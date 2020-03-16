@@ -1,0 +1,44 @@
+{
+  "id": "fbdlyline",
+  "isStereo": false,
+  "name": "FB Dly Line",
+  "params": [
+    {
+      "id": "length",
+      "name": "Length / Samples",
+      "type": "int",
+      "min": 1,
+      "max": 88200,
+      "step": 1
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "drywet",
+      "name": "Dry / Wet",
+      "type": "int",
+      "min" : 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "level",
+      "name": "Level",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "enable",
+      "name": "Enable",
+      "type": "bool"
+    }
+  ]
+}

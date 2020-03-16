@@ -1,0 +1,16 @@
+
+menu "CTAG TBD Configuration"
+
+        choice CODEC_IC_TYPE
+            prompt "Codec IC selection"
+            default CODEC_IC_WM8978
+            help
+                Determines the available CodecManager on the board.
+
+            config CODEC_IC_WM8978
+                bool "WM8978"
+            config CODEC_IC_WM8731
+                bool "WM8731"
+
+        endchoice
+endmenu

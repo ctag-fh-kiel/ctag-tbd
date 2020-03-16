@@ -1,0 +1,55 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "mode",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "freeze",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "bypass",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "length",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "feedback",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "pan",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "wvol",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "dvol",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "gain",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

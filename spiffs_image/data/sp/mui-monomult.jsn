@@ -1,0 +1,20 @@
+{
+  "id": "monomult",
+  "isStereo": false,
+  "name": "Multiplier",
+  "params": [
+    {
+      "id": "enable",
+      "name": "Enable",
+      "type": "bool"
+    },
+    {
+      "id": "factor",
+      "name": "Factor",
+      "type": "int",
+      "min": 0,
+      "max": 1023,
+      "step": 1
+    }
+  ]
+}

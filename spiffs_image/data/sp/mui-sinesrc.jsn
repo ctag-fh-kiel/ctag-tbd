@@ -1,0 +1,97 @@
+{
+  "id": "sinesrc",
+  "isStereo": false,
+  "name": "Sine Source",
+  "params": [
+    {
+      "id": "frequency",
+      "name": "Frequency / Hz",
+      "type": "int",
+      "min": 10,
+      "max": 15000,
+      "step": 1
+    },
+    {
+      "id": "loudness",
+      "name": "Loudness",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "env",
+      "name": "EG Loudness",
+      "type": "group",
+      "params": [
+        {
+          "id": "enableEG",
+          "name": "Enable EG",
+          "type": "bool"
+        },
+        {
+          "id": "loopEG",
+          "name": "Loop EG",
+          "type": "bool"
+        },
+        {
+          "id": "attack",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "env_p",
+      "name": "EG Pitch",
+      "type": "group",
+      "params": [
+        {
+          "id": "enableEG_p",
+          "name": "Enable EG",
+          "type": "bool"
+        },
+        {
+          "id": "loopEG_p",
+          "name": "Loop EG",
+          "type": "bool"
+        },
+        {
+          "id": "amount_p",
+          "name": "Amount",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "attack_p",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "decay_p",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "stereoam",
+  "isStereo": true,
+  "name": "Stereo AM",
+  "params": [
+    {
+      "id": "lfo",
+      "name": "LFO",
+      "type": "group",
+      "params": [
+        {
+          "id": "lfo_freq",
+          "name": "Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 100,
+          "step": 1
+        },
+        {
+          "id": "lfo_amount",
+          "name": "Amount",
+          "type": "int",
+          "min": 0,
+          "max": 100,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "eg",
+      "name": "EG",
+      "type": "group",
+      "params": [
+        {
+          "id": "eg_a",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 100,
+          "step": 2
+        },
+        {
+          "id": "eg_d",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 100,
+          "step": 1
+        },
+        {
+          "id": "eg_loop",
+          "name": "EG Loop",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "id": "misc",
+      "name": "Miscellaneous",
+      "type": "group",
+      "params": [
+        {
+          "id": "enable",
+          "name": "Enable",
+          "type": "bool"
+        },
+        {
+          "id": "sup",
+          "name": "Sup sir?",
+          "type": "int",
+          "min": 0,
+          "max": 127,
+          "step": 1
+        }
+      ]
+    }
+  ]
+}

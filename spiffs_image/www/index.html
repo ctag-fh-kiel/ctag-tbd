@@ -1,0 +1,619 @@
+<!--
+CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
+
+A project conceived within the Creative Technologies Arbeitsgruppe of
+Kiel University of Applied Sciences: https://www.creative-technologies.de
+
+(c) 2020 by Robert Manzke. All rights reserved.
+
+The CTAG TBD software is licensed under the GNU General Public License
+(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
+
+The CTAG TBD hardware design is released under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+CTAG TBD is provided "as is" without any express or implied warranties.
+
+License and copyright details for specific submodules are included in their
+respective component folders / files if different from this license.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="-1"/>
+    <link rel="stylesheet" href="css/onsenui-core.min.css">
+    <link rel="stylesheet" href="css/onsen-css-c.min.css">
+    <script src="js/onsenui.min.js"></script>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/ajaxq.js"></script>
+    <title>CTAG-TBD</title>
+</head>
+<body>
+<ons-navigator swipeable id="myNavigator" page="main.html"></ons-navigator>
+</ons-navigator>
+
+<template id="main.html">
+    <ons-page id="main">
+        <ons-toolbar>
+            <div class="center">CTAG-TBD</div>
+        </ons-toolbar>
+        <ons-list>
+            <ons-list-header>Plugin channel 0</ons-list-header>
+            <ons-list-item>
+                <ons-select>
+                    <select id="plugin-select-ch0">
+                    </select>
+                </ons-select>
+            </ons-list-item>
+            <ons-list-item>
+                <ons-button id="go-ch0" style="margin: 2px;">Edit channel 0</ons-button>
+                <ons-button id="load-ch0" style="margin: 2px">Load preset</ons-button>
+                <ons-button id="save-ch0" style="margin: 2px;">Save preset</ons-button>
+            </ons-list-item>
+        </ons-list>
+
+        <ons-list>
+            <ons-list-header>Plugin channel 1</ons-list-header>
+            <ons-list-item>
+                <ons-select>
+                    <select id="plugin-select-ch1">
+                    </select>
+                </ons-select>
+            </ons-list-item>
+            <ons-list-item>
+                <ons-button id="go-ch1" style="margin: 2px;">Edit channel 1</ons-button>
+                <ons-button id="load-ch1" style="margin: 2px">Load preset</ons-button>
+                <ons-button id="save-ch1" style="margin: 2px;">Save preset</ons-button>
+            </ons-list-item>
+        </ons-list>
+        <ons-list>
+            <ons-list-header>Configuration</ons-list-header>
+            <ons-list-item>
+                <ons-button id="go-config" style="margin: 2px;">Edit configuration</ons-button>
+            </ons-list-item>
+        </ons-list>
+        <script>
+            ons.getScriptPage().onInit = function () {
+                // get available plugins from API and assign current ones
+                $.getq('myq',
+                    'api/v1/getPlugins',
+                    data => {
+                        // sort array by name
+                        data.sort((a, b) => a.name.localeCompare(b.name, undefined, {numberic: true}));
+                        // populate plugin list
+                        data.forEach(el => {
+                                // only show stereo plugins on ch-0
+                                if (el.isStereo)
+                                    $('#plugin-select-ch0').append('<option value="' + el.id + '">ST: ' + el.name + '</option>');
+                                else
+                                    $('#plugin-select-ch0').append('<option value="' + el.id + '">M: ' + el.name + '</option>');
+                                if (!el.isStereo)
+                                    $('#plugin-select-ch1').append('<option value="' + el.id + '">M: ' + el.name + '</option>');
+                            }
+                        );
+                        // global var
+                        window.plugins = data;
+                    }
+                );
+                // get active plugin and set in UI
+                $.getq('myq',
+                    '/api/v1/getActivePlugin/0',
+                    data => {
+                        $('#plugin-select-ch0').val(data.id);
+                        if (window.plugins.find(el => el.id === data.id).isStereo) {
+                            $('#go-ch1,#load-ch1,#save-ch1').prop("disabled", true);
+                            $('#plugin-select-ch1').prop("disabled", true);
+                        } else {
+                            $('#go-ch1,#load-ch1,#save-ch1').removeAttr('disabled');
+                            $('#plugin-select-ch1').removeAttr('disabled');
+                        }
+                    }
+                );
+                $.getq('myq',
+                    '/api/v1/getActivePlugin/1',
+                    data => {
+                        $('#plugin-select-ch1').val(data.id);
+                    }
+                );
+                // set up call backs upon change of plugin
+                $('#plugin-select-ch0').on('change', function () {
+                    $.getq('myq',
+                        'api/v1/setActivePlugin/0',
+                        {id: this.value}
+                    );
+                    // check if stereo plugin selected, if so, disable ch 1
+                    if (window.plugins.find(el => el.id === this.value).isStereo) {
+                        $('#go-ch1,#save-ch1,#load-ch1').prop("disabled", true);
+                        $('#plugin-select-ch1').prop("disabled", true);
+                    } else {
+                        $('#go-ch1,#save-ch1,#load-ch1').removeAttr('disabled');
+                        $('#plugin-select-ch1').removeAttr('disabled');
+                        // re-set mono channel as well
+                        $.getq('myq',
+                            'api/v1/setActivePlugin/1',
+                            {id: $('#plugin-select-ch1').val()}
+                        );
+                    }
+
+                });
+                $('#plugin-select-ch1').on('change', function () {
+                    $.getq('myq',
+                        'api/v1/setActivePlugin/1',
+                        {id: this.value}
+                    );
+                });
+
+                this.querySelector('#go-ch0').onclick = function () {
+                    document.querySelector('#myNavigator').pushPage('edit.html', {data: {ch: 0}});
+                };
+
+                this.querySelector('#go-ch1').onclick = function () {
+                    document.querySelector('#myNavigator').pushPage('edit.html', {data: {ch: 1}});
+                };
+
+                this.querySelector('#load-ch0').onclick = function () {
+                    document.querySelector('#myNavigator').pushPage('load.html', {data: {ch: 0}});
+                };
+
+                this.querySelector('#load-ch1').onclick = function () {
+                    document.querySelector('#myNavigator').pushPage('load.html', {data: {ch: 1}});
+                };
+
+                this.querySelector('#save-ch0').onclick = function () {
+                    document.querySelector('#myNavigator').pushPage('save.html', {data: {ch: 0}});
+                };
+
+                this.querySelector('#save-ch1').onclick = function () {
+                    document.querySelector('#myNavigator').pushPage('save.html', {data: {ch: 1}});
+                };
+
+                this.querySelector('#go-config').onclick = function () {
+                    document.querySelector('#myNavigator').pushPage('config.html', {});
+                };
+
+                this.onShow = function () {
+                    //console.log('Main');
+                };
+            };
+        </script>
+    </ons-page>
+</template>
+
+<template id="config.html">
+    <ons-page id="config">
+        <ons-toolbar>
+            <div class="left">
+                <ons-back-button>Config</ons-back-button>
+            </div>
+            <div class="center">TBD Setup</div>
+        </ons-toolbar>
+        <ons-list-header>CV0 Config</ons-list-header>
+        <ons-list-item>
+            <ons-select id="cv0-config">
+                <option value="unipolar">Unipolar 0 .. 5V</option>
+                <option value="bipolar">Bipolar -5 .. 5V</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>CV1 Config</ons-list-header>
+        <ons-list-item>
+            <ons-select id="cv1-config">
+                <option value="unipolar">Unipolar 0 .. 5V</option>
+                <option value="bipolar">Bipolar -5 .. 5V</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>Pot 0 Config</ons-list-header>
+        <ons-list-item>
+            <ons-select id="cv2-config">
+                <option value="unipolar">Unipolar 0 .. 1</option>
+                <option value="bipolar">Bipolar -1 .. 1</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>Pot 1 Config</ons-list-header>
+        <ons-list-item>
+            <ons-select id="cv3-config">
+                <option value="unipolar">Unipolar 0 .. 1</option>
+                <option value="bipolar">Bipolar -1 .. 1</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>Input Noise Gate</ons-list-header>
+        <ons-list-item>
+            <ons-select id="ng-config">
+                <option value="off">Off</option>
+                <option value="dual">Both channels</option>
+                <option value="ch0">Channel 0</option>
+                <option value="ch1">Channel 1</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>CH0 To Stereo</ons-list-header>
+        <ons-list-item>
+            <ons-select id="ch0-stereo-config">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+                <option value="mix">Mix with CH1</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>CH1 To Stereo</ons-list-header>
+        <ons-list-item>
+            <ons-select id="ch1-stereo-config">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+                <option value="mix">Mix with CH0</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>Wifi Configuration</ons-list-header>
+        <ons-list-item>
+            <div style="text-align: center; margin-top: 30px;">
+            <ons-select id="wifi-mode">
+                <option value="ap">Access Point</option>
+                <option value="sta">Station</option>
+            </ons-select>
+            <p>
+                <div>SSID</div><ons-input id="ssid" modifier="underbar" placeholder="SSID" float></ons-input>
+            </p>
+            <p>
+                <div>Password</div><ons-input id="pwd" modifier="underbar" placeholder="Password" float></ons-input>
+            </p>
+            <p>
+                <div>mDNS Name</div><ons-input id="mdns-name" modifier="underbar" placeholder="mDNS Name" float></ons-input>
+            </p>
+            <ons-button id="commit-wifi" style="margin-top: 30px;">Commit WiFi data</ons-button>
+            </div>
+        </ons-list-item>
+        <script>
+            ons.getScriptPage().onInit = function () {
+                $.getq('myq', 'api/v1/getConfiguration',
+                    data => {
+                        $('#cv0-config').val(data["cv_ch0"]);
+                        $('#cv1-config').val(data["cv_ch1"]);
+                        $('#cv2-config').val(data["cv_ch2"]);
+                        $('#cv3-config').val(data["cv_ch3"]);
+                        $('#ng-config').val(data["ng_config"]);
+                        $('#ch0-stereo-config').val(data["ch0_toStereo"]);
+                        $('#ch1-stereo-config').val(data["ch1_toStereo"]);
+                        $('#wifi-mode').val(data["wifi"].mode);
+                        $('#ssid').val(data["wifi"].ssid);
+                        $('#pwd').val(data["wifi"].pwd);
+                        $('#mdns-name').val(data["wifi"].mdns_name);
+                        window.cfgData = data;
+                        $('#cv0-config').on('change', function () {
+                            cfgData.cv_ch0 = $('#cv0-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#cv1-config').on('change', function () {
+                            cfgData.cv_ch1 = $('#cv1-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#cv2-config').on('change', function () {
+                            cfgData.cv_ch2 = $('#cv2-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#cv3-config').on('change', function () {
+                            cfgData.cv_ch3 = $('#cv3-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ng-config').on('change', function () {
+                            cfgData.ng_config = $('#ng-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ch0-stereo-config').on('change', function () {
+                            cfgData.ch0_toStereo = $('#ch0-stereo-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ch1-stereo-config').on('change', function () {
+                            cfgData.ch1_toStereo = $('#ch1-stereo-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#commit-wifi').on('click', function () {
+                            cfgData.wifi.ssid = $('#ssid').val();
+                            cfgData.wifi.pwd = $('#pwd').val();
+                            cfgData.wifi.mode = $('#wifi-mode').val();
+                            cfgData.wifi.mdns_name = $('#mdns-name').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                            ons.notification.toast('You must manually reboot the module for changes to take effect!', {
+                                timeout: 3000,
+                                animation: 'fall'
+                            });
+                        });
+                    },
+                );
+
+                this.onShow = function () {
+                    //console.log('Main');
+                };
+            };
+        </script>
+    </ons-page>
+</template>
+
+<template id="save.html">
+    <ons-page id="save">
+        <ons-toolbar>
+            <div class="left">
+                <ons-back-button>Save</ons-back-button>
+            </div>
+            <div class="center"></div>
+        </ons-toolbar>
+        <div id="preset-input"></div>
+        <script>
+            ons.getScriptPage().onInit = function () {
+                console.log("OnInit Save");
+                this.querySelector('ons-toolbar .center').innerHTML = 'CHANNEL ' + this.data.ch + ' PRESET';
+                let ch = this.data.ch;
+                $.getq('myq', 'api/v1/getPresets/' + this.data.ch,
+                    data => {
+                        let presets = data.presets;
+                        $('#preset-input').append(
+                            '<div style="text-align: center; margin-top: 30px;">' +
+                            '<p style="font-weight: bold;">Current preset ' + data.activePresetNumber + ': ' + presets[data.activePresetNumber].name + '</p>' +
+                            '<div>Patch Number:</div><div><ons-input id="patch-number" type="number" min="0" max="' + presets.length + '" value="' + presets.length + '"float/></div>' +
+                            '<p><ons-input id="patch-name" placeholder="Enter Patch Name" float/></p>' +
+                            '<p><ons-button id="patch-save">Save Preset</ons-button></p>' +
+                            '</div>'
+                        );
+                        $('#patch-save').on('click', () => {
+                            if ($('#patch-number').val() > presets.length || $('#patch-number').val() < 0) {
+                                ons.notification.toast('Wrong patch number must be > 0 and < ' + presets.length, {
+                                    timeout: 1000,
+                                    animation: 'fall'
+                                });
+                            } else {
+                                $.getq('myq', 'api/v1/savePreset/' + ch, {
+                                    number: $('#patch-number').val(),
+                                    name: $('#patch-name').val()
+                                });
+                                document.querySelector('#myNavigator').popPage();
+                            }
+                        });
+                    }
+                );
+                this.onShow = function () {
+                    //console.log('Main');
+                };
+            }
+        </script>
+    </ons-page>
+</template>
+
+<template id="load.html">
+    <ons-page id="load">
+        <ons-toolbar>
+            <div class="left">
+                <ons-back-button>Load</ons-back-button>
+            </div>
+            <div class="center"></div>
+        </ons-toolbar>
+        <ons-list id="patch-list">
+        </ons-list>
+        <script>
+            ons.getScriptPage().onInit = function () {
+                this.querySelector('ons-toolbar .center').innerHTML = 'CHANNEL ' + this.data.ch + ' PRESET';
+                // get available plugins from API and assign current ones
+                let ch = this.data.ch;
+                $.getq('myq', 'api/v1/getPresets/' + this.data.ch,
+                    data => {
+                        data.presets.forEach(el => {
+                                if (data.activePresetNumber == el.number)
+                                    $('#patch-list').append(
+                                        `<ons-list-item tappable id="preset-${el.number}"><span style="font-weight: bold;"><em>${el.number}</em>: ${el.name}</span></ons-list-item>`
+                                    );
+                                else
+                                    $('#patch-list').append(
+                                        `<ons-list-item tappable id="preset-${el.number}"><em>${el.number}</em>: ${el.name}</ons-list-item>`
+                                    );
+                                $('#preset-' + el.number).on('click', function (event) {
+                                    $.getq('myq', 'api/v1/loadPreset/' + ch, {number: el.number});
+                                    document.querySelector('#myNavigator').popPage();
+                                });
+                            }
+                        );
+                    }
+                );
+                this.onShow = function () {
+                    //console.log('Main');
+                };
+            }
+        </script>
+    </ons-page>
+</template>
+
+<template id="edit.html">
+    <ons-page id="Edit">
+        <ons-toolbar>
+            <div class="left">
+                <ons-back-button>Edit</ons-back-button>
+            </div>
+            <div class="center"></div>
+        </ons-toolbar>
+        <ons-list id="params-list">
+        </ons-list>
+        <script>
+            function renderParams(ch, sel, el) {
+                let s = '';
+                switch (el.type) {
+                    case 'group':
+                        // render ui
+                        console.log('Adding group-' + el.id);
+                        sel.append(
+                            '<ons-list id="group-' + el.id + '">' +
+                            '<ons-list-header>' + el.name + '</ons-list-header>' +
+                            '</ons-list>'
+                        );
+                        // recursively render group elements
+                        el.params.forEach(it => renderParams(ch, $('#group-' + el.id), it));
+                        break;
+                    case 'int':
+                        // render UI
+                        s = '<ons-list-item>' +
+                            '<div style="width: 30%;">' +
+                            el.name +
+                            '</div>' +
+                            '<div style="width: 10%;">' +
+                            '<ons-input id="ip-' + el.id + '" type="number" min="' + el.min + '" max="' + el.max + '" value="' + el.current + '"></ons-input>' +
+                            '</div>' +
+                            '<div style="width: 50%;">' +
+                            '<ons-range id="sl-' + el.id + '"' +
+                            'style="width: 100%;" min="' + el.min + '" max="' + el.max + '" value="' + el.current + '" step="' + el.step + '"></ons-range>' +
+                            '</div>';
+                        if (el.hasOwnProperty('cv')) {
+                            s += '<div style="width: 10%;" class="right">' +
+                                '<select id="ch-' + ch + '-cv-' + el.id + '">' +
+                                '<option value="-1">None</option>' +
+                                '<option value="0">CV0</option>' +
+                                '<option value="1">CV1</option>' +
+                                '<option value="2">POT0</option>' +
+                                '<option value="3">POT1</option>' +
+                                '</select>' +
+                                '</div>';
+                        } else {
+                            s += '<div style="width: 10%;" class="right">.oOo.</div>';
+                        }
+                        s += '</ons-list-item>';
+                        sel.append(s);
+                        // set cv routing current value
+                        if (el.hasOwnProperty('cv')) {
+                            $('#ch-' + ch + '-cv-' + el.id).val(el.cv);
+                        }
+                        // attach event listener slider
+                        $('#sl-' + el.id).on('input', {ch: ch, el: el}, // send only when interaction done
+                            //event => {console.log(event.data.id + $('#sl-' + event.data.id).val())}
+                            event => {
+                                // rest request to backend
+                                $.getq('myq',
+                                    'api/v1/setPluginParam/' + event.data.ch,
+                                    {
+                                        id: event.data.el.id,
+                                        current: $('#sl-' + event.data.el.id).val()
+                                    }
+                                );
+                                // update view input element
+                                $('#ip-' + event.data.el.id).val($('#sl-' + event.data.el.id).val());
+                            }
+                        );
+                        // attach event listener number input
+                        $('#ip-' + el.id).on('input', {ch: ch, el: el},
+                            //event => {console.log(event.data.id + $('#sl-' + event.data.id).val())}
+                            event => {
+                                // rest request to backend
+                                $.getq('myq',
+                                    'api/v1/setPluginParam/' + event.data.ch,
+                                    {
+                                        id: event.data.el.id,
+                                        current: $('#ip-' + event.data.el.id).val()
+                                    }
+                                );
+                                // update view input element
+                                $('#sl-' + event.data.el.id).val($('#ip-' + event.data.el.id).val());
+                            }
+                        );
+                        // attach event listener to select cv
+                        if (el.hasOwnProperty('cv')) {
+                            $(`#ch-${ch}-cv-${el.id}`).on('change', {ch: ch, el: el},
+                                function (event) {
+                                    $.getq('myq', 'api/v1/setPluginParamCV/' + event.data.ch,
+                                        {
+                                            id: event.data.el.id,
+                                            cv: this.value
+                                        }
+                                    );
+                                }
+                            );
+                        }
+                        break;
+                    case 'bool':
+                        // render UI
+                        s = '<ons-list-item>' +
+                            '<div style="width: 40%;">' +
+                            el.name +
+                            '</div>' +
+                            '<div style="width: 50%;">' +
+                            '<ons-switch id="sw-' + el.id + '"' + (el.current == 1 ? 'checked' : '') + '></ons-switch>' +
+                            '</div>';
+                        if (el.hasOwnProperty('trig')) {
+                            s += '<div class="right" style="width: 10%;">' +
+                                '<select id="ch-' + ch + '-trig-' + el.id + '">' +
+                                '<option value="-1">None</option>' +
+                                '<option value="0">TRIG 0</option>' +
+                                '<option value="1">TRIG 1</option>' +
+                                '</select>' +
+                                '</div>';
+                        } else {
+                            s += '<div style="width: 10%;" class="right">.oOo.</div>';
+                        }
+                        s += '</ons-list-item>';
+                        sel.append(s);
+                        // set trig routing current value
+                        if (el.hasOwnProperty('trig')) {
+                            $('#ch-' + ch + '-trig-' + el.id).val(el.trig);
+                        }
+                        // attach event listener
+                        $('#sw-' + el.id).on('change', {ch: ch, el: el},
+                            //event => {console.log(event.data.el.id + $('#sw-' + event.data.el.id).prop('checked')
+                            event => $.getq('myq',
+                                'api/v1/setPluginParam/' + event.data.ch,
+                                {
+                                    id: event.data.el.id,
+                                    current: ($('#sw-' + event.data.el.id).prop('checked') ? 1 : 0)
+                                }
+                            )
+                        );
+                        // attach event listener to select trig
+                        if (el.hasOwnProperty('trig')) {
+                            $(`#ch-${ch}-trig-${el.id}`).on('change', {ch: ch, el: el},
+                                function (event) {
+                                    $.getq('myq', 'api/v1/setPluginParamTRIG/' + event.data.ch,
+                                        {
+                                            id: event.data.el.id,
+                                            trig: this.value
+                                        }
+                                    );
+                                }
+                            );
+                        }
+                        break;
+                    default:
+                        //console.log('Unknown parameter type, ignoring!');
+                        break;
+                }
+            }
+
+            ons.getScriptPage().onInit = function () {
+                this.querySelector('ons-toolbar .center').innerHTML = 'CHANNEL ' + this.data.ch;
+
+                $.getq('myq',
+                    '/api/v1/getPluginParams/' + this.data.ch,
+                    data => {
+                        data.params.forEach(el => renderParams(this.data.ch, $('#params-list'), el));
+                        //console.log($('#params-list'));
+                        //console.log(data);
+                    }
+                );
+
+                this.onShow = function () {
+                    //console.log('Setup show');
+                };
+            };
+        </script>
+    </ons-page>
+</template>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "id": "fverb",
+  "isStereo": true,
+  "name": "Freeverb",
+  "params": [
+    {
+      "id": "roomsize",
+      "name": "Room Size",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "damp",
+      "name": "Damp",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "dry",
+      "name": "Dry",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "wet",
+      "name": "Wet",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "width",
+      "name": "Width",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "mode",
+      "name": "Hold",
+      "type": "bool"
+    },
+    {
+      "id": "mono",
+      "name": "Mono In",
+      "type": "bool"
+    }
+  ]
+}

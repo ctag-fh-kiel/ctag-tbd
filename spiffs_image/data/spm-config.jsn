@@ -1,0 +1,23 @@
+{
+  "activeProcessors": [],
+  "lastPatches": [
+    [],
+    []
+  ],
+  "configuration": {
+    "wifi": {
+      "ssid": "ctag-tbd",
+      "pwd": "",
+      "mode": "ap",
+      "mdns_name": "ctag-tbd",
+      "ip": "192.178.3.1"
+    },
+    "cv_ch0": "unipolar",
+    "cv_ch1": "unipolar",
+    "cv_ch2": "unipolar",
+    "cv_ch3": "unipolar",
+    "ng_config": "off",
+    "ch0_toStereo": "off",
+    "ch1_toStereo": "off"
+  }
+}

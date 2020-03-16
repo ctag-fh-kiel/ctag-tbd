@@ -1,0 +1,49 @@
+{
+  "activePatch" : 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "bipolar",
+          "current": 1
+        },
+        {
+          "id": "rate",
+          "current": 1023,
+          "cv": -1
+        },
+        {
+          "id": "level",
+          "current": 2048,
+          "cv": -1
+        },
+        {
+          "id": "width",
+          "current": 1023,
+          "cv": -1
+        },
+        {
+          "id": "smooth",
+          "current": 1023,
+          "cv": -1
+        },
+        {
+          "id": "bp_enable",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "bp_fcut",
+          "current": 100,
+          "cv": -1
+        },
+        {
+          "id": "bp_q",
+          "current": 1023,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}
