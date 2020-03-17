@@ -56,17 +56,53 @@ ctagSoundProcessorStrampDly::ctagSoundProcessorStrampDly() {
 
 void ctagSoundProcessorStrampDly::Process(const ProcessData &data) {
     float tempL, tempR;
+    if(cv_length != -1){
+        msLength = data.cv[cv_length] * data.cv[cv_length] * msMaxLength;
+    }else{
+        msLength = (float)length / 4095.f * msMaxLength;
+    }
 
-    msLength = (float)length / 4095.f * msMaxLength;
-    //if(delay->msLength > delay->msMaxLength) delay->msLength = delay->msMaxLength;
     fTapOffset = 0.995 * fTapOffset + 0.005 * (msMaxLength - msLength) * sampleRate / 1000.0;
     tapOffset = (uint32_t) fTapOffset;
-    fFeedback = 0.8 * fFeedback + 0.2 * (float)feedback / 4095.f * 1.1f;
-    fPan = (float)pan / 4095.f;
-    fWetVolume= (float)wvol / 4095.f;
-    fDryVolume = (float)dvol / 4095.f;
-    float fGain = (float)gain / 4095.f * 4.f;
-    //ESP_LOGE("dly", "fPan %f, fWet %f", fPan, fWetVolume);
+    if(cv_feedback != -1){
+        fFeedback = 0.8 * fFeedback + 0.2 * data.cv[cv_feedback] * data.cv[cv_feedback] * 2.f;
+    }else{
+        fFeedback = 0.8 * fFeedback + 0.2 * (float)feedback / 4095.f * 1.5f;
+    }
+    if(trig_freeze != -1){
+        if(data.trig[trig_freeze] == 0) fFeedback = 1.f; // inverted ins
+    }else{
+        if(freeze == 1)
+            fFeedback = 1.f;
+    }
+
+    if(cv_pan != -1)
+        fPan = data.cv[cv_pan] * data.cv[cv_pan];
+    else
+        fPan = (float)pan / 4095.f;
+    if(cv_wvol != -1)
+        fWetVolume = data.cv[cv_wvol] * data.cv[cv_wvol];
+    else
+        fWetVolume= (float)wvol / 4095.f;
+    if(cv_dvol != -1)
+        fDryVolume = data.cv[cv_dvol] * data.cv[cv_dvol];
+    else
+        fDryVolume = (float)dvol / 4095.f;
+    float fGain;
+    if(cv_gain != -1)
+        fGain = data.cv[cv_gain] * data.cv[cv_gain];
+    else
+        fGain = (float)gain / 4095.f * 2.f;
+
+    if(trig_bypass != -1){
+        if(data.trig[trig_bypass] == 0) return;
+    }
+    else{
+        if(bypass == 1) return;
+    }
+
+    uint32_t dlyMode = mode;
+    if(trig_mode != -1) dlyMode = data.trig[trig_mode] == 1 ? 0 : 1; // inverted trig signals
 
     for(uint32_t i=0; i<bufSz; i++){
         uint32_t cPos;
@@ -77,7 +113,7 @@ void ctagSoundProcessorStrampDly::Process(const ProcessData &data) {
 
         // write
         cPos = pos;
-        if(mode == 1){
+        if(dlyMode == 1){
             bufL[cPos] = tempR * fFeedback;
             bufR[cPos] = tempL * fFeedback;
         }else{
@@ -85,28 +121,45 @@ void ctagSoundProcessorStrampDly::Process(const ProcessData &data) {
             bufR[cPos] = tempR * fFeedback;
         }
 
-        // noise reduction included
-        //if(fabs(data.buf[i*2]) > 0.001 && fabs(data.buf[i*2 + 1]) > 0.001){
+        // noise reduction with envelope follower input
+        if(fabs(data.buf[i*2]) > envFollowInput)
+            envFollowInput = fabs(data.buf[i*2]);
+        else if(fabs(data.buf[i*2 + 1]) > envFollowInput)
+            envFollowInput = fabs(data.buf[i*2] + 1);
+        else
+            envFollowInput *= 0.9f; // decay
+
+        if(envFollowInput > 0.0001){
             bufL[cPos] += (data.buf[i*2] + data.buf[i*2 + 1]) * (1.f - fPan) * 2.f;
             bufR[cPos] += (data.buf[i*2] + data.buf[i*2 + 1]) * fPan * 2.f;
-        //}
-        /*
-        if(fabs(bufL[pos]) < 0.0001) // remove noise
-            bufL[pos] = 0.0f;
-        if(fabs(bufR[pos]) < 0.0001) // remove noise
-            bufR[pos] = 0.0f;
-        */
+        }
+
+
+        // noise reduction with envelope follower buffer
+        if(fabs(bufL[cPos]) > envFollowBuffer)
+            envFollowBuffer = fabs(bufL[cPos]);
+        else if(fabs(bufR[cPos]) > envFollowBuffer)
+            envFollowBuffer = fabs(bufR[cPos]);
+        else
+            envFollowBuffer *= 0.9f; // decay
+
+        if(envFollowBuffer < 0.0001){
+            bufL[cPos] = 0.f;
+            bufR[cPos] = 0.f;
+        }
 
         // update position
         pos++;
         pos %= bufLen;
 
         // set volume
-        data.buf[i*2] = tempL * fWetVolume + data.buf[i*2] * fDryVolume;
-        data.buf[i*2 + 1] = tempR * fWetVolume + data.buf[i*2 + 1] * fDryVolume;
+        data.buf[i*2] *= fDryVolume;
+        data.buf[i*2] += tempL * fWetVolume;
+        data.buf[i*2 + 1] *= fDryVolume;
+        data.buf[i*2 + 1] += tempR * fWetVolume;
 
-        //data.buf[i*2] = mFac * HELPERS::fastatan(data.buf[i*2] * fGain);
-        //data.buf[i*2 + 1] = mFac * HELPERS::fastatan(data.buf[i*2 + 1] * fGain);
+        data.buf[i*2] = mFac * HELPERS::fasttanh(data.buf[i*2] * fGain);
+        data.buf[i*2 + 1] = mFac * HELPERS::fasttanh(data.buf[i*2 + 1] * fGain);
     }
 }
 

@@ -69,6 +69,9 @@ atomic<int32_t> gain, cv_gain;
             uint32_t tapOffset;
             float fTapOffset;
             const float mFac = 4.f / M_PI;
+            float envFollowBuffer = 0.f;
+            float envFollowInput = 0.f;
+
         };
     }
 }

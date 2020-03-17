@@ -102,12 +102,10 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         float maxl = 0.f, maxr = 0.f;
         float max = 0.f;
         for (uint32_t i = 0; i < BUF_SZ; i++) {
-            float val = fbuf[i * 2];
-            val = in_dccutl(val);
-            if (val > maxl) maxl = val;
-            val = fbuf[i * 2 + 1];
-            val = in_dccutr(val);
-            if (val > maxr) maxr = fbuf[i * 2 + 1];
+            fbuf[i * 2] = in_dccutl(fbuf[i * 2]);
+            if (fbuf[i * 2] > maxl) maxl = fbuf[i * 2];
+            fbuf[i * 2 + 1] = in_dccutr(fbuf[i * 2 + 1]);
+            if (fbuf[i * 2 + 1] > maxr) maxr = fbuf[i * 2 + 1];
         }
         max = maxl >= maxr ? maxl : maxr;
         peakIn = 0.95f * peakIn + 0.05f * max;
