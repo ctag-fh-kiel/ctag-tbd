@@ -46,19 +46,19 @@ namespace CTAG{
                 void SetProcessChannel(int ch){processCh = ch;}
                 const char * GetCStrJSONParamSpecs() const {return model->GetCStrJSONParams();}
                 virtual const char * GetCStrID() const = 0;
-                void SetParamValue(const string id, const string key, const int val){
+                void SetParamValue(const string &id, const string &key, const int val){
                     setParamValueInternal(id, key, val); // as immediate as possible
                     model->SetParamValue(id, key, val);
                 }
                 const char * GetCStrJSONPresets(){return model->GetCStrJSONPresets();}
                 bool GetIsStereo() const {return isStereo;}
-                void SavePreset(const string name, const int number){model->SavePreset(name, number);}
+                void SavePreset(const string &name, const int number){model->SavePreset(name, number);}
                 void LoadPreset(const int number){
                     model->LoadPreset(number); // first get the data into the model
                     loadPresetInternal();
                 }
             protected:
-                virtual void setParamValueInternal(const string id, const string key, const int val){};
+                virtual void setParamValueInternal(const string &id, const string &key, const int val){};
                 virtual void loadPresetInternal(){};
                 bool isStereo = false;
                 int bufSz = 32;

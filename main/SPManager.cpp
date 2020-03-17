@@ -253,7 +253,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
 }
 
-void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const string id) {
+void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const string &id) {
     ledBlink = 5;
     ESP_LOGI("SP", "Switching plugin %d to %s", chan, id.c_str());
     xSemaphoreTake(processMutex, portMAX_DELAY);
@@ -328,12 +328,12 @@ void SoundProcessorManager::StartSoundProcessor() {
     xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
 }
 
-void SoundProcessorManager::SetChannelParamValue(const int chan, const string id, const string key, const int val) {
+void SoundProcessorManager::SetChannelParamValue(const int chan, const string &id, const string &key, const int val) {
     ledBlink = 3;
     sp[chan]->SetParamValue(id, key, val);
 }
 
-void SoundProcessorManager::ChannelSavePreset(const int chan, const string name, const int number) {
+void SoundProcessorManager::ChannelSavePreset(const int chan, const string &name, const int number) {
     ledBlink = 3;
     if (sp[chan] == nullptr) return;
     xSemaphoreTake(processMutex, portMAX_DELAY);
@@ -356,7 +356,7 @@ string SoundProcessorManager::GetStringID(const int chan) {
     return model->GetActiveProcessorID(chan);
 }
 
-void SoundProcessorManager::SetConfigurationFromJSON(const string data) {
+void SoundProcessorManager::SetConfigurationFromJSON(const string &data) {
     ledBlink = 3;
     xSemaphoreTake(processMutex, portMAX_DELAY);
     model->SetConfigurationFromJSON(data);

@@ -9,7 +9,7 @@ namespace CTAG{
                 ctagSoundProcessorStereoAM();
                 virtual const char * GetCStrID() const;
             private:
-                virtual void setParamValueInternal(const string id, const int val);
+                virtual void setParamValueInternal(const string& id, const int val);
                 const string id = "stereoam";
         };
     }

@@ -119,7 +119,7 @@ const char * ctagSoundProcessorDust::GetCStrID() const{
     return id.c_str();
 }
 
-void ctagSoundProcessorDust::setParamValueInternal(const string id, const string key, const int val) {
+void ctagSoundProcessorDust::setParamValueInternal(const string &id, const string &key, const int val) {
     if(id.compare("rate") == 0){
         if(key.compare("current") == 0){
             rate = val;

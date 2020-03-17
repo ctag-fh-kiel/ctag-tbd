@@ -35,7 +35,7 @@ respective component folders / files if different from this license.
 
 #define MB_BUF_SZ 4096
 
-void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string fn){
+void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn){
     ESP_LOGD("JSON", "read buffer");
     //FILE*
     fp = fopen(fn.c_str(), "r");
@@ -51,7 +51,7 @@ void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string fn){
     fclose(fp);
 }
 
-void CTAG::SP::ctagDataModelBase::storeJSON(Document &d, const string fn) {
+void CTAG::SP::ctagDataModelBase::storeJSON(Document &d, const string &fn) {
     //FILE*
     fp = fopen(fn.c_str(), "w"); // non-Windows use "w"
     if(fp == NULL){

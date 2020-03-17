@@ -53,7 +53,7 @@ const char * ctagSoundProcessorPNoise::GetCStrID() const{
     return id.c_str();
 }
 
-void ctagSoundProcessorPNoise::setParamValueInternal(const string id, const string key, const int val) {
+void ctagSoundProcessorPNoise::setParamValueInternal(const string &id, const string &key, const int val) {
     ESP_LOGW("Monomult", "set param val id %s key %s val %d", id.c_str(), key.c_str(), val);
     if(id.compare("factor") == 0){
         if(key.compare("current") == 0){

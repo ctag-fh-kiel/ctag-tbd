@@ -87,7 +87,7 @@ string SPManagerDataModel::GetActiveProcessorID(const int chan) {
     return m["activeProcessors"].GetArray()[chan].GetString();
 }
 
-void SPManagerDataModel::SetActivePluginID(const string id, const int chan) {
+void SPManagerDataModel::SetActivePluginID(const string &id, const int chan) {
     if(chan>1 || chan<0) return;
     if(!m.HasMember("activeProcessors")) return;
     if(!m["activeProcessors"].IsArray()) return;
@@ -131,7 +131,7 @@ int SPManagerDataModel::GetActivePatchNum(const int chan) {
     return 0;
 }
 
-bool SPManagerDataModel::IsStereo(const string id) {
+bool SPManagerDataModel::IsStereo(const string &id) {
     return false;
 }
 
@@ -185,7 +185,7 @@ const char *SPManagerDataModel::GetCStrJSONConfiguration() {
     return json.GetString();
 }
 
-void SPManagerDataModel::SetConfigurationFromJSON(const string data) {
+void SPManagerDataModel::SetConfigurationFromJSON(const string &data) {
     if(!m.HasMember("configuration")) return;
     Document d;
     d.Parse(data);
@@ -196,7 +196,7 @@ void SPManagerDataModel::SetConfigurationFromJSON(const string data) {
     //PrintSelf();
 }
 
-string SPManagerDataModel::GetConfigurationData(const string id) {
+string SPManagerDataModel::GetConfigurationData(const string &id) {
     //PrintSelf();
     if(!m.HasMember("configuration")) return string();
     Value s(kStringType);
@@ -204,7 +204,7 @@ string SPManagerDataModel::GetConfigurationData(const string id) {
     return s.GetString();
 }
 
-string SPManagerDataModel::GetNetworkConfigurationData(const string which) {
+string SPManagerDataModel::GetNetworkConfigurationData(const string &which) {
     if(!m.HasMember("configuration")) return string();
     if(!m["configuration"].HasMember("wifi")) return string();
     Value s(kStringType);

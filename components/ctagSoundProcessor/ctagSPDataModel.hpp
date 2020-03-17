@@ -35,14 +35,14 @@ namespace CTAG{
     namespace SP{
         class ctagSPDataModel : public ctagDataModelBase {
         public:
-            ctagSPDataModel(const string id, const bool isStereo);
+            ctagSPDataModel(const string &id, const bool isStereo);
             ~ctagSPDataModel();
             const char * GetCStrJSONParams();
             void LoadPreset(const int num);
             // set a preset value, "which" can be current, cv, trig
-            void SetParamValue(const string id, const string which, const int val);
-            int GetParamValue(const string id, const string key);
-            void SavePreset(const string name, const int number);
+            void SetParamValue(const string &id, const string &key, const int val);
+            int GetParamValue(const string &id, const string &key);
+            void SavePreset(const string &name, const int number);
             const char * GetCStrJSONPresets();
             void PrintSelf();
         private:

@@ -42,14 +42,14 @@ namespace CTAG{
             const char * GetCStrJSONSoundProcessors();
             const char * GetCStrJSONConfiguration();
             string GetActiveProcessorID(const int chan);
-            void SetConfigurationFromJSON(const string data);
-            string GetConfigurationData(const string id);
-            string GetNetworkConfigurationData(const string which);
+            void SetConfigurationFromJSON(const string &data);
+            string GetConfigurationData(const string &id);
+            string GetNetworkConfigurationData(const string &which);
             void ResetNetworkConfiguration();
-            void SetActivePluginID(const string id, const int chan);
+            void SetActivePluginID(const string &id, const int chan);
             int GetActivePatchNum(const int chan);
             void SetActivePatchNum(const int patchNum, const int chan);
-            bool IsStereo(const string id);
+            bool IsStereo(const string &id);
             void PrintSelf();
         private:
             void getSoundProcessors();

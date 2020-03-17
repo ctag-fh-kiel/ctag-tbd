@@ -40,9 +40,9 @@ namespace CTAG {
            ~ctagDataModelBase();
         protected:
             StringBuffer json;
-            void loadJSON(rapidjson::Document &d, const string fn);
+            void loadJSON(rapidjson::Document &d, const string &fn);
             void printJSON(rapidjson::Value &v);
-            void storeJSON(rapidjson::Document &d, const string fn);
+            void storeJSON(rapidjson::Document &d, const string &fn);
             char * buffer;
             FILE *fp = nullptr;
         };

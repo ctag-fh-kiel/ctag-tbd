@@ -43,7 +43,7 @@ namespace CTAG{
             static void ledTask(void * params);
             static void btnTask(void * params);
             static void acquireData(std::vector<uint32_t> &d);
-            static void calcPiecewiseLinearCoeffs(const string dataID, CVConfig cvType);
+            static void calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvType);
             static TaskHandle_t ledTaskHandle, btnTaskHandle;
             static std::atomic_int32_t taskControl;
             static QueueHandle_t evQueue;

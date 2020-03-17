@@ -81,7 +81,7 @@ const char * ctagSoundProcessorFBDlyLine::GetCStrID() const{
     return id.c_str();
 }
 
-void ctagSoundProcessorFBDlyLine::setParamValueInternal(const string id, const string key, const int val) {
+void ctagSoundProcessorFBDlyLine::setParamValueInternal(const string &id, const string &key, const int val) {
     if(id.compare("length") == 0){
         if(key.compare("current") == 0){
             length = val;

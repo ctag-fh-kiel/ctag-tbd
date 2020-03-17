@@ -104,7 +104,7 @@ const char *ctagSoundProcessorGDVerb::GetCStrID() const {
     return id.c_str();
 }
 
-void ctagSoundProcessorGDVerb::setParamValueInternal(const string id, const string key, const int val) {
+void ctagSoundProcessorGDVerb::setParamValueInternal(const string &id, const string &key, const int val) {
     if (id.compare("revtime") == 0) {
         if (key.compare("current") == 0) {
             par_revtime = val;

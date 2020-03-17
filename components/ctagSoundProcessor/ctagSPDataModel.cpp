@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSPDataModel::ctagSPDataModel(const string id, const bool isStereo)
+ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo)
 {
     // acquire data from json files ui model and patch model
     muiFileName = string("/spiffs/data/sp/mui-") + id + string(".jsn");
@@ -65,7 +65,7 @@ void ctagSPDataModel::mergeModels() {
     }
 }
 
-void ctagSPDataModel::SetParamValue(const string id, const string key, const int val) {
+void ctagSPDataModel::SetParamValue(const string &id, const string &key, const int val) {
     ESP_LOGD("Model", "Setting id %s, with %s to %d", id.c_str(), key.c_str(), val);
     if(!activePreset.HasMember("params")) return;
     Value &patchParams = activePreset["params"];
@@ -82,7 +82,7 @@ void ctagSPDataModel::SetParamValue(const string id, const string key, const int
     }
 }
 
-int ctagSPDataModel::GetParamValue(const string id, const string key) {
+int ctagSPDataModel::GetParamValue(const string &id, const string &key) {
     if(!activePreset.HasMember("params")) return 0;
     Value &patchParams = activePreset["params"];
     if(!patchParams.IsArray()) return 0;
@@ -182,7 +182,7 @@ void ctagSPDataModel::recursiveFindAndInsert(const Value &paramF, Value &paramI)
     }
 }
 
-void ctagSPDataModel::SavePreset(const string name, const int number) {
+void ctagSPDataModel::SavePreset(const string &name, const int number) {
     //ESP_LOGE("Model", "Save preset %s %d", name.c_str(), number);
     //ESP_LOGE("MOdel", "Stored JSON before");
     //PrintSelf();

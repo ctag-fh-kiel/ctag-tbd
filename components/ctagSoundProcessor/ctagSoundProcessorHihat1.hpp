@@ -40,7 +40,7 @@ namespace CTAG{
                 ctagSoundProcessorHihat1();
                 const char * GetCStrID() const;
             private:
-                void setParamValueInternal(const string id, const string key, const int val) override;
+                void setParamValueInternal(const string &id, const string &key, const int val) override;
                 void loadPresetInternal() override;
                 const string id = "hihat1";
                 // inter thread variables are atomic

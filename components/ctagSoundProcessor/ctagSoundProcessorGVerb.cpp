@@ -92,7 +92,7 @@ const char * ctagSoundProcessorGVerb::GetCStrID() const{
     return id.c_str();
 }
 
-void ctagSoundProcessorGVerb::setParamValueInternal(const string id, const string key, const int val) {
+void ctagSoundProcessorGVerb::setParamValueInternal(const string &id, const string &key, const int val) {
     if(id.compare("roomsize") == 0){
         if(key.compare("current") == 0){
             roomSz = val;

@@ -132,7 +132,7 @@ const char * ctagSoundProcessorSineSrc::GetCStrID() const{
     return id.c_str();
 }
 
-void ctagSoundProcessorSineSrc::setParamValueInternal(const string id, const string key, const int val) {
+void ctagSoundProcessorSineSrc::setParamValueInternal(const string &id, const string &key, const int val) {
     if(id.compare("loudness") == 0){
         if(key.compare("current") == 0){
             loudness = val;

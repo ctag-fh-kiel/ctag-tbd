@@ -50,14 +50,14 @@ void CTAG::CAL::CalibrationModel::PushRow(const vector<uint32_t> data) {
     matrix.PushBack(matrixRow, matrix.GetAllocator());
 }
 
-void CTAG::CAL::CalibrationModel::StoreMatrix(const string id) {
+void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id) {
     if(m.HasMember(id)) m.RemoveMember(id);
     Value sid(id, m.GetAllocator());
     m.GetObject().AddMember(sid, matrix.Move(), m.GetAllocator());
     storeJSON(m, MODELJSONFN);
 }
 
-vector<vector<uint32_t >> CTAG::CAL::CalibrationModel::GetMatrix(const string id) {
+vector<vector<uint32_t >> CTAG::CAL::CalibrationModel::GetMatrix(const string &id) {
     vector<vector<uint32_t>> mat;
     for(auto &i: m[id].GetArray()){
         vector<uint32_t > v;
@@ -69,7 +69,7 @@ vector<vector<uint32_t >> CTAG::CAL::CalibrationModel::GetMatrix(const string id
     return mat;
 }
 
-void CTAG::CAL::CalibrationModel::StoreMatrix(const string id, const vector<vector<float>> mat) {
+void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id, const vector<vector<float>> mat) {
     if(m.HasMember(id)) m.RemoveMember(id);
 
     Value rows(kArrayType);
@@ -91,7 +91,7 @@ void CTAG::CAL::CalibrationModel::StoreMatrix(const string id, const vector<vect
     storeJSON(m, MODELJSONFN);
 }
 
-void CTAG::CAL::CalibrationModel::LoadMatrix(const string id, float *data) {
+void CTAG::CAL::CalibrationModel::LoadMatrix(const string &id, float *data) {
     if(!m.HasMember(id)) return;
     for(auto &i: m[id].GetArray()){
         for(auto &j: i.GetArray()){

@@ -146,7 +146,7 @@ const char * ctagSoundProcessorDLoop::GetCStrID() const{
     return id.c_str();
 }
 
-void ctagSoundProcessorDLoop::setParamValueInternal(const string id, const string key, const int val) {
+void ctagSoundProcessorDLoop::setParamValueInternal(const string &id, const string &key, const int val) {
     if(id.compare("reset") == 0){
         if(key.compare("current") == 0){
             reset = val;

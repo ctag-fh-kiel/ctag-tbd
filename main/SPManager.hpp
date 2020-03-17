@@ -61,15 +61,15 @@ namespace CTAG {
                 return model->GetCStrJSONConfiguration();
             }
 
-            static void SetConfigurationFromJSON(const string data);
+            static void SetConfigurationFromJSON(const string &data);
 
             static string GetStringID(const int chan);
 
-            static void SetSoundProcessorChannel(const int chan, const string id);
+            static void SetSoundProcessorChannel(const int chan, const string &id);
 
-            static void SetChannelParamValue(const int chan, const string id, const string key, const int val);
+            static void SetChannelParamValue(const int chan, const string &id, const string &key, const int val);
 
-            static void ChannelSavePreset(const int chan, const string name, const int number);
+            static void ChannelSavePreset(const int chan, const string &name, const int number);
 
             static void ChannelLoadPreset(const int chan, const int number);
 

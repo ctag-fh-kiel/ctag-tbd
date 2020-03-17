@@ -147,7 +147,7 @@ const char * ctagSoundProcessorHihat1::GetCStrID() const{
     return id.c_str();
 }
 
-void ctagSoundProcessorHihat1::setParamValueInternal(const string id, const string key, const int val) {
+void ctagSoundProcessorHihat1::setParamValueInternal(const string &id, const string &key, const int val) {
     if(id.compare("ntype") == 0){
         if(key.compare("current") == 0){
             ntype = val;

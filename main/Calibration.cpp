@@ -172,7 +172,7 @@ void Calibration::acquireData(std::vector<uint32_t> &d) {
     }
 }
 
-void Calibration::calcPiecewiseLinearCoeffs(const string dataID, CVConfig cvType) {
+void Calibration::calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvType) {
     vector<vector<uint32_t >> xMat;
     vector<vector<float>> aCalMat;
     vector<vector<float>> bCalMat;

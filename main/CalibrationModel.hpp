@@ -41,11 +41,11 @@ namespace CTAG{
             ~CalibrationModel();
             void CreateMatrix();
             void PushRow(const vector<uint32_t> data);
-            void StoreMatrix(const string id);
-            void StoreMatrix(const string id, const vector<vector<float>> mat);
-            vector<vector<uint32_t >> GetMatrix(const string id);
+            void StoreMatrix(const string &id);
+            void StoreMatrix(const string &id, const vector<vector<float>> mat);
+            vector<vector<uint32_t >> GetMatrix(const string &id);
             void PrintSelf();
-            void LoadMatrix(const string id, float* data);
+            void LoadMatrix(const string &id, float* data);
         private:
             Document m;
             const string MODELJSONFN = "/spiffs/data/calibration.jsn";

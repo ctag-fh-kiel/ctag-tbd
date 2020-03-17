@@ -13,7 +13,7 @@ ctagSoundProcessorStereoAM::ctagSoundProcessorStereoAM()
 void ctagSoundProcessorStereoAM::Process(const ProcessData &data){
 }
 
-void ctagSoundProcessorStereoAM::setParamValueInternal(const string id, const int val) {
+void ctagSoundProcessorStereoAM::setParamValueInternal(const string& id, const int val) {
 
 }
 
