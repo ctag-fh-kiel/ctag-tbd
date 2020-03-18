@@ -1,2 +1,3 @@
-.vscode/
 build/
+/hw/pcb/*.bak
+/hw/pcb/*.bak
