@@ -1,0 +1,358 @@
+EESchema Schematic File Version 4
+LIBS:ESP32-Eurorack-Audio-cache
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 5 8
+Title "ESP32 Eurorack Audio Module"
+Date "2019-06-13"
+Rev "D"
+Comp "(c) Robert Manzke 2019"
+Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+Comment2 "Licensed under CC BY-NC-SA 4.0"
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L tft_ili9341:TFT_ILI9341 LCD501
+U 1 1 5B68E8E2
+P 3300 2500
+F 0 "LCD501" H 3669 2747 60  0000 C CNN
+F 1 "TFT_ILI9341" H 3669 2641 60  0000 C CNN
+F 2 "tft:TFT_2.2" H 3300 2500 60  0001 C CNN
+F 3 "" H 3300 2500 60  0001 C CNN
+	1    3300 2500
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:C C501
+U 1 1 5B68E999
+P 3900 2500
+F 0 "C501" V 3648 2500 50  0000 C CNN
+F 1 "10u" V 3739 2500 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3938 2350 50  0001 C CNN
+F 3 "~" H 3900 2500 50  0001 C CNN
+	1    3900 2500
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	3750 2500 3500 2500
+Wire Wire Line
+	3300 2600 4150 2600
+Wire Wire Line
+	4150 2600 4150 2500
+Wire Wire Line
+	4150 2500 4050 2500
+$Comp
+L power:+3V3 #PWR0501
+U 1 1 5B68EA2E
+P 3500 2400
+F 0 "#PWR0501" H 3500 2250 50  0001 C CNN
+F 1 "+3V3" H 3515 2573 50  0000 C CNN
+F 2 "" H 3500 2400 50  0001 C CNN
+F 3 "" H 3500 2400 50  0001 C CNN
+	1    3500 2400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3500 2400 3500 2500
+Connection ~ 3500 2500
+Wire Wire Line
+	3500 2500 3400 2500
+Wire Wire Line
+	3300 2800 3400 2800
+Wire Wire Line
+	3400 2800 3400 2500
+Connection ~ 3400 2500
+Wire Wire Line
+	3400 2500 3300 2500
+Wire Wire Line
+	3300 3200 3400 3200
+Wire Wire Line
+	3400 3200 3400 2800
+Connection ~ 3400 2800
+Wire Wire Line
+	3300 2700 4150 2700
+Wire Wire Line
+	3300 2900 4150 2900
+Wire Wire Line
+	3300 3000 4150 3000
+Wire Wire Line
+	3300 3100 4150 3100
+Wire Wire Line
+	3300 3300 4150 3300
+Text HLabel 4150 2700 2    50   Input ~ 0
+CS
+Text HLabel 4150 2900 2    50   Input ~ 0
+DC
+Text HLabel 4150 3000 2    50   Input ~ 0
+MOSI
+Text HLabel 4150 3100 2    50   Input ~ 0
+SCK
+Text HLabel 4150 3300 2    50   Output ~ 0
+MISO
+$Comp
+L Device:Rotary_Encoder_Switch SW501
+U 1 1 5B68EE8E
+P 3700 4800
+F 0 "SW501" H 3700 5167 50  0000 C CNN
+F 1 "SEL" H 3700 5076 50  0000 C CNN
+F 2 "Rotary_Encoder:RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm" H 3550 4960 50  0001 C CNN
+F 3 "~" H 3700 5060 50  0001 C CNN
+	1    3700 4800
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0506
+U 1 1 5B68F5A7
+P 4100 5000
+F 0 "#PWR0506" H 4100 4750 50  0001 C CNN
+F 1 "GND" H 4105 4827 50  0000 C CNN
+F 2 "" H 4100 5000 50  0001 C CNN
+F 3 "" H 4100 5000 50  0001 C CNN
+	1    4100 5000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4000 4900 4100 4900
+Wire Wire Line
+	4100 4900 4100 5000
+$Comp
+L power:GND #PWR0505
+U 1 1 5B68F757
+P 3300 5000
+F 0 "#PWR0505" H 3300 4750 50  0001 C CNN
+F 1 "GND" H 3305 4827 50  0000 C CNN
+F 2 "" H 3300 5000 50  0001 C CNN
+F 3 "" H 3300 5000 50  0001 C CNN
+	1    3300 5000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 4800 3300 4800
+Wire Wire Line
+	3300 4800 3300 5000
+$Comp
+L Device:R R502
+U 1 1 5B68F96E
+P 2550 4400
+F 0 "R502" H 2620 4446 50  0000 L CNN
+F 1 "10k" H 2620 4355 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2480 4400 50  0001 C CNN
+F 3 "~" H 2550 4400 50  0001 C CNN
+	1    2550 4400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 4700 2550 4700
+Wire Wire Line
+	2550 4700 2550 4550
+$Comp
+L Device:R R501
+U 1 1 5B68FC31
+P 2150 4400
+F 0 "R501" H 2220 4446 50  0000 L CNN
+F 1 "10k" H 2220 4355 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2080 4400 50  0001 C CNN
+F 3 "~" H 2150 4400 50  0001 C CNN
+	1    2150 4400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 4900 2150 4900
+Wire Wire Line
+	2150 4900 2150 4550
+$Comp
+L Device:R R503
+U 1 1 5B68FF46
+P 4200 4400
+F 0 "R503" H 4270 4446 50  0000 L CNN
+F 1 "10k" H 4270 4355 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 4130 4400 50  0001 C CNN
+F 3 "~" H 4200 4400 50  0001 C CNN
+	1    4200 4400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4000 4700 4200 4700
+Wire Wire Line
+	4200 4700 4200 4550
+$Comp
+L power:+3V3 #PWR0504
+U 1 1 5B6902D6
+P 2150 4100
+F 0 "#PWR0504" H 2150 3950 50  0001 C CNN
+F 1 "+3V3" H 2165 4273 50  0000 C CNN
+F 2 "" H 2150 4100 50  0001 C CNN
+F 3 "" H 2150 4100 50  0001 C CNN
+	1    2150 4100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2150 4100 2150 4150
+Wire Wire Line
+	4200 4250 4200 4150
+Wire Wire Line
+	4200 4150 2550 4150
+Connection ~ 2150 4150
+Wire Wire Line
+	2150 4150 2150 4250
+Wire Wire Line
+	2550 4250 2550 4150
+Connection ~ 2550 4150
+Wire Wire Line
+	2550 4150 2150 4150
+Text HLabel 4850 4700 2    50   Output ~ 0
+ENC_BTN
+Wire Wire Line
+	4850 4700 4200 4700
+Connection ~ 4200 4700
+Wire Wire Line
+	2150 4900 1750 4900
+Connection ~ 2150 4900
+Connection ~ 2550 4700
+Text HLabel 1750 4700 0    50   Output ~ 0
+ENC_A
+Text HLabel 1750 4900 0    50   Output ~ 0
+ENC_B
+Text Label 3800 2700 0    50   ~ 0
+CS
+Text Label 3800 2900 0    50   ~ 0
+DC
+Text Label 3800 3000 0    50   ~ 0
+MOSI
+Text Label 3800 3300 0    50   ~ 0
+MISO
+Text Label 3800 3100 0    50   ~ 0
+SCK
+Text Label 1850 4700 0    50   ~ 0
+ENC_A
+Text Label 1850 4900 0    50   ~ 0
+ENC_B
+Text Label 4400 4700 0    50   ~ 0
+ENC_BTN
+$Comp
+L power:GND #PWR0101
+U 1 1 5B6AAA2A
+P 4450 2700
+F 0 "#PWR0101" H 4450 2450 50  0001 C CNN
+F 1 "GND" H 4455 2527 50  0000 C CNN
+F 2 "" H 4450 2700 50  0001 C CNN
+F 3 "" H 4450 2700 50  0001 C CNN
+	1    4450 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4450 2600 4450 2700
+Wire Wire Line
+	4150 2600 4450 2600
+Connection ~ 4150 2600
+$Comp
+L Device:C C502
+U 1 1 5B6DF1A7
+P 3400 3500
+F 0 "C502" V 3148 3500 50  0000 C CNN
+F 1 "10u" V 3239 3500 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3438 3350 50  0001 C CNN
+F 3 "~" H 3400 3500 50  0001 C CNN
+	1    3400 3500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	3400 3200 3400 3350
+Connection ~ 3400 3200
+$Comp
+L power:GND #PWR0507
+U 1 1 5B6DFCCC
+P 3400 3700
+F 0 "#PWR0507" H 3400 3450 50  0001 C CNN
+F 1 "GND" H 3405 3527 50  0000 C CNN
+F 2 "" H 3400 3700 50  0001 C CNN
+F 3 "" H 3400 3700 50  0001 C CNN
+	1    3400 3700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 3650 3400 3700
+Text Notes 2500 3350 1    50   ~ 0
+MDF7-9S-2.54DSA(55)
+$Comp
+L Device:C C504
+U 1 1 5CA39CAD
+P 2550 5200
+F 0 "C504" H 2435 5154 50  0000 R CNN
+F 1 "100n" H 2435 5245 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2588 5050 50  0001 C CNN
+F 3 "~" H 2550 5200 50  0001 C CNN
+	1    2550 5200
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2550 4700 2550 5050
+$Comp
+L Device:C C503
+U 1 1 5CA3E66E
+P 2150 5200
+F 0 "C503" H 2035 5154 50  0000 R CNN
+F 1 "100n" H 2035 5245 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2188 5050 50  0001 C CNN
+F 3 "~" H 2150 5200 50  0001 C CNN
+	1    2150 5200
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2150 4900 2150 5050
+$Comp
+L power:GND #PWR0502
+U 1 1 5CA3F1C4
+P 2550 5500
+F 0 "#PWR0502" H 2550 5250 50  0001 C CNN
+F 1 "GND" H 2555 5327 50  0000 C CNN
+F 2 "" H 2550 5500 50  0001 C CNN
+F 3 "" H 2550 5500 50  0001 C CNN
+	1    2550 5500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2150 5350 2150 5450
+Wire Wire Line
+	2150 5450 2550 5450
+Wire Wire Line
+	2550 5450 2550 5500
+Wire Wire Line
+	2550 5350 2550 5450
+Connection ~ 2550 5450
+Wire Wire Line
+	1750 4700 2550 4700
+$Comp
+L Device:C C505
+U 1 1 5CDB2DC9
+P 4500 5200
+F 0 "C505" H 4385 5154 50  0000 R CNN
+F 1 "100n" H 4385 5245 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 4538 5050 50  0001 C CNN
+F 3 "~" H 4500 5200 50  0001 C CNN
+	1    4500 5200
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:GND #PWR0111
+U 1 1 5CDB35D2
+P 4500 5450
+F 0 "#PWR0111" H 4500 5200 50  0001 C CNN
+F 1 "GND" H 4505 5277 50  0000 C CNN
+F 2 "" H 4500 5450 50  0001 C CNN
+F 3 "" H 4500 5450 50  0001 C CNN
+	1    4500 5450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4500 5350 4500 5450
+Wire Wire Line
+	4200 4700 4200 4850
+Wire Wire Line
+	4200 4850 4500 4850
+Wire Wire Line
+	4500 4850 4500 5050
+$EndSCHEMATC
