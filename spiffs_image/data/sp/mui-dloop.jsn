@@ -2,6 +2,7 @@
   "id": "dloop",
   "isStereo": true,
   "name": "Dust Loop",
+  "hint": "This plugin simulates pops / crackles in a looping style",
   "params": [
     {
       "id": "reset",

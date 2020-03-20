@@ -2,6 +2,7 @@
   "id": "fverb",
   "isStereo": true,
   "name": "Freeverb",
+  "hint": "The original freeverb by Jezar",
   "params": [
     {
       "id": "roomsize",

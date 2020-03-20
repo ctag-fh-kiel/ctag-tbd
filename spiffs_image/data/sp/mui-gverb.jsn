@@ -2,6 +2,7 @@
   "id": "gverb",
   "isStereo": true,
   "name": "G-Verb",
+  "hint": "G-verb feedback delay network based reverb, by Juhana Sadeharju",
   "params": [
     {
       "id": "roomsize",

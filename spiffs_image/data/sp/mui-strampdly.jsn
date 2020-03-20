@@ -2,6 +2,7 @@
   "id": "strampdly",
   "isStereo": true,
   "name": "SDelay",
+  "hint": "Delay algorithm from the CTAG Strämpler module",
   "params": [
     {
       "id": "mode",

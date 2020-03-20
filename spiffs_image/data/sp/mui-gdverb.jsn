@@ -2,6 +2,7 @@
   "id": "gdverb",
   "isStereo": true,
   "name": "Plate Reverb",
+  "hint": "Griesinger plate reverb according to D'Attoro, adapted from freesound3",
   "params": [
     {
       "id": "revtime",

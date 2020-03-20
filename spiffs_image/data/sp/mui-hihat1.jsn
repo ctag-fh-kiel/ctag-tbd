@@ -2,6 +2,7 @@
   "id": "hihat1",
   "isStereo": false,
   "name": "Hihat 1",
+  "hint": "Hihat generator based on noise shaping",
   "params": [
     {
       "id": "ntype",
