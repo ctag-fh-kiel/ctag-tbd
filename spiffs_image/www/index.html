@@ -86,13 +86,20 @@ respective component folders / files if different from this license.
                         data.sort((a, b) => a.name.localeCompare(b.name, undefined, {numberic: true}));
                         // populate plugin list
                         data.forEach(el => {
+                                let t = el.hasOwnProperty('hint') ? 'title="' + el.hint + '" ' : '';
                                 // only show stereo plugins on ch-0
-                                if (el.isStereo)
-                                    $('#plugin-select-ch0').append('<option value="' + el.id + '">ST: ' + el.name + '</option>');
-                                else
-                                    $('#plugin-select-ch0').append('<option value="' + el.id + '">M: ' + el.name + '</option>');
-                                if (!el.isStereo)
-                                    $('#plugin-select-ch1').append('<option value="' + el.id + '">M: ' + el.name + '</option>');
+                                if (el.isStereo){
+                                    let s = '<option ' + t + 'value="' + el.id + '">ST: ' + el.name + '</option>';
+                                    $('#plugin-select-ch0').append(s);
+                                }
+                                else{
+                                    let s = '<option ' + t + 'value="' + el.id + '">M: ' + el.name + '</option>';
+                                    $('#plugin-select-ch0').append(s);
+                                }
+                                if (!el.isStereo) {
+                                    let s = '<option ' + t + 'value="' + el.id + '">M: ' + el.name + '</option>';
+                                    $('#plugin-select-ch1').append(s);
+                                }
                             }
                         );
                         // global var
@@ -464,7 +471,7 @@ respective component folders / files if different from this license.
                     case 'int':
                         // render UI
                         s = '<ons-list-item>' +
-                            '<div style="width: 30%;">' +
+                            '<div title="' + (el.hasOwnProperty('hint') ? el.hint : '') + '" style="width: 30%;">' +
                             el.name +
                             '</div>' +
                             '<div style="width: 10%;">' +
@@ -542,7 +549,7 @@ respective component folders / files if different from this license.
                     case 'bool':
                         // render UI
                         s = '<ons-list-item>' +
-                            '<div style="width: 40%;">' +
+                            '<div title="' + (el.hasOwnProperty('hint') ? el.hint : '') + '" style="width: 40%;">' +
                             el.name +
                             '</div>' +
                             '<div style="width: 50%;">' +
