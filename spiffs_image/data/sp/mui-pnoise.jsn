@@ -2,6 +2,7 @@
   "id": "pnoise",
   "isStereo": false,
   "name": "Pink Noise",
+  "hint": "Pink noise generator",
   "params": [
     {
       "id": "enable",

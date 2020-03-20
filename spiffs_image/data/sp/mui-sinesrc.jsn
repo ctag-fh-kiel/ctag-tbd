@@ -2,6 +2,7 @@
   "id": "sinesrc",
   "isStereo": false,
   "name": "Sine Source",
+  "hint": "Sine generator with shaping, good also for drums and fat drum and bass",
   "params": [
     {
       "id": "frequency",

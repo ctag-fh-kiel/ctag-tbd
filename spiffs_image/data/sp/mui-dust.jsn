@@ -2,6 +2,7 @@
   "id": "dust",
   "isStereo": false,
   "name": "Dust",
+  "hint": "Dust simulation, adapted from supercolliders dust",
   "params": [
     {
       "id": "bipolar",

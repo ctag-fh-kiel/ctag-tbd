@@ -2,6 +2,7 @@
   "id": "monomult",
   "isStereo": false,
   "name": "Multiplier",
+  "hint": "A simple multiplier",
   "params": [
     {
       "id": "enable",

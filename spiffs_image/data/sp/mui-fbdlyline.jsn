@@ -2,6 +2,7 @@
   "id": "fbdlyline",
   "isStereo": false,
   "name": "FB Dly Line",
+  "hint": "Simple delay line",
   "params": [
     {
       "id": "length",
