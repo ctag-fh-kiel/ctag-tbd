@@ -59,9 +59,14 @@ void SPManagerDataModel::getSoundProcessors() {
                 Value obj(kObjectType);
                 Value id(d["id"].GetString(), d.GetAllocator());
                 Value name(d["name"].GetString(), d.GetAllocator());
+                Value hint(kStringType);
                 obj.AddMember("id", id.Move(), m.GetAllocator());
                 obj.AddMember("name", name.Move(), m.GetAllocator());
                 obj.AddMember("isStereo", d["isStereo"], m.GetAllocator());
+                if(d.HasMember("hint")){
+                    hint.SetString(d["hint"].GetString(), m.GetAllocator());
+                    obj.AddMember("hint", hint.Move(), m.GetAllocator());
+                }
                 m["availableProcessors"].PushBack(obj, m.GetAllocator());
             }
         }

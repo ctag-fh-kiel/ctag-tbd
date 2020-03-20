@@ -1,0 +1,30 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "ntype",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "bwidth",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "nharms",
+          "current": 8,
+          "cv": -1
+        },
+        {
+          "id": "gain",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "id": "subsynth",
+  "isStereo": false,
+  "name": "Sub Synth",
+  "hint": "This plugin is inspired by Paul Nasca's zynaddsubfx sub synth. It takes noise and shapes it through a cascade of bandpass filters.",
+  "params": [
+    {
+      "id": "ntype",
+      "name": "Noise W / P",
+      "type": "bool",
+      "hint": "white or pink noise"
+    },
+    {
+      "id": "bwidth",
+      "name": "Bandwidth",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1,
+      "hint": "relative bandwidth"
+    },
+    {
+      "id": "nharms",
+      "name": "Harmonics",
+      "type": "int",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "hint": "number of harmonics"
+    },
+    {
+      "id": "gain",
+      "name": "Gain",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1,
+      "hint": "volume"
+    }
+  ]
+}
