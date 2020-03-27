@@ -1,21 +1,2 @@
-{
-  "id": "monomult",
-  "isStereo": false,
-  "name": "Multiplier",
-  "hint": "A simple multiplier",
-  "params": [
-    {
-      "id": "enable",
-      "name": "Enable",
-      "type": "bool"
-    },
-    {
-      "id": "factor",
-      "name": "Factor",
-      "type": "int",
-      "min": 0,
-      "max": 1023,
-      "step": 1
-    }
-  ]
-}
+
+{"id":"monomult","isStereo":false,"name":"Multiplier","hint":"A simple multiplier","params":[{"id":"enable","name":"Enable","type":"bool"},{"id":"factor","name":"Factor","type":"int","min":0,"max":1023,"step":1}]}
