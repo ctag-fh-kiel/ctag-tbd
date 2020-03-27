@@ -257,11 +257,9 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req){
 
 esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req){
     char query[128];
-    char id[128];
     size_t qlen = httpd_req_get_url_query_len(req);
     size_t urilen = strlen(req->uri);
     httpd_req_get_url_query_str(req, query, 128);
-    httpd_query_key_value(query, "id", id, 128);
     char ch = req->uri[urilen - qlen - 1];
     httpd_resp_set_type(req, "application/json");
     ch -= 0x30;
@@ -319,6 +317,7 @@ esp_err_t RestServer::StartRestServer()
     config.uri_match_fn = httpd_uri_match_wildcard;
     config.task_priority = tskIDLE_PRIORITY + 3;
     config.max_uri_handlers = 12;
+    config.stack_size = 8192;
     /*
     config.max_open_sockets   = 10;
     config.max_resp_headers   = 10;
@@ -350,7 +349,7 @@ esp_err_t RestServer::StartRestServer()
         .uri_match_fn = NULL                            \
 }
 */
-    ESP_LOGD(REST_TAG, "Starting HTTP Server");
+    ESP_LOGI(REST_TAG, "Starting HTTP Server");
     if(httpd_start(&server, &config) != ESP_OK)
         return ESP_FAIL;
   /*
@@ -423,6 +422,15 @@ esp_err_t RestServer::StartRestServer()
             .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &get_presets_get_uri);
+
+    /* get all presets */
+    httpd_uri_t get_preset_json_get_uri = {
+            .uri = "/api/v1/getAllPresetData*",
+            .method = HTTP_GET,
+            .handler = &RestServer::get_preset_json_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &get_preset_json_get_uri);
 
     /* save a preset */
     httpd_uri_t save_preset_get_uri = {
@@ -502,5 +510,20 @@ esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
 esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONConfiguration());
+    return ESP_OK;
+}
+
+esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
+    char query[128];
+    size_t qlen = httpd_req_get_url_query_len(req);
+    size_t urilen = strlen(req->uri);
+    httpd_req_get_url_query_str(req, query, 128);
+    char ch = req->uri[urilen - qlen - 1];
+    httpd_resp_set_type(req, "application/json");
+    ch -= 0x30;
+    ESP_LOGD(REST_TAG, "Sending all preset data of channel %d as JSON", ch);
+    if(ch == 0 || ch == 1)
+        httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONAllPresetData(ch));
+    httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }

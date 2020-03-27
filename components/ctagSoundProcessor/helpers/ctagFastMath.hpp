@@ -10,6 +10,8 @@ namespace CTAG::SP::HELPERS {
 
     float fasttan(float x);
 
+    float fastsinh(float x);
+
     float fastcos(float x);
 
     float fastsin(float x);

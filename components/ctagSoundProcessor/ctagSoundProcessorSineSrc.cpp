@@ -43,7 +43,7 @@ ctagSoundProcessorSineSrc::ctagSoundProcessorSineSrc()
     adEnv.SetSampleRate(44100.f);
     adEnv.SetModeExp();
     pitchEnv.SetSampleRate(44100.f);
-    pitchEnv.SetModeLin();
+    pitchEnv.SetModeExp();
 }
 
 void ctagSoundProcessorSineSrc::Process(const ProcessData &data){

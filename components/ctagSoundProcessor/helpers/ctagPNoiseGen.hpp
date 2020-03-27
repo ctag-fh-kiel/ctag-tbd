@@ -79,6 +79,9 @@ namespace CTAG::SP::HELPERS{
 
             return output;
         }
+        void ReSeed(uint32_t seed){
+            randSeed = seed;
+        }
     private:
         struct
         {

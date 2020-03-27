@@ -521,15 +521,26 @@ respective component folders / files if different from this license.
                             //event => {console.log(event.data.id + $('#sl-' + event.data.id).val())}
                             event => {
                                 // rest request to backend
+                                let value = $('#ip-' + event.data.el.id).val();
+                                // bounds check needed ons number messes up otherwise despite min max attributes
+                                if(value > event.data.el.max){
+                                    value = event.data.el.max;
+                                    $('#ip-' + event.data.el.id).val(value);
+                                }
+                                if(value < event.data.el.min){
+                                    value = event.data.el.min;
+                                    $('#ip-' + event.data.el.id).val(value);
+                                }
                                 $.getq('myq',
                                     'api/v1/setPluginParam/' + event.data.ch,
                                     {
                                         id: event.data.el.id,
-                                        current: $('#ip-' + event.data.el.id).val()
+                                        current: value
                                     }
                                 );
                                 // update view input element
-                                $('#sl-' + event.data.el.id).val($('#ip-' + event.data.el.id).val());
+                                $('#sl-' + event.data.el.id).val(value);
+
                             }
                         );
                         // attach event listener to select cv
