@@ -10,3 +10,4 @@
 
 # Notes
 - if trig or CV are not present in preset, they will not be rendered in ui, use this if parameters should not be mappable to trig or cv, this should probably be part of the ui model and not the preset data-->to be done
+- you can use https://github.com/douglascrockford/JSMin to minify the JSONs for small performance increases on the esp
