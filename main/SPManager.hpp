@@ -51,9 +51,14 @@ namespace CTAG {
                 return sp[chan]->GetCStrJSONParamSpecs();
             }
 
-            static const char *GetCStrJSONGetPresets(const int chan) {
+            static const char *GetCStrJSONGetPresets(const int chan) { // names of all available presets
                 ledBlink = 1;
                 return sp[chan]->GetCStrJSONPresets();
+            }
+
+            static const char *GetCStrJSONAllPresetData(const int chan) { // current preset as JSON
+                ledBlink = 1;
+                return sp[chan]->GetCStrJSONAllPresetData();
             }
 
             static const char *GetCStrJSONConfiguration() {

@@ -43,7 +43,8 @@ namespace CTAG{
             void SetParamValue(const string &id, const string &key, const int val);
             int GetParamValue(const string &id, const string &key);
             void SavePreset(const string &name, const int number);
-            const char * GetCStrJSONPresets();
+            const char * GetCStrJSONPresets(); // all presets
+            const char * GetCStrJSONAllPresetData(); // current preset
             void PrintSelf();
         private:
             void recursiveFindAndInsert(const Value &paramF, Value &paramI);

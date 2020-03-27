@@ -172,6 +172,18 @@ Get presets, returns array with preset number and names of active channel plugin
 }
 ```
 
+####URL: `/getAllPresetData/:ch`
+
+Get all preset data of current channel
+
+**Method** : `GET`
+
+**Data example**
+
+```
+Returns patch data as JSON
+```
+
 ####URL: `/loadPreset/:ch`
 
 Load a preset with number

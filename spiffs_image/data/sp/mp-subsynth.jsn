@@ -1,30 +1,434 @@
 {
-  "activePatch": 0,
-  "patches": [
+ "activePatch": 0,
+ "patches": [
+  {
+   "name": "pad",
+   "params": [
     {
-      "name": "Default",
-      "params": [
-        {
-          "id": "ntype",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "bwidth",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "nharms",
-          "current": 8,
-          "cv": -1
-        },
-        {
-          "id": "gain",
-          "current": 2047,
-          "cv": -1
-        }
-      ]
+     "id": "srcsel",
+     "current": 1
+    },
+    {
+     "id": "cascade",
+     "current": 3,
+     "cv": -1
+    },
+    {
+     "id": "partials",
+     "current": 9,
+     "cv": -1
+    },
+    {
+     "id": "gain",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "enableEG",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "attack",
+     "current": 2047,
+     "cv": -1
+    },
+    {
+     "id": "decay",
+     "current": 2047,
+     "cv": -1
+    },
+    {
+     "id": "sustain",
+     "current": 2047,
+     "cv": -1
+    },
+    {
+     "id": "release",
+     "current": 2047,
+     "cv": -1
+    },
+    {
+     "id": "eg0_enableEG",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "eg0_loopEG",
+     "current": 1,
+     "trig": -1
+    },
+    {
+     "id": "eg0_mode",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "eg0_attack",
+     "current": 2047,
+     "cv": -1
+    },
+    {
+     "id": "eg0_decay",
+     "current": 2047,
+     "cv": -1
+    },
+    {
+     "id": "eg1_enableEG",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "eg1_loopEG",
+     "current": 1,
+     "trig": -1
+    },
+    {
+     "id": "eg1_mode",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "eg1_attack",
+     "current": 486,
+     "cv": -1
+    },
+    {
+     "id": "eg1_decay",
+     "current": 492,
+     "cv": -1
+    },
+    {
+     "id": "root_frequency",
+     "current": 100,
+     "cv": 0
+    },
+    {
+     "id": "root_bwidth",
+     "current": 129,
+     "cv": -1
+    },
+    {
+     "id": "root_level",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "p1_harm",
+     "current": 12,
+     "cv": -1
+    },
+    {
+     "id": "p1_bwidth",
+     "current": 148,
+     "cv": -1
+    },
+    {
+     "id": "p1_gain",
+     "current": 2047,
+     "cv": -1
+    },
+    {
+     "id": "p1_modbwsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p1_modbw",
+     "current": 182,
+     "cv": -1
+    },
+    {
+     "id": "p1_modgainsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p1_modgain",
+     "current": 2420,
+     "cv": -1
+    },
+    {
+     "id": "p2_harm",
+     "current": 24,
+     "cv": -1
+    },
+    {
+     "id": "p2_bwidth",
+     "current": 166,
+     "cv": -1
+    },
+    {
+     "id": "p2_gain",
+     "current": 516,
+     "cv": -1
+    },
+    {
+     "id": "p2_modbwsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p2_modbw",
+     "current": 92,
+     "cv": -1
+    },
+    {
+     "id": "p2_modgainsrc",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "p2_modgain",
+     "current": 718,
+     "cv": -1
+    },
+    {
+     "id": "p3_harm",
+     "current": 15,
+     "cv": -1
+    },
+    {
+     "id": "p3_bwidth",
+     "current": 482,
+     "cv": -1
+    },
+    {
+     "id": "p3_gain",
+     "current": 265,
+     "cv": -1
+    },
+    {
+     "id": "p3_modbwsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p3_modbw",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "p3_modgainsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p3_modgain",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "p4_harm",
+     "current": 36,
+     "cv": -1
+    },
+    {
+     "id": "p4_bwidth",
+     "current": 223,
+     "cv": -1
+    },
+    {
+     "id": "p4_gain",
+     "current": 330,
+     "cv": -1
+    },
+    {
+     "id": "p4_modbwsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p4_modbw",
+     "current": 517,
+     "cv": -1
+    },
+    {
+     "id": "p4_modgainsrc",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "p4_modgain",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "p5_harm",
+     "current": 7,
+     "cv": -1
+    },
+    {
+     "id": "p5_bwidth",
+     "current": 381,
+     "cv": -1
+    },
+    {
+     "id": "p5_gain",
+     "current": 1060,
+     "cv": -1
+    },
+    {
+     "id": "p5_modbwsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p5_modbw",
+     "current": 94,
+     "cv": -1
+    },
+    {
+     "id": "p5_modgainsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p5_modgain",
+     "current": 1163,
+     "cv": -1
+    },
+    {
+     "id": "p6_harm",
+     "current": 24,
+     "cv": -1
+    },
+    {
+     "id": "p6_bwidth",
+     "current": 132,
+     "cv": -1
+    },
+    {
+     "id": "p6_gain",
+     "current": 855,
+     "cv": -1
+    },
+    {
+     "id": "p1_modbwsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p6_modbw",
+     "current": 416,
+     "cv": -1
+    },
+    {
+     "id": "p6_modgainsrc",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "p6_modgain",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "p7_harm",
+     "current": 36,
+     "cv": -1
+    },
+    {
+     "id": "p7_bwidth",
+     "current": 1010,
+     "cv": -1
+    },
+    {
+     "id": "p7_gain",
+     "current": 837,
+     "cv": -1
+    },
+    {
+     "id": "p7_modbwsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p7_modbw",
+     "current": -1638,
+     "cv": -1
+    },
+    {
+     "id": "p7_modgainsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p7_modgain",
+     "current": 208,
+     "cv": -1
+    },
+    {
+     "id": "p8_harm",
+     "current": 60,
+     "cv": -1
+    },
+    {
+     "id": "p8_bwidth",
+     "current": 315,
+     "cv": -1
+    },
+    {
+     "id": "p8_gain",
+     "current": 657,
+     "cv": -1
+    },
+    {
+     "id": "p8_modbwsrc",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "p8_modbw",
+     "current": -1394,
+     "cv": -1
+    },
+    {
+     "id": "p8_modgainsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p8_modgain",
+     "current": 2447,
+     "cv": -1
+    },
+    {
+     "id": "p9_harm",
+     "current": 48,
+     "cv": -1
+    },
+    {
+     "id": "p9_bwidth",
+     "current": 545,
+     "cv": -1
+    },
+    {
+     "id": "p9_gain",
+     "current": 371,
+     "cv": -1
+    },
+    {
+     "id": "p9_modbwsrc",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "p9_modbw",
+     "current": -3695,
+     "cv": -1
+    },
+    {
+     "id": "p9_modgainsrc",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "p9_modgain",
+     "current": 4095,
+     "cv": -1
     }
-  ]
+   ]
+  }
+ ]
 }

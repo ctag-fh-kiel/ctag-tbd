@@ -51,6 +51,7 @@ namespace CTAG{
                     model->SetParamValue(id, key, val);
                 }
                 const char * GetCStrJSONPresets(){return model->GetCStrJSONPresets();}
+                const char * GetCStrJSONAllPresetData(){return model->GetCStrJSONAllPresetData();}
                 bool GetIsStereo() const {return isStereo;}
                 void SavePreset(const string &name, const int number){model->SavePreset(name, number);}
                 void LoadPreset(const int number){

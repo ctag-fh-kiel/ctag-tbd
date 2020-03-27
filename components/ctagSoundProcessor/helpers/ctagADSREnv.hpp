@@ -27,23 +27,24 @@ respective component folders / files if different from this license.
 namespace CTAG{
     namespace SP{
         namespace HELPERS{
-            class ctagADEnv {
+            class ctagADSREnv {
             public:
                 float Process();
                 void SetSampleRate(float fs_hz);
                 void SetAttack(float a_s);
                 void SetDecay(float d_s);
-                void Trigger();
+                void SetSustain(float s_s);
+                void SetRelease(float r_s);
+                void Gate(bool isGate);
                 void SetModeLin();
                 void SetModeExp();
-                void SetLoop(bool l);
-                bool GetLoop();
-                bool GetIsRunning();
             private:
                 enum class EnvStateType : uint32_t{
                     STATE_IDLE,
                     STATE_ATTACK,
                     STATE_DECAY,
+                    STATE_SUSTAIN,
+                    STATE_RELEASE
                 };
                 enum class EnvModeType : uint32_t{
                     MODE_LIN,
@@ -52,11 +53,12 @@ namespace CTAG{
                 EnvStateType envState = EnvStateType::STATE_IDLE;
                 EnvModeType envMode = EnvModeType::MODE_LOG;
                 float envAccum = 0.f;
-                float envMaxLength = 44100.0f / 32.f / 10.f; // 10s at 44100Hz fs and 32 buf size
                 float attack = 0.5f;
                 float decay = 0.5f;
+                float sustain = 0.5f;
+                float release = 0.5f;
                 float fSample = 0.f, tSample = 0.f;
-                bool loop = false;
+                bool preGate = false;
             };
         }
     }

@@ -24,21 +24,25 @@ respective component folders / files if different from this license.
 // Created by Robert Manzke on 09.02.20.
 //
 
-#include "ctagADEnv.hpp"
+#include "ctagADSREnv.hpp"
+#include "esp_log.h"
+#include "helpers/ctagFastMath.hpp"
 
 using namespace CTAG::SP;
 using namespace CTAG::SP::HELPERS;
 
 #define LOG0001 -9.210340371976182f // -80dB
 
-float CTAG::SP::HELPERS::ctagADEnv::Process() {
+
+float CTAG::SP::HELPERS::ctagADSREnv::Process() {
     float val;
-    if (envMode == EnvModeType::MODE_LIN) {
-        switch (envState) {
+    if(envMode == EnvModeType::MODE_LIN){
+        switch (envState){
             case EnvStateType::STATE_ATTACK:
                 val = envAccum + attack;
                 if(val >= 1.f){
                     envAccum = 1.f;
+                    //ESP_LOGW("ADSR", "Switching from attack to decay");
                     envState = EnvStateType::STATE_DECAY;
                 }else{
                     envAccum = val;
@@ -46,26 +50,33 @@ float CTAG::SP::HELPERS::ctagADEnv::Process() {
                 break;
             case EnvStateType::STATE_DECAY:
                 val = envAccum - decay;
-                if (envAccum <= 0.f) {
-                    envAccum = 0.f;
-                    if (loop) {
-                        envState = EnvStateType::STATE_ATTACK;
-                    } else {
-                        envState = EnvStateType::STATE_IDLE;
-                    }
+                if(val <= sustain){
+                    envAccum = sustain;
+                    //ESP_LOGW("ADSR", "Switching from decy to sus");
+                    envState = EnvStateType::STATE_SUSTAIN;
                 }else{
                     envAccum = val;
                 }
                 break;
+            case EnvStateType::STATE_RELEASE:
+                val = envAccum - release;
+                if(val <= 0.0001f){
+                    envAccum = 0.f;
+                    //ESP_LOGW("ADSR", "Switching from sus to rel");
+                    envState = EnvStateType::STATE_IDLE;
+                }else{
+                    envAccum = val;
+                }
             default:
                 break;
         }
-    } else if (envMode == EnvModeType::MODE_LOG){
-        switch (envState) {
+    }else{
+        switch (envState){
             case EnvStateType::STATE_ATTACK:
                 val = envAccum * attack;
                 if(val >= 1.f){
                     envAccum = 1.f;
+                    //ESP_LOGW("ADSR", "Switching from attack to decay");
                     envState = EnvStateType::STATE_DECAY;
                 }else{
                     envAccum = val;
@@ -73,18 +84,23 @@ float CTAG::SP::HELPERS::ctagADEnv::Process() {
                 break;
             case EnvStateType::STATE_DECAY:
                 val = envAccum * decay;
-                if (envAccum <= 0.0001f) {
-                    if (loop) {
-                        envState = EnvStateType::STATE_ATTACK;
-                        envAccum = 0.0001f;
-                    } else {
-                        envState = EnvStateType::STATE_IDLE;
-                        envAccum = 0.f;
-                    }
+                if(val <= sustain){
+                    envAccum = sustain;
+                    //ESP_LOGW("ADSR", "Switching from decy to sus");
+                    envState = EnvStateType::STATE_SUSTAIN;
                 }else{
                     envAccum = val;
                 }
                 break;
+            case EnvStateType::STATE_RELEASE:
+                val = envAccum * release;
+                if(val <= 0.0001f){
+                    envAccum = 0.f;
+                    //ESP_LOGW("ADSR", "Switching from sus to rel");
+                    envState = EnvStateType::STATE_IDLE;
+                }else{
+                    envAccum = val;
+                }
             default:
                 break;
         }
@@ -94,50 +110,54 @@ float CTAG::SP::HELPERS::ctagADEnv::Process() {
     return envAccum;
 }
 
-void CTAG::SP::HELPERS::ctagADEnv::SetAttack(float a_s) {
+void CTAG::SP::HELPERS::ctagADSREnv::SetAttack(float a_s) {
     if(envMode == EnvModeType::MODE_LIN)
         attack = 1.f / (a_s * fSample);
     else
         attack = 1.f - LOG0001 / (a_s * fSample);
 }
 
-void CTAG::SP::HELPERS::ctagADEnv::SetDecay(float d_s) {
+void CTAG::SP::HELPERS::ctagADSREnv::SetDecay(float d_s) {
     if(envMode == EnvModeType::MODE_LIN)
         decay = 1.f / (d_s * fSample);
     else
         decay = 1.f + LOG0001 / (d_s * fSample);
 }
 
-void CTAG::SP::HELPERS::ctagADEnv::Trigger() {
-    if(envMode==EnvModeType::MODE_LIN){
-        envAccum = 0.f;
-    }else{
-        envAccum = 0.0001f;
+void CTAG::SP::HELPERS::ctagADSREnv::Gate(bool isGate) {
+    if(isGate != preGate){
+        preGate = isGate;
+        if(preGate == true){
+            envAccum = 0.0001f;
+            envState = EnvStateType::STATE_ATTACK;
+            //ESP_LOGW("ADSR", "trig -> attack");
+        }else{
+            envState = EnvStateType::STATE_RELEASE;
+            //ESP_LOGW("ADSR", "trig -> release");
+        }
     }
-    envState = EnvStateType::STATE_ATTACK;
 }
 
-void ctagADEnv::SetModeLin() {
+void ctagADSREnv::SetModeLin() {
     envMode = EnvModeType::MODE_LIN;
 }
 
-void ctagADEnv::SetModeExp() {
+void ctagADSREnv::SetModeExp() {
     envMode = EnvModeType::MODE_LOG;
 }
 
-void ctagADEnv::SetLoop(bool l) {
-    loop = l;
-}
-
-void ctagADEnv::SetSampleRate(float fs_hz) {
+void ctagADSREnv::SetSampleRate(float fs_hz) {
     fSample = fs_hz;
     tSample = 1.f / fSample;
 }
 
-bool ctagADEnv::GetLoop() {
-    return loop;
+void ctagADSREnv::SetSustain(float s_s) {
+    sustain = s_s;
 }
 
-bool ctagADEnv::GetIsRunning() {
-    return envState != EnvStateType::STATE_IDLE ? true : false;
+void ctagADSREnv::SetRelease(float r_s) {
+    if(envMode == EnvModeType::MODE_LIN)
+        release = 1.f / (r_s * fSample);
+    else
+        release = 1.f + LOG0001 / (r_s * fSample);
 }

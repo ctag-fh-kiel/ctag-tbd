@@ -221,4 +221,8 @@ namespace CTAG::SP::HELPERS {
         return M_PI_4*x - x*(fabs(x) - 1)*(0.2447f + 0.0663f*fabs(x));
     }
 
+    float fastsinh(float x) {
+        return (expf_fast(x) - expf_fast(-x)) * 0.5f;
+    }
+
 }

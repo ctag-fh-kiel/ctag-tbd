@@ -219,3 +219,12 @@ void ctagSPDataModel::PrintSelf(){
     ESP_LOGD("Model", "activePreset:");
     printJSON(activePreset);
 }
+
+const char *ctagSPDataModel::GetCStrJSONAllPresetData() {
+    Document d;
+    loadJSON(d, mpFileName);
+    Writer<StringBuffer> writer(json);
+    d.Accept(writer);
+    //printf("%s\n", json.GetString());
+    return json.GetString();
+}
