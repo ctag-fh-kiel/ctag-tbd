@@ -1,5 +1,7 @@
 # **CTAG TBD >>to be determined<<**
 
+![CTAG-TBD](tbd.png)
+
 ## What it is:
 - An open source Eurorack sound module based on the ESP32.
 - With an easy to extend audio plugin architecture.
