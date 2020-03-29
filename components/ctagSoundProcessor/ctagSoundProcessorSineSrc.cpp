@@ -63,11 +63,11 @@ void ctagSoundProcessorSineSrc::Process(const ProcessData &data){
             if(prevTrigState_p == 0) pitchEnv.Trigger();
         }
         pitchEnv.SetLoop(loopEG_p);
-        attackVal_p = (float)attack_p / 4095.f;
+        attackVal_p = (float)attack_p / 4095.f * 5.f;
         if(cvControlAttack_p != -1){
             attackVal_p = data.cv[cvControlAttack_p] * data.cv[cvControlAttack_p];
         }
-        decayVal_p = (float)decay_p / 4095.f;
+        decayVal_p = (float)decay_p / 4095.f * 5.f;
         if(cvControlDecay_p != -1){
             decayVal_p = data.cv[cvControlDecay_p] * data.cv[cvControlDecay_p];
         }
@@ -83,13 +83,13 @@ void ctagSoundProcessorSineSrc::Process(const ProcessData &data){
             if(prevTrigState == 0) adEnv.Trigger();
         }
         adEnv.SetLoop(loopEG);
-        attackVal = (float)attack / 4095.f;
+        attackVal = (float)attack / 4095.f * 5.f;
         if(cvControlAttack != -1){
-            attackVal = data.cv[cvControlAttack] * data.cv[cvControlAttack];
+            attackVal = data.cv[cvControlAttack] * data.cv[cvControlAttack] * 2.f;
         }
-        decayVal = (float)decay / 4095.f;
+        decayVal = (float)decay / 4095.f * 10.f;
         if(cvControlDecay != -1){
-            decayVal = data.cv[cvControlDecay] * data.cv[cvControlDecay];
+            decayVal = data.cv[cvControlDecay] * data.cv[cvControlDecay] * 4.f;
         }
         adEnv.SetAttack(attackVal);
         adEnv.SetDecay(decayVal);
