@@ -284,6 +284,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     ledBlink = 5;
     model = std::make_unique<SPManagerDataModel>();
 
+    /* there should be an extra pin for this!
     // check if network reset requested trig 1 pressed at startup
     if(GPIO::GetTrig1() == 0){
         DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
@@ -291,6 +292,7 @@ void SoundProcessorManager::StartSoundProcessor() {
         ESP_LOGE("SP", "Network credentials reset requested!");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
+    */
 
     // generate internal data
     updateConfiguration();
