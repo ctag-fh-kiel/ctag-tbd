@@ -46,6 +46,7 @@ void Calibration::Init() {
     ConfigCVChannels(CVConfig::CVUnipolar, CVConfig::CVUnipolar, CVConfig::CVUnipolar, CVConfig::CVUnipolar);
     DRIVERS::ADC::SetCVINUnipolar(0);
     DRIVERS::ADC::SetCVINUnipolar(1);
+    /* there should be an extra pin for this!
     ESP_LOGI("CAL", "Check calibration request");
     if(DRIVERS::GPIO::GetTrig0() == 0){
         ESP_LOGI("CAL", "Starting calibration");
@@ -54,6 +55,7 @@ void Calibration::Init() {
         ESP_LOGI("CAL", "Calibration completed");
         DRIVERS::LedRGB::SetLedRGB(0, 0, 0);
     }
+    */
     model->LoadMatrix("aCalCalibration_CV_05V", aCoeffs05V);
     model->LoadMatrix("bCalCalibration_CV_05V", bCoeffs05V);
     model->LoadMatrix("aCalCalibration_CV_10V", aCoeffs10V);
