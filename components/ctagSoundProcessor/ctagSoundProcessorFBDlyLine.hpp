@@ -37,7 +37,7 @@ namespace CTAG{
             private:
                 void setParamValueInternal(const string &id, const string &key, const int val) override;
                 void loadPresetInternal() override;
-                const string id = "fbdlyline";
+                const string id = "FBDlyLine";
                 const uint32_t maxLength;
                 HELPERS::ctagFBDelayLine dlyLine;
                 // inter thread variables are atomic

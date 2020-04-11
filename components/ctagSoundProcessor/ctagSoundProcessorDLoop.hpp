@@ -45,7 +45,7 @@ namespace CTAG {
         private:
             void setParamValueInternal(const string &id, const string &key, const int val) override;
             void loadPresetInternal() override;
-            const string id = "dloop"; // stands for dust looped
+            const string id = "DLoop"; // stands for dust looped
 
             // inter thread variables are atomic
             atomic<int32_t> reset;

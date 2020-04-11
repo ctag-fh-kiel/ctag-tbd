@@ -38,7 +38,7 @@ namespace CTAG::SP{
     private:
         void setParamValueInternal(const string &id, const string &key, const int val) override;
         void loadPresetInternal() override;
-        const string id = "gverb";
+        const string id = "GVerb";
         float maxRoomSize = 500.f;
         // gverb objects
         ty_gverb *gverb;

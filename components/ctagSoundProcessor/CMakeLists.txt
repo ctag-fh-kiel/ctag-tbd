@@ -12,7 +12,6 @@ foreach(VAR ${SOUND_PROCESSORS})
     # check if JSON file for sound processor exists
     get_filename_component(MYFILE_WITHOUT_EXT ${VAR} NAME_WLE)
     string(REGEX REPLACE "ctagSoundProcessor+" "" SP_ID ${MYFILE_WITHOUT_EXT} )
-    string(TOLOWER ${SP_ID} SP_ID)
     set(SP_INCLUDES "${SP_INCLUDES}#include \"${MYFILE_WITHOUT_EXT}.hpp\"\n")
     # prepare big if variable for factory
     set(BIG_IF "${BIG_IF}if(type.compare(\"${SP_ID}\") == 0) return std::make_unique<${MYFILE_WITHOUT_EXT}>();\n")
