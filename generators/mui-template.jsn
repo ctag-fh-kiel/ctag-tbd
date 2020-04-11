@@ -1,0 +1,9 @@
+{
+  "id": "template",
+  "isStereo": true,
+  "name": "template",
+  "hint": "what is this plugin about?",
+  "params": [
+    "place your params here"
+  ]
+}
