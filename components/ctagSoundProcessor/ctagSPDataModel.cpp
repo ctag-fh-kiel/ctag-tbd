@@ -32,10 +32,10 @@ ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo)
 {
     // acquire data from json files ui model and patch model
     muiFileName = string("/spiffs/data/sp/mui-") + id + string(".jsn");
-    //std::cout << "Reading " << fn << std::endl;
+    std::cout << "Reading " << muiFileName << std::endl;
     loadJSON(mui, muiFileName);
     mpFileName = string("/spiffs/data/sp/mp-") + id + string(".jsn");
-    //std::cout << "Reading " << fn << std::endl;
+    std::cout << "Reading " << mpFileName << std::endl;
     loadJSON(mp, mpFileName);
     // load last activated preset
     ESP_LOGD("Model", "Loading patch number %d", mp["activePatch"].GetInt());

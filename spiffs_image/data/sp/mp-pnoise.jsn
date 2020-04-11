@@ -1,2 +1,0 @@
-
-{"activePatch":0,"patches":[{"name":"Default","params":[{"id":"enable","current":1,"trig":-1},{"id":"factor","current":1023,"cv":-1}]},{"name":"A nice program","params":[{"id":"enable","current":1,"trig":-1},{"id":"factor","current":255,"cv":-1}]}]}

@@ -46,7 +46,7 @@ namespace CTAG {
 
             void loadPresetInternal() override;
 
-            const string id = "dust";
+            const string id = "Dust";
 
             // inter thread variables are atomic
             atomic<int32_t> rate;

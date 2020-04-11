@@ -40,7 +40,7 @@ namespace CTAG{
             private:
                 void setParamValueInternal(const string &id, const string &key, const int val) override;
                 void loadPresetInternal() override;
-                const string id = "sinesrc";
+                const string id = "SineSrc";
                 // inter thread variables are atomic
                 atomic<int32_t> loudness;
                 atomic<int32_t> frequency;

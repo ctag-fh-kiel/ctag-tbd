@@ -38,7 +38,7 @@ namespace CTAG::SP{
     private:
         void setParamValueInternal(const string &id, const string &key, const int val) override;
         void loadPresetInternal() override;
-        const string id = "gdverb";
+        const string id = "GDVerb";
         // stereo reverb object
         fv3::strev_f strev;
         //fv3::progenitor_f strev;
