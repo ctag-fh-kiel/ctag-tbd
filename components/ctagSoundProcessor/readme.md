@@ -6,4 +6,4 @@
 - "src_root"/spiffs_image/data/sp/mui-"id".jsn has to have same information as json above, add possible parameters for ui rendering
 - "src_root"/spiffs_image/data/sp/mp-"id".jsn has to have parameter values of all parameters included in ui, at least one preset definition
 - create new class, check another sound processor, e.g. ctagSoundProcessorMonoMultiply as an example
-- there is an auto generator for creating the boring code in your sound processor to link the UI with the data model and the functionality, check spiffs_image/sp/generator.js and the StrampDly sound processor as an example
+- there is an auto generator for creating the boring code in your sound processor to link the UI with the data model and the functionality, check generators/generator.js and the StrampDly sound processor as an example
