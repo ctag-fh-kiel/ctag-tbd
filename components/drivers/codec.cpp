@@ -275,7 +275,7 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
     int16_t tmp2;
     size_t nb;
     const float mult = 32768.f;
-    // 32 bit word config
+    // 16 bit word config
     for (int i = 0; i < sz; i++) {
         tmp2 = (int32_t) (mult * buf[i * 2]);
         tmp2 = MAX(tmp2, -32768);
@@ -579,7 +579,7 @@ void Codec::WM8978_I2S_Cfg(u8 fmt, u8 len)
 {
     fmt &= 0X03;
     len &= 0X03;								  //限定范围
-    WM8978_Write_Reg(4, (fmt << 3) | (len << 5)); //R4,WM8978工作模式设置
+    WM8978_Write_Reg(4, (fmt << 3) | (len << 5) | 2 | 4); //R4,WM8978工作模式设置
 }
 
 //设置耳机左右声道音量
