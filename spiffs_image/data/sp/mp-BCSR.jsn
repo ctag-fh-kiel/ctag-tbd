@@ -1,0 +1,105 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "level",
+          "current": 100,
+          "cv": -1
+        },
+        {
+          "id": "invert",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "dry",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "bc_ena",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "bc_amount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "eg_bc_ena",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_bc_loop",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_bc_le",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_bc_amount",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "eg_bc_att",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "eg_bc_dec",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "sr_ena",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "sr_amount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "eg_sr_ena",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_sr_loop",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_sr_le",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_sr_amount",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "eg_sr_att",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "eg_sr_dec",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}
