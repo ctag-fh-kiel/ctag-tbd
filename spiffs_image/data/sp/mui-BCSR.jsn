@@ -1,0 +1,158 @@
+{
+  "id": "BCSR",
+  "isStereo": false,
+  "name": "Crushendo",
+  "hint": "Bit crushing and sample rate reducing",
+  "params": [
+    {
+      "id": "level",
+      "name": "Gain",
+      "hint": "Gain / distort",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "invert",
+      "name": "Invert",
+      "hint": "Inverts wet phase",
+      "type": "bool"
+    },
+    {
+      "id": "dry",
+      "name": "Dry level",
+      "hint": "Adds dry signal",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "bc",
+      "name": "Bit Crusher",
+      "type": "group",
+      "params": [
+        {
+          "id": "bc_ena",
+          "name": "Enable",
+          "hint": "Enable bit crusher",
+          "type": "bool"
+        },
+        {
+          "id": "bc_amount",
+          "name": "Amount",
+          "hint": "Bit crusher amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "eg_bc",
+          "name": "EG Bit Crusher",
+          "type": "group",
+          "params": [
+            {
+              "id": "eg_bc_ena",
+              "name": "Enable",
+              "type": "bool"
+            },
+            {
+              "id": "eg_bc_loop",
+              "name": "Loop",
+              "type": "bool"
+            },
+            {
+              "id": "eg_bc_le",
+              "name": "Lin / Exp",
+              "type": "bool"
+            },
+            {
+              "id": "eg_bc_amount",
+              "name": "Amount",
+              "type": "int",
+              "min": -4095,
+              "max": 4095
+            },
+            {
+              "id": "eg_bc_att",
+              "name": "Attack",
+              "type": "int",
+              "min": 0,
+              "max": 4095
+            },
+            {
+              "id": "eg_bc_dec",
+              "name": "Decay",
+              "type": "int",
+              "min": 0,
+              "max": 4095
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sr",
+      "name": "Sample Rate Reducer",
+      "type": "group",
+      "params": [
+        {
+          "id": "sr_ena",
+          "name": "Enable",
+          "hint": "Enable sample rate reducer",
+          "type": "bool"
+        },
+        {
+          "id": "sr_amount",
+          "name": "Amount",
+          "hint": "Sample rate reducer amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "eg_sr",
+          "name": "EG Sample Rate Reducer",
+          "type": "group",
+          "params": [
+            {
+              "id": "eg_sr_ena",
+              "name": "Enable",
+              "type": "bool"
+            },
+            {
+              "id": "eg_sr_loop",
+              "name": "Loop",
+              "type": "bool"
+            },
+            {
+              "id": "eg_sr_le",
+              "name": "Lin / Exp",
+              "type": "bool"
+            },
+            {
+              "id": "eg_sr_amount",
+              "name": "Amount",
+              "type": "int",
+              "min": -4095,
+              "max": 4095
+            },
+            {
+              "id": "eg_sr_att",
+              "name": "Attack",
+              "type": "int",
+              "min": 0,
+              "max": 4095
+            },
+            {
+              "id": "eg_sr_dec",
+              "name": "Decay",
+              "type": "int",
+              "min": 0,
+              "max": 4095
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
