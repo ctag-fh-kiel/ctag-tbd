@@ -1,0 +1,68 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "smodel",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "frequency",
+          "current": 1000,
+          "cv": -1
+        },
+        {
+          "id": "level",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "harmonics",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "timbre",
+          "current": 2047
+        },
+        {
+          "id": "morph",
+          "current": 2047
+        },
+        {
+          "id": "lpg_color",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "lpg_decay",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "mod_freq",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_timbre",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_morph",
+          "current": 0,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}
