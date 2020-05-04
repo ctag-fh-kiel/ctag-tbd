@@ -43,7 +43,7 @@ file(GLOB SRCS_FILES
 
 idf_component_register(SRCS ${SRCS_FILES} 
                     INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
-                    PRIV_REQUIRES rapidjson esp-dsp)
+                    PRIV_REQUIRES rapidjson esp-dsp mutable)
 
 #set_source_files_properties(ctagSoundProcessorGDVerb.cpp
 #        PROPERTIES COMPILE_FLAGS
