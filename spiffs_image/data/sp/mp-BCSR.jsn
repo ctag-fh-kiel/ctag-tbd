@@ -6,7 +6,7 @@
       "params": [
         {
           "id": "level",
-          "current": 100,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -16,7 +16,7 @@
         },
         {
           "id": "dry",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {

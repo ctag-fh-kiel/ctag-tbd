@@ -131,8 +131,8 @@ function cppSource1(el){
     s += '\tif(key.compare("current") == 0){\n';
     s += '\t\t' + el.id + ' = val;\n';
     s += '\t\treturn;\n';
-    s += '\t}\n';
-    s += '\tif(key.compare("';
+    s += '\t}';
+    s += 'else if(key.compare("';
     if(el.type == 'bool'){
         s += 'trig") == 0){\n';
         s += '\t\tif(val >= -1 && val <= 1)\n';
@@ -142,8 +142,8 @@ function cppSource1(el){
         s += '\t\tif(val >= -1 && val <= 3)\n';
         s += '\t\t\tcv_' + el.id + ' = val;\n';
     }
-    s += '\t\treturn;\n';
-    s += '\t}\n}\n';
+    //s += '\t\treturn;\n';
+    s += '\t}\n\treturn;\n}\n';
     sCpp1 += s;
 }
 
