@@ -10,13 +10,18 @@ file(GLOB SRCS_FILES
         eurorack/plaits/dsp/speech/*.h
         eurorack/plaits/dsp/physical_modelling/*.h
         eurorack/plaits/resources.h
+        eurorack/rings/dsp/fm_voice.cc
+        eurorack/rings/dsp/part.cc
+        eurorack/rings/dsp/string_synth_part.cc
+        eurorack/rings/dsp/string.cc
+        eurorack/rings/dsp/resonator.cc
+        eurorack/rings/resources.cc
         eurorack/stmlib/utils/random.cc
         eurorack/stmlib/dsp/atan.cc
         eurorack/stmlib/dsp/units.cc
+        eurorack/stmlib/dsp/dsp.h
         )
 
 idf_component_register(SRCS ${SRCS_FILES}
         INCLUDE_DIRS eurorack
         PRIV_REQUIRES )
-
-target_compile_options(${COMPONENT_LIB} PRIVATE -DTEST)
