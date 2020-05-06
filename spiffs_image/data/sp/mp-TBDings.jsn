@@ -6,7 +6,7 @@
       "params": [
         {
           "id": "reson_model",
-          "current": 0,
+          "current": 2,
           "cv": -1
         },
         {
@@ -16,7 +16,7 @@
         },
         {
           "id": "polyphony",
-          "current": 0,
+          "current": 1,
           "cv": -1
         },
         {
@@ -40,8 +40,8 @@
           "cv": -1
         },
         {
-          "id": "chord",
-          "current": 0,
+          "id": "chords",
+          "current": 5,
           "cv": -1
         },
         {
@@ -51,13 +51,13 @@
         },
         {
           "id": "ex_int",
-          "current": 1,
+          "current": 0,
           "trig": -1
         },
         {
           "id": "strum_int",
-          "current": 1,
-          "trig": 0
+          "current": 0,
+          "trig": -1
         },
         {
           "id": "note_int",
@@ -66,27 +66,27 @@
         },
         {
           "id": "mod_brightness",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "mod_frequency",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "mod_damping",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "mod_structure",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "mod_position",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         }
       ]

@@ -1,8 +1,8 @@
 {
-  "id": "Rings",
+  "id": "TBDings",
   "isStereo": true,
-  "name": "Rings",
-  "hint": "Mutable Instruments Rings",
+  "name": "TBDings",
+  "hint": "Mutable Instruments Rings Port",
   "params": [
     {
       "id": "reson_model",

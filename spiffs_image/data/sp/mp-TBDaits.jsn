@@ -6,7 +6,7 @@
       "params": [
         {
           "id": "smodel",
-          "current": 0,
+          "current": 7,
           "cv": -1
         },
         {
@@ -16,12 +16,12 @@
         },
         {
           "id": "frequency",
-          "current": 1000,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "level",
-          "current": 4095,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -31,11 +31,13 @@
         },
         {
           "id": "timbre",
-          "current": 2047
+          "current": 2047,
+          "cv": -1
         },
         {
           "id": "morph",
-          "current": 2047
+          "current": 2047,
+          "cv": -1
         },
         {
           "id": "lpg_color",
@@ -49,17 +51,17 @@
         },
         {
           "id": "mod_freq",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "mod_timbre",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "mod_morph",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         }
       ]
