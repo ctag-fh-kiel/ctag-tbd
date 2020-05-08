@@ -37,6 +37,8 @@ respective component folders / files if different from this license.
 #include "esp_vfs.h"
 #include "cJSON.h"
 #include "SPManager.hpp"
+#include "Calibration.hpp"
+
 
 using namespace CTAG;
 using namespace CTAG::REST;
@@ -123,54 +125,6 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req)
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
-
-/*
-static esp_err_t light_brightness_post_handler(httpd_req_t *req)
-{
-    int total_len = req->content_len;
-    int cur_len = 0;
-    char *buf = ((rest_server_context_t *)(req->user_ctx))->scratch;
-    int received = 0;
-    if (total_len >= SCRATCH_BUFSIZE) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
-        return ESP_FAIL;
-    }
-    while (cur_len < total_len) {
-        received = httpd_req_recv(req, buf + cur_len, total_len);
-        if (received <= 0) {
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to post control value");
-            return ESP_FAIL;
-        }
-        cur_len += received;
-    }
-    buf[total_len] = '\0';
-
-    cJSON *root = cJSON_Parse(buf);
-    int red = cJSON_GetObjectItem(root, "red")->valueint;
-    int green = cJSON_GetObjectItem(root, "green")->valueint;
-    int blue = cJSON_GetObjectItem(root, "blue")->valueint;
-    ESP_LOGD(REST_TAG, "Light control: red = %d, green = %d, blue = %d", red, green, blue);
-    cJSON_Delete(root);
-    httpd_resp_sendstr(req, "Post control value successfully");
-    return ESP_OK;
-}
-
-
-static esp_err_t system_info_get_handler(httpd_req_t *req)
-{
-    httpd_resp_set_type(req, "application/json");
-    cJSON *root = cJSON_CreateObject();
-    esp_chip_info_t chip_info;
-    esp_chip_info(&chip_info);
-    cJSON_AddStringToObject(root, "version", IDF_VER);
-    cJSON_AddNumberToObject(root, "cores", chip_info.cores);
-    const char *sys_info = cJSON_Print(root);
-    httpd_resp_sendstr(req, sys_info);
-    free((void *)sys_info);
-    cJSON_Delete(root);
-    return ESP_OK;
-}
-*/
 
 esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req){
     httpd_resp_set_type(req, "application/json");
@@ -316,7 +270,7 @@ esp_err_t RestServer::StartRestServer()
     config.core_id = 0;
     config.uri_match_fn = httpd_uri_match_wildcard;
     config.task_priority = tskIDLE_PRIORITY + 3;
-    config.max_uri_handlers = 12;
+    config.max_uri_handlers = 13;
     config.stack_size = 8192;
     /*
     config.max_open_sockets   = 10;
@@ -459,6 +413,15 @@ esp_err_t RestServer::StartRestServer()
     };
     httpd_register_uri_handler(server, &get_configuration_get_uri);
 
+    /* reboot with and without calibration request */
+    httpd_uri_t reboot_handler_get_uri = {
+            .uri = "/api/v1/reboot",
+            .method = HTTP_GET,
+            .handler = &RestServer::reboot_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &reboot_handler_get_uri);
+
     /* set configuration */
     httpd_uri_t set_configuration_post_uri = {
             .uri = "/api/v1/setConfiguration",
@@ -525,5 +488,18 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
     if(ch == 0 || ch == 1)
         httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONAllPresetData(ch));
     httpd_resp_send_chunk(req, NULL, 0);
+    return ESP_OK;
+}
+
+esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
+    char query[128];
+    char calibration[16];
+    httpd_req_get_url_query_str(req, query, 128);
+    httpd_query_key_value(query, "calibration", calibration, 16);
+    int doCal = atoi(calibration);
+    ESP_LOGW(REST_TAG, "Reboot requested with calibration = %d", doCal);
+    if(doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
+    httpd_resp_send_chunk(req, NULL, 0);
+    esp_restart();
     return ESP_OK;
 }

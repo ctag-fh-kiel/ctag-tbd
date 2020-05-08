@@ -101,3 +101,19 @@ void CTAG::CAL::CalibrationModel::LoadMatrix(const string &id, float *data) {
         }
     }
 }
+
+bool CTAG::CAL::CalibrationModel::GetCalibrateOnReboot() {
+    if(!m.HasMember("CalibrationOnReboot")) return false;
+    if(!m["CalibrationOnReboot"].IsBool()) return false;
+    return m["CalibrationOnReboot"].GetBool() == true;
+}
+
+void CTAG::CAL::CalibrationModel::SetCalibrateOnReboot(bool val) {
+    if(!m.HasMember("CalibrationOnReboot")){
+        Value b(val);
+        m.AddMember(b, b.Move(), m.GetAllocator());
+    }else{
+        m["CalibrationOnReboot"].SetBool(val);
+    }
+    storeJSON(m, MODELJSONFN);
+}

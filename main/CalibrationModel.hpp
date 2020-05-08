@@ -46,6 +46,8 @@ namespace CTAG{
             vector<vector<uint32_t >> GetMatrix(const string &id);
             void PrintSelf();
             void LoadMatrix(const string &id, float* data);
+            bool GetCalibrateOnReboot();
+            void SetCalibrateOnReboot(bool val);
         private:
             Document m;
             const string MODELJSONFN = "/spiffs/data/calibration.jsn";
