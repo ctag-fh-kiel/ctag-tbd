@@ -38,6 +38,7 @@ namespace CTAG{
             static void Init();
             static void IRAM_ATTR MapCVData(const uint16_t *adcIn, float *mapOut);
             static void ConfigCVChannels(CVConfig ch0, CVConfig ch1, CVConfig ch2, CVConfig ch3);
+            static void RequestCalibrationOnReboot();
         private:
             static void doCalibration();
             static void ledTask(void * params);

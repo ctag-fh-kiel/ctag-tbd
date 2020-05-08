@@ -270,6 +270,59 @@ respective component folders / files if different from this license.
             <ons-button id="commit-wifi" style="margin-top: 30px;">Commit WiFi data</ons-button>
             </div>
         </ons-list-item>
+        <ons-list-header>System Reboot</ons-list-header>
+        <ons-list-item>
+            <div style="text-align: center; margin-top: 30px;">
+                <ons-button id="reboot" style="margin-top: 30px;">Reboot</ons-button>
+                <ons-button id="reboot-calibration" style="margin-top: 30px;">Reboot, calibrate CVs</ons-button>
+            </div>
+        </ons-list-item>
+        <ons-modal direction="down">
+            <div style="text-align: left">
+                Calibration instructions:
+                <ol>
+                    <li>Single LED pulse</li>
+                    <ul>
+                        <li>Turn knobs all left</li>
+                        <li>Apply 0V to CV ins</li>
+                        <li>Press trig 0</li>
+                    </ul>
+                    <li>Double LED pulse</li>
+                    <ul>
+                        <li>Turn knobs mid position</li>
+                        <li>Apply 2.5V to CV ins</li>
+                        <li>Press trig 0</li>
+                    </ul>
+                    <li>Triple LED pulse</li>
+                    <ul>
+                        <li>Turn knobs all right</li>
+                        <li>Apply 5V to CV ins</li>
+                        <li>Press trig 0</li>
+                    </ul>
+                    <li>Four LED pulses</li>
+                    <ul>
+                        <li>Turn knobs all left</li>
+                        <li>Apply -5V to CV ins</li>
+                        <li>Press trig 0</li>
+                    </ul>
+                    <li>Five LED pulses</li>
+                    <ul>
+                        <li>Turn knobs mid position</li>
+                        <li>Apply 0V to CV ins</li>
+                        <li>Press trig 0</li>
+                    </ul>
+                    <li>Six LED pulses</li>
+                    <ul>
+                        <li>Turn knobs all right</li>
+                        <li>Apply 5V to CV ins</li>
+                        <li>Press trig 0</li>
+                    </ul>
+                    <li>
+                        Calibration completed!
+                    </li>
+                </ol>
+            </div>
+        </ons-modal>
         <script>
             ons.getScriptPage().onInit = function () {
                 $.getq('myq', 'api/v1/getConfiguration',
@@ -336,10 +389,27 @@ respective component folders / files if different from this license.
                             $.postq('myq', 'api/v1/setConfiguration',
                                 JSON.stringify(cfgData), 'json'
                             );
-                            ons.notification.toast('You must manually reboot the module for changes to take effect!', {
+                            ons.notification.toast('You must reboot the module for changes to take effect!', {
                                 timeout: 3000,
                                 animation: 'fall'
                             });
+                        });
+                        $('#reboot').on('click', function() {
+                            $.getq('myq',
+                                '/api/v1/reboot',
+                                { 'calibration': '0'}
+                            );
+                            ons.notification.toast('Software reboot!', {
+                                timeout: 3000,
+                                animation: 'fall'
+                            });
+                        });
+                        $('#reboot-calibration').on('click', function() {
+                            $.getq('myq',
+                                '/api/v1/reboot',
+                                { 'calibration': '1'}
+                            );
+                            document.querySelector('ons-modal').show();
                         });
                     },
                 );
@@ -351,6 +421,7 @@ respective component folders / files if different from this license.
         </script>
     </ons-page>
 </template>
+
 
 <template id="save.html">
     <ons-page id="save">
