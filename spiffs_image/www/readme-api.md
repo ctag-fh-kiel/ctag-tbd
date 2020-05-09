@@ -244,7 +244,7 @@ Get the module configuration
 
 Set the module configuration
 
-**Method** : `GET`
+**Method** : `POST`
 
 **Data example**
 
@@ -258,6 +258,22 @@ Set the module configuration
     "mode": "bipolar"
   },
   ...
+}
+```
+
+####URL: `/reboot`
+
+Reboot module
+
+**Method** : `GET`
+
+**Data example**
+- calibration = 0 --> just reboot
+- calibration = 1 --> reboot and perform CV calibration
+
+```json
+{
+ "calibration": "1"
 }
 ```
 
