@@ -16,6 +16,9 @@ file(GLOB SRCS_FILES
         eurorack/rings/dsp/string.cc
         eurorack/rings/dsp/resonator.cc
         eurorack/rings/resources.cc
+        eurorack/tides2/poly_slope_generator.cc
+        eurorack/tides2/ramp_extractor.cc
+        eurorack/tides2/resources.cc
         eurorack/stmlib/utils/random.cc
         eurorack/stmlib/dsp/atan.cc
         eurorack/stmlib/dsp/units.cc
