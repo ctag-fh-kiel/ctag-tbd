@@ -1,0 +1,76 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "clock",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "out0",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "out1",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "frequency",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "shape",
+          "current": 2047
+        },
+        {
+          "id": "slope",
+          "current": 2047
+        },
+        {
+          "id": "smoothness",
+          "current": 2047
+        },
+        {
+          "id": "shift",
+          "current": 2047
+        },
+        {
+          "id": "mod_frequency",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_shape",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_slope",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_smoothness",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_shift",
+          "current": 0,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

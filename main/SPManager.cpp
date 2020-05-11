@@ -242,7 +242,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
             if (fbuf[i * 2 + 1] > max) max = fbuf[i * 2 + 1];
         }
         peakOut = 0.9f * peakOut + 0.1f * max;
-        max = 255.f + 3.2f * fast_dBV(peakOut);
+        max = 255.f + 3.2f * HELPERS::fast_dBV(peakOut);
        // ESP_LOGW("PEAK", "max %.7f, peak %.7f", max, peakOut);
         if (max > 0.f) ledData |= ((uint32_t) max) << 16; // red
         ledStatus = ledData;
