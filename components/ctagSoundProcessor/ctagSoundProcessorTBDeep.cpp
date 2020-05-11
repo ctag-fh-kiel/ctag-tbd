@@ -1,0 +1,377 @@
+#include "ctagSoundProcessorTBDeep.hpp"
+#include <iostream>
+
+
+// part of the port is adapted from VCV Rack Audible Instruments, (C) Andrew Belt
+using namespace CTAG::SP;
+
+#define CONSTRAIN(var, min, max) \
+  if (var < (min)) { \
+    var = (min); \
+  } else if (var > (max)) { \
+    var = (max); \
+  }
+
+static const float kRootScaled[3] = {
+        0.125f,
+        2.0f,
+        130.81f
+};
+
+static const tides2::Ratio kRatios[20] = {
+        { 0.0625f, 16 },
+        { 0.125f, 8 },
+        { 0.1666666f, 6 },
+        { 0.25f, 4 },
+        { 0.3333333f, 3 },
+        { 0.5f, 2 },
+        { 0.6666666f, 3 },
+        { 0.75f, 4 },
+        { 0.8f, 5 },
+        { 1, 1 },
+        { 1, 1 },
+        { 1.25f, 4 },
+        { 1.3333333f, 3 },
+        { 1.5f, 2 },
+        { 2.0f, 1 },
+        { 3.0f, 1 },
+        { 4.0f, 1 },
+        { 6.0f, 1 },
+        { 8.0f, 1 },
+        { 16.0f, 1 },
+};
+
+ctagSoundProcessorTBDeep::ctagSoundProcessorTBDeep() {
+    setIsStereo();
+    model = std::make_unique<ctagSPDataModel>(id, isStereo);
+    model->LoadPreset(0);
+
+    poly_slope_generator.Init();
+    ratio_index_quantizer.Init();
+    output_mode = tides2::OUTPUT_MODE_GATES;
+    ramp_mode = tides2::RAMP_MODE_LOOPING;
+    ramp_extractor.Init(44100.f, 40.f / 44100.f);
+
+}
+
+void ctagSoundProcessorTBDeep::Process(const ProcessData &data) {
+
+    output_mode = (tides2::OutputMode)3; // only mode 3 (tides2::OutputMode)(mode % 4);
+
+    ramp_mode = (tides2::RampMode)1; // only mode 1
+
+    // Input gates
+    for(int i=0;i<bufSz;i++){
+        trig_flags[i] = stmlib::ExtractGateFlags(previous_trig_flag, data.trig[0] != 1);
+        previous_trig_flag = trig_flags[i];
+
+        clock_flags[i] = stmlib::ExtractGateFlags(previous_clock_flag, data.trig[1] != 1);
+        previous_clock_flag = clock_flags[i];
+    }
+
+    float note = frequency;
+    if(cv_frequency != -1){
+        note += 12.f * data.cv[cv_frequency] * 5.f;
+    }
+    CONSTRAIN(note, -96.f, 96.f);
+
+    float fm = 0.f;
+    if(cv_mod_frequency != -1){
+        fm += mod_frequency / 4095.f * data.cv[cv_mod_frequency] * 12.f * 5.f;
+        CONSTRAIN(fm, -96.f, 96.f);
+    }
+    float transposition = note + fm;
+
+    float ramp[tides2::kBlockSize];
+    float freq;
+    tides2::Range range_mode = tides2::RANGE_AUDIO; // only audio (range < 2) ? tides2::RANGE_CONTROL : tides2::RANGE_AUDIO;
+
+
+    if (trig_clock != -1) {
+        if (must_reset_ramp_extractor) {
+            ramp_extractor.Reset();
+        }
+
+        tides2::Ratio r = ratio_index_quantizer.Lookup(kRatios, 0.5f + transposition * 0.0105f, 20);
+        freq = ramp_extractor.Process(
+                range_mode == tides2::RANGE_AUDIO,
+                range_mode == tides2::RANGE_AUDIO && ramp_mode == tides2::RAMP_MODE_AR,
+                r,
+                clock_flags,
+                ramp,
+                tides2::kBlockSize);
+        must_reset_ramp_extractor = false;
+    }
+    else {
+        freq = kRootScaled[2] / 44100.f * stmlib::SemitonesToRatio(transposition);
+        must_reset_ramp_extractor = true;
+    }
+
+    // Get parameters
+    float fSlope = slope / 4095.f;
+    float fShape = shape / 4095.f;
+    float fSmoothness = smoothness / 4095.f;
+    float fShift = shift / 4095.f;
+
+    if(cv_mod_slope != -1){
+        fSlope += mod_slope / 4095.f * data.cv[cv_mod_slope];
+        CONSTRAIN(fSlope, 0.f, 1.f);
+    }
+    if(cv_mod_shape != -1){
+        fShape += mod_shape / 4095.f * data.cv[cv_mod_shape];
+        CONSTRAIN(fShape, 0.f, 1.f);
+    }
+    if(cv_mod_smoothness != -1){
+        fSmoothness += mod_smoothness / 4095.f * data.cv[cv_mod_smoothness];
+        CONSTRAIN(fSmoothness, 0.f, 1.f);
+    }
+    if(cv_shift != -1){
+        fShift += mod_shift / 4095.f * data.cv[cv_mod_shift];
+        CONSTRAIN(fShift, 0.f, 1.f);
+    }
+
+    if (output_mode != previous_output_mode) {
+        poly_slope_generator.Reset();
+        previous_output_mode = output_mode;
+    }
+
+    // Render generator
+    poly_slope_generator.Render(
+            ramp_mode,
+            output_mode,
+            range_mode,
+            freq,
+            fSlope,
+            fShape,
+            fSmoothness,
+            fShift,
+            trig_flags,
+            (trig_trigger == -1) && (trig_clock != -1) ? ramp : NULL,
+            out,
+            tides2::kBlockSize);
+
+    int o0 = out0;
+    if(cv_out0 != -1){
+        o0 = fabs(data.cv[cv_out0] * 4.f);
+        CONSTRAIN(o0, 0, 3);
+    }
+
+    int o1 = out1;
+    if(cv_out1 != -1){
+        o1 = fabs(data.cv[cv_out1] * 4.f);
+        CONSTRAIN(o1, 0, 3);
+    }
+    for (int j = 0; j < bufSz; j++) {
+        data.buf[j * 2] = out[j].channel[o0] / 6.0f;
+        data.buf[j * 2 + 1] = out[j].channel[o1] / 6.0f;
+    }
+
+
+}
+
+ctagSoundProcessorTBDeep::~ctagSoundProcessorTBDeep() {
+
+}
+
+const char *ctagSoundProcessorTBDeep::GetCStrID() const {
+    return id.c_str();
+}
+
+
+void ctagSoundProcessorTBDeep::setParamValueInternal(const string& id, const string& key, const int val) {
+// autogenerated code here
+// sectionCpp0
+if(id.compare("trigger") == 0){
+	if(key.compare("current") == 0){
+		trigger = val;
+		return;
+	}else if(key.compare("trig") == 0){
+		if(val >= -1 && val <= 1)
+			trig_trigger = val;
+	}
+	return;
+}
+if(id.compare("clock") == 0){
+	if(key.compare("current") == 0){
+		clock = val;
+		return;
+	}else if(key.compare("trig") == 0){
+		if(val >= -1 && val <= 1)
+			trig_clock = val;
+	}
+	return;
+}
+if(id.compare("out0") == 0){
+	if(key.compare("current") == 0){
+		out0 = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_out0 = val;
+	}
+	return;
+}
+if(id.compare("out1") == 0){
+	if(key.compare("current") == 0){
+		out1 = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_out1 = val;
+	}
+	return;
+}
+if(id.compare("frequency") == 0){
+	if(key.compare("current") == 0){
+		frequency = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_frequency = val;
+	}
+	return;
+}
+if(id.compare("shape") == 0){
+	if(key.compare("current") == 0){
+		shape = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_shape = val;
+	}
+	return;
+}
+if(id.compare("slope") == 0){
+	if(key.compare("current") == 0){
+		slope = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_slope = val;
+	}
+	return;
+}
+if(id.compare("smoothness") == 0){
+	if(key.compare("current") == 0){
+		smoothness = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_smoothness = val;
+	}
+	return;
+}
+if(id.compare("shift") == 0){
+	if(key.compare("current") == 0){
+		shift = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_shift = val;
+	}
+	return;
+}
+if(id.compare("mod_frequency") == 0){
+	if(key.compare("current") == 0){
+		mod_frequency = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_mod_frequency = val;
+	}
+	return;
+}
+if(id.compare("mod_shape") == 0){
+	if(key.compare("current") == 0){
+		mod_shape = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_mod_shape = val;
+	}
+	return;
+}
+if(id.compare("mod_slope") == 0){
+	if(key.compare("current") == 0){
+		mod_slope = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_mod_slope = val;
+	}
+	return;
+}
+if(id.compare("mod_smoothness") == 0){
+	if(key.compare("current") == 0){
+		mod_smoothness = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_mod_smoothness = val;
+	}
+	return;
+}
+if(id.compare("mod_shift") == 0){
+	if(key.compare("current") == 0){
+		mod_shift = val;
+		return;
+	}else if(key.compare("cv") == 0){
+		if(val >= -1 && val <= 3)
+			cv_mod_shift = val;
+	}
+	return;
+}
+// sectionCpp0
+
+
+
+
+
+
+
+
+
+}
+
+void ctagSoundProcessorTBDeep::loadPresetInternal() {
+// autogenerated code here
+// sectionCpp1
+trigger = model->GetParamValue("trigger", "current");
+trig_trigger = model->GetParamValue("trigger", "trig");
+clock = model->GetParamValue("clock", "current");
+trig_clock = model->GetParamValue("clock", "trig");
+out0 = model->GetParamValue("out0", "current");
+cv_out0 = model->GetParamValue("out0", "cv");
+out1 = model->GetParamValue("out1", "current");
+cv_out1 = model->GetParamValue("out1", "cv");
+frequency = model->GetParamValue("frequency", "current");
+cv_frequency = model->GetParamValue("frequency", "cv");
+shape = model->GetParamValue("shape", "current");
+cv_shape = model->GetParamValue("shape", "cv");
+slope = model->GetParamValue("slope", "current");
+cv_slope = model->GetParamValue("slope", "cv");
+smoothness = model->GetParamValue("smoothness", "current");
+cv_smoothness = model->GetParamValue("smoothness", "cv");
+shift = model->GetParamValue("shift", "current");
+cv_shift = model->GetParamValue("shift", "cv");
+mod_frequency = model->GetParamValue("mod_frequency", "current");
+cv_mod_frequency = model->GetParamValue("mod_frequency", "cv");
+mod_shape = model->GetParamValue("mod_shape", "current");
+cv_mod_shape = model->GetParamValue("mod_shape", "cv");
+mod_slope = model->GetParamValue("mod_slope", "current");
+cv_mod_slope = model->GetParamValue("mod_slope", "cv");
+mod_smoothness = model->GetParamValue("mod_smoothness", "current");
+cv_mod_smoothness = model->GetParamValue("mod_smoothness", "cv");
+mod_shift = model->GetParamValue("mod_shift", "current");
+cv_mod_shift = model->GetParamValue("mod_shift", "cv");
+// sectionCpp1
+
+
+
+
+
+
+
+
+
+}
