@@ -1,0 +1,22 @@
+{
+  "id": "MIEnsemble",
+  "isStereo": true,
+  "name": "MIEnsemble",
+  "hint": "Ensemble effect of mutable instruments",
+  "params": [
+    {
+      "id": "depth",
+      "type": "int",
+      "name": "Depth",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "amount",
+      "type": "int",
+      "name": "Amount",
+      "min": 0,
+      "max": 4095
+    }
+  ]
+}

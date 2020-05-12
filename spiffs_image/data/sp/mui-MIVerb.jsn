@@ -1,0 +1,57 @@
+{
+  "id": "MIVerb",
+  "isStereo": true,
+  "name": "MIVerb",
+  "hint": "Griesinger Topology Reverb based on Mutable Instruments implementation",
+  "params": [
+    {
+      "id": "time",
+      "type": "int",
+      "name": "Time",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "amount",
+      "type": "int",
+      "name": "Amount",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "in_gain",
+      "type": "int",
+      "name": "Input Gain",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "diffusion",
+      "type": "int",
+      "name": "Diffusion",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "lp",
+      "type": "int",
+      "name": "Low Pass",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "lfo1_f",
+      "type": "int",
+      "name": "LFO 1 Frequency",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "lfo2_f",
+      "type": "int",
+      "name": "LFO 2 Frequency",
+      "min": 0,
+      "max": 4095
+    }
+  ]
+}

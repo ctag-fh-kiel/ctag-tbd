@@ -1,0 +1,45 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "time",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "amount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "in_gain",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "diffusion",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "lp",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "lfo1_f",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "lfo2_f",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

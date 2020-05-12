@@ -1,0 +1,22 @@
+{
+  "id": "MIPShft",
+  "isStereo": true,
+  "name": "MIPShft",
+  "hint": "Pitch shifter based on mutable instruments implementation",
+  "params": [
+    {
+      "id": "ratio",
+      "type": "int",
+      "name": "Ratio",
+      "min": 0,
+      "max": 8192
+    },
+    {
+      "id": "size",
+      "type": "int",
+      "name": "Size",
+      "min": 0,
+      "max": 4095
+    }
+  ]
+}

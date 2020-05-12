@@ -1,0 +1,20 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "amount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "time",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "depth",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "amount",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}
