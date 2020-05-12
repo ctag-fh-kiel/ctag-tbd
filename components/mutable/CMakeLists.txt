@@ -19,6 +19,7 @@ file(GLOB SRCS_FILES
         eurorack/tides2/poly_slope_generator.cc
         eurorack/tides2/ramp_extractor.cc
         eurorack/tides2/resources.cc
+        eurorack/clouds/resources.cc
         eurorack/stmlib/utils/random.cc
         eurorack/stmlib/dsp/atan.cc
         eurorack/stmlib/dsp/units.cc
