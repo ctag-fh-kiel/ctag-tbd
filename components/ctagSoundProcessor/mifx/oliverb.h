@@ -45,6 +45,8 @@ namespace mifx {
 
         void Init(float* buffer) {
             engine_.Init(buffer);
+            engine_.SetLFOFrequency(LFO_1, 0.5f / 44100.0f);
+            engine_.SetLFOFrequency(LFO_2, 0.3f / 44100.0f);
             diffusion_ = 0.625f;
             size_ = 0.5f;
             mod_amount_ = 0.0f;
@@ -57,7 +59,6 @@ namespace mifx {
             phase_ = 0.0f;
             ratio_ = 0.0f;
             pitch_shift_amount_ = 1.0f;
-            level_ = 0.0f;
             for (int i=0; i<9; i++)
                 lfo_[i].Init();
         }
@@ -112,7 +113,7 @@ namespace mifx {
                 ONE_POLE(smooth_size_, size_, 0.01f);
 
                 // compute windowing info for the pitch shifter
-                float ps_size = 128.0f + (3410.0f - 128.0f) * smooth_size_;
+                float ps_size = 128.0f + (4500.0f - 128.0f) * smooth_size_;
                 phase_ += (1.0f - ratio_) / ps_size;
                 if (phase_ >= 1.0f) phase_ -= 1.0f;
                 if (phase_ <= 0.0f) phase_ += 1.0f;
@@ -264,7 +265,6 @@ namespace mifx {
 
         float phase_ = 0.f;
         float ratio_ = 0.f;
-        float level_ = 0.f;
         float amount_ = 0.f;
 
         RandomOscillator lfo_[9];
