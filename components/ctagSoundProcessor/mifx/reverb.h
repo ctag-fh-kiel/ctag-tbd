@@ -90,8 +90,8 @@ namespace mifx {
                 engine_.Start(&c);
 
                 // Smear AP1 inside the loop.
-                //c.Interpolate(ap1, 10.0f, LFO_1, 80.0f, 1.0f);
-                //c.Write(ap1, 100, 0.0f);
+                c.Interpolate(ap1, 10.0f, LFO_1, 80.0f, 1.0f);
+                c.Write(ap1, 100, 0.0f);
 
                 c.Read(*left + *right, gain);
 
