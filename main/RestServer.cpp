@@ -478,15 +478,16 @@ esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
     char query[128];
-    size_t qlen = httpd_req_get_url_query_len(req);
-    size_t urilen = strlen(req->uri);
+    char pluginID[64];
     httpd_req_get_url_query_str(req, query, 128);
-    char ch = req->uri[urilen - qlen - 1];
     httpd_resp_set_type(req, "application/json");
-    ch -= 0x30;
-    ESP_LOGD(REST_TAG, "Sending all preset data of channel %d as JSON", ch);
-    if(ch == 0 || ch == 1)
-        httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONAllPresetData(ch));
+    char *pLastSlash = strrchr(req->uri, '/');
+    if(pLastSlash){
+        strcpy(pluginID, pLastSlash + 1);
+        ESP_LOGE(REST_TAG, "Sending all preset data of plugin %s as JSON", pluginID);
+        httpd_resp_sendstr(req, "moin\0");
+        //httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONAllPresetData(ch));
+    }
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }

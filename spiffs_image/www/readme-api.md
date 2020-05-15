@@ -172,9 +172,9 @@ Get presets, returns array with preset number and names of active channel plugin
 }
 ```
 
-####URL: `/getAllPresetData/:ch`
+####URL: `/getAllPresetData/:PluginID`
 
-Get all preset data of current channel
+Get all preset data of the queried plugin ID
 
 **Method** : `GET`
 
