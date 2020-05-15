@@ -222,6 +222,7 @@ void ctagSPDataModel::PrintSelf(){
 
 const char *ctagSPDataModel::GetCStrJSONAllPresetData() {
     Document d;
+    json.Clear();
     loadJSON(d, mpFileName);
     Writer<StringBuffer> writer(json);
     d.Accept(writer);
