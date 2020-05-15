@@ -485,8 +485,9 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
     if(pLastSlash){
         strcpy(pluginID, pLastSlash + 1);
         ESP_LOGE(REST_TAG, "Sending all preset data of plugin %s as JSON", pluginID);
-        httpd_resp_sendstr(req, "moin\0");
-        //httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONAllPresetData(ch));
+        const char *json = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string(pluginID));
+        if(json)
+            httpd_resp_sendstr(req, json);
     }
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
