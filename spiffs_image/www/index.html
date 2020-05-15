@@ -423,10 +423,11 @@ respective component folders / files if different from this license.
                                                             zip.file('mp-' + el.id + '.jsn', JSON.stringify(el.presets));
                                                         });
                                                         zip.file('all.jsn', JSON.stringify(presets));
+                                                        console.log(JSON.stringify(presets));
                                                         zip.generateAsync({type:"blob"})
                                                             .then(function(content) {
                                                                 // see FileSaver.js
-                                                                saveAs(content, "presets.zip");
+                                                                saveAs(content, 'presets.zip');
                                                             });
                                                     }
                                                 );
