@@ -409,21 +409,36 @@ respective component folders / files if different from this license.
                                         for(let i=0;i<data.length;i++){
                                             let el = data[i];
                                             if(i == data.length - 1){
-                                                console.log('last reached');
                                                 $.getq('myq',
                                                     'api/v1/getAllPresetData/' + el.id,
                                                     rdata => {
-                                                        console.log(rdata);
-                                                        presets.push(rdata);
-                                                        console.log(presets);
+                                                        let o = {
+                                                            id: el.id,
+                                                            presets: rdata
+                                                        };
+                                                        presets.push(o);
+                                                        // last request completed
+                                                        let zip = new JSZip();
+                                                        presets.forEach(el => {
+                                                            zip.file('mp-' + el.id + '.jsn', JSON.stringify(el.presets));
+                                                        });
+                                                        zip.file('all.jsn', JSON.stringify(presets));
+                                                        zip.generateAsync({type:"blob"})
+                                                            .then(function(content) {
+                                                                // see FileSaver.js
+                                                                saveAs(content, "presets.zip");
+                                                            });
                                                     }
                                                 );
                                             }else{
                                                 $.getq('myq',
                                                     'api/v1/getAllPresetData/' + el.id,
                                                     rdata => {
-                                                        console.log(rdata);
-                                                        presets.push(rdata);
+                                                        let o = {
+                                                            id: el.id,
+                                                            presets: rdata
+                                                        };
+                                                        presets.push(o);
                                                     }
                                                 );
                                             }
