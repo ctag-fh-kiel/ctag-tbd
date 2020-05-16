@@ -253,7 +253,7 @@ respective component folders / files if different from this license.
         </ons-list-item>
         <ons-list-header>Wifi Configuration</ons-list-header>
         <ons-list-item>
-            <div style="text-align: center; margin-top: 30px;">
+            <div style="text-align: center; margin-top: 10px;">
             <ons-select id="wifi-mode">
                 <option value="ap">Access Point</option>
                 <option value="sta">Station</option>
@@ -270,11 +270,17 @@ respective component folders / files if different from this license.
             <ons-button id="commit-wifi" style="margin-top: 30px;">Commit WiFi data</ons-button>
             </div>
         </ons-list-item>
+        <ons-list-header>System Backup</ons-list-header>
+        <ons-list-item>
+            <div style="text-align: center; margin-top: 10px;">
+                <ons-button id="backup-presets" style="margin-top: 10px;">Backup Presets</ons-button>
+            </div>
+        </ons-list-item>
         <ons-list-header>System Reboot</ons-list-header>
         <ons-list-item>
-            <div style="text-align: center; margin-top: 30px;">
-                <ons-button id="reboot" style="margin-top: 30px;">Reboot</ons-button>
-                <ons-button id="reboot-calibration" style="margin-top: 30px;">Reboot, calibrate CVs</ons-button>
+            <div style="text-align: center; margin-top: 10px;">
+                <ons-button id="reboot" style="margin-top: 10px;">Reboot</ons-button>
+                <ons-button id="reboot-calibration" style="margin-top: 10px;">Reboot, calibrate CVs</ons-button>
             </div>
         </ons-list-item>
         <ons-modal direction="down">
@@ -394,6 +400,54 @@ respective component folders / files if different from this license.
                                 animation: 'fall'
                             });
                         });
+                        $('#backup-presets').on('click', function(){
+                            loadScript('/js/jszip.min.js', () => {
+                                $.getq('myq',
+                                    'api/v1/getPlugins',
+                                    data => {
+                                        let presets = [];
+                                        for(let i=0;i<data.length;i++){
+                                            let el = data[i];
+                                            if(i == data.length - 1){
+                                                $.getq('myq',
+                                                    'api/v1/getAllPresetData/' + el.id,
+                                                    rdata => {
+                                                        let o = {
+                                                            id: el.id,
+                                                            presets: rdata
+                                                        };
+                                                        presets.push(o);
+                                                        // last request completed
+                                                        let zip = new JSZip();
+                                                        presets.forEach(el => {
+                                                            zip.file('mp-' + el.id + '.jsn', JSON.stringify(el.presets));
+                                                        });
+                                                        zip.file('all.jsn', JSON.stringify(presets));
+                                                        console.log(JSON.stringify(presets));
+                                                        zip.generateAsync({type:"blob"})
+                                                            .then(function(content) {
+                                                                // see FileSaver.js
+                                                                saveAs(content, 'presets.zip');
+                                                            });
+                                                    }
+                                                );
+                                            }else{
+                                                $.getq('myq',
+                                                    'api/v1/getAllPresetData/' + el.id,
+                                                    rdata => {
+                                                        let o = {
+                                                            id: el.id,
+                                                            presets: rdata
+                                                        };
+                                                        presets.push(o);
+                                                    }
+                                                );
+                                            }
+                                        }
+                                    }
+                                );
+                            });
+                        });
                         $('#reboot').on('click', function() {
                             $.getq('myq',
                                 '/api/v1/reboot',
@@ -417,6 +471,20 @@ respective component folders / files if different from this license.
                 this.onShow = function () {
                     //console.log('Main');
                 };
+
+                function loadScript(url, cb) {
+                    let isLoaded = document.querySelectorAll('.search-script');
+                    if(isLoaded.length > 0) {
+                        cb();
+                        return;
+                    }
+
+                    let myScript = document.createElement("script");
+                    myScript.src = url;
+                    myScript.className = 'search-script';
+                    myScript.onload = cb;
+                    document.body.appendChild(myScript);
+                }
             };
         </script>
     </ons-page>

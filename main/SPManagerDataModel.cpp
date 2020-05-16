@@ -229,3 +229,21 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
     storeJSON(m, MODELJSONFN);
 }
 
+const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
+    // check if file exists
+    DIR *dir;
+    dir=opendir(string("/spiffs/data/sp/mp-" + id + ".jsn").c_str());
+    if (dir == NULL){
+        ESP_LOGE("SPM", "Preset file for processors %s could not be opened!\n", id.c_str());
+        return nullptr;
+    }
+    closedir(dir);
+    // prepare JSON output string
+    json.Clear();
+    Document d;
+    loadJSON(d, "/spiffs/data/sp/mp-" + id + ".jsn");
+    Writer<StringBuffer> writer(json);
+    d.Accept(writer);
+    return json.GetString();
+}
+
