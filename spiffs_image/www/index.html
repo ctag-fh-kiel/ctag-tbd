@@ -89,15 +89,15 @@ respective component folders / files if different from this license.
                                 let t = el.hasOwnProperty('hint') ? 'title="' + el.hint + '" ' : '';
                                 // only show stereo plugins on ch-0
                                 if (el.isStereo){
-                                    let s = '<option ' + t + 'value="' + el.id + '">ST: ' + el.name + '</option>';
+                                    let s = '<option ' + t + 'value="' + el.id + '">' + el.name + ' (ST)</option>';
                                     $('#plugin-select-ch0').append(s);
                                 }
                                 else{
-                                    let s = '<option ' + t + 'value="' + el.id + '">M: ' + el.name + '</option>';
+                                    let s = '<option ' + t + 'value="' + el.id + '">' + el.name + ' (M)</option>';
                                     $('#plugin-select-ch0').append(s);
                                 }
                                 if (!el.isStereo) {
-                                    let s = '<option ' + t + 'value="' + el.id + '">M: ' + el.name + '</option>';
+                                    let s = '<option ' + t + 'value="' + el.id + '">' + el.name + ' (M)</option>';
                                     $('#plugin-select-ch1').append(s);
                                 }
                             }
