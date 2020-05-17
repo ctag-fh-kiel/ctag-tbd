@@ -270,7 +270,7 @@ esp_err_t RestServer::StartRestServer()
     config.core_id = 0;
     config.uri_match_fn = httpd_uri_match_wildcard;
     config.task_priority = tskIDLE_PRIORITY + 3;
-    config.max_uri_handlers = 13;
+    config.max_uri_handlers = 14;
     config.stack_size = 8192;
     /*
     config.max_open_sockets   = 10;
@@ -413,6 +413,15 @@ esp_err_t RestServer::StartRestServer()
     };
     httpd_register_uri_handler(server, &get_configuration_get_uri);
 
+    /* get configuration*/
+    httpd_uri_t get_calibration_get_uri = {
+            .uri = "/api/v1/getCalibration",
+            .method = HTTP_GET,
+            .handler = &RestServer::get_calibration_get_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &get_calibration_get_uri);
+
     /* reboot with and without calibration request */
     httpd_uri_t reboot_handler_get_uri = {
             .uri = "/api/v1/reboot",
@@ -503,5 +512,11 @@ esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
     if(doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
     httpd_resp_send_chunk(req, NULL, 0);
     esp_restart();
+    return ESP_OK;
+}
+
+esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_sendstr(req, CTAG::CAL::Calibration::GetCStrJSONCalibration());
     return ESP_OK;
 }

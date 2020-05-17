@@ -22,6 +22,9 @@ respective component folders / files if different from this license.
 
 #include "CalibrationModel.hpp"
 #include <cmath>
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 using namespace std;
 
@@ -116,4 +119,11 @@ void CTAG::CAL::CalibrationModel::SetCalibrateOnReboot(bool val) {
         m["CalibrationOnReboot"].SetBool(val);
     }
     storeJSON(m, MODELJSONFN);
+}
+
+const char *CTAG::CAL::CalibrationModel::GetCStrJSONCalibration() {
+    json.Clear();
+    Writer<StringBuffer> writer(json);
+    m.Accept(writer);
+    return json.GetString();
 }

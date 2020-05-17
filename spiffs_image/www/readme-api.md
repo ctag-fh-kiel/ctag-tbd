@@ -261,6 +261,20 @@ Set the module configuration
 }
 ```
 
+####URL: `/getCalibration`
+
+Get the module configuration
+
+**Method** : `GET`
+
+**Data example** returns calibration json
+
+```json
+{
+  ...
+}
+```
+
 ####URL: `/reboot`
 
 Reboot module
