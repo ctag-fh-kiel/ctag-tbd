@@ -48,6 +48,7 @@ namespace CTAG{
             void LoadMatrix(const string &id, float* data);
             bool GetCalibrateOnReboot();
             void SetCalibrateOnReboot(bool val);
+            const char *GetCStrJSONCalibration();
         private:
             Document m;
             const string MODELJSONFN = "/spiffs/data/calibration.jsn";

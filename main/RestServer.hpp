@@ -41,6 +41,7 @@ namespace CTAG{
                 static esp_err_t load_preset_get_handler(httpd_req_t *req);
                 static esp_err_t set_configuration_post_handler(httpd_req_t *req);
                 static esp_err_t get_configuration_get_handler(httpd_req_t *req);
+                static esp_err_t get_calibration_get_handler(httpd_req_t *req);
                 static esp_err_t get_preset_json_handler(httpd_req_t *req);
                 static esp_err_t reboot_handler(httpd_req_t *req);
         };
