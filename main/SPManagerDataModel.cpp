@@ -247,3 +247,20 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &i
     return json.GetString();
 }
 
+void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const string &data) {
+    // check if file exists
+    DIR *dir;
+    dir=opendir(string("/spiffs/data/sp/mp-" + id + ".jsn").c_str());
+    if (dir == NULL){
+        ESP_LOGE("SPM", "Preset file for processors %s could not be opened!\n", id.c_str());
+        return;
+    }
+    closedir(dir);
+    Document d;
+    loadJSON(d, string("/spiffs/data/sp/mp-" + id + ".jsn"));
+
+    Document preset;
+    preset.Parse(data);
+    d["patches"].PushBack(preset.Move(), d.GetAllocator());
+    storeJSON(d, string("/spiffs/data/sp/mp-" + id + ".jsn"));
+}

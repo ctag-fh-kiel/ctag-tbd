@@ -1,126 +1,157 @@
 {
-  "id": "TBDings",
-  "isStereo": true,
-  "name": "TBDings",
-  "hint": "Mutable Instruments Rings Port",
-  "params": [
+ "id": "TBDings",
+ "isStereo": true,
+ "name": "TBDings",
+ "hint": "Mutable Instruments Rings Port",
+ "params": [
+  {
+   "id": "reson_model",
+   "name": "Resonator Model",
+   "type": "int",
+   "min": 0,
+   "max": 5
+  },
+  {
+   "id": "frequency",
+   "name": "Frequency",
+   "type": "int",
+   "min": 0,
+   "max": 4032
+  },
+  {
+   "id": "polyphony",
+   "name": "Polyphony",
+   "type": "int",
+   "min": 0,
+   "max": 2
+  },
+  {
+   "id": "structure",
+   "name": "Structure",
+   "type": "int",
+   "min": 0,
+   "max": 4095
+  },
+  {
+   "id": "brightness",
+   "name": "Brightness",
+   "type": "int",
+   "min": 0,
+   "max": 4095
+  },
+  {
+   "id": "damping",
+   "name": "Damping",
+   "type": "int",
+   "min": 0,
+   "max": 4095
+  },
+  {
+   "id": "position",
+   "name": "Position",
+   "type": "int",
+   "min": 0,
+   "max": 4095
+  },
+  {
+   "id": "chords",
+   "name": "Chords",
+   "type": "int",
+   "min": 0,
+   "max": 10
+  },
+  {
+   "id": "easter",
+   "type": "bool",
+   "name": "Easter Egg"
+  },
+  {
+   "id": "ex_int",
+   "type": "bool",
+   "name": "Internal Exciter"
+  },
+  {
+   "id": "strum_int",
+   "type": "bool",
+   "name": "Internal Strum"
+  },
+  {
+   "id": "note_int",
+   "type": "bool",
+   "name": "Internal Note"
+  },
+  {
+   "id": "eg",
+   "type": "group",
+   "name": "EG",
+   "params": [
     {
-      "id": "reson_model",
-      "name": "Resonator Model",
-      "type": "int",
-      "min": 0,
-      "max": 5
+     "id": "eg_trigger",
+     "type": "bool",
+     "name": "Trigger"
     },
     {
-      "id": "frequency",
-      "name": "Frequency",
-      "type": "int",
-      "min": 0,
-      "max": 4032
+     "id": "eg_loop",
+     "type": "bool",
+     "name": "Loop"
     },
     {
-      "id": "polyphony",
-      "name": "Polyphony",
-      "type": "int",
-      "min": 0,
-      "max": 2
+     "id": "eg_attack",
+     "type": "int",
+     "name": "Attack",
+     "min": 0,
+     "max": 4095
     },
     {
-      "id": "structure",
-      "name": "Structure",
-      "type": "int",
-      "min": 0,
-      "max": 4095
-    },
-    {
-      "id": "brightness",
-      "name": "Brightness",
-      "type": "int",
-      "min": 0,
-      "max": 4095
-    },
-    {
-      "id": "damping",
-      "name": "Damping",
-      "type": "int",
-      "min": 0,
-      "max": 4095
-    },
-    {
-      "id": "position",
-      "name": "Position",
-      "type": "int",
-      "min": 0,
-      "max": 4095
-    },
-    {
-      "id": "chords",
-      "name": "Chords",
-      "type": "int",
-      "min": 0,
-      "max": 10
-    },
-    {
-      "id": "easter",
-      "type": "bool",
-      "name": "Easter Egg"
-    },
-    {
-      "id": "ex_int",
-      "type": "bool",
-      "name": "Internal Exciter"
-    },
-    {
-      "id": "strum_int",
-      "type": "bool",
-      "name": "Internal Strum"
-    },
-    {
-      "id": "note_int",
-      "type": "bool",
-      "name": "Internal Note"
-    },
-    {
-      "id": "mod",
-      "type": "group",
-      "name": "Modulation",
-      "params": [
-        {
-          "id": "mod_brightness",
-          "type": "int",
-          "name": "Brightness mod",
-          "min": -4095,
-          "max": 4095
-        },
-        {
-          "id": "mod_frequency",
-          "type": "int",
-          "name": "Frequency mod",
-          "min": -4095,
-          "max": 4095
-        },
-        {
-          "id": "mod_damping",
-          "type": "int",
-          "name": "Damping mod",
-          "min": -4095,
-          "max": 4095
-        },
-        {
-          "id": "mod_structure",
-          "type": "int",
-          "name": "Structure mod",
-          "min": -4095,
-          "max": 4095
-        },
-        {
-          "id": "mod_position",
-          "type": "int",
-          "name": "Position mod",
-          "min": -4095,
-          "max": 4095
-        }
-      ]
+     "id": "eg_decay",
+     "type": "int",
+     "name": "Decay",
+     "min": 0,
+     "max": 4095
     }
-  ]
+   ]
+  },
+  {
+   "id": "mod",
+   "type": "group",
+   "name": "Modulation",
+   "params": [
+    {
+     "id": "mod_brightness",
+     "type": "int",
+     "name": "Brightness mod",
+     "min": -4095,
+     "max": 4095
+    },
+    {
+     "id": "mod_frequency",
+     "type": "int",
+     "name": "Frequency mod",
+     "min": -4095,
+     "max": 4095
+    },
+    {
+     "id": "mod_damping",
+     "type": "int",
+     "name": "Damping mod",
+     "min": -4095,
+     "max": 4095
+    },
+    {
+     "id": "mod_structure",
+     "type": "int",
+     "name": "Structure mod",
+     "min": -4095,
+     "max": 4095
+    },
+    {
+     "id": "mod_position",
+     "type": "int",
+     "name": "Position mod",
+     "min": -4095,
+     "max": 4095
+    }
+   ]
+  }
+ ]
 }

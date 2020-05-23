@@ -38,6 +38,7 @@ respective component folders / files if different from this license.
 #include "cJSON.h"
 #include "SPManager.hpp"
 #include "Calibration.hpp"
+#include "OTAManager.hpp"
 
 
 using namespace CTAG;
@@ -270,7 +271,7 @@ esp_err_t RestServer::StartRestServer()
     config.core_id = 0;
     config.uri_match_fn = httpd_uri_match_wildcard;
     config.task_priority = tskIDLE_PRIORITY + 3;
-    config.max_uri_handlers = 14;
+    config.max_uri_handlers = 20;
     config.stack_size = 8192;
     /*
     config.max_open_sockets   = 10;
@@ -379,7 +380,7 @@ esp_err_t RestServer::StartRestServer()
 
     /* get all presets */
     httpd_uri_t get_preset_json_get_uri = {
-            .uri = "/api/v1/getAllPresetData*",
+            .uri = "/api/v1/getPresetData*",
             .method = HTTP_GET,
             .handler = &RestServer::get_preset_json_handler,
             .user_ctx = rest_context
@@ -439,6 +440,34 @@ esp_err_t RestServer::StartRestServer()
             .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &set_configuration_post_uri);
+
+
+    /* set calibration */
+    httpd_uri_t set_calibration_post_uri = {
+            .uri = "/api/v1/setCalibration*",
+            .method = HTTP_POST,
+            .handler = &RestServer::set_calibration_post_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &set_calibration_post_uri);
+
+
+    httpd_uri_t set_preset_data_post_uri = {
+            .uri = "/api/v1/setPresetData*",
+            .method = HTTP_POST,
+            .handler = &RestServer::set_preset_json_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &set_preset_data_post_uri);
+
+    /* set spiffs upload */
+    httpd_uri_t ota_post_uri = {
+            .uri = "/api/v1/otaAPI*",
+            .method = HTTP_POST,
+            .handler = &RestServer::ota_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &ota_post_uri);
 
     /* URI handler for getting web server files */
     httpd_uri_t common_get_uri = {
@@ -518,5 +547,107 @@ esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
 esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, CTAG::CAL::Calibration::GetCStrJSONCalibration());
+    return ESP_OK;
+}
+
+esp_err_t RestServer::ota_handler(httpd_req_t *req) {
+    static int lastOtaRequest = 0;
+    size_t qlen = httpd_req_get_url_query_len(req);
+    size_t urilen = strlen(req->uri);
+    char otaRequest = req->uri[urilen - qlen - 1];
+    otaRequest -= 0x30;
+    esp_err_t err = ESP_ERR_NOT_FOUND;
+    ESP_LOGI("HTTPD", "OTA request type %d, last request was %d, expecting %d", otaRequest, lastOtaRequest, lastOtaRequest+1);
+    // stage 1, kill audio task and bring into ota update mode
+    if(lastOtaRequest == 0 && otaRequest == 1){
+        CTAG::OTA::OTAManager::InitiateOTA(req);
+        lastOtaRequest++;
+        err = ESP_OK;
+    }
+    // stage 2, upload SPIFFS image
+    if(lastOtaRequest == 1 && otaRequest == 2){
+        err = CTAG::OTA::OTAManager::PostHandlerSPIFFS(req);
+        lastOtaRequest++;
+    }
+    // stage 3, upload Flash image
+    if(lastOtaRequest == 2 && otaRequest == 3){
+        err = CTAG::OTA::OTAManager::PostHandlerApp(req);
+        lastOtaRequest++;
+    }
+    // stage 4, upload Flash image
+    if(lastOtaRequest == 3 && otaRequest == 4){
+        err = CTAG::OTA::OTAManager::PostHandlerFlashCommit(req);
+        if(err == ESP_OK){
+            ESP_LOGI("REST", "OTA successful, rebooting!");
+            httpd_resp_send_chunk(req, NULL, 0);
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            esp_restart();
+        }
+    }
+
+    if(err != ESP_OK){
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error OTA error!");
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        esp_restart();
+    }
+
+    httpd_resp_send_chunk(req, NULL, 0);
+
+    return ESP_OK;
+}
+
+esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
+    ESP_LOGI("REST", "Set calibration post handler: content length %d", req->content_len);
+    char *content = (char*)heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+    int ret = httpd_req_recv(req, content, req->content_len);
+    if (ret <= 0) {  /* 0 return value indicates connection closed */
+        /* Check if timeout occurred */
+        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+            /* In case of timeout one can choose to retry calling
+             * httpd_req_recv(), but to keep it simple, here we
+             * respond with an HTTP 408 (Request Timeout) error */
+            httpd_resp_send_408(req);
+        }
+        /* In case of error, returning ESP_FAIL will
+         * ensure that the underlying socket is closed */
+        return ESP_FAIL;
+    }
+    content[req->content_len] = 0;
+    CTAG::CAL::Calibration::SetJSONCalibration(string(content));
+    free(content);
+    httpd_resp_send_chunk(req, NULL, 0);
+    return ESP_OK;
+}
+
+esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
+    char query[128];
+    char pluginID[64];
+    httpd_req_get_url_query_str(req, query, 128);
+    httpd_resp_set_type(req, "application/json");
+    char *pLastSlash = strrchr(req->uri, '/');
+    if(pLastSlash){
+        strcpy(pluginID, pLastSlash + 1);
+        ESP_LOGE(REST_TAG, "Storing data for %s as JSON", pluginID);
+        char *content = (char*)heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+        int ret = httpd_req_recv(req, content, req->content_len);
+        if (ret <= 0) {  /* 0 return value indicates connection closed */
+            /* Check if timeout occurred */
+            if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+                /* In case of timeout one can choose to retry calling
+                 * httpd_req_recv(), but to keep it simple, here we
+                 * respond with an HTTP 408 (Request Timeout) error */
+                httpd_resp_send_408(req);
+            }
+            /* In case of error, returning ESP_FAIL will
+             * ensure that the underlying socket is closed */
+            return ESP_FAIL;
+        }
+        content[req->content_len] = 0;
+        CTAG::AUDIO::SoundProcessorManager::SetJSONSoundProcessorPreset(string(pluginID), string(content));
+        free(content);
+        httpd_resp_send_chunk(req, NULL, 0);
+    }else{
+        httpd_resp_send_404(req);
+    }
     return ESP_OK;
 }
