@@ -20,8 +20,18 @@
           "cv": -1
         },
         {
+          "id": "out0_level",
+          "current": 2047,
+          "cv": -1
+        },
+        {
           "id": "out1",
           "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "out1_level",
+          "current": 2047,
           "cv": -1
         },
         {
@@ -43,7 +53,33 @@
         },
         {
           "id": "shift",
-          "current": 2047
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "eg_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_loop",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_attack",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "eg_decay",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "mod_level",
+          "current": 0,
+          "cv": -1
         },
         {
           "id": "mod_frequency",

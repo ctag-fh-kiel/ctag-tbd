@@ -94,9 +94,8 @@ void Network::wifi_init_sta(void) {
     } else if (bits & WIFI_FAIL_BIT) {
         ESP_LOGI(TAG, "Could not connect, starting as AP");
         Network::SetIsAccessPoint(true);
-        Network::SetSSID("ctag-tbd");
+        Network::SetSSID(Network::_mdns);
         Network::SetPWD("");
-        Network::SetMDNSName("ctag-tbd");
         Network::wifi_init_softap();
     } else {
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
@@ -125,6 +124,8 @@ void Network::wifi_init_softap(void) {
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    // issues with wifi:bcn_timout,ap_probe_send_start
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
 
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler_ap, NULL));
 
