@@ -127,3 +127,14 @@ const char *CTAG::CAL::CalibrationModel::GetCStrJSONCalibration() {
     m.Accept(writer);
     return json.GetString();
 }
+
+void CTAG::CAL::CalibrationModel::SetJSONCalibration(const string &calData) {
+    Document d;
+    d.Parse(calData);
+    if(!d.IsObject()){
+        ESP_LOGE("CALMODEL", "Could not parse json string!");
+        return;
+    }
+    storeJSON(d, MODELJSONFN);
+    loadJSON(m, MODELJSONFN);
+}

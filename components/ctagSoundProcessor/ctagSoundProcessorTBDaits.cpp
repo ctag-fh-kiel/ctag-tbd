@@ -58,7 +58,7 @@ void ctagSoundProcessorTBDaits::Process(const ProcessData &data) {
     if (cv_lpg_color != -1) {
         patch.lpg_colour = HELPERS::fastfabs(data.cv[cv_lpg_color]);
     } else {
-        patch.lpg_colour = lpg_decay / 4095.f;
+        patch.lpg_colour = lpg_color / 4095.f;
     }
 
     patch.timbre = timbre / 4095.f;

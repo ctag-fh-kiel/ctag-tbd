@@ -172,7 +172,7 @@ Get presets, returns array with preset number and names of active channel plugin
 }
 ```
 
-####URL: `/getAllPresetData/:PluginID`
+####URL: `/getPresetData/:PluginID`
 
 Get all preset data of the queried plugin ID
 
@@ -182,6 +182,28 @@ Get all preset data of the queried plugin ID
 
 ```
 Returns patch data as JSON
+```
+
+####URL: `/setPresetData/:PluginID`
+
+Save preset data for a given plugin, the next available storage slot will be used
+
+**Method** : `POST`
+
+**Data example**
+
+```json
+  {
+   "name": "Default",
+   "params": [
+    {
+     "id": "decay",
+     "current": 3292,
+     "cv": -1
+    },
+    ...
+   ]
+  }
 ```
 
 ####URL: `/loadPreset/:ch`
@@ -263,11 +285,25 @@ Set the module configuration
 
 ####URL: `/getCalibration`
 
-Get the module configuration
+Get the module's calibration
 
 **Method** : `GET`
 
 **Data example** returns calibration json
+
+```json
+{
+  ...
+}
+```
+
+####URL: `/setCalibration`
+
+Set the module's calibration
+
+**Method** : `POST`
+
+**Data example** 
 
 ```json
 {
@@ -291,3 +327,36 @@ Reboot module
 }
 ```
 
+####URL: `/otaAPI/1`
+
+Initialize OTA
+
+**Method** : `POST`
+
+**Data example**
+
+####URL: `/otaAPI/2`
+
+Upload SPIFFS image
+
+**Method** : `POST`
+
+**Data example**
+spiffs blob
+
+####URL: `/otaAPI/3`
+
+Upload firmware image
+
+**Method** : `POST`
+
+**Data example**
+fw blob
+
+####URL: `/otaAPI/4`
+
+Finalize OTA update
+
+**Method** : `POST`
+
+**Data example**

@@ -71,6 +71,11 @@ namespace CTAG {
                 return model->GetCStrJSONSoundProcessorPresets(id);
             }
 
+            static void SetJSONSoundProcessorPreset(const string &id, const string &data){
+                ledBlink = 1;
+                model->SetJSONSoundProcessorPreset(id, data);
+            }
+
             static void SetConfigurationFromJSON(const string &data);
 
             static string GetStringID(const int chan);
@@ -82,6 +87,8 @@ namespace CTAG {
             static void ChannelSavePreset(const int chan, const string &name, const int number);
 
             static void ChannelLoadPreset(const int chan, const int number);
+
+            static void KillAudioTask();
 
         private:
             static void audio_task(void *pvParams);
@@ -99,7 +106,7 @@ namespace CTAG {
             static atomic<uint32_t> noiseGateCfg;
             static atomic<uint32_t> toStereoCH0;
             static atomic<uint32_t> toStereoCH1;
-
+            static atomic<uint32_t> runAudioTask;
         };
     }
 }

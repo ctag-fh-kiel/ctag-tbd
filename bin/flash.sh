@@ -4,11 +4,12 @@ BOOTLOADER="bootloader.bin"
 APP="ctag-tbd.bin"
 PARTITIONS="partition-table.bin"
 STORAGE="storage.bin"
+OTA="ota_data_initial.bin"
 
 if [ $# -le 2 ]
   then
-    echo "Usage: $0 bootloader.bin app.bin partitions.bin storage.bin"
-    echo "Using default parameters $BOOTLOADER $APP $PARTITIONS $STORAGE"
+    echo "Usage: $0 bootloader.bin app.bin partitions.bin storage.bin ota_data_initial.bin"
+    echo "Using default parameters $BOOTLOADER $APP $PARTITIONS $STORAGE $OTA"
   else
     BOOTLOADER=$1
     APP=$2
@@ -26,7 +27,7 @@ if [[ $answer = y* ]]
       then 
         cp "../build/bootloader/$BOOTLOADER" .
     fi
-    for file in $APP partition_table/$PARTITIONS $STORAGE
+    for file in $APP partition_table/$PARTITIONS $STORAGE $OTA
       do
         if [ -f "../build/$file" ]
           then
@@ -37,5 +38,4 @@ if [[ $answer = y* ]]
     echo -e "\nTrying to use existing binaries in local folder"
 fi
 
-python $IDF_PATH/components/esptool_py/esptool/esptool.py --chip esp32 --port /dev/cu.SLAB_USBtoUART --baud 921600 --before default_reset --after hard_reset --chip esp32 write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 $BOOTLOADER 0x8000 $PARTITIONS 0x10000 $APP 0x210000 $STORAGE
-
+python $IDF_PATH/components/esptool_py/esptool/esptool.py -p /dev/cu.SLAB_USBtoUART -b 1500000 --before default_reset --after hard_reset --chip esp32 write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x8000 $PARTITIONS 0xd000 $OTA 0x1000 $BOOTLOADER 0x10000 $APP 0x610000 $STORAGE
