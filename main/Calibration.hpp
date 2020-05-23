@@ -42,6 +42,15 @@ namespace CTAG{
             static const char *GetCStrJSONCalibration() {
                 return model->GetCStrJSONCalibration();
             }
+            static void SetJSONCalibration(const string &calData){
+                model->SetJSONCalibration(calData);
+                /* this is NOT thread safe !!! */
+                model->LoadMatrix("aCalCalibration_CV_05V", aCoeffs05V);
+                model->LoadMatrix("bCalCalibration_CV_05V", bCoeffs05V);
+                model->LoadMatrix("aCalCalibration_CV_10V", aCoeffs10V);
+                model->LoadMatrix("bCalCalibration_CV_10V", bCoeffs10V);
+                /* NOT THREAD SAFE END */
+            }
         private:
             static void doCalibration();
             static void ledTask(void * params);

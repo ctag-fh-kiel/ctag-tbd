@@ -5,6 +5,7 @@
 #include "tides2/poly_slope_generator.h"
 #include "tides2/ramp_extractor.h"
 #include "tides2/io_buffer.h"
+#include "helpers/ctagADEnv.hpp"
 
 namespace CTAG {
     namespace SP {
@@ -29,18 +30,30 @@ void setIsStereo(){isStereo = true;}
 atomic<int32_t> trigger, trig_trigger;
 atomic<int32_t> clock, trig_clock;
 atomic<int32_t> out0, cv_out0;
+atomic<int32_t> out0_level, cv_out0_level;
 atomic<int32_t> out1, cv_out1;
+atomic<int32_t> out1_level, cv_out1_level;
 atomic<int32_t> frequency, cv_frequency;
 atomic<int32_t> shape, cv_shape;
 atomic<int32_t> slope, cv_slope;
 atomic<int32_t> smoothness, cv_smoothness;
 atomic<int32_t> shift, cv_shift;
+atomic<int32_t> eg_trigger, trig_eg_trigger;
+atomic<int32_t> eg_loop, trig_eg_loop;
+atomic<int32_t> eg_attack, cv_eg_attack;
+atomic<int32_t> eg_decay, cv_eg_decay;
+atomic<int32_t> mod_level, cv_mod_level;
 atomic<int32_t> mod_frequency, cv_mod_frequency;
 atomic<int32_t> mod_shape, cv_mod_shape;
 atomic<int32_t> mod_slope, cv_mod_slope;
 atomic<int32_t> mod_smoothness, cv_mod_smoothness;
 atomic<int32_t> mod_shift, cv_mod_shift;
 // sectionHpp
+
+
+
+
+
 
 
             // private attributes could go here
@@ -62,6 +75,10 @@ atomic<int32_t> mod_shift, cv_mod_shift;
             bool must_reset_ramp_extractor = true;
             tides2::OutputMode previous_output_mode = tides2::OUTPUT_MODE_GATES;
             uint8_t frame = 0;
+
+            CTAG::SP::HELPERS::ctagADEnv loudAD, paramAD;
+            bool eg_pre_trigger = false;
+
         };
     }
 }

@@ -202,7 +202,9 @@ namespace CTAG::SP::HELPERS {
     }
 
     float fastfabs(float p) {
-        return p < 0.f ? -p : p;
+        // slower than fabs!
+        //return p < 0.f ? -p : p;
+        return fabs(p);
     }
 
     float fastexp(const float p) {

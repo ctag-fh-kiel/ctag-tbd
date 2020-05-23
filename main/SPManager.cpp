@@ -85,7 +85,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         lramp[i] *= lramp[i];
     }
 
-    for (;;) {
+    while(runAudioTask) {
         // update data from ADCs for real-time control 
         ADC::Update();
         CAL::Calibration::MapCVData(ADC::data, cv);
@@ -175,8 +175,10 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         // sound processors
         if (xSemaphoreTake(processMutex, 0) == pdTRUE) {
             // apply sound processors
-            isStereoCH0 = sp[0]->GetIsStereo();
-            if (sp[0] != nullptr) sp[0]->Process(pd);
+            if (sp[0] != nullptr) {
+                isStereoCH0 = sp[0]->GetIsStereo();
+                sp[0]->Process(pd);
+            }
             if (!isStereoCH0) if (sp[1] != nullptr) sp[1]->Process(pd); // 0 is not a stereo processor
             xSemaphoreGive(processMutex);
         } else {
@@ -250,7 +252,8 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         // write raw float data back to CODEC
         DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
     }
-
+    runAudioTask = 2;
+    vTaskDelete(NULL);
 }
 
 void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const string &id) {
@@ -279,6 +282,7 @@ atomic<uint32_t> SoundProcessorManager::ledStatus;
 atomic<uint32_t> SoundProcessorManager::noiseGateCfg;
 atomic<uint32_t> SoundProcessorManager::toStereoCH0;
 atomic<uint32_t> SoundProcessorManager::toStereoCH1;
+atomic<uint32_t> SoundProcessorManager::runAudioTask;
 
 void SoundProcessorManager::StartSoundProcessor() {
     ledBlink = 5;
@@ -327,6 +331,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     xTaskCreatePinnedToCore(&SoundProcessorManager::led_task, "led_task", 4096, nullptr, tskIDLE_PRIORITY + 2,
                             &ledTaskH, 0);
     // create audio thread
+    runAudioTask = 1;
     xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
 }
 
@@ -440,4 +445,16 @@ void SoundProcessorManager::led_task(void *pvParams) {
         if (ledBlink > 1) ledBlink--;
         vTaskDelay(50 / portTICK_PERIOD_MS); // 50ms refresh rate for led
     }
+}
+
+void SoundProcessorManager::KillAudioTask() {
+    // stop audio Task, delete plugins
+    runAudioTask = 0;
+    while(runAudioTask != 2); // wait for audio task to be dead
+    sp[0] = nullptr;
+    sp[1] = nullptr;
+    vTaskDelete(ledTaskH);
+    ledTaskH = NULL;
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
 }

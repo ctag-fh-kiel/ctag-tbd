@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <math.h>
+#include <cmath>
 
 namespace CTAG::SP::HELPERS {
     float fastpow2(const float p);

@@ -49,6 +49,7 @@ namespace CTAG{
             bool GetCalibrateOnReboot();
             void SetCalibrateOnReboot(bool val);
             const char *GetCStrJSONCalibration();
+            void SetJSONCalibration(const string &calData);
         private:
             Document m;
             const string MODELJSONFN = "/spiffs/data/calibration.jsn";

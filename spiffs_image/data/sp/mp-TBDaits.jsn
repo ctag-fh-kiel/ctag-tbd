@@ -31,13 +31,11 @@
         },
         {
           "id": "timbre",
-          "current": 2047,
-          "cv": -1
+          "current": 2047
         },
         {
           "id": "morph",
-          "current": 2047,
-          "cv": -1
+          "current": 2047
         },
         {
           "id": "lpg_color",
@@ -51,17 +49,17 @@
         },
         {
           "id": "mod_freq",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "mod_timbre",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "mod_morph",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         }
       ]
