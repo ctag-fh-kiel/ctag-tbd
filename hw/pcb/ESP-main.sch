@@ -4,9 +4,9 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 6
-Title "CTAG TBD Eurorack Audio Module"
-Date "2020-03-18"
-Rev "B"
+Title "CTAG-TBD"
+Date "2020-06-06"
+Rev "C"
 Comp "(c) Robert Manzke 2020"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
