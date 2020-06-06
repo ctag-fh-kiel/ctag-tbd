@@ -4,9 +4,9 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 6
-Title "CTAG TBD Eurorack Audio Module"
-Date "2020-03-18"
-Rev "B"
+Title "CTAG-TBD"
+Date "2020-06-06"
+Rev "C"
 Comp "(c) Robert Manzke 2020"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
@@ -56,7 +56,7 @@ $EndSheet
 Wire Wire Line
 	3350 2850 3800 2850
 Wire Wire Line
-	3800 2950 3350 2950
+	3800 2950 3650 2950
 Wire Wire Line
 	3350 3050 3800 3050
 Wire Wire Line
@@ -68,7 +68,7 @@ F0 "PWR" 50
 F1 "PWR.sch" 50
 $EndSheet
 $Sheet
-S 6050 2700 550  850 
+S 6050 2600 550  950 
 U 5B69D59C
 F0 "CODEC" 50
 F1 "CODEC.sch" 50
@@ -79,6 +79,7 @@ F5 "BCLK" I L 6050 3150 50
 F6 "DACDAT" I L 6050 3350 50 
 F7 "LRCLK" I L 6050 3250 50 
 F8 "ADCDAT" O L 6050 3450 50 
+F9 "MCLK" I L 6050 2700 50 
 $EndSheet
 $Sheet
 S 6050 3850 550  900 
@@ -265,4 +266,15 @@ F 3 "~" H 3100 4500 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	6050 4650 5800 4650
+Wire Wire Line
+	6050 2700 5950 2700
+Wire Wire Line
+	5950 2700 5950 2350
+Wire Wire Line
+	5950 2350 3650 2350
+Wire Wire Line
+	3650 2350 3650 2950
+Connection ~ 3650 2950
+Wire Wire Line
+	3650 2950 3350 2950
 $EndSCHEMATC
