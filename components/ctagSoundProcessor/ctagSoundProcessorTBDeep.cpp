@@ -156,9 +156,22 @@ void IRAM_ATTR ctagSoundProcessorTBDeep::Process(const ProcessData &data) {
 
     // Get parameters
     float fSlope = slope / 4095.f;
+    if(cv_slope != -1){
+        fSlope = fabsf(data.cv[cv_slope]);
+    }
     float fShape = shape / 4095.f;
+    if(cv_shape != -1){
+        fShape = fabsf(data.cv[cv_shape]);
+    }
     float fSmoothness = smoothness / 4095.f;
+    if(cv_smoothness != -1){
+        fSmoothness = fabsf(data.cv[cv_smoothness]);
+    }
     float fShift = shift / 4095.f;
+    if(cv_shift != -1){
+        fShift = fabsf(data.cv[cv_shift]);
+    }
+
 
     if(cv_mod_slope != -1){
         fSlope += mod_slope / 4095.f * data.cv[cv_mod_slope];

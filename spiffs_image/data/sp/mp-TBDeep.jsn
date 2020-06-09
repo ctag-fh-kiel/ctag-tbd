@@ -41,15 +41,18 @@
         },
         {
           "id": "shape",
-          "current": 2047
+          "current": 2047,
+          "cv": -1
         },
         {
           "id": "slope",
-          "current": 2047
+          "current": 2047,
+          "cv": -1
         },
         {
           "id": "smoothness",
-          "current": 2047
+          "current": 2047,
+          "cv": -1
         },
         {
           "id": "shift",
