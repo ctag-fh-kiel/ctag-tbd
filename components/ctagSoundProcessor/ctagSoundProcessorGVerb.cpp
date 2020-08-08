@@ -27,6 +27,7 @@ respective component folders / files if different from this license.
 #include "ctagSoundProcessorGVerb.hpp"
 #include <iostream>
 #include <cmath>
+#include "esp_log.h"
 
 using namespace CTAG::SP;
 

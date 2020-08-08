@@ -25,7 +25,7 @@ respective component folders / files if different from this license.
 #include <iostream>
 #include <cmath>
 #include "helpers/ctagFastMath.hpp"
-#include "freeverb/denormals.hh"
+#include "esp_log.h"
 
 using namespace CTAG::SP;
 

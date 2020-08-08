@@ -23,6 +23,8 @@ respective component folders / files if different from this license.
 #include <iostream>
 #include <cmath>
 #include "esp_system.h"
+#include "esp_log.h"
+#include "esp_heap_caps.h"
 
 
 using namespace CTAG::SP;

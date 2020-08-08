@@ -3,6 +3,8 @@
 #include "helpers/ctagFastMath.hpp"
 #include "esp_system.h"
 #include <cmath>
+#include "esp_log.h"
+#include "esp_heap_caps.h"
 
 // part of the port is adapted from VCV Rack Audible Instruments, (C) Andrew Belt
 using namespace CTAG::SP;

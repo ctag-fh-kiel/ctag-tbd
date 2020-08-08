@@ -82,6 +82,7 @@ respective component folders / files if different from this license.
                 $.getq('myq',
                     'api/v1/getPlugins',
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         // sort array by name
                         data.sort((a, b) => a.name.localeCompare(b.name, undefined, {numberic: true}));
                         // populate plugin list
@@ -110,6 +111,7 @@ respective component folders / files if different from this license.
                 $.getq('myq',
                     '/api/v1/getActivePlugin/0',
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         $('#plugin-select-ch0').val(data.id);
                         if (window.plugins.find(el => el.id === data.id).isStereo) {
                             $('#go-ch1,#load-ch1,#save-ch1').prop("disabled", true);
@@ -123,6 +125,7 @@ respective component folders / files if different from this license.
                 $.getq('myq',
                     '/api/v1/getActivePlugin/1',
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         $('#plugin-select-ch1').val(data.id);
                     }
                 );
@@ -741,6 +744,7 @@ respective component folders / files if different from this license.
                 let ch = this.data.ch;
                 $.getq('myq', 'api/v1/getPresets/' + this.data.ch,
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         let presets = data.presets;
                         $('#preset-input').append(
                             '<div style="text-align: center; margin-top: 30px;">' +
@@ -791,6 +795,7 @@ respective component folders / files if different from this license.
                 let ch = this.data.ch;
                 $.getq('myq', 'api/v1/getPresets/' + this.data.ch,
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         data.presets.forEach(el => {
                                 if (data.activePresetNumber == el.number)
                                     $('#patch-list').append(
@@ -993,6 +998,7 @@ respective component folders / files if different from this license.
                 $.getq('myq',
                     '/api/v1/getPluginParams/' + this.data.ch,
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         data.params.forEach(el => renderParams(this.data.ch, $('#params-list'), el));
                         //console.log($('#params-list'));
                         //console.log(data);

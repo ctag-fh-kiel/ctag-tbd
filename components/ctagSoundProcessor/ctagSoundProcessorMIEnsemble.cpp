@@ -1,6 +1,8 @@
 #include "ctagSoundProcessorMIEnsemble.hpp"
 #include <iostream>
 #include "helpers/ctagFastMath.hpp"
+#include "esp_log.h"
+#include "esp_heap_caps.h"
 
 using namespace CTAG::SP;
 
