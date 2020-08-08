@@ -26,6 +26,11 @@ file(GLOB SRCS_FILES
         eurorack/stmlib/dsp/dsp.h
         )
 
-idf_component_register(SRCS ${SRCS_FILES}
-        INCLUDE_DIRS eurorack
-        PRIV_REQUIRES )
+if(TBD_SIM)
+    add_library(mutable STATIC ${SRCS_FILES})
+    target_include_directories(mutable PRIVATE "eurorack")
+else()
+    idf_component_register(SRCS ${SRCS_FILES}
+            INCLUDE_DIRS eurorack
+            PRIV_REQUIRES )
+endif()

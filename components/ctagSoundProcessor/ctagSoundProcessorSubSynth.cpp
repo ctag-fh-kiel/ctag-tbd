@@ -29,7 +29,9 @@ respective component folders / files if different from this license.
 #include "dsps_mul.h"
 #include "dsps_mulc.h"
 #include "dsps_addc.h"
+#ifndef TBD_SIM
 #include "xtensa/core-macros.h"
+#endif
 #include "esp_system.h"
 
 using namespace CTAG::SP;
@@ -44,8 +46,10 @@ ctagSoundProcessorSubSynth::ctagSoundProcessorSubSynth() {
     memset(filterZs, 0, 10 * 3 * 2 * sizeof(float));
     memset(fCoeffs, 0, 6 * sizeof(float));
     wNoise.SetBipolar(true);
+#ifndef TBD_SIM
     wNoise.ReSeed(XTHAL_GET_CCOUNT()); // seed random from CPU time ticks
     pNoise.ReSeed(XTHAL_GET_CCOUNT());
+#endif
     adsrEnvSum.SetSampleRate(44100.f);
     adsrEnvSum.SetModeExp();
     eg[0].SetModeLin();
@@ -86,8 +90,8 @@ void IRAM_ATTR ctagSoundProcessorSubSynth::Process(const ProcessData &data) {
     computeFilterCoefs(fCoeffs, fRootFrequency, fRootBWidth, fRootLevel * computeRolloff(fRootFrequency));
     int32_t cMax = cascade;
     for (uint32_t c = 0; c < cMax; c++) {
-        if (c == 0) dsps_biquad_f32_ae32(tmpIn, acc, bufSz, fCoeffs, filterZs[c]);
-        else dsps_biquad_f32_ae32(acc, acc, bufSz, fCoeffs, filterZs[c]);
+        if (c == 0) dsps_biquad_f32(tmpIn, acc, bufSz, fCoeffs, filterZs[c]);
+        else dsps_biquad_f32(acc, acc, bufSz, fCoeffs, filterZs[c]);
     }
 
     // partials
@@ -100,15 +104,15 @@ void IRAM_ATTR ctagSoundProcessorSubSynth::Process(const ProcessData &data) {
         if (bw < 0.f) bw = 0.f;
         computeFilterCoefs(fCoeffs, freq, bw, fGain[p] * computeRolloff(freq));
         for (uint32_t c = 0; c < cMax; c++) {
-            if (c == 0) dsps_biquad_f32_ae32(tmpIn, tmpOut, bufSz, fCoeffs, filterZs[(p + 1) * 3]);
-            else dsps_biquad_f32_ae32(tmpOut, tmpOut, bufSz, fCoeffs, filterZs[(p + 1) * 3 + c]);
+            if (c == 0) dsps_biquad_f32(tmpIn, tmpOut, bufSz, fCoeffs, filterZs[(p + 1) * 3]);
+            else dsps_biquad_f32(tmpOut, tmpOut, bufSz, fCoeffs, filterZs[(p + 1) * 3 + c]);
         }
         // apply loudness envelope
-        dsps_mulc_f32_ae32(egVals[p_modgainsrc[p]], egApply, bufSz, fModGain[p], 1, 1);
-        dsps_addc_f32_ae32(egApply, egApply, bufSz, (1.f - fModGain[p]), 1, 1);
-        dsps_mul_f32_ae32(tmpOut, egApply, tmpOut, bufSz, 1, 1, 1);
+        dsps_mulc_f32(egVals[p_modgainsrc[p]], egApply, bufSz, fModGain[p], 1, 1);
+        dsps_addc_f32(egApply, egApply, bufSz, (1.f - fModGain[p]), 1, 1);
+        dsps_mul_f32(tmpOut, egApply, tmpOut, bufSz, 1, 1, 1);
         // accumulate buffers
-        dsps_add_f32_ae32(tmpOut, acc, acc, bufSz, 1, 1, 1);
+        dsps_add_f32(tmpOut, acc, acc, bufSz, 1, 1, 1);
     }
 
     // re-arrange data array and apply sum eg

@@ -407,6 +407,7 @@ void FV3_(strev)::setFsFactors() {
     totalMem2 += f_(delayCo[2], totalFactor);
     totalMem2 += f_(delayCo[3], totalFactor);
 
+#ifndef TBD_SIM
     if(totalMem2 >= totalMem1){
         ESP_LOGE("STREV", "Trying mem alloc!");
         totalBuf2 = (float*) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -464,7 +465,10 @@ void FV3_(strev)::setFsFactors() {
                      (int)(totalMem2 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
         }
     }
-
+#else
+    totalBuf1 = (float*) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    totalBuf2 = (float*) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+#endif
 
 
     float *fPtr = totalBuf1;

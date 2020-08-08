@@ -33,13 +33,13 @@ namespace CTAG {
     namespace SP {
         class ctagSoundProcessorSubSynth : public ctagSoundProcessor {
         public:
-            void Process(const ProcessData &);
+            void Process(const ProcessData &) override;
 
             ~ctagSoundProcessorSubSynth();
 
             ctagSoundProcessorSubSynth();
 
-            const char *GetCStrID() const;
+            const char *GetCStrID() const override;
 
         private:
             void setParamValueInternal(const string &id, const string &key, const int val) override;

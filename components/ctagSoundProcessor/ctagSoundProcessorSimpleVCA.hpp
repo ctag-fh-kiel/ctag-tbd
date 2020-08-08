@@ -5,13 +5,13 @@ namespace CTAG {
     namespace SP {
         class ctagSoundProcessorSimpleVCA : public ctagSoundProcessor {
         public:
-            virtual void Process(const ProcessData &);
+            virtual void Process(const ProcessData &) override;
 
             virtual ~ctagSoundProcessorSimpleVCA();
 
             ctagSoundProcessorSimpleVCA();
 
-            virtual const char *GetCStrID() const;
+            virtual const char *GetCStrID() const override;
 
         private:
             void setParamValueInternal(const string &id, const string &key, const int val) override;

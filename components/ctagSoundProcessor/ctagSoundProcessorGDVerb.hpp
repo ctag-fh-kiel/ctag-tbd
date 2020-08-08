@@ -31,10 +31,10 @@ respective component folders / files if different from this license.
 namespace CTAG::SP{
     class ctagSoundProcessorGDVerb : public ctagSoundProcessor{
     public:
-        void Process(const ProcessData &);
+        void Process(const ProcessData &) override;
         ~ctagSoundProcessorGDVerb();
         ctagSoundProcessorGDVerb();
-        const char * GetCStrID() const;
+        const char * GetCStrID() const override;
     private:
         void setParamValueInternal(const string &id, const string &key, const int val) override;
         void loadPresetInternal() override;

@@ -7,6 +7,8 @@
 #include "revmodel.hpp"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_log.h"
+#include "esp_heap_caps.h"
 /*
 // Buffers for the combs
 float	DRAM_ATTR bufcombL1[combtuningL1];
@@ -51,17 +53,21 @@ revmodel::revmodel()
             allpasstuningL2 + allpasstuningR2 +
             allpasstuningL3 + allpasstuningR3 +
             allpasstuningL4 + allpasstuningR4;
+
+#ifndef TBD_SIM
     // use internal ram, which will be always accessible, no cache misses!
     // allocate one big chunk, otherwise ESP crashes :(
     ESP_LOGE("FVERB", "Mem alloc try requested size %d, freesize %d, largest block %d!",
              (int)(sz * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-
+#endif
     allBuf = (float*)heap_caps_malloc(sz * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     if(allBuf == NULL){
         ESP_LOGE("FVERB", "Cannot alloc mem!");
     }else{
+#ifndef TBD_SIM
         ESP_LOGE("FVERB", "Mem alloc success requested size %d, freesize %d, largest block %d!",
                  (int)(sz * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+#endif
     }
     float *fPtr = allBuf;
     // Tie the components to their buffers
