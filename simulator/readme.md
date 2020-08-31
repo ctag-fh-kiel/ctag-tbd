@@ -67,6 +67,14 @@ You can run your plugin prior to flashing it to the hardware on your local host.
 and flash your project for the real hardware. 
 The simulator greatly speeds up plugin development.
 
+## Options
+```sh
+  -h [ --help ]            this help message
+  -l [ --list ]            list sound cards
+  -d [ --device ] arg (=0) sound card device id, default 0
+  -o [ --output ]          use output only (if no duplex device available)
+```
+
 ## Limitations
 
 * General module configuration not supported

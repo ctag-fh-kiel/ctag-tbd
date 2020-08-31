@@ -119,7 +119,7 @@ add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
 target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
 ## Application
-find_package(Boost 1.53.0 COMPONENTS system thread filesystem)
+find_package(Boost 1.53.0 COMPONENTS system thread filesystem program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "could not find Boost!")
 endif()

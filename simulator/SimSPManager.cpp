@@ -27,16 +27,19 @@ using namespace CTAG::AUDIO;
 std::mutex audioMutex;
 
 // Audio callback
-int SimSPManager::inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
-           double streamTime, RtAudioStreamStatus status, void *userData )
-{
+int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
+                        double streamTime, RtAudioStreamStatus status, void *userData) {
     bool isStereoCH0;
     SP::ProcessData pd;
-    float fbuf[32*2];
+    float fbuf[32 * 2];
     float cv[4] = {0.f, 0.f, 0.f, 0.f};
     uint8_t trig[2] = {0, 0};
 
-    memcpy(fbuf, inputBuffer, 32*2*4);
+    if(inputBuffer != NULL)
+        memcpy(fbuf, inputBuffer, 32 * 2 * 4);
+    else
+        memset(fbuf, 0, 32*2*4);
+
     pd.buf = fbuf;
     pd.cv = cv;
     pd.trig = trig;
@@ -44,82 +47,87 @@ int SimSPManager::inout( void *outputBuffer, void *inputBuffer, unsigned int nBu
     //if ( status ) std::cout << "Stream over/underflow detected." << std::endl;
 
     // sound processors
-    if(audioMutex.try_lock()){
+    if (audioMutex.try_lock()) {
         if (SimSPManager::sp[0] != nullptr) {
             isStereoCH0 = SimSPManager::sp[0]->GetIsStereo();
             SimSPManager::sp[0]->Process(pd);
         }
-        if (!isStereoCH0) if (SimSPManager::sp[1] != nullptr) SimSPManager::sp[1]->Process(pd); // 0 is not a stereo processor
+        if (!isStereoCH0)
+            if (SimSPManager::sp[1] != nullptr)
+                SimSPManager::sp[1]->Process(pd); // 0 is not a stereo processor
         audioMutex.unlock();
     }
 
-    memcpy(outputBuffer, fbuf, 32*2*4);
+    memcpy(outputBuffer, fbuf, 32 * 2 * 4);
     return 0;
 }
 
-void SimSPManager::StartSoundProcessor() {
-    // Determine the number of devices available
-    unsigned int devices = audio.getDeviceCount();
-
+void SimSPManager::StartSoundProcessor(int iSoundCardID, bool bOutOnly) {
     // Scan through devices for various capabilities
     RtAudio::DeviceInfo info;
-    int audioIODevice = -1;
-    for ( unsigned int i=0; i<devices; i++ ) {
-        info = audio.getDeviceInfo( i );
-        if ( info.probed == true ) {
-            // Print, for example, the maximum number of output channels for each device
-            std::cout << "device = " << i << " " << info.name;
-            std::cout << ": maximum duplex channels = " << info.duplexChannels << "\n";
-            std::cout << ": formats = " << (info.nativeFormats & RTAUDIO_FLOAT32);
-            for(const auto &v: info.sampleRates){
-                std::cout << ": sample rates = " << v << endl;
-                if(info.duplexChannels >= 2 && v == 44100 && (info.nativeFormats & RTAUDIO_FLOAT32) != 0){
-                    audioIODevice = i;
-                    break;
-                }
+    info = audio.getDeviceInfo(iSoundCardID);
+    if (info.probed == true) {
+        bool bFormatSupported = false;
+        // Print, for example, the maximum number of output channels for each device
+        std::cout << "device = " << iSoundCardID << " " << info.name << std::endl;
+        if (info.duplexChannels < 2) {
+            std::cout << "No duplex device found, enabling output only!" << std::endl;
+            bOutOnly = true;
+        }
+        for (const auto &v: info.sampleRates) {
+            if (v == 44100 && (info.nativeFormats & RTAUDIO_FLOAT32) != 0) {
+                bFormatSupported = true;
+                break;
             }
         }
+        if (!bFormatSupported) {
+            std::cout << "Sample rate of 44100Hz@float32 not supported!" << std::endl;
+            exit(0);
+        }
+    } else {
+        std::cout << "Could not probe sound card!" << std::endl;
+        exit(0);
     }
 
     RtAudio::StreamParameters iParams, oParams;
-    iParams.deviceId = audioIODevice;
+    iParams.deviceId = iSoundCardID;
     iParams.nChannels = 2;
-    oParams.deviceId = audioIODevice;
+    oParams.deviceId = iSoundCardID;
     oParams.nChannels = 2;
     unsigned int bufferBytes, bufferFrames = 32;
     bufferBytes = bufferFrames * 2 * 4;
-    if(audioIODevice != -1){
-        std::cout << "Trying to open device id: " << audioIODevice << endl;
-        try {
-            audio.openStream( &oParams, &iParams, RTAUDIO_FLOAT32, 44100, &bufferFrames, &SimSPManager::inout);
-            // configure channels
-            model = std::make_unique<SPManagerDataModel>();
-            sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
-            sp[0]->SetProcessChannel(0);
-            sp[0]->LoadPreset(model->GetActivePatchNum(0));
-            if (!sp[0]->GetIsStereo()) {
-                sp[1] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(1));
-                sp[1]->SetProcessChannel(1);
-                sp[1]->LoadPreset(model->GetActivePatchNum(1));
-            }
+    std::cout << "Trying to open device id: " << iSoundCardID << endl;
+    try {
+        if (bOutOnly) {
+            audio.openStream(&oParams, NULL, RTAUDIO_FLOAT32, 44100, &bufferFrames, &SimSPManager::inout);
+        } else {
+            audio.openStream(&oParams, &iParams, RTAUDIO_FLOAT32, 44100, &bufferFrames, &SimSPManager::inout);
         }
-        catch ( RtAudioError& e ) {
-            e.printMessage();
-            exit( 0 );
+        // configure channels
+        model = std::make_unique<SPManagerDataModel>();
+        sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
+        sp[0]->SetProcessChannel(0);
+        sp[0]->LoadPreset(model->GetActivePatchNum(0));
+        if (!sp[0]->GetIsStereo()) {
+            sp[1] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(1));
+            sp[1]->SetProcessChannel(1);
+            sp[1]->LoadPreset(model->GetActivePatchNum(1));
         }
-        try {
-            audio.startStream();
-        }
-        catch ( RtAudioError& e ) {
-            e.printMessage();
-        }
-    }else{
-        std::cout << "No device with required capabilities available!" << endl;
+    }
+    catch (RtAudioError &e) {
+        e.printMessage();
+        exit(0);
+    }
+    try {
+        audio.startStream();
+    }
+    catch (RtAudioError &e) {
+        e.printMessage();
     }
 }
 
 void SimSPManager::StopSoundProcessor() {
-    if(audio.isStreamRunning() && audio.isStreamOpen()){
+    if (audio.isStreamRunning() && audio.isStreamOpen()) {
         audio.stopStream();
         audio.closeStream();
     }
@@ -162,6 +170,30 @@ void SimSPManager::ChannelLoadPreset(const int chan, const int number) {
 
 string SimSPManager::GetStringID(const int chan) {
     return model->GetActiveProcessorID(chan);
+}
+
+void SimSPManager::ListSoundCards() {
+    // Determine the number of devices available
+    unsigned int devices = audio.getDeviceCount();
+    // Scan through devices for various capabilities
+    RtAudio::DeviceInfo info;
+    int audioIODevice = -1;
+    for (unsigned int i = 0; i < devices; i++) {
+        info = audio.getDeviceInfo(i);
+        if (info.probed == true) {
+            // Print, for example, the maximum number of output channels for each device
+            std::cout << "device = " << i << " " << info.name;
+            std::cout << ": maximum duplex channels = " << info.duplexChannels << "\n";
+            std::cout << ": formats = " << (info.nativeFormats & RTAUDIO_FLOAT32);
+            for (const auto &v: info.sampleRates) {
+                std::cout << ": sample rates = " << v << endl;
+                if (info.duplexChannels >= 2 && v == 44100 && (info.nativeFormats & RTAUDIO_FLOAT32) != 0) {
+                    audioIODevice = i;
+                    break;
+                }
+            }
+        }
+    }
 }
 
 
