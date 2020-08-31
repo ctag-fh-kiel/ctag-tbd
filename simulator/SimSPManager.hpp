@@ -38,8 +38,9 @@ namespace CTAG {
     namespace AUDIO {
         class SimSPManager {
         public:
-            static void StartSoundProcessor();
+            static void StartSoundProcessor(int iSoundCardID, bool bOutOnly);
             static void StopSoundProcessor();
+            static void ListSoundCards();
 
             static const char *GetCStrJSONSoundProcessors() {
                 return model->GetCStrJSONSoundProcessors();
