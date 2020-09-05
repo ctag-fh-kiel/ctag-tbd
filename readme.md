@@ -21,6 +21,7 @@ Documentation on TBD usage can be found [here (Google Docs)](https://docs.google
 ## Features: 
 - Easy DSP plugin development.
 - **NEW!!!** Simulator for cross platform plugin development without hardware module (speeds up plugin development, better code verification).
+    - Check description [here](simulator/readme.md)
 - With web UI user interface by wireless browser access.
 - Through a REST-API.
 

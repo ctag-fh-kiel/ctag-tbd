@@ -30,6 +30,8 @@ respective component folders / files if different from this license.
 #include "SPManagerDataModel.hpp"
 #include <RtAudio.h>
 #include <atomic>
+#include "SimDataModel.hpp"
+#include "SimStimulus.hpp"
 
 using namespace CTAG::SP;
 using namespace std;
@@ -38,7 +40,7 @@ namespace CTAG {
     namespace AUDIO {
         class SimSPManager {
         public:
-            static void StartSoundProcessor(int iSoundCardID, bool bOutOnly);
+            static void StartSoundProcessor(int iSoundCardID, string wavFile, bool bOutOnly);
             static void StopSoundProcessor();
             static void ListSoundCards();
 
@@ -82,17 +84,23 @@ namespace CTAG {
 
             static void ChannelLoadPreset(const int chan, const int number);
 
+            static void SetProcessParams(const string &params);
+            static const char* GetProcessParams(){
+                return simModel->GetModelJSONCString();
+            }
+
 
         private:
 
             static void updateConfiguration();
 
-            //static TaskHandle_t audioTaskH, ledTaskH;
             static std::unique_ptr<ctagSoundProcessor> sp[2];
             static std::unique_ptr<SPManagerDataModel> model;
             static RtAudio audio;
             static int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
                                             double streamTime, RtAudioStreamStatus status, void *userData );
+            static std::unique_ptr<SimDataModel> simModel;
+            static SimStimulus stimulus;
         };
     }
 }

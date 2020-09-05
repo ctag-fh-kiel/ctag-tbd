@@ -59,6 +59,12 @@ file(GLOB RAPIDJSON_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson/rapidjson/*.h
 )
 
+#tinywav
+set(TINYWAV_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/../components/tinywav/tinywav.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../components/tinywav/tinywav.c
+        )
+
 #esp-dsp
 set(ESP_DSP_DIR "../components/esp-dsp")
 set(ESP_DSP_SRC_FILES  "${ESP_DSP_DIR}/modules/common/misc/dsps_pwroftwo.cpp"
@@ -130,7 +136,7 @@ set(SRC_FILES2
         "fake-idf/esp_heap_caps.c"
         )
 
-add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES})
+add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
 target_link_libraries(tbd-sim simple-web-server)
 target_link_libraries(tbd-sim rtaudio ctagsp mutable esp-dsp)
 target_link_libraries(tbd-sim ${Boost_LIBRARIES})
@@ -138,6 +144,7 @@ target_include_directories(tbd-sim PRIVATE ${Boost_INCLUDE_DIR})
 target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
 target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_include)
 target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/rtaudio)
+target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/tinywav)
 target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../main)
 
 
