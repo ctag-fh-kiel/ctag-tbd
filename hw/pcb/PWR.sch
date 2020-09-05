@@ -4,9 +4,9 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 4 6
-Title "CTAG-TBD"
-Date "2020-06-06"
-Rev "C"
+Title "ESP32 Eurorack Audio Module"
+Date "2020-08-18"
+Rev "G"
 Comp "(c) Robert Manzke 2020"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
@@ -531,7 +531,7 @@ L Jumper:Jumper_2_Open JP401
 U 1 1 5DB17B7D
 P 6900 2800
 F 0 "JP401" H 6900 3035 50  0000 C CNN
-F 1 "default open" H 6900 2944 50  0000 C CNN
+F 1 "Jumper_2_Open" H 6900 2944 50  0000 C CNN
 F 2 "Jumper:SolderJumper-2_P1.3mm_Open_TrianglePad1.0x1.5mm" H 6900 2800 50  0001 C CNN
 F 3 "~" H 6900 2800 50  0001 C CNN
 	1    6900 2800
@@ -609,6 +609,4 @@ F 3 "" H 2800 2400 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	2800 2800 2800 2400
-Text Notes 6600 3250 0    50   ~ 0
-Bridge solder jumper if you do NOT want to use U402 (saves the expensive low noise \nLDO), however audio quality is significantly impacted by digital noise in my \nexperience. For pro audio quality U402 is mandatory!
 $EndSCHEMATC
