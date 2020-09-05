@@ -20,11 +20,16 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "SimSPManager.hpp"
+#include "tinywav.h"
 #include <mutex>
+#include <cmath>
 
 using namespace CTAG::AUDIO;
 
 std::mutex audioMutex;
+TinyWav tw;
+bool isWaveInput = false;
+
 
 // Audio callback
 int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
@@ -40,6 +45,18 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
     else
         memset(fbuf, 0, 32*2*4);
 
+    if(isWaveInput){
+        int nread = 0;
+        nread = tinywav_read_f(&tw, fbuf, 32);
+        if(nread != 32){
+            tinywav_read_reset(&tw);
+        }
+    }
+
+    // process stimulus
+    stimulus.Process(cv, trig);
+
+    // create data structure
     pd.buf = fbuf;
     pd.cv = cv;
     pd.trig = trig;
@@ -62,7 +79,15 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
     return 0;
 }
 
-void SimSPManager::StartSoundProcessor(int iSoundCardID, bool bOutOnly) {
+void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, bool bOutOnly) {
+    // Initialize simulator parameters
+    simModel = std::make_unique<SimDataModel>();
+    int mode[6], value[6];
+    for(int i=0;i<6;i++){
+        mode[i] = simModel->GetArrayElement("mode", i);
+        value[i] = simModel->GetArrayElement("value", i);
+    }
+    stimulus.UpdateStimulus(mode, value);
     // Scan through devices for various capabilities
     RtAudio::DeviceInfo info;
     info = audio.getDeviceInfo(iSoundCardID);
@@ -89,13 +114,31 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, bool bOutOnly) {
         exit(0);
     }
 
+    // wav file
+    if(!wavFile.empty()){
+        tinywav_open_read(&tw, wavFile.c_str(), TW_INTERLEAVED, TW_FLOAT32);
+        if(!tw.f){
+            cout << "Could not open wav file!" << endl;
+            exit(-1);
+        }
+        if(tw.numChannels!=2){
+            cout << "Wave file is not stereo!" << endl;
+            exit(-1);
+        }
+        if(tw.sampFmt != TW_FLOAT32){
+            cout << "Wave file is not float32!" << endl;
+            exit(-1);
+        }
+        isWaveInput = true;
+    }
+
+    // main stuff
     RtAudio::StreamParameters iParams, oParams;
     iParams.deviceId = iSoundCardID;
     iParams.nChannels = 2;
     oParams.deviceId = iSoundCardID;
     oParams.nChannels = 2;
-    unsigned int bufferBytes, bufferFrames = 32;
-    bufferBytes = bufferFrames * 2 * 4;
+    unsigned int bufferFrames = 32;
     std::cout << "Trying to open device id: " << iSoundCardID << endl;
     try {
         if (bOutOnly) {
@@ -127,6 +170,7 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, bool bOutOnly) {
 }
 
 void SimSPManager::StopSoundProcessor() {
+    if(isWaveInput) tinywav_close_read(&tw);
     if (audio.isStreamRunning() && audio.isStreamOpen()) {
         audio.stopStream();
         audio.closeStream();
@@ -196,8 +240,20 @@ void SimSPManager::ListSoundCards() {
     }
 }
 
+void SimSPManager::SetProcessParams(const string &params) {
+    simModel->SetModelJSONString(params);
+    int mode[6], value[6];
+    for(int i=0;i<6;i++){
+        mode[i] = simModel->GetArrayElement("mode", i);
+        value[i] = simModel->GetArrayElement("value", i);
+    }
+    stimulus.UpdateStimulus(mode, value);
+}
+
 
 RtAudio  SimSPManager::audio;
 std::unique_ptr<ctagSoundProcessor> SimSPManager::sp[2];
 std::unique_ptr<SPManagerDataModel> SimSPManager::model;
+std::unique_ptr<SimDataModel> SimSPManager::simModel;
+SimStimulus SimSPManager::stimulus;
 

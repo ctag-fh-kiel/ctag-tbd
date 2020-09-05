@@ -61,6 +61,9 @@ make
 
 After ./tbd-sim command is executed, a local web server is running on port 8080. Simply open a browser and 
 enter [http://localhost:8080]. You will land on exactly the same web UI used by the hardware module.
+CV, Pot and Trig simulation is possible by adjusting settings on the URL [http://localhost:8080/ctrl].
+You can use a .wav file (stereo float32) using the -w option if you want to simulate the audio input instead of using the
+real-time data of the sound card.
 The simulator uses 99% the same code as the hardware unit. Only difference is the plugin manager and the web server part.
 You can start developing your plugins just like you do for the hardware module, same directory and file structures.
 You can run your plugin prior to flashing it to the hardware on your local host. Once the plugin is stable, you build
@@ -73,12 +76,17 @@ The simulator greatly speeds up plugin development.
   -l [ --list ]            list sound cards
   -d [ --device ] arg (=0) sound card device id, default 0
   -o [ --output ]          use output only (if no duplex device available)
+  -w [ --wav ] arg         read audio in from wav file (arg), must be 2 channel
+                           stereo float32 data, will be cycled through 
+                           indefinitely
+  -o [ --output ]          use output only (if no duplex device available)
 ```
 
 ## Limitations
 
 * General module configuration not supported
-* CV and pots not supported (could be simulated in future e.g. with preset waveforms)
-* Trigs not supported (could be simulated in future e.g. with preset trig sequence)
 
-
+## Credits
+* Demo wav files by 
+    * https://freesound.org/people/vacuumfan7072/sounds/322128/
+    
