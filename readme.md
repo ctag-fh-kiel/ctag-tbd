@@ -4,6 +4,8 @@
 
 ## Documentation (in the works) / wishlist:
 Documentation on TBD usage can be found [here (Google Docs)](https://docs.google.com/document/d/1c8mjxWjdiJNP0xpkU2CxRUp9av6V4W39wARJf3_SMSo/edit?usp=sharing)
+Tutorial videos in [YouTube playlist](https://www.youtube.com/playlist?list=PLB5iCbhcvJ2qdD7s1o9wsvQ9qtsCUWVLR)
+
 
 ## What it is:
 - An open source Eurorack sound module based on the ESP32.
