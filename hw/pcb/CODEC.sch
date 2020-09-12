@@ -4,9 +4,9 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 5 6
-Title "CTAG-TBD"
-Date "2020-06-06"
-Rev "C"
+Title "ESP32 Eurorack Audio Module"
+Date "2020-08-18"
+Rev "G"
 Comp "(c) Robert Manzke 2020"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
@@ -1724,12 +1724,4 @@ Wire Wire Line
 	2700 2650 4300 2650
 Wire Wire Line
 	4300 2650 4300 2350
-Text Notes 600  800  0    50   ~ 0
-WM8978 ADC is MUCH BETTER than the WM8731:\nRead this also: https://hackaday.io/project/7936-cortex-guitar-board/log/44553-this-adc-makes-weird-noises\nIt strikes me that it is still used so often in Eurorack audio (I made that mistake too)
-Text Notes 3000 3650 0    50   ~ 0
-Solder jumpers for DC coupling (not tested)
-Text Notes 9400 700  0    50   ~ 0
-Solder jumpers for DC coupling (not tested)
-Text Notes 3350 3100 0    50   ~ 0
-Bridge solder jumpers on pin 2+3 for normal operations.\n1+2 is for testing and playing with the codec.
 $EndSCHEMATC
