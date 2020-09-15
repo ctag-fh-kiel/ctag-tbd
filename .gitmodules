@@ -10,3 +10,6 @@
 [submodule "simulator/rtaudio"]
 	path = simulator/rtaudio
 	url = https://github.com/thestk/rtaudio.git
+[submodule "components/moog/MoogLadders"]
+	path = components/moog/MoogLadders
+	url = https://github.com/ctag-fh-kiel/MoogLadders.git

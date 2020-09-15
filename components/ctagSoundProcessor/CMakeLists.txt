@@ -44,7 +44,7 @@ if(TBD_SIM)
 else()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
-            PRIV_REQUIRES rapidjson esp-dsp mutable)
+            PRIV_REQUIRES rapidjson esp-dsp mutable moog)
 endif()
 
 #set_source_files_properties(ctagSoundProcessorGDVerb.cpp
