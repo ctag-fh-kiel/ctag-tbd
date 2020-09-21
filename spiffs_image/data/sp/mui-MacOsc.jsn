@@ -1,0 +1,145 @@
+{
+  "id": "MacOsc",
+  "isStereo": false,
+  "name": "MacOsc",
+  "hint": "Adaptation of mutable braids",
+  "params": [
+    {
+      "id": "shape",
+      "name": "Shape",
+      "type": "int",
+      "min": 0,
+      "max": 46,
+      "step": 1
+    },
+    {
+      "id": "gain",
+      "name": "Gain",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "pitch",
+      "name": "Pitch",
+      "type": "int",
+      "min": 0,
+      "max": 16383,
+      "step": 1
+    },
+    {
+      "id": "decimation",
+      "name": "Decimation",
+      "type": "int",
+      "min": 1,
+      "max": 30,
+      "step": 1
+    },
+    {
+      "id": "bit_reduction",
+      "name": "Bit Reduction",
+      "type": "int",
+      "min": 0,
+      "max": 6,
+      "step": 1
+    },
+    {
+      "id": "q_scale",
+      "name": "Quantization Scale",
+      "type": "int",
+      "min": 0,
+      "max": 47,
+      "step": 1
+    },
+    {
+      "id": "param_0",
+      "name": "Parameter 0",
+      "type": "int",
+      "min": 0,
+      "max": 32767,
+      "step": 1
+    },
+    {
+      "id": "param_1",
+      "name": "Parameter 1",
+      "type": "int",
+      "min": 0,
+      "max": 32767,
+      "step": 1
+    },
+    {
+      "id": "waveshaping",
+      "name": "Wave Shaping",
+      "type": "int",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "fm_amt",
+      "name": "FM Amount",
+      "hint": "FM Amount",
+      "type": "int",
+      "min": -64,
+      "max": 64
+    },
+    {
+      "id": "am_amt",
+      "name": "AM Amount",
+      "hint": "AM Amount",
+      "type": "int",
+      "min": -64,
+      "max": 64
+    },
+    {
+      "id": "p0_amt",
+      "name": "P0 Amount",
+      "hint": "P0 Amount",
+      "type": "int",
+      "min": -64,
+      "max": 64
+    },
+    {
+      "id": "p1_amt",
+      "name": "P1 Amount",
+      "hint": "P1 Amount",
+      "type": "int",
+      "min": -64,
+      "max": 64
+    },
+    {
+      "id": "env",
+      "name": "EG",
+      "type": "group",
+      "params": [
+        {
+          "id": "enableEG",
+          "name": "Enable EG",
+          "type": "bool"
+        },
+        {
+          "id": "loopEG",
+          "name": "Loop EG",
+          "type": "bool"
+        },
+        {
+          "id": "attack",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "flt_mode",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "gain",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "cutoff",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "resonance",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fm_amt",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "enableEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "loopEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "attack",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "decay",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}
