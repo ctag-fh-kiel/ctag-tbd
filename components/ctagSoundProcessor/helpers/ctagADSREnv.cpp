@@ -1,163 +1,157 @@
-/***************
-CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
-
-A project conceived within the Creative Technologies Arbeitsgruppe of
-Kiel University of Applied Sciences: https://www.creative-technologies.de
-
-(c) 2020 by Robert Manzke. All rights reserved.
-
-The CTAG TBD software is licensed under the GNU General Public License
-(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
-
-The CTAG TBD hardware design is released under the Creative Commons
-Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
-Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
-CTAG TBD is provided "as is" without any express or implied warranties.
-
-License and copyright details for specific submodules are included in their
-respective component folders / files if different from this license.
-***************/
-
-
+//  Created by Nigel Redmon on 12/18/12.
+//  EarLevel Engineering: earlevel.com
+//  Copyright 2012 Nigel Redmon
 //
-// Created by Robert Manzke on 09.02.20.
+//  For a complete explanation of the ADSR envelope generator and code,
+//  read the series of articles by the author, starting here:
+//  http://www.earlevel.com/main/2013/06/01/envelope-generators/
+//
+//  License:
+//
+//  This source code is provided as is, without warranty.
+//  You may copy and distribute verbatim copies of this document.
+//  You may modify and use this source code to create binary code for your own purposes, free or commercial.
+//
+//  1.01  2016-01-02  njr   added calcCoef to SetTargetRatio functions that were in the ADSR widget but missing in this code
+//  1.02  2017-01-04  njr   in calcCoef, checked for rate 0, to support non-IEEE compliant compilers
+//  1.03  2020-04-08  njr   changed float to double; large target ratio and rate resulted in exp returning 1 in calcCoef
 //
 
 #include "ctagADSREnv.hpp"
-#include "esp_log.h"
 #include "helpers/ctagFastMath.hpp"
 
 using namespace CTAG::SP;
 using namespace CTAG::SP::HELPERS;
 
-#define LOG0001 -9.210340371976182f // -80dB
-
-
-float CTAG::SP::HELPERS::ctagADSREnv::Process() {
-    float val;
-    if(envMode == EnvModeType::MODE_LIN){
-        switch (envState){
-            case EnvStateType::STATE_ATTACK:
-                val = envAccum + attack;
-                if(val >= 1.f){
-                    envAccum = 1.f;
-                    //ESP_LOGW("ADSR", "Switching from attack to decay");
-                    envState = EnvStateType::STATE_DECAY;
-                }else{
-                    envAccum = val;
-                }
-                break;
-            case EnvStateType::STATE_DECAY:
-                val = envAccum - decay;
-                if(val <= sustain){
-                    envAccum = sustain;
-                    //ESP_LOGW("ADSR", "Switching from decy to sus");
-                    envState = EnvStateType::STATE_SUSTAIN;
-                }else{
-                    envAccum = val;
-                }
-                break;
-            case EnvStateType::STATE_RELEASE:
-                val = envAccum - release;
-                if(val <= 0.0001f){
-                    envAccum = 0.f;
-                    //ESP_LOGW("ADSR", "Switching from sus to rel");
-                    envState = EnvStateType::STATE_IDLE;
-                }else{
-                    envAccum = val;
-                }
-            default:
-                break;
-        }
-    }else{
-        switch (envState){
-            case EnvStateType::STATE_ATTACK:
-                val = envAccum * attack;
-                if(val >= 1.f){
-                    envAccum = 1.f;
-                    //ESP_LOGW("ADSR", "Switching from attack to decay");
-                    envState = EnvStateType::STATE_DECAY;
-                }else{
-                    envAccum = val;
-                }
-                break;
-            case EnvStateType::STATE_DECAY:
-                val = envAccum * decay;
-                if(val <= sustain){
-                    envAccum = sustain;
-                    //ESP_LOGW("ADSR", "Switching from decy to sus");
-                    envState = EnvStateType::STATE_SUSTAIN;
-                }else{
-                    envAccum = val;
-                }
-                break;
-            case EnvStateType::STATE_RELEASE:
-                val = envAccum * release;
-                if(val <= 0.0001f){
-                    envAccum = 0.f;
-                    //ESP_LOGW("ADSR", "Switching from sus to rel");
-                    envState = EnvStateType::STATE_IDLE;
-                }else{
-                    envAccum = val;
-                }
-            default:
-                break;
-        }
-    }
-    if(envAccum > 1.f) envAccum = 1.f;
-    if(envAccum < 0.f) envAccum = 0.f;
-    return envAccum;
+ctagADSREnv::ctagADSREnv(void) {
+    fs = 44100.f;
+    Reset();
+    SetAttack(0.f);
+    SetDecay(0.f);
+    SetRelease(0.f);
+    SetSustain(1.0);
+    SetTargetRatioA(0.3);
+    SetTargetRatioDR(0.0001);
 }
 
-void CTAG::SP::HELPERS::ctagADSREnv::SetAttack(float a_s) {
-    if(envMode == EnvModeType::MODE_LIN)
-        attack = 1.f / (a_s * fSample);
-    else
-        attack = 1.f - LOG0001 / (a_s * fSample);
+ctagADSREnv::~ctagADSREnv(void) {
 }
 
-void CTAG::SP::HELPERS::ctagADSREnv::SetDecay(float d_s) {
-    if(envMode == EnvModeType::MODE_LIN)
-        decay = 1.f / (d_s * fSample);
-    else
-        decay = 1.f + LOG0001 / (d_s * fSample);
+void ctagADSREnv::SetAttack(float rate) {
+    attackRate = rate * fs;
+    attackCoef = calcCoef(attackRate, targetRatioA);
+    attackBase = (1.0f + targetRatioA) * (1.0f - attackCoef);
 }
 
-void CTAG::SP::HELPERS::ctagADSREnv::Gate(bool isGate) {
-    if(isGate != preGate){
-        preGate = isGate;
-        if(preGate == true){
-            envAccum = 0.0001f;
-            envState = EnvStateType::STATE_ATTACK;
-            //ESP_LOGW("ADSR", "trig -> attack");
-        }else{
-            envState = EnvStateType::STATE_RELEASE;
-            //ESP_LOGW("ADSR", "trig -> release");
-        }
-    }
+void ctagADSREnv::SetDecay(float rate) {
+    decayRate = rate * fs;
+    decayCoef = calcCoef(decayRate, targetRatioDR);
+    decayBase = (sustainLevel - targetRatioDR) * (1.0f - decayCoef);
 }
 
-void ctagADSREnv::SetModeLin() {
-    envMode = EnvModeType::MODE_LIN;
+void ctagADSREnv::SetRelease(float rate) {
+    releaseRate = rate * fs;
+    releaseCoef = calcCoef(releaseRate, targetRatioDR);
+    releaseBase = -targetRatioDR * (1.0f - releaseCoef);
 }
 
-void ctagADSREnv::SetModeExp() {
-    envMode = EnvModeType::MODE_LOG;
+float ctagADSREnv::calcCoef(float rate, float targetRatio) {
+    float exponent = -logf_fast((1.0f + targetRatio) / targetRatio) / rate;
+    //float a = (rate <= 0) ? 0.0f : expf(exponent);
+    float b = (rate <= 0) ? 0.0f : exp5(exponent);
+    return b;
+}
+
+void ctagADSREnv::SetSustain(float level) {
+    sustainLevel = level;
+    decayBase = (sustainLevel - targetRatioDR) * (1.0 - decayCoef);
+}
+
+void ctagADSREnv::SetTargetRatioA(float targetRatio) {
+    if (targetRatio < 0.000000001f)
+        targetRatio = 0.000000001f;  // -180 dB
+    targetRatioA = targetRatio;
+    SetAttack(attackRate / fs);
+}
+
+void ctagADSREnv::SetTargetRatioDR(float targetRatio) {
+    if (targetRatio < 0.000000001f)
+        targetRatio = 0.000000001f;  // -180 dB
+    targetRatioDR = targetRatio;
+    SetDecay(decayRate / fs);
+    SetRelease(releaseRate / fs);
 }
 
 void ctagADSREnv::SetSampleRate(float fs_hz) {
-    fSample = fs_hz;
-    tSample = 1.f / fSample;
+    fs = fs_hz;
 }
 
-void ctagADSREnv::SetSustain(float s_s) {
-    sustain = s_s;
+bool ctagADSREnv::IsIdle() {
+    return state == env_idle;
 }
 
-void ctagADSREnv::SetRelease(float r_s) {
-    if(envMode == EnvModeType::MODE_LIN)
-        release = 1.f / (r_s * fSample);
-    else
-        release = 1.f + LOG0001 / (r_s * fSample);
+void ctagADSREnv::SetModeLin() {
+    SetTargetRatioA(10.f);
+    SetTargetRatioDR(10.f);
+}
+
+void ctagADSREnv::SetModeExp() {
+    SetTargetRatioA(1);
+    SetTargetRatioDR(0.001);
+}
+
+void ctagADSREnv::Hold() {
+    if (state == env_release) {
+        state = env_sustain;
+    }
+}
+
+float ctagADSREnv::Process() {
+    switch (state) {
+        case env_idle:
+            break;
+        case env_attack:
+            output = attackBase + output * attackCoef;
+            if (output >= 1.0) {
+                output = 1.0;
+                state = env_decay;
+            }
+            break;
+        case env_decay:
+            output = decayBase + output * decayCoef;
+            if (output <= sustainLevel) {
+                output = sustainLevel;
+                state = env_sustain;
+            }
+            break;
+        case env_sustain:
+            break;
+        case env_release:
+            output = releaseBase + output * releaseCoef;
+            if (output <= 0.0) {
+                output = 0.0;
+                state = env_idle;
+            }
+    }
+    return output;
+}
+
+void ctagADSREnv::Gate(bool gate) {
+    if (gate)
+        state = env_attack;
+    else if (state != env_idle)
+        state = env_release;
+}
+
+int ctagADSREnv::GetState() {
+    return state;
+}
+
+void ctagADSREnv::Reset() {
+    state = env_idle;
+    output = 0.0;
+}
+
+float ctagADSREnv::GetOutput() {
+    return output;
 }

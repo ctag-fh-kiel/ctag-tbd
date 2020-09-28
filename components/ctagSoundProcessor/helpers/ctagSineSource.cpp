@@ -19,19 +19,13 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-
-//
-// Created by Robert Manzke on 20.02.20.
-//
 #include <cmath>
 #include "ctagSineSource.hpp"
 #include "ctagFastMath.hpp"
 
 CTAG::SP::HELPERS::ctagSineSource::ctagSineSource() {
-    //a = 2.f*(float)sin(M_PI*1000.f/44100.f);
-    a = 2.f*(float)fastsin(M_PI*1000.f/44100.f);
-    s[0] = 0.5f;
-    s[1] = 0.f;
+    fSample = 44100.f;
+    SetFrequencyPhase(1.f, 0.f);
 }
 
 void CTAG::SP::HELPERS::ctagSineSource::SetSampleRate(float f_hz) {
@@ -39,8 +33,7 @@ void CTAG::SP::HELPERS::ctagSineSource::SetSampleRate(float f_hz) {
 }
 
 void CTAG::SP::HELPERS::ctagSineSource::SetFrequency(float f_hz) {
-    //a = 2.f*(float)sin(M_PI*f_hz/fSample);
-    a = 2.f*(float)fastsin(M_PI*f_hz/44100.f);
+    a = 2.f*(float)fastsin(M_PI*f_hz/fSample);
 }
 
 float CTAG::SP::HELPERS::ctagSineSource::Process() {
@@ -55,4 +48,10 @@ float CTAG::SP::HELPERS::ctagSineSource::GetCos() {
 
 float CTAG::SP::HELPERS::ctagSineSource::GetSin() {
     return s[0];
+}
+
+void CTAG::SP::HELPERS::ctagSineSource::SetFrequencyPhase(float f_hz, float phase_rad) {
+    a = 2.f*(float)fastsin(M_PI*f_hz/fSample);
+    s[0] = 0.5f * fastcos(phase_rad);
+    s[1] = 0.5f * fastsin(phase_rad);
 }

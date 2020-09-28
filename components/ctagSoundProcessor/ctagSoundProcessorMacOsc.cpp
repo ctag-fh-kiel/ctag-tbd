@@ -124,7 +124,7 @@ void ctagSoundProcessorMacOsc::Process(const ProcessData &data) {
     // pitch calculation and quantization + fm
     int32_t ipitch = pitch;
     if(cv_pitch != -1){
-        ipitch += static_cast<int32_t>((fabsf(data.cv[cv_pitch]) * 12.f * 5.f * 128.f)); // five octaves
+        ipitch += static_cast<int32_t>(fabsf(data.cv[cv_pitch] * 12.f * 5.f * 128.f)); // five octaves
     }
     int32_t sc = q_scale;
     if(cv_q_scale != -1){

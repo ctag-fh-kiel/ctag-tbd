@@ -137,6 +137,8 @@ set(SRC_FILES2
         "fake-idf/esp_heap_caps.c"
         )
 
+
+
 add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
 target_link_libraries(tbd-sim simple-web-server)
 target_link_libraries(tbd-sim rtaudio ctagsp mutable esp-dsp)
@@ -147,6 +149,21 @@ target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_inclu
 target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/rtaudio)
 target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/tinywav)
 target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../main)
+
+
+set(TEST_FILES
+        tests/test_ctagADSREnv.cpp
+        tests/test_ctagADSREnv.hpp
+        tests/run_tests.cpp
+        )
+
+add_executable(run_tests ${TEST_FILES})
+target_link_libraries(run_tests ctagsp mutable esp-dsp)
+target_link_libraries(run_tests ${Boost_LIBRARIES})
+target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
+target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_include)
+target_include_directories(run_tests PRIVATE ${Boost_INCLUDE_DIR})
 
 
 
