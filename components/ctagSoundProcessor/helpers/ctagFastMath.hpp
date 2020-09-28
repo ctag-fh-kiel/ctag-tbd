@@ -24,9 +24,29 @@ namespace CTAG::SP::HELPERS {
     float fastfabs(float p);
 
 //https://www.musicdsp.org/en/latest/Other/63-fast-log2.html
-    float fast_log2(float val);
 
+
+    float fast_log2(float val);
+    float fast_logN(float val);
     float fast_log10(float val);
+
+
+    float another_fast_exp (float x);
+    float exp1(float x);
+    float exp2(float x);
+    float exp3(float x);
+    float exp4(float x);
+    float exp5(float x);
+    float exp6(float x);
+    float exp7(float x);
+    float logf_fast_ub(float a);
+    float logf_fast(float a);
+    float logf_fast_lb(float a);
+    float expf_fast_ub(float a);
+    float expf_fast(float a);
+    float expf_fast_lb(float a);
+
+
     float fastatan(float x);
 
     float fast_dBV(float val);

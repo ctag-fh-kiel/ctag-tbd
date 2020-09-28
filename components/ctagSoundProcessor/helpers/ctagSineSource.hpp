@@ -30,6 +30,7 @@ namespace CTAG::SP::HELPERS {
         ctagSineSource();
         void SetSampleRate(float f_hz);
         void SetFrequency(float f_hz);
+        void SetFrequencyPhase(float f_hz, float phase_rad);
         float Process();
         float GetCos();
         float GetSin();

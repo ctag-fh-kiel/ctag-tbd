@@ -222,11 +222,19 @@ void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr
             else
                 *mapOutPtr = aCoeffs10V[i] * (float)*adcInPtr + bCoeffs10V[i];
         }else{
-            if(configCV[i] == CVConfig::CVUnipolar)
+            if(configCV[i] == CVConfig::CVUnipolar){
                 *mapOutPtr = aCoeffs05V[i + 4] * (float)*adcInPtr + bCoeffs05V[i + 4];
+            }
             else
                 *mapOutPtr = aCoeffs10V[i + 4] * (float)*adcInPtr + bCoeffs10V[i + 4];
         }
+        // constrain ranges
+        if(configCV[i] == CVConfig::CVUnipolar){
+            if(*mapOutPtr < 0.002f) *mapOutPtr = 0.f;
+        }else{
+            if(*mapOutPtr < -0.998f) *mapOutPtr = -1.f;
+        }
+        if(*mapOutPtr > 0.998f) *mapOutPtr = 1.f;
         adcInPtr++;
         mapOutPtr++;
     }

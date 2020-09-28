@@ -19,4 +19,13 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
+#pragma once
+
+#include <cstdint>
+#include <cstdlib>
+
 #define IRAM_ATTR
+#define DRAM_ATTR
+
+
+inline uint32_t esp_random(){return static_cast<uint32_t>(rand());}

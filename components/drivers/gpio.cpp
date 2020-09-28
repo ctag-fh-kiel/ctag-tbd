@@ -43,12 +43,23 @@ void GPIO::InitGPIO(){
     //enable pull-up mode
     //io_conf.pull_up_en = 1;
     gpio_config(&io_conf);
+
+    t0delay = 0;
+    t1delay = 0;
 }
 
-uint8_t GPIO::GetTrig0(){
-  return (uint8_t)gpio_get_level((gpio_num_t)TRIG0_PIN);
+// trigs get delayed as ADC sampling is slow, delay approx. 3ms
+uint8_t IRAM_ATTR GPIO::GetTrig0(){
+    t0delay <<= 1;
+    t0delay |= gpio_get_level((gpio_num_t)TRIG0_PIN);
+    return (uint8_t) ((t0delay & 0x08) > 1);
 }
 
-uint8_t GPIO::GetTrig1(){
-  return (uint8_t)gpio_get_level((gpio_num_t)TRIG1_PIN);
+uint8_t IRAM_ATTR GPIO::GetTrig1(){
+    t1delay <<= 1;
+    t1delay |= gpio_get_level((gpio_num_t)TRIG1_PIN);
+    return (uint8_t) ((t1delay & 0x08) > 1);
 }
+
+DRAM_ATTR uint32_t CTAG::DRIVERS::GPIO::t0delay;
+DRAM_ATTR uint32_t CTAG::DRIVERS::GPIO::t1delay;

@@ -9,6 +9,7 @@ add_definitions(
         -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 # rapidjson
         -DRAPIDJSON_HAS_STDSTRING=1 # rapidjson
         -Wno-unused-local-typedefs
+        -ffast-math
 )
 
 

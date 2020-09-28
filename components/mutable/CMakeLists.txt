@@ -21,6 +21,7 @@ file(GLOB SRCS_FILES
         eurorack/tides2/resources.cc
         eurorack/clouds/resources.cc
         eurorack/stmlib/utils/random.cc
+        eurorack/stmlib/utils/random.h
         eurorack/stmlib/dsp/atan.cc
         eurorack/stmlib/dsp/units.cc
         eurorack/stmlib/dsp/dsp.h
