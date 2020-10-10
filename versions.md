@@ -1,4 +1,9 @@
-#CTAG TBD Version Log
+# CTAG TBD Version Log
+
+## V0.9.1
+- Added TBD03 emulation of TB303, essentially braids oscillator with various ladder filter models and some envelopes, filter model 1 is least computationally expensive and allows for TBD03 running on two channels
+- Some minor bugs fixes and adaptations
+- Updated IDF Release 4.1
 
 ## V0.9.0
 - Added version log

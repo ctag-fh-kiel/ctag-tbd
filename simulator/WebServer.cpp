@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "WebServer.hpp"
-#include "SimSpManager.hpp"
+#include "SimSPManager.hpp"
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <fstream>
