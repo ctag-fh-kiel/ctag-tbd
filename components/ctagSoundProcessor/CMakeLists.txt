@@ -37,6 +37,8 @@ file(GLOB SRCS_FILES
     mifx/*.h
     polypad/*.hpp
     polypad/*.cpp
+    filters/*.hpp
+    filters/*.cpp
     ${CMAKE_BINARY_DIR}/gen_include/*.hpp
 )
 

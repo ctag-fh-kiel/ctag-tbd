@@ -241,7 +241,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
     int16_t tmp[sz * 2];
     int16_t *ptrTmp = tmp;
     size_t nb;
-    const float div = 3.0517578125E-5f;
+    const float div = 3.0518509476E-5f;
     // 16 bit word config stereo
     i2s_read(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
     while(sz > 0){
@@ -274,15 +274,15 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
     int16_t tmp[sz * 2];
     int16_t tmp2;
     size_t nb;
-    const float mult = 32768.f;
+    const float mult = 32767.f;
     // 16 bit word config
     for (int i = 0; i < sz; i++) {
         tmp2 = (int32_t) (mult * buf[i * 2]);
-        tmp2 = MAX(tmp2, -32768);
+        tmp2 = MAX(tmp2, -32767);
         tmp2 = MIN(tmp2, 32767);
         tmp[i * 2] = tmp2;
         tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
-        tmp2 = MAX(tmp2, -32768);
+        tmp2 = MAX(tmp2, -32767);
         tmp2 = MIN(tmp2, 32767);
         tmp[i * 2 + 1] = tmp2;
     }
