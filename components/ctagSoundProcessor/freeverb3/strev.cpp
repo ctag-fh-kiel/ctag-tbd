@@ -168,7 +168,7 @@ void FV3_(strev)::processreplace(fv3_float_t *inputL, fv3_float_t *inputR, fv3_f
     int32_t count = numsamples * getOSFactor();
     //growWave(count);
 
-    fv3_float_t outL, outR, input, *origOutL = outputL, *origOutR = outputR;
+    fv3_float_t outL, outR, input;
     //SRC.usrc(inputL, inputR, over.L, over.R, numsamples);
     /*
     inputL = over.L;

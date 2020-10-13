@@ -41,9 +41,9 @@ SimDataModel::~SimDataModel() {
 
 }
 
-const string &SimDataModel::GetKeyValue(const string &key) {
-    if(!m.HasMember(key)) return "";
-    if(!m[key].IsString()) return "";
+const string SimDataModel::GetKeyValue(const string &key) {
+    if(!m.HasMember(key)) return key;
+    if(!m[key].IsString()) return key;
     return m[key].GetString();
 }
 
@@ -52,4 +52,5 @@ const int SimDataModel::GetArrayElement(const string &key, const int index) {
     if(!m[key].IsArray()) return 0;
     if(m[key][index].IsString()) return std::stoi(m[key][index].GetString());
     if(m[key][index].IsInt()) return m[key][index].GetInt();
+    return 0;
 }

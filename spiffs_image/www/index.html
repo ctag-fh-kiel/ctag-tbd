@@ -254,6 +254,20 @@ respective component folders / files if different from this license.
                 <option value="mix">Mix with CH0</option>
             </ons-select>
         </ons-list-item>
+        <ons-list-header>CH0 Soft Clip Output</ons-list-header>
+        <ons-list-item>
+            <ons-select id="ch0-sco-config">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>CH1 Soft Clip Output</ons-list-header>
+        <ons-list-item>
+            <ons-select id="ch1-sco-config">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+            </ons-select>
+        </ons-list-item>
         <ons-list-header>Wifi Configuration</ons-list-header>
         <ons-list-item>
             <div style="text-align: center; margin-top: 10px;">
@@ -354,6 +368,8 @@ respective component folders / files if different from this license.
                         $('#ng-config').val(data["ng_config"]);
                         $('#ch0-stereo-config').val(data["ch0_toStereo"]);
                         $('#ch1-stereo-config').val(data["ch1_toStereo"]);
+                        $('#ch0-sco-config').val(data["ch0_outputSoftClip"]);
+                        $('#ch1-sco-config').val(data["ch1_outputSoftClip"]);
                         $('#wifi-mode').val(data["wifi"].mode);
                         $('#ssid').val(data["wifi"].ssid);
                         $('#pwd').val(data["wifi"].pwd);
@@ -397,6 +413,18 @@ respective component folders / files if different from this license.
                         });
                         $('#ch1-stereo-config').on('change', function () {
                             cfgData.ch1_toStereo = $('#ch1-stereo-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ch0-sco-config').on('change', function () {
+                            cfgData.ch0_outputSoftClip = $('#ch0-sco-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ch1-sco-config').on('change', function () {
+                            cfgData.ch1_outputSoftClip = $('#ch1-sco-config').val();
                             $.postq('myq', 'api/v1/setConfiguration',
                                 JSON.stringify(cfgData), 'json'
                             );

@@ -36,7 +36,7 @@ public:
     ~SimDataModel();
     void SetModelJSONString(const string &);
     const char * GetModelJSONCString();
-    const string &GetKeyValue(const string &key);
+    const string GetKeyValue(const string &key);
     const int GetArrayElement(const string &key, const int index);
 private:
     const string MODELJSONFN = "../data/cfg_tbd_sim.jsn";

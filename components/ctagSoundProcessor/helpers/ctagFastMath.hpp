@@ -46,6 +46,9 @@ namespace CTAG::SP::HELPERS {
     float expf_fast(float a);
     float expf_fast_lb(float a);
 
+    float powf_fast(float a, float b);
+    float powf_fast_lb(float a, float b);
+    float powf_fast_ub(float a, float b);
 
     float fastatan(float x);
 

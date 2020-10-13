@@ -6,7 +6,6 @@
 Documentation on TBD usage can be found [here (Google Docs)](https://docs.google.com/document/d/1c8mjxWjdiJNP0xpkU2CxRUp9av6V4W39wARJf3_SMSo/edit?usp=sharing)
 Tutorial videos in [YouTube playlist](https://www.youtube.com/playlist?list=PLB5iCbhcvJ2qdD7s1o9wsvQ9qtsCUWVLR)
 
-
 ## What it is:
 - An open source Eurorack sound module based on the ESP32.
 - With an easy to extend audio plugin architecture.
@@ -26,6 +25,9 @@ Tutorial videos in [YouTube playlist](https://www.youtube.com/playlist?list=PLB5
     - Check description [here](simulator/readme.md)
 - With web UI user interface by wireless browser access.
 - Through a REST-API.
+
+## Version log
+[See here...](versions.md)
 
 ## Potential new features / current limitations / work to be done:
 - FAUST support.
