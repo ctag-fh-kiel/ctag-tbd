@@ -241,7 +241,34 @@ namespace CTAG::SP::HELPERS {
         cvt.i += (i << 23);                                          /* scale by 2^i */
         return cvt.f;
     }
-    
+
+    // from https://github.com/ekmett/approximate/blob/master/cbits/fast.c
+    /*
+ These constants are based loosely on the following comment off of Ankerl's blog:
+ "I have used the same trick for float, not double, with some slight modification to the constants to suite IEEE754 float format. The first constant for float is 1<<23/log(2) and the second is 127<<23 (for double they are 1<<20/log(2) and 1023<<20)." -- John
+*/
+
+/* 1065353216 + 1      = 1065353217 ub */
+/* 1065353216 - 486411 = 1064866805 min RMSE */
+/* 1065353216 - 722019 = 1064631197 lb */
+    float powf_fast(float a, float b) {
+        union { float d; int x; } u = { a };
+        u.x = (int)(b * (u.x - 1064866805) + 1064866805);
+        return u.d;
+    }
+
+    float powf_fast_lb(float a, float b) {
+        union { float d; int x; } u = { a };
+        u.x = (int)(b * (u.x - 1065353217) + 1064631197);
+        return u.d;
+    }
+
+    float powf_fast_ub(float a, float b) {
+        union { float d; int x; } u = { a };
+        u.x = (int)(b * (u.x - 1064631197) + 1065353217);
+        return u.d;
+    }
+
     //https://stackoverflow.com/questions/10552280/fast-exp-calculation-possible-to-improve-accuracy-without-losing-too-much-perfo
     float exp1(float x) {
         return (6+x*(6+x*(3+x)))*0.16666666f;

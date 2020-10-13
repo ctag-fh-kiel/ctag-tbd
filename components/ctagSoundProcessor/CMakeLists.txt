@@ -39,6 +39,8 @@ file(GLOB SRCS_FILES
     polypad/*.cpp
     filters/*.hpp
     filters/*.cpp
+    tesselode/*.h
+    tesselode/*.cpp
     ${CMAKE_BINARY_DIR}/gen_include/*.hpp
 )
 

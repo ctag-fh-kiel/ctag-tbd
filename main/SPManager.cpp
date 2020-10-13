@@ -37,6 +37,7 @@ respective component folders / files if different from this license.
 #include <math.h>
 #include "helpers/ctagFastMath.hpp"
 #include "freeverb3/efilter.hpp"
+#include "stmlib/dsp/dsp.h"
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
@@ -65,12 +66,15 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     float lramp[BUF_SZ];
     bool isStereoCH0 = false;
 
+
     fv3::dccut_f in_dccutl, in_dccutr;
-    fv3::dccut_f out_dccutl, out_dccutr;
+    //fv3::dccut_f out_dccutl, out_dccutr;
     in_dccutl.setCutOnFreq(3.7f, 44100.f);
     in_dccutr.setCutOnFreq(3.7f, 44100.f);
+    /*
     out_dccutl.setCutOnFreq(3.7f, 44100.f);
     out_dccutr.setCutOnFreq(3.7f, 44100.f);
+    */
 
     SP::ProcessData pd;
     pd.buf = fbuf;
@@ -235,17 +239,22 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         }
 
         // Out peak detection, red for output
-        // dc cut output
+        // dc cut output, limiting output
         max = 0.f;
         for (uint32_t i = 0; i < BUF_SZ; i++) {
-            fbuf[i * 2] = out_dccutl(fbuf[i * 2]);
-            fbuf[i * 2 + 1] = out_dccutr(fbuf[i * 2 + 1]);
+            // soft limiting
+            if(ch0_outputSoftClip){
+                fbuf[i * 2] = stmlib::SoftClip(fbuf[i * 2]);
+            }
+            if(ch1_outputSoftClip){
+                fbuf[i * 2 + 1] = stmlib::SoftClip(fbuf[i * 2 + 1]);
+            }
             if (fbuf[i * 2] > max) max = fbuf[i * 2];
             if (fbuf[i * 2 + 1] > max) max = fbuf[i * 2 + 1];
         }
         peakOut = 0.9f * peakOut + 0.1f * max;
         max = 255.f + 3.2f * HELPERS::fast_dBV(peakOut);
-       // ESP_LOGW("PEAK", "max %.7f, peak %.7f", max, peakOut);
+        // ESP_LOGW("PEAK", "max %.7f, peak %.7f", max, peakOut);
         if (max > 0.f) ledData |= ((uint32_t) max) << 16; // red
         ledStatus = ledData;
 
@@ -283,6 +292,8 @@ atomic<uint32_t> SoundProcessorManager::noiseGateCfg;
 atomic<uint32_t> SoundProcessorManager::toStereoCH0;
 atomic<uint32_t> SoundProcessorManager::toStereoCH1;
 atomic<uint32_t> SoundProcessorManager::runAudioTask;
+atomic<uint32_t> SoundProcessorManager::ch0_outputSoftClip;
+atomic<uint32_t> SoundProcessorManager::ch1_outputSoftClip;
 
 void SoundProcessorManager::StartSoundProcessor() {
     ledBlink = 5;
@@ -426,6 +437,19 @@ void SoundProcessorManager::updateConfiguration() {
     }else if (model->GetConfigurationData("ch1_toStereo").compare("mix") == 0) {
         toStereoCH1 = 2;
     }
+
+    // soft clipping?
+    if (model->GetConfigurationData("ch0_outputSoftClip").compare("off") == 0) {
+        ch0_outputSoftClip = 0;
+    }else if(model->GetConfigurationData("ch0_outputSoftClip").compare("on") == 0){
+        ch0_outputSoftClip = 1;
+    }
+    if (model->GetConfigurationData("ch1_outputSoftClip").compare("off") == 0) {
+        ch1_outputSoftClip = 0;
+    }else if(model->GetConfigurationData("ch1_outputSoftClip").compare("on") == 0){
+        ch1_outputSoftClip = 1;
+    }
+
 }
 
 void SoundProcessorManager::led_task(void *pvParams) {

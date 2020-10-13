@@ -200,9 +200,9 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
     }
     filt[ftype]->SetResonance(r);
 
-    uint16_t signature = saturation;
+    int32_t signature = saturation;
     if(cv_saturation != -1){
-        signature = static_cast<uint16_t>(fabsf(data.cv[cv_saturation]) * 65535.f);
+        signature = static_cast<int32_t>(fabsf(data.cv[cv_saturation]) * 65535.f);
     }
     CONSTRAIN(signature, 0, 65535)
 

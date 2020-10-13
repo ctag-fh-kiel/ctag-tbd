@@ -87,7 +87,7 @@ ty_fixeddelay *fixeddelay_make(int size)
   p->size = size;
   p->idx = 0;
   p->buf = (float *)heap_caps_calloc(size*sizeof(float), 1, MALLOC_CAP_SPIRAM);
-  ESP_LOGI("GVERB DSP", "Allocated %d bytes for delay line %p", size*sizeof(float), p->buf);
+  //ESP_LOGI("GVERB DSP", "Allocated %d bytes for delay line %p", size*sizeof(float), p->buf);
   for (i = 0; i < size; i++) p->buf[i] = 0.0;
   return(p);
 }

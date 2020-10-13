@@ -155,12 +155,12 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
         c = static_cast<int32_t>(1750.f + fabsf(data.cv[cv_cutoff]) * (16384.f - 1750.f));
         CONSTRAIN(c, 1750, 16384)
     }
-    uint32_t r = resonance;
+    int32_t r = resonance;
     if(cv_resonance != -1){
         r = static_cast<int32_t>(fabsf(data.cv[cv_resonance]) * 32767.f);
         CONSTRAIN(r, 0, 32767)
     }
-    uint32_t d = detune;
+    int32_t d = detune;
     if(cv_detune != -1){
         d = static_cast<int32_t>(fabsf(data.cv[cv_detune]) * 32767.f);
         CONSTRAIN(d, 0, 32767)
