@@ -8,29 +8,29 @@
       "id": "dly_time",
       "name": "Delay Time / ms",
       "type": "int",
-      "min": "0",
-      "max": "2000"
+      "min": 0,
+      "max": 2000
     },
     {
       "id": "dly_time_bpm",
       "name": "Delay Time / bpm",
       "type": "int",
-      "min": "30",
-      "max": "250"
+      "min": 30,
+      "max": 250
     },
     {
       "id": "dly_sync",
       "name": "Tempo Sync",
       "type": "int",
-      "min": "0",
-      "max": "19"
+      "min": 0,
+      "max": 19
     },
     {
       "id": "dly_feedback",
       "name": "Feedback",
       "type": "int",
-      "min": "0",
-      "max": "4095"
+      "min": 0,
+      "max": 4095
     },
     {
       "id": "freeze",
@@ -41,22 +41,22 @@
       "id": "dly_st_ofs",
       "name": "Stereo Offset",
       "type": "int",
-      "min": "-4095",
-      "max": "4095"
+      "min": -4095,
+      "max": 4095
     },
     {
       "id": "dly_pan_mode",
       "name": "Pan Mode",
       "type": "int",
-      "min": "0",
-      "max": "2"
+      "min": 0,
+      "max": 2
     },
     {
       "id": "dly_panning",
       "name": "Panning",
       "type": "int",
-      "min": "-4095",
-      "max": "4095"
+      "min": -4095,
+      "max": 4095
     },
     {
       "id": "dly_mono",
@@ -67,15 +67,15 @@
       "id": "dly_wet",
       "name": "Wet",
       "type": "int",
-      "min": "0",
-      "max": "4095"
+      "min": 0,
+      "max": 4095
     },
     {
       "id": "dly_dry",
       "name": "Dry",
       "type": "int",
-      "min": "0",
-      "max": "4095"
+      "min": 0,
+      "max": 4095
     },
     {
       "id": "gr_mod",
@@ -86,29 +86,29 @@
           "id": "lfo_amt",
           "name": "Lfo Amount",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "lfo_frq",
           "name": "Lfo Frequency",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "lfo_drift_amt",
           "name": "Lfo Drift Amount",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "lfo_drift_spd",
           "name": "Lfo Drift Speed",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         }
       ]
     },
@@ -121,22 +121,22 @@
           "id": "duck_amt",
           "name": "Ducking Amount",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "duck_atck",
           "name": "Ducking Attack",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "duck_rls",
           "name": "Ducking Release",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         }
       ]
     },
@@ -149,43 +149,43 @@
           "id": "flt_mode",
           "name": "Filter Mode",
           "type": "int",
-          "min": "0",
-          "max": "3"
+          "min": 0,
+          "max": 3
         },
         {
           "id": "flt_co",
           "name": "Cutoff",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "flt_reso",
           "name": "Resonance",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "flt_lfo_freq",
           "name": "LFO Frequency",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "flt_lfo_amt",
           "name": "LFO Amount",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "flt_mix",
           "name": "Filter Mix",
           "type": "int",
-          "min": "0",
-          "max": "4095"
+          "min": 0,
+          "max": 4095
         }
       ]
     }

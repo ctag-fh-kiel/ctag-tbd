@@ -5,9 +5,8 @@
 - Added option of soft clipping for outputs
 - Optimized Moog filters
 - Changed IDF settings for 
-    - Memory allocations, std::vector can now allocate from PSRAM pool
     - Flash speed (OTA updates now faster)
-    - PSRAM speed
+    - SPIRAM speed
 - Fixed many compiler warnings
 - Minor bug fixes and optimizations
 

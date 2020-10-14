@@ -35,10 +35,9 @@ void ctagSoundProcessorSimpleVCA::Process(const ProcessData &data) {
     if(cv_loudness != -1){
         fLoudness = data.cv[cv_loudness]; // range 0 ..1 or -1 .. 1
     }
-    if(fLoudness > 0.f){
-        for(int i=0;i < this->bufSz; i++){
-            data.buf[i*2 + this->processCh] = fLoudness * data.buf[i*2 + this->processCh];
-        }
+
+    for(int i=0;i < this->bufSz; i++){
+        data.buf[i*2 + this->processCh] = fLoudness * data.buf[i*2 + this->processCh];
     }
 }
 
