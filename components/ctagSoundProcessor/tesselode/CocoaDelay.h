@@ -28,7 +28,6 @@ SOFTWARE.
 #include <cmath>
 #include "Util.h"
 #include "helpers/ctagSineSource.hpp"
-#include <vector>
 #include "braids/svf.h"
 
 namespace tesselode{
@@ -149,7 +148,7 @@ namespace tesselode{
         void UpdateDucking(float input);
         void UpdateLfo();
         void UpdateDrift();
-        float GetSample(std::vector<float> &buffer, float position);
+        float GetSample(float *buffer, float position);
         void WriteToBuffer(float *data, int s, float outL, float outR);
 
         float dt = 0.0;
@@ -158,8 +157,12 @@ namespace tesselode{
         float fs = 44100.f;
 
         // delay
+        /*
         std::vector<float> bufferL;
         std::vector<float> bufferR;
+         */
+        float *bufferL, *bufferR;
+        int bufferSize;
         int writePosition;
         float readPositionL;
         float readPositionR;

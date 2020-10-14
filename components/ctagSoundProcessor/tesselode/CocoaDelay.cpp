@@ -29,6 +29,8 @@ SOFTWARE.
 #include "helpers/ctagFastMath.hpp"
 #include "stmlib/stmlib.h"
 #include "stmlib/dsp/dsp.h"
+#include "esp_heap_caps.h"
+#include <cstring>
 
 using namespace tesselode;
 using namespace CTAG::SP::HELPERS;
@@ -38,7 +40,10 @@ CocoaDelay::CocoaDelay() {
     svf_r.Init();
 }
 
-CocoaDelay::~CocoaDelay() {}
+CocoaDelay::~CocoaDelay() {
+    heap_caps_free(bufferL);
+    heap_caps_free(bufferR);
+}
 
 float CocoaDelay::GetDelayTime() {
     float delayTime;
@@ -129,10 +134,17 @@ void CocoaDelay::GetReadPositions(float &l, float &r) {
 }
 
 void CocoaDelay::InitBuffer() {
+    /*
     bufferL.resize(GetSampleRate() * tapeLength);
     bufferR.resize(GetSampleRate() * tapeLength);
     std::fill(bufferL.begin(), bufferL.end(), 0.f);
     std::fill(bufferR.begin(), bufferR.end(), 0.f);
+     */
+    bufferL = (float*)heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    memset(bufferL, 0, sizeof(float) * GetSampleRate() * tapeLength);
+    bufferR = (float*)heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    memset(bufferR, 0, sizeof(float) * GetSampleRate() * tapeLength);
+    bufferSize = GetSampleRate() * tapeLength;
     writePosition = 0.0f;
     GetReadPositions(readPositionL, readPositionR);
 }
@@ -146,7 +158,7 @@ void CocoaDelay::UpdateReadPositions() {
 
 void CocoaDelay::UpdateWritePosition() {
     writePosition += 1;
-    writePosition %= bufferL.size();
+    writePosition %= bufferSize;
 }
 
 void CocoaDelay::UpdateParameters() {
@@ -190,11 +202,11 @@ void CocoaDelay::UpdateDrift() {
     driftPhase += driftVelocity * dt;
 }
 
-float CocoaDelay::GetSample(std::vector<float> &buffer, float position) {
-    int p0 = wrap(floorf(position) - 1, 0, buffer.size() - 1);
-    int p1 = wrap(floorf(position), 0, buffer.size() - 1);
-    int p2 = wrap(ceilf(position), 0, buffer.size() - 1);
-    int p3 = wrap(ceilf(position) + 1, 0, buffer.size() - 1);
+float CocoaDelay::GetSample(float *buffer, float position) {
+    int p0 = wrap(floorf(position) - 1, 0, bufferSize - 1);
+    int p1 = wrap(floorf(position), 0, bufferSize - 1);
+    int p2 = wrap(ceilf(position), 0, bufferSize - 1);
+    int p3 = wrap(ceilf(position) + 1, 0, bufferSize - 1);
 
     float x = position - floorf(position);
     float y0 = buffer[p0];
