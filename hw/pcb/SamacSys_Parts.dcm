@@ -1,0 +1,27 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP NE555DR
+D Single Precision Timer
+K
+F http://www.ti.com/lit/ds/symlink/ne555.pdf
+$ENDCMP
+#
+$CMP MIMXRT1051DVL6B
+D NXP - MIMXRT1051DVL6B - I.MX RT1050 CROSSOVER PROCESSOR
+K
+F https://componentsearchengine.com/Datasheets/1/MIMXRT1051DVL6B.pdf
+$ENDCMP
+#
+$CMP MDF7-5S-2.54DSA(55)
+D Board to Board & Mezzanine Connectors REC 5POS SINGLE TIN
+K
+F https://componentsearchengine.com/Datasheets/1/MDF7-5S-2.54DSA(55).pdf
+$ENDCMP
+#
+$CMP WM8978CGEFL_V
+D Interface - CODECs Stereo Codec w H/P SPKR
+K
+F https://componentsearchengine.com/Datasheets/1/WM8978CGEFL_V.pdf
+$ENDCMP
+#
+#End Doc Library

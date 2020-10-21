@@ -4,9 +4,9 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 4 6
-Title "CTAG TBD Eurorack Audio Module"
-Date "2020-03-18"
-Rev "B"
+Title "ESP32 Eurorack Audio Module"
+Date "2020-08-18"
+Rev "G"
 Comp "(c) Robert Manzke 2020"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"

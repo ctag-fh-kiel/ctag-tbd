@@ -25,7 +25,9 @@ respective component folders / files if different from this license.
 #include <cmath>
 #include <cstdint>
 #include "ctagWNoiseGen.hpp"
+#ifndef TBD_SIM
 #include "xtensa/core-macros.h"
+#endif
 
 // after supercollider dust
 
@@ -33,7 +35,11 @@ namespace CTAG::SP::HELPERS {
     class ctagDustGen {
     public:
         ctagDustGen() :
+#ifndef TBD_SIM
                 wnoise(XTHAL_GET_CCOUNT()) // seed noise generator with system tick count
+#else
+                wnoise(42)
+#endif
         {
             wnoise.SetBipolar(false);
             isBipolar = false;

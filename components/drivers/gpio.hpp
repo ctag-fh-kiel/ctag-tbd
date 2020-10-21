@@ -30,6 +30,9 @@ namespace CTAG{
         static void InitGPIO();
         static uint8_t GetTrig0();
         static uint8_t GetTrig1();
+    private:
+        static uint32_t t0delay;
+        static uint32_t t1delay;
     };
   }
 }

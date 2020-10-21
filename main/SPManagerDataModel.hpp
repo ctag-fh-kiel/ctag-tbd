@@ -58,7 +58,11 @@ namespace CTAG{
             void validateActiveProcessors();
             void validatePatches();
             Document m;
+#ifndef TBD_SIM
             const string MODELJSONFN = "/spiffs/data/spm-config.jsn";
+#else
+            const string MODELJSONFN = "../../spiffs_image/data/spm-config.jsn";
+#endif
         };
     }
 }

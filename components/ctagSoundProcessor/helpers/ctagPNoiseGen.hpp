@@ -64,6 +64,8 @@ namespace CTAG::SP::HELPERS{
                  * Subtract and add back to RunningSum instead of adding all the random
                  * values together. Only one changes each time.
                  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshift-count-overflow"
                 pink.pink_RunningSum -= pink.pink_Rows[numZeros];
                 newRandom = ((int32_t)GenerateRandomNumber()) >> PINK_RANDOM_SHIFT;
                 pink.pink_RunningSum += newRandom;
@@ -73,6 +75,7 @@ namespace CTAG::SP::HELPERS{
 /* Add extra white noise value. */
             newRandom = ((int32_t)GenerateRandomNumber()) >> PINK_RANDOM_SHIFT;
             sum = pink.pink_RunningSum + newRandom;
+#pragma GCC diagnostic pop
 
 /* Scale to range of -1.0 to 0.9999. */
             output = pink.pink_Scalar * sum;

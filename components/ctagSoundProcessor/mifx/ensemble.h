@@ -106,8 +106,69 @@ class Ensemble {
       right++;
     }
   }
-  
-  inline void set_amount(float amount) {
+
+    void Process(float* buf, size_t size) {
+        typedef E::Reserve<2047, E::Reserve<2047> > Memory;
+        E::DelayLine<Memory, 0> line_l;
+        E::DelayLine<Memory, 1> line_r;
+        E::Context c;
+
+        while (size--) {
+            engine_.Start(&c);
+            float dry_amount = 1.0f - amount_ * 0.5f;
+
+            // Update LFO.
+            phase_1_ += 1.57e-05f;
+            if (phase_1_ >= 1.0f) {
+                phase_1_ -= 1.0f;
+            }
+            phase_2_ += 1.37e-04f;
+            if (phase_2_ >= 1.0f) {
+                phase_2_ -= 1.0f;
+            }
+            int32_t phi_1 = (phase_1_ * 4096.0f);
+            float slow_0 = rings::lut_sine[phi_1 & 4095];
+            float slow_120 = rings::lut_sine[(phi_1 + 1365) & 4095];
+            float slow_240 = rings::lut_sine[(phi_1 + 2730) & 4095];
+            int32_t phi_2 = (phase_2_ * 4096.0f);
+            float fast_0 = rings::lut_sine[phi_2 & 4095];
+            float fast_120 = rings::lut_sine[(phi_2 + 1365) & 4095];
+            float fast_240 = rings::lut_sine[(phi_2 + 2730) & 4095];
+
+            float a = depth_ * 1.0f;
+            float b = depth_ * 0.1f;
+
+            float mod_1 = slow_0 * a + fast_0 * b;
+            float mod_2 = slow_120 * a + fast_120 * b;
+            float mod_3 = slow_240 * a + fast_240 * b;
+
+            float wet = 0.0f;
+
+            // Sum L & R channel to send to chorus line.
+            float *left = buf;
+            float *right = buf + 1;
+            c.Read(*left, 1.0f);
+            c.Write(line_l, 0.0f);
+            c.Read(*right, 1.0f);
+            c.Write(line_r, 0.0f);
+
+            c.Interpolate(line_l, mod_1 + 1024, 0.33f);
+            c.Interpolate(line_l, mod_2 + 1024, 0.33f);
+            c.Interpolate(line_r, mod_3 + 1024, 0.33f);
+            c.Write(wet, 0.0f);
+            *left = wet * amount_ + *left * dry_amount;
+
+            c.Interpolate(line_r, mod_1 + 1024, 0.33f);
+            c.Interpolate(line_r, mod_2 + 1024, 0.33f);
+            c.Interpolate(line_l, mod_3 + 1024, 0.33f);
+            c.Write(wet, 0.0f);
+            *right = wet * amount_ + *right * dry_amount;
+            buf+=2;
+        }
+    }
+
+
+    inline void set_amount(float amount) {
     amount_ = amount;
   }
   

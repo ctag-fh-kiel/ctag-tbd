@@ -72,7 +72,7 @@ void FV3_(progenitor2)::processreplace(fv3_float_t *inputL, fv3_float_t *inputR,
   int32_t count = numsamples*getOSFactor();
   //growWave(count);
 
-  fv3_float_t outL, outR, *origOutL = outputL, *origOutR = outputR;
+  fv3_float_t outL, outR;
   //SRC.usrc(inputL, inputR, over.L, over.R, numsamples);
   //inputL = over.L; inputR = over.R; outputL = overO.L; outputR = overO.R;
 

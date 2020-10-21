@@ -35,10 +35,10 @@ namespace CTAG{
     namespace SP{
         class ctagSoundProcessorHihat1 : public ctagSoundProcessor{
             public: 
-                void Process(const ProcessData &);
+                void Process(const ProcessData &) override;
                 ~ctagSoundProcessorHihat1();
                 ctagSoundProcessorHihat1();
-                const char * GetCStrID() const;
+                const char * GetCStrID() const override;
             private:
                 void setParamValueInternal(const string &id, const string &key, const int val) override;
                 void loadPresetInternal() override;

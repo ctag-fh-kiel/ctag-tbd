@@ -1,6 +1,3 @@
-include(${COMPONENT_DIR}/cmake/bin2h.cmake)
-include(${COMPONENT_DIR}/cmake/JSONParser.cmake)
-
 # get all sound processor files
 file(GLOB SOUND_PROCESSORS ctagSoundProcessor*.cpp)
 # clean generated directory
@@ -38,13 +35,23 @@ file(GLOB SRCS_FILES
     freeverb3/*.cpp
     freeverb3/*.h
     mifx/*.h
+    polypad/*.hpp
+    polypad/*.cpp
+    filters/*.hpp
+    filters/*.cpp
+    tesselode/*.h
+    tesselode/*.cpp
     ${CMAKE_BINARY_DIR}/gen_include/*.hpp
 )
 
-
-idf_component_register(SRCS ${SRCS_FILES} 
-                    INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
-                    PRIV_REQUIRES rapidjson esp-dsp mutable)
+if(TBD_SIM)
+    add_library(ctagsp STATIC ${SRCS_FILES})
+    target_include_directories(ctagsp PRIVATE . ${CMAKE_BINARY_DIR}/gen_include)
+else()
+    idf_component_register(SRCS ${SRCS_FILES}
+            INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
+            PRIV_REQUIRES rapidjson esp-dsp mutable moog)
+endif()
 
 #set_source_files_properties(ctagSoundProcessorGDVerb.cpp
 #        PROPERTIES COMPILE_FLAGS

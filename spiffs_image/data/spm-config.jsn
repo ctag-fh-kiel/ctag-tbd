@@ -18,6 +18,8 @@
     "cv_ch3": "unipolar",
     "ng_config": "off",
     "ch0_toStereo": "off",
-    "ch1_toStereo": "off"
+    "ch1_toStereo": "off",
+    "ch0_outputSoftClip": "on",
+    "ch1_outputSoftClip": "on"
   }
 }

@@ -1,66 +1,83 @@
-/***************
-CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
-
-A project conceived within the Creative Technologies Arbeitsgruppe of
-Kiel University of Applied Sciences: https://www.creative-technologies.de
-
-(c) 2020 by Robert Manzke. All rights reserved.
-
-The CTAG TBD software is licensed under the GNU General Public License
-(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
-
-The CTAG TBD hardware design is released under the Creative Commons
-Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
-Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
-CTAG TBD is provided "as is" without any express or implied warranties.
-
-License and copyright details for specific submodules are included in their
-respective component folders / files if different from this license.
-***************/
-
-
 #pragma once
 
-#include <cstdint>
+//
+//  watch this https://youtu.be/0oreYmOWgYE
+//
+//  Created by Nigel Redmon on 12/18/12.
+//  EarLevel Engineering: earlevel.com
+//  Copyright 2012 Nigel Redmon
+//
+//  For a complete explanation of the ADSR envelope generator and code,
+//  read the series of articles by the author, starting here:
+//  http://www.earlevel.com/main/2013/06/01/envelope-generators/
+//
+//  License:
+//
+//  This source code is provided as is, without warranty.
+//  You may copy and distribute verbatim copies of this document.
+//  You may modify and use this source code to create binary code for your own purposes, free or commercial.
+//
+//  1.01  2016-01-02  njr   added calcCoef to SetTargetRatio functions that were in the ADSR widget but missing in this code
+//  1.02  2017-01-04  njr   in calcCoef, checked for rate 0, to support non-IEEE compliant compilers
+//  1.03  2020-04-08  njr   changed float to float; large target ratio and rate resulted in exp returning 1 in calcCoef
+//
+// used some optimization on the exp approximation, it has to be accurate for very small exponents
 
 namespace CTAG{
     namespace SP{
         namespace HELPERS{
             class ctagADSREnv {
             public:
-                float Process();
+                ctagADSREnv(void);
+                ~ctagADSREnv(void);
+                float Process(void);
+                float GetOutput(void);
+                int GetState(void);
+                void Gate(bool gate);
+                void SetAttack(float rate);
+                void SetDecay(float rate);
+                void SetRelease(float rate);
+                void SetSustain(float level);
+                void SetTargetRatioA(float targetRatio);
+                void SetTargetRatioDR(float targetRatio);
+                void Reset(void);
                 void SetSampleRate(float fs_hz);
-                void SetAttack(float a_s);
-                void SetDecay(float d_s);
-                void SetSustain(float s_s);
-                void SetRelease(float r_s);
-                void Gate(bool isGate);
+                bool IsIdle();
                 void SetModeLin();
                 void SetModeExp();
-            private:
-                enum class EnvStateType : uint32_t{
-                    STATE_IDLE,
-                    STATE_ATTACK,
-                    STATE_DECAY,
-                    STATE_SUSTAIN,
-                    STATE_RELEASE
+                void Hold();
+
+
+                enum envState {
+                    env_idle = 0,
+                    env_attack,
+                    env_decay,
+                    env_sustain,
+                    env_release
                 };
-                enum class EnvModeType : uint32_t{
-                    MODE_LIN,
-                    MODE_LOG
-                };
-                EnvStateType envState = EnvStateType::STATE_IDLE;
-                EnvModeType envMode = EnvModeType::MODE_LOG;
-                float envAccum = 0.f;
-                float attack = 0.5f;
-                float decay = 0.5f;
-                float sustain = 0.5f;
-                float release = 0.5f;
-                float fSample = 0.f, tSample = 0.f;
-                bool preGate = false;
+
+            protected:
+                int state;
+                float fs;
+                float output;
+                float attackRate;
+                float decayRate;
+                float releaseRate;
+                float attackCoef;
+                float decayCoef;
+                float releaseCoef;
+                float sustainLevel;
+                float targetRatioA;
+                float targetRatioDR;
+                float attackBase;
+                float decayBase;
+                float releaseBase;
+
+                float calcCoef(float rate, float targetRatio);
             };
         }
     }
 }
+
+
 
