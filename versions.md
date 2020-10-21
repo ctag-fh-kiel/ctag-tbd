@@ -1,5 +1,8 @@
 # CTAG TBD Version Log
 
+## V0.9.2b
+   - Bug fix, calibration
+
 ## V0.9.2
 - Added CDelay delay effect (adapted and modified version of Cocoa Delay by tesselode)
 - Added option of soft clipping for outputs
