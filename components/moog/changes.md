@@ -1,0 +1,4 @@
+- fastmath
+- double --> float
+- namespaces
+

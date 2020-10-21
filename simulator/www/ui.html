@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+/***************
+CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
+
+A project conceived within the Creative Technologies Arbeitsgruppe of
+Kiel University of Applied Sciences: https://www.creative-technologies.de
+
+(c) 2020 by Robert Manzke. All rights reserved.
+
+The CTAG TBD software is licensed under the GNU General Public License
+(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
+
+The CTAG TBD hardware design is released under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+CTAG TBD is provided "as is" without any express or implied warranties.
+
+License and copyright details for specific submodules are included in their
+respective component folders / files if different from this license.
+***************/
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="-1"/>
+    <link rel="stylesheet" href="/css/onsenui-core.min.css">
+    <link rel="stylesheet" href="/css/onsen-css-c.min.css">
+    <script src="/js/onsenui.min.js"></script>
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script src="/js/ajaxq.js"></script>
+    <title>TBD Test UI</title>
+</head>
+<body>
+<ons-navigator swipeable id="myNavigator" page="main.html"></ons-navigator>
+</ons-navigator>
+
+<template id="main.html">
+    <ons-page id="main">
+        <ons-toolbar>
+            <div class="center">CTAG-TBD-SIM</div>
+        </ons-toolbar>
+        <ons-list>
+            <ons-list-header>TRIG0</ons-list-header>
+            <ons-list-item>
+                <ons-select>
+                    <select id="mode0" onchange="sendAllData()">
+                        <option value="0">Manual</option>
+                        <option value="1">Pulse train</option>
+                    </select>
+                </ons-select>
+            </ons-list-item>
+            <ons-list-item>
+                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value0" min="0" max="4095" value="0"></ons-range>
+            </ons-list-item>
+        </ons-list>
+        <ons-list>
+            <ons-list-header>TRIG1</ons-list-header>
+            <ons-list-item>
+                <ons-select>
+                    <select id="mode1" onchange="sendAllData()">
+                        <option value="0">Manual</option>
+                        <option value="1">Pulse train</option>
+                    </select>
+                </ons-select>
+            </ons-list-item>
+            <ons-list-item>
+                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value1" min="0" max="4095" value="0"></ons-range>
+            </ons-list-item>
+        </ons-list>
+        <ons-list>
+            <ons-list-header>CV0</ons-list-header>
+            <ons-list-item>
+                <ons-select>
+                    <select id="mode2" onchange="sendAllData()">
+                        <option value="0">Manual</option>
+                        <option value="1">Pulse train</option>
+                        <option value="2">Sine wave unipolar</option>
+                        <option value="3">Sine wave bipolar</option>
+                        <option value="4">Steps -5:5:1</option>
+                    </select>
+                </ons-select>
+            </ons-list-item>
+            <ons-list-item>
+                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value2" min="0" max="4095" value="0"></ons-range>
+            </ons-list-item>
+        </ons-list>
+        <ons-list>
+            <ons-list-header>CV1</ons-list-header>
+            <ons-list-item>
+                <ons-select>
+                    <select id="mode3" onchange="sendAllData()">
+                        <option value="0">Manual</option>
+                        <option value="1">Pulse train</option>
+                        <option value="2">Sine wave unipolar</option>
+                        <option value="3">Sine wave bipolar</option>
+                        <option value="4">Steps -5:5:1</option>
+                    </select>
+                </ons-select>
+            </ons-list-item>
+            <ons-list-item>
+                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value3" min="0" max="4095" value="0"></ons-range>
+            </ons-list-item>
+        </ons-list>
+        <ons-list>
+            <ons-list-header>POT0</ons-list-header>
+            <ons-list-item>
+                <ons-select>
+                    <select id="mode4" onchange="sendAllData()">
+                        <option value="0">Manual</option>
+                        <option value="1">Pulse train</option>
+                        <option value="2">Sine wave unipolar</option>
+                        <option value="3">Sine wave bipolar</option>
+                        <option value="4">Steps -5:5:1</option>
+                    </select>
+                </ons-select>
+            </ons-list-item>
+            <ons-list-item>
+                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value4" min="0" max="4095" value="0"></ons-range>
+            </ons-list-item>
+        </ons-list>
+        <ons-list>
+            <ons-list-header>POT1</ons-list-header>
+            <ons-list-item>
+                <ons-select>
+                    <select id="mode5" onchange="sendAllData()">
+                        <option value="0">Manual</option>
+                        <option value="1">Pulse train</option>
+                        <option value="2">Sine wave unipolar</option>
+                        <option value="3">Sine wave bipolar</option>
+                        <option value="4">Steps -5:5:1</option>
+                    </select>
+                </ons-select>
+            </ons-list-item>
+            <ons-list-item>
+                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value5" min="0" max="4095" value="0"></ons-range>
+            </ons-list-item>
+        </ons-list>
+        <script>
+            ons.getScriptPage().onInit = function () {
+                $.getq('myq', 'ctrl-get',
+                    data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
+                        for(let i=0;i<6;i++){
+                            $('#mode'+i).val(data.mode[i]);
+                            $('#value'+i).val(data.value[i]);
+                        }
+                    }
+                );
+                this.onShow = function () {
+                    //console.log('Main');
+                };
+            };
+            function sendAllData(){
+                let allData = {mode:[], value:[]};
+                for(let i=0;i<6;i++){
+                    allData.mode.push($('#mode'+i).val());
+                    allData.value.push($('#value'+i).val());
+                }
+                $.ajaxq('myq', {
+                    url: '/ctrl-set',
+                    type: 'post',
+                    data: JSON.stringify(allData)
+                });
+            }
+        </script>
+    </ons-page>
+</template>
+</body>
+</html>

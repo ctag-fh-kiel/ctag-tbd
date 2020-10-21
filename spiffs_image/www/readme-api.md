@@ -1,5 +1,7 @@
 # CTAG-TBD API V1
 **URL** : `/api/v1`
+
+Note: This API does not strictly follow HTTP / REST semantics, maybe it should be improved in future
 ___
 
 ####URL: `/getPlugins`

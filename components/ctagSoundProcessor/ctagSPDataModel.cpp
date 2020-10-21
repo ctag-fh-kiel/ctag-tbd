@@ -26,15 +26,21 @@ respective component folders / files if different from this license.
 #include "rapidjson/stringbuffer.h"
 #include "esp_log.h"
 
+#ifndef TBD_SIM
+#define SPIFFS_PATH "/spiffs"
+#else
+#define SPIFFS_PATH "../../spiffs_image"
+#endif
+
 using namespace CTAG::SP;
 
 ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo)
 {
     // acquire data from json files ui model and patch model
-    muiFileName = string("/spiffs/data/sp/mui-") + id + string(".jsn");
+    muiFileName = string(string(SPIFFS_PATH) + "/data/sp/mui-") + id + string(".jsn");
     //std::cout << "Reading " << muiFileName << std::endl;
     loadJSON(mui, muiFileName);
-    mpFileName = string("/spiffs/data/sp/mp-") + id + string(".jsn");
+    mpFileName = string(string(SPIFFS_PATH) + "/data/sp/mp-") + id + string(".jsn");
     //std::cout << "Reading " << mpFileName << std::endl;
     loadJSON(mp, mpFileName);
     // load last activated preset

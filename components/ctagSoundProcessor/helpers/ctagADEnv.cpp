@@ -19,11 +19,6 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-
-//
-// Created by Robert Manzke on 09.02.20.
-//
-
 #include "ctagADEnv.hpp"
 
 using namespace CTAG::SP;

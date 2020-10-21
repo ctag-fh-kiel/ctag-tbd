@@ -1,0 +1,217 @@
+{
+ "id": "PolyPad",
+ "isStereo": false,
+ "name": "PolyPad",
+ "hint": "PolyPad Synthesizer",
+ "params": [
+  {
+   "id": "gr_osc",
+   "name": "Voice Parameters",
+   "type": "group",
+   "params": [
+    {
+     "id": "gain",
+     "name": "Gain",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "pitch",
+     "name": "Pitch",
+     "type": "int",
+     "min": 0,
+     "max": 16383,
+     "step": 1
+    },
+    {
+     "id": "q_scale",
+     "name": "Quantization Scale",
+     "type": "int",
+     "min": 0,
+     "max": 47,
+     "step": 1
+    },
+    {
+     "id": "chord",
+     "name": "Chord",
+     "type": "int",
+     "min": 0,
+     "max": 17,
+     "step": 1
+    },
+    {
+     "id": "inversion",
+     "name": "Inversion",
+     "type": "int",
+     "min": -2,
+     "max": 2,
+     "step": 1
+    },
+    {
+     "id": "detune",
+     "name": "Detune",
+     "type": "int",
+     "min": 0,
+     "max": 32767,
+     "step": 1
+    },
+    {
+     "id": "nnotes",
+     "name": "Number Notes",
+     "type": "int",
+     "min": 1,
+     "max": 4,
+     "step": 1
+    },
+    {
+     "id": "ncvoices",
+     "name": "Number Chord Voices",
+     "type": "int",
+     "min": 1,
+     "max": 8,
+     "step": 1
+    },
+    {
+     "id": "voicehold",
+     "name": "Hold Pre Voice",
+     "type": "bool",
+     "hint": "hold previous voice"
+    },
+    {
+     "id": "lfo1_freq",
+     "name": "Vibrato Frequency",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "lfo1_amt",
+     "name": "Vibrato Amount",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "gr_filter",
+   "name": "Filter",
+   "type": "group",
+   "params": [
+    {
+     "id": "filter_type",
+     "name": "Filter Type",
+     "type": "int",
+     "min": 0,
+     "max": 2,
+     "step": 1
+    },
+    {
+     "id": "cutoff",
+     "name": "Cutoff",
+     "type": "int",
+     "min": 1750,
+     "max": 16383,
+     "step": 1
+    },
+    {
+     "id": "resonance",
+     "name": "Resonance",
+     "type": "int",
+     "min": 0,
+     "max": 32767,
+     "step": 1
+    },
+    {
+     "id": "lfo2_freq",
+     "name": "Filter FM Frequency",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "lfo2_amt",
+     "name": "Filter FM Amount",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "lfo2_rphase",
+     "name": "Filter FM Random Phase",
+     "type": "bool"
+    },
+    {
+     "id": "eg_filt_amt",
+     "name": "Filter EG Amount",
+     "type": "int",
+     "min": -4095,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "env",
+   "name": "Envelope",
+   "type": "group",
+   "params": [
+    {
+     "id": "enableEG",
+     "name": "Trigger EG",
+     "type": "bool"
+    },
+    {
+     "id": "latchEG",
+     "name": "EG Latch Mode",
+     "type": "bool",
+     "hint": "latches trigger"
+    },
+    {
+     "id": "eg_slow_fast",
+     "name": "EG Fast / Slow",
+     "type": "bool",
+     "hint": "slow or fast"
+    },
+    {
+     "id": "attack",
+     "name": "Attack",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "decay",
+     "name": "Decay",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "sustain",
+     "name": "Sustain",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "release",
+     "name": "Release",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  }
+ ]
+}

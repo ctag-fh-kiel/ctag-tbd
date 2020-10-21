@@ -89,19 +89,19 @@ void ctagSoundProcessorDust::Process(const ProcessData &data){
     if(bp_enable){
         if(trig_bp_enable != -1) {
             if(data.trig[trig_bp_enable] == 1)
-                dsps_biquad_f32_ae32(tmp, tmp, bufSz, coeffs, w1);
+                dsps_biquad_f32(tmp, tmp, bufSz, coeffs, w1);
         }else{
-            dsps_biquad_f32_ae32(tmp, tmp, bufSz, coeffs, w1);
+            dsps_biquad_f32(tmp, tmp, bufSz, coeffs, w1);
         }
     }else{
         if(trig_bp_enable != -1) {
             if(data.trig[trig_bp_enable] == 0)
-                dsps_biquad_f32_ae32(tmp, tmp, bufSz, coeffs, w1);
+                dsps_biquad_f32(tmp, tmp, bufSz, coeffs, w1);
         }
     }
 
     // cascade
-    //dsps_biquad_f32_ae32(tmp, tmp, bufSz, coeffs, w2);
+    //dsps_biquad_f32(tmp, tmp, bufSz, coeffs, w2);
     float fLevel = (float) level / 4095.f;
     if(cvLevel != -1){
         fLevel = data.cv[cvLevel];

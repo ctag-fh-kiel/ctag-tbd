@@ -20,6 +20,7 @@
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 
+
 RAPIDJSON_NAMESPACE_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,7 +83,6 @@ public:
         //ESP_LOGI("CrtAllocator", "Allocating %d bytes", size);
         if (size) //  behavior of malloc(0) is implementation defined.
             return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
-            //return std::malloc(size);
         else
             return NULL; // standardize to returning NULL.
     }
@@ -91,15 +91,13 @@ public:
         //ESP_LOGI("CrtAllocator", "Re-allocating %d bytes", newSize);
         if (newSize == 0) {
             heap_caps_free(originalPtr);
-            //std::free(originalPtr);
             return NULL;
         }
-        return heap_caps_realloc(originalPtr, newSize, MALLOC_CAP_SPIRAM);//std::realloc(originalPtr, newSize);
+        return heap_caps_realloc(originalPtr, newSize, MALLOC_CAP_SPIRAM);
     }
     static void Free(void *ptr) {
         //ESP_LOGI("CrtAllocator", "Freeing");
         heap_caps_free(ptr);
-        /*std::free(ptr);*/
     }
 };
 

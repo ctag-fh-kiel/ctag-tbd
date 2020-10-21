@@ -82,6 +82,7 @@ respective component folders / files if different from this license.
                 $.getq('myq',
                     'api/v1/getPlugins',
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         // sort array by name
                         data.sort((a, b) => a.name.localeCompare(b.name, undefined, {numberic: true}));
                         // populate plugin list
@@ -110,6 +111,7 @@ respective component folders / files if different from this license.
                 $.getq('myq',
                     '/api/v1/getActivePlugin/0',
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         $('#plugin-select-ch0').val(data.id);
                         if (window.plugins.find(el => el.id === data.id).isStereo) {
                             $('#go-ch1,#load-ch1,#save-ch1').prop("disabled", true);
@@ -123,6 +125,7 @@ respective component folders / files if different from this license.
                 $.getq('myq',
                     '/api/v1/getActivePlugin/1',
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         $('#plugin-select-ch1').val(data.id);
                     }
                 );
@@ -251,6 +254,20 @@ respective component folders / files if different from this license.
                 <option value="mix">Mix with CH0</option>
             </ons-select>
         </ons-list-item>
+        <ons-list-header>CH0 Soft Clip Output</ons-list-header>
+        <ons-list-item>
+            <ons-select id="ch0-sco-config">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-header>CH1 Soft Clip Output</ons-list-header>
+        <ons-list-item>
+            <ons-select id="ch1-sco-config">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+            </ons-select>
+        </ons-list-item>
         <ons-list-header>Wifi Configuration</ons-list-header>
         <ons-list-item>
             <div style="text-align: center; margin-top: 10px;">
@@ -351,6 +368,8 @@ respective component folders / files if different from this license.
                         $('#ng-config').val(data["ng_config"]);
                         $('#ch0-stereo-config').val(data["ch0_toStereo"]);
                         $('#ch1-stereo-config').val(data["ch1_toStereo"]);
+                        $('#ch0-sco-config').val(data["ch0_outputSoftClip"]);
+                        $('#ch1-sco-config').val(data["ch1_outputSoftClip"]);
                         $('#wifi-mode').val(data["wifi"].mode);
                         $('#ssid').val(data["wifi"].ssid);
                         $('#pwd').val(data["wifi"].pwd);
@@ -394,6 +413,18 @@ respective component folders / files if different from this license.
                         });
                         $('#ch1-stereo-config').on('change', function () {
                             cfgData.ch1_toStereo = $('#ch1-stereo-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ch0-sco-config').on('change', function () {
+                            cfgData.ch0_outputSoftClip = $('#ch0-sco-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ch1-sco-config').on('change', function () {
+                            cfgData.ch1_outputSoftClip = $('#ch1-sco-config').val();
                             $.postq('myq', 'api/v1/setConfiguration',
                                 JSON.stringify(cfgData), 'json'
                             );
@@ -741,6 +772,7 @@ respective component folders / files if different from this license.
                 let ch = this.data.ch;
                 $.getq('myq', 'api/v1/getPresets/' + this.data.ch,
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         let presets = data.presets;
                         $('#preset-input').append(
                             '<div style="text-align: center; margin-top: 30px;">' +
@@ -791,6 +823,7 @@ respective component folders / files if different from this license.
                 let ch = this.data.ch;
                 $.getq('myq', 'api/v1/getPresets/' + this.data.ch,
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         data.presets.forEach(el => {
                                 if (data.activePresetNumber == el.number)
                                     $('#patch-list').append(
@@ -993,6 +1026,7 @@ respective component folders / files if different from this license.
                 $.getq('myq',
                     '/api/v1/getPluginParams/' + this.data.ch,
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         data.params.forEach(el => renderParams(this.data.ch, $('#params-list'), el));
                         //console.log($('#params-list'));
                         //console.log(data);

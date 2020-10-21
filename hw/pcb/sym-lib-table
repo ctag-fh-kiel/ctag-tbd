@@ -1,3 +1,4 @@
 (sym_lib_table
   (lib (name ESP32-Eurorack-Audio-rescue)(type Legacy)(uri ${KIPRJMOD}/ESP32-Eurorack-Audio-rescue.lib)(options "")(descr ""))
+  (lib (name SamacSys_Parts)(type Legacy)(uri ${KIPRJMOD}/SamacSys_Parts.lib)(options "")(descr ""))
 )

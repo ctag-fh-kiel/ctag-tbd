@@ -88,5 +88,5 @@ void CTAG::SP::HELPERS::ctagBiQuad::calcCoeffs(){
 }
 
 void ctagBiQuad::Process(float *data, const uint32_t sz) {
-    dsps_biquad_f32_ae32(data, data, sz, coeff, w);
+    dsps_biquad_f32(data, data, sz, coeff, w);
 }

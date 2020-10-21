@@ -9,8 +9,10 @@ add_definitions(
         -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 # rapidjson
         -DRAPIDJSON_HAS_STDSTRING=1 # rapidjson
         -Wno-unused-local-typedefs
+        # https://stackoverflow.com/questions/22931147/stdisinf-does-not-work-with-ffast-math-how-to-check-for-infinity
+        # -ffast-math
+        # -ffast-math -fno-finite-math-only
 )
-
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(ctag-tbd)

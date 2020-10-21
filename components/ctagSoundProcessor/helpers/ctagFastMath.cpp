@@ -12,7 +12,7 @@ namespace CTAG::SP::HELPERS {
         union {
             uint32_t i;
             float f;
-        } v = {(uint32_t) ((1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))};
+        } v = {(uint32_t)((1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))};
         return v.f;
     }
 
@@ -79,7 +79,7 @@ namespace CTAG::SP::HELPERS {
         union {
             uint32_t i;
             float f;
-        } v = {(uint32_t) ((1 << 23) * (clipp + 126.94269504f))};
+        } v = {(uint32_t)((1 << 23) * (clipp + 126.94269504f))};
         return v.f;
     }
 
@@ -108,6 +108,10 @@ namespace CTAG::SP::HELPERS {
         return (val + log_2);
     }
 
+    float fast_logN(float val){
+        const float LN_2 = 0.693147180559945f; // log 2 base e
+        return LN_2 * fast_log2(val);
+    }
 
     float fast_log10(float val) {
         const float LOG10_2 = 0.301029995663981f; // log 2 base 10
@@ -122,8 +126,7 @@ namespace CTAG::SP::HELPERS {
         return fasterpow10(val / 20.f);
     }
 
-    void dsps_biquad_gen_lpf_f32(float *coeffs, float f, float qFactor)
-    {
+    void dsps_biquad_gen_lpf_f32(float *coeffs, float f, float qFactor) {
         if (qFactor <= 0.0001) {
             qFactor = 0.0001;
         }
@@ -175,8 +178,7 @@ namespace CTAG::SP::HELPERS {
     }
 
 
-    void dsps_biquad_gen_bpf0db_f32(float *coeffs, float f, float qFactor)
-    {
+    void dsps_biquad_gen_bpf0db_f32(float *coeffs, float f, float qFactor) {
         if (qFactor <= 0.0001) {
             qFactor = 0.0001;
         }
@@ -211,16 +213,135 @@ namespace CTAG::SP::HELPERS {
         const float LOG2_E = 1.4426950408889634f; // log e base 2
         return fastpow2(p * LOG2_E);
     }
+
     // from https://github.com/ekmett/approximate/blob/master/cbits/fast.c
+    /* 1065353216 - 722019 */
+    float logf_fast_ub(float a) {
+        union {
+            float f;
+            int x;
+        } u = {a};
+        return (u.x - 1064631197) * 8.262958405176314e-8f; /* 1 / 12102203.0; */
+    }
+
+    // https://stackoverflow.com/questions/10552280/fast-exp-calculation-possible-to-improve-accuracy-without-losing-too-much-perfo
+    float another_fast_exp (float x)
+    {
+        volatile union {
+            float f;
+            unsigned int i;
+        } cvt;
+
+        /* exp(x) = 2^i * 2^f; i = floor (log2(e) * x), 0 <= f <= 1 */
+        float t = x * 1.442695041f;
+        float fi = floorf (t);
+        float f = t - fi;
+        int i = (int)fi;
+        cvt.f = (0.3371894346f * f + 0.657636276f) * f + 1.00172476f; /* compute 2^f */
+        cvt.i += (i << 23);                                          /* scale by 2^i */
+        return cvt.f;
+    }
+
+    // from https://github.com/ekmett/approximate/blob/master/cbits/fast.c
+    /*
+ These constants are based loosely on the following comment off of Ankerl's blog:
+ "I have used the same trick for float, not double, with some slight modification to the constants to suite IEEE754 float format. The first constant for float is 1<<23/log(2) and the second is 127<<23 (for double they are 1<<20/log(2) and 1023<<20)." -- John
+*/
+
+/* 1065353216 + 1      = 1065353217 ub */
+/* 1065353216 - 486411 = 1064866805 min RMSE */
+/* 1065353216 - 722019 = 1064631197 lb */
+    float powf_fast(float a, float b) {
+        union { float d; int x; } u = { a };
+        u.x = (int)(b * (u.x - 1064866805) + 1064866805);
+        return u.d;
+    }
+
+    float powf_fast_lb(float a, float b) {
+        union { float d; int x; } u = { a };
+        u.x = (int)(b * (u.x - 1065353217) + 1064631197);
+        return u.d;
+    }
+
+    float powf_fast_ub(float a, float b) {
+        union { float d; int x; } u = { a };
+        u.x = (int)(b * (u.x - 1064631197) + 1065353217);
+        return u.d;
+    }
+
+    //https://stackoverflow.com/questions/10552280/fast-exp-calculation-possible-to-improve-accuracy-without-losing-too-much-perfo
+    float exp1(float x) {
+        return (6+x*(6+x*(3+x)))*0.16666666f;
+    }
+
+    float exp2(float x) {
+        return (24+x*(24+x*(12+x*(4+x))))*0.041666666f;
+    }
+
+    float exp3(float x) {
+        return (120+x*(120+x*(60+x*(20+x*(5+x)))))*0.0083333333f;
+    }
+
+    float exp4(float x) {
+        return (720+x*(720+x*(360+x*(120+x*(30+x*(6+x))))))*0.0013888888f;
+    }
+
+    float exp5(float x) {
+        return (5040+x*(5040+x*(2520+x*(840+x*(210+x*(42+x*(7+x)))))))*0.00019841269f;
+    }
+
+    float exp6(float x) {
+        return (40320+x*(40320+x*(20160+x*(6720+x*(1680+x*(336+x*(56+x*(8+x))))))))*2.4801587301e-5f;
+    }
+
+    float exp7(float x) {
+        return (362880+x*(362880+x*(181440+x*(60480+x*(15120+x*(3024+x*(504+x*(72+x*(9+x)))))))))*2.75573192e-6f;
+    }
+
+/* Ankerl's adaptation of Schraudolph's published algorithm with John's constants */
+/* 1065353216 - 486411 = 1064866805 */
+    float logf_fast(float a) {
+        union {
+            float f;
+            int x;
+        } u = {a};
+        return (u.x - 1064866805) * 8.262958405176314e-8f; /* 1 / 12102203.0; */
+    }
+
+/* 1065353216 + 1 */
+    float logf_fast_lb(float a) {
+        union {
+            float f;
+            int x;
+        } u = {a};
+        return (u.x - 1065353217) * 8.262958405176314e-8f; /* 1 / 12102203.0 */
+    }
+
+    /* 1065353216 + 1 */
+    float expf_fast_ub(float a) {
+        union { float f; int x; } u;
+        u.x = (int) (12102203 * a + 1065353217);
+        return u.f;
+    }
+
+/* Schraudolph's published algorithm with John's constants */
+/* 1065353216 - 486411 = 1064866805 */
     float expf_fast(float a) {
         union { float f; int x; } u;
         u.x = (int) (12102203 * a + 1064866805);
         return u.f;
     }
+
+    /* 1065353216 - 722019 */
+    float expf_fast_lb(float a) {
+        union { float f; int x; } u;
+        u.x = (int) (12102203 * a + 1064631197);
+        return u.f;
+    }
+
     // http://nghiaho.com/?p=997
-    float fastatan(float x)
-    {
-        return M_PI_4*x - x*(fabs(x) - 1)*(0.2447f + 0.0663f*fabs(x));
+    float fastatan(float x) {
+        return M_PI_4 * x - x * (fabs(x) - 1) * (0.2447f + 0.0663f * fabs(x));
     }
 
     float fastsinh(float x) {
