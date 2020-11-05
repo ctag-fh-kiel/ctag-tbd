@@ -35,7 +35,7 @@ FV3_(allpass)::FV3_(allpass)() {
 }
 
 FV3_(allpass)::FV3_(~allpass)() {
-    if(isExternalMem) return;
+    if (isExternalMem) return;
     free();
 }
 
@@ -133,7 +133,7 @@ FV3_(allpassm)::FV3_(allpassm)() {
 }
 
 FV3_(allpassm)::FV3_(~allpassm)() {
-    if(isExternalMem) return;
+    if (isExternalMem) return;
     free();
 }
 

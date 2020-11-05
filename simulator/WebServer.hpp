@@ -31,5 +31,6 @@ private:
     std::thread server_thread;
 public:
     void Start();
+
     void Stop();
 };

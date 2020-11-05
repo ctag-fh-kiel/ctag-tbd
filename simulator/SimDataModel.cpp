@@ -26,11 +26,11 @@ SimDataModel::SimDataModel() {
 }
 
 void SimDataModel::SetModelJSONString(const string &s) {
-   m.Parse(s);
-   storeJSON(m, MODELJSONFN);
+    m.Parse(s);
+    storeJSON(m, MODELJSONFN);
 }
 
-const char * SimDataModel::GetModelJSONCString() {
+const char *SimDataModel::GetModelJSONCString() {
     json.Clear();
     Writer<StringBuffer> writer(json);
     m.Accept(writer);
@@ -42,15 +42,15 @@ SimDataModel::~SimDataModel() {
 }
 
 const string SimDataModel::GetKeyValue(const string &key) {
-    if(!m.HasMember(key)) return key;
-    if(!m[key].IsString()) return key;
+    if (!m.HasMember(key)) return key;
+    if (!m[key].IsString()) return key;
     return m[key].GetString();
 }
 
 const int SimDataModel::GetArrayElement(const string &key, const int index) {
-    if(!m.HasMember(key)) return 0;
-    if(!m[key].IsArray()) return 0;
-    if(m[key][index].IsString()) return std::stoi(m[key][index].GetString());
-    if(m[key][index].IsInt()) return m[key][index].GetInt();
+    if (!m.HasMember(key)) return 0;
+    if (!m[key].IsArray()) return 0;
+    if (m[key][index].IsString()) return std::stoi(m[key][index].GetString());
+    if (m[key][index].IsInt()) return m[key][index].GetInt();
     return 0;
 }

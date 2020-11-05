@@ -93,6 +93,7 @@ int tinywav_open_read(TinyWav *tw, const char *path, TinyWavChannelFormat chanFm
 }
 
 void tinywav_read_reset(TinyWav *tw){
+    if(tw->f == NULL) return;
     fseek(tw->f, tw->dataStart, SEEK_SET);
 }
 

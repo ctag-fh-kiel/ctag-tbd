@@ -31,7 +31,7 @@ using namespace CTAG::SP::HELPERS;
 
 CTAG::SP::HELPERS::ctagBiQuad::ctagBiQuad() {
     Mute();
-    for(int i=0;i<6;i++)coeff[i] = 0.f;
+    for (int i = 0; i < 6; i++)coeff[i] = 0.f;
     type = BIQUAD_TYPE::LP;
     _fs = 44100.f;
     _cut = 1000.f;
@@ -71,15 +71,15 @@ void CTAG::SP::HELPERS::ctagBiQuad::SetSampleRate(float fs) {
     calcCoeffs();
 }
 
-void CTAG::SP::HELPERS::ctagBiQuad::calcCoeffs(){
-    switch (type){
-        case BIQUAD_TYPE ::LP:
-            dsps_biquad_gen_lpf_f32(coeff, _cut/_fs, _q);
+void CTAG::SP::HELPERS::ctagBiQuad::calcCoeffs() {
+    switch (type) {
+        case BIQUAD_TYPE::LP:
+            dsps_biquad_gen_lpf_f32(coeff, _cut / _fs, _q);
             break;
-        case BIQUAD_TYPE ::BP:
+        case BIQUAD_TYPE::BP:
             dsps_biquad_gen_bpf0db_f32(coeff, _cut / _fs, _q);
             break;
-        case BIQUAD_TYPE ::HP:
+        case BIQUAD_TYPE::HP:
             dsps_biquad_gen_hpf_f32(coeff, _cut / _fs, _q);
             break;
         default:

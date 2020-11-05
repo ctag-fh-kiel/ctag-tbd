@@ -39,18 +39,25 @@ using namespace std;
 using namespace braids;
 using namespace stmlib;
 
-namespace CTAG{
-    namespace SP{
+namespace CTAG {
+    namespace SP {
         class MiSuperSawOsc {
         public:
             void Render(int16_t *buffer, size_t size);
+
             void SetDetune(const int16_t &detune);
+
             void SetPitch(const int16_t &pitch);
+
             void SetDamp(const uint16_t &damp);
+
             void Init();
+
         private:
             uint32_t ComputePhaseIncrement(int16_t midi_pitch);
+
             uint32_t ComputeDelay(int16_t midi_pitch);
+
             uint32_t phase[6] = {0};
             uint32_t phase_ = 0;
             uint32_t phase_increment_ = 0;

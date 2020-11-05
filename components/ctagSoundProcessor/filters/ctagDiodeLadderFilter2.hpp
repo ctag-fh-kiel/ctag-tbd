@@ -40,14 +40,19 @@ Adapted by R. Manzke from Csound zdf_ladder C versions by Steven Yi
 
 #include "ctagFilterBase.hpp"
 
-namespace CTAG::SP::HELPERS{
-    class ctagDiodeLadderFilter2 : public ctagFilterBase{
+namespace CTAG::SP::HELPERS {
+    class ctagDiodeLadderFilter2 : public ctagFilterBase {
     public:
         virtual void SetCutoff(float cutoff) override;
+
         virtual void SetResonance(float resonance) override;
+
         virtual void SetSampleRate(float fs) override;
+
         virtual float Process(float in) override;
+
         virtual void Init() override;
+
     private:
         float q = 1.f, k = 1.f;
         float z1 = 0.0f;

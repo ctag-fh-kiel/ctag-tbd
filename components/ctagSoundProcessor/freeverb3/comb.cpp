@@ -42,7 +42,7 @@ int32_t FV3_(comb)::getsize() {
     return bufsize;
 }
 
-void FV3_(comb)::setsize(float *buf, const uint32_t size){
+void FV3_(comb)::setsize(float *buf, const uint32_t size) {
     buffer = buf;
     FV3_(utils)::mute(buffer, size);
     if (bufsize > 0 && bufsize <= size) {
@@ -144,7 +144,7 @@ int32_t FV3_(combm)::getmodulationsize() {
     return modulationsize;
 }
 
-void FV3_(combm)::setsize(float* buf, const uint32_t size, int32_t modsize){
+void FV3_(combm)::setsize(float *buf, const uint32_t size, int32_t modsize) {
     if (size <= 0) return;
     if (modsize < 0) modsize = 0;
     if (modsize > size) modsize = size;

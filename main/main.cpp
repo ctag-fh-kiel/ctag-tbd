@@ -37,7 +37,7 @@ respective component folders / files if different from this license.
 using namespace CTAG;
 
 extern "C" {
-  void app_main();
+void app_main();
 }
 
 /* as much as possible static:
@@ -47,16 +47,16 @@ https://www.embedded.com/modern-c-in-embedded-systems-part-1-myth-and-reality/
 */
 
 void app_main() {
-  
-  DRIVERS::FileSystem::InitFS();
 
-  DRIVERS::ADC::InitADCSystem();
-  DRIVERS::LedRGB::InitLedRGB();
-  DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
-  DRIVERS::GPIO::InitGPIO();
+    DRIVERS::FileSystem::InitFS();
 
-  // calibration starts if trig0 is pressed at boot up
-  CAL::Calibration::Init();
+    DRIVERS::ADC::InitADCSystem();
+    DRIVERS::LedRGB::InitLedRGB();
+    DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
+    DRIVERS::GPIO::InitGPIO();
 
-  AUDIO::SoundProcessorManager::StartSoundProcessor();    
+    // calibration starts if trig0 is pressed at boot up
+    CAL::Calibration::Init();
+
+    AUDIO::SoundProcessorManager::StartSoundProcessor();
 }

@@ -47,14 +47,14 @@ void CTAG::CAL::CalibrationModel::CreateMatrix() {
 
 void CTAG::CAL::CalibrationModel::PushRow(const vector<uint32_t> data) {
     Value matrixRow(kArrayType);
-    for(auto &i : data){
+    for (auto &i : data) {
         matrixRow.PushBack(i, matrix.GetAllocator());
     }
     matrix.PushBack(matrixRow, matrix.GetAllocator());
 }
 
 void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id) {
-    if(m.HasMember(id)) m.RemoveMember(id);
+    if (m.HasMember(id)) m.RemoveMember(id);
     Value sid(id, m.GetAllocator());
     m.GetObject().AddMember(sid, matrix.Move(), m.GetAllocator());
     storeJSON(m, MODELJSONFN);
@@ -62,9 +62,9 @@ void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id) {
 
 vector<vector<uint32_t >> CTAG::CAL::CalibrationModel::GetMatrix(const string &id) {
     vector<vector<uint32_t>> mat;
-    for(auto &i: m[id].GetArray()){
-        vector<uint32_t > v;
-        for(auto &j: i.GetArray()){
+    for (auto &i: m[id].GetArray()) {
+        vector<uint32_t> v;
+        for (auto &j: i.GetArray()) {
             v.push_back(j.GetInt());
         }
         mat.push_back(v);
@@ -73,17 +73,17 @@ vector<vector<uint32_t >> CTAG::CAL::CalibrationModel::GetMatrix(const string &i
 }
 
 void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id, const vector<vector<float>> mat) {
-    if(m.HasMember(id)) m.RemoveMember(id);
+    if (m.HasMember(id)) m.RemoveMember(id);
 
     Value rows(kArrayType);
     Value sid(id, m.GetAllocator());
 
-    for(auto i:mat){
+    for (auto i:mat) {
         Value col(kArrayType);
-        for(auto j: i){
+        for (auto j: i) {
             ESP_LOGD("CM", "Storing %f", j);
             Value f(kNumberType);
-            if(isinf(j) || isnan(j)) f.SetFloat(0);
+            if (isinf(j) || isnan(j)) f.SetFloat(0);
             else f.SetFloat(j);
             col.PushBack(f, m.GetAllocator());
         }
@@ -95,9 +95,9 @@ void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id, const vector<vec
 }
 
 void CTAG::CAL::CalibrationModel::LoadMatrix(const string &id, float *data) {
-    if(!m.HasMember(id)) return;
-    for(auto &i: m[id].GetArray()){
-        for(auto &j: i.GetArray()){
+    if (!m.HasMember(id)) return;
+    for (auto &i: m[id].GetArray()) {
+        for (auto &j: i.GetArray()) {
             *data = j.GetFloat();
             ESP_LOGD("Cal", "Value %f", *data);
             data++;
@@ -106,16 +106,16 @@ void CTAG::CAL::CalibrationModel::LoadMatrix(const string &id, float *data) {
 }
 
 bool CTAG::CAL::CalibrationModel::GetCalibrateOnReboot() {
-    if(!m.HasMember("CalibrationOnReboot")) return false;
-    if(!m["CalibrationOnReboot"].IsBool()) return false;
+    if (!m.HasMember("CalibrationOnReboot")) return false;
+    if (!m["CalibrationOnReboot"].IsBool()) return false;
     return m["CalibrationOnReboot"].GetBool() == true;
 }
 
 void CTAG::CAL::CalibrationModel::SetCalibrateOnReboot(bool val) {
-    if(!m.HasMember("CalibrationOnReboot")){
+    if (!m.HasMember("CalibrationOnReboot")) {
         Value b(val);
         m.AddMember(b, b.Move(), m.GetAllocator());
-    }else{
+    } else {
         m["CalibrationOnReboot"].SetBool(val);
     }
     storeJSON(m, MODELJSONFN);
@@ -131,7 +131,7 @@ const char *CTAG::CAL::CalibrationModel::GetCStrJSONCalibration() {
 void CTAG::CAL::CalibrationModel::SetJSONCalibration(const string &calData) {
     Document d;
     d.Parse(calData);
-    if(!d.IsObject()){
+    if (!d.IsObject()) {
         ESP_LOGE("CALMODEL", "Could not parse json string!");
         return;
     }

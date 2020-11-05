@@ -33,12 +33,12 @@ void CTAG::SP::HELPERS::ctagSineSource::SetSampleRate(float f_hz) {
 }
 
 void CTAG::SP::HELPERS::ctagSineSource::SetFrequency(float f_hz) {
-    a = 2.f*(float)fastsin(M_PI*f_hz/fSample);
+    a = 2.f * (float) fastsin(M_PI * f_hz / fSample);
 }
 
 float CTAG::SP::HELPERS::ctagSineSource::Process() {
-    s[0] = s[0] - a*s[1]; // sin
-    s[1] = s[1] + a*s[0]; // cos
+    s[0] = s[0] - a * s[1]; // sin
+    s[1] = s[1] + a * s[0]; // cos
     return s[0];
 }
 
@@ -51,7 +51,7 @@ float CTAG::SP::HELPERS::ctagSineSource::GetSin() {
 }
 
 void CTAG::SP::HELPERS::ctagSineSource::SetFrequencyPhase(float f_hz, float phase_rad) {
-    a = 2.f*(float)fastsin(M_PI*f_hz/fSample);
+    a = 2.f * (float) fastsin(M_PI * f_hz / fSample);
     s[0] = 0.5f * fastcos(phase_rad);
     s[1] = 0.5f * fastsin(phase_rad);
 }

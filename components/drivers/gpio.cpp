@@ -30,12 +30,12 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::DRIVERS;
 
-void GPIO::InitGPIO(){
+void GPIO::InitGPIO() {
     gpio_config_t io_conf;
     memset(&io_conf, 0, sizeof(io_conf));
     // inputs
     //interrupt edge
-    io_conf.intr_type = (gpio_int_type_t)GPIO_PIN_INTR_NEGEDGE;
+    io_conf.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_NEGEDGE;
     //bit mask of the pins
     io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
     //set as input mode    
@@ -49,15 +49,15 @@ void GPIO::InitGPIO(){
 }
 
 // trigs get delayed as ADC sampling is slow, delay approx. 3ms
-uint8_t IRAM_ATTR GPIO::GetTrig0(){
+uint8_t IRAM_ATTR GPIO::GetTrig0() {
     t0delay <<= 1;
-    t0delay |= gpio_get_level((gpio_num_t)TRIG0_PIN);
+    t0delay |= gpio_get_level((gpio_num_t) TRIG0_PIN);
     return (uint8_t) ((t0delay & 0x08) > 1);
 }
 
-uint8_t IRAM_ATTR GPIO::GetTrig1(){
+uint8_t IRAM_ATTR GPIO::GetTrig1() {
     t1delay <<= 1;
-    t1delay |= gpio_get_level((gpio_num_t)TRIG1_PIN);
+    t1delay |= gpio_get_level((gpio_num_t) TRIG1_PIN);
     return (uint8_t) ((t1delay & 0x08) > 1);
 }
 

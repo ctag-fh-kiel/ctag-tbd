@@ -30,24 +30,22 @@ respective component folders / files if different from this license.
 using namespace CTAG::SP;
 
 ctagSoundProcessorStrampDly::ctagSoundProcessorStrampDly() {
-    isStereo = true;
-    // acquire model from spiffs json, model auto loads last active preset
+    knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
-    // take preset values from model
-    loadPresetInternal();
+    LoadPreset(0);
 
     // config defs
     msMaxLength = 4095.f;
     fFeedback = 0.f;
     msLength = length;
     sampleRate = 44100.f;
-    bufLen = ceilf(sampleRate * msMaxLength/1000.0);
-    bufL = (float*)heap_caps_calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
-    if(bufL == NULL){
+    bufLen = ceilf(sampleRate * msMaxLength / 1000.0);
+    bufL = (float *) heap_caps_calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
+    if (bufL == NULL) {
         ESP_LOGE("DELAY", "Could not allocate memory --> delay buffer!");
     }
-    bufR = (float*)heap_caps_calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
-    if(bufR == NULL){
+    bufR = (float *) heap_caps_calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
+    if (bufR == NULL) {
         ESP_LOGE("DELAY", "Could not allocate memory --> delay buffer!");
     }
     mute();
@@ -56,55 +54,54 @@ ctagSoundProcessorStrampDly::ctagSoundProcessorStrampDly() {
 
 void ctagSoundProcessorStrampDly::Process(const ProcessData &data) {
     float tempL, tempR;
-    if(cv_length != -1){
+    if (cv_length != -1) {
         msLength = data.cv[cv_length] * data.cv[cv_length] * msMaxLength;
-    }else{
-        msLength = (float)length / 4095.f * msMaxLength;
+    } else {
+        msLength = (float) length / 4095.f * msMaxLength;
     }
 
     fTapOffset = 0.995 * fTapOffset + 0.005 * (msMaxLength - msLength) * sampleRate / 1000.0;
     tapOffset = (uint32_t) fTapOffset;
-    if(cv_feedback != -1){
+    if (cv_feedback != -1) {
         fFeedback = 0.8 * fFeedback + 0.2 * data.cv[cv_feedback] * data.cv[cv_feedback] * 2.f;
-    }else{
-        fFeedback = 0.8 * fFeedback + 0.2 * (float)feedback / 4095.f * 1.5f;
+    } else {
+        fFeedback = 0.8 * fFeedback + 0.2 * (float) feedback / 4095.f * 1.5f;
     }
-    if(trig_freeze != -1){
-        if(data.trig[trig_freeze] == 0) fFeedback = 1.f; // inverted ins
-    }else{
-        if(freeze == 1)
+    if (trig_freeze != -1) {
+        if (data.trig[trig_freeze] == 0) fFeedback = 1.f; // inverted ins
+    } else {
+        if (freeze == 1)
             fFeedback = 1.f;
     }
 
-    if(cv_pan != -1)
+    if (cv_pan != -1)
         fPan = data.cv[cv_pan] * data.cv[cv_pan];
     else
-        fPan = (float)pan / 4095.f;
-    if(cv_wvol != -1)
+        fPan = (float) pan / 4095.f;
+    if (cv_wvol != -1)
         fWetVolume = data.cv[cv_wvol] * data.cv[cv_wvol];
     else
-        fWetVolume= (float)wvol / 4095.f;
-    if(cv_dvol != -1)
+        fWetVolume = (float) wvol / 4095.f;
+    if (cv_dvol != -1)
         fDryVolume = data.cv[cv_dvol] * data.cv[cv_dvol];
     else
-        fDryVolume = (float)dvol / 4095.f;
+        fDryVolume = (float) dvol / 4095.f;
     float fGain;
-    if(cv_gain != -1)
+    if (cv_gain != -1)
         fGain = data.cv[cv_gain] * data.cv[cv_gain];
     else
-        fGain = (float)gain / 4095.f * 2.f;
+        fGain = (float) gain / 4095.f * 2.f;
 
-    if(trig_bypass != -1){
-        if(data.trig[trig_bypass] == 0) return;
-    }
-    else{
-        if(bypass == 1) return;
+    if (trig_bypass != -1) {
+        if (data.trig[trig_bypass] == 0) return;
+    } else {
+        if (bypass == 1) return;
     }
 
     uint32_t dlyMode = mode;
-    if(trig_mode != -1) dlyMode = data.trig[trig_mode] == 1 ? 0 : 1; // inverted trig signals
+    if (trig_mode != -1) dlyMode = data.trig[trig_mode] == 1 ? 0 : 1; // inverted trig signals
 
-    for(uint32_t i=0; i<bufSz; i++){
+    for (uint32_t i = 0; i < bufSz; i++) {
         uint32_t cPos;
         // read
         cPos = (pos + tapOffset) % bufLen;
@@ -113,37 +110,37 @@ void ctagSoundProcessorStrampDly::Process(const ProcessData &data) {
 
         // write
         cPos = pos;
-        if(dlyMode == 1){
+        if (dlyMode == 1) {
             bufL[cPos] = tempR * fFeedback;
             bufR[cPos] = tempL * fFeedback;
-        }else{
+        } else {
             bufL[cPos] = tempL * fFeedback;
             bufR[cPos] = tempR * fFeedback;
         }
 
         // noise reduction with envelope follower input
-        if(fabs(data.buf[i*2]) > envFollowInput)
-            envFollowInput = fabs(data.buf[i*2]);
-        else if(fabs(data.buf[i*2 + 1]) > envFollowInput)
-            envFollowInput = fabs(data.buf[i*2] + 1);
+        if (fabs(data.buf[i * 2]) > envFollowInput)
+            envFollowInput = fabs(data.buf[i * 2]);
+        else if (fabs(data.buf[i * 2 + 1]) > envFollowInput)
+            envFollowInput = fabs(data.buf[i * 2] + 1);
         else
             envFollowInput *= 0.9f; // decay
 
-        if(envFollowInput > 0.0001){
-            bufL[cPos] += (data.buf[i*2] + data.buf[i*2 + 1]) * (1.f - fPan) * 2.f;
-            bufR[cPos] += (data.buf[i*2] + data.buf[i*2 + 1]) * fPan * 2.f;
+        if (envFollowInput > 0.0001) {
+            bufL[cPos] += (data.buf[i * 2] + data.buf[i * 2 + 1]) * (1.f - fPan) * 2.f;
+            bufR[cPos] += (data.buf[i * 2] + data.buf[i * 2 + 1]) * fPan * 2.f;
         }
 
 
         // noise reduction with envelope follower buffer
-        if(fabs(bufL[cPos]) > envFollowBuffer)
+        if (fabs(bufL[cPos]) > envFollowBuffer)
             envFollowBuffer = fabs(bufL[cPos]);
-        else if(fabs(bufR[cPos]) > envFollowBuffer)
+        else if (fabs(bufR[cPos]) > envFollowBuffer)
             envFollowBuffer = fabs(bufR[cPos]);
         else
             envFollowBuffer *= 0.9f; // decay
 
-        if(envFollowBuffer < 0.0001){
+        if (envFollowBuffer < 0.0001) {
             bufL[cPos] = 0.f;
             bufR[cPos] = 0.f;
         }
@@ -153,164 +150,50 @@ void ctagSoundProcessorStrampDly::Process(const ProcessData &data) {
         pos %= bufLen;
 
         // set volume
-        data.buf[i*2] *= fDryVolume;
-        data.buf[i*2] += tempL * fWetVolume;
-        data.buf[i*2 + 1] *= fDryVolume;
-        data.buf[i*2 + 1] += tempR * fWetVolume;
+        data.buf[i * 2] *= fDryVolume;
+        data.buf[i * 2] += tempL * fWetVolume;
+        data.buf[i * 2 + 1] *= fDryVolume;
+        data.buf[i * 2 + 1] += tempR * fWetVolume;
 
-        data.buf[i*2] = mFac * HELPERS::fasttanh(data.buf[i*2] * fGain);
-        data.buf[i*2 + 1] = mFac * HELPERS::fasttanh(data.buf[i*2 + 1] * fGain);
+        data.buf[i * 2] = mFac * HELPERS::fasttanh(data.buf[i * 2] * fGain);
+        data.buf[i * 2 + 1] = mFac * HELPERS::fasttanh(data.buf[i * 2 + 1] * fGain);
     }
 }
 
 ctagSoundProcessorStrampDly::~ctagSoundProcessorStrampDly() {
-}
-
-const char *ctagSoundProcessorStrampDly::GetCStrID() const {
-    return id.c_str();
-}
-
-void ctagSoundProcessorStrampDly::setParamValueInternal(const string& id, const string& key, const int val) {
-// autogenerated code here
-// sectionCpp0
-if(id.compare("mode") == 0){
-	if(key.compare("current") == 0){
-		mode = val;
-		return;
-	}
-	if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_mode = val;
-		return;
-	}
-}
-if(id.compare("freeze") == 0){
-	if(key.compare("current") == 0){
-		freeze = val;
-		return;
-	}
-	if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_freeze = val;
-		return;
-	}
-}
-if(id.compare("bypass") == 0){
-	if(key.compare("current") == 0){
-		bypass = val;
-		return;
-	}
-	if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_bypass = val;
-		return;
-	}
-}
-if(id.compare("length") == 0){
-	if(key.compare("current") == 0){
-		length = val;
-		return;
-	}
-	if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_length = val;
-		return;
-	}
-}
-if(id.compare("feedback") == 0){
-	if(key.compare("current") == 0){
-		feedback = val;
-		return;
-	}
-	if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_feedback = val;
-		return;
-	}
-}
-if(id.compare("pan") == 0){
-	if(key.compare("current") == 0){
-		pan = val;
-		return;
-	}
-	if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_pan = val;
-		return;
-	}
-}
-if(id.compare("wvol") == 0){
-	if(key.compare("current") == 0){
-		wvol = val;
-		return;
-	}
-	if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_wvol = val;
-		return;
-	}
-}
-if(id.compare("dvol") == 0){
-	if(key.compare("current") == 0){
-		dvol = val;
-		return;
-	}
-	if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_dvol = val;
-		return;
-	}
-}
-if(id.compare("gain") == 0){
-	if(key.compare("current") == 0){
-		gain = val;
-		return;
-	}
-	if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_gain = val;
-		return;
-	}
-}
-// sectionCpp0
-
-
-
-
-}
-
-void ctagSoundProcessorStrampDly::loadPresetInternal() {
-// autogenerated code here
-// sectionCpp1
-mode = model->GetParamValue("mode", "current");
-trig_mode = model->GetParamValue("mode", "trig");
-freeze = model->GetParamValue("freeze", "current");
-trig_freeze = model->GetParamValue("freeze", "trig");
-bypass = model->GetParamValue("bypass", "current");
-trig_bypass = model->GetParamValue("bypass", "trig");
-length = model->GetParamValue("length", "current");
-cv_length = model->GetParamValue("length", "cv");
-feedback = model->GetParamValue("feedback", "current");
-cv_feedback = model->GetParamValue("feedback", "cv");
-pan = model->GetParamValue("pan", "current");
-cv_pan = model->GetParamValue("pan", "cv");
-wvol = model->GetParamValue("wvol", "current");
-cv_wvol = model->GetParamValue("wvol", "cv");
-dvol = model->GetParamValue("dvol", "current");
-cv_dvol = model->GetParamValue("dvol", "cv");
-gain = model->GetParamValue("gain", "current");
-cv_gain = model->GetParamValue("gain", "cv");
-// sectionCpp1
-
-
-
-
+    heap_caps_free(bufL);
+    heap_caps_free(bufR);
 }
 
 void ctagSoundProcessorStrampDly::mute() {
     memset(bufL, 0, bufLen * sizeof(float));
     memset(bufR, 0, bufLen * sizeof(float));
-    tapOffset = (uint32_t)(sampleRate * (msMaxLength - msLength) / 1000.0);
+    tapOffset = (uint32_t) (sampleRate * (msMaxLength - msLength) / 1000.0);
     fTapOffset = tapOffset;
     pos = 0;
+}
+
+void ctagSoundProcessorStrampDly::knowYourself() {
+// sectionCpp0
+    pMapPar.emplace("mode", [&](const int val) { mode = val; });
+    pMapTrig.emplace("mode", [&](const int val) { trig_mode = val; });
+    pMapPar.emplace("freeze", [&](const int val) { freeze = val; });
+    pMapTrig.emplace("freeze", [&](const int val) { trig_freeze = val; });
+    pMapPar.emplace("bypass", [&](const int val) { bypass = val; });
+    pMapTrig.emplace("bypass", [&](const int val) { trig_bypass = val; });
+    pMapPar.emplace("length", [&](const int val) { length = val; });
+    pMapCv.emplace("length", [&](const int val) { cv_length = val; });
+    pMapPar.emplace("feedback", [&](const int val) { feedback = val; });
+    pMapCv.emplace("feedback", [&](const int val) { cv_feedback = val; });
+    pMapPar.emplace("pan", [&](const int val) { pan = val; });
+    pMapCv.emplace("pan", [&](const int val) { cv_pan = val; });
+    pMapPar.emplace("wvol", [&](const int val) { wvol = val; });
+    pMapCv.emplace("wvol", [&](const int val) { cv_wvol = val; });
+    pMapPar.emplace("dvol", [&](const int val) { dvol = val; });
+    pMapCv.emplace("dvol", [&](const int val) { cv_dvol = val; });
+    pMapPar.emplace("gain", [&](const int val) { gain = val; });
+    pMapCv.emplace("gain", [&](const int val) { cv_gain = val; });
+    isStereo = true;
+    id = "StrampDly";
+    // sectionCpp0
 }

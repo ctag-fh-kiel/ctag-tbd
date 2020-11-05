@@ -25,6 +25,7 @@ respective component folders / files if different from this license.
 #include <cmath>
 #include <cstdint>
 #include "ctagWNoiseGen.hpp"
+
 #ifndef TBD_SIM
 #include "xtensa/core-macros.h"
 #endif
@@ -49,56 +50,56 @@ namespace CTAG::SP::HELPERS {
             wCnt = 0;
         }
 
-        void SetParams(float rate, float mul, float add, float fs){
+        void SetParams(float rate, float mul, float add, float fs) {
             fSample = fs;
             m_density = rate;
-            m_thresh = m_density/fSample;
+            m_thresh = m_density / fSample;
             m_scale = m_thresh > 0.f ? 1.f / m_thresh : 0.f;
         }
 
-        void SetRate(float rate){
+        void SetRate(float rate) {
             m_density = rate;
-            m_thresh = m_density/fSample;
+            m_thresh = m_density / fSample;
             m_scale = m_thresh > 0.f ? 1.f / m_thresh : 0.f;
         }
 
-        void SetSmooth(const float s){
-            if(s>1.f)smooth = 1.f;
-            else if(s<0.f)smooth = 0.f;
+        void SetSmooth(const float s) {
+            if (s > 1.f)smooth = 1.f;
+            else if (s < 0.f)smooth = 0.f;
             else smooth = s;
         }
 
-        void SetWidth(uint32_t w){
-            if(w>0.05f * fSample) w = (uint32_t)0.05 * fSample;
+        void SetWidth(uint32_t w) {
+            if (w > 0.05f * fSample) w = (uint32_t) 0.05 * fSample;
             width = w;
         }
 
-        void SetBipolar(bool yes){
+        void SetBipolar(bool yes) {
             wnoise.SetBipolar(yes);
         }
 
         float Process() {
-                if(wCnt != 0){
-                    //ESP_LOGE("Dust", "wcnt %d", wCnt);
-                    wCnt--;
-                    if(wCnt > width / 2)
-                        return zLast;
-                    else
-                        return -zLast;
-                }
-
-                float z = wnoise.Process();
-                float val;
-                if (fabs(z) < m_thresh)
-                    val = z * m_scale;
+            if (wCnt != 0) {
+                //ESP_LOGE("Dust", "wcnt %d", wCnt);
+                wCnt--;
+                if (wCnt > width / 2)
+                    return zLast;
                 else
-                    val = 0.f;
-                if(val != 0.f){
-                    wCnt = width;
-                }
-                val = (1.f - smooth) * val + smooth * zLast;
-                zLast = val;
-                return val;
+                    return -zLast;
+            }
+
+            float z = wnoise.Process();
+            float val;
+            if (fabs(z) < m_thresh)
+                val = z * m_scale;
+            else
+                val = 0.f;
+            if (val != 0.f) {
+                wCnt = width;
+            }
+            val = (1.f - smooth) * val + smooth * zLast;
+            zLast = val;
+            return val;
         }
 
     private:

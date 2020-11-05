@@ -150,7 +150,7 @@ void CTAG::SP::HELPERS::ctagDiodeLadderFilter5::SetCutoff(float cutoff) {
 
     // low shelf boost
     float tnls = tn;
-    if(cutoff > 10000.f){ // limit low shelf frequency, this is fixed for 44100kHz to avoid extra tan calculation
+    if (cutoff > 10000.f) { // limit low shelf frequency, this is fixed for 44100kHz to avoid extra tan calculation
         tnls = 0.012434004797755f;
     }
     cb = (tnls - 1.f) / (tnls + 1.f);
@@ -174,5 +174,5 @@ void CTAG::SP::HELPERS::ctagDiodeLadderFilter5::SetGain(float gain) {
 
 void CTAG::SP::HELPERS::ctagDiodeLadderFilter5::calcLowShelveBoost() {
     H0 = ((kval_ < 1.f ? 1.f : kval_) * gain_) - 1.f; // this is approximate by hearing
-    if(H0 < 0.f) H0 = 0.f;
+    if (H0 < 0.f) H0 = 0.f;
 }

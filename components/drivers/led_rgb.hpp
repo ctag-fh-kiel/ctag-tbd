@@ -24,19 +24,25 @@ respective component folders / files if different from this license.
 
 #include "driver/ledc.h"
 
-namespace CTAG{
-    namespace DRIVERS{
-        class LedRGB{
-            public:
+namespace CTAG {
+    namespace DRIVERS {
+        class LedRGB {
+        public:
             // rgb are each 8 bit valued PWM
-                static void InitLedRGB();
-                static void GetLedRGB(int &r, int &g, int &b);
-                static void SetLedRGB(int r, int g, int b);
-                static void SetLedR(int r);
-                static void SetLedG(int g);
-                static void SetLedB(int b);
-            private:
-                static ledc_channel_config_t ledc_channel[3];
+            static void InitLedRGB();
+
+            static void GetLedRGB(int &r, int &g, int &b);
+
+            static void SetLedRGB(int r, int g, int b);
+
+            static void SetLedR(int r);
+
+            static void SetLedG(int g);
+
+            static void SetLedB(int b);
+
+        private:
+            static ledc_channel_config_t ledc_channel[3];
         };
     }
 }

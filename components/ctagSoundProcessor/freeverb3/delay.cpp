@@ -41,8 +41,8 @@ int32_t FV3_(delay)::getsize() {
     return bufsize;
 }
 
-void FV3_(delay)::setsize(float *buf, const uint32_t size){
-    if(buf == NULL){
+void FV3_(delay)::setsize(float *buf, const uint32_t size) {
+    if (buf == NULL) {
         buffer = NULL;
         return;
     }
@@ -96,7 +96,7 @@ void FV3_(delay)::setsize(int32_t size) {
 }
 
 void FV3_(delay)::free() {
-    if(isExternalMem) return;
+    if (isExternalMem) return;
     if (buffer == NULL || bufsize == 0) return;
     heap_caps_free(buffer);
     buffer = NULL;

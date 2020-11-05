@@ -35,9 +35,9 @@ using namespace stmlib;
 #define kAccentVCAFactor 1.5f
 
 ctagSoundProcessorTBD03::ctagSoundProcessorTBD03() {
-    setIsStereo();
+    knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
-    model->LoadPreset(0);
+    LoadPreset(0);
 
     filt[0] = std::make_unique<ctagDiodeLadderFilter5>(); // Pirkle ZDF with boost
     filt[1] = std::make_unique<ctagDiodeLadderFilter3>(); // Karlson
@@ -71,79 +71,80 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
     float dvcf, dvca;
     bool trg;
 
-    if(trig_trigger != -1) {
+    if (trig_trigger != -1) {
         trg = data.trig[trig_trigger] == 1 ? 0 : 1; // negative logic
-    }else{
+    } else {
         trg = trigger;
     }
 
-    if(trg && !pre_trig){
+    if (trg && !pre_trig) {
         isAccent = accent;
-        if(trig_accent != -1){
+        if (trig_accent != -1) {
             isAccent = data.trig[trig_accent] == 0 ? 1 : 0;
         }
         dvcf = decay_vcf / 4095.f * 5.f;
-        if(cv_decay_vcf != -1){
+        if (cv_decay_vcf != -1) {
             dvcf = fabsf(data.cv[cv_decay_vcf]) * 5.f;
         }
         // if accent shorten decay of filter eg
-        if(isAccent){
+        if (isAccent) {
             dvcf = kAccentDecay;
         }
         adVCF.SetDecay(dvcf);
         dvca = decay_vca / 4095.f * 5.f;
-        if(cv_decay_vca != -1){
+        if (cv_decay_vca != -1) {
             dvca = fabsf(data.cv[cv_decay_vca]) * 5.f;
         }
         adVCA.SetDecay(dvca);
         adVCF.Trigger();
         adVCA.Trigger();
         // sync on trigger
-        if(sync_trig) sync[0] = 1;
+        if (sync_trig) sync[0] = 1;
         osc.Strike();
         pre_trig = true;
-    }else if(!trg){
+    } else if (!trg) {
         pre_trig = false;
     }
 
     float egvalVCA = adVCA.Process();
     // if accent make slightly louder
-    if(isAccent){
+    if (isAccent) {
         egvalVCA *= kAccentVCAFactor;
     }
     float egvalVCF = adVCF.Process();
 
     // shape
     int s = shape;
-    if(cv_shape != -1){
+    if (cv_shape != -1) {
         s = fabsf(data.cv[cv_shape]) * (braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META + 1);
     }
     braids::MacroOscillatorShape ms = static_cast<braids::MacroOscillatorShape>(s);
-    if(ms >= braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META) ms = braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META;
+    if (ms >= braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META)
+        ms = braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META;
     osc.set_shape(ms);
 
     // Set timbre and color: CV + internal modulation.
     int16_t parameters[2];
     parameters[0] = param_0;
     parameters[1] = param_1;
-    if(cv_param_0 != -1){
+    if (cv_param_0 != -1) {
         parameters[0] = static_cast<int16_t>(fabsf(data.cv[cv_param_0] * 32767));
     }
-    if(cv_param_1 != -1){
+    if (cv_param_1 != -1) {
         parameters[1] = static_cast<int16_t>(fabsf(data.cv[cv_param_1] * 32767));
     }
     int32_t mod_amt[2];
     mod_amt[0] = p0_amt;
     mod_amt[1] = p1_amt;
     int32_t mod[2];
-    if(cv_p0_amt != -1){
+    if (cv_p0_amt != -1) {
         mod[0] = static_cast<int32_t >(data.cv[cv_p0_amt] * 65535.f);
-    }else{
+    } else {
         mod[0] = static_cast<int32_t >(egvalVCF * 65535.f);
     }
-    if(cv_p1_amt != -1){
+    if (cv_p1_amt != -1) {
         mod[1] = static_cast<int32_t >(data.cv[cv_p1_amt] * 65535.f);
-    }else{
+    } else {
         mod[1] = static_cast<int32_t >(egvalVCF * 65535.f);
     }
     for (int i = 0; i < 2; ++i) {
@@ -156,8 +157,8 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
 
     // pitch calculation and quantization
     int32_t ipitch = pitch;
-    if(cv_pitch != -1){
-        ipitch += static_cast<int32_t>(fabsf(data.cv[cv_pitch] * 12.f * 5.f * 128.f)); // five octaves
+    if (cv_pitch != -1) {
+        ipitch += static_cast<int32_t>(data.cv[cv_pitch] * 12.f * 5.f * 128.f); // five octaves
     }
     CONSTRAIN(ipitch, 0, 16383);
     osc.set_pitch(ipitch);
@@ -168,315 +169,111 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
 
     // apply filter and EGs
     int ftype = filter_type;
-    if(cv_filter_type != -1){
+    if (cv_filter_type != -1) {
         ftype = static_cast<int>(fabsf(data.cv[cv_filter_type]) * 5.f);
     }
     CONSTRAIN(ftype, 0, 4)
     float c = cutoff / 4095.f;
-    if(cv_cutoff != -1){
+    if (cv_cutoff != -1) {
         c = fabsf(data.cv[cv_cutoff]);
     }
     c *= 27000.f;
     c -= 5000.f;
     float fenv = envelope / 4095.f;
-    if(cv_envelope != -1){
+    if (cv_envelope != -1) {
         fenv = fabsf(data.cv[cv_envelope]);
     }
     c += fenv * egvalVCF * 22000.f;
     // if accent add to VCF envelope
     float facclev = accent_level / 4095.f;
-    if(cv_accent_level != -1){
+    if (cv_accent_level != -1) {
         facclev = fabsf(data.cv[cv_accent_level]);
     }
-    if(isAccent){
+    if (isAccent) {
         c += facclev * egvalVCF * 22000.f;
     }
     CONSTRAIN(c, 20.f, 22000.f)
     filt[ftype]->SetCutoff(c);
 
     float r = resonance / 4095.f;
-    if(cv_resonance != -1){
+    if (cv_resonance != -1) {
         r = fabsf(data.cv[cv_resonance]);
     }
     filt[ftype]->SetResonance(r);
 
     int32_t signature = saturation;
-    if(cv_saturation != -1){
+    if (cv_saturation != -1) {
         signature = static_cast<int32_t>(fabsf(data.cv[cv_saturation]) * 65535.f);
     }
     CONSTRAIN(signature, 0, 65535)
 
     float dri = drive / 4095.f * 30.f;
-    if(cv_drive != -1){
+    if (cv_drive != -1) {
         dri = fabsf(data.cv[cv_drive]) * 30.f;
     }
     CONSTRAIN(dri, 1.f, 30.f)
     filt[ftype]->SetGain(dri);
 
     float fgain = gain / 4095.f * 2.f;
-    if(cv_gain != -1){
+    if (cv_gain != -1) {
         fgain = fabsf(data.cv[cv_gain]) * 2.f;
     }
 
-    for(int i=0;i<bufSz;i++){
-        float eg = pre_eg_val + (egvalVCA - pre_eg_val) / (float) bufSz * i; // linear fade from previous eg value to avoid glitches
+    for (int i = 0; i < bufSz; i++) {
+        float eg = pre_eg_val +
+                   (egvalVCA - pre_eg_val) / (float) bufSz * i; // linear fade from previous eg value to avoid glitches
         // apply non linearity to filter input
         int16_t warped = ws.Transform(buffer[i]);
         buffer[i] = stmlib::Mix(buffer[i], warped, signature);
         // filter, EG and clip
-        data.buf[i*2 + processCh] = fgain * stmlib::SoftClip( eg * filt[ftype]->Process(buffer[i] / 32767.f));
+        data.buf[i * 2 + processCh] = fgain * stmlib::SoftClip(eg * filt[ftype]->Process(buffer[i] / 32767.f));
     }
     pre_eg_val = egvalVCA;
     // sync on trigger
     sync[0] = 0;
 }
 
-ctagSoundProcessorTBD03::~ctagSoundProcessorTBD03() {
-}
-
-const char *ctagSoundProcessorTBD03::GetCStrID() const {
-    return id.c_str();
-}
-
-
-void ctagSoundProcessorTBD03::setParamValueInternal(const string& id, const string& key, const int val) {
-// autogenerated code here
-// sectionCpp0
-if(id.compare("trigger") == 0){
-	if(key.compare("current") == 0){
-		trigger = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_trigger = val;
-	}
-	return;
-}
-if(id.compare("sync_trig") == 0){
-	if(key.compare("current") == 0){
-		sync_trig = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_sync_trig = val;
-	}
-	return;
-}
-if(id.compare("pitch") == 0){
-	if(key.compare("current") == 0){
-		pitch = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_pitch = val;
-	}
-	return;
-}
-if(id.compare("shape") == 0){
-	if(key.compare("current") == 0){
-		shape = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_shape = val;
-	}
-	return;
-}
-if(id.compare("param_0") == 0){
-	if(key.compare("current") == 0){
-		param_0 = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_param_0 = val;
-	}
-	return;
-}
-if(id.compare("param_1") == 0){
-	if(key.compare("current") == 0){
-		param_1 = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_param_1 = val;
-	}
-	return;
-}
-if(id.compare("gain") == 0){
-	if(key.compare("current") == 0){
-		gain = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_gain = val;
-	}
-	return;
-}
-if(id.compare("filter_type") == 0){
-	if(key.compare("current") == 0){
-		filter_type = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_filter_type = val;
-	}
-	return;
-}
-if(id.compare("cutoff") == 0){
-	if(key.compare("current") == 0){
-		cutoff = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_cutoff = val;
-	}
-	return;
-}
-if(id.compare("resonance") == 0){
-	if(key.compare("current") == 0){
-		resonance = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_resonance = val;
-	}
-	return;
-}
-if(id.compare("envelope") == 0){
-	if(key.compare("current") == 0){
-		envelope = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_envelope = val;
-	}
-	return;
-}
-if(id.compare("saturation") == 0){
-	if(key.compare("current") == 0){
-		saturation = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_saturation = val;
-	}
-	return;
-}
-if(id.compare("drive") == 0){
-	if(key.compare("current") == 0){
-		drive = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_drive = val;
-	}
-	return;
-}
-if(id.compare("accent") == 0){
-	if(key.compare("current") == 0){
-		accent = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_accent = val;
-	}
-	return;
-}
-if(id.compare("accent_level") == 0){
-	if(key.compare("current") == 0){
-		accent_level = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_accent_level = val;
-	}
-	return;
-}
-if(id.compare("decay_vca") == 0){
-	if(key.compare("current") == 0){
-		decay_vca = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_decay_vca = val;
-	}
-	return;
-}
-if(id.compare("decay_vcf") == 0){
-	if(key.compare("current") == 0){
-		decay_vcf = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_decay_vcf = val;
-	}
-	return;
-}
-if(id.compare("p0_amt") == 0){
-	if(key.compare("current") == 0){
-		p0_amt = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_p0_amt = val;
-	}
-	return;
-}
-if(id.compare("p1_amt") == 0){
-	if(key.compare("current") == 0){
-		p1_amt = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_p1_amt = val;
-	}
-	return;
-}
-// sectionCpp0
-
-}
-
-void ctagSoundProcessorTBD03::loadPresetInternal() {
-// autogenerated code here
-// sectionCpp1
-trigger = model->GetParamValue("trigger", "current");
-trig_trigger = model->GetParamValue("trigger", "trig");
-sync_trig = model->GetParamValue("sync_trig", "current");
-trig_sync_trig = model->GetParamValue("sync_trig", "trig");
-pitch = model->GetParamValue("pitch", "current");
-cv_pitch = model->GetParamValue("pitch", "cv");
-shape = model->GetParamValue("shape", "current");
-cv_shape = model->GetParamValue("shape", "cv");
-param_0 = model->GetParamValue("param_0", "current");
-cv_param_0 = model->GetParamValue("param_0", "cv");
-param_1 = model->GetParamValue("param_1", "current");
-cv_param_1 = model->GetParamValue("param_1", "cv");
-gain = model->GetParamValue("gain", "current");
-cv_gain = model->GetParamValue("gain", "cv");
-filter_type = model->GetParamValue("filter_type", "current");
-cv_filter_type = model->GetParamValue("filter_type", "cv");
-cutoff = model->GetParamValue("cutoff", "current");
-cv_cutoff = model->GetParamValue("cutoff", "cv");
-resonance = model->GetParamValue("resonance", "current");
-cv_resonance = model->GetParamValue("resonance", "cv");
-envelope = model->GetParamValue("envelope", "current");
-cv_envelope = model->GetParamValue("envelope", "cv");
-saturation = model->GetParamValue("saturation", "current");
-cv_saturation = model->GetParamValue("saturation", "cv");
-drive = model->GetParamValue("drive", "current");
-cv_drive = model->GetParamValue("drive", "cv");
-accent = model->GetParamValue("accent", "current");
-trig_accent = model->GetParamValue("accent", "trig");
-accent_level = model->GetParamValue("accent_level", "current");
-cv_accent_level = model->GetParamValue("accent_level", "cv");
-decay_vca = model->GetParamValue("decay_vca", "current");
-cv_decay_vca = model->GetParamValue("decay_vca", "cv");
-decay_vcf = model->GetParamValue("decay_vcf", "current");
-cv_decay_vcf = model->GetParamValue("decay_vcf", "cv");
-p0_amt = model->GetParamValue("p0_amt", "current");
-cv_p0_amt = model->GetParamValue("p0_amt", "cv");
-p1_amt = model->GetParamValue("p1_amt", "current");
-cv_p1_amt = model->GetParamValue("p1_amt", "cv");
-// sectionCpp1
-
+void ctagSoundProcessorTBD03::knowYourself() {
+    // sectionCpp0
+    pMapPar.emplace("trigger", [&](const int val) { trigger = val; });
+    pMapTrig.emplace("trigger", [&](const int val) { trig_trigger = val; });
+    pMapPar.emplace("sync_trig", [&](const int val) { sync_trig = val; });
+    pMapTrig.emplace("sync_trig", [&](const int val) { trig_sync_trig = val; });
+    pMapPar.emplace("pitch", [&](const int val) { pitch = val; });
+    pMapCv.emplace("pitch", [&](const int val) { cv_pitch = val; });
+    pMapPar.emplace("shape", [&](const int val) { shape = val; });
+    pMapCv.emplace("shape", [&](const int val) { cv_shape = val; });
+    pMapPar.emplace("param_0", [&](const int val) { param_0 = val; });
+    pMapCv.emplace("param_0", [&](const int val) { cv_param_0 = val; });
+    pMapPar.emplace("param_1", [&](const int val) { param_1 = val; });
+    pMapCv.emplace("param_1", [&](const int val) { cv_param_1 = val; });
+    pMapPar.emplace("gain", [&](const int val) { gain = val; });
+    pMapCv.emplace("gain", [&](const int val) { cv_gain = val; });
+    pMapPar.emplace("filter_type", [&](const int val) { filter_type = val; });
+    pMapCv.emplace("filter_type", [&](const int val) { cv_filter_type = val; });
+    pMapPar.emplace("cutoff", [&](const int val) { cutoff = val; });
+    pMapCv.emplace("cutoff", [&](const int val) { cv_cutoff = val; });
+    pMapPar.emplace("resonance", [&](const int val) { resonance = val; });
+    pMapCv.emplace("resonance", [&](const int val) { cv_resonance = val; });
+    pMapPar.emplace("envelope", [&](const int val) { envelope = val; });
+    pMapCv.emplace("envelope", [&](const int val) { cv_envelope = val; });
+    pMapPar.emplace("saturation", [&](const int val) { saturation = val; });
+    pMapCv.emplace("saturation", [&](const int val) { cv_saturation = val; });
+    pMapPar.emplace("drive", [&](const int val) { drive = val; });
+    pMapCv.emplace("drive", [&](const int val) { cv_drive = val; });
+    pMapPar.emplace("accent", [&](const int val) { accent = val; });
+    pMapTrig.emplace("accent", [&](const int val) { trig_accent = val; });
+    pMapPar.emplace("accent_level", [&](const int val) { accent_level = val; });
+    pMapCv.emplace("accent_level", [&](const int val) { cv_accent_level = val; });
+    pMapPar.emplace("decay_vca", [&](const int val) { decay_vca = val; });
+    pMapCv.emplace("decay_vca", [&](const int val) { cv_decay_vca = val; });
+    pMapPar.emplace("decay_vcf", [&](const int val) { decay_vcf = val; });
+    pMapCv.emplace("decay_vcf", [&](const int val) { cv_decay_vcf = val; });
+    pMapPar.emplace("p0_amt", [&](const int val) { p0_amt = val; });
+    pMapCv.emplace("p0_amt", [&](const int val) { cv_p0_amt = val; });
+    pMapPar.emplace("p1_amt", [&](const int val) { p1_amt = val; });
+    pMapCv.emplace("p1_amt", [&](const int val) { cv_p1_amt = val; });
+    isStereo = false;
+    id = "TBD03";
+    // sectionCpp0
 }

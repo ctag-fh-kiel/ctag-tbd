@@ -30,135 +30,55 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorFVerb::ctagSoundProcessorFVerb()
-{
-    isStereo = true;
-    // acquire model from spiffs json, model auto loads last active preset
+ctagSoundProcessorFVerb::ctagSoundProcessorFVerb() {
+    knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
-    // take preset values from model
-    loadPresetInternal();
+    LoadPreset(0);
 }
 
 void ctagSoundProcessorFVerb::Process(const ProcessData &data) {
-    float val = (float)roomsz / 4095.f;
-    if(cvRoomSz != -1) val = data.cv[cvRoomSz] * data.cv[cvRoomSz];
+    float val = (float) roomsize / 4095.f;
+    if (cv_roomsize != -1) val = data.cv[cv_roomsize] * data.cv[cv_roomsize];
     freeverb.setroomsize(val);
-    val = (float)damp / 4095.f;
-    if(cvDamp != -1) val = data.cv[cvDamp] * data.cv[cvDamp];
+    val = (float) damp / 4095.f;
+    if (cv_damp != -1) val = data.cv[cv_damp] * data.cv[cv_damp];
     freeverb.setdamp(val);
-    val = (float)dry / 4095.f;
-    if(cvDry != -1) val = data.cv[cvDry] * data.cv[cvDry];
+    val = (float) dry / 4095.f;
+    if (cv_dry != -1) val = data.cv[cv_dry] * data.cv[cv_dry];
     freeverb.setdry(val);
-    val = (float)width / 4095.f;
-    if(cvWidth != -1) val = data.cv[cvWidth] * data.cv[cvWidth];
+    val = (float) width / 4095.f;
+    if (cv_width != -1) val = data.cv[cv_width] * data.cv[cv_width];
     freeverb.setwidth(val);
-    val = (float)mode;
-    if(trigMode != -1){
-        val = 1.f - data.trig[trigMode];
+    val = (float) mode;
+    if (trig_mode != -1) {
+        val = 1.f - data.trig[trig_mode];
     }
     freeverb.setmode(val);
     freeverb.setmono(mono);
-    val = (float)wet / 4095.f;
-    if(cvWet != -1) val = data.cv[cvWet] * data.cv[cvWet];
+    val = (float) wet / 4095.f;
+    if (cv_wet != -1) val = data.cv[cv_wet] * data.cv[cv_wet];
     freeverb.setwet(val);
     freeverb.process(data.buf, bufSz);
 }
 
-ctagSoundProcessorFVerb::~ctagSoundProcessorFVerb(){
-
+void ctagSoundProcessorFVerb::knowYourself() {
+    // sectionCpp0
+    pMapPar.emplace("roomsize", [&](const int val) { roomsize = val; });
+    pMapCv.emplace("roomsize", [&](const int val) { cv_roomsize = val; });
+    pMapPar.emplace("damp", [&](const int val) { damp = val; });
+    pMapCv.emplace("damp", [&](const int val) { cv_damp = val; });
+    pMapPar.emplace("dry", [&](const int val) { dry = val; });
+    pMapCv.emplace("dry", [&](const int val) { cv_dry = val; });
+    pMapPar.emplace("wet", [&](const int val) { wet = val; });
+    pMapCv.emplace("wet", [&](const int val) { cv_wet = val; });
+    pMapPar.emplace("width", [&](const int val) { width = val; });
+    pMapCv.emplace("width", [&](const int val) { cv_width = val; });
+    pMapPar.emplace("mode", [&](const int val) { mode = val; });
+    pMapTrig.emplace("mode", [&](const int val) { trig_mode = val; });
+    pMapPar.emplace("mono", [&](const int val) { mono = val; });
+    pMapTrig.emplace("mono", [&](const int val) { trig_mono = val; });
+    isStereo = true;
+    id = "FVerb";
+    // sectionCpp0
 }
 
-const char * ctagSoundProcessorFVerb::GetCStrID() const{
-    return id.c_str();
-}
-
-void ctagSoundProcessorFVerb::setParamValueInternal(const string &id, const string &key, const int val) {
-    if(id.compare("roomsize") == 0){
-        if(key.compare("current") == 0){
-            roomsz = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvRoomSz = val;
-            return;
-        }
-    }
-    if(id.compare("damp") == 0){
-        if(key.compare("current") == 0){
-            damp = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvDamp = val;
-            return;
-        }
-    }
-    if(id.compare("dry") == 0){
-        if(key.compare("current") == 0){
-            dry = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvDry = val;
-            return;
-        }
-    }
-    if(id.compare("wet") == 0){
-        if(key.compare("current") == 0){
-            wet = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvWet = val;
-            return;
-        }
-    }
-    if(id.compare("width") == 0){
-        if(key.compare("current") == 0){
-            width = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvWidth = val;
-            return;
-        }
-    }
-    if(id.compare("mode") == 0){
-        if(key.compare("current") == 0){
-            mode = val;
-            return;
-        }
-        if(key.compare("trig") == 0){
-            if(val >= -1 && val <= 1)
-                trigMode = val;
-            return;
-        }
-    }
-    if (id.compare("mono") == 0) {
-        if (key.compare("current") == 0) {
-            mono = val;
-            return;
-        }
-    }
-}
-
-void ctagSoundProcessorFVerb::loadPresetInternal() {
-    roomsz = model->GetParamValue("roomsize", "current");
-    damp = model->GetParamValue("damp", "current");
-    dry = model->GetParamValue("dry", "current");
-    wet = model->GetParamValue("wet", "current");
-    width = model->GetParamValue("width", "current");
-    mode = model->GetParamValue("mode", "current");
-    mono = model->GetParamValue("mono", "current");
-    cvRoomSz = model->GetParamValue("roomsize", "cv");
-    cvDamp = model->GetParamValue("damp", "cv");
-    cvDry = model->GetParamValue("dry", "cv");
-    cvWet = model->GetParamValue("wet", "cv");
-    cvWidth = model->GetParamValue("width", "cv");
-    trigMode = model->GetParamValue("mode", "trig");
-}

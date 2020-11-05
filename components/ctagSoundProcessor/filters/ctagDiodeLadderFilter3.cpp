@@ -64,17 +64,19 @@ float CTAG::SP::HELPERS::ctagDiodeLadderFilter3::Process(float in) {
 
     b_lf = b_lf + ((-b_lf + b_v) * b_lfcut); // b_lfcut 0..1
     float b_lfhp = b_v - b_lf;
-    b_v = b_lf + (b_lfhp * ((b_lfgain*0.5f)+1.f));
+    b_v = b_lf + (b_lfhp * ((b_lfgain * 0.5f) + 1.f));
 
     float b_rez = b_aflt4 - b_v; // no attenuation with rez, makes a stabler filter.
-    b_v = b_v - (b_rez*b_fres); // b_fres = resonance amount. 0..4 typical "to selfoscillation", 0.6 covers a more saturated range.
+    b_v = b_v - (b_rez *
+                 b_fres); // b_fres = resonance amount. 0..4 typical "to selfoscillation", 0.6 covers a more saturated range.
 
     float b_vnc = b_v; // clip, and adding back some nonclipped, to get a dynamic like analog.
-    if (b_v > 1) {b_v = 1;} else if (b_v < -1) {b_v = -1;}
+    if (b_v > 1) { b_v = 1; } else if (b_v < -1) { b_v = -1; }
     // lower number for more grit at high resonance
     b_v = b_vnc + ((-b_vnc + b_v) * 0.6123f); // original 0.9740 seems to affect barking at high resonance levels
 
-    b_aflt1 = b_aflt1 + ((-b_aflt1 + b_v) * b_fenv); // straightforward 4 pole filter, (4 normalized feedback paths in series)
+    b_aflt1 = b_aflt1 +
+              ((-b_aflt1 + b_v) * b_fenv); // straightforward 4 pole filter, (4 normalized feedback paths in series)
     b_aflt2 = b_aflt2 + ((-b_aflt2 + b_aflt1) * b_fenv);
     b_aflt3 = b_aflt3 + ((-b_aflt3 + b_aflt2) * b_fenv);
     b_aflt4 = b_aflt4 + ((-b_aflt4 + b_aflt3) * b_fenv);

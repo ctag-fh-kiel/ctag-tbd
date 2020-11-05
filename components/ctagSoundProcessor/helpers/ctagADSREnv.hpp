@@ -23,28 +23,45 @@
 //
 // used some optimization on the exp approximation, it has to be accurate for very small exponents
 
-namespace CTAG{
-    namespace SP{
-        namespace HELPERS{
+namespace CTAG {
+    namespace SP {
+        namespace HELPERS {
             class ctagADSREnv {
             public:
                 ctagADSREnv(void);
+
                 ~ctagADSREnv(void);
+
                 float Process(void);
+
                 float GetOutput(void);
+
                 int GetState(void);
+
                 void Gate(bool gate);
+
                 void SetAttack(float rate);
+
                 void SetDecay(float rate);
+
                 void SetRelease(float rate);
+
                 void SetSustain(float level);
+
                 void SetTargetRatioA(float targetRatio);
+
                 void SetTargetRatioDR(float targetRatio);
+
                 void Reset(void);
+
                 void SetSampleRate(float fs_hz);
+
                 bool IsIdle();
+
                 void SetModeLin();
+
                 void SetModeExp();
+
                 void Hold();
 
 

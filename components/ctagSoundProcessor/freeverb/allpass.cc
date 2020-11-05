@@ -7,19 +7,16 @@
 #include "allpass.hpp"
 #include <cstring>
 
-allpass::allpass()
-{
-	bufidx = 0;
+allpass::allpass() {
+    bufidx = 0;
 }
 
-void allpass::setbuffer(float *buf, int size) 
-{
-	buffer = buf; 
-	bufsize = size;
+void allpass::setbuffer(float *buf, int size) {
+    buffer = buf;
+    bufsize = size;
 }
 
-void allpass::mute()
-{
+void allpass::mute() {
     memset(buffer, 0, bufsize * sizeof(float));
     /*
 	for (int i=0; i<bufsize; i++)
@@ -27,14 +24,12 @@ void allpass::mute()
      */
 }
 
-void allpass::setfeedback(float val) 
-{
-	feedback = val;
+void allpass::setfeedback(float val) {
+    feedback = val;
 }
 
-float allpass::getfeedback() 
-{
-	return feedback;
+float allpass::getfeedback() {
+    return feedback;
 }
 
 //ends

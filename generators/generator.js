@@ -63,15 +63,15 @@ if(nargs == 3){
     process.exit(-1);
 }
 // parse mui file
-let sHeader = 'const string id = "' + mui.id + '";\n';
-sHeader += 'void setIsStereo(){isStereo = ' + mui.isStereo + ';}\n';
+let sHeader = '';
 let sCpp1 = '';
-let sCpp2 = '';
 let smp = {}; // preset object to be written as json
 smp.activePatch = 0;
 smp.patches = [];
 smp.patches.push({"name": "Default", "params": []});
 mui.params.forEach(el => parseData(el));
+sCpp1 += '\tisStereo = ' + mui.isStereo + ';\n';
+sCpp1 += '\tid = "' + mui.id + '";\n';
 // create mp preset model
 fs.writeFileSync(mp, JSON.stringify(smp, null, 2));
 // generate header file
@@ -82,7 +82,7 @@ part.splice(1, 1); // remove auto code section, to be replaced with new generati
 let newHpp = part[0];
 newHpp += '// sectionHpp\n';
 newHpp += sHeader;
-newHpp += '// sectionHpp\n';
+newHpp += '\t// sectionHpp';
 newHpp += part[1];
 fs.writeFileSync(hppOut, newHpp);
 // generate source file
@@ -94,19 +94,9 @@ part.splice(1, 1);
 let newCpp = part[0];
 newCpp += '// sectionCpp0\n';
 newCpp += sCpp1;
-newCpp += '// sectionCpp0\n';
-newCpp += part[1];
-// part 2
-part = newCpp.split('// sectionCpp1');
-part.splice(1, 1);
-newCpp = part[0];
-newCpp += '// sectionCpp1\n';
-newCpp += sCpp2;
-newCpp += '// sectionCpp1\n';
+newCpp += '\t// sectionCpp0';
 newCpp += part[1];
 fs.writeFileSync(cppOut, newCpp);
-
-
 
 function parseData(el){
     switch(el.type){
@@ -116,41 +106,24 @@ function parseData(el){
         default:
             hppSource(el);
             cppSource1(el);
-            cppSource2(el);
             smpSource(el);
             break;
     }
 }
 
 function hppSource(el){
-    sHeader += "atomic<int32_t> " + el.id + ", " + (el.type == "bool" ? "trig_" : "cv_") + el.id + ";\n";
+    sHeader += "\tatomic<int32_t> " + el.id + ", " + (el.type == "bool" ? "trig_" : "cv_") + el.id + ";\n";
 }
 
 function cppSource1(el){
-    let s = 'if(id.compare("' + el.id + '") == 0){\n';
-    s += '\tif(key.compare("current") == 0){\n';
-    s += '\t\t' + el.id + ' = val;\n';
-    s += '\t\treturn;\n';
-    s += '\t}';
-    s += 'else if(key.compare("';
+    let s = '';
+    s += '\tpMapPar.emplace("' + el.id + '", [&](const int val){ ' + el.id + ' = val;});\n';
     if(el.type == 'bool'){
-        s += 'trig") == 0){\n';
-        s += '\t\tif(val >= -1 && val <= 1)\n';
-        s += '\t\t\ttrig_' + el.id + ' = val;\n';
+        s += '\tpMapTrig.emplace("' + el.id + '", [&](const int val){ trig_' + el.id + ' = val;});\n';
     }else{
-        s += 'cv") == 0){\n';
-        s += '\t\tif(val >= -1 && val <= 3)\n';
-        s += '\t\t\tcv_' + el.id + ' = val;\n';
+        s += '\tpMapCv.emplace("' + el.id + '", [&](const int val){ cv_' + el.id + ' = val;});\n';
     }
-    //s += '\t\treturn;\n';
-    s += '\t}\n\treturn;\n}\n';
     sCpp1 += s;
-}
-
-function cppSource2(el){
-    let s = el.id + ' = model->GetParamValue("' + el.id + '", "current");\n';
-    s += (el.type == 'bool' ? 'trig_' : 'cv_') + el.id + ' = model->GetParamValue("' + el.id + '", "' + (el.type == 'bool' ? 'trig' : 'cv') + '");\n';
-    sCpp2 += s;
 }
 
 function smpSource(el){

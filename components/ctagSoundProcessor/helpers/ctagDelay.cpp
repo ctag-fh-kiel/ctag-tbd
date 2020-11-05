@@ -55,15 +55,15 @@ float CTAG::SP::HELPERS::ctagDelay::GetZ(uint32_t index) {
 float CTAG::SP::HELPERS::ctagDelay::Process(float input) {
     float bufout = buffer[bufidx];
     buffer[bufidx] = input;
-    bufidx ++;
+    bufidx++;
     bufidx %= bufsize;
     return bufout;
 }
 
 float CTAG::SP::HELPERS::ctagDelay::ProcessFeedback(float input) {
     float bufout = buffer[bufidx];
-    buffer[bufidx] = feedback*input;
-    bufidx ++;
+    buffer[bufidx] = feedback * input;
+    bufidx++;
     bufidx %= bufsize;
     return bufout;
 }

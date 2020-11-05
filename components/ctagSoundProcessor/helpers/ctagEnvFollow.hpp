@@ -29,14 +29,23 @@ namespace CTAG::SP::HELPERS {
     class ctagEnvFollow {
     public:
         ctagEnvFollow();
+
         void SetSampleRate(float fs);
+
         float Process(float in);
+
         void SetAttack(float t_in_s);
+
         void SetDecay(float t_in_s);
+
         float GetDecayComp();
+
         float GetAttackComp();
+
         void SetDecayComp(float val);
+
         void SetAttackComp(float val);
+
     private:
         float _fs;
         float _a;

@@ -60,7 +60,7 @@ void FV3_(slot)::alloc(int32_t nsize, int32_t nch) {
     if (slot_bad_alloc == true) {
         data = NULL;
 //        for (int32_t t = 0; t < ch; t++) FV3_(utils)::aligned_free(data[t]);
-  //      delete[] data;
+        //      delete[] data;
         //std::fprintf(stderr, "slot::alloc(%ld, %ld) bad_alloc\n", nsize, nch);
     }
     size = nsize;

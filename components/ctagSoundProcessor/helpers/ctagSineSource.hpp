@@ -28,11 +28,17 @@ namespace CTAG::SP::HELPERS {
     class ctagSineSource {
     public:
         ctagSineSource();
+
         void SetSampleRate(float f_hz);
+
         void SetFrequency(float f_hz);
+
         void SetFrequencyPhase(float f_hz, float phase_rad);
+
         float Process();
+
         float GetCos();
+
         float GetSin();
 
     protected:

@@ -36,44 +36,13 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ~ctagSoundProcessorDLoop();
-
             ctagSoundProcessorDLoop();
 
-            const char *GetCStrID() const override;
 
         private:
-            void setParamValueInternal(const string &id, const string &key, const int val) override;
-            void loadPresetInternal() override;
-            const string id = "DLoop"; // stands for dust looped
 
-            // inter thread variables are atomic
-            atomic<int32_t> reset;
-            atomic<int32_t> loop;
-            atomic<int32_t> seed;
-            atomic<int32_t> level;
-            atomic<int32_t> density;
-            atomic<int32_t> slen;
-            atomic<int32_t> sspread;
-            atomic<int32_t> ofssspread;
-            atomic<int32_t> vspread;
-            atomic<int32_t> ofsvspread;
-            atomic<int32_t> s_enable;
-            atomic<int32_t> s_rlevel;
-            atomic<int32_t> s_decay;
-            atomic<int32_t> t_reset;
-            atomic<int32_t> t_loop;
-            atomic<int32_t> cv_seed;
-            atomic<int32_t> cv_level;
-            atomic<int32_t> cv_density;
-            atomic<int32_t> cv_slen;
-            atomic<int32_t> cv_sspread;
-            atomic<int32_t> cv_vspread;
-            atomic<int32_t> cv_ofssspread;
-            atomic<int32_t> cv_ofsvspread;
-            atomic<int32_t> t_s_enable;
-            atomic<int32_t> cv_s_rlevel;
-            atomic<int32_t> cv_s_decay;
+            virtual void knowYourself() override;
+
             // process only objects
             ctagWNoiseGen d, d_pan, d_level, s_l, s_r;
             ctagDecay decL, decR;
@@ -81,6 +50,21 @@ namespace CTAG {
             uint32_t loopCntr;
             uint32_t lastReset;
 
+            // sectionHpp
+            atomic<int32_t> reset, trig_reset;
+            atomic<int32_t> loop, trig_loop;
+            atomic<int32_t> seed, cv_seed;
+            atomic<int32_t> level, cv_level;
+            atomic<int32_t> density, cv_density;
+            atomic<int32_t> slen, cv_slen;
+            atomic<int32_t> sspread, cv_sspread;
+            atomic<int32_t> ofssspread, cv_ofssspread;
+            atomic<int32_t> vspread, cv_vspread;
+            atomic<int32_t> ofsvspread, cv_ofsvspread;
+            atomic<int32_t> s_enable, trig_s_enable;
+            atomic<int32_t> s_rlevel, cv_s_rlevel;
+            atomic<int32_t> s_decay, cv_s_decay;
+            // sectionHpp
         };
     }
 }

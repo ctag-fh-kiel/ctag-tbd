@@ -23,24 +23,29 @@ respective component folders / files if different from this license.
 
 // abstract filter superclass
 
-namespace CTAG::SP::HELPERS{
+namespace CTAG::SP::HELPERS {
     class ctagFilterBase {
     public:
 
-        virtual ~ctagFilterBase(){};
+        virtual ~ctagFilterBase() {};
 
-        virtual void SetCutoff(float cutoff){
+        virtual void SetCutoff(float cutoff) {
             cutoff_ = cutoff;
         };
-        virtual void SetResonance(float resonance){
+
+        virtual void SetResonance(float resonance) {
             resonance_ = resonance;
         };
-        virtual void SetSampleRate(float fs){
+
+        virtual void SetSampleRate(float fs) {
             fs_ = fs;
         };
+
         virtual float Process(float in) = 0;
+
         virtual void Init() = 0;
-        virtual void SetGain(float gain){
+
+        virtual void SetGain(float gain) {
             gain_ = gain;
         }
 

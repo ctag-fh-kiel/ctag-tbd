@@ -31,9 +31,9 @@ const int32_t FV3_(strev)::idxLCo[] = {266, 2974, 1913, 1996, 1990, 187, 1066,};
 const int32_t FV3_(strev)::idxRCo[] = {353, 3627, 1228, 2673, 2111, 335, 121,};
 const int32_t FV3_(strev)::allpM_EXCURSION = 32;
 
-FV3_(strev)::~FV3_(strev)(){
-    if(totalBuf1 != NULL) heap_caps_free(totalBuf1);
-    if(totalBuf2 != NULL) heap_caps_free(totalBuf2);
+FV3_(strev)::~FV3_(strev)() {
+    if (totalBuf1 != NULL) heap_caps_free(totalBuf1);
+    if (totalBuf2 != NULL) heap_caps_free(totalBuf2);
     totalBuf1 = NULL;
     totalBuf2 = NULL;
 }
@@ -87,17 +87,17 @@ void FV3_(strev)::mute() {
     //noise1L.mute();
 }
 
-void FV3_(strev)::processreplace(fv3_float_t *samples, int32_t numsamples){
+void FV3_(strev)::processreplace(fv3_float_t *samples, int32_t numsamples) {
     //if (numsamples <= 0) return;
     //int32_t count = numsamples * getOSFactor();
     //growWave(numsamples);
 
     fv3_float_t outL, outR, input;
-    for(uint32_t i = 0;i<numsamples; i++) {
-        if(isMono){
-            input = samples[i*2];
-        }else{
-            input = (samples[i*2] + samples[i*2 + 1]) / 2.f;
+    for (uint32_t i = 0; i < numsamples; i++) {
+        if (isMono) {
+            input = samples[i * 2];
+        } else {
+            input = (samples[i * 2] + samples[i * 2 + 1]) / 2.f;
         }
 
         // DC-cut HPF + input LPF
@@ -130,15 +130,15 @@ void FV3_(strev)::processreplace(fv3_float_t *samples, int32_t numsamples){
 
         fv3_float_t fpL = delayWL(out1_lpf(outL));
         fv3_float_t fpR = delayWR(out2_lpf(outR));
-        samples[i*2] = fpL * wet1 + fpR * wet2 + delayL(samples[i*2]) * dry;
-        if(isMono){
-            samples[i*2 + 1]= fpR * wet1 + fpL * wet2 + delayR(samples[i*2]) * dry;
-        }else{
-            samples[i*2 + 1]= fpR * wet1 + fpL * wet2 + delayR(samples[i*2 + 1]) * dry;
+        samples[i * 2] = fpL * wet1 + fpR * wet2 + delayL(samples[i * 2]) * dry;
+        if (isMono) {
+            samples[i * 2 + 1] = fpR * wet1 + fpL * wet2 + delayR(samples[i * 2]) * dry;
+        } else {
+            samples[i * 2 + 1] = fpR * wet1 + fpL * wet2 + delayR(samples[i * 2 + 1]) * dry;
         }
 
-        UNDENORMAL(samples[i*2]);
-        UNDENORMAL(samples[i*2 + 1]);
+        UNDENORMAL(samples[i * 2]);
+        UNDENORMAL(samples[i * 2 + 1]);
 
     }
     //SRC.dsrc(overO.L, overO.R, origOutL, origOutR, numsamples);
@@ -466,13 +466,13 @@ void FV3_(strev)::setFsFactors() {
         }
     }
 #else
-    totalBuf1 = (float*) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    totalBuf2 = (float*) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    totalBuf1 = (float *) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    totalBuf2 = (float *) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 #endif
 
 
     float *fPtr = totalBuf1;
-    for (int32_t i = 0; i < FV3_STREV_NUM_ALLPASS_4; i++){
+    for (int32_t i = 0; i < FV3_STREV_NUM_ALLPASS_4; i++) {
         allpassC[i].setsize(fPtr, f_(allpCo[i], totalFactor));
         fPtr += f_(allpCo[i], totalFactor);
     }

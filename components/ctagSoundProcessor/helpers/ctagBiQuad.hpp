@@ -24,24 +24,34 @@ respective component folders / files if different from this license.
 
 #include "dsps_biquad.h"
 
-namespace CTAG::SP::HELPERS{
-    enum class BIQUAD_TYPE : uint32_t{
+namespace CTAG::SP::HELPERS {
+    enum class BIQUAD_TYPE : uint32_t {
         LP, BP, HP
     };
+
     class ctagBiQuad {
     public:
         ctagBiQuad();
+
         void SetType(BIQUAD_TYPE t);
+
         void Mute();
+
         //void Process(float *data, const uint32_t sz, const uint32_t inc);
         //float Process(float data);
         void Process(float *data, const uint32_t sz);
+
         void SetCutoffHz(float cut);
+
         void SetQ(float q);
+
         void SetSampleRate(float fs);
+
     private:
         BIQUAD_TYPE type;
+
         void calcCoeffs();
+
         float w[2];
         float coeff[6];
         float _cut, _q;

@@ -31,25 +31,39 @@ respective component folders / files if different from this license.
 using namespace std;
 using namespace rapidjson;
 
-namespace CTAG{
-    namespace SP{
+namespace CTAG {
+    namespace SP {
         class ctagSPDataModel : public ctagDataModelBase {
         public:
             ctagSPDataModel(const string &id, const bool isStereo);
+
             ~ctagSPDataModel();
-            const char * GetCStrJSONParams();
+
+            const char *GetCStrJSONParams();
+
             void LoadPreset(const int num);
+
             // set a preset value, "which" can be current, cv, trig
             void SetParamValue(const string &id, const string &key, const int val);
+
             int GetParamValue(const string &id, const string &key);
+
             void SavePreset(const string &name, const int number);
-            const char * GetCStrJSONPresets(); // all presets
-            const char * GetCStrJSONAllPresetData(); // current preset
+
+            const char *GetCStrJSONPresets(); // all presets
+            const char *GetCStrJSONAllPresetData(); // current preset
+            bool IsParamTrig(const string &id);
+
+            bool IsParamCV(const string &id);
+
             void PrintSelf();
+
         private:
             void recursiveFindAndInsert(const Value &paramF, Value &paramI);
+
             // merge ui and preset models
             void mergeModels();
+
             Document mui, mp;
             string mpFileName, muiFileName;
             Value activePreset;

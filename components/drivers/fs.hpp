@@ -22,11 +22,11 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-namespace CTAG{
-    namespace DRIVERS{
-        class FileSystem{
-            public:
-                static void InitFS();
+namespace CTAG {
+    namespace DRIVERS {
+        class FileSystem {
+        public:
+            static void InitFS();
         };
     }
 }

@@ -16,11 +16,11 @@ set(SRCS_FILES
         MoogLadders/src/util.h
         )
 
-if(TBD_SIM)
+if (TBD_SIM)
     add_library(moog STATIC ${SRCS_FILES})
     target_include_directories(moog PRIVATE "MoogLadders/src")
-else()
+else ()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS MoogLadders/src
-            PRIV_REQUIRES )
-endif()
+            PRIV_REQUIRES)
+endif ()

@@ -41,7 +41,9 @@ namespace CTAG {
         class SimSPManager {
         public:
             static void StartSoundProcessor(int iSoundCardID, string wavFile, bool bOutOnly);
+
             static void StopSoundProcessor();
+
             static void ListSoundCards();
 
             static const char *GetCStrJSONSoundProcessors() {
@@ -64,11 +66,11 @@ namespace CTAG {
                 return model->GetCStrJSONConfiguration();
             }
 
-            static const char * GetCStrJSONSoundProcessorPresets(const string &id){
+            static const char *GetCStrJSONSoundProcessorPresets(const string &id) {
                 return model->GetCStrJSONSoundProcessorPresets(id);
             }
 
-            static void SetJSONSoundProcessorPreset(const string &id, const string &data){
+            static void SetJSONSoundProcessorPreset(const string &id, const string &data) {
                 model->SetJSONSoundProcessorPreset(id, data);
             }
 
@@ -85,7 +87,8 @@ namespace CTAG {
             static void ChannelLoadPreset(const int chan, const int number);
 
             static void SetProcessParams(const string &params);
-            static const char* GetProcessParams(){
+
+            static const char *GetProcessParams() {
                 return simModel->GetModelJSONCString();
             }
 
@@ -97,8 +100,10 @@ namespace CTAG {
             static std::unique_ptr<ctagSoundProcessor> sp[2];
             static std::unique_ptr<SPManagerDataModel> model;
             static RtAudio audio;
-            static int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
-                                            double streamTime, RtAudioStreamStatus status, void *userData );
+
+            static int inout(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
+                             double streamTime, RtAudioStreamStatus status, void *userData);
+
             static std::unique_ptr<SimDataModel> simModel;
             static SimStimulus stimulus;
         };

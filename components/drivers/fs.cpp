@@ -29,14 +29,14 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::DRIVERS;
 
-void FileSystem::InitFS(){
+void FileSystem::InitFS() {
     ESP_LOGI("fs", "Initializing SPIFFS");
 
     esp_vfs_spiffs_conf_t conf = {
-      .base_path = "/spiffs",
-      .partition_label = NULL,
-      .max_files = 5,
-      .format_if_mount_failed = false
+            .base_path = "/spiffs",
+            .partition_label = NULL,
+            .max_files = 5,
+            .format_if_mount_failed = false
     };
 
     // Use settings defined above to initialize and mount SPIFFS filesystem.

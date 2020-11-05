@@ -149,34 +149,31 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  enum
-    {
-      FV3_W_BLACKMAN = 1,
-      FV3_W_HANNING  = 2,
-      FV3_W_HAMMING  = 3,
-      FV3_W_KAISER   = 4,
-      FV3_W_COSRO    = 5,
-      FV3_W_SQUARE   = 6,
-    };
-  
-  enum
-    {
-      FV3_3BSPLIT_IR_IR2 = 0,
-      FV3_3BSPLIT_IR_IR3 = 1,
-    };
-  
-  enum
-    {
-      FV3_SRC_SINC_BEST_QUALITY        =   0,
-      FV3_SRC_SINC_MEDIUM_QUALITY      =   1,
-      FV3_SRC_SINC_FASTEST             =   2,
-      FV3_SRC_ZERO_ORDER_HOLD          =   3,
-      FV3_SRC_LINEAR                   =   4,
-      FV3_SRC_SINC_SLOW_BEST_QUALITY   =  10,
-      FV3_SRC_SINC_SLOW_MEDIUM_QUALITY =  11,
-      FV3_SRC_LPF_IIR_1                = 100,
-      FV3_SRC_LPF_IIR_2                = 101,
-    };
+enum {
+    FV3_W_BLACKMAN = 1,
+    FV3_W_HANNING = 2,
+    FV3_W_HAMMING = 3,
+    FV3_W_KAISER = 4,
+    FV3_W_COSRO = 5,
+    FV3_W_SQUARE = 6,
+};
+
+enum {
+    FV3_3BSPLIT_IR_IR2 = 0,
+    FV3_3BSPLIT_IR_IR3 = 1,
+};
+
+enum {
+    FV3_SRC_SINC_BEST_QUALITY = 0,
+    FV3_SRC_SINC_MEDIUM_QUALITY = 1,
+    FV3_SRC_SINC_FASTEST = 2,
+    FV3_SRC_ZERO_ORDER_HOLD = 3,
+    FV3_SRC_LINEAR = 4,
+    FV3_SRC_SINC_SLOW_BEST_QUALITY = 10,
+    FV3_SRC_SINC_SLOW_MEDIUM_QUALITY = 11,
+    FV3_SRC_LPF_IIR_1 = 100,
+    FV3_SRC_LPF_IIR_2 = 101,
+};
 #ifdef __cplusplus
 }
 #endif

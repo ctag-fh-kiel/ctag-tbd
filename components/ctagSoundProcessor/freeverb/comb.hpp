@@ -10,54 +10,60 @@
 #include "denormals.hh"
 #include "esp_system.h"
 
-class comb
-{
+class comb {
 public:
-					comb();
-			void	setbuffer(float *buf, int size);
-	inline  float	IRAM_ATTR process(float inp);
-			void	mute();
-			void	setdamp(float val);
-			float	getdamp();
-			void	setfeedback(float val);
-			float	getfeedback();
+    comb();
+
+    void setbuffer(float *buf, int size);
+
+    inline float    IRAM_ATTR process(float inp);
+
+    void mute();
+
+    void setdamp(float val);
+
+    float getdamp();
+
+    void setfeedback(float val);
+
+    float getfeedback();
+
 private:
-	float	feedback;
-	float	filterstore;
-	float	damp1;
-	float	damp2;
-	float	*buffer;
-	int		bufsize;
-	int		bufidx;
+    float feedback;
+    float filterstore;
+    float damp1;
+    float damp2;
+    float *buffer;
+    int bufsize;
+    int bufidx;
 };
 
 
 // Big to inline - but crucial for speed
 
-inline float IRAM_ATTR comb::process(float input)
-{
-	float output;
+inline float IRAM_ATTR comb::process(float input) {
+    float output;
 
-	output = buffer[bufidx];
+    output = buffer[bufidx];
 
     output += 1e-18f;
     output -= 1e-18f;
 
     //undenormalise(output);
 
-	filterstore = (output*damp2) + (filterstore*damp1);
-	//undenormalise(filterstore);
+    filterstore = (output * damp2) + (filterstore * damp1);
+    //undenormalise(filterstore);
 
     filterstore += 1e-18f;
     filterstore -= 1e-18f;
 
 
-	buffer[bufidx] = input + (filterstore*feedback);
+    buffer[bufidx] = input + (filterstore * feedback);
     bufidx++;
-    bufidx%=bufsize;
-	//if(++bufidx>=bufsize) bufidx = 0;
+    bufidx %= bufsize;
+    //if(++bufidx>=bufsize) bufidx = 0;
 
-	return output;
+    return output;
 }
 
 #endif //_comb_

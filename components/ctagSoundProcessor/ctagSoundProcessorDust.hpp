@@ -35,35 +35,12 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ~ctagSoundProcessorDust();
-
             ctagSoundProcessorDust();
 
-            const char *GetCStrID() const override;
-
         private:
-            void setParamValueInternal(const string &id, const string &key, const int val) override;
 
-            void loadPresetInternal() override;
+            virtual void knowYourself() override;
 
-            const string id = "Dust";
-
-            // inter thread variables are atomic
-            atomic<int32_t> rate;
-            atomic<int32_t> level;
-            atomic<int32_t> bipolar;
-            atomic<int32_t> smooth;
-            atomic<int32_t> width;
-            atomic<int32_t> bp_enable;
-            atomic<int32_t> bp_fcut;
-            atomic<int32_t> bp_q;
-            atomic<int32_t> cvRate;
-            atomic<int32_t> cvLevel;
-            atomic<int32_t> cvSmooth;
-            atomic<int32_t> cvWidth;
-            atomic<int32_t> cv_bp_fcut;
-            atomic<int32_t> cv_bp_q;
-            atomic<int32_t> trig_bp_enable;
             // process only variables
 
             // random sources
@@ -73,6 +50,17 @@ namespace CTAG {
             float coeffs[6];
             float w1[2];
             float w2[2];
+
+            // sectionHpp
+            atomic<int32_t> bipolar, trig_bipolar;
+            atomic<int32_t> rate, cv_rate;
+            atomic<int32_t> level, cv_level;
+            atomic<int32_t> width, cv_width;
+            atomic<int32_t> smooth, cv_smooth;
+            atomic<int32_t> bp_enable, trig_bp_enable;
+            atomic<int32_t> bp_fcut, cv_bp_fcut;
+            atomic<int32_t> bp_q, cv_bp_q;
+            // sectionHpp
         };
     }
 }

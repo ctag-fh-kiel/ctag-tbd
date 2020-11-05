@@ -28,8 +28,7 @@ respective component folders / files if different from this license.
 #include "helpers/ctagFastMath.hpp"
 
 CTAG::SP::HELPERS::ctagEnvFollow::ctagEnvFollow() :
-    _fs(44100.f), _a(0.001f), _d(0.001f), envOut(0.f)
-{
+        _fs(44100.f), _a(0.001f), _d(0.001f), envOut(0.f) {
 
 }
 
@@ -39,7 +38,7 @@ void CTAG::SP::HELPERS::ctagEnvFollow::SetSampleRate(float fs) {
 
 float CTAG::SP::HELPERS::ctagEnvFollow::Process(float envIn) {
     envIn = fastfabs(envIn);
-    if(envOut < envIn)
+    if (envOut < envIn)
         envOut = envIn + _a * (envOut - envIn);
     else
         envOut = envIn + _d * (envOut - envIn);

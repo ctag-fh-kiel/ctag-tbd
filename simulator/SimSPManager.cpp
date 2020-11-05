@@ -40,15 +40,15 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
     float cv[4] = {0.f, 0.f, 0.f, 0.f};
     uint8_t trig[2] = {0, 0};
 
-    if(inputBuffer != NULL)
+    if (inputBuffer != NULL)
         memcpy(fbuf, inputBuffer, 32 * 2 * 4);
     else
-        memset(fbuf, 0, 32*2*4);
+        memset(fbuf, 0, 32 * 2 * 4);
 
-    if(isWaveInput){
+    if (isWaveInput) {
         int nread = 0;
         nread = tinywav_read_f(&tw, fbuf, 32);
-        if(nread != 32){
+        if (nread != 32) {
             tinywav_read_reset(&tw);
         }
     }
@@ -83,7 +83,7 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, bool bO
     // Initialize simulator parameters
     simModel = std::make_unique<SimDataModel>();
     int mode[6], value[6];
-    for(int i=0;i<6;i++){
+    for (int i = 0; i < 6; i++) {
         mode[i] = simModel->GetArrayElement("mode", i);
         value[i] = simModel->GetArrayElement("value", i);
     }
@@ -115,17 +115,17 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, bool bO
     }
 
     // wav file
-    if(!wavFile.empty()){
+    if (!wavFile.empty()) {
         tinywav_open_read(&tw, wavFile.c_str(), TW_INTERLEAVED, TW_FLOAT32);
-        if(!tw.f){
+        if (!tw.f) {
             cout << "Could not open wav file!" << endl;
             exit(-1);
         }
-        if(tw.numChannels!=2){
+        if (tw.numChannels != 2) {
             cout << "Wave file is not stereo!" << endl;
             exit(-1);
         }
-        if(tw.sampFmt != TW_FLOAT32){
+        if (tw.sampFmt != TW_FLOAT32) {
             cout << "Wave file is not float32!" << endl;
             exit(-1);
         }
@@ -170,7 +170,7 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, bool bO
 }
 
 void SimSPManager::StopSoundProcessor() {
-    if(isWaveInput) tinywav_close_read(&tw);
+    if (isWaveInput) tinywav_close_read(&tw);
     if (audio.isStreamRunning() && audio.isStreamOpen()) {
         audio.stopStream();
         audio.closeStream();
@@ -243,7 +243,7 @@ void SimSPManager::ListSoundCards() {
 void SimSPManager::SetProcessParams(const string &params) {
     simModel->SetModelJSONString(params);
     int mode[6], value[6];
-    for(int i=0;i<6;i++){
+    for (int i = 0; i < 6; i++) {
         mode[i] = simModel->GetArrayElement("mode", i);
         value[i] = simModel->GetArrayElement("value", i);
     }

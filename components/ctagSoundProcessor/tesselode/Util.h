@@ -31,12 +31,11 @@ SOFTWARE.
 
 using namespace CTAG::SP::HELPERS;
 
-namespace tesselode{
+namespace tesselode {
     const float pi = M_PI;
 
 // https://stackoverflow.com/a/707426
-    inline int wrap(int kX, int const kLowerBound, int const kUpperBound)
-    {
+    inline int wrap(int kX, int const kLowerBound, int const kUpperBound) {
         int range_size = kUpperBound - kLowerBound + 1;
 
         if (kX < kLowerBound)
@@ -46,8 +45,7 @@ namespace tesselode{
     }
 
 // http://musicdsp.org/archive.php?classid=5#93
-    inline float interpolate(float x, float y0, float y1, float y2, float y3)
-    {
+    inline float interpolate(float x, float y0, float y1, float y2, float y3) {
         // 4-point, 3rd-order Hermite (x-form)
         float c0 = y1;
         float c1 = 0.5f * (y2 - y0);
@@ -56,8 +54,7 @@ namespace tesselode{
         return ((c3 * x + c2) * x + c1) * x + c0;
     }
 
-    inline void adjustPanning(float inL, float inR, float angle, float &outL, float &outR)
-    {
+    inline void adjustPanning(float inL, float inR, float angle, float &outL, float &outR) {
         auto c = fastcos(angle);
         auto s = fastsin(angle);
         outL = inL * c - inR * s;
@@ -68,8 +65,8 @@ namespace tesselode{
 
 // https://stackoverflow.com/questions/1640258/need-a-fast-random-generator-for-c
     static uint32_t x = 123456789, y = 362436069, z = 521288629;
-    inline uint32_t xorshift(void)
-    {
+
+    inline uint32_t xorshift(void) {
         unsigned long t;
         x ^= x << 16;
         x ^= x >> 5;
@@ -82,8 +79,8 @@ namespace tesselode{
     }
 
     const float xorshiftMultiplier = 2.0f / UINT32_MAX;
-    inline float random()
-    {
+
+    inline float random() {
         return -1.0f + xorshift() * xorshiftMultiplier;
     }
 }

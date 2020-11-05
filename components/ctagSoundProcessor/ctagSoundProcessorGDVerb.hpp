@@ -28,62 +28,42 @@ respective component folders / files if different from this license.
 #include "freeverb3/strev.hpp"
 #include "freeverb3/progenitor.hpp"
 
-namespace CTAG::SP{
-    class ctagSoundProcessorGDVerb : public ctagSoundProcessor{
+namespace CTAG::SP {
+    class ctagSoundProcessorGDVerb : public ctagSoundProcessor {
     public:
         void Process(const ProcessData &) override;
-        ~ctagSoundProcessorGDVerb();
+
         ctagSoundProcessorGDVerb();
-        const char * GetCStrID() const override;
+
     private:
-        void setParamValueInternal(const string &id, const string &key, const int val) override;
-        void loadPresetInternal() override;
-        const string id = "GDVerb";
+
+        virtual void knowYourself() override;
+
         // stereo reverb object
         fv3::strev_f strev;
-        //fv3::progenitor_f strev;
-        // inter thread variables are atomic
-        atomic<int32_t> par_revtime;
-        atomic<int32_t> par_dccut;
-        atomic<int32_t> par_idiffusion1;
-        atomic<int32_t> par_idiffusion2;
-        atomic<int32_t> par_diffusion1;
-        atomic<int32_t> par_diffusion2;
-        atomic<int32_t> par_inputdamp;
-        atomic<int32_t> par_damp;
-        atomic<int32_t> par_outputdamp;
-        atomic<int32_t> par_spin;
-        atomic<int32_t> par_spindiff;
-        atomic<int32_t> par_spinlimit;
-        atomic<int32_t> par_wander;
-        atomic<int32_t> par_modnoise1;
-        atomic<int32_t> par_modnoise2;
-        atomic<int32_t> par_autodiff;
-        atomic<int32_t> par_wet;
-        atomic<int32_t> par_dry;
-        atomic<int32_t> par_width;
-        atomic<int32_t> par_mono;
-        atomic<int32_t> cv_par_revtime;
-        atomic<int32_t> cv_par_dccut;
-        atomic<int32_t> cv_par_idiffusion1;
-        atomic<int32_t> cv_par_idiffusion2;
-        atomic<int32_t> cv_par_diffusion1;
-        atomic<int32_t> cv_par_diffusion2;
-        atomic<int32_t> cv_par_inputdamp;
-        atomic<int32_t> cv_par_damp;
-        atomic<int32_t> cv_par_outputdamp;
-        atomic<int32_t> cv_par_spin;
-        atomic<int32_t> cv_par_spindiff;
-        atomic<int32_t> cv_par_spinlimit;
-        atomic<int32_t> cv_par_wander;
-        atomic<int32_t> cv_par_modnoise1;
-        atomic<int32_t> cv_par_modnoise2;
-        atomic<int32_t> cv_par_autodiff;
-        atomic<int32_t> cv_par_wet;
-        atomic<int32_t> cv_par_dry;
-        atomic<int32_t> cv_par_width;
-        atomic<int32_t> updateParams;
 
+        // sectionHpp
+        atomic<int32_t> revtime, cv_revtime;
+        atomic<int32_t> dccut, cv_dccut;
+        atomic<int32_t> idiffusion1, cv_idiffusion1;
+        atomic<int32_t> idiffusion2, cv_idiffusion2;
+        atomic<int32_t> diffusion1, cv_diffusion1;
+        atomic<int32_t> diffusion2, cv_diffusion2;
+        atomic<int32_t> inputdamp, cv_inputdamp;
+        atomic<int32_t> damp, cv_damp;
+        atomic<int32_t> outputdamp, cv_outputdamp;
+        atomic<int32_t> spin, cv_spin;
+        atomic<int32_t> spindiff, cv_spindiff;
+        atomic<int32_t> spinlimit, cv_spinlimit;
+        atomic<int32_t> wander, cv_wander;
+        atomic<int32_t> modnoise1, cv_modnoise1;
+        atomic<int32_t> modnoise2, cv_modnoise2;
+        atomic<int32_t> autodiff, trig_autodiff;
+        atomic<int32_t> dry, cv_dry;
+        atomic<int32_t> wet, cv_wet;
+        atomic<int32_t> width, cv_width;
+        atomic<int32_t> mono, trig_mono;
+        // sectionHpp
     };
 }
 

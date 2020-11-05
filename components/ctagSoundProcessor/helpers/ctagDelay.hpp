@@ -45,19 +45,29 @@ respective component folders / files if different from this license.
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-namespace CTAG::SP::HELPERS{
+namespace CTAG::SP::HELPERS {
     class ctagDelay {
     public:
         ctagDelay();
+
         void SetBuffer(float *buf, const uint32_t bufsz);
+
         void Mute();
+
         void SetFeedback(float fb);
+
         float GetFeedback();
+
         uint32_t GetSize();
+
         float GetLast();
+
         float GetZ(uint32_t index);
+
         float Process(float input);
+
         float ProcessFeedback(float input);
+
     protected:
         float feedback, *buffer;
         uint32_t bufsize, bufidx;

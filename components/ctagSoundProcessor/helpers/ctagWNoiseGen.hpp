@@ -37,18 +37,18 @@ namespace CTAG::SP::HELPERS {
             sd = seed;
         }
 
-        void SetBipolar(bool yes){
+        void SetBipolar(bool yes) {
             isBipolar = yes;
         }
 
-        void ReSeed(int32_t seed){
+        void ReSeed(int32_t seed) {
             sd = seed;
         }
 
         float Process() {
 // from http://www.musicdsp.org/archive.php?classid=5#273
             sd *= 16807;
-            if(isBipolar)return (float) sd * 4.6566129e-010f;
+            if (isBipolar)return (float) sd * 4.6566129e-010f;
             return (float) (sd & 0x7FFFFFFF) * 4.6566129e-010f;
         }
 

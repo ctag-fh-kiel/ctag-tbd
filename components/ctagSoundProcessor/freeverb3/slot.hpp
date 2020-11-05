@@ -26,12 +26,13 @@
 #include "utils.hpp"
 #include "fv3_defs.h"
 
-namespace fv3
-{
+namespace fv3 {
 
 #define _fv3_float_t float
 #define _FV3_(name) name ## _f
+
 #include "slot_t.hpp"
+
 #undef _FV3_
 #undef _fv3_float_t
 

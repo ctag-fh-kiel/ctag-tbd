@@ -33,359 +33,110 @@ respective component folders / files if different from this license.
 using namespace CTAG::SP;
 
 ctagSoundProcessorGDVerb::ctagSoundProcessorGDVerb() {
-    isStereo = true;
-    // acquire model from spiffs json, model auto loads last active preset
+    knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
-    // take preset values from model
-    loadPresetInternal();
-    updateParams = 1;
+    LoadPreset(0);
+
     strev.setSampleRate(44100.f);
-    ESP_LOGE("GDVERB", "os fac %d, total fs %f, fs %f", strev.getOSFactor(), strev.getTotalSampleRate(), strev.getSampleRate());
+    strev.mute();
+    ESP_LOGE("GDVERB", "os fac %d, total fs %f, fs %f", strev.getOSFactor(), strev.getTotalSampleRate(),
+             strev.getSampleRate());
 }
 
 void ctagSoundProcessorGDVerb::Process(const ProcessData &data) {
-    if(updateParams){
-        updateParams = 0;
-        strev.setrt60((float)par_revtime / 4095.f * 20.f);
-        strev.setdccutfreq((float)par_dccut);
-        strev.setidiffusion1((float)par_idiffusion1 / 4095.f);
-        strev.setidiffusion2((float)par_idiffusion2 / 4095.f);
-        strev.setdiffusion1((float)par_diffusion1 / 4095.f);
-        strev.setdiffusion2((float)par_diffusion1 / 4095.f);
-        strev.setinputdamp((float) par_inputdamp);
-        strev.setdamp((float)par_damp);
-        strev.setoutputdamp((float)par_outputdamp);
-        strev.setspin((float)par_spin / 4095.f * 10.f);
-        strev.setspindiff((float)par_spindiff / 4095.f);
-        strev.setspinlimit((float)par_spinlimit / 4095.f * 50.f);
-        strev.setwander((float)par_wander / 4095.f);
-        strev.setmodulationnoise1((float)par_modnoise1 / 4095.f * 0.1f);
-        strev.setmodulationnoise2((float)par_modnoise2 / 4095.f * 0.1f);
-        strev.setAutoDiff(par_autodiff);
-        strev.setwetr((float)par_wet / 4095.f);
-        strev.setdryr((float) par_dry / 4095.f);
-        strev.setwidth((float) par_width / 4095.f);
-        strev.setmono((bool)par_mono);
+    strev.setrt60((float) revtime / 4095.f * 20.f);
+    strev.setdccutfreq((float) dccut);
+    strev.setidiffusion1((float) idiffusion1 / 4095.f);
+    strev.setidiffusion2((float) idiffusion2 / 4095.f);
+    strev.setdiffusion1((float) diffusion1 / 4095.f);
+    strev.setdiffusion2((float) diffusion2 / 4095.f);
+    strev.setinputdamp((float) inputdamp);
+    strev.setdamp((float) damp);
+    strev.setoutputdamp((float) outputdamp);
+    strev.setspin((float) spin / 4095.f * 10.f);
+    strev.setspindiff((float) spindiff / 4095.f);
+    strev.setspinlimit((float) spinlimit / 4095.f * 50.f);
+    strev.setwander((float) wander / 4095.f);
+    strev.setmodulationnoise1((float) modnoise1 / 4095.f * 0.1f);
+    strev.setmodulationnoise2((float) modnoise2 / 4095.f * 0.1f);
+    strev.setAutoDiff(autodiff);
+    strev.setwetr((float) wet / 4095.f);
+    strev.setdryr((float) dry / 4095.f);
+    strev.setwidth((float) width / 4095.f);
+    strev.setmono((bool) mono);
+
+    if (cv_width != -1) {
+        strev.setwidth(fabsf(data.cv[cv_width]));
     }
-    if(cv_par_width != -1){
-        strev.setwidth(data.cv[cv_par_width] * data.cv[cv_par_width]);
+    if (cv_wet != -1) {
+        strev.setwetr(fabs(data.cv[cv_wet]));
     }
-    if(cv_par_wet != -1){
-        strev.setwetr(data.cv[cv_par_wet] * data.cv[cv_par_wet]);
+    if (cv_dry != -1) {
+        strev.setdryr(fabs(data.cv[cv_dry]));
     }
-    if(cv_par_dry != -1){
-        strev.setdryr(data.cv[cv_par_dry] * data.cv[cv_par_dry]);
+    if (cv_dccut != -1) {
+        strev.setdccutfreq(data.cv[cv_dccut] * data.cv[cv_dccut] * 10000.f);
     }
-    if(cv_par_dccut != -1){
-        strev.setdccutfreq(data.cv[cv_par_dccut] * data.cv[cv_par_dccut] * 10000.f);
+    if (cv_inputdamp != -1) {
+        strev.setinputdamp(data.cv[cv_inputdamp] * data.cv[cv_inputdamp] * 20000.f);
     }
-    if(cv_par_inputdamp != -1){
-        strev.setinputdamp(data.cv[cv_par_inputdamp] * data.cv[cv_par_inputdamp] * 20000.f);
+    if (cv_damp != -1) {
+        strev.setdamp(data.cv[cv_damp] * data.cv[cv_damp] * 20000.f);
     }
-    if(cv_par_damp != -1){
-        strev.setdamp(data.cv[cv_par_damp] * data.cv[cv_par_damp] * 20000.f);
+    if (cv_outputdamp != -1) {
+        strev.setoutputdamp(data.cv[cv_outputdamp] * data.cv[cv_outputdamp] * 20000.f);
     }
-    if(cv_par_outputdamp != -1){
-        strev.setoutputdamp(data.cv[cv_par_outputdamp] * data.cv[cv_par_outputdamp] * 20000.f);
-    }
-    if(cv_par_wander != -1){
-        strev.setwander(data.cv[cv_par_wander] * data.cv[cv_par_wander]);
+    if (cv_wander != -1) {
+        strev.setwander(data.cv[cv_wander] * data.cv[cv_wander]);
     }
 
     // process the data
     strev.processreplace(data.buf, bufSz);
 }
 
-ctagSoundProcessorGDVerb::~ctagSoundProcessorGDVerb() {
-
-}
-
-const char *ctagSoundProcessorGDVerb::GetCStrID() const {
-    return id.c_str();
-}
-
-void ctagSoundProcessorGDVerb::setParamValueInternal(const string &id, const string &key, const int val) {
-    if (id.compare("revtime") == 0) {
-        if (key.compare("current") == 0) {
-            par_revtime = val;
-            updateParams = 1;
-            return;
-        }
-        /*
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvRoomSz = val;
-            return;
-        }
-         */
-    }
-    if (id.compare("dccut") == 0) {
-        if (key.compare("current") == 0) {
-            par_dccut = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_dccut = val;
-            return;
-        }
-    }
-    if (id.compare("idiffusion1") == 0) {
-        if (key.compare("current") == 0) {
-            par_idiffusion1 = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_idiffusion1 = val;
-            return;
-        }
-    }
-    if (id.compare("idiffusion2") == 0) {
-        if (key.compare("current") == 0) {
-            par_idiffusion2 = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_idiffusion2 = val;
-            return;
-        }
-    }
-    if (id.compare("diffusion1") == 0) {
-        if (key.compare("current") == 0) {
-            par_diffusion1 = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_diffusion1 = val;
-            return;
-        }
-    }
-    if (id.compare("diffusion2") == 0) {
-        if (key.compare("current") == 0) {
-            par_diffusion2 = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_diffusion2 = val;
-            return;
-        }
-    }
-    if (id.compare("inputdamp") == 0) {
-        if (key.compare("current") == 0) {
-            par_inputdamp = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_inputdamp = val;
-            return;
-        }
-    }
-    if (id.compare("damp") == 0) {
-        if (key.compare("current") == 0) {
-            par_damp = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_damp = val;
-            return;
-        }
-    }
-    if (id.compare("outputdamp") == 0) {
-        if (key.compare("current") == 0) {
-            par_outputdamp = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_outputdamp = val;
-            return;
-        }
-    }
-    if (id.compare("spin") == 0) {
-        if (key.compare("current") == 0) {
-            par_spin = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_spin = val;
-            return;
-        }
-    }
-    if (id.compare("spindiff") == 0) {
-        if (key.compare("current") == 0) {
-            par_spindiff = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_spindiff = val;
-            return;
-        }
-    }
-    if (id.compare("spinlimit") == 0) {
-        if (key.compare("current") == 0) {
-            par_spinlimit = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_spinlimit = val;
-            return;
-        }
-    }
-    if (id.compare("wander") == 0) {
-        if (key.compare("current") == 0) {
-            par_wander = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_wander = val;
-            return;
-        }
-    }
-    if (id.compare("modnoise1") == 0) {
-        if (key.compare("current") == 0) {
-            par_modnoise1 = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_modnoise1 = val;
-            return;
-        }
-    }
-    if (id.compare("modnoise2") == 0) {
-        if (key.compare("current") == 0) {
-            par_modnoise2 = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_modnoise2 = val;
-            return;
-        }
-    }
-    if (id.compare("autodiff") == 0) {
-        if (key.compare("current") == 0) {
-            par_autodiff = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_autodiff = val;
-            return;
-        }
-    }
-    if (id.compare("wet") == 0) {
-        if (key.compare("current") == 0) {
-            par_wet = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_wet = val;
-            return;
-        }
-    }
-    if (id.compare("dry") == 0) {
-        if (key.compare("current") == 0) {
-            par_dry = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_dry = val;
-            return;
-        }
-    }
-    if (id.compare("width") == 0) {
-        if (key.compare("current") == 0) {
-            par_width = val;
-            updateParams = 1;
-            return;
-        }
-        if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
-                cv_par_width = val;
-            return;
-        }
-    }
-    if (id.compare("mono") == 0) {
-        if (key.compare("current") == 0) {
-            par_mono = val;
-            updateParams = 1;
-            return;
-        }
-    }
-
-}
-
-void ctagSoundProcessorGDVerb::loadPresetInternal() {
-    par_revtime = model->GetParamValue("revtime", "current");
-    par_dccut = model->GetParamValue("dccut", "current");
-    par_idiffusion1 = model->GetParamValue("idiffusion1", "current");
-    par_idiffusion2 = model->GetParamValue("idiffusion2", "current");
-    par_diffusion1 = model->GetParamValue("diffusion1", "current");
-    par_diffusion2 = model->GetParamValue("diffusion2", "current");
-    par_inputdamp = model->GetParamValue("inputdamp", "current");
-    par_damp = model->GetParamValue("damp", "current");
-    par_outputdamp = model->GetParamValue("outputdamp", "current");
-    par_spin = model->GetParamValue("spin", "current");
-    par_spindiff = model->GetParamValue("spindiff", "current");
-    par_spinlimit = model->GetParamValue("spinlimit", "current");
-    par_wander = model->GetParamValue("wander", "current");
-    par_modnoise1 = model->GetParamValue("modnoise1", "current");
-    par_modnoise2 = model->GetParamValue("modnoise2", "current");
-    par_autodiff = model->GetParamValue("autodiff", "current");
-    par_wet = model->GetParamValue("wet", "current");
-    par_dry = model->GetParamValue("dry", "current");
-    par_width = model->GetParamValue("width", "current");
-    par_mono = model->GetParamValue("mono", "current");
-
-    cv_par_revtime = model->GetParamValue("revtime", "cv");
-    cv_par_dccut = model->GetParamValue("dccut", "cv");
-    cv_par_idiffusion1 = model->GetParamValue("idiffusion1", "cv");
-    cv_par_idiffusion2 = model->GetParamValue("idiffusion2", "cv");
-    cv_par_diffusion1 = model->GetParamValue("diffusion1", "cv");
-    cv_par_diffusion2 = model->GetParamValue("diffusion2", "cv");
-    cv_par_inputdamp = model->GetParamValue("inputdamp", "cv");
-    cv_par_damp = model->GetParamValue("damp", "cv");
-    cv_par_outputdamp = model->GetParamValue("outputdamp", "cv");
-    cv_par_spin = model->GetParamValue("spin", "cv");
-    cv_par_spindiff = model->GetParamValue("spindiff", "cv");
-    cv_par_spinlimit = model->GetParamValue("spinlimit", "cv");
-    cv_par_wander = model->GetParamValue("drywet", "cv");
-    cv_par_modnoise1 = model->GetParamValue("wander", "cv");
-    cv_par_modnoise2 = model->GetParamValue("modnoise1", "cv");
-    cv_par_autodiff = model->GetParamValue("modnoise2", "cv");
-    cv_par_wet = model->GetParamValue("wet", "cv");
-    cv_par_dry = model->GetParamValue("dry", "cv");
-    cv_par_width = model->GetParamValue("width", "cv");
-    updateParams = 1;
-    strev.mute();
+void ctagSoundProcessorGDVerb::knowYourself() {
+    // sectionCpp0
+    pMapPar.emplace("revtime", [&](const int val) { revtime = val; });
+    pMapCv.emplace("revtime", [&](const int val) { cv_revtime = val; });
+    pMapPar.emplace("dccut", [&](const int val) { dccut = val; });
+    pMapCv.emplace("dccut", [&](const int val) { cv_dccut = val; });
+    pMapPar.emplace("idiffusion1", [&](const int val) { idiffusion1 = val; });
+    pMapCv.emplace("idiffusion1", [&](const int val) { cv_idiffusion1 = val; });
+    pMapPar.emplace("idiffusion2", [&](const int val) { idiffusion2 = val; });
+    pMapCv.emplace("idiffusion2", [&](const int val) { cv_idiffusion2 = val; });
+    pMapPar.emplace("diffusion1", [&](const int val) { diffusion1 = val; });
+    pMapCv.emplace("diffusion1", [&](const int val) { cv_diffusion1 = val; });
+    pMapPar.emplace("diffusion2", [&](const int val) { diffusion2 = val; });
+    pMapCv.emplace("diffusion2", [&](const int val) { cv_diffusion2 = val; });
+    pMapPar.emplace("inputdamp", [&](const int val) { inputdamp = val; });
+    pMapCv.emplace("inputdamp", [&](const int val) { cv_inputdamp = val; });
+    pMapPar.emplace("damp", [&](const int val) { damp = val; });
+    pMapCv.emplace("damp", [&](const int val) { cv_damp = val; });
+    pMapPar.emplace("outputdamp", [&](const int val) { outputdamp = val; });
+    pMapCv.emplace("outputdamp", [&](const int val) { cv_outputdamp = val; });
+    pMapPar.emplace("spin", [&](const int val) { spin = val; });
+    pMapCv.emplace("spin", [&](const int val) { cv_spin = val; });
+    pMapPar.emplace("spindiff", [&](const int val) { spindiff = val; });
+    pMapCv.emplace("spindiff", [&](const int val) { cv_spindiff = val; });
+    pMapPar.emplace("spinlimit", [&](const int val) { spinlimit = val; });
+    pMapCv.emplace("spinlimit", [&](const int val) { cv_spinlimit = val; });
+    pMapPar.emplace("wander", [&](const int val) { wander = val; });
+    pMapCv.emplace("wander", [&](const int val) { cv_wander = val; });
+    pMapPar.emplace("modnoise1", [&](const int val) { modnoise1 = val; });
+    pMapCv.emplace("modnoise1", [&](const int val) { cv_modnoise1 = val; });
+    pMapPar.emplace("modnoise2", [&](const int val) { modnoise2 = val; });
+    pMapCv.emplace("modnoise2", [&](const int val) { cv_modnoise2 = val; });
+    pMapPar.emplace("autodiff", [&](const int val) { autodiff = val; });
+    pMapTrig.emplace("autodiff", [&](const int val) { trig_autodiff = val; });
+    pMapPar.emplace("dry", [&](const int val) { dry = val; });
+    pMapCv.emplace("dry", [&](const int val) { cv_dry = val; });
+    pMapPar.emplace("wet", [&](const int val) { wet = val; });
+    pMapCv.emplace("wet", [&](const int val) { cv_wet = val; });
+    pMapPar.emplace("width", [&](const int val) { width = val; });
+    pMapCv.emplace("width", [&](const int val) { cv_width = val; });
+    pMapPar.emplace("mono", [&](const int val) { mono = val; });
+    pMapTrig.emplace("mono", [&](const int val) { trig_mono = val; });
+    isStereo = true;
+    id = "GDVerb";
+    // sectionCpp0
 }

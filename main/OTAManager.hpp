@@ -33,19 +33,25 @@ respective component folders / files if different from this license.
 #include "esp_http_server.h"
 #include "esp_err.h"
 
-namespace CTAG{
-    namespace OTA{
+namespace CTAG {
+    namespace OTA {
         class OTAManager {
         public:
             static esp_err_t InitiateOTA(httpd_req_t *req);
+
             static esp_err_t PostHandlerSPIFFS(httpd_req_t *req);
+
             static esp_err_t PostHandlerApp(httpd_req_t *req);
+
             static esp_err_t PostHandlerFlashCommit(httpd_req_t *req);
+
         private:
             static void cleanup();
+
             static esp_err_t flashSPIFFS();
-            static char* largeBuf;
-            static char* smallBuf;
+
+            static char *largeBuf;
+            static char *smallBuf;
             static bool hasMemSPIFFS;
             static bool hasFlashAppImage;
             static uint32_t spiffsImageSize;

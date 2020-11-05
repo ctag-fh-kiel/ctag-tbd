@@ -30,13 +30,12 @@ SOFTWARE.
 #include "helpers/ctagSineSource.hpp"
 #include "braids/svf.h"
 
-namespace tesselode{
+namespace tesselode {
 
     const int numPrograms = 128;
     const int tapeLength = 10;
 
-    enum class Parameters
-    {
+    enum class Parameters {
         delayTime,
         lfoAmount,
         lfoFrequency,
@@ -62,8 +61,7 @@ namespace tesselode{
         numParameters
     };
 
-    enum class TempoSyncTimes
-    {
+    enum class TempoSyncTimes {
         tempoSyncOff,
         whole,
         dottedHalf,
@@ -87,15 +85,14 @@ namespace tesselode{
         numTempoSyncTimes
     };
 
-    enum class PanModes
-    {
+    enum class PanModes {
         stationary,
         pingPong,
         circular,
         numPanModes
     };
 
-    struct ParameterValues{
+    struct ParameterValues {
         bool isMono = false;
         float delayTime = 0.2f; //)->InitDouble("Delay time", .2, 0.001, 2.0, .01, "", "", 2.0);
         float lfoAmount = 0.f; // )->InitDouble("LFO amount", 0.0, 0.0, .5, .01, "", "", 2.0);
@@ -125,30 +122,44 @@ namespace tesselode{
         float bpm = 120.f;
     };
 
-    class CocoaDelay
-    {
+    class CocoaDelay {
     public:
         CocoaDelay();
+
         ~CocoaDelay();
 
         void Reset();
+
         void Process(float *data, int nFrames);
+
         float GetSampleRate();
+
         void SetSampleRate(const float &sampleRate);
+
         // effect parameters
         ParameterValues params;
 
     private:
         float GetDelayTime();
-        void GetReadPositions(float & l, float & r);
+
+        void GetReadPositions(float &l, float &r);
+
         void InitBuffer();
+
         void UpdateReadPositions();
+
         void UpdateWritePosition();
+
         void UpdateParameters();
+
         void UpdateDucking(float input);
+
         void UpdateLfo();
+
         void UpdateDrift();
+
         float GetSample(float *buffer, float position);
+
         void WriteToBuffer(float *data, int s, float outL, float outR);
 
         float dt = 0.0;

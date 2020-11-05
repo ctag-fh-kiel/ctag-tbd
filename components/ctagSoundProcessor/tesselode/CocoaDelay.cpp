@@ -140,9 +140,9 @@ void CocoaDelay::InitBuffer() {
     std::fill(bufferL.begin(), bufferL.end(), 0.f);
     std::fill(bufferR.begin(), bufferR.end(), 0.f);
      */
-    bufferL = (float*)heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    bufferL = (float *) heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
     memset(bufferL, 0, sizeof(float) * GetSampleRate() * tapeLength);
-    bufferR = (float*)heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    bufferR = (float *) heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
     memset(bufferR, 0, sizeof(float) * GetSampleRate() * tapeLength);
     bufferSize = GetSampleRate() * tapeLength;
     writePosition = 0.0f;
@@ -177,7 +177,7 @@ void CocoaDelay::UpdateParameters() {
     // pan amount smoothing
     float panAmount = params.pan;
     float stationaryPanAmountTarget = (currentPanMode == PanModes::stationary || currentPanMode == PanModes::pingPong)
-                                     ? panAmount : 0.0f;
+                                      ? panAmount : 0.0f;
     stationaryPanAmount += (stationaryPanAmountTarget - stationaryPanAmount) * 100.0f * dt;
     float circularPanAmountTarget = (currentPanMode == PanModes::circular ? panAmount : 0.0f);
     circularPanAmount += (circularPanAmountTarget - circularPanAmount) * 100.0f * dt;
@@ -219,12 +219,12 @@ float CocoaDelay::GetSample(float *buffer, float position) {
 
 void CocoaDelay::WriteToBuffer(float *data, int s, float outL, float outR) {
     float writeL = 0.0f, writeR = 0.0f;
-    if(params.isMono){
-        writeL += data[s*2];
-        writeR += data[s*2];
-    }else{
-        writeL += data[s*2];
-        writeR += data[s*2 + 1];
+    if (params.isMono) {
+        writeL += data[s * 2];
+        writeR += data[s * 2];
+    } else {
+        writeL += data[s * 2];
+        writeR += data[s * 2 + 1];
     }
 
     adjustPanning(writeL, writeR, stationaryPanAmount * .5, writeL, writeR);
@@ -251,14 +251,14 @@ void CocoaDelay::Process(float *data, int nFrames) {
         // workaround for daws like renoise that don't start processing until the effect receives an input.
         // if it's the first sample to be processed, the read positions will be immediately set to their targets.
         // this way, when you first start a project, each delay plugin doesn't have to "slide up" to the correct delay time.
-        if(!warmedUp) {
-                GetReadPositions(readPositionL, readPositionR);
-                warmedUp = true;
+        if (!warmedUp) {
+            GetReadPositions(readPositionL, readPositionR);
+            warmedUp = true;
         }
 
         UpdateParameters();
         UpdateReadPositions();
-        UpdateDucking(data[s*2] + data[s*2 + 1]);
+        UpdateDucking(data[s * 2] + data[s * 2 + 1]);
         UpdateLfo();
         UpdateDrift();
 
@@ -271,9 +271,9 @@ void CocoaDelay::Process(float *data, int nFrames) {
 
         // filters
         float fLfo = filtLfo.Process();
-        if((int) params.filterMode != 0){
-            svf_l.set_mode((braids::SvfMode) ((int)(params.filterMode)-1));
-            svf_r.set_mode((braids::SvfMode) ((int)(params.filterMode)-1));
+        if ((int) params.filterMode != 0) {
+            svf_l.set_mode((braids::SvfMode) ((int) (params.filterMode) - 1));
+            svf_r.set_mode((braids::SvfMode) ((int) (params.filterMode) - 1));
             float flp = params.svfCutoffFreq + fLfo * params.svfLfoAmt;
             flp *= 16384;
             CONSTRAIN(flp, 1750, 16384)
@@ -282,8 +282,8 @@ void CocoaDelay::Process(float *data, int nFrames) {
             float fhp = params.svfResonance;
             fhp *= 32767;
             CONSTRAIN(fhp, 0, 32767)
-            svf_l.set_resonance((int16_t)fhp);
-            svf_r.set_resonance((int16_t)fhp);
+            svf_l.set_resonance((int16_t) fhp);
+            svf_r.set_resonance((int16_t) fhp);
             float tl = svf_l.Process((int32_t) (outL * 32767.f)) / 32767.f;
             float tr = svf_r.Process((int32_t) (outR * 32767.f)) / 32767.f;
             outL = (1.f - params.svfMix) * outL + params.svfMix * tl;
@@ -300,8 +300,8 @@ void CocoaDelay::Process(float *data, int nFrames) {
         float duckValue = params.duckAmount * duckFollower;
         duckValue = duckValue > 1.0 ? 1.0 : duckValue;
         wet *= 1.0 - duckValue;
-        data[s*2]  = data[s*2] * dry + outL * wet;
-        data[s*2 + 1] = data[s*2 + 1] * dry + outR * wet;
+        data[s * 2] = data[s * 2] * dry + outL * wet;
+        data[s * 2 + 1] = data[s * 2 + 1] * dry + outR * wet;
     }
 }
 

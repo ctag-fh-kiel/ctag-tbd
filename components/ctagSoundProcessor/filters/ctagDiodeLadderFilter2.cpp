@@ -49,7 +49,7 @@ float CTAG::SP::HELPERS::ctagDiodeLadderFilter2::Process(float in) {
     float S4 = z4 / g_plus_1;
 
     float S = (G3 * S1) + (G2 * S2) + (G * S3) + S4;
-    float u = (in - k *  S) / (1.f + k * GAMMA);
+    float u = (in - k * S) / (1.f + k * GAMMA);
 
     // 1st stage
     float v = (u - z1) * G;

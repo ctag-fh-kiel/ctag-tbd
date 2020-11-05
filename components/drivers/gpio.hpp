@@ -21,18 +21,22 @@ respective component folders / files if different from this license.
 
 
 #pragma once
+
 #include <stdint.h>
 
-namespace CTAG{
-  namespace DRIVERS{
-    class GPIO{
-      public:
-        static void InitGPIO();
-        static uint8_t GetTrig0();
-        static uint8_t GetTrig1();
-    private:
-        static uint32_t t0delay;
-        static uint32_t t1delay;
-    };
-  }
+namespace CTAG {
+    namespace DRIVERS {
+        class GPIO {
+        public:
+            static void InitGPIO();
+
+            static uint8_t GetTrig0();
+
+            static uint8_t GetTrig1();
+
+        private:
+            static uint32_t t0delay;
+            static uint32_t t1delay;
+        };
+    }
 }

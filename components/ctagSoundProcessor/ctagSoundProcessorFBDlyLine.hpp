@@ -26,35 +26,31 @@ respective component folders / files if different from this license.
 #include "helpers/ctagFBDelayLine.hpp"
 
 
-namespace CTAG{
-    namespace SP{
-        class ctagSoundProcessorFBDlyLine: public ctagSoundProcessor{
-            public: 
-                void Process(const ProcessData &) override;
-                ~ctagSoundProcessorFBDlyLine();
-                ctagSoundProcessorFBDlyLine();
-                const char * GetCStrID() const override;
-            private:
-                void setParamValueInternal(const string &id, const string &key, const int val) override;
-                void loadPresetInternal() override;
-                const string id = "FBDlyLine";
-                const uint32_t maxLength;
-                HELPERS::ctagFBDelayLine dlyLine;
-                // inter thread variables are atomic
-                atomic<int32_t> feedback;
-                atomic<int32_t> length;
-                atomic<int32_t> enable;
-                atomic<int32_t> drywet;
-                atomic<int32_t> level;
-                atomic<int32_t> cvControlFeedback;
-                atomic<int32_t> cvControlLength;
-                atomic<int32_t> cvControlDryWet;
-                atomic<int32_t> cvControlLevel;
-                atomic<int32_t> trigControlEnable;
-                // process only variables
-                float fLength = 0.f, cvLength = 0.f;
-                float fLevel = 1.f;
-                float fDryWet = 0.5f;
+namespace CTAG {
+    namespace SP {
+        class ctagSoundProcessorFBDlyLine : public ctagSoundProcessor {
+        public:
+            void Process(const ProcessData &) override;
+
+            ctagSoundProcessorFBDlyLine();
+
+        private:
+
+            virtual void knowYourself() override;
+
+            const uint32_t maxLength;
+            HELPERS::ctagFBDelayLine dlyLine;
+            // process only variables
+            float fLength = 0.f, cvLength = 0.f;
+            float fLevel = 1.f;
+            float fDryWet = 0.5f;
+            // sectionHpp
+            atomic<int32_t> length, cv_length;
+            atomic<int32_t> feedback, cv_feedback;
+            atomic<int32_t> drywet, cv_drywet;
+            atomic<int32_t> level, cv_level;
+            atomic<int32_t> enable, trig_enable;
+            // sectionHpp
         };
     }
 }

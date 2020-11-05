@@ -24,28 +24,38 @@ respective component folders / files if different from this license.
 
 #include <cstdint>
 
-namespace CTAG{
-    namespace SP{
-        namespace HELPERS{
+namespace CTAG {
+    namespace SP {
+        namespace HELPERS {
             class ctagADEnv {
             public:
                 float Process();
+
                 void SetSampleRate(float fs_hz);
+
                 void SetAttack(float a_s);
+
                 void SetDecay(float d_s);
+
                 void Trigger();
+
                 void SetModeLin();
+
                 void SetModeExp();
+
                 void SetLoop(bool l);
+
                 bool GetLoop();
+
                 bool GetIsRunning();
+
             private:
-                enum class EnvStateType : uint32_t{
+                enum class EnvStateType : uint32_t {
                     STATE_IDLE,
                     STATE_ATTACK,
                     STATE_DECAY,
                 };
-                enum class EnvModeType : uint32_t{
+                enum class EnvModeType : uint32_t {
                     MODE_LIN,
                     MODE_LOG
                 };

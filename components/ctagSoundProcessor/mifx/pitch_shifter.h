@@ -35,79 +35,80 @@
 
 namespace mifx {
 
-class PitchShifter {
- public:
-  PitchShifter() { }
-  ~PitchShifter() { }
-  
-  void Init(float* buffer) {
-    engine_.Init(buffer);
-    phase_ = 0;
-    size_ = 2047.0f;
-  }
-  
-  void Clear() {
-    engine_.Clear();
-  }
+    class PitchShifter {
+    public:
+        PitchShifter() {}
 
-  inline void Process(clouds::FloatFrame* input_output, size_t size) {
-    while (size--) {
-      Process(input_output);
-      ++input_output;
-    }
-  }
-  
-  void Process(clouds::FloatFrame* input_output) {
-    typedef E::Reserve<2047, E::Reserve<2047> > Memory;
-    E::DelayLine<Memory, 0> left;
-    E::DelayLine<Memory, 1> right;
-    E::Context c;
-    engine_.Start(&c);
-    
-    phase_ += (1.0f - ratio_) / size_;
-    if (phase_ >= 1.0f) {
-      phase_ -= 1.0f;
-    }
-    if (phase_ <= 0.0f) {
-      phase_ += 1.0f;
-    }
-    float tri = 2.0f * (phase_ >= 0.5f ? 1.0f - phase_ : phase_);
-    float phase = phase_ * size_;
-    float half = phase + size_ * 0.5f;
-    if (half >= size_) {
-      half -= size_;
-    }
-    
-    c.Read(input_output->l, 1.0f);
-    c.Write(left, 0.0f);
-    c.Interpolate(left, phase, tri);
-    c.Interpolate(left, half, 1.0f - tri);
-    c.Write(input_output->l, 0.0f);
+        ~PitchShifter() {}
 
-    c.Read(input_output->r, 1.0f);
-    c.Write(right, 0.0f);
-    c.Interpolate(right, phase, tri);
-    c.Interpolate(right, half, 1.0f - tri);
-    c.Write(input_output->r, 0.0f);
-  }
-  
-  inline void set_ratio(float ratio) {
-    ratio_ = ratio;
-  }
-  
-  inline void set_size(float size) {
-    float target_size = 128.0f + (2047.0f - 128.0f) * size * size * size;
-    ONE_POLE(size_, target_size, 0.05f)
-  }
-  
- private:
-  typedef FxEngine<4096, FORMAT_32_BIT> E;
-  E engine_;
-  float phase_;
-  float ratio_;
-  float size_;
-  
-  DISALLOW_COPY_AND_ASSIGN(PitchShifter);
-};
+        void Init(float *buffer) {
+            engine_.Init(buffer);
+            phase_ = 0;
+            size_ = 2047.0f;
+        }
+
+        void Clear() {
+            engine_.Clear();
+        }
+
+        inline void Process(clouds::FloatFrame *input_output, size_t size) {
+            while (size--) {
+                Process(input_output);
+                ++input_output;
+            }
+        }
+
+        void Process(clouds::FloatFrame *input_output) {
+            typedef E::Reserve<2047, E::Reserve<2047> > Memory;
+            E::DelayLine<Memory, 0> left;
+            E::DelayLine<Memory, 1> right;
+            E::Context c;
+            engine_.Start(&c);
+
+            phase_ += (1.0f - ratio_) / size_;
+            if (phase_ >= 1.0f) {
+                phase_ -= 1.0f;
+            }
+            if (phase_ <= 0.0f) {
+                phase_ += 1.0f;
+            }
+            float tri = 2.0f * (phase_ >= 0.5f ? 1.0f - phase_ : phase_);
+            float phase = phase_ * size_;
+            float half = phase + size_ * 0.5f;
+            if (half >= size_) {
+                half -= size_;
+            }
+
+            c.Read(input_output->l, 1.0f);
+            c.Write(left, 0.0f);
+            c.Interpolate(left, phase, tri);
+            c.Interpolate(left, half, 1.0f - tri);
+            c.Write(input_output->l, 0.0f);
+
+            c.Read(input_output->r, 1.0f);
+            c.Write(right, 0.0f);
+            c.Interpolate(right, phase, tri);
+            c.Interpolate(right, half, 1.0f - tri);
+            c.Write(input_output->r, 0.0f);
+        }
+
+        inline void set_ratio(float ratio) {
+            ratio_ = ratio;
+        }
+
+        inline void set_size(float size) {
+            float target_size = 128.0f + (2047.0f - 128.0f) * size * size * size;
+            ONE_POLE(size_, target_size, 0.05f)
+        }
+
+    private:
+        typedef FxEngine<4096, FORMAT_32_BIT> E;
+        E engine_;
+        float phase_;
+        float ratio_;
+        float size_;
+
+        DISALLOW_COPY_AND_ASSIGN(PitchShifter);
+    };
 
 }  // namespace

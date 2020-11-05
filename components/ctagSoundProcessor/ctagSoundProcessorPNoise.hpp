@@ -27,27 +27,26 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP::HELPERS;
 
-namespace CTAG{
-    namespace SP{
-        class ctagSoundProcessorPNoise : public ctagSoundProcessor{
-            public: 
-                void Process(const ProcessData &) override;
-                ~ctagSoundProcessorPNoise();
-                ctagSoundProcessorPNoise();
-                const char * GetCStrID() const override;
-            private:
-                void setParamValueInternal(const string &id, const string &key, const int val) override;
-                void loadPresetInternal() override;
-                const string id = "PNoise";
-                ctagPNoiseGen noiseGen;
-                // inter thread variables are atomic
-                atomic<int32_t> factor;
-                atomic<int32_t> enable;
-                atomic<int32_t> cvControl;
-                atomic<int32_t> trigControl;
-                // process only variables
-                float fFactor = 0.f;
+namespace CTAG {
+    namespace SP {
+        class ctagSoundProcessorPNoise : public ctagSoundProcessor {
+        public:
+            void Process(const ProcessData &) override;
 
+            ctagSoundProcessorPNoise();
+
+        private:
+
+            virtual void knowYourself() override;
+
+            ctagPNoiseGen noiseGen;
+            // process only variables
+            float fFactor = 0.f;
+
+            // sectionHpp
+            atomic<int32_t> enable, trig_enable;
+            atomic<int32_t> factor, cv_factor;
+            // sectionHpp
         };
     }
 }

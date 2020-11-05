@@ -28,13 +28,10 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorHihat1::ctagSoundProcessorHihat1()
-{
-    isStereo = false;
-    // acquire model from spiffs json, model auto loads last active preset
+ctagSoundProcessorHihat1::ctagSoundProcessorHihat1() {
+    knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
-    // take preset values from model
-    loadPresetInternal();
+    LoadPreset(0);
 
     // init params
     wNoise.SetBipolar(true);
@@ -47,50 +44,50 @@ ctagSoundProcessorHihat1::ctagSoundProcessorHihat1()
     pitchEnv.SetModeLin();
 }
 
-void ctagSoundProcessorHihat1::Process(const ProcessData &data){
-    float deltaCVLoud = (data.cv[cvControlLoudness] - preCVLoudness) / (float)bufSz; // for linear CV interpolation
+void ctagSoundProcessorHihat1::Process(const ProcessData &data) {
+    float deltaCVLoud = (data.cv[cv_loudness] - preCVLoudness) / (float) bufSz; // for linear CV interpolation
     freq = (float) frequency; // frequency
     // cv frequency
-    if(cvControlFrequency != -1){
-        preCVFrequency = 0.3f * data.cv[cvControlFrequency] + 0.7f * preCVFrequency; // smooth CV
+    if (cv_frequency != -1) {
+        preCVFrequency = 0.3f * data.cv[cv_frequency] + 0.7f * preCVFrequency; // smooth CV
         float fMod = preCVFrequency * 5.f;
         fMod = CTAG::SP::HELPERS::fastpow2(fMod);
         freq *= fMod;
     }
     // eg pitch
-    if(enableEG_p == 1 && trigEG_p != -1){
-        if(data.trig[trigEG_p] != prevTrigState_p){
-            prevTrigState_p = data.trig[trigEG_p];
-            if(prevTrigState_p == 0) pitchEnv.Trigger();
+    if (enableEG_p == 1 && trig_enableEG_p != -1) {
+        if (data.trig[trig_enableEG_p] != prevTrigState_p) {
+            prevTrigState_p = data.trig[trig_enableEG_p];
+            if (prevTrigState_p == 0) pitchEnv.Trigger();
         }
         pitchEnv.SetLoop(loopEG_p);
-        attackVal_p = (float)attack_p / 4095.f;
-        if(cvControlAttack_p != -1){
-            attackVal_p = data.cv[cvControlAttack_p] * data.cv[cvControlAttack_p];
+        attackVal_p = (float) attack_p / 4095.f;
+        if (cv_attack_p != -1) {
+            attackVal_p = data.cv[cv_attack_p] * data.cv[cv_attack_p];
         }
-        decayVal_p = (float)decay_p / 4095.f;
-        if(cvControlDecay_p != -1){
-            decayVal_p = data.cv[cvControlDecay_p] * data.cv[cvControlDecay_p];
+        decayVal_p = (float) decay_p / 4095.f;
+        if (cv_decay_p != -1) {
+            decayVal_p = data.cv[cv_decay_p] * data.cv[cv_decay_p];
         }
         pitchEnv.SetAttack(attackVal_p);
         pitchEnv.SetDecay(decayVal_p);
     }
     // parameter control
-    loud = (float)loudness / 4095.f;
+    loud = (float) loudness / 4095.f;
     //  eg loud
-    if(enableEG == 1 && trigEG != -1){
-        if(data.trig[trigEG] != prevTrigState){
-            prevTrigState = data.trig[trigEG];
-            if(prevTrigState == 0) adEnv.Trigger();
+    if (enableEG == 1 && trig_enableEG != -1) {
+        if (data.trig[trig_enableEG] != prevTrigState) {
+            prevTrigState = data.trig[trig_enableEG];
+            if (prevTrigState == 0) adEnv.Trigger();
         }
         adEnv.SetLoop(loopEG);
-        attackVal = (float)attack / 4095.f;
-        if(cvControlAttack != -1){
-            attackVal = data.cv[cvControlAttack] * data.cv[cvControlAttack];
+        attackVal = (float) attack / 4095.f;
+        if (cv_attack != -1) {
+            attackVal = data.cv[cv_attack] * data.cv[cv_attack];
         }
-        decayVal = (float)decay / 4095.f;
-        if(cvControlDecay != -1){
-            decayVal = data.cv[cvControlDecay] * data.cv[cvControlDecay];
+        decayVal = (float) decay / 4095.f;
+        if (cv_decay != -1) {
+            decayVal = data.cv[cv_decay] * data.cv[cv_decay];
         }
         adEnv.SetAttack(attackVal);
         adEnv.SetDecay(decayVal);
@@ -99,26 +96,26 @@ void ctagSoundProcessorHihat1::Process(const ProcessData &data){
     float freqb = freq;
     float tmp[bufSz];
     int nt = ntype;
-    if(trigNType != -1) nt = data.trig[trigNType];
-    for(int i=0;i<bufSz;i++){
-        if(nt == 0)
+    if (trig_ntype != -1) nt = data.trig[trig_ntype];
+    for (int i = 0; i < bufSz; i++) {
+        if (nt == 0)
             tmp[i] = wNoise.Process();
-        else if(nt == 1)
+        else if (nt == 1)
             tmp[i] = pNoise.Process();
     }
-    if(enableEG_p == 1 && trigEG_p != -1){
+    if (enableEG_p == 1 && trig_enableEG_p != -1) {
         float val;
-        if(cvAmount_p == -1)
-            val = CTAG::SP::HELPERS::fasterpow2(pitchEnv.Process() * (float)amount_p / 4095.f * 8.f);
+        if (cv_amount_p == -1)
+            val = CTAG::SP::HELPERS::fasterpow2(pitchEnv.Process() * (float) amount_p / 4095.f * 8.f);
         else
-            val = CTAG::SP::HELPERS::fasterpow2(pitchEnv.Process() * data.cv[cvAmount_p] * 8.f);
+            val = CTAG::SP::HELPERS::fasterpow2(pitchEnv.Process() * data.cv[cv_amount_p] * 8.f);
         freqb *= val;
-        if(freqb > 20000.f) freqb = 20000.f;
-        if(freqb < 15.f) freqb = 15.f;
+        if (freqb > 20000.f) freqb = 20000.f;
+        if (freqb < 15.f) freqb = 15.f;
     }
-    float q = (float)qfac / 4095.f * 100.f;
-    if(cvControlQFac != -1){
-        q = data.cv[cvControlQFac];
+    float q = (float) qfac / 4095.f * 100.f;
+    if (cv_qfac != -1) {
+        q = data.cv[cv_qfac];
         q *= q;
         q *= 100.f;
     }
@@ -126,187 +123,50 @@ void ctagSoundProcessorHihat1::Process(const ProcessData &data){
     filterBP.SetCutoffHz(freqb);
     filterBP.Process(tmp, bufSz);
     // apply loudness
-    for(int i=0;i<this->bufSz;i++){ // iterate all channel samples
-        data.buf[i*2 + this->processCh] = tmp[i] * loud;
+    for (int i = 0; i < this->bufSz; i++) { // iterate all channel samples
+        data.buf[i * 2 + this->processCh] = tmp[i] * loud;
         // apply loud EG
-        if(enableEG == 1){
-            data.buf[i*2 + this->processCh] *= adEnv.Process();
+        if (enableEG == 1) {
+            data.buf[i * 2 + this->processCh] *= adEnv.Process();
         }
         // apply CV loud control
-        if(cvControlLoudness != -1){
-            data.buf[i*2 + this->processCh] *= preCVLoudness * preCVLoudness; // linearly interpolate CV data, square for loudness perception
+        if (cv_loudness != -1) {
+            data.buf[i * 2 + this->processCh] *=
+                    preCVLoudness * preCVLoudness; // linearly interpolate CV data, square for loudness perception
             preCVLoudness += deltaCVLoud;
         }
     }
 }
 
-ctagSoundProcessorHihat1::~ctagSoundProcessorHihat1(){
-}
-
-const char * ctagSoundProcessorHihat1::GetCStrID() const{
-    return id.c_str();
-}
-
-void ctagSoundProcessorHihat1::setParamValueInternal(const string &id, const string &key, const int val) {
-    if(id.compare("ntype") == 0){
-        if(key.compare("current") == 0){
-            ntype = val;
-            return;
-        }
-        if(key.compare("trig") == 0){
-            if(val >= -1 && val <= 1)
-                trigNType = val;
-            return;
-        }
-    }
-    if(id.compare("loudness") == 0){
-        if(key.compare("current") == 0){
-            loudness = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvControlLoudness = val;
-            return;
-        }
-    }
-    if(id.compare("qfac") == 0){
-        if(key.compare("current") == 0){
-            qfac = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvControlQFac = val;
-            return;
-        }
-    }
-    if(id.compare("frequency") == 0){
-        if(key.compare("current") == 0){
-            frequency = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvControlFrequency = val;
-            return;
-        }
-    }
-    if(id.compare("enableEG") == 0){
-        if(key.compare("current") == 0){
-            enableEG = val;
-            return;
-        }
-        if(key.compare("trig") == 0){
-            if(val >= -1 && val <= 1)
-                trigEG = val;
-            return;
-        }
-    }
-    if(id.compare("loopEG") == 0){
-        if(key.compare("current") == 0){
-            loopEG = val;
-            return;
-        }
-    }
-    if(id.compare("decay") == 0){
-        if(key.compare("current") == 0){
-            decay = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvControlDecay = val;
-            return;
-        }
-    }
-    if(id.compare("attack") == 0){
-        if(key.compare("current") == 0){
-            attack = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvControlAttack = val;
-            return;
-        }
-    }
-    if(id.compare("enableEG_p") == 0){
-        if(key.compare("current") == 0){
-            enableEG_p = val;
-            return;
-        }
-        if(key.compare("trig") == 0){
-            if(val >= -1 && val <= 1)
-                trigEG_p = val;
-            return;
-        }
-    }
-    if(id.compare("loopEG_p") == 0){
-        if(key.compare("current") == 0){
-            loopEG_p = val;
-            return;
-        }
-    }
-    if(id.compare("decay_p") == 0){
-        if(key.compare("current") == 0){
-            decay_p = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvControlDecay_p = val;
-            return;
-        }
-    }
-    if(id.compare("attack_p") == 0){
-        if(key.compare("current") == 0){
-            attack_p = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvControlAttack_p = val;
-            return;
-        }
-    }
-    if(id.compare("amount_p") == 0){
-        if(key.compare("current") == 0){
-            amount_p = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvAmount_p = val;
-            return;
-        }
-    }
-}
-
-void ctagSoundProcessorHihat1::loadPresetInternal() {
-    ntype = model->GetParamValue("ntype", "current");
-    frequency = model->GetParamValue("frequency", "current");
-    loudness = model->GetParamValue("loudness", "current");
-    qfac = model->GetParamValue("qfac", "current");
-    enableEG = model->GetParamValue("enableEG", "current");
-    loopEG = model->GetParamValue("loopEG", "current");
-    attack = model->GetParamValue("attack", "current");
-    decay = model->GetParamValue("decay", "current");
-    enableEG_p = model->GetParamValue("enableEG_p", "current");
-    loopEG_p = model->GetParamValue("loopEG_p", "current");
-    attack_p = model->GetParamValue("attack_p", "current");
-    decay_p = model->GetParamValue("decay_p", "current");
-    amount_p = model->GetParamValue("amount_p", "current");
-
-    trigNType = model->GetParamValue("ntype", "trig");
-    cvControlLoudness = model->GetParamValue("loudness", "cv");
-    cvControlQFac = model->GetParamValue("qfac", "cv");
-    cvControlFrequency = model->GetParamValue("frequency", "cv");
-    cvControlAttack = model->GetParamValue("attack", "cv");
-    cvControlDecay = model->GetParamValue("decay", "cv");
-    trigEG = model->GetParamValue("enableEG", "trig");
-    cvControlAttack_p = model->GetParamValue("attack_p", "cv");
-    cvControlDecay_p = model->GetParamValue("decay_p", "cv");
-    trigEG_p = model->GetParamValue("enableEG_p", "trig");
-    cvAmount_p = model->GetParamValue("amount_p", "cv");
+void ctagSoundProcessorHihat1::knowYourself() {
+    // sectionCpp0
+    pMapPar.emplace("ntype", [&](const int val) { ntype = val; });
+    pMapTrig.emplace("ntype", [&](const int val) { trig_ntype = val; });
+    pMapPar.emplace("frequency", [&](const int val) { frequency = val; });
+    pMapCv.emplace("frequency", [&](const int val) { cv_frequency = val; });
+    pMapPar.emplace("qfac", [&](const int val) { qfac = val; });
+    pMapCv.emplace("qfac", [&](const int val) { cv_qfac = val; });
+    pMapPar.emplace("loudness", [&](const int val) { loudness = val; });
+    pMapCv.emplace("loudness", [&](const int val) { cv_loudness = val; });
+    pMapPar.emplace("enableEG", [&](const int val) { enableEG = val; });
+    pMapTrig.emplace("enableEG", [&](const int val) { trig_enableEG = val; });
+    pMapPar.emplace("loopEG", [&](const int val) { loopEG = val; });
+    pMapTrig.emplace("loopEG", [&](const int val) { trig_loopEG = val; });
+    pMapPar.emplace("attack", [&](const int val) { attack = val; });
+    pMapCv.emplace("attack", [&](const int val) { cv_attack = val; });
+    pMapPar.emplace("decay", [&](const int val) { decay = val; });
+    pMapCv.emplace("decay", [&](const int val) { cv_decay = val; });
+    pMapPar.emplace("enableEG_p", [&](const int val) { enableEG_p = val; });
+    pMapTrig.emplace("enableEG_p", [&](const int val) { trig_enableEG_p = val; });
+    pMapPar.emplace("loopEG_p", [&](const int val) { loopEG_p = val; });
+    pMapTrig.emplace("loopEG_p", [&](const int val) { trig_loopEG_p = val; });
+    pMapPar.emplace("amount_p", [&](const int val) { amount_p = val; });
+    pMapCv.emplace("amount_p", [&](const int val) { cv_amount_p = val; });
+    pMapPar.emplace("attack_p", [&](const int val) { attack_p = val; });
+    pMapCv.emplace("attack_p", [&](const int val) { cv_attack_p = val; });
+    pMapPar.emplace("decay_p", [&](const int val) { decay_p = val; });
+    pMapCv.emplace("decay_p", [&](const int val) { cv_decay_p = val; });
+    isStereo = false;
+    id = "Hihat1";
+    // sectionCpp0
 }
