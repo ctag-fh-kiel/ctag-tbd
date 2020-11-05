@@ -40,46 +40,51 @@ void WebServer::Start() {
     // 1 thread is usually faster than several threads
     server.config.port = 8080;
 
-    server.resource["^/api/v1/getPlugins$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/getPlugins$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                        shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         auto content = request->content.string();
         response->write(SimSPManager::GetCStrJSONSoundProcessors());
     };
 
-    server.resource["^/api/v1/getActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/getActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                     shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         response->write("{\"id\":\"" + CTAG::AUDIO::SimSPManager::GetStringID(ch) + "\"}");
     };
 
-    server.resource["^/api/v1/getPluginParams/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/getPluginParams/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                     shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         response->write(SimSPManager::GetCStrJSONActivePluginParams(ch));
     };
 
-    server.resource["^/api/v1/setActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/setActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                     shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         auto query_fields = request->parse_query_string();
-        for(auto &field: query_fields){
-            if(field.first == "id"){
+        for (auto &field: query_fields) {
+            if (field.first == "id") {
                 SimSPManager::SetSoundProcessorChannel(ch, field.second);
             }
         }
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/setPluginParam/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/setPluginParam/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                    shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         auto query_fields = request->parse_query_string();
         string id, what;
         int value;
-        for(auto &field: query_fields){
-            if(field.first == "id"){
+        for (auto &field: query_fields) {
+            if (field.first == "id") {
                 id = field.second;
-            }else{
+            } else {
                 what = field.first;
                 value = std::stoi(field.second);
             }
@@ -88,16 +93,17 @@ void WebServer::Start() {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/setPluginParamCV/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/setPluginParamCV/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                      shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         auto query_fields = request->parse_query_string();
         string id, what;
         int value;
-        for(auto &field: query_fields){
-            if(field.first == "id"){
+        for (auto &field: query_fields) {
+            if (field.first == "id") {
                 id = field.second;
-            }else{
+            } else {
                 what = field.first;
                 value = std::stoi(field.second);
             }
@@ -106,16 +112,17 @@ void WebServer::Start() {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/setPluginParamTRIG/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/setPluginParamTRIG/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                        shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         auto query_fields = request->parse_query_string();
         string id, what;
         int value;
-        for(auto &field: query_fields){
-            if(field.first == "id"){
+        for (auto &field: query_fields) {
+            if (field.first == "id") {
                 id = field.second;
-            }else{
+            } else {
                 what = field.first;
                 value = std::stoi(field.second);
             }
@@ -124,19 +131,21 @@ void WebServer::Start() {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/getPresets/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/getPresets/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         response->write(SimSPManager::GetCStrJSONGetPresets(ch));
     };
 
-    server.resource["^/api/v1/loadPreset/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/loadPreset/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         auto query_fields = request->parse_query_string();
         int number = 0;
-        for(auto &field: query_fields){
-            if(field.first == "number"){
+        for (auto &field: query_fields) {
+            if (field.first == "number") {
                 number = std::stoi(field.second);
             }
         }
@@ -144,16 +153,17 @@ void WebServer::Start() {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/savePreset/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/api/v1/savePreset/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         auto query_fields = request->parse_query_string();
         string name;
         int number;
-        for(auto &field: query_fields){
-            if(field.first == "number"){
+        for (auto &field: query_fields) {
+            if (field.first == "number") {
                 number = std::stoi(field.second);
-            }else if(field.first == "name"){
+            } else if (field.first == "name") {
                 name = field.second;
             }
         }
@@ -161,12 +171,14 @@ void WebServer::Start() {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/ctrl-set"]["POST"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/ctrl-set"]["POST"] = [](shared_ptr<HttpServer::Response> response,
+                                               shared_ptr<HttpServer::Request> request) {
         SimSPManager::SetProcessParams(request->content.string());
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/ctrl-get"]["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/ctrl-get"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                              shared_ptr<HttpServer::Request> request) {
         response->write(SimSPManager::GetProcessParams());
     };
 
@@ -176,13 +188,14 @@ void WebServer::Start() {
     // Default file: index.html
     // Can for instance be used to retrieve an HTML 5 client that uses REST-resources on this server
     // I.E. static web files
-    server.resource["^/ctrl"]["GET"]  = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.resource["^/ctrl"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                          shared_ptr<HttpServer::Request> request) {
         try {
             auto web_root_path = boost::filesystem::canonical("../www");
             auto path = boost::filesystem::canonical(web_root_path / "ui.html");
             // Check if path is within web_root_path
-            if(distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
-               !equal(web_root_path.begin(), web_root_path.end(), path.begin()))
+            if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
+                !equal(web_root_path.begin(), web_root_path.end(), path.begin()))
                 throw invalid_argument("path must be within root path");
 
             SimpleWeb::CaseInsensitiveMultimap header;
@@ -194,7 +207,7 @@ void WebServer::Start() {
             auto ifs = make_shared<ifstream>();
             ifs->open(path.string(), ifstream::in | ios::binary | ios::ate);
 
-            if(*ifs) {
+            if (*ifs) {
                 auto length = ifs->tellg();
                 ifs->seekg(0, ios::beg);
 
@@ -204,15 +217,17 @@ void WebServer::Start() {
                 // Trick to define a recursive function within this scope (for example purposes)
                 class FileServer {
                 public:
-                    static void read_and_send(const shared_ptr<HttpServer::Response> &response, const shared_ptr<ifstream> &ifs) {
+                    static void
+                    read_and_send(const shared_ptr<HttpServer::Response> &response, const shared_ptr<ifstream> &ifs) {
                         // Read and send 128 KB at a time
                         static vector<char> buffer(131072); // Safe when server is running on one thread
                         streamsize read_length;
-                        if((read_length = ifs->read(&buffer[0], static_cast<streamsize>(buffer.size())).gcount()) > 0) {
+                        if ((read_length = ifs->read(&buffer[0], static_cast<streamsize>(buffer.size())).gcount()) >
+                            0) {
                             response->write(&buffer[0], read_length);
-                            if(read_length == static_cast<streamsize>(buffer.size())) {
+                            if (read_length == static_cast<streamsize>(buffer.size())) {
                                 response->send([response, ifs](const SimpleWeb::error_code &ec) {
-                                    if(!ec)
+                                    if (!ec)
                                         read_and_send(response, ifs);
                                     else
                                         cerr << "Connection interrupted" << endl;
@@ -222,12 +237,12 @@ void WebServer::Start() {
                     }
                 };
                 FileServer::read_and_send(response, ifs);
-            }
-            else
+            } else
                 throw invalid_argument("could not read file");
         }
-        catch(const exception &e) {
-            response->write(SimpleWeb::StatusCode::client_error_bad_request, "Could not open path " + request->path + ": " + e.what());
+        catch (const exception &e) {
+            response->write(SimpleWeb::StatusCode::client_error_bad_request,
+                            "Could not open path " + request->path + ": " + e.what());
         }
     };
 
@@ -236,15 +251,16 @@ void WebServer::Start() {
     // Default file: index.html
     // Can for instance be used to retrieve an HTML 5 client that uses REST-resources on this server
     // I.E. static web files
-    server.default_resource["GET"] = [](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+    server.default_resource["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                        shared_ptr<HttpServer::Request> request) {
         try {
             auto web_root_path = boost::filesystem::canonical("../../spiffs_image/www");
             auto path = boost::filesystem::canonical(web_root_path / request->path);
             // Check if path is within web_root_path
-            if(distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
-               !equal(web_root_path.begin(), web_root_path.end(), path.begin()))
+            if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
+                !equal(web_root_path.begin(), web_root_path.end(), path.begin()))
                 throw invalid_argument("path must be within root path");
-            if(boost::filesystem::is_directory(path))
+            if (boost::filesystem::is_directory(path))
                 path /= "index.html";
 
             SimpleWeb::CaseInsensitiveMultimap header;
@@ -256,7 +272,7 @@ void WebServer::Start() {
             auto ifs = make_shared<ifstream>();
             ifs->open(path.string(), ifstream::in | ios::binary | ios::ate);
 
-            if(*ifs) {
+            if (*ifs) {
                 auto length = ifs->tellg();
                 ifs->seekg(0, ios::beg);
 
@@ -266,15 +282,17 @@ void WebServer::Start() {
                 // Trick to define a recursive function within this scope (for example purposes)
                 class FileServer {
                 public:
-                    static void read_and_send(const shared_ptr<HttpServer::Response> &response, const shared_ptr<ifstream> &ifs) {
+                    static void
+                    read_and_send(const shared_ptr<HttpServer::Response> &response, const shared_ptr<ifstream> &ifs) {
                         // Read and send 128 KB at a time
                         static vector<char> buffer(131072); // Safe when server is running on one thread
                         streamsize read_length;
-                        if((read_length = ifs->read(&buffer[0], static_cast<streamsize>(buffer.size())).gcount()) > 0) {
+                        if ((read_length = ifs->read(&buffer[0], static_cast<streamsize>(buffer.size())).gcount()) >
+                            0) {
                             response->write(&buffer[0], read_length);
-                            if(read_length == static_cast<streamsize>(buffer.size())) {
+                            if (read_length == static_cast<streamsize>(buffer.size())) {
                                 response->send([response, ifs](const SimpleWeb::error_code &ec) {
-                                    if(!ec)
+                                    if (!ec)
                                         read_and_send(response, ifs);
                                     else
                                         cerr << "Connection interrupted" << endl;
@@ -284,12 +302,12 @@ void WebServer::Start() {
                     }
                 };
                 FileServer::read_and_send(response, ifs);
-            }
-            else
+            } else
                 throw invalid_argument("could not read file");
         }
-        catch(const exception &e) {
-            response->write(SimpleWeb::StatusCode::client_error_bad_request, "Could not open path " + request->path + ": " + e.what());
+        catch (const exception &e) {
+            response->write(SimpleWeb::StatusCode::client_error_bad_request,
+                            "Could not open path " + request->path + ": " + e.what());
         }
     };
 

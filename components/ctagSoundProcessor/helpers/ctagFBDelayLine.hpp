@@ -24,15 +24,21 @@ respective component folders / files if different from this license.
 
 #include <cstdint>
 
-namespace CTAG::SP::HELPERS{
-    class ctagFBDelayLine{
+namespace CTAG::SP::HELPERS {
+    class ctagFBDelayLine {
     public:
         ctagFBDelayLine(uint32_t maxLength);
+
         ~ctagFBDelayLine();
+
         void SetFeedback(const float fb);
+
         void SetLength(const uint32_t length);
+
         void Clear();
+
         virtual void Process(float *samples, const uint32_t offset, const uint32_t inc, const uint32_t size);
+
     protected:
         float feedback = 0.f;
         float *buffer = nullptr;

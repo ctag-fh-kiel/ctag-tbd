@@ -31,8 +31,7 @@ respective component folders / files if different from this license.
 
 
 CTAG::SP::HELPERS::ctagDecay::ctagDecay() :
-        _c(0.f), out(0.f), _fs(44100.f), pre_c(0.f), smooth_c(true), smooth_level(1.f/32.f)
-{
+        _c(0.f), out(0.f), _fs(44100.f), pre_c(0.f), smooth_c(true), smooth_level(1.f / 32.f) {
 
 }
 
@@ -43,9 +42,9 @@ void CTAG::SP::HELPERS::ctagDecay::SetDecay60dB(float val) {
 }
 
 float CTAG::SP::HELPERS::ctagDecay::Process(float in) {
-    if(smooth_c){
+    if (smooth_c) {
         pre_c = _c * smooth_level + (1.f - smooth_level) * pre_c;
-    }else{
+    } else {
         pre_c = _c;
     }
     out = in + pre_c * out;

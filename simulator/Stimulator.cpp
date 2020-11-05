@@ -34,7 +34,7 @@ Stimulator::~Stimulator() {
 }
 
 void Stimulator::SetMode(const int m) {
-    mode = (ModeType)m;
+    mode = (ModeType) m;
 }
 
 void Stimulator::SetValue(const int v) {
@@ -44,7 +44,7 @@ void Stimulator::SetValue(const int v) {
 }
 
 float Stimulator::Process() {
-    switch(mode){
+    switch (mode) {
         case ModeType::MANUAL:
             src.Process();
             return value;

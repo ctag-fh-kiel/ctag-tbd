@@ -29,55 +29,46 @@ respective component folders / files if different from this license.
 // based on
 // https://www.musicdsp.org/en/latest/Synthesis/10-fast-sine-and-cosine-calculation.html
 
-namespace CTAG{
-    namespace SP{
-        class ctagSoundProcessorSineSrc : public ctagSoundProcessor{
-            public: 
-                void Process(const ProcessData &) override;
-                ~ctagSoundProcessorSineSrc();
-                ctagSoundProcessorSineSrc();
-                const char * GetCStrID() const override;
-            private:
-                void setParamValueInternal(const string &id, const string &key, const int val) override;
-                void loadPresetInternal() override;
-                const string id = "SineSrc";
-                // inter thread variables are atomic
-                atomic<int32_t> loudness;
-                atomic<int32_t> frequency;
-                atomic<int32_t> cvControlLoudness;
-                atomic<int32_t> cvControlFrequency;
-                atomic<int32_t> attack;
-                atomic<int32_t> decay;
-                atomic<int32_t> enableEG;
-                atomic<int32_t> cvControlAttack;
-                atomic<int32_t> cvControlDecay;
-                atomic<int32_t> trigEG;
-                atomic<int32_t> loopEG;
-                atomic<int32_t> attack_p;
-                atomic<int32_t> decay_p;
-                atomic<int32_t> enableEG_p;
-                atomic<int32_t> amount_p;
-                atomic<int32_t> cvControlAttack_p;
-                atomic<int32_t> cvControlDecay_p;
-                atomic<int32_t> cvAmount_p;
-                atomic<int32_t> trigEG_p;
-                atomic<int32_t> loopEG_p;
-                // process only variables
-                float freq = 10.f;
-                const float fs = 44100.f;
-                float a = 0.f;
-                float loud = 0.5f;
-                float s[2];
-                float preCVLoudness = 0.f;
-                float preCVFrequency = 0.f;
-                float attackVal = 0.f;
-                float decayVal = 1.f;
-                float attackVal_p = 0.f;
-                float decayVal_p = 1.f;
-                int prevTrigState = 1;
-                int prevTrigState_p = 1;
-                HELPERS::ctagADEnv adEnv, pitchEnv;
-                HELPERS::ctagSineSource sineSource;
+namespace CTAG {
+    namespace SP {
+        class ctagSoundProcessorSineSrc : public ctagSoundProcessor {
+        public:
+            void Process(const ProcessData &) override;
+
+            ctagSoundProcessorSineSrc();
+
+        private:
+            virtual void knowYourself() override;
+
+            // process only variables
+            float freq = 10.f;
+            const float fs = 44100.f;
+            float a = 0.f;
+            float loud = 0.5f;
+            float s[2];
+            float preCVLoudness = 0.f;
+            float preCVFrequency = 0.f;
+            float attackVal = 0.f;
+            float decayVal = 1.f;
+            float attackVal_p = 0.f;
+            float decayVal_p = 1.f;
+            int prevTrigState = 1;
+            int prevTrigState_p = 1;
+            HELPERS::ctagADEnv adEnv, pitchEnv;
+            HELPERS::ctagSineSource sineSource;
+            // sectionHpp
+            atomic<int32_t> frequency, cv_frequency;
+            atomic<int32_t> loudness, cv_loudness;
+            atomic<int32_t> enableEG, trig_enableEG;
+            atomic<int32_t> loopEG, trig_loopEG;
+            atomic<int32_t> attack, cv_attack;
+            atomic<int32_t> decay, cv_decay;
+            atomic<int32_t> enableEG_p, trig_enableEG_p;
+            atomic<int32_t> loopEG_p, trig_loopEG_p;
+            atomic<int32_t> amount_p, cv_amount_p;
+            atomic<int32_t> attack_p, cv_attack_p;
+            atomic<int32_t> decay_p, cv_decay_p;
+            // sectionHpp
         };
     }
 }

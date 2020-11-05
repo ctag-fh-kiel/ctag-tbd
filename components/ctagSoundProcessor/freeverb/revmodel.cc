@@ -9,6 +9,7 @@
 #include "esp_log.h"
 #include "esp_log.h"
 #include "esp_heap_caps.h"
+
 /*
 // Buffers for the combs
 float	DRAM_ATTR bufcombL1[combtuningL1];
@@ -39,20 +40,19 @@ float	DRAM_ATTR bufallpassL4[allpasstuningL4];
 float	DRAM_ATTR bufallpassR4[allpasstuningR4];
  */
 
-revmodel::revmodel()
-{
+revmodel::revmodel() {
     uint32_t sz = combtuningL1 + combtuningR1 +
-            combtuningL2 + combtuningR2 +
-            combtuningL3 + combtuningR3 +
-            combtuningL4 + combtuningR4 +
-            combtuningL5 + combtuningR5 +
-            combtuningL6 + combtuningR6 +
-            combtuningL7 + combtuningR7 +
-            combtuningL8 + combtuningR8 +
-            allpasstuningL1 + allpasstuningR1 +
-            allpasstuningL2 + allpasstuningR2 +
-            allpasstuningL3 + allpasstuningR3 +
-            allpasstuningL4 + allpasstuningR4;
+                  combtuningL2 + combtuningR2 +
+                  combtuningL3 + combtuningR3 +
+                  combtuningL4 + combtuningR4 +
+                  combtuningL5 + combtuningR5 +
+                  combtuningL6 + combtuningR6 +
+                  combtuningL7 + combtuningR7 +
+                  combtuningL8 + combtuningR8 +
+                  allpasstuningL1 + allpasstuningR1 +
+                  allpasstuningL2 + allpasstuningR2 +
+                  allpasstuningL3 + allpasstuningR3 +
+                  allpasstuningL4 + allpasstuningR4;
 
 #ifndef TBD_SIM
     // use internal ram, which will be always accessible, no cache misses!
@@ -60,10 +60,10 @@ revmodel::revmodel()
     ESP_LOGE("FVERB", "Mem alloc try requested size %d, freesize %d, largest block %d!",
              (int)(sz * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
 #endif
-    allBuf = (float*)heap_caps_malloc(sz * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(allBuf == NULL){
+    allBuf = (float *) heap_caps_malloc(sz * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if (allBuf == NULL) {
         ESP_LOGE("FVERB", "Cannot alloc mem!");
-    }else{
+    } else {
 #ifndef TBD_SIM
         ESP_LOGE("FVERB", "Mem alloc success requested size %d, freesize %d, largest block %d!",
                  (int)(sz * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
@@ -71,195 +71,178 @@ revmodel::revmodel()
     }
     float *fPtr = allBuf;
     // Tie the components to their buffers
-	combL[0].setbuffer(fPtr,combtuningL1);
+    combL[0].setbuffer(fPtr, combtuningL1);
     fPtr += combtuningL1;
-	combR[0].setbuffer(fPtr,combtuningR1);
+    combR[0].setbuffer(fPtr, combtuningR1);
     fPtr += combtuningR1;
-	combL[1].setbuffer(fPtr,combtuningL2);
+    combL[1].setbuffer(fPtr, combtuningL2);
     fPtr += combtuningL2;
-	combR[1].setbuffer(fPtr,combtuningR2);
+    combR[1].setbuffer(fPtr, combtuningR2);
     fPtr += combtuningR2;
-	combL[2].setbuffer(fPtr,combtuningL3);
+    combL[2].setbuffer(fPtr, combtuningL3);
     fPtr += combtuningL3;
-    combR[2].setbuffer(fPtr,combtuningR3);
+    combR[2].setbuffer(fPtr, combtuningR3);
     fPtr += combtuningR3;
-    combL[3].setbuffer(fPtr,combtuningL4);
+    combL[3].setbuffer(fPtr, combtuningL4);
     fPtr += combtuningL4;
-    combR[3].setbuffer(fPtr,combtuningR4);
+    combR[3].setbuffer(fPtr, combtuningR4);
     fPtr += combtuningR4;
-    combL[4].setbuffer(fPtr,combtuningL5);
+    combL[4].setbuffer(fPtr, combtuningL5);
     fPtr += combtuningL5;
-    combR[4].setbuffer(fPtr,combtuningR5);
+    combR[4].setbuffer(fPtr, combtuningR5);
     fPtr += combtuningR5;
-    combL[5].setbuffer(fPtr,combtuningL6);
+    combL[5].setbuffer(fPtr, combtuningL6);
     fPtr += combtuningL6;
-    combR[5].setbuffer(fPtr,combtuningR6);
+    combR[5].setbuffer(fPtr, combtuningR6);
     fPtr += combtuningR6;
-    combL[6].setbuffer(fPtr,combtuningL7);
+    combL[6].setbuffer(fPtr, combtuningL7);
     fPtr += combtuningL7;
-    combR[6].setbuffer(fPtr,combtuningR7);
+    combR[6].setbuffer(fPtr, combtuningR7);
     fPtr += combtuningR7;
-    combL[7].setbuffer(fPtr,combtuningL8);
+    combL[7].setbuffer(fPtr, combtuningL8);
     fPtr += combtuningL8;
-    combR[7].setbuffer(fPtr,combtuningR8);
+    combR[7].setbuffer(fPtr, combtuningR8);
     fPtr += combtuningR8;
-	allpassL[0].setbuffer(fPtr,allpasstuningL1);
+    allpassL[0].setbuffer(fPtr, allpasstuningL1);
     fPtr += allpasstuningL1;
-	allpassR[0].setbuffer(fPtr,allpasstuningR1);
+    allpassR[0].setbuffer(fPtr, allpasstuningR1);
     fPtr += allpasstuningR1;
-	allpassL[1].setbuffer(fPtr,allpasstuningL2);
+    allpassL[1].setbuffer(fPtr, allpasstuningL2);
     fPtr += allpasstuningL2;
-	allpassR[1].setbuffer(fPtr,allpasstuningR2);
+    allpassR[1].setbuffer(fPtr, allpasstuningR2);
     fPtr += allpasstuningR2;
-	allpassL[2].setbuffer(fPtr,allpasstuningL3);
+    allpassL[2].setbuffer(fPtr, allpasstuningL3);
     fPtr += allpasstuningL3;
-	allpassR[2].setbuffer(fPtr,allpasstuningR3);
+    allpassR[2].setbuffer(fPtr, allpasstuningR3);
     fPtr += allpasstuningR3;
-	allpassL[3].setbuffer(fPtr,allpasstuningL4);
+    allpassL[3].setbuffer(fPtr, allpasstuningL4);
     fPtr += allpasstuningL4;
-	allpassR[3].setbuffer(fPtr,allpasstuningR4);
+    allpassR[3].setbuffer(fPtr, allpasstuningR4);
 
-	// Set default values
-	allpassL[0].setfeedback(0.5f);
-	allpassR[0].setfeedback(0.5f);
-	allpassL[1].setfeedback(0.5f);
-	allpassR[1].setfeedback(0.5f);
-	allpassL[2].setfeedback(0.5f);
-	allpassR[2].setfeedback(0.5f);
-	allpassL[3].setfeedback(0.5f);
-	allpassR[3].setfeedback(0.5f);
-	setwet(initialwet);
-	setroomsize(initialroom);
-	setdry(initialdry);
-	setdamp(initialdamp);
-	setwidth(initialwidth);
-	setmode(initialmode);
+    // Set default values
+    allpassL[0].setfeedback(0.5f);
+    allpassR[0].setfeedback(0.5f);
+    allpassL[1].setfeedback(0.5f);
+    allpassR[1].setfeedback(0.5f);
+    allpassL[2].setfeedback(0.5f);
+    allpassR[2].setfeedback(0.5f);
+    allpassL[3].setfeedback(0.5f);
+    allpassR[3].setfeedback(0.5f);
+    setwet(initialwet);
+    setroomsize(initialroom);
+    setdry(initialdry);
+    setdamp(initialdamp);
+    setwidth(initialwidth);
+    setmode(initialmode);
 
-	// Buffer will be full of rubbish - so we MUST mute them
-	mute();
+    // Buffer will be full of rubbish - so we MUST mute them
+    mute();
 }
 
-void revmodel::mute()
-{
-	if (getmode() >= freezemode)
-		return;
+void revmodel::mute() {
+    if (getmode() >= freezemode)
+        return;
 
-	for (int i=0;i<numcombs;i++)
-	{
-		combL[i].mute();
-		combR[i].mute();
-	}
-	for (int i=0;i<numallpasses;i++)
-	{
-		allpassL[i].mute();
-		allpassR[i].mute();
-	}
+    for (int i = 0; i < numcombs; i++) {
+        combL[i].mute();
+        combR[i].mute();
+    }
+    for (int i = 0; i < numallpasses; i++) {
+        allpassL[i].mute();
+        allpassR[i].mute();
+    }
 }
 
-void revmodel::processreplace(float *inputL, float *inputR, float *outputL, float *outputR, long numsamples, int skip)
-{
-	float outL,outR,input;
+void revmodel::processreplace(float *inputL, float *inputR, float *outputL, float *outputR, long numsamples, int skip) {
+    float outL, outR, input;
 
-	while(numsamples-- > 0)
-	{
-		outL = outR = 0;
-		input = (*inputL + *inputR) * gain;
+    while (numsamples-- > 0) {
+        outL = outR = 0;
+        input = (*inputL + *inputR) * gain;
 
-		// Accumulate comb filters in parallel
-		for(int i=0; i<numcombs; i++)
-		{
-			outL += combL[i].process(input);
-			outR += combR[i].process(input);
-		}
+        // Accumulate comb filters in parallel
+        for (int i = 0; i < numcombs; i++) {
+            outL += combL[i].process(input);
+            outR += combR[i].process(input);
+        }
 
-		// Feed through allpasses in series
-		for(int i=0; i<numallpasses; i++)
-		{
-			outL = allpassL[i].process(outL);
-			outR = allpassR[i].process(outR);
-		}
+        // Feed through allpasses in series
+        for (int i = 0; i < numallpasses; i++) {
+            outL = allpassL[i].process(outL);
+            outR = allpassR[i].process(outR);
+        }
 
-		// Calculate output REPLACING anything already there
-		*outputL = outL*wet1 + outR*wet2 + *inputL*dry;
-		*outputR = outR*wet1 + outL*wet2 + *inputR*dry;
+        // Calculate output REPLACING anything already there
+        *outputL = outL * wet1 + outR * wet2 + *inputL * dry;
+        *outputR = outR * wet1 + outL * wet2 + *inputR * dry;
 
-		// Increment sample pointers, allowing for interleave (if any)
-		inputL += skip;
-		inputR += skip;
-		outputL += skip;
-		outputR += skip;
-	}
+        // Increment sample pointers, allowing for interleave (if any)
+        inputL += skip;
+        inputR += skip;
+        outputL += skip;
+        outputR += skip;
+    }
 }
 
-void revmodel::processmix(float *inputL, float *inputR, float *outputL, float *outputR, long numsamples, int skip)
-{
-	float outL,outR,input;
+void revmodel::processmix(float *inputL, float *inputR, float *outputL, float *outputR, long numsamples, int skip) {
+    float outL, outR, input;
 
-	while(numsamples-- > 0)
-	{
-		outL = outR = 0;
-		input = (*inputL + *inputR) * gain;
+    while (numsamples-- > 0) {
+        outL = outR = 0;
+        input = (*inputL + *inputR) * gain;
 
-		// Accumulate comb filters in parallel
-		for(int i=0; i<numcombs; i++)
-		{
-			outL += combL[i].process(input);
-			outR += combR[i].process(input);
-		}
+        // Accumulate comb filters in parallel
+        for (int i = 0; i < numcombs; i++) {
+            outL += combL[i].process(input);
+            outR += combR[i].process(input);
+        }
 
-		// Feed through allpasses in series
-		for(int i=0; i<numallpasses; i++)
-		{
-			outL = allpassL[i].process(outL);
-			outR = allpassR[i].process(outR);
-		}
+        // Feed through allpasses in series
+        for (int i = 0; i < numallpasses; i++) {
+            outL = allpassL[i].process(outL);
+            outR = allpassR[i].process(outR);
+        }
 
-		// Calculate output MIXING with anything already there
-		*outputL += outL*wet1 + outR*wet2 + *inputL*dry;
-		*outputR += outR*wet1 + outL*wet2 + *inputR*dry;
+        // Calculate output MIXING with anything already there
+        *outputL += outL * wet1 + outR * wet2 + *inputL * dry;
+        *outputR += outR * wet1 + outL * wet2 + *inputR * dry;
 
-		// Increment sample pointers, allowing for interleave (if any)
-		inputL += skip;
-		inputR += skip;
-		outputL += skip;
-		outputR += skip;
-	}
+        // Increment sample pointers, allowing for interleave (if any)
+        inputL += skip;
+        inputR += skip;
+        outputL += skip;
+        outputR += skip;
+    }
 }
 
-void revmodel::update()
-{
+void revmodel::update() {
 // Recalculate internal values after parameter change
 
-	int i;
+    int i;
 
-	wet1 = wet*(width/2 + 0.5f);
-	wet2 = wet*((1-width)/2);
+    wet1 = wet * (width / 2 + 0.5f);
+    wet2 = wet * ((1 - width) / 2);
 
-	if (mode >= freezemode)
-	{
-		roomsize1 = 1.f;
-		damp1 = 0.f;
-		//gain = muted;
+    if (mode >= freezemode) {
+        roomsize1 = 1.f;
+        damp1 = 0.f;
+        //gain = muted;
         gain = fixedgain;
-	}
-	else
-	{
-		roomsize1 = roomsize;
-		damp1 = damp;
-		gain = fixedgain;
-	}
+    } else {
+        roomsize1 = roomsize;
+        damp1 = damp;
+        gain = fixedgain;
+    }
 
-	for(i=0; i<numcombs; i++)
-	{
-		combL[i].setfeedback(roomsize1);
-		combR[i].setfeedback(roomsize1);
-	}
+    for (i = 0; i < numcombs; i++) {
+        combL[i].setfeedback(roomsize1);
+        combR[i].setfeedback(roomsize1);
+    }
 
-	for(i=0; i<numcombs; i++)
-	{
-		combL[i].setdamp(damp1);
-		combR[i].setdamp(damp1);
-	}
+    for (i = 0; i < numcombs; i++) {
+        combL[i].setdamp(damp1);
+        combR[i].setdamp(damp1);
+    }
 }
 
 // The following get/set functions are not inlined, because
@@ -267,106 +250,91 @@ void revmodel::update()
 // because as you develop the reverb model, you may
 // wish to take dynamic action when they are called.
 
-void revmodel::setroomsize(float value)
-{
-	roomsize = (value*scaleroom) + offsetroom;
-	update();
+void revmodel::setroomsize(float value) {
+    roomsize = (value * scaleroom) + offsetroom;
+    update();
 }
 
-float revmodel::getroomsize()
-{
-	return (roomsize-offsetroom)/scaleroom;
+float revmodel::getroomsize() {
+    return (roomsize - offsetroom) / scaleroom;
 }
 
-void revmodel::setdamp(float value)
-{
-	damp = value*scaledamp;
-	update();
+void revmodel::setdamp(float value) {
+    damp = value * scaledamp;
+    update();
 }
 
-float revmodel::getdamp()
-{
-	return damp/scaledamp;
+float revmodel::getdamp() {
+    return damp / scaledamp;
 }
 
-void revmodel::setwet(float value)
-{
-	wet = value*scalewet;
-	update();
+void revmodel::setwet(float value) {
+    wet = value * scalewet;
+    update();
 }
 
-float revmodel::getwet()
-{
-	return wet/scalewet;
+float revmodel::getwet() {
+    return wet / scalewet;
 }
 
-void revmodel::setdry(float value)
-{
-	dry = value*scaledry;
+void revmodel::setdry(float value) {
+    dry = value * scaledry;
 }
 
-float revmodel::getdry()
-{
-	return dry/scaledry;
+float revmodel::getdry() {
+    return dry / scaledry;
 }
 
-void revmodel::setwidth(float value)
-{
-	width = value;
-	update();
+void revmodel::setwidth(float value) {
+    width = value;
+    update();
 }
 
-float revmodel::getwidth()
-{
-	return width;
+float revmodel::getwidth() {
+    return width;
 }
 
-void revmodel::setmode(float value)
-{
-	mode = value;
-	update();
+void revmodel::setmode(float value) {
+    mode = value;
+    update();
 }
 
-float revmodel::getmode()
-{
-	if (mode >= freezemode)
-		return 1;
-	else
-		return 0;
+float revmodel::getmode() {
+    if (mode >= freezemode)
+        return 1;
+    else
+        return 0;
 }
 
 void IRAM_ATTR revmodel::process(float *data, uint32_t numsamples) {
-    float outL,outR,input;
+    float outL, outR, input;
 
-    for(uint32_t i=0;i<numsamples;i++)
-    {
+    for (uint32_t i = 0; i < numsamples; i++) {
         outL = outR = 0.f;
-        if(isMono)
-            input = data[i*2] * gain;
+        if (isMono)
+            input = data[i * 2] * gain;
         else
-            input = (data[i*2] + data[i*2+1]) * gain;
+            input = (data[i * 2] + data[i * 2 + 1]) * gain;
 
 
         // Accumulate comb filters in parallel
-        for(int j=0; j<numcombs; j++)
-        {
+        for (int j = 0; j < numcombs; j++) {
             outL += combL[j].process(input);
             outR += combR[j].process(input);
         }
 
         // Feed through allpasses in series
-        for(int j=0; j<numallpasses; j++)
-        {
+        for (int j = 0; j < numallpasses; j++) {
             outL = allpassL[j].process(outL);
             outR = allpassR[j].process(outR);
         }
 
         // Calculate output MIXING with anything already there
-        data[i*2] = outL*wet1 + outR*wet2 + data[i*2] *dry;
-        if(isMono){
-            data[i*2+1] = outR*wet1 + outL*wet2 + data[i*2] *dry;
-        }else{
-            data[i*2+1] = outR*wet1 + outL*wet2 + data[i*2+1] *dry;
+        data[i * 2] = outL * wet1 + outR * wet2 + data[i * 2] * dry;
+        if (isMono) {
+            data[i * 2 + 1] = outR * wet1 + outL * wet2 + data[i * 2] * dry;
+        } else {
+            data[i * 2 + 1] = outR * wet1 + outL * wet2 + data[i * 2 + 1] * dry;
         }
 
     }

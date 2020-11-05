@@ -1,5 +1,12 @@
 # CTAG TBD Version Log
 
+## V0.9.3
+   - Significant refactoring reducing code bloat in sound processors, improved compilation speed of sound processors
+   - Improved sound processor template generation
+   - Minor bug fixes
+      - Some plugins previously did not work correctly with negative CV mapped to pitch
+   - Otherwise no new plugins
+   
 ## V0.9.2b
    - Bug fix, calibration
 

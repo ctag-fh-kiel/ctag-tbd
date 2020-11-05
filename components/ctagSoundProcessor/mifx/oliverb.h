@@ -40,10 +40,11 @@ namespace mifx {
 
     class Oliverb {
     public:
-        Oliverb() { }
-        ~Oliverb() { }
+        Oliverb() {}
 
-        void Init(float* buffer) {
+        ~Oliverb() {}
+
+        void Init(float *buffer) {
             engine_.Init(buffer);
             engine_.SetLFOFrequency(LFO_1, 0.5f / 44100.0f);
             engine_.SetLFOFrequency(LFO_2, 0.3f / 44100.0f);
@@ -55,15 +56,15 @@ namespace mifx {
             input_gain_ = 1.0f;
             decay_ = 0.5f;
             lp_ = 1.0f;
-            hp_= 0.0f;
+            hp_ = 0.0f;
             phase_ = 0.0f;
             ratio_ = 0.0f;
             pitch_shift_amount_ = 1.0f;
-            for (int i=0; i<9; i++)
+            for (int i = 0; i < 9; i++)
                 lfo_[i].Init();
         }
 
-        void Process(clouds::FloatFrame* in_out, size_t size) {
+        void Process(clouds::FloatFrame *in_out, size_t size) {
             // This is the Griesinger topology described in the Dattorro paper
             // (4 AP diffusers on the input, then a loop of 2x 2AP+1Delay).
             // Modulation is applied in the loop of the first diffuser AP for additional
@@ -102,7 +103,7 @@ namespace mifx {
             float slope = mod_rate_ * mod_rate_;
             slope *= slope * slope;
             slope /= 200.0f;
-            for (int i=0; i<9; i++)
+            for (int i = 0; i < 9; i++)
                 lfo_[i].set_slope(slope);
 
             while (size--) {
@@ -118,7 +119,7 @@ namespace mifx {
                 if (phase_ >= 1.0f) phase_ -= 1.0f;
                 if (phase_ <= 0.0f) phase_ += 1.0f;
                 float tri = 2.0f * (phase_ >= 0.5f ? 1.0f - phase_ : phase_);
-                tri = Interpolate(clouds::lut_window, tri, LUT_WINDOW_SIZE-1);
+                tri = Interpolate(clouds::lut_window, tri, LUT_WINDOW_SIZE - 1);
                 float phase = phase_ * ps_size;
                 float half = phase + ps_size * 0.5f;
                 if (half >= ps_size) half -= ps_size;

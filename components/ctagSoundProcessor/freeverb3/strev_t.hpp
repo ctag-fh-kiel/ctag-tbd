@@ -23,6 +23,7 @@
 class _FV3_(strev) : public _FV3_(revbase) {
 public:
     _FV3_(strev)();
+
     ~_FV3_(strev)();
 
     virtual void mute();
@@ -41,7 +42,8 @@ public:
 
     _fv3_float_t getrt60();
 
-    void setmono(bool mode){isMono = mode;}
+    void setmono(bool mode) { isMono = mode; }
+
     /**
      * set the cut on frequency of the input signals' DC cut filter.
      * @param[in] value actual freqneucy.

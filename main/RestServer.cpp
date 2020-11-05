@@ -58,8 +58,7 @@ typedef struct rest_server_context {
 #define CHECK_FILE_EXTENSION(filename, ext) (strcasecmp(&filename[strlen(filename) - strlen(ext)], ext) == 0)
 
 /* Set HTTP response content type according to file extension */
-static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepath)
-{
+static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepath) {
     const char *type = "text/plain";
     if (CHECK_FILE_EXTENSION(filepath, ".html")) {
         type = "text/html";
@@ -78,11 +77,10 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepa
 }
 
 /* Send HTTP response with the contents of the requested file */
-static esp_err_t rest_common_get_handler(httpd_req_t *req)
-{
+static esp_err_t rest_common_get_handler(httpd_req_t *req) {
     char filepath[FILE_PATH_MAX];
 
-    rest_server_context_t *rest_context = (rest_server_context_t *)req->user_ctx;
+    rest_server_context_t *rest_context = (rest_server_context_t *) req->user_ctx;
     strlcpy(filepath, rest_context->base_path, sizeof(filepath));
     if (req->uri[strlen(req->uri) - 1] == '/') {
         strlcat(filepath, "/index.html", sizeof(filepath));
@@ -127,41 +125,41 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req){
+esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessors());
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req){
+esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
     size_t qlen = httpd_req_get_url_query_len(req);
     size_t urilen = strlen(req->uri);
     char ch = req->uri[urilen - qlen - 1];
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Get active plugin for channel %d", ch);
     string res;
-    if(ch == 0 || ch == 1){
-            res = "{\"id\":\"" + CTAG::AUDIO::SoundProcessorManager::GetStringID(ch) + "\"}";
+    if (ch == 0 || ch == 1) {
+        res = "{\"id\":\"" + CTAG::AUDIO::SoundProcessorManager::GetStringID(ch) + "\"}";
     }
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, res.c_str());
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req){
+esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
     size_t qlen = httpd_req_get_url_query_len(req);
     size_t urilen = strlen(req->uri);
     char ch = req->uri[urilen - qlen - 1];
     httpd_resp_set_type(req, "application/json");
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Get plugin params for channel %d", ch);
-    if(ch == 0 || ch == 1)
+    if (ch == 0 || ch == 1)
         httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(ch));
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
-esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req){
+esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
     char s[128];
     char v[128];
     size_t qlen = httpd_req_get_url_query_len(req);
@@ -173,13 +171,13 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req){
     std::string id(v);
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Set active plugin for channel %d %s %s", ch, v, s);
-    if(ch == 0 || ch == 1)
+    if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
-esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req){
+esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
     char query[128];
     char id[128];
     char cstrvalue[128];
@@ -190,13 +188,13 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req){
     httpd_req_get_url_query_str(req, query, 128);
     httpd_query_key_value(query, "id", id, 128);
     char ch = req->uri[urilen - qlen - 2];
-    if(strstr(req->uri, "TRIG")){
+    if (strstr(req->uri, "TRIG")) {
         httpd_query_key_value(query, "trig", cstrvalue, 128);
         key = "trig";
-    }else if(strstr(req->uri, "CV")){
+    } else if (strstr(req->uri, "CV")) {
         httpd_query_key_value(query, "cv", cstrvalue, 128);
         key = "cv";
-    }else{
+    } else {
         httpd_query_key_value(query, "current", cstrvalue, 128);
         key = "current";
     }
@@ -204,13 +202,13 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req){
     std::string sid(id);
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Setting chan %d param %s key %s value %d", ch, id, key.c_str(), val);
-    if(ch == 0 || ch == 1)
+    if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, sid, key, val);
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req){
+esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
     char query[128];
     size_t qlen = httpd_req_get_url_query_len(req);
     size_t urilen = strlen(req->uri);
@@ -219,13 +217,13 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req){
     httpd_resp_set_type(req, "application/json");
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Querying presets for channel %d", ch);
-    if(ch == 0 || ch == 1)
+    if (ch == 0 || ch == 1)
         httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch));
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
-esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req){
+esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
     char query[128];
     char name[128];
     char number[16];
@@ -237,7 +235,7 @@ esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req){
     char ch = req->uri[urilen - qlen - 2];
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Store preset for channel %s %d", req->uri, ch);
-    if(ch == 0 || ch == 1)
+    if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::ChannelSavePreset(ch, string(name), atoi(number));
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
@@ -253,16 +251,15 @@ esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
     char ch = req->uri[urilen - qlen - 2];
     ch -= 0x30;
     ESP_LOGD("HTTPD", "Load preset for channel %s %c", req->uri, ch);
-    if(ch == 0 || ch == 1)
+    if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(ch, atoi(number));
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 
-esp_err_t RestServer::StartRestServer()
-{
+esp_err_t RestServer::StartRestServer() {
     const char *base_path = "/spiffs/www\0";
-    rest_server_context_t *rest_context = (rest_server_context_t*)calloc(1, sizeof(rest_server_context_t));
+    rest_server_context_t *rest_context = (rest_server_context_t *) calloc(1, sizeof(rest_server_context_t));
     assert(rest_context);
     strlcpy(rest_context->base_path, base_path, sizeof(rest_context->base_path));
 
@@ -305,49 +302,49 @@ esp_err_t RestServer::StartRestServer()
 }
 */
     ESP_LOGI(REST_TAG, "Starting HTTP Server");
-    if(httpd_start(&server, &config) != ESP_OK)
+    if (httpd_start(&server, &config) != ESP_OK)
         return ESP_FAIL;
-  /*
-    httpd_uri_t system_info_get_uri = {
-        .uri = "/api/v1/system/info",
-        .method = HTTP_GET,
-        .handler = system_info_get_handler,
-        .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &system_info_get_uri);
+    /*
+      httpd_uri_t system_info_get_uri = {
+          .uri = "/api/v1/system/info",
+          .method = HTTP_GET,
+          .handler = system_info_get_handler,
+          .user_ctx = rest_context
+      };
+      httpd_register_uri_handler(server, &system_info_get_uri);
 
-    httpd_uri_t light_brightness_post_uri = {
-        .uri = "/api/v1/light/brightness",
-        .method = HTTP_POST,
-        .handler = light_brightness_post_handler,
-        .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &light_brightness_post_uri);
-*/
+      httpd_uri_t light_brightness_post_uri = {
+          .uri = "/api/v1/light/brightness",
+          .method = HTTP_POST,
+          .handler = light_brightness_post_handler,
+          .user_ctx = rest_context
+      };
+      httpd_register_uri_handler(server, &light_brightness_post_uri);
+  */
     /* URI handler for getting available sound processors */
     httpd_uri_t get_plugins_get_uri = {
-        .uri = "/api/v1/getPlugins",
-        .method = HTTP_GET,
-        .handler = &RestServer::get_plugins_get_handler,
-        .user_ctx = rest_context
+            .uri = "/api/v1/getPlugins",
+            .method = HTTP_GET,
+            .handler = &RestServer::get_plugins_get_handler,
+            .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &get_plugins_get_uri);
 
     /* get currently activated plugin */
     httpd_uri_t get_active_plugin_get_uri = {
-        .uri = "/api/v1/getActivePlugin*",
-        .method = HTTP_GET,
-        .handler = &RestServer::get_active_plugin_get_handler,
-        .user_ctx = rest_context
+            .uri = "/api/v1/getActivePlugin*",
+            .method = HTTP_GET,
+            .handler = &RestServer::get_active_plugin_get_handler,
+            .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &get_active_plugin_get_uri);
 
     /* get plugin params of active plugin */
     httpd_uri_t get_params_plugin_get_uri = {
-        .uri = "/api/v1/getPluginParams*",
-        .method = HTTP_GET,
-        .handler = &RestServer::get_params_plugin_get_handler,
-        .user_ctx = rest_context
+            .uri = "/api/v1/getPluginParams*",
+            .method = HTTP_GET,
+            .handler = &RestServer::get_params_plugin_get_handler,
+            .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &get_params_plugin_get_uri);
 
@@ -471,10 +468,10 @@ esp_err_t RestServer::StartRestServer()
 
     /* URI handler for getting web server files */
     httpd_uri_t common_get_uri = {
-        .uri = "/*",
-        .method = HTTP_GET,
-        .handler = rest_common_get_handler,
-        .user_ctx = rest_context
+            .uri = "/*",
+            .method = HTTP_GET,
+            .handler = rest_common_get_handler,
+            .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &common_get_uri);
 
@@ -487,7 +484,7 @@ esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
      * as well be any binary data (needs type casting).
      * In case of string data, null termination will be absent, and
      * content length would give length of string */
-    char *content = (char*)heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+    char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
     int ret = httpd_req_recv(req, content, req->content_len);
     if (ret <= 0) {  /* 0 return value indicates connection closed */
         /* Check if timeout occurred */
@@ -520,11 +517,11 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
     httpd_req_get_url_query_str(req, query, 128);
     httpd_resp_set_type(req, "application/json");
     char *pLastSlash = strrchr(req->uri, '/');
-    if(pLastSlash){
+    if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
         ESP_LOGE(REST_TAG, "Sending all preset data of plugin %s as JSON", pluginID);
         const char *json = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string(pluginID));
-        if(json)
+        if (json)
             httpd_resp_sendstr(req, json);
     }
     httpd_resp_send_chunk(req, NULL, 0);
@@ -538,7 +535,7 @@ esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
     httpd_query_key_value(query, "calibration", calibration, 16);
     int doCal = atoi(calibration);
     ESP_LOGW(REST_TAG, "Reboot requested with calibration = %d", doCal);
-    if(doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
+    if (doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
     httpd_resp_send_chunk(req, NULL, 0);
     esp_restart();
     return ESP_OK;
@@ -557,27 +554,28 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
     char otaRequest = req->uri[urilen - qlen - 1];
     otaRequest -= 0x30;
     esp_err_t err = ESP_ERR_NOT_FOUND;
-    ESP_LOGI("HTTPD", "OTA request type %d, last request was %d, expecting %d", otaRequest, lastOtaRequest, lastOtaRequest+1);
+    ESP_LOGI("HTTPD", "OTA request type %d, last request was %d, expecting %d", otaRequest, lastOtaRequest,
+             lastOtaRequest + 1);
     // stage 1, kill audio task and bring into ota update mode
-    if(lastOtaRequest == 0 && otaRequest == 1){
+    if (lastOtaRequest == 0 && otaRequest == 1) {
         CTAG::OTA::OTAManager::InitiateOTA(req);
         lastOtaRequest++;
         err = ESP_OK;
     }
     // stage 2, upload SPIFFS image
-    if(lastOtaRequest == 1 && otaRequest == 2){
+    if (lastOtaRequest == 1 && otaRequest == 2) {
         err = CTAG::OTA::OTAManager::PostHandlerSPIFFS(req);
         lastOtaRequest++;
     }
     // stage 3, upload Flash image
-    if(lastOtaRequest == 2 && otaRequest == 3){
+    if (lastOtaRequest == 2 && otaRequest == 3) {
         err = CTAG::OTA::OTAManager::PostHandlerApp(req);
         lastOtaRequest++;
     }
     // stage 4, upload Flash image
-    if(lastOtaRequest == 3 && otaRequest == 4){
+    if (lastOtaRequest == 3 && otaRequest == 4) {
         err = CTAG::OTA::OTAManager::PostHandlerFlashCommit(req);
-        if(err == ESP_OK){
+        if (err == ESP_OK) {
             ESP_LOGI("REST", "OTA successful, rebooting!");
             httpd_resp_send_chunk(req, NULL, 0);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -585,7 +583,7 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
         }
     }
 
-    if(err != ESP_OK){
+    if (err != ESP_OK) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error OTA error!");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         esp_restart();
@@ -598,7 +596,7 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
     ESP_LOGI("REST", "Set calibration post handler: content length %d", req->content_len);
-    char *content = (char*)heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+    char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
     int ret = httpd_req_recv(req, content, req->content_len);
     if (ret <= 0) {  /* 0 return value indicates connection closed */
         /* Check if timeout occurred */
@@ -625,10 +623,10 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
     httpd_req_get_url_query_str(req, query, 128);
     httpd_resp_set_type(req, "application/json");
     char *pLastSlash = strrchr(req->uri, '/');
-    if(pLastSlash){
+    if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
         ESP_LOGE(REST_TAG, "Storing data for %s as JSON", pluginID);
-        char *content = (char*)heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+        char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
         int ret = httpd_req_recv(req, content, req->content_len);
         if (ret <= 0) {  /* 0 return value indicates connection closed */
             /* Check if timeout occurred */
@@ -646,7 +644,7 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
         CTAG::AUDIO::SoundProcessorManager::SetJSONSoundProcessorPreset(string(pluginID), string(content));
         free(content);
         httpd_resp_send_chunk(req, NULL, 0);
-    }else{
+    } else {
         httpd_resp_send_404(req);
     }
     return ESP_OK;

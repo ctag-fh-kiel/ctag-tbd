@@ -1,2 +1,1 @@
-namespace fv3
-{
+namespace fv3 {

@@ -35,11 +35,9 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ~ctagSoundProcessorSubSynth();
-
             ctagSoundProcessorSubSynth();
 
-            const char *GetCStrID() const override;
+            const char *GetCStrID() const;
 
         private:
             void setParamValueInternal(const string &id, const string &key, const int val) override;

@@ -35,7 +35,7 @@ void CTAG::SP::HELPERS::ctagFBDelayLine::SetFeedback(float fb) {
 
 void CTAG::SP::HELPERS::ctagFBDelayLine::Process(float *samples, const uint32_t offset, const uint32_t inc,
                                                  const uint32_t size) {
-    for(uint32_t i=0; i<size; i+=inc){
+    for (uint32_t i = 0; i < size; i += inc) {
         uint32_t wpos = (pos + len - 1) % len;
         uint32_t rpos = pos;
         buffer[wpos] = samples[i + offset] + feedback * buffer[wpos];
@@ -47,8 +47,8 @@ void CTAG::SP::HELPERS::ctagFBDelayLine::Process(float *samples, const uint32_t 
 
 CTAG::SP::HELPERS::ctagFBDelayLine::ctagFBDelayLine(uint32_t maxLength) {
     maxLen = maxLength;
-    buffer = (float*)heap_caps_malloc(maxLength * sizeof(float), MALLOC_CAP_SPIRAM);
-    if(buffer == nullptr){
+    buffer = (float *) heap_caps_malloc(maxLength * sizeof(float), MALLOC_CAP_SPIRAM);
+    if (buffer == nullptr) {
         ESP_LOGE("FBDLYLINE", "Out of memory!");
         return;
     }
@@ -64,7 +64,7 @@ void CTAG::SP::HELPERS::ctagFBDelayLine::SetLength(const uint32_t length) {
 }
 
 void CTAG::SP::HELPERS::ctagFBDelayLine::Clear() {
-    memset((void*) buffer, 0, maxLen * sizeof(float));
+    memset((void *) buffer, 0, maxLen * sizeof(float));
 }
 
 

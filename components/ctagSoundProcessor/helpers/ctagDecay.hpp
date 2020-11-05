@@ -30,13 +30,21 @@ namespace CTAG::SP::HELPERS {
     class ctagDecay {
     public:
         ctagDecay();
+
         void SetDecay60dB(float val);
+
         void SetSampleRate(float fs);
+
         float Process(float in);
+
         void SetCoeff(float c);
+
         void SetCoeffSmoothing(bool yes);
+
         void SetCoeffSmoothingLevel(float lev);
+
         float GetCoeff();
+
     private:
         float _c;
         float out;

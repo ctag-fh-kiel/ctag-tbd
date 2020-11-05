@@ -16,13 +16,14 @@ void CTAG::SP::ChordSynth::SetResonance(const uint32_t &resonance) {
     svf.set_resonance(resonance);
 }
 
-void IRAM_ATTR CTAG::SP::ChordSynth::Process(float *buf, const uint32_t& ofs) {
-    memset(buffer, 0, 32*2);
+void IRAM_ATTR CTAG::SP::ChordSynth::Process(float *buf, const uint32_t &ofs) {
+    memset(buffer, 0, 32 * 2);
 
     // vibrato and render buffer
-    int i=0;
-    for(auto& osc:v_osc){
-        osc.SetPitch(params_.pitch + scale[i++] * 128 + static_cast<int16_t>(lfo1.Process() * params_.lfo1_amt * 128.f));
+    int i = 0;
+    for (auto &osc:v_osc) {
+        osc.SetPitch(
+                params_.pitch + scale[i++] * 128 + static_cast<int16_t>(lfo1.Process() * params_.lfo1_amt * 128.f));
         osc.Render(buffer, 32);
     }
 
@@ -34,12 +35,12 @@ void IRAM_ATTR CTAG::SP::ChordSynth::Process(float *buf, const uint32_t& ofs) {
     CONSTRAIN(ffreq, 0, 16383)
 
     svf.set_frequency(static_cast<uint16_t>(ffreq));
-    for(int i=0;i<32;i++){
+    for (int i = 0; i < 32; i++) {
         buffer[i] = svf.Process(buffer[i]);
     }
 
-    for(int i=0;i<32;i++){
-        buf[i*2 + ofs] += static_cast<float>(buffer[i]>>1) / 32767.f * eg;
+    for (int i = 0; i < 32; i++) {
+        buf[i * 2 + ofs] += static_cast<float>(buffer[i] >> 1) / 32767.f * eg;
     }
 }
 
@@ -47,13 +48,13 @@ bool CTAG::SP::ChordSynth::IsDead() {
     return adsr.IsIdle();
 }
 
-CTAG::SP::ChordSynth::ChordSynth(const ChordParams& params) {
+CTAG::SP::ChordSynth::ChordSynth(const ChordParams &params) {
     params_ = params;
     stmlib::Random::Seed(esp_random());
     lfo1.SetSampleRate(44100.f / 32.f);
     lfo1.SetFrequencyPhase(params.lfo1_freq, 6.2f * stmlib::Random::GetFloat());
     lfo2.SetSampleRate(44100.f / 32.f);
-    if(params.lfo2_random_phase)
+    if (params.lfo2_random_phase)
         lfo2.SetFrequencyPhase(params.lfo2_freq, 6.2f * stmlib::Random::GetFloat());
     else
         lfo2.SetFrequencyPhase(params.lfo2_freq, 3.1415f);
@@ -69,7 +70,7 @@ CTAG::SP::ChordSynth::ChordSynth(const ChordParams& params) {
 
     calcInversion(scale, params.chord, params.inversion, params.nnotes);
 
-    for(int i=0;i<params.nnotes;i++){
+    for (int i = 0; i < params.nnotes; i++) {
         MiSuperSawOsc osc;
         osc.Init();
         osc.SetPitch(params.pitch + scale[i] * 128);
@@ -82,16 +83,16 @@ void CTAG::SP::ChordSynth::SetFilterType(const SvfMode &mode) {
 }
 
 void CTAG::SP::ChordSynth::SetDetune(const uint32_t &detune) {
-    for(auto& osc:v_osc){
+    for (auto &osc:v_osc) {
         osc.SetDetune(detune);
     }
 }
 
 void IRAM_ATTR CTAG::SP::ChordSynth::calcInversion(int8_t *ht_steps, const int16_t &chord, const int16_t &inversion,
-                                         const int16_t &nnotes) {
+                                                   const int16_t &nnotes) {
     int8_t inv[4];
-    for(int i=0;i<4;i++){
-        inv[i] = chords[chord][i+2+inversion];
+    for (int i = 0; i < 4; i++) {
+        inv[i] = chords[chord][i + 2 + inversion];
     }
     memcpy(ht_steps, inv, 4);
 }

@@ -28,21 +28,27 @@ respective component folders / files if different from this license.
 #include "freertos/queue.h"
 #include "CalibrationModel.hpp"
 
-namespace CTAG{
-    namespace CAL{
+namespace CTAG {
+    namespace CAL {
         enum class CVConfig : int {
             CVUnipolar, CVBipolar
         };
-        class Calibration{
+
+        class Calibration {
         public:
             static void Init();
+
             static void IRAM_ATTR MapCVData(const uint16_t *adcIn, float *mapOut);
+
             static void ConfigCVChannels(CVConfig ch0, CVConfig ch1, CVConfig ch2, CVConfig ch3);
+
             static void RequestCalibrationOnReboot();
+
             static const char *GetCStrJSONCalibration() {
                 return model->GetCStrJSONCalibration();
             }
-            static void SetJSONCalibration(const string &calData){
+
+            static void SetJSONCalibration(const string &calData) {
                 model->SetJSONCalibration(calData);
                 /* this is NOT thread safe !!! */
                 model->LoadMatrix("aCalCalibration_CV_05V", aCoeffs05V);
@@ -51,21 +57,29 @@ namespace CTAG{
                 model->LoadMatrix("bCalCalibration_CV_10V", bCoeffs10V);
                 /* NOT THREAD SAFE END */
             }
+
         private:
             static void doCalibration();
-            static void ledTask(void * params);
-            static void btnTask(void * params);
+
+            static void ledTask(void *params);
+
+            static void btnTask(void *params);
+
             static void acquireData(std::vector<uint32_t> &d);
+
             static void calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvType);
+
             static TaskHandle_t ledTaskHandle, btnTaskHandle;
             static std::atomic_int32_t taskControl;
             static QueueHandle_t evQueue;
-            enum class Event : uint32_t {NONE, BTN_PRESS};
+            enum class Event : uint32_t {
+                NONE, BTN_PRESS
+            };
             static unique_ptr<CalibrationModel> model;
-            static DRAM_ATTR float aCoeffs05V[4*2];
-            static DRAM_ATTR float bCoeffs05V[4*2];
-            static DRAM_ATTR float aCoeffs10V[4*2];
-            static DRAM_ATTR float bCoeffs10V[4*2];
+            static DRAM_ATTR float aCoeffs05V[4 * 2];
+            static DRAM_ATTR float bCoeffs05V[4 * 2];
+            static DRAM_ATTR float aCoeffs10V[4 * 2];
+            static DRAM_ATTR float bCoeffs10V[4 * 2];
             static DRAM_ATTR CVConfig configCV[4];
         };
     }

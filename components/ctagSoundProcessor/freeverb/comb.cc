@@ -7,20 +7,17 @@
 #include "comb.hpp"
 #include <cstring>
 
-comb::comb()
-{
-	filterstore = 0;
-	bufidx = 0;
+comb::comb() {
+    filterstore = 0;
+    bufidx = 0;
 }
 
-void comb::setbuffer(float *buf, int size) 
-{
-	buffer = buf; 
-	bufsize = size;
+void comb::setbuffer(float *buf, int size) {
+    buffer = buf;
+    bufsize = size;
 }
 
-void comb::mute()
-{
+void comb::mute() {
     memset(buffer, 0, bufsize * sizeof(float));
     /*
 	for (int i=0; i<bufsize; i++)
@@ -28,25 +25,21 @@ void comb::mute()
      */
 }
 
-void comb::setdamp(float val) 
-{
-	damp1 = val; 
-	damp2 = 1.f-val;
+void comb::setdamp(float val) {
+    damp1 = val;
+    damp2 = 1.f - val;
 }
 
-float comb::getdamp() 
-{
-	return damp1;
+float comb::getdamp() {
+    return damp1;
 }
 
-void comb::setfeedback(float val) 
-{
-	feedback = val;
+void comb::setfeedback(float val) {
+    feedback = val;
 }
 
-float comb::getfeedback() 
-{
-	return feedback;
+float comb::getfeedback() {
+    return feedback;
 }
 
 // ends

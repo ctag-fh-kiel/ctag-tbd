@@ -30,7 +30,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  enum { FV3_BIQUAD_RBJ_BW = 0, FV3_BIQUAD_RBJ_Q  = 1, FV3_BIQUAD_RBJ_S  = 2, };
+enum {
+    FV3_BIQUAD_RBJ_BW = 0, FV3_BIQUAD_RBJ_Q = 1, FV3_BIQUAD_RBJ_S = 2,
+};
 #ifdef __cplusplus
 }
 #endif
@@ -38,12 +40,13 @@ extern "C" {
 #define FV3_BIQUAD_RBJ_Q_BUTTERWORTH 0.7071067811865475244 // 1/sqrt(2)
 #define FV3_BIQUAD_RBJ_Q_BESSEL      0.5773502691896257645 // 1/sqrt(3)
 
-namespace fv3
-{
+namespace fv3 {
 
 #define _fv3_float_t float
 #define _FV3_(name) name ## _f
+
 #include "biquad_t.hpp"
+
 #undef _FV3_
 #undef _fv3_float_t
 

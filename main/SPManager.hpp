@@ -66,12 +66,12 @@ namespace CTAG {
                 return model->GetCStrJSONConfiguration();
             }
 
-            static const char * GetCStrJSONSoundProcessorPresets(const string &id){
+            static const char *GetCStrJSONSoundProcessorPresets(const string &id) {
                 ledBlink = 1;
                 return model->GetCStrJSONSoundProcessorPresets(id);
             }
 
-            static void SetJSONSoundProcessorPreset(const string &id, const string &data){
+            static void SetJSONSoundProcessorPreset(const string &id, const string &data) {
                 ledBlink = 1;
                 model->SetJSONSoundProcessorPreset(id, data);
             }

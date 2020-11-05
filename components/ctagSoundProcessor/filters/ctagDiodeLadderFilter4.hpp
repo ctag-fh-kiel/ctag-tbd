@@ -27,17 +27,21 @@
 #include "ctagFilterBase.hpp"
 #include <cmath>
 
-namespace CTAG::SP::HELPERS{
+namespace CTAG::SP::HELPERS {
     class ctagDiodeLadderFilter4 : public ctagFilterBase {
     public:
         virtual void SetCutoff(float cutoff) override;
+
         virtual void SetResonance(float resonance) override;
+
         virtual void SetSampleRate(float fs) override;
+
         virtual float Process(float in) override;
+
         virtual void Init() override;
+
     private:
-        static float clip(const float x)
-        {
+        static float clip(const float x) {
             return x / (1 + abs(x));
         }
 

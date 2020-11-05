@@ -32,10 +32,10 @@ float CTAG::SP::HELPERS::ctagADEnv::Process() {
         switch (envState) {
             case EnvStateType::STATE_ATTACK:
                 val = envAccum + attack;
-                if(val >= 1.f){
+                if (val >= 1.f) {
                     envAccum = 1.f;
                     envState = EnvStateType::STATE_DECAY;
-                }else{
+                } else {
                     envAccum = val;
                 }
                 break;
@@ -48,21 +48,21 @@ float CTAG::SP::HELPERS::ctagADEnv::Process() {
                     } else {
                         envState = EnvStateType::STATE_IDLE;
                     }
-                }else{
+                } else {
                     envAccum = val;
                 }
                 break;
             default:
                 break;
         }
-    } else if (envMode == EnvModeType::MODE_LOG){
+    } else if (envMode == EnvModeType::MODE_LOG) {
         switch (envState) {
             case EnvStateType::STATE_ATTACK:
                 val = envAccum * attack;
-                if(val >= 1.f){
+                if (val >= 1.f) {
                     envAccum = 1.f;
                     envState = EnvStateType::STATE_DECAY;
-                }else{
+                } else {
                     envAccum = val;
                 }
                 break;
@@ -76,7 +76,7 @@ float CTAG::SP::HELPERS::ctagADEnv::Process() {
                         envState = EnvStateType::STATE_IDLE;
                         envAccum = 0.f;
                     }
-                }else{
+                } else {
                     envAccum = val;
                 }
                 break;
@@ -84,29 +84,29 @@ float CTAG::SP::HELPERS::ctagADEnv::Process() {
                 break;
         }
     }
-    if(envAccum > 1.f) envAccum = 1.f;
-    if(envAccum < 0.f) envAccum = 0.f;
+    if (envAccum > 1.f) envAccum = 1.f;
+    if (envAccum < 0.f) envAccum = 0.f;
     return envAccum;
 }
 
 void CTAG::SP::HELPERS::ctagADEnv::SetAttack(float a_s) {
-    if(envMode == EnvModeType::MODE_LIN)
+    if (envMode == EnvModeType::MODE_LIN)
         attack = 1.f / (a_s * fSample);
     else
         attack = 1.f - LOG0001 / (a_s * fSample);
 }
 
 void CTAG::SP::HELPERS::ctagADEnv::SetDecay(float d_s) {
-    if(envMode == EnvModeType::MODE_LIN)
+    if (envMode == EnvModeType::MODE_LIN)
         decay = 1.f / (d_s * fSample);
     else
         decay = 1.f + LOG0001 / (d_s * fSample);
 }
 
 void CTAG::SP::HELPERS::ctagADEnv::Trigger() {
-    if(envMode==EnvModeType::MODE_LIN){
+    if (envMode == EnvModeType::MODE_LIN) {
         envAccum = 0.f;
-    }else{
+    } else {
         envAccum = 0.0001f;
     }
     envState = EnvStateType::STATE_ATTACK;

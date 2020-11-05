@@ -24,21 +24,27 @@ respective component folders / files if different from this license.
 
 #include <stdint.h>
 
-namespace CTAG{
-    namespace DRIVERS{
-        class ADC{
-            public:
-                static void InitADCSystem();
-                static void SetCVINUnipolar(int ch);
-                static void SetCVINBipolar(int ch);
-                static uint16_t GetChannelVal(int ch);
-                static void GetChannelVals(uint16_t *);
-                static void Update();
-                // exposed to get pointer access for speed
-                static uint16_t data[4];
-            protected:
-                static void init_ulp_program();
-                
+namespace CTAG {
+    namespace DRIVERS {
+        class ADC {
+        public:
+            static void InitADCSystem();
+
+            static void SetCVINUnipolar(int ch);
+
+            static void SetCVINBipolar(int ch);
+
+            static uint16_t GetChannelVal(int ch);
+
+            static void GetChannelVals(uint16_t *);
+
+            static void Update();
+
+            // exposed to get pointer access for speed
+            static uint16_t data[4];
+        protected:
+            static void init_ulp_program();
+
         };
     }
 }

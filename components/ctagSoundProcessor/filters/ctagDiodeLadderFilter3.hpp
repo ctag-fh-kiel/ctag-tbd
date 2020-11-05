@@ -23,14 +23,19 @@ respective component folders / files if different from this license.
 
 #include "ctagFilterBase.hpp"
 
-namespace CTAG::SP::HELPERS{
+namespace CTAG::SP::HELPERS {
     class ctagDiodeLadderFilter3 : public ctagFilterBase {
     public:
         virtual void SetCutoff(float cutoff) override;
+
         virtual void SetResonance(float resonance) override;
+
         virtual void SetSampleRate(float fs) override;
+
         virtual float Process(float in) override;
+
         virtual void Init() override;
+
     private:
         float b_aflt1, b_aflt2, b_aflt3, b_aflt4;
         float b_fres, b_fenv;

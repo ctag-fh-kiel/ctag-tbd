@@ -33,23 +33,36 @@ respective component folders / files if different from this license.
 using namespace std;
 using namespace rapidjson;
 
-namespace CTAG{
-    namespace CAL{
-        class CalibrationModel : public CTAG::SP::ctagDataModelBase{
+namespace CTAG {
+    namespace CAL {
+        class CalibrationModel : public CTAG::SP::ctagDataModelBase {
         public:
             CalibrationModel();
+
             ~CalibrationModel();
+
             void CreateMatrix();
+
             void PushRow(const vector<uint32_t> data);
+
             void StoreMatrix(const string &id);
+
             void StoreMatrix(const string &id, const vector<vector<float>> mat);
+
             vector<vector<uint32_t >> GetMatrix(const string &id);
+
             void PrintSelf();
-            void LoadMatrix(const string &id, float* data);
+
+            void LoadMatrix(const string &id, float *data);
+
             bool GetCalibrateOnReboot();
+
             void SetCalibrateOnReboot(bool val);
+
             const char *GetCStrJSONCalibration();
+
             void SetJSONCalibration(const string &calData);
+
         private:
             Document m;
             const string MODELJSONFN = "/spiffs/data/calibration.jsn";

@@ -22,158 +22,141 @@
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
 
-FV3_(compmodel)::FV3_(compmodel)()
-{
-  currentfs = 44100;
-  setRMS(0); setLookahead(0); setAttack(0); setRelease(0);
-  setThreshold(-10); setSoftKnee(10); setRatio(2);
-  mute();
+FV3_(compmodel)::FV3_(compmodel)() {
+    currentfs = 44100;
+    setRMS(0);
+    setLookahead(0);
+    setAttack(0);
+    setRelease(0);
+    setThreshold(-10);
+    setSoftKnee(10);
+    setRatio(2);
+    mute();
 }
 
-fv3_float_t FV3_(compmodel)::getSampleRate()
-{
-  return currentfs;
+fv3_float_t FV3_(compmodel)::getSampleRate() {
+    return currentfs;
 }
 
-void FV3_(compmodel)::setSampleRate(fv3_float_t fs)
-{
-  if(fs <= 0) return;
-  currentfs = fs;
-  setRMS(getRMS());
-  setLookahead(getLookahead());
-  setAttack(getAttack());
-  setRelease(getRelease());
-  mute();
+void FV3_(compmodel)::setSampleRate(fv3_float_t fs) {
+    if (fs <= 0) return;
+    currentfs = fs;
+    setRMS(getRMS());
+    setLookahead(getLookahead());
+    setAttack(getAttack());
+    setRelease(getRelease());
+    mute();
 }
 
-fv3_float_t FV3_(compmodel)::getRMS()
-{
-  return RMS;
+fv3_float_t FV3_(compmodel)::getRMS() {
+    return RMS;
 }
 
-void FV3_(compmodel)::setRMS(fv3_float_t msec)
-{
-  RMS = msec;
-  compL.setRMS(FV3_(utils)::ms2sample(RMS,currentfs));
-  compR.setRMS(FV3_(utils)::ms2sample(RMS,currentfs));
+void FV3_(compmodel)::setRMS(fv3_float_t msec) {
+    RMS = msec;
+    compL.setRMS(FV3_(utils)::ms2sample(RMS, currentfs));
+    compR.setRMS(FV3_(utils)::ms2sample(RMS, currentfs));
 }
 
-fv3_float_t FV3_(compmodel)::getLookahead()
-{
-  return Lookahead;
+fv3_float_t FV3_(compmodel)::getLookahead() {
+    return Lookahead;
 }
 
-void FV3_(compmodel)::setLookahead(fv3_float_t msec)
-{
-  Lookahead = msec;
-  lookaL.setsize(FV3_(utils)::ms2sample(Lookahead,currentfs));
-  lookaR.setsize(FV3_(utils)::ms2sample(Lookahead,currentfs));
+void FV3_(compmodel)::setLookahead(fv3_float_t msec) {
+    Lookahead = msec;
+    lookaL.setsize(FV3_(utils)::ms2sample(Lookahead, currentfs));
+    lookaR.setsize(FV3_(utils)::ms2sample(Lookahead, currentfs));
 }
 
-fv3_float_t FV3_(compmodel)::getAttack()
-{
-  return Attack;
+fv3_float_t FV3_(compmodel)::getAttack() {
+    return Attack;
 }
 
-void FV3_(compmodel)::setAttack(fv3_float_t msec)
-{
-  Attack = msec;
-  compL.setAttack(FV3_(utils)::ms2sample(Attack,currentfs));
-  compR.setAttack(FV3_(utils)::ms2sample(Attack,currentfs));
+void FV3_(compmodel)::setAttack(fv3_float_t msec) {
+    Attack = msec;
+    compL.setAttack(FV3_(utils)::ms2sample(Attack, currentfs));
+    compR.setAttack(FV3_(utils)::ms2sample(Attack, currentfs));
 }
 
-fv3_float_t FV3_(compmodel)::getRelease()
-{
-  return Release;
+fv3_float_t FV3_(compmodel)::getRelease() {
+    return Release;
 }
 
-void FV3_(compmodel)::setRelease(fv3_float_t msec)
-{
-  Release = msec;
-  compL.setRelease(FV3_(utils)::ms2sample(Release,currentfs));
-  compR.setRelease(FV3_(utils)::ms2sample(Release,currentfs));
+void FV3_(compmodel)::setRelease(fv3_float_t msec) {
+    Release = msec;
+    compL.setRelease(FV3_(utils)::ms2sample(Release, currentfs));
+    compR.setRelease(FV3_(utils)::ms2sample(Release, currentfs));
 }
 
-fv3_float_t FV3_(compmodel)::getThreshold()
-{
-  return Threshold;
+fv3_float_t FV3_(compmodel)::getThreshold() {
+    return Threshold;
 }
 
-void FV3_(compmodel)::setThreshold(fv3_float_t dB)
-{
-  Threshold = dB;
-  compL.setThreshold(FV3_(utils)::dB2R(Threshold));
-  compR.setThreshold(FV3_(utils)::dB2R(Threshold));
+void FV3_(compmodel)::setThreshold(fv3_float_t dB) {
+    Threshold = dB;
+    compL.setThreshold(FV3_(utils)::dB2R(Threshold));
+    compR.setThreshold(FV3_(utils)::dB2R(Threshold));
 }
 
-fv3_float_t FV3_(compmodel)::getSoftKnee()
-{
-  return SoftKnee;
+fv3_float_t FV3_(compmodel)::getSoftKnee() {
+    return SoftKnee;
 }
 
-void FV3_(compmodel)::setSoftKnee(fv3_float_t dB)
-{
-  SoftKnee = dB;
-  compL.setSoftKnee(SoftKnee);
-  compR.setSoftKnee(SoftKnee);
+void FV3_(compmodel)::setSoftKnee(fv3_float_t dB) {
+    SoftKnee = dB;
+    compL.setSoftKnee(SoftKnee);
+    compR.setSoftKnee(SoftKnee);
 }
 
-fv3_float_t FV3_(compmodel)::getRatio()
-{
-  return Ratio;
+fv3_float_t FV3_(compmodel)::getRatio() {
+    return Ratio;
 }
 
-void FV3_(compmodel)::setRatio(fv3_float_t value)
-{
-  Ratio = value;
-  compL.setRatio(Ratio);
-  compR.setRatio(Ratio);
+void FV3_(compmodel)::setRatio(fv3_float_t value) {
+    Ratio = value;
+    compL.setRatio(Ratio);
+    compR.setRatio(Ratio);
 }
 
-int32_t FV3_(compmodel)::getLatency()
-{
-  return 0;
+int32_t FV3_(compmodel)::getLatency() {
+    return 0;
 }
 
-void FV3_(compmodel)::mute()
-{
-  currentGain = 1;
-  compL.mute();
-  compR.mute();
-  lookaL.mute();
-  lookaR.mute();
+void FV3_(compmodel)::mute() {
+    currentGain = 1;
+    compL.mute();
+    compR.mute();
+    lookaL.mute();
+    lookaR.mute();
 }
 
-fv3_float_t FV3_(compmodel)::getCGain()
-{
-  return currentGain;
+fv3_float_t FV3_(compmodel)::getCGain() {
+    return currentGain;
 }
 
 //! main process
 /*!
   output is valid even inputL/R == outputL/R.
  */
-void FV3_(compmodel)::processreplace(fv3_float_t *inputL, fv3_float_t *inputR, fv3_float_t *outputL, fv3_float_t *outputR, int32_t numsamples)
-{
-  float gainL, gainR;
-  for(int32_t i = 0;i < numsamples;i ++)
-    {
-      gainL = compL.process(inputL[i]);
-      gainR = compR.process(inputR[i]);
-      if(gainL > gainR) currentGain = gainR;
-      else currentGain = gainL;
-      outputL[i] = lookaL.process(inputL[i])*currentGain;
-      outputR[i] = lookaR.process(inputR[i])*currentGain;
+void
+FV3_(compmodel)::processreplace(fv3_float_t *inputL, fv3_float_t *inputR, fv3_float_t *outputL, fv3_float_t *outputR,
+                                int32_t numsamples) {
+    float gainL, gainR;
+    for (int32_t i = 0; i < numsamples; i++) {
+        gainL = compL.process(inputL[i]);
+        gainR = compR.process(inputR[i]);
+        if (gainL > gainR) currentGain = gainR;
+        else currentGain = gainL;
+        outputL[i] = lookaL.process(inputL[i]) * currentGain;
+        outputR[i] = lookaR.process(inputR[i]) * currentGain;
     }
 }
 
-fv3_float_t FV3_(compmodel)::getEnv()
-{
-  return compL.getEnv();
+fv3_float_t FV3_(compmodel)::getEnv() {
+    return compL.getEnv();
 }
 
-void FV3_(compmodel)::printconfig()
-{
+void FV3_(compmodel)::printconfig() {
     /*
   std::fprintf(stderr, "*** compmodel config ***\n");
   std::fprintf(stderr, "Fs=%f[Hz]\n",currentfs);

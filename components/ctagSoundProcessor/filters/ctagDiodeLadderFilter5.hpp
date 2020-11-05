@@ -42,17 +42,24 @@ Adapted by R. Manzke from Csound diode_ladder C versions by Steven Yi
 
 #include "ctagFilterBase.hpp"
 
-namespace CTAG::SP::HELPERS{
+namespace CTAG::SP::HELPERS {
     class ctagDiodeLadderFilter5 : public ctagFilterBase {
     public:
         virtual void SetCutoff(float cutoff) override;
+
         virtual void SetResonance(float resonance) override;
+
         virtual void SetSampleRate(float fs) override;
+
         virtual float Process(float in) override;
+
         virtual void SetGain(float gain) override;
+
         virtual void Init() override;
+
     private:
         void calcLowShelveBoost();
+
         float kval_ = 1.f;
         float a[4] = {0.f};
         float z[4] = {0.f};

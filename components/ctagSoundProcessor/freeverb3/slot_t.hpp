@@ -18,25 +18,37 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-class _FV3_(slot)
-{
- public:
-  _FV3_(slot)();
-  virtual _FV3_(~slot)();
-  void alloc(int32_t nsize, int32_t nch);
-  _fv3_float_t * c(int32_t nch);
-  void free();
-  void mute();
-  void mute(int32_t limit);
-  void mute(int32_t offset, int32_t limit);
-  int32_t getsize(){ return size; }
-  int32_t getch(){ return ch; }
-  _fv3_float_t ** getArray();
-  _fv3_float_t *L, *R;
+class _FV3_(slot) {
+public:
+    _FV3_(slot)();
 
- private:
-  _FV3_(slot)(const _FV3_(slot)& x);
-  _FV3_(slot)& operator=(const _FV3_(slot)& x);
-  int32_t size, ch;
-  _fv3_float_t ** data;
+    virtual _FV3_(~slot)();
+
+    void alloc(int32_t nsize, int32_t nch);
+
+    _fv3_float_t *c(int32_t nch);
+
+    void free();
+
+    void mute();
+
+    void mute(int32_t limit);
+
+    void mute(int32_t offset, int32_t limit);
+
+    int32_t getsize() { return size; }
+
+    int32_t getch() { return ch; }
+
+    _fv3_float_t **getArray();
+
+    _fv3_float_t *L, *R;
+
+private:
+    _FV3_(slot)(const _FV3_(slot) &x);
+
+    _FV3_(slot) &operator=(const _FV3_(slot) &x);
+
+    int32_t size, ch;
+    _fv3_float_t **data;
 };

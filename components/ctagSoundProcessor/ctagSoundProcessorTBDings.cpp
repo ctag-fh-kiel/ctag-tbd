@@ -37,9 +37,9 @@ using namespace CTAG::SP;
   }
 
 ctagSoundProcessorTBDings::ctagSoundProcessorTBDings() {
-    setIsStereo();
+    knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
-    model->LoadPreset(0);
+    LoadPreset(0);
 
     //ESP_LOGE("Rings", "Free mem %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
     reverb_buffer = (uint16_t *) heap_caps_malloc(32768 * sizeof(uint16_t),
@@ -63,7 +63,7 @@ void IRAM_ATTR ctagSoundProcessorTBDings::Process(const ProcessData &data) {
     updateParams(data);
 
     bool isEaster = easter;
-    if(trig_easter != -1){
+    if (trig_easter != -1) {
         isEaster = data.trig[trig_easter] != 1;
     }
 
@@ -93,36 +93,36 @@ void IRAM_ATTR ctagSoundProcessorTBDings::Process(const ProcessData &data) {
 
 
 void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
-    if(cv_reson_model != -1){
-        resonatorModel = (rings::ResonatorModel) ((int)(floorf(data.cv[cv_reson_model] * 7.f)) % 6);
-    }else{
+    if (cv_reson_model != -1) {
+        resonatorModel = (rings::ResonatorModel) ((int) (floorf(data.cv[cv_reson_model] * 7.f)) % 6);
+    } else {
         resonatorModel = (rings::ResonatorModel) ((reson_model) % 6);
     }
 
     // ad envelope
     float fAttack = eg_attack / 4095.f * 5.f;
-    if(cv_eg_attack != -1){
+    if (cv_eg_attack != -1) {
         fAttack = fabsf(data.cv[cv_eg_attack]) * 5.f;
     }
     paramAD.SetAttack(fAttack);
 
     float fDecay = eg_decay / 4095.f * 5.f;
-    if(cv_eg_decay != -1){
+    if (cv_eg_decay != -1) {
         fDecay = fabsf(data.cv[cv_eg_decay]) * 5.f;
     }
     paramAD.SetDecay(fDecay);
 
     bool triggerAD = eg_trigger;
-    if(trig_eg_trigger != -1){
+    if (trig_eg_trigger != -1) {
         triggerAD = data.trig[trig_eg_trigger] != 1;
     }
-    if(triggerAD && !eg_pre_trigger){
+    if (triggerAD && !eg_pre_trigger) {
         paramAD.Trigger();
     }
     eg_pre_trigger = triggerAD;
 
     bool loopAD = eg_loop;
-    if(trig_eg_loop != -1){
+    if (trig_eg_loop != -1) {
         loopAD = data.trig[trig_eg_loop] != 1;
     }
     paramAD.SetLoop(loopAD);
@@ -132,28 +132,28 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
     patch.brightness = brightness / 4095.f;
     if (cv_mod_brightness != -1) {
         patch.brightness += data.cv[cv_mod_brightness] * mod_brightness / 4095.f;
-    }else{
+    } else {
         patch.brightness += fAD * mod_brightness / 4095.f;
     }
     CONSTRAIN(patch.brightness, 0.f, 1.f);
     patch.damping = damping / 4095.f;
     if (cv_mod_damping != -1) {
         patch.damping += data.cv[cv_mod_damping] * mod_damping / 4095.f;
-    }else{
+    } else {
         patch.damping += fAD * mod_damping / 4095.f;
     }
     CONSTRAIN(patch.damping, 0.f, 1.f);
     patch.position = position / 4095.f;
     if (cv_mod_position != -1) {
         patch.position += data.cv[cv_mod_position] * mod_position / 4095.f;
-    }else{
+    } else {
         patch.position += fAD * mod_position / 4095.f;
     }
     CONSTRAIN(patch.position, 0.f, 1.f);
     patch.structure = structure / 4095.f;
     if (cv_mod_structure != -1) {
         patch.structure += data.cv[cv_mod_structure] * mod_structure / 4095.f;
-    }else{
+    } else {
         patch.structure += fAD * mod_structure / 4095.f;
     }
     CONSTRAIN(patch.structure, 0.f, 1.f);
@@ -166,7 +166,7 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
 
     if (cv_mod_frequency != -1) {
         performance_state.fm = data.cv[cv_mod_frequency] * mod_frequency / 4095.f * 48.f;
-    }else {
+    } else {
         performance_state.fm = fAD * mod_frequency / 4095.f * 48.f;
     }
     CONSTRAIN(performance_state.fm, -48.f, 48.f);
@@ -187,8 +187,8 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
     strum = false;
 
     performance_state.chord = chords;//(int) (patch.structure * (rings::kNumChords - 1));
-    if(cv_chords != -1){
-        performance_state.chord = (int)floorf(data.cv[cv_chords] * 11.f);
+    if (cv_chords != -1) {
+        performance_state.chord = (int) floorf(data.cv[cv_chords] * 11.f);
         CONSTRAIN(performance_state.chord, 0, 10);
     }
 
@@ -200,282 +200,51 @@ ctagSoundProcessorTBDings::~ctagSoundProcessorTBDings() {
     heap_caps_free(reverb_buffer);
 }
 
-const char *ctagSoundProcessorTBDings::GetCStrID() const {
-    return id.c_str();
+void ctagSoundProcessorTBDings::knowYourself() {
+    // sectionCpp0
+    pMapPar.emplace("reson_model", [&](const int val) { reson_model = val; });
+    pMapCv.emplace("reson_model", [&](const int val) { cv_reson_model = val; });
+    pMapPar.emplace("frequency", [&](const int val) { frequency = val; });
+    pMapCv.emplace("frequency", [&](const int val) { cv_frequency = val; });
+    pMapPar.emplace("polyphony", [&](const int val) { polyphony = val; });
+    pMapCv.emplace("polyphony", [&](const int val) { cv_polyphony = val; });
+    pMapPar.emplace("structure", [&](const int val) { structure = val; });
+    pMapCv.emplace("structure", [&](const int val) { cv_structure = val; });
+    pMapPar.emplace("brightness", [&](const int val) { brightness = val; });
+    pMapCv.emplace("brightness", [&](const int val) { cv_brightness = val; });
+    pMapPar.emplace("damping", [&](const int val) { damping = val; });
+    pMapCv.emplace("damping", [&](const int val) { cv_damping = val; });
+    pMapPar.emplace("position", [&](const int val) { position = val; });
+    pMapCv.emplace("position", [&](const int val) { cv_position = val; });
+    pMapPar.emplace("chords", [&](const int val) { chords = val; });
+    pMapCv.emplace("chords", [&](const int val) { cv_chords = val; });
+    pMapPar.emplace("easter", [&](const int val) { easter = val; });
+    pMapTrig.emplace("easter", [&](const int val) { trig_easter = val; });
+    pMapPar.emplace("ex_int", [&](const int val) { ex_int = val; });
+    pMapTrig.emplace("ex_int", [&](const int val) { trig_ex_int = val; });
+    pMapPar.emplace("strum_int", [&](const int val) { strum_int = val; });
+    pMapTrig.emplace("strum_int", [&](const int val) { trig_strum_int = val; });
+    pMapPar.emplace("note_int", [&](const int val) { note_int = val; });
+    pMapTrig.emplace("note_int", [&](const int val) { trig_note_int = val; });
+    pMapPar.emplace("eg_trigger", [&](const int val) { eg_trigger = val; });
+    pMapTrig.emplace("eg_trigger", [&](const int val) { trig_eg_trigger = val; });
+    pMapPar.emplace("eg_loop", [&](const int val) { eg_loop = val; });
+    pMapTrig.emplace("eg_loop", [&](const int val) { trig_eg_loop = val; });
+    pMapPar.emplace("eg_attack", [&](const int val) { eg_attack = val; });
+    pMapCv.emplace("eg_attack", [&](const int val) { cv_eg_attack = val; });
+    pMapPar.emplace("eg_decay", [&](const int val) { eg_decay = val; });
+    pMapCv.emplace("eg_decay", [&](const int val) { cv_eg_decay = val; });
+    pMapPar.emplace("mod_brightness", [&](const int val) { mod_brightness = val; });
+    pMapCv.emplace("mod_brightness", [&](const int val) { cv_mod_brightness = val; });
+    pMapPar.emplace("mod_frequency", [&](const int val) { mod_frequency = val; });
+    pMapCv.emplace("mod_frequency", [&](const int val) { cv_mod_frequency = val; });
+    pMapPar.emplace("mod_damping", [&](const int val) { mod_damping = val; });
+    pMapCv.emplace("mod_damping", [&](const int val) { cv_mod_damping = val; });
+    pMapPar.emplace("mod_structure", [&](const int val) { mod_structure = val; });
+    pMapCv.emplace("mod_structure", [&](const int val) { cv_mod_structure = val; });
+    pMapPar.emplace("mod_position", [&](const int val) { mod_position = val; });
+    pMapCv.emplace("mod_position", [&](const int val) { cv_mod_position = val; });
+    isStereo = true;
+    id = "TBDings";
+    // sectionCpp0
 }
-
-
-void ctagSoundProcessorTBDings::setParamValueInternal(const string &id, const string &key, const int val) {
-// autogenerated code here
-// sectionCpp0
-if(id.compare("reson_model") == 0){
-	if(key.compare("current") == 0){
-		reson_model = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_reson_model = val;
-	}
-	return;
-}
-if(id.compare("frequency") == 0){
-	if(key.compare("current") == 0){
-		frequency = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_frequency = val;
-	}
-	return;
-}
-if(id.compare("polyphony") == 0){
-	if(key.compare("current") == 0){
-		polyphony = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_polyphony = val;
-	}
-	return;
-}
-if(id.compare("structure") == 0){
-	if(key.compare("current") == 0){
-		structure = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_structure = val;
-	}
-	return;
-}
-if(id.compare("brightness") == 0){
-	if(key.compare("current") == 0){
-		brightness = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_brightness = val;
-	}
-	return;
-}
-if(id.compare("damping") == 0){
-	if(key.compare("current") == 0){
-		damping = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_damping = val;
-	}
-	return;
-}
-if(id.compare("position") == 0){
-	if(key.compare("current") == 0){
-		position = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_position = val;
-	}
-	return;
-}
-if(id.compare("chords") == 0){
-	if(key.compare("current") == 0){
-		chords = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_chords = val;
-	}
-	return;
-}
-if(id.compare("easter") == 0){
-	if(key.compare("current") == 0){
-		easter = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_easter = val;
-	}
-	return;
-}
-if(id.compare("ex_int") == 0){
-	if(key.compare("current") == 0){
-		ex_int = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_ex_int = val;
-	}
-	return;
-}
-if(id.compare("strum_int") == 0){
-	if(key.compare("current") == 0){
-		strum_int = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_strum_int = val;
-	}
-	return;
-}
-if(id.compare("note_int") == 0){
-	if(key.compare("current") == 0){
-		note_int = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_note_int = val;
-	}
-	return;
-}
-if(id.compare("eg_trigger") == 0){
-	if(key.compare("current") == 0){
-		eg_trigger = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_eg_trigger = val;
-	}
-	return;
-}
-if(id.compare("eg_loop") == 0){
-	if(key.compare("current") == 0){
-		eg_loop = val;
-		return;
-	}else if(key.compare("trig") == 0){
-		if(val >= -1 && val <= 1)
-			trig_eg_loop = val;
-	}
-	return;
-}
-if(id.compare("eg_attack") == 0){
-	if(key.compare("current") == 0){
-		eg_attack = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_eg_attack = val;
-	}
-	return;
-}
-if(id.compare("eg_decay") == 0){
-	if(key.compare("current") == 0){
-		eg_decay = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_eg_decay = val;
-	}
-	return;
-}
-if(id.compare("mod_brightness") == 0){
-	if(key.compare("current") == 0){
-		mod_brightness = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_mod_brightness = val;
-	}
-	return;
-}
-if(id.compare("mod_frequency") == 0){
-	if(key.compare("current") == 0){
-		mod_frequency = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_mod_frequency = val;
-	}
-	return;
-}
-if(id.compare("mod_damping") == 0){
-	if(key.compare("current") == 0){
-		mod_damping = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_mod_damping = val;
-	}
-	return;
-}
-if(id.compare("mod_structure") == 0){
-	if(key.compare("current") == 0){
-		mod_structure = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_mod_structure = val;
-	}
-	return;
-}
-if(id.compare("mod_position") == 0){
-	if(key.compare("current") == 0){
-		mod_position = val;
-		return;
-	}else if(key.compare("cv") == 0){
-		if(val >= -1 && val <= 3)
-			cv_mod_position = val;
-	}
-	return;
-}
-// sectionCpp0
-
-
-
-
-
-
-
-
-}
-
-void ctagSoundProcessorTBDings::loadPresetInternal() {
-// autogenerated code here
-// sectionCpp1
-reson_model = model->GetParamValue("reson_model", "current");
-cv_reson_model = model->GetParamValue("reson_model", "cv");
-frequency = model->GetParamValue("frequency", "current");
-cv_frequency = model->GetParamValue("frequency", "cv");
-polyphony = model->GetParamValue("polyphony", "current");
-cv_polyphony = model->GetParamValue("polyphony", "cv");
-structure = model->GetParamValue("structure", "current");
-cv_structure = model->GetParamValue("structure", "cv");
-brightness = model->GetParamValue("brightness", "current");
-cv_brightness = model->GetParamValue("brightness", "cv");
-damping = model->GetParamValue("damping", "current");
-cv_damping = model->GetParamValue("damping", "cv");
-position = model->GetParamValue("position", "current");
-cv_position = model->GetParamValue("position", "cv");
-chords = model->GetParamValue("chords", "current");
-cv_chords = model->GetParamValue("chords", "cv");
-easter = model->GetParamValue("easter", "current");
-trig_easter = model->GetParamValue("easter", "trig");
-ex_int = model->GetParamValue("ex_int", "current");
-trig_ex_int = model->GetParamValue("ex_int", "trig");
-strum_int = model->GetParamValue("strum_int", "current");
-trig_strum_int = model->GetParamValue("strum_int", "trig");
-note_int = model->GetParamValue("note_int", "current");
-trig_note_int = model->GetParamValue("note_int", "trig");
-eg_trigger = model->GetParamValue("eg_trigger", "current");
-trig_eg_trigger = model->GetParamValue("eg_trigger", "trig");
-eg_loop = model->GetParamValue("eg_loop", "current");
-trig_eg_loop = model->GetParamValue("eg_loop", "trig");
-eg_attack = model->GetParamValue("eg_attack", "current");
-cv_eg_attack = model->GetParamValue("eg_attack", "cv");
-eg_decay = model->GetParamValue("eg_decay", "current");
-cv_eg_decay = model->GetParamValue("eg_decay", "cv");
-mod_brightness = model->GetParamValue("mod_brightness", "current");
-cv_mod_brightness = model->GetParamValue("mod_brightness", "cv");
-mod_frequency = model->GetParamValue("mod_frequency", "current");
-cv_mod_frequency = model->GetParamValue("mod_frequency", "cv");
-mod_damping = model->GetParamValue("mod_damping", "current");
-cv_mod_damping = model->GetParamValue("mod_damping", "cv");
-mod_structure = model->GetParamValue("mod_structure", "current");
-cv_mod_structure = model->GetParamValue("mod_structure", "cv");
-mod_position = model->GetParamValue("mod_position", "current");
-cv_mod_position = model->GetParamValue("mod_position", "cv");
-// sectionCpp1
-
-
-}
-

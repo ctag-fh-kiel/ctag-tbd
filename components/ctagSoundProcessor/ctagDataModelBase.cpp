@@ -34,11 +34,11 @@ respective component folders / files if different from this license.
 
 #define MB_BUF_SZ 4096
 
-void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn){
+void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
     ESP_LOGD("JSON", "read buffer");
     //FILE*
     fp = fopen(fn.c_str(), "r");
-    if(fp == NULL){
+    if (fp == NULL) {
         ESP_LOGE("JSON", "could not open file %s", fn.c_str());
         return;
     }
@@ -53,7 +53,7 @@ void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn){
 void CTAG::SP::ctagDataModelBase::storeJSON(Document &d, const string &fn) {
     //FILE*
     fp = fopen(fn.c_str(), "w"); // non-Windows use "w"
-    if(fp == NULL){
+    if (fp == NULL) {
         ESP_LOGE("JSON", "could not open file %s", fn.c_str());
         return;
     }
@@ -73,8 +73,8 @@ void CTAG::SP::ctagDataModelBase::printJSON(Value &v) {
 }
 
 CTAG::SP::ctagDataModelBase::ctagDataModelBase() {
-    buffer = (char*) heap_caps_malloc(MB_BUF_SZ, MALLOC_CAP_SPIRAM);
-    if(buffer == nullptr) ESP_LOGE("Model Base", "Fatal: Out of mem!");
+    buffer = (char *) heap_caps_malloc(MB_BUF_SZ, MALLOC_CAP_SPIRAM);
+    if (buffer == nullptr) ESP_LOGE("Model Base", "Fatal: Out of mem!");
 }
 
 CTAG::SP::ctagDataModelBase::~ctagDataModelBase() {

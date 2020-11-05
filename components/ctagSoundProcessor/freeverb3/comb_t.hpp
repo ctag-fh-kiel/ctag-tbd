@@ -22,149 +22,194 @@
 /**
  * A feedback delayed comb filter with LPF in original freeverb.
  */
-class _FV3_(comb)
-{
+class _FV3_(comb) {
 public:
-  _FV3_(comb)();
-  _FV3_(~comb)();
-  void free();
+    _FV3_(comb)();
 
-  /**
-   * Set delay size. This preserves previous data.
-   * @param[in] size The delay size.
-   */
-  void setsize(int32_t size);
-  void setsize(float *buf, const uint32_t size);
-  int32_t getsize();
-  void mute();
-  void          setdamp(_fv3_float_t val);
-  _fv3_float_t  getdamp();
-  inline void   setfeedback(_fv3_float_t val){ feedback = val; }
-  _fv3_float_t  getfeedback();
+    _FV3_(~comb)();
 
-  /**
-   * A feedback delayed comb filter with internal LPF.
-   * The original feedback comb filter's output is taken from the head of the delayline,
-   * but this filter, which is used in many reverb algorithms takes its output from
-   * the last of the delayline.
-   * @param[in] input The input signal.
-   */
-  inline _fv3_float_t process(_fv3_float_t input)
-  {
-    if(bufsize == 0) return input;
-    return _process(input);
-  }
-  inline _fv3_float_t operator()(_fv3_float_t input){return process(input);}
-  inline _fv3_float_t _process(_fv3_float_t input)
-  {
-    _fv3_float_t output = buffer[bufidx];
-    UNDENORMAL(output);
-    filterstore = (output * damp2) + (filterstore * damp1);
-    buffer[bufidx] = input + (filterstore * feedback);
-    bufidx ++; if(bufidx >= bufsize) bufidx = 0;
-    return output;
-  }
+    void free();
 
-  /**
-   * A simple feedforward delayed comb filter.
-   * @param[in] input The input signal.
-   */
-  inline _fv3_float_t process_ff(_fv3_float_t input)
-  {
-    if(bufsize == 0) return input;
-    return _process_ff(input);
-  }
-  inline _fv3_float_t process_ff(_fv3_float_t input, _fv3_float_t fb){ setfeedback(fb); return process_ff(input); }
-  inline _fv3_float_t _process_ff(_fv3_float_t input)
-  {
-    _fv3_float_t output = buffer[bufidx] * feedback + input;
-    buffer[bufidx] = input;
-    bufidx ++; if(bufidx >= bufsize) bufidx = 0;
-    UNDENORMAL(output);
-    return output;
-  }
-  inline _fv3_float_t _process_ff(_fv3_float_t input, _fv3_float_t fb){ setfeedback(fb); return _process_ff(input); }
+    /**
+     * Set delay size. This preserves previous data.
+     * @param[in] size The delay size.
+     */
+    void setsize(int32_t size);
 
-  /**
-   * A simple feedback delayed comb filter.
-   * @param[in] input The input signal.
-   */
-  inline _fv3_float_t process_fb(_fv3_float_t input)
-  {
-    if(bufsize == 0) return input;
-    return _process_fb(input);
-  }
-  inline _fv3_float_t process_fb(_fv3_float_t input, _fv3_float_t fb){ setfeedback(fb); return process_fb(input); }
-  inline _fv3_float_t _process_fb(_fv3_float_t input)
-  {
-    input = buffer[bufidx] * feedback + input;
-    buffer[bufidx] = input;
-    bufidx ++; if(bufidx >= bufsize) bufidx = 0;
-    UNDENORMAL(input);
-    return input;
-  }
-  inline _fv3_float_t _process_fb(_fv3_float_t input, _fv3_float_t fb){ setfeedback(fb); return _process_fb(input); }
+    void setsize(float *buf, const uint32_t size);
+
+    int32_t getsize();
+
+    void mute();
+
+    void setdamp(_fv3_float_t val);
+
+    _fv3_float_t getdamp();
+
+    inline void setfeedback(_fv3_float_t val) { feedback = val; }
+
+    _fv3_float_t getfeedback();
+
+    /**
+     * A feedback delayed comb filter with internal LPF.
+     * The original feedback comb filter's output is taken from the head of the delayline,
+     * but this filter, which is used in many reverb algorithms takes its output from
+     * the last of the delayline.
+     * @param[in] input The input signal.
+     */
+    inline _fv3_float_t process(_fv3_float_t input) {
+        if (bufsize == 0) return input;
+        return _process(input);
+    }
+
+    inline _fv3_float_t operator()(_fv3_float_t input) { return process(input); }
+
+    inline _fv3_float_t _process(_fv3_float_t input) {
+        _fv3_float_t output = buffer[bufidx];
+        UNDENORMAL(output);
+        filterstore = (output * damp2) + (filterstore * damp1);
+        buffer[bufidx] = input + (filterstore * feedback);
+        bufidx++;
+        if (bufidx >= bufsize) bufidx = 0;
+        return output;
+    }
+
+    /**
+     * A simple feedforward delayed comb filter.
+     * @param[in] input The input signal.
+     */
+    inline _fv3_float_t process_ff(_fv3_float_t input) {
+        if (bufsize == 0) return input;
+        return _process_ff(input);
+    }
+
+    inline _fv3_float_t process_ff(_fv3_float_t input, _fv3_float_t fb) {
+        setfeedback(fb);
+        return process_ff(input);
+    }
+
+    inline _fv3_float_t _process_ff(_fv3_float_t input) {
+        _fv3_float_t output = buffer[bufidx] * feedback + input;
+        buffer[bufidx] = input;
+        bufidx++;
+        if (bufidx >= bufsize) bufidx = 0;
+        UNDENORMAL(output);
+        return output;
+    }
+
+    inline _fv3_float_t _process_ff(_fv3_float_t input, _fv3_float_t fb) {
+        setfeedback(fb);
+        return _process_ff(input);
+    }
+
+    /**
+     * A simple feedback delayed comb filter.
+     * @param[in] input The input signal.
+     */
+    inline _fv3_float_t process_fb(_fv3_float_t input) {
+        if (bufsize == 0) return input;
+        return _process_fb(input);
+    }
+
+    inline _fv3_float_t process_fb(_fv3_float_t input, _fv3_float_t fb) {
+        setfeedback(fb);
+        return process_fb(input);
+    }
+
+    inline _fv3_float_t _process_fb(_fv3_float_t input) {
+        input = buffer[bufidx] * feedback + input;
+        buffer[bufidx] = input;
+        bufidx++;
+        if (bufidx >= bufsize) bufidx = 0;
+        UNDENORMAL(input);
+        return input;
+    }
+
+    inline _fv3_float_t _process_fb(_fv3_float_t input, _fv3_float_t fb) {
+        setfeedback(fb);
+        return _process_fb(input);
+    }
 
 private:
-  _FV3_(comb)(const _FV3_(comb)& x);
-  _FV3_(comb)& operator=(const _FV3_(comb)& x);
-  _fv3_float_t *buffer, feedback, filterstore, damp1, damp2;
-  int32_t bufsize, bufidx;
+    _FV3_(comb)(const _FV3_(comb) &x);
+
+    _FV3_(comb) &operator=(const _FV3_(comb) &x);
+
+    _fv3_float_t *buffer, feedback, filterstore, damp1, damp2;
+    int32_t bufsize, bufidx;
 };
 
 /**
  * A modulated feedback delayed comb filter with LPF.
  */
-class _FV3_(combm)
-{
+class _FV3_(combm) {
 public:
-  _FV3_(combm)();
-  _FV3_(~combm)();
-  void free();
+    _FV3_(combm)();
 
-  void setsize(int32_t size);
-  void setsize(int32_t size, int32_t modsize);
-  void setsize(float* buf, const uint32_t size, int32_t modsize);
-  int32_t getsize();
-  int32_t getdelaysize();
-  int32_t getmodulationsize();
-  void mute();
-  void          setdamp(_fv3_float_t val);
-  _fv3_float_t	getdamp();
-  void	        setfeedback(_fv3_float_t val);
-  _fv3_float_t	getfeedback();
-  
-  inline _fv3_float_t process(_fv3_float_t input){return process(input, 0);}
-  inline _fv3_float_t operator()(_fv3_float_t input){return process(input);}
+    _FV3_(~combm)();
 
-  inline _fv3_float_t process(_fv3_float_t input, _fv3_float_t modulation)
-  {
-    if(bufsize == 0) return input;
-    modulation = (modulation + 1.) * modulationsize_f;
-    _fv3_float_t floor_mod = std::floor(modulation); // >= 0
-    _fv3_float_t m_frac = 1. - (modulation - floor_mod); // >= 0
-    
-    int32_t readidx_a = readidx - (int32_t)floor_mod; if(readidx_a < 0) readidx_a += bufsize;
-    int32_t readidx_b = readidx_a - 1; if(readidx_b < 0) readidx_b += bufsize;
-    
-    z_1 = buffer[readidx_b] + m_frac * (buffer[readidx_a] - z_1);
-    UNDENORMAL(z_1);
-    
-    readidx ++; if(readidx >= bufsize) readidx = 0;
+    void free();
 
-    filterstore = z_1 * damp2 + filterstore * damp1;
-    UNDENORMAL(filterstore);
+    void setsize(int32_t size);
 
-    buffer[writeidx] = input + filterstore * feedback;
-    writeidx ++; if(writeidx >= bufsize) writeidx = 0;
-    
-    return z_1;
-  }
-  inline _fv3_float_t operator()(_fv3_float_t input, _fv3_float_t modulation){return process(input,modulation);}
+    void setsize(int32_t size, int32_t modsize);
+
+    void setsize(float *buf, const uint32_t size, int32_t modsize);
+
+    int32_t getsize();
+
+    int32_t getdelaysize();
+
+    int32_t getmodulationsize();
+
+    void mute();
+
+    void setdamp(_fv3_float_t val);
+
+    _fv3_float_t getdamp();
+
+    void setfeedback(_fv3_float_t val);
+
+    _fv3_float_t getfeedback();
+
+    inline _fv3_float_t process(_fv3_float_t input) { return process(input, 0); }
+
+    inline _fv3_float_t operator()(_fv3_float_t input) { return process(input); }
+
+    inline _fv3_float_t process(_fv3_float_t input, _fv3_float_t modulation) {
+        if (bufsize == 0) return input;
+        modulation = (modulation + 1.) * modulationsize_f;
+        _fv3_float_t floor_mod = std::floor(modulation); // >= 0
+        _fv3_float_t m_frac = 1. - (modulation - floor_mod); // >= 0
+
+        int32_t readidx_a = readidx - (int32_t) floor_mod;
+        if (readidx_a < 0) readidx_a += bufsize;
+        int32_t readidx_b = readidx_a - 1;
+        if (readidx_b < 0) readidx_b += bufsize;
+
+        z_1 = buffer[readidx_b] + m_frac * (buffer[readidx_a] - z_1);
+        UNDENORMAL(z_1);
+
+        readidx++;
+        if (readidx >= bufsize) readidx = 0;
+
+        filterstore = z_1 * damp2 + filterstore * damp1;
+        UNDENORMAL(filterstore);
+
+        buffer[writeidx] = input + filterstore * feedback;
+        writeidx++;
+        if (writeidx >= bufsize) writeidx = 0;
+
+        return z_1;
+    }
+
+    inline _fv3_float_t operator()(_fv3_float_t input, _fv3_float_t modulation) { return process(input, modulation); }
 
 private:
-  _FV3_(combm)(const _FV3_(combm)& x);
-  _FV3_(combm)& operator=(const _FV3_(combm)& x);
-  _fv3_float_t *buffer, feedback, filterstore, damp1, damp2, z_1, modulationsize_f;
-  int32_t bufsize, readidx, writeidx, delaysize, modulationsize;
+    _FV3_(combm)(const _FV3_(combm) &x);
+
+    _FV3_(combm) &operator=(const _FV3_(combm) &x);
+
+    _fv3_float_t *buffer, feedback, filterstore, damp1, damp2, z_1, modulationsize_f;
+    int32_t bufsize, readidx, writeidx, delaysize, modulationsize;
 };

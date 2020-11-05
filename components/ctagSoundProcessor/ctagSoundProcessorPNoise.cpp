@@ -27,63 +27,34 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorPNoise::ctagSoundProcessorPNoise()
-{
-    isStereo = false;
-    // acquire model from spiffs json, model auto loads last active preset
+ctagSoundProcessorPNoise::ctagSoundProcessorPNoise() {
+    knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
-    // take preset values from model
-    loadPresetInternal();
+    LoadPreset(0);
 }
 
-void ctagSoundProcessorPNoise::Process(const ProcessData &data){
-    fFactor = factor / (float)1023.f;
-    if(cvControl != -1){
-        fFactor = data.cv[cvControl];
+void ctagSoundProcessorPNoise::Process(const ProcessData &data) {
+    fFactor = factor / (float) 1023.f;
+    if (cv_factor != -1) {
+        fFactor = data.cv[cv_factor];
         fFactor *= fFactor;
     }
-    for(uint32_t i = 0;i<bufSz; i++){
-        data.buf[i*2 + processCh] = noiseGen.Process() * fFactor * fFactor;
-    }
-}
-
-ctagSoundProcessorPNoise::~ctagSoundProcessorPNoise(){
-}
-
-const char * ctagSoundProcessorPNoise::GetCStrID() const{
-    return id.c_str();
-}
-
-void ctagSoundProcessorPNoise::setParamValueInternal(const string &id, const string &key, const int val) {
-    ESP_LOGW("Monomult", "set param val id %s key %s val %d", id.c_str(), key.c_str(), val);
-    if(id.compare("factor") == 0){
-        if(key.compare("current") == 0){
-            factor = val;
-            return;
-        }
-        if(key.compare("cv") == 0){
-            if(val >= -1 && val <= 3)
-                cvControl = val;
-            return;
+    bool ena = enable;
+    if(trig_enable != -1) ena = data.trig[trig_enable];
+    if(ena){
+        for (uint32_t i = 0; i < bufSz; i++) {
+            data.buf[i * 2 + processCh] = noiseGen.Process() * fFactor * fFactor;
         }
     }
-    if(id.compare("enable") == 0){
-        if(key.compare("current") == 0){
-            enable = val;
-            return;
-        }
-        if(key.compare("trig") == 0){
-            if(val >= -1 && val <= 1)
-                trigControl = val;
-            return;
-        }
-    }
-
 }
 
-void ctagSoundProcessorPNoise::loadPresetInternal() {
-    factor = model->GetParamValue("factor", "current");
-    enable = model->GetParamValue("enable", "current");
-    cvControl = model->GetParamValue("factor", "cv");
-    trigControl = model->GetParamValue("enable", "trig");
+void ctagSoundProcessorPNoise::knowYourself() {
+    // sectionCpp0
+    pMapPar.emplace("enable", [&](const int val) { enable = val; });
+    pMapTrig.emplace("enable", [&](const int val) { trig_enable = val; });
+    pMapPar.emplace("factor", [&](const int val) { factor = val; });
+    pMapCv.emplace("factor", [&](const int val) { cv_factor = val; });
+    isStereo = false;
+    id = "PNoise";
+    // sectionCpp0
 }

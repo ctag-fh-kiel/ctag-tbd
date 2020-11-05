@@ -31,16 +31,14 @@ namespace CTAG::SP::HELPERS {
     class ctagGNoiseGen {
     public:
         ctagGNoiseGen() :
-            wnoise(815)
-        {
+                wnoise(815) {
             SetPrecision(32);
         }
 
-        void SetPrecision(int32_t prec)
-        {
+        void SetPrecision(int32_t prec) {
             int32_t q = prec;
-            float c1 =(1 << q) - 1;
-            gwn3_c2 = ((int32_t)(c1 / 3)) + 1;
+            float c1 = (1 << q) - 1;
+            gwn3_c2 = ((int32_t) (c1 / 3)) + 1;
             gwn3_c3 = 1. / c1;
         }
 
@@ -55,7 +53,8 @@ namespace CTAG::SP::HELPERS {
             // Note: the random() function used is the standard random function from Delphi/Pascal that produces *linear*
             // distributed numbers from 0 to parameter-1, the equivalent C function is probably rand().
             float random = wnoise.Process();
-            return (2. * ((random * gwn3_c2) + (random * gwn3_c2) + (random * gwn3_c2)) - 3. * (gwn3_c2 - 1.)) * gwn3_c3;
+            return (2. * ((random * gwn3_c2) + (random * gwn3_c2) + (random * gwn3_c2)) - 3. * (gwn3_c2 - 1.)) *
+                   gwn3_c3;
         }
 
     private:

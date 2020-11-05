@@ -84,12 +84,12 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     DRIVERS::Codec::InitCodec();
 
     // generate linear ramp ]0,1[ squared
-    for(uint32_t i = 0; i < BUF_SZ; i++){
-        lramp[i] = (float)(i+1)/ (float)(BUF_SZ + 1);
+    for (uint32_t i = 0; i < BUF_SZ; i++) {
+        lramp[i] = (float) (i + 1) / (float) (BUF_SZ + 1);
         lramp[i] *= lramp[i];
     }
 
-    while(runAudioTask) {
+    while (runAudioTask) {
         // update data from ADCs for real-time control 
         ADC::Update();
         CAL::Calibration::MapCVData(ADC::data, cv);
@@ -191,48 +191,48 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         }
 
         // to stereo conversion
-        if(!isStereoCH0){
-            if(toStereoCH0 || toStereoCH1){
-                float sb[BUF_SZ*2];
-                memcpy(sb, fbuf, BUF_SZ*2*sizeof(float));
-                if(toStereoCH0 == 1 && toStereoCH1 == 0){ // spread CH0 to both channels
-                    for(uint32_t i=0;i<BUF_SZ;i++){
-                        fbuf[i*2] = 0.5f * sb[i*2];
-                        fbuf[i*2 + 1] = 0.5f * sb[i*2] + sb[i*2 + 1];
+        if (!isStereoCH0) {
+            if (toStereoCH0 || toStereoCH1) {
+                float sb[BUF_SZ * 2];
+                memcpy(sb, fbuf, BUF_SZ * 2 * sizeof(float));
+                if (toStereoCH0 == 1 && toStereoCH1 == 0) { // spread CH0 to both channels
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2] = 0.5f * sb[i * 2];
+                        fbuf[i * 2 + 1] = 0.5f * sb[i * 2] + sb[i * 2 + 1];
                     }
-                }else if(toStereoCH1 == 1 && toStereoCH0 == 0){ // spread CH1 to both channels
-                    for(uint32_t i=0;i<BUF_SZ;i++){
-                        fbuf[i*2] = 0.5f * sb[i*2 + 1] + sb[i*2];
-                        fbuf[i*2 + 1] = 0.5f * sb[i*2 + 1];
+                } else if (toStereoCH1 == 1 && toStereoCH0 == 0) { // spread CH1 to both channels
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2] = 0.5f * sb[i * 2 + 1] + sb[i * 2];
+                        fbuf[i * 2 + 1] = 0.5f * sb[i * 2 + 1];
                     }
-                }else if(toStereoCH0 == 1 && toStereoCH1 == 1){ // spread CH0 + CH1 to both channels
-                    for(uint32_t i=0;i<BUF_SZ;i++){
-                        fbuf[i*2] = fbuf[i*2 + 1] = 0.5f * (sb[i*2] + sb[i*2 + 1]);
+                } else if (toStereoCH0 == 1 && toStereoCH1 == 1) { // spread CH0 + CH1 to both channels
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2] = fbuf[i * 2 + 1] = 0.5f * (sb[i * 2] + sb[i * 2 + 1]);
                     }
-                }else if(toStereoCH0 == 2 && toStereoCH1 == 2){ // swap channels
-                    for(uint32_t i=0;i<BUF_SZ;i++){
-                        fbuf[i*2] = sb[i*2 + 1];
-                        fbuf[i*2 + 1] = sb[i*2];
+                } else if (toStereoCH0 == 2 && toStereoCH1 == 2) { // swap channels
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2] = sb[i * 2 + 1];
+                        fbuf[i * 2 + 1] = sb[i * 2];
                     }
-                }else if(toStereoCH0 == 2 && toStereoCH1 == 0){ // mix CH0 with CH1 on CH1
-                    for(uint32_t i=0;i<BUF_SZ;i++){
-                        fbuf[i*2] = 0.f;
-                        fbuf[i*2 + 1] += sb[i*2];
+                } else if (toStereoCH0 == 2 && toStereoCH1 == 0) { // mix CH0 with CH1 on CH1
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2] = 0.f;
+                        fbuf[i * 2 + 1] += sb[i * 2];
                     }
-                }else if(toStereoCH0 == 0 && toStereoCH1 == 2){ // mix CH1 with CH0 on CH0
-                    for(uint32_t i=0;i<BUF_SZ;i++){
-                        fbuf[i*2] += sb[i*2 + 1];
-                        fbuf[i*2 + 1] = 0.f;
+                } else if (toStereoCH0 == 0 && toStereoCH1 == 2) { // mix CH1 with CH0 on CH0
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2] += sb[i * 2 + 1];
+                        fbuf[i * 2 + 1] = 0.f;
                     }
-                }else if(toStereoCH0 == 2 && toStereoCH1 == 1){ // move CH0 to CH1, spread CH1 to both
-                    for(uint32_t i=0;i<BUF_SZ;i++){
-                        fbuf[i*2] = 0.5f * sb[i*2 + 1];
-                        fbuf[i*2 + 1] = 0.5f * sb[i*2 + 1] + sb[i*2];
+                } else if (toStereoCH0 == 2 && toStereoCH1 == 1) { // move CH0 to CH1, spread CH1 to both
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2] = 0.5f * sb[i * 2 + 1];
+                        fbuf[i * 2 + 1] = 0.5f * sb[i * 2 + 1] + sb[i * 2];
                     }
-                }else if(toStereoCH0 == 1 && toStereoCH1 == 2){ // move CH1 to CH0, spread CH0 to both
-                    for(uint32_t i=0;i<BUF_SZ;i++){
-                        fbuf[i*2] = 0.5f * sb[i*2] + sb[i*2 + 1];
-                        fbuf[i*2 + 1] = 0.5f * sb[i*2];
+                } else if (toStereoCH0 == 1 && toStereoCH1 == 2) { // move CH1 to CH0, spread CH0 to both
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2] = 0.5f * sb[i * 2] + sb[i * 2 + 1];
+                        fbuf[i * 2 + 1] = 0.5f * sb[i * 2];
                     }
                 }
             }
@@ -243,10 +243,10 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         max = 0.f;
         for (uint32_t i = 0; i < BUF_SZ; i++) {
             // soft limiting
-            if(ch0_outputSoftClip){
+            if (ch0_outputSoftClip) {
                 fbuf[i * 2] = stmlib::SoftClip(fbuf[i * 2]);
             }
-            if(ch1_outputSoftClip){
+            if (ch1_outputSoftClip) {
                 fbuf[i * 2 + 1] = stmlib::SoftClip(fbuf[i * 2 + 1]);
             }
             if (fbuf[i * 2] > max) max = fbuf[i * 2];
@@ -427,26 +427,26 @@ void SoundProcessorManager::updateConfiguration() {
         toStereoCH0 = 0;
     } else if (model->GetConfigurationData("ch0_toStereo").compare("on") == 0) {
         toStereoCH0 = 1;
-    }else if (model->GetConfigurationData("ch0_toStereo").compare("mix") == 0) {
+    } else if (model->GetConfigurationData("ch0_toStereo").compare("mix") == 0) {
         toStereoCH0 = 2;
     }
     if (model->GetConfigurationData("ch1_toStereo").compare("off") == 0) {
         toStereoCH1 = 0;
     } else if (model->GetConfigurationData("ch1_toStereo").compare("on") == 0) {
         toStereoCH1 = 1;
-    }else if (model->GetConfigurationData("ch1_toStereo").compare("mix") == 0) {
+    } else if (model->GetConfigurationData("ch1_toStereo").compare("mix") == 0) {
         toStereoCH1 = 2;
     }
 
     // soft clipping?
     if (model->GetConfigurationData("ch0_outputSoftClip").compare("off") == 0) {
         ch0_outputSoftClip = 0;
-    }else if(model->GetConfigurationData("ch0_outputSoftClip").compare("on") == 0){
+    } else if (model->GetConfigurationData("ch0_outputSoftClip").compare("on") == 0) {
         ch0_outputSoftClip = 1;
     }
     if (model->GetConfigurationData("ch1_outputSoftClip").compare("off") == 0) {
         ch1_outputSoftClip = 0;
-    }else if(model->GetConfigurationData("ch1_outputSoftClip").compare("on") == 0){
+    } else if (model->GetConfigurationData("ch1_outputSoftClip").compare("on") == 0) {
         ch1_outputSoftClip = 1;
     }
 
@@ -474,7 +474,7 @@ void SoundProcessorManager::led_task(void *pvParams) {
 void SoundProcessorManager::KillAudioTask() {
     // stop audio Task, delete plugins
     runAudioTask = 0;
-    while(runAudioTask != 2); // wait for audio task to be dead
+    while (runAudioTask != 2); // wait for audio task to be dead
     sp[0] = nullptr;
     sp[1] = nullptr;
     vTaskDelete(ledTaskH);

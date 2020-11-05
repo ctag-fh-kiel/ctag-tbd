@@ -34,8 +34,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo)
-{
+ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo) {
     // acquire data from json files ui model and patch model
     muiFileName = string(string(SPIFFS_PATH) + "/data/sp/mui-") + id + string(".jsn");
     //std::cout << "Reading " << muiFileName << std::endl;
@@ -46,12 +45,13 @@ ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo)
     // load last activated preset
     ESP_LOGD("Model", "Loading patch number %d", mp["activePatch"].GetInt());
     LoadPreset(mp["activePatch"].GetInt());
+
 }
 
-ctagSPDataModel::~ctagSPDataModel(){
+ctagSPDataModel::~ctagSPDataModel() {
 }
 
-const char * ctagSPDataModel::GetCStrJSONParams(){
+const char *ctagSPDataModel::GetCStrJSONParams() {
     json.Clear();
     mergeModels();
     Writer<StringBuffer> writer(json);
@@ -62,10 +62,10 @@ const char * ctagSPDataModel::GetCStrJSONParams(){
 
 void ctagSPDataModel::mergeModels() {
     // iterate preset model for all parameters
-    if(!activePreset.HasMember("params")) return;
-    if(!mui.HasMember("params")) return;
+    if (!activePreset.HasMember("params")) return;
+    if (!mui.HasMember("params")) return;
     Value &patchParams = activePreset["params"];
-    for (auto& v : patchParams.GetArray()){
+    for (auto &v : patchParams.GetArray()) {
         //printf("Searching for %s in ui model", v["id"].GetString());
         recursiveFindAndInsert(v, mui["params"]);
     }
@@ -73,30 +73,30 @@ void ctagSPDataModel::mergeModels() {
 
 void ctagSPDataModel::SetParamValue(const string &id, const string &key, const int val) {
     ESP_LOGD("Model", "Setting id %s, with %s to %d", id.c_str(), key.c_str(), val);
-    if(!activePreset.HasMember("params")) return;
+    if (!activePreset.HasMember("params")) return;
     Value &patchParams = activePreset["params"];
-    if(!patchParams.IsArray()) return;
-    for (auto& v : patchParams.GetArray()){
+    if (!patchParams.IsArray()) return;
+    for (auto &v : patchParams.GetArray()) {
         //printf("Searching for %s in ui model", v["id"].GetString());
-        if(!v.HasMember("id")) return;
-        if(!v["id"].IsString()) return;
-        if(v["id"] == id){
+        if (!v.HasMember("id")) return;
+        if (!v["id"].IsString()) return;
+        if (v["id"] == id) {
             ESP_LOGD("Model", "I found the value");
-            if(!v.HasMember(key)) return;
+            if (!v.HasMember(key)) return;
             v[key] = val;
         }
     }
 }
 
 int ctagSPDataModel::GetParamValue(const string &id, const string &key) {
-    if(!activePreset.HasMember("params")) return 0;
+    if (!activePreset.HasMember("params")) return 0;
     Value &patchParams = activePreset["params"];
-    if(!patchParams.IsArray()) return 0;
-    for (auto& v : patchParams.GetArray()){
-        if(!v.HasMember("id")) return 0;
-        if(!v["id"].IsString()) return 0;
-        if(v["id"] == id){
-            if(!v.HasMember(key)) return 0;
+    if (!patchParams.IsArray()) return 0;
+    for (auto &v : patchParams.GetArray()) {
+        if (!v.HasMember("id")) return 0;
+        if (!v["id"].IsString()) return 0;
+        if (v["id"] == id) {
+            if (!v.HasMember(key)) return 0;
             return v[key].GetInt();
         }
     }
@@ -104,8 +104,8 @@ int ctagSPDataModel::GetParamValue(const string &id, const string &key) {
 }
 
 const char *ctagSPDataModel::GetCStrJSONPresets() {
-    if(!mp.HasMember("activePatch")) return nullptr;
-    if(!mp["activePatch"].IsInt()) return nullptr;
+    if (!mp.HasMember("activePatch")) return nullptr;
+    if (!mp["activePatch"].IsInt()) return nullptr;
     json.Clear();
     int num = 0;
     Value obj(kObjectType);
@@ -115,9 +115,9 @@ const char *ctagSPDataModel::GetCStrJSONPresets() {
     n.SetInt(mp["activePatch"].GetInt());
     obj.AddMember("activePresetNumber", n, mp.GetAllocator());
     loadJSON(d, mpFileName);
-    if(!d.HasMember("patches")) return nullptr;
-    if(!d["patches"].IsArray()) return nullptr;
-    for (auto& v : d["patches"].GetArray()){
+    if (!d.HasMember("patches")) return nullptr;
+    if (!d["patches"].IsArray()) return nullptr;
+    for (auto &v : d["patches"].GetArray()) {
         Value o(kObjectType);
         Value name(kStringType);
         name.SetString(v["name"].GetString(), mp.GetAllocator());
@@ -136,17 +136,17 @@ const char *ctagSPDataModel::GetCStrJSONPresets() {
 void ctagSPDataModel::LoadPreset(const int num) {
     loadJSON(mp, mpFileName);
     int patchNum = num;
-    if(patchNum < 0) patchNum = 0;
-    if(!mp.HasMember("patches")) return;
-    if(!mp["patches"].IsArray()) return;
-    if(patchNum >= mp["patches"].GetArray().Size()){
+    if (patchNum < 0) patchNum = 0;
+    if (!mp.HasMember("patches")) return;
+    if (!mp["patches"].IsArray()) return;
+    if (patchNum >= mp["patches"].GetArray().Size()) {
         ESP_LOGD("Model", "Bounds check patch num %d, size %d", patchNum, mp["patches"].GetArray().Size());
         patchNum = mp["patches"].GetArray().Size() - 1;
     }
     activePreset.CopyFrom(mp["patches"].GetArray()[patchNum], mp.GetAllocator());
     ESP_LOGD("Model", "Preset Name is %s number %d", activePreset["name"].GetString(), patchNum);
     // save currently loaded preset to model
-    if(!mp.HasMember("activePatch")) return;
+    if (!mp.HasMember("activePatch")) return;
     mp["activePatch"].SetInt(patchNum);
     storeJSON(mp, mpFileName);
     json.Clear();
@@ -155,25 +155,25 @@ void ctagSPDataModel::LoadPreset(const int num) {
 }
 
 void ctagSPDataModel::recursiveFindAndInsert(const Value &paramF, Value &paramI) {
-    if(!paramI.IsArray()) return;
-    for (auto& v : paramI.GetArray()){
+    if (!paramI.IsArray()) return;
+    for (auto &v : paramI.GetArray()) {
         //printf("Matching for %s in with %s", paramF["id"].GetString(), v["id"].GetString());
-        if(!paramF.HasMember("id")) return;
-        if(!v.HasMember("id")) return;
-        if(paramF["id"] == v["id"]){
+        if (!paramF.HasMember("id")) return;
+        if (!v.HasMember("id")) return;
+        if (paramF["id"] == v["id"]) {
             //printf("Found, inserting data...");
             Value::MemberIterator iter = v.FindMember("current");
             if (iter == v.MemberEnd())
                 v.AddMember("current", paramF["current"].GetInt(), mui.GetAllocator());
             else
                 iter->value = paramF["current"].GetInt();
-            if(v["type"] == "bool" && paramF.HasMember("trig")){
+            if (v["type"] == "bool" && paramF.HasMember("trig")) {
                 Value::MemberIterator iter = v.FindMember("trig");
                 if (iter == v.MemberEnd())
                     v.AddMember("trig", paramF["trig"].GetInt(), mui.GetAllocator());
                 else
                     iter->value = paramF["trig"].GetInt();
-            }else if(v["type"] == "int" && paramF.HasMember("cv")){
+            } else if (v["type"] == "int" && paramF.HasMember("cv")) {
                 Value::MemberIterator iter = v.FindMember("cv");
                 if (iter == v.MemberEnd())
                     v.AddMember("cv", paramF["cv"].GetInt(), mui.GetAllocator());
@@ -181,7 +181,7 @@ void ctagSPDataModel::recursiveFindAndInsert(const Value &paramF, Value &paramI)
                     iter->value = paramF["cv"].GetInt();
             }
             break;
-        } else if (v["type"] == "group"){
+        } else if (v["type"] == "group") {
             //printf("Going for a group recursion");
             recursiveFindAndInsert(paramF, v["params"]);
         }
@@ -194,30 +194,31 @@ void ctagSPDataModel::SavePreset(const string &name, const int number) {
     //PrintSelf();
     loadJSON(mp, mpFileName);
     int patchNum = number;
-    if(patchNum < 0) patchNum = 0;
-    if(!mp.HasMember("patches")) return;
-    if(!mp["patches"].IsArray()) return;
-    if(patchNum > mp["patches"].GetArray().Size()) patchNum = mp["patches"].GetArray().Size();
-    if(!activePreset.HasMember("name")) return;
+    if (patchNum < 0) patchNum = 0;
+    if (!mp.HasMember("patches")) return;
+    if (!mp["patches"].IsArray()) return;
+    if (patchNum > mp["patches"].GetArray().Size()) patchNum = mp["patches"].GetArray().Size();
+    if (!activePreset.HasMember("name")) return;
     activePreset["name"].SetString(name, mp.GetAllocator());
     //ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
-    if(patchNum == mp["patches"].GetArray().Size()){
+    if (patchNum == mp["patches"].GetArray().Size()) {
         Value copyOfPreset(activePreset, mp.GetAllocator());
         //copyOfPreset["name"].SetString(name, mp.GetAllocator());
         mp["patches"].PushBack(copyOfPreset.Move(), mp.GetAllocator());
-        ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
-    }else{
+        ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum,
+                 mp["patches"].GetArray().Size());
+    } else {
         mp["patches"][patchNum].CopyFrom(activePreset, mp.GetAllocator()); // saved preset is current
         ESP_LOGE("Model", "Replace");
     }
-    if(!mp.HasMember("activePatch")) return;
+    if (!mp.HasMember("activePatch")) return;
     mp["activePatch"] = patchNum;
     storeJSON(mp, mpFileName);
     //ESP_LOGE("MOdel", "Stored JSON after");
     //PrintSelf();
 }
 
-void ctagSPDataModel::PrintSelf(){
+void ctagSPDataModel::PrintSelf() {
     ESP_LOGD("Model", "mp:");
     printJSON(mp);
     ESP_LOGD("Model", "mui:");
@@ -234,4 +235,32 @@ const char *ctagSPDataModel::GetCStrJSONAllPresetData() {
     d.Accept(writer);
     //printf("%s\n", json.GetString());
     return json.GetString();
+}
+
+bool ctagSPDataModel::IsParamTrig(const string &id) {
+    if (!activePreset.HasMember("params")) return false;
+    Value &patchParams = activePreset["params"];
+    if (!patchParams.IsArray()) return false;
+    for (auto &v : patchParams.GetArray()) {
+        if (!v.HasMember("id")) return false;
+        if (!v["id"].IsString()) return false;
+        if (v["id"] == id) {
+            if (v.HasMember("trig")) return true;
+        }
+    }
+    return false;
+}
+
+bool ctagSPDataModel::IsParamCV(const string &id) {
+    if (!activePreset.HasMember("params")) return false;
+    Value &patchParams = activePreset["params"];
+    if (!patchParams.IsArray()) return false;
+    for (auto &v : patchParams.GetArray()) {
+        if (!v.HasMember("id")) return false;
+        if (!v["id"].IsString()) return false;
+        if (v["id"] == id) {
+            if (v.HasMember("cv")) return true;
+        }
+    }
+    return false;
 }

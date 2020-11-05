@@ -26,33 +26,28 @@ respective component folders / files if different from this license.
 #include "ctagSoundProcessor.hpp"
 #include "freeverb/revmodel.hpp"
 
-namespace CTAG::SP{
-    class ctagSoundProcessorFVerb : public ctagSoundProcessor{
+namespace CTAG::SP {
+    class ctagSoundProcessorFVerb : public ctagSoundProcessor {
     public:
         void Process(const ProcessData &) override;
-        ~ctagSoundProcessorFVerb();
+
         ctagSoundProcessorFVerb();
-        const char * GetCStrID() const override;
+
     private:
-        void setParamValueInternal(const string &id, const string &key, const int val) override;
-        void loadPresetInternal() override;
-        const string id = "FVerb";
+        virtual void knowYourself() override;
+
         revmodel freeverb;
-        // inter thread variables are atomic
-        atomic<int32_t> roomsz;
-        atomic<int32_t> damp;
-        atomic<int32_t> dry;
-        atomic<int32_t> wet;
-        atomic<int32_t> width;
-        atomic<int32_t> mode;
-        atomic<int32_t> mono;
-        atomic<int32_t> cvRoomSz;
-        atomic<int32_t> cvDamp;
-        atomic<int32_t> cvDry;
-        atomic<int32_t> cvWet;
-        atomic<int32_t> cvWidth;
-        atomic<int32_t> trigMode;
-        // process only variables
+
+        // sectionHpp
+        atomic<int32_t> roomsize, cv_roomsize;
+        atomic<int32_t> damp, cv_damp;
+        atomic<int32_t> dry, cv_dry;
+        atomic<int32_t> wet, cv_wet;
+        atomic<int32_t> width, cv_width;
+        atomic<int32_t> mode, trig_mode;
+        atomic<int32_t> mono, trig_mono;
+        // sectionHpp
+
     };
 }
 
