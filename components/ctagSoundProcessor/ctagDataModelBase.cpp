@@ -30,6 +30,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/writer.h"
 #include "rapidjson/filereadstream.h"
 #include <cstdio>
+#include <regex>
 #include "ctagDataModelBase.hpp"
 
 #define MB_BUF_SZ 4096
@@ -48,6 +49,36 @@ void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
 //    ESP_LOGE("JSON", "trying to parse");
     d.ParseStream(is);
     fclose(fp);
+
+    // error checks and reading backup if error
+    // THIS IS AN IMPORTANT BUG FIX
+    // WHEN ESP IS LOOSING POWER DURING FLASH WRITE, IMPORTANT JSON FILES CAN GET CORRUPTED
+    // IF THIS HAPPENS DATA IS PULLED FROM THE INITIAL BACKUP FILE STRUCTURE
+    // THE BACKUP FILE STRUCTURE IS GENERATED DURING CMAKE BUILD FROM THE ORIGINAL
+    // CONTENTS OF SPIFFS_IMAGE/DATA
+    // IF THIS HAPPENS, ALL CONTENTS OF THE AFFECTED FILE ARE RESET TO FACTORY DEFAULT
+    if(d.HasParseError()){
+        string backup_file_name = std::regex_replace(fn, std::regex("data"), "dbup");
+        ESP_LOGE("JSON", "File %s has a parse error!", fn.c_str());
+        ESP_LOGE("JSON", "Trying to replace with backup file %s", backup_file_name.c_str());
+        fp = fopen(backup_file_name.c_str(), "r");
+        if (fp == NULL) {
+            ESP_LOGE("JSON", "Could not open file %s", backup_file_name.c_str());
+            return;
+        }
+        //char readBuffer[512];
+//    ESP_LOGE("JSON", "read stream");
+        FileReadStream is(fp, buffer, MB_BUF_SZ);
+//    ESP_LOGE("JSON", "trying to parse");
+        d.ParseStream(is);
+        fclose(fp);
+        // if backup parsing was successful, copy backuped data to defective file
+        if(!d.HasParseError()){
+            storeJSON(d, fn);
+        }else{
+            ESP_LOGE("JSON", "FATAL ERROR: Could not recover from backup file %s", backup_file_name.c_str());
+        }
+    }
 }
 
 void CTAG::SP::ctagDataModelBase::storeJSON(Document &d, const string &fn) {

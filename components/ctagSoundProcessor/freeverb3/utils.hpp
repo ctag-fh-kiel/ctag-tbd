@@ -28,6 +28,7 @@
 #include <new>
 #include <stdint.h>
 #include "fv3_defs.h"
+#include "helpers/ctagFastMath.hpp"
 
 namespace fv3 {
 

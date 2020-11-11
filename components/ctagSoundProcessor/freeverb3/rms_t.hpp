@@ -33,7 +33,7 @@ public:
     void mute();
 
     inline _fv3_float_t process(_fv3_float_t input) {
-        if (bufsize == 0) return std::fabs(input);
+        if (bufsize == 0) return fabsf(input);
         if (bufidx == bufsize - 1)
             bufidx = 0;
         else

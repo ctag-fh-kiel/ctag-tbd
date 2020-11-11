@@ -31,6 +31,7 @@ SOFTWARE.
 #include "stmlib/dsp/dsp.h"
 #include "esp_heap_caps.h"
 #include <cstring>
+#include "esp_log.h"
 
 using namespace tesselode;
 using namespace CTAG::SP::HELPERS;
@@ -117,9 +118,9 @@ float CocoaDelay::GetDelayTime() {
 
     // modulation
     float lfoAmount = params.lfoAmount; //params.lfoAmount;
-    if (lfoAmount != 0.0f) delayTime = powf_fast(delayTime, 1.0f + lfoAmount * fastsin(lfoPhase * 2.f * pi));
+    if (lfoAmount != 0.0f) delayTime = CTAG::SP::HELPERS::powf_fast(delayTime, 1.0f + lfoAmount * fastsin(lfoPhase * 2.f * pi));
     float driftAmount = params.driftAmount; //params.driftAmount;
-    if (driftAmount != 0.0f) delayTime = powf_fast(delayTime, 1.0f + driftAmount * fastsin(driftPhase));
+    if (driftAmount != 0.0f) delayTime = CTAG::SP::HELPERS::powf_fast(delayTime, 1.0f + driftAmount * fastsin(driftPhase));
 
     return delayTime;
 }
@@ -127,8 +128,8 @@ float CocoaDelay::GetDelayTime() {
 void CocoaDelay::GetReadPositions(float &l, float &r) {
     float offset = params.stereoOffset * 0.5f;
     float baseTime = GetDelayTime();
-    float timeL = powf_fast(baseTime, 1.0f + offset);
-    float timeR = powf_fast(baseTime, 1.0f - offset);
+    float timeL = CTAG::SP::HELPERS::powf_fast(baseTime, 1.0f + offset);
+    float timeR = CTAG::SP::HELPERS::powf_fast(baseTime, 1.0f - offset);
     l = timeL * GetSampleRate();
     r = timeR * GetSampleRate();
 }
@@ -141,8 +142,16 @@ void CocoaDelay::InitBuffer() {
     std::fill(bufferR.begin(), bufferR.end(), 0.f);
      */
     bufferL = (float *) heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    if(bufferL == NULL){
+        ESP_LOGE("CDelay", "Could not allocate buffer L in SPIRAM!");
+        return;
+    }
     memset(bufferL, 0, sizeof(float) * GetSampleRate() * tapeLength);
     bufferR = (float *) heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    if(bufferL == NULL){
+        ESP_LOGE("CDelay", "Could not allocate buffer R in SPIRAM!");
+        return;
+    }
     memset(bufferR, 0, sizeof(float) * GetSampleRate() * tapeLength);
     bufferSize = GetSampleRate() * tapeLength;
     writePosition = 0.0f;
@@ -198,7 +207,7 @@ void CocoaDelay::UpdateLfo() {
 void CocoaDelay::UpdateDrift() {
     float driftSpeed = params.driftSpeed;
     driftVelocity += random() * 10000.0f * driftSpeed * dt;
-    driftVelocity -= driftVelocity * 2.0f * powf_fast(driftSpeed, 0.5f) * dt;
+    driftVelocity -= driftVelocity * 2.0f * fastsqrt(driftSpeed) * dt;
     driftPhase += driftVelocity * dt;
 }
 

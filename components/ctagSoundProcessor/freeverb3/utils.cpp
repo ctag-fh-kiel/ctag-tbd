@@ -23,11 +23,13 @@
 #include "fv3_ns_start.h"
 
 fv3_float_t FV3_(utils)::dB2R(fv3_float_t dB) {
-    return std::pow(10., dB / 20.);
+    //return std::pow(10., dB / 20.);
+    return CTAG::SP::HELPERS::fast_VdB(dB);
 }
 
 fv3_float_t FV3_(utils)::R2dB(fv3_float_t real) {
-    return 20. * std::log(real) / std::log(10.0f);
+    //return 20. * std::log(real) / std::log(10.0f);
+    return CTAG::SP::HELPERS::fast_dBV(real);
 }
 
 int32_t FV3_(utils)::ms2sample(fv3_float_t msec, int32_t fs) {

@@ -28,6 +28,8 @@ namespace CTAG::SP::HELPERS {
 
     float fastfabs(float p);
 
+    float fastsqrt(float x);
+
 //https://www.musicdsp.org/en/latest/Other/63-fast-log2.html
 
 
@@ -65,6 +67,8 @@ namespace CTAG::SP::HELPERS {
     float expf_fast(float a);
 
     float expf_fast_lb(float a);
+
+    float powf_fast_precise(float a, float b);
 
     float powf_fast(float a, float b);
 

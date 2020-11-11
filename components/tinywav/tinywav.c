@@ -98,7 +98,8 @@ void tinywav_read_reset(TinyWav *tw){
 }
 
 int tinywav_read_f(TinyWav *tw, void *data, int len) { // returns number of frames read
-  switch (tw->sampFmt) {
+    if(tw->f == NULL) return 0;
+    switch (tw->sampFmt) {
     case TW_INT16:
         /* bogus code
 { //TODO(gio): implement TW_INT16 conversion

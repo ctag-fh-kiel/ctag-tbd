@@ -27,6 +27,8 @@
 #include "utils.hpp"
 #include "fv3_defs.h"
 
+#include "helpers/ctagFastMath.hpp"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

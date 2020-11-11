@@ -41,7 +41,7 @@ void FV3_(biquad)::printconfig() {
 }
 
 void FV3_(biquad)::mute() {
-    i1 = i2 = o1 = o2 = t0 = t1 = t2 = 0;
+    i1 = i2 = o1 = o2 = t0 = t1 = t2 = 0.f;
 }
 
 void
@@ -68,12 +68,13 @@ static inline fv3_float_t BQ_LIMIT(fv3_float_t v, fv3_float_t l, fv3_float_t u) 
 
 fv3_float_t FV3_(biquad)::calcAlpha(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, unsigned mode) {
     fv3_float_t omega = 2.0 * M_PI * fc / fs;
-    fv3_float_t sn = std::sin(omega);
+    //fv3_float_t sn = std::sin(omega);
+    fv3_float_t sn = CTAG::SP::HELPERS::fastsin(omega);
     switch (mode) {
         case FV3_BIQUAD_RBJ_BW:
-            return sn * std::sinh(M_LN2 / 2.0 * bw * omega / sn);
+            return sn * CTAG::SP::HELPERS::fastsinh(M_LN2 / 2.0f * bw * omega / sn);
         case FV3_BIQUAD_RBJ_Q:
-            return sn * (2. * bw);
+            return sn * (2.f * bw);
         case FV3_BIQUAD_RBJ_S:
         default:
             break;
@@ -83,30 +84,30 @@ fv3_float_t FV3_(biquad)::calcAlpha(fv3_float_t fc, fv3_float_t bw, fv3_float_t 
 
 void FV3_(biquad)::setAPF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, unsigned mode) {
     // fc : determines how steep the slope of the phase response is, when it passes through -180 degrees
-    fv3_float_t omega = 2.0 * M_PI * fc / fs;
-    fv3_float_t cs = std::cos(omega);
+    fv3_float_t omega = 2.0f * M_PI * fc / fs;
+    fv3_float_t cs = CTAG::SP::HELPERS::fastcos(omega);
     fv3_float_t alpha = calcAlpha(fc, bw, fs, mode);
-    fv3_float_t a0r = 1.0 / (1.0 + alpha);
-    b0 = a0r * (1.0 - alpha);
-    b1 = a0r * (-2.0 * cs);
-    b2 = a0r * (1.0 + alpha);
-    a1 = a0r * (-2.0 * cs);
-    a2 = a0r * (1.0 - alpha);
+    fv3_float_t a0r = 1.0f / (1.0f + alpha);
+    b0 = a0r * (1.0f - alpha);
+    b1 = a0r * (-2.0f * cs);
+    b2 = a0r * (1.0f + alpha);
+    a1 = a0r * (-2.0f * cs);
+    a2 = a0r * (1.0f - alpha);
 }
 
 void FV3_(biquad)::setLPF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, unsigned mode) {
-    fv3_float_t omega = 2.0 * M_PI * fc / fs;
-    fv3_float_t cs = std::cos(omega);
+    fv3_float_t omega = 2.0f * M_PI * fc / fs;
+    fv3_float_t cs = CTAG::SP::HELPERS::fastcos(omega);
     fv3_float_t alpha = calcAlpha(fc, bw, fs, mode);
-    fv3_float_t a0r = 1.0 / (1.0 + alpha);
-    b0 = a0r * (1.0 - cs) * 0.5;
-    b1 = a0r * (1.0 - cs);
-    b2 = a0r * (1.0 - cs) * 0.5;
-    a1 = a0r * (-2.0 * cs);
-    a2 = a0r * (1.0 - alpha);
+    fv3_float_t a0r = 1.0f / (1.0f + alpha);
+    b0 = a0r * (1.0f - cs) * 0.5f;
+    b1 = a0r * (1.0f - cs);
+    b2 = a0r * (1.0f - cs) * 0.5f;
+    a1 = a0r * (-2.0f * cs);
+    a2 = a0r * (1.0f - alpha);
     /*
       d = Scalar, damping factor (default: square root of 2)
-      if nargin < 3 d = sqrt(2); end
+      if nargin < 3 d = CTAG::SP::HELPERS::fastsqrt(2); end
       beta = 0.5 * ( ( 1 - ( d / 2 ) * sin( 2 * pi * (fc / fs) ) ) / ( 1 + ( d / 2 ) * sin( 2 * pi * (fc / fs) ) ) );
       gamma = ( 0.5 + beta ) * cos ( 2 * pi * (fc / fs) );
       alfa = ( 0.5 + beta - gamma ) / 4;
@@ -121,18 +122,18 @@ void FV3_(biquad)::setLPF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, un
 }
 
 void FV3_(biquad)::setHPF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, unsigned mode) {
-    fv3_float_t omega = 2.0 * M_PI * fc / fs;
-    fv3_float_t cs = std::cos(omega);
+    fv3_float_t omega = 2.0f * M_PI * fc / fs;
+    fv3_float_t cs = CTAG::SP::HELPERS::fastcos(omega);
     fv3_float_t alpha = calcAlpha(fc, bw, fs, mode);
-    float a0r = 1.0 / (1.0 + alpha);
-    b0 = a0r * (1.0 + cs) * 0.5;
-    b1 = a0r * -(1.0 + cs);
-    b2 = a0r * (1.0 + cs) * 0.5;
-    a1 = -1.0 * a0r * (2.0 * cs);
-    a2 = -1.0 * a0r * (alpha - 1.0);
+    float a0r = 1.0f / (1.0f + alpha);
+    b0 = a0r * (1.0f + cs) * 0.5f;
+    b1 = a0r * -(1.0f + cs);
+    b2 = a0r * (1.0f + cs) * 0.5f;
+    a1 = -1.0f * a0r * (2.0f * cs);
+    a2 = -1.0f * a0r * (alpha - 1.0f);
     /*
       d = Scalar, damping factor (default: square root of 2)
-      if nargin < 3 d = sqrt(2); end
+      if nargin < 3 d = CTAG::SP::HELPERS::fastsqrt(2); end
       beta = 0.5 * ( ( 1 - ( d / 2 ) * sin( 2 * pi * (fc / fs) ) ) / ( 1 + ( d / 2 ) * sin( 2 * pi * (fc / fs) ) ) );
       gamma = ( 0.5 + beta ) * cos ( 2 * pi * (fc / fs) );
       alfa = ( 0.5 + beta + gamma ) / 4;
@@ -150,15 +151,15 @@ void FV3_(biquad)::setHPF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, un
 
 void FV3_(biquad)::setBPF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, unsigned mode) {
     // constant 0 dB peak gain
-    fv3_float_t omega = 2.0 * M_PI * fc / fs;
-    fv3_float_t cs = std::cos(omega);
+    fv3_float_t omega = 2.0f * M_PI * fc / fs;
+    fv3_float_t cs = CTAG::SP::HELPERS::fastcos(omega);
     fv3_float_t alpha = calcAlpha(fc, bw, fs, mode);
-    fv3_float_t a0r = 1.0 / (1.0 + alpha);
+    fv3_float_t a0r = 1.0f / (1.0f + alpha);
     b0 = a0r * alpha;
-    b1 = 0;
-    b2 = a0r * (-1.0 * alpha);
-    a1 = a0r * (-2.0 * cs);
-    a2 = a0r * (1.0 - alpha);
+    b1 = 0.f;
+    b2 = a0r * (-1.0f * alpha);
+    a1 = a0r * (-2.0f * cs);
+    a2 = a0r * (1.0f - alpha);
     /*
       Q = Scalar, quality factor (default: 1)
       if nargin < 3 Q = 1; end
@@ -179,16 +180,16 @@ void FV3_(biquad)::setBPF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, un
 
 void FV3_(biquad)::setBPFP_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, unsigned mode) {
     // constant skirt gain, peak gain = Q
-    fv3_float_t omega = 2.0 * M_PI * fc / fs;
-    fv3_float_t sn = std::sin(omega);
-    fv3_float_t cs = std::cos(omega);
+    fv3_float_t omega = 2.0f * M_PI * fc / fs;
+    fv3_float_t sn = CTAG::SP::HELPERS::fastsin(omega);
+    fv3_float_t cs = CTAG::SP::HELPERS::fastcos(omega);
     fv3_float_t alpha = calcAlpha(fc, bw, fs, mode);
-    fv3_float_t a0r = 1.0 / (1.0 + alpha);
-    b0 = a0r * (0.5 * sn);
+    fv3_float_t a0r = 1.0f / (1.0f + alpha);
+    b0 = a0r * (0.5f * sn);
     b1 = 0;
-    b2 = a0r * (-0.5 * sn);
-    a1 = a0r * (-2.0 * cs);
-    a2 = a0r * (1.0 - alpha);
+    b2 = a0r * (-0.5f * sn);
+    a1 = a0r * (-2.0f * cs);
+    a2 = a0r * (1.0f - alpha);
     /*
       Second-Order IIR Butterworth Peaking Filter
       Q = Scalar, quality factor (default: 1)
@@ -210,16 +211,16 @@ void FV3_(biquad)::setBPFP_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, u
 }
 
 void FV3_(biquad)::setBSF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, unsigned mode) {
-    fv3_float_t omega = 2.0 * M_PI * fc / fs;
+    fv3_float_t omega = 2.0f * M_PI * fc / fs;
     //fv3_float_t sn = std::sin(omega);
-    fv3_float_t cs = std::cos(omega);
+    fv3_float_t cs = CTAG::SP::HELPERS::fastcos(omega);
     fv3_float_t alpha = calcAlpha(fc, bw, fs, mode);
-    fv3_float_t a0r = 1.0 / (1.0 + alpha);
+    fv3_float_t a0r = 1.0f / (1.0f + alpha);
     b0 = a0r;
-    b1 = a0r * (-2.0 * cs);
+    b1 = a0r * (-2.0f * cs);
     b2 = a0r;
-    a1 = a0r * (-2.0 * cs);
-    a2 = a0r * (1.0 - alpha);
+    a1 = a0r * (-2.0f * cs);
+    a2 = a0r * (1.0f - alpha);
     /*
       Second-Order IIR Butterworth Band-Stop Filter
       Q = Scalar, quality factor (default: 1)
@@ -238,51 +239,51 @@ void FV3_(biquad)::setBSF_RBJ(fv3_float_t fc, fv3_float_t bw, fv3_float_t fs, un
 }
 
 void FV3_(biquad)::setPeakEQ_RBJ(fv3_float_t fc, fv3_float_t gain, fv3_float_t bw, fv3_float_t fs) {
-    fv3_float_t w = 2.0 * M_PI * BQ_LIMIT(fc, 1.0, fs / 2.0) / fs;
-    fv3_float_t cw = std::cos(w);
-    fv3_float_t sw = std::sin(w);
-    fv3_float_t J = std::pow(10.0, gain * 0.025);
-    fv3_float_t g = sw * std::sinh(LN_2_2 * BQ_LIMIT(bw, 0.0001, 4.0) * w / sw);
-    fv3_float_t a0r = 1.0 / (1.0 + (g / J));
-    b0 = (1.0 + (g * J)) * a0r;
-    b1 = (-2.0 * cw) * a0r;
-    b2 = (1.0 - (g * J)) * a0r;
+    fv3_float_t w = 2.0f * M_PI * BQ_LIMIT(fc, 1.0, fs / 2.0) / fs;
+    fv3_float_t cw = CTAG::SP::HELPERS::fastcos(w);
+    fv3_float_t sw = CTAG::SP::HELPERS::fastsin(w);
+    fv3_float_t J = powf(10.0f, gain * 0.025f);
+    fv3_float_t g = sw * CTAG::SP::HELPERS::fastsinh(LN_2_2 * BQ_LIMIT(bw, 0.0001f, 4.0f) * w / sw);
+    fv3_float_t a0r = 1.0f / (1.0f + (g / J));
+    b0 = (1.0f + (g * J)) * a0r;
+    b1 = (-2.0f * cw) * a0r;
+    b2 = (1.0f - (g * J)) * a0r;
     a1 = b1;
-    a2 = -1.0 * ((g / J) - 1.0) * a0r;
+    a2 = -1.0f * ((g / J) - 1.0f) * a0r;
 }
 
 void FV3_(biquad)::setLSF_RBJ(fv3_float_t fc, fv3_float_t gain, fv3_float_t slope, fv3_float_t fs) {
-    fv3_float_t w = 2.0 * M_PI * BQ_LIMIT(fc, 1.0, fs / 2.0) / fs;
-    fv3_float_t cw = std::cos(w);
-    fv3_float_t sw = std::sin(w);
-    fv3_float_t A = std::pow((fv3_float_t) 10.0, gain * (fv3_float_t) 0.025);
-    fv3_float_t b = std::sqrt(((1.0 + A * A) / BQ_LIMIT(slope, 0.0001, 1.0)) - ((A - 1.0) * (A - 1.0)));
-    fv3_float_t apc = cw * (A + 1.0);
-    fv3_float_t amc = cw * (A - 1.0);
+    fv3_float_t w = 2.0f * M_PI * BQ_LIMIT(fc, 1.0f, fs / 2.0f) / fs;
+    fv3_float_t cw = CTAG::SP::HELPERS::fastcos(w);
+    fv3_float_t sw = CTAG::SP::HELPERS::fastsin(w);
+    fv3_float_t A = powf((fv3_float_t) 10.0f, gain * (fv3_float_t) 0.025f);
+    fv3_float_t b = CTAG::SP::HELPERS::fastsqrt(((1.0f + A * A) / BQ_LIMIT(slope, 0.0001f, 1.0f)) - ((A - 1.0f) * (A - 1.0f)));
+    fv3_float_t apc = cw * (A + 1.0f);
+    fv3_float_t amc = cw * (A - 1.0f);
     fv3_float_t bs = b * sw;
-    fv3_float_t a0r = 1.0 / (A + 1.0 + amc + bs);
-    b0 = a0r * A * (A + 1.0 - amc + bs);
-    b1 = a0r * 2.0 * A * (A - 1.0 - apc);
+    fv3_float_t a0r = 1.0f / (A + 1.0f + amc + bs);
+    b0 = a0r * A * (A + 1.0f - amc + bs);
+    b1 = a0r * 2.0f * A * (A - 1.0f - apc);
     b2 = a0r * A * (A + 1.0f - amc - bs);
-    a1 = -1.0 * a0r * 2.0 * (A - 1.0 + apc);
-    a2 = -1.0 * a0r * (-A - 1.0 - amc + bs);
+    a1 = -1.0f * a0r * 2.0f * (A - 1.0f + apc);
+    a2 = -1.0f * a0r * (-A - 1.0f - amc + bs);
 }
 
 void FV3_(biquad)::setHSF_RBJ(fv3_float_t fc, fv3_float_t gain, fv3_float_t slope, fv3_float_t fs) {
-    fv3_float_t w = 2.0 * M_PI * BQ_LIMIT(fc, 1.0, fs / 2.0) / fs;
-    fv3_float_t cw = std::cos(w);
-    fv3_float_t sw = std::sin(w);
-    fv3_float_t A = std::pow((fv3_float_t) 10.0, gain * (fv3_float_t) 0.025);
-    fv3_float_t b = std::sqrt(((1.0 + A * A) / BQ_LIMIT(slope, 0.0001, 1.0)) - ((A - 1.0) * (A - 1.0)));
-    fv3_float_t apc = cw * (A + 1.0);
-    fv3_float_t amc = cw * (A - 1.0);
+    fv3_float_t w = 2.0f * M_PI * BQ_LIMIT(fc, 1.0f, fs / 2.0f) / fs;
+    fv3_float_t cw = CTAG::SP::HELPERS::fastcos(w);
+    fv3_float_t sw = CTAG::SP::HELPERS::fastsin(w);
+    fv3_float_t A = powf((fv3_float_t) 10.0f, gain * (fv3_float_t) 0.025f);
+    fv3_float_t b = CTAG::SP::HELPERS::fastsqrt(((1.0f + A * A) / BQ_LIMIT(slope, 0.0001f, 1.0f)) - ((A - 1.0f) * (A - 1.0f)));
+    fv3_float_t apc = cw * (A + 1.0f);
+    fv3_float_t amc = cw * (A - 1.0f);
     fv3_float_t bs = b * sw;
-    fv3_float_t a0r = 1.0f / (A + 1.0 - amc + bs);
-    b0 = a0r * A * (A + 1.0 + amc + bs);
-    b1 = a0r * -2.0 * A * (A - 1.0 + apc);
-    b2 = a0r * A * (A + 1.0 + amc - bs);
-    a1 = -1.0 * a0r * -2.0 * (A - 1.0 - apc);
-    a2 = -1.0 * a0r * (-A - 1.0 + amc + bs);
+    fv3_float_t a0r = 1.0f / (A + 1.0f - amc + bs);
+    b0 = a0r * A * (A + 1.0f + amc + bs);
+    b1 = a0r * -2.0f * A * (A - 1.0f + apc);
+    b2 = a0r * A * (A + 1.0f + amc - bs);
+    a1 = -1.0f * a0r * -2.0f * (A - 1.0f - apc);
+    a2 = -1.0f * a0r * (-A - 1.0f + amc + bs);
 }
 
 #include "fv3_ns_end.h"

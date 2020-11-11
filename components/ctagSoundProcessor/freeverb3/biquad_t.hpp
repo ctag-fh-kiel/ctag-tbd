@@ -78,7 +78,7 @@ public:
         input *= b0;
         input += b1 * i1 + b2 * i2;
         input -= a1 * o1 + a2 * o2;
-        UNDENORMAL(input);
+        //UNDENORMAL(input);
         i2 = i1;
         i1 = i0;
         o2 = o1;

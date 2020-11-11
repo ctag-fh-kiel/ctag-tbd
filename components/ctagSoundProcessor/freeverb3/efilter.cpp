@@ -56,9 +56,10 @@ void FV3_(iir_1st)::setCoefficients(fv3_float_t _b1, fv3_float_t _b2, fv3_float_
 
 void FV3_(iir_1st)::setLPF_BW(fv3_float_t fc, fv3_float_t fs) {
     fv3_float_t omega_2 = M_PI * fc / fs;
-    fv3_float_t tan_omega_2 = std::tan(omega_2);
-    b1 = b2 = tan_omega_2 / (1 + tan_omega_2);
-    a2 = (1 - tan_omega_2) / (1 + tan_omega_2);
+    //fv3_float_t tan_omega_2 = CTAG::SP::HELPERS::fasttan((omega_2);
+    fv3_float_t tan_omega_2 = CTAG::SP::HELPERS::fasttan(omega_2);
+    b1 = b2 = tan_omega_2 / (1.f + tan_omega_2);
+    a2 = (1.f - tan_omega_2) / (1.f + tan_omega_2);
     /*
       AudioFilteringToolkit
       John Lane, Jayant Datta, Brent Karley, Jay Norwood, "DSP Filters",
@@ -78,10 +79,10 @@ void FV3_(iir_1st)::setLPF_BW(fv3_float_t fc, fv3_float_t fs) {
 
 void FV3_(iir_1st)::setHPF_BW(fv3_float_t fc, fv3_float_t fs) {
     fv3_float_t omega_2 = M_PI * fc / fs;
-    fv3_float_t tan_omega_2 = std::tan(omega_2);
-    b1 = 1 / (1 + tan_omega_2);
-    b2 = -1 * b1;
-    a2 = (1 - tan_omega_2) / (1 + tan_omega_2);
+    fv3_float_t tan_omega_2 = CTAG::SP::HELPERS::fasttan(omega_2);
+    b1 = 1.f / (1.f + tan_omega_2);
+    b2 = -1.f * b1;
+    a2 = (1.f - tan_omega_2) / (1.f + tan_omega_2);
     /*
       beta = 0.5 * ( ( 1 - sin( 2 * pi * (fc / fs) ) ) / ( 1 + sin( 2 * pi * (fc / fs) ) ) );
       gamma = ( 0.5 + beta ) * cos ( 2 * pi * (fc / fs) );
@@ -103,43 +104,44 @@ void FV3_(iir_1st)::setHPF_BW(fv3_float_t fc, fv3_float_t fs) {
 */
 
 void FV3_(iir_1st)::setLPF_A(fv3_float_t fc, fv3_float_t fs) {
-    a2 = std::exp(-1 * M_PI * fc / (fs / 2.));
-    b1 = 1.;
-    b2 = .12;
-    fv3_float_t norm = (1 - a2) / (b1 + b2);
+    //a2 = CTAG::SP::HELPERS::expf_fast(-1 * M_PI * fc / (fs / 2.));
+    a2 = CTAG::SP::HELPERS::expf_fast(-1.f * M_PI * fc / (fs / 2.f));
+    b1 = 1.f;
+    b2 = .12f;
+    fv3_float_t norm = (1.f - a2) / (b1 + b2);
     b1 *= norm;
     b2 *= norm;
 }
 
 void FV3_(iir_1st)::setHPF_A(fv3_float_t fc, fv3_float_t fs) {
-    a2 = std::exp(-1 * M_PI * fc / (fs / 2.));
-    b1 = 1.;
-    b2 = -1.;
-    fv3_float_t norm = (1 + a2) / 2.;
+    a2 = CTAG::SP::HELPERS::expf_fast(-1 * M_PI * fc / (fs / 2.f));
+    b1 = 1.f;
+    b2 = -1.f;
+    fv3_float_t norm = (1.f + a2) / 2.f;
     b1 *= norm;
     b2 *= norm;
 }
 
 void FV3_(iir_1st)::setLSF_A(fv3_float_t f1, fv3_float_t f2, fv3_float_t fs) {
-    a2 = -1 * std::exp(-1 * M_PI * f1 / (fs / 2.));
-    b1 = -1.;
-    b2 = std::exp(-1 * M_PI * f2 / (fs / 2.));
+    a2 = -1.f * CTAG::SP::HELPERS::expf_fast(-1.f * M_PI * f1 / (fs / 2.f));
+    b1 = -1.f;
+    b2 = CTAG::SP::HELPERS::expf_fast(-1 * M_PI * f2 / (fs / 2.));
 }
 
 void FV3_(iir_1st)::setHSF_A(fv3_float_t f1, fv3_float_t f2, fv3_float_t fs) {
-    a2 = std::exp(-1 * M_PI * f1 / (fs / 2.));
-    b1 = -1.;
-    b2 = std::exp(-1 * M_PI * f2 / (fs / 2.));
-    fv3_float_t norm = (1 - a2) / (b1 + b2);
+    a2 = CTAG::SP::HELPERS::expf_fast(-1.f * M_PI * f1 / (fs / 2.f));
+    b1 = -1.f;
+    b2 = CTAG::SP::HELPERS::expf_fast(-1.f * M_PI * f2 / (fs / 2.f));
+    fv3_float_t norm = (1.f - a2) / (b1 + b2);
     b1 *= norm;
     b2 *= norm;
 }
 
 void FV3_(iir_1st)::setHPFwLFS_A(fv3_float_t fc, fv3_float_t fs) {
-    b1 = -1.;
-    b2 = std::exp(-1 * M_PI * fc / (fs / 2.));
-    a2 = -.12;
-    fv3_float_t norm = (1 - a2) / std::abs(b1 + b2);
+    b1 = -1.f;
+    b2 = CTAG::SP::HELPERS::expf_fast(-1.f * M_PI * fc / (fs / 2.f));
+    a2 = -.12f;
+    fv3_float_t norm = (1 - a2) / fabsf(b1 + b2);
     b1 *= norm;
     b2 *= norm;
 }
@@ -151,71 +153,72 @@ void FV3_(iir_1st)::setLPF_C(fv3_float_t fc, fv3_float_t fs) {
 
 void FV3_(iir_1st)::setHPF_C(fv3_float_t fc, fv3_float_t fs) {
     b1 = fs / (fs + fc);
-    b2 = -1 * b1;
+    b2 = -1.f * b1;
     a2 = (fs - fc) / (fs + fc);
 }
 
 void FV3_(iir_1st)::setPole(fv3_float_t v) {
     a2 = v;
-    b1 = 1;
-    b2 = 0;
-    fv3_float_t norm = 1. - std::abs(a2);
+    b1 = 1.f;
+    b2 = 0.f;
+    fv3_float_t norm = 1.f - fabsf(a2);
     b1 *= norm;
     b2 *= norm;
 }
 
 void FV3_(iir_1st)::setZero(fv3_float_t v) {
-    a2 = 0;
-    b1 = -1.;
+    a2 = 0.f;
+    b1 = -1.f;
     b2 = v;
-    fv3_float_t norm = std::abs(b1) + std::abs(b2);
+    fv3_float_t norm = fabsf(b1) + fabsf(b2);
     b1 *= norm;
     b2 *= norm;
 }
 
 void FV3_(iir_1st)::setPoleLPF(fv3_float_t fc, fv3_float_t fs) {
-    fv3_float_t omega = 2. * M_PI * fc / fs;
-    fv3_float_t cos_omega = std::cos(omega);
-    fv3_float_t coeff = (2 - cos_omega) - std::sqrt((2 - cos_omega) * (2 - cos_omega) - 1);
+    fv3_float_t omega = 2.f * M_PI * fc / fs;
+    //fv3_float_t cos_omega = std::cos(omega);
+    fv3_float_t cos_omega = CTAG::SP::HELPERS::fastcos(omega);
+    fv3_float_t coeff = (2.f - cos_omega) - sqrtf((2.f - cos_omega) * (2.f - cos_omega) - 1.f);
     a2 = coeff;
-    b1 = 1 - coeff;
-    b2 = 0;
+    b1 = 1.f - coeff;
+    b2 = 0.f;
 }
 
 void FV3_(iir_1st)::setPoleHPF(fv3_float_t fc, fv3_float_t fs) {
-    fv3_float_t omega = 2. * M_PI * fc / fs;
-    fv3_float_t cos_omega = std::cos(omega);
-    fv3_float_t coeff = (2 + cos_omega) - std::sqrt((2 + cos_omega) * (2 + cos_omega) - 1);
-    a2 = -1 * coeff;
-    b1 = coeff - 1;
-    b2 = 0;
+    fv3_float_t omega = 2.f * M_PI * fc / fs;
+    fv3_float_t cos_omega = CTAG::SP::HELPERS::fastcos(omega);
+    fv3_float_t coeff = (2.f + cos_omega) - sqrtf((2.f + cos_omega) * (2.f + cos_omega) - 1.f);
+    a2 = -1.f * coeff;
+    b1 = coeff - 1.f;
+    b2 = 0.f;
 }
 
 void FV3_(iir_1st)::setZeroLPF(fv3_float_t fc, fv3_float_t fs) {
     // fc > fs/4
-    fv3_float_t omega = 2. * M_PI * fc / fs;
-    fv3_float_t cos_omega = std::cos(omega);
-    fv3_float_t coeff = (1 - 2 * cos_omega) - std::sqrt((1 - 2 * cos_omega) * (1 - 2 * cos_omega) - 1);
-    a2 = 0;
-    b1 = 1 / (1 + coeff);
-    b2 = coeff / (1 + coeff);
+    fv3_float_t omega = 2.f * M_PI * fc / fs;
+    fv3_float_t cos_omega = CTAG::SP::HELPERS::fastcos(omega);
+    fv3_float_t coeff = (1.f - 2.f * cos_omega) - sqrtf((1.f - 2.f * cos_omega) * (1.f - 2.f * cos_omega) - 1.f);
+    a2 = 0.f;
+    b1 = 1.f / (1.f + coeff);
+    b2 = coeff / (1.f + coeff);
 }
 
 void FV3_(iir_1st)::setZeroHPF(fv3_float_t fc, fv3_float_t fs) {
     // fc < fs/4
-    fv3_float_t omega = 2. * M_PI * fc / fs;
-    fv3_float_t cos_omega = std::cos(omega);
-    fv3_float_t coeff = (1 + 2 * cos_omega) - std::sqrt((1 + 2 * cos_omega) * (1 + 2 * cos_omega) - 1);
-    a2 = 0;
-    b1 = 1 / (1 + coeff);
-    b2 = -1 * coeff / (1 + coeff);
+    fv3_float_t omega = 2.f * M_PI * fc / fs;
+    fv3_float_t cos_omega = CTAG::SP::HELPERS::fastcos(omega);
+    fv3_float_t coeff = (1.f + 2.f * cos_omega) - sqrtf((1.f + 2.f * cos_omega) * (1.f + 2.f * cos_omega) - 1.f);
+    a2 = 0.f;
+    b1 = 1.f / (1.f + coeff);
+    b2 = -1.f * coeff / (1.f + coeff);
 }
 
 // class efilter
 
 FV3_(efilter)::FV3_(efilter)() {
-    setLPF(0);
-    setHPF(0);
+    setLPF(0.f);
+    setHPF(0.f);
     mute();
 }
 
@@ -254,7 +257,7 @@ FV3_(dccut)::FV3_(dccut)() {
 }
 
 void FV3_(dccut)::mute() {
-    y1 = y2 = 0;
+    y1 = y2 = 0.f;
 }
 
 void FV3_(dccut)::seta(fv3_float_t val) {
@@ -266,16 +269,21 @@ fv3_float_t FV3_(dccut)::geta() {
 }
 
 void FV3_(dccut)::setCutOnFreq(fv3_float_t fc, fv3_float_t fs) {
-    fv3_float_t _fc = 2 * fc / fs;
-    gain = (std::sqrt(3.) - 2. * std::sin(M_PI * _fc)) / (std::sin(M_PI * _fc) + std::sqrt(3.) * std::cos(M_PI * _fc));
+    fv3_float_t _fc = 2.f * fc / fs;
+    const float sqrt3 = 1.732050807568877f;
+    //gain = (std::sqrt(3.) - 2. * std::sin(M_PI * _fc)) / (std::sin(M_PI * _fc) + std::sqrt(3.) * std::cos(M_PI * _fc));
+    float c = CTAG::SP::HELPERS::fastsin(M_PI * _fc);
+    gain = (sqrt3 - 2.f * c) / (c + sqrt3 * CTAG::SP::HELPERS::fastcos(M_PI * _fc));
 }
 
 fv3_float_t FV3_(dccut)::getCutOnFreq() {
-    return std::atan(std::sqrt(3.) * (1. - gain * gain) / (1. + 4. * gain + gain * gain)) / M_PI;
+    const float sqrt3 = 1.732050807568877f;
+    //return std::atan(std::sqrt(3.) * (1. - gain * gain) / (1. + 4. * gain + gain * gain)) / M_PI;
+    return CTAG::SP::HELPERS::fastatan(sqrt3 * (1.f - gain * gain) / (1.f + 4.f * gain + gain * gain)) / M_PI;
 }
 
 fv3_float_t FV3_(dccut)::getCutOnFreq(fv3_float_t fs) {
-    return getCutOnFreq() * fs / 2.;
+    return getCutOnFreq() * fs / 2.f;
 }
 
 // class ahdsr
@@ -317,12 +325,12 @@ fv3_float_t FV3_(ahdsr)::process(fv3_float_t input) {
         return input;
     if (count >= attack + hold && count < attack + hold + decay)
         return input * (sustainLevel +
-                        (1. - sustainLevel) * (1. - (fv3_float_t) (count - (attack + hold)) / (fv3_float_t) decay));
+                        (1.f - sustainLevel) * (1.f - (fv3_float_t) (count - (attack + hold)) / (fv3_float_t) decay));
     if (count >= attack + hold + decay && count < attack + hold + decay + sustain)
         return input * sustainLevel;
     if (count >= attack + hold + decay + sustain && count < attack + hold + decay + sustain + release)
         return input * sustainLevel *
-               (1. - (fv3_float_t) (count - (attack + hold + decay + sustain)) / (fv3_float_t) release);
+               (1.f - (fv3_float_t) (count - (attack + hold + decay + sustain)) / (fv3_float_t) release);
     if (count >= attack + hold + decay + sustain + release) {
         if (loopMode)
             count = -1;

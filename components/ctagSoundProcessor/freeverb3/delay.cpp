@@ -68,14 +68,20 @@ void FV3_(delay)::setsize(int32_t size) {
     if (size <= 0) return;
     fv3_float_t *new_buffer = NULL;
 
-    new_buffer = (fv3_float_t *) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
+    //SP_LOGE("delay", "Trying mem alloc!");
+    new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if(new_buffer == NULL){
+        ESP_LOGE("delay", "Cannot alloc mem trying SPIRAM!");
+        new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
+        if(new_buffer == NULL) {
+            ESP_LOGE("delay", "Cannot alloc mem on SPIRAM!");
+            return;
+        }
+    }/*else{
+        ESP_LOGE("delay", "Mem alloc success requested size %d, freesize %d, largest block %d!",
+                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    }*/
 
-    if (new_buffer != NULL) {
-        ESP_LOGW("delay", "Allocated %d bytes", (int) (size * sizeof(float)));
-    } else {
-        ESP_LOGE("delay", "Bad alloc!");
-        return;
-    }
 
     FV3_(utils)::mute(new_buffer, size);
 
@@ -153,14 +159,18 @@ void FV3_(delaym)::setsize(int32_t size, int32_t modsize) {
     int32_t newsize = size + modsize;
     fv3_float_t *new_buffer = NULL;
 
-    new_buffer = (fv3_float_t *) heap_caps_malloc(newsize * sizeof(float), MALLOC_CAP_SPIRAM);
-
-    if (new_buffer != NULL) {
-        ESP_LOGW("delay", "Allocated %d bytes", (int) (newsize * sizeof(float)));
-    } else {
-        ESP_LOGE("delay", "Bad alloc!");
-        return;
-    }
+    new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if(new_buffer == NULL){
+        ESP_LOGE("delaym", "Cannot alloc mem trying SPIRAM!");
+        new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
+        if(new_buffer == NULL) {
+            ESP_LOGE("delaym", "Cannot alloc mem on SPIRAM!");
+            return;
+        }
+    }/*else{
+        ESP_LOGE("delay", "Mem alloc success requested size %d, freesize %d, largest block %d!",
+                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    }*/
 
     FV3_(utils)::mute(new_buffer, newsize);
 

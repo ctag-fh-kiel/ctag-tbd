@@ -18,6 +18,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+
 class _FV3_(iir_1st) {
 public:
     _FV3_(iir_1st)();
@@ -81,9 +82,9 @@ public:
     // Direct form I
     inline _fv3_float_t processd1(_fv3_float_t input) {
         _fv3_float_t output = input * b1 + y1;
-        UNDENORMAL(output);
+        //UNDENORMAL(output);
         y1 = output * a2 + input * b2;
-        UNDENORMAL(y1);
+        //UNDENORMAL(y1);
         return output;
     }
 
@@ -163,7 +164,7 @@ public:
     inline _fv3_float_t processp(_fv3_float_t input) {
         // if you want precisely normalized signals,
         // the input signals should be *(1+gain)/2.
-        return this->processd1(input * (1. + gain) / 2.);
+        return this->processd1(input * (1.f + gain) / 2.f);
     }
 
     // Direct form I
@@ -208,13 +209,14 @@ public:
         _fv3_float_t out = im;
         _fv3_float_t new_re = re * arc_re - im * arc_im;
         _fv3_float_t new_im = re * arc_im + im * arc_re;
-        UNDENORMAL(new_re); UNDENORMAL(new_im);
+        //UNDENORMAL(new_re); UNDENORMAL(new_im);
         re = new_re;
         im = new_im;
         if (count++ > count_max) {
             count = 0;
-            _fv3_float_t arc_r = std::sqrt(re * re + im * im);
-            UNDENORMAL(arc_r);
+            //_fv3_float_t arc_r = sqrt(re * re + im * im);
+            _fv3_float_t arc_r = CTAG::SP::HELPERS::fastsqrt(re * re + im * im);
+            //UNDENORMAL(arc_r);
             re /= arc_r;
             im /= arc_r;
         }
@@ -240,9 +242,9 @@ public:
 
     void setFreq(_fv3_float_t fc) {
         s_fc = fc;
-        _fv3_float_t theta = 2. * M_PI * fc;
-        arc_re = std::cos(theta);
-        arc_im = std::sin(theta);
+        _fv3_float_t theta = 2.f * M_PI * fc;
+        arc_re = CTAG::SP::HELPERS::fastcos(theta);
+        arc_im = CTAG::SP::HELPERS::fastsin(theta);
     }
 
     void setRCount(int32_t v) { if (v > 0)count_max = v; }

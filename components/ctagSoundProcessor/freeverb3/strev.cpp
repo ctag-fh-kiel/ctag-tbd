@@ -23,6 +23,7 @@
 #include "fv3_ns_start.h"
 #include "esp_log.h"
 #include "esp_heap_caps.h"
+#include "esp_log.h"
 
 // Fs = 29.761 kHz
 const int32_t FV3_(strev)::allpCo[] = {142, 107, 379, 277, 672, 908, 1800, 2656,};
@@ -31,19 +32,10 @@ const int32_t FV3_(strev)::idxLCo[] = {266, 2974, 1913, 1996, 1990, 187, 1066,};
 const int32_t FV3_(strev)::idxRCo[] = {353, 3627, 1228, 2673, 2111, 335, 121,};
 const int32_t FV3_(strev)::allpM_EXCURSION = 32;
 
-FV3_(strev)::~FV3_(strev)() {
-    if (totalBuf1 != NULL) heap_caps_free(totalBuf1);
-    if (totalBuf2 != NULL) heap_caps_free(totalBuf2);
-    totalBuf1 = NULL;
-    totalBuf2 = NULL;
-}
-
 FV3_(strev)::FV3_(strev)() {
     //setSampleRate(44100.f);
     //setOSFactor(1);
-    //setRSFactor(1.f);
-    totalBuf1 = NULL;
-    totalBuf2 = NULL;
+    setRSFactor(1.f);
     isMono = false;
     setrt60(1);
     setdccutfreq(10);
@@ -225,8 +217,9 @@ void FV3_(strev)::processreplace(fv3_float_t *inputL, fv3_float_t *inputR, fv3_f
 void FV3_(strev)::setrt60(fv3_float_t value) {
     rt60 = value;
     fv3_float_t back = rt60 * getTotalSampleRate();
-    UNDENORMAL(back);
-    if (back > 0) decay = std::pow((fv3_float_t) 10.0, -3 * (fv3_float_t) tankDelay / back);
+    //UNDENORMAL(back);
+    //if (back > 0) decay = std::pow((fv3_float_t) 10.0, -3 * (fv3_float_t) tankDelay / back);
+    if (back > 0) decay = powf((fv3_float_t) 10.0f, -3.f * (fv3_float_t) tankDelay / back);
     else decay = 0;
     if (autoDiff) {
         fv3_float_t adiff = decay + 0.15;
@@ -394,105 +387,20 @@ void FV3_(strev)::setFsFactors() {
     fv3_float_t totalFactor = getTotalFactorFs() / (fv3_float_t) FV3_STREV_DEFAULT_FS;
     fv3_float_t excurFactor = getTotalSampleRate() / (fv3_float_t) FV3_STREV_DEFAULT_FS;
 
-    uint32_t totalMem1 = 0;
-    for (int32_t i = 0; i < FV3_STREV_NUM_ALLPASS_4; i++) totalMem1 += f_(allpCo[i], totalFactor);
-    totalMem1 += f_(allpCo[6], totalFactor);
-    totalMem1 += f_(allpCo[7], totalFactor);
-
-    uint32_t totalMem2 = 0;
-    totalMem2 += f_(allpCo[4], totalFactor) + f_(allpM_EXCURSION, excurFactor);
-    totalMem2 += f_(allpCo[5], totalFactor) + f_(allpM_EXCURSION, excurFactor);
-    totalMem2 += f_(delayCo[0], totalFactor);
-    totalMem2 += f_(delayCo[1], totalFactor);
-    totalMem2 += f_(delayCo[2], totalFactor);
-    totalMem2 += f_(delayCo[3], totalFactor);
-
-#ifndef TBD_SIM
-    if(totalMem2 >= totalMem1){
-        ESP_LOGE("STREV", "Trying mem alloc!");
-        totalBuf2 = (float*) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        if(totalBuf2 == NULL){
-            ESP_LOGE("STREV", "Cannot alloc memm trying SPIRAM!");
-            totalBuf2 = (float*) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_SPIRAM);
-            if(totalBuf2 == NULL) {
-                ESP_LOGE("STREV", "Cannot alloc mem on SPIRAM!");
-                totalBuf2 = (float *) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_SPIRAM);
-                return;
-            }
-        }else{
-            ESP_LOGE("STREV", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                     (int)(totalMem2 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-        }
-        totalBuf1 = (float*) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        if(totalBuf1 == NULL){
-            ESP_LOGE("STREV", "Cannot alloc memm trying SPIRAM!");
-            totalBuf1 = (float*) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_SPIRAM);
-            if(totalBuf1 == NULL) {
-                ESP_LOGE("STREV", "Cannot alloc mem on SPIRAM!");
-                totalBuf1 = (float *) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_SPIRAM);
-                return;
-            }
-        }else{
-            ESP_LOGE("STREV", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                     (int)(totalMem1 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-        }
-    }else{
-        ESP_LOGE("STREV", "Trying mem alloc!");
-        totalBuf1 = (float*) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        if(totalBuf1 == NULL){
-            ESP_LOGE("STREV", "Cannot alloc memm trying SPIRAM!");
-            totalBuf1 = (float*) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_SPIRAM);
-            if(totalBuf1 == NULL) {
-                ESP_LOGE("STREV", "Cannot alloc mem on SPIRAM!");
-                totalBuf1 = (float *) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_SPIRAM);
-                return;
-            }
-        }else{
-            ESP_LOGE("STREV", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                     (int)(totalMem1 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-        }
-        totalBuf2 = (float*) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        if(totalBuf2 == NULL){
-            ESP_LOGE("STREV", "Cannot alloc memm trying SPIRAM!");
-            totalBuf2 = (float*) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_SPIRAM);
-            if(totalBuf2 == NULL) {
-                ESP_LOGE("STREV", "Cannot alloc mem on SPIRAM!");
-                totalBuf2 = (float *) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_SPIRAM);
-                return;
-            }
-        }else{
-            ESP_LOGE("STREV", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                     (int)(totalMem2 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-        }
-    }
-#else
-    totalBuf1 = (float *) heap_caps_malloc(totalMem1 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    totalBuf2 = (float *) heap_caps_malloc(totalMem2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-#endif
-
-
-    float *fPtr = totalBuf1;
     for (int32_t i = 0; i < FV3_STREV_NUM_ALLPASS_4; i++) {
-        allpassC[i].setsize(fPtr, f_(allpCo[i], totalFactor));
-        fPtr += f_(allpCo[i], totalFactor);
+        allpassC[i].setsize(f_(allpCo[i], totalFactor));
     }
-    allpassC_31_33.setsize(fPtr, f_(allpCo[6], totalFactor));
-    fPtr += f_(allpCo[6], totalFactor);
-    allpassC_55_59.setsize(fPtr, f_(allpCo[7], totalFactor));
+    allpassC_31_33.setsize(f_(allpCo[6], totalFactor));
+    allpassC_55_59.setsize(f_(allpCo[7], totalFactor));
 
-    fPtr = totalBuf2;
-    allpassM_23_24.setsize(fPtr, f_(allpCo[4], totalFactor), f_(allpM_EXCURSION, excurFactor));
-    fPtr += f_(allpCo[4], totalFactor) + f_(allpM_EXCURSION, excurFactor);
-    allpassM_46_48.setsize(fPtr, f_(allpCo[5], totalFactor), f_(allpM_EXCURSION, excurFactor));
-    fPtr += f_(allpCo[5], totalFactor) + f_(allpM_EXCURSION, excurFactor);
+    allpassM_23_24.setsize(f_(allpCo[4], totalFactor), f_(allpM_EXCURSION, excurFactor));
+    allpassM_46_48.setsize(f_(allpCo[5], totalFactor), f_(allpM_EXCURSION, excurFactor));
 
-    delayC_30.setsize(fPtr, f_(delayCo[0], totalFactor));
-    fPtr += f_(delayCo[0], totalFactor);
-    delayC_39.setsize(fPtr, f_(delayCo[1], totalFactor));
-    fPtr += f_(delayCo[1], totalFactor);
-    delayC_54.setsize(fPtr, f_(delayCo[2], totalFactor));
-    fPtr += f_(delayCo[2], totalFactor);
-    delayC_63.setsize(fPtr, f_(delayCo[3], totalFactor));
+    delayC_30.setsize(f_(delayCo[0], totalFactor));
+    delayC_39.setsize(f_(delayCo[1], totalFactor));
+    delayC_54.setsize(f_(delayCo[2], totalFactor));
+    delayC_63.setsize(f_(delayCo[3], totalFactor));
+
     for (int32_t i = 0; i < FV3_STREV_NUM_INDEX; i++) {
         iLC[i] = f_(idxLCo[i], totalFactor);
         iRC[i] = f_(idxRCo[i], totalFactor);

@@ -44,7 +44,12 @@ ctagSoundProcessorGDVerb::ctagSoundProcessorGDVerb() {
 }
 
 void ctagSoundProcessorGDVerb::Process(const ProcessData &data) {
-    strev.setrt60((float) revtime / 4095.f * 20.f);
+    float fRevTime = (float) revtime / 4095.f * 20.f;
+    if(cv_revtime != -1){
+        fRevTime = 0.9f * prefRevTime + 0.1f * (0.2f + fabsf(data.cv[cv_revtime]) * 20.f);
+        prefRevTime = fRevTime;
+    }
+    strev.setrt60(fRevTime);
     strev.setdccutfreq((float) dccut);
     strev.setidiffusion1((float) idiffusion1 / 4095.f);
     strev.setidiffusion2((float) idiffusion2 / 4095.f);

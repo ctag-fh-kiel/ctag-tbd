@@ -51,6 +51,7 @@ else ()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
             PRIV_REQUIRES rapidjson esp-dsp mutable moog)
+    #target_compile_options(${COMPONENT_LIB} PRIVATE -ffast-math -fno-finite-math-only)
 endif ()
 
 #set_source_files_properties(ctagSoundProcessorGDVerb.cpp

@@ -47,9 +47,18 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
 
     if (isWaveInput) {
         int nread = 0;
-        nread = tinywav_read_f(&tw, fbuf, 32);
-        if (nread != 32) {
-            tinywav_read_reset(&tw);
+        do{
+            nread = tinywav_read_f(&tw, fbuf, 32);
+            if (nread != 32) {
+                tinywav_read_reset(&tw);
+            }
+        }while(nread != 32);
+        // check value range
+        for(int i=0;i<32;i++){
+            if(fbuf[i*2] > 1.f)fbuf[i*2] = 0.f;
+            if(fbuf[i*2] < -1.f)fbuf[i*2] = -0.f;
+            if(fbuf[i*2 + 1] > 1.f)fbuf[i*2 + 1] = 0.f;
+            if(fbuf[i*2 + 1] < -1.f)fbuf[i*2 + 1] = -0.f;
         }
     }
 

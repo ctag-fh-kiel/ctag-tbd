@@ -1,0 +1,296 @@
+{
+ "id": "GDVerb2",
+ "isStereo": true,
+ "name": "Progen Reverb",
+ "hint": "Griesinger progenitor reverb according to D'Attoro, adapted from freesound3",
+ "params": [
+  {
+   "id": "decay",
+   "name": "Length",
+   "type": "group",
+   "params": [
+    {
+     "id": "exprtdecay",
+     "type": "bool",
+     "name": "Expert Off/On",
+     "info": "If in expert mode, decay factors an be set manually, otherwise only rev time has an effect."
+    },
+    {
+     "id": "revtime",
+     "name": "Rev Time",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "decay0",
+     "name": "Loop Decay",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "decay1",
+     "name": "Decay 1",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "decay2",
+     "name": "Decay 2",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "decay3",
+     "name": "Decay 3",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "decayf",
+     "name": "Decay f",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "diffusion",
+   "name": "Diffusion",
+   "type": "group",
+   "params": [
+    {
+     "id": "exprtdiffu",
+     "type": "bool",
+     "name": "Expert Off/On",
+     "info": "If in expert mode, diffusion parameters can be set manually, otherwise preset."
+    },
+    {
+     "id": "diffusion1",
+     "name": "Diffusion 1",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "diffusion2",
+     "name": "Diffusion 2",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "diffusion3",
+     "name": "Diffusion 3",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "diffusion4",
+     "name": "Diffusion 4",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "damping",
+   "name": "Damping",
+   "type": "group",
+   "params": [
+    {
+     "id": "exprtdamp",
+     "type": "bool",
+     "name": "Expert Off/On",
+     "info": "If not in expert mode, preset values are applied."
+    },
+    {
+     "id": "dccut",
+     "name": "Input HPF",
+     "type": "int",
+     "min": 5,
+     "max": 10000,
+     "step": 1
+    },
+    {
+     "id": "inputdamp",
+     "name": "Input LPF",
+     "type": "int",
+     "min": 10,
+     "max": 20000,
+     "step": 1
+    },
+    {
+     "id": "damp",
+     "name": "Loop LPF",
+     "type": "int",
+     "min": 10,
+     "max": 20000,
+     "step": 1
+    },
+    {
+     "id": "outputdamp",
+     "name": "Output LPF",
+     "type": "int",
+     "min": 10,
+     "max": 11000,
+     "step": 1
+    },
+    {
+     "id": "outputdampbw",
+     "name": "Output LPF BW",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "bassboost",
+     "name": "Bass Boost",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "damp2",
+     "name": "Bass LPF",
+     "type": "int",
+     "min": 10,
+     "max": 1000,
+     "step": 1
+    },
+    {
+     "id": "bassbw",
+     "name": "Bass LPF BW",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "modulation",
+   "name": "Modulation",
+   "type": "group",
+   "params": [
+    {
+     "id": "exprtmod",
+     "type": "bool",
+     "name": "Expert Off/On",
+     "info": "If not in expert mode, preset values are applied."
+    },
+    {
+     "id": "spin",
+     "name": "Mod Freq",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "spinlimit",
+     "name": "Mod Freq Limit",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "wander",
+     "name": "Mod Strength",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "spin2",
+     "name": "Spin Freq",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "spinlimit2",
+     "name": "Spin Freq Limit",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "wander2",
+     "name": "Spin Strength",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "spin2wander",
+     "name": "Wander",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "ios",
+   "name": "Input / Output",
+   "type": "group",
+   "params": [
+    {
+     "id": "dry",
+     "name": "Dry",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "wet",
+     "name": "Wet",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "width",
+     "name": "Width",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "mono",
+     "name": "Mono In",
+     "type": "bool"
+    }
+   ]
+  }
+ ]
+}
