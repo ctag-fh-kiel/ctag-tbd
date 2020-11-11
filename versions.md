@@ -1,5 +1,11 @@
 # CTAG TBD Version Log
 
+## V0.9.4
+   - New reverb plugin Progenitor Reverb (from freesound3), essentially Griesinger Lexicon 224 topology --> with love for all ambient musicians :)
+   - Reverb time of Plate Reverb can now be controlled with CV
+   - Flash write issue workaround, i.e. when TBD suffers a power loss during a flash write e.g. during storing of preset data, files can get corrupted; this could only be fixed with manually re-flashing the module; now, TBD tries to recover files from a backup directory in the default firmware. Note that any settings made by the user stored in that file will lost. You should always make sure, the power supply is stable and power is only disconnected when no flash writes are in progress (LED NOT BLUE!).
+   - Several smaller bug fixes and optimizations
+
 ## V0.9.3
    - Significant refactoring reducing code bloat in sound processors, improved compilation speed of sound processors
    - Improved sound processor template generation

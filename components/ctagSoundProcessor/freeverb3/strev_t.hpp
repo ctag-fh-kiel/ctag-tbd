@@ -24,8 +24,6 @@ class _FV3_(strev) : public _FV3_(revbase) {
 public:
     _FV3_(strev)();
 
-    ~_FV3_(strev)();
-
     virtual void mute();
 
     virtual void
@@ -139,8 +137,6 @@ protected:
     _FV3_(strev) &operator=(const _FV3_(strev) &x);
 
     virtual void setFsFactors();
-
-    float *totalBuf1, *totalBuf2;
 
     _fv3_float_t rt60, decay, dccutfq, inputdamp, damp, outputdamp;
     _fv3_float_t diff1, diff2, idiff1, idiff2, spin, spindiff, spinlimit, wander, modnoise1, modnoise2;

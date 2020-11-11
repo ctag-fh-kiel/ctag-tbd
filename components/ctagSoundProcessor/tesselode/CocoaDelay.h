@@ -172,11 +172,11 @@ namespace tesselode {
         std::vector<float> bufferL;
         std::vector<float> bufferR;
          */
-        float *bufferL, *bufferR;
-        int bufferSize;
-        int writePosition;
-        float readPositionL;
-        float readPositionR;
+        float *bufferL = NULL, *bufferR = NULL;
+        int bufferSize = 0;
+        int writePosition = 0;
+        float readPositionL = 0.f;
+        float readPositionR = 0.f;
         bool warmedUp = false;
 
         // fading parameters

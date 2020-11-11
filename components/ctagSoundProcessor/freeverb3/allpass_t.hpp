@@ -202,9 +202,9 @@ public:
     inline _fv3_float_t operator()(_fv3_float_t input, _fv3_float_t modulation) { return process(input, modulation); }
 
     inline _fv3_float_t _process(_fv3_float_t input, _fv3_float_t modulation) {
-        modulation = (modulation + 1.) * modulationsize_f;
-        _fv3_float_t floor_mod = std::floor(modulation); // >= 0
-        _fv3_float_t m_frac = 1. - (modulation - floor_mod); // >= 0
+        modulation = (modulation + 1.f) * modulationsize_f;
+        _fv3_float_t floor_mod = floorf(modulation); // >= 0
+        _fv3_float_t m_frac = 1.f - (modulation - floor_mod); // >= 0
 
         int32_t readidx_a = readidx - (int32_t) floor_mod;
         if (readidx_a < 0) readidx_a += bufsize;
@@ -258,9 +258,9 @@ public:
     }
 
     inline _fv3_float_t _process_dc(_fv3_float_t input, _fv3_float_t modulation) {
-        modulation = (modulation + 1.) * modulationsize_f;
-        _fv3_float_t floor_mod = std::floor(modulation); // >= 0
-        _fv3_float_t m_frac = 1. - (modulation - floor_mod); // >= 0
+        modulation = (modulation + 1.f) * modulationsize_f;
+        _fv3_float_t floor_mod = floorf(modulation); // >= 0
+        _fv3_float_t m_frac = 1.f - (modulation - floor_mod); // >= 0
 
         int32_t readidx_a = readidx - (int32_t) floor_mod;
         if (readidx_a < 0) readidx_a += bufsize;
@@ -268,7 +268,7 @@ public:
         if (readidx_b < 0) readidx_b += bufsize;
 
         z_1 = buffer[readidx_b] + m_frac * (buffer[readidx_a] - z_1);
-        UNDENORMAL(z_1);
+        //UNDENORMAL(z_1);
         readidx++;
         if (readidx >= bufsize) readidx = 0;
 
@@ -303,7 +303,7 @@ public:
 
     inline _fv3_float_t _process_li(_fv3_float_t input, _fv3_float_t modulation) {
         modulation = (modulation + 1.) * modulationsize_f;
-        _fv3_float_t floor_mod = std::floor(modulation); // >= 0
+        _fv3_float_t floor_mod = floorf(modulation); // >= 0
         _fv3_float_t frac = modulation - floor_mod; // >= 0
 
         int32_t readidx_a = readidx - (int32_t) floor_mod;
@@ -447,11 +447,11 @@ public:
     inline _fv3_float_t _process(_fv3_float_t input) {
         input += feedback2 * buffer2[bufidx2];
         _fv3_float_t output = decay2 * buffer2[bufidx2] - input * feedback2;
-        UNDENORMAL(output);
+        //UNDENORMAL(output);
 
         input += feedback1 * buffer1[bufidx1];
         buffer2[bufidx2] = decay1 * buffer1[bufidx1] - input * feedback1;
-        UNDENORMAL(buffer2[bufidx2]);
+        //UNDENORMAL(buffer2[bufidx2]);
 
         buffer1[bufidx1] = input;
 
@@ -531,15 +531,15 @@ public:
     inline _fv3_float_t _process(_fv3_float_t input) {
         input += feedback3 * buffer3[bufidx3];
         _fv3_float_t output = decay3 * buffer3[bufidx3] - feedback3 * input;
-        UNDENORMAL(output);
+        //UNDENORMAL(output);
 
         input += feedback2 * buffer2[bufidx2];
         buffer3[bufidx3] = decay2 * buffer2[bufidx2] - feedback2 * input;
-        UNDENORMAL(buffer3[bufidx3]);
+        //UNDENORMAL(buffer3[bufidx3]);
 
         input += feedback1 * buffer1[readidx1];
         buffer2[bufidx2] = decay1 * buffer1[readidx1] - feedback1 * input;
-        UNDENORMAL(buffer2[bufidx2]);
+        //UNDENORMAL(buffer2[bufidx2]);
 
         buffer1[writeidx1] = input;
 
@@ -563,7 +563,7 @@ public:
 
     inline _fv3_float_t _process(_fv3_float_t input, _fv3_float_t modulation) {
         modulation = (modulation + 1.) * modulationsize_f;
-        _fv3_float_t floor_mod = std::floor(modulation); // >= 0
+        _fv3_float_t floor_mod = floorf(modulation); // >= 0
         _fv3_float_t frac = modulation - floor_mod; // >= 0
 
         int32_t readidx_a = readidx1 - (int32_t) floor_mod;

@@ -22,6 +22,8 @@
 #include "progenitor.hpp"
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
+#include "esp_heap_caps.h"
+#include "esp_log.h"
 
 // Fs = 34.125 kHz
 const int32_t FV3_(progenitor)::allpassLCo[] = {239, 392, 1944, 612, 1212, 121, 816, 1264,};
@@ -33,6 +35,7 @@ const int32_t FV3_(progenitor)::delayRCo[] = {1, 625, 835, 500, 16, 1460,};
 const int32_t FV3_(progenitor)::allpM_EXCURSION = 32;
 const int32_t FV3_(progenitor)::idxOutCo[] = {276, 468, 625, 312, 8, 24, 36, 40, 1, 192, 1572,};
 //                                         d31   {d49  d40  d31 d58}  d49 d37  {d31 d23  d49   d37}
+
 
 FV3_(progenitor)::FV3_(progenitor)() {
     setrt60(2.);
@@ -61,6 +64,7 @@ FV3_(progenitor)::FV3_(progenitor)() {
     setdamp2(500); // bass boost
     setbassbw(2);
     setbassboost(0.1);
+    isMono = false;
 }
 
 void FV3_(progenitor)::mute() {
@@ -78,16 +82,19 @@ void FV3_(progenitor)::mute() {
 }
 
 void FV3_(progenitor)::processreplace(fv3_float_t *data, int32_t size) {
-
-    //growWave(size);
     fv3_float_t outL, outR;
-    //SRC.usrc(inputL, inputR, over.L, over.R, numsamples);
 
     for (uint32_t i = 0; i < size; i++) {
-        float inputL = data[i * 2];
-        float inputR = data[i * 2 + 1];
-        UNDENORMAL(inputL); UNDENORMAL(inputR);
-        outL = outR = 0.0;
+        float inputL;
+        float inputR;
+        if (isMono) {
+            inputL = data[i * 2];
+            inputR = data[i * 2];
+        } else {
+            inputL = data[i * 2];
+            inputR = data[i * 2 + 1];
+        }
+        //UNDENORMAL(inputL); UNDENORMAL(inputR);
 
         /* input DC-cut + LPF + short delay */
         // outL = 0.5 * delayL_61(lpfL_in_59_60(0.812*dccutL(*inputL)));
@@ -109,12 +116,12 @@ void FV3_(progenitor)::processreplace(fv3_float_t *data, int32_t size) {
         // outL = allpassmL_17_18(delayL_16(allpassmL_15_16(lpfLdamp_11_12(0.688 * outL), lfo1_lpf(lfo1.process())*wander)));
         // outR = allpassmR_21_22(delayR_ts(allpassmR_19_20(lpfRdamp_13_14(0.688 * outR), lfo2_lpf(lfo2.process())*wander)));
         outL = allpassmL_17_18.process_dc(delayL_16(allpassmL_15_16.process_dc(lpfLdamp_11_12(outL), lfomod)),
-                                          lfomod * (-1.));
-        outR = allpassmR_21_22.process_dc(delayR_ts(allpassmR_19_20.process_dc(lpfRdamp_13_14(outR), lfomod * (-1.))),
+                                          lfomod * (-1.f));
+        outR = allpassmR_21_22.process_dc(delayR_ts(allpassmR_19_20.process_dc(lpfRdamp_13_14(outR), lfomod * (-1.f))),
                                           lfomod);
         delayL_37(allpass3L_34_37._process(delayL_31(allpass2L_25_27._process(delayL_23(outL))), lfomod));
         // delayR_58(allpass3R_52_55._process(delayR_49(allpass2R_43_45._process(delayR_41(delayR_40(outR)))), lfomod*(-1.)));
-        delayR_58(allpass3R_52_55._process(delayR_49(allpass2R_43_45._process(delayR_40(outR))), lfomod * (-1.)));
+        delayR_58(allpass3R_52_55._process(delayR_49(allpass2R_43_45._process(delayR_40(outR))), lfomod * (-1.f)));
 
         // Original Output
         // The Lexicon 224 manual says that A or C is the mono output, A and C are the stereo mode L and R outputs,
@@ -129,21 +136,20 @@ void FV3_(progenitor)::processreplace(fv3_float_t *data, int32_t size) {
         // Cout = delayR_49._get_z(iOutC[5])*0.938 + delayL_37._get_z(iOutC[6])*0.469;
 
         fv3_float_t Bout, Dout;
-        Dout = delayL_23._get_z(iOutC[8]) * 0.938 + (delayL_31._get_z(iOutC[7]) - delayR_49._get_z(iOutC[9])) * 0.438 +
-               delayL_37._get_z(iOutC[10]) * 0.125;
-        Bout = delayR_40._get_z(iOutC[2]) * 0.938 + (delayR_49._get_z(iOutC[1]) - delayL_31._get_z(iOutC[3])) * 0.438 +
-               delayR_58._get_z(iOutC[4]) * 0.125;
+        Dout = delayL_23._get_z(iOutC[8]) * 0.938f + (delayL_31._get_z(iOutC[7]) - delayR_49._get_z(iOutC[9])) * 0.438f +
+               delayL_37._get_z(iOutC[10]) * 0.125f;
+        Bout = delayR_40._get_z(iOutC[2]) * 0.938f + (delayR_49._get_z(iOutC[1]) - delayL_31._get_z(iOutC[3])) * 0.438f +
+               delayR_58._get_z(iOutC[4]) * 0.125f;
 
         lfomod = lfo2_lpf(lfo2() * wander2);
         outL = outCombL._process_ff(Dout, lfomod);
-        outR = outCombR._process_ff(Bout, lfomod * (-1.));
+        outR = outCombR._process_ff(Bout, lfomod * (-1.f));
 
         fv3_float_t fpL = delayWL(out1_lpf.process(outL));
         fv3_float_t fpR = delayWR(out2_lpf.process(outR));
         data[i * 2] = fpL * wet1 + fpR * wet2 + delayL(inputL) * dry;
         data[i * 2 + 1] = fpR * wet1 + fpL * wet2 + delayR(inputR) * dry;
-        UNDENORMAL(data[i * 2]); UNDENORMAL(data[i * 2 + 1]);
-
+        //UNDENORMAL(data[i * 2]); UNDENORMAL(data[i * 2 + 1]);
     }
 
 }
@@ -184,11 +190,11 @@ FV3_(progenitor)::processreplace(fv3_float_t *inputL, fv3_float_t *inputR, fv3_f
         // outR = allpassmR_21_22(delayR_ts(allpassmR_19_20(lpfRdamp_13_14(0.688 * outR), lfo2_lpf(lfo2.process())*wander)));
         outL = allpassmL_17_18.process_dc(delayL_16(allpassmL_15_16.process_dc(lpfLdamp_11_12(outL), lfomod)),
                                           lfomod * (-1.));
-        outR = allpassmR_21_22.process_dc(delayR_ts(allpassmR_19_20.process_dc(lpfRdamp_13_14(outR), lfomod * (-1.))),
+        outR = allpassmR_21_22.process_dc(delayR_ts(allpassmR_19_20.process_dc(lpfRdamp_13_14(outR), lfomod * (-1.f))),
                                           lfomod);
         delayL_37(allpass3L_34_37._process(delayL_31(allpass2L_25_27._process(delayL_23(outL))), lfomod));
         // delayR_58(allpass3R_52_55._process(delayR_49(allpass2R_43_45._process(delayR_41(delayR_40(outR)))), lfomod*(-1.)));
-        delayR_58(allpass3R_52_55._process(delayR_49(allpass2R_43_45._process(delayR_40(outR))), lfomod * (-1.)));
+        delayR_58(allpass3R_52_55._process(delayR_49(allpass2R_43_45._process(delayR_40(outR))), lfomod * (-1.f)));
 
         // Original Output
         // The Lexicon 224 manual says that A or C is the mono output, A and C are the stereo mode L and R outputs,
@@ -203,14 +209,14 @@ FV3_(progenitor)::processreplace(fv3_float_t *inputL, fv3_float_t *inputR, fv3_f
         // Cout = delayR_49._get_z(iOutC[5])*0.938 + delayL_37._get_z(iOutC[6])*0.469;
 
         fv3_float_t Bout, Dout;
-        Dout = delayL_23._get_z(iOutC[8]) * 0.938 + (delayL_31._get_z(iOutC[7]) - delayR_49._get_z(iOutC[9])) * 0.438 +
-               delayL_37._get_z(iOutC[10]) * 0.125;
-        Bout = delayR_40._get_z(iOutC[2]) * 0.938 + (delayR_49._get_z(iOutC[1]) - delayL_31._get_z(iOutC[3])) * 0.438 +
-               delayR_58._get_z(iOutC[4]) * 0.125;
+        Dout = delayL_23._get_z(iOutC[8]) * 0.938f + (delayL_31._get_z(iOutC[7]) - delayR_49._get_z(iOutC[9])) * 0.438f +
+               delayL_37._get_z(iOutC[10]) * 0.125f;
+        Bout = delayR_40._get_z(iOutC[2]) * 0.938f + (delayR_49._get_z(iOutC[1]) - delayL_31._get_z(iOutC[3])) * 0.438f +
+               delayR_58._get_z(iOutC[4]) * 0.125f;
 
         lfomod = lfo2_lpf(lfo2() * wander2);
         outL = outCombL._process_ff(Dout, lfomod);
-        outR = outCombR._process_ff(Bout, lfomod * (-1.));
+        outR = outCombR._process_ff(Bout, lfomod * (-1.f));
 
         fv3_float_t fpL = delayWL(out1_lpf.process(outL));
         fv3_float_t fpR = delayWR(out2_lpf.process(outR));
@@ -317,10 +323,10 @@ fv3_float_t FV3_(progenitor)::getspin2() {
 
 
 void FV3_(progenitor)::setspin2wander(fv3_float_t value) {
-    if (value < 0) value = 0;
+    if (value < 0.f) value = 0.f;
     spin2wander = value;
-    outCombL.setsize(p_(spin2wander, getTotalSampleRate() * 0.001));
-    outCombR.setsize(p_(spin2wander, getTotalSampleRate() * 0.001));
+    outCombL.setsize(p_(spin2wander, getTotalSampleRate() * 0.001f));
+    outCombR.setsize(p_(spin2wander, getTotalSampleRate() * 0.001f));
 }
 
 fv3_float_t FV3_(progenitor)::getspin2wander() {
@@ -336,8 +342,8 @@ fv3_float_t FV3_(progenitor)::getspinlimit2() {
 }
 
 void FV3_(progenitor)::setwander2(fv3_float_t value) {
-    if (value < 0) value = 0;
-    if (value > 1) value = 1;
+    if (value < 0.f) value = 0.f;
+    if (value > 1.f) value = 1.f;
     wander2 = value;
 }
 
@@ -416,37 +422,51 @@ void FV3_(progenitor)::resetdecay() {
     //            = 10^(-3*R1*fs*OSFactor*RSFactor/(rt60*fs*OSFactor))
     //            = 10^(-3*R1/(rt60/RSFactor))
     //      -3*R1 = log10(decayn), rt60L = rt60/RSFactor
+
     fv3_float_t decay_, rt60L = rt60 / getRSFactor(), rt60s = rt60 * decayf / getRSFactor();
-    UNDENORMAL(rt60L); UNDENORMAL(rt60s);
+    //UNDENORMAL(rt60L); UNDENORMAL(rt60s);
+    //printf("rt60L %f, rt60s %f, rt60 %f, decayf %f\n", rt60L, rt60s, rt60, decayf);
+    //decay_ = std::pow((fv3_float_t) 10.0, std::log10(decay0) / rt60L);
+    //decay_ = CTAG::SP::HELPERS::powf_fast(10.0f, CTAG::SP::HELPERS::fast_log10(decay0) / rt60L);
+    decay_ = powf(10.0f, CTAG::SP::HELPERS::fast_log10(decay0) / rt60L);
 
-    decay_ = std::pow((fv3_float_t) 10.0, std::log10(decay0) / rt60L);
     loopdecay = decay_;
+    //printf("decay_ from decay0 %f\n", decay_);
 
-    decay_ = std::pow((fv3_float_t) 10.0, std::log10(decay1) / rt60s);
+    //decay_ = std::pow((fv3_float_t) 10.0, std::log10(decay1) / rt60s);
+    //decay_ = CTAG::SP::HELPERS::powf_fast(10.0f, CTAG::SP::HELPERS::fast_log10(decay1) / rt60s);
+    decay_ = powf(10.0f, CTAG::SP::HELPERS::fast_log10(decay1) / rt60s);
     allpass2L_25_27.setdecay1(decay_), allpass2R_43_45.setdecay1(decay_);
     allpass3L_34_37.setdecay1(decay_), allpass3L_34_37.setdecay2(decay_);
     allpass3R_52_55.setdecay1(decay_), allpass3R_52_55.setdecay2(decay_);
+    //printf("decay_ from decay1 %f\n", decay_);
 
-    decay_ = std::pow((fv3_float_t) 10.0, std::log10(decay2) / rt60s);
+    //decay_ = std::pow((fv3_float_t) 10.0, std::log10(decay2) / rt60s);
+    //decay_ = CTAG::SP::HELPERS::powf_fast(10.0f, CTAG::SP::HELPERS::fast_log10(decay2) / rt60s);
+    decay_ = powf(10.0f, CTAG::SP::HELPERS::fast_log10(decay2) / rt60s);
     allpassmL_15_16.setdecay(decay_), allpassmR_19_20.setdecay(decay_);
     allpass2L_25_27.setdecay2(decay_), allpass2R_43_45.setdecay2(decay_);
     allpass3L_34_37.setdecay3(decay_), allpass3R_52_55.setdecay3(decay_);
+    //printf("decay_ from decay2 %f\n", decay_);
 
-    decay_ = std::pow((fv3_float_t) 10.0, std::log10(decay3) / rt60s);
+    //decay_ = std::pow((fv3_float_t) 10.0, std::log10(decay3) / rt60s);
+    //decay_ = CTAG::SP::HELPERS::powf_fast(10.0f, CTAG::SP::HELPERS::fast_log10(decay3) / rt60s);
+    decay_ = powf(10.0f, CTAG::SP::HELPERS::fast_log10(decay3) / rt60s);
     allpassmL_17_18.setdecay(decay_), allpassmR_21_22.setdecay(decay_);
+    //printf("decay_ from decay3 %f\n", decay_);
 }
 
-void FV3_(progenitor)::setrt60(fv3_float_t value) { rt60 = value, resetdecay(); }
+void FV3_(progenitor)::setrt60(fv3_float_t value) { rt60 = value; }
 
-void FV3_(progenitor)::setdecay0(fv3_float_t value) { decay0 = value, resetdecay(); }
+void FV3_(progenitor)::setdecay0(fv3_float_t value) { decay0 = value; }
 
-void FV3_(progenitor)::setdecay1(fv3_float_t value) { decay1 = value, resetdecay(); }
+void FV3_(progenitor)::setdecay1(fv3_float_t value) { decay1 = value; }
 
-void FV3_(progenitor)::setdecay2(fv3_float_t value) { decay2 = value, resetdecay(); }
+void FV3_(progenitor)::setdecay2(fv3_float_t value) { decay2 = value; }
 
-void FV3_(progenitor)::setdecay3(fv3_float_t value) { decay3 = value, resetdecay(); }
+void FV3_(progenitor)::setdecay3(fv3_float_t value) { decay3 = value; }
 
-void FV3_(progenitor)::setdecayf(fv3_float_t value) { decayf = value, resetdecay(); }
+void FV3_(progenitor)::setdecayf(fv3_float_t value) { decayf = value; }
 
 void FV3_(progenitor)::setFsFactors() {
     FV3_(revbase)::setFsFactors();

@@ -35,3 +35,11 @@ void *heap_caps_calloc(unsigned int n, unsigned int size, unsigned int caps){
 void *heap_caps_realloc(void * ptr, unsigned int size, unsigned int caps){
     return realloc(ptr, size);
 }
+
+int heap_caps_get_free_size(unsigned int caps){
+    return 0;
+}
+
+int heap_caps_get_largest_free_block(unsigned int caps){
+    return 0;
+}

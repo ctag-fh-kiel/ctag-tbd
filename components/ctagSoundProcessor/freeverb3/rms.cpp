@@ -42,14 +42,19 @@ void FV3_(rms)::setsize(int32_t size) {
     if (size <= 0) return;
     this->free();
 
-    buffer = (fv3_float_t *) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
+    buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    if(buffer == NULL){
+        ESP_LOGE("rms", "Cannot alloc mem trying SPIRAM!");
+        buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
+        if(buffer == NULL) {
+            ESP_LOGE("rms", "Cannot alloc mem on SPIRAM!");
+            return;
+        }
+    }/*else{
+        ESP_LOGE("rms", "Mem alloc success requested size %d, freesize %d, largest block %d!",
+                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    }*/
 
-    if (buffer != NULL) {
-        ESP_LOGW("rms", "Allocated %d bytes", (int) (size * sizeof(float)));
-    } else {
-        ESP_LOGE("rms", "Bad alloc!");
-        return;
-    }
     bufs = bufsize = size;
     mute();
 }

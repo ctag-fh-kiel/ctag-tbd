@@ -32,6 +32,8 @@ void *heap_caps_malloc(unsigned int , unsigned int  );
 void heap_caps_free(void *);
 void *heap_caps_calloc(unsigned int , unsigned int , unsigned int );
 void *heap_caps_realloc(void *, unsigned int , unsigned int );
+int heap_caps_get_free_size(unsigned int);
+int heap_caps_get_largest_free_block(unsigned int);
 #ifdef __cplusplus
 }
 #endif

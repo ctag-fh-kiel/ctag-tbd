@@ -158,7 +158,7 @@ public:
 
     inline _fv3_float_t _process(_fv3_float_t input, _fv3_float_t modulation) {
         modulation = (modulation + 1.) * modulationsize_f;
-        _fv3_float_t floor_mod = std::floor(modulation); // >= 0
+        _fv3_float_t floor_mod = floorf(modulation); // >= 0
         _fv3_float_t m_frac = 1. - (modulation - floor_mod); // >= 0
 
         int32_t readidx_a = readidx - (int32_t) floor_mod;

@@ -54,21 +54,25 @@ revmodel::revmodel() {
                   allpasstuningL3 + allpasstuningR3 +
                   allpasstuningL4 + allpasstuningR4;
 
-#ifndef TBD_SIM
     // use internal ram, which will be always accessible, no cache misses!
     // allocate one big chunk, otherwise ESP crashes :(
     ESP_LOGE("FVERB", "Mem alloc try requested size %d, freesize %d, largest block %d!",
              (int)(sz * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-#endif
     allBuf = (float *) heap_caps_malloc(sz * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+
     if (allBuf == NULL) {
+        allBuf = (float*) heap_caps_malloc(sz * sizeof(float), MALLOC_CAP_SPIRAM);
+        if(allBuf == NULL) {
+            ESP_LOGE("comb", "Cannot alloc mem on SPIRAM!");
+            return;
+        }
         ESP_LOGE("FVERB", "Cannot alloc mem!");
-    } else {
-#ifndef TBD_SIM
+    }
+    else {
         ESP_LOGE("FVERB", "Mem alloc success requested size %d, freesize %d, largest block %d!",
                  (int)(sz * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-#endif
     }
+
     float *fPtr = allBuf;
     // Tie the components to their buffers
     combL[0].setbuffer(fPtr, combtuningL1);

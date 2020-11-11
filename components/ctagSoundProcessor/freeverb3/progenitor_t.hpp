@@ -146,6 +146,8 @@ public:
 
     void setdecayf(_fv3_float_t value);
 
+    void resetdecay();
+
     _fv3_float_t getdecay0() { return decay0; }
 
     _fv3_float_t getdecay1() { return decay1; }
@@ -168,12 +170,14 @@ public:
 
     _fv3_float_t getbassboost() { return bassb; }
 
+    void setmono(bool mode) { isMono = mode; }
+
 protected:
     _FV3_(progenitor)(const _FV3_(progenitor) &x);
 
     _FV3_(progenitor) &operator=(const _FV3_(progenitor) &x);
 
-    void resetdecay();
+
 
     virtual void setFsFactors();
 
@@ -198,4 +202,6 @@ protected:
             delayLCo[FV3_PROGENITOR_NUM_DELAY], delayRCo[FV3_PROGENITOR_NUM_DELAY], idxOutCo[FV3_PROGENITOR_OUT_INDEX];
     const static int32_t allpM_EXCURSION;
     int32_t iOutC[FV3_PROGENITOR_OUT_INDEX];
+
+    bool isMono;
 };

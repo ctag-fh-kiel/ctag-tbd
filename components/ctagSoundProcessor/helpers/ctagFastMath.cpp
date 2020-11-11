@@ -1,4 +1,5 @@
 #include "ctagFastMath.hpp"
+#include <cstdio>
 
 namespace CTAG::SP::HELPERS {
 
@@ -247,6 +248,33 @@ namespace CTAG::SP::HELPERS {
  "I have used the same trick for float, not double, with some slight modification to the constants to suite IEEE754 float format. The first constant for float is 1<<23/log(2) and the second is 127<<23 (for double they are 1<<20/log(2) and 1023<<20)." -- John
 */
 
+    /* should be much more precise with large b */
+    float powf_fast_precise(float a, float b) {
+        int flipped = 0;
+        if (b < 0) {
+            flipped = 1;
+            b = -b;
+        }
+
+        /* calculate approximation with fraction of the exponent */
+        int e = (int) b;
+        union { float f; int x; } u = { a };
+        u.x = (int)((b - e) * (u.x - 1065353216) + 1065353216);
+
+        float r = 1.0f;
+        while (e) {
+            if (e & 1) {
+                r *= a;
+            }
+            a *= a;
+            e >>= 1;
+        }
+
+        r *= u.f;
+
+        return flipped ? 1.0f/r : r;
+    }
+
 /* 1065353216 + 1      = 1065353217 ub */
 /* 1065353216 - 486411 = 1064866805 min RMSE */
 /* 1065353216 - 722019 = 1064631197 lb */
@@ -256,6 +284,7 @@ namespace CTAG::SP::HELPERS {
             int x;
         } u = {a};
         u.x = (int) (b * (u.x - 1064866805) + 1064866805);
+        //float f = u.d; printf("Args base %f, exp %f, True pow %f, fast pow %f, relative error %f%%\n", a, b, powf(a, b), f,  (f/ powf(a, b) - 1.f) * 100.f);
         return u.d;
     }
 
@@ -276,6 +305,7 @@ namespace CTAG::SP::HELPERS {
         u.x = (int) (b * (u.x - 1064631197) + 1065353217);
         return u.d;
     }
+
 
     //https://stackoverflow.com/questions/10552280/fast-exp-calculation-possible-to-improve-accuracy-without-losing-too-much-perfo
     float exp1(float x) {
@@ -366,6 +396,27 @@ namespace CTAG::SP::HELPERS {
 
     float fastsinh(float x) {
         return (expf_fast(x) - expf_fast(-x)) * 0.5f;
+    }
+
+    // https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
+    float fastsqrt(float x) {
+        union
+        {
+            int i;
+            float x;
+        } u;
+        u.x = x;
+        u.i = (1<<29) + (u.i >> 1) - (1<<22);
+
+        // Two Babylonian Steps (simplified from:)
+        // u.x = 0.5f * (u.x + x/u.x);
+        // u.x = 0.5f * (u.x + x/u.x);
+        u.x =       u.x + x/u.x;
+        u.x = 0.25f*u.x + x/u.x;
+
+        //float f = u.x; printf("True sqrt %f, fast pow %f, relative error %f%%\n", sqrtf(x), f,  (f/ sqrtf(x) - 1.f) * 100.f);
+
+        return u.x;
     }
 
 }

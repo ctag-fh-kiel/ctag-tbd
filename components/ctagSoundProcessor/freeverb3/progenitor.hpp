@@ -28,6 +28,8 @@
 #include "efilter.hpp"
 #include "biquad.hpp"
 #include "fv3_defs.h"
+#include "helpers/ctagFastMath.hpp"
+#include <cmath>
 
 #define FV3_PROGENITOR_DEFAULT_FS 34125
 #define FV3_PROGENITOR_NUM_ALLPASS 8

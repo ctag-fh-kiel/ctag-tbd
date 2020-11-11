@@ -267,18 +267,42 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
 void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const string &id) {
     ledBlink = 5;
+
     ESP_LOGI("SP", "Switching plugin %d to %s", chan, id.c_str());
+    ESP_LOGE("SP", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
+    // destroy active plugin
     xSemaphoreTake(processMutex, portMAX_DELAY);
     sp[chan] = nullptr; // destruct smart ptr
     if (model->IsStereo(id) && chan == 0) {
         ESP_LOGI("SP", "Removing ch 1 plugin as ch 0 is stereo!");
         sp[1] = nullptr; // destruct smart ptr
     }
+
+    ESP_LOGE("SP", "2: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
+    // create new plugin
     sp[chan] = ctagSoundProcessorFactory::Create(id);
     sp[chan]->SetProcessChannel(chan);
     model->SetActivePluginID(id, chan);
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
     xSemaphoreGive(processMutex);
+
+
+    ESP_LOGE("SP", "3: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
 }
 
 TaskHandle_t SoundProcessorManager::audioTaskH;

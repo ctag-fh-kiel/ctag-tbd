@@ -42,6 +42,8 @@ namespace CTAG::SP {
         // stereo reverb object
         fv3::strev_f strev;
 
+        float prefRevTime = 1.f;
+
         // sectionHpp
         atomic<int32_t> revtime, cv_revtime;
         atomic<int32_t> dccut, cv_dccut;

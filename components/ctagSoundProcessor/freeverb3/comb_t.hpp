@@ -36,8 +36,6 @@ public:
      */
     void setsize(int32_t size);
 
-    void setsize(float *buf, const uint32_t size);
-
     int32_t getsize();
 
     void mute();
@@ -136,7 +134,9 @@ private:
     _FV3_(comb) &operator=(const _FV3_(comb) &x);
 
     _fv3_float_t *buffer, feedback, filterstore, damp1, damp2;
-    int32_t bufsize, bufidx;
+    int32_t bufsize; // used buffer
+    int32_t bufidx;
+    int32_t totalBufSize;
 };
 
 /**
@@ -153,8 +153,6 @@ public:
     void setsize(int32_t size);
 
     void setsize(int32_t size, int32_t modsize);
-
-    void setsize(float *buf, const uint32_t size, int32_t modsize);
 
     int32_t getsize();
 
@@ -179,7 +177,7 @@ public:
     inline _fv3_float_t process(_fv3_float_t input, _fv3_float_t modulation) {
         if (bufsize == 0) return input;
         modulation = (modulation + 1.) * modulationsize_f;
-        _fv3_float_t floor_mod = std::floor(modulation); // >= 0
+        _fv3_float_t floor_mod = floorf(modulation); // >= 0
         _fv3_float_t m_frac = 1. - (modulation - floor_mod); // >= 0
 
         int32_t readidx_a = readidx - (int32_t) floor_mod;
