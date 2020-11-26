@@ -35,7 +35,17 @@ brew install boost
 
 ### Windows
 
-try yourself
+- Getting the simulator running on Windows has been tested using the MingW GCC environment (32-bit)
+- Tests with the MS Visual Studio Compiler resulted in many errors
+- Here are the steps which lead to a success
+    - Required tools / steps:
+        - JetBrains CLion IDE (could work also with others)
+        - MingW follow these steps (but use 32-bit, i686)
+            - https://www.jetbrains.com/help/clion/quick-tutorial-on-configuring-clion-on-windows.html
+        - Install Boost, follow these steps (update the version number accordingly and use the 32-bit MingW locations)
+            - https://gist.github.com/zrsmithson/0b72e0cb58d0cb946fc48b5c88511da8
+        - Set Boost_DIR environment variable (e.g. Boost_DIR=c:\boost)
+            - https://www.jetbrains.com/help/clion/add-environment-variables-and-program-arguments.html
 
 ## Clone with complete CTAG-TBD source repository
 
