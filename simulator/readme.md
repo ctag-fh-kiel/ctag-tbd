@@ -36,7 +36,7 @@ brew install boost
 ### Windows
 
 #### Approach 1 (64bit)
-Install [msys2.org](msys2.org) and launch the MinGW 64-bit shell from the Start menu, not the default MSYS shell. Update the package manager itself:
+Install [msys2.org](https://www.msys2.org) and launch the MinGW 64-bit shell from the Start menu, not the default MSYS shell. Update the package manager itself:
 ```sh
 pacman -Syu
 ```
