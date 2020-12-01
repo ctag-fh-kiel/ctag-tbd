@@ -1,5 +1,9 @@
 # CTAG TBD Version Log
 
+## V0.9.5
+   - New ensemble / chorus plugin, based on airwindows design --> EChorus
+   - Optimizations
+
 ## V0.9.4a
    - New reverb plugin Progenitor Reverb (from freesound3), essentially Griesinger Lexicon 224 topology --> with love for all ambient musicians :)
    - Reverb time of Plate Reverb can now be controlled with CV
