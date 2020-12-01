@@ -10,8 +10,8 @@ add_definitions(
         -DRAPIDJSON_HAS_STDSTRING=1 # rapidjson
         -Wno-unused-local-typedefs
         # https://stackoverflow.com/questions/22931147/stdisinf-does-not-work-with-ffast-math-how-to-check-for-infinity
-        # -ffast-math
-        -ffast-math -fno-finite-math-only
+        -ffast-math
+        #-ffast-math -fno-finite-math-only
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
