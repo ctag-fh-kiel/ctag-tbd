@@ -41,6 +41,8 @@ file(GLOB SRCS_FILES
         filters/*.cpp
         tesselode/*.h
         tesselode/*.cpp
+        airwindows/*.hpp
+        airwindows/*.cpp
         ${CMAKE_BINARY_DIR}/gen_include/*.hpp
         )
 
