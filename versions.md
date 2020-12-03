@@ -1,5 +1,8 @@
 # CTAG TBD Version Log
 
+## V0.9.6
+   - Mono tape delay effect plugin, based on airwindows design --> Tape Delay
+
 ## V0.9.5
    - New ensemble / chorus plugin, based on airwindows design --> EChorus
    - Optimizations
