@@ -1,0 +1,61 @@
+{
+  "id": "TDelay",
+  "isStereo": false,
+  "name": "Tape Delay",
+  "hint": "Tape delay adapted from airwindows",
+  "params": [
+    {
+      "id": "bypass",
+      "name": "Bypass",
+      "type": "bool"
+    },
+    {
+      "id": "depth",
+      "name": "Depth",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "delay",
+      "name": "Delay",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "lnft",
+      "name": "Lean / Fat",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "dry",
+      "name": "Dry",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "wet",
+      "name": "Wet",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    }
+  ]
+}
