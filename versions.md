@@ -1,5 +1,10 @@
 # CTAG TBD Version Log
 
+## V0.9.7
+   - Mono + Stereo CStrip effect plugin, based on airwindows design --> Channel Strip
+   - Stereo Every Trim effect plugin, based on airwindows design --> Every Trim 
+   - Minor bug fixes
+
 ## V0.9.6
    - Mono tape delay effect plugin, based on airwindows design --> Tape Delay
 

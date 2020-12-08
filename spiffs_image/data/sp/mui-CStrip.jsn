@@ -1,0 +1,104 @@
+{
+  "id": "CStrip",
+  "isStereo": true,
+  "name": "CStrip",
+  "hint": "port of airwindows' CStrip",
+  "params": [
+    {
+      "id": "treble",
+      "name": "Treble",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "mid",
+      "name": "Mid",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "bass",
+      "name": "Bass",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "lowpass",
+      "name": "Lowpass",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "trebfreq",
+      "name": "Treble Frequency",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "bassfreq",
+      "name": "Bass Frequency",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "hipass",
+      "name": "Highpass",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "gate",
+      "name": "Gate",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "comp",
+      "name": "Compression",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "compspd",
+      "name": "Comp Speed",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "timelag",
+      "name": "Timing Lag",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "outgain",
+      "name": "Output Gain",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    }
+  ]
+}

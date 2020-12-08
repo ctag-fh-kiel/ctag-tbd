@@ -1,0 +1,48 @@
+{
+  "id": "EveryTrim",
+  "isStereo": true,
+  "name": "EveryTrim",
+  "hint": "port of airwindows' EveryTrim",
+  "params": [
+    {
+      "id": "left",
+      "name": "Left",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "right",
+      "name": "Right",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "mid",
+      "name": "Mid",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "side",
+      "name": "Side",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "master",
+      "name": "Master",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    }
+  ]
+}
