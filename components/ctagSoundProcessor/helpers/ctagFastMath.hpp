@@ -18,6 +18,21 @@ namespace CTAG::SP::HELPERS {
 
     float fastsin(float x);
 
+    inline float fastasin(float a){
+        // Approximate acos(a) with relative error < 5.15e-3
+// This uses an idea from Robert Harley's posting in comp.arch.arithmetic on 1996/07/12
+// https://groups.google.com/forum/#!original/comp.arch.arithmetic/wqCPkCCXqWs/T9qCkHtGE2YJ
+            const float PI = 3.14159265f;
+            const float C  = 0.10501094f;
+            float r, s, t, u;
+            t = (a < 0) ? (-a) : a;  // handle negative arguments
+            u = 1.0f - t;
+            s = sqrtf (u + u);
+            r = C * u * s + s;
+            if (a < 0) r = PI - r;  // handle negative arguments
+            return r;
+    };
+
     float fasttanh(float x);
 
     float fasterpow2(float p);
