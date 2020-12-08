@@ -42,7 +42,7 @@ int main(int ac, char **av) {
                 ("device,d", po::value<int>(&iDeviceNum)->default_value(0), "sound card device id, default 0")
                 ("output,o", po::bool_switch(&bOutputOnly)->default_value(false),
                  "use output only (if no duplex device available)")
-                ("wav,w", po::value<string>(&wavFile)->default_value(""),
+                ("wav,w", po::value<string>(&wavFile),
                  "read audio in from wav file (arg), must be 2 channel stereo float32 data, will be cycled through indefinitely");
 
         po::store(po::parse_command_line(ac, av, desc), vm);
