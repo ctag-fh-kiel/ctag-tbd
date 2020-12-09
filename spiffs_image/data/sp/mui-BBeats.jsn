@@ -1,0 +1,75 @@
+{
+   "id": "BBeats", "isStereo": false, "name": "BBeats", "hint": "ByteBeats with Xfade", "params":
+    [
+      {  
+         "id": "BBeat1_params", "name": "Beat A Params", "type": "group", "params":  
+          [
+             {"id":"beatA_stop","name":"BeatA stop","type":"bool"},
+             {"id":"beatA_backwards","name":"BeatA backwards","type":"bool"},
+             {"id":"beatA_select","name":"#1 BeatA select","type":"int","min":0,"max":54,"step":1},
+             {"id":"beatA_pitch","name":"#2 BeatA pitch","type":"int","min":0,"max":128,"step":1}
+          ]
+      },
+      {
+         "id": "BBeat2_params", "name": "Beat B Params", "type": "group", "params":  
+         [
+            {"id":"beatB_stop","name":"BeatB stop","type":"bool"},
+            {"id":"beatB_backwards","name":"BeatB backwards","type":"bool"},
+            {"id":"beatB_select","name":"#3 BeatB select","type":"int","min":0,"max":55,"step":1},
+            {"id":"beatB_pitch","name":"#4 BeatB pitch","type":"int","min":0,"max":128,"step":1}
+         ] 
+      },
+      {
+         "id": "beat_mixer", "name": "Beat Mixer", "type": "group", "params": 
+         [
+            {"id":"reset_bbeats_on_stop","name":"Reset BBeats on stop","type":"bool"},
+            {"id":"volume","name":"#5 Volume","type":"int","min":0,"max":4095,"step":1},
+            {"id":"xFadeA_B","name":"#6 XFade A<=>B","type":"int","min":0,"max":4095,"step":1}
+         ]
+      },
+      {
+         "id": "EG_1", "name": "EG 1 (linear) Current setting of target gets modulated (EG off: Target # 0) Targets are exclusive to one EG!", "type": "group", "params": 
+         [
+            {"id":"destinationEG_1","name":"Target # of any Slider","type":"int","min":0,"max":6,"step":1},
+            {"id":"activateEG_1","name":"Activate EG","type":"bool"},
+            {"id":"loopEG_1","name":"Loop EG","type":"bool"},
+            {"id":"amountEG_1","name":"Amount (adding to target)","type":"int","min":0,"max":4095,"step":1},
+            {"id":"attackEG_1","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+            {"id":"decayEG_1","name":"Decay","type":"int","min":0,"max":4095,"step":1}
+         ]
+      },
+      {
+         "id": "EG_2", "name": "EG 2 (logarithmic) Current setting of target gets modulated (EG off: Target # 0) Targets are exclusive to one EG!", "type": "group", "params": 
+         [
+            {"id":"destinationEG_2","name":"Target # of any Slider","type":"int","min":0,"max":6,"step":1},
+            {"id":"activateEG_2","name":"Activate EG","type":"bool"},
+            {"id":"loopEG_2","name":"Loop EG","type":"bool"},
+            {"id":"amountEG_2","name":"Amount (adding to target)","type":"int","min":0,"max":4095,"step":1},
+            {"id":"attackEG_2","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+            {"id":"decayEG_2","name":"Decay","type":"int","min":0,"max":4095,"step":1}
+         ]
+      },
+      {
+         "id": "EG_3", "name": "EG 3 (linear) Current setting of target gets modulated (EG off: Target # 0) Targets are exclusive to one EG!", "type": "group", "params": 
+         [
+            {"id":"destinationEG_3","name":"Target # of any Slider","type":"int","min":0,"max":6,"step":1},
+            {"id":"activateEG_3","name":"Activate EG","type":"bool"},
+            {"id":"loopEG_3","name":"Loop EG","type":"bool"},
+            {"id":"amountEG_3","name":"Amount (adding to target)","type":"int","min":0,"max":4095,"step":1},
+            {"id":"attackEG_3","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+            {"id":"decayEG_3","name":"Decay","type":"int","min":0,"max":4095,"step":1}
+         ]
+      },
+      {
+         "id": "EG_4", "name": "EG 4 (logarithmic) Current setting of target gets modulated (EG off: Target # 0) Targets are exclusive to one EG!", "type": "group", "params": 
+         [
+            {"id":"destinationEG_4","name":"Target # of any Slider","type":"int","min":0,"max":6,"step":1},
+            {"id":"activateEG_4","name":"Activate EG","type":"bool"},
+            {"id":"loopEG_4","name":"Loop EG","type":"bool"},
+            {"id":"amountEG_4","name":"Amount (adding to target)","type":"int","min":0,"max":4095,"step":1},
+            {"id":"attackEG_4","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+            {"id":"decayEG_4","name":"Decay","type":"int","min":0,"max":4095,"step":1}
+         ]
+      }
+   ]
+}
