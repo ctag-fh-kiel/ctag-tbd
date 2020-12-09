@@ -1,5 +1,8 @@
 # CTAG TBD Version Log
 
+## V0.9.8
+   - New plugin BBeats by M. Brüssel (credits also to M. Wand for beats) --> Byte Beat Generator
+
 ## V0.9.7a
    - Mono + Stereo CStrip effect plugin, based on airwindows design --> Channel Strip
    - Stereo Every Trim effect plugin, based on airwindows design --> Every Trim 
