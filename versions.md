@@ -1,5 +1,9 @@
 # CTAG TBD Version Log
 
+## V0.9.9a
+   - New plugin Claude --> port of mutable instruments Clouds including parasites reverse option
+   - Some minor optimizations
+
 ## V0.9.8
    - New plugin BBeats by M. Brüssel (credits also to M. Wand for beats) --> Byte Beat Generator
 
