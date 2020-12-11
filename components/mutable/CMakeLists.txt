@@ -39,7 +39,35 @@ file(GLOB SRCS_FILES
         eurorack/braids/quantizer.cc
         eurorack/braids/quantizer.h
         eurorack/braids/quantizer_scales.h
+        eurorack/clouds/resources.cc
+        eurorack/clouds/resources.h
+        eurorack/clouds/dsp/audio_buffer.h
+        eurorack/clouds/dsp/correlator.cc
+        eurorack/clouds/dsp/correlator.h
+        eurorack/clouds/dsp/frame.h
+        eurorack/clouds/dsp/grain.h
+        eurorack/clouds/dsp/granular_processor.cc
+        eurorack/clouds/dsp/granular_processor.h
+        eurorack/clouds/dsp/granular_sample_player.h
+        eurorack/clouds/dsp/looping_sample_player.h
+        eurorack/clouds/dsp/mu_law.cc
+        eurorack/clouds/dsp/mu_law.h
+        eurorack/clouds/dsp/parameters.h
+        eurorack/clouds/dsp/sample_rate_converter.h
+        eurorack/clouds/dsp/window.h
+        eurorack/clouds/dsp/wsola_sample_player.h
+        eurorack/clouds/dsp/fx/diffuser.h
+        eurorack/clouds/dsp/fx/fx_engine.h
+        eurorack/clouds/dsp/fx/pitch_shifter.h
+        eurorack/clouds/dsp/fx/reverb.h
+        eurorack/clouds/dsp/pvoc/frame_transformation.cc
+        eurorack/clouds/dsp/pvoc/frame_transformation.h
+        eurorack/clouds/dsp/pvoc/phase_vocoder.cc
+        eurorack/clouds/dsp/pvoc/phase_vocoder.h
+        eurorack/clouds/dsp/pvoc/stft.cc
+        eurorack/clouds/dsp/pvoc/stft.h
         )
+
 
 if(TBD_SIM)
     add_library(mutable STATIC ${SRCS_FILES})

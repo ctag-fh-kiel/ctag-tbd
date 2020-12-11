@@ -1,0 +1,111 @@
+{
+  "id": "Claude",
+  "isStereo": true,
+  "name": "Claude",
+  "hint": "Port of mutable instruments clouds",
+  "params": [
+    {
+      "id": "trigger",
+      "name": "Trigger",
+      "type": "bool"
+    },
+    {
+      "id": "freeze",
+      "name": "Freeze",
+      "type": "bool"
+    },
+    {
+      "id": "reverse",
+      "name": "Reverse",
+      "type": "bool"
+    },
+    {
+      "id": "mode",
+      "name": "Mode",
+      "type": "int",
+      "min": 0,
+      "max": 2,
+      "step": 1
+    },
+    {
+      "id": "quality",
+      "name": "Quality",
+      "type": "int",
+      "min": 0,
+      "max": 3,
+      "step": 1
+    },
+    {
+      "id": "position",
+      "name": "Position",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "size",
+      "name": "Size",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "pitch",
+      "name": "Pitch",
+      "type": "int",
+      "min": -48,
+      "max": 48,
+      "step": 1
+    },
+    {
+      "id": "density",
+      "name": "Density",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "texture",
+      "name": "Texture",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "width",
+      "name": "Width",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "reverb",
+      "name": "Reverb",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "drywet",
+      "name": "Dry / Wet",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    }
+  ]
+}

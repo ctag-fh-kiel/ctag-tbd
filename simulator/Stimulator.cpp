@@ -39,7 +39,7 @@ void Stimulator::SetMode(const int m) {
 
 void Stimulator::SetValue(const int v) {
     value = (float) v / 4095.f;
-    f = value * 1000.f;
+    f = value * 10.f;
     src.SetFrequency(f);
 }
 
