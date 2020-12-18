@@ -361,6 +361,7 @@ respective component folders / files if different from this license.
             ons.getScriptPage().onInit = function () {
                 $.getq('myq', 'api/v1/getConfiguration',
                     data => {
+                        if(typeof data == 'string') data = JSON.parse(data);
                         $('#cv0-config').val(data["cv_ch0"]);
                         $('#cv1-config').val(data["cv_ch1"]);
                         $('#cv2-config').val(data["cv_ch2"]);

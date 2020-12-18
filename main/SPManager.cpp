@@ -33,6 +33,7 @@ respective component folders / files if different from this license.
 #include "esp_heap_caps.h"
 #include "led_rgb.hpp"
 #include "network.hpp"
+#include "SerialAPI.hpp"
 #include "RestServer.hpp"
 #include <math.h>
 #include "helpers/ctagFastMath.hpp"
@@ -336,6 +337,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     // generate internal data
     updateConfiguration();
 
+#ifdef CONFIG_WIFI_UI
     // boot network
     NET::Network::SetSSID(model->GetNetworkConfigurationData("ssid"));
     NET::Network::SetPWD(model->GetNetworkConfigurationData("pwd"));
@@ -343,8 +345,10 @@ void SoundProcessorManager::StartSoundProcessor() {
     NET::Network::SetIP(model->GetNetworkConfigurationData("ip"));
     NET::Network::SetMDNSName(model->GetNetworkConfigurationData("mdns_name"));
     NET::Network::Up();
-
     REST::RestServer::StartRestServer();
+#elif CONFIG_SERIAL_UI
+    SAPI::SerialAPI::StartSerialAPI();
+#endif
 
     // configure channels
     sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
