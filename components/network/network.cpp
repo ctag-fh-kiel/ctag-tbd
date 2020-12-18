@@ -200,7 +200,9 @@ void Network::Up() {
     } else {
         wifi_init_sta();
     }
-
+    ESP_LOGI("Network", "Disabling wifi power save mode");
+    wifi_ps_type_t ps_mode = WIFI_PS_NONE;
+    esp_wifi_set_ps(ps_mode);
 }
 
 string Network::_ssid = "";
