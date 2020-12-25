@@ -300,7 +300,8 @@ void Codec::setupSPIWM8978() {
     //WM8978_AUX_Gain(0);
     WM8978_LINEIN_Gain(5); // 0db
     //WM8978_SPKvol_Set(0);
-    WM8978_HPvol_Set(50, 50); //0-63 // 0db is 57 // 38
+    // here are the gain settings for the output
+    WM8978_HPvol_Set(CONFIG_CODEC_OUT_LEVEL, CONFIG_CODEC_OUT_LEVEL); //0-63 // 0db is 57 // 38
     /*
     WM8978_EQ_3D_Dir(0);
     WM8978_EQ1_Set(0, 12); // 0 db is 12
