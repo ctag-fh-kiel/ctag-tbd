@@ -1,5 +1,9 @@
 # CTAG TBD Version Log
 
+## V0.9.10
+- New configuration option for output volume
+- Bug fix: Modular output levels were too low
+
 ## V0.9.9a
    - New plugin Claude --> port of mutable instruments Clouds including parasites reverse option
    - Some minor optimizations

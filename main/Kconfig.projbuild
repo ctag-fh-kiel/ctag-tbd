@@ -11,11 +11,4 @@ menu "CTAG TBD Configuration"
                 bool "WM8731"
 
         endchoice
-        config CODEC_OUT_LEVEL
-            int "WM8978 Output Level"
-            range 0 63
-            default 57
-            depends on CODEC_IC_WM8978
-            help
-                Output level of audio codec, 57 is 0dB (resulting in 10Vpp) 63 is +6dB.
 endmenu

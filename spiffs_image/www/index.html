@@ -268,6 +268,15 @@ respective component folders / files if different from this license.
                 <option value="on">On</option>
             </ons-select>
         </ons-list-item>
+        <ons-list-header>Codec Output Levels (58 for 10Vpp modular, 1dB Steps)</ons-list-header>
+        <ons-list-item>
+            <div>
+                Left:<input style="margin-right:1em;" id="ch0-codec-lvl-out" placeholder="58" type="number" min="0" max="63" step="1"></input>
+            </div>
+            <div>
+                Right:<input style="margin-right:1em;" id="ch1-codec-lvl-out" placeholder="58" type="number" min="0" max="63" step="1"></input>
+            </div>
+        </ons-list-item>
         <ons-list-header>Wifi Configuration</ons-list-header>
         <ons-list-item>
             <div style="text-align: center; margin-top: 10px;">
@@ -370,6 +379,8 @@ respective component folders / files if different from this license.
                         $('#ch1-stereo-config').val(data["ch1_toStereo"]);
                         $('#ch0-sco-config').val(data["ch0_outputSoftClip"]);
                         $('#ch1-sco-config').val(data["ch1_outputSoftClip"]);
+                        $('#ch0-codec-lvl-out').val(data["ch0_codecLvlOut"]);
+                        $('#ch1-codec-lvl-out').val(data["ch1_codecLvlOut"]);
                         $('#wifi-mode').val(data["wifi"].mode);
                         $('#ssid').val(data["wifi"].ssid);
                         $('#pwd').val(data["wifi"].pwd);
@@ -425,6 +436,18 @@ respective component folders / files if different from this license.
                         });
                         $('#ch1-sco-config').on('change', function () {
                             cfgData.ch1_outputSoftClip = $('#ch1-sco-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ch0-codec-lvl-out').on('change', function () {
+                            cfgData.ch0_codecLvlOut = $('#ch0-codec-lvl-out').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#ch1-codec-lvl-out').on('change', function () {
+                            cfgData.ch1_codecLvlOut = $('#ch1-codec-lvl-out').val();
                             $.postq('myq', 'api/v1/setConfiguration',
                                 JSON.stringify(cfgData), 'json'
                             );
