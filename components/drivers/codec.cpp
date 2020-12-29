@@ -44,7 +44,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::DRIVERS;
 
-spi_device_handle_t Codec::codec_h;
+spi_device_handle_t Codec::codec_h = NULL;
 spi_transaction_t Codec::trans;
 spi_bus_config_t Codec::buscfg;
 spi_device_interface_config_t Codec::codec_cfg;
@@ -301,7 +301,7 @@ void Codec::setupSPIWM8978() {
     WM8978_LINEIN_Gain(5); // 0db
     //WM8978_SPKvol_Set(0);
     // here are the gain settings for the output
-    WM8978_HPvol_Set(CONFIG_CODEC_OUT_LEVEL, CONFIG_CODEC_OUT_LEVEL); //0-63 // 0db is 57 // 38
+    WM8978_HPvol_Set(58, 58); //0-63 // 0db is 57 // 38
     /*
     WM8978_EQ_3D_Dir(0);
     WM8978_EQ1_Set(0, 12); // 0 db is 12
@@ -311,6 +311,16 @@ void Codec::setupSPIWM8978() {
     WM8978_EQ5_Set(0, 12);
      */
     WM8978_I2S_Cfg(2, 0);
+}
+
+void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
+#ifdef CONFIG_CODEC_IC_WM8978
+    if(!isReady){
+        ESP_LOGD("CODEC", "Codec not initialized");
+    }
+    ESP_LOGD("CODEC", "Setting levels to %d, %d", left, right);
+    WM8978_HPvol_Set(static_cast<u8>(left), static_cast<u8>(right));
+#endif
 }
 
 void Codec::setupI2SWM8978() {

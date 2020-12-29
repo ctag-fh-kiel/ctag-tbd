@@ -81,8 +81,6 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     pd.cv = cv;
     pd.trig = trig;
 
-    DRIVERS::Codec::InitCodec();
-
     // generate linear ramp ]0,1[ squared
     for (uint32_t i = 0; i < BUF_SZ; i++) {
         lramp[i] = (float) (i + 1) / (float) (BUF_SZ + 1);
@@ -333,6 +331,9 @@ void SoundProcessorManager::StartSoundProcessor() {
     }
     */
 
+    // init codec
+    DRIVERS::Codec::InitCodec();
+
     // generate internal data
     updateConfiguration();
 
@@ -474,6 +475,16 @@ void SoundProcessorManager::updateConfiguration() {
         ch1_outputSoftClip = 1;
     }
 
+    // output levels of codec
+    if(model->GetConfigurationData("ch0_codecLvlOut").compare("") != 0){
+        if(model->GetConfigurationData("ch0_codecLvlOut").compare("") != 0){
+            int lLevel = std::stoi(model->GetConfigurationData("ch0_codecLvlOut"));
+            int rLevel = std::stoi(model->GetConfigurationData("ch1_codecLvlOut"));
+            CONSTRAIN(rLevel, 0, 63)
+            CONSTRAIN(lLevel, 0, 63)
+            DRIVERS::Codec::SetOutputLevels(lLevel, rLevel);
+        }
+    }
 }
 
 void SoundProcessorManager::led_task(void *pvParams) {
