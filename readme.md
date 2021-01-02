@@ -21,6 +21,7 @@ Tutorial videos in [YouTube playlist](https://www.youtube.com/playlist?list=PLB5
 
 ## Features: 
 - Easy DSP plugin development.
+- **NEW!!!** Sample ROM playback and wavetable oscillator with user wavetables from sample ROM [details here](sample_rom/readme.md)
 - **NEW!!!** Simulator for cross platform plugin development without hardware module (speeds up plugin development, better code verification).
     - Check description [here](simulator/readme.md)
 - With web UI user interface by wireless browser access.
