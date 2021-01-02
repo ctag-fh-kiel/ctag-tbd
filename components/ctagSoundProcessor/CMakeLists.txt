@@ -43,6 +43,8 @@ file(GLOB SRCS_FILES
         tesselode/*.cpp
         airwindows/*.hpp
         airwindows/*.cpp
+        synthesis/*.hpp
+        synthesis/*.cpp
         ${CMAKE_BINARY_DIR}/gen_include/*.hpp
         )
 
@@ -52,7 +54,7 @@ if (TBD_SIM)
 else ()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
-            PRIV_REQUIRES rapidjson esp-dsp mutable moog)
+            PRIV_REQUIRES rapidjson esp-dsp mutable moog spi_flash)
     #target_compile_options(${COMPONENT_LIB} PRIVATE -ffast-math -fno-finite-math-only)
 endif ()
 

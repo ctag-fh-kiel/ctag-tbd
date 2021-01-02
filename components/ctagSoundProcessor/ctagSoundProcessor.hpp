@@ -24,6 +24,31 @@ respective component folders / files if different from this license.
 
 #pragma once
 
+#define MK_BOOL_PAR(outname, inname) \
+    bool outname = inname;\
+    if(trig_##inname != -1) outname = data.trig[trig_##inname] == 1 ? false : true;
+
+#define MK_FLT_PAR_ABS(outname, inname, norm, scale) \
+    float outname = inname / norm * scale;\
+    if(cv_##inname != -1) outname = fabsf(data.cv[cv_##inname]) * scale;
+
+#define MK_FLT_PAR_ABS_SFT(outname, inname, norm, scale) \
+    float outname = inname / norm * scale;\
+    if(cv_##inname != -1) outname = (fabsf(data.cv[cv_##inname]) - 0.5f) * 2.f * scale;
+
+#define MK_FLT_PAR(outname, inname, norm, scale) \
+    float outname = inname / norm * scale;\
+    if(cv_##inname != -1) outname = data.cv[cv_##inname] * scale;
+
+#define MK_INT_PAR_ABS(outname, inname, scale) \
+    int outname = inname;\
+    if(cv_##inname != -1) outname = static_cast<int>(fabsf(data.cv[cv_##inname]) * scale);
+
+#define MK_INT_PAR(outname, inname, scale) \
+    int outname = inname;\
+    if(cv_##inname != -1) outname = static_cast<int>(data.cv[cv_##inname] * scale);
+
+
 #include <stdint.h>
 #include <string>
 #include <memory>

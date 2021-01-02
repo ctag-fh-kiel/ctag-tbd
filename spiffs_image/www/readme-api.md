@@ -362,3 +362,21 @@ Finalize OTA update
 **Method** : `POST`
 
 **Data example**
+
+####URL: `/srom/getSize`
+
+Gets size of sample rom in bytes
+
+**Method** : `POST`
+
+####URL: `/srom/erase`
+
+Erases sample rom flash area
+
+**Method** : `POST`
+
+####URL: `/srom/upRaw`
+
+Uploads raw sample blob
+
+**Method** : `POST`

@@ -27,12 +27,31 @@ using namespace CTAG::SP;
 using namespace std;
 
 void ctagSoundProcessorClaude::Process(const ProcessData &data) {
+
+    MK_BOOL_PAR(isMono, monoin)
+
     // prepare input buffer
     clouds::ShortFrame in[32];
-    for(int i=0;i<bufSz;i++){
-        in[i].l = data.buf[i*2] * 32767.f;
-        in[i].r = data.buf[i*2 + 1] * 32767.f;
+    if(isMono){
+        for(int i=0;i<bufSz;i++){
+            int16_t val;
+            val = static_cast<int16_t>((data.buf[i*2] + data.buf[i*2 + 1]) * 32767.f);
+            CONSTRAIN(val, -32767, 32767)
+            in[i].l = val;
+            in[i].r = val;
+        }
+    }else{
+        for(int i=0;i<bufSz;i++){
+            int16_t val;
+            val = static_cast<int16_t>(data.buf[i*2] * 32767.f);
+            CONSTRAIN(val, -32767, 32767)
+            in[i].l = val;
+            val = static_cast<int16_t>(data.buf[i*2 + 1] * 32767.f);
+            CONSTRAIN(val, -32767, 32767)
+            in[i].r = val;
+        }
     }
+
 
     // setup processor
     clouds::PlaybackMode playbackMode = static_cast<clouds::PlaybackMode>(mode.load());
@@ -192,6 +211,8 @@ void ctagSoundProcessorClaude::knowYourself(){
 	pMapCv.emplace("reverb", [&](const int val){ cv_reverb = val;});
 	pMapPar.emplace("drywet", [&](const int val){ drywet = val;});
 	pMapCv.emplace("drywet", [&](const int val){ cv_drywet = val;});
+    pMapPar.emplace("monoin", [&](const int val){ monoin = val;});
+    pMapTrig.emplace("monoin", [&](const int val){ trig_monoin = val;});
 	isStereo = true;
 	id = "Claude";
 	// sectionCpp0

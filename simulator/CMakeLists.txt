@@ -1,6 +1,6 @@
 # The following lines of boilerplate have to be in your project's CMakeLists
 # in this exact order for cmake to work correctly
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -135,11 +135,14 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 set(SRC_FILES2
         "../main/SPManagerDataModel.cpp"
         "fake-idf/esp_heap_caps.c"
+        "fake-idf/esp_spi_flash.c"
         )
 
-
+# paths for sample-rom input files
+set(SAMPLE_ROM_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom/sample-rom.tbd" CACHE FILEPATH "Sample-rom raw file")
 
 add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
+target_compile_definitions(tbd-sim PRIVATE SAMPLE_ROM_FILE="${SAMPLE_ROM_FILE}")
 target_link_libraries(tbd-sim simple-web-server)
 target_link_libraries(tbd-sim rtaudio ctagsp mutable esp-dsp)
 target_link_libraries(tbd-sim ${Boost_LIBRARIES})
