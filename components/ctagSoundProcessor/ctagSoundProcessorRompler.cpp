@@ -31,11 +31,23 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data_) {
     ProcessData data;
     data.buf = data_.buf;
     data.trig = data_.trig;
-    data.cv = cvDelay;
+    data.cv = data_.cv;
 
 
     // duo or monophonic
     MK_BOOL_PAR(bDuo, duo)
+
+    // slice selection
+    MK_BOOL_PAR(bSliceOnTrg, slontrg)
+    MK_INT_PAR_ABS(iBank, bank, 32.f)
+    CONSTRAIN(iBank, 0, 31)
+    MK_INT_PAR_ABS(iSlice, slice, 32.f)
+    CONSTRAIN(iSlice, 0, 31)
+    MK_BOOL_PAR(bSkipWt, skpwt)
+    iSlice = iBank * 32 + iSlice;
+    if(bSkipWt)
+        iSlice += wtSliceOffset;
+    if(!bSliceOnTrg) romplers[activeVoice]->params.slice = iSlice;
 
     // latch mode
     MK_BOOL_PAR(bLatch, latch)
@@ -51,8 +63,9 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data_) {
     preGateLatch = bGate;
     if(bDuo){
         if(bGate2 != preGate && bGate == true){
-            romplers[nextVoice]->params.gate = bGate2;
             activeVoice = nextVoice;
+            romplers[activeVoice]->params.gate = bGate2;
+            romplers[activeVoice]->params.slice = iSlice;
         }else if(bGate2 != preGate && bGate == false){
             romplers[activeVoice]->params.gate = bGate2;
             nextVoice = (nextVoice+1)%2;
@@ -64,17 +77,7 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data_) {
         romplers[(activeVoice+1)%2]->Reset();
     }
 
-    // slice selection
-    MK_INT_PAR_ABS(iBank, bank, 32.f)
-    CONSTRAIN(iBank, 0, 31)
-    MK_INT_PAR_ABS(iSlice, slice, 32.f)
-    CONSTRAIN(iSlice, 0, 31)
-    MK_BOOL_PAR(bSkipWt, skpwt)
-    iSlice = iBank * 32 + iSlice;
-    if(bSkipWt)
-        iSlice += wtSliceOffset;
 
-    romplers[activeVoice]->params.slice = iSlice;
 
     // pitch related items
     MK_FLT_PAR_ABS_SFT(fSpeed, speed, 2048.f, 2.f)
@@ -206,6 +209,8 @@ void ctagSoundProcessorRompler::knowYourself(){
 	pMapCv.emplace("bank", [&](const int val){ cv_bank = val;});
 	pMapPar.emplace("slice", [&](const int val){ slice = val;});
 	pMapCv.emplace("slice", [&](const int val){ cv_slice = val;});
+    pMapPar.emplace("slontrg", [&](const int val){ slontrg = val;});
+    pMapTrig.emplace("slontrg", [&](const int val){ trig_slontrg = val;});
 	pMapPar.emplace("skpwt", [&](const int val){ skpwt = val;});
 	pMapTrig.emplace("skpwt", [&](const int val){ trig_skpwt = val;});
 	pMapPar.emplace("speed", [&](const int val){ speed = val;});
