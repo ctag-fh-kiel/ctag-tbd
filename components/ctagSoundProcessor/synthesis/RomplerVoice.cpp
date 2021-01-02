@@ -1,3 +1,24 @@
+/***************
+CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
+
+A project conceived within the Creative Technologies Arbeitsgruppe of
+Kiel University of Applied Sciences: https://www.creative-technologies.de
+
+(c) 2020 by Robert Manzke. All rights reserved.
+
+The CTAG TBD software is licensed under the GNU General Public License
+(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
+
+The CTAG TBD hardware design is released under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+CTAG TBD is provided "as is" without any express or implied warranties.
+
+License and copyright details for specific submodules are included in their
+respective component folders / files if different from this license.
+***************/
+
 #include "RomplerVoice.hpp"
 #include <cmath>
 #include <cstring>
@@ -39,14 +60,6 @@ namespace CTAG::SYNTHESIS {
 
 
     void RomplerVoice::Process(float *out, const uint32_t size) {
-        // compute slice parameters and check if slice data is available
-        uint32_t slice = params.slice;
-        if (!sampleRom.HasSlice(slice)) {
-            memset(out, 0, size * sizeof(float));
-            return;
-        }
-        uint32_t sliceLength = sampleRom.GetSliceSize(slice);
-
         // check for trigger signal
         if (params.gate == true && params.gate != preGate) { // trigger happened reset to beginning of sample
             adsr.Reset();
@@ -56,6 +69,21 @@ namespace CTAG::SYNTHESIS {
             pipoFlip = false;
         }
         preGate = params.gate;
+
+        // compute slice parameters and check if slice data is available
+        if(params.sliceLock){
+            if(bufferStatus == BufferStatus::READFIRST){
+                slice = params.slice;
+            }
+        }else{
+            slice = params.slice;
+        }
+
+        if (!sampleRom.HasSlice(slice)) {
+            memset(out, 0, size * sizeof(float));
+            return;
+        }
+        uint32_t sliceLength = sampleRom.GetSliceSize(slice);
 
         //  set eg and lfo parameters
         adsr.SetAttack(params.a);
