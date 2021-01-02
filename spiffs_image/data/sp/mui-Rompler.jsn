@@ -40,6 +40,12 @@
       "step": 1
     },
     {
+      "id": "slontrg",
+      "name": "Slice Lock",
+      "hint": "Lock slice on trig",
+      "type": "bool"
+    },
+    {
       "id": "skpwt",
       "name": "Skip Wavetables",
       "hint": "Skips wavetable data at ROM start",

@@ -28,31 +28,6 @@ using namespace std;
 
 void ctagSoundProcessorClaude::Process(const ProcessData &data) {
 
-    MK_BOOL_PAR(isMono, monoin)
-
-    // prepare input buffer
-    clouds::ShortFrame in[32];
-    if(isMono){
-        for(int i=0;i<bufSz;i++){
-            int16_t val;
-            val = static_cast<int16_t>((data.buf[i*2] + data.buf[i*2 + 1]) * 32767.f);
-            CONSTRAIN(val, -32767, 32767)
-            in[i].l = val;
-            in[i].r = val;
-        }
-    }else{
-        for(int i=0;i<bufSz;i++){
-            int16_t val;
-            val = static_cast<int16_t>(data.buf[i*2] * 32767.f);
-            CONSTRAIN(val, -32767, 32767)
-            in[i].l = val;
-            val = static_cast<int16_t>(data.buf[i*2 + 1] * 32767.f);
-            CONSTRAIN(val, -32767, 32767)
-            in[i].r = val;
-        }
-    }
-
-
     // setup processor
     clouds::PlaybackMode playbackMode = static_cast<clouds::PlaybackMode>(mode.load());
     processor.set_playback_mode(playbackMode);
@@ -134,14 +109,15 @@ void ctagSoundProcessorClaude::Process(const ProcessData &data) {
     }
     p->reverb = fReverb;
 
-    clouds::ShortFrame out[32];
-    processor.Process(in, out, 32);
-
-    // back convert buffers from int to float
-    for(int i=0;i<bufSz;i++){
-        data.buf[i*2] = out[i].l * 0.000030518509476f;
-        data.buf[i*2 + 1] = out[i].r * 0.000030518509476f;
+    MK_BOOL_PAR(bMonoIn, monoin)
+    if(bMonoIn){
+        for(int i=0;i<bufSz;i++){
+            data.buf[i*2 + 1] = data.buf[i*2];
+        }
     }
+
+    processor.Process(data.buf, 32);
+
 }
 
 ctagSoundProcessorClaude::ctagSoundProcessorClaude() {

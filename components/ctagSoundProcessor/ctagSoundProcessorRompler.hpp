@@ -56,6 +56,7 @@ namespace CTAG {
 	atomic<int32_t> latch, trig_latch;
 	atomic<int32_t> bank, cv_bank;
 	atomic<int32_t> slice, cv_slice;
+    atomic<int32_t> slontrg, trig_slontrg;
 	atomic<int32_t> skpwt, trig_skpwt;
 	atomic<int32_t> speed, cv_speed;
 	atomic<int32_t> pitch, cv_pitch;
