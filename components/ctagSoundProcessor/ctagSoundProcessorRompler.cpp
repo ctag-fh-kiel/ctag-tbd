@@ -25,29 +25,10 @@ using namespace CTAG::SP;
 
 // TODO add switch to include wavetables
 
-void ctagSoundProcessorRompler::Process(const ProcessData &data_) {
-
-    // delay cv input by one frame
-    ProcessData data;
-    data.buf = data_.buf;
-    data.trig = data_.trig;
-    data.cv = data_.cv;
-
+void ctagSoundProcessorRompler::Process(const ProcessData &data) {
 
     // duo or monophonic
     MK_BOOL_PAR(bDuo, duo)
-
-    // slice selection
-    MK_BOOL_PAR(bSliceOnTrg, slontrg)
-    MK_INT_PAR_ABS(iBank, bank, 32.f)
-    CONSTRAIN(iBank, 0, 31)
-    MK_INT_PAR_ABS(iSlice, slice, 32.f)
-    CONSTRAIN(iSlice, 0, 31)
-    MK_BOOL_PAR(bSkipWt, skpwt)
-    iSlice = iBank * 32 + iSlice;
-    if(bSkipWt)
-        iSlice += wtSliceOffset;
-    if(!bSliceOnTrg) romplers[activeVoice]->params.slice = iSlice;
 
     // latch mode
     MK_BOOL_PAR(bLatch, latch)
@@ -62,11 +43,10 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data_) {
     }
     preGateLatch = bGate;
     if(bDuo){
-        if(bGate2 != preGate && bGate == true){
+        if(bGate2 != preGate && bGate2 == true){
+            romplers[nextVoice]->params.gate = bGate2;
             activeVoice = nextVoice;
-            romplers[activeVoice]->params.gate = bGate2;
-            romplers[activeVoice]->params.slice = iSlice;
-        }else if(bGate2 != preGate && bGate == false){
+        }else if(bGate2 != preGate && bGate2 == false){
             romplers[activeVoice]->params.gate = bGate2;
             nextVoice = (nextVoice+1)%2;
         }
@@ -77,7 +57,18 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data_) {
         romplers[(activeVoice+1)%2]->Reset();
     }
 
-
+    // slice selection
+    MK_BOOL_PAR(bSliceOnTrg, slontrg)
+    romplers[activeVoice]->params.sliceLock = bSliceOnTrg;
+    MK_INT_PAR_ABS(iBank, bank, 32.f)
+    CONSTRAIN(iBank, 0, 31)
+    MK_INT_PAR_ABS(iSlice, slice, 32.f)
+    CONSTRAIN(iSlice, 0, 31)
+    MK_BOOL_PAR(bSkipWt, skpwt)
+    iSlice = iBank * 32 + iSlice;
+    if(bSkipWt)
+        iSlice += wtSliceOffset;
+    romplers[activeVoice]->params.slice = iSlice;
 
     // pitch related items
     MK_FLT_PAR_ABS_SFT(fSpeed, speed, 2048.f, 2.f)
@@ -169,11 +160,6 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data_) {
         }
     }
 
-    // update cv delay
-    cvDelay[0] = data_.cv[0];
-    cvDelay[1] = data_.cv[1];
-    cvDelay[2] = data_.cv[2];
-    cvDelay[3] = data_.cv[3];
 }
 
 ctagSoundProcessorRompler::ctagSoundProcessorRompler() {

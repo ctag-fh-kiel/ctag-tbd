@@ -40,7 +40,6 @@ namespace CTAG {
             virtual void knowYourself() override;
             std::unique_ptr<RomplerVoice> romplers[2];
             float out[32];
-            float cvDelay[4] = {0.f};
             bool preGate = false;
             bool bGate2 = false;
             bool preGateLatch = false;
