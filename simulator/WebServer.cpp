@@ -40,6 +40,11 @@ void WebServer::Start() {
     // 1 thread is usually faster than several threads
     server.config.port = 8080;
 
+    server.resource["^/api/v1/srom/getSize$"]["POST"] = [](shared_ptr<HttpServer::Response> response,
+                                                        shared_ptr<HttpServer::Request> request) {
+        response->write(to_string(1024*1024*5));
+    };
+
     server.resource["^/api/v1/getPlugins$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
                                                         shared_ptr<HttpServer::Request> request) {
         // Retrieve string:

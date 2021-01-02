@@ -38,6 +38,7 @@ respective component folders / files if different from this license.
 #include "helpers/ctagFastMath.hpp"
 #include "freeverb3/efilter.hpp"
 #include "stmlib/dsp/dsp.h"
+#include "helpers/ctagSampleRom.hpp"
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
@@ -54,12 +55,14 @@ using namespace CTAG::DRIVERS;
 #define NG_BOTH 1
 #define NG_LEFT 2
 #define NG_RIGHT 3
+#define N_CVS 4
+#define N_TRIGS 2
 
 // audio real-time task
 void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     float fbuf[BUF_SZ * 2];
-    float cv[4];
-    uint8_t trig[2];
+    float cv[N_CVS];
+    uint8_t trig[N_TRIGS];
     float peakIn = 0.f, peakOut = 0.f;
     float peakL = 0.f, peakR = 0.f;
     int ngState = NG_OPEN;
@@ -516,4 +519,16 @@ void SoundProcessorManager::KillAudioTask() {
     ledTaskH = NULL;
     vTaskDelay(100 / portTICK_PERIOD_MS);
     DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
+}
+
+void SoundProcessorManager::DisablePluginProcessing() {
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+}
+
+void SoundProcessorManager::EnablePluginProcessing() {
+    xSemaphoreGive(processMutex);
+}
+
+void SoundProcessorManager::RebuildSampleRomIndex() {
+    HELPERS::ctagSampleRom::RefreshDataStructure();
 }

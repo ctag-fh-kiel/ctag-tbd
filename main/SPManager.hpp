@@ -90,6 +90,10 @@ namespace CTAG {
 
             static void KillAudioTask();
 
+            static void DisablePluginProcessing();
+            static void EnablePluginProcessing();
+            static void RebuildSampleRomIndex();
+
         private:
             static void audio_task(void *pvParams);
 

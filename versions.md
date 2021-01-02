@@ -1,5 +1,12 @@
 # CTAG TBD Version Log
 
+## V0.9.11
+- BIG FRESH 2021 UPDATE, TBD CAN DO SAMPLE PLAYBACK NOW, [details here](sample_rom/readme.md)
+- New plugin Rompler (sample playback device)
+- New plugin WTOsc (wavetable oscillator able to use user wavetables from WaveEdit)
+- Bug fix Claude input clamping
+- Extension Claude mono in option
+
 ## V0.9.10
 - New configuration option for output volume
 - Bug fix: Modular output levels were too low

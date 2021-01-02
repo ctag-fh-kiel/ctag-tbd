@@ -71,6 +71,12 @@ respective component folders / files if different from this license.
             </ons-list-item>
         </ons-list>
         <ons-list>
+            <ons-list-header>Sample ROM</ons-list-header>
+            <ons-list-item>
+                <ons-button id="go-sample-rom" style="margin: 2px;">Edit sample ROM</ons-button>
+            </ons-list-item>
+        </ons-list>
+        <ons-list>
             <ons-list-header>Configuration</ons-list-header>
             <ons-list-item>
                 <ons-button id="go-config" style="margin: 2px;">Edit configuration</ons-button>
@@ -179,6 +185,10 @@ respective component folders / files if different from this license.
 
                 this.querySelector('#save-ch1').onclick = function () {
                     document.querySelector('#myNavigator').pushPage('save.html', {data: {ch: 1}});
+                };
+
+                this.querySelector('#go-sample-rom').onclick = function () {
+                    window.open('sample-rom.html', '_blank');
                 };
 
                 this.querySelector('#go-config').onclick = function () {
