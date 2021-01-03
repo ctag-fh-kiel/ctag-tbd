@@ -28,8 +28,10 @@ using namespace std;
 namespace CTAG::SP::HELPERS{
     class ctagSampleRom {
     public:
-        static void RefreshDataStructure(); // forces refresh of data structure, not thread safe!
+        static void InvalidateSampleRom();
+        void RefreshDataStructure(); // forces refresh of data structure, not thread safe!
         ctagSampleRom();
+        ~ctagSampleRom();
         uint32_t GetNumberSlices();
         uint32_t GetFirstNonWaveTableSlice();
         // return slice size in int16 samples i.e. *2 in bytes
@@ -42,11 +44,13 @@ namespace CTAG::SP::HELPERS{
         void ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples);
         void ReadSliceAsFloat(float *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples);
     private:
-        static uint32_t totalSize;
-        static uint32_t numberSlices;
-        static uint32_t headerSize;
-        static vector<uint32_t> v_sliceSizes;
-        static vector<uint32_t> v_sliceOffsets;
+        uint32_t totalSize = 0;
+        uint32_t numberSlices = 0;
+        uint32_t headerSize = 0;
+        uint32_t *sliceSizes = NULL;
+        uint32_t *sliceOffsets = NULL;
+        //<vector<uint32_t> v_sliceSizes;
+        //vector<uint32_t> v_sliceOffsets;
         static bool isInitialized;
     };
 }

@@ -713,7 +713,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
         }
         heap_caps_free(buffer);
         httpd_resp_send_chunk(req, NULL, 0);
-        CTAG::AUDIO::SoundProcessorManager::RebuildSampleRomIndex();
+        CTAG::AUDIO::SoundProcessorManager::InvalidateSampleRom();
         CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
         ESP_LOGI("REST", "Sample ROM flashing completed!");
         return ESP_OK;

@@ -36,9 +36,9 @@ respective component folders / files if different from this license.
 #include "RestServer.hpp"
 #include <math.h>
 #include "helpers/ctagFastMath.hpp"
+#include "helpers/ctagSampleRom.hpp"
 #include "freeverb3/efilter.hpp"
 #include "stmlib/dsp/dsp.h"
-#include "helpers/ctagSampleRom.hpp"
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
@@ -529,6 +529,6 @@ void SoundProcessorManager::EnablePluginProcessing() {
     xSemaphoreGive(processMutex);
 }
 
-void SoundProcessorManager::RebuildSampleRomIndex() {
-    HELPERS::ctagSampleRom::RefreshDataStructure();
+void SoundProcessorManager::InvalidateSampleRom() {
+    ctagSampleRom::InvalidateSampleRom();
 }
