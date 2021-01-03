@@ -92,7 +92,7 @@ namespace CTAG {
 
             static void DisablePluginProcessing();
             static void EnablePluginProcessing();
-            static void RebuildSampleRomIndex();
+            static void InvalidateSampleRom();
 
         private:
             static void audio_task(void *pvParams);
