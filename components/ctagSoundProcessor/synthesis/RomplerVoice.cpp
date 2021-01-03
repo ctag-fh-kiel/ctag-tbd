@@ -125,9 +125,9 @@ namespace CTAG::SYNTHESIS {
         int32_t startPos = static_cast<int32_t>(params.startOffsetRelative * sliceLength);
         if (startPos < 0) startPos = 0;
         int32_t playLength = static_cast<int32_t>(params.lengthRelative * sliceLength);
-        if (playLength >= sliceLength) playLength = sliceLength - 1;
+        if (playLength >= sliceLength) playLength = sliceLength;
         int32_t endPos = startPos + playLength;
-        if (endPos >= sliceLength) endPos = sliceLength - 1; // end beyond slice length?
+        if (endPos >= sliceLength) endPos = sliceLength; // end beyond slice length?
         // loop calculations
         int32_t loopPos = startPos + static_cast<int32_t >(params.loopMarker *
                                                            playLength); // relative to play length, could be also relative to sliceLength
