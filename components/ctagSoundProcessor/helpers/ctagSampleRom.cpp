@@ -137,6 +137,7 @@ namespace CTAG::SP::HELPERS {
         v_sliceOffsets.clear();
         v_sliceOffsets.shrink_to_fit();
         uint32_t deadface = 0;
+        headerSize = 0;
         spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS, &deadface, 4);
         headerSize += 4;
         if (deadface != 0xdeadface){
