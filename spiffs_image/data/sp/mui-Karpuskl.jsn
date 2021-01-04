@@ -1,0 +1,50 @@
+{
+   "id": "Karpuskl", "isStereo": false, "name": "Karpuskl", "hint": "Inspired by Kevin Karplus und Alex Strong", "params":
+   [
+       {  
+          "id": "KarplusParams", "name": "Plucked String Synth", "type": "group", "params":  
+           [
+              {"id":"SingleNotes","name":"Single Notes/Chords","type":"bool"},
+              {"id":"PowerChords","name":"Power Chords/Stradella","type":"bool"},
+              {"id":"FourNoteChords","name":"Four Note Chords","type":"bool"},
+              {"id":"OctUp","name":"Octave up for Stradella","type":"bool"},
+              {"id":"OctDown","name":"Octave down for Stradella","type":"bool"},
+              {"id":"KarpusklTrigger","name":"Trigger","type":"bool"},
+              {"id":"KarpusklFrequ","name":"Frequency","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Damping","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Brightness","name":"Stiffness","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "RingmodParams", "name": "Ring Modulator", "type": "group", "params":  
+           [
+              {"id":"DrivePost","name":"Drive Pre Modulator","type":"bool"},
+              {"id":"DriveChar","name":"Drive Fuzz+Sustainer","type":"int","min":0,"max":4095,"step":1},
+              {"id":"DriveAmnt","name":"Modulator Gain","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ModMix","name":"Modulator Mix","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ModFreq","name":"Modulator Frequency","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ModFreqLoHi","name":"Modulator Freq Lo/Hi","type":"bool"},  
+              {"id":"LFOamnt","name":"LFO Amount","type":"int","min":0,"max":4095,"step":1},
+              {"id":"LFOrate","name":"LFO Rate","type":"int","min":0,"max":4095,"step":1},
+              {"id":"LFOsquare","name":"LFO Sine/Square","type":"bool"}
+            ]
+       },
+       {  
+          "id": "VCAenv", "name": "VCA+Envelope", "type": "group", "params":  
+           [
+              {"id":"MasterGain","name":"Master Gain","type":"int","min":0,"max":4095,"step":1},
+              {"id":"EnvActive","name":"Volume EG on/off","type":"bool"},
+              {"id":"VolAttack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+              {"id":"VolDecay","name":"Decay","type":"int","min":0,"max":4095,"step":1},
+              {"id":"EnvLoop","name":"EG Loop off/on","type":"bool"}
+            ]
+       },
+      {  
+          "id": "PitchQuant", "name": "Pitch+Quantizer", "type": "group", "params":  
+           [
+              {"id":"MasterPitch","name":"Adjust Pitch CV","type":"int","min":-2048,"max":2047,"step":1},
+              {"id":"QuantizeOn","name":"Chromatic Quantize","type":"bool"}
+            ]
+       }
+   ] 
+}
