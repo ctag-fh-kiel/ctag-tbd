@@ -1,0 +1,135 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "SingleNotes",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "PowerChords",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "FourNoteChords",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "OctUp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "OctDown",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "KarpusklTrigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "KarpusklFrequ",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "Damping",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "Brightness",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "DrivePost",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "DriveChar",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "DriveAmnt",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ModMix",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ModFreq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ModFreqLoHi",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "LFOamnt",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "LFOrate",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "LFOsquare",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "MasterGain",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "EnvActive",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "VolAttack",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "VolDecay",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "EnvLoop",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "MasterPitch",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "QuantizeOn",
+          "current": 0,
+          "trig": -1
+        }
+      ]
+    }
+  ]
+}
