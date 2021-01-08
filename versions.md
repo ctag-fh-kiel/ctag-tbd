@@ -1,5 +1,10 @@
 # CTAG TBD Version Log
 
+## V0.9.12
+- New plugin Karpuskl by M. Brüssel
+- Sample rom can now be flashed without need for reboot
+- Bug fixes
+
 ## V0.9.11a
 - BIG FRESH 2021 UPDATE, TBD CAN DO SAMPLE PLAYBACK NOW, [details here](sample_rom/readme.md)
 - When you update, check the new "edit sample rom" option and upload custom or stock samples (sample-rom.tbd file in release)
