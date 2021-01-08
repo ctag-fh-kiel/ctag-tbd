@@ -269,6 +269,9 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const string &id) {
     ledBlink = 5;
 
+    // when trying to set chan 1 and chan 0 is a stereo plugin, return
+    if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
+
     ESP_LOGI("SP", "Switching plugin %d to %s", chan, id.c_str());
     ESP_LOGE("SP", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -522,12 +525,15 @@ void SoundProcessorManager::KillAudioTask() {
 
 void SoundProcessorManager::DisablePluginProcessing() {
     xSemaphoreTake(processMutex, portMAX_DELAY);
+    ledBlink = 43;
 }
 
 void SoundProcessorManager::EnablePluginProcessing() {
+    ledBlink = 5;
     xSemaphoreGive(processMutex);
 }
 
 void SoundProcessorManager::RefreshSampleRom() {
+    ledBlink = 5;
     ctagSampleRom::RefreshDataStructure();
 }

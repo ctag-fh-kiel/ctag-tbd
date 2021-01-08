@@ -1,6 +1,6 @@
 # CTAG TBD Version Log
 
-## V0.9.12
+## V0.9.12a
 - New plugin Karpuskl by M. Brüssel
 - Sample rom can now be flashed without need for reboot
 - Bug fixes

@@ -40,9 +40,9 @@ namespace CTAG::SP::HELPERS {
     uint32_t ctagSampleRom::firstNonWtSlice = 0;
 
     ctagSampleRom::ctagSampleRom() {
-        if(nConsumers == 0)
-            RefreshDataStructure();
         nConsumers++;
+        if(nConsumers == 1)
+            RefreshDataStructure();
     }
 
     uint32_t ctagSampleRom::GetNumberSlices() {
@@ -114,6 +114,7 @@ namespace CTAG::SP::HELPERS {
     }
 
     void ctagSampleRom::RefreshDataStructure() {
+        if(nConsumers == 0) return;
         if (sliceOffsets != NULL) {
             heap_caps_free(sliceOffsets);
             sliceOffsets = NULL;
