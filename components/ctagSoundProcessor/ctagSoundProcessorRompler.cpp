@@ -67,7 +67,7 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data) {
     MK_BOOL_PAR(bSkipWt, skpwt)
     iSlice = iBank * 32 + iSlice;
     if(bSkipWt)
-        iSlice += wtSliceOffset;
+        iSlice += sampleRom.GetFirstNonWaveTableSlice();
     romplers[activeVoice]->params.slice = iSlice;
 
     // pitch related items
@@ -167,8 +167,6 @@ ctagSoundProcessorRompler::ctagSoundProcessorRompler() {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
-
-    wtSliceOffset = sampleRom.GetFirstNonWaveTableSlice();
 
     // create voices
     romplers[0] = std::make_unique<RomplerVoice>();

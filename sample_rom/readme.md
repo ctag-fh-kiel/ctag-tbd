@@ -1,7 +1,7 @@
 # Information about sample rom
 TBD allows to use a configurable amount of flash memory for storage of sample data. 
 This sample data can be used for wavetable storage and / or playback of mono and stereo samples.
-Sample data can be uploaded by users through a web-based UI. Reboot is recommended after upload as glitches may occur otherwise.
+Sample data can be uploaded by users through a web-based UI.
 The UI allows one to drop .wav files, pre-listen and order files to define the memory layout.
 Once files are selected and ordered, users can download the data to TBD's flash memory or to the host PC to create backups or exchange sample packs with other users.
 ## Layout and structure of sample data

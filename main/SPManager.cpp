@@ -280,7 +280,6 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     xSemaphoreTake(processMutex, portMAX_DELAY);
     sp[chan] = nullptr; // destruct smart ptr
     if (model->IsStereo(id) && chan == 0) {
-        ESP_LOGI("SP", "Removing ch 1 plugin as ch 0 is stereo!");
         sp[1] = nullptr; // destruct smart ptr
     }
 
@@ -529,6 +528,6 @@ void SoundProcessorManager::EnablePluginProcessing() {
     xSemaphoreGive(processMutex);
 }
 
-void SoundProcessorManager::InvalidateSampleRom() {
-    ctagSampleRom::InvalidateSampleRom();
+void SoundProcessorManager::RefreshSampleRom() {
+    ctagSampleRom::RefreshDataStructure();
 }

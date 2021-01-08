@@ -27,17 +27,22 @@ respective component folders / files if different from this license.
 #ifdef TBD_SIM
 #define CONFIG_SAMPLE_ROM_START_ADDRESS 0
 #else
-
 #include "sdkconfig.h"
-
 #endif
 
 namespace CTAG::SP::HELPERS {
-
-    bool ctagSampleRom::isInitialized = false;
+    atomic<uint32_t> ctagSampleRom::nConsumers = 0;
+    uint32_t ctagSampleRom::totalSize = 0;
+    uint32_t ctagSampleRom::numberSlices = 0;
+    uint32_t ctagSampleRom::headerSize = 0;
+    uint32_t *ctagSampleRom::sliceSizes = NULL;
+    uint32_t *ctagSampleRom::sliceOffsets = NULL;
+    uint32_t ctagSampleRom::firstNonWtSlice = 0;
 
     ctagSampleRom::ctagSampleRom() {
-        RefreshDataStructure();
+        if(nConsumers == 0)
+            RefreshDataStructure();
+        nConsumers++;
     }
 
     uint32_t ctagSampleRom::GetNumberSlices() {
@@ -45,14 +50,12 @@ namespace CTAG::SP::HELPERS {
     }
 
     uint32_t ctagSampleRom::GetSliceSize(const uint32_t slice) {
-        if(!isInitialized) return 0;
-        if(slice >=numberSlices) return 0;
+        if (slice >= numberSlices) return 0;
         return sliceSizes[slice];
     }
 
     uint32_t ctagSampleRom::GetSliceGroupSize(const uint32_t startSlice, const uint32_t endSlice) {
-        if(!isInitialized) return 0;
-        if(endSlice <= startSlice) return 0;
+        if (endSlice <= startSlice) return 0;
         uint32_t totalSize = 0;
         for (uint32_t i = startSlice; i <= endSlice; i++) {
             totalSize += sliceSizes[i];
@@ -61,14 +64,12 @@ namespace CTAG::SP::HELPERS {
     }
 
     uint32_t ctagSampleRom::GetSliceOffset(const uint32_t slice) {
-        if(!isInitialized) return 0;
-        if(slice >=numberSlices) return 0;
+        if (slice >= numberSlices) return 0;
         return sliceOffsets[slice];
     }
 
     // reads words, offset in words not bytes
     void ctagSampleRom::Read(int16_t *dst, uint32_t offset, const uint32_t n_samples) {
-        if(!isInitialized) return;
         assert(dst != NULL);
         offset *= 2; // from int16 to bytes
         offset += headerSize; // add header size
@@ -77,80 +78,60 @@ namespace CTAG::SP::HELPERS {
     }
 
     bool ctagSampleRom::HasSlice(const uint32_t slice) {
-        if(!isInitialized) {
-            RefreshDataStructure();
-            if(!isInitialized) return 0;
-        }
-
-        if(slice >= numberSlices) return false;
+        if (slice >= numberSlices) return false;
         return true;
     }
 
     bool ctagSampleRom::HasSliceGroup(const uint32_t startSlice, const uint32_t endSlice) {
-        if(!isInitialized) {
-            RefreshDataStructure();
-            if(!isInitialized) return 0;
-        }
-
         if (startSlice > numberSlices || endSlice > numberSlices) return false;
         return true;
     }
 
-    uint32_t ctagSampleRom::GetFirstNonWaveTableSlice() {
-        if(!isInitialized) return 0;
-        for(int i=0;i<numberSlices;i++){
-            if(sliceSizes[i] > 256)
-                return i;
-        }
-        return 0;
-    }
-
     void ctagSampleRom::ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples) {
-        if(!isInitialized) return;
         uint32_t start = sliceOffsets[slice] + offset;
         int32_t len = n_samples;
-        if(offset + len >= sliceSizes[slice]){ // read beyond slice end ?
+        if (offset + len >= sliceSizes[slice]) { // read beyond slice end ?
             len = sliceSizes[slice] - offset;
         }
-        if(len <= 0) return; // nothing to read!
+        if (len <= 0) return; // nothing to read!
         Read(dst, start, len);
     }
 
     void ctagSampleRom::ReadSliceAsFloat(float *dst, const uint32_t slice, const uint32_t offset,
                                          const uint32_t n_samples) {
-        if(!isInitialized) return;
         uint32_t start = sliceOffsets[slice] + offset;
         int32_t len = n_samples;
-        if(offset + len >= sliceSizes[slice]){ // read beyond slice end ?
+        if (offset + len >= sliceSizes[slice]) { // read beyond slice end ?
             len = sliceSizes[slice] - offset;
         }
-        if(len <= 0) return; // nothing to read!
+        if (len <= 0) return; // nothing to read!
         int16_t idst[len];
         int16_t *dptr = idst;
         Read(idst, start, len);
-        while(len--){
+        while (len--) {
             *dst++ = float(*dptr++) * 0.000030518509476f;
         }
     }
 
     void ctagSampleRom::RefreshDataStructure() {
-        isInitialized = false;
-        if(sliceOffsets != NULL){
+        if (sliceOffsets != NULL) {
             heap_caps_free(sliceOffsets);
+            sliceOffsets = NULL;
         }
-        if(sliceSizes != NULL){
+        if (sliceSizes != NULL) {
             heap_caps_free(sliceSizes);
+            sliceSizes = NULL;
         }
         uint32_t deadface = 0;
         totalSize = 0;
         numberSlices = 0;
         headerSize = 0;
         spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS, &deadface, 4);
-        headerSize += 4;
-        if (deadface != 0xdeadface){
+        if (deadface != 0xdeadface) {
             ESP_LOGE("SROM", "Magic number wrong!");
             return;
         }
+        headerSize += 4;
         spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 4, &totalSize, 4);
         headerSize += 4;
         ESP_LOGD("SROM", "Total sample data size %d bytes", totalSize);
@@ -158,9 +139,9 @@ namespace CTAG::SP::HELPERS {
         headerSize += 4;
         ESP_LOGD("SROM", "Number slices %d", numberSlices);
         // alloc memory
-        sliceOffsets = (uint32_t*)heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
+        sliceOffsets = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceOffsets != NULL);
-        sliceSizes = (uint32_t*)heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
+        sliceSizes = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceSizes != NULL);
         spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 12, &sliceOffsets[0], 4 * numberSlices);
         headerSize += 4 * numberSlices;
@@ -171,19 +152,36 @@ namespace CTAG::SP::HELPERS {
             sliceOffsets[i] -= sliceSizes[i];
             ESP_LOGD("SROM", "Slice size %d, offset %d", sliceSizes[i], sliceOffsets[i]);
         }
-        isInitialized = true;
+        // get first non Wt Slice
+        for (int i = 0; i < numberSlices; i++) {
+            if (sliceSizes[i] > 256){
+                firstNonWtSlice = i;
+                break;
+            }
+        }
     }
 
     ctagSampleRom::~ctagSampleRom() {
-        if(sliceOffsets != NULL){
+        //ESP_LOGE("SR", "nConsumers %d", nConsumers.load());
+        nConsumers--;
+
+        if (nConsumers > 0) return;
+        //ESP_LOGE("SR", "freeing up SR");
+        if (sliceOffsets != NULL) {
             heap_caps_free(sliceOffsets);
         }
-        if(sliceSizes != NULL){
+        if (sliceSizes != NULL) {
             heap_caps_free(sliceSizes);
         }
+        totalSize = 0;
+        numberSlices = 0;
+        headerSize = 0;
+        sliceSizes = NULL;
+        sliceOffsets = NULL;
+        firstNonWtSlice = 0;
     }
 
-    void ctagSampleRom::InvalidateSampleRom() {
-        isInitialized = false;
+    uint32_t ctagSampleRom::GetFirstNonWaveTableSlice() {
+        return firstNonWtSlice;
     }
 }
