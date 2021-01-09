@@ -74,9 +74,11 @@ namespace CTAG::SYNTHESIS {
         if(params.sliceLock){
             if(bufferStatus == BufferStatus::READFIRST){
                 slice = params.slice;
+                sliceLockedPitch = params.pitch;
             }
         }else{
             slice = params.slice;
+            sliceLockedPitch = params.pitch;
         }
 
         if (!sampleRom.HasSlice(slice)) {
@@ -96,7 +98,7 @@ namespace CTAG::SYNTHESIS {
         // calculate playback speed = dt = phase increment
         phaseIncrement = params.playbackSpeed; // speed
         phaseIncrement *= stmlib::SemitonesToRatio( // modulation
-                params.pitch + params.tune + adsrLastVal * params.egFM +
+                sliceLockedPitch + params.tune + adsrLastVal * params.egFM +
                 lfoLastVal * params.lfoFM); // includes pitch FM
 
         // evaluate loop settings
