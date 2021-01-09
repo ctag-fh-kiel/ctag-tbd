@@ -32,6 +32,7 @@ SOFTWARE.
 #include "esp_heap_caps.h"
 #include <cstring>
 #include "esp_log.h"
+#include "stmlib/dsp/units.h"
 
 using namespace tesselode;
 using namespace CTAG::SP::HELPERS;
@@ -281,20 +282,30 @@ void CocoaDelay::Process(float *data, int nFrames) {
         // filters
         float fLfo = filtLfo.Process();
         if ((int) params.filterMode != 0) {
-            svf_l.set_mode((braids::SvfMode) ((int) (params.filterMode) - 1));
-            svf_r.set_mode((braids::SvfMode) ((int) (params.filterMode) - 1));
-            float flp = params.svfCutoffFreq + fLfo * params.svfLfoAmt;
-            flp *= 16384;
-            CONSTRAIN(flp, 1750, 16384)
-            svf_l.set_frequency((int16_t) flp);
-            svf_r.set_frequency((int16_t) flp);
-            float fhp = params.svfResonance;
-            fhp *= 32767;
-            CONSTRAIN(fhp, 0, 32767)
-            svf_l.set_resonance((int16_t) fhp);
-            svf_r.set_resonance((int16_t) fhp);
-            float tl = svf_l.Process((int32_t) (outL * 32767.f)) / 32767.f;
-            float tr = svf_r.Process((int32_t) (outR * 32767.f)) / 32767.f;
+            float fCut = params.svfCutoffFreq + params.svfLfoAmt * fLfo; // TODO: Pitch tracking
+            CONSTRAIN(fCut, 0.f, 1.f)
+            fCut = 20.f * stmlib::SemitonesToRatio(fCut * 120.f);
+            float fReso = params.svfResonance;
+            CONSTRAIN(fReso, 1.f, 20.f)
+            svf_l.set_f_q<stmlib::FREQUENCY_FAST>(fCut / 44100.f, fReso);
+            svf_r.set_f_q<stmlib::FREQUENCY_FAST>(fCut / 44100.f, fReso);
+            float tl = 0.f;
+            float tr = 0.f;
+            switch (params.filterMode) {
+                case 1:
+                    tl = svf_l.Process<stmlib::FILTER_MODE_LOW_PASS>(outL);
+                    tr = svf_r.Process<stmlib::FILTER_MODE_LOW_PASS>(outR);
+                    break;
+                case 2:
+                    tl = svf_l.Process<stmlib::FILTER_MODE_BAND_PASS>(outL);
+                    tr = svf_r.Process<stmlib::FILTER_MODE_BAND_PASS>(outR);
+                    break;
+                case 3:
+                    tl = svf_l.Process<stmlib::FILTER_MODE_HIGH_PASS>(outL);
+                    break;
+                default:
+                    break;
+            }
             outL = (1.f - params.svfMix) * outL + params.svfMix * tl;
             outR = (1.f - params.svfMix) * outR + params.svfMix * tr;
         }

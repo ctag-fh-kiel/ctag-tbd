@@ -77,7 +77,8 @@ namespace CTAG::SYNTHESIS{
         float w_lpf3[5]{0.f};
         float w_lpf4[5]{0.f};
         // params
-        float fs;
+        float fs = 44100.f;
+        float sliceLockedPitch = 0.f;
         // modulation
         float adsrLastVal = 0.f, lfoLastVal = 0.f; // last because filter mod and pitch mod use last calculated value -> fs/buffersize, AM uses fs
         // buffer params

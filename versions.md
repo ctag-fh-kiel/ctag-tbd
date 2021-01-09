@@ -1,5 +1,10 @@
 # CTAG TBD Version Log
 
+## V0.9.13
+- CDelay noise reduction / different filter model
+- Rompler pitch latch if slice latch on trig
+- Bug fixes
+
 ## V0.9.12a
 - New plugin Karpuskl by M. Brüssel
 - Sample rom can now be flashed without need for reboot
