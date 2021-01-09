@@ -109,13 +109,6 @@ void ctagSoundProcessorClaude::Process(const ProcessData &data) {
     }
     p->reverb = fReverb;
 
-    MK_BOOL_PAR(bMonoIn, monoin)
-    if(bMonoIn){
-        for(int i=0;i<bufSz;i++){
-            data.buf[i*2 + 1] = data.buf[i*2];
-        }
-    }
-
     processor.Process(data.buf, 32);
 
 }
@@ -187,8 +180,6 @@ void ctagSoundProcessorClaude::knowYourself(){
 	pMapCv.emplace("reverb", [&](const int val){ cv_reverb = val;});
 	pMapPar.emplace("drywet", [&](const int val){ drywet = val;});
 	pMapCv.emplace("drywet", [&](const int val){ cv_drywet = val;});
-    pMapPar.emplace("monoin", [&](const int val){ monoin = val;});
-    pMapTrig.emplace("monoin", [&](const int val){ trig_monoin = val;});
 	isStereo = true;
 	id = "Claude";
 	// sectionCpp0
