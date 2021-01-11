@@ -12,13 +12,14 @@ Adaptations can be made in the code, RTAudio will open the first available devic
 * Boost.Asio
 * RTAudio
 * Simple-Web-Server (by C. Eidheim)
+* CMake Version 3.17 or higher
 
 Installation instructions for the dependencies needed to compile the simulator on a selection of platforms can be seen below.
 
 ### Debian based distributions
 
 ```sh
-sudo apt-get install libboost-filesystem-dev libboost-thread-dev
+sudo apt-get install libboost-filesystem-dev libboost-thread-dev libboost-program-options-dev libasound2-dev
 ```
 
 ### Arch Linux based distributions
