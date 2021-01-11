@@ -62,7 +62,7 @@ git checkout release/v4.1
 git submodule update
 sudo ./install.sh
 ```
-You may need to upgrade CMake to version 3.17 or higher.
+You may need to upgrade CMake to version 3.16 or higher.
 Then follow these steps to create the firmware image:
 ```sh
 git clone https://github.com/ctag-fh-kiel/ctag-tbd.git
