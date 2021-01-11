@@ -2,7 +2,7 @@
 
 ## V0.9.13
 - CDelay noise reduction / different filter model
-- Rompler pitch latch if slice latch on trig
+- Rompler pitch and start position latch if slice latch on trig
 - Claude more grains, removed mono in as same functionality already with mode 1 & 3 
 - Bug fixes
 
