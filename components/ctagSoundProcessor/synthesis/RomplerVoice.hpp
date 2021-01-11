@@ -79,6 +79,7 @@ namespace CTAG::SYNTHESIS{
         // params
         float fs = 44100.f;
         float sliceLockedPitch = 0.f;
+        float sliceLockedStartOffset = 0.f;
         // modulation
         float adsrLastVal = 0.f, lfoLastVal = 0.f; // last because filter mod and pitch mod use last calculated value -> fs/buffersize, AM uses fs
         // buffer params
