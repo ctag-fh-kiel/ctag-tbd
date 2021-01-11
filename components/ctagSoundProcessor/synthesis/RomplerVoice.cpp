@@ -75,10 +75,12 @@ namespace CTAG::SYNTHESIS {
             if(bufferStatus == BufferStatus::READFIRST){
                 slice = params.slice;
                 sliceLockedPitch = params.pitch;
+                sliceLockedStartOffset = params.startOffsetRelative;
             }
         }else{
             slice = params.slice;
             sliceLockedPitch = params.pitch;
+            sliceLockedStartOffset = params.startOffsetRelative;
         }
 
         if (!sampleRom.HasSlice(slice)) {
@@ -124,7 +126,7 @@ namespace CTAG::SYNTHESIS {
         CONSTRAIN(phaseIncrement, -15.f, 15.f) // limit to stay in memory and CPU capability bounds
 
         // calc relative positions and bounds check
-        int32_t startPos = static_cast<int32_t>(params.startOffsetRelative * sliceLength);
+        int32_t startPos = static_cast<int32_t>(sliceLockedStartOffset * sliceLength);
         if (startPos < 0) startPos = 0;
         int32_t playLength = static_cast<int32_t>(params.lengthRelative * sliceLength);
         if (playLength >= sliceLength) playLength = sliceLength;
