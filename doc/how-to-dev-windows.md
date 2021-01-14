@@ -57,7 +57,7 @@ idf.py build
 ```
 ## Manually build spiffs image, it is somehow not correctly built with idf.py!
 ```
-$IDF_PATH/components/spiffs/spiffsgen.py 0x300000 spiffs_image/ build/storage.bin
+$IDF_PATH/components/spiffs/spiffsgen.py 0x300000 build/spiffs_image build/storage.bin
 ```
 ## Flash TBD binaries
 - Note: You have to adapt your COM port in flash.sh and press 'y' when asked to copy fresh binaries
