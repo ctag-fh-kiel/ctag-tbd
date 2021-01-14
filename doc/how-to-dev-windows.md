@@ -36,7 +36,7 @@ unzip https://github.com/espressif/binutils-esp32ulp/releases/download/v2.28.51-
 ```
 export IDF_PATH=$HOME/esp-idf
 export python=/mingw64/bin/python
-export PATH="$IDF_PATH/tools:/opt/esp32ulp-elf-binutils/bin:/home/rma/esp-idf/tools:/opt/xtensa-esp32-elf/bin:$PATH"
+export PATH="$IDF_PATH/tools:/opt/esp32ulp-elf-binutils/bin:/opt/xtensa-esp32-elf/bin:$PATH"
 ```
 - Execute:
 ```
@@ -44,6 +44,7 @@ source ~/.bashrc
 ```
 - Install pip requirements:
 ```
+cd ~/esp-idf
 python -m pip install -r requirements.txt
 ```
 ## Build TBD binaries
