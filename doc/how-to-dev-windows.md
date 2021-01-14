@@ -1,8 +1,14 @@
 # How-to setup up windows dev environment including esp idf and mingw-gcc for simulator
 Note that these instructions are an alternative to setting up esp-idf as compared to espressif sources [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/)
+## Required knowledge about MSYS2
+Msys2 offers several subsystems for development:
+- MSYS2 shell, (mostly) posix cygwin based environment
+- MINGGW native windows environment
+- There are dedicated toolchains for each environment.
+- ESP-IDF uses separate xtensa cross compiler
 ## Create esp-idf dev env
 - Install [msys2.org](msys2.org)
-- Start mingw64 console
+- Start mingw64 console (not MSYS2)
 - Execute, which may require restart of mingw64 console:
 ```
 pacman -Syu
@@ -18,10 +24,6 @@ cd esp-idf
 git checkout release/v4.1
 git submodule update --init --recursive
 ```
-- Install requirements:
-```
-python -m pip install -r requirements.txt
-```
 - Install xtensa toolchain:
 ```
 cd /opt
@@ -34,11 +36,15 @@ unzip https://github.com/espressif/binutils-esp32ulp/releases/download/v2.28.51-
 ```
 export IDF_PATH=$HOME/esp-idf
 export python=/mingw64/bin/python
-export PATH="/opt/esp32ulp-elf-binutils/bin:/home/rma/esp-idf/tools:/opt/xtensa-esp32-elf/bin:$PATH"
+export PATH="$IDF_PATH/tools:/opt/esp32ulp-elf-binutils/bin:/home/rma/esp-idf/tools:/opt/xtensa-esp32-elf/bin:$PATH"
 ```
 - Execute:
 ```
 source ~/.bashrc
+```
+- Install pip requirements:
+```
+python -m pip install -r requirements.txt
 ```
 ## Build TBD binaries
 ```
@@ -47,6 +53,10 @@ git clone https://github.com/ctag-fh-kiel/ctag-tbd.git
 cd ctag-tbd
 git submodule update --init --recursive
 idf.py build
+```
+## Manually build spiffs image, it is somehow not correctly built with idf.py!
+```
+$IDF_PATH/components/spiffs/spiffsgen.py 0x300000 spiffs_image/ build/storage.bin
 ```
 ## Flash TBD binaries
 - Note: You have to adapt your COM port in flash.sh and press 'y' when asked to copy fresh binaries
@@ -68,4 +78,7 @@ mingw32-make
 ```
 ## Limitations
 - idf.py menuconfig does not work due to missing POSIX environment
+- This may be fixed when using msys2 environment instead of mingw
+- TODO msys2 tests for idf.py menuconfig
+pacman -S openssl-devel libffi-devel libcrypt-devel gettext-devel gcc git make ncurses-devel flex bison gperf vim mingw-w64-i686-python-pip mingw-w64-i686-python-cryptography unzip winpty mingw-w64-i686-gcc
 
