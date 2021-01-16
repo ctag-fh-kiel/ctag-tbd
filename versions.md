@@ -1,9 +1,10 @@
 # CTAG TBD Version Log
 
 ## V0.9.13
-- CDelay noise reduction / different filter model
-- Rompler pitch and start position latch if slice latch on trig
-- Claude more grains, removed mono in as same functionality already with mode 1 & 3 
+- CDelay noise reduction / different filter model (done)
+- Rompler pitch and start position latch if slice latch on trig (done)
+- Rompler bit reduction, N retrig, retrig speed? (TODO)
+- Claude more grains, removed mono in as same functionality already with mode 1 & 3 (done) 
 - Bug fixes
 
 ## V0.9.12a
