@@ -44,7 +44,7 @@ pacman -Syu
 
 Then restart the shell and install packages:
 ```sh
-pacman -Su git wget make tar unzip zip mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb mingw-w64-x86_64-cmake autoconf automake mingw-w64-x86_64-libtool mingw-w64-x86_64-jq mingw-w64-x86_64-boost python 
+pacman -Su git mingw-w64-x86_64-make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libtool mingw-w64-x86_64-jq mingw-w64-x86_64-boost
 ```
 
 When running cmake use:
@@ -52,6 +52,11 @@ When running cmake use:
 cmake -G "MinGW Makefiles" ..
 ```
 instead of just using "cmake .." as written below.
+
+To make run:
+```sh
+mingw32-make
+```
 
 #### Approach 2 (32bit)
 - Getting the simulator running on Windows has been tested using the MingW GCC environment (32-bit)
