@@ -63,7 +63,7 @@ ctagSoundProcessorSubSynth::ctagSoundProcessorSubSynth() {
 
 }
 
-void IRAM_ATTR ctagSoundProcessorSubSynth::Process(const ProcessData &data) {
+void ctagSoundProcessorSubSynth::Process(const ProcessData &data) {
     fetchControlData(data);
     updateEGs(data);
     float tmpIn[bufSz], tmpOut[bufSz], acc[bufSz];

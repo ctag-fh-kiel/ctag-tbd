@@ -4,8 +4,8 @@
 - CDelay noise reduction / different filter model (done)
 - Rompler pitch, start position latch if slice latch on trig (done)
 - Rompler bit reduction (done)
-- Claude more grains, removed mono in as same functionality already with mode 1 & 3 (done)
-- Issue TBDings type 3 poly 2 computations (TODO!)
+- Claude more grains, removed mono in as similar functionality already with mode 1 & 3 (done)
+- Added developer docs for windows (in doc/ folder)
 - Bug fixes
 
 ## V0.9.12a
