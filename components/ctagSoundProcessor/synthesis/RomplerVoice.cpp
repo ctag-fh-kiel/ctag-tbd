@@ -89,6 +89,9 @@ namespace CTAG::SYNTHESIS {
         }
         uint32_t sliceLength = sampleRom.GetSliceSize(slice);
 
+        // bit reduction
+        int16_t brr_mask = bit_reduction_masks[14 - params.bitReduction];
+
         //  set eg and lfo parameters
         adsr.SetAttack(params.a);
         adsr.SetDecay(params.d);
@@ -189,7 +192,7 @@ namespace CTAG::SYNTHESIS {
                 // and write convert to float buffer
                 for (int i = 0; i < readBufferLength; i++) {
                     readBufferFloat[i + 4] =
-                            static_cast<float>(readBufferInt16[i]) * 0.000030518509476f; // only 2 for linear interp
+                            static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
                 }
 
                 // interpolate process buffer
@@ -214,7 +217,7 @@ namespace CTAG::SYNTHESIS {
                         readPos = startPos;
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, remainBuffer);
                         for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[remainBuffer - i - 1]) *
+                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[remainBuffer - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         bufferStatus = BufferStatus::READLAST;
@@ -228,7 +231,7 @@ namespace CTAG::SYNTHESIS {
                     sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                     // and write convert reversed to float buffer
                     for (int i = 0; i < readBufferLength; i++) {
-                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]) *
+                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                 }
@@ -277,7 +280,7 @@ namespace CTAG::SYNTHESIS {
                 // and write convert to float buffer
                 for (int i = 0; i < readBufferLength; i++) {
                     readBufferFloat[i + 4] =
-                            static_cast<float>(readBufferInt16[i]) * 0.000030518509476f; // only 2 for linear interp
+                            static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
                 }
 
                 // interpolate process buffer
@@ -299,7 +302,7 @@ namespace CTAG::SYNTHESIS {
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                         // and write convert reversed to float buffer
                         for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]) *
+                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
@@ -318,7 +321,7 @@ namespace CTAG::SYNTHESIS {
                         }
                         // and write convert reversed to float buffer
                         for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]) *
+                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
@@ -331,7 +334,7 @@ namespace CTAG::SYNTHESIS {
                     sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                     // and write convert reversed to float buffer
                     for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]) *
+                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
@@ -357,7 +360,7 @@ namespace CTAG::SYNTHESIS {
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                         // and write convert reversed to float buffer
                         for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]) *
+                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
@@ -369,7 +372,7 @@ namespace CTAG::SYNTHESIS {
                         int i;
                         for (i = 0; i < remainBuffer; i++) { // still fwd
                             readBufferFloat[i + 4] =
-                                    static_cast<float>(readBufferInt16[i]) *
+                                    static_cast<float>(readBufferInt16[i]&brr_mask) *
                                     0.000030518509476f; // only 2 for linear interp
                         }
                         readPos += remainBuffer;
@@ -379,7 +382,7 @@ namespace CTAG::SYNTHESIS {
                             readPos = readPos - remainBuffer;
                             sampleRom.ReadSlice(readBufferInt16, slice, readPos, remainBuffer);
                             for (; i < readBufferLength; i++) { // read convert reverse
-                                readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]) *
+                                readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                          0.000030518509476f; // only 2 for linear interp
                             }
                         }
@@ -397,7 +400,7 @@ namespace CTAG::SYNTHESIS {
                     // and write convert to float buffer
                     for (int i = 0; i < readBufferLength; i++) {
                         readBufferFloat[i + 4] =
-                                static_cast<float>(readBufferInt16[i]) * 0.000030518509476f; // only 2 for linear interp
+                                static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
                     processBlock(out, size);
@@ -420,7 +423,7 @@ namespace CTAG::SYNTHESIS {
                         // and write convert to float buffer
                         for (int i = 0; i < readBufferLength; i++) { // forward play
                             readBufferFloat[i + 4] =
-                                    static_cast<float>(readBufferInt16[i]) *
+                                    static_cast<float>(readBufferInt16[i]&brr_mask) *
                                     0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
@@ -434,7 +437,7 @@ namespace CTAG::SYNTHESIS {
                         int i;
                         // and write convert reversed to float buffer
                         for (i = 0; i < remainBuffer; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[remainBuffer - i - 1]) *
+                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[remainBuffer - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // rest forward
@@ -446,7 +449,7 @@ namespace CTAG::SYNTHESIS {
                             readPos += remainBuffer;
                             for (; i < readBufferLength; i++) { // rest forward
                                 readBufferFloat[i + 4] =
-                                        static_cast<float>(readBufferInt16[i]) *
+                                        static_cast<float>(readBufferInt16[i]&brr_mask) *
                                         0.000030518509476f; // only 2 for linear interp
                             }
                         }
@@ -460,7 +463,7 @@ namespace CTAG::SYNTHESIS {
                     sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                     // and write convert reversed to float buffer
                     for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]) *
+                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
