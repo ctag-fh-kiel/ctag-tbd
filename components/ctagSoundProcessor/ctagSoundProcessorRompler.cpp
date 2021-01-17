@@ -91,6 +91,11 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fGain, gain, 4095.f, 2.f)
     romplers[activeVoice]->params.gain = fGain;
 
+    // bit rate reduction
+    MK_INT_PAR_ABS(iBrr, brr, 16)
+    CONSTRAIN(iBrr, 0, 14)
+    romplers[activeVoice]->params.bitReduction = iBrr;
+
     // adsr
     MK_BOOL_PAR(bEGSync, egstop)
     romplers[activeVoice]->params.egSync = bEGSync;
@@ -185,6 +190,8 @@ void ctagSoundProcessorRompler::knowYourself(){
     // sectionCpp0
 	pMapPar.emplace("gain", [&](const int val){ gain = val;});
 	pMapCv.emplace("gain", [&](const int val){ cv_gain = val;});
+    pMapPar.emplace("brr", [&](const int val){ brr = val;});
+    pMapCv.emplace("brr", [&](const int val){ cv_brr = val;});
 	pMapPar.emplace("gate", [&](const int val){ gate = val;});
 	pMapTrig.emplace("gate", [&](const int val){ trig_gate = val;});
 	pMapPar.emplace("latch", [&](const int val){ latch = val;});

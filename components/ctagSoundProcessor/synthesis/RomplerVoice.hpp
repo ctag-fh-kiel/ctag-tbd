@@ -45,6 +45,7 @@ namespace CTAG::SYNTHESIS{
             float lfoSpeed;
             float lfoAM, lfoFM, lfoFMFilter;
             float egAM, egFM, egFMFilter;
+            uint32_t bitReduction;
             bool egSync;
             bool gate, sliceLock;
         };
@@ -95,6 +96,23 @@ namespace CTAG::SYNTHESIS{
         float readBufferPhase = 0.f;
         float phaseIncrement = 0.f; // depending on pitch
         int32_t readPos = 0;
+        // bit reduction masks
+        const uint16_t bit_reduction_masks[15] = {
+                0xc000,
+                0xe000,
+                0xf000,
+                0xf800,
+                0xfc00,
+                0xfe00,
+                0xff00,
+                0xff80,
+                0xffc0,
+                0xffe0,
+                0xfff0,
+                0xfff8,
+                0xfffc,
+                0xfffe,
+                0xffff};
     };
 }
 
