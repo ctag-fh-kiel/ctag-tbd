@@ -16,7 +16,7 @@ public:
 
     void setbuffer(float *buf, int size);
 
-    inline float    IRAM_ATTR process(float inp);
+    inline float     process(float inp);
 
     void mute();
 
@@ -41,7 +41,7 @@ private:
 
 // Big to inline - but crucial for speed
 
-inline float IRAM_ATTR comb::process(float input) {
+inline float  comb::process(float input) {
     float output;
 
     output = buffer[bufidx];

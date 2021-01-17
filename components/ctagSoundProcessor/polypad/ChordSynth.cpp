@@ -37,7 +37,7 @@ void CTAG::SP::ChordSynth::SetResonance(const uint32_t &resonance) {
     svf.set_resonance(resonance);
 }
 
-void IRAM_ATTR CTAG::SP::ChordSynth::Process(float *buf, const uint32_t &ofs) {
+void  CTAG::SP::ChordSynth::Process(float *buf, const uint32_t &ofs) {
     memset(buffer, 0, 32 * 2);
 
     // vibrato and render buffer
@@ -109,7 +109,7 @@ void CTAG::SP::ChordSynth::SetDetune(const uint32_t &detune) {
     }
 }
 
-void IRAM_ATTR CTAG::SP::ChordSynth::calcInversion(int8_t *ht_steps, const int16_t &chord, const int16_t &inversion,
+void  CTAG::SP::ChordSynth::calcInversion(int8_t *ht_steps, const int16_t &chord, const int16_t &inversion,
                                                    const int16_t &nnotes) {
     int8_t inv[4];
     for (int i = 0; i < 4; i++) {
