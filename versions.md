@@ -6,6 +6,7 @@
 - Rompler bit reduction (done)
 - Claude more grains, removed mono in as similar functionality already with mode 1 & 3 (done)
 - Added developer docs for windows (in doc/ folder)
+- Added continuous integration scripts
 - Bug fixes
 
 ## V0.9.12a
