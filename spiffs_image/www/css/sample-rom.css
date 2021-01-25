@@ -96,6 +96,12 @@ div.line-el{
     transform: translateY(10%);
     filter: grayscale(100%);
 }
+a:visited,a:active {
+    color: #757575;
+}
+a:hover{
+    color: #000000;
+}
 
 
 
