@@ -135,7 +135,7 @@ void Codec::setupI2SWM8731() {
 
 void Codec::InitCodec() {
     initSPI();
-#ifdef CONFIG_CODEC_IC_WM8731
+#ifdef CONFIG_TBD_PLATFORM_V1
     setupSPIWM8731();
     setupI2SWM8731();
     vTaskDelay(5000 / portTICK_PERIOD_MS); // wait until system is settled a bit
@@ -144,7 +144,7 @@ void Codec::InitCodec() {
     HighPassEnable();
     vTaskDelay(1000 / portTICK_PERIOD_MS); // wait until system is settled a bit
     HighPassDisable();
-#elif CONFIG_CODEC_IC_WM8978
+#elif CONFIG_TBD_PLATFORM_V2
     setupSPIWM8978();
     setupI2SWM8978();
 #endif
@@ -152,7 +152,7 @@ void Codec::InitCodec() {
 }
 
 void Codec::HighPassEnable() {
-#ifdef CONFIG_CODEC_IC_WM8731
+#ifdef CONFIG_TBD_PLATFORM_V1
     unsigned char cmd;
     trans.flags = 0;
     trans.length = 8;
@@ -166,7 +166,7 @@ void Codec::HighPassEnable() {
 }
 
 void Codec::HighPassDisable() {
-#ifdef CONFIG_CODEC_IC_WM8731
+#ifdef CONFIG_TBD_PLATFORM_V1
     unsigned char cmd;
     trans.flags = 0;
     trans.length = 8;
@@ -180,7 +180,7 @@ void Codec::HighPassDisable() {
 }
 
 void Codec::RecalibDCOffset() {
-#ifdef CONFIG_CODEC_IC_WM8731
+#ifdef CONFIG_TBD_PLATFORM_V1
     if(!isReady) return;
     HighPassEnable();
     vTaskDelay(50 / portTICK_PERIOD_MS); // wait until system is settled a bit
@@ -225,7 +225,7 @@ void Codec::initSPI() {
 }
 
 void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_CODEC_IC_WM8731
+#ifdef CONFIG_TBD_PLATFORM_V1
     int32_t tmp[sz * 2];
     int32_t *ptrTmp = tmp;
     size_t nb;
@@ -237,7 +237,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
         *buf++ = div * (float) *ptrTmp++;
         sz--;
     }
-#elif CONFIG_CODEC_IC_WM8978
+#elif CONFIG_TBD_PLATFORM_V2
     int16_t tmp[sz * 2];
     int16_t *ptrTmp = tmp;
     size_t nb;
@@ -253,7 +253,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
 }
 
 void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_CODEC_IC_WM8731
+#ifdef CONFIG_TBD_PLATFORM_V1
     int32_t tmp[sz * 2];
     int32_t tmp2;
     size_t nb;
@@ -270,7 +270,7 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp[i * 2 + 1] = tmp2 << 8;
     }
     i2s_write(I2S_NUM_0, tmp, sz * 4 * 2, &nb, portMAX_DELAY);
-#elif CONFIG_CODEC_IC_WM8978
+#elif CONFIG_TBD_PLATFORM_V2
     int16_t tmp[sz * 2];
     int16_t tmp2;
     size_t nb;
@@ -314,7 +314,7 @@ void Codec::setupSPIWM8978() {
 }
 
 void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
-#ifdef CONFIG_CODEC_IC_WM8978
+#ifdef CONFIG_TBD_PLATFORM_V2
     if(!isReady){
         ESP_LOGD("CODEC", "Codec not initialized");
     }
