@@ -1,0 +1,78 @@
+{
+   "id": "VctrSnt", "isStereo": true, "name": "VctrSnt", "hint": "Inspired by the Sequential Circuits Prophet VS", "params":
+   [
+       {  
+          "id": "Voices", "name": "Voices", "type": "group", "params":  
+           [
+              {"id":"Gate_1","name":"Gate Voice 1 n/y","type":"bool"},
+              {"id":"Freq_1","name":"Frequency Voice 1","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Gate_2","name":"Gate Voice 2 n/y","type":"bool"},
+              {"id":"Freq_2","name":"Frequency Voice 2","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "VectorSpace", "name": "Vector space (A<->C is X-Axis, D<->B is Y-Axis)", "type": "group", "params":  
+           [
+              {"id":"WaveTblA","name":"Select Wavetable A (off if 0)","type":"int","min":0,"max":31,"step":1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
+              {"id":"WaveTblC","name":"Select Wavetable C (off if 0)","type":"int","min":0,"max":31,"step":1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
+              {"id":"SampleD","name":"Select Sample D (off if 0)","type":"int","min":0,"max":4095,"step":1},
+              {"id":"SampleB","name":"Select Sample B (off if 0)","type":"int","min":0,"max":4095,"step":1},
+              {"id":"XfadeWaveTbls","name":"Crossfade Wavetables A<->C","type":"int","min":-2047,"max":2048,"step":1},
+              {"id":"XfadeSamples","name":"Crossfade Samples D<->B","type":"int","min":-2047,"max":2048,"step":1}
+           ]
+       },
+       {  
+          "id": "VectorModulators", "name": "Vector Modulators (Looping EGs start at given offset)", "type": "group", "params":  
+           [
+               {"id":"ModWaveTblsXfade","name":"Modulate WaveTable Xfade n/y","type":"bool"},
+               {"id":"AttackWaveTblsXfd","name":"Attack WaveTable Xfade","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayWaveTblsXfd","name":"Decay WaveTable Xfade","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ModSamplesXfade","name":"Modulate Samples Xfade n/y","type":"bool"},
+               {"id":"AttackSamplesXfd","name":"Attack Samples Xfade","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecaySamplesXfd","name":"Decay Samples Xfade","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "WaveScanners", "name": "Wave Scanners (Looping EGs start at given offset)", "type": "group", "params":  
+           [
+               {"id":"ScanWavTblA","name":"Scan Wavetable A","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ScanWavTblAauto","name":"Automatic Scanning A n/y","type":"bool"},
+               {"id":"AttackScanA","name":"Attack Scan A","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayScanA","name":"Decay Scan A","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ScanWavTblB","name":"Scan Wavetable B","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ScanWavTblBauto","name":"Automatic Scanning B n/y","type":"bool"},
+               {"id":"AttackScanB","name":"Attack Scan B","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayScanB","name":"Decay Scan B","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "FreqMod", "name": "Frequency Modulation", "type": "group", "params":  
+           [
+               {"id":"FreqModActive","name":"Freq Modulation active n/y","type":"bool"},
+               {"id":"FreqModSinus","name":"FreqMod Sinus n/y","type":"bool"},
+               {"id":"FreqModAmnt","name":"Modulation Intensity","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FreqModSpeed","name":"Modulation Speed","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "VolEnv", "name": "VCA / Envelope", "type": "group", "params":  
+           [
+               {"id":"Volume","name":"Volume","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGvolActive","name":"Volume EG active n/y","type":"bool"},
+               {"id":"EGvolGate","name":"Volume EG Gate n/y","type":"bool"},
+               {"id":"AttackVol","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayVol","name":"Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SustainVol","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ReleaseVol","name":"Release","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "PanTrem", "name": "Panner/Tremolo", "type": "group", "params":  
+           [
+               {"id":"PanAmnt","name":"Panner Intensity (off if 0)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PanFreq","name":"Panner Frequency","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PanOffset","name":"Panner Offset (Tremolo if 0)","type":"int","min":0,"max":4095,"step":1}
+           ]
+       }
+   ] 
+}
