@@ -52,25 +52,24 @@ using namespace DRIVERS;
 extern const uint8_t ulp_drivers_bin_start[] asm("_binary_ulp_drivers_bin_start");
 extern const uint8_t ulp_drivers_bin_end[]   asm("_binary_ulp_drivers_bin_end");
 
-
 static QueueHandle_t adcDataQueue = NULL;
 
+uint16_t ADC::data[NUMBERCV];
+
 static void IRAM_ATTR ulp_isr(void *arg) {
-    static uint16_t data[4];
+    static uint16_t data[NUMBERCV];
     //static uint32_t s = 0;
     //gpio_set_level(23, (s++)&0x01);
-    /* hardware debugging 
+    /* hardware debugging
     gpio_set_level(SPI_TFT_MISO_PIN, 1);
     */
 
     // disable ULP timer, should get 10 us to settle
     CLEAR_PERI_REG_MASK(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
 
-    data[0] = (uint16_t) *((&ulp_adc_data) + 0);
-    data[1] = (uint16_t) *((&ulp_adc_data) + 1);
-    data[2] = (uint16_t) *((&ulp_adc_data) + 2);
-    data[3] = (uint16_t) *((&ulp_adc_data) + 3);
-    //setLedRGB(data[0], data[1], data[3]);
+    for(int i=0;i<NUMBERCV;i++){
+        data[i] = (uint16_t) *((&ulp_adc_data) + i);
+    }
 
     xQueueSendToFrontFromISR(adcDataQueue, data, NULL);
 
@@ -128,7 +127,7 @@ void ADC::SetCVINBipolar(int ch) {
     }
 }
 
-uint16_t ADC::data[4];
+
 
 void ADC::init_ulp_program() {
     /* load ULP program */
