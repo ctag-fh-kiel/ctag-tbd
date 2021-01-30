@@ -71,7 +71,7 @@ file(GLOB SRCS_FILES
 
 if(TBD_SIM)
     add_library(mutable STATIC ${SRCS_FILES})
-    target_include_directories(mutable PRIVATE "eurorack")
+    target_include_directories(mutable PRIVATE "eurorack" "${CMAKE_SOURCE_DIR}/../components/ctagSoundProcessor")
     target_compile_options(mutable PRIVATE
             -Wno-unused-variable
             -Wno-shift-negative-value
@@ -80,7 +80,7 @@ if(TBD_SIM)
 else()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS eurorack
-            PRIV_REQUIRES )
+            PRIV_REQUIRES ctagSoundProcessor)
 
     target_compile_options(${COMPONENT_LIB} PRIVATE
             -Wno-unused-variable
