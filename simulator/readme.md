@@ -9,10 +9,10 @@ Adaptations can be made in the code, RTAudio will open the first available devic
 
 ## Dependencies
 
-* Boost.Asio
+* Boost Asio, FileSystem, Thread, ProgramOptions
 * RTAudio
 * Simple-Web-Server (by C. Eidheim)
-* CMake Version 3.17 or higher
+* CMake Version 3.16 or higher
 
 Installation instructions for the dependencies needed to compile the simulator on a selection of platforms can be seen below.
 

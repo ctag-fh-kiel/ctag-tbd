@@ -28,7 +28,7 @@ SOFTWARE.
 #include <cmath>
 #include "Util.h"
 #include "helpers/ctagSineSource.hpp"
-#include "braids/svf.h"
+#include "stmlib/dsp/filter.h"
 
 namespace tesselode {
 
@@ -107,7 +107,7 @@ namespace tesselode {
         float duckAmount = 0.f; //)->InitDouble("Ducking amount", 0.0, 0.0, 10.0, .01, "", "", 1.0);
         float duckAttackSpeed = 10.f; //)->InitDouble("Ducking attack", 10.0, .1, 100.0, .01, "", "", 2.0);
         float duckReleaseSpeed = 10.f;//)->InitDouble("Ducking release", 10.0, .1, 100.0, .01, "", "", 2.0);
-        braids::SvfMode filterMode = braids::SVF_MODE_LP;
+        int filterMode = 0;
         float svfCutoffFreq = 0.75;
         float svfResonance = 0.001f;
         float svfLfoFreq = 0.2f;
@@ -186,7 +186,8 @@ namespace tesselode {
         float circularPanAmount = 0.0;
 
         // filters
-        braids::Svf svf_l, svf_r;
+        //braids::Svf svf_l, svf_r;
+        stmlib::Svf svf_l, svf_r;
 
         // modulation
         float duckFollower = 0.0;

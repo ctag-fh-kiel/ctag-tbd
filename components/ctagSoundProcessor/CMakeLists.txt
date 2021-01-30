@@ -7,7 +7,9 @@ set(SP_INCLUDES "" PARENT_SCOPE)
 set(BIG_IF "" PARENT_SCOPE)
 foreach (VAR ${SOUND_PROCESSORS})
     # check if JSON file for sound processor exists
-    get_filename_component(MYFILE_WITHOUT_EXT ${VAR} NAME_WLE)
+    # get_filename_component(MYFILE_WITHOUT_EXT ${VAR} NAME_WLE) # needs newer CMake Version > 3.13 which is not in IDF r4.1 docker image
+    get_filename_component(MYFILE_WITHOUT_EXT ${VAR} NAME_WE)
+    string(REGEX REPLACE "\\.[^.]*$" "" MYFILE_WITHOUT_EXT ${MYFILE_WITHOUT_EXT}) # using regex instead of NAME_WLE
     string(REGEX REPLACE "ctagSoundProcessor+" "" SP_ID ${MYFILE_WITHOUT_EXT})
     set(SP_INCLUDES "${SP_INCLUDES}#include \"${MYFILE_WITHOUT_EXT}.hpp\"\n")
     # prepare big if variable for factory

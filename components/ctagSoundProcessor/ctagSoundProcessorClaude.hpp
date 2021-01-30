@@ -60,7 +60,6 @@ namespace CTAG {
 	atomic<int32_t> width, cv_width;
 	atomic<int32_t> reverb, cv_reverb;
 	atomic<int32_t> drywet, cv_drywet;
-    atomic<int32_t> monoin, trig_monoin;
 	// sectionHpp
         };
     }

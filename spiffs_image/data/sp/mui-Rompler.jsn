@@ -13,6 +13,14 @@
       "step": 1
     },
     {
+      "id": "brr",
+      "name": "Bit Reduction",
+      "type": "int",
+      "min": 0,
+      "max": 14,
+      "step": 1
+    },
+    {
       "id": "gate",
       "name": "Gate",
       "type": "bool"
