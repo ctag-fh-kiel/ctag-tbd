@@ -63,60 +63,31 @@ inline int ctagSoundProcessorAPCpp::process_param_trig(const ProcessData &data, 
 }
 
 // --- Helper function: rescale CV or Pot to float 0...1.0 (CV is already in correct format, we still keep it inside this method for convenience ---
-inline float ctagSoundProcessorAPCpp::process_param_float(const ProcessData &data, int cv_myparm, int my_parm, float out_min, float out_max )
+inline float ctagSoundProcessorAPCpp::process_param_float(const ProcessData &data, int cv_myparm, int my_parm, float out_min, float out_max, bool exponential )
 {
   if(cv_myparm != -1)
   {
     if (data.cv[cv_myparm] >= 0.0f)     // This is a bypass solution to avoid negative values in rare cases
-      return data.cv[cv_myparm]*(out_max - out_min) + out_min;     // Rescale float of 0.0..1.0 to min...max output-range       //
+    {
+      if (exponential)                  // Typically this is used for volume envelopes
+        return data.cv[cv_myparm] * data.cv[cv_myparm] * out_max;     // Avoid negative values by self-multiplication, apply exponatial-type of scaling, ignore lower limit for range
+      else                              // Standard processing for all other usecases
+        return data.cv[cv_myparm] * (out_max - out_min) + out_min;     // Rescale float of 0.0..1.0 to min...max output-range
+    }
     else
       return out_min;                   // Unexpected, return minimum valid value
   }
   else
-    return (my_parm/4095.f)*(out_max - out_min) + out_min;     // convert to float of 0.0..1.0 and scale to min..max output-range
+  {
+    if (exponential)                    // Typically this is used for volume envelopes,
+      return (my_parm/4095.f) * (my_parm/4095.f) * out_max;       // Avoid negative values by self-multiplication, apply exponatial-type of scaling, ignore lower limit for range
+    else                                // Standard processing for all other usecases
+      return (my_parm/4095.f) * (out_max - out_min) + out_min;    // Convert to float of 0.0..1.0 and scale to min..max output-range
+  }
 }
 
-void ctagSoundProcessorAPCpp::Process(const ProcessData &data) {
-// --- Trigger/Gate inputs and/or GUI-options ---
-int mod1_on = 0;
-int mod2_on = 0;
-int fm1_is_square = 0;
-int fm2_is_square = 0;
-int pwm_mod_1 = 0;
-int pwm_mod_2 = 0;
-int smooth_it_1 = 0;
-int smooth_it_2 = 0;
-int env_active = 0;
-int env_trigger = 0;
-int env_loop = 0;
-
-// --- CV inputs and/or variable GUI-settings ---
-float f_midi_note_1 = 12.f;
-float f_midi_note_2 = 24.f;
-
-// --- Helper variables ---
-float osc_freq_1 = 0.f;
-float osc_freq_2 = 0.f;
-float pwm_freq_1 = 6.f;
-float pwm_freq_2 = 6.f;
-float osc_freq_7_up_1 = 0.f;
-float osc_freq_7_up_2 = 0.f;
-float smoothed_amp_factor = 1.f;
-float fm_freq_1 = 6.f;
-float fm_freq_2 = 6.f;
-float fm_amnt_1 = 0.f;
-float fm_amnt_2 = 0.f;
-float volume = 0.f;
-float vol_attack = 0.f;
-float vol_decay = 0.f;
-
-// --- DSP calculation results ---
-int i_osc_1 = 0;
-int i_osc_2 = 0;
-float f_valA = 0.f;
-float f_valB = 0.f;
-float f_val_result = 0.f;
-
+void ctagSoundProcessorAPCpp::Process(const ProcessData &data)
+{
   // --- Read and buffer triggers/options for APC ---
   // Use sinus or square for pitch-modulation of each of the two oscillators
   fm1_is_square = process_param_trig(data, trig_FreqmodSquare_active_1, FreqmodSquare_active_1, e_FreqmodSquare_active_1);
@@ -150,28 +121,12 @@ float f_val_result = 0.f;
   // Volume for "VCA" (and max. vol for envelope)
   volume = process_param_float(data, cv_Vol_amount, Vol_amount);
   // Envelope parameters
-  vol_attack = process_param_float(data, cv_Env_Attack, Env_Attack);
-  vol_decay = process_param_float(data, cv_Env_Decay, Env_Decay);
+  vol_attack = process_param_float(data, cv_Env_Attack, Env_Attack, 0.f, 2.f, true );  // Important: set optional last parameter to exponential scaling!
+  vol_decay = process_param_float(data, cv_Env_Decay, Env_Decay, 0.f, 10.f, true );   // Important: set optional last parameter to exponential scaling!
 
-  // --- Get settings for volume envelope ---
-  if (cv_Env_Attack != -1)
-  {
-    if( data.cv[cv_Env_Attack] >= 0.f )
-      vol_attack = data.cv[cv_Env_Attack] * data.cv[cv_Env_Attack] * 2.f; // power of two prevents negative values and adjusts pots to more expotential behaviour
-  }
-  else
-    vol_attack = (float) Env_Attack / 4095.f * 5.f;    // get attack value from GUI, set time
+  // --- Set values for Envelope Generator ---
   vol_env.SetAttack(vol_attack);
-
-  if (cv_Env_Decay != -1)
-  {
-    if( data.cv[cv_Env_Decay] >= 0.f )
-      vol_decay = data.cv[cv_Env_Decay] * data.cv[cv_Env_Decay] * 8.f;     // power of two prevents negative values and adjusts pots to more expotential behaviour
-  }
-  else
-    vol_decay = (float) Env_Decay / 4095.f * 20.f;   // get decay value from GUI, set time
   vol_env.SetDecay(vol_decay);
-
   vol_env.SetLoop( (bool)env_loop );
 
   // --- DSP related stuff that can be handled already before the main DSP-loop ---
@@ -277,12 +232,12 @@ float f_val_result = 0.f;
 
     // --- Adjust Mastervolume incl. Volume envelope and truncate in case of clipping ---
     f_val_result *= volume * smoothed_amp_factor;     // If we are in smoothed-operation-mode we amplify the volume just a bit...
+    if( env_active )
+      f_val_result *= vol_env.Process();            // Apply Volume Envelope if required
     if( f_val_result > 1.f)
       f_val_result = 1.f;
     if( f_val_result < -1.f)
       f_val_result = -1.f;
-    if( env_active )
-      f_val_result *= vol_env.Process();            // Apply Volume Envelope if required
 
     // --- Output of DSP-results ---
     data.buf[i * 2 + processCh] = f_val_result;
