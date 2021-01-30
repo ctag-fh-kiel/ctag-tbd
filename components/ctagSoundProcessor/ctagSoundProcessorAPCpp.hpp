@@ -13,9 +13,48 @@ namespace CTAG {
             virtual ~ctagSoundProcessorAPCpp();
 
         private:
+            // === Pseudo local variables start here ===
+            // --- Trigger/Gate inputs and/or GUI-options ---
+            int mod1_on = 0;
+            int mod2_on = 0;
+            int fm1_is_square = 0;
+            int fm2_is_square = 0;
+            int pwm_mod_1 = 0;
+            int pwm_mod_2 = 0;
+            int smooth_it_1 = 0;
+            int smooth_it_2 = 0;
+            int env_active = 0;
+            int env_trigger = 0;
+            int env_loop = 0;
+            // --- CV inputs and/or variable GUI-settings ---
+            float f_midi_note_1 = 12.f;
+            float f_midi_note_2 = 24.f;
+            // --- Helper variables ---
+            float osc_freq_1 = 0.f;
+            float osc_freq_2 = 0.f;
+            float pwm_freq_1 = 6.f;
+            float pwm_freq_2 = 6.f;
+            float osc_freq_7_up_1 = 0.f;
+            float osc_freq_7_up_2 = 0.f;
+            float smoothed_amp_factor = 1.f;
+            float fm_freq_1 = 6.f;
+            float fm_freq_2 = 6.f;
+            float fm_amnt_1 = 0.f;
+            float fm_amnt_2 = 0.f;
+            float volume = 0.f;
+            float vol_attack = 0.f;
+            float vol_decay = 0.f;
+            // --- DSP calculation results ---
+            int i_osc_1 = 0;
+            int i_osc_2 = 0;
+            float f_valA = 0.f;
+            float f_valB = 0.f;
+            float f_val_result = 0.f;
+            // === End of pseudo local variables ===
+
             virtual void knowYourself() override;
             inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id ); // rescale incoming data to bool
-            inline float process_param_float( const ProcessData &data, int cv_myparm, int my_parm, float out_min = 0.f, float out_max = 1.f ); // rescale incoming data to 0.0-1.0
+            inline float process_param_float( const ProcessData &data, int cv_myparm, int my_parm, float out_min = 0.f, float out_max = 1.f, bool exponential = false ); // rescale incoming data to 0.0-1.0
 
             HELPERS::ctagSineSource osc_1;  // Main Oscillators
             HELPERS::ctagSineSource osc_2;
