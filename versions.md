@@ -1,10 +1,11 @@
 # CTAG TBD Version Log
 
 ## V0.9.13
-- CDelay noise reduction / different filter model (done)
-- Rompler pitch, start position latch if slice latch on trig (done)
-- Rompler bit reduction (done)
-- Claude more grains, removed mono in as similar functionality already with mode 1 & 3 (done)
+- New plugin APCpp by M. Brüssel
+- CDelay noise reduction / different filter model
+- Rompler pitch, start position latch if slice latch on trig
+- Rompler bit reduction
+- Claude more grains, removed mono in as similar functionality already with mode 1 & 3 
 - Added developer docs for windows (in doc/ folder)
 - Added continuous integration scripts
 - Bug fixes
