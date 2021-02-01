@@ -39,8 +39,8 @@ respective component folders / files if different from this license.
 #include "plaits/dsp/engine/engine.h"
 
 #define GATE_HIGH_NEW       2
-#define GATE_HIGH           1
-#define GATE_LOW            0
+#define GATE_HIGH                1
+#define GATE_LOW                 0
 #define GATE_LOW_NEW        -1
 
 #define IDX_OSC_B           1         // Sample-Oscillator on top of Y-Axix for "Vector-Stick"
