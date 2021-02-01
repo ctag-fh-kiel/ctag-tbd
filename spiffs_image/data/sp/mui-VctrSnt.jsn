@@ -1,0 +1,128 @@
+{
+   "id": "VctrSnt", "isStereo": true, "name": "VctrSnt", "hint": "Inspired by the Sequential Circuits Prophet VS", "params":
+   [
+       {  
+          "id": "Voice", "name": "Voice", "type": "group", "params":  
+           [
+              {"id":"Gate","name":"Gate Voice n/y","type":"bool"},
+              {"id":"Freq","name":"Pitch CV Voice","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+          "id": "VectorSpace", "name": "Vector space (A<->C is X-Axis, D<->B is Y-Axis)", "type": "group", "params":  
+           [
+              {"id":"VolWT_A","name":"Vol Wavetable A","type":"int","min":0,"max":4095,"step":1},
+              {"id":"VolOsc_B","name":"Vol Sample Osc B","type":"int","min":0,"max":4095,"step":1},
+              {"id":"VolWT_C","name":"Vol Wavetable C","type":"int","min":0,"max":4095,"step":1},
+              {"id":"VolOsc_D","name":"Vol Sample Osc D","type":"int","min":0,"max":4095,"step":1},
+              {"id":"XfadeWaveTbls","name":"Crossfade Wavetables A<->C","type":"int","min":-2047,"max":2048,"step":1},
+              {"id":"XfadeSamples","name":"Crossfade Samples D<->B","type":"int","min":-2047,"max":2048,"step":1}
+           ]
+       },
+       {  
+          "id": "VectorModulators", "name": "Vector Modulators (Looping EGs start at given offset)", "type": "group", "params":  
+           [
+               {"id":"LfoWaveTblsXfadeActive","name":"LFO WaveTable Xfade n/y","type":"bool"},
+               {"id":"LfoWaveTblsXfadeIsSquare","name":"LFO WaveTable Xfade Square n/y","type":"bool"},
+               {"id":"LfoWaveTblsXfadeRange","name":"LFO WaveTable range","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LfoWaveTblsXfadeSpeed","name":"LFO WaveTable Speed","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"ModWaveTblsXfade","name":"Modulate WaveTable Xfade n/y","type":"bool"},
+               {"id":"AttackWaveTblsXfd","name":"Attack WaveTable Xfade","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayWaveTblsXfd","name":"Decay WaveTable Xfade","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"ModSamplesXfade","name":"Modulate Samples Xfade n/y","type":"bool"},
+               {"id":"AttackSamplesXfd","name":"Attack Samples Xfade","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecaySamplesXfd","name":"Decay Samples Xfade","type":"int","min":0,"max":4095,"step":1}
+           ]
+      },
+      {  
+          "id": "WaveScanners", "name": "Wave Scanners (Looping EGs start at given offset)", "type": "group", "params":  
+           [
+               {"id":"ScanWavTblAauto","name":"Automatic Scanning A n/y","type":"bool"},
+               {"id":"AttackScanA","name":"Attack Scan A","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayScanA","name":"Decay Scan A","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ScanWavTblCauto","name":"Automatic Scanning C n/y","type":"bool"},
+               {"id":"AttackScanC","name":"Attack Scan C","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayScanC","name":"Decay Scan C","type":"int","min":0,"max":4095,"step":1}
+           ]
+      },
+      {  
+         "id": "WtOsc_A", "name": "Wavetable A", "type": "group", "params":  
+          [
+              {"id": "WaveTblA","name": "Wavetable A","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
+              {"id":"ScanWavTblA","name":"Scan Wavetable A","type":"int","min":0,"max":4095,"step":1}, 
+              {"id": "pitch_A","type": "int","name": "Pitch A","min": -48,"max": 48,"step": 1 },
+              {"id": "tune_A","type": "int","name": "Tune A","min": -2048,"max": 2048,"step": 1}
+          ]
+      },
+      {  
+         "id": "SampleOsc_B", "name": "Sample Oscillator B", "type": "group", "params":  
+          [
+              {"id": "bank_B","name": "Bank B","type": "int","min": 0,"max": 31,"step": 1},
+              {"id": "slice_B","name": "Slice B","type": "int","min": 0,"max": 31,"step": 1},
+              {"id": "speed_B","name": "Playback Speed B","type": "int","min": -2048,"max": 2048,"step": 1},
+              {"id": "pitch_B","name": "Pitch B","type": "int","min": -48,"max": 48,"step": 1},
+              {"id": "tune_B","name": "Tune B","type": "int","min": -2048,"max": 2048,"step": 1},
+              {"id": "start_B","name": "Start Position B","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
+              {"id": "length_B","name": "Length B","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
+              {"id": "loop_B","name": "Loop B off/on","type": "bool"},
+              {"id": "loop_pipo_B","name": "Ping-Pong B","type": "bool"},
+              {"id": "lpstart_B","name": "Loop Position B","hint": "Relative to length of subselection (not slice length)","type": "int","min": 0,"max": 1048576,"step": 1}
+            ]
+      },
+      {  
+         "id": "WtOsc_C", "name": "Wavetable C", "type": "group", "params":  
+          [
+              {"id": "WaveTblC","name": "Wavetable C","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
+              {"id":"ScanWavTblC","name":"Scan Wavetable C","type":"int","min":0,"max":4095,"step":1},
+              {"id": "pitch_C","type": "int","name": "Pitch C","min": -48,"max": 48,"step": 1 },
+              {"id": "tune_C","type": "int","name": "Tune C","min": -2048,"max": 2048,"step": 1}
+          ]
+      },
+      {  
+         "id": "SampleOsc_D", "name": "Sample Oscillator D", "type": "group", "params":  
+          [
+              {"id": "bank_D","name": "Bank D","type": "int","min": 0,"max": 31,"step": 1},
+              {"id": "slice_D","name": "Slice D","type": "int","min": 0,"max": 31,"step": 1},
+              {"id": "speed_D","name": "Playback Speed D","type": "int","min": -2048,"max": 2048,"step": 1},
+              {"id": "pitch_D","name": "Pitch D","type": "int","min": -48,"max": 48,"step": 1},
+              {"id": "tune_D","name": "Tune D","type": "int","min": -2048,"max": 2048,"step": 1},
+              {"id": "start_D","name": "Start Position D","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
+              {"id": "length_D","name": "Length D","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
+              {"id": "loop_D","name": "Loop D off/on","type": "bool"},
+              {"id": "loop_pipo_D","name": "Ping-Pong D","type": "bool"},
+              {"id": "lpstart_D","name": "Loop Position D","hint": "Relative to length of subselection (not slice length)","type": "int","min": 0,"max": 1048576,"step": 1}
+            ]
+        },         
+       {  
+          "id": "FreqMod", "name": "Frequency Modulation", "type": "group", "params":  
+           [
+               {"id":"FreqModActive","name":"Freq Modulation active n/y","type":"bool"},
+               {"id":"FreqModSinus","name":"FreqMod Sinus n/y","type":"bool"},
+               {"id":"FreqModAmnt","name":"Modulation Intensity","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FreqModSpeed","name":"Modulation Speed","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "VolEnv", "name": "Volume Envelope", "type": "group", "params":  
+           [
+               {"id":"EGvolActive","name":"Volume EG active n/y","type":"bool"},
+               {"id":"EGvolGate","name":"Volume EG Gate n/y","type":"bool"},
+               {"id":"AttackVol","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayVol","name":"Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SustainVol","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ReleaseVol","name":"Release","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "PanTrem", "name": "Panner/Tremolo", "type": "group", "params":  
+           [
+               {"id":"PanAmnt","name":"Panner Intensity (off if 0)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PanFreq","name":"Panner Frequency","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PanOffset","name":"Panner Offset (Tremolo if 0)","type":"int","min":0,"max":4095,"step":1}
+           ]
+       }
+   ] 
+}
