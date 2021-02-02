@@ -20,6 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "soc/rtc_cntl_reg.h"
+#include "soc/rtc_io_reg.h"
 #include "soc/soc_ulp.h"
 
     // Macros for pin access
@@ -45,13 +46,6 @@ respective component folders / files if different from this license.
         WRITE_RTC_REG(RTC_GPIO_OUT_W1TS_REG, RTC_GPIO_OUT_DATA_W1TS_S + 14, 1, 1)
     .endm
 
-    .macro clear_CS_WM8731
-        WRITE_RTC_REG(RTC_GPIO_OUT_W1TC_REG, RTC_GPIO_OUT_DATA_W1TC_S + 10, 1, 1)
-    .endm
-    .macro set_CS_WM8731
-        WRITE_RTC_REG(RTC_GPIO_OUT_W1TS_REG, RTC_GPIO_OUT_DATA_W1TS_S + 10, 1, 1)
-    .endm
-
     .macro clear_CS_MCP3208
         WRITE_RTC_REG(RTC_GPIO_OUT_W1TC_REG, RTC_GPIO_OUT_DATA_W1TC_S + 9, 1, 1)
     .endm
@@ -60,19 +54,11 @@ respective component folders / files if different from this license.
     .endm
 
 	/* Define variables, which go into .bss section (zero-initialized data) */
+.data
 	.bss
-	.global stack
-stack:
-	.skip 100
-	.global stackEnd
-stackEnd:
-	.long 0
-
 	.global adc_data
 adc_data:
-	.skip 64 					/* 128bit, 8 x 4(byte) */
-
-    .global adc_data_offset
+	.skip 32 					/* 128bit, 8 x 4(byte) */
 
 	/* Code goes into .text section */
 	.text
@@ -109,7 +95,6 @@ adc_read_loop0:
     // store data
     sub r2, r3, r2 // 4096 minus ADC value due to electronic design
     move r0, adc_data
-    add r0, r0, r1 // add offset
     st r2, r0, 0
 
     // read channel 1
@@ -144,7 +129,6 @@ adc_read_loop1:
     // store data
     sub r2, r3, r2
     move r0, adc_data
-    add r0, r0, r1 // add offset
     st r2, r0, 4
 
     // read channel 2
@@ -180,7 +164,6 @@ adc_read_loop2:
     // store data
     sub r2, r3, r2
     move r0, adc_data
-    add r0, r0, r1 // add offset
     st r2, r0, 8
 
    // read channel 3
@@ -215,7 +198,6 @@ adc_read_loop3:
     // store data
     sub r2, r3, r2
     move r0, adc_data
-    add r0, r0, r1 // add offset
     st r2, r0, 12
 
    // read channel 4
@@ -249,7 +231,6 @@ adc_read_loop4:
     // store data
     sub r2, r3, r2
     move r0, adc_data
-    add r0, r0, r1 // add offset
     st r2, r0, 16
 
    // read channel 5
@@ -284,7 +265,6 @@ adc_read_loop5:
     // store data
     sub r2, r3, r2
     move r0, adc_data
-    add r0, r0, r1 // add offset
     st r2, r0, 20
 
    // read channel 6
@@ -318,7 +298,6 @@ adc_read_loop6:
     // store data
     sub r2, r3, r2
     move r0, adc_data
-    add r0, r0, r1 // add offset
     st r2, r0, 24
 
    // read channel 7
@@ -351,12 +330,8 @@ adc_read_loop7:
     // store data
     sub r2, r3, r2
     move r0, adc_data
-    add r0, r0, r1 // add offset
     st r2, r0, 28
 
-    // set offset in storage
-    move r0, adc_data_offset
-    st r1, r0, 0
     /* send interrupt */
     wake
     halt

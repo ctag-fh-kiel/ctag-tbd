@@ -8,6 +8,7 @@
 - Claude more grains, removed mono in as similar functionality already with mode 1 & 3 
 - Added developer docs for windows (in doc/ folder)
 - Added continuous integration scripts
+- Added configuration option for different HW platforms including (Strämpler)[https://github.com/ctag-fh-kiel/ctag-straempler]
 - Bug fixes
 
 ## V0.9.12a

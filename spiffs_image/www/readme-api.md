@@ -380,3 +380,18 @@ Erases sample rom flash area
 Uploads raw sample blob
 
 **Method** : `POST`
+
+####URL: `/getIOCaps`
+
+Get IO capabilities of module
+
+**Method** : `GET`
+
+**Response data example**
+
+```json
+{
+ "t": ["TRIG0", "TRIG1"],
+ "cv": ["CV0", "CV1", "POT0", "POT1"]
+}
+```

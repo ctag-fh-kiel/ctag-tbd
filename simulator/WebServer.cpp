@@ -52,6 +52,14 @@ void WebServer::Start() {
         response->write(SimSPManager::GetCStrJSONSoundProcessors());
     };
 
+    server.resource["^/api/v1/getIOCaps$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                        shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        auto content = request->content.string();
+        string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
+        response->write(s);
+    };
+
     server.resource["^/api/v1/getActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
                                                                      shared_ptr<HttpServer::Request> request) {
         // Retrieve string:

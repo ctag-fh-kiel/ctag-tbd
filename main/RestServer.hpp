@@ -64,6 +64,8 @@ namespace CTAG {
             static esp_err_t ota_handler(httpd_req_t *req);
 
             static esp_err_t srom_handler(httpd_req_t *req);
+
+            static esp_err_t get_iocaps_handler(httpd_req_t *req);
         };
     }
 }

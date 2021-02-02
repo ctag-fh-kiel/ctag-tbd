@@ -55,8 +55,9 @@ using namespace CTAG::DRIVERS;
 #define NG_BOTH 1
 #define NG_LEFT 2
 #define NG_RIGHT 3
-#define N_CVS 4
-#define N_TRIGS 2
+// defined in CMakelists.txt
+//#define N_CVS 4
+//#define N_TRIGS 2
 
 // audio real-time task
 void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
@@ -338,6 +339,9 @@ void SoundProcessorManager::StartSoundProcessor() {
 
     // init codec
     DRIVERS::Codec::InitCodec();
+#ifdef CONFIG_TBD_PLATFORM_STR
+    DRIVERS::ADC::InitADCSystem();
+#endif
 
     // generate internal data
     updateConfiguration();
@@ -368,9 +372,11 @@ void SoundProcessorManager::StartSoundProcessor() {
     if (processMutex == NULL) {
         ESP_LOGE("SPM", "Fatal couldn't create mutex!");
     }
+#ifndef CONFIG_TBD_PLATFORM_STR
     // create led indicator thread
     xTaskCreatePinnedToCore(&SoundProcessorManager::led_task, "led_task", 4096, nullptr, tskIDLE_PRIORITY + 2,
                             &ledTaskH, 0);
+#endif
     // create audio thread
     runAudioTask = 1;
     xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
@@ -517,10 +523,12 @@ void SoundProcessorManager::KillAudioTask() {
     while (runAudioTask != 2); // wait for audio task to be dead
     sp[0] = nullptr;
     sp[1] = nullptr;
+#ifndef CONFIG_TBD_PLATFORM_STR
     vTaskDelete(ledTaskH);
     ledTaskH = NULL;
     vTaskDelay(100 / portTICK_PERIOD_MS);
     DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
+#endif
 }
 
 void SoundProcessorManager::DisablePluginProcessing() {

@@ -41,8 +41,7 @@ respective component folders / files if different from this license.
 	.bss
 	.global adc_data
 adc_data:
-	.skip 64 					/* 128bit, 8 x 4(byte) */
-    .global adc_data_offset
+	.skip 32 					/* 128bit, 8 x 4(byte) */
 
 	/* Code goes into .text section */
 	.text

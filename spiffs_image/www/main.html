@@ -1,0 +1,171 @@
+<ons-page id="main">
+    <ons-toolbar>
+        <div class="center">CTAG-TBD</div>
+    </ons-toolbar>
+    <ons-list>
+        <ons-list-header>Plugin channel 0</ons-list-header>
+        <ons-list-item>
+            <ons-select>
+                <select id="plugin-select-ch0">
+                </select>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-item>
+            <ons-button id="go-ch0" style="margin: 2px;">Edit channel 0</ons-button>
+            <ons-button id="load-ch0" style="margin: 2px">Load preset</ons-button>
+            <ons-button id="save-ch0" style="margin: 2px;">Save preset</ons-button>
+        </ons-list-item>
+    </ons-list>
+
+    <ons-list>
+        <ons-list-header>Plugin channel 1</ons-list-header>
+        <ons-list-item>
+            <ons-select>
+                <select id="plugin-select-ch1">
+                </select>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-item>
+            <ons-button id="go-ch1" style="margin: 2px;">Edit channel 1</ons-button>
+            <ons-button id="load-ch1" style="margin: 2px">Load preset</ons-button>
+            <ons-button id="save-ch1" style="margin: 2px;">Save preset</ons-button>
+        </ons-list-item>
+    </ons-list>
+    <ons-list>
+        <ons-list-header>Sample ROM</ons-list-header>
+        <ons-list-item>
+            <ons-button id="go-sample-rom" style="margin: 2px;">Edit sample ROM</ons-button>
+        </ons-list-item>
+    </ons-list>
+    <ons-list>
+        <ons-list-header>Configuration</ons-list-header>
+        <ons-list-item>
+            <ons-button id="go-config" style="margin: 2px;">Edit configuration</ons-button>
+        </ons-list-item>
+    </ons-list>
+    <script>
+        ons.getScriptPage().onInit = function () {
+            // get available plugins from API and assign current ones
+            $.getq('myq',
+                'api/v1/getPlugins',
+                data => {
+                    if(typeof data == 'string') data = JSON.parse(data);
+                    // sort array by name
+                    data.sort((a, b) => a.name.localeCompare(b.name, undefined, {numberic: true}));
+                    // populate plugin list
+                    data.forEach(el => {
+                            let t = el.hasOwnProperty('hint') ? 'title="' + el.hint + '" ' : '';
+                            // only show stereo plugins on ch-0
+                            if (el.isStereo){
+                                let s = '<option ' + t + 'value="' + el.id + '">' + el.name + ' (ST)</option>';
+                                $('#plugin-select-ch0').append(s);
+                            }
+                            else{
+                                let s = '<option ' + t + 'value="' + el.id + '">' + el.name + ' (M)</option>';
+                                $('#plugin-select-ch0').append(s);
+                            }
+                            if (!el.isStereo) {
+                                let s = '<option ' + t + 'value="' + el.id + '">' + el.name + ' (M)</option>';
+                                $('#plugin-select-ch1').append(s);
+                            }
+                        }
+                    );
+                    // global var
+                    window.plugins = data;
+                }
+            );
+            // get active plugin and set in UI
+            $.getq('myq',
+                '/api/v1/getActivePlugin/0',
+                data => {
+                    if(typeof data == 'string') data = JSON.parse(data);
+                    $('#plugin-select-ch0').val(data.id);
+                    if (window.plugins.find(el => el.id === data.id).isStereo) {
+                        $('#go-ch1,#load-ch1,#save-ch1').prop("disabled", true);
+                        $('#plugin-select-ch1').prop("disabled", true);
+                    } else {
+                        $('#go-ch1,#load-ch1,#save-ch1').removeAttr('disabled');
+                        $('#plugin-select-ch1').removeAttr('disabled');
+                    }
+                }
+            );
+            $.getq('myq',
+                '/api/v1/getActivePlugin/1',
+                data => {
+                    if(typeof data == 'string') data = JSON.parse(data);
+                    $('#plugin-select-ch1').val(data.id);
+                }
+            );
+            $.getq('myq',
+                '/api/v1/getIOCaps',
+                data => {
+                    if(typeof data == 'string') data = JSON.parse(data);
+                    window.ioCaps = data;
+                }
+            );
+            // set up call backs upon change of plugin
+            $('#plugin-select-ch0').on('change', function () {
+                $.getq('myq',
+                    'api/v1/setActivePlugin/0',
+                    {id: this.value}
+                );
+                // check if stereo plugin selected, if so, disable ch 1
+                if (window.plugins.find(el => el.id === this.value).isStereo) {
+                    $('#go-ch1,#save-ch1,#load-ch1').prop("disabled", true);
+                    $('#plugin-select-ch1').prop("disabled", true);
+                } else {
+                    $('#go-ch1,#save-ch1,#load-ch1').removeAttr('disabled');
+                    $('#plugin-select-ch1').removeAttr('disabled');
+                    // re-set mono channel as well
+                    $.getq('myq',
+                        'api/v1/setActivePlugin/1',
+                        {id: $('#plugin-select-ch1').val()}
+                    );
+                }
+
+            });
+            $('#plugin-select-ch1').on('change', function () {
+                $.getq('myq',
+                    'api/v1/setActivePlugin/1',
+                    {id: this.value}
+                );
+            });
+
+            this.querySelector('#go-ch0').onclick = function () {
+                document.querySelector('#myNavigator').pushPage('edit.html', {data: {ch: 0}});
+            };
+
+            this.querySelector('#go-ch1').onclick = function () {
+                document.querySelector('#myNavigator').pushPage('edit.html', {data: {ch: 1}});
+            };
+
+            this.querySelector('#load-ch0').onclick = function () {
+                document.querySelector('#myNavigator').pushPage('load.html', {data: {ch: 0}});
+            };
+
+            this.querySelector('#load-ch1').onclick = function () {
+                document.querySelector('#myNavigator').pushPage('load.html', {data: {ch: 1}});
+            };
+
+            this.querySelector('#save-ch0').onclick = function () {
+                document.querySelector('#myNavigator').pushPage('save.html', {data: {ch: 0}});
+            };
+
+            this.querySelector('#save-ch1').onclick = function () {
+                document.querySelector('#myNavigator').pushPage('save.html', {data: {ch: 1}});
+            };
+
+            this.querySelector('#go-sample-rom').onclick = function () {
+                window.open('sample-rom.html', '_blank');
+            };
+
+            this.querySelector('#go-config').onclick = function () {
+                document.querySelector('#myNavigator').pushPage('config.html', {});
+            };
+
+            this.onShow = function () {
+                //console.log('Main');
+            };
+        };
+    </script>
+</ons-page>
