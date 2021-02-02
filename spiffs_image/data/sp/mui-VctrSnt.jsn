@@ -64,8 +64,8 @@
               {"id": "fmode_B","name": "Filter Mode B","hint": "0: Off, 1: LP, 2: BP, 3:HP","type": "int","min": 0,"max": 3,"step": 1},
               {"id": "fcut_B","name": "Filter Cutoff B","type": "int","min": 0,"max": 4095,"step":1},
               {"id": "freso_B","name": "Filter Resonance B","type": "int","min": 0,"max": 4095,"step": 1},
-              {"id": "lfo2filtfm_B","name": "LFO Filter FM B","type": "int","min": 0,"max": 4095,"step": 1},
-              {"id": "lfospeed_B","name": "Speed B","type": "int","min": 0,"max": 4095,"step": 1}
+              {"id": "lfo2filtfm_B","name": "Filter LFO Amount B","type": "int","min": 0,"max": 4095,"step": 1},
+              {"id": "lfospeed_B","name": "Filter LFO Speed B","type": "int","min": 0,"max": 4095,"step": 1}
           ]
       },
       {  
@@ -96,15 +96,15 @@
               {"id": "fmode_D","name": "Filter Mode D","hint": "0: Off, 1: LP, 2: BP, 3:HP","type": "int","min": 0,"max": 3,"step": 1},
               {"id": "fcut_D","name": "Filter Cutoff D","type": "int","min": 0,"max": 4095,"step":1},
               {"id": "freso_D","name": "Filter Resonance D","type": "int","min": 0,"max": 4095,"step": 1},
-              {"id": "lfo2filtfm_D","name": "LFO Filter FM D","type": "int","min": 0,"max": 4095,"step": 1},
-              {"id": "lfospeed_D","name": "Speed D","type": "int","min": 0,"max": 4095,"step": 1}
+              {"id": "lfo2filtfm_D","name": "Filter LFO Amount D","type": "int","min": 0,"max": 4095,"step": 1},
+              {"id": "lfospeed_D","name": "Filter LFO Speed D","type": "int","min": 0,"max": 4095,"step": 1}
             ]
         },         
        {  
           "id": "FreqMod", "name": "Frequency Modulation", "type": "group", "params":  
            [
                {"id":"FreqModActive","name":"Freq Modulation active n/y","type":"bool"},
-               {"id":"FreqModSinus","name":"FreqMod Sinus n/y","type":"bool"},
+               {"id":"FreqModSinus","name":"FreqMod Square n/y","type":"bool"},
                {"id":"FreqModAmnt","name":"Modulation Intensity","type":"int","min":0,"max":4095,"step":1},
                {"id":"FreqModSpeed","name":"Modulation Speed","type":"int","min":0,"max":4095,"step":1}
            ]
