@@ -39,8 +39,8 @@ respective component folders / files if different from this license.
 #include "plaits/dsp/engine/engine.h"
 
 #define GATE_HIGH_NEW       2
-#define GATE_HIGH                1
-#define GATE_LOW                 0
+#define GATE_HIGH           1
+#define GATE_LOW            0
 #define GATE_LOW_NEW        -1
 
 #define IDX_OSC_B           1         // Sample-Oscillator on top of Y-Axix for "Vector-Stick"
@@ -48,8 +48,7 @@ respective component folders / files if different from this license.
 
 // --- Additional Macros for automated parameter evaluations ---
 #define MK_TRIG_PAR(outname, inname) int outname = process_param_trig(data, trig_##inname, inname, e_##inname);
-#define MK_FLT_PAR_ABS_PAN(outname, inname, norm, scale)  float outname = ((inname/norm)+1.f)/2.f * scale; if(cv_##inname != -1) outname = fabsf(data.cv[cv_##inname]) * scale;
-
+#define MK_FLT_PAR_ABS_PAN(outname, inname, norm, scale)  float outname = ((inname/norm)+1.f)/2.f * scale; if(cv_##inname != -1) outname = fabsf(data.cv[cv_##inname]) * scale;         // Used for XFades!
 
 // --- Modify sine-wave for Vector or Wavetable-Z-Axis modulation
 #define SINE_TO_UPPER_HALF(sine_val)          sine_val = (sine_val >= 0) ? sine_val     : -sine_val;
@@ -59,6 +58,9 @@ respective component folders / files if different from this license.
 #define SINE_TO_SQARE_UPPER_HALF(sine_val)    sine_val = (sine_val >= 0) ? 1.f          : 0.f;
 #define SINE_TO_SQARE_LOWER_HALF(sine_val)    sine_val = (sine_val >= 0) ? 0.f          : -1.f;
 #define SINE_TO_SQARE(sine_val)               sine_val = (sine_val >= 0) ? 1.f          : -1.f;
+
+// !!!
+// ### Andere SIN->SAW usw. evtl. s.o. nicht alle benötigt, sofern +-Modulation !!!
 
 using namespace CTAG::SP;
 
@@ -148,92 +150,97 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
 
   // --- Voice / Volume ---
   MK_TRIG_PAR(t_Gate, Gate);
+  MK_TRIG_PAR(t_EGvolGate, EGvolGate);
+  if (t_Gate == GATE_HIGH_NEW &&
+      !t_EGvolGate)   // We have two modes for "on trigger": reset playing of samples to start y/n
+  {
+    romplers[IDX_OSC_B]->Reset();     // Reset Sample-OSCs to play from beginning and so in if new triggered
+    romplers[IDX_OSC_D]->Reset();     // Please note: once triggered, all Voices will stay active (i.e. also samples will play "forever" if looping is active)
+  }
   MK_FLT_PAR_ABS(f_Freq, Freq, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 3.f);
+  MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 5.f);
 
   // --- VectorSpace ---
-  MK_FLT_PAR_ABS( f_VolWT_A, VolWT_A, 4095.f, 1.f);
-  MK_FLT_PAR_ABS( f_VolOsc_B, VolOsc_B, 4095.f, 2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
-  MK_FLT_PAR_ABS( f_VolWT_C, VolWT_C, 4095.f, 1.f);
-  MK_FLT_PAR_ABS( f_VolOsc_D, VolOsc_D, 4095.f, 2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
+  MK_FLT_PAR_ABS(f_VolWT_A, VolWT_A, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_VolOsc_B, VolOsc_B, 4095.f,
+                 2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
+  MK_FLT_PAR_ABS(f_VolWT_C, VolWT_C, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_VolOsc_D, VolOsc_D, 4095.f,
+                 2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
 
-  MK_FLT_PAR_ABS_PAN(f_XfadeWaveTbls, XfadeWaveTbls, 2048.f, 1.f);     // We have a middle-centered scale, but we need 0-1.0 for mixing
+  MK_FLT_PAR_ABS_PAN(f_XfadeWaveTbls, XfadeWaveTbls, 2048.f,
+                     1.f);     // We have a middle-centered scale, but we need 0-1.0 for mixing
   MK_FLT_PAR_ABS_PAN(f_XfadeSamples, XfadeSamples, 2048.f, 1.f);
 
   // --- Vector Modulators (Looping EGs start at given offset) ---
   MK_TRIG_PAR(t_LfoWaveTblsXfadeActive, LfoWaveTblsXfadeActive);
   MK_TRIG_PAR(t_LfoWaveTblsXfadeIsSquare, LfoWaveTblsXfadeIsSquare);
-  MK_FLT_PAR_ABS_SFT(f_LfoWaveTblsXfadeRange, LfoWaveTblsXfadeRange, 4095.f, 1.f);
-  MK_FLT_PAR_ABS_SFT(f_LfoWaveTblsXfadeSpeed, LfoWaveTblsXfadeSpeed, 4095.f, 15.f);
+  MK_FLT_PAR_ABS(f_LfoWaveTblsXfadeRange, LfoWaveTblsXfadeRange, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_LfoWaveTblsXfadeSpeed, LfoWaveTblsXfadeSpeed, 4095.f, 15.f);
   lfoXfadeWTs.SetFrequency(f_LfoWaveTblsXfadeSpeed);
 
   MK_TRIG_PAR(t_ModWaveTblsXfade, ModWaveTblsXfade);
-  MK_FLT_PAR_ABS_SFT(f_AttackWaveTblsXfd, AttackWaveTblsXfd, 4095.f, 2.f);   // We use exponential scaling for envelopes, so the max effectively will be squared
-  MK_FLT_PAR_ABS_SFT(f_DecayWaveTblsXfd, DecayWaveTblsXfd, 4095.f, 10.f);
+  MK_FLT_PAR_ABS(f_AttackWaveTblsXfd, AttackWaveTblsXfd, 4095.f,2.f);   // We use exponential scaling for envelopes, so the max effectively will be squared
+  MK_FLT_PAR_ABS(f_DecayWaveTblsXfd, DecayWaveTblsXfd, 4095.f, 8.f);
   xFadeSamples_eg.SetAttack(f_AttackWaveTblsXfd);
   xFadeSamples_eg.SetDecay(f_AttackWaveTblsXfd);
 
   MK_TRIG_PAR(t_ModSamplesXfade, ModSamplesXfade);
-  MK_FLT_PAR_ABS_SFT(f_AttackSamplesXfd, AttackSamplesXfd, 4095.f, 2.f);
-  MK_FLT_PAR_ABS_SFT(f_DecaySamplesXfd, DecaySamplesXfd, 4095.f, 10.f);
+  MK_FLT_PAR_ABS(f_AttackSamplesXfd, AttackSamplesXfd, 4095.f, 2.f);
+  MK_FLT_PAR_ABS(f_DecaySamplesXfd, DecaySamplesXfd, 4095.f, 8.f);
   xFadeWTs_eg.SetAttack(f_AttackSamplesXfd);
   xFadeWTs_eg.SetDecay(f_DecaySamplesXfd);
 
   // --- Wave Scanners (Looping EGs start at given offset) ---
   MK_FLT_PAR_ABS(f_ScanWavTblA, ScanWavTblA, 4095.f, 1.f);
   MK_TRIG_PAR(t_ScanWavTblAauto, ScanWavTblAauto);
-  MK_FLT_PAR_ABS_SFT(f_AttackScanA, AttackScanA, 4095.f, 2.f);
-  MK_FLT_PAR_ABS_SFT(f_DecayScanA, DecayScanA, 4095.f, 10.f);
-  MK_FLT_PAR_ABS(f_ScanWavTblC, ScanWavTblC,4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_AttackScanA, AttackScanA, 4095.f, 2.f);
+  MK_FLT_PAR_ABS(f_DecayScanA, DecayScanA, 4095.f, 8.f);
+  MK_FLT_PAR_ABS(f_ScanWavTblC, ScanWavTblC, 4095.f, 1.f);
   MK_TRIG_PAR(t_ScanWavTblCauto, ScanWavTblCauto);
-  MK_FLT_PAR_ABS_SFT(f_AttackScanC, AttackScanC, 4095.f, 2.f);
-  MK_FLT_PAR_ABS_SFT(f_DecayScanC, DecayScanC, 4095.f, 10.f);
+  MK_FLT_PAR_ABS(f_AttackScanC, AttackScanC, 4095.f, 2.f);
+  MK_FLT_PAR_ABS(f_DecayScanC, DecayScanC, 4095.f, 8.f);
 
   // --- Wave select A ---
   currentBank_A = WaveTblA;
-  if(lastBank_A != currentBank_A)
-  { // this is slow, hence not modulated by CV
-    prepareWavetable( (const int16_t **)&wavetables_A, currentBank_A, &isWaveTableGood_A, &fbuffer_A, &buffer_A );
+  if (lastBank_A != currentBank_A) { // this is slow, hence not modulated by CV
+    prepareWavetable((const int16_t **) &wavetables_A, currentBank_A, &isWaveTableGood_A, &fbuffer_A, &buffer_A);
     lastBank_A = currentBank_A;
   }
   // --- Wave select C ---
   currentBank_C = WaveTblC;
-  if(lastBank_C != currentBank_C)
-  { // this is slow, hence not modulated by CV
-    prepareWavetable( (const int16_t **)&wavetables_C, currentBank_C, &isWaveTableGood_C, &fbuffer_C, &buffer_C );
+  if (lastBank_C != currentBank_C) { // this is slow, hence not modulated by CV
+    prepareWavetable((const int16_t **) &wavetables_C, currentBank_C, &isWaveTableGood_C, &fbuffer_C, &buffer_C);
     lastBank_C = currentBank_C;
   }
 
   // --- Pitch / Tune Wavetable Oscillator A ---
   float f_pitch_A = pitch_A;
-  if(cv_pitch_A != -1)
+  if (cv_pitch_A != -1)
     f_pitch_A += data.cv[cv_pitch_A] * 12.f * 5.f;
   MK_FLT_PAR_ABS_SFT(f_tune_A, tune_A, 2048.f, 1.f);
   const float f_freq_A = plaits::NoteToFrequency(60 + f_pitch_A + f_tune_A * 12.f) * 0.998f;
 
   // --- Pitch / Tune Wavetable Oscillator C ---
   float f_pitch_C = pitch_C;
-  if(cv_pitch_C != -1)
+  if (cv_pitch_C != -1)
     f_pitch_C += data.cv[cv_pitch_C] * 12.f * 5.f;
   MK_FLT_PAR_ABS_SFT(f_tune_C, tune_C, 2048.f, 1.f);
   const float f_freq_C = plaits::NoteToFrequency(60 + f_pitch_C + f_tune_C * 12.f) * 0.998f;
 
   // --- Render and buffer wave-Table oscillators ---
   float out_A[32] = {0.f};  // Initialize (all elements to 0) each time or results may be weird!
-  if(isWaveTableGood_A)     // Wavetable A ready?
+  if (isWaveTableGood_A)     // Wavetable A ready?
     wt_osc_A.Render(f_freq_A, f_VolWT_A, f_ScanWavTblA, wavetables_A, out_A, bufSz);
 
   float out_C[32] = {0.f};  // Initialize (all elements to 0) each time or results may be weird!
-  if(isWaveTableGood_C)     // Wavetable C ready?
+  if (isWaveTableGood_C)     // Wavetable C ready?
     wt_osc_C.Render(f_freq_C, f_VolWT_C, f_ScanWavTblC, wavetables_C, out_C, bufSz);
 
   // === Sample oscillators (aka Rompler Voices) ===
   // --- Sample Oscillator B ---
   romplers[IDX_OSC_B]->params.gate = 1;   // ### To be optimized with real trigger!
   romplers[IDX_OSC_B]->params.sliceLock = false; // ### latch for trigger instead of Gate?
-  bool new_trigger_B = false;          // ### To be optimized with real trigger!
-  if( new_trigger_B )
-    romplers[IDX_OSC_B]->Reset();
 
   MK_INT_PAR_ABS(i_Bank_B, bank_B, 32.f)
   CONSTRAIN(i_Bank_B, 0, 31)
@@ -246,7 +253,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS_SFT(f_Speed_B, speed_B, 2048.f, 2.f)
   romplers[IDX_OSC_B]->params.playbackSpeed = f_Speed_B;
   float f_Pitch_B = pitch_B;
-  if(cv_pitch_B != -1)
+  if (cv_pitch_B != -1)
     f_Pitch_B += data.cv[cv_pitch_B] * 12.f * 5.f;
   romplers[IDX_OSC_B]->params.pitch = f_Pitch_B;
   MK_FLT_PAR_ABS_SFT(f_Tune_B, tune_B, 2048.f, 12.f)
@@ -263,16 +270,23 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   romplers[IDX_OSC_B]->params.loop = t_loop_B;
   MK_TRIG_PAR(t_loop_pipo_B, loop_pipo_B)
   romplers[IDX_OSC_B]->params.loopPiPo = t_loop_pipo_B;
-  romplers[IDX_OSC_B]->params.gain = f_VolOsc_B;               // ### change to true trigger here!
+  romplers[IDX_OSC_B]->params.gain = f_VolOsc_B;
+
+  // --- Filter params OSC B ---
+  MK_FLT_PAR_ABS(f_Cut_B, fcut_B, 4095.f, 1.f)
+  romplers[IDX_OSC_B]->params.cutoff = f_Cut_B;
+  MK_FLT_PAR_ABS(f_Reso_B, freso_B, 4095.f, 20.f)
+  romplers[IDX_OSC_B]->params.resonance = f_Reso_B;
+  MK_INT_PAR_ABS(i_FType_B, fmode_B, 4.f)
+  CONSTRAIN(i_FType_B, 0, 3);
+  romplers[IDX_OSC_B]->params.filterType = static_cast<RomplerVoice::FilterType>(i_FType_B);
+
   // --- Render and buffer Sample oscillator B ---
   romplers[IDX_OSC_B]->Process(sample_buf_B, bufSz);
 
   // --- Sample Oscillator D ---
   romplers[IDX_OSC_D]->params.gate = 1;   // ### To be optimized with real trigger!
   romplers[IDX_OSC_D]->params.sliceLock = false; // ### latch for trigger instead of Gate?
-  bool new_trigger_D = false;          // ### To be optimized with real trigger!
-  if( new_trigger_D )
-    romplers[IDX_OSC_D]->Reset();
 
   MK_INT_PAR_ABS(i_Bank_D, bank_D, 32.f)
   CONSTRAIN(i_Bank_D, 0, 31)
@@ -284,7 +298,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS_SFT(f_Speed_D, speed_D, 2048.f, 2.f)
   romplers[IDX_OSC_D]->params.playbackSpeed = f_Speed_D;
   float f_Pitch_D = pitch_D;
-  if(cv_pitch_D != -1)
+  if (cv_pitch_D != -1)
     f_Pitch_D += data.cv[cv_pitch_D] * 12.f * 5.f;
   romplers[IDX_OSC_D]->params.pitch = f_Pitch_D;
   MK_FLT_PAR_ABS_SFT(f_Tune_D, tune_D, 2048.f, 12.f)
@@ -301,7 +315,17 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   romplers[IDX_OSC_D]->params.loop = t_loop_D;
   MK_TRIG_PAR(t_loop_pipo_D, loop_pipo_D)
   romplers[IDX_OSC_D]->params.loopPiPo = t_loop_pipo_D;
-  romplers[IDX_OSC_D]->params.gain = f_VolOsc_D;               // ### change to true trigger here!
+  romplers[IDX_OSC_D]->params.gain = f_VolOsc_D;
+
+  // --- Filter params OSC D ---
+  MK_FLT_PAR_ABS(f_Cut_D, fcut_D, 4095.f, 1.f)
+  romplers[IDX_OSC_D]->params.cutoff = f_Cut_D;
+  MK_FLT_PAR_ABS(f_Reso_D, freso_D, 4095.f, 20.f)
+  romplers[IDX_OSC_D]->params.resonance = f_Reso_D;
+  MK_INT_PAR_ABS(i_FType_D, fmode_D, 4.f)
+  CONSTRAIN(i_FType_D, 0, 3);
+  romplers[IDX_OSC_D]->params.filterType = static_cast<RomplerVoice::FilterType>(i_FType_D);
+
   // --- Render and buffer Sample oscillator D ---
   romplers[IDX_OSC_D]->Process(sample_buf_D, bufSz);
 
@@ -312,17 +336,18 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS(f_FreqModSpeed, FreqModSpeed, 4095.f, 100.f);   // LFO will have frequencies from 0.05 to 100 Hz
 
   // --- Volume Envelope ---
+  MK_FLT_PAR_ABS(f_AttackVol, AttackVol, 4095.f, 2.f);
+  vol_eg.SetAttack(f_AttackVol);
+  MK_FLT_PAR_ABS(f_DecayVol, DecayVol, 4095.f, 8.f);
+  vol_eg.SetDecay(f_DecayVol);
   MK_TRIG_PAR(t_EGvolActive, EGvolActive);
-  MK_TRIG_PAR(t_EGvolGate, EGvolGate);
-  MK_FLT_PAR_ABS_SFT(f_AttackVol, AttackVol, 4095.f, 2.f);
-  MK_FLT_PAR_ABS_SFT(f_DecayVol, DecayVol, 4095.f, 1.f);
-  MK_FLT_PAR_ABS_SFT(f_SustainVol,SustainVol,4095.f, 5.f);
-  MK_FLT_PAR_ABS_SFT(f_ReleaseVol, ReleaseVol, 4095.f, 10.f);
+  if (t_EGvolActive && t_Gate == GATE_HIGH_NEW)
+    vol_eg.Trigger();
 
   // --- Panner/Tremolo ---
   MK_FLT_PAR_ABS(f_PanAmnt, PanAmnt, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_PanFreq, PanFreq, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_PanOffset, PanOffset, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_PanFreq, PanFreq, 4095.f, 15.f);
+  lfoPanner.SetFrequency(f_PanFreq);
 
   // --- This is the loop where the audio-output is written ---
   for (uint32_t i = 0; i < bufSz; i++)
@@ -356,10 +381,31 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     f_val_result += sample_buf_D[i] * (1.f-f_XfadeSamples) * 0.25f;      // Crossfade samples and mix with wavetables
     f_val_result += sample_buf_B[i] * (f_XfadeSamples)  * 0.25f;
     f_val_result *= f_Volume;                                             // Adjust Master-Volume
-    CONSTRAIN(f_val_result, -1.f, 1.f);                          // Limit result to max. audio-level
+    if( t_EGvolActive )                                                   // Apply volume EG?
+      f_val_result *= vol_eg.Process();
 
-    // --- Output of DSP-results ---
-    data.buf[i * 2 + processCh] = f_val_result;    // ### This is left channel only for now, correct when implementing Panner-effect!
+    // --- Output of DSP-results, add Autopanner if needed ---
+    if( f_PanAmnt )       // Autopanner is on / has amount > 0
+    {
+      float panValue = fastsin(lfoPanner.Process()) + 1.f;             // Panning based on the algorithm found here: https://audioordeal.co.uk/how-to-build-a-vst-lesson-2-autopanner/
+      panValue = (panValue * M_PI) / 4.f;
+
+      float f_val_result_l = f_val_result * fastcos(panValue);
+      f_val_result_l = f_val_result_l*f_PanAmnt + (1.f-f_PanAmnt)*f_val_result;  // Crossfade with original signal, depending on needed amount of panner
+      CONSTRAIN(f_val_result_l, -1.f, 1.f);                      // Limit result to max. audio-level
+      data.buf[i*2] = f_val_result_l;
+
+      float f_val_result_r = f_val_result * fastsin(panValue);
+      f_val_result_r = f_val_result_r*f_PanAmnt + (1.f-f_PanAmnt)*f_val_result;  // Crossfade with original signal, depending on needed amount of panner
+      CONSTRAIN(f_val_result_r, -1.f, 1.f);
+      data.buf[i*2+1] = f_val_result_r;
+    }
+    else
+    {
+      CONSTRAIN(f_val_result, -1.f, 1.f);                          // Limit result to max. audio-level
+      data.buf[i*2] = f_val_result;            // Left channel (sound in principle is mono, without the right channel we will have a tremelo instead of an auto-panner effect!
+      data.buf[i*2+1] = f_val_result;            // Right channel output
+    }
   }
 }
 
@@ -408,7 +454,6 @@ ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
   // --- Initialize Volume Envelope ---
   vol_eg.SetSampleRate(44100.f);    // Sync Env with our audio-processing
   vol_eg.SetModeExp();                   // Logarithmic scaling
-  vol_eg.Reset();
 
   // --- Vector-EGs ---
   xFadeSamples_eg.SetSampleRate(44100.f);
@@ -421,11 +466,9 @@ ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
   xFadeWTs_eg.SetLoop(true);
   xFadeWTs_eg.Trigger();
 
-  // --- Initialize LFOs ---
-  lfoXfadeWTs.SetSampleRate(44100.f);
-  lfoXfadeWTs.SetFrequency(1.f);
-  lfoXfadeSamples.SetSampleRate(44100.f);
-  lfoXfadeSamples.SetFrequency(1.f);
+  // !!!
+  // ### xFadeWTs_eg.SetSampleRate(44100.f/bufSz); // Für Sample-Stimmen und WT-Stimmer die Aktualisierung langsamer machen und außerhalb der Main Loop aufrufen!
+  // !!!
 
   Gate = false;   // Init Gate to off for instanziation of object, so that we wait for a trigger
 }
@@ -446,6 +489,8 @@ void ctagSoundProcessorVctrSnt::knowYourself()
   // sectionCpp0
 	pMapPar.emplace("Gate", [&](const int val){ Gate = val;});
 	pMapTrig.emplace("Gate", [&](const int val){ trig_Gate = val;});
+	pMapPar.emplace("EGvolGate", [&](const int val){ EGvolGate = val;});
+	pMapTrig.emplace("EGvolGate", [&](const int val){ trig_EGvolGate = val;});
 	pMapPar.emplace("Freq", [&](const int val){ Freq = val;});
 	pMapCv.emplace("Freq", [&](const int val){ cv_Freq = val;});
 	pMapPar.emplace("Volume", [&](const int val){ Volume = val;});
@@ -482,18 +527,6 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapCv.emplace("AttackSamplesXfd", [&](const int val){ cv_AttackSamplesXfd = val;});
 	pMapPar.emplace("DecaySamplesXfd", [&](const int val){ DecaySamplesXfd = val;});
 	pMapCv.emplace("DecaySamplesXfd", [&](const int val){ cv_DecaySamplesXfd = val;});
-	pMapPar.emplace("ScanWavTblAauto", [&](const int val){ ScanWavTblAauto = val;});
-	pMapTrig.emplace("ScanWavTblAauto", [&](const int val){ trig_ScanWavTblAauto = val;});
-	pMapPar.emplace("AttackScanA", [&](const int val){ AttackScanA = val;});
-	pMapCv.emplace("AttackScanA", [&](const int val){ cv_AttackScanA = val;});
-	pMapPar.emplace("DecayScanA", [&](const int val){ DecayScanA = val;});
-	pMapCv.emplace("DecayScanA", [&](const int val){ cv_DecayScanA = val;});
-	pMapPar.emplace("ScanWavTblCauto", [&](const int val){ ScanWavTblCauto = val;});
-	pMapTrig.emplace("ScanWavTblCauto", [&](const int val){ trig_ScanWavTblCauto = val;});
-	pMapPar.emplace("AttackScanC", [&](const int val){ AttackScanC = val;});
-	pMapCv.emplace("AttackScanC", [&](const int val){ cv_AttackScanC = val;});
-	pMapPar.emplace("DecayScanC", [&](const int val){ DecayScanC = val;});
-	pMapCv.emplace("DecayScanC", [&](const int val){ cv_DecayScanC = val;});
 	pMapPar.emplace("WaveTblA", [&](const int val){ WaveTblA = val;});
 	pMapCv.emplace("WaveTblA", [&](const int val){ cv_WaveTblA = val;});
 	pMapPar.emplace("ScanWavTblA", [&](const int val){ ScanWavTblA = val;});
@@ -502,6 +535,12 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapCv.emplace("pitch_A", [&](const int val){ cv_pitch_A = val;});
 	pMapPar.emplace("tune_A", [&](const int val){ tune_A = val;});
 	pMapCv.emplace("tune_A", [&](const int val){ cv_tune_A = val;});
+	pMapPar.emplace("ScanWavTblAauto", [&](const int val){ ScanWavTblAauto = val;});
+	pMapTrig.emplace("ScanWavTblAauto", [&](const int val){ trig_ScanWavTblAauto = val;});
+	pMapPar.emplace("AttackScanA", [&](const int val){ AttackScanA = val;});
+	pMapCv.emplace("AttackScanA", [&](const int val){ cv_AttackScanA = val;});
+	pMapPar.emplace("DecayScanA", [&](const int val){ DecayScanA = val;});
+	pMapCv.emplace("DecayScanA", [&](const int val){ cv_DecayScanA = val;});
 	pMapPar.emplace("bank_B", [&](const int val){ bank_B = val;});
 	pMapCv.emplace("bank_B", [&](const int val){ cv_bank_B = val;});
 	pMapPar.emplace("slice_B", [&](const int val){ slice_B = val;});
@@ -522,6 +561,16 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapTrig.emplace("loop_pipo_B", [&](const int val){ trig_loop_pipo_B = val;});
 	pMapPar.emplace("lpstart_B", [&](const int val){ lpstart_B = val;});
 	pMapCv.emplace("lpstart_B", [&](const int val){ cv_lpstart_B = val;});
+	pMapPar.emplace("fmode_B", [&](const int val){ fmode_B = val;});
+	pMapCv.emplace("fmode_B", [&](const int val){ cv_fmode_B = val;});
+	pMapPar.emplace("fcut_B", [&](const int val){ fcut_B = val;});
+	pMapCv.emplace("fcut_B", [&](const int val){ cv_fcut_B = val;});
+	pMapPar.emplace("freso_B", [&](const int val){ freso_B = val;});
+	pMapCv.emplace("freso_B", [&](const int val){ cv_freso_B = val;});
+	pMapPar.emplace("lfo2filtfm_B", [&](const int val){ lfo2filtfm_B = val;});
+	pMapCv.emplace("lfo2filtfm_B", [&](const int val){ cv_lfo2filtfm_B = val;});
+	pMapPar.emplace("lfospeed_B", [&](const int val){ lfospeed_B = val;});
+	pMapCv.emplace("lfospeed_B", [&](const int val){ cv_lfospeed_B = val;});
 	pMapPar.emplace("WaveTblC", [&](const int val){ WaveTblC = val;});
 	pMapCv.emplace("WaveTblC", [&](const int val){ cv_WaveTblC = val;});
 	pMapPar.emplace("ScanWavTblC", [&](const int val){ ScanWavTblC = val;});
@@ -530,6 +579,12 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapCv.emplace("pitch_C", [&](const int val){ cv_pitch_C = val;});
 	pMapPar.emplace("tune_C", [&](const int val){ tune_C = val;});
 	pMapCv.emplace("tune_C", [&](const int val){ cv_tune_C = val;});
+	pMapPar.emplace("ScanWavTblCauto", [&](const int val){ ScanWavTblCauto = val;});
+	pMapTrig.emplace("ScanWavTblCauto", [&](const int val){ trig_ScanWavTblCauto = val;});
+	pMapPar.emplace("AttackScanC", [&](const int val){ AttackScanC = val;});
+	pMapCv.emplace("AttackScanC", [&](const int val){ cv_AttackScanC = val;});
+	pMapPar.emplace("DecayScanC", [&](const int val){ DecayScanC = val;});
+	pMapCv.emplace("DecayScanC", [&](const int val){ cv_DecayScanC = val;});
 	pMapPar.emplace("bank_D", [&](const int val){ bank_D = val;});
 	pMapCv.emplace("bank_D", [&](const int val){ cv_bank_D = val;});
 	pMapPar.emplace("slice_D", [&](const int val){ slice_D = val;});
@@ -550,6 +605,16 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapTrig.emplace("loop_pipo_D", [&](const int val){ trig_loop_pipo_D = val;});
 	pMapPar.emplace("lpstart_D", [&](const int val){ lpstart_D = val;});
 	pMapCv.emplace("lpstart_D", [&](const int val){ cv_lpstart_D = val;});
+	pMapPar.emplace("fmode_D", [&](const int val){ fmode_D = val;});
+	pMapCv.emplace("fmode_D", [&](const int val){ cv_fmode_D = val;});
+	pMapPar.emplace("fcut_D", [&](const int val){ fcut_D = val;});
+	pMapCv.emplace("fcut_D", [&](const int val){ cv_fcut_D = val;});
+	pMapPar.emplace("freso_D", [&](const int val){ freso_D = val;});
+	pMapCv.emplace("freso_D", [&](const int val){ cv_freso_D = val;});
+	pMapPar.emplace("lfo2filtfm_D", [&](const int val){ lfo2filtfm_D = val;});
+	pMapCv.emplace("lfo2filtfm_D", [&](const int val){ cv_lfo2filtfm_D = val;});
+	pMapPar.emplace("lfospeed_D", [&](const int val){ lfospeed_D = val;});
+	pMapCv.emplace("lfospeed_D", [&](const int val){ cv_lfospeed_D = val;});
 	pMapPar.emplace("FreqModActive", [&](const int val){ FreqModActive = val;});
 	pMapTrig.emplace("FreqModActive", [&](const int val){ trig_FreqModActive = val;});
 	pMapPar.emplace("FreqModSinus", [&](const int val){ FreqModSinus = val;});
@@ -560,22 +625,14 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapCv.emplace("FreqModSpeed", [&](const int val){ cv_FreqModSpeed = val;});
 	pMapPar.emplace("EGvolActive", [&](const int val){ EGvolActive = val;});
 	pMapTrig.emplace("EGvolActive", [&](const int val){ trig_EGvolActive = val;});
-	pMapPar.emplace("EGvolGate", [&](const int val){ EGvolGate = val;});
-	pMapTrig.emplace("EGvolGate", [&](const int val){ trig_EGvolGate = val;});
 	pMapPar.emplace("AttackVol", [&](const int val){ AttackVol = val;});
 	pMapCv.emplace("AttackVol", [&](const int val){ cv_AttackVol = val;});
 	pMapPar.emplace("DecayVol", [&](const int val){ DecayVol = val;});
 	pMapCv.emplace("DecayVol", [&](const int val){ cv_DecayVol = val;});
-	pMapPar.emplace("SustainVol", [&](const int val){ SustainVol = val;});
-	pMapCv.emplace("SustainVol", [&](const int val){ cv_SustainVol = val;});
-	pMapPar.emplace("ReleaseVol", [&](const int val){ ReleaseVol = val;});
-	pMapCv.emplace("ReleaseVol", [&](const int val){ cv_ReleaseVol = val;});
 	pMapPar.emplace("PanAmnt", [&](const int val){ PanAmnt = val;});
 	pMapCv.emplace("PanAmnt", [&](const int val){ cv_PanAmnt = val;});
 	pMapPar.emplace("PanFreq", [&](const int val){ PanFreq = val;});
 	pMapCv.emplace("PanFreq", [&](const int val){ cv_PanFreq = val;});
-	pMapPar.emplace("PanOffset", [&](const int val){ PanOffset = val;});
-	pMapCv.emplace("PanOffset", [&](const int val){ cv_PanOffset = val;});
 	isStereo = true;
 	id = "VctrSnt";
 	// sectionCpp0

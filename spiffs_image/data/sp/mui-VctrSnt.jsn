@@ -5,6 +5,7 @@
           "id": "Voice", "name": "Voice", "type": "group", "params":  
            [
               {"id":"Gate","name":"Gate Voice n/y","type":"bool"},
+              {"id":"EGvolGate","name":"Samples ignore Gate n/y","type":"bool"},
               {"id":"Freq","name":"Pitch CV Voice","type":"int","min":0,"max":4095,"step":1},
               {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
            ]
@@ -27,25 +28,12 @@
                {"id":"LfoWaveTblsXfadeIsSquare","name":"LFO WaveTable Xfade Square n/y","type":"bool"},
                {"id":"LfoWaveTblsXfadeRange","name":"LFO WaveTable range","type":"int","min":0,"max":4095,"step":1},
                {"id":"LfoWaveTblsXfadeSpeed","name":"LFO WaveTable Speed","type":"int","min":0,"max":4095,"step":1},
-               
                {"id":"ModWaveTblsXfade","name":"Modulate WaveTable Xfade n/y","type":"bool"},
                {"id":"AttackWaveTblsXfd","name":"Attack WaveTable Xfade","type":"int","min":0,"max":4095,"step":1},
                {"id":"DecayWaveTblsXfd","name":"Decay WaveTable Xfade","type":"int","min":0,"max":4095,"step":1},
-               
                {"id":"ModSamplesXfade","name":"Modulate Samples Xfade n/y","type":"bool"},
                {"id":"AttackSamplesXfd","name":"Attack Samples Xfade","type":"int","min":0,"max":4095,"step":1},
                {"id":"DecaySamplesXfd","name":"Decay Samples Xfade","type":"int","min":0,"max":4095,"step":1}
-           ]
-      },
-      {  
-          "id": "WaveScanners", "name": "Wave Scanners (Looping EGs start at given offset)", "type": "group", "params":  
-           [
-               {"id":"ScanWavTblAauto","name":"Automatic Scanning A n/y","type":"bool"},
-               {"id":"AttackScanA","name":"Attack Scan A","type":"int","min":0,"max":4095,"step":1},
-               {"id":"DecayScanA","name":"Decay Scan A","type":"int","min":0,"max":4095,"step":1},
-               {"id":"ScanWavTblCauto","name":"Automatic Scanning C n/y","type":"bool"},
-               {"id":"AttackScanC","name":"Attack Scan C","type":"int","min":0,"max":4095,"step":1},
-               {"id":"DecayScanC","name":"Decay Scan C","type":"int","min":0,"max":4095,"step":1}
            ]
       },
       {  
@@ -54,8 +42,11 @@
               {"id": "WaveTblA","name": "Wavetable A","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
               {"id":"ScanWavTblA","name":"Scan Wavetable A","type":"int","min":0,"max":4095,"step":1}, 
               {"id": "pitch_A","type": "int","name": "Pitch A","min": -48,"max": 48,"step": 1 },
-              {"id": "tune_A","type": "int","name": "Tune A","min": -2048,"max": 2048,"step": 1}
-          ]
+              {"id": "tune_A","type": "int","name": "Tune A","min": -2048,"max": 2048,"step": 1},
+              {"id":"ScanWavTblAauto","name":"Automatic Scanning A n/y","type":"bool"},
+              {"id":"AttackScanA","name":"Attack Scan A","type":"int","min":0,"max":4095,"step":1},
+              {"id":"DecayScanA","name":"Decay Scan A","type":"int","min":0,"max":4095,"step":1}
+           ]
       },
       {  
          "id": "SampleOsc_B", "name": "Sample Oscillator B", "type": "group", "params":  
@@ -69,8 +60,13 @@
               {"id": "length_B","name": "Length B","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
               {"id": "loop_B","name": "Loop B off/on","type": "bool"},
               {"id": "loop_pipo_B","name": "Ping-Pong B","type": "bool"},
-              {"id": "lpstart_B","name": "Loop Position B","hint": "Relative to length of subselection (not slice length)","type": "int","min": 0,"max": 1048576,"step": 1}
-            ]
+              {"id": "lpstart_B","name": "Loop Position B","hint": "Relative to length of subselection (not slice length)","type": "int","min": 0,"max": 1048576,"step": 1},
+              {"id": "fmode_B","name": "Filter Mode B","hint": "0: Off, 1: LP, 2: BP, 3:HP","type": "int","min": 0,"max": 3,"step": 1},
+              {"id": "fcut_B","name": "Filter Cutoff B","type": "int","min": 0,"max": 4095,"step":1},
+              {"id": "freso_B","name": "Filter Resonance B","type": "int","min": 0,"max": 4095,"step": 1},
+              {"id": "lfo2filtfm_B","name": "LFO Filter FM B","type": "int","min": 0,"max": 4095,"step": 1},
+              {"id": "lfospeed_B","name": "Speed B","type": "int","min": 0,"max": 4095,"step": 1}
+          ]
       },
       {  
          "id": "WtOsc_C", "name": "Wavetable C", "type": "group", "params":  
@@ -78,7 +74,10 @@
               {"id": "WaveTblC","name": "Wavetable C","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
               {"id":"ScanWavTblC","name":"Scan Wavetable C","type":"int","min":0,"max":4095,"step":1},
               {"id": "pitch_C","type": "int","name": "Pitch C","min": -48,"max": 48,"step": 1 },
-              {"id": "tune_C","type": "int","name": "Tune C","min": -2048,"max": 2048,"step": 1}
+              {"id": "tune_C","type": "int","name": "Tune C","min": -2048,"max": 2048,"step": 1},
+              {"id":"ScanWavTblCauto","name":"Automatic Scanning C n/y","type":"bool"},
+              {"id":"AttackScanC","name":"Attack Scan C","type":"int","min":0,"max":4095,"step":1},
+              {"id":"DecayScanC","name":"Decay Scan C","type":"int","min":0,"max":4095,"step":1}
           ]
       },
       {  
@@ -93,7 +92,12 @@
               {"id": "length_D","name": "Length D","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
               {"id": "loop_D","name": "Loop D off/on","type": "bool"},
               {"id": "loop_pipo_D","name": "Ping-Pong D","type": "bool"},
-              {"id": "lpstart_D","name": "Loop Position D","hint": "Relative to length of subselection (not slice length)","type": "int","min": 0,"max": 1048576,"step": 1}
+              {"id": "lpstart_D","name": "Loop Position D","hint": "Relative to length of subselection (not slice length)","type": "int","min": 0,"max": 1048576,"step": 1},
+              {"id": "fmode_D","name": "Filter Mode D","hint": "0: Off, 1: LP, 2: BP, 3:HP","type": "int","min": 0,"max": 3,"step": 1},
+              {"id": "fcut_D","name": "Filter Cutoff D","type": "int","min": 0,"max": 4095,"step":1},
+              {"id": "freso_D","name": "Filter Resonance D","type": "int","min": 0,"max": 4095,"step": 1},
+              {"id": "lfo2filtfm_D","name": "LFO Filter FM D","type": "int","min": 0,"max": 4095,"step": 1},
+              {"id": "lfospeed_D","name": "Speed D","type": "int","min": 0,"max": 4095,"step": 1}
             ]
         },         
        {  
@@ -109,19 +113,15 @@
           "id": "VolEnv", "name": "Volume Envelope", "type": "group", "params":  
            [
                {"id":"EGvolActive","name":"Volume EG active n/y","type":"bool"},
-               {"id":"EGvolGate","name":"Volume EG Gate n/y","type":"bool"},
                {"id":"AttackVol","name":"Attack","type":"int","min":0,"max":4095,"step":1},
-               {"id":"DecayVol","name":"Decay","type":"int","min":0,"max":4095,"step":1},
-               {"id":"SustainVol","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
-               {"id":"ReleaseVol","name":"Release","type":"int","min":0,"max":4095,"step":1}
+               {"id":"DecayVol","name":"Decay","type":"int","min":0,"max":4095,"step":1}
            ]
        },
        {  
           "id": "PanTrem", "name": "Panner/Tremolo", "type": "group", "params":  
            [
                {"id":"PanAmnt","name":"Panner Intensity (off if 0)","type":"int","min":0,"max":4095,"step":1},
-               {"id":"PanFreq","name":"Panner Frequency","type":"int","min":0,"max":4095,"step":1},
-               {"id":"PanOffset","name":"Panner Offset (Tremolo if 0)","type":"int","min":0,"max":4095,"step":1}
+               {"id":"PanFreq","name":"Panner Frequency","type":"int","min":0,"max":4095,"step":1}
            ]
        }
    ] 
