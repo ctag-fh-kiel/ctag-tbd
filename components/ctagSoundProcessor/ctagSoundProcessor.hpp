@@ -112,7 +112,7 @@ namespace CTAG {
                     return;
                 }
                 if (key.compare("cv") == 0) {
-                    if (val >= -1 && val <= 3) {
+                    if (val >= -1 && val < N_CVS) {
                         auto it = pMapCv.find(id);
                         if (it != pMapCv.end()) {
                             (it->second)(val);
@@ -121,7 +121,7 @@ namespace CTAG {
                     return;
                 }
                 if (key.compare("trig") == 0) {
-                    if (val >= -1 && val <= 1) {
+                    if (val >= -1 && val < N_TRGS) {
                         auto it = pMapTrig.find(id);
                         if (it != pMapTrig.end()) {
                             (it->second)(val);

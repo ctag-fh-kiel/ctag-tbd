@@ -25,11 +25,6 @@ respective component folders / files if different from this license.
 #include <stdint.h>
 #include "sdkconfig.h"
 
-#ifdef CONFIG_TBD_PLATFORM_STR
-#define NUMBERCV 8
-#else
-#define NUMBERCV 4
-#endif
 
 namespace CTAG {
     namespace DRIVERS {
@@ -48,10 +43,10 @@ namespace CTAG {
             static void Update();
 
             // exposed to get pointer access for speed
-            static uint16_t data[NUMBERCV];
+            static uint16_t data[N_CVS];
         protected:
             static void init_ulp_program();
-
+            static void init_analog_sub_system();
         };
     }
 }

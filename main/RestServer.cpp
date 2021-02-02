@@ -305,23 +305,7 @@ esp_err_t RestServer::StartRestServer() {
     ESP_LOGI(REST_TAG, "Starting HTTP Server");
     if (httpd_start(&server, &config) != ESP_OK)
         return ESP_FAIL;
-    /*
-      httpd_uri_t system_info_get_uri = {
-          .uri = "/api/v1/system/info",
-          .method = HTTP_GET,
-          .handler = system_info_get_handler,
-          .user_ctx = rest_context
-      };
-      httpd_register_uri_handler(server, &system_info_get_uri);
 
-      httpd_uri_t light_brightness_post_uri = {
-          .uri = "/api/v1/light/brightness",
-          .method = HTTP_POST,
-          .handler = light_brightness_post_handler,
-          .user_ctx = rest_context
-      };
-      httpd_register_uri_handler(server, &light_brightness_post_uri);
-  */
     /* URI handler for getting available sound processors */
     httpd_uri_t get_plugins_get_uri = {
             .uri = "/api/v1/getPlugins",
@@ -429,6 +413,15 @@ esp_err_t RestServer::StartRestServer() {
             .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &reboot_handler_get_uri);
+
+    /* get io caps */
+    httpd_uri_t io_caps_handler_get_uri = {
+            .uri = "/api/v1/getIOCaps",
+            .method = HTTP_GET,
+            .handler = &RestServer::get_iocaps_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &io_caps_handler_get_uri);
 
     /* set configuration */
     httpd_uri_t set_configuration_post_uri = {
@@ -721,5 +714,16 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
 
     httpd_resp_send_404(req);
 
+    return ESP_OK;
+}
+
+esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
+    httpd_resp_set_type(req, "application/json");
+#ifdef CONFIG_TBD_PLATFORM_STR
+    string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV1\",\"CV2\",\"CV3\",\"CV4\",\"CV5\",\"CV6\",\"CV7\",\"CV8\"]}");
+#else
+    string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
+#endif
+    httpd_resp_sendstr(req, s.c_str());
     return ESP_OK;
 }

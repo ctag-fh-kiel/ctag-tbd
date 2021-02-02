@@ -36,11 +36,17 @@ respective component folders / files if different from this license.
 #define PIN_NUM_MOSI 13
 #define PIN_NUM_CLK 12
 #define PIN_NUM_MISO 0
-// I2S pins
+
+// I2S
 #define I2S_BCLK_PIN 21
-#define I2S_LRCLK_PIN 19
-#define I2S_DACDAT_PIN 22
 #define I2S_ADCDAT_PIN 27
+#define I2S_DACDAT_PIN 22
+
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+    #define I2S_LRCLK_PIN 19
+#elif CONFIG_TBD_PLATFORM_STR
+    #define I2S_LRCLK_PIN 25
+#endif
 
 using namespace CTAG::DRIVERS;
 
@@ -135,7 +141,7 @@ void Codec::setupI2SWM8731() {
 
 void Codec::InitCodec() {
     initSPI();
-#ifdef CONFIG_TBD_PLATFORM_V1
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     setupSPIWM8731();
     setupI2SWM8731();
     vTaskDelay(5000 / portTICK_PERIOD_MS); // wait until system is settled a bit
@@ -148,11 +154,14 @@ void Codec::InitCodec() {
     setupSPIWM8978();
     setupI2SWM8978();
 #endif
+#ifdef CONFIG_TBD_PLATFORM_STR
+    freeSPI();
+#endif
     isReady = true;
 }
 
 void Codec::HighPassEnable() {
-#ifdef CONFIG_TBD_PLATFORM_V1
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     unsigned char cmd;
     trans.flags = 0;
     trans.length = 8;
@@ -166,7 +175,7 @@ void Codec::HighPassEnable() {
 }
 
 void Codec::HighPassDisable() {
-#ifdef CONFIG_TBD_PLATFORM_V1
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     unsigned char cmd;
     trans.flags = 0;
     trans.length = 8;
@@ -180,7 +189,7 @@ void Codec::HighPassDisable() {
 }
 
 void Codec::RecalibDCOffset() {
-#ifdef CONFIG_TBD_PLATFORM_V1
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     if(!isReady) return;
     HighPassEnable();
     vTaskDelay(50 / portTICK_PERIOD_MS); // wait until system is settled a bit
@@ -225,7 +234,7 @@ void Codec::initSPI() {
 }
 
 void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_TBD_PLATFORM_V1
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     int32_t tmp[sz * 2];
     int32_t *ptrTmp = tmp;
     size_t nb;
@@ -253,7 +262,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
 }
 
 void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_TBD_PLATFORM_V1
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     int32_t tmp[sz * 2];
     int32_t tmp2;
     size_t nb;
@@ -732,5 +741,13 @@ void Codec::WM8978_Noise_Set(u8 enable, u8 gain) {
     regval = (enable << 3);
     regval |= gain;                  //设置增益
     WM8978_Write_Reg(35, regval); //R18,EQ1设置
+}
+
+void Codec::freeSPI() {
+    esp_err_t ret;
+    ret = spi_bus_remove_device(codec_h);
+    assert(ret == ESP_OK);
+    ret = spi_bus_free(VSPI_HOST);
+    assert(ret == ESP_OK);
 }
 

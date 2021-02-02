@@ -47,6 +47,7 @@ namespace CTAG {
 
         private:
             static void initSPI();
+            static void freeSPI();
 
             static void setupSPIWM8731();
 
