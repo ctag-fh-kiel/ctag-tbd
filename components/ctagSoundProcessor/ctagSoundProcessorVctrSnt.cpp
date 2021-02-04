@@ -137,9 +137,8 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // --- DSP calculation results ---
   float f_val_result = 0.f;
 
-  // --- Read Buttons from GUI or Trigger/Gate and Sliders from GUI or CV and scale the data if required, "order in way of apperance" on GUI ---
+  // === Read Buttons from GUI or Trigger/Gate and Sliders from GUI or CV and scale the data if required, "order in way of apperance" on GUI ===
   // Trigger variables will be named like the given parameter with an t_-Prefix but stay integers, CV-Variables are floats and thus f_*
-
   // --- Voice / Volume ---
   MK_TRIG_PAR(t_Gate, Gate);
   MK_TRIG_PAR(t_EGvolGate, EGvolGate);
@@ -152,6 +151,10 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 5.f);
 
   // --- VectorSpace ---
+  MK_TRIG_PAR(t_SubOscPWM_A, SubOscPWM_A);
+  MK_FLT_PAR_ABS(f_SubOscFade_A, SubOscFade_A, 4095.f, 1.f);
+  MK_TRIG_PAR(t_SubOscSquare_C, SubOscSquare_C);
+  MK_FLT_PAR_ABS(f_SubOscFade_C, SubOscFade_C, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_VolWT_A, VolWT_A, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_VolOsc_B, VolOsc_B, 4095.f,2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
   MK_FLT_PAR_ABS(f_VolWT_C, VolWT_C, 4095.f, 1.f);
@@ -182,10 +185,17 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // --- Wave Scanners (Looping EGs start at given offset) ---
   MK_FLT_PAR_ABS(f_ScanWavTblA, ScanWavTblA, 4095.f, 1.f);
   MK_TRIG_PAR(t_ScanWavTbl_A, ScanWavTbl_A);
+  MK_TRIG_PAR(t_LFOzScanSquare_A, LFOzScanSquare_A );
+  MK_FLT_PAR_ABS(f_LFOzScanAmt_A, LFOzScanAmt_A, 4095.f, 1.f);
+  MK_FLT_PAR_ABS_MIN_MAX(f_LFOzScanSpeed_A, LFOzScanSpeed_A, 4095.f, 0.01f, 20.f);
+
   MK_FLT_PAR_ABS(f_ScanWavTblC, ScanWavTblC, 4095.f, 1.f);
   MK_TRIG_PAR(t_ScanWavTbl_C, ScanWavTbl_C);
+  MK_TRIG_PAR(t_LFOzScanSquare_C, LFOzScanSquare_C );
+  MK_FLT_PAR_ABS(f_LFOzScanAmt_C, LFOzScanAmt_C, 4095.f, 1.f);
+  MK_FLT_PAR_ABS_MIN_MAX(f_LFOzScanSpeed_C, LFOzScanSpeed_C, 4095.f, 0.01f, 20.f);
 
-  // --- Frequency Modulation (Please note: these controls are located further down in the GUI, but we need the infos to set the oscillators already here!) ---
+  // === Frequency Modulation (Please note: these controls are located further down in the GUI, but we need the infos to set the oscillators already here!) ===
   float f_PitchMod = 0.f;
   MK_TRIG_PAR(t_FreqModActive, FreqModActive);
   MK_TRIG_PAR(t_FreqModSquare, FreqModSquare);
@@ -208,6 +218,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     f_PitchMod = pitchVal * f_FreqModAmnt;    // We will add this to each Oscillator, the value is either 0 (if inactive) or the current offset.
   }
 
+  // === Wave-Table oscillator A ===
   // --- Wave select A ---
   currentBank_A = WaveTblA;
   if (lastBank_A != currentBank_A)
@@ -215,14 +226,6 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     prepareWavetable((const int16_t **) &wavetables_A, currentBank_A, &isWaveTableGood_A, &fbuffer_A, &buffer_A);
     lastBank_A = currentBank_A;
   }
-  // --- Wave select C ---
-  currentBank_C = WaveTblC;
-  if (lastBank_C != currentBank_C)
-  { // this is slow, hence not modulated by CV
-    prepareWavetable((const int16_t **) &wavetables_C, currentBank_C, &isWaveTableGood_C, &fbuffer_C, &buffer_C);
-    lastBank_C = currentBank_C;
-  }
-
   // --- Pitch / Tune Wavetable Oscillator A ---
   float f_pitch_A = pitch_A;
   if (cv_pitch_A != -1)
@@ -230,17 +233,8 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS_SFT(f_tune_A, tune_A, 2048.f, 1.f);
   const float f_freq_A = plaits::NoteToFrequency(60 + f_pitch_A + (f_tune_A+f_MasterTune) * 12.f + f_PitchMod) * 0.998f; // ### Changed from 60 to 12
 
-  // --- Pitch / Tune Wavetable Oscillator C ---
-  float f_pitch_C = pitch_C;
-  if (cv_pitch_C != -1)
-    f_pitch_C += data.cv[cv_pitch_C] * 12.f * 5.f;
-  MK_FLT_PAR_ABS_SFT(f_tune_C, tune_C, 2048.f, 1.f);
-  const float f_freq_C = plaits::NoteToFrequency(60 + f_MasterTune + f_pitch_C + (f_tune_C+f_MasterTune) * 12.f + f_PitchMod) * 0.998f;
-
-  // === Render and buffer wave-Table oscillators ===
-  // --- Filter settings for wavetable ---
+  // --- Filter settings for wavetable A ---
   MK_FLT_PAR_ABS(fLFOFMFilt_A, lfo2filtfm_A, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_LFOzScanSpeed_A, LFOzScanSpeed_A, 4095.f, 1.f)
   MK_FLT_PAR_ABS(fCut_A, fcut_A, 4095.f, 1.f)
   MK_FLT_PAR_ABS_MIN_MAX(fReso_A, freso_A, 4095.f, 1.f, 20.f);
 
@@ -254,7 +248,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     float f_filterLFO_A = lfo_A.Process();
     if (t_FilterLFOsquare_A)
       SINE_TO_SQARE(f_filterLFO_A);
-    fCut_A = fCut_A + f_filterLFO_A * fLFOFMFilt_A;   // Filter modulation
+    fCut_A += f_filterLFO_A * fLFOFMFilt_A;   // Filter modulation
     CONSTRAIN(fCut_A, 0.f, 1.f);    // limit values
   }
   fCut_A = 20.f * stmlib::SemitonesToRatio(fCut_A * 120.f);
@@ -262,14 +256,36 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_INT_PAR_ABS(iFType_A, fmode_A, 4.f)
   CONSTRAIN(iFType_A, 0, 3);
 
-  // ### float fWt = fWave + valADSR * fEGWave + valLFO * fLFOWave * 2.f;
-  // ### CONSTRAIN(fWt, 0.f, 1.f)
-
-  // --- Calc wave and apply filter ---
+  // --- Check for Wavetable Z-axis modulation ---
+  if( t_ScanWavTbl_A)
+  {
+    lfo_WT_A.SetFrequency(f_LFOzScanSpeed_A);
+    float f_LFO_WT_A = lfo_WT_A.Process();
+    if(t_LFOzScanSquare_A)
+    {
+      if (f_LFO_WT_A > 0.f)                            // ### Experimental!
+      {
+        if( new_Z_for_A )
+          f_LFO_WT_saved_A = oscWnoise_Scan_A.Process();             // ### Experimental!
+        new_Z_for_A = false;
+      }
+      else
+        new_Z_for_A = true;
+      f_LFO_WT_A = f_LFO_WT_saved_A;
+    }
+    f_ScanWavTblA += f_LFO_WT_A * f_LFOzScanAmt_A;
+    CONSTRAIN(f_ScanWavTblA, 0.f, 1.f)
+  }
+  // --- Render A: Calc wave and apply filter ---
   float out_A[32] = {0.f};
   if(isWaveTableGood_A)
   {
     wt_osc_A.Render(f_freq_A, f_VolWT_A, f_ScanWavTblA, wavetables_A, out_A, bufSz);
+
+    for( int i=0; i<bufSz; i++)
+    {
+      out_A[i] = out_A[i]*(1.f-f_SubOscFade_A) + oscWnoise_A.Process()*f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
+    }
     switch(iFType_A)
     {
       case 1:
@@ -285,12 +301,28 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     }
   }
 
+  // === Wave-Table oscillator C ===
+  // --- Wave select C ---
+  currentBank_C = WaveTblC;
+  if (lastBank_C != currentBank_C)
+  { // this is slow, hence not modulated by CV
+    prepareWavetable((const int16_t **) &wavetables_C, currentBank_C, &isWaveTableGood_C, &fbuffer_C, &buffer_C);
+    lastBank_C = currentBank_C;
+  }
+  // --- Pitch / Tune Wavetable Oscillator C ---
+  float f_pitch_C = pitch_C;
+  if (cv_pitch_C != -1)
+    f_pitch_C += data.cv[cv_pitch_C] * 12.f * 5.f;
+  MK_FLT_PAR_ABS_SFT(f_tune_C, tune_C, 2048.f, 1.f);
+  const float f_freq_C = plaits::NoteToFrequency(60 + f_MasterTune + f_pitch_C + (f_tune_C+f_MasterTune) * 12.f + f_PitchMod) * 0.998f;
+
+  // ### Filter and wavescanners go here!!! ??? ###
+
   float out_C[32] = {0.f};  // Initialize (all elements to 0) each time or results may be weird!
   if (isWaveTableGood_C)     // Wavetable C ready?
     wt_osc_C.Render(f_freq_C, f_VolWT_C, f_ScanWavTblC, wavetables_C, out_C, bufSz);
 
-  // === Sample oscillators (aka Rompler Voices) ===
-  // --- Sample Oscillator B ---
+  // === Sample oscillator B ===
   romplers[IDX_OSC_B]->params.gate = 1;   // ### To be optimized with real trigger!
   romplers[IDX_OSC_B]->params.sliceLock = false; // ### latch for trigger instead of Gate?
 
@@ -339,10 +371,10 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS(f_LFOFMFilt_B, lfo2filtfm_B, 4095.f, 1.f)
   romplers[IDX_OSC_B]->params.lfoFMFilter = f_LFOFMFilt_B;
 
-  // === Render and buffer Sample oscillator B ===
+  // --- Render and buffer Sample oscillator B ---
   romplers[IDX_OSC_B]->Process(sample_buf_B, bufSz);
 
-  // --- Sample Oscillator D ---
+  // === Sample oscillator D ===
   romplers[IDX_OSC_D]->params.gate = 1;   // ### To be optimized with real trigger!
   romplers[IDX_OSC_D]->params.sliceLock = false; // ### latch for trigger instead of Gate?
 
@@ -390,10 +422,10 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS(f_lfo2filtfm_B, lfo2filtfm_B, 4095.f, 1.f);
   romplers[IDX_OSC_D]->params.lfoFMFilter = lfo2filtfm_B;
 
-  // === Render and buffer Sample oscillator D ===
+  // --- Render and buffer Sample oscillator D ---
   romplers[IDX_OSC_D]->Process(sample_buf_D, bufSz);
 
-  // --- Volume Envelope ---
+  // === Volume Envelope ===
   MK_FLT_PAR_ABS(f_AttackVol, AttackVol, 4095.f, 2.f);
   vol_eg.SetAttack(f_AttackVol);
   MK_FLT_PAR_ABS(f_DecayVol, DecayVol, 4095.f, 8.f);
@@ -402,12 +434,12 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   if (t_EGvolActive && t_Gate == GATE_HIGH_NEW)
     vol_eg.Trigger();
 
-  // --- Panner/Tremolo ---
+  // === Panner/Tremolo ===
   MK_TRIG_PAR(t_PannerOn, PannerOn);
   MK_FLT_PAR_ABS(f_PanAmnt, PanAmnt, 4095.f, 1.f);
   MK_FLT_PAR_ABS_MIN_MAX(f_PanFreq, PanFreq, 4095.f, 0.05f, 15.f);
 
-  // --- This is the loop where the audio-output is written ---
+  // === DSP-output: This is the loop where the audio-output is written ===
   for (uint32_t i = 0; i < bufSz; i++)
   {
     // --- Vector XFades LFOs ---
@@ -435,10 +467,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     }
     // --- Oscillator-Mix and Mastervolume (truncate audio in case of clipping) ---
     f_val_result = out_A[i] * (1.f-f_XfadeWaveTbls) * 0.25f;    // Get precalculated data from wavetable-voice A for output
-    // ### f_val_result += out_C[i] * (f_XfadeWaveTbls) * 0.25f;       // Mix with precalculated data from wavetable-voice B for output
-    // ### Experimental, change to proper "Suboscillator" later!
-    f_val_result += oscWnoise_A.Process() * (f_XfadeWaveTbls) * 0.25f;
-    // ### ^^^
+    f_val_result += out_C[i] * (f_XfadeWaveTbls) * 0.25f;       // Mix with precalculated data from wavetable-voice B for output
     f_val_result += sample_buf_D[i] * (1.f-f_XfadeSamples) * 0.25f;      // Crossfade samples and mix with wavetables
     f_val_result += sample_buf_B[i] * (f_XfadeSamples)  * 0.25f;
     f_val_result *= f_Volume;                                             // Adjust Master-Volume
@@ -532,11 +561,17 @@ ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
   lfoPitch.SetSampleRate(44100.f / bufSz);   // Please note: because the LFO is applied already outside the DSP-loop we reduce it's frequency in a manner to fit
   lfoPitch.SetFrequency(1.f);
 
+  // --- LFOs for filter-mod of Wavetables ---
   lfo_A.SetSampleRate(44100.f / bufSz);
   lfo_A.SetFrequency(1.f);
   lfo_C.SetSampleRate(44100.f / bufSz);
   lfo_C.SetFrequency(1.f);
 
+  // --- LFOs for Z-Scan-mod of Wavetables ---
+  lfo_WT_A.SetSampleRate(44100.f / bufSz);
+  lfo_WT_A.SetFrequency(1.f);
+  lfo_WT_C.SetSampleRate(44100.f / bufSz);
+  lfo_WT_C.SetFrequency(1.f);
 
   Gate = false;   // Init Gate to off for instanziation of object, so that we wait for a trigger
 }
