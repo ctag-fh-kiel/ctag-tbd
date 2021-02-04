@@ -34,8 +34,8 @@ namespace CTAG {
                               e_FreqModSquare, e_EGvolActive, e_EGvolGate, e_loop_D, e_loop_B, e_loop_pipo_D, e_loop_pipo_B,
                               e_LfoWaveTblsXfadeActive, e_LfoWaveTblsXfadeIsSquare, e_ScanWavTbl_A, e_ScanWavTbl_C,
                               e_PannerOn, e_FilterLFOsquare_A, e_FilterLFOsquare_C, e_FilterLFOon_A, e_FilterLFOon_C,
-                              e_SubOscPWM_A, e_SubOscSquare_C, e_LFOzScanSquare_A, e_LFOzScanSquare_C,
-                              e_APC_options_max};
+                              e_FilterLFOon_B, e_FilterLFOon_D, e_SubOscPWM_A, e_SubOscSquare_C, e_LFOzScanSquare_A,
+                              e_LFOzScanSquare_C, e_APC_options_max};
             int prev_trig_state[e_APC_options_max] = {0};   // Initialize _all_ entries with "low value"
 
             // --- Sample and Hold for LFOs ---

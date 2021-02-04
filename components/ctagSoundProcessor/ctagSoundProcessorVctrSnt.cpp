@@ -300,10 +300,10 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
         subOscVal = oscSub_A.Process();
         subOscVal += f_LFO_WT_A_pwm*f_LFOzScanAmt_A; // Add "PWM-offset", we take the amount and LFO-speed for our sub-oscillator from the settings of the table-Z-scan!
         SINE_TO_SQARE_HALF(subOscVal);   // This by nature contains a constrain, avoiding value overflow!
-        out_A[i] = out_A[i]*(1.f-f_SubOscFade_A) + subOscVal*f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
+        out_A[i] = out_A[i]*(1.f-f_SubOscFade_A) + f_VolWT_A*subOscVal*f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
       }
       else                  // White noise as sub-oscillator
-        out_A[i] = out_A[i]*(1.f-f_SubOscFade_A) + oscWnoise_A.Process()*f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
+        out_A[i] = out_A[i]*(1.f-f_SubOscFade_A) + f_VolWT_A*oscWnoise_A.Process()*f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
     }
     switch(iFType_A)
     {
@@ -319,7 +319,6 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
         break;    // Filter is off, ignore!
     }
   }
-
   // === Wave-Table oscillator C ===
   // --- Wave select C ---
   currentBank_C = WaveTblC;
@@ -386,10 +385,10 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
         subOscVal = oscSub_C.Process();
         subOscVal += f_LFO_WT_C_pwm*f_LFOzScanAmt_C; // Add "PWM-offset", we take the amount and LFO-speed for our sub-oscillator from the settings of the table-Z-scan!
         SINE_TO_SQARE_HALF(subOscVal);   // This by nature contains a constrain, avoiding value overflow!
-        out_C[i] = out_C[i]*(1.f-f_SubOscFade_C) + subOscVal*f_SubOscFade_C;    // Crossfade the Wavetable and its suboscillator
+        out_C[i] = out_C[i]*(1.f-f_SubOscFade_C) + f_VolWT_C*subOscVal*f_SubOscFade_C;    // Crossfade the Wavetable and its suboscillator
       }
       else                  // White noise as sub-oscillator
-        out_C[i] = out_C[i]*(1.f-f_SubOscFade_C) + oscWnoise_C.Process()*f_SubOscFade_C;    // Crossfade the Wavetable and its suboscillator
+        out_C[i] = out_C[i]*(1.f-f_SubOscFade_C) + f_VolWT_C*oscWnoise_C.Process()*f_SubOscFade_C;    // Crossfade the Wavetable and its suboscillator
     }
     switch(iFType_C)
     {
@@ -405,8 +404,6 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
         break;    // Filter is off, ignore!
     }
   }
-
-
   // === Sample oscillator B ===
   romplers[IDX_OSC_B]->params.gate = 1;   // ### To be optimized with real trigger!
   romplers[IDX_OSC_B]->params.sliceLock = false; // ### latch for trigger instead of Gate?
@@ -454,7 +451,8 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS_MIN_MAX(f_LFOSpeed_B, lfospeed_B, 4095.f, 0.05f, 20.f);
   romplers[IDX_OSC_B]->params.lfoSpeed = f_LFOSpeed_B;
   MK_FLT_PAR_ABS(f_LFOFMFilt_B, lfo2filtfm_B, 4095.f, 1.f)
-  romplers[IDX_OSC_B]->params.lfoFMFilter = f_LFOFMFilt_B;
+  MK_TRIG_PAR(t_FilterLFOon_B, FilterLFOon_B);
+  romplers[IDX_OSC_B]->params.lfoFMFilter = t_FilterLFOon_B ? f_LFOFMFilt_B : 0.f;
 
   // --- Render and buffer Sample oscillator B ---
   romplers[IDX_OSC_B]->Process(sample_buf_B, bufSz);
@@ -504,8 +502,9 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // --- Filter modulation LFO OSC D ---
   MK_FLT_PAR_ABS_MIN_MAX(f_lfospeed_D, lfospeed_D, 4095.f, 0.05f, 20.f);
   romplers[IDX_OSC_D]->params.lfoSpeed = f_lfospeed_D;
-  MK_FLT_PAR_ABS(f_lfo2filtfm_B, lfo2filtfm_B, 4095.f, 1.f);
-  romplers[IDX_OSC_D]->params.lfoFMFilter = lfo2filtfm_B;
+  MK_FLT_PAR_ABS(f_lfo2filtfm_D, lfo2filtfm_D, 4095.f, 1.f);
+  MK_TRIG_PAR(t_FilterLFOon_D, FilterLFOon_D);
+  romplers[IDX_OSC_D]->params.lfoFMFilter = t_FilterLFOon_D ? f_lfo2filtfm_D : 0.f;
 
   // --- Render and buffer Sample oscillator D ---
   romplers[IDX_OSC_D]->Process(sample_buf_D, bufSz);
@@ -618,16 +617,9 @@ ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
   for( int i=0; i < 2; i++)
   {
     romplers[i] = std::make_unique<RomplerVoice>();
-
     romplers[i]->params.s = 1.f;          // Set Sustain to max, "just in case"
-    romplers[i]->params.egAM = 0.5f;
-    romplers[i]->params.egFM = 0.5f;
-    romplers[i]->params.egFMFilter = 0.5f;
-    romplers[i]->params.cutoff = 0.f;
-    romplers[i]->params.resonance = 0.f;
-    romplers[i]->params.filterType = static_cast<RomplerVoice::FilterType>(0.f);  // ### This may change if we use it as Low-Cut for instance...
+    romplers[i]->params.resonance = 1.f;  // Set Resonance to 1 (should not be 0), "just in case"
   }
-
   // --- Initialize Volume Envelope ---
   vol_eg.SetSampleRate(44100.f);    // Sync Env with our audio-processing
   vol_eg.SetModeExp();                   // Logarithmic scaling
