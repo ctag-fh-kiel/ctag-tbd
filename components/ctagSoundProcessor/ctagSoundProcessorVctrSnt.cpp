@@ -510,9 +510,9 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   romplers[IDX_OSC_D]->Process(sample_buf_D, bufSz);
 
   // === Volume Envelope ===
-  MK_FLT_PAR_ABS(f_AttackVol, AttackVol, 4095.f, 2.f);
+  MK_FLT_PAR_ABS(f_AttackVol, AttackVol, 4095.f, 5.f);
   vol_eg.SetAttack(f_AttackVol);
-  MK_FLT_PAR_ABS(f_DecayVol, DecayVol, 4095.f, 8.f);
+  MK_FLT_PAR_ABS(f_DecayVol, DecayVol, 4095.f, 50.f);
   vol_eg.SetDecay(f_DecayVol);
   MK_TRIG_PAR(t_EGvolActive, EGvolActive);
   if (t_EGvolActive && t_Gate == GATE_HIGH_NEW)
@@ -520,65 +520,80 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
 
   // === Panner/Tremolo ===
   MK_TRIG_PAR(t_PannerOn, PannerOn);
-  MK_FLT_PAR_ABS(f_PanAmnt, PanAmnt, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_PanAmnt_HI, PanAmnt, 4095.f, 1.f);
+  float f_PanAmnt_LO = 1.0-f_PanAmnt_HI;
   MK_FLT_PAR_ABS_MIN_MAX(f_PanFreq, PanFreq, 4095.f, 0.05f, 15.f);
+  lfoPanner.SetFrequency(f_PanFreq);
+
+  // --- We "precalculate" the Process() values for our main loop, this might be slightly less accurate, but uses about 1/32 less performance for these functions ---
+  float lfoXfadeWTs_process = lfoXfadeWTs.Process();
+  float xFadeWTs_eg_process = xFadeWTs_eg.Process();
+  float xFadeSamples_eg_process = xFadeSamples_eg.Process();
+  float vol_eg_process = vol_eg.Process();
+
+  float panValue = (fastsin(lfoPanner.Process())+1.f) * M_PI / 4.f;             // Panning based on the algorithm found here: https://audioordeal.co.uk/how-to-build-a-vst-lesson-2-autopanner/
+  float fastcos_panValue = fastcos(panValue);
+  float fastsin_panValue = fastsin(panValue);
+
+  // --- Precalculate Vector XFades LFOs ---
+  if(t_LfoWaveTblsXfadeActive)
+  {
+    float lfo_value = lfoXfadeWTs_process; // We apply auto-xfades in the final loop, to gain results as smooth as possible!
+    if (t_LfoWaveTblsXfadeIsSquare)
+      SINE_TO_SQARE(lfo_value);
+    if(t_ModWaveTblsXfade)
+      f_XfadeWaveTbls += f_LfoWaveTblsXfadeRange * (lfo_value+xFadeWTs_eg_process);
+    else
+      f_XfadeWaveTbls += f_LfoWaveTblsXfadeRange * lfo_value;
+    CONSTRAIN(f_XfadeWaveTbls,0.f, 1.f);
+  }
+  else      // Maybe no LFO but only EG to modulate the X-Fade?
+  {
+    if(t_ModWaveTblsXfade)
+      f_XfadeWaveTbls += f_LfoWaveTblsXfadeRange/4.f * xFadeWTs_eg_process;   // We reduce the range, because EG is only going "upwards"
+  }
+  if(t_ModSamplesXfade)
+  {
+    f_XfadeSamples += xFadeSamples_eg_process;
+    CONSTRAIN(f_XfadeSamples,0.f, 1.f);
+  }
+  float f_XfadeWaveTbls_A = (1.f-f_XfadeWaveTbls) * 0.25f * f_Volume;   // Precalculate elements for Vector-Space mixer including Mastervolume
+  float f_XfadeWaveTbls_C = (f_XfadeWaveTbls) * 0.25f * f_Volume;
+  float f_XfadeSamples_D = (1.f-f_XfadeSamples) * 0.25f * f_Volume;
+  float f_XfadeSamples_B = (f_XfadeSamples)  * 0.25f * f_Volume;
+  float f_val_result_l = 0.f;
+  float f_val_result_r = 0.f;
 
   // === DSP-output: This is the loop where the audio-output is written ===
   for (uint32_t i = 0; i < bufSz; i++)
   {
-    // --- Vector XFades LFOs ---
-    if(t_LfoWaveTblsXfadeActive)
-    {
-      float lfo_value = lfoXfadeWTs.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
-      if (t_LfoWaveTblsXfadeIsSquare)
-        SINE_TO_SQARE(lfo_value);
-      if(t_ModWaveTblsXfade)
-        f_XfadeWaveTbls += f_LfoWaveTblsXfadeRange * (lfo_value+xFadeWTs_eg.Process());
-      else
-        f_XfadeWaveTbls += f_LfoWaveTblsXfadeRange * lfo_value;
-      CONSTRAIN(f_XfadeWaveTbls,0.f, 1.f);
-    }
-    else      // Maybe no LFO but only EG to modulate the X-Fade?
-    {
-      if(t_ModWaveTblsXfade)
-        f_XfadeWaveTbls += f_LfoWaveTblsXfadeRange/4.f * xFadeWTs_eg.Process();   // We reduce the range, because EG is only going "upwards"
-    }
-
-    if(t_ModSamplesXfade)
-    {
-      f_XfadeSamples += xFadeSamples_eg.Process();
-      CONSTRAIN(f_XfadeSamples,0.f, 1.f);
-    }
     // --- Oscillator-Mix and Mastervolume (truncate audio in case of clipping) ---
-    f_val_result = out_A[i] * (1.f-f_XfadeWaveTbls) * 0.25f;    // Get precalculated data from wavetable-voice A for output
-    f_val_result += out_C[i] * (f_XfadeWaveTbls) * 0.25f;       // Mix with precalculated data from wavetable-voice B for output
-    f_val_result += sample_buf_D[i] * (1.f-f_XfadeSamples) * 0.25f;      // Crossfade samples and mix with wavetables
-    f_val_result += sample_buf_B[i] * (f_XfadeSamples)  * 0.25f;
-    f_val_result *= f_Volume;                                             // Adjust Master-Volume
-    if( t_EGvolActive )                                                   // Apply volume EG?
-      f_val_result *= vol_eg.Process();
+    f_val_result = out_A[i] * f_XfadeWaveTbls_A;        // Get precalculated data from wavetable-voice A for output
+    f_val_result += out_C[i] * f_XfadeWaveTbls_C;       // Mix with precalculated data from wavetable-voice B for output
+    f_val_result += sample_buf_D[i] * f_XfadeSamples_D;      // Crossfade samples and mix with wavetables
+    f_val_result += sample_buf_B[i] * f_XfadeSamples_B;
+    if( t_EGvolActive )                                      // Apply volume EG?
+      f_val_result *= vol_eg_process;
 
     // --- Output of DSP-results, add Autopanner if needed (Please note: we apply panning in the final loop, to gain results as smooth as possible) ---
-    if( t_PannerOn && f_PanAmnt != 0.f )       // Autopanner is on / has amount > 0
+    if( t_PannerOn && f_PanAmnt_HI != 0.f )       // Autopanner is on / has amount > 0
     {
-      float panValue = fastsin(lfoPanner.Process()) + 1.f;             // Panning based on the algorithm found here: https://audioordeal.co.uk/how-to-build-a-vst-lesson-2-autopanner/
-      panValue = (panValue * M_PI) / 4.f;
+      f_val_result_l  = f_val_result * fastcos_panValue; // fastcos(panValue);
+      f_val_result_r  = f_val_result * fastsin_panValue; // fastsin(panValue);
 
-      float f_val_result_l = f_val_result * fastcos(panValue);
-      f_val_result_l = f_val_result_l*f_PanAmnt + (1.f-f_PanAmnt)*f_val_result;  // Crossfade with original signal, depending on needed amount of panner
-      CONSTRAIN(f_val_result_l, -1.f, 1.f);                      // Limit result to max. audio-level
-      data.buf[i*2] = f_val_result_l;
+      f_val_result = f_val_result*f_PanAmnt_LO + f_val_result_l*f_PanAmnt_HI;  // Crossfade with original signal, depending on needed amount of panner
+      CONSTRAIN(f_val_result, -1.f, 1.f);         // Limit result to max. audio-level
+      data.buf[i*2] = f_val_result;         // Left channel (sound in principle is mono, without the right channel we will have a tremelo instead of an auto-panner effect!
 
-      float f_val_result_r = f_val_result * fastsin(panValue);
-      f_val_result_r = f_val_result_r*f_PanAmnt + (1.f-f_PanAmnt)*f_val_result;  // Crossfade with original signal, depending on needed amount of panner
-      CONSTRAIN(f_val_result_r, -1.f, 1.f);
-      data.buf[i*2+1] = f_val_result_r;
+      f_val_result = f_val_result*f_PanAmnt_LO + f_val_result_r*f_PanAmnt_HI;  // Crossfade with original signal, depending on needed amount of panner
+      CONSTRAIN(f_val_result, -1.f, 1.f);         // Limit result to max. audio-level
+      data.buf[i*2+1] = f_val_result;       // Right channel output
     }
     else
     {
-      CONSTRAIN(f_val_result, -1.f, 1.f);                          // Limit result to max. audio-level
-      data.buf[i*2] = f_val_result;            // Left channel (sound in principle is mono, without the right channel we will have a tremelo instead of an auto-panner effect!
-      data.buf[i*2+1] = f_val_result;            // Right channel output
+      CONSTRAIN(f_val_result, -1.f, 1.f);     // Limit result to max. audio-level
+      data.buf[i*2] = f_val_result;            // Left channel
+      data.buf[i*2+1] = f_val_result;          // Right channel output
     }
   }
 }
@@ -621,16 +636,16 @@ ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
     romplers[i]->params.resonance = 1.f;  // Set Resonance to 1 (should not be 0), "just in case"
   }
   // --- Initialize Volume Envelope ---
-  vol_eg.SetSampleRate(44100.f);    // Sync Env with our audio-processing
+  vol_eg.SetSampleRate(44100.f/ bufSz);    // Sync Env with our audio-processing
   vol_eg.SetModeExp();                   // Logarithmic scaling
 
   // --- Vector-EGs ---
-  xFadeSamples_eg.SetSampleRate(44100.f);
+  xFadeSamples_eg.SetSampleRate(44100.f/ bufSz);
   xFadeSamples_eg.SetModeLin();
   xFadeSamples_eg.SetLoop(true);
   xFadeSamples_eg.Trigger();
 
-  xFadeWTs_eg.SetSampleRate(44100.f);
+  xFadeWTs_eg.SetSampleRate(44100.f/ bufSz);
   xFadeWTs_eg.SetModeLin();
   xFadeWTs_eg.SetLoop(true);
   xFadeWTs_eg.Trigger();
@@ -644,6 +659,10 @@ ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
   // --- LFO to modulate the pitch of the Oscillators ---
   lfoPitch.SetSampleRate(44100.f / bufSz);   // Please note: because the LFO is applied already outside the DSP-loop we reduce it's frequency in a manner to fit
   lfoPitch.SetFrequency(1.f);
+
+  // --- LFO for autopanning effect ---
+  lfoPanner.SetSampleRate(44100.f / bufSz);
+  lfoPanner.SetFrequency(1.f);
 
   // --- LFOs for filter-mod of Wavetables ---
   lfo_A.SetSampleRate(44100.f / bufSz);
