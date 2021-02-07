@@ -6,28 +6,30 @@
            [
               {"id":"Gate","name":"Gate Voice n/y","type":"bool"},
               {"id":"EGvolGate","name":"Samples ignore Gate n/y","type":"bool"},
-              {"id": "MasterPitch","type": "int","name": "Master Pitch","min": -2048,"max": 2048,"step": 1},
+              {"id": "MasterPitch","type": "int","name": "Master Pitch","min": -48,"max": 48,"step": 1 },
+              {"id": "MasterTune","type": "int","name": "Master Tune","min": -1200,"max": 1200,"step": 1},
+              {"id":"QuantizePitch","name":"Quantize CV to chromatic tuning n/y","type":"bool"},
               {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
            ]
        },
        {
           "id": "VectorSpace", "name": "Vector space (A<->C is X-Axis, D<->B is Y-Axis)", "type": "group", "params":  
            [
-              {"id":"SubOscPWM_A","name":"(=) SubOsc Noise/PWM (ZscanSetting) A","type":"bool"},
-              {"id": "PitchSubOsc_A","type": "int","name": "(=) Pitch SubOsc A","min": -2048,"max": 2048,"step": 1},              
-              {"id":"SubOscFade_A","name":"(=) SubOscillator Level A","type":"int","min":0,"max":4095,"step":1},  
+              {"id":"SubOscPWM_A","name":"SubOsc Noise/PWM (ZscanSetting) A","type":"bool"},
+              {"id": "PitchSubOsc_A","type": "int","name": "Pitch SubOsc A","min": -3600,"max": 3600,"step": 1},              
+              {"id":"SubOscFade_A","name":"SubOscillator Level A","type":"int","min":0,"max":4095,"step":1},  
               
-              {"id":"SubOscPWM_C","name":"[~] SubOsc Noise/PWM (ZscanSetting) C","type":"bool"},  
-              {"id": "PitchSubOsc_C","type": "int","name": "[~] Pitch SubOsc C","min": -2048,"max": 2048,"step": 1}, 
-              {"id":"SubOscFade_C","name":"[~] SubOscillator Level C","type":"int","min":0,"max":4095,"step":1},  
+              {"id":"SubOscPWM_C","name":"SubOsc Noise/PWM (ZscanSetting) C","type":"bool"},  
+              {"id": "PitchSubOsc_C","type": "int","name": "Pitch SubOsc C","min": -3600,"max": 3600,"step": 1}, 
+              {"id":"SubOscFade_C","name":"SubOscillator Level C","type":"int","min":0,"max":4095,"step":1},  
               
-              {"id":"VolWT_A","name":"{=} Vol Wavetable A","type":"int","min":0,"max":4095,"step":1},
-              {"id":"VolOsc_B","name":"{=} Vol Sample Osc B","type":"int","min":0,"max":4095,"step":1},
-              {"id":"VolWT_C","name":"{=} Vol Wavetable C","type":"int","min":0,"max":4095,"step":1},
-              {"id":"VolOsc_D","name":"{=} Vol Sample Osc D","type":"int","min":0,"max":4095,"step":1},
+              {"id":"VolWT_A","name":"Vol Wavetable A","type":"int","min":0,"max":4095,"step":1},
+              {"id":"VolOsc_B","name":"Vol Sample Osc B","type":"int","min":0,"max":4095,"step":1},
+              {"id":"VolWT_C","name":"Vol Wavetable C","type":"int","min":0,"max":4095,"step":1},
+              {"id":"VolOsc_D","name":"Vol Sample Osc D","type":"int","min":0,"max":4095,"step":1},
               
-              {"id":"XfadeWaveTbls","name":"(~) Crossfade Wavetables A<->C","type":"int","min":-2047,"max":2048,"step":1},
-              {"id":"XfadeSamples","name":"(~) Crossfade Samples D<->B","type":"int","min":-2047,"max":2048,"step":1}
+              {"id":"XfadeWaveTbls","name":"Crossfade Wavetables A<->C","type":"int","min":-2047,"max":2048,"step":1},
+              {"id":"XfadeSamples","name":"Crossfade Samples D<->B","type":"int","min":-2047,"max":2048,"step":1}
            ]
        },
        {  
@@ -60,7 +62,7 @@
               {"id": "WaveTblA","name": "Wavetable A","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
               {"id":"ScanWavTblA","name":"Scan Wavetable A","type":"int","min":0,"max":4095,"step":1}, 
               {"id": "pitch_A","type": "int","name": "Pitch A","min": -48,"max": 48,"step": 1 },
-              {"id": "tune_A","type": "int","name": "Tune A","min": -2048,"max": 2048,"step": 1},
+              {"id": "tune_A","type": "int","name": "Tune A","min": -1200,"max": 1200,"step": 1},
               {"id":"ScanWavTbl_A","name":"Automatic Scanning A n/y","type":"bool"},
               {"id":"LFOzScanType_A","name":"LFO Z-Scan Type A","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
               {"id":"LFOzScanAmt_A","name":"LFO Z-Scan Amount A","type":"int","min":0,"max":4095,"step":1},
@@ -82,7 +84,7 @@
               {"id": "slice_B","name": "Slice B","type": "int","min": 0,"max": 31,"step": 1},
               {"id": "speed_B","name": "Playback Speed B","type": "int","min": -2048,"max": 2048,"step": 1},
               {"id": "pitch_B","name": "Pitch B","type": "int","min": -48,"max": 48,"step": 1},
-              {"id": "tune_B","name": "Tune B","type": "int","min": -2048,"max": 2048,"step": 1},
+              {"id": "tune_B","name": "Tune B","type": "int","min": -1200,"max": 1200,"step": 1},
               {"id": "start_B","name": "Start Position B","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
               {"id": "length_B","name": "Length B","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
               {"id": "loop_B","name": "Loop B off/on","type": "bool"},
@@ -103,7 +105,7 @@
               {"id": "WaveTblC","name": "Wavetable C","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
               {"id":"ScanWavTblC","name":"Scan Wavetable C","type":"int","min":0,"max":4095,"step":1},
               {"id": "pitch_C","type": "int","name": "Pitch C","min": -48,"max": 48,"step": 1 },
-              {"id": "tune_C","type": "int","name": "Tune C","min": -2048,"max": 2048,"step": 1},
+              {"id": "tune_C","type": "int","name": "Tune C","min": -1200,"max": 1200,"step": 1},
               {"id":"ScanWavTbl_C","name":"Automatic Scanning C n/y","type":"bool"},
               {"id":"LFOzScanType_C","name":"LFO Z-Scan Type C","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
               {"id":"LFOzScanAmt_C","name":"LFO Z-Scan Amount C","type":"int","min":0,"max":4095,"step":1},
@@ -125,7 +127,7 @@
               {"id": "slice_D","name": "Slice D","type": "int","min": 0,"max": 31,"step": 1},
               {"id": "speed_D","name": "Playback Speed D","type": "int","min": -2048,"max": 2048,"step": 1},
               {"id": "pitch_D","name": "Pitch D","type": "int","min": -48,"max": 48,"step": 1},
-              {"id": "tune_D","name": "Tune D","type": "int","min": -2048,"max": 2048,"step": 1},
+              {"id": "tune_D","name": "Tune D","type": "int","min": -1200,"max": 1200,"step": 1},
               {"id": "start_D","name": "Start Position D","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
               {"id": "length_D","name": "Length D","hint": "Relative to sample length","type": "int","min": 0,"max": 1048576,"step": 1},
               {"id": "loop_D","name": "Loop D off/on","type": "bool"},
