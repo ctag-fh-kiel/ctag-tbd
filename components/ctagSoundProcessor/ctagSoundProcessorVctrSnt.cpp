@@ -55,8 +55,8 @@ using namespace CTAG::SP;
 // --- Additional Macro for automated parameter evaluations ---
 #define MK_TRIG_PAR(outname, inname) int outname = process_param_trig(data, trig_##inname, inname, e_##inname);
 
-// --- Modify sine-wave for Vector or Wavetable-Z-Axis modulation
-#define SINE_TO_SQARE_QUIETER(sine_val)               sine_val = (sine_val >= 0) ? 0.85f : -0.85f;
+// --- Modify sine-wave for Squarewave/PWM or various modulations (including Pitch-Mod, Filter-Mod, Z-Scan and Vector-Modulation) ---
+#define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
 #define MORPH_SINE(sine_val, morph_mode, enum_sine)   sine_val = morph_sine_wave(sine_val, morph_mode, enum_sine);
 
 // --- Morph sinewave to square, pseudo triangle, sample and hold and similar ---
@@ -186,11 +186,13 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     romplers[IDX_OSC_D]->Reset();     // Please note: once triggered, all Voices will stay active (i.e. also samples will play "forever" if looping is active)
   }
   float f_MasterPitch = MasterPitch;  // Range is -48...48 as "MIDI notes"...
-  if (cv_MasterPitch != -1)
-    f_MasterPitch += data.cv[cv_MasterPitch] * 60.f;        // We expect "MIDI"-notes 0-59 for 5 octaves (5*12) which fit into 0...+5V with 1V/Oct logic!
 
   MK_FLT_PAR_ABS_SFT(f_MasterTune, MasterTune, 1200.f, 1.f);
-  f_MasterPitch += f_MasterTune*12;                         // Please note that this tuning in combination with quantize can be used for error-correction of CV, too!
+  f_MasterPitch += f_MasterTune*12;                         // Please note: that this tuning in combination with quantize can be used for error-correction of CV, too!
+
+  float f_MasterPitch_CV = f_MasterPitch;
+  if (cv_MasterPitch != -1)                                 // Please note: we save the CV-assciated pitch here seperately, this may be excluded per Oscillator-Group via an option!
+    f_MasterPitch_CV = f_MasterPitch+data.cv[cv_MasterPitch] * 60.f;    // We expect "MIDI"-notes 0-59 for 5 octaves (5*12) which fit into 0...+5V with 1V/Oct logic!
 
   MK_TRIG_PAR(t_QuantizePitch, QuantizePitch);
   if( t_QuantizePitch )
@@ -198,7 +200,20 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
 
   MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 5.f);
 
+  // --- Check if Oscillator-Groups should be excluded from CV pitch-tracking ---
+  MK_TRIG_PAR(t_ExclSubOSCmasterPitch, ExclSubOSCmasterPitch);
+  float f_MasterPitch_SubOSC = t_ExclSubOSCmasterPitch ? f_MasterPitch : f_MasterPitch_CV;   // We either add the CV-masterpitch for groups of oscillators or ignore it!
+  MK_TRIG_PAR(t_ExclWTmasterPitch, ExclWTmasterPitch);
+  float f_MasterPitch_WT = t_ExclWTmasterPitch ? f_MasterPitch : f_MasterPitch_CV;
+  MK_TRIG_PAR(t_ExclSMPmasterPitch, ExclSMPmasterPitch);
+  float f_MasterPitch_SMP = t_ExclSMPmasterPitch ? f_MasterPitch: f_MasterPitch_CV;
+
   // --- VectorSpace (we mix the signals of the various oscillators later, here) ---
+  MK_FLT_PAR_ABS( f_PWMintensity, PWMintensity, 4095.f, 1.f);
+  MK_FLT_PAR_ABS_MIN_MAX( f_PWMspeed, PWMspeed, 4095.f, 0.05f, 20.f);
+  lfoPWM.SetFrequency(f_PWMspeed);
+  float f_LFO_pwm = lfoPWM.Process();   // This is a "free running" LFO, we don't use other depencenties to not complicate things, even if it's unused
+
   MK_TRIG_PAR(t_SubOscPWM_A, SubOscPWM_A);
   MK_FLT_PAR_ABS(f_SubOscFade_A, SubOscFade_A, 4095.f, 1.f);
   float f_PitchSubOsc_A = PitchSubOsc_A/100.f;                    // Range is -3600...3600 as "MIDI notes"...
@@ -216,6 +231,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS(f_VolWT_C, VolWT_C, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_VolOsc_D, VolOsc_D, 4095.f,2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
 
+  MK_TRIG_PAR(t_StereoSplit, StereoSplit);                          // If activated the oscillator-groups will be panned left/right
   MK_FLT_PAR_ABS_PAN(f_XfadeWaveTbls, XfadeWaveTbls, 2048.f,1.f);     // We have a middle-centered scale, but we need 0-1.0 for mixing
   MK_FLT_PAR_ABS_PAN(f_XfadeSamples, XfadeSamples, 2048.f, 1.f);
 
@@ -315,7 +331,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   if (cv_pitch_A != -1)
     f_pitch_A += data.cv[cv_pitch_A] * 12.f * 5.f;
   MK_FLT_PAR_ABS_SFT(f_tune_A, tune_A, 1200.f, 1.f);
-  const float f_freq_A = plaits::NoteToFrequency(60 + f_tune_A*12.f + f_pitch_A+f_MasterPitch+f_PitchMod_WT) * 0.998f; // ### Changed from 60 to 12
+  const float f_freq_A = plaits::NoteToFrequency(60 + f_tune_A*12.f + f_pitch_A+f_MasterPitch_WT+f_PitchMod_WT) * 0.998f; // ### Changed from 60 to 12
 
   // --- Filter settings for wavetable A ---
   MK_FLT_PAR_ABS(fLFOFMFilt_A, lfo2filtfm_A, 4095.f, 1.f);
@@ -343,7 +359,6 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // --- Check for Wavetable Z-axis modulation ---
   lfo_WT_A.SetFrequency(f_LFOzScanSpeed_A);
   float f_LFO_WT_A = lfo_WT_A.Process();
-  float f_LFO_WT_A_pwm = f_LFO_WT_A;
   if( t_ScanWavTbl_A)
   {
     MORPH_SINE(f_LFO_WT_A, i_LFOzScanType_A, e_WT_A);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
@@ -356,7 +371,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   {
     wt_osc_A.Render(f_freq_A, f_VolWT_A, f_ScanWavTblA, wavetables_A, out_A, bufSz);
     if(t_SubOscPWM_A)   // PWM modulated square-wave as sub-oscillator?
-      oscSub_A.SetFrequency(noteToFreq(f_MasterPitch+f_PitchSubOsc_A+f_PitchMod_SubOsc) );
+      oscSub_A.SetFrequency(noteToFreq(f_MasterPitch_SubOSC+f_PitchSubOsc_A+f_PitchMod_SubOsc) );
 
     float subOscVal = 0.f;
     for( int i=0; i<bufSz; i++)
@@ -364,8 +379,8 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
       if(t_SubOscPWM_A)   // PWM modulated square-wave as sub-oscillator?
       {
         subOscVal = oscSub_A.Process();
-        subOscVal += f_LFO_WT_A_pwm*f_LFOzScanAmt_A; // Add "PWM-offset", we take the amount and LFO-speed for our sub-oscillator from the settings of the table-Z-scan!
-        SINE_TO_SQARE_QUIETER(subOscVal);   // This by nature contains a constrain, avoiding value overflow!
+        subOscVal += f_LFO_pwm*f_PWMintensity; // Add "PWM-offset", we take the amount and LFO-speed for our sub-oscillator from the settings of the table-Z-scan!
+        SINE_TO_SQUARE(subOscVal);   // This by nature contains a constrain, avoiding value overflow!
         out_A[i] = out_A[i]*(1.f-f_SubOscFade_A) + f_VolWT_A*subOscVal*f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
       }
       else                  // Noise as sub-oscillator
@@ -396,7 +411,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   if (cv_pitch_C != -1)
     f_pitch_C += data.cv[cv_pitch_C] * 12.f * 5.f;
   MK_FLT_PAR_ABS_SFT(f_tune_C, tune_C, 1200.f, 1.f);
-  const float f_freq_C = plaits::NoteToFrequency(60 + f_tune_C*12.f + f_pitch_C+f_MasterPitch+f_PitchMod_WT) * 0.998f;
+  const float f_freq_C = plaits::NoteToFrequency(60 + f_tune_C*12.f + f_pitch_C+f_MasterPitch_WT+f_PitchMod_WT) * 0.998f;
 
   // --- Filter settings for wavetable C ---
   MK_FLT_PAR_ABS(fLFOFMFilt_C, lfo2filtfm_C, 4095.f, 1.f);
@@ -424,20 +439,19 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // --- Check for Wavetable Z-axis modulation ---
   lfo_WT_C.SetFrequency(f_LFOzScanSpeed_C);
   float f_LFO_WT_C = lfo_WT_C.Process();
-  float f_LFO_WT_C_pwm = f_LFO_WT_C;
   if( t_ScanWavTbl_C)
   {
     MORPH_SINE(f_LFO_WT_C, i_LFOzScanType_C, e_WT_C);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_ScanWavTblA += f_LFO_WT_C * f_LFOzScanAmt_C;
     CONSTRAIN(f_ScanWavTblA, 0.f, 1.f)
   }
-  // --- Render A: Calc wave and apply filter ---
+  // --- Render C: Calc wave and apply filter ---
   float out_C[32] = {0.f};
   if(isWaveTableGood_C)
   {
     wt_osc_C.Render(f_freq_C, f_VolWT_C, f_ScanWavTblA, wavetables_C, out_C, bufSz);
     if(t_SubOscPWM_C)   // PWM modulated square-wave as sub-oscillator?
-      oscSub_C.SetFrequency(noteToFreq(f_MasterPitch+f_PitchSubOsc_C+f_PitchMod_SubOsc) );
+      oscSub_C.SetFrequency(noteToFreq(f_MasterPitch_SubOSC+f_PitchSubOsc_C+f_PitchMod_SubOsc) );
 
     float subOscVal = 0.f;
     for( int i=0; i<bufSz; i++)
@@ -445,8 +459,8 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
       if(t_SubOscPWM_C)   // PWM modulated square-wave as sub-oscillator?
       {
         subOscVal = oscSub_C.Process();
-        subOscVal += f_LFO_WT_C_pwm*f_LFOzScanAmt_C; // Add "PWM-offset", we take the amount and LFO-speed for our sub-oscillator from the settings of the table-Z-scan!
-        SINE_TO_SQARE_QUIETER(subOscVal);   // This by nature contains a constrain, avoiding value overflow!
+        subOscVal += f_LFO_pwm*f_PWMintensity; // Add "PWM-offset", we take the amount and LFO-speed for our sub-oscillator from the settings of the table-Z-scan!
+        SINE_TO_SQUARE(subOscVal);   // This by nature contains a constrain, avoiding value overflow!
         out_C[i] = out_C[i]*(1.f-f_SubOscFade_C) + f_VolWT_C*subOscVal*f_SubOscFade_C;    // Crossfade the Wavetable and its suboscillator
       }
       else                  // Noise as sub-oscillator
@@ -481,7 +495,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   float f_Pitch_B = pitch_B;
   if (cv_pitch_B != -1)
     f_Pitch_B += data.cv[cv_pitch_B] * 12.f * 5.f;
-  romplers[IDX_OSC_B]->params.pitch = f_MasterPitch+f_Pitch_B+f_PitchMod_Sample;  // ### Adjust pitch to masterpitch (f_Frequ?)
+  romplers[IDX_OSC_B]->params.pitch = f_MasterPitch_SMP+f_Pitch_B+f_PitchMod_Sample;  // ### Adjust pitch to masterpitch (f_Frequ?)
   MK_FLT_PAR_ABS_SFT(f_Tune_B, tune_B, 1200.f, 12.f)
   romplers[IDX_OSC_B]->params.tune = f_Tune_B;
 
@@ -533,7 +547,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   float f_Pitch_D = pitch_D;
   if (cv_pitch_D != -1)
     f_Pitch_D += data.cv[cv_pitch_D] * 12.f * 5.f;
-  romplers[IDX_OSC_D]->params.pitch = f_MasterPitch+f_Pitch_D+f_PitchMod_Sample;  // ### Adjust pitch to masterpitch (f_Frequ?)
+  romplers[IDX_OSC_D]->params.pitch = f_MasterPitch_SMP+f_Pitch_D+f_PitchMod_Sample;  // ### Adjust pitch to masterpitch (f_Frequ?)
   MK_FLT_PAR_ABS_SFT(f_Tune_D, tune_D, 2048.f, 12.f)
   romplers[IDX_OSC_D]->params.tune = f_Tune_D;
 
@@ -624,43 +638,86 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   CONSTRAIN(f_XfadeSamples, 0.f, 1.f);
 
   // --- Precalculate elements for Vector-Space mixer including Mastervolume ---
-  float f_XfadeWaveTbls_A = (1.f-f_XfadeWaveTbls) * 0.25f * f_Volume;
-  float f_XfadeWaveTbls_C = (f_XfadeWaveTbls) * 0.25f * f_Volume;
-  float f_XfadeSamples_D = (1.f-f_XfadeSamples) * 0.25f * f_Volume;
-  float f_XfadeSamples_B = (f_XfadeSamples)  * 0.25f * f_Volume;
+  float f_mix_factor = t_StereoSplit ? 0.5f : 0.25f;    // We mix 4 inputs mono or 2 inputs per stereo-channel
+  float f_XfadeWaveTbls_A = (1.f-f_XfadeWaveTbls) * f_mix_factor * f_Volume;
+  float f_XfadeWaveTbls_C = (f_XfadeWaveTbls) * f_mix_factor * f_Volume;
+  float f_XfadeSamples_D = (1.f-f_XfadeSamples) * f_mix_factor * f_Volume;
+  float f_XfadeSamples_B = (f_XfadeSamples)  * f_mix_factor * f_Volume;
   float f_val_result_l = 0.f;
   float f_val_result_r = 0.f;
 
   // === DSP-output: This is the loop where the audio-output is written ===
   for (uint32_t i = 0; i < bufSz; i++)
   {
-    // --- Oscillator-Mix and Mastervolume (truncate audio in case of clipping) ---
-    f_val_result = out_A[i] * f_XfadeWaveTbls_A;        // Get precalculated data from wavetable-voice A for output
-    f_val_result += out_C[i] * f_XfadeWaveTbls_C;       // Mix with precalculated data from wavetable-voice B for output
-    f_val_result += sample_buf_D[i] * f_XfadeSamples_D;      // Crossfade samples and mix with wavetables
-    f_val_result += sample_buf_B[i] * f_XfadeSamples_B;
-    if( t_EGvolActive )                                      // Apply volume EG?
-      f_val_result *= vol_eg_process;
-
-    // --- Output of DSP-results, add Autopanner if needed (Please note: we apply panning in the final loop, to gain results as smooth as possible) ---
-    if( t_PannerOn && f_PanAmnt_HI != 0.f )       // Autopanner is on / has amount > 0
+    // --- Decide if we have to pan groups of oscillators to left/right ---
+    if(t_StereoSplit)
     {
-      f_val_result_l = f_val_result * fastcos_panValue; // fastcos(panValue);
-      f_val_result_r = f_val_result * fastsin_panValue; // fastsin(panValue);
+      f_val_result_l = out_A[i] * f_XfadeWaveTbls_A;        // Get precalculated data from wavetable-voice A for output
+      f_val_result_r = out_C[i] * f_XfadeWaveTbls_C;       // Mix with precalculated data from wavetable-voice B for output
+      f_val_result_l += sample_buf_D[i] * f_XfadeSamples_D;      // Crossfade samples and mix with wavetables
+      f_val_result_r += sample_buf_B[i] * f_XfadeSamples_B;
 
-      f_val_result_l = f_val_result*f_PanAmnt_LO + f_val_result_l*f_PanAmnt_HI;  // Crossfade with original signal, depending on needed amount of panner
-      CONSTRAIN(f_val_result_l, -1.f, 1.f);         // Limit result to max. audio-level
-      data.buf[i*2] = f_val_result_l;         // Left channel (sound in principle is mono, without the right channel we will have a tremelo instead of an auto-panner effect!
+      if(t_EGvolActive)                                 // Apply volume EG?
+      {
+        f_val_result_l *= vol_eg_process;
+        f_val_result_r *= vol_eg_process;
+      }
+      if (t_PannerOn && f_PanAmnt_HI != 0.f)            // Autopanner is on / has amount > 0
+      {
+        float f_val_result_l_dry = f_val_result_l;
+        float f_val_result_r_dry = f_val_result_r;
+        f_val_result_l *= fastcos_panValue; // fastcos(panValue);
+        f_val_result_r *= fastsin_panValue; // fastsin(panValue);
 
-      f_val_result_r = f_val_result*f_PanAmnt_LO + f_val_result_r*f_PanAmnt_HI;  // Crossfade with original signal, depending on needed amount of panner
-      CONSTRAIN(f_val_result_r, -1.f, 1.f);         // Limit result to max. audio-level
-      data.buf[i*2+1] = f_val_result_r;       // Right channel output
+        f_val_result_l = f_val_result_l_dry*f_PanAmnt_LO + f_val_result_l*f_PanAmnt_HI;  // Crossfade with original signal, depending on needed amount of panner
+        CONSTRAIN(f_val_result_l, -1.f, 1.f);         // Limit result to max. audio-level
+        data.buf[i * 2] = f_val_result_l;         // Left channel (sound in principle is mono, without the right channel we will have a tremelo instead of an auto-panner effect!
+
+        f_val_result_r = f_val_result_r_dry * f_PanAmnt_LO + f_val_result_r * f_PanAmnt_HI;  // Crossfade with original signal, depending on needed amount of panner
+        CONSTRAIN(f_val_result_r, -1.f, 1.f);         // Limit result to max. audio-level
+        data.buf[i * 2 + 1] = f_val_result_r;       // Right channel output
+
+      }
+      else  // Channels are split, but no auto-panner is active
+      {
+        CONSTRAIN(f_val_result_l, -1.f, 1.f);     // Limit result to max. audio-level
+        data.buf[i * 2] = f_val_result_l;            // Left channel
+
+        CONSTRAIN(f_val_result_r, -1.f, 1.f);     // Limit result to max. audio-level
+        data.buf[i * 2 + 1] = f_val_result_r;          // Right channel output
+      }
     }
-    else
+    else      // XFades are not panned Left/Right, but we still may have an auto-panner effect on the mono-signal
     {
-      CONSTRAIN(f_val_result, -1.f, 1.f);     // Limit result to max. audio-level
-      data.buf[i*2] = f_val_result;            // Left channel
-      data.buf[i*2+1] = f_val_result;          // Right channel output
+      // --- Oscillator-Mix and Mastervolume (truncate audio in case of clipping) ---
+      f_val_result = out_A[i] * f_XfadeWaveTbls_A;        // Get precalculated data from wavetable-voice A for output
+      f_val_result += out_C[i] * f_XfadeWaveTbls_C;       // Mix with precalculated data from wavetable-voice B for output
+      f_val_result += sample_buf_D[i] * f_XfadeSamples_D;      // Crossfade samples and mix with wavetables
+      f_val_result += sample_buf_B[i] * f_XfadeSamples_B;
+
+      if (t_EGvolActive)                                 // Apply volume EG?
+        f_val_result *= vol_eg_process;
+
+      // --- Output of DSP-results, add Autopanner if needed (Please note: we apply panning in the final loop, to gain results as smooth as possible) ---
+      if (t_PannerOn && f_PanAmnt_HI != 0.f)       // Autopanner is on / has amount > 0
+      {
+        f_val_result_l = f_val_result * fastcos_panValue; // fastcos(panValue);
+        f_val_result_r = f_val_result * fastsin_panValue; // fastsin(panValue);
+
+        f_val_result_l = f_val_result * f_PanAmnt_LO + f_val_result_l * f_PanAmnt_HI;  // Crossfade with original signal, depending on needed amount of panner
+        CONSTRAIN(f_val_result_l, -1.f, 1.f);         // Limit result to max. audio-level
+        data.buf[i * 2] = f_val_result_l;         // Left channel (sound in principle is mono, without the right channel we will have a tremelo instead of an auto-panner effect!
+
+        f_val_result_r = f_val_result * f_PanAmnt_LO + f_val_result_r * f_PanAmnt_HI;  // Crossfade with original signal, depending on needed amount of panner
+        CONSTRAIN(f_val_result_r, -1.f, 1.f);         // Limit result to max. audio-level
+        data.buf[i * 2 + 1] = f_val_result_r;       // Right channel output
+      }
+      else    // No channel-split or auto-panning
+      {
+        CONSTRAIN(f_val_result, -1.f, 1.f);     // Limit result to max. audio-level
+        data.buf[i * 2] = f_val_result;            // Left channel
+        data.buf[i * 2 + 1] = f_val_result;          // Right channel output
+      }
     }
   }
 }
@@ -721,6 +778,10 @@ ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
   lfoPanner.SetSampleRate(44100.f / bufSz);
   lfoPanner.SetFrequency(1.f);
 
+  // --- LFO for PWM of (optional) Sub Oscillators ---
+  lfoPWM.SetSampleRate(44100.f / bufSz);
+  lfoPWM.SetFrequency(1.f);
+
   // --- LFOs for filter-mod of Wavetables ---
   lfo_A.SetSampleRate(44100.f / bufSz);
   lfo_A.SetFrequency(1.f);
@@ -776,6 +837,16 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapTrig.emplace("QuantizePitch", [&](const int val){ trig_QuantizePitch = val;});
 	pMapPar.emplace("Volume", [&](const int val){ Volume = val;});
 	pMapCv.emplace("Volume", [&](const int val){ cv_Volume = val;});
+	pMapPar.emplace("ExclSubOSCmasterPitch", [&](const int val){ ExclSubOSCmasterPitch = val;});
+	pMapTrig.emplace("ExclSubOSCmasterPitch", [&](const int val){ trig_ExclSubOSCmasterPitch = val;});
+	pMapPar.emplace("ExclWTmasterPitch", [&](const int val){ ExclWTmasterPitch = val;});
+	pMapTrig.emplace("ExclWTmasterPitch", [&](const int val){ trig_ExclWTmasterPitch = val;});
+	pMapPar.emplace("ExclSMPmasterPitch", [&](const int val){ ExclSMPmasterPitch = val;});
+	pMapTrig.emplace("ExclSMPmasterPitch", [&](const int val){ trig_ExclSMPmasterPitch = val;});
+	pMapPar.emplace("PWMintensity", [&](const int val){ PWMintensity = val;});
+	pMapCv.emplace("PWMintensity", [&](const int val){ cv_PWMintensity = val;});
+	pMapPar.emplace("PWMspeed", [&](const int val){ PWMspeed = val;});
+	pMapCv.emplace("PWMspeed", [&](const int val){ cv_PWMspeed = val;});
 	pMapPar.emplace("SubOscPWM_A", [&](const int val){ SubOscPWM_A = val;});
 	pMapTrig.emplace("SubOscPWM_A", [&](const int val){ trig_SubOscPWM_A = val;});
 	pMapPar.emplace("PitchSubOsc_A", [&](const int val){ PitchSubOsc_A = val;});
@@ -796,6 +867,8 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapCv.emplace("VolWT_C", [&](const int val){ cv_VolWT_C = val;});
 	pMapPar.emplace("VolOsc_D", [&](const int val){ VolOsc_D = val;});
 	pMapCv.emplace("VolOsc_D", [&](const int val){ cv_VolOsc_D = val;});
+	pMapPar.emplace("StereoSplit", [&](const int val){ StereoSplit = val;});
+	pMapTrig.emplace("StereoSplit", [&](const int val){ trig_StereoSplit = val;});
 	pMapPar.emplace("XfadeWaveTbls", [&](const int val){ XfadeWaveTbls = val;});
 	pMapCv.emplace("XfadeWaveTbls", [&](const int val){ cv_XfadeWaveTbls = val;});
 	pMapPar.emplace("XfadeSamples", [&](const int val){ XfadeSamples = val;});

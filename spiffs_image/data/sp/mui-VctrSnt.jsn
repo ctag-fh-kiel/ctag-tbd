@@ -9,17 +9,23 @@
               {"id": "MasterPitch","type": "int","name": "Master Pitch","min": -48,"max": 48,"step": 1 },
               {"id": "MasterTune","type": "int","name": "Master Tune","min": -1200,"max": 1200,"step": 1},
               {"id":"QuantizePitch","name":"Quantize CV to chromatic tuning n/y","type":"bool"},
-              {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
+              {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ExclSubOSCmasterPitch","name":"Exclude SubOSCs from MasterPitch-CV n/y","type":"bool"},
+              {"id":"ExclWTmasterPitch","name":"Exclude WaveTables from MasterPitch-CV n/y","type":"bool"},
+              {"id":"ExclSMPmasterPitch","name":"Exclude Samples from MasterPitch-CV n/y","type":"bool"}
            ]
        },
        {
           "id": "VectorSpace", "name": "Vector space (A<->C is X-Axis, D<->B is Y-Axis)", "type": "group", "params":  
            [
-              {"id":"SubOscPWM_A","name":"SubOsc Noise/PWM (ZscanSetting) A","type":"bool"},
+              {"id":"PWMintensity","name":"PWM intensity SubOSCs","type":"int","min":0,"max":4095,"step":1}, 
+              {"id":"PWMspeed","name":"PWM speed SubOSCs","type":"int","min":0,"max":4095,"step":1}, 
+              
+              {"id":"SubOscPWM_A","name":"SubOsc Noise/PWM A","type":"bool"},
               {"id": "PitchSubOsc_A","type": "int","name": "Pitch SubOsc A","min": -3600,"max": 3600,"step": 1},              
               {"id":"SubOscFade_A","name":"SubOscillator Level A","type":"int","min":0,"max":4095,"step":1},  
               
-              {"id":"SubOscPWM_C","name":"SubOsc Noise/PWM (ZscanSetting) C","type":"bool"},  
+              {"id":"SubOscPWM_C","name":"SubOsc Noise/PWM","type":"bool"},  
               {"id": "PitchSubOsc_C","type": "int","name": "Pitch SubOsc C","min": -3600,"max": 3600,"step": 1}, 
               {"id":"SubOscFade_C","name":"SubOscillator Level C","type":"int","min":0,"max":4095,"step":1},  
               
@@ -28,6 +34,7 @@
               {"id":"VolWT_C","name":"Vol Wavetable C","type":"int","min":0,"max":4095,"step":1},
               {"id":"VolOsc_D","name":"Vol Sample Osc D","type":"int","min":0,"max":4095,"step":1},
               
+              {"id":"StereoSplit","name":"Stereo Split Oscillators n/y","type":"bool"},  
               {"id":"XfadeWaveTbls","name":"Crossfade Wavetables A<->C","type":"int","min":-2047,"max":2048,"step":1},
               {"id":"XfadeSamples","name":"Crossfade Samples D<->B","type":"int","min":-2047,"max":2048,"step":1}
            ]
