@@ -244,7 +244,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   lfoXfadeWT_1.SetFrequency(f_LfoWTxFadeSpeed_1);
 
   MK_TRIG_PAR(t_LfoWTxFadeActive_2, LfoWTxFadeActive_2);
-  MK_INT_PAR_ABS(i_LfoTypeWTxFade_2, LfoTypeWTxFade_1, 7.f)
+  MK_INT_PAR_ABS(i_LfoTypeWTxFade_2, LfoTypeWTxFade_2, 7.f)
   CONSTRAIN(i_LfoTypeWTxFade_2, 0, 6);      // 7 possible types of LFOs
   MK_FLT_PAR_ABS(f_LfoWTxFadeRange_2, LfoWTxFadeRange_2, 4095.f, 1.f);
   MK_FLT_PAR_ABS_MIN_MAX(f_LfoWTxFadeSpeed_2, LfoWTxFadeSpeed_2, 4095.f, 0.05f, 15.f);
@@ -268,6 +268,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // --- WaveTable Scan Modulators ---
   MK_FLT_PAR_ABS(f_ScanWavTblA, ScanWavTblA, 4095.f, 1.f);
   MK_TRIG_PAR(t_ScanWavTbl_A, ScanWavTbl_A);
+  MK_TRIG_PAR(t_ModulateSubOscXfade_C, ModulateSubOscXfade_C);
   MK_INT_PAR_ABS(i_LFOzScanType_A, LFOzScanType_A, 7.f)
   CONSTRAIN(i_LFOzScanType_A, 0, 6);      // 7 possible types of LFOs
   MK_FLT_PAR_ABS(f_LFOzScanAmt_A, LFOzScanAmt_A, 4095.f, 1.f);
@@ -275,6 +276,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
 
   MK_FLT_PAR_ABS(f_ScanWavTblC, ScanWavTblC, 4095.f, 1.f);
   MK_TRIG_PAR(t_ScanWavTbl_C, ScanWavTbl_C);
+  MK_TRIG_PAR(t_ModulateSubOscXfade_A, ModulateSubOscXfade_A);
   MK_INT_PAR_ABS(i_LFOzScanType_C, LFOzScanType_C, 7.f)
   CONSTRAIN(i_LFOzScanType_C, 0, 6);      // 7 possible types of LFOs
   MK_FLT_PAR_ABS(f_LFOzScanAmt_C, LFOzScanAmt_C, 4095.f, 1.f);
@@ -374,22 +376,29 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
       oscSub_A.SetFrequency(noteToFreq(f_MasterPitch_SubOSC+f_PitchSubOsc_A+f_PitchMod_SubOsc) );
 
     float subOscVal = 0.f;
+    float lfo_Xfade_SubOSC_A = 1.f;
+    if(t_ModulateSubOscXfade_A && t_LfoWTxFadeActive_2)   // Modulate SubOSC a Xfade with LFO 2 of WT XFade?
+    {
+      lfo_Xfade_SubOSC_A = lfoXfadeWT_2.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
+      MORPH_SINE(lfo_Xfade_SubOSC_A, i_LfoTypeWTxFade_2, e_XfadeWT_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+      lfo_Xfade_SubOSC_A *= f_LfoWTxFadeRange_2;
+    }
     for( int i=0; i<bufSz; i++)
     {
       if(t_SubOscPWM_A)   // PWM modulated square-wave as sub-oscillator?
       {
         subOscVal = oscSub_A.Process();
         subOscVal += f_LFO_pwm*f_PWMintensity; // Add "PWM-offset", we take the amount and LFO-speed for our sub-oscillator from the settings of the table-Z-scan!
-        SINE_TO_SQUARE(subOscVal);   // This by nature contains a constrain, avoiding value overflow!
-        out_A[i] = out_A[i]*(1.f-f_SubOscFade_A) + f_VolWT_A*subOscVal*f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
+        SINE_TO_SQUARE(subOscVal);    // This by nature contains a constrain, avoiding value overflow!
       }
       else                  // Noise as sub-oscillator
       {
         if( f_PitchSubOsc_A < 0.f )    // Pitchslider below middle-Position? => Pink Noise
-          out_A[i] = out_A[i] * (1.f - f_SubOscFade_A) + f_VolWT_A * oscPnoise_A.Process() * f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
+          subOscVal = oscPnoise_A.Process();
         else    // White Noise
-          out_A[i] = out_A[i] * (1.f - f_SubOscFade_A) + f_VolWT_A * oscWnoise_A.Process() * f_SubOscFade_A;    // Crossfade the Wavetable and its suboscillator
+          subOscVal = oscWnoise_A.Process();
       }
+      out_A[i] = out_A[i]*(1.f-f_SubOscFade_A)*lfo_Xfade_SubOSC_A + subOscVal*f_VolWT_A*f_SubOscFade_A*lfo_Xfade_SubOSC_A;    // Crossfade the Wavetable and its suboscillator
     }
     switch(iFType_A)    // 0 if filter is off!
     {
@@ -454,22 +463,30 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
       oscSub_C.SetFrequency(noteToFreq(f_MasterPitch_SubOSC+f_PitchSubOsc_C+f_PitchMod_SubOsc) );
 
     float subOscVal = 0.f;
+    float lfo_Xfade_SubOSC_C = 1.f;
+    if(t_ModulateSubOscXfade_C && t_LfoSAMPxFadeActive_2)   // Modulate SubOSC C Xfade with LFO 2 of Sample XFade?
+    {
+      lfo_Xfade_SubOSC_C = lfoXfadeSample_2.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
+      MORPH_SINE(lfo_Xfade_SubOSC_C, i_LfoTypeSAMPxFade_2, e_XfadeSAMP_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+      lfo_Xfade_SubOSC_C *= f_LfoSAMPxFadeRange_2;
+    }
     for( int i=0; i<bufSz; i++)
     {
       if(t_SubOscPWM_C)   // PWM modulated square-wave as sub-oscillator?
       {
         subOscVal = oscSub_C.Process();
         subOscVal += f_LFO_pwm*f_PWMintensity; // Add "PWM-offset", we take the amount and LFO-speed for our sub-oscillator from the settings of the table-Z-scan!
-        SINE_TO_SQUARE(subOscVal);   // This by nature contains a constrain, avoiding value overflow!
-        out_C[i] = out_C[i]*(1.f-f_SubOscFade_C) + f_VolWT_C*subOscVal*f_SubOscFade_C;    // Crossfade the Wavetable and its suboscillator
+        SINE_TO_SQUARE(subOscVal);    // This by nature contains a constrain, avoiding value overflow!
+        subOscVal *= f_VolWT_C;
       }
       else                  // Noise as sub-oscillator
       {
         if( f_PitchSubOsc_C < 0.f )   // Pitch-Slider below Middle? => Pink Noise
-          out_C[i] = out_C[i] * (1.f - f_SubOscFade_C) + f_VolWT_C * oscPnoise_C.Process() * f_SubOscFade_C;    // Crossfade the Wavetable and its suboscillator
+          subOscVal = oscPnoise_C.Process()*f_VolWT_C;
         else // White noise
-          out_C[i] = out_C[i] * (1.f - f_SubOscFade_C) + f_VolWT_C * oscWnoise_C.Process() * f_SubOscFade_C;    // Crossfade the Wavetable and its suboscillator
+          subOscVal = oscWnoise_C.Process()*f_VolWT_C;
       }
+      out_C[i] = out_C[i]*(1.f-f_SubOscFade_C)*lfo_Xfade_SubOSC_C + subOscVal*f_SubOscFade_C*lfo_Xfade_SubOSC_C;    // Crossfade the Wavetable and its suboscillator
     }
     switch(iFType_C)    // 0 if filter is off!
     {
@@ -614,7 +631,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     MORPH_SINE(f_lfo_value_Xfade_WT_1, i_LfoTypeWTxFade_1, e_XfadeWT_1);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_XfadeWaveTbls += f_LfoWTxFadeRange_1 * f_lfo_value_Xfade_WT_1;
   }
-  if(t_LfoWTxFadeActive_2)
+  if(t_LfoWTxFadeActive_2 && !t_ModulateSubOscXfade_C )   // Modulate SubOSC Xfade instead?
   {
     float f_lfo_value_Xfade_WT_2 = lfoXfadeWT_2.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
     MORPH_SINE(f_lfo_value_Xfade_WT_2, i_LfoTypeWTxFade_2, e_XfadeWT_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
@@ -629,7 +646,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     MORPH_SINE(f_lfo_value_Xfade_SMP_1, i_LfoTypeSAMPxFade_1, e_XfadeSAMP_1);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_XfadeSamples += f_LfoSAMPxFadeRange_1 * f_lfo_value_Xfade_SMP_1;
   }
-  if(t_LfoSAMPxFadeActive_2)
+  if(t_LfoSAMPxFadeActive_2 && !t_ModulateSubOscXfade_C )   // Modulate SubOSC Xfade instead?
   {
     float f_lfo_value_Xfade_SMP_2 = lfoXfadeSample_2.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
     MORPH_SINE(f_lfo_value_Xfade_SMP_2, i_LfoTypeSAMPxFade_2, e_XfadeSAMP_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
@@ -883,6 +900,8 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapCv.emplace("LfoWTxFadeSpeed_1", [&](const int val){ cv_LfoWTxFadeSpeed_1 = val;});
 	pMapPar.emplace("LfoWTxFadeActive_2", [&](const int val){ LfoWTxFadeActive_2 = val;});
 	pMapTrig.emplace("LfoWTxFadeActive_2", [&](const int val){ trig_LfoWTxFadeActive_2 = val;});
+	pMapPar.emplace("ModulateSubOscXfade_A", [&](const int val){ ModulateSubOscXfade_A = val;});
+	pMapTrig.emplace("ModulateSubOscXfade_A", [&](const int val){ trig_ModulateSubOscXfade_A = val;});
 	pMapPar.emplace("LfoTypeWTxFade_2", [&](const int val){ LfoTypeWTxFade_2 = val;});
 	pMapCv.emplace("LfoTypeWTxFade_2", [&](const int val){ cv_LfoTypeWTxFade_2 = val;});
 	pMapPar.emplace("LfoWTxFadeRange_2", [&](const int val){ LfoWTxFadeRange_2 = val;});
@@ -899,6 +918,8 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapCv.emplace("LfoSAMPxFadeSpeed_1", [&](const int val){ cv_LfoSAMPxFadeSpeed_1 = val;});
 	pMapPar.emplace("LfoSAMPxFadeActive_2", [&](const int val){ LfoSAMPxFadeActive_2 = val;});
 	pMapTrig.emplace("LfoSAMPxFadeActive_2", [&](const int val){ trig_LfoSAMPxFadeActive_2 = val;});
+	pMapPar.emplace("ModulateSubOscXfade_C", [&](const int val){ ModulateSubOscXfade_C = val;});
+	pMapTrig.emplace("ModulateSubOscXfade_C", [&](const int val){ trig_ModulateSubOscXfade_C = val;});
 	pMapPar.emplace("LfoTypeSAMPxFade_2", [&](const int val){ LfoTypeSAMPxFade_2 = val;});
 	pMapCv.emplace("LfoTypeSAMPxFade_2", [&](const int val){ cv_LfoTypeSAMPxFade_2 = val;});
 	pMapPar.emplace("LfoSAMPxFadeRange_2", [&](const int val){ LfoSAMPxFadeRange_2 = val;});

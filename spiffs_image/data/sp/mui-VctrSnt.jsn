@@ -25,7 +25,7 @@
               {"id": "PitchSubOsc_A","type": "int","name": "Pitch SubOsc A","min": -3600,"max": 3600,"step": 1},              
               {"id":"SubOscFade_A","name":"SubOscillator Level A","type":"int","min":0,"max":4095,"step":1},  
               
-              {"id":"SubOscPWM_C","name":"SubOsc Noise/PWM","type":"bool"},  
+              {"id":"SubOscPWM_C","name":"SubOsc Noise/PWM C","type":"bool"},  
               {"id": "PitchSubOsc_C","type": "int","name": "Pitch SubOsc C","min": -3600,"max": 3600,"step": 1}, 
               {"id":"SubOscFade_C","name":"SubOscillator Level C","type":"int","min":0,"max":4095,"step":1},  
               
@@ -44,23 +44,25 @@
            [
                {"id":"LfoWTxFadeActive_1","name":"LFO 1 WaveTable Xfade n/y","type":"bool"},
                {"id": "LfoTypeWTxFade_1","name": "LFO 1 Type WT Xfade","hint": "0: SINE, 1: SQARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
-               {"id":"LfoWTxFadeRange_1","name":"LFO 1 WaveTable range","type":"int","min":0,"max":4095,"step":1},
-               {"id":"LfoWTxFadeSpeed_1","name":"LFO 1 WaveTable Speed","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LfoWTxFadeRange_1","name":"LFO 1 WaveTable Xfade range","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LfoWTxFadeSpeed_1","name":"LFO 1 WaveTable Xfade Speed","type":"int","min":0,"max":4095,"step":1},
                
                {"id":"LfoWTxFadeActive_2","name":"LFO 2 WaveTable Xfade n/y","type":"bool"},
+               {"id":"ModulateSubOscXfade_A","name":"WT LFO 2 modulates SubOscXfade A n/y","type":"bool"},
                {"id": "LfoTypeWTxFade_2","name": "LFO 2 Type WT Xfade","hint": "0: SINE, 1: SQARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
-               {"id":"LfoWTxFadeRange_2","name":"LFO 2 WaveTable range","type":"int","min":0,"max":4095,"step":1},
-               {"id":"LfoWTxFadeSpeed_2","name":"LFO 2 WaveTable Speed","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LfoWTxFadeRange_2","name":"LFO 2 WaveTable Xfade range","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LfoWTxFadeSpeed_2","name":"LFO 2 WaveTable Xfade Speed","type":"int","min":0,"max":4095,"step":1},
     
                {"id":"LfoSAMPxFadeActive_1","name":"LFO 1 Sample Xfade n/y","type":"bool"},
                {"id": "LfoTypeSAMPxFade_1","name": "LFO 1 Type Sample Xfade","hint": "0: SINE, 1: SQARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
-               {"id":"LfoSAMPxFadeRange_1","name":"LFO 1 Sample range","type":"int","min":0,"max":4095,"step":1},
-               {"id":"LfoSAMPxFadeSpeed_1","name":"LFO 1 Sample Speed","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LfoSAMPxFadeRange_1","name":"LFO 1 Sample Xfade range","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LfoSAMPxFadeSpeed_1","name":"LFO 1 Sample Xfade Speed","type":"int","min":0,"max":4095,"step":1},
                
                {"id":"LfoSAMPxFadeActive_2","name":"LFO 2 Sample Xfade n/y","type":"bool"},
+               {"id":"ModulateSubOscXfade_C","name":"Sample LFO 2 modulates SubOscXfade C n/y","type":"bool"},              
                {"id": "LfoTypeSAMPxFade_2","name": "LFO 2 Type Sample Xfade","hint": "0: SINE, 1: SQARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
-               {"id":"LfoSAMPxFadeRange_2","name":"LFO 2 Sample range","type":"int","min":0,"max":4095,"step":1},
-               {"id":"LfoSAMPxFadeSpeed_2","name":"LFO 2 Sample Speed","type":"int","min":0,"max":4095,"step":1}
+               {"id":"LfoSAMPxFadeRange_2","name":"LFO 2 Sample Xfade range","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LfoSAMPxFadeSpeed_2","name":"LFO 2 Sample Xfade Speed","type":"int","min":0,"max":4095,"step":1}
          ]
       },
       {  

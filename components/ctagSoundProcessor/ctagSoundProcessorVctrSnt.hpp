@@ -31,21 +31,26 @@ namespace CTAG {
 
             // --- Remember status of triggers / buttons ---
             inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id ); // rescale incoming data to bool
-            enum trig_states {
-            e_Gate, e_LfoWTxFadeActive_1, e_LfoWTxFadeActive_2, e_LfoSAMPxFadeActive_1, e_LfoSAMPxFadeActive_2,
-            e_ExclSubOSCmasterPitch, e_ExclWTmasterPitch, e_loop_D, e_loop_B, e_loop_pipo_B, e_PannerOn, e_FilterLFOsquare_A,
-            e_EGvolGate, e_QuantizePitch, e_ExclSMPmasterPitch, e_StereoSplit, e_ScanWavTbl_A, e_ScanWavTbl_C,
-            e_FreqModActive, e_FreqModExclWT, e_FreqModExclSample, e_FilterLFOon_A, e_FilterLFOon_C, e_loop_pipo_D,
-            e_FilterLFOon_D, e_EGvolActive, e_FilterLFOsquare_C, e_FreqModExclSubOSC, e_FilterLFOon_B, e_SubOscPWM_A, e_SubOscPWM_C, e_APC_options_max };
+            enum trig_states
+            {
+              e_Gate, e_LfoWTxFadeActive_1, e_LfoWTxFadeActive_2, e_LfoSAMPxFadeActive_1, e_LfoSAMPxFadeActive_2,
+              e_ExclSubOSCmasterPitch, e_ExclWTmasterPitch, e_loop_D, e_loop_B, e_loop_pipo_B, e_PannerOn, e_FilterLFOsquare_A,
+              e_EGvolGate, e_QuantizePitch, e_ExclSMPmasterPitch, e_StereoSplit, e_ScanWavTbl_A, e_ScanWavTbl_C,
+              e_FreqModActive, e_FreqModExclWT, e_FreqModExclSample, e_FilterLFOon_A, e_FilterLFOon_C, e_loop_pipo_D,
+              e_ModulateSubOscXfade_A, e_ModulateSubOscXfade_C, e_FilterLFOon_D, e_EGvolActive, e_FilterLFOsquare_C, e_FreqModExclSubOSC,
+              e_FilterLFOon_B, e_SubOscPWM_A, e_SubOscPWM_C, e_APC_options_max
+            };
             int prev_trig_state[e_APC_options_max] = {0};   // Initialize _all_ entries with "low value"
 
             // --- Sample and Hold for LFOs ---
-            enum snh_members {
-            e_XfadeWT_1, e_XfadeWT_2, e_XfadeSAMP_1, e_XfadeSAMP_2, e_WT_A, e_WT_C, e_PitchMod, e_filterLFO_A, e_filterLFO_C, e_snh_max };
-            ctagWNoiseGen oscSnH[e_snh_max];
+            float applySnH(float sine_lfo_val, int enum_val);
+            enum snh_members
+            {
+              e_XfadeWT_1, e_XfadeWT_2, e_XfadeSAMP_1, e_XfadeSAMP_2, e_WT_A, e_WT_C, e_PitchMod, e_filterLFO_A, e_filterLFO_C, e_snh_max
+            };
+            ctagWNoiseGen oscSnH[e_snh_max] = {(ctagWNoiseGen)NULL};
             float saved_sample[e_snh_max] = {0.f};
             bool hold_trigger[e_snh_max] = {false};
-            float applySnH(float sine_lfo_val, int enum_val);
 
             // --- Helper functions: convert wavetable to MI-format, morph waves ---
             void prepareWavetable(const int16_t **wavetables, int currentBank, bool *isWaveTableGood, float **fbuffer, int16_t **ibuffer );
@@ -140,6 +145,7 @@ namespace CTAG {
 	atomic<int32_t> LfoWTxFadeRange_1, cv_LfoWTxFadeRange_1;
 	atomic<int32_t> LfoWTxFadeSpeed_1, cv_LfoWTxFadeSpeed_1;
 	atomic<int32_t> LfoWTxFadeActive_2, trig_LfoWTxFadeActive_2;
+	atomic<int32_t> ModulateSubOscXfade_A, trig_ModulateSubOscXfade_A;
 	atomic<int32_t> LfoTypeWTxFade_2, cv_LfoTypeWTxFade_2;
 	atomic<int32_t> LfoWTxFadeRange_2, cv_LfoWTxFadeRange_2;
 	atomic<int32_t> LfoWTxFadeSpeed_2, cv_LfoWTxFadeSpeed_2;
@@ -148,6 +154,7 @@ namespace CTAG {
 	atomic<int32_t> LfoSAMPxFadeRange_1, cv_LfoSAMPxFadeRange_1;
 	atomic<int32_t> LfoSAMPxFadeSpeed_1, cv_LfoSAMPxFadeSpeed_1;
 	atomic<int32_t> LfoSAMPxFadeActive_2, trig_LfoSAMPxFadeActive_2;
+	atomic<int32_t> ModulateSubOscXfade_C, trig_ModulateSubOscXfade_C;
 	atomic<int32_t> LfoTypeSAMPxFade_2, cv_LfoTypeSAMPxFade_2;
 	atomic<int32_t> LfoSAMPxFadeRange_2, cv_LfoSAMPxFadeRange_2;
 	atomic<int32_t> LfoSAMPxFadeSpeed_2, cv_LfoSAMPxFadeSpeed_2;
