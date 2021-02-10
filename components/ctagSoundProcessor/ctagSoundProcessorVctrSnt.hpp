@@ -34,11 +34,12 @@ namespace CTAG {
             enum trig_states
             {
               e_Gate, e_LfoWTxFadeActive_1, e_LfoWTxFadeActive_2, e_LfoSAMPxFadeActive_1, e_LfoSAMPxFadeActive_2,
-              e_ExclSubOSCmasterPitch, e_ExclWTmasterPitch, e_loop_D, e_loop_B, e_loop_pipo_B, e_PannerOn, e_FilterLFOsquare_A,
-              e_EGvolGate, e_QuantizePitch, e_ExclSMPmasterPitch, e_StereoSplit, e_ScanWavTbl_A, e_ScanWavTbl_C,
-              e_FreqModActive, e_FreqModExclWT, e_FreqModExclSample, e_FilterLFOon_A, e_FilterLFOon_C, e_loop_pipo_D,
-              e_ModulateSubOscXfade_A, e_ModulateSubOscXfade_C, e_FilterLFOon_D, e_EGvolActive, e_FilterLFOsquare_C, e_FreqModExclSubOSC,
-              e_FilterLFOon_B, e_SubOscPWM_A, e_SubOscPWM_C, e_APC_options_max
+              e_SubOsc2VCF_A, e_SubOsc2VCF_C, e_ExclSubOSCmasterPitch, e_ExclWTmasterPitch, e_loop_D, e_loop_B,
+              e_loop_pipo_B, e_PannerOn, e_FilterLFOsquare_A, e_EGvolGate, e_QuantizePitch, e_ExclSMPmasterPitch,
+              e_StereoSplit, e_ScanWavTbl_A, e_ScanWavTbl_C, e_FreqModActive, e_FreqModExclWT, e_FreqModExclSample,
+              e_FilterLFOon_A, e_FilterLFOon_C, e_loop_pipo_D, e_ModulateSubOscXfade_A, e_ModulateSubOscXfade_C,
+              e_FilterLFOon_D, e_EGvolActive, e_FilterLFOsquare_C, e_FreqModExclSubOSC, e_FilterLFOon_B, e_SubOscPWM_A,
+              e_SubOscPWM_C, e_APC_options_max
             };
             int prev_trig_state[e_APC_options_max] = {0};   // Initialize _all_ entries with "low value"
 
@@ -49,8 +50,8 @@ namespace CTAG {
               e_XfadeWT_1, e_XfadeWT_2, e_XfadeSAMP_1, e_XfadeSAMP_2, e_WT_A, e_WT_C, e_PitchMod, e_filterLFO_A, e_filterLFO_C, e_snh_max
             };
             ctagWNoiseGen oscSnH[e_snh_max];        // This is a list of objects, so we must not initilize it (again)
-            float saved_sample[e_snh_max] = {0.f};
-            bool hold_trigger[e_snh_max] = {false};
+            float saved_sample[e_snh_max] = {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+            bool hold_trigger[e_snh_max] = {true, true, true, true, true, true, true, true, true};
 
             // --- Helper functions: convert wavetable to MI-format, morph waves ---
             void prepareWavetable(const int16_t **wavetables, int currentBank, bool *isWaveTableGood, float **fbuffer, int16_t **ibuffer );
@@ -128,9 +129,11 @@ namespace CTAG {
 	atomic<int32_t> PWMintensity, cv_PWMintensity;
 	atomic<int32_t> PWMspeed, cv_PWMspeed;
 	atomic<int32_t> SubOscPWM_A, trig_SubOscPWM_A;
+	atomic<int32_t> SubOsc2VCF_A, trig_SubOsc2VCF_A;
 	atomic<int32_t> PitchSubOsc_A, cv_PitchSubOsc_A;
 	atomic<int32_t> SubOscFade_A, cv_SubOscFade_A;
 	atomic<int32_t> SubOscPWM_C, trig_SubOscPWM_C;
+	atomic<int32_t> SubOsc2VCF_C, trig_SubOsc2VCF_C;
 	atomic<int32_t> PitchSubOsc_C, cv_PitchSubOsc_C;
 	atomic<int32_t> SubOscFade_C, cv_SubOscFade_C;
 	atomic<int32_t> VolWT_A, cv_VolWT_A;

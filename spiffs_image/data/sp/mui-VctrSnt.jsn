@@ -22,10 +22,12 @@
               {"id":"PWMspeed","name":"PWM speed SubOSCs","type":"int","min":0,"max":4095,"step":1}, 
               
               {"id":"SubOscPWM_A","name":"SubOsc Noise/PWM A","type":"bool"},
+              {"id":"SubOsc2VCF_A","name":"Route SubOsc to Filter A n/y","type":"bool"},
               {"id": "PitchSubOsc_A","type": "int","name": "Pitch SubOsc A","min": -3600,"max": 3600,"step": 1},              
               {"id":"SubOscFade_A","name":"SubOscillator Level A","type":"int","min":0,"max":4095,"step":1},  
               
               {"id":"SubOscPWM_C","name":"SubOsc Noise/PWM C","type":"bool"},  
+              {"id":"SubOsc2VCF_C","name":"Route SubOsc to Filter C n/y","type":"bool"},
               {"id": "PitchSubOsc_C","type": "int","name": "Pitch SubOsc C","min": -3600,"max": 3600,"step": 1}, 
               {"id":"SubOscFade_C","name":"SubOscillator Level C","type":"int","min":0,"max":4095,"step":1},  
               
