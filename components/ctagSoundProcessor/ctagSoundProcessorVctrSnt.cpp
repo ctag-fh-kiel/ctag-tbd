@@ -34,7 +34,6 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagSoundProcessorVctrSnt.hpp"
-#include <cstdlib>
 #include "esp_heap_caps.h"
 #include "helpers/ctagNumUtil.hpp"
 #include "plaits/dsp/engine/engine.h"
@@ -42,8 +41,6 @@ respective component folders / files if different from this license.
 using namespace CTAG::SP;
 
 #define GATE_HIGH_NEW       2
-#define GATE_HIGH           1
-#define GATE_LOW            0
 #define GATE_LOW_NEW        -1
 
 #define IDX_OSC_B           1         // Sample-Oscillator on top of Y-Axix for "Vector-Stick"
@@ -77,7 +74,7 @@ inline float ctagSoundProcessorVctrSnt::morph_sine_wave(float sine_val, int morp
     case 5:
       return(-(1.0f-fabsf(sine_val)));            // SINE_TO_TRI_MOD_LEFT
     case 6:
-      return(applySnH(sine_val, enum_sine));      // Sample & Hold
+      return(applySnH(sine_val, enum_sine));      // Sample & Hold, values -1.f ... +1.f
     default:                                      // unexpected value
       return(sine_val);                           // leave unchanged!
   }
@@ -88,8 +85,9 @@ float ctagSoundProcessorVctrSnt::applySnH(float sine_lfo_val, int enum_val)
 {
   if(sine_lfo_val > 0.5f || sine_lfo_val < -0.5f )   // we use this so that we can have equal frequency as with a spared value
   {
-    if(hold_trigger[enum_val])      // Index relies on the member "enum snh_members", we use arrays for the elements needed instead of dynamically instanciating several objects
-      saved_sample[enum_val] = oscSnH[enum_val].Process();
+    if (hold_trigger[enum_val])      // Index relies on the member "enum snh_members", we use arrays for the elements needed instead of dynamically instanciating several objects
+      saved_sample[enum_val] = oscSnH[enum_val].Process();  // values -1.f ... +1.f
+
     hold_trigger[enum_val] = false;
   }
   else
@@ -198,7 +196,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   if( t_QuantizePitch )
     f_MasterPitch = (float)((int)f_MasterPitch);            // We get rid of the values behind the decimal point if quantize is on
 
-  MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 5.f);
+  MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 4.f);
 
   // --- Check if Oscillator-Groups should be excluded from CV pitch-tracking ---
   MK_TRIG_PAR(t_ExclSubOSCmasterPitch, ExclSubOSCmasterPitch);
@@ -333,7 +331,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   if (cv_pitch_A != -1)
     f_pitch_A += data.cv[cv_pitch_A] * 12.f * 5.f;
   MK_FLT_PAR_ABS_SFT(f_tune_A, tune_A, 1200.f, 1.f);
-  const float f_freq_A = plaits::NoteToFrequency(60 + f_tune_A*12.f + f_pitch_A+f_MasterPitch_WT+f_PitchMod_WT) * 0.998f; // ### Changed from 60 to 12
+  const float f_freq_A = plaits::NoteToFrequency(60 + f_tune_A*12.f + f_pitch_A+f_MasterPitch_WT+f_PitchMod_WT) * 0.998f;
 
   // --- Filter settings for wavetable A ---
   MK_FLT_PAR_ABS(fLFOFMFilt_A, lfo2filtfm_A, 4095.f, 1.f);
@@ -496,9 +494,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     }
   }
   // === Sample oscillator B ===
-  romplers[IDX_OSC_B]->params.gate = 1;   // ### To be optimized with real trigger!
-  romplers[IDX_OSC_B]->params.sliceLock = false; // ### latch for trigger instead of Gate?
-
+  romplers[IDX_OSC_B]->params.gate = true;
   MK_INT_PAR_ABS(i_Bank_B, bank_B, 32.f)
   CONSTRAIN(i_Bank_B, 0, 31)
   MK_INT_PAR_ABS(i_Slice_B, slice_B, 32.f)
@@ -512,7 +508,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   float f_Pitch_B = pitch_B;
   if (cv_pitch_B != -1)
     f_Pitch_B += data.cv[cv_pitch_B] * 12.f * 5.f;
-  romplers[IDX_OSC_B]->params.pitch = f_MasterPitch_SMP+f_Pitch_B+f_PitchMod_Sample;  // ### Adjust pitch to masterpitch (f_Frequ?)
+  romplers[IDX_OSC_B]->params.pitch = f_MasterPitch_SMP+f_Pitch_B+f_PitchMod_Sample;
   MK_FLT_PAR_ABS_SFT(f_Tune_B, tune_B, 1200.f, 12.f)
   romplers[IDX_OSC_B]->params.tune = f_Tune_B;
 
@@ -549,9 +545,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   romplers[IDX_OSC_B]->Process(sample_buf_B, bufSz);
 
   // === Sample oscillator D ===
-  romplers[IDX_OSC_D]->params.gate = 1;   // ### To be optimized with real trigger!
-  romplers[IDX_OSC_D]->params.sliceLock = false; // ### latch for trigger instead of Gate?
-
+  romplers[IDX_OSC_D]->params.gate = true;
   MK_INT_PAR_ABS(i_Bank_D, bank_D, 32.f)
   CONSTRAIN(i_Bank_D, 0, 31)
   MK_INT_PAR_ABS(i_Slice_D, slice_D, 32.f)
@@ -564,7 +558,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   float f_Pitch_D = pitch_D;
   if (cv_pitch_D != -1)
     f_Pitch_D += data.cv[cv_pitch_D] * 12.f * 5.f;
-  romplers[IDX_OSC_D]->params.pitch = f_MasterPitch_SMP+f_Pitch_D+f_PitchMod_Sample;  // ### Adjust pitch to masterpitch (f_Frequ?)
+  romplers[IDX_OSC_D]->params.pitch = f_MasterPitch_SMP+f_Pitch_D+f_PitchMod_Sample;
   MK_FLT_PAR_ABS_SFT(f_Tune_D, tune_D, 2048.f, 12.f)
   romplers[IDX_OSC_D]->params.tune = f_Tune_D;
 
@@ -612,7 +606,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // === Panner/Tremolo ===
   MK_TRIG_PAR(t_PannerOn, PannerOn);
   MK_FLT_PAR_ABS(f_PanAmnt_HI, PanAmnt, 4095.f, 1.f);
-  float f_PanAmnt_LO = 1.0-f_PanAmnt_HI;
+  float f_PanAmnt_LO = 1.f-f_PanAmnt_HI;
   MK_FLT_PAR_ABS_MIN_MAX(f_PanFreq, PanFreq, 4095.f, 0.05f, 15.f);
   lfoPanner.SetFrequency(f_PanFreq);
 

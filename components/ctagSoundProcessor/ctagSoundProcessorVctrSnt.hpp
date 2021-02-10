@@ -48,7 +48,7 @@ namespace CTAG {
             {
               e_XfadeWT_1, e_XfadeWT_2, e_XfadeSAMP_1, e_XfadeSAMP_2, e_WT_A, e_WT_C, e_PitchMod, e_filterLFO_A, e_filterLFO_C, e_snh_max
             };
-            ctagWNoiseGen oscSnH[e_snh_max] = {(ctagWNoiseGen)NULL};
+            ctagWNoiseGen oscSnH[e_snh_max];        // This is a list of objects, so we must not initilize it (again)
             float saved_sample[e_snh_max] = {0.f};
             bool hold_trigger[e_snh_max] = {false};
 
