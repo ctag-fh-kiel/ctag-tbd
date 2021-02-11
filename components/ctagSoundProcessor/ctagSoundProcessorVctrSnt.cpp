@@ -54,10 +54,9 @@ using namespace CTAG::SP;
 
 // --- Modify sine-wave for Squarewave/PWM or various modulations (including Pitch-Mod, Filter-Mod, Z-Scan and Vector-Modulation) ---
 #define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
-#define MORPH_SINE(sine_val, morph_mode, enum_sine)   sine_val = morph_sine_wave(sine_val, morph_mode, enum_sine);
 
 // --- Morph sinewave to square, pseudo triangle, sample and hold and similar ---
-inline float ctagSoundProcessorVctrSnt::morph_sine_wave(float sine_val, int morph_mode, int enum_sine)
+float ctagSoundProcessorVctrSnt::morph_sine_wave(float sine_val, int morph_mode, int enum_sine)
 {
   switch (morph_mode)
   {
@@ -267,7 +266,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // --- WaveTable Scan Modulators ---
   MK_FLT_PAR_ABS(f_ScanWavTblA, ScanWavTblA, 4095.f, 1.f);
   MK_TRIG_PAR(t_ScanWavTbl_A, ScanWavTbl_A);
-  MK_TRIG_PAR(t_ModulateSubOscXfade_C, ModulateSubOscXfade_C);
+  MK_TRIG_PAR(t_ModulateSubOscXfade_A, ModulateSubOscXfade_A);
   MK_INT_PAR_ABS(i_LFOzScanType_A, LFOzScanType_A, 7.f)
   CONSTRAIN(i_LFOzScanType_A, 0, 6);      // 7 possible types of LFOs
   MK_FLT_PAR_ABS(f_LFOzScanAmt_A, LFOzScanAmt_A, 4095.f, 1.f);
@@ -275,7 +274,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
 
   MK_FLT_PAR_ABS(f_ScanWavTblC, ScanWavTblC, 4095.f, 1.f);
   MK_TRIG_PAR(t_ScanWavTbl_C, ScanWavTbl_C);
-  MK_TRIG_PAR(t_ModulateSubOscXfade_A, ModulateSubOscXfade_A);
+  MK_TRIG_PAR(t_ModulateSubOscXfade_C, ModulateSubOscXfade_C);
   MK_INT_PAR_ABS(i_LFOzScanType_C, LFOzScanType_C, 7.f)
   CONSTRAIN(i_LFOzScanType_C, 0, 6);      // 7 possible types of LFOs
   MK_FLT_PAR_ABS(f_LFOzScanAmt_C, LFOzScanAmt_C, 4095.f, 1.f);
@@ -308,7 +307,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     }
     lfoPitch.SetFrequency(f_FreqModSpeed);
     float pitchVal = lfoPitch.Process();
-    MORPH_SINE(pitchVal, i_FreqModType, e_PitchMod);    // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    pitchVal = morph_sine_wave(pitchVal, i_FreqModType, e_PitchMod);    // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_PitchMod = pitchVal * f_FreqModAmnt;    // We will add this to each Oscillator, the value is either 0 (if inactive) or the current offset.
 
     // --- Check per category of oscillators if PitchMod should be applied (if not set, we will simply add 0 lateron for no effect) ---
@@ -348,7 +347,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     MK_FLT_PAR_ABS_MIN_MAX(f_LFOSpeed_A, lfospeed_A, 4095.f, 0.05f, 20.f);
     lfo_A.SetFrequency(f_LFOSpeed_A);
     float f_filterLFO_A = lfo_A.Process();
-    MORPH_SINE(f_filterLFO_A, i_LFOfilterType_A, e_filterLFO_A);    // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    f_filterLFO_A = morph_sine_wave(f_filterLFO_A, i_LFOfilterType_A, e_filterLFO_A);    // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     fCut_A += f_filterLFO_A * fLFOFMFilt_A;   // Filter modulation
     CONSTRAIN(fCut_A, 0.f, 1.f);    // limit values
   }
@@ -362,7 +361,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   float f_LFO_WT_A = lfo_WT_A.Process();
   if( t_ScanWavTbl_A)
   {
-    MORPH_SINE(f_LFO_WT_A, i_LFOzScanType_A, e_WT_A);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    f_LFO_WT_A = morph_sine_wave(f_LFO_WT_A, i_LFOzScanType_A, e_WT_A);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_ScanWavTblA += f_LFO_WT_A * f_LFOzScanAmt_A;
     CONSTRAIN(f_ScanWavTblA, 0.f, 1.f)
   }
@@ -379,7 +378,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     if(t_ModulateSubOscXfade_A && t_LfoWTxFadeActive_2)   // Modulate SubOSC a Xfade with LFO 2 of WT XFade?
     {
       lfo_Xfade_SubOSC_A = lfoXfadeWT_2.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
-      MORPH_SINE(lfo_Xfade_SubOSC_A, i_LfoTypeWTxFade_2, e_XfadeWT_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+      lfo_Xfade_SubOSC_A = morph_sine_wave(lfo_Xfade_SubOSC_A, i_LfoTypeWTxFade_2, e_XfadeWT_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
       lfo_Xfade_SubOSC_A *= f_LfoWTxFadeRange_2;
     }
     if( !t_SubOsc2VCF_A )    // Apply Filter _before_ mix of SubOSC with Wavetable
@@ -447,7 +446,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     MK_FLT_PAR_ABS_MIN_MAX(f_LFOSpeed_C, lfospeed_C, 4095.f, 0.05f, 20.f);
     lfo_A.SetFrequency(f_LFOSpeed_C);
     float f_filterLFO_C = lfo_C.Process();
-    MORPH_SINE(f_filterLFO_C, i_LFOfilterType_C, e_filterLFO_C);    // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    f_filterLFO_C = morph_sine_wave(f_filterLFO_C, i_LFOfilterType_C, e_filterLFO_C);    // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     fCut_C += f_filterLFO_C * fLFOFMFilt_C;   // Filter modulation
     CONSTRAIN(fCut_C, 0.f, 1.f);    // limit values
   }
@@ -461,7 +460,8 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   float f_LFO_WT_C = lfo_WT_C.Process();
   if( t_ScanWavTbl_C)
   {
-    MORPH_SINE(f_LFO_WT_C, i_LFOzScanType_C, e_WT_C);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    // MORPH_SINE(f_LFO_WT_C, i_LFOzScanType_C, e_WT_C);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    f_LFO_WT_C = morph_sine_wave(f_LFO_WT_C, i_LFOzScanType_C, e_WT_C);
     f_ScanWavTblC += f_LFO_WT_C * f_LFOzScanAmt_C;
     CONSTRAIN(f_ScanWavTblC, 0.f, 1.f)
   }
@@ -478,7 +478,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
     if(t_ModulateSubOscXfade_C && t_LfoSAMPxFadeActive_2)   // Modulate SubOSC C Xfade with LFO 2 of Sample XFade?
     {
       lfo_Xfade_SubOSC_C = lfoXfadeSample_2.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
-      MORPH_SINE(lfo_Xfade_SubOSC_C, i_LfoTypeSAMPxFade_2, e_XfadeSAMP_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+      lfo_Xfade_SubOSC_C = morph_sine_wave(lfo_Xfade_SubOSC_C, i_LfoTypeSAMPxFade_2, e_XfadeSAMP_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
       lfo_Xfade_SubOSC_C *= f_LfoSAMPxFadeRange_2;
     }
     if(!t_SubOsc2VCF_C)    // Apply filter _before_ mix of SubOSC to wavetable
@@ -647,13 +647,13 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   if(t_LfoWTxFadeActive_1)
   {
     float f_lfo_value_Xfade_WT_1 = lfoXfadeWT_1.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
-    MORPH_SINE(f_lfo_value_Xfade_WT_1, i_LfoTypeWTxFade_1, e_XfadeWT_1);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    f_lfo_value_Xfade_WT_1 = morph_sine_wave(f_lfo_value_Xfade_WT_1, i_LfoTypeWTxFade_1, e_XfadeWT_1);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_XfadeWaveTbls += f_LfoWTxFadeRange_1 * f_lfo_value_Xfade_WT_1;
   }
   if(t_LfoWTxFadeActive_2 && !t_ModulateSubOscXfade_C )   // Modulate SubOSC Xfade instead?
   {
     float f_lfo_value_Xfade_WT_2 = lfoXfadeWT_2.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
-    MORPH_SINE(f_lfo_value_Xfade_WT_2, i_LfoTypeWTxFade_2, e_XfadeWT_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    f_lfo_value_Xfade_WT_2 = morph_sine_wave(f_lfo_value_Xfade_WT_2, i_LfoTypeWTxFade_2, e_XfadeWT_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_XfadeWaveTbls += f_LfoWTxFadeRange_2 * f_lfo_value_Xfade_WT_2;
   }
   CONSTRAIN(f_XfadeWaveTbls,0.f, 1.f);
@@ -662,13 +662,13 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   if(t_LfoSAMPxFadeActive_1)
   {
     float f_lfo_value_Xfade_SMP_1 = lfoXfadeSample_1.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
-    MORPH_SINE(f_lfo_value_Xfade_SMP_1, i_LfoTypeSAMPxFade_1, e_XfadeSAMP_1);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    f_lfo_value_Xfade_SMP_1 = morph_sine_wave(f_lfo_value_Xfade_SMP_1, i_LfoTypeSAMPxFade_1, e_XfadeSAMP_1);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_XfadeSamples += f_LfoSAMPxFadeRange_1 * f_lfo_value_Xfade_SMP_1;
   }
   if(t_LfoSAMPxFadeActive_2 && !t_ModulateSubOscXfade_C )   // Modulate SubOSC Xfade instead?
   {
     float f_lfo_value_Xfade_SMP_2 = lfoXfadeSample_2.Process(); // We apply auto-xfades in the final loop, to gain results as smooth as possible!
-    MORPH_SINE(f_lfo_value_Xfade_SMP_2, i_LfoTypeSAMPxFade_2, e_XfadeSAMP_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
+    f_lfo_value_Xfade_SMP_2 = morph_sine_wave(f_lfo_value_Xfade_SMP_2, i_LfoTypeSAMPxFade_2, e_XfadeSAMP_2);   // Convert sine-wave to square-wave, pseudo-triangle, S&H and so on if desired
     f_XfadeSamples += f_LfoSAMPxFadeRange_2 * f_lfo_value_Xfade_SMP_2;
   }
   CONSTRAIN(f_XfadeSamples, 0.f, 1.f);

@@ -55,7 +55,7 @@ namespace CTAG {
 
             // --- Helper functions: convert wavetable to MI-format, morph waves ---
             void prepareWavetable(const int16_t **wavetables, int currentBank, bool *isWaveTableGood, float **fbuffer, int16_t **ibuffer );
-            inline float morph_sine_wave(float sine_val, int morph_mode, int enum_sine);  // Morph sinewave to square, pseudo triangle, sample and hold and similar
+            float morph_sine_wave(float sine_val, int morph_mode, int enum_sine);  // Morph sinewave to square, pseudo triangle, sample and hold and similar
 
             // --- Wavetable A ---
             ctagSampleRom sample_rom;
