@@ -85,7 +85,9 @@ float ctagSoundProcessorVctrSnt::applySnH(float sine_lfo_val, int enum_val)
   if(sine_lfo_val > 0.5f || sine_lfo_val < -0.5f )   // we use this so that we can have equal frequency as with a spared value
   {
     if (hold_trigger[enum_val])      // Index relies on the member "enum snh_members", we use arrays for the elements needed instead of dynamically instanciating several objects
+    {
       saved_sample[enum_val] = oscSnH[enum_val].Process();  // values -1.f ... +1.f
+    }
     hold_trigger[enum_val] = false;
   }
   else
@@ -192,7 +194,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
 
   MK_TRIG_PAR(t_QuantizePitch, QuantizePitch);
   if( t_QuantizePitch )
-    f_MasterPitch = (float)((int)f_MasterPitch);            // We get rid of the values behind the decimal point if quantize is on
+    f_MasterPitch_CV = (float)((int)f_MasterPitch_CV);     // We get rid of the values behind the decimal point if quantize is on
 
   MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 4.f);
 
