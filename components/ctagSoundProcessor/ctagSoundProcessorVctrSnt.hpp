@@ -4,7 +4,8 @@
 #include "helpers/ctagWNoiseGen.hpp"
 #include "helpers/ctagPNoiseGen.hpp"
 #include "helpers/ctagFastMath.hpp"
-#include "helpers/ctagADEnv.hpp"            // Needed for AD EG (Attack/Decay Enveloppe Generator)
+#include "helpers/ctagADEnv.hpp"            // Needed for AD EG (Attack/Decay Envelope Generator)
+#include "helpers/ctagADSREnv.hpp"          // Needed for ADSR EG (Attack/Decay/Sustain/Release Envelope Generator)
 #include "helpers/ctagSampleRom.hpp"
 #include "helpers/ctagSineSource.hpp"
 #include "helpers/ctagADSREnv.hpp"
@@ -39,7 +40,7 @@ namespace CTAG {
               e_StereoSplit, e_ScanWavTbl_A, e_ScanWavTbl_C, e_FreqModActive, e_FreqModExclWT, e_FreqModExclSample,
               e_FilterLFOon_A, e_FilterLFOon_C, e_loop_pipo_D, e_ModulateSubOscXfade_A, e_ModulateSubOscXfade_C,
               e_FilterLFOon_D, e_EGvolActive, e_FilterLFOsquare_C, e_FreqModExclSubOSC, e_FilterLFOon_B, e_SubOscPWM_A,
-              e_SubOscPWM_C, e_APC_options_max
+              e_SubOscPWM_C, e_EGvolSlow, e_EGvolADSRon, e_APC_options_max
             };
             int prev_trig_state[e_APC_options_max] = {0};   // Initialize _all_ entries with "low value"
 
@@ -89,6 +90,7 @@ namespace CTAG {
 
             // --- Volume EG --
             ctagADEnv vol_eg;
+            ctagADSREnv vol_eg_adsr;
 
             // --- LFOs ---
             ctagSineSource lfoXfadeWT_1;
@@ -232,8 +234,12 @@ namespace CTAG {
 	atomic<int32_t> FreqModSpeed, cv_FreqModSpeed;
 	atomic<int32_t> FreqModAnalog, cv_FreqModAnalog;
 	atomic<int32_t> EGvolActive, trig_EGvolActive;
+	atomic<int32_t> EGvolSlow, trig_EGvolSlow;
 	atomic<int32_t> AttackVol, cv_AttackVol;
 	atomic<int32_t> DecayVol, cv_DecayVol;
+	atomic<int32_t> EGvolADSRon, trig_EGvolADSRon;
+	atomic<int32_t> SustainVol, cv_SustainVol;
+	atomic<int32_t> ReleaseVol, cv_ReleaseVol;
 	atomic<int32_t> PannerOn, trig_PannerOn;
 	atomic<int32_t> PanAmnt, cv_PanAmnt;
 	atomic<int32_t> PanFreq, cv_PanFreq;

@@ -170,8 +170,12 @@
           "id": "VolEnv", "name": "Volume Envelope", "type": "group", "params":  
            [
                {"id":"EGvolActive","name":"Volume EG active n/y","type":"bool"},
+               {"id":"EGvolSlow","name":"Slow Envelope n/y","type":"bool"},
                {"id":"AttackVol","name":"Attack","type":"int","min":0,"max":4095,"step":1},
-               {"id":"DecayVol","name":"Decay","type":"int","min":0,"max":4095,"step":1}
+               {"id":"DecayVol","name":"Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGvolADSRon","name":"Use ADSR-logic n/y","type":"bool"},
+               {"id":"SustainVol","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ReleaseVol","name":"Release","type":"int","min":0,"max":4095,"step":1}
            ]
        },
        {  

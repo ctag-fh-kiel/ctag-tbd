@@ -107,7 +107,7 @@ inline int ctagSoundProcessorVctrSnt::process_param_trig(const ProcessData &data
       if (data.trig[trig_myparm] == 0)                      // HIGH if 0
         return (GATE_HIGH_NEW);          // New trigger
       else
-        return (GATE_LOW_NEW);         // Trigger released
+        return (GATE_LOW_NEW);           // Trigger released
     }
   }
   else                        // We may have a trigger set by activating the button via the GUI
@@ -622,14 +622,46 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   romplers[IDX_OSC_D]->Process(sample_buf_D, bufSz);
 
   // === Volume Envelope ===
-  MK_FLT_PAR_ABS(f_AttackVol, AttackVol, 4095.f, 5.f);
-  vol_eg.SetAttack(f_AttackVol);
-  MK_FLT_PAR_ABS(f_DecayVol, DecayVol, 4095.f, 50.f);
-  vol_eg.SetDecay(f_DecayVol);
+  float vol_eg_process = 0.f; // If active we also "precalculate" the Process() values for our main loop (Vol EG first) - this might be slightly less accurate, but uses about 1/32 less performance for these functions
   MK_TRIG_PAR(t_EGvolActive, EGvolActive);
-  if (t_EGvolActive && t_Gate == GATE_HIGH_NEW)
-    vol_eg.Trigger();
+  if( t_EGvolActive )     // Is the envelope activated anyways?
+  {
+    MK_TRIG_PAR(t_EGvolSlow, EGvolSlow);
+    MK_TRIG_PAR(t_EGvolADSRon, EGvolADSRon);
+    MK_FLT_PAR_ABS(f_AttackVol, AttackVol, 4095.f, 10.f);
+    MK_FLT_PAR_ABS(f_DecayVol, DecayVol, 4095.f, 10.f);
+    MK_FLT_PAR_ABS(f_SustainVol, SustainVol, 4095.f, 1.f);
+    MK_FLT_PAR_ABS(f_ReleaseVol, ReleaseVol, 4095.f, 10.f);
+    if(t_EGvolSlow)   // We extend the EG-times (for AD _and_ ADSR) if slow envelope is selected!
+    {
+      f_AttackVol *= 30.f;
+      f_DecayVol *= 30.f;
+      f_ReleaseVol *= 30.f;
+    }
+    // --- Decide if to use ADSR or AD envelope
+    if(t_EGvolADSRon)   // ADSR mode
+    {
+      vol_eg_adsr.SetAttack(f_AttackVol);
+      vol_eg_adsr.SetDecay(f_DecayVol);
+      vol_eg_adsr.SetSustain(f_SustainVol);
+      vol_eg_adsr.SetRelease(f_ReleaseVol);
 
+      if( t_Gate > 0 )      // values range from -1...+2
+        vol_eg_adsr.Gate(true);
+      else
+        vol_eg_adsr.Gate(false);
+      vol_eg_process = vol_eg_adsr.Process();   // Precalculate current Volume EG, it will be added in the "main" DSP-loop below
+    }
+    else  // AD mode
+    {
+      vol_eg.SetAttack(f_AttackVol);
+      vol_eg.SetDecay(f_DecayVol);
+
+      if (t_Gate == GATE_HIGH_NEW)    // New trigger encountered?
+        vol_eg.Trigger();
+      vol_eg_process = vol_eg.Process();   // Precalculate current Volume EG, it will be added in the "main" DSP-loop below
+    }
+  }
   // === Panner/Tremolo ===
   MK_TRIG_PAR(t_PannerOn, PannerOn);
   MK_FLT_PAR_ABS(f_PanAmnt_HI, PanAmnt, 4095.f, 1.f);
@@ -637,8 +669,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS_MIN_MAX(f_PanFreq, PanFreq, 4095.f, 0.05f, 15.f);
   lfoPanner.SetFrequency(f_PanFreq);
 
-  // --- We "precalculate" the Process() values for our main loop (Vol EG first) - this might be slightly less accurate, but uses about 1/32 less performance for these functions ---
-  float vol_eg_process = vol_eg.Process();
+
 
   // --- Precalculate values for Panner ---
   float panValue = (fastsin(lfoPanner.Process())+1.f) * M_PI / 4.f;             // Panning based on the algorithm found here: https://audioordeal.co.uk/how-to-build-a-vst-lesson-2-autopanner/
@@ -800,7 +831,10 @@ ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
   }
   // --- Initialize Volume Envelope ---
   vol_eg.SetSampleRate(44100.f/ bufSz);    // Sync Env with our audio-processing
-  vol_eg.SetModeExp();                   // Logarithmic scaling
+  vol_eg.SetModeExp();  // Logarithmic scaling
+  vol_eg_adsr.SetSampleRate(44100.f/ bufSz);    // Optional ADSR-EG: sync Env with our audio-processing
+  vol_eg_adsr.SetModeExp();                     // Logarithmic scaling
+  vol_eg_adsr.Reset();
 
   // --- Suboscillators (PWM, set outside main loop) ---
   oscSub_A.SetSampleRate(44100.f / bufSz);
@@ -1093,10 +1127,18 @@ void ctagSoundProcessorVctrSnt::knowYourself()
 	pMapCv.emplace("FreqModAnalog", [&](const int val){ cv_FreqModAnalog = val;});
 	pMapPar.emplace("EGvolActive", [&](const int val){ EGvolActive = val;});
 	pMapTrig.emplace("EGvolActive", [&](const int val){ trig_EGvolActive = val;});
+	pMapPar.emplace("EGvolSlow", [&](const int val){ EGvolSlow = val;});
+	pMapTrig.emplace("EGvolSlow", [&](const int val){ trig_EGvolSlow = val;});
 	pMapPar.emplace("AttackVol", [&](const int val){ AttackVol = val;});
 	pMapCv.emplace("AttackVol", [&](const int val){ cv_AttackVol = val;});
 	pMapPar.emplace("DecayVol", [&](const int val){ DecayVol = val;});
 	pMapCv.emplace("DecayVol", [&](const int val){ cv_DecayVol = val;});
+	pMapPar.emplace("EGvolADSRon", [&](const int val){ EGvolADSRon = val;});
+	pMapTrig.emplace("EGvolADSRon", [&](const int val){ trig_EGvolADSRon = val;});
+	pMapPar.emplace("SustainVol", [&](const int val){ SustainVol = val;});
+	pMapCv.emplace("SustainVol", [&](const int val){ cv_SustainVol = val;});
+	pMapPar.emplace("ReleaseVol", [&](const int val){ ReleaseVol = val;});
+	pMapCv.emplace("ReleaseVol", [&](const int val){ cv_ReleaseVol = val;});
 	pMapPar.emplace("PannerOn", [&](const int val){ PannerOn = val;});
 	pMapTrig.emplace("PannerOn", [&](const int val){ trig_PannerOn = val;});
 	pMapPar.emplace("PanAmnt", [&](const int val){ PanAmnt = val;});
