@@ -210,7 +210,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   MK_FLT_PAR_ABS( f_PWMintensity, PWMintensity, 4095.f, 1.f);
   MK_FLT_PAR_ABS_MIN_MAX( f_PWMspeed, PWMspeed, 4095.f, 0.05f, 20.f);
   lfoPWM.SetFrequency(f_PWMspeed);
-  float f_LFO_pwm = lfoPWM.Process();   // This is a "free running" LFO, we don't use other depencenties to not complicate things, even if it's unused
+  float f_LFO_pwm = lfoPWM.Process();   // This is a "free running" LFO, we don't use other dependancies to not complicate things, even if it's unused
 
   MK_TRIG_PAR(t_SubOscPWM_A, SubOscPWM_A);
   MK_TRIG_PAR(t_SubOsc2VCF_A, SubOsc2VCF_A);
