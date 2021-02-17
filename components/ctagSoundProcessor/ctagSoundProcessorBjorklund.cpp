@@ -138,8 +138,10 @@ void ctagSoundProcessorBjorklund::Process(const ProcessData &data)
   static unsigned int my_x = 0;
 
   if( t_Saturate == GATE_HIGH_NEW )
-    my_x = ++my_x % 12;
-
+  {  
+    my_x++;
+    my_x = my_x % 12;
+  }
   Phasedist_controlChange(pd_data, 31, i_CC_val, 0);
 
   for(uint32_t i = 0; i < bufSz; i++)
