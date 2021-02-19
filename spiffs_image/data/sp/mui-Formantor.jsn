@@ -1,0 +1,47 @@
+{
+   "id": "Formantor", "isStereo": false, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
+   [
+       {  
+          "id": "Global", "name": "Global", "type": "group", "params":  
+           [
+               {"id":"Gate","name":"Gate/Trigger n/y","type":"bool"},
+               {"id": "MasterPitch","type": "int","name": "Master Pitch","min": -48,"max": 48,"step": 1},
+               {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+          "id": "Voice", "name": "Voice ('Blackkey logic': 5 keys trigger the formants A,E,I,O,U / Pitch is on white keys)", "type": "group", "params":  
+           [
+               {"id":"PDamount","name":"PD amount","type":"int","min":0,"max":127,"step":1},
+               {"id":"FormantFilterOn","name":"Formant Filter n/y","type":"bool"},
+               {"id":"BlackKeyLogic","name":"'Blackkey logic' on n/y","type":"bool"},
+               {"id":"FormantLock","name":"Formantchange on trigger only n/y","type":"bool"},
+               {"id":"FormantSelect","name":"Formant select for current note (A,E,I,O,U)","type":"int","min":1,"max":5,"step":1},   
+               {"id":"FormantBlendingOn","name":"Allow Formant blending n/y","type":"bool"},
+               {"id":"FormantBlend","name":"Formant blend adjacent","type":"int","min":-2048,"max":2047,"step":1}
+           ]   
+       },
+       {
+          "id": "Tremolo", "name": "Tremolo", "type": "group", "params":  
+           [
+               {"id":"TremoloActive","name":"Tremolo active n/y","type":"bool"}, 
+               {"id":"TremoloAfterFormant","name":"Tremolo after formant filtering n/y","type":"bool"}, 
+               {"id":"TremoloAttack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloSpeed","name":"Tremolo Speed","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloAmount","name":"Tremolo Amount","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+      {
+          "id": "Envelope", "name": "Envelope", "type": "group", "params":  
+           [
+               {"id":"EGvolActive","name":"Volume envelope active n/y","type":"bool"}, 
+               {"id":"EGvolSlow","name":"Slow EG n/y","type":"bool"}, 
+               {"id":"Attack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Decay","name":"Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADSRon","name":"ADSR n/y","type":"bool"},
+               {"id":"Sustain","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Release","name":"Release","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       }
+   ] 
+}
