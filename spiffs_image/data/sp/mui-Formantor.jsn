@@ -12,13 +12,11 @@
        {
           "id": "Voice", "name": "Voice ('Blackkey logic': 5 keys trigger the formants A,E,I,O,U / Pitch is on white keys)", "type": "group", "params":  
            [
-               {"id":"PDamount","name":"PD amount","type":"int","min":0,"max":127,"step":1},
+               {"id":"PDamount","name":"PD amount","type":"int","min":0,"max":4095,"step":1},
                {"id":"FormantFilterOn","name":"Formant Filter n/y","type":"bool"},
                {"id":"BlackKeyLogic","name":"'Blackkey logic' on n/y","type":"bool"},
                {"id":"FormantLock","name":"Formantchange on trigger only n/y","type":"bool"},
-               {"id":"FormantSelect","name":"Formant select for current note (A,E,I,O,U)","type":"int","min":1,"max":5,"step":1},   
-               {"id":"FormantBlendingOn","name":"Allow Formant blending n/y","type":"bool"},
-               {"id":"FormantBlend","name":"Formant blend adjacent","type":"int","min":-2048,"max":2047,"step":1}
+               {"id":"FormantSelect","name":"Formant select for current note (A,E,I,O,U)","type":"int","min":1,"max":5,"step":1} 
            ]   
        },
        {

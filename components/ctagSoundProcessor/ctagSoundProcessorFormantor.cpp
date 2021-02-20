@@ -48,8 +48,8 @@ using namespace CTAG::SP;
 #define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
 
 // --- VULT "Library for TBD" ---
-#include "../vult/vult_lib4tbd.cpp"
-#include "../vult/vultin.cpp"
+#include "vult_formantor.cpp"
+#include "vultin.cpp"
 
 
 // --- Process trigger signals and keep their state internally ---
@@ -80,21 +80,6 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
   return(prev_trig_state[prev_trig_state_id]);            // No change (1 for active, 0 for inactive)
 }
 
-// --- Formant filter function h / higher than current ---
-float ctagSoundProcessorFormantor::formant_filter(float in)     // Vowel IDs are 0...4: A, E, I, O, U
-{
-  float res = (float) ( coeff_cur[0] * in +
-                        coeff_cur[1] * vowel_mem[0] + coeff_cur[2] * vowel_mem[1] + coeff_cur[3] * vowel_mem[2] +
-                        coeff_cur[4] * vowel_mem[3] + coeff_cur[5] * vowel_mem[4] + coeff_cur[6] * vowel_mem[5] +
-                        coeff_cur[7] * vowel_mem[6] + coeff_cur[8] * vowel_mem[7] + coeff_cur[9] * vowel_mem[8] + coeff_cur[10] * vowel_mem[9] );
-
-  vowel_mem[9] = vowel_mem[8]; vowel_mem[8] = vowel_mem[7]; vowel_mem[7] = vowel_mem[6]; vowel_mem[6] = vowel_mem[5]; vowel_mem[5] = vowel_mem[4];
-  vowel_mem[4] = vowel_mem[3]; vowel_mem[3] = vowel_mem[2]; vowel_mem[2] = vowel_mem[1]; vowel_mem[1] = vowel_mem[0];
-
-  vowel_mem[0] = res;
-  return res;
-}
-
 // --- Main processing function for Formantor ---
 void ctagSoundProcessorFormantor::Process(const ProcessData &data)
 {
@@ -104,6 +89,7 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
 
   // === Global section ===
   MK_TRIG_PAR(t_Gate, Gate);
+  MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 1.f);
 
   // === Voice section ===
   MK_TRIG_PAR(t_FormantFilterOn, FormantFilterOn);
@@ -113,11 +99,10 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   if (cv_MasterPitch != -1)                                 // Please note: we save the CV-assciated pitch here seperately, this may be excluded per Oscillator-Group via an option!
     f_MasterPitch_CV = f_MasterPitch+data.cv[cv_MasterPitch] * 60.f;    // We expect "MIDI"-notes 0-59 for 5 octaves (5*12) which fit into 0...+5V with 1V/Oct logic!
 
-  int current_note = ((int)f_MasterPitch_CV)+48;
-  CONSTRAIN(current_note, 0, 127);
+  float current_note = f_MasterPitch_CV+48.f;
+  int current_note_int = (int)current_note;
 
-  MK_INT_PAR_ABS(i_PDamount, PDamount, 128.f);
-  CONSTRAIN(i_PDamount, 0, 127);
+  MK_FLT_PAR_ABS(f_PDamount, PDamount, 4095.f, 1.f);
 
   MK_INT_PAR_ABS(i_FormantSelect, FormantSelect,  6.f);
   i_FormantSelect--;    // GUI shows values 1-5 for formants a,e,i,o,u, we use 0-4 internally!
@@ -129,14 +114,14 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   MK_TRIG_PAR( t_BlackKeyLogic, BlackKeyLogic );
   if( t_BlackKeyLogic )    // We may encounter a black key for formant change
   {
-    int my_formant = formant_trigger[current_note%12];
+    int my_formant = formant_trigger[current_note_int%12];
     if( my_formant != -1)     // We found a new formant via a black key
     {
       formant_selected = my_formant;
-      current_note = note_save;   // We had a black key, so reset the current note to the one we remembered before.
+      current_note_int = note_save;   // We had a black key, so reset the current note to the one we remembered before.
     }
     else
-      note_save = current_note;   // We had no black key, so remember it for later!
+      note_save = current_note_int;   // We had no black key, so remember it for later!
   }
   else    // No black key logic
     formant_selected = i_FormantSelect;   // Take formants from the slider / CV instead
@@ -152,9 +137,6 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   else
     i_FormantSelect_save = formant_selected;     // We save the current formant in case formant-selection gets locked to triggering lateron!
 
-
-  MK_TRIG_PAR( t_FormantBlendingOn, FormantBlendingOn );
-  MK_FLT_PAR_ABS_SFT(f_FormantBlend, FormantBlend, 2048.f, 1.f); // Blend values: -1...0...1 to blend current with adjecent lower or higher formant
 
   // === Volume Envelope section ===
   float vol_eg_process = 1.f;              // Set to max, in case if EG is unused this will work, too!
@@ -199,26 +181,19 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   }
 
   // --- Precalculation for realtime DSP loop ---
-  Phasedist_controlChange(pd_data, 31, i_PDamount, 0);
-  Phasedist_noteOn(pd_data, current_note, 110, 0);
+  Phasedist_real_controlChange(pd_data, 31, f_PDamount, 0);
+  Phasedist_real_noteOn(pd_data, current_note, 110, 0);
 
   int vowel_id = formant_selected;  // values 1-5 on the GUI and maybe 0 or 1-n from a keyboard
 
-  // --- Set the current vowel-type as array of coeffencies  ---
-  coeff_cur = coeff_array[vowel_id];  // member variable will be used by formant-filter in main loop
 
-  float vowel_factor = 1.f;
-  if( vowel_id == 0 )
-  {
-    vowel_factor = 0.7f;   // Formant A is much louder, we lower the volume!
-    printf("vowel_factor is %f \n", vowel_factor );
-  }
   // --- Realtime DSP output loop ---
   for(uint32_t i = 0; i < bufSz; i++)
   {
-    f_val_result = Phasedist_process(pd_data,0);
+    f_val_result = Phasedist_real_process(pd_data,0);
     if( t_FormantFilterOn )
-      f_val_result = formant_filter(f_val_result) * vowel_factor;
+      f_val_result = Rescomb_process(rescomb_data, f_val_result, 0.5, 0.4f, 0.6f); // Pitch, Tone, Resonance
+      ; // To be implemented ###
     
     f_val_result *= vol_eg_process;                 // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive)
     data.buf[i * 2 + processCh] = f_val_result;     // Mono channel output for plugin in slot 1 and/or in slot 2
@@ -234,8 +209,10 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
   LoadPreset(0);
 
   // --- VULT ---
-  Phasedist_process_init(pd_data);
-  Phasedist_default(pd_data);
+  Phasedist_real_process_init(pd_data);
+  Phasedist_real_default(pd_data);              // Enable default settings for PD-Synth
+
+  Rescomb_process_init(rescomb_data);
 
   // --- Initialize Volume Envelope ---
   vol_eg_ad.SetSampleRate(44100.f/ bufSz);    // Sync Env with our audio-processing
@@ -271,10 +248,6 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapTrig.emplace("FormantLock", [&](const int val){ trig_FormantLock = val;});
 	pMapPar.emplace("FormantSelect", [&](const int val){ FormantSelect = val;});
 	pMapCv.emplace("FormantSelect", [&](const int val){ cv_FormantSelect = val;});
-	pMapPar.emplace("FormantBlendingOn", [&](const int val){ FormantBlendingOn = val;});
-	pMapTrig.emplace("FormantBlendingOn", [&](const int val){ trig_FormantBlendingOn = val;});
-	pMapPar.emplace("FormantBlend", [&](const int val){ FormantBlend = val;});
-	pMapCv.emplace("FormantBlend", [&](const int val){ cv_FormantBlend = val;});
 	pMapPar.emplace("TremoloActive", [&](const int val){ TremoloActive = val;});
 	pMapTrig.emplace("TremoloActive", [&](const int val){ trig_TremoloActive = val;});
 	pMapPar.emplace("TremoloAfterFormant", [&](const int val){ TremoloAfterFormant = val;});
