@@ -80,48 +80,18 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
   return(prev_trig_state[prev_trig_state_id]);            // No change (1 for active, 0 for inactive)
 }
 
-// --- Formant filter function l / lower than current ---
-float ctagSoundProcessorFormantor::formant_filter_l(float in, int vowelnum)     // Vowel IDs are 0...4: A, E, I, O, U
-{
-  float res = (float) ( coeff[vowelnum][0] * in +
-    coeff[vowelnum][1] * vowel_m_l[0] + coeff[vowelnum][2] * vowel_m_l[1] + coeff[vowelnum][3] * vowel_m_l[2] + coeff[vowelnum][4] * vowel_m_l[3] +
-    coeff[vowelnum][5] * vowel_m_l[4] + coeff[vowelnum][6] * vowel_m_l[5] + coeff[vowelnum][7] * vowel_m_l[6] + coeff[vowelnum][8] * vowel_m_l[7] +
-    coeff[vowelnum][9] * vowel_m_l[8] +  coeff[vowelnum][10] * vowel_m_l[9] );
-
-  vowel_m_l[9] = vowel_m_l[8]; vowel_m_l[8] = vowel_m_l[7]; vowel_m_l[7] = vowel_m_l[6]; vowel_m_l[6] = vowel_m_l[5]; vowel_m_l[5] = vowel_m_l[4];
-  vowel_m_l[4] = vowel_m_l[3]; vowel_m_l[3] = vowel_m_l[2]; vowel_m_l[2] = vowel_m_l[1]; vowel_m_l[1] = vowel_m_l[0];
-
-  vowel_m_l[0] = (double)res;
-  return res;
-}
-
-// --- Formant filter function c / current (optional blending with lower or higher formant: e.g. A<->E<->I or e.g. O<->U<->A or e.g. U<->A<->E) ---
-float ctagSoundProcessorFormantor::formant_filter_c(float in, int vowelnum)     // Vowel IDs are 0...4: A, E, I, O, U
-{
-  float res = (float) ( coeff[vowelnum][0] * in +
-                        coeff[vowelnum][1] * vowel_m_c[0] + coeff[vowelnum][2] * vowel_m_c[1] + coeff[vowelnum][3] * vowel_m_c[2] + coeff[vowelnum][4] * vowel_m_c[3] +
-                        coeff[vowelnum][5] * vowel_m_c[4] + coeff[vowelnum][6] * vowel_m_c[5] + coeff[vowelnum][7] * vowel_m_c[6] + coeff[vowelnum][8] * vowel_m_c[7] +
-                        coeff[vowelnum][9] * vowel_m_c[8] +  coeff[vowelnum][10] * vowel_m_c[9] );
-
-  vowel_m_c[9] = vowel_m_c[8]; vowel_m_c[8] = vowel_m_c[7]; vowel_m_c[7] = vowel_m_c[6]; vowel_m_c[6] = vowel_m_c[5]; vowel_m_c[5] = vowel_m_c[4];
-  vowel_m_c[4] = vowel_m_c[3]; vowel_m_c[3] = vowel_m_c[2]; vowel_m_c[2] = vowel_m_c[1]; vowel_m_c[1] = vowel_m_c[0];
-
-  vowel_m_c[0] = (double)res;
-  return res;
-}
-
 // --- Formant filter function h / higher than current ---
-float ctagSoundProcessorFormantor::formant_filter_h(float in, int vowelnum)     // Vowel IDs are 0...4: A, E, I, O, U
+float ctagSoundProcessorFormantor::formant_filter(float in)     // Vowel IDs are 0...4: A, E, I, O, U
 {
-  float res = (float) ( coeff[vowelnum][0] * in +
-                        coeff[vowelnum][1] * vowel_m_h[0] + coeff[vowelnum][2] * vowel_m_h[1] + coeff[vowelnum][3] * vowel_m_h[2] + coeff[vowelnum][4] * vowel_m_h[3] +
-                        coeff[vowelnum][5] * vowel_m_h[4] + coeff[vowelnum][6] * vowel_m_h[5] + coeff[vowelnum][7] * vowel_m_h[6] + coeff[vowelnum][8] * vowel_m_h[7] +
-                        coeff[vowelnum][9] * vowel_m_h[8] +  coeff[vowelnum][10] * vowel_m_h[9] );
+  float res = (float) ( coeff_cur[0] * in +
+                        coeff_cur[1] * vowel_mem[0] + coeff_cur[2] * vowel_mem[1] + coeff_cur[3] * vowel_mem[2] +
+                        coeff_cur[4] * vowel_mem[3] + coeff_cur[5] * vowel_mem[4] + coeff_cur[6] * vowel_mem[5] +
+                        coeff_cur[7] * vowel_mem[6] + coeff_cur[8] * vowel_mem[7] + coeff_cur[9] * vowel_mem[8] + coeff_cur[10] * vowel_mem[9] );
 
-  vowel_m_h[9] = vowel_m_h[8]; vowel_m_h[8] = vowel_m_h[7]; vowel_m_h[7] = vowel_m_h[6]; vowel_m_h[6] = vowel_m_h[5]; vowel_m_h[5] = vowel_m_h[4];
-  vowel_m_h[4] = vowel_m_h[3]; vowel_m_h[3] = vowel_m_h[2]; vowel_m_h[2] = vowel_m_h[1]; vowel_m_h[1] = vowel_m_h[0];
+  vowel_mem[9] = vowel_mem[8]; vowel_mem[8] = vowel_mem[7]; vowel_mem[7] = vowel_mem[6]; vowel_mem[6] = vowel_mem[5]; vowel_mem[5] = vowel_mem[4];
+  vowel_mem[4] = vowel_mem[3]; vowel_mem[3] = vowel_mem[2]; vowel_mem[2] = vowel_mem[1]; vowel_mem[1] = vowel_mem[0];
 
-  vowel_m_h[0] = (double)res;
+  vowel_mem[0] = res;
   return res;
 }
 
@@ -233,48 +203,23 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   Phasedist_noteOn(pd_data, current_note, 110, 0);
 
   int vowel_id = formant_selected;  // values 1-5 on the GUI and maybe 0 or 1-n from a keyboard
-  int vowel_id_diff = 0;
-  float f_blendVal = 1.f;
-  float f_blendVal_diff = 1.f;
 
-  if( t_FormantBlendingOn && f_FormantBlend != 0.f )  // We will need this for formant-blending further downward and calculate it outside the main loop for better performance
+  // --- Set the current vowel-type as array of coeffencies  ---
+  coeff_cur = coeff_array[vowel_id];  // member variable will be used by formant-filter in main loop
+
+  float vowel_factor = 1.f;
+  if( vowel_id == 0 )
   {
-    if( f_FormantBlend > 0 )  // Format blending "to the right" required...
-    {
-      f_blendVal = f_FormantBlend;
-      vowel_id_diff = (vowel_id+1) % 5;
-    }
-    else  // Format-blending "to the left" required...
-    {
-      f_blendVal = -1.f*f_FormantBlend;   // We need a positive value for mixing!
-      vowel_id_diff = (vowel_id-1) % 5;
-      if( vowel_id_diff < 0)
-        vowel_id_diff = 4;    // The lowest value on the left is 0, so for wraparound -1 it will be 4 because values are 0...4
-    }
-    f_blendVal_diff = 1.f - f_blendVal;   // Mixing-factor
+    vowel_factor = 0.7f;   // Formant A is much louder, we lower the volume!
+    printf("vowel_factor is %f \n", vowel_factor );
   }
-
   // --- Realtime DSP output loop ---
   for(uint32_t i = 0; i < bufSz; i++)
   {
     f_val_result = Phasedist_process(pd_data,0);
     if( t_FormantFilterOn )
-    {
-      f_val_result = formant_filter_c(f_val_result, vowel_id);
-      if( t_FormantBlendingOn && f_FormantBlend != 0.f )
-      {
-        if( f_FormantBlend > 0 ) // blend current formant with the next lower one
-        {
-          f_formant_h = formant_filter_h(f_val_result, vowel_id_diff);
-          f_val_result = (f_val_result*f_blendVal_diff + f_formant_h*f_blendVal) / 2.f;  // Mix current with next higher formant, depending on Slider-setting / CV
-        }
-        else    // blend current formant with the next lower one
-        {
-          f_formant_l = formant_filter_l(f_val_result, vowel_id_diff);
-          f_val_result = (f_val_result*f_blendVal_diff + f_formant_l*f_blendVal) / 2.f;  // Mix current with next higher formant, depending on Slider-setting / CV
-        }
-      }
-    }
+      f_val_result = formant_filter(f_val_result) * vowel_factor;
+    
     f_val_result *= vol_eg_process;                 // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive)
     data.buf[i * 2 + processCh] = f_val_result;     // Mono channel output for plugin in slot 1 and/or in slot 2
   }

@@ -24,21 +24,16 @@ namespace CTAG {
             virtual void knowYourself() override;
 
             // --- Vowel/formant filter ---
-            int i_FormantSelect_save = 0;
-            float formant_filter_l(float input_for_filter, int vowel_id);   // vowel_ids are 0...4 for A, E, I, O, U
-            float formant_filter_c(float input_for_filter, int vowel_id);   // vowel_ids are 0...4 for A, E, I, O, U
-            float formant_filter_h(float input_for_filter, int vowel_id);   // vowel_ids are 0...4 for A, E, I, O, U
-            const double coeff[5][11]=
-            { // --- A, E, I, O, U ---
-              { 8.11044e-06, 8.943665402, -36.83889529, 92.01697887, -154.337906, 181.6233289, -151.8651235, 89.09614114, -35.10298511, 8.388101016, -0.923313471 },
-              { 4.36215e-06, 8.90438318, -36.55179099, 91.05750846, -152.422234, 179.1170248, -149.6496211, 87.78352223, -34.60687431, 8.282228154, -0.914150747 },
-              { 3.33819e-06, 8.893102966, -36.49532826, 90.96543286, -152.4545478, 179.4835618, -150.315433, 88.43409371, -34.98612086, 8.407803364, -0.932568035 },
-              { 1.13572e-06, 8.994734087, -37.2084849, 93.22900521, -156.6929844, 184.596544, -154.3755513, 90.49663749, -35.58964535, 8.478996281, -0.929252233 },
-              { 4.09431e-07, 8.997322763, -37.20218544, 93.11385476, -156.2530937, 183.7080141, -153.2631681, 89.59539726, -35.12454591, 8.338655623, -0.910251753 }
-            };
-            double vowel_m_l[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}; // Formant one lower than current formant
-            double vowel_m_c[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}; // Current Formant (blending e.g. A<->E<->I or e.g. O<->U<->A or e.g. U<->A<->E)
-            double vowel_m_h[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}; // Formant one higher than current formant
+            int i_FormantSelect_save = 0;         // This is a buffer variable in case we allow switching of formants only on note-change
+            float formant_filter(float input_for_filter);   // vowel_ids are 0...4 for A, E, I, O, U -> we use seperate arrays for faster processing!
+            const double coeff_a[11] = { 8.11044e-06, 8.943665402, -36.83889529, 92.01697887, -154.337906, 181.6233289, -151.8651235, 89.09614114, -35.10298511, 8.388101016, -0.923313471 };
+            const double coeff_e[11] = { 4.36215e-06, 8.90438318, -36.55179099, 91.05750846, -152.422234, 179.1170248, -149.6496211, 87.78352223, -34.60687431, 8.282228154, -0.914150747 };
+            const double coeff_i[11] = { 3.33819e-06, 8.893102966, -36.49532826, 90.96543286, -152.4545478, 179.4835618, -150.315433, 88.43409371, -34.98612086, 8.407803364, -0.932568035 };
+            const double coeff_o[11] = { 1.13572e-06, 8.994734087, -37.2084849, 93.22900521, -156.6929844, 184.596544, -154.3755513, 90.49663749, -35.58964535, 8.478996281, -0.929252233 };
+            const double coeff_u[11] = { 4.09431e-07, 8.997322763, -37.20218544, 93.11385476, -156.2530937, 183.7080141, -153.2631681, 89.59539726, -35.12454591, 8.338655623, -0.910251753 };
+            const double* coeff_cur = (const double *)coeff_a;
+            const double* coeff_array[5] = { (const double *)coeff_a, (const double *)coeff_e, (const double *)coeff_i, (const double *)coeff_o, (const double *)coeff_u };
+            float vowel_mem[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}; // Current Formant (blending e.g. A<->E<->I or e.g. O<->U<->A or e.g. U<->A<->E)
 
             // --- Keyboard logic[s] to switch formants ---
             int formant_trigger[12] = {-1,0,-1,1,-1,-1,2,-1,3,-1,4,-1};   // Black keys on a keyboard
