@@ -192,7 +192,7 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   {
     f_val_result = Phasedist_real_process(pd_data,0);
     if( t_FormantFilterOn )
-      f_val_result = Rescomb_process(rescomb_data, f_val_result, 0.5, 0.4f, 0.6f); // Pitch, Tone, Resonance
+      // ### f_val_result = Rescomb_process(rescomb_data, f_val_result, 0.5, 0.4f, 0.6f); // Pitch, Tone, Resonance
       ; // To be implemented ###
     
     f_val_result *= vol_eg_process;                 // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive)
@@ -212,7 +212,7 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
   Phasedist_real_process_init(pd_data);
   Phasedist_real_default(pd_data);              // Enable default settings for PD-Synth
 
-  Rescomb_process_init(rescomb_data);
+  // Rescomb_process_init(rescomb_data);
 
   // --- Initialize Volume Envelope ---
   vol_eg_ad.SetSampleRate(44100.f/ bufSz);    // Sync Env with our audio-processing
