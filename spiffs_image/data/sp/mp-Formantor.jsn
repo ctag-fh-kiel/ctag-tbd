@@ -1,1 +1,110 @@
-{"activePatch":0,"patches":[{"name":"Default","params":[{"id":"Gate","current":0,"trig":-1},{"id":"MasterPitch","current":48,"cv":-1},{"id":"Volume","current":2047,"cv":-1},{"id":"PDamount","current":2047,"cv":-1},{"id":"FormantFilterOn","current":0,"trig":-1},{"id":"BlackKeyLogic","current":0,"trig":-1},{"id":"FormantLock","current":0,"trig":-1},{"id":"FormantSelect","current":2,"cv":-1},{"id":"TremoloActive","current":0,"trig":-1},{"id":"TremoloAfterFormant","current":0,"trig":-1},{"id":"TremoloAttack","current":2047,"cv":-1},{"id":"TremoloSpeed","current":2047,"cv":-1},{"id":"TremoloAmount","current":2047,"cv":-1},{"id":"EGvolActive","current":0,"trig":-1},{"id":"EGvolSlow","current":0,"trig":-1},{"id":"Attack","current":2047,"cv":-1},{"id":"Decay","current":2047,"cv":-1},{"id":"ADSRon","current":0,"trig":-1},{"id":"Sustain","current":2047,"cv":-1},{"id":"Release","current":2047,"cv":-1}]}]}
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "Gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "MasterPitch",
+          "current": 48,
+          "cv": -1
+        },
+        {
+          "id": "Volume",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "PDamount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "FormantFilterOn",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "BlackKeyLogic",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "FormantLock",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "FormantSelect",
+          "current": 2,
+          "cv": -1
+        },
+        {
+          "id": "TremoloActive",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "TremoloAfterFormant",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "TremoloAttack",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "TremoloSpeed",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "TremoloAmount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "EGvolActive",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "EGvolSlow",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "Attack",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "Decay",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ADSRon",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "Sustain",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "Release",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

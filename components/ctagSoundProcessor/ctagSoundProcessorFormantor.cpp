@@ -272,7 +272,7 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("Sustain", [&](const int val){ cv_Sustain = val;});
 	pMapPar.emplace("Release", [&](const int val){ Release = val;});
 	pMapCv.emplace("Release", [&](const int val){ cv_Release = val;});
-	isStereo = false;
+	isStereo = true;
 	id = "Formantor";
 	// sectionCpp0
 }
