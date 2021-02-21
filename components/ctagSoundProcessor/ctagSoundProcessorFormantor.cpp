@@ -59,7 +59,7 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
   {
     if((!data.trig[trig_myparm]) != prev_trig_state[prev_trig_state_id])    // Statuschange from HIGH to LOW or LOW to HIGH?
     {
-      prev_trig_state[prev_trig_state_id] = !data.trig[trig_myparm];       // Remember status
+      prev_trig_state[prev_trig_state_id] = !data.trig[trig_myparm];       // Remember status (we use negation of array-element to make sure we only get 0 or 1)
       if (data.trig[trig_myparm] == 0)                      // HIGH if 0
         return (GATE_HIGH_NEW);          // New trigger
       else
@@ -84,8 +84,9 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
 void ctagSoundProcessorFormantor::Process(const ProcessData &data)
 {
   float f_val_result = 0.f;
-  float f_formant_l = 0.f; // one formant lower to current
-  float f_formant_h = 0.f; // one formant higher to current
+  float f_formant_x = 0.f; // first formant for bandpass
+  float f_formant_y = 0.f; // second formant for bandpass
+  float f_formant_z = 0.f; // third formant for bandpass
 
   // === Global section ===
   MK_TRIG_PAR(t_Gate, Gate);
@@ -137,6 +138,16 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   else
     i_FormantSelect_save = formant_selected;     // We save the current formant in case formant-selection gets locked to triggering lateron!
 
+  // === Get settings for formants ===
+  MK_FLT_PAR_ABS(f_CutOffX_1, CutOffX_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_X_1, FltAmnt_X_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_CutOffY_1, CutOffY_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Y_1, FltAmnt_Y_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_CutOffZ_1, CutOffZ_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Z_1, FltAmnt_Z_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_Reso_1, Reso_1, 4095.f, 4.5f);
+  MK_FLT_PAR_ABS(f_BPamnt_1, BPamnt_1, 4095.f, 2.f);
+
 
   // === Volume Envelope section ===
   float vol_eg_process = 1.f;              // Set to max, in case if EG is unused this will work, too!
@@ -186,15 +197,17 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
 
   int vowel_id = formant_selected;  // values 1-5 on the GUI and maybe 0 or 1-n from a keyboard
 
-
   // --- Realtime DSP output loop ---
   for(uint32_t i = 0; i < bufSz; i++)
   {
     f_val_result = Phasedist_real_process(pd_data,0);
     if( t_FormantFilterOn )
-      // ### f_val_result = Rescomb_process(rescomb_data, f_val_result, 0.5, 0.4f, 0.6f); // Pitch, Tone, Resonance
-      ; // To be implemented ###
-    
+    { // Svf__ctx_type_4 &_ctx, float x, float cv, float q, int sel) - sel==2 for bandpass
+      f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX_1, f_Reso_1,2);
+      f_formant_y = Svf_process(svf_data_y, f_val_result, f_CutOffY_1, f_Reso_1,2);
+      f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ_1, f_Reso_1,2);
+      f_val_result = (f_formant_x*f_FltAmnt_X_1/3.f + f_formant_y*f_FltAmnt_Y_1/3.f + f_formant_z*f_FltAmnt_Z_1/3.f)*f_BPamnt_1;
+    }
     f_val_result *= vol_eg_process;                 // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive)
     data.buf[i * 2 + processCh] = f_val_result;     // Mono channel output for plugin in slot 1 and/or in slot 2
   }
@@ -212,7 +225,10 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
   Phasedist_real_process_init(pd_data);
   Phasedist_real_default(pd_data);              // Enable default settings for PD-Synth
 
-  // Rescomb_process_init(rescomb_data);
+  // State Variable Filter (Bandpass) init (svf_data_x,y,z... for 3 bandpasses);
+  Svf__ctx_type_4_init(svf_data_x);
+  Svf__ctx_type_4_init(svf_data_y);
+  Svf__ctx_type_4_init(svf_data_z);
 
   // --- Initialize Volume Envelope ---
   vol_eg_ad.SetSampleRate(44100.f/ bufSz);    // Sync Env with our audio-processing
@@ -248,6 +264,22 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapTrig.emplace("FormantLock", [&](const int val){ trig_FormantLock = val;});
 	pMapPar.emplace("FormantSelect", [&](const int val){ FormantSelect = val;});
 	pMapCv.emplace("FormantSelect", [&](const int val){ cv_FormantSelect = val;});
+	pMapPar.emplace("CutOffX_1", [&](const int val){ CutOffX_1 = val;});
+	pMapCv.emplace("CutOffX_1", [&](const int val){ cv_CutOffX_1 = val;});
+	pMapPar.emplace("FltAmnt_X_1", [&](const int val){ FltAmnt_X_1 = val;});
+	pMapCv.emplace("FltAmnt_X_1", [&](const int val){ cv_FltAmnt_X_1 = val;});
+	pMapPar.emplace("CutOffY_1", [&](const int val){ CutOffY_1 = val;});
+	pMapCv.emplace("CutOffY_1", [&](const int val){ cv_CutOffY_1 = val;});
+	pMapPar.emplace("FltAmnt_Y_1", [&](const int val){ FltAmnt_Y_1 = val;});
+	pMapCv.emplace("FltAmnt_Y_1", [&](const int val){ cv_FltAmnt_Y_1 = val;});
+	pMapPar.emplace("CutOffZ_1", [&](const int val){ CutOffZ_1 = val;});
+	pMapCv.emplace("CutOffZ_1", [&](const int val){ cv_CutOffZ_1 = val;});
+	pMapPar.emplace("FltAmnt_Z_1", [&](const int val){ FltAmnt_Z_1 = val;});
+	pMapCv.emplace("FltAmnt_Z_1", [&](const int val){ cv_FltAmnt_Z_1 = val;});
+	pMapPar.emplace("Reso_1", [&](const int val){ Reso_1 = val;});
+	pMapCv.emplace("Reso_1", [&](const int val){ cv_Reso_1 = val;});
+	pMapPar.emplace("BPamnt_1", [&](const int val){ BPamnt_1 = val;});
+	pMapCv.emplace("BPamnt_1", [&](const int val){ cv_BPamnt_1 = val;});
 	pMapPar.emplace("TremoloActive", [&](const int val){ TremoloActive = val;});
 	pMapTrig.emplace("TremoloActive", [&](const int val){ trig_TremoloActive = val;});
 	pMapPar.emplace("TremoloAfterFormant", [&](const int val){ TremoloAfterFormant = val;});

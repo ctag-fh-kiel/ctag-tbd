@@ -35,10 +35,13 @@ namespace CTAG {
             {
                 e_Gate, e_EGvolActive, e_EGvolSlow, e_FormantBlendingOn, e_FormantFilterOn, e_BlackKeyLogic, e_FormantLock, e_ADSRon, e_Formantor_options_max
             };
-            int prev_trig_state[e_Formantor_options_max] = {0};   // Initialize _all_ entries with "low value"
+            int prev_trig_state[e_Formantor_options_max] = {-1};   // Initialize _all_ entries with "low value" // ### check for bugs!
 
             // --- VULT Stuff ---
             Phasedist_real_process_type pd_data;        // VULT PD synth voice internal datastructure, also needed for initialisation
+            Svf__ctx_type_4 svf_data_x;                 // State Variable Filter (Bandpass) init (svf_data_x,y,z... for 3 bandpasses);
+            Svf__ctx_type_4 svf_data_y;
+            Svf__ctx_type_4 svf_data_z;
 
             // --- Volume EG --
             ctagADEnv vol_eg_ad;
@@ -55,6 +58,14 @@ namespace CTAG {
 	atomic<int32_t> BlackKeyLogic, trig_BlackKeyLogic;
 	atomic<int32_t> FormantLock, trig_FormantLock;
 	atomic<int32_t> FormantSelect, cv_FormantSelect;
+	atomic<int32_t> CutOffX_1, cv_CutOffX_1;
+	atomic<int32_t> FltAmnt_X_1, cv_FltAmnt_X_1;
+	atomic<int32_t> CutOffY_1, cv_CutOffY_1;
+	atomic<int32_t> FltAmnt_Y_1, cv_FltAmnt_Y_1;
+	atomic<int32_t> CutOffZ_1, cv_CutOffZ_1;
+	atomic<int32_t> FltAmnt_Z_1, cv_FltAmnt_Z_1;
+	atomic<int32_t> Reso_1, cv_Reso_1;
+	atomic<int32_t> BPamnt_1, cv_BPamnt_1;
 	atomic<int32_t> TremoloActive, trig_TremoloActive;
 	atomic<int32_t> TremoloAfterFormant, trig_TremoloAfterFormant;
 	atomic<int32_t> TremoloAttack, cv_TremoloAttack;
