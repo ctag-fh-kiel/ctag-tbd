@@ -27,7 +27,8 @@ namespace CTAG {
             // --- Keyboard logic[s] to switch formants ---
             int formant_trigger[12] = {-1,0,-1,1,-1,-1,2,-1,3,-1,4,-1};   // Black keys on a keyboard
             int formant_selected = 0;   // We remember the most recent trigger-key of the formant here
-            int note_save = 0;          // We remember the last note, in case we select formants via black keys...
+            int i_note_save = 36;          // We remember the last note, in case we select formants via black keys...
+            float f_note_save = 36.f;      // We remember the last note, in case we select formants via black keys...
 
             // --- Remember status of triggers / buttons ---
             inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id ); // rescale incoming data to bool
@@ -59,13 +60,55 @@ namespace CTAG {
 	atomic<int32_t> FormantLock, trig_FormantLock;
 	atomic<int32_t> FormantSelect, cv_FormantSelect;
 	atomic<int32_t> CutOffX_1, cv_CutOffX_1;
-	atomic<int32_t> FltAmnt_X_1, cv_FltAmnt_X_1;
+	atomic<int32_t> ResoX_1, cv_ResoX_1;
+	atomic<int32_t> FltAmntX_1, cv_FltAmntX_1;
 	atomic<int32_t> CutOffY_1, cv_CutOffY_1;
-	atomic<int32_t> FltAmnt_Y_1, cv_FltAmnt_Y_1;
+	atomic<int32_t> ResoY_1, cv_ResoY_1;
+	atomic<int32_t> FltAmntY_1, cv_FltAmntY_1;
 	atomic<int32_t> CutOffZ_1, cv_CutOffZ_1;
-	atomic<int32_t> FltAmnt_Z_1, cv_FltAmnt_Z_1;
-	atomic<int32_t> Reso_1, cv_Reso_1;
+	atomic<int32_t> ResoZ_1, cv_ResoZ_1;
+	atomic<int32_t> FltAmntZ_1, cv_FltAmntZ_1;
 	atomic<int32_t> BPamnt_1, cv_BPamnt_1;
+	atomic<int32_t> CutOffX_2, cv_CutOffX_2;
+	atomic<int32_t> ResoX_2, cv_ResoX_2;
+	atomic<int32_t> FltAmntX_2, cv_FltAmntX_2;
+	atomic<int32_t> CutOffY_2, cv_CutOffY_2;
+	atomic<int32_t> ResoY_2, cv_ResoY_2;
+	atomic<int32_t> FltAmntY_2, cv_FltAmntY_2;
+	atomic<int32_t> CutOffZ_2, cv_CutOffZ_2;
+	atomic<int32_t> ResoZ_2, cv_ResoZ_2;
+	atomic<int32_t> FltAmntZ_2, cv_FltAmntZ_2;
+	atomic<int32_t> BPamnt_2, cv_BPamnt_2;
+	atomic<int32_t> CutOffX_3, cv_CutOffX_3;
+	atomic<int32_t> ResoX_3, cv_ResoX_3;
+	atomic<int32_t> FltAmntX_3, cv_FltAmntX_3;
+	atomic<int32_t> CutOffY_3, cv_CutOffY_3;
+	atomic<int32_t> ResoY_3, cv_ResoY_3;
+	atomic<int32_t> FltAmntY_3, cv_FltAmntY_3;
+	atomic<int32_t> CutOffZ_3, cv_CutOffZ_3;
+	atomic<int32_t> ResoZ_3, cv_ResoZ_3;
+	atomic<int32_t> FltAmntZ_3, cv_FltAmntZ_3;
+	atomic<int32_t> BPamnt_3, cv_BPamnt_3;
+	atomic<int32_t> CutOffX_4, cv_CutOffX_4;
+	atomic<int32_t> ResoX_4, cv_ResoX_4;
+	atomic<int32_t> FltAmntX_4, cv_FltAmntX_4;
+	atomic<int32_t> CutOffY_4, cv_CutOffY_4;
+	atomic<int32_t> ResoY_4, cv_ResoY_4;
+	atomic<int32_t> FltAmntY_4, cv_FltAmntY_4;
+	atomic<int32_t> CutOffZ_4, cv_CutOffZ_4;
+	atomic<int32_t> ResoZ_4, cv_ResoZ_4;
+	atomic<int32_t> FltAmntZ_4, cv_FltAmntZ_4;
+	atomic<int32_t> BPamnt_4, cv_BPamnt_4;
+	atomic<int32_t> CutOffX_5, cv_CutOffX_5;
+	atomic<int32_t> ResoX_5, cv_ResoX_5;
+	atomic<int32_t> FltAmntX_5, cv_FltAmntX_5;
+	atomic<int32_t> CutOffY_5, cv_CutOffY_5;
+	atomic<int32_t> ResoY_5, cv_ResoY_5;
+	atomic<int32_t> FltAmntY_5, cv_FltAmntY_5;
+	atomic<int32_t> CutOffZ_5, cv_CutOffZ_5;
+	atomic<int32_t> ResoZ_5, cv_ResoZ_5;
+	atomic<int32_t> FltAmntZ_5, cv_FltAmntZ_5;
+	atomic<int32_t> BPamnt_5, cv_BPamnt_5;
 	atomic<int32_t> TremoloActive, trig_TremoloActive;
 	atomic<int32_t> TremoloAfterFormant, trig_TremoloAfterFormant;
 	atomic<int32_t> TremoloAttack, cv_TremoloAttack;

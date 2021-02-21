@@ -95,13 +95,14 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   // === Voice section ===
   MK_TRIG_PAR(t_FormantFilterOn, FormantFilterOn);
 
-  float f_MasterPitch = MasterPitch;  // Range is -48...48 as "MIDI notes"...
+  float f_MasterPitch = (float)(MasterPitch+48);  // Range is -48...48 as "MIDI notes"...
   float f_MasterPitch_CV = f_MasterPitch;
   if (cv_MasterPitch != -1)                                 // Please note: we save the CV-assciated pitch here seperately, this may be excluded per Oscillator-Group via an option!
-    f_MasterPitch_CV = f_MasterPitch+data.cv[cv_MasterPitch] * 60.f;    // We expect "MIDI"-notes 0-59 for 5 octaves (5*12) which fit into 0...+5V with 1V/Oct logic!
+    f_MasterPitch_CV = f_MasterPitch+data.cv[cv_MasterPitch]*60.f;    // We expect "MIDI"-notes 0-59 for 5 octaves (5*12) which fit into 0...+5V with 1V/Oct logic!
 
-  float current_note = f_MasterPitch_CV+48.f;
-  int current_note_int = (int)current_note;
+  float f_current_note = f_MasterPitch_CV;
+  int i_current_note = (int)f_current_note;
+
 
   MK_FLT_PAR_ABS(f_PDamount, PDamount, 4095.f, 1.f);
 
@@ -115,17 +116,22 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   MK_TRIG_PAR( t_BlackKeyLogic, BlackKeyLogic );
   if( t_BlackKeyLogic )    // We may encounter a black key for formant change
   {
-    int my_formant = formant_trigger[current_note_int%12];
+    int my_formant = formant_trigger[i_current_note%12];
     if( my_formant != -1)     // We found a new formant via a black key
     {
       formant_selected = my_formant;
-      current_note_int = note_save;   // We had a black key, so reset the current note to the one we remembered before.
+      i_current_note = i_note_save;   // We had a black key, so reset the current note to the one we remembered before.
+      f_current_note = f_note_save;
     }
     else
-      note_save = current_note_int;   // We had no black key, so remember it for later!
+    {
+      i_note_save = i_current_note;   // We had no black key, so remember it for later!
+      f_note_save = f_current_note;
+    }
   }
   else    // No black key logic
     formant_selected = i_FormantSelect;   // Take formants from the slider / CV instead
+
 
   // --- If active: only allow new formants when a new note is triggered! ---
   if( t_FormantLock )
@@ -138,16 +144,84 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
   else
     i_FormantSelect_save = formant_selected;     // We save the current formant in case formant-selection gets locked to triggering lateron!
 
+  // ### printf("MasterPitch: %d f_MasterPitch_CV: %f current_note_int: %d formant_trigger: %d, formant_selected %d\n",       // ###
+  // ###       (int)MasterPitch, f_MasterPitch_CV, i_current_note, formant_trigger[i_current_note%12], formant_selected); // ###
+
   // === Get settings for formants ===
+  // --- Formant 1 (A) ---
   MK_FLT_PAR_ABS(f_CutOffX_1, CutOffX_1, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_FltAmnt_X_1, FltAmnt_X_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoX_1, ResoX_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_X_1, FltAmntX_1, 4095.f, 1.f);
+
   MK_FLT_PAR_ABS(f_CutOffY_1, CutOffY_1, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_FltAmnt_Y_1, FltAmnt_Y_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoY_1, ResoY_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Y_1, FltAmntY_1, 4095.f, 1.f);
+
   MK_FLT_PAR_ABS(f_CutOffZ_1, CutOffZ_1, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_FltAmnt_Z_1, FltAmnt_Z_1, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_Reso_1, Reso_1, 4095.f, 4.5f);
+  MK_FLT_PAR_ABS(f_ResoZ_1, ResoZ_1, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Z_1, FltAmntZ_1, 4095.f, 1.f);
+
   MK_FLT_PAR_ABS(f_BPamnt_1, BPamnt_1, 4095.f, 2.f);
 
+  // --- Formant 2 (E) ---
+  MK_FLT_PAR_ABS(f_CutOffX_2, CutOffX_2, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoX_2, ResoX_2, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_X_2, FltAmntX_2, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_CutOffY_2, CutOffY_2, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoY_2, ResoY_2, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Y_2, FltAmntY_2, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_CutOffZ_2, CutOffZ_2, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoZ_2, ResoZ_2, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Z_2, FltAmntZ_2, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_BPamnt_2, BPamnt_2, 4095.f, 2.f);
+
+  // --- Formant 3 (I) ---
+  MK_FLT_PAR_ABS(f_CutOffX_3, CutOffX_3, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoX_3, ResoX_3, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_X_3, FltAmntX_3, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_CutOffY_3, CutOffY_3, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoY_3, ResoY_3, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Y_3, FltAmntY_3, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_CutOffZ_3, CutOffZ_3, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoZ_3, ResoZ_3, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Z_3, FltAmntZ_3, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_BPamnt_3, BPamnt_3, 4095.f, 2.f);
+
+  // --- Formant 4 (O) ---
+  MK_FLT_PAR_ABS(f_CutOffX_4, CutOffX_4, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoX_4, ResoX_4, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_X_4, FltAmntX_4, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_CutOffY_4, CutOffY_4, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoY_4, ResoY_4, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Y_4, FltAmntY_4, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_CutOffZ_4, CutOffZ_4, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoZ_4, ResoZ_4, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Z_4, FltAmntZ_4, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_BPamnt_4, BPamnt_4, 4095.f, 2.f);
+
+  // --- Formant 5 (U) ---
+  MK_FLT_PAR_ABS(f_CutOffX_5, CutOffX_5, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoX_5, ResoX_5, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_X_5, FltAmntX_5, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_CutOffY_5, CutOffY_5, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoY_5, ResoY_5, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Y_5, FltAmntY_5, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_CutOffZ_5, CutOffZ_5, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResoZ_5, ResoZ_5, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_FltAmnt_Z_5, FltAmntZ_5, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_BPamnt_5, BPamnt_5, 4095.f, 2.f);
 
   // === Volume Envelope section ===
   float vol_eg_process = 1.f;              // Set to max, in case if EG is unused this will work, too!
@@ -193,9 +267,7 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
 
   // --- Precalculation for realtime DSP loop ---
   Phasedist_real_controlChange(pd_data, 31, f_PDamount, 0);
-  Phasedist_real_noteOn(pd_data, current_note, 110, 0);
-
-  int vowel_id = formant_selected;  // values 1-5 on the GUI and maybe 0 or 1-n from a keyboard
+  Phasedist_real_noteOn(pd_data, f_current_note, 110, 0);
 
   // --- Realtime DSP output loop ---
   for(uint32_t i = 0; i < bufSz; i++)
@@ -203,10 +275,45 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
     f_val_result = Phasedist_real_process(pd_data,0);
     if( t_FormantFilterOn )
     { // Svf__ctx_type_4 &_ctx, float x, float cv, float q, int sel) - sel==2 for bandpass
-      f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX_1, f_Reso_1,2);
-      f_formant_y = Svf_process(svf_data_y, f_val_result, f_CutOffY_1, f_Reso_1,2);
-      f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ_1, f_Reso_1,2);
-      f_val_result = (f_formant_x*f_FltAmnt_X_1/3.f + f_formant_y*f_FltAmnt_Y_1/3.f + f_formant_z*f_FltAmnt_Z_1/3.f)*f_BPamnt_1;
+      switch( formant_selected )
+      {
+        case 0:
+          f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX_1, f_ResoX_1, 2);
+          f_formant_y = Svf_process(svf_data_y, f_val_result, f_CutOffY_1, f_ResoY_1, 2);
+          f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ_1, f_ResoZ_1, 2);
+          f_val_result = (f_formant_x * f_FltAmnt_X_1 + f_formant_y * f_FltAmnt_Y_1 +
+                          f_formant_z * f_FltAmnt_Z_1 ) * f_BPamnt_1;
+          break;
+        case 1:
+          f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX_2, f_ResoX_2, 2);
+          f_formant_y = Svf_process(svf_data_y, f_val_result, f_CutOffY_2, f_ResoY_2, 2);
+          f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ_2, f_ResoZ_2, 2);
+          f_val_result = (f_formant_x * f_FltAmnt_X_2 + f_formant_y * f_FltAmnt_Y_2 +
+                          f_formant_z * f_FltAmnt_Z_2 ) * f_BPamnt_2;
+          break;
+        case 2:
+          f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX_3, f_ResoX_3, 2);
+          f_formant_y = Svf_process(svf_data_y, f_val_result, f_CutOffY_3, f_ResoY_3, 2);
+          f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ_3, f_ResoZ_3, 2);
+          f_val_result = (f_formant_x * f_FltAmnt_X_3 + f_formant_y * f_FltAmnt_Y_3 +
+                          f_formant_z * f_FltAmnt_Z_3 ) * f_BPamnt_3;
+          break;
+        case 3:
+          f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX_4, f_ResoX_4, 2);
+          f_formant_y = Svf_process(svf_data_y, f_val_result, f_CutOffY_4, f_ResoY_4, 2);
+          f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ_4, f_ResoZ_4, 2);
+          f_val_result = (f_formant_x * f_FltAmnt_X_4 + f_formant_y * f_FltAmnt_Y_4 +
+                          f_formant_z * f_FltAmnt_Z_4 ) * f_BPamnt_4;
+          break;
+        case 4:
+          f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX_5, f_ResoX_5, 2);
+          f_formant_y = Svf_process(svf_data_y, f_val_result, f_CutOffY_5, f_ResoY_5, 2);
+          f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ_5, f_ResoZ_5, 2);
+          f_val_result = (f_formant_x * f_FltAmnt_X_5 + f_formant_y * f_FltAmnt_Y_5 +
+                          f_formant_z * f_FltAmnt_Z_5 ) * f_BPamnt_5;
+          break;
+
+      }
     }
     f_val_result *= vol_eg_process;                 // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive)
     data.buf[i * 2 + processCh] = f_val_result;     // Mono channel output for plugin in slot 1 and/or in slot 2
@@ -266,20 +373,104 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("FormantSelect", [&](const int val){ cv_FormantSelect = val;});
 	pMapPar.emplace("CutOffX_1", [&](const int val){ CutOffX_1 = val;});
 	pMapCv.emplace("CutOffX_1", [&](const int val){ cv_CutOffX_1 = val;});
-	pMapPar.emplace("FltAmnt_X_1", [&](const int val){ FltAmnt_X_1 = val;});
-	pMapCv.emplace("FltAmnt_X_1", [&](const int val){ cv_FltAmnt_X_1 = val;});
+	pMapPar.emplace("ResoX_1", [&](const int val){ ResoX_1 = val;});
+	pMapCv.emplace("ResoX_1", [&](const int val){ cv_ResoX_1 = val;});
+	pMapPar.emplace("FltAmntX_1", [&](const int val){ FltAmntX_1 = val;});
+	pMapCv.emplace("FltAmntX_1", [&](const int val){ cv_FltAmntX_1 = val;});
 	pMapPar.emplace("CutOffY_1", [&](const int val){ CutOffY_1 = val;});
 	pMapCv.emplace("CutOffY_1", [&](const int val){ cv_CutOffY_1 = val;});
-	pMapPar.emplace("FltAmnt_Y_1", [&](const int val){ FltAmnt_Y_1 = val;});
-	pMapCv.emplace("FltAmnt_Y_1", [&](const int val){ cv_FltAmnt_Y_1 = val;});
+	pMapPar.emplace("ResoY_1", [&](const int val){ ResoY_1 = val;});
+	pMapCv.emplace("ResoY_1", [&](const int val){ cv_ResoY_1 = val;});
+	pMapPar.emplace("FltAmntY_1", [&](const int val){ FltAmntY_1 = val;});
+	pMapCv.emplace("FltAmntY_1", [&](const int val){ cv_FltAmntY_1 = val;});
 	pMapPar.emplace("CutOffZ_1", [&](const int val){ CutOffZ_1 = val;});
 	pMapCv.emplace("CutOffZ_1", [&](const int val){ cv_CutOffZ_1 = val;});
-	pMapPar.emplace("FltAmnt_Z_1", [&](const int val){ FltAmnt_Z_1 = val;});
-	pMapCv.emplace("FltAmnt_Z_1", [&](const int val){ cv_FltAmnt_Z_1 = val;});
-	pMapPar.emplace("Reso_1", [&](const int val){ Reso_1 = val;});
-	pMapCv.emplace("Reso_1", [&](const int val){ cv_Reso_1 = val;});
+	pMapPar.emplace("ResoZ_1", [&](const int val){ ResoZ_1 = val;});
+	pMapCv.emplace("ResoZ_1", [&](const int val){ cv_ResoZ_1 = val;});
+	pMapPar.emplace("FltAmntZ_1", [&](const int val){ FltAmntZ_1 = val;});
+	pMapCv.emplace("FltAmntZ_1", [&](const int val){ cv_FltAmntZ_1 = val;});
 	pMapPar.emplace("BPamnt_1", [&](const int val){ BPamnt_1 = val;});
 	pMapCv.emplace("BPamnt_1", [&](const int val){ cv_BPamnt_1 = val;});
+	pMapPar.emplace("CutOffX_2", [&](const int val){ CutOffX_2 = val;});
+	pMapCv.emplace("CutOffX_2", [&](const int val){ cv_CutOffX_2 = val;});
+	pMapPar.emplace("ResoX_2", [&](const int val){ ResoX_2 = val;});
+	pMapCv.emplace("ResoX_2", [&](const int val){ cv_ResoX_2 = val;});
+	pMapPar.emplace("FltAmntX_2", [&](const int val){ FltAmntX_2 = val;});
+	pMapCv.emplace("FltAmntX_2", [&](const int val){ cv_FltAmntX_2 = val;});
+	pMapPar.emplace("CutOffY_2", [&](const int val){ CutOffY_2 = val;});
+	pMapCv.emplace("CutOffY_2", [&](const int val){ cv_CutOffY_2 = val;});
+	pMapPar.emplace("ResoY_2", [&](const int val){ ResoY_2 = val;});
+	pMapCv.emplace("ResoY_2", [&](const int val){ cv_ResoY_2 = val;});
+	pMapPar.emplace("FltAmntY_2", [&](const int val){ FltAmntY_2 = val;});
+	pMapCv.emplace("FltAmntY_2", [&](const int val){ cv_FltAmntY_2 = val;});
+	pMapPar.emplace("CutOffZ_2", [&](const int val){ CutOffZ_2 = val;});
+	pMapCv.emplace("CutOffZ_2", [&](const int val){ cv_CutOffZ_2 = val;});
+	pMapPar.emplace("ResoZ_2", [&](const int val){ ResoZ_2 = val;});
+	pMapCv.emplace("ResoZ_2", [&](const int val){ cv_ResoZ_2 = val;});
+	pMapPar.emplace("FltAmntZ_2", [&](const int val){ FltAmntZ_2 = val;});
+	pMapCv.emplace("FltAmntZ_2", [&](const int val){ cv_FltAmntZ_2 = val;});
+	pMapPar.emplace("BPamnt_2", [&](const int val){ BPamnt_2 = val;});
+	pMapCv.emplace("BPamnt_2", [&](const int val){ cv_BPamnt_2 = val;});
+	pMapPar.emplace("CutOffX_3", [&](const int val){ CutOffX_3 = val;});
+	pMapCv.emplace("CutOffX_3", [&](const int val){ cv_CutOffX_3 = val;});
+	pMapPar.emplace("ResoX_3", [&](const int val){ ResoX_3 = val;});
+	pMapCv.emplace("ResoX_3", [&](const int val){ cv_ResoX_3 = val;});
+	pMapPar.emplace("FltAmntX_3", [&](const int val){ FltAmntX_3 = val;});
+	pMapCv.emplace("FltAmntX_3", [&](const int val){ cv_FltAmntX_3 = val;});
+	pMapPar.emplace("CutOffY_3", [&](const int val){ CutOffY_3 = val;});
+	pMapCv.emplace("CutOffY_3", [&](const int val){ cv_CutOffY_3 = val;});
+	pMapPar.emplace("ResoY_3", [&](const int val){ ResoY_3 = val;});
+	pMapCv.emplace("ResoY_3", [&](const int val){ cv_ResoY_3 = val;});
+	pMapPar.emplace("FltAmntY_3", [&](const int val){ FltAmntY_3 = val;});
+	pMapCv.emplace("FltAmntY_3", [&](const int val){ cv_FltAmntY_3 = val;});
+	pMapPar.emplace("CutOffZ_3", [&](const int val){ CutOffZ_3 = val;});
+	pMapCv.emplace("CutOffZ_3", [&](const int val){ cv_CutOffZ_3 = val;});
+	pMapPar.emplace("ResoZ_3", [&](const int val){ ResoZ_3 = val;});
+	pMapCv.emplace("ResoZ_3", [&](const int val){ cv_ResoZ_3 = val;});
+	pMapPar.emplace("FltAmntZ_3", [&](const int val){ FltAmntZ_3 = val;});
+	pMapCv.emplace("FltAmntZ_3", [&](const int val){ cv_FltAmntZ_3 = val;});
+	pMapPar.emplace("BPamnt_3", [&](const int val){ BPamnt_3 = val;});
+	pMapCv.emplace("BPamnt_3", [&](const int val){ cv_BPamnt_3 = val;});
+	pMapPar.emplace("CutOffX_4", [&](const int val){ CutOffX_4 = val;});
+	pMapCv.emplace("CutOffX_4", [&](const int val){ cv_CutOffX_4 = val;});
+	pMapPar.emplace("ResoX_4", [&](const int val){ ResoX_4 = val;});
+	pMapCv.emplace("ResoX_4", [&](const int val){ cv_ResoX_4 = val;});
+	pMapPar.emplace("FltAmntX_4", [&](const int val){ FltAmntX_4 = val;});
+	pMapCv.emplace("FltAmntX_4", [&](const int val){ cv_FltAmntX_4 = val;});
+	pMapPar.emplace("CutOffY_4", [&](const int val){ CutOffY_4 = val;});
+	pMapCv.emplace("CutOffY_4", [&](const int val){ cv_CutOffY_4 = val;});
+	pMapPar.emplace("ResoY_4", [&](const int val){ ResoY_4 = val;});
+	pMapCv.emplace("ResoY_4", [&](const int val){ cv_ResoY_4 = val;});
+	pMapPar.emplace("FltAmntY_4", [&](const int val){ FltAmntY_4 = val;});
+	pMapCv.emplace("FltAmntY_4", [&](const int val){ cv_FltAmntY_4 = val;});
+	pMapPar.emplace("CutOffZ_4", [&](const int val){ CutOffZ_4 = val;});
+	pMapCv.emplace("CutOffZ_4", [&](const int val){ cv_CutOffZ_4 = val;});
+	pMapPar.emplace("ResoZ_4", [&](const int val){ ResoZ_4 = val;});
+	pMapCv.emplace("ResoZ_4", [&](const int val){ cv_ResoZ_4 = val;});
+	pMapPar.emplace("FltAmntZ_4", [&](const int val){ FltAmntZ_4 = val;});
+	pMapCv.emplace("FltAmntZ_4", [&](const int val){ cv_FltAmntZ_4 = val;});
+	pMapPar.emplace("BPamnt_4", [&](const int val){ BPamnt_4 = val;});
+	pMapCv.emplace("BPamnt_4", [&](const int val){ cv_BPamnt_4 = val;});
+	pMapPar.emplace("CutOffX_5", [&](const int val){ CutOffX_5 = val;});
+	pMapCv.emplace("CutOffX_5", [&](const int val){ cv_CutOffX_5 = val;});
+	pMapPar.emplace("ResoX_5", [&](const int val){ ResoX_5 = val;});
+	pMapCv.emplace("ResoX_5", [&](const int val){ cv_ResoX_5 = val;});
+	pMapPar.emplace("FltAmntX_5", [&](const int val){ FltAmntX_5 = val;});
+	pMapCv.emplace("FltAmntX_5", [&](const int val){ cv_FltAmntX_5 = val;});
+	pMapPar.emplace("CutOffY_5", [&](const int val){ CutOffY_5 = val;});
+	pMapCv.emplace("CutOffY_5", [&](const int val){ cv_CutOffY_5 = val;});
+	pMapPar.emplace("ResoY_5", [&](const int val){ ResoY_5 = val;});
+	pMapCv.emplace("ResoY_5", [&](const int val){ cv_ResoY_5 = val;});
+	pMapPar.emplace("FltAmntY_5", [&](const int val){ FltAmntY_5 = val;});
+	pMapCv.emplace("FltAmntY_5", [&](const int val){ cv_FltAmntY_5 = val;});
+	pMapPar.emplace("CutOffZ_5", [&](const int val){ CutOffZ_5 = val;});
+	pMapCv.emplace("CutOffZ_5", [&](const int val){ cv_CutOffZ_5 = val;});
+	pMapPar.emplace("ResoZ_5", [&](const int val){ ResoZ_5 = val;});
+	pMapCv.emplace("ResoZ_5", [&](const int val){ cv_ResoZ_5 = val;});
+	pMapPar.emplace("FltAmntZ_5", [&](const int val){ FltAmntZ_5 = val;});
+	pMapCv.emplace("FltAmntZ_5", [&](const int val){ cv_FltAmntZ_5 = val;});
+	pMapPar.emplace("BPamnt_5", [&](const int val){ BPamnt_5 = val;});
+	pMapCv.emplace("BPamnt_5", [&](const int val){ cv_BPamnt_5 = val;});
 	pMapPar.emplace("TremoloActive", [&](const int val){ TremoloActive = val;});
 	pMapTrig.emplace("TremoloActive", [&](const int val){ trig_TremoloActive = val;});
 	pMapPar.emplace("TremoloAfterFormant", [&](const int val){ TremoloAfterFormant = val;});
@@ -304,7 +495,7 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("Sustain", [&](const int val){ cv_Sustain = val;});
 	pMapPar.emplace("Release", [&](const int val){ Release = val;});
 	pMapCv.emplace("Release", [&](const int val){ cv_Release = val;});
-	isStereo = true;
+	isStereo = false;
 	id = "Formantor";
 	// sectionCpp0
 }

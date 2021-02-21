@@ -1,5 +1,5 @@
 {
-   "id": "Formantor", "isStereo": true, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
+   "id": "Formantor", "isStereo": false, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
    [
        {  
           "id": "Global", "name": "Global", "type": "group", "params":  
@@ -10,7 +10,7 @@
            ]
        },
        {
-          "id": "Voice", "name": "Voice ('Blackkey logic': 5 keys trigger the formants 1,2,3,4,5 / A,E,I,O,U / Pitch is on white keys)", "type": "group", "params":  
+          "id": "Voice", "name": "Voice ('Blackkey logic': 5 keys trigger the formants 1,2,3,4,5 / A,E,I,O,U - Pitch is on white keys)", "type": "group", "params":  
            [
                {"id":"PDamount","name":"PD amount","type":"int","min":0,"max":4095,"step":1},
                {"id":"FormantFilterOn","name":"Formant Filter n/y","type":"bool"},
@@ -20,16 +20,93 @@
            ]   
        },
        {
-          "id": "Formant_1", "name": "Select 3 Bandpasses for Formant 1 (A)", "type": "group", "params":  
+          "id": "Formant_1", "name": "Set 3 BandpassFilters for Formant 1 (A)", "type": "group", "params":  
            [
-               {"id":"CutOffX_1","name":"CutOff X","type":"int","min":0,"max":4095,"step":1},
-               {"id":"FltAmnt_X_1","name":"Amount X","type":"int","min":0,"max":4095,"step":1},
-               {"id":"CutOffY_1","name":"CutOff Y","type":"int","min":0,"max":4095,"step":1},
-               {"id":"FltAmnt_Y_1","name":"Amount Y","type":"int","min":0,"max":4095,"step":1},
-               {"id":"CutOffZ_1","name":"CutOff Z","type":"int","min":0,"max":4095,"step":1},
-               {"id":"FltAmnt_Z_1","name":"Amount Z","type":"int","min":0,"max":4095,"step":1},
-               {"id":"Reso_1","name":"Resonance","type":"int","min":0,"max":4095,"step":1},
-               {"id":"BPamnt_1","name":"Level Formant 1","type":"int","min":0,"max":4095,"step":1}
+               {"id":"CutOffX_1","name":"CutOff_1 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoX_1","name":"Resonance_1 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntX_1","name":"Amount_1 X","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffY_1","name":"CutOff_1 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoY_1","name":"Resonance_1 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntY_1","name":"Amount_1 Y","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffZ_1","name":"CutOff_1 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoZ_1","name":"Resonance_1 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntZ_1","name":"Amount_1 Z","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"BPamnt_1","name":"Level Formant_1","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+          "id": "Formant_2", "name": "Set 3 BandpassFilters for Formant 2 (E)", "type": "group", "params":  
+           [
+               {"id":"CutOffX_2","name":"CutOff_2 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoX_2","name":"Resonance_2 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntX_2","name":"Amount_2 X","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffY_2","name":"CutOff_2 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoY_2","name":"Resonance_2 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntY_2","name":"Amount_2 Y","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffZ_2","name":"CutOff_2 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoZ_2","name":"Resonance_2 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntZ_2","name":"Amount_2 Z","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"BPamnt_2","name":"Level Formant_2","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+        {
+          "id": "Formant_3", "name": "Set 3 BandpassFilters for Formant 3 (I)", "type": "group", "params":  
+           [
+               {"id":"CutOffX_3","name":"CutOff_3 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoX_3","name":"Resonance_3 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntX_3","name":"Amount_3 X","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffY_3","name":"CutOff_3 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoY_3","name":"Resonance_3 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntY_3","name":"Amount_3 Y","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffZ_3","name":"CutOff_3 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoZ_3","name":"Resonance_3 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntZ_3","name":"Amount_3 Z","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"BPamnt_3","name":"Level Formant_3","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+          "id": "Formant_4", "name": "Set 3 BandpassFilters for Formant 4 (O)", "type": "group", "params":  
+           [
+               {"id":"CutOffX_4","name":"CutOff_4 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoX_4","name":"Resonance_4 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntX_4","name":"Amount_4 X","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffY_4","name":"CutOff_4 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoY_4","name":"Resonance_4 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntY_4","name":"Amount_4 Y","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffZ_4","name":"CutOff_4 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoZ_4","name":"Resonance_4 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntZ_4","name":"Amount_4 Z","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"BPamnt_4","name":"Level Formant_4","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+        {
+          "id": "Formant_5", "name": "Set 3 BandpassFilters for Formant 5 (U)", "type": "group", "params":  
+           [
+               {"id":"CutOffX_5","name":"CutOff_5 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoX_5","name":"Resonance_5 X","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntX_5","name":"Amount_5 X","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffY_5","name":"CutOff_5 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoY_5","name":"Resonance_5 Y","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntY_5","name":"Amount_5 Y","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"CutOffZ_5","name":"CutOff_5 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResoZ_5","name":"Resonance_5 Z","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FltAmntZ_5","name":"Amount_5 Z","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"BPamnt_5","name":"Level Formant_5","type":"int","min":0,"max":4095,"step":1}
            ]   
        },
        {
