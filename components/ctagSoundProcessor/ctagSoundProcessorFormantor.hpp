@@ -5,10 +5,8 @@
 
 
 // --- VULT "Library for TBD" ---
-#include "vult_formantor.h"
-#include "vult_formantor.tables.h"
-#include "vultin.h"
-
+#include "./vult/vult_formantor.h"
+#include "./vult/vult_formantor.tables.h"
 
 using namespace CTAG::SP::HELPERS;
 
@@ -41,7 +39,6 @@ namespace CTAG {
 
             // --- VULT Stuff ---
             Phasedist_real_process_type pd_data;        // VULT PD synth voice internal datastructure, also needed for initialisation
-            Rescomb__ctx_type_6 rescomb_data;           // VULT Rescomb filter internal datastructure, also needed for initialisation
 
             // --- Volume EG --
             ctagADEnv vol_eg_ad;

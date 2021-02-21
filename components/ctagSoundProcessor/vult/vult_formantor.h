@@ -4,42 +4,8 @@
 #define VULT_FORMANTOR_H
 #include <stdint.h>
 #include <math.h>
-#include "vultin.h"
+#include "../vult/vultin.h"
 #include "vult_formantor.tables.h"
-
-static_inline float Saturate_soft_tanh_table_raw_c0(int index){
-   return Saturate_soft_tanh_table_c0[index];
-};
-
-static_inline float Saturate_soft_tanh_table_raw_c1(int index){
-   return Saturate_soft_tanh_table_c1[index];
-};
-
-static_inline float Saturate_soft_tanh_table_raw_c2(int index){
-   return Saturate_soft_tanh_table_c2[index];
-};
-
-static_inline float Saturate_soft_tanh_table(float x){
-   int index;
-   index = int_clip(float_to_int((5.f * (24.f + x))),0,240);
-   return (float_wrap_array(Saturate_soft_tanh_table_c0)[index] + (x * (float_wrap_array(Saturate_soft_tanh_table_c1)[index] + (x * float_wrap_array(Saturate_soft_tanh_table_c2)[index]))));
-}
-
-static_inline float Saturate_soft_process(float x){
-   return Saturate_soft_tanh_table(x);
-};
-
-static_inline void Saturate_soft_noteOn(int note, int velocity, int channel){
-}
-
-static_inline void Saturate_soft_noteOff(int note, int channel){
-}
-
-static_inline void Saturate_soft_controlChange(int control, int value, int channel){
-}
-
-static_inline void Saturate_soft_default(){
-}
 
 typedef struct Util__ctx_type_0 {
    uint8_t pre;
@@ -291,119 +257,120 @@ static_inline float Util_cvTokHz(float cv){
    return (float_wrap_array(Util_cvTokHz_c0)[index] + (cv * (float_wrap_array(Util_cvTokHz_c1)[index] + (cv * float_wrap_array(Util_cvTokHz_c2)[index]))));
 }
 
-typedef struct Rescomb__ctx_type_0 {
-   int write_pos;
-   float buffer[675];
-} Rescomb__ctx_type_0;
-
-typedef Rescomb__ctx_type_0 Rescomb_delay_type;
-
-void Rescomb__ctx_type_0_init(Rescomb__ctx_type_0 &_output_);
-
-static_inline void Rescomb_delay_init(Rescomb__ctx_type_0 &_output_){
-   Rescomb__ctx_type_0_init(_output_);
-   return ;
-}
-
-float Rescomb_delay(Rescomb__ctx_type_0 &_ctx, float x, float cv);
-
-static_inline float Rescomb_toneCurve_raw_c0(int index){
-   return Rescomb_toneCurve_c0[index];
+static_inline float Saturate_soft_tanh_table_raw_c0(int index){
+   return Saturate_soft_tanh_table_c0[index];
 };
 
-static_inline float Rescomb_toneCurve_raw_c1(int index){
-   return Rescomb_toneCurve_c1[index];
+static_inline float Saturate_soft_tanh_table_raw_c1(int index){
+   return Saturate_soft_tanh_table_c1[index];
 };
 
-static_inline float Rescomb_toneCurve_raw_c2(int index){
-   return Rescomb_toneCurve_c2[index];
+static_inline float Saturate_soft_tanh_table_raw_c2(int index){
+   return Saturate_soft_tanh_table_c2[index];
 };
 
-static_inline float Rescomb_toneCurve(float tone){
+static_inline float Saturate_soft_tanh_table(float x){
    int index;
-   index = int_clip(float_to_int((26.25f * (1.2f + tone))),0,63);
-   return (float_wrap_array(Rescomb_toneCurve_c0)[index] + (tone * (float_wrap_array(Rescomb_toneCurve_c1)[index] + (tone * float_wrap_array(Rescomb_toneCurve_c2)[index]))));
+   index = int_clip(float_to_int((5.f * (24.f + x))),0,240);
+   return (float_wrap_array(Saturate_soft_tanh_table_c0)[index] + (x * (float_wrap_array(Saturate_soft_tanh_table_c1)[index] + (x * float_wrap_array(Saturate_soft_tanh_table_c2)[index]))));
 }
 
-typedef struct Rescomb__ctx_type_5 {
-   float stone;
-   float output;
-   Rescomb__ctx_type_0 _inst47a;
-   Util__ctx_type_3 _inst37d;
-   Util__ctx_type_1 _inst13b;
-} Rescomb__ctx_type_5;
-
-typedef Rescomb__ctx_type_5 Rescomb_do_type;
-
-void Rescomb__ctx_type_5_init(Rescomb__ctx_type_5 &_output_);
-
-static_inline void Rescomb_do_init(Rescomb__ctx_type_5 &_output_){
-   Rescomb__ctx_type_5_init(_output_);
-   return ;
-}
-
-float Rescomb_do(Rescomb__ctx_type_5 &_ctx, float in, float cv, float tone, float res);
-
-typedef struct Rescomb__ctx_type_6 {
-   Rescomb__ctx_type_5 _inst179;
-} Rescomb__ctx_type_6;
-
-typedef Rescomb__ctx_type_6 Rescomb_process_type;
-
-static_inline void Rescomb__ctx_type_6_init(Rescomb__ctx_type_6 &_output_){
-   Rescomb__ctx_type_6 _ctx;
-   Rescomb__ctx_type_5_init(_ctx._inst179);
-   _output_ = _ctx;
-   return ;
-}
-
-static_inline void Rescomb_process_init(Rescomb__ctx_type_6 &_output_){
-   Rescomb__ctx_type_6_init(_output_);
-   return ;
-}
-
-static_inline float Rescomb_process(Rescomb__ctx_type_6 &_ctx, float in, float cv, float tone, float res){
-   return Rescomb_do(_ctx._inst179,in,cv,tone,res);
+static_inline float Saturate_soft_process(float x){
+   return Saturate_soft_tanh_table(x);
 };
 
-typedef Rescomb__ctx_type_6 Rescomb_noteOn_type;
+static_inline void Saturate_soft_noteOn(int note, int velocity, int channel){
+}
 
-static_inline void Rescomb_noteOn_init(Rescomb__ctx_type_6 &_output_){
-   Rescomb__ctx_type_6_init(_output_);
+static_inline void Saturate_soft_noteOff(int note, int channel){
+}
+
+static_inline void Saturate_soft_controlChange(int control, int value, int channel){
+}
+
+static_inline void Saturate_soft_default(){
+}
+
+static_inline float Svf_calc_g_raw_c0(int index){
+   return Svf_calc_g_c0[index];
+};
+
+static_inline float Svf_calc_g_raw_c1(int index){
+   return Svf_calc_g_c1[index];
+};
+
+static_inline float Svf_calc_g_raw_c2(int index){
+   return Svf_calc_g_c2[index];
+};
+
+static_inline float Svf_calc_g(float cv){
+   int index;
+   index = int_clip(float_to_int((141.111111111f * cv)),0,127);
+   return (float_wrap_array(Svf_calc_g_c0)[index] + (cv * (float_wrap_array(Svf_calc_g_c1)[index] + (cv * float_wrap_array(Svf_calc_g_c2)[index]))));
+}
+
+typedef struct Svf__ctx_type_4 {
+   float z2;
+   float z1;
+   float inv_den;
+   float g;
+   Util__ctx_type_1 _inst23b;
+   Util__ctx_type_1 _inst13b;
+   float R;
+} Svf__ctx_type_4;
+
+typedef Svf__ctx_type_4 Svf_process_type;
+
+void Svf__ctx_type_4_init(Svf__ctx_type_4 &_output_);
+
+static_inline void Svf_process_init(Svf__ctx_type_4 &_output_){
+   Svf__ctx_type_4_init(_output_);
    return ;
 }
 
-static_inline void Rescomb_noteOn(Rescomb__ctx_type_6 &_ctx, int note, int velocity, int channel){
-}
+float Svf_process(Svf__ctx_type_4 &_ctx, float x, float cv, float q, int sel);
 
-typedef Rescomb__ctx_type_6 Rescomb_noteOff_type;
+typedef Svf__ctx_type_4 Svf_noteOn_type;
 
-static_inline void Rescomb_noteOff_init(Rescomb__ctx_type_6 &_output_){
-   Rescomb__ctx_type_6_init(_output_);
+static_inline void Svf_noteOn_init(Svf__ctx_type_4 &_output_){
+   Svf__ctx_type_4_init(_output_);
    return ;
 }
 
-static_inline void Rescomb_noteOff(Rescomb__ctx_type_6 &_ctx, int note, int channel){
+static_inline void Svf_noteOn(Svf__ctx_type_4 &_ctx, int note, int velocity, int channel){
 }
 
-typedef Rescomb__ctx_type_6 Rescomb_controlChange_type;
+typedef Svf__ctx_type_4 Svf_noteOff_type;
 
-static_inline void Rescomb_controlChange_init(Rescomb__ctx_type_6 &_output_){
-   Rescomb__ctx_type_6_init(_output_);
+static_inline void Svf_noteOff_init(Svf__ctx_type_4 &_output_){
+   Svf__ctx_type_4_init(_output_);
    return ;
 }
 
-static_inline void Rescomb_controlChange(Rescomb__ctx_type_6 &_ctx, int control, int value, int channel){
+static_inline void Svf_noteOff(Svf__ctx_type_4 &_ctx, int note, int channel){
 }
 
-typedef Rescomb__ctx_type_6 Rescomb_default_type;
+typedef Svf__ctx_type_4 Svf_controlChange_type;
 
-static_inline void Rescomb_default_init(Rescomb__ctx_type_6 &_output_){
-   Rescomb__ctx_type_6_init(_output_);
+static_inline void Svf_controlChange_init(Svf__ctx_type_4 &_output_){
+   Svf__ctx_type_4_init(_output_);
    return ;
 }
 
-static_inline void Rescomb_default(Rescomb__ctx_type_6 &_ctx){
+static_inline void Svf_controlChange(Svf__ctx_type_4 &_ctx, int control, int value, int channel){
+}
+
+typedef Svf__ctx_type_4 Svf_default_type;
+
+static_inline void Svf_default_init(Svf__ctx_type_4 &_output_){
+   Svf__ctx_type_4_init(_output_);
+   return ;
+}
+
+static_inline void Svf_default(Svf__ctx_type_4 &_ctx){
+   _ctx.g = 0.0023297121342f;
+   _ctx.R = 1.f;
+   _ctx.inv_den = (1.f / (1.f + (_ctx.g * _ctx.g)));
 }
 
 typedef struct Phasedist_real__ctx_type_0 {

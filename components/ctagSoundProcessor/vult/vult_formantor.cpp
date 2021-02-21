@@ -18,60 +18,52 @@ float Util_dcblock(Util__ctx_type_3 &_ctx, float x0){
    return y0;
 }
 
-void Rescomb__ctx_type_0_init(Rescomb__ctx_type_0 &_output_){
-   Rescomb__ctx_type_0 _ctx;
-   _ctx.write_pos = 0;
-   float_init_array(675,0.0f,_ctx.buffer);
-   _output_ = _ctx;
-   return ;
-}
-
-float Rescomb_delay(Rescomb__ctx_type_0 &_ctx, float x, float cv){
-   _ctx.write_pos = ((1 + _ctx.write_pos) % 675);
-   float_set(_ctx.buffer,_ctx.write_pos,x);
-   float r_size;
-   r_size = 675.f;
-   float r_index;
-   r_index = fmodf((int_to_float(_ctx.write_pos) + (- Util_cvToperiod(cv))),r_size);
-   if(r_index < 0.0f){
-      r_index = (r_index + r_size);
-   }
-   int t1;
-   t1 = (float_to_int(floorf(r_index)) % 675);
-   int t2;
-   t2 = ((1 + t1) % 675);
-   float decimal;
-   decimal = (r_index + (- int_to_float(t1)));
-   float x1;
-   x1 = float_get(_ctx.buffer,t1);
-   float x2;
-   x2 = float_get(_ctx.buffer,t2);
-   float ret;
-   ret = (x1 + (decimal * (x2 + (- x1))));
-   return ret;
-}
-
-void Rescomb__ctx_type_5_init(Rescomb__ctx_type_5 &_output_){
-   Rescomb__ctx_type_5 _ctx;
-   _ctx.stone = 0.0f;
-   _ctx.output = 0.0f;
-   Rescomb__ctx_type_0_init(_ctx._inst47a);
-   Util__ctx_type_3_init(_ctx._inst37d);
+void Svf__ctx_type_4_init(Svf__ctx_type_4 &_output_){
+   Svf__ctx_type_4 _ctx;
+   _ctx.z2 = 0.0f;
+   _ctx.z1 = 0.0f;
+   _ctx.inv_den = 0.0f;
+   _ctx.g = 0.0f;
+   Util__ctx_type_1_init(_ctx._inst23b);
    Util__ctx_type_1_init(_ctx._inst13b);
+   _ctx.R = 0.0f;
+   Svf_default(_ctx);
    _output_ = _ctx;
    return ;
 }
 
-float Rescomb_do(Rescomb__ctx_type_5 &_ctx, float in, float cv, float tone, float res){
-   if(Util_change(_ctx._inst13b,tone)){
-      _ctx.stone = Rescomb_toneCurve(tone);
+float Svf_process(Svf__ctx_type_4 &_ctx, float x, float cv, float q, int sel){
+   q = (0.5f + q);
+   if(Util_change(_ctx._inst13b,cv) || Util_change(_ctx._inst23b,q)){
+      _ctx.g = Svf_calc_g(cv);
+      _ctx.R = (1.f / (2.f * (1e-018f + q)));
+      _ctx.inv_den = (1.f / (1.f + (2.f * _ctx.R * _ctx.g) + (_ctx.g * _ctx.g)));
    }
-   float feedback;
-   feedback = Util_dcblock(_ctx._inst37d,(_ctx.output * res));
-   float saturated_input;
-   saturated_input = Saturate_soft_process((feedback + in));
-   _ctx.output = (in + (_ctx.stone * Rescomb_delay(_ctx._inst47a,saturated_input,cv)));
-   return Saturate_soft_process(_ctx.output);
+   float high;
+   high = (_ctx.inv_den * (x + (- _ctx.z2) + (- (_ctx.z1 * (_ctx.g + (2.f * _ctx.R))))));
+   float band;
+   band = (_ctx.z1 + (_ctx.g * high));
+   float low;
+   low = (_ctx.z2 + (_ctx.g * band));
+   float notch;
+   notch = (high + low);
+   _ctx.z1 = (band + (_ctx.g * high));
+   _ctx.z2 = (low + (_ctx.g * band));
+   float output;
+   switch(sel) {
+      case 0:
+         output = low;
+      break;
+      case 1:
+         output = high;
+      break;
+      case 2:
+         output = band;
+      break;
+    default: 
+      output = notch;
+   }
+   return Saturate_soft_process(output);
 }
 
 void Phasedist_real__ctx_type_2_init(Phasedist_real__ctx_type_2 &_output_){

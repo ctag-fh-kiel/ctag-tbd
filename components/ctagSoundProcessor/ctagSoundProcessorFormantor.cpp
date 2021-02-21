@@ -48,8 +48,8 @@ using namespace CTAG::SP;
 #define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
 
 // --- VULT "Library for TBD" ---
-#include "vult_formantor.cpp"
-#include "vultin.cpp"
+#include "../vult/vultin.cpp"
+#include "./vult/vult_formantor.cpp"
 
 
 // --- Process trigger signals and keep their state internally ---
