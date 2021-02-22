@@ -48,6 +48,7 @@ using namespace CTAG::SP;
 
 // --- Additional Macro for automated parameter evaluations ---
 #define MK_TRIG_PAR(outname, inname) int outname = process_param_trig(data, trig_##inname, inname, e_##inname);
+#define MK_GATE_PAR(outname, inname) bool outname = (bool)process_param_trig(data, trig_##inname, inname, e_##inname, true);
 
 // --- Modify sine-wave for Squarewave/PWM or various modulations (including Pitch-Mod, Filter-Mod, Z-Scan and Vector-Modulation) ---
 #define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
@@ -59,13 +60,16 @@ using namespace CTAG::SP;
 
 
 // --- Process trigger signals and keep their state internally ---
-inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id )
+inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, bool is_gate = false )
 {
  int trig_status = 0;
   
   if(trig_myparm != -1)       // Trigger given via CV/Gate or button?
   {
     trig_status = !data.trig[trig_myparm]; // HIGH is 0, so we negate for boolean logic
+    if( is_gate )
+      return(trig_status);
+
     if(trig_status != prev_trig_state[prev_trig_state_id])    // Statuschange from HIGH to LOW or LOW to HIGH? Startup-Status for prev_trig_state is -1, so first change is always new
     {
       if (trig_status)                                  // New status is HIGH
@@ -157,7 +161,9 @@ float vowel_factor = 1.f;
 bool b_use_fix_formants = true;
 
   // === Global section ===
-  MK_TRIG_PAR(t_Gate, Gate);
+  MK_TRIG_PAR(t_Gate, Gate);      // We may have a trigger if AD EG
+  MK_GATE_PAR(g_Gate, Gate);      // Or a gate if ADSR EG
+
   MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 2.f);
 
   // === Voice section ===
@@ -241,10 +247,7 @@ bool b_use_fix_formants = true;
       vol_eg_adsr.SetSustain(f_Sustain);
       vol_eg_adsr.SetRelease(f_Release);
 
-      if (t_Gate > 0)      // values range from -1...+2
-        vol_eg_adsr.Gate(true);
-      else
-        vol_eg_adsr.Gate(false);
+      vol_eg_adsr.Gate(g_Gate);
       vol_eg_process = vol_eg_adsr.Process();   // Precalculate current Volume EG, it will be added in the "main" DSP-loop below
     }
     else  // AD mode for volume EG
