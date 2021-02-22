@@ -36,7 +36,9 @@ respective component folders / files if different from this license.
 using namespace CTAG::SP;
 
 #define GATE_HIGH_NEW       2
-#define GATE_LOW_NEW        -1
+#define GATE_HIGH                1
+#define GATE_LOW                0
+#define GATE_LOW_NEW       -1
 
 // --- Replace function-call of frequency-conversion with macro for increasing speed just a bit ---
 #define noteToFreq(incoming_note) (HELPERS::fastpow2 ((incoming_note - 69.f) / 12.f) *440.f)
@@ -51,7 +53,6 @@ using namespace CTAG::SP;
 #define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
 
 
-
 // --- VULT "Library for TBD" ---
 #include "../vult/vultin.cpp"
 #include "./vult/vult_formantor.cpp"
@@ -60,16 +61,27 @@ using namespace CTAG::SP;
 // --- Process trigger signals and keep their state internally ---
 inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id )
 {
+ int trig_status = 0;
+  
   if(trig_myparm != -1)       // Trigger given via CV/Gate or button?
   {
-    if((!data.trig[trig_myparm]) != prev_trig_state[prev_trig_state_id])    // Statuschange from HIGH to LOW or LOW to HIGH?
+    trig_status = !data.trig[trig_myparm]; // HIGH is 0, so we negate for boolean logic
+    if(trig_status != prev_trig_state[prev_trig_state_id])    // Statuschange from HIGH to LOW or LOW to HIGH? Startup-Status for prev_trig_state is -1, so first change is always new
     {
-      prev_trig_state[prev_trig_state_id] = !data.trig[trig_myparm];       // Remember status (we use negation of array-element to make sure we only get 0 or 1)
-      if (data.trig[trig_myparm] == 0)                      // HIGH if 0
-        return (GATE_HIGH_NEW);          // New trigger
-      else
-        return (GATE_LOW_NEW);           // Trigger released
-    }
+      if (trig_status)                                  // New status is HIGH
+      {
+        if( prev_trig_state[prev_trig_state_id] == GATE_LOW )
+        {
+          prev_trig_state[prev_trig_state_id] = GATE_HIGH;       // Remember status for next round
+          return (GATE_HIGH_NEW);           // New trigger
+        } 
+        else        // previous status was high!
+        {
+          prev_trig_state[prev_trig_state_id] = GATE_LOW;       // Remember status for next round
+          return (GATE_LOW_NEW);           // New trigger
+        } 
+      }  
+    } 
   }
   else                        // We may have a trigger set by activating the button via the GUI
   {

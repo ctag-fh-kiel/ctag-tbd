@@ -51,7 +51,7 @@ namespace CTAG {
                 e_FormantRndNew, e_ResCombOn,
                 e_FormantFilterOn, e_BlackKeyLogic, e_FormantLock, e_ADSRon, e_Formantor_options_max
             };
-            int prev_trig_state[e_Formantor_options_max] = {-1};   // Initialize _all_ entries with "low value" // ### check for bugs!
+            int prev_trig_state[e_Formantor_options_max] = {0};   // Initialize _all_ entries with "low value"
 
             // --- VULT Stuff ---
             Phasedist_real_process_type pd_data;        // VULT PD synth voice internal datastructure, also needed for initialisation
