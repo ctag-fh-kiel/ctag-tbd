@@ -70,24 +70,26 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
     if( is_gate )
       return(trig_status);
 
-    if(trig_status != prev_trig_state[prev_trig_state_id])    // Statuschange from HIGH to LOW or LOW to HIGH? Startup-Status for prev_trig_state is -1, so first change is always new
+    if(trig_status)    // Statuschange from HIGH to LOW or LOW to HIGH? Startup-Status for prev_trig_state is -1, so first change is always new
     {
-      if (trig_status)                                  // New status is HIGH
+      if( low_reached[trig_myparm] )    // We had a trigger low before the new trigger high
       {
-        if( prev_trig_state[prev_trig_state_id] == GATE_LOW )
+        if (prev_trig_state[prev_trig_state_id] == GATE_LOW)
         {
           prev_trig_state[prev_trig_state_id] = GATE_HIGH;       // Remember status for next round
+          low_reached[trig_myparm] = false;
           return (GATE_HIGH_NEW);           // New trigger
-        } 
+        }
         else        // previous status was high!
         {
           prev_trig_state[prev_trig_state_id] = GATE_LOW;       // Remember status for next round
+          low_reached[trig_myparm] = false;
           return (GATE_LOW_NEW);           // New trigger
-        } 
+        }
       }
-      else
-        prev_trig_state[prev_trig_state_id] = trig_status;      // Remember current status if changed from high to low to react with next high!
-    } 
+    }
+    else
+      low_reached[trig_myparm] = true;
   }
   else                        // We may have a trigger set by activating the button via the GUI
   {
