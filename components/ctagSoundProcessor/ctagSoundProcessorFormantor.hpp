@@ -44,7 +44,7 @@ namespace CTAG {
             float f_note_save = 36.f;      // We remember the last note, in case we select formants via black keys...
 
             // --- Remember status of triggers / buttons ---
-            inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, bool is_gate ); // rescale incoming data to bool
+            inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
             enum trig_states
             {
                 e_Gate, e_EGvolActive, e_EGvolSlow, e_FormantBlendingOn,

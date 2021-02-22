@@ -48,7 +48,8 @@ using namespace CTAG::SP;
 
 // --- Additional Macro for automated parameter evaluations ---
 #define MK_TRIG_PAR(outname, inname) int outname = process_param_trig(data, trig_##inname, inname, e_##inname);
-#define MK_GATE_PAR(outname, inname) bool outname = (bool)process_param_trig(data, trig_##inname, inname, e_##inname, true);
+#define MK_GATE_PAR(outname, inname) bool outname = (bool)process_param_trig(data, trig_##inname, inname, e_##inname, 1);
+#define MK_ADEG_PAR(outname, inname) int outname = process_param_trig(data, trig_##inname, inname, e_##inname, 2);
 
 // --- Modify sine-wave for Squarewave/PWM or various modulations (including Pitch-Mod, Filter-Mod, Z-Scan and Vector-Modulation) ---
 #define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
@@ -60,21 +61,21 @@ using namespace CTAG::SP;
 
 
 // --- Process trigger signals and keep their state internally ---
-inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, bool is_gate = false )
+inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type = 0 )
 {
  int trig_status = 0;
   
   if(trig_myparm != -1)       // Trigger given via CV/Gate or button?
   {
     trig_status = !data.trig[trig_myparm]; // HIGH is 0, so we negate for boolean logic
-    if( is_gate )
+    if( gate_type == 1 )
       return(trig_status);
 
     if(trig_status)    // Statuschange from HIGH to LOW or LOW to HIGH? Startup-Status for prev_trig_state is -1, so first change is always new
     {
       if( low_reached[trig_myparm] )    // We had a trigger low before the new trigger high
       {
-        if (prev_trig_state[prev_trig_state_id] == GATE_LOW)
+        if (prev_trig_state[prev_trig_state_id] == GATE_LOW || gate_type==2 )   // Toggle or AD EG Trigger...
         {
           prev_trig_state[prev_trig_state_id] = GATE_HIGH;       // Remember status for next round
           low_reached[trig_myparm] = false;
@@ -165,7 +166,7 @@ float vowel_factor = 1.f;
 bool b_use_fix_formants = true;
 
   // === Global section ===
-  MK_TRIG_PAR(t_Gate, Gate);      // We may have a trigger if AD EG
+  MK_ADEG_PAR(t_Gate, Gate);      // We may have a trigger if AD EG
   MK_GATE_PAR(g_Gate, Gate);      // Or a gate if ADSR EG
 
   MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 2.f);
