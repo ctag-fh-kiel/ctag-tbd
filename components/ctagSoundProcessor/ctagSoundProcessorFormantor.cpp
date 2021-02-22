@@ -84,7 +84,9 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
           prev_trig_state[prev_trig_state_id] = GATE_LOW;       // Remember status for next round
           return (GATE_LOW_NEW);           // New trigger
         } 
-      }  
+      }
+      else
+        prev_trig_state[prev_trig_state_id] = trig_status;      // Remember current status if changed from high to low to react with next high!
     } 
   }
   else                        // We may have a trigger set by activating the button via the GUI
