@@ -10,14 +10,23 @@
            ]
        },
        {
-          "id": "Voice", "name": "Voice ('Blackkey logic': 5 keys trigger the formants 1,2,3,4,5 / A,E,I,O,U - Pitch is on white keys)", "type": "group", "params":  
+          "id": "Voice", "name": "Voice ('Blackkey logic': 10 keys trigger the formants A,E,I,O,U / R1-R5 - Pitch is on white keys)", "type": "group", "params":  
            [
                {"id":"PDamount","name":"PD amount","type":"int","min":0,"max":4095,"step":1},
                {"id":"FormantFilterOn","name":"Formant Filter n/y","type":"bool"},
                {"id":"FormantRndNew","name":"New random formants n/y","type":"bool"},
                {"id":"BlackKeyLogic","name":"'Blackkey logic' on n/y","type":"bool"},
                {"id":"FormantLock","name":"Formantchange on trigger only n/y","type":"bool"},
-               {"id":"FormantSelect","name":"Formant select for current note (A,E,I,O,U / rndF1, rndF2, rndF3, rndF4, rndF5)","type":"int","min":1,"max":10,"step":1} 
+               {"id":"FormantSelect","name":"Formant select for current note (A,E,I,O,U / R1, R2, R3, R4, R5)","type":"int","min":1,"max":10,"step":1} 
+           ]   
+       },
+       {
+          "id": "Rescomb", "name": "Resonator", "type": "group", "params":  
+           [
+              {"id":"ResCombOn","name":"Resonator active n/y","type":"bool"},
+              {"id":"ResFreq","name":"Resonator Frequency","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResTone","name":"Resonator Tone","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResQ","name":"Resonator Q","type":"int","min":0,"max":4095,"step":1}
            ]   
        },
        {

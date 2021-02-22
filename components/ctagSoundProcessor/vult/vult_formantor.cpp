@@ -66,6 +66,63 @@ float Svf_process(Svf__ctx_type_4 &_ctx, float x, float cv, float q, int sel){
    return Saturate_soft_process(output);
 }
 
+void Rescomb__ctx_type_0_init(Rescomb__ctx_type_0 &_output_){
+  Rescomb__ctx_type_0 _ctx;
+  _ctx.write_pos = 0;
+  _ctx.bufferptr = (float*)heap_caps_malloc(sizeof(float)*675, MALLOC_CAP_8BIT);
+  float_init_array(675,0.0f,_ctx.bufferptr);
+  _output_ = _ctx;
+  return ;
+}
+
+float Rescomb_delay(Rescomb__ctx_type_0 &_ctx, float x, float cv){
+   _ctx.write_pos = ((1 + _ctx.write_pos) % 675);
+   float_set(_ctx.bufferptr,_ctx.write_pos,x);
+   float r_size;
+   r_size = 675.f;
+   float r_index;
+   r_index = fmodf((int_to_float(_ctx.write_pos) + (- Util_cvToperiod(cv))),r_size);
+   if(r_index < 0.0f){
+      r_index = (r_index + r_size);
+   }
+   int t1;
+   t1 = (float_to_int(floorf(r_index)) % 675);
+   int t2;
+   t2 = ((1 + t1) % 675);
+   float decimal;
+   decimal = (r_index + (- int_to_float(t1)));
+   float x1;
+   x1 = float_get(_ctx.bufferptr,t1);
+   float x2;
+   x2 = float_get(_ctx.bufferptr,t2);
+   float ret;
+   ret = (x1 + (decimal * (x2 + (- x1))));
+   return ret;
+}
+
+void Rescomb__ctx_type_5_init(Rescomb__ctx_type_5 &_output_){
+   Rescomb__ctx_type_5 _ctx;
+   _ctx.stone = 0.0f;
+   _ctx.output = 0.0f;
+   Rescomb__ctx_type_0_init(_ctx._inst47a);
+   Util__ctx_type_3_init(_ctx._inst37d);
+   Util__ctx_type_1_init(_ctx._inst13b);
+   _output_ = _ctx;
+   return ;
+}
+
+float Rescomb_do(Rescomb__ctx_type_5 &_ctx, float in, float cv, float tone, float res){
+   if(Util_change(_ctx._inst13b,tone)){
+      _ctx.stone = Rescomb_toneCurve(tone);
+   }
+   float feedback;
+   feedback = Util_dcblock(_ctx._inst37d,(_ctx.output * res));
+   float saturated_input;
+   saturated_input = Saturate_soft_process((feedback + in));
+   _ctx.output = (in + (_ctx.stone * Rescomb_delay(_ctx._inst47a,saturated_input,cv)));
+   return Saturate_soft_process(_ctx.output);
+}
+
 void Phasedist_real__ctx_type_2_init(Phasedist_real__ctx_type_2 &_output_){
    Phasedist_real__ctx_type_2 _ctx;
    _ctx.rate = 0.0f;

@@ -245,6 +245,12 @@ bool b_use_fix_formants = true;
       vol_eg_process = vol_eg_ad.Process();   // Precalculate current Volume EG, it will be added in the "main" DSP-loop below
     }
   }
+  // === Resonator (Resonant comb filter) ===
+  MK_TRIG_PAR(t_ResCombOn, ResCombOn);
+  MK_FLT_PAR_ABS(f_ResFreq, ResFreq, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResTone, ResTone, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResQ, ResQ, 4095.f, 1.f);
+
   // === Precalculation for realtime DSP loop ===
   // --- Find out what formant-related settings have to be made before main loop ---
   if( formant_selected > 4 )      // Random formants to be used
@@ -275,6 +281,8 @@ bool b_use_fix_formants = true;
   for(uint32_t i = 0; i < bufSz; i++)
   {
     f_val_result = Phasedist_real_process(pd_data,0);
+    if( t_ResCombOn )
+      f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
     if( t_FormantFilterOn )
     {
       if( b_use_fix_formants )
@@ -305,6 +313,9 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
   Phasedist_real_process_init(pd_data);
   Phasedist_real_default(pd_data);              // Enable default settings for PD-Synth
 
+  // heap_caps_malloc()
+  Rescomb_process_init(rescomb_data);
+
   // State Variable Filter (Bandpass) init (svf_data_x,y,z... for 3 bandpasses);
   Svf__ctx_type_4_init(svf_data_x);
   Svf__ctx_type_4_init(svf_data_y);
@@ -317,6 +328,7 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
   vol_eg_adsr.SetModeExp();                     // Logarithmic scaling
   vol_eg_adsr.Reset();
 
+
   // --- Set random formants for 3 Bandpass filters ---
   random_bp_filter_settings();
 }
@@ -324,6 +336,7 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
 // --- Formantor Destructor ---
 ctagSoundProcessorFormantor::~ctagSoundProcessorFormantor()
 {
+  heap_caps_free(rescomb_data._inst179._inst47a.bufferptr);   // Free delay buffer of Resonant comb filter!
 }
 
 // --- Formantor Initializer for factory design pattern ---
@@ -349,6 +362,14 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapTrig.emplace("FormantLock", [&](const int val){ trig_FormantLock = val;});
 	pMapPar.emplace("FormantSelect", [&](const int val){ FormantSelect = val;});
 	pMapCv.emplace("FormantSelect", [&](const int val){ cv_FormantSelect = val;});
+	pMapPar.emplace("ResCombOn", [&](const int val){ ResCombOn = val;});
+	pMapTrig.emplace("ResCombOn", [&](const int val){ trig_ResCombOn = val;});
+	pMapPar.emplace("ResFreq", [&](const int val){ ResFreq = val;});
+	pMapCv.emplace("ResFreq", [&](const int val){ cv_ResFreq = val;});
+	pMapPar.emplace("ResTone", [&](const int val){ ResTone = val;});
+	pMapCv.emplace("ResTone", [&](const int val){ cv_ResTone = val;});
+	pMapPar.emplace("ResQ", [&](const int val){ ResQ = val;});
+	pMapCv.emplace("ResQ", [&](const int val){ cv_ResQ = val;});
 	pMapPar.emplace("TremoloActive", [&](const int val){ TremoloActive = val;});
 	pMapTrig.emplace("TremoloActive", [&](const int val){ trig_TremoloActive = val;});
 	pMapPar.emplace("TremoloAfterFormant", [&](const int val){ TremoloAfterFormant = val;});

@@ -48,7 +48,7 @@ namespace CTAG {
             enum trig_states
             {
                 e_Gate, e_EGvolActive, e_EGvolSlow, e_FormantBlendingOn,
-                e_FormantRndNew,
+                e_FormantRndNew, e_ResCombOn,
                 e_FormantFilterOn, e_BlackKeyLogic, e_FormantLock, e_ADSRon, e_Formantor_options_max
             };
             int prev_trig_state[e_Formantor_options_max] = {-1};   // Initialize _all_ entries with "low value" // ### check for bugs!
@@ -58,6 +58,8 @@ namespace CTAG {
             Svf__ctx_type_4 svf_data_x;                 // State Variable Filter (Bandpass) init (svf_data_x,y,z... for 3 bandpasses);
             Svf__ctx_type_4 svf_data_y;
             Svf__ctx_type_4 svf_data_z;
+
+            Rescomb__ctx_type_6 rescomb_data;
 
             // --- Formant Parmeters for 3 BP-filters ---
             float f_CutOffXarray[5] = {0.f}; // Cutoff frequency values for 5 formants with 3 BP filters
@@ -94,6 +96,10 @@ namespace CTAG {
 	atomic<int32_t> BlackKeyLogic, trig_BlackKeyLogic;
 	atomic<int32_t> FormantLock, trig_FormantLock;
 	atomic<int32_t> FormantSelect, cv_FormantSelect;
+	atomic<int32_t> ResCombOn, trig_ResCombOn;
+	atomic<int32_t> ResFreq, cv_ResFreq;
+	atomic<int32_t> ResTone, cv_ResTone;
+	atomic<int32_t> ResQ, cv_ResQ;
 	atomic<int32_t> TremoloActive, trig_TremoloActive;
 	atomic<int32_t> TremoloAfterFormant, trig_TremoloAfterFormant;
 	atomic<int32_t> TremoloAttack, cv_TremoloAttack;
