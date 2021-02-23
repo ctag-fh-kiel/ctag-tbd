@@ -121,7 +121,7 @@ void ctagSoundProcessorAPCpp::Process(const ProcessData &data)
   mod2_on = process_param_trig(data, trig_MOD_active_2, MOD_active_2, e_MOD_active_2);  // Allow PWM for Osc2?
   // Volume Envelope active and/or triggered?
   env_active = process_param_trig(data, trig_Env_active, Env_active, e_Env_active);
-  env_trigger = process_param_trig(data, trig_Trigger_env, Trigger_env, e_Trigger_env);
+  env_trigger = process_param_trig(data, trig_Trigger_env, Trigger_env, e_Trigger_env, 2);  // Variant 2: trigger always, not (only) toggled!
   env_loop = process_param_trig(data, trig_Env_loop_active, Env_loop_active, e_Env_loop_active);
 
   // --- Read and buffer controllers for APC and frequencies required for sound-generation lateron ---
