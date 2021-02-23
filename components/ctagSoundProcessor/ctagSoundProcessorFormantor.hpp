@@ -61,6 +61,7 @@ namespace CTAG {
             Svf__ctx_type_4 svf_data_z;
 
             Rescomb__ctx_type_6 rescomb_data;
+            Ladder__ctx_type_8 ladder_data;
 
             // --- Formant Parmeters for 3 BP-filters ---
             float f_CutOffXarray[5] = {0.f}; // Cutoff frequency values for 5 formants with 3 BP filters

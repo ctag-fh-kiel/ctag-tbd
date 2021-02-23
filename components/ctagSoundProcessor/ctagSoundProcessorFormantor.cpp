@@ -315,6 +315,9 @@ bool b_use_fix_formants = true;
         f_val_result = f_formant_x + f_formant_y + f_formant_z;
       }
     }
+    if( t_BlackKeyLogic )    // ### to be optimized later! ###
+      f_val_result = Ladder_process(ladder_data, f_val_result, 0.8f, 3.5f );  // Ladder__ctx_type_8 &_ctx, float input, float cut, float res){
+
     f_val_result *= vol_eg_process * f_Volume;      // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive), adjust master-volume
     CONSTRAIN(f_val_result, -1.f, 1.f );
     data.buf[i * 2 + processCh] = f_val_result;     // Mono channel output for plugin in slot 1 and/or in slot 2
@@ -335,6 +338,8 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
 
   // heap_caps_malloc()
   Rescomb_process_init(rescomb_data);
+
+  Ladder_process_init(ladder_data);
 
   // State Variable Filter (Bandpass) init (svf_data_x,y,z... for 3 bandpasses);
   Svf__ctx_type_4_init(svf_data_x);

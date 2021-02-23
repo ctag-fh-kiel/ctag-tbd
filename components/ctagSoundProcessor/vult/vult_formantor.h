@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "../vult/vultin.h"
-#include "./vult/vult_formantor.tables.h"
+#include "vult_formantor.tables.h"
 
 typedef struct Util__ctx_type_0 {
    uint8_t pre;
@@ -373,11 +373,160 @@ static_inline void Svf_default(Svf__ctx_type_4 &_ctx){
    _ctx.inv_den = (1.f / (1.f + (_ctx.g * _ctx.g)));
 }
 
+static_inline float Ladder_tune_raw_c0(int index){
+   return Ladder_tune_c0[index];
+};
+
+static_inline float Ladder_tune_raw_c1(int index){
+   return Ladder_tune_c1[index];
+};
+
+static_inline float Ladder_tune_raw_c2(int index){
+   return Ladder_tune_c2[index];
+};
+
+static_inline float Ladder_tune(float cut){
+   int index;
+   index = int_clip(float_to_int((127.f * cut)),0,127);
+   return (float_wrap_array(Ladder_tune_c0)[index] + (cut * (float_wrap_array(Ladder_tune_c1)[index] + (cut * float_wrap_array(Ladder_tune_c2)[index]))));
+}
+
+typedef struct Ladder__ctx_type_4 {
+   float p3;
+   float p2;
+   float p1;
+   float p0;
+} Ladder__ctx_type_4;
+
+typedef Ladder__ctx_type_4 Ladder_heun_type;
+
+void Ladder__ctx_type_4_init(Ladder__ctx_type_4 &_output_);
+
+static_inline void Ladder_heun_init(Ladder__ctx_type_4 &_output_){
+   Ladder__ctx_type_4_init(_output_);
+   return ;
+}
+
+float Ladder_heun(Ladder__ctx_type_4 &_ctx, float input, float fh, float res);
+
+typedef struct Ladder__ctx_type_5 {
+   float p3;
+   float p2;
+   float p1;
+   float p0;
+} Ladder__ctx_type_5;
+
+typedef Ladder__ctx_type_5 Ladder_euler_type;
+
+void Ladder__ctx_type_5_init(Ladder__ctx_type_5 &_output_);
+
+static_inline void Ladder_euler_init(Ladder__ctx_type_5 &_output_){
+   Ladder__ctx_type_5_init(_output_);
+   return ;
+}
+
+float Ladder_euler(Ladder__ctx_type_5 &_ctx, float input, float fh, float res);
+
+typedef struct Ladder__ctx_type_6 {
+   float fh;
+   Ladder__ctx_type_5 e;
+   Util__ctx_type_1 _inst13b;
+} Ladder__ctx_type_6;
+
+typedef Ladder__ctx_type_6 Ladder_process_euler_type;
+
+void Ladder__ctx_type_6_init(Ladder__ctx_type_6 &_output_);
+
+static_inline void Ladder_process_euler_init(Ladder__ctx_type_6 &_output_){
+   Ladder__ctx_type_6_init(_output_);
+   return ;
+}
+
+float Ladder_process_euler(Ladder__ctx_type_6 &_ctx, float input, float cut, float res);
+
+typedef struct Ladder__ctx_type_7 {
+   Ladder__ctx_type_4 h;
+   float fh;
+   Util__ctx_type_1 _inst13b;
+} Ladder__ctx_type_7;
+
+typedef Ladder__ctx_type_7 Ladder_process_heun_type;
+
+void Ladder__ctx_type_7_init(Ladder__ctx_type_7 &_output_);
+
+static_inline void Ladder_process_heun_init(Ladder__ctx_type_7 &_output_){
+   Ladder__ctx_type_7_init(_output_);
+   return ;
+}
+
+float Ladder_process_heun(Ladder__ctx_type_7 &_ctx, float input, float cut, float res);
+
+typedef struct Ladder__ctx_type_8 {
+   Ladder__ctx_type_7 _inst112;
+} Ladder__ctx_type_8;
+
+typedef Ladder__ctx_type_8 Ladder_process_type;
+
+static_inline void Ladder__ctx_type_8_init(Ladder__ctx_type_8 &_output_){
+   Ladder__ctx_type_8 _ctx;
+   Ladder__ctx_type_7_init(_ctx._inst112);
+   _output_ = _ctx;
+   return ;
+}
+
+static_inline void Ladder_process_init(Ladder__ctx_type_8 &_output_){
+   Ladder__ctx_type_8_init(_output_);
+   return ;
+}
+
+static_inline float Ladder_process(Ladder__ctx_type_8 &_ctx, float input, float cut, float res){
+   return Ladder_process_heun(_ctx._inst112,input,cut,res);
+};
+
+typedef Ladder__ctx_type_8 Ladder_noteOn_type;
+
+static_inline void Ladder_noteOn_init(Ladder__ctx_type_8 &_output_){
+   Ladder__ctx_type_8_init(_output_);
+   return ;
+}
+
+static_inline void Ladder_noteOn(Ladder__ctx_type_8 &_ctx, int note, int velocity, int channel){
+}
+
+typedef Ladder__ctx_type_8 Ladder_noteOff_type;
+
+static_inline void Ladder_noteOff_init(Ladder__ctx_type_8 &_output_){
+   Ladder__ctx_type_8_init(_output_);
+   return ;
+}
+
+static_inline void Ladder_noteOff(Ladder__ctx_type_8 &_ctx, int note, int channel){
+}
+
+typedef Ladder__ctx_type_8 Ladder_controlChange_type;
+
+static_inline void Ladder_controlChange_init(Ladder__ctx_type_8 &_output_){
+   Ladder__ctx_type_8_init(_output_);
+   return ;
+}
+
+static_inline void Ladder_controlChange(Ladder__ctx_type_8 &_ctx, int control, int value, int channel){
+}
+
+typedef Ladder__ctx_type_8 Ladder_default_type;
+
+static_inline void Ladder_default_init(Ladder__ctx_type_8 &_output_){
+   Ladder__ctx_type_8_init(_output_);
+   return ;
+}
+
+static_inline void Ladder_default(Ladder__ctx_type_8 &_ctx){
+}
+
 typedef struct Rescomb__ctx_type_0 {
    int write_pos;
    float* bufferptr;
 } Rescomb__ctx_type_0;
-
 
 typedef Rescomb__ctx_type_0 Rescomb_delay_type;
 
