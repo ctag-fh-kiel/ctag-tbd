@@ -52,6 +52,8 @@ using namespace CTAG::SP;
 
 // --- Additional Macro for automated parameter evaluations ---
 #define MK_TRIG_PAR(outname, inname) int outname = process_param_trig(data, trig_##inname, inname, e_##inname);
+#define MK_GATE_PAR(outname, inname) bool outname = (bool)process_param_trig(data, trig_##inname, inname, e_##inname, 1);
+#define MK_ADEG_PAR(outname, inname) int outname = process_param_trig(data, trig_##inname, inname, e_##inname, 2);
 
 // --- Modify sine-wave for Squarewave/PWM or various modulations (including Pitch-Mod, Filter-Mod, Z-Scan and Vector-Modulation) ---
 #define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
@@ -195,7 +197,9 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   // === Read Buttons from GUI or Trigger/Gate and Sliders from GUI or CV and scale the data if required, "order in way of apperance" on GUI ===
   // Trigger variables will be named like the given parameter with an t_-Prefix but stay integers, CV-Variables are floats and thus f_*
   // --- Voice / Volume ---
-  MK_TRIG_PAR(t_Gate, Gate);
+  MK_GATE_PAR(g_Gate, Gate);
+  MK_ADEG_PAR(t_Gate, Gate);
+
   MK_TRIG_PAR(t_EGvolGate, EGvolGate);
   if (t_Gate == GATE_HIGH_NEW && !t_EGvolGate)   // We have two modes for "on trigger": reset playing of samples to start y/n
   {
@@ -665,10 +669,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
       vol_eg_adsr.SetSustain(f_SustainVol);
       vol_eg_adsr.SetRelease(f_ReleaseVol);
 
-      if( t_Gate > 0 )      // values range from -1...+2
-        vol_eg_adsr.Gate(true);
-      else
-        vol_eg_adsr.Gate(false);
+      vol_eg_adsr.Gate(g_Gate);
       vol_eg_process = vol_eg_adsr.Process();   // Precalculate current Volume EG, it will be added in the "main" DSP-loop below
     }
     else  // AD mode
