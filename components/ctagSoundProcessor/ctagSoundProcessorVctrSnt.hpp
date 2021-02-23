@@ -31,7 +31,7 @@ namespace CTAG {
             virtual void knowYourself() override;
 
             // --- Remember status of triggers / buttons ---
-            inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id ); // rescale incoming data to bool
+            inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
             enum trig_states
             {
               e_Gate, e_LfoWTxFadeActive_1, e_LfoWTxFadeActive_2, e_LfoSAMPxFadeActive_1, e_LfoSAMPxFadeActive_2,
@@ -40,9 +40,10 @@ namespace CTAG {
               e_StereoSplit, e_ScanWavTbl_A, e_ScanWavTbl_C, e_FreqModActive, e_FreqModExclWT, e_FreqModExclSample,
               e_FilterLFOon_A, e_FilterLFOon_C, e_loop_pipo_D, e_ModulateSubOscXfade_A, e_ModulateSubOscXfade_C,
               e_FilterLFOon_D, e_EGvolActive, e_FilterLFOsquare_C, e_FreqModExclSubOSC, e_FilterLFOon_B, e_SubOscPWM_A,
-              e_SubOscPWM_C, e_EGvolSlow, e_EGvolADSRon, e_APC_options_max
+              e_SubOscPWM_C, e_EGvolSlow, e_EGvolADSRon, e_VctrSnt_options_max
             };
-            int prev_trig_state[e_APC_options_max] = {0};   // Initialize _all_ entries with "low value"
+            int prev_trig_state[e_VctrSnt_options_max] = {0};   // Initialize _all_ entries with "low value"
+            bool low_reached[e_VctrSnt_options_max] = {false};  // We need this for look for toggle-events
 
             // --- Sample and Hold for LFOs ---
             float applySnH(float sine_lfo_val, int enum_val);

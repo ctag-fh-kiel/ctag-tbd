@@ -36,9 +36,9 @@ respective component folders / files if different from this license.
 using namespace CTAG::SP;
 
 #define GATE_HIGH_NEW       2
-#define GATE_HIGH                1
-#define GATE_LOW                0
-#define GATE_LOW_NEW       -1
+#define GATE_HIGH           1
+#define GATE_LOW            0
+
 
 // --- Replace function-call of frequency-conversion with macro for increasing speed just a bit ---
 #define noteToFreq(incoming_note) (HELPERS::fastpow2 ((incoming_note - 69.f) / 12.f) *440.f)
@@ -85,7 +85,7 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
         {
           prev_trig_state[prev_trig_state_id] = GATE_LOW;       // Remember status for next round
           low_reached[trig_myparm] = false;
-          return (GATE_LOW_NEW);           // New trigger
+          return (GATE_LOW);           // New trigger
         }
       }
     }
@@ -100,7 +100,7 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
       if(my_parm != 0)                   // LOW if 0
         return (GATE_HIGH_NEW);          // New trigger
       else
-        return (GATE_LOW_NEW);           // Trigger released
+        return (GATE_LOW);           // Trigger released
     }
   }
   return(prev_trig_state[prev_trig_state_id]);            // No change (1 for active, 0 for inactive)
