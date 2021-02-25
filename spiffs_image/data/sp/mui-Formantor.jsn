@@ -2,17 +2,52 @@
    "id": "Formantor", "isStereo": false, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
    [
        {  
-          "id": "Global", "name": "Global", "type": "group", "params":  
+          "id": "Global", "name": "Global (Quantizer relative to Master Tune!)", "type": "group", "params":  
            [
                {"id":"Gate","name":"Gate/Trigger n/y","type":"bool"},
-               {"id": "MasterPitch","type": "int","name": "Master Pitch","min": -48,"max": 48,"step": 1},
+               {"id": "MasterPitch","type": "int","name": "Master Pitch (map CV here)","min": -48,"max": 48,"step": 1},
+               {"id": "MasterTune","type": "int","name": "Master Tune +- 1200 Cent","min": -1200,"max": 1200,"step": 1},
+               {"id":"QuantizePitch","name":"Quantize CV to chromatic tuning n/y","type":"bool"},
                {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
            ]
        },
        {
-          "id": "Voice", "name": "Voice ('Blackkey logic': 10 keys trigger the formants A,E,I,O,U / R1-R5 - Pitch is on white keys)", "type": "group", "params":  
+          "id": "Voice", "name": "Voice", "type": "group", "params":  
            [
-               {"id":"PDamount","name":"PD amount","type":"int","min":0,"max":4095,"step":1},
+               {"id": "PDPitch","type": "int","name": "PD Pitch","min": -48,"max": 48,"step": 1}, 
+               {"id": "PDTune","type": "int","name": "PD Tune","min": -1200,"max": 1200,"step": 1},
+               {"id":"PDamount","name":"Phase Distortion of PD Osc","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PDformantsOff","name":"PD Osc bypasses Formant-Filter n/y","type":"bool"},
+               {"id":"PDresonatorOff","name":"PD Osc bypasses Resonator n/y","type":"bool"},
+              
+               {"id": "SQWPitch","type": "int","name": "SQW Pitch","min": -48,"max": 48,"step": 1},
+               {"id": "SQWTune","type": "int","name": "SQW Tune","min": -1200,"max": 1200,"step": 1},
+               {"id":"PWMintensity","name":"PWM intensity for SQW Osc","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"PWMspeed","name":"PWM speed for SQW Osc","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SQWformantsOff","name":"SQW Osc bypasses Formant-Filter n/y","type":"bool"},
+               {"id":"SQWresonatorOff","name":"SQW Osc bypasses Resonator n/y","type":"bool"},
+
+               {"id": "SAWPitch","type": "int","name": "SAW Pitch","min": -48,"max": 48,"step": 1},
+               {"id": "SAWTune","type": "int","name": "SAW Tune","min": -1200,"max": 1200,"step": 1},
+               {"id":"SAWformantsOff","name":"SAW Osc bypasses Formant-Filter n/y","type":"bool"},
+               {"id":"SAWresonatorOff","name":"SAW Osc bypasses Resonator n/y","type":"bool"}
+           ]   
+       },
+       {
+          "id": "Mixer", "name": "Crossmodulator / Mixer", "type": "group", "params":  
+           [
+               {"id":"PDxmod","name":"PD to Xmod PD with SQW","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SQWxmod","name":"SQW to Xmod PD with SAW","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SAWxmod","name":"SAW to Xmod SAW with PD","type":"int","min":0,"max":4095,"step":1}, 
+               
+               {"id":"PDvol","name":"PD Oscillator/Xmod volume","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SQWvol","name":"SQW Oscillator/Xmod volume","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SAWvol","name":"SAW Oscillator/Xmod volume","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+          "id": "Formants", "name": "Formant-Filter ('Blackkey logic': 10 keys trigger the formants A,E,I,O,U / R1-R5 - Pitch is on white keys)", "type": "group", "params":  
+           [
                {"id":"FormantFilterOn","name":"Formant Filter n/y","type":"bool"},
                {"id":"FormantRndNew","name":"New random formants n/y","type":"bool"},
                {"id":"BlackKeyLogic","name":"'Blackkey logic' on n/y","type":"bool"},
@@ -24,6 +59,7 @@
           "id": "Rescomb", "name": "Resonator", "type": "group", "params":  
            [
               {"id":"ResCombOn","name":"Resonator active n/y","type":"bool"},
+              {"id":"ResCombBeforeFormants","name":"Resonator before formant-filter n/y","type":"bool"},
               {"id":"ResFreq","name":"Resonator Frequency","type":"int","min":0,"max":4095,"step":1},
               {"id":"ResTone","name":"Resonator Tone","type":"int","min":0,"max":4095,"step":1},
               {"id":"ResQ","name":"Resonator Q","type":"int","min":0,"max":4095,"step":1}
@@ -33,7 +69,7 @@
           "id": "Tremolo", "name": "Tremolo", "type": "group", "params":  
            [
                {"id":"TremoloActive","name":"Tremolo active n/y","type":"bool"}, 
-               {"id":"TremoloAfterFormant","name":"Tremolo after formant filtering n/y","type":"bool"}, 
+               {"id":"TremoloAfterFormant","name":"Tremolo becomes panner after filters n/y","type":"bool"}, 
                {"id":"TremoloAttack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
                {"id":"TremoloSpeed","name":"Tremolo Speed","type":"int","min":0,"max":4095,"step":1},
                {"id":"TremoloAmount","name":"Tremolo Amount","type":"int","min":0,"max":4095,"step":1}

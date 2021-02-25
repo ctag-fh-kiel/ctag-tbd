@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <math.h>
 #include "../vult/vultin.h"
-#include "vult_formantor.tables.h"
+#include "./vult/vult_formantor.tables.h"
 
 typedef struct Util__ctx_type_0 {
    uint8_t pre;
@@ -748,6 +748,64 @@ static_inline void Phasedist_real_default(Phasedist_real__ctx_type_3 &_ctx){
    _ctx.pitch = 45.f;
    _ctx.detune = 0.0f;
 }
+
+typedef struct Saw_eptr__ctx_type_0 {
+   float rate;
+   float phase;
+   Util__ctx_type_1 _inst13b;
+} Saw_eptr__ctx_type_0;
+
+typedef Saw_eptr__ctx_type_0 Saw_eptr_process_type;
+
+void Saw_eptr__ctx_type_0_init(Saw_eptr__ctx_type_0 &_output_);
+
+static_inline void Saw_eptr_process_init(Saw_eptr__ctx_type_0 &_output_){
+   Saw_eptr__ctx_type_0_init(_output_);
+   return ;
+}
+
+float Saw_eptr_process(Saw_eptr__ctx_type_0 &_ctx, float cv);
+
+typedef Saw_eptr__ctx_type_0 Saw_eptr_noteOn_type;
+
+static_inline void Saw_eptr_noteOn_init(Saw_eptr__ctx_type_0 &_output_){
+   Saw_eptr__ctx_type_0_init(_output_);
+   return ;
+}
+
+static_inline void Saw_eptr_noteOn(Saw_eptr__ctx_type_0 &_ctx, int note, int velocity, int channel){
+}
+
+typedef Saw_eptr__ctx_type_0 Saw_eptr_noteOff_type;
+
+static_inline void Saw_eptr_noteOff_init(Saw_eptr__ctx_type_0 &_output_){
+   Saw_eptr__ctx_type_0_init(_output_);
+   return ;
+}
+
+static_inline void Saw_eptr_noteOff(Saw_eptr__ctx_type_0 &_ctx, int note, int channel){
+}
+
+typedef Saw_eptr__ctx_type_0 Saw_eptr_controlChange_type;
+
+static_inline void Saw_eptr_controlChange_init(Saw_eptr__ctx_type_0 &_output_){
+   Saw_eptr__ctx_type_0_init(_output_);
+   return ;
+}
+
+static_inline void Saw_eptr_controlChange(Saw_eptr__ctx_type_0 &_ctx, int control, int value, int channel){
+}
+
+typedef Saw_eptr__ctx_type_0 Saw_eptr_default_type;
+
+static_inline void Saw_eptr_default_init(Saw_eptr__ctx_type_0 &_output_){
+   Saw_eptr__ctx_type_0_init(_output_);
+   return ;
+}
+
+static_inline void Saw_eptr_default(Saw_eptr__ctx_type_0 &_ctx){
+   _ctx.rate = 0.000741569062643f;
+};
 
 
 

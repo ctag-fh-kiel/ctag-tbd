@@ -39,11 +39,10 @@ using namespace CTAG::SP;
 #define GATE_HIGH           1
 #define GATE_LOW            0
 
-
 // --- Replace function-call of frequency-conversion with macro for increasing speed just a bit ---
 #define noteToFreq(incoming_note) (HELPERS::fastpow2 ((incoming_note - 69.f) / 12.f) *440.f)
 
-// --- Rescale randome values from 0...1 to needed output ---
+// --- Rescale random values from 0...1 to needed output ---
 #define RESCALE_FLT_MIN_MAX(inname, out_min, out_max) (inname * (out_max-out_min)+out_min)
 
 // --- Additional Macro for automated parameter evaluations ---
@@ -148,6 +147,12 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
 {
 // --- Main processing output ---
 float f_val_result = 0.f;
+
+float f_val_pd = 0.f;   // Results for PD Osc
+float f_val_sqw = 0.f;  // Results for SQW Osc
+float f_val_saw = 0.f;  // Results for SAW Osc
+
+
 // --- Formant values for BP formants ---
 float f_formant_x = 0.f;
 float f_formant_y = 0.f;
@@ -172,12 +177,10 @@ bool b_use_fix_formants = true;
   MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 2.f);
 
   // === Voice section ===
-  MK_TRIG_PAR(t_FormantRndNew, FormantRndNew);
+  MK_ADEG_PAR(t_FormantRndNew, FormantRndNew);
   if( t_FormantRndNew == GATE_HIGH_NEW)
-  {
-    random_bp_filter_settings();  // ### experimental !!! to be optimized in logic later!
-    // ### printf("new setting of random BP formants...\n");
-  }
+    random_bp_filter_settings();
+
   MK_TRIG_PAR(t_FormantFilterOn, FormantFilterOn);
 
   float f_MasterPitch = (float)(MasterPitch+48);  // Range is -48...48 as "MIDI notes"...
@@ -190,6 +193,20 @@ bool b_use_fix_formants = true;
 
   MK_FLT_PAR_ABS(f_PDamount, PDamount, 4095.f, 1.f);
 
+  // --- SQW Osc / PWM ---
+  // ###
+
+  // === Mixer/Xmod section ===
+  MK_FLT_PAR_ABS(f_PDxmod, PDxmod, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_SQWxmod, SQWxmod, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_SAWxmod, SAWxmod, 4095.f, 1.f);
+
+  MK_FLT_PAR_ABS(f_PDvol, PDvol, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_SQWvol, SQWvol, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_SAWvol, SAWvol, 4095.f, 1.f);
+
+
+  // === Formant section ===
   MK_INT_PAR_ABS(i_FormantSelect, FormantSelect,  11.f);
   i_FormantSelect--;    // GUI shows values 1-5 for formants a,e,i,o,u, we use 0-4 internally!
   CONSTRAIN(i_FormantSelect, 0, 9);
@@ -267,6 +284,7 @@ bool b_use_fix_formants = true;
   }
   // === Resonator (Resonant comb filter) ===
   MK_TRIG_PAR(t_ResCombOn, ResCombOn);
+  MK_TRIG_PAR(t_ResCombBeforeFormants, ResCombBeforeFormants);
   MK_FLT_PAR_ABS(f_ResFreq, ResFreq, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_ResTone, ResTone, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_ResQ, ResQ, 4095.f, 1.f);
@@ -297,12 +315,24 @@ bool b_use_fix_formants = true;
   Phasedist_real_controlChange(pd_data, 31, f_PDamount, 0);
   Phasedist_real_noteOn(pd_data, f_current_note, 110, 0);
 
+  // --- Set values for additional PWM oscillator ---
+  oscPWM.SetFrequency(noteToFreq(f_current_note) );
+
   // === Realtime DSP output loop ===
+  float sawNote = f_current_note / 127.f;    // Saw_eptr_process() is scaled to 0 ... 1.0 for 5 octaves of "MIDI"-notes as float-value...
   for(uint32_t i = 0; i < bufSz; i++)
   {
-    f_val_result = Phasedist_real_process(pd_data,0);
-    if( t_ResCombOn )
+    f_val_pd = Phasedist_real_process(pd_data,0);
+
+    f_val_sqw = oscPWM.Process();
+    SINE_TO_SQUARE(f_val_sqw);
+    f_val_saw = Saw_eptr_process( saw_data, sawNote );
+
+    f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
+
+    if( t_ResCombOn && t_ResCombBeforeFormants)
       f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
+
     if( t_FormantFilterOn )
     {
       if( b_use_fix_formants )
@@ -315,8 +345,8 @@ bool b_use_fix_formants = true;
         f_val_result = f_formant_x + f_formant_y + f_formant_z;
       }
     }
-    if( t_BlackKeyLogic )    // ### to be optimized later! ###
-      f_val_result = Ladder_process(ladder_data, f_val_result, 0.8f, 3.5f );  // Ladder__ctx_type_8 &_ctx, float input, float cut, float res){
+    if( t_ResCombOn && !t_ResCombBeforeFormants)
+        f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
 
     f_val_result *= vol_eg_process * f_Volume;      // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive), adjust master-volume
     CONSTRAIN(f_val_result, -1.f, 1.f );
@@ -332,14 +362,17 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
   model = std::make_unique<ctagSPDataModel>(id, isStereo);
   LoadPreset(0);
 
+  // --- Additional oscillator (PWM) ---
+  oscPWM.SetSampleRate(44100.f);
+  oscPWM.SetFrequency(1.f);
+
   // --- VULT ---
   Phasedist_real_process_init(pd_data);
   Phasedist_real_default(pd_data);              // Enable default settings for PD-Synth
 
-  // heap_caps_malloc()
-  Rescomb_process_init(rescomb_data);
+  Rescomb_process_init(rescomb_data);           // Modified to use heap_caps_malloc()
 
-  Ladder_process_init(ladder_data);
+  Saw_eptr_process_init(saw_data);          // SawWave
 
   // State Variable Filter (Bandpass) init (svf_data_x,y,z... for 3 bandpasses);
   Svf__ctx_type_4_init(svf_data_x);
@@ -373,10 +406,54 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapTrig.emplace("Gate", [&](const int val){ trig_Gate = val;});
 	pMapPar.emplace("MasterPitch", [&](const int val){ MasterPitch = val;});
 	pMapCv.emplace("MasterPitch", [&](const int val){ cv_MasterPitch = val;});
+	pMapPar.emplace("MasterTune", [&](const int val){ MasterTune = val;});
+	pMapCv.emplace("MasterTune", [&](const int val){ cv_MasterTune = val;});
+	pMapPar.emplace("QuantizePitch", [&](const int val){ QuantizePitch = val;});
+	pMapTrig.emplace("QuantizePitch", [&](const int val){ trig_QuantizePitch = val;});
 	pMapPar.emplace("Volume", [&](const int val){ Volume = val;});
 	pMapCv.emplace("Volume", [&](const int val){ cv_Volume = val;});
+	pMapPar.emplace("PDPitch", [&](const int val){ PDPitch = val;});
+	pMapCv.emplace("PDPitch", [&](const int val){ cv_PDPitch = val;});
+	pMapPar.emplace("PDTune", [&](const int val){ PDTune = val;});
+	pMapCv.emplace("PDTune", [&](const int val){ cv_PDTune = val;});
 	pMapPar.emplace("PDamount", [&](const int val){ PDamount = val;});
 	pMapCv.emplace("PDamount", [&](const int val){ cv_PDamount = val;});
+	pMapPar.emplace("PDformantsOff", [&](const int val){ PDformantsOff = val;});
+	pMapTrig.emplace("PDformantsOff", [&](const int val){ trig_PDformantsOff = val;});
+	pMapPar.emplace("PDresonatorOff", [&](const int val){ PDresonatorOff = val;});
+	pMapTrig.emplace("PDresonatorOff", [&](const int val){ trig_PDresonatorOff = val;});
+	pMapPar.emplace("SQWPitch", [&](const int val){ SQWPitch = val;});
+	pMapCv.emplace("SQWPitch", [&](const int val){ cv_SQWPitch = val;});
+	pMapPar.emplace("SQWTune", [&](const int val){ SQWTune = val;});
+	pMapCv.emplace("SQWTune", [&](const int val){ cv_SQWTune = val;});
+	pMapPar.emplace("PWMintensity", [&](const int val){ PWMintensity = val;});
+	pMapCv.emplace("PWMintensity", [&](const int val){ cv_PWMintensity = val;});
+	pMapPar.emplace("PWMspeed", [&](const int val){ PWMspeed = val;});
+	pMapCv.emplace("PWMspeed", [&](const int val){ cv_PWMspeed = val;});
+	pMapPar.emplace("SQWformantsOff", [&](const int val){ SQWformantsOff = val;});
+	pMapTrig.emplace("SQWformantsOff", [&](const int val){ trig_SQWformantsOff = val;});
+	pMapPar.emplace("SQWresonatorOff", [&](const int val){ SQWresonatorOff = val;});
+	pMapTrig.emplace("SQWresonatorOff", [&](const int val){ trig_SQWresonatorOff = val;});
+	pMapPar.emplace("SAWPitch", [&](const int val){ SAWPitch = val;});
+	pMapCv.emplace("SAWPitch", [&](const int val){ cv_SAWPitch = val;});
+	pMapPar.emplace("SAWTune", [&](const int val){ SAWTune = val;});
+	pMapCv.emplace("SAWTune", [&](const int val){ cv_SAWTune = val;});
+	pMapPar.emplace("SAWformantsOff", [&](const int val){ SAWformantsOff = val;});
+	pMapTrig.emplace("SAWformantsOff", [&](const int val){ trig_SAWformantsOff = val;});
+	pMapPar.emplace("SAWresonatorOff", [&](const int val){ SAWresonatorOff = val;});
+	pMapTrig.emplace("SAWresonatorOff", [&](const int val){ trig_SAWresonatorOff = val;});
+	pMapPar.emplace("PDxmod", [&](const int val){ PDxmod = val;});
+	pMapCv.emplace("PDxmod", [&](const int val){ cv_PDxmod = val;});
+	pMapPar.emplace("SQWxmod", [&](const int val){ SQWxmod = val;});
+	pMapCv.emplace("SQWxmod", [&](const int val){ cv_SQWxmod = val;});
+	pMapPar.emplace("SAWxmod", [&](const int val){ SAWxmod = val;});
+	pMapCv.emplace("SAWxmod", [&](const int val){ cv_SAWxmod = val;});
+	pMapPar.emplace("PDvol", [&](const int val){ PDvol = val;});
+	pMapCv.emplace("PDvol", [&](const int val){ cv_PDvol = val;});
+	pMapPar.emplace("SQWvol", [&](const int val){ SQWvol = val;});
+	pMapCv.emplace("SQWvol", [&](const int val){ cv_SQWvol = val;});
+	pMapPar.emplace("SAWvol", [&](const int val){ SAWvol = val;});
+	pMapCv.emplace("SAWvol", [&](const int val){ cv_SAWvol = val;});
 	pMapPar.emplace("FormantFilterOn", [&](const int val){ FormantFilterOn = val;});
 	pMapTrig.emplace("FormantFilterOn", [&](const int val){ trig_FormantFilterOn = val;});
 	pMapPar.emplace("FormantRndNew", [&](const int val){ FormantRndNew = val;});
@@ -389,6 +466,8 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("FormantSelect", [&](const int val){ cv_FormantSelect = val;});
 	pMapPar.emplace("ResCombOn", [&](const int val){ ResCombOn = val;});
 	pMapTrig.emplace("ResCombOn", [&](const int val){ trig_ResCombOn = val;});
+	pMapPar.emplace("ResCombBeforeFormants", [&](const int val){ ResCombBeforeFormants = val;});
+	pMapTrig.emplace("ResCombBeforeFormants", [&](const int val){ trig_ResCombBeforeFormants = val;});
 	pMapPar.emplace("ResFreq", [&](const int val){ ResFreq = val;});
 	pMapCv.emplace("ResFreq", [&](const int val){ cv_ResFreq = val;});
 	pMapPar.emplace("ResTone", [&](const int val){ ResTone = val;});

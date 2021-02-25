@@ -207,12 +207,12 @@ float Ladder_process_heun(Ladder__ctx_type_7 &_ctx, float input, float cut, floa
 }
 
 void Rescomb__ctx_type_0_init(Rescomb__ctx_type_0 &_output_){
-   Rescomb__ctx_type_0 _ctx;
-   _ctx.write_pos = 0;
+  Rescomb__ctx_type_0 _ctx;
+  _ctx.write_pos = 0;
   _ctx.bufferptr = (float*)heap_caps_malloc(sizeof(float)*675, MALLOC_CAP_8BIT);
-   float_init_array(675,0.0f,_ctx.bufferptr);
-   _output_ = _ctx;
-   return ;
+  float_init_array(675,0.0f,_ctx.bufferptr);
+  _output_ = _ctx;
+  return ;
 }
 
 float Rescomb_delay(Rescomb__ctx_type_0 &_ctx, float x, float cv){
@@ -310,6 +310,34 @@ float Phasedist_real_process(Phasedist_real__ctx_type_3 &_ctx, float input){
    float sine;
    sine = sinf((6.28318530718f * phase2));
    return (comp * sine);
+}
+
+void Saw_eptr__ctx_type_0_init(Saw_eptr__ctx_type_0 &_output_){
+   Saw_eptr__ctx_type_0 _ctx;
+   _ctx.rate = 0.0f;
+   _ctx.phase = 0.0f;
+   Util__ctx_type_1_init(_ctx._inst13b);
+   Saw_eptr_default(_ctx);
+   _output_ = _ctx;
+   return ;
+}
+
+float Saw_eptr_process(Saw_eptr__ctx_type_0 &_ctx, float cv){
+   float y;
+   y = 0.0f;
+   if(Util_change(_ctx._inst13b,cv)){
+      _ctx.rate = Util_cvToRate(cv);
+   }
+   _ctx.phase = (_ctx.phase + (2.f * _ctx.rate));
+   if(_ctx.phase > (1.f + (- _ctx.rate))){
+      y = (-1.f + _ctx.phase + (- (_ctx.phase / _ctx.rate)) + (1.f / _ctx.rate));
+      _ctx.phase = (-2.f + _ctx.phase);
+   }
+   else
+   {
+      y = _ctx.phase;
+   }
+   return y;
 }
 
 

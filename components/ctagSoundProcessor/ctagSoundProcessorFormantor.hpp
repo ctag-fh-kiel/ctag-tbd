@@ -3,6 +3,8 @@
 #include "helpers/ctagADEnv.hpp"            // Needed for AD EG (Attack/Decay Envelope Generator)
 #include "helpers/ctagADSREnv.hpp"          // Needed for ADSR EG (Attack/Decay/Sustain/Release Envelope Generator)
 #include "helpers/ctagWNoiseGen.hpp"
+#include "helpers/ctagSineSource.hpp"
+#include "helpers/ctagFastMath.hpp"
 
 // --- VULT "Library for TBD" ---
 #include "./vult/vult_formantor.h"
@@ -48,11 +50,15 @@ namespace CTAG {
             enum trig_states
             {
                 e_Gate, e_EGvolActive, e_EGvolSlow, e_FormantBlendingOn,
-                e_FormantRndNew, e_ResCombOn,
+                e_FormantRndNew, e_ResCombOn, e_SQWon, e_CrossModOn, e_ResCombBeforeFormants,
                 e_FormantFilterOn, e_BlackKeyLogic, e_FormantLock, e_ADSRon, e_Formantor_options_max
             };
             int prev_trig_state[e_Formantor_options_max] = {0};   // Initialize _all_ entries with "low value"
             bool low_reached[e_Formantor_options_max] = {false};  // We need this for look for toggle-events
+
+            // --- ---
+            // --- Suboscillators ---
+            ctagSineSource oscPWM;
 
             // --- VULT Stuff ---
             Phasedist_real_process_type pd_data;        // VULT PD synth voice internal datastructure, also needed for initialisation
@@ -61,7 +67,7 @@ namespace CTAG {
             Svf__ctx_type_4 svf_data_z;
 
             Rescomb__ctx_type_6 rescomb_data;
-            Ladder__ctx_type_8 ladder_data;
+            Saw_eptr__ctx_type_0 saw_data;
 
             // --- Formant Parmeters for 3 BP-filters ---
             float f_CutOffXarray[5] = {0.f}; // Cutoff frequency values for 5 formants with 3 BP filters
@@ -91,14 +97,37 @@ namespace CTAG {
             // sectionHpp
 	atomic<int32_t> Gate, trig_Gate;
 	atomic<int32_t> MasterPitch, cv_MasterPitch;
+	atomic<int32_t> MasterTune, cv_MasterTune;
+	atomic<int32_t> QuantizePitch, trig_QuantizePitch;
 	atomic<int32_t> Volume, cv_Volume;
+	atomic<int32_t> PDPitch, cv_PDPitch;
+	atomic<int32_t> PDTune, cv_PDTune;
 	atomic<int32_t> PDamount, cv_PDamount;
+	atomic<int32_t> PDformantsOff, trig_PDformantsOff;
+	atomic<int32_t> PDresonatorOff, trig_PDresonatorOff;
+	atomic<int32_t> SQWPitch, cv_SQWPitch;
+	atomic<int32_t> SQWTune, cv_SQWTune;
+	atomic<int32_t> PWMintensity, cv_PWMintensity;
+	atomic<int32_t> PWMspeed, cv_PWMspeed;
+	atomic<int32_t> SQWformantsOff, trig_SQWformantsOff;
+	atomic<int32_t> SQWresonatorOff, trig_SQWresonatorOff;
+	atomic<int32_t> SAWPitch, cv_SAWPitch;
+	atomic<int32_t> SAWTune, cv_SAWTune;
+	atomic<int32_t> SAWformantsOff, trig_SAWformantsOff;
+	atomic<int32_t> SAWresonatorOff, trig_SAWresonatorOff;
+	atomic<int32_t> PDxmod, cv_PDxmod;
+	atomic<int32_t> SQWxmod, cv_SQWxmod;
+	atomic<int32_t> SAWxmod, cv_SAWxmod;
+	atomic<int32_t> PDvol, cv_PDvol;
+	atomic<int32_t> SQWvol, cv_SQWvol;
+	atomic<int32_t> SAWvol, cv_SAWvol;
 	atomic<int32_t> FormantFilterOn, trig_FormantFilterOn;
 	atomic<int32_t> FormantRndNew, trig_FormantRndNew;
 	atomic<int32_t> BlackKeyLogic, trig_BlackKeyLogic;
 	atomic<int32_t> FormantLock, trig_FormantLock;
 	atomic<int32_t> FormantSelect, cv_FormantSelect;
 	atomic<int32_t> ResCombOn, trig_ResCombOn;
+	atomic<int32_t> ResCombBeforeFormants, trig_ResCombBeforeFormants;
 	atomic<int32_t> ResFreq, cv_ResFreq;
 	atomic<int32_t> ResTone, cv_ResTone;
 	atomic<int32_t> ResQ, cv_ResQ;
