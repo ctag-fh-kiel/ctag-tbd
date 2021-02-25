@@ -217,7 +217,8 @@ bool b_use_fix_formants = true;
   MK_TRIG_PAR( t_BlackKeyLogic, BlackKeyLogic );
   if( t_BlackKeyLogic )    // We may encounter a black key for formant change
   {
-    int my_formant = formant_trigger[i_current_note%24];    // We have max 10 formants, connected to 10 black keys, changing every 2 octaves...
+    // ### int my_formant = formant_trigger[i_current_note%24];    // We have max 10 formants, connected to 10 black keys, changing every 2 octaves...
+    int my_formant = i_current_note%5;  // ### Hack!
     if( my_formant != -1)     // We found a new formant via a black key
     {
       formant_selected = my_formant;
@@ -229,6 +230,7 @@ bool b_use_fix_formants = true;
       i_note_save = i_current_note;   // We had no black key, so remember it for later!
       f_note_save = f_current_note;
     }
+    formant_selected = my_formant;  // ### Hack! (delete later again!)
   }
   else    // No black key logic
     formant_selected = i_FormantSelect;   // Take formants from the slider / CV instead
@@ -323,10 +325,11 @@ bool b_use_fix_formants = true;
   for(uint32_t i = 0; i < bufSz; i++)
   {
     f_val_pd = Phasedist_real_process(pd_data,0);
-
     f_val_sqw = oscPWM.Process();
     SINE_TO_SQUARE(f_val_sqw);
-    f_val_saw = Saw_eptr_process( saw_data, sawNote );
+
+    if( f_SAWvol > 0.1 )    // ### Hack to be able to turn it off for performance-testing!
+      f_val_saw = Saw_eptr_process( saw_data, sawNote );
 
     f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
 

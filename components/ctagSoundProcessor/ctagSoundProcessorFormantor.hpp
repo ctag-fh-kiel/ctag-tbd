@@ -41,6 +41,8 @@ namespace CTAG {
             // --- Keyboard logic[s] to switch formants ---
             int formant_trigger[24] = { -1,0,-1,1,-1,-1,2,-1,3,-1,4,-1,   // Black keys on a keyboard, 10 formants connected to 2*5 black keys per two octaves =>
                                         -1,5,-1,6,-1,-1,7,-1,8,-1,9,-1};  // 1st, 3rd and 5th octave has fix formants, 2nd and 4th octave has random formants!
+
+            // ### int formant_triggerX[12] = {-1,0,-1,1,-1,-1,2,-1,3,-1,4,-1};
             int formant_selected = 0;   // We remember the most recent trigger-key of the formant here
             int i_note_save = 36;          // We remember the last note, in case we select formants via black keys...
             float f_note_save = 36.f;      // We remember the last note, in case we select formants via black keys...
