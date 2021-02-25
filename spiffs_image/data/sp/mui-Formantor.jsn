@@ -1,5 +1,5 @@
 {
-   "id": "Formantor", "isStereo": false, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
+   "id": "Formantor", "isStereo": true, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
    [
        {  
           "id": "Global", "name": "Global (Quantizer relative to Master Tune!)", "type": "group", "params":  
