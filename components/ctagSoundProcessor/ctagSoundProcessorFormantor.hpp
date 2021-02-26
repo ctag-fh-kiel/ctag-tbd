@@ -25,6 +25,7 @@ namespace CTAG {
 
             // --- Vowel/formant filter ---
             int i_FormantSelect_save = 0;         // This is a buffer variable in case we allow switching of formants only on note-change
+
             const double* coeff_array[5] = { (const double *)coeff_a, (const double *)coeff_e, (const double *)coeff_i, (const double *)coeff_o, (const double *)coeff_u };
             const double coeff_a[11] = { 8.11044e-06, 8.943665402, -36.83889529, 92.01697887, -154.337906, 181.6233289, -151.8651235, 89.09614114, -35.10298511, 8.388101016, -0.923313471 };
             const double coeff_e[11] = { 4.36215e-06, 8.90438318, -36.55179099, 91.05750846, -152.422234, 179.1170248, -149.6496211, 87.78352223, -34.60687431, 8.282228154, -0.914150747 };
@@ -32,6 +33,15 @@ namespace CTAG {
             const double coeff_o[11] = { 1.13572e-06, 8.994734087, -37.2084849, 93.22900521, -156.6929844, 184.596544, -154.3755513, 90.49663749, -35.58964535, 8.478996281, -0.929252233 };
             const double coeff_u[11] = { 4.09431e-07, 8.997322763, -37.20218544, 93.11385476, -156.2530937, 183.7080141, -153.2631681, 89.59539726, -35.12454591, 8.338655623, -0.910251753 };
             const double* coeff_cur = (const double *)coeff_a;
+            /*
+            const float* coeff_array[5] = { (const float *)coeff_a, (const float *)coeff_e, (const float *)coeff_i, (const float *)coeff_o, (const float *)coeff_u };
+            const float coeff_a[11] = { 0.000008, 8.943665, -36.83889, 92.01697, -154.3379, 181.6233, -151.8651, 89.0961, -35.10298, 8.388101, -0.923313 };
+            const float coeff_e[11] = { 0.000004, 8.904383, -36.55179, 91.05750, -152.4222, 179.1170, -149.6496, 87.7835, -34.60687, 8.282228, -0.914150 };
+            const float coeff_i[11] = { 0.000003, 8.893102, -36.49532, 90.96543, -152.4545, 179.4835, -150.3154, 88.4340, -34.98612, 8.407803, -0.932568 };
+            const float coeff_o[11] = { 0.000001, 8.994734, -37.20848, 93.22900, -156.6929, 184.5965, -154.3755, 90.4966, -35.58964, 8.478996, -0.929252 };
+            const float coeff_u[11] = { 0.000001, 8.997322, -37.20218, 93.11385, -156.2530, 183.7080, -153.2631, 89.5953, -35.12454, 8.338655, -0.910251 };
+            const float* coeff_cur = (const float *)coeff_a;
+            */
             inline void formant_filter_set_formant(int formant_idx) {coeff_cur = coeff_array[formant_idx];}
             float formant_filter(float input_for_filter);   // vowel_ids are 0...4 for A, E, I, O, U -> we use seperate arrays for faster processing!
 

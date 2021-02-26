@@ -123,22 +123,31 @@ float ctagSoundProcessorFormantor::formant_filter(float in)     // Vowel IDs are
 // --- Find random formants by setting parameters for 5*3 BP-filters ---
 void ctagSoundProcessorFormantor::random_bp_filter_settings()
 {
-  for( int i=0; i<5; i++)   // Process all 5 formants
+float cutoff_tmp1 = 0.f;
+float cutoff_tmp2 = 0.f;
+
+  for( int i=0; i<5; i++)   // Process all 5 formants, random inspired by table from: https://en.wikipedia.org/wiki/Formant
   {
     // --- Set Cutoff frequencies for 3 Bandpass filters for each formant ---
-    f_CutOffXarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.2f, 0.4f);      // 0.4f, 0.8f);
-    f_CutOffYarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.3f, 0.6f);
-    f_CutOffZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.5f, 0.8f);
+    f_CutOffXarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.3f, 0.5f);
+    f_CutOffYarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.5f, 0.6f);
+    f_CutOffZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.6f, 0.8f);
+    /*
+    f_CutOffXarray[i] = cutoff_tmp1 = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.1f, 0.35f);
+    f_CutOffYarray[i] = cutoff_tmp2 = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.5f, 0.9f);
+    cutoff_tmp1 = fabsf(cutoff_tmp2-cutoff_tmp1);
+    f_CutOffZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), cutoff_tmp1, cutoff_tmp2); // fabsf(cutoff_tmp2-cutoff_tmp1);
+    */
 
     // --- Set Resonance for 3 Bandpass filters for each formant ---
-    f_ResoXarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 3.f, 4.5f);
-    f_ResoYarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 2.f, 4.f);       // 2.f, 4.5f);
-    f_ResoZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 3.5f, 5.f);
+    f_ResoXarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 3.f, 4.5f);
+    f_ResoYarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 2.f, 4.f);       // 2.f, 4.5f);
+    f_ResoZarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 3.5f, 5.f);
 
     // --- Set Volume for 3 Bandpass filters for each formant ---
-    f_FltAmntXarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.8f, 1.4f);
-    f_FltAmntYarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.6f, 1.2f); // 0.6f, 1.8f);
-    f_FltAmntZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.9f, 1.8f);
+    f_FltAmntXarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.8f, 1.4f);
+    f_FltAmntYarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.6f, 1.2f); // 0.6f, 1.8f);
+    f_FltAmntZarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.9f, 1.8f);
   }
 }
 
@@ -310,7 +319,10 @@ bool b_use_fix_formants = true;
   else // Use fix formants
   {
     if (formant_selected == 0)
-      vowel_factor = 0.7f;   // Formant A is much louder, we lower the volume! Else, the factor simply will be 1.
+      vowel_factor = 0.6f;   // Formant A is much louder, we lower the volume! Else, the factor simply will be 1.
+    if (formant_selected == 2)
+      vowel_factor = 1.7f;   // Formant I is much quieter, we increase the volume! Else, the factor simply will be 1.
+
     formant_filter_set_formant(formant_selected); // We set the selected formant to be used as member-variable for runtime-optimisation for main loop
   }
   // --- Set values for PD-synth ---
@@ -325,21 +337,27 @@ bool b_use_fix_formants = true;
   for(uint32_t i = 0; i < bufSz; i++)
   {
     f_val_pd = Phasedist_real_process(pd_data,0);
-    f_val_sqw = oscPWM.Process();
-    SINE_TO_SQUARE(f_val_sqw);
-
-    if( f_SAWvol > 0.1 )    // ### Hack to be able to turn it off for performance-testing!
+    if( i%2 )
+    {
+      f_val_sqw = oscPWM.Process();
+      SINE_TO_SQUARE(f_val_sqw);
+    }
+    if( f_SAWvol > 0.1 && i%2)    // ### Hack to be able to turn it off for performance-testing!
       f_val_saw = Saw_eptr_process( saw_data, sawNote );
 
-    f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
+    // f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
+    f_val_result = (f_val_pd*f_PDvol  + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
 
     if( t_ResCombOn && t_ResCombBeforeFormants)
       f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
 
     if( t_FormantFilterOn )
     {
-      if( b_use_fix_formants )
-        f_val_result = formant_filter(f_val_result) * vowel_factor;
+      if( b_use_fix_formants && i%2 )
+      {
+        f_val_result = formant_filter((f_val_sqw * f_SQWvol + f_val_saw * f_SAWvol) / 2.f) *
+                       vowel_factor;  // ### experimental, half samplerate!
+      }
       else
       {
         f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX, f_ResoX, 2) * f_FltAmntX;
@@ -347,6 +365,7 @@ bool b_use_fix_formants = true;
         f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ, f_ResoZ, 2) * f_FltAmntZ;
         f_val_result = f_formant_x + f_formant_y + f_formant_z;
       }
+      f_val_result = (f_val_result+f_val_pd*f_PDvol)/2.f;
     }
     if( t_ResCombOn && !t_ResCombBeforeFormants)
         f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
