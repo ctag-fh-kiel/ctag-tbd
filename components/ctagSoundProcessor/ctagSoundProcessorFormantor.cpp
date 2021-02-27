@@ -52,7 +52,7 @@ using namespace CTAG::SP;
 
 // --- Modify sine-wave for Squarewave/PWM or various modulations (including Pitch-Mod, Filter-Mod, Z-Scan and Vector-Modulation) ---
 #define SINE_TO_SQUARE(sine_val)                      sine_val = (sine_val >= 0) ? 1.f : -1.f;
-
+#define X_FADE(fader, val_left, val_right)                    ((1.f-fader)*val_left + fader*val_right)
 
 // --- VULT "Library for TBD" ---
 #include "../vult/vultin.cpp"
@@ -121,33 +121,39 @@ float ctagSoundProcessorFormantor::formant_filter(float in)     // Vowel IDs are
 }
 
 // --- Find random formants by setting parameters for 5*3 BP-filters ---
-void ctagSoundProcessorFormantor::random_bp_filter_settings()
+void ctagSoundProcessorFormantor::random_bp_filter_settings(int set_num)
 {
-float cutoff_tmp1 = 0.f;
-float cutoff_tmp2 = 0.f;
+int lo=0; int hi=0;
 
-  for( int i=0; i<5; i++)   // Process all 5 formants, random inspired by table from: https://en.wikipedia.org/wiki/Formant
+  // --- Decide which mode is needed to set BP "formants" ---
+  if( set_num < 0 )   // Random all (upon initialisation)
+  {
+    lo = 0;
+    hi = 4;
+  }
+  else                // Random one
+  {
+    lo = set_num;
+    hi = set_num;
+  }
+  printf("random_bp_filter_settings(%d, %d)\n", hi, lo );
+  // --- Either set one or all required random bandpass combinations to result in new formant filtering ---
+  for( int i=lo; i <= hi; i++)   // Process all 5 formants
   {
     // --- Set Cutoff frequencies for 3 Bandpass filters for each formant ---
-    f_CutOffXarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.3f, 0.5f);
-    f_CutOffYarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.5f, 0.6f);
-    f_CutOffZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.6f, 0.8f);
-    /*
-    f_CutOffXarray[i] = cutoff_tmp1 = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.1f, 0.35f);
-    f_CutOffYarray[i] = cutoff_tmp2 = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.5f, 0.9f);
-    cutoff_tmp1 = fabsf(cutoff_tmp2-cutoff_tmp1);
-    f_CutOffZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), cutoff_tmp1, cutoff_tmp2); // fabsf(cutoff_tmp2-cutoff_tmp1);
-    */
+    f_CutOffXarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.2f, 0.4f);
+    f_CutOffYarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.3f, 0.6f);
+    f_CutOffZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.5f, 0.8f);
 
     // --- Set Resonance for 3 Bandpass filters for each formant ---
-    f_ResoXarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 3.f, 4.5f);
-    f_ResoYarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 2.f, 4.f);       // 2.f, 4.5f);
-    f_ResoZarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 3.5f, 5.f);
+    f_ResoXarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 3.f, 4.5f);
+    f_ResoYarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 2.f, 4.f);
+    f_ResoZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 3.5f, 5.f);
 
     // --- Set Volume for 3 Bandpass filters for each formant ---
-    f_FltAmntXarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.8f, 1.4f);
-    f_FltAmntYarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.6f, 1.2f); // 0.6f, 1.8f);
-    f_FltAmntZarray[i] = 1.f; // RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.9f, 1.8f);
+    f_FltAmntXarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.8f, 1.4f);
+    f_FltAmntYarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.6f, 1.2f);
+    f_FltAmntZarray[i] = RESCALE_FLT_MIN_MAX(rndVal.Process(), 0.9f, 1.8f);
   }
 }
 
@@ -220,14 +226,12 @@ bool b_use_fix_formants = true;
   i_FormantSelect--;    // GUI shows values 1-5 for formants a,e,i,o,u, we use 0-4 internally!
   CONSTRAIN(i_FormantSelect, 0, 9);
 
-  MK_TRIG_PAR(t_FormantLock, FormantLock );
 
   // --- Check for formant-selection via black keys ---
-  MK_TRIG_PAR( t_BlackKeyLogic, BlackKeyLogic );
-  if( t_BlackKeyLogic )    // We may encounter a black key for formant change
+  MK_TRIG_PAR( t_KeyLogic, KeyLogic );
+  if( t_KeyLogic )    // We may encounter a black key for formant change
   {
-    // ### int my_formant = formant_trigger[i_current_note%24];    // We have max 10 formants, connected to 10 black keys, changing every 2 octaves...
-    int my_formant = i_current_note%5;  // ### Hack!
+    int my_formant = formant_trigger[i_current_note%12];    // We have max 10 formants, connected to 10 black keys, changing every 2 octaves...
     if( my_formant != -1)     // We found a new formant via a black key
     {
       formant_selected = my_formant;
@@ -239,21 +243,9 @@ bool b_use_fix_formants = true;
       i_note_save = i_current_note;   // We had no black key, so remember it for later!
       f_note_save = f_current_note;
     }
-    formant_selected = my_formant;  // ### Hack! (delete later again!)
   }
   else    // No black key logic
     formant_selected = i_FormantSelect;   // Take formants from the slider / CV instead
-
-  // --- If active: only allow new formants when a new note is triggered! ---
-  if( t_FormantLock )
-  {
-    if( t_Gate == GATE_HIGH_NEW )
-      i_FormantSelect_save = formant_selected;   // The new formant will be used now with the newly triggered note
-    else
-      formant_selected = i_FormantSelect_save;   // We reset the selected formant to the one that had been saved when the last note got triggered
-  }
-  else
-    i_FormantSelect_save = formant_selected;     // We save the current formant in case formant-selection gets locked to triggering lateron!
 
   // === Volume Envelope section ===
   float vol_eg_process = 1.f;              // Set to max, in case if EG is unused this will work, too!
@@ -299,13 +291,13 @@ bool b_use_fix_formants = true;
   MK_FLT_PAR_ABS(f_ResFreq, ResFreq, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_ResTone, ResTone, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_ResQ, ResQ, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResAmount, ResAmount,4095.f, 1.f);
 
   // === Precalculation for realtime DSP loop ===
   // --- Find out what formant-related settings have to be made before main loop ---
-  if( formant_selected > 4 )      // Random formants to be used
+  if( t_ResCombOn )      // With resonator for performance reasons (on the ESP) only random formants are to be used
   {
     b_use_fix_formants = false;
-    formant_selected -= 5;
     f_CutOffX = f_CutOffXarray[formant_selected]; // Used with random formants for bandpass function later: Svf_process(Svf__ctx_type_4 &_ctx, float x, float cv, float q, int sel) - sel==2 for bandpass
     f_CutOffY = f_CutOffXarray[formant_selected];
     f_CutOffZ = f_CutOffXarray[formant_selected];
@@ -337,38 +329,33 @@ bool b_use_fix_formants = true;
   for(uint32_t i = 0; i < bufSz; i++)
   {
     f_val_pd = Phasedist_real_process(pd_data,0);
-    if( i%2 )
-    {
-      f_val_sqw = oscPWM.Process();
-      SINE_TO_SQUARE(f_val_sqw);
-    }
-    if( f_SAWvol > 0.1 && i%2)    // ### Hack to be able to turn it off for performance-testing!
+    f_val_sqw = oscPWM.Process();
+    SINE_TO_SQUARE(f_val_sqw);
+
+    if( f_SAWvol > 0.1 )    // ### Hack to be able to turn it off for performance-testing!
       f_val_saw = Saw_eptr_process( saw_data, sawNote );
 
-    // f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
-    f_val_result = (f_val_pd*f_PDvol  + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
+    f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
 
     if( t_ResCombOn && t_ResCombBeforeFormants)
       f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
 
     if( t_FormantFilterOn )
     {
-      if( b_use_fix_formants && i%2 )
+      if( b_use_fix_formants )
       {
-        f_val_result = formant_filter((f_val_sqw * f_SQWvol + f_val_saw * f_SAWvol) / 2.f) *
-                       vowel_factor;  // ### experimental, half samplerate!
+        f_val_result = formant_filter(f_val_result * vowel_factor);  // ### experimental, half samplerate!
       }
       else
       {
         f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX, f_ResoX, 2) * f_FltAmntX;
         f_formant_y = Svf_process(svf_data_y, f_val_result, f_CutOffY, f_ResoY, 2) * f_FltAmntY;
         f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ, f_ResoZ, 2) * f_FltAmntZ;
-        f_val_result = f_formant_x + f_formant_y + f_formant_z;
+        f_val_result = (f_formant_x + f_formant_y + f_formant_z)/3.f;
       }
-      f_val_result = (f_val_result+f_val_pd*f_PDvol)/2.f;
     }
     if( t_ResCombOn && !t_ResCombBeforeFormants)
-        f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
+      f_val_result = X_FADE(f_ResAmount, f_val_result, Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ));
 
     f_val_result *= vol_eg_process * f_Volume;      // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive), adjust master-volume
     CONSTRAIN(f_val_result, -1.f, 1.f );
@@ -480,10 +467,8 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapTrig.emplace("FormantFilterOn", [&](const int val){ trig_FormantFilterOn = val;});
 	pMapPar.emplace("FormantRndNew", [&](const int val){ FormantRndNew = val;});
 	pMapTrig.emplace("FormantRndNew", [&](const int val){ trig_FormantRndNew = val;});
-	pMapPar.emplace("BlackKeyLogic", [&](const int val){ BlackKeyLogic = val;});
-	pMapTrig.emplace("BlackKeyLogic", [&](const int val){ trig_BlackKeyLogic = val;});
-	pMapPar.emplace("FormantLock", [&](const int val){ FormantLock = val;});
-	pMapTrig.emplace("FormantLock", [&](const int val){ trig_FormantLock = val;});
+	pMapPar.emplace("KeyLogic", [&](const int val){ KeyLogic = val;});
+	pMapTrig.emplace("KeyLogic", [&](const int val){ trig_KeyLogic = val;});
 	pMapPar.emplace("FormantSelect", [&](const int val){ FormantSelect = val;});
 	pMapCv.emplace("FormantSelect", [&](const int val){ cv_FormantSelect = val;});
 	pMapPar.emplace("ResCombOn", [&](const int val){ ResCombOn = val;});
@@ -496,6 +481,8 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("ResTone", [&](const int val){ cv_ResTone = val;});
 	pMapPar.emplace("ResQ", [&](const int val){ ResQ = val;});
 	pMapCv.emplace("ResQ", [&](const int val){ cv_ResQ = val;});
+	pMapPar.emplace("ResAmount", [&](const int val){ ResAmount = val;});
+	pMapCv.emplace("ResAmount", [&](const int val){ cv_ResAmount = val;});
 	pMapPar.emplace("TremoloActive", [&](const int val){ TremoloActive = val;});
 	pMapTrig.emplace("TremoloActive", [&](const int val){ trig_TremoloActive = val;});
 	pMapPar.emplace("TremoloAfterFormant", [&](const int val){ TremoloAfterFormant = val;});
