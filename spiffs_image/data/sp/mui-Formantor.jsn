@@ -42,12 +42,12 @@
            ]   
        },
        {
-          "id": "Formants", "name": "Formant-Filter ('Key logic': Keys trigger the formants  (A,a,E,e,I,i,O,o,U / R1-R9)", "type": "group", "params":  
+          "id": "Formants", "name": "Formant-Filter ('Key logic': Keys trigger the formants  (A,a,E,e,I,i,O,o,U / R1-R12)", "type": "group", "params":  
            [
               {"id":"FormantFilterOn","name":"Formant Filter n/y","type":"bool"},
               {"id":"KeyLogic","name":"'Key logic' on n/y","type":"bool"},
               {"id":"FormantRndNew","name":"New random formant for selection n/y","type":"bool"},
-              {"id":"FormantSelect","name":"Formant selection (A,a,E,e,I,i,O,o,U / R1-R9)","type":"int","min":1,"max":9,"step":1},
+              {"id":"FormantSelect","name":"Formant selection (A,a,E,e,I,i,O,o,U / R1-R12)","type":"int","min":1,"max":12,"step":1},
               {"id":"FormantAmount","name":"Formant Filter Amount","type":"int","min":0,"max":4095,"step":1},
               
               {"id":"ResCombOn","name":"Resonator active (switch to random formants) n/y","type":"bool"},

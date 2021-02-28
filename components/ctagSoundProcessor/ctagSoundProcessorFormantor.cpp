@@ -131,7 +131,7 @@ int lo=0; int hi=0;
   if( set_num < 0 )   // Random all (upon initialisation)
   {
     lo = 0;
-    hi = 8;
+    hi = 11;
   }
   else                // Random one
   {
@@ -221,11 +221,10 @@ bool b_use_fix_formants = true;
   MK_FLT_PAR_ABS(f_SQWvol, SQWvol, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_SAWvol, SAWvol, 4095.f, 1.f);
 
-
   // === Formant section ===
-  MK_INT_PAR_ABS(i_FormantSelect, FormantSelect,  9.f);
-  i_FormantSelect--;    // GUI shows values 1-5 for formants a,e,i,o,u, we use 0-4 internally!
-  CONSTRAIN(i_FormantSelect, 0, 8);
+  MK_INT_PAR_ABS(i_FormantSelect, FormantSelect,  12.f);
+  i_FormantSelect--;    // GUI shows values 1-12 for formants a,e,i,o,u (plus interpolated variants) we use 0-11 internally!
+  CONSTRAIN(i_FormantSelect, 0, 11);  // We use 11 values to make them playable by 12 notes per octave as well ;-)
 
   MK_FLT_PAR_ABS(f_FormantAmount, FormantAmount, 4095.f, 1.f);
 
@@ -314,8 +313,8 @@ bool b_use_fix_formants = true;
   {
     if (formant_selected == 0)
       vowel_factor = 0.6f;   // Formant A is much louder, we lower the volume! Else, the factor simply will be 1.
-    if (formant_selected == 2)
-      vowel_factor = 1.7f;   // Formant I is much quieter, we increase the volume! Else, the factor simply will be 1.
+    if (formant_selected == 3)
+      vowel_factor = 1.1f;   // Formant I is much quieter, we increase the volume! Else, the factor simply will be 1.
 
     formant_filter_set_formant(formant_selected); // We set the selected formant to be used as member-variable for runtime-optimisation for main loop
   }
