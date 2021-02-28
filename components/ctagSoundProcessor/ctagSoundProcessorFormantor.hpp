@@ -26,7 +26,7 @@ namespace CTAG {
             // --- Vowel/formant filter ---
             float formant_filter(float input_for_filter);   // vowel_ids are 0...4 for A, E, I, O, U -> we use seperate arrays for faster processing!
             int i_FormantSelect_save = 0;         // This is a buffer variable in case we allow switching of formants only on note-change
-            const double* coeff_array[5] = { (const double *)coeff_a, (const double *)coeff_e, (const double *)coeff_i, (const double *)coeff_o, (const double *)coeff_u };
+            const double* coeff_array[9] = { coeff_a, coeff_a2, coeff_e, coeff_e2, coeff_i, coeff_i2, coeff_o, coeff_o2, coeff_u };
             float vowel_mem[10] = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.}; // Memory for current formant of vowel-filter
             const double coeff_a[11] = { 8.11044e-06, 8.943665402, -36.83889529, 92.01697887, -154.337906, 181.6233289, -151.8651235, 89.09614114, -35.10298511, 8.388101016, -0.923313471 };
             // Alternatively for first a-value: 3.11044e-06
@@ -57,6 +57,10 @@ namespace CTAG {
             // --- Additional oscillator[s] ---
             ctagSineSource oscPWM;
 
+            // --- LFOs ---
+            ctagSineSource lfoPWM;
+            ctagSineSource lfoTremolo;
+
             // --- VULT Stuff ---
             Phasedist_real_process_type pd_data;        // VULT PD synth voice internal datastructure, also needed for initialisation
             Svf__ctx_type_4 svf_data_x;                 // State Variable Filter (Bandpass) init (svf_data_x,y,z... for 3 bandpasses);
@@ -67,17 +71,17 @@ namespace CTAG {
             Saw_eptr__ctx_type_0 saw_data;              // SAW Osc data-structure
 
             // --- Formant Parmeters for 3 BP-filters ---
-            float f_CutOffXarray[5] = {0.f}; // Cutoff frequency values for 5 formants with 3 BP filters
-            float f_CutOffYarray[5] = {0.f};
-            float f_CutOffZarray[5] = {0.f};
+            float f_CutOffXarray[9] = {0.f}; // Cutoff frequency values for 5 formants with 3 BP filters
+            float f_CutOffYarray[9] = {0.f};
+            float f_CutOffZarray[9] = {0.f};
 
-            float f_ResoXarray[5] = {0.f};  // Resonance values for 5 formants with 3 BP filters
-            float f_ResoYarray[5] = {0.f};
-            float f_ResoZarray[5] = {0.f};
+            float f_ResoXarray[9] = {0.f};  // Resonance values for 5 formants with 3 BP filters
+            float f_ResoYarray[9] = {0.f};
+            float f_ResoZarray[9] = {0.f};
 
-            float f_FltAmntXarray[5] = {0.f};  // Volume values for 5 formants with 3 BP filters
-            float f_FltAmntYarray[5] = {0.f};
-            float f_FltAmntZarray[5] = {0.f};
+            float f_FltAmntXarray[9] = {0.f};  // Volume values for 5 formants with 3 BP filters
+            float f_FltAmntYarray[9] = {0.f};
+            float f_FltAmntZarray[9] = {0.f};
 
             // --- Find random formants by setting parameters for 5*3 BP-filters ---
             void random_bp_filter_settings(int set_num=-1);
@@ -89,6 +93,57 @@ namespace CTAG {
             // --- Random Source ---
             ctagWNoiseGen rndVal;
 
+            // --- Open Source by Autodafe to double alex@smartelectronix.com's formants by interpolation: https://github.com/antoniograzioli/Autodafe/blob/master/src/FormantFilter.cpp ---
+            inline double CosineInterpolate( double y1,double y2, double mu)
+            {
+              double mu2;
+              mu2 = (1-cos(mu*M_PI))/2;
+              return(y1*(1-mu2)+y2*mu2);
+            }
+            const double coeff_a2[11] =  {  CosineInterpolate(3.11044e-06, 4.36215e-06,0.5),
+                                            CosineInterpolate(8.943665402, 8.90438318,0.5),
+                                            CosineInterpolate(-36.83889529, -36.55179099,0.5),
+                                            CosineInterpolate(92.01697887, 91.05750846,0.5),
+                                            CosineInterpolate(-154.337906, -152.422234,0.5),
+                                            CosineInterpolate(181.6233289, 179.1170248,0.5),
+                                            CosineInterpolate(-151.8651235, -149.6496211,0.5),
+                                            CosineInterpolate(89.09614114, 87.78352223,0.5),
+                                            CosineInterpolate(-35.10298511, -34.60687431,0.5),
+                                            CosineInterpolate(8.388101016, 8.282228154,0.5),
+                                            CosineInterpolate(-0.923313471, -0.914150747,0.5)   };
+            const double coeff_e2[11] = {   CosineInterpolate(4.36215e-06, 3.33819e-06,0.5),
+                                            CosineInterpolate(8.90438318, 8.893102966,0.5),
+                                            CosineInterpolate(-36.55179099, -36.49532826,0.5),
+                                            CosineInterpolate(91.05750846, 90.96543286,0.5),
+                                            CosineInterpolate(-152.422234, -152.4545478,0.5),
+                                            CosineInterpolate(179.1170248, 179.4835618,0.5),
+                                            CosineInterpolate(-149.6496211, -150.315433,0.5),
+                                            CosineInterpolate(87.78352223, 88.43409371,0.5),
+                                            CosineInterpolate(-34.60687431, -34.98612086,0.5),
+                                            CosineInterpolate(8.282228154, 8.407803364,0.5),
+                                            CosineInterpolate(-0.914150747, -0.932568035,0.5)  };
+            const double coeff_i2[11] = {   CosineInterpolate(3.33819e-06 , 1.13572e-06,0.5),
+                                            CosineInterpolate(8.893102966 , 8.994734087,0.5),
+                                            CosineInterpolate(-36.49532826 , -37.2084849,0.5),
+                                            CosineInterpolate(90.96543286 , 93.22900521,0.5),
+                                            CosineInterpolate(-152.4545478 , -156.6929844,0.5),
+                                            CosineInterpolate(179.4835618 , 184.596544,0.5),
+                                            CosineInterpolate(-150.315433 , -154.3755513,0.5),
+                                            CosineInterpolate(88.43409371 , 90.49663749,0.5),
+                                            CosineInterpolate(-34.98612086 , -35.58964535,0.5),
+                                            CosineInterpolate(8.407803364 , 8.478996281,0.5),
+                                            CosineInterpolate(-0.932568035 , -0.929252233,0.5)  };
+            const double coeff_o2[11] =  {  CosineInterpolate(1.13572e-06 , 4.09431e-07,0.5),
+                                            CosineInterpolate(8.994734087 , 8.997322763,0.5),
+                                            CosineInterpolate(-37.2084849 , -37.20218544,0.5),
+                                            CosineInterpolate(93.22900521 , 93.11385476,0.5),
+                                            CosineInterpolate(-156.6929844 , -156.2530937,0.5),
+                                            CosineInterpolate(184.596544 , 183.7080141,0.5),
+                                            CosineInterpolate(-154.3755513 , -153.2631681,0.5),
+                                            CosineInterpolate(90.49663749 , 89.59539726,0.5),
+                                            CosineInterpolate(-35.58964535 , -35.12454591,0.5),
+                                            CosineInterpolate(8.478996281 , 8.338655623,0.5),
+                                            CosineInterpolate(-0.929252233 , -0.910251753,0.5)  };
             // private attributes could go here
             // autogenerated code here
             // sectionHpp
@@ -97,21 +152,17 @@ namespace CTAG {
 	atomic<int32_t> MasterTune, cv_MasterTune;
 	atomic<int32_t> QuantizePitch, trig_QuantizePitch;
 	atomic<int32_t> Volume, cv_Volume;
+	atomic<int32_t> VoicesDirectOut, trig_VoicesDirectOut;
 	atomic<int32_t> PDPitch, cv_PDPitch;
 	atomic<int32_t> PDTune, cv_PDTune;
 	atomic<int32_t> PDamount, cv_PDamount;
-	atomic<int32_t> PDformantsOff, trig_PDformantsOff;
-	atomic<int32_t> PDresonatorOff, trig_PDresonatorOff;
 	atomic<int32_t> SAWPitch, cv_SAWPitch;
 	atomic<int32_t> SAWTune, cv_SAWTune;
-	atomic<int32_t> SAWformantsOff, trig_SAWformantsOff;
-	atomic<int32_t> SAWresonatorOff, trig_SAWresonatorOff;
 	atomic<int32_t> SQWPitch, cv_SQWPitch;
 	atomic<int32_t> SQWTune, cv_SQWTune;
-	atomic<int32_t> PWMintensity, cv_PWMintensity;
 	atomic<int32_t> PWMspeed, cv_PWMspeed;
-	atomic<int32_t> SQWformantsOff, trig_SQWformantsOff;
-	atomic<int32_t> SQWresonatorOff, trig_SQWresonatorOff;
+	atomic<int32_t> PWMintensity, cv_PWMintensity;
+	atomic<int32_t> CrossModOn, trig_CrossModOn;
 	atomic<int32_t> PDxmod, cv_PDxmod;
 	atomic<int32_t> SAWxmod, cv_SAWxmod;
 	atomic<int32_t> SQWxmod, cv_SQWxmod;
@@ -122,6 +173,7 @@ namespace CTAG {
 	atomic<int32_t> KeyLogic, trig_KeyLogic;
 	atomic<int32_t> FormantRndNew, trig_FormantRndNew;
 	atomic<int32_t> FormantSelect, cv_FormantSelect;
+	atomic<int32_t> FormantAmount, cv_FormantAmount;
 	atomic<int32_t> ResCombOn, trig_ResCombOn;
 	atomic<int32_t> ResCombBeforeFormants, trig_ResCombBeforeFormants;
 	atomic<int32_t> ResFreq, cv_ResFreq;
@@ -133,6 +185,7 @@ namespace CTAG {
 	atomic<int32_t> TremoloAttack, cv_TremoloAttack;
 	atomic<int32_t> TremoloSpeed, cv_TremoloSpeed;
 	atomic<int32_t> TremoloAmount, cv_TremoloAmount;
+	atomic<int32_t> TremoloResAmount, cv_TremoloResAmount;
 	atomic<int32_t> EGvolActive, trig_EGvolActive;
 	atomic<int32_t> EGvolSlow, trig_EGvolSlow;
 	atomic<int32_t> Attack, cv_Attack;
@@ -140,6 +193,7 @@ namespace CTAG {
 	atomic<int32_t> ADSRon, trig_ADSRon;
 	atomic<int32_t> Sustain, cv_Sustain;
 	atomic<int32_t> Release, cv_Release;
+	atomic<int32_t> EnvPDamount, cv_EnvPDamount;
 	// sectionHpp
         };
     }

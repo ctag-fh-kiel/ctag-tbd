@@ -1,5 +1,5 @@
 {
-   "id": "Formantor", "isStereo": false, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
+   "id": "Formantor", "isStereo": true, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
    [
        {  
           "id": "Global", "name": "Global (Quantizer relative to Master Tune!)", "type": "group", "params":  
@@ -14,28 +14,24 @@
        {
           "id": "Voice", "name": "Voice", "type": "group", "params":  
            [
+               {"id":"VoicesDirectOut","name":"All voices direct out (right) n/y","type":"bool"},
                {"id": "PDPitch","type": "int","name": "PD Pitch","min": -48,"max": 48,"step": 1}, 
                {"id": "PDTune","type": "int","name": "PD Tune","min": -1200,"max": 1200,"step": 1},
                {"id":"PDamount","name":"Phase Distortion of PD Osc","type":"int","min":0,"max":4095,"step":1},
-               {"id":"PDformantsOff","name":"PD Osc bypasses Formant-Filter n/y","type":"bool"},
-               {"id":"PDresonatorOff","name":"PD Osc bypasses Resonator n/y","type":"bool"},
               
                {"id": "SAWPitch","type": "int","name": "SAW Pitch","min": -48,"max": 48,"step": 1},
                {"id": "SAWTune","type": "int","name": "SAW Tune","min": -1200,"max": 1200,"step": 1},
-               {"id":"SAWformantsOff","name":"SAW Osc bypasses Formant-Filter n/y","type":"bool"},
-               {"id":"SAWresonatorOff","name":"SAW Osc bypasses Resonator n/y","type":"bool"},
                
                {"id": "SQWPitch","type": "int","name": "SQW Pitch","min": -48,"max": 48,"step": 1},
                {"id": "SQWTune","type": "int","name": "SQW Tune","min": -1200,"max": 1200,"step": 1},
-               {"id":"PWMintensity","name":"PWM intensity for SQW Osc","type":"int","min":0,"max":4095,"step":1}, 
-               {"id":"PWMspeed","name":"PWM speed for SQW Osc","type":"int","min":0,"max":4095,"step":1}, 
-               {"id":"SQWformantsOff","name":"SQW Osc bypasses Formant-Filter n/y","type":"bool"},
-               {"id":"SQWresonatorOff","name":"SQW Osc bypasses Resonator n/y","type":"bool"}
+               {"id":"PWMspeed","name":"PWM speed for SQW Osc","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PWMintensity","name":"PWM intensity for SQW Osc","type":"int","min":0,"max":4095,"step":1}
            ]   
        },
        {
           "id": "Mixer", "name": "Crossmodulator / Mixer", "type": "group", "params":  
            [
+               {"id":"CrossModOn","name":"Crossmod active n/y","type":"bool"},
                {"id":"PDxmod","name":"PD to Xmod PD with SAW","type":"int","min":0,"max":4095,"step":1}, 
                {"id":"SAWxmod","name":"SAW to Xmod SAW with Sine from SQW","type":"int","min":0,"max":4095,"step":1}, 
                {"id":"SQWxmod","name":"SQW to Xmod SQW with PD","type":"int","min":0,"max":4095,"step":1}, 
@@ -46,12 +42,14 @@
            ]   
        },
        {
-          "id": "Formants", "name": "Formant-Filter ('Key logic': Keys trigger the formants A,E,I,O,U / R1-R5)", "type": "group", "params":  
+          "id": "Formants", "name": "Formant-Filter ('Key logic': Keys trigger the formants  (A,a,E,e,I,i,O,o,U / R1-R9)", "type": "group", "params":  
            [
               {"id":"FormantFilterOn","name":"Formant Filter n/y","type":"bool"},
               {"id":"KeyLogic","name":"'Key logic' on n/y","type":"bool"},
               {"id":"FormantRndNew","name":"New random formant for selection n/y","type":"bool"},
-              {"id":"FormantSelect","name":"Formant select for current note (A,E,I,O,U / R1, R2, R3, R4, R5)","type":"int","min":1,"max":5,"step":1},
+              {"id":"FormantSelect","name":"Formant selection (A,a,E,e,I,i,O,o,U / R1-R9)","type":"int","min":1,"max":9,"step":1},
+              {"id":"FormantAmount","name":"Formant Filter Amount","type":"int","min":0,"max":4095,"step":1},
+              
               {"id":"ResCombOn","name":"Resonator active (switch to random formants) n/y","type":"bool"},
               {"id":"ResCombBeforeFormants","name":"Resonator before formant-filter n/y","type":"bool"},
               {"id":"ResFreq","name":"Resonator Frequency","type":"int","min":0,"max":4095,"step":1},
@@ -67,7 +65,8 @@
                {"id":"TremoloAfterFormant","name":"Tremolo becomes panner after filters n/y","type":"bool"}, 
                {"id":"TremoloAttack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
                {"id":"TremoloSpeed","name":"Tremolo Speed","type":"int","min":0,"max":4095,"step":1},
-               {"id":"TremoloAmount","name":"Tremolo Amount","type":"int","min":0,"max":4095,"step":1}
+               {"id":"TremoloAmount","name":"Tremolo Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloResAmount","name":"Modulate Resonator Tone Amount","type":"int","min":0,"max":4095,"step":1}
            ]   
        },
       {
@@ -79,7 +78,8 @@
                {"id":"Decay","name":"Decay","type":"int","min":0,"max":4095,"step":1},
                {"id":"ADSRon","name":"ADSR n/y","type":"bool"},
                {"id":"Sustain","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
-               {"id":"Release","name":"Release","type":"int","min":0,"max":4095,"step":1}
+               {"id":"Release","name":"Release","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EnvPDamount","name":"Envelope to Distortion PD-OSC","type":"int","min":0,"max":4095,"step":1}
            ]   
        }
    ] 
