@@ -164,11 +164,9 @@ void ctagSoundProcessorFormantor::Process(const ProcessData &data)
 {
 // --- Main processing output ---
 float f_val_result = 0.f;
-
 float f_val_pd = 0.f;   // Results for PD Osc
 float f_val_sqw = 0.f;  // Results for SQW Osc
 float f_val_saw = 0.f;  // Results for SAW Osc
-
 
 // --- Formant values for BP formants ---
 float f_formant_x = 0.f;
@@ -183,6 +181,7 @@ float f_ResoZ = 0.f;
 float f_FltAmntX = 0.f;
 float f_FltAmntY = 0.f;
 float f_FltAmntZ = 0.f;
+
 // --- Formant values for fix formant filter ---
 float vowel_factor = 1.f;
 bool b_use_fix_formants = true;
@@ -209,13 +208,14 @@ bool b_use_fix_formants = true;
   // --- SQW Osc / PWM ---
   MK_PITCH_PAR(f_SQWPitch, SQWPitch);
   MK_FLT_PAR_ABS_SFT(f_SQWTune, SQWTune, 1200.f, 1.f);
-  MK_FLT_PAR_ABS(f_PWMspeed, PWMspeed, 4095.f, 1.f);
+  MK_FLT_PAR_ABS_MIN_MAX(f_PWMspeed, PWMspeed, 4095.f, 0.05f, 20.f);
   MK_FLT_PAR_ABS(f_PWMintensity, PWMintensity, 4095.f, 1.f);
 
   // === Mixer/Xmod section ===
-  MK_FLT_PAR_ABS(f_PDxmod, PDxmod, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_SQWxmod, SQWxmod, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_SAWxmod, SAWxmod, 4095.f, 1.f);
+  MK_TRIG_PAR(t_AMon, AMon);
+  MK_FLT_PAR_ABS(f_PDaMod, PDaMod, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_SQWaMod, SQWaMod, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_SAWaMod, SAWaMod, 4095.f, 1.f);
 
   MK_FLT_PAR_ABS(f_PDvol, PDvol, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_SQWvol, SQWvol, 4095.f, 1.f);
@@ -247,6 +247,23 @@ bool b_use_fix_formants = true;
   }
   else    // No black key logic
     formant_selected = i_FormantSelect;   // Take formants from the slider / CV instead
+
+  // === Resonator (Resonant comb filter) ===
+  MK_TRIG_PAR(t_ResCombOn, ResCombOn);
+  MK_TRIG_PAR(t_ResCombBeforeFormants, ResCombBeforeFormants);
+  MK_FLT_PAR_ABS(f_ResFreq, ResFreq, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResTone, ResTone, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResQ, ResQ, 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_ResAmount, ResAmount,4095.f, 1.f);
+
+  // === Tremolo ===
+  MK_TRIG_PAR(t_TremoloActive, TremoloActive);
+  MK_TRIG_PAR(t_TremoloIsSQW, TremoloIsSQW);
+  MK_TRIG_PAR(t_TremoloAfterFormant, TremoloAfterFormant);
+  MK_FLT_PAR_ABS(f_TremoloAttack, TremoloAttack, 4095.f, 10.f);
+  MK_FLT_PAR_ABS_MIN_MAX(f_TremoloSpeed, TremoloSpeed, 4095.f, 0.05f, 15.f);
+  MK_FLT_PAR_ABS(f_TremoloAmount,TremoloAmount , 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_TremoloResAmount,TremoloResAmount, 4095.f, 1.f);
 
   // === Volume Envelope section ===
   float vol_eg_process = 1.f;              // Set to max, in case if EG is unused this will work, too!
@@ -286,14 +303,6 @@ bool b_use_fix_formants = true;
       vol_eg_process = vol_eg_ad.Process();   // Precalculate current Volume EG, it will be added in the "main" DSP-loop below
     }
   }
-  // === Resonator (Resonant comb filter) ===
-  MK_TRIG_PAR(t_ResCombOn, ResCombOn);
-  MK_TRIG_PAR(t_ResCombBeforeFormants, ResCombBeforeFormants);
-  MK_FLT_PAR_ABS(f_ResFreq, ResFreq, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_ResTone, ResTone, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_ResQ, ResQ, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_ResAmount, ResAmount,4095.f, 1.f);
-
   // === Precalculation for realtime DSP loop ===
   // --- Find out what formant-related settings have to be made before main loop ---
   if( t_ResCombOn )      // With resonator for performance reasons (on the ESP) only random formants are to be used
@@ -318,13 +327,17 @@ bool b_use_fix_formants = true;
 
     formant_filter_set_formant(formant_selected); // We set the selected formant to be used as member-variable for runtime-optimisation for main loop
   }
-  // --- Set values for PD-synth ---
-  Phasedist_real_controlChange(pd_data, 31, f_PDamount, 0);
+  // --- Set values for PD-synth (we modded the MIDI example, because that's an easy way to set pitch and PD-amount _before_ the main loop to save performance... ---
+  Phasedist_real_controlChange(pd_data, 31, f_PDamount, 0);     // In the given example PD was mapped to MIDI CC 31
   Phasedist_real_noteOn(pd_data, f_current_note, 110, 0);
 
-  // --- Set LFOs ---
+  // --- Set LFOs (PWM and Tremolo) ---
   lfoPWM.SetFrequency(f_PWMspeed);
   float f_LFO_pwm = lfoPWM.Process();   // This is a "free running" LFO, we don't use other dependancies to not complicate things, even if it's unused
+  lfoTremolo.SetFrequency(f_TremoloSpeed);
+  float f_LFO_tremolo = lfoTremolo.Process();
+  if(t_TremoloIsSQW)
+    SINE_TO_SQUARE(f_LFO_tremolo);
 
   // --- Set values for additional PWM oscillator ---
   oscPWM.SetFrequency(noteToFreq(f_current_note+f_SQWPitch+f_SQWTune) );
@@ -335,23 +348,29 @@ bool b_use_fix_formants = true;
   for(uint32_t i = 0; i < bufSz; i++)
   {
     // --- Calculate all oscillators (PD, SAW, SQW/PWM) ---
-    f_val_pd = Phasedist_real_process(pd_data,0);
+    f_val_pd = Phasedist_real_process(pd_data,0);   // The input-parameter is ignored by this VULT algorithm with the MIDI-example!
     f_val_saw = Saw_eptr_process( saw_data, sawNote );
     f_val_sqw = f_sine_tmp = oscPWM.Process();
     f_val_sqw += f_LFO_pwm*f_PWMintensity; // Add "PWM-offset"
     SINE_TO_SQUARE(f_val_sqw);  // This by nature contains a constrain, avoiding value overflow (possibly due to PWM-mechanism)!
 
     // --- Calculate values for crossmodulations (PD, SAW, SQW/PWM) ---
-    float f_val_pd_tmp = f_val_pd;
-    f_val_pd = X_FADE(f_PDxmod, f_val_pd, f_val_pd*f_val_saw);
-    f_val_saw = X_FADE(f_SAWxmod, f_val_saw, f_val_saw*f_sine_tmp);
-    f_val_sqw = X_FADE(f_SQWxmod, f_val_sqw, f_val_sqw*f_val_pd_tmp);
-
+    if(t_AMon)
+    {
+      float f_val_pd_tmp = f_val_pd;
+      f_val_pd = X_FADE(f_PDaMod, f_val_pd, f_val_pd * f_val_saw);
+      f_val_saw = X_FADE(f_SAWaMod, f_val_saw, f_val_saw * f_sine_tmp);
+      f_val_sqw = X_FADE(f_SQWaMod, f_val_sqw, f_val_sqw * f_val_pd_tmp);
+    }
     // --- Mixer ---
     f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
 
     if( t_ResCombOn && t_ResCombBeforeFormants)     // ### Drop this option ???
       f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
+
+    // --- Tremolo before Formant-Filter? ---
+    if(t_TremoloActive && !t_TremoloAfterFormant)
+      f_val_result = X_FADE(f_TremoloAmount, f_val_result, f_LFO_tremolo*f_val_result);
 
     // --- Formant-Filter fix or random values ---
     if( t_FormantFilterOn )
@@ -464,14 +483,14 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("PWMspeed", [&](const int val){ cv_PWMspeed = val;});
 	pMapPar.emplace("PWMintensity", [&](const int val){ PWMintensity = val;});
 	pMapCv.emplace("PWMintensity", [&](const int val){ cv_PWMintensity = val;});
-	pMapPar.emplace("CrossModOn", [&](const int val){ CrossModOn = val;});
-	pMapTrig.emplace("CrossModOn", [&](const int val){ trig_CrossModOn = val;});
-	pMapPar.emplace("PDxmod", [&](const int val){ PDxmod = val;});
-	pMapCv.emplace("PDxmod", [&](const int val){ cv_PDxmod = val;});
-	pMapPar.emplace("SAWxmod", [&](const int val){ SAWxmod = val;});
-	pMapCv.emplace("SAWxmod", [&](const int val){ cv_SAWxmod = val;});
-	pMapPar.emplace("SQWxmod", [&](const int val){ SQWxmod = val;});
-	pMapCv.emplace("SQWxmod", [&](const int val){ cv_SQWxmod = val;});
+	pMapPar.emplace("AMon", [&](const int val){ AMon = val;});
+	pMapTrig.emplace("AMon", [&](const int val){ trig_AMon = val;});
+	pMapPar.emplace("PDaMod", [&](const int val){ PDaMod = val;});
+	pMapCv.emplace("PDaMod", [&](const int val){ cv_PDaMod = val;});
+	pMapPar.emplace("SAWaMod", [&](const int val){ SAWaMod = val;});
+	pMapCv.emplace("SAWaMod", [&](const int val){ cv_SAWaMod = val;});
+	pMapPar.emplace("SQWaMod", [&](const int val){ SQWaMod = val;});
+	pMapCv.emplace("SQWaMod", [&](const int val){ cv_SQWaMod = val;});
 	pMapPar.emplace("PDvol", [&](const int val){ PDvol = val;});
 	pMapCv.emplace("PDvol", [&](const int val){ cv_PDvol = val;});
 	pMapPar.emplace("SAWvol", [&](const int val){ SAWvol = val;});
@@ -502,6 +521,8 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("ResAmount", [&](const int val){ cv_ResAmount = val;});
 	pMapPar.emplace("TremoloActive", [&](const int val){ TremoloActive = val;});
 	pMapTrig.emplace("TremoloActive", [&](const int val){ trig_TremoloActive = val;});
+	pMapPar.emplace("TremoloIsSQW", [&](const int val){ TremoloIsSQW = val;});
+	pMapTrig.emplace("TremoloIsSQW", [&](const int val){ trig_TremoloIsSQW = val;});
 	pMapPar.emplace("TremoloAfterFormant", [&](const int val){ TremoloAfterFormant = val;});
 	pMapTrig.emplace("TremoloAfterFormant", [&](const int val){ trig_TremoloAfterFormant = val;});
 	pMapPar.emplace("TremoloAttack", [&](const int val){ TremoloAttack = val;});

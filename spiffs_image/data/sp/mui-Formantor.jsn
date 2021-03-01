@@ -17,7 +17,7 @@
                {"id":"VoicesDirectOut","name":"All voices direct out (right) n/y","type":"bool"},
                {"id": "PDPitch","type": "int","name": "PD Pitch","min": -48,"max": 48,"step": 1}, 
                {"id": "PDTune","type": "int","name": "PD Tune","min": -1200,"max": 1200,"step": 1},
-               {"id":"PDamount","name":"Phase Distortion of PD Osc","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PDamount","name":"Phase Distortion amount","type":"int","min":0,"max":4095,"step":1},
               
                {"id": "SAWPitch","type": "int","name": "SAW Pitch","min": -48,"max": 48,"step": 1},
                {"id": "SAWTune","type": "int","name": "SAW Tune","min": -1200,"max": 1200,"step": 1},
@@ -29,16 +29,16 @@
            ]   
        },
        {
-          "id": "Mixer", "name": "Crossmodulator / Mixer", "type": "group", "params":  
+          "id": "Mixer", "name": "AM / Mixer", "type": "group", "params":  
            [
-               {"id":"CrossModOn","name":"Crossmod active n/y","type":"bool"},
-               {"id":"PDxmod","name":"PD to Xmod PD with SAW","type":"int","min":0,"max":4095,"step":1}, 
-               {"id":"SAWxmod","name":"SAW to Xmod SAW with Sine from SQW","type":"int","min":0,"max":4095,"step":1}, 
-               {"id":"SQWxmod","name":"SQW to Xmod SQW with PD","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"AMon","name":"Amplitude Modulation active n/y","type":"bool"},
+               {"id":"PDaMod","name":"PD Osc<->AM PD with SAW","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SAWaMod","name":"SAW Osc<->AM SAW with Sine from SQW","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SQWaMod","name":"SQW Osc<->AM SQW with PD","type":"int","min":0,"max":4095,"step":1}, 
                
-               {"id":"PDvol","name":"PD Oscillator/Xmod volume","type":"int","min":0,"max":4095,"step":1}, 
-               {"id":"SAWvol","name":"SAW Oscillator/Xmod volume","type":"int","min":0,"max":4095,"step":1},
-               {"id":"SQWvol","name":"SQW Oscillator/Xmod volume","type":"int","min":0,"max":4095,"step":1}
+               {"id":"PDvol","name":"PD Oscillator volume","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SAWvol","name":"SAW Oscillator volume","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SQWvol","name":"SQW Oscillator volume","type":"int","min":0,"max":4095,"step":1}
            ]   
        },
        {
@@ -62,11 +62,12 @@
           "id": "Tremolo", "name": "Tremolo", "type": "group", "params":  
            [
                {"id":"TremoloActive","name":"Tremolo active n/y","type":"bool"}, 
-               {"id":"TremoloAfterFormant","name":"Tremolo becomes panner after filters n/y","type":"bool"}, 
+               {"id":"TremoloIsSQW","name":"Tremolo uses SQW n/y","type":"bool"}, 
+               {"id":"TremoloAfterFormant","name":"Tremolo after formant filter n/y","type":"bool"}, 
                {"id":"TremoloAttack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
                {"id":"TremoloSpeed","name":"Tremolo Speed","type":"int","min":0,"max":4095,"step":1},
                {"id":"TremoloAmount","name":"Tremolo Amount","type":"int","min":0,"max":4095,"step":1},
-               {"id":"TremoloResAmount","name":"Modulate Resonator Tone Amount","type":"int","min":0,"max":4095,"step":1}
+               {"id":"TremoloResAmount","name":"S&H-Modulate Resonator Tone Amount","type":"int","min":0,"max":4095,"step":1}
            ]   
        },
       {
@@ -79,7 +80,7 @@
                {"id":"ADSRon","name":"ADSR n/y","type":"bool"},
                {"id":"Sustain","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
                {"id":"Release","name":"Release","type":"int","min":0,"max":4095,"step":1},
-               {"id":"EnvPDamount","name":"Envelope to Distortion PD-OSC","type":"int","min":0,"max":4095,"step":1}
+               {"id":"EnvPDamount","name":"Envelope to Phase PD-OSC","type":"int","min":0,"max":4095,"step":1}
            ]   
        }
    ] 

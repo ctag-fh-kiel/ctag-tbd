@@ -48,8 +48,8 @@ namespace CTAG {
             inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
             enum trig_states
             {
-                e_Gate, e_EGvolActive, e_EGvolSlow, e_FormantBlendingOn,
-                e_FormantRndNew, e_ResCombOn, e_SQWon, e_CrossModOn, e_ResCombBeforeFormants,
+                e_Gate, e_EGvolActive, e_EGvolSlow, e_FormantBlendingOn, e_TremoloActive, e_TremoloAfterFormant,
+                e_FormantRndNew, e_ResCombOn, e_SQWon, e_CrossModOn, e_ResCombBeforeFormants, e_TremoloIsSQW, e_AMon,
                 e_FormantFilterOn, e_KeyLogic, e_FormantLock, e_ADSRon, e_Formantor_options_max
             };
             int prev_trig_state[e_Formantor_options_max] = {0};   // Initialize _all_ entries with "low value"
@@ -204,10 +204,10 @@ namespace CTAG {
 	atomic<int32_t> SQWTune, cv_SQWTune;
 	atomic<int32_t> PWMspeed, cv_PWMspeed;
 	atomic<int32_t> PWMintensity, cv_PWMintensity;
-	atomic<int32_t> CrossModOn, trig_CrossModOn;
-	atomic<int32_t> PDxmod, cv_PDxmod;
-	atomic<int32_t> SAWxmod, cv_SAWxmod;
-	atomic<int32_t> SQWxmod, cv_SQWxmod;
+	atomic<int32_t> AMon, trig_AMon;
+	atomic<int32_t> PDaMod, cv_PDaMod;
+	atomic<int32_t> SAWaMod, cv_SAWaMod;
+	atomic<int32_t> SQWaMod, cv_SQWaMod;
 	atomic<int32_t> PDvol, cv_PDvol;
 	atomic<int32_t> SAWvol, cv_SAWvol;
 	atomic<int32_t> SQWvol, cv_SQWvol;
@@ -223,6 +223,7 @@ namespace CTAG {
 	atomic<int32_t> ResQ, cv_ResQ;
 	atomic<int32_t> ResAmount, cv_ResAmount;
 	atomic<int32_t> TremoloActive, trig_TremoloActive;
+	atomic<int32_t> TremoloIsSQW, trig_TremoloIsSQW;
 	atomic<int32_t> TremoloAfterFormant, trig_TremoloAfterFormant;
 	atomic<int32_t> TremoloAttack, cv_TremoloAttack;
 	atomic<int32_t> TremoloSpeed, cv_TremoloSpeed;
