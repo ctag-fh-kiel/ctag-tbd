@@ -371,7 +371,7 @@ bool b_use_fix_formants = true;
   {
     // --- Calculate all oscillators (PD, SAW, SQW/PWM) ---
     f_val_pd = Phasedist_real_process(pd_data,0);   // The input-parameter is ignored by this VULT algorithm with the MIDI-example!
-    f_val_saw = Saw_eptr_process( saw_data, sawNote );
+    f_val_saw = 0.f; // Performancetest! Saw_eptr_process( saw_data, sawNote );
     f_val_sqw = f_sine_tmp = oscPWM.Process();
     f_val_sqw += f_LFO_pwm*f_PWMintensity; // Add "PWM-offset"
     SINE_TO_SQUARE(f_val_sqw);  // This by nature contains a constrain, avoiding value overflow (possibly due to PWM-mechanism)!
@@ -388,7 +388,7 @@ bool b_use_fix_formants = true;
     f_val_result = f_right_direct_out = f_rescomb_process = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
 
     // --- Tremolo before Formant-Filter/Rescomb? ---
-    if( !t_TremoloAfterFormant )
+    if( !t_TremoloAfterFormant && t_TremoloActive)    // ### to check t_TremoloActive here is a hack, because normally we need the EG for smooth transitions!
       f_val_result = X_FADE(f_TremoloAmount*f_tremolo_eg, f_val_result, f_LFO_tremolo*f_val_result); // XFade will be all left it tremolo-EG is finished!
 
     /*  ###
@@ -426,11 +426,12 @@ bool b_use_fix_formants = true;
       f_val_result = X_FADE(f_ResAmount, f_val_result, f_rescomb_process );
     }
     // --- Tremolo after Formant-Filter/Resonator? ---
-    if( t_TremoloAfterFormant )
+    if( t_TremoloAfterFormant && t_TremoloActive)    // ### to check t_TremoloActive here is a hack, because normally we need the EG for smooth transitions!
       f_val_result = X_FADE(f_TremoloAmount*f_tremolo_eg, f_val_result, f_LFO_tremolo*f_val_result); // XFade will be all left it tremolo-EG is finished!
 
     // --- Fade in Resonator S&H result with Tremolo if activated ---
-    f_val_result = X_FADE(f_TremoloResAmount*f_tremolo_eg, f_val_result, f_SnH*f_rescomb_process);
+    if( f_TremoloResAmount >= 0.1f) // ### Hack to check performance!
+      f_val_result = X_FADE(f_TremoloResAmount*f_tremolo_eg, f_val_result, f_SnH*f_rescomb_process);
 
     // --- Apply AD[SR] if active and send out DSP-result ---
     f_val_result *= vol_eg_process * f_Volume;      // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive), adjust master-volume
