@@ -62,24 +62,25 @@
           "id": "Tremolo", "name": "Tremolo", "type": "group", "params":  
            [
                {"id":"TremoloActive","name":"Tremolo active n/y","type":"bool"}, 
-               {"id":"TremoloIsSQW","name":"Tremolo uses SQW n/y","type":"bool"}, 
-               {"id":"TremoloAfterFormant","name":"Tremolo after formant filter n/y","type":"bool"}, 
                {"id":"TremoloAttack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloRelease","name":"Release","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloIsSQW","name":"Tremolo uses SQW n/y","type":"bool"}, 
                {"id":"TremoloSpeed","name":"Tremolo Speed","type":"int","min":0,"max":4095,"step":1},
                {"id":"TremoloAmount","name":"Tremolo Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloAfterFormant","name":"Tremolo after formant filter n/y","type":"bool"}, 
                {"id":"TremoloResAmount","name":"S&H-Modulate Resonator Tone Amount","type":"int","min":0,"max":4095,"step":1}
            ]   
        },
       {
-          "id": "Envelope", "name": "Envelope", "type": "group", "params":  
+          "id": "Envelope", "name": "Volume Envelope", "type": "group", "params":  
            [
                {"id":"EGvolActive","name":"Volume envelope active n/y","type":"bool"}, 
-               {"id":"EGvolSlow","name":"Slow EG n/y","type":"bool"}, 
                {"id":"Attack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
                {"id":"Decay","name":"Decay","type":"int","min":0,"max":4095,"step":1},
                {"id":"ADSRon","name":"ADSR n/y","type":"bool"},
                {"id":"Sustain","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
                {"id":"Release","name":"Release","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGvolSlow","name":"Slow EG n/y","type":"bool"}, 
                {"id":"EnvPDamount","name":"Envelope to Phase PD-OSC","type":"int","min":0,"max":4095,"step":1}
            ]   
        }

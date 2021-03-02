@@ -245,7 +245,7 @@ bool b_use_fix_formants = true;
       f_note_save = f_current_note;
     }
   }
-  else    // No black key logic
+  else    // No key logic
     formant_selected = i_FormantSelect;   // Take formants from the slider / CV instead
 
   // === Resonator (Resonant comb filter) ===
@@ -260,10 +260,12 @@ bool b_use_fix_formants = true;
   MK_TRIG_PAR(t_TremoloActive, TremoloActive);
   MK_TRIG_PAR(t_TremoloIsSQW, TremoloIsSQW);
   MK_TRIG_PAR(t_TremoloAfterFormant, TremoloAfterFormant);
-  MK_FLT_PAR_ABS(f_TremoloAttack, TremoloAttack, 4095.f, 10.f);
-  MK_FLT_PAR_ABS_MIN_MAX(f_TremoloSpeed, TremoloSpeed, 4095.f, 0.05f, 15.f);
-  MK_FLT_PAR_ABS(f_TremoloAmount,TremoloAmount , 4095.f, 1.f);
+  MK_FLT_PAR_ABS(f_TremoloAttack, TremoloAttack, 4095.f, 20.f);
+  MK_FLT_PAR_ABS(f_TremoloRelease, TremoloRelease, 4095.f, 20.f);
+  MK_FLT_PAR_ABS_MIN_MAX(f_TremoloSpeed, TremoloSpeed, 4095.f, 0.05f, 20.f);
+  MK_FLT_PAR_ABS(f_TremoloAmount,TremoloAmount, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_TremoloResAmount,TremoloResAmount, 4095.f, 1.f);
+  tremolo_adsr.SetAttack(f_TremoloAttack);
 
   // === Volume Envelope section ===
   float vol_eg_process = 1.f;              // Set to max, in case if EG is unused this will work, too!
@@ -289,7 +291,6 @@ bool b_use_fix_formants = true;
       vol_eg_adsr.SetDecay(f_Decay);
       vol_eg_adsr.SetSustain(f_Sustain);
       vol_eg_adsr.SetRelease(f_Release);
-
       vol_eg_adsr.Gate(g_Gate);
       vol_eg_process = vol_eg_adsr.Process();   // Precalculate current Volume EG, it will be added in the "main" DSP-loop below
     }
@@ -297,7 +298,6 @@ bool b_use_fix_formants = true;
     {
       vol_eg_ad.SetAttack(f_Attack);
       vol_eg_ad.SetDecay(f_Decay);
-
       if (t_Gate == GATE_HIGH_NEW)    // New trigger encountered?
         vol_eg_ad.Trigger();
       vol_eg_process = vol_eg_ad.Process();   // Precalculate current Volume EG, it will be added in the "main" DSP-loop below
@@ -334,10 +334,21 @@ bool b_use_fix_formants = true;
   // --- Set LFOs (PWM and Tremolo) ---
   lfoPWM.SetFrequency(f_PWMspeed);
   float f_LFO_pwm = lfoPWM.Process();   // This is a "free running" LFO, we don't use other dependancies to not complicate things, even if it's unused
+
+  // --- Set tremolo ---
   lfoTremolo.SetFrequency(f_TremoloSpeed);
   float f_LFO_tremolo = lfoTremolo.Process();
-  if(t_TremoloIsSQW)
+  if (t_TremoloIsSQW)
     SINE_TO_SQUARE(f_LFO_tremolo);
+  tremolo_adsr.SetAttack(f_TremoloAttack);
+  tremolo_adsr.SetDecay(0.f);
+  tremolo_adsr.SetSustain(1.f);
+  tremolo_adsr.SetRelease(f_TremoloRelease);
+  if( t_TremoloActive )
+    tremolo_adsr.Gate(true);
+  else
+    tremolo_adsr.Gate(false);              // Reset Attack-phase of tremolo if effect is off
+  float f_tremolo_eg = tremolo_adsr.Process();  // If Tremolo is off, the effect will fade out until the Tremolo-EG is zero!
 
   // --- Set values for additional PWM oscillator ---
   oscPWM.SetFrequency(noteToFreq(f_current_note+f_SQWPitch+f_SQWTune) );
@@ -365,19 +376,27 @@ bool b_use_fix_formants = true;
     // --- Mixer ---
     f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
 
+    // --- Tremolo before Formant-Filter/Rescomb? ---
+    if( !t_TremoloAfterFormant )
+      f_val_result = X_FADE(f_TremoloAmount*f_tremolo_eg, f_val_result, f_LFO_tremolo*f_val_result); // XFade will be all left it tremolo-EG is finished!
+
+
+
     if( t_ResCombOn && t_ResCombBeforeFormants)     // ### Drop this option ???
-      f_val_result = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
+      f_val_result = X_FADE(f_ResAmount, f_val_result, Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ));
 
-    // --- Tremolo before Formant-Filter? ---
-    if(t_TremoloActive && !t_TremoloAfterFormant)
-      f_val_result = X_FADE(f_TremoloAmount, f_val_result, f_LFO_tremolo*f_val_result);
+    static int once = 0;  // ###
+    if( once==0)  // ###
+      printf("t_ResCombBeforeFormants: %d\n",t_ResCombBeforeFormants); // ###
+    once++; // ###
 
-    // --- Formant-Filter fix or random values ---
+
+    // --- Formant-Filter with fix or random values ---
     if( t_FormantFilterOn )
     {
       float f_val_formants = 0.f;
       if( b_use_fix_formants )
-        f_val_formants = formant_filter(f_val_result * vowel_factor);  // ### experimental, half samplerate!
+        f_val_formants = formant_filter(f_val_result * vowel_factor);
       else
       {
         f_formant_x = Svf_process(svf_data_x, f_val_result, f_CutOffX, f_ResoX, 2) * f_FltAmntX;
@@ -387,9 +406,13 @@ bool b_use_fix_formants = true;
       }
       f_val_result = X_FADE(f_FormantAmount, f_val_result, f_val_formants);
     }
-    // --- Apply resonator if active ---
+    // --- Apply resonator if active (and located after formant-filter) ---
     if( t_ResCombOn && !t_ResCombBeforeFormants)
       f_val_result = X_FADE(f_ResAmount, f_val_result, Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ));
+
+    // --- Tremolo after Formant-Filter/Resonator? ---
+    if( t_TremoloAfterFormant )
+      f_val_result = X_FADE(f_TremoloAmount*f_tremolo_eg, f_val_result, f_LFO_tremolo*f_val_result); // XFade will be all left it tremolo-EG is finished!
 
     // --- Apply AD[SR] if active and send out DSP-result ---
     f_val_result *= vol_eg_process * f_Volume;      // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive), adjust master-volume
@@ -440,6 +463,13 @@ ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
   // --- LFO for Tremolo / Panner ---
   lfoTremolo.SetSampleRate(44100.f / bufSz);
   lfoTremolo.SetFrequency(1.f);
+
+  tremolo_adsr.SetSampleRate(44100.f/ bufSz);
+  tremolo_adsr.SetModeExp();
+  tremolo_adsr.Reset();
+  tremolo_adsr.SetDecay(0.f); // We only use the Attack to delay the tremolo-effect, so the rest can be set statically here already
+  tremolo_adsr.SetSustain(1.f);
+  tremolo_adsr.SetRelease(0.f);
 }
 
 // --- Formantor Destructor ---
@@ -521,22 +551,22 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("ResAmount", [&](const int val){ cv_ResAmount = val;});
 	pMapPar.emplace("TremoloActive", [&](const int val){ TremoloActive = val;});
 	pMapTrig.emplace("TremoloActive", [&](const int val){ trig_TremoloActive = val;});
-	pMapPar.emplace("TremoloIsSQW", [&](const int val){ TremoloIsSQW = val;});
-	pMapTrig.emplace("TremoloIsSQW", [&](const int val){ trig_TremoloIsSQW = val;});
-	pMapPar.emplace("TremoloAfterFormant", [&](const int val){ TremoloAfterFormant = val;});
-	pMapTrig.emplace("TremoloAfterFormant", [&](const int val){ trig_TremoloAfterFormant = val;});
 	pMapPar.emplace("TremoloAttack", [&](const int val){ TremoloAttack = val;});
 	pMapCv.emplace("TremoloAttack", [&](const int val){ cv_TremoloAttack = val;});
+	pMapPar.emplace("TremoloRelease", [&](const int val){ TremoloRelease = val;});
+	pMapCv.emplace("TremoloRelease", [&](const int val){ cv_TremoloRelease = val;});
+	pMapPar.emplace("TremoloIsSQW", [&](const int val){ TremoloIsSQW = val;});
+	pMapTrig.emplace("TremoloIsSQW", [&](const int val){ trig_TremoloIsSQW = val;});
 	pMapPar.emplace("TremoloSpeed", [&](const int val){ TremoloSpeed = val;});
 	pMapCv.emplace("TremoloSpeed", [&](const int val){ cv_TremoloSpeed = val;});
 	pMapPar.emplace("TremoloAmount", [&](const int val){ TremoloAmount = val;});
 	pMapCv.emplace("TremoloAmount", [&](const int val){ cv_TremoloAmount = val;});
+	pMapPar.emplace("TremoloAfterFormant", [&](const int val){ TremoloAfterFormant = val;});
+	pMapTrig.emplace("TremoloAfterFormant", [&](const int val){ trig_TremoloAfterFormant = val;});
 	pMapPar.emplace("TremoloResAmount", [&](const int val){ TremoloResAmount = val;});
 	pMapCv.emplace("TremoloResAmount", [&](const int val){ cv_TremoloResAmount = val;});
 	pMapPar.emplace("EGvolActive", [&](const int val){ EGvolActive = val;});
 	pMapTrig.emplace("EGvolActive", [&](const int val){ trig_EGvolActive = val;});
-	pMapPar.emplace("EGvolSlow", [&](const int val){ EGvolSlow = val;});
-	pMapTrig.emplace("EGvolSlow", [&](const int val){ trig_EGvolSlow = val;});
 	pMapPar.emplace("Attack", [&](const int val){ Attack = val;});
 	pMapCv.emplace("Attack", [&](const int val){ cv_Attack = val;});
 	pMapPar.emplace("Decay", [&](const int val){ Decay = val;});
@@ -547,6 +577,8 @@ void ctagSoundProcessorFormantor::knowYourself()
 	pMapCv.emplace("Sustain", [&](const int val){ cv_Sustain = val;});
 	pMapPar.emplace("Release", [&](const int val){ Release = val;});
 	pMapCv.emplace("Release", [&](const int val){ cv_Release = val;});
+	pMapPar.emplace("EGvolSlow", [&](const int val){ EGvolSlow = val;});
+	pMapTrig.emplace("EGvolSlow", [&](const int val){ trig_EGvolSlow = val;});
 	pMapPar.emplace("EnvPDamount", [&](const int val){ EnvPDamount = val;});
 	pMapCv.emplace("EnvPDamount", [&](const int val){ cv_EnvPDamount = val;});
 	isStereo = true;

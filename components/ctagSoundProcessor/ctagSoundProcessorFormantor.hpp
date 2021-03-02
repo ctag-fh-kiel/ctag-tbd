@@ -7,7 +7,7 @@
 #include "helpers/ctagFastMath.hpp"
 
 // --- VULT "Library for TBD" ---
-#include "./vult/vult_formantor.h"
+#include "./vult/vult_formantor.h" 
 #include "./vult/vult_formantor.tables.h"
 
 using namespace CTAG::SP::HELPERS;
@@ -87,9 +87,10 @@ namespace CTAG {
             // --- Find random formants by setting parameters for 5*3 BP-filters ---
             void random_bp_filter_settings(int set_num=-1);
 
-            // --- Volume EG --
+            // --- Volume EGs --
             ctagADEnv vol_eg_ad;
             ctagADSREnv vol_eg_adsr;
+            ctagADSREnv tremolo_adsr;
 
             // --- Random Source ---
             ctagWNoiseGen rndVal;
@@ -223,19 +224,20 @@ namespace CTAG {
 	atomic<int32_t> ResQ, cv_ResQ;
 	atomic<int32_t> ResAmount, cv_ResAmount;
 	atomic<int32_t> TremoloActive, trig_TremoloActive;
-	atomic<int32_t> TremoloIsSQW, trig_TremoloIsSQW;
-	atomic<int32_t> TremoloAfterFormant, trig_TremoloAfterFormant;
 	atomic<int32_t> TremoloAttack, cv_TremoloAttack;
+	atomic<int32_t> TremoloRelease, cv_TremoloRelease;
+	atomic<int32_t> TremoloIsSQW, trig_TremoloIsSQW;
 	atomic<int32_t> TremoloSpeed, cv_TremoloSpeed;
 	atomic<int32_t> TremoloAmount, cv_TremoloAmount;
+	atomic<int32_t> TremoloAfterFormant, trig_TremoloAfterFormant;
 	atomic<int32_t> TremoloResAmount, cv_TremoloResAmount;
 	atomic<int32_t> EGvolActive, trig_EGvolActive;
-	atomic<int32_t> EGvolSlow, trig_EGvolSlow;
 	atomic<int32_t> Attack, cv_Attack;
 	atomic<int32_t> Decay, cv_Decay;
 	atomic<int32_t> ADSRon, trig_ADSRon;
 	atomic<int32_t> Sustain, cv_Sustain;
 	atomic<int32_t> Release, cv_Release;
+	atomic<int32_t> EGvolSlow, trig_EGvolSlow;
 	atomic<int32_t> EnvPDamount, cv_EnvPDamount;
 	// sectionHpp
         };
