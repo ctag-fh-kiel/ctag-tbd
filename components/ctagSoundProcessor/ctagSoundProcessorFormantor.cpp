@@ -6,7 +6,8 @@ Kiel University of Applied Sciences: https://www.creative-technologies.de
 (c) 2020/2021 by Robert Manzke. All rights reserved.
 
 (c) 2021 for the "Formantor"-Plugin by Mathias Brüssel
-The idea of Formantor is to to have a simple yet fun to control synthesizer combining a Phase Distortion oscillator with a vowel-filter and an envelope.
+The idea of Formantor is to to have a simple yet fun to control synthesizer combining a Phase Distortion oscillator, some additional osciallators,
+a vowel-filter, a resonator, a tremolo and an envelope.
 There are different options for playing and controlling the formant filters, for more details please look here:
 https://docs.google.com/document/d/1c8mjxWjdiJNP0xpkU2CxRUp9av6V4W39wARJf3_SMSo
 Formantor uses filters and a Phase Distortion synth by Carlos Laguna Ruiz implemented in his VULT language, the synth can be found here:
@@ -60,7 +61,6 @@ using namespace CTAG::SP;
 #include "../vult/vultin.cpp"
 #include "./vult/vult_formantor.cpp"
 
-
 // --- Process trigger signals and keep their state internally ---
 inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type = 0 )
 {
@@ -105,6 +105,21 @@ inline int ctagSoundProcessorFormantor::process_param_trig(const ProcessData &da
     }
   }
   return(prev_trig_state[prev_trig_state_id]);            // No change (1 for active, 0 for inactive)
+}
+
+// --- Sample & Hold LFO ---
+float ctagSoundProcessorFormantor::applySnH(float sine_lfo_val)
+{
+  if(sine_lfo_val > 0.5f || sine_lfo_val < -0.5f )   // we use this so that we can have equal frequency as with a spared value
+  {
+    if (hold_triggerSnH)
+      saved_SnHsample = oscSnH.Process();  // values -1.f ... +1.f
+    hold_triggerSnH = false;
+  }
+  else
+    hold_triggerSnH = true;
+
+  return(saved_SnHsample);
 }
 
 // --- Formant filter function, based on method by alex@smartelectronix.com ---
@@ -193,6 +208,7 @@ bool b_use_fix_formants = true;
   MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 2.f);
 
   // === Voice section ===
+  MK_TRIG_PAR(t_VoicesDirectOut, VoicesDirectOut);
   MK_ADEG_PAR(t_FormantRndNew, FormantRndNew);
   if( t_FormantRndNew == GATE_HIGH_NEW)
     random_bp_filter_settings();
@@ -200,8 +216,11 @@ bool b_use_fix_formants = true;
   MK_TRIG_PAR(t_FormantFilterOn, FormantFilterOn);
 
   MK_PITCH_PAR(f_MasterPitch, MasterPitch);
+  MK_TRIG_PAR(t_QuantizePitch , QuantizePitch);
   float f_current_note = f_MasterPitch;
-  int i_current_note = (int)f_current_note;
+  int i_current_note = (int)(f_current_note+0.49f);   // Round and cast to nearest note, we need this for pitch quantize and/or formant selection by key
+  if( t_QuantizePitch )
+    f_current_note = (float)i_current_note;
 
   MK_FLT_PAR_ABS(f_PDamount, PDamount, 4095.f, 1.f);
 
@@ -230,23 +249,12 @@ bool b_use_fix_formants = true;
 
   // --- Check for formant-selection via black keys ---
   MK_TRIG_PAR( t_KeyLogic, KeyLogic );
-  if( t_KeyLogic )    // We may encounter a black key for formant change
-  {
-    int my_formant = formant_trigger[i_current_note%12];    // We have max 10 formants, connected to 10 black keys, changing every 2 octaves...
-    if( my_formant != -1)     // We found a new formant via a black key
-    {
-      formant_selected = my_formant;
-      i_current_note = i_note_save;   // We had a black key, so reset the current note to the one we remembered before.
-      f_current_note = f_note_save;
-    }
-    else
-    {
-      i_note_save = i_current_note;   // We had no black key, so remember it for later!
-      f_note_save = f_current_note;
-    }
-  }
+  int formant_selected = 0;
+  if( t_KeyLogic )    // Select formants via notes on a keyboard or the slider on the GUI
+    formant_selected = i_current_note%12;       // We have max 12 formants, one associated to every key, regardless of its octave
   else    // No key logic
-    formant_selected = i_FormantSelect;   // Take formants from the slider / CV instead
+    formant_selected = i_FormantSelect;         // Take formants from the slider / CV instead
+  CONSTRAIN( formant_selected, 0, 11); // We had a weird segmentation violation, which should be preventable, just in case...
 
   // === Resonator (Resonant comb filter) ===
   MK_TRIG_PAR(t_ResCombOn, ResCombOn);
@@ -338,6 +346,7 @@ bool b_use_fix_formants = true;
   // --- Set tremolo ---
   lfoTremolo.SetFrequency(f_TremoloSpeed);
   float f_LFO_tremolo = lfoTremolo.Process();
+  float f_SnH = applySnH(f_LFO_tremolo);        // We may need this to modulate the Resonator Tone Amount
   if (t_TremoloIsSQW)
     SINE_TO_SQUARE(f_LFO_tremolo);
   tremolo_adsr.SetAttack(f_TremoloAttack);
@@ -356,6 +365,8 @@ bool b_use_fix_formants = true;
   // === Realtime DSP output loop ===
   float sawNote = f_current_note / 127.f;    // Saw_eptr_process() is scaled to 0 ... 1.0 for 5 octaves of "MIDI"-notes as float-value...
   float f_sine_tmp = 0.f;
+  float f_right_direct_out = 0.f;
+  float f_rescomb_process = 0.f;
   for(uint32_t i = 0; i < bufSz; i++)
   {
     // --- Calculate all oscillators (PD, SAW, SQW/PWM) ---
@@ -373,23 +384,24 @@ bool b_use_fix_formants = true;
       f_val_saw = X_FADE(f_SAWaMod, f_val_saw, f_val_saw * f_sine_tmp);
       f_val_sqw = X_FADE(f_SQWaMod, f_val_sqw, f_val_sqw * f_val_pd_tmp);
     }
-    // --- Mixer ---
-    f_val_result = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
+    // --- Mixer --- // Please note: We also save the f_rescomb_processvalue for S&H tremolo in case the resonator is not active and value for direct out of right channel
+    f_val_result = f_right_direct_out = f_rescomb_process = (f_val_pd*f_PDvol + f_val_sqw*f_SQWvol + f_val_saw*f_SAWvol) / 3.f;    // Check if we already devide here? ###
 
     // --- Tremolo before Formant-Filter/Rescomb? ---
     if( !t_TremoloAfterFormant )
       f_val_result = X_FADE(f_TremoloAmount*f_tremolo_eg, f_val_result, f_LFO_tremolo*f_val_result); // XFade will be all left it tremolo-EG is finished!
 
-
-
+    /*  ###
     if( t_ResCombOn && t_ResCombBeforeFormants)     // ### Drop this option ???
-      f_val_result = X_FADE(f_ResAmount, f_val_result, Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ));
-
-    static int once = 0;  // ###
-    if( once==0)  // ###
+    {
+      f_rescomb_process = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
+      f_val_result = X_FADE(f_ResAmount, f_val_result, f_rescomb_process );
+    }
+    static int count_me = 0;  // ###
+    if( (count_me%1000)==0)  // ###
       printf("t_ResCombBeforeFormants: %d\n",t_ResCombBeforeFormants); // ###
-    once++; // ###
-
+    count_me++; // ###
+    ### */
 
     // --- Formant-Filter with fix or random values ---
     if( t_FormantFilterOn )
@@ -404,20 +416,37 @@ bool b_use_fix_formants = true;
         f_formant_z = Svf_process(svf_data_z, f_val_result, f_CutOffZ, f_ResoZ, 2) * f_FltAmntZ;
         f_val_formants = (f_formant_x + f_formant_y + f_formant_z)/3.f;
       }
+      f_rescomb_process = f_val_formants;   // We save the value for S&H tremolo in case the resonator is not active
       f_val_result = X_FADE(f_FormantAmount, f_val_result, f_val_formants);
     }
     // --- Apply resonator if active (and located after formant-filter) ---
-    if( t_ResCombOn && !t_ResCombBeforeFormants)
-      f_val_result = X_FADE(f_ResAmount, f_val_result, Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ));
-
+    if( t_ResCombOn ) // ###  && !t_ResCombBeforeFormants)
+    {
+      f_rescomb_process = Rescomb_process(rescomb_data, f_val_result, f_ResFreq, f_ResTone, f_ResQ);
+      f_val_result = X_FADE(f_ResAmount, f_val_result, f_rescomb_process );
+    }
     // --- Tremolo after Formant-Filter/Resonator? ---
     if( t_TremoloAfterFormant )
       f_val_result = X_FADE(f_TremoloAmount*f_tremolo_eg, f_val_result, f_LFO_tremolo*f_val_result); // XFade will be all left it tremolo-EG is finished!
 
+    // --- Fade in Resonator S&H result with Tremolo if activated ---
+    f_val_result = X_FADE(f_TremoloResAmount*f_tremolo_eg, f_val_result, f_SnH*f_rescomb_process);
+
     // --- Apply AD[SR] if active and send out DSP-result ---
     f_val_result *= vol_eg_process * f_Volume;      // Apply AD or ADSR volume shaping to audio (is 1.0 if EG is inactive), adjust master-volume
     CONSTRAIN(f_val_result, -1.f, 1.f );
-    data.buf[i * 2 + processCh] = f_val_result;     // Mono channel output for plugin in slot 1 and/or in slot 2
+    if(t_VoicesDirectOut )
+    {
+      f_right_direct_out *= f_Volume;
+      CONSTRAIN(f_right_direct_out, -1.f, 1.f);  // Limit right-channel result to max. audio-level
+      data.buf[i * 2] = f_val_result;                     // Left channel
+      data.buf[i * 2 + 1] = f_right_direct_out;           // Right channel output
+    }
+    else
+    {
+      data.buf[i * 2] = f_val_result;                     // Left channel
+      data.buf[i * 2 + 1] = f_val_result;                 // Right channel output
+    }
   }
 }
 

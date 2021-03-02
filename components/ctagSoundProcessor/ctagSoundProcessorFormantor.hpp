@@ -38,18 +38,12 @@ namespace CTAG {
             const double* coeff_cur = (const double *)coeff_a;
             inline void formant_filter_set_formant(int formant_idx) {coeff_cur = coeff_array[formant_idx];}  // Used to set the current vowel before the main loop
 
-            // --- Keyboard logic[s] to switch formants ---
-            int formant_trigger[12] = {-1,0,-1,1,-1,-1,2,-1,3,-1,4,-1}; // Select one of 5 formants (fix or random) per key from keyboard
-            int formant_selected = 0;       // We remember the most recent trigger-key of the formant here
-            int i_note_save = 36;          // We remember the last note, in case we select formants via black keys...
-            float f_note_save = 36.f;      // We remember the last note, in case we select formants via black keys...
-
             // --- Remember status of triggers / buttons ---
             inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
             enum trig_states
             {
-                e_Gate, e_EGvolActive, e_EGvolSlow, e_FormantBlendingOn, e_TremoloActive, e_TremoloAfterFormant,
-                e_FormantRndNew, e_ResCombOn, e_SQWon, e_CrossModOn, e_ResCombBeforeFormants, e_TremoloIsSQW, e_AMon,
+                e_Gate, e_EGvolActive, e_EGvolSlow, e_FormantBlendingOn, e_TremoloActive, e_TremoloAfterFormant, e_VoicesDirectOut,
+                e_FormantRndNew, e_ResCombOn, e_SQWon, e_CrossModOn, e_ResCombBeforeFormants, e_TremoloIsSQW, e_AMon, e_QuantizePitch,
                 e_FormantFilterOn, e_KeyLogic, e_FormantLock, e_ADSRon, e_Formantor_options_max
             };
             int prev_trig_state[e_Formantor_options_max] = {0};   // Initialize _all_ entries with "low value"
@@ -61,6 +55,12 @@ namespace CTAG {
             // --- LFOs ---
             ctagSineSource lfoPWM;
             ctagSineSource lfoTremolo;
+
+            // --- Sample and Hold for Tremolo-LFO ---
+            float applySnH(float sine_lfo_val);
+            ctagWNoiseGen oscSnH;
+            float saved_SnHsample = 0.f;
+            bool hold_triggerSnH = true;
 
             // --- VULT Stuff ---
             Phasedist_real_process_type pd_data;        // VULT PD synth voice internal datastructure, also needed for initialisation
