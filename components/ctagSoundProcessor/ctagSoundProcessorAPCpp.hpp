@@ -53,7 +53,7 @@ namespace CTAG {
             // === End of pseudo local variables ===
 
             virtual void knowYourself() override;
-            inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id ); // rescale incoming data to bool
+            inline int process_param_trig( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
             inline float process_param_float( const ProcessData &data, int cv_myparm, int my_parm, float out_min = 0.f, float out_max = 1.f, bool exponential = false ); // rescale incoming data to 0.0-1.0
 
             HELPERS::ctagSineSource osc_1;  // Main Oscillators
@@ -71,6 +71,7 @@ namespace CTAG {
             enum trig_states {e_MOD_active_1, e_MOD_active_2, e_FreqmodSquare_active_1, e_FreqmodSquare_active_2, e_MOD_is_PWM_1, e_MOD_is_PWM_2,
                               e_SmoothOSC_1, e_SmoothOSC_2, e_Env_active, e_Trigger_env, e_Env_loop_active, e_APC_options_max };
             int prev_trig_state[e_APC_options_max] = {0,0,0,0,0,0,0,0,0,0,0};
+            bool low_reached[e_APC_options_max] = {false};  // We need this for look for toggle-events
 
             inline float noteToFreq(float incoming_note) { return  (HELPERS::fastpow2 ((incoming_note - 69.f) / 12.f) *440.f); } // MIDItoFrequency, inspired by: https://github.com/little-scale/mtof/blob/master/mtof.cpp
 

@@ -31,22 +31,40 @@ respective component folders / files if different from this license.
 #define GATE_HIGH_NEW       2
 #define GATE_HIGH           1
 #define GATE_LOW            0
-#define GATE_LOW_NEW        -1
 
 using namespace CTAG::SP;
 
-inline int ctagSoundProcessorAPCpp::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id )
+// --- Process trigger signals and keep their state internally ---
+inline int ctagSoundProcessorAPCpp::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type = 0 )
 {
+  int trig_status = 0;
+
   if(trig_myparm != -1)       // Trigger given via CV/Gate or button?
   {
-    if((!data.trig[trig_myparm]) != prev_trig_state[prev_trig_state_id])    // Statuschange from HIGH to LOW or LOW to HIGH?
+    trig_status = !data.trig[trig_myparm]; // HIGH is 0, so we negate for boolean logic
+    if( gate_type == 1 )
+      return(trig_status);
+
+    if(trig_status)    // Statuschange from HIGH to LOW or LOW to HIGH? Startup-Status for prev_trig_state is -1, so first change is always new
     {
-      prev_trig_state[prev_trig_state_id] = !data.trig[trig_myparm];       // Remember status
-      if (data.trig[trig_myparm] == 0)                      // HIGH if 0
-        return (GATE_HIGH_NEW);          // New trigger
-      else
-        return (GATE_LOW_NEW);         // Trigger released
+      if( low_reached[trig_myparm] )    // We had a trigger low before the new trigger high
+      {
+        if (prev_trig_state[prev_trig_state_id] == GATE_LOW || gate_type==2 )   // Toggle or AD EG Trigger...
+        {
+          prev_trig_state[prev_trig_state_id] = GATE_HIGH;       // Remember status for next round
+          low_reached[trig_myparm] = false;
+          return (GATE_HIGH_NEW);           // New trigger
+        }
+        else        // previous status was high!
+        {
+          prev_trig_state[prev_trig_state_id] = GATE_LOW;       // Remember status for next round
+          low_reached[trig_myparm] = false;
+          return (GATE_LOW);           // New trigger
+        }
+      }
     }
+    else
+      low_reached[trig_myparm] = true;
   }
   else                        // We may have a trigger set by activating the button via the GUI
   {
@@ -56,7 +74,7 @@ inline int ctagSoundProcessorAPCpp::process_param_trig(const ProcessData &data, 
       if(my_parm != 0)                   // LOW if 0
         return (GATE_HIGH_NEW);          // New trigger
       else
-        return (GATE_LOW_NEW);           // Trigger released
+        return (GATE_LOW);           // Trigger released
     }
   }
   return(prev_trig_state[prev_trig_state_id]);            // No change (1 for active, 0 for inactive)
@@ -103,7 +121,7 @@ void ctagSoundProcessorAPCpp::Process(const ProcessData &data)
   mod2_on = process_param_trig(data, trig_MOD_active_2, MOD_active_2, e_MOD_active_2);  // Allow PWM for Osc2?
   // Volume Envelope active and/or triggered?
   env_active = process_param_trig(data, trig_Env_active, Env_active, e_Env_active);
-  env_trigger = process_param_trig(data, trig_Trigger_env, Trigger_env, e_Trigger_env);
+  env_trigger = process_param_trig(data, trig_Trigger_env, Trigger_env, e_Trigger_env, 2);  // Variant 2: trigger always, not (only) toggled!
   env_loop = process_param_trig(data, trig_Env_loop_active, Env_loop_active, e_Env_loop_active);
 
   // --- Read and buffer controllers for APC and frequencies required for sound-generation lateron ---
