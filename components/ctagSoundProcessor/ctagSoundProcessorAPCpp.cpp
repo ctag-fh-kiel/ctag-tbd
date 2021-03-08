@@ -31,35 +31,53 @@ respective component folders / files if different from this license.
 #define GATE_HIGH_NEW       2
 #define GATE_HIGH           1
 #define GATE_LOW            0
-#define GATE_LOW_NEW        -1
 
 using namespace CTAG::SP;
 
-inline int ctagSoundProcessorAPCpp::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id )
+// --- Process trigger signals and keep their state internally ---
+inline int ctagSoundProcessorAPCpp::process_param_trig(const ProcessData &data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
 {
+  int trig_status = 0;
+
   if(trig_myparm != -1)       // Trigger given via CV/Gate or button?
   {
-    if((!data.trig[trig_myparm]) != prev_trig_state[prev_trig_state_id])    // Statuschange from HIGH to LOW or LOW to HIGH?
+    trig_status = (data.trig[trig_myparm]==0); // HIGH is 0, we assign true or false to trig_status, without changine the value of the reference to the data.trig-array!
+    if( gate_type == 1 )      // We have an on/off gate
+      return(trig_status);    // And return true if the gate is on, false if off
+
+    if(trig_status)    // Statuschange (for toggles) from HIGH to LOW or LOW to HIGH? 
     {
-      prev_trig_state[prev_trig_state_id] = !data.trig[trig_myparm];       // Remember status
-      if (data.trig[trig_myparm] == 0)                      // HIGH if 0
-        return (GATE_HIGH_NEW);          // New trigger
-      else
-        return (GATE_LOW_NEW);         // Trigger released
+      if( low_reached[enum_trigger_id] )    // We had a trigger low before the new trigger high
+      {
+        if (prev_trig_state[enum_trigger_id] == GATE_LOW || gate_type==2 )   // Toggle or AD EG Trigger...
+        {
+          prev_trig_state[enum_trigger_id] = GATE_HIGH;       // Remember status for next round
+          low_reached[enum_trigger_id] = false;
+          return (GATE_HIGH_NEW);           // New trigger
+        }
+        else        // previous status was high!
+        {
+          prev_trig_state[enum_trigger_id] = GATE_LOW;       // Remember status for next round
+          low_reached[enum_trigger_id] = false;
+          return (GATE_LOW);           // New trigger
+        }
+      }
     }
+    else
+      low_reached[enum_trigger_id] = true;
   }
   else                        // We may have a trigger set by activating the button via the GUI
   {
-    if (my_parm != prev_trig_state[prev_trig_state_id])    // Statuschange from HIGH to LOW or LOW to HIGH?
+    if (my_parm != prev_trig_state[enum_trigger_id])    // Statuschange from HIGH to LOW or LOW to HIGH?
     {
-      prev_trig_state[prev_trig_state_id] = my_parm;       // Remember status
+      prev_trig_state[enum_trigger_id] = my_parm;       // Remember status
       if(my_parm != 0)                   // LOW if 0
         return (GATE_HIGH_NEW);          // New trigger
       else
-        return (GATE_LOW_NEW);           // Trigger released
+        return (GATE_LOW);           // Trigger released
     }
   }
-  return(prev_trig_state[prev_trig_state_id]);            // No change (1 for active, 0 for inactive)
+  return(prev_trig_state[enum_trigger_id]);            // No change (1 for active, 0 for inactive)
 }
 
 // --- Helper function: rescale CV or Pot to float 0...1.0 (CV is already in correct format, we still keep it inside this method for convenience ---
@@ -103,7 +121,7 @@ void ctagSoundProcessorAPCpp::Process(const ProcessData &data)
   mod2_on = process_param_trig(data, trig_MOD_active_2, MOD_active_2, e_MOD_active_2);  // Allow PWM for Osc2?
   // Volume Envelope active and/or triggered?
   env_active = process_param_trig(data, trig_Env_active, Env_active, e_Env_active);
-  env_trigger = process_param_trig(data, trig_Trigger_env, Trigger_env, e_Trigger_env);
+  env_trigger = process_param_trig(data, trig_Trigger_env, Trigger_env, e_Trigger_env, 2);  // Variant 2: trigger always, not (only) toggled!
   env_loop = process_param_trig(data, trig_Env_loop_active, Env_loop_active, e_Env_loop_active);
 
   // --- Read and buffer controllers for APC and frequencies required for sound-generation lateron ---
