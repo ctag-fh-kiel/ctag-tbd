@@ -43,6 +43,6 @@ add_custom_target(copy-files-backup ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
         ${CMAKE_BINARY_DIR}/spiffs_image/dbup
         )
 
-spiffs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT)
+spiffs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT DEPENDS copy-files copy-files-backup)
 
 
