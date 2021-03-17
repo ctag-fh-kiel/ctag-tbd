@@ -69,7 +69,7 @@ void Network::wifi_init_sta(void) {
     strcpy((char *) wifi_config.sta.password, _pwd.c_str());
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
     ESP_LOGI(TAG, "wifi_init_sta finished.");
@@ -142,7 +142,7 @@ void Network::wifi_init_softap(void) {
     }
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
 
     /* DHCP stuff not working yet
     esp_netif_dhcpc_stop(netif);
