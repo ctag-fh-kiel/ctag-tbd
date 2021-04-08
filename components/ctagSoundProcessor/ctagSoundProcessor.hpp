@@ -47,6 +47,14 @@ respective component folders / files if different from this license.
 #define MK_INT_PAR(outname, inname, scale) \
     int outname = inname;\
     if(cv_##inname != -1) outname = static_cast<int>(data.cv[cv_##inname] * scale);
+    
+ #define MK_FLT_PAR_ABS_MIN_MAX(outname, inname, norm, out_min, out_max) \
+    float outname = inname/norm * (out_max-out_min)+out_min; \
+    if(cv_##inname != -1) outname = fabsf(data.cv[cv_##inname]) * (out_max-out_min)+out_min;   
+
+#define MK_FLT_PAR_ABS_PAN(outname, inname, norm, scale)  \
+    float outname = (inname/norm+1.f)/2.f * scale; \
+    if(cv_##inname != -1) outname = fabsf(data.cv[cv_##inname]) * scale; 
 
 
 #include <stdint.h>
