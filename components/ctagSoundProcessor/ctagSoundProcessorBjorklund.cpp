@@ -31,7 +31,7 @@ using namespace CTAG::SP;
 
 #include "helpers/ctagNumUtil.hpp"
 #include "plaits/dsp/engine/engine.h"
-#include <algorithm >
+#include <algorithm>
 
 // --- VULT "Library for TBD" ---
 // #include "./vult/vult_formantor.cpp"  // Already defined in ctagSoundProcessorFormantor, so to avoid double defines we omit it here!
