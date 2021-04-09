@@ -279,14 +279,14 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
   CONSTRAIN(i_LfoTypeSAMPxFade_1, 0, 6);      // 7 possible types of LFOs
   MK_FLT_PAR_ABS(f_LfoSAMPxFadeRange_1, LfoSAMPxFadeRange_1, 4095.f, 1.f);
   MK_FLT_PAR_ABS_MIN_MAX(f_LfoSAMPxFadeSpeed_1, LfoSAMPxFadeSpeed_1, 4095.f, 0.05f, 15.f);
-  lfoXfadeSample_1.SetFrequency(f_LfoWTxFadeSpeed_1);
+  lfoXfadeSample_1.SetFrequency(f_LfoSAMPxFadeSpeed_1);
 
   MK_TRIG_PAR(t_LfoSAMPxFadeActive_2, LfoSAMPxFadeActive_2);
   MK_INT_PAR_ABS(i_LfoTypeSAMPxFade_2, LfoTypeSAMPxFade_2, 7.f)
   CONSTRAIN(i_LfoTypeSAMPxFade_2, 0, 6);      // 7 possible types of LFOs
   MK_FLT_PAR_ABS(f_LfoSAMPxFadeRange_2, LfoSAMPxFadeRange_2, 4095.f, 1.f);
   MK_FLT_PAR_ABS_MIN_MAX(f_LfoSAMPxFadeSpeed_2, LfoSAMPxFadeSpeed_2, 4095.f, 0.05f, 15.f);
-  lfoXfadeSample_2.SetFrequency(f_LfoWTxFadeSpeed_2);
+  lfoXfadeSample_2.SetFrequency(f_LfoSAMPxFadeSpeed_2);
 
   // --- WaveTable Scan Modulators ---
   MK_FLT_PAR_ABS(f_ScanWavTblA, ScanWavTblA, 4095.f, 1.f);
