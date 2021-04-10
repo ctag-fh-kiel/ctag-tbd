@@ -1,0 +1,85 @@
+{
+   "id": "Formantor", "isStereo": true, "name": "Formantor", "hint": "Combining a simple PD voice with a simple formant filter", "params":
+   [
+       {  
+          "id": "Global", "name": "Global (Quantizer relative to Master Tune!)", "type": "group", "params":  
+           [
+               {"id":"Gate","name":"Gate/Trigger n/y","type":"bool"},
+               {"id": "MasterPitch","type": "int","name": "Master Pitch (map CV here)","min": -48,"max": 48,"step": 1},
+               {"id": "MasterTune","type": "int","name": "Master Tune +- 1200 Cent","min": -1200,"max": 1200,"step": 1},
+               {"id":"QuantizePitch","name":"Quantize CV to chromatic tuning n/y","type":"bool"},
+               {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+          "id": "Voice", "name": "Voice", "type": "group", "params":  
+           [
+               {"id":"VoicesDirectOut","name":"Voices direct out (out-1) n/y","type":"bool"},
+               {"id": "PDPitch","type": "int","name": "PD Pitch","min": -48,"max": 48,"step": 1}, 
+               {"id": "PDTune","type": "int","name": "PD Tune","min": -1200,"max": 1200,"step": 1},
+               {"id":"PDpitchMod","name":"PD PitchMod Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PDamount","name":"Phase Distortion Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"WaveFolder","name":"PD WaveFolding Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id": "SQWPitch","type": "int","name": "SQW Pitch","min": -48,"max": 48,"step": 1},
+               {"id": "SQWTune","type": "int","name": "SQW Tune","min": -1200,"max": 1200,"step": 1},
+               {"id":"PWMspeed","name":"PD-PitchMod and PWM speed","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PWMintensity","name":"PWM intensity for SQW Osc","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+          "id": "Mixer", "name": "AM / Mixer", "type": "group", "params":  
+           [
+               {"id":"AMon","name":"Amplitude Modulation active n/y","type":"bool"},
+               {"id":"PDaMod","name":"PD Osc<->AM PD with Sine from SQW","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SQWaMod","name":"SQW Osc<->AM SQW with PD","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"PDvol","name":"PD Oscillator volume","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SQWvol","name":"SQW Oscillator volume","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+          "id": "Formants", "name": "Formant-Filter ('Key logic': Keys trigger the formants  (A..E.I..O..U / R1-R12)", "type": "group", "params":  
+           [
+              {"id":"FormantFilterOn","name":"Formant Filter n/y","type":"bool"},
+              {"id":"KeyLogic","name":"'Key logic' on n/y","type":"bool"},
+              {"id":"FormantSelect","name":"Formant selection (A..E.I..O..U / R1-R12)","type":"int","min":1,"max":12,"step":1},
+              {"id":"FormantRndNew","name":"New random formant for selection n/y","type":"bool"},
+              {"id":"FormantAmount","name":"Formant Filter Amount","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResCombOn","name":"Resonator active (switch to random formants) n/y","type":"bool"},
+              {"id":"ResFreq","name":"Resonator Frequency","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResTone","name":"Resonator Tone","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResQ","name":"Resonator Q","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResAmount","name":"Resonator Amount","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+          "id": "Tremolo", "name": "Tremolo", "type": "group", "params":  
+           [
+               {"id":"TremoloActive","name":"Tremolo active n/y","type":"bool"}, 
+               {"id":"TremoloGateTrigger","name":"Enable only with ADSR Gate n/y","type":"bool"},
+               {"id":"TremoloAttack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloRelease","name":"Release","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloIsSQW","name":"Tremolo uses SQW n/y","type":"bool"}, 
+               {"id":"TremoloSpeed","name":"Tremolo Speed","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloAmount","name":"Tremolo Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloAfterResonator","name":"Tremolo after Resonator n/y","type":"bool"}, 
+                {"id":"TremoloPDisSQW","name":"PD-mod uses SQW n/y","type":"bool"}, 
+               {"id":"TremoloPDAmount","name":"Modulate PD Tone Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloResAmount","name":"S&H-Modulate Resonator Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"TremoloSnHpd","name":"S&H-Modulate PD Tone","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+      {
+          "id": "Envelope", "name": "Volume Envelope", "type": "group", "params":  
+           [
+               {"id":"EGvolActive","name":"Volume envelope active n/y","type":"bool"}, 
+               {"id":"Attack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Decay","name":"Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADSRon","name":"ADSR n/y","type":"bool"},
+               {"id":"Sustain","name":"Sustain","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Release","name":"Release","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGvolSlow","name":"Slow EG n/y","type":"bool"}, 
+               {"id":"EnvPDamount","name":"Envelope to Phase PD-OSC","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       }
+   ] 
+}
