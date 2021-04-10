@@ -1,0 +1,162 @@
+{
+   "id": "Bjorklund", "isStereo": true, "name": "Bjorklund", "hint": "Combining Patterns based on Bjorklund's implementation of Euclidian rhythms and mathematical palindromes", "params":
+   [
+       {  
+          "id": "Global", "name": "Global (Quantizer relative to Master Tune!)", "type": "group", "params":  
+           [
+               {"id":"Trigger","name":"Trigger/Clock","type":"bool"},
+               {"id":"BeatDivider","name":"Beat Divider","type":"int","min":1,"max":32,"step":1}, 
+               {"id":"InternalClock","name":"Use internal clock n/y","type":"bool"},
+               {"id": "ClockSpeed","type": "int","name": "Clock Speed","min":0,"max":4095,"step":1},
+               {"id": "MasterPitch","type": "int","name": "Master Pitch (map CV here => source for keytracking)","min": -48,"max": 48,"step": 1},
+               {"id": "MasterTune","type": "int","name": "Master Tune +- 1200 Cent","min": -1200,"max": 1200,"step": 1},
+               {"id":"QuantizePitch","name":"Quantize CV according to Scale-Correction n/y","type":"bool"},
+               {"id":"ScaleCorrect","name":"Scale-Correction (0: Chromatic)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+          "id": "Oscillators", "name": "Oscillators", "type": "group", "params":  
+           [
+               {"id": "SawPitch","type": "int","name": "Saw Pitch","min": -48,"max": 48,"step": 1}, 
+               {"id": "SawTune","type": "int","name": "Saw Tune","min": -1200,"max": 1200,"step": 1},
+               {"id": "PulsePitch","type": "int","name": "Pulse Pitch","min": -48,"max": 48,"step": 1}, 
+               {"id": "PulseTune","type": "int","name": "Pulse Tune","min": -1200,"max": 1200,"step": 1},
+               {"id":"PulseWidth","name":"Pulse Width","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PWMon","name":"PWM n/y","type":"bool"},
+               {"id":"PWMspeed","name":"PWM Speed","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PWMamount","name":"PWM Amount","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+          "id": "Mixer", "name": "Sound Mixer", "type": "group", "params":  
+           [
+               {"id":"SeperateOutput","name":"Direct out before Filter and Envelopes on Right Channel n/y","type":"bool"},
+               {"id":"NoiseVol","name":"Noise volume","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SawVol","name":"Saw Oscillator volume","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"PulseVol","name":"Pulse Oscillator volume","type":"int","min":0,"max":4095,"step":1},
+               {"id":"OSCmix","name":"Oscillators Mix","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+       "id": "FxFilter", "name": "Effects & Filter (Distortion / WaveFolder / Ringmodulator /  Diode Ladder Filter)", "type": "group", "params":  
+           [
+               {"id":"RingOnSaw","name":"Ring/AM Modulation active for Saw n/y","type":"bool"},
+               {"id":"RingOnPulse","name":"Ring/AM Modulation active for Pulse n/y","type":"bool"},
+               {"id":"AMisSquare","name":"AM Modulation Boost n/y","type":"bool"},
+               {"id":"RingModFreq","name":"AM/RingMod Frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"RingModAmnt","name":"AM/RingMod amount","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"WaveFolder","name":"WaveFolding Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VintageFilter","name":"Vintage Resonance pitching n/y","type":"bool"},
+               {"id":"Cutoff","name":"Cutoff Frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"Resonance","name":"Resonance amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FilterTracking","name":"Filter key tracking","type":"int","min": -2048,"max": 2047,"step": 1},
+               {"id":"FilterLeakage","name":"Filter Leakage (let unfiltered sounds through)","type":"int","min":0,"max":4095,"step":1}
+           ]   
+       },
+       {
+          "id": "Bjorklund", "name": "Bjorklund patterns / Sequencer", "type": "group", "params":  
+           [
+               {"id":"PatternSequencer","name":"PatternSequencer off/on","type":"bool"},
+               {"id":"ResetSequencer","name":"Reset Sequencer n/y","type":"bool"},
+               {"id":"BjorklundOff","name":"Bjorklund patterns inactive n/y","type":"bool"},
+               {"id":"BjorklundPattern","name":"Bjorklund Pattern","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"BjorklundShift","name":"Bjorklund Shift","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PalindromeOff","name":"Palindrome melodies inactive n/y","type":"bool"},
+               {"id":"PalindromeSelect","name":"Palindrome select","type":"int","min":0,"max":4095,"step":1}, 
+               {"id": "PalindromeRootkey","type": "int","name": "Palindrome rootkey","min": -48,"max": 48,"step": 1},
+               {"id":"AccentOff","name":"Accent patterns inactive n/y","type":"bool"},
+               {"id":"AccentSync","name":"Sync Accents with Bjorklund patterns n/y","type":"bool"},
+               {"id":"AccentDestination","name":"Accent Destination (see numbers of EGs)","type":"int","min":0,"max":6,"step":1},
+               {"id":"AccentBeatDivider","name":"Accent Beat Divider","type":"int","min":1,"max":32,"step":1}, 
+               {"id":"AccentIsBjorklund","name":"Bjorklund instead of metrical for accents  n/y","type":"bool"},
+               {"id":"AccentSelect","name":"Accent patterns select","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"AccentShift","name":"Accent Shift","type":"int","min":0,"max":4095,"step":1},
+               {"id":"AccentAmount","name":"Accent amount","type":"int","min":-2048,"max":2047,"step":1} 
+           ]   
+       },
+       {
+          "id": "VolEnv", "name": "(0) Volume Envelope", "type": "group", "params":  
+           [
+               {"id":"EGvolActive","name":"Volume envelope active n/y","type":"bool"}, 
+               {"id":"EGvolNegative","name":"Invert Volume envelope n/y","type":"bool"}, 
+               {"id":"VolAttack","name":"Volumt Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VolDecay","name":"Volume Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VolEnvAmount","name":"Volume envelope Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGvolLoop","name":"Volume envelope loop n/y","type":"bool"}
+           ]   
+       },
+       {
+          "id": "UseVolEGonly", "name": "Disable everything downwards form here on for parameter reduction?", "type": "group", "params":  
+           [
+               {"id":"EasyEditOn","name":"Use  Volume Envelope only ('easy edit mode') n/y","type":"bool"}
+           ]   
+       },
+       {
+          "id": "NoiseEnv", "name": "(1) Noise Envelope", "type": "group", "params":  
+           [
+               {"id":"EGnoiseActive","name":"Noise envelope active n/y","type":"bool"}, 
+               {"id":"EGnoiseNegative","name":"Invert Noise envelope n/y","type":"bool"}, 
+               {"id":"NoiseAttack","name":"Noise Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"NoiseDecay","name":"Noise  Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"NoiseEnvAmount","name":"Noise  envelope amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGnoiseLoop","name":"Noise envelope loop n/y","type":"bool"}
+           ]   
+       },
+       {
+          "id": "OSCmixEnv", "name": "(2) Oscillators Mix Envelope", "type": "group", "params":  
+           [
+               {"id":"EGoscMixActive","name":"OscillatorMix envelope active n/y","type":"bool"}, 
+               {"id":"EGoscMixNegative","name":"Invert OscillatorMix envelope n/y","type":"bool"}, 
+               {"id":"OscMixAttack","name":"OscillatorMix Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"OscMixDecay","name":"OscillatorMix  Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"OscMixEnvAmount","name":"OscillatorMix  envelope amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGoscMixLoop","name":"OscillatorMix envelope loop n/y","type":"bool"}
+           ]   
+       },
+       {
+          "id": "RingModEnv", "name": "(3) RingModulator Envelope", "type": "group", "params":  
+           [
+               {"id":"EGringActive","name":"RingMod envelope active n/y","type":"bool"}, 
+               {"id":"EGringNegative","name":"Invert RingMod envelope n/y","type":"bool"}, 
+               {"id":"RingAttack","name":"RingMod Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"RingDecay","name":"RingMod Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"RingAmount","name":"RingMod envelope amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGringLoop","name":"RingMod envelope loop n/y","type":"bool"}
+           ]   
+       },
+       {
+          "id": "WfEnv", "name": "(4) WaveFolder Envelope", "type": "group", "params":  
+           [
+               {"id":"EGwfActive","name":"WaveFolder envelope active n/y","type":"bool"}, 
+               {"id":"EGwfNegative","name":"Invert WaveFolder envelope n/y","type":"bool"}, 
+               {"id":"WfAttack","name":"WaveFolder  Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"WfDecay","name":"WaveFolder  Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"WfEnvAmount","name":"WaveFolder  envelope amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGwfLoop","name":"WaveFolder envelope loop n/y","type":"bool"}
+           ]   
+       },
+       {
+          "id": "FiltEnv", "name": "(5) Filter Cutoff Envelope", "type": "group", "params":  
+           [
+               {"id":"EGfiltActive","name":"Filter envelope active n/y","type":"bool"}, 
+               {"id":"EGfiltNegative","name":"Invert Filter envelope n/y","type":"bool"}, 
+               {"id":"FiltAttack","name":"FilterAttack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FiltDecay","name":"Filter Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FiltAmount","name":"Filter envelope amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGfiltLoop","name":"Filter envelope loop n/y","type":"bool"}
+           ]   
+       },
+       {
+          "id": "FilterLeakEnv", "name": "(6) Filter Leakage Envelope", "type": "group", "params":  
+           [
+               {"id":"EGfilterLeakActive","name":"FilterLeak envelope active n/y","type":"bool"}, 
+               {"id":"EGfilterLeakNegative","name":"Invert FilterLeak envelope n/y","type":"bool"}, 
+               {"id":"FilterLeakAttack","name":"FilterLeak Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FilterLeakDecay","name":"FilterLeak  Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FilterLeakEnvAmount","name":"FilterLeak  envelope amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"FilterLeakEnvLoop","name":"FilterLeak envelope loop n/y","type":"bool"}
+           ]   
+       }
+   ] 
+}

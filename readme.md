@@ -56,7 +56,12 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 
 ## How to build
 You need C/C++ skills. You may want to check the [TBD simulator](simulator/readme.md) for easy plugin development without TBD hardware.
-Install espressif esp-idf, instructions are [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html).
+
+**NEW!!!** you can build the firmware using a Github action. Just fork the ctag-tbd repo to your Github account and enable the supplied
+Github action. Each time you will push your edits into your fork's master branch, Github will cut a draft release for you automatically.
+No need for a toolchain on your own system.
+
+If you prefer to have a dev environment on your own, install espressif esp-idf, instructions are [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html).
 Use git to checkout esp-idf release/v4.1 (TBD may build also with newer versions, you can try), do this within the esp-idf folder:
 ```sh
 git checkout release/v4.1

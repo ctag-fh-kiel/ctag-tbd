@@ -1,0 +1,14 @@
+{
+  "id": "Void",
+  "isStereo": false,
+  "name": "Void",
+  "hint": "This plugin does nothing",
+  "params": [
+    {
+      "type": "bool",
+      "id": "dummy",
+      "name": "dummy",
+      "help": "Does nothing"
+    }
+  ]
+}
