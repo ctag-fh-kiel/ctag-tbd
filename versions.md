@@ -1,5 +1,10 @@
 # CTAG TBD Version Log
 
+## V0.9.14
+- New plugin Formantor by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+- New plugin Bjorklund by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+- Added dummy plugin Void --> No processing overhead for a single channel
+
 ## V0.9.13
 - New plugin APCpp by M. Brüssel
 - CDelay noise reduction / different filter model
@@ -8,7 +13,7 @@
 - Claude more grains, removed mono in as similar functionality already with mode 1 & 3 
 - Added developer docs for windows (in doc/ folder)
 - Added continuous integration scripts
-- Added configuration option for different HW platforms including (Strämpler)[https://github.com/ctag-fh-kiel/ctag-straempler]
+- Added configuration option for different HW platforms including [Strämpler](https://github.com/ctag-fh-kiel/ctag-straempler)
 - Bug fixes
 
 ## V0.9.12a
