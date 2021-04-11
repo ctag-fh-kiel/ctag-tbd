@@ -126,6 +126,9 @@ add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
 target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
 ## Application
+if(APPLE)
+    set(Boost_USE_STATIC_LIBS ON)
+endif()
 find_package(Boost 1.67.0 COMPONENTS system thread filesystem program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "could not find Boost!")
@@ -140,6 +143,7 @@ set(SRC_FILES2
 
 # paths for sample-rom input files
 set(SAMPLE_ROM_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom/sample-rom.tbd" CACHE FILEPATH "Sample-rom raw file")
+
 
 add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
 target_compile_definitions(tbd-sim PRIVATE SAMPLE_ROM_FILE="${SAMPLE_ROM_FILE}")
@@ -171,6 +175,23 @@ target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_include)
 target_include_directories(run_tests PRIVATE ${Boost_INCLUDE_DIR})
 
+# installation
+install(CODE "set(CMAKE_INSTALL_LOCAL_ONLY true)")
+install(TARGETS tbd-sim RUNTIME DESTINATION simulator/bin)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION .)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom DESTINATION .)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION simulator)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION simulator)
 
+# package generation
+set(CPACK_GENERATOR "ZIP")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "tbd-sim")
+SET(CPACK_PACKAGE_VENDOR "ctag-tbd")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/readme.md")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE")
 
-
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "9")
+SET(CPACK_PACKAGE_VERSION_PATCH "14")
+#SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+include(CPack)
