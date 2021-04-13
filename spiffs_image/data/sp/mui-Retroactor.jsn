@@ -1,0 +1,48 @@
+{
+   "id": "Retroactor", "isStereo": true, "name": "Retroactor", "hint": "Feedbackline for sine-waves through a comb- and diode ladder-filter", "params":
+   [
+       {  
+          "id": "Global", "name": "Global", "type": "group", "params":  
+           [
+               {"id": "MasterPitch","type": "int","name": "Master Pitch (map CV here if desired)","min": -48,"max": 48,"step": 1},
+               {"id": "MasterTune","type": "int","name": "Master Tune +- 1200 Cent","min": -1200,"max": 1200,"step": 1},
+               {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+          "id": "Voice", "name": "Voice (Sine phases given as angles of degrees*10)", "type": "group", "params":  
+           [
+              {"id": "PitchSineA","type": "int","name": "Pitch Sine A","min": -48,"max": 48,"step": 1},  
+              {"id": "FrequSineA","name": "Sine A +-1 Octave","type": "int","min": -2048,"max": 2047,"step": 1},
+              {"id": "PitchSineB","type": "int","name": "Pitch Sine B","min": -48,"max": 48,"step": 1},
+              {"id": "FrequSineB","name": "Sine B  +-1 Octave","type": "int","min": -2048,"max": 2047,"step": 1}
+            ]  
+       },
+       {
+          "id": "FeedbackLoop", "name": "Feedback Loop (The Option Isolated Feedback will 'switch-out' the Sinewaves)", "type": "group", "params":  
+           [
+               {"id":"ResetFeedbackLoop","name":"Reset Feedback Loop now?","type":"bool"},
+               {"id":"CombCut","name":"Combfilter Cutoff","type":"int","min":0,"max":4095,"step":1},
+               {"id":"CombRes","name":"Combfilter Resonance", "type":"int","min":0,"max":4095,"step":1},
+               {"id":"CombTone","name":"Combfilter Tone", "type":"int","min":0,"max":4095,"step":1},
+               {"id":"LadderCut","name":"Diode Ladder Cutoff","type":"int","min":0,"max":4095,"step":1},
+               {"id":"LadderRes","name":"Diode Ladder Resonance", "type":"int","min":0,"max":4095,"step":1},
+               {"id":"VintageFilter","name":"Vintage Resonance pitching n/y","type":"bool"},
+               {"id":"WavefolderAmount","name":"Wavefolder Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"IsolateFeedback","name":"Isolate Feedback-Loop n/y","type":"bool"}
+           ]
+       },
+       {
+          "id": "Mixer", "name": "Mixer", "type": "group", "params":  
+           [
+               {"id":"SineDisable","name":"Disable Sinus Waves n/y","type":"bool"}, 
+               {"id":"VolSineBoost","name":"Boost Waves","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VolSineA","name":"Vol Sine A","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VolSineB","name":"Vol Sine B","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SineMix","name": "Sinewaves Mix","type": "int","min": -2048,"max": 2047,"step": 1},
+               {"id":"VolFeedbackLoop","name":"Vol Feedback Loop","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VolWavefolder","name":"Vol Wavesfolder","type":"int","min":0,"max":4095,"step":1}
+           ]
+       }
+   ] 
+}
