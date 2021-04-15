@@ -86,7 +86,7 @@ inline int ctagSoundProcessorRetroactor::process_param_trig(const ProcessData &d
       if(my_parm != 0)                   // LOW if 0
         return (GATE_HIGH_NEW);          // New trigger
       else
-        return (GATE_LOW);           // Trigger released
+        return (GATE_LOW);              // Trigger released
     }
   }
   return(prev_trig_state[enum_trigger_id]);            // No change (1 for active, 0 for inactive)
@@ -125,7 +125,7 @@ float f_val_result = 0.f;         // Sum of results for DSP-output
   // === Mixer section ===
   MK_TRIG_PAR(t_SineDisable, SineDisable);
   MK_FLT_PAR_ABS(f_VolSineA, VolSineA, 4095.f, 0.25f);
-  MK_FLT_PAR_ABS(f_VolSineB, VolSineB, 4095.f, 0.25f);
+  MK_FLT_PAR_ABS(f_VolSineB, VolSineB, 4095.f, 0.175f);             // ###
   MK_FLT_PAR_ABS(f_VolSineBoost, VolSineBoost, 4095.f, 4.f);
   MK_FREQ_PAR(f_SineMix, SineMix);
   MK_FLT_PAR_ABS(f_VolFeedbackLoop, VolFeedbackLoop, 4095.f, 0.25f);
@@ -153,6 +153,8 @@ float f_val_result = 0.f;         // Sum of results for DSP-output
   if(t_ResetFeedbackLoop == GATE_HIGH_NEW ) // [re]init the feedback-data with an arbitrary value, to start/restart feedback in case the loop has "run dry"...
     m_feedback_process = 0.77f;
 
+  float rough_sine_B = sine_B.Process();      // "Rough Wave B" for performance-optimisation and additional tonalities
+
   // === Realtime DSP output loop ===
   uint32_t target = bufSz*2;
   for (uint32_t i = 0; i < target; i++)
@@ -167,12 +169,12 @@ float f_val_result = 0.f;         // Sum of results for DSP-output
         f_val_result = Ladder_process(ladder_data, f_val_result, f_LadderCut, f_LadderRes);               // Heun-logic for cutoff-pitch
       m_feedback_process = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
       // --- Mix the oscillators with the feedback-line ---
-      f_val_result = sine_A.Process()*f_VolSineA + sine_B.Process()*f_VolSineB + f_val_result*f_VolFeedbackLoop + m_wavefolder*f_VolWavefolder;
+      f_val_result = sine_A.Process()*f_VolSineA + rough_sine_B*f_VolSineB + f_val_result*f_VolFeedbackLoop + m_wavefolder*f_VolWavefolder;
     }
     else    // Standard feedback-line: sine-waves go to comb-filter->ladder-filter->wavefolder->output / comb-filter->ladder-filter->wavefolder is fed back to comb-filter
     {
       // --- Mix the oscillators with the feedback-line (processed during last round already) ---
-      f_val_result = sine_A.Process()*f_VolSineA + sine_B.Process()*f_VolSineB + m_feedback_process*f_VolFeedbackLoop + m_wavefolder*f_VolWavefolder;
+      f_val_result = sine_A.Process()*f_VolSineA + rough_sine_B*f_VolSineB + m_feedback_process*f_VolFeedbackLoop + m_wavefolder*f_VolWavefolder;
       // --- Resonant Comb Filter + Ladderfilter + Wavefolder ---
       f_val_result = Rescomb_process(rescomb_data, f_val_result, f_CombCut, f_CombTone, f_CombRes);
       if (t_VintageFilter)
@@ -197,7 +199,7 @@ ctagSoundProcessorRetroactor::ctagSoundProcessorRetroactor()
   // --- Initialize Oscillators ---
   sine_A.SetSampleRate(44100.f);
   sine_A.SetFrequency(1.f);
-  sine_B.SetSampleRate(44100.f);
+  sine_B.SetSampleRate(44100.f/bufSz);    // "Rough Wave B" for performance-optimisation and additional tonalities
   sine_B.SetFrequency(1.f);
 
   // --- Initialize VULT stuff ---

@@ -30,8 +30,8 @@ namespace CTAG {
             bool low_reached[e_Retroactor_options_max] = {false};  // We need this for look for toggle-events
 
             // --- Oscillators ---
-            ctagSineSource sine_A;
-            ctagSineSource sine_B;
+            ctagSineSource sine_A;          // To be updated in main loop => smooth
+            ctagSineSource sine_B;          // To be updated outside main loop => rough
 
             // --- Feedback Loop ---
             float m_feedback_process = 0;
