@@ -37,14 +37,9 @@ using namespace CTAG::SP;
 // #include "./vult/vult_formantor.cpp"  // Already defined in ctagSoundProcessorFormantor, so to avoid double defines we omit it here!
 // #include "./vult/vultin.cpp"          // Already defined in ctagSoundProcessorFormantor, so to avoid double defines we omit it here!
 
-using namespace CTAG::SP;
-
 #define GATE_HIGH_NEW       2
 #define GATE_HIGH           1
 #define GATE_LOW            0
-
-#define WHITE_NOISE_SIZE      22040
-#define WHITE_NOISE_SIZE_MAX  22000
 
 // --- Replace function-call of frequency-conversion with macro for increasing speed just a bit ---
 #define noteToFreq(incoming_note) (HELPERS::fastpow2 ((incoming_note - 69.f) / 12.f) *440.f)
@@ -145,7 +140,6 @@ bool new_accent_trigger = false;  // We need this for possibly triggering accent
   MK_FLT_PAR_ABS_MIN_MAX(f_PWMspeed, PWMspeed, 4095.f, 0.05f, 20.f);
 
   // === Mixer section ===
-  MK_TRIG_PAR(t_SeperateOutput, SeperateOutput);
   MK_FLT_PAR_ABS(f_NoiseVol, NoiseVol, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_SawVol, SawVol, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_PulseVol, PulseVol, 4095.f, 1.f);
@@ -485,48 +479,71 @@ bool new_accent_trigger = false;  // We need this for possibly triggering accent
   CONSTRAIN(f_Cutoff, 0.f, 1.f);            // Target 5
   CONSTRAIN(f_FilterLeakage, 0.f, 1.f);     // Target 6
 
+  // --- Xfade Saw and Pulse waves ---
+  f_SawVol  *= (1.f - f_OSCmix);
+  f_PulseVol *= f_OSCmix;
+
+  // --- Precalculate AM/Ringmodulator if required ---
+  if(t_RingOnSaw)
+    f_SawVol = f_SawVol*f_val_ring*f_RingModAmnt;
+  if(t_RingOnPulse)
+    f_PulseVol = f_PulseVol*f_val_ring*f_RingModAmnt;
+
+  // Precalculate X-Fade of Filterleakage
+  float f_FilterLeakage_left = 1.f-f_FilterLeakage;
+
+  // --- Precalculate EG with VCA ---
+  vol_eg_process *= f_Volume;
+
   // === Realtime DSP output loop ===
-  for(uint32_t i = 0; i < bufSz; i++)
+  uint32_t target = bufSz*2;
+  if(t_VintageFilter)
   {
-    // --- Calculate the oscillators ---
-    if( (i%3) == 0)
-      f_val_noise = Noise_process(noise_data, 0.f);
-    f_val_saw = Saw_eptr_process(saw_data, saw_cv);
-    f_val_pulse = Blit_osc_blit(pulse_data, pulse_cv, f_PulseWidth, 0.f); // data, cv, pulse_width, wave - last parameter !=1 => pulse wave
-
-    // --- AM/Ringmodulator required? ---
-    if(t_RingOnSaw)
-      f_val_saw = X_FADE(f_RingModAmnt, f_val_saw,f_val_saw*f_val_ring );
-    if(t_RingOnPulse)
-      f_val_pulse = X_FADE(f_RingModAmnt, f_val_pulse,f_val_pulse*f_val_ring );
-
-    // --- Mix the oscillators (X-fading Pulse and Saw before) ---
-    float f_val_result_mix = (f_val_noise*f_NoiseVol + X_FADE(f_OSCmix, f_val_pulse*f_PulseVol, f_val_saw*f_SawVol) ) / 2.f;    // Mix all oscillators
-
-    // --- Wave Folder and Ringmodulator ---
-    f_val_result = Fold_do(f_val_result_mix, f_WaveFolder);   // Apply wavefolder to PD-OSC
-
-    // --- Diode Ladder Filter (with optional "leakage", meaning optional bypassing of the raw signal) ---
-    if(t_VintageFilter)
-      f_val_result = X_FADE(f_FilterLeakage, Ladder_process(ladder_data, f_val_result, f_Cutoff, f_Resonance),f_val_result);               // Heun-logic for cutoff-pitch
-    else
-      f_val_result = X_FADE(f_FilterLeakage, Ladder_process_euler(ladder_vintage_data, f_val_result, f_Cutoff, f_Resonance),f_val_result); // Euler-logic for cutoff-pitch
-
-    // --- Adjust volume and restrict to max. range ---
-    f_val_result *= f_Volume*vol_eg_process;
-    CONSTRAIN(f_val_result, -1.f, 1.f );
-    
-    // --- Output of DSP-results ---
-    data.buf[i*2] = f_val_result;
-
-    if(t_SeperateOutput)
+    for (uint32_t i = 0; i < target; i++)
     {
-      CONSTRAIN(f_val_result_mix, -1.f, 1.f );
-      data.buf[i*2+1] = f_val_result_mix;  // Output oscillators-mix before wavefolder, filter and EGs on right channel!
-    }
-    else
-      data.buf[i*2+1] = f_val_result;
+      // --- Calculate the oscillators ---
+      if ((i % 3) == 0)
+        f_val_noise = Noise_process(noise_data, 0.f);
+      f_val_saw = Saw_eptr_process(saw_data, saw_cv);
+      f_val_pulse = Blit_osc_blit(pulse_data, pulse_cv, f_PulseWidth, 0.f); // data, cv, pulse_width, wave - last parameter !=1 => pulse wave
 
+      // --- Wave Folder and optionally Ringmodulator ---
+      f_val_result = Fold_do((f_val_noise * f_NoiseVol + f_val_pulse * f_PulseVol + f_val_saw * f_SawVol), f_WaveFolder);   // Apply wavefolder on mix of all oscillators, X-fading Pulse and Saw before
+
+      // --- Diode Ladder Filter (with optional "leakage", meaning optional bypassing of the raw signal) ---
+      f_val_result = Ladder_process_euler(ladder_vintage_data, f_val_result, f_Cutoff, f_Resonance) * f_FilterLeakage_left + f_val_result*f_FilterLeakage; // Euler-logic for cutoff-pitch
+
+      // --- Adjust volume and restrict to max. range ---
+      f_val_result *= vol_eg_process;
+
+      // --- Output of DSP-results ---
+      data.buf[i] = f_val_result;
+      data.buf[++i] = f_val_result;
+    }
+  }
+  else
+  {
+    for (uint32_t i = 0; i < target; i++)
+    {
+      // --- Calculate the oscillators ---
+      if ((i % 3) == 0)
+        f_val_noise = Noise_process(noise_data, 0.f);
+      f_val_saw = Saw_eptr_process(saw_data, saw_cv);
+      f_val_pulse = Blit_osc_blit(pulse_data, pulse_cv, f_PulseWidth, 0.f); // data, cv, pulse_width, wave - last parameter !=1 => pulse wave
+
+      // --- Wave Folder and optionally Ringmodulator ---
+      f_val_result = Fold_do((f_val_noise * f_NoiseVol + f_val_pulse * f_PulseVol + f_val_saw * f_SawVol), f_WaveFolder);   // Apply wavefolder on mix of all oscillators, X-fading Pulse and Saw before
+
+      // --- Diode Ladder Filter (with optional "leakage", meaning optional bypassing of the raw signal) ---
+      f_val_result = Ladder_process(ladder_data, f_val_result, f_Cutoff, f_Resonance) * f_FilterLeakage_left + f_val_result*f_FilterLeakage;               // Heun-logic for cutoff-pitch
+
+      // --- Adjust volume and restrict to max. range ---
+      f_val_result *= vol_eg_process;
+
+      // --- Output of DSP-results ---
+      data.buf[i] = f_val_result;
+      data.buf[++i] = f_val_result;
+    }
   }
 }
 
@@ -622,8 +639,6 @@ void ctagSoundProcessorBjorklund::knowYourself()
 	pMapCv.emplace("PWMspeed", [&](const int val){ cv_PWMspeed = val;});
 	pMapPar.emplace("PWMamount", [&](const int val){ PWMamount = val;});
 	pMapCv.emplace("PWMamount", [&](const int val){ cv_PWMamount = val;});
-	pMapPar.emplace("SeperateOutput", [&](const int val){ SeperateOutput = val;});
-	pMapTrig.emplace("SeperateOutput", [&](const int val){ trig_SeperateOutput = val;});
 	pMapPar.emplace("NoiseVol", [&](const int val){ NoiseVol = val;});
 	pMapCv.emplace("NoiseVol", [&](const int val){ cv_NoiseVol = val;});
 	pMapPar.emplace("SawVol", [&](const int val){ SawVol = val;});

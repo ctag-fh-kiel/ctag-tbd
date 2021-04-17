@@ -31,7 +31,6 @@
        {
           "id": "Mixer", "name": "Sound Mixer", "type": "group", "params":  
            [
-               {"id":"SeperateOutput","name":"Direct out before Filter and Envelopes on Right Channel n/y","type":"bool"},
                {"id":"NoiseVol","name":"Noise volume","type":"int","min":0,"max":4095,"step":1}, 
                {"id":"SawVol","name":"Saw Oscillator volume","type":"int","min":0,"max":4095,"step":1}, 
                {"id":"PulseVol","name":"Pulse Oscillator volume","type":"int","min":0,"max":4095,"step":1},
