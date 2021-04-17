@@ -86,7 +86,7 @@ inline int ctagSoundProcessorRetroactor::process_param_trig(const ProcessData &d
       if(my_parm != 0)                   // LOW if 0
         return (GATE_HIGH_NEW);          // New trigger
       else
-        return (GATE_LOW);           // Trigger released
+        return (GATE_LOW);              // Trigger released
     }
   }
   return(prev_trig_state[enum_trigger_id]);            // No change (1 for active, 0 for inactive)
@@ -94,8 +94,8 @@ inline int ctagSoundProcessorRetroactor::process_param_trig(const ProcessData &d
 
 void ctagSoundProcessorRetroactor::Process(const ProcessData &data)
 {
-// --- Main processing output ---
-float f_val_result = 0.f;         // Sum of results for DSP-output
+float f_val_result = 0.f;             // Sum of results for DSP-output
+float rough_sine_B_processed = 0.f;   // Simply precalculate the sine-wave outside of the main loop for "distorted sine" effect
 
   // === Global section ===
   MK_PITCH_PAR(f_MasterPitch, MasterPitch);
@@ -107,6 +107,7 @@ float f_val_result = 0.f;         // Sum of results for DSP-output
   MK_PITCH_PAR(f_PitchSineA, PitchSineA);
   MK_FREQ_PAR(f_FrequSineA, FrequSineA);
   f_FrequSineA = rescaleMinMax(f_FrequSineA, -12.f, 12.f);
+  MK_TRIG_PAR(t_SineBisDistorted, SineBisDistorted);
   MK_PITCH_PAR(f_PitchSineB, PitchSineB);
   MK_FREQ_PAR(f_FrequSineB, FrequSineB);
   f_FrequSineB = rescaleMinMax(f_FrequSineB, -12.f, 12.f);
@@ -125,16 +126,16 @@ float f_val_result = 0.f;         // Sum of results for DSP-output
   // === Mixer section ===
   MK_TRIG_PAR(t_SineDisable, SineDisable);
   MK_FLT_PAR_ABS(f_VolSineA, VolSineA, 4095.f, 0.25f);
-  MK_FLT_PAR_ABS(f_VolSineB, VolSineB, 4095.f, 0.25f);
+  MK_FLT_PAR_ABS(f_VolSineB, VolSineB, 4095.f, 0.175f);             // ###
   MK_FLT_PAR_ABS(f_VolSineBoost, VolSineBoost, 4095.f, 4.f);
   MK_FREQ_PAR(f_SineMix, SineMix);
   MK_FLT_PAR_ABS(f_VolFeedbackLoop, VolFeedbackLoop, 4095.f, 0.25f);
   MK_FLT_PAR_ABS(f_VolWavefolder, VolWavefolder, 4095.f, 0.25f);
 
   // === Precalculations for realtime DSP loop ===
-  if( t_IsolateFeedback )
+  if (t_IsolateFeedback)
     f_Volume *= 1.9f;
-  if( t_SineDisable )
+  if (t_SineDisable)
   {
     f_VolSineA = 0.f;
     f_VolSineB = 0.f;
@@ -148,42 +149,132 @@ float f_val_result = 0.f;         // Sum of results for DSP-output
   f_VolFeedbackLoop *= f_Volume;
 
   sine_A.SetFrequency(noteToFreq(f_current_note + f_PitchSineA + f_FrequSineA));
-  sine_B.SetFrequency(noteToFreq(f_current_note + f_PitchSineB + f_FrequSineB));
+  if( t_SineBisDistorted )
+  {
+    rough_sine_B.SetFrequency(noteToFreq(f_current_note + f_PitchSineB + f_FrequSineB));
+    rough_sine_B_processed = rough_sine_B.Process();      // "Rough Wave B" for performance-optimisation and additional tonalities
+  }
+  else
+    sine_B.SetFrequency(noteToFreq(f_current_note + f_PitchSineB + f_FrequSineB));
 
-  if(t_ResetFeedbackLoop == GATE_HIGH_NEW ) // [re]init the feedback-data with an arbitrary value, to start/restart feedback in case the loop has "run dry"...
-    m_feedback_process = 0.77f;
+  if (t_ResetFeedbackLoop == GATE_HIGH_NEW) // [re]init the feedback-data with an arbitrary value, to start/restart feedback in case the loop has "run dry"...
+    m_feedback_process = 0.77f;             // Just an arbitrary value...
 
   // === Realtime DSP output loop ===
-  uint32_t target = bufSz*2;
-  for (uint32_t i = 0; i < target; i++)
+  // Please note: in order to optimize performance we moved major option-logic towards the top, resulting in redundant code for the output-loop, tough!
+  if (t_IsolateFeedback)       // Special feedback-line: sine-waves go directly to output / comb-filter->ladder-filter->wavefolder is fed back to comb-filter and output
   {
-    if( t_IsolateFeedback )       // Special feedback-line: sine-waves go directly to output / comb-filter->ladder-filter->wavefolder is fed back to comb-filter and output
-    {                             // Please note: We need an iniatial feedback (sinewave or ladder-feedback) to get the feedback going first!
-      // --- Resonant Comb Filter + Ladderfilter + Wavefolder ---
-      f_val_result = Rescomb_process(rescomb_data, m_feedback_process*f_VolFeedbackLoop, f_CombCut, f_CombTone, f_CombRes);
-      if (t_VintageFilter)
-        f_val_result = Ladder_process_euler(ladder_vintage_data, f_val_result, f_LadderCut, f_LadderRes); // Euler-logic for cutoff-pitch
-      else
-        f_val_result = Ladder_process(ladder_data, f_val_result, f_LadderCut, f_LadderRes);               // Heun-logic for cutoff-pitch
-      m_feedback_process = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
-      // --- Mix the oscillators with the feedback-line ---
-      f_val_result = sine_A.Process()*f_VolSineA + sine_B.Process()*f_VolSineB + f_val_result*f_VolFeedbackLoop + m_wavefolder*f_VolWavefolder;
-    }
-    else    // Standard feedback-line: sine-waves go to comb-filter->ladder-filter->wavefolder->output / comb-filter->ladder-filter->wavefolder is fed back to comb-filter
+    if (t_VintageFilter)
     {
-      // --- Mix the oscillators with the feedback-line (processed during last round already) ---
-      f_val_result = sine_A.Process()*f_VolSineA + sine_B.Process()*f_VolSineB + m_feedback_process*f_VolFeedbackLoop + m_wavefolder*f_VolWavefolder;
-      // --- Resonant Comb Filter + Ladderfilter + Wavefolder ---
-      f_val_result = Rescomb_process(rescomb_data, f_val_result, f_CombCut, f_CombTone, f_CombRes);
-      if (t_VintageFilter)
-        f_val_result = m_feedback_process = Ladder_process_euler(ladder_vintage_data, f_val_result, f_LadderCut, f_LadderRes); // Euler-logic for cutoff-pitch
+      if(t_SineBisDistorted )
+      {
+        for (uint32_t i = 0; i < loop_target; i++)
+        {
+          f_val_result = Rescomb_process(rescomb_data, m_feedback_process * f_VolFeedbackLoop, f_CombCut, f_CombTone, f_CombRes);
+          f_val_result = Ladder_process_euler(ladder_vintage_data, f_val_result, f_LadderCut, f_LadderRes); // Euler-logic for cutoff-pitch
+          m_feedback_process = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+          f_val_result = sine_A.Process() * f_VolSineA + rough_sine_B_processed * f_VolSineB +  f_val_result * f_VolFeedbackLoop + m_wavefolder * f_VolWavefolder;
+          data.buf[i] = f_val_result;
+          data.buf[++i] = f_val_result;
+        }
+      }
       else
-        f_val_result = m_feedback_process = Ladder_process(ladder_data, f_val_result, f_LadderCut, f_LadderRes);               // Heun-logic for cutoff-pitch
-      f_val_result = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+      {
+        for (uint32_t i = 0; i < loop_target; i++)
+        {
+          f_val_result = Rescomb_process(rescomb_data, m_feedback_process * f_VolFeedbackLoop, f_CombCut, f_CombTone, f_CombRes);
+          f_val_result = Ladder_process_euler(ladder_vintage_data, f_val_result, f_LadderCut, f_LadderRes); // Euler-logic for cutoff-pitch
+          m_feedback_process = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+          f_val_result = sine_A.Process() * f_VolSineA + sine_B.Process() * f_VolSineB + f_val_result * f_VolFeedbackLoop + m_wavefolder * f_VolWavefolder;
+          data.buf[i] = f_val_result;
+          data.buf[++i] = f_val_result;
+        }
+      }
     }
-    // --- Output of DSP-results ---
-    data.buf[i] = f_val_result;
-    data.buf[++i] = f_val_result;
+    else    // No Vintage-Filter (but isolated Feedback-loop)
+    {
+      if(t_SineBisDistorted )
+      {
+        for (uint32_t i = 0; i < loop_target; i++)
+        {
+          f_val_result = Rescomb_process(rescomb_data, m_feedback_process * f_VolFeedbackLoop, f_CombCut, f_CombTone, f_CombRes);
+          f_val_result = Ladder_process(ladder_data, f_val_result, f_LadderCut, f_LadderRes);               // Heun-logic for cutoff-pitch
+          m_feedback_process = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+          f_val_result = sine_A.Process() * f_VolSineA + rough_sine_B_processed * f_VolSineB +  f_val_result * f_VolFeedbackLoop + m_wavefolder * f_VolWavefolder;
+          data.buf[i] = f_val_result;
+          data.buf[++i] = f_val_result;
+        }
+      }
+      else
+      {
+        for (uint32_t i = 0; i < loop_target; i++)
+        {
+          f_val_result = Rescomb_process(rescomb_data, m_feedback_process * f_VolFeedbackLoop, f_CombCut, f_CombTone, f_CombRes);
+          f_val_result = Ladder_process(ladder_data, f_val_result, f_LadderCut, f_LadderRes);               // Heun-logic for cutoff-pitch
+          m_feedback_process = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+          f_val_result = sine_A.Process() * f_VolSineA + sine_B.Process() * f_VolSineB +  f_val_result * f_VolFeedbackLoop + m_wavefolder * f_VolWavefolder;
+          data.buf[i] = f_val_result;
+          data.buf[++i] = f_val_result;
+        }
+      }
+    }
+  }
+  else    // Standard feedback-line: sine-waves go to comb-filter->ladder-filter->wavefolder->output / comb-filter->ladder-filter->wavefolder is fed back to comb-filter
+  {
+    if (t_VintageFilter)
+    {
+      if(t_SineBisDistorted )
+      {
+        for (uint32_t i = 0; i < loop_target; i++)
+        {                             // Please note: We need an iniatial feedback (sinewave or ladder-feedback) to get the feedback going first!
+          f_val_result = sine_A.Process() * f_VolSineA + rough_sine_B_processed * f_VolSineB +   m_feedback_process * f_VolFeedbackLoop + m_wavefolder * f_VolWavefolder;
+          f_val_result = Rescomb_process(rescomb_data, f_val_result, f_CombCut, f_CombTone, f_CombRes);
+          f_val_result = m_feedback_process = Ladder_process_euler(ladder_vintage_data, f_val_result, f_LadderCut, f_LadderRes); // Euler-logic for cutoff-pitch
+          f_val_result = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+          data.buf[i] = f_val_result;
+          data.buf[++i] = f_val_result;
+        }
+      }
+      else
+      {
+        for (uint32_t i = 0; i < loop_target; i++)
+        {                             // Please note: We need an iniatial feedback (sinewave or ladder-feedback) to get the feedback going first!
+          f_val_result = sine_A.Process() * f_VolSineA + sine_B.Process() * f_VolSineB +   m_feedback_process * f_VolFeedbackLoop + m_wavefolder * f_VolWavefolder;
+          f_val_result = Rescomb_process(rescomb_data, f_val_result, f_CombCut, f_CombTone, f_CombRes);
+          f_val_result = m_feedback_process = Ladder_process_euler(ladder_vintage_data, f_val_result, f_LadderCut, f_LadderRes); // Euler-logic for cutoff-pitch
+          f_val_result = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+          data.buf[i] = f_val_result;
+          data.buf[++i] = f_val_result;
+        }
+      }
+    }
+    else  // Vintage Filter and normal feedback-loop
+    {
+      if(t_SineBisDistorted )
+      {
+        for (uint32_t i = 0; i < loop_target; i++)
+        {                             // Please note: We need an iniatial feedback (sinewave or ladder-feedback) to get the feedback going first!
+          f_val_result = sine_A.Process() * f_VolSineA + rough_sine_B_processed * f_VolSineB + m_feedback_process * f_VolFeedbackLoop + m_wavefolder * f_VolWavefolder;
+          f_val_result = Rescomb_process(rescomb_data, f_val_result, f_CombCut, f_CombTone, f_CombRes);
+          f_val_result = m_feedback_process = Ladder_process(ladder_data, f_val_result, f_LadderCut, f_LadderRes);               // Heun-logic for cutoff-pitch
+          f_val_result = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+          data.buf[i] = f_val_result;
+          data.buf[++i] = f_val_result;
+        }
+      }
+      else
+      {
+        for (uint32_t i = 0; i < loop_target; i++)
+        {                             // Please note: We need an iniatial feedback (sinewave or ladder-feedback) to get the feedback going first!
+          f_val_result = sine_A.Process() * f_VolSineA + sine_B.Process()* f_VolSineB + m_feedback_process * f_VolFeedbackLoop + m_wavefolder * f_VolWavefolder;
+          f_val_result = Rescomb_process(rescomb_data, f_val_result, f_CombCut, f_CombTone, f_CombRes);
+          f_val_result = m_feedback_process = Ladder_process(ladder_data, f_val_result, f_LadderCut, f_LadderRes);               // Heun-logic for cutoff-pitch
+          f_val_result = m_wavefolder = Fold_do(f_val_result, f_WavefolderAmount);
+          data.buf[i] = f_val_result;
+          data.buf[++i] = f_val_result;
+        }
+      }
+    }
   }
 }
 
@@ -197,7 +288,9 @@ ctagSoundProcessorRetroactor::ctagSoundProcessorRetroactor()
   // --- Initialize Oscillators ---
   sine_A.SetSampleRate(44100.f);
   sine_A.SetFrequency(1.f);
-  sine_B.SetSampleRate(44100.f);
+  rough_sine_B.SetSampleRate(44100.f/bufSz);    // "Rough Wave B" for performance-optimisation and additional tonalities
+  rough_sine_B.SetFrequency(1.f);
+  sine_B.SetSampleRate(44100.f);    // "Rough Wave B" for performance-optimisation and additional tonalities
   sine_B.SetFrequency(1.f);
 
   // --- Initialize VULT stuff ---
@@ -224,6 +317,8 @@ void ctagSoundProcessorRetroactor::knowYourself(){
 	pMapCv.emplace("PitchSineA", [&](const int val){ cv_PitchSineA = val;});
 	pMapPar.emplace("FrequSineA", [&](const int val){ FrequSineA = val;});
 	pMapCv.emplace("FrequSineA", [&](const int val){ cv_FrequSineA = val;});
+	pMapPar.emplace("SineBisDistorted", [&](const int val){ SineBisDistorted = val;});
+	pMapTrig.emplace("SineBisDistorted", [&](const int val){ trig_SineBisDistorted = val;});
 	pMapPar.emplace("PitchSineB", [&](const int val){ PitchSineB = val;});
 	pMapCv.emplace("PitchSineB", [&](const int val){ cv_PitchSineB = val;});
 	pMapPar.emplace("FrequSineB", [&](const int val){ FrequSineB = val;});

@@ -12,10 +12,11 @@
        {
           "id": "Voice", "name": "Voice (Sine phases given as angles of degrees*10)", "type": "group", "params":  
            [
-              {"id": "PitchSineA","type": "int","name": "Pitch Sine A","min": -48,"max": 48,"step": 1},  
-              {"id": "FrequSineA","name": "Sine A +-1 Octave","type": "int","min": -2048,"max": 2047,"step": 1},
-              {"id": "PitchSineB","type": "int","name": "Pitch Sine B","min": -48,"max": 48,"step": 1},
-              {"id": "FrequSineB","name": "Sine B  +-1 Octave","type": "int","min": -2048,"max": 2047,"step": 1}
+              {"id": "PitchSineA","type": "int","name": "Pitch smooth Sine A","min": -48,"max": 48,"step": 1},  
+              {"id": "FrequSineA","name": "Smooth Sine A +-1 Octave","type": "int","min": -2048,"max": 2047,"step": 1},
+              {"id":"SineBisDistorted","name":"Distort Sine B n/y","type":"bool"},
+              {"id": "PitchSineB","type": "int","name": "Pitch variable Sine B","min": -48,"max": 48,"step": 1},
+              {"id": "FrequSineB","name": "Variable Sine B  +-1 Octave","type": "int","min": -2048,"max": 2047,"step": 1}
             ]  
        },
        {
@@ -37,8 +38,8 @@
            [
                {"id":"SineDisable","name":"Disable Sinus Waves n/y","type":"bool"}, 
                {"id":"VolSineBoost","name":"Boost Waves","type":"int","min":0,"max":4095,"step":1},
-               {"id":"VolSineA","name":"Vol Sine A","type":"int","min":0,"max":4095,"step":1},
-               {"id":"VolSineB","name":"Vol Sine B","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VolSineA","name":"Vol smooth Sine A","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VolSineB","name":"Vol variable Sine B","type":"int","min":0,"max":4095,"step":1},
                {"id":"SineMix","name": "Sinewaves Mix","type": "int","min": -2048,"max": 2047,"step": 1},
                {"id":"VolFeedbackLoop","name":"Vol Feedback Loop","type":"int","min":0,"max":4095,"step":1},
                {"id":"VolWavefolder","name":"Vol Wavesfolder","type":"int","min":0,"max":4095,"step":1}
