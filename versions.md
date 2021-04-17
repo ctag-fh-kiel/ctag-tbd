@@ -1,5 +1,9 @@
 # CTAG TBD Version Log
 
+## V0.9.15
+- New plugin Retroactor by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+- Bugfixes Bjorklund by M. Brüssel
+
 ## V0.9.14
 - New plugin Formantor by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
 - New plugin Bjorklund by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
