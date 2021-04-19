@@ -48,17 +48,27 @@ void GPIO::InitGPIO() {
     t1delay = 0;
 }
 
-// trigs get delayed as ADC sampling is slow, delay approx. 3ms
+// trigs get delayed as ADC sampling is slow
 uint8_t IRAM_ATTR GPIO::GetTrig0() {
     t0delay <<= 1;
     t0delay |= gpio_get_level((gpio_num_t) TRIG0_PIN);
+
+#ifdef CONFIG_TBD_PLATFORM_STR
+    return (uint8_t) ((t0delay & 0x10) > 1);
+#else
     return (uint8_t) ((t0delay & 0x08) > 1);
+#endif
 }
 
 uint8_t IRAM_ATTR GPIO::GetTrig1() {
     t1delay <<= 1;
     t1delay |= gpio_get_level((gpio_num_t) TRIG1_PIN);
+
+#ifdef CONFIG_TBD_PLATFORM_STR
+    return (uint8_t) ((t1delay & 0x10) > 1);
+#else
     return (uint8_t) ((t1delay & 0x08) > 1);
+#endif
 }
 
 DRAM_ATTR uint32_t CTAG::DRIVERS::GPIO::t0delay;
