@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(tbd-sim)
 
 add_definitions(
-        -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 # rapidjson
+        -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=16384 # rapidjson
         -DRAPIDJSON_HAS_STDSTRING=1 # rapidjson
         -DTBD_SIM=1
         -Wno-unused-local-typedefs
