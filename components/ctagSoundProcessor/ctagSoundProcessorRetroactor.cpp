@@ -295,6 +295,9 @@ ctagSoundProcessorRetroactor::ctagSoundProcessorRetroactor()
 
   // --- Initialize VULT stuff ---
   Rescomb_process_init(rescomb_data);   // Modified to use heap_caps_malloc()
+  rescomb_data._inst179._inst47a.bufferptr = (float*)heap_caps_malloc(sizeof(float)*675, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);
+  memset(rescomb_data._inst179._inst47a.bufferptr, 0, sizeof(float)*675);
+
   Ladder_process_init(ladder_data);     // Diode Ladder Filter with Heun based resonance frequency smoothing
   Ladder_process_euler_init(ladder_vintage_data); // Diode Ladder Filter with Euler based resonance frequency smoothing
 }

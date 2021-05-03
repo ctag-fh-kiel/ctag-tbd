@@ -551,9 +551,12 @@ maxDelayLength(88200), dlyLine(maxDelayLength)
   Saw_eptr_process_init(saw_data);        // Saw wave
 }
 
-// --- Destructor (nothing to do here) ---
+
 ctagSoundProcessorSpaceFX::~ctagSoundProcessorSpaceFX() 
 {
+    if(nullptr != reverb_buffer){
+        heap_caps_free(reverb_buffer);
+    }
 }
 
 // --- Attach parameters from GUI ---

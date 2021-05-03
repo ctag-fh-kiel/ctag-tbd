@@ -1,5 +1,8 @@
 # CTAG TBD Version Log
 
+## V0.9.16
+- New plugin SpaceFX by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+
 ## V0.9.15
 - New plugin Retroactor by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
 - Bugfixes Bjorklund by M. Brüssel
