@@ -33,7 +33,7 @@ respective component folders / files if different from this license.
 #include <regex>
 #include "ctagDataModelBase.hpp"
 
-#define MB_BUF_SZ RAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY
+#define MB_BUF_SZ 4096
 
 void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
     ESP_LOGD("JSON", "read buffer");
