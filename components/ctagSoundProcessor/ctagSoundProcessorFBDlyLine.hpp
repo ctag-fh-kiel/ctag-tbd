@@ -43,7 +43,6 @@ namespace CTAG {
             // process only variables
             float fLength = 0.f, cvLength = 0.f;
             float fLevel = 1.f;
-            float fDryWet = 0.5f;
             // sectionHpp
             atomic<int32_t> length, cv_length;
             atomic<int32_t> feedback, cv_feedback;

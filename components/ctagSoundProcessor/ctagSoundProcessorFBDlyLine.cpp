@@ -53,8 +53,10 @@ void ctagSoundProcessorFBDlyLine::Process(const ProcessData &data) {
         cvLength += (data.cv[cv_length] - 0.5) * (float) (maxLength / 2);
     }
     fLength = 0.5f * fLength + 0.5f * cvLength;
+    MK_FLT_PAR(fDryWet, drywet, 4095.f, 1.f)
     if (fLength > maxLength) fLength = maxLength;
     if (fLength < 1) fLength = 1.f;
+    dlyLine.SetDryWet(fDryWet);
     dlyLine.SetLength((uint32_t) fLength);
     dlyLine.SetFeedback(fb);
     dlyLine.Process(data.buf, this->processCh, 2, 32 * 2);
@@ -65,7 +67,7 @@ void ctagSoundProcessorFBDlyLine::Process(const ProcessData &data) {
         if (fLevel < 0.f) fLevel = 0.f;
         if (fLevel > 1.f) fLevel = 1.f;
     }
-    fDryWet = (float) drywet / 4095.f;
+
     for (uint32_t i = 0; i < bufSz; i++) {
         data.buf[i * 2 + processCh] *= fLevel;
     }
