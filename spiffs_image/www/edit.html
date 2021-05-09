@@ -25,7 +25,7 @@
                 case 'int':
                     // render UI
                     s = '<ons-list-item>' +
-                        '<div title="' + (el.hasOwnProperty('hint') ? el.hint : '') + '" style="width: 30%;">' +
+                        '<div id="id-' + el.id + '"title="' + (el.hasOwnProperty('hint') ? el.hint : '') + '" style="width: 30%;">' +
                         el.name +
                         '</div>' +
                         '<div style="width: 10%;">' +
@@ -67,6 +67,31 @@
                             // update view input element
                             $('#ip-' + event.data.el.id).val($('#sl-' + event.data.el.id).val());
                         }
+                    );
+                    // attach event listener title double click to reset to 0 or min value
+                    $('#id-' + el.id).on('dblclick', {ch: ch, el: el}, // send only when interaction done
+                    /*
+                        event => {
+                            $('#sl-' + event.data.el.id).val(0);
+                            console.log($('#sl-' + event.data.el.id).val())
+                        }
+                    */
+                    event => {
+                            // update view input element, set to 0 or min value
+                            let v = event.data.el.min;
+                            if(v < 0) v = 0;
+                            $('#sl-' + event.data.el.id).val(v);
+                            $('#ip-' + event.data.el.id).val(v);
+                            // rest request to backend
+                            $.getq('myq',
+                                'api/v1/setPluginParam/' + event.data.ch,
+                                {
+                                    id: event.data.el.id,
+                                    current: $('#sl-' + event.data.el.id).val()
+                                }
+                            );
+                        }
+
                     );
                     // attach event listener number input
                     $('#ip-' + el.id).on('input', {ch: ch, el: el},
