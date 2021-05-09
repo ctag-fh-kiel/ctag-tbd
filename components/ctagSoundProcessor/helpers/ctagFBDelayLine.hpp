@@ -35,12 +35,15 @@ namespace CTAG::SP::HELPERS {
 
         void SetLength(const uint32_t length);
 
+        void SetDryWet(const float dw);
+
         void Clear();
 
         virtual void Process(float *samples, const uint32_t offset, const uint32_t inc, const uint32_t size);
 
     protected:
         float feedback = 0.f;
+        float drywet = 1.f;
         float *buffer = nullptr;
         uint32_t pos = 0;
         uint32_t len = 0;
