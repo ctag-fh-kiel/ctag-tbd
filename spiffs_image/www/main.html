@@ -45,6 +45,8 @@
     </ons-list>
     <script>
         ons.getScriptPage().onInit = function () {
+            // modal
+            let modal_mn = $('#modal-mn');
             // get available plugins from API and assign current ones
             $.getq('myq',
                 'api/v1/getPlugins',
@@ -105,9 +107,13 @@
             );
             // set up call backs upon change of plugin
             $('#plugin-select-ch0').on('change', function () {
+                modal_mn.show();
                 $.getq('myq',
                     'api/v1/setActivePlugin/0',
-                    {id: this.value}
+                    {id: this.value},
+                    d => {
+                        modal_mn.hide();
+                    }
                 );
                 // check if stereo plugin selected, if so, disable ch 1
                 if (window.plugins.find(el => el.id === this.value).isStereo) {
@@ -125,9 +131,15 @@
 
             });
             $('#plugin-select-ch1').on('change', function () {
+                modal.show();
+                console.log('modal show');
                 $.getq('myq',
                     'api/v1/setActivePlugin/1',
-                    {id: this.value}
+                    {id: this.value},
+                    d => {
+                        modal.hide();
+                        console.log('modal hide');
+                    }
                 );
             });
 
@@ -168,4 +180,7 @@
             };
         };
     </script>
+    <ons-modal id="modal-mn" direction="up">
+        <ons-icon icon="md-spinner" size="28px" spin></ons-icon>Loading...
+    </ons-modal>
 </ons-page>
