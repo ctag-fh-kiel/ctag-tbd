@@ -9,33 +9,52 @@
     <script>
         ons.getScriptPage().onInit = function () {
             // console.log("OnInit Save");
+            let modal_sp = $('#modal-sp');
             this.querySelector('ons-toolbar .center').innerHTML = 'CHANNEL ' + this.data.ch + ' PRESET';
             let ch = this.data.ch;
             $.getq('myq', 'api/v1/getPresets/' + this.data.ch,
                 data => {
                     if(typeof data == 'string') data = JSON.parse(data);
                     let presets = data.presets;
+                    let max = (presets.length > 9 ? 9 : presets.length);
                     $('#preset-input').append(
                         '<div style="text-align: center; margin-top: 30px;">' +
                         '<p style="font-weight: bold;">Current preset ' + data.activePresetNumber + ': ' + presets[data.activePresetNumber].name + '</p>' +
-                        '<div>Patch Number:</div><div><ons-input id="patch-number" type="number" min="0" max="' + presets.length + '" value="' + presets.length + '"float/></div>' +
+                        '<div>Patch Number:</div><div><ons-input id="patch-number" type="number" min="0" max="' + max + '" value="' + max + '"float/></div>' +
                         '<p><ons-input id="patch-name" placeholder="Enter Patch Name" float/></p>' +
                         '<p><ons-button id="patch-save">Save Preset</ons-button></p>' +
                         '</div>'
                     );
+                    let btnColor = $('#patch-save').css('background-color');
+                    if($('#patch-number').val() < presets.length){
+                        $('#patch-save').css('background-color', 'red');
+                        $('#patch-save').html('Overwrite Preset ?!');
+                    }
+                    $('#patch-number').on('input', () => {
+                        if($('#patch-number').val() < presets.length){
+                            $('#patch-save').css('background-color', 'red');
+                            $('#patch-save').html('Overwrite Preset ?!');
+                        }else{
+                            $('#patch-save').css('background-color', btnColor);
+                            $('#patch-save').html('Save Preset');
+                        }
+                    });
                     $('#patch-save').on('click', () => {
                         if ($('#patch-number').val() > presets.length || $('#patch-number').val() < 0) {
                             ons.notification.toast('Wrong patch number must be > 0 and < ' + presets.length, {
                                 timeout: 1000,
                                 animation: 'fall'
                             });
-                        } else {
-                            $.getq('myq', 'api/v1/savePreset/' + ch, {
-                                number: $('#patch-number').val(),
-                                name: $('#patch-name').val()
-                            });
-                            document.querySelector('#myNavigator').popPage();
+                            return;
                         }
+                        modal_sp.show();
+                        $.getq('myq', 'api/v1/savePreset/' + ch, {
+                            number: $('#patch-number').val(),
+                            name: $('#patch-name').val()
+                        }, d => {
+                            modal_sp.hide();
+                            document.querySelector('#myNavigator').popPage();
+                        });
                     });
                 }
             );
@@ -44,5 +63,8 @@
             };
         }
     </script>
+    <ons-modal id="modal-sp" direction="up">
+        <ons-icon icon="md-spinner" size="28px" spin></ons-icon> Saving...
+    </ons-modal>
 </ons-page>
 

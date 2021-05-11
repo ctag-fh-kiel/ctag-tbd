@@ -9,12 +9,14 @@
     </ons-list>
     <script>
         ons.getScriptPage().onInit = function () {
+            // modal
+            let modal_lp = $('#modal-lp');
             this.querySelector('ons-toolbar .center').innerHTML = 'CHANNEL ' + this.data.ch + ' PRESET';
             // get available plugins from API and assign current ones
             let ch = this.data.ch;
             $.getq('myq', 'api/v1/getPresets/' + this.data.ch,
                 data => {
-                    if(typeof data == 'string') data = JSON.parse(data);
+                    if (typeof data == 'string') data = JSON.parse(data);
                     data.presets.forEach(el => {
                             if (data.activePresetNumber == el.number)
                                 $('#patch-list').append(
@@ -25,8 +27,14 @@
                                     `<ons-list-item tappable id="preset-${el.number}"><em>${el.number}</em>: ${el.name}</ons-list-item>`
                                 );
                             $('#preset-' + el.number).on('click', function (event) {
-                                $.getq('myq', 'api/v1/loadPreset/' + ch, {number: el.number});
-                                document.querySelector('#myNavigator').popPage();
+                                modal_lp.show();
+                                $.getq('myq', 'api/v1/loadPreset/' + ch,
+                                    {number: el.number},
+                                    d => {
+                                        modal_lp.hide();
+                                        document.querySelector('#myNavigator').popPage();
+                                    }
+                                );
                             });
                         }
                     );
@@ -37,4 +45,7 @@
             };
         }
     </script>
+    <ons-modal id="modal-lp" direction="up">
+        <ons-icon icon="md-spinner" size="28px" spin></ons-icon>Loading...
+    </ons-modal>
 </ons-page>

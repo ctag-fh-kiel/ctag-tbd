@@ -389,6 +389,9 @@
                             });
                             return;
                         }
+                        $('ons-button').each((index, el) => {
+                            $(el).attr("disabled", true);
+                        });
                         $.ajaxq('myq', {
                             url: '/api/v1/otaAPI/1',
                             type: 'post',

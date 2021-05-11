@@ -156,7 +156,7 @@ esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Get plugin params for channel %d", ch);
     if (ch == 0 || ch == 1)
         httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(ch));
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -174,7 +174,8 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Set active plugin for channel %d %s %s", ch, v, s);
     if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, 0, 0);
     return ESP_OK;
 }
 
@@ -205,7 +206,8 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Setting chan %d param %s key %s value %d", ch, id, key.c_str(), val);
     if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, sid, key, val);
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -220,7 +222,7 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Querying presets for channel %d", ch);
     if (ch == 0 || ch == 1)
         httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch));
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -238,7 +240,8 @@ esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Store preset for channel %s %d", req->uri, ch);
     if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::ChannelSavePreset(ch, string(name), atoi(number));
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -254,7 +257,8 @@ esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
     ESP_LOGD("HTTPD", "Load preset for channel %s %c", req->uri, ch);
     if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(ch, atoi(number));
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -504,7 +508,8 @@ esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
     content[req->content_len] = 0;
     CTAG::AUDIO::SoundProcessorManager::SetConfigurationFromJSON(string(content));
     free(content);
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -527,7 +532,7 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
         if (json)
             httpd_resp_sendstr(req, json);
     }
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -539,7 +544,8 @@ esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
     int doCal = atoi(calibration);
     ESP_LOGW(REST_TAG, "Reboot requested with calibration = %d", doCal);
     if (doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     esp_restart();
     return ESP_OK;
 }
@@ -580,7 +586,8 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
         err = CTAG::OTA::OTAManager::PostHandlerFlashCommit(req);
         if (err == ESP_OK) {
             ESP_LOGI("REST", "OTA successful, rebooting!");
-            httpd_resp_send_chunk(req, NULL, 0);
+            httpd_resp_set_type(req, "text/html");
+            httpd_resp_send(req, NULL, 0);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             esp_restart();
         }
@@ -591,8 +598,8 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         esp_restart();
     }
-
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
 
     return ESP_OK;
 }
@@ -616,7 +623,8 @@ esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
     content[req->content_len] = 0;
     CTAG::CAL::Calibration::SetJSONCalibration(string(content));
     free(content);
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -646,7 +654,8 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
         content[req->content_len] = 0;
         CTAG::AUDIO::SoundProcessorManager::SetJSONSoundProcessorPreset(string(pluginID), string(content));
         free(content);
-        httpd_resp_send_chunk(req, NULL, 0);
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_send(req, NULL, 0);
     } else {
         httpd_resp_send_404(req);
     }
@@ -670,7 +679,8 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
         // erase flash / lengthy operation
         ESP_LOGI("REST", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
         ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
-        httpd_resp_send_chunk(req, NULL, 0);
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_send(req, NULL, 0);
         CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
         return ESP_OK;
     }
@@ -705,7 +715,8 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
             blockCnt++;
         }
         heap_caps_free(buffer);
-        httpd_resp_send_chunk(req, NULL, 0);
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_send(req, NULL, 0);
         CTAG::AUDIO::SoundProcessorManager::RefreshSampleRom();
         CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
         ESP_LOGI("REST", "Sample ROM flashing completed!");
