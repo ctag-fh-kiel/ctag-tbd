@@ -41,7 +41,8 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 [See here...](versions.md)
 
 ## Potential new features / current limitations / work to be done:
-- FAUST support.
+- More plugins.
+- VULT support.
 - Bug identification and fixing.
 - Code refactoring to make things more beautiful.
 - More user friendly interaction.
@@ -78,10 +79,11 @@ idf.py build
 ```
 
 ## How to flash
-Either use the binaries available from the [releases from github](https://github.com/ctag-fh-kiel/ctag-tbd/releases) to flash through the web ui 
-or execute these commands from the command line within the ctag-tbd folder, in which case 
-the module needs to be connected to the PC with a USB cable:
+Either use the binaries available from the [releases at github](https://github.com/ctag-fh-kiel/ctag-tbd/releases) to flash through the TBD's web ui. 
+
+Or use [ESP Tool](https://github.com/espressif/esptool) to flash through a USB connection with your PC (check [this script](bin/flash.sh)).
+
+If you have [ESP IDF](https://github.com/espressif/esp-idf) installed (the whole development environment), use:
 ```sh
 idf.py flash monitor
 ```
-Alternatively on Mac / Linux you can also have a look at [this script](bin/flash.sh)
