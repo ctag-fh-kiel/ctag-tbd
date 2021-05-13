@@ -39,7 +39,7 @@ namespace CTAG {
                e_EasyEditOn, e_EGoscMixActive, e_EGoscMixNegative, e_EGoscMixLoop, e_EGfilterLeakActive, e_EGfilterLeakNegative, e_FilterLeakEnvLoop,
                e_EGwfNegative, e_EGringNegative, e_EGfiltNegative, e_EGvolLoop, e_EGvolNegative, e_EGringLoop, e_EGwfLoop, e_EGfiltLoop, e_AccentIsBjorklund,
                e_AccentOff, e_AccentSync, e_ResetSequencer, e_PalindromeOff, e_RingOn, e_RingOnPulse, e_RingOnSaw, e_EGvolActive, e_EGwfActive,
-               e_EGnoiseActive, e_EGringActive, e_EGfiltActive, e_AMisSquare, e_PWMon, e_QuantizePitch, e_VintageFilter, e_Bjorklund_options_max
+               e_EGnoiseActive, e_EGringActive, e_EGfiltActive, e_AMisSquare, e_PWMon, e_QuantizePitch, e_Bjorklund_options_max
             };
             int prev_trig_state[e_Bjorklund_options_max] = {0};   // Initialize _all_ entries with "low value"
             bool low_reached[e_Bjorklund_options_max] = {false};  // We need this for look for toggle-events
@@ -51,7 +51,6 @@ namespace CTAG {
             Saw_eptr__ctx_type_0 saw_data;              // Saw oscillator data-structure
             Blit__ctx_type_1 pulse_data;                 // Pulse oscillator data-structure
             Noise__ctx_type_1 noise_data;               // Noise oscillator data-structure
-            Ladder__ctx_type_8 ladder_data;             // Ladder filter data-structure
             Ladder__ctx_type_6 ladder_vintage_data;     // Euler ladder algorithm
 
             // --- Additional oscillator[s] ---
@@ -249,7 +248,6 @@ namespace CTAG {
 	atomic<int32_t> RingModFreq, cv_RingModFreq;
 	atomic<int32_t> RingModAmnt, cv_RingModAmnt;
 	atomic<int32_t> WaveFolder, cv_WaveFolder;
-	atomic<int32_t> VintageFilter, trig_VintageFilter;
 	atomic<int32_t> Cutoff, cv_Cutoff;
 	atomic<int32_t> Resonance, cv_Resonance;
 	atomic<int32_t> FilterTracking, cv_FilterTracking;
