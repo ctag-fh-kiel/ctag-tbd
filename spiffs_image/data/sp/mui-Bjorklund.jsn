@@ -46,7 +46,6 @@
                {"id":"RingModFreq","name":"AM/RingMod Frequency","type":"int","min":0,"max":4095,"step":1}, 
                {"id":"RingModAmnt","name":"AM/RingMod amount","type":"int","min":0,"max":4095,"step":1}, 
                {"id":"WaveFolder","name":"WaveFolding Amount","type":"int","min":0,"max":4095,"step":1},
-               {"id":"VintageFilter","name":"Vintage Resonance pitching n/y","type":"bool"},
                {"id":"Cutoff","name":"Cutoff Frequency","type":"int","min":0,"max":4095,"step":1}, 
                {"id":"Resonance","name":"Resonance amount","type":"int","min":0,"max":4095,"step":1},
                {"id":"FilterTracking","name":"Filter key tracking","type":"int","min": -2048,"max": 2047,"step": 1},
