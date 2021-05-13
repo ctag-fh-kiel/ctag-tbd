@@ -2,6 +2,7 @@
 
 ## V0.9.16
 - New plugin SpaceFX by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+- Bjorklund parameter reduction (some setting caused CPU overload)
 - Numeric plugin parameters can now be reset to 0 by double clicking parameter name
 - FBDlyLine plugin bug fix, dry/wet slider now working
 - Limitation of patch storage to 10 patches per plugin (this is due to the limited storage resources on the platform), fixes out of mem bug, when too many patches were created

@@ -131,14 +131,12 @@
 
             });
             $('#plugin-select-ch1').on('change', function () {
-                modal.show();
-                console.log('modal show');
+                modal_mn.show();
                 $.getq('myq',
                     'api/v1/setActivePlugin/1',
                     {id: this.value},
                     d => {
-                        modal.hide();
-                        console.log('modal hide');
+                        modal_mn.hide();
                     }
                 );
             });
