@@ -27,12 +27,6 @@ using namespace CTAG::SP;
 using namespace std;
 
 void ctagSoundProcessorClaude::Process(const ProcessData &data) {
-    // prepare input buffer
-    clouds::ShortFrame in[32];
-    for(int i=0;i<bufSz;i++){
-        in[i].l = data.buf[i*2] * 32767.f;
-        in[i].r = data.buf[i*2 + 1] * 32767.f;
-    }
 
     // setup processor
     clouds::PlaybackMode playbackMode = static_cast<clouds::PlaybackMode>(mode.load());
@@ -115,14 +109,8 @@ void ctagSoundProcessorClaude::Process(const ProcessData &data) {
     }
     p->reverb = fReverb;
 
-    clouds::ShortFrame out[32];
-    processor.Process(in, out, 32);
+    processor.Process(data.buf, 32);
 
-    // back convert buffers from int to float
-    for(int i=0;i<bufSz;i++){
-        data.buf[i*2] = out[i].l * 0.000030518509476f;
-        data.buf[i*2 + 1] = out[i].r * 0.000030518509476f;
-    }
 }
 
 ctagSoundProcessorClaude::ctagSoundProcessorClaude() {

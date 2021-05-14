@@ -38,7 +38,7 @@ namespace CTAG {
         public:
             ctagDataModelBase();
 
-            ~ctagDataModelBase();
+            virtual ~ctagDataModelBase();
 
         protected:
             StringBuffer json;

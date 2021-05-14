@@ -1,6 +1,6 @@
 # The following lines of boilerplate have to be in your project's CMakeLists
 # in this exact order for cmake to work correctly
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(tbd-sim)
 
 add_definitions(
-        -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 # rapidjson
+        -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=16384 # rapidjson
         -DRAPIDJSON_HAS_STDSTRING=1 # rapidjson
         -DTBD_SIM=1
         -Wno-unused-local-typedefs
@@ -23,12 +23,12 @@ add_library(simple-web-server INTERFACE)
 target_include_directories(simple-web-server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Simple-Web-Server)
 find_package(Threads REQUIRED)
 target_link_libraries(simple-web-server INTERFACE ${CMAKE_THREAD_LIBS_INIT})
-find_package(Boost 1.53.0 COMPONENTS system thread REQUIRED)
+find_package(Boost 1.67.0 COMPONENTS system thread REQUIRED)
 target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
 target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
     target_compile_definitions(simple-web-server INTERFACE USE_BOOST_REGEX)
-    find_package(Boost 1.53.0 COMPONENTS regex REQUIRED)
+    find_package(Boost 1.67.0 COMPONENTS regex REQUIRED)
     target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
     target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
 endif()
@@ -126,7 +126,10 @@ add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
 target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
 ## Application
-find_package(Boost 1.53.0 COMPONENTS system thread filesystem program_options)
+if(APPLE)
+    set(Boost_USE_STATIC_LIBS ON)
+endif()
+find_package(Boost 1.67.0 COMPONENTS system thread filesystem program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "could not find Boost!")
 endif()
@@ -135,11 +138,15 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 set(SRC_FILES2
         "../main/SPManagerDataModel.cpp"
         "fake-idf/esp_heap_caps.c"
+        "fake-idf/esp_spi_flash.c"
         )
 
+# paths for sample-rom input files
+set(SAMPLE_ROM_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom/sample-rom.tbd" CACHE FILEPATH "Sample-rom raw file")
 
 
 add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
+target_compile_definitions(tbd-sim PRIVATE SAMPLE_ROM_FILE="${SAMPLE_ROM_FILE}")
 target_link_libraries(tbd-sim simple-web-server)
 target_link_libraries(tbd-sim rtaudio ctagsp mutable esp-dsp)
 target_link_libraries(tbd-sim ${Boost_LIBRARIES})
@@ -168,6 +175,23 @@ target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 target_include_directories(run_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_include)
 target_include_directories(run_tests PRIVATE ${Boost_INCLUDE_DIR})
 
+# installation
+install(CODE "set(CMAKE_INSTALL_LOCAL_ONLY true)")
+install(TARGETS tbd-sim RUNTIME DESTINATION simulator/bin)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION .)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom DESTINATION .)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION simulator)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION simulator)
 
+# package generation
+set(CPACK_GENERATOR "ZIP")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "tbd-sim")
+SET(CPACK_PACKAGE_VENDOR "ctag-tbd")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/readme.md")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE")
 
-
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "9")
+SET(CPACK_PACKAGE_VERSION_PATCH "14")
+#SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+include(CPack)

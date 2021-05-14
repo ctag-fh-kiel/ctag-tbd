@@ -1,0 +1,212 @@
+<ons-page id="Edit">
+    <ons-toolbar>
+        <div class="left">
+            <ons-back-button>Edit</ons-back-button>
+        </div>
+        <div class="center"></div>
+    </ons-toolbar>
+    <ons-list id="params-list">
+    </ons-list>
+    <script>
+        function renderParams(ch, sel, el) {
+            let s = '';
+            switch (el.type) {
+                case 'group':
+                    // render ui
+                    //console.log('Adding group-' + el.id);
+                    sel.append(
+                        '<ons-list id="group-' + el.id + '">' +
+                        '<ons-list-header>' + el.name + '</ons-list-header>' +
+                        '</ons-list>'
+                    );
+                    // recursively render group elements
+                    el.params.forEach(it => renderParams(ch, $('#group-' + el.id), it));
+                    break;
+                case 'int':
+                    // render UI
+                    s = '<ons-list-item>' +
+                        '<div id="id-' + el.id + '"title="' + (el.hasOwnProperty('hint') ? el.hint : '') + '" style="width: 30%;">' +
+                        el.name +
+                        '</div>' +
+                        '<div style="width: 10%;">' +
+                        '<ons-input id="ip-' + el.id + '" type="number" min="' + el.min + '" max="' + el.max + '" value="' + el.current + '"></ons-input>' +
+                        '</div>' +
+                        '<div style="width: 50%;">' +
+                        '<ons-range id="sl-' + el.id + '"' +
+                        'style="width: 100%;" min="' + el.min + '" max="' + el.max + '" value="' + el.current + '" step="' + el.step + '"></ons-range>' +
+                        '</div>';
+                    if (el.hasOwnProperty('cv')) {
+                        s += '<div style="width: 10%;" class="right">' +
+                            '<select id="ch-' + ch + '-cv-' + el.id + '">' +
+                            '<option value="-1">None</option>';
+                        for(let i in window.ioCaps.cv){
+                            s += '<option value="' + i + '">' + window.ioCaps.cv[i] + '</option>';
+                        }
+                        s += '</select></div>';
+                    } else {
+                        s += '<div style="width: 10%;" class="right">.oOo.</div>';
+                    }
+                    s += '</ons-list-item>';
+                    sel.append(s);
+                    // set cv routing current value
+                    if (el.hasOwnProperty('cv')) {
+                        $('#ch-' + ch + '-cv-' + el.id).val(el.cv);
+                    }
+                    // attach event listener slider
+                    $('#sl-' + el.id).on('input', {ch: ch, el: el}, // send only when interaction done
+                        //event => {console.log(event.data.id + $('#sl-' + event.data.id).val())}
+                        event => {
+                            // rest request to backend
+                            $.getq('myq',
+                                'api/v1/setPluginParam/' + event.data.ch,
+                                {
+                                    id: event.data.el.id,
+                                    current: $('#sl-' + event.data.el.id).val()
+                                }
+                            );
+                            // update view input element
+                            $('#ip-' + event.data.el.id).val($('#sl-' + event.data.el.id).val());
+                        }
+                    );
+                    // attach event listener title double click to reset to 0 or min value
+                    $('#id-' + el.id).on('dblclick', {ch: ch, el: el}, // send only when interaction done
+                    /*
+                        event => {
+                            $('#sl-' + event.data.el.id).val(0);
+                            console.log($('#sl-' + event.data.el.id).val())
+                        }
+                    */
+                    event => {
+                            // update view input element, set to 0 or min value
+                            let v = event.data.el.min;
+                            if(v < 0) v = 0;
+                            $('#sl-' + event.data.el.id).val(v);
+                            $('#ip-' + event.data.el.id).val(v);
+                            // rest request to backend
+                            $.getq('myq',
+                                'api/v1/setPluginParam/' + event.data.ch,
+                                {
+                                    id: event.data.el.id,
+                                    current: $('#sl-' + event.data.el.id).val()
+                                }
+                            );
+                        }
+
+                    );
+                    // attach event listener number input
+                    $('#ip-' + el.id).on('input', {ch: ch, el: el},
+                        //event => {console.log(event.data.id + $('#sl-' + event.data.id).val())}
+                        event => {
+                            // rest request to backend
+                            let value = $('#ip-' + event.data.el.id).val();
+                            // bounds check needed ons number messes up otherwise despite min max attributes
+                            if(value > event.data.el.max){
+                                value = event.data.el.max;
+                                $('#ip-' + event.data.el.id).val(value);
+                            }
+                            if(value < event.data.el.min){
+                                value = event.data.el.min;
+                                $('#ip-' + event.data.el.id).val(value);
+                            }
+                            $.getq('myq',
+                                'api/v1/setPluginParam/' + event.data.ch,
+                                {
+                                    id: event.data.el.id,
+                                    current: value
+                                }
+                            );
+                            // update view input element
+                            $('#sl-' + event.data.el.id).val(value);
+
+                        }
+                    );
+                    // attach event listener to select cv
+                    if (el.hasOwnProperty('cv')) {
+                        $(`#ch-${ch}-cv-${el.id}`).on('change', {ch: ch, el: el},
+                            function (event) {
+                                $.getq('myq', 'api/v1/setPluginParamCV/' + event.data.ch,
+                                    {
+                                        id: event.data.el.id,
+                                        cv: this.value
+                                    }
+                                );
+                            }
+                        );
+                    }
+                    break;
+                case 'bool':
+                    // render UI
+                    s = '<ons-list-item>' +
+                        '<div title="' + (el.hasOwnProperty('hint') ? el.hint : '') + '" style="width: 40%;">' +
+                        el.name +
+                        '</div>' +
+                        '<div style="width: 50%;">' +
+                        '<ons-switch id="sw-' + el.id + '"' + (el.current == 1 ? 'checked' : '') + '></ons-switch>' +
+                        '</div>';
+                    if (el.hasOwnProperty('trig')) {
+                        s += '<div class="right" style="width: 10%;">' +
+                            '<select id="ch-' + ch + '-trig-' + el.id + '">' +
+                            '<option value="-1">None</option>';
+                        for(let i in window.ioCaps.t){
+                            s += '<option value="' + i + '">' + window.ioCaps.t[i] + '</option>';
+                        }
+                            s += '</select></div>';
+                    } else {
+                        s += '<div style="width: 10%;" class="right">.oOo.</div>';
+                    }
+                    s += '</ons-list-item>';
+                    sel.append(s);
+                    // set trig routing current value
+                    if (el.hasOwnProperty('trig')) {
+                        $('#ch-' + ch + '-trig-' + el.id).val(el.trig);
+                    }
+                    // attach event listener
+                    $('#sw-' + el.id).on('change', {ch: ch, el: el},
+                        //event => {console.log(event.data.el.id + $('#sw-' + event.data.el.id).prop('checked')
+                        event => $.getq('myq',
+                            'api/v1/setPluginParam/' + event.data.ch,
+                            {
+                                id: event.data.el.id,
+                                current: ($('#sw-' + event.data.el.id).prop('checked') ? 1 : 0)
+                            }
+                        )
+                    );
+                    // attach event listener to select trig
+                    if (el.hasOwnProperty('trig')) {
+                        $(`#ch-${ch}-trig-${el.id}`).on('change', {ch: ch, el: el},
+                            function (event) {
+                                $.getq('myq', 'api/v1/setPluginParamTRIG/' + event.data.ch,
+                                    {
+                                        id: event.data.el.id,
+                                        trig: this.value
+                                    }
+                                );
+                            }
+                        );
+                    }
+                    break;
+                default:
+                    //console.log('Unknown parameter type, ignoring!');
+                    break;
+            }
+        }
+
+        ons.getScriptPage().onInit = function () {
+            this.querySelector('ons-toolbar .center').innerHTML = 'CHANNEL ' + this.data.ch;
+
+            $.getq('myq',
+                '/api/v1/getPluginParams/' + this.data.ch,
+                data => {
+                    if(typeof data == 'string') data = JSON.parse(data);
+                    data.params.forEach(el => renderParams(this.data.ch, $('#params-list'), el));
+                    //console.log($('#params-list'));
+                    //console.log(data);
+                }
+            );
+
+            this.onShow = function () {
+                //console.log('Setup show');
+            };
+        };
+    </script>
+</ons-page>

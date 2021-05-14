@@ -1,3 +1,5 @@
+// this is based on Mutable Instruments
+
 #include "MiSuperSawOsc.hpp"
 #include <cstring>
 #include <cmath>
@@ -20,7 +22,7 @@ void MiSuperSawOsc::SetPitch(const int16_t &pitch) {
     }
 }
 
-void IRAM_ATTR MiSuperSawOsc::Render(
+void MiSuperSawOsc::Render(
         int16_t *buffer,
         size_t size) {
     int32_t detune = detune_ + 1024;

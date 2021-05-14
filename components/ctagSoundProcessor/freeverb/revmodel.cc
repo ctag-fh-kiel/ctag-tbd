@@ -310,7 +310,7 @@ float revmodel::getmode() {
         return 0;
 }
 
-void IRAM_ATTR revmodel::process(float *data, uint32_t numsamples) {
+void  revmodel::process(float *data, uint32_t numsamples) {
     float outL, outR, input;
 
     for (uint32_t i = 0; i < numsamples; i++) {

@@ -23,6 +23,8 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <stdint.h>
+#include "sdkconfig.h"
+
 
 namespace CTAG {
     namespace DRIVERS {
@@ -41,10 +43,10 @@ namespace CTAG {
             static void Update();
 
             // exposed to get pointer access for speed
-            static uint16_t data[4];
+            static uint16_t data[N_CVS];
         protected:
             static void init_ulp_program();
-
+            static void init_analog_sub_system();
         };
     }
 }

@@ -111,9 +111,9 @@ void ctagSoundProcessorCDelay::Process(const ProcessData &data) {
     }
     delay.params.svfCutoffFreq = flt_cut;
 
-    float resp = flt_reso / 4095.f;
+    float resp = flt_reso / 4095.f * 10.f;
     if (cv_flt_reso != -1) {
-        resp = fabsf(data.cv[cv_flt_reso]) * 0.99f;
+        resp = fabsf(data.cv[cv_flt_reso] * 10.f);
     }
     delay.params.svfResonance = resp;
 
@@ -145,7 +145,8 @@ void ctagSoundProcessorCDelay::Process(const ProcessData &data) {
     if (cv_flt_mode != -1) {
         filterMode = static_cast<int>(fabsf(data.cv[cv_flt_mode]) * 4.f);
     }
-    delay.params.filterMode = (braids::SvfMode) filterMode;
+    delay.params.filterMode = filterMode;
+
 
     float bpm = static_cast<float>(dly_time_bpm);
     if (cv_dly_time_bpm != -1) {

@@ -50,9 +50,11 @@ void app_main() {
 
     DRIVERS::FileSystem::InitFS();
 
+#ifndef CONFIG_TBD_PLATFORM_STR
     DRIVERS::ADC::InitADCSystem();
     DRIVERS::LedRGB::InitLedRGB();
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
+#endif
     DRIVERS::GPIO::InitGPIO();
 
     // calibration starts if trig0 is pressed at boot up
