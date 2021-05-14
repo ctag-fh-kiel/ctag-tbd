@@ -39,7 +39,8 @@ respective component folders / files if different from this license.
 #include "SPManager.hpp"
 #include "Calibration.hpp"
 #include "OTAManager.hpp"
-
+#include "sdkconfig.h"
+#include "esp_spi_flash.h"
 
 using namespace CTAG;
 using namespace CTAG::REST;
@@ -155,7 +156,7 @@ esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Get plugin params for channel %d", ch);
     if (ch == 0 || ch == 1)
         httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(ch));
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -173,7 +174,8 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Set active plugin for channel %d %s %s", ch, v, s);
     if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, 0, 0);
     return ESP_OK;
 }
 
@@ -204,7 +206,8 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Setting chan %d param %s key %s value %d", ch, id, key.c_str(), val);
     if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, sid, key, val);
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -219,7 +222,7 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Querying presets for channel %d", ch);
     if (ch == 0 || ch == 1)
         httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch));
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -237,7 +240,8 @@ esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
     ESP_LOGD(REST_TAG, "Store preset for channel %s %d", req->uri, ch);
     if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::ChannelSavePreset(ch, string(name), atoi(number));
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -253,7 +257,8 @@ esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
     ESP_LOGD("HTTPD", "Load preset for channel %s %c", req->uri, ch);
     if (ch == 0 || ch == 1)
         CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(ch, atoi(number));
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -304,23 +309,7 @@ esp_err_t RestServer::StartRestServer() {
     ESP_LOGI(REST_TAG, "Starting HTTP Server");
     if (httpd_start(&server, &config) != ESP_OK)
         return ESP_FAIL;
-    /*
-      httpd_uri_t system_info_get_uri = {
-          .uri = "/api/v1/system/info",
-          .method = HTTP_GET,
-          .handler = system_info_get_handler,
-          .user_ctx = rest_context
-      };
-      httpd_register_uri_handler(server, &system_info_get_uri);
 
-      httpd_uri_t light_brightness_post_uri = {
-          .uri = "/api/v1/light/brightness",
-          .method = HTTP_POST,
-          .handler = light_brightness_post_handler,
-          .user_ctx = rest_context
-      };
-      httpd_register_uri_handler(server, &light_brightness_post_uri);
-  */
     /* URI handler for getting available sound processors */
     httpd_uri_t get_plugins_get_uri = {
             .uri = "/api/v1/getPlugins",
@@ -429,6 +418,15 @@ esp_err_t RestServer::StartRestServer() {
     };
     httpd_register_uri_handler(server, &reboot_handler_get_uri);
 
+    /* get io caps */
+    httpd_uri_t io_caps_handler_get_uri = {
+            .uri = "/api/v1/getIOCaps",
+            .method = HTTP_GET,
+            .handler = &RestServer::get_iocaps_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &io_caps_handler_get_uri);
+
     /* set configuration */
     httpd_uri_t set_configuration_post_uri = {
             .uri = "/api/v1/setConfiguration",
@@ -466,6 +464,15 @@ esp_err_t RestServer::StartRestServer() {
     };
     httpd_register_uri_handler(server, &ota_post_uri);
 
+    /* set sample upload */
+    httpd_uri_t srom_post_uri = {
+            .uri = "/api/v1/srom*",
+            .method = HTTP_POST,
+            .handler = &RestServer::srom_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &srom_post_uri);
+
     /* URI handler for getting web server files */
     httpd_uri_t common_get_uri = {
             .uri = "/*",
@@ -501,7 +508,8 @@ esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
     content[req->content_len] = 0;
     CTAG::AUDIO::SoundProcessorManager::SetConfigurationFromJSON(string(content));
     free(content);
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -524,7 +532,7 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
         if (json)
             httpd_resp_sendstr(req, json);
     }
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -536,7 +544,8 @@ esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
     int doCal = atoi(calibration);
     ESP_LOGW(REST_TAG, "Reboot requested with calibration = %d", doCal);
     if (doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     esp_restart();
     return ESP_OK;
 }
@@ -577,7 +586,8 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
         err = CTAG::OTA::OTAManager::PostHandlerFlashCommit(req);
         if (err == ESP_OK) {
             ESP_LOGI("REST", "OTA successful, rebooting!");
-            httpd_resp_send_chunk(req, NULL, 0);
+            httpd_resp_set_type(req, "text/html");
+            httpd_resp_send(req, NULL, 0);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             esp_restart();
         }
@@ -588,8 +598,8 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         esp_restart();
     }
-
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
 
     return ESP_OK;
 }
@@ -613,7 +623,8 @@ esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
     content[req->content_len] = 0;
     CTAG::CAL::Calibration::SetJSONCalibration(string(content));
     free(content);
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -643,9 +654,87 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
         content[req->content_len] = 0;
         CTAG::AUDIO::SoundProcessorManager::SetJSONSoundProcessorPreset(string(pluginID), string(content));
         free(content);
-        httpd_resp_send_chunk(req, NULL, 0);
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_send(req, NULL, 0);
     } else {
         httpd_resp_send_404(req);
     }
+    return ESP_OK;
+}
+
+esp_err_t RestServer::srom_handler(httpd_req_t *req) {
+    char *s = strrchr(req->uri, '/');
+    string cmd = ++s;
+
+    ESP_LOGE("REST", "Sample ROM command: %s", cmd.c_str());
+
+    if(cmd.compare("getSize") == 0){
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_sendstr(req, to_string(CONFIG_SAMPLE_ROM_SIZE).c_str());
+        return ESP_OK;
+    }
+
+    if(cmd.compare("erase") == 0){
+        CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+        // erase flash / lengthy operation
+        ESP_LOGI("REST", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
+        ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_send(req, NULL, 0);
+        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+        return ESP_OK;
+    }
+
+    if(cmd.compare("upRaw") == 0){
+        ESP_LOGI("REST", "Sample ROM flashing!");
+        int data_read, remaining = req->content_len, offset = 0;
+        char *buffer = (char*)heap_caps_malloc(4096, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        if(buffer == NULL){
+            httpd_resp_send_500(req);
+            return ESP_ERR_NO_MEM;
+        }
+        CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+        int blockCnt = 0;
+        while (remaining > 0) {
+            // Read the data for the request
+            uint32_t size = remaining > 4096 ? 4096 : remaining;
+            data_read = httpd_req_recv(req, buffer, size);
+            if (data_read < 0) {
+                httpd_resp_send_500(req);
+                heap_caps_free(buffer);
+                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                return ESP_ERR_INVALID_ARG;
+            } else if (data_read > 0) {
+                spi_flash_write(CONFIG_SAMPLE_ROM_START_ADDRESS + offset, buffer, data_read);
+            }
+            offset += data_read;
+            remaining -= data_read;
+            if(blockCnt == 0){
+                ESP_LOGE("REST", "Magic number 0xdeadface = 0x%08x", ((uint32_t*)buffer)[0]);
+            }
+            blockCnt++;
+        }
+        heap_caps_free(buffer);
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_send(req, NULL, 0);
+        CTAG::AUDIO::SoundProcessorManager::RefreshSampleRom();
+        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+        ESP_LOGI("REST", "Sample ROM flashing completed!");
+        return ESP_OK;
+    }
+
+    httpd_resp_send_404(req);
+
+    return ESP_OK;
+}
+
+esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
+    httpd_resp_set_type(req, "application/json");
+#ifdef CONFIG_TBD_PLATFORM_STR
+    string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV1\",\"CV2\",\"CV3\",\"CV4\",\"CV5\",\"CV6\",\"CV7\",\"CV8\"]}");
+#else
+    string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
+#endif
+    httpd_resp_sendstr(req, s.c_str());
     return ESP_OK;
 }

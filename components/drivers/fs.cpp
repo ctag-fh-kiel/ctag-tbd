@@ -34,7 +34,7 @@ void FileSystem::InitFS() {
 
     esp_vfs_spiffs_conf_t conf = {
             .base_path = "/spiffs",
-            .partition_label = NULL,
+            .partition_label = "storage",
             .max_files = 5,
             .format_if_mount_failed = false
     };
@@ -55,7 +55,7 @@ void FileSystem::InitFS() {
     }
 
     size_t total = 0, used = 0;
-    ret = esp_spiffs_info(NULL, &total, &used);
+    ret = esp_spiffs_info("storage", &total, &used);
     if (ret != ESP_OK) {
         ESP_LOGE("fs", "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret));
     } else {

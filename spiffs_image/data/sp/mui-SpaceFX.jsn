@@ -1,0 +1,148 @@
+{
+   "id": "SpaceFX", "isStereo": true, "name": "SpaceFX", "hint": "Provides noise and filter-resonance effects as well known starting with Space Rock acts like Gong, Hawkwind and similar", "params":
+   [
+       {  
+          "id": "Global", "name": "Global", "type": "group", "params":  
+           [
+               {"id":"Trigger","name":"Trigger/Gate Envelopes n/y","type":"bool"},
+               {"id": "MasterPitch","type": "int","name": "Master Pitch (map CV to Cutoff here if desired)","min": -48,"max": 48,"step": 1},
+               {"id": "MasterTune","type": "int","name": "Master Tune +- 1200 Cent","min": -1200,"max": 1200,"step": 1},
+               {"id":"FilterTracking","name":"Filter key tracking (Pitch-CV to Cutoff)","type":"int","min": -2048,"max": 2047,"step": 1},
+               {"id":"Volume","name":"Volume before Effects","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+          "id": "Noise", "name": "Voice: Noise", "type": "group", "params":  
+           [
+               {"id":"EnableNoise","name":"Enable Noise n/y","type":"bool"}, 
+               {"id":"NoiseColour","name":"Noise Colour (Pink to White)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"MixedNoiseLevel","name":"Noise Level","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EnableNoiseMod","name":"Modulate Noise n/y","type":"bool"}, 
+               {"id":"NoiseColourModSpeed","name":"Noise Colour Mod Speed","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"NoiseColourModAmount","name":"Noise Colour Mod Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"NoiseLevelModSpeed","name":"Noise Level Mod Speed","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"NoiseLevelModAmount","name":"Noise Level Mod Amount","type":"int","min":0,"max":4095,"step":1}
+            ]  
+       },
+       {
+          "id": "Filter", "name": "Voice: Filter", "type": "group", "params":  
+           [
+               {"id":"PitchToCutoff","name":"Enable Pitch to Cutoff n/y","type":"bool"}, 
+               {"id":"Cutoff","name":"Cutoff Frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"Resonance","name":"Resonance","type":"int","min":0,"max":4095,"step":1},
+               {"id":"VintageResonance","name":"Use vintage resonance tuning n/y","type":"bool"}, 
+               {"id":"CutoffModulationAmount","name":"Cutoff Modulation Level (EGs+SOU+LFOs)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ResonanceModulationAmount","name":"Resonance Modulation Level (EGs+SOU+LFOs)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"AmplitudeModulationAmount","name":"Amlitude Modulation Level (EGs+SOU+LFOs)","type":"int","min":0,"max":4095,"step":1}
+           ]
+        },   
+       {
+          "id": "ADenvelope", "name": "AD Envelope", "type": "group", "params":  
+           [
+               {"id":"ADenvEnable","name":"AD envelope active n/y","type":"bool"},   
+               {"id":"ADenvToVCA","name":"AD envelope modifys VCA level n/y","type":"bool"},  
+               {"id":"ADattack","name":"AD Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADdecay","name":"AD Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADegLoop","name":"AD envelope loop n/y","type":"bool"},
+               {"id":"ADenvNegative","name":"AD volume envelope invert n/y","type":"bool"}, 
+               {"id":"ADenvelopeCutoffAmount","name":"AD envelope cutoff amount","type":"int","min":-2048,"max":2047,"step":1},
+               {"id":"ADenvelopeResonanceAmount","name":"AD envelope resonance amount","type":"int","min":-2048,"max":2047,"step":1},
+               {"id":"ADtoSawLFOfrequ","name":"AD to Saw LFO speed n/y","type":"bool"}, 
+               {"id":"ADtoSawSpeedLevel","name":"AD to Saw LFO speed amount","type":"int","min":-2048,"max":2047,"step":1}
+           ]
+        },
+        {        
+          "id": "ADSRenvelope", "name": "ADSR Envelope", "type": "group", "params":  
+           [
+               {"id":"ADSRenvEnable","name":"ADSR envelope active n/y","type":"bool"},   
+               {"id":"ADSRenvToVCA","name":"ADSR envelope modifys VCA level n/y","type":"bool"}, 
+               {"id":"ADSRattack","name":"ADSR Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADSRdecay","name":"ADSR Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADSRsustain","name":"ADSR Sustain","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADSRrelease","name":"ADSR Release","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADSRenvNegative","name":"ADSR volume envelope invert n/y","type":"bool"}, 
+               {"id":"ADSRenvelopeCutoffAmount","name":"ADSR envelope cutoff amount","type":"int","min":-2048,"max":2047,"step":1},
+               {"id":"ADSRenvelopeResonanceAmount","name":"ADSR envelope resonance amount","type":"int","min":-2048,"max":2047,"step":1},
+               {"id":"ADSRtoSineLFOfrequ","name":"ADSR to Sine LFO speed n/y","type":"bool"}, 
+               {"id":"ADSRtoSineSpeedLevel","name":"ADSR to Sine LFO speed amount","type":"int","min":-2048,"max":2047,"step":1}
+           ]
+       },
+       {
+            "id": "SOU", "name": "SOU - Source of Uncertainty (SnH1: Whitenoise-Based, SnH2: Pinknoise-based)", "type": "group", "params":  
+            [
+               {"id":"SnH1Enable","name":"SAMPLE AND HOLD LFO 1 active n/y","type":"bool"},
+               {"id":"SnH1Freq","name":"Sample n' Hold 1 frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SnH1CutoffLevel","name":"Sample n' Hold 1 cutoff level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SnH1ResonanceLevel","name":"Sample n' Hold 1 resonance level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SnH1AMlevel","name":"Sample n' Hold 1 AM level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SnH1FrequSnH2Change","name":"Sample n' Hold 1 to Frequ. of SnH-1","type":"int","min": -2048,"max": 2047,"step": 1},
+               {"id":"SnH1FrequSquareChange","name":"Sample n' Hold 1 to Frequ. of Square LFO","type":"int","min": -2048,"max": 2047,"step": 1},
+               {"id":"SnH1ADattackChange","name":"Sample n' Hold 1 to AD Attack","type":"int","min": -2048,"max": 2047,"step": 1},
+               
+               {"id":"SnH2Enable","name":"SAMPLE AND HOLD LFO 2 active n/y","type":"bool"},
+               {"id":"SnH2Freq","name":"Sample n' Hold 2 frequency","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SnH2CutoffLevel","name":"Sample n' Hold 2 cutoff level","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SnH2ResonanceLevel","name":"Sample n' Hold 2 resonance level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SnH2AMlevel","name":"Sample n' Hold 2 AM level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SnH2FrequSnH1Change","name":"Sample n' Hold 2 to Frequ. of SnH-1","type":"int","min": -2048,"max": 2047,"step": 1},
+               {"id":"SnH2FrequPulseChange","name":"Sample n' Hold 2 to Frequ. of Pulse/Tri LFO","type":"int","min": -2048,"max": 2047,"step": 1},
+               {"id":"SnH2ADdecayChange","name":"Sample n' Hold 2 to AD Decay","type":"int","min": -2048,"max": 2047,"step": 1}
+            ]
+        },        
+       {
+          "id": "LFOmodulationMixer", "name": "LFO Modulation Mixer (Cutoff, Resonance and Amplitude Modulation)", "type": "group", "params":  
+           [
+               {"id":"SineEnable","name":"SINE LFO active n/y","type":"bool"},
+               {"id":"SineFreq","name":"Sine frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SineCutoffAmount","name":"Sine LFO cutoff level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SineResonanceAmount","name":"Sine LFO resonance level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SineAMamount","name":"Sine LFO AM level","type":"int","min":0,"max":4095,"step":1}, 
+               
+               {"id":"PulseEnable","name":"Pulse LFO active n/y","type":"bool"},
+               {"id":"PulseFreq","name":"Pulse frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"PulseWidth","name":"PWM Oddness factor","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PWMspeed","name":"PWM speed","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PWMamount","name":"PWM amount","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PulseCutoffAmount","name":"Pulse LFO cutoff level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"PulseResonanceAmount","name":"Pulse LFO resonance level","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PulseAMamount","name":"Pulse LFO AM level","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"SawEnable","name":"SAW LFO active n/y","type":"bool"},
+               {"id":"SawFreq","name":"Sawtooth frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SawCutoffAmount","name":"Sawtooth LFO cutoff level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SawResonanceAmount","name":"Sawtooth LFO resonance level","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SawAMamount","name":"Sawtooth LFO AM level","type":"int","min":0,"max":4095,"step":1},
+               
+               {"id":"SquareEnable","name":"SQUARE LFO active n/y","type":"bool"},
+               {"id":"SquareFreq","name":"Square frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SquareCutoffAmount","name":"Squarewave LFO cutoff level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SquareResonanceAmount","name":"Squarewave LFO resonance level","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"SquareAMamount","name":"Squarewave LFO AM level","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+          "id": "Delay", "name": "Delay", "type": "group", "params":  
+           [
+               {"id":"DelayEnable","name":"Delay active n/y","type":"bool"},  
+               {"id":"DelayTimeShortened","name":"Shorten Delay Times to 0.5 seconds n/y","type":"bool"},  
+               {"id":"DelayTime","name":"Delay Time (max. 0.5 or 2 Sec.)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DelayFeedback","name":"Delay Feedback","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DelayDryWet","name":"Delay Dry/Wet","type":"int","min":0,"max":4095,"step":1}
+            ]  
+       },
+       {
+          "id": "Reverb", "name": "Reverb (Set to Mono if you want to use only one output of the TBD)", "type": "group", "params":  
+           [
+               {"id":"ReverbEnable","name":"Reverb active n/y","type":"bool"},  
+               {"id":"ReverbIsMono","name":"Mono Reverb n/y","type":"bool"},  
+               {"id":"RevInputGain","name":"Reverb Input Gain","type":"int","min":0,"max":4095,"step":1},
+               {"id":"RevDiffusion","name":"Reverb Diffusion","type":"int","min":0,"max":4095,"step":1},
+               {"id":"RevTime","name":"Reverb Time","type":"int","min":0,"max":4095,"step":1},
+               {"id":"RevLowpass","name":"Reverb Lowpass","type":"int","min":0,"max":4095,"step":1},
+               {"id":"RevLFO1","name":"Reverb LFO 1","type":"int","min":0,"max":4095,"step":1},
+               {"id":"RevLFO2","name":"Reverb LFO 2","type":"int","min":0,"max":4095,"step":1},
+               {"id":"RevAmount","name":"Reverb Dry/Wet","type":"int","min":0,"max":4095,"step":1}
+            ]  
+       }
+   ] 
+}

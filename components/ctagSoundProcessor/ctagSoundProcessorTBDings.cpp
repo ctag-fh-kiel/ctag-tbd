@@ -59,7 +59,7 @@ ctagSoundProcessorTBDings::ctagSoundProcessorTBDings() {
     paramAD.SetModeLin();
 }
 
-void IRAM_ATTR ctagSoundProcessorTBDings::Process(const ProcessData &data) {
+void ctagSoundProcessorTBDings::Process(const ProcessData &data) {
     updateParams(data);
 
     bool isEaster = easter;

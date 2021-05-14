@@ -37,6 +37,7 @@ respective component folders / files if different from this license.
 #include "RestServer.hpp"
 #include <math.h>
 #include "helpers/ctagFastMath.hpp"
+#include "helpers/ctagSampleRom.hpp"
 #include "freeverb3/efilter.hpp"
 #include "stmlib/dsp/dsp.h"
 
@@ -55,12 +56,15 @@ using namespace CTAG::DRIVERS;
 #define NG_BOTH 1
 #define NG_LEFT 2
 #define NG_RIGHT 3
+// defined in CMakelists.txt
+//#define N_CVS 4
+//#define N_TRIGS 2
 
 // audio real-time task
 void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     float fbuf[BUF_SZ * 2];
-    float cv[4];
-    uint8_t trig[2];
+    float cv[N_CVS];
+    uint8_t trig[N_TRIGS];
     float peakIn = 0.f, peakOut = 0.f;
     float peakL = 0.f, peakR = 0.f;
     int ngState = NG_OPEN;
@@ -81,8 +85,6 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     pd.buf = fbuf;
     pd.cv = cv;
     pd.trig = trig;
-
-    DRIVERS::Codec::InitCodec();
 
     // generate linear ramp ]0,1[ squared
     for (uint32_t i = 0; i < BUF_SZ; i++) {
@@ -269,6 +271,9 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const string &id) {
     ledBlink = 5;
 
+    // when trying to set chan 1 and chan 0 is a stereo plugin, return
+    if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
+
     ESP_LOGI("SP", "Switching plugin %d to %s", chan, id.c_str());
     ESP_LOGE("SP", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -280,7 +285,6 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     xSemaphoreTake(processMutex, portMAX_DELAY);
     sp[chan] = nullptr; // destruct smart ptr
     if (model->IsStereo(id) && chan == 0) {
-        ESP_LOGI("SP", "Removing ch 1 plugin as ch 0 is stereo!");
         sp[1] = nullptr; // destruct smart ptr
     }
 
@@ -334,6 +338,12 @@ void SoundProcessorManager::StartSoundProcessor() {
     }
     */
 
+    // init codec
+    DRIVERS::Codec::InitCodec();
+#ifdef CONFIG_TBD_PLATFORM_STR
+    DRIVERS::ADC::InitADCSystem();
+#endif
+
     // generate internal data
     updateConfiguration();
 
@@ -366,9 +376,11 @@ void SoundProcessorManager::StartSoundProcessor() {
     if (processMutex == NULL) {
         ESP_LOGE("SPM", "Fatal couldn't create mutex!");
     }
+#ifndef CONFIG_TBD_PLATFORM_STR
     // create led indicator thread
     xTaskCreatePinnedToCore(&SoundProcessorManager::led_task, "led_task", 4096, nullptr, tskIDLE_PRIORITY + 2,
                             &ledTaskH, 0);
+#endif
     // create audio thread
     runAudioTask = 1;
     xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
@@ -478,6 +490,16 @@ void SoundProcessorManager::updateConfiguration() {
         ch1_outputSoftClip = 1;
     }
 
+    // output levels of codec
+    if(model->GetConfigurationData("ch0_codecLvlOut").compare("") != 0){
+        if(model->GetConfigurationData("ch0_codecLvlOut").compare("") != 0){
+            int lLevel = std::stoi(model->GetConfigurationData("ch0_codecLvlOut"));
+            int rLevel = std::stoi(model->GetConfigurationData("ch1_codecLvlOut"));
+            CONSTRAIN(rLevel, 0, 63)
+            CONSTRAIN(lLevel, 0, 63)
+            DRIVERS::Codec::SetOutputLevels(lLevel, rLevel);
+        }
+    }
 }
 
 void SoundProcessorManager::led_task(void *pvParams) {
@@ -505,8 +527,25 @@ void SoundProcessorManager::KillAudioTask() {
     while (runAudioTask != 2); // wait for audio task to be dead
     sp[0] = nullptr;
     sp[1] = nullptr;
+#ifndef CONFIG_TBD_PLATFORM_STR
     vTaskDelete(ledTaskH);
     ledTaskH = NULL;
     vTaskDelay(100 / portTICK_PERIOD_MS);
     DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
+#endif
+}
+
+void SoundProcessorManager::DisablePluginProcessing() {
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    ledBlink = 43;
+}
+
+void SoundProcessorManager::EnablePluginProcessing() {
+    ledBlink = 5;
+    xSemaphoreGive(processMutex);
+}
+
+void SoundProcessorManager::RefreshSampleRom() {
+    ledBlink = 5;
+    ctagSampleRom::RefreshDataStructure();
 }

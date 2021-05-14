@@ -9,16 +9,17 @@ Adaptations can be made in the code, RTAudio will open the first available devic
 
 ## Dependencies
 
-* Boost.Asio
+* Boost Asio, FileSystem, Thread, ProgramOptions
 * RTAudio
 * Simple-Web-Server (by C. Eidheim)
+* CMake Version 3.16 or higher
 
 Installation instructions for the dependencies needed to compile the simulator on a selection of platforms can be seen below.
 
 ### Debian based distributions
 
 ```sh
-sudo apt-get install libboost-filesystem-dev libboost-thread-dev
+sudo apt-get install libboost-filesystem-dev libboost-thread-dev libboost-program-options-dev libasound2-dev
 ```
 
 ### Arch Linux based distributions
@@ -43,7 +44,7 @@ pacman -Syu
 
 Then restart the shell and install packages:
 ```sh
-pacman -Su git wget make tar unzip zip mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb mingw-w64-x86_64-cmake autoconf automake mingw-w64-x86_64-libtool mingw-w64-x86_64-jq mingw-w64-x86_64-boost python 
+pacman -Su git mingw-w64-x86_64-make mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-libtool mingw-w64-x86_64-jq mingw-w64-x86_64-boost
 ```
 
 When running cmake use:
@@ -51,6 +52,11 @@ When running cmake use:
 cmake -G "MinGW Makefiles" ..
 ```
 instead of just using "cmake .." as written below.
+
+To make run:
+```sh
+mingw32-make
+```
 
 #### Approach 2 (32bit)
 - Getting the simulator running on Windows has been tested using the MingW GCC environment (32-bit)

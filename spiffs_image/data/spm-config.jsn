@@ -20,6 +20,8 @@
     "ch0_toStereo": "off",
     "ch1_toStereo": "off",
     "ch0_outputSoftClip": "on",
-    "ch1_outputSoftClip": "on"
+    "ch1_outputSoftClip": "on",
+    "ch0_codecLvlOut": "58",
+    "ch1_codecLvlOut": "58"
   }
 }

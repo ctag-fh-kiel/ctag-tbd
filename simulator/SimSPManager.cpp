@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "tinywav.h"
 #include <mutex>
 #include <cmath>
+#include "esp_spi_flash.h"
 
 using namespace CTAG::AUDIO;
 
@@ -89,6 +90,8 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
 }
 
 void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, bool bOutOnly) {
+    // start fake sample rom
+    spi_flash_emu_init();
     // Initialize simulator parameters
     simModel = std::make_unique<SimDataModel>();
     int mode[6], value[6];
@@ -179,6 +182,8 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, bool bO
 }
 
 void SimSPManager::StopSoundProcessor() {
+    // free sample rom emulation
+    spi_flash_emu_release();
     if (isWaveInput) tinywav_close_read(&tw);
     if (audio.isStreamRunning() && audio.isStreamOpen()) {
         audio.stopStream();

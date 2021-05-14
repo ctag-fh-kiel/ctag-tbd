@@ -39,12 +39,15 @@ namespace CTAG {
 
             static void RecalibDCOffset();
 
+            static void SetOutputLevels(const uint32_t left, const uint32_t right);
+
             static void ReadBuffer(float *buf, uint32_t sz);
 
             static void WriteBuffer(float *buf, uint32_t sz);
 
         private:
             static void initSPI();
+            static void freeSPI();
 
             static void setupSPIWM8731();
 

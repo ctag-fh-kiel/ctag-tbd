@@ -52,25 +52,35 @@ using namespace DRIVERS;
 extern const uint8_t ulp_drivers_bin_start[] asm("_binary_ulp_drivers_bin_start");
 extern const uint8_t ulp_drivers_bin_end[]   asm("_binary_ulp_drivers_bin_end");
 
-
 static QueueHandle_t adcDataQueue = NULL;
 
+uint16_t ADC::data[N_CVS];
+
 static void IRAM_ATTR ulp_isr(void *arg) {
-    static uint16_t data[4];
+    static uint16_t data[N_CVS];
     //static uint32_t s = 0;
     //gpio_set_level(23, (s++)&0x01);
-    /* hardware debugging 
+    /* hardware debugging
     gpio_set_level(SPI_TFT_MISO_PIN, 1);
     */
 
     // disable ULP timer, should get 10 us to settle
     CLEAR_PERI_REG_MASK(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
 
+#ifdef CONFIG_TBD_PLATFORM_STR
     data[0] = (uint16_t) *((&ulp_adc_data) + 0);
     data[1] = (uint16_t) *((&ulp_adc_data) + 1);
     data[2] = (uint16_t) *((&ulp_adc_data) + 2);
     data[3] = (uint16_t) *((&ulp_adc_data) + 3);
-    //setLedRGB(data[0], data[1], data[3]);
+    data[4] = (uint16_t) *((&ulp_adc_data) + 4);
+    data[5] = (uint16_t) *((&ulp_adc_data) + 6);
+    data[6] = (uint16_t) *((&ulp_adc_data) + 5);
+    data[7] = (uint16_t) *((&ulp_adc_data) + 7);
+#else
+    for(int i=0; i < N_CVS; i++){
+        data[i] = (uint16_t) *((&ulp_adc_data) + i);
+    }
+#endif
 
     xQueueSendToFrontFromISR(adcDataQueue, data, NULL);
 
@@ -81,7 +91,7 @@ static void IRAM_ATTR ulp_isr(void *arg) {
 }
 
 void IRAM_ATTR ADC::Update() {
-    xQueueReceive(adcDataQueue, data, 0);
+    xQueueReceive(adcDataQueue, data, portMAX_DELAY);
     // restart ULP
     SET_PERI_REG_MASK(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
 }
@@ -94,7 +104,7 @@ void ADC::InitADCSystem() {
     esp_err_t err;
 
     // create data queue
-    adcDataQueue = xQueueCreate(1, sizeof(uint16_t) * 4);
+    adcDataQueue = xQueueCreate(1, sizeof(uint16_t) * N_CVS);
 
     // set up ULP program
     err = rtc_isr_register((intr_handler_t) &ulp_isr, (void *) 0, (uint32_t) RTC_CNTL_SAR_INT_ST_M);
@@ -103,12 +113,21 @@ void ADC::InitADCSystem() {
     // set RTC FAST CLOCK to XTAL/4 = 10MHz at 40Mhz XTAL speed
     rtc_clk_fast_freq_set(RTC_FAST_FREQ_XTALD4);
     init_ulp_program();
+
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+    init_analog_sub_system();
+#endif
+
     ESP_ERROR_CHECK(ulp_run((&ulp_entry - RTC_SLOW_MEM) / sizeof(uint32_t)));
+
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
     SetCVINUnipolar(0);
     SetCVINUnipolar(1);
+#endif
 }
 
 void ADC::SetCVINUnipolar(int ch) {
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
     if (ch == 0) {
         dac_output_voltage(DAC_CHANNEL_1, 55); // offset
         adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_0); // GPIO32
@@ -116,9 +135,11 @@ void ADC::SetCVINUnipolar(int ch) {
         dac_output_voltage(DAC_CHANNEL_2, 55);
         adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_DB_0); // GPIO33
     }
+#endif
 }
 
 void ADC::SetCVINBipolar(int ch) {
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
     if (ch == 0) {
         dac_output_voltage(DAC_CHANNEL_1, 57); // offset
         adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_6); // GPIO32
@@ -126,14 +147,43 @@ void ADC::SetCVINBipolar(int ch) {
         dac_output_voltage(DAC_CHANNEL_2, 57);
         adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_DB_6); // GPIO33
     }
+#endif
 }
-
-uint16_t ADC::data[4];
 
 void ADC::init_ulp_program() {
     /* load ULP program */
     ESP_ERROR_CHECK(ulp_load_binary(0, ulp_drivers_bin_start,
                                     (ulp_drivers_bin_end - ulp_drivers_bin_start) / sizeof(uint32_t)));
+
+#ifdef CONFIG_TBD_PLATFORM_STR
+    const gpio_num_t GPIO_CS0 = GPIO_NUM_32;
+    const gpio_num_t GPIO_MOSI = GPIO_NUM_13;
+    const gpio_num_t GPIO_SCLK = GPIO_NUM_12;
+    const gpio_num_t GPIO_MISO = GPIO_NUM_0;
+
+    rtc_gpio_init(GPIO_CS0);
+    rtc_gpio_set_direction(GPIO_CS0, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(GPIO_CS0, 0);
+
+    rtc_gpio_init(GPIO_MOSI);
+    rtc_gpio_set_direction(GPIO_MOSI, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(GPIO_MOSI, 0);
+
+    rtc_gpio_init(GPIO_SCLK);
+    rtc_gpio_set_direction(GPIO_SCLK, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(GPIO_SCLK, 0);
+
+    rtc_gpio_init(GPIO_MISO);
+    rtc_gpio_set_direction(GPIO_MISO, RTC_GPIO_MODE_INPUT_ONLY);
+    rtc_gpio_pullup_en(GPIO_MISO);
+#endif
+}
+
+void ADC::GetChannelVals(uint16_t *d) {
+    memcpy(d, data, sizeof(uint16_t) * N_CVS);
+}
+
+void ADC::init_analog_sub_system() {
     /* config DAC for offset voltage */
     /* default for 0->5V CV in */
     dac_output_enable(DAC_CHANNEL_1);
@@ -147,8 +197,4 @@ void ADC::init_ulp_program() {
     adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_DB_0); // GPIO35
     /* enable ULP on adc 1 */
     adc1_ulp_enable();
-}
-
-void ADC::GetChannelVals(uint16_t *d) {
-    memcpy(d, data, sizeof(uint16_t) * 4);
 }

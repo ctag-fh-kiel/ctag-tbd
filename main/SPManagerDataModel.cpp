@@ -144,6 +144,14 @@ int SPManagerDataModel::GetActivePatchNum(const int chan) {
 }
 
 bool SPManagerDataModel::IsStereo(const string &id) {
+    if (!m.HasMember("availableProcessors")) return false;
+    for(auto &v: m["availableProcessors"].GetArray()){
+        if(v.HasMember("id")){
+            if(id.compare(v["id"].GetString()) == 0){
+                return v["isStereo"].GetBool();
+            }
+        }
+    }
     return false;
 }
 

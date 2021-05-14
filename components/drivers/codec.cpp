@@ -36,15 +36,21 @@ respective component folders / files if different from this license.
 #define PIN_NUM_MOSI 13
 #define PIN_NUM_CLK 12
 #define PIN_NUM_MISO 0
-// I2S pins
+
+// I2S
 #define I2S_BCLK_PIN 21
-#define I2S_LRCLK_PIN 19
-#define I2S_DACDAT_PIN 22
 #define I2S_ADCDAT_PIN 27
+#define I2S_DACDAT_PIN 22
+
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+    #define I2S_LRCLK_PIN 19
+#elif CONFIG_TBD_PLATFORM_STR
+    #define I2S_LRCLK_PIN 25
+#endif
 
 using namespace CTAG::DRIVERS;
 
-spi_device_handle_t Codec::codec_h;
+spi_device_handle_t Codec::codec_h = NULL;
 spi_transaction_t Codec::trans;
 spi_bus_config_t Codec::buscfg;
 spi_device_interface_config_t Codec::codec_cfg;
@@ -135,7 +141,7 @@ void Codec::setupI2SWM8731() {
 
 void Codec::InitCodec() {
     initSPI();
-#ifdef CONFIG_CODEC_IC_WM8731
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     setupSPIWM8731();
     setupI2SWM8731();
     vTaskDelay(5000 / portTICK_PERIOD_MS); // wait until system is settled a bit
@@ -144,15 +150,18 @@ void Codec::InitCodec() {
     HighPassEnable();
     vTaskDelay(1000 / portTICK_PERIOD_MS); // wait until system is settled a bit
     HighPassDisable();
-#elif CONFIG_CODEC_IC_WM8978
+#elif CONFIG_TBD_PLATFORM_V2
     setupSPIWM8978();
     setupI2SWM8978();
+#endif
+#ifdef CONFIG_TBD_PLATFORM_STR
+    freeSPI();
 #endif
     isReady = true;
 }
 
 void Codec::HighPassEnable() {
-#ifdef CONFIG_CODEC_IC_WM8731
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     unsigned char cmd;
     trans.flags = 0;
     trans.length = 8;
@@ -166,7 +175,7 @@ void Codec::HighPassEnable() {
 }
 
 void Codec::HighPassDisable() {
-#ifdef CONFIG_CODEC_IC_WM8731
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     unsigned char cmd;
     trans.flags = 0;
     trans.length = 8;
@@ -180,7 +189,7 @@ void Codec::HighPassDisable() {
 }
 
 void Codec::RecalibDCOffset() {
-#ifdef CONFIG_CODEC_IC_WM8731
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     if(!isReady) return;
     HighPassEnable();
     vTaskDelay(50 / portTICK_PERIOD_MS); // wait until system is settled a bit
@@ -225,7 +234,7 @@ void Codec::initSPI() {
 }
 
 void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_CODEC_IC_WM8731
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     int32_t tmp[sz * 2];
     int32_t *ptrTmp = tmp;
     size_t nb;
@@ -237,7 +246,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
         *buf++ = div * (float) *ptrTmp++;
         sz--;
     }
-#elif CONFIG_CODEC_IC_WM8978
+#elif CONFIG_TBD_PLATFORM_V2
     int16_t tmp[sz * 2];
     int16_t *ptrTmp = tmp;
     size_t nb;
@@ -253,7 +262,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
 }
 
 void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_CODEC_IC_WM8731
+#if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
     int32_t tmp[sz * 2];
     int32_t tmp2;
     size_t nb;
@@ -270,7 +279,7 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp[i * 2 + 1] = tmp2 << 8;
     }
     i2s_write(I2S_NUM_0, tmp, sz * 4 * 2, &nb, portMAX_DELAY);
-#elif CONFIG_CODEC_IC_WM8978
+#elif CONFIG_TBD_PLATFORM_V2
     int16_t tmp[sz * 2];
     int16_t tmp2;
     size_t nb;
@@ -300,7 +309,8 @@ void Codec::setupSPIWM8978() {
     //WM8978_AUX_Gain(0);
     WM8978_LINEIN_Gain(5); // 0db
     //WM8978_SPKvol_Set(0);
-    WM8978_HPvol_Set(50, 50); //0-63 // 0db is 57 // 38
+    // here are the gain settings for the output
+    WM8978_HPvol_Set(58, 58); //0-63 // 0db is 57 // 38
     /*
     WM8978_EQ_3D_Dir(0);
     WM8978_EQ1_Set(0, 12); // 0 db is 12
@@ -310,6 +320,16 @@ void Codec::setupSPIWM8978() {
     WM8978_EQ5_Set(0, 12);
      */
     WM8978_I2S_Cfg(2, 0);
+}
+
+void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
+#ifdef CONFIG_TBD_PLATFORM_V2
+    if(!isReady){
+        ESP_LOGD("CODEC", "Codec not initialized");
+    }
+    ESP_LOGD("CODEC", "Setting levels to %d, %d", left, right);
+    WM8978_HPvol_Set(static_cast<u8>(left), static_cast<u8>(right));
+#endif
 }
 
 void Codec::setupI2SWM8978() {
@@ -721,5 +741,13 @@ void Codec::WM8978_Noise_Set(u8 enable, u8 gain) {
     regval = (enable << 3);
     regval |= gain;                  //设置增益
     WM8978_Write_Reg(35, regval); //R18,EQ1设置
+}
+
+void Codec::freeSPI() {
+    esp_err_t ret;
+    ret = spi_bus_remove_device(codec_h);
+    assert(ret == ESP_OK);
+    ret = spi_bus_free(VSPI_HOST);
+    assert(ret == ESP_OK);
 }
 

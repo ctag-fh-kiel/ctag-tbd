@@ -1,5 +1,53 @@
 # CTAG TBD Version Log
 
+## V0.9.16
+- New plugin SpaceFX by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+- Bjorklund parameter reduction (some setting caused CPU overload)
+- Numeric plugin parameters can now be reset to 0 by double clicking parameter name
+- FBDlyLine plugin bug fix, dry/wet slider now working
+- Limitation of patch storage to 10 patches per plugin (this is due to the limited storage resources on the platform), fixes out of mem bug, when too many patches were created
+- Patch write button changes color to red to indicate overwrite of existing patch
+- Web UI has now modal screen during plugin change and preset load/save
+- Minor optimizations
+
+## V0.9.15
+- New plugin Retroactor by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+- Bugfixes Bjorklund by M. Brüssel
+
+## V0.9.14
+- New plugin Formantor by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+- New plugin Bjorklund by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
+- Added dummy plugin Void --> No processing overhead for a single channel
+
+## V0.9.13
+- New plugin APCpp by M. Brüssel
+- CDelay noise reduction / different filter model
+- Rompler pitch, start position latch if slice latch on trig
+- Rompler bit reduction
+- Claude more grains, removed mono in as similar functionality already with mode 1 & 3 
+- Added developer docs for windows (in doc/ folder)
+- Added continuous integration scripts
+- Added configuration option for different HW platforms including [Strämpler](https://github.com/ctag-fh-kiel/ctag-straempler)
+- Bug fixes
+
+## V0.9.12a
+- New plugin Karpuskl by M. Brüssel
+- Sample rom can now be flashed without need for reboot
+- Bug fixes
+
+## V0.9.11a
+- BIG FRESH 2021 UPDATE, TBD CAN DO SAMPLE PLAYBACK NOW, [details here](sample_rom/readme.md)
+- When you update, check the new "edit sample rom" option and upload custom or stock samples (sample-rom.tbd file in release)
+- New plugin Rompler (sample playback device)
+- New plugin WTOsc (wavetable oscillator able to use user wavetables from WaveEdit)
+- Bug fix Claude
+- Extension Claude mono in option
+- Rompler memory fixes
+
+## V0.9.10
+- New configuration option for output volume
+- Bug fix: Modular output levels were too low
+
 ## V0.9.9a
    - New plugin Claude --> port of mutable instruments Clouds including parasites reverse option
    - Some minor optimizations

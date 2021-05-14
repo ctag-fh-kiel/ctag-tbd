@@ -39,7 +39,7 @@ void CTAG::SP::HELPERS::ctagFBDelayLine::Process(float *samples, const uint32_t 
         uint32_t wpos = (pos + len - 1) % len;
         uint32_t rpos = pos;
         buffer[wpos] = samples[i + offset] + feedback * buffer[wpos];
-        samples[i + offset] = buffer[rpos];
+        samples[i + offset] = (1.f - drywet) * samples[i + offset] + drywet * buffer[rpos];
         pos++;
         pos %= len;
     }
@@ -65,6 +65,10 @@ void CTAG::SP::HELPERS::ctagFBDelayLine::SetLength(const uint32_t length) {
 
 void CTAG::SP::HELPERS::ctagFBDelayLine::Clear() {
     memset((void *) buffer, 0, maxLen * sizeof(float));
+}
+
+void CTAG::SP::HELPERS::ctagFBDelayLine::SetDryWet(const float dw) {
+    drywet = dw;
 }
 
 

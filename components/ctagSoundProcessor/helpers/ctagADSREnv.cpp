@@ -125,6 +125,7 @@ float ctagADSREnv::Process() {
             }
             break;
         case env_sustain:
+            output = sustainLevel;
             break;
         case env_release:
             output = releaseBase + output * releaseCoef;
@@ -137,10 +138,13 @@ float ctagADSREnv::Process() {
 }
 
 void ctagADSREnv::Gate(bool gate) {
-    if (gate)
-        state = env_attack;
-    else if (state != env_idle)
+    if (gate){
+        if(state == env_idle || state == env_release){
+            state = env_attack;
+        }
+    }else if (state != env_idle){
         state = env_release;
+    }
 }
 
 int ctagADSREnv::GetState() {

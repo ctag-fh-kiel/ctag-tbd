@@ -40,11 +40,24 @@ void WebServer::Start() {
     // 1 thread is usually faster than several threads
     server.config.port = 8080;
 
+    server.resource["^/api/v1/srom/getSize$"]["POST"] = [](shared_ptr<HttpServer::Response> response,
+                                                        shared_ptr<HttpServer::Request> request) {
+        response->write(to_string(1024*1024*5));
+    };
+
     server.resource["^/api/v1/getPlugins$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
                                                         shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         auto content = request->content.string();
         response->write(SimSPManager::GetCStrJSONSoundProcessors());
+    };
+
+    server.resource["^/api/v1/getIOCaps$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                        shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        auto content = request->content.string();
+        string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
+        response->write(s);
     };
 
     server.resource["^/api/v1/getActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
