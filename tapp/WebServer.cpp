@@ -98,6 +98,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
                 serial->writeString(cmd);
             }
         }
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
@@ -119,7 +120,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
         string cmd = "{\"cmd\":\"" + request->path + "\", \"ch\":" + to_string(ch) + ", \"id\": \"" + id +
                 "\", \"current\":" + to_string(value) + "}";
         serial->writeString(cmd);
-
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
@@ -142,6 +143,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
         string cmd = "{\"cmd\":\"" + request->path + "\", \"ch\":" + to_string(ch) + ", \"id\": \"" + id +
                      "\", \"cv\":" + to_string(value) + "}";
         serial->writeString(cmd);
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
@@ -163,6 +165,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
         string cmd = "{\"cmd\":\"" + request->path + "\", \"ch\":" + to_string(ch) + ", \"id\": \"" + id +
                      "\", \"trig\":" + to_string(value) + "}";
         serial->writeString(cmd);
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
@@ -191,6 +194,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
         string cmd = "{\"cmd\":\"" + request->path + "\", \"ch\":" + to_string(ch) +
                 ", \"number\": " + to_string(number) + "}";
         serial->writeString(cmd);
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
@@ -212,11 +216,23 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
                      ", \"number\": " + to_string(number) +
                      ", \"name\":\"" + name + "\"}";
         serial->writeString(cmd);
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
     server.resource["^/api/v1/getConfiguration$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                          shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        auto content = request->content.string();
+        string cmd = "{\"cmd\":\"" + request->path + "\"}";
+        serial->writeString(cmd);
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(serial->readString(), header);
+    };
+
+    server.resource["^/api/v1/getIOCaps"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
+                                                               shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         auto content = request->content.string();
         string cmd = "{\"cmd\":\"" + request->path + "\"}";
@@ -239,6 +255,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
         string cmd = "{\"cmd\":\"" + request->path + "\"" +
                      ", \"calibration\": " + to_string(doCal) + "}";
         serial->writeString(cmd);
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
@@ -271,6 +288,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
                 "\"calibration\": " + content + "}";
 
         serial->writeString(cmd);
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
@@ -281,6 +299,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
                      "\"configuration\": " + content + "}";
         cout << cmd << endl;
         serial->writeString(cmd);
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
@@ -293,6 +312,7 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
                      "\"data\": " + content + "}";
 
         serial->writeString(cmd);
+        serial->readString();
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
