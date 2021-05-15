@@ -24,14 +24,14 @@ void CTAG::SAPI::SerialAPI::StartSerialAPI() {
 void CTAG::SAPI::SerialAPI::initUART() {
     /* Configure parameters of a UART driver,
      * communication pins and install the driver */
-    uart_config_t uart_config = {
-            .baud_rate = 115200,
-            .data_bits = UART_DATA_8_BITS,
-            .parity    = UART_PARITY_DISABLE,
-            .stop_bits = UART_STOP_BITS_1,
-            .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-            .rx_flow_ctrl_thresh = 0 // no effect as HW flow disabled
-    };
+    uart_config_t uart_config;
+    uart_config.baud_rate = 115200;
+    uart_config.data_bits = UART_DATA_8_BITS;
+    uart_config.parity    = UART_PARITY_DISABLE;
+    uart_config.stop_bits = UART_STOP_BITS_1;
+    uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
+    uart_config.rx_flow_ctrl_thresh = 0; // no effect as HW flow disabled
+
     uart_param_config(UART_NUM_0, &uart_config);
     //uart_set_pin(UART_NUM_0, ECHO_TEST_TXD, ECHO_TEST_RXD, ECHO_TEST_RTS, ECHO_TEST_CTS);
     uart_set_pin(UART_NUM_0,UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE,UART_PIN_NO_CHANGE,UART_PIN_NO_CHANGE);
@@ -97,6 +97,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int ch = d["ch"].GetInt();
         string id = d["id"].GetString();
         CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
+        sendString("{}");
         return;
     }
     if(s.find("/api/v1/setPluginParam/") == 0){
@@ -104,6 +105,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int val = d["current"].GetInt();
         string id = d["id"].GetString();
         CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, id, "current", val);
+        sendString("{}");
         return;
     }
     if(s.find("/api/v1/setPluginParamCV/") == 0){
@@ -111,6 +113,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int val = d["cv"].GetInt();
         string id = d["id"].GetString();
         CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, id, "cv", val);
+        sendString("{}");
         return;
     }
     if(s.find("/api/v1/setPluginParamTRIG/") == 0){
@@ -118,6 +121,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int val = d["trig"].GetInt();
         string id = d["id"].GetString();
         CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, id, "trig", val);
+        sendString("{}");
         return;
     }
     if(s.find("/api/v1/getPresets/") == 0){
@@ -129,6 +133,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int ch = d["ch"].GetInt();
         int num = d["number"].GetInt();
         CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(ch, num);
+        sendString("{}");
         return;
     }
     if(s.find("/api/v1/savePreset/") == 0){
@@ -136,6 +141,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int num = d["number"].GetInt();
         string name = d["name"].GetString();
         CTAG::AUDIO::SoundProcessorManager::ChannelSavePreset(ch, name, num);
+        sendString("{}");
         return;
     }
     if(s.find("/api/v1/getConfiguration") == 0){
@@ -145,7 +151,9 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
     if(s.find("/api/v1/reboot") == 0){
         int doCal = d["calibration"].GetInt();
         if (doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
+        sendString("{}");
         esp_restart();
+        // no return
     }
     if(s.find("/api/v1/getPresetData") == 0){
         string pluginID = d["id"].GetString();
@@ -160,12 +168,23 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         sendString(CTAG::CAL::Calibration::GetCStrJSONCalibration());
         return;
     }
+    if(s.find("/api/v1/getIOCaps") == 0){
+        // TODO this should be at one central place
+#ifdef CONFIG_TBD_PLATFORM_STR
+        string const caps("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV1\",\"CV2\",\"CV3\",\"CV4\",\"CV5\",\"CV6\",\"CV7\",\"CV8\"]}");
+#else
+        string const caps("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
+#endif
+        sendString(caps);
+        return;
+    }
     if(s.find("/api/v1/setCalibration") == 0){
         Value calibrationData = d["calibration"].GetObject();
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
         calibrationData.Accept(writer);
         CTAG::CAL::Calibration::SetJSONCalibration(buffer.GetString());
+        sendString("{}");
         return;
     }
     if(s.find("/api/v1/setConfiguration") == 0){
@@ -174,6 +193,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         Writer<StringBuffer> writer(buffer);
         configData.Accept(writer);
         CTAG::AUDIO::SoundProcessorManager::SetConfigurationFromJSON(buffer.GetString());
+        sendString("{}");
         return;
     }
     if(s.find("/api/v1/setPresetData") == 0){
@@ -183,6 +203,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         Writer<StringBuffer> writer(buffer);
         presetData.Accept(writer);
         CTAG::AUDIO::SoundProcessorManager::SetJSONSoundProcessorPreset(id, buffer.GetString());
+        sendString("{}");
         return;
     }
     /*
