@@ -1,0 +1,325 @@
+{
+ "id": "Antique",
+ "isStereo": false,
+ "name": "Antique",
+ "hint": "Antique effect",
+ "params": [
+  {
+   "id": "levels",
+   "type": "group",
+   "name": "Levels",
+   "params": [
+    {
+     "id": "inplevel",
+     "name": "Input level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "hiss",
+   "type": "group",
+   "name": "Hiss / Scrub / Hum",
+   "params": [
+    {
+     "id": "hisslevel",
+     "name": "Hiss level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "hissf",
+     "name": "Hiss frequency",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "hissbw",
+     "name": "Hiss bandwidth",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "hissshp",
+     "name": "Hiss shape",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "scrublev",
+     "name": "Scrub level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "scrubcen",
+     "name": "Scrub center",
+     "type": "int",
+     "min": 30,
+     "max": 13000,
+     "step": 1
+    },
+    {
+     "id": "scrubq",
+     "name": "Scrub Q",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "scrubmodlev",
+     "name": "Scrub mod level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "humlev",
+     "name": "Hum level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "humf",
+     "name": "Hum frequency",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "humshape",
+     "name": "Hum shape",
+     "type": "int",
+     "min": 0,
+     "max": 32767,
+     "step": 1
+    },
+    {
+     "id": "humagr",
+     "name": "Hum aggression",
+     "type": "int",
+     "min": 0,
+     "max": 30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "wowflut",
+   "type": "group",
+   "name": "Wow and flutter",
+   "params": [
+    {
+     "id": "wowl",
+     "name": "Wow level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "wowf",
+     "name": "Wow speed",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "flutl",
+     "name": "Flutter level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "flutf",
+     "name": "Flutter speed",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "clickpop",
+   "type": "group",
+   "name": "Clicks and pops",
+   "params": [
+    {
+     "id": "clickl",
+     "name": "Click level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "clickd",
+     "name": "Click density",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "clickf",
+     "name": "Click frequency",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "clickfmod",
+     "name": "Click frequency mod",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "clickq",
+     "name": "Click Q",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "clickqm",
+     "name": "Click Q mod",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "popl",
+     "name": "Pop level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "popd1",
+     "name": "Pop density 1",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "popd2",
+     "name": "Pop density 2",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "poplen",
+     "name": "Pop pattern length",
+     "type": "int",
+     "min": 0,
+     "max": 500000,
+     "step": 1
+    },
+    {
+     "id": "poplensy",
+     "name": "Sync to wow",
+     "type": "bool"
+    },
+    {
+     "id": "popblen",
+     "name": "Pop blend length",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "popf",
+     "name": "Pop freq",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "popdcy",
+     "name": "Pop decay",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "outp",
+   "type": "group",
+   "name": "Output",
+   "params": [
+    {
+     "id": "outlevel",
+     "name": "Level",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "outfltctr",
+     "name": "Filter center",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "outfltbw",
+     "name": "Filter BW",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "outfltq",
+     "name": "Filter Q",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "hishumpre",
+     "name": "Hiss + hum pre / post",
+     "type": "bool"
+    }
+   ]
+  }
+ ]
+}
