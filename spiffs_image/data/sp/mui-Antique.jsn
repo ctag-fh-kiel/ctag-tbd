@@ -5,15 +5,31 @@
  "hint": "Antique effect",
  "params": [
   {
-   "id": "levels",
+   "id": "input",
    "type": "group",
-   "name": "Levels",
+   "name": "Input",
    "params": [
     {
      "id": "inplevel",
      "name": "Input level",
      "type": "int",
      "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "inpdist",
+     "name": "Input distortion",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
+     "id": "inprepitch",
+     "name": "Input repitch",
+     "type": "int",
+     "min": -4095,
      "max": 4095,
      "step": 1
     }
