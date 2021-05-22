@@ -6,7 +6,12 @@ void ctagSoundProcessorAntique::Process(const ProcessData &data) {
     // input shaping
     MK_FLT_PAR_ABS(fInputLevel, inplevel, 4095.f, 1.f)
     fInputLevel *= fInputLevel;
-    fInputLevel *= 10.f;
+    fInputLevel *= 4.f;
+    MK_FLT_PAR_ABS(fInputDistortion, inpdist, 4095.f, 1.f)
+    fInputDistortion *= fInputDistortion;
+    fInputDistortion *= 20.f;
+    fInputDistortion += 1.f;
+    MK_FLT_PAR(fInputRepitch, inprepitch, 4095.f, 1.f)
 
     // Hum --> electric noise 50/60Hz
     MK_FLT_PAR(fHumLevel, humlev, 4095.f, 1.f)
@@ -31,7 +36,7 @@ void ctagSoundProcessorAntique::Process(const ProcessData &data) {
     fHissLevel *= fHissLevel;
     hissFlt.set_f_q<stmlib::FrequencyApproximation::FREQUENCY_FAST>(fHissFreq/44100.f, fHissQ);
 
-    // wow + flutter
+    // wow + flutter + repitch
     fx.set_size(1.f);
     MK_FLT_PAR_ABS(fLfoWowLev, wowl, 4095.f, 0.1f)
     MK_FLT_PAR_ABS_MIN_MAX(fLfoWowFreq, wowf, 4095.f, 0.1f, 1.f)
@@ -42,7 +47,9 @@ void ctagSoundProcessorAntique::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS_MIN_MAX(fLfoFlutterFreq, flutf, 4095.f, 8.f, 14.f)
     lfoFlutter.SetFrequency(fLfoFlutterFreq);
     fLfoFlutterLev *= 0.5f - lfoFlutter.Process();
-    fx.set_ratio(1.f + fLfoWowLev + fLfoFlutterLev);
+    float ratio = 1.f + fLfoWowLev + fLfoFlutterLev + fInputRepitch;
+    CONSTRAIN(ratio, -1.f, 2.f)
+    fx.set_ratio(ratio);
     clouds::FloatFrame frames[bufSz];
 
     // clicks --> random glitches, fine dust
@@ -105,6 +112,10 @@ void ctagSoundProcessorAntique::Process(const ProcessData &data) {
         cl = cl < fClickDensity ? 1.f : 0.f;
         cl *= rnd.Process(); // make loudness random
         cl = clickFilter.Process<stmlib::FILTER_MODE_BAND_PASS>(cl);
+
+        // level + distort
+        data.buf[i * 2 + processCh] *= fInputLevel;
+        data.buf[i * 2 + processCh] = stmlib::SoftClip(data.buf[i * 2 + processCh] * fInputDistortion) / fInputDistortion;
 
         // mix with input
         frames[i].l = frames[i].r = cl * fClickLevel + pop * fPopLevel + stmlib::SoftClip(data.buf[i * 2 + processCh] * fInputLevel);
@@ -234,6 +245,10 @@ void ctagSoundProcessorAntique::knowYourself(){
     // sectionCpp0
 	pMapPar.emplace("inplevel", [&](const int val){ inplevel = val;});
 	pMapCv.emplace("inplevel", [&](const int val){ cv_inplevel = val;});
+	pMapPar.emplace("inpdist", [&](const int val){ inpdist = val;});
+	pMapCv.emplace("inpdist", [&](const int val){ cv_inpdist = val;});
+	pMapPar.emplace("inprepitch", [&](const int val){ inprepitch = val;});
+	pMapCv.emplace("inprepitch", [&](const int val){ cv_inprepitch = val;});
 	pMapPar.emplace("hisslevel", [&](const int val){ hisslevel = val;});
 	pMapCv.emplace("hisslevel", [&](const int val){ cv_hisslevel = val;});
 	pMapPar.emplace("hissf", [&](const int val){ hissf = val;});
