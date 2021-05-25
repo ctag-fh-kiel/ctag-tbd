@@ -74,6 +74,7 @@ namespace CTAG {
 	atomic<int32_t> popf, cv_popf;
 	atomic<int32_t> popdcy, cv_popdcy;
 	atomic<int32_t> outlevel, cv_outlevel;
+    atomic<int32_t> outdw, cv_outdw;
 	atomic<int32_t> outfltctr, cv_outfltctr;
 	atomic<int32_t> outfltbw, cv_outfltbw;
 	atomic<int32_t> outfltq, cv_outfltq;
