@@ -34,8 +34,9 @@ namespace CTAG {
             CVUnipolar, CVBipolar
         };
 
-        class Calibration {
+        class Calibration final {
         public:
+            Calibration() = delete;
             static void Init();
 
             static void IRAM_ATTR MapCVData(const uint16_t *adcIn, float *mapOut);

@@ -1,5 +1,11 @@
 # CTAG TBD Version Log
 
+## V0.9.17
+- New plugin Antique --> Generates old record / tape effect
+- New plugin Subbotnik by M. Brüssel --> Huge modulations
+- New plugin VctrSyn by M. Brüssel --> Complex vector synth monster
+- Minor bug fixes / architecture improvements
+
 ## V0.9.16
 - New plugin SpaceFX by M. Brüssel (uses [Vult Technology](https://github.com/modlfo))
 - Bjorklund parameter reduction (some setting caused CPU overload)

@@ -3,6 +3,8 @@
 using namespace CTAG::SP;
 
 void ctagSoundProcessorAntique::Process(const ProcessData &data) {
+    // dry buffer
+    float dry[32];
     // input shaping
     MK_FLT_PAR_ABS(fInputLevel, inplevel, 4095.f, 1.f)
     fInputLevel *= fInputLevel;
@@ -114,6 +116,7 @@ void ctagSoundProcessorAntique::Process(const ProcessData &data) {
         cl = clickFilter.Process<stmlib::FILTER_MODE_BAND_PASS>(cl);
 
         // level + distort
+        dry[i] = data.buf[i * 2 + processCh];
         data.buf[i * 2 + processCh] *= fInputLevel;
         data.buf[i * 2 + processCh] = stmlib::SoftClip(data.buf[i * 2 + processCh] * fInputDistortion) / fInputDistortion;
 
@@ -142,6 +145,7 @@ void ctagSoundProcessorAntique::Process(const ProcessData &data) {
     fOutCutHp /= 44100.f;
     lpMaster.set_f_q<stmlib::FrequencyApproximation::FREQUENCY_FAST>(fOutCutLp, fOutQ);
     hpMaster.set_f_q<stmlib::FrequencyApproximation::FREQUENCY_FAST>(fOutCutHp, fOutQ);
+    MK_FLT_PAR_ABS(fWetDry, outdw, 4095.f, 1.f)
 
     // Scrub --> simulates noise from play head mechanical motion
     MK_FLT_PAR_ABS(fScrubLevel, scrublev, 4095.f, 1.f)
@@ -173,7 +177,7 @@ void ctagSoundProcessorAntique::Process(const ProcessData &data) {
         }else{
             tmp = hpMaster.Process<stmlib::FILTER_MODE_HIGH_PASS>(lpMaster.Process<stmlib::FILTER_MODE_LOW_PASS>(frames[i].l + scrub + hum + his));
         }
-        data.buf[i * 2 + processCh] = stmlib::SoftClip(tmp * fOutLevel);
+        data.buf[i * 2 + processCh] = stmlib::Crossfade(dry[i], stmlib::SoftClip(tmp * fOutLevel), fWetDry);
     }
 }
 
@@ -311,6 +315,8 @@ void ctagSoundProcessorAntique::knowYourself(){
 	pMapCv.emplace("popdcy", [&](const int val){ cv_popdcy = val;});
 	pMapPar.emplace("outlevel", [&](const int val){ outlevel = val;});
 	pMapCv.emplace("outlevel", [&](const int val){ cv_outlevel = val;});
+    pMapPar.emplace("outdw", [&](const int val){ outdw = val;});
+    pMapCv.emplace("outdw", [&](const int val){ cv_outdw = val;});
 	pMapPar.emplace("outfltctr", [&](const int val){ outfltctr = val;});
 	pMapCv.emplace("outfltctr", [&](const int val){ cv_outfltctr = val;});
 	pMapPar.emplace("outfltbw", [&](const int val){ outfltbw = val;});

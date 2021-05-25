@@ -307,6 +307,14 @@
      "step": 1
     },
     {
+     "id": "outdw",
+     "name": "Dry / wet",
+     "type": "int",
+     "min": 0,
+     "max": 4095,
+     "step": 1
+    },
+    {
      "id": "outfltctr",
      "name": "Filter center",
      "type": "int",

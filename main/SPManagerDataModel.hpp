@@ -35,7 +35,7 @@ using namespace rapidjson;
 
 namespace CTAG {
     namespace AUDIO {
-        class SPManagerDataModel : public CTAG::SP::ctagDataModelBase {
+        class SPManagerDataModel final : public CTAG::SP::ctagDataModelBase {
         public:
             SPManagerDataModel();
 
