@@ -17,7 +17,7 @@ jobs:
       with:
         submodules: 'recursive'
         
-    - name: Echo removed apps
+    - name: Remove apps
       run: |
         echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
 
