@@ -20,3 +20,17 @@ jobs:
     - name: Echo removed apps
       run: |
         echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
+
+    - name: Build binaries
+        uses: ctag-fh-kiel/esp-idf-action@1
+
+    - name: Archive binaries
+      run: |
+        zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
+
+    - name: Upload binary
+      uses: actions/upload-artifact@v2.2.1
+      with:
+        name: Custom tbd firmware
+        # A file, directory or wildcard pattern that describes what to upload
+        path: ./binaries.zip
