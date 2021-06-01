@@ -19,4 +19,4 @@ jobs:
         
     - name: Echo removed apps
       run: |
-        echo "${{ github.event.inputs.apps }}" > python .github/remove-apps.py
+        echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
