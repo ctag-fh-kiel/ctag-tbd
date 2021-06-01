@@ -22,7 +22,7 @@ jobs:
         echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
 
     - name: Build binaries
-        uses: ctag-fh-kiel/esp-idf-action@1
+      uses: ctag-fh-kiel/esp-idf-action@1
 
     - name: Archive binaries
       run: |
