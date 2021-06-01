@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: 'Apps to be removed from tbd.'  
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+        
+    - name: Echo inputs
+      run: |
+        echo "Deleted apps: ${{ github.event.inputs.apps }}"
