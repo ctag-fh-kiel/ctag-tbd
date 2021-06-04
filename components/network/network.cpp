@@ -71,7 +71,7 @@ void Network::wifi_init_sta(void) {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     // Add random connection delay up to 5 seconds for multimodule setups
-    vTaskDelay(esp_random() / (UINT32_MAX/500));
+    vTaskDelay(esp_random() / (UINT32_MAX / 5000 * portTICK_PERIOD_MS));
     ESP_ERROR_CHECK(esp_wifi_start());
 
     ESP_LOGI(TAG, "wifi_init_sta finished.");
