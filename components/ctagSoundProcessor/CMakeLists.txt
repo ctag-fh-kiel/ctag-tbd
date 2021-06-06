@@ -41,6 +41,8 @@ file(GLOB SRCS_FILES
         polypad/*.cpp
         filters/*.hpp
         filters/*.cpp
+        fx/*.hpp
+        fx/*.cpp
         tesselode/*.h
         tesselode/*.cpp
         airwindows/*.hpp
