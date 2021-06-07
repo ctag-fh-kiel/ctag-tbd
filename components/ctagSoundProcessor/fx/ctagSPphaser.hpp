@@ -25,53 +25,70 @@ https://paulbatchelor.github.io/res/soundpipe/docs/phaser.html
 Adapted by M. Brüssel from the Soundpipe version.
 */
 
-class ctagSPphaser
-{
-  public:
-    ctagSPphaser() {Init();}
-    void Init();
-    float Process(float in);  // Mono
-    void Process(float* in_l, float* in_r ,float* out_l, float* out_r); // Stereo
 
-    inline void SetSampleRate(float sr) { fSamplingFreq_ = sr;  }
-    inline void SetMaxNotch1Freq(float maxNotch1Freq) {  maxNotch1Freq_ = maxNotch1Freq; }
-    inline void SetMinNotch1Freq(float minNotch1Freq) {  minNotch1Freq_ = minNotch1Freq; }
-    inline void SetNotchWidth(float notchWidth) {  notchWidth_ = notchWidth; }
-    inline void SetNotchFreq(float notchFreq) {  notchFreq_ = notchFreq; }
-    inline void SetVibratoMode(bool activate) {  vibratoMode_ = (float)activate; }
-    inline void SetDepth(float depth) { depth_ = depth; }
-    inline void SetFeedbackGain(float feedbackGain) { feedbackGain_ = feedbackGain; }
-    inline void SetInvert(bool activate) { invert_ = (float)activate; }
-    inline void SetLevel(float level) { level_ = level; }
-    inline void SetLfoBpm(float lfobpm) { lfobpm_ = lfobpm; }
+namespace CTAG::SP {
 
-  private:
-    float fRec4[3];
-    float fRec3[3];
-    float fRec2[3];
-    float fRec1[3];
-    float fRec11[3];
-    float fRec10[3];
-    float fRec9[3];
-    float fRec8[3];
-    int iVec0[2];
-    float fRec5[2];
-    float fRec6[2];
-    float fRec0[2];
-    float fRec7[2];
 
-    float level_;
-    float vibratoMode_;
-    float depth_;
-    int fSamplingFreq_;
-    int iConst0;
-    float fConst1;
-    float notchWidth_;
-    float notchFreq_;
-    float minNotch1Freq_;
-    float maxNotch1Freq_;
-    float fConst2;
-    float lfobpm_;
-    float feedbackGain_;
-    float invert_;
-};
+    class ctagSPphaser {
+    public:
+        ctagSPphaser() { Init(); }
+
+        void Init();
+
+        float Process(float in);  // Mono
+        void Process(float *in_l, float *in_r, float *out_l, float *out_r); // Stereo
+
+        inline void SetSampleRate(float sr) { fSamplingFreq_ = sr; }
+
+        inline void SetMaxNotch1Freq(float maxNotch1Freq) { maxNotch1Freq_ = maxNotch1Freq; }
+
+        inline void SetMinNotch1Freq(float minNotch1Freq) { minNotch1Freq_ = minNotch1Freq; }
+
+        inline void SetNotchWidth(float notchWidth) { notchWidth_ = notchWidth; }
+
+        inline void SetNotchFreq(float notchFreq) { notchFreq_ = notchFreq; }
+
+        inline void SetVibratoMode(bool activate) { vibratoMode_ = (float) activate; }
+
+        inline void SetDepth(float depth) { depth_ = depth; }
+
+        inline void SetFeedbackGain(float feedbackGain) { feedbackGain_ = feedbackGain; }
+
+        inline void SetInvert(bool activate) { invert_ = (float) activate; }
+
+        inline void SetLevel(float level) { level_ = level; }
+
+        inline void SetLfoBpm(float lfobpm) { lfobpm_ = lfobpm; }
+
+    private:
+        float fRec4[3];
+        float fRec3[3];
+        float fRec2[3];
+        float fRec1[3];
+        float fRec11[3];
+        float fRec10[3];
+        float fRec9[3];
+        float fRec8[3];
+        int iVec0[2];
+        float fRec5[2];
+        float fRec6[2];
+        float fRec0[2];
+        float fRec7[2];
+
+        float level_;
+        float vibratoMode_;
+        float depth_;
+        int fSamplingFreq_;
+        int iConst0;
+        float fConst1;
+        float notchWidth_;
+        float notchFreq_;
+        float minNotch1Freq_;
+        float maxNotch1Freq_;
+        float fConst2;
+        float lfobpm_;
+        float feedbackGain_;
+        float invert_;
+    };
+
+}
