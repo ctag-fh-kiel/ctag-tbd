@@ -26,8 +26,9 @@ respective component folders / files if different from this license.
 
 namespace CTAG {
     namespace REST {
-        class RestServer {
+        class RestServer final{
         public:
+            RestServer() = delete;
             static esp_err_t StartRestServer();
 
         private:

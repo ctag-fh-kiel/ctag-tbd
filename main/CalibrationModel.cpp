@@ -32,10 +32,6 @@ CTAG::CAL::CalibrationModel::CalibrationModel() {
     loadJSON(m, MODELJSONFN);
 }
 
-CTAG::CAL::CalibrationModel::~CalibrationModel() {
-
-}
-
 void CTAG::CAL::CalibrationModel::PrintSelf() {
     printJSON(m);
 }
