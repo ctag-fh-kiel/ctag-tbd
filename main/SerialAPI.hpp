@@ -9,6 +9,7 @@ using namespace std;
 namespace CTAG::SAPI{
     class SerialAPI {
     public:
+        SerialAPI() = delete;
         static void StartSerialAPI();
     private:
         static void processAPICommand(const string &cmd);

@@ -30,6 +30,7 @@ namespace CTAG {
     namespace DRIVERS {
         class ADC {
         public:
+            ADC() = delete;
             static void InitADCSystem();
 
             static void SetCVINUnipolar(int ch);

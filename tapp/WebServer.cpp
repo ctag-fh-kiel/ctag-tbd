@@ -316,6 +316,43 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
+    server.resource["^/api/v1/srom/getSize$"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        string id = request->path_match[1].str();
+        string content = request->content.string();
+        string cmd = "{\"cmd\":\"/api/v1/srom/getSize\"}";
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "text/plain");
+        serial->writeString(cmd);
+        response->write(serial->readString(), header);
+    };
+    // TODO API for serial sample rom writing
+    /*
+    server.resource["^/api/v1/srom/erase$"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        string cmd = "{\"cmd\":\"/api/v1/srom/erase\"}";
+
+        serial->writeString(cmd);
+        serial->readString();
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+    server.resource["^/api/v1/srom/upRaw"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        string id = request->path_match[1].str();
+        int size = request->content.size();
+        string cmd = "{\"cmd\":\"/api/v1/srom/upRaw\", \"size\":";
+        cmd += std::to_string(size);
+        cmd += "}";
+
+        serial->writeString(cmd);
+        serial->readString();
+        cerr << "Writing blob" << endl;
+        serial->writeBLOB(request->content.string());
+        serial->readString();
+
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+*/
     // Default GET-example. If no other matches, this anonymous function will be called.
     // Will respond with content in the web/-directory, and its subdirectories.
     // Default file: index.html

@@ -365,7 +365,11 @@ void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
 }
 
 void Codec::setupI2SWM8978() {
+#ifdef CONFIG_TBD_PLATFORM_V2
     ESP_LOGI("WM8978", "Initializing CODEC I2S");
+#elif CONFIG_TBD_PLATFORM_AEM
+    ESP_LOGI("WM8974", "Initializing CODEC I2S");
+#endif
     // allow GPIO0 to be clock out
     gpio_config_t io_conf;
     io_conf.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_DISABLE;

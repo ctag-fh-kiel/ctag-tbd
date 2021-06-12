@@ -38,4 +38,4 @@ if [[ $answer = y* ]]
     echo -e "\nTrying to use existing binaries in local folder"
 fi
 
-python $IDF_PATH/components/esptool_py/esptool/esptool.py -p /dev/cu.SLAB_USBtoUART -b 921600 --before default_reset --after hard_reset --chip esp32 write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x8000 $PARTITIONS 0xd000 $OTA 0x1000 $BOOTLOADER 0x10000 $APP 0x610000 $STORAGE
+python $IDF_PATH/components/esptool_py/esptool/esptool.py -p /dev/cu.usbserial-1420 -b 460800 --before default_reset --after hard_reset --chip esp32 write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB 0x8000 $PARTITIONS 0xd000 $OTA 0x1000 $BOOTLOADER 0x10000 $APP 0x610000 $STORAGE

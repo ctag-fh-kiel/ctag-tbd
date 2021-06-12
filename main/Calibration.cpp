@@ -254,7 +254,7 @@ void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr
 }
 
 void Calibration::ConfigCVChannels(CVConfig ch0, CVConfig ch1, CVConfig ch2, CVConfig ch3) {
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     if (ch0 == CVConfig::CVUnipolar)
         DRIVERS::ADC::SetCVINUnipolar(0);
     else
@@ -272,7 +272,7 @@ void Calibration::ConfigCVChannels(CVConfig ch0, CVConfig ch1, CVConfig ch2, CVC
 }
 
 void Calibration::RequestCalibrationOnReboot() {
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     model->SetCalibrateOnReboot(true);
 #endif
 }

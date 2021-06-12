@@ -63,8 +63,6 @@ int main(int ac, char **av) {
     char input;
     std::cin.get(input);
 
-    //SimSPManager::StopSoundProcessor();
-
     webServer.Stop();
 
     return 0;
