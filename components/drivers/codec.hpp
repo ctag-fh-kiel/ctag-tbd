@@ -31,6 +31,7 @@ namespace CTAG {
 
         class Codec {
         public:
+            Codec() = delete;
             static void InitCodec();
 
             static void HighPassEnable();
@@ -46,6 +47,7 @@ namespace CTAG {
             static void WriteBuffer(float *buf, uint32_t sz);
 
         private:
+
             static void initSPI();
             static void freeSPI();
 
@@ -66,6 +68,7 @@ namespace CTAG {
 
             // this code is from someone great, i could not trace back the original copyright
             static u8 WM8978_Init(void);
+            static u8 WM8974_Init(void);
 
             static void WM8978_ADDA_Cfg(u8 dacen, u8 adcen);
 

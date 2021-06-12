@@ -35,8 +35,9 @@ respective component folders / files if different from this license.
 
 namespace CTAG {
     namespace OTA {
-        class OTAManager {
+        class OTAManager final {
         public:
+            OTAManager() = delete;
             static esp_err_t InitiateOTA(httpd_req_t *req);
 
             static esp_err_t PostHandlerSPIFFS(httpd_req_t *req);

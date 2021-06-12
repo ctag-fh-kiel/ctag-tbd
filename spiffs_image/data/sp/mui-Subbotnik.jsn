@@ -1,0 +1,148 @@
+{
+   "id": "Subbotnik", "isStereo": true, "name": "Subbotnik", "hint": "Westcoast Style Plugin", "params":
+   [
+      {  
+          "id": "Global", "name": "Global", "type": "group", "params":  
+           [
+               {"id":"Gate","name":"Gate Oscillators and Envelopes","type":"bool"},
+               {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1},
+               {"id":"xFadeOscAoscB","name":"(0) CrossFade MacOsc A <=> MacOsc B","type":"int","min": -2048,"max": 2047,"step": 1}
+           ]
+       },
+      {
+         "id": "MacOsc_A", "name": "MacOsc A (Includes LFO Destinations 1-4)", "type": "group", "params":  
+         [
+            {"id": "osc_active_A","name": "Enable MacOsc A n/y","type": "bool"},
+            {"id": "shape_A","name": "Shape A","type": "int","min": 0,"max": 46, "step": 1},
+            {"id": "vol_A","name": "(1) Volume A","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "pitch_A","name": "(2) Pitch (100 cent per semitone) A","type": "int","min": 0,"max": 128000,"step": 1},
+            {"id": "tune_A","type": "int","name": "Fine Tune +- 1200 Cent A","min": -1200,"max": 1200,"step": 1},
+            {"id": "timbre_A","name": "(3) Timbre A","type": "int","min": 0,"max": 32767,"step": 1},
+            {"id": "color_A","name": "(4) Color A","type": "int","min": 0,"max": 32767,"step": 1},
+            {"id": "xModActive_A","name": "Enable CrossModulation from Osc B n/y","type": "bool"},
+            {"id": "am_xModB_A","name": "AM xModB Amount A","type": "int","min": 0,"max": 4095,"step": 1}, 
+            {"id": "freqX_factor_A","name": "Frequency xModB Factor A","type": "int","min": 0,"max": 4095,"step": 1}, 
+            {"id": "freq_xModB_A","name": "Frequency xModB Amount A","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "timbre_xModB_A","name": "Timbre xModB Amount A","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "color_xModB_A","name": "Color xModB Amount A","type": "int","min": 0,"max": 4095,"step": 1}
+         ]
+      },
+      {
+         "id": "MacOsc_B", "name": "MacOsc B (Includes LFO Destinations 5-8)", "type": "group", "params":  
+         [
+            {"id": "osc_active_B","name": "Enable MacOsc B n/y","type": "bool"},
+            {"id": "shape_B","name": "Shape B","type": "int","min": 0,"max": 46, "step": 1},
+            {"id": "vol_B","name": "(5) Volume B","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "pitch_B","name": "(6) Pitch (100 cent per semitone) B ","type": "int","min": 0,"max": 128000,"step": 1},
+            {"id": "tune_B","type": "int","name": "Fine Tune +- 1200 Cent B","min": -1200,"max": 1200,"step": 1},
+            {"id": "timbre_B","name": "(7) Timbre B","type": "int","min": 0,"max": 32767,"step": 1},
+            {"id": "color_B","name": "(8) Color B","type": "int","min": 0,"max": 32767,"step": 1},
+            {"id": "xModActive_B","name": "Enable CrossModulation from Osc B n/y","type": "bool"},
+            {"id": "am_xModA_B","name": "AM xModA Amount B","type": "int","min": 0,"max": 4095,"step": 1}, 
+            {"id": "freqX_factor_B","name": "Frequency xModA Factor B","type": "int","min": 0,"max": 4095,"step": 1}, 
+            {"id": "freq_xModA_B","name": "Frequency xModA Amount B","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "timbre_xModA_B","name": "Timbre xModA Amount B","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "color_xModA_B","name": "Color xModA Amount B","type": "int","min": 0,"max": 4095,"step": 1}
+         ]
+      },
+      {
+          "id": "Filter", "name": "Low Pass Filter (please note: some shapes force the SVF)", "type": "group", "params":  
+           [
+               {"id": "enableFilter","name": "Filter enable n/y","type": "bool"},
+               {"id": "filterIsSVF","name": "Diode Ladder <=> State Variable Filter","type": "bool"},
+               {"id":"WavefolderAmnt","name":"(9) Filter Drive / Wavefolder Amount","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"Cutoff","name":"(10) Cutoff Frequency","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"Resonance","name":"Resonance","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ADfilterAmnt","name":"AD EG Filter amount","type":"int","min":0,"max":4095,"step":1}
+            ]  
+      },
+      {
+         "id": "ADenv","name": "AD EG (Note: for a 'lowpass Gate' kind of EG please set the Filter's Cutoff Frequency and EG-amount to your liking first)","type": "group","params": 
+         [
+            {"id": "enableADeg","name": "Enable AD-EG n/y","type": "bool"},
+            {"id": "ADegIsLowpassGate","name": "AD-EG to Volume+Filter <=> Filter (Filter must be set accordingly!)","type": "bool"},
+            {"id": "attackADeg","name": "(16) Attack AD-EG","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "decayADeg","name": "(17) Decay AD-EG","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "loopADeg","name": "Loop AD-EG while Gate is active n/y","type": "bool"}
+         ]
+       },
+      {
+         "id": "VolADSRenv","name": "Volume ADSR EG","type": "group","params": 
+         [
+            {"id": "enableVolADSReg","name": "Enable Volume ADSR-EG  n/y","type": "bool"},
+            {"id": "attackVolADSReg","name": "Attack Volume ADSR-EG","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "decayVolADSReg","name": "Decay Volume ADSR-EG","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "sustainVolADSReg","name": "Sustain Volume ADSR-EG","type": "int","min": 0,"max": 4095,"step": 1},
+            {"id": "releaseVolADSReg","name": "Release Volume ADSR-EG","type": "int","min": 0,"max": 4095,"step": 1}
+         ]
+       },
+      {
+         "id": "LFOs","name": "LFO Types:  0)SINE 1)SQUARE 2)SINE LOW 3)SINE HI 4)TRI LOW 5)TRI HI 6)S&H / Destination: 0)Xfade 1)Vol_A 2)Pitch_A 3)Timbre_A 4)Color_A 5)Vol_B 6)Pitch_B 7)Timbre_B 8)Color_B 9)Drive 10)Cutoff","type": "group","params": 
+         [
+            {"id": "lfoActive_1","name": "Enable LFO 1 n/y","type": "bool"},
+            {"id":"lfoDestination_1","name":"Destination LFO 1","hint": "MacOscA 1-4, MacOscB 5-8","type": "int","min": 0,"max": 10,"step": 1},
+            {"id":"lfoType_1","name":"Type LFO 1","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_1","name":"(11) Modulation Speed LFO 1","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_1","name":"Modulation Intensity LFO 1","type":"int","min":0,"max":4095,"step":1},
+            
+            {"id": "lfoActive_2","name": "Enable LFO 2 n/y","type": "bool"},
+            {"id":"lfoDestination_2","name":"Destination LFO 2","hint": "MacOscA 1-4, MacOscB 5-8","type": "int","min": 0,"max": 10,"step": 1},
+            {"id":"lfoType_2","name":"Type LFO 2","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_2","name":"(12) Modulation Speed LFO 2","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_2","name":"Modulation Intensity LFO 2","type":"int","min":0,"max":4095,"step":1},
+            
+            {"id": "lfoActive_3","name": "Enable LFO 3 n/y","type": "bool"},
+            {"id":"lfoDestination_3","name":"Destination LFO 3","hint": "MacOscA 1-4, MacOscB 5-8","type": "int","min": 0,"max": 10,"step": 1},
+            {"id":"lfoType_3","name":"Type LFO 3","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_3","name":"(13) Modulation Speed LFO 3","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_3","name":"Modulation Intensity LFO 3","type":"int","min":0,"max":4095,"step":1},
+
+            {"id": "lfoActive_4","name": "Enable LFO 4 n/y","type": "bool"},
+            {"id":"lfoDestination_4","name":"Destination LFO 4","hint": "MacOscA 1-4, MacOscB 5-8","type": "int","min": 0,"max": 10,"step": 1},
+            {"id":"lfoType_4","name":"Type LFO 4","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_4","name":"(14) Modulation Speed LFO 4","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_4","name":"Modulation Intensity LFO 4","type":"int","min":0,"max":4095,"step":1},
+            
+            {"id": "lfoActive_5","name": "Enable LFO 5 n/y","type": "bool"},
+            {"id":"lfoDestination_5","name":"Destination LFO 5","hint": "MacOscA 1-4, MacOscB 5-8","type": "int","min": 0,"max": 10,"step": 1},
+            {"id":"lfoType_5","name":"Type LFO 5","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_5","name":"(15) Modulation Speed LFO 5","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_5","name":"Modulation Intensity LFO 5","type":"int","min":0,"max":4095,"step":1}
+         ]
+       },
+       {
+            "id": "LFOsToVariSpeeds", "name": "LFOs++ Types:  0)SINE, 1)SQR 2)SINE LOW 3)SINE HI 4)TRI LOW 5)TRI HI 6)S&H / Dest: 0)Xfade 1)Vol_A 2)Pitch_A 3)Timbre_A 4)Color_A 5)Vol_B 6)Pitch_B 7)Timbre_B 8)Color_B 9)Drive 10)Cutoff 11)LFO1 12)LFO2 13)LFO3 14)LFO4 15)LFO5 16)AD-Attack 17)AD-Decay", "type": "group", "params":  
+            [
+               {"id":"lfoppActive_1","name":"LFO++ 1 active n/y","type":"bool"},
+               {"id":"lfoppDestination_1","name":"Destination LFO++ 1","hint": "LFO1-LFO4, AD-Attack, AD-Decay","type": "int","min": 0,"max": 17,"step": 1},
+               {"id":"lfoppType_1","name":"Type LFO++ 1","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+               {"id":"lfoppSpeed_1","name":"Modulation Speed LFO++ 1","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"lfoppAmnt_1","name":"Modulation Intensity LFO++ 1","type":"int","min":0,"max":4095,"step":1}, 
+               
+               {"id":"lfoppActive_2","name":"LFO++ 2 active n/y","type":"bool"},
+               {"id":"lfoppDestination_2","name":"Destination LFO++ 2","hint": "LFO1-LFO4, AD-Attack, AD-Decay","type": "int","min": 0,"max": 17,"step": 1},
+               {"id":"lfoppType_2","name":"Type LFO++ 2","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+               {"id":"lfoppSpeed_2","name":"Modulation Speed LFO++ 2","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"lfoppAmnt_2","name":"Modulation Intensity LFO++ 2","type":"int","min":0,"max":4095,"step":1}, 
+
+               {"id":"lfoppActive_3","name":"LFO++ 3 active n/y","type":"bool"},
+               {"id":"lfoppDestination_3","name":"Destination LFO++ 3","hint": "LFO1-LFO4, AD-Attack, AD-Decay","type": "int","min": 0,"max": 17,"step": 1},
+               {"id":"lfoppType_3","name":"Type LFO++ 3","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+               {"id":"lfoppSpeed_3","name":"Modulation Speed LFO++ 3","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"lfoppAmnt_3","name":"Modulation Intensity LFO++ 3","type":"int","min":0,"max":4095,"step":1}, 
+               
+               {"id":"lfoppActive_4","name":"LFO++ 4 active n/y","type":"bool"},
+               {"id":"lfoppDestination_4","name":"Destination LFO++ 4","hint": "LFO1-LFO4, AD-Attack, AD-Decay","type": "int","min": 0,"max": 17,"step": 1},
+               {"id":"lfoppType_4","name":"Type LFO++ 4","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+               {"id":"lfoppSpeed_4","name":"Modulation Speed LFO++ 4","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"lfoppAmnt_4","name":"Modulation Intensity LFO++ 4","type":"int","min":0,"max":4095,"step":1}, 
+               
+               {"id":"lfoppActive_5","name":"LFO++ 5 active n/y","type":"bool"},
+               {"id":"lfoppDestination_5","name":"Destination LFO++ 5","hint": "LFO1-LFO4, AD-Attack, AD-Decay","type": "int","min": 0,"max": 17,"step": 1},
+               {"id":"lfoppType_5","name":"Type LFO++ 5","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+               {"id":"lfoppSpeed_5","name":"Modulation Speed LFO++ 5","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"lfoppAmnt_5","name":"Modulation Intensity LFO++ 5","type":"int","min":0,"max":4095,"step":1}
+            ]
+       } 
+   ] 
+}

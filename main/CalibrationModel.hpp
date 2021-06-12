@@ -35,11 +35,9 @@ using namespace rapidjson;
 
 namespace CTAG {
     namespace CAL {
-        class CalibrationModel : public CTAG::SP::ctagDataModelBase {
+        class CalibrationModel final : public CTAG::SP::ctagDataModelBase {
         public:
             CalibrationModel();
-
-            ~CalibrationModel();
 
             void CreateMatrix();
 

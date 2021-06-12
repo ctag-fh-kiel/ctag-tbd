@@ -37,8 +37,9 @@ using namespace CTAG::SP;
 
 namespace CTAG {
     namespace AUDIO {
-        class SoundProcessorManager {
+        class SoundProcessorManager final {
         public:
+            SoundProcessorManager() = delete;
             static void StartSoundProcessor();
 
             static const char *GetCStrJSONSoundProcessors() {
