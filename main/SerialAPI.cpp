@@ -9,6 +9,7 @@
 #include "Calibration.hpp"
 #include "driver/gpio.h"
 #include "driver/uart.h"
+#include "esp_spi_flash.h"
 
 using namespace rapidjson;
 
@@ -210,7 +211,41 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
 
     otaAPI
      */
+    // sample rom API
+    if(s.find("/api/v1/srom/getSize") == 0){
+        sendString(to_string(CONFIG_SAMPLE_ROM_SIZE));
+        return;
+    }
+    // TODO: implement sample rom write with serial api, it is super slow...
+    /*
+    if(s.find("/api/v1/srom/erase") == 0){
+        CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+        // erase flash / lengthy operation
+        ESP_LOGI("SERIAL", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
+        //ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
+        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+        sendString("{}");
+        return;
+    }
+    if(s.find("/api/v1/srom/upRaw") == 0){
+        int size = d["size"].GetInt();
+        // erase flash / lengthy operation
+        ESP_LOGI("SERIAL", "Receiving srom BLOB size %d bytes", size);
+        sendString("{}");
+        int cnt = 0, len;
+        char data;
 
+        do{
+            len = uart_read_bytes(UART_NUM_0, (uint8_t *)&data, 1, 500 / portTICK_RATE_MS);
+            cnt += len;
+        }while(cnt != size);
+
+        sendString("{}");
+        ESP_LOGI("SERIAL", "Received %d bytes", cnt);
+
+        return;
+    }
+    */
 }
 
 void CTAG::SAPI::SerialAPI::sendString(const string &s) {

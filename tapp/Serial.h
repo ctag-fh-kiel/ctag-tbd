@@ -1,6 +1,9 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <vector>
+#include <iterator>
+#include <cstdint>
 
 class Serial
 {
@@ -15,6 +18,10 @@ public:
     {
         std::string cmd = stx + s + etx;
         boost::asio::write(serial,boost::asio::buffer(cmd.c_str(),cmd.size()));
+    }
+
+    void writeBLOB(std::string const & s){
+        boost::asio::write(serial,boost::asio::buffer(s.c_str(), s.size()));
     }
 
     std::string readString()
@@ -47,6 +54,7 @@ private:
     boost::asio::serial_port serial;
     const char stx = 2;
     const char etx = 3;
+    const char soh = 1;
     enum ProtocolStates {
         IDLE = 0x00,
         RCV = 0x01
