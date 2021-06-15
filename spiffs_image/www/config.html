@@ -42,6 +42,13 @@
             <option value="ch1">Channel 1</option>
         </ons-select>
     </ons-list-item>
+    <ons-list-header>CH0 To CH1 Daisy Chain</ons-list-header>
+    <ons-list-item>
+        <ons-select id="ch01-daisy">
+            <option value="off">Off</option>
+            <option value="on">On</option>
+        </ons-select>
+    </ons-list-item>
     <ons-list-header>CH0 To Stereo</ons-list-header>
     <ons-list-item>
         <ons-select id="ch0-stereo-config">
@@ -179,6 +186,7 @@
                     $('#cv2-config').val(data["cv_ch2"]);
                     $('#cv3-config').val(data["cv_ch3"]);
                     $('#ng-config').val(data["ng_config"]);
+                    $('#ch01-daisy').val(data["ch01_daisy"]);
                     $('#ch0-stereo-config').val(data["ch0_toStereo"]);
                     $('#ch1-stereo-config').val(data["ch1_toStereo"]);
                     $('#ch0-sco-config').val(data["ch0_outputSoftClip"]);
@@ -216,6 +224,12 @@
                     });
                     $('#ng-config').on('change', function () {
                         cfgData.ng_config = $('#ng-config').val();
+                        $.postq('myq', 'api/v1/setConfiguration',
+                            JSON.stringify(cfgData), 'json'
+                        );
+                    });
+                    $('#ch01-daisy').on('change', function () {
+                        cfgData.ch01_daisy = $('#ch01-daisy').val();
                         $.postq('myq', 'api/v1/setConfiguration',
                             JSON.stringify(cfgData), 'json'
                         );
