@@ -186,7 +186,15 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 isStereoCH0 = sp[0]->GetIsStereo();
                 sp[0]->Process(pd);
             }
-            if (!isStereoCH0) if (sp[1] != nullptr) sp[1]->Process(pd); // 0 is not a stereo processor
+            if (!isStereoCH0){
+                // check if ch0 -> ch1 daisy chain, i.e. use output of ch0 as input for ch1
+                if(ch01Daisy){
+                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                        fbuf[i * 2 + 1] = fbuf[i * 2];
+                    }
+                }
+                if (sp[1] != nullptr) sp[1]->Process(pd); // 0 is not a stereo processor
+            }
             xSemaphoreGive(processMutex);
         } else {
             // mute audio
@@ -318,6 +326,7 @@ SemaphoreHandle_t SoundProcessorManager::processMutex;
 atomic<uint32_t> SoundProcessorManager::ledBlink;
 atomic<uint32_t> SoundProcessorManager::ledStatus;
 atomic<uint32_t> SoundProcessorManager::noiseGateCfg;
+atomic<uint32_t> SoundProcessorManager::ch01Daisy;
 atomic<uint32_t> SoundProcessorManager::toStereoCH0;
 atomic<uint32_t> SoundProcessorManager::toStereoCH1;
 atomic<uint32_t> SoundProcessorManager::runAudioTask;
@@ -462,6 +471,12 @@ void SoundProcessorManager::updateConfiguration() {
         noiseGateCfg = 3;
     }
 
+    // ch01 daisy
+    if (model->GetConfigurationData("ch01_daisy").compare("off") == 0) {
+        ch01Daisy = 0;
+    }else if(model->GetConfigurationData("ch01_daisy").compare("on") == 0){
+        ch01Daisy = 1;
+    }
     // mono to stereo channel cfg
     if (model->GetConfigurationData("ch0_toStereo").compare("off") == 0) {
         toStereoCH0 = 0;

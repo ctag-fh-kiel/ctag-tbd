@@ -1,5 +1,10 @@
 # CTAG TBD Version Log
 
+## preV0.9.18
+- New plugin MSxxNoise by M. Brüssel --> Models MS20 filter and [Stone Phaser](https://github.com/jpcima/stone-phaser)
+- Config option to daisy chain CH0 out -> CH1 in, that is route CH0 output to CH1 input in software
+- Minor bug fixes / architecture improvements
+
 ## V0.9.17
 - New plugin Antique --> Generates old record / tape effect
 - New plugin Subbotnik by M. Brüssel --> Huge modulations
