@@ -53,10 +53,11 @@ DEALINGS IN THE SOFTWARE.
 
  */
 
+#pragma once
+
 #ifndef FAUSTFLOAT
 #define FAUSTFLOAT float
 #endif
-
 
 namespace CTAG::SP{
     class ctagPebble
