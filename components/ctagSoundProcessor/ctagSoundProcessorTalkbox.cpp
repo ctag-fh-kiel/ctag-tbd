@@ -108,10 +108,10 @@ void ctagSoundProcessorTalkbox::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(f_CarrierBalance, CarrierBalance, 4095.f, 1.f)
     MK_FLT_PAR_ABS(f_CarrierExternalBalance, CarrierExternalBalance, 4095.f, 1.f)
     MK_FLT_PAR_ABS(f_CarrierLeakage, CarrierLeak, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_POW(f_ExtCarrierAmnt, ExtCarrierAmnt, 4095.f, 4.f)
+    MK_FLT_PAR_ABS_POW(f_ExtCarrierAmnt, ExtCarrierAmnt, 4095.f, 6.f)
     MK_TRIG_PAR(t_AccentBendIsActive, AccentBendIsActive)
     MK_FLT_PAR_ABS(f_AccentBend, AccentBend, 4095.f, 190.f)
-    MK_FLT_PAR_ABS_POW(f_ModulatorAmnt, ModulatorAmnt, 4095.f, 3.f)
+    MK_FLT_PAR_ABS_POW(f_ModulatorAmnt, ModulatorAmnt, 4095.f, 4.f)
     MK_FLT_PAR_ABS_POW(f_ModulatorLeakage, ModulatorLeakage, 4095.f, 2.f)
     MK_FLT_PAR_ABS_POW(f_Volume, Volume, 4095.f, 8.f)  // We use a high value to have headroom, so lower the volume normally
 
