@@ -1,0 +1,45 @@
+{
+   "id": "Talkbox", "isStereo": true, "name": "Talkbox", "hint": "Oscillator+Suboscillators+Phaser+Talkbox Effect", "params":
+   [
+        {  
+          "id": "GlobalMixer", "name": "Global / Mixer (Select low Vocoder quality for less noisy and faster action of sliders on GUI)", "type": "group", "params":  
+           [
+               {"id": "MasterPitch","type": "int","name": "Internal Carrier Pitch (map CV here)","min": -48,"max": 48,"step": 1},
+               {"id": "MasterTune","type": "int","name": "Internal Carrier Tune +- 1200 Cent","min": -1200,"max": 1200,"step": 1},  
+               {"id":"CarrierAmnt","name":"Total Carrier Level","type":"int","min":0,"max":4095,"step":1},  
+               {"id":"CarrierBalance","name":"Internal Carrier Signal Balance (Synth<=>Noise)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"CarrierExternalBalance","name":"Carrier Balance (Internal<=>External [1-in])","type":"int","min":0,"max":4095,"step":1},
+               {"id":"CarrierLeak","name":"Carrier Leakage","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ExtCarrierAmnt","name":"External Carrier Amount","type":"int","min":0,"max":4095,"step":1},
+               {"id": "AccentBendIsActive","name":"Activate Accent Bend n/y","type":"bool"},
+               {"id":"AccentBend","name":"Accent Bend (Talkbox to Internal Carrier Pitch)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ModulatorAmnt","name":"Modulator Level [0-in]","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"ModulatorLeakage","name":"Modulator Leakage [0-in]","type":"int","min":0,"max":4095,"step":1}, 
+               {"id":"Volume","name":"Volume","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "InternalCarrier", "name": "Internal Carrier", "type": "group", "params":  
+           [
+               {"id": "VibratoIsActive","name":"Vibrato active n/y","type":"bool"},
+               {"id": "VibratoSpeed","name":"Vibrato Speed","type":"int","min":0,"max":4095,"step":1},
+               {"id": "VibratoDepth","name":"Vibrato Depth","type":"int","min":0,"max":4095,"step":1},
+               {"id": "PWMactive","name":"PWM active n/y","type":"bool"},
+               {"id": "PWMspeed","name":"PWM Speed","type":"int","min":0,"max":4095,"step":1},
+               {"id": "PWMdepth","name":"PWM Depth","type":"int","min":0,"max":4095,"step":1},
+               {"id": "SubOscTune_A","type": "int","name": "SubOsc Tuning (A) +- 1200 Cent","min": -1200,"max": 1200,"step": 1}, 
+               {"id": "SubOscTuningBactive","name":"SubOsc switch Tuning (A)<=>(B) ","type":"bool"},
+               {"id": "SubOscTune_B","type": "int","name": "SubOsc Tuning (B) +- 1200 Cent","min": -1200,"max": 1200,"step": 1}
+           ]
+       },
+       {
+          "id": "fx", "name": "FX", "type": "group", "params":
+          [
+               {"id": "FXIsActive","name":"FX active n/y","type":"bool"},
+               {"id": "FXEnsChor","name":"Ensemble / Chorus","type":"bool"},
+               {"id": "FXDepth","name":"FX Depth","type":"int","min":0,"max":4095,"step":1},
+               {"id": "FXAmt","name":"FX Amount","type":"int","min":0,"max":4095,"step":1}
+          ]
+       }
+   ] 
+}
