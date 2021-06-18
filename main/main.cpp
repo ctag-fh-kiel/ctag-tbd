@@ -29,10 +29,15 @@ respective component folders / files if different from this license.
 #include "fs.hpp"
 #include "led_rgb.hpp"
 #include "gpio.hpp"
+
 #include "Calibration.hpp"
 #include "codec.hpp"
 #include <vector>
 #include "SPManager.hpp"
+
+#ifdef CONFIG_TBD_PLATFORM_AEM
+    #include "display.hpp"
+#endif
 
 using namespace CTAG;
 
@@ -55,6 +60,12 @@ void app_main() {
     DRIVERS::LedRGB::InitLedRGB();
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
 #endif
+
+#ifdef CONFIG_TBD_PLATFORM_AEM
+    DRIVERS::Display::Init();
+    DRIVERS::Display::Demo();
+#endif
+
     DRIVERS::GPIO::InitGPIO();
 
     // calibration starts if trig0 is pressed at boot up
