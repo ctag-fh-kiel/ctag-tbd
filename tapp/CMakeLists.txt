@@ -10,14 +10,21 @@ add_definitions(
         -DRAPIDJSON_HAS_STDSTRING=1 # rapidjson
 )
 
+# everything static linking
+#set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+#set(BUILD_SHARED_LIBS OFF)
+#set(CMAKE_EXE_LINKER_FLAGS "-static")
+#set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
+
+# link boost statically
+set(Boost_USE_STATIC_LIBS ON)
+find_package(Boost 1.74.0 COMPONENTS system thread filesystem program_options REQUIRED)
+
 ## Web Server Part
 add_library(simple-web-server INTERFACE)
 target_include_directories(simple-web-server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../simulator/Simple-Web-Server)
 find_package(Threads REQUIRED)
 target_link_libraries(simple-web-server INTERFACE ${CMAKE_THREAD_LIBS_INIT})
-# link boost statically
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.74.0 COMPONENTS system thread REQUIRED)
 target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
 target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
@@ -27,24 +34,29 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
     target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
 endif()
 
+
 #rapidjson
 file(GLOB RAPIDJSON_FILES
         ${CMAKE_SOURCE_DIR}/../components/rapidjson/rapidjson/*.h
 )
 
-## Application
-find_package(Boost 1.74.0 COMPONENTS system thread filesystem program_options)
-if(NOT Boost_FOUND)
-    message(FATAL_ERROR "could not find Boost!")
-endif()
-
+#tapp
 file(GLOB SRC_FILES *.cpp *.hpp)
 add_executable(tapp ${SRC_FILES} ${CMAKE_SOURCE_DIR}/../simulator/fake-idf/esp_heap_caps.c)
-target_link_libraries(tapp simple-web-server)
-target_link_libraries(tapp ${Boost_LIBRARIES})
+#target_link_options(tapp PRIVATE -static-libgcc -static-libstdc++)
+
 if(WIN32)
-    target_link_libraries(tapp ws2_32 wsock32)
+    target_link_libraries(tapp -static simple-web-server)
+    target_link_libraries(tapp -static ${Boost_LIBRARIES})
+    target_link_libraries(tapp -static ws2_32 wsock32)
+elseif(APPLE)
+    target_link_libraries(tapp simple-web-server)
+    target_link_libraries(tapp ${Boost_LIBRARIES})
+else() #linux etc?!
+    target_link_libraries(tapp simple-web-server)
+    target_link_libraries(tapp ${Boost_LIBRARIES})
 endif()
+
 target_include_directories(tapp PRIVATE ${Boost_INCLUDE_DIR})
 target_include_directories(tapp PRIVATE ${CMAKE_SOURCE_DIR}/../components/rapidjson)
 target_include_directories(tapp PRIVATE ${CMAKE_SOURCE_DIR}/../simulator/fake-idf)
@@ -56,6 +68,3 @@ add_custom_target(copy-www
         ${CMAKE_SOURCE_DIR}/../spiffs_image/www
         ${CMAKE_BINARY_DIR}/www
         )
-
-
-
