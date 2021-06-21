@@ -19,7 +19,7 @@ jobs:
         with:
           submodules: recursive
       - name: Build binaries
-        uses: ctag-fh-kiel/tapp-mingw64-action@v1
+        uses: ctag-fh-kiel/tapp-mingw64-action@v2
       - name: Archive binaries
         run: |
           zip --junk-paths binaries tapp/build/*.zip
@@ -30,7 +30,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.sha }}
-          release_name: Bleeding-edge-${{ github.sha }}
+          release_name: tapp-win64-${{ github.sha }}
           body: |
             tapp mingw-64
           draft: true
