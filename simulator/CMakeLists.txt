@@ -139,10 +139,6 @@ set(SRC_FILES2
         "fake-idf/esp_spi_flash.c"
         )
 
-# paths for sample-rom input files
-set(SAMPLE_ROM_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom/sample-rom.tbd" CACHE FILEPATH "Sample-rom raw file")
-
-
 add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
 target_compile_definitions(tbd-sim PRIVATE SAMPLE_ROM_FILE="${SAMPLE_ROM_FILE}")
 
