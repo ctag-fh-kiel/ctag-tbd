@@ -14,12 +14,13 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      - run: brew install boost
       - name: Checkout repository and submodules
         uses: actions/checkout@v2
         with:
           submodules: recursive
- #     - name: Build binaries
- #       uses: ctag-fh-kiel/tapp-mingw64-action@v3
+      - run: cd tapp && mkdir build && cd build && cmake .. && make && cpack && cd ../..
+      - run: cd simulator && mkdir build && cd build && cmake .. && make && cpack && cd ../..
       - name: Archive binaries
         run: |
           zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip
