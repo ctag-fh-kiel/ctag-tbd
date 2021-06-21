@@ -78,7 +78,7 @@ The compiled data is structured as follows (note that downloaded .tbd sample rom
 Use helpers/ctagSampleRom as a convenience class to access TBD's sample rom.
 ### Simulator access
 Sample rom access is fully modelled in TBD's simulator application. One can access it the same way.
-The sample rom data is read from an external .tbd binary file (configurable). One must point at it during the cmake configuration process of the simulator.
+The sample rom data is read from an external .tbd binary file (configurable by command line option of tbd-sim).
 ## Stock samples and credits
 - Wavetables are from [WaveTable online](https://waveeditonline.com/) with [CC0 1.0 Universal (CC0 1.0) Public Domain Dedication License](https://creativecommons.org/publicdomain/zero/1.0/)
 - Samples are from CTAG and Freesound (all CC0)

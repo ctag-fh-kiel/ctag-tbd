@@ -19,10 +19,10 @@ jobs:
         with:
           submodules: recursive
       - name: Build binaries
-        uses: ctag-fh-kiel/tapp-mingw64-action@v2
+        uses: ctag-fh-kiel/tapp-mingw64-action@v3
       - name: Archive binaries
         run: |
-          zip --junk-paths binaries tapp/build/*.zip
+          zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -30,7 +30,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.sha }}
-          release_name: tapp-win64-${{ github.sha }}
+          release_name: tbd-sim-tapp-win64-${{ github.sha }}
           body: |
             tapp mingw-64
           draft: true

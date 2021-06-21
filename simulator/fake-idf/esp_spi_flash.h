@@ -26,7 +26,7 @@ respective component folders / files if different from this license.
 extern "C" {
 #endif
 esp_err_t spi_flash_read(size_t src, void *dstv, size_t size);
-void spi_flash_emu_init();
+void spi_flash_emu_init(const char*);
 void spi_flash_emu_release();
 #ifdef __cplusplus
 }
