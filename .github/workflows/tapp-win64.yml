@@ -1,0 +1,47 @@
+name: tapp-win64
+
+on:
+  push:
+    branches:
+      - aem
+  pull_request:
+    branches:
+      - aem
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Build binaries
+        uses: ctag-fh-kiel/tapp-mingw64-action@v1
+      - name: Archive binaries
+        run: |
+          zip --junk-paths binaries tapp/build/*.zip
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.sha }}
+          release_name: Bleeding-edge-${{ github.sha }}
+          body: |
+            tapp mingw-64
+          draft: true
+          prerelease: true
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./binaries.zip
+          asset_name: binaries.zip
+          asset_content_type: application/zip
