@@ -3,10 +3,10 @@ name: tbd-sim-tapp-osx
 on:
   push:
     branches:
-      - osx
+      - aem
   pull_request:
     branches:
-      - osx
+      - aem
 
 jobs:
   build:
