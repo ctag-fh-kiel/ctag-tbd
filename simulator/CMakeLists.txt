@@ -178,7 +178,7 @@ target_include_directories(run_tests PRIVATE ${Boost_INCLUDE_DIR})
 install(CODE "set(CMAKE_INSTALL_LOCAL_ONLY true)")
 install(TARGETS tbd-sim RUNTIME DESTINATION simulator/bin)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION .)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom DESTINATION .)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom/sample-rom.tbd DESTINATION simulator/data)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION simulator)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION simulator)
 
