@@ -62,8 +62,8 @@ void app_main() {
 #endif
 
 #ifdef CONFIG_TBD_PLATFORM_AEM
-    DRIVERS::Display::Init();
-    DRIVERS::Display::Demo();
+    //DRIVERS::Display::Init();
+    //DRIVERS::Display::Demo();
 #endif
 
     DRIVERS::GPIO::InitGPIO();
