@@ -5,10 +5,12 @@ on:
     branches:
       - master
       - dev
+      - aem
   pull_request:
     branches:
       - master
       - dev
+      - aem
 
 jobs:
   build:
