@@ -1,0 +1,42 @@
+{
+   "id": "MSxxNoise", "isStereo": false, "name": "MSxxNoise", "hint": "White/Pink Noise+external in+Filter+LFO+Reverb", "params":
+   [
+       {  
+          "id": "Soundsources", "name": "Soundsources", "type": "group", "params":  
+           [
+               {"id":"ExternalActive","name":"External Input n/y","type":"bool"},
+               {"id":"NoiseExternalBalance","name":"Noise <=> External Input","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PinkActive","name":"Pink Noise n/y","type":"bool"},
+               {"id":"WhiteActive","name":"White Noise n/y","type":"bool"},
+               {"id":"PinkWhiteBalance","name":"PinkNoise <=> WhiteNoise","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Volume","name":"Volume","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "Soundmodifiers", "name": "Soundmodifiers", "type": "group", "params":  
+           [
+                {"id":"FilterBypass","name":"Filter Bypass n/y","type":"bool"},
+                {"id":"SaturationActive","name":"Enable Filter Drive n/y","type":"bool"}, 
+                {"id":"Saturation","name":"Filter Drive","type":"int","min":0,"max":4095,"step":1},
+                {"id":"Cutoff","name":"Cutoff","type":"int","min":0,"max":4095,"step":1},
+                {"id":"Resonance","name":"Resonance","type":"int","min":0,"max":4095,"step":1},
+                {"id":"MGactive","name":"MG active n/y","type":"bool"},
+                {"id":"MGisSquare","name":"MG Sinus <=> Square","type":"bool"},  
+                {"id":"MGspeed","name":"MG Speed","type":"int","min":0,"max":4095,"step":1},
+                {"id":"MGamnt","name":"MG Amount","type":"int","min":0,"max":4095,"step":1},
+                {"id":"PhaserBypass","name":"Phaser Bypass n/y","type":"bool"},
+                {"id":"PhaserDryWet","name":"Phaser Dry <=> Wet","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "Phaser", "name": "Phaser", "type": "group", "params":  
+           [
+               {"id":"PhaserPreset","name":"Disable Phaser Parameters and set to Preset n/y","type":"bool"},
+               {"id":"PhaserColor","name":"Color","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PhaserLFOfrequency","name":"LFO Frequency","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PhaserFeedbackDepth","name":"Feedback Depth","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PhaserFeedbackBassCut","name":"Feedback Bass Cut","type":"int","min":0,"max":4095,"step":1}
+           ]
+       }
+   ] 
+}
