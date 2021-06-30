@@ -24,6 +24,13 @@ jobs:
     - name: Build binaries
       uses: ctag-fh-kiel/esp-idf-action@1
 
+    - name: Update partition table and rom config
+      run: |
+        python .github/update-partition-table.py
+
+    - name: Build binaries
+      uses: ctag-fh-kiel/esp-idf-action@1
+
     - name: Archive binaries
       run: |
         zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
