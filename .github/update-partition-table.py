@@ -39,8 +39,8 @@ new_kconfig = []
 
 with open("main/Kconfig.projbuild", "r") as kconfig:
     for line in kconfig:
-        line.replace("0xB00000",hex(new_rom_start))
-        line.replace("0x500000",hex(storage))
+        line = line.replace("0xB00000",hex(new_rom_start))
+        line = line.replace("0x500000",hex(storage))
         new_kconfig.append(line)
 
 with open("main/Kconfig.projbuild", "w") as kconfig:
