@@ -28,9 +28,10 @@ jobs:
       run: |
         python .github/update-partition-table.py
 
-    - name: Print partition table
+    - name: Print partition table and sdkconfig.defaults
       run: |
         cat partitions_example.csv
+        cat sdkconfig.defaults
 
     - name: Build binaries
       uses: ctag-fh-kiel/esp-idf-action@1
