@@ -43,5 +43,5 @@ with open("main/Kconfig.projbuild", "r") as kconfig:
         line.replace("0x500000",hex(storage))
         new_kconfig.append(line)
 
-with open("main/Kconfig.projbuild", "w") as sdkconfig:
-    sdkconfig.writelines(new_kconfig)
+with open("main/Kconfig.projbuild", "w") as kconfig:
+    kconfig.writelines(new_kconfig)
