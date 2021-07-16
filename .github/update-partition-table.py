@@ -38,7 +38,7 @@ with open("sdkconfig.defaults", "w") as sdkconfig:
 new_kconfig = []
 
 with open("main/Kconfig.projbuild", "r") as kconfig:
-    for line in sdkconfig:
+    for line in kconfig:
         line.replace("0xB00000",hex(new_rom_start))
         line.replace("0x500000",hex(storage))
         new_kconfig.append(line)
