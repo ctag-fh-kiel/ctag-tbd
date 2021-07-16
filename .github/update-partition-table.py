@@ -1,11 +1,11 @@
 import os
 import csv
 
-bin_size = os.path.getsize("bin/ctag-tbd.bin") * 8
-storage = 40000000 + 2 * (24000000 - bin_size)
+bin_size = os.path.getsize("bin/ctag-tbd.bin")
+storage = 5000000 + 2 * (3000000 - bin_size)
 
 rom_start = 11534336  # hex: 0xb00000
-new_rom_start = rom_start - 2 * (24000000 - bin_size)
+new_rom_start = rom_start - 2 * (3000000 - bin_size)
 
 new_partitions = []
 
@@ -20,7 +20,7 @@ with open("partitions_example.csv", "w", newline="") as partitions:
     writer = csv.writer(partitions, delimiter=",")
     for row in new_partitions:
         writer.writerow(row)
-    writer.writerow([f"# This partition was generated with the tbd-cloud-compiler. Now with {storage/8000000:.2f}MB (instead of 5MB) for your samples", 4*""])
+    writer.writerow([f"# This partition was generated with the tbd-cloud-compiler. Now with {storage/1000000:.2f}MB (instead of 5MB) for your samples", 4*""])
 
 new_config = []
 
