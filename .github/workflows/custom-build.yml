@@ -31,6 +31,7 @@ jobs:
     - name: Print partition table and sdkconfig.defaults
       run: |
         cat partitions_example.csv
+        cat main/Kconfig.projbuild
         cat sdkconfig.defaults
 
     - name: Build binaries
