@@ -28,6 +28,10 @@ jobs:
       run: |
         python .github/update-partition-table.py
 
+    - name: Print partition table
+      run: |
+        cat partitions_example.csv
+
     - name: Build binaries
       uses: ctag-fh-kiel/esp-idf-action@1
 
