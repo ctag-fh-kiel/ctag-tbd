@@ -34,3 +34,14 @@ with open("sdkconfig.defaults", "r") as sdkconfig:
 
 with open("sdkconfig.defaults", "w") as sdkconfig:
     sdkconfig.writelines(new_config)
+
+new_kconfig = []
+
+with open("main/Kconfig.projbuild", "r") as kconfig:
+    for line in sdkconfig:
+        line.replace("0xB00000",hex(new_rom_start))
+        line.replace("0x500000",hex(storage))
+        new_kconfig.append(line)
+
+with open("main/Kconfig.projbuild", "w") as sdkconfig:
+    sdkconfig.writelines(new_kconfig)
