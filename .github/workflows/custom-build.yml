@@ -33,6 +33,10 @@ jobs:
         cat partitions_example.csv
         cat main/Kconfig.projbuild
         cat sdkconfig.defaults
+        
+    - name: Remove previous build
+      run: |
+        rm -rf build
 
     - name: Build binaries
       uses: ctag-fh-kiel/esp-idf-action@1
