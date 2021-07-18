@@ -36,7 +36,7 @@ jobs:
         
     - name: Remove previous build
       run: |
-        rm -rf build
+        sudo rm -rf build
 
     - name: Build binaries
       uses: ctag-fh-kiel/esp-idf-action@1
