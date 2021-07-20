@@ -36,7 +36,7 @@ foreach(WWW_FILE ${WWW_FILES})
 endforeach()
 add_custom_target(copy-files ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
         # clean up
-        COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/spiffs_image
+        COMMAND rm -rf ${CMAKE_BINARY_DIR}/spiffs_image
         # copy spiffs files to build folder
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image ${CMAKE_BINARY_DIR}/spiffs_image
         # create gzip encoded www files
