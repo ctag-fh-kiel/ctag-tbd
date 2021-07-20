@@ -24,7 +24,7 @@ with open("partitions_example.csv", "w", newline="") as partitions:
 
 new_config = []
 
-with open("sdkconfig", "r") as sdkconfig:
+with open("sdkconfig.defaults", "r") as sdkconfig:
     for line in sdkconfig:
         if line.startswith("CONFIG_SAMPLE_ROM_START_ADDRESS="):
             line = f"CONFIG_SAMPLE_ROM_START_ADDRESS={hex(new_rom_start)}\n"
@@ -32,5 +32,5 @@ with open("sdkconfig", "r") as sdkconfig:
             line = f"CONFIG_SAMPLE_ROM_SIZE={hex(storage)}\n"
         new_config.append(line)
 
-with open("sdkconfig", "w") as sdkconfig:
+with open("sdkconfig.defaults", "w") as sdkconfig:
     sdkconfig.writelines(new_config)
