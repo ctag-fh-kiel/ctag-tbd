@@ -81,6 +81,7 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepa
 static esp_err_t rest_common_get_handler(httpd_req_t *req) {
     char filepath[FILE_PATH_MAX];
 
+    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     rest_server_context_t *rest_context = (rest_server_context_t *) req->user_ctx;
     strlcpy(filepath, rest_context->base_path, sizeof(filepath));
     if (req->uri[strlen(req->uri) - 1] == '/') {
@@ -88,6 +89,8 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req) {
     } else {
         strlcat(filepath, req->uri, sizeof(filepath));
     }
+    set_content_type_from_file(req, filepath);
+    strlcat(filepath, ".gz", sizeof(filepath));
     int fd = open(filepath, O_RDONLY, 0);
     if (fd == -1) {
         ESP_LOGE(REST_TAG, "Failed to open file : %s", filepath);
@@ -95,8 +98,6 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to read existing file");
         return ESP_FAIL;
     }
-
-    set_content_type_from_file(req, filepath);
 
     char *chunk = rest_context->scratch;
     ssize_t read_bytes;// = 10240;
