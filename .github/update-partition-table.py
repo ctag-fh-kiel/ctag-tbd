@@ -2,19 +2,20 @@ import os
 import csv
 
 bin_size = os.path.getsize("bin/ctag-tbd.bin")
-storage = 5000000 + 2 * (3000000 - bin_size)
+storage = 8000000 + (3000000 - bin_size)
 
-rom_start = 11534336  # hex: 0xb00000
-new_rom_start = rom_start - 2 * (3000000 - bin_size)
+rom_start = 11534336 - 3000000 # hex: 0xb00000
+new_rom_start = rom_start - (3000000 - bin_size)
 
 new_partitions = []
 
 with open("partitions_example.csv", newline="") as partitions:
     rows = csv.reader(partitions, delimiter=",")
     for row in rows:
-        if row[0].startswith("ota_"):
+        if row[0].startswith("ota_0"):
             row[4] = bin_size
-        new_partitions.append(row)
+        if not row[0].startswith("ota_1"):
+            new_partitions.append(row)
 
 with open("partitions_example.csv", "w", newline="") as partitions:
     writer = csv.writer(partitions, delimiter=",")
@@ -34,3 +35,22 @@ with open("sdkconfig.defaults", "r") as sdkconfig:
 
 with open("sdkconfig.defaults", "w") as sdkconfig:
     sdkconfig.writelines(new_config)
+
+new_html = ""
+
+with open("spiffs_image/www/config.html", "r") as html:
+    new_html = html.read().replace("""    <ons-list-item>
+        <div style="text-align: left;">
+            <ons-progress-bar id="fw-progress" value="0" secondary-value="0"></ons-progress-bar>
+            <label for="app-binary">ctag-tbd.bin</label><input id="app-binary" type="file"/>
+            <label for="spiffs-binary">storage.bin</label><input id="spiffs-binary" type="file"/>
+            <ons-button id="upgrade-firmware" style="margin-top: 10px;">Upgrade Firmware</ons-button>
+        </div>
+    </ons-list-item>""", """    <ons-list-item>
+        <div style="text-align: left;">
+            <p>No firmware upgrade possible via WIFI with firmware from <a href="fxwiegand.github.io/tbd-cloud-compiler" target="_blank">the tbd-cloud-compiler</a>.</p>
+        </div>
+    </ons-list-item>""")
+
+with open("spiffs_image/www/config.html", "w") as html:
+    html.writelines(new_html)
