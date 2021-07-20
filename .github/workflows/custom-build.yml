@@ -34,9 +34,10 @@ jobs:
         cat main/Kconfig.projbuild
         cat sdkconfig.defaults
         
-    - name: Remove previous build
+    - name: Remove previous build and sdkconfig
       run: |
         sudo rm -rf build
+        sudo rm -rf sdkconfig
 
     - name: Build binaries
       uses: ctag-fh-kiel/esp-idf-action@1
