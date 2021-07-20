@@ -29,20 +29,22 @@ project(ctag-tbd)
 # that fits the partition named 'storage'. FLASH_IN_PROJECT indicates that
 # the generated image should be flashed when the entire project is flashed to
 # the target with 'idf.py -p PORT flash'.
-
-# copy spiffs files to build folder
+file(GLOB_RECURSE WWW_FILES RELATIVE ${CMAKE_SOURCE_DIR}/spiffs_image ${CMAKE_SOURCE_DIR}/spiffs_image/www/*)
+foreach(WWW_FILE ${WWW_FILES})
+    list(APPEND GZIP_COMMANDS
+            COMMAND gzip -9 ${CMAKE_BINARY_DIR}/spiffs_image/${WWW_FILE} )
+endforeach()
 add_custom_target(copy-files ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/spiffs_image
-        ${CMAKE_BINARY_DIR}/spiffs_image
-        )
-# and create backup file structure (sometimes when the ESP's power is interrupted during flash writes, the SPIFFS file gets corrupted)
-add_custom_target(copy-files-backup ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/spiffs_image/data
-        ${CMAKE_BINARY_DIR}/spiffs_image/dbup
+        # clean up
+        COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_BINARY_DIR}/spiffs_image
+        # copy spiffs files to build folder
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image ${CMAKE_BINARY_DIR}/spiffs_image
+        # create gzip encoded www files
+        ${GZIP_COMMANDS}
+        # and create backup file structure (sometimes when the ESP's power is interrupted during flash writes, the SPIFFS file gets corrupted)
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image/data ${CMAKE_BINARY_DIR}/spiffs_image/dbup
         )
 
-spiffs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT DEPENDS copy-files copy-files-backup)
+spiffs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT DEPENDS copy-files)
 
 
