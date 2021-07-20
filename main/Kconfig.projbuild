@@ -17,14 +17,14 @@ menu "CTAG TBD Configuration"
         config SAMPLE_ROM_START_ADDRESS
             hex "Sample ROM Start Address"
             default 0xB00000
-            range 0xA00000 0xD00000
+            range 0x700000 0xD00000
             help
                 Define the start of the sample ROM flash section. Has to be at end of flash, beyond last partition entries.
 
         config SAMPLE_ROM_SIZE
             hex "Sample ROM Size"
             default 0x500000
-            range 0x300000 0x600000
+            range 0x300000 0xA00000
             help
                 Define sample ROM flash size.
 
