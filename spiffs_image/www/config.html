@@ -5,29 +5,29 @@
         </div>
         <div class="center">TBD Setup</div>
     </ons-toolbar>
-    <ons-list-header>CV0 Config</ons-list-header>
-    <ons-list-item>
+    <ons-list-header class="mk1">CV0 Config</ons-list-header>
+    <ons-list-item class="mk1">
         <ons-select id="cv0-config">
             <option value="unipolar">Unipolar 0 .. 5V</option>
             <option value="bipolar">Bipolar -5 .. 5V</option>
         </ons-select>
     </ons-list-item>
-    <ons-list-header>CV1 Config</ons-list-header>
-    <ons-list-item>
+    <ons-list-header class="mk1">CV1 Config</ons-list-header>
+    <ons-list-item class="mk1">
         <ons-select id="cv1-config">
             <option value="unipolar">Unipolar 0 .. 5V</option>
             <option value="bipolar">Bipolar -5 .. 5V</option>
         </ons-select>
     </ons-list-item>
-    <ons-list-header>Pot 0 Config</ons-list-header>
-    <ons-list-item>
+    <ons-list-header class="mk1">Pot 0 Config</ons-list-header>
+    <ons-list-item class="mk1">
         <ons-select id="cv2-config">
             <option value="unipolar">Unipolar 0 .. 1</option>
             <option value="bipolar">Bipolar -1 .. 1</option>
         </ons-select>
     </ons-list-item>
-    <ons-list-header>Pot 1 Config</ons-list-header>
-    <ons-list-item>
+    <ons-list-header class="mk1">Pot 1 Config</ons-list-header>
+    <ons-list-item class="mk1">
         <ons-select id="cv3-config">
             <option value="unipolar">Unipolar 0 .. 1</option>
             <option value="bipolar">Bipolar -1 .. 1</option>
@@ -181,10 +181,38 @@
         ons.getScriptPage().onInit = function () {
             $.getq('myq', 'api/v1/getConfiguration',
                 data => {
-                    $('#cv0-config').val(data["cv_ch0"]);
-                    $('#cv1-config').val(data["cv_ch1"]);
-                    $('#cv2-config').val(data["cv_ch2"]);
-                    $('#cv3-config').val(data["cv_ch3"]);
+                    if(window.ioCaps.p == 'mk1'){
+                        $('#cv0-config').val(data["cv_ch0"]);
+                        $('#cv1-config').val(data["cv_ch1"]);
+                        $('#cv2-config').val(data["cv_ch2"]);
+                        $('#cv3-config').val(data["cv_ch3"]);
+                        $('#cv0-config').on('change', function () {
+                            cfgData.cv_ch0 = $('#cv0-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#cv1-config').on('change', function () {
+                            cfgData.cv_ch1 = $('#cv1-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#cv2-config').on('change', function () {
+                            cfgData.cv_ch2 = $('#cv2-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                        $('#cv3-config').on('change', function () {
+                            cfgData.cv_ch3 = $('#cv3-config').val();
+                            $.postq('myq', 'api/v1/setConfiguration',
+                                JSON.stringify(cfgData), 'json'
+                            );
+                        });
+                    }else{
+                        $('.mk1').remove();
+                    }
                     $('#ng-config').val(data["ng_config"]);
                     $('#ch01-daisy').val(data["ch01_daisy"]);
                     $('#ch0-stereo-config').val(data["ch0_toStereo"]);
@@ -198,30 +226,6 @@
                     $('#pwd').val(data["wifi"].pwd);
                     $('#mdns-name').val(data["wifi"].mdns_name);
                     window.cfgData = data;
-                    $('#cv0-config').on('change', function () {
-                        cfgData.cv_ch0 = $('#cv0-config').val();
-                        $.postq('myq', 'api/v1/setConfiguration',
-                            JSON.stringify(cfgData), 'json'
-                        );
-                    });
-                    $('#cv1-config').on('change', function () {
-                        cfgData.cv_ch1 = $('#cv1-config').val();
-                        $.postq('myq', 'api/v1/setConfiguration',
-                            JSON.stringify(cfgData), 'json'
-                        );
-                    });
-                    $('#cv2-config').on('change', function () {
-                        cfgData.cv_ch2 = $('#cv2-config').val();
-                        $.postq('myq', 'api/v1/setConfiguration',
-                            JSON.stringify(cfgData), 'json'
-                        );
-                    });
-                    $('#cv3-config').on('change', function () {
-                        cfgData.cv_ch3 = $('#cv3-config').val();
-                        $.postq('myq', 'api/v1/setConfiguration',
-                            JSON.stringify(cfgData), 'json'
-                        );
-                    });
                     $('#ng-config').on('change', function () {
                         cfgData.ng_config = $('#ng-config').val();
                         $.postq('myq', 'api/v1/setConfiguration',

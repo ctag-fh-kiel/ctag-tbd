@@ -57,17 +57,10 @@ file(GLOB SRCS_FILES
 if (TBD_SIM)
     add_library(ctagsp STATIC ${SRCS_FILES})
     target_include_directories(ctagsp PRIVATE . ${CMAKE_BINARY_DIR}/gen_include)
-    target_compile_definitions(ctagsp PUBLIC N_CVS=4 N_TRGS=2)
 else ()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
             PRIV_REQUIRES rapidjson esp-dsp mutable moog spi_flash)
-    # number of CV ins
-    if(CONFIG_TBD_PLATFORM_STR)
-        target_compile_definitions(${COMPONENT_LIB} PUBLIC N_CVS=8 N_TRGS=2)
-    else()
-        target_compile_definitions(${COMPONENT_LIB} PUBLIC N_CVS=4 N_TRGS=2)
-    endif()
 endif ()
 
 

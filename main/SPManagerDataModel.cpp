@@ -279,3 +279,13 @@ void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const str
     d["patches"].PushBack(preset.Move(), d.GetAllocator());
     storeJSON(d, string(string(SPIFFS_PATH) + "/data/sp/mp-" + id + ".jsn"));
 }
+
+bool SPManagerDataModel::HasPluginID(const string &id) {
+    if (!m.HasMember("availableProcessors")) return false;
+    for(auto &v: m["availableProcessors"].GetArray()){
+        if(v.HasMember("id")){
+            if(v["id"].GetString() == id) return true;
+        }
+    }
+    return false;
+}

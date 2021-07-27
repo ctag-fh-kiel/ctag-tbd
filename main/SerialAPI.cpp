@@ -6,6 +6,7 @@
 #include <atomic>
 #include <cstdint>
 #include "SPManager.hpp"
+#include "Favorites.hpp"
 #include "Calibration.hpp"
 #include "driver/gpio.h"
 #include "driver/uart.h"
@@ -171,12 +172,14 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
     }
     if(s.find("/api/v1/getIOCaps") == 0){
         // TODO this should be at one central place
-#ifdef CONFIG_TBD_PLATFORM_STR
-        string const caps("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV1\",\"CV2\",\"CV3\",\"CV4\",\"CV5\",\"CV6\",\"CV7\",\"CV8\"]}");
+#if defined(CONFIG_TBD_PLATFORM_STR)
+        string const s("{\"p\":\"str\",\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV1\",\"CV2\",\"CV3\",\"CV4\",\"CV5\",\"CV6\",\"CV7\",\"CV8\"]}");
+#elif defined(CONFIG_TBD_PLATFORM_MK2)
+        string const s("{\"p\":\"mk2\",\"t\":[\"TRIG0\",\"TRIG1\",\"TRIG2\",\"TRIG3\",\"TRIG4\",\"TRIG5\",\"M0NOTE\",\"M1NOTE\",\"M0VEL\",\"M1VEL\",\"MOD0\",\"MOD1\"],\"cv\":[\"UCVPOT0\",\"UCVPOT1\",\"UCVPOT2\",\"UCVPOT3\",\"POT0\",\"POT1\",\"POT2\",\"POT3\",\"PCV0\",\"PCV1\",\"BPCV0\",\"BPCV1\",\"BPCV2\",\"BPCV3\",\"M0NOTE\",\"M1NOTE\",\"M0VEL\",\"M1VEL\",\"M0PB\",\"M1PB\",\"M0MOD\",\"M1MOD\"]}");
 #else
-        string const caps("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
+        string const s("{\"p\":\"mk1\",\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
 #endif
-        sendString(caps);
+        sendString(s);
         return;
     }
     if(s.find("/api/v1/setCalibration") == 0){
@@ -194,6 +197,26 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         Writer<StringBuffer> writer(buffer);
         configData.Accept(writer);
         CTAG::AUDIO::SoundProcessorManager::SetConfigurationFromJSON(buffer.GetString());
+        sendString("{}");
+        return;
+    }
+    if(s.find("/api/v1/favorites/getAll") == 0) {
+        sendString(FAV::Favorites::GetAllFavorites().c_str());
+        return;
+    }
+    if(s.find("/api/v1/favorites/store") == 0) {
+        Value data = d["data"].GetObject();
+        int fav = d["fav"].GetInt();
+        StringBuffer buffer;
+        Writer<StringBuffer> writer(buffer);
+        data.Accept(writer);
+        CTAG::FAV::Favorites::StoreFavorite(fav, buffer.GetString());
+        sendString("{}");
+        return;
+    }
+    if(s.find("/api/v1/favorites/recall") == 0) {
+        int fav = d["fav"].GetInt();
+        FAV::Favorites::ActivateFavorite(fav);
         sendString("{}");
         return;
     }

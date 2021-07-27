@@ -21,7 +21,12 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-#include "ssd1306.h"
+extern "C" {
+    #include "ssd1306.h"
+}
+
+#include <string>
+#include <vector>
 
 namespace CTAG {
     namespace DRIVERS {
@@ -30,11 +35,20 @@ namespace CTAG {
             static const int I2CDisplayWidth;
             static const int I2CDisplayHeight;
             static const int I2CResetPin;
-            static struct SSD1306_Device I2CDisplay;
+            static SSD1306_t I2CDisplay;
+            static std::vector<std::string> userString_v;
+            static int currentUserStringRow;
         public:
             Display() = delete;
             static void Init();
-            static void Demo();
+            static void Clear();
+            static void ShowFavorite(int const &id, std::string const &name);
+            static void ShowFWVersion();
+            static void PrepareDisplayFavoriteUString(std::string const &us);
+            static void UpdateFavoriteUStringScroll();
+            static void LoadFavorite(int const &id, std::string const &name);
+            static void Confirm(const int &id);
+            static void UserMode();
         };
     }
 }

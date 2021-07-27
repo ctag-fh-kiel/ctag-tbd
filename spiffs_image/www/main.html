@@ -16,7 +16,6 @@
             <ons-button id="save-ch0" style="margin: 2px;">Save preset</ons-button>
         </ons-list-item>
     </ons-list>
-
     <ons-list>
         <ons-list-header>Plugin channel 1</ons-list-header>
         <ons-list-item>
@@ -32,6 +31,20 @@
         </ons-list-item>
     </ons-list>
     <ons-list>
+        <ons-list-header>Favorites</ons-list-header>
+        <ons-list-item>
+            <ons-select>
+                <select id="fav-select">
+                </select>
+            </ons-select>
+        </ons-list-item>
+        <ons-list-item>
+            <ons-button id="fav-recall" style="margin: 2px;background-color: red">Recall</ons-button>
+            <ons-button id="fav-snap" style="margin: 2px;background-color: orange">Snap</ons-button>
+            <ons-button id="fav-edit" style="margin: 2px">Edit</ons-button>
+        </ons-list-item>
+    </ons-list>
+    <ons-list>
         <ons-list-header>Sample ROM</ons-list-header>
         <ons-list-item>
             <ons-button id="go-sample-rom" style="margin: 2px;">Edit sample ROM</ons-button>
@@ -44,6 +57,29 @@
         </ons-list-item>
     </ons-list>
     <script>
+        function getActivePluginAndSetUI(){
+            $.getq('myq',
+                '/api/v1/getActivePlugin/0',
+                data => {
+                    if(typeof data == 'string') data = JSON.parse(data);
+                    $('#plugin-select-ch0').val(data.id);
+                    if (window.plugins.find(el => el.id === data.id).isStereo) {
+                        $('#go-ch1,#load-ch1,#save-ch1').prop("disabled", true);
+                        $('#plugin-select-ch1').prop("disabled", true);
+                    } else {
+                        $('#go-ch1,#load-ch1,#save-ch1').removeAttr('disabled');
+                        $('#plugin-select-ch1').removeAttr('disabled');
+                    }
+                }
+            );
+            $.getq('myq',
+                '/api/v1/getActivePlugin/1',
+                data => {
+                    if(typeof data == 'string') data = JSON.parse(data);
+                    $('#plugin-select-ch1').val(data.id);
+                }
+            );
+        }
         ons.getScriptPage().onInit = function () {
             // modal
             let modal_mn = $('#modal-mn');
@@ -76,28 +112,24 @@
                     window.plugins = data;
                 }
             );
-            // get active plugin and set in UI
-            $.getq('myq',
-                '/api/v1/getActivePlugin/0',
+            $.postq('myq',
+                'api/v1/favorites/getAll',
                 data => {
                     if(typeof data == 'string') data = JSON.parse(data);
-                    $('#plugin-select-ch0').val(data.id);
-                    if (window.plugins.find(el => el.id === data.id).isStereo) {
-                        $('#go-ch1,#load-ch1,#save-ch1').prop("disabled", true);
-                        $('#plugin-select-ch1').prop("disabled", true);
-                    } else {
-                        $('#go-ch1,#load-ch1,#save-ch1').removeAttr('disabled');
-                        $('#plugin-select-ch1').removeAttr('disabled');
+                    // populate favorite list
+                    for(let i in data){
+                        let s = '<option ' + 'title="' + data[i].ustring + '" value="' + i + '">' + i + ": " + data[i].name + '</option>';
+                        $('#fav-select').append(s);
                     }
+                    // global var
+                    window.favorites = {};
+                    window.favorites.data = data;
+                    window.favorites.selected = 0;
                 }
             );
-            $.getq('myq',
-                '/api/v1/getActivePlugin/1',
-                data => {
-                    if(typeof data == 'string') data = JSON.parse(data);
-                    $('#plugin-select-ch1').val(data.id);
-                }
-            );
+            // get active plugin and set in UI
+            getActivePluginAndSetUI();
+            // get IO caps
             $.getq('myq',
                 '/api/v1/getIOCaps',
                 data => {
@@ -141,6 +173,51 @@
                 );
             });
 
+            $('#fav-select').on('change', function () {
+                window.favorites.selected = this.value;
+            });
+
+            this.querySelector('#fav-snap').onclick = function () {
+                modal_mn.show();
+                window.favorites.selected = $('#fav-select').val();
+                window.favorites.data[window.favorites.selected].plug_0 = $('#plugin-select-ch0').val();
+                window.favorites.data[window.favorites.selected].plug_1 = $('#plugin-select-ch1').val();
+                if (window.plugins.find(el => el.id ===  $('#plugin-select-ch0').val()).isStereo) {
+                    window.favorites.data[window.favorites.selected].plug_1 = "";
+                    $.getq('myq', 'api/v1/getPresets/0',
+                        data => {
+                            window.favorites.data[window.favorites.selected].pre_0 = data.activePresetNumber;
+                            modal_mn.hide();
+                            document.querySelector('#myNavigator').pushPage('fav.html', {});
+                        }
+                    );
+                } else {
+                    $.getq('myq', 'api/v1/getPresets/0',
+                        data => {
+                            window.favorites.data[window.favorites.selected].pre_0 = data.activePresetNumber;
+                            $.getq('myq', 'api/v1/getPresets/1',
+                                data => {
+                                    window.favorites.data[window.favorites.selected].pre_1 = data.activePresetNumber;
+                                    modal_mn.hide();
+                                    document.querySelector('#myNavigator').pushPage('fav.html', {});
+                                }
+                            );
+                        }
+                    );
+                }
+            };
+
+            this.querySelector('#fav-recall').onclick = function () {
+                modal_mn.show();
+                $.postq('myq',
+                    'api/v1/favorites/recall/' + parseInt(window.favorites.selected),
+                    data => {
+                        getActivePluginAndSetUI();
+                        modal_mn.hide();
+                    }
+                );
+            };
+
             this.querySelector('#go-ch0').onclick = function () {
                 document.querySelector('#myNavigator').pushPage('edit.html', {data: {ch: 0}});
             };
@@ -165,6 +242,10 @@
                 document.querySelector('#myNavigator').pushPage('save.html', {data: {ch: 1}});
             };
 
+            this.querySelector('#fav-edit').onclick = function () {
+                document.querySelector('#myNavigator').pushPage('fav.html', {});
+            };
+
             this.querySelector('#go-sample-rom').onclick = function () {
                 window.open('sample-rom.html', '_blank');
             };
@@ -174,7 +255,15 @@
             };
 
             this.onShow = function () {
-                //console.log('Main');
+                // populate favorite list
+                if(window.favorites){
+                    $('#fav-select').empty();
+                    for(let i in window.favorites.data){
+                        let s = '<option value="' + i + '">' + i + ": " + window.favorites.data[i].name + '</option>';
+                        $('#fav-select').append(s);
+                    }
+                    $('#fav-select').val(window.favorites.selected);
+                }
             };
         };
     </script>
