@@ -1,32 +1,29 @@
-name: draft-release
+name: tbd-sim-tapp-osx
 
 on:
   push:
     branches:
-      - master
-      - dev
       - aem
   pull_request:
     branches:
-      - master
-      - dev
       - aem
 
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
+      - run: brew install boost
       - name: Checkout repository and submodules
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Build binaries
-        uses: ctag-fh-kiel/esp-idf-action@1
+      - run: cd tapp && mkdir build && cd build && cmake .. && make && cpack && cd ../..
+      - run: cd simulator && mkdir build && cd build && cmake .. && make && cpack && cd ../..
       - name: Archive binaries
         run: |
-          zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
+          zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -34,9 +31,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.sha }}
-          release_name: Bleeding-edge-${{ github.sha }}
+          release_name: tbd-sim-tapp-osx-${{ github.sha }}
           body: |
-            This is a draft-release, it may not be functional, use at own risk, know what you do!
+            tapp osx
           draft: true
           prerelease: true
       - name: Upload Release Asset

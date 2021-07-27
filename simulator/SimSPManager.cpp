@@ -89,9 +89,9 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
     return 0;
 }
 
-void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, bool bOutOnly) {
+void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string sromFile, bool bOutOnly) {
     // start fake sample rom
-    spi_flash_emu_init();
+    spi_flash_emu_init(sromFile.c_str());
     // Initialize simulator parameters
     simModel = std::make_unique<SimDataModel>();
     int mode[6], value[6];

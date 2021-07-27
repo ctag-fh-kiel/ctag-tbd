@@ -40,7 +40,7 @@ namespace CTAG {
     namespace AUDIO {
         class SimSPManager {
         public:
-            static void StartSoundProcessor(int iSoundCardID, string wavFile, bool bOutOnly);
+            static void StartSoundProcessor(int iSoundCardID, string wavFile, string sromFile, bool bOutOnly);
 
             static void StopSoundProcessor();
 

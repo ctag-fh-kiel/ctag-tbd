@@ -20,14 +20,22 @@ respective component folders / files if different from this license.
 ***************/
 
 #pragma once
-#include "esp_err.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-esp_err_t spi_flash_read(size_t src, void *dstv, size_t size);
-void spi_flash_emu_init(const char*);
-void spi_flash_emu_release();
-#ifdef __cplusplus
-}
-#endif
+#include <memory>
+#include <string>
+#include "server_http.hpp"
+#include "Serial.h"
+
+using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
+using namespace std;
+
+class WebServer {
+private:
+    HttpServer server;
+    std::thread server_thread;
+    std::unique_ptr<Serial> serial = nullptr;
+    string CreateSerialRequest(const string &cmd);
+public:
+    void Start(const unsigned short port, const string &serialPort);
+    void Stop();
+};

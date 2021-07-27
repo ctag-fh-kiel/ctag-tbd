@@ -1,7 +1,7 @@
 # Information about sample rom
 TBD allows to use a configurable amount of flash memory for storage of sample data. 
 This sample data can be used for wavetable storage and / or playback of mono and stereo samples.
-Sample data can be uploaded by users through a web-based UI.
+Sample data can be uploaded by users through a web-based UI or a serial connection.
 The UI allows one to drop .wav files, pre-listen and order files to define the memory layout.
 Once files are selected and ordered, users can download the data to TBD's flash memory or to the host PC to create backups or exchange sample packs with other users.
 ## Layout and structure of sample data
@@ -50,6 +50,19 @@ TBD's stock firmware offers two basic plugins which make use of the sample rom:
     - Amplitude modulated with EG/LFO/CV
     - SVF filter modulated with EG/LFO/CV
     - Mono / duophonic voice allocation (note that duo may cause frame dropps if pitch is high, as number of calculations is increased)
+## How-to flash without wifi in serial communication mode
+In order to flash the sample rom without wifi you can use the following steps. First create a valid sample rom file using the sample rom dialog from TBDs UI.
+Then download the compiled file.
+Perform the following commands (note, you will have to have [esptool.py](https://github.com/espressif/esptool) installed on your system):
+
+    esptool.py -p serial_port -b 460800 erase_region 0xB00000 0x500000
+    esptool.py -p serial_port -b 460800 write_flash --flash_mode dio -fs detect 0xB00000 sample-rom.tbd 
+    
+Replace "serial_port" with your serial port e.g. COM3 or /dev/cu.usbserial-1420, an example can be found in flash-sample-rom.sh which can be the base for your own.
+
+Replace 0xB00000 with the start address of your sample rom flash start address in case of custom size configs.
+Same for 0x500000 if you change the default size.
+Replace sample-rom.tbd with the correct file name you have downloaded from TBDs UI.
 ## Remarks for developers
 ### Config and layout of flash memory:
 The size of the flash rom allocated for sample rom can be configured in the TBD configuration section when executing idf.py menuconfig.
@@ -65,7 +78,7 @@ The compiled data is structured as follows (note that downloaded .tbd sample rom
 Use helpers/ctagSampleRom as a convenience class to access TBD's sample rom.
 ### Simulator access
 Sample rom access is fully modelled in TBD's simulator application. One can access it the same way.
-The sample rom data is read from an external .tbd file. One must point at it during the cmake configuration process of the simulator.
+The sample rom data is read from an external .tbd binary file (configurable by command line option of tbd-sim).
 ## Stock samples and credits
 - Wavetables are from [WaveTable online](https://waveeditonline.com/) with [CC0 1.0 Universal (CC0 1.0) Public Domain Dedication License](https://creativecommons.org/publicdomain/zero/1.0/)
 - Samples are from CTAG and Freesound (all CC0)

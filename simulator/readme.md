@@ -110,6 +110,7 @@ The simulator greatly speeds up plugin development.
   -l [ --list ]            list sound cards
   -d [ --device ] arg (=0) sound card device id, default 0
   -o [ --output ]          use output only (if no duplex device available)
+  -s [ --srom ] arg        file to emulate sample rom
   -w [ --wav ] arg         read audio in from wav file (arg), must be 2 channel
                            stereo float32 data, will be cycled through 
                            indefinitely

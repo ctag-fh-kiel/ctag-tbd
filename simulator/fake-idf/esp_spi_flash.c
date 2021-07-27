@@ -27,8 +27,9 @@ respective component folders / files if different from this license.
 
 static char* file_buffer = NULL;
 
-void spi_flash_emu_init(){
-    FILE *f = fopen(SAMPLE_ROM_FILE, "rb");
+void spi_flash_emu_init(const char *sromFile) {
+    if(NULL == sromFile) return;
+    FILE *f = fopen(sromFile, "rb");
     assert(f != NULL);
     fseek(f, 0L, SEEK_END);
     int sz=ftell(f);
@@ -45,7 +46,7 @@ void spi_flash_emu_release(){
 }
 
 esp_err_t spi_flash_read(size_t src, void *dstv, size_t size){
-    assert(file_buffer != NULL);
+    if(NULL == file_buffer) return ESP_ERR_INVALID_ARG;
     memcpy(dstv, (const void*)&file_buffer[src], size);
     return ESP_OK;
 }

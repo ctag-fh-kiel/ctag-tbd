@@ -11,7 +11,20 @@ menu "CTAG TBD Configuration"
                 bool "V1 (WM8731 + ESP ADC)"
             config TBD_PLATFORM_STR
                 bool "Strämpler (WM8731 + MCP3208)"
+            config TBD_PLATFORM_AEM
+                bool "AE Modular (WM8974 + ESP ADC)"
 
+        endchoice
+
+        choice TBD_UI_TYPE
+            prompt "Wifi or serial UI"
+            default WIFI_UI
+            help
+                Whether to build for Wifi or Serial UI
+            config WIFI_UI
+                bool "WIFI UI"
+            config SERIAL_UI
+                bool "SERIAL UI"
         endchoice
 
         config SAMPLE_ROM_START_ADDRESS
