@@ -69,6 +69,8 @@ namespace CTAG {
 
             void PrintSelf();
 
+            bool HasPluginID(string const &id);
+
         private:
             void getSoundProcessors();
 

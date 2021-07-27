@@ -13,6 +13,3 @@
 [submodule "components/moog/MoogLadders"]
 	path = components/moog/MoogLadders
 	url = https://github.com/ctag-fh-kiel/MoogLadders.git
-[submodule "components/tarablessd1306"]
-	path = components/tarablessd1306
-	url = https://github.com/ctag-fh-kiel/tarablessd1306.git

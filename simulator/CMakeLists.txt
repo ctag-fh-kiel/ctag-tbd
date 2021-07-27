@@ -14,6 +14,8 @@ add_definitions(
         -Wno-unused-local-typedefs
         -DTEST
         -DCONFIG_DSP_ANSI=1
+        -DN_CVS=4
+        -DN_TRIGS=2
 )
 
 set(TBD_SIM 1)

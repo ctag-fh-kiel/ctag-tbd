@@ -13,6 +13,8 @@ menu "CTAG TBD Configuration"
                 bool "Strämpler (WM8731 + MCP3208)"
             config TBD_PLATFORM_AEM
                 bool "AE Modular (WM8974 + ESP ADC)"
+            config TBD_PLATFORM_MK2
+                bool "MK2 (WM8978 + STM32 CVs + Trigs)"
 
         endchoice
 

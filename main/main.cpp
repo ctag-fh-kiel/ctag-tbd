@@ -35,7 +35,7 @@ respective component folders / files if different from this license.
 #include <vector>
 #include "SPManager.hpp"
 
-#ifdef CONFIG_TBD_PLATFORM_AEM
+#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
     #include "display.hpp"
 #endif
 
@@ -56,20 +56,18 @@ void app_main() {
     DRIVERS::FileSystem::InitFS();
 
 #ifndef CONFIG_TBD_PLATFORM_STR
-    DRIVERS::ADC::InitADCSystem();
     DRIVERS::LedRGB::InitLedRGB();
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
 #endif
 
-#ifdef CONFIG_TBD_PLATFORM_AEM
+#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
     DRIVERS::Display::Init();
-    DRIVERS::Display::Demo();
+    DRIVERS::Display::ShowFWVersion();
 #endif
 
-    DRIVERS::GPIO::InitGPIO();
-
-    // calibration starts if trig0 is pressed at boot up
-    CAL::Calibration::Init();
+#if defined(CONFIG_SERIAL_UI)
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+#endif
 
     AUDIO::SoundProcessorManager::StartSoundProcessor();
 }

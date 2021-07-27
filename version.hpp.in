@@ -1,0 +1,4 @@
+#pragma once
+
+#define TBD_HW_VERSION "@TBD_HW@"
+#define TBD_FW_VERSION "@TBD_FW@"

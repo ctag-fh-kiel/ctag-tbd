@@ -303,6 +303,44 @@ void WebServer::Start(const unsigned short port, const string &serialPort) {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
+    server.resource["^/api/v1/favorites/getAll"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        string content = request->content.string();
+        string cmd = "{\"cmd\":\"" + request->path + "\"}";
+        cout << cmd << endl;
+        serial->writeString(cmd);
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(serial->readString(), header);
+    };
+
+    server.resource["^/api/v1/favorites/store/([0-9])$"]["POST"] = [&](shared_ptr<HttpServer::Response> response,
+                                                                      shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        int fav = std::stoi(request->path_match[1].str());
+        string content = request->content.string();
+        string cmd = "{\"cmd\":\"" + request->path + "\", " +
+                     "\"fav\": " + to_string(fav) + "," +
+                     "\"data\": " + content + "}";
+        cout << cmd << endl;
+        serial->writeString(cmd);
+        serial->readString();
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+
+    server.resource["^/api/v1/favorites/recall/([0-9])$"]["POST"] = [&](shared_ptr<HttpServer::Response> response,
+                                                                      shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        int fav = std::stoi(request->path_match[1].str());
+        string content = request->content.string();
+        string cmd = "{\"cmd\":\"" + request->path + "\"" +
+                     ", \"fav\":" + to_string(fav) + "}";
+        cout << cmd << endl;
+        serial->writeString(cmd);
+        serial->readString();
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+
     server.resource["^/api/v1/setPresetData/(.+)"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         string id = request->path_match[1].str();

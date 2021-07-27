@@ -33,21 +33,30 @@ respective component folders / files if different from this license.
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
 
 // SPI pins
-#define PIN_NUM_CS_WM 4
-#define PIN_NUM_MOSI 13
-#define PIN_NUM_CLK 12
-#define PIN_NUM_MISO 0
+#if defined(CONFIG_TBD_PLATFORM_MK2)
+    #define PIN_NUM_CS_WM 5
+    #define PIN_NUM_MOSI 23
+    #define PIN_NUM_CLK 18
+    #define PIN_NUM_MISO -1
+#else
+    #define PIN_NUM_CS_WM 4
+    #define PIN_NUM_MOSI 13
+    #define PIN_NUM_CLK 12
+    #define PIN_NUM_MISO 0
+#endif
+
 
 // I2S
 #define I2S_BCLK_PIN 21
 #define I2S_ADCDAT_PIN 27
 #define I2S_DACDAT_PIN 22
-
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
-    #define I2S_LRCLK_PIN 19
-#elif CONFIG_TBD_PLATFORM_STR
+#if defined(CONFIG_TBD_PLATFORM_STR)
     #define I2S_LRCLK_PIN 25
+#else
+    #define I2S_LRCLK_PIN 19
 #endif
+
+
 
 using namespace CTAG::DRIVERS;
 
@@ -151,7 +160,7 @@ void Codec::InitCodec() {
     HighPassEnable();
     vTaskDelay(1000 / portTICK_PERIOD_MS); // wait until system is settled a bit
     HighPassDisable();
-#elif CONFIG_TBD_PLATFORM_V2
+#elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     setupSPIWM8978();
     setupI2SWM8978();
 #elif CONFIG_TBD_PLATFORM_AEM
@@ -250,7 +259,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
         *buf++ = div * (float) *ptrTmp++;
         sz--;
     }
-#elif CONFIG_TBD_PLATFORM_V2
+#elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     int16_t tmp[sz * 2];
     int16_t *ptrTmp = tmp;
     size_t nb;
@@ -297,7 +306,7 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp[i * 2 + 1] = tmp2 << 8;
     }
     i2s_write(I2S_NUM_0, tmp, sz * 4 * 2, &nb, portMAX_DELAY);
-#elif CONFIG_TBD_PLATFORM_V2
+#elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     int16_t tmp[sz * 2];
     int16_t tmp2;
     size_t nb;
@@ -355,7 +364,7 @@ void Codec::setupSPIWM8978() {
 }
 
 void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
-#ifdef CONFIG_TBD_PLATFORM_V2
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     if(!isReady){
         ESP_LOGD("CODEC", "Codec not initialized");
     }
@@ -365,7 +374,7 @@ void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
 }
 
 void Codec::setupI2SWM8978() {
-#ifdef CONFIG_TBD_PLATFORM_V2
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     ESP_LOGI("WM8978", "Initializing CODEC I2S");
 #elif CONFIG_TBD_PLATFORM_AEM
     ESP_LOGI("WM8974", "Initializing CODEC I2S");
