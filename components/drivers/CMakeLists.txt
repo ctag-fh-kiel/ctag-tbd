@@ -1,6 +1,6 @@
-idf_component_register(SRCS gpio.cpp adc.cpp fs.cpp led_rgb.cpp codec.cpp
+idf_component_register(SRCS gpio.cpp adc.cpp fs.cpp led_rgb.cpp codec.cpp display.cpp
         INCLUDE_DIRS "."
-        REQUIRES ulp driver spiffs)
+        REQUIRES ulp driver spiffs tarablessd1306)
 
 set(ulp_app_name ulp_${COMPONENT_NAME})
 

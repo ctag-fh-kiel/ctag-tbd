@@ -20,14 +20,21 @@ respective component folders / files if different from this license.
 ***************/
 
 #pragma once
-#include "esp_err.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-esp_err_t spi_flash_read(size_t src, void *dstv, size_t size);
-void spi_flash_emu_init(const char*);
-void spi_flash_emu_release();
-#ifdef __cplusplus
+#include "ssd1306.h"
+
+namespace CTAG {
+    namespace DRIVERS {
+        class Display final {
+            static const int I2CDisplayAddress;
+            static const int I2CDisplayWidth;
+            static const int I2CDisplayHeight;
+            static const int I2CResetPin;
+            static struct SSD1306_Device I2CDisplay;
+        public:
+            Display() = delete;
+            static void Init();
+            static void Demo();
+        };
+    }
 }
-#endif

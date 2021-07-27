@@ -19,46 +19,31 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "WebServer.hpp"
-#include "SimSPManager.hpp"
 #include <boost/program_options.hpp>
+#include <iostream>
+#include "WebServer.hpp"
 
 using namespace std;
-using namespace CTAG::AUDIO;
 namespace po = boost::program_options;
 
 int main(int ac, char **av) {
     // parse command line args
-    bool bListSoundCards = false;
-    bool bOutputOnly = false;
-    int iDeviceNum = 0;
-    string wavFile, sromFile;
+    string serialPort = "";
+    unsigned short iPort = 3030;
     po::options_description desc(string(av[0]) + " options");
     po::variables_map vm;
     try {
         desc.add_options()
                 ("help,h", "this help message")
-                ("list,l", po::bool_switch(&bListSoundCards)->default_value(false), "list sound cards")
-                ("device,d", po::value<int>(&iDeviceNum)->default_value(0), "sound card device id, default 0")
-                ("output,o", po::bool_switch(&bOutputOnly)->default_value(false),
-                 "use output only (if no duplex device available)")
-                ("srom,s", po::value<string>(&sromFile),
-                 "file for sample rom emulation")
-                ("wav,w", po::value<string>(&wavFile),
-                 "read audio in from wav file (arg), must be 2 channel stereo float32 data, will be cycled through indefinitely");
+                ("port,p", po::value<unsigned short>(&iPort)->default_value(3030), "http port, default 3030")
+                ("ser,s", po::value<string>(&serialPort)->required(),
+                 "serial port, e.g. /dev/ttyUSB0");
 
         po::store(po::parse_command_line(ac, av, desc), vm);
         po::notify(vm);
 
         if (vm.count("help")) {
             cout << desc << "\n";
-            return 1;
-        }
-        if (vm.count("wav")) {
-            cout << "Trying to read from file " << wavFile << endl;
-        }
-        if (bListSoundCards) {
-            SimSPManager::ListSoundCards();
             return 1;
         }
     } catch (const boost::program_options::required_option &e) {
@@ -70,16 +55,13 @@ int main(int ac, char **av) {
         }
     }
 
-    SimSPManager::StartSoundProcessor(iDeviceNum, wavFile, sromFile, bOutputOnly);
 
     WebServer webServer;
-    webServer.Start();
+    webServer.Start(iPort, serialPort);
 
-    std::cout << "\nRunning ... press <enter> to quit.\n";
+    std::cout << "tapp is running ... \nPress <enter> to quit.\n";
     char input;
     std::cin.get(input);
-
-    SimSPManager::StopSoundProcessor();
 
     webServer.Stop();
 

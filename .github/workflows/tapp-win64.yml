@@ -1,15 +1,11 @@
-name: draft-release
+name: tapp-win64
 
 on:
   push:
     branches:
-      - master
-      - dev
       - aem
   pull_request:
     branches:
-      - master
-      - dev
       - aem
 
 jobs:
@@ -23,10 +19,10 @@ jobs:
         with:
           submodules: recursive
       - name: Build binaries
-        uses: ctag-fh-kiel/esp-idf-action@1
+        uses: ctag-fh-kiel/tapp-mingw64-action@v3
       - name: Archive binaries
         run: |
-          zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
+          zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -34,9 +30,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.sha }}
-          release_name: Bleeding-edge-${{ github.sha }}
+          release_name: tbd-sim-tapp-win64-${{ github.sha }}
           body: |
-            This is a draft-release, it may not be functional, use at own risk, know what you do!
+            tapp mingw-64
           draft: true
           prerelease: true
       - name: Upload Release Asset
