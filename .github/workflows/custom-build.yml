@@ -22,7 +22,7 @@ jobs:
         echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
 
     - name: Build binaries
-      uses: ctag-fh-kiel/esp-idf-action@1
+      uses: ctag-fh-kiel/esp-idf-action@2
 
     - name: Update partition table and rom config
       run: |
@@ -40,7 +40,11 @@ jobs:
         sudo rm -rf sdkconfig
 
     - name: Build binaries
-      uses: ctag-fh-kiel/esp-idf-action@1
+      id: idf_build
+      uses: ctag-fh-kiel/esp-idf-action@2
+      
+    - name: Test output of build command
+      run: echo "${{ steps.idf_build.outputs.build_output }}"
 
     - name: Archive binaries
       run: |
