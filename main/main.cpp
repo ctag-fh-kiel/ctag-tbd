@@ -36,7 +36,7 @@ respective component folders / files if different from this license.
 #include "SPManager.hpp"
 
 #if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
-    #include "display.hpp"
+    #include "Display.hpp"
 #endif
 
 using namespace CTAG;
