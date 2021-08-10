@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-          fetch: 0
+          fetch-depth: 0
       - name: Build binaries
         uses: ctag-fh-kiel/esp-idf-action@1
       - name: Archive binaries
