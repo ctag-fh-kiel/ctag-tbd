@@ -22,7 +22,7 @@ respective component folders / files if different from this license.
 #include "Favorites.hpp"
 #include "SPManager.hpp"
 #include "driver/gpio.h"
-#include "display.hpp"
+#include "Display.hpp"
 
 #define UI_TASK_PERIOD_MS 50
 #define LONG_PRESS_PERIOD_MS 2000
