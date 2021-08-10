@@ -3,9 +3,11 @@ name: tbd-sim-tapp-osx
 on:
   push:
     branches:
+      - master
       - aem
   pull_request:
     branches:
+      - master
       - aem
 
 jobs:
