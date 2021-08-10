@@ -1,9 +1,9 @@
 if(CONFIG_TBD_PLATFORM_MK2)
-    idf_component_register(SRCS fs.cpp led_rgb.cpp codec.cpp ../../main/display.cpp mk2.cpp ssd1306.c ssd1306_i2c.c
+    idf_component_register(SRCS fs.cpp led_rgb.cpp codec.cpp mk2.cpp ssd1306.c ssd1306_i2c.c
             INCLUDE_DIRS "."
             REQUIRES driver spiffs)
 else()
-    idf_component_register(SRCS gpio.cpp adc.cpp fs.cpp led_rgb.cpp codec.cpp ../../main/display.cpp ssd1306.c ssd1306_i2c.c
+    idf_component_register(SRCS gpio.cpp adc.cpp fs.cpp led_rgb.cpp codec.cpp ssd1306.c ssd1306_i2c.c
             INCLUDE_DIRS "."
             REQUIRES ulp driver spiffs)
 
