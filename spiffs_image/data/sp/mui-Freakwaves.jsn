@@ -1,0 +1,173 @@
+{
+   "id": "Freakwaves", "isStereo": true, "name": "Freakwaves", "hint": "Generates melodies via overlaying two VC/Gate signals for two wavetable oscillators", "params":
+   [
+      {  
+          "id": "Global", "name": "Global / Mixer incl. Modulation Destinations (0-2)", "type": "group", "params":  
+           [
+              {"id":"GateA","name":"Gate [A]","type":"bool"},
+              {"id":"GateB","name":"Gate [B]","type":"bool"},
+              {"id":"MasterPitch","type": "int","name": "Master Pitch","min": -48,"max": 48,"step": 1 },
+              {"id": "MasterTune","type": "int","name": "(0) Master Tune","min": -1200,"max": 1200,"step": 1},
+              {"id":"CoutOnRightCh","name":"Output of [C] on right channel n/y","type":"bool"},
+              {"id":"QuantInputA","name":"Pitch Quantize [A] when modulated <-> on input","type":"bool"},
+              {"id":"Qscale_A","name": "Quantization Scale [A], 0==off","type": "int","min": 0,"max": 47,"step": 1},
+              {"id":"QuantInputB","name":"Pitch Quantize [B] when modulated <-> on input","type":"bool"},
+              {"id":"Qscale_B","name": "Quantization Scale [B], 0==off","type": "int","min": 0,"max": 47,"step": 1},
+              {"id":"Qscale_C","name": "Quantization Scale [C], 0==off","type": "int","min": 0,"max": 47,"step": 1},
+              {"id":"PortaA","name":"Glide [A] off/on","type":"bool"},
+              {"id":"PortamentoTimeA","name":"Glide Time [A]","type":"int","min":0,"max":4095,"step":1},
+              {"id":"PortaB","name":"Glide [B] off/on","type":"bool"},
+              {"id":"PortamentoTimeB","name":"Glide Time [B]","type":"int","min":0,"max":4095,"step":1},
+              {"id":"PortaC","name":"Glide [C] off/on","type":"bool"},
+              {"id":"PortamentoTimeC","name":"Glide Time [C]","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Vol_A","name":"Volume [A]","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Vol_B","name":"Volume [B]","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Vol_C","name":"Volume [C]","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Vol_Ext","name":"(1) Volume External in","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ExternalWet","name":"External Signal Dry<=>Wet","type":"int","min":0,"max":4095,"step":1},
+              {"id":"BalanceAB_C","name":"(2) Balance [A/B/Ext] <=> [C]","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1}
+           ]
+       }, 
+       {  
+          "id": "Oscillators", "name": "Oscillators incl. Modulation Destinations (3-8) [Osc C will be generated via logical operations on A and B and adjustable modifiers]", "type": "group", "params":  
+           [
+              {"id": "WaveTblA","name": "Source Wavetable A","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
+              {"id":"ScanWavTblA","name":"(3) Scan Wavetable A","type":"int","min":0,"max":4095,"step":1}, 
+              {"id": "pitch_A","type": "int","name": "(4) Pitch A","min": -48,"max": 48,"step": 1 },
+              {"id": "tune_A","type": "int","name": "Tune A (also offset for quantisation of input, if activated!)","min": -1200,"max": 1200,"step": 1},
+              {"id": "WaveTblB","name": "Source Wavetable B","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
+              {"id":"ScanWavTblB","name":"(5) Scan Wavetable B","type":"int","min":0,"max":4095,"step":1},
+              {"id": "pitch_B","type": "int","name": "(6) Pitch B","min": -48,"max": 48,"step": 1 },
+              {"id": "tune_B","type": "int","name": "Tune B (also offset for quantisation of input, if activated!)","min": -1200,"max": 1200,"step": 1},
+              {"id": "WaveTblC","name": "[Sub B/Result A/B] Wavetable C","type": "int","min": 0,"max": 31,"step": 1,"hint":"If wave bank is unavailable in ROM, no sound will be audible"},
+              {"id":"ScanWavTblC","name":"(7) Scan Wavetable C","type":"int","min":0,"max":4095,"step":1},
+              {"id": "relative_tune_C","type": "int","name": "(8) Tune C (Osc B or Modifier Logic)","min": -1200,"max": 1200,"step": 1}
+           ]
+       },
+       {  
+          "id": "Logic", "name": "Logical Connective", "type": "group", "params":  
+           [
+              {"id":"GeneratePitchC","name":"Generate pitch for OSC C off/on","type":"bool"}, 
+              {"id":"CnotAorB","name":"Generate C via A==B<->A!=B","type":"bool"},
+              {"id":"ChooseBforNot","name":"If logic A!=B choose for C: A<->B","type":"bool"},
+              {"id":"UseABGate","name":"Trigger C only if Gate from A or B n/y","type":"bool"},
+              {"id":"GateForCisB","name":"Select Gate for C: A <-> B","type":"bool"}
+           ]
+       },
+       {
+          "id": "Modifiers", "name": "Modifiers", "type": "group", "params":  
+           [  
+              {"id":"LFOspeedC","name":"Frequ-Mod Speed [C]","type":"int","min":0,"max":4095,"step":1}, 
+              {"id":"LFOamountC","name":"Frequ-Mod Amount [C]","type":"int","min":0,"max":4095,"step":1},  
+              {"id":"ExtModCisOn","name":"External Mod [C] off/on","type":"bool"}, 
+              {"id":"ExtModGain","name":"External Mod Gain","type":"int","min":0,"max":4095,"step":1}, 
+              {"id":"AmountForExternalMod","name":"Amount of External Mod [C]","type":"int","min": -2047,"max": 2047,"step": 1},
+              {"id":"ExternalDetectToRelease","name":"External Signal modifies: FrequMod<->Release [C]","type":"bool"},
+              {"id":"AccentModCisOn","name":"Accent Mod [C] off/on","type":"bool"}, 
+              {"id":"DetectAccentLevel","name":"Accent Level of output","type":"int","min":0,"max":4095,"step":1},
+              {"id":"AmountForAccentMod","name":"Amount of Accent Mod [C]","type":"int","min": -2047,"max": 2047,"step": 1},              
+              {"id":"AccentToScanC","name":"Accent to: Bend<->Wavescan [C]","type":"bool"},
+              {"id":"KeytrackModCisOn","name":"Keytrack Mod [C] off/on","type":"bool"}, 
+              {"id": "KeytrackingLevel","type": "int","name": "Keytracking [C] to Effect (Delaytime/Resonator Structure)","min": -2047,"max": 2047,"step": 1},
+              {"id":"KeytrackSlew","name":"Keytracking slew limiter off/on","type":"bool"},
+              {"id":"KeytrackingToEcho","name":"Keytracking [C] to: Resonator<->Delay","type":"bool"}
+           ]
+       },
+       {  
+          "id": "VolEnv", "name": "Volume Envelopes OSC A,B,C", "type": "group", "params":  
+           [
+               {"id":"EGvolActive_A","name":"Volume EG [A] off/on","type":"bool"},
+               {"id":"EGvolSlow_A","name":"Slow Envelope [A] n/y","type":"bool"},
+               {"id":"AttackVol_A","name":"Attack [A]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayVol_A","name":"Decay [A]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SustainVol_A","name":"Sustain [A]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ReleaseVol_A","name":"Release [A]","type":"int","min":0,"max":4095,"step":1},
+
+               {"id":"EGvolActive_B","name":"Volume EG [B] off/on","type":"bool"},
+               {"id":"EGvolSlow_B","name":"Slow Envelope [B] n/y","type":"bool"},
+               {"id":"AttackVol_B","name":"Attack [B]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayVol_B","name":"Decay [B]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SustainVol_B","name":"Sustain [B]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ReleaseVol_B","name":"Release [B]","type":"int","min":0,"max":4095,"step":1},
+
+               {"id":"EGvolActive_C","name":"Volume EG [C] off/on","type":"bool"},
+               {"id":"EGvolSlow_C","name":"Slow Envelope [C] n/y","type":"bool"},
+               {"id":"AttackVol_C","name":"Attack [C]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DecayVol_C","name":"Decay [C]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SustainVol_C","name":"Sustain [C]","type":"int","min":0,"max":4095,"step":1},
+               {"id":"ReleaseVol_C","name":"Release [C]","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+          "id": "Delay", "name": "Delay incl. Modulation Destinations (9-11)", "type": "group", "params":  
+           [
+               {"id":"DelayEnable","name":"Delay off/on","type":"bool"},  
+               {"id":"AddDelayAfterResonator","name":"Delay after Resonator n/y","type":"bool"},  
+               {"id":"DelayDryWet","name":"(9) Delay Dry<=>Wet","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DelayTimeShortened","name":"Shorten Delay Times to 0.5 seconds n/y","type":"bool"},  
+               {"id":"DelayTime","name":"(10) Delay Time (max. 0.5 or 2 Sec.)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"DelayFeedback","name":"(11) Delay Feedback","type":"int","min":0,"max":4095,"step":1}
+            ]  
+       },
+       {  
+          "id": "Resonator", "name": "Resonator  incl. Modulation Destinations (12-17)", "type": "group", "params":  
+           [
+              {"id":"ResonatorOn","name":"Resonator off/on","type":"bool"},  
+              {"id":"ResonatorDryWet","name":"(12) Resonator Dry<=>Wet","type":"int","min":0,"max":4095,"step":1},
+              {"id":"WaveShaperDryWet","name":"(13) Drive Amount","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResonatorPosition","name":"Resonator Position","type":"int","min":0,"max":23,"step":1},
+              {"id":"ResonatorFreq","name":"(14) Resonator Frequency","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResonatorStructure","name":"(15) Resonator Structure","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResonatorBrightness","name":"(16) Resonator Brightness","type":"int","min":0,"max":4095,"step":1},
+              {"id":"ResonatorDamping","name":"(17) Resonator Damping","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {
+         "id": "LFOs","name": "LFO Types->0)SINE 1)SQUARE 2)SINE LOW 3)SINE HI 4)TRI LOW 5)TRI HI 6)S&H / Dest->Global:0)Tune 1)ExtIn 2)Mix A:3)Scan 4)Pitch B:5)Scan 6)Pitch C:7)Scan 8)Tune Delay:9)Wet 10)Time 11)Feed Reso:12)Wet 13)Drive 14)Freq 15)Struct 16)Bright 17)Damp","type": "group","params": 
+         [
+            {"id": "lfoActive_1","name": "Enable LFO 1 n/y","type": "bool"},
+            {"id":"lfoDestination_1","name":"Destination LFO 1","hint": "Mod Pitch,Scan,Effects","type": "int","min": 0,"max": 17,"step": 1},
+            {"id":"lfoType_1","name":"Type LFO 1","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_1","name":"Modulation Speed LFO 1","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_1","name":"Modulation Intensity LFO 1","type":"int","min":0,"max":4095,"step":1},
+            
+            {"id": "lfoActive_2","name": "Enable LFO 2 n/y","type": "bool"},
+            {"id":"lfoDestination_2","name":"Destination LFO 2","hint": "Mod Pitch,Scan,Effects","type": "int","min": 0,"max": 17,"step": 1},
+            {"id":"lfoType_2","name":"Type LFO 2","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_2","name":"Modulation Speed LFO 2","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_2","name":"Modulation Intensity LFO 2","type":"int","min":0,"max":4095,"step":1},
+            
+            {"id": "lfoActive_3","name": "Enable LFO 3 n/y","type": "bool"},
+            {"id":"lfoDestination_3","name":"Destination LFO 3","hint": "Mod Pitch,Scan,Effects","type": "int","min": 0,"max": 17,"step": 1},
+            {"id":"lfoType_3","name":"Type LFO 3","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_3","name":"Modulation Speed LFO 3","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_3","name":"Modulation Intensity LFO 3","type":"int","min":0,"max":4095,"step":1},
+            
+            {"id": "lfoActive_4","name": "Enable LFO 4 n/y","type": "bool"},
+            {"id":"lfoDestination_4","name":"Destination LFO 4","hint": "Mod Pitch,Scan,Effects","type": "int","min": 0,"max": 17,"step": 1},
+            {"id":"lfoType_4","name":"Type LFO 4","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_4","name":"Modulation Speed LFO 4","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_4","name":"Modulation Intensity LFO 4","type":"int","min":0,"max":4095,"step":1},
+                        
+            {"id": "lfoActive_5","name": "Enable LFO 5 n/y","type": "bool"},
+            {"id":"lfoDestination_5","name":"Destination LFO 5","hint": "Mod Pitch,Scan,Effects","type": "int","min": 0,"max": 17,"step": 1},
+            {"id":"lfoType_5","name":"Type LFO 5","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_5","name":"Modulation Speed LFO 5","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_5","name":"Modulation Intensity LFO 5","type":"int","min":0,"max":4095,"step":1},
+            
+            {"id": "lfoActive_6","name": "Enable LFO 6 n/y","type": "bool"},
+            {"id":"lfoDestination_6","name":"Destination LFO 6","hint": "Mod Pitch,Scan,Effects","type": "int","min": 0,"max": 17,"step": 1},
+            {"id":"lfoType_6","name":"Type LFO 6","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_6","name":"Modulation Speed LFO 6","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_6","name":"Modulation Intensity LFO 6","type":"int","min":0,"max":4095,"step":1},
+                        
+            {"id": "lfoActive_7","name": "Enable LFO 7 n/y","type": "bool"},
+            {"id":"lfoDestination_7","name":"Destination LFO 7","hint": "Mod Pitch,Scan,Effects","type": "int","min": 0,"max": 17,"step": 1},
+            {"id":"lfoType_7","name":"Type LFO 7","hint": "0: SINE, 1: SQUARE, 2: HALF-SINE RIGHT, 3: HALF-SINE LEFT, 4: TRI RIGHT, 5: TRI LEFT, 6: SAMPLE & HOLD","type": "int","min": 0,"max": 6,"step": 1},
+            {"id":"lfoSpeed_7","name":"Modulation Speed LFO 7","type":"int","min":0,"max":4095,"step":1},
+            {"id":"lfoAmnt_7","name":"Modulation Intensity LFO 7","type":"int","min":0,"max":4095,"step":1}
+         ]
+       }
+   ] 
+}
