@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name SamacSys_Parts)(type KiCad)(uri C:/Users/rmanzke/Downloads/SamacSys_Parts.pretty)(options "")(descr ""))
+  (lib (name esp32-eurorack-audio)(type KiCad)(uri ${KIPRJMOD}/esp32-eurorack-audio.pretty)(options "")(descr ""))
+)
