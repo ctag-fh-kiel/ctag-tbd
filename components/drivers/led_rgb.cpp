@@ -27,7 +27,7 @@ respective component folders / files if different from this license.
 using namespace CTAG::DRIVERS;
 
 #if defined(CONFIG_TBD_PLATFORM_MK2)
-    #define PIN_NUM_RED 2
+    #define PIN_NUM_RED 26
     #define PIN_NUM_GREEN 4
     #define PIN_NUM_BLUE 25
 #else
