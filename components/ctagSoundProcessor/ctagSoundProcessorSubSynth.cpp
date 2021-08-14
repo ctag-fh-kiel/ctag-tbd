@@ -203,7 +203,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_srcsel = val;
             return;
         }
@@ -214,7 +214,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_cascade = val;
             return;
         }
@@ -225,7 +225,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_partials = val;
             return;
         }
@@ -236,7 +236,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_gain = val;
             return;
         }
@@ -247,7 +247,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("trig") == 0) {
-            if (val >= -1 && val <= 1)
+            if (val >= -1 && val <= N_TRIGS)
                 trig_enableEG = val;
             return;
         }
@@ -258,7 +258,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_attack = val;
             return;
         }
@@ -269,7 +269,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_decay = val;
             return;
         }
@@ -280,7 +280,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_sustain = val;
             return;
         }
@@ -291,7 +291,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_release = val;
             return;
         }
@@ -302,7 +302,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_root_frequency = val;
             return;
         }
@@ -313,7 +313,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_root_bwidth = val;
             return;
         }
@@ -324,7 +324,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_root_level = val;
             return;
         }
@@ -342,7 +342,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_p_harm[index] = val;
             return;
         }
@@ -356,7 +356,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_p_bwidth[index] = val;
             return;
         }
@@ -370,7 +370,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_p_gain[index] = val;
             return;
         }
@@ -391,7 +391,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_p_modbw[index] = val;
             return;
         }
@@ -412,7 +412,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_p_modgain[index] = val;
             return;
         }
@@ -425,7 +425,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("trig") == 0) {
-            if (val >= -1 && val <= 1)
+            if (val >= -1 && val <= N_TRIGS)
                 trig_eg_enableEG[index] = val;
             return;
         }
@@ -438,7 +438,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("trig") == 0) {
-            if (val >= -1 && val <= 1)
+            if (val >= -1 && val <= N_TRIGS)
                 trig_eg_loopEG[index] = val;
             return;
         }
@@ -451,7 +451,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("trig") == 0) {
-            if (val >= -1 && val <= 1)
+            if (val >= -1 && val <= N_TRIGS)
                 trig_eg_mode[index] = val;
             return;
         }
@@ -465,7 +465,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_eg_attack[index] = val;
             return;
         }
@@ -479,7 +479,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
             return;
         }
         if (key.compare("cv") == 0) {
-            if (val >= -1 && val <= 3)
+            if (val >= -1 && val <= N_CVS)
                 cv_eg_decay[index] = val;
             return;
         }

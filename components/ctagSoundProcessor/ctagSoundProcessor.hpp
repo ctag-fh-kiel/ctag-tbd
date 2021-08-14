@@ -70,8 +70,8 @@ namespace CTAG {
     namespace SP {
         struct ProcessData {
             float *buf;
-            const float *cv;
-            const uint8_t *trig;
+            float *cv;
+            uint8_t *trig;
         };
 
         class ctagSoundProcessor {
@@ -129,7 +129,7 @@ namespace CTAG {
                     return;
                 }
                 if (key.compare("trig") == 0) {
-                    if (val >= -1 && val < N_TRGS) {
+                    if (val >= -1 && val < N_TRIGS) {
                         auto it = pMapTrig.find(id);
                         if (it != pMapTrig.end()) {
                             (it->second)(val);

@@ -27,26 +27,36 @@ respective component folders / files if different from this license.
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <string.h>
+#include <cmath>
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
 
 // SPI pins
-#define PIN_NUM_CS_WM 4
-#define PIN_NUM_MOSI 13
-#define PIN_NUM_CLK 12
-#define PIN_NUM_MISO 0
+#if defined(CONFIG_TBD_PLATFORM_MK2)
+    #define PIN_NUM_CS_WM 5
+    #define PIN_NUM_MOSI 23
+    #define PIN_NUM_CLK 18
+    #define PIN_NUM_MISO -1
+#else
+    #define PIN_NUM_CS_WM 4
+    #define PIN_NUM_MOSI 13
+    #define PIN_NUM_CLK 12
+    #define PIN_NUM_MISO 0
+#endif
+
 
 // I2S
 #define I2S_BCLK_PIN 21
 #define I2S_ADCDAT_PIN 27
 #define I2S_DACDAT_PIN 22
-
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
-    #define I2S_LRCLK_PIN 19
-#elif CONFIG_TBD_PLATFORM_STR
+#if defined(CONFIG_TBD_PLATFORM_STR)
     #define I2S_LRCLK_PIN 25
+#else
+    #define I2S_LRCLK_PIN 19
 #endif
+
+
 
 using namespace CTAG::DRIVERS;
 
@@ -150,8 +160,11 @@ void Codec::InitCodec() {
     HighPassEnable();
     vTaskDelay(1000 / portTICK_PERIOD_MS); // wait until system is settled a bit
     HighPassDisable();
-#elif CONFIG_TBD_PLATFORM_V2
+#elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     setupSPIWM8978();
+    setupI2SWM8978();
+#elif CONFIG_TBD_PLATFORM_AEM
+    WM8974_Init();
     setupI2SWM8978();
 #endif
 #ifdef CONFIG_TBD_PLATFORM_STR
@@ -246,7 +259,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
         *buf++ = div * (float) *ptrTmp++;
         sz--;
     }
-#elif CONFIG_TBD_PLATFORM_V2
+#elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     int16_t tmp[sz * 2];
     int16_t *ptrTmp = tmp;
     size_t nb;
@@ -258,8 +271,22 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
         *buf++ = div * (float) *ptrTmp++;
         sz--;
     }
+#elif CONFIG_TBD_PLATFORM_AEM
+    int16_t tmp[sz * 2];
+    int16_t *ptrTmp = tmp;
+    size_t nb;
+    const float div = 3.0518509476E-5f;
+    i2s_read(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
+    while (sz > 0) {
+        float s = div * (float) *ptrTmp++;
+        ptrTmp++;
+        *buf++ = s;
+        *buf++ = s;
+        sz--;
+    }
 #endif
 }
+
 
 void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
 #if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
@@ -279,7 +306,7 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp[i * 2 + 1] = tmp2 << 8;
     }
     i2s_write(I2S_NUM_0, tmp, sz * 4 * 2, &nb, portMAX_DELAY);
-#elif CONFIG_TBD_PLATFORM_V2
+#elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     int16_t tmp[sz * 2];
     int16_t tmp2;
     size_t nb;
@@ -294,6 +321,20 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp2 = MAX(tmp2, -32767);
         tmp2 = MIN(tmp2, 32767);
         tmp[i * 2 + 1] = tmp2;
+    }
+    i2s_write(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
+#elif CONFIG_TBD_PLATFORM_AEM
+    int16_t tmp[sz * 2];
+    int16_t tmp2;
+    size_t nb;
+    const float mult = 32767.f;
+    // 16 bit word config
+    for (int i = 0; i < sz; i++) {
+        tmp2 = (int32_t) (mult * buf[i * 2]);
+        tmp2 = MAX(tmp2, -32767);
+        tmp2 = MIN(tmp2, 32767);
+        tmp[i * 2] = tmp2;
+        //tmp[i * 2 + 1] = 0; // not used in mono codec
     }
     i2s_write(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
 #endif
@@ -323,7 +364,7 @@ void Codec::setupSPIWM8978() {
 }
 
 void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
-#ifdef CONFIG_TBD_PLATFORM_V2
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     if(!isReady){
         ESP_LOGD("CODEC", "Codec not initialized");
     }
@@ -333,7 +374,11 @@ void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
 }
 
 void Codec::setupI2SWM8978() {
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
     ESP_LOGI("WM8978", "Initializing CODEC I2S");
+#elif CONFIG_TBD_PLATFORM_AEM
+    ESP_LOGI("WM8974", "Initializing CODEC I2S");
+#endif
     // allow GPIO0 to be clock out
     gpio_config_t io_conf;
     io_conf.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_DISABLE;
@@ -749,5 +794,29 @@ void Codec::freeSPI() {
     assert(ret == ESP_OK);
     ret = spi_bus_free(VSPI_HOST);
     assert(ret == ESP_OK);
+}
+
+u8 Codec::WM8974_Init(void) {
+    ESP_LOGI("WM8974", "Init");
+    WM8978_Write_Reg(0, 0); //soft reset WM8978
+    vTaskDelay(100 / portTICK_PERIOD_MS); // wait until system is settled a bit
+    WM8978_Write_Reg(1, 0b001001111); // enable AUX input buffer
+    WM8978_Write_Reg(2, 0b000010101); // enable ADC, PGA and boost section
+    WM8978_Write_Reg(3, 0b010001001); // enable DAC, Mono out, mono mixer
+    WM8978_Write_Reg(4, 0b000010110); // i2s mode + dac lr swap + adc lr swap
+    WM8978_Write_Reg(5, 0);
+    WM8978_Write_Reg(6, 0);
+    WM8978_Write_Reg(7, 0);
+    WM8978_Write_Reg(8, 0);
+    WM8978_Write_Reg(10, 0b000001000); // DAC 128x Oversampling
+    WM8978_Write_Reg(11, 0b011110011); // DAC level
+    WM8978_Write_Reg(14, 0b100001000); // enable ADC HP + 128x Oversampling
+    WM8978_Write_Reg(15, 0b011111111); // ADC level
+    WM8978_Write_Reg(40, 0b000000000); // no attenuation
+    WM8978_Write_Reg(44, 0b000000100); // aux to PGA
+    WM8978_Write_Reg(45, 0b000010011); // PGA level
+    WM8978_Write_Reg(56, 0b000000001); // DAC to Mono Mixer
+    ESP_LOGI("WM8974", "Init finished");
+    return 0;
 }
 

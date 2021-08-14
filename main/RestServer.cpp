@@ -37,6 +37,7 @@ respective component folders / files if different from this license.
 #include "esp_vfs.h"
 #include "cJSON.h"
 #include "SPManager.hpp"
+#include "Favorites.hpp"
 #include "Calibration.hpp"
 #include "OTAManager.hpp"
 #include "sdkconfig.h"
@@ -173,8 +174,11 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
     std::string id(v);
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Set active plugin for channel %d %s %s", ch, v, s);
-    if (ch == 0 || ch == 1)
+    if (ch == 0 || ch == 1){
         CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
+        FAV::Favorites::DeactivateFavorite();
+    }
+
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, 0, 0);
     return ESP_OK;
@@ -256,8 +260,10 @@ esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
     char ch = req->uri[urilen - qlen - 2];
     ch -= 0x30;
     ESP_LOGD("HTTPD", "Load preset for channel %s %c", req->uri, ch);
-    if (ch == 0 || ch == 1)
+    if (ch == 0 || ch == 1){
         CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(ch, atoi(number));
+        FAV::Favorites::DeactivateFavorite();
+    }
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, NULL, 0);
     return ESP_OK;
@@ -273,7 +279,7 @@ esp_err_t RestServer::StartRestServer() {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.core_id = 0;
     config.uri_match_fn = httpd_uri_match_wildcard;
-    config.task_priority = tskIDLE_PRIORITY + 3;
+    config.task_priority = tskIDLE_PRIORITY + 4;
     config.max_uri_handlers = 20;
     config.stack_size = 8192;
     /*
@@ -464,6 +470,15 @@ esp_err_t RestServer::StartRestServer() {
             .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &ota_post_uri);
+
+    /* favorite handler*/
+    httpd_uri_t favorite_get_uri = {
+            .uri = "/api/v1/favorite*",
+            .method = HTTP_POST,
+            .handler = &RestServer::favorite_get_handler,
+            .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &favorite_get_uri);
 
     /* set sample upload */
     httpd_uri_t srom_post_uri = {
@@ -729,13 +744,66 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
+// transmit io capabilities
 esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
-#ifdef CONFIG_TBD_PLATFORM_STR
-    string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV1\",\"CV2\",\"CV3\",\"CV4\",\"CV5\",\"CV6\",\"CV7\",\"CV8\"]}");
+#if defined(CONFIG_TBD_PLATFORM_STR)
+    string const s("{\"p\":\"str\",\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV1\",\"CV2\",\"CV3\",\"CV4\",\"CV5\",\"CV6\",\"CV7\",\"CV8\"]}");
+#elif defined(CONFIG_TBD_PLATFORM_MK2)
+    string const s("{\"p\":\"mk2\",\"t\":[\"TRIG0\",\"TRIG1\",\"TRIG2\",\"TRIG3\",\"TRIG4\",\"TRIG5\",\"M0NOTE\",\"M1NOTE\",\"M0VEL\",\"M1VEL\",\"MOD0\",\"MOD1\"],\"cv\":[\"UCVPOT0\",\"UCVPOT1\",\"UCVPOT2\",\"UCVPOT3\",\"POT0\",\"POT1\",\"POT2\",\"POT3\",\"PCV0\",\"PCV1\",\"BPCV0\",\"BPCV1\",\"BPCV2\",\"BPCV3\",\"M0NOTE\",\"M1NOTE\",\"M0VEL\",\"M1VEL\",\"M0PB\",\"M1PB\",\"M0MOD\",\"M1MOD\"]}");
 #else
-    string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
+    string const s("{\"p\":\"mk1\",\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
 #endif
     httpd_resp_sendstr(req, s.c_str());
+    return ESP_OK;
+}
+
+esp_err_t RestServer::favorite_get_handler(httpd_req_t *req) {
+    string cmd{req->uri};
+
+    ESP_LOGI("REST", "Favorite handler cmd: %s", cmd.c_str());
+
+    if(cmd.rfind("getAll") != string::npos){
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, FAV::Favorites::GetAllFavorites().c_str());
+        return ESP_OK;
+    }
+
+    if(cmd.rfind("store") != string::npos){
+        char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+        int ret = httpd_req_recv(req, content, req->content_len);
+        if (ret <= 0) {  /* 0 return value indicates connection closed */
+            /* Check if timeout occurred */
+            if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+                /* In case of timeout one can choose to retry calling
+                 * httpd_req_recv(), but to keep it simple, here we
+                 * respond with an HTTP 408 (Request Timeout) error */
+                httpd_resp_send_408(req);
+            }
+            /* In case of error, returning ESP_FAIL will
+             * ensure that the underlying socket is closed */
+            return ESP_FAIL;
+        }
+        content[req->content_len] = 0;
+        // call upstream API here
+        int id = stoi((cmd.substr(cmd.length() - 1, 1)));
+        CTAG::FAV::Favorites::StoreFavorite(id, string(content));
+        free(content);
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_send(req, NULL, 0);
+        return ESP_OK;
+    }
+
+    if(cmd.rfind("recall") != string::npos){
+        // call upstream API here
+        int id = stoi((cmd.substr(cmd.length() - 1, 1)));
+        FAV::Favorites::ActivateFavorite(id);
+        httpd_resp_set_type(req, "text/html");
+        httpd_resp_send(req, NULL, 0);
+        return ESP_OK;
+    }
+
+    httpd_resp_send_404(req);
+
     return ESP_OK;
 }

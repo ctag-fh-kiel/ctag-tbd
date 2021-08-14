@@ -14,6 +14,8 @@ add_definitions(
         -Wno-unused-local-typedefs
         -DTEST
         -DCONFIG_DSP_ANSI=1
+        -DN_CVS=4
+        -DN_TRIGS=2
 )
 
 set(TBD_SIM 1)
@@ -126,9 +128,7 @@ add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
 target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
 ## Application
-if(APPLE)
-    set(Boost_USE_STATIC_LIBS ON)
-endif()
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.67.0 COMPONENTS system thread filesystem program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "could not find Boost!")
@@ -141,17 +141,18 @@ set(SRC_FILES2
         "fake-idf/esp_spi_flash.c"
         )
 
-# paths for sample-rom input files
-set(SAMPLE_ROM_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom/sample-rom.tbd" CACHE FILEPATH "Sample-rom raw file")
-
-
 add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
 target_compile_definitions(tbd-sim PRIVATE SAMPLE_ROM_FILE="${SAMPLE_ROM_FILE}")
-target_link_libraries(tbd-sim simple-web-server)
-target_link_libraries(tbd-sim rtaudio ctagsp mutable esp-dsp)
-target_link_libraries(tbd-sim ${Boost_LIBRARIES})
+
 if(WIN32)
-    target_link_libraries(tbd-sim ws2_32 wsock32)
+    target_link_libraries(tbd-sim -static simple-web-server)
+    target_link_libraries(tbd-sim -static rtaudio ctagsp mutable esp-dsp)
+    target_link_libraries(tbd-sim -static ${Boost_LIBRARIES})
+    target_link_libraries(tbd-sim -static ws2_32 wsock32)
+else()
+    target_link_libraries(tbd-sim simple-web-server)
+    target_link_libraries(tbd-sim rtaudio ctagsp mutable esp-dsp)
+    target_link_libraries(tbd-sim ${Boost_LIBRARIES})
 endif()
 target_include_directories(tbd-sim PRIVATE ${Boost_INCLUDE_DIR})
 target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
@@ -179,7 +180,7 @@ target_include_directories(run_tests PRIVATE ${Boost_INCLUDE_DIR})
 install(CODE "set(CMAKE_INSTALL_LOCAL_ONLY true)")
 install(TARGETS tbd-sim RUNTIME DESTINATION simulator/bin)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION .)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom DESTINATION .)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../sample_rom/sample-rom.tbd DESTINATION simulator/data)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION simulator)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/www DESTINATION simulator)
 

@@ -114,20 +114,20 @@ void ADC::InitADCSystem() {
     rtc_clk_fast_freq_set(RTC_FAST_FREQ_XTALD4);
     init_ulp_program();
 
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     init_analog_sub_system();
 #endif
 
     ESP_ERROR_CHECK(ulp_run((&ulp_entry - RTC_SLOW_MEM) / sizeof(uint32_t)));
 
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     SetCVINUnipolar(0);
     SetCVINUnipolar(1);
 #endif
 }
 
 void ADC::SetCVINUnipolar(int ch) {
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     if (ch == 0) {
         dac_output_voltage(DAC_CHANNEL_1, 55); // offset
         adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_0); // GPIO32
@@ -139,7 +139,7 @@ void ADC::SetCVINUnipolar(int ch) {
 }
 
 void ADC::SetCVINBipolar(int ch) {
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     if (ch == 0) {
         dac_output_voltage(DAC_CHANNEL_1, 57); // offset
         adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_6); // GPIO32

@@ -243,6 +243,60 @@ Save a preset with name
 ]
 ```
 
+####URL: `/favorites/getAll`
+
+Get array of favorites, max. 10 supported
+
+**Method** : `POST`
+
+**Data example**
+
+```json
+[
+  {
+   "name": "Favorite 0",
+   "plug-0": "Void",
+   "pre-0": 0,
+   "plug-1": "Void",
+   "pre-1": 0,
+   "ustring": ""
+  },
+  ...
+ ]
+```
+
+
+####URL: `/favorites/store/:id`
+
+Store favorite with id
+
+**Method** : `POST`
+
+**Data example**
+
+id is the favorite which is to be stored
+
+```json
+{
+ "name": "New Favorite",
+ "plug-0": "BCSR",
+ "pre-0": 3,
+ "plug-1": "WTOsc",
+ "pre-1": 2,
+ "ustring": ""
+}
+```
+
+####URL: `/favorites/recall/:id`
+
+Recall favorite with given id
+
+**Method** : `POST`
+
+id is the favorite which is to be activated
+plug-? is the id of the plugin
+
+
 ####URL: `/getConfiguration`
 
 Get the module configuration

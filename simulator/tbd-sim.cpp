@@ -32,7 +32,7 @@ int main(int ac, char **av) {
     bool bListSoundCards = false;
     bool bOutputOnly = false;
     int iDeviceNum = 0;
-    string wavFile;
+    string wavFile, sromFile;
     po::options_description desc(string(av[0]) + " options");
     po::variables_map vm;
     try {
@@ -42,6 +42,8 @@ int main(int ac, char **av) {
                 ("device,d", po::value<int>(&iDeviceNum)->default_value(0), "sound card device id, default 0")
                 ("output,o", po::bool_switch(&bOutputOnly)->default_value(false),
                  "use output only (if no duplex device available)")
+                ("srom,s", po::value<string>(&sromFile),
+                 "file for sample rom emulation")
                 ("wav,w", po::value<string>(&wavFile),
                  "read audio in from wav file (arg), must be 2 channel stereo float32 data, will be cycled through indefinitely");
 
@@ -68,7 +70,7 @@ int main(int ac, char **av) {
         }
     }
 
-    SimSPManager::StartSoundProcessor(iDeviceNum, wavFile, bOutputOnly);
+    SimSPManager::StartSoundProcessor(iDeviceNum, wavFile, sromFile, bOutputOnly);
 
     WebServer webServer;
     webServer.Start();

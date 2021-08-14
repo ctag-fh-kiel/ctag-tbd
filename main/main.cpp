@@ -29,10 +29,15 @@ respective component folders / files if different from this license.
 #include "fs.hpp"
 #include "led_rgb.hpp"
 #include "gpio.hpp"
+
 #include "Calibration.hpp"
 #include "codec.hpp"
 #include <vector>
 #include "SPManager.hpp"
+
+#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
+    #include "Display.hpp"
+#endif
 
 using namespace CTAG;
 
@@ -51,14 +56,18 @@ void app_main() {
     DRIVERS::FileSystem::InitFS();
 
 #ifndef CONFIG_TBD_PLATFORM_STR
-    DRIVERS::ADC::InitADCSystem();
     DRIVERS::LedRGB::InitLedRGB();
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
 #endif
-    DRIVERS::GPIO::InitGPIO();
 
-    // calibration starts if trig0 is pressed at boot up
-    CAL::Calibration::Init();
+#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
+    DRIVERS::Display::Init();
+    DRIVERS::Display::ShowFWVersion();
+#endif
+
+#if defined(CONFIG_SERIAL_UI)
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+#endif
 
     AUDIO::SoundProcessorManager::StartSoundProcessor();
 }

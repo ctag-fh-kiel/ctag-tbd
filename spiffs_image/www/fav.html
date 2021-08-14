@@ -1,0 +1,49 @@
+<ons-page id="fav">
+    <ons-toolbar>
+        <div class="left">
+            <ons-back-button>Favorites</ons-back-button>
+        </div>
+        <div class="center">Edit Favorite</div>
+    </ons-toolbar>
+    <ons-list-header>Name</ons-list-header>
+    <ons-list-item>
+        <ons-input id="fav-name" type="text" maxlength="10" style="background-color: white"></ons-input>
+    </ons-list-item>
+
+    <ons-list-header>User String</ons-list-header>
+    <ons-list-item>
+        <ons-input id="fav-str" type="text" maxlength="250" style="width: 100%;background-color: white"></ons-input>
+    </ons-list-item>
+    <ons-list-header>Persist</ons-list-header>
+    <ons-list-item>
+        <ons-button id="fav-store" style="margin-top: 10px;background-color: red;">Store</ons-button>
+    </ons-list-item>
+    <script>
+        ons.getScriptPage().onInit = function () {
+            let modal_fv = $('#modal-fv');
+            let fav = window.favorites.data[window.favorites.selected];
+            $('#fav-name').val(fav.name);
+            $('#fav-str').val(fav.ustring);
+
+            $('#fav-store').on('click', () => {
+                    modal_fv.show();
+                    window.favorites.data[window.favorites.selected].name = $('#fav-name').val();
+                    window.favorites.data[window.favorites.selected].ustring = $('#fav-str').val();
+                    let data = window.favorites.data[window.favorites.selected];
+                    $.ajaxq('myq', {
+                        url: 'api/v1/favorites/store/' + parseInt(window.favorites.selected),
+                        type: 'post',
+                        data: JSON.stringify(data),
+                        success: function () {
+                            modal_fv.hide();
+                            document.querySelector('#myNavigator').popPage();
+                        }
+                    });
+                }
+            );
+        };
+    </script>
+    <ons-modal id="modal-fv" direction="up">
+        <ons-icon icon="md-spinner" size="28px" spin></ons-icon>Loading...
+    </ons-modal>
+</ons-page>

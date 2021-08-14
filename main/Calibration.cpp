@@ -214,7 +214,7 @@ void Calibration::calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvTyp
 }
 
 void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr) {
-#ifdef CONFIG_TBD_PLATFORM_STR
+#if defined(CONFIG_TBD_PLATFORM_STR)
     // -1.5V .. 5.5V unipolar
     mapOutPtr[0] = adcInPtr[0] * 0.00034188034188f;
     mapOutPtr[1] = adcInPtr[1] * 0.00034188034188f;
@@ -226,6 +226,7 @@ void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr
     mapOutPtr[5] = adcInPtr[5] * 0.0002442002442f;
     mapOutPtr[6] = adcInPtr[6] * 0.0002442002442f;
     mapOutPtr[7] = adcInPtr[7] * 0.0002442002442f;
+#elif defined(CONFIG_TBD_PLATFORM_MK2)
 #else
     // real-cv ins 0-1, pots 2-3
     for (int i = 0; i < N_CVS; i++) {
@@ -254,7 +255,7 @@ void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr
 }
 
 void Calibration::ConfigCVChannels(CVConfig ch0, CVConfig ch1, CVConfig ch2, CVConfig ch3) {
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     if (ch0 == CVConfig::CVUnipolar)
         DRIVERS::ADC::SetCVINUnipolar(0);
     else
@@ -272,7 +273,7 @@ void Calibration::ConfigCVChannels(CVConfig ch0, CVConfig ch1, CVConfig ch2, CVC
 }
 
 void Calibration::RequestCalibrationOnReboot() {
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1)
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     model->SetCalibrateOnReboot(true);
 #endif
 }
