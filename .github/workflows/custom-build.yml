@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       apps:
-        description: 'Apps to be removed from tbd.'  
+        description: 'Apps to be removed from tbd.'
+      deps:
+        description: 'Whether apps that share the same dependecies should be added or not.' 
 
 jobs:
   build:
@@ -16,6 +18,10 @@ jobs:
       uses: actions/checkout@v2
       with:
         submodules: 'recursive'
+        
+    - name: Test echo dependecy input 
+      run: |
+        echo "${{ github.event.inputs.deps }}"
         
     - name: Remove apps
       run: |
