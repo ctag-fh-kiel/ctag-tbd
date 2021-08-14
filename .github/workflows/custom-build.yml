@@ -26,7 +26,7 @@ jobs:
         
     - name: Remove apps
       run: |
-        if ${{ github.event.inputs.deps }} == "true"; then
+        if "${{ github.event.inputs.deps }}" == "true"; then
           echo "${{ github.event.inputs.apps }}" | python .github/analyse-dependencies.py | python .github/remove-apps.py
         else
           echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
