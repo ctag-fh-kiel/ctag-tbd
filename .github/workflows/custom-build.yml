@@ -26,7 +26,11 @@ jobs:
         
     - name: Remove apps
       run: |
-        echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
+        if ${{ github.event.inputs.deps }} == "true"; then
+          echo "${{ github.event.inputs.apps }}" | python .github/analyse-dependencies.py | python .github/remove-apps.py
+        else
+          echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
+        fi
 
     - name: Build binaries
       uses: ctag-fh-kiel/esp-idf-action@2
