@@ -853,7 +853,7 @@ maxDelayLength(88200), dlyLine(maxDelayLength)
   buffer_A = (int16_t*)heap_caps_malloc(260*64*2, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT); // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
   assert(buffer_A != NULL);
   memset(buffer_A, 0, 260*64*2);
-  fbuffer_A = (float*)heap_caps_malloc(512*4, MALLOC_CAP_8BIT|MALLOC_CAP_INTERNAL); // buffer for wavetable prep computations
+  fbuffer_A = (float*)heap_caps_malloc(512*4, MALLOC_CAP_SPIRAM); // buffer for wavetable prep computations
   assert(fbuffer_A != NULL);
   memset(fbuffer_A, 0, 512*4);
   wt_osc_A.Init();
@@ -862,7 +862,7 @@ maxDelayLength(88200), dlyLine(maxDelayLength)
   buffer_B = (int16_t*)heap_caps_malloc(260*64*2, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT); // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
   assert(buffer_B != NULL);
   memset(buffer_B, 0, 260*64*2);
-  fbuffer_B = (float*)heap_caps_malloc(512*4, MALLOC_CAP_8BIT|MALLOC_CAP_INTERNAL); // buffer for wavetable prep computations
+  fbuffer_B = (float*)heap_caps_malloc(512*4, MALLOC_CAP_SPIRAM); // buffer for wavetable prep computations
   assert(fbuffer_B != NULL);
   memset(fbuffer_B, 0, 512*4);
   wt_osc_B.Init();
@@ -871,7 +871,7 @@ maxDelayLength(88200), dlyLine(maxDelayLength)
   buffer_C = (int16_t*)heap_caps_malloc(260*64*2, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT); // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
   assert(buffer_C != NULL);
   memset(buffer_C, 0, 260*64*2);
-  fbuffer_C = (float*)heap_caps_malloc(512*4, MALLOC_CAP_8BIT|MALLOC_CAP_INTERNAL); // buffer for wavetable prep computations
+  fbuffer_C = (float*)heap_caps_malloc(512*4, MALLOC_CAP_SPIRAM); // buffer for wavetable prep computations
   assert(fbuffer_C != NULL);
   memset(fbuffer_C, 0, 512*4);
   wt_osc_C.Init();
