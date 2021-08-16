@@ -34,7 +34,7 @@ jobs:
         fi
 
     - name: Build binaries
-      uses: ctag-fh-kiel/esp-idf-action@2
+      uses: ctag-fh-kiel/esp-idf-action@3
 
     - name: Update partition table and rom config
       run: |
@@ -53,7 +53,7 @@ jobs:
 
     - name: Build binaries
       id: idf_build
-      uses: ctag-fh-kiel/esp-idf-action@2
+      uses: ctag-fh-kiel/esp-idf-action@3
       
     - name: Test output of build command
       run: echo "${{ steps.idf_build.outputs.build_output }}"
