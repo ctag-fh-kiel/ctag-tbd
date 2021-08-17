@@ -25,7 +25,7 @@ with open("partitions_example.csv", "w", newline="") as partitions:
     writer.writerow([f"# This partition was generated with the tbd-cloud-compiler. Now with {storage/1000000:.2f}MB (instead of 5MB) for your samples", 4*""])
 
 new_config = []
-platform = sys.stdin.read()
+platform = sys.stdin.read().strip()
 
 with open(f"sdkconfig.defaults.{platform}", "r") as sdkconfig:
     for line in sdkconfig:
