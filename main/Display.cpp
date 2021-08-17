@@ -72,12 +72,14 @@ void Display::ShowFWVersion() {
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length(), false);
     s = std::string(TBD_FW_VERSION);
+    if(s.length()>16)s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 1, s.c_str(), s.length(), false);
     s = std::string("TBD hw:");
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 2, s.c_str(), s.length(), false);
     s = std::string(TBD_HW_VERSION);
+    if(s.length()>16)s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
 }
