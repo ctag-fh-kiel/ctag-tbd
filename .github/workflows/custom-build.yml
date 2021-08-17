@@ -40,8 +40,7 @@ jobs:
 
     - name: Update partition table and rom config
       run: |
-        echo "${{ github.event.inputs.platform }}"
-        python .github/update-partition-table.py
+        echo "${{ github.event.inputs.platform }}" | python .github/update-partition-table.py
 
     - name: Print partition table and sdkconfig.defaults
       run: |
