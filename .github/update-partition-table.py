@@ -1,5 +1,6 @@
 import os
 import csv
+import sys
 
 bin_size = os.path.getsize("bin/ctag-tbd.bin")
 storage = 8000000 + (3000000 - bin_size)
