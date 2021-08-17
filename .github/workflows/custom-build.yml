@@ -6,7 +6,9 @@ on:
       apps:
         description: 'Apps to be removed from tbd.'
       deps:
-        description: 'Whether apps that share the same dependecies should be added or not.' 
+        description: 'Whether apps that share the same dependecies should be added or not.'
+      platform:
+        description: 'Firmware platform.'
 
 jobs:
   build:
@@ -38,6 +40,7 @@ jobs:
 
     - name: Update partition table and rom config
       run: |
+        echo "${{ github.event.inputs.platform }}"
         python .github/update-partition-table.py
 
     - name: Print partition table and sdkconfig.defaults
