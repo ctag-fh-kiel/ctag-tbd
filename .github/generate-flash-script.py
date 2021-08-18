@@ -14,5 +14,6 @@ command = command.replace("partition_table/", "")
 with open("flash.sh", "w") as flash_script:
     flash_script.write("#!/bin/sh\n")
     flash_script.write("# Change ESP_TOOL_PATH to the location of your esptool.py\n")
+    flash_script.write("# Change PORT to the port your tbd is connected\n")
     flash_script.write('export ESP_TOOL_PATH = "/opt/esp/idf/components/esptool_py/esptool/esptool.py"\n')
     flash_script.write(command)
