@@ -57,12 +57,12 @@ jobs:
       id: idf_build
       uses: ctag-fh-kiel/esp-idf-action@3
       
-    - name: Test output of build command
-      run: echo "${{ steps.idf_build.outputs.build_output }}"
+    - name: Generate flash script
+      run: echo "${{ steps.idf_build.outputs.build_output }}" | .github/generate-flash-script.py
 
     - name: Archive binaries
       run: |
-        zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
+        zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin flash.sh
 
     - name: Upload binary
       uses: actions/upload-artifact@v2.2.1
