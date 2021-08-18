@@ -58,7 +58,7 @@ jobs:
       uses: ctag-fh-kiel/esp-idf-action@3
       
     - name: Generate flash script
-      run: echo "${{ steps.idf_build.outputs.build_output }}" | .github/generate-flash-script.py
+      run: echo "${{ steps.idf_build.outputs.build_output }}" | python .github/generate-flash-script.py
 
     - name: Archive binaries
       run: |
