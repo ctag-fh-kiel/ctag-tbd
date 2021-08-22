@@ -3,10 +3,14 @@ import csv
 import sys
 
 bin_size = os.path.getsize("bin/ctag-tbd.bin")
-storage = 8000000 + (3000000 - bin_size)
+storage = 8388608 + (3145728 - bin_size)
 
-rom_start = 11534336 - 3000000 # hex: 0xb00000
-new_rom_start = rom_start - (3000000 - bin_size)
+rom_start = 11534336 - 3145728 # hex: 0xb00000
+new_rom_start = rom_start - (3145728 - bin_size)
+
+# Round storage and rom start to 4kb blocks
+storage = (storage // 4096) * 4096
+new_rom_start = ((new_rom_start // 4096) + 1) * 4096
 
 new_partitions = []
 
