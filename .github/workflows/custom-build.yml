@@ -1,0 +1,66 @@
+name: cloud-compiler
+
+on:
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: 'Apps to be removed from tbd.'
+      deps:
+        description: 'Whether apps that share the same dependecies should be added or not.'
+      platform:
+        description: 'Firmware platform.'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+        fetch-depth: 0
+        
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+        
+    - name: Remove apps
+      run: |
+        if "${{ github.event.inputs.deps }}" == "true"; then
+          echo "${{ github.event.inputs.apps }}" | python .github/analyse-dependencies.py | python .github/remove-apps.py
+        else
+          echo "${{ github.event.inputs.apps }}" | python .github/remove-apps.py
+        fi
+
+    - name: Build binaries
+      uses: ctag-fh-kiel/esp-idf-action@1
+
+    - name: Update partition table and rom config
+      run: |
+        echo "${{ github.event.inputs.platform }}" | python .github/update-partition-table.py
+        
+    - name: Remove previous build and sdkconfig
+      run: |
+        sudo rm -rf build
+        sudo rm -rf sdkconfig
+
+    - name: Build binaries
+      id: idf_build
+      uses: ctag-fh-kiel/esp-idf-action@3
+      
+    - name: Generate flash script
+      run: echo "${{ steps.idf_build.outputs.build_output }}" | python .github/generate-flash-script.py
+
+    - name: Archive binaries
+      run: |
+        zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin flash.sh
+
+    - name: Upload binary
+      uses: actions/upload-artifact@v2.2.1
+      with:
+        name: Custom tbd firmware
+        # A file, directory or wildcard pattern that describes what to upload
+        path: ./binaries.zip
