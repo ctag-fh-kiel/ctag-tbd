@@ -34,7 +34,7 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 - **NEW!!!** Sample ROM playback and wavetable oscillator with user wavetables from sample ROM [details here](sample_rom/readme.md)
 - **NEW!!!** Simulator for cross platform plugin development without hardware module (speeds up plugin development, better code verification).
     - Check description [here](simulator/readme.md)
-- **NEW!!!** [Cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/) to build firmwares with plugin subset, allows to optimize sample-rom size (NOTE: Binaries from **cloud compiler** can be **flashed only through serial connection**!)
+- **NEW!!!** [Cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/) to build firmwares with plugin subsets, allows to optimize sample-rom size (NOTE: Binaries from **cloud compiler** can be **flashed only through serial connection**!)
 - With web UI user interface by wireless browser access.
 - Through a REST-API.
 

@@ -91,6 +91,7 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
 
 void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string sromFile, bool bOutOnly) {
     // start fake sample rom
+    cout << "Trying to open sample rom file (define own with -s command line option): " << sromFile << endl;
     spi_flash_emu_init(sromFile.c_str());
     // Initialize simulator parameters
     simModel = std::make_unique<SimDataModel>();

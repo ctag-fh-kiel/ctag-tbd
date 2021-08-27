@@ -38,12 +38,12 @@ int main(int ac, char **av) {
     try {
         desc.add_options()
                 ("help,h", "this help message")
+                ("srom,s", po::value<string>(&sromFile)->default_value("../../sample_rom/sample-rom.tbd"),
+                 "file for sample rom emulation, default ../../sample_rom/sample-rom.tbd")
                 ("list,l", po::bool_switch(&bListSoundCards)->default_value(false), "list sound cards")
                 ("device,d", po::value<int>(&iDeviceNum)->default_value(0), "sound card device id, default 0")
                 ("output,o", po::bool_switch(&bOutputOnly)->default_value(false),
                  "use output only (if no duplex device available)")
-                ("srom,s", po::value<string>(&sromFile),
-                 "file for sample rom emulation")
                 ("wav,w", po::value<string>(&wavFile),
                  "read audio in from wav file (arg), must be 2 channel stereo float32 data, will be cycled through indefinitely");
 
@@ -66,6 +66,8 @@ int main(int ac, char **av) {
             std::cout << desc << std::endl;
             return 1;
         } else {
+            std::cout << "It seems some args are missing/wrong:" << std::endl;
+            std::cout << desc << std::endl;
             throw e;
         }
     }
