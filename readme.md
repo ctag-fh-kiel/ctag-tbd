@@ -34,6 +34,7 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 - **NEW!!!** Sample ROM playback and wavetable oscillator with user wavetables from sample ROM [details here](sample_rom/readme.md)
 - **NEW!!!** Simulator for cross platform plugin development without hardware module (speeds up plugin development, better code verification).
     - Check description [here](simulator/readme.md)
+- **NEW!!!** [Cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/) to build firmwares with plugin subset, allows to optimize sample-rom size (NOTE: Binaries from **cloud compiler** can be **flashed only through serial connection**!)
 - With web UI user interface by wireless browser access.
 - Through a REST-API.
 
@@ -56,9 +57,13 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 - More ideas?
 
 ## How to build
-You need C/C++ skills. You may want to check the [TBD simulator](simulator/readme.md) for easy plugin development without TBD hardware.
+**NEW!!!** You can build custom firmwares with plugin subsets and to increase sample-rom using the [cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/).
+No need for a toolchain on your own system.
 
-**NEW!!!** you can build the firmware using a Github action. Just fork the ctag-tbd repo to your Github account and enable the supplied
+For developing your own plugins / make TBD yours, you need C/C++ skills. 
+You may want to check the [TBD simulator](simulator/readme.md) for easy plugin development without TBD hardware.
+
+You can build the firmware using a Github action. Just fork the ctag-tbd repo to your Github account and enable the supplied
 Github action. Each time you will push your edits into your fork's master branch, Github will cut a draft release for you automatically.
 No need for a toolchain on your own system.
 
