@@ -313,7 +313,7 @@ void ctagSoundProcessorFreakwaves::Process(const ProcessData &data)
   MK_TRIG_PAR(t_ResonatorOn, ResonatorOn);
   MK_FLT_PAR_ABS(f_ResonatorDryWet, ResonatorDryWet, 4095.f, 1.f);
   MK_FLT_PAR_ABS(f_WaveShaperDryWet, WaveShaperDryWet, 4095.f, 1.f);
-  MK_FLT_PAR_ABS(f_ResonatorPosition, ResonatorPosition, 23.f, 0.9999f);
+  float f_ResonatorPosition = ResonatorPosition / 23.f * 0.9999f; // only in GUI, no CV
   MK_FLT_PAR_ABS_MIN_MAX(f_ResonatorFreq, ResonatorFreq, 4095.f, 10.f, 6000.f);         // Frequency in Hz
   MK_FLT_PAR_ABS(f_ResonatorStructure, ResonatorStructure, 4095.f, 1.f);                          // Values 0-1
   MK_FLT_PAR_ABS(f_ResonatorBrightness, ResonatorBrightness, 4095.f, 1.f);                        // Values 0-1
