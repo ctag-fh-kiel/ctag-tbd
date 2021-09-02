@@ -75,6 +75,7 @@ if(TBD_SIM)
     target_compile_options(mutable PRIVATE
             -Wno-unused-variable
             -Wno-shift-negative-value
+            -ffast-math
             )
 
 else()
@@ -85,5 +86,6 @@ else()
     target_compile_options(${COMPONENT_LIB} PRIVATE
             -Wno-unused-variable
             -Wno-shift-negative-value
+            -ffast-math
             )
 endif()
