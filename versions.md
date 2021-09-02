@@ -1,5 +1,12 @@
 # CTAG TBD Version Log
 
+## V0.9.19
+- New plugin Freakwaves by M. Brüssel --> complex wavetable synth
+- Web GUI now transmits static data in gzip compressed fashion resulting in much faster GUI loading
+- Favorites menu allows to store/recall plugin + preset combinations --> convenient way to restore module setting
+- Github action scripts to support [Cloud Compiler](https://fxwiegand.github.io/tbd-cloud-compiler/) which allows one to only include the best plugins e.g. to obtain more sample rom --> cloud compiled firmwares can only be flashed through serial USB connection *NOT* WIFI
+- Modifications to support more upcoming hardware versions
+
 ## V0.9.18
 - New plugin Talkbox by M. Brüssel --> Awesome Vocoder Plugin based on [mdaTalkbox](https://sourceforge.net/projects/mda-vst)
 - New plugin MSxxNoise by M. Brüssel --> Models MS20 filter and [Stone Phaser](https://github.com/jpcima/stone-phaser)
