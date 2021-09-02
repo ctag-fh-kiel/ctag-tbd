@@ -23,4 +23,7 @@ else ()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS MoogLadders/src
             PRIV_REQUIRES)
+    target_compile_options(${COMPONENT_LIB} PRIVATE
+            -ffast-math
+            )
 endif ()
