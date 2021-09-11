@@ -14,7 +14,7 @@ idf_build_set_property(COMPILE_OPTIONS -Wno-unused-local-typedefs -ffast-math AP
 idf_build_set_property(COMPILE_DEFINITIONS -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 APPEND)
 idf_build_set_property(COMPILE_DEFINITIONS -DRAPIDJSON_HAS_STDSTRING=1 APPEND)
 
-if(CONFIG_TBD_PLATFORM_STRAMPLER)
+if(CONFIG_TBD_PLATFORM_STR)
     message("Configuring for Strämpler!")
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=8 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)

@@ -337,15 +337,15 @@ void SoundProcessorManager::StartSoundProcessor() {
     }
     */
 
+#ifdef CONFIG_TBD_PLATFORM_STR
+    DRIVERS::Codec::InitCodec();
+    CTRL::Control::Init();
+#elif
     // init control
     CTRL::Control::Init();
-
     // init codec
     DRIVERS::Codec::InitCodec();
-#ifdef CONFIG_TBD_PLATFORM_STR
-    DRIVERS::ADC::InitADCSystem();
 #endif
-
     // generate internal data
     updateConfiguration();
 
