@@ -338,9 +338,10 @@ void SoundProcessorManager::StartSoundProcessor() {
     */
 
 #ifdef CONFIG_TBD_PLATFORM_STR
+    // inverted here as some pins are used twice --> check for issues
     DRIVERS::Codec::InitCodec();
     CTRL::Control::Init();
-#elif
+#else
     // init control
     CTRL::Control::Init();
     // init codec
