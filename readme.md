@@ -15,7 +15,7 @@ Alternatively you can connect a USB cable to the TBD and use the serial flasher 
 In order to use the sample rom, you can upload from the edit sample rom page [factory sample data](sample_rom/readme.md) (sample-rom.tbd).
 
 ## What it is:
-- The eierlegende Wollmilchsau (German for swiss army) audio processing module.
+- The eierlegende Wollmilchsau (German for swiss army knife) audio processing module.
 - Offering already more than 30 high quality audio generators and effects.
 - Open source Eurorack sound module based on the ESP32.
 - With an easy to extend audio plugin architecture.
