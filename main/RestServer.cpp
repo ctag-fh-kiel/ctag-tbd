@@ -282,6 +282,7 @@ esp_err_t RestServer::StartRestServer() {
     config.task_priority = tskIDLE_PRIORITY + 4;
     config.max_uri_handlers = 20;
     config.stack_size = 8192;
+    config.recv_wait_timeout  = 30;
     /*
     config.max_open_sockets   = 10;
     config.max_resp_headers   = 10;
