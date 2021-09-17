@@ -18,10 +18,10 @@ Content-Type: application/json
 
 {
  "name": "New Favorite",
- "plug-0": "Void",
- "pre-0": 0,
- "plug-1": "Void",
- "pre-1": 0,
+ "plug_0": "Void",
+ "pre_0": 0,
+ "plug_1": "Void",
+ "pre_1": 0,
  "ustring": "cool"
 }
 ###
@@ -30,10 +30,10 @@ Content-Type: application/json
 
 {
  "name": "New Favorite",
- "plug-0": "Void",
- "pre-0": 0,
- "plug-1": "Void",
- "pre-1": 0,
+ "plug_0": "Void",
+ "pre_0": 0,
+ "plug_1": "Void",
+ "pre_1": 0,
  "ustring": "cool"
 }
 ###
@@ -42,10 +42,10 @@ Content-Type: application/json
 
 {
  "name": "New Favorite",
- "plug-0": "Void",
- "pre-0": 0,
- "plug-1": "Void",
- "pre-1": 0,
+ "plug_0": "Void",
+ "pre_0": 0,
+ "plug_1": "Void",
+ "pre_1": 0,
  "ustring": "cool"
 }
 ###
@@ -54,10 +54,10 @@ Content-Type: application/json
 
 {
  "name": "New Favorite",
- "plug-0": "Void",
- "pre-0": 0,
- "plug-1": "Void",
- "pre-1": 0,
+ "plug_0": "Void",
+ "pre_0": 0,
+ "plug_1": "Void",
+ "pre_1": 0,
  "ustring": "cool"
 }
 ###
@@ -66,10 +66,10 @@ Content-Type: application/json
 
 {
  "name": "New Favorite",
- "plug-0": "Void",
- "pre-0": 0,
- "plug-1": "Void",
- "pre-1": 0,
+ "plug_0": "Void",
+ "pre_0": 0,
+ "plug_1": "Void",
+ "pre_1": 0,
  "ustring": "cool"
 }
 ###

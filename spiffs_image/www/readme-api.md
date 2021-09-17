@@ -216,10 +216,10 @@ Get array of favorites, max. 10 supported
 [
   {
    "name": "Favorite 0",
-   "plug-0": "Void",
-   "pre-0": 0,
-   "plug-1": "Void",
-   "pre-1": 0,
+   "plug_0": "Void",
+   "pre_0": 0,
+   "plug_1": "Void",
+   "pre_1": 0,
    "ustring": ""
   },
   ...
@@ -240,10 +240,10 @@ id is the favorite which is to be stored
 ```json
 {
  "name": "New Favorite",
- "plug-0": "BCSR",
- "pre-0": 3,
- "plug-1": "WTOsc",
- "pre-1": 2,
+ "plug_0": "BCSR",
+ "pre_0": 3,
+ "plug_1": "WTOsc",
+ "pre_1": 2,
  "ustring": ""
 }
 ```
