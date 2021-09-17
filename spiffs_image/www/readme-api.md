@@ -208,40 +208,22 @@ Save preset data for a given plugin, the next available storage slot will be use
   }
 ```
 
-####URL: `/loadPreset/:ch`
+####URL: `/loadPreset/:ch?`
 
 Load a preset with number
 
 **Method** : `GET`
 
-**Data example**
+Query string is e.g. --> number=0
 
-```json
-[
-  {
-    "number": 0
-  },
-  ...
-]
-```
+####URL: `/savePreset/:ch?`
 
-####URL: `/savePreset/:ch`
-
-Save a preset with name
+Save a preset with name (current plugin settings)
 
 **Method** : `GET`
 
-**Data example**
+Query string is e.g. --> number=0&name=coolname
 
-```json
-[
-  {
-    "number": 0,
-    "name": "New Preset"
-  },
-  ...
-]
-```
 
 ####URL: `/favorites/getAll`
 

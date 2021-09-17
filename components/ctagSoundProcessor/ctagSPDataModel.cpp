@@ -103,30 +103,36 @@ int ctagSPDataModel::GetParamValue(const string &id, const string &key) {
     return 0;
 }
 
+
 const char *ctagSPDataModel::GetCStrJSONPresets() {
     if (!mp.HasMember("activePatch")) return nullptr;
     if (!mp["activePatch"].IsInt()) return nullptr;
     json.Clear();
     int num = 0;
+    // data to be printed
     Value obj(kObjectType);
     Value a(kArrayType);
     Value n(kNumberType);
-    Document d;
+    // temporary root documents p is export d is patch file
+    Document p, d;
+    // data to be printed
     n.SetInt(mp["activePatch"].GetInt());
-    obj.AddMember("activePresetNumber", n, mp.GetAllocator());
+    obj.AddMember("activePresetNumber", n, p.GetAllocator());
+    // load presets to document d
     loadJSON(d, mpFileName);
     if (!d.HasMember("patches")) return nullptr;
     if (!d["patches"].IsArray()) return nullptr;
+    // iterate presets
     for (auto &v : d["patches"].GetArray()) {
+        // construct items for export document
         Value o(kObjectType);
         Value name(kStringType);
-        name.SetString(v["name"].GetString(), mp.GetAllocator());
-        //string name =  v["name"].GetString();
-        o.AddMember("name", name.Move(), mp.GetAllocator());
-        o.AddMember("number", num++, mp.GetAllocator());
-        a.PushBack(o, mp.GetAllocator());
+        name.SetString(v["name"].GetString(), p.GetAllocator());
+        o.AddMember("name", name.Move(), p.GetAllocator());
+        o.AddMember("number", num++, p.GetAllocator());
+        a.PushBack(o, p.GetAllocator());
     }
-    obj.AddMember("presets", a, mp.GetAllocator());
+    obj.AddMember("presets", a, p.GetAllocator());
     Writer<StringBuffer> writer(json);
     obj.Accept(writer);
     //printf("%s\n", json.GetString());
@@ -188,9 +194,10 @@ void ctagSPDataModel::recursiveFindAndInsert(const Value &paramF, Value &paramI)
     }
 }
 
+
 void ctagSPDataModel::SavePreset(const string &name, const int number) {
-    //ESP_LOGE("Model", "Save preset %s %d", name.c_str(), number);
-    //ESP_LOGE("MOdel", "Stored JSON before");
+    ESP_LOGE("Model", "Save preset %s %d", name.c_str(), number);
+    ESP_LOGE("MOdel", "Stored JSON before");
     //PrintSelf();
     loadJSON(mp, mpFileName);
     int patchNum = number;
@@ -200,7 +207,7 @@ void ctagSPDataModel::SavePreset(const string &name, const int number) {
     if (patchNum > mp["patches"].GetArray().Size()) patchNum = mp["patches"].GetArray().Size();
     if (!activePreset.HasMember("name")) return;
     activePreset["name"].SetString(name, mp.GetAllocator());
-    //ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
+    ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
     if (patchNum == mp["patches"].GetArray().Size()) {
         Value copyOfPreset(activePreset, mp.GetAllocator());
         //copyOfPreset["name"].SetString(name, mp.GetAllocator());
@@ -214,8 +221,8 @@ void ctagSPDataModel::SavePreset(const string &name, const int number) {
     if (!mp.HasMember("activePatch")) return;
     mp["activePatch"] = patchNum;
     storeJSON(mp, mpFileName);
-    //ESP_LOGE("MOdel", "Stored JSON after");
-    //PrintSelf();
+    ESP_LOGE("MOdel", "Stored JSON after");
+    PrintSelf();
 }
 
 void ctagSPDataModel::PrintSelf() {

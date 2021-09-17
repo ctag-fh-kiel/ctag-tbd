@@ -36,6 +36,7 @@ respective component folders / files if different from this license.
 #define MB_BUF_SZ 4096
 
 void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
+    d.GetAllocator().Clear();
     ESP_LOGD("JSON", "read buffer");
     //FILE*
     fp = fopen(fn.c_str(), "r");
