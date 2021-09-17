@@ -1,0 +1,1 @@
+- Favorite API, WebUI could/should select active favorite, if one is active..
