@@ -20,6 +20,10 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagDiodeLadderFilter3.hpp"
+#include <cstdio>
+#include "esp_log.h"
+#include <cmath>
+#include <limits>
 
 void CTAG::SP::HELPERS::ctagDiodeLadderFilter3::SetCutoff(float cutoff) {
     b_fenv = cutoff / fs_;
@@ -67,6 +71,10 @@ float CTAG::SP::HELPERS::ctagDiodeLadderFilter3::Process(float in) {
     b_v = b_lf + (b_lfhp * ((b_lfgain * 0.5f) + 1.f));
 
     float b_rez = b_aflt4 - b_v; // no attenuation with rez, makes a stabler filter.
+    if(b_fres > 10.f){
+        ESP_LOGE("FILT", "Error reso %f", b_fres);
+        b_fres = 0.f;
+    }
     b_v = b_v - (b_rez *
                  b_fres); // b_fres = resonance amount. 0..4 typical "to selfoscillation", 0.6 covers a more saturated range.
 
@@ -75,8 +83,11 @@ float CTAG::SP::HELPERS::ctagDiodeLadderFilter3::Process(float in) {
     // lower number for more grit at high resonance
     b_v = b_vnc + ((-b_vnc + b_v) * 0.6123f); // original 0.9740 seems to affect barking at high resonance levels
 
+
+
     b_aflt1 = b_aflt1 +
               ((-b_aflt1 + b_v) * b_fenv); // straightforward 4 pole filter, (4 normalized feedback paths in series)
+
     b_aflt2 = b_aflt2 + ((-b_aflt2 + b_aflt1) * b_fenv);
     b_aflt3 = b_aflt3 + ((-b_aflt3 + b_aflt2) * b_fenv);
     b_aflt4 = b_aflt4 + ((-b_aflt4 + b_aflt3) * b_fenv);
@@ -92,4 +103,11 @@ void CTAG::SP::HELPERS::ctagDiodeLadderFilter3::Init() {
     b_lf = 0.f;
     b_lfcut = 0.2f;
     b_lfgain = 10.f;
+}
+
+void CTAG::SP::HELPERS::ctagDiodeLadderFilter3::Debug() {
+    ctagFilterBase::Debug();
+    printf("afilt 1-4 %f %f %f %f\n", b_aflt1, b_aflt2, b_aflt3, b_aflt4);
+    printf("fres, fenv %f, %f\n", b_fres, b_fenv);
+    printf("lf, lfcut, lfgain %f, %f, %f\n", b_lf, b_lfcut, b_lfgain);
 }

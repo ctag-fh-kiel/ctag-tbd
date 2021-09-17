@@ -192,14 +192,11 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
     if (isAccent) {
         c += facclev * egvalVCF * 22000.f;
     }
-    CONSTRAIN(c, 20.f, 22000.f)
-    filt[ftype]->SetCutoff(c);
 
     float r = resonance / 4095.f;
     if (cv_resonance != -1) {
         r = fabsf(data.cv[cv_resonance]);
     }
-    filt[ftype]->SetResonance(r);
 
     int32_t signature = saturation;
     if (cv_saturation != -1) {
@@ -211,7 +208,12 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
     if (cv_drive != -1) {
         dri = fabsf(data.cv[cv_drive]) * 30.f;
     }
+
+    CONSTRAIN(c, 20.f, 22000.f)
+    CONSTRAIN(r, 0.f, 1.f)
     CONSTRAIN(dri, 1.f, 30.f)
+    filt[ftype]->SetCutoff(c);
+    filt[ftype]->SetResonance(r);
     filt[ftype]->SetGain(dri);
 
     float fgain = gain / 4095.f * 2.f;
@@ -226,7 +228,8 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
         int16_t warped = ws.Transform(buffer[i]);
         buffer[i] = stmlib::Mix(buffer[i], warped, signature);
         // filter, EG and clip
-        data.buf[i * 2 + processCh] = fgain * stmlib::SoftClip(eg * filt[ftype]->Process(buffer[i] / 32767.f));
+        const float div = 3.0518509476E-5f;
+        data.buf[i * 2 + processCh] = fgain * stmlib::SoftClip(eg * filt[ftype]->Process(buffer[i] * div));
     }
     pre_eg_val = egvalVCA;
     // sync on trigger
