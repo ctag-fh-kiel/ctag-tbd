@@ -35,6 +35,7 @@ namespace CTAG::SP::HELPERS {
         virtual float Process(float in) override;
 
         virtual void Init() override;
+        void Debug() override;
 
     private:
         float b_aflt1, b_aflt2, b_aflt3, b_aflt4;

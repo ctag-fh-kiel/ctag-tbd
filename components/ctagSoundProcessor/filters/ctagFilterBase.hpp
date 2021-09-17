@@ -20,6 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 #pragma once
+#include <cstdio>
 
 // abstract filter superclass
 
@@ -47,6 +48,10 @@ namespace CTAG::SP::HELPERS {
 
         virtual void SetGain(float gain) {
             gain_ = gain;
+        }
+
+        virtual void Debug(){
+            printf("fs, cutoff, resonance, gain, %f, %f, %f, %f", fs_, cutoff_, resonance_, gain_);
         }
 
     protected:
