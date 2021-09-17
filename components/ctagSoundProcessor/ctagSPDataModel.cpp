@@ -149,7 +149,8 @@ void ctagSPDataModel::LoadPreset(const int num) {
         ESP_LOGD("Model", "Bounds check patch num %d, size %d", patchNum, mp["patches"].GetArray().Size());
         patchNum = mp["patches"].GetArray().Size() - 1;
     }
-    activePreset.CopyFrom(mp["patches"].GetArray()[patchNum], mp.GetAllocator());
+    activePreset.GetAllocator().Clear();
+    activePreset.CopyFrom(mp["patches"].GetArray()[patchNum], activePreset.GetAllocator());
     ESP_LOGD("Model", "Preset Name is %s number %d", activePreset["name"].GetString(), patchNum);
     // save currently loaded preset to model
     if (!mp.HasMember("activePatch")) return;
@@ -196,8 +197,8 @@ void ctagSPDataModel::recursiveFindAndInsert(const Value &paramF, Value &paramI)
 
 
 void ctagSPDataModel::SavePreset(const string &name, const int number) {
-    ESP_LOGE("Model", "Save preset %s %d", name.c_str(), number);
-    ESP_LOGE("MOdel", "Stored JSON before");
+    //ESP_LOGE("Model", "Save preset %s %d", name.c_str(), number);
+    //ESP_LOGE("MOdel", "Stored JSON before");
     //PrintSelf();
     loadJSON(mp, mpFileName);
     int patchNum = number;
@@ -206,23 +207,25 @@ void ctagSPDataModel::SavePreset(const string &name, const int number) {
     if (!mp["patches"].IsArray()) return;
     if (patchNum > mp["patches"].GetArray().Size()) patchNum = mp["patches"].GetArray().Size();
     if (!activePreset.HasMember("name")) return;
-    activePreset["name"].SetString(name, mp.GetAllocator());
-    ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
+    activePreset["name"].SetString(name, activePreset.GetAllocator());
+    //ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
     if (patchNum == mp["patches"].GetArray().Size()) {
         Value copyOfPreset(activePreset, mp.GetAllocator());
         //copyOfPreset["name"].SetString(name, mp.GetAllocator());
         mp["patches"].PushBack(copyOfPreset.Move(), mp.GetAllocator());
+        /*
         ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum,
                  mp["patches"].GetArray().Size());
+                 */
     } else {
         mp["patches"][patchNum].CopyFrom(activePreset, mp.GetAllocator()); // saved preset is current
-        ESP_LOGE("Model", "Replace");
+        //ESP_LOGE("Model", "Replace");
     }
     if (!mp.HasMember("activePatch")) return;
     mp["activePatch"] = patchNum;
     storeJSON(mp, mpFileName);
-    ESP_LOGE("MOdel", "Stored JSON after");
-    PrintSelf();
+    //ESP_LOGE("MOdel", "Stored JSON after");
+    //PrintSelf();
 }
 
 void ctagSPDataModel::PrintSelf() {

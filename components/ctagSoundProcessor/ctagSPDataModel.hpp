@@ -66,7 +66,7 @@ namespace CTAG {
 
             Document mui, mp;
             string mpFileName, muiFileName;
-            Value activePreset;
+            Document activePreset;
         };
     }
 }

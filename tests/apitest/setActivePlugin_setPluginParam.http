@@ -1,12 +1,12 @@
-GET http://ctag-tbd.local/api/v1/setActivePlugin/0?{"id":"void"}
+GET http://ctag-tbd.local/api/v1/setActivePlugin/0?id=Void
 Accept: application/json
 ###
-GET http://ctag-tbd.local/api/v1/setActivePlugin/1?{"id":"void"}
+GET http://ctag-tbd.local/api/v1/setActivePlugin/1?id=Void
 Accept: application/json
 ###
-GET http://ctag-tbd.local/api/v1/setPluginParam/0?{"id":"dummy","current":"true"}
+GET http://ctag-tbd.local/api/v1/setPluginParam/0?id=dummy&current=true
 Accept: application/json
 ###
-GET http://ctag-tbd.local/api/v1/setPluginParam/1?{"id":"dummy","current":"true"}
+GET http://ctag-tbd.local/api/v1/setPluginParam/1?id=dummy&current=true
 Accept: application/json
 ###

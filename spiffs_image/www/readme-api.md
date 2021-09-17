@@ -95,34 +95,23 @@ Get parameters of active plugin of specified channel number
     }
 ```
 
-####URL: `/setActivePlugin/:ch`
+####URL: `/setActivePlugin/:ch?id=Void`
 
 Set active plugin id of specified channel number
 
 **Method** : `GET`
 
-**Data example**
+Query string id=Void
 
-```
-{"id": "am"}
-```
-
-####URL: `/setPluginParam/:ch`
+####URL: `/setPluginParam/:ch?id=dummy&current=true`
 
 Set parameter of plugin of specified channel
 
 **Method** : `GET`
 
-**Data example**
+Query string id=dummy&current=true
 
-```json
-{
-    "id": "sup",
-    "current": 127
-}
-```
-
-####URL: `/setPluginParamCV/:ch`
+####URL: `/setPluginParamCV/:ch?id=sup&cv=1`
 
 Set cv channel (-1 [off], 0, 1) of plugin parameter of specified channel
 
@@ -130,14 +119,9 @@ Set cv channel (-1 [off], 0, 1) of plugin parameter of specified channel
 
 **Data example**
 
-```json
-{
-    "id": "sup",
-    "cv": 1
-}
-```
+See query string
 
-####URL: `/setPluginParamTRIG/:ch`
+####URL: `/setPluginParamTRIG/:ch?id=enable&trig=1`
 
 Set trig channel (-1 [off], 0, 1) of parameter of plugin of specified channel
 
@@ -145,12 +129,7 @@ Set trig channel (-1 [off], 0, 1) of parameter of plugin of specified channel
 
 **Data example**
 
-```json
-{
-    "id": "enable",
-    "trig": -1
-}
-```
+See query string
 
 ####URL: `/getPresets/:ch`
 
