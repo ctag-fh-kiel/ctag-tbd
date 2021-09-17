@@ -1,0 +1,33 @@
+GET http://ctag-tbd.local/api/v1/getPresets/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPresets/1
+Accept: application/json
+###

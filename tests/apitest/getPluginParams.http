@@ -1,0 +1,30 @@
+GET http://ctag-tbd.local/api/v1/getPluginParams/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/getPluginParams/1
+Accept: application/json
+###
