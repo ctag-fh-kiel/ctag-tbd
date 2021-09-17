@@ -129,7 +129,7 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
-    ESP_LOGE("get_plugins_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("get_plugins_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -140,7 +140,7 @@ esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
-    ESP_LOGE("get_active_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("get_active_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -160,7 +160,7 @@ esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
-    ESP_LOGE("get_params_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("get_params_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -178,7 +178,7 @@ esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
-    ESP_LOGE("set_active_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("set_active_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -205,7 +205,7 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
-    ESP_LOGE("set_plugin_param_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("set_plugin_param_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -242,7 +242,7 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
-    ESP_LOGE("get_presets_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("get_presets_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -262,7 +262,7 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
-    ESP_LOGE("save_preset_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("save_preset_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -286,7 +286,7 @@ esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
-    ESP_LOGE("load_preset_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("load_preset_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -543,7 +543,7 @@ esp_err_t RestServer::StartRestServer() {
 }
 
 esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
-    ESP_LOGE("set_configuration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("set_configuration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -576,7 +576,7 @@ esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
-    ESP_LOGE("get_configuration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("get_configuration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -587,7 +587,7 @@ esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
-    ESP_LOGE("get_configuration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("get_configuration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -599,7 +599,7 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
     char *pLastSlash = strrchr(req->uri, '/');
     if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
-        ESP_LOGE(REST_TAG, "Sending all preset data of plugin %s as JSON", pluginID);
+        ESP_LOGD(REST_TAG, "Sending all preset data of plugin %s as JSON", pluginID);
         const char *json = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string(pluginID));
         if (json)
             httpd_resp_sendstr(req, json);
@@ -623,7 +623,7 @@ esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
-    ESP_LOGE("get_calibration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("get_calibration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -686,7 +686,7 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
-    ESP_LOGE("set_calibration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("set_calibration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -715,7 +715,7 @@ esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
-    ESP_LOGE("set_preset_json_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("set_preset_json_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -727,7 +727,7 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
     char *pLastSlash = strrchr(req->uri, '/');
     if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
-        ESP_LOGE(REST_TAG, "Storing data for %s as JSON", pluginID);
+        ESP_LOGD(REST_TAG, "Storing data for %s as JSON", pluginID);
         char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
         int ret = httpd_req_recv(req, content, req->content_len);
         if (ret <= 0) {  /* 0 return value indicates connection closed */
@@ -834,14 +834,14 @@ esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::favorite_get_handler(httpd_req_t *req) {
-    ESP_LOGE("favorite_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("favorite_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     string cmd{req->uri};
 
-    ESP_LOGI("REST", "Favorite handler cmd: %s", cmd.c_str());
+    ESP_LOGD("REST", "Favorite handler cmd: %s", cmd.c_str());
 
     if(cmd.rfind("getAll") != string::npos){
         httpd_resp_set_type(req, "application/json");

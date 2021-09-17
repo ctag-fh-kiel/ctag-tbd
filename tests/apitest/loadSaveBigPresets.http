@@ -1,0 +1,30 @@
+GET http://ctag-tbd.local/api/v1/setActivePlugin/0?id=SubSynth
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/setActivePlugin/1?id=SubSynth
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/loadPreset/0?number=0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/loadPreset/1?number=0
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/savePreset/0?number=1&name=pre1
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/savePreset/1?number=2&name=pre2
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/savePreset/0?number=3&name=pre3
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/savePreset/1?number=4&name=pre4
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/loadPreset/0?number=4
+Accept: application/json
+###
+GET http://ctag-tbd.local/api/v1/loadPreset/1?number=3
+Accept: application/json
+###
