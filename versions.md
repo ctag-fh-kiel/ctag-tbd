@@ -1,5 +1,9 @@
 # CTAG TBD Version Log
 
+## V0.9.20
+- WTOsc extended with pitch quantizer
+- 
+
 ## V0.9.19a
 - New plugin Freakwaves by M. Brüssel --> complex wavetable synth
 - Web GUI now transmits static data in gzip compressed fashion resulting in much faster GUI loading
