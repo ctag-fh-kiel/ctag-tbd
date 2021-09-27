@@ -26,6 +26,14 @@
       "step": 1
     },
     {
+      "id": "q_scale",
+      "name": "Quantization Scale",
+      "type": "int",
+      "min": 0,
+      "max": 47,
+      "step": 1
+    },
+    {
       "id": "tune",
       "type": "int",
       "name": "Tune",

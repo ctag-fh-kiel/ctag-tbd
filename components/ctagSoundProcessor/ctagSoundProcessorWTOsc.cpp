@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "esp_heap_caps.h"
 #include "helpers/ctagNumUtil.hpp"
 #include "plaits/dsp/engine/engine.h"
+#include "braids/quantizer_scales.h"
 
 using namespace CTAG::SP;
 using namespace CTAG::SP::HELPERS;
@@ -31,6 +32,14 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     // wave select
     currentBank = wavebank;
     MK_FLT_PAR_ABS(fWave, wave, 4095.f, 1.f)
+    // smooth fWave
+    float w1 = fabsf(fWave - pre_fWt);
+    //if(w1 > 0.02f) w1 = 10.f * w1;
+    //if(w1 > 1.f) w1 = 1.f;
+    float w2 = 1.f - w1;
+    fWave = w1 * fWave + w2 * pre_fWt;
+    pre_fWt = fWave;
+
     if(lastBank != currentBank){ // this is slow, hence not modulated by CV
         prepareWavetables();
         lastBank = currentBank;
@@ -83,12 +92,26 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     valLFO = lfo.Process();
 
     // pitch / tuning / FM
-    float fPitch = pitch;
-    if(cv_pitch != -1){
-        fPitch += data.cv[cv_pitch] * 12.f * 5.f;
+    int32_t ipitch = pitch;
+    ipitch += 48; // midi note * resolution
+    ipitch *= 128;
+    int32_t ipitch_root = ipitch;
+    if (cv_pitch != -1) {
+        ipitch += static_cast<int32_t>(data.cv[cv_pitch] * 12.f * 5.f * 128.f); // five octaves
     }
+    int32_t sc = q_scale;
+    if (cv_q_scale != -1) {
+        sc = static_cast<int32_t>(fabsf(data.cv[cv_q_scale]) * 48.f);
+        CONSTRAIN(sc, 0, 47);
+    }
+    //ESP_LOGE("WTOSC", "Scale %d", sc);
+    pitchQuantizer.Configure(braids::scales[sc]);
+    ipitch = pitchQuantizer.Process(ipitch, ipitch_root);
+
+    float fPitch = static_cast<float>(ipitch);
+    fPitch /= 128.f;
     MK_FLT_PAR_ABS_SFT(fTune, tune, 2048.f, 1.f)
-    const float f0 = plaits::NoteToFrequency(60 + fPitch + fTune * 12.f + fLFOFM * valLFO + fEGFM * valADSR) * 0.998f;
+    const float f0 = plaits::NoteToFrequency(fPitch + fTune * 12.f + fLFOFM * valLFO + fEGFM * valADSR) * 0.998f;
 
     // filter
     MK_FLT_PAR_ABS(fCut, fcut, 4095.f, 1.f)
@@ -159,6 +182,7 @@ ctagSoundProcessorWTOsc::ctagSoundProcessorWTOsc() {
     adsr.SetModeExp();
     adsr.SetSampleRate(44100.f / bufSz);
     adsr.Reset();
+    pitchQuantizer.Init();
 }
 
 ctagSoundProcessorWTOsc::~ctagSoundProcessorWTOsc() {
@@ -175,6 +199,8 @@ void ctagSoundProcessorWTOsc::knowYourself(){
 	pMapTrig.emplace("gate", [&](const int val){ trig_gate = val;});
 	pMapPar.emplace("pitch", [&](const int val){ pitch = val;});
 	pMapCv.emplace("pitch", [&](const int val){ cv_pitch = val;});
+	pMapPar.emplace("q_scale", [&](const int val){ q_scale = val;});
+	pMapCv.emplace("q_scale", [&](const int val){ cv_q_scale = val;});
 	pMapPar.emplace("tune", [&](const int val){ tune = val;});
 	pMapCv.emplace("tune", [&](const int val){ cv_tune = val;});
 	pMapPar.emplace("wavebank", [&](const int val){ wavebank = val;});
