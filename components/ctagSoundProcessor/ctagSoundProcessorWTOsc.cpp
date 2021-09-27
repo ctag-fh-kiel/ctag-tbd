@@ -34,8 +34,8 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fWave, wave, 4095.f, 1.f)
     // smooth fWave
     float w1 = fabsf(fWave - pre_fWt);
-    //if(w1 > 0.02f) w1 = 10.f * w1;
-    //if(w1 > 1.f) w1 = 1.f;
+    if(w1 > 0.02f) w1 = 5.f * w1;
+    if(w1 > 1.f) w1 = 1.f;
     float w2 = 1.f - w1;
     fWave = w1 * fWave + w2 * pre_fWt;
     pre_fWt = fWave;
