@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>TBD Calibration</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="-1"/>
+    <link rel="stylesheet" href="css/sample-rom.css"/>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/ajaxq.js"></script>
+</head>
+<body>
+<div class="line-el">
+    Utility screen for downloading and uploading calibration data (mk1 hardware versions only, where ESP ADCs are used for CV).
+</div>
+<div class="line-el">
+    Download current calibration data as JSON and store to text file:
+    <button class="button" onclick="downloadCalibration();">Download Calibration Data</button>
+</div>
+<div class="line-el">
+    Upload text file and overwrite current calibration:
+    <input type="file" id="selFile">
+    <button class="button" onclick="uploadCalibration();">Upload Calibration Data</button>
+</div>
+<script>
+    function downloadCalibration(){
+        $.getq('myq', 'api/v1/getCalibration',
+            data => {
+                let a = document.createElement("a");
+                let file = new Blob([JSON.stringify(data)], {type: 'text/plain'});
+                a.href = URL.createObjectURL(file);
+                a.download = 'tbd-calibration.jsn';
+                a.click();
+            }
+        );
+    }
+    function uploadCalibration(){
+        const selectedFile = document.getElementById('selFile').files[0];
+        let fr = new FileReader();
+        fr.onload = function(e) {
+            console.log(e);
+            let result = JSON.parse(e.target.result);
+            let formatted = JSON.stringify(result, null, 2);
+            console.log(formatted);
+            $.postq('myq', 'api/v1/setCalibration',
+                JSON.stringify(result), 'json'
+            );
+        }
+        fr.readAsText(selectedFile);
+    }
+</script>
+</body>
+</html>

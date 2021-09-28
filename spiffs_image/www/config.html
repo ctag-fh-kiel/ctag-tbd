@@ -1,4 +1,5 @@
 <ons-page id="config">
+<ons-page id="config">
     <ons-toolbar>
         <div class="left">
             <ons-back-button>Config</ons-back-button>
@@ -113,12 +114,14 @@
             <ons-button id="download-backup" style="margin-top: 10px;">Download Backup</ons-button>
             <ons-button id="upload-backup" style="margin-top: 10px;">Upload Backup</ons-button>
             <input id="uploadBackup" type="file" hidden/>
+            <ons-button id="go-cal-backup" style="margin-top: 10px;">Calibration Backup</ons-button>
         </div>
     </ons-list-item>
     <ons-list-header>Firmware upgrade</ons-list-header>
     <ons-list-item>
         <div style="text-align: left;">
             <div style="color: red; margin: 1em">IMPORTANT: DO NOT USE WITH BINARIES FROM <a href="https://fxwiegand.github.io/tbd-cloud-compiler/">CLOUD COMPILER</a> OR WHEN YOU SET YOUR OWN PARTITION SIZES! MAKE SURE YOUR BINARY IS FOR THE CORRECT HARDWARE PLATFORM!</div>
+            <div style="color: orangered; margin: 1em" id="version"></div>
             <ons-progress-bar id="fw-progress" value="0" secondary-value="0"></ons-progress-bar>
             <label for="app-binary">ctag-tbd.bin</label><input id="app-binary" type="file"/>
             <label for="spiffs-binary">storage.bin</label><input id="spiffs-binary" type="file"/>
@@ -180,6 +183,10 @@
     </ons-modal>
     <script>
         ons.getScriptPage().onInit = function () {
+            this.querySelector('#go-cal-backup').onclick = function () {
+                window.open('calib.html', '_blank');
+            };
+            $('#version').text('Current FW: ' + window.ioCaps.FWV + " HW: " + window.ioCaps.HWV);
             $.getq('myq', 'api/v1/getConfiguration',
                 data => {
                     if(window.ioCaps.p == 'mk1'){
