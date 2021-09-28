@@ -156,9 +156,17 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
     osc.set_parameters(parameters[0], parameters[1]);
 
     // pitch calculation and quantization
+    MK_BOOL_PAR(isSlide, slide)
+    MK_FLT_PAR_ABS(fSlideLevel, slide_level, 4095.f, 0.099f)
+    fSlideLevel += 0.9f;
     int32_t ipitch = pitch;
     if (cv_pitch != -1) {
-        ipitch += static_cast<int32_t>(data.cv[cv_pitch] * 12.f * 5.f * 128.f); // five octaves
+        float fPitch = data.cv[cv_pitch] * 12.f * 5.f; // five octaves
+        if(isSlide){
+            fPitch = fSlideLevel * pre_pitch_val + (1.f - fSlideLevel) * fPitch;
+        }
+        pre_pitch_val = fPitch;
+        ipitch += static_cast<int32_t>(fPitch * 128.f);
     }
     CONSTRAIN(ipitch, 0, 16383);
     osc.set_pitch(ipitch);
@@ -238,45 +246,49 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
 
 void ctagSoundProcessorTBD03::knowYourself() {
     // sectionCpp0
-    pMapPar.emplace("trigger", [&](const int val) { trigger = val; });
-    pMapTrig.emplace("trigger", [&](const int val) { trig_trigger = val; });
-    pMapPar.emplace("sync_trig", [&](const int val) { sync_trig = val; });
-    pMapTrig.emplace("sync_trig", [&](const int val) { trig_sync_trig = val; });
-    pMapPar.emplace("pitch", [&](const int val) { pitch = val; });
-    pMapCv.emplace("pitch", [&](const int val) { cv_pitch = val; });
-    pMapPar.emplace("shape", [&](const int val) { shape = val; });
-    pMapCv.emplace("shape", [&](const int val) { cv_shape = val; });
-    pMapPar.emplace("param_0", [&](const int val) { param_0 = val; });
-    pMapCv.emplace("param_0", [&](const int val) { cv_param_0 = val; });
-    pMapPar.emplace("param_1", [&](const int val) { param_1 = val; });
-    pMapCv.emplace("param_1", [&](const int val) { cv_param_1 = val; });
-    pMapPar.emplace("gain", [&](const int val) { gain = val; });
-    pMapCv.emplace("gain", [&](const int val) { cv_gain = val; });
-    pMapPar.emplace("filter_type", [&](const int val) { filter_type = val; });
-    pMapCv.emplace("filter_type", [&](const int val) { cv_filter_type = val; });
-    pMapPar.emplace("cutoff", [&](const int val) { cutoff = val; });
-    pMapCv.emplace("cutoff", [&](const int val) { cv_cutoff = val; });
-    pMapPar.emplace("resonance", [&](const int val) { resonance = val; });
-    pMapCv.emplace("resonance", [&](const int val) { cv_resonance = val; });
-    pMapPar.emplace("envelope", [&](const int val) { envelope = val; });
-    pMapCv.emplace("envelope", [&](const int val) { cv_envelope = val; });
-    pMapPar.emplace("saturation", [&](const int val) { saturation = val; });
-    pMapCv.emplace("saturation", [&](const int val) { cv_saturation = val; });
-    pMapPar.emplace("drive", [&](const int val) { drive = val; });
-    pMapCv.emplace("drive", [&](const int val) { cv_drive = val; });
-    pMapPar.emplace("accent", [&](const int val) { accent = val; });
-    pMapTrig.emplace("accent", [&](const int val) { trig_accent = val; });
-    pMapPar.emplace("accent_level", [&](const int val) { accent_level = val; });
-    pMapCv.emplace("accent_level", [&](const int val) { cv_accent_level = val; });
-    pMapPar.emplace("decay_vca", [&](const int val) { decay_vca = val; });
-    pMapCv.emplace("decay_vca", [&](const int val) { cv_decay_vca = val; });
-    pMapPar.emplace("decay_vcf", [&](const int val) { decay_vcf = val; });
-    pMapCv.emplace("decay_vcf", [&](const int val) { cv_decay_vcf = val; });
-    pMapPar.emplace("p0_amt", [&](const int val) { p0_amt = val; });
-    pMapCv.emplace("p0_amt", [&](const int val) { cv_p0_amt = val; });
-    pMapPar.emplace("p1_amt", [&](const int val) { p1_amt = val; });
-    pMapCv.emplace("p1_amt", [&](const int val) { cv_p1_amt = val; });
-    isStereo = false;
-    id = "TBD03";
-    // sectionCpp0
+	pMapPar.emplace("trigger", [&](const int val){ trigger = val;});
+	pMapTrig.emplace("trigger", [&](const int val){ trig_trigger = val;});
+	pMapPar.emplace("sync_trig", [&](const int val){ sync_trig = val;});
+	pMapTrig.emplace("sync_trig", [&](const int val){ trig_sync_trig = val;});
+	pMapPar.emplace("pitch", [&](const int val){ pitch = val;});
+	pMapCv.emplace("pitch", [&](const int val){ cv_pitch = val;});
+	pMapPar.emplace("shape", [&](const int val){ shape = val;});
+	pMapCv.emplace("shape", [&](const int val){ cv_shape = val;});
+	pMapPar.emplace("param_0", [&](const int val){ param_0 = val;});
+	pMapCv.emplace("param_0", [&](const int val){ cv_param_0 = val;});
+	pMapPar.emplace("param_1", [&](const int val){ param_1 = val;});
+	pMapCv.emplace("param_1", [&](const int val){ cv_param_1 = val;});
+	pMapPar.emplace("gain", [&](const int val){ gain = val;});
+	pMapCv.emplace("gain", [&](const int val){ cv_gain = val;});
+	pMapPar.emplace("filter_type", [&](const int val){ filter_type = val;});
+	pMapCv.emplace("filter_type", [&](const int val){ cv_filter_type = val;});
+	pMapPar.emplace("cutoff", [&](const int val){ cutoff = val;});
+	pMapCv.emplace("cutoff", [&](const int val){ cv_cutoff = val;});
+	pMapPar.emplace("resonance", [&](const int val){ resonance = val;});
+	pMapCv.emplace("resonance", [&](const int val){ cv_resonance = val;});
+	pMapPar.emplace("envelope", [&](const int val){ envelope = val;});
+	pMapCv.emplace("envelope", [&](const int val){ cv_envelope = val;});
+	pMapPar.emplace("saturation", [&](const int val){ saturation = val;});
+	pMapCv.emplace("saturation", [&](const int val){ cv_saturation = val;});
+	pMapPar.emplace("drive", [&](const int val){ drive = val;});
+	pMapCv.emplace("drive", [&](const int val){ cv_drive = val;});
+	pMapPar.emplace("accent", [&](const int val){ accent = val;});
+	pMapTrig.emplace("accent", [&](const int val){ trig_accent = val;});
+	pMapPar.emplace("accent_level", [&](const int val){ accent_level = val;});
+	pMapCv.emplace("accent_level", [&](const int val){ cv_accent_level = val;});
+	pMapPar.emplace("slide", [&](const int val){ slide = val;});
+	pMapTrig.emplace("slide", [&](const int val){ trig_slide = val;});
+	pMapPar.emplace("slide_level", [&](const int val){ slide_level = val;});
+	pMapCv.emplace("slide_level", [&](const int val){ cv_slide_level = val;});
+	pMapPar.emplace("decay_vca", [&](const int val){ decay_vca = val;});
+	pMapCv.emplace("decay_vca", [&](const int val){ cv_decay_vca = val;});
+	pMapPar.emplace("decay_vcf", [&](const int val){ decay_vcf = val;});
+	pMapCv.emplace("decay_vcf", [&](const int val){ cv_decay_vcf = val;});
+	pMapPar.emplace("p0_amt", [&](const int val){ p0_amt = val;});
+	pMapCv.emplace("p0_amt", [&](const int val){ cv_p0_amt = val;});
+	pMapPar.emplace("p1_amt", [&](const int val){ p1_amt = val;});
+	pMapCv.emplace("p1_amt", [&](const int val){ cv_p1_amt = val;});
+	isStereo = false;
+	id = "TBD03";
+	// sectionCpp0
 }

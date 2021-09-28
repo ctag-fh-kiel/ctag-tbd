@@ -119,6 +119,18 @@
           "type": "int",
           "min": 0,
           "max": 4095
+        },
+        {
+          "id": "slide",
+          "name": "Slide",
+          "type": "bool"
+        },
+        {
+          "id": "slide_level",
+          "name": "Slide Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
         }
       ]
     },

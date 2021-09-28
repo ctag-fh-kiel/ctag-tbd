@@ -1,8 +1,9 @@
 # CTAG TBD Version Log
 
 ## V0.9.20
-- WTOsc extended with pitch quantizer
-- 
+- WTOsc extended with pitch quantizer, smoothed wavetable selection by CV
+- TBD03 slide and slide level parameter added
+- Current firmware version shown in web ui configuration menu
 
 ## V0.9.19a
 - New plugin Freakwaves by M. Brüssel --> complex wavetable synth
