@@ -31,8 +31,7 @@
     },
     {
      "id": "wavebank",
-     "current": 0,
-     "cv": -1
+     "current": 0
     },
     {
      "id": "wave",
