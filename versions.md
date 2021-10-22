@@ -1,6 +1,7 @@
 # CTAG TBD Version Log
 
 ## V0.9.21
+- When overwriting patches, old patch name is shown in dialog and can be edited prior to overwrite
 - Favorites are now contained in backup
 - Stability improvements with regard to flash storage reliability at boot up
 

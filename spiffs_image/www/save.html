@@ -21,7 +21,7 @@
                         '<div style="text-align: center; margin-top: 30px;">' +
                         '<p style="font-weight: bold;">Current preset ' + data.activePresetNumber + ': ' + presets[data.activePresetNumber].name + '</p>' +
                         '<div>Patch Number:</div><div><ons-input id="patch-number" type="number" min="0" max="' + max + '" value="' + max + '"float/></div>' +
-                        '<p><ons-input id="patch-name" placeholder="Enter Patch Name" float/></p>' +
+                        '<div>Patch Name:</div><p><ons-input id="patch-name" placeholder="Enter Patch Name" float/></p>' +
                         '<p><ons-button id="patch-save">Save Preset</ons-button></p>' +
                         '</div>'
                     );
@@ -29,14 +29,18 @@
                     if($('#patch-number').val() < presets.length){
                         $('#patch-save').css('background-color', 'red');
                         $('#patch-save').html('Overwrite Preset ?!');
+                        $('#patch-name').val(presets[$('#patch-number').val()].name);
                     }
                     $('#patch-number').on('input', () => {
                         if($('#patch-number').val() < presets.length){
                             $('#patch-save').css('background-color', 'red');
                             $('#patch-save').html('Overwrite Preset ?!');
+                            $('#patch-name').val(presets[$('#patch-number').val()].name);
                         }else{
                             $('#patch-save').css('background-color', btnColor);
                             $('#patch-save').html('Save Preset');
+                            $('#patch-name').val('');
+                            $('#patch-name').attr('placeholder', 'Enter Patch Name');
                         }
                     });
                     $('#patch-save').on('click', () => {
