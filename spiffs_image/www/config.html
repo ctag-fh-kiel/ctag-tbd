@@ -303,6 +303,7 @@
                                     let presets = [];
                                     let calibration = {};
                                     let configuration = {};
+                                    let favorites = {};
                                     $.getq('myq',
                                         'api/v1/getCalibration',
                                         data => {
@@ -313,6 +314,12 @@
                                         'api/v1/getConfiguration',
                                         data => {
                                             configuration = data;
+                                        }
+                                    );
+                                    $.postq('myq',
+                                        'api/v1/favorites/getAll',
+                                        data => {
+                                            favorites = data;
                                         }
                                     );
                                     for (let i = 0; i < data.length; i++) {
@@ -334,7 +341,8 @@
                                                     let all = {
                                                         presets: presets,
                                                         calibration: calibration,
-                                                        configuration: configuration
+                                                        configuration: configuration,
+                                                        favorites: favorites
                                                     }
                                                     zip.file('all.jsn', JSON.stringify(all));
                                                     zip.generateAsync({type: "blob"})
@@ -560,6 +568,24 @@
                         });
                     }
                 });
+                if(Array.isArray(data.favorites)){
+                    for(let i in data.favorites){
+                        $.ajaxq('myq', {
+                            url: '/api/v1/favorites/store/' + i,
+                            type: 'post',
+                            data: JSON.stringify(data.favorites[i]),
+                            success: function () {
+                                console.log('Favorite ' + i + ' persisted!');
+                            },
+                            error: function () {
+                                ons.notification.toast('Error persisting favorite ' + i + ' !', {
+                                    timeout: 1000,
+                                    animation: 'fall'
+                                });
+                            }
+                        });
+                    }
+                }
                 let presets = data.presets;
                 presets.forEach(plugin => {
                     if(plugin.presets.patches.length == 0){
