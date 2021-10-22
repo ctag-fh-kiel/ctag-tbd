@@ -1,5 +1,8 @@
 # CTAG TBD Version Log
 
+## V0.9.21
+- Stability improvements with regard to flash storage reliability
+
 ## V0.9.20
 - WTOsc extended with pitch quantizer, smoothed wavetable selection by CV --> significant improvement
 - TBD03 slide and slide level parameter added
