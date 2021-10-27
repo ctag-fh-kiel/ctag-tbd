@@ -42,6 +42,9 @@
             <ons-button id="fav-recall" style="margin: 2px;background-color: red">Recall</ons-button>
             <ons-button id="fav-snap" style="margin: 2px;background-color: orange">Snap</ons-button>
             <ons-button id="fav-edit" style="margin: 2px">Edit</ons-button>
+            <ons-button id="fav-export" style="margin: 2px">Export</ons-button>
+            <ons-button id="fav-import" style="margin: 2px;background-color: red">Import</ons-button>
+            <input id="fav-import-file" type="file" accept=".jsn,.json,application/json" hidden/>
         </ons-list-item>
     </ons-list>
     <ons-list>
@@ -177,6 +180,19 @@
                 window.favorites.selected = this.value;
             });
 
+            $('#fav-import-file').on('change', function () {
+                let file = $('#fav-import-file').get(0).files[0];
+                if (file == undefined) return;
+                if (file == '') return;
+                if (file == 0) return;
+                let fr = new FileReader();
+                fr.onloadend = (e) => {
+                    let data = JSON.parse(e.target.result);
+                    console.log(JSON.stringify(data));
+                }
+                fr.readAsText(file);
+            });
+
             this.querySelector('#fav-snap').onclick = function () {
                 modal_mn.show();
                 window.favorites.selected = $('#fav-select').val();
@@ -244,6 +260,41 @@
 
             this.querySelector('#fav-edit').onclick = function () {
                 document.querySelector('#myNavigator').pushPage('fav.html', {});
+            };
+
+            this.querySelector('#fav-import').onclick = function () {
+                $('#fav-import-file').trigger('click');
+            };
+
+            this.querySelector('#fav-export').onclick = function () {
+                let currentFav = window.favorites.selected;
+                if(!Array.isArray(window.favorites.data)) return;
+                if(window.favorites.data[currentFav] === undefined) return;
+                let exportFav = {fav: window.favorites.data[currentFav]};
+                $.getq('myq', 'api/v1/getPresetData/' + exportFav.fav.plug_0,
+                    data => {
+                        exportFav.preset_0 = data.patches[exportFav.fav.pre_0];
+                        if(exportFav.fav.plug_1 === ''){
+                            exportFav.preset_1 = data.patches[exportFav.fav.pre_1];
+                            let a = document.createElement("a");
+                            let file = new Blob([JSON.stringify(exportFav)], {type: 'text/plain'});
+                            a.href = URL.createObjectURL(file);
+                            a.download = 'fav-export.jsn';
+                            a.click();
+                        }else{
+                            $.getq('myq', 'api/v1/getPresetData/' + exportFav.fav.plug_1,
+                                data => {
+                                    exportFav.preset_1 = data.patches[exportFav.fav.pre_1];
+                                    let a = document.createElement("a");
+                                    let file = new Blob([JSON.stringify(exportFav)], {type: 'text/plain'});
+                                    a.href = URL.createObjectURL(file);
+                                    a.download = 'fav-export.jsn';
+                                    a.click();
+                                }
+                            );
+                        }
+                    }
+                );
             };
 
             this.querySelector('#go-sample-rom').onclick = function () {

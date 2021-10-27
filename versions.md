@@ -1,9 +1,11 @@
 # CTAG TBD Version Log
 
 ## V0.9.21
+- Favorite ex-/import
 - When overwriting patches, old patch name is shown in dialog and can be edited prior to overwrite
-- Favorites are now contained in backup
+- Favorites are now contained in backup, restoring backup now OVERWRITES current data, this leads to more data consistency
 - Stability improvements with regard to flash storage reliability at boot up
+- Minor bug fixes
 
 ## V0.9.20
 - WTOsc extended with pitch quantizer, smoothed wavetable selection by CV --> significant improvement
