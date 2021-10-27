@@ -161,30 +161,20 @@ Get all preset data of the queried plugin ID
 
 **Data example**
 
-```
-Returns patch data as JSON
+```json
+{"activePatch":0,"patches":[{"name":"Default","params":[{"id":"dummy","current":0,"trig":-1}]}]}
 ```
 
 ####URL: `/setPresetData/:PluginID`
 
-Save preset data for a given plugin, the next available storage slot will be used
+Save all preset data for a given plugin --> overwrites all existing preset data !!!
 
 **Method** : `POST`
 
 **Data example**
 
 ```json
-  {
-   "name": "Default",
-   "params": [
-    {
-     "id": "decay",
-     "current": 3292,
-     "cv": -1
-    },
-    ...
-   ]
-  }
+{"activePatch":0,"patches":[{"name":"Default","params":[{"id":"dummy","current":0,"trig":-1}]}]}
 ```
 
 ####URL: `/loadPreset/:ch?`
