@@ -271,13 +271,11 @@ void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const str
         return;
     }
     closedir(dir);
-    Document d;
-    loadJSON(d, string(string(SPIFFS_PATH) + "/data/sp/mp-" + id + ".jsn"));
 
-    Document preset;
-    preset.Parse(data);
-    d["patches"].PushBack(preset.Move(), d.GetAllocator());
-    storeJSON(d, string(string(SPIFFS_PATH) + "/data/sp/mp-" + id + ".jsn"));
+    ESP_LOGD("Model", "String %s", data.c_str());
+    Document presets;
+    presets.Parse(data);
+    storeJSON(presets, string(string(SPIFFS_PATH) + "/data/sp/mp-" + id + ".jsn"));
 }
 
 bool SPManagerDataModel::HasPluginID(const string &id) {

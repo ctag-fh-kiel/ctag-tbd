@@ -728,24 +728,39 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
     char *pLastSlash = strrchr(req->uri, '/');
     if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
-        ESP_LOGD(REST_TAG, "Storing data for %s as JSON", pluginID);
         char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
-        int ret = httpd_req_recv(req, content, req->content_len);
-        if (ret <= 0) {  /* 0 return value indicates connection closed */
-            /* Check if timeout occurred */
-            if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-                /* In case of timeout one can choose to retry calling
-                 * httpd_req_recv(), but to keep it simple, here we
-                 * respond with an HTTP 408 (Request Timeout) error */
-                httpd_resp_send_408(req);
+        ESP_LOGD(REST_TAG, "Storing data for %s as JSON, content length %d", pluginID, req->content_len);
+        char *ptrContent = content;
+        // get chunked data
+        int remaining = req->content_len;
+        while(remaining > 0){
+            uint32_t size = remaining > 4096 ? 4096 : remaining;
+            int data_read = httpd_req_recv(req, ptrContent, size);
+            if (data_read <= 0) {  /* 0 return value indicates connection closed */
+                /* Check if timeout occurred */
+                if (data_read == HTTPD_SOCK_ERR_TIMEOUT) {
+                    /* In case of timeout one can choose to retry calling
+                     * httpd_req_recv(), but to keep it simple, here we
+                     * respond with an HTTP 408 (Request Timeout) error */
+                    httpd_resp_send_408(req);
+                }else{
+                    httpd_resp_send_500(req);
+                }
+                /* In case of error, returning ESP_FAIL will
+                 * ensure that the underlying socket is closed */
+                heap_caps_free(content);
+                return ESP_FAIL;
             }
-            /* In case of error, returning ESP_FAIL will
-             * ensure that the underlying socket is closed */
-            return ESP_FAIL;
+            ptrContent += data_read;
+            remaining -= data_read;
         }
+        // terminate c string with \0
         content[req->content_len] = 0;
+        ESP_LOGD("REST", "Content read %s", content);
+        // call up and persist
         CTAG::AUDIO::SoundProcessorManager::SetJSONSoundProcessorPreset(string(pluginID), string(content));
-        free(content);
+        // clear up
+        heap_caps_free(content);
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
     } else {
