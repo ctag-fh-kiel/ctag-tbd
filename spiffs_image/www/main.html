@@ -60,11 +60,11 @@
         </ons-list-item>
     </ons-list>
     <script>
-        function getActivePluginAndSetUI(){
+        function getActivePluginAndSetUI() {
             $.getq('myq',
                 '/api/v1/getActivePlugin/0',
                 data => {
-                    if(typeof data == 'string') data = JSON.parse(data);
+                    if (typeof data == 'string') data = JSON.parse(data);
                     $('#plugin-select-ch0').val(data.id);
                     if (window.plugins.find(el => el.id === data.id).isStereo) {
                         $('#go-ch1,#load-ch1,#save-ch1').prop("disabled", true);
@@ -78,11 +78,12 @@
             $.getq('myq',
                 '/api/v1/getActivePlugin/1',
                 data => {
-                    if(typeof data == 'string') data = JSON.parse(data);
+                    if (typeof data == 'string') data = JSON.parse(data);
                     $('#plugin-select-ch1').val(data.id);
                 }
             );
         }
+
         ons.getScriptPage().onInit = function () {
             // modal
             let modal_mn = $('#modal-mn');
@@ -90,18 +91,17 @@
             $.getq('myq',
                 'api/v1/getPlugins',
                 data => {
-                    if(typeof data == 'string') data = JSON.parse(data);
+                    if (typeof data == 'string') data = JSON.parse(data);
                     // sort array by name
                     data.sort((a, b) => a.name.localeCompare(b.name, undefined, {numberic: true}));
                     // populate plugin list
                     data.forEach(el => {
                             let t = el.hasOwnProperty('hint') ? 'title="' + el.hint + '" ' : '';
                             // only show stereo plugins on ch-0
-                            if (el.isStereo){
+                            if (el.isStereo) {
                                 let s = '<option ' + t + 'value="' + el.id + '">' + el.name + ' (ST)</option>';
                                 $('#plugin-select-ch0').append(s);
-                            }
-                            else{
+                            } else {
                                 let s = '<option ' + t + 'value="' + el.id + '">' + el.name + ' (M)</option>';
                                 $('#plugin-select-ch0').append(s);
                             }
@@ -118,9 +118,9 @@
             $.postq('myq',
                 'api/v1/favorites/getAll',
                 data => {
-                    if(typeof data == 'string') data = JSON.parse(data);
+                    if (typeof data == 'string') data = JSON.parse(data);
                     // populate favorite list
-                    for(let i in data){
+                    for (let i in data) {
                         let s = '<option ' + 'title="' + data[i].ustring + '" value="' + i + '">' + i + ": " + data[i].name + '</option>';
                         $('#fav-select').append(s);
                     }
@@ -136,7 +136,7 @@
             $.getq('myq',
                 '/api/v1/getIOCaps',
                 data => {
-                    if(typeof data == 'string') data = JSON.parse(data);
+                    if (typeof data == 'string') data = JSON.parse(data);
                     window.ioCaps = data;
                 }
             );
@@ -181,15 +181,130 @@
             });
 
             $('#fav-import-file').on('change', function () {
+                // load json import file from client
                 let file = $('#fav-import-file').get(0).files[0];
                 if (file == undefined) return;
                 if (file == '') return;
                 if (file == 0) return;
                 let fr = new FileReader();
+                // when load completed
                 fr.onloadend = (e) => {
+                    // parse loaded json data
                     let data = JSON.parse(e.target.result);
+                    if(data.fav == undefined) return;
+                    if(data.fav.plug_0 == undefined) return;
+                    if(data.fav.plug_0 === '') return;
                     console.log(JSON.stringify(data));
+                    // get preset data for favorite plugin 0
+                    $.getq('myq',
+                        '/api/v1/getPresetData/' + data.fav.plug_0,
+                        res => {
+                            // does plugin exist?
+                            if (typeof res != "object") {
+                                console.log('Plugin not available: ' + data.fav.plug_0);
+                                return;
+                            }
+                            // does it have patches?
+                            if (res.patches.length == 0) {
+                                console.log('No patches available in plugin ' + data.fav.plug_0);
+                                return;
+                            }
+                            // das the patch have params?
+                            if (res.patches[0].params.length == 0) {
+                                console.log('No patches available in plugin ' + data.fav.plug_0);
+                                return;
+                            }
+                            // check for patch parameters not available in data set and add
+                            res.patches[0].params.forEach(param => {
+                                const found = data.preset_0.params.find(({id}) => id === param.id);
+                                if (found == undefined) {
+                                    console.log('Unknown new param ' + param.id + ' inserting!');
+                                    data.preset_0.params.push(param);
+                                }
+                            });
+                            // check for patch parameters not available on available plugin of TBD HW and drop
+                            data.preset_0.params = data.preset_0.params.filter(param => {
+                                const found = res.patches[0].params.find(({id}) => id === param.id);
+                                if (found == undefined) console.log('Removing old param ' + param.id);
+                                return found != undefined;
+                            });
+                            // replace preset in patch data structure
+                            // check if patch data can be placed at correct storage position
+                            // if not add dummy presets
+                            if (data.fav.pre_0 > res.patches.length) {
+                                while (data.fav.pre_0 > res.patches.length) {
+                                    res.patches.push(data.preset_0);
+                                }
+                            } else {
+                                res.patches[data.fav.pre_0] = data.preset_0;
+                            }
+                            // overwrite existing preset storage with preset data from patch
+                            $.postq('myq',
+                                '/api/v1/setPresetData/' + data.fav.plug_0,
+                                JSON.stringify(res), 'json');
+                        }
+                    );
+                    // repeat above for plug_1 preset
+                    // check if plug1 exists or is stereo?
+                    if (data.fav.plug_1 !== '') {
+                        $.getq('myq',
+                            '/api/v1/getPresetData/' + data.fav.plug_1,
+                            res => {
+                                // does plugin exist?
+                                if (typeof res != "object") {
+                                    console.log('Plugin not available: ' + data.fav.plug_1);
+                                    return;
+                                }
+                                // does it have patches?
+                                if (res.patches.length == 0) {
+                                    console.log('No patches available in plugin ' + data.fav.plug_1);
+                                    return;
+                                }
+                                // das the patch have params?
+                                if (res.patches[0].params.length == 0) {
+                                    console.log('No patches available in plugin ' + data.fav.plug_1);
+                                    return;
+                                }
+                                // check for patch parameters not available in data set and add
+                                res.patches[0].params.forEach(param => {
+                                    const found = data.preset_1.params.find(({id}) => id === param.id);
+                                    if (found == undefined) {
+                                        console.log('Unknown new param ' + param.id + ' inserting!');
+                                        data.preset_1.params.push(param);
+                                    }
+                                });
+                                // check for patch parameters not available on available plugin of TBD HW and drop
+                                data.preset_1.params = data.preset_1.params.filter(param => {
+                                    const found = res.patches[0].params.find(({id}) => id === param.id);
+                                    if (found == undefined) console.log('Removing old param ' + param.id);
+                                    return found != undefined;
+                                });
+                                // replace preset in patch data structure
+                                // check if patch data can be placed at correct storage position
+                                // if not add dummy presets
+                                if (data.fav.pre_1 > res.patches.length) {
+                                    while (data.fav.pre_1 > res.patches.length) {
+                                        res.patches.push(data.preset_1);
+                                    }
+                                } else {
+                                    res.patches[data.fav.pre_1] = data.preset_1;
+                                }
+                                // overwrite existing preset storage with preset data from patch
+                                $.postq('myq',
+                                    '/api/v1/setPresetData/' + data.fav.plug_1,
+                                    JSON.stringify(res), 'json');
+                            }
+                        );
+                    }
+                    // persist imported fav
+                    $.ajaxq('myq', {
+                        url: 'api/v1/favorites/store/' + parseInt(window.favorites.selected),
+                        type: 'post',
+                        data: JSON.stringify(data.fav)
+                    });
+                    // TODO refresh fav list in main page after import
                 }
+                // execute read json file for import
                 fr.readAsText(file);
             });
 
@@ -198,7 +313,7 @@
                 window.favorites.selected = $('#fav-select').val();
                 window.favorites.data[window.favorites.selected].plug_0 = $('#plugin-select-ch0').val();
                 window.favorites.data[window.favorites.selected].plug_1 = $('#plugin-select-ch1').val();
-                if (window.plugins.find(el => el.id ===  $('#plugin-select-ch0').val()).isStereo) {
+                if (window.plugins.find(el => el.id === $('#plugin-select-ch0').val()).isStereo) {
                     window.favorites.data[window.favorites.selected].plug_1 = "";
                     $.getq('myq', 'api/v1/getPresets/0',
                         data => {
@@ -268,20 +383,19 @@
 
             this.querySelector('#fav-export').onclick = function () {
                 let currentFav = window.favorites.selected;
-                if(!Array.isArray(window.favorites.data)) return;
-                if(window.favorites.data[currentFav] === undefined) return;
+                if (!Array.isArray(window.favorites.data)) return;
+                if (window.favorites.data[currentFav] === undefined) return;
                 let exportFav = {fav: window.favorites.data[currentFav]};
                 $.getq('myq', 'api/v1/getPresetData/' + exportFav.fav.plug_0,
                     data => {
                         exportFav.preset_0 = data.patches[exportFav.fav.pre_0];
-                        if(exportFav.fav.plug_1 === ''){
-                            exportFav.preset_1 = data.patches[exportFav.fav.pre_1];
+                        if (exportFav.fav.plug_1 === '') {
                             let a = document.createElement("a");
                             let file = new Blob([JSON.stringify(exportFav)], {type: 'text/plain'});
                             a.href = URL.createObjectURL(file);
                             a.download = 'fav-export.jsn';
                             a.click();
-                        }else{
+                        } else {
                             $.getq('myq', 'api/v1/getPresetData/' + exportFav.fav.plug_1,
                                 data => {
                                     exportFav.preset_1 = data.patches[exportFav.fav.pre_1];
@@ -307,9 +421,9 @@
 
             this.onShow = function () {
                 // populate favorite list
-                if(window.favorites){
+                if (window.favorites) {
                     $('#fav-select').empty();
-                    for(let i in window.favorites.data){
+                    for (let i in window.favorites.data) {
                         let s = '<option value="' + i + '">' + i + ": " + window.favorites.data[i].name + '</option>';
                         $('#fav-select').append(s);
                     }
@@ -319,6 +433,7 @@
         };
     </script>
     <ons-modal id="modal-mn" direction="up">
-        <ons-icon icon="md-spinner" size="28px" spin></ons-icon>Loading...
+        <ons-icon icon="md-spinner" size="28px" spin></ons-icon>
+        Loading...
     </ons-modal>
 </ons-page>
