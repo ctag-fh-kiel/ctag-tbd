@@ -33,7 +33,9 @@ struct tbd4vcv : Module {
 	};
 
 	tbd4vcv() {
-        server.Start();
+        instanceCount++;
+        std::cerr << "Instance number " << instanceCount << std::endl;
+        server.Start(2999 + instanceCount);
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(BTN_TRIG_0_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(BTN_TRIG_1_PARAM, 0.f, 1.f, 0.f, "");
@@ -43,6 +45,8 @@ struct tbd4vcv : Module {
 		configParam(GAIN1_PARAM, 0.f, 1.f, 0.f, "");
 	}
     ~tbd4vcv(){
+        rack::logger::log(Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
+        instanceCount--;
         std::cerr << "module destructor called" << std::endl;
         server.Stop();
     }
@@ -53,8 +57,10 @@ struct tbd4vcv : Module {
 
 private:
     WebServer server;
+    static int instanceCount;
 };
 
+int tbd4vcv::instanceCount {0};
 
 struct tbd4vcvWidget : ModuleWidget {
 	tbd4vcvWidget(tbd4vcv* module) {
