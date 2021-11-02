@@ -13,6 +13,3 @@
 [submodule "components/moog/MoogLadders"]
 	path = components/moog/MoogLadders
 	url = https://github.com/ctag-fh-kiel/MoogLadders.git
-[submodule "tbd4vcv/uWebSockets"]
-	path = tbd4vcv/dep/uWebSockets
-	url = https://github.com/uNetworking/uWebSockets.git

@@ -16,13 +16,39 @@ set(PLUGIN_NAME tbd4vcv)
 
 project(${PLUGIN_NAME})
 
+## Web Server Part
+add_library(simple-web-server INTERFACE)
+target_include_directories(simple-web-server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Simple-Web-Server)
+find_package(Threads REQUIRED)
+target_link_libraries(simple-web-server INTERFACE ${CMAKE_THREAD_LIBS_INIT})
+find_package(Boost 1.67.0 REQUIRED COMPONENTS system filesystem thread )
+target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
+target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+    target_compile_definitions(simple-web-server INTERFACE USE_BOOST_REGEX)
+    find_package(Boost 1.67.0 COMPONENTS regex REQUIRED)
+    target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
+    target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
+endif()
+if(NOT TARGET Boost::filesystem)
+    add_library(Boost::filesystem IMPORTED INTERFACE)
+    set_property(TARGET Boost::filesystem PROPERTY
+            INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+    set_property(TARGET Boost::filesystem PROPERTY
+            INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
+endif()
+
 # Plugin part
 set(LIB_NAME plugin)
-file(GLOB_RECURSE PLUGIN_SOURCES src/*.cpp uWebSockets/uSockets/src/*.c)
+#file(GLOB_RECURSE PLUGIN_SOURCES src/*.cpp uWebSockets/uSockets/src/*.c)
+set(PLUGIN_SOURCES src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp)
+
 
 add_library(${LIB_NAME} SHARED ${PLUGIN_SOURCES})
 target_include_directories(${LIB_NAME} PUBLIC "${RACK_DIR}/include" "${RACK_DIR}/dep/include")
 target_include_directories(${LIB_NAME} PUBLIC "uWebSockets/src/" "uWebSockets/uSockets/src")
+target_include_directories(${LIB_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../simulator/Simple-Web-Server")
+target_include_directories(${LIB_NAME} PUBLIC ${Boost_INCLUDE_DIR})
 
 if(WIN32)
     target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_WIN)
@@ -38,6 +64,8 @@ else()
 endif()
 target_compile_options(${LIB_NAME} PRIVATE -fPIC)
 target_compile_definitions(${LIB_NAME} PUBLIC LIBUS_NO_SSL UWS_NO_ZLIB)
+#message(FATAL_ERROR ${Boost_LIBRARIES})
+target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES})
 set_target_properties(${LIB_NAME} PROPERTIES PREFIX "")
 
 # install
