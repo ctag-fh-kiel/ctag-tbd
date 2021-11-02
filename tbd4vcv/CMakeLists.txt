@@ -64,7 +64,6 @@ else()
 endif()
 target_compile_options(${LIB_NAME} PRIVATE -fPIC)
 target_compile_definitions(${LIB_NAME} PUBLIC LIBUS_NO_SSL UWS_NO_ZLIB)
-#message(FATAL_ERROR ${Boost_LIBRARIES})
 target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES})
 set_target_properties(${LIB_NAME} PROPERTIES PREFIX "")
 
@@ -72,7 +71,7 @@ set_target_properties(${LIB_NAME} PROPERTIES PREFIX "")
 install(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
 install(FILES plugin.json DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
 install(DIRECTORY res DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME}/www)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
 #install(DIRECTORY ${CMAKE_BINARY_DIR}/www DESTINATION .)
 
 # package generation

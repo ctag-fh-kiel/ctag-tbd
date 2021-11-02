@@ -30,7 +30,7 @@ private:
     HttpServer server;
     std::thread server_thread;
 public:
-    void Start();
+    void Start(const int);
 
     void Stop();
 };
