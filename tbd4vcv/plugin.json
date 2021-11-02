@@ -1,0 +1,23 @@
+{
+  "slug": "tbd4vcv",
+  "name": "tbd4vcv",
+  "version": "1.0.0",
+  "license": "GPL3",
+  "brand": "CTAG",
+  "author": "Robert Manzke",
+  "authorEmail": "paradenker@gmail.com",
+  "authorUrl": "github.com/ctag-fh-kiel",
+  "pluginUrl": "github.com/ctag-fh-kiel",
+  "manualUrl": "",
+  "sourceUrl": "",
+  "donateUrl": "",
+  "changelogUrl": "",
+  "modules": [
+    {
+      "slug": "tbd4vcv",
+      "name": "tbd4vcv",
+      "description": "",
+      "tags": []
+    }
+  ]
+}
