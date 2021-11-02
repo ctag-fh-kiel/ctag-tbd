@@ -35,7 +35,6 @@ struct tbd4vcv : Module {
 	tbd4vcv() {
         instanceCount++;
         std::cerr << "Instance number " << instanceCount << std::endl;
-        server.Start(2999 + instanceCount);
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(BTN_TRIG_0_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(BTN_TRIG_1_PARAM, 0.f, 1.f, 0.f, "");
@@ -45,22 +44,26 @@ struct tbd4vcv : Module {
 		configParam(GAIN1_PARAM, 0.f, 1.f, 0.f, "");
 	}
     ~tbd4vcv(){
+        server.Stop();
         rack::logger::log(Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
         instanceCount--;
         std::cerr << "module destructor called" << std::endl;
-        server.Stop();
     }
 
 	void process(const ProcessArgs& args) override {
 
 	}
 
-private:
+    static tbd4vcv* activeServerInstance;
     WebServer server;
     static int instanceCount;
+
+private:
+
 };
 
 int tbd4vcv::instanceCount {0};
+tbd4vcv* tbd4vcv::activeServerInstance {nullptr};
 
 struct tbd4vcvWidget : ModuleWidget {
 	tbd4vcvWidget(tbd4vcv* module) {
@@ -91,6 +94,37 @@ struct tbd4vcvWidget : ModuleWidget {
 
 		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(20.123, 57.802)), module, tbd4vcv::BTN_TRIG_0_LIGHT));
 	}
+
+    void appendContextMenu(Menu* menu) override {
+        rack::logger::log(Level::DEBUG_LEVEL, "tbd4vcv.cpp", 98, "appendContextMenu called");
+        tbd4vcv* module = dynamic_cast<tbd4vcv*>(this->module);
+
+        menu->addChild(new MenuEntry);
+        menu->addChild(createMenuLabel("Enable Web Server"));
+
+        struct ModeItem : MenuItem {
+            tbd4vcv* module;
+            void onAction(const event::Action& e) override {
+                if(module->activeServerInstance == module){
+                    module->activeServerInstance = nullptr;
+                    module->server.Stop();
+                }else{
+                    module->activeServerInstance = module;
+                }
+            }
+        };
+
+        std::string modeName = {"Active"};
+        ModeItem* modeItem = createMenuItem<ModeItem>(modeName);
+        modeItem->rightText = CHECKMARK(module == module->activeServerInstance);
+        modeItem->module = module;
+        menu->addChild(modeItem);
+
+        if(module == module->activeServerInstance){
+            module->server.Stop();
+            module->server.Start(3000);
+        }
+    }
 };
 
 

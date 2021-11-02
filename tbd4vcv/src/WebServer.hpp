@@ -29,6 +29,7 @@ class WebServer {
 private:
     HttpServer server;
     std::thread server_thread;
+    bool isRunning {false};
 public:
     void Start(const int);
 
