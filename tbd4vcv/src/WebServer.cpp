@@ -276,9 +276,11 @@ void WebServer::Start(const int port) {
     });
     server_thread = std::move(st);
     cout << "Server listening on port " << server_port.get_future().get() << endl << endl;
+    isRunning = true;
 }
 
 void WebServer::Stop() {
+    if(!isRunning) return;
     server.stop();
     server_thread.join();
 }
