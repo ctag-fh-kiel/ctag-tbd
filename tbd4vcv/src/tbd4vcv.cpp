@@ -1,5 +1,6 @@
 #include "plugin.hpp"
 #include "WebServer.hpp"
+#include <iostream>
 
 
 struct tbd4vcv : Module {
@@ -41,6 +42,10 @@ struct tbd4vcv : Module {
 		configParam(GAIN0_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(GAIN1_PARAM, 0.f, 1.f, 0.f, "");
 	}
+    ~tbd4vcv(){
+        std::cerr << "module destructor called" << std::endl;
+        server.Stop();
+    }
 
 	void process(const ProcessArgs& args) override {
 
