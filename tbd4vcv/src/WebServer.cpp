@@ -43,15 +43,15 @@ void WebServer::Start(const int port) {
                                                         shared_ptr<HttpServer::Request> request) {
         response->write(to_string(1024*1024*5));
     };
-/*
-    server.resource["^/api/v1/getPlugins$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+
+    server.resource["^/api/v1/getPlugins$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                         shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         auto content = request->content.string();
-        response->write(SimSPManager::GetCStrJSONSoundProcessors());
+        response->write(currentSPManager->GetCStrJSONSoundProcessors());
     };
 
-    server.resource["^/api/v1/getIOCaps$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/getIOCaps$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                         shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         auto content = request->content.string();
@@ -59,34 +59,34 @@ void WebServer::Start(const int port) {
         response->write(s);
     };
 
-    server.resource["^/api/v1/getActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/getActivePlugin/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                      shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
-        response->write("{\"id\":\"" + CTAG::AUDIO::SimSPManager::GetStringID(ch) + "\"}");
+        response->write("{\"id\":\"" + currentSPManager->GetStringID(ch) + "\"}");
     };
 
-    server.resource["^/api/v1/getPluginParams/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/getPluginParams/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                      shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
-        response->write(SimSPManager::GetCStrJSONActivePluginParams(ch));
+        response->write(currentSPManager->GetCStrJSONActivePluginParams(ch));
     };
 
-    server.resource["^/api/v1/setActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/setActivePlugin/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                      shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
         auto query_fields = request->parse_query_string();
         for (auto &field: query_fields) {
             if (field.first == "id") {
-                SimSPManager::SetSoundProcessorChannel(ch, field.second);
+                currentSPManager->SetSoundProcessorChannel(ch, field.second);
             }
         }
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/setPluginParam/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/setPluginParam/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                     shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
@@ -101,11 +101,11 @@ void WebServer::Start(const int port) {
                 value = std::stoi(field.second);
             }
         }
-        SimSPManager::SetChannelParamValue(ch, id, what, value);
+        currentSPManager->SetChannelParamValue(ch, id, what, value);
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/setPluginParamCV/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/setPluginParamCV/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                       shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
@@ -120,11 +120,11 @@ void WebServer::Start(const int port) {
                 value = std::stoi(field.second);
             }
         }
-        SimSPManager::SetChannelParamValue(ch, id, what, value);
+        currentSPManager->SetChannelParamValue(ch, id, what, value);
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/setPluginParamTRIG/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/setPluginParamTRIG/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                         shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
@@ -139,18 +139,18 @@ void WebServer::Start(const int port) {
                 value = std::stoi(field.second);
             }
         }
-        SimSPManager::SetChannelParamValue(ch, id, what, value);
+        currentSPManager->SetChannelParamValue(ch, id, what, value);
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/getPresets/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/getPresets/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                 shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
-        response->write(SimSPManager::GetCStrJSONGetPresets(ch));
+        response->write(currentSPManager->GetCStrJSONGetPresets(ch));
     };
 
-    server.resource["^/api/v1/loadPreset/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/loadPreset/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                 shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
@@ -161,11 +161,11 @@ void WebServer::Start(const int port) {
                 number = std::stoi(field.second);
             }
         }
-        SimSPManager::ChannelLoadPreset(ch, number);
+        currentSPManager->ChannelLoadPreset(ch, number);
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/api/v1/savePreset/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/api/v1/savePreset/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                 shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
@@ -179,22 +179,22 @@ void WebServer::Start(const int port) {
                 name = field.second;
             }
         }
-        SimSPManager::ChannelSavePreset(ch, name, number);
+        currentSPManager->ChannelSavePreset(ch, name, number);
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/ctrl-set"]["POST"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/ctrl-set"]["POST"] = [&](shared_ptr<HttpServer::Response> response,
                                                shared_ptr<HttpServer::Request> request) {
-        SimSPManager::SetProcessParams(request->content.string());
+        currentSPManager->SetProcessParams(request->content.string());
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/ctrl-get"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.resource["^/ctrl-get"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                               shared_ptr<HttpServer::Request> request) {
-        response->write(SimSPManager::GetProcessParams());
+        response->write(currentSPManager->GetProcessParams());
     };
 
-*/
+
 
     // Default GET-example. If no other matches, this anonymous function will be called.
     // Will respond with content in the web/-directory, and its subdirectories.
@@ -268,7 +268,7 @@ void WebServer::Start(const int port) {
 
     // Start server and receive assigned port when server is listening for requests
     promise<unsigned short> server_port;
-    thread st([this, &server_port]() {
+    thread st([&]() {
         // Start server
         server.start([&server_port](unsigned short port) {
             server_port.set_value(port);
@@ -283,4 +283,9 @@ void WebServer::Stop() {
     if(!isRunning) return;
     server.stop();
     server_thread.join();
+}
+
+void WebServer::SetCurrentSPManager(CTAG::AUDIO::SPManager *manager) {
+    std::cerr << "Setting current SP Manager " << manager << std::endl;
+    currentSPManager = manager;
 }

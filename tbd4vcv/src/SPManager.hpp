@@ -44,6 +44,8 @@ namespace CTAG {
         public:
             void Start();
             void Stop();
+            string Test();
+            void Process(const CTAG::SP::ProcessData &);
 
             const char *GetCStrJSONSoundProcessors() {
                 return model->GetCStrJSONSoundProcessors();
@@ -98,10 +100,7 @@ namespace CTAG {
 
             std::unique_ptr<ctagSoundProcessor> sp[2];
             std::unique_ptr<SPManagerDataModel> model;
-/*
-             int inout(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
-                             double streamTime, RtAudioStreamStatus status, void *userData);
-*/
+
              std::unique_ptr<SimDataModel> simModel;
             //           SimStimulus stimulus;
         };

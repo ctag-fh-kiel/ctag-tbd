@@ -26,11 +26,13 @@ respective component folders / files if different from this license.
 #include "rapidjson/stringbuffer.h"
 #include "esp_log.h"
 
+/*
 #ifndef TBD_SIM
 #define SPIFFS_PATH "/spiffs"
 #else
 #define SPIFFS_PATH "../../spiffs_image"
 #endif
+ */
 
 using namespace CTAG::SP;
 

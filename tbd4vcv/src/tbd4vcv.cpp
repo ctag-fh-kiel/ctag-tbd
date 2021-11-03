@@ -19,7 +19,7 @@ struct tbd4vcv : rack::Module {
 		IN1_INPUT,
 		TRIG0_INPUT,
 		TRIG1_INPUT,
-		CV0_INPUT,
+        CV0_INPUT,
 		CV1_INPUT,
 		NUM_INPUTS
 	};
@@ -37,9 +37,13 @@ struct tbd4vcv : rack::Module {
         if(instanceCount == 0){
             server.Start(3000);
             activeServerInstance = this;
+            server.SetCurrentSPManager(&this->spManager);
         }
+        spManager.Start();
         instanceCount++;
         std::cerr << "Instance number " << instanceCount << std::endl;
+        std::cerr << rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn") << std::endl;
+        std::cerr << rack::asset::system(rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn")) << std::endl;
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(BTN_TRIG_0_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(BTN_TRIG_1_PARAM, 0.f, 1.f, 0.f, "");
@@ -50,20 +54,94 @@ struct tbd4vcv : rack::Module {
 	}
     ~tbd4vcv(){
         rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
+        spManager.Stop();
         instanceCount--;
-        if(activeServerInstance == this) activeServerInstance = nullptr;
+        if(activeServerInstance == this){
+            activeServerInstance = nullptr;
+            server.SetCurrentSPManager(nullptr);
+        }
         if(instanceCount == 0){
             server.Stop();
         }
     }
 
-	void process(const ProcessArgs& args) override {
+    rack::dsp::SampleRateConverter<2> inputSrc;
+    rack::dsp::SampleRateConverter<2> outputSrc;
+    rack::dsp::DoubleRingBuffer<rack::dsp::Frame<2>, 256> inputBuffer;
+    rack::dsp::DoubleRingBuffer<rack::dsp::Frame<2>, 256> outputBuffer;
 
+	void process(const ProcessArgs& args) override {
+        // Get input
+        rack::dsp::Frame<2> inputFrame = {};
+        if (!inputBuffer.full()) {
+            inputFrame.samples[0] = inputs[IN0_INPUT].getVoltage() / 5.0;
+            inputFrame.samples[1] = inputs[IN1_INPUT].getVoltage() / 5.0;
+            inputBuffer.push(inputFrame);
+        }
+
+        // Render frames
+        if (outputBuffer.empty()) {
+            float audiobuffer[32*2];
+            float cvdata[N_CVS];
+            uint8_t trigdata[N_TRIGS];
+            // Convert input buffer
+            {
+                inputSrc.setRates(args.sampleRate, 44100);
+                rack::dsp::Frame<2> inputFrames[32];
+                int inLen = inputBuffer.size();
+                int outLen = 32;
+                inputSrc.process(inputBuffer.startData(), &inLen, inputFrames, &outLen);
+                inputBuffer.startIncr(inLen);
+
+                // We might not fill all of the input buffer if there is a deficiency, but this cannot be avoided due to imprecisions between the input and output SRC.
+                for (int i = 0; i < outLen; i++) {
+                    audiobuffer[i*2] = inputFrames[i].samples[0] * params[GAIN0_PARAM].getValue();
+                    audiobuffer[i*2 + 1] = inputFrames[i].samples[1] * params[GAIN1_PARAM].getValue();
+                }
+            }
+
+            cvdata[0] = inputs[CV0_INPUT].getVoltage() / 5.0;
+            cvdata[1] = inputs[CV1_INPUT].getVoltage() / 5.0;
+            cvdata[2] = params[POT0_PARAM].getValue();
+            cvdata[3] = params[POT1_PARAM].getValue();
+
+            // inverted logic here
+            trigdata[0] = (params[BTN_TRIG_0_PARAM].getValue() > 0.5 ? 1 : 0) || (inputs[TRIG0_INPUT].getVoltage() > 2.5 ? 1 : 0) == 1 ? 0 : 1;
+            trigdata[1] = (params[BTN_TRIG_1_PARAM].getValue() > 0.5 ? 1 : 0) || (inputs[TRIG1_INPUT].getVoltage() > 2.5 ? 1 : 0) == 1 ? 0 : 1;
+
+            CTAG::SP::ProcessData pd;
+            pd.buf = audiobuffer;
+            pd.cv = cvdata;
+            pd.trig = trigdata;
+
+            spManager.Process(pd);
+
+            // Convert output buffer
+            {
+                rack::dsp::Frame<2> outputFrames[32];
+                for (int i = 0; i < 32; i++) {
+                    outputFrames[i].samples[0] = audiobuffer[i*2];
+                    outputFrames[i].samples[1] = audiobuffer[i*2 + 1];
+                }
+
+                outputSrc.setRates(44100, args.sampleRate);
+                int inLen = 32;
+                int outLen = outputBuffer.capacity();
+                outputSrc.process(outputFrames, &inLen, outputBuffer.endData(), &outLen);
+                outputBuffer.endIncr(outLen);
+            }
+        }
+
+        // Set output
+        rack::dsp::Frame<2> outputFrame = {};
+        if (!outputBuffer.empty()) {
+            outputFrame = outputBuffer.shift();
+            outputs[OUT0_OUTPUT].setVoltage(5.0 * outputFrame.samples[0]);
+            outputs[OUT1_OUTPUT].setVoltage(5.0 * outputFrame.samples[1]);
+        }
 	}
 
     static tbd4vcv* activeServerInstance;
-
-private:
     static WebServer server;
     static int instanceCount;
     CTAG::AUDIO::SPManager spManager;
@@ -116,8 +194,10 @@ struct tbd4vcvWidget : rack::ModuleWidget {
             void onAction(const rack::event::Action& e) override {
                 if(module->activeServerInstance == module){
                     module->activeServerInstance = nullptr;
+                    module->server.SetCurrentSPManager(nullptr);
                 }else{
                     module->activeServerInstance = module;
+                    module->server.SetCurrentSPManager(&module->spManager);
                 }
             }
         };

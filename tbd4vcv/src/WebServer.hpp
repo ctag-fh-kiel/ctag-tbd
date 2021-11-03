@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include "server_http.hpp"
+#include "SPManager.hpp"
 
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 
@@ -30,8 +31,9 @@ private:
     HttpServer server;
     std::thread server_thread;
     bool isRunning {false};
+    CTAG::AUDIO::SPManager* currentSPManager {nullptr};
 public:
     void Start(const int);
-
+    void SetCurrentSPManager(CTAG::AUDIO::SPManager*);
     void Stop();
 };

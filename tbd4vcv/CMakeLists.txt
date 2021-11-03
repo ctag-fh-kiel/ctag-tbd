@@ -40,7 +40,11 @@ endif()
 
 # Plugin part
 set(LIB_NAME plugin)
-set(PLUGIN_SOURCES src/SimDataModel.cpp src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp src/SPManager.cpp)
+set(PLUGIN_SOURCES
+        src/SimDataModel.cpp src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp src/SPManager.cpp src/SPManagerDataModel.cpp
+        "../simulator/fake-idf/esp_heap_caps.c"
+        "../simulator/fake-idf/esp_spi_flash.c"
+        )
 
 add_library(${LIB_NAME} SHARED ${PLUGIN_SOURCES})
 target_include_directories(${LIB_NAME} PUBLIC "${RACK_DIR}/include" "${RACK_DIR}/dep/include")
@@ -73,6 +77,7 @@ add_compile_definitions(
         CONFIG_DSP_ANSI=1
         N_CVS=4
         N_TRIGS=2
+        SPIFFS_PATH="./plugins/tbd4vcv/spiffs_image/" # TODO this has to go in the firmware cmakelists.txt as well + simulator
 )
 target_compile_options(${LIB_NAME} PRIVATE -Wno-unused-local-typedefs)
 set(TBD_SIM 1)
@@ -93,7 +98,7 @@ set(COMPONENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor ${CMAKE_CURRENT_BINARY_DIR}/ctagsp)
 target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
 target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_include)
-target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../main)
+#target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../main)
 
 #mutable
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable ${CMAKE_CURRENT_BINARY_DIR}/mutable)
