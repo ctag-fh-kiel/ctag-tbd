@@ -31,16 +31,11 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::AUDIO;
 
-/*
-#ifndef TBD_SIM
-#define SPIFFS_PATH "/spiffs"
-#else
-#define SPIFFS_PATH "../../spiffs_image"
-#endif
-*/
+//#define SPIFFS_PATH "./plugins/tbd4vcv/spiffs_image/"
+
 
 SPManagerDataModel::SPManagerDataModel() {
-    ESP_LOGI("SPModel", "Trying to read config file");
+    ESP_LOGI("SPModel", "Trying to read config file %s", MODELJSONFN.c_str());
     loadJSON(m, MODELJSONFN);
     getSoundProcessors();
     validateActiveProcessors();

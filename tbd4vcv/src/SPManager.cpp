@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include <mutex>
 #include <cmath>
 #include "esp_spi_flash.h"
+#include <sstream>
 
 using namespace CTAG::AUDIO;
 
@@ -41,6 +42,16 @@ void SPManager::Start(){
         value[i] = simModel->GetArrayElement("value", i);
     }
      */
+    // configure channels
+    model = std::make_unique<SPManagerDataModel>();
+    sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
+    sp[0]->SetProcessChannel(0);
+    sp[0]->LoadPreset(model->GetActivePatchNum(0));
+    if (!sp[0]->GetIsStereo()) {
+        sp[1] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(1));
+        sp[1]->SetProcessChannel(1);
+        sp[1]->LoadPreset(model->GetActivePatchNum(1));
+    }
 }
 
 void SPManager::Stop() {
@@ -104,4 +115,26 @@ void SPManager::SetProcessParams(const string &params) {
     }
     stimulus.UpdateStimulus(mode, value);
      */
+}
+
+string SPManager::Test() {
+    std::ostringstream address;
+    address << (void const *)this;
+    std:string name = address.str();
+    return move(name);
+}
+
+void SPManager::Process(const CTAG::SP::ProcessData &data) {
+    // sound processors
+    bool isStereoCH0 {false};
+    if (audioMutex.try_lock()) {
+        if (sp[0] != nullptr) {
+            isStereoCH0 = sp[0]->GetIsStereo();
+            sp[0]->Process(data);
+        }
+        if (!isStereoCH0)
+            if (sp[1] != nullptr)
+                sp[1]->Process(data); // 0 is not a stereo processor
+        audioMutex.unlock();
+    }
 }
