@@ -33,6 +33,10 @@ struct tbd4vcv : Module {
 	};
 
 	tbd4vcv() {
+        if(instanceCount == 0){
+            server.Start(3000);
+            activeServerInstance = this;
+        }
         instanceCount++;
         std::cerr << "Instance number " << instanceCount << std::endl;
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -44,10 +48,12 @@ struct tbd4vcv : Module {
 		configParam(GAIN1_PARAM, 0.f, 1.f, 0.f, "");
 	}
     ~tbd4vcv(){
-        server.Stop();
         rack::logger::log(Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
         instanceCount--;
-        std::cerr << "module destructor called" << std::endl;
+        if(activeServerInstance == this) activeServerInstance = nullptr;
+        if(instanceCount == 0){
+            server.Stop();
+        }
     }
 
 	void process(const ProcessArgs& args) override {
@@ -55,15 +61,15 @@ struct tbd4vcv : Module {
 	}
 
     static tbd4vcv* activeServerInstance;
-    WebServer server;
-    static int instanceCount;
 
 private:
-
+    static WebServer server;
+    static int instanceCount;
 };
 
 int tbd4vcv::instanceCount {0};
 tbd4vcv* tbd4vcv::activeServerInstance {nullptr};
+WebServer tbd4vcv::server;
 
 struct tbd4vcvWidget : ModuleWidget {
 	tbd4vcvWidget(tbd4vcv* module) {
@@ -102,28 +108,24 @@ struct tbd4vcvWidget : ModuleWidget {
         menu->addChild(new MenuEntry);
         menu->addChild(createMenuLabel("Enable Web Server"));
 
-        struct ModeItem : MenuItem {
+        // happens when action is performed on view
+        struct ServerItem : MenuItem {
             tbd4vcv* module;
             void onAction(const event::Action& e) override {
                 if(module->activeServerInstance == module){
                     module->activeServerInstance = nullptr;
-                    module->server.Stop();
                 }else{
                     module->activeServerInstance = module;
                 }
             }
         };
 
-        std::string modeName = {"Active"};
-        ModeItem* modeItem = createMenuItem<ModeItem>(modeName);
-        modeItem->rightText = CHECKMARK(module == module->activeServerInstance);
-        modeItem->module = module;
-        menu->addChild(modeItem);
-
-        if(module == module->activeServerInstance){
-            module->server.Stop();
-            module->server.Start(3000);
-        }
+        // happens when view is rendered
+        std::string serverItemName = {"Active"};
+        ServerItem* serverItem = createMenuItem<ServerItem>(serverItemName);
+        serverItem->rightText = CHECKMARK(module == module->activeServerInstance);
+        serverItem->module = module;
+        menu->addChild(serverItem);
     }
 };
 
