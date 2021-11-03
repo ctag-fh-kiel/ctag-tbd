@@ -40,13 +40,10 @@ endif()
 
 # Plugin part
 set(LIB_NAME plugin)
-#file(GLOB_RECURSE PLUGIN_SOURCES src/*.cpp uWebSockets/uSockets/src/*.c)
-set(PLUGIN_SOURCES src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp)
-
+set(PLUGIN_SOURCES src/SimDataModel.cpp src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp src/SPManager.cpp)
 
 add_library(${LIB_NAME} SHARED ${PLUGIN_SOURCES})
 target_include_directories(${LIB_NAME} PUBLIC "${RACK_DIR}/include" "${RACK_DIR}/dep/include")
-target_include_directories(${LIB_NAME} PUBLIC "uWebSockets/src/" "uWebSockets/uSockets/src")
 target_include_directories(${LIB_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../simulator/Simple-Web-Server")
 target_include_directories(${LIB_NAME} PUBLIC ${Boost_INCLUDE_DIR})
 
@@ -64,8 +61,106 @@ else()
 endif()
 target_compile_options(${LIB_NAME} PRIVATE -fPIC)
 target_compile_definitions(${LIB_NAME} PUBLIC LIBUS_NO_SSL UWS_NO_ZLIB)
-target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES} ctagsp mutable esp-dsp)
 set_target_properties(${LIB_NAME} PROPERTIES PREFIX "")
+
+# tbd part
+add_compile_definitions(
+        RAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=16384 # rapidjson
+        RAPIDJSON_HAS_STDSTRING=1 # rapidjson
+        TBD_SIM=1
+        TEST=1
+        CONFIG_DSP_ANSI=1
+        N_CVS=4
+        N_TRIGS=2
+)
+target_compile_options(${LIB_NAME} PRIVATE -Wno-unused-local-typedefs)
+set(TBD_SIM 1)
+#ctagSoundProcessor
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/iir/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/add/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/addc/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/mul/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/mulc/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/common/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable/eurorack)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/moog/MoogLadders/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../simulator/fake-idf)
+
+#ctag sound processors
+set(COMPONENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor ${CMAKE_CURRENT_BINARY_DIR}/ctagsp)
+target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
+target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_include)
+target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../main)
+
+#mutable
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable ${CMAKE_CURRENT_BINARY_DIR}/mutable)
+
+#rapidjson
+file(GLOB RAPIDJSON_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson/rapidjson/*.h
+        )
+#esp-dsp
+set(ESP_DSP_DIR "../components/esp-dsp")
+set(ESP_DSP_SRC_FILES  "${ESP_DSP_DIR}/modules/common/misc/dsps_pwroftwo.cpp"
+        "${ESP_DSP_DIR}/modules/dotprod/float/dsps_dotprod_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/dotprod/float/dsps_dotprode_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/dotprod/fixed/dsps_dotprod_s16_ansi.c"
+        "${ESP_DSP_DIR}/modules/matrix/float/dspm_mult_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/matrix/fixed/dspm_mult_s16_ansi.c"
+        "${ESP_DSP_DIR}/modules/math/mulc/float/dsps_mulc_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/math/addc/float/dsps_addc_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/math/add/float/dsps_add_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/math/sub/float/dsps_sub_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/math/mul/float/dsps_mul_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/support/misc/dsps_d_gen.c"
+        "${ESP_DSP_DIR}/modules/support/misc/dsps_h_gen.c"
+        "${ESP_DSP_DIR}/modules/support/misc/dsps_tone_gen.c"
+        "${ESP_DSP_DIR}/modules/support/view/dsps_view.cpp"
+        "${ESP_DSP_DIR}/modules/windows/hann/float/dsps_wind_hann_f32.c"
+        "${ESP_DSP_DIR}/modules/windows/blackman/float/dsps_wind_blackman_f32.c"
+        "${ESP_DSP_DIR}/modules/windows/blackman_harris/float/dsps_wind_blackman_harris_f32.c"
+        "${ESP_DSP_DIR}/modules/windows/blackman_nuttall/float/dsps_wind_blackman_nuttall_f32.c"
+        "${ESP_DSP_DIR}/modules/windows/nuttall/float/dsps_wind_nuttall_f32.c"
+        "${ESP_DSP_DIR}/modules/windows/flat_top/float/dsps_wind_flat_top_f32.c"
+        "${ESP_DSP_DIR}/modules/conv/float/dsps_conv_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/conv/float/dsps_corr_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/conv/float/dsps_ccorr_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/iir/biquad/dsps_biquad_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/iir/biquad/dsps_biquad_gen_f32.c"
+        "${ESP_DSP_DIR}/modules/fir/float/dsps_fir_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/fir/float/dsps_fir_init_f32.c"
+        "${ESP_DSP_DIR}/modules/fir/float/dsps_fird_f32_ansi.c"
+        "${ESP_DSP_DIR}/modules/fir/float/dsps_fird_init_f32.c")
+
+set(ESP_DSP_INC_DIRS   "${ESP_DSP_DIR}/modules/dotprod/include"
+        "${ESP_DSP_DIR}/modules/support/include"
+        "${ESP_DSP_DIR}/modules/windows/include"
+        "${ESP_DSP_DIR}/modules/windows/hann/include"
+        "${ESP_DSP_DIR}/modules/windows/blackman/include"
+        "${ESP_DSP_DIR}/modules/windows/blackman_harris/include"
+        "${ESP_DSP_DIR}/modules/windows/blackman_nuttall/include"
+        "${ESP_DSP_DIR}/modules/windows/nuttall/include"
+        "${ESP_DSP_DIR}/modules/windows/flat_top/include"
+        "${ESP_DSP_DIR}/modules/iir/include"
+        "${ESP_DSP_DIR}/modules/fir/include"
+        "${ESP_DSP_DIR}/modules/math/include"
+        "${ESP_DSP_DIR}/modules/math/add/include"
+        "${ESP_DSP_DIR}/modules/math/sub/include"
+        "${ESP_DSP_DIR}/modules/math/mul/include"
+        "${ESP_DSP_DIR}/modules/math/addc/include"
+        "${ESP_DSP_DIR}/modules/math/mulc/include"
+        "${ESP_DSP_DIR}/modules/matrix/include"
+        "${ESP_DSP_DIR}/modules/fft/include"
+        "${ESP_DSP_DIR}/modules/dct/include"
+        "${ESP_DSP_DIR}/modules/conv/include"
+        "${ESP_DSP_DIR}/modules/common/include")
+
+add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
+target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
+
 
 # install
 install(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
