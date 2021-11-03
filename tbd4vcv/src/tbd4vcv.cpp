@@ -1,9 +1,10 @@
 #include "plugin.hpp"
 #include "WebServer.hpp"
+#include "SPManager.hpp"
 #include <iostream>
 
 
-struct tbd4vcv : Module {
+struct tbd4vcv : rack::Module {
 	enum ParamIds {
 		BTN_TRIG_0_PARAM,
 		BTN_TRIG_1_PARAM,
@@ -48,7 +49,7 @@ struct tbd4vcv : Module {
 		configParam(GAIN1_PARAM, 0.f, 1.f, 0.f, "");
 	}
     ~tbd4vcv(){
-        rack::logger::log(Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
+        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
         instanceCount--;
         if(activeServerInstance == this) activeServerInstance = nullptr;
         if(instanceCount == 0){
@@ -65,53 +66,54 @@ struct tbd4vcv : Module {
 private:
     static WebServer server;
     static int instanceCount;
+    CTAG::AUDIO::SPManager spManager;
 };
 
 int tbd4vcv::instanceCount {0};
 tbd4vcv* tbd4vcv::activeServerInstance {nullptr};
 WebServer tbd4vcv::server;
 
-struct tbd4vcvWidget : ModuleWidget {
+struct tbd4vcvWidget : rack::ModuleWidget {
 	tbd4vcvWidget(tbd4vcv* module) {
 		setModule(module);
-		setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/tbd4vcv.svg")));
+		setPanel(APP->window->loadSvg(rack::asset::plugin(pluginInstance, "res/tbd4vcv.svg")));
 
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-		addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+		addChild(rack::createWidget<rack::ScrewSilver>(rack::Vec(rack::RACK_GRID_WIDTH, 0)));
+		addChild(rack::createWidget<rack::ScrewSilver>(rack::Vec(box.size.x - 2 * rack::RACK_GRID_WIDTH, 0)));
+		addChild(rack::createWidget<rack::ScrewSilver>(rack::Vec(rack::RACK_GRID_WIDTH, rack::RACK_GRID_HEIGHT - rack::RACK_GRID_WIDTH)));
+		addChild(rack::createWidget<rack::ScrewSilver>(rack::Vec(box.size.x - 2 * rack::RACK_GRID_WIDTH, rack::RACK_GRID_HEIGHT - rack::RACK_GRID_WIDTH)));
 
-		addParam(createParamCentered<BefacoPush>(mm2px(Vec(7.406, 49.539)), module, tbd4vcv::BTN_TRIG_0_PARAM));
-		addParam(createParamCentered<BefacoPush>(mm2px(Vec(32.806, 49.539)), module, tbd4vcv::BTN_TRIG_1_PARAM));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(7.406, 62.333)), module, tbd4vcv::POT0_PARAM));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(32.806, 62.333)), module, tbd4vcv::POT1_PARAM));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(7.406, 78.933)), module, tbd4vcv::GAIN0_PARAM));
-		addParam(createParamCentered<Trimpot>(mm2px(Vec(32.806, 78.933)), module, tbd4vcv::GAIN1_PARAM));
+		addParam(rack::createParamCentered<rack::BefacoPush>(rack::mm2px(rack::Vec(7.406, 49.539)), module, tbd4vcv::BTN_TRIG_0_PARAM));
+		addParam(rack::createParamCentered<rack::BefacoPush>(rack::mm2px(rack::Vec(32.806, 49.539)), module, tbd4vcv::BTN_TRIG_1_PARAM));
+		addParam(rack::createParamCentered<rack::Trimpot>(rack::mm2px(rack::Vec(7.406, 62.333)), module, tbd4vcv::POT0_PARAM));
+		addParam(rack::createParamCentered<rack::Trimpot>(rack::mm2px(rack::Vec(32.806, 62.333)), module, tbd4vcv::POT1_PARAM));
+		addParam(rack::createParamCentered<rack::Trimpot>(rack::mm2px(rack::Vec(7.406, 78.933)), module, tbd4vcv::GAIN0_PARAM));
+		addParam(rack::createParamCentered<rack::Trimpot>(rack::mm2px(rack::Vec(32.806, 78.933)), module, tbd4vcv::GAIN1_PARAM));
 
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(4.897, 96.524)), module, tbd4vcv::IN0_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(15.057, 96.524)), module, tbd4vcv::IN1_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25.217, 96.524)), module, tbd4vcv::TRIG0_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(35.377, 96.524)), module, tbd4vcv::TRIG1_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(25.217, 109.478)), module, tbd4vcv::CV0_INPUT));
-		addInput(createInputCentered<PJ301MPort>(mm2px(Vec(35.377, 109.478)), module, tbd4vcv::CV1_INPUT));
+		addInput(rack::createInputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(4.897, 96.524)), module, tbd4vcv::IN0_INPUT));
+		addInput(rack::createInputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(15.057, 96.524)), module, tbd4vcv::IN1_INPUT));
+		addInput(rack::createInputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(25.217, 96.524)), module, tbd4vcv::TRIG0_INPUT));
+		addInput(rack::createInputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(35.377, 96.524)), module, tbd4vcv::TRIG1_INPUT));
+		addInput(rack::createInputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(25.217, 109.478)), module, tbd4vcv::CV0_INPUT));
+		addInput(rack::createInputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(35.377, 109.478)), module, tbd4vcv::CV1_INPUT));
 
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(4.897, 109.478)), module, tbd4vcv::OUT0_OUTPUT));
-		addOutput(createOutputCentered<PJ301MPort>(mm2px(Vec(15.057, 109.478)), module, tbd4vcv::OUT1_OUTPUT));
+		addOutput(rack::createOutputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(4.897, 109.478)), module, tbd4vcv::OUT0_OUTPUT));
+		addOutput(rack::createOutputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(15.057, 109.478)), module, tbd4vcv::OUT1_OUTPUT));
 
-		addChild(createLightCentered<MediumLight<RedLight>>(mm2px(Vec(20.123, 57.802)), module, tbd4vcv::BTN_TRIG_0_LIGHT));
+		addChild(rack::createLightCentered<rack::MediumLight<rack::RedLight>>(rack::mm2px(rack::Vec(20.123, 57.802)), module, tbd4vcv::BTN_TRIG_0_LIGHT));
 	}
 
-    void appendContextMenu(Menu* menu) override {
-        rack::logger::log(Level::DEBUG_LEVEL, "tbd4vcv.cpp", 98, "appendContextMenu called");
+    void appendContextMenu(rack::Menu* menu) override {
+        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 98, "appendContextMenu called");
         tbd4vcv* module = dynamic_cast<tbd4vcv*>(this->module);
 
-        menu->addChild(new MenuEntry);
-        menu->addChild(createMenuLabel("Enable Web Server"));
+        menu->addChild(new rack::MenuEntry);
+        menu->addChild(rack::createMenuLabel("Enable Web Server"));
 
         // happens when action is performed on view
-        struct ServerItem : MenuItem {
+        struct ServerItem : rack::MenuItem {
             tbd4vcv* module;
-            void onAction(const event::Action& e) override {
+            void onAction(const rack::event::Action& e) override {
                 if(module->activeServerInstance == module){
                     module->activeServerInstance = nullptr;
                 }else{
@@ -122,7 +124,7 @@ struct tbd4vcvWidget : ModuleWidget {
 
         // happens when view is rendered
         std::string serverItemName = {"Active"};
-        ServerItem* serverItem = createMenuItem<ServerItem>(serverItemName);
+        ServerItem* serverItem = rack::createMenuItem<ServerItem>(serverItemName);
         serverItem->rightText = CHECKMARK(module == module->activeServerInstance);
         serverItem->module = module;
         menu->addChild(serverItem);
@@ -130,4 +132,4 @@ struct tbd4vcvWidget : ModuleWidget {
 };
 
 
-Model* modeltbd4vcv = createModel<tbd4vcv, tbd4vcvWidget>("tbd4vcv");
+rack::Model* modeltbd4vcv = rack::createModel<tbd4vcv, tbd4vcvWidget>("tbd4vcv");
