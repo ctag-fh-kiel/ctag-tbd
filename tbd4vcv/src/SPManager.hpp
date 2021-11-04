@@ -37,8 +37,9 @@ namespace CTAG {
     namespace AUDIO {
         class SPManager {
         public:
-            void Start();
-            void Stop();
+            SPManager();
+            ~SPManager();
+
             void Process(const CTAG::SP::ProcessData &);
 
             const char *GetCStrJSONSoundProcessors() {
@@ -81,7 +82,6 @@ namespace CTAG {
 
             void ChannelLoadPreset(const int chan, const int number);
 
-            void SetProcessParams(const string &params);
             bool GetBlueStatus();
             string GetSPManagerDataModel();
             void SetSPManagerDataModel(const string &);
