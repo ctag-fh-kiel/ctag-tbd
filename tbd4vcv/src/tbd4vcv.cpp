@@ -39,12 +39,11 @@ struct tbd4vcv : rack::Module {
             activeServerInstance = this;
             server.SetCurrentSPManager(&this->spManager);
         }
-        spManager.Start();
         instanceCount++;
-        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Constructor called");
-        std::cerr << "Instance number " << instanceCount << std::endl;
-        std::cerr << rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn") << std::endl;
-        std::cerr << rack::asset::system(rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn")) << std::endl;
+        //rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Constructor called");
+        //std::cerr << "Instance number " << instanceCount << std::endl;
+        //std::cerr << rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn") << std::endl;
+        //std::cerr << rack::asset::system(rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn")) << std::endl;
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(BTN_TRIG_0_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(BTN_TRIG_1_PARAM, 0.f, 1.f, 0.f, "");
@@ -57,8 +56,7 @@ struct tbd4vcv : rack::Module {
         chMeters[1].mode = rack::dsp::VuMeter2::Mode::PEAK;
 	}
     ~tbd4vcv(){
-        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
-        spManager.Stop();
+        //rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
         instanceCount--;
         if(activeServerInstance == this){
             activeServerInstance = nullptr;
@@ -176,7 +174,7 @@ struct tbd4vcv : rack::Module {
 	}
 
     json_t* dataToJson() override {
-        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "dataToJson called");
+        //rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "dataToJson called");
         json_t* rootJ = json_loads(spManager.GetSPManagerDataModel().c_str(), 0, NULL);
         return rootJ;
     }
@@ -230,7 +228,7 @@ struct tbd4vcvWidget : rack::ModuleWidget {
 	}
 
     void appendContextMenu(rack::Menu* menu) override {
-        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 98, "appendContextMenu called");
+        //rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 98, "appendContextMenu called");
         tbd4vcv* module = dynamic_cast<tbd4vcv*>(this->module);
 
         menu->addChild(new rack::MenuEntry);

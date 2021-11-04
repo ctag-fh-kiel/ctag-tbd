@@ -183,14 +183,6 @@ void WebServer::Start(const int port) {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/ctrl-set"]["POST"] = [&](shared_ptr<HttpServer::Response> response,
-                                               shared_ptr<HttpServer::Request> request) {
-        currentSPManager->SetProcessParams(request->content.string());
-        response->write(SimpleWeb::StatusCode::success_ok);
-    };
-
-
-
     // Default GET-example. If no other matches, this anonymous function will be called.
     // Will respond with content in the web/-directory, and its subdirectories.
     // Default file: index.html

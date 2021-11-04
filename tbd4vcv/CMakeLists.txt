@@ -168,11 +168,19 @@ target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
 
 # install
-install(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
-install(FILES plugin.json DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
-install(DIRECTORY res DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
+#install(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
+#install(FILES plugin.json DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
+#install(FILES ../sample_rom/sample-rom.tbd DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME}/sample-rom)
+#install(DIRECTORY res DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
 #install(DIRECTORY ${CMAKE_BINARY_DIR}/www DESTINATION .)
+
+install(TARGETS ${LIB_NAME} LIBRARY DESTINATION tbd4vcv)
+install(FILES plugin.json DESTINATION tbd4vcv)
+install(FILES ../sample_rom/sample-rom.tbd DESTINATION tbd4vcv/sample-rom)
+install(DIRECTORY res DESTINATION tbd4vcv)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION tbd4vcv)
+install(FILES ../LICENSE readme.md DESTINATION tbd4vcv)
 
 # package generation
 set(CPACK_GENERATOR "ZIP")
@@ -180,9 +188,11 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "tbd4vcv")
 SET(CPACK_PACKAGE_VENDOR "ctag-tbd")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/readme.md")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE")
-
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MAJOR "1")
 SET(CPACK_PACKAGE_VERSION_MINOR "0")
-SET(CPACK_PACKAGE_VERSION_PATCH "1")
-#SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+# Tell CPack not to put everything inside an enclosing directory.
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+# Apparently this should be always on but isn't for backwards compatibility.
+set(CPACK_VERBATIM_VARIABLES YES)
 include(CPack)

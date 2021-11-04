@@ -29,19 +29,9 @@ using namespace CTAG::AUDIO;
 
 std::mutex audioMutex;
 
-void SPManager::Start(){
-    /*
-    // start fake sample rom
-    cout << "Trying to open sample rom file (define own with -s command line option): " << sromFile << endl;
-    spi_flash_emu_init(sromFile.c_str());
-    // Initialize simulator parameters
-    simModel = std::make_unique<SimDataModel>();
-    int mode[6], value[6];
-    for (int i = 0; i < 6; i++) {
-        mode[i] = simModel->GetArrayElement("mode", i);
-        value[i] = simModel->GetArrayElement("value", i);
-    }
-     */
+SPManager::SPManager(){
+    spi_flash_emu_init("./plugins/tbd4vcv/sample-rom/sample-rom.tbd");
+
     // configure channels
     model = std::make_unique<SPManagerDataModel>("{\"activeProcessors\":[],\"lastPatches\":[[],[]]}");
     sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
@@ -54,16 +44,8 @@ void SPManager::Start(){
     }
 }
 
-void SPManager::Stop() {
-    /*
-    // free sample rom emulation
+SPManager::~SPManager() {
     spi_flash_emu_release();
-    if (isWaveInput) tinywav_close_read(&tw);
-    if (audio.isStreamRunning() && audio.isStreamOpen()) {
-        audio.stopStream();
-        audio.closeStream();
-    }
-     */
 }
 
 void SPManager::SetSoundProcessorChannel(const int chan, const string &id) {
@@ -107,18 +89,6 @@ void SPManager::ChannelLoadPreset(const int chan, const int number) {
 
 string SPManager::GetStringID(const int chan) {
     return model->GetActiveProcessorID(chan);
-}
-
-void SPManager::SetProcessParams(const string &params) {
-    /*
-    simModel->SetModelJSONString(params);
-    int mode[6], value[6];
-    for (int i = 0; i < 6; i++) {
-        mode[i] = simModel->GetArrayElement("mode", i);
-        value[i] = simModel->GetArrayElement("value", i);
-    }
-    stimulus.UpdateStimulus(mode, value);
-     */
 }
 
 void SPManager::Process(const CTAG::SP::ProcessData &data) {
