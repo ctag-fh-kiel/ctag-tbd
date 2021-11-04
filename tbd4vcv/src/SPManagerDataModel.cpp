@@ -33,10 +33,16 @@ using namespace CTAG::AUDIO;
 
 //#define SPIFFS_PATH "./plugins/tbd4vcv/spiffs_image/"
 
+// TODO maybe mutexes are needed as web server and vcv module instance access methods possibly at same time?
+// TODO thread safety not tested!
 
-SPManagerDataModel::SPManagerDataModel() {
-    ESP_LOGI("SPModel", "Trying to read config file %s", MODELJSONFN.c_str());
-    loadJSON(m, MODELJSONFN);
+SPManagerDataModel::SPManagerDataModel(const string &json) {
+//    ESP_LOGI("SPModel", "Trying to read config file %s", MODELJSONFN.c_str());
+//    loadJSON(m, MODELJSONFN);
+    m.Parse(json);
+    if(m.HasParseError()){
+        cerr << "SPManagerDataModel initial json parse error!" << endl;
+    }
     getSoundProcessors();
     validateActiveProcessors();
     validatePatches();
@@ -75,11 +81,11 @@ void SPManagerDataModel::getSoundProcessors() {
         }
         closedir(dir);
     }
-    storeJSON(m, MODELJSONFN);
+    //storeJSON(m, MODELJSONFN);
 }
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessors() {
-    loadJSON(m, MODELJSONFN);
+    //loadJSON(m, MODELJSONFN);
     json.Clear();
     Writer<StringBuffer> writer(json);
     if (!m.HasMember("availableProcessors")) return nullptr;
@@ -101,7 +107,7 @@ void SPManagerDataModel::SetActivePluginID(const string &id, const int chan) {
     if (!m["activeProcessors"].IsArray()) return;
     if (m["activeProcessors"].Size() == 0) return;
     m["activeProcessors"][chan].SetString(id, m.GetAllocator());
-    storeJSON(m, MODELJSONFN);
+    //storeJSON(m, MODELJSONFN);
 }
 
 void SPManagerDataModel::SetActivePatchNum(const int patchNum, const int chan) {
@@ -118,7 +124,7 @@ void SPManagerDataModel::SetActivePatchNum(const int patchNum, const int chan) {
             break;
         }
     }
-    storeJSON(m, MODELJSONFN);
+    //storeJSON(m, MODELJSONFN);
 }
 
 int SPManagerDataModel::GetActivePatchNum(const int chan) {
@@ -168,7 +174,7 @@ void SPManagerDataModel::validatePatches() {
             }
         }
     }
-    storeJSON(m, MODELJSONFN);
+    //storeJSON(m, MODELJSONFN);
 }
 
 void SPManagerDataModel::validateActiveProcessors() {
@@ -186,7 +192,7 @@ void SPManagerDataModel::validateActiveProcessors() {
             }
         }
     }
-    storeJSON(m, MODELJSONFN);
+    //storeJSON(m, MODELJSONFN);
 }
 
 void SPManagerDataModel::PrintSelf() {
@@ -208,7 +214,7 @@ void SPManagerDataModel::SetConfigurationFromJSON(const string &data) {
     Value obj(kObjectType);
     obj.CopyFrom(d, m.GetAllocator());
     m["configuration"] = obj.Move();
-    storeJSON(m, MODELJSONFN);
+    //storeJSON(m, MODELJSONFN);
     //PrintSelf();
 }
 
@@ -237,7 +243,7 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
     m["configuration"]["wifi"]["ssid"] = ssid.Move();
     m["configuration"]["wifi"]["pwd"] = pwd.Move();
     m["configuration"]["wifi"]["mode"] = mode.Move();
-    storeJSON(m, MODELJSONFN);
+    //storeJSON(m, MODELJSONFN);
 }
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
@@ -282,4 +288,19 @@ bool SPManagerDataModel::HasPluginID(const string &id) {
         }
     }
     return false;
+}
+
+string SPManagerDataModel::GetSPManagerDataModel() {
+    json.Clear();
+    Writer<StringBuffer> writer(json);
+    m.Accept(writer);
+    return json.GetString();
+}
+
+void SPManagerDataModel::SetSPManagerDataModel(const string &json) {
+    m.GetAllocator().Clear();
+    m.Parse(json);
+    if(m.HasParseError()){
+        cerr << "SPManagerDataModel set json parse error!" << endl;
+    }
 }

@@ -43,7 +43,7 @@ void SPManager::Start(){
     }
      */
     // configure channels
-    model = std::make_unique<SPManagerDataModel>();
+    model = std::make_unique<SPManagerDataModel>("{\"activeProcessors\":[],\"lastPatches\":[[],[]]}");
     sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
     sp[0]->SetProcessChannel(0);
     sp[0]->LoadPreset(model->GetActivePatchNum(0));
@@ -156,4 +156,22 @@ bool SPManager::GetBlueStatus() {
     bool stat = blue;
     blue = false;
     return stat;
+}
+
+string SPManager::GetSPManagerDataModel() {
+    return model->GetSPManagerDataModel();
+}
+
+void SPManager::SetSPManagerDataModel(const string &json) {
+    model->SetSPManagerDataModel(json);
+    if(sp[0] != nullptr) sp[0] = nullptr;
+    if(sp[1] != nullptr) sp[1] = nullptr;
+    sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
+    sp[0]->SetProcessChannel(0);
+    sp[0]->LoadPreset(model->GetActivePatchNum(0));
+    if (!sp[0]->GetIsStereo()) {
+        sp[1] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(1));
+        sp[1]->SetProcessChannel(1);
+        sp[1]->LoadPreset(model->GetActivePatchNum(1));
+    }
 }

@@ -41,6 +41,7 @@ struct tbd4vcv : rack::Module {
         }
         spManager.Start();
         instanceCount++;
+        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Constructor called");
         std::cerr << "Instance number " << instanceCount << std::endl;
         std::cerr << rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn") << std::endl;
         std::cerr << rack::asset::system(rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn")) << std::endl;
@@ -68,12 +69,14 @@ struct tbd4vcv : rack::Module {
         }
     }
 
+    // instance members
     rack::dsp::SampleRateConverter<2> inputSrc;
     rack::dsp::SampleRateConverter<2> outputSrc;
     rack::dsp::DoubleRingBuffer<rack::dsp::Frame<2>, 256> inputBuffer;
     rack::dsp::DoubleRingBuffer<rack::dsp::Frame<2>, 256> outputBuffer;
     rack::dsp::VuMeter2 chMeters[2];
     int blueDecay {0};
+    CTAG::AUDIO::SPManager spManager;
 
 	void process(const ProcessArgs& args) override {
         // Get input
@@ -163,19 +166,32 @@ struct tbd4vcv : rack::Module {
             lights[RGB_LIGHT + 2].setBrightness(0.);
             float sum = inputs[IN0_INPUT].getVoltage() / 5.f + inputs[IN1_INPUT].getVoltage() / 5.0;
             chMeters[0].process(args.sampleTime, sum);
-            float g = chMeters[0].getBrightness(-12.f, 0.f);
+            float g = chMeters[0].getBrightness(-30.f, 0.f);
             sum = outputs[OUT0_OUTPUT].getVoltage() / 5.f + outputs[OUT1_OUTPUT].getVoltage() / 5.0;
             chMeters[1].process(args.sampleTime, sum);
-            float r = chMeters[1].getBrightness(-12.f, 0.f);
+            float r = chMeters[1].getBrightness(-30.f, 0.f);
             lights[RGB_LIGHT + 0].setBrightness(r);
             lights[RGB_LIGHT + 1].setBrightness(g);
         }
 	}
 
+    json_t* dataToJson() override {
+        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "dataToJson called");
+        json_t* rootJ = json_loads(spManager.GetSPManagerDataModel().c_str(), 0, NULL);
+        return rootJ;
+    }
+
+    void dataFromJson(json_t *root) override{
+        char * s = json_dumps(root, 0);
+//        rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "dataFromJson called\n%s", s);
+        spManager.SetSPManagerDataModel(string(s));
+        free(s);
+    }
+
+    // static members
     static tbd4vcv* activeServerInstance;
     static WebServer server;
     static int instanceCount;
-    CTAG::AUDIO::SPManager spManager;
 };
 
 int tbd4vcv::instanceCount {0};
@@ -224,10 +240,8 @@ struct tbd4vcvWidget : rack::ModuleWidget {
         struct ServerItem : rack::MenuItem {
             tbd4vcv* module;
             void onAction(const rack::event::Action& e) override {
-                if(module->activeServerInstance == module){
-                    module->activeServerInstance = nullptr;
-                    module->server.SetCurrentSPManager(nullptr);
-                }else{
+                if(module->activeServerInstance != module){
+                    // TODO: maybe there is a mutex needed here, as the web server accesses this from a different thread!
                     module->activeServerInstance = module;
                     module->server.SetCurrentSPManager(&module->spManager);
                 }
