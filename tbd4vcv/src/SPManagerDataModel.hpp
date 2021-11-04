@@ -37,7 +37,8 @@ namespace CTAG {
     namespace AUDIO {
         class SPManagerDataModel final : public CTAG::SP::ctagDataModelBase {
         public:
-            SPManagerDataModel();
+            SPManagerDataModel(const string &);
+            void SetSPManagerDataModel(const string&);
 
             ~SPManagerDataModel();
 
@@ -46,6 +47,8 @@ namespace CTAG {
             const char *GetCStrJSONConfiguration();
 
             const char *GetCStrJSONSoundProcessorPresets(const string &id);
+
+            string GetSPManagerDataModel();
 
             void SetJSONSoundProcessorPreset(const string &id, const string &data);
 
@@ -79,8 +82,6 @@ namespace CTAG {
             void validatePatches();
 
             Document m;
-
-            const string MODELJSONFN = "./plugins/tbd4vcv/spiffs_image/data/spm-config.jsn";
         };
     }
 }

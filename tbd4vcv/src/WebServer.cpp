@@ -189,11 +189,6 @@ void WebServer::Start(const int port) {
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
-    server.resource["^/ctrl-get"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
-                                              shared_ptr<HttpServer::Request> request) {
-        response->write(currentSPManager->GetProcessParams());
-    };
-
 
 
     // Default GET-example. If no other matches, this anonymous function will be called.

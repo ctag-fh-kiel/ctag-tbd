@@ -30,11 +30,6 @@ respective component folders / files if different from this license.
 #include "SPManagerDataModel.hpp"
 #include <atomic>
 
-#include "SimDataModel.hpp"
-/*
-#include "SimStimulus.hpp"
- */
-
 using namespace CTAG::SP;
 using namespace std;
 
@@ -88,10 +83,8 @@ namespace CTAG {
 
             void SetProcessParams(const string &params);
             bool GetBlueStatus();
-
-            const char *GetProcessParams() {
-                return simModel->GetModelJSONCString();
-            }
+            string GetSPManagerDataModel();
+            void SetSPManagerDataModel(const string &);
 
 
         private:
@@ -101,9 +94,6 @@ namespace CTAG {
 
             std::unique_ptr<ctagSoundProcessor> sp[2];
             std::unique_ptr<SPManagerDataModel> model;
-
-             std::unique_ptr<SimDataModel> simModel;
-            //           SimStimulus stimulus;
         };
     }
 }
