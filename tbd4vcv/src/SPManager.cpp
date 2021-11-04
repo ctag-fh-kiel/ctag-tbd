@@ -69,6 +69,7 @@ void SPManager::Stop() {
 void SPManager::SetSoundProcessorChannel(const int chan, const string &id) {
     printf("Switching plugin %d to %s", chan, id.c_str());
     audioMutex.lock();
+    blue = true;
     sp[chan] = nullptr; // destruct smart ptr
     if (model->IsStereo(id) && chan == 0) {
         ESP_LOGI("SP", "Removing ch 1 plugin as ch 0 is stereo!");
@@ -82,12 +83,14 @@ void SPManager::SetSoundProcessorChannel(const int chan, const string &id) {
 }
 
 void SPManager::SetChannelParamValue(const int chan, const string &id, const string &key, const int val) {
+    blue = true;
     sp[chan]->SetParamValue(id, key, val);
 }
 
 void SPManager::ChannelSavePreset(const int chan, const string &name, const int number) {
     if (sp[chan] == nullptr) return;
     audioMutex.lock();
+    blue = true;
     sp[chan]->SavePreset(name, number);
     model->SetActivePatchNum(number, chan);
     audioMutex.unlock();
@@ -96,6 +99,7 @@ void SPManager::ChannelSavePreset(const int chan, const string &name, const int 
 void SPManager::ChannelLoadPreset(const int chan, const int number) {
     if (sp[chan] == nullptr) return;
     audioMutex.lock();
+    blue = true;
     sp[chan]->LoadPreset(number);
     model->SetActivePatchNum(number, chan);
     audioMutex.unlock();
@@ -117,16 +121,19 @@ void SPManager::SetProcessParams(const string &params) {
      */
 }
 
-string SPManager::Test() {
-    std::ostringstream address;
-    address << (void const *)this;
-    std:string name = address.str();
-    return move(name);
-}
-
 void SPManager::Process(const CTAG::SP::ProcessData &data) {
     // sound processors
     bool isStereoCH0 {false};
+
+    fv3::dccut_f in_dccutl, in_dccutr;
+    in_dccutl.setCutOnFreq(3.7f, 44100.f);
+    in_dccutr.setCutOnFreq(3.7f, 44100.f);
+    // dc cut input
+    for (uint32_t i = 0; i < 32; i++) {
+        data.buf[i * 2] = in_dccutl(data.buf[i * 2]);
+        data.buf[i * 2 + 1] = in_dccutr(data.buf[i * 2 + 1]);
+    }
+
     if (audioMutex.try_lock()) {
         if (sp[0] != nullptr) {
             isStereoCH0 = sp[0]->GetIsStereo();
@@ -136,5 +143,17 @@ void SPManager::Process(const CTAG::SP::ProcessData &data) {
             if (sp[1] != nullptr)
                 sp[1]->Process(data); // 0 is not a stereo processor
         audioMutex.unlock();
+
     }
+    // softclip out
+    for(int i=0;i<32;i++){
+        data.buf[i*2] = stmlib::SoftClip(data.buf[i*2]);
+        data.buf[i*2 + 1] = stmlib::SoftClip(data.buf[i*2 + 1]);
+    }
+}
+
+bool SPManager::GetBlueStatus() {
+    bool stat = blue;
+    blue = false;
+    return stat;
 }
