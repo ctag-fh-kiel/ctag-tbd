@@ -44,7 +44,6 @@ namespace CTAG {
         public:
             void Start();
             void Stop();
-            string Test();
             void Process(const CTAG::SP::ProcessData &);
 
             const char *GetCStrJSONSoundProcessors() {
@@ -88,6 +87,7 @@ namespace CTAG {
             void ChannelLoadPreset(const int chan, const int number);
 
             void SetProcessParams(const string &params);
+            bool GetBlueStatus();
 
             const char *GetProcessParams() {
                 return simModel->GetModelJSONCString();
@@ -97,6 +97,7 @@ namespace CTAG {
         private:
 
             void updateConfiguration();
+            bool blue {false};
 
             std::unique_ptr<ctagSoundProcessor> sp[2];
             std::unique_ptr<SPManagerDataModel> model;

@@ -29,7 +29,7 @@ struct tbd4vcv : rack::Module {
 		NUM_OUTPUTS
 	};
 	enum LightIds {
-		BTN_TRIG_0_LIGHT,
+        ENUMS(RGB_LIGHT, 3),
 		NUM_LIGHTS
 	};
 
@@ -51,6 +51,9 @@ struct tbd4vcv : rack::Module {
 		configParam(POT1_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(GAIN0_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(GAIN1_PARAM, 0.f, 1.f, 0.f, "");
+
+        chMeters[0].mode = rack::dsp::VuMeter2::Mode::PEAK;
+        chMeters[1].mode = rack::dsp::VuMeter2::Mode::PEAK;
 	}
     ~tbd4vcv(){
         rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Destructor called");
@@ -69,6 +72,8 @@ struct tbd4vcv : rack::Module {
     rack::dsp::SampleRateConverter<2> outputSrc;
     rack::dsp::DoubleRingBuffer<rack::dsp::Frame<2>, 256> inputBuffer;
     rack::dsp::DoubleRingBuffer<rack::dsp::Frame<2>, 256> outputBuffer;
+    rack::dsp::VuMeter2 chMeters[2];
+    int blueDecay {0};
 
 	void process(const ProcessArgs& args) override {
         // Get input
@@ -105,6 +110,11 @@ struct tbd4vcv : rack::Module {
             cvdata[2] = params[POT0_PARAM].getValue();
             cvdata[3] = params[POT1_PARAM].getValue();
 
+            // led
+            //lights[RGB_LIGHT + 0].setBrightness(red);
+
+            //lights[RGB_LIGHT + 2].setBrightness(blue);
+
             // inverted logic here
             trigdata[0] = (params[BTN_TRIG_0_PARAM].getValue() > 0.5 ? 1 : 0) || (inputs[TRIG0_INPUT].getVoltage() > 2.5 ? 1 : 0) == 1 ? 0 : 1;
             trigdata[1] = (params[BTN_TRIG_1_PARAM].getValue() > 0.5 ? 1 : 0) || (inputs[TRIG1_INPUT].getVoltage() > 2.5 ? 1 : 0) == 1 ? 0 : 1;
@@ -138,6 +148,27 @@ struct tbd4vcv : rack::Module {
             outputFrame = outputBuffer.shift();
             outputs[OUT0_OUTPUT].setVoltage(5.0 * outputFrame.samples[0]);
             outputs[OUT1_OUTPUT].setVoltage(5.0 * outputFrame.samples[1]);
+        }
+
+        // led
+        if(spManager.GetBlueStatus()){
+            blueDecay = args.sampleRate / 2;
+        }
+        if(blueDecay){
+            blueDecay--;
+            lights[RGB_LIGHT + 0].setBrightness(0.);
+            lights[RGB_LIGHT + 1].setBrightness(0.);
+            lights[RGB_LIGHT + 2].setBrightness(1.);
+        }else{
+            lights[RGB_LIGHT + 2].setBrightness(0.);
+            float sum = inputs[IN0_INPUT].getVoltage() / 5.f + inputs[IN1_INPUT].getVoltage() / 5.0;
+            chMeters[0].process(args.sampleTime, sum);
+            float g = chMeters[0].getBrightness(-12.f, 0.f);
+            sum = outputs[OUT0_OUTPUT].getVoltage() / 5.f + outputs[OUT1_OUTPUT].getVoltage() / 5.0;
+            chMeters[1].process(args.sampleTime, sum);
+            float r = chMeters[1].getBrightness(-12.f, 0.f);
+            lights[RGB_LIGHT + 0].setBrightness(r);
+            lights[RGB_LIGHT + 1].setBrightness(g);
         }
 	}
 
@@ -178,7 +209,8 @@ struct tbd4vcvWidget : rack::ModuleWidget {
 		addOutput(rack::createOutputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(4.897, 109.478)), module, tbd4vcv::OUT0_OUTPUT));
 		addOutput(rack::createOutputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(15.057, 109.478)), module, tbd4vcv::OUT1_OUTPUT));
 
-		addChild(rack::createLightCentered<rack::MediumLight<rack::RedLight>>(rack::mm2px(rack::Vec(20.123, 57.802)), module, tbd4vcv::BTN_TRIG_0_LIGHT));
+        addChild(rack::createLightCentered<rack::LargeLight<rack::RedGreenBlueLight>>(rack::mm2px(rack::Vec(20.123, 57.802)), module, tbd4vcv::RGB_LIGHT));
+		//addChild(rack::createLightCentered<rack::MediumLight<rack::RedLight>>(rack::mm2px(rack::Vec(20.123, 57.802)), module, tbd4vcv::BTN_TRIG_0_LIGHT));
 	}
 
     void appendContextMenu(rack::Menu* menu) override {
