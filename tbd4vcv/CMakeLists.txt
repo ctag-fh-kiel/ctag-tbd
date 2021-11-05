@@ -64,8 +64,11 @@ else()
     target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_LIN)
 endif()
 target_compile_options(${LIB_NAME} PRIVATE -fPIC)
-target_compile_definitions(${LIB_NAME} PUBLIC LIBUS_NO_SSL UWS_NO_ZLIB)
 target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES} ctagsp mutable esp-dsp)
+if(WIN32)
+    #target_link_libraries(tbd-sim -static simple-web-server)
+    target_link_libraries(tbd-sim ws2_32 wsock32)
+endif()
 set_target_properties(${LIB_NAME} PROPERTIES PREFIX "")
 
 # tbd part

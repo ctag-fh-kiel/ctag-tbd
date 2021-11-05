@@ -1,6 +1,7 @@
 #include "plugin.hpp"
 #include "WebServer.hpp"
 #include "SPManager.hpp"
+#include "esp_spi_flash.h"
 #include <iostream>
 
 
@@ -35,6 +36,7 @@ struct tbd4vcv : rack::Module {
 
 	tbd4vcv() {
         if(instanceCount == 0){
+            spi_flash_emu_init("./plugins/tbd4vcv/sample-rom/sample-rom.tbd");
             server.Start(3000);
             activeServerInstance = this;
             server.SetCurrentSPManager(&this->spManager);
@@ -63,6 +65,7 @@ struct tbd4vcv : rack::Module {
             server.SetCurrentSPManager(nullptr);
         }
         if(instanceCount == 0){
+            spi_flash_emu_release();
             server.Stop();
         }
     }

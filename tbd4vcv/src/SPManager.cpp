@@ -22,7 +22,6 @@ respective component folders / files if different from this license.
 #include "SPManager.hpp"
 #include <mutex>
 #include <cmath>
-#include "esp_spi_flash.h"
 #include <sstream>
 
 using namespace CTAG::AUDIO;
@@ -30,8 +29,6 @@ using namespace CTAG::AUDIO;
 std::mutex audioMutex;
 
 SPManager::SPManager(){
-    spi_flash_emu_init("./plugins/tbd4vcv/sample-rom/sample-rom.tbd");
-
     // configure channels
     model = std::make_unique<SPManagerDataModel>("{\"activeProcessors\":[],\"lastPatches\":[[],[]]}");
     sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
@@ -42,10 +39,6 @@ SPManager::SPManager(){
         sp[1]->SetProcessChannel(1);
         sp[1]->LoadPreset(model->GetActivePatchNum(1));
     }
-}
-
-SPManager::~SPManager() {
-    spi_flash_emu_release();
 }
 
 void SPManager::SetSoundProcessorChannel(const int chan, const string &id) {
