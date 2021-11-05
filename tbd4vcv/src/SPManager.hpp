@@ -38,7 +38,6 @@ namespace CTAG {
         class SPManager {
         public:
             SPManager();
-            ~SPManager();
 
             void Process(const CTAG::SP::ProcessData &);
 
