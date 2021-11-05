@@ -25,6 +25,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include "esp_log.h"
+#include "ctagResources.hpp"
 
 /*
 #ifndef TBD_SIM
@@ -38,10 +39,10 @@ using namespace CTAG::SP;
 
 ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo) {
     // acquire data from json files ui model and patch model
-    muiFileName = string(string(SPIFFS_PATH) + "/data/sp/mui-") + id + string(".jsn");
+    muiFileName = string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mui-") + id + string(".jsn");
     //std::cout << "Reading " << muiFileName << std::endl;
     loadJSON(mui, muiFileName);
-    mpFileName = string(string(SPIFFS_PATH) + "/data/sp/mp-") + id + string(".jsn");
+    mpFileName = string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-") + id + string(".jsn");
     //std::cout << "Reading " << mpFileName << std::endl;
     loadJSON(mp, mpFileName);
     // load last activated preset

@@ -23,12 +23,21 @@ respective component folders / files if different from this license.
 #include <mutex>
 #include <cmath>
 #include <sstream>
+#include "ctagResources.hpp"
 
 using namespace CTAG::AUDIO;
 
+// global variable, spiffs base directory
+namespace CTAG {
+    namespace RESOURCES {
+        std::string spiffsRoot {""};
+    }
+}
+
 std::mutex audioMutex;
 
-SPManager::SPManager(){
+void SPManager::Start(const string &spiffsPath) {
+    CTAG::RESOURCES::spiffsRoot = spiffsPath;
     // configure channels
     model = std::make_unique<SPManagerDataModel>("{\"activeProcessors\":[],\"lastPatches\":[[],[]]}");
     sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));

@@ -33,10 +33,12 @@ using namespace std;
 using namespace boost::property_tree;
 
 
-void WebServer::Start(const int port) {
+void WebServer::Start(const int port, const string& basePath) {
     // HTTP-server at port 8080 using 1 thread
     // Unless you do more heavy non-threaded processing in the resources,
     // 1 thread is usually faster than several threads
+    spiffsPath = basePath;
+
     server.config.port = port;
 
     server.resource["^/api/v1/srom/getSize$"]["POST"] = [](shared_ptr<HttpServer::Response> response,
@@ -188,10 +190,10 @@ void WebServer::Start(const int port) {
     // Default file: index.html
     // Can for instance be used to retrieve an HTML 5 client that uses REST-resources on this server
     // I.E. static web files
-    server.default_resource["GET"] = [](shared_ptr<HttpServer::Response> response,
+    server.default_resource["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                         shared_ptr<HttpServer::Request> request) {
         try {
-            auto web_root_path = boost::filesystem::canonical("plugins/tbd4vcv/spiffs_image/www");
+            auto web_root_path = boost::filesystem::canonical(spiffsPath);
             auto path = boost::filesystem::canonical(web_root_path / request->path);
             // Check if path is within web_root_path
             if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
