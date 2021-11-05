@@ -68,7 +68,7 @@ target_compile_options(${LIB_NAME} PRIVATE -fPIC)
 target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES} ctagsp mutable esp-dsp)
 if(WIN32)
     #target_link_libraries(tbd-sim -static simple-web-server)
-    target_link_libraries(tbd-sim ws2_32 wsock32)
+    target_link_libraries(${LIB_NAME} ws2_32 wsock32)
 endif()
 set_target_properties(${LIB_NAME} PROPERTIES PREFIX "")
 
