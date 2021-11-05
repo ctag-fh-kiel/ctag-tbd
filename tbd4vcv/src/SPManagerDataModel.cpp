@@ -28,6 +28,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/stringbuffer.h"
 #include <dirent.h>
 #include "esp_log.h"
+#include "ctagResources.hpp"
 
 using namespace CTAG::AUDIO;
 
@@ -58,13 +59,13 @@ void SPManagerDataModel::getSoundProcessors() {
     struct dirent *ent;
     Value sparray(kArrayType);
     m.AddMember("availableProcessors", sparray, m.GetAllocator());
-    if ((dir = opendir(string(string(SPIFFS_PATH) + string("/data/sp")).c_str())) != NULL) {
+    if ((dir = opendir(string(CTAG::RESOURCES::spiffsRoot + string("/data/sp")).c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             string fn(ent->d_name);
             if (fn.find("mui-") != string::npos) {
                 ESP_LOGD("SPModel", "Filename: %s", fn.c_str());
                 Document d;
-                loadJSON(d, string(SPIFFS_PATH) + "/data/sp/" + fn);
+                loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/" + fn);
                 Value obj(kObjectType);
                 Value id(d["id"].GetString(), d.GetAllocator());
                 Value name(d["name"].GetString(), d.GetAllocator());
@@ -249,7 +250,7 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
     // check if file exists
     DIR *dir;
-    dir = opendir(string(string(SPIFFS_PATH) + "/data/sp/mp-" + id + ".jsn").c_str());
+    dir = opendir(string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn").c_str());
     if (dir == NULL) {
         ESP_LOGE("SPM", "Preset file for processors %s could not be opened!\n", id.c_str());
         return nullptr;
@@ -258,7 +259,7 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &i
     // prepare JSON output string
     json.Clear();
     Document d;
-    loadJSON(d, string(SPIFFS_PATH) + "/data/sp/mp-" + id + ".jsn");
+    loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
     Writer<StringBuffer> writer(json);
     d.Accept(writer);
     return json.GetString();
@@ -267,7 +268,7 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &i
 void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const string &data) {
     // check if file exists
     DIR *dir;
-    dir = opendir(string(string(SPIFFS_PATH) + "/data/sp/mp-" + id + ".jsn").c_str());
+    dir = opendir(string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn").c_str());
     if (dir == NULL) {
         ESP_LOGE("SPM", "Preset file for processors %s could not be opened!\n", id.c_str());
         return;
@@ -277,7 +278,7 @@ void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const str
     ESP_LOGD("Model", "String %s", data.c_str());
     Document presets;
     presets.Parse(data);
-    storeJSON(presets, string(string(SPIFFS_PATH) + "/data/sp/mp-" + id + ".jsn"));
+    storeJSON(presets, string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn"));
 }
 
 bool SPManagerDataModel::HasPluginID(const string &id) {

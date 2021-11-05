@@ -37,7 +37,8 @@ namespace CTAG {
     namespace AUDIO {
         class SPManager {
         public:
-            SPManager();
+
+            void Start(const string& spiffsPath);
 
             void Process(const CTAG::SP::ProcessData &);
 

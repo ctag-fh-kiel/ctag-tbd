@@ -35,9 +35,10 @@ struct tbd4vcv : rack::Module {
 	};
 
 	tbd4vcv() {
+        spManager.Start(rack::asset::plugin(pluginInstance, "spiffs_image/"));
         if(instanceCount == 0){
-            spi_flash_emu_init("./plugins/tbd4vcv/sample-rom/sample-rom.tbd");
-            server.Start(3000);
+            spi_flash_emu_init(rack::asset::plugin(pluginInstance, "sample-rom/sample-rom.tbd").c_str());
+            server.Start(3000, rack::asset::plugin(pluginInstance, "spiffs_image/www"));
             activeServerInstance = this;
             server.SetCurrentSPManager(&this->spManager);
         }

@@ -81,7 +81,7 @@ add_compile_definitions(
         CONFIG_DSP_ANSI=1
         N_CVS=4
         N_TRIGS=2
-        SPIFFS_PATH="./plugins/tbd4vcv/spiffs_image/" # TODO this has to go in the firmware cmakelists.txt as well + simulator
+        #SPIFFS_PATH="./plugins/tbd4vcv/spiffs_image/" # TODO this has to go in the firmware cmakelists.txt as well + simulator
 )
 target_compile_options(${LIB_NAME} PRIVATE -Wno-unused-local-typedefs)
 set(TBD_SIM 1)
