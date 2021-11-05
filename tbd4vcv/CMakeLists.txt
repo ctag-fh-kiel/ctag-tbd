@@ -21,6 +21,7 @@ add_library(simple-web-server INTERFACE)
 target_include_directories(simple-web-server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Simple-Web-Server)
 find_package(Threads REQUIRED)
 target_link_libraries(simple-web-server INTERFACE ${CMAKE_THREAD_LIBS_INIT})
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.67.0 REQUIRED COMPONENTS system filesystem thread )
 target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
 target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
@@ -178,12 +179,14 @@ target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
 #install(DIRECTORY ${CMAKE_BINARY_DIR}/www DESTINATION .)
 
+
 install(TARGETS ${LIB_NAME} LIBRARY DESTINATION tbd4vcv)
 install(FILES plugin.json DESTINATION tbd4vcv)
 install(FILES ../sample_rom/sample-rom.tbd DESTINATION tbd4vcv/sample-rom)
 install(DIRECTORY res DESTINATION tbd4vcv)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION tbd4vcv)
 install(FILES ../LICENSE readme.md DESTINATION tbd4vcv)
+#install(FILES ${Boost_LIBRARY_DIRS}/libboost_system-mt.dylib DESTINATION tbd4vcv)
 
 # package generation
 set(CPACK_GENERATOR "ZIP")
