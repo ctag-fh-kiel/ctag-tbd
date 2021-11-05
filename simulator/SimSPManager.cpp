@@ -31,6 +31,12 @@ std::mutex audioMutex;
 TinyWav tw;
 bool isWaveInput = false;
 
+// global variable, spiffs base directory
+namespace CTAG {
+    namespace RESOURCES {
+        std::string spiffsRoot {"../../spiffs_image"};
+    }
+}
 
 // Audio callback
 int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
