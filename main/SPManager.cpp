@@ -56,6 +56,13 @@ using namespace CTAG::DRIVERS;
 #define NG_LEFT 2
 #define NG_RIGHT 3
 
+// global variable, spiffs base directory
+namespace CTAG {
+    namespace RESOURCES {
+        std::string spiffsRoot {"/spiffs"};
+    }
+}
+
 // audio real-time task
 void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     float fbuf[BUF_SZ * 2];
