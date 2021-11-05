@@ -19,7 +19,7 @@ jobs:
         with:
           submodules: recursive
       - name: Build binaries
-        uses: ctag-fh-kiel/tapp-mingw64-action@v5
+        uses: ctag-fh-kiel/tapp-mingw64-action@v6
       - name: Archive binaries
         run: |
           zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip tbd4vcv/build/*.zip
