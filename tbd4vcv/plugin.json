@@ -8,16 +8,16 @@
   "authorEmail": "paradenker@gmail.com",
   "authorUrl": "github.com/ctag-fh-kiel",
   "pluginUrl": "github.com/ctag-fh-kiel",
-  "manualUrl": "",
-  "sourceUrl": "",
+  "manualUrl": "https://github.com/ctag-fh-kiel/ctag-tbd/blob/vcv/tbd4vcv/readme.md",
+  "sourceUrl": "https://github.com/ctag-fh-kiel/ctag-tbd/tree/vcv/tbd4vcv",
   "donateUrl": "",
   "changelogUrl": "",
   "modules": [
     {
       "slug": "tbd4vcv",
       "name": "tbd4vcv",
-      "description": "",
-      "tags": []
+      "description": "Software emulation of ctag tbd Eurorack module",
+      "tags": ["tbd", "Eurorack", "ctag-tbd"]
     }
   ]
 }

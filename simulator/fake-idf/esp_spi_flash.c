@@ -25,11 +25,10 @@ respective component folders / files if different from this license.
 #include <string.h>
 #include <stdlib.h>
 
-char* file_buffer = NULL;
+static char* file_buffer = NULL;
 
 void spi_flash_emu_init(const char *sromFile) {
     if(NULL == sromFile) return;
-    if(NULL != file_buffer) return;
     FILE *f = fopen(sromFile, "rb");
     assert(f != NULL);
     fseek(f, 0L, SEEK_END);
@@ -43,10 +42,7 @@ void spi_flash_emu_init(const char *sromFile) {
 }
 
 void spi_flash_emu_release(){
-    if(NULL != file_buffer){
-        free(file_buffer);
-    }
-    file_buffer = NULL;
+    free(file_buffer);
 }
 
 esp_err_t spi_flash_read(size_t src, void *dstv, size_t size){
