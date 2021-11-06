@@ -1,4 +1,4 @@
-name: tapp-win64
+name: tbd4vcv-win
 
 on:
   push:
@@ -12,17 +12,26 @@ jobs:
   build:
 
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
 
     steps:
-      - name: Checkout repository and submodules
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Build binaries
-        uses: ctag-fh-kiel/tapp-mingw64-action@v7
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git mingw-w64-x86_64-toolchain mingw-w64-x86_64-ninja mingw-w64-x86_64-boost mingw-w64-x86_64-cmake unzip
+      - name: CI-Build
+        run: |
+          echo 'Running in MSYS2!'
+          ./tbd4vcv/cibuild-win-msys2mingw-win64.sh
       - name: Archive binaries
         run: |
-          zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip tbd4vcv/build/*.zip
+          zip --junk-paths binaries tbd4vcv/build/*.zip
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -30,9 +39,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.sha }}
-          release_name: tbd4vcv-win64-${{ github.sha }}
+          release_name: tbd4vcv-${{ github.sha }}
           body: |
-            tbd4vcv mingw-64
+            tbd4vcv mingw
           draft: true
           prerelease: true
       - name: Upload Release Asset
