@@ -21,7 +21,6 @@ jobs:
         with:
           submodules: recursive
       - name: Build binaries
-        uses: openrndr/setup-opengl@v1.1
         uses: ctag-fh-kiel/tapp-mingw64-action@v4
       - name: Archive binaries
         run: |
