@@ -21,7 +21,7 @@ jobs:
       - name: Install OpenGL Dev
         run: sudo apt-get install libgl1-mesa-dev
       - name: Setup tmate session
-          uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@v3
       - name: Build binaries
         uses: ctag-fh-kiel/tapp-mingw64-action@v7
       - name: Archive binaries
