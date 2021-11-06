@@ -18,10 +18,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: OpenGL
-        uses: openrndr/setup-opengl@v1.1
       - name: Build binaries
-        uses: ctag-fh-kiel/tapp-mingw64-action@v7
+        uses: ctag-fh-kiel/tapp-mingw64-action@v8
       - name: Archive binaries
         run: |
           zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip tbd4vcv/build/*.zip
