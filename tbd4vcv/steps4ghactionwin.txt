@@ -1,0 +1,14 @@
+wget https://vcvrack.com/downloads/Rack-SDK-1.1.6.zip
+unzip Rack-SDK-1.1.6.zip
+cd Rack-SDK
+export RACK_DIR=`pwd`
+cd ..
+pacman -S --noconfirm mingw-w64-x86_64-cninja mingw-w64-x86_64-boost
+git clone --recursive https://github.com/ctag-fh-kiel/ctag-tbd.git
+cd ctag-tbd
+git checkout vcv
+cd tbd4vcv
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_INSTALL_PREFIX=${MINGW} -DCMAKE_FIND_ROOT_PATH=${MINGW} -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ -DCMAKE_RC_COMPILER=x86_64-w64-mingw32-windres ..
+
