@@ -11,17 +11,13 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository and submodules
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Install OpenGL Dev
-        run: sudo apt-get install libgl1-mesa-dev
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Build binaries
         uses: ctag-fh-kiel/tapp-mingw64-action@v7
       - name: Archive binaries
