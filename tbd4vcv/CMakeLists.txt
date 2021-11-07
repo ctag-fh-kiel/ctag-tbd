@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(RACK_DIR $ENV{RACK_DIR})
@@ -63,6 +63,10 @@ elseif(APPLE)
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
     endif()
+    target_link_options(${LIB_NAME} PUBLIC
+            -stdlib=libc++
+    )
+    target_link_libraries(${LIB_NAME} PUBLIC -static c++)
 else()
     target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_LIN)
 endif()
