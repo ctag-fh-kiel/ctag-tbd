@@ -184,7 +184,7 @@ target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
 install(TARGETS ${LIB_NAME} LIBRARY DESTINATION tbd4vcv)
 install(FILES plugin.json DESTINATION tbd4vcv)
-install(FILES ../sample_rom/sample-rom.tbd DESTINATION tbd4vcv/sample-rom)
+install(FILES ../sample_rom/sample-rom.tbd DESTINATION tbd4vcv/sample_rom)
 install(DIRECTORY res DESTINATION tbd4vcv)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION tbd4vcv)
 install(FILES ../LICENSE readme.md DESTINATION tbd4vcv)
