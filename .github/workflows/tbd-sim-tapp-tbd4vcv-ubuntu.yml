@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Install boost
-        run: sudo apt-get install -y libboost-all-dev
+        run: sudo apt-get install -y libboost-all-dev libasound2-dev
       - name: Checkout repository and submodules
         uses: actions/checkout@v2
         with:
