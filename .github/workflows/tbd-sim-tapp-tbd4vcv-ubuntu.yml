@@ -3,12 +3,10 @@ name: tbd-sim-tapp-tbd4vcv-linux
 on:
   push:
     branches:
-      - master
-      - aem
+      - test
   pull_request:
     branches:
-      - master
-      - aem
+      - test
 
 jobs:
   build:
@@ -17,13 +15,7 @@ jobs:
 
     steps:
       - name: Install boost
-        uses: MarkusJx/install-boost@v2.0.0
-        id: install-boost
-        with:
-          # REQUIRED: Specify the required boost version
-          # A list of supported versions can be found here:
-          # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
-          boost_version: 1.73.0
+        run: sudo apt-get install -y libboost-all-dev
       - name: Checkout repository and submodules
         uses: actions/checkout@v2
         with:
