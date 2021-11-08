@@ -1,4 +1,4 @@
-name: tbd-sim-tapp-tbd4vcv-osx
+name: tbd-sim-tapp-tbd4vcv-linux
 
 on:
   push:
@@ -13,10 +13,17 @@ on:
 jobs:
   build:
 
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
-      - run: brew install boost
+      - name: Install boost
+        uses: MarkusJx/install-boost@v2.0.0
+        id: install-boost
+        with:
+          # REQUIRED: Specify the required boost version
+          # A list of supported versions can be found here:
+          # https://github.com/actions/boost-versions/blob/main/versions-manifest.json
+          boost_version: 1.73.0
       - name: Checkout repository and submodules
         uses: actions/checkout@v2
         with:
@@ -34,9 +41,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.sha }}
-          release_name: tbd-sim-tapp-tbd4vcv-osx-${{ github.sha }}
+          release_name: tbd-sim-tapp-tbd4vcv-linux-${{ github.sha }}
           body: |
-            tbd-sim-tapp-tbd4vcv-osx
+            tbd-sim-tapp-tbd4vcv-linux-
           draft: true
           prerelease: true
       - name: Upload Release Asset
