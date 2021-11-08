@@ -1,9 +1,11 @@
 # CTAG TBD Version Log
 
 ## V0.9.21
-- Favorite ex-/import
+- [VCV Rack](https://vcvrack.com/) v1 plugins available to test and enjoy TBDs growing set of sound processors, details [here](tbd4vcv/readme.md)
+- Sample import web UI now indicates stereo samples and lets you choose l/r or both channels to import
 - When overwriting patches, old patch name is shown in dialog and can be edited prior to overwrite
-- Favorites are now contained in backup, restoring backup now OVERWRITES current data, this leads to more data consistency
+- Favorites are now contained in backup, restoring backup now OVERWRITES!!! current data (leads to more data consistency)
+- Favorite ex-/import (OVERWRITES EXISTING PATCHES AND FAVORITE!!!)
 - Stability improvements with regard to flash storage reliability at boot up
 - Minor bug fixes
 
