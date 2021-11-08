@@ -304,4 +304,8 @@ void SPManagerDataModel::SetSPManagerDataModel(const string &json) {
     if(m.HasParseError()){
         cerr << "SPManagerDataModel set json parse error!" << endl;
     }
+    m.RemoveMember("availableProcessors");
+    getSoundProcessors();
+    validateActiveProcessors();
+    validatePatches();
 }

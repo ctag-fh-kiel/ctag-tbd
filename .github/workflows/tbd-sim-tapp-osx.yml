@@ -23,9 +23,10 @@ jobs:
           submodules: recursive
       - run: cd tapp && mkdir build && cd build && cmake .. && make && cpack && cd ../..
       - run: cd simulator && mkdir build && cd build && cmake .. && make && cpack && cd ../..
+      - run: cd tbd4vcv && mkdir build && cd build && cmake .. && make && cpack && cd ../..
       - name: Archive binaries
         run: |
-          zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip
+          zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip tbd4vcv/build/*.zip
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

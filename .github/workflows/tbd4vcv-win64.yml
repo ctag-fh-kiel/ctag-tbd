@@ -3,10 +3,10 @@ name: tbd4vcv-win
 on:
   push:
     branches:
-      - vcv
+      - master
   pull_request:
     branches:
-      - vcv
+      - master
 
 jobs:
   build:
