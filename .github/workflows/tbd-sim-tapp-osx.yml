@@ -23,7 +23,7 @@ jobs:
           submodules: recursive
       - run: cd tapp && mkdir build && cd build && cmake .. && make && cpack && cd ../..
       - run: cd simulator && mkdir build && cd build && cmake .. && make && cpack && cd ../..
-      - run: cd tbd4vcv && mkdir build && cd build && cmake .. && make && cpack && cd ../..
+      - run: wget https://vcvrack.com/downloads/Rack-SDK-1.1.6.zip && unzip Rack-SDK-1.1.6.zip && cd Rack-SDK && export RACK_DIR=`pwd` && cd ../tbd4vcv && mkdir build && cd build && cmake .. && make && cpack && cd ../..
       - name: Archive binaries
         run: |
           zip --junk-paths binaries tapp/build/*.zip simulator/build/*.zip tbd4vcv/build/*.zip
