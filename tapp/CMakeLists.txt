@@ -18,7 +18,7 @@ add_definitions(
 
 # link boost statically
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.74.0 COMPONENTS system thread filesystem program_options REQUIRED)
+find_package(Boost 1.67.0 COMPONENTS system thread filesystem program_options REQUIRED)
 
 ## Web Server Part
 add_library(simple-web-server INTERFACE)
@@ -29,7 +29,7 @@ target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
 target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
     target_compile_definitions(simple-web-server INTERFACE USE_BOOST_REGEX)
-    find_package(Boost 1.74.0 COMPONENTS regex REQUIRED)
+    find_package(Boost 1.67.0 COMPONENTS regex REQUIRED)
     target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
     target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
 endif()
