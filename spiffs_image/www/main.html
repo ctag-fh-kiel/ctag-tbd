@@ -186,6 +186,7 @@
                 if (file == undefined) return;
                 if (file == '') return;
                 if (file == 0) return;
+                if (file == null) return;
                 let fr = new FileReader();
                 // when load completed
                 fr.onloadend = (e) => {
@@ -302,7 +303,9 @@
                         type: 'post',
                         data: JSON.stringify(data.fav)
                     });
-                    // TODO refresh fav list in main page after import
+                    // refresh favorites
+                    window.favorites.data[window.favorites.selected] = data.fav;
+                    refreshFavorites();
                 }
                 // execute read json file for import
                 fr.readAsText(file);
@@ -378,10 +381,12 @@
             };
 
             this.querySelector('#fav-import').onclick = function () {
+                $('#fav-import-file').val(null);
                 $('#fav-import-file').trigger('click');
             };
 
             this.querySelector('#fav-export').onclick = function () {
+                console.log("On Click fav export");
                 let currentFav = window.favorites.selected;
                 if (!Array.isArray(window.favorites.data)) return;
                 if (window.favorites.data[currentFav] === undefined) return;
@@ -419,7 +424,7 @@
                 document.querySelector('#myNavigator').pushPage('config.html', {});
             };
 
-            this.onShow = function () {
+            function refreshFavorites(){
                 // populate favorite list
                 if (window.favorites) {
                     $('#fav-select').empty();
@@ -429,6 +434,10 @@
                     }
                     $('#fav-select').val(window.favorites.selected);
                 }
+            }
+
+            this.onShow = function () {
+                refreshFavorites();
             };
         };
     </script>
