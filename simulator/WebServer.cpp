@@ -188,7 +188,9 @@ void WebServer::Start() {
                                                                 shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
-        response->write(SimSPManager::GetCStrJSONGetPresets(ch));
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(SimSPManager::GetCStrJSONGetPresets(ch), header);
     };
 
     server.resource["^/api/v1/loadPreset/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
