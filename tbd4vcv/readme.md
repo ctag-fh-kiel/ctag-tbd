@@ -12,7 +12,6 @@
 
 ## Known issues / limitations
 - Config data and sample rom upload not working at this point
-- Favorites not supported at this point
 - To include your own sample rom data, use TBDs edit sample rom page and use compile + download to PC, replace the file sample-rom.tbd in Racks plugins-v1/tbd4vcv/sample_rom folder with your file (sample-rom.tbd file name needs to be maintained)
 - tbd4vcv may be incompatible with older Mac OSX versions due to the need for c++17 requirements (outdated stdlibc++)
 

@@ -20,6 +20,12 @@
     <input type="file" id="file-dialog" multiple accept="audio/wav" hidden onchange="handleFiles(this.files);"/>
     or <button class="button" onclick="clearList();">clear</button>.
     Check <a target="_blank" href="https://kernow.me/loopslicer">Loopslicer</a> for slicing loops.
+    Check <a target="_blank" href="https://synthtech.com/waveedit">Waveedit</a> for creating wavetables.
+</div>
+<div class="line-el">
+    Place wavetables at top for WTOsc, afterwards place samples.
+    Stereo samples are mapped to subsequent slices.
+    Play stereo sample with two Romplers using subsequently mapped slices.
 </div>
 <div class="line-el">
     <button class="button" onclick="downloadCompiledRaw();">Compile, download PC</button>
@@ -165,10 +171,13 @@
                         actx.decodeAudioData(e.target.result, (buffer) => {
                             fileIcon.rawBuffer = buffer;
                             if(buffer.numberOfChannels == 1 && buffer.length == 256*64){ //likely a wavetable file
-                                fileIcon.innerHTML = '<span></span>' + file.name + ', is WaveEdit compiled wavetable<input type="checkbox" class="wtcb" onclick="checkWavetable(this)" checked/>';
+                                fileIcon.innerHTML = '<span></span>' + file.name + ' | mono > is wavetable<input type="checkbox" class="wtcb" onclick="checkWavetable(this)" checked/>';
                                 fileIcon.isWavetable = true;
-                            }else{
-                                fileIcon.innerHTML = '<span></span>' + file.name + ', is WaveEdit compiled wavetable<input type="checkbox" class="wtcb" onclick="checkWavetable(this)"/>';
+                            }else if(buffer.numberOfChannels == 1){
+                                fileIcon.innerHTML = '<span></span>' + file.name + ' | mono > is wavetable<input type="checkbox" class="wtcb" onclick="checkWavetable(this)"/>';
+                                fileIcon.isWavetable = false;
+                            }else if(buffer.numberOfChannels > 1){
+                                fileIcon.innerHTML = '<span></span>' + file.name + ' | STEREO > 2 subsequent slices';
                                 fileIcon.isWavetable = false;
                             }
                             document.getElementById('drop-area').appendChild(fileIcon);
