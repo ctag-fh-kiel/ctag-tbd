@@ -101,6 +101,7 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string 
     spi_flash_emu_init(sromFile.c_str());
     // Initialize simulator parameters
     simModel = std::make_unique<SimDataModel>();
+    favModel = std::make_unique<FAV::FavoritesModel>();
     int mode[6], value[6];
     for (int i = 0; i < 6; i++) {
         mode[i] = simModel->GetArrayElement("mode", i);
@@ -200,6 +201,11 @@ void SimSPManager::StopSoundProcessor() {
 
 void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
     printf("Switching plugin %d to %s", chan, id.c_str());
+    // does the SP exist?
+    if(!model->HasPluginID(id)) return;
+
+    // when trying to set chan 1 and chan 0 is a stereo plugin, return
+    if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
     audioMutex.lock();
     sp[chan] = nullptr; // destruct smart ptr
     if (model->IsStereo(id) && chan == 0) {
@@ -271,10 +277,32 @@ void SimSPManager::SetProcessParams(const string &params) {
     stimulus.UpdateStimulus(mode, value);
 }
 
+string SimSPManager::GetAllFavorites() {
+    return favModel->GetAllFavorites();
+}
+
+void SimSPManager::StoreFavorite(const int &id, const string &fav) {
+    favModel->SetFavorite(id, fav);
+}
+
+void SimSPManager::ActivateFavorite(const int &id) {
+    if(id < 0 || id > 9) return;
+    // NOTE: all checks if plugins exists and if presets exists are done in SPManager
+    string p0id = favModel->GetFavoritePluginID(id, 0);
+    int p0pre = favModel->GetFavoritePreset(id, 0);
+    SetSoundProcessorChannel(0, p0id);
+    ChannelLoadPreset(0, p0pre);
+    string p1id = favModel->GetFavoritePluginID(id, 1);
+    int p1pre = favModel->GetFavoritePreset(id, 1);
+    SetSoundProcessorChannel(1, p1id);
+    ChannelLoadPreset(1, p1pre);
+}
+
 
 RtAudio  SimSPManager::audio;
 std::unique_ptr<ctagSoundProcessor> SimSPManager::sp[2];
 std::unique_ptr<SPManagerDataModel> SimSPManager::model;
+std::unique_ptr<CTAG::FAV::FavoritesModel> SimSPManager::favModel;
 std::unique_ptr<SimDataModel> SimSPManager::simModel;
 SimStimulus SimSPManager::stimulus;
 

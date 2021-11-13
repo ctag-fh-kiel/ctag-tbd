@@ -137,6 +137,7 @@ endif()
 file(GLOB SRC_FILES *.cpp *.hpp)
 set(SRC_FILES2
         "../main/SPManagerDataModel.cpp"
+        "../main/FavoritesModel.cpp"
         "fake-idf/esp_heap_caps.c"
         "fake-idf/esp_spi_flash.c"
         )

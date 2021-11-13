@@ -517,7 +517,7 @@ esp_err_t RestServer::StartRestServer() {
     httpd_uri_t favorite_get_uri = {
             .uri = "/api/v1/favorite*",
             .method = HTTP_POST,
-            .handler = &RestServer::favorite_get_handler,
+            .handler = &RestServer::favorite_post_handler,
             .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &favorite_get_uri);
@@ -849,8 +849,8 @@ esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::favorite_get_handler(httpd_req_t *req) {
-    ESP_LOGD("favorite_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+esp_err_t RestServer::favorite_post_handler(httpd_req_t *req) {
+    ESP_LOGD("favorite_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
