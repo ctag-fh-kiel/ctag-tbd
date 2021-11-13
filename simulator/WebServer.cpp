@@ -40,6 +40,46 @@ void WebServer::Start() {
     // 1 thread is usually faster than several threads
     server.config.port = 8080;
 
+    server.resource["^/api/v1/favorites/getAll"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(SimSPManager::GetAllFavorites(), header);
+    };
+
+    server.resource["^/api/v1/favorites/store/([0-9])$"]["POST"] = [&](shared_ptr<HttpServer::Response> response,
+                                                                       shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        int fav = std::stoi(request->path_match[1].str());
+        string content = request->content.string();
+        SimSPManager::StoreFavorite(fav, content);
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+
+    server.resource["^/api/v1/favorites/recall/([0-9])$"]["POST"] = [&](shared_ptr<HttpServer::Response> response,
+                                                                        shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        int fav = std::stoi(request->path_match[1].str());
+        SimSPManager::ActivateFavorite(fav);
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+
+    server.resource["^/api/v1/setPresetData/(.+)"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        string id = request->path_match[1].str();
+        string content = request->content.string();
+        SimSPManager::SetJSONSoundProcessorPreset(id, content);
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+
+    server.resource["^/api/v1/getPresetData/(.+)"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
+                                                                shared_ptr<HttpServer::Request> request) {
+        string id = request->path_match[1].str();
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(string(SimSPManager::GetCStrJSONSoundProcessorPresets(id)), header);
+    };
+
     server.resource["^/api/v1/srom/getSize$"]["POST"] = [](shared_ptr<HttpServer::Response> response,
                                                         shared_ptr<HttpServer::Request> request) {
         response->write(to_string(1024*1024*5));

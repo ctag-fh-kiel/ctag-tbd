@@ -58,7 +58,7 @@ namespace CTAG {
 
             static esp_err_t get_preset_json_handler(httpd_req_t *req);
 
-            static esp_err_t favorite_get_handler(httpd_req_t *req);
+            static esp_err_t favorite_post_handler(httpd_req_t *req);
 
             static esp_err_t set_preset_json_handler(httpd_req_t *req);
 

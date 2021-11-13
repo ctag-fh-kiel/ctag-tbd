@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 
 #include <cstdio>
 #include <string>
+#include <fstream>
 #include "SPManagerDataModel.hpp"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
@@ -32,13 +33,6 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::AUDIO;
 
-/*
-#ifndef TBD_SIM
-#define SPIFFS_PATH "/spiffs"
-#else
-#define SPIFFS_PATH "../../spiffs_image"
-#endif
-*/
 
 SPManagerDataModel::SPManagerDataModel() {
     ESP_LOGI("SPModel", "Trying to read config file");
@@ -247,15 +241,6 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
 }
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
-    // check if file exists
-    DIR *dir;
-    dir = opendir(string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn").c_str());
-    if (dir == NULL) {
-        ESP_LOGE("SPM", "Preset file for processors %s could not be opened!\n", id.c_str());
-        return nullptr;
-    }
-    closedir(dir);
-    // prepare JSON output string
     json.Clear();
     Document d;
     loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
@@ -265,15 +250,6 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &i
 }
 
 void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const string &data) {
-    // check if file exists
-    DIR *dir;
-    dir = opendir(string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn").c_str());
-    if (dir == NULL) {
-        ESP_LOGE("SPM", "Preset file for processors %s could not be opened!\n", id.c_str());
-        return;
-    }
-    closedir(dir);
-
     ESP_LOGD("Model", "String %s", data.c_str());
     Document presets;
     presets.Parse(data);

@@ -22,9 +22,11 @@ respective component folders / files if different from this license.
 
 #pragma once
 
+
 #include <string>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
+#include "ctagResources.hpp"
 #include "SPManagerDataModel.hpp"
 
 using namespace std;
@@ -44,7 +46,7 @@ namespace CTAG {
 
         private:
             Document m;
-            const string MODELJSONFN = "/spiffs/data/favs.jsn";
+            string MODELJSONFN = CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn";
         };
     }
 }
