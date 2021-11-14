@@ -248,14 +248,6 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
 }
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
-    // check if file exists
-    DIR *dir;
-    dir = opendir(string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn").c_str());
-    if (dir == NULL) {
-        ESP_LOGE("SPM", "Preset file for processors %s could not be opened!\n", id.c_str());
-        return nullptr;
-    }
-    closedir(dir);
     // prepare JSON output string
     json.Clear();
     Document d;
@@ -266,15 +258,6 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &i
 }
 
 void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const string &data) {
-    // check if file exists
-    DIR *dir;
-    dir = opendir(string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn").c_str());
-    if (dir == NULL) {
-        ESP_LOGE("SPM", "Preset file for processors %s could not be opened!\n", id.c_str());
-        return;
-    }
-    closedir(dir);
-
     ESP_LOGD("Model", "String %s", data.c_str());
     Document presets;
     presets.Parse(data);

@@ -41,6 +41,46 @@ void WebServer::Start(const int port, const string& basePath) {
 
     server.config.port = port;
 
+    server.resource["^/api/v1/favorites/getAll"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(currentSPManager->GetAllFavorites(), header);
+    };
+
+    server.resource["^/api/v1/favorites/store/([0-9])$"]["POST"] = [&](shared_ptr<HttpServer::Response> response,
+                                                                       shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        int fav = std::stoi(request->path_match[1].str());
+        string content = request->content.string();
+        currentSPManager->StoreFavorite(fav, content);
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+
+    server.resource["^/api/v1/favorites/recall/([0-9])$"]["POST"] = [&](shared_ptr<HttpServer::Response> response,
+                                                                        shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        int fav = std::stoi(request->path_match[1].str());
+        currentSPManager->ActivateFavorite(fav);
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+
+    server.resource["^/api/v1/setPresetData/(.+)"]["POST"] = [&](shared_ptr<HttpServer::Response> response, shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        string id = request->path_match[1].str();
+        string content = request->content.string();
+        currentSPManager->SetJSONSoundProcessorPreset(id, content);
+        response->write(SimpleWeb::StatusCode::success_ok);
+    };
+
+    server.resource["^/api/v1/getPresetData/(.+)"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
+                                                                shared_ptr<HttpServer::Request> request) {
+        string id = request->path_match[1].str();
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(string(currentSPManager->GetCStrJSONSoundProcessorPresets(id)), header);
+    };
+
     server.resource["^/api/v1/srom/getSize$"]["POST"] = [](shared_ptr<HttpServer::Response> response,
                                                         shared_ptr<HttpServer::Request> request) {
         response->write(to_string(1024*1024*5));
@@ -50,29 +90,37 @@ void WebServer::Start(const int port, const string& basePath) {
                                                         shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         auto content = request->content.string();
-        response->write(currentSPManager->GetCStrJSONSoundProcessors());
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(currentSPManager->GetCStrJSONSoundProcessors(), header);
     };
 
     server.resource["^/api/v1/getIOCaps$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                         shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         auto content = request->content.string();
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
         string const s("{\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
-        response->write(s);
+        response->write(s, header);
     };
 
     server.resource["^/api/v1/getActivePlugin/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                      shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
-        response->write("{\"id\":\"" + currentSPManager->GetStringID(ch) + "\"}");
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write("{\"id\":\"" + currentSPManager->GetStringID(ch) + "\"}", header);
     };
 
     server.resource["^/api/v1/getPluginParams/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
                                                                      shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
-        response->write(currentSPManager->GetCStrJSONActivePluginParams(ch));
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(currentSPManager->GetCStrJSONActivePluginParams(ch), header);
     };
 
     server.resource["^/api/v1/setActivePlugin/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,
@@ -149,7 +197,9 @@ void WebServer::Start(const int port, const string& basePath) {
                                                                 shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
         int ch = std::stoi(request->path_match[1].str());
-        response->write(currentSPManager->GetCStrJSONGetPresets(ch));
+        SimpleWeb::CaseInsensitiveMultimap header;
+        header.emplace("Content-Type", "application/json");
+        response->write(currentSPManager->GetCStrJSONGetPresets(ch), header);
     };
 
     server.resource["^/api/v1/loadPreset/([0-1])$"]["GET"] = [&](shared_ptr<HttpServer::Response> response,

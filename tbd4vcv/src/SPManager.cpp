@@ -40,6 +40,7 @@ void SPManager::Start(const string &spiffsPath) {
     CTAG::RESOURCES::spiffsRoot = spiffsPath;
     // configure channels
     model = std::make_unique<SPManagerDataModel>("{\"activeProcessors\":[],\"lastPatches\":[[],[]]}");
+    favModel = std::make_unique<CTAG::FAV::FavoritesModel>();
     sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
     sp[0]->SetProcessChannel(0);
     sp[0]->LoadPreset(model->GetActivePatchNum(0));
@@ -52,6 +53,11 @@ void SPManager::Start(const string &spiffsPath) {
 
 void SPManager::SetSoundProcessorChannel(const int chan, const string &id) {
     printf("Switching plugin %d to %s", chan, id.c_str());
+    // does the SP exist?
+    if(!model->HasPluginID(id)) return;
+
+    // when trying to set chan 1 and chan 0 is a stereo plugin, return
+    if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
     audioMutex.lock();
     blue = true;
     sp[chan] = nullptr; // destruct smart ptr
@@ -146,4 +152,25 @@ void SPManager::SetSPManagerDataModel(const string &json) {
         sp[1]->SetProcessChannel(1);
         sp[1]->LoadPreset(model->GetActivePatchNum(1));
     }
+}
+
+string SPManager::GetAllFavorites() {
+    return favModel->GetAllFavorites();
+}
+
+void SPManager::StoreFavorite(const int &id, const string &fav) {
+    favModel->SetFavorite(id, fav);
+}
+
+void SPManager::ActivateFavorite(const int &id) {
+    if(id < 0 || id > 9) return;
+    // NOTE: all checks if plugins exists and if presets exists are done in SPManager
+    string p0id = favModel->GetFavoritePluginID(id, 0);
+    int p0pre = favModel->GetFavoritePreset(id, 0);
+    SetSoundProcessorChannel(0, p0id);
+    ChannelLoadPreset(0, p0pre);
+    string p1id = favModel->GetFavoritePluginID(id, 1);
+    int p1pre = favModel->GetFavoritePreset(id, 1);
+    SetSoundProcessorChannel(1, p1id);
+    ChannelLoadPreset(1, p1pre);
 }
