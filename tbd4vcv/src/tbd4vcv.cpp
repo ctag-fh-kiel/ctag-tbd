@@ -52,6 +52,7 @@ struct tbd4vcv : rack::Module {
 	};
 	enum LightIds {
         ENUMS(RGB_LIGHT, 3),
+        ENUMS(WIFI_LIGHT, 3),
 		NUM_LIGHTS
 	};
 
@@ -101,6 +102,7 @@ struct tbd4vcv : rack::Module {
     rack::dsp::VuMeter2 chMeters[2];
     int blueDecay {0};
     CTAG::AUDIO::SPManager spManager;
+    float wifiStatus {0.3f};
 
 	void process(const ProcessArgs& args) override {
         // Get input
@@ -137,10 +139,6 @@ struct tbd4vcv : rack::Module {
             cvdata[2] = params[POT0_PARAM].getValue();
             cvdata[3] = params[POT1_PARAM].getValue();
 
-            // led
-            //lights[RGB_LIGHT + 0].setBrightness(red);
-
-            //lights[RGB_LIGHT + 2].setBrightness(blue);
 
             // inverted logic here
             trigdata[0] = (params[BTN_TRIG_0_PARAM].getValue() > 0.5 ? 1 : 0) || (inputs[TRIG0_INPUT].getVoltage() > 2.5 ? 1 : 0) == 1 ? 0 : 1;
@@ -177,9 +175,21 @@ struct tbd4vcv : rack::Module {
             outputs[OUT1_OUTPUT].setVoltage(5.0 * outputFrame.samples[1]);
         }
 
-        // led
+        // wifi led
+        if(activeServerInstance == this){
+            if(wifiStatus > 0.7f) wifiStatus = 0.3f;
+            lights[WIFI_LIGHT + 0].setBrightness(wifiStatus);
+            lights[WIFI_LIGHT + 1].setBrightness(wifiStatus);
+            lights[WIFI_LIGHT + 2].setBrightness(wifiStatus);
+            wifiStatus += args.sampleTime * 0.25f;
+        }else{
+            lights[WIFI_LIGHT + 0].setBrightness(0.f);
+            lights[WIFI_LIGHT + 1].setBrightness(0.f);
+            lights[WIFI_LIGHT + 2].setBrightness(0.f);
+        }
+        // status led
         if(spManager.GetBlueStatus()){
-            blueDecay = args.sampleRate / 2;
+            blueDecay = args.sampleRate / 2.;
         }
         if(blueDecay){
             blueDecay--;
@@ -250,6 +260,7 @@ struct tbd4vcvWidget : rack::ModuleWidget {
 		addOutput(rack::createOutputCentered<rack::PJ301MPort>(rack::mm2px(rack::Vec(15.057, 109.478)), module, tbd4vcv::OUT1_OUTPUT));
 
         addChild(rack::createLightCentered<rack::LargeLight<rack::RedGreenBlueLight>>(rack::mm2px(rack::Vec(20.123, 57.802)), module, tbd4vcv::RGB_LIGHT));
+        addChild(rack::createLightCentered<rack::SmallLight<rack::RedGreenBlueLight>>(rack::mm2px(rack::Vec(4.187+3.25, 9.742+3.25)), module, tbd4vcv::WIFI_LIGHT));
 		//addChild(rack::createLightCentered<rack::MediumLight<rack::RedLight>>(rack::mm2px(rack::Vec(20.123, 57.802)), module, tbd4vcv::BTN_TRIG_0_LIGHT));
 	}
 
