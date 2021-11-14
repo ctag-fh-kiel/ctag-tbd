@@ -314,7 +314,7 @@ void WebServer::Start(const int port, const string& basePath) {
         });
     });
     server_thread = std::move(st);
-    cout << "Server listening on port " << server_port.get_future().get() << endl << endl;
+    server_port.get_future().get();
     isRunning = true;
 }
 
@@ -325,6 +325,6 @@ void WebServer::Stop() {
 }
 
 void WebServer::SetCurrentSPManager(CTAG::AUDIO::SPManager *manager) {
-    std::cerr << "Setting current SP Manager " << manager << std::endl;
+    //std::cerr << "Setting current SP Manager " << manager << std::endl;
     currentSPManager = manager;
 }
