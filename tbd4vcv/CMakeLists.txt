@@ -42,7 +42,7 @@ endif()
 # Plugin part
 set(LIB_NAME plugin)
 set(PLUGIN_SOURCES
-        src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp src/SPManager.cpp src/SPManagerDataModel.cpp
+        src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp src/SPManager.cpp src/SPManagerDataModel.cpp src/FavoritesModel.cpp
         "../simulator/fake-idf/esp_heap_caps.c"
         "../simulator/fake-idf/esp_spi_flash.c"
         )

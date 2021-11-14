@@ -28,6 +28,7 @@ respective component folders / files if different from this license.
 #include "ctagSoundProcessorFactory.hpp"
 #include "ctagSoundProcessor.hpp"
 #include "SPManagerDataModel.hpp"
+#include "FavoritesModel.hpp"
 #include <atomic>
 
 using namespace CTAG::SP;
@@ -86,6 +87,11 @@ namespace CTAG {
             string GetSPManagerDataModel();
             void SetSPManagerDataModel(const string &);
 
+            // favorites api
+            string GetAllFavorites();
+            void StoreFavorite(int const &id, const string &fav);
+            void ActivateFavorite(const int &id);
+
 
         private:
 
@@ -94,6 +100,7 @@ namespace CTAG {
 
             std::unique_ptr<ctagSoundProcessor> sp[2];
             std::unique_ptr<SPManagerDataModel> model;
+            std::unique_ptr<FAV::FavoritesModel> favModel;
         };
     }
 }
