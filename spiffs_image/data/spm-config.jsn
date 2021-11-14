@@ -17,7 +17,6 @@
     "cv_ch2": "unipolar",
     "cv_ch3": "unipolar",
     "ng_config": "off",
-    "ch01_daisy": "off",
     "ch0_toStereo": "off",
     "ch1_toStereo": "off",
     "ch0_outputSoftClip": "on",
