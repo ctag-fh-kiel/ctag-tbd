@@ -46,7 +46,6 @@ namespace CTAG {
 
         private:
             Document m;
-            string MODELJSONFN = CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn";
         };
     }
 }
