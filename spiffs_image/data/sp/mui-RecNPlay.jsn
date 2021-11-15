@@ -1,0 +1,45 @@
+{
+   "id": "RecNPlay", "isStereo": false, "name": "RecNPlay", "hint": "Simple Sequencer with variable sound and AD envelope", "params":
+   [
+       {  
+          "id": "VolEG", "name": "Global Stuff (Volume / EG / Trigger)", "type": "group", "params":  
+           [
+               {"id":"Volume","name":"Master Volume","type":"int","min":0,"max":4095,"step":1},
+               {"id":"EGactiv","name": "EG active n/y","type": "bool"},
+               {"id":"Attack","name":"Attack","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Decay","name":"Decay","type":"int","min":0,"max":4095,"step":1},
+               {"id":"StepAndEGtrigger","name": "Main Trigger (EG and/or next step)","type": "bool"}
+           ]
+       },
+       {  
+          "id": "Voice", "name": "Voice (Parameters can't be modified during playback)", "type": "group", "params":  
+           [
+               {"id":"VoiceVol","name":"Voice Volume (0== mute)","type":"int","min":0,"max":4095,"step":1},
+               {"id":"PitchSaw","type": "int","name": "Pitch Saw - CV V/Oct","min": -48,"max": 48,"step": 1},
+               {"id":"ExtSawMix","name": "External <=> Saw","type": "int","min":0,"max":4095,"step":1},
+               {"id":"SawNoiseMix","name": "Saw <=> Noise","type": "int","min":0,"max":4095,"step":1},
+               {"id":"Cutoff","name":"Cutoff","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Resonance","name":"Resonance","type":"int","min":0,"max":4095,"step":1},
+               {"id":"Drive","name":"Filter Drive Noise","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "FX", "name": "Effects / Bitcrusher", "type": "group", "params":  
+           [
+               {"id":"BitsToCrush","name":"Bits to Crush (0==off)","type":"int","min":0,"max":16,"step":1},
+               {"id":"DownsampleFactor","name":"Downsample Factor","type":"int","min":0,"max":4095,"step":1},
+               {"id":"SnHamount","name":"S&H ModAmount per Step","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "Stepper", "name": "Stepper (Values of 'Voice' to be recorded)", "type": "group", "params":  
+           [
+                {"id":"StepperActive","name": "Stepper active n/y","type": "bool"},
+                {"id":"RecPlay","name": "Record <-> Playback (Change sets step to one)","type": "bool"},
+                {"id":"CurrentStep","name":"Current Step (changes on modify)","type":"int","min":1,"max":32,"step":1},
+                {"id":"NumberOfSteps","name":"Number of Steps","type":"int","min":1,"max":32,"step":1},
+                {"id":"BPMint","name":"Clock TPM*10 (0==ExtTrig / Max==1/32 at 60.0 BPM)","type":"int","min":0,"max":19200,"step":1}
+           ]
+       }
+   ] 
+}
