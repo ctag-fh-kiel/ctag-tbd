@@ -1,11 +1,12 @@
 # CTAG TBD Version Log
 
 ## V0.9.21
-- [VCV Rack](https://vcvrack.com/) v1 plugins available to test and enjoy TBDs growing set of sound processors, details [here](tbd4vcv/readme.md)
+- [VCV Rack](https://vcvrack.com/) v1 plugins available "tbd4vcv" to test and enjoy TBDs growing set of sound processors, details [here](tbd4vcv/readme.md)
+- New plugin RecNPlay by M. Brüssel --> [https://soundcloud.com/taitekatto/recnplay-for-tbd](https://soundcloud.com/taitekatto/recnplay-for-tbd)
 - Sample import web UI now indicates mono vs. stereo samples
 - When overwriting patches, old patch name is shown in dialog and can be edited prior to overwrite
 - Favorites are now contained in backup, restoring backup OVERWRITES!!! current data
-- Favorite ex-/import OVERWRITES EXISTING PATCHES AND FAVORITE!!!
+- Favorite ex-/import allows exchanging patches among users, tbd4vcv and simulator, import OVERWRITES EXISTING PATCHES AND FAVORITE!!!
 - Stability improvements with regard to flash storage reliability at boot up
 - Minor bug fixes
 
