@@ -147,7 +147,7 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
                     //if(event == LONG) uiMenuState = FAV_SELECT;
                     break;
                 case FAV_ACTIVE_USTRING:
-                    DRIVERS::Display::PrepareDisplayFavoriteUString(model.GetFavoriteUString(activeFav));
+                    DRIVERS::Display::PrepareDisplayFavoriteUString(activeFav, model.GetFavoriteName(activeFav), model.GetFavoriteUString(activeFav));
                     if (event == SHORT) uiMenuState = CLEAR;
                     if (event == LONG){
                         uiMenuState = FAV_SELECT;

@@ -84,19 +84,26 @@ void Display::ShowFWVersion() {
     ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
 }
 
-void Display::PrepareDisplayFavoriteUString(const std::string &us) {
+void Display::PrepareDisplayFavoriteUString(int const &id, std::string const &name, std::string const &us) {
     // create slices
-    std::string s {us};
+    std::string s {us}, title{"#" + std::to_string(id) + ": " + name};
+    title.append(16-title.length(), ' ');
     userString_v.clear();
-    userString_v.push_back("Fav User String:");
+    userString_v.push_back(title);
     userString_v.push_back("                ");
     while(s.length() > 0){
         if(s.length() < 16) s.append(16-s.length(), ' ');
         userString_v.push_back(s.substr(0, 16));
         s = s.substr(16, s.length() - 16);
     }
-    userString_v.push_back("________________");
-    userString_v.push_back("                ");
+    userString_v.shrink_to_fit();
+    if(userString_v.size() > 4){
+        userString_v.push_back("                ");
+    }else{
+        while(userString_v.size() < 4){
+            userString_v.push_back("                ");
+        }
+    }
     userString_v.shrink_to_fit();
     currentUserStringRow = 0;
     ssd1306_clear_screen(&I2CDisplay, false);
@@ -155,7 +162,8 @@ void Display::LoadFavorite(int const &id, const std::string &name) {
 
 void Display::UpdateFavoriteUStringScroll() {
     if(userString_v.size() == 0) return;
+    if(userString_v.size() <= 4 && currentUserStringRow == userString_v.size()) return;
+    if(currentUserStringRow >= userString_v.size()) currentUserStringRow = 0;
     ssd1306_scroll_text(&I2CDisplay, userString_v[currentUserStringRow].c_str(), 16, false);
     currentUserStringRow++;
-    if(currentUserStringRow >= userString_v.size()) currentUserStringRow = 0;
 }
