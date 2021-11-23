@@ -67,6 +67,7 @@ void app_main() {
 #if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
     DRIVERS::Display::Init();
     DRIVERS::Display::ShowFWVersion();
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
 #endif
 
 #if defined(CONFIG_SERIAL_UI)

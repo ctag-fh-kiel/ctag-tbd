@@ -25,8 +25,9 @@ respective component folders / files if different from this license.
 #include "Display.hpp"
 
 #define UI_TASK_PERIOD_MS 50
-#define LONG_PRESS_PERIOD_MS 2000
+#define LONG_PRESS_PERIOD_MS 1000
 #define SCROLL_RATE_MS 1000
+#define TIMEOUT_PERIOD_MS 5000
 
 #if defined(CONFIG_TBD_PLATFORM_AEM)
     #define PIN_PUSH_BTN GPIO_NUM_2
@@ -80,81 +81,106 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
 // UI task menu state machine
 [[noreturn]] void CTAG::FAV::Favorites::ui_task(void *pvParams) {
-    int timer {0}, favSel {0}, timer2 {0};
-    enum Event {NONE, SHORT, LONG, WAIT} event {NONE};
+    int timer {0}; // btn event timer
+    int timer2 {0}; // scroll timer
+    int timer3 {0}; // timeout timer
+    int favSel {0};
+    enum Event {NONE, SHORT, LONG, WAIT, TIMEOUT} event {NONE};
     MenuStates pre_state {CLEAR};
+    MenuStates return_state {CLEAR};
     DRIVERS::Display::Clear();
     while (1) {
         // check button state and generate events
 #if defined(CONFIG_TBD_PLATFORM_MK2)
-        if(!gpio_get_level(PIN_PUSH_BTN)){
+        if (!gpio_get_level(PIN_PUSH_BTN)) {
 #else
         if(gpio_get_level(PIN_PUSH_BTN)){
 #endif
-            if(timer != -1) timer++;
-            if(timer >= LONG_PRESS_PERIOD_MS / UI_TASK_PERIOD_MS){
+            if (timer != -1) timer++;
+            if (timer >= LONG_PRESS_PERIOD_MS / UI_TASK_PERIOD_MS) {
                 event = LONG;
                 timer = -1;
-            }else{
+            } else {
                 event = NONE;
             }
-        }else{
-            if(timer > 0 && timer < LONG_PRESS_PERIOD_MS / UI_TASK_PERIOD_MS) {
+            timer3 = 0;
+        } else {
+            if (timer > 0 && timer < LONG_PRESS_PERIOD_MS / UI_TASK_PERIOD_MS) {
                 event = SHORT;
-            }else event = NONE;
+            } else event = NONE;
             timer = 0;
+            timer3++;
+            // generate timeout event if in fav select
+            if (uiMenuState == FAV_SELECT_CONFIRM){
+                if (timer3 >= TIMEOUT_PERIOD_MS / UI_TASK_PERIOD_MS) {
+                    event = TIMEOUT;
+                    timer3 = 0;
+                }
+            }
         }
 
         // any key event? or new state? --> process state machine for menu
-        // only once if an event is not NONE and state is changing
-        if(event != NONE || pre_state != uiMenuState){
+        // only once if an event is not NONE or state is changing
+        if (event != NONE || pre_state != uiMenuState) {
             pre_state = uiMenuState;
-            switch(uiMenuState){
+            switch (uiMenuState) {
                 case CLEAR:
                     DRIVERS::Display::Clear();
-                    if(event == SHORT) uiMenuState = FAV_ACTIVE_NAME;
-                    if(event == LONG) uiMenuState = FAV_SELECT;
+                    if (event == SHORT) uiMenuState = FAV_ACTIVE_NAME;
+                    if (event == LONG){
+                        uiMenuState = FAV_SELECT;
+                        return_state = CLEAR;
+                    }
                     break;
                 case FAV_ACTIVE_NAME:
-                    if(activeFav != -1){
-                        DRIVERS::Display::ShowFavorite(activeFav, model.GetFavoriteName(activeFav));
-                        if(event == SHORT) uiMenuState = FAV_ACTIVE_USTRING;
-                    }
-                    else{
+                    if (activeFav != -1) {
+                        //DRIVERS::Display::ShowFavorite(activeFav, model.GetFavoriteName(activeFav));
+                        uiMenuState = FAV_ACTIVE_USTRING;
+                    } else {
                         DRIVERS::Display::UserMode();
-                        if(event == SHORT) uiMenuState = CLEAR;
+                        if (event == SHORT) uiMenuState = CLEAR;
+                        if (event == LONG){
+                            uiMenuState = FAV_SELECT;
+                            return_state = FAV_ACTIVE_NAME;
+                        }
                     }
-                    if(event == LONG) uiMenuState = FAV_SELECT;
+                    //if(event == LONG) uiMenuState = FAV_SELECT;
                     break;
                 case FAV_ACTIVE_USTRING:
                     DRIVERS::Display::PrepareDisplayFavoriteUString(model.GetFavoriteUString(activeFav));
-                    if(event == SHORT) uiMenuState = CLEAR;
-                    if(event == LONG) uiMenuState = FAV_SELECT;
+                    if (event == SHORT) uiMenuState = CLEAR;
+                    if (event == LONG){
+                        uiMenuState = FAV_SELECT;
+                        return_state = FAV_ACTIVE_NAME;
+                    }
                     break;
                 case FAV_SELECT:
-                    if(event == SHORT) {
-                        favSel++;
-                        if(favSel > 9) favSel = 0;
-                    }
-                    DRIVERS::Display::LoadFavorite(favSel, model.GetFavoriteName(favSel));
-                    if(event == LONG) uiMenuState = FAV_SELECT_CONFIRM;
+                    if (activeFav != -1) favSel = activeFav;
+                    uiMenuState = FAV_SELECT_CONFIRM;
                     break;
                 case FAV_SELECT_CONFIRM:
-                    DRIVERS::Display::Confirm(favSel);
-                    if(event == SHORT) uiMenuState = FAV_ACTIVE_NAME;
-                    if(event == LONG){
+                    if (event == SHORT) {
+                        favSel++;
+                        if (favSel > 9) favSel = 0;
+                    }
+                    DRIVERS::Display::LoadFavorite(favSel, model.GetFavoriteName(favSel));
+                    //DRIVERS::Display::Confirm(favSel);
+                    if (event == LONG) {
                         activeFav = favSel;
                         ActivateFavorite(favSel);
                         uiMenuState = FAV_ACTIVE_NAME;
                     }
+                    if (event == TIMEOUT) {
+                        uiMenuState = return_state;
+                    }
                     break;
             }
         }
-
-        if(uiMenuState == FAV_ACTIVE_USTRING){
+        // generate scroll events
+        if (uiMenuState == FAV_ACTIVE_USTRING) {
             timer2++;
             timer2 %= SCROLL_RATE_MS / UI_TASK_PERIOD_MS;
-            if(timer2 == 0){
+            if (timer2 == 0) {
                 DRIVERS::Display::UpdateFavoriteUStringScroll();
             }
         }
