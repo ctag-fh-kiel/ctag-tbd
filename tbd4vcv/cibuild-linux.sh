@@ -6,8 +6,8 @@ export BOOST_LIBRARYDIR=`pwd`/stage/lib
 ./bootstrap.sh
 ./b2 cxxflags=-fPIC cflags=-fPIC --with-system --with-filesystem --with-thread -a threading=multi link=static
 cd ..
-wget https://vcvrack.com/downloads/Rack-SDK-1.1.6.zip
-unzip Rack-SDK-1.1.6.zip
+wget https://vcvrack.com/downloads/Rack-SDK-2.0.0-lin.zip
+unzip Rack-SDK-2.0.0-lin.zip
 cd Rack-SDK
 export RACK_DIR=`pwd`
 cd ..
@@ -25,4 +25,4 @@ cp -r ../../spiffs_image tbd4vcv/
 cp -r ../res tbd4vcv/
 mkdir tbd4vcv/sample_rom
 cp ../../sample_rom/sample-rom.tbd tbd4vcv/sample_rom/
-zip -r tbd4vcv-1.0.0-win64.zip tbd4vcv
+zip -r tbd4vcv-2.0.0-win64.zip tbd4vcv
