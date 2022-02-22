@@ -1,5 +1,9 @@
 # CTAG TBD Version Log
 
+## V0.9.21a
+- ADC input channels phase issue fixed (thanks to Synthpatti for reporting)
+- ADC input highpass enabled
+
 ## V0.9.21
 - [VCV Rack](https://vcvrack.com/) v1 plugins available "tbd4vcv" to test and enjoy TBDs growing set of sound processors, details [here](tbd4vcv/readme.md)
 - New plugin RecNPlay by M. Brüssel --> [https://soundcloud.com/taitekatto/recnplay-for-tbd](https://soundcloud.com/taitekatto/recnplay-for-tbd)
