@@ -463,7 +463,7 @@ u8 Codec::WM8978_Init(void) {
     //WM8978_Write_Reg(48, 1 << 8); //R48设置,PGABOOSTR,右通道MIC获得20倍增益
     //WM8978_Write_Reg(49, 1 << 1); //R49,TSDEN,开启过热保护
     WM8978_Write_Reg(10, 1 << 3); //R10,SOFTMUTE关闭,128x采样,最佳SNR
-    WM8978_Write_Reg(14, 1 << 3 | 1); //R14,ADC 128x采样率 HPF Enable
+    WM8978_Write_Reg(14, 0b100001000); //R14,ADC 128x采样率 HPF Enable
     //WM8978_Write_Reg(50, 0b11);
 
     ESP_LOGI("WM8978", "Init finished");
@@ -585,6 +585,10 @@ void Codec::WM8978_Input_Cfg(u8 micen, u8 lineinen, u8 auxen) {
         WM8978_AUX_Gain(7); //AUX 6dB增益
     else
         WM8978_AUX_Gain(0); //关闭AUX输入
+
+    regval = WM8978_Read_Reg(44); // input polarity
+
+
 }
 
 //WM8978 输出配置
