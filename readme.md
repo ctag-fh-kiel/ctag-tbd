@@ -105,6 +105,8 @@ Open the repository folder with Visual Studio Code and open the container, there
 - Open the Command Palette and select `Remote-Containers: Reopen in Container`
 - Use the open in a remote window button on the bottom left corner to `Reopen in Container`
 
+By default, the image will be pulled from [esp-idf-env](https://hub.docker.com/r/sergiogasquez/esp-idf-env), but users can also build
+it from the Dockerfile by editing the [`.devcontainer.json`](https://github.com/ctag-fh-kiel/ctag-tbd/blob/master/.devcontainer/devcontainer.json#L3-L10)
 ### tbd cloud compiler
 The [tbd cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/) allows you to reduce the size of the ctag-tbd firmware, therefore making up more free space for your samples, by removing one or multiple plug-ins that you don't want to use with your module via a web ui. It makes use of GitHub actions running in your own forked repository and therefore doesn't depend on any toolchain installed on your own system. For more information take a look at the [user guide](https://fxwiegand.github.io/tbd-cloud-compiler/user-guide).
 
