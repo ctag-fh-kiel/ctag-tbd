@@ -1,12 +1,13 @@
 {
   "name": "esp-idf",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "args": {
-      "ESP_BOARD": "esp32",
-      "ESP_IDF_VERSION": "release/v4.1"
-    }
-  },
+  "image": "docker.io/sergiogasquez/esp-idf-env:v4.4_esp32",
+  // "build": {
+  //   "dockerfile": "Dockerfile",
+  //   "args": {
+  //     "ESP_BOARD": "esp32",
+  //     "ESP_IDF_VERSION": "release/v4.4"
+  //   }
+  // },
   "settings": {
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,

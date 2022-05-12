@@ -5,7 +5,7 @@ ENV LANG=C.UTF-8
 ARG CONTAINER_USER=esp
 ARG CONTAINER_GROUP=esp
 ARG ESP_BOARD=esp32
-ARG ESP_IDF_VERSION=release/v4.1
+ARG ESP_IDF_VERSION=release/v4.4
 RUN apt-get update \
     && apt-get install -y git curl wget flex bison gperf python3 python3-pip \
     python3-setuptools ninja-build ccache libffi-dev libssl-dev dfu-util \
