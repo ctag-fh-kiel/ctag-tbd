@@ -1,0 +1,27 @@
+{
+  "name": "esp-idf",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "ESP_BOARD": "esp32",
+      "ESP_IDF_VERSION": "release/v4.1"
+    }
+  },
+  "settings": {
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modifications",
+    "editor.formatOnType": true,
+    "lldb.executable": "/usr/bin/lldb",
+    "files.watcherExclude": {
+      "**/target/**": true
+    }
+  },
+  "extensions": [
+    "mutantdino.resourcemonitor",
+    "yzhang.markdown-all-in-one",
+    "espressif.esp-idf-extension"
+  ],
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/esp/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/home/esp/workspace/"
+}
