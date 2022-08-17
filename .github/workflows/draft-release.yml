@@ -1,16 +1,7 @@
 name: draft-release
 
 on:
-  push:
-    branches:
-      - master
-      - dev
-      - aem
-  pull_request:
-    branches:
-      - master
-      - dev
-      - aem
+  workflow_dispatch:
 
 jobs:
   build:
@@ -28,25 +19,9 @@ jobs:
       - name: Archive binaries
         run: |
           zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload binary
+        uses: actions/upload-artifact@v2.2.1
         with:
-          tag_name: ${{ github.sha }}
-          release_name: Bleeding-edge-${{ github.sha }}
-          body: |
-            This is a draft-release, it may not be functional, use at own risk, know what you do!
-          draft: true
-          prerelease: true
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./binaries.zip
-          asset_name: binaries.zip
-          asset_content_type: application/zip
+          name: binaries.zip
+          # A file, directory or wildcard pattern that describes what to upload
+          path: ./binaries.zip

@@ -16,7 +16,7 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 
 ## What it is:
 - The eierlegende Wollmilchsau (German for swiss army knife) audio processing module.
-- Offering already more than 30 high quality audio generators and effects.
+- Offering already more than 50 high quality audio generators and effects.
 - Open source Eurorack sound module based on the ESP32.
 - With an easy to extend audio plugin architecture.
 - What you make it.
@@ -30,7 +30,7 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 - To fight boredom and despair of Corona Virus!
 
 ## Features:
-- More than 30 high quality audio generators and effects.
+- More than 50 high quality audio generators and effects.
 - Easy DSP plugin development.
 - **NEW!!!** Sample ROM playback and wavetable oscillator with user wavetables from sample ROM [details here](sample_rom/readme.md)
 - **NEW!!!** Simulator for cross platform plugin development without hardware module (speeds up plugin development, better code verification).
