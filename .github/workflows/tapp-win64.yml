@@ -1,14 +1,15 @@
 name: tapp-win64
 
 on:
-  push:
-    branches:
-      - master
-      - aem
-  pull_request:
-    branches:
-      - master
-      - aem
+  workflow_dispatch:
+  #push:
+  #  branches:
+  #    - master
+  #    - aem
+  #pull_request:
+  #  branches:
+  #    - master
+  #    - aem
 
 jobs:
   build:

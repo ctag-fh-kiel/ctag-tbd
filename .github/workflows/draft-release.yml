@@ -17,7 +17,7 @@ jobs:
       - name: Set ownership
         run: |
           # this is to fix "fatal: detected dubious ownership in repository at '/github/workspace'"
-          chown -R $(id -u):$(id -g) $PWD
+          git config --global --add safe.directory /github/workspace
       - name: Build binaries
         uses: ctag-fh-kiel/esp-idf-action@1
       - name: Archive binaries
