@@ -14,6 +14,10 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+      - name: Set ownership
+        run: |
+          # this is to fix "fatal: detected dubious ownership in repository at '/github/workspace'"
+          chown -R $(id -u):$(id -g) $PWD
       - name: Build binaries
         uses: ctag-fh-kiel/esp-idf-action@1
       - name: Archive binaries
