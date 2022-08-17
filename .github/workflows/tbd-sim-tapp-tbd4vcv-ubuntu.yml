@@ -1,12 +1,13 @@
 name: tbd-sim-tapp-tbd4vcv-linux
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  workflow_dispatch:
+  #push:
+  #  branches:
+  #    - master
+  #pull_request:
+  #  branches:
+  #    - master
 
 jobs:
   build:
