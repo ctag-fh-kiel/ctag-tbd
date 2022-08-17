@@ -65,8 +65,8 @@ For developing your own plugins / make TBD yours, you need C/C++ skills.
 You may want to check the [TBD simulator](simulator/readme.md) for easy plugin development without TBD hardware.
 
 You can build the firmware using a Github action. Just fork the ctag-tbd repo to your Github account and enable the supplied
-Github action. Each time you will push your edits into your fork's master branch, Github will cut a draft release for you automatically.
-No need for a toolchain on your own system.
+Github action. Enter the Github actions menu and select e.g. the "draft-release" action. Click the "Run workflow" button. 
+Upon successful completion, your binaries will be available as .zip archive as output of your run.
 
 If you prefer to have a dev environment on your own, install espressif esp-idf, instructions are [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html).
 Use git to checkout esp-idf release/v4.1 (TBD may build also with newer versions, you can try), do this within the esp-idf folder:
