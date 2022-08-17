@@ -14,12 +14,8 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-      - name: Set ownership
-        run: |
-          # this is to fix "fatal: detected dubious ownership in repository at '/github/workspace'"
-          git config --global --add safe.directory /github/workspace
       - name: Build binaries
-        uses: ctag-fh-kiel/esp-idf-action@1
+        uses: ctag-fh-kiel/esp-idf-action@4
       - name: Archive binaries
         run: |
           zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
