@@ -379,6 +379,7 @@ void Codec::setupI2SWM8978() {
 #elif CONFIG_TBD_PLATFORM_AEM
     ESP_LOGI("WM8974", "Initializing CODEC I2S");
 #endif
+    /*
     // allow GPIO0 to be clock out
     gpio_config_t io_conf;
     io_conf.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_DISABLE;
@@ -388,6 +389,7 @@ void Codec::setupI2SWM8978() {
     io_conf.pull_up_en = (gpio_pullup_t) 0;
     gpio_config(&io_conf);
     gpio_set_level(GPIO_NUM_0, 0);
+     */
 
     static i2s_config_t i2s_config;
     memset(&i2s_config, 0, sizeof(i2s_config));
@@ -395,10 +397,11 @@ void Codec::setupI2SWM8978() {
     i2s_config.sample_rate = 44100;
     i2s_config.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
     i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
-    i2s_config.communication_format = (i2s_comm_format_t) (I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
+    i2s_config.communication_format = (i2s_comm_format_t)I2S_COMM_FORMAT_STAND_I2S;// (I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
     i2s_config.intr_alloc_flags = ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL3; // default interrupt priority would be 0
     i2s_config.dma_buf_count = 4;
     i2s_config.dma_buf_len = 32;
+    i2s_config.mclk_multiple = I2S_MCLK_MULTIPLE_128;
     i2s_config.use_apll = true;
 
     static i2s_pin_config_t pin_config;
@@ -416,6 +419,8 @@ void Codec::setupI2SWM8978() {
     // output master clock on GPIO0
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0_CLK_OUT1);
     REG_WRITE(PIN_CTRL, 0xFFFFFFF0);
+
+    //i2s_set_sample_rates(I2S_NUM_0, 44100);
 }
 
 /* this code is by an unknown author */
@@ -807,7 +812,7 @@ u8 Codec::WM8974_Init(void) {
     WM8978_Write_Reg(1, 0b001001111); // enable AUX input buffer
     WM8978_Write_Reg(2, 0b000010101); // enable ADC, PGA and boost section
     WM8978_Write_Reg(3, 0b010001001); // enable DAC, Mono out, mono mixer
-    WM8978_Write_Reg(4, 0b000010110); // i2s mode + dac lr swap + adc lr swap
+    WM8978_Write_Reg(4, 0b000010000); // i2s mode + dac lr swap + adc lr swap
     WM8978_Write_Reg(5, 0);
     WM8978_Write_Reg(6, 0);
     WM8978_Write_Reg(7, 0);
