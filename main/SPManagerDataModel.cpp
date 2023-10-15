@@ -242,10 +242,15 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
     json.Clear();
-    Document d;
-    loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
+    Document d1, d2;
+    loadJSON(d1, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
+    d2.SetObject();
+    Value s_id(kObjectType);
+    s_id.SetString(id, d2.GetAllocator());
+    d2.AddMember("id", s_id.Move(), d2.GetAllocator());
+    d2.AddMember("presets", d1.Move(), d2.GetAllocator());
     Writer<StringBuffer> writer(json);
-    d.Accept(writer);
+    d2.Accept(writer);
     return json.GetString();
 }
 

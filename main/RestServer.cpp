@@ -41,7 +41,7 @@ respective component folders / files if different from this license.
 #include "Calibration.hpp"
 #include "OTAManager.hpp"
 #include "sdkconfig.h"
-#include "esp_spi_flash.h"
+#include "esp_flash.h"
 #include "version.hpp"
 
 using namespace CTAG;
@@ -785,7 +785,8 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
         CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
         // erase flash / lengthy operation
         ESP_LOGI("REST", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
-        ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
+        //ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
+        ESP_ERROR_CHECK(esp_flash_erase_region(NULL, CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
         CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
@@ -812,12 +813,13 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
                 CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 return ESP_ERR_INVALID_ARG;
             } else if (data_read > 0) {
-                spi_flash_write(CONFIG_SAMPLE_ROM_START_ADDRESS + offset, buffer, data_read);
+                //spi_flash_write(CONFIG_SAMPLE_ROM_START_ADDRESS + offset, buffer, data_read);
+                esp_flash_write(NULL, buffer, CONFIG_SAMPLE_ROM_START_ADDRESS + offset, data_read);
             }
             offset += data_read;
             remaining -= data_read;
             if(blockCnt == 0){
-                ESP_LOGE("REST", "Magic number 0xdeadface = 0x%08x", ((uint32_t*)buffer)[0]);
+                ESP_LOGE("REST", "Magic number 0xdeadface = 0x%08li", ((uint32_t*)buffer)[0]);
             }
             blockCnt++;
         }

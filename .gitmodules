@@ -13,3 +13,6 @@
 [submodule "components/moog/MoogLadders"]
 	path = components/moog/MoogLadders
 	url = https://github.com/ctag-fh-kiel/MoogLadders.git
+[submodule "components/esp_littlefs"]
+	path = components/esp_littlefs
+	url = https://github.com/joltwallet/esp_littlefs.git

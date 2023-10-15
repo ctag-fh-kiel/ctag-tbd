@@ -27,7 +27,6 @@ respective component folders / files if different from this license.
 #include "braids/svf.h"
 #include "helpers/ctagADSREnv.hpp"
 #include "helpers/ctagSineSource.hpp"
-#include "esp_system.h"
 
 using namespace std;
 

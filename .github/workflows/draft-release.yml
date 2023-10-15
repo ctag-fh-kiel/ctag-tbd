@@ -15,7 +15,7 @@ jobs:
           submodules: recursive
           fetch-depth: 0
       - name: Build binaries
-        uses: ctag-fh-kiel/esp-idf-action@4
+        uses: ctag-fh-kiel/esp-idf-action@5
       - name: Archive binaries
         run: |
           zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin

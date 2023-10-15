@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 #include "ChordSynth.hpp"
 #include <cstring>
 #include "stmlib/utils/random.h"
+#include <esp_random.h>
 
 void CTAG::SP::ChordSynth::NoteOff() {
     adsr.Gate(false);

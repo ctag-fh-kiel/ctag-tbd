@@ -1,0 +1,21 @@
+POST http://ctag-tbd.local/api/v1/otaAPI/1
+
+###
+
+POST http://ctag-tbd.local/api/v1/otaAPI/2
+
+< ../build/storage.bin
+
+###
+
+POST http://ctag-tbd.local/api/v1/otaAPI/3
+
+< ../build/ctag-tbd.bin
+
+###
+
+POST http://ctag-tbd.local/api/v1/otaAPI/4
+
+<> 2023-03-25T093920.500.html
+
+###

@@ -14,6 +14,7 @@ namespace CTAG::SAPI{
     private:
         static void processAPICommand(const string &cmd);
         static void sendString(const string &s);
+        static void sendString(const char* s);
         static void initUART();
         static void serialTask(void*);
         static TaskHandle_t hSerialTask;

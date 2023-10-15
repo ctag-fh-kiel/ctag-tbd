@@ -31,7 +31,8 @@ extern "C" {
 #include "driver/rtc_io.h"
 #include "driver/rtc_cntl.h"
 #include "driver/adc.h"
-#include "driver/dac.h"
+//#include "driver/dac.h"
+#include "driver/dac_oneshot.h"
 #include "soc/soc.h"
 #include "soc/rtc.h"
 #include "soc/rtc_cntl_reg.h"
@@ -55,6 +56,9 @@ extern const uint8_t ulp_drivers_bin_end[]   asm("_binary_ulp_drivers_bin_end");
 static QueueHandle_t adcDataQueue = NULL;
 
 uint16_t ADC::data[N_CVS];
+
+static dac_oneshot_handle_t chan0_handle;
+static dac_oneshot_handle_t chan1_handle;
 
 static void IRAM_ATTR ulp_isr(void *arg) {
     static uint16_t data[N_CVS];
@@ -107,7 +111,7 @@ void ADC::InitADCSystem() {
     adcDataQueue = xQueueCreate(1, sizeof(uint16_t) * N_CVS);
 
     // set up ULP program
-    err = rtc_isr_register((intr_handler_t) &ulp_isr, (void *) 0, (uint32_t) RTC_CNTL_SAR_INT_ST_M);
+    err = rtc_isr_register((intr_handler_t) &ulp_isr, (void *) 0, (uint32_t) RTC_CNTL_SAR_INT_ST_M, 0);
     ESP_ERROR_CHECK(err);
     REG_SET_BIT(RTC_CNTL_INT_ENA_REG, RTC_CNTL_ULP_CP_INT_ENA_M);
     // set RTC FAST CLOCK to XTAL/4 = 10MHz at 40Mhz XTAL speed
@@ -128,11 +132,14 @@ void ADC::InitADCSystem() {
 
 void ADC::SetCVINUnipolar(int ch) {
 #if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
+    ESP_LOGI("ADC", "SetCVINUnipolar(%d)", ch);
     if (ch == 0) {
-        dac_output_voltage(DAC_CHANNEL_1, 55); // offset
+        //dac_output_voltage(DAC_CHAN_0, 55); // offset
+        ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, 55));
         adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_0); // GPIO32
     } else if (ch == 1) {
-        dac_output_voltage(DAC_CHANNEL_2, 55);
+        //dac_output_voltage(DAC_CHAN_1, 55);
+        ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 55));
         adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_DB_0); // GPIO33
     }
 #endif
@@ -140,11 +147,14 @@ void ADC::SetCVINUnipolar(int ch) {
 
 void ADC::SetCVINBipolar(int ch) {
 #if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
+    ESP_LOGI("ADC", "SetCVINBipolar(%d)", ch);
     if (ch == 0) {
-        dac_output_voltage(DAC_CHANNEL_1, 57); // offset
+        //dac_output_voltage(DAC_CHAN_0, 57); // offset
+        ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, 57));
         adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_6); // GPIO32
     } else if (ch == 1) {
-        dac_output_voltage(DAC_CHANNEL_2, 57);
+        //dac_output_voltage(DAC_CHAN_1, 57);
+        ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 57));
         adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_DB_6); // GPIO33
     }
 #endif
@@ -186,15 +196,34 @@ void ADC::GetChannelVals(uint16_t *d) {
 void ADC::init_analog_sub_system() {
     /* config DAC for offset voltage */
     /* default for 0->5V CV in */
-    dac_output_enable(DAC_CHANNEL_1);
-    dac_output_voltage(DAC_CHANNEL_1, 58);
-    dac_output_enable(DAC_CHANNEL_2);
-    dac_output_voltage(DAC_CHANNEL_2, 58);
+    /*
+    dac_output_enable(DAC_CHAN_0);
+    dac_output_voltage(DAC_CHAN_0, 58);
+    dac_output_enable(DAC_CHAN_1);
+    dac_output_voltage(DAC_CHAN_1, 58);
+     */
+    /* NEW API: DAC oneshot init */
+    dac_oneshot_config_t chan0_cfg = {
+            .chan_id = DAC_CHAN_0,
+    };
+    ESP_ERROR_CHECK(dac_oneshot_new_channel(&chan0_cfg, &chan0_handle));
+    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan0_handle, 58));
+    dac_oneshot_config_t chan1_cfg = {
+            .chan_id = DAC_CHAN_1,
+    };
+    ESP_ERROR_CHECK(dac_oneshot_new_channel(&chan1_cfg, &chan1_handle));
+    ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 58));
+
+
     /* config ADC channels */
+
     adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_0); // GPIO32
     adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_DB_0); // GPIO33
     adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_0); // GPIO34
     adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_DB_0); // GPIO35
+
     /* enable ULP on adc 1 */
+
     adc1_ulp_enable();
+
 }

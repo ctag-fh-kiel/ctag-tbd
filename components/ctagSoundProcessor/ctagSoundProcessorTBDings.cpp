@@ -42,8 +42,8 @@ ctagSoundProcessorTBDings::ctagSoundProcessorTBDings() {
     LoadPreset(0);
 
     //ESP_LOGE("Rings", "Free mem %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
-    reverb_buffer = (uint16_t *) heap_caps_malloc(32768 * sizeof(uint16_t),
-                                                  MALLOC_CAP_SPIRAM);//MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    reverb_buffer = (uint16_t *) heap_caps_malloc_prefer(32768 * sizeof(uint16_t),MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+
     if (reverb_buffer == NULL) {
         ESP_LOGE("Rings", "Could not allocate shared buffer!");
     }

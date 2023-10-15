@@ -5,8 +5,8 @@
 #include "mk2.hpp"
 
 #ifndef CONFIG_TBD_PLATFORM_MK2
-    DRAM_ATTR uint8_t CTAG::CTRL::Control::trig_data[N_TRIGS];
-    DRAM_ATTR float CTAG::CTRL::Control::cv_data[N_CVS];
+    uint8_t CTAG::CTRL::Control::trig_data[N_TRIGS];
+    float CTAG::CTRL::Control::cv_data[N_CVS];
 #endif
 
 void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs) {
