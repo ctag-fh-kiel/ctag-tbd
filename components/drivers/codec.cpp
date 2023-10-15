@@ -397,7 +397,7 @@ void Codec::setupI2SWM8978() {
     i2s_config.sample_rate = 44100;
     i2s_config.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT;
     i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
-    i2s_config.communication_format = (i2s_comm_format_t)I2S_COMM_FORMAT_STAND_I2S;// (I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
+    i2s_config.communication_format = (i2s_comm_format_t)I2S_COMM_FORMAT_STAND_I2S;
     i2s_config.intr_alloc_flags = ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL3; // default interrupt priority would be 0
     i2s_config.dma_buf_count = 4;
     i2s_config.dma_buf_len = 32;
@@ -812,7 +812,7 @@ u8 Codec::WM8974_Init(void) {
     WM8978_Write_Reg(1, 0b001001111); // enable AUX input buffer
     WM8978_Write_Reg(2, 0b000010101); // enable ADC, PGA and boost section
     WM8978_Write_Reg(3, 0b010001001); // enable DAC, Mono out, mono mixer
-    WM8978_Write_Reg(4, 0b000010000); // i2s mode + dac lr swap + adc lr swap
+    WM8978_Write_Reg(4, 0b000010000); // i2s mode
     WM8978_Write_Reg(5, 0);
     WM8978_Write_Reg(6, 0);
     WM8978_Write_Reg(7, 0);
