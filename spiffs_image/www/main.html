@@ -200,6 +200,7 @@
                     $.getq('myq',
                         '/api/v1/getPresetData/' + data.fav.plug_0,
                         res => {
+                            res = res.presets; // new data structure has id and presets
                             // does plugin exist?
                             if (typeof res != "object") {
                                 console.log('Plugin not available: ' + data.fav.plug_0);
@@ -251,6 +252,7 @@
                         $.getq('myq',
                             '/api/v1/getPresetData/' + data.fav.plug_1,
                             res => {
+                                res = res.presets; // new data structure has id and presets
                                 // does plugin exist?
                                 if (typeof res != "object") {
                                     console.log('Plugin not available: ' + data.fav.plug_1);
@@ -393,6 +395,7 @@
                 let exportFav = {fav: window.favorites.data[currentFav]};
                 $.getq('myq', 'api/v1/getPresetData/' + exportFav.fav.plug_0,
                     data => {
+                        data = data.presets; // new data structure has id and presets
                         exportFav.preset_0 = data.patches[exportFav.fav.pre_0];
                         if (exportFav.fav.plug_1 === '') {
                             let a = document.createElement("a");
@@ -403,6 +406,7 @@
                         } else {
                             $.getq('myq', 'api/v1/getPresetData/' + exportFav.fav.plug_1,
                                 data => {
+                                    data = data.presets; // new data structure has id and presets
                                     exportFav.preset_1 = data.patches[exportFav.fav.pre_1];
                                     let a = document.createElement("a");
                                     let file = new Blob([JSON.stringify(exportFav)], {type: 'text/plain'});

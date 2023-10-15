@@ -20,7 +20,8 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagSampleRom.hpp"
-#include "esp_spi_flash.h"
+//#include "esp_spi_flash.h"
+#include <esp_flash.h>
 #include "esp_log.h"
 #include "esp_heap_caps.h"
 
@@ -74,7 +75,8 @@ namespace CTAG::SP::HELPERS {
         offset *= 2; // from int16 to bytes
         offset += headerSize; // add header size
         offset += CONFIG_SAMPLE_ROM_START_ADDRESS; // add start offset
-        spi_flash_read(offset, dst, n_samples * 2);
+        //spi_flash_read(offset, dst, n_samples * 2);
+        esp_flash_read(NULL, dst, offset, n_samples * 2);
     }
 
     bool ctagSampleRom::HasSlice(const uint32_t slice) {
@@ -127,31 +129,35 @@ namespace CTAG::SP::HELPERS {
         totalSize = 0;
         numberSlices = 0;
         headerSize = 0;
-        spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS, &deadface, 4);
+        //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS, &deadface, 4);
+        esp_flash_read(NULL, &deadface, CONFIG_SAMPLE_ROM_START_ADDRESS, 4);
         if (deadface != 0xdeadface) {
             ESP_LOGE("SROM", "Magic number wrong!");
             return;
         }
         headerSize += 4;
-        spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 4, &totalSize, 4);
+        //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 4, &totalSize, 4);
+        esp_flash_read(NULL,&totalSize, CONFIG_SAMPLE_ROM_START_ADDRESS + 4, 4);
         headerSize += 4;
-        ESP_LOGD("SROM", "Total sample data size %d bytes", totalSize);
-        spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 8, &numberSlices, 4);
+        ESP_LOGD("SROM", "Total sample data size %li bytes", totalSize);
+        //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 8, &numberSlices, 4);
+        esp_flash_read(NULL, &numberSlices, CONFIG_SAMPLE_ROM_START_ADDRESS + 8, 4);
         headerSize += 4;
-        ESP_LOGD("SROM", "Number slices %d", numberSlices);
+        ESP_LOGD("SROM", "Number slices %li", numberSlices);
         // alloc memory
         sliceOffsets = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceOffsets != NULL);
         sliceSizes = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceSizes != NULL);
-        spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 12, &sliceOffsets[0], 4 * numberSlices);
+        //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 12, &sliceOffsets[0], 4 * numberSlices);
+        esp_flash_read(NULL, &sliceOffsets[0], CONFIG_SAMPLE_ROM_START_ADDRESS + 12, 4 * numberSlices);
         headerSize += 4 * numberSlices;
         int lastOffset = 0;
         for (uint32_t i = 0; i < numberSlices; i++) {
             sliceSizes[i] = sliceOffsets[i] - lastOffset;
             lastOffset = sliceOffsets[i];
             sliceOffsets[i] -= sliceSizes[i];
-            ESP_LOGD("SROM", "Slice size %d, offset %d", sliceSizes[i], sliceOffsets[i]);
+            ESP_LOGD("SROM", "Slice size %li, offset %li", sliceSizes[i], sliceOffsets[i]);
         }
         // get first non Wt Slice
         for (int i = 0; i < numberSlices; i++) {

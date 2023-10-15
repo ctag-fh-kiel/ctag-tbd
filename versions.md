@@ -1,5 +1,11 @@
 # CTAG TBD Version Log
 
+## V1.0.0
+- Switched to ESP-IDF 5.1.1
+- Swapped flash file system to LittleFS from SPIFFS
+- Much improved stability of flash file system
+- Fixed many bugs with backup / restore mechanism
+
 ## V0.9.21a
 - ADC input channels phase issue fixed (thanks to Synthpatti for reporting)
 - ADC input highpass enabled

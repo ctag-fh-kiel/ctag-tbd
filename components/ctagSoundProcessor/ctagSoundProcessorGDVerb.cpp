@@ -39,7 +39,7 @@ ctagSoundProcessorGDVerb::ctagSoundProcessorGDVerb() {
 
     strev.setSampleRate(44100.f);
     strev.mute();
-    ESP_LOGE("GDVERB", "os fac %d, total fs %f, fs %f", strev.getOSFactor(), strev.getTotalSampleRate(),
+    ESP_LOGE("GDVERB", "os fac %li, total fs %f, fs %f", strev.getOSFactor(), strev.getTotalSampleRate(),
              strev.getSampleRate());
 }
 

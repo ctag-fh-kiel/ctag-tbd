@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "gpio.hpp"
 #include "driver/gpio.h"
 #include <string.h>
+#include <esp_attr.h>
 
 #define TRIG0_PIN 39
 #define TRIG1_PIN 36
@@ -35,7 +36,7 @@ void GPIO::InitGPIO() {
     memset(&io_conf, 0, sizeof(io_conf));
     // inputs
     //interrupt edge
-    io_conf.intr_type = (gpio_int_type_t) GPIO_PIN_INTR_NEGEDGE;
+    io_conf.intr_type = (gpio_int_type_t) GPIO_INTR_NEGEDGE;
     //bit mask of the pins
     io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
     //set as input mode    

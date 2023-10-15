@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "rom/gpio.h"
 
 #include "ssd1306.h"
 

@@ -32,10 +32,10 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 ## Features:
 - More than 50 high quality audio generators and effects.
 - Easy DSP plugin development.
-- **NEW!!!** Sample ROM playback and wavetable oscillator with user wavetables from sample ROM [details here](sample_rom/readme.md)
-- **NEW!!!** Simulator for cross platform plugin development without hardware module (speeds up plugin development, better code verification).
+- Sample ROM playback and wavetable oscillator with user wavetables from sample ROM [details here](sample_rom/readme.md)
+- Simulator for cross platform plugin development without hardware module (speeds up plugin development, better code verification).
     - Check description [here](simulator/readme.md)
-- **NEW!!!** [Cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/) to build firmwares with plugin subsets, allows to optimize sample-rom size (NOTE: Binaries from **cloud compiler** can be **flashed only through serial connection**!)
+- [Cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/) to build firmwares with plugin subsets, allows to optimize sample-rom size (NOTE: Binaries from **cloud compiler** can be **flashed only through serial connection**!)
 - With web UI user interface by wireless browser access.
 - Through a REST-API.
 
@@ -69,20 +69,9 @@ Github action. Enter the Github actions menu and select e.g. the "draft-release"
 Upon successful completion, your binaries will be available as .zip archive as output of your run.
 
 If you prefer to have a dev environment on your own, install espressif esp-idf, instructions are [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html).
-Use git to checkout esp-idf release/v4.1 (TBD may build also with newer versions, you can try), do this within the esp-idf folder:
-```sh
-git checkout release/v4.1
-git submodule update
-sudo ./install.sh
-```
-You may need to upgrade CMake to version 3.16 or higher.
-Then follow these steps to create the firmware image:
-```sh
-git clone https://github.com/ctag-fh-kiel/ctag-tbd.git
-cd ctag-tbd
-git submodule update --init --recursive
-idf.py build
-```
+Then clone the ctag-tbd repo with all dependencies and build firmware with cmake.
+Firmware release v1.0.0 was build with ESP-IDF 5.1.1 release.
+
 ### Devcontainers
 Devcontainers allow users to develop in an isolated container, with all the
 dependencies installed and with the features of an IDE. Currently there are two

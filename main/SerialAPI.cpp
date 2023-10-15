@@ -10,7 +10,6 @@
 #include "Calibration.hpp"
 #include "driver/gpio.h"
 #include "driver/uart.h"
-#include "esp_spi_flash.h"
 
 using namespace rapidjson;
 
@@ -20,7 +19,7 @@ const char CTAG::SAPI::SerialAPI::etx = 0x03;
 
 void CTAG::SAPI::SerialAPI::StartSerialAPI() {
     initUART();
-    xTaskCreatePinnedToCore(&SerialAPI::serialTask, "serial_task", 4096, 0, tskIDLE_PRIORITY + 4, &hSerialTask, 0);
+    xTaskCreatePinnedToCore(&SerialAPI::serialTask, "serial_task", 4096*2, 0, tskIDLE_PRIORITY + 4, &hSerialTask, 0);
 }
 
 void CTAG::SAPI::SerialAPI::initUART() {
@@ -33,6 +32,7 @@ void CTAG::SAPI::SerialAPI::initUART() {
     uart_config.stop_bits = UART_STOP_BITS_1;
     uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
     uart_config.rx_flow_ctrl_thresh = 0; // no effect as HW flow disabled
+    uart_config.source_clk = UART_SCLK_DEFAULT;
 
     uart_param_config(UART_NUM_0, &uart_config);
     //uart_set_pin(UART_NUM_0, ECHO_TEST_TXD, ECHO_TEST_RXD, ECHO_TEST_RTS, ECHO_TEST_CTS);
@@ -42,6 +42,11 @@ void CTAG::SAPI::SerialAPI::initUART() {
 
 void CTAG::SAPI::SerialAPI::serialTask(void *) {
     char data;
+    // TODO: using a string here for storing cmd is bad, when large data is received, and a large plugin is loaded
+    // TODO: one may run out of memory
+    // TODO: fix this with heap_caps_malloc
+    // TODO: currently Void preset is loaded from web-ui before a backup is send to the TBD
+    // TODO: but Void may not exist in a custom firmware
     std::string cmd;
     enum ProtocolStates {
         IDLE = 0x00,
@@ -50,7 +55,7 @@ void CTAG::SAPI::SerialAPI::serialTask(void *) {
     ProtocolStates pState = IDLE;
     while(1) {
         //Read data from UART
-        int len = uart_read_bytes(UART_NUM_0, (uint8_t *)&data, 1, 500 / portTICK_RATE_MS);
+        int len = uart_read_bytes(UART_NUM_0, (uint8_t *)&data, 1, 500 / portTICK_PERIOD_MS);
         if(len != 0){
             if(data == stx){
                 // start of text
@@ -275,4 +280,13 @@ void CTAG::SAPI::SerialAPI::sendString(const string &s) {
     string cmd = stx + s + etx;
     cout << cmd;
     cout.flush();
+}
+
+void CTAG::SAPI::SerialAPI::sendString(const char* s) {
+    size_t strLen = strlen(s);
+    write(STDOUT_FILENO, &stx, 1);
+    write(STDOUT_FILENO, s, strLen);
+    write(STDOUT_FILENO, &etx, 1);
+    // flush stdout
+    write(STDOUT_FILENO, NULL, 0);
 }

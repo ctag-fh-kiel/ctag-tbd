@@ -493,7 +493,7 @@ void FV3_(progenitor)::setFsFactors() {
     delayL_37.setsize(p_(delayLCo[4], totalFactor));
 
     // delayR_66.setsize(p_(delayRCo[0],totalFactor));
-    delayR_ts.setsize(p_(1, totalFactor));
+    delayR_ts.setsize(p_(static_cast<int32_t>(1), totalFactor));
     delayR_40.setsize(p_(delayRCo[5], totalFactor)); // delayRCo[1]+delayRCo[2]
     // delayR_41.setsize(p_(delayRCo[2],totalFactor));
     delayR_49.setsize(p_(delayRCo[3], totalFactor));

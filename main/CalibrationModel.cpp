@@ -44,7 +44,7 @@ void CTAG::CAL::CalibrationModel::CreateMatrix() {
 void CTAG::CAL::CalibrationModel::PushRow(const vector<uint32_t> data) {
     Value matrixRow(kArrayType);
     for (auto &i : data) {
-        matrixRow.PushBack(i, matrix.GetAllocator());
+        matrixRow.PushBack(static_cast<unsigned int>(i), matrix.GetAllocator());
     }
     matrix.PushBack(matrixRow, matrix.GetAllocator());
 }

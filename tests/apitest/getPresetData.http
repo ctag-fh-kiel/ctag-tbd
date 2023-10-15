@@ -1,4 +1,4 @@
-GET http://ctag-tbd.local/api/v1/getPresetData/Void
+GET http://ctag-tbd.local/api/v1/getPresetData/Subbotnik
 Accept: application/json
 ###
 GET http://ctag-tbd.local/api/v1/getPresetData/Void
