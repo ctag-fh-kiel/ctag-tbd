@@ -1,0 +1,29 @@
+I (844) cpu_start: App cpu up.
+I (1334) spiram: SPI SRAM memory test OK
+I (1335) heap_init: Initializing. RAM available for dynamic allocation:
+I (1335) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (1341) heap_init: At 3FFB64F8 len 00029B08 (166 KiB): DRAM
+I (1347) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (1354) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (1360) heap_init: At 40094360 len 0000BCA0 (47 KiB): IRAM
+I (1367) cpu_start: Pro cpu start user code
+I (1371) spiram: Adding pool of 4096K of external SPI memory to heap allocator
+I (1393) spi_flash: detected chip: generic
+I (1393) spi_flash: flash io: qio
+I (1394) cpu_start: Starting scheduler on PRO CPU.
+I (0) cpu_start: Starting scheduler on APP CPU.
+I (5397) fs: Initializing SPIFFS
+I (6267) fs: Partition size: total: 3145728, used: 1613824
+I (6267) SSD1306: OLED configured successfully
+I (10337) SPModel: Trying to read config file
+I (10387) Control: Initializing control!
+I (10387) gpio: GPIO[36]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:2
+I (10397) gpio: GPIO[39]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:2
+I (10427) CAL: Check calibration request
+I (10427) WM8974: Init
+I (10527) WM8974: Init finished
+I (10527) WM8974: Initializing CODEC I2S
+I (10527) gpio: GPIO[0]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0
+I (10527) I2S: DMA Malloc info, datalen=blocksize=128, dma_buf_count=4
+I (10537) I2S: DMA Malloc info, datalen=blocksize=128, dma_buf_count=4
+I (10557) I2S: APLL: Req RATE: 4b?????rate: 44099.988, BITS: 16, CLKM: 1, BCK_M: 8, MCLK: 11289597.000, SCLK: 1411199.625000, diva: 1, divb: 0
