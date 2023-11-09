@@ -3,7 +3,7 @@ menu "CTAG TBD Configuration"
             prompt "TBD Hardware Platform"
             default TBD_PLATFORM_V2
             help
-                Determines which TBD platform, V1 WM8731 codec, V2 WM8978 codec, STR Strämpler
+                Determines which TBD platform, V1 WM8731 codec, V2 WM8978 codec, STR Strämpler, BBA Black Box Audio
 
             config TBD_PLATFORM_V2
                 bool "V2 (WM8978 + ESP ADC)"
@@ -15,6 +15,8 @@ menu "CTAG TBD Configuration"
                 bool "AE Modular (WM8974 + ESP ADC)"
             config TBD_PLATFORM_MK2
                 bool "MK2 (WM8978 + STM32 CVs + Trigs)"
+            config TBD_PLATFORM_BBA
+                bool "BBA (ES8388 + Midi)"
 
         endchoice
 
@@ -39,7 +41,7 @@ menu "CTAG TBD Configuration"
         config SAMPLE_ROM_SIZE
             hex "Sample ROM Size"
             default 0x500000
-            range 0x300000 0xA00000
+            range 0x300000 0x1300000
             help
                 Define sample ROM flash size.
 

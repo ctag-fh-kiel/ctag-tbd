@@ -11,7 +11,7 @@ namespace CTAG{
             Control() = delete;
             static void Init();
             static void SetCVChannelBiPolar(bool const &v0, bool const &v1, bool const &v2, bool const &v3);
-            static void Update(uint8_t **trigs, float **cvs);
+            IRAM_ATTR static void Update(uint8_t **trigs, float **cvs);
         private:
 #ifndef CONFIG_TBD_PLATFORM_MK2
             DRAM_ATTR static uint8_t trig_data[N_TRIGS];
