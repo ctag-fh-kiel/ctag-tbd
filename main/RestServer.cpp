@@ -844,6 +844,8 @@ esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
     string const s("{\"HWV\":\"" + TBD_HW_VERSION + "\",\"FWV\":\"" + TBD_FW_VERSION + "\",\"p\":\"str\",\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV1\",\"CV2\",\"CV3\",\"CV4\",\"CV5\",\"CV6\",\"CV7\",\"CV8\"]}");
 #elif defined(CONFIG_TBD_PLATFORM_MK2)
     string const s("{\"HWV\":\"" + TBD_HW_VERSION + "\",\"FWV\":\"" + TBD_FW_VERSION + "\",\"p\":\"mk2\",\"t\":[\"TRIG0\",\"TRIG1\",\"TRIG2\",\"TRIG3\",\"TRIG4\",\"TRIG5\",\"M0NOTE\",\"M1NOTE\",\"M0VEL\",\"M1VEL\",\"MOD0\",\"MOD1\"],\"cv\":[\"UCVPOT0\",\"UCVPOT1\",\"UCVPOT2\",\"UCVPOT3\",\"POT0\",\"POT1\",\"POT2\",\"POT3\",\"PCV0\",\"PCV1\",\"BPCV0\",\"BPCV1\",\"BPCV2\",\"BPCV3\",\"M0NOTE\",\"M1NOTE\",\"M0VEL\",\"M1VEL\",\"M0PB\",\"M1PB\",\"M0MOD\",\"M1MOD\"]}");
+#elif defined(CONFIG_TBD_PLATFORM_BBA)
+    string const s("{\"HWV\":\"" + TBD_HW_VERSION + "\",\"FWV\":\"" + TBD_FW_VERSION + "\",\"p\":\"bba\",\"t\":[\"M0NOTE\",\"M1NOTE\",\"M0AFT\",\"M1AFT\",\"M0MOD\",\"M1MOD\"],\"cv\":[\"M0NOTE\",\"M1NOTE\",\"M0VEL\",\"M1VEL\",\"M0AFT\",\"M1AFT\",\"M0PB\",\"M1PB\",\"M0MOD\",\"M1MOD\"]}");
 #else
     string const s("{\"HWV\":\"" + TBD_HW_VERSION + "\",\"FWV\":\"" + TBD_FW_VERSION + "\",\"p\":\"mk1\",\"t\":[\"TRIG0\", \"TRIG1\"], \"cv\":[\"CV0\",\"CV1\",\"POT0\",\"POT1\"]}");
 #endif

@@ -22,7 +22,6 @@ respective component folders / files if different from this license.
 
 #include "SPManager.hpp"
 #include "esp_log.h"
-#include "driver/i2s.h"
 #include "esp_system.h"
 #include "stdint.h"
 #include "string.h"

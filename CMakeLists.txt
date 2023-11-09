@@ -37,6 +37,10 @@ elseif(CONFIG_TBD_PLATFORM_AEM)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=4 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
     set(TBD_HW "AEM")
+elseif(CONFIG_TBD_PLATFORM_BBA)
+    idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=10 APPEND)
+    idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=6 APPEND)
+    set(TBD_HW "BBA")
 endif()
 
 # generate include definitions for hw + fw version
