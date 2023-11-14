@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::DRIVERS;
 
-static const int RX_BUF_SIZE = 1024;
+static const int RX_BUF_SIZE = 128;
 
 midiuart::midiuart() {
     const uart_port_t uart_num = UART_NUM_1;
@@ -60,5 +60,5 @@ void midiuart::write(uint8_t *data, std::size_t len){
 }
 
 void midiuart::read(uint8_t *data, int *len) {
-    *len = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 10 / portTICK_PERIOD_MS);
+    *len = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 0);
 }
