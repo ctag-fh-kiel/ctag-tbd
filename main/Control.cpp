@@ -15,13 +15,6 @@
     #define MIDI_CHANNEL_B 1
     #define MIDI_NOTE_0V 48 // is C3
 
-    typedef struct{
-        midiXparser::midiStatusValue status;
-        uint8_t data[3]; // one too much
-    }mididata_t;
-
-    // queue handle
-    static QueueHandle_t midi_queue;
     DRAM_ATTR static uint8_t buf0[DATA_SZ];
     DRAM_ATTR static uint8_t *midi_note_trig = &buf0[N_CVS*4];
     DRAM_ATTR static float *midi_data = (float*) buf0;
