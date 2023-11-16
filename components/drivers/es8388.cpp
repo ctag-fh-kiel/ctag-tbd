@@ -83,14 +83,14 @@ es8388::es8388() : _pinsda{GPIO_NUM_40}, _pinscl{GPIO_NUM_41}, _i2cspeed{400000}
             .clk_flags = 0,
     };
 
-    err |= i2c_param_config(i2c_port_t(0), &conf);
-    err |= i2c_driver_install(i2c_port_t(0), conf.mode, 0, 0, 0);
+    err |= i2c_param_config(I2C_NUM_1, &conf);
+    err |= i2c_driver_install(I2C_NUM_1, conf.mode, 0, 0, 0);
     ESP_ERROR_CHECK(err);
 }
 
 es8388::~es8388() {
     // TODO destroy
-    i2c_driver_delete(i2c_port_t(0));
+    i2c_driver_delete(I2C_NUM_1);
 }
 
 bool es8388::write_reg(uint8_t reg_add, uint8_t data)
@@ -105,7 +105,7 @@ bool es8388::write_reg(uint8_t reg_add, uint8_t data)
         ret |= i2c_master_write_byte(cmd, reg_add, 1);
         ret |= i2c_master_write_byte(cmd, data, 1);
         ret |= i2c_master_stop(cmd);
-        ret |= i2c_master_cmd_begin(i2c_port_t (0), cmd, portMAX_DELAY);
+        ret |= i2c_master_cmd_begin(I2C_NUM_1, cmd, portMAX_DELAY);
         i2c_cmd_link_delete(cmd);
     }while(ret != ESP_OK);
 
@@ -132,14 +132,14 @@ bool es8388::read_reg(uint8_t reg_add, uint8_t &data)
     ret |= i2c_master_write_byte(cmd, ES8388_ADDR, 1);
     ret |= i2c_master_write_byte(cmd, reg_add, 1);
     ret |= i2c_master_stop(cmd);
-    ret |= i2c_master_cmd_begin(i2c_port_t (0), cmd, portMAX_DELAY);
+    ret |= i2c_master_cmd_begin(I2C_NUM_1, cmd, portMAX_DELAY);
     i2c_cmd_link_delete(cmd);
     cmd = i2c_cmd_link_create();
     ret |= i2c_master_start(cmd);
     ret |= i2c_master_write_byte(cmd, ES8388_ADDR | 0x01, 1);
     ret |= i2c_master_read_byte(cmd, &data, i2c_ack_type_t (0));
     ret |= i2c_master_stop(cmd);
-    ret |= i2c_master_cmd_begin(i2c_port_t (0), cmd, portMAX_DELAY);
+    ret |= i2c_master_cmd_begin(I2C_NUM_1, cmd, portMAX_DELAY);
     i2c_cmd_link_delete(cmd);
     //ESP_ERROR_CHECK(ret);
     return ret == ESP_OK;
