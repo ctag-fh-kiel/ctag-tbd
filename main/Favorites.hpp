@@ -35,7 +35,7 @@ namespace CTAG {
             static void StoreFavorite(int const &id, const string &fav);
             static void ActivateFavorite(const int &id);
             static void DeactivateFavorite();
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
+#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
             static void StartUI();
 #endif
         private:
@@ -43,7 +43,7 @@ namespace CTAG {
             static int32_t activeFav;
             enum MenuStates {CLEAR, FAV_ACTIVE_NAME, FAV_ACTIVE_USTRING, FAV_SELECT, FAV_SELECT_CONFIRM};
             static MenuStates uiMenuState;
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
+#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
 
             [[noreturn]] static void ui_task(void *pvParams);
             static TaskHandle_t uiTaskHandle;

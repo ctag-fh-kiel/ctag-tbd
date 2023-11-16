@@ -25,9 +25,12 @@ respective component folders / files if different from this license.
 #include "version.hpp"
 #include "esp_log.h"
 
-#if defined(CONFIG_TBD_PLATFORM_MK2)
+#if CONFIG_TBD_PLATFORM_MK2
     #define SCL_GPIO 32
     #define SDA_GPIO 33
+#elif CONFIG_TBD_PLATFORM_BBA
+    #define SCL_GPIO 4
+    #define SDA_GPIO 5
 #else
     #define SCL_GPIO 23
     #define SDA_GPIO 5

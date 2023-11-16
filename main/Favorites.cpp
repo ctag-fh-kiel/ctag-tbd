@@ -29,15 +29,18 @@ respective component folders / files if different from this license.
 #define SCROLL_RATE_MS 1000
 #define TIMEOUT_PERIOD_MS 5000
 
-#if defined(CONFIG_TBD_PLATFORM_AEM)
+#if CONFIG_TBD_PLATFORM_AEM
     #define PIN_PUSH_BTN GPIO_NUM_2
-#elif defined(CONFIG_TBD_PLATFORM_MK2)
+#elif CONFIG_TBD_PLATFORM_MK2
     #define PIN_PUSH_BTN GPIO_NUM_34
+#elif CONFIG_TBD_PLATFORM_BBA
+    #include "driver/touch_pad.h"
+    #define TOUCH_PAD TOUCH_PAD_NUM6 // is GPIO_NUM_6
 #endif
 
 CTAG::FAV::FavoritesModel CTAG::FAV::Favorites::model;
 int32_t CTAG::FAV::Favorites::activeFav {-1};
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
+#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
     TaskHandle_t CTAG::FAV::Favorites::uiTaskHandle {nullptr};
 #endif
 CTAG::FAV::Favorites::MenuStates CTAG::FAV::Favorites::uiMenuState {CLEAR};
@@ -71,6 +74,14 @@ void CTAG::FAV::Favorites::ActivateFavorite(const int &id) {
         gpio_set_direction(PIN_PUSH_BTN, (gpio_mode_t)GPIO_MODE_DEF_INPUT);
         xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
     }
+#elif CONFIG_TBD_PLATFORM_BBA
+    void CTAG::FAV::Favorites::StartUI() {
+        touch_pad_init();
+        touch_pad_config(TOUCH_PAD);
+        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+        touch_pad_fsm_start();
+        xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
+    }
 #endif
 
 void CTAG::FAV::Favorites::DeactivateFavorite() {
@@ -78,7 +89,7 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
     uiMenuState = CLEAR;
 }
 
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
+#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
 // UI task menu state machine
 [[noreturn]] void CTAG::FAV::Favorites::ui_task(void *pvParams) {
     int timer {0}; // btn event timer
@@ -91,8 +102,13 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
     DRIVERS::Display::Clear();
     while (1) {
         // check button state and generate events
-#if defined(CONFIG_TBD_PLATFORM_MK2)
+#if CONFIG_TBD_PLATFORM_MK2
         if (!gpio_get_level(PIN_PUSH_BTN)) {
+#elif CONFIG_TBD_PLATFORM_BBA
+        uint32_t touch_value;
+        touch_pad_read_raw_data(TOUCH_PAD, &touch_value);    // read raw data.
+        //printf("Touch value: %li\n", touch_value);
+        if(touch_value > 26000) {
 #else
         if(gpio_get_level(PIN_PUSH_BTN)){
 #endif

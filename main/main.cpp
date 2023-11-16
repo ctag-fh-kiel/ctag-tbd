@@ -35,7 +35,7 @@ respective component folders / files if different from this license.
 #include <vector>
 #include "SPManager.hpp"
 
-#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
+#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     #include "Display.hpp"
 #endif
 
@@ -64,7 +64,7 @@ void app_main() {
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
 #endif
 
-#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
+#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     DRIVERS::Display::Init();
     DRIVERS::Display::ShowFWVersion();
     vTaskDelay(2000 / portTICK_PERIOD_MS);
