@@ -630,10 +630,11 @@ esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     httpd_resp_set_type(req, "application/json");
-#ifndef CONFIG_TBD_PLATFORM_MK2
-    httpd_resp_sendstr(req, CTAG::CAL::Calibration::GetCStrJSONCalibration());
-#else
+
+#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     httpd_resp_sendstr(req, "{}");
+#else
+    httpd_resp_sendstr(req, CTAG::CAL::Calibration::GetCStrJSONCalibration());
 #endif
     return ESP_OK;
 }
@@ -708,7 +709,10 @@ esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
         return ESP_FAIL;
     }
     content[req->content_len] = 0;
+#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
+#else
     CTAG::CAL::Calibration::SetJSONCalibration(string(content));
+#endif
     free(content);
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, NULL, 0);
