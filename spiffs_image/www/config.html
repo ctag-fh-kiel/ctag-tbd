@@ -288,6 +288,14 @@
                         );
                     });
                     $('#commit-wifi').on('click', function () {
+                        // if wifi password is shorter than 8 chars, do not commit
+                        if($('#pwd').val().length < 8){
+                            ons.notification.toast('Password must be at least 8 characters long!', {
+                                timeout: 3000,
+                                animation: 'fall'
+                            });
+                            return;
+                        }
                         cfgData.wifi.ssid = $('#ssid').val();
                         cfgData.wifi.pwd = $('#pwd').val();
                         cfgData.wifi.mode = $('#wifi-mode').val();
