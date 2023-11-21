@@ -10,7 +10,7 @@
       "name": "Model",
       "hint": "Select model",
       "min": 0,
-      "max": 15
+      "max": 23
     },
     {
       "id": "trigger",

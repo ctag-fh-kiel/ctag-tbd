@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 #include "stmlib/dsp/hysteresis_quantizer.h"
 #include "stmlib/dsp/units.h"
 #include "tides2/poly_slope_generator.h"
-#include "tides2/ramp_extractor.h"
+#include "tides2/ramp/ramp_extractor.h"
 #include "tides2/io_buffer.h"
 #include "helpers/ctagADEnv.hpp"
 
