@@ -128,7 +128,7 @@ add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
 target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
 ## Application
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS ON) # comment this if you want to link to Boost dynamically
 find_package(Boost 1.67.0 COMPONENTS system thread filesystem program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "could not find Boost!")
@@ -140,6 +140,7 @@ set(SRC_FILES2
         "../main/FavoritesModel.cpp"
         "fake-idf/esp_heap_caps.c"
         "fake-idf/esp_spi_flash.c"
+        "fake-idf/esp_flash.c"
         )
 
 add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
@@ -153,6 +154,7 @@ if(WIN32)
 else()
     target_link_libraries(tbd-sim simple-web-server)
     target_link_libraries(tbd-sim rtaudio ctagsp mutable esp-dsp)
+    message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
     target_link_libraries(tbd-sim ${Boost_LIBRARIES})
 endif()
 target_include_directories(tbd-sim PRIVATE ${Boost_INCLUDE_DIR})

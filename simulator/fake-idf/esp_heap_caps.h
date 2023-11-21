@@ -29,6 +29,7 @@ extern "C"
 {
 #endif
 void *heap_caps_malloc(unsigned int , unsigned int  );
+void *heap_caps_malloc_prefer(unsigned int , unsigned int , ... );
 void heap_caps_free(void *);
 void *heap_caps_calloc(unsigned int , unsigned int , unsigned int );
 void *heap_caps_realloc(void *, unsigned int , unsigned int );

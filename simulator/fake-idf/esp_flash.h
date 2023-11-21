@@ -19,32 +19,16 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "esp_heap_caps.h"
-#include <stdlib.h>
+#pragma once
 
-void *heap_caps_malloc(unsigned int size, unsigned int  caps){
-    return malloc(size);
-}
-void heap_caps_free(void *ptr){
-    free(ptr);
-}
-void *heap_caps_calloc(unsigned int n, unsigned int size, unsigned int caps){
-    return calloc(n, size);
-}
+#include "esp_err.h"
+typedef struct esp_flash_t esp_flash_t;
 
-void *heap_caps_realloc(void * ptr, unsigned int size, unsigned int caps){
-    return realloc(ptr, size);
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern esp_err_t esp_flash_read(esp_flash_t*, void*, unsigned int, unsigned int);
+#ifdef __cplusplus
 }
+#endif
 
-int heap_caps_get_free_size(unsigned int caps){
-    return 0;
-}
-
-int heap_caps_get_largest_free_block(unsigned int caps){
-    return 0;
-}
-
-void *heap_caps_malloc_prefer( unsigned int size, unsigned int num, ... )
-{
-    return heap_caps_malloc(size, MALLOC_CAP_DEFAULT);
-}
