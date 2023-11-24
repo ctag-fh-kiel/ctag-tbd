@@ -22,9 +22,10 @@ jobs:
         with:
           esp_idf_version: v5.1.1
           target: esp32
+          command: update-dependencies build
       - name: Archive binaries
         run: |
-          zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
+          zip --junk-paths binaries /app/ctag-fh-kiel/ctag-tbd/build/*.bin /app/ctag-fh-kiel/ctag-tbd/build/bootloader/*.bin /app/ctag-fh-kiel/ctag-tbd/build/partition_table/*.bin
       - name: Upload binary
         uses: actions/upload-artifact@v2.2.1
         with:
