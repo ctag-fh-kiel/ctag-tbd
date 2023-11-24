@@ -40,9 +40,9 @@ void Codec::InitCodec() {
     ESP_LOGI("ES8388", "Starting i2s setup...");
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(i2s_port_t(0), I2S_ROLE_MASTER);
     chan_cfg.auto_clear = false;
-    // TODO is 6 dma descriptors enough? -> any effect on latency, started with 4 but sometime there was noise
+    // TODO is 4 dma descriptors enough? -> any effect on latency, started with 4 but sometime there was noise
     // TODO can be estimated from this https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
-    chan_cfg.dma_desc_num = 6;
+    chan_cfg.dma_desc_num = 4;
     chan_cfg.dma_frame_num = 32;
 
     ESP_ERROR_CHECK(i2s_new_channel(&chan_cfg, &tx_handle, &rx_handle));
