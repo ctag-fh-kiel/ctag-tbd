@@ -3,8 +3,7 @@
 ## V1.0.0
 - Updated to newer mutable instruments code base, TBDaits (aka. Plaits) has now all 24 models
 - Switched to ESP-IDF 5.1.1
-- Swapped flash file system to LittleFS from SPIFFS
-- Much improved stability of flash file system
+- Swapped flash file system to LittleFS from SPIFFS, much improved stability of flash file system
 - Fixed many bugs with backup / restore mechanism
 - Added support for BlackBoxAudio hardware
 

@@ -10,12 +10,18 @@ jobs:
 
     steps:
       - name: Checkout repository and submodules
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
-      - name: Build binaries
-        uses: ctag-fh-kiel/esp-idf-action@5
+#      - name: Copy config
+#        run: |
+#          git checkout v1.0.0_pre && cp sdkconfig.defaults.mk1 sdkconfig
+      - name: esp-idf build
+        uses: espressif/esp-idf-ci-action@v1.1.0
+        with:
+          esp_idf_version: v5.1.1
+          target: esp32
       - name: Archive binaries
         run: |
           zip --junk-paths binaries build/*.bin build/bootloader/*.bin build/partition_table/*.bin
