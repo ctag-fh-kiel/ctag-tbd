@@ -1,4 +1,4 @@
-/***************
+ /***************
 CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 
 A project conceived within the Creative Technologies Arbeitsgruppe of
@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <cstdint>
+#include "es8388.hpp"
 
 namespace CTAG {
     namespace DRIVERS {
@@ -45,7 +46,7 @@ namespace CTAG {
             static void WriteBuffer(float *buf, uint32_t sz);
 
         private:
-
+            static es8388 codec;
 
         };
     }

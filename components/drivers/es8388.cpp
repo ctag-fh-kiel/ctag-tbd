@@ -231,6 +231,7 @@ bool es8388::init() {
     /* Power up DEM and STM */
     res &= write_reg(ES8388_CHIPPOWER, 0x00);
     /* set up MCLK) */
+    _outSel = OUTALL;
     return res;
 }
 
@@ -291,9 +292,25 @@ bool es8388::setOutputVolume(uint8_t vol) {
     if (_outSel == OUTALL || _outSel == OUT1) {
         res &= write_reg(ES8388_DACCONTROL24, vol);  // LOUT1VOL
         res &= write_reg(ES8388_DACCONTROL25, vol);  // ROUT1VOL
-    } else if (_outSel == OUTALL || _outSel == OUT2) {
+    }
+    if (_outSel == OUTALL || _outSel == OUT2) {
         res &= write_reg(ES8388_DACCONTROL26, vol);  // LOUT2VOL
         res &= write_reg(ES8388_DACCONTROL27, vol);  // ROUT2VOL
+    }
+    return res;
+}
+
+
+bool es8388::setOutputVolume(uint8_t lvol, uint8_t rvol) {
+    bool res = true;
+    if (_outSel == OUTALL || _outSel == OUT1) {
+        //ESP_LOGE("ES8388", "lvol: %d, rvol: %d", lvol, rvol);
+        res &= write_reg(ES8388_DACCONTROL24, lvol);  // LOUT1VOL
+        res &= write_reg(ES8388_DACCONTROL25, rvol);  // ROUT1VOL
+    }
+    if (_outSel == OUTALL || _outSel == OUT2) {
+        res &= write_reg(ES8388_DACCONTROL26, lvol);  // LOUT2VOL
+        res &= write_reg(ES8388_DACCONTROL27, rvol);  // ROUT2VOL
     }
     return res;
 }
