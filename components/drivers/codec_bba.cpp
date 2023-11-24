@@ -21,8 +21,6 @@ respective component folders / files if different from this license.
 
 #include "codec_bba.hpp"
 
-#include "es8388.hpp"
-
 #include <driver/i2s_std.h>
 #include "esp_log.h"
 #include "esp_attr.h"
@@ -36,11 +34,15 @@ using namespace CTAG::DRIVERS;
 static i2s_chan_handle_t tx_handle = NULL;
 static i2s_chan_handle_t rx_handle = NULL;
 
+es8388 Codec::codec;
+
 void Codec::InitCodec() {
     ESP_LOGI("ES8388", "Starting i2s setup...");
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(i2s_port_t(0), I2S_ROLE_MASTER);
     chan_cfg.auto_clear = false;
-    chan_cfg.dma_desc_num = 4;
+    // TODO is 6 dma descriptors enough? -> any effect on latency, started with 4 but sometime there was noise
+    // TODO can be estimated from this https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/i2s.html
+    chan_cfg.dma_desc_num = 6;
     chan_cfg.dma_frame_num = 32;
 
     ESP_ERROR_CHECK(i2s_new_channel(&chan_cfg, &tx_handle, &rx_handle));
@@ -75,7 +77,7 @@ void Codec::InitCodec() {
     ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     ESP_ERROR_CHECK(i2s_channel_enable(rx_handle));
 
-    es8388 codec;
+
     if(codec.identify()){
         ESP_LOGI("ES8388", "Found ES8388...");
     }else{
@@ -94,6 +96,7 @@ void Codec::RecalibDCOffset() {
 }
 
 void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
+    codec.setOutputVolume(static_cast<uint8_t>(left), static_cast<uint8_t>(right));
 }
 
 void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {

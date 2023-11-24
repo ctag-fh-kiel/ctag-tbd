@@ -58,6 +58,7 @@ public:
     bool DACmute(bool mute);
     uint8_t getOutputVolume();
     bool setOutputVolume(uint8_t vol);
+    bool setOutputVolume(uint8_t lvol, uint8_t rvol);
     uint8_t getInputGain();
     bool setInputGain(uint8_t gain);
     bool setALCmode(alcmodesel_t alc);
