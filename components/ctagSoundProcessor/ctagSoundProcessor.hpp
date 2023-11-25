@@ -155,7 +155,7 @@ namespace CTAG {
             };
 
             bool isStereo = false;
-            int bufSz = 32;
+            int const bufSz = 32;
             int processCh = 0;
             std::unique_ptr<ctagSPDataModel> model = nullptr;
             string id = "";
