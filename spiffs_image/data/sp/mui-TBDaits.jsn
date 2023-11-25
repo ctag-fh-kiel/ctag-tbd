@@ -62,7 +62,7 @@
       "type": "int",
       "name": "LPG Color",
       "hint": "Low pass gate response",
-      "min": "0",
+      "min": 0,
       "max": 4095
     },
     {
