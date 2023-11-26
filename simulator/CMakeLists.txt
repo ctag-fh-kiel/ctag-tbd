@@ -128,7 +128,7 @@ add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
 target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
 ## Application
-set(Boost_USE_STATIC_LIBS ON) # comment this if you want to link to Boost dynamically
+set(Boost_USE_STATIC_LIBS OFF) # set to ON if you want to use static boost libraries
 find_package(Boost 1.67.0 COMPONENTS system thread filesystem program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "could not find Boost!")
