@@ -61,9 +61,9 @@ void LedRGB::GetLedRGB(int &r, int &g, int &b) {
 }
 
 void LedRGB::SetLedRGB(int r, int g, int b) {
-    r >>= 4;
-    g >>= 4;
-    b >>= 4;
+    r >>= 5;
+    g >>= 5;
+    b >>= 5;
     _r = r;
     _g = g;
     _b = b;
