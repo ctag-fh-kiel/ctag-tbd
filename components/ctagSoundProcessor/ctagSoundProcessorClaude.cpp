@@ -120,24 +120,14 @@ ctagSoundProcessorClaude::ctagSoundProcessorClaude() {
     LoadPreset(0);
 
     // memallocs
-    block_mem = (uint8_t *) heap_caps_malloc(memLen, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    block_mem = (uint8_t *) heap_caps_malloc_prefer(memLen, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
     if(block_mem == NULL){
-        ESP_LOGE("Claude", "Cannot alloc DRAM mem trying SPIRAM!");
-        block_mem = (uint8_t*) heap_caps_malloc(memLen, MALLOC_CAP_SPIRAM);
-        if(block_mem == NULL) {
-            ESP_LOGE("Claude", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
+        ESP_LOGE("Claude", "Cannot alloc ram!");
     }
     memset(block_mem, 0, memLen);
-    block_ccm = (uint8_t*) heap_caps_malloc(ccmLen, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    block_ccm = (uint8_t*) heap_caps_malloc_prefer(ccmLen, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
     if(block_ccm == NULL){
-        ESP_LOGE("Claude", "Cannot alloc DRAM mem trying SPIRAM!");
-        block_ccm = (uint8_t*) heap_caps_malloc(ccmLen, MALLOC_CAP_SPIRAM);
-        if(block_ccm == NULL) {
-            ESP_LOGE("Claude", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
+        ESP_LOGE("Claude", "Cannot alloc ram!");
     }
     memset(block_ccm, 0, ccmLen);
 

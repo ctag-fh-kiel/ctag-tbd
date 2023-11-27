@@ -685,7 +685,10 @@
                                         JSON.stringify(plugin.presets),
                                         data => {
                                             nPlugins--;
-                                            if(nPlugins==0) modal_busy.hide();
+                                            if(nPlugins==0){
+                                                modal_busy.hide();
+                                                location.reload();
+                                            }
                                             else ons.notification.toast('Restoring plugin data ' + nPlugins + ' out of ' + presets.length, {
                                                 timeout: 250,
                                                 animation: 'none'
