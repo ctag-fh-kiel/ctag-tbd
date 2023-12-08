@@ -75,8 +75,8 @@ es8388::es8388() : _pinsda{GPIO_NUM_40}, _pinscl{GPIO_NUM_41}, _i2cspeed{400000}
             .mode = I2C_MODE_MASTER,
             .sda_io_num = _pinsda,
             .scl_io_num = _pinscl,
-            .sda_pullup_en = true,
-            .scl_pullup_en = true,
+            .sda_pullup_en = false,
+            .scl_pullup_en = false,
             .master = {
                     .clk_speed = _i2cspeed,
             },
@@ -84,7 +84,7 @@ es8388::es8388() : _pinsda{GPIO_NUM_40}, _pinscl{GPIO_NUM_41}, _i2cspeed{400000}
     };
 
     err |= i2c_param_config(I2C_NUM_1, &conf);
-    err |= i2c_driver_install(I2C_NUM_1, conf.mode, 0, 0, 0);
+    err |= i2c_driver_install(I2C_NUM_1, conf.mode, 0, 0, ESP_INTR_FLAG_SHARED|ESP_INTR_FLAG_LOWMED);
     ESP_ERROR_CHECK(err);
 }
 
@@ -110,7 +110,8 @@ bool es8388::write_reg(uint8_t reg_add, uint8_t data)
     }while(ret != ESP_OK);
 
     //ESP_ERROR_CHECK(ret);
-    /*
+    if(ret != ESP_OK)
+        ESP_LOGE("ES8388", "Error writing to register %d", reg_add);
     uint8_t _data;
     read_reg(reg_add, _data);
     // log register verification in hex
@@ -118,7 +119,7 @@ bool es8388::write_reg(uint8_t reg_add, uint8_t data)
         ESP_LOGE("ES8388", "Wrote %x to register %d, read %x", data, reg_add, _data);
     else
         ESP_LOGI("ES8388", "Wrote %x to register %x, read %x", data, reg_add, _data);
-    */
+
 
     return ret == ESP_OK;
 }
@@ -142,6 +143,8 @@ bool es8388::read_reg(uint8_t reg_add, uint8_t &data)
     ret |= i2c_master_cmd_begin(I2C_NUM_1, cmd, portMAX_DELAY);
     i2c_cmd_link_delete(cmd);
     //ESP_ERROR_CHECK(ret);
+    if(ret != ESP_OK)
+        ESP_LOGE("ES8388", "Error reading from register %d", reg_add);
     return ret == ESP_OK;
 }
 
@@ -188,7 +191,8 @@ bool es8388::init() {
     // SFI setting (i2s mode/16 bit)
     res &= write_reg(ES8388_ADCCONTROL4, 0b00001100);
     // ADC MCLK/LCRK ratio (256)
-    res &= write_reg(ES8388_ADCCONTROL5, 0b00000011);//0b00000010);
+    // TODO does ES8388 auto derive ratio?
+    //res &= write_reg(ES8388_ADCCONTROL5, 0b00000011);//0b00000010);
     //res &= write_reg(ES8388_ADCCONTROL6, 0b00110000); // HP input enable
     // set ADC digital volume
     res &= write_reg(ES8388_ADCCONTROL8, 0x00);
@@ -206,7 +210,8 @@ bool es8388::init() {
     // SFI setting (i2s mode/16 bit)
     res &= write_reg(ES8388_DACCONTROL1, 0b00011000); // binary 0b00011000
     // DAC MCLK/LCRK ratio (256)
-    res &= write_reg(ES8388_DACCONTROL2, 0b00000011);//0b00000010);
+    // TODO does ES8388 auto derive ratio?
+    //res &= write_reg(ES8388_DACCONTROL2, 0b00000011);//0b00000010);
     // unmute codec
     //res &= write_reg(ES8388_DACCONTROL3, 0x00);
     // set DAC digital volume

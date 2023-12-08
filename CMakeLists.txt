@@ -2,11 +2,16 @@
 # in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+# MB20231205 added for USB MIDI
+# include(${CMAKE_SOURCE_DIR}/managed_components/espressif__esp_tinyusb/CMakeLists.txt)
 
 # pull in idf specific items, config vars etc.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
 
 project(ctag-tbd)
 
@@ -38,8 +43,8 @@ elseif(CONFIG_TBD_PLATFORM_AEM)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
     set(TBD_HW "AEM")
 elseif(CONFIG_TBD_PLATFORM_BBA)
-    idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=10 APPEND)
-    idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=6 APPEND)
+    idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=90 APPEND)
+    idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=40 APPEND)
     set(TBD_HW "BBA")
 endif()
 
@@ -71,6 +76,5 @@ add_custom_target(copy-files ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image/data ${CMAKE_BINARY_DIR}/spiffs_image/dbup
         )
 
-include(managed_components/joltwallet__littlefs/project_include.cmake)
 littlefs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT DEPENDS copy-files)
 
