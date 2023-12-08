@@ -27,6 +27,7 @@ file(GLOB SRCS_FILES
         eurorack/rings/dsp/resonator.cc
         eurorack/rings/resources.cc
         eurorack/tides2/poly_slope_generator.cc
+        eurorack/tides2/poly_slope_generator.h
         eurorack/tides2/ramp/ramp_extractor.cc
         eurorack/tides2/ramp/ramp_extractor.h
         eurorack/tides2/resources.cc

@@ -55,7 +55,7 @@ void Codec::InitCodec() {
             .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(44100),
             .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
             .gpio_cfg = {
-                    .mclk = GPIO_NUM_0,
+                    .mclk = GPIO_NUM_39,
                     .bclk = GPIO_NUM_45,
                     .ws   = GPIO_NUM_1,
                     .dout = GPIO_NUM_2,
@@ -68,6 +68,8 @@ void Codec::InitCodec() {
             },
     };
     std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_384;
+    //std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_512;
+    //std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256; // -> bad does not work!
 
 
     /* Initialize the channels */
@@ -76,6 +78,7 @@ void Codec::InitCodec() {
 
     ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     ESP_ERROR_CHECK(i2s_channel_enable(rx_handle));
+
 
 
     if(codec.identify()){

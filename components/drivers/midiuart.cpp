@@ -44,7 +44,7 @@ midiuart::midiuart() {
 
 // Install UART driver using an event queue here
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM_1, RX_BUF_SIZE*2, \
-                                        0, 0, NULL, 0));
+                                        0, 0, NULL, ESP_INTR_FLAG_LOWMED|ESP_INTR_FLAG_SHARED));
 }
 
 midiuart::~midiuart(){
