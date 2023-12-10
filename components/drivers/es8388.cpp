@@ -114,13 +114,14 @@ bool es8388::write_reg(uint8_t reg_add, uint8_t data)
         ESP_LOGE("ES8388", "Error writing to register %d", reg_add);
     uint8_t _data;
     read_reg(reg_add, _data);
+    /*
     // log register verification in hex
     if(_data != data)
         ESP_LOGE("ES8388", "Wrote %x to register %d, read %x", data, reg_add, _data);
     else
         ESP_LOGI("ES8388", "Wrote %x to register %x, read %x", data, reg_add, _data);
 
-
+    */
     return ret == ESP_OK;
 }
 

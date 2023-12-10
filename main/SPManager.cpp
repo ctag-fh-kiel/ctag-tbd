@@ -390,6 +390,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     xTaskCreatePinnedToCore(&SoundProcessorManager::led_task, "led_task", 4096, nullptr, tskIDLE_PRIORITY + 2,
                             &ledTaskH, 0);
 #endif
+    CTRL::Control::FlushBuffers();
     // create audio thread
     runAudioTask = 1;
     xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
