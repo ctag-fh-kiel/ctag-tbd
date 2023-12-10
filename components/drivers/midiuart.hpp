@@ -35,6 +35,8 @@ namespace CTAG {
 
             void read(uint8_t *data, int *len);
 
+            void flush();
+
             int GetBufferSize() const;
         };
     }
