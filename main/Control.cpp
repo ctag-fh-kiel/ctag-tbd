@@ -58,6 +58,17 @@ respective component folders / files if different from this license.
     // debug queue
     #include <freertos/queue.h>
     QueueHandle_t debug_queue;
+    struct debug_msg {
+        uint32_t value;
+        uint32_t max;
+    };
+    static void debug_task(void *) {
+        debug_msg msg;
+        while (true) {
+            xQueueReceive(debug_queue, &msg, portMAX_DELAY);
+            ESP_LOGE("Midi", "Buffer status: %li, maximum filling %li", msg.value, msg.max);
+        }
+    }
     #endif
 
     // Interface counter
@@ -107,24 +118,11 @@ respective component folders / files if different from this license.
             TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
     };
 
-    #ifdef DEBUG_MIDI
-
-    static void debug_task(void *) {
-        uint32_t max{0};
-        while (true) {
-            uint32_t value;
-            xQueueReceive(debug_queue, &value, portMAX_DELAY);
-            max = max < value ? value : max;
-            ESP_LOGE("Midi", "Buffer status: %li, maximum filling %li", value, max);
-        }
-    }
-
-    #endif
 
     // --- General BBA Initialisation Method ---
     static void bba_init() {
     #ifdef DEBUG_MIDI
-        debug_queue = xQueueCreate(10, sizeof(uint32_t));
+        debug_queue = xQueueCreate(10, sizeof(debug_msg));
         xTaskCreatePinnedToCore(debug_task, "debug", 4096, NULL, 5, NULL, 0);
     #endif
         memset(buf0, 0, DATA_SZ);                       // Reset "virtual CV"-data at startup
@@ -197,7 +195,10 @@ respective component folders / files if different from this license.
         }
     #ifdef DEBUG_MIDI
         // debug buffer consumption
-        xQueueSendToFront(debug_queue, &len, 0);
+        static debug_msg msg {0, 0};
+        msg.value = len;
+        msg.max = msg.max < len ? len : msg.max;
+        xQueueSendToFront(debug_queue, &msg, 0);
     #endif
         // --- Parse incoming MIDI-Channel-Voice-Messages and distribute to equivalent handler-methods ---
         while (len > 0)                    // Read complete buffer at once
