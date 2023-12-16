@@ -1,0 +1,192 @@
+{
+  "id": "MacOscDuo",
+  "isStereo": false,
+  "name": "MacOscDuo",
+  "hint": "Duophonic Adaptation of Braids Oscillator",
+  "params": [
+    {
+      "id": "shape",
+      "name": "Shape",
+      "type": "int",
+      "min": 0,
+      "max": 46,
+      "step": 1
+    },
+    {
+      "id": "gain1",
+      "name": "Gain 1",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "gain2",
+      "name": "Gain 2",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "pitch1",
+      "name": "Pitch 1",
+      "type": "int",
+      "min": 0,
+      "max": 16383,
+      "step": 1
+    },
+    {
+      "id": "pitch2",
+      "name": "Pitch 2",
+      "type": "int",
+      "min": 0,
+      "max": 16383,
+      "step": 1
+    },
+    {
+      "id": "decimation",
+      "name": "Decimation",
+      "type": "int",
+      "min": 1,
+      "max": 30,
+      "step": 1
+    },
+    {
+      "id": "bit_reduction",
+      "name": "Bit Reduction",
+      "type": "int",
+      "min": 0,
+      "max": 6,
+      "step": 1
+    },
+    {
+      "id": "q_scale",
+      "name": "Quantization Scale",
+      "type": "int",
+      "min": 0,
+      "max": 47,
+      "step": 1
+    },
+    {
+      "id": "param_0",
+      "name": "Parameter A",
+      "type": "int",
+      "min": 0,
+      "max": 32767,
+      "step": 1
+    },
+    {
+      "id": "param_1",
+      "name": "Parameter B",
+      "type": "int",
+      "min": 0,
+      "max": 32767,
+      "step": 1
+    },
+    {
+      "id": "waveshaping",
+      "name": "Wave Shaping",
+      "type": "int",
+      "min": 0,
+      "max": 65535,
+      "step": 1
+    },
+    {
+      "id": "mod",
+      "name": "MOD",
+      "type": "group",
+      "params": [
+        {
+          "id": "enableEG1",
+          "name": "Trigger EG 1",
+          "type": "bool"
+        },
+        {
+          "id": "enableEG2",
+          "name": "Trigger EG 2",
+          "type": "bool"
+        },
+        {
+          "id": "attack",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "sustain",
+          "name": "Sustain",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "release",
+          "name": "Release",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "lfo_f",
+          "name": "LFO Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fm_amt1",
+          "name": "FM Amount EG/1",
+          "hint": "FM Amount EG/1",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        },
+        {
+          "id": "fm_amt2",
+          "name": "FM Amount LFO/2",
+          "hint": "FM Amount LFO/2",
+          "type": "int",
+          "min": 0,
+          "max": 1024
+        },
+        {
+          "id": "am_amt",
+          "name": "AM Amount LFO",
+          "hint": "AM Amount LFO",
+          "type": "int",
+          "min": 0,
+          "max": 64
+        },
+        {
+          "id": "p0_amt",
+          "name": "PA Amount EG",
+          "hint": "PA Amount EG",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        },
+        {
+          "id": "p1_amt",
+          "name": "PB Amount EG",
+          "hint": "PB Amount EG",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        }
+      ]
+    }
+  ]
+}
