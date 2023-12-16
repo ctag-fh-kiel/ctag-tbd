@@ -32,6 +32,10 @@ respective component folders / files if different from this license.
     float outname = inname / norm * scale;\
     if(cv_##inname != -1) outname = fabsf(data.cv[cv_##inname]) * scale;
 
+#define MK_FLT_PAR_ABS_ADD(outname, inname, norm, scale) \
+    float outname = inname / norm * scale;\
+    if(cv_##inname != -1) outname += fabsf(data.cv[cv_##inname]) * scale;    
+
 #define MK_FLT_PAR_ABS_SFT(outname, inname, norm, scale) \
     float outname = inname / norm * scale;\
     if(cv_##inname != -1) outname = (fabsf(data.cv[cv_##inname]) - 0.5f) * 2.f * scale;

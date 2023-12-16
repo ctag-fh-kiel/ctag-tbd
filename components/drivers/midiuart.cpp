@@ -24,8 +24,6 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::DRIVERS;
 
-static const int RX_BUF_SIZE = 128;
-
 midiuart::midiuart() {
     const uart_port_t uart_num = UART_NUM_1;
     uart_config_t uart_config = {

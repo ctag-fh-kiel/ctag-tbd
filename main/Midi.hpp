@@ -40,9 +40,15 @@ respective component folders / files if different from this license.
 #define MAX_ACTIVE_TRIGVALS          8  // Size of Trig-Dimension 2: One Empty Element + Number of Trigger-mapable Notes, Velocities, Aftertouch, ProgChange, and CCs 
 #define MIDI_GLOBAL_CHANNEL          0  // MIDI Channel 1 is Master and Global channel (internally 0)
 #define MIDI_VOICE_A                 1  // MIDI Channel 2 is used for Voice A, especially concerning monophonic voice-mode 
-#define MIDI_SPECIAL_CHANNEL_14     13  // MIDI Channel for "global" logarithmic Pitchbend 
+#define MIDI_VOICE_B                 2  // MIDI Channel 3 is used for Voice B, especially concerning monophonic voice-mode 
+#define MIDI_GLOBAL_CHANNEL_14      13  // MIDI Channel for PolyPhonic roundrobin playmode, additional controls will be remapped to global channel
 #define MIDI_GLOBAL_CHANNEL_15      14  // MIDI Channel for Duophonic playmode, additional controls will be remapped to global channel
 #define MIDI_GLOBAL_CHANNEL_16      15  // MIDI Channel for Polyphonic playmode, additional controls will be remapped to global channelMIDI Channel 16 is secondary MPE-Master / provides logarithmic pitchbend (internally 15)
+#define IS_UPPER_GLOBAL(chan)       (chan > 12)    // Macro-Funktion to determine if channel is withing the range of MIDI-Channels 14 to 16
+#define IS_DUOPHONIC(chan)          ((channel==MIDI_GLOBAL_CHANNEL_14) || (channel==MIDI_GLOBAL_CHANNEL_15))   // A/B or C/D Duophonic?
+#define IS_DUO_AB(chan)             (channel==MIDI_GLOBAL_CHANNEL_14)   // A/B Duophonic
+#define IS_DUO_CD(chan)             (channel==MIDI_GLOBAL_CHANNEL_15)   // C/D Duophonic
+#define IS_4_VOICE(chan)            (channel==MIDI_GLOBAL_CHANNEL_16)   // Macro-Funktion to determine if channel is used polyphonically
 #define MIDI_INVALD_NOTE           255  // Unexpected Value for remembering currently sounding values
 #define TRIG_ON                      0  // Sets Trigger to On
 #define TRIG_OFF                     1  // Sets Trigger to Off
@@ -50,6 +56,7 @@ respective component folders / files if different from this license.
 #define SCALEVALUE_MIDI_NOTE_TO_CV              0.016666666666667f      // 1.f / 60   (5 Octaves of MIDI-Notes, -5V to +5V in "Eurorack-Land")
 #define SCALEVALUE_MIDI_PITCHBEND_TO_CV         0.00012208521548f       // 1.f / 8191 (Signed 14Bit values for Pitchbend)
 #define SCALEVALUE_MIDI_PITCHBEND_TO_CV_10BIT   0.000977517106549f      // 1.f / 1023 (Unsigned 10Bit values for logarithmically scaled Pitchbend)
+#define POSSIBLE_COMBINATIONS_OF_VOICEMODES     2                       // Max dimension for midi_note_pressed[][], only Duophonic_AB and Duophonic_CD can happen at once in two plugin-slots
 
 // === class Midi provides different voice-modes and mappable events, depending on the MIDI-channel notes, and control-events are send from ===
 // Input on MIDI channel 1 will be handled like a monosynth with low-voice priority and legato-option
@@ -58,6 +65,7 @@ respective component folders / files if different from this license.
 // Channels 2-5 (and/or also 6-9 and 10-13 respecively) will be used as individual channels, for intance for MPE-like usage
 // On the GUI this is represented in the dropdown-list of mappable MIDI-events as "global voices": 'G' or "individual voices": 'A','B','C','D'
 // MIDI-notes on the global channels 1, 15 and 16 will be converted to be mappable as Voices A, B+C or B-D, depending on the 3 voicemodes
+
 namespace CTAG::CTRL
 {
     class Midi final
@@ -145,7 +153,7 @@ namespace CTAG::CTRL
             B_RES_71, B_REL_72, B_ATK_73, B_CUT_74, B_SC6_75, B_SC7_76, B_SC8_77, B_SC9_78, 
             C_RES_71, C_REL_72, C_ATK_73, C_CUT_74, C_SC6_75, C_SC7_76, C_SC8_77, C_SC9_78, 
             D_RES_71, D_REL_72, D_ATK_73, D_CUT_74, D_SC6_75, D_SC7_76, D_SC8_77, D_SC9_78, 
-            G_PB, G_14_PB_LG, G_AT, G_MW_01, G_BC_02, G_FOOT_04, G_DATA_06, G_VOL_07, G_BAL_08, G_PAN_10, 
+            G_PB, G_PB_LG, G_AT, G_MW_01, G_BC_02, G_FOOT_04, G_DATA_06, G_VOL_07, G_BAL_08, G_PAN_10, 
             G_EXPR_11, G_FX1_12, G_FX2_13, G_SUSTP_64, G_PORTP_65, G_SOSTP_66, G_SOFTP_67, G_HOLDP_69
         };
 
@@ -171,7 +179,7 @@ namespace CTAG::CTRL
         }; 
         enum struct CV_id_glob  // Channel 1: Global 
         {   
-            g_pitchbend, g_16_pb_log, g_at,                                           // MIDI status events (g_16_pb_log is for rescaling pitchbend (from channel 16) logarithmically)
+            g_pitchbend, g_pb_log, g_at,                                           // MIDI status events (g_16_pb_log is for rescaling pitchbend (from channel 16) logarithmically)
             g_mw_01, g_bc_02, g_foot_04, g_data_06, g_vol_07, g_bal_08, g_pan_10, // MIDI CCs (status: continuous controller)
             g_expr_11, g_fx1_12, g_fx2_13, g_sustp_64, g_portp_65, g_sstnp_66, g_softp_67, g_holdp_69, glob_cc_invalid // MIDI CCs (status: continuous controller)
         }; 
@@ -189,6 +197,16 @@ namespace CTAG::CTRL
         {   
             t_g_at, t_g_fx1_12, t_g_fx2_13, t_g_sustp_64, t_g_portp_65, t_g_sostp_66, t_g_softp_67, t_g_holdp_69, t_glob_cc_invalid   // MIDI CCs (status: continious controller) 
         }; 
+
+        // --- Voicemodes, needed as indexes (0 and 1) to array of notes already used (named midi_note_pressed[][]) ---
+        enum Voicemodes_SlotCombinationOne  // These Voicemode-combinations are mutually exclusive, because both use Voice A
+        {
+            vmode_mono, vmode_4voice        // Mono-Mode uses the same space as Duophonic-AB for our lookup-array of notes
+        };
+        enum Voicemodes_SlotCombinationTwo  // These Voicemode-combinations are possible at once, Voices A+B on one plugin slot, Voices C+D on the other slot!
+        {
+            vmode_duo_ab, vmode_duo_cd      // Duophonic-CD uses the same space as 4-Voice for our lookup-array of notes
+        };
 
         // --- Structure to be retrieved for cvs, based on MIDI-Event-type (Status), channel and possibly CC-number ---
         typedef struct 
@@ -219,8 +237,8 @@ namespace CTAG::CTRL
             // MIDI Channel 1
             {
                 { G_PB, opt_bipolar },              // g_pb,  
-                { G_14_PB_LG, opt_logarithmic },    // g_16_pb_log,
-                { G_AT, opt_none },             // g_bc_at, 
+                { G_PB_LG, opt_logarithmic },       // g_pb_log,
+                { G_AT, opt_none },            // g_bc_at, 
                 { G_MW_01, opt_none },         // g_mw_01, 
                 { G_BC_02, opt_none },         // g_bc_02,
                 { G_FOOT_04, opt_none },       // g_foot_04, 
@@ -385,13 +403,15 @@ namespace CTAG::CTRL
         // --- Remember last note for potential Trigger-Reset of voices ---
         uint8_t last_midi_note_pitch_abcd[MAX_ACTIVE_CHANNELS] = { MIDI_INVALD_NOTE, MIDI_INVALD_NOTE, MIDI_INVALD_NOTE, MIDI_INVALD_NOTE, MIDI_INVALD_NOTE }; // Notes have values 0-127, invalid note is higher, though ;)
 
-        // --- Helpervariables for monophonic voicemode (low key priorita and legato-option) ---
+        // --- Helpervariables for voicemode (low key priorita and legato-option or roundrobin) ---
         bool legato = false;                // If true we may have a new pitch, but no new trigger for the EG and similar
         bool new_pitch_and_velo_for_note = true;    // NoteOn: normally we have a new pitch and velocity (and also trigger, no legato)
-        uint8_t midi_note_pressed[128] = {};    // For any active Mono-, Duo- or Polyphonic note we will remember its velocity (0 means inactive)
+        uint8_t midi_note_pressed[POSSIBLE_COMBINATIONS_OF_VOICEMODES][128] = {};    // For any active Mono, Duo-AB, Duo-CD or Polyphonic note we will remember its velocity (0 means inactive)
         int monophonic_keys_down = 0;       // Used to determine if any monophonic notes are playing at all
         uint8_t monophonic_lowest_key = 0;  // We use low key prio, so we have to check if newly active note is lower
-
+        uint8_t round_robin_chan_duo = 0;   // Counter for round-robin with voice A / MIDI-channel 2 which internally is represented as 1 and end with MIDI-channel 3
+        uint8_t round_robin_chan_4voice = 0;// Counter for round-robin with voice A / MIDI-channel 2 which internally is represented as 1 and end with MIDI-channel 5 
+        uint8_t latest_noteoff_channel = 0; // Please note: regular values are 1-2 or 1-4 for roundrobin - On this MIDI-Channel was our most recent noteoff, we may need that to prioritice notes to avoid voice-stealing as good as possible...
         // === Data used for mapping MIDI-data to CVs or Triggers for audiothread ===
         ControlCVtags cv_entry;     // Will contain the result of CCs to be mapped to CVs or be empty if not found...
         ControlTrigTags trig_entry; // Will contain the result of CCs to be mapped to Triggers or be empty if not found...
