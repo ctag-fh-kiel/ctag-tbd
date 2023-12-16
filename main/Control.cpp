@@ -35,11 +35,12 @@ respective component folders / files if different from this license.
 #elif CONFIG_TBD_PLATFORM_BBA
     #define DEBUG_MIDI
 
+    #include "midiuart.hpp"
     #include "tinyusb.h"
     #include "midi.hpp"                         // Provide methods and data for MIDI-message processing and communiction of detected events to audio-thread
 
     using namespace CTAG::CTRL;
-    #define MIDI_BUF_SZ (1024+32)
+    #define MIDI_BUF_SZ (RX_BUF_SIZE+32)
 
     // --- Instanciate objects for lowlevel and highlevel MIDI processing ---
     static CTAG::DRIVERS::midiuart midi;              // UART reader (and writer) for MIDI-messages

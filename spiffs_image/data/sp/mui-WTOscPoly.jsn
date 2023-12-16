@@ -1,0 +1,276 @@
+{
+  "id": "WTOscPoly",
+  "isStereo": false,
+  "name": "WTOscPoly",
+  "hint": "Poly Wavetable oscillator",
+  "params": [
+    {
+      "id": "gain",
+      "name": "Gain",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "gate_1",
+      "name": "Gate 1",
+      "type": "bool"
+    },
+    {
+      "id": "pitch_1",
+      "type": "int",
+      "name": "Pitch 1",
+      "min": -48,
+      "max": 48,
+      "step": 1
+    },
+    {
+      "id": "gate_2",
+      "name": "Gate 2",
+      "type": "bool"
+    },
+    {
+      "id": "pitch_2",
+      "type": "int",
+      "name": "Pitch 2",
+      "min": -48,
+      "max": 48,
+      "step": 1
+    },
+
+    {
+      "id": "q_scale",
+      "name": "Quantization Scale",
+      "type": "int",
+      "min": 0,
+      "max": 47,
+      "step": 1
+    },
+    {
+      "id": "tune_1",
+      "type": "int",
+      "name": "Tune 1",
+      "min": -2048,
+      "max": 2048,
+      "step": 1
+    },
+    {
+      "id": "tune_2",
+      "type": "int",
+      "name": "Tune 2",
+      "min": -2048,
+      "max": 2048,
+      "step": 1
+    },
+    {
+      "id": "wavebank",
+      "type": "int",
+      "name": "Wave Bank",
+      "hint": "If wave bank is unavailable in ROM, no sound will be audible",
+      "min": 0,
+      "max": 31,
+      "step": 1
+    },
+    {
+      "id": "wave_1",
+      "type": "int",
+      "name": "Wave 1",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "wave_2",
+      "type": "int",
+      "name": "Wave 2",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "gr_filt",
+      "name": "Filter",
+      "type": "group",
+      "params": [
+        {
+          "id": "fmode",
+          "name": "Filter Mode",
+          "hint": "0: Off, 1: LP, 2: BP, 3:HP",
+          "type": "int",
+          "min": 0,
+          "max": 3,
+          "step": 1
+        },
+        {
+          "id": "fcut_1",
+          "name": "Filter Cutoff 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "fcut_2",
+          "name": "Filter Cutoff 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "freso",
+          "name": "Filter Resonance",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "gr_mod",
+      "name": "Modulation",
+      "type": "group",
+      "params": [
+        {
+          "id": "lfo2wave",
+          "name": "LFO Wave",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "lfo2am",
+          "name": "LFO AM",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "lfo2fm",
+          "name": "LFO FM",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "lfo2filtfm",
+          "name": "LFO Filter FM",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "eg2wave",
+          "name": "EG Wave",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "eg2am",
+          "name": "EG AM",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "eg2fm",
+          "name": "EG FM",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "eg2filtfm",
+          "name": "EG Filter FM",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "gr_lfo",
+      "name": "LFO",
+      "type": "group",
+      "params": [
+        {
+          "id": "lfospeed",
+          "name": "Speed",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "lfosync",
+          "name": "Sync",
+          "hint": "Sync to gate",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "id": "gr_adsr",
+      "name": "ADSR EG",
+      "type": "group",
+      "params": [
+        {
+          "id": "egfasl",
+          "name": "Fast / Slow",
+          "type": "bool"
+        },
+        {
+          "id": "attack",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "sustain_1",
+          "name": "Sustain 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "sustain_2",
+          "name": "Sustain 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "release",
+          "name": "Release",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    }
+  ]
+}

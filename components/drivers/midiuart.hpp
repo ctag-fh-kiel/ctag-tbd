@@ -22,6 +22,8 @@ respective component folders / files if different from this license.
 #pragma once
 #include <cstdint>
 
+#define RX_BUF_SIZE 128
+
 namespace CTAG {
     namespace DRIVERS {
         class midiuart final {
