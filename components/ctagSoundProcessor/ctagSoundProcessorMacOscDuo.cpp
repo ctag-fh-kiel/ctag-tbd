@@ -50,6 +50,10 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
         envelope[i].SetDecay(d);
         envelope[i].SetSustain(s);
         envelope[i].SetRelease(r);
+        envelopeHighRes[i].SetAttack(a);
+        envelopeHighRes[i].SetDecay(d);
+        envelopeHighRes[i].SetSustain(s);
+        envelopeHighRes[i].SetRelease(r);
         ad_value[i] = static_cast<uint32_t>(envelope[i].Process() * 65535.f);
     }
 
@@ -59,6 +63,7 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
         lfo_freq = fabsf(data.cv[cv_lfo_f]) * 30.f;
     }
     lfo.SetFrequency(lfo_freq);
+    lfoHighRes.SetFrequency(lfo_freq);
     int32_t lfo_val = static_cast<uint32_t>(lfo.Process() * 65535.f / 2.f);
 
     // shape
@@ -98,6 +103,7 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
             gate[i] = data.trig[trig_gate[i]] == 1 ? false : true;
         }
         envelope[i].Gate(gate[i]);
+        envelopeHighRes[i].Gate(gate[i]);
     }
 
     // Set timbre and color: CV + internal modulation.
@@ -109,7 +115,7 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
     int32_t mod_amt[2];
     mod_amt[0] = p0_amt;
     mod_amt[1] = p1_amt;
-    int32_t mod[2][2]; //mod, voice #
+    int32_t mod[2][2]; // mod, voice #
     for(int i {0};i<2;i++){
         if (cv_param_0 != -1) {
             parameters[0][i] = static_cast<int16_t>(fabsf(data.cv[cv_param_0] * 32767));
@@ -118,12 +124,16 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
             parameters[1][i] = static_cast<int16_t>(fabsf(data.cv[cv_param_1] * 32767));
         }
         if (cv_p0_amt != -1) {
-            mod[0][i] = static_cast<int32_t >(data.cv[cv_p0_amt] * 65535.f);
+            float v = 0.9f * smoothp0[i] + 0.1f * data.cv[cv_p0_amt] * static_cast<float>(ad_value[i]);
+            smoothp0[i] = v;
+            mod[0][i] = static_cast<int32_t >(v);
         } else {
             mod[0][i] = ad_value[i];
         }
         if (cv_p1_amt != -1) {
-            mod[1][i] = static_cast<int32_t >(data.cv[cv_p1_amt] * 65535.f);
+            float v = 0.9f * smoothp1[i] + 0.1f * data.cv[cv_p1_amt] * static_cast<float>(ad_value[i]);
+            smoothp1[i] = v;
+            mod[1][i] = static_cast<int32_t >(v);
         } else {
             mod[1][i] = ad_value[i];
         }
@@ -139,6 +149,16 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
     }
 
     // pitch calculation and quantization + fm
+    // lfo
+    MK_INT_PAR(iFMAmt2, fm_amt2, 1024)
+
+    // tune
+    float fTune1 = tune1 / 4095.f * 12.f * 128.f;
+    if(cv_tune1 != -1)
+        fTune1 = data.cv[cv_tune1] * 12.f * 128.f;
+    float fTune2 = tune2 / 4095.f * 12.f * 128.f;
+    if(cv_tune2 != -1)
+        fTune2 = data.cv[cv_tune2] * 12.f * 128.f;
     for(int i {0};i<2;i++){
         int32_t ipitch = i == 0 ? pitch1 : pitch2;
         if (i == 0 && cv_pitch1 != -1) {
@@ -155,15 +175,14 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
         quantizer[i].Configure(braids::scales[sc]);
         ipitch = quantizer[i].Process(ipitch, i == 0 ? pitch1 : pitch2);
 
-        int32_t fm = fm_amt1 * ad_value[i] / 512;
-        fm += fm_amt2 * lfo_val / 8192;
-        if (i == 0 && cv_fm_amt1 != -1) {
-            fm = static_cast<int32_t>(data.cv[cv_fm_amt1] * 12.f * 3.f * 128.f); // three octaves
-        }
-        if (i == 1 && cv_fm_amt2 != -1) {
-            fm = static_cast<int32_t>(data.cv[cv_fm_amt2] * 12.f * 3.f * 128.f); // three octaves
-        }
+        // fm
+        int fm = iFMAmt2 * lfo_val / 8192; // lfo
+        int iFMAmt1 = fm_amt1;
+        if(cv_fm_amt1 != -1) iFMAmt1 = static_cast<int>(data.cv[cv_fm_amt1] * 127.f) - 64; // bipolar
+        fm += iFMAmt1 * ad_value[i] / 1024; // adsr
+
         ipitch += fm;
+        ipitch += (i == 0 ? static_cast<int32_t>(fTune1) : static_cast<int32_t>(fTune2));
         CONSTRAIN(ipitch, 0, 16383);
         osc[i].set_pitch(static_cast<int16_t >(ipitch));
     }
@@ -174,16 +193,8 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
     osc[0].Render(sync1, buffer1, bufSz);
     osc[1].Render(sync2, buffer2, bufSz);
 
-    // calculate amplitude modulation
-    int32_t mod_gain[2] = {65535, 65535};
-    int32_t lfo_mod = am_amt * lfo_val / 64;
-    for(int i{0};i<2;i++){
-        mod_gain[i] = ad_value[i] + ad_value[i] * lfo_mod / 16383 ;
-        if (cv_am_amt != -1) {
-            mod_gain[i] += static_cast<int32_t>(data.cv[cv_am_amt] * 65535.f);
-        }
-        CONSTRAIN(mod_gain[i], 0, 65535)
-    }
+    //  amplitude modulation
+    MK_FLT_PAR_ABS(fAM, am_amt, 64.f, 1.f)
 
     // convert final audio buffer
     uint16_t signature = waveshaping;
@@ -209,7 +220,7 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
     }
     int16_t sample1 = 0;
     int16_t sample2 = 0;
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < bufSz; i++) {
         if ((i % dfactor) == 0) {
             sample1 = buffer1[i] & bit_mask;
             sample2 = buffer2[i] & bit_mask;
@@ -218,9 +229,14 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
         int16_t warped2 = ws[1].Transform(sample2);
         buffer1[i] = stmlib::Mix(sample1, warped1, signature);
         buffer2[i] = stmlib::Mix(sample2, warped2, signature);
-        buffer1[i] = buffer1[i] * mod_gain[0] / 65535;
-        buffer2[i] = buffer2[i] * mod_gain[1] / 65535;
-        data.buf[i * 2 + this->processCh] = static_cast<float>(buffer1[i]) / 32767.f * fGain1 + static_cast<float>(buffer2[i]) / 32767.f * fGain2;
+        float s1 = static_cast<float>(buffer1[i]) / 32767.f * fGain1;
+        float s2 = static_cast<float>(buffer2[i]) / 32767.f * fGain2;
+        float fLFOhr = lfoHighRes.Process();
+        float amFactor1 = envelopeHighRes[0].Process() * (1.f + fAM * fLFOhr);
+        float amFactor2 = envelopeHighRes[1].Process() * (1.f + fAM * fLFOhr);
+        s1 *= amFactor1;
+        s2 *= amFactor2;
+        data.buf[i * 2 + this->processCh] = s1 + s2;
     }
 }
 
@@ -239,9 +255,14 @@ ctagSoundProcessorMacOscDuo::ctagSoundProcessorMacOscDuo() {
         envelope[i].SetSampleRate(44100.f / 32.f);
         envelope[i].SetModeExp();
         envelope[i].Reset();
+        envelopeHighRes[i].SetSampleRate(44100.f);
+        envelopeHighRes[i].SetModeExp();
+        envelopeHighRes[i].Reset();
         quantizer[i].Init();
         lfo.SetSampleRate(44100.f / 32.f);
         lfo.SetFrequency(1.f);
+        lfoHighRes.SetSampleRate(44100.f);
+        lfoHighRes.SetFrequency(1.f);
     }
 }
 
@@ -261,6 +282,10 @@ void ctagSoundProcessorMacOscDuo::knowYourself(){
 	pMapCv.emplace("pitch1", [&](const int val){ cv_pitch1 = val;});
 	pMapPar.emplace("pitch2", [&](const int val){ pitch2 = val;});
 	pMapCv.emplace("pitch2", [&](const int val){ cv_pitch2 = val;});
+	pMapPar.emplace("tune1", [&](const int val){ tune1 = val;});
+	pMapCv.emplace("tune1", [&](const int val){ cv_tune1 = val;});
+	pMapPar.emplace("tune2", [&](const int val){ tune2 = val;});
+	pMapCv.emplace("tune2", [&](const int val){ cv_tune2 = val;});
 	pMapPar.emplace("decimation", [&](const int val){ decimation = val;});
 	pMapCv.emplace("decimation", [&](const int val){ cv_decimation = val;});
 	pMapPar.emplace("bit_reduction", [&](const int val){ bit_reduction = val;});
@@ -273,16 +298,6 @@ void ctagSoundProcessorMacOscDuo::knowYourself(){
 	pMapCv.emplace("param_1", [&](const int val){ cv_param_1 = val;});
 	pMapPar.emplace("waveshaping", [&](const int val){ waveshaping = val;});
 	pMapCv.emplace("waveshaping", [&](const int val){ cv_waveshaping = val;});
-	pMapPar.emplace("fm_amt1", [&](const int val){ fm_amt1 = val;});
-	pMapCv.emplace("fm_amt1", [&](const int val){ cv_fm_amt1 = val;});
-	pMapPar.emplace("fm_amt2", [&](const int val){ fm_amt2 = val;});
-	pMapCv.emplace("fm_amt2", [&](const int val){ cv_fm_amt2 = val;});
-	pMapPar.emplace("am_amt", [&](const int val){ am_amt = val;});
-	pMapCv.emplace("am_amt", [&](const int val){ cv_am_amt = val;});
-	pMapPar.emplace("p0_amt", [&](const int val){ p0_amt = val;});
-	pMapCv.emplace("p0_amt", [&](const int val){ cv_p0_amt = val;});
-	pMapPar.emplace("p1_amt", [&](const int val){ p1_amt = val;});
-	pMapCv.emplace("p1_amt", [&](const int val){ cv_p1_amt = val;});
 	pMapPar.emplace("enableEG1", [&](const int val){ enableEG1 = val;});
 	pMapTrig.emplace("enableEG1", [&](const int val){ trig_enableEG1 = val;});
 	pMapPar.emplace("enableEG2", [&](const int val){ enableEG2 = val;});
@@ -297,6 +312,16 @@ void ctagSoundProcessorMacOscDuo::knowYourself(){
 	pMapCv.emplace("release", [&](const int val){ cv_release = val;});
 	pMapPar.emplace("lfo_f", [&](const int val){ lfo_f = val;});
 	pMapCv.emplace("lfo_f", [&](const int val){ cv_lfo_f = val;});
+	pMapPar.emplace("fm_amt1", [&](const int val){ fm_amt1 = val;});
+	pMapCv.emplace("fm_amt1", [&](const int val){ cv_fm_amt1 = val;});
+	pMapPar.emplace("fm_amt2", [&](const int val){ fm_amt2 = val;});
+	pMapCv.emplace("fm_amt2", [&](const int val){ cv_fm_amt2 = val;});
+	pMapPar.emplace("am_amt", [&](const int val){ am_amt = val;});
+	pMapCv.emplace("am_amt", [&](const int val){ cv_am_amt = val;});
+	pMapPar.emplace("p0_amt", [&](const int val){ p0_amt = val;});
+	pMapCv.emplace("p0_amt", [&](const int val){ cv_p0_amt = val;});
+	pMapPar.emplace("p1_amt", [&](const int val){ p1_amt = val;});
+	pMapCv.emplace("p1_amt", [&](const int val){ cv_p1_amt = val;});
 	isStereo = false;
 	id = "MacOscDuo";
 	// sectionCpp0
