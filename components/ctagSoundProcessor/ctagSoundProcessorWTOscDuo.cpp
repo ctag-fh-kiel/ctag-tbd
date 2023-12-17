@@ -19,7 +19,7 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "ctagSoundProcessorWTOscPoly.hpp"
+#include "ctagSoundProcessorWTOscDuo.hpp"
 #include "esp_heap_caps.h"
 #include "helpers/ctagNumUtil.hpp"
 #include "plaits/dsp/engine/engine.h"
@@ -28,9 +28,7 @@ respective component folders / files if different from this license.
 using namespace CTAG::SP;
 using namespace CTAG::SP::HELPERS;
 
-
-
-void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
+void ctagSoundProcessorWTOscDuo::Process(const ProcessData &data) {
     // wave select
     currentBank_1 = wavebank;
     MK_FLT_PAR_ABS(fwave_1, wave_1, 4095.f, 1.f)
@@ -59,7 +57,8 @@ void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
     }
 
     // gain
-    MK_FLT_PAR_ABS(fGain, gain, 4095.f, 2.f)
+    MK_FLT_PAR_ABS_ADD(fGain_1, gain_1, 4095.f, 2.f)
+    MK_FLT_PAR_ABS_ADD(fGain_2, gain_2, 4095.f, 2.f)
 
     // adsr + adsr modulation
     MK_BOOL_PAR(bGate_1, gate_1)
@@ -69,9 +68,9 @@ void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
     MK_BOOL_PAR(bEGSlow, egfasl)
     MK_FLT_PAR_ABS(fAttack, attack, 4095.f, 10.f)
     MK_FLT_PAR_ABS(fDecay, decay, 4095.f, 10.f)
-    MK_FLT_PAR_ABS_ADD(fSustain_1, sustain_1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_ADD(fSustain_2, sustain_2, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRelease, release, 4095.f, 10.f)
+    MK_FLT_PAR_ABS(fSustain, sustain, 4095.f, 1.f)
+    CONSTRAIN(fSustain, 0.f, 1.f)
+     MK_FLT_PAR_ABS(fRelease, release, 4095.f, 10.f)
     if(bEGSlow){
         fAttack *= 30.f;
         fDecay *= 30.f;
@@ -79,12 +78,12 @@ void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
     }
     adsr_1.SetAttack(fAttack);
     adsr_1.SetDecay(fDecay);
-    adsr_1.SetSustain(fSustain_1);
+    adsr_1.SetSustain(fSustain);
     adsr_1.SetRelease(fRelease);
 
     adsr_2.SetAttack(fAttack);
     adsr_2.SetDecay(fDecay);
-    adsr_2.SetSustain(fSustain_2);
+    adsr_2.SetSustain(fSustain);
     adsr_2.SetRelease(fRelease);
     // adsr modulation
     MK_FLT_PAR_ABS_SFT(fEGAM, eg2am, 4095.f, 1.f)
@@ -96,23 +95,25 @@ void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
 
     // modulation LFO
     MK_FLT_PAR_ABS(fLFOSpeed, lfospeed, 4095.f, 20.f)
-    MK_BOOL_PAR(bLFOSync, lfosync)
-    if(bLFOSync){
-        if(preGate_1 != bGate_1 && bGate_1 == true){ // detect trigger
-            lfo.SetFrequencyPhase(fLFOSpeed, 0.f);
-        }else{
-            lfo.SetFrequency(fLFOSpeed);
-        }
-    }else{
-        lfo.SetFrequency(fLFOSpeed);
-    }
+    MK_FLT_PAR_ABS(fVintageVibe, vintage_vibe, 4095.f, 0.625f)    // Used to slightly detune the LFOs frequencies
+    MK_BOOL_PAR(bLFOSync_1, lfosync_1)
+    MK_BOOL_PAR(bLFOSync_2, lfosync_2)
+    if(bLFOSync_1 && preGate_1 != bGate_1 && bGate_1 == true) // If LFO of voice 1 should be synced: detect EG-trigger of voice 1
+        lfo_1.SetFrequencyPhase(fLFOSpeed, 0.f);
+    lfo_1.SetFrequency(fLFOSpeed-fVintageVibe);  // Always newly set LFO-frequency, it might be changed since last check
+    
+    if(bLFOSync_2 && preGate_2 != bGate_2 && bGate_2 == true) // If LFO of voice 2 should be synced: detect EG-trigger of voice 1
+        lfo_2.SetFrequencyPhase(fLFOSpeed, 0.f);
+    lfo_2.SetFrequency(fLFOSpeed+fVintageVibe);  // Always newly set LFO-frequency, it might be changed since last check
+    
     preGate_1 = bGate_1;
     preGate_2 = bGate_2;
     MK_FLT_PAR_ABS(fLFOAM, lfo2am, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fLFOFM, lfo2fm, 4095.f, 12.f)
     MK_FLT_PAR_ABS(fLFOFMFilt, lfo2filtfm, 4095.f, 1.f);
     MK_FLT_PAR_ABS(fLFOWave, lfo2wave, 4095.f, 1.f)
-    valLFO = lfo.Process();
+    valLFO_1 = lfo_1.Process();
+    valLFO_2 = lfo_2.Process();
 
     // pitch / tuning / FM
     int32_t ipitch_1 = pitch_1;
@@ -137,7 +138,7 @@ void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
         sc = static_cast<int32_t>(fabsf(data.cv[cv_q_scale]) * 48.f);
         CONSTRAIN(sc, 0, 47);
     }
-    //ESP_LOGE("WTOscPoly", "Scale %d", sc);
+    //ESP_LOGE("WTOscDuo", "Scale %d", sc);
     pitchQuantizer.Configure(braids::scales[sc]);
     ipitch_1 = pitchQuantizer.Process(ipitch_1, ipitch_1_root);
     ipitch_2 = pitchQuantizer.Process(ipitch_2, ipitch_2_root);
@@ -145,23 +146,24 @@ void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
     float fpitch_1 = static_cast<float>(ipitch_1);
     fpitch_1 /= 128.f;
     MK_FLT_PAR_ABS_SFT(fTune_1, tune_1, 2048.f, 1.f)
-    const float f_1 = plaits::NoteToFrequency(fpitch_1 + fTune_1 * 12.f + fLFOFM * valLFO + fEGFM * valADSR_1) * 0.998f;
+    const float f_1 = plaits::NoteToFrequency(fpitch_1 + fTune_1 * 12.f + fLFOFM * valLFO_1 + fEGFM * valADSR_1) * 0.998f;
 
     float fpitch_2 = static_cast<float>(ipitch_2);
     fpitch_2 /= 128.f;
     MK_FLT_PAR_ABS_SFT(fTune_2, tune_2, 2048.f, 1.f)
-    const float f_2 = plaits::NoteToFrequency(fpitch_2 + fTune_2 * 12.f + fLFOFM * valLFO + fEGFM * valADSR_1) * 0.998f;
+    const float f_2 = plaits::NoteToFrequency(fpitch_2 + fTune_2 * 12.f + fLFOFM * valLFO_2 + fEGFM * valADSR_2) * 0.998f;
 
     // filter
     MK_FLT_PAR_ABS_ADD(fCut_1, fcut_1, 4095.f, 1.f);      // This is a special variant where the GUI-parameter and the corresponding CV get added
     MK_FLT_PAR_ABS_ADD(fCut_2, fcut_2, 4095.f, 1.f); 
     MK_FLT_PAR_ABS(fReso, freso, 4095.f, 20.f)
     // filter modulation
-    fCut_1 = fCut_1 + fEGFMFilt * valADSR_1 + fLFOFMFilt * valLFO; // TODO: Pitch tracking
-    fCut_2 = fCut_2 + fEGFMFilt * valADSR_2 + fLFOFMFilt * valLFO; // TODO: Pitch tracking
+    fCut_1 = fCut_1 + fEGFMFilt * valADSR_1 + fLFOFMFilt * valLFO_1; // TODO: Pitch tracking
+    fCut_2 = fCut_2 + fEGFMFilt * valADSR_2 + fLFOFMFilt * valLFO_2; // TODO: Pitch tracking
     // limit values
     CONSTRAIN(fCut_1, 0.f, 1.f)
     CONSTRAIN(fCut_2, 0.f, 1.f)
+    
     CONSTRAIN(fReso, 1.f, 20.f)
     fCut_1 = 20.f * stmlib::SemitonesToRatio(fCut_1 * 120.f);
     svf_1.set_f_q<stmlib::FREQUENCY_FAST>(fCut_1 / 44100.f, fReso);
@@ -176,21 +178,21 @@ void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
     float fAM_1 = valADSR_1 * fEGAM; // adsr
     if (fEGAM < 0.f) fAM_1 -= fEGAM; // adsr
     fAM_1 = ((1.f - fabsf(fEGAM)) + fAM_1); // adsr
-    fAM_1 *= (1.f - (valLFO + 1.f) * 0.5f * fLFOAM); // lfo 
-    fAM_1 *= fGain * fGain; // gain (quadratic)
+    fAM_1 *= (1.f - (valLFO_1 + 1.f) * 0.5f * fLFOAM); // lfo 
+    fAM_1 *= fGain_1 * fGain_1; // gain (quadratic)
     CONSTRAIN(fAM_1, 0.f, 1.f)
 
     float fAM_2 = valADSR_2 * fEGAM; // adsr
     if (fEGAM < 0.f) fAM_2 -= fEGAM; // adsr
     fAM_2 = ((1.f - fabsf(fEGAM)) + fAM_2); // adsr
-    fAM_2 *= (1.f - (valLFO + 1.f) * 0.5f * fLFOAM); // lfo 
-    fAM_2 *= fGain * fGain; // gain (quadratic)
+    fAM_2 *= (1.f - (valLFO_2 + 1.f) * 0.5f * fLFOAM); // lfo 
+    fAM_2 *= fGain_2 * fGain_2; // gain (quadratic)
     CONSTRAIN(fAM_2, 0.f, 1.f)
 
-    float fWt_1 = fwave_1 + valADSR_1 * fEGWave + valLFO * fLFOWave * 2.f;
+    float fWt_1 = fwave_1 + valADSR_1 * fEGWave + valLFO_1 * fLFOWave * 2.f;
     CONSTRAIN(fWt_1, 0.f, 1.f)
 
-    float fWt_2 = fwave_2 + valADSR_2 * fEGWave + valLFO * fLFOWave * 2.f;
+    float fWt_2 = fwave_2 + valADSR_2 * fEGWave + valLFO_1 * fLFOWave * 2.f;
     CONSTRAIN(fWt_2, 0.f, 1.f)
 
     // calc wave and apply filter
@@ -239,14 +241,17 @@ void ctagSoundProcessorWTOscPoly::Process(const ProcessData &data) {
     }
 }
 
-ctagSoundProcessorWTOscPoly::ctagSoundProcessorWTOscPoly() {
+ctagSoundProcessorWTOscDuo::ctagSoundProcessorWTOscDuo() {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    lfo.SetSampleRate( 44100.f / bufSz);
-    lfo.SetFrequency(1.f);
+    lfo_1.SetSampleRate( 44100.f / bufSz);
+    lfo_1.SetFrequency(1.f);
+
+    lfo_2.SetSampleRate( 44100.f / bufSz);
+    lfo_2.SetFrequency(1.f);
     // alloc mem for one wavetable
     
     buffer_1 = (int16_t*)heap_caps_malloc(260*64*2, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT); // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
@@ -271,7 +276,7 @@ ctagSoundProcessorWTOscPoly::ctagSoundProcessorWTOscPoly() {
     pitchQuantizer.Init();
 }
 
-ctagSoundProcessorWTOscPoly::~ctagSoundProcessorWTOscPoly() 
+ctagSoundProcessorWTOscDuo::~ctagSoundProcessorWTOscDuo() 
 {
     heap_caps_free(buffer_1);
     heap_caps_free(fbuffer_1);
@@ -279,7 +284,7 @@ ctagSoundProcessorWTOscPoly::~ctagSoundProcessorWTOscPoly()
     heap_caps_free(fbuffer_2);
 }
 
-void ctagSoundProcessorWTOscPoly::prepareWavetables_1()
+void ctagSoundProcessorWTOscDuo::prepareWavetables_1()
 {
     // precalculates wavetable data according to https://www.dafx12.york.ac.uk/papers/dafx12_submission_69.pdf
     // plaits uses integrated wavetable synthesis, i.e. integrated wavetables, order K=1 (one integration), N=1 (linear interpolation)
@@ -327,11 +332,13 @@ void ctagSoundProcessorWTOscPoly::prepareWavetables_1()
     isWaveTableGood_1 = true;
 }
 
-void ctagSoundProcessorWTOscPoly::knowYourself(){
+void ctagSoundProcessorWTOscDuo::knowYourself(){
     // autogenerated code here
     // sectionCpp0
-	pMapPar.emplace("gain", [&](const int val){ gain = val;});
-	pMapCv.emplace("gain", [&](const int val){ cv_gain = val;});
+	pMapPar.emplace("gain_1", [&](const int val){ gain_1 = val;});
+	pMapCv.emplace("gain_1", [&](const int val){ cv_gain_1 = val;});
+	pMapPar.emplace("gain_2", [&](const int val){ gain_2 = val;});
+	pMapCv.emplace("gain_2", [&](const int val){ cv_gain_2 = val;});
 	pMapPar.emplace("gate_1", [&](const int val){ gate_1 = val;});
 	pMapTrig.emplace("gate_1", [&](const int val){ trig_gate_1 = val;});
 	pMapPar.emplace("pitch_1", [&](const int val){ pitch_1 = val;});
@@ -378,21 +385,23 @@ void ctagSoundProcessorWTOscPoly::knowYourself(){
 	pMapCv.emplace("eg2filtfm", [&](const int val){ cv_eg2filtfm = val;});
 	pMapPar.emplace("lfospeed", [&](const int val){ lfospeed = val;});
 	pMapCv.emplace("lfospeed", [&](const int val){ cv_lfospeed = val;});
-	pMapPar.emplace("lfosync", [&](const int val){ lfosync = val;});
-	pMapTrig.emplace("lfosync", [&](const int val){ trig_lfosync = val;});
+	pMapPar.emplace("vintage_vibe", [&](const int val){ vintage_vibe = val;});
+	pMapCv.emplace("vintage_vibe", [&](const int val){ cv_vintage_vibe = val;});
+	pMapPar.emplace("lfosync_1", [&](const int val){ lfosync_1 = val;});
+	pMapTrig.emplace("lfosync_1", [&](const int val){ trig_lfosync_1 = val;});
+	pMapPar.emplace("lfosync_2", [&](const int val){ lfosync_2 = val;});
+	pMapTrig.emplace("lfosync_2", [&](const int val){ trig_lfosync_2 = val;});
 	pMapPar.emplace("egfasl", [&](const int val){ egfasl = val;});
 	pMapTrig.emplace("egfasl", [&](const int val){ trig_egfasl = val;});
 	pMapPar.emplace("attack", [&](const int val){ attack = val;});
 	pMapCv.emplace("attack", [&](const int val){ cv_attack = val;});
 	pMapPar.emplace("decay", [&](const int val){ decay = val;});
 	pMapCv.emplace("decay", [&](const int val){ cv_decay = val;});
-	pMapPar.emplace("sustain_1", [&](const int val){ sustain_1 = val;});
-	pMapCv.emplace("sustain_1", [&](const int val){ cv_sustain_1 = val;});
-	pMapPar.emplace("sustain_2", [&](const int val){ sustain_2 = val;});
-	pMapCv.emplace("sustain_2", [&](const int val){ cv_sustain_2 = val;});
+	pMapPar.emplace("sustain", [&](const int val){ sustain = val;});
+	pMapCv.emplace("sustain", [&](const int val){ cv_sustain = val;});
 	pMapPar.emplace("release", [&](const int val){ release = val;});
 	pMapCv.emplace("release", [&](const int val){ cv_release = val;});
 	isStereo = false;
-	id = "WTOscPoly";
+	id = "WTOscDuo";
 	// sectionCpp0
 }

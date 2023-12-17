@@ -98,6 +98,9 @@ Midi::CV_id_glob Midi::ccToCVid_glob(uint8_t cc)
             return g_softp_67; 
         case 69:
             return g_holdp_69;
+        case 120:           // All sounds off, not mappable, but used to directly reset current triggers to prevent hanging notes...   
+            allNotesOff();  // We listen to MIDI all notes off event on all channels! (Here channel 2-5 or indirectly 6-14) 
+            return glob_cc_invalid;   // Unexpected value, so we know the incoming CC can't be mapped to values known for the globals     
         case 123:           // All notes off, not mappable, but used to directly reset current triggers to prevent hanging notes...   
             allNotesOff();  // We listen to MIDI all notes off event on all channels! (Here channel 2-5 or indirectly 6-14) 
             return glob_cc_invalid;   // Unexpected value, so we know the incoming CC can't be mapped to values known for the globals 
@@ -199,11 +202,11 @@ void Midi::handleNoteOff(uint8_t*  msg)
         if(IS_UPPER_GLOBAL(channel))              // Convert Duophonic or Polyphonc to Voice A+B or A-D respectively?
         {
             // --- Duophonic or Polyphonic mode? Decide on upper limit for loop through channels ---
-            uint8_t voice_mode = vmode_duo_ab;      // "Default" poly voicemode: Duophonic-AB
+            uint8_t voice_mode = vmode_duo_ab;      // "Default" poly voicemode: Duophonic-AB (channel 14)
             uint8_t duo_offset = 0;                 // This is a channel-offset to distinguish between Duo-AB or Duo-CD, default is AB
             uint8_t upper_channel_for_voices = 3;   // Max two voices, beginning with MIDI-Channel 2, so upper MIDI-Channel limit is 3 (internally 2).
             
-            // --- Make basic settings, depending on voicemode ---
+            // --- Make basic settings, depending on voicemode, Voicemode Duophonic-AB is set already as a kind of default ---
             switch(channel)
             {
                 case MIDI_GLOBAL_CHANNEL_15:        // Voicemode Duophonic_CD
