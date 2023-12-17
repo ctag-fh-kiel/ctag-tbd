@@ -1,12 +1,20 @@
 {
-  "id": "WTOscPoly",
+  "id": "WTOscDuo",
   "isStereo": false,
-  "name": "WTOscPoly",
+  "name": "WTOscDuo",
   "hint": "Poly Wavetable oscillator",
   "params": [
     {
-      "id": "gain",
-      "name": "Gain",
+      "id": "gain_1",
+      "name": "Gain 1",
+      "type": "int",
+      "min": 0,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "gain_2",
+      "name": "Gain 2",
       "type": "int",
       "min": 0,
       "max": 4095,
@@ -213,8 +221,22 @@
           "step": 1
         },
         {
-          "id": "lfosync",
-          "name": "Sync",
+          "id": "vintage_vibe",
+          "name": "Vintage vibe",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "lfosync_1",
+          "name": "Sync 1",
+          "hint": "Sync to gate",
+          "type": "bool"
+        },
+                {
+          "id": "lfosync_2",
+          "name": "Sync 2",
           "hint": "Sync to gate",
           "type": "bool"
         }
@@ -247,16 +269,8 @@
           "step": 1
         },
         {
-          "id": "sustain_1",
-          "name": "Sustain 1",
-          "type": "int",
-          "min": 0,
-          "max": 4095,
-          "step": 1
-        },
-        {
-          "id": "sustain_2",
-          "name": "Sustain 2",
+          "id": "sustain",
+          "name": "Sustain",
           "type": "int",
           "min": 0,
           "max": 4095,
