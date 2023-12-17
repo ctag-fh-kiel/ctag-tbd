@@ -2,7 +2,7 @@
   "id": "WTOscDuo",
   "isStereo": false,
   "name": "WTOscDuo",
-  "hint": "Poly Wavetable oscillator",
+  "hint": "Duo Wavetable oscillator",
   "params": [
     {
       "id": "gain_1",
