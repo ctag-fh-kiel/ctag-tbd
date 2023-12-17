@@ -45,6 +45,22 @@
       "step": 1
     },
     {
+      "id": "tune1",
+      "name": "Tune 1",
+      "type": "int",
+      "min": -4095,
+      "max": 4095,
+      "step": 1
+    },
+    {
+      "id": "tune2",
+      "name": "Tune 2",
+      "type": "int",
+      "min": -4095,
+      "max": 4095,
+      "step": 1
+    },
+    {
       "id": "decimation",
       "name": "Decimation",
       "type": "int",
@@ -148,16 +164,16 @@
         },
         {
           "id": "fm_amt1",
-          "name": "FM Amount EG/1",
-          "hint": "FM Amount EG/1",
+          "name": "FM Amount EG",
+          "hint": "FM Amount EG",
           "type": "int",
           "min": -64,
           "max": 64
         },
         {
           "id": "fm_amt2",
-          "name": "FM Amount LFO/2",
-          "hint": "FM Amount LFO/2",
+          "name": "FM Amount LFO",
+          "hint": "FM Amount LFO",
           "type": "int",
           "min": 0,
           "max": 1024

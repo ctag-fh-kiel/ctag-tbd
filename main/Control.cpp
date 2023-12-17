@@ -33,7 +33,7 @@ respective component folders / files if different from this license.
 #if CONFIG_TBD_PLATFORM_MK2
 // nothing to do here
 #elif CONFIG_TBD_PLATFORM_BBA
-    #define DEBUG_MIDI
+    //#define DEBUG_MIDI
 
     #include "midiuart.hpp"
     #include "tinyusb.h"
