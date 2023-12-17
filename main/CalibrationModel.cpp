@@ -118,10 +118,15 @@ void CTAG::CAL::CalibrationModel::SetCalibrateOnReboot(bool val) {
 }
 
 const char *CTAG::CAL::CalibrationModel::GetCStrJSONCalibration() {
+#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     json.Clear();
     Writer<StringBuffer> writer(json);
     m.Accept(writer);
     return json.GetString();
+#else
+    static const char *json = "{}";
+    return json;
+#endif
 }
 
 void CTAG::CAL::CalibrationModel::SetJSONCalibration(const string &calData) {
