@@ -103,9 +103,11 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         float max = 0.f;
         for (uint32_t i = 0; i < BUF_SZ; i++) {
             fbuf[i * 2] = in_dccutl(fbuf[i * 2]);
-            if (fbuf[i * 2] > maxl) maxl = fbuf[i * 2];
+            float val = fabsf(fbuf[i * 2]);
+            if (val > maxl) maxl = val;
             fbuf[i * 2 + 1] = in_dccutr(fbuf[i * 2 + 1]);
-            if (fbuf[i * 2 + 1] > maxr) maxr = fbuf[i * 2 + 1];
+            val = fabsf(fbuf[i * 2 + 1]);
+            if (val > maxr) maxr = val;
         }
         max = maxl >= maxr ? maxl : maxr;
         peakIn = 0.95f * peakIn + 0.05f * max;
@@ -243,7 +245,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         }
 
         // Out peak detection, red for output
-        // dc cut output, limiting output
+        // limiting output
         max = 0.f;
         for (uint32_t i = 0; i < BUF_SZ; i++) {
             // soft limiting
@@ -253,12 +255,14 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
             if (ch1_outputSoftClip) {
                 fbuf[i * 2 + 1] = stmlib::SoftClip(fbuf[i * 2 + 1]);
             }
-            if (fbuf[i * 2] > max) max = fbuf[i * 2];
-            if (fbuf[i * 2 + 1] > max) max = fbuf[i * 2 + 1];
+            //if (fbuf[i * 2] > max) max = fbuf[i * 2];
+            //if (fbuf[i * 2 + 1] > max) max = fbuf[i * 2 + 1];
         }
+        // just take first sample of block for level meter
+        max = fabsf(fbuf[0] + fbuf[1]) / 2.f;
         peakOut = 0.9f * peakOut + 0.1f * max;
+        //ESP_LOGW("PEAK", "max %.12f, peak %.12f", max, peakOut);
         max = 255.f + 3.2f * HELPERS::fast_dBV(peakOut);
-        // ESP_LOGW("PEAK", "max %.7f, peak %.7f", max, peakOut);
         if (max > 0.f) ledData |= ((uint32_t) max) << 16; // red
         ledStatus = ledData;
 
