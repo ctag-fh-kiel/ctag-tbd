@@ -17,8 +17,16 @@ menu "CTAG TBD Configuration"
                 bool "MK2 (WM8978 + STM32 CVs + Trigs)"
             config TBD_PLATFORM_BBA
                 bool "BBA (ES8388 + Midi)"
+            config TBD_TOUCH_BUTTON_THRESHOLD
+                int "Touch Button Threshold"
+                default 36000
+                depends on TBD_PLATFORM_BBA
+                range 0 50000
+                help
+                    Threshold for touch buttons.
 
         endchoice
+
 
         choice TBD_UI_TYPE
             prompt "Wifi or serial UI"

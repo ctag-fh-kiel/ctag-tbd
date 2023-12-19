@@ -108,7 +108,7 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
         uint32_t touch_value;
         touch_pad_read_raw_data(TOUCH_PAD, &touch_value);    // read raw data.
         //printf("Touch value: %li\n", touch_value);
-        if(touch_value > 26000) {
+        if(touch_value > CONFIG_TBD_TOUCH_BUTTON_THRESHOLD) {
 #else
         if(gpio_get_level(PIN_PUSH_BTN)){
 #endif
