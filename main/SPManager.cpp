@@ -501,8 +501,8 @@ void SoundProcessorManager::updateConfiguration() {
             int lLevel = std::stoi(model->GetConfigurationData("ch0_codecLvlOut"));
             int rLevel = std::stoi(model->GetConfigurationData("ch1_codecLvlOut"));
 #ifdef CONFIG_TBD_PLATFORM_BBA
-            CONSTRAIN(rLevel, 0, 35)
-            CONSTRAIN(lLevel, 0, 35)
+            CONSTRAIN(rLevel, 0, 36)
+            CONSTRAIN(lLevel, 0, 36)
 #else
             CONSTRAIN(rLevel, 0, 63)
             CONSTRAIN(lLevel, 0, 63)
