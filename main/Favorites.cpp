@@ -36,6 +36,7 @@ respective component folders / files if different from this license.
 #elif CONFIG_TBD_PLATFORM_BBA
     #include "driver/touch_pad.h"
     #define TOUCH_PAD TOUCH_PAD_NUM6 // is GPIO_NUM_6
+    static uint32_t noTouch {0};
 #endif
 
 CTAG::FAV::FavoritesModel CTAG::FAV::Favorites::model;
@@ -69,20 +70,26 @@ void CTAG::FAV::Favorites::ActivateFavorite(const int &id) {
     activeFav = id;
     uiMenuState = CLEAR;
 }
+void CTAG::FAV::Favorites::StartUI() {
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
-    void CTAG::FAV::Favorites::StartUI() {
         gpio_set_direction(PIN_PUSH_BTN, (gpio_mode_t)GPIO_MODE_DEF_INPUT);
         xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
-    }
 #elif CONFIG_TBD_PLATFORM_BBA
-    void CTAG::FAV::Favorites::StartUI() {
         touch_pad_init();
         touch_pad_config(TOUCH_PAD);
         touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
         touch_pad_fsm_start();
+        DRIVERS::Display::ShowUserString("Do no touch sensor!");
+        vTaskDelay(2000/ portTICK_PERIOD_MS);
+        uint32_t touch_value;
+        for(int i=0;i<16;i++){
+            touch_pad_read_raw_data(TOUCH_PAD, &touch_value);
+            noTouch += touch_value;
+        }
+        noTouch /= 16;
         xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
-    }
 #endif
+}
 
 void CTAG::FAV::Favorites::DeactivateFavorite() {
     activeFav = -1;
@@ -107,8 +114,7 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
 #elif CONFIG_TBD_PLATFORM_BBA
         uint32_t touch_value;
         touch_pad_read_raw_data(TOUCH_PAD, &touch_value);    // read raw data.
-        //printf("Touch value: %li\n", touch_value);
-        if(touch_value > CONFIG_TBD_TOUCH_BUTTON_THRESHOLD) {
+        if(touch_value > noTouch + 1000) {
 #else
         if(gpio_get_level(PIN_PUSH_BTN)){
 #endif

@@ -87,6 +87,11 @@ void Display::ShowFWVersion() {
     ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
 }
 
+void Display::ShowUserString(std::string const &s) {
+    ssd1306_clear_screen(&I2CDisplay, false);
+    ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length() > 16 ? 16 : s.length(), false);
+}
+
 void Display::PrepareDisplayFavoriteUString(int const &id, std::string const &name, std::string const &us) {
     // create slices
     std::string s {us}, title{"#" + std::to_string(id) + ": " + name};
