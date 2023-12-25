@@ -64,12 +64,15 @@ Midi::CV_id_abcd Midi::ccToCVid_abcd(uint8_t cc)
 }
 
 // --- Map incoming CCs for "global channel" to CVs according their representation as used with the TBD BBA, to be distributed according to names mapped via the UI ---
-Midi::CV_id_glob Midi::ccToCVid_glob(uint8_t cc) 
+Midi::CV_id_glob Midi::ccToCVid_glob(uint8_t* msg) 
 {
-    switch (cc)     // Voices A-D: Convert incoming CC-numbers to valid enum of processed CCs or 'none' which effectively is 0 and unused!
+    switch(*msg)     // Voices A-D: Convert incoming CC-numbers to valid enum of processed CCs or 'none' which effectively is 0 and unused!
     {
+        case 0:                     // Bankchange: Set global bank, this may lead to select a new plugin on Slot 0 when triggered via programchange
+            glob_bank = *(msg+1);
+            return glob_cc_invalid; // Unexpected value, so we know the incoming CC can't be mapped to values known for the globals
         case 1:
-            return g_mw_01;    // For "strong typing" we use typed enums, but still cast to normal numeric values, because we need them as indexes
+            return g_mw_01;         // For "strong typing" we use typed enums, but still cast to normal numeric values, because we need them as indexes
         case 2:
             return g_bc_02; 
         case 4:
@@ -88,6 +91,9 @@ Midi::CV_id_glob Midi::ccToCVid_glob(uint8_t cc)
             return g_fx1_12; 
         case 13:
             return g_fx2_13; 
+        case 32:                        // Subbankchange: Set global sub-bank if received via bankchange, this may lead to select a new plugin on Slot 1 when triggered via programchange
+            glob_sub_bank = *(msg+1);
+            return glob_cc_invalid;     // Unexpected value, so we know the incoming CC can't be mapped to values known for the globals    
         case 64:
             return g_sustp_64; 
         case 65:
@@ -324,7 +330,8 @@ void Midi::controlChange(uint8_t* msg)
     }
     else    // Global channel (internally 0)
     {
-        globCVid = ccToCVid_glob(cc_num);  // Retrieve MIDI-channel (internally 1-4) by masking the MIDI status-byte, We cast the enum retrieved in order to use it as a regular array-index
+        
+        globCVid = ccToCVid_glob(msg);  // Retrieve MIDI-channel (internally 1-4) by masking the MIDI status-byte, We cast the enum retrieved in order to use it as a regular array-index
         if( globCVid != glob_cc_invalid)    // Valid CC for CV found?
         {
             int8_t ctrl_val = msg[2];
@@ -380,11 +387,30 @@ void Midi::programChange(uint8_t* msg)
     channel = msg[0]&0x0F;   // Please note: channel 0 is global, 2-5 are voices, 6-16 are mapped to 2-5, (16 may be global for MPE or unused, so that we don't get any data here anyhow)
  
     // === Get type and ID for CV and/or Trigger with given CC and Channel, if any ===
-    if( channel != MIDI_GLOBAL_CHANNEL )    // Voices A-D
+    if( channel != MIDI_GLOBAL_CHANNEL && !IS_UPPER_GLOBAL(channel) )    // Voices A-D
         channel = (channel-1)%4 +1;         // We 'map down' MIDI-channels above 2-5 to channels, 2-5 accordingly! So via "voice-stealing", Channel 6 will be stored as 2 again and so on  
-    else
-        return;                             // We don't support ProgramChange on the global channel!
+    else    // Check if we can change a Favourite or a Plugin and its preset!
+    {
+        allNotesOff();      // First of all switch off any playing notes, because we don't want them to stay active during and after a sound-switch.
 
+        if(!glob_bank && !glob_sub_bank)    // Scenario to change a favourite via programchange
+        {
+            // ### Favorites::ActivateFavorite( *(msg+1) );
+        }
+        else if(glob_bank && !glob_sub_bank)      // Scenario to change the plugin (soundprocessor) on Slot 0 and its preset via programchange
+        {
+            // ### SPManager::SetSoundProcessorChannel(0, glob_bank, *(msg+1) );
+        } else if (!glob_bank && glob_sub_bank)     // Scenario to change the plugin (soundprocessor) on Slot 1 and its preset via programchange
+        {
+            // ### SPManager::SetSoundProcessorChannel(1, glob_sub_bank, *(msg+1) );
+        }
+        else      // Scenario to change the plugin (soundprocessor) on Slot 0 _and_ Slot 1 to the same preset(number) via programchange
+        {
+            // ### SPManager::SetSoundProcessorChannel(0, glob_bank, *(msg+1) );
+            // ### SPManager::SetSoundProcessorChannel(1, glob_sub_bank, *(msg+1) );
+        }
+        return;                             // We don't support the mapping to ProgramChange on the global channel!
+    }
     // === Get type and ID for CV and Trigger with using the Channel, if any (we use different CCs on Master and Voice-channel!) ===
     cv_entry = cv_distributor[channel][(uint8_t)progchange];  // Retrieve MIDI-channel (internally 0-15) by masking the MIDI status-byte, We cast the associated enum in order to use it as a regular array-index
     midi_cvs[(uint8_t)cv_entry.element_cv_id] = msg[1] * SCALEVALUE_MIDI_CTRLS_TO_CV;      // Set CV at given offset as just retrieved. (We get rid of the first "none"-entry to calculate the CV-index). Rescale according to 0.-1.f according 0-5V CV from CCs 

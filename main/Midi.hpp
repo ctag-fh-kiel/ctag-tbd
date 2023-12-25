@@ -403,6 +403,11 @@ namespace CTAG::CTRL
         // --- Remember last note for potential Trigger-Reset of voices ---
         uint8_t last_midi_note_pitch_abcd[MAX_ACTIVE_CHANNELS] = { MIDI_INVALD_NOTE, MIDI_INVALD_NOTE, MIDI_INVALD_NOTE, MIDI_INVALD_NOTE, MIDI_INVALD_NOTE }; // Notes have values 0-127, invalid note is higher, though ;)
 
+        // --- Status-Variables for change of Plugin and Preset or Favourite (only valid on global channels 1,14,15,16) ---
+        uint8_t glob_bank = 0;      // To be set via MIDI bankchange, CC 0
+        uint8_t glob_sub_bank = 0;  // To be set via MIDI subbankchange, CC 32
+        uint8_t glob_program = 0;   // To be set via MIDI programchange
+        
         // --- Helpervariables for voicemode (low key priorita and legato-option or roundrobin) ---
         bool legato = false;                // If true we may have a new pitch, but no new trigger for the EG and similar
         bool new_pitch_and_velo_for_note = true;    // NoteOn: normally we have a new pitch and velocity (and also trigger, no legato)
@@ -412,6 +417,7 @@ namespace CTAG::CTRL
         uint8_t round_robin_chan_duo = 0;   // Counter for round-robin with voice A / MIDI-channel 2 which internally is represented as 1 and end with MIDI-channel 3
         uint8_t round_robin_chan_4voice = 0;// Counter for round-robin with voice A / MIDI-channel 2 which internally is represented as 1 and end with MIDI-channel 5 
         uint8_t latest_noteoff_channel = 0; // Please note: regular values are 1-2 or 1-4 for roundrobin - On this MIDI-Channel was our most recent noteoff, we may need that to prioritice notes to avoid voice-stealing as good as possible...
+        
         // === Data used for mapping MIDI-data to CVs or Triggers for audiothread ===
         ControlCVtags cv_entry;     // Will contain the result of CCs to be mapped to CVs or be empty if not found...
         ControlTrigTags trig_entry; // Will contain the result of CCs to be mapped to Triggers or be empty if not found...
@@ -428,7 +434,7 @@ namespace CTAG::CTRL
         // --- Try to map a Conctrol Change message to a for UI-list known category ---
         CV_id_abcd ccToCVid_abcd(uint8_t cc);      // Voices A-D: Map CCs to enums for CV-indexes
         CV_id_abcd abcdCVid;    // Return-value of function for examination
-        CV_id_glob ccToCVid_glob(uint8_t cc);      // Global Channel: Map CCs to enums for CV-indexes
+        CV_id_glob ccToCVid_glob(uint8_t* msg);      // Global Channel: Map CCs to enums for CV-indexes
         CV_id_glob globCVid;    // Return-value of function for examination
         TRIG_id_abcd ccToTrigId_abcd(uint8_t cc);    // Voices A-D: Map CCs to enums for Trigger-indexes
         TRIG_id_abcd abcdTRIGid;   // Return-value of function for examination 
