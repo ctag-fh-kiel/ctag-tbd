@@ -27,6 +27,8 @@ respective component folders / files if different from this license.
 #include "mk2.hpp"
 
 
+// ### #define DEBUG_MIDI  true    // ### MB20231219
+
 // --- Calculate size of buffer for "CV" and "Gate/Trigger" values to be exchanged with audio-thread / plugins ---
 #define DATA_SZ  (N_CVS * 4 + N_TRIGS + 2)
 
@@ -49,8 +51,7 @@ respective component folders / files if different from this license.
     // === Buffer to pass on MIDI-Event as virtual CV and Gate 'voltages', normalized to -1.f...+1.f (CV) and 0 or 1 integers (Triggers/Gates) ===
     DRAM_ATTR static uint8_t buf0[DATA_SZ];     // Common Array of Data for CVs and Triggers, will be passed on at audio-rate, so that Plugins can process this data
     DRAM_ATTR static float *midi_data = (float *) buf0; // CVs: Array of floats, positioned directly before Triggers in a common array for CVs+Triggers
-    DRAM_ATTR static uint8_t *midi_note_trig = &buf0[N_CVS *
-                                                     4];  // Triggers: Array of Bytes, positioned directly behind CVs in a common array for CVs+Triggers
+    DRAM_ATTR static uint8_t *midi_note_trig = &buf0[N_CVS * 4];  // Triggers: Array of Bytes, positioned directly behind CVs in a common array for CVs+Triggers
 
     // --- MIDI incomind messages buffer to be read via UART ---
     DRAM_ATTR static uint8_t msgBuffer[MIDI_BUF_SZ]; // ## ??? Message-buffer for MIDI-parsing with added alligned space, in principle we only need 130 (128+2) Byte, though...
@@ -149,24 +150,27 @@ respective component folders / files if different from this license.
     DRAM_ATTR static uint8_t missing_bytes_offset = 0;   // We may have to add that before we fetch our next buffer?
     DRAM_ATTR static int len = 0;
     DRAM_ATTR static uint8_t *ptr = NULL;
+    static uint8_t current_status = 0;    // Current status byte to be remembered in case of a running-status situation
+    static uint8_t loc_msg[8];            // Local message to be constructed in a running-status situation
 
     // --- The macro below is used to exit the parser in case there is an invalid 2byte message: statusbyte when only data is expected ---
-    #define SUPRESS_INVALID_3BYTE_MESSAGE() \
-                if( (*(ptr+1))&0x80 )           \
+    #define SUPRESS_INVALID_3BYTE_MESSAGE(p_loc) \
+                if( (*(p_loc+1))&0x80 )           \
                 /* ESP_LOGI("MIDI", "*** Unexpected status in message => Ignored: %02x %02x %02x, Len: %03d", *ptr, *(ptr+1), *(ptr+2), len ); */ \
-                { len--;  ptr++; break;  }      \
-                if( (*(ptr+2))&0x80 )           \
+                { len--; ptr++; break;  }      \
+                if( (*(p_loc+2))&0x80 )           \
                 /* ESP_LOGI("MIDI", "+++ Ignored Message %02x %02x %02x, Len: %03d", *ptr, *(ptr+1), *(ptr+2), len ); */ \
                 { len -= 2; ptr += 2; break; }
 
     // --- The macro below is used to exit the parser in case there is an invalid 2byte message: statusbyte when only data is expected ---
-    #define SUPRESS_INVALID_2BYTE_MESSAGE() \
-                if( (*(ptr+1))&0x80 )           \
+    #define SUPRESS_INVALID_2BYTE_MESSAGE(p_loc) \
+                if( (*(p_loc+1))&0x80 )           \
                 /* ESP_LOGI("MIDI", "--- Unexpected status in message => Ignored: %02x %02x %02x, Len: %03d", *ptr, *(ptr+1), *(ptr+2), len ); */ \
-                { len--;  ptr++; break;  }
+                { len--;  ptr++; break; }
 
     // ===  MIDI-parsing method (Please note: Running status is not processed correctly with this implementation!) ===
-    IRAM_ATTR static uint8_t *bba_update() {
+    IRAM_ATTR static uint8_t *bba_update() 
+    {
         // --- Check if we have "leftover" data to be processed or if we need to ask for new MIDI-messages via polling ---
         if (len == 0)                        // Only read new buffer if we ran out of data
         {
@@ -174,14 +178,22 @@ respective component folders / files if different from this license.
             uint8_t packet[4];
             uint32_t len2{0};
             bool read = false;
-            while (tud_midi_available() && missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) { // safety margin 32 bytes
+
+            /* ==================================================================    
+            while (tud_midi_available() && missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) 
+            { // safety margin 32 bytes
+
+                tud_midi_n_stream_read
                 read = tud_midi_packet_read(packet);
-                if (read) {
-                    memcpy(&msgBuffer[missing_bytes_offset + len2], &packet[1],
-                           3); // first USB Midi byte is the cable number, we don't need it
+                if (read) 
+                {
+                    memcpy(&msgBuffer[missing_bytes_offset + len2], &packet[1], 3); // first USB Midi byte is the cable number, we don't need it
                     len2 += 3;
                 }
             }
+            ================================================================== */
+            len2 =  tud_midi_n_stream_read( ITF_NUM_MIDI, ITF_NUM_MIDI_STREAMING, &msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32);
+
             // get all available MIDI messages from UART
             if (missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) // safety margin
                 midi.read(&msgBuffer[missing_bytes_offset + len2], &len);  // Read UART data into MIDI-buffer
@@ -202,19 +214,146 @@ respective component folders / files if different from this license.
         xQueueSendToFront(debug_queue, &msg, 0);
     #endif
         // --- Parse incoming MIDI-Channel-Voice-Messages and distribute to equivalent handler-methods ---
-        while (len > 0)                    // Read complete buffer at once
+        while (len > 0)                                 // Read complete buffer at once
         {
-            switch ((*ptr) & 0xF0)                     // Mask out (possible) status-byte and check it for usage
+            // --- Check for "running-status" processing (only possible if we saved that last statusbyte and it's one that we need to process) ---
+            if( (*ptr < 0x80) && current_status)        // No (for us valid) statusbyte, when we expect one => Should be a "running status situation"
+            {
+                // --- Reconstruct status to a "local message", apart of the message-buffer and its pointer ptr ---
+                loc_msg[0] = current_status;       
+                
+                // --- Check rest of message to reconstruct a complete message together with regenerated (running) status byte to be passed on ---
+                switch(current_status & 0xF0)           // Check it for usage
+                {
+                    case Midi::noteOnStatus:            // May also contain noteOff events that are send as noteOns with Velocity 0
+                        if (len >= 2)                   // Message-Lenght as expected
+                        {
+                            loc_msg[1] = *ptr;
+                            loc_msg[2] = *(ptr+1);
+                            SUPRESS_INVALID_3BYTE_MESSAGE(loc_msg);
+                            distribute.noteOn(loc_msg);     // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                            len -= 2;                   // Noteon Messages have 3 byte, we already read the status byte
+                            ptr += 2;                   // Advance buffer-pointer to next message for next round of parsing
+                        } 
+                        else                            // Message is shorter than anticipaded
+                        {
+                            msgBuffer[0] = current_status;  // Add first databyte to beginning of new buffer
+                            missing_bytes_offset = len+1;     // Len is 1 or 2
+                            if (len > 1)
+                                msgBuffer[1] = *ptr;// Add second databyte to beginning of new buffer
+                            len = 0;                    // Not enough data left (buffer underrun?), skip message and read complete buffer next time!
+                        }
+                        break;
+
+                    case Midi::noteOffStatus:            // Switchs of Triggers of notes if noteOff for same Pitch as the active note is detected
+                        if (len >= 2) 
+                        {
+                            loc_msg[1] = *ptr;
+                            loc_msg[2] = *(ptr+1);
+                            SUPRESS_INVALID_3BYTE_MESSAGE(loc_msg);
+                            distribute.noteOff(loc_msg);
+                            ptr += 2;                   // Advance buffer-pointer to next message for next round of parsing
+                            len -= 2;                   // Noteoff Messages have 3 byte, we already read the status byte
+                        } 
+                        else                            // Message is shorter than anticipaded
+                        {
+                            msgBuffer[0] = current_status;  // Add first databyte to beginning of new buffer
+                            missing_bytes_offset = len+1; // Len is 1 or 2
+                            if (len > 1)
+                                msgBuffer[1] = *ptr;    // Add second databyte to beginning of new buffer
+                            len = 0;                    // Not enough data left (buffer underrun?), skip message and read complete buffer next time!
+                        }
+                        break;
+
+                    case Midi::channelPressureStatus:    // aka AfterTouch
+                        if (len >= 1) 
+                        {
+                            loc_msg[1] = *ptr;
+                            SUPRESS_INVALID_2BYTE_MESSAGE(loc_msg);
+                            distribute.channelPressure(loc_msg);    // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                            len -= 1;                   // ChannelPressure Messages have 2 byte, we already read the status byte
+                            ptr += 1;                   // Advance buffer-pointer to next message for next round of parsing
+                        } 
+                        else                            // Message is shorter than anticipaded
+                        {
+                            msgBuffer[0] = current_status;  // Add first databyte to beginning of new buffer
+                            missing_bytes_offset = 2;   // We add this offset to the biginning of the next buffer, to "stitch together" our new message in next round
+                            len = 0;                    // Not enough data left (buffer underrun?), skip message
+                        }
+                        break;
+
+                    case Midi::pitchBendStatus:        // 14bit Pitchbend (will be handled bipolarily)
+                        if (len >= 2)                   // Message has suitable length
+                        {
+                            loc_msg[1] = *ptr;
+                            loc_msg[2] = *(ptr+1);    
+                            SUPRESS_INVALID_3BYTE_MESSAGE(loc_msg);
+                            distribute.pitchBend(loc_msg);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                            len -= 2;                   // Pitchshift Messages have 3 byte, we already read the status byte
+                            ptr += 2;                   // Advance buffer-pointer to next messager for next round of parsing
+                        } 
+                        else                            // Message is shorter than anticipaded
+                        {
+                            msgBuffer[0] = current_status;  // Add first databyte to beginning of new buffer
+                            missing_bytes_offset = len+1; // Len is 1 or 2
+                            if (len > 1)
+                                msgBuffer[1] = *ptr;    // Add second databyte to beginning of new buffer
+                            len = 0;                    // Not enough data left (buffer underrun?), skip message and read complete buffer next time!
+                        }
+                        break;
+
+                    case Midi::controlChangeStatus:     // Including Bank and Subbank information
+                        if (len >= 2)                    // Message has correct lenght
+                        {
+                            loc_msg[1] = *ptr;
+                            loc_msg[2] = *(ptr+1);
+                            SUPRESS_INVALID_3BYTE_MESSAGE(loc_msg);
+                            distribute.controlChange(loc_msg);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                            len -= 2;                   // Continuous Controller Messages have 3 byte, we already read the status byte
+                            ptr += 2;                   // Advance buffer-pointer to next message for next round of parsing
+                        } 
+                        else                            // Message is shorter than anticipaded
+                        {
+                            msgBuffer[0] = current_status;  // Add first databyte to beginning of new buffer
+                            missing_bytes_offset = len+1; // Len is 1 or 2
+                            if (len > 1)
+                                msgBuffer[1] = *ptr;    // Add second databyte to beginning of new buffer
+                            len = 0;                    // Not enough data left (buffer underrun?), skip message and read complete buffer next time!
+                        }
+                        break;
+
+                    case Midi::programChangeStatus:     // We accept ProgramChange events as a kind of continuous controls, too
+                        if (len >= 1) 
+                        {
+                            loc_msg[1] = *ptr;
+                            SUPRESS_INVALID_2BYTE_MESSAGE(loc_msg);
+                            distribute.programChange(loc_msg);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                            len -= 1;                   // Program Change Messages have 3 byte, we already read the status byte
+                            ptr += 1;                   // Advance buffer-pointer to next messager for next round of parsing
+                        } 
+                        else                            // Message is shorter than anticipaded
+                        {
+                            msgBuffer[0] = current_status;  // Add first databyte to beginning of new buffer
+                            missing_bytes_offset = 2;   // We add this offset to the biginning of the next buffer, to "stitch together" our new message in next round
+                            len = 0;                    // Not enough data left (buffer underrun?), skip message
+                        }
+                        break;
+                }
+                continue;           // We had to regenerate a previous status for running-status situation, ignore further data and check again during next round of loop!
+            }    
+            // --- Regular status processing (If we reach here, there has no running-status been processed before!) ---
+            switch ((*ptr) & 0xF0)                  // Mask out (possible) status-byte and check it for usage
             {
                 case Midi::noteOnStatus:            // May also contain noteOff events that are send as noteOns with Velocity 0
-                    if (len >= 3)                    // Message-Lenght as expected
+                    current_status = *ptr;          // Remember valid status, in case we encounter a running status byte next time!
+                    if (len >= 3)                   // Message-Lenght as expected
                     {
-                        SUPRESS_INVALID_3BYTE_MESSAGE();
-                        distribute.noteOn(
-                                ptr);     // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                        SUPRESS_INVALID_3BYTE_MESSAGE(ptr);
+                        distribute.noteOn(ptr);     // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
                         len -= 3;                   // Noteon Messages have 3 byte, we already read the status byte
                         ptr += 3;                   // Advance buffer-pointer to next message for next round of parsing
-                    } else                            // Message is shorter than anticipaded
+                    } 
+                    else                            // Message is shorter than anticipaded
                     {
                         msgBuffer[0] = *ptr;        // Add first databyte to beginning of new buffer
                         missing_bytes_offset = len; // Len is 1 or 2
@@ -225,12 +364,15 @@ respective component folders / files if different from this license.
                     break;
 
                 case Midi::noteOffStatus:            // Switchs of Triggers of notes if noteOff for same Pitch as the active note is detected
-                    if (len >= 3) {
-                        SUPRESS_INVALID_3BYTE_MESSAGE();
+                    current_status = *ptr;          // Remember valid status, in case we encounter a running status byte next time!
+                    if (len >= 3) 
+                    {
+                        SUPRESS_INVALID_3BYTE_MESSAGE(ptr);
                         distribute.noteOff(ptr);
                         ptr += 3;                   // Advance buffer-pointer to next message for next round of parsing
                         len -= 3;                   // Noteoff Messages have 3 byte, we already read the status byte
-                    } else                            // Message is shorter than anticipaded
+                    } 
+                    else                            // Message is shorter than anticipaded
                     {
                         msgBuffer[0] = *ptr;        // Add first databyte to beginning of new buffer
                         missing_bytes_offset = len; // Len is 1 or 2
@@ -241,20 +383,20 @@ respective component folders / files if different from this license.
                     break;
 
                 case Midi::channelPressureStatus:    // aka AfterTouch
-                    if (len >= 2) {
-                        while ((len >= 4) && (*ptr == *(ptr +
-                                                        2)))   // Overread redundant aftertouch messages! Only last in buffer will lead to new CV/Gate values
+                    current_status = *ptr;          // Remember valid status, in case we encounter a running status byte next time!
+                    if (len >= 2) 
+                    {
+                        while ((len >= 4) && (*ptr == *(ptr + 2)))   // Overread redundant aftertouch messages! Only last in buffer will lead to new CV/Gate values
                         {
-                            // ### ESP_LOGI("MIDI", "Aftertouch Ignored: %02x %02x, Len: %03d", *ptr, *(ptr+1), len );
                             len -= 2;   // Pitchshift Messages have 3 byte, we already read the status byte
                             ptr += 2;   // Overread current redundant pitchbend, it can't be validated by the audiothread anyhow, because we read the current MIDI-buffer in one go
                         }
-                        SUPRESS_INVALID_2BYTE_MESSAGE();
-                        distribute.channelPressure(
-                                ptr);    // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                        SUPRESS_INVALID_2BYTE_MESSAGE(ptr);
+                        distribute.channelPressure(ptr);    // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
                         len -= 2;                   // ChannelPressure Messages have 2 byte, we already read the status byte
                         ptr += 2;                   // Advance buffer-pointer to next message for next round of parsing
-                    } else                            // Message is shorter than anticipaded
+                    } 
+                    else                            // Message is shorter than anticipaded
                     {
                         msgBuffer[0] = *ptr;        // Set beginning of next buffer to current data-byte
                         missing_bytes_offset = 1;   // We add this offset to the biginning of the next buffer, to "stitch together" our new message in next round
@@ -263,21 +405,20 @@ respective component folders / files if different from this license.
                     break;
 
                 case Midi::pitchBendStatus:        // 14bit Pitchbend (will be handled bipolarily)
+                    current_status = *ptr;          // Remember valid status, in case we encounter a running status byte next time!
                     if (len >= 3)                   // Message has suitable length
                     {
-                        while ((len >= 6) && (*ptr == *(ptr +
-                                                        3)))   // Overread redundant pitchbend messages! Only last in buffer will lead to new CV/Gate values
+                        while ((len >= 6) && (*ptr == *(ptr + 3)))   // Overread redundant pitchbend messages! Only last in buffer will lead to new CV/Gate values
                         {
-                            // ### ESP_LOGI("MIDI", "PitchBend Ignored: %02x %02x %02x, Len: %03d", *ptr, *(ptr+1), *(ptr+2), len );
                             len -= 3;   // Pitchshift Messages have 3 byte, we already read the status byte
                             ptr += 3;   // Overread current redundant pitchbend, it can't be validated by the audiothread anyhow, because we read the current MIDI-buffer in one go
                         }
-                        SUPRESS_INVALID_3BYTE_MESSAGE();
-                        distribute.pitchBend(
-                                ptr);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                        SUPRESS_INVALID_3BYTE_MESSAGE(ptr);
+                        distribute.pitchBend(ptr);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
                         len -= 3;                   // Pitchshift Messages have 3 byte, we already read the status byte
                         ptr += 3;                   // Advance buffer-pointer to next messager for next round of parsing
-                    } else                            // Message is shorter than anticipaded
+                    } 
+                    else                            // Message is shorter than anticipaded
                     {
                         msgBuffer[0] = *ptr;        // Add first databyte to beginning of new buffer
                         missing_bytes_offset = len; // Len is 1 or 2
@@ -288,21 +429,20 @@ respective component folders / files if different from this license.
                     break;
 
                 case Midi::controlChangeStatus:     // Including Bank and Subbank information
+                    current_status = *ptr;          // Remember valid status, in case we encounter a running status byte next time!
                     if (len >= 3)                    // Message has correct lenght
                     {
-                        while ((len >= 6) && (*ptr == *(ptr + 3)) && (*(ptr + 1) == *(ptr +
-                                                                                      4)))   // Overread redundant (with identical CC-number) continous control messages! Only last in buffer will lead to new CV/Gate values
+                        while ((len >= 6) && (*ptr == *(ptr + 3)) && (*(ptr + 1) == *(ptr + 4)))   // Overread redundant (with identical CC-number) continous control messages! Only last in buffer will lead to new CV/Gate values
                         {
-                            // ### ESP_LOGI("MIDI", "PitchBend Ignored: %02x %02x %02x, Len: %03d", *ptr, *(ptr+1), *(ptr+2), len );
                             len -= 3;   // Pitchshift Messages have 3 byte, we already read the status byte
                             ptr += 3;   // Overread current redundant pitchbend, it can't be validated by the audiothread anyhow, because we read the current MIDI-buffer in one go
                         }
-                        SUPRESS_INVALID_3BYTE_MESSAGE();
-                        distribute.controlChange(
-                                ptr);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                        SUPRESS_INVALID_3BYTE_MESSAGE(ptr);
+                        distribute.controlChange(ptr);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
                         len -= 3;                   // Continuous Controller Messages have 3 byte, we already read the status byte
                         ptr += 3;                   // Advance buffer-pointer to next message for next round of parsing
-                    } else                            // Message is shorter than anticipaded
+                    } 
+                    else                            // Message is shorter than anticipaded
                     {
                         msgBuffer[0] = *ptr;        // Add first databyte to beginning of new buffer
                         missing_bytes_offset = len; // Len is 1 or 2
@@ -313,20 +453,20 @@ respective component folders / files if different from this license.
                     break;
 
                 case Midi::programChangeStatus:     // We accept ProgramChange events as a kind of continuous controls, too
-                    if (len >= 2) {
-                        while ((len >= 4) && (*ptr == *(ptr +
-                                                        2)))   // Overread redundant program-change messages! Only last in buffer will lead to new CV/Gate values
+                    current_status = *ptr;          // Remember valid status, in case we encounter a running status byte next time!
+                    if (len >= 2) 
+                    {
+                        while ((len >= 4) && (*ptr == *(ptr + 2)))   // Overread redundant program-change messages! Only last in buffer will lead to new CV/Gate values
                         {
-                            // ### ESP_LOGI("MIDI", "Aftertouch Ignored: %02x %02x, Len: %03d", *ptr, *(ptr+1), len );
                             len -= 2;   // Pitchshift Messages have 3 byte, we already read the status byte
                             ptr += 2;   // Overread current redundant pitchbend, it can't be validated by the audiothread anyhow, because we read the current MIDI-buffer in one go
                         }
-                        SUPRESS_INVALID_2BYTE_MESSAGE();
-                        distribute.programChange(
-                                ptr);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
+                        SUPRESS_INVALID_2BYTE_MESSAGE(ptr);
+                        distribute.programChange(ptr);  // Process message and fill buffer for virtual CV/Gates which can be looked up from plugin if tagged via WebUI
                         len -= 2;                   // Program Change Messages have 3 byte, we already read the status byte
                         ptr += 2;                   // Advance buffer-pointer to next messager for next round of parsing
-                    } else                            // Message is shorter than anticipaded
+                    } 
+                    else                            // Message is shorter than anticipaded
                     {
                         msgBuffer[0] = *ptr;        // Set beginning of next buffer to current data-byte
                         missing_bytes_offset = 1;   // We add this offset to the biginning of the next buffer, to "stitch together" our new message in next round
@@ -335,6 +475,7 @@ respective component folders / files if different from this license.
                     break;
 
                 default:        // No relevant MIDI-message (status-byte with data) found, increase on for "better luck next time"
+                    current_status = 0;             // This is a to us unknown statusbyte! We set it to zero, to also pass on that running-status can not be handled in next round!     
                     len--;                          // Shorten read-lenght for next round of parsing
                     ptr++;                          // Skip invalid byte, may be simply a MIDI-clock message for instance
             }
