@@ -175,9 +175,7 @@ respective component folders / files if different from this license.
         if (len == 0)                        // Only read new buffer if we ran out of data
         {
             // get all available MIDI messages from USB
-            uint8_t packet[4];
             uint32_t len2{0};
-            bool read = false;
 
             /* ==================================================================    
             while (tud_midi_available() && missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) 
