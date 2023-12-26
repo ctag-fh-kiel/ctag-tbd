@@ -32,13 +32,7 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     // wave select
     currentBank = wavebank;
     MK_FLT_PAR_ABS(fWave, wave, 4095.f, 1.f)
-    // smooth fWave
-    float w1 = fabsf(fWave - pre_fWt);
-    if(w1 > 0.02f) w1 = 5.f * w1;
-    if(w1 > 1.f) w1 = 1.f;
-    float w2 = 1.f - w1;
-    fWave = w1 * fWave + w2 * pre_fWt;
-    pre_fWt = fWave;
+
 
     if(lastBank != currentBank){ // this is slow, hence not modulated by CV
         prepareWavetables();
@@ -75,15 +69,12 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     // modulation LFO
     MK_FLT_PAR_ABS(fLFOSpeed, lfospeed, 4095.f, 20.f)
     MK_BOOL_PAR(bLFOSync, lfosync)
-    if(bLFOSync){
-        if(preGate != bGate && bGate == true){ // detect trigger
-            lfo.SetFrequencyPhase(fLFOSpeed, 0.f);
-        }else{
-            lfo.SetFrequency(fLFOSpeed);
-        }
-    }else{
+    bool trigger = preGate != bGate && bGate;
+    if(bLFOSync && trigger)
+        lfo.SetFrequencyPhase(fLFOSpeed, 0.f);
+    else
         lfo.SetFrequency(fLFOSpeed);
-    }
+
     preGate = bGate;
     MK_FLT_PAR_ABS(fLFOAM, lfo2am, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fLFOFM, lfo2fm, 4095.f, 12.f)
@@ -137,10 +128,17 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     float fWt = fWave + valADSR * fEGWave + valLFO * fLFOWave * 2.f;
     CONSTRAIN(fWt, 0.f, 1.f)
 
+    // detect very fast modulations and filter wave for respective frame
+    float deltaWt = fabsf(pre_fWt - fWt);
+    if(deltaWt > 0.1f){
+        trigger = true;
+    }
+    pre_fWt = fWt;
+
     // calc wave and apply filter
     float out[32] = {0.f};
     if(isWaveTableGood){
-        oscillator.Render(f0, fAM, fWt, wavetables, out, bufSz);
+        oscillator.Render(trigger, f0, fAM, fWt, wavetables, out, bufSz);
 
         switch(iFType){
             case 1:

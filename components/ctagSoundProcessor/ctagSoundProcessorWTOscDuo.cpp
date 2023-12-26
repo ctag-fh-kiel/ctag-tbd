@@ -30,30 +30,14 @@ using namespace CTAG::SP::HELPERS;
 
 void ctagSoundProcessorWTOscDuo::Process(const ProcessData &data) {
     // wave select
-    currentBank_1 = wavebank;
+    currentBank = wavebank;
     MK_FLT_PAR_ABS(fwave_1, wave_1, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fwave_2, wave_2, 4095.f, 1.f)
-    
-    // smooth fWave 1
-    float w1 = fabsf(fwave_1 - pre_fWt_1);
-    if(w1 > 0.02f) w1 = 5.f * w1;
-    if(w1 > 1.f) w1 = 1.f;
-    float w2 = 1.f - w1;
-    fwave_1 = w1 * fwave_1 + w2 * pre_fWt_1;
-    pre_fWt_1 = fwave_1;
 
-    // smooth fWave 2
-    float w3 = fabsf(fwave_2 - pre_fWt_2);
-    if(w3 > 0.02f) w3 = 5.f * w3;
-    if(w3 > 1.f) w3 = 1.f;
-    float w4 = 1.f - w3;
-    fwave_2 = w3 * fwave_2 + w4 * pre_fWt_2;
-    pre_fWt_2 = fwave_2;
-
-    if(lastBank_1 != currentBank_1 )
+    if(lastBank != currentBank )
     { // this is slow, hence not modulated by CV
-        prepareWavetables_1();
-        lastBank_1 = currentBank_1;
+        prepareWavetables();
+        lastBank = currentBank;
     }
 
     // gain
@@ -98,13 +82,17 @@ void ctagSoundProcessorWTOscDuo::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fVintageVibe, vintage_vibe, 4095.f, 0.625f)    // Used to slightly detune the LFOs frequencies
     MK_BOOL_PAR(bLFOSync_1, lfosync_1)
     MK_BOOL_PAR(bLFOSync_2, lfosync_2)
-    if(bLFOSync_1 && preGate_1 != bGate_1 && bGate_1 == true) // If LFO of voice 1 should be synced: detect EG-trigger of voice 1
-        lfo_1.SetFrequencyPhase(fLFOSpeed, 0.f);
-    lfo_1.SetFrequency(fLFOSpeed-fVintageVibe);  // Always newly set LFO-frequency, it might be changed since last check
+    bool trigger1 {preGate_1 != bGate_1 && bGate_1};
+    bool trigger2 {preGate_2 != bGate_2 && bGate_2};
+    if(bLFOSync_1 && trigger1) // If LFO of voice 1 should be synced: detect EG-trigger of voice 1
+        lfo_1.SetFrequencyPhase(fLFOSpeed-fVintageVibe, 0.f);
+    else
+        lfo_1.SetFrequency(fLFOSpeed-fVintageVibe);  // Always newly set LFO-frequency, it might be changed since last check
     
-    if(bLFOSync_2 && preGate_2 != bGate_2 && bGate_2 == true) // If LFO of voice 2 should be synced: detect EG-trigger of voice 1
-        lfo_2.SetFrequencyPhase(fLFOSpeed, 0.f);
-    lfo_2.SetFrequency(fLFOSpeed+fVintageVibe);  // Always newly set LFO-frequency, it might be changed since last check
+    if(bLFOSync_2 && trigger2) // If LFO of voice 2 should be synced: detect EG-trigger of voice 1
+        lfo_2.SetFrequencyPhase(fLFOSpeed+fVintageVibe, 0.f);
+    else
+        lfo_2.SetFrequency(fLFOSpeed+fVintageVibe);  // Always newly set LFO-frequency, it might be changed since last check
     
     preGate_1 = bGate_1;
     preGate_2 = bGate_2;
@@ -195,11 +183,23 @@ void ctagSoundProcessorWTOscDuo::Process(const ProcessData &data) {
     float fWt_2 = fwave_2 + valADSR_2 * fEGWave + valLFO_1 * fLFOWave * 2.f;
     CONSTRAIN(fWt_2, 0.f, 1.f)
 
+    // detect very fast modulations and filter wave for respective frame
+    float deltaWt1 = fabsf(pre_fWt_1 - fWt_1);
+    if(deltaWt1 > 0.1f){
+        trigger1 = true;
+    }
+    pre_fWt_1 = fWt_1;
+
+    float deltaWt2 = fabsf(pre_fWt_2 - fWt_1);
+    if(deltaWt2 > 0.1f)
+        trigger2 = true;
+    pre_fWt_2 = fWt_2;
+
     // calc wave and apply filter
     float out_1[32] = {0.f};
-    if(isWaveTableGood_1)
+    if(isWaveTableGood)
     {
-        oscillator_1.Render(f_1, fAM_1, fWt_1, wavetables_1, out_1, bufSz);
+        oscillator_1.Render(trigger1, f_1, fAM_1, fWt_1, wavetables, out_1, bufSz);
 
         switch(iFType){
             case 1:
@@ -216,9 +216,9 @@ void ctagSoundProcessorWTOscDuo::Process(const ProcessData &data) {
     }
     // calc wave and apply filter
     float out_2[32] = {0.f};
-    if(isWaveTableGood_1)
+    if(isWaveTableGood)
     {
-        oscillator_2.Render(f_2, fAM_2, fWt_2, wavetables_1, out_2, bufSz);
+        oscillator_2.Render(trigger2, f_2, fAM_2, fWt_2, wavetables, out_2, bufSz);
 
         switch(iFType){
             case 1:
@@ -254,12 +254,12 @@ ctagSoundProcessorWTOscDuo::ctagSoundProcessorWTOscDuo() {
     lfo_2.SetFrequency(1.f);
     // alloc mem for one wavetable
     
-    buffer_1 = (int16_t*)heap_caps_malloc(260*64*2, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT); // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
-    assert(buffer_1 != NULL);
-    memset(buffer_1, 0, 260*64*2);
-    fbuffer_1 = (float*)heap_caps_malloc(512*4, MALLOC_CAP_8BIT|MALLOC_CAP_INTERNAL); // buffer for wavetable prep computations
-    assert(fbuffer_1 != NULL);
-    memset(fbuffer_1, 0, 512*4);
+    buffer = (int16_t*)heap_caps_malloc(260 * 64 * 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
+    assert(buffer != NULL);
+    memset(buffer, 0, 260 * 64 * 2);
+    fbuffer = (float*)heap_caps_malloc(512 * 4, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL); // buffer for wavetable prep computations
+    assert(fbuffer != NULL);
+    memset(fbuffer, 0, 512 * 4);
     
     oscillator_1.Init();
     oscillator_2.Init();
@@ -278,58 +278,56 @@ ctagSoundProcessorWTOscDuo::ctagSoundProcessorWTOscDuo() {
 
 ctagSoundProcessorWTOscDuo::~ctagSoundProcessorWTOscDuo() 
 {
-    heap_caps_free(buffer_1);
-    heap_caps_free(fbuffer_1);
-    heap_caps_free(buffer_2);
-    heap_caps_free(fbuffer_2);
+    heap_caps_free(buffer);
+    heap_caps_free(fbuffer);
 }
 
-void ctagSoundProcessorWTOscDuo::prepareWavetables_1()
+void ctagSoundProcessorWTOscDuo::prepareWavetables()
 {
     // precalculates wavetable data according to https://www.dafx12.york.ac.uk/papers/dafx12_submission_69.pdf
     // plaits uses integrated wavetable synthesis, i.e. integrated wavetables, order K=1 (one integration), N=1 (linear interpolation)
     // check if sample rom seems to have current bank
-    if(!sample_rom_1.HasSliceGroup(currentBank_1 * 64, currentBank_1 * 64 + 63))
+    if(!sample_rom_1.HasSliceGroup(currentBank * 64, currentBank * 64 + 63))
     {
-        isWaveTableGood_1 = false;
+        isWaveTableGood = false;
         return;
     }
-    int size = sample_rom_1.GetSliceGroupSize(currentBank_1 * 64, currentBank_1 * 64 + 63);
+    int size = sample_rom_1.GetSliceGroupSize(currentBank * 64, currentBank * 64 + 63);
     if(size != 256*64)
     {
-        isWaveTableGood_1 = false;
+        isWaveTableGood = false;
         return;
     }
-    int bankOffset = currentBank_1*64*256;
+    int bankOffset = currentBank*64*256;
     int bufferOffset = 4*64; // load sample data into buffer at offset, due to pre-calculation each wave will be 260 words long
-    sample_rom_1.Read(&buffer_1[bufferOffset], bankOffset, 256*64);
+    sample_rom_1.Read(&buffer[bufferOffset], bankOffset, 256 * 64);
     // start conversion of data
     // 64 wavetables per bank
     int c = 0;
     for(int i=0;i<64;i++){ // iterate all waves
         int startOffset = bufferOffset + i*256; // which wave
         // prepare long array, i.e. x = numpy.array(list(wave) * 2 + wave[0] + wave[1] + wave[2] + wave[3])
-        float sum4 = buffer_1[startOffset] + buffer_1[startOffset+1] + buffer_1[startOffset+2] + buffer_1[startOffset+3]; // add dc
+        float sum4 = buffer[startOffset] + buffer[startOffset + 1] + buffer[startOffset + 2] + buffer[startOffset + 3]; // add dc
         for(int j=0;j<512;j++){
-            fbuffer_1[j] = buffer_1[startOffset + (j%256)] + sum4;
+            fbuffer[j] = buffer[startOffset + (j % 256)] + sum4;
         }
         // x -= x.mean()
-        removeMeanOfFloatArray(fbuffer_1, 512);
+        removeMeanOfFloatArray(fbuffer, 512);
         // x /= numpy.abs(x).max()
-        scaleFloatArrayToAbsMax(fbuffer_1, 512);
+        scaleFloatArrayToAbsMax(fbuffer, 512);
         // x = numpy.cumsum(x)
-        accumulateFloatArray(fbuffer_1, 512);
+        accumulateFloatArray(fbuffer, 512);
         // x -= x.mean()
-        removeMeanOfFloatArray(fbuffer_1, 512);
+        removeMeanOfFloatArray(fbuffer, 512);
         // create pointer map
-        wavetables_1[i] = &buffer_1[c];
+        wavetables[i] = &buffer[c];
         // x = numpy.round(x * (4 * 32768.0 / WAVETABLE_SIZE)
         for(int j=512-256-4;j<512;j++){
-            int16_t v = static_cast<int16_t >(roundf(fbuffer_1[j] * 4.f * 32768.f / 256.f));
-            buffer_1[c++] = v;
+            int16_t v = static_cast<int16_t >(roundf(fbuffer[j] * 4.f * 32768.f / 256.f));
+            buffer[c++] = v;
         }
     }
-    isWaveTableGood_1 = true;
+    isWaveTableGood = true;
 }
 
 void ctagSoundProcessorWTOscDuo::knowYourself(){
