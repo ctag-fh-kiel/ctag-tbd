@@ -41,8 +41,7 @@ namespace CTAG {
 
         private:
             virtual void knowYourself() override;
-            void prepareWavetables_1();
-            void prepareWavetables_2();
+            void prepareWavetables();
             ctagSampleRom sample_rom_1;
             ctagSampleRom sample_rom_2;
             plaits::WavetableOscillator<256, 64> oscillator_1;
@@ -53,16 +52,12 @@ namespace CTAG {
             ctagADSREnv adsr_2;
             stmlib::Svf svf_1;
             stmlib::Svf svf_2;
-            int16_t *buffer_1 = NULL;
-            float *fbuffer_1 = NULL;
-            int16_t *buffer_2 = NULL;
-            float *fbuffer_2 = NULL;
-            const int16_t *wavetables_1[64];
-            const int16_t *wavetables_2[64];
-            int currentBank_1 = 0;
-            int lastBank_1 = -1;
-            bool isWaveTableGood_1 = false;
-            bool isWaveTableGood_2 = false;
+            int16_t *buffer = NULL;
+            float *fbuffer = NULL;
+            const int16_t *wavetables[64];
+            int currentBank = 0;
+            int lastBank = -1;
+            bool isWaveTableGood = false;
             float valADSR_1 = 0.f;
             float valADSR_2 = 0.f; 
             float valLFO_1 = 0.f;
