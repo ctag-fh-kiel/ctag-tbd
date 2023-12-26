@@ -13,6 +13,3 @@
 [submodule "components/moog/MoogLadders"]
 	path = components/moog/MoogLadders
 	url = https://github.com/ctag-fh-kiel/MoogLadders.git
-[submodule "components/midi/midiXparser"]
-	path = components/midi/midiXparser
-	url = https://github.com/ctag-fh-kiel/midiXparser.git

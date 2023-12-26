@@ -30,7 +30,6 @@ respective component folders / files if different from this license.
 
 #include "midiuart.hpp"
 #define byte uint8_t
-#include "midiXparser/midiXparser.h"
 
 
 // --- Define-contants for MIDI-mapping-related stuff --- 

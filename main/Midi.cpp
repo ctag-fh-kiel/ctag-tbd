@@ -658,5 +658,3 @@ void Midi::noteOff(uint8_t* msg)
     handleNoteOff(msg); // Processing is dependant on channel, because we have different voicemodes for channels, 1, 15 and 16
     return; // We don't process note-off velocity!
 }
-
-
