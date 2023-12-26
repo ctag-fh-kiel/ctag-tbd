@@ -79,7 +79,11 @@ void CTAG::FAV::Favorites::StartUI() {
         touch_pad_config(TOUCH_PAD);
         touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
         touch_pad_fsm_start();
-        DRIVERS::Display::ShowUserString("Do no touch sensor!");
+        std::vector<std::string> vs;
+        vs.emplace_back("Calibration:");
+        vs.emplace_back("");
+        vs.emplace_back("Do not touch!");
+        DRIVERS::Display::ShowUserString(vs);
         vTaskDelay(2000/ portTICK_PERIOD_MS);
         uint32_t touch_value;
         for(int i=0;i<16;i++){

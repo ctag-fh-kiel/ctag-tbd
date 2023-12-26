@@ -92,6 +92,13 @@ void Display::ShowUserString(std::string const &s) {
     ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length() > 16 ? 16 : s.length(), false);
 }
 
+void Display::ShowUserString(std::vector<std::string> const &sv) {
+    ssd1306_clear_screen(&I2CDisplay, false);
+    for(int i=0;i<sv.size();i++){
+        ssd1306_display_text(&I2CDisplay, i, sv[i].c_str(), sv[i].length() > 16 ? 16 : sv[i].length(), false);
+    }
+}
+
 void Display::PrepareDisplayFavoriteUString(int const &id, std::string const &name, std::string const &us) {
     // create slices
     std::string s {us}, title{"#" + std::to_string(id) + ": " + name};
