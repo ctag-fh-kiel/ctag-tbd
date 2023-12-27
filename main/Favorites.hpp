@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 #include "FavoritesModel.hpp"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
+#include <atomic>
 
 namespace CTAG {
     namespace FAV {
@@ -38,15 +38,21 @@ namespace CTAG {
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
             static void StartUI();
 #endif
+#ifdef CONFIG_TBD_PLATFORM_BBA
+            static void SetProgramChangeValue(uint32_t const &v);
+#endif
+            static void TouchPadHandler();
         private:
             static FavoritesModel model;
             static int32_t activeFav;
             enum MenuStates {CLEAR, FAV_ACTIVE_NAME, FAV_ACTIVE_USTRING, FAV_SELECT, FAV_SELECT_CONFIRM};
             static MenuStates uiMenuState;
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
-
             [[noreturn]] static void ui_task(void *pvParams);
             static TaskHandle_t uiTaskHandle;
+#endif
+#ifdef CONFIG_TBD_PLATFORM_BBA
+            static std::atomic<uint32_t> programChangeValue;
 #endif
         };
     }

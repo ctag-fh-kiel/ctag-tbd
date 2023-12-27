@@ -36,7 +36,11 @@ respective component folders / files if different from this license.
 #elif CONFIG_TBD_PLATFORM_BBA
     #include "driver/touch_pad.h"
     #define TOUCH_PAD TOUCH_PAD_NUM6 // is GPIO_NUM_6
-    static uint32_t noTouch {0};
+    static uint32_t noTouch {0}, previousProgramChangeValue {0};
+    std::atomic<uint32_t> CTAG::FAV::Favorites::programChangeValue {0};
+    void CTAG::FAV::Favorites::SetProgramChangeValue(uint32_t const &v) {
+        programChangeValue.store(v);
+    }
 #endif
 
 CTAG::FAV::FavoritesModel CTAG::FAV::Favorites::model;
@@ -80,8 +84,8 @@ void CTAG::FAV::Favorites::StartUI() {
         touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
         touch_pad_fsm_start();
         std::vector<std::string> vs;
-        vs.emplace_back("Calibration:");
-        vs.emplace_back("");
+        vs.emplace_back("Touch sensor");
+        vs.emplace_back("calibration:");
         vs.emplace_back("Do not touch!");
         DRIVERS::Display::ShowUserString(vs);
         vTaskDelay(2000/ portTICK_PERIOD_MS);
@@ -118,6 +122,11 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
 #elif CONFIG_TBD_PLATFORM_BBA
         uint32_t touch_value;
         touch_pad_read_raw_data(TOUCH_PAD, &touch_value);    // read raw data.
+        uint32_t pchgval = programChangeValue.load();
+        if(pchgval != previousProgramChangeValue){
+            previousProgramChangeValue = pchgval;
+            ESP_LOGE("Favorites", "Program Change Value: 0x%lX", pchgval);
+        }
         if(touch_value > noTouch + 1000) {
 #else
         if(gpio_get_level(PIN_PUSH_BTN)){

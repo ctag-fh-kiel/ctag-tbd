@@ -2,10 +2,14 @@
 
 ## V1.0.0
 - Updated to newer mutable instruments code base, TBDaits (aka. Plaits) has now all 24 models
+- Added WTOscDuo, dual oscillator version of WTOsc
+- Added MacOscDuo, dual oscillator version of MacOsc
+- WTOsc and WTOscDuo have improved transient response for fast wavetable changes
+- Support for new hardware version TBD-BBA (BlackBoxAudio), which is a TBD controlled by USB MIDI and DIN MIDI with a comprehensive MIDI implementation and duo/quadrophonic output
 - Switched to ESP-IDF 5.1.1
 - Swapped flash file system to LittleFS from SPIFFS, much improved stability of flash file system
 - Fixed many bugs with backup / restore mechanism
-- Added support for BlackBoxAudio hardware
+- Bug fixes in several plugins
 
 ## V0.9.21a
 - ADC input channels phase issue fixed (thanks to Synthpatti for reporting)
