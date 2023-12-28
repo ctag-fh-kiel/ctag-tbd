@@ -125,7 +125,10 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
         uint32_t pchgval = programChangeValue.load();
         if(pchgval != previousProgramChangeValue){
             previousProgramChangeValue = pchgval;
-            ESP_LOGE("Favorites", "Program Change Value: 0x%lX", pchgval);
+            int fav = previousProgramChangeValue & 0xFF;
+            activeFav = favSel;
+            ActivateFavorite(fav % 10);
+            uiMenuState = FAV_ACTIVE_NAME;
         }
         if(touch_value > noTouch + 1000) {
 #else
