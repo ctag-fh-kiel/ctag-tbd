@@ -482,7 +482,7 @@ bool b_use_fix_formants = true;
 }
 
 // --- Formantor Constructor ---
-ctagSoundProcessorFormantor::ctagSoundProcessorFormantor()
+void ctagSoundProcessorFormantor::Init()
 {
   // construct internal data model
   knowYourself();

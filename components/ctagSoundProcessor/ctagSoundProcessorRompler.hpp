@@ -33,7 +33,7 @@ namespace CTAG {
         class ctagSoundProcessorRompler : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorRompler();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorRompler();
 
         private:

@@ -20,9 +20,6 @@ respective component folders / files if different from this license.
 ***************/
 
 
-//
-// Created by Robert Manzke on 31.01.20.
-//
 #include "esp_log.h"
 #include "esp_heap_caps.h"
 #include "rapidjson/filewritestream.h"

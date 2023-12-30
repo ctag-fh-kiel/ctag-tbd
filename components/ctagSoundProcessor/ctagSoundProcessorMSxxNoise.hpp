@@ -19,7 +19,7 @@ namespace CTAG
     {
       public:
         virtual void Process(const ProcessData &) override;
-        ctagSoundProcessorMSxxNoise();
+       virtual void Init() override;
         virtual ~ctagSoundProcessorMSxxNoise();
 
       private:

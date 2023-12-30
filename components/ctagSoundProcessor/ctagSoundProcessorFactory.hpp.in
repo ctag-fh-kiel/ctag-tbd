@@ -33,10 +33,14 @@ namespace CTAG {
         class ctagSoundProcessorFactory {
         public:
             static std::unique_ptr <ctagSoundProcessor> Create(const std::string type) {
+            std::unique_ptr <ctagSoundProcessor> processor {nullptr};
 // generated code
                 @BIG_IF@
 // end generated code
-                return nullptr;
+                if(nullptr != processor) {
+                    processor->Init();
+                }
+                return processor;
             }
         };
     }

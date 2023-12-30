@@ -30,7 +30,7 @@ using namespace CTAG::SP;
 
 #define MAX_GAIN 20.f
 
-ctagSoundProcessorBCSR::ctagSoundProcessorBCSR() {
+void ctagSoundProcessorBCSR::Init() {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

@@ -1,3 +1,29 @@
+/***************
+CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
+
+A project conceived within the Creative Technologies Arbeitsgruppe of
+Kiel University of Applied Sciences: https://www.creative-technologies.de
+(c) 2020/2021 by Robert Manzke. All rights reserved.
+
+(c) 2021 for the "APCpp"-Plugin by Mathias Brüssel
+APCpp stands for "Atari Punk Console plus plus", i.e. the digital implementation of a popular electronics circuit with enhancements
+As with many simple Oscillators, the original hardware design is based on timerchips (two NE555 or one 556) https://de.wikipedia.org/wiki/NE555
+To learn more about the original APC circuit please refer to: https://sdiy.info/wiki/Atari_Punk_Console
+Enhancements are optional pitch-modulation, pulse-with-modulation, amplitude/ring-modulation, sinuswaves for the oscillators and a volume-envelope.
+
+The CTAG TBD software is licensed under the GNU General Public License
+(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
+
+The CTAG TBD hardware design is released under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+CTAG TBD is provided "as is" without any express or implied warranties.
+
+License and copyright details for specific submodules are included in their
+respective component folders / files if different from this license.
+***************/
+
 #include <atomic>
 #include <vector>
 #include "ctagSoundProcessor.hpp"
@@ -16,7 +42,7 @@ namespace CTAG {
         class ctagSoundProcessorAntique : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorAntique();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorAntique();
 
         private:

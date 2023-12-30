@@ -29,7 +29,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorTBDaits::ctagSoundProcessorTBDaits() {
+void ctagSoundProcessorTBDaits::Init() {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

@@ -26,7 +26,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorMacOsc::ctagSoundProcessorMacOsc() {
+void ctagSoundProcessorMacOsc::Init() {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

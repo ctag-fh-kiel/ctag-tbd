@@ -33,7 +33,7 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ctagSoundProcessorPNoise();
+           virtual void Init() override;
 
         private:
 

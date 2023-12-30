@@ -76,7 +76,7 @@ void ctagSoundProcessorClaude::Process(const ProcessData &data) {
     if(cv_pitch != -1){
         fPitch += 12.f * data.cv[cv_pitch] * 5.f;
     }
-    clamp(fPitch, -48.f, 48.f);
+    CONSTRAIN(fPitch, -48.f, 48.f)
     p->pitch = fPitch;
     float fDensity = density / 4095.f;
     if(cv_density != -1){
@@ -113,7 +113,7 @@ void ctagSoundProcessorClaude::Process(const ProcessData &data) {
 
 }
 
-ctagSoundProcessorClaude::ctagSoundProcessorClaude() {
+void ctagSoundProcessorClaude::Init() {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

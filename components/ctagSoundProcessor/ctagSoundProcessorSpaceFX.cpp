@@ -494,8 +494,7 @@ float f_val_saw = 0.f;                // Saw wave
 }
 
 // --- Constructor (initalize factory pattern and all DSP-related stuff) ---
-ctagSoundProcessorSpaceFX::ctagSoundProcessorSpaceFX():
-maxDelayLength(88200), dlyLine(maxDelayLength)
+void ctagSoundProcessorSpaceFX::Init()
 {
   // construct internal data model
   knowYourself();

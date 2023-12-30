@@ -31,7 +31,7 @@ namespace CTAG {
 
             ~ctagSoundProcessorMIVerb();
 
-            ctagSoundProcessorMIVerb();
+           virtual void Init() override;
 
         private:
             virtual void knowYourself() override;

@@ -14,7 +14,7 @@ namespace CTAG {
         class ctagSoundProcessorRetroactor : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorRetroactor();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorRetroactor();
 
         private:

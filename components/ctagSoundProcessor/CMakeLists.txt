@@ -1,5 +1,7 @@
 # get all sound processor files
 file(GLOB SOUND_PROCESSORS ctagSoundProcessor*.cpp)
+# remove item matching "ctagSoundProcessor.cpp" from ${SOUND_PROCESSORS}
+# list(FILTER SOUND_PROCESSORS EXCLUDE REGEX "ctagSoundProcessor\\.cpp$")
 # clean generated directory
 file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/gen_include)
 # convert JSON descriptors to c headers and extract processor IDs
@@ -13,7 +15,7 @@ foreach (VAR ${SOUND_PROCESSORS})
     string(REGEX REPLACE "ctagSoundProcessor+" "" SP_ID ${MYFILE_WITHOUT_EXT})
     set(SP_INCLUDES "${SP_INCLUDES}#include \"${MYFILE_WITHOUT_EXT}.hpp\"\n")
     # prepare big if variable for factory
-    set(BIG_IF "${BIG_IF}if(type.compare(\"${SP_ID}\") == 0) return std::make_unique<${MYFILE_WITHOUT_EXT}>();\n")
+    set(BIG_IF "${BIG_IF}if(type.compare(\"${SP_ID}\") == 0) processor = std::make_unique<${MYFILE_WITHOUT_EXT}>();\n")
 endforeach ()
 
 # write sound processor descriptor json and convert it to header file

@@ -5,13 +5,15 @@ using namespace CTAG::SP;
 void ctagSoundProcessorTemplate::Process(const ProcessData &data) {
 }
 
-ctagSoundProcessorTemplate::ctagSoundProcessorTemplate() {
+void ctagSoundProcessorTemplate::Init() {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 }
 
+// no ctor, use Init() instead, is called from factory after successful creation
+// dtor
 ctagSoundProcessorTemplate::~ctagSoundProcessorTemplate() {
 }
 

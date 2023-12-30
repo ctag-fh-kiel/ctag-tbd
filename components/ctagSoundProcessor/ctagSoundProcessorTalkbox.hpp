@@ -20,7 +20,7 @@ namespace CTAG {
         class ctagSoundProcessorTalkbox : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorTalkbox();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorTalkbox();
 
         private:

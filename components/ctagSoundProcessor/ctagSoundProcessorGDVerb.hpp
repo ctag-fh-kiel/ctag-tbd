@@ -33,7 +33,7 @@ namespace CTAG::SP {
     public:
         void Process(const ProcessData &) override;
 
-        ctagSoundProcessorGDVerb();
+       virtual void Init() override;
 
     private:
 

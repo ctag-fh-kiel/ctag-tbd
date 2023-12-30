@@ -27,7 +27,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorMIChorus::ctagSoundProcessorMIChorus() {
+void ctagSoundProcessorMIChorus::Init() {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

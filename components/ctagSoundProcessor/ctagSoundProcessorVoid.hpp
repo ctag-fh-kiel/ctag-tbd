@@ -6,7 +6,7 @@ namespace CTAG {
         class ctagSoundProcessorVoid : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorVoid();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorVoid();
 
         private:

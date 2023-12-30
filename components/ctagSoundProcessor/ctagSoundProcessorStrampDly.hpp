@@ -33,7 +33,7 @@ namespace CTAG {
 
             ~ctagSoundProcessorStrampDly();
 
-            ctagSoundProcessorStrampDly();
+           virtual void Init() override;
 
         private:
             virtual void knowYourself() override;

@@ -62,7 +62,7 @@ void ctagSoundProcessorEveryTrim::Process(const ProcessData &data) {
 
 }
 
-ctagSoundProcessorEveryTrim::ctagSoundProcessorEveryTrim() {
+void ctagSoundProcessorEveryTrim::Init() {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

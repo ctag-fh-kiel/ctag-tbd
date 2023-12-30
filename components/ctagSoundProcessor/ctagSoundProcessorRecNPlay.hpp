@@ -20,7 +20,7 @@ namespace CTAG {
         class ctagSoundProcessorRecNPlay : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorRecNPlay();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorRecNPlay();
 
         private:

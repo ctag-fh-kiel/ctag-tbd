@@ -9,7 +9,7 @@ namespace CTAG {
         class ctagSoundProcessorAPCpp : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorAPCpp();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorAPCpp();
 
         private:
