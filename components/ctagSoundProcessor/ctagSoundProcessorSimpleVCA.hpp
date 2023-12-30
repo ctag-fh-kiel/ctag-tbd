@@ -34,7 +34,7 @@ namespace CTAG {
 
             virtual ~ctagSoundProcessorSimpleVCA();
 
-            ctagSoundProcessorSimpleVCA();
+           virtual void Init() override;
 
         private:
             virtual void knowYourself() override;

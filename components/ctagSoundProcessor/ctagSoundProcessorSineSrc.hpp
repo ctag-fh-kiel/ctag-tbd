@@ -35,7 +35,7 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ctagSoundProcessorSineSrc();
+           virtual void Init() override;
 
         private:
             virtual void knowYourself() override;

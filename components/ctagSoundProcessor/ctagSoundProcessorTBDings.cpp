@@ -32,7 +32,7 @@ using namespace CTAG::SP;
 
 
 
-ctagSoundProcessorTBDings::ctagSoundProcessorTBDings() {
+void ctagSoundProcessorTBDings::Init() {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

@@ -6,7 +6,8 @@ namespace CTAG {
         class ctagSoundProcessorTemplate : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorTemplate();
+            // no ctor, use Init() instead, is called from factory after successful creation
+            virtual void Init() override;
             virtual ~ctagSoundProcessorTemplate();
 
         private:

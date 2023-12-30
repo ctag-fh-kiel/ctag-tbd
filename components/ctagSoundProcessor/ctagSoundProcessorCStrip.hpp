@@ -29,7 +29,7 @@ namespace CTAG {
         class ctagSoundProcessorCStrip : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorCStrip();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorCStrip();
 
         private:

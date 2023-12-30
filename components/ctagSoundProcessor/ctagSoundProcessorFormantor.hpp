@@ -22,7 +22,7 @@ namespace CTAG {
         class ctagSoundProcessorFormantor : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorFormantor();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorFormantor();
 
         private:

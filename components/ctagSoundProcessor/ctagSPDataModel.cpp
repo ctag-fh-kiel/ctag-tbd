@@ -277,3 +277,17 @@ bool ctagSPDataModel::IsParamCV(const string &id) {
     }
     return false;
 }
+
+std::string ctagSPDataModel::GetActivePluginParameters() {
+    rapidjson::StringBuffer parameters;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(parameters);
+    activePreset.Accept(writer);
+    return parameters.GetString();
+}
+
+void ctagSPDataModel::SetActivePluginParameters(const std::string &parameters) {
+    Document d;
+    d.Parse(parameters.c_str());
+    activePreset.GetAllocator().Clear();
+    activePreset.CopyFrom(d, activePreset.GetAllocator());
+}

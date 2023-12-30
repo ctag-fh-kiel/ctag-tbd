@@ -29,7 +29,7 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) override;
 
-            ctagSoundProcessorEChorus();
+           virtual void Init() override;
 
             virtual ~ctagSoundProcessorEChorus();
 

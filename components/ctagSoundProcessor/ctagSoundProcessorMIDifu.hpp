@@ -31,7 +31,7 @@ namespace CTAG {
 
             virtual ~ctagSoundProcessorMIDifu();
 
-            ctagSoundProcessorMIDifu();
+           virtual void Init() override;
 
         private:
             virtual void knowYourself() override;

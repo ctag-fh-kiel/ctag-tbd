@@ -31,7 +31,7 @@ namespace CTAG {
 
             ~ctagSoundProcessorMIPShft();
 
-            ctagSoundProcessorMIPShft();
+           virtual void Init() override;
 
 
         private:

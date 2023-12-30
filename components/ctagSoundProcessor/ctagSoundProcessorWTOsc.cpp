@@ -160,7 +160,7 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     }
 }
 
-ctagSoundProcessorWTOsc::ctagSoundProcessorWTOsc() {
+void ctagSoundProcessorWTOsc::Init() {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

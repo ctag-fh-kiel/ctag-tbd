@@ -31,7 +31,7 @@ namespace CTAG {
 
             ~ctagSoundProcessorMIEnsemble();
 
-            ctagSoundProcessorMIEnsemble();
+           virtual void Init() override;
 
 
         private:

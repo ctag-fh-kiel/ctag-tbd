@@ -33,7 +33,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorGDVerb2::ctagSoundProcessorGDVerb2() {
+void ctagSoundProcessorGDVerb2::Init() {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

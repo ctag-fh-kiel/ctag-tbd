@@ -28,7 +28,7 @@ namespace CTAG {
         class ctagSoundProcessorTDelay : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorTDelay();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorTDelay();
 
         private:

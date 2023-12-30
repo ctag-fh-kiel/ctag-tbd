@@ -37,7 +37,7 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ctagSoundProcessorHihat1();
+           virtual void Init() override;
 
         private:
 

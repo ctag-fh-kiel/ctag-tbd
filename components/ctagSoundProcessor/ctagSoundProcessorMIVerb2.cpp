@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorMIVerb2::ctagSoundProcessorMIVerb2() {
+void ctagSoundProcessorMIVerb2::Init() {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

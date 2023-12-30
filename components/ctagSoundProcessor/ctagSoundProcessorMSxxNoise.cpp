@@ -150,7 +150,7 @@ void ctagSoundProcessorMSxxNoise::Process(const ProcessData &data)
   }
 }
 
-ctagSoundProcessorMSxxNoise::ctagSoundProcessorMSxxNoise()
+void ctagSoundProcessorMSxxNoise::Init()
 {
     // construct internal data model
     knowYourself();

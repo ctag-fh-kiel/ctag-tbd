@@ -5,7 +5,7 @@ using namespace CTAG::SP;
 void ctagSoundProcessorVoid::Process(const ProcessData &data) {
 }
 
-ctagSoundProcessorVoid::ctagSoundProcessorVoid() {
+void ctagSoundProcessorVoid::Init() {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

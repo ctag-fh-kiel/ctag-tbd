@@ -33,7 +33,7 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) override;
 
-            ctagSoundProcessorMoogFilt();
+           virtual void Init() override;
 
         private:
             virtual void knowYourself() override;

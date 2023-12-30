@@ -36,7 +36,7 @@ namespace CTAG {
         class ctagSoundProcessorBBeats : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorBBeats();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorBBeats();
 
         private:

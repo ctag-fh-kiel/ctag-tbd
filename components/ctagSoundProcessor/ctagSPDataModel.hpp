@@ -52,6 +52,10 @@ namespace CTAG {
 
             const char *GetCStrJSONPresets(); // all presets
             const char *GetCStrJSONAllPresetData(); // current preset
+
+            std::string GetActivePluginParameters(); // active preset which contains non stored values
+            void SetActivePluginParameters(const std::string &preset);
+
             bool IsParamTrig(const string &id);
 
             bool IsParamCV(const string &id);

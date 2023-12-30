@@ -31,7 +31,7 @@ namespace CTAG {
 
             ~ctagSoundProcessorMIChorus();
 
-            ctagSoundProcessorMIChorus();
+           virtual void Init() override;
 
         private:
 

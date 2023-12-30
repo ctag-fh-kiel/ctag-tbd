@@ -66,7 +66,7 @@ void ctagSoundProcessorTDelay::Process(const ProcessData &data) {
     tdelay.Process(data.buf, bufSz, processCh);
 }
 
-ctagSoundProcessorTDelay::ctagSoundProcessorTDelay() {
+void ctagSoundProcessorTDelay::Init() {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

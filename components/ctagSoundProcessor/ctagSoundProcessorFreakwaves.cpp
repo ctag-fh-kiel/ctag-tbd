@@ -835,8 +835,7 @@ void ctagSoundProcessorFreakwaves::Process(const ProcessData &data)
   }
 }
 
-ctagSoundProcessorFreakwaves::ctagSoundProcessorFreakwaves():
-maxDelayLength(88200), dlyLine(maxDelayLength)
+void ctagSoundProcessorFreakwaves::Init()
 {
   // construct internal data model
   knowYourself();

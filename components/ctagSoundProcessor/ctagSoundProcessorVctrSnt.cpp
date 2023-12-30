@@ -810,7 +810,7 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data)
 }
 
 // --- Constructor for VctrSnt ---
-ctagSoundProcessorVctrSnt::ctagSoundProcessorVctrSnt()
+void ctagSoundProcessorVctrSnt::Init()
 {
   // construct internal data model
   knowYourself();

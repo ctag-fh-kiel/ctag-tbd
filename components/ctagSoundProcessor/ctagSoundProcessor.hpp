@@ -82,6 +82,8 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) = 0; // pure virtual --> must be implemented by derived
 
+            virtual void Init() = 0;
+
             virtual ~ctagSoundProcessor() {};
 
             int GetAudioBufferSize() { return bufSz; }
@@ -91,6 +93,7 @@ namespace CTAG {
             const char *GetCStrJSONParamSpecs() const { return model->GetCStrJSONParams(); }
 
             virtual const char *GetCStrID() { return id.c_str(); }
+            virtual const string& GetID() { return id; }
 
             void SetParamValue(const string &id, const string &key, const int val) {
                 setParamValueInternal(id, key, val); // as immediate as possible
@@ -110,9 +113,15 @@ namespace CTAG {
                 loadPresetInternal();
             }
 
+            std::string GetActivePluginParameters() { return model->GetActivePluginParameters(); }
+            void SetActivePluginParameters(std::string const& p) {
+                model->SetActivePluginParameters(p);
+                loadPresetInternal();
+            }
+
         protected:
 
-            virtual void knowYourself() {};
+            virtual void knowYourself() = 0;
 
             virtual void setParamValueInternal(const string &id, const string &key, const int val) {
                 //printf("%s, %s, %d\n", id.c_str(), key.c_str(), val);
@@ -161,6 +170,7 @@ namespace CTAG {
             bool isStereo = false;
             int const bufSz = 32;
             int processCh = 0;
+            int instance {0};
             std::unique_ptr<ctagSPDataModel> model = nullptr;
             string id = "";
             map<string, function<void(const int)>> pMapPar;

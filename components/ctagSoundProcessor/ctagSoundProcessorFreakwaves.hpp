@@ -35,7 +35,7 @@ namespace CTAG {
         class ctagSoundProcessorFreakwaves : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorFreakwaves();
+            virtual void Init() override;
             virtual ~ctagSoundProcessorFreakwaves();
 
         private:
@@ -127,9 +127,9 @@ namespace CTAG {
             float f_pitch_stored_C_ = 0.f; // Most recent valid pitch of OSC C...
 
             // --- Delay ---
-            const uint32_t maxDelayLength;
+            const uint32_t maxDelayLength {88200};
             const uint32_t shorterMaxDelayLength = maxDelayLength / 4;    // We have an option to shorten the delay-range for slapback delays
-            HELPERS::ctagFBDelayLine dlyLine;
+            HELPERS::ctagFBDelayLine dlyLine {maxDelayLength};
             float m_DelayTime = 0.f;          // Hysteresis values... (avoiding too abrupt changes...)
             float m_DelayFeedback = 0.f;
 

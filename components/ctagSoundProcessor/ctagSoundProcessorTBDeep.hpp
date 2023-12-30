@@ -34,7 +34,7 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) override;
 
-            ctagSoundProcessorTBDeep();
+           virtual void Init() override;
 
 
         private:

@@ -11,7 +11,7 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) override;
 
-            ctagSoundProcessorMISVF();
+           virtual void Init() override;
 
         private:
             virtual void knowYourself() override;

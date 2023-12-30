@@ -36,7 +36,7 @@ namespace CTAG {
         class ctagSoundProcessorWTOscDuo : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorWTOscDuo();
+           virtual void Init() override;
             virtual ~ctagSoundProcessorWTOscDuo();
 
         private:
