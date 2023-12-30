@@ -825,7 +825,10 @@ void ctagSoundProcessorFreakwaves::Process(const ProcessData &data)
       }
       resonator.Process(f_ResonatorFreq, f_ResonatorStructure, f_ResonatorBrightness, f_ResonatorDamping, reso_buf, reso_buf, bufSz);
       for (uint32_t bufId = 0; bufId < bufSz; bufId++)
+      {
         data.buf[bufId * 2] = data.buf[bufId*2]*f_ExternalDry + delay_buf[bufId]*resonator_dry + reso_buf[bufId]*resonator_wet;   // Apply Resonator now and let original signal through partly if activated
+        data.buf[bufId * 2 + 1] = 0.f;  // Make sure that we "leave no garbage" on the unused channel
+      }  
       // === Postprocessing ===
       f_accentVal_ = averageAccent.dejitter(fabsf(data.buf[30]));  // Remember average volume of last completely processed value to maybe apply as Accent Bend or "Wavescan" in next round...
     }
