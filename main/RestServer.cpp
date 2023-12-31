@@ -814,6 +814,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
                 httpd_resp_send_500(req);
                 heap_caps_free(buffer);
                 CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                heap_caps_free(buffer);
                 return ESP_ERR_INVALID_ARG;
             } else if (data_read > 0) {
                 //spi_flash_write(CONFIG_SAMPLE_ROM_START_ADDRESS + offset, buffer, data_read);
@@ -877,6 +878,7 @@ esp_err_t RestServer::favorite_post_handler(httpd_req_t *req) {
             }
             /* In case of error, returning ESP_FAIL will
              * ensure that the underlying socket is closed */
+            heap_caps_free(content);
             return ESP_FAIL;
         }
         content[req->content_len] = 0;
