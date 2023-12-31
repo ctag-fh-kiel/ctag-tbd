@@ -282,11 +282,6 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     // when trying to set chan 1 and chan 0 is a stereo plugin, return
     if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
 
-    // check if sound processor already active
-    if(nullptr != sp[chan]){
-        if(sp[chan]->GetID() == id) return;
-    }
-
     ESP_LOGI("SP", "Switching plugin %d to %s", chan, id.c_str());
     ESP_LOGE("SP", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -294,23 +289,12 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 
-    // rescue settings of plugin that will be destroyed but reloaded
-    std::string activePluginSettings;
-    if(chan == 1){
-        if(nullptr != sp[0]){
-            activePluginSettings = sp[0]->GetActivePluginParameters();
-        }
-    }else{
-        if(nullptr != sp[1]){
-            activePluginSettings = sp[1]->GetActivePluginParameters();
-        }
-    }
-
     // destroy active plugin
     xSemaphoreTake(processMutex, portMAX_DELAY);
-    // destroy both plugins in this order to avoid heap fragmentation as much as possible
-    sp[1] = nullptr; // destruct smart ptr
-    sp[0] = nullptr; // destruct smart ptr
+    sp[chan] = nullptr; // destruct smart ptr
+    if (model->IsStereo(id) && chan == 0) {
+        sp[1] = nullptr; // destruct smart ptr
+    }
 
     ESP_LOGE("SP", "2: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -318,35 +302,11 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 
-    // create new plugins
-    // freshly allocate plugins in this order to avoid heap fragmentation
-    if(chan == 0){
-        sp[0] = ctagSoundProcessorFactory::Create(id);
-        sp[0]->SetProcessChannel(0);
-        model->SetActivePluginID(id, 0);
-        sp[0]->LoadPreset(model->GetActivePatchNum(0));
-        if(!model->IsStereo(id)){
-            sp[1] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(1));
-            sp[1]->SetProcessChannel(1);
-            if(activePluginSettings.empty()) {
-                sp[1]->LoadPreset(model->GetActivePatchNum(1));
-            }else{
-                sp[1]->SetActivePluginParameters(activePluginSettings);
-            }
-        }
-    }else{
-        sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
-        sp[0]->SetProcessChannel(0);
-        if(activePluginSettings.empty()) {
-            sp[0]->LoadPreset(model->GetActivePatchNum(0));
-        }else{
-            sp[0]->SetActivePluginParameters(activePluginSettings);
-        }
-        sp[1] = ctagSoundProcessorFactory::Create(id);
-        sp[1]->SetProcessChannel(1);
-        model->SetActivePluginID(id, 1);
-        sp[1]->LoadPreset(model->GetActivePatchNum(1));
-    }
+    // create new plugin
+    sp[chan] = ctagSoundProcessorFactory::Create(id);
+    sp[chan]->SetProcessChannel(chan);
+    model->SetActivePluginID(id, chan);
+    sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
     xSemaphoreGive(processMutex);
 
 
@@ -360,7 +320,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
 
 TaskHandle_t SoundProcessorManager::audioTaskH;
 TaskHandle_t SoundProcessorManager::ledTaskH;
-std::unique_ptr<ctagSoundProcessor> SoundProcessorManager::sp[2];
+std::unique_ptr<ctagSoundProcessor> SoundProcessorManager::sp[2] {nullptr, nullptr};
 std::unique_ptr<SPManagerDataModel> SoundProcessorManager::model;
 SemaphoreHandle_t SoundProcessorManager::processMutex;
 atomic<uint32_t> SoundProcessorManager::ledBlink;
@@ -414,6 +374,7 @@ void SoundProcessorManager::StartSoundProcessor() {
 #endif
 
     // configure channels
+    /*
     sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
     sp[0]->SetProcessChannel(0);
     sp[0]->LoadPreset(model->GetActivePatchNum(0));
@@ -424,6 +385,9 @@ void SoundProcessorManager::StartSoundProcessor() {
         sp[1]->LoadPreset(model->GetActivePatchNum(1));
         ESP_LOGD("SPM", "id sp 0 %s, preset %d", model->GetActiveProcessorID(1).c_str(), model->GetActivePatchNum(1));
     }
+    */
+
+
     // prepare threads and mutex
     processMutex = xSemaphoreCreateMutex();
     if (processMutex == NULL) {
@@ -442,6 +406,23 @@ void SoundProcessorManager::StartSoundProcessor() {
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
     FAV::Favorites::StartUI();
 #endif
+
+    string id0 = model->GetActiveProcessorID(0);
+    string id1 = model->GetActiveProcessorID(1);
+    SetSoundProcessorChannel(0, "Void");
+    SetSoundProcessorChannel(1, "Void");
+    ESP_LOGE("SP", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+    SetSoundProcessorChannel(0, id0);
+    SetSoundProcessorChannel(1, id1);
+    ESP_LOGE("SP", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 }
 
 void SoundProcessorManager::SetChannelParamValue(const int chan, const string &id, const string &key, const int val) {
