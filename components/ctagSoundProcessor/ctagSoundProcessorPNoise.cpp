@@ -27,7 +27,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-void ctagSoundProcessorPNoise::Init() {
+void ctagSoundProcessorPNoise::Init(std::size_t const &blockSize, void *const blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

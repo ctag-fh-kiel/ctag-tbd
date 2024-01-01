@@ -240,7 +240,7 @@ void ctagSoundProcessorMacOscDuo::Process(const ProcessData &data) {
     }
 }
 
-void ctagSoundProcessorMacOscDuo::Init() {
+void ctagSoundProcessorMacOscDuo::Init(std::size_t const &blockSize, void *const blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

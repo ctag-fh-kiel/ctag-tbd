@@ -31,7 +31,7 @@ namespace CTAG {
 
             virtual ~ctagSoundProcessorTBDaits();
 
-           virtual void Init() override;
+           virtual void Init(std::size_t const &blockSize, void *const blockPtr) override;
 
 
         private:

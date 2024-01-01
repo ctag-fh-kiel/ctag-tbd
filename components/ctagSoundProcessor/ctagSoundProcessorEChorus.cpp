@@ -65,7 +65,7 @@ void ctagSoundProcessorEChorus::Process(const ProcessData &data) {
     echorus.Process(data.buf, bufSz);
 }
 
-void ctagSoundProcessorEChorus::Init() {
+void ctagSoundProcessorEChorus::Init(std::size_t const &blockSize, void *const blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

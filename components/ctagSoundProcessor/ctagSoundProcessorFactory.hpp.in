@@ -33,14 +33,17 @@ namespace CTAG {
     namespace SP {
         class ctagSoundProcessorFactory {
         public:
-            static std::unique_ptr <ctagSoundProcessor> Create(const std::string& type, ctagSPAllocator::AllocationType const& type) {
+            static std::unique_ptr <ctagSoundProcessor> Create(const std::string& type, ctagSPAllocator::AllocationType const& aType) {
             std::unique_ptr <ctagSoundProcessor> processor {nullptr};
-            ctagSPAllocator::PrepareAllocation(type);
+            int ch = 0;
+            if(aType == ctagSPAllocator::AllocationType::CH1) ch = 1;
+            ctagSPAllocator::PrepareAllocation(aType);
 // generated code
                 @BIG_IF@
 // end generated code
                 if(nullptr != processor) {
                     processor->Init(ctagSPAllocator::GetRemainingBufferSize(), ctagSPAllocator::GetRemainingBuffer());
+                    processor->SetProcessChannel(ch);
                 }
                 return processor;
             }

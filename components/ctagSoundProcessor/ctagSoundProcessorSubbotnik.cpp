@@ -661,7 +661,7 @@ void ctagSoundProcessorSubbotnik::Process(const ProcessData &data)
   }
 }
 
-void ctagSoundProcessorSubbotnik::Init()
+void ctagSoundProcessorSubbotnik::Init(std::size_t const &blockSize, void *const blockPtr)
 {
   // construct internal data model
   knowYourself();

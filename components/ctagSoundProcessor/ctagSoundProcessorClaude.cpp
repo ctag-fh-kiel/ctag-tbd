@@ -113,7 +113,7 @@ void ctagSoundProcessorClaude::Process(const ProcessData &data) {
 
 }
 
-void ctagSoundProcessorClaude::Init() {
+void ctagSoundProcessorClaude::Init(std::size_t const &blockSize, void *const blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

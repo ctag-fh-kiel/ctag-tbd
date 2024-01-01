@@ -33,7 +33,7 @@ namespace CTAG::SP {
     public:
         void Process(const ProcessData &) override;
 
-       virtual void Init() override;
+       virtual void Init(std::size_t const &blockSize, void *const blockPtr) override;
 
     private:
 

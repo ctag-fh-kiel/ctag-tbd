@@ -170,14 +170,8 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string 
         }
         // configure channels
         model = std::make_unique<SPManagerDataModel>();
-        sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
-        sp[0]->SetProcessChannel(0);
-        sp[0]->LoadPreset(model->GetActivePatchNum(0));
-        if (!sp[0]->GetIsStereo()) {
-            sp[1] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(1));
-            sp[1]->SetProcessChannel(1);
-            sp[1]->LoadPreset(model->GetActivePatchNum(1));
-        }
+        SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
+        SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
     }
     catch (RtAudioError &e) {
         e.printMessage();
@@ -215,7 +209,10 @@ void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
         ESP_LOGI("SP", "Removing ch 1 plugin as ch 0 is stereo!");
         sp[1] = nullptr; // destruct smart ptr
     }
-    sp[chan] = ctagSoundProcessorFactory::Create(id);
+    ctagSPAllocator::AllocationType aType = ctagSPAllocator::AllocationType::CH0;
+    if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
+    if(model->IsStereo(id)) aType = ctagSPAllocator::AllocationType::STEREO;
+    sp[chan] = ctagSoundProcessorFactory::Create(id, aType);
     sp[chan]->SetProcessChannel(chan);
     model->SetActivePluginID(id, chan);
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
@@ -303,7 +300,7 @@ void SimSPManager::ActivateFavorite(const int &id) {
 
 
 RtAudio  SimSPManager::audio;
-std::unique_ptr<ctagSoundProcessor> SimSPManager::sp[2];
+std::unique_ptr<ctagSoundProcessor> SimSPManager::sp[2] {nullptr, nullptr};
 std::unique_ptr<SPManagerDataModel> SimSPManager::model;
 std::unique_ptr<CTAG::FAV::FavoritesModel> SimSPManager::favModel;
 std::unique_ptr<SimDataModel> SimSPManager::simModel;
