@@ -49,9 +49,11 @@ menu "CTAG TBD Configuration"
         config SAMPLE_ROM_SIZE
             hex "Sample ROM Size"
             default 0x500000
-            range 0x300000 0x1300000
+            range 0x300000 0x1500000
             help
                 Define sample ROM flash size.
+                TBD-Platform V1: 0x500000 (ESP32)
+                TBD-Platform BBA: 0x1500000 (ESP32-S3)
 
         config SP_FIXED_MEM_ALLOC_SZ
             int "Sound Processor Fixed Memory Alloc Size"
