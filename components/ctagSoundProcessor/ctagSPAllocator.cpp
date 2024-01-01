@@ -65,7 +65,7 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer1 = static_cast<uint8_t *>(buffer1) + size;
             size1 -= size;
         }else{
-            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH0");
+            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH0 request %d bytes, %d bytes free", size, size1);
             assert(false);
         }
     }else if(allocationType == AllocationType::CH1){
@@ -74,7 +74,7 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer2 = static_cast<uint8_t *>(buffer2) + size;
             size2 -= size;
         }else{
-            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH1");
+            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH1 request %d bytes, %d bytes free", size, size1);
             assert(false);
         }
     }else if(allocationType == AllocationType::STEREO){
@@ -83,7 +83,7 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer1 = static_cast<uint8_t *>(buffer1) + size;
             size1 -= size;
         }else{
-            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for STEREO");
+            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for STEREO request %d bytes, %d bytes free", size, size1);
             assert(false);
         }
     }
