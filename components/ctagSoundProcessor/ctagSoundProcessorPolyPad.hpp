@@ -70,7 +70,7 @@ namespace CTAG {
             // sectionHpp
 
             // private attributes could go here
-            vector<ChordSynth> v_voices;
+            array<ChordSynth, 8> v_voices;
             bool latchVoice = false;
             bool latched = false;
             bool toggle = false;
