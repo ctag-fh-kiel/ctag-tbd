@@ -298,7 +298,7 @@ float f_val_result = 0.f;
   wNoiseSnH = whiteNoise; // We sample one White Noise event in case we need it to modulate the BitCrusher later on
 }
 
-void ctagSoundProcessorRecNPlay::Init()
+void ctagSoundProcessorRecNPlay::Init(std::size_t const &blockSize, void *const blockPtr)
 {
     // construct internal data model
     knowYourself();

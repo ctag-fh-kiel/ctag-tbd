@@ -835,7 +835,7 @@ void ctagSoundProcessorFreakwaves::Process(const ProcessData &data)
   }
 }
 
-void ctagSoundProcessorFreakwaves::Init()
+void ctagSoundProcessorFreakwaves::Init(std::size_t const &blockSize, void *const blockPtr)
 {
   // construct internal data model
   knowYourself();

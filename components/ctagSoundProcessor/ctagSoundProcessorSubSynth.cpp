@@ -38,7 +38,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-void ctagSoundProcessorSubSynth::Init() {
+void ctagSoundProcessorSubSynth::Init(std::size_t const &blockSize, void *const blockPtr) {
     isStereo = false;
     // acquire model from spiffs json, model auto loads last active preset
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

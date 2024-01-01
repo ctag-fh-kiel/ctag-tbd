@@ -28,13 +28,13 @@ respective component folders / files if different from this license.
 
 namespace CTAG::SP {
     class ctagSPAllocator final {
+    public:
         // allocator can allocate memory for different type of sound processor creation
         enum AllocationType {
             CH0,
             CH1,
             STEREO
         };
-    public:
         ctagSPAllocator() = delete;
 
         // allocate large block of memory which is used by the sound processors

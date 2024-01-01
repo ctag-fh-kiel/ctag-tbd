@@ -198,7 +198,7 @@ void ctagSoundProcessorTalkbox::Process(const ProcessData &data) {
             fabsf(data.buf[30]));  // Remember average volume of last value to maybe apply as Accent Bend in next round...
 }
 
-void ctagSoundProcessorTalkbox::Init() {
+void ctagSoundProcessorTalkbox::Init(std::size_t const &blockSize, void *const blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
