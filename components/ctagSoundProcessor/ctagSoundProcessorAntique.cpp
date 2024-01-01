@@ -230,10 +230,8 @@ void ctagSoundProcessorAntique::Init(std::size_t blockSize, void *blockPtr) {
     humm.Init();
 
     // flutter, wow
-    fx_buffer = (float *) heap_caps_malloc(4096 * sizeof(float),MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if (fx_buffer == NULL) {
-        ESP_LOGE("MIPShift", "Could not allocate shared buffer!");
-    };
+    assert(blockSize >= 4096 * sizeof(float));
+    fx_buffer = (float *) blockPtr;
     fx.Init(fx_buffer);
     lfoWow.SetSampleRate(44100.f / 32.f);
     lfoWow.SetFrequency(.55f);
@@ -267,7 +265,6 @@ void ctagSoundProcessorAntique::Init(std::size_t blockSize, void *blockPtr) {
 }
 
 ctagSoundProcessorAntique::~ctagSoundProcessorAntique() {
-    heap_caps_free(fx_buffer);
 }
 
 void ctagSoundProcessorAntique::knowYourself(){

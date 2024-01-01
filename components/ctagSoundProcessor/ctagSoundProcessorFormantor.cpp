@@ -498,7 +498,8 @@ void ctagSoundProcessorFormantor::Init(std::size_t blockSize, void *blockPtr)
   Phasedist_real_default(pd_data);              // Enable default settings for PD-Synth
 
   Rescomb_process_init(rescomb_data);           // Modified to use heap_caps_malloc()
-  rescomb_data._inst179._inst47a.bufferptr = (float*)heap_caps_malloc(sizeof(float)*675, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);
+  assert(blockSize >= sizeof(float)*675);
+  rescomb_data._inst179._inst47a.bufferptr = (float*)blockPtr;
   memset(rescomb_data._inst179._inst47a.bufferptr, 0, sizeof(float)*675);
 
   // State Variable Filter (Bandpass) init (svf_data_x,y,z... for 3 bandpasses);
@@ -543,7 +544,6 @@ void ctagSoundProcessorFormantor::Init(std::size_t blockSize, void *blockPtr)
 // --- Formantor Destructor ---
 ctagSoundProcessorFormantor::~ctagSoundProcessorFormantor()
 {
-  heap_caps_free(rescomb_data._inst179._inst47a.bufferptr);   // Free delay buffer of Resonant comb filter!
 }
 
 // --- Formantor Initializer for factory design pattern ---

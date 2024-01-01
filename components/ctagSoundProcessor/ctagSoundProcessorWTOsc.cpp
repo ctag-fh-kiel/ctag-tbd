@@ -20,7 +20,6 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagSoundProcessorWTOsc.hpp"
-#include "esp_heap_caps.h"
 #include "helpers/ctagNumUtil.hpp"
 #include "plaits/dsp/engine/engine.h"
 #include "braids/quantizer_scales.h"
@@ -188,8 +187,6 @@ void ctagSoundProcessorWTOsc::Init(std::size_t blockSize, void *blockPtr) {
 }
 
 ctagSoundProcessorWTOsc::~ctagSoundProcessorWTOsc() {
-    heap_caps_free(buffer);
-    heap_caps_free(fbuffer);
 }
 
 void ctagSoundProcessorWTOsc::knowYourself(){

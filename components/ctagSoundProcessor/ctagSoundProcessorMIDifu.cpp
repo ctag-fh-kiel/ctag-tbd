@@ -22,8 +22,6 @@ respective component folders / files if different from this license.
 #include "ctagSoundProcessorMIDifu.hpp"
 #include <iostream>
 #include "helpers/ctagFastMath.hpp"
-#include "esp_log.h"
-#include "esp_heap_caps.h"
 
 using namespace CTAG::SP;
 
@@ -32,11 +30,8 @@ void ctagSoundProcessorMIDifu::Init(std::size_t blockSize, void *blockPtr) {
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    fx_buffer = (float *) heap_caps_malloc(8192 * sizeof(float),
-                                           MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if (fx_buffer == NULL) {
-        ESP_LOGE("MIDifu", "Could not allocate shared buffer!");
-    }
+    assert(blockSize >= 8192 * sizeof(float));
+    fx_buffer = (float *) blockPtr;
     fx.Init(fx_buffer);
     fx.Clear();
 }
@@ -63,7 +58,6 @@ void ctagSoundProcessorMIDifu::Process(const ProcessData &data) {
 }
 
 ctagSoundProcessorMIDifu::~ctagSoundProcessorMIDifu() {
-    heap_caps_free(fx_buffer);
 }
 
 void ctagSoundProcessorMIDifu::knowYourself() {

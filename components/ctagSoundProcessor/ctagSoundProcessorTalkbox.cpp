@@ -208,11 +208,8 @@ void ctagSoundProcessorTalkbox::Init(std::size_t blockSize, void *blockPtr) {
     ctag_talkbox.Init(44100.f, 1.f);
 
     // Ensemble fx memory alloc
-    fx_buffer = (float *) heap_caps_malloc(4096 * sizeof(float),
-                                           MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if (fx_buffer == NULL) {
-        ESP_LOGE("MIChorus", "Could not allocate shared buffer!");
-    };
+    assert(blockSize >= 4096 * sizeof(float));
+    fx_buffer = (float *) blockPtr;
 
     chorus.Init(fx_buffer);
     ens.Init(fx_buffer);
@@ -233,7 +230,6 @@ void ctagSoundProcessorTalkbox::Init(std::size_t blockSize, void *blockPtr) {
 }
 
 ctagSoundProcessorTalkbox::~ctagSoundProcessorTalkbox() {
-    heap_caps_free(fx_buffer);
 }
 
 void ctagSoundProcessorTalkbox::knowYourself() {
