@@ -39,17 +39,11 @@ void ctagSoundProcessorTBD03::Init(std::size_t blockSize, void *blockPtr) {
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    filt[0] = std::make_unique<ctagDiodeLadderFilter5>(); // Pirkle ZDF with boost
-    filt[1] = std::make_unique<ctagDiodeLadderFilter3>(); // Karlson
-    filt[2] = std::make_unique<ctagDiodeLadderFilter4>(); // Blaukraut
-    filt[3] = std::make_unique<ctagDiodeLadderFilter>(); // Pirkle ZDF
-    filt[4] = std::make_unique<ctagDiodeLadderFilter>(); // Zavalishin ZDF
-
-    filt[0]->Init();
-    filt[1]->Init();
-    filt[2]->Init();
-    filt[3]->Init();
-    filt[4]->Init();
+    pirkle_zdf_boost.Init();
+    karlson.Init();
+    blaukraut.Init();
+    pirkle_zdf.Init();
+    zavalishin.Init();
 
     osc.Init();
     osc.set_pitch(100);
@@ -220,9 +214,27 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
     CONSTRAIN(c, 20.f, 22000.f)
     CONSTRAIN(r, 0.f, 1.f)
     CONSTRAIN(dri, 1.f, 30.f)
-    filt[ftype]->SetCutoff(c);
-    filt[ftype]->SetResonance(r);
-    filt[ftype]->SetGain(dri);
+    ctagFilterBase *filter = &pirkle_zdf_boost;
+    switch(ftype){
+        case 0:
+            filter = &pirkle_zdf_boost;
+            break;
+        case 1:
+            filter = &karlson;
+            break;
+        case 2:
+            filter = &blaukraut;
+            break;
+        case 3:
+            filter = &pirkle_zdf;
+            break;
+        case 4:
+            filter = &zavalishin;
+            break;
+    }
+    filter->SetCutoff(c);
+    filter->SetResonance(r);
+    filter->SetGain(dri);
 
     float fgain = gain / 4095.f * 2.f;
     if (cv_gain != -1) {
@@ -237,7 +249,7 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
         buffer[i] = stmlib::Mix(buffer[i], warped, signature);
         // filter, EG and clip
         const float div = 3.0518509476E-5f;
-        data.buf[i * 2 + processCh] = fgain * stmlib::SoftClip(eg * filt[ftype]->Process(buffer[i] * div));
+        data.buf[i * 2 + processCh] = fgain * stmlib::SoftClip(eg * filter->Process(buffer[i] * div));
     }
     pre_eg_val = egvalVCA;
     // sync on trigger
