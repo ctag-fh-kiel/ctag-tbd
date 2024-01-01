@@ -204,10 +204,10 @@ void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
     // when trying to set chan 1 and chan 0 is a stereo plugin, return
     if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
     audioMutex.lock();
-    sp[chan] = nullptr; // destruct smart ptr
+    delete sp[chan];
     if (model->IsStereo(id) && chan == 0) {
         ESP_LOGI("SP", "Removing ch 1 plugin as ch 0 is stereo!");
-        sp[1] = nullptr; // destruct smart ptr
+        delete sp[1];
     }
     ctagSPAllocator::AllocationType aType = ctagSPAllocator::AllocationType::CH0;
     if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
@@ -299,7 +299,7 @@ void SimSPManager::ActivateFavorite(const int &id) {
 
 
 RtAudio  SimSPManager::audio;
-std::unique_ptr<ctagSoundProcessor> SimSPManager::sp[2] {nullptr, nullptr};
+ctagSoundProcessor* SimSPManager::sp[2] {nullptr, nullptr};
 std::unique_ptr<SPManagerDataModel> SimSPManager::model;
 std::unique_ptr<CTAG::FAV::FavoritesModel> SimSPManager::favModel;
 std::unique_ptr<SimDataModel> SimSPManager::simModel;
