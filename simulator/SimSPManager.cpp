@@ -97,7 +97,7 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
 }
 
 void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string sromFile, bool bOutOnly) {
-    ctagSPAllocator::AllocateInternalBuffer(113000);
+    ctagSPAllocator::AllocateInternalBuffer(112*1024); // TBDings has highest needs of 113944 bytes, this is 112k=114688 bytes
     // start fake sample rom
     cout << "Trying to open sample rom file (define own with -s command line option): " << sromFile << endl;
     spi_flash_emu_init(sromFile.c_str());
