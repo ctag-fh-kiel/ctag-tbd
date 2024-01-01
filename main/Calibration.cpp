@@ -26,6 +26,9 @@ respective component folders / files if different from this license.
 #include "led_rgb.hpp"
 #include "adc.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
+
 using namespace CTAG;
 using namespace CTAG::CAL;
 
@@ -277,3 +280,5 @@ void Calibration::RequestCalibrationOnReboot() {
     model->SetCalibrateOnReboot(true);
 #endif
 }
+
+#pragma GCC diagnostic pop
