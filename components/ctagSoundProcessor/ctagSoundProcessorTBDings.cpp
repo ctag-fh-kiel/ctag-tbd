@@ -34,8 +34,13 @@ void ctagSoundProcessorTBDings::Init(std::size_t blockSize, void *blockPtr) {
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
+    /* this doesn't fit in the available block
     assert(blockSize >= 32768 * sizeof(uint16_t));
     reverb_buffer = (uint16_t *) blockPtr;
+     */
+
+    reverb_buffer = (uint16_t *) heap_caps_malloc(32768 * sizeof(uint16_t), MALLOC_CAP_SPIRAM);
+    assert(reverb_buffer != nullptr);
 
     strummer.Init(0.01f, 44100.0f / bufSz);
     part.Init(reverb_buffer);
@@ -193,6 +198,7 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
 }
 
 ctagSoundProcessorTBDings::~ctagSoundProcessorTBDings() {
+    heap_caps_free(reverb_buffer);
 }
 
 void ctagSoundProcessorTBDings::knowYourself() {
