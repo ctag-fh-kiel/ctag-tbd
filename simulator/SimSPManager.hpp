@@ -102,7 +102,7 @@ namespace CTAG {
 
             static void updateConfiguration();
 
-            static std::unique_ptr<ctagSoundProcessor> sp[2];
+            static ctagSoundProcessor* sp[2];
             static std::unique_ptr<SPManagerDataModel> model;
             static std::unique_ptr<FAV::FavoritesModel> favModel;
             static RtAudio audio;
