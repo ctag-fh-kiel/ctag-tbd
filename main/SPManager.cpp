@@ -303,8 +303,10 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 
     // create new plugin
-    sp[chan] = ctagSoundProcessorFactory::Create(id);
-    sp[chan]->SetProcessChannel(chan);
+    ctagSPAllocator::AllocationType aType = ctagSPAllocator::AllocationType::CH0;
+    if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
+    if(model->IsStereo(id)) aType = ctagSPAllocator::AllocationType::STEREO;
+    sp[chan] = ctagSoundProcessorFactory::Create(id, aType);
     model->SetActivePluginID(id, chan);
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
     xSemaphoreGive(processMutex);
@@ -373,21 +375,6 @@ void SoundProcessorManager::StartSoundProcessor() {
     SAPI::SerialAPI::StartSerialAPI();
 #endif
 
-    // configure channels
-    /*
-    sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
-    sp[0]->SetProcessChannel(0);
-    sp[0]->LoadPreset(model->GetActivePatchNum(0));
-    ESP_LOGD("SPM", "id sp 0 %s, preset %d", model->GetActiveProcessorID(0).c_str(), model->GetActivePatchNum(0));
-    if (!sp[0]->GetIsStereo()) {
-        sp[1] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(1));
-        sp[1]->SetProcessChannel(1);
-        sp[1]->LoadPreset(model->GetActivePatchNum(1));
-        ESP_LOGD("SPM", "id sp 0 %s, preset %d", model->GetActiveProcessorID(1).c_str(), model->GetActivePatchNum(1));
-    }
-    */
-
-
     // prepare threads and mutex
     processMutex = xSemaphoreCreateMutex();
     if (processMutex == NULL) {
@@ -407,8 +394,8 @@ void SoundProcessorManager::StartSoundProcessor() {
     FAV::Favorites::StartUI();
 #endif
 
-    SetSoundProcessorChannel(0, "Void");
-    SetSoundProcessorChannel(1, "Void");
+    SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
+    SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
     ESP_LOGE("SP", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
