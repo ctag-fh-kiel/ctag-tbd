@@ -8,7 +8,7 @@ do
     do
         echo Favorite $i
         # call the api with POST with the current value of i http://ctag-tbd-bba.local/api/v1/favorites/recall/0
-        curl -X POST "http://ctag-tbd-bba.local/api/v1/favorites/recall/$i" -H "accept: application/json" -H "Content-Type: application/json" -d ""
+        curl -X POST "http://ctag-tbd.local/api/v1/favorites/recall/$i" -H "accept: application/json" -H "Content-Type: application/json" -d ""
         sleep 5
     done
 done
