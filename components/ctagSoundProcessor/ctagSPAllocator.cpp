@@ -37,17 +37,17 @@ std::size_t ctagSPAllocator::size2 = 0;
 ctagSPAllocator::AllocationType ctagSPAllocator::allocationType = ctagSPAllocator::AllocationType::CH0;
 
 void ctagSPAllocator::AllocateInternalBuffer(std::size_t const &size) {
-    ESP_LOGI("ctagSPAllocator", "AllocateInternalBuffer: allocating %d bytes\n", size);
+    ESP_LOGI("ctagSPAllocator", "AllocateInternalBuffer: allocating %d bytes", size);
     internalBuffer = heap_caps_malloc(size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     if(nullptr == internalBuffer){
-        ESP_LOGE("ctagSPAllocator", "AllocateInternalBuffer: could not allocate memory of size %d\n", size);
+        ESP_LOGE("ctagSPAllocator", "AllocateInternalBuffer: could not allocate memory of size %d", size);
         assert(nullptr != internalBuffer);
     }
     totalSize = size;
 }
 
 void ctagSPAllocator::ReleaseInternalBuffer() {
-    ESP_LOGI("ctagSPAllocator", "ReleaseInternalBuffer: releasing memory\n");
+    ESP_LOGI("ctagSPAllocator", "ReleaseInternalBuffer: releasing memory");
     heap_caps_free(internalBuffer);
     internalBuffer = nullptr;
     buffer1 = nullptr;
@@ -65,7 +65,7 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer1 = static_cast<uint8_t *>(buffer1) + size;
             size1 -= size;
         }else{
-            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH0\n");
+            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH0");
             assert(false);
         }
     }else if(allocationType == AllocationType::CH1){
@@ -74,7 +74,7 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer2 = static_cast<uint8_t *>(buffer2) + size;
             size2 -= size;
         }else{
-            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH1\n");
+            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH1");
             assert(false);
         }
     }else if(allocationType == AllocationType::STEREO){
@@ -83,22 +83,22 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer1 = static_cast<uint8_t *>(buffer1) + size;
             size1 -= size;
         }else{
-            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for STEREO\n");
+            ESP_LOGE("ctagSPAllocator", "Allocate: not enough memory for STEREO");
             assert(false);
         }
     }
     switch(allocationType){
         case AllocationType::CH0:
-            ESP_LOGI("ctagSPAllocator", "Allocate: allocating CH0 %d bytes, ch0 %d bytes remaining\n", size, size1);
+            ESP_LOGI("ctagSPAllocator", "Allocate: allocating CH0 %d bytes object size, ch0 %d bytes blockMem", size, size1);
             break;
         case AllocationType::CH1:
-            ESP_LOGI("ctagSPAllocator", "Allocate: allocating CH1 %d bytes, ch1 %d bytes remaining\n", size, size2);
+            ESP_LOGI("ctagSPAllocator", "Allocate: allocating CH1 %d bytes object size, ch1 %d bytes blockMem", size, size2);
             break;
         case AllocationType::STEREO:
-            ESP_LOGI("ctagSPAllocator", "Allocate: allocating STEREO %d bytes, %d bytes remaining\n", size, size1);
+            ESP_LOGI("ctagSPAllocator", "Allocate: allocating STEREO %d bytes object size, %d bytes blockMem", size, size1);
             break;
         default:
-            ESP_LOGE("ctagSPAllocator", "Allocate: unknown allocation type\n");
+            ESP_LOGE("ctagSPAllocator", "Allocate: unknown allocation type");
             assert(false);
     }
     return ptr;
@@ -106,13 +106,13 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
 
 std::size_t ctagSPAllocator::GetRemainingBufferSize() {
     if(allocationType == AllocationType::CH0 || allocationType == AllocationType::STEREO){
-        ESP_LOGI("ctagSPAllocator", "GetRemainingBuffer: CH0 or STEREO %d bytes\n", size1);
+        ESP_LOGD("ctagSPAllocator", "GetRemainingBuffer: CH0 or STEREO %d bytes free", size1);
         return size1;
     }else if(allocationType == AllocationType::CH1){
-        ESP_LOGI("ctagSPAllocator", "GetRemainingBuffer: CH1 %d bytes\n", size2);
+        ESP_LOGD("ctagSPAllocator", "GetRemainingBuffer: CH1 %d bytes free", size2);
         return size2;
     }else
-        ESP_LOGE("ctagSPAllocator", "GetRemainingBufferSize: unknown allocation type\n");
+        ESP_LOGE("ctagSPAllocator", "GetRemainingBufferSize: unknown allocation type");
     return 0;
 }
 
@@ -125,7 +125,7 @@ void *ctagSPAllocator::GetRemainingBuffer() {
         ptr = buffer2;
     }
     else
-        ESP_LOGE("ctagSPAllocator", "GetRemainingBuffer: unknown allocation type\n");
+        ESP_LOGE("ctagSPAllocator", "GetRemainingBuffer: unknown allocation type");
     return ptr;
 }
 
@@ -133,21 +133,21 @@ void *ctagSPAllocator::GetRemainingBuffer() {
 void ctagSPAllocator::PrepareAllocation(AllocationType const &type) {
     allocationType = type;
     if(allocationType == AllocationType::CH0){
-        ESP_LOGI("ctagSPAllocator", "SetAllocationType: Single Channel CH0\n");
+        ESP_LOGI("ctagSPAllocator", "SetAllocationType: Single Channel CH0");
         size1 = totalSize / 2;
         buffer1 = internalBuffer;
     }else if(allocationType == AllocationType::CH1){
-        ESP_LOGI("ctagSPAllocator", "SetAllocationType: Single Channel CH1\n");
+        ESP_LOGI("ctagSPAllocator", "SetAllocationType: Single Channel CH1");
         size2 = totalSize / 2;
         buffer2 = static_cast<uint8_t *>(internalBuffer) + size2;
     }else if(allocationType == AllocationType::STEREO){
-        ESP_LOGI("ctagSPAllocator", "SetAllocationType: Stereo\n");
+        ESP_LOGI("ctagSPAllocator", "SetAllocationType: Stereo");
         size1 = totalSize;
         buffer1 = internalBuffer;
         size2 = 0;
         buffer2 = nullptr;
     }else{
-        ESP_LOGE("ctagSPAllocator", "SetAllocationType: unknown allocation type\n");
+        ESP_LOGE("ctagSPAllocator", "SetAllocationType: unknown allocation type");
         assert(false);
     }
 }
