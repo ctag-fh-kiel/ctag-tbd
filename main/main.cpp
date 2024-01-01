@@ -54,7 +54,7 @@ https://www.embedded.com/modern-c-in-embedded-systems-part-1-myth-and-reality/
 
 void app_main() {
     // reserve large block of memory before anything else happens
-    ctagSPAllocator::AllocateInternalBuffer(113000);
+    ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
 
     // wait until power is somewhat more settled
     vTaskDelay(2000 / portTICK_PERIOD_MS);

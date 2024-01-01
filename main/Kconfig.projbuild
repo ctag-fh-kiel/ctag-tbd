@@ -53,4 +53,12 @@ menu "CTAG TBD Configuration"
             help
                 Define sample ROM flash size.
 
+        config SP_FIXED_MEM_ALLOC_SZ
+            int "Sound Processor Fixed Memory Alloc Size"
+            default 114688
+            range 113944 118784
+            help
+                Define sound processor fixed memory size allocated at startup.
+                Sound processors are allocated from this memory pool.
+
 endmenu
