@@ -1,6 +1,6 @@
 #
 # Automatically generated file. DO NOT EDIT.
-# Espressif IoT Development Framework (ESP-IDF) 5.1.2 Project Configuration
+# Espressif IoT Development Framework (ESP-IDF)  Project Configuration
 #
 CONFIG_SOC_MPU_MIN_REGION_SIZE=0x20000000
 CONFIG_SOC_MPU_REGIONS_MAX_NUM=8
@@ -478,6 +478,7 @@ CONFIG_WIFI_UI=y
 # CONFIG_SERIAL_UI is not set
 CONFIG_SAMPLE_ROM_START_ADDRESS=0xB00000
 CONFIG_SAMPLE_ROM_SIZE=0x500000
+CONFIG_SP_FIXED_MEM_ALLOC_SZ=114688
 # end of CTAG TBD Configuration
 
 #
