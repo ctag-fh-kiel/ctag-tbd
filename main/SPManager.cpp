@@ -522,17 +522,26 @@ void SoundProcessorManager::led_task(void *pvParams) {
 }
 
 void SoundProcessorManager::KillAudioTask() {
+    Codec::SetOutputLevels(0, 0);
     // stop audio Task, delete plugins
     runAudioTask = 0;
     while (runAudioTask != 2); // wait for audio task to be dead
+    delete sp[0];
+    delete sp[1];
     sp[0] = nullptr;
     sp[1] = nullptr;
+    ctagSPAllocator::ReleaseInternalBuffer();
 #ifndef CONFIG_TBD_PLATFORM_STR
     vTaskDelete(ledTaskH);
     ledTaskH = NULL;
     vTaskDelay(100 / portTICK_PERIOD_MS);
     DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
 #endif
+    ESP_LOGI("SPManager", "Audio Task Killed: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 }
 
 void SoundProcessorManager::DisablePluginProcessing() {
