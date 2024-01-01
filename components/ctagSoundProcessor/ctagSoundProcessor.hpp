@@ -83,7 +83,8 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) = 0; // pure virtual --> must be implemented by derived
 
-            virtual void Init(std::size_t const &blockSize, void *const blockPtr) = 0;
+            // plugins will need to make sure not to use more than blocksize bytes of data
+            virtual void Init(std::size_t blockSize, void *blockPtr) = 0;
 
             virtual ~ctagSoundProcessor() {};
 
@@ -92,12 +93,11 @@ namespace CTAG {
             }
 
             void operator delete (void *ptr) noexcept {
-                std::cerr << "Deleting plugin" << std::endl;
+                // arena allocator will just reset the arena
             }
             void* operator new[] (std::size_t size) = delete;
             void* operator new[] (std::size_t size, const std::nothrow_t& tag) = delete;
             void operator delete[] (void *ptr) noexcept = delete;
-
 
             int GetAudioBufferSize() { return bufSz; }
 

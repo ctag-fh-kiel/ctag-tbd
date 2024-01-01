@@ -160,7 +160,7 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     }
 }
 
-void ctagSoundProcessorWTOsc::Init(std::size_t const &blockSize, void *const blockPtr) {
+void ctagSoundProcessorWTOsc::Init(std::size_t blockSize, void *blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
@@ -169,12 +169,16 @@ void ctagSoundProcessorWTOsc::Init(std::size_t const &blockSize, void *const blo
     lfo.SetSampleRate( 44100.f / bufSz);
     lfo.SetFrequency(1.f);
     // alloc mem for one wavetable
-    buffer = (int16_t*)heap_caps_malloc(260*64*2, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT); // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
-    assert(buffer != NULL);
-    memset(buffer, 0, 260*64*2);
-    fbuffer = (float*)heap_caps_malloc(512*4, MALLOC_CAP_8BIT|MALLOC_CAP_INTERNAL); // buffer for wavetable prep computations
-    assert(fbuffer != NULL);
-    memset(fbuffer, 0, 512*4);
+    // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
+    int totalBlockSzRequired = 260*64*2 + 512*4;
+    assert(totalBlockSzRequired < blockSize);
+    buffer = (int16_t*)blockPtr;
+    blockPtr = static_cast<uint8_t *>(blockPtr) + 260 * 64 * 2;
+    memset(buffer, 0, 260 * 64 * 2);
+    fbuffer = (float*)blockPtr;
+    memset(fbuffer, 0, 512 * 4);
+
+
     oscillator.Init();
     svf.Init();
     adsr.SetModeExp();
