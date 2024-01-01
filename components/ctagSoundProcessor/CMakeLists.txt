@@ -15,7 +15,7 @@ foreach (VAR ${SOUND_PROCESSORS})
     string(REGEX REPLACE "ctagSoundProcessor+" "" SP_ID ${MYFILE_WITHOUT_EXT})
     set(SP_INCLUDES "${SP_INCLUDES}#include \"${MYFILE_WITHOUT_EXT}.hpp\"\n")
     # prepare big if variable for factory
-    set(BIG_IF "${BIG_IF}if(type.compare(\"${SP_ID}\") == 0) processor = std::make_unique<${MYFILE_WITHOUT_EXT}>();\n")
+    set(BIG_IF "${BIG_IF}if(type.compare(\"${SP_ID}\") == 0) processor = new ${MYFILE_WITHOUT_EXT}();\n")
 endforeach ()
 
 # write sound processor descriptor json and convert it to header file
