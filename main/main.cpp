@@ -34,6 +34,7 @@ respective component folders / files if different from this license.
 #include "codec.hpp"
 #include <vector>
 #include "SPManager.hpp"
+#include "ctagSPAllocator.hpp"
 
 #if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     #include "Display.hpp"
@@ -52,6 +53,8 @@ https://www.embedded.com/modern-c-in-embedded-systems-part-1-myth-and-reality/
 */
 
 void app_main() {
+    // reserve large block of memory before anything else happens
+    ctagSPAllocator::AllocateInternalBuffer(113000);
 
     // wait until power is somewhat more settled
     vTaskDelay(2000 / portTICK_PERIOD_MS);
