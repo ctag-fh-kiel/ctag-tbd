@@ -262,7 +262,7 @@ void ctagSoundProcessorAPCpp::Process(const ProcessData &data)
   }
 }
 
-void ctagSoundProcessorAPCpp::Init(std::size_t const &blockSize, void *const blockPtr)
+void ctagSoundProcessorAPCpp::Init(std::size_t blockSize, void *blockPtr)
 {
   // construct internal data model
   knowYourself();

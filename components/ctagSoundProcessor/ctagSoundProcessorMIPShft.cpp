@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-void ctagSoundProcessorMIPShft::Init(std::size_t const &blockSize, void *const blockPtr) {
+void ctagSoundProcessorMIPShft::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

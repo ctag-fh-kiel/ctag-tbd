@@ -482,7 +482,7 @@ bool b_use_fix_formants = true;
 }
 
 // --- Formantor Constructor ---
-void ctagSoundProcessorFormantor::Init(std::size_t const &blockSize, void *const blockPtr)
+void ctagSoundProcessorFormantor::Init(std::size_t blockSize, void *blockPtr)
 {
   // construct internal data model
   knowYourself();

@@ -31,7 +31,7 @@ namespace CTAG {
 
             virtual ~ctagSoundProcessorMIDifu();
 
-           virtual void Init(std::size_t const &blockSize, void *const blockPtr) override;
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
         private:
             virtual void knowYourself() override;

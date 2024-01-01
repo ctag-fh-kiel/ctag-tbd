@@ -150,7 +150,7 @@ void ctagSoundProcessorMSxxNoise::Process(const ProcessData &data)
   }
 }
 
-void ctagSoundProcessorMSxxNoise::Init(std::size_t const &blockSize, void *const blockPtr)
+void ctagSoundProcessorMSxxNoise::Init(std::size_t blockSize, void *blockPtr)
 {
     // construct internal data model
     knowYourself();

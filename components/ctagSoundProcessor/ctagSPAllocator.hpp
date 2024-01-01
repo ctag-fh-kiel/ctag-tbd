@@ -21,6 +21,14 @@ respective component folders / files if different from this license.
 
 // this is an arena style allocator for the sound processors
 // implemented to reduce memory fragmentation
+// steps to use:
+// 1. call AllocateInternalBuffer with size of large buffer at program start
+// 2. call PrepareAllocation with specific AllocationType before creating new sound processor,
+// note that the state is set in "allocationType" for subsequent allocations
+// 3. Allocate is called in overloaded new operator of sound processor
+// 4. GetRemainingBufferSize is called by sound processor factory in "Init()" to pass remaining memory size available to sound processor
+// 5. GetRemainingBuffer is called by sound processor factory in "Init()" to pass remaining memory available to sound processor
+// 6. ReleaseInternalBuffer is called at program end to release large buffer, or when large memory is needed somewhere else
 
 #pragma once
 
@@ -54,6 +62,6 @@ namespace CTAG::SP {
         static void *internalBuffer; // main ptr to large buffer
         static void *buffer1, *buffer2; // ptrs pointing at memory available for sound processor
         static std::size_t totalSize, size1, size2; // size of large buffer and size of memory available for sound processor
-        static AllocationType allocationType; // type of sound processor to create
+        static AllocationType allocationType; // type of sound processor to create, is state variable
     };
 }

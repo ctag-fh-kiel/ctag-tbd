@@ -197,7 +197,7 @@ void SimSPManager::StopSoundProcessor() {
 }
 
 void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
-    printf("Switching plugin %d to %s", chan, id.c_str());
+    printf("Switching plugin %d to %s\n", chan, id.c_str());
     // does the SP exist?
     if(!model->HasPluginID(id)) return;
 
@@ -213,7 +213,6 @@ void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
     if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
     if(model->IsStereo(id)) aType = ctagSPAllocator::AllocationType::STEREO;
     sp[chan] = ctagSoundProcessorFactory::Create(id, aType);
-    sp[chan]->SetProcessChannel(chan);
     model->SetActivePluginID(id, chan);
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
     audioMutex.unlock();

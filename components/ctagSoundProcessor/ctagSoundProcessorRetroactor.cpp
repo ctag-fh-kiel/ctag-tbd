@@ -278,7 +278,7 @@ float rough_sine_B_processed = 0.f;   // Simply precalculate the sine-wave outsi
   }
 }
 
-void ctagSoundProcessorRetroactor::Init(std::size_t const &blockSize, void *const blockPtr)
+void ctagSoundProcessorRetroactor::Init(std::size_t blockSize, void *blockPtr)
 {
   // construct internal data model
   knowYourself();
