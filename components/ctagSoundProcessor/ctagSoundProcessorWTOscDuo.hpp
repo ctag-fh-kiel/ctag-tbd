@@ -65,7 +65,6 @@ namespace CTAG {
             bool preGate_1 = false;
             bool preGate_2 = false;
             braids::Quantizer pitchQuantizer;
-            ctagRollingAverage wtAverager;
             float pre_fWt_1 = 0.f;
             float pre_fWt_2 = 0.f;
             // private attributes could go here
