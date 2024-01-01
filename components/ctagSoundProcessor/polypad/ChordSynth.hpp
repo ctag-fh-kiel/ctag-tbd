@@ -22,7 +22,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <cstdint>
-#include <vector>
+#include <array>
 #include "MiSuperSawOsc.hpp"
 #include "braids/svf.h"
 #include "helpers/ctagADSREnv.hpp"
@@ -72,7 +72,7 @@ namespace CTAG {
                 bool lfo2_random_phase;
             };
 
-            ChordSynth(const ChordParams &params);
+            void Init(const ChordParams &params);
 
             void Hold();
 
@@ -98,7 +98,7 @@ namespace CTAG {
 
             HELPERS::ctagADSREnv adsr;
             braids::Svf svf;
-            vector<MiSuperSawOsc> v_osc;
+            array<MiSuperSawOsc, 4> v_osc;
             braids::SvfMode mode_ = braids::SvfMode::SVF_MODE_LP;
             CTAG::SP::HELPERS::ctagSineSource lfo1, lfo2;
             ChordParams params_;
