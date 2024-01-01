@@ -22,9 +22,6 @@ respective component folders / files if different from this license.
 #include "ctagSoundProcessorTBDings.hpp"
 #include <iostream>
 #include <cmath>
-#include "esp_system.h"
-#include "esp_log.h"
-#include "esp_heap_caps.h"
 #include "stmlib/stmlib.h"
 
 
@@ -37,12 +34,8 @@ void ctagSoundProcessorTBDings::Init(std::size_t blockSize, void *blockPtr) {
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    //ESP_LOGE("Rings", "Free mem %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
-    reverb_buffer = (uint16_t *) heap_caps_malloc_prefer(32768 * sizeof(uint16_t),MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
-
-    if (reverb_buffer == NULL) {
-        ESP_LOGE("Rings", "Could not allocate shared buffer!");
-    }
+    assert(blockSize >= 32768 * sizeof(uint16_t));
+    reverb_buffer = (uint16_t *) blockPtr;
 
     strummer.Init(0.01f, 44100.0f / bufSz);
     part.Init(reverb_buffer);
@@ -200,7 +193,6 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
 }
 
 ctagSoundProcessorTBDings::~ctagSoundProcessorTBDings() {
-    heap_caps_free(reverb_buffer);
 }
 
 void ctagSoundProcessorTBDings::knowYourself() {

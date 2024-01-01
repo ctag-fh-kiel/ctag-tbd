@@ -37,10 +37,8 @@ void ctagSoundProcessorGVerb::Init(std::size_t blockSize, void *blockPtr) {
     LoadPreset(0);
 
     maxRoomSize = 500.f;
-    gverb = (ty_gverb *) malloc(sizeof(ty_gverb));
-    if (gverb == nullptr) {
-        ESP_LOGE("GVERB", "Fatal error, couldn't allocate memory!");
-    }
+    assert(blockSize >= sizeof(ty_gverb));
+    gverb = (ty_gverb *) blockPtr;
     // roomSz, time, damp, spread, ibw, early, tail
     gverb_new(gverb, 44100, maxRoomSize, 50.0f, 7.0f, 0.5f, 15.0f, 0.5f, 0.5f, 0.5f);
 }
@@ -83,8 +81,6 @@ void ctagSoundProcessorGVerb::Process(const ProcessData &data) {
 }
 
 ctagSoundProcessorGVerb::~ctagSoundProcessorGVerb() {
-    // careful, this also frees itself
-    gverb_free(gverb);
 }
 
 void ctagSoundProcessorGVerb::knowYourself() {

@@ -1,7 +1,7 @@
 #include "TDelay.hpp"
-#include "esp_heap_caps.h"
 #include <cmath>
 #include <cstdlib>
+#include "esp_heap_caps.h"
 
 namespace airwindows {
 
@@ -205,9 +205,8 @@ namespace airwindows {
         isBypass = v;
     }
 
-    TDelay::TDelay() {
+    TDelay::TDelay(){
         d = (float *) heap_caps_malloc(length * sizeof(float), MALLOC_CAP_SPIRAM);
-        p = (int *) heap_caps_malloc(258 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         A = 1.0;
         B = 0.0;
         C = 0.5;
@@ -215,7 +214,6 @@ namespace airwindows {
         E = 1.0; //-1.0 to 1.0
         F = 0.0; //8 taps
 
-        for (int count = 0; count < 258; count++) { p[count] = 0; }
         for (delay = 0; delay < length; delay++) { d[delay] = 0.0; }
         maxdelay = 0;
         delay = 0;
@@ -227,10 +225,15 @@ namespace airwindows {
 
     TDelay::~TDelay() {
         heap_caps_free(d);
-        heap_caps_free(p);
     }
 
     void TDelay::SetDry(const float &v) {
         A = v;
+    }
+
+    void TDelay::SetBlockMem(void *blockMemPtr) {
+        // has to be 258 * 4 floats
+        p = (int *) blockMemPtr;
+        for (int count = 0; count < 258; count++) { p[count] = 0; }
     }
 }
