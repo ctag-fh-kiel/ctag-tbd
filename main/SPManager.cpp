@@ -287,8 +287,10 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     // destroy active plugin
     xSemaphoreTake(processMutex, portMAX_DELAY);
     delete sp[chan]; // destruct processor
+    sp[chan] = nullptr;
     if (model->IsStereo(id) && chan == 0) {
         delete sp[1]; // destruct processor
+        sp[1] = nullptr;
     }
 
     // create new plugin
