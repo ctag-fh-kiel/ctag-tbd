@@ -38,7 +38,7 @@ namespace CTAG {
 
         private:
             virtual void knowYourself() override;
-            std::unique_ptr<RomplerVoice> romplers[2];
+            RomplerVoice romplers[2];
             float out[32];
             bool preGate = false;
             bool bGate2 = false;

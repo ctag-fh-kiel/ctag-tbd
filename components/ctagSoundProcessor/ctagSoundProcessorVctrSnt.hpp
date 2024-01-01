@@ -79,7 +79,7 @@ namespace CTAG {
             bool isWaveTableGood_C = false;
 
             // --- Sample Oscillators B and D ---
-            std::unique_ptr<RomplerVoice> romplers[2];
+            RomplerVoice romplers[2];
             float sample_buf_B[32];
             float sample_buf_D[32];
             uint32_t wtSliceOffset = 0;

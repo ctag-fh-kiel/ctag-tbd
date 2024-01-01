@@ -90,8 +90,8 @@ namespace CTAG::SYNTHESIS{
         bool pipoFlip = false;
         BufferStatus bufferStatus;
         const uint32_t readBufferMaxSize = 2048; // 2k are ok given default params, there should be a bounds check with downsampling, not to exceed the buffer size
-        float *readBufferFloat;
-        int16_t *readBufferInt16;
+        float readBufferFloat[2048];
+        int16_t readBufferInt16[2048];
         int32_t readBufferLength;
         float readBufferPhase = 0.f;
         float phaseIncrement = 0.f; // depending on pitch
