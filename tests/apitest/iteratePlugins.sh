@@ -35,12 +35,12 @@ echo Beginning with Mono plugins
 # iterating all mono plugins and combinations between them
 # do the same with all mono plugins
 for i in "${!pluginListMono[@]}"; do
-    echo Plugin ${pluginListMono[$i]}
+    echo
     curl -X GET "http://ctag-tbd.local/api/v1/setActivePlugin/0?id=${pluginListMono[$i]}" -H "accept: application/json" -H "Content-Type: application/json" -d ""
     # iterate all mono plugins except the currently selected one and send a GET http://ctag-tbd.local/api/v1/setActivePlugin/1?id= request for each plugin in pluginListMono
     for j in "${!pluginListMono[@]}"; do
         if [ $i != $j ]; then
-            echo Plugin ${pluginListMono[$j]}
+            echo CH0 ${pluginListMono[$i]} with CH1 ${pluginListMono[$j]}
             curl -X GET "http://ctag-tbd.local/api/v1/setActivePlugin/1?id=${pluginListMono[$j]}" -H "accept: application/json" -H "Content-Type: application/json" -d ""
             sleep 2
         fi
