@@ -387,7 +387,7 @@ void SoundProcessorManager::StartSoundProcessor() {
 
     SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
     SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
-    ESP_LOGE("SP", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGI("SPManager", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
