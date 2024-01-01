@@ -282,7 +282,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     // when trying to set chan 1 and chan 0 is a stereo plugin, return
     if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
 
-    ESP_LOGI("SP", "Switching plugin %d to %s", chan, id.c_str());
+    ESP_LOGI("SPManager", "Switching ch%d to plugin %s", chan, id.c_str());
 
     // destroy active plugin
     xSemaphoreTake(processMutex, portMAX_DELAY);
@@ -303,7 +303,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     xSemaphoreGive(processMutex);
 
 
-    ESP_LOGE("SP", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGE("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
