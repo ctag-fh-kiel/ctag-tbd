@@ -238,7 +238,7 @@ namespace CTAG::SP::HELPERS {
         float f = t - fi;
         int i = (int) fi;
         cvt.f = (0.3371894346f * f + 0.657636276f) * f + 1.00172476f; /* compute 2^f */
-        cvt.i += (i << 23);                                          /* scale by 2^i */
+        cvt.i = cvt.i + (i << 23);                                          /* scale by 2^i */
         return cvt.f;
     }
 
