@@ -67,6 +67,7 @@ respective component folders / files if different from this license.
 #include <map>
 #include <functional>
 #include "ctagSPDataModel.hpp"
+#include "ctagSPAllocator.hpp"
 
 using namespace std;
 
@@ -82,9 +83,21 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) = 0; // pure virtual --> must be implemented by derived
 
-            virtual void Init() = 0;
+            virtual void Init(std::size_t const &blockSize, void *const blockPtr) = 0;
 
             virtual ~ctagSoundProcessor() {};
+
+            void* operator new (std::size_t size) {
+                return ctagSPAllocator::Allocate(size);
+            }
+
+            void operator delete (void *ptr) noexcept {
+                std::cerr << "Deleting plugin" << std::endl;
+            }
+            void* operator new[] (std::size_t size) = delete;
+            void* operator new[] (std::size_t size, const std::nothrow_t& tag) = delete;
+            void operator delete[] (void *ptr) noexcept = delete;
+
 
             int GetAudioBufferSize() { return bufSz; }
 

@@ -27,18 +27,20 @@ respective component folders / files if different from this license.
 #include <string>
 #include "ctagSoundProcessor.hpp"
 #include "ctagSoundProcessors.hpp"
+#include "ctagSPAllocator.hpp"
 
 namespace CTAG {
     namespace SP {
         class ctagSoundProcessorFactory {
         public:
-            static std::unique_ptr <ctagSoundProcessor> Create(const std::string type) {
+            static std::unique_ptr <ctagSoundProcessor> Create(const std::string& type, ctagSPAllocator::AllocationType const& type) {
             std::unique_ptr <ctagSoundProcessor> processor {nullptr};
+            ctagSPAllocator::PrepareAllocation(type);
 // generated code
                 @BIG_IF@
 // end generated code
                 if(nullptr != processor) {
-                    processor->Init();
+                    processor->Init(ctagSPAllocator::GetRemainingBufferSize(), ctagSPAllocator::GetRemainingBuffer());
                 }
                 return processor;
             }

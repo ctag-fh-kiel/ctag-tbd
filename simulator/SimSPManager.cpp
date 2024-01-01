@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "tinywav.h"
 #include <mutex>
 #include <cmath>
+#include <ctagSPAllocator.hpp>
 #include "esp_spi_flash.h"
 
 using namespace CTAG::AUDIO;
@@ -96,6 +97,7 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
 }
 
 void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string sromFile, bool bOutOnly) {
+    ctagSPAllocator::AllocateInternalBuffer(113000);
     // start fake sample rom
     cout << "Trying to open sample rom file (define own with -s command line option): " << sromFile << endl;
     spi_flash_emu_init(sromFile.c_str());
@@ -197,6 +199,7 @@ void SimSPManager::StopSoundProcessor() {
         audio.stopStream();
         audio.closeStream();
     }
+    ctagSPAllocator::ReleaseInternalBuffer();
 }
 
 void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
