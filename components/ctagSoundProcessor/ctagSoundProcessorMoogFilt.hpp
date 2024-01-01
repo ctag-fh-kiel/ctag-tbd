@@ -22,6 +22,12 @@ respective component folders / files if different from this license.
 #include <atomic>
 #include "ctagSoundProcessor.hpp"
 #include "LadderFilterBase.h"
+#include "SimplifiedModel.h"
+#include "MusicDSPModel.h"
+#include "OberheimVariationModel.h"
+#include "HuovilainenModel.h"
+#include "KrajeskiModel.h"
+#include "StilsonModel.h"
 #include "helpers/ctagADEnv.hpp"
 
 using namespace Moog;
@@ -40,7 +46,13 @@ namespace CTAG {
 
 
             // private attributes could go here
-            std::unique_ptr<LadderFilterBase> ladderFilters[6];
+            LadderFilterBase *ladderFilters[6];
+            SimplifiedMoog simplifiedMoog {44100.f};
+            MusicDSPMoog musicDSPMoog {44100.f};
+            OberheimVariationMoog oberheimVariationMoog {44100.f};
+            HuovilainenMoog huovilainenMoog {44100.f};
+            KrajeskiMoog krajeskiMoog {44100.f};
+            StilsonMoog stilsonMoog {44100.f};
             const float fCutoffScales[6] = {4095.f, 15000.f, 20000.f, 20000.f, 8000.f, 20000.f};
             const float fResoScales[6] = {1.5f, 1.f, 30.f, 1.f, 1.f, 1.f};
             const float fGainScales[6] = {2.f, 1.f, 1.f, 1.f, 1.f, 1.f};
