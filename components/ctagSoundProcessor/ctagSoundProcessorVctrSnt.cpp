@@ -193,8 +193,8 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data) {
     if (t_Gate == GATE_HIGH_NEW &&
         !t_EGvolGate)   // We have two modes for "on trigger": reset playing of samples to start y/n
     {
-        romplers[IDX_OSC_B]->Reset();     // Reset Sample-OSCs to play from beginning and so in if new triggered
-        romplers[IDX_OSC_D]->Reset();     // Please note: once triggered, all Voices will stay active (i.e. also samples will play "forever" if looping is active)
+        romplers[IDX_OSC_B].Reset();     // Reset Sample-OSCs to play from beginning and so in if new triggered
+        romplers[IDX_OSC_D].Reset();     // Please note: once triggered, all Voices will stay active (i.e. also samples will play "forever" if looping is active)
     }
     float f_MasterPitch = MasterPitch;  // Range is -48...48 as "MIDI notes"...
 
@@ -573,105 +573,105 @@ void ctagSoundProcessorVctrSnt::Process(const ProcessData &data) {
         }
     }
     // === Sample oscillator B ===
-    romplers[IDX_OSC_B]->params.gate = true;
+    romplers[IDX_OSC_B].params.gate = true;
     MK_INT_PAR_ABS(i_Bank_B, bank_B, 32.f)
     CONSTRAIN(i_Bank_B, 0, 31)
     MK_INT_PAR_ABS(i_Slice_B, slice_B, 32.f)
     CONSTRAIN(i_Slice_B, 0, 31)
     i_Slice_B = i_Bank_B * 32 + i_Slice_B + wtSliceOffset;
-    romplers[IDX_OSC_B]->params.slice = i_Slice_B;
+    romplers[IDX_OSC_B].params.slice = i_Slice_B;
 
     // --- Sample B pitch related items ---
     MK_FLT_PAR_ABS_SFT(f_Speed_B, speed_B, 2048.f, 2.f)
-    romplers[IDX_OSC_B]->params.playbackSpeed = f_Speed_B;
+    romplers[IDX_OSC_B].params.playbackSpeed = f_Speed_B;
     float f_Pitch_B = pitch_B;
     if (cv_pitch_B != -1)
         f_Pitch_B += data.cv[cv_pitch_B] * 12.f * 5.f;
-    romplers[IDX_OSC_B]->params.pitch = f_MasterPitch_SMP + f_Pitch_B + f_PitchMod_Sample;
+    romplers[IDX_OSC_B].params.pitch = f_MasterPitch_SMP + f_Pitch_B + f_PitchMod_Sample;
     MK_FLT_PAR_ABS_SFT(f_Tune_B, tune_B, 1200.f, 12.f)
-    romplers[IDX_OSC_B]->params.tune = f_Tune_B;
+    romplers[IDX_OSC_B].params.tune = f_Tune_B;
 
     // --- Sample Length and Loop-related stuff ---
     MK_FLT_PAR_ABS(f_start_B, start_B, 1048576.f, 1.f);
-    romplers[IDX_OSC_B]->params.startOffsetRelative = f_start_B;
+    romplers[IDX_OSC_B].params.startOffsetRelative = f_start_B;
     MK_FLT_PAR_ABS(f_length_B, length_B, 1048576.f, 1.f);
-    romplers[IDX_OSC_B]->params.lengthRelative = f_length_B;
+    romplers[IDX_OSC_B].params.lengthRelative = f_length_B;
     MK_FLT_PAR_ABS(f_lpstart_B, lpstart_B, 1048576.f, 1.f)
-    romplers[IDX_OSC_B]->params.loopMarker = f_lpstart_B;
+    romplers[IDX_OSC_B].params.loopMarker = f_lpstart_B;
     MK_TRIG_PAR(t_loop_B, loop_B)
-    romplers[IDX_OSC_B]->params.loop = t_loop_B;
+    romplers[IDX_OSC_B].params.loop = t_loop_B;
     MK_TRIG_PAR(t_loop_pipo_B, loop_pipo_B)
-    romplers[IDX_OSC_B]->params.loopPiPo = t_loop_pipo_B;
-    romplers[IDX_OSC_B]->params.gain = f_VolOsc_B;
+    romplers[IDX_OSC_B].params.loopPiPo = t_loop_pipo_B;
+    romplers[IDX_OSC_B].params.gain = f_VolOsc_B;
 
     // --- Filter params OSC B ---
     MK_FLT_PAR_ABS(f_Cut_B, fcut_B, 4095.f, 1.f)
-    romplers[IDX_OSC_B]->params.cutoff = f_Cut_B;
+    romplers[IDX_OSC_B].params.cutoff = f_Cut_B;
     MK_FLT_PAR_ABS(f_Reso_B, freso_B, 4095.f, 20.f)
-    romplers[IDX_OSC_B]->params.resonance = f_Reso_B;
+    romplers[IDX_OSC_B].params.resonance = f_Reso_B;
     MK_INT_PAR_ABS(i_FType_B, fmode_B, 4.f)
     CONSTRAIN(i_FType_B, 0, 3);
-    romplers[IDX_OSC_B]->params.filterType = static_cast<RomplerVoice::FilterType>(i_FType_B);
+    romplers[IDX_OSC_B].params.filterType = static_cast<RomplerVoice::FilterType>(i_FType_B);
 
     // --- Filter modulation LFO OSC B ---
     MK_FLT_PAR_ABS_MIN_MAX(f_LFOSpeed_B, lfospeed_B, 4095.f, 0.05f, 20.f);
-    romplers[IDX_OSC_B]->params.lfoSpeed = f_LFOSpeed_B;
+    romplers[IDX_OSC_B].params.lfoSpeed = f_LFOSpeed_B;
     MK_FLT_PAR_ABS(f_LFOFMFilt_B, lfo2filtfm_B, 4095.f, 1.f)
     MK_TRIG_PAR(t_FilterLFOon_B, FilterLFOon_B);
-    romplers[IDX_OSC_B]->params.lfoFMFilter = t_FilterLFOon_B ? f_LFOFMFilt_B : 0.f;
+    romplers[IDX_OSC_B].params.lfoFMFilter = t_FilterLFOon_B ? f_LFOFMFilt_B : 0.f;
 
     // --- Render and buffer Sample oscillator B ---
-    romplers[IDX_OSC_B]->Process(sample_buf_B, bufSz);
+    romplers[IDX_OSC_B].Process(sample_buf_B, bufSz);
 
     // === Sample oscillator D ===
-    romplers[IDX_OSC_D]->params.gate = true;
+    romplers[IDX_OSC_D].params.gate = true;
     MK_INT_PAR_ABS(i_Bank_D, bank_D, 32.f)
     CONSTRAIN(i_Bank_D, 0, 31)
     MK_INT_PAR_ABS(i_Slice_D, slice_D, 32.f)
     CONSTRAIN(i_Slice_D, 0, 31)
     i_Slice_D = i_Bank_D * 32 + i_Slice_D + wtSliceOffset;
-    romplers[IDX_OSC_D]->params.slice = i_Slice_D;
+    romplers[IDX_OSC_D].params.slice = i_Slice_D;
     // --- Sample D pitch related items ---
     MK_FLT_PAR_ABS_SFT(f_Speed_D, speed_D, 2048.f, 2.f)
-    romplers[IDX_OSC_D]->params.playbackSpeed = f_Speed_D;
+    romplers[IDX_OSC_D].params.playbackSpeed = f_Speed_D;
     float f_Pitch_D = pitch_D;
     if (cv_pitch_D != -1)
         f_Pitch_D += data.cv[cv_pitch_D] * 12.f * 5.f;
-    romplers[IDX_OSC_D]->params.pitch = f_MasterPitch_SMP + f_Pitch_D + f_PitchMod_Sample;
+    romplers[IDX_OSC_D].params.pitch = f_MasterPitch_SMP + f_Pitch_D + f_PitchMod_Sample;
     MK_FLT_PAR_ABS_SFT(f_Tune_D, tune_D, 2048.f, 12.f)
-    romplers[IDX_OSC_D]->params.tune = f_Tune_D;
+    romplers[IDX_OSC_D].params.tune = f_Tune_D;
 
     // --- Sample Length and Loop-related stuff ---
     MK_FLT_PAR_ABS(f_start_D, start_D, 1048576.f, 1.f);
-    romplers[IDX_OSC_D]->params.startOffsetRelative = f_start_D;
+    romplers[IDX_OSC_D].params.startOffsetRelative = f_start_D;
     MK_FLT_PAR_ABS(f_length_D, length_D, 1048576.f, 1.f);
-    romplers[IDX_OSC_D]->params.lengthRelative = f_length_D;
+    romplers[IDX_OSC_D].params.lengthRelative = f_length_D;
     MK_FLT_PAR_ABS(f_lpstart_D, lpstart_D, 1048576.f, 1.f)
-    romplers[IDX_OSC_D]->params.loopMarker = f_lpstart_D;
+    romplers[IDX_OSC_D].params.loopMarker = f_lpstart_D;
     MK_TRIG_PAR(t_loop_D, loop_D)
-    romplers[IDX_OSC_D]->params.loop = t_loop_D;
+    romplers[IDX_OSC_D].params.loop = t_loop_D;
     MK_TRIG_PAR(t_loop_pipo_D, loop_pipo_D)
-    romplers[IDX_OSC_D]->params.loopPiPo = t_loop_pipo_D;
-    romplers[IDX_OSC_D]->params.gain = f_VolOsc_D;
+    romplers[IDX_OSC_D].params.loopPiPo = t_loop_pipo_D;
+    romplers[IDX_OSC_D].params.gain = f_VolOsc_D;
 
     // --- Filter params OSC D ---
     MK_FLT_PAR_ABS(f_Cut_D, fcut_D, 4095.f, 1.f);
-    romplers[IDX_OSC_D]->params.cutoff = f_Cut_D;
+    romplers[IDX_OSC_D].params.cutoff = f_Cut_D;
     MK_FLT_PAR_ABS_MIN_MAX(f_Reso_D, freso_D, 4095.f, 0.05f, 20.f);
-    romplers[IDX_OSC_D]->params.resonance = f_Reso_D;
+    romplers[IDX_OSC_D].params.resonance = f_Reso_D;
     MK_INT_PAR_ABS(i_FType_D, fmode_D, 4.f)
     CONSTRAIN(i_FType_D, 0, 3);
-    romplers[IDX_OSC_D]->params.filterType = static_cast<RomplerVoice::FilterType>(i_FType_D);
+    romplers[IDX_OSC_D].params.filterType = static_cast<RomplerVoice::FilterType>(i_FType_D);
 
     // --- Filter modulation LFO OSC D ---
     MK_FLT_PAR_ABS_MIN_MAX(f_lfospeed_D, lfospeed_D, 4095.f, 0.05f, 20.f);
-    romplers[IDX_OSC_D]->params.lfoSpeed = f_lfospeed_D;
+    romplers[IDX_OSC_D].params.lfoSpeed = f_lfospeed_D;
     MK_FLT_PAR_ABS(f_lfo2filtfm_D, lfo2filtfm_D, 4095.f, 1.f);
     MK_TRIG_PAR(t_FilterLFOon_D, FilterLFOon_D);
-    romplers[IDX_OSC_D]->params.lfoFMFilter = t_FilterLFOon_D ? f_lfo2filtfm_D : 0.f;
+    romplers[IDX_OSC_D].params.lfoFMFilter = t_FilterLFOon_D ? f_lfo2filtfm_D : 0.f;
 
     // --- Render and buffer Sample oscillator D ---
-    romplers[IDX_OSC_D]->Process(sample_buf_D, bufSz);
+    romplers[IDX_OSC_D].Process(sample_buf_D, bufSz);
 
     // === Volume Envelope ===
     float vol_eg_process = 0.f; // If active we also "precalculate" the Process() values for our main loop (Vol EG first) - this might be slightly less accurate, but uses about 1/32 less performance for these functions
@@ -887,9 +887,8 @@ void ctagSoundProcessorVctrSnt::Init(std::size_t blockSize, void *blockPtr) {
 
     // Create sample-oscillators / Rompler-voices and initialize Rompler voices regarding parameters not actively used here ---
     for (int i = 0; i < 2; i++) {
-        romplers[i] = std::make_unique<RomplerVoice>();
-        romplers[i]->params.s = 1.f;          // Set Sustain to max, "just in case"
-        romplers[i]->params.resonance = 1.f;  // Set Resonance to 1 (should not be 0), "just in case"
+        romplers[i].params.s = 1.f;          // Set Sustain to max, "just in case"
+        romplers[i].params.resonance = 1.f;  // Set Resonance to 1 (should not be 0), "just in case"
     }
     // --- Initialize Volume Envelope ---
     vol_eg.SetSampleRate(44100.f / bufSz);    // Sync Env with our audio-processing

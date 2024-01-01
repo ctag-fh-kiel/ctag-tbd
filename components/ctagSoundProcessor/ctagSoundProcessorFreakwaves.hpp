@@ -3,18 +3,17 @@
 #include "helpers/ctagRollingAverage.hpp"
 #include "plaits/dsp/oscillator/wavetable_oscillator.h"
 #include "plaits/dsp/physical_modelling/resonator.h"
-#include "synthesis/RomplerVoice.hpp"
+#include "plaits/dsp/engine/engine.h"
 #include "helpers/ctagFastMath.hpp"
 #include "helpers/ctagSineSource.hpp"
 #include "helpers/ctagNumUtil.hpp"
 #include "helpers/ctagADSREnv.hpp"
 #include "plaits/dsp/oscillator/wavetable_oscillator.h"
-#include "synthesis/RomplerVoice.hpp"
-#include "plaits/dsp/engine/engine.h"
-#include "helpers/ctagRollingAverage.hpp"
-#include "helpers/ctagFBDelayLine.hpp"
-#include "helpers/ctagWNoiseGen.hpp"
 #include "braids/quantizer.h"
+#include "helpers/ctagSampleRom.hpp"
+#include "helpers/ctagWNoiseGen.hpp"
+#include "helpers/ctagFBDelayLine.hpp"
+
 
 // --- Trigger/Gate values ---
 #define GATE_HIGH_NEW       2
@@ -28,7 +27,6 @@
 #define NUM_OF_LFOS_FW                7
 
 using namespace CTAG::SP::HELPERS;
-using namespace CTAG::SYNTHESIS;
 
 namespace CTAG {
     namespace SP {

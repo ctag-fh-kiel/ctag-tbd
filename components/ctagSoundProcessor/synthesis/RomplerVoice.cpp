@@ -528,19 +528,10 @@ namespace CTAG::SYNTHESIS {
 
     RomplerVoice::RomplerVoice() {
         memset(&params, 0, sizeof(Params));
-        readBufferFloat = (float *) heap_caps_malloc(readBufferMaxSize * sizeof(float),
-                                                MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        assert(readBufferFloat != NULL);
-        readBufferInt16 = (int16_t *) heap_caps_malloc(readBufferMaxSize * sizeof(float),
-                                                       MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        assert(readBufferInt16 != NULL);
-
         Reset();
     }
 
     RomplerVoice::~RomplerVoice() {
-        heap_caps_free(readBufferFloat);
-        heap_caps_free(readBufferInt16);
     }
 
     void RomplerVoice::processBlock(float *out, const uint32_t size) {
