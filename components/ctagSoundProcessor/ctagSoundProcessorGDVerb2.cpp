@@ -38,10 +38,9 @@ void ctagSoundProcessorGDVerb2::Init(std::size_t blockSize, void *blockPtr) {
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
+    prog_rev.init(blockSize, blockPtr);
     prog_rev.setSampleRate(44100.f);
     prog_rev.mute();
-    ESP_LOGE("GDVERB2", "os fac %li, total fs %f, fs %f", prog_rev.getOSFactor(), prog_rev.getTotalSampleRate(),
-             prog_rev.getSampleRate());
 }
 
 void ctagSoundProcessorGDVerb2::Process(const ProcessData &data) {

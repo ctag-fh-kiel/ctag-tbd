@@ -21,13 +21,11 @@
 #include "rms.hpp"
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
-#include "esp_log.h"
-#include "esp_heap_caps.h"
 
 FV3_(rms)::FV3_(rms)() {
     sum = bufs = 0;
     bufsize = bufidx = 0;
-    buffer = NULL;
+    buffer = nullptr;
 }
 
 FV3_(rms)::~FV3_(rms)() {
@@ -42,32 +40,21 @@ void FV3_(rms)::setsize(int32_t size) {
     if (size <= 0) return;
     this->free();
 
-    buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(buffer == NULL){
-        ESP_LOGE("rms", "Cannot alloc mem trying SPIRAM!");
-        buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(buffer == NULL) {
-            ESP_LOGE("rms", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("rms", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    buffer = (float*) utils_f::fv3_malloc(size * sizeof(float));
 
     bufs = bufsize = size;
     mute();
 }
 
 void FV3_(rms)::free() {
-    if (buffer != NULL && bufsize != 0)
-        heap_caps_free(buffer);
-    buffer = NULL;
+    if (buffer != nullptr && bufsize != 0)
+        utils_f::fv3_free(buffer);
+    buffer = nullptr;
     bufidx = bufsize = 0;
 }
 
 void FV3_(rms)::mute() {
-    if (buffer == NULL || bufsize == 0) return;
+    if (buffer == nullptr || bufsize == 0) return;
     FV3_(utils)::mute(buffer, bufsize);
     sum = 0;
     bufidx = 0;
