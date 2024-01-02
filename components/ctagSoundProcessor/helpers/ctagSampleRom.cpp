@@ -36,11 +36,12 @@ namespace CTAG::SP::HELPERS {
     uint32_t ctagSampleRom::totalSize = 0;
     uint32_t ctagSampleRom::numberSlices = 0;
     uint32_t ctagSampleRom::headerSize = 0;
-    uint32_t *ctagSampleRom::sliceSizes = NULL;
-    uint32_t *ctagSampleRom::sliceOffsets = NULL;
+    uint32_t *ctagSampleRom::sliceSizes = nullptr;
+    uint32_t *ctagSampleRom::sliceOffsets = nullptr;
     uint32_t ctagSampleRom::firstNonWtSlice = 0;
 
     ctagSampleRom::ctagSampleRom() {
+        //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
         nConsumers++;
         if(nConsumers == 1)
             RefreshDataStructure();
@@ -71,12 +72,12 @@ namespace CTAG::SP::HELPERS {
 
     // reads words, offset in words not bytes
     void ctagSampleRom::Read(int16_t *dst, uint32_t offset, const uint32_t n_samples) {
-        assert(dst != NULL);
+        assert(dst != nullptr);
         offset *= 2; // from int16 to bytes
         offset += headerSize; // add header size
         offset += CONFIG_SAMPLE_ROM_START_ADDRESS; // add start offset
         //spi_flash_read(offset, dst, n_samples * 2);
-        esp_flash_read(NULL, dst, offset, n_samples * 2);
+        esp_flash_read(nullptr, dst, offset, n_samples * 2);
     }
 
     bool ctagSampleRom::HasSlice(const uint32_t slice) {
@@ -117,40 +118,40 @@ namespace CTAG::SP::HELPERS {
 
     void ctagSampleRom::RefreshDataStructure() {
         if(nConsumers == 0) return;
-        if (sliceOffsets != NULL) {
+        if (sliceOffsets != nullptr) {
             heap_caps_free(sliceOffsets);
-            sliceOffsets = NULL;
+            sliceOffsets = nullptr;
         }
-        if (sliceSizes != NULL) {
+        if (sliceSizes != nullptr) {
             heap_caps_free(sliceSizes);
-            sliceSizes = NULL;
+            sliceSizes = nullptr;
         }
         uint32_t deadface = 0;
         totalSize = 0;
         numberSlices = 0;
         headerSize = 0;
         //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS, &deadface, 4);
-        esp_flash_read(NULL, &deadface, CONFIG_SAMPLE_ROM_START_ADDRESS, 4);
+        esp_flash_read(nullptr, &deadface, CONFIG_SAMPLE_ROM_START_ADDRESS, 4);
         if (deadface != 0xdeadface) {
             ESP_LOGE("SROM", "Magic number wrong!");
             return;
         }
         headerSize += 4;
         //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 4, &totalSize, 4);
-        esp_flash_read(NULL,&totalSize, CONFIG_SAMPLE_ROM_START_ADDRESS + 4, 4);
+        esp_flash_read(nullptr,&totalSize, CONFIG_SAMPLE_ROM_START_ADDRESS + 4, 4);
         headerSize += 4;
         ESP_LOGD("SROM", "Total sample data size %li bytes", totalSize);
         //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 8, &numberSlices, 4);
-        esp_flash_read(NULL, &numberSlices, CONFIG_SAMPLE_ROM_START_ADDRESS + 8, 4);
+        esp_flash_read(nullptr, &numberSlices, CONFIG_SAMPLE_ROM_START_ADDRESS + 8, 4);
         headerSize += 4;
         ESP_LOGD("SROM", "Number slices %li", numberSlices);
         // alloc memory
         sliceOffsets = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
-        assert(sliceOffsets != NULL);
+        assert(sliceOffsets != nullptr);
         sliceSizes = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
-        assert(sliceSizes != NULL);
+        assert(sliceSizes != nullptr);
         //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 12, &sliceOffsets[0], 4 * numberSlices);
-        esp_flash_read(NULL, &sliceOffsets[0], CONFIG_SAMPLE_ROM_START_ADDRESS + 12, 4 * numberSlices);
+        esp_flash_read(nullptr, &sliceOffsets[0], CONFIG_SAMPLE_ROM_START_ADDRESS + 12, 4 * numberSlices);
         headerSize += 4 * numberSlices;
         int lastOffset = 0;
         for (uint32_t i = 0; i < numberSlices; i++) {
@@ -169,22 +170,22 @@ namespace CTAG::SP::HELPERS {
     }
 
     ctagSampleRom::~ctagSampleRom() {
-        //ESP_LOGE("SR", "nConsumers %d", nConsumers.load());
+        //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
         nConsumers--;
 
         if (nConsumers > 0) return;
-        //ESP_LOGE("SR", "freeing up SR");
-        if (sliceOffsets != NULL) {
+        //ESP_LOGE("SR", "freeing up SR data structure");
+        if (sliceOffsets != nullptr) {
             heap_caps_free(sliceOffsets);
         }
-        if (sliceSizes != NULL) {
+        if (sliceSizes != nullptr) {
             heap_caps_free(sliceSizes);
         }
         totalSize = 0;
         numberSlices = 0;
         headerSize = 0;
-        sliceSizes = NULL;
-        sliceOffsets = NULL;
+        sliceSizes = nullptr;
+        sliceOffsets = nullptr;
         firstNonWtSlice = 0;
     }
 
