@@ -74,6 +74,7 @@ namespace CTAG {
             bool latchVoice = false;
             bool latched = false;
             bool toggle = false;
+            int32_t preNCVoices = 0;
             braids::Quantizer quantizer;
         };
     }

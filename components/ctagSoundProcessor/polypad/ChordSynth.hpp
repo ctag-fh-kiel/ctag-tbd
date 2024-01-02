@@ -78,6 +78,8 @@ namespace CTAG {
 
             void NoteOff();
 
+            void Reset();
+
             void SetDetune(const uint32_t &detune);
 
             void SetCutoff(const uint32_t &cutoff);
