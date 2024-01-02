@@ -22,8 +22,6 @@
 #include "allpass.hpp"
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
-#include "esp_heap_caps.h"
-#include "esp_log.h"
 
 // simple allpass filter
 
@@ -31,7 +29,7 @@ FV3_(allpass)::FV3_(allpass)() {
     isExternalMem = false;
     bufsize = bufidx = 0;
     decay = 1;
-    buffer = NULL;
+    buffer = nullptr;
 }
 
 FV3_(allpass)::FV3_(~allpass)() {
@@ -44,8 +42,8 @@ int32_t FV3_(allpass)::getsize() {
 }
 
 void FV3_(allpass)::setsize(fv3_float_t *buf, const uint32_t size) {
-    if (buf == NULL) {
-        buffer = NULL;
+    if (buf == nullptr) {
+        buffer = nullptr;
         return;
     }
     isExternalMem = true;
@@ -66,20 +64,9 @@ void FV3_(allpass)::setsize(fv3_float_t *buf, const uint32_t size) {
 
 void FV3_(allpass)::setsize(int32_t size) {
     if (size <= 0) return;
-    fv3_float_t *new_buffer = NULL;
-    //ESP_LOGE("allpass", "Trying mem alloc!");
-    new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(new_buffer == NULL){
-        ESP_LOGE("allpass", "Cannot alloc mem trying SPIRAM!");
-        new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(new_buffer == NULL) {
-            ESP_LOGE("allpass", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("allpass", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    fv3_float_t *new_buffer = nullptr;
+
+    new_buffer = (float*) utils_f::fv3_malloc(size * sizeof(float));
 
     FV3_(utils)::mute(new_buffer, size);
 
@@ -100,14 +87,14 @@ void FV3_(allpass)::setsize(int32_t size) {
 }
 
 void FV3_(allpass)::free() {
-    if (buffer == NULL || bufsize == 0) return;
-    heap_caps_free(buffer);
-    buffer = NULL;
+    if (buffer == nullptr || bufsize == 0) return;
+    utils_f::fv3_free(buffer);
+    buffer = nullptr;
     bufidx = bufsize = 0;
 }
 
 void FV3_(allpass)::mute() {
-    if (buffer == NULL || bufsize == 0) return;
+    if (buffer == nullptr || bufsize == 0) return;
     FV3_(utils)::mute(buffer, bufsize);
     bufidx = 0;
 }
@@ -134,7 +121,7 @@ FV3_(allpassm)::FV3_(allpassm)() {
     isExternalMem = false;
     bufsize = readidx = writeidx = modulationsize = 0;
     feedback = feedback_mod = z_1 = modulationsize_f = 0;
-    buffer = NULL;
+    buffer = nullptr;
     decay = 1;
 }
 
@@ -160,8 +147,8 @@ void FV3_(allpassm)::setsize(int32_t size) {
 }
 
 void FV3_(allpassm)::setsize(fv3_float_t *buf, const uint32_t size, const uint32_t modsize) {
-    if (buf == NULL) {
-        buffer = NULL;
+    if (buf == nullptr) {
+        buffer = nullptr;
         return;
     }
     isExternalMem = true;
@@ -181,21 +168,9 @@ void FV3_(allpassm)::setsize(int32_t size, int32_t modsize) {
     if (modsize < 0) modsize = 0;
     if (modsize > size) modsize = size;
     int32_t newsize = size + modsize;
-    fv3_float_t *new_buffer = NULL;
+    fv3_float_t *new_buffer = nullptr;
 
-    //ESP_LOGE("allpassm", "Trying mem alloc!");
-    new_buffer = (float*) heap_caps_malloc((size+modsize) * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(new_buffer == NULL){
-        ESP_LOGE("allpassm", "Cannot alloc mem trying SPIRAM!");
-        new_buffer = (float*) heap_caps_malloc((size+modsize) * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(new_buffer == NULL) {
-            ESP_LOGE("allpassm", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("allpassm", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)((size+modsize) * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    new_buffer = (float*) utils_f::fv3_malloc((size+modsize) * sizeof(float));
 
     FV3_(utils)::mute(new_buffer, newsize);
 
@@ -210,15 +185,15 @@ void FV3_(allpassm)::setsize(int32_t size, int32_t modsize) {
 }
 
 void FV3_(allpassm)::free() {
-    if (buffer == NULL || bufsize == 0) return;
-    heap_caps_free(buffer);
-    buffer = NULL;
+    if (buffer == nullptr || bufsize == 0) return;
+    utils_f::fv3_free(buffer);
+    buffer = nullptr;
     writeidx = bufsize = 0;
     z_1 = 0;
 }
 
 void FV3_(allpassm)::mute() {
-    if (buffer == NULL || bufsize == 0) return;
+    if (buffer == nullptr || bufsize == 0) return;
     FV3_(utils)::mute(buffer, bufsize);
     writeidx = 0;
     z_1 = 0;
@@ -253,7 +228,7 @@ FV3_(allpass2)::FV3_(allpass2)() {
     bufsize1 = bufidx1 = bufsize2 = bufidx2 = 0;
     decay1 = decay2 = 1;
     feedback1 = feedback2 = 0;
-    buffer1 = buffer2 = NULL;
+    buffer1 = buffer2 = nullptr;
 }
 
 FV3_(allpass2)::FV3_(~allpass2)() {
@@ -264,33 +239,9 @@ void FV3_(allpass2)::setsize(int32_t size1, int32_t size2) {
     if (size1 <= 0 || size2 <= 0) return;
     free();
 
-    //ESP_LOGE("allpass2", "Trying mem alloc!");
-    buffer1 = (float*) heap_caps_malloc(size1 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(buffer1 == NULL){
-        ESP_LOGE("allpass2", "Cannot alloc mem trying SPIRAM!");
-        buffer1 = (float*) heap_caps_malloc(size1 * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(buffer1 == NULL) {
-            ESP_LOGE("allpass2", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("allpass2", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size1 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    buffer1 = (float*) utils_f::fv3_malloc(size1 * sizeof(float));
 
-    //ESP_LOGE("allpass2", "Trying mem alloc!");
-    buffer2 = (float*) heap_caps_malloc(size2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(buffer2 == NULL){
-        ESP_LOGE("allpass2", "Cannot alloc mem trying SPIRAM!");
-        buffer2 = (float*) heap_caps_malloc(size2 * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(buffer2 == NULL) {
-            ESP_LOGE("allpass2", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("allpass2", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size2 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    buffer2 = (float*) utils_f::fv3_malloc(size2 * sizeof(float));
 
     bufsize1 = size1;
     bufsize2 = size2;
@@ -298,15 +249,15 @@ void FV3_(allpass2)::setsize(int32_t size1, int32_t size2) {
 }
 
 void FV3_(allpass2)::free() {
-    if (buffer1 == NULL || bufsize1 == 0 || buffer2 == NULL || bufsize2 == 0) return;
-    heap_caps_free(buffer1);
-    heap_caps_free(buffer2);
-    buffer1 = buffer2 = NULL;
+    if (buffer1 == nullptr || bufsize1 == 0 || buffer2 == nullptr || bufsize2 == 0) return;
+    utils_f::fv3_free(buffer1);
+    utils_f::fv3_free(buffer2);
+    buffer1 = buffer2 = nullptr;
     bufidx1 = bufidx2 = bufsize1 = bufsize2 = 0;
 }
 
 void FV3_(allpass2)::mute() {
-    if (buffer1 == NULL || bufsize1 == 0 || buffer2 == NULL || bufsize2 == 0) return;
+    if (buffer1 == nullptr || bufsize1 == 0 || buffer2 == nullptr || bufsize2 == 0) return;
     FV3_(utils)::mute(buffer1, bufsize1);
     FV3_(utils)::mute(buffer2, bufsize2);
 }
@@ -332,7 +283,7 @@ void FV3_(allpass2)::setdecay2(fv3_float_t val) {
 FV3_(allpass3)::FV3_(allpass3)() {
     bufsize1 = readidx1 = writeidx1 = bufsize2 = bufidx2 = bufsize3 = bufidx3 = modulationsize = 0;
     decay1 = decay2 = decay3 = 1;
-    buffer1 = buffer2 = buffer3 = NULL;
+    buffer1 = buffer2 = buffer3 = nullptr;
     feedback1 = feedback2 = feedback3 = modulationsize_f = 0;
 }
 
@@ -350,47 +301,11 @@ void FV3_(allpass3)::setsize(int32_t size1, int32_t size1mod, int32_t size2, int
     if (size1mod > size1) size1mod = size1;
     this->free();
 
-    //ESP_LOGE("allpass3", "Trying mem alloc!");
-    buffer1 = (float*) heap_caps_malloc((size1 + size1mod) * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(buffer1 == NULL){
-        ESP_LOGE("allpass3", "Cannot alloc mem trying SPIRAM!");
-        buffer1 = (float*) heap_caps_malloc((size1 + size1mod) * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(buffer1 == NULL) {
-            ESP_LOGE("allpass3", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("allpass3", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)((size1 + size1mod) * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    buffer1 = (float*) utils_f::fv3_malloc((size1 + size1mod) * sizeof(float));
 
-    //ESP_LOGE("allpass3", "Trying mem alloc!");
-    buffer2 = (float*) heap_caps_malloc(size2 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(buffer2 == NULL){
-        ESP_LOGE("allpass3", "Cannot alloc mem trying SPIRAM!");
-        buffer2 = (float*) heap_caps_malloc(size2 * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(buffer2 == NULL) {
-            ESP_LOGE("allpass3", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("allpass3", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size2 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    buffer2 = (float*) utils_f::fv3_malloc(size2 * sizeof(float));
 
-    //ESP_LOGE("allpass3", "Trying mem alloc!");
-    buffer3 = (float*) heap_caps_malloc(size3 * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(buffer3 == NULL){
-        ESP_LOGE("allpass3", "Cannot alloc mem trying SPIRAM!");
-        buffer3 = (float*) heap_caps_malloc(size3 * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(buffer3 == NULL) {
-            ESP_LOGE("allpass3", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("allpass3", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size3 * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    buffer3 = (float*) utils_f::fv3_malloc(size3 * sizeof(float));
 
     bufsize1 = size1 + size1mod;
     readidx1 = size1mod * 2;
@@ -403,17 +318,17 @@ void FV3_(allpass3)::setsize(int32_t size1, int32_t size1mod, int32_t size2, int
 }
 
 void FV3_(allpass3)::free() {
-    if (buffer1 == NULL || bufsize1 == 0 || buffer2 == NULL || bufsize2 == 0 || buffer3 == NULL || bufsize3 == 0)
+    if (buffer1 == nullptr || bufsize1 == 0 || buffer2 == nullptr || bufsize2 == 0 || buffer3 == nullptr || bufsize3 == 0)
         return;
-    heap_caps_free(buffer1);
-    heap_caps_free(buffer2);
-    heap_caps_free(buffer3);
-    buffer1 = buffer2 = buffer3 = NULL;
+    utils_f::fv3_free(buffer1);
+    utils_f::fv3_free(buffer2);
+    utils_f::fv3_free(buffer3);
+    buffer1 = buffer2 = buffer3 = nullptr;
     readidx1 = writeidx1 = bufidx2 = bufidx3 = bufsize1 = bufsize2 = bufsize3 = 0;
 }
 
 void FV3_(allpass3)::mute() {
-    if (buffer1 == NULL || bufsize1 == 0 || buffer2 == NULL || bufsize2 == 0 || buffer3 == NULL || bufsize3 == 0)
+    if (buffer1 == nullptr || bufsize1 == 0 || buffer2 == nullptr || bufsize2 == 0 || buffer3 == nullptr || bufsize3 == 0)
         return;
     FV3_(utils)::mute(buffer1, bufsize1);
     FV3_(utils)::mute(buffer2, bufsize2);

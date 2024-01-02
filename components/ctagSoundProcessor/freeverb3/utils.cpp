@@ -220,4 +220,74 @@ uint32_t FV3_(utils)::getSIMDFlag() {
     return simdFlag;
 }
 
+#define MAX_ALLOCS 30
+static size_t blockMemSize = 0;
+static void *blockMem = nullptr;
+static void *allocsSPIRAM[MAX_ALLOCS]; // 30 is the max number of allocs we can do, testing used reverbs use approx 24 allocs total
+static int nAllocsSPIRAM = 0;
+
+static int allocating = 0;
+static int freeing = 0;
+
+#include "esp_heap_caps.h"
+#include "esp_log.h"
+#include <cassert>
+
+void FV3_(utils)::SetBlockMemory(size_t size, void* blockMemory){
+    blockMemSize = size;
+    blockMem = blockMemory;
+    memset(allocsSPIRAM, 0, sizeof(allocsSPIRAM));
+    nAllocsSPIRAM = 0;
+    freeing= 0;
+    allocating= 0;
+}
+
+void *FV3_(utils)::fv3_malloc(size_t size){
+    void *ptr = nullptr;
+    /*
+    // try to use block memory first
+    if(blockMemSize > size){
+        ptr = blockMem;
+        blockMem = static_cast<char*>(blockMem) + size;
+        blockMemSize -= size;
+        return ptr;
+    }
+    ESP_LOGE("fv3_malloc", "Cannot alloc mem trying SPIRAM!");
+    ptr = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+    assert(ptr != nullptr);
+    allocsSPIRAM[nAllocsSPIRAM++] = ptr;
+    assert(nAllocsSPIRAM < MAX_ALLOCS);
+     */
+    // get all memory from SPIRAM
+    //ESP_LOGE("fv3", "Allocating %d %d bytes", allocating++, size);
+    ptr = heap_caps_malloc_prefer(size, MALLOC_CAP_DEFAULT, MALLOC_CAP_SPIRAM);
+    assert(ptr != nullptr);
+    return ptr;
+}
+void FV3_(utils)::fv3_free(void *ptr){
+    /*
+    // check if ptr is in allocsSPIRAM
+    for(int i = nAllocsSPIRAM - 1; i >= 0; i++){
+        if(allocsSPIRAM[i] == ptr){
+            ESP_LOGE("fv3_free", "Freeing SPIRAM ptr %d", i);
+            heap_caps_free(ptr);
+            allocsSPIRAM[i] = nullptr;
+            return;
+        }
+    }
+    // else do nothing, rest is from block memory
+     */
+    // deallocate from SPIRAM
+    //ESP_LOGE("fv3", "Freeing %d", freeing++);
+    heap_caps_free(ptr);
+    /*
+    ESP_LOGI("fv3", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             */
+}
+
+
 #include "fv3_ns_end.h"
