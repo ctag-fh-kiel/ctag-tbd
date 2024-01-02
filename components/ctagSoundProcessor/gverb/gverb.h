@@ -52,9 +52,9 @@ typedef struct {
     ty_fixeddelay *tapdelay;
     int *taps;
     float *tapgains;
-    float *d;
-    float *u;
-    float *f;
+    float d[FDNORDER];
+    float u[FDNORDER];
+    float f[FDNORDER];
     double alpha;
 } ty_gverb;
 

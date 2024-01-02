@@ -3,6 +3,12 @@
 #define GVERBDSP_H
 
 #include "ladspa-util.h"
+#include <assert.h>
+
+
+void gverb_set_blockbuffer(size_t size, void* ptr);
+void *gverb_malloc(size_t size);
+void gverb_free_malloc(void *p);
 
 typedef struct {
     int size;
