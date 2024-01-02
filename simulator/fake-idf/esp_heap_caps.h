@@ -19,10 +19,10 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#define MALLOC_CAP_INTERNAL 0
-#define MALLOC_CAP_8BIT 0
-#define MALLOC_CAP_SPIRAM 0
-#define MALLOC_CAP_DEFAULT 0
+#define MALLOC_CAP_INTERNAL 1
+#define MALLOC_CAP_8BIT 2
+#define MALLOC_CAP_SPIRAM 4
+#define MALLOC_CAP_DEFAULT 8
 
 #ifdef __cplusplus
 extern "C"
