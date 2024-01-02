@@ -35,7 +35,7 @@ void ctagSoundProcessorPolyPad::Init(std::size_t blockSize, void *blockPtr) {
     LoadPreset(0);
 
     for(auto &s:v_voices){
-        s.NoteOff();
+        s.Reset();
     }
 
     quantizer.Init();
@@ -47,8 +47,16 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
         data.buf[i * 2 + processCh] = 0.f;
     }
 
-    int iNVoices = ncvoices;
-    CONSTRAIN(iNVoices, 1, 8)
+    int32_t NCVoices = ncvoices;
+    CONSTRAIN(NCVoices, 1, 8)
+    if(preNCVoices != NCVoices){
+        ESP_LOGE("PolyPad", "ncvoices changed from %ld to %ld", preNCVoices, NCVoices);
+        for(auto &s:v_voices){
+            s.Reset();
+        }
+        preNCVoices = NCVoices;
+    }
+
     // start chord
     bool shouldTrigger = enableEG;
     if (trig_enableEG != -1) shouldTrigger = data.trig[trig_enableEG] == 1 ? 0 : 1; // inverted logic
@@ -71,18 +79,16 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
     if (shouldTrigger) {
         // check if voice needs to be killed because too many are active
 
-        // sort array according to voice time to live
-        sort(begin(v_voices), end(v_voices) - (8-iNVoices),
+        // sort array according to voice time to live, last in array has shortest TTL
+        sort(begin(v_voices), end(v_voices) - (8-NCVoices),
              [](ChordSynth &a, ChordSynth &b) { return a.GetTTL() > b.GetTTL(); }
         );
-        // kill the one which is most quiet = shortest TTL
-        (v_voices.end() - (8-iNVoices) - 1)->NoteOff();
 
         // hold voices
         bool shouldHold = voicehold;
         if (trig_voicehold != -1) { shouldHold = data.trig[trig_voicehold] == 0 ? 1 : 0; } // inverted logic
         if (shouldHold) {
-            for (int i=0;i<iNVoices;i++) {
+            for (int i=0;i<NCVoices-1;i++) {
                 if(!v_voices[i].IsDead())
                     v_voices[i].Hold();
             }
@@ -164,10 +170,15 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
         CONSTRAIN(params.filter_type, 0, 2)
 
         // find a silent voice and activate
-        for(int i=0;i<iNVoices;i++){
+        for(int i=0;i<NCVoices;i++){
+            // find a dead voice
             if(v_voices[i].IsDead()){
                 v_voices[i].Init(params);
                 break;
+            }
+            // if none found, activate the last one
+            if(i == NCVoices-1){
+                v_voices[i].Init(params);
             }
         }
 
@@ -191,7 +202,7 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
         CONSTRAIN(d, 0, 32767)
     }
 
-    for (int i=0;i<iNVoices;i++) {
+    for (int i=0;i<NCVoices;i++) {
         if(v_voices[i].IsDead()) continue;
         v_voices[i].SetCutoff(c);
         v_voices[i].SetResonance(r);

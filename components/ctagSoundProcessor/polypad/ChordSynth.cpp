@@ -124,3 +124,7 @@ void CTAG::SP::ChordSynth::Init(const CTAG::SP::ChordSynth::ChordParams &params)
         v_osc[i].SetPitch(params.pitch + scale[i] * 128);
     }
 }
+
+void CTAG::SP::ChordSynth::Reset() {
+    adsr.Reset();
+}
