@@ -823,7 +823,14 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
             offset += data_read;
             remaining -= data_read;
             if(blockCnt == 0){
-                ESP_LOGE("REST", "Magic number 0xdeadface = 0x%08li", ((uint32_t*)buffer)[0]);
+                if(((uint32_t*)buffer)[0] != 0xdeadface){
+                    ESP_LOGE("REST", "Not a valid sample rom file!");
+                    httpd_resp_send_500(req);
+                    heap_caps_free(buffer);
+                    CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                    heap_caps_free(buffer);
+                    return ESP_ERR_INVALID_ARG;
+                }
             }
             blockCnt++;
         }
