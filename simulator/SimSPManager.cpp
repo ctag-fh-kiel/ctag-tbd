@@ -204,11 +204,19 @@ void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
     // when trying to set chan 1 and chan 0 is a stereo plugin, return
     if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
     audioMutex.lock();
-    delete sp[chan];
+    if(nullptr != sp[chan]){
+        delete sp[chan];
+        sp[chan] = nullptr;
+    }
+
     if (model->IsStereo(id) && chan == 0) {
         ESP_LOGI("SP", "Removing ch 1 plugin as ch 0 is stereo!");
-        delete sp[1];
+        if(nullptr != sp[1]){
+            delete sp[1];
+            sp[1] = nullptr;
+        }
     }
+
     ctagSPAllocator::AllocationType aType = ctagSPAllocator::AllocationType::CH0;
     if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
     if(model->IsStereo(id)) aType = ctagSPAllocator::AllocationType::STEREO;

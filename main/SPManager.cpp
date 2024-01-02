@@ -286,11 +286,15 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
 
     // destroy active plugin
     xSemaphoreTake(processMutex, portMAX_DELAY);
-    delete sp[chan]; // destruct processor
-    sp[chan] = nullptr;
+    if(nullptr != sp[chan]){
+        delete sp[chan]; // destruct processor
+        sp[chan] = nullptr;
+    }
     if (model->IsStereo(id) && chan == 0) {
-        delete sp[1]; // destruct processor
-        sp[1] = nullptr;
+        if(nullptr != sp[1]){
+            delete sp[1]; // destruct processor
+            sp[1] = nullptr;
+        }
     }
 
     // create new plugin
@@ -526,8 +530,8 @@ void SoundProcessorManager::KillAudioTask() {
     // stop audio Task, delete plugins
     runAudioTask = 0;
     while (runAudioTask != 2); // wait for audio task to be dead
-    delete sp[0];
-    delete sp[1];
+    if(nullptr!=sp[0]) delete sp[0];
+    if(nullptr!=sp[1]) delete sp[1];
     sp[0] = nullptr;
     sp[1] = nullptr;
     ctagSPAllocator::ReleaseInternalBuffer();
