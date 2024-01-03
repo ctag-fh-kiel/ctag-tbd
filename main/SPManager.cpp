@@ -317,9 +317,9 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
 
 TaskHandle_t SoundProcessorManager::audioTaskH;
 TaskHandle_t SoundProcessorManager::ledTaskH;
-ctagSoundProcessor* SoundProcessorManager::sp[2] {nullptr, nullptr};
+DRAM_ATTR ctagSoundProcessor* SoundProcessorManager::sp[2] {nullptr, nullptr};
 std::unique_ptr<SPManagerDataModel> SoundProcessorManager::model;
-SemaphoreHandle_t SoundProcessorManager::processMutex;
+DRAM_ATTR SemaphoreHandle_t SoundProcessorManager::processMutex;
 atomic<uint32_t> SoundProcessorManager::ledBlink;
 atomic<uint32_t> SoundProcessorManager::ledStatus;
 atomic<uint32_t> SoundProcessorManager::noiseGateCfg;
