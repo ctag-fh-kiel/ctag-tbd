@@ -28,7 +28,7 @@ using namespace CTAG::SP;
 // data.buf[i * 2 + processCh] = (float)((byte)(t & 128));    // Square wave, working ok!
 
 // --- Helper function: rescale CV or Pot to integer of given range 0...max ---
-inline int ctagSoundProcessorBBeats::process_param(const ProcessData &data, int cv_myparm, int my_parm, int parm_range, int max_idx )
+int ctagSoundProcessorBBeats::process_param(const ProcessData &data, int cv_myparm, int my_parm, int parm_range, int max_idx )
 {
   if (cv_myparm != -1) 
   {
@@ -42,7 +42,7 @@ inline int ctagSoundProcessorBBeats::process_param(const ProcessData &data, int 
 }
 
 // --- Helper function: rescale CV or Pot to float 0...1.0 (CV is already in correct format, we still keep it inside this method for convenience ---
-inline float ctagSoundProcessorBBeats::process_param_float(const ProcessData &data, int cv_myparm, int my_parm, int max_idx )
+float ctagSoundProcessorBBeats::process_param_float(const ProcessData &data, int cv_myparm, int my_parm, int max_idx )
 {
   if(cv_myparm != -1)
   {
@@ -56,7 +56,7 @@ inline float ctagSoundProcessorBBeats::process_param_float(const ProcessData &da
 }
 
 
-inline bool ctagSoundProcessorBBeats::process_param_bool(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, bool direct_eg_trigger )
+bool ctagSoundProcessorBBeats::process_param_bool(const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, bool direct_eg_trigger )
 {
   if(trig_myparm != -1)       // Trigger given via CV/Gate or button?
   {
