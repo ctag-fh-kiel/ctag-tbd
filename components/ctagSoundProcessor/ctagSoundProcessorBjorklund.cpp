@@ -799,7 +799,7 @@ void ctagSoundProcessorBjorklund::knowYourself() {
     pMapCv.emplace("FilterLeakEnvAmount", [&](const int val) { cv_FilterLeakEnvAmount = val; });
     pMapPar.emplace("FilterLeakEnvLoop", [&](const int val) { FilterLeakEnvLoop = val; });
     pMapTrig.emplace("FilterLeakEnvLoop", [&](const int val) { trig_FilterLeakEnvLoop = val; });
-    isStereo = false;
+    isStereo = true;
     id = "Bjorklund";
     // sectionCpp0
 }
