@@ -50,7 +50,6 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
     int32_t NCVoices = ncvoices;
     CONSTRAIN(NCVoices, 1, 8)
     if(preNCVoices != NCVoices){
-        ESP_LOGE("PolyPad", "ncvoices changed from %ld to %ld", preNCVoices, NCVoices);
         for(auto &s:v_voices){
             s.Reset();
         }
