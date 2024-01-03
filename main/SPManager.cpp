@@ -281,6 +281,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
 
     // when trying to set chan 1 and chan 0 is a stereo plugin, return
     if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
+    if(chan == 1 && model->IsStereo(id)) return;
 
     ESP_LOGI("SPManager", "Switching ch%d to plugin %s", chan, id.c_str());
 
