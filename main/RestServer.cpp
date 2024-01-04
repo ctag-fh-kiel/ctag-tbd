@@ -786,12 +786,14 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
 
     if(cmd.compare("erase") == 0){
         CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+        CTAG::FAV::Favorites::DisableFavoritesUI();
         // erase flash / lengthy operation
         ESP_LOGI("REST", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
         //ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
         ESP_ERROR_CHECK(esp_flash_erase_region(NULL, CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
+        CTAG::FAV::Favorites::EnableFavoritesUI();
         CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
         return ESP_OK;
     }
@@ -805,6 +807,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
             return ESP_ERR_NO_MEM;
         }
         CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+        CTAG::FAV::Favorites::DisableFavoritesUI();
         int blockCnt = 0;
         while (remaining > 0) {
             // Read the data for the request
@@ -813,6 +816,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
             if (data_read < 0) {
                 httpd_resp_send_500(req);
                 heap_caps_free(buffer);
+                CTAG::FAV::Favorites::EnableFavoritesUI();
                 CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 heap_caps_free(buffer);
                 return ESP_ERR_INVALID_ARG;
@@ -827,6 +831,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
                     ESP_LOGE("REST", "Not a valid sample rom file!");
                     httpd_resp_send_500(req);
                     heap_caps_free(buffer);
+                    CTAG::FAV::Favorites::EnableFavoritesUI();
                     CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                     heap_caps_free(buffer);
                     return ESP_ERR_INVALID_ARG;
@@ -838,6 +843,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
         CTAG::AUDIO::SoundProcessorManager::RefreshSampleRom();
+        CTAG::FAV::Favorites::EnableFavoritesUI();
         CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
         ESP_LOGI("REST", "Sample ROM flashing completed!");
         return ESP_OK;

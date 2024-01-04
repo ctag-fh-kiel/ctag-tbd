@@ -43,6 +43,7 @@ respective component folders / files if different from this license.
     }
 #endif
 
+bool CTAG::FAV::Favorites::isUIEnabled {false};
 CTAG::FAV::FavoritesModel CTAG::FAV::Favorites::model;
 int32_t CTAG::FAV::Favorites::activeFav {-1};
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
@@ -95,6 +96,7 @@ void CTAG::FAV::Favorites::StartUI() {
             noTouch += touch_value;
         }
         noTouch /= 16;
+        isUIEnabled = true;
         xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
 #endif
 }
@@ -115,7 +117,12 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
     MenuStates pre_state {CLEAR};
     MenuStates return_state {CLEAR};
     DRIVERS::Display::Clear();
-    while (1) {
+    while (true) {
+        if(!isUIEnabled){
+            DRIVERS::Display::Clear();
+            uiMenuState = CLEAR;
+            pre_state = CLEAR;
+        }
         // check button state and generate events
 #if CONFIG_TBD_PLATFORM_MK2
         if (!gpio_get_level(PIN_PUSH_BTN)) {
@@ -225,4 +232,13 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
         vTaskDelay(UI_TASK_PERIOD_MS / portTICK_PERIOD_MS);
     }
 }
+
+void CTAG::FAV::Favorites::DisableFavoritesUI() {
+    isUIEnabled = false;
+}
+
+void CTAG::FAV::Favorites::EnableFavoritesUI() {
+    isUIEnabled = true;
+}
+
 #endif

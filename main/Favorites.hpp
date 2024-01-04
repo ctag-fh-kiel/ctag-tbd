@@ -35,6 +35,8 @@ namespace CTAG {
             static void StoreFavorite(int const &id, const string &fav);
             static void ActivateFavorite(const int &id);
             static void DeactivateFavorite();
+            static void DisableFavoritesUI();
+            static void EnableFavoritesUI();
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
             static void StartUI();
 #endif
@@ -43,6 +45,7 @@ namespace CTAG {
 #endif
             static void TouchPadHandler();
         private:
+            static bool isUIEnabled;
             static FavoritesModel model;
             static int32_t activeFav;
             enum MenuStates {CLEAR, FAV_ACTIVE_NAME, FAV_ACTIVE_USTRING, FAV_SELECT, FAV_SELECT_CONFIRM};
