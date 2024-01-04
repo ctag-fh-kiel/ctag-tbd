@@ -289,7 +289,7 @@
                     });
                     $('#commit-wifi').on('click', function () {
                         // if wifi password is shorter than 8 chars, do not commit
-                        if($('#pwd').val().length < 8 && $('#pwd').val().length != 0)
+                        if($('#pwd').val().length < 8 && $('#pwd').val().length != 0){
                             ons.notification.toast('Password must be at least 8 characters long, or none!', {
                                 timeout: 3000,
                                 animation: 'fall'
