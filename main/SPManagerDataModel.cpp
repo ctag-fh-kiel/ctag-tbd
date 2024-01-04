@@ -254,8 +254,8 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &i
     return json.GetString();
 }
 
-void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const string &data) {
-    ESP_LOGD("Model", "String %s", data.c_str());
+void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const char* data) {
+    ESP_LOGD("Model", "String %s", data);
     Document presets;
     presets.Parse(data);
     storeJSON(presets, string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn"));

@@ -135,7 +135,8 @@ esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     httpd_resp_set_type(req, "application/json");
-    httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessors());
+    const char* res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessors();
+    if(nullptr != res) httpd_resp_sendstr(req, res);
     return ESP_OK;
 }
 
@@ -171,8 +172,11 @@ esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Get plugin params for channel %d", ch);
-    if (ch == 0 || ch == 1)
-        httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(ch));
+    if (ch == 0 || ch == 1){
+        const char *res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(ch);
+        if(nullptr != res) httpd_resp_sendstr(req, res);
+    }
+
     httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
@@ -255,8 +259,11 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Querying presets for channel %d", ch);
-    if (ch == 0 || ch == 1)
-        httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch));
+    if (ch == 0 || ch == 1){
+        const char* res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch);
+        if(nullptr != res) httpd_resp_sendstr(req, res);
+    }
+
     httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
@@ -582,7 +589,8 @@ esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     httpd_resp_set_type(req, "application/json");
-    httpd_resp_sendstr(req, CTAG::AUDIO::SoundProcessorManager::GetCStrJSONConfiguration());
+    const char *res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONConfiguration();
+    if(nullptr != res) httpd_resp_sendstr(req, res);
     return ESP_OK;
 }
 
@@ -601,7 +609,7 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
         strcpy(pluginID, pLastSlash + 1);
         ESP_LOGD(REST_TAG, "Sending all preset data of plugin %s as JSON", pluginID);
         const char *json = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string(pluginID));
-        if (json)
+        if (nullptr != json)
             httpd_resp_sendstr(req, json);
     }
     httpd_resp_send(req, NULL, 0);
@@ -633,7 +641,8 @@ esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     httpd_resp_sendstr(req, "{}");
 #else
-    httpd_resp_sendstr(req, CTAG::CAL::Calibration::GetCStrJSONCalibration());
+    const char* res = CTAG::CAL::Calibration::GetCStrJSONCalibration();
+    if(nullptr != res) httpd_resp_sendstr(req, res);
 #endif
     return ESP_OK;
 }
@@ -726,12 +735,13 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     char query[128];
     char pluginID[64];
+    memset(pluginID, 0, 64);
     httpd_req_get_url_query_str(req, query, 128);
     httpd_resp_set_type(req, "application/json");
     char *pLastSlash = strrchr(req->uri, '/');
     if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
-        char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+        char *content = (char *) heap_caps_calloc(1, req->content_len + 1, MALLOC_CAP_SPIRAM);
         ESP_LOGD(REST_TAG, "Storing data for %s as JSON, content length %d", pluginID, req->content_len);
         char *ptrContent = content;
         // get chunked data
@@ -759,9 +769,9 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
         }
         // terminate c string with \0
         content[req->content_len] = 0;
-        ESP_LOGD("REST", "Content read %s", content);
+        ESP_LOGD("REST", "Plugin %s content read %s", pluginID, content);
         // call up and persist
-        CTAG::AUDIO::SoundProcessorManager::SetJSONSoundProcessorPreset(string(pluginID), string(content));
+        CTAG::AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID, content);
         // clear up
         heap_caps_free(content);
         httpd_resp_set_type(req, "text/html");
