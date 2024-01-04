@@ -47,7 +47,7 @@ namespace CTAG {
 
             const char *GetCStrJSONSoundProcessorPresets(const string &id);
 
-            void SetJSONSoundProcessorPreset(const string &id, const string &data);
+            void SetCStrJSONSoundProcessorPreset(const char *id, const char* data);
 
             string GetActiveProcessorID(const int chan);
 
