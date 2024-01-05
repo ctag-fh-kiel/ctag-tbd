@@ -136,7 +136,6 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
             fav++; // to match fav1 = 1, fav0 = 10
             activeFav = favSel;
             ActivateFavorite(fav % 10);
-            uiMenuState = FAV_ACTIVE_NAME;
         }
         if(touch_value > noTouch + 1000) {
 #else
