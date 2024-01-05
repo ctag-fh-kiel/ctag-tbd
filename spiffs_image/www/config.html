@@ -415,16 +415,9 @@
                         let reader = new FileReader();
                         reader.onload = function (event) {
                             let contents = event.target.result;
-                            try {
-                                let jsn = JSON.parse(contents);
-                                $('#uploadBackup').val('');
-                                performUploadBackup(jsn);
-                            } catch (e) {
-                                ons.notification.toast('Error parsing backup file!', {
-                                    timeout: 250,
-                                    animation: 'fall'
-                                });
-                            }
+                            let jsn = JSON.parse(contents);
+                            $('#uploadBackup').val('');
+                            performUploadBackup(jsn);
                         }
                         reader.readAsText($('#uploadBackup').prop('files')[0]);
                     });
@@ -605,7 +598,6 @@
                     }
                 }
                 let presets = data.presets;
-                let nPlugins = 0;
                 // loading void on both channels, to conserve memory
                 $.getq('myq',
                     'api/v1/setActivePlugin/0?id=Void'
@@ -613,93 +605,141 @@
                 $.getq('myq',
                     'api/v1/setActivePlugin/1?id=Void'
                 );
-                presets.forEach(plugin => {
-                    nPlugins++;
-                    // log plugin id
-                    console.log('Restoring data from plugin ' + plugin.id);
-                    if(plugin.presets.patches.length == 0){
-                        console.log('No preset data for plugin ' + plugin.id);
+                let numberRetries = 0;
+                let aborted = false;
+                function recursiveIterate(presets_){
+                    if(numberRetries >= 10){
+                        if(!aborted){
+                            console.log('Too many retries, aborting!');
+                            ons.notification.toast('Too many retries, aborting!', {
+                                timeout: 500,
+                                animation: 'none'
+                            });
+                            setInterval( () => {
+                                modal_busy.hide();
+                                location.reload();
+                            }, 500);
+                        }
+                        aborted = true;
                         return;
                     }
-                    // delayed call of function
-                    setTimeout(() => {
-                        $.getq('myq',
-                            '/api/v1/getPresetData/' + plugin.id,
-                            data => {
-                                let error = false;
-                                // log data id and plugin id
-                                console.log('Plugin ' + plugin.id + ' verified data id ' + data.id + ' ' + (plugin.id===data.id).toString());
-                                ons.notification.toast('Verifying plugin ' + plugin.id, {
+                    plugin = presets_.shift(); // take first element
+                    if(plugin === undefined){ // iteration finished
+                        modal_busy.hide();
+                        location.reload();
+                        return;
+                    }
+                    // log plugin id
+                    console.log('Restoring data from plugin ' + plugin.id);
+                    if(plugin.presets.patches.length === 0){
+                        console.error('No preset data for plugin ' + plugin.id);
+                        return;
+                    }
+                    $.getq('myq',
+                        '/api/v1/getPresetData/' + plugin.id,
+                        data => {
+                            let error = false;
+                            // log data id and plugin id
+                            console.log('Plugin ' + plugin.id + ' verified data id ' + data.id + ' ' + (plugin.id===data.id).toString());
+                            ons.notification.toast('Verifying plugin ' + plugin.id, {
+                                timeout: 250,
+                                animation: 'none'
+                            });
+                            // check for errors
+                            if(typeof data != "object"){
+                                console.error('Plugin not available: ' + plugin.id);
+                                error = true;
+                            }
+                            if(!data.hasOwnProperty('presets')){
+                                console.error('getPresetsResponse Error: ' + plugin.id);
+                                numberRetries++;
+                                presets_.push(plugin);
+                                recursiveIterate(presets_);
+                                return;
+                            }
+                            if(data.presets.patches.length === 0){
+                                console.error('No patches available in plugin ' + plugin.id);
+                                error = true;
+                            }
+                            if(data.presets.patches[0].params.length === 0){
+                                console.error('No patches available in plugin ' + plugin.id);
+                                error = true;
+                            }
+                            // check for parameters not available in backup data set and add
+                            data.presets.patches[0].params.forEach(param => {
+                                plugin.presets.patches.forEach( p => {
+                                    const found = p.params.find(({id}) => id === param.id);
+                                    if(found === undefined){
+                                        console.error('Unknown new parameter ' + param.id);
+                                        //p.params.push(param);
+                                        error = true;
+                                    }
+                                });
+                            });
+                            // check for parameters not available on available plugin of TBD HW and drop
+                            plugin.presets.patches.forEach(p => {
+                                p.params = p.params.filter(param => {
+                                    const found = data.presets.patches[0].params.find(({id}) => id === param.id);
+                                    if(found === undefined){
+                                        console.error('Patch has old parameter ' + param.id);
+                                        error = true;
+                                    }
+                                    return found !== undefined;
+                                });
+                            });
+                            if(error){
+                                ons.notification.toast('Error: Plugin ' + plugin.id + ' not restored!', {
                                     timeout: 250,
                                     animation: 'none'
                                 });
-                                // check for errors
-                                if(typeof data != "object"){
-                                    console.log('Plugin not available: ' + plugin.id);
-                                    error = true;
-                                }
-                                if(data.presets.patches.length == 0){
-                                    console.log('No patches available in plugin ' + plugin.id);
-                                    error = true;
-                                }
-                                if(data.presets.patches[0].params.length == 0){
-                                    console.log('No patches available in plugin ' + plugin.id);
-                                    error = true;
-                                }
-                                // check for parameters not available in backup data set and add
-                                data.presets.patches[0].params.forEach(param => {
-                                    plugin.presets.patches.forEach( p => {
-                                        const found = p.params.find(({id}) => id === param.id);
-                                        if(found == undefined){
-                                            console.log('Unknown new param ' + param.id + ' inserting!');
-                                            //p.params.push(param);
-                                            error = true;
-                                        }
-                                    });
-                                });
-                                // check for parameters not available on available plugin of TBD HW and drop
-                                plugin.presets.patches.forEach(p => {
-                                    p.params = p.params.filter(param => {
-                                        const found = data.presets.patches[0].params.find(({id}) => id === param.id);
-                                        if(found === undefined){
-                                            console.log('Removing old param ' + param.id);
-                                            error = true;
-                                        }
-                                        return found !== undefined;
-                                    });
-                                });
-                                if(error){
-                                    ons.notification.toast('Error: Plugin ' + plugin.id + ' not restored!', {
+                                // do not reiterate current plugin
+                                recursiveIterate(presets_);
+                                return;
+                            }
+                            // overwrite existing preset storage
+                            console.log('spawning post for plugin ' + plugin.id);
+                            $.post('/api/v1/setPresetData/' + plugin.id,
+                                JSON.stringify(plugin.presets),
+                                data => {
+                                    // log data id and plugin id
+                                    console.log('Post response received: ' + data);
+                                    if(typeof data !== "object"){
+                                        console.error('Error restoring plugin ' + plugin.id);
+                                        console.error('Pushing back to queue');
+                                        presets_.push(plugin);
+                                    }
+                                    if(data.id !== plugin.id){
+                                        console.error('Error restoring plugin ' + plugin.id + ' data id mismatch: ' + data.id);
+                                        console.error('Pushing back to queue');
+                                        presets_.push(plugin);
+                                    }
+                                    ons.notification.toast('Remaining data sets: ' + presets_.length, {
                                         timeout: 250,
                                         animation: 'none'
                                     });
-                                    nPlugins--;
-                                    if(nPlugins==0) modal_busy.hide();
-                                    return;
+                                    recursiveIterate(presets_);
                                 }
-                                // overwrite existing preset storage
-                                // delayed call of function
-                                setTimeout(() => {
-                                    $.postq('myq',
-                                        '/api/v1/setPresetData/' + plugin.id,
-                                        JSON.stringify(plugin.presets),
-                                        data => {
-                                            nPlugins--;
-                                            if(nPlugins==0){
-                                                modal_busy.hide();
-                                                location.reload();
-                                            }
-                                            else ons.notification.toast('Restoring plugin data ' + nPlugins + ' out of ' + presets.length, {
-                                                timeout: 250,
-                                                animation: 'none'
-                                            });
-                                        }
-                                    );
-                                }, 500);
-                            }
-                        );
-                    }, 500);
-                });
+                            ).fail(
+                                () => {
+                                    numberRetries++;
+                                    console.error('Hard error set preset data, restoring plugin ' + plugin.id);
+                                    console.error('Possibly the socket closed? Retrying...');
+                                    presets_.push(plugin);
+                                    recursiveIterate(presets_);
+                                }
+                            );
+                        }
+                    ).fail(
+                        () => {
+                            numberRetries++;
+                            console.error('Hard error restoring get preset data, plugin ' + plugin.id);
+                            console.error('Possibly the socket closed? Retrying...');
+                            presets_.push(plugin);
+                            recursiveIterate(presets_);
+                        }
+                    );
+                }
+                recursiveIterate(presets);
             }
         };
     </script>
