@@ -133,6 +133,7 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
         if(pchgval != previousProgramChangeValue){
             previousProgramChangeValue = pchgval;
             int fav = previousProgramChangeValue & 0xFF;
+            fav++; // to match fav1 = 1, fav0 = 10
             activeFav = favSel;
             ActivateFavorite(fav % 10);
             uiMenuState = FAV_ACTIVE_NAME;
