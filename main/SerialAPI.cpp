@@ -225,7 +225,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         Writer<StringBuffer> writer(buffer);
         presetData.Accept(writer);
         CTAG::AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(id.c_str(), buffer.GetString());
-        sendString("{}");
+        sendString("{\"id\":\"" + id + "\"}");
         return;
     }
     /*
