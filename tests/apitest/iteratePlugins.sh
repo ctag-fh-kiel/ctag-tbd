@@ -19,6 +19,10 @@ done
 pluginListStereo=($(printf "%s\n" "${pluginList[@]}" | grep "true" | cut -d " " -f 1))
 pluginListMono=($(printf "%s\n" "${pluginList[@]}" | grep "false" | cut -d " " -f 1))
 
+# randomize sort lists
+pluginListStereo=($(shuf -e "${pluginListStereo[@]}"))
+pluginListMono=($(shuf -e "${pluginListMono[@]}"))
+
 # print pluginListStereo and pluginListMono
 echo Stereo plugins: ${pluginListStereo[@]}
 echo Mono plugins: ${pluginListMono[@]}
