@@ -177,6 +177,12 @@ Save all preset data for a given plugin --> overwrites all existing preset data 
 {"activePatch":0,"patches":[{"name":"Default","params":[{"id":"dummy","current":0,"trig":-1}]}]}
 ```
 
+**Returns**
+
+```json
+{"is":"PluginID"}
+```
+
 ####URL: `/loadPreset/:ch?`
 
 Load a preset with number

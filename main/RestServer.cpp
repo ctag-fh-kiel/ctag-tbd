@@ -246,11 +246,6 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
-    ESP_LOGD("get_presets_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     char query[128];
     size_t qlen = httpd_req_get_url_query_len(req);
     size_t urilen = strlen(req->uri);
@@ -728,16 +723,11 @@ esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
-    ESP_LOGD("set_preset_json_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     char query[128];
     char pluginID[64];
+    memset(query, 0, 128);
     memset(pluginID, 0, 64);
     httpd_req_get_url_query_str(req, query, 128);
-    httpd_resp_set_type(req, "application/json");
     char *pLastSlash = strrchr(req->uri, '/');
     if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
@@ -770,12 +760,15 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
         // terminate c string with \0
         content[req->content_len] = 0;
         ESP_LOGD("REST", "Plugin %s content read %s", pluginID, content);
+        // respond to client
+        string response = "{\"id\":\"" + string(pluginID) + "\"}";
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, response.c_str());
+        httpd_resp_send(req, NULL, 0);
         // call up and persist
         CTAG::AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID, content);
         // clear up
         heap_caps_free(content);
-        httpd_resp_set_type(req, "text/html");
-        httpd_resp_send(req, NULL, 0);
     } else {
         httpd_resp_send_404(req);
     }
