@@ -269,6 +269,8 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         // write raw float data back to CODEC
         DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
     }
+    memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
+    DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
     runAudioTask = 2;
     vTaskDelete(NULL);
 }
@@ -540,6 +542,7 @@ void SoundProcessorManager::led_task(void *pvParams) {
 }
 
 void SoundProcessorManager::KillAudioTask() {
+    FAV::Favorites::DisableFavoritesUI();
     Codec::SetOutputLevels(0, 0);
     // stop audio Task, delete plugins
     runAudioTask = 0;
