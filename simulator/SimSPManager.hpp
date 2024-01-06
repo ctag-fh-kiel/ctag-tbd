@@ -71,8 +71,8 @@ namespace CTAG {
                 return model->GetCStrJSONSoundProcessorPresets(id);
             }
 
-            static void SetJSONSoundProcessorPreset(const string &id, const string &data) {
-                model->SetJSONSoundProcessorPreset(id, data);
+            static void SetCStrJSONSoundProcessorPreset(const char* id, const char* data) {
+                model->SetCStrJSONSoundProcessorPreset(id, data);
             }
 
             static void SetConfigurationFromJSON(const string &data);
