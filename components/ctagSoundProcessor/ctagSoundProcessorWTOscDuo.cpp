@@ -193,7 +193,7 @@ void ctagSoundProcessorWTOscDuo::Process(const ProcessData &data) {
     }
     pre_fWt_1 = fWt_1;
 
-    float deltaWt2 = fabsf(pre_fWt_2 - fWt_1);
+    float deltaWt2 = fabsf(pre_fWt_2 - fWt_2);
     if (deltaWt2 > 0.1f)
         trigger2 = true;
     pre_fWt_2 = fWt_2;
