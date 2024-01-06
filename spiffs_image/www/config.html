@@ -579,6 +579,25 @@
                         }
                     });
                 }
+                if(data.configuration !== null){
+                    $.ajaxq('myq', {
+                        url: '/api/v1/setConfiguration',
+                        type: 'post',
+                        data: JSON.stringify(data.configuration),
+                        success: function () {
+                            ons.notification.toast('Configuration data persisted!', {
+                                timeout: 250,
+                                animation: 'fall'
+                            });
+                        },
+                        error: function () {
+                            ons.notification.toast('Error persisting configuration data!', {
+                                timeout: 250,
+                                animation: 'fall'
+                            });
+                        }
+                    });
+                }
                 if(Array.isArray(data.favorites)){
                     for(let i in data.favorites){
                         $.ajaxq('myq', {
