@@ -39,84 +39,8 @@ if(NOT TARGET Boost::filesystem)
             INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
 endif()
 
-# Plugin part
-set(LIB_NAME plugin)
-set(PLUGIN_SOURCES
-        src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp src/SPManager.cpp src/SPManagerDataModel.cpp src/FavoritesModel.cpp
-        "../simulator/fake-idf/esp_heap_caps.c"
-        "../simulator/fake-idf/esp_spi_flash.c"
-        )
-
-add_library(${LIB_NAME} SHARED ${PLUGIN_SOURCES})
-target_include_directories(${LIB_NAME} PUBLIC "${RACK_DIR}/include" "${RACK_DIR}/dep/include")
-target_include_directories(${LIB_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../simulator/Simple-Web-Server")
-target_include_directories(${LIB_NAME} PUBLIC ${Boost_INCLUDE_DIR})
-
-if(WIN32)
-    target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_WIN)
-    target_link_libraries(${LIB_NAME} PUBLIC ws2_32 wsock32)
-    target_link_directories(${LIB_NAME} PUBLIC ${RACK_DIR})
-    target_link_libraries(${LIB_NAME} PUBLIC "Rack")
-    target_link_options(${LIB_NAME} PRIVATE -static-libgcc -static-libstdc++)
-elseif(APPLE)
-    target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_MAC)
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
-    endif()
-    target_link_options(${LIB_NAME} PUBLIC
-            -stdlib=libc++
-    )
-    target_link_libraries(${LIB_NAME} PUBLIC -static c++)
-else()
-    add_compile_options(-fPIC)
-    target_link_options(${LIB_NAME} PRIVATE -static-libgcc -static-libstdc++)
-    target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_LIN)
-endif()
-target_compile_options(${LIB_NAME} PRIVATE -fPIC)
-target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES} ctagsp mutable esp-dsp)
-set_target_properties(${LIB_NAME} PROPERTIES PREFIX "")
-
-# tbd part
-add_compile_definitions(
-        RAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=16384 # rapidjson
-        RAPIDJSON_HAS_STDSTRING=1 # rapidjson
-        TBD_SIM=1
-        TEST=1
-        CONFIG_DSP_ANSI=1
-        N_CVS=4
-        N_TRIGS=2
-        #SPIFFS_PATH="./plugins/tbd4vcv/spiffs_image/" # TODO this has to go in the firmware cmakelists.txt as well + simulator
-)
-target_compile_options(${LIB_NAME} PRIVATE -Wno-unused-local-typedefs)
-set(TBD_SIM 1)
-#ctagSoundProcessor
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/iir/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/add/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/addc/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/mul/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/mulc/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/common/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable/eurorack)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/moog/MoogLadders/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../simulator/fake-idf)
-
-#ctag sound processors
-set(COMPONENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor ${CMAKE_CURRENT_BINARY_DIR}/ctagsp)
-target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
-target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_include)
-#target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../main)
-
-#mutable
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable ${CMAKE_CURRENT_BINARY_DIR}/mutable)
-
-#rapidjson
-file(GLOB RAPIDJSON_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson/rapidjson/*.h
-        )
 #esp-dsp
-set(ESP_DSP_DIR "../components/esp-dsp")
+set(ESP_DSP_DIR "../managed_components/espressif__esp-dsp")
 set(ESP_DSP_SRC_FILES  "${ESP_DSP_DIR}/modules/common/misc/dsps_pwroftwo.cpp"
         "${ESP_DSP_DIR}/modules/dotprod/float/dsps_dotprod_f32_ansi.c"
         "${ESP_DSP_DIR}/modules/dotprod/float/dsps_dotprode_f32_ansi.c"
@@ -173,6 +97,78 @@ set(ESP_DSP_INC_DIRS   "${ESP_DSP_DIR}/modules/dotprod/include"
 
 add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
 target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
+
+# Plugin part
+set(LIB_NAME plugin)
+set(PLUGIN_SOURCES
+        src/plugin.cpp src/WebServer.cpp src/tbd4vcv.cpp src/SPManager.cpp src/SPManagerDataModel.cpp src/FavoritesModel.cpp
+        "../simulator/fake-idf/esp_heap_caps.c"
+        "../simulator/fake-idf/esp_spi_flash.c"
+        )
+
+add_library(${LIB_NAME} SHARED ${PLUGIN_SOURCES})
+target_include_directories(${LIB_NAME} PUBLIC "${RACK_DIR}/include" "${RACK_DIR}/dep/include")
+target_include_directories(${LIB_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../simulator/Simple-Web-Server")
+target_include_directories(${LIB_NAME} PUBLIC ${Boost_INCLUDE_DIR})
+
+if(WIN32)
+    target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_WIN)
+    target_link_libraries(${LIB_NAME} PUBLIC ws2_32 wsock32)
+    target_link_directories(${LIB_NAME} PUBLIC ${RACK_DIR})
+    target_link_libraries(${LIB_NAME} PUBLIC "Rack")
+    target_link_options(${LIB_NAME} PRIVATE -static-libgcc -static-libstdc++)
+elseif(APPLE)
+    target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_MAC)
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
+    endif()
+    target_link_options(${LIB_NAME} PUBLIC
+            -stdlib=libc++
+    )
+    target_link_libraries(${LIB_NAME} PUBLIC -static c++)
+else()
+    add_compile_options(-fPIC)
+    target_link_options(${LIB_NAME} PRIVATE -static-libgcc -static-libstdc++)
+    target_compile_definitions(${LIB_NAME} PRIVATE -DARCH_LIN)
+endif()
+target_compile_options(${LIB_NAME} PRIVATE -fPIC)
+target_link_libraries(${LIB_NAME} PUBLIC ${Boost_LIBRARIES} ctagsp mutable esp-dsp)
+set_target_properties(${LIB_NAME} PROPERTIES PREFIX "")
+
+# tbd part
+add_compile_definitions(
+        RAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=16384 # rapidjson
+        RAPIDJSON_HAS_STDSTRING=1 # rapidjson
+        TBD_SIM=1
+        TEST=1
+        CONFIG_DSP_ANSI=1
+        N_CVS=4
+        N_TRIGS=2
+        #SPIFFS_PATH="./plugins/tbd4vcv/spiffs_image/" # TODO this has to go in the firmware cmakelists.txt as well + simulator
+)
+target_compile_options(${LIB_NAME} PRIVATE -Wno-unused-local-typedefs)
+set(TBD_SIM 1)
+#ctagSoundProcessor
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson)
+include_directories(${ESP_DSP_INC_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable/eurorack)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/moog/MoogLadders/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../simulator/fake-idf)
+
+#ctag sound processors
+set(COMPONENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor ${CMAKE_CURRENT_BINARY_DIR}/ctagsp)
+target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
+target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gen_include)
+#target_include_directories(${LIB_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../main)
+
+#mutable
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable ${CMAKE_CURRENT_BINARY_DIR}/mutable)
+
+#rapidjson
+file(GLOB RAPIDJSON_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson/rapidjson/*.h
+        )
 
 
 # install

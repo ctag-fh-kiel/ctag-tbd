@@ -24,6 +24,7 @@ respective component folders / files if different from this license.
 #include <cmath>
 #include <sstream>
 #include "ctagResources.hpp"
+#include "ctagSPAllocator.hpp"
 
 using namespace CTAG::AUDIO;
 
@@ -35,6 +36,7 @@ namespace CTAG {
 }
 
 std::mutex audioMutex;
+
 
 void SPManager::Start(const string &spiffsPath) {
     CTAG::RESOURCES::spiffsRoot = spiffsPath;
