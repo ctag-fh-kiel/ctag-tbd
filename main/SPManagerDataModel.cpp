@@ -205,6 +205,7 @@ void SPManagerDataModel::SetConfigurationFromJSON(const string &data) {
     if (!m.HasMember("configuration")) return;
     Document d;
     d.Parse(data);
+    if(d.HasParseError()) return;
     Value obj(kObjectType);
     obj.CopyFrom(d, m.GetAllocator());
     m["configuration"] = obj.Move();
@@ -258,6 +259,7 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
     ESP_LOGD("Model", "String %s", data);
     Document presets;
     presets.Parse(data);
+    if(presets.HasParseError()) return;
     storeJSON(presets, string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn"));
 }
 
