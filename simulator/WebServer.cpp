@@ -68,7 +68,7 @@ void WebServer::Start() {
         // Retrieve string:
         string id = request->path_match[1].str();
         string content = request->content.string();
-        SimSPManager::SetJSONSoundProcessorPreset(id, content);
+        SimSPManager::SetCStrJSONSoundProcessorPreset(id.c_str(), content.c_str());
         response->write(SimpleWeb::StatusCode::success_ok);
     };
 
