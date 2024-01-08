@@ -6,9 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
-# MB20231205 added for USB MIDI
-# include(${CMAKE_SOURCE_DIR}/managed_components/espressif__esp_tinyusb/CMakeLists.txt)
-
 # pull in idf specific items, config vars etc.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
@@ -77,4 +74,3 @@ add_custom_target(copy-files ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
         )
 
 littlefs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT DEPENDS copy-files)
-
