@@ -233,6 +233,8 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
     }
 }
 
+#endif
+
 void CTAG::FAV::Favorites::DisableFavoritesUI() {
     isUIEnabled = false;
 }
@@ -240,5 +242,3 @@ void CTAG::FAV::Favorites::DisableFavoritesUI() {
 void CTAG::FAV::Favorites::EnableFavoritesUI() {
     isUIEnabled = true;
 }
-
-#endif

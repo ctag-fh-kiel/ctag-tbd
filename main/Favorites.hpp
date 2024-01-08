@@ -37,9 +37,7 @@ namespace CTAG {
             static void DeactivateFavorite();
             static void DisableFavoritesUI();
             static void EnableFavoritesUI();
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
             static void StartUI();
-#endif
 #ifdef CONFIG_TBD_PLATFORM_BBA
             static void SetProgramChangeValue(uint32_t const &v);
 #endif
