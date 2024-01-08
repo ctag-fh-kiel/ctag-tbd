@@ -220,73 +220,56 @@ uint32_t FV3_(utils)::getSIMDFlag() {
     return simdFlag;
 }
 
-#define MAX_ALLOCS 30
+#define MAX_ALLOCS 30 // empirically determined
 static size_t blockMemSize = 0;
 static void *blockMem = nullptr;
-static void *allocsSPIRAM[MAX_ALLOCS]; // 30 is the max number of allocs we can do, testing used reverbs use approx 24 allocs total
-static int nAllocsSPIRAM = 0;
-
+static void *allocsSPIRAM[MAX_ALLOCS];
 static int allocating = 0;
 static int freeing = 0;
 
 #include "esp_heap_caps.h"
 #include "esp_log.h"
 #include <cassert>
+#include "memory/tinyalloc.h"
 
 void FV3_(utils)::SetBlockMemory(size_t size, void* blockMemory){
     blockMemSize = size;
     blockMem = blockMemory;
-    memset(allocsSPIRAM, 0, sizeof(allocsSPIRAM));
-    nAllocsSPIRAM = 0;
     freeing= 0;
     allocating= 0;
+    memset(allocsSPIRAM, 0, sizeof(void*) * MAX_ALLOCS);
+    ta_init(blockMem, static_cast<char*>(blockMem) + blockMemSize, MAX_ALLOCS, 16, 1);
 }
 
 void *FV3_(utils)::fv3_malloc(size_t size){
     void *ptr = nullptr;
-    /*
-    // try to use block memory first
-    if(blockMemSize > size){
-        ptr = blockMem;
-        blockMem = static_cast<char*>(blockMem) + size;
-        blockMemSize -= size;
+    ESP_LOGD("fv3", "Trying Blockmemalloc");
+    ptr = ta_alloc(size);
+    if(ptr != nullptr){
         return ptr;
     }
-    ESP_LOGE("fv3_malloc", "Cannot alloc mem trying SPIRAM!");
-    ptr = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
-    assert(ptr != nullptr);
-    allocsSPIRAM[nAllocsSPIRAM++] = ptr;
-    assert(nAllocsSPIRAM < MAX_ALLOCS);
-     */
-    // get all memory from SPIRAM
-    //ESP_LOGE("fv3", "Allocating %d %d bytes", allocating++, size);
-    ptr = heap_caps_malloc_prefer(size, MALLOC_CAP_DEFAULT, MALLOC_CAP_SPIRAM);
-    assert(ptr != nullptr);
+    ESP_LOGD("fv3", "Falling back to regular malloc prefer internal, then SPIRAM");
+    ptr = heap_caps_malloc_prefer(size, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+    for(int i = 0; i < MAX_ALLOCS; i++){
+        if(allocsSPIRAM[i] == nullptr){
+            allocsSPIRAM[i] = ptr;
+            break;
+        }
+    }
     return ptr;
 }
+
 void FV3_(utils)::fv3_free(void *ptr){
-    /*
-    // check if ptr is in allocsSPIRAM
-    for(int i = nAllocsSPIRAM - 1; i >= 0; i++){
+    for(int i = 0; i < MAX_ALLOCS; i++){
         if(allocsSPIRAM[i] == ptr){
-            ESP_LOGE("fv3_free", "Freeing SPIRAM ptr %d", i);
-            heap_caps_free(ptr);
             allocsSPIRAM[i] = nullptr;
+            ESP_LOGD("fv3", "Freeing regular malloc");
+            heap_caps_free(ptr);
             return;
         }
     }
-    // else do nothing, rest is from block memory
-     */
-    // deallocate from SPIRAM
-    //ESP_LOGE("fv3", "Freeing %d", freeing++);
-    heap_caps_free(ptr);
-    /*
-    ESP_LOGI("fv3", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-             */
+    ESP_LOGD("fv3", "Freeing Blockmem");
+    ta_free(ptr);
 }
 
 

@@ -53,6 +53,8 @@ file(GLOB SRCS_FILES
         synthesis/*.cpp
         vult/*.cpp
         vult/*.h
+        memory/*.h
+        memory/*.c
         ${CMAKE_BINARY_DIR}/gen_include/*.hpp
         )
 
