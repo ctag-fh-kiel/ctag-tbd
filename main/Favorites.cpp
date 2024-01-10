@@ -96,9 +96,9 @@ void CTAG::FAV::Favorites::StartUI() {
             noTouch += touch_value;
         }
         noTouch /= 16;
-        isUIEnabled = true;
         xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
 #endif
+    isUIEnabled = true;
 }
 
 void CTAG::FAV::Favorites::DeactivateFavorite() {
