@@ -337,7 +337,7 @@
                                         }
                                     );
                                     let nreceived = 0;
-                                    let el = data[nreceived];
+                                    let el;
                                     let cbFcn = rdata => {
                                         presets.push(rdata);
                                         nreceived++;
@@ -348,14 +348,7 @@
                                         });
                                         // if last request not completed spawn next
                                         if(nreceived < data.length){
-                                            el = data[nreceived];
-                                            $.getq('myq',
-                                                'api/v1/getPresetData/' + el.id,
-                                                rdata => {
-                                                    // delayed call of function
-                                                    setTimeout(cbFcn, 500, rdata);
-                                                }
-                                            );
+                                            getPresetData();
                                             return;
                                         }
                                         let zip = new JSZip();
@@ -376,10 +369,20 @@
                                                 modal_busy.hide();
                                             });
                                     }
-                                    $.getq('myq',
-                                        'api/v1/getPresetData/' + el.id,
-                                        cbFcn
-                                    );
+                                    function getPresetData(){
+                                        el = data[nreceived];
+                                        $.getq('myq',
+                                            'api/v1/getPresetData/' + el.id,
+                                            cbFcn
+                                        )
+                                        .fail(
+                                            () => {
+                                                console.error("Error getting preset data for plugin " + el.id + " retrying...");
+                                                getPresetData();
+                                            }
+                                        );
+                                    }
+                                    getPresetData();
                                 }
                             );
                         });
