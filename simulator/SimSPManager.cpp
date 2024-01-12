@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "SimSPManager.hpp"
-#include "tinywav.h"
+#include "tinywav/tinywav.h"
 #include <mutex>
 #include <cmath>
 #include <ctagSPAllocator.hpp>
