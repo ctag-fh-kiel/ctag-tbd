@@ -337,6 +337,7 @@
                                         }
                                     );
                                     let nreceived = 0;
+                                    let nRetry = 0;
                                     let el;
                                     let cbFcn = rdata => {
                                         presets.push(rdata);
@@ -377,6 +378,16 @@
                                         )
                                         .fail(
                                             () => {
+                                                nRetry++;
+                                                if(nRetry > 20){
+                                                    console.error("Too many retries, aborting!");
+                                                    ons.notification.toast('Too many retries, aborting!', {
+                                                        timeout: 500,
+                                                        animation: 'none'
+                                                    });
+                                                    modal_busy.hide();
+                                                    return;
+                                                }
                                                 console.error("Error getting preset data for plugin " + el.id + " retrying...");
                                                 getPresetData();
                                             }
