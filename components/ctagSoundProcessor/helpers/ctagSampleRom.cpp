@@ -94,19 +94,16 @@ namespace CTAG::SP::HELPERS {
     }
 
     void ctagSampleRom::ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples) {
-        if(slice >= nSlicesBuffered){ // nSlicesBuffered is zero if not buffered
-            uint32_t start = sliceOffsets[slice] + offset;
-            int32_t len = n_samples;
-            if (offset + len >= sliceSizes[slice]) { // read beyond slice end ?
-                len = sliceSizes[slice] - offset;
-            }
-            if (len <= 0) return; // nothing to read!
-            Read(dst, start, len);
-            return;
-        }
-
         uint32_t start = sliceOffsets[slice] + offset;
-        memcpy(dst, &ptrSPIRAM[start], n_samples*2);
+        int32_t len = n_samples;
+        if (offset + len >= sliceSizes[slice]) { // read beyond slice end ?
+            len = sliceSizes[slice] - offset;
+        }
+        if (len <= 0) return; // nothing to read!
+        if(slice >= nSlicesBuffered) // nSlicesBuffered > 0 if SPIRAM Buffer is used
+            Read(dst, start, len);
+        else
+            memcpy(dst, &ptrSPIRAM[start], n_samples*2);
     }
 
     void ctagSampleRom::ReadSliceAsFloat(float *dst, const uint32_t slice, const uint32_t offset,
@@ -119,7 +116,10 @@ namespace CTAG::SP::HELPERS {
         if (len <= 0) return; // nothing to read!
         int16_t idst[len];
         int16_t *dptr = idst;
-        Read(idst, start, len);
+        if(slice >= nSlicesBuffered)
+            Read(idst, start, len);
+        else
+            memcpy(idst, &ptrSPIRAM[start], n_samples*2);
         while (len--) {
             *dst++ = float(*dptr++) * 0.000030518509476f;
         }
