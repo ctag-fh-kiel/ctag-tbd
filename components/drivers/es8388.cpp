@@ -196,14 +196,16 @@ bool es8388::init() {
     //res &= write_reg(ES8388_ADCCONTROL5, 0b00000011);//0b00000010);
     //res &= write_reg(ES8388_ADCCONTROL6, 0b00110000); // HP input enable
     // set ADC digital volume
-    res &= write_reg(ES8388_ADCCONTROL8, 0x00);
-    res &= write_reg(ES8388_ADCCONTROL9, 0x00);
+    res &= write_reg(ES8388_ADCCONTROL8, 0b00011000); // set to 0 in normal case too noisy inputs
+    res &= write_reg(ES8388_ADCCONTROL9, 0b00011000);
     // recommended ALC setting for VOICE refer to es8388 MANUAL
     res &= write_reg(ES8388_ADCCONTROL10, 0x00); // alc off
-    //res &= write_reg(ES8388_ADCCONTROL11, 0xC0);
-    //res &= write_reg(ES8388_ADCCONTROL12, 0x12);
-    //res &= write_reg(ES8388_ADCCONTROL13, 0x06);
-    //res &= write_reg(ES8388_ADCCONTROL14, 0b00000000); // noise gate
+    /*
+    res &= write_reg(ES8388_ADCCONTROL11, 0b00000001);
+    res &= write_reg(ES8388_ADCCONTROL12, 0b00000000);
+    res &= write_reg(ES8388_ADCCONTROL13, 0b00000110);
+    res &= write_reg(ES8388_ADCCONTROL14, 0b11111011); // noise gate
+     */
 
 
     /* DAC setting */
