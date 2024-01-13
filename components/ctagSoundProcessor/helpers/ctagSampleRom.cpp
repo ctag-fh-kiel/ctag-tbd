@@ -24,6 +24,7 @@ respective component folders / files if different from this license.
 #include <esp_flash.h>
 #include "esp_log.h"
 #include "esp_heap_caps.h"
+#include <cstring>
 
 #ifdef TBD_SIM
 #define CONFIG_SAMPLE_ROM_START_ADDRESS 0
@@ -39,6 +40,8 @@ namespace CTAG::SP::HELPERS {
     uint32_t *ctagSampleRom::sliceSizes = nullptr;
     uint32_t *ctagSampleRom::sliceOffsets = nullptr;
     uint32_t ctagSampleRom::firstNonWtSlice = 0;
+    int16_t *ctagSampleRom::ptrSPIRAM = nullptr;
+    uint32_t ctagSampleRom::nSlicesBuffered = 0;
 
     ctagSampleRom::ctagSampleRom() {
         //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
@@ -91,13 +94,19 @@ namespace CTAG::SP::HELPERS {
     }
 
     void ctagSampleRom::ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples) {
-        uint32_t start = sliceOffsets[slice] + offset;
-        int32_t len = n_samples;
-        if (offset + len >= sliceSizes[slice]) { // read beyond slice end ?
-            len = sliceSizes[slice] - offset;
+        if(slice >= nSlicesBuffered){ // nSlicesBuffered is zero if not buffered
+            uint32_t start = sliceOffsets[slice] + offset;
+            int32_t len = n_samples;
+            if (offset + len >= sliceSizes[slice]) { // read beyond slice end ?
+                len = sliceSizes[slice] - offset;
+            }
+            if (len <= 0) return; // nothing to read!
+            Read(dst, start, len);
+            return;
         }
-        if (len <= 0) return; // nothing to read!
-        Read(dst, start, len);
+
+        uint32_t start = sliceOffsets[slice] + offset;
+        memcpy(dst, &ptrSPIRAM[start], n_samples*2);
     }
 
     void ctagSampleRom::ReadSliceAsFloat(float *dst, const uint32_t slice, const uint32_t offset,
@@ -187,9 +196,40 @@ namespace CTAG::SP::HELPERS {
         sliceSizes = nullptr;
         sliceOffsets = nullptr;
         firstNonWtSlice = 0;
+
+        if(ptrSPIRAM != nullptr){
+            heap_caps_free(ptrSPIRAM);
+            nSlicesBuffered = 0;
+        }
     }
 
     uint32_t ctagSampleRom::GetFirstNonWaveTableSlice() {
         return firstNonWtSlice;
+    }
+
+    bool ctagSampleRom::IsBufferedInSPIRAM() {
+        if(ptrSPIRAM == nullptr) return false;
+        return true;
+    }
+
+    void ctagSampleRom::BufferInSPIRAM() {
+        if(ptrSPIRAM != nullptr) return; // already buffered
+        size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+        maxSizeBytes -= 128*1024; // reserve 128k for other stuff
+        if(maxSizeBytes < 1024*1024) return; // not enough memory for this to make sense
+        ptrSPIRAM = (int16_t *)heap_caps_malloc(maxSizeBytes, MALLOC_CAP_SPIRAM);
+        if(ptrSPIRAM == nullptr) return;
+        ESP_LOGI("SR", "Buffering %d bytes in SPIRAM", maxSizeBytes);
+        // figure out how many slices can be buffered
+        uint32_t maxSizeWords = maxSizeBytes / 2;
+        nSlicesBuffered = 0;
+        uint32_t totalSizeWords = 0;
+        for(uint32_t i=0;i<numberSlices;i++){
+            if(totalSizeWords + sliceSizes[i] > maxSizeWords) break;
+            totalSizeWords += sliceSizes[i];
+            nSlicesBuffered++;
+        }
+        ESP_LOGI("SR", "Buffering %li slices of %li, consuming %li bytes", nSlicesBuffered, numberSlices, totalSizeWords*2);
+        Read(ptrSPIRAM, 0, totalSizeWords);
     }
 }
