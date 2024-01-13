@@ -19,7 +19,7 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "RomplerVoice.hpp"
+#include "RomplerVoiceMinimal.hpp"
 #include <cmath>
 #include <cstring>
 #include "stmlib/dsp/dsp.h"
@@ -41,29 +41,11 @@ namespace CTAG::SYNTHESIS {
         return a + (b - a) * t;
     }
 
-    inline float InterpolateWaveHermite( // better interpolation sounds better
-            const float *table,
-            int32_t index_integral,
-            float index_fractional) {
-        const float xm1 = table[index_integral];
-        const float x0 = table[index_integral + 1];
-        const float x1 = table[index_integral + 2];
-        const float x2 = table[index_integral + 3];
-        const float c = (x1 - xm1) * 0.5f;
-        const float v = x0 - x1;
-        const float w = c + v;
-        const float a = w + v + (x2 - x0) * 0.5f;
-        const float b_neg = w + a;
-        const float f = index_fractional;
-        return (((a * f) - b_neg) * f + c) * f + x0;
-    }
 
-
-    void RomplerVoice::Process(float *out, const uint32_t size) {
+    void RomplerVoiceMinimal::Process(float *out, const uint32_t size) {
         // check for trigger signal
         if (params.gate == true && params.gate != preGate) { // trigger happened reset to beginning of sample
-            adsr.Reset();
-            svf.Reset();
+            ad.Trigger();
             bufferStatus = BufferStatus::READFIRST;
             readBufferPhase = 0.f;
             pipoFlip = false;
@@ -71,17 +53,8 @@ namespace CTAG::SYNTHESIS {
         preGate = params.gate;
 
         // compute slice parameters and check if slice data is available
-        if(params.sliceLock){
-            if(bufferStatus == BufferStatus::READFIRST){
-                slice = params.slice;
-                sliceLockedPitch = params.pitch;
-                sliceLockedStartOffset = params.startOffsetRelative;
-            }
-        }else{
-            slice = params.slice;
-            sliceLockedPitch = params.pitch;
-            sliceLockedStartOffset = params.startOffsetRelative;
-        }
+        slice = params.slice;
+        sliceLockedStartOffset = params.startOffsetRelative;
 
         if (!sampleRom.HasSlice(slice)) {
             memset(out, 0, size * sizeof(float));
@@ -93,18 +66,12 @@ namespace CTAG::SYNTHESIS {
         int16_t brr_mask = bit_reduction_masks[14 - params.bitReduction];
 
         //  set eg and lfo parameters
-        adsr.SetAttack(params.a);
-        adsr.SetDecay(params.d);
-        adsr.SetSustain(params.s);
-        adsr.SetRelease(params.r);
-        adsr.Gate(params.gate);
-        lfo.SetFrequency(params.lfoSpeed);
+        ad.SetAttack(params.a);
+        ad.SetDecay(params.d);
 
         // calculate playback speed = dt = phase increment
         phaseIncrement = params.playbackSpeed; // speed
-        phaseIncrement *= stmlib::SemitonesToRatio( // modulation
-                sliceLockedPitch + params.tune + adsrLastVal * params.egFM +
-                lfoLastVal * params.lfoFM); // includes pitch FM
+        phaseIncrement *= stmlib::SemitonesToRatio( adLastVal * params.egFM); // includes pitch FM
 
         // evaluate loop settings
         if (params.loop) {
@@ -187,11 +154,11 @@ namespace CTAG::SYNTHESIS {
                 }
 
                 // obtain sample rom data
-                assert(readBufferLength <= (readBufferMaxSize - 4)); // beyond buffer size?
+                assert(readBufferLength <= (readBufferMaxSize - 2)); // beyond buffer size?
                 sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                 // and write convert to float buffer
                 for (int i = 0; i < readBufferLength; i++) {
-                    readBufferFloat[i + 4] =
+                    readBufferFloat[i + 2] =
                             static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
                 }
 
@@ -217,7 +184,7 @@ namespace CTAG::SYNTHESIS {
                         readPos = startPos;
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, remainBuffer);
                         for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[remainBuffer - i - 1]&brr_mask) *
+                            readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[remainBuffer - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         bufferStatus = BufferStatus::READLAST;
@@ -227,11 +194,11 @@ namespace CTAG::SYNTHESIS {
                         return;
                     }
                 }else{
-                    assert(readBufferLength <= (readBufferMaxSize - 4)); // beyond buffer size?
+                    assert(readBufferLength <= (readBufferMaxSize - 2)); // beyond buffer size?
                     sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                     // and write convert reversed to float buffer
                     for (int i = 0; i < readBufferLength; i++) {
-                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
+                        readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                 }
@@ -271,7 +238,7 @@ namespace CTAG::SYNTHESIS {
                     }
                 } else {
                     // obtain sample rom data
-                    assert(readBufferLength <= (readBufferMaxSize - 4)); // beyond buffer size?
+                    assert(readBufferLength <= (readBufferMaxSize - 2)); // beyond buffer size?
                     sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                     // update read position
                     readPos += readBufferLength;
@@ -279,7 +246,7 @@ namespace CTAG::SYNTHESIS {
 
                 // and write convert to float buffer
                 for (int i = 0; i < readBufferLength; i++) {
-                    readBufferFloat[i + 4] =
+                    readBufferFloat[i + 2] =
                             static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
                 }
 
@@ -302,7 +269,7 @@ namespace CTAG::SYNTHESIS {
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                         // and write convert reversed to float buffer
                         for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
+                            readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
@@ -321,7 +288,7 @@ namespace CTAG::SYNTHESIS {
                         }
                         // and write convert reversed to float buffer
                         for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
+                            readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
@@ -330,11 +297,11 @@ namespace CTAG::SYNTHESIS {
                     }
                 } else { // normal reverse read
                     // obtain sample rom forward
-                    assert(readBufferLength <= (readBufferMaxSize - 4)); // beyond buffer size?
+                    assert(readBufferLength <= (readBufferMaxSize - 2)); // beyond buffer size?
                     sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                     // and write convert reversed to float buffer
                     for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
+                        readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
@@ -360,7 +327,7 @@ namespace CTAG::SYNTHESIS {
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                         // and write convert reversed to float buffer
                         for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
+                            readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
@@ -371,7 +338,7 @@ namespace CTAG::SYNTHESIS {
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, remainBuffer);
                         int i;
                         for (i = 0; i < remainBuffer; i++) { // still fwd
-                            readBufferFloat[i + 4] =
+                            readBufferFloat[i + 2] =
                                     static_cast<float>(readBufferInt16[i]&brr_mask) *
                                     0.000030518509476f; // only 2 for linear interp
                         }
@@ -382,7 +349,7 @@ namespace CTAG::SYNTHESIS {
                             readPos = readPos - remainBuffer;
                             sampleRom.ReadSlice(readBufferInt16, slice, readPos, remainBuffer);
                             for (; i < readBufferLength; i++) { // read convert reverse
-                                readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
+                                readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                          0.000030518509476f; // only 2 for linear interp
                             }
                         }
@@ -393,13 +360,13 @@ namespace CTAG::SYNTHESIS {
                     }
                 } else {
                     // obtain sample rom data
-                    assert(readBufferLength <= (readBufferMaxSize - 4)); // beyond buffer size?
+                    assert(readBufferLength <= (readBufferMaxSize - 2)); // beyond buffer size?
                     sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                     // update read position
                     readPos += readBufferLength;
                     // and write convert to float buffer
                     for (int i = 0; i < readBufferLength; i++) {
-                        readBufferFloat[i + 4] =
+                        readBufferFloat[i + 2] =
                                 static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
@@ -422,7 +389,7 @@ namespace CTAG::SYNTHESIS {
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                         // and write convert to float buffer
                         for (int i = 0; i < readBufferLength; i++) { // forward play
-                            readBufferFloat[i + 4] =
+                            readBufferFloat[i + 2] =
                                     static_cast<float>(readBufferInt16[i]&brr_mask) *
                                     0.000030518509476f; // only 2 for linear interp
                         }
@@ -437,7 +404,7 @@ namespace CTAG::SYNTHESIS {
                         int i;
                         // and write convert reversed to float buffer
                         for (i = 0; i < remainBuffer; i++) { // read convert reverse
-                            readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[remainBuffer - i - 1]&brr_mask) *
+                            readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[remainBuffer - i - 1]&brr_mask) *
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // rest forward
@@ -448,7 +415,7 @@ namespace CTAG::SYNTHESIS {
                             sampleRom.ReadSlice(bufPos, slice, readPos, remainBuffer);
                             readPos += remainBuffer;
                             for (; i < readBufferLength; i++) { // rest forward
-                                readBufferFloat[i + 4] =
+                                readBufferFloat[i + 2] =
                                         static_cast<float>(readBufferInt16[i]&brr_mask) *
                                         0.000030518509476f; // only 2 for linear interp
                             }
@@ -459,11 +426,11 @@ namespace CTAG::SYNTHESIS {
                     }
                 } else { // normal reverse read
                     // obtain sample rom forward
-                    assert(readBufferLength <= (readBufferMaxSize - 4)); // beyond buffer size?
+                    assert(readBufferLength <= (readBufferMaxSize - 2)); // beyond buffer size?
                     sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
                     // and write convert reversed to float buffer
                     for (int i = 0; i < readBufferLength; i++) { // read convert reverse
-                        readBufferFloat[i + 4] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
+                        readBufferFloat[i + 2] = static_cast<float>(readBufferInt16[readBufferLength - i - 1]&brr_mask) *
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
@@ -480,66 +447,31 @@ namespace CTAG::SYNTHESIS {
         if (bufferStatus == BufferStatus::READLAST) {
             bufferStatus = BufferStatus::STOPPED;
         }
-        if (params.egSync) {
-            if (adsr.IsIdle()) bufferStatus = BufferStatus::STOPPED;
-        }
-
-// apply filter, TODO possibly move to interpolation loop for sample accurate modulation
-        float fCut = params.cutoff + params.egFMFilter * adsrLastVal +
-                     params.lfoFMFilter * lfoLastVal; // TODO: Pitch tracking
-        CONSTRAIN(fCut, 0.f, 1.f)
-        fCut = 20.f * stmlib::SemitonesToRatio(fCut * 120.f);
-        float fReso = params.resonance;
-        CONSTRAIN(fReso, 1.f, 20.f)
-        svf.
-                set_f_q<stmlib::FREQUENCY_FAST>(fCut
-                                                / 44100.f, fReso);
-        switch (params.filterType) {
-            case FilterType::LP:
-                svf.
-                        Process<stmlib::FILTER_MODE_LOW_PASS>(out, out, size
-                );
-                break;
-            case FilterType::BP:
-                svf.
-                        Process<stmlib::FILTER_MODE_BAND_PASS>(out, out, size
-                );
-                break;
-            case FilterType::HP:
-                svf.
-                        Process<stmlib::FILTER_MODE_HIGH_PASS>(out, out, size
-                );
-                break;
-            default:
-                break;
-        }
-
+        if (!ad.GetIsRunning()) bufferStatus = BufferStatus::STOPPED;
     }
 
-    void RomplerVoice::Init(const float samplingRate) {
+    void RomplerVoiceMinimal::Init(const float samplingRate) {
         fs = samplingRate;
-        adsr.SetSampleRate(fs);
-        adsr.SetModeExp();
-        lfo.SetSampleRate(fs);
-        svf.Init();
+        ad.SetSampleRate(fs);
+        ad.SetModeExp();
+        ad.SetLoop(false);
         bufferStatus = BufferStatus::STOPPED;
         pipoFlip = false;
     }
 
-    RomplerVoice::RomplerVoice() {
+    RomplerVoiceMinimal::RomplerVoiceMinimal() {
         memset(&params, 0, sizeof(Params));
         Reset();
     }
 
-    RomplerVoice::~RomplerVoice() {
+    RomplerVoiceMinimal::~RomplerVoiceMinimal() {
     }
 
-    void RomplerVoice::processBlock(float *out, const uint32_t size) {
+    void RomplerVoiceMinimal::processBlock(float *out, const uint32_t size) {
         // fade first incoming buffer
         if (bufferStatus == BufferStatus::READFIRST) {
             readBufferFloat[1] = 0.01f * readBufferFloat[4];
-            readBufferFloat[2] = 0.1f * readBufferFloat[4];
-            readBufferFloat[3] = 0.5f * readBufferFloat[4];
+            readBufferFloat[2] = 0.25f * readBufferFloat[4];
         }
         // TODO fade last buffer
         // apply anti-aliasing low-pass when downsampling, i.e. pitch up, not required if pitch down (upsampling)
@@ -547,27 +479,19 @@ namespace CTAG::SYNTHESIS {
         if (fAntiAlias < 0.5f) {
             dsps_biquad_gen_lpf_f32(coeffs_lpf, fAntiAlias, .5f);
             // the more cascades the better, but beware of cost
-            dsps_biquad_f32(&readBufferFloat[4], &readBufferFloat[4], readBufferLength, coeffs_lpf, w_lpf1);
-            dsps_biquad_f32(&readBufferFloat[4], &readBufferFloat[4], readBufferLength, coeffs_lpf, w_lpf2);
-            dsps_biquad_f32(&readBufferFloat[4], &readBufferFloat[4], readBufferLength, coeffs_lpf, w_lpf3);
-            //dsps_biquad_f32(&readBufferFloat[4], &readBufferFloat[4], readBufferLength, coeffs_lpf, w_lpf4);
+            dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf1);
+            dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf2);
         }
         // interpolate sample buffer from data
         // and apply AM
         for (int i = 0; i < size; i++) {
             // AM precalculations
-            adsrLastVal = adsr.Process();
-            lfoLastVal = lfo.Process();
-            float amFactor = adsrLastVal * params.egAM; // adsr
-            if (params.egAM < 0.f) amFactor -= params.egAM; // adsr
-            amFactor = ((1.f - fabsf(params.egAM)) + amFactor); // adsr
-            amFactor *= (1.f - (lfoLastVal + 1.f) * 0.5f * params.lfoAM); // lfo
-            amFactor *= params.gain * params.gain; // gain (quadratic)
+            adLastVal = ad.Process();
+            float amFactor = adLastVal; // ad
             // interpolate wave
             const float p = readBufferPhase;
             MAKE_INTEGRAL_FRACTIONAL(p);
-            float x = InterpolateWaveHermite(readBufferFloat, p_integral, p_fractional);
-            //float x = InterpolateWave(readBuffer, p_integral, p_fractional);
+            float x = InterpolateWave(readBufferFloat, p_integral, p_fractional);
             // apply AM
             out[i] = x * amFactor;
             readBufferPhase += phaseIncrement;
@@ -590,14 +514,11 @@ namespace CTAG::SYNTHESIS {
         // update Zs
         readBufferFloat[0] = readBufferFloat[readBufferLength];
         readBufferFloat[1] = readBufferFloat[readBufferLength + 1];
-        readBufferFloat[2] = readBufferFloat[readBufferLength + 2]; // only two if linear interp
-        readBufferFloat[3] = readBufferFloat[readBufferLength + 3]; // only two if linear interp
     }
 
-    void RomplerVoice::Reset() {
-        adsr.Reset();
-        svf.Reset();
-        readBufferFloat[0] = readBufferFloat[1] = readBufferFloat[2] = readBufferFloat[3] = 0.f;
+    void RomplerVoiceMinimal::Reset() {
+        ad.Reset();
+        readBufferFloat[0] = readBufferFloat[1] = 0.f;
         preGate = false;
         bufferStatus = BufferStatus::STOPPED;
         readBufferPhase = 0.f;
