@@ -176,6 +176,9 @@ void ctagSoundProcessorRompler::Init(std::size_t blockSize, void *blockPtr) {
     // inits
     preGate = false;
     gate = false;
+
+    for(auto &r: romplers)
+        r.Init(44100.f);
 }
 
 ctagSoundProcessorRompler::~ctagSoundProcessorRompler() {

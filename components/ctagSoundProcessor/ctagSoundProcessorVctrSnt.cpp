@@ -856,6 +856,10 @@ void ctagSoundProcessorVctrSnt::Init(std::size_t blockSize, void *blockPtr) {
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
+    // romplers init
+    for(auto &r: romplers)
+        r.Init(44100.f);
+
     // Alloc mem for one wavetable (Oscillator A)
     // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
     int totalBlockSzRequired = 260 * 64 * 2 + 512 * 4;
