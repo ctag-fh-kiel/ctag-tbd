@@ -472,8 +472,8 @@
       "type": "group",
       "params": [
         {
-          "id": "s1_trigger",
-          "name": "Trigger",
+          "id": "s1_gate",
+          "name": "Gate",
           "type": "bool"
         },
         {
@@ -501,6 +501,27 @@
           "step": 1
         },
         {
+          "id": "s1_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "s1_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "s1_skpwt",
+          "name": "Skip Wavetables",
+          "type": "bool"
+        },
+        {
           "id": "s1_start",
           "name": "Start",
           "type": "int",
@@ -517,9 +538,22 @@
           "step": 1
         },
         {
-          "id": "s1_loop",
+          "id": "s1_lp",
           "name": "Loop",
           "type": "bool"
+        },
+        {
+          "id": "s1_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "s1_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
         },
         {
           "id": "s1_atk",
@@ -536,6 +570,22 @@
           "min": 0,
           "max": 4095,
           "step": 1
+        },
+        {
+          "id": "s1_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "s1_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14,
+          "step": 1
         }
       ]
     },
@@ -545,8 +595,8 @@
       "type": "group",
       "params": [
         {
-          "id": "s2_trigger",
-          "name": "Trigger",
+          "id": "s2_gate",
+          "name": "Gate",
           "type": "bool"
         },
         {
@@ -574,6 +624,27 @@
           "step": 1
         },
         {
+          "id": "s2_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "s2_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "s2_skpwt",
+          "name": "Skip Wavetables",
+          "type": "bool"
+        },
+        {
           "id": "s2_start",
           "name": "Start",
           "type": "int",
@@ -590,9 +661,22 @@
           "step": 1
         },
         {
-          "id": "s2_loop",
+          "id": "s2_lp",
           "name": "Loop",
           "type": "bool"
+        },
+        {
+          "id": "s2_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "s2_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
         },
         {
           "id": "s2_atk",
@@ -609,17 +693,33 @@
           "min": 0,
           "max": 4095,
           "step": 1
+        },
+        {
+          "id": "s2_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "s2_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14,
+          "step": 1
         }
       ]
     },
     {
       "id": "s3_group",
-      "name": "Sample 3",
+      "name": "Sample 1",
       "type": "group",
       "params": [
         {
-          "id": "s3_trigger",
-          "name": "Trigger",
+          "id": "s3_gate",
+          "name": "Gate",
           "type": "bool"
         },
         {
@@ -647,6 +747,27 @@
           "step": 1
         },
         {
+          "id": "s3_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "s3_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "s3_skpwt",
+          "name": "Skip Wavetables",
+          "type": "bool"
+        },
+        {
           "id": "s3_start",
           "name": "Start",
           "type": "int",
@@ -663,9 +784,22 @@
           "step": 1
         },
         {
-          "id": "s3_loop",
+          "id": "s3_lp",
           "name": "Loop",
           "type": "bool"
+        },
+        {
+          "id": "s3_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "s3_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
         },
         {
           "id": "s3_atk",
@@ -682,17 +816,33 @@
           "min": 0,
           "max": 4095,
           "step": 1
+        },
+        {
+          "id": "s3_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "s3_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14,
+          "step": 1
         }
       ]
     },
     {
       "id": "s4_group",
-      "name": "Sample 4",
+      "name": "Sample 1",
       "type": "group",
       "params": [
         {
-          "id": "s4_trigger",
-          "name": "Trigger",
+          "id": "s4_gate",
+          "name": "Gate",
           "type": "bool"
         },
         {
@@ -720,6 +870,27 @@
           "step": 1
         },
         {
+          "id": "s4_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "s4_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "s4_skpwt",
+          "name": "Skip Wavetables",
+          "type": "bool"
+        },
+        {
           "id": "s4_start",
           "name": "Start",
           "type": "int",
@@ -736,9 +907,22 @@
           "step": 1
         },
         {
-          "id": "s4_loop",
+          "id": "s4_lp",
           "name": "Loop",
           "type": "bool"
+        },
+        {
+          "id": "s4_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "s4_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
         },
         {
           "id": "s4_atk",
@@ -754,6 +938,22 @@
           "type": "int",
           "min": 0,
           "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "s4_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "s4_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14,
           "step": 1
         }
       ]

@@ -22,40 +22,31 @@ respective component folders / files if different from this license.
 #pragma once
 #include <cstdint>
 #include "helpers/ctagSampleRom.hpp"
-#include "helpers/ctagADSREnv.hpp"
-#include "helpers/ctagSineSource.hpp"
-#include "stmlib/dsp/filter.h"
+#include "helpers/ctagADEnv.hpp"
 
 using namespace CTAG::SP::HELPERS;
 
 namespace CTAG::SYNTHESIS{
-    class RomplerVoice {
+    class RomplerVoiceMinimal {
     public:
-        enum class FilterType : uint32_t {NONE = 0x00, LP, BP, HP};
         struct Params{
             uint32_t slice;
-            float playbackSpeed, pitch, tune;
+            float playbackSpeed;
             float startOffsetRelative, lengthRelative; // relative to entire sliceLength
-            float gain;
-            float a, d, s, r;
-            float cutoff, resonance;
-            FilterType filterType;
+            float a, d;
             bool loop, loopPiPo;
             float loopMarker; // relative to length of subsection, not sliceLength
-            float lfoSpeed;
-            float lfoAM, lfoFM, lfoFMFilter;
-            float egAM, egFM, egFMFilter;
+            float egFM;
             uint32_t bitReduction;
-            bool egSync;
-            bool gate, sliceLock;
+            bool gate;
         };
 
         void Init(const float samplingRate);
         void Process(float* out, uint32_t size);
         void Reset();
 
-        RomplerVoice();
-        ~RomplerVoice();
+        RomplerVoiceMinimal();
+        ~RomplerVoiceMinimal();
 
         Params params;
 
@@ -63,9 +54,8 @@ namespace CTAG::SYNTHESIS{
         // mode params
         bool preGate = false;
         // internal modulation
-        ctagADSREnv adsr;
-        ctagSineSource lfo;
-        stmlib::Svf svf;
+        ctagADEnv ad;
+
         // process methods for modes
         void processBlock(float *out, const uint32_t size);
         // sample data
@@ -75,14 +65,11 @@ namespace CTAG::SYNTHESIS{
         float coeffs_lpf[5]{0.f};
         float w_lpf1[5]{0.f};
         float w_lpf2[5]{0.f};
-        float w_lpf3[5]{0.f};
-        float w_lpf4[5]{0.f};
         // params
         float fs = 44100.f;
-        float sliceLockedPitch = 0.f;
         float sliceLockedStartOffset = 0.f;
         // modulation
-        float adsrLastVal = 0.f, lfoLastVal = 0.f; // last because filter mod and pitch mod use last calculated value -> fs/buffersize, AM uses fs
+        float adLastVal = 0.f; // last because filter mod and pitch mod use last calculated value -> fs/buffersize, AM uses fs
         // buffer params
         enum class BufferStatus {STOPPED, READFIRST, READLAST, RUNNING};
         enum class PlayBackDirection {FWD, BWD, LOOPFWD, LOOPBWD, LOOPFWDPIPO, LOOPBWDPIPO};
