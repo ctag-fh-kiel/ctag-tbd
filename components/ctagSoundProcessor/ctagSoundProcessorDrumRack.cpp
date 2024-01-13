@@ -373,6 +373,9 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void *blockPtr) {
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
+    // preload samples
+    sampleRom.BufferInSPIRAM();
+
     // init models
     abd.Init();
     asd.Init();
