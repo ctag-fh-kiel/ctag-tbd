@@ -49,6 +49,8 @@ namespace CTAG {
 
                 bool GetIsRunning();
 
+                void Reset();
+
             private:
                 enum class EnvStateType : uint32_t {
                     STATE_IDLE,
