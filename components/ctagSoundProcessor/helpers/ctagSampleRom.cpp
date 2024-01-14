@@ -199,6 +199,7 @@ namespace CTAG::SP::HELPERS {
 
         if(ptrSPIRAM != nullptr){
             heap_caps_free(ptrSPIRAM);
+            ptrSPIRAM = nullptr;
             nSlicesBuffered = 0;
         }
     }
