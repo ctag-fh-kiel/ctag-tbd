@@ -55,6 +55,8 @@ file(GLOB SRCS_FILES
         vult/*.h
         memory/*.h
         memory/*.c
+        SimpleComp/*.h
+        SimpleComp/*.cpp
         ${CMAKE_BINARY_DIR}/gen_include/*.hpp
         )
 

@@ -10,6 +10,11 @@
       "type": "group",
       "params": [
         {
+          "id": "ab_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
           "id": "ab_trigger",
           "name": "Trigger",
           "type": "bool"
@@ -29,11 +34,6 @@
           "min": -4095,
           "max": 4095,
           "step": 1
-        },
-        {
-          "id": "ab_sus",
-          "name": "Sustain",
-          "type": "bool"
         },
         {
           "id": "ab_accent",
@@ -91,6 +91,11 @@
       "type": "group",
       "params": [
         {
+          "id": "db_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
           "id": "db_trigger",
           "name": "Trigger",
           "type": "bool"
@@ -110,11 +115,6 @@
           "min": -4095,
           "max": 4095,
           "step": 1
-        },
-        {
-          "id": "db_sus",
-          "name": "Sustain",
-          "type": "bool"
         },
         {
           "id": "db_accent",
@@ -180,6 +180,11 @@
       "type": "group",
       "params": [
         {
+          "id": "as_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
           "id": "as_trigger",
           "name": "Trigger",
           "type": "bool"
@@ -199,11 +204,6 @@
           "min": -4095,
           "max": 4095,
           "step": 1
-        },
-        {
-          "id": "as_sus",
-          "name": "Sustain",
-          "type": "bool"
         },
         {
           "id": "as_accent",
@@ -253,6 +253,11 @@
       "type": "group",
       "params": [
         {
+          "id": "ds_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
           "id": "ds_trigger",
           "name": "Trigger",
           "type": "bool"
@@ -272,11 +277,6 @@
           "min": -4095,
           "max": 4095,
           "step": 1
-        },
-        {
-          "id": "ds_sus",
-          "name": "Sustain",
-          "type": "bool"
         },
         {
           "id": "ds_accent",
@@ -326,6 +326,11 @@
       "type": "group",
       "params": [
         {
+          "id": "hh1_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
           "id": "hh1_trigger",
           "name": "Trigger",
           "type": "bool"
@@ -345,11 +350,6 @@
           "min": -4095,
           "max": 4095,
           "step": 1
-        },
-        {
-          "id": "hh1_sus",
-          "name": "Sustain",
-          "type": "bool"
         },
         {
           "id": "hh1_accent",
@@ -399,6 +399,11 @@
       "type": "group",
       "params": [
         {
+          "id": "hh2_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
           "id": "hh2_trigger",
           "name": "Trigger",
           "type": "bool"
@@ -418,11 +423,6 @@
           "min": -4095,
           "max": 4095,
           "step": 1
-        },
-        {
-          "id": "hh2_sus",
-          "name": "Sustain",
-          "type": "bool"
         },
         {
           "id": "hh2_accent",
@@ -472,6 +472,11 @@
       "type": "group",
       "params": [
         {
+          "id": "s1_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
           "id": "s1_gate",
           "name": "Gate",
           "type": "bool"
@@ -515,11 +520,6 @@
           "min": 0,
           "max": 31,
           "step": 1
-        },
-        {
-          "id": "s1_skpwt",
-          "name": "Skip Wavetables",
-          "type": "bool"
         },
         {
           "id": "s1_start",
@@ -595,6 +595,11 @@
       "type": "group",
       "params": [
         {
+          "id": "s2_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
           "id": "s2_gate",
           "name": "Gate",
           "type": "bool"
@@ -638,11 +643,6 @@
           "min": 0,
           "max": 31,
           "step": 1
-        },
-        {
-          "id": "s2_skpwt",
-          "name": "Skip Wavetables",
-          "type": "bool"
         },
         {
           "id": "s2_start",
@@ -714,9 +714,14 @@
     },
     {
       "id": "s3_group",
-      "name": "Sample 1",
+      "name": "Sample 3",
       "type": "group",
       "params": [
+        {
+          "id": "s3_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
         {
           "id": "s3_gate",
           "name": "Gate",
@@ -761,11 +766,6 @@
           "min": 0,
           "max": 31,
           "step": 1
-        },
-        {
-          "id": "s3_skpwt",
-          "name": "Skip Wavetables",
-          "type": "bool"
         },
         {
           "id": "s3_start",
@@ -837,9 +837,14 @@
     },
     {
       "id": "s4_group",
-      "name": "Sample 1",
+      "name": "Sample 4",
       "type": "group",
       "params": [
+        {
+          "id": "s4_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
         {
           "id": "s4_gate",
           "name": "Gate",
@@ -884,11 +889,6 @@
           "min": 0,
           "max": 31,
           "step": 1
-        },
-        {
-          "id": "s4_skpwt",
-          "name": "Skip Wavetables",
-          "type": "bool"
         },
         {
           "id": "s4_start",
@@ -955,6 +955,81 @@
           "min": 0,
           "max": 14,
           "step": 1
+        }
+      ]
+    },
+    {
+      "id": "c_group",
+      "name": "Compressor",
+      "type": "group",
+      "params": [
+        {
+          "id": "c_thres",
+          "name": "Threshold",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "c_ratio",
+          "name": "Ratio",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "c_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_rel",
+          "name": "Release",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_lpf",
+          "name": "Sidechain LPF",
+          "type": "bool"
+        },
+        {
+          "id": "c_gain",
+          "name": "Gain",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_mix",
+          "name": "Mix",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "sum",
+      "name": "Overall Mix",
+      "type": "group",
+      "params": [
+        {
+          "id": "sum_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "sum_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
         }
       ]
     }
