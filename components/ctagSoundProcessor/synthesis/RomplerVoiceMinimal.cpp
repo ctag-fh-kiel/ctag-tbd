@@ -23,8 +23,6 @@ respective component folders / files if different from this license.
 #include <cmath>
 #include <cstring>
 #include "stmlib/dsp/dsp.h"
-#include "esp_heap_caps.h"
-#include "esp_log.h"
 #include "helpers/ctagFastMath.hpp"
 #include "dsps_biquad.h"
 #include "stmlib/dsp/units.h"
@@ -151,15 +149,15 @@ namespace CTAG::SYNTHESIS {
                         bufferStatus = BufferStatus::STOPPED;
                         return;
                     }
-                }
-
-                // obtain sample rom data
-                assert(readBufferLength <= (readBufferMaxSize - 2)); // beyond buffer size?
-                sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
-                // and write convert to float buffer
-                for (int i = 0; i < readBufferLength; i++) {
-                    readBufferFloat[i + 2] =
-                            static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
+                }else{
+                    // obtain sample rom data
+                    assert(readBufferLength <= (readBufferMaxSize - 2)); // beyond buffer size?
+                    sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
+                    // and write convert to float buffer
+                    for (int i = 0; i < readBufferLength; i++) {
+                        readBufferFloat[i + 2] =
+                                static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
+                    }
                 }
 
                 // interpolate process buffer
@@ -486,7 +484,7 @@ namespace CTAG::SYNTHESIS {
         // and apply AM
         for (int i = 0; i < size; i++) {
             // AM precalculations
-            adLastVal = ad.Process();
+            adLastVal = ad.Process(); // adLastVal is used for pitch EG as well
             float amFactor = adLastVal; // ad
             // interpolate wave
             const float p = readBufferPhase;
