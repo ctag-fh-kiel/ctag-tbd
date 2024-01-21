@@ -535,6 +535,7 @@ namespace CTAG::SYNTHESIS {
     void RomplerVoice::processBlock(float *out, const uint32_t size) {
         // fade first incoming buffer
         if (bufferStatus == BufferStatus::READFIRST) {
+            readBufferFloat[0] = 0.001f * readBufferFloat[4];
             readBufferFloat[1] = 0.01f * readBufferFloat[4];
             readBufferFloat[2] = 0.1f * readBufferFloat[4];
             readBufferFloat[3] = 0.5f * readBufferFloat[4];

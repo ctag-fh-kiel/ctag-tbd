@@ -468,8 +468,8 @@ namespace CTAG::SYNTHESIS {
     void RomplerVoiceMinimal::processBlock(float *out, const uint32_t size) {
         // fade first incoming buffer
         if (bufferStatus == BufferStatus::READFIRST) {
-            readBufferFloat[1] = 0.01f * readBufferFloat[4];
-            readBufferFloat[2] = 0.25f * readBufferFloat[4];
+            readBufferFloat[0] = 0.01f * readBufferFloat[2];
+            readBufferFloat[1] = 0.33f * readBufferFloat[2];
         }
         // TODO fade last buffer
         // apply anti-aliasing low-pass when downsampling, i.e. pitch up, not required if pitch down (upsampling)
