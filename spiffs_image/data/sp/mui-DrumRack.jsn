@@ -10,13 +10,13 @@
       "type": "group",
       "params": [
         {
-          "id": "ab_mute",
-          "name": "Mute",
+          "id": "ab_trigger",
+          "name": "Trigger",
           "type": "bool"
         },
         {
-          "id": "ab_trigger",
-          "name": "Trigger",
+          "id": "ab_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -91,13 +91,13 @@
       "type": "group",
       "params": [
         {
-          "id": "db_mute",
-          "name": "Mute",
+          "id": "db_trigger",
+          "name": "Trigger",
           "type": "bool"
         },
         {
-          "id": "db_trigger",
-          "name": "Trigger",
+          "id": "db_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -180,13 +180,13 @@
       "type": "group",
       "params": [
         {
-          "id": "as_mute",
-          "name": "Mute",
+          "id": "as_trigger",
+          "name": "Trigger",
           "type": "bool"
         },
         {
-          "id": "as_trigger",
-          "name": "Trigger",
+          "id": "as_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -253,13 +253,13 @@
       "type": "group",
       "params": [
         {
-          "id": "ds_mute",
-          "name": "Mute",
+          "id": "ds_trigger",
+          "name": "Trigger",
           "type": "bool"
         },
         {
-          "id": "ds_trigger",
-          "name": "Trigger",
+          "id": "ds_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -326,13 +326,13 @@
       "type": "group",
       "params": [
         {
-          "id": "hh1_mute",
-          "name": "Mute",
+          "id": "hh1_trigger",
+          "name": "Trigger",
           "type": "bool"
         },
         {
-          "id": "hh1_trigger",
-          "name": "Trigger",
+          "id": "hh1_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -399,13 +399,13 @@
       "type": "group",
       "params": [
         {
-          "id": "hh2_mute",
-          "name": "Mute",
+          "id": "hh2_trigger",
+          "name": "Trigger",
           "type": "bool"
         },
         {
-          "id": "hh2_trigger",
-          "name": "Trigger",
+          "id": "hh2_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -472,13 +472,13 @@
       "type": "group",
       "params": [
         {
-          "id": "s1_mute",
-          "name": "Mute",
+          "id": "s1_gate",
+          "name": "Gate",
           "type": "bool"
         },
         {
-          "id": "s1_gate",
-          "name": "Gate",
+          "id": "s1_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -595,13 +595,13 @@
       "type": "group",
       "params": [
         {
-          "id": "s2_mute",
-          "name": "Mute",
+          "id": "s2_gate",
+          "name": "Gate",
           "type": "bool"
         },
         {
-          "id": "s2_gate",
-          "name": "Gate",
+          "id": "s2_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -718,13 +718,13 @@
       "type": "group",
       "params": [
         {
-          "id": "s3_mute",
-          "name": "Mute",
+          "id": "s3_gate",
+          "name": "Gate",
           "type": "bool"
         },
         {
-          "id": "s3_gate",
-          "name": "Gate",
+          "id": "s3_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
@@ -841,13 +841,13 @@
       "type": "group",
       "params": [
         {
-          "id": "s4_mute",
-          "name": "Mute",
+          "id": "s4_gate",
+          "name": "Gate",
           "type": "bool"
         },
         {
-          "id": "s4_gate",
-          "name": "Gate",
+          "id": "s4_mute",
+          "name": "Mute",
           "type": "bool"
         },
         {
