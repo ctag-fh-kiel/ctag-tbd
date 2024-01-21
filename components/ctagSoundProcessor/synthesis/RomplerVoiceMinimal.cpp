@@ -47,6 +47,7 @@ namespace CTAG::SYNTHESIS {
             bufferStatus = BufferStatus::READFIRST;
             readBufferPhase = 0.f;
             pipoFlip = false;
+            fmDecay = 1.f;
         }
         preGate = params.gate;
 
@@ -69,7 +70,8 @@ namespace CTAG::SYNTHESIS {
 
         // calculate playback speed = dt = phase increment
         phaseIncrement = params.playbackSpeed; // speed
-        phaseIncrement *= stmlib::SemitonesToRatio( adLastVal * params.egFM); // includes pitch FM
+        phaseIncrement *= stmlib::SemitonesToRatio( fmDecay * params.egFM * 4); // includes pitch FM
+        fmDecay *= (0.9f + 0.0999999f * params.d / 50.f);
 
         // evaluate loop settings
         if (params.loop) {
@@ -446,6 +448,34 @@ namespace CTAG::SYNTHESIS {
             bufferStatus = BufferStatus::STOPPED;
         }
         if (!ad.GetIsRunning()) bufferStatus = BufferStatus::STOPPED;
+
+        float fCut = params.cutoff;
+        CONSTRAIN(fCut, 0.f, 1.f)
+        fCut = 20.f * stmlib::SemitonesToRatio(fCut * 120.f);
+        float fReso = params.resonance;
+        CONSTRAIN(fReso, 1.f, 20.f)
+        svf.
+                set_f_q<stmlib::FREQUENCY_FAST>(fCut
+                                                / 44100.f, fReso);
+        switch (params.filterType) {
+            case FilterType::LP:
+                svf.
+                        Process<stmlib::FILTER_MODE_LOW_PASS>(out, out, size
+                );
+                break;
+            case FilterType::BP:
+                svf.
+                        Process<stmlib::FILTER_MODE_BAND_PASS>(out, out, size
+                );
+                break;
+            case FilterType::HP:
+                svf.
+                        Process<stmlib::FILTER_MODE_HIGH_PASS>(out, out, size
+                );
+                break;
+            default:
+                break;
+        }
     }
 
     void RomplerVoiceMinimal::Init(const float samplingRate) {
@@ -474,24 +504,21 @@ namespace CTAG::SYNTHESIS {
         // TODO fade last buffer
         // apply anti-aliasing low-pass when downsampling, i.e. pitch up, not required if pitch down (upsampling)
         float fAntiAlias = 0.5f / phaseIncrement;
-        if (fAntiAlias < 0.5f) {
-            dsps_biquad_gen_lpf_f32(coeffs_lpf, fAntiAlias, .5f);
+        if (fAntiAlias < 0.5f && params.filterType == FilterType::NONE) {
             // the more cascades the better, but beware of cost
+            dsps_biquad_gen_lpf_f32(coeffs_lpf, fAntiAlias, .5f);
             dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf1);
             dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf2);
         }
         // interpolate sample buffer from data
         // and apply AM
         for (int i = 0; i < size; i++) {
-            // AM precalculations
-            adLastVal = ad.Process(); // adLastVal is used for pitch EG as well
-            float amFactor = adLastVal; // ad
             // interpolate wave
             const float p = readBufferPhase;
             MAKE_INTEGRAL_FRACTIONAL(p);
             float x = InterpolateWave(readBufferFloat, p_integral, p_fractional);
             // apply AM
-            out[i] = x * amFactor;
+            out[i] = x * ad.Process();
             readBufferPhase += phaseIncrement;
         }
         // first buffer, fade in, TODO check for buffer sizes (LUT is 17 default, size is 32 default)
