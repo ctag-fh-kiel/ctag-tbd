@@ -586,6 +586,27 @@
           "min": 0,
           "max": 14,
           "step": 1
+        },
+        {
+          "id": "s1_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "s1_fc",
+          "name": "Filter Cutoff",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+        },
+        {
+          "id": "s1_fq",
+          "name": "Filter Q",
+            "type": "int",
+            "min": 0,
+            "max": 4095
         }
       ]
     },
@@ -709,6 +730,27 @@
           "min": 0,
           "max": 14,
           "step": 1
+        },
+        {
+          "id": "s2_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "s2_fc",
+          "name": "Filter Cutoff",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+        },
+        {
+          "id": "s2_fq",
+          "name": "Filter Q",
+            "type": "int",
+            "min": 0,
+            "max": 4095
         }
       ]
     },
@@ -832,6 +874,27 @@
           "min": 0,
           "max": 14,
           "step": 1
+        },
+        {
+          "id": "s3_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "s3_fc",
+          "name": "Filter Cutoff",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+        },
+        {
+          "id": "s3_fq",
+          "name": "Filter Q",
+            "type": "int",
+            "min": 0,
+            "max": 4095
         }
       ]
     },
@@ -955,6 +1018,27 @@
           "min": 0,
           "max": 14,
           "step": 1
+        },
+        {
+          "id": "s4_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "s4_fc",
+          "name": "Filter Cutoff",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+        },
+        {
+          "id": "s4_fq",
+          "name": "Filter Q",
+            "type": "int",
+            "min": 0,
+            "max": 4095
         }
       ]
     },

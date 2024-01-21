@@ -23,21 +23,26 @@ respective component folders / files if different from this license.
 #include <cstdint>
 #include "helpers/ctagSampleRom.hpp"
 #include "helpers/ctagADEnv.hpp"
+#include "stmlib/dsp/filter.h"
 
 using namespace CTAG::SP::HELPERS;
 
 namespace CTAG::SYNTHESIS{
     class RomplerVoiceMinimal {
     public:
+        enum class FilterType : uint32_t {NONE = 0x00, LP, BP, HP};
         struct Params{
             uint32_t slice;
             float playbackSpeed;
             float startOffsetRelative, lengthRelative; // relative to entire sliceLength
             float a, d;
+            float cutoff, resonance;
+            FilterType filterType;
             bool loop, loopPiPo;
             float loopMarker; // relative to length of subsection, not sliceLength
             float egFM;
             uint32_t bitReduction;
+            // struct for filter type
             bool gate;
         };
 
@@ -55,6 +60,8 @@ namespace CTAG::SYNTHESIS{
         bool preGate = false;
         // internal modulation
         ctagADEnv ad;
+        // multimode filter
+        stmlib::Svf svf;
 
         // process methods for modes
         void processBlock(float *out, const uint32_t size);
@@ -69,7 +76,7 @@ namespace CTAG::SYNTHESIS{
         float fs = 44100.f;
         float sliceLockedStartOffset = 0.f;
         // modulation
-        float adLastVal = 0.f; // last because filter mod and pitch mod use last calculated value -> fs/buffersize, AM uses fs
+        float fmDecay = 0.f;
         // buffer params
         enum class BufferStatus {STOPPED, READFIRST, READLAST, RUNNING};
         enum class PlayBackDirection {FWD, BWD, LOOPFWD, LOOPBWD, LOOPFWDPIPO, LOOPBWDPIPO};
