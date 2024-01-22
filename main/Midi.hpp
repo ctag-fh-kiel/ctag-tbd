@@ -350,58 +350,57 @@ namespace CTAG::CTRL
                 {
                         // MIDI Channel 1
                         {
-                                T_AT,           // t_g_at
-                                T_G_FX1_12,     // t_g_fx1_12
-                                T_G_FX2_13,     // t_g_fx2_13
-                                T_G_SUSTP_64,   // t_g_sustp_64
-                                T_G_PORTP_65,   // t_g_portp_65
-                                T_G_SSTNP_66,   // t_g_sstnp_66
-                                T_G_SOFTP_67,   // t_g_softp_67
-                                T_G_HOLDP_69    // t_g_holdp_69
+                                {T_AT},           // t_g_at
+                                {T_G_FX1_12},     // t_g_fx1_12
+                                {T_G_FX2_13},     // t_g_fx2_13
+                                {T_G_SUSTP_64},   // t_g_sustp_64
+                                {T_G_PORTP_65},   // t_g_portp_65
+                                {T_G_SSTNP_66},   // t_g_sstnp_66
+                                {T_G_SOFTP_67},   // t_g_softp_67
+                                {T_G_HOLDP_69}    // t_g_holdp_69
                         },
                         // MIDI Channel 2
                         {
-                                T_A_NOTE,        // t_note,
-                                T_A_VELO,        // t_velo,
-                                T_A_PROG,        // t_prog
-                                T_A_AT,          // t_at
-                                T_A_SC6_75,      // t_sc6_75,
-                                T_A_SC7_76,      // t_sc7_76,
-                                T_A_SC8_77,      // t_sc8_77,
-                                T_A_SC9_78       // t_sc8_78
+                                {T_A_NOTE},        // t_note,
+                                {T_A_VELO},        // t_velo,
+                                {T_A_PROG},        // t_prog
+                                {T_A_AT},          // t_at
+                                {T_A_SC6_75},      // t_sc6_75,
+                                {T_A_SC7_76},      // t_sc7_76,
+                                {T_A_SC8_77},      // t_sc8_77,
+                                {T_A_SC9_78}       // t_sc8_78
                         },
                         // MIDI Channel 3
                         {
-                                T_B_NOTE,        // t_note,
-                                T_B_VELO,        // t_velo,
-                                T_B_PROG,        // t_prog
-                                T_B_AT,          // t_at
-                                T_B_SC6_75,      // t_sc6_75,
-                                T_B_SC7_76,      // t_sc7_76,
-                                T_B_SC8_77,      // t_sc8_77,
-                                T_B_SC9_78       // t_sc8_78
+                                {T_B_NOTE},        // t_note,
+                                {T_B_VELO},        // t_velo,
+                                {T_B_PROG},        // t_prog
+                                {T_B_AT},          // t_at
+                                {T_B_SC6_75},      // t_sc6_75,
+                                {T_B_SC7_76},      // t_sc7_76,
+                                {T_B_SC8_77},      // t_sc8_77,{T_B_SC9_78       // t_sc8_78
                         },
                         // MIDI Channel 4
                         {
-                                T_C_NOTE,        // t_note,
-                                T_C_VELO,        // t_velo,
-                                T_C_PROG,        // t_prog
-                                T_C_AT,          // t_at
-                                T_C_SC6_75,      // t_sc6_75,
-                                T_C_SC7_76,      // t_sc7_76,
-                                T_C_SC8_77,      // t_sc8_77,
-                                T_C_SC9_78       // t_sc8_78
+                                {T_C_NOTE},        // t_note,
+                                {T_C_VELO},        // t_velo,
+                                {T_C_PROG},        // t_prog
+                                {T_C_AT},          // t_at
+                                {T_C_SC6_75},      // t_sc6_75,
+                                {T_C_SC7_76},      // t_sc7_76,
+                                {T_C_SC8_77},      // t_sc8_77,
+                                {T_C_SC9_78}       // t_sc8_78
                         },
                         // MIDI Channel 5
                         {
-                                T_D_NOTE,        // t_note,
-                                T_D_VELO,        // t_velo,
-                                T_D_PROG,        // t_prog
-                                T_D_AT,          // t_at
-                                T_D_SC6_75,      // t_sc6_75,
-                                T_D_SC7_76,      // t_sc7_76,
-                                T_D_SC8_77,      // t_sc8_77,
-                                T_D_SC9_78       // t_sc8_78
+                                {T_D_NOTE},        // t_note,
+                                {T_D_VELO},        // t_velo,
+                                {T_D_PROG},        // t_prog
+                                {T_D_AT},          // t_at
+                                {T_D_SC6_75},      // t_sc6_75,
+                                {T_D_SC7_76},      // t_sc7_76,
+                                {T_D_SC8_77},      // t_sc8_77,
+                                {T_D_SC9_78}       // t_sc8_78
                         }
                 };
         // --- Remember last note for potential Trigger-Reset of voices ---

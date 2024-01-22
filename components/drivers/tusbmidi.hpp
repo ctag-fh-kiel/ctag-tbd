@@ -26,8 +26,10 @@ namespace CTAG {
     namespace DRIVERS {
         class tusbmidi final {
         public:
-            void Init();
-            uint32_t Read(uint8_t *data, uint32_t len);
+            tusbmidi() = delete;
+            static void Init();
+            static uint32_t Read(uint8_t *data, uint32_t len);
+            static uint32_t Write(uint8_t const *data, uint32_t len);
         };
     }
 }
