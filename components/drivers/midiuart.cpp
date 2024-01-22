@@ -21,6 +21,7 @@ respective component folders / files if different from this license.
 
 #include "midiuart.hpp"
 #include "driver/uart.h"
+#include "esp_attr.h"
 
 using namespace CTAG::DRIVERS;
 
@@ -57,7 +58,7 @@ void midiuart::write(uint8_t *data, std::size_t len){
     uart_write_bytes(UART_NUM_1, (const char *)data, len);
 }
 
-void midiuart::read(uint8_t *data, int *len) {
+IRAM_ATTR void midiuart::read(uint8_t *data, int *len) {
     *len = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 0);
 }
 

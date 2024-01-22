@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 #include "tusbmidi.hpp"
 #include "tinyusb.h"
 #include "esp_log.h"
+#include "esp_attr.h"
 
 // Interface counter
 enum interface_count {
@@ -85,6 +86,10 @@ void CTAG::DRIVERS::tusbmidi::Init() {
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 }
 
-uint32_t CTAG::DRIVERS::tusbmidi::Read(uint8_t *data, uint32_t len) {
+IRAM_ATTR uint32_t CTAG::DRIVERS::tusbmidi::Read(uint8_t *data, uint32_t len) {
     return tud_midi_n_stream_read( ITF_NUM_MIDI, ITF_NUM_MIDI_STREAMING, data, len);
+}
+
+uint32_t CTAG::DRIVERS::tusbmidi::Write(const uint8_t *data, uint32_t len) {
+    return tud_midi_stream_write(0, data, len);
 }
