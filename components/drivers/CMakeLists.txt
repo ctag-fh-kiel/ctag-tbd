@@ -3,9 +3,9 @@ if(CONFIG_TBD_PLATFORM_MK2)
             INCLUDE_DIRS "."
             REQUIRES driver )
 elseif (CONFIG_TBD_PLATFORM_BBA)
-    idf_component_register(SRCS fs.cpp led_rgb_bba.cpp codec_bba.cpp es8388.cpp midiuart.cpp ssd1306.c ssd1306_i2c.c
+    idf_component_register(SRCS fs.cpp led_rgb_bba.cpp codec_bba.cpp es8388.cpp midiuart.cpp tusbmidi.cpp ssd1306.c ssd1306_i2c.c
             INCLUDE_DIRS "."
-            REQUIRES driver  esp-dsp)
+            REQUIRES driver  esp-dsp esp-tinyusb)
 else()
     idf_component_register(SRCS gpio.cpp adc.cpp fs.cpp led_rgb.cpp codec.cpp ssd1306.c ssd1306_i2c.c
             INCLUDE_DIRS "."

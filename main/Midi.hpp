@@ -22,14 +22,8 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-#include "Control.hpp"
-#include "Calibration.hpp"
-#include "gpio.hpp"
-#include "adc.hpp"
-#include "mk2.hpp"
-
+#include "esp_attr.h"
 #include "midiuart.hpp"
-#define byte uint8_t
 
 
 // --- Define-contants for MIDI-mapping-related stuff --- 
@@ -74,6 +68,13 @@ namespace CTAG::CTRL
     class Midi final
     {
     public:
+
+        static void Init();
+
+        IRAM_ATTR static uint8_t *Update();
+
+        static void Flush();
+
         enum midiStatusValues
         {
             // --- Channel Voice Messages ---
