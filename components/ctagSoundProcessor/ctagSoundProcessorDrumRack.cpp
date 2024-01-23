@@ -214,7 +214,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fS1Lev, s1_lev, 4095.f, 2.f)
     fS1Lev *= fS1Lev;
     MK_FLT_PAR_ABS_PAN(fS1Pan, s1_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_SFT(fS1Speed, s1_speed, 4095.f, 2.f)
+    float fS1Speed = s1_speed / 4095.f * 2.f;
+    if(cv_s1_speed != -1) fS1Speed += (fabsf(data.cv[cv_s1_speed]) - 0.5f) * 2.f * 2.f;
+    CONSTRAIN(fS1Speed, -2.f, 2.f)
     rompler[0].params.playbackSpeed = fS1Speed;
     MK_INT_PAR_ABS(iS1Bank, s1_bank, 32.f)
     CONSTRAIN(iS1Bank, 0, 31)
@@ -261,7 +263,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fS2Lev, s2_lev, 4095.f, 2.f)
     fS2Lev *= fS2Lev;
     MK_FLT_PAR_ABS_PAN(fS2Pan, s2_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_SFT(fS2Speed, s2_speed, 4095.f, 2.f)
+    float fS2Speed = s2_speed / 4095.f * 2.f;
+    if(cv_s2_speed != -1) fS2Speed += (fabsf(data.cv[cv_s2_speed]) - 0.5f) * 2.f * 2.f;
+    CONSTRAIN(fS2Speed, -2.f, 2.f)
     rompler[1].params.playbackSpeed = fS2Speed;
     MK_INT_PAR_ABS(iS2Bank, s2_bank, 32.f)
     CONSTRAIN(iS2Bank, 0, 31)
@@ -307,7 +311,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fS3Lev, s3_lev, 4095.f, 2.f)
     fS3Lev *= fS3Lev;
     MK_FLT_PAR_ABS_PAN(fS3Pan, s3_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_SFT(fS3Speed, s3_speed, 4095.f, 2.f)
+    float fS3Speed = s3_speed / 4095.f * 2.f;
+    if(cv_s3_speed != -1) fS3Speed += (fabsf(data.cv[cv_s3_speed]) - 0.5f) * 2.f * 2.f;
+    CONSTRAIN(fS3Speed, -2.f, 2.f)
     rompler[2].params.playbackSpeed = fS3Speed;
     MK_INT_PAR_ABS(iS3Bank, s3_bank, 32.f)
     CONSTRAIN(iS3Bank, 0, 31)
@@ -353,7 +359,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fS4Lev, s4_lev, 4095.f, 2.f)
     fS4Lev *= fS4Lev;
     MK_FLT_PAR_ABS_PAN(fS4Pan, s4_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_SFT(fS4Speed, s4_speed, 4095.f, 2.f)
+    float fS4Speed = s4_speed / 4095.f * 2.f;
+    if(cv_s4_speed != -1) fS4Speed += (fabsf(data.cv[cv_s4_speed]) - 0.5f) * 2.f * 2.f;
+    CONSTRAIN(fS4Speed, -2.f, 2.f)
     rompler[3].params.playbackSpeed = fS4Speed;
     MK_INT_PAR_ABS(iS4Bank, s4_bank, 32.f)
     CONSTRAIN(iS4Bank, 0, 31)
