@@ -182,7 +182,7 @@ void aic3254::init() {
     write_16bit_reg(AIC32X4_PWRCFG, 0b00001000); // (P1_R1) disable crude AVDD generation from DVDD [0b00001000]
     write_16bit_reg(AIC32X4_LDOCTL, 0x01); // (P1_R2) enable analog block, AVDD LDO powered up [0b00000001]
     write_16bit_reg(AIC32X4_CMMODE, 0x00); // 0.9V common mode voltage throughout// configure PLL and clocks
-    write_16bit_reg(AIC32X4_IFACE1, 0b00000000); // I2S, 16bit depth, BCLK+WCLK as input, DOUT enabled
+    write_16bit_reg(AIC32X4_IFACE1, 0b00110000); // I2S, 32bit depth, BCLK+WCLK as input, DOUT enabled
     write_16bit_reg(AIC32X4_IFACE2, 0x00); // no BCLK offset
     write_16bit_reg(AIC32X4_CLKMUX, 0b00000000); // MCLK is codec clock in, TODO: test maybe PLL clock if issues
     write_16bit_reg(AIC32X4_PLLPR, 0x00); // PLL power down
