@@ -34,10 +34,14 @@ using namespace CTAG::DRIVERS;
 static i2s_chan_handle_t tx_handle = NULL;
 static i2s_chan_handle_t rx_handle = NULL;
 
+#ifdef CONFIG_TBD_BBA_CODEC_ES8388
 es8388 Codec::codec;
+#else
+aic3254 Codec::codec;
+#endif
 
 void Codec::InitCodec() {
-    ESP_LOGI("ES8388", "Starting i2s setup...");
+    ESP_LOGI("BBA Codec", "Starting i2s setup...");
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(i2s_port_t(0), I2S_ROLE_MASTER);
     chan_cfg.auto_clear = false;
     // TODO is 4 dma descriptors enough? -> any effect on latency, started with 4 but sometime there was noise
@@ -67,10 +71,12 @@ void Codec::InitCodec() {
                     },
             },
     };
-    std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_384;
-    //std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_512;
-    //std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256; // -> bad does not work!
 
+#ifdef CONFIG_TBD_BBA_CODEC_ES8388
+    std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_384;
+#else
+    std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
+#endif
 
     /* Initialize the channels */
     ESP_ERROR_CHECK(i2s_channel_init_std_mode(tx_handle, &std_cfg));
@@ -79,12 +85,10 @@ void Codec::InitCodec() {
     ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     ESP_ERROR_CHECK(i2s_channel_enable(rx_handle));
 
-
-
     if(codec.identify()){
-        ESP_LOGI("ES8388", "Found ES8388...");
+        ESP_LOGI("BBA Codec", "Found codec...");
     }else{
-        ESP_LOGE("ES8388", "Could not find ES8388...");
+        ESP_LOGE("BBA Codec", "Error: Could not find codec!");
     }
     codec.init();
 }
