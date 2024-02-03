@@ -193,6 +193,7 @@ void aic3254::init() {
     write_16bit_reg(AIC32X4_MDAC, 0x82); // (P0_R12) power up and set MDAC = 2
     write_16bit_reg(AIC32X4_NADC, 0x81); // (P0_R18) power up and set NADC = 1
     write_16bit_reg(AIC32X4_MADC, 0x82); // (P0_R19) power up and set MADC = 2
+    write_16bit_reg(AIC32X4_DACSPB, 0x08); // PRB_P8
 
     // DAC routing and power up
     write_16bit_reg(AIC32X4_LOLROUTE, 0x08);
