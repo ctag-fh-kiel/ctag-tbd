@@ -509,7 +509,7 @@ void SoundProcessorManager::updateConfiguration() {
         if(model->GetConfigurationData("ch0_codecLvlOut").compare("") != 0){
             int lLevel = std::stoi(model->GetConfigurationData("ch0_codecLvlOut"));
             int rLevel = std::stoi(model->GetConfigurationData("ch1_codecLvlOut"));
-#ifdef CONFIG_TBD_PLATFORM_BBA
+#ifdef CONFIG_TBD_BBA_CODEC_ES8388
             CONSTRAIN(rLevel, 0, 36)
             CONSTRAIN(lLevel, 0, 36)
 #else
