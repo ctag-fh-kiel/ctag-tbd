@@ -57,7 +57,11 @@ void Codec::InitCodec() {
 
     i2s_std_config_t std_cfg = {
             .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(44100),
+#ifdef CONFIG_TBD_BBA_CODEC_ES8388
             .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
+#else
+            .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_STEREO),
+#endif
             .gpio_cfg = {
                     .mclk = GPIO_NUM_39,
                     .bclk = GPIO_NUM_45,
@@ -107,6 +111,7 @@ void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
 }
 
 void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
+#ifdef CONFIG_TBD_BBA_CODEC_ES8388
     int16_t tmp[sz * 2];
     int16_t *ptrTmp = tmp;
     size_t nb;
@@ -118,9 +123,23 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
         *buf++ = div * (float) *ptrTmp++;
         sz--;
     }
+#else
+    int32_t tmp[sz * 2];
+    int32_t *ptrTmp = tmp;
+    size_t nb;
+    const float div = 1.0f / 2147483648.0f;
+    // 32 bit word config stereo
+    i2s_channel_read(rx_handle, tmp, sz*2*4, &nb, portMAX_DELAY);
+    while (sz > 0) {
+        *buf++ = div * (float) *ptrTmp++;
+        *buf++ = div * (float) *ptrTmp++;
+        sz--;
+    }
+#endif
 }
 
 void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
+#ifdef CONFIG_TBD_BBA_CODEC_ES8388
     int16_t tmp[sz * 2];
     int16_t tmp2;
     size_t nb;
@@ -137,4 +156,22 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp[i * 2 + 1] = tmp2;
     }
     i2s_channel_write(tx_handle, tmp, sz*2*2, &nb, portMAX_DELAY);
+#else
+    int32_t tmp[sz * 2];
+    int32_t tmp2;
+    size_t nb;
+    const float mult = 2147483647.f;
+    // 32 bit word config
+    for (int i = 0; i < sz; i++) {
+        tmp2 = (int32_t) (mult * buf[i * 2]);
+        tmp2 = MAX(tmp2, -2147483647);
+        tmp2 = MIN(tmp2, 2147483647);
+        tmp[i * 2] = tmp2;
+        tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
+        tmp2 = MAX(tmp2, -2147483648);
+        tmp2 = MIN(tmp2, 2147483647);
+        tmp[i * 2 + 1] = tmp2;
+    }
+    i2s_channel_write(tx_handle, tmp, sz*2*4, &nb, portMAX_DELAY);
+#endif
 }
