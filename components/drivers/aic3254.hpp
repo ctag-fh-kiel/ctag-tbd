@@ -8,7 +8,7 @@ class aic3254 final {
     gpio_num_t _pinsda, _pinscl, _pinreset;
     uint32_t _i2cspeed;
     void write_reg(uint8_t reg_add, uint8_t data);
-    void write_16bit_reg(uint8_t reg_add, uint8_t data);
+    void write_AIC32X4_reg(uint8_t reg_add, uint8_t data);
     uint8_t read_16bit_reg(uint8_t reg_add);
     uint8_t read_reg(uint8_t reg_add);
     bool test_reg(uint8_t register_address, uint8_t expected_value);
