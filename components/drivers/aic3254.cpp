@@ -170,62 +170,62 @@ bool aic3254::test_reg(uint8_t register_address, uint8_t expected_value) {
 }
 
 bool aic3254::identify() {
-    write_16bit_reg(AIC32X4_PSEL, 0);
+    write_AIC32X4_reg(AIC32X4_PSEL, 0);
     return test_reg(0, 0);
 }
 
 void aic3254::init() {
     // issue a soft reset
-    write_16bit_reg(AIC32X4_RESET, 0x01);            // (P0_R1) issue a software reset to the codec
+    write_AIC32X4_reg(AIC32X4_RESET, 0x01);            // (P0_R1) issue a software reset to the codec
     vTaskDelay(10 / portTICK_PERIOD_MS); // wait for device to initialize registers
     // configure power
-    write_16bit_reg(AIC32X4_PWRCFG, 0b00001000); // (P1_R1) disable crude AVDD generation from DVDD [0b00001000]
-    write_16bit_reg(AIC32X4_LDOCTL, 0x01); // (P1_R2) enable analog block, AVDD LDO powered up [0b00000001]
-    write_16bit_reg(AIC32X4_CMMODE, 0x00); // 0.9V common mode voltage throughout// configure PLL and clocks
-    write_16bit_reg(AIC32X4_IFACE1, 0b00110000); // I2S, 32bit depth, BCLK+WCLK as input, DOUT enabled
-    write_16bit_reg(AIC32X4_IFACE2, 0x00); // no BCLK offset
-    write_16bit_reg(AIC32X4_CLKMUX, 0b00000000); // MCLK is codec clock in, TODO: test maybe PLL clock if issues
-    write_16bit_reg(AIC32X4_PLLPR, 0x00); // PLL power down
-    write_16bit_reg(AIC32X4_DOSRMSB, 0x00);
-    write_16bit_reg(AIC32X4_DOSRLSB, 0x80); // (P0_R14) set DOSR = 128 decimal or 0x0080 hex
-    write_16bit_reg(AIC32X4_AOSR, 0x80); // (P0_R20) set AOSR = 128 decimal or 0x0080 hex, for decimation filters 1 to 6, ADC Oversampling
-    write_16bit_reg(AIC32X4_NDAC, 0x81); // (P0_R11) power up and set NDAC = 1
-    write_16bit_reg(AIC32X4_MDAC, 0x82); // (P0_R12) power up and set MDAC = 2
-    write_16bit_reg(AIC32X4_NADC, 0x81); // (P0_R18) power up and set NADC = 1
-    write_16bit_reg(AIC32X4_MADC, 0x82); // (P0_R19) power up and set MADC = 2
-    write_16bit_reg(AIC32X4_DACSPB, 0x08); // PRB_P8
+    write_AIC32X4_reg(AIC32X4_PWRCFG, 0b00001000); // (P1_R1) disable crude AVDD generation from DVDD [0b00001000]
+    write_AIC32X4_reg(AIC32X4_LDOCTL, 0x01); // (P1_R2) enable analog block, AVDD LDO powered up [0b00000001]
+    write_AIC32X4_reg(AIC32X4_CMMODE, 0x08); // (P1_R10) output common mode for LOL and LOR is 1.65 from LDOIN (= Vcc / 2) [0b00001000]
+    write_AIC32X4_reg(AIC32X4_IFACE1, 0b00110000); // I2S, 32bit depth, BCLK+WCLK as input, DOUT enabled
+    write_AIC32X4_reg(AIC32X4_IFACE2, 0x00); // no BCLK offset
+    write_AIC32X4_reg(AIC32X4_CLKMUX, 0b00000000); // MCLK is codec clock in, TODO: test maybe PLL clock if issues
+    write_AIC32X4_reg(AIC32X4_PLLPR, 0x00); // PLL power down
+    write_AIC32X4_reg(AIC32X4_DOSRMSB, 0x00);
+    write_AIC32X4_reg(AIC32X4_DOSRLSB, 0x80); // (P0_R14) set DOSR = 128 decimal or 0x0080 hex
+    write_AIC32X4_reg(AIC32X4_AOSR, 0x80); // (P0_R20) set AOSR = 128 decimal or 0x0080 hex, for decimation filters 1 to 6, ADC Oversampling
+    write_AIC32X4_reg(AIC32X4_NDAC, 0x81); // (P0_R11) power up and set NDAC = 1
+    write_AIC32X4_reg(AIC32X4_MDAC, 0x82); // (P0_R12) power up and set MDAC = 2
+    write_AIC32X4_reg(AIC32X4_NADC, 0x81); // (P0_R18) power up and set NADC = 1
+    write_AIC32X4_reg(AIC32X4_MADC, 0x82); // (P0_R19) power up and set MADC = 2
+    // TODO: DACSPB -> using default
+    // TODO: ADCSPB -> using default
+    //write_16bit_reg(AIC32X4_DACSPB, 0x08); // PRB_P8
 
     // DAC routing and power up
-    write_16bit_reg(AIC32X4_LOLROUTE, 0x08);
-    write_16bit_reg(AIC32X4_LORROUTE, 0x08);
-    write_16bit_reg(AIC32X4_HPLROUTE, 0x08);
-    write_16bit_reg(AIC32X4_HPRROUTE, 0x08);
+    write_AIC32X4_reg(AIC32X4_LOLROUTE, 0x08);
+    write_AIC32X4_reg(AIC32X4_LORROUTE, 0x08);
+    write_AIC32X4_reg(AIC32X4_HPLROUTE, 0x08);
+    write_AIC32X4_reg(AIC32X4_HPRROUTE, 0x08);
 
-    write_16bit_reg(AIC32X4_DACMUTE, 0x00); // individual volume control for L/R
-    write_16bit_reg(AIC32X4_LDACVOL, 0x00); // (P0_R65) set left DAC gain to 0dB DIGITAL VOL
-    write_16bit_reg(AIC32X4_RDACVOL, 0x00); // (P0_R66) set right DAC gain to 0dB DIGITAL VOL
-    write_16bit_reg(AIC32X4_DACSETUP, 0b11010100); // (P0_R63) Power up left and right DAC data paths and set channel [0b11010100]
-    write_16bit_reg(AIC32X4_OUTPWRCTL, 0b00111100); // (P1_R9) power up HPL, HPR, LOL and LOR [0b00111100]
-    write_16bit_reg(AIC32X4_HPLGAIN, 0x00); // (P1_R16) unmute HPL, set 0dB gain
-    write_16bit_reg(AIC32X4_HPRGAIN, 0x00); // (P1_R16) unmute HPL, set 0dB gain
-    //TODO: common mode for HPOUT?
-    write_16bit_reg(AIC32X4_CMMODE, 0x08); // (P1_R10) output common mode for LOL and LOR is 1.65 from LDOIN (= Vcc / 2) [0b00001000]
-    write_16bit_reg(AIC32X4_LOLGAIN, 0x00); // (P1_R18) unmute LOL, set 0dB gain
-    write_16bit_reg(AIC32X4_LORGAIN, 0x00); // (P1_R18) unmute LOL, set 0dB gain
+    write_AIC32X4_reg(AIC32X4_DACMUTE, 0x00); // individual volume control for L/R
+    write_AIC32X4_reg(AIC32X4_LDACVOL, 0x00); // (P0_R65) set left DAC gain to 0dB DIGITAL VOL
+    write_AIC32X4_reg(AIC32X4_RDACVOL, 0x00); // (P0_R66) set right DAC gain to 0dB DIGITAL VOL
+    write_AIC32X4_reg(AIC32X4_DACSETUP, 0b11010100); // (P0_R63) Power up left and right DAC data paths and set channel [0b11010100]
+    write_AIC32X4_reg(AIC32X4_OUTPWRCTL, 0b00111100); // (P1_R9) power up HPL, HPR, LOL and LOR [0b00111100]
+    write_AIC32X4_reg(AIC32X4_HPLGAIN, 0x00); // (P1_R16) unmute HPL, set 0dB gain
+    write_AIC32X4_reg(AIC32X4_HPRGAIN, 0x00); // (P1_R16) unmute HPL, set 0dB gain
+    write_AIC32X4_reg(AIC32X4_LOLGAIN, 0x06); // (P1_R18) unmute LOL, set 6dB gain
+    write_AIC32X4_reg(AIC32X4_LORGAIN, 0x06); // (P1_R18) unmute LOL, set 6dB gain
 
     // ADC routing and power up
-    write_16bit_reg(AIC32X4_LMICPGAPIN, 0b01000000); // IN1L routed to left MICPGA with 10k
-    write_16bit_reg(AIC32X4_RMICPGAPIN, 0b01000000); // IN1L routed to left MICPGA with 10k
-    write_16bit_reg(AIC32X4_LMICPGANIN, 0b01000000); // (P1_R54) CM is routed to Left MICPGA via CM1L with 10kohm resistance
-    write_16bit_reg(AIC32X4_RMICPGANIN, 0b01000000); // (P1_R57) CM is routed to Right MICPGA via CM1R with 10kohm resistance
-    write_16bit_reg(AIC32X4_LMICPGAVOL, 0x80); // 0dB gain for left MICPGA
-    write_16bit_reg(AIC32X4_RMICPGAVOL, 0x80); // 0dB gain for left MICPGA
-    write_16bit_reg(AIC32X4_ADCSETUP, 0b11000000); // (P0_R81) power up left and right ADCs
-    write_16bit_reg(AIC32X4_ADCFGA, 0x00); // (P0_R82) unmute left and right ADCs
+    write_AIC32X4_reg(AIC32X4_LMICPGAPIN, 0b01000000); // IN1L routed to left MICPGA with 10k
+    write_AIC32X4_reg(AIC32X4_RMICPGAPIN, 0b01000000); // IN1L routed to left MICPGA with 10k
+    write_AIC32X4_reg(AIC32X4_LMICPGANIN, 0b01000000); // (P1_R54) CM is routed to Left MICPGA via CM1L with 10kohm resistance
+    write_AIC32X4_reg(AIC32X4_RMICPGANIN, 0b01000000); // (P1_R57) CM is routed to Right MICPGA via CM1R with 10kohm resistance
+    write_AIC32X4_reg(AIC32X4_LMICPGAVOL, 0x80); // 0dB gain for left MICPGA
+    write_AIC32X4_reg(AIC32X4_RMICPGAVOL, 0x80); // 0dB gain for left MICPGA
+    write_AIC32X4_reg(AIC32X4_ADCSETUP, 0b11000000); // (P0_R81) power up left and right ADCs
+    write_AIC32X4_reg(AIC32X4_ADCFGA, 0x00); // (P0_R82) unmute left and right ADCs
     vTaskDelay(10 / portTICK_PERIOD_MS); // wait for device to initialize registers
 }
 
-void aic3254::write_16bit_reg(uint8_t reg_add, uint8_t data) {
+void aic3254::write_AIC32X4_reg(uint8_t reg_add, uint8_t data) {
     if((reg_add >> 7) != page) {
         page = reg_add >> 7;
         write_reg(AIC32X4_PSEL, page);
@@ -248,8 +248,8 @@ uint8_t aic3254::read_16bit_reg(uint8_t reg_add) {
 }
 
 void aic3254::beep() {
-    write_16bit_reg(AIC3254_BEEPCTL_L, 0x80);
-    write_16bit_reg(AIC3254_BEEPCTL_R, 0x80);
+    write_AIC32X4_reg(AIC3254_BEEPCTL_L, 0x80);
+    write_AIC32X4_reg(AIC3254_BEEPCTL_R, 0x80);
 }
 
 bool aic3254::setOutputVolume(uint8_t lvol, uint8_t rvol) {
@@ -261,7 +261,7 @@ bool aic3254::setOutputVolume(uint8_t lvol, uint8_t rvol) {
     lvol = volume_mapping[lvol];
     rvol = volume_mapping[rvol];
     ESP_LOGE("AIC3254", "Setting volume to 0x%02X, 0x%02X", lvol, rvol);
-    write_16bit_reg(AIC32X4_LDACVOL, lvol);
-    write_16bit_reg(AIC32X4_RDACVOL, rvol);
+    write_AIC32X4_reg(AIC32X4_LDACVOL, lvol);
+    write_AIC32X4_reg(AIC32X4_RDACVOL, rvol);
     return true;
 }
