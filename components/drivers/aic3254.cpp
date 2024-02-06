@@ -257,10 +257,10 @@ bool aic3254::setOutputVolume(uint8_t lvol, uint8_t rvol) {
     // incoming range 0 to 63 for lvol and rvol, default 0dB is 58
     lvol = lvol > 63 ? 63 : lvol;
     rvol = rvol > 63 ? 63 : rvol;
-    ESP_LOGE("AIC3254", "Setting volume to %d, %d", lvol, rvol);
+    //ESP_LOGE("AIC3254", "Setting volume to %d, %d", lvol, rvol);
     lvol = volume_mapping[lvol];
     rvol = volume_mapping[rvol];
-    ESP_LOGE("AIC3254", "Setting volume to 0x%02X, 0x%02X", lvol, rvol);
+    //ESP_LOGE("AIC3254", "Setting volume to 0x%02X, 0x%02X", lvol, rvol);
     write_AIC32X4_reg(AIC32X4_LDACVOL, lvol);
     write_AIC32X4_reg(AIC32X4_RDACVOL, rvol);
     return true;
