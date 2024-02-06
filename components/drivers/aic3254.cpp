@@ -107,12 +107,14 @@ aic3254::aic3254() : _pinsda{GPIO_NUM_41}, _pinscl{GPIO_NUM_40}, _pinreset{GPIO_
     err |= i2c_param_config(i2c_port_t(I2C_PORT_NUM), &conf);
     err |= i2c_driver_install(i2c_port_t(I2C_PORT_NUM), conf.mode, 0, 0, 0);
 
+    /* implemented in hardware with RC circuit
     gpio_reset_pin(_pinreset);
     gpio_set_direction(_pinreset, GPIO_MODE_OUTPUT);
     gpio_set_level(_pinreset, 0);
     vTaskDelay(100 / portTICK_PERIOD_MS);
     gpio_set_level(_pinreset, 1);
     vTaskDelay(100 / portTICK_PERIOD_MS);
+     */
 }
 
 aic3254::~aic3254() {
@@ -245,11 +247,6 @@ uint8_t aic3254::read_16bit_reg(uint8_t reg_add) {
     }
     reg_add = reg_add & 0x7F;
     return read_reg(reg_add);
-}
-
-void aic3254::beep() {
-    write_AIC32X4_reg(AIC3254_BEEPCTL_L, 0x80);
-    write_AIC32X4_reg(AIC3254_BEEPCTL_R, 0x80);
 }
 
 bool aic3254::setOutputVolume(uint8_t lvol, uint8_t rvol) {

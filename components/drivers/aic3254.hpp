@@ -24,7 +24,6 @@ public:
     ~aic3254();
     void init();
     bool identify();
-    void beep();
     bool setOutputVolume(uint8_t lvol, uint8_t rvol);
 };
 
