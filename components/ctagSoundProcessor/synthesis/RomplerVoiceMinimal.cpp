@@ -70,7 +70,7 @@ namespace CTAG::SYNTHESIS {
 
         // calculate playback speed = dt = phase increment
         phaseIncrement = params.playbackSpeed; // speed
-        phaseIncrement *= stmlib::SemitonesToRatio( fmDecay * params.egFM * 4); // includes pitch FM
+        phaseIncrement *= stmlib::SemitonesToRatio( params.pitch + fmDecay * params.egFM * 4); // includes pitch FM
         fmDecay *= (0.9f + 0.0999999f * params.d / 50.f);
 
         // evaluate loop settings
