@@ -218,6 +218,11 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     if(cv_s1_speed != -1) fS1Speed += (fabsf(data.cv[cv_s1_speed]) - 0.5f) * 2.f * 2.f;
     CONSTRAIN(fS1Speed, -2.f, 2.f)
     rompler[0].params.playbackSpeed = fS1Speed;
+    float fS1Pitch = s1_pitch;
+    if(cv_s1_pitch != -1){
+        fS1Pitch += data.cv[cv_s1_pitch] * 12.f * 5.f;
+    }
+    rompler[0].params.pitch = fS1Pitch;
     MK_INT_PAR_ABS(iS1Bank, s1_bank, 32.f)
     CONSTRAIN(iS1Bank, 0, 31)
     MK_INT_PAR_ABS(iS1Slice, s1_slice, 32.f)
@@ -267,6 +272,11 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     if(cv_s2_speed != -1) fS2Speed += (fabsf(data.cv[cv_s2_speed]) - 0.5f) * 2.f * 2.f;
     CONSTRAIN(fS2Speed, -2.f, 2.f)
     rompler[1].params.playbackSpeed = fS2Speed;
+    float fS2Pitch = s2_pitch;
+    if(cv_s2_pitch != -1){
+        fS2Pitch += data.cv[cv_s2_pitch] * 12.f * 5.f;
+    }
+    rompler[1].params.pitch = fS2Pitch;
     MK_INT_PAR_ABS(iS2Bank, s2_bank, 32.f)
     CONSTRAIN(iS2Bank, 0, 31)
     MK_INT_PAR_ABS(iS2Slice, s2_slice, 32.f)
@@ -315,6 +325,11 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     if(cv_s3_speed != -1) fS3Speed += (fabsf(data.cv[cv_s3_speed]) - 0.5f) * 2.f * 2.f;
     CONSTRAIN(fS3Speed, -2.f, 2.f)
     rompler[2].params.playbackSpeed = fS3Speed;
+    float fS3Pitch = s3_pitch;
+    if(cv_s3_pitch != -1){
+        fS3Pitch += data.cv[cv_s3_pitch] * 12.f * 5.f;
+    }
+    rompler[2].params.pitch = fS3Pitch;
     MK_INT_PAR_ABS(iS3Bank, s3_bank, 32.f)
     CONSTRAIN(iS3Bank, 0, 31)
     MK_INT_PAR_ABS(iS3Slice, s3_slice, 32.f)
@@ -363,6 +378,11 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     if(cv_s4_speed != -1) fS4Speed += (fabsf(data.cv[cv_s4_speed]) - 0.5f) * 2.f * 2.f;
     CONSTRAIN(fS4Speed, -2.f, 2.f)
     rompler[3].params.playbackSpeed = fS4Speed;
+    float fS4Pitch = s4_pitch;
+    if(cv_s4_pitch != -1){
+        fS4Pitch += data.cv[cv_s4_pitch] * 12.f * 5.f;
+    }
+    rompler[3].params.pitch = fS4Pitch;
     MK_INT_PAR_ABS(iS4Bank, s4_bank, 32.f)
     CONSTRAIN(iS4Bank, 0, 31)
     MK_INT_PAR_ABS(iS4Slice, s4_slice, 32.f)
@@ -497,7 +517,6 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void *blockPtr) {
     for(auto &r : rompler){
         r.Init(44100.f);
     }
-
 
     // check if blockMem is large enough
     // blockMem is used just like larger blocks of heap memory
@@ -639,6 +658,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s1_pan", [&](const int val){ cv_s1_pan = val;});
 	pMapPar.emplace("s1_speed", [&](const int val){ s1_speed = val;});
 	pMapCv.emplace("s1_speed", [&](const int val){ cv_s1_speed = val;});
+    pMapPar.emplace("s1_pitch", [&](const int val){ s1_pitch= val;});
+	pMapCv.emplace("s1_pitch", [&](const int val){ cv_s1_pitch = val;});
 	pMapPar.emplace("s1_bank", [&](const int val){ s1_bank = val;});
 	pMapCv.emplace("s1_bank", [&](const int val){ cv_s1_bank = val;});
 	pMapPar.emplace("s1_slice", [&](const int val){ s1_slice = val;});
@@ -677,6 +698,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s2_pan", [&](const int val){ cv_s2_pan = val;});
 	pMapPar.emplace("s2_speed", [&](const int val){ s2_speed = val;});
 	pMapCv.emplace("s2_speed", [&](const int val){ cv_s2_speed = val;});
+    pMapPar.emplace("s2_pitch", [&](const int val){ s2_pitch= val;});
+    pMapCv.emplace("s2_pitch", [&](const int val){ cv_s2_pitch = val;});
 	pMapPar.emplace("s2_bank", [&](const int val){ s2_bank = val;});
 	pMapCv.emplace("s2_bank", [&](const int val){ cv_s2_bank = val;});
 	pMapPar.emplace("s2_slice", [&](const int val){ s2_slice = val;});
@@ -715,6 +738,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s3_pan", [&](const int val){ cv_s3_pan = val;});
 	pMapPar.emplace("s3_speed", [&](const int val){ s3_speed = val;});
 	pMapCv.emplace("s3_speed", [&](const int val){ cv_s3_speed = val;});
+    pMapPar.emplace("s3_pitch", [&](const int val){ s3_pitch= val;});
+    pMapCv.emplace("s3_pitch", [&](const int val){ cv_s3_pitch = val;});
 	pMapPar.emplace("s3_bank", [&](const int val){ s3_bank = val;});
 	pMapCv.emplace("s3_bank", [&](const int val){ cv_s3_bank = val;});
 	pMapPar.emplace("s3_slice", [&](const int val){ s3_slice = val;});
@@ -753,6 +778,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s4_pan", [&](const int val){ cv_s4_pan = val;});
 	pMapPar.emplace("s4_speed", [&](const int val){ s4_speed = val;});
 	pMapCv.emplace("s4_speed", [&](const int val){ cv_s4_speed = val;});
+    pMapPar.emplace("s4_pitch", [&](const int val){ s4_pitch= val;});
+    pMapCv.emplace("s4_pitch", [&](const int val){ cv_s4_pitch = val;});
 	pMapPar.emplace("s4_bank", [&](const int val){ s4_bank = val;});
 	pMapCv.emplace("s4_bank", [&](const int val){ cv_s4_bank = val;});
 	pMapPar.emplace("s4_slice", [&](const int val){ s4_slice = val;});

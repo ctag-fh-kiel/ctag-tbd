@@ -125,6 +125,7 @@ namespace CTAG {
 	atomic<int32_t> s1_lev, cv_s1_lev;
 	atomic<int32_t> s1_pan, cv_s1_pan;
 	atomic<int32_t> s1_speed, cv_s1_speed;
+	atomic<int32_t> s1_pitch, cv_s1_pitch;
 	atomic<int32_t> s1_bank, cv_s1_bank;
 	atomic<int32_t> s1_slice, cv_s1_slice;
 	atomic<int32_t> s1_start, cv_s1_start;
@@ -144,6 +145,7 @@ namespace CTAG {
 	atomic<int32_t> s2_lev, cv_s2_lev;
 	atomic<int32_t> s2_pan, cv_s2_pan;
 	atomic<int32_t> s2_speed, cv_s2_speed;
+    atomic<int32_t> s2_pitch, cv_s2_pitch;
 	atomic<int32_t> s2_bank, cv_s2_bank;
 	atomic<int32_t> s2_slice, cv_s2_slice;
 	atomic<int32_t> s2_start, cv_s2_start;
@@ -163,6 +165,7 @@ namespace CTAG {
 	atomic<int32_t> s3_lev, cv_s3_lev;
 	atomic<int32_t> s3_pan, cv_s3_pan;
 	atomic<int32_t> s3_speed, cv_s3_speed;
+    atomic<int32_t> s3_pitch, cv_s3_pitch;
 	atomic<int32_t> s3_bank, cv_s3_bank;
 	atomic<int32_t> s3_slice, cv_s3_slice;
 	atomic<int32_t> s3_start, cv_s3_start;
@@ -182,6 +185,7 @@ namespace CTAG {
 	atomic<int32_t> s4_lev, cv_s4_lev;
 	atomic<int32_t> s4_pan, cv_s4_pan;
 	atomic<int32_t> s4_speed, cv_s4_speed;
+    atomic<int32_t> s4_pitch, cv_s4_pitch;
 	atomic<int32_t> s4_bank, cv_s4_bank;
 	atomic<int32_t> s4_slice, cv_s4_slice;
 	atomic<int32_t> s4_start, cv_s4_start;
