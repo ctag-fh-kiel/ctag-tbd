@@ -71,7 +71,6 @@ namespace CTAG::SYNTHESIS{
         // anti aliasing filter data
         float coeffs_lpf[5]{0.f};
         float w_lpf1[5]{0.f};
-        float w_lpf2[5]{0.f};
         // params
         float fs = 44100.f;
         float sliceLockedStartOffset = 0.f;

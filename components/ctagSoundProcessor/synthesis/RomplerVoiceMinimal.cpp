@@ -70,8 +70,7 @@ namespace CTAG::SYNTHESIS {
 
         // calculate playback speed = dt = phase increment
         phaseIncrement = params.playbackSpeed; // speed
-        phaseIncrement *= stmlib::SemitonesToRatio( params.pitch + fmDecay * params.egFM * 4); // includes pitch FM
-        fmDecay *= (0.9f + 0.0999999f * params.d / 50.f);
+        phaseIncrement *= stmlib::SemitonesToRatio( params.pitch); // includes pitch FM
 
         // evaluate loop settings
         if (params.loop) {
@@ -93,7 +92,10 @@ namespace CTAG::SYNTHESIS {
         }
         // now take abs
         phaseIncrement = fabsf(phaseIncrement);
-        CONSTRAIN(phaseIncrement, -15.f, 15.f) // limit to stay in memory and CPU capability bounds
+        // TODO: adapt this also in Rompler?
+        if(phaseIncrement >= 6.f) phaseIncrement = 6.f; // limit to stay in memory and CPU capability bounds
+        phaseIncrement += fmDecay * params.egFM * 4;
+        fmDecay *= (0.9f + 0.0999999f * params.d / 50.f);
 
         // calc relative positions and bounds check
         int32_t startPos = static_cast<int32_t>(sliceLockedStartOffset * sliceLength);
@@ -503,13 +505,15 @@ namespace CTAG::SYNTHESIS {
         }
         // TODO fade last buffer
         // apply anti-aliasing low-pass when downsampling, i.e. pitch up, not required if pitch down (upsampling)
+        // > 0.1f to limit processing power at high pitch, has aliasing then
+        // TODO anti aliasing could possibly completely be removed
         float fAntiAlias = 0.5f / phaseIncrement;
-        if (fAntiAlias < 0.5f && params.filterType == FilterType::NONE) {
+        if (fAntiAlias < 0.5f && fAntiAlias > 0.1f && params.filterType == FilterType::NONE) {
             // the more cascades the better, but beware of cost
             dsps_biquad_gen_lpf_f32(coeffs_lpf, fAntiAlias, .5f);
             dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf1);
-            dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf2);
         }
+
         // interpolate sample buffer from data
         // and apply AM
         for (int i = 0; i < size; i++) {
