@@ -20,22 +20,13 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagSoundProcessorTBDeep.hpp"
-#include <iostream>
 #include "helpers/ctagFastMath.hpp"
-#include "esp_system.h"
 #include <cmath>
-#include "esp_log.h"
-#include "esp_heap_caps.h"
+#include "stmlib/utils/dsp.h"
 
 // part of the port is adapted from VCV Rack Audible Instruments, (C) Andrew Belt
 using namespace CTAG::SP;
 
-#define CONSTRAIN(var, min, max) \
-  if (var < (min)) { \
-    var = (min); \
-  } else if (var > (max)) { \
-    var = (max); \
-  }
 
 static const float kRootScaled[3] = {
         0.125f,
