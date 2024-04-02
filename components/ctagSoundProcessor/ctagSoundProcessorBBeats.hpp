@@ -36,16 +36,16 @@ namespace CTAG {
         class ctagSoundProcessorBBeats : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorBBeats();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
             virtual ~ctagSoundProcessorBBeats();
 
         private:
             virtual void knowYourself() override;
 
-            inline static int process_param( const ProcessData &data, int cv_myparm, int my_parm, int parm_range, int max_idx ); // rescale incoming data
-            inline static float process_param_float( const ProcessData &data, int cv_myparm, int my_parm, int max_idx ); // rescale incoming data to 0.0-1.0
-            inline bool process_param_bool( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, bool direct_eg_trigger=false ); // rescale incoming data to bool
-            inline float logic_operation_on_beat( );   // Logical operation on the bytebeats
+            int process_param( const ProcessData &data, int cv_myparm, int my_parm, int parm_range, int max_idx ); // rescale incoming data
+            float process_param_float( const ProcessData &data, int cv_myparm, int my_parm, int max_idx ); // rescale incoming data to 0.0-1.0
+            bool process_param_bool( const ProcessData &data, int trig_myparm, int my_parm, int prev_trig_state_id, bool direct_eg_trigger=false ); // rescale incoming data to bool
+            float logic_operation_on_beat( );   // Logical operation on the bytebeats
 
             enum trig_states {e_stop_beatA, e_reverse_beatA, e_stop_beatB, e_reverse_beatB, e_reset_bbeats_on_stop,
                               e_activateEG_1, e_loopEG_1, e_activateEG_2, e_loopEG_2, e_activateEG_3, e_loopEG_3, e_activateEG_4, e_loopEG_4, e_bbeat_options_max };

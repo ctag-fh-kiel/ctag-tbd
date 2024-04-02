@@ -35,7 +35,7 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ctagSoundProcessorDust();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
         private:
 

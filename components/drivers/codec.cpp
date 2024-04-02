@@ -26,6 +26,7 @@ respective component folders / files if different from this license.
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "soc/io_mux_reg.h"
 #include <string.h>
 #include <cmath>
 
@@ -130,7 +131,7 @@ void Codec::setupI2SWM8731() {
     i2s_config.sample_rate = 44100;
     i2s_config.bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT;
     i2s_config.channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT;
-    i2s_config.communication_format = (i2s_comm_format_t) (I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB);
+    i2s_config.communication_format = (i2s_comm_format_t) I2S_COMM_FORMAT_STAND_I2S;
     i2s_config.intr_alloc_flags = ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL3; // default interrupt priority would be 0
     i2s_config.dma_buf_count = 4;
     i2s_config.dma_buf_len = 32;
@@ -360,7 +361,8 @@ void Codec::setupSPIWM8978() {
     WM8978_EQ4_Set(0, 12);
     WM8978_EQ5_Set(0, 12);
      */
-    WM8978_I2S_Cfg(2, 0);
+    //WM8978_I2S_Cfg(2, 0);
+
 }
 
 void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
@@ -368,7 +370,7 @@ void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
     if(!isReady){
         ESP_LOGD("CODEC", "Codec not initialized");
     }
-    ESP_LOGD("CODEC", "Setting levels to %d, %d", left, right);
+    ESP_LOGD("CODEC", "Setting levels to %li, %li", left, right);
     WM8978_HPvol_Set(static_cast<u8>(left), static_cast<u8>(right));
 #endif
 }
@@ -462,6 +464,7 @@ u8 Codec::WM8978_Init(void) {
     //WM8978_Write_Reg(2, 0X1B0);   //R2,ROUT1,LOUT1输出使能(耳机可以工作),BOOSTENR,BOOSTENL使能
     WM8978_Write_Reg(3, 0b000001111);
     //WM8978_Write_Reg(3, 0X6C);	//R3,LOUT2,ROUT2输出使能(喇叭工作),RMIX,LMIX使能
+    WM8978_Write_Reg(4, 0b000010000);
     WM8978_Write_Reg(6, 0);          //R6,MCLK由外部提供
     //WM8978_Write_Reg(43, 1 << 4); //R43,INVROUT2反向,驱动喇叭
     //WM8978_Write_Reg(47, 1 << 8); //R47设置,PGABOOSTL,左通道MIC获得20倍增益

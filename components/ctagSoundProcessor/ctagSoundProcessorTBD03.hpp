@@ -41,14 +41,18 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) override;
 
-            ctagSoundProcessorTBD03();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
         private:
 
             virtual void knowYourself() override;
 
             // private attributes could go here
-            std::unique_ptr<ctagFilterBase> filt[5];
+            ctagDiodeLadderFilter5 pirkle_zdf_boost; // Pirkle ZDF with boost
+            ctagDiodeLadderFilter3 karlson; // Karlson
+            ctagDiodeLadderFilter4 blaukraut; // Blaukraut
+            ctagDiodeLadderFilter pirkle_zdf; // Pirkle ZDF
+            ctagDiodeLadderFilter2 zavalishin; // Zavalishin ZDF
             ctagADEnv adVCA, adVCF;
             braids::MacroOscillator osc;
             braids::SignatureWaveshaper ws;

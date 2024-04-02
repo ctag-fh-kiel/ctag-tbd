@@ -32,14 +32,14 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ctagSoundProcessorFBDlyLine();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
         private:
 
             virtual void knowYourself() override;
 
-            const uint32_t maxLength;
-            HELPERS::ctagFBDelayLine dlyLine;
+            const uint32_t maxLength {88200};
+            HELPERS::ctagFBDelayLine dlyLine {maxLength};
             // process only variables
             float fLength = 0.f, cvLength = 0.f;
             float fLevel = 1.f;

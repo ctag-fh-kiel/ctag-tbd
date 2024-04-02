@@ -31,7 +31,7 @@ namespace CTAG {
 
             ~ctagSoundProcessorMIEnsemble();
 
-            ctagSoundProcessorMIEnsemble();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
 
         private:

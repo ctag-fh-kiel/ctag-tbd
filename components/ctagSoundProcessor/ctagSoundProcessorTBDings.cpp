@@ -22,38 +22,32 @@ respective component folders / files if different from this license.
 #include "ctagSoundProcessorTBDings.hpp"
 #include <iostream>
 #include <cmath>
-#include "esp_system.h"
-#include "esp_log.h"
-#include "esp_heap_caps.h"
+#include "stmlib/stmlib.h"
 
 
 using namespace CTAG::SP;
 
-#define CONSTRAIN(var, min, max) \
-  if (var < (min)) { \
-    var = (min); \
-  } else if (var > (max)) { \
-    var = (max); \
-  }
 
-ctagSoundProcessorTBDings::ctagSoundProcessorTBDings() {
+
+void ctagSoundProcessorTBDings::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    //ESP_LOGE("Rings", "Free mem %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
-    reverb_buffer = (uint16_t *) heap_caps_malloc(32768 * sizeof(uint16_t),
-                                                  MALLOC_CAP_SPIRAM);//MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if (reverb_buffer == NULL) {
-        ESP_LOGE("Rings", "Could not allocate shared buffer!");
-    }
+    /* this doesn't fit in the available block
+    assert(blockSize >= 32768 * sizeof(uint16_t));
+    reverb_buffer = (uint16_t *) blockPtr;
+     */
 
-    strummer.Init(0.01, 44100.0 / bufSz);
+    reverb_buffer = (uint16_t *) heap_caps_malloc(32768 * sizeof(uint16_t), MALLOC_CAP_SPIRAM);
+    assert(reverb_buffer != nullptr);
+
+    strummer.Init(0.01f, 44100.0f / bufSz);
     part.Init(reverb_buffer);
     string_synth.Init(reverb_buffer);
 
-    memset(&patch, 0, sizeof(patch));
-    memset(&performance_state, 0, sizeof(performance_state));
+    //memset(&patch, 0, sizeof(patch));
+    //memset(&performance_state, 0, sizeof(performance_state));
 
     paramAD.SetSampleRate(44100.f / 32.f);
     paramAD.SetModeLin();
@@ -98,18 +92,23 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
     } else {
         resonatorModel = (rings::ResonatorModel) ((reson_model) % 6);
     }
+    if(resonatorModel>5) resonatorModel = rings::ResonatorModel(5);
+    if(resonatorModel<0) resonatorModel = rings::ResonatorModel(0);
+
 
     // ad envelope
     float fAttack = eg_attack / 4095.f * 5.f;
     if (cv_eg_attack != -1) {
         fAttack = fabsf(data.cv[cv_eg_attack]) * 5.f;
     }
+    CONSTRAIN(fAttack, 0.f, 5.f)
     paramAD.SetAttack(fAttack);
 
     float fDecay = eg_decay / 4095.f * 5.f;
     if (cv_eg_decay != -1) {
         fDecay = fabsf(data.cv[cv_eg_decay]) * 5.f;
     }
+    CONSTRAIN(fDecay, 0.f, 5.f)
     paramAD.SetDecay(fDecay);
 
     bool triggerAD = eg_trigger;
@@ -163,6 +162,7 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
     if (cv_frequency != -1) {
         performance_state.note += data.cv[cv_frequency] * 5.f * 12.f;
     }
+    CONSTRAIN(performance_state.note, 0.f, 96.f);
 
     if (cv_mod_frequency != -1) {
         performance_state.fm = data.cv[cv_mod_frequency] * mod_frequency / 4095.f * 48.f;
@@ -189,10 +189,11 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
     performance_state.chord = chords;//(int) (patch.structure * (rings::kNumChords - 1));
     if (cv_chords != -1) {
         performance_state.chord = (int) floorf(data.cv[cv_chords] * 11.f);
-        CONSTRAIN(performance_state.chord, 0, 10);
     }
+    CONSTRAIN(performance_state.chord, 0, 10);
 
     int poly = 1 << polyphony;
+    CONSTRAIN(poly, 1, 4)
     if (poly != part.polyphony()) part.set_polyphony(poly);
 }
 

@@ -136,3 +136,8 @@ bool ctagADEnv::GetLoop() {
 bool ctagADEnv::GetIsRunning() {
     return envState != EnvStateType::STATE_IDLE ? true : false;
 }
+
+void ctagADEnv::Reset() {
+    envAccum = 0.f;
+    envState = EnvStateType::STATE_IDLE;
+}

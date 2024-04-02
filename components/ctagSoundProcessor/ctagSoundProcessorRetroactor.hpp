@@ -14,7 +14,7 @@ namespace CTAG {
         class ctagSoundProcessorRetroactor : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorRetroactor();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
             virtual ~ctagSoundProcessorRetroactor();
 
         private:

@@ -22,8 +22,8 @@
 #include "progenitor.hpp"
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
-#include "esp_heap_caps.h"
-#include "esp_log.h"
+#include "utils.hpp"
+
 
 // Fs = 34.125 kHz
 const int32_t FV3_(progenitor)::allpassLCo[] = {239, 392, 1944, 612, 1212, 121, 816, 1264,};
@@ -37,7 +37,8 @@ const int32_t FV3_(progenitor)::idxOutCo[] = {276, 468, 625, 312, 8, 24, 36, 40,
 //                                         d31   {d49  d40  d31 d58}  d49 d37  {d31 d23  d49   d37}
 
 
-FV3_(progenitor)::FV3_(progenitor)() {
+void FV3_(progenitor)::init(size_t blockMemSize, void* blockMemory){
+    fv3::utils_f::SetBlockMemory(blockMemSize, blockMemory);
     setrt60(2.);
     setdccutfreq(5);
     setdiffusion1(0.375);
@@ -65,6 +66,10 @@ FV3_(progenitor)::FV3_(progenitor)() {
     setbassbw(2);
     setbassboost(0.1);
     isMono = false;
+}
+
+FV3_(progenitor)::FV3_(progenitor)() {
+    // moved to init();
 }
 
 void FV3_(progenitor)::mute() {
@@ -493,7 +498,7 @@ void FV3_(progenitor)::setFsFactors() {
     delayL_37.setsize(p_(delayLCo[4], totalFactor));
 
     // delayR_66.setsize(p_(delayRCo[0],totalFactor));
-    delayR_ts.setsize(p_(1, totalFactor));
+    delayR_ts.setsize(p_(static_cast<int32_t>(1), totalFactor));
     delayR_40.setsize(p_(delayRCo[5], totalFactor)); // delayRCo[1]+delayRCo[2]
     // delayR_41.setsize(p_(delayRCo[2],totalFactor));
     delayR_49.setsize(p_(delayRCo[3], totalFactor));

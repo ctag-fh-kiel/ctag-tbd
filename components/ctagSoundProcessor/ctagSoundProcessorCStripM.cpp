@@ -98,7 +98,7 @@ void ctagSoundProcessorCStripM::Process(const ProcessData &data) {
 
 }
 
-ctagSoundProcessorCStripM::ctagSoundProcessorCStripM() {
+void ctagSoundProcessorCStripM::Init(std::size_t blockSize, void *blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);

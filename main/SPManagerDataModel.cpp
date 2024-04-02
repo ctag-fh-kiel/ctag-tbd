@@ -205,6 +205,7 @@ void SPManagerDataModel::SetConfigurationFromJSON(const string &data) {
     if (!m.HasMember("configuration")) return;
     Document d;
     d.Parse(data);
+    if(d.HasParseError()) return;
     Value obj(kObjectType);
     obj.CopyFrom(d, m.GetAllocator());
     m["configuration"] = obj.Move();
@@ -242,17 +243,23 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
     json.Clear();
-    Document d;
-    loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
+    Document d1, d2;
+    loadJSON(d1, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
+    d2.SetObject();
+    Value s_id(kObjectType);
+    s_id.SetString(id, d2.GetAllocator());
+    d2.AddMember("id", s_id.Move(), d2.GetAllocator());
+    d2.AddMember("presets", d1.Move(), d2.GetAllocator());
     Writer<StringBuffer> writer(json);
-    d.Accept(writer);
+    d2.Accept(writer);
     return json.GetString();
 }
 
-void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const string &data) {
-    ESP_LOGD("Model", "String %s", data.c_str());
+void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const char* data) {
+    ESP_LOGD("Model", "String %s", data);
     Document presets;
     presets.Parse(data);
+    if(presets.HasParseError()) return;
     storeJSON(presets, string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn"));
 }
 

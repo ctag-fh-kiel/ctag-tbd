@@ -43,6 +43,8 @@ namespace CTAG::SP::HELPERS{
         void Read(int16_t *dst, uint32_t offset, const uint32_t n_samples);
         void ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples);
         void ReadSliceAsFloat(float *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples);
+        void BufferInSPIRAM();
+        bool IsBufferedInSPIRAM();
     private:
         static uint32_t totalSize;
         static uint32_t numberSlices;
@@ -50,6 +52,8 @@ namespace CTAG::SP::HELPERS{
         static uint32_t *sliceSizes;
         static uint32_t *sliceOffsets;
         static uint32_t firstNonWtSlice;
-        static atomic<uint32_t> nConsumers;
+        static atomic<uint32_t>  nConsumers;
+        static int16_t *ptrSPIRAM;
+        static uint32_t nSlicesBuffered;
     };
 }

@@ -32,7 +32,7 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) override;
 
-            ctagSoundProcessorPolyPad();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
             void PrintParams(ChordSynth::ChordParams &params);
 
@@ -70,10 +70,11 @@ namespace CTAG {
             // sectionHpp
 
             // private attributes could go here
-            vector<ChordSynth> v_voices;
+            array<ChordSynth, 8> v_voices;
             bool latchVoice = false;
             bool latched = false;
             bool toggle = false;
+            int32_t preNCVoices = 0;
             braids::Quantizer quantizer;
         };
     }

@@ -85,22 +85,22 @@ measure:
     /* ch 0 */
     ld r0, r2, 0
     rsh r0, r0, adc_oversampling_factor_log
-    //sub r0, r3, r0
+    sub r0, r3, r0
     st r0, r2, 0
     /* ch 1 */
     ld r0, r2, 4
     rsh r0, r0, adc_oversampling_factor_log
-    //sub r0, r3, r0
+    sub r0, r3, r0
     st r0, r2, 4
     /* ch 2 */
     ld r0, r2, 8
     rsh r0, r0, adc_oversampling_factor_log
-    sub r0, r3, r0
+    //sub r0, r3, r0
     st r0, r2, 8
     /* ch 3 */
     ld r0, r2, 12
     rsh r0, r0, adc_oversampling_factor_log
-    sub r0, r3, r0
+    //sub r0, r3, r0
     st r0, r2, 12
     /* send interrupt */
     wake

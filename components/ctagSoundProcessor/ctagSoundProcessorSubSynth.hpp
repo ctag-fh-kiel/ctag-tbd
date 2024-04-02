@@ -35,11 +35,13 @@ namespace CTAG {
         public:
             void Process(const ProcessData &) override;
 
-            ctagSoundProcessorSubSynth();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
             const char *GetCStrID() const;
 
         private:
+            virtual void knowYourself() override {};
+
             void setParamValueInternal(const string &id, const string &key, const int val) override;
 
             void loadPresetInternal() override;
@@ -59,11 +61,6 @@ namespace CTAG {
             atomic<int32_t> root_frequency, cv_root_frequency;
             atomic<int32_t> root_bwidth, cv_root_bwidth;
             atomic<int32_t> root_level, cv_root_level;
-
-// sectionHpp
-
-
-
             atomic<int32_t> p_harm[9];
             atomic<int32_t> cv_p_harm[9];
             atomic<int32_t> p_bwidth[9];
@@ -86,19 +83,19 @@ namespace CTAG {
             atomic<int32_t> p_modgainsrc[9];
             atomic<int32_t> p_modgain[9];
             atomic<int32_t> cv_p_modgain[9];
-
-            float fBWidth[9];
-            float fGain[9];
-            float fHarm[9];
-            float fModBW[9];
-            float fModGain[9];
-            float fRootBWidth;
-            float fRootFrequency;
-            float fRootLevel;
+            // sectionHpp
+            float fBWidth[9] {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+            float fGain[9] {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+            float fHarm[9] {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+            float fModBW[9] {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+            float fModGain[9] {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+            float fRootBWidth {0.f};
+            float fRootFrequency {0.f};
+            float fRootLevel {0.f};
             const float fs = 44100.f;
             float filterZs[10 * 3][2]; // cascade 3 filters, base + 9 harmonics, biquad delay elements
-            float fCoeffs[6];
-            float fSumGain = 1.f;
+            float fCoeffs[6] {0.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+            float fSumGain {1.f};
             HELPERS::ctagPNoiseGen pNoise;
             HELPERS::ctagWNoiseGen wNoise;
             HELPERS::ctagADSREnv adsrEnvSum;

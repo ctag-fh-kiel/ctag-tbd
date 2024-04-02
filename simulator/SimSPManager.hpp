@@ -71,8 +71,8 @@ namespace CTAG {
                 return model->GetCStrJSONSoundProcessorPresets(id);
             }
 
-            static void SetJSONSoundProcessorPreset(const string &id, const string &data) {
-                model->SetJSONSoundProcessorPreset(id, data);
+            static void SetCStrJSONSoundProcessorPreset(const char* id, const char* data) {
+                model->SetCStrJSONSoundProcessorPreset(id, data);
             }
 
             static void SetConfigurationFromJSON(const string &data);
@@ -102,7 +102,7 @@ namespace CTAG {
 
             static void updateConfiguration();
 
-            static std::unique_ptr<ctagSoundProcessor> sp[2];
+            static ctagSoundProcessor* sp[2];
             static std::unique_ptr<SPManagerDataModel> model;
             static std::unique_ptr<FAV::FavoritesModel> favModel;
             static RtAudio audio;

@@ -23,6 +23,8 @@ class _FV3_(progenitor) : public _FV3_(revbase) {
 public:
     _FV3_(progenitor)();
 
+    void init(size_t blockMemSize, void* blockMemory);
+
     virtual void mute();
 
     virtual void

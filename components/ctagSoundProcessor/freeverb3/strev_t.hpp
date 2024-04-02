@@ -24,6 +24,8 @@ class _FV3_(strev) : public _FV3_(revbase) {
 public:
     _FV3_(strev)();
 
+    void init(size_t blockMemSize, void* blockMemory);
+
     virtual void mute();
 
     virtual void

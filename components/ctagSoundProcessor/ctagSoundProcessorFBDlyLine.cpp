@@ -27,9 +27,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorFBDlyLine::ctagSoundProcessorFBDlyLine() :
-        maxLength(88200),
-        dlyLine(maxLength) {
+void ctagSoundProcessorFBDlyLine::Init(std::size_t blockSize, void *blockPtr){
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

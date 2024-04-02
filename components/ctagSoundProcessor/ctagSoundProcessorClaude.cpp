@@ -76,7 +76,7 @@ void ctagSoundProcessorClaude::Process(const ProcessData &data) {
     if(cv_pitch != -1){
         fPitch += 12.f * data.cv[cv_pitch] * 5.f;
     }
-    clamp(fPitch, -48.f, 48.f);
+    CONSTRAIN(fPitch, -48.f, 48.f)
     p->pitch = fPitch;
     float fDensity = density / 4095.f;
     if(cv_density != -1){
@@ -113,32 +113,21 @@ void ctagSoundProcessorClaude::Process(const ProcessData &data) {
 
 }
 
-ctagSoundProcessorClaude::ctagSoundProcessorClaude() {
+void ctagSoundProcessorClaude::Init(std::size_t blockSize, void *blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
     // memallocs
-    block_mem = (uint8_t *) heap_caps_malloc(memLen, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    block_mem = (uint8_t *) heap_caps_malloc(memLen, MALLOC_CAP_SPIRAM);
     if(block_mem == NULL){
-        ESP_LOGE("Claude", "Cannot alloc DRAM mem trying SPIRAM!");
-        block_mem = (uint8_t*) heap_caps_malloc(memLen, MALLOC_CAP_SPIRAM);
-        if(block_mem == NULL) {
-            ESP_LOGE("Claude", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
+        ESP_LOGE("Claude", "Cannot alloc ram!");
     }
     memset(block_mem, 0, memLen);
-    block_ccm = (uint8_t*) heap_caps_malloc(ccmLen, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(block_ccm == NULL){
-        ESP_LOGE("Claude", "Cannot alloc DRAM mem trying SPIRAM!");
-        block_ccm = (uint8_t*) heap_caps_malloc(ccmLen, MALLOC_CAP_SPIRAM);
-        if(block_ccm == NULL) {
-            ESP_LOGE("Claude", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }
+
+    assert(blockSize >= ccmLen);
+    block_ccm = (uint8_t*) blockPtr;
     memset(block_ccm, 0, ccmLen);
 
     processor.Init(block_mem, memLen, block_ccm, ccmLen);
@@ -146,7 +135,6 @@ ctagSoundProcessorClaude::ctagSoundProcessorClaude() {
 
 ctagSoundProcessorClaude::~ctagSoundProcessorClaude() {
     heap_caps_free(block_mem);
-    heap_caps_free(block_ccm);
 }
 
 void ctagSoundProcessorClaude::knowYourself(){

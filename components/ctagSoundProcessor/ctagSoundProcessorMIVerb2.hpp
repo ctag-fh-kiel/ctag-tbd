@@ -31,7 +31,7 @@ namespace CTAG {
 
             virtual ~ctagSoundProcessorMIVerb2();
 
-            ctagSoundProcessorMIVerb2();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
 
         private:

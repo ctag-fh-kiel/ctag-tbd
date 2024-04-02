@@ -28,6 +28,7 @@
 #include "gverb.h"
 #include "ladspa-util.h"
 
+
 void gverb_new(ty_gverb *p, int srate, float maxroomsize, float roomsize,
                float revtime,
                float damping, float spread,
@@ -48,14 +49,14 @@ void gverb_new(ty_gverb *p, int srate, float maxroomsize, float roomsize,
     p->earlylevel = earlylevel;
     p->taillevel = taillevel;
 
-    p->maxdelay = p->rate * p->maxroomsize / 340.0;
-    p->largestdelay = p->rate * p->roomsize / 340.0;
+    p->maxdelay = p->rate * p->maxroomsize / 340.0f;
+    p->largestdelay = p->rate * p->roomsize / 340.0f;
 
 
     /* Input damper */
 
     p->inputbandwidth = inputbandwidth;
-    p->inputdamper = damper_make(1.0 - p->inputbandwidth);
+    p->inputdamper = damper_make(1.0f - p->inputbandwidth);
 
 
     /* FDN section */
@@ -73,70 +74,70 @@ void gverb_new(ty_gverb *p, int srate, float maxroomsize, float roomsize,
         p->fdndamps[i] = damper_make(p->fdndamping);
     }
 
-    ga = 60.0;
+    ga = 60.0f;
     gt = p->revtime;
     ga = powf(10.0f, -ga / 20.0f);
     n = p->rate * gt;
-    p->alpha = pow((double) ga, 1.0 / (double) n);
+    p->alpha = pow((double) ga, 1.0f / (double) n);
 
-    gb = 0.0;
+    gb = 0.0f;
     for (i = 0; i < FDNORDER; i++) {
-        if (i == 0) gb = 1.000000 * p->largestdelay;
-        if (i == 1) gb = 0.816490 * p->largestdelay;
-        if (i == 2) gb = 0.707100 * p->largestdelay;
-        if (i == 3) gb = 0.632450 * p->largestdelay;
+        if (i == 0) gb = 1.000000f * p->largestdelay;
+        if (i == 1) gb = 0.816490f * p->largestdelay;
+        if (i == 2) gb = 0.707100f * p->largestdelay;
+        if (i == 3) gb = 0.632450f * p->largestdelay;
 
 #if 0
-        p->fdnlens[i] = nearest_prime((int)gb, 0.5);
+        p->fdnlens[i] = nearest_prime((int)gb, 0.5f);
 #else
         p->fdnlens[i] = f_round(gb);
 #endif
         p->fdngains[i] = -powf((float) p->alpha, p->fdnlens[i]);
     }
 
-    p->d = (float *) calloc(FDNORDER, sizeof(float));
-    p->u = (float *) calloc(FDNORDER, sizeof(float));
-    p->f = (float *) calloc(FDNORDER, sizeof(float));
+    memset(p->d, 0, FDNORDER * sizeof(float));
+    memset(p->u, 0, FDNORDER * sizeof(float));
+    memset(p->f, 0, FDNORDER * sizeof(float));
 
     /* Diffuser section */
 
     diffscale = (float) p->fdnlens[3] / (210 + 159 + 562 + 410);
     spread1 = spread;
-    spread2 = 3.0 * spread;
+    spread2 = 3.0f * spread;
 
     b = 210;
-    r = 0.125541;
+    r = 0.125541f;
     a = spread1 * r;
     c = 210 + 159 + a;
     cc = c - b;
-    r = 0.854046;
+    r = 0.854046f;
     a = spread2 * r;
     d = 210 + 159 + 562 + a;
     dd = d - c;
     e = 1341 - d;
 
     p->ldifs = (ty_diffuser **) calloc(4, sizeof(ty_diffuser *));
-    p->ldifs[0] = diffuser_make((int) (diffscale * b), 0.75);
-    p->ldifs[1] = diffuser_make((int) (diffscale * cc), 0.75);
-    p->ldifs[2] = diffuser_make((int) (diffscale * dd), 0.625);
-    p->ldifs[3] = diffuser_make((int) (diffscale * e), 0.625);
+    p->ldifs[0] = diffuser_make((int) (diffscale * b), 0.75f);
+    p->ldifs[1] = diffuser_make((int) (diffscale * cc), 0.75f);
+    p->ldifs[2] = diffuser_make((int) (diffscale * dd), 0.625f);
+    p->ldifs[3] = diffuser_make((int) (diffscale * e), 0.625f);
 
     b = 210;
-    r = -0.568366;
+    r = -0.568366f;
     a = spread1 * r;
     c = 210 + 159 + a;
     cc = c - b;
-    r = -0.126815;
+    r = -0.126815f;
     a = spread2 * r;
     d = 210 + 159 + 562 + a;
     dd = d - c;
     e = 1341 - d;
 
     p->rdifs = (ty_diffuser **) calloc(4, sizeof(ty_diffuser *));
-    p->rdifs[0] = diffuser_make((int) (diffscale * b), 0.75);
-    p->rdifs[1] = diffuser_make((int) (diffscale * cc), 0.75);
-    p->rdifs[2] = diffuser_make((int) (diffscale * dd), 0.625);
-    p->rdifs[3] = diffuser_make((int) (diffscale * e), 0.625);
+    p->rdifs[0] = diffuser_make((int) (diffscale * b), 0.75f);
+    p->rdifs[1] = diffuser_make((int) (diffscale * cc), 0.75f);
+    p->rdifs[2] = diffuser_make((int) (diffscale * dd), 0.625f);
+    p->rdifs[3] = diffuser_make((int) (diffscale * e), 0.625f);
 
 
 
@@ -146,10 +147,10 @@ void gverb_new(ty_gverb *p, int srate, float maxroomsize, float roomsize,
     p->taps = (int *) calloc(FDNORDER, sizeof(int));
     p->tapgains = (float *) calloc(FDNORDER, sizeof(float));
 
-    p->taps[0] = 5 + 0.410 * p->largestdelay;
-    p->taps[1] = 5 + 0.300 * p->largestdelay;
-    p->taps[2] = 5 + 0.155 * p->largestdelay;
-    p->taps[3] = 5 + 0.000 * p->largestdelay;
+    p->taps[0] = 5 + 0.410f * p->largestdelay;
+    p->taps[1] = 5 + 0.300f * p->largestdelay;
+    p->taps[2] = 5 + 0.155f * p->largestdelay;
+    p->taps[3] = 5 + 0.000f * p->largestdelay;
 
     for (i = 0; i < FDNORDER; i++) {
         p->tapgains[i] = pow(p->alpha, (double) p->taps[i]);
@@ -170,15 +171,12 @@ void gverb_free(ty_gverb *p) {
     free(p->fdngains);
     free(p->fdnlens);
     free(p->fdndamps);
-    free(p->d);
-    free(p->u);
-    free(p->f);
     free(p->ldifs);
     free(p->rdifs);
     free(p->taps);
     free(p->tapgains);
     fixeddelay_free(p->tapdelay);
-    free(p);
+    //free(p);
 }
 
 void gverb_flush(ty_gverb *p) {

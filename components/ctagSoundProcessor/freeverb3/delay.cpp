@@ -21,8 +21,6 @@
 #include "delay.hpp"
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
-#include "esp_log.h"
-#include "esp_heap_caps.h"
 
 // simple delay
 
@@ -30,7 +28,7 @@ FV3_(delay)::FV3_(delay)() {
     isExternalMem = false;
     feedback = 1.;
     bufsize = bufidx = 0;
-    buffer = NULL;
+    buffer = nullptr;
 }
 
 FV3_(delay)::~FV3_(delay)() {
@@ -42,8 +40,8 @@ int32_t FV3_(delay)::getsize() {
 }
 
 void FV3_(delay)::setsize(float *buf, const uint32_t size) {
-    if (buf == NULL) {
-        buffer = NULL;
+    if (buf == nullptr) {
+        buffer = nullptr;
         return;
     }
     isExternalMem = true;
@@ -66,22 +64,9 @@ void FV3_(delay)::setsize(float *buf, const uint32_t size) {
 
 void FV3_(delay)::setsize(int32_t size) {
     if (size <= 0) return;
-    fv3_float_t *new_buffer = NULL;
+    fv3_float_t *new_buffer = nullptr;
 
-    //SP_LOGE("delay", "Trying mem alloc!");
-    new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(new_buffer == NULL){
-        ESP_LOGE("delay", "Cannot alloc mem trying SPIRAM!");
-        new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(new_buffer == NULL) {
-            ESP_LOGE("delay", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("delay", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
-
+    new_buffer = (float*) utils_f::fv3_malloc(size * sizeof(float));
 
     FV3_(utils)::mute(new_buffer, size);
 
@@ -103,14 +88,14 @@ void FV3_(delay)::setsize(int32_t size) {
 
 void FV3_(delay)::free() {
     if (isExternalMem) return;
-    if (buffer == NULL || bufsize == 0) return;
-    heap_caps_free(buffer);
-    buffer = NULL;
+    if (buffer == nullptr || bufsize == 0) return;
+    utils_f::fv3_free(buffer);
+    buffer = nullptr;
     bufidx = bufsize = 0;
 }
 
 void FV3_(delay)::mute() {
-    if (buffer == NULL || bufsize == 0) return;
+    if (buffer == nullptr || bufsize == 0) return;
     FV3_(utils)::mute(buffer, bufsize);
     bufidx = 0;
 }
@@ -129,7 +114,7 @@ FV3_(delaym)::FV3_(delaym)() {
     bufsize = readidx = writeidx = modulationsize = 0;
     feedback = 1.;
     z_1 = modulationsize_f = 0;
-    buffer = NULL;
+    buffer = nullptr;
 }
 
 FV3_(delaym)::~FV3_(delaym)() {
@@ -157,20 +142,9 @@ void FV3_(delaym)::setsize(int32_t size, int32_t modsize) {
     if (modsize < 0) modsize = 0;
     if (modsize > size) modsize = size;
     int32_t newsize = size + modsize;
-    fv3_float_t *new_buffer = NULL;
+    fv3_float_t *new_buffer = nullptr;
 
-    new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(new_buffer == NULL){
-        ESP_LOGE("delaym", "Cannot alloc mem trying SPIRAM!");
-        new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(new_buffer == NULL) {
-            ESP_LOGE("delaym", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("delay", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    new_buffer = (float*) utils_f::fv3_malloc(size * sizeof(float));
 
     FV3_(utils)::mute(new_buffer, newsize);
 
@@ -185,15 +159,15 @@ void FV3_(delaym)::setsize(int32_t size, int32_t modsize) {
 }
 
 void FV3_(delaym)::free() {
-    if (buffer == NULL || bufsize == 0) return;
-    heap_caps_free(buffer);
-    buffer = NULL;
+    if (buffer == nullptr || bufsize == 0) return;
+    utils_f::fv3_free(buffer);
+    buffer = nullptr;
     writeidx = bufsize = 0;
     z_1 = 0;
 }
 
 void FV3_(delaym)::mute() {
-    if (buffer == NULL || bufsize == 0) return;
+    if (buffer == nullptr || bufsize == 0) return;
     FV3_(utils)::mute(buffer, bufsize);
     writeidx = 0;
     z_1 = 0;

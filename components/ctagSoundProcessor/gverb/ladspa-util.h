@@ -70,7 +70,7 @@ static __inline float flush_to_zero(float f) {
     return (v.i & 0x7f800000) < 0x08000000 ? 0.0f : f;
 }
 
-static __inline void round_to_zero(volatile float *f) {
+static __inline void round_to_zero(float *f) {
     *f += 1e-18;
     *f -= 1e-18;
 }

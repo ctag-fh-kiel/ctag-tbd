@@ -25,9 +25,12 @@ respective component folders / files if different from this license.
 #include "version.hpp"
 #include "esp_log.h"
 
-#if defined(CONFIG_TBD_PLATFORM_MK2)
+#if CONFIG_TBD_PLATFORM_MK2
     #define SCL_GPIO 32
     #define SDA_GPIO 33
+#elif CONFIG_TBD_PLATFORM_BBA
+    #define SCL_GPIO 4
+    #define SDA_GPIO 5
 #else
     #define SCL_GPIO 23
     #define SDA_GPIO 5
@@ -82,6 +85,18 @@ void Display::ShowFWVersion() {
     if(s.length()>16)s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
+}
+
+void Display::ShowUserString(std::string const &s) {
+    ssd1306_clear_screen(&I2CDisplay, false);
+    ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length() > 16 ? 16 : s.length(), false);
+}
+
+void Display::ShowUserString(std::vector<std::string> const &sv) {
+    ssd1306_clear_screen(&I2CDisplay, false);
+    for(int i=0;i<sv.size();i++){
+        ssd1306_display_text(&I2CDisplay, i, sv[i].c_str(), sv[i].length() > 16 ? 16 : sv[i].length(), false);
+    }
 }
 
 void Display::PrepareDisplayFavoriteUString(int const &id, std::string const &name, std::string const &us) {

@@ -21,7 +21,9 @@ respective component folders / files if different from this license.
 
 #include "ChordSynth.hpp"
 #include <cstring>
+#include <cstdio>
 #include "stmlib/utils/random.h"
+#include <esp_random.h>
 
 void CTAG::SP::ChordSynth::NoteOff() {
     adsr.Gate(false);
@@ -41,11 +43,10 @@ void  CTAG::SP::ChordSynth::Process(float *buf, const uint32_t &ofs) {
     memset(buffer, 0, 32 * 2);
 
     // vibrato and render buffer
-    int i = 0;
-    for (auto &osc:v_osc) {
-        osc.SetPitch(
-                params_.pitch + scale[i++] * 128 + static_cast<int16_t>(lfo1.Process() * params_.lfo1_amt * 128.f));
-        osc.Render(buffer, 32);
+    for (int i=0;i<params_.nnotes;i++) {
+        v_osc[i].SetPitch(
+                params_.pitch + scale[i] * 128 + static_cast<int16_t>(lfo1.Process() * params_.lfo1_amt * 128.f));
+        v_osc[i].Render(buffer, 32);
     }
 
     // apply filter with lfo and eg
@@ -67,36 +68,6 @@ void  CTAG::SP::ChordSynth::Process(float *buf, const uint32_t &ofs) {
 
 bool CTAG::SP::ChordSynth::IsDead() {
     return adsr.IsIdle();
-}
-
-CTAG::SP::ChordSynth::ChordSynth(const ChordParams &params) {
-    params_ = params;
-    stmlib::Random::Seed(esp_random());
-    lfo1.SetSampleRate(44100.f / 32.f);
-    lfo1.SetFrequencyPhase(params.lfo1_freq, 6.2f * stmlib::Random::GetFloat());
-    lfo2.SetSampleRate(44100.f / 32.f);
-    if (params.lfo2_random_phase)
-        lfo2.SetFrequencyPhase(params.lfo2_freq, 6.2f * stmlib::Random::GetFloat());
-    else
-        lfo2.SetFrequencyPhase(params.lfo2_freq, 3.1415f);
-    adsr.SetSampleRate(44100.f / 32.f);
-    adsr.SetAttack(params.attack);
-    adsr.SetDecay(params.decay);
-    adsr.SetSustain(params.sustain);
-    adsr.SetRelease(params.release);
-    adsr.SetModeExp();
-    adsr.Gate(true);
-    svf.Init();
-    svf.set_mode(static_cast<SvfMode>(params.filter_type));
-
-    calcInversion(scale, params.chord, params.inversion, params.nnotes);
-
-    for (int i = 0; i < params.nnotes; i++) {
-        MiSuperSawOsc osc;
-        osc.Init();
-        osc.SetPitch(params.pitch + scale[i] * 128);
-        v_osc.push_back(osc);
-    }
 }
 
 void CTAG::SP::ChordSynth::SetFilterType(const SvfMode &mode) {
@@ -124,4 +95,36 @@ float CTAG::SP::ChordSynth::GetTTL() {
 
 void CTAG::SP::ChordSynth::Hold() {
     adsr.Hold();
+}
+
+void CTAG::SP::ChordSynth::Init(const CTAG::SP::ChordSynth::ChordParams &params) {
+    params_ = params;
+    stmlib::Random::Seed(esp_random());
+    lfo1.SetSampleRate(44100.f / 32.f);
+    lfo1.SetFrequencyPhase(params.lfo1_freq, 6.2f * stmlib::Random::GetFloat());
+    lfo2.SetSampleRate(44100.f / 32.f);
+    if (params.lfo2_random_phase)
+        lfo2.SetFrequencyPhase(params.lfo2_freq, 6.2f * stmlib::Random::GetFloat());
+    else
+        lfo2.SetFrequencyPhase(params.lfo2_freq, 3.1415f);
+    adsr.SetSampleRate(44100.f / 32.f);
+    adsr.SetAttack(params.attack);
+    adsr.SetDecay(params.decay);
+    adsr.SetSustain(params.sustain);
+    adsr.SetRelease(params.release);
+    adsr.SetModeExp();
+    adsr.Gate(true);
+    svf.Init();
+    svf.set_mode(static_cast<SvfMode>(params.filter_type));
+
+    calcInversion(scale, params.chord, params.inversion, params.nnotes);
+
+    for (int i = 0; i < params.nnotes; i++) {
+        v_osc[i].Init();
+        v_osc[i].SetPitch(params.pitch + scale[i] * 128);
+    }
+}
+
+void CTAG::SP::ChordSynth::Reset() {
+    adsr.Reset();
 }

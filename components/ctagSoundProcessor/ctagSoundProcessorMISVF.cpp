@@ -4,7 +4,7 @@
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorMISVF::ctagSoundProcessorMISVF() {
+void ctagSoundProcessorMISVF::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);

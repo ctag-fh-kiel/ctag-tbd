@@ -53,4 +53,8 @@ public:
     static void XGETBV(uint32_t op, uint32_t *_eax, uint32_t *_edx);
 
     static uint32_t getSIMDFlag();
+
+    static void SetBlockMemory(size_t size, void* blockMemory);
+    static void *fv3_malloc(size_t size);
+    static void fv3_free(void *);
 };

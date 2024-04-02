@@ -10,6 +10,7 @@ namespace airwindows{
         void SetDelay(const float&v);
         void SetFeedback(const float&v);
         void SetBypass(const bool v);
+        void SetBlockMem(void *blockMemPtr);
         TDelay();
         ~TDelay();
     private:

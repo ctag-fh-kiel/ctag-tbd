@@ -20,9 +20,10 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "SimSPManager.hpp"
-#include "tinywav.h"
+#include "tinywav/tinywav.h"
 #include <mutex>
 #include <cmath>
+#include <ctagSPAllocator.hpp>
 #include "esp_spi_flash.h"
 
 using namespace CTAG::AUDIO;
@@ -96,6 +97,7 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
 }
 
 void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string sromFile, bool bOutOnly) {
+    ctagSPAllocator::AllocateInternalBuffer(112*1024); // TBDings has highest needs of 113944 bytes, this is 112k=114688 bytes
     // start fake sample rom
     cout << "Trying to open sample rom file (define own with -s command line option): " << sromFile << endl;
     spi_flash_emu_init(sromFile.c_str());
@@ -168,14 +170,8 @@ void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string 
         }
         // configure channels
         model = std::make_unique<SPManagerDataModel>();
-        sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
-        sp[0]->SetProcessChannel(0);
-        sp[0]->LoadPreset(model->GetActivePatchNum(0));
-        if (!sp[0]->GetIsStereo()) {
-            sp[1] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(1));
-            sp[1]->SetProcessChannel(1);
-            sp[1]->LoadPreset(model->GetActivePatchNum(1));
-        }
+        SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
+        SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
     }
     catch (RtAudioError &e) {
         e.printMessage();
@@ -197,23 +193,34 @@ void SimSPManager::StopSoundProcessor() {
         audio.stopStream();
         audio.closeStream();
     }
+    ctagSPAllocator::ReleaseInternalBuffer();
 }
 
 void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
-    printf("Switching plugin %d to %s", chan, id.c_str());
+    printf("Switching plugin %d to %s\n", chan, id.c_str());
     // does the SP exist?
     if(!model->HasPluginID(id)) return;
 
     // when trying to set chan 1 and chan 0 is a stereo plugin, return
     if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
     audioMutex.lock();
-    sp[chan] = nullptr; // destruct smart ptr
+    if(nullptr != sp[chan]){
+        delete sp[chan];
+        sp[chan] = nullptr;
+    }
+
     if (model->IsStereo(id) && chan == 0) {
         ESP_LOGI("SP", "Removing ch 1 plugin as ch 0 is stereo!");
-        sp[1] = nullptr; // destruct smart ptr
+        if(nullptr != sp[1]){
+            delete sp[1];
+            sp[1] = nullptr;
+        }
     }
-    sp[chan] = ctagSoundProcessorFactory::Create(id);
-    sp[chan]->SetProcessChannel(chan);
+
+    ctagSPAllocator::AllocationType aType = ctagSPAllocator::AllocationType::CH0;
+    if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
+    if(model->IsStereo(id)) aType = ctagSPAllocator::AllocationType::STEREO;
+    sp[chan] = ctagSoundProcessorFactory::Create(id, aType);
     model->SetActivePluginID(id, chan);
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
     audioMutex.unlock();
@@ -300,7 +307,7 @@ void SimSPManager::ActivateFavorite(const int &id) {
 
 
 RtAudio  SimSPManager::audio;
-std::unique_ptr<ctagSoundProcessor> SimSPManager::sp[2];
+ctagSoundProcessor* SimSPManager::sp[2] {nullptr, nullptr};
 std::unique_ptr<SPManagerDataModel> SimSPManager::model;
 std::unique_ptr<CTAG::FAV::FavoritesModel> SimSPManager::favModel;
 std::unique_ptr<SimDataModel> SimSPManager::simModel;
