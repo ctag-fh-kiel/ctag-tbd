@@ -59,7 +59,7 @@ void Codec::InitCodec() {
             .clk_cfg = {
                     .sample_rate_hz = 44100,
                     .clk_src = I2S_CLK_SRC_DEFAULT,
-                    .ext_clk_freq_hz = 0,
+                    //.ext_clk_freq_hz = 0,
                     .mclk_multiple = I2S_MCLK_MULTIPLE_256
             },
 #ifdef CONFIG_TBD_BBA_CODEC_ES8388
