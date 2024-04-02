@@ -19,28 +19,24 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-
-//
-// Created by Robert Manzke on 10.02.20.
-//
-
 #include "ctagSoundProcessorGVerb.hpp"
 #include <iostream>
 #include <cmath>
-#include "esp_log.h"
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorGVerb::ctagSoundProcessorGVerb() {
+void ctagSoundProcessorGVerb::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
     maxRoomSize = 500.f;
-    gverb = (ty_gverb *) malloc(sizeof(ty_gverb));
-    if (gverb == nullptr) {
-        ESP_LOGE("GVERB", "Fatal error, couldn't allocate memory!");
-    }
+    assert(blockSize >= sizeof(ty_gverb));
+    gverb = (ty_gverb *) blockPtr;
+    blockPtr = static_cast<uint8_t *>(blockPtr) + sizeof(ty_gverb);
+    blockSize -= sizeof(ty_gverb);
+    gverb_set_blockbuffer(blockSize, blockPtr);
+
     // roomSz, time, damp, spread, ibw, early, tail
     gverb_new(gverb, 44100, maxRoomSize, 50.0f, 7.0f, 0.5f, 15.0f, 0.5f, 0.5f, 0.5f);
 }
@@ -83,7 +79,6 @@ void ctagSoundProcessorGVerb::Process(const ProcessData &data) {
 }
 
 ctagSoundProcessorGVerb::~ctagSoundProcessorGVerb() {
-    // careful, this also frees itself
     gverb_free(gverb);
 }
 

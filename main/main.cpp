@@ -34,8 +34,9 @@ respective component folders / files if different from this license.
 #include "codec.hpp"
 #include <vector>
 #include "SPManager.hpp"
+#include "ctagSPAllocator.hpp"
 
-#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
+#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     #include "Display.hpp"
 #endif
 
@@ -52,6 +53,8 @@ https://www.embedded.com/modern-c-in-embedded-systems-part-1-myth-and-reality/
 */
 
 void app_main() {
+    // reserve large block of memory before anything else happens
+    ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
 
     // wait until power is somewhat more settled
     vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -64,7 +67,7 @@ void app_main() {
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
 #endif
 
-#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2)
+#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     DRIVERS::Display::Init();
     DRIVERS::Display::ShowFWVersion();
     vTaskDelay(2000 / portTICK_PERIOD_MS);

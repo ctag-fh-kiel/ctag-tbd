@@ -29,15 +29,24 @@ respective component folders / files if different from this license.
 #define SCROLL_RATE_MS 1000
 #define TIMEOUT_PERIOD_MS 5000
 
-#if defined(CONFIG_TBD_PLATFORM_AEM)
+#if CONFIG_TBD_PLATFORM_AEM
     #define PIN_PUSH_BTN GPIO_NUM_2
-#elif defined(CONFIG_TBD_PLATFORM_MK2)
+#elif CONFIG_TBD_PLATFORM_MK2
     #define PIN_PUSH_BTN GPIO_NUM_34
+#elif CONFIG_TBD_PLATFORM_BBA
+    #include "driver/touch_pad.h"
+    #define TOUCH_PAD TOUCH_PAD_NUM6 // is GPIO_NUM_6
+    static uint32_t noTouch {0}, previousProgramChangeValue {0xFF000000};
+    std::atomic<uint32_t> CTAG::FAV::Favorites::programChangeValue {0xFF000000};
+    void CTAG::FAV::Favorites::SetProgramChangeValue(uint32_t const &v) {
+        programChangeValue.store(v);
+    }
 #endif
 
+bool CTAG::FAV::Favorites::isUIEnabled {false};
 CTAG::FAV::FavoritesModel CTAG::FAV::Favorites::model;
 int32_t CTAG::FAV::Favorites::activeFav {-1};
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
+#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
     TaskHandle_t CTAG::FAV::Favorites::uiTaskHandle {nullptr};
 #endif
 CTAG::FAV::Favorites::MenuStates CTAG::FAV::Favorites::uiMenuState {CLEAR};
@@ -66,19 +75,38 @@ void CTAG::FAV::Favorites::ActivateFavorite(const int &id) {
     activeFav = id;
     uiMenuState = CLEAR;
 }
+void CTAG::FAV::Favorites::StartUI() {
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
-    void CTAG::FAV::Favorites::StartUI() {
         gpio_set_direction(PIN_PUSH_BTN, (gpio_mode_t)GPIO_MODE_DEF_INPUT);
         xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
-    }
+#elif CONFIG_TBD_PLATFORM_BBA
+        touch_pad_init();
+        touch_pad_config(TOUCH_PAD);
+        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
+        touch_pad_fsm_start();
+        std::vector<std::string> vs;
+        vs.emplace_back("Touch sensor");
+        vs.emplace_back("calibration:");
+        vs.emplace_back("Do not touch!");
+        DRIVERS::Display::ShowUserString(vs);
+        vTaskDelay(2000/ portTICK_PERIOD_MS);
+        uint32_t touch_value;
+        for(int i=0;i<16;i++){
+            touch_pad_read_raw_data(TOUCH_PAD, &touch_value);
+            noTouch += touch_value;
+        }
+        noTouch /= 16;
+        xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
 #endif
+    isUIEnabled = true;
+}
 
 void CTAG::FAV::Favorites::DeactivateFavorite() {
     activeFav = -1;
     uiMenuState = CLEAR;
 }
 
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
+#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
 // UI task menu state machine
 [[noreturn]] void CTAG::FAV::Favorites::ui_task(void *pvParams) {
     int timer {0}; // btn event timer
@@ -89,10 +117,27 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
     MenuStates pre_state {CLEAR};
     MenuStates return_state {CLEAR};
     DRIVERS::Display::Clear();
-    while (1) {
+    while (true) {
+        if(!isUIEnabled){
+            DRIVERS::Display::Clear();
+            uiMenuState = CLEAR;
+            pre_state = CLEAR;
+        }
         // check button state and generate events
-#if defined(CONFIG_TBD_PLATFORM_MK2)
+#if CONFIG_TBD_PLATFORM_MK2
         if (!gpio_get_level(PIN_PUSH_BTN)) {
+#elif CONFIG_TBD_PLATFORM_BBA
+        uint32_t touch_value;
+        touch_pad_read_raw_data(TOUCH_PAD, &touch_value);    // read raw data.
+        uint32_t pchgval = programChangeValue.load();
+        if(pchgval != previousProgramChangeValue){
+            previousProgramChangeValue = pchgval;
+            int fav = previousProgramChangeValue & 0xFF;
+            fav++; // to match fav1 = 1, fav0 = 10
+            activeFav = favSel;
+            ActivateFavorite(fav % 10);
+        }
+        if(touch_value > noTouch + 1000) {
 #else
         if(gpio_get_level(PIN_PUSH_BTN)){
 #endif
@@ -187,4 +232,13 @@ void CTAG::FAV::Favorites::DeactivateFavorite() {
         vTaskDelay(UI_TASK_PERIOD_MS / portTICK_PERIOD_MS);
     }
 }
+
 #endif
+
+void CTAG::FAV::Favorites::DisableFavoritesUI() {
+    isUIEnabled = false;
+}
+
+void CTAG::FAV::Favorites::EnableFavoritesUI() {
+    isUIEnabled = true;
+}

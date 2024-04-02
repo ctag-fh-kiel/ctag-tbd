@@ -21,12 +21,10 @@
 #include "delayline.hpp"
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
-#include "esp_heap_caps.h"
-#include "esp_log.h"
 
 FV3_(delayline)::FV3_(delayline)() {
     currentfs = FV3_REVBASE_DEFAULT_FS;
-    bufsize = baseidx = 0, buffer = NULL;
+    bufsize = baseidx = 0, buffer = nullptr;
 }
 
 FV3_(delayline)::~FV3_(delayline)() {
@@ -47,21 +45,9 @@ int32_t FV3_(delayline)::getsize() {
 
 void FV3_(delayline)::setsize(int32_t size) {
     if (size <= 0) return;
-    fv3_float_t *new_buffer = NULL;
+    fv3_float_t *new_buffer = nullptr;
 
-    //ESP_LOGE("delayline", "Trying mem alloc!");
-    new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(new_buffer == NULL){
-        ESP_LOGE("delayline", "Cannot alloc mem trying SPIRAM!");
-        new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(new_buffer == NULL) {
-            ESP_LOGE("delayline", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("allpass2", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    new_buffer = (float*) utils_f::fv3_malloc(size * sizeof(float));
 
     FV3_(utils)::mute(new_buffer, size);
 
@@ -79,14 +65,14 @@ void FV3_(delayline)::setsize(int32_t size) {
 }
 
 void FV3_(delayline)::free() {
-    if (buffer == NULL || bufsize == 0) return;
-    heap_caps_free(buffer);
-    buffer = NULL;
+    if (buffer == nullptr || bufsize == 0) return;
+    utils_f::fv3_free(buffer);
+    buffer = nullptr;
     baseidx = bufsize = 0;
 }
 
 void FV3_(delayline)::mute() {
-    if (buffer == NULL || bufsize == 0) return;
+    if (buffer == nullptr || bufsize == 0) return;
     FV3_(utils)::mute(buffer, bufsize);
 }
 

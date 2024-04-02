@@ -21,23 +21,18 @@ respective component folders / files if different from this license.
 
 #include "ctagSoundProcessorTBDaits.hpp"
 #include <iostream>
-#include "esp_heap_caps.h"
-#include "esp_log.h"
 #include "helpers/ctagFastMath.hpp"
-#include "esp_log.h"
-#include "esp_heap_caps.h"
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorTBDaits::ctagSoundProcessorTBDaits() {
+void ctagSoundProcessorTBDaits::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    shared_buffer = (char *) heap_caps_malloc(16384, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if (shared_buffer == NULL) {
-        ESP_LOGE("Plaits", "Could not allocate shared buffer!");
-    }
+    assert(blockSize >= 16384);
+    shared_buffer = (char *) blockPtr;
+
     stmlib::BufferAllocator allocator(shared_buffer, 16384);
     voice.Init(&allocator);
 
@@ -143,7 +138,6 @@ void ctagSoundProcessorTBDaits::Process(const ProcessData &data) {
 }
 
 ctagSoundProcessorTBDaits::~ctagSoundProcessorTBDaits() {
-    heap_caps_free(shared_buffer);
 }
 
 void ctagSoundProcessorTBDaits::knowYourself() {

@@ -26,6 +26,9 @@ respective component folders / files if different from this license.
 #include "led_rgb.hpp"
 #include "adc.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
+
 using namespace CTAG;
 using namespace CTAG::CAL;
 
@@ -34,11 +37,11 @@ TaskHandle_t Calibration::btnTaskHandle;
 std::atomic_int32_t Calibration::taskControl;
 QueueHandle_t Calibration::evQueue;
 unique_ptr<CalibrationModel> Calibration::model;
-DRAM_ATTR float Calibration::aCoeffs05V[4 * 2];
-DRAM_ATTR float Calibration::bCoeffs05V[4 * 2];
-DRAM_ATTR float Calibration::aCoeffs10V[4 * 2];
-DRAM_ATTR float Calibration::bCoeffs10V[4 * 2];
-DRAM_ATTR CVConfig Calibration::configCV[4];
+float Calibration::aCoeffs05V[4 * 2];
+float Calibration::bCoeffs05V[4 * 2];
+float Calibration::aCoeffs10V[4 * 2];
+float Calibration::bCoeffs10V[4 * 2];
+CVConfig Calibration::configCV[4];
 
 
 void Calibration::Init() {
@@ -181,7 +184,7 @@ void Calibration::calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvTyp
     ESP_LOGD("CM", "Matrix content:");
     for (auto &i: xMat) {
         for (auto &j: i) {
-            printf("%d\t", j);
+            printf("%li\t", j);
         }
         printf("\n");
     }
@@ -277,3 +280,5 @@ void Calibration::RequestCalibrationOnReboot() {
     model->SetCalibrateOnReboot(true);
 #endif
 }
+
+#pragma GCC diagnostic pop

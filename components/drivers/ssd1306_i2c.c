@@ -29,6 +29,7 @@ SOFTWARE.
 
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "rom/gpio.h"
 
 #include "ssd1306.h"
 
@@ -46,7 +47,7 @@ void i2c_master_init(SSD1306_t * dev, int16_t sda, int16_t scl, int16_t reset)
 		.master.clk_speed = 1000000
 	};
 	i2c_param_config(I2C_NUM_0, &i2c_config);
-	i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
+	i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, ESP_INTR_FLAG_SHARED|ESP_INTR_FLAG_LOWMED);
 
 	if (reset >= 0) {
 		gpio_pad_select_gpio(reset);

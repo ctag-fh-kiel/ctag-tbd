@@ -220,4 +220,57 @@ uint32_t FV3_(utils)::getSIMDFlag() {
     return simdFlag;
 }
 
+#define MAX_ALLOCS 30 // empirically determined
+static size_t blockMemSize = 0;
+static void *blockMem = nullptr;
+static void *allocsSPIRAM[MAX_ALLOCS];
+static int allocating = 0;
+static int freeing = 0;
+
+#include "esp_heap_caps.h"
+#include "esp_log.h"
+#include <cassert>
+#include "memory/tinyalloc.h"
+
+void FV3_(utils)::SetBlockMemory(size_t size, void* blockMemory){
+    blockMemSize = size;
+    blockMem = blockMemory;
+    freeing= 0;
+    allocating= 0;
+    memset(allocsSPIRAM, 0, sizeof(void*) * MAX_ALLOCS);
+    ta_init(blockMem, static_cast<char*>(blockMem) + blockMemSize, MAX_ALLOCS, 16, 1);
+}
+
+void *FV3_(utils)::fv3_malloc(size_t size){
+    void *ptr = nullptr;
+    ESP_LOGD("fv3", "Trying Blockmemalloc");
+    ptr = ta_alloc(size);
+    if(ptr != nullptr){
+        return ptr;
+    }
+    ESP_LOGD("fv3", "Falling back to regular malloc prefer internal, then SPIRAM");
+    ptr = heap_caps_malloc_prefer(size, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+    for(int i = 0; i < MAX_ALLOCS; i++){
+        if(allocsSPIRAM[i] == nullptr){
+            allocsSPIRAM[i] = ptr;
+            break;
+        }
+    }
+    return ptr;
+}
+
+void FV3_(utils)::fv3_free(void *ptr){
+    for(int i = 0; i < MAX_ALLOCS; i++){
+        if(allocsSPIRAM[i] == ptr){
+            allocsSPIRAM[i] = nullptr;
+            ESP_LOGD("fv3", "Freeing regular malloc");
+            heap_caps_free(ptr);
+            return;
+        }
+    }
+    ESP_LOGD("fv3", "Freeing Blockmem");
+    ta_free(ptr);
+}
+
+
 #include "fv3_ns_end.h"

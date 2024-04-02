@@ -75,16 +75,16 @@ esp_err_t OTAManager::PostHandlerApp(httpd_req_t *req) {
 
     if (configured != running) {
         ESP_LOGW("OTA",
-                 "Configured OTA boot partition at offset 0x%08x, but running from offset 0x%08x",
+                 "Configured OTA boot partition at offset 0x%08li, but running from offset 0x%08li",
                  configured->address, running->address);
         ESP_LOGW("OTA",
                  "(This can happen if either the OTA boot data or preferred boot image become corrupted somehow.)");
     }
-    ESP_LOGD("OTA", "Running partition type %d subtype %d (offset 0x%08x)",
+    ESP_LOGD("OTA", "Running partition type %i subtype %i (offset 0x%08li)",
              running->type, running->subtype, running->address);
 
     update_partition = esp_ota_get_next_update_partition(NULL);
-    ESP_LOGD("OTA", "Writing to partition subtype %d at offset 0x%x",
+    ESP_LOGD("OTA", "Writing to partition subtype %i at offset 0x%li",
              update_partition->subtype, update_partition->address);
 
     if (update_partition == NULL) {
@@ -107,9 +107,9 @@ esp_err_t OTAManager::PostHandlerApp(httpd_req_t *req) {
     ESP_LOGI("OTA", "Running partition: %s",
              running->label);
 
-    ESP_LOGD("OTA", "Update partition size: %d",
+    ESP_LOGD("OTA", "Update partition size: %li",
              update_partition->size);
-    ESP_LOGD("OTA", "Update partition address: 0x%X",
+    ESP_LOGD("OTA", "Update partition address: 0x%li",
              update_partition->address);
 
     int binary_file_length = 0;
@@ -217,13 +217,13 @@ esp_err_t OTAManager::flashSPIFFS() {
     }
 
     const esp_partition_t *p = esp_partition_get(pi);
-    ESP_LOGI("OTA", "Found partition %s, size %08x, address %08x", p->label, p->size, p->address);
+    ESP_LOGI("OTA", "Found partition %s, size %08li, address %08li", p->label, p->size, p->address);
 
     if (p->size != spiffsImageSize) {
         ESP_LOGE("OTA", "SPIFFS image is incorrect size!");
         cleanup();
         esp_partition_iterator_release(pi);
-        return ESP_ERR_FLASH_SIZE_NOT_MATCH;
+        return ESP_ERR_FLASH_BASE;
     }
 
     ESP_LOGI("OTA", "Erasing...");
@@ -231,7 +231,7 @@ esp_err_t OTAManager::flashSPIFFS() {
         ESP_LOGE("OTA", "Error erasing SPIFFS flash partition!");
         cleanup();
         esp_partition_iterator_release(pi);
-        return ESP_ERR_FLASH_OP_FAIL;
+        return ESP_ERR_FLASH_BASE;
     }
 
     ESP_LOGI("OTA", "Flashing...");
@@ -252,10 +252,10 @@ esp_err_t OTAManager::flashSPIFFS() {
             ESP_LOGE("OTA", "Error writing SPIFFS flash partition!");
             cleanup();
             esp_partition_iterator_release(pi);
-            return ESP_ERR_FLASH_OP_FAIL;
+            return ESP_ERR_FLASH_BASE;
         }
         offset += size;
-        ESP_LOGI("OTA", "Flash writing, left %d", spiffsImageSize - offset);
+        ESP_LOGI("OTA", "Flash writing, left %li", spiffsImageSize - offset);
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 

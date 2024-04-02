@@ -278,7 +278,7 @@ float rough_sine_B_processed = 0.f;   // Simply precalculate the sine-wave outsi
   }
 }
 
-ctagSoundProcessorRetroactor::ctagSoundProcessorRetroactor()
+void ctagSoundProcessorRetroactor::Init(std::size_t blockSize, void *blockPtr)
 {
   // construct internal data model
   knowYourself();
@@ -295,7 +295,8 @@ ctagSoundProcessorRetroactor::ctagSoundProcessorRetroactor()
 
   // --- Initialize VULT stuff ---
   Rescomb_process_init(rescomb_data);   // Modified to use heap_caps_malloc()
-  rescomb_data._inst179._inst47a.bufferptr = (float*)heap_caps_malloc(sizeof(float)*675, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);
+  assert(blockSize >= sizeof(float)*675);
+  rescomb_data._inst179._inst47a.bufferptr = (float*) blockPtr;
   memset(rescomb_data._inst179._inst47a.bufferptr, 0, sizeof(float)*675);
 
   Ladder_process_init(ladder_data);     // Diode Ladder Filter with Heun based resonance frequency smoothing
@@ -304,7 +305,6 @@ ctagSoundProcessorRetroactor::ctagSoundProcessorRetroactor()
 
 ctagSoundProcessorRetroactor::~ctagSoundProcessorRetroactor()
 {
-  heap_caps_free(rescomb_data._inst179._inst47a.bufferptr);   // Free delay buffer of Resonant comb filter!
 }
 
 void ctagSoundProcessorRetroactor::knowYourself(){

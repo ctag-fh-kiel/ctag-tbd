@@ -33,12 +33,12 @@ namespace CTAG {
         class ctagSoundProcessorRompler : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorRompler();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
             virtual ~ctagSoundProcessorRompler();
 
         private:
             virtual void knowYourself() override;
-            std::unique_ptr<RomplerVoice> romplers[2];
+            RomplerVoice romplers[2];
             float out[32];
             bool preGate = false;
             bool bGate2 = false;

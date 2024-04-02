@@ -29,7 +29,7 @@ namespace CTAG {
         public:
             virtual void Process(const ProcessData &) override;
 
-            ctagSoundProcessorBCSR();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
         private:
 

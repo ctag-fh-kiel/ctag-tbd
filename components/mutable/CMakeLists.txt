@@ -1,14 +1,24 @@
 # add sources to config, headers added for intellij
 file(GLOB SRCS_FILES
-        eurorack/plaits/dsp/*.cc
-        eurorack/plaits/dsp/engine/*.cc
-        eurorack/plaits/dsp/speech/*.cc
-        eurorack/plaits/dsp/physical_modelling/*.cc
-        eurorack/plaits/resources.cc
         eurorack/plaits/dsp/*.h
+        eurorack/plaits/dsp/*.cc
+        eurorack/plaits/dsp/chords/*.cc
+        eurorack/plaits/dsp/downsampler/*.h
+        eurorack/plaits/dsp/drums/*.h
         eurorack/plaits/dsp/engine/*.h
+        eurorack/plaits/dsp/engine/*.cc
+        eurorack/plaits/dsp/engine2/*.cc
+        eurorack/plaits/dsp/fm/*.cc
+        eurorack/plaits/dsp/fm/*.h
+        eurorack/plaits/dsp/fx/*.cc
+        eurorack/plaits/dsp/noise/*.h
+        eurorack/plaits/dsp/oscillator/*.cc
+        eurorack/plaits/dsp/oscillator/*.h
+        eurorack/plaits/dsp/speech/*.cc
         eurorack/plaits/dsp/speech/*.h
         eurorack/plaits/dsp/physical_modelling/*.h
+        eurorack/plaits/dsp/physical_modelling/*.cc
+        eurorack/plaits/resources.cc
         eurorack/plaits/resources.h
         eurorack/rings/dsp/fm_voice.cc
         eurorack/rings/dsp/part.cc
@@ -17,7 +27,9 @@ file(GLOB SRCS_FILES
         eurorack/rings/dsp/resonator.cc
         eurorack/rings/resources.cc
         eurorack/tides2/poly_slope_generator.cc
-        eurorack/tides2/ramp_extractor.cc
+        eurorack/tides2/poly_slope_generator.h
+        eurorack/tides2/ramp/ramp_extractor.cc
+        eurorack/tides2/ramp/ramp_extractor.h
         eurorack/tides2/resources.cc
         eurorack/clouds/resources.cc
         eurorack/stmlib/utils/random.cc

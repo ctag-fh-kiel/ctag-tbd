@@ -28,7 +28,7 @@ namespace CTAG {
         class ctagSoundProcessorClaude : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorClaude();
+           virtual void Init(std::size_t blockSize, void *blockPtr) override;
             virtual ~ctagSoundProcessorClaude();
 
         private:

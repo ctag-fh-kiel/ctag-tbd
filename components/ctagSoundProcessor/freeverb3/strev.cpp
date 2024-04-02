@@ -32,7 +32,8 @@ const int32_t FV3_(strev)::idxLCo[] = {266, 2974, 1913, 1996, 1990, 187, 1066,};
 const int32_t FV3_(strev)::idxRCo[] = {353, 3627, 1228, 2673, 2111, 335, 121,};
 const int32_t FV3_(strev)::allpM_EXCURSION = 32;
 
-FV3_(strev)::FV3_(strev)() {
+void FV3_(strev)::init(size_t blockMemSize, void* blockMemory){
+    fv3::utils_f::SetBlockMemory(blockMemSize, blockMemory);
     //setSampleRate(44100.f);
     //setOSFactor(1);
     setRSFactor(1.f);
@@ -53,6 +54,10 @@ FV3_(strev)::FV3_(strev)() {
     setmodulationnoise1(0.05);
     setmodulationnoise2(0.03);
     setAutoDiff(true);
+}
+
+FV3_(strev)::FV3_(strev)() {
+    // moved to init
 }
 
 void FV3_(strev)::mute() {

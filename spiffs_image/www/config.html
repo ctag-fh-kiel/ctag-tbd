@@ -1,5 +1,4 @@
 <ons-page id="config">
-<ons-page id="config">
     <ons-toolbar>
         <div class="left">
             <ons-back-button>Config</ons-back-button>
@@ -135,7 +134,7 @@
             <ons-button id="reboot-calibration" style="margin-top: 10px;">Reboot, calibrate CVs</ons-button>
         </div>
     </ons-list-item>
-    <ons-modal direction="down">
+    <ons-modal id="cal-modal" direction="down">
         <div style="text-align: left">
             Calibration instructions:
             <ol>
@@ -181,8 +180,14 @@
             </ol>
         </div>
     </ons-modal>
+    <ons-modal id="modal-busy" direction="up">
+        <ons-icon icon="md-spinner" size="28px" spin></ons-icon>
+        Processing, please wait!
+    </ons-modal>
     <script>
         ons.getScriptPage().onInit = function () {
+            let cal_modal = $('#cal-modal');
+            let modal_busy = $('#modal-busy');
             this.querySelector('#go-cal-backup').onclick = function () {
                 window.open('calib.html', '_blank');
             };
@@ -283,6 +288,14 @@
                         );
                     });
                     $('#commit-wifi').on('click', function () {
+                        // if wifi password is shorter than 8 chars, do not commit
+                        if($('#pwd').val().length < 8 && $('#pwd').val().length != 0){
+                            ons.notification.toast('Password must be at least 8 characters long, or none!', {
+                                timeout: 3000,
+                                animation: 'fall'
+                            });
+                            return;
+                        }
                         cfgData.wifi.ssid = $('#ssid').val();
                         cfgData.wifi.pwd = $('#pwd').val();
                         cfgData.wifi.mode = $('#wifi-mode').val();
@@ -297,6 +310,7 @@
                     });
                     $('#download-backup').on('click', function () {
                         loadScript('/js/jszip.min.js', () => {
+                            modal_busy.show();
                             $.getq('myq',
                                 'api/v1/getPlugins',
                                 data => {
@@ -322,49 +336,64 @@
                                             favorites = data;
                                         }
                                     );
-                                    for (let i = 0; i < data.length; i++) {
-                                        let el = data[i];
-                                        if (i == data.length - 1) {
-                                            $.getq('myq',
-                                                'api/v1/getPresetData/' + el.id,
-                                                rdata => {
-                                                    let o = {
-                                                        id: el.id,
-                                                        presets: rdata,
-                                                    };
-                                                    presets.push(o);
-                                                    // last request completed
-                                                    let zip = new JSZip();
-                                                    presets.forEach(el => {
-                                                        zip.file('mp-' + el.id + '.jsn', JSON.stringify(el.presets));
-                                                    });
-                                                    let all = {
-                                                        presets: presets,
-                                                        calibration: calibration,
-                                                        configuration: configuration,
-                                                        favorites: favorites
-                                                    }
-                                                    zip.file('all.jsn', JSON.stringify(all));
-                                                    zip.generateAsync({type: "blob"})
-                                                        .then(function (content) {
-                                                            // see FileSaver.js
-                                                            saveAs(content, 'presets.zip');
-                                                        });
-                                                }
-                                            );
-                                        } else {
-                                            $.getq('myq',
-                                                'api/v1/getPresetData/' + el.id,
-                                                rdata => {
-                                                    let o = {
-                                                        id: el.id,
-                                                        presets: rdata
-                                                    };
-                                                    presets.push(o);
-                                                }
-                                            );
+                                    let nreceived = 0;
+                                    let nRetry = 0;
+                                    let el;
+                                    let cbFcn = rdata => {
+                                        presets.push(rdata);
+                                        nreceived++;
+                                        console.log('Received ' + nreceived + ' of ' + data.length + ' presets');
+                                        ons.notification.toast('Received plugin data ' + nreceived + ' out of ' + data.length, {
+                                            timeout: 250,
+                                            animation: 'none'
+                                        });
+                                        // if last request not completed spawn next
+                                        if(nreceived < data.length){
+                                            getPresetData();
+                                            return;
                                         }
+                                        let zip = new JSZip();
+                                        presets.forEach(el => {
+                                            zip.file('mp-' + el.id + '.jsn', JSON.stringify(el.presets));
+                                        });
+                                        let all = {
+                                            presets: presets,
+                                            calibration: calibration,
+                                            configuration: configuration,
+                                            favorites: favorites
+                                        }
+                                        zip.file('all.jsn', JSON.stringify(all));
+                                        zip.generateAsync({type: "blob"})
+                                            .then(function (content) {
+                                                // see FileSaver.js
+                                                saveAs(content, 'presets.zip');
+                                                modal_busy.hide();
+                                            });
                                     }
+                                    function getPresetData(){
+                                        el = data[nreceived];
+                                        $.getq('myq',
+                                            'api/v1/getPresetData/' + el.id,
+                                            cbFcn
+                                        )
+                                        .fail(
+                                            () => {
+                                                nRetry++;
+                                                if(nRetry > 20){
+                                                    console.error("Too many retries, aborting!");
+                                                    ons.notification.toast('Too many retries, aborting!', {
+                                                        timeout: 500,
+                                                        animation: 'none'
+                                                    });
+                                                    modal_busy.hide();
+                                                    return;
+                                                }
+                                                console.error("Error getting preset data for plugin " + el.id + " retrying...");
+                                                getPresetData();
+                                            }
+                                        );
+                                    }
+                                    getPresetData();
                                 }
                             );
                         });
@@ -380,11 +409,11 @@
                         });
                     });
                     $('#reboot-calibration').on('click', function () {
+                        cal_modal.show();
                         $.getq('myq',
                             '/api/v1/reboot',
                             {'calibration': '1'}
                         );
-                        document.querySelector('ons-modal').show();
                     });
                     $('#upload-backup').click(function () {
                         ons.notification.toast('Select all.jsn!', {
@@ -400,16 +429,9 @@
                         let reader = new FileReader();
                         reader.onload = function (event) {
                             let contents = event.target.result;
-                            try {
-                                let jsn = JSON.parse(contents);
-                                $('#uploadBackup').val('');
-                                performUploadBackup(jsn);
-                            } catch (e) {
-                                ons.notification.toast('Error parsing backup file!', {
-                                    timeout: 1000,
-                                    animation: 'fall'
-                                });
-                            }
+                            let jsn = JSON.parse(contents);
+                            $('#uploadBackup').val('');
+                            performUploadBackup(jsn);
                         }
                         reader.readAsText($('#uploadBackup').prop('files')[0]);
                     });
@@ -418,7 +440,7 @@
                         let fwImage = $('#app-binary').get(0).files[0];
                         if(spiffsImage == undefined || fwImage == undefined){
                             ons.notification.toast('Binary image files not defined', {
-                                timeout: 1000,
+                                timeout: 250,
                                 animation: 'fall'
                             });
                             return;
@@ -432,13 +454,13 @@
                             data: null,
                             success: function () {
                                 ons.notification.toast('Please wait some time until update is completed, I will notify you! DO NOT POWER DOWN!!!', {
-                                    timeout: 10000,
+                                    timeout: 2500,
                                     animation: 'fall'
                                 });
                             },
                             error: function () {
                                 ons.notification.toast('Error OTA 1!', {
-                                    timeout: 1000,
+                                    timeout: 250,
                                     animation: 'fall'
                                 });
                             }
@@ -468,7 +490,7 @@
                             },
                             error: function () {
                                 ons.notification.toast('Error OTA 2!', {
-                                    timeout: 1000,
+                                    timeout: 250,
                                     animation: 'fall'
                                 });
                             }
@@ -495,7 +517,7 @@
                             timeout: 60*1000,
                             success: function () {
                                 ons.notification.toast('Please wait some time until update is completed, I will notify you! DO NOT POWER DOWN!!!', {
-                                    timeout: 10000,
+                                    timeout: 2500,
                                     animation: 'fall'
                                 });
                                 $('#fw-progress').attr('value', '80');
@@ -503,7 +525,7 @@
                             },
                             error: function () {
                                 ons.notification.toast('Error OTA 3!', {
-                                    timeout: 1000,
+                                    timeout: 250,
                                     animation: 'fall'
                                 });
                             }
@@ -516,14 +538,14 @@
                                 $('#fw-progress').attr('value', '100');
                                 $('#fw-progress').attr('secondary-value', '100');
                                 ons.notification.toast('Update success, rebooting!', {
-                                    timeout: 1000,
+                                    timeout: 250,
                                     animation: 'fall'
                                 });
                                 setTimeout(function(){location.reload()}, 10000);
                             },
                             error: function () {
                                 ons.notification.toast('Error OTA 4!', {
-                                    timeout: 1000,
+                                    timeout: 250,
                                     animation: 'fall'
                                 });
                             }
@@ -551,6 +573,7 @@
             }
             function performUploadBackup(data){
                 // console.log(JSON.stringify(data.calibration));
+                modal_busy.show();
                 if(data.calibration !== null){
                     $.ajaxq('myq', {
                         url: '/api/v1/setCalibration',
@@ -558,13 +581,32 @@
                         data: JSON.stringify(data.calibration),
                         success: function () {
                             ons.notification.toast('Calibration data persisted!', {
-                                timeout: 1000,
+                                timeout: 250,
                                 animation: 'fall'
                             });
                         },
                         error: function () {
                             ons.notification.toast('Error persisting calibration data!', {
-                                timeout: 1000,
+                                timeout: 250,
+                                animation: 'fall'
+                            });
+                        }
+                    });
+                }
+                if(data.configuration !== null){
+                    $.ajaxq('myq', {
+                        url: '/api/v1/setConfiguration',
+                        type: 'post',
+                        data: JSON.stringify(data.configuration),
+                        success: function () {
+                            ons.notification.toast('Configuration data persisted!', {
+                                timeout: 250,
+                                animation: 'fall'
+                            });
+                        },
+                        error: function () {
+                            ons.notification.toast('Error persisting configuration data!', {
+                                timeout: 250,
                                 animation: 'fall'
                             });
                         }
@@ -581,7 +623,7 @@
                             },
                             error: function () {
                                 ons.notification.toast('Error persisting favorite ' + i + ' !', {
-                                    timeout: 1000,
+                                    timeout: 250,
                                     animation: 'fall'
                                 });
                             }
@@ -589,51 +631,148 @@
                     }
                 }
                 let presets = data.presets;
-                presets.forEach(plugin => {
-                    if(plugin.presets.patches.length == 0){
-                        console.log('No preset data for plugin ' + plugin.id);
+                // loading void on both channels, to conserve memory
+                $.getq('myq',
+                    'api/v1/setActivePlugin/0?id=Void'
+                );
+                $.getq('myq',
+                    'api/v1/setActivePlugin/1?id=Void'
+                );
+                let numberRetries = 0;
+                let aborted = false;
+                function recursiveIterate(presets_){
+                    if(numberRetries >= 10){
+                        if(!aborted){
+                            console.log('Too many retries, aborting!');
+                            ons.notification.toast('Too many retries, aborting!', {
+                                timeout: 500,
+                                animation: 'none'
+                            });
+                            setInterval( () => {
+                                modal_busy.hide();
+                                location.reload();
+                            }, 500);
+                        }
+                        aborted = true;
+                        return;
+                    }
+                    plugin = presets_.shift(); // take first element
+                    if(plugin === undefined){ // iteration finished
+                        modal_busy.hide();
+                        location.reload();
+                        return;
+                    }
+                    // log plugin id
+                    console.log('Restoring data from plugin ' + plugin.id);
+                    if(plugin.presets.patches.length === 0){
+                        console.error('No preset data for plugin ' + plugin.id);
                         return;
                     }
                     $.getq('myq',
                         '/api/v1/getPresetData/' + plugin.id,
                         data => {
+                            let error = false;
+                            // log data id and plugin id
+                            console.log('Plugin ' + plugin.id + ' verified data id ' + data.id + ' ' + (plugin.id===data.id).toString());
+                            ons.notification.toast('Verifying plugin ' + plugin.id, {
+                                timeout: 250,
+                                animation: 'none'
+                            });
+                            // check for errors
                             if(typeof data != "object"){
-                                console.log('Plugin not available: ' + plugin.id);
+                                console.error('Plugin not available: ' + plugin.id);
+                                error = true;
+                            }
+                            if(!data.hasOwnProperty('presets')){
+                                console.error('getPresetsResponse Error: ' + plugin.id);
+                                numberRetries++;
+                                presets_.push(plugin);
+                                recursiveIterate(presets_);
                                 return;
                             }
-                            if(data.patches.length == 0){
-                                console.log('No patches available in plugin ' + plugin.id);
-                                return;
+                            if(data.presets.patches.length === 0){
+                                console.error('No patches available in plugin ' + plugin.id);
+                                error = true;
                             }
-                            if(data.patches[0].params.length == 0){
-                                console.log('No patches available in plugin ' + plugin.id);
-                                return;
+                            if(data.presets.patches[0].params.length === 0){
+                                console.error('No patches available in plugin ' + plugin.id);
+                                error = true;
                             }
                             // check for parameters not available in backup data set and add
-                            data.patches[0].params.forEach(param => {
+                            data.presets.patches[0].params.forEach(param => {
                                 plugin.presets.patches.forEach( p => {
                                     const found = p.params.find(({id}) => id === param.id);
-                                    if(found == undefined){
-                                        console.log('Unknown new param ' + param.id + ' inserting!');
-                                        p.params.push(param);
+                                    if(found === undefined){
+                                        console.error('Unknown new parameter ' + param.id);
+                                        //p.params.push(param);
+                                        error = true;
                                     }
                                 });
                             });
                             // check for parameters not available on available plugin of TBD HW and drop
                             plugin.presets.patches.forEach(p => {
                                 p.params = p.params.filter(param => {
-                                    const found = data.patches[0].params.find(({id}) => id === param.id);
-                                    if(found == undefined) console.log('Removing old param ' + param.id);
-                                    return found != undefined;
+                                    const found = data.presets.patches[0].params.find(({id}) => id === param.id);
+                                    if(found === undefined){
+                                        console.error('Patch has old parameter ' + param.id);
+                                        error = true;
+                                    }
+                                    return found !== undefined;
                                 });
                             });
+                            if(error){
+                                ons.notification.toast('Error: Plugin ' + plugin.id + ' not restored!', {
+                                    timeout: 250,
+                                    animation: 'none'
+                                });
+                                // do not reiterate current plugin
+                                recursiveIterate(presets_);
+                                return;
+                            }
                             // overwrite existing preset storage
-                            $.postq('myq',
-                                '/api/v1/setPresetData/' + plugin.id,
-                                JSON.stringify(plugin.presets), 'json');
+                            console.log('spawning post for plugin ' + plugin.id);
+                            $.post('/api/v1/setPresetData/' + plugin.id,
+                                JSON.stringify(plugin.presets),
+                                data => {
+                                    // log data id and plugin id
+                                    console.log('Post response received: ' + data);
+                                    if(typeof data !== "object"){
+                                        console.error('Error restoring plugin ' + plugin.id);
+                                        console.error('Pushing back to queue');
+                                        presets_.push(plugin);
+                                    }
+                                    if(data.id !== plugin.id){
+                                        console.error('Error restoring plugin ' + plugin.id + ' data id mismatch: ' + data.id);
+                                        console.error('Pushing back to queue');
+                                        presets_.push(plugin);
+                                    }
+                                    ons.notification.toast('Remaining data sets: ' + presets_.length, {
+                                        timeout: 250,
+                                        animation: 'none'
+                                    });
+                                    recursiveIterate(presets_);
+                                }
+                            ).fail(
+                                () => {
+                                    numberRetries++;
+                                    console.error('Hard error set preset data, restoring plugin ' + plugin.id);
+                                    console.error('Possibly the socket closed? Retrying...');
+                                    presets_.push(plugin);
+                                    recursiveIterate(presets_);
+                                }
+                            );
+                        }
+                    ).fail(
+                        () => {
+                            numberRetries++;
+                            console.error('Hard error restoring get preset data, plugin ' + plugin.id);
+                            console.error('Possibly the socket closed? Retrying...');
+                            presets_.push(plugin);
+                            recursiveIterate(presets_);
                         }
                     );
-                });
+                }
+                recursiveIterate(presets);
             }
         };
     </script>

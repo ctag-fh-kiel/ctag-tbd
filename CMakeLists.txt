@@ -5,8 +5,10 @@ cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
 # pull in idf specific items, config vars etc.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
 
 project(ctag-tbd)
 
@@ -37,6 +39,10 @@ elseif(CONFIG_TBD_PLATFORM_AEM)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=4 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
     set(TBD_HW "AEM")
+elseif(CONFIG_TBD_PLATFORM_BBA)
+    idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=90 APPEND)
+    idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=40 APPEND)
+    set(TBD_HW "BBA")
 endif()
 
 # generate include definitions for hw + fw version
@@ -56,6 +62,12 @@ foreach(WWW_FILE ${WWW_FILES})
     list(APPEND GZIP_COMMANDS
             COMMAND gzip -9 ${CMAKE_BINARY_DIR}/spiffs_image/${WWW_FILE} )
 endforeach()
+if(NOT CONFIG_TBD_PLATFORM_BBA)
+    list(APPEND DEL_COMMANDS
+            COMMAND rm -f ${CMAKE_BINARY_DIR}/spiffs_image/data/sp/*DrumRack.jsn)
+    list(APPEND DEL_COMMANDS
+            COMMAND rm -f ${CMAKE_BINARY_DIR}/spiffs_image/dbup/sp/*DrumRack.jsn)
+endif()
 add_custom_target(copy-files ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
         # clean up
         COMMAND rm -rf ${CMAKE_BINARY_DIR}/spiffs_image
@@ -65,7 +77,7 @@ add_custom_target(copy-files ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
         ${GZIP_COMMANDS}
         # and create backup file structure (sometimes when the ESP's power is interrupted during flash writes, the SPIFFS file gets corrupted)
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image/data ${CMAKE_BINARY_DIR}/spiffs_image/dbup
+        ${DEL_COMMANDS}
         )
 
 littlefs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT DEPENDS copy-files)
-

@@ -29,10 +29,14 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorPolyPad::ctagSoundProcessorPolyPad() {
+void ctagSoundProcessorPolyPad::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
+
+    for(auto &s:v_voices){
+        s.Reset();
+    }
 
     quantizer.Init();
 }
@@ -43,12 +47,14 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
         data.buf[i * 2 + processCh] = 0.f;
     }
 
-    // kill unused chords, ugly but effective std c++, i think there's a better way in c++20
-    v_voices.erase(
-            std::remove_if(v_voices.begin(), v_voices.end(),
-                           [&](ChordSynth &v) { return v.IsDead(); }
-            ),
-            v_voices.end());
+    int32_t NCVoices = ncvoices;
+    CONSTRAIN(NCVoices, 1, 8)
+    if(preNCVoices != NCVoices){
+        for(auto &s:v_voices){
+            s.Reset();
+        }
+        preNCVoices = NCVoices;
+    }
 
     // start chord
     bool shouldTrigger = enableEG;
@@ -71,21 +77,19 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
     // start processing voices
     if (shouldTrigger) {
         // check if voice needs to be killed because too many are active
-        if (v_voices.size() > ncvoices) {
-            // sort vector according to voice time to live
-            sort(begin(v_voices), end(v_voices),
-                 [](ChordSynth &a, ChordSynth &b) { return a.GetTTL() > b.GetTTL(); }
-            );
-            // kill the one which is most quiet = shortest TTL
-            v_voices.erase(v_voices.end() - 1);
-        }
+
+        // sort array according to voice time to live, last in array has shortest TTL
+        sort(begin(v_voices), end(v_voices) - (8-NCVoices),
+             [](ChordSynth &a, ChordSynth &b) { return a.GetTTL() > b.GetTTL(); }
+        );
 
         // hold voices
         bool shouldHold = voicehold;
         if (trig_voicehold != -1) { shouldHold = data.trig[trig_voicehold] == 0 ? 1 : 0; } // inverted logic
         if (shouldHold) {
-            for (auto &v:v_voices) {
-                v.Hold();
+            for (int i=0;i<NCVoices-1;i++) {
+                if(!v_voices[i].IsDead())
+                    v_voices[i].Hold();
             }
         }
 
@@ -163,11 +167,19 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
         params.filter_type = filter_type;
         if (cv_filter_type != -1) { params.filter_type = fabsf(data.cv[cv_filter_type]) * 3.f; }
         CONSTRAIN(params.filter_type, 0, 2)
-        //printf("%f, %f, %f, %f\n", data.cv[0], data.cv[1], data.cv[2], data.cv[3]);
-        //PrintParams(params);
-        // make voice, constructor triggers playback
-        ChordSynth voice(params);
-        v_voices.push_back(voice);
+
+        // find a silent voice and activate
+        for(int i=0;i<NCVoices;i++){
+            // find a dead voice
+            if(v_voices[i].IsDead()){
+                v_voices[i].Init(params);
+                break;
+            }
+            // if none found, activate the last one
+            if(i == NCVoices-1){
+                v_voices[i].Init(params);
+            }
+        }
 
         latchVoice = true;
     }
@@ -189,11 +201,12 @@ void ctagSoundProcessorPolyPad::Process(const ProcessData &data) {
         CONSTRAIN(d, 0, 32767)
     }
 
-    for (auto &v:v_voices) {
-        v.SetCutoff(c);
-        v.SetResonance(r);
-        v.SetDetune(d);
-        v.Process(data.buf, processCh);
+    for (int i=0;i<NCVoices;i++) {
+        if(v_voices[i].IsDead()) continue;
+        v_voices[i].SetCutoff(c);
+        v_voices[i].SetResonance(r);
+        v_voices[i].SetDetune(d);
+        v_voices[i].Process(data.buf, processCh);
     }
 
     // apply gain

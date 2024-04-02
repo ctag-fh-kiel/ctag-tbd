@@ -128,22 +128,22 @@ namespace CTAG::SP::HELPERS {
     }
 
     void dsps_biquad_gen_lpf_f32(float *coeffs, float f, float qFactor) {
-        if (qFactor <= 0.0001) {
-            qFactor = 0.0001;
+        if (qFactor <= 0.0001f) {
+            qFactor = 0.0001f;
         }
-        float Fs = 1;
+        float Fs = 1.f;
 
-        float w0 = 2 * M_PI * f / Fs;
-        float c = cosf(w0);
-        float s = sinf(w0);
-        float alpha = s / (2 * qFactor);
+        float w0 = 2.f * PI * f / Fs;
+        float c = fastcos(w0);
+        float s = fastsin(w0);
+        float alpha = s / (2.f * qFactor);
 
-        float b0 = (1 - c) / 2;
-        float b1 = 1 - c;
+        float b0 = (1.f - c) / 2.f;
+        float b1 = 1.f - c;
         float b2 = b0;
-        float a0 = 1 + alpha;
-        float a1 = -2 * c;
-        float a2 = 1 - alpha;
+        float a0 = 1.f + alpha;
+        float a1 = -2.f * c;
+        float a2 = 1.f - alpha;
 
         coeffs[0] = b0 / a0;
         coeffs[1] = b1 / a0;
@@ -154,22 +154,22 @@ namespace CTAG::SP::HELPERS {
 
 
     void dsps_biquad_gen_hpf_f32(float *coeffs, float f, float qFactor) {
-        if (qFactor <= 0.0001) {
-            qFactor = 0.0001;
+        if (qFactor <= 0.0001f) {
+            qFactor = 0.0001f;
         }
-        float Fs = 1;
+        float Fs = 1.f;
 
-        float w0 = 2 * M_PI * f / Fs;
-        float c = cosf(w0);
-        float s = sinf(w0);
-        float alpha = s / (2 * qFactor);
+        float w0 = 2.f * PI * f / Fs;
+        float c = fastcos(w0);
+        float s = fastsin(w0);
+        float alpha = s / (2.f * qFactor);
 
-        float b0 = (1 + c) / 2;
-        float b1 = -(1 + c);
+        float b0 = (1.f + c) / 2.f;
+        float b1 = -(1.f + c);
         float b2 = b0;
-        float a0 = 1 + alpha;
-        float a1 = -2 * c;
-        float a2 = 1 - alpha;
+        float a0 = 1.f + alpha;
+        float a1 = -2.f * c;
+        float a2 = 1.f - alpha;
 
         coeffs[0] = b0 / a0;
         coeffs[1] = b1 / a0;
@@ -180,22 +180,22 @@ namespace CTAG::SP::HELPERS {
 
 
     void dsps_biquad_gen_bpf0db_f32(float *coeffs, float f, float qFactor) {
-        if (qFactor <= 0.0001) {
-            qFactor = 0.0001;
+        if (qFactor <= 0.0001f) {
+            qFactor = 0.0001f;
         }
-        float Fs = 1;
+        float Fs = 1.f;
 
-        float w0 = 2 * M_PI * f / Fs;
+        float w0 = 2.f * PI * f / Fs;
         float c = fastcos(w0);
         float s = fastsin(w0);
-        float alpha = s / (2 * qFactor);
+        float alpha = s / (2.f * qFactor);
 
         float b0 = alpha;
-        float b1 = 0;
+        float b1 = 0.f;
         float b2 = -alpha;
-        float a0 = 1 + alpha;
-        float a1 = -2 * c;
-        float a2 = 1 - alpha;
+        float a0 = 1.f + alpha;
+        float a1 = -2.f * c;
+        float a2 = 1.f - alpha;
 
         coeffs[0] = b0 / a0;
         coeffs[1] = b1 / a0;
@@ -238,7 +238,7 @@ namespace CTAG::SP::HELPERS {
         float f = t - fi;
         int i = (int) fi;
         cvt.f = (0.3371894346f * f + 0.657636276f) * f + 1.00172476f; /* compute 2^f */
-        cvt.i += (i << 23);                                          /* scale by 2^i */
+        cvt.i = cvt.i + (i << 23);                                          /* scale by 2^i */
         return cvt.f;
     }
 

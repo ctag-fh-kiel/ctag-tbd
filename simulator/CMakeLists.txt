@@ -39,37 +39,8 @@ endif()
 set(RTAUDIO_BUILD_STATIC_LIBS TRUE)
 add_subdirectory(rtaudio)
 
-#ctagSoundProcessor
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/iir/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/add/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/addc/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/mul/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/math/mulc/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/esp-dsp/modules/common/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable/eurorack)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/moog/MoogLadders/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fake-idf)
-
-set(COMPONENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor ${CMAKE_CURRENT_BINARY_DIR}/ctagsp)
-
-#mutable
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable ${CMAKE_CURRENT_BINARY_DIR}/mutable)
-
-#rapidjson
-file(GLOB RAPIDJSON_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson/rapidjson/*.h
-)
-
-#tinywav
-set(TINYWAV_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../components/tinywav/tinywav.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../components/tinywav/tinywav.c
-        )
-
 #esp-dsp
-set(ESP_DSP_DIR "../components/esp-dsp")
+set(ESP_DSP_DIR "../managed_components/espressif__esp-dsp")
 set(ESP_DSP_SRC_FILES  "${ESP_DSP_DIR}/modules/common/misc/dsps_pwroftwo.cpp"
         "${ESP_DSP_DIR}/modules/dotprod/float/dsps_dotprod_f32_ansi.c"
         "${ESP_DSP_DIR}/modules/dotprod/float/dsps_dotprode_f32_ansi.c"
@@ -127,8 +98,32 @@ set(ESP_DSP_INC_DIRS   "${ESP_DSP_DIR}/modules/dotprod/include"
 add_library(esp-dsp STATIC ${ESP_DSP_SRC_FILES})
 target_include_directories(esp-dsp PRIVATE ${ESP_DSP_INC_DIRS})
 
+#ctagSoundProcessor
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson)
+include_directories(${ESP_DSP_INC_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable/eurorack)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../components/moog/MoogLadders/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fake-idf)
+
+set(COMPONENT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/ctagSoundProcessor ${CMAKE_CURRENT_BINARY_DIR}/ctagsp)
+
+#mutable
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../components/mutable ${CMAKE_CURRENT_BINARY_DIR}/mutable)
+
+#rapidjson
+file(GLOB RAPIDJSON_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/../components/rapidjson/rapidjson/*.h
+)
+
+#tinywav
+set(TINYWAV_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/tinywav/tinywav.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/tinywav/tinywav.c
+        )
+
 ## Application
-set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_LIBS OFF) # set to ON if you want to use static boost libraries
 find_package(Boost 1.67.0 COMPONENTS system thread filesystem program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "could not find Boost!")
@@ -140,6 +135,7 @@ set(SRC_FILES2
         "../main/FavoritesModel.cpp"
         "fake-idf/esp_heap_caps.c"
         "fake-idf/esp_spi_flash.c"
+        "fake-idf/esp_flash.c"
         )
 
 add_executable(tbd-sim ${SRC_FILES} ${SRC_FILES2} ${RAPIDJSON_FILES} ${TINYWAV_FILES})
@@ -153,6 +149,7 @@ if(WIN32)
 else()
     target_link_libraries(tbd-sim simple-web-server)
     target_link_libraries(tbd-sim rtaudio ctagsp mutable esp-dsp)
+    message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
     target_link_libraries(tbd-sim ${Boost_LIBRARIES})
 endif()
 target_include_directories(tbd-sim PRIVATE ${Boost_INCLUDE_DIR})
@@ -192,8 +189,8 @@ SET(CPACK_PACKAGE_VENDOR "ctag-tbd")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/readme.md")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE")
 
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "9")
-SET(CPACK_PACKAGE_VERSION_PATCH "18")
+SET(CPACK_PACKAGE_VERSION_MAJOR "1")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
 #SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
 include(CPack)

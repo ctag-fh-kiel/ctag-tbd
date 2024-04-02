@@ -32,15 +32,14 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorGDVerb::ctagSoundProcessorGDVerb() {
+void ctagSoundProcessorGDVerb::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
+    strev.init(blockSize, blockPtr);
     strev.setSampleRate(44100.f);
     strev.mute();
-    ESP_LOGE("GDVERB", "os fac %d, total fs %f, fs %f", strev.getOSFactor(), strev.getTotalSampleRate(),
-             strev.getSampleRate());
 }
 
 void ctagSoundProcessorGDVerb::Process(const ProcessData &data) {

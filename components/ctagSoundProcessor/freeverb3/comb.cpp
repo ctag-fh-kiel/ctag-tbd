@@ -22,14 +22,12 @@
 #include "comb.hpp"
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
-#include "esp_heap_caps.h"
-#include "esp_log.h"
 
 // simple comb filter
 
 FV3_(comb)::FV3_(comb)() {
     bufsize = bufidx = 0;
-    buffer = NULL;
+    buffer = nullptr;
     setdamp(0);
     feedback = filterstore = 0;
 }
@@ -44,25 +42,10 @@ int32_t FV3_(comb)::getsize() {
 
 void FV3_(comb)::setsize(int32_t size) {
     if (size <= 0) return;
-    fv3_float_t *new_buffer = NULL;
-
-    //ESP_LOGE("comb", "Trying mem alloc!");
-    new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(new_buffer == NULL){
-        //ESP_LOGE("comb", "Cannot alloc mem trying SPIRAM!");
-        new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(new_buffer == NULL) {
-            ESP_LOGE("comb", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }
-    /*
-    else{
-        ESP_LOGE("comb", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }
-    */
-
+    fv3_float_t *new_buffer = nullptr;
+    
+    new_buffer = (float*) utils_f::fv3_malloc(size * sizeof(float));
+    
     FV3_(utils)::mute(new_buffer, size);
 
     if (bufsize > 0 && bufsize <= size) {
@@ -84,15 +67,15 @@ void FV3_(comb)::setsize(int32_t size) {
 }
 
 void FV3_(comb)::free() {
-    if (buffer == NULL || bufsize == 0) return;
-    heap_caps_free(buffer);
-    buffer = NULL;
+    if (buffer == nullptr || bufsize == 0) return;
+    utils_f::fv3_free(buffer);
+    buffer = nullptr;
     bufidx = bufsize = 0;
     filterstore = 0;
 }
 
 void FV3_(comb)::mute() {
-    if (buffer == NULL || bufsize == 0) return;
+    if (buffer == nullptr || bufsize == 0) return;
     FV3_(utils)::mute(buffer, bufsize);
     filterstore = 0;
     bufidx = 0;
@@ -115,7 +98,7 @@ fv3_float_t FV3_(comb)::getfeedback() {
 
 FV3_(combm)::FV3_(combm)() {
     bufsize = readidx = writeidx = delaysize = modulationsize = 0;
-    buffer = NULL;
+    buffer = nullptr;
     setdamp(0);
     feedback = 1;
     z_1 = filterstore = modulationsize_f = 0;
@@ -147,21 +130,9 @@ void FV3_(combm)::setsize(int32_t size, int32_t modsize) {
     if (modsize < 0) modsize = 0;
     if (modsize > size) modsize = size;
     int32_t newsize = size + modsize;
-    fv3_float_t *new_buffer = NULL;
+    fv3_float_t *new_buffer = nullptr;
 
-    //ESP_LOGE("combm", "Trying mem alloc!");
-    new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(new_buffer == NULL){
-        ESP_LOGE("combm", "Cannot alloc mem trying SPIRAM!");
-        new_buffer = (float*) heap_caps_malloc(size * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(new_buffer == NULL) {
-            ESP_LOGE("combm", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-    }/*else{
-        ESP_LOGE("combm", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(size * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }*/
+    new_buffer = (float*) utils_f::fv3_malloc(size * sizeof(float));
 
     FV3_(utils)::mute(new_buffer, newsize);
 
@@ -177,15 +148,15 @@ void FV3_(combm)::setsize(int32_t size, int32_t modsize) {
 }
 
 void FV3_(combm)::free() {
-    if (buffer == NULL || bufsize == 0) return;
-    heap_caps_free(buffer);
-    buffer = NULL;
+    if (buffer == nullptr || bufsize == 0) return;
+    utils_f::fv3_free(buffer);
+    buffer = nullptr;
     writeidx = bufsize = 0;
     z_1 = filterstore = 0;
 }
 
 void FV3_(combm)::mute() {
-    if (buffer == NULL || bufsize == 0) return;
+    if (buffer == nullptr || bufsize == 0) return;
     FV3_(utils)::mute(buffer, bufsize);
     writeidx = 0;
     filterstore = z_1 = 0;

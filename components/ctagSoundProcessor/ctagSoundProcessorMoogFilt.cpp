@@ -21,32 +21,20 @@ respective component folders / files if different from this license.
 
 #include "ctagSoundProcessorMoogFilt.hpp"
 #include <iostream>
-#include "SimplifiedModel.h"
-#include "MusicDSPModel.h"
-#include "OberheimVariationModel.h"
-#include "HuovilainenModel.h"
-#include "KrajeskiModel.h"
-#include "StilsonModel.h"
-
-/*
-#include "MicrotrackerModel.h"
-#include "RKSimulationModel.h"
-#include "ImprovedModel.h"
-*/
 
 using namespace CTAG::SP;
 
-ctagSoundProcessorMoogFilt::ctagSoundProcessorMoogFilt() {
+void ctagSoundProcessorMoogFilt::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    ladderFilters[0] = std::make_unique<SimplifiedMoog>(44100.f);
-    ladderFilters[1] = std::make_unique<MusicDSPMoog>(44100.f);
-    ladderFilters[2] = std::make_unique<OberheimVariationMoog>(44100.f);
-    ladderFilters[3] = std::make_unique<HuovilainenMoog>(44100.f);
-    ladderFilters[4] = std::make_unique<KrajeskiMoog>(44100.f);
-    ladderFilters[5] = std::make_unique<StilsonMoog>(44100.f);
+    ladderFilters[0] = &simplifiedMoog;
+    ladderFilters[1] = &musicDSPMoog;
+    ladderFilters[2] = &oberheimVariationMoog;
+    ladderFilters[3] = &huovilainenMoog;
+    ladderFilters[4] = &krajeskiMoog;
+    ladderFilters[5] = &stilsonMoog;
 /* these models are too much for the ESP without further optimizations
     ladderFilters[4] = std::make_unique<ImprovedMoog>(44100.f);
     ladderFilters[6] = std::make_unique<MicrotrackerMoog>(44100.f);

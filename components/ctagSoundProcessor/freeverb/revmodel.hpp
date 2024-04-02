@@ -17,6 +17,8 @@ class revmodel {
 public:
     revmodel();
 
+    void init(int memSize, void* memPtr);
+
     ~revmodel();
 
     void mute();

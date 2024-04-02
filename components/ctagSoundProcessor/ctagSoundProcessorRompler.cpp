@@ -44,22 +44,22 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data) {
     preGateLatch = bGate;
     if(bDuo){
         if(bGate2 != preGate && bGate2 == true){
-            romplers[nextVoice]->params.gate = bGate2;
+            romplers[nextVoice].params.gate = bGate2;
             activeVoice = nextVoice;
         }else if(bGate2 != preGate && bGate2 == false){
-            romplers[activeVoice]->params.gate = bGate2;
+            romplers[activeVoice].params.gate = bGate2;
             nextVoice = (nextVoice+1)%2;
         }
         preGate = bGate2;
     }else{
-        romplers[activeVoice]->params.gate = bGate2;
+        romplers[activeVoice].params.gate = bGate2;
         nextVoice = (activeVoice+1)%2;
-        romplers[(activeVoice+1)%2]->Reset();
+        romplers[(activeVoice+1)%2].Reset();
     }
 
     // slice selection
     MK_BOOL_PAR(bSliceOnTrg, slontrg)
-    romplers[activeVoice]->params.sliceLock = bSliceOnTrg;
+    romplers[activeVoice].params.sliceLock = bSliceOnTrg;
     MK_INT_PAR_ABS(iBank, bank, 32.f)
     CONSTRAIN(iBank, 0, 31)
     MK_INT_PAR_ABS(iSlice, slice, 32.f)
@@ -68,37 +68,37 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data) {
     iSlice = iBank * 32 + iSlice;
     if(bSkipWt)
         iSlice += sampleRom.GetFirstNonWaveTableSlice();
-    romplers[activeVoice]->params.slice = iSlice;
+    romplers[activeVoice].params.slice = iSlice;
 
     // pitch related items
     MK_FLT_PAR_ABS_SFT(fSpeed, speed, 2048.f, 2.f)
-    romplers[activeVoice]->params.playbackSpeed = fSpeed;
+    romplers[activeVoice].params.playbackSpeed = fSpeed;
     float fPitch = pitch;
     if(cv_pitch != -1){
         fPitch += data.cv[cv_pitch] * 12.f * 5.f;
     }
-    romplers[activeVoice]->params.pitch = fPitch;
+    romplers[activeVoice].params.pitch = fPitch;
     MK_FLT_PAR_ABS_SFT(fTune, tune, 2048.f, 12.f)
-    romplers[activeVoice]->params.tune = fTune;
+    romplers[activeVoice].params.tune = fTune;
 
     // offsets
     MK_FLT_PAR_ABS(fStart, start, 1048576.f, 1.f)
-    romplers[activeVoice]->params.startOffsetRelative = fStart;
+    romplers[activeVoice].params.startOffsetRelative = fStart;
     MK_FLT_PAR_ABS(fLength, length, 1048576.f, 1.f)
-    romplers[activeVoice]->params.lengthRelative = fLength;
+    romplers[activeVoice].params.lengthRelative = fLength;
 
     // gain
     MK_FLT_PAR_ABS(fGain, gain, 4095.f, 2.f)
-    romplers[activeVoice]->params.gain = fGain;
+    romplers[activeVoice].params.gain = fGain;
 
     // bit rate reduction
     MK_INT_PAR_ABS(iBrr, brr, 16)
     CONSTRAIN(iBrr, 0, 14)
-    romplers[activeVoice]->params.bitReduction = iBrr;
+    romplers[activeVoice].params.bitReduction = iBrr;
 
     // adsr
     MK_BOOL_PAR(bEGSync, egstop)
-    romplers[activeVoice]->params.egSync = bEGSync;
+    romplers[activeVoice].params.egSync = bEGSync;
     MK_BOOL_PAR(bEGSlow, egfasl)
     MK_FLT_PAR_ABS(fAttack, attack, 4095.f, 10.f)
     MK_FLT_PAR_ABS(fDecay, decay, 4095.f, 10.f)
@@ -109,57 +109,57 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data) {
         fDecay *= 30.f;
         fRelease *= 30.f;
     }
-    romplers[activeVoice]->params.a = fAttack;
-    romplers[activeVoice]->params.d = fDecay;
-    romplers[activeVoice]->params.s = fSustain;
-    romplers[activeVoice]->params.r = fRelease;
+    romplers[activeVoice].params.a = fAttack;
+    romplers[activeVoice].params.d = fDecay;
+    romplers[activeVoice].params.s = fSustain;
+    romplers[activeVoice].params.r = fRelease;
 
     // adsr modulation
     MK_FLT_PAR_ABS_SFT(fEGAM, eg2am, 4095.f, 1.f)
-    romplers[activeVoice]->params.egAM = fEGAM;
+    romplers[activeVoice].params.egAM = fEGAM;
     MK_FLT_PAR_ABS_SFT(fEGFM, eg2fm, 4095.f, 12.f)
-    romplers[activeVoice]->params.egFM = fEGFM;
+    romplers[activeVoice].params.egFM = fEGFM;
     MK_FLT_PAR_ABS_SFT(fEGFMFilt, eg2filtfm, 4095.f, 1.f)
-    romplers[activeVoice]->params.egFMFilter = fEGFMFilt;
+    romplers[activeVoice].params.egFMFilter = fEGFMFilt;
 
     // filter params
     MK_FLT_PAR_ABS(fCut, fcut, 4095.f, 1.f)
-    romplers[activeVoice]->params.cutoff = fCut;
+    romplers[activeVoice].params.cutoff = fCut;
     MK_FLT_PAR_ABS(fReso, freso, 4095.f, 20.f)
-    romplers[activeVoice]->params.resonance = fReso;
+    romplers[activeVoice].params.resonance = fReso;
     MK_INT_PAR_ABS(iFType, fmode, 4.f)
     CONSTRAIN(iFType, 0, 3);
-    romplers[activeVoice]->params.filterType = static_cast<RomplerVoice::FilterType>(iFType);
+    romplers[activeVoice].params.filterType = static_cast<RomplerVoice::FilterType>(iFType);
 
     // loop params
     MK_FLT_PAR_ABS(fLoopPos, lpstart, 1048576.f, 1.f)
-    romplers[activeVoice]->params.loopMarker = fLoopPos;
+    romplers[activeVoice].params.loopMarker = fLoopPos;
     MK_BOOL_PAR(bLoop, loop)
-    romplers[activeVoice]->params.loop = bLoop;
+    romplers[activeVoice].params.loop = bLoop;
     MK_BOOL_PAR(bLoopPipo, looppipo)
-    romplers[activeVoice]->params.loopPiPo = bLoopPipo;
+    romplers[activeVoice].params.loopPiPo = bLoopPipo;
 
     // modulation LFO
     MK_FLT_PAR_ABS(fLFOSpeed, lfospeed, 4095.f, 20.f)
-    romplers[activeVoice]->params.lfoSpeed = fLFOSpeed;
+    romplers[activeVoice].params.lfoSpeed = fLFOSpeed;
     MK_FLT_PAR_ABS(fLFOAM, lfo2am, 4095.f, 1.f)
-    romplers[activeVoice]->params.lfoAM = fLFOAM;
+    romplers[activeVoice].params.lfoAM = fLFOAM;
     MK_FLT_PAR_ABS(fLFOFM, lfo2fm, 4095.f, 12.f)
-    romplers[activeVoice]->params.lfoFM = fLFOFM;
+    romplers[activeVoice].params.lfoFM = fLFOFM;
     MK_FLT_PAR_ABS(fLFOFMFilt, lfo2filtfm, 4095.f, 1.f)
-    romplers[activeVoice]->params.lfoFMFilter = fLFOFMFilt;
+    romplers[activeVoice].params.lfoFMFilter = fLFOFMFilt;
 
     if(bDuo){
-        romplers[0]->Process(out, bufSz);
+        romplers[0].Process(out, bufSz);
         for(int i=0;i<bufSz;i++){
             data.buf[i*2 + processCh] = out[i];
         }
-        romplers[1]->Process(out, bufSz);
+        romplers[1].Process(out, bufSz);
         for(int i=0;i<bufSz;i++){
             data.buf[i*2 + processCh] += out[i];
         }
     }else{
-        romplers[activeVoice]->Process(out, bufSz);
+        romplers[activeVoice].Process(out, bufSz);
         for(int i=0;i<bufSz;i++){
             data.buf[i*2 + processCh] = out[i];
         }
@@ -167,19 +167,18 @@ void ctagSoundProcessorRompler::Process(const ProcessData &data) {
 
 }
 
-ctagSoundProcessorRompler::ctagSoundProcessorRompler() {
+void ctagSoundProcessorRompler::Init(std::size_t blockSize, void *blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    // create voices
-    romplers[0] = std::make_unique<RomplerVoice>();
-    romplers[1] = std::make_unique<RomplerVoice>();
-
     // inits
     preGate = false;
     gate = false;
+
+    for(auto &r: romplers)
+        r.Init(44100.f);
 }
 
 ctagSoundProcessorRompler::~ctagSoundProcessorRompler() {

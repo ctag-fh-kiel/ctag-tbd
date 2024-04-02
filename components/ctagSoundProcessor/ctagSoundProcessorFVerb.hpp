@@ -31,7 +31,7 @@ namespace CTAG::SP {
     public:
         void Process(const ProcessData &) override;
 
-        ctagSoundProcessorFVerb();
+       virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
     private:
         virtual void knowYourself() override;

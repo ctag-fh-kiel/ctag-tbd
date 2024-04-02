@@ -72,9 +72,9 @@ namespace CTAG {
                 return model->GetCStrJSONSoundProcessorPresets(id);
             }
 
-            static void SetJSONSoundProcessorPreset(const string &id, const string &data) {
+            static void SetCStrJSONSoundProcessorPreset(const char* id, const char *data) {
                 ledBlink = 1;
-                model->SetJSONSoundProcessorPreset(id, data);
+                model->SetCStrJSONSoundProcessorPreset(id, data);
             }
 
             static void SetConfigurationFromJSON(const string &data);
@@ -103,7 +103,7 @@ namespace CTAG {
             static void updateConfiguration();
 
             static TaskHandle_t audioTaskH, ledTaskH;
-            static std::unique_ptr<ctagSoundProcessor> sp[2];
+            static ctagSoundProcessor *sp[2];
             static std::unique_ptr<SPManagerDataModel> model;
             static SemaphoreHandle_t processMutex;
             static atomic<uint32_t> ledBlink;

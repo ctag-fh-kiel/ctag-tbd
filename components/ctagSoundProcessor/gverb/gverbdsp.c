@@ -33,22 +33,43 @@
 #define TRUE 1
 #define FALSE 0
 
+static size_t blockSize = 0;
+static void* blockPtr = NULL;
+
+void gverb_set_blockbuffer(size_t size, void* ptr){
+    blockSize = size;
+    blockPtr = ptr;
+}
+
+void *gverb_malloc(size_t size){
+    assert(blockSize>=size);
+    void* ptr = blockPtr;
+    blockPtr = (uint8_t*)blockPtr + size;
+    blockSize -= size;
+    //fprintf(stderr, "Size left %ld\n", blockSize);
+    return ptr;
+}
+
+void gverb_free_malloc(void *p){
+    // do nothing
+}
+
 ty_diffuser *diffuser_make(int size, float coeff) {
     ty_diffuser *p;
     int i;
 
-    p = (ty_diffuser *) malloc(sizeof(ty_diffuser));
+    p = (ty_diffuser *) gverb_malloc(sizeof(ty_diffuser));
     p->size = size;
     p->coeff = coeff;
     p->idx = 0;
-    p->buf = (float *) malloc(size * sizeof(float));
-    for (i = 0; i < size; i++) p->buf[i] = 0.0;
+    p->buf = (float *) gverb_malloc(size * sizeof(float));
+    for (i = 0; i < size; i++) p->buf[i] = 0.0f;
     return (p);
 }
 
 void diffuser_free(ty_diffuser *p) {
-    free(p->buf);
-    free(p);
+    gverb_free_malloc(p->buf);
+    gverb_free_malloc(p);
 }
 
 void diffuser_flush(ty_diffuser *p) {
@@ -58,14 +79,14 @@ void diffuser_flush(ty_diffuser *p) {
 ty_damper *damper_make(float damping) {
     ty_damper *p;
 
-    p = (ty_damper *) malloc(sizeof(ty_damper));
+    p = (ty_damper *) gverb_malloc(sizeof(ty_damper));
     p->damping = damping;
     p->delay = 0.0f;
     return (p);
 }
 
 void damper_free(ty_damper *p) {
-    free(p);
+    gverb_free_malloc(p);
 }
 
 void damper_flush(ty_damper *p) {
@@ -76,18 +97,18 @@ ty_fixeddelay *fixeddelay_make(int size) {
     ty_fixeddelay *p;
     int i;
 
-    p = (ty_fixeddelay *) malloc(sizeof(ty_fixeddelay));
+    p = (ty_fixeddelay *) gverb_malloc(sizeof(ty_fixeddelay));
     p->size = size;
     p->idx = 0;
     p->buf = (float *) heap_caps_calloc(size * sizeof(float), 1, MALLOC_CAP_SPIRAM);
     //ESP_LOGI("GVERB DSP", "Allocated %d bytes for delay line %p", size*sizeof(float), p->buf);
-    for (i = 0; i < size; i++) p->buf[i] = 0.0;
+    for (i = 0; i < size; i++) p->buf[i] = 0.0f;
     return (p);
 }
 
 void fixeddelay_free(ty_fixeddelay *p) {
     heap_caps_free(p->buf);
-    free(p);
+    gverb_free_malloc(p);
 }
 
 void fixeddelay_flush(ty_fixeddelay *p) {

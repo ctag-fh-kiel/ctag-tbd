@@ -4,11 +4,9 @@
 // http://www.dreampoint.co.uk
 // This code is public domain
 
+#include <cassert>
 #include "revmodel.hpp"
-#include "esp_heap_caps.h"
 #include "esp_log.h"
-#include "esp_log.h"
-#include "esp_heap_caps.h"
 
 /*
 // Buffers for the combs
@@ -41,106 +39,6 @@ float	DRAM_ATTR bufallpassR4[allpasstuningR4];
  */
 
 revmodel::revmodel() {
-    uint32_t sz = combtuningL1 + combtuningR1 +
-                  combtuningL2 + combtuningR2 +
-                  combtuningL3 + combtuningR3 +
-                  combtuningL4 + combtuningR4 +
-                  combtuningL5 + combtuningR5 +
-                  combtuningL6 + combtuningR6 +
-                  combtuningL7 + combtuningR7 +
-                  combtuningL8 + combtuningR8 +
-                  allpasstuningL1 + allpasstuningR1 +
-                  allpasstuningL2 + allpasstuningR2 +
-                  allpasstuningL3 + allpasstuningR3 +
-                  allpasstuningL4 + allpasstuningR4;
-
-    // use internal ram, which will be always accessible, no cache misses!
-    // allocate one big chunk, otherwise ESP crashes :(
-    ESP_LOGE("FVERB", "Mem alloc try requested size %d, freesize %d, largest block %d!",
-             (int)(sz * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    allBuf = (float *) heap_caps_malloc(sz * sizeof(float), MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-
-    if (allBuf == NULL) {
-        allBuf = (float*) heap_caps_malloc(sz * sizeof(float), MALLOC_CAP_SPIRAM);
-        if(allBuf == NULL) {
-            ESP_LOGE("comb", "Cannot alloc mem on SPIRAM!");
-            return;
-        }
-        ESP_LOGE("FVERB", "Cannot alloc mem!");
-    }
-    else {
-        ESP_LOGE("FVERB", "Mem alloc success requested size %d, freesize %d, largest block %d!",
-                 (int)(sz * sizeof(float)), heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
-    }
-
-    float *fPtr = allBuf;
-    // Tie the components to their buffers
-    combL[0].setbuffer(fPtr, combtuningL1);
-    fPtr += combtuningL1;
-    combR[0].setbuffer(fPtr, combtuningR1);
-    fPtr += combtuningR1;
-    combL[1].setbuffer(fPtr, combtuningL2);
-    fPtr += combtuningL2;
-    combR[1].setbuffer(fPtr, combtuningR2);
-    fPtr += combtuningR2;
-    combL[2].setbuffer(fPtr, combtuningL3);
-    fPtr += combtuningL3;
-    combR[2].setbuffer(fPtr, combtuningR3);
-    fPtr += combtuningR3;
-    combL[3].setbuffer(fPtr, combtuningL4);
-    fPtr += combtuningL4;
-    combR[3].setbuffer(fPtr, combtuningR4);
-    fPtr += combtuningR4;
-    combL[4].setbuffer(fPtr, combtuningL5);
-    fPtr += combtuningL5;
-    combR[4].setbuffer(fPtr, combtuningR5);
-    fPtr += combtuningR5;
-    combL[5].setbuffer(fPtr, combtuningL6);
-    fPtr += combtuningL6;
-    combR[5].setbuffer(fPtr, combtuningR6);
-    fPtr += combtuningR6;
-    combL[6].setbuffer(fPtr, combtuningL7);
-    fPtr += combtuningL7;
-    combR[6].setbuffer(fPtr, combtuningR7);
-    fPtr += combtuningR7;
-    combL[7].setbuffer(fPtr, combtuningL8);
-    fPtr += combtuningL8;
-    combR[7].setbuffer(fPtr, combtuningR8);
-    fPtr += combtuningR8;
-    allpassL[0].setbuffer(fPtr, allpasstuningL1);
-    fPtr += allpasstuningL1;
-    allpassR[0].setbuffer(fPtr, allpasstuningR1);
-    fPtr += allpasstuningR1;
-    allpassL[1].setbuffer(fPtr, allpasstuningL2);
-    fPtr += allpasstuningL2;
-    allpassR[1].setbuffer(fPtr, allpasstuningR2);
-    fPtr += allpasstuningR2;
-    allpassL[2].setbuffer(fPtr, allpasstuningL3);
-    fPtr += allpasstuningL3;
-    allpassR[2].setbuffer(fPtr, allpasstuningR3);
-    fPtr += allpasstuningR3;
-    allpassL[3].setbuffer(fPtr, allpasstuningL4);
-    fPtr += allpasstuningL4;
-    allpassR[3].setbuffer(fPtr, allpasstuningR4);
-
-    // Set default values
-    allpassL[0].setfeedback(0.5f);
-    allpassR[0].setfeedback(0.5f);
-    allpassL[1].setfeedback(0.5f);
-    allpassR[1].setfeedback(0.5f);
-    allpassL[2].setfeedback(0.5f);
-    allpassR[2].setfeedback(0.5f);
-    allpassL[3].setfeedback(0.5f);
-    allpassR[3].setfeedback(0.5f);
-    setwet(initialwet);
-    setroomsize(initialroom);
-    setdry(initialdry);
-    setdamp(initialdamp);
-    setwidth(initialwidth);
-    setmode(initialmode);
-
-    // Buffer will be full of rubbish - so we MUST mute them
-    mute();
 }
 
 void revmodel::mute() {
@@ -345,7 +243,93 @@ void  revmodel::process(float *data, uint32_t numsamples) {
 }
 
 revmodel::~revmodel() {
-    heap_caps_free(allBuf);
+}
+
+void revmodel::init(int memSize, void *memPtr) {
+    uint32_t sz = combtuningL1 + combtuningR1 +
+                  combtuningL2 + combtuningR2 +
+                  combtuningL3 + combtuningR3 +
+                  combtuningL4 + combtuningR4 +
+                  combtuningL5 + combtuningR5 +
+                  combtuningL6 + combtuningR6 +
+                  combtuningL7 + combtuningR7 +
+                  combtuningL8 + combtuningR8 +
+                  allpasstuningL1 + allpasstuningR1 +
+                  allpasstuningL2 + allpasstuningR2 +
+                  allpasstuningL3 + allpasstuningR3 +
+                  allpasstuningL4 + allpasstuningR4;
+
+    assert(memSize >= sz * sizeof(float));
+    allBuf = (float *) memPtr;
+
+    float *fPtr = allBuf;
+    // Tie the components to their buffers
+    combL[0].setbuffer(fPtr, combtuningL1);
+    fPtr += combtuningL1;
+    combR[0].setbuffer(fPtr, combtuningR1);
+    fPtr += combtuningR1;
+    combL[1].setbuffer(fPtr, combtuningL2);
+    fPtr += combtuningL2;
+    combR[1].setbuffer(fPtr, combtuningR2);
+    fPtr += combtuningR2;
+    combL[2].setbuffer(fPtr, combtuningL3);
+    fPtr += combtuningL3;
+    combR[2].setbuffer(fPtr, combtuningR3);
+    fPtr += combtuningR3;
+    combL[3].setbuffer(fPtr, combtuningL4);
+    fPtr += combtuningL4;
+    combR[3].setbuffer(fPtr, combtuningR4);
+    fPtr += combtuningR4;
+    combL[4].setbuffer(fPtr, combtuningL5);
+    fPtr += combtuningL5;
+    combR[4].setbuffer(fPtr, combtuningR5);
+    fPtr += combtuningR5;
+    combL[5].setbuffer(fPtr, combtuningL6);
+    fPtr += combtuningL6;
+    combR[5].setbuffer(fPtr, combtuningR6);
+    fPtr += combtuningR6;
+    combL[6].setbuffer(fPtr, combtuningL7);
+    fPtr += combtuningL7;
+    combR[6].setbuffer(fPtr, combtuningR7);
+    fPtr += combtuningR7;
+    combL[7].setbuffer(fPtr, combtuningL8);
+    fPtr += combtuningL8;
+    combR[7].setbuffer(fPtr, combtuningR8);
+    fPtr += combtuningR8;
+    allpassL[0].setbuffer(fPtr, allpasstuningL1);
+    fPtr += allpasstuningL1;
+    allpassR[0].setbuffer(fPtr, allpasstuningR1);
+    fPtr += allpasstuningR1;
+    allpassL[1].setbuffer(fPtr, allpasstuningL2);
+    fPtr += allpasstuningL2;
+    allpassR[1].setbuffer(fPtr, allpasstuningR2);
+    fPtr += allpasstuningR2;
+    allpassL[2].setbuffer(fPtr, allpasstuningL3);
+    fPtr += allpasstuningL3;
+    allpassR[2].setbuffer(fPtr, allpasstuningR3);
+    fPtr += allpasstuningR3;
+    allpassL[3].setbuffer(fPtr, allpasstuningL4);
+    fPtr += allpasstuningL4;
+    allpassR[3].setbuffer(fPtr, allpasstuningR4);
+
+    // Set default values
+    allpassL[0].setfeedback(0.5f);
+    allpassR[0].setfeedback(0.5f);
+    allpassL[1].setfeedback(0.5f);
+    allpassR[1].setfeedback(0.5f);
+    allpassL[2].setfeedback(0.5f);
+    allpassR[2].setfeedback(0.5f);
+    allpassL[3].setfeedback(0.5f);
+    allpassR[3].setfeedback(0.5f);
+    setwet(initialwet);
+    setroomsize(initialroom);
+    setdry(initialdry);
+    setdamp(initialdamp);
+    setwidth(initialwidth);
+    setmode(initialmode);
+
+    // Buffer will be full of rubbish - so we MUST mute them
+    mute();
 }
 
 //ends

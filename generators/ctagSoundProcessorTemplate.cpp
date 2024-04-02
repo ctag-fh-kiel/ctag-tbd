@@ -5,14 +5,23 @@ using namespace CTAG::SP;
 void ctagSoundProcessorTemplate::Process(const ProcessData &data) {
 }
 
-ctagSoundProcessorTemplate::ctagSoundProcessorTemplate() {
+void ctagSoundProcessorTemplate::Init(std::size_t blockSize, void *blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
+
+    // check if blockMem is large enough
+    // blockMem is used just like larger blocks of heap memory
+    // assert(blockSize >= memLen);
+    // if memory larger than blockMem is needed, use heap_caps_malloc() instead with MALLOC_CAPS_SPIRAM
 }
 
+// no ctor, use Init() instead, is called from factory after successful creation
+// dtor
 ctagSoundProcessorTemplate::~ctagSoundProcessorTemplate() {
+    // no explicit freeing for blockMem needed, done by ctagSPAllocator
+    // explicit free is only needed when using heap_caps_malloc() with MALLOC_CAPS_SPIRAM
 }
 
 void ctagSoundProcessorTemplate::knowYourself(){

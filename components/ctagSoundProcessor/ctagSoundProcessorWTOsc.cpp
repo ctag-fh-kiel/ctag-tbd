@@ -20,7 +20,6 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagSoundProcessorWTOsc.hpp"
-#include "esp_heap_caps.h"
 #include "helpers/ctagNumUtil.hpp"
 #include "plaits/dsp/engine/engine.h"
 #include "braids/quantizer_scales.h"
@@ -32,13 +31,7 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     // wave select
     currentBank = wavebank;
     MK_FLT_PAR_ABS(fWave, wave, 4095.f, 1.f)
-    // smooth fWave
-    float w1 = fabsf(fWave - pre_fWt);
-    if(w1 > 0.02f) w1 = 5.f * w1;
-    if(w1 > 1.f) w1 = 1.f;
-    float w2 = 1.f - w1;
-    fWave = w1 * fWave + w2 * pre_fWt;
-    pre_fWt = fWave;
+
 
     if(lastBank != currentBank){ // this is slow, hence not modulated by CV
         prepareWavetables();
@@ -75,15 +68,12 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     // modulation LFO
     MK_FLT_PAR_ABS(fLFOSpeed, lfospeed, 4095.f, 20.f)
     MK_BOOL_PAR(bLFOSync, lfosync)
-    if(bLFOSync){
-        if(preGate != bGate && bGate == true){ // detect trigger
-            lfo.SetFrequencyPhase(fLFOSpeed, 0.f);
-        }else{
-            lfo.SetFrequency(fLFOSpeed);
-        }
-    }else{
+    bool trigger = preGate != bGate && bGate;
+    if(bLFOSync && trigger)
+        lfo.SetFrequencyPhase(fLFOSpeed, 0.f);
+    else
         lfo.SetFrequency(fLFOSpeed);
-    }
+
     preGate = bGate;
     MK_FLT_PAR_ABS(fLFOAM, lfo2am, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fLFOFM, lfo2fm, 4095.f, 12.f)
@@ -137,10 +127,17 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     float fWt = fWave + valADSR * fEGWave + valLFO * fLFOWave * 2.f;
     CONSTRAIN(fWt, 0.f, 1.f)
 
+    // detect very fast modulations and filter wave for respective frame
+    float deltaWt = fabsf(pre_fWt - fWt);
+    if(deltaWt > 0.1f){
+        trigger = true;
+    }
+    pre_fWt = fWt;
+
     // calc wave and apply filter
     float out[32] = {0.f};
     if(isWaveTableGood){
-        oscillator.Render(f0, fAM, fWt, wavetables, out, bufSz);
+        oscillator.Render(trigger, f0, fAM, fWt, wavetables, out, bufSz);
 
         switch(iFType){
             case 1:
@@ -162,7 +159,7 @@ void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     }
 }
 
-ctagSoundProcessorWTOsc::ctagSoundProcessorWTOsc() {
+void ctagSoundProcessorWTOsc::Init(std::size_t blockSize, void *blockPtr) {
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
@@ -171,12 +168,16 @@ ctagSoundProcessorWTOsc::ctagSoundProcessorWTOsc() {
     lfo.SetSampleRate( 44100.f / bufSz);
     lfo.SetFrequency(1.f);
     // alloc mem for one wavetable
-    buffer = (int16_t*)heap_caps_malloc(260*64*2, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT); // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
-    assert(buffer != NULL);
-    memset(buffer, 0, 260*64*2);
-    fbuffer = (float*)heap_caps_malloc(512*4, MALLOC_CAP_8BIT|MALLOC_CAP_INTERNAL); // buffer for wavetable prep computations
-    assert(fbuffer != NULL);
-    memset(fbuffer, 0, 512*4);
+    // 260 = wavetable size after prep, 64 wavetables, 2 bytes per sample (int16)
+    int totalBlockSzRequired = 260*64*2 + 512*4;
+    assert(totalBlockSzRequired < blockSize);
+    buffer = (int16_t*)blockPtr;
+    blockPtr = static_cast<uint8_t *>(blockPtr) + 260 * 64 * 2;
+    memset(buffer, 0, 260 * 64 * 2);
+    fbuffer = (float*)blockPtr;
+    memset(fbuffer, 0, 512 * 4);
+
+
     oscillator.Init();
     svf.Init();
     adsr.SetModeExp();
@@ -186,8 +187,6 @@ ctagSoundProcessorWTOsc::ctagSoundProcessorWTOsc() {
 }
 
 ctagSoundProcessorWTOsc::~ctagSoundProcessorWTOsc() {
-    heap_caps_free(buffer);
-    heap_caps_free(fbuffer);
 }
 
 void ctagSoundProcessorWTOsc::knowYourself(){

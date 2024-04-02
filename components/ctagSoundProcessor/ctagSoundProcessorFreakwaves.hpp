@@ -3,18 +3,17 @@
 #include "helpers/ctagRollingAverage.hpp"
 #include "plaits/dsp/oscillator/wavetable_oscillator.h"
 #include "plaits/dsp/physical_modelling/resonator.h"
-#include "synthesis/RomplerVoice.hpp"
+#include "plaits/dsp/engine/engine.h"
 #include "helpers/ctagFastMath.hpp"
 #include "helpers/ctagSineSource.hpp"
 #include "helpers/ctagNumUtil.hpp"
 #include "helpers/ctagADSREnv.hpp"
 #include "plaits/dsp/oscillator/wavetable_oscillator.h"
-#include "synthesis/RomplerVoice.hpp"
-#include "plaits/dsp/engine/engine.h"
-#include "helpers/ctagRollingAverage.hpp"
-#include "helpers/ctagFBDelayLine.hpp"
-#include "helpers/ctagWNoiseGen.hpp"
 #include "braids/quantizer.h"
+#include "helpers/ctagSampleRom.hpp"
+#include "helpers/ctagWNoiseGen.hpp"
+#include "helpers/ctagFBDelayLine.hpp"
+
 
 // --- Trigger/Gate values ---
 #define GATE_HIGH_NEW       2
@@ -28,14 +27,13 @@
 #define NUM_OF_LFOS_FW                7
 
 using namespace CTAG::SP::HELPERS;
-using namespace CTAG::SYNTHESIS;
 
 namespace CTAG {
     namespace SP {
         class ctagSoundProcessorFreakwaves : public ctagSoundProcessor {
         public:
             virtual void Process(const ProcessData &) override;
-            ctagSoundProcessorFreakwaves();
+            virtual void Init(std::size_t blockSize, void *blockPtr) override;
             virtual ~ctagSoundProcessorFreakwaves();
 
         private:
@@ -127,9 +125,9 @@ namespace CTAG {
             float f_pitch_stored_C_ = 0.f; // Most recent valid pitch of OSC C...
 
             // --- Delay ---
-            const uint32_t maxDelayLength;
+            const uint32_t maxDelayLength {88200};
             const uint32_t shorterMaxDelayLength = maxDelayLength / 4;    // We have an option to shorten the delay-range for slapback delays
-            HELPERS::ctagFBDelayLine dlyLine;
+            HELPERS::ctagFBDelayLine dlyLine {maxDelayLength};
             float m_DelayTime = 0.f;          // Hysteresis values... (avoiding too abrupt changes...)
             float m_DelayFeedback = 0.f;
 

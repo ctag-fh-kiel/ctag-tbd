@@ -44,6 +44,8 @@ namespace CTAG {
             static void Clear();
             static void ShowFavorite(int const &id, std::string const &name);
             static void ShowFWVersion();
+            static void ShowUserString(std::string const &s);
+            static void ShowUserString(std::vector<std::string> const &sv);
             static void PrepareDisplayFavoriteUString(int const &id, std::string const &name, std::string const &us);
             static void UpdateFavoriteUStringScroll();
             static void LoadFavorite(int const &id, std::string const &name);

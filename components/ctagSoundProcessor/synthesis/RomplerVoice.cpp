@@ -23,8 +23,6 @@ respective component folders / files if different from this license.
 #include <cmath>
 #include <cstring>
 #include "stmlib/dsp/dsp.h"
-#include "esp_heap_caps.h"
-#include "esp_log.h"
 #include "helpers/ctagFastMath.hpp"
 #include "dsps_biquad.h"
 #include "stmlib/dsp/units.h"
@@ -184,15 +182,15 @@ namespace CTAG::SYNTHESIS {
                         bufferStatus = BufferStatus::STOPPED;
                         return;
                     }
-                }
-
-                // obtain sample rom data
-                assert(readBufferLength <= (readBufferMaxSize - 4)); // beyond buffer size?
-                sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
-                // and write convert to float buffer
-                for (int i = 0; i < readBufferLength; i++) {
-                    readBufferFloat[i + 4] =
-                            static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
+                }else{
+                    // obtain sample rom data
+                    assert(readBufferLength <= (readBufferMaxSize - 4)); // beyond buffer size?
+                    sampleRom.ReadSlice(readBufferInt16, slice, readPos, readBufferLength);
+                    // and write convert to float buffer
+                    for (int i = 0; i < readBufferLength; i++) {
+                        readBufferFloat[i + 4] =
+                                static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
+                    }
                 }
 
                 // interpolate process buffer
@@ -516,7 +514,7 @@ namespace CTAG::SYNTHESIS {
 
     }
 
-    void RomplerVoice::Init(const float samplingRate, const uint32_t bufferSize) {
+    void RomplerVoice::Init(const float samplingRate) {
         fs = samplingRate;
         adsr.SetSampleRate(fs);
         adsr.SetModeExp();
@@ -528,24 +526,16 @@ namespace CTAG::SYNTHESIS {
 
     RomplerVoice::RomplerVoice() {
         memset(&params, 0, sizeof(Params));
-        readBufferFloat = (float *) heap_caps_malloc(readBufferMaxSize * sizeof(float),
-                                                MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        assert(readBufferFloat != NULL);
-        readBufferInt16 = (int16_t *) heap_caps_malloc(readBufferMaxSize * sizeof(float),
-                                                       MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        assert(readBufferInt16 != NULL);
-
         Reset();
     }
 
     RomplerVoice::~RomplerVoice() {
-        heap_caps_free(readBufferFloat);
-        heap_caps_free(readBufferInt16);
     }
 
     void RomplerVoice::processBlock(float *out, const uint32_t size) {
         // fade first incoming buffer
         if (bufferStatus == BufferStatus::READFIRST) {
+            readBufferFloat[0] = 0.001f * readBufferFloat[4];
             readBufferFloat[1] = 0.01f * readBufferFloat[4];
             readBufferFloat[2] = 0.1f * readBufferFloat[4];
             readBufferFloat[3] = 0.5f * readBufferFloat[4];

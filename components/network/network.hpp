@@ -2,6 +2,7 @@
 
 #include <string>
 #include "esp_event.h"
+#include "esp_netif.h"
 
 using namespace std;
 
