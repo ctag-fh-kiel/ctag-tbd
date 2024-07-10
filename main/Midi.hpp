@@ -23,7 +23,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include "esp_attr.h"
-#include "midiuart.hpp"
+#include <cstdint>
 
 
 // --- Define-contants for MIDI-mapping-related stuff --- 
