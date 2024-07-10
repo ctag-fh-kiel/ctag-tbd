@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 
 #include "Midi.hpp"
 #include "Favorites.hpp"
+#include "rp2040_spi_stream.hpp"
 
 using namespace CTAG::CTRL;
 
@@ -764,7 +765,7 @@ DRAM_ATTR static uint8_t msgBuffer[MIDI_BUF_SZ]; // ## ??? Message-buffer for MI
 
 // === Persistant variables for MIDI-parsing ===
 DRAM_ATTR static uint8_t missing_bytes_offset = 0;   // We may have to add that before we fetch our next buffer?
-DRAM_ATTR static int len = 0;
+DRAM_ATTR static uint32_t len = 0;
 DRAM_ATTR static uint8_t *ptr = NULL;
 static uint8_t current_status = 0;    // Current status byte to be remembered in case of a running-status situation
 static uint8_t loc_msg[8];            // Local message to be constructed in a running-status situation
@@ -795,6 +796,7 @@ void Midi::Init() {
            N_TRIGS);             // Reset "virtual Gate/Trigger"-data at startup (1==off aka TRIG_OFF)
     distribute.setCVandTriggerPointers(midi_data, midi_note_trig);    // Pass on pointer to CV and Trigger shared data
     CTAG::DRIVERS::tusbmidi::Init();
+    DRIVERS::rp2040_spi_stream::Init();
 }
 
 // ===  MIDI-parsing method (Please note: Running status is not processed correctly with this implementation!) ===
@@ -818,12 +820,15 @@ uint8_t *Midi::Update() {
             }
         }
         ================================================================== */
-        len2 =  CTAG::DRIVERS::tusbmidi::Read(&msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32);
+        len2 = CTAG::DRIVERS::tusbmidi::Read(&msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32);
 
         // get all available MIDI messages from UART
         if (missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) // safety margin
             midiuart_instance.read(&msgBuffer[missing_bytes_offset + len2], &len);  // Read UART data into MIDI-buffer
         len += len2;
+
+        // get all messages from rp2040
+        len += DRIVERS::rp2040_spi_stream::Read(&msgBuffer[missing_bytes_offset + len], MIDI_BUF_SZ - 32 - len);
 
         if (len == 0)                   // Nothing to process now, better luck next time?
             return buf0;                // We return the identical CV / Trigger data as last round
@@ -831,6 +836,7 @@ uint8_t *Midi::Update() {
         ptr = msgBuffer;                // We found a new message (or several new messages), reassign message-pointer!
         len += missing_bytes_offset;    // We may have incomplete messages from last round to process here, so we add their (partial) length, zero otherwise!
         missing_bytes_offset = 0;       // Reset missing-bytes counter, may be rearranged with next incomplete message due to incomplete buffering
+
     }
 #ifdef DEBUG_MIDI
     // debug buffer consumption

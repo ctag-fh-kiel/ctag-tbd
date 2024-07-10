@@ -4,7 +4,8 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020, 2024 by Robert Manzke. All rights reserved.
+(c) 2023 MIDI-Message-Parser aka 'bba_update()' by Mathias Brüssel.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -20,27 +21,19 @@ respective component folders / files if different from this license.
 ***************/
 
 #pragma once
-#include <cstdint>
 
-#define RX_BUF_SIZE 128
+#include "driver/spi_slave.h"
 
 namespace CTAG {
     namespace DRIVERS {
-        class midiuart final {
+        class rp2040_spi_stream final{
         public:
-            midiuart();
-
-            ~midiuart();
-
-            // function to write midi message
-            void write(uint8_t *data, std::size_t len);
-
-            void read(uint8_t *data, uint32_t *len);
-
-            void flush();
-
-            int GetBufferSize() const;
+            rp2040_spi_stream() = delete;
+            static void Init();
+            static uint32_t Read(uint8_t* data, uint32_t max_len);
+        private:
+            static spi_slave_transaction_t transaction[2];
+            static uint32_t currentTransaction;
         };
     }
 }
-
