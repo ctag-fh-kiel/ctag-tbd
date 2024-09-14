@@ -49,6 +49,7 @@ namespace CTAG {
             stmlib::Svf svf;
             int16_t *buffer = NULL;
             float *fbuffer = NULL;
+        	float fWave = 0.f;
             const int16_t *wavetables[64];
             int currentBank = 0;
             int lastBank = -1;
