@@ -58,6 +58,8 @@ namespace CTAG {
             int currentBank = 0;
             int lastBank = -1;
             bool isWaveTableGood = false;
+        	float fwave_1 = 0.f;
+        	float fwave_2 = 0.f;
             float valADSR_1 = 0.f;
             float valADSR_2 = 0.f; 
             float valLFO_1 = 0.f;
