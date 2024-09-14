@@ -37,10 +37,11 @@ respective component folders / files if different from this license.
 #define MIDI_GLOBAL_CHANNEL_14      13  // MIDI Channel for PolyPhonic roundrobin playmode, additional controls will be remapped to global channel
 #define MIDI_GLOBAL_CHANNEL_15      14  // MIDI Channel for Duophonic playmode, additional controls will be remapped to global channel
 #define MIDI_GLOBAL_CHANNEL_16      15  // MIDI Channel for Polyphonic playmode, additional controls will be remapped to global channelMIDI Channel 16 is secondary MPE-Master / provides logarithmic pitchbend (internally 15)
-#define IS_MONOPHONIC(chan)         (chan == 0)    // Global Channel 1 => Monophonic
-#define IS_PERCUSSION(chan)         (chan == 9)    // MIDI Channel 10, typically used for drums and percussions with GM (General MIDI standard)
+#define IS_MONOPHONIC(chan)         (chan==0)    // Global Channel 1 => Monophonic
+#define IS_PERCUSSION(chan)         (chan==9 || chan==10 || chan==11 || chan==12) // MIDI Channel 10-13 allow trigger-notes for typically percussive synths. (General MIDI standard supports 10 and 11 for drums)
+#define IGNORE_CHAN_6_TO_9(chan)    (ignore_channels_6to9 && (chan==5 || chan==6 || chan==7 || chan==8) ) // Returns true if channel to be ignored 
 #define IS_UPPER_GLOBAL(chan)       (chan > 12)    // Macro-Funktion to determine if channel is withing the range of MIDI-Channels 14 to 16
-#define IS_DUOPHONIC(chan)          ((channel==MIDI_GLOBAL_CHANNEL_14) || (channel==MIDI_GLOBAL_CHANNEL_15))   // A/B or C/D Duophonic?
+#define IS_DUOPHONIC(chan)          (channel==MIDI_GLOBAL_CHANNEL_14 || channel==MIDI_GLOBAL_CHANNEL_15)   // A/B or C/D Duophonic?
 #define IS_DUO_AB(chan)             (channel==MIDI_GLOBAL_CHANNEL_14)   // A/B Duophonic
 #define IS_DUO_CD(chan)             (channel==MIDI_GLOBAL_CHANNEL_15)   // C/D Duophonic
 #define IS_4_VOICE(chan)            (channel==MIDI_GLOBAL_CHANNEL_16)   // Macro-Funktion to determine if channel is used polyphonically
@@ -106,6 +107,8 @@ namespace CTAG::CTRL
         // === I/O data to be exchanged with audio-thread, pointers will be linked initially by bba_init() in Control.cpp Midi::viasetCVandTriggerPointers() ===
         float* midi_cvs;              // Normally only to be set once
         uint8_t* midi_triggers;       // Normally only to be set once
+
+        bool ignore_channels_6to9 = false;  // If this is turned on (via CC 111 or the GUI) channels 6-9 will be ignored to make them usable for MIDI thru!
 
         constexpr static uint16_t lut_logarithmic_10bit[1024] =
                 {
