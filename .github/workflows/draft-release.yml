@@ -14,20 +14,21 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-#      - name: Copy config
-#        run: |
-#          git checkout v1.0.0_pre && cp sdkconfig.defaults.mk1 sdkconfig
+      - name: Copy config
+        run: |
+#          git checkout v1.0.0_pre && cp sdkconfig.defaults.mk1 sdkconfig.defaults
+          cp sdkconfig.defaults.mk1 sdkconfig.defaults
       - name: esp-idf build
         uses: espressif/esp-idf-ci-action@v1.1.0
         with:
-          esp_idf_version: v5.1.1
+          esp_idf_version: v5.1.4
           target: esp32
           command: idf.py update-dependencies build
       - name: Archive binaries
         run: |
           zip --junk-paths binaries /app/ctag-fh-kiel/ctag-tbd/build/*.bin /app/ctag-fh-kiel/ctag-tbd/build/bootloader/*.bin /app/ctag-fh-kiel/ctag-tbd/build/partition_table/*.bin
       - name: Upload binary
-        uses: actions/upload-artifact@v2.2.1
+        uses: actions/upload-artifact@v4
         with:
           name: binaries.zip
           # A file, directory or wildcard pattern that describes what to upload
