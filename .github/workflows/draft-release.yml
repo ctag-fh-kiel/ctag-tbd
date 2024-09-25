@@ -13,10 +13,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0
       - name: Copy config
         run: |
-#          git checkout v1.0.0_pre && cp sdkconfig.defaults.mk1 sdkconfig.defaults
           cp sdkconfig.defaults.mk1 sdkconfig.defaults
       - name: esp-idf build
         uses: espressif/esp-idf-ci-action@v1.1.0
