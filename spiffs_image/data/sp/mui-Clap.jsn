@@ -1,0 +1,48 @@
+{
+  "id": "Clap",
+  "isStereo": false,
+  "name": "Clap",
+  "hint": "Clap synthesis",
+  "params": [
+    {
+      "id": "trg",
+      "name": "Trigger",
+      "type": "bool"
+    },
+    {
+      "id": "decay",
+      "name": "Decay",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "tone",
+      "name": "Tone",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "t_p1",
+      "name": "Transient P1",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "t_p2",
+      "name": "Transient P2",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "t_p3",
+      "name": "Transient P3",
+      "type": "int",
+      "min": 0,
+      "max": 7
+    }
+  ]
+}
