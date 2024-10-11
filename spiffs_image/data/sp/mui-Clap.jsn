@@ -42,7 +42,7 @@
       "name": "Transient P3",
       "type": "int",
       "min": 0,
-      "max": 7
+      "max": 127
     }
   ]
 }

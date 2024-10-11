@@ -3,26 +3,28 @@
 using namespace CTAG::SP;
 
 void ctagSoundProcessorClap::Process(const ProcessData &data) {
-    MK_FLT_PAR_ABS_MIN_MAX(fTone1, tone, 4095.f, 400.f, 4000.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fTone1, tone, 4095.f, 350.f, 4000.f)
     MK_FLT_PAR_ABS_MIN_MAX(fReso1, t_p1, 4095.f, 1.f, 2.5f)
     svf1.set_f_q<stmlib::FREQUENCY_DIRTY>(fTone1/44100.f, fReso1);
-    MK_FLT_PAR_ABS_MIN_MAX(fTone2, tone, 4095.f, 400.f, 2200.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fTone2, tone, 4095.f, 325.f, 3500.f)
     MK_FLT_PAR_ABS_MIN_MAX(fReso2, t_p1, 4095.f, 0.75f, 6.5f)
     svf2.set_f_q<stmlib::FREQUENCY_DIRTY>(fTone2/44100.f, fReso2);
-    MK_FLT_PAR_ABS_MIN_MAX(fDecay1, decay, 4095.f, 0.2f, 0.3f)
-    MK_FLT_PAR_ABS_MIN_MAX(fDecay2, decay, 4095.f, 0.2f, 2.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fDecay1, decay, 4095.f, 0.05f, 0.3f)
+    MK_FLT_PAR_ABS_MIN_MAX(fDecay2, decay, 4095.f, 0.05f, 2.f)
     env1.SetDecay(fDecay1);
     env2.SetDecay(fDecay2);
-    MK_FLT_PAR_ABS_MIN_MAX(fAttack2, t_p2, 4095.f, 0.f, 0.2f)
-    MK_FLT_PAR_ABS_MIN_MAX(fScale, t_p2, 4095.f, 1.f, 4.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fAttack2, t_p2, 4095.f, 0.f, 0.1f)
+    MK_FLT_PAR_ABS_MIN_MAX(fScale, t_p2, 4095.f, 1.f, 3.f)
     env2.SetAttack(fAttack2);
     iTransient = t_p3;
-    if(cv_t_p3 != -1) iTransient = static_cast<int>(fabsf(data.cv[cv_t_p3]) * 8);
-    CONSTRAIN(iTransient, 0, 7)
+    if(cv_t_p3 != -1) iTransient = static_cast<int>(fabsf(data.cv[cv_t_p3]) * 128);
     MK_BOOL_PAR(isTrig, trg);
     // trigger env1 if isTrig had rising edge
     if(isTrig == true && isTrig != previous_trigger){
         env1.Trigger();
+        // create many permutations
+        //int transientnumber = ((iTransient / 16) + iTransient%16)%16;
+        iTransient %= 16;
         timers[0].SetTimeout(delays[iTransient][0] * fScale);
         timers[1].SetTimeout(delays[iTransient][1] * fScale);
         timers[2].SetTimeout(delays[iTransient][2] * fScale);
@@ -71,10 +73,10 @@ void ctagSoundProcessorClap::Init(std::size_t blockSize, void *blockPtr) {
     env2.SetAttack(0.f);
     env2.SetLoop(false);
 
-    timers[0].SetTimeoutCallback([&](){a1 = amplitudes[iTransient][0]; env1.Trigger();});
-    timers[1].SetTimeoutCallback([&](){a1 = amplitudes[iTransient][1]; env1.Trigger();});
-    timers[2].SetTimeoutCallback([&](){a1 = amplitudes[iTransient][2]; env1.Trigger();});
-    timers[3].SetTimeoutCallback([&](){a2 = amplitudes[iTransient][3]; env2.Trigger();});
+    timers[0].SetTimeoutCallback([&](){a1 = amplitudes[iTransient%16][0]; env1.Trigger();});
+    timers[1].SetTimeoutCallback([&](){a1 = amplitudes[iTransient%16][1]; env1.Trigger();});
+    timers[2].SetTimeoutCallback([&](){a1 = amplitudes[iTransient%16][2]; env1.Trigger();});
+    timers[3].SetTimeoutCallback([&](){a2 = amplitudes[iTransient%16][3]; env2.Trigger();});
 }
 
 // no ctor, use Init() instead, is called from factory after successful creation
