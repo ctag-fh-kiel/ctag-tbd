@@ -1,51 +1,63 @@
 #include "ctagSoundProcessorClap.hpp"
+#include "stmlib/dsp/dsp.h"
+#include "helpers/ctagFastMath.hpp"
 
 using namespace CTAG::SP;
 
+inline float DistortedSine(float phase) {
+
+    float triangle = (phase < 0.5f ? phase : 1.0f - phase) * 4.0f - 1.3f;
+    return 2.0f * triangle / (1.0f + fabsf(triangle));
+
+    //return phase < 0.5f ? 1.f : -1.f;
+    return sinf(phase * 2.f * M_PI);
+}
+
 void ctagSoundProcessorClap::Process(const ProcessData &data) {
-    MK_FLT_PAR_ABS_MIN_MAX(fTone1, tone, 4095.f, 350.f, 4000.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fReso1, t_p1, 4095.f, 1.f, 2.5f)
-    svf1.set_f_q<stmlib::FREQUENCY_DIRTY>(fTone1/44100.f, fReso1);
-    MK_FLT_PAR_ABS_MIN_MAX(fTone2, tone, 4095.f, 325.f, 3500.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fReso2, t_p1, 4095.f, 0.75f, 6.5f)
-    svf2.set_f_q<stmlib::FREQUENCY_DIRTY>(fTone2/44100.f, fReso2);
-    MK_FLT_PAR_ABS_MIN_MAX(fDecay1, decay, 4095.f, 0.05f, 0.3f)
-    MK_FLT_PAR_ABS_MIN_MAX(fDecay2, decay, 4095.f, 0.05f, 2.f)
-    env1.SetDecay(fDecay1);
-    env2.SetDecay(fDecay2);
-    MK_FLT_PAR_ABS_MIN_MAX(fAttack2, t_p2, 4095.f, 0.f, 0.1f)
-    MK_FLT_PAR_ABS_MIN_MAX(fScale, t_p2, 4095.f, 1.f, 3.f)
-    env2.SetAttack(fAttack2);
-    iTransient = t_p3;
-    if(cv_t_p3 != -1) iTransient = static_cast<int>(fabsf(data.cv[cv_t_p3]) * 128);
+    MK_FLT_PAR_ABS_MIN_MAX(fTone1, tone, 4095.f, 100.f/44100.f, 750.f/44100.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fDecay1, decay, 4095.f, 1.f, 100.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fScale, t_p1, 4095.f, fTone1/2.f, fTone1*8.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fFilterQ, t_p2, 4095.f, 1.f, 20.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fDist, t_p3, 4095.f, 1.f, 1000.f)
     MK_BOOL_PAR(isTrig, trg);
     // trigger env1 if isTrig had rising edge
     if(isTrig == true && isTrig != previous_trigger){
-        env1.Trigger();
-        // create many permutations
-        //int transientnumber = ((iTransient / 16) + iTransient%16)%16;
-        iTransient %= 16;
-        timers[0].SetTimeout(delays[iTransient][0] * fScale);
-        timers[1].SetTimeout(delays[iTransient][1] * fScale);
-        timers[2].SetTimeout(delays[iTransient][2] * fScale);
-        timers[3].SetTimeout(delays[iTransient][3] * fScale);
+        env[0].Trigger();
+        env[1].Trigger();
+        env[2].Trigger();
+        phase[0] = 0.f;
+        phase[1] = 0.f;
+        phase[2] = 0.f;
+        dcy[0] = 1.f;
+        dcy[1] = 1.f;
+        dcy[2] = 1.f;
         previous_trigger = true;
     }else if(isTrig == false){
         previous_trigger = false;
     }
+    env[0].SetDecay(0.010f);
+    env[1].SetDecay(0.020f*fDecay1);
+    env[2].SetDecay(0.05f);
+    svf.set_f_q<stmlib::FREQUENCY_DIRTY>(fScale, fFilterQ);
+    float phaseinc1 = fTone1;
+    float phaseinc2 = fTone1 * 2.f;
+    float phaseinc3 = fTone1 * 4.f;
     for(int i=0;i<32;i++){
-        timers[0].Tick();
-        timers[1].Tick();
-        timers[2].Tick();
-        timers[3].Tick();
-        float noise = stmlib::Random::GetFloat();
-        noise = noise > 0.5f ? 1.f : -1.f;
-        float transient = svf1.Process<stmlib::FILTER_MODE_BAND_PASS>(noise);
-        transient *= env1.Process() * a1;
-        float tail = svf2.Process<stmlib::FILTER_MODE_BAND_PASS>(noise);
-        tail *= env2.Process() * a2;
-        data.buf[i*2 + 0] = transient + tail;
-        data.buf[i*2 + 1] = transient + tail;
+        phase[0] += phaseinc1;
+        phase[1] += phaseinc2;
+        phase[2] += phaseinc3;
+        if(phase[0] > 1.f) phase[0] -= 1.f;
+        if(phase[1] > 1.f) phase[1] -= 1.f;
+        if(phase[2] > 1.f) phase[2] -= 1.f;
+        float s1, s2, s3;
+        s1 = DistortedSine(phase[0]) * env[0].Process();
+        s2 = DistortedSine(phase[1]) * env[1].Process();
+        s3 = DistortedSine(phase[2]) * env[2].Process();
+        float sum = s1 + s2 * 0.5f + s3;
+        sum = HELPERS::fasttanh(sum * fDist);
+        sum = svf.Process<stmlib::FILTER_MODE_HIGH_PASS>(sum);
+        data.buf[i*2 + 0] = sum;
+        data.buf[i*2 + 1] = data.buf[i*2 + 0];
     }
 
 }
@@ -60,23 +72,18 @@ void ctagSoundProcessorClap::Init(std::size_t blockSize, void *blockPtr) {
     // blockMem is used just like larger blocks of heap memory
     // assert(blockSize >= memLen);
     // if memory larger than blockMem is needed, use heap_caps_malloc() instead with MALLOC_CAPS_SPIRAM
+    env[0].SetAttack(0.f);
+    env[0].SetModeExp();
+    env[0].SetSampleRate(44100.f);
+    // do same for other envs
+    env[1].SetAttack(0.f);
+    env[1].SetModeExp();
+    env[1].SetSampleRate(44100.f);
+    env[2].SetAttack(0.f);
+    env[2].SetModeExp();
+    env[2].SetSampleRate(44100.f);
 
-    svf1.Init();
-    svf2.Init();
-    stmlib::Random::Seed(42);
-    env1.SetSampleRate(44100.f);
-    env1.SetModeExp();
-    env1.SetAttack(0.f);
-    env1.SetLoop(false);
-    env2.SetSampleRate(44100.f);
-    env2.SetModeExp();
-    env2.SetAttack(0.f);
-    env2.SetLoop(false);
-
-    timers[0].SetTimeoutCallback([&](){a1 = amplitudes[iTransient%16][0]; env1.Trigger();});
-    timers[1].SetTimeoutCallback([&](){a1 = amplitudes[iTransient%16][1]; env1.Trigger();});
-    timers[2].SetTimeoutCallback([&](){a1 = amplitudes[iTransient%16][2]; env1.Trigger();});
-    timers[3].SetTimeoutCallback([&](){a2 = amplitudes[iTransient%16][3]; env2.Trigger();});
+    svf.Init();
 }
 
 // no ctor, use Init() instead, is called from factory after successful creation
