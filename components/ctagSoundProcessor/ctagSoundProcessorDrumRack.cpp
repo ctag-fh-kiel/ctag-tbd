@@ -211,7 +211,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data)
 	MK_FLT_PAR_ABS(fRSLev, rs_lev, 4095.f, 2.f)
 	fRSLev *= fRSLev;
 	MK_FLT_PAR_ABS_PAN(fRSPan, rs_pan, 4095.f, 1.f)
-	MK_FLT_PAR_ABS_MIN_MAX(rs_f0_, rs_tone, 4095.f, 70.f, 350.f)
+	MK_FLT_PAR_ABS_MIN_MAX(rs_f0_, rs_f0, 4095.f, 70.f, 350.f)
 	MK_FLT_PAR_ABS_MIN_MAX(rs_decay_, rs_decay, 4095.f, .1f, .75f)
 	MK_FLT_PAR_ABS_MIN_MAX(rs_noise_, rs_noise, 4095.f, 0.f, .2f)
 	MK_FLT_PAR_ABS_MIN_MAX(rs_accent_, rs_accent, 4095.f, 0.1f, 1.f)
@@ -262,8 +262,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data)
 	cl.params.scale = cl_scale_trans;
 	cl.params.transient = cl_trans_ % 16;
 
-	MK_BOOL_PAR(bCLTrig, rs_trigger)
-	if(bCLTrig != rs_trig_prev && bRSTrig){
+	MK_BOOL_PAR(bCLTrig, cl_trigger)
+	if(bCLTrig != cl_trig_prev && bCLTrig){
 		cl_trig_prev = true;
 		cl.Trigger();
 	}else if(!bCLTrig)
@@ -271,7 +271,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data)
 		cl_trig_prev = false;
 	}
 
-	if(!bCLMute) cl.Process(rs_out, 32);
+	if(!bCLMute) cl.Process(cl_out, 32);
 	else memset(cl_out, 0, 32*sizeof(float));
 
     // romplers
