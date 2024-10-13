@@ -2,209 +2,277 @@
 
 using namespace CTAG::SP;
 
-void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
+void ctagSoundProcessorDrumRack::Process(const ProcessData &data)
+{
+	// Analog Bass Drum
+	MK_BOOL_PAR(bABMute, ab_mute)
+	MK_BOOL_PAR(bABTrig, ab_trigger)
+	if(bABTrig != abd_trig_prev) {
+		abd_trig_prev = bABTrig;
+	}else{
+		bABTrig = false;
+	}
 
-    // Analog Bass Drum
-    MK_BOOL_PAR(bABMute, ab_mute)
-    MK_BOOL_PAR(bABTrig, ab_trigger)
-    if(bABTrig != abd_trig_prev) {
-        abd_trig_prev = bABTrig;
-    }else{
-        bABTrig = false;
-    }
+	MK_FLT_PAR_ABS(fABLev, ab_lev, 4095.f, 2.f)
+	fABLev *= fABLev;
+	MK_FLT_PAR_ABS_PAN(fABPan, ab_pan, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fABAccent, ab_accent, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(fABF0, ab_f0, 4095.f, 0.0001f, 0.01f)
+	MK_FLT_PAR_ABS(fABTone, ab_tone, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fABDecay, ab_decay, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(fABAfm, ab_a_fm, 4095.f, 0.f, 100.f)
+	MK_FLT_PAR_ABS_MIN_MAX(fABSfm, ab_s_fm, 4095.f, 0.f, 100.f)
 
-    MK_FLT_PAR_ABS(fABLev, ab_lev, 4095.f, 2.f)
-    fABLev *= fABLev;
-    MK_FLT_PAR_ABS_PAN(fABPan, ab_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fABAccent, ab_accent, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fABF0, ab_f0, 4095.f, 0.0001f, 0.01f)
-    MK_FLT_PAR_ABS(fABTone, ab_tone, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fABDecay, ab_decay, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fABAfm, ab_a_fm, 4095.f, 0.f, 100.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fABSfm, ab_s_fm, 4095.f, 0.f, 100.f)
+	if(!bABMute) abd.Render(
+			false,
+			bABTrig,
+			fABAccent,
+			fABF0,
+			fABTone,
+			fABDecay,
+			fABAfm,
+			fABSfm,
+			abd_out,
+			32);
+	else{
+		memset(abd_out, 0, 32*sizeof(float));
+	}
 
-    if(!bABMute) abd.Render(
-            false,
-            bABTrig,
-            fABAccent,
-            fABF0,
-            fABTone,
-            fABDecay,
-            fABAfm,
-            fABSfm,
-            abd_out,
-            32);
-    else{
-        memset(abd_out, 0, 32*sizeof(float));
-    }
+	// Analog Snare Drum
+	MK_BOOL_PAR(bASMute, as_mute)
+	MK_BOOL_PAR(bASTrig, as_trigger)
+	if(bASTrig != asd_trig_prev) {
+		asd_trig_prev = bASTrig;
+	}else{
+		bASTrig = false;
+	}
 
-    // Analog Snare Drum
-    MK_BOOL_PAR(bASMute, as_mute)
-    MK_BOOL_PAR(bASTrig, as_trigger)
-    if(bASTrig != asd_trig_prev) {
-        asd_trig_prev = bASTrig;
-    }else{
-        bASTrig = false;
-    }
+	MK_FLT_PAR_ABS(fASLev, as_lev, 4095.f, 2.f)
+	fASLev *= fASLev;
+	MK_FLT_PAR_ABS_PAN(fASPan, as_pan, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fASAccent, as_accent, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(fASF0, as_f0, 4095.f, 0.001f, 0.01f)
+	MK_FLT_PAR_ABS(fASTone, as_tone, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fASDecay, as_decay, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fASAspy, as_a_spy, 4095.f, 1.f)
 
-    MK_FLT_PAR_ABS(fASLev, as_lev, 4095.f, 2.f)
-    fASLev *= fASLev;
-    MK_FLT_PAR_ABS_PAN(fASPan, as_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fASAccent, as_accent, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fASF0, as_f0, 4095.f, 0.001f, 0.01f)
-    MK_FLT_PAR_ABS(fASTone, as_tone, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fASDecay, as_decay, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fASAspy, as_a_spy, 4095.f, 1.f)
+	if(!bASMute) asd.Render(
+			false,
+			bASTrig,
+			fASAccent,
+			fASF0,
+			fASTone,
+			fASDecay,
+			fASAspy,
+			asd_out,
+			32);
+	else{
+		memset(asd_out, 0, 32*sizeof(float));
+	}
 
-    if(!bASMute) asd.Render(
-            false,
-            bASTrig,
-            fASAccent,
-            fASF0,
-            fASTone,
-            fASDecay,
-            fASAspy,
-            asd_out,
-            32);
-    else{
-        memset(asd_out, 0, 32*sizeof(float));
-    }
+	// Digital Bass Drum
+	MK_BOOL_PAR(bDBMute, db_mute)
+	MK_BOOL_PAR(bDBTrig, db_trigger)
+	if(bDBTrig != dbd_trig_prev) {
+		dbd_trig_prev = bDBTrig;
+	}else{
+		bDBTrig = false;
+	}
 
-    // Digital Bass Drum
-    MK_BOOL_PAR(bDBMute, db_mute)
-    MK_BOOL_PAR(bDBTrig, db_trigger)
-    if(bDBTrig != dbd_trig_prev) {
-        dbd_trig_prev = bDBTrig;
-    }else{
-        bDBTrig = false;
-    }
+	MK_FLT_PAR_ABS(fDBLev, db_lev, 4095.f, 2.f)
+	fDBLev *= fDBLev;
+	MK_FLT_PAR_ABS_PAN(fDBPan, db_pan, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fDBAccent, db_accent, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(fDBF0, db_f0, 4095.f, 0.0005f, 0.01f)
+	MK_FLT_PAR_ABS(fDBTone, db_tone, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fDBDecay, db_decay, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fDBDirty, db_dirty, 4095.f, 5.f)
+	MK_FLT_PAR_ABS(fDBFmEnv, db_fm_env, 4095.f, 5.f)
+	MK_FLT_PAR_ABS(fDBFmDcy, db_fm_dcy, 4095.f, 4.f)
 
-    MK_FLT_PAR_ABS(fDBLev, db_lev, 4095.f, 2.f)
-    fDBLev *= fDBLev;
-    MK_FLT_PAR_ABS_PAN(fDBPan, db_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDBAccent, db_accent, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fDBF0, db_f0, 4095.f, 0.0005f, 0.01f)
-    MK_FLT_PAR_ABS(fDBTone, db_tone, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDBDecay, db_decay, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDBDirty, db_dirty, 4095.f, 5.f)
-    MK_FLT_PAR_ABS(fDBFmEnv, db_fm_env, 4095.f, 5.f)
-    MK_FLT_PAR_ABS(fDBFmDcy, db_fm_dcy, 4095.f, 4.f)
+	if(!bDBMute) dbd.Render(
+			false,
+			bDBTrig,
+			fDBAccent,
+			fDBF0,
+			fDBTone,
+			fDBDecay,
+			fDBDirty,
+			fDBFmEnv,
+			fDBFmDcy,
+			dbd_out,
+			32);
+	else{
+		memset(dbd_out, 0, 32*sizeof(float));
+	}
 
-    if(!bDBMute) dbd.Render(
-            false,
-            bDBTrig,
-            fDBAccent,
-            fDBF0,
-            fDBTone,
-            fDBDecay,
-            fDBDirty,
-            fDBFmEnv,
-            fDBFmDcy,
-            dbd_out,
-            32);
-    else{
-        memset(dbd_out, 0, 32*sizeof(float));
-    }
+	// Digital Snare Drum
+	MK_BOOL_PAR(bDSMute, ds_mute)
+	MK_BOOL_PAR(bDSTrig, ds_trigger)
+	if(bDSTrig != dsd_trig_prev) {
+		dsd_trig_prev = bDSTrig;
+	}else{
+		bDSTrig = false;
+	}
 
-    // Digital Snare Drum
-    MK_BOOL_PAR(bDSMute, ds_mute)
-    MK_BOOL_PAR(bDSTrig, ds_trigger)
-    if(bDSTrig != dsd_trig_prev) {
-        dsd_trig_prev = bDSTrig;
-    }else{
-        bDSTrig = false;
-    }
+	MK_FLT_PAR_ABS(fDSLev, ds_lev, 4095.f, 2.f)
+	fDSLev *= fDSLev;
+	MK_FLT_PAR_ABS_PAN(fDSPan, ds_pan, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fDSAccent, ds_accent, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(fDSF0, ds_f0, 4095.f, 0.0008f, 0.01f)
+	MK_FLT_PAR_ABS(fDSFmAmt, ds_fm_amt, 4095.f, 1.5f)
+	MK_FLT_PAR_ABS(fDSDecay, ds_decay, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fDSSpy, ds_spy, 4095.f, 1.f)
 
-    MK_FLT_PAR_ABS(fDSLev, ds_lev, 4095.f, 2.f)
-    fDSLev *= fDSLev;
-    MK_FLT_PAR_ABS_PAN(fDSPan, ds_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDSAccent, ds_accent, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fDSF0, ds_f0, 4095.f, 0.0008f, 0.01f)
-    MK_FLT_PAR_ABS(fDSFmAmt, ds_fm_amt, 4095.f, 1.5f)
-    MK_FLT_PAR_ABS(fDSDecay, ds_decay, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDSSpy, ds_spy, 4095.f, 1.f)
+	if(!bDSMute) dsd.Render(
+			false,
+			bDSTrig,
+			fDSAccent,
+			fDSF0,
+			fDSFmAmt,
+			fDSDecay,
+			fDSSpy,
+			dsd_out,
+			32);
+	else{
+		memset(dsd_out, 0, 32*sizeof(float));
+	}
 
-    if(!bDSMute) dsd.Render(
-            false,
-            bDSTrig,
-            fDSAccent,
-            fDSF0,
-            fDSFmAmt,
-            fDSDecay,
-            fDSSpy,
-            dsd_out,
-            32);
-    else{
-        memset(dsd_out, 0, 32*sizeof(float));
-    }
+	// HiHat 1
+	MK_BOOL_PAR(bHH1Mute, hh1_mute)
+	MK_BOOL_PAR(bHH1Trig, hh1_trigger)
+	if(bHH1Trig != hh1_trig_prev) {
+		hh1_trig_prev = bHH1Trig;
+	}else{
+		bHH1Trig = false;
+	}
 
-    // HiHat 1
-    MK_BOOL_PAR(bHH1Mute, hh1_mute)
-    MK_BOOL_PAR(bHH1Trig, hh1_trigger)
-    if(bHH1Trig != hh1_trig_prev) {
-        hh1_trig_prev = bHH1Trig;
-    }else{
-        bHH1Trig = false;
-    }
+	MK_FLT_PAR_ABS(fHH1Lev, hh1_lev, 4095.f, 2.f)
+	fHH1Lev *= fHH1Lev;
+	MK_FLT_PAR_ABS_PAN(fHH1Pan, hh1_pan, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fHH1Accent, hh1_accent, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(fHH1F0, hh1_f0, 4095.f, 0.0005f, 0.1f)
+	MK_FLT_PAR_ABS(fHH1Tone, hh1_tone, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fHH1Decay, hh1_decay, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fHH1Noise, hh1_noise, 4095.f, 1.f)
 
-    MK_FLT_PAR_ABS(fHH1Lev, hh1_lev, 4095.f, 2.f)
-    fHH1Lev *= fHH1Lev;
-    MK_FLT_PAR_ABS_PAN(fHH1Pan, hh1_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH1Accent, hh1_accent, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fHH1F0, hh1_f0, 4095.f, 0.0005f, 0.1f)
-    MK_FLT_PAR_ABS(fHH1Tone, hh1_tone, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH1Decay, hh1_decay, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH1Noise, hh1_noise, 4095.f, 1.f)
+	if(!bHH1Mute) hh1.Render(
+			false,
+			bHH1Trig,
+			fHH1Accent,
+			fHH1F0,
+			fHH1Tone,
+			fHH1Decay,
+			fHH1Noise,
+			temp1_,
+			temp2_,
+			hh1_out,
+			32);
+	else{
+		memset(hh1_out, 0, 32*sizeof(float));
+	}
 
-    if(!bHH1Mute) hh1.Render(
-            false,
-            bHH1Trig,
-            fHH1Accent,
-            fHH1F0,
-            fHH1Tone,
-            fHH1Decay,
-            fHH1Noise,
-            temp1_,
-            temp2_,
-            hh1_out,
-            32);
-    else{
-        memset(hh1_out, 0, 32*sizeof(float));
-    }
+	// HiHat 2
+	MK_BOOL_PAR(bHH2Mute, hh2_mute)
+	MK_BOOL_PAR(bHH2Trig, hh2_trigger)
+	if(bHH2Trig != hh2_trig_prev) {
+		hh2_trig_prev = bHH2Trig;
+	}else{
+		bHH2Trig = false;
+	}
 
-    // HiHat 2
-    MK_BOOL_PAR(bHH2Mute, hh2_mute)
-    MK_BOOL_PAR(bHH2Trig, hh2_trigger)
-    if(bHH2Trig != hh2_trig_prev) {
-        hh2_trig_prev = bHH2Trig;
-    }else{
-        bHH2Trig = false;
-    }
+	MK_FLT_PAR_ABS(fHH2Lev, hh2_lev, 4095.f, 2.f)
+	fHH2Lev *= fHH2Lev;
+	MK_FLT_PAR_ABS_PAN(fHH2Pan, hh2_pan, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fHH2Accent, hh2_accent, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(fHH2F0, hh2_f0, 4095.f, .00001f, .1f)
+	MK_FLT_PAR_ABS(fHH2Tone, hh2_tone, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fHH2Decay, hh2_decay, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fHH2Noise, hh2_noise, 4095.f, 1.f)
 
-    MK_FLT_PAR_ABS(fHH2Lev, hh2_lev, 4095.f, 2.f)
-    fHH2Lev *= fHH2Lev;
-    MK_FLT_PAR_ABS_PAN(fHH2Pan, hh2_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH2Accent, hh2_accent, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_MIN_MAX(fHH2F0, hh2_f0, 4095.f, .00001f, .1f)
-    MK_FLT_PAR_ABS(fHH2Tone, hh2_tone, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH2Decay, hh2_decay, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH2Noise, hh2_noise, 4095.f, 1.f)
+	if(!bHH2Mute) hh2.Render(
+			false,
+			bHH2Trig,
+			fHH2Accent,
+			fHH2F0,
+			fHH2Tone,
+			fHH2Decay,
+			fHH2Noise,
+			temp1_,
+			temp2_,
+			hh2_out,
+			32);
+	else{
+		memset(hh2_out, 0, 32*sizeof(float));
+	}
 
-    if(!bHH2Mute) hh2.Render(
-            false,
-            bHH2Trig,
-            fHH2Accent,
-            fHH2F0,
-            fHH2Tone,
-            fHH2Decay,
-            fHH2Noise,
-            temp1_,
-            temp2_,
-            hh2_out,
-            32);
-    else{
-        memset(hh2_out, 0, 32*sizeof(float));
-    }
+	// rimshot
+	MK_BOOL_PAR(bRSMute, rs_mute)
+	MK_FLT_PAR_ABS(fRSLev, rs_lev, 4095.f, 2.f)
+	fRSLev *= fRSLev;
+	MK_FLT_PAR_ABS_PAN(fRSPan, rs_pan, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(rs_f0_, rs_tone, 4095.f, 70.f, 350.f)
+	MK_FLT_PAR_ABS_MIN_MAX(rs_decay_, rs_decay, 4095.f, .1f, .75f)
+	MK_FLT_PAR_ABS_MIN_MAX(rs_noise_, rs_noise, 4095.f, 0.f, .2f)
+	MK_FLT_PAR_ABS_MIN_MAX(rs_accent_, rs_accent, 4095.f, 0.1f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(rs_base_, rs_tone, 4095.f, .35f, .65f)
+	MK_FLT_PAR_ABS_MIN_MAX(rs_reso_hp_, rs_tone, 4095.f, 5.f, 1.f)
+
+	rs.params.f0 = rs_f0_ / 44100.f;
+	rs.params.decay = rs_decay_;
+	rs.params.accent = rs_accent_;
+	rs.params.reso_hp = rs_reso_hp_;
+	rs.params.base = rs_base_;
+	rs.params.noise_level = rs_noise_;
+
+	MK_BOOL_PAR(bRSTrig, rs_trigger)
+	if(bRSTrig != rs_trig_prev && bRSTrig){
+		rs_trig_prev = true;
+		rs.Trigger();
+	}else if(!bRSTrig)
+	{
+		rs_trig_prev = false;
+	}
+
+	if(!bRSMute) rs.Process(rs_out, 32);
+	else memset(rs_out, 0, 32*sizeof(float));
+
+	// clap
+	MK_BOOL_PAR(bCLMute, cl_mute)
+	MK_FLT_PAR_ABS(fCLLev, cl_lev, 4095.f, 2.f)
+	fCLLev *= fCLLev;
+	MK_FLT_PAR_ABS_PAN(fCLPan, cl_pan, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_MIN_MAX(cl_pitch1_, cl_f0, 4095.f, 350.f, 4000.f)
+	MK_FLT_PAR_ABS_MIN_MAX(cl_pitch2_, cl_f0, 4095.f, 300.f, 3000.f)
+	MK_FLT_PAR_ABS_MIN_MAX(cl_reso1_, cl_tone, 4095.f, 1.f, 2.5f)
+	MK_FLT_PAR_ABS_MIN_MAX(cl_reso2_, cl_tone, 4095.f, 0.75f, 6.5f)
+	MK_FLT_PAR_ABS_MIN_MAX(cl_decay1_, cl_decay, 4095.f, 0.05f, 0.3f)
+	MK_FLT_PAR_ABS_MIN_MAX(cl_decay2_, cl_decay, 4095.f, 0.05f, 2.f)
+	MK_FLT_PAR_ABS_MIN_MAX(cl_scale_attack_, cl_scale, 4095.f, 0.f, 0.1f)
+	MK_FLT_PAR_ABS_MIN_MAX(cl_scale_trans, cl_scale, 4095.f, 1.f, 3.f)
+	MK_INT_PAR_ABS(cl_trans_, cl_transient, 16)
+
+	cl.params.pitch1 = cl_pitch1_ /44100.f;
+	cl.params.pitch2 = cl_pitch2_ /44100.f;
+	cl.params.reso1 = cl_reso1_;
+	cl.params.reso2 = cl_reso2_;
+	cl.params.decay1 = cl_decay1_;
+	cl.params.decay2 = cl_decay2_;
+	cl.params.attack = cl_scale_attack_;
+	cl.params.scale = cl_scale_trans;
+	cl.params.transient = cl_trans_ % 16;
+
+	MK_BOOL_PAR(bCLTrig, rs_trigger)
+	if(bCLTrig != rs_trig_prev && bRSTrig){
+		cl_trig_prev = true;
+		cl.Trigger();
+	}else if(!bCLTrig)
+	{
+		cl_trig_prev = false;
+	}
+
+	if(!bCLMute) cl.Process(rs_out, 32);
+	else memset(cl_out, 0, 32*sizeof(float));
 
     // romplers
     uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
@@ -458,6 +526,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
         fVal_l += dsd_out[i] * fDSLev * (1.f-fDSPan);
         fVal_l += hh1_out[i] * fHH1Lev * (1.f-fHH1Pan);
         fVal_l += hh2_out[i] * fHH2Lev * (1.f-fHH2Pan);
+    	fVal_l += rs_out[i] * fRSLev * (1.f-fRSPan);
+    	fVal_l += cl_out[i] * fCLLev * (1.f-fCLPan);
         fVal_l += s1_out[i] * fS1Lev * (1.f-fS1Pan);
         fVal_l += s2_out[i] * fS2Lev * (1.f-fS2Pan);
         fVal_l += s3_out[i] * fS3Lev * (1.f-fS3Pan);
@@ -468,6 +538,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
         fVal_r += dsd_out[i] * fDSLev * fDSPan;
         fVal_r += hh1_out[i] * fHH1Lev * fHH1Pan;
         fVal_r += hh2_out[i] * fHH2Lev * fHH2Pan;
+		fVal_r += rs_out[i] * fRSLev * fRSPan;
+    	fVal_r += cl_out[i] * fCLLev * fCLPan;
         fVal_r += s1_out[i] * fS1Lev * fS1Pan;
         fVal_r += s2_out[i] * fS2Lev * fS2Pan;
         fVal_r += s3_out[i] * fS3Lev * fS3Pan;
@@ -512,6 +584,8 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void *blockPtr) {
     dsd.Init();
     hh1.Init();
     hh2.Init();
+	rs.Init();
+	cl.Init();
 
     // init romplers
     for(auto &r : rompler){
@@ -648,6 +722,42 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("hh2_decay", [&](const int val){ cv_hh2_decay = val;});
 	pMapPar.emplace("hh2_noise", [&](const int val){ hh2_noise = val;});
 	pMapCv.emplace("hh2_noise", [&](const int val){ cv_hh2_noise = val;});
+	pMapPar.emplace("rs_trigger", [&](const int val){ rs_trigger = val;});
+	pMapTrig.emplace("rs_trigger", [&](const int val){ trig_rs_trigger = val;});
+	pMapPar.emplace("rs_mute", [&](const int val){ rs_mute = val;});
+	pMapTrig.emplace("rs_mute", [&](const int val){ trig_rs_mute = val;});
+	pMapPar.emplace("rs_lev", [&](const int val){ rs_lev = val;});
+	pMapCv.emplace("rs_lev", [&](const int val){ cv_rs_lev = val;});
+	pMapPar.emplace("rs_pan", [&](const int val){ rs_pan = val;});
+	pMapCv.emplace("rs_pan", [&](const int val){ cv_rs_pan = val;});
+	pMapPar.emplace("rs_accent", [&](const int val){ rs_accent = val;});
+	pMapCv.emplace("rs_accent", [&](const int val){ cv_rs_accent = val;});
+	pMapPar.emplace("rs_f0", [&](const int val){ rs_f0 = val;});
+	pMapCv.emplace("rs_f0", [&](const int val){ cv_rs_f0 = val;});
+	pMapPar.emplace("rs_tone", [&](const int val){ rs_tone = val;});
+	pMapCv.emplace("rs_tone", [&](const int val){ cv_rs_tone = val;});
+	pMapPar.emplace("rs_decay", [&](const int val){ rs_decay = val;});
+	pMapCv.emplace("rs_decay", [&](const int val){ cv_rs_decay = val;});
+	pMapPar.emplace("rs_noise", [&](const int val){ rs_noise = val;});
+	pMapCv.emplace("rs_noise", [&](const int val){ cv_rs_noise = val;});
+	pMapPar.emplace("cl_trigger", [&](const int val){ cl_trigger = val;});
+	pMapTrig.emplace("cl_trigger", [&](const int val){ trig_cl_trigger = val;});
+	pMapPar.emplace("cl_mute", [&](const int val){ cl_mute = val;});
+	pMapTrig.emplace("cl_mute", [&](const int val){ trig_cl_mute = val;});
+	pMapPar.emplace("cl_lev", [&](const int val){ cl_lev = val;});
+	pMapCv.emplace("cl_lev", [&](const int val){ cv_cl_lev = val;});
+	pMapPar.emplace("cl_pan", [&](const int val){ cl_pan = val;});
+	pMapCv.emplace("cl_pan", [&](const int val){ cv_cl_pan = val;});
+	pMapPar.emplace("cl_f0", [&](const int val){ cl_f0 = val;});
+	pMapCv.emplace("cl_f0", [&](const int val){ cv_cl_f0 = val;});
+	pMapPar.emplace("cl_tone", [&](const int val){ cl_tone = val;});
+	pMapCv.emplace("cl_tone", [&](const int val){ cv_cl_tone = val;});
+	pMapPar.emplace("cl_decay", [&](const int val){ cl_decay = val;});
+	pMapCv.emplace("cl_decay", [&](const int val){ cv_cl_decay = val;});
+	pMapPar.emplace("cl_scale", [&](const int val){ cl_scale = val;});
+	pMapCv.emplace("cl_scale", [&](const int val){ cv_cl_scale = val;});
+	pMapPar.emplace("cl_transient", [&](const int val){ cl_transient = val;});
+	pMapCv.emplace("cl_transient", [&](const int val){ cv_cl_transient = val;});
 	pMapPar.emplace("s1_gate", [&](const int val){ s1_gate = val;});
 	pMapTrig.emplace("s1_gate", [&](const int val){ trig_s1_gate = val;});
 	pMapPar.emplace("s1_mute", [&](const int val){ s1_mute = val;});
@@ -658,7 +768,7 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s1_pan", [&](const int val){ cv_s1_pan = val;});
 	pMapPar.emplace("s1_speed", [&](const int val){ s1_speed = val;});
 	pMapCv.emplace("s1_speed", [&](const int val){ cv_s1_speed = val;});
-    pMapPar.emplace("s1_pitch", [&](const int val){ s1_pitch= val;});
+	pMapPar.emplace("s1_pitch", [&](const int val){ s1_pitch = val;});
 	pMapCv.emplace("s1_pitch", [&](const int val){ cv_s1_pitch = val;});
 	pMapPar.emplace("s1_bank", [&](const int val){ s1_bank = val;});
 	pMapCv.emplace("s1_bank", [&](const int val){ cv_s1_bank = val;});
@@ -698,8 +808,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s2_pan", [&](const int val){ cv_s2_pan = val;});
 	pMapPar.emplace("s2_speed", [&](const int val){ s2_speed = val;});
 	pMapCv.emplace("s2_speed", [&](const int val){ cv_s2_speed = val;});
-    pMapPar.emplace("s2_pitch", [&](const int val){ s2_pitch= val;});
-    pMapCv.emplace("s2_pitch", [&](const int val){ cv_s2_pitch = val;});
+	pMapPar.emplace("s2_pitch", [&](const int val){ s2_pitch = val;});
+	pMapCv.emplace("s2_pitch", [&](const int val){ cv_s2_pitch = val;});
 	pMapPar.emplace("s2_bank", [&](const int val){ s2_bank = val;});
 	pMapCv.emplace("s2_bank", [&](const int val){ cv_s2_bank = val;});
 	pMapPar.emplace("s2_slice", [&](const int val){ s2_slice = val;});
@@ -738,8 +848,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s3_pan", [&](const int val){ cv_s3_pan = val;});
 	pMapPar.emplace("s3_speed", [&](const int val){ s3_speed = val;});
 	pMapCv.emplace("s3_speed", [&](const int val){ cv_s3_speed = val;});
-    pMapPar.emplace("s3_pitch", [&](const int val){ s3_pitch= val;});
-    pMapCv.emplace("s3_pitch", [&](const int val){ cv_s3_pitch = val;});
+	pMapPar.emplace("s3_pitch", [&](const int val){ s3_pitch = val;});
+	pMapCv.emplace("s3_pitch", [&](const int val){ cv_s3_pitch = val;});
 	pMapPar.emplace("s3_bank", [&](const int val){ s3_bank = val;});
 	pMapCv.emplace("s3_bank", [&](const int val){ cv_s3_bank = val;});
 	pMapPar.emplace("s3_slice", [&](const int val){ s3_slice = val;});
@@ -778,8 +888,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s4_pan", [&](const int val){ cv_s4_pan = val;});
 	pMapPar.emplace("s4_speed", [&](const int val){ s4_speed = val;});
 	pMapCv.emplace("s4_speed", [&](const int val){ cv_s4_speed = val;});
-    pMapPar.emplace("s4_pitch", [&](const int val){ s4_pitch= val;});
-    pMapCv.emplace("s4_pitch", [&](const int val){ cv_s4_pitch = val;});
+	pMapPar.emplace("s4_pitch", [&](const int val){ s4_pitch = val;});
+	pMapCv.emplace("s4_pitch", [&](const int val){ cv_s4_pitch = val;});
 	pMapPar.emplace("s4_bank", [&](const int val){ s4_bank = val;});
 	pMapCv.emplace("s4_bank", [&](const int val){ cv_s4_bank = val;});
 	pMapPar.emplace("s4_slice", [&](const int val){ s4_slice = val;});
