@@ -53,8 +53,8 @@ namespace CTAG {
             float temp2_[32];
             float s1_out[32];
             float s2_out[32];
-            float s3_out[32];
-            float s4_out[32];
+            //float s3_out[32];
+            //float s4_out[32];
 
             bool abd_trig_prev {false};
             bool asd_trig_prev {false};
@@ -66,7 +66,8 @@ namespace CTAG {
         	bool cl_trig_prev {false};
 
             // rompler
-            CTAG::SYNTHESIS::RomplerVoiceMinimal rompler[4];
+            //CTAG::SYNTHESIS::RomplerVoiceMinimal rompler[4];
+            CTAG::SYNTHESIS::RomplerVoiceMinimal rompler[2];
             CTAG::SP::HELPERS::ctagSampleRom sampleRom;
 
 

@@ -383,6 +383,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data)
         memset(s2_out, 0, 32*sizeof(float));
     }
 
+	/*
     MK_BOOL_PAR(bMuteS3, s3_mute)
     MK_BOOL_PAR(bGateS3, s3_gate)
     rompler[2].params.gate = bGateS3;
@@ -488,7 +489,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data)
     else{
         memset(s4_out, 0, 32*sizeof(float));
     }
-
+*/
     // sum compressor
     MK_FLT_PAR_ABS_MIN_MAX(fCompThresdB, c_thres, 4095.f, -80.f, 0.f)
     sumCompressor.setThresh(fCompThresdB);
@@ -530,8 +531,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data)
     	fVal_l += cl_out[i] * fCLLev * (1.f-fCLPan);
         fVal_l += s1_out[i] * fS1Lev * (1.f-fS1Pan);
         fVal_l += s2_out[i] * fS2Lev * (1.f-fS2Pan);
-        fVal_l += s3_out[i] * fS3Lev * (1.f-fS3Pan);
-        fVal_l += s4_out[i] * fS4Lev * (1.f-fS4Pan);
+        //fVal_l += s3_out[i] * fS3Lev * (1.f-fS3Pan);
+        //fVal_l += s4_out[i] * fS4Lev * (1.f-fS4Pan);
         fVal_r = abd_out[i] * fABLev * fABPan;
         fVal_r += asd_out[i] * fASLev * fASPan;
         fVal_r += dbd_out[i] * fDBLev * fDBPan;
@@ -542,8 +543,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data)
     	fVal_r += cl_out[i] * fCLLev * fCLPan;
         fVal_r += s1_out[i] * fS1Lev * fS1Pan;
         fVal_r += s2_out[i] * fS2Lev * fS2Pan;
-        fVal_r += s3_out[i] * fS3Lev * fS3Pan;
-        fVal_r += s4_out[i] * fS4Lev * fS4Pan;
+        //fVal_r += s3_out[i] * fS3Lev * fS3Pan;
+        //fVal_r += s4_out[i] * fS4Lev * fS4Pan;
         float dry_l = fVal_l;
         float dry_r = fVal_r;
         if(bSideChainLPF){
