@@ -7,7 +7,7 @@
         {
           "id": "ab_trigger",
           "current": 0,
-          "trig": -1
+          "trig": 16
         },
         {
           "id": "ab_mute",
@@ -21,43 +21,43 @@
         },
         {
           "id": "ab_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "ab_accent",
-          "current": 2047,
+          "current": 1950,
           "cv": -1
         },
         {
           "id": "ab_f0",
-          "current": 2047,
+          "current": 380,
           "cv": -1
         },
         {
           "id": "ab_tone",
-          "current": 2047,
+          "current": 590,
           "cv": -1
         },
         {
           "id": "ab_decay",
-          "current": 2047,
+          "current": 800,
           "cv": -1
         },
         {
           "id": "ab_a_fm",
-          "current": 2047,
+          "current": 90,
           "cv": -1
         },
         {
           "id": "ab_s_fm",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "db_trigger",
           "current": 0,
-          "trig": -1
+          "trig": 17
         },
         {
           "id": "db_mute",
@@ -71,48 +71,48 @@
         },
         {
           "id": "db_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "db_accent",
-          "current": 2047,
+          "current": 1250,
           "cv": -1
         },
         {
           "id": "db_f0",
-          "current": 2047,
+          "current": 240,
           "cv": -1
         },
         {
           "id": "db_tone",
-          "current": 2047,
+          "current": 2632,
           "cv": -1
         },
         {
           "id": "db_decay",
-          "current": 2047,
+          "current": 1490,
           "cv": -1
         },
         {
           "id": "db_dirty",
-          "current": 2047,
+          "current": 965,
           "cv": -1
         },
         {
           "id": "db_fm_env",
-          "current": 2047,
+          "current": 1030,
           "cv": -1
         },
         {
           "id": "db_fm_dcy",
-          "current": 2047,
+          "current": 80,
           "cv": -1
         },
         {
           "id": "as_trigger",
           "current": 0,
-          "trig": -1
+          "trig": 18
         },
         {
           "id": "as_mute",
@@ -126,38 +126,38 @@
         },
         {
           "id": "as_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "as_accent",
-          "current": 2047,
+          "current": 660,
           "cv": -1
         },
         {
           "id": "as_f0",
-          "current": 2047,
+          "current": 1147,
           "cv": -1
         },
         {
           "id": "as_tone",
-          "current": 2047,
+          "current": 3484,
           "cv": -1
         },
         {
           "id": "as_decay",
-          "current": 2047,
+          "current": 688,
           "cv": -1
         },
         {
           "id": "as_a_spy",
-          "current": 2047,
+          "current": 417,
           "cv": -1
         },
         {
           "id": "ds_trigger",
           "current": 0,
-          "trig": -1
+          "trig": 19
         },
         {
           "id": "ds_mute",
@@ -171,38 +171,38 @@
         },
         {
           "id": "ds_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "ds_accent",
-          "current": 2047,
+          "current": 2043,
           "cv": -1
         },
         {
           "id": "ds_f0",
-          "current": 2047,
+          "current": 1024,
           "cv": -1
         },
         {
           "id": "ds_fm_amt",
-          "current": 2047,
+          "current": 1660,
           "cv": -1
         },
         {
           "id": "ds_decay",
-          "current": 2047,
+          "current": 900,
           "cv": -1
         },
         {
           "id": "ds_spy",
-          "current": 2047,
+          "current": 490,
           "cv": -1
         },
         {
           "id": "hh1_trigger",
           "current": 0,
-          "trig": -1
+          "trig": 20
         },
         {
           "id": "hh1_mute",
@@ -216,38 +216,38 @@
         },
         {
           "id": "hh1_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "hh1_accent",
-          "current": 2047,
+          "current": 2050,
           "cv": -1
         },
         {
           "id": "hh1_f0",
-          "current": 2047,
+          "current": 3420,
           "cv": -1
         },
         {
           "id": "hh1_tone",
-          "current": 2047,
+          "current": 3462,
           "cv": -1
         },
         {
           "id": "hh1_decay",
-          "current": 2047,
+          "current": 1100,
           "cv": -1
         },
         {
           "id": "hh1_noise",
-          "current": 2047,
+          "current": 3090,
           "cv": -1
         },
         {
           "id": "hh2_trigger",
           "current": 0,
-          "trig": -1
+          "trig": 21
         },
         {
           "id": "hh2_mute",
@@ -261,7 +261,7 @@
         },
         {
           "id": "hh2_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
@@ -271,28 +271,28 @@
         },
         {
           "id": "hh2_f0",
-          "current": 2047,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "hh2_tone",
-          "current": 2047,
+          "current": 3139,
           "cv": -1
         },
         {
           "id": "hh2_decay",
-          "current": 2047,
+          "current": 683,
           "cv": -1
         },
         {
           "id": "hh2_noise",
-          "current": 2047,
+          "current": 2898,
           "cv": -1
         },
         {
           "id": "rs_trigger",
           "current": 0,
-          "trig": -1
+          "trig": 22
         },
         {
           "id": "rs_mute",
@@ -306,38 +306,38 @@
         },
         {
           "id": "rs_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "rs_accent",
-          "current": 2047,
+          "current": 638,
           "cv": -1
         },
         {
           "id": "rs_f0",
-          "current": 2047,
+          "current": 2364,
           "cv": -1
         },
         {
           "id": "rs_tone",
-          "current": 2047,
+          "current": 2986,
           "cv": -1
         },
         {
           "id": "rs_decay",
-          "current": 2047,
+          "current": 1324,
           "cv": -1
         },
         {
           "id": "rs_noise",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "cl_trigger",
           "current": 0,
-          "trig": -1
+          "trig": 23
         },
         {
           "id": "cl_mute",
@@ -351,38 +351,38 @@
         },
         {
           "id": "cl_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "cl_f0",
-          "current": 2047,
+          "current": 1263,
           "cv": -1
         },
         {
           "id": "cl_tone",
-          "current": 2047,
+          "current": 1993,
           "cv": -1
         },
         {
           "id": "cl_decay",
-          "current": 2047,
+          "current": 970,
           "cv": -1
         },
         {
           "id": "cl_scale",
-          "current": 2047,
+          "current": 591,
           "cv": -1
         },
         {
           "id": "cl_transient",
-          "current": 7,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s1_gate",
           "current": 0,
-          "trig": -1
+          "trig": 24
         },
         {
           "id": "s1_mute",
@@ -391,47 +391,47 @@
         },
         {
           "id": "s1_lev",
-          "current": 2047,
+          "current": 1100,
           "cv": -1
         },
         {
           "id": "s1_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s1_speed",
-          "current": 4095,
+          "current": 2048,
           "cv": -1
         },
         {
           "id": "s1_pitch",
-          "current": 48,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s1_bank",
-          "current": 15,
+          "current": 1,
           "cv": -1
         },
         {
           "id": "s1_slice",
-          "current": 15,
+          "current": 7,
           "cv": -1
         },
         {
           "id": "s1_start",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s1_end",
-          "current": 2047,
+          "current": 436,
           "cv": -1
         },
         {
           "id": "s1_lp",
-          "current": 0,
+          "current": 1,
           "trig": -1
         },
         {
@@ -441,48 +441,48 @@
         },
         {
           "id": "s1_lp_pos",
-          "current": 2047,
+          "current": 701,
           "cv": -1
         },
         {
           "id": "s1_atk",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s1_dcy",
-          "current": 2047,
+          "current": 248,
           "cv": -1
         },
         {
           "id": "s1_eg2fm",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s1_brr",
-          "current": 7,
+          "current": 3,
           "cv": -1
         },
         {
           "id": "s1_ft",
-          "current": 1,
+          "current": 2,
           "cv": -1
         },
         {
           "id": "s1_fc",
-          "current": 2047,
+          "current": 1800,
           "cv": -1
         },
         {
           "id": "s1_fq",
-          "current": 2047,
+          "current": 220,
           "cv": -1
         },
         {
           "id": "s2_gate",
           "current": 0,
-          "trig": -1
+          "trig": 25
         },
         {
           "id": "s2_mute",
@@ -491,42 +491,42 @@
         },
         {
           "id": "s2_lev",
-          "current": 2047,
+          "current": 730,
           "cv": -1
         },
         {
           "id": "s2_pan",
-          "current": 4095,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s2_speed",
-          "current": 4095,
+          "current": 2048,
           "cv": -1
         },
         {
           "id": "s2_pitch",
-          "current": 48,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s2_bank",
-          "current": 15,
+          "current": 1,
           "cv": -1
         },
         {
           "id": "s2_slice",
-          "current": 15,
+          "current": 9,
           "cv": -1
         },
         {
           "id": "s2_start",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s2_end",
-          "current": 2047,
+          "current": 4095,
           "cv": -1
         },
         {
@@ -541,32 +541,32 @@
         },
         {
           "id": "s2_lp_pos",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s2_atk",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s2_dcy",
-          "current": 2047,
+          "current": 610,
           "cv": -1
         },
         {
           "id": "s2_eg2fm",
-          "current": 2047,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s2_brr",
-          "current": 7,
+          "current": 0,
           "cv": -1
         },
         {
           "id": "s2_ft",
-          "current": 1,
+          "current": 0,
           "cv": -1
         },
         {
@@ -580,233 +580,33 @@
           "cv": -1
         },
         {
-          "id": "s3_gate",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "s3_mute",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "s3_lev",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s3_pan",
-          "current": 4095,
-          "cv": -1
-        },
-        {
-          "id": "s3_speed",
-          "current": 4095,
-          "cv": -1
-        },
-        {
-          "id": "s3_pitch",
-          "current": 48,
-          "cv": -1
-        },
-        {
-          "id": "s3_bank",
-          "current": 15,
-          "cv": -1
-        },
-        {
-          "id": "s3_slice",
-          "current": 15,
-          "cv": -1
-        },
-        {
-          "id": "s3_start",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s3_end",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s3_lp",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "s3_lp_pp",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "s3_lp_pos",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s3_atk",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s3_dcy",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s3_eg2fm",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s3_brr",
-          "current": 7,
-          "cv": -1
-        },
-        {
-          "id": "s3_ft",
-          "current": 1,
-          "cv": -1
-        },
-        {
-          "id": "s3_fc",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s3_fq",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_gate",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "s4_mute",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "s4_lev",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_pan",
-          "current": 4095,
-          "cv": -1
-        },
-        {
-          "id": "s4_speed",
-          "current": 4095,
-          "cv": -1
-        },
-        {
-          "id": "s4_pitch",
-          "current": 48,
-          "cv": -1
-        },
-        {
-          "id": "s4_bank",
-          "current": 15,
-          "cv": -1
-        },
-        {
-          "id": "s4_slice",
-          "current": 15,
-          "cv": -1
-        },
-        {
-          "id": "s4_start",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_end",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_lp",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "s4_lp_pp",
-          "current": 0,
-          "trig": -1
-        },
-        {
-          "id": "s4_lp_pos",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_atk",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_dcy",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_eg2fm",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_brr",
-          "current": 7,
-          "cv": -1
-        },
-        {
-          "id": "s4_ft",
-          "current": 1,
-          "cv": -1
-        },
-        {
-          "id": "s4_fc",
-          "current": 2047,
-          "cv": -1
-        },
-        {
-          "id": "s4_fq",
-          "current": 2047,
-          "cv": -1
-        },
-        {
           "id": "c_thres",
           "current": 2047,
           "cv": -1
         },
         {
           "id": "c_ratio",
-          "current": 2047,
+          "current": 1090,
           "cv": -1
         },
         {
           "id": "c_atk",
-          "current": 2047,
+          "current": 100,
           "cv": -1
         },
         {
           "id": "c_rel",
-          "current": 2047,
+          "current": 430,
           "cv": -1
         },
         {
           "id": "c_lpf",
-          "current": 0,
+          "current": 1,
           "trig": -1
         },
         {
           "id": "c_gain",
-          "current": 2047,
+          "current": 1540,
           "cv": -1
         },
         {
