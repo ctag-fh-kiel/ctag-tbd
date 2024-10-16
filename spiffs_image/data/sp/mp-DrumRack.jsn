@@ -296,7 +296,7 @@
         },
         {
           "id": "rs_mute",
-          "current": 0,
+          "current": 1,
           "trig": -1
         },
         {
@@ -341,7 +341,7 @@
         },
         {
           "id": "cl_mute",
-          "current": 0,
+          "current": 1,
           "trig": -1
         },
         {
@@ -401,12 +401,12 @@
         },
         {
           "id": "s1_speed",
-          "current": 2048,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "s1_pitch",
-          "current": 0,
+          "current": 12,
           "cv": -1
         },
         {
@@ -426,7 +426,7 @@
         },
         {
           "id": "s1_end",
-          "current": 436,
+          "current": 460,
           "cv": -1
         },
         {
@@ -436,12 +436,12 @@
         },
         {
           "id": "s1_lp_pp",
-          "current": 0,
+          "current": 1,
           "trig": -1
         },
         {
           "id": "s1_lp_pos",
-          "current": 701,
+          "current": 0,
           "cv": -1
         },
         {
@@ -451,7 +451,7 @@
         },
         {
           "id": "s1_dcy",
-          "current": 248,
+          "current": 1308,
           "cv": -1
         },
         {
@@ -566,37 +566,137 @@
         },
         {
           "id": "s2_ft",
-          "current": 0,
+          "current": 1,
           "cv": -1
         },
         {
           "id": "s2_fc",
-          "current": 2047,
+          "current": 2801,
           "cv": -1
         },
         {
           "id": "s2_fq",
+          "current": 1108,
+          "cv": -1
+        },
+        {
+          "id": "s3_gate",
+          "current": 0,
+          "trig": 26
+        },
+        {
+          "id": "s3_mute",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "s3_lev",
+          "current": 1500,
+          "cv": -1
+        },
+        {
+          "id": "s3_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s3_speed",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "s3_pitch",
+          "current": 48,
+          "cv": -1
+        },
+        {
+          "id": "s3_bank",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "s3_slice",
+          "current": 7,
+          "cv": -1
+        },
+        {
+          "id": "s3_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s3_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "s3_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "s3_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "s3_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s3_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s3_dcy",
           "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "s3_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s3_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s3_ft",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "s3_fc",
+          "current": 2782,
+          "cv": -1
+        },
+        {
+          "id": "s3_fq",
+          "current": 0,
           "cv": -1
         },
         {
           "id": "c_thres",
-          "current": 2047,
+          "current": 1500,
           "cv": -1
         },
         {
           "id": "c_ratio",
-          "current": 1090,
+          "current": 1000,
           "cv": -1
         },
         {
           "id": "c_atk",
-          "current": 100,
+          "current": 150,
           "cv": -1
         },
         {
           "id": "c_rel",
-          "current": 430,
+          "current": 333,
           "cv": -1
         },
         {
@@ -606,7 +706,7 @@
         },
         {
           "id": "c_gain",
-          "current": 1540,
+          "current": 1200,
           "cv": -1
         },
         {
