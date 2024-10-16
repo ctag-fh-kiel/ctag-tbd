@@ -57,7 +57,7 @@ namespace CTAG::SYNTHESIS{
     		int pulse_remaining_samples_ {0};
         	float pulse_ {0.f};
         	float pulse_height_ {0.f};
-        	float pulse_lp_ {0.f};;
+        	float pulse_lp_ {0.f};
         	float noise_envelope_ {0.f};
         	float sustain_gain_ {0.f};
 
