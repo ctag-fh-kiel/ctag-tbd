@@ -2,14 +2,14 @@
 
 using namespace CTAG::SP;
 
-void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
-
+void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     // Analog Bass Drum
     MK_BOOL_PAR(bABMute, ab_mute)
     MK_BOOL_PAR(bABTrig, ab_trigger)
-    if(bABTrig != abd_trig_prev) {
+    if (bABTrig != abd_trig_prev){
         abd_trig_prev = bABTrig;
-    }else{
+    }
+    else{
         bABTrig = false;
     }
 
@@ -23,7 +23,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS_MIN_MAX(fABAfm, ab_a_fm, 4095.f, 0.f, 100.f)
     MK_FLT_PAR_ABS_MIN_MAX(fABSfm, ab_s_fm, 4095.f, 0.f, 100.f)
 
-    if(!bABMute) abd.Render(
+    if (!bABMute)
+        abd.Render(
             false,
             bABTrig,
             fABAccent,
@@ -35,15 +36,16 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
             abd_out,
             32);
     else{
-        memset(abd_out, 0, 32*sizeof(float));
+        memset(abd_out, 0, 32 * sizeof(float));
     }
 
     // Analog Snare Drum
     MK_BOOL_PAR(bASMute, as_mute)
     MK_BOOL_PAR(bASTrig, as_trigger)
-    if(bASTrig != asd_trig_prev) {
+    if (bASTrig != asd_trig_prev){
         asd_trig_prev = bASTrig;
-    }else{
+    }
+    else{
         bASTrig = false;
     }
 
@@ -56,7 +58,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fASDecay, as_decay, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fASAspy, as_a_spy, 4095.f, 1.f)
 
-    if(!bASMute) asd.Render(
+    if (!bASMute)
+        asd.Render(
             false,
             bASTrig,
             fASAccent,
@@ -67,15 +70,16 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
             asd_out,
             32);
     else{
-        memset(asd_out, 0, 32*sizeof(float));
+        memset(asd_out, 0, 32 * sizeof(float));
     }
 
     // Digital Bass Drum
     MK_BOOL_PAR(bDBMute, db_mute)
     MK_BOOL_PAR(bDBTrig, db_trigger)
-    if(bDBTrig != dbd_trig_prev) {
+    if (bDBTrig != dbd_trig_prev){
         dbd_trig_prev = bDBTrig;
-    }else{
+    }
+    else{
         bDBTrig = false;
     }
 
@@ -90,7 +94,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fDBFmEnv, db_fm_env, 4095.f, 5.f)
     MK_FLT_PAR_ABS(fDBFmDcy, db_fm_dcy, 4095.f, 4.f)
 
-    if(!bDBMute) dbd.Render(
+    if (!bDBMute)
+        dbd.Render(
             false,
             bDBTrig,
             fDBAccent,
@@ -103,15 +108,16 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
             dbd_out,
             32);
     else{
-        memset(dbd_out, 0, 32*sizeof(float));
+        memset(dbd_out, 0, 32 * sizeof(float));
     }
 
     // Digital Snare Drum
     MK_BOOL_PAR(bDSMute, ds_mute)
     MK_BOOL_PAR(bDSTrig, ds_trigger)
-    if(bDSTrig != dsd_trig_prev) {
+    if (bDSTrig != dsd_trig_prev){
         dsd_trig_prev = bDSTrig;
-    }else{
+    }
+    else{
         bDSTrig = false;
     }
 
@@ -124,7 +130,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fDSDecay, ds_decay, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fDSSpy, ds_spy, 4095.f, 1.f)
 
-    if(!bDSMute) dsd.Render(
+    if (!bDSMute)
+        dsd.Render(
             false,
             bDSTrig,
             fDSAccent,
@@ -135,15 +142,16 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
             dsd_out,
             32);
     else{
-        memset(dsd_out, 0, 32*sizeof(float));
+        memset(dsd_out, 0, 32 * sizeof(float));
     }
 
     // HiHat 1
     MK_BOOL_PAR(bHH1Mute, hh1_mute)
     MK_BOOL_PAR(bHH1Trig, hh1_trigger)
-    if(bHH1Trig != hh1_trig_prev) {
+    if (bHH1Trig != hh1_trig_prev){
         hh1_trig_prev = bHH1Trig;
-    }else{
+    }
+    else{
         bHH1Trig = false;
     }
 
@@ -156,7 +164,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fHH1Decay, hh1_decay, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fHH1Noise, hh1_noise, 4095.f, 1.f)
 
-    if(!bHH1Mute) hh1.Render(
+    if (!bHH1Mute)
+        hh1.Render(
             false,
             bHH1Trig,
             fHH1Accent,
@@ -169,15 +178,16 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
             hh1_out,
             32);
     else{
-        memset(hh1_out, 0, 32*sizeof(float));
+        memset(hh1_out, 0, 32 * sizeof(float));
     }
 
     // HiHat 2
     MK_BOOL_PAR(bHH2Mute, hh2_mute)
     MK_BOOL_PAR(bHH2Trig, hh2_trigger)
-    if(bHH2Trig != hh2_trig_prev) {
+    if (bHH2Trig != hh2_trig_prev){
         hh2_trig_prev = bHH2Trig;
-    }else{
+    }
+    else{
         bHH2Trig = false;
     }
 
@@ -190,7 +200,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fHH2Decay, hh2_decay, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fHH2Noise, hh2_noise, 4095.f, 1.f)
 
-    if(!bHH2Mute) hh2.Render(
+    if (!bHH2Mute)
+        hh2.Render(
             false,
             bHH2Trig,
             fHH2Accent,
@@ -203,8 +214,84 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
             hh2_out,
             32);
     else{
-        memset(hh2_out, 0, 32*sizeof(float));
+        memset(hh2_out, 0, 32 * sizeof(float));
     }
+
+    // rimshot
+    MK_BOOL_PAR(bRSMute, rs_mute)
+    MK_FLT_PAR_ABS(fRSLev, rs_lev, 4095.f, 2.f)
+    fRSLev *= fRSLev;
+    MK_FLT_PAR_ABS_PAN(fRSPan, rs_pan, 4095.f, 1.f)
+    if(!bRSMute){
+        MK_FLT_PAR_ABS_MIN_MAX(rs_f0_, rs_f0, 4095.f, 70.f, 350.f)
+        MK_FLT_PAR_ABS_MIN_MAX(rs_decay_, rs_decay, 4095.f, .1f, .75f)
+        MK_FLT_PAR_ABS_MIN_MAX(rs_noise_, rs_noise, 4095.f, 0.f, .2f)
+        MK_FLT_PAR_ABS_MIN_MAX(rs_accent_, rs_accent, 4095.f, 0.1f, 1.f)
+        MK_FLT_PAR_ABS_MIN_MAX(rs_base_, rs_tone, 4095.f, .35f, .65f)
+        MK_FLT_PAR_ABS_MIN_MAX(rs_reso_hp_, rs_tone, 4095.f, 5.f, 1.f)
+
+        rs.params.f0 = rs_f0_ / 44100.f;
+        rs.params.decay = rs_decay_;
+        rs.params.accent = rs_accent_;
+        rs.params.reso_hp = rs_reso_hp_;
+        rs.params.base = rs_base_;
+        rs.params.noise_level = rs_noise_;
+
+        MK_BOOL_PAR(bRSTrig, rs_trigger)
+        if (bRSTrig != rs_trig_prev && bRSTrig){
+            rs_trig_prev = true;
+            rs.Trigger();
+        }
+        else if (!bRSTrig){
+            rs_trig_prev = false;
+        }
+
+        rs.Process(rs_out, 32);
+    }else{
+    	memset(cl_out, 0, 32 * sizeof(float));
+    }
+
+
+    // clap
+    MK_BOOL_PAR(bCLMute, cl_mute)
+    MK_FLT_PAR_ABS(fCLLev, cl_lev, 4095.f, 2.f)
+    fCLLev *= fCLLev;
+    MK_FLT_PAR_ABS_PAN(fCLPan, cl_pan, 4095.f, 1.f)
+    if(!bCLMute){
+        MK_FLT_PAR_ABS_MIN_MAX(cl_pitch1_, cl_f0, 4095.f, 350.f, 4000.f)
+        MK_FLT_PAR_ABS_MIN_MAX(cl_pitch2_, cl_f0, 4095.f, 300.f, 3000.f)
+        MK_FLT_PAR_ABS_MIN_MAX(cl_reso1_, cl_tone, 4095.f, 1.f, 2.5f)
+        MK_FLT_PAR_ABS_MIN_MAX(cl_reso2_, cl_tone, 4095.f, 0.75f, 6.5f)
+        MK_FLT_PAR_ABS_MIN_MAX(cl_decay1_, cl_decay, 4095.f, 0.05f, 0.3f)
+        MK_FLT_PAR_ABS_MIN_MAX(cl_decay2_, cl_decay, 4095.f, 0.05f, 2.f)
+        MK_FLT_PAR_ABS_MIN_MAX(cl_scale_attack_, cl_scale, 4095.f, 0.f, 0.1f)
+        MK_FLT_PAR_ABS_MIN_MAX(cl_scale_trans, cl_scale, 4095.f, 1.f, 3.f)
+        MK_INT_PAR_ABS(cl_trans_, cl_transient, 16)
+
+        cl.params.pitch1 = cl_pitch1_ / 44100.f;
+        cl.params.pitch2 = cl_pitch2_ / 44100.f;
+        cl.params.reso1 = cl_reso1_;
+        cl.params.reso2 = cl_reso2_;
+        cl.params.decay1 = cl_decay1_;
+        cl.params.decay2 = cl_decay2_;
+        cl.params.attack = cl_scale_attack_;
+        cl.params.scale = cl_scale_trans;
+        cl.params.transient = cl_trans_ % 16;
+
+        MK_BOOL_PAR(bCLTrig, cl_trigger)
+        if (bCLTrig != cl_trig_prev && bCLTrig){
+            cl_trig_prev = true;
+            cl.Trigger();
+        }
+        else if (!bCLTrig){
+            cl_trig_prev = false;
+        }
+
+        cl.Process(cl_out, 32);
+    }else{
+    	memset(cl_out, 0, 32 * sizeof(float));
+    }
+
 
     // romplers
     uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
@@ -215,11 +302,11 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     fS1Lev *= fS1Lev;
     MK_FLT_PAR_ABS_PAN(fS1Pan, s1_pan, 4095.f, 1.f)
     float fS1Speed = s1_speed / 4095.f * 2.f;
-    if(cv_s1_speed != -1) fS1Speed += (fabsf(data.cv[cv_s1_speed]) - 0.5f) * 2.f * 2.f;
+    if (cv_s1_speed != -1) fS1Speed += (fabsf(data.cv[cv_s1_speed]) - 0.5f) * 2.f * 2.f;
     CONSTRAIN(fS1Speed, -2.f, 2.f)
     rompler[0].params.playbackSpeed = fS1Speed;
     float fS1Pitch = s1_pitch;
-    if(cv_s1_pitch != -1){
+    if (cv_s1_pitch != -1){
         fS1Pitch += data.cv[cv_s1_pitch] * 12.f * 5.f;
     }
     rompler[0].params.pitch = fS1Pitch;
@@ -256,169 +343,121 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_INT_PAR_ABS(iS1FType, s1_ft, 4.f)
     CONSTRAIN(iS1FType, 0, 3);
     rompler[0].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS1FType);
-    if(!bMuteS1) rompler[0].Process(s1_out, 32);
+    if (!bMuteS1) rompler[0].Process(s1_out, 32);
     else{
-        memset(s1_out, 0, 32*sizeof(float));
+        memset(s1_out, 0, 32 * sizeof(float));
     }
 
-
-    MK_BOOL_PAR(bMuteS2, s2_mute)
-    MK_BOOL_PAR(bGateS2, s2_gate)
-    rompler[1].params.gate = bGateS2;
-    MK_FLT_PAR_ABS(fS2Lev, s2_lev, 4095.f, 2.f)
-    fS2Lev *= fS2Lev;
-    MK_FLT_PAR_ABS_PAN(fS2Pan, s2_pan, 4095.f, 1.f)
-    float fS2Speed = s2_speed / 4095.f * 2.f;
-    if(cv_s2_speed != -1) fS2Speed += (fabsf(data.cv[cv_s2_speed]) - 0.5f) * 2.f * 2.f;
-    CONSTRAIN(fS2Speed, -2.f, 2.f)
-    rompler[1].params.playbackSpeed = fS2Speed;
-    float fS2Pitch = s2_pitch;
-    if(cv_s2_pitch != -1){
-        fS2Pitch += data.cv[cv_s2_pitch] * 12.f * 5.f;
-    }
-    rompler[1].params.pitch = fS2Pitch;
-    MK_INT_PAR_ABS(iS2Bank, s2_bank, 32.f)
-    CONSTRAIN(iS2Bank, 0, 31)
-    MK_INT_PAR_ABS(iS2Slice, s2_slice, 32.f)
-    CONSTRAIN(iS2Slice, 0, 31)
-    iS2Slice = iS2Bank * 32 + iS2Slice + firstNonWtSlice;
-    rompler[1].params.slice = iS2Slice;
-    MK_FLT_PAR_ABS(fS2Start, s2_start, 4095.f, 1.f)
-    rompler[1].params.startOffsetRelative = fS2Start;
-    MK_FLT_PAR_ABS(fS2Length, s2_end, 4095.f, 1.f)
-    rompler[1].params.lengthRelative = fS2Length;
-    MK_FLT_PAR_ABS(fS2LoopPos, s2_lp_pos, 4095.f, 1.f)
-    rompler[1].params.loopMarker = fS2LoopPos;
-    MK_BOOL_PAR(bS2Loop, s2_lp)
-    rompler[1].params.loop = bS2Loop;
-    MK_BOOL_PAR(bS2LoopPipo, s2_lp_pp)
-    rompler[1].params.loopPiPo = bS2LoopPipo;
-    MK_FLT_PAR_ABS(fS2Attack, s2_atk, 4095.f, 2.f)
-    rompler[1].params.a = fS2Attack;
-    MK_FLT_PAR_ABS(fS2Decay, s2_dcy, 4095.f, 50.f)
-    rompler[1].params.d = fS2Decay;
-    MK_FLT_PAR_ABS_SFT(fS2EGFM, s2_eg2fm, 4095.f, 12.f)
-    rompler[1].params.egFM = fS2EGFM;
-    MK_INT_PAR_ABS(iS2Brr, s2_brr, 16)
-    CONSTRAIN(iS2Brr, 0, 14)
-    rompler[1].params.bitReduction = iS2Brr;
-    // filter params
-    MK_FLT_PAR_ABS(fS2Cut, s2_fc, 4095.f, 1.f)
-    rompler[1].params.cutoff = fS2Cut;
-    MK_FLT_PAR_ABS(fS2Reso, s2_fq, 4095.f, 20.f)
-    rompler[1].params.resonance = fS2Reso;
-    MK_INT_PAR_ABS(iS2FType, s2_ft, 4.f)
-    CONSTRAIN(iS2FType, 0, 3);
-    rompler[1].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS2FType);
-    if(!bMuteS2) rompler[1].Process(s2_out, 32);
-    else{
-        memset(s2_out, 0, 32*sizeof(float));
-    }
-
-    MK_BOOL_PAR(bMuteS3, s3_mute)
-    MK_BOOL_PAR(bGateS3, s3_gate)
-    rompler[2].params.gate = bGateS3;
-    MK_FLT_PAR_ABS(fS3Lev, s3_lev, 4095.f, 2.f)
-    fS3Lev *= fS3Lev;
-    MK_FLT_PAR_ABS_PAN(fS3Pan, s3_pan, 4095.f, 1.f)
-    float fS3Speed = s3_speed / 4095.f * 2.f;
-    if(cv_s3_speed != -1) fS3Speed += (fabsf(data.cv[cv_s3_speed]) - 0.5f) * 2.f * 2.f;
-    CONSTRAIN(fS3Speed, -2.f, 2.f)
-    rompler[2].params.playbackSpeed = fS3Speed;
-    float fS3Pitch = s3_pitch;
-    if(cv_s3_pitch != -1){
-        fS3Pitch += data.cv[cv_s3_pitch] * 12.f * 5.f;
-    }
-    rompler[2].params.pitch = fS3Pitch;
-    MK_INT_PAR_ABS(iS3Bank, s3_bank, 32.f)
-    CONSTRAIN(iS3Bank, 0, 31)
-    MK_INT_PAR_ABS(iS3Slice, s3_slice, 32.f)
-    CONSTRAIN(iS3Slice, 0, 31)
-    iS3Slice = iS3Bank * 32 + iS3Slice + firstNonWtSlice;
-    rompler[2].params.slice = iS3Slice;
-    MK_FLT_PAR_ABS(fS3Start, s3_start, 4095.f, 1.f)
-    rompler[2].params.startOffsetRelative = fS3Start;
-    MK_FLT_PAR_ABS(fS3Length, s3_end, 4095.f, 1.f)
-    rompler[2].params.lengthRelative = fS3Length;
-    MK_FLT_PAR_ABS(fS3LoopPos, s3_lp_pos, 4095.f, 1.f)
-    rompler[2].params.loopMarker = fS3LoopPos;
-    MK_BOOL_PAR(bS3Loop, s3_lp)
-    rompler[2].params.loop = bS3Loop;
-    MK_BOOL_PAR(bS3LoopPipo, s3_lp_pp)
-    rompler[2].params.loopPiPo = bS3LoopPipo;
-    MK_FLT_PAR_ABS(fS3Attack, s3_atk, 4095.f, 2.f)
-    rompler[2].params.a = fS3Attack;
-    MK_FLT_PAR_ABS(fS3Decay, s3_dcy, 4095.f, 50.f)
-    rompler[2].params.d = fS3Decay;
-    MK_FLT_PAR_ABS_SFT(fS3EGFM, s3_eg2fm, 4095.f, 12.f)
-    rompler[2].params.egFM = fS3EGFM;
-    MK_INT_PAR_ABS(iS3Brr, s3_brr, 16)
-    CONSTRAIN(iS3Brr, 0, 14)
-    rompler[2].params.bitReduction = iS3Brr;
-    // filter params
-    MK_FLT_PAR_ABS(fS3Cut, s3_fc, 4095.f, 1.f)
-    rompler[2].params.cutoff = fS3Cut;
-    MK_FLT_PAR_ABS(fS3Reso, s3_fq, 4095.f, 20.f)
-    rompler[2].params.resonance = fS3Reso;
-    MK_INT_PAR_ABS(iS3FType, s3_ft, 4.f)
-    CONSTRAIN(iS3FType, 0, 3);
-    rompler[2].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS3FType);
-    if(!bMuteS3) rompler[2].Process(s3_out, 32);
-    else{
-        memset(s3_out, 0, 32*sizeof(float));
+    float fS2Lev = 0.f, fS2Pan = 0.f;
+    if (bRSMute){
+        MK_BOOL_PAR(bMuteS2, s2_mute)
+        MK_BOOL_PAR(bGateS2, s2_gate)
+        rompler[1].params.gate = bGateS2;
+        fS2Lev = s2_lev / 4095.f * 2.f;
+        if (cv_s2_lev != -1) fS2Lev = fabsf(data.cv[cv_s2_lev]) * 2.f;
+        fS2Lev *= fS2Lev;
+        fS2Pan = (s2_pan / 4095.f + 1.f) / 2.f * 1.f;
+        if (cv_s2_pan != -1) fS2Pan = fabsf(data.cv[cv_s2_pan]) * 1.f;
+        float fS2Speed = s2_speed / 4095.f * 2.f;
+        if (cv_s2_speed != -1) fS2Speed += (fabsf(data.cv[cv_s2_speed]) - 0.5f) * 2.f * 2.f;
+        CONSTRAIN(fS2Speed, -2.f, 2.f)
+        rompler[1].params.playbackSpeed = fS2Speed;
+        float fS2Pitch = s2_pitch;
+        if (cv_s2_pitch != -1){
+            fS2Pitch += data.cv[cv_s2_pitch] * 12.f * 5.f;
+        }
+        rompler[1].params.pitch = fS2Pitch;
+        MK_INT_PAR_ABS(iS2Bank, s2_bank, 32.f)
+        CONSTRAIN(iS2Bank, 0, 31)
+        MK_INT_PAR_ABS(iS2Slice, s2_slice, 32.f)
+        CONSTRAIN(iS2Slice, 0, 31)
+        iS2Slice = iS2Bank * 32 + iS2Slice + firstNonWtSlice;
+        rompler[1].params.slice = iS2Slice;
+        MK_FLT_PAR_ABS(fS2Start, s2_start, 4095.f, 1.f)
+        rompler[1].params.startOffsetRelative = fS2Start;
+        MK_FLT_PAR_ABS(fS2Length, s2_end, 4095.f, 1.f)
+        rompler[1].params.lengthRelative = fS2Length;
+        MK_FLT_PAR_ABS(fS2LoopPos, s2_lp_pos, 4095.f, 1.f)
+        rompler[1].params.loopMarker = fS2LoopPos;
+        MK_BOOL_PAR(bS2Loop, s2_lp)
+        rompler[1].params.loop = bS2Loop;
+        MK_BOOL_PAR(bS2LoopPipo, s2_lp_pp)
+        rompler[1].params.loopPiPo = bS2LoopPipo;
+        MK_FLT_PAR_ABS(fS2Attack, s2_atk, 4095.f, 2.f)
+        rompler[1].params.a = fS2Attack;
+        MK_FLT_PAR_ABS(fS2Decay, s2_dcy, 4095.f, 50.f)
+        rompler[1].params.d = fS2Decay;
+        MK_FLT_PAR_ABS_SFT(fS2EGFM, s2_eg2fm, 4095.f, 12.f)
+        rompler[1].params.egFM = fS2EGFM;
+        MK_INT_PAR_ABS(iS2Brr, s2_brr, 16)
+        CONSTRAIN(iS2Brr, 0, 14)
+        rompler[1].params.bitReduction = iS2Brr;
+        // filter params
+        MK_FLT_PAR_ABS(fS2Cut, s2_fc, 4095.f, 1.f)
+        rompler[1].params.cutoff = fS2Cut;
+        MK_FLT_PAR_ABS(fS2Reso, s2_fq, 4095.f, 20.f)
+        rompler[1].params.resonance = fS2Reso;
+        MK_INT_PAR_ABS(iS2FType, s2_ft, 4.f)
+        CONSTRAIN(iS2FType, 0, 3);
+        rompler[1].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS2FType);
+        if (!bMuteS2) rompler[1].Process(s2_out, 32);
+        else memset(s2_out, 0, 32 * sizeof(float));
     }
 
-    MK_BOOL_PAR(bMuteS4, s4_mute)
-    MK_BOOL_PAR(bGateS4, s4_gate)
-    rompler[3].params.gate = bGateS4;
-    MK_FLT_PAR_ABS(fS4Lev, s4_lev, 4095.f, 2.f)
-    fS4Lev *= fS4Lev;
-    MK_FLT_PAR_ABS_PAN(fS4Pan, s4_pan, 4095.f, 1.f)
-    float fS4Speed = s4_speed / 4095.f * 2.f;
-    if(cv_s4_speed != -1) fS4Speed += (fabsf(data.cv[cv_s4_speed]) - 0.5f) * 2.f * 2.f;
-    CONSTRAIN(fS4Speed, -2.f, 2.f)
-    rompler[3].params.playbackSpeed = fS4Speed;
-    float fS4Pitch = s4_pitch;
-    if(cv_s4_pitch != -1){
-        fS4Pitch += data.cv[cv_s4_pitch] * 12.f * 5.f;
-    }
-    rompler[3].params.pitch = fS4Pitch;
-    MK_INT_PAR_ABS(iS4Bank, s4_bank, 32.f)
-    CONSTRAIN(iS4Bank, 0, 31)
-    MK_INT_PAR_ABS(iS4Slice, s4_slice, 32.f)
-    CONSTRAIN(iS4Slice, 0, 31)
-    iS4Slice = iS4Bank * 32 + iS4Slice + firstNonWtSlice;
-    rompler[3].params.slice = iS4Slice;
-    MK_FLT_PAR_ABS(fS4Start, s4_start, 4095.f, 1.f)
-    rompler[3].params.startOffsetRelative = fS4Start;
-    MK_FLT_PAR_ABS(fS4Length, s4_end, 4095.f, 1.f)
-    rompler[3].params.lengthRelative = fS4Length;
-    MK_FLT_PAR_ABS(fS4LoopPos, s4_lp_pos, 4095.f, 1.f)
-    rompler[3].params.loopMarker = fS4LoopPos;
-    MK_BOOL_PAR(bS4Loop, s4_lp)
-    rompler[3].params.loop = bS4Loop;
-    MK_BOOL_PAR(bS4LoopPipo, s4_lp_pp)
-    rompler[3].params.loopPiPo = bS4LoopPipo;
-    MK_FLT_PAR_ABS(fS4Attack, s4_atk, 4095.f, 2.f)
-    rompler[3].params.a = fS4Attack;
-    MK_FLT_PAR_ABS(fS4Decay, s4_dcy, 4095.f, 50.f)
-    rompler[3].params.d = fS4Decay;
-    MK_FLT_PAR_ABS_SFT(fS4EGFM, s4_eg2fm, 4095.f, 12.f)
-    rompler[3].params.egFM = fS4EGFM;
-    MK_INT_PAR_ABS(iS4Brr, s4_brr, 16)
-    CONSTRAIN(iS4Brr, 0, 14)
-    rompler[3].params.bitReduction = iS4Brr;
-    // filter params
-    MK_FLT_PAR_ABS(fS4Cut, s4_fc, 4095.f, 1.f)
-    rompler[3].params.cutoff = fS4Cut;
-    MK_FLT_PAR_ABS(fS4Reso, s4_fq, 4095.f, 20.f)
-    rompler[3].params.resonance = fS4Reso;
-    MK_INT_PAR_ABS(iS4FType, s4_ft, 4.f)
-    CONSTRAIN(iS4FType, 0, 3);
-    rompler[3].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS4FType);
-    if(!bMuteS4) rompler[3].Process(s4_out, 32);
-    else{
-        memset(s4_out, 0, 32*sizeof(float));
+    float fS3Lev = 0.f, fS3Pan = 0.f;;
+    if (bRSMute && bCLMute){
+        MK_BOOL_PAR(bMuteS3, s3_mute)
+        MK_BOOL_PAR(bGateS3, s3_gate)
+        rompler[2].params.gate = bGateS3;
+    	fS3Lev = s3_lev / 4095.f * 2.f;
+        if (cv_s3_lev != -1) fS3Lev = fabsf(data.cv[cv_s3_lev]) * 2.f;
+        fS3Lev *= fS3Lev;
+        fS3Pan = (s3_pan / 4095.f + 1.f) / 2.f * 1.f;
+        if (cv_s3_pan != -1) fS3Pan = fabsf(data.cv[cv_s3_pan]) * 1.f;
+        float fS3Speed = s3_speed / 4095.f * 2.f;
+        if (cv_s3_speed != -1) fS3Speed += (fabsf(data.cv[cv_s3_speed]) - 0.5f) * 2.f * 2.f;
+        CONSTRAIN(fS3Speed, -2.f, 2.f)
+        rompler[2].params.playbackSpeed = fS3Speed;
+        float fS3Pitch = s3_pitch;
+        if (cv_s3_pitch != -1){
+            fS3Pitch += data.cv[cv_s3_pitch] * 12.f * 5.f;
+        }
+        rompler[2].params.pitch = fS3Pitch;
+        MK_INT_PAR_ABS(iS3Bank, s3_bank, 32.f)
+        CONSTRAIN(iS3Bank, 0, 31)
+        MK_INT_PAR_ABS(iS3Slice, s3_slice, 32.f)
+        CONSTRAIN(iS3Slice, 0, 31)
+        iS3Slice = iS3Bank * 32 + iS3Slice + firstNonWtSlice;
+        rompler[2].params.slice = iS3Slice;
+        MK_FLT_PAR_ABS(fS3Start, s3_start, 4095.f, 1.f)
+        rompler[2].params.startOffsetRelative = fS3Start;
+        MK_FLT_PAR_ABS(fS3Length, s3_end, 4095.f, 1.f)
+        rompler[2].params.lengthRelative = fS3Length;
+        MK_FLT_PAR_ABS(fS3LoopPos, s3_lp_pos, 4095.f, 1.f)
+        rompler[2].params.loopMarker = fS3LoopPos;
+        MK_BOOL_PAR(bS3Loop, s3_lp)
+        rompler[2].params.loop = bS3Loop;
+        MK_BOOL_PAR(bS3LoopPipo, s3_lp_pp)
+        rompler[2].params.loopPiPo = bS3LoopPipo;
+        MK_FLT_PAR_ABS(fS3Attack, s3_atk, 4095.f, 2.f)
+        rompler[2].params.a = fS3Attack;
+        MK_FLT_PAR_ABS(fS3Decay, s3_dcy, 4095.f, 50.f)
+        rompler[2].params.d = fS3Decay;
+        MK_FLT_PAR_ABS_SFT(fS3EGFM, s3_eg2fm, 4095.f, 12.f)
+        rompler[2].params.egFM = fS3EGFM;
+        MK_INT_PAR_ABS(iS3Brr, s3_brr, 16)
+        CONSTRAIN(iS3Brr, 0, 14)
+        rompler[2].params.bitReduction = iS3Brr;
+        // filter params
+        MK_FLT_PAR_ABS(fS3Cut, s3_fc, 4095.f, 1.f)
+        rompler[2].params.cutoff = fS3Cut;
+        MK_FLT_PAR_ABS(fS3Reso, s3_fq, 4095.f, 20.f)
+        rompler[2].params.resonance = fS3Reso;
+        MK_INT_PAR_ABS(iS3FType, s3_ft, 4.f)
+        CONSTRAIN(iS3FType, 0, 3);
+        rompler[2].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS3FType);
+        if (!bMuteS3) rompler[2].Process(s3_out, 32);
+        else memset(s3_out, 0, 32 * sizeof(float));
     }
 
     // sum compressor
@@ -433,7 +472,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_BOOL_PAR(bSideChainLPF, c_lpf)
     MK_FLT_PAR_ABS_PAN(fCompMix, c_mix, 4095.f, 1.f)
     MK_FLT_PAR_ABS_MIN_MAX(fCompMUPGain, c_gain, 4095.f, 0.f, 60.f) // in dB
-    if(fCompMUPGain != fCompMUPGain_pre){
+    if (fCompMUPGain != fCompMUPGain_pre){
         fCompMUPGain = chunkware_simple::dB2lin(fCompMUPGain);
         fCompMUPGain_pre = fCompMUPGain;
     }
@@ -443,41 +482,83 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
     MK_FLT_PAR_ABS(fMixLevel, sum_lev, 4095.f, 3.f)
     fMixLevel *= fMixLevel;
 
-    if(bSumMute) {
-        memset(data.buf, 0, 32*2*sizeof(float));
+    if (bSumMute){
+        memset(data.buf, 0, 32 * 2 * sizeof(float));
         return;
     }
 
     // render final buffer
-    for(int i=0;i<32;i++){
+    // calc volumes
+    float lev_l[11] = {
+        fABLev * (1.f - fABPan),
+        fASLev * (1.f - fASPan),
+        fDBLev * (1.f - fDBPan),
+        fDSLev * (1.f - fDSPan),
+        fHH1Lev * (1.f - fHH1Pan),
+        fHH2Lev * (1.f - fHH2Pan),
+        fRSLev * (1.f - fRSPan),
+        fCLLev * (1.f - fCLPan),
+        fS1Lev * (1.f - fS1Pan),
+        fS2Lev * (1.f - fS2Pan),
+        fS3Lev * (1.f - fS3Pan)
+    };
+    float lev_r[11] = {
+        fABLev * fABPan,
+        fASLev * fASPan,
+        fDBLev * fDBPan,
+        fDSLev * fDSPan,
+        fHH1Lev * fHH1Pan,
+        fHH2Lev * fHH2Pan,
+        fRSLev * fRSPan,
+        fCLLev * fCLPan,
+        fS1Lev * fS1Pan,
+        fS2Lev * fS2Pan,
+        fS3Lev * fS3Pan
+    };
+    for (int i = 0; i < 32; i++){
         float fVal_l;
         float fVal_r;
-        fVal_l = abd_out[i] * fABLev * (1.f-fABPan);
-        fVal_l += asd_out[i] * fASLev * (1.f-fASPan);
-        fVal_l += dbd_out[i] * fDBLev * (1.f-fDBPan);
-        fVal_l += dsd_out[i] * fDSLev * (1.f-fDSPan);
-        fVal_l += hh1_out[i] * fHH1Lev * (1.f-fHH1Pan);
-        fVal_l += hh2_out[i] * fHH2Lev * (1.f-fHH2Pan);
-        fVal_l += s1_out[i] * fS1Lev * (1.f-fS1Pan);
-        fVal_l += s2_out[i] * fS2Lev * (1.f-fS2Pan);
-        fVal_l += s3_out[i] * fS3Lev * (1.f-fS3Pan);
-        fVal_l += s4_out[i] * fS4Lev * (1.f-fS4Pan);
-        fVal_r = abd_out[i] * fABLev * fABPan;
-        fVal_r += asd_out[i] * fASLev * fASPan;
-        fVal_r += dbd_out[i] * fDBLev * fDBPan;
-        fVal_r += dsd_out[i] * fDSLev * fDSPan;
-        fVal_r += hh1_out[i] * fHH1Lev * fHH1Pan;
-        fVal_r += hh2_out[i] * fHH2Lev * fHH2Pan;
-        fVal_r += s1_out[i] * fS1Lev * fS1Pan;
-        fVal_r += s2_out[i] * fS2Lev * fS2Pan;
-        fVal_r += s3_out[i] * fS3Lev * fS3Pan;
-        fVal_r += s4_out[i] * fS4Lev * fS4Pan;
+        fVal_l = abd_out[i] * lev_l[0];
+        fVal_l += asd_out[i] * lev_l[1];
+        fVal_l += dbd_out[i] * lev_l[2];
+        fVal_l += dsd_out[i] * lev_l[3];
+        fVal_l += hh1_out[i] * lev_l[4];
+        fVal_l += hh2_out[i] * lev_l[5];
+
+        fVal_l += s1_out[i] * lev_l[8];
+
+        fVal_r = abd_out[i] * lev_r[0];
+        fVal_r += asd_out[i] * lev_r[1];
+        fVal_r += dbd_out[i] * lev_r[2];
+        fVal_r += dsd_out[i] * lev_r[3];
+        fVal_r += hh1_out[i] * lev_r[4];
+        fVal_r += hh2_out[i] * lev_r[5];
+
+        fVal_r += s1_out[i] * lev_r[8];
+
+        if (bRSMute){
+            fVal_l += s2_out[i] * lev_l[9];
+            fVal_r += s2_out[i] * lev_r[9];
+        }else{
+            fVal_l += rs_out[i] * lev_l[6];
+            fVal_r += rs_out[i] * lev_r[6];
+        }
+
+        if (bRSMute && bCLMute){
+            fVal_l += s3_out[i] * lev_l[10];
+            fVal_r += s3_out[i] * lev_r[10];
+        }else{
+            fVal_l += cl_out[i] * lev_l[7];
+            fVal_r += cl_out[i] * lev_r[7];
+        }
+
         float dry_l = fVal_l;
         float dry_r = fVal_r;
-        if(bSideChainLPF){
+        if (bSideChainLPF){
             ONE_POLE(side_l, fVal_l, 0.0005f);
             ONE_POLE(side_r, fVal_r, 0.0005f);
-        }else{
+        }
+        else{
             side_l = fVal_l;
             side_r = fVal_r;
         }
@@ -485,14 +566,14 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData &data) {
         side_r = fabsf(side_r);
         float side = std::max(side_l, side_r);
         sumCompressor.process(fVal_l, fVal_r, side);
-        fVal_l = fVal_l * fCompMUPGain * fCompMix + dry_l * (1.f-fCompMix);
-        fVal_r = fVal_r * fCompMUPGain * fCompMix + dry_r * (1.f-fCompMix);
-        data.buf[i*2] = fVal_l * fMixLevel;
-        data.buf[i*2+1] = fVal_r * fMixLevel;
+        fVal_l = fVal_l * fCompMUPGain * fCompMix + dry_l * (1.f - fCompMix);
+        fVal_r = fVal_r * fCompMUPGain * fCompMix + dry_r * (1.f - fCompMix);
+        data.buf[i * 2] = fVal_l * fMixLevel;
+        data.buf[i * 2 + 1] = fVal_r * fMixLevel;
     }
 }
 
-void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void *blockPtr) {
+void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     // construct internal data model
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
@@ -512,9 +593,11 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void *blockPtr) {
     dsd.Init();
     hh1.Init();
     hh2.Init();
+    rs.Init();
+    cl.Init();
 
     // init romplers
-    for(auto &r : rompler){
+    for (auto& r : rompler){
         r.Init(44100.f);
     }
 
@@ -526,7 +609,7 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void *blockPtr) {
 
 // no ctor, use Init() instead, is called from factory after successful creation
 // dtor
-ctagSoundProcessorDrumRack::~ctagSoundProcessorDrumRack() {
+ctagSoundProcessorDrumRack::~ctagSoundProcessorDrumRack(){
     // no explicit freeing for blockMem needed, done by ctagSPAllocator
     // explicit free is only needed when using heap_caps_malloc() with MALLOC_CAPS_SPIRAM
 }
@@ -648,6 +731,42 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("hh2_decay", [&](const int val){ cv_hh2_decay = val;});
 	pMapPar.emplace("hh2_noise", [&](const int val){ hh2_noise = val;});
 	pMapCv.emplace("hh2_noise", [&](const int val){ cv_hh2_noise = val;});
+	pMapPar.emplace("rs_trigger", [&](const int val){ rs_trigger = val;});
+	pMapTrig.emplace("rs_trigger", [&](const int val){ trig_rs_trigger = val;});
+	pMapPar.emplace("rs_mute", [&](const int val){ rs_mute = val;});
+	pMapTrig.emplace("rs_mute", [&](const int val){ trig_rs_mute = val;});
+	pMapPar.emplace("rs_lev", [&](const int val){ rs_lev = val;});
+	pMapCv.emplace("rs_lev", [&](const int val){ cv_rs_lev = val;});
+	pMapPar.emplace("rs_pan", [&](const int val){ rs_pan = val;});
+	pMapCv.emplace("rs_pan", [&](const int val){ cv_rs_pan = val;});
+	pMapPar.emplace("rs_accent", [&](const int val){ rs_accent = val;});
+	pMapCv.emplace("rs_accent", [&](const int val){ cv_rs_accent = val;});
+	pMapPar.emplace("rs_f0", [&](const int val){ rs_f0 = val;});
+	pMapCv.emplace("rs_f0", [&](const int val){ cv_rs_f0 = val;});
+	pMapPar.emplace("rs_tone", [&](const int val){ rs_tone = val;});
+	pMapCv.emplace("rs_tone", [&](const int val){ cv_rs_tone = val;});
+	pMapPar.emplace("rs_decay", [&](const int val){ rs_decay = val;});
+	pMapCv.emplace("rs_decay", [&](const int val){ cv_rs_decay = val;});
+	pMapPar.emplace("rs_noise", [&](const int val){ rs_noise = val;});
+	pMapCv.emplace("rs_noise", [&](const int val){ cv_rs_noise = val;});
+	pMapPar.emplace("cl_trigger", [&](const int val){ cl_trigger = val;});
+	pMapTrig.emplace("cl_trigger", [&](const int val){ trig_cl_trigger = val;});
+	pMapPar.emplace("cl_mute", [&](const int val){ cl_mute = val;});
+	pMapTrig.emplace("cl_mute", [&](const int val){ trig_cl_mute = val;});
+	pMapPar.emplace("cl_lev", [&](const int val){ cl_lev = val;});
+	pMapCv.emplace("cl_lev", [&](const int val){ cv_cl_lev = val;});
+	pMapPar.emplace("cl_pan", [&](const int val){ cl_pan = val;});
+	pMapCv.emplace("cl_pan", [&](const int val){ cv_cl_pan = val;});
+	pMapPar.emplace("cl_f0", [&](const int val){ cl_f0 = val;});
+	pMapCv.emplace("cl_f0", [&](const int val){ cv_cl_f0 = val;});
+	pMapPar.emplace("cl_tone", [&](const int val){ cl_tone = val;});
+	pMapCv.emplace("cl_tone", [&](const int val){ cv_cl_tone = val;});
+	pMapPar.emplace("cl_decay", [&](const int val){ cl_decay = val;});
+	pMapCv.emplace("cl_decay", [&](const int val){ cv_cl_decay = val;});
+	pMapPar.emplace("cl_scale", [&](const int val){ cl_scale = val;});
+	pMapCv.emplace("cl_scale", [&](const int val){ cv_cl_scale = val;});
+	pMapPar.emplace("cl_transient", [&](const int val){ cl_transient = val;});
+	pMapCv.emplace("cl_transient", [&](const int val){ cv_cl_transient = val;});
 	pMapPar.emplace("s1_gate", [&](const int val){ s1_gate = val;});
 	pMapTrig.emplace("s1_gate", [&](const int val){ trig_s1_gate = val;});
 	pMapPar.emplace("s1_mute", [&](const int val){ s1_mute = val;});
@@ -658,7 +777,7 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s1_pan", [&](const int val){ cv_s1_pan = val;});
 	pMapPar.emplace("s1_speed", [&](const int val){ s1_speed = val;});
 	pMapCv.emplace("s1_speed", [&](const int val){ cv_s1_speed = val;});
-    pMapPar.emplace("s1_pitch", [&](const int val){ s1_pitch= val;});
+	pMapPar.emplace("s1_pitch", [&](const int val){ s1_pitch = val;});
 	pMapCv.emplace("s1_pitch", [&](const int val){ cv_s1_pitch = val;});
 	pMapPar.emplace("s1_bank", [&](const int val){ s1_bank = val;});
 	pMapCv.emplace("s1_bank", [&](const int val){ cv_s1_bank = val;});
@@ -698,8 +817,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s2_pan", [&](const int val){ cv_s2_pan = val;});
 	pMapPar.emplace("s2_speed", [&](const int val){ s2_speed = val;});
 	pMapCv.emplace("s2_speed", [&](const int val){ cv_s2_speed = val;});
-    pMapPar.emplace("s2_pitch", [&](const int val){ s2_pitch= val;});
-    pMapCv.emplace("s2_pitch", [&](const int val){ cv_s2_pitch = val;});
+	pMapPar.emplace("s2_pitch", [&](const int val){ s2_pitch = val;});
+	pMapCv.emplace("s2_pitch", [&](const int val){ cv_s2_pitch = val;});
 	pMapPar.emplace("s2_bank", [&](const int val){ s2_bank = val;});
 	pMapCv.emplace("s2_bank", [&](const int val){ cv_s2_bank = val;});
 	pMapPar.emplace("s2_slice", [&](const int val){ s2_slice = val;});
@@ -738,8 +857,8 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s3_pan", [&](const int val){ cv_s3_pan = val;});
 	pMapPar.emplace("s3_speed", [&](const int val){ s3_speed = val;});
 	pMapCv.emplace("s3_speed", [&](const int val){ cv_s3_speed = val;});
-    pMapPar.emplace("s3_pitch", [&](const int val){ s3_pitch= val;});
-    pMapCv.emplace("s3_pitch", [&](const int val){ cv_s3_pitch = val;});
+	pMapPar.emplace("s3_pitch", [&](const int val){ s3_pitch = val;});
+	pMapCv.emplace("s3_pitch", [&](const int val){ cv_s3_pitch = val;});
 	pMapPar.emplace("s3_bank", [&](const int val){ s3_bank = val;});
 	pMapCv.emplace("s3_bank", [&](const int val){ cv_s3_bank = val;});
 	pMapPar.emplace("s3_slice", [&](const int val){ s3_slice = val;});
@@ -768,46 +887,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s3_fc", [&](const int val){ cv_s3_fc = val;});
 	pMapPar.emplace("s3_fq", [&](const int val){ s3_fq = val;});
 	pMapCv.emplace("s3_fq", [&](const int val){ cv_s3_fq = val;});
-	pMapPar.emplace("s4_gate", [&](const int val){ s4_gate = val;});
-	pMapTrig.emplace("s4_gate", [&](const int val){ trig_s4_gate = val;});
-	pMapPar.emplace("s4_mute", [&](const int val){ s4_mute = val;});
-	pMapTrig.emplace("s4_mute", [&](const int val){ trig_s4_mute = val;});
-	pMapPar.emplace("s4_lev", [&](const int val){ s4_lev = val;});
-	pMapCv.emplace("s4_lev", [&](const int val){ cv_s4_lev = val;});
-	pMapPar.emplace("s4_pan", [&](const int val){ s4_pan = val;});
-	pMapCv.emplace("s4_pan", [&](const int val){ cv_s4_pan = val;});
-	pMapPar.emplace("s4_speed", [&](const int val){ s4_speed = val;});
-	pMapCv.emplace("s4_speed", [&](const int val){ cv_s4_speed = val;});
-    pMapPar.emplace("s4_pitch", [&](const int val){ s4_pitch= val;});
-    pMapCv.emplace("s4_pitch", [&](const int val){ cv_s4_pitch = val;});
-	pMapPar.emplace("s4_bank", [&](const int val){ s4_bank = val;});
-	pMapCv.emplace("s4_bank", [&](const int val){ cv_s4_bank = val;});
-	pMapPar.emplace("s4_slice", [&](const int val){ s4_slice = val;});
-	pMapCv.emplace("s4_slice", [&](const int val){ cv_s4_slice = val;});
-	pMapPar.emplace("s4_start", [&](const int val){ s4_start = val;});
-	pMapCv.emplace("s4_start", [&](const int val){ cv_s4_start = val;});
-	pMapPar.emplace("s4_end", [&](const int val){ s4_end = val;});
-	pMapCv.emplace("s4_end", [&](const int val){ cv_s4_end = val;});
-	pMapPar.emplace("s4_lp", [&](const int val){ s4_lp = val;});
-	pMapTrig.emplace("s4_lp", [&](const int val){ trig_s4_lp = val;});
-	pMapPar.emplace("s4_lp_pp", [&](const int val){ s4_lp_pp = val;});
-	pMapTrig.emplace("s4_lp_pp", [&](const int val){ trig_s4_lp_pp = val;});
-	pMapPar.emplace("s4_lp_pos", [&](const int val){ s4_lp_pos = val;});
-	pMapCv.emplace("s4_lp_pos", [&](const int val){ cv_s4_lp_pos = val;});
-	pMapPar.emplace("s4_atk", [&](const int val){ s4_atk = val;});
-	pMapCv.emplace("s4_atk", [&](const int val){ cv_s4_atk = val;});
-	pMapPar.emplace("s4_dcy", [&](const int val){ s4_dcy = val;});
-	pMapCv.emplace("s4_dcy", [&](const int val){ cv_s4_dcy = val;});
-	pMapPar.emplace("s4_eg2fm", [&](const int val){ s4_eg2fm = val;});
-	pMapCv.emplace("s4_eg2fm", [&](const int val){ cv_s4_eg2fm = val;});
-	pMapPar.emplace("s4_brr", [&](const int val){ s4_brr = val;});
-	pMapCv.emplace("s4_brr", [&](const int val){ cv_s4_brr = val;});
-	pMapPar.emplace("s4_ft", [&](const int val){ s4_ft = val;});
-	pMapCv.emplace("s4_ft", [&](const int val){ cv_s4_ft = val;});
-	pMapPar.emplace("s4_fc", [&](const int val){ s4_fc = val;});
-	pMapCv.emplace("s4_fc", [&](const int val){ cv_s4_fc = val;});
-	pMapPar.emplace("s4_fq", [&](const int val){ s4_fq = val;});
-	pMapCv.emplace("s4_fq", [&](const int val){ cv_s4_fq = val;});
 	pMapPar.emplace("c_thres", [&](const int val){ c_thres = val;});
 	pMapCv.emplace("c_thres", [&](const int val){ cv_c_thres = val;});
 	pMapPar.emplace("c_ratio", [&](const int val){ c_ratio = val;});
