@@ -29,16 +29,6 @@ respective component folders / files if different from this license.
 #include "clouds/resources.h" // use fade lut
 
 namespace CTAG::SYNTHESIS {
-    inline float InterpolateWave( // use this to save more cpu, however correct zdelays to 2 instead of 4
-            const float *table,
-            int32_t index_integral,
-            float index_fractional) {
-        float a = static_cast<float>(table[index_integral]);
-        float b = static_cast<float>(table[index_integral + 1]);
-        float t = index_fractional;
-        return a + (b - a) * t;
-    }
-
 
     void RomplerVoiceMinimal::Process(float *out, const uint32_t size) {
         // check for trigger signal
@@ -520,7 +510,8 @@ namespace CTAG::SYNTHESIS {
             // interpolate wave
             const float p = readBufferPhase;
             MAKE_INTEGRAL_FRACTIONAL(p);
-            float x = InterpolateWave(readBufferFloat, p_integral, p_fractional);
+            // use this to save more cpu, however correct zdelays to 2 instead of 4
+            float x = InterpolateWaveLinear(readBufferFloat, p_integral, p_fractional);
             // apply AM
             out[i] = x * ad.Process();
             readBufferPhase += phaseIncrement;
