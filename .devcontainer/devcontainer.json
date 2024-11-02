@@ -1,28 +1,53 @@
 {
-  "name": "esp-idf",
-  "image": "docker.io/sergiogasquez/esp-idf-env:v4.4_esp32",
-  // "build": {
-  //   "dockerfile": "Dockerfile",
-  //   "args": {
-  //     "ESP_BOARD": "esp32",
-  //     "ESP_IDF_VERSION": "release/v4.4"
-  //   }
-  // },
-  "settings": {
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "modifications",
-    "editor.formatOnType": true,
-    "lldb.executable": "/usr/bin/lldb",
-    "files.watcherExclude": {
-      "**/target/**": true
-    }
-  },
-  "extensions": [
-    "mutantdino.resourcemonitor",
-    "yzhang.markdown-all-in-one",
-    "espressif.esp-idf-extension"
-  ],
-  "workspaceMount": "source=${localWorkspaceFolder},target=/home/esp/workspace,type=bind,consistency=cached",
-  "workspaceFolder": "/home/esp/workspace/"
+    "name": "tbd-dev-container",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/ctag_tbd,type=bind",
+    "workspaceFolder": "/workspaces/ctag_tbd",
+    "mounts": [
+        "source=extensionCache,target=/root/.vscode-server/extensions,type=volume"
+    ],
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "containerEnv": {
+        "IDF_TARGET": "esp32s3",
+        "TBD_PROJECT_DIR": "${containerWorkspaceFolder}",
+        "TBD_FIRMWARE_BUILD_DIR": "${containerWorkspaceFolder}/build/firmware",
+        "TBD_DOCS_DIR": "${containerWorkspaceFolder}/docs",
+        "TBD_DOCS_BUILD_DIR": "${containerWorkspaceFolder}/build/docs"
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                // configure IDF plugin
+                "idf.espIdfPath": "/opt/esp/idf",
+                "idf.toolsPath": "/opt/esp",
+                "idf.gitPath": "/usr/bin/git",
+                "idf.adapterTargetName": "esp32s3",
+                "idf.buildPath": "${workspaceFolder}/build/firmware",
+                "cmake.buildDirectory": "${workspaceFolder}/build/firmware",
+                "esbonio.sphinx.buildDir": "${workspaceFolder}/build/docs",
+                "esbonio.sphinx.confDir": "${workspaceFolder}/docs/config",
+                "esbonio.sphinx.srcDir": "${workspaceFolder}/docs"
+            },
+            "extensions": [
+                "ms-vscode.cpptools-extension-pack",
+                "espressif.esp-idf-extension",
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack",
+                "swyddfa.esbonio",
+                "ms-python.vscode-pylance",
+                "ms-python.python",
+                "ms-python.debugpy",
+                "lextudio.restructuredtext",
+                "trond-snekvik.simple-rst",
+                "ms-vscode.cpptools-themes",
+                "twxs.cmake"
+            ]
+        }
+    },
+    "runArgs": [
+        // required for flashing
+        "--privileged"
+    ]
 }
