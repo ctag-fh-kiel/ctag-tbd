@@ -1,0 +1,43 @@
+name: build_docs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v3
+
+      - name: build tbd build image
+        run: ls -1 .devcontainer && docker build -t doc_builder .devcontainer
+
+      - name: build docs
+        run: docker run -it -v $PWD:/build -w/build doc_builder /build/tools/tbd_tools/bin/tbd docs build
+
+      - name: upload html
+        uses: actions/upload-artifact@v4
+        with:
+          name: html_docs
+          path: build/docs/html
+          overwrite: true
+
+  deploy:
+    needs: build
+
+    permissions:
+      pages: write      
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy docs
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: html_docs
