@@ -1,0 +1,13 @@
+menu "CTAG TBD Plugins"
+    
+    config TBD_PLUGINS_TEST_PLUGIN_1_ENABLED
+        bool "enable TestPlugin1"
+        default 1
+        help "bar add to rom or not"
+
+    config TBD_PLUGINS_TEST_PLUGIN_2_ENABLED
+        bool "enable TestPlugin2"
+        default 1
+        help "foo add to rom or not"
+    
+endmenu

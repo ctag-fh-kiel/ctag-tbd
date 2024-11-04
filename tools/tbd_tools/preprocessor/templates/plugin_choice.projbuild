@@ -1,0 +1,11 @@
+menu "CTAG TBD Plugins"
+    
+{% for plugin in plugins %}
+    config TBD_PLUGINS_{{ plugin.config_name }}_ENABLED
+        bool "enable {{ plugin.name }}"
+        default y
+        help 
+            add to rom or not
+{% endfor %}
+    
+endmenu

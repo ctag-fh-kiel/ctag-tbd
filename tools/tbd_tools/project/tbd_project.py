@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 import os
 from pathlib import Path
+from typing import Optional
+
+import git
 
 
 @dataclass
@@ -10,6 +13,14 @@ class ProjectStructure:
     @property
     def build(self):
         return self.project / 'build'
+    
+    @property
+    def build_firmware(self):
+        return self.build / 'firmware'
+    
+    @property
+    def generated_includes(self):
+        return self.build_firmware / 'gen_include'
     
     @property
     def docs(self):
@@ -56,10 +67,33 @@ class ProjectStructure:
         return self.build / 'tbd_simulator'
     
 
-def get_tbd_project_dir():
+def get_project_repo() -> git.Repo:
+    cwd = Path(os.getcwd()) 
+    return git.Repo(cwd, search_parent_directories=True)
+
+
+def _find_root_from_env() -> Optional[Path]:
     if (project_dir := os.getenv('TBD_PROJECT_DIR')) is not None:
-        return project_dir
-    return os.getcwd()
+        return Path(project_dir)
+    return None
 
 
-__all__ = ['ProjectStructure', 'get_tbd_project_dir']
+def _find_root_from_repo() -> Path:
+    try:
+        git_repo = get_project_repo()
+        git_root = git_repo.git.rev_parse("--show-toplevel")
+        return Path(git_root)
+    except:
+        return None
+
+
+def find_project_root() -> Path:
+    if (project_root := _find_root_from_env()) is not None:
+        return project_root
+    if (project_root := _find_root_from_repo()) is not None:
+        return project_root
+    return Path(os.getcwd())
+    
+
+
+__all__ = ['ProjectStructure', 'get_project_repo', 'find_project_root']

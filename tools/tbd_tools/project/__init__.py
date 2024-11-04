@@ -1,2 +1,2 @@
 from .tbd_project import *
-from .version import *
+from .build_info import *
