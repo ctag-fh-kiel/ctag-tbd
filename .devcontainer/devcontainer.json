@@ -10,10 +10,12 @@
     },
     "containerEnv": {
         "IDF_TARGET": "esp32s3",
+        "TBD_PYTHON_ENV_PATH": "/opt/esp/python_env/idf5.3_py3.10_env",
         "TBD_PROJECT_DIR": "${containerWorkspaceFolder}",
-        "TBD_FIRMWARE_BUILD_DIR": "${containerWorkspaceFolder}/build/firmware",
-        "TBD_DOCS_DIR": "${containerWorkspaceFolder}/docs",
-        "TBD_DOCS_BUILD_DIR": "${containerWorkspaceFolder}/build/docs"
+    },
+    "remoteEnv": {
+        // setting PATH in container causes build error
+        "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/tools/tbd_tools/bin"
     },
     "customizations": {
         "vscode": {
@@ -26,6 +28,7 @@
                 "idf.adapterTargetName": "esp32s3",
                 "idf.buildPath": "${workspaceFolder}/build/firmware",
                 "cmake.buildDirectory": "${workspaceFolder}/build/firmware",
+                "cmake.automaticReconfigure": false,
                 "esbonio.sphinx.buildDir": "${workspaceFolder}/build/docs",
                 "esbonio.sphinx.confDir": "${workspaceFolder}/docs/config",
                 "esbonio.sphinx.srcDir": "${workspaceFolder}/docs"
