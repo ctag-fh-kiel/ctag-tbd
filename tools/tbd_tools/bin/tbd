@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+TBD_TOOL_MAIN="$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))/__main__.py"
+exec python "$TBD_TOOL_MAIN" $@
