@@ -66,6 +66,14 @@ class ProjectStructure:
     def simulator_build(self):
         return self.build / 'tbd_simulator'
     
+    @property
+    def resources(self):
+        return self.project / 'spiffs_image'
+
+    @property
+    def plugin_configs(self):
+        return self.resources / 'data' / 'sp'
+    
 
 def get_project_repo() -> git.Repo:
     cwd = Path(os.getcwd()) 

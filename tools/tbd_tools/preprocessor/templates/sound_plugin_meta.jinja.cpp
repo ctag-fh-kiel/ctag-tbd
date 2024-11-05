@@ -7,10 +7,12 @@ namespace SP {
 
 std::map<std::string, {{ cls.meta_name }}::PropertyMeta> {{ cls.meta_name }}::properties_ = {
     {%- for property in cls.properties %}
-    {"{{ property.name }}", {
-        reflect::PropertyType::{{ property.type }},
-        {{ cls.meta_name }}::access_{{ property.name }}
-    }},
+    {
+        "{{ property.name }}", {
+            reflect::PropertyType::{{ property.type }},
+            {{ cls.meta_name }}::access_{{ property.name }}
+        } 
+    },
     {%- endfor %}
 };
 {% endfor %}

@@ -1,6 +1,6 @@
-from .plugin_config import *
-from .preprocessor import *
+from .deactivate_plugins_config import *
+from .process_plugins import *
 from .reflectables import *
-from .sound_plugin_parser import *
-
-
+from .plugin_parser import *
+from .sound_plugin import *
+from .process_configs import *

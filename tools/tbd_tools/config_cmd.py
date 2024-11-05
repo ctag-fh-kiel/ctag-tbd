@@ -1,7 +1,7 @@
 import typer
 from subprocess import run
 
-from project import ProjectStructure
+from .project import ProjectStructure
 
 
 config_group = typer.Typer()

@@ -5,7 +5,7 @@ from kconfiglib import Kconfig
 import jinja2 as ji
 import humps
 
-from .sound_plugin_parser import SoundPluginDescription
+from .plugin_parser import SoundPluginDescription
 
 
 class PluginConfig:
@@ -18,8 +18,6 @@ class PluginConfig:
         while item:
             yield item
             item = item.next
-    
-
 
 @dataclass
 class PluginConfig:
@@ -40,8 +38,9 @@ def write_plugin_config(plugins: List[SoundPluginDescription], config_file: Path
 
     config_entries = [entry_from_plugin_name(plugin.name) for plugin in plugins]
 
-    template = env.get_template('plugin_choice.projbuild')
+    template = env.get_template('plugin_choice.jinja.projbuild')
     config = template.render(plugins=config_entries)
+    config_file.parent.mkdir(parents=True, exist_ok=True)
     with open(config_file, 'w') as f:
         f.write(config)    
 

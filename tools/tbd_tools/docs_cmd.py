@@ -1,7 +1,7 @@
 import typer
 from subprocess import run
 
-from project import ProjectStructure
+from .project import ProjectStructure
 
 
 docs_group = typer.Typer()

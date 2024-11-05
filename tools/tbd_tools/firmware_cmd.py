@@ -2,7 +2,7 @@ import sys
 import typer
 from subprocess import run
 
-from project import ProjectStructure
+from .project import ProjectStructure
 
 
 firmware_group = typer.Typer()

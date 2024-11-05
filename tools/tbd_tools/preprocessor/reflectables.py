@@ -20,7 +20,6 @@ def get_property_type(cpp_type: str):
 
 @dataclass
 class PropertyDescription:
-    
     name: str
     type: str
     is_read_only: bool

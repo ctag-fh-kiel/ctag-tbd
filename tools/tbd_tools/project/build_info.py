@@ -92,7 +92,7 @@ def write_build_info_header(build_info_header_path: Path):
 
     build_info = get_build_info()
 
-    template = env.get_template('build_info_header.hpp')
+    template = env.get_template('build_info_header.jinja.hpp')
     header = template.render(build_info=build_info)
     build_info_header_path.parent.mkdir(parents=True, exist_ok=True)
     print(build_info_header_path.parent)
