@@ -26,7 +26,9 @@ RUN . "$IDF_ACTIVATE" && pip install \
     cxxheaderparser \
     jinja2 \
     GitPython \
-    loguru
+    loguru \
+    pyhumps \
+    pydantic
 
 FROM esp_idf_stage AS sphinx_docs_stage
 
@@ -38,7 +40,6 @@ RUN . "$IDF_ACTIVATE" && pip install \
     pydata-sphinx-theme \
     sphinxcontrib-youtube \
     esbonio \
-    pyhumps \
     breathe
 
 ENTRYPOINT [ "/opt/esp/entrypoint.sh" ]

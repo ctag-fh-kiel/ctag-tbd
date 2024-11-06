@@ -11,7 +11,7 @@
     "containerEnv": {
         "IDF_TARGET": "esp32s3",
         "TBD_PYTHON_ENV_PATH": "/opt/esp/python_env/idf5.3_py3.10_env",
-        "TBD_PROJECT_DIR": "${containerWorkspaceFolder}",
+        "TBD_PROJECT_DIR": "${containerWorkspaceFolder}"
     },
     "remoteEnv": {
         // setting PATH in container causes build error
@@ -27,6 +27,7 @@
                 "idf.gitPath": "/usr/bin/git",
                 "idf.adapterTargetName": "esp32s3",
                 "idf.buildPath": "${workspaceFolder}/build/firmware",
+                "idf.pythonBinPath": "/opt/esp/python_env/idf5.3_py3.10_env/bin/python",
                 "cmake.buildDirectory": "${workspaceFolder}/build/firmware",
                 "cmake.automaticReconfigure": false,
                 "esbonio.sphinx.buildDir": "${workspaceFolder}/build/docs",
@@ -45,7 +46,8 @@
                 "lextudio.restructuredtext",
                 "trond-snekvik.simple-rst",
                 "ms-vscode.cpptools-themes",
-                "twxs.cmake"
+                "twxs.cmake",
+                "samuelcolvin.jinjahtml"
             ]
         }
     },
