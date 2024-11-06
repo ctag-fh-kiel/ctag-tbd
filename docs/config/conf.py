@@ -1,14 +1,41 @@
 import os
 from pathlib import Path
+import git
+import sys
 
 
-if (doxygen_xml_dir := os.getenv('TBD_DOCS_BUILD_DI')) is None:
-    print('THIS')
-    doxygen_xml_dir = (Path(__file__).parent.parent.parent) / 'build' / 'docs'
-else:
-    print('THAT')
-    doxygen_xml_dir = Path(doxygen_xml_dir)
-doxygen_xml_dir = doxygen_xml_dir / 'code_xml'
+def find_project_path() -> Path:
+    # try env var
+    if (project_path := os.getenv('TBD_PROJECT_DIR')) is not None:
+        return Path(project_path).resolve()
+    
+    # try to find git root
+    try:
+        git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
+        git_root = git_repo.git.rev_parse("--show-toplevel")
+        return Path(git_root).resolve()
+    except:
+        pass
+
+    # try relative to current file
+    return Path(__file__).parent.parent
+
+try:
+    import tbdtools.sphinx
+except:
+    sys.path.append(find_project_path() / 'tools' / 'tbd_tool')
+
+
+def get_build_dir() -> Path:
+    return find_project_path() / 'build' / 'docs'
+
+
+def get_doxygen_xml_dir() -> Path:
+    return get_build_dir() / 'code_xml'
+
+
+doxygen_xml_dir = get_doxygen_xml_dir()
+
 
 # -- Project information -----------------------------------------------------
 
@@ -20,7 +47,8 @@ author = 'CTAG'
 
 extensions = [
     'sphinxcontrib.youtube',
-    'breathe'
+    'breathe',
+    'tbdtools.sphinx',
 ]
 
 exclude_patterns = []

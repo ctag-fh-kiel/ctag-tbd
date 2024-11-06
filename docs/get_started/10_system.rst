@@ -2,6 +2,7 @@
 System
 ******
 
+
 WIFI 
 ====
 
@@ -37,6 +38,7 @@ settings:
 
    -  You can now access all TBDs through the primary TBDs network in AP
          mode → no external wireless network needed, no router needed
+
 
 Other settings
 ==============
@@ -89,6 +91,7 @@ Other settings
 |                       |                       | module data           |
 +-----------------------+-----------------------+-----------------------+
 
+
 Firmware update
 ===============
 
@@ -125,6 +128,7 @@ ctag-tbd, where you can make all you settings.
 In case you brick your TBD in this process, you can always manually
 flash it through a USB connection (see
 https://github.com/ctag-fh-kiel/ctag-tbd#how-to-flash for details).
+
 
 Calibration
 ===========

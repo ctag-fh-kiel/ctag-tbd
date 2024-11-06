@@ -20,6 +20,7 @@ Everything to build your own audio processor device for MIDI or Eruorack. Add so
 .. image:: about/images/teaser.png
 
 
+
 What is CTAG TBD
 ================
 
@@ -95,13 +96,15 @@ this allows you to:
 
     about/*
 
+
 .. toctree::
     :hidden:
     :caption: Get Started
-    :maxdepth: 2
+    :maxdepth: 4
     :glob:
 
     get_started/*
+
 
 .. toctree::
     :hidden:
@@ -111,6 +114,7 @@ this allows you to:
 
     sound_library/*
 
+
 .. toctree::
     :hidden:
     :caption: Create Plugins
@@ -118,6 +122,7 @@ this allows you to:
     :glob:
 
     create_plugins/*
+
 
 .. toctree::
     :hidden:
