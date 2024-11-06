@@ -1,7 +1,7 @@
 import typer
 from subprocess import run
 
-from .project import find_project_root, get_version_info, get_build_info, write_build_info_header, ProjectStructure
+from tbdtools.project import find_project_root, get_version_info, get_build_info, write_build_info_header, ProjectStructure
 
 
 project_group = typer.Typer()

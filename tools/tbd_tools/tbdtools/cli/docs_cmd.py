@@ -1,8 +1,8 @@
 import typer
 from subprocess import run
 
-from .project import ProjectStructure
-from .cmd_utils import write_docs_for_cli ,get_main
+from tbdtools.project import ProjectStructure
+from tbdtools.cmd_utils import write_docs_for_cli ,get_main
 
 docs_group = typer.Typer()
 

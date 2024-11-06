@@ -1,8 +1,8 @@
 from pathlib import Path
 import typer
 
-from .project import ProjectStructure
-from .preprocessor import (
+from tbdtools.project import ProjectStructure
+from tbdtools.preprocessor import (
     search_for_plugins, 
     write_plugin_factory_header, 
     write_meta_class, 

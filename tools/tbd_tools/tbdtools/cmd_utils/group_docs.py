@@ -24,34 +24,42 @@ class CliDocsBuilder:
     def docs(self):
         return '\n\n'.join(self._docs)
 
-    def add_no_args_hint(docs):
+    def add_no_args_hint(self, docs):
         pass
 
     def start_group(self, name, docs, parents):
-        depth = len(parents)
+        if len(parents) == 0:
+            return
 
+        depth = len(parents)
         body = docs if docs is not None else ''
 
-        if depth == 0:
-        # root command
-            
-            pass
-        else:
-        # first level subcommands
-
-            heading = self._rst_heading(name, self._base_heading + depth)
-            part = f'{heading}\n\n{docs}'
-            self._docs.append(part)
-
-    def add_command(self, name, docs, group, parents):
-        parents_title = ' '.join(parents)
-        title = f'``{parents_title}`` **{name}**'
-        if docs is None:
-            part = f'{title}\n\n'
-        else:
-            body = '\n'.join([f'   {line}' for line in docs.split('\n')])
-            part = f'{title}\n\n{body}\n\n'
+        heading = self._rst_heading(name, self._base_heading + depth)
+        part = f'{heading}\n{body}'
         self._docs.append(part)
+
+    def add_command(self, name, docs, group, parents):          
+        parents_title = ' '.join(parents)
+        self._add_title(f'``{parents_title} {group} {name}``')
+
+        if docs:
+            self._add_block(docs)
+
+    def start_params(self):
+        self._add_title('**parameters**')
+
+    def add_param(self, name, type, docs):
+        self._add_title(f'--{name} [{type}]')
+
+    def add_parameter(self, name, type, docs):
+        self._docs.append()
+
+    def _add_title(self, title):
+        self._docs.append(title)
+
+    def _add_block(self, string: str):
+        for line in string.split('\n'):
+            self._docs.append(f'   {line}')
 
     @staticmethod
     def _rst_heading(title, level):
@@ -77,12 +85,19 @@ def _build_group_doc_tree(group: TyperGroup, builder: CliDocsBuilder, route: Lis
 
     group_name = group.name
     builder.start_group(group_name, group.help, route)
+    params = [param.name for param in group.params]
 
     for cmd_name, cmd in commands.items():
-        if len(route) == 1 and cmd_name == 'no-args':
+        if len(route) == 0 and cmd_name == 'no-args':
             builder.add_no_args_hint(cmd.help)
         else:
             builder.add_command(cmd_name, cmd.help, group_name, route)
+        params = cmd.params
+        if len(params) > 0:
+            builder.start_params()
+            for param in params:
+                print(param.param_type_name)
+                builder.add_param(param.name, param.type.name, params)
 
     new_route = [*route, group.name]
     for group in groups.values():
