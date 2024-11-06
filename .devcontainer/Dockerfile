@@ -21,6 +21,8 @@ ARG IDF_ACTIVATE=/opt/esp/idf/export.sh
 ENTRYPOINT [ "/opt/esp/entrypoint.sh" ]
 CMD ["/bin/bash", "-c"]
 
+FROM esp_idf_stage AS tbd_tools_stage
+
 RUN . "$IDF_ACTIVATE" && pip install \
     typer \
     cxxheaderparser \
@@ -30,7 +32,7 @@ RUN . "$IDF_ACTIVATE" && pip install \
     pyhumps \
     pydantic
 
-FROM esp_idf_stage AS sphinx_docs_stage
+FROM tbd_tools_stage AS sphinx_docs_stage
 
 RUN apt-get install -y \
     doxygen
