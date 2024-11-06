@@ -1,7 +1,8 @@
 from pathlib import Path
 import typer
+from functools import cache
 
-from .project import ProjectStructure, find_project_root
+from ..project import ProjectStructure, find_project_root
 
 greeting_header_full = r'''
 ________/\\\\\\\\\__/\\\\\\\\\\\\\\\_____/\\\\\\\\\________/\\\\\\\\\\\\____________/\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\____/\\\\\\\\\\\\____        
@@ -48,4 +49,16 @@ def common_callback(
     ctx.obj = ProjectStructure(project_dir)
     
 
-__all__ = ['greeting_header', 'common_callback']
+@cache
+def get_main() -> typer.Typer:
+    """ get the tbd app object
+    
+        ensures that only one instance is present and allows cnddocs to 
+    """
+    return typer.Typer(
+        name='tbd',
+        callback=common_callback, 
+        pretty_exceptions_enable=False, help=greeting_header, no_args_is_help=True)
+
+
+__all__ = ['greeting_header', 'common_callback', 'get_main']

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Generic, List, TypeVar
+from typing import Generic, List, Tuple, TypeVar
 import abc
 import re
 
@@ -10,10 +10,12 @@ import cxxheaderparser.types as cpptypes
 from .reflectables import Properties, PropertyDescription, ReflectableDescription, get_property_type, Headers
 
 
+
 class AnnotationParser(cpplib.SimpleCxxVisitor):
     def __init__(self, lines) -> None:
         self._get_properties_exp = re.compile(r'^\s*\[\s*\[(?P<attributes>.*)\]\s*\]')
         self._ctag_attr_expr = re.compile(r'(?P<attr>\w+)(\((?P<args>[^\)]*)\))?')
+        self._string_literal_expr = re.compile('r"(\w)"')
         self._lines = lines
         super().__init__()
 
@@ -35,13 +37,32 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
         if len(ctag_attrs) > 1:
             raise ValueError('multiple occurences of ctag_prop attribute')
         
-        prop_attr = ctag_attrs[0]
-        if prop_attr is None or prop_attr == '':
+        print(ctag_attrs)
+        prop_args = ctag_attrs[0]
+        if prop_args is None or prop_args == '':
             return False
-        
-        if prop_attr != 'readonly':
-            raise ValueError(f'invalid ctag_prop argument {prop_attr}')
+
+        if prop_args != 'readonly':
+            raise ValueError(f'invalid ctag_prop argument {prop_args}')
         return True
+    
+    @staticmethod
+    def _parse_prop_args(arg_list: str):
+        def split_assignments(arg: str) -> Tuple[str, str]:
+            lhs, *rhs = arg.split('=')
+            if len(rhs) == 0:
+                return lhs, None
+            elif len(rhs) == 1:
+
+                return lhs, rhs[0]
+            else:
+                raise ValueError(f"bad attribute arg: {arg}")
+
+        args = dict([split_assignments(arg) for arg in arg_list.split(',')])
+
+
+        
+
 
 
 ReflectableT = TypeVar('ReflectableT', bound=ReflectableDescription)

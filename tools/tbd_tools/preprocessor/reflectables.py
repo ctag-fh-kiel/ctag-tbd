@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum, unique
-from typing import List, Set
+from typing import List, Set, Optional
 
 
 @unique
@@ -23,6 +23,7 @@ class PropertyDescription:
     name: str
     type: str
     is_read_only: bool
+    description: Optional[str] = None
 
 
 Properties = List[PropertyDescription]

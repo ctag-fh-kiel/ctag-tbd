@@ -35,6 +35,10 @@ class ProjectStructure:
         return self.build / 'docs'
 
     @property
+    def docs_cli(self):
+        return self.docs / 'get_started' / '15_cli.rst'
+
+    @property
     def code_docs(self):
         return self.docs_build / 'code_xml'
     
