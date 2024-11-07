@@ -48,12 +48,13 @@
                 "trond-snekvik.simple-rst",
                 "ms-vscode.cpptools-themes",
                 "twxs.cmake",
-                "samuelcolvin.jinjahtml"
+                "samuelcolvin.jinjahtml",
+                "tamasfe.even-better-toml"
             ]
         }
     },
     "runArgs": [
         // required for flashing
-        "--privileged"
+        // "--privileged"
     ]
 }
