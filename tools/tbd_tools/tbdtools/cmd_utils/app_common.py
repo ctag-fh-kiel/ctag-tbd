@@ -2,7 +2,7 @@ from pathlib import Path
 import typer
 from functools import cache
 
-from ..project import ProjectStructure, find_project_root
+from tbdtools.project import get_project_structure, find_project_root
 
 greeting_header_full = r'''
 ________/\\\\\\\\\__/\\\\\\\\\\\\\\\_____/\\\\\\\\\________/\\\\\\\\\\\\____________/\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\____/\\\\\\\\\\\\____        
@@ -46,7 +46,7 @@ def common_callback(
     ctx: typer.Context,
     project_dir: Path =  typer.Option(...,'-d', '--project-dir', default_factory=find_project_root)
 ):
-    ctx.obj = ProjectStructure(project_dir)
+    ctx.obj = get_project_structure(project_dir)
     
 
 @cache

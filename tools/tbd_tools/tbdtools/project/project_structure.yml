@@ -1,0 +1,45 @@
+description: "mono repo for all things related to TBD"
+
+config:
+  path: '/'
+  description: "main project configuration files"
+  cmake: ./CMakeLists.txt
+
+src:
+  path: /components/
+  sounds:
+    path: ./tbd_sounds/
+    headers: './include/tbd/sounds/'
+    sources: './src/'
+  sound_registry:
+    path: './tbd_sound_registry/'
+    headers: './include/tbd/sound_registry/'
+    sources: './src/'
+
+
+tools:
+  path: '/tools/'
+  tbd_tools: 
+    path: './tbd_tools/'
+    description: 'python package containing CLI and build helpers'
+    package: './tbdtools/'
+
+docs:
+  path: /docs/
+  config: ./config/
+  cli: './get_started/15_cli.rst'
+
+resources:
+  path: '/spiffs_image/'
+  plugin_definitions: ./data/sp/
+
+build:
+  path: '/build/'
+  docs:
+    path: './docs/'
+    html: './html/'
+    cpp: './cpp/'
+
+  firmware: 
+    path: './firmware/'
+    generated_sources: './gen_src/'

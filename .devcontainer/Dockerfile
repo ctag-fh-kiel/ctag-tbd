@@ -30,7 +30,8 @@ RUN . "$IDF_ACTIVATE" && pip install \
     GitPython \
     loguru \
     pyhumps \
-    pydantic
+    pydantic \
+    pyyaml
 
 FROM tbd_tools_stage AS sphinx_docs_stage
 

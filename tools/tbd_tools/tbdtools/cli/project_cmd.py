@@ -1,7 +1,15 @@
+import json
 import typer
 from subprocess import run
 
-from tbdtools.project import find_project_root, get_version_info, get_build_info, write_build_info_header, ProjectStructure
+from tbdtools.project import (
+    find_project_root, 
+    get_version_info, 
+    get_build_info, 
+    write_build_info_header, 
+    pretty_print_project_structure,
+    ProjectRoot,
+)
 
 
 project_group = typer.Typer()
@@ -30,8 +38,31 @@ def build_info_cmd(ctx: typer.Context):
 def crate_build_info_cmd(ctx: typer.Context):
     """ write build information header """
 
-    dirs: ProjectStructure = ctx.obj
-    write_build_info_header(dirs.generated_includes / 'version.hpp')    
+    dirs: ProjectRoot = ctx.obj
+    write_build_info_header(dirs.build.firmware.generated_sources() / 'version.cpp')    
 
 
-__all__ = ['version']
+@project_group.command('structure')
+def structure_cmd(ctx: typer.Context,
+    absolute: bool = typer.Option(False)
+):
+    """ write build information header """
+
+    dirs: ProjectRoot = ctx.obj
+    print(pretty_print_project_structure(dirs, absolute))
+
+
+@project_group.command('path-to')
+def path_to_cmd(ctx: typer.Context,
+    absolute: bool = typer.Option(False),
+    elem: str = typer.Argument(...),
+):
+    """ write build information header """
+
+    dirs: ProjectRoot = ctx.obj
+    pos = dirs
+    for path_segment in elem.split('.'):
+        pos = getattr(pos, path_segment)
+    print(pos())
+
+__all__ = ['project_group']
