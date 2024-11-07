@@ -16,7 +16,6 @@ src:
     headers: './include/tbd/sound_registry/'
     sources: './src/'
 
-
 tools:
   path: '/tools/'
   tbd_tools: 
@@ -39,7 +38,6 @@ build:
     path: './docs/'
     html: './html/'
     cpp: './cpp/'
-
   firmware: 
     path: './firmware/'
     generated_sources: './gen_src/'

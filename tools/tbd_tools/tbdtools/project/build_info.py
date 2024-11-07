@@ -8,7 +8,7 @@ from typing import Tuple
 
 import jinja2 as ji
 
-from .tbd_project import get_project_repo, find_project_root
+from .get_project import get_project_repo, find_project_root
 
 
 @unique

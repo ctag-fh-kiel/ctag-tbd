@@ -44,23 +44,28 @@ def crate_build_info_cmd(ctx: typer.Context):
 
 @project_group.command('structure')
 def structure_cmd(ctx: typer.Context,
-    absolute: bool = typer.Option(False)
+    relative: bool = typer.Option(False)
 ):
     """ write build information header """
 
     dirs: ProjectRoot = ctx.obj
-    print(pretty_print_project_structure(dirs, absolute))
+    if relative:
+        dirs = dirs.relative()
+
+    print(pretty_print_project_structure(dirs))
 
 
 @project_group.command('path-to')
 def path_to_cmd(ctx: typer.Context,
-    absolute: bool = typer.Option(False),
+    relative: bool = typer.Option(False),
     elem: str = typer.Argument(...),
 ):
     """ write build information header """
 
-    dirs: ProjectRoot = ctx.obj
-    pos = dirs
+    pos: ProjectRoot = ctx.obj
+    if relative:
+        pos = pos.relative()
+
     for path_segment in elem.split('.'):
         pos = getattr(pos, path_segment)
     print(pos())
