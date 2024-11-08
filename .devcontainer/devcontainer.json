@@ -6,11 +6,12 @@
         "source=extensionCache,target=/root/.vscode-server/extensions,type=volume"
     ],
     "build": {
+        "context": ".",
         "dockerfile": "Dockerfile"
     },
     "containerEnv": {
         "IDF_TARGET": "esp32s3",
-        "TBD_PYTHON_ENV_PATH": "/opt/esp/python_env/idf5.3_py3.10_env",
+        // "TBD_PYTHON_ENV_PATH": "/opt/esp/python_env/idf5.3_py3.10_env",
         "TBD_PROJECT_DIR": "${containerWorkspaceFolder}",
         "PYTHONPATH": "${containerWorkspaceFolder}/tools/tbd_tools"
     },
