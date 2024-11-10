@@ -1,0 +1,14 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import SaveChannelPreset from "../../components/SaveChannelPreset";
+
+export function getStaticPaths() {
+  return [{ params: { channel: "0" } }, { params: { channel: "1" } }];
+}
+
+const { channel } = Astro.params;
+---
+
+<Layout title={`Channel ${channel} preset`}>
+  <SaveChannelPreset client:load channel={channel} />
+</Layout>
