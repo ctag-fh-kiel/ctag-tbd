@@ -1,0 +1,1 @@
+{"namelookupTime": %{time_namelookup}, "connectTime": %{time_connect}, "appconnectTime": %{time_appconnect}, "pretransferTime": %{time_pretransfer}, "redirectTime": %{time_redirect}, "starttransferTime": %{time_starttransfer}, "totalTime": %{time_total}}
