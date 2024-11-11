@@ -323,6 +323,24 @@ void WebServer::Start() {
             // Uncomment the following line to enable Cache-Control
             // header.emplace("Cache-Control", "max-age=86400");
 
+            auto acceptEncoding = request->header.find("Accept-Encoding");
+            if (acceptEncoding != request->header.end()) {
+                auto encoding = acceptEncoding->second;
+                auto brPath = boost::filesystem::path{path.string() + ".br"};
+                auto zstPath = boost::filesystem::path{path.string() + ".zst"};
+                auto gzPath = boost::filesystem::path{path.string() + ".gz"};
+
+                if (encoding.find("br") != std::string::npos && boost::filesystem::exists(brPath)) {
+                    path = brPath;
+                    header.emplace("Content-Encoding", "br");
+                } else if (encoding.find("zstd") != std::string::npos && boost::filesystem::exists(zstPath)) {
+                    path = zstPath;
+                    header.emplace("Content-Encoding", "zstd");
+                } else if (encoding.find("gzip") != std::string::npos && boost::filesystem::exists(gzPath)) {
+                    path = gzPath;
+                    header.emplace("Content-Encoding", "gzip");
+                }
+            }
 
             auto ifs = make_shared<ifstream>();
             ifs->open(path.string(), ifstream::in | ios::binary | ios::ate);
