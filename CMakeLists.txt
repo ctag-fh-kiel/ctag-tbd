@@ -2,7 +2,7 @@
 # in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.13)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -18,31 +18,40 @@ idf_build_set_property(COMPILE_DEFINITIONS -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_C
 idf_build_set_property(COMPILE_DEFINITIONS -DRAPIDJSON_HAS_STDSTRING=1 APPEND)
 
 if(CONFIG_TBD_PLATFORM_STR)
-    message("Configuring for Strämpler!")
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=8 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
+    set(TBD_PORT_LIB tbd_port_esp32)
     set(TBD_HW "Strampler")
 elseif(CONFIG_TBD_PLATFORM_MK2)
-    message("Configuring for MK2!")
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=22 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=12 APPEND)
+    set(TBD_PORT_LIB tbd_port_esp32)
     set(TBD_HW "mk2")
 elseif(CONFIG_TBD_PLATFORM_V2)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=4 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
+    set(TBD_PORT_LIB tbd_port_esp32)
     set(TBD_HW "V2")
 elseif(CONFIG_TBD_PLATFORM_V1)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=4 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
+    set(TBD_PORT_LIB tbd_port_esp32)
     set(TBD_HW "V1")
 elseif(CONFIG_TBD_PLATFORM_AEM)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=4 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
+    set(TBD_PORT_LIB tbd_port_esp32)
     set(TBD_HW "AEM")
 elseif(CONFIG_TBD_PLATFORM_BBA)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=90 APPEND)
     idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=40 APPEND)
+    set(TBD_PORT_LIB GLOBAL tbd_port_esp32)
     set(TBD_HW "BBA")
+elseif(CONFIG_TBD_PLATFORM_DESKTOP)
+    idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=90 APPEND)
+    idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=40 APPEND)
+    set(TBD_PORT_LIB tbd_port_desktop)
+    set(TBD_HW "desktop")
 endif()
 
 # generate include definitions for hw + fw version
@@ -69,15 +78,15 @@ if(NOT CONFIG_TBD_PLATFORM_BBA)
             COMMAND rm -f ${CMAKE_BINARY_DIR}/spiffs_image/dbup/sp/*DrumRack.jsn)
 endif()
 add_custom_target(copy-files ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
-        # clean up
-        COMMAND rm -rf ${CMAKE_BINARY_DIR}/spiffs_image
-        # copy spiffs files to build folder
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image ${CMAKE_BINARY_DIR}/spiffs_image
-        # create gzip encoded www files
-        ${GZIP_COMMANDS}
-        # and create backup file structure (sometimes when the ESP's power is interrupted during flash writes, the SPIFFS file gets corrupted)
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image/data ${CMAKE_BINARY_DIR}/spiffs_image/dbup
-        ${DEL_COMMANDS}
-        )
+    # clean up
+    COMMAND rm -rf ${CMAKE_BINARY_DIR}/spiffs_image
+    # copy spiffs files to build folder
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image ${CMAKE_BINARY_DIR}/spiffs_image
+    # create gzip encoded www files
+    ${GZIP_COMMANDS}
+    # and create backup file structure (sometimes when the ESP's power is interrupted during flash writes, the SPIFFS file gets corrupted)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/spiffs_image/data ${CMAKE_BINARY_DIR}/spiffs_image/dbup
+    ${DEL_COMMANDS}
+)
 
 littlefs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT DEPENDS copy-files)
