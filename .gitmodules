@@ -1,5 +1,5 @@
 [submodule "components/mutable/eurorack"]
-	path = components/mutable/eurorack
+	path = vendor/mutable/eurorack
 	url = https://github.com/ctag-fh-kiel/eurorack.git
 [submodule "simulator/Simple-Web-Server"]
 	path = simulator/Simple-Web-Server
@@ -8,5 +8,5 @@
 	path = simulator/rtaudio
 	url = https://github.com/thestk/rtaudio.git
 [submodule "components/moog/MoogLadders"]
-	path = components/moog/MoogLadders
+	path = vendor/moog/MoogLadders
 	url = https://github.com/ctag-fh-kiel/MoogLadders.git

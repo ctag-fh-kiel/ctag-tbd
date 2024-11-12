@@ -44,13 +44,13 @@ elseif(CONFIG_TBD_PLATFORM_AEM)
     set(TBD_PORT_LIB tbd_port_esp32)
     set(TBD_HW "AEM")
 elseif(CONFIG_TBD_PLATFORM_BBA)
-    idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=90 APPEND)
-    idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=40 APPEND)
+    add_compile_definitions(N_CVS=90)
+    add_compile_definitions(N_TRIGS=40)
     set(TBD_PORT_LIB GLOBAL tbd_port_esp32)
     set(TBD_HW "BBA")
 elseif(CONFIG_TBD_PLATFORM_DESKTOP)
-    idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=90 APPEND)
-    idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=40 APPEND)
+    add_compile_definitions(N_CVS=90)
+    add_compile_definitions(N_TRIGS=40)
     set(TBD_PORT_LIB tbd_port_desktop)
     set(TBD_HW "desktop")
 endif()
@@ -59,13 +59,18 @@ if(NOT TBD_TOOL)
     find_program(TBD_TOOL NAMES tbd PATHS ${CMAKE_SOURCE_DIR/tools/tbd_tools/bin} NO_CACHE)
 endif()
 
+add_subdirectory(vendor)
 add_subdirectory(tbd)
+
 
 
 # Create a SPIFFS image from the contents of the 'spiffs_image' directory
 # that fits the partition named 'storage'. FLASH_IN_PROJECT indicates that
 # the generated image should be flashed when the entire project is flashed to
 # the target with 'idf.py -p PORT flash'.
+
+if (TBD_BUILD_FS)
+
 file(GLOB_RECURSE WWW_FILES RELATIVE ${CMAKE_SOURCE_DIR}/spiffs_image ${CMAKE_SOURCE_DIR}/spiffs_image/www/*)
 foreach(WWW_FILE ${WWW_FILES})
     list(APPEND GZIP_COMMANDS
@@ -90,3 +95,5 @@ add_custom_target(copy-files ALL DEPENDS ${CMAKE_SOURCE_DIR}/spiffs_image
 )
 
 littlefs_create_partition_image(storage ${CMAKE_BINARY_DIR}/spiffs_image FLASH_IN_PROJECT DEPENDS copy-files)
+
+endif()

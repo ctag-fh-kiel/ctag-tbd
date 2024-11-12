@@ -29,7 +29,7 @@ respective component folders / files if different from this license.
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
 #include "ctagSoundProcessor.hpp"
-#include "ctagSoundProcessorFactory.hpp"
+#include <tbd/sound_registry/ctagSoundProcessorFactory.hpp>
 #include "SPManagerDataModel.hpp"
 #include <atomic>
 

@@ -1,1 +1,6 @@
 add_subdirectory(tbd_version)
+add_subdirectory(tbd_sound_processor)
+add_subdirectory(tbd_sounds)
+add_subdirectory(tbd_sound_registry)
+add_subdirectory(tbd_helpers)
+add_subdirectory(tbd_drivers)

@@ -5,5 +5,5 @@ set(SRCS_FILES
     ${CMAKE_BINARY_DIR}/gen_src/version.cpp
 )
 
-add_library(tbd_version ${SRCS_FILES})
+add_library(tbd_version STATIC ${SRCS_FILES})
 target_include_directories(tbd_version PUBLIC include)
