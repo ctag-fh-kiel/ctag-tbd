@@ -1,0 +1,7 @@
+{
+    "HWV": "{{ hardware_type }}",
+    "FWV": "{{ firmware_version }}",
+    "p": "mk1",
+    "t": ["TRIG0", "TRIG1"],
+    "cv": ["CV0", "CV1", "POT0", "POT1"]
+}

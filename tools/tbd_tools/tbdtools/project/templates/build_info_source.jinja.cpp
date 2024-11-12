@@ -5,6 +5,7 @@ namespace CTAG {
 
 const std::string hardware_type("{{ build_info.hardware }}");
 const std::string firmware_version("{{ build_info.firmware }}");
+const std::string device_capabilities(R"({{ build_info.device_capabilities }})");
 
 const std::string commit("{{ build_info.commit }}");
 const bool post_commit_changes = {{ 'true' if build_info.post_commit_changes else 'false' }};
