@@ -42,6 +42,7 @@ respective component folders / files if different from this license.
 #include "OTAManager.hpp"
 #include "sdkconfig.h"
 #include "esp_flash.h"
+#include <tbd/version.hpp>
 
 using namespace CTAG;
 using namespace CTAG::REST;
@@ -860,8 +861,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
 // transmit io capabilities
 esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
-#include "IOCapabilities.hpp"
-    httpd_resp_sendstr(req, s.c_str());
+    httpd_resp_sendstr(req, device_capabilities.c_str());
     return ESP_OK;
 }
 

@@ -10,7 +10,7 @@ idf_component_register(SRCS ${SRC_FILES}
         INCLUDE_DIRS "."
         REQUIRES)
 
+target_link_libraries(${COMPONENT_LIB} tbd_version)
 target_compile_options(${COMPONENT_LIB} PRIVATE
         -Wno-unused-local-typedefs
-        )
-
+)

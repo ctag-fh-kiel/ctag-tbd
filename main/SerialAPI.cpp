@@ -10,6 +10,7 @@
 #include "Calibration.hpp"
 #include "driver/gpio.h"
 #include "driver/uart.h"
+#include <tbd/version.hpp>
 
 using namespace rapidjson;
 
@@ -176,8 +177,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         return;
     }
     if(s.find("/api/v1/getIOCaps") == 0){
-#include "IOCapabilities.hpp"
-        sendString(s);
+        sendString(device_capabilities);
         return;
     }
     if(s.find("/api/v1/setCalibration") == 0){

@@ -2,13 +2,14 @@
 # in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.13)
 
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 # pull in idf specific items, config vars etc.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-
 
 project(ctag-tbd)
 
@@ -54,13 +55,12 @@ elseif(CONFIG_TBD_PLATFORM_DESKTOP)
     set(TBD_HW "desktop")
 endif()
 
-# generate include definitions for hw + fw version
-execute_process(
-        COMMAND bash -c "git describe --tags --abbrev=4"
-        OUTPUT_VARIABLE TBD_FW)
-string(STRIP ${TBD_FW} TBD_FW)
-configure_file(${CMAKE_SOURCE_DIR}/version.hpp.in ${CMAKE_BINARY_DIR}/gen_include/version.hpp @ONLY)
-idf_build_set_property(INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/gen_include APPEND)
+if(NOT TBD_TOOL)
+    find_program(TBD_TOOL NAMES tbd PATHS ${CMAKE_SOURCE_DIR/tools/tbd_tools/bin} NO_CACHE)
+endif()
+
+add_subdirectory(tbd)
+
 
 # Create a SPIFFS image from the contents of the 'spiffs_image' directory
 # that fits the partition named 'storage'. FLASH_IN_PROJECT indicates that

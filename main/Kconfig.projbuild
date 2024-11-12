@@ -6,9 +6,9 @@ menu "CTAG TBD Configuration"
                 Determines which TBD platform, V1 WM8731 codec, V2 WM8978 codec, STR Strämpler, BBA Black Box Audio
 
             config TBD_PLATFORM_V2
-                bool "V2 (WM8978 + ESP ADC)"
+                bool "MK1 rev2 (WM8978 + ESP ADC)"
             config TBD_PLATFORM_V1
-                bool "V1 (WM8731 + ESP ADC)"
+                bool "MK1 rev1 (WM8731 + ESP ADC)"
             config TBD_PLATFORM_STR
                 bool "Strämpler (WM8731 + MCP3208)"
             config TBD_PLATFORM_AEM
