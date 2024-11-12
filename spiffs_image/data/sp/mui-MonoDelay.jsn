@@ -1,16 +1,31 @@
 {
-  "id": "BBDelay",
+  "id": "MonoDelay",
   "isStereo": false,
-  "name": "Bucket Brigade Delay",
-  "hint": "Simulation of a bucket brigade delay",
+  "name": "Mono Delay",
+  "hint": "Simple Mono Delay",
   "params": [
     {
       "id": "time_ms",
       "name": "Delay/ms",
       "type": "int",
       "min": 1,
-      "max": 1000,
+      "max": 2000,
       "step": 1
+    },
+    {
+      "id": "sync",
+      "name": "Sync",
+      "type": "bool"
+    },
+    {
+      "id": "freeze",
+      "name": "Freeze",
+      "type": "bool"
+    },
+    {
+      "id": "tape_digital",
+      "name": "Tape/Digital",
+      "type": "bool"
     },
     {
       "id": "feedback",
