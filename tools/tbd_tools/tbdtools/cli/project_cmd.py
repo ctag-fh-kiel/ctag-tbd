@@ -45,11 +45,11 @@ def crate_build_info_cmd(
     out_path: Optional[Path] = typer.Option(None, '-o' '--out-file')                         
 ):
     """ write build information header """
-    
+
     if out_path is None:
         out_path = get_build_dir(_ctx).generated_sources() / 'version.cpp'
     
-    write_build_info_header(out_path / 'version.cpp') 
+    write_build_info_header(out_path) 
 
 
 @project_group.command('structure')
