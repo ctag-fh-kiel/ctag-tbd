@@ -1,33 +1,17 @@
-from dataclasses import dataclass
-from enum import Enum, unique
+import collections
+from dataclasses import asdict
+from pydantic.dataclasses import dataclass
 import json
-import os
 from datetime import datetime
 from pathlib import Path
-import re
-from typing import Tuple
+from typing import Dict
 
+from git import List
 import jinja2 as ji
+from pydantic import ConfigDict, Field, RootModel
 
-from .get_project import get_project_repo, find_project_root
-
-
-@unique
-class Platform(Enum):
-    v1      = 'TBD mk 1 rev 1'
-    v2      = 'TBD mk 1 rev 2'
-    str     = 'Strämpler'
-    aem     = 'Tangible Waves AEM'
-    mk2     = 'TBD mk 2'
-    bba     = 'TBD BBA'
-    desktop = 'TBD Desktop'
-
-
-def _platform_from_config_string(config_str: str) -> Platform:
-    for item in Platform:
-        if item.name == config_str:
-            return item
-    raise ValueError(f'unknown platform {config_str}')
+from .get_project import get_project_repo
+from .get_platform import Platform, get_platform
 
 
 def _get_template(template_name: str):
@@ -44,7 +28,7 @@ class BuildInfo:
     commit: str
     post_commit_changes: bool
     ahead_of_release: int
-    build_date: int
+    build_date: str
 
 
 @dataclass
@@ -53,6 +37,82 @@ class Version:
     commit: str
     post_commit_changes: bool
     ahead_of_release: int
+
+
+@dataclass(config=ConfigDict(populate_by_name=True))
+class DeviceInputs:
+    binary: List[str] = Field(alias='t')
+    analog: List[str] = Field(alias='cv')
+
+
+@dataclass(config=ConfigDict(populate_by_name=True))
+class DeviceHeader:
+    hardware_type: str = Field(alias='HWV')
+    firmware_version: str = Field(alias='FWV')
+    hardware_id: str = Field(alias='p')
+
+
+@dataclass
+class DeviceCapabilities(DeviceHeader, DeviceInputs):
+    @staticmethod
+    def from_header_and_inputs(header: DeviceHeader, inputs: DeviceInputs) -> 'DeviceCapabilities':
+        header_dict = asdict(header)
+        inputs_dict = asdict(inputs)
+        return DeviceCapabilities(**header_dict, **inputs_dict)
+
+
+def _get_device_inputs(platform: Platform) -> Dict:
+    if platform == Platform.v2 or platform == Platform.v2:
+        inputs_type = 'mk1'
+    elif platform == Platform.str:
+        inputs_type = 'str'
+    elif platform == Platform.aem:
+        raise ValueError(f'aem platform not yet supported {platform.name}')
+    elif platform == Platform.mk2:
+        inputs_type = 'mk2'
+    elif platform == Platform.bba:
+        inputs_type = 'bba'
+    elif platform == Platform.desktop:
+        raise ValueError(f'desktop platform not yet supported {platform.name}')
+    else:
+        raise ValueError(f'unsupported platform {platform.name}')
+    
+    inputs_file = Path(__file__).parent / 'resources' / f'io_capabilities.{inputs_type}.json'
+    with open(inputs_file, 'r') as f:
+        return json.load(f)
+
+
+def _get_device_capabilities(platform: Platform, firmware_version: Version) -> DeviceCapabilities:   
+    inputs_dict = _get_device_inputs(platform)
+    header = DeviceHeader(
+        hardware_type=platform.value, 
+        firmware_version=firmware_version.tag,
+        hardware_id=platform.name,
+    )
+    inputs = DeviceInputs(**inputs_dict)
+    return DeviceCapabilities.from_header_and_inputs(header, inputs)
+
+
+def _get_device_capabilities_str(
+        platform: Platform, firmware_version: Version, *, readable: bool = False
+    ):
+
+    capabilities = _get_device_capabilities(platform, firmware_version)
+
+    # NOTE: the following JSON key sorting can be removed in future versions of the software
+    # for max compatibility the JSON is reordered to precisely match the legacy implementation
+    capabilities_dict = collections.OrderedDict([
+        ('HWV', capabilities.hardware_type),
+        ('FWV', capabilities.firmware_version),
+        ('p', capabilities.hardware_id),
+        ('t', capabilities.binary),
+        ('cv', capabilities.analog)
+    ])
+
+    if readable:
+        return json.dumps(capabilities_dict, indent=2)
+    else:
+        return json.dumps(capabilities_dict)
 
 
 def get_version_info() -> Version:
@@ -66,57 +126,28 @@ def get_version_info() -> Version:
             return Version(tag, commit.hexsha, is_dirty, i)
     return Version('unknown', commit.hexsha, is_dirty, -1)
 
-_config_platform_expr = re.compile(r'config_tbd_platform_(?P<platform>\w+)\s*=\s*(?P<value>\w+)')
-
-
-def get_hardware_version() -> Platform:
-    project_root = find_project_root()    
-    with open(project_root / 'sdkconfig', 'r') as f:
-        active_platforms = [match.group('platform') for line in f 
-                            if (match :=_config_platform_expr.match(line.lower())) and match.group('value') == 'y']
-    active_platforms = [_platform_from_config_string(platform) for platform in active_platforms]
-
-    if len(active_platforms) == 1:
-        return active_platforms[0]
-    raise ValueError(f'could not determine platform, found {[p.value for p in active_platforms]} in config')
-
-def get_device_capabilities_line(platform: Platform, firmware_version: Version):   
-    if platform == Platform.v2 or platform == Platform.v2:
-        template = _get_template('io_capabilities.mk1.jinja.json')
-    elif platform == Platform.str:
-        template = _get_template('io_capabilities.str.jinja.json')
-    elif platform == Platform.aem:
-        raise ValueError(f'unsupported platform {platform.name}')
-    elif platform == Platform.mk2:
-        template = _get_template('io_capabilities.mk2.jinja.json')
-    elif platform == Platform.bba:
-        template = _get_template('io_capabilities.bba.jinja.json')
-    elif platform == Platform.desktop:
-        raise ValueError(f'unsupported platform {platform.name}')
-    else:
-        raise ValueError(f'unsupported platform {platform.name}')
-    
-    return template.render(hardware_type=platform.value, firmware_version=firmware_version.tag)
-
 
 def get_build_info() -> BuildInfo:
     version = get_version_info()
-    hardware = get_hardware_version()
-    print(version, hardware)
-    device_capabilities = get_device_capabilities_line(hardware, version)
-    device_capabilities = json.dumps(json.loads(device_capabilities))
-    print(device_capabilities)
+    platform = get_platform()
+    device_capabilities = _get_device_capabilities_str(platform, version)
 
     build_date = datetime.now().replace(microsecond=0).isoformat()
     return BuildInfo(
-        hardware=hardware.name, 
+        hardware=platform.name, 
         firmware=version.tag, 
-        device_capabilities=device_capabilities,
         commit=version.commit, 
         post_commit_changes=version.post_commit_changes,
         ahead_of_release=version.ahead_of_release, 
-        build_date=build_date
+        build_date=build_date,
+        device_capabilities=device_capabilities
     )
+
+
+def get_readable_device_capabilities():
+    version = get_version_info()
+    platform = get_platform()
+    return _get_device_capabilities_str(platform, version, readable=True)
 
 
 def write_build_info_header(build_info_header_path: Path):
@@ -130,4 +161,11 @@ def write_build_info_header(build_info_header_path: Path):
         f.write(header)    
 
 
-__all__ = ['get_version_info', 'get_hardware_version', 'get_build_info', 'write_build_info_header']
+__all__ = [
+    'BuildInfo',
+    'Version',
+    'get_version_info', 
+    'get_readable_device_capabilities',
+    'get_build_info', 
+    'write_build_info_header'
+]

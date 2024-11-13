@@ -1,7 +1,4 @@
 {
-    "HWV": "{{ hardware_type }}",
-    "FWV": "{{ firmware_version }}",
-    "p": "bba",
     "t": [
         "A_NOTE",
         "A_VELO",

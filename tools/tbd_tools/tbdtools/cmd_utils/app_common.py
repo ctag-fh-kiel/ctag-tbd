@@ -49,7 +49,7 @@ def common_callback(
     ctx.obj = get_project_structure(project_dir)
     
 
-@cache
+@cache  
 def get_main() -> typer.Typer:
     """ get the tbd app object
     

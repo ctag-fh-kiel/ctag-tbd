@@ -21,11 +21,13 @@ def version_cmd(ctx: typer.Context):
 
     print(get_version_info())
 
+
 @project_group.command('root')
 def root_cmd(ctx: typer.Context):
     """ show project root dir """
 
     print(find_project_root())
+
 
 @project_group.command('build-info')
 def build_info_cmd(ctx: typer.Context):
@@ -69,5 +71,6 @@ def path_to_cmd(ctx: typer.Context,
     for path_segment in elem.split('.'):
         pos = getattr(pos, path_segment)
     print(pos())
+
 
 __all__ = ['project_group']
