@@ -3,7 +3,7 @@ from typing import List, Tuple
 import jinja2 as ji
 
 from .reflectables import Headers
-from .plugin_parser import SoundPluginFinder, SoundPlugins
+from .plugin_source_parser import SoundPluginFinder, SoundPlugins
 
 
 def search_for_plugins(headers: Headers, strict: bool) -> Tuple[Headers, SoundPlugins]:

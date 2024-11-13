@@ -5,7 +5,7 @@ from kconfiglib import Kconfig
 import jinja2 as ji
 import humps
 
-from .plugin_parser import SoundPluginDescription
+from .plugin_source_parser import SoundPluginDescription
 
 
 class PluginConfig:

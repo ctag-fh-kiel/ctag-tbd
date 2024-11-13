@@ -35,7 +35,6 @@ def write_pretty_configs(configs_path: Path, out_path: Path):
     for preset_file, preset in iter_configs(configs_path, ConfigType.preset_file):
         preset = SoundPluginPatches(**preset)
         json = RootModel[SoundPluginPatches](preset).model_dump_json(indent=2, )
-        # # json = TypeAdapter[SoundPluginPatches](SoundPluginPatches).dump_json(preset, indent=2, by_alias=True)
         with open(out_path / preset_file,'w') as out_file:
             out_file.write(json)
 
