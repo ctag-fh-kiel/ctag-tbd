@@ -4,16 +4,12 @@
 #include "helpers/ctagWNoiseGen.hpp"
 #include "filters/ctagWPkorg35.hpp"
 #include "helpers/ctagADEnv.hpp"
-#include "stmlib/stmlib.h"      // for CONSTRAIN Macro...
 #include "fx/ctagDecimator.h"
 #include "helpers/ctagSineSource.hpp"
 
 // --- VULT "Library for TBD" ---
 #include "./vult/vult_formantor.h"
 #include "./vult/vult_formantor.tables.h"
-
-using namespace CTAG::SP::HELPERS;
-using namespace CTAG::SP;
 
 namespace CTAG {
     namespace SP {
@@ -36,7 +32,7 @@ namespace CTAG {
             bool low_reached[e_RecNplay_options_max] = {false};  // We need this for look for toggle-events
 
             // --- Clock-Metronome ---
-            ctagSineSource metro;
+            HELPERS::ctagSineSource metro;
             bool clockSinusWasLow = false;
             float f_BPMint_mem = 0.f;
 
@@ -44,7 +40,7 @@ namespace CTAG {
             ctagDecimator decimator;
 
             // --- White Noise ---
-            ctagWNoiseGen wNoise;
+            HELPERS::ctagWNoiseGen wNoise;
 
             // --- Sample and Hold for Bitcrusher ---
             float wNoiseSnH = 0.f;
@@ -52,7 +48,7 @@ namespace CTAG {
             float f_DownsampleFactorMem_ = 0.f;
 
             // --- Filter ---
-            ctagWPkorg35 wpKorg35;
+            HELPERS::ctagWPkorg35 wpKorg35;
 
             // --- Envelope ---
             HELPERS::ctagADEnv vol_env;

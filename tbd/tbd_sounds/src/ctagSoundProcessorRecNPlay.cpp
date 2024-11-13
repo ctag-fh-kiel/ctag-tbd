@@ -22,8 +22,10 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-
 #include <tbd/sounds/ctagSoundProcessorRecNPlay.hpp>
+
+#include <stmlib/stmlib.h>
+
 using namespace CTAG::SP;
 
 // --- Trigger/Gate values ---

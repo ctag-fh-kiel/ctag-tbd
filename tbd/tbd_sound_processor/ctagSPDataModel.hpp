@@ -29,13 +29,12 @@ respective component folders / files if different from this license.
 #include <vector>
 #include <rapidjson/document.h>
 
-using namespace std;
 
 namespace CTAG {
     namespace SP {
         class ctagSPDataModel : public ctagDataModelBase {
         public:
-            ctagSPDataModel(const string &id, const bool isStereo);
+            ctagSPDataModel(const std::string &id, const bool isStereo);
 
             ~ctagSPDataModel();
 
@@ -44,11 +43,11 @@ namespace CTAG {
             void LoadPreset(const int num);
 
             // set a preset value, "which" can be current, cv, trig
-            void SetParamValue(const string &id, const string &key, const int val);
+            void SetParamValue(const std::string &id, const std::string &key, const int val);
 
-            int GetParamValue(const string &id, const string &key);
+            int GetParamValue(const std::string &id, const std::string &key);
 
-            void SavePreset(const string &name, const int number);
+            void SavePreset(const std::string &name, const int number);
 
             const char *GetCStrJSONPresets(); // all presets
             const char *GetCStrJSONAllPresetData(); // current preset
@@ -56,20 +55,20 @@ namespace CTAG {
             std::string GetActivePluginParameters(); // active preset which contains non stored values
             void SetActivePluginParameters(const std::string &preset);
 
-            bool IsParamTrig(const string &id);
+            bool IsParamTrig(const std::string &id);
 
-            bool IsParamCV(const string &id);
+            bool IsParamCV(const std::string &id);
 
             void PrintSelf();
 
         private:
-            void recursiveFindAndInsert(const Value &paramF, Value &paramI);
+            void recursiveFindAndInsert(const rapidjson::Value &paramF, rapidjson::Value &paramI);
 
             // merge ui and preset models
             void mergeModels();
 
             rapidjson::Document mui, mp;
-            string mpFileName, muiFileName;
+            std::string mpFileName, muiFileName;
             rapidjson::Document activePreset;
         };
     }

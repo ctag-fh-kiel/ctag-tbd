@@ -35,14 +35,17 @@ respective component folders / files if different from this license.
 #endif
  */
 
-using namespace CTAG::SP;
+namespace rj = rapidjson;
 
-ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo) {
+namespace CTAG {
+namespace SP {
+
+ctagSPDataModel::ctagSPDataModel(const std::string &id, const bool isStereo) {
     // acquire data from json files ui model and patch model
-    muiFileName = string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mui-") + id + string(".jsn");
+    muiFileName = std::string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mui-") + id + std::string(".jsn");
     //std::cout << "Reading " << muiFileName << std::endl;
     loadJSON(mui, muiFileName);
-    mpFileName = string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-") + id + string(".jsn");
+    mpFileName = std::string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-") + id + std::string(".jsn");
     //std::cout << "Reading " << mpFileName << std::endl;
     loadJSON(mp, mpFileName);
     // load last activated preset
@@ -57,7 +60,7 @@ ctagSPDataModel::~ctagSPDataModel() {
 const char *ctagSPDataModel::GetCStrJSONParams() {
     json.Clear();
     mergeModels();
-    Writer<StringBuffer> writer(json);
+    rj::Writer<rj::StringBuffer> writer(json);
     mui.Accept(writer);
     //printf("%s\n", json.GetString());
     return json.GetString();
@@ -67,17 +70,17 @@ void ctagSPDataModel::mergeModels() {
     // iterate preset model for all parameters
     if (!activePreset.HasMember("params")) return;
     if (!mui.HasMember("params")) return;
-    Value &patchParams = activePreset["params"];
+    rj::Value &patchParams = activePreset["params"];
     for (auto &v : patchParams.GetArray()) {
         //printf("Searching for %s in ui model", v["id"].GetString());
         recursiveFindAndInsert(v, mui["params"]);
     }
 }
 
-void ctagSPDataModel::SetParamValue(const string &id, const string &key, const int val) {
+void ctagSPDataModel::SetParamValue(const std::string &id, const std::string &key, const int val) {
     ESP_LOGD("Model", "Setting id %s, with %s to %d", id.c_str(), key.c_str(), val);
     if (!activePreset.HasMember("params")) return;
-    Value &patchParams = activePreset["params"];
+    rj::Value &patchParams = activePreset["params"];
     if (!patchParams.IsArray()) return;
     for (auto &v : patchParams.GetArray()) {
         //printf("Searching for %s in ui model", v["id"].GetString());
@@ -91,9 +94,9 @@ void ctagSPDataModel::SetParamValue(const string &id, const string &key, const i
     }
 }
 
-int ctagSPDataModel::GetParamValue(const string &id, const string &key) {
+int ctagSPDataModel::GetParamValue(const std::string &id, const std::string &key) {
     if (!activePreset.HasMember("params")) return 0;
-    Value &patchParams = activePreset["params"];
+    rj::Value &patchParams = activePreset["params"];
     if (!patchParams.IsArray()) return 0;
     for (auto &v : patchParams.GetArray()) {
         if (!v.HasMember("id")) return 0;
@@ -113,11 +116,11 @@ const char *ctagSPDataModel::GetCStrJSONPresets() {
     json.Clear();
     int num = 0;
     // data to be printed
-    Value obj(kObjectType);
-    Value a(kArrayType);
-    Value n(kNumberType);
+    rj::Value obj(rj::kObjectType);
+    rj::Value a(rj::kArrayType);
+    rj::Value n(rj::kNumberType);
     // temporary root documents p is export d is patch file
-    Document p, d;
+    rj::Document p, d;
     // data to be printed
     n.SetInt(mp["activePatch"].GetInt());
     obj.AddMember("activePresetNumber", n, p.GetAllocator());
@@ -128,15 +131,15 @@ const char *ctagSPDataModel::GetCStrJSONPresets() {
     // iterate presets
     for (auto &v : d["patches"].GetArray()) {
         // construct items for export document
-        Value o(kObjectType);
-        Value name(kStringType);
+        rj::Value o(rj::kObjectType);
+        rj::Value name(rj::kStringType);
         name.SetString(v["name"].GetString(), p.GetAllocator());
         o.AddMember("name", name.Move(), p.GetAllocator());
         o.AddMember("number", num++, p.GetAllocator());
         a.PushBack(o, p.GetAllocator());
     }
     obj.AddMember("presets", a, p.GetAllocator());
-    Writer<StringBuffer> writer(json);
+    rj::Writer<rj::StringBuffer> writer(json);
     obj.Accept(writer);
     //printf("%s\n", json.GetString());
     return json.GetString();
@@ -160,11 +163,11 @@ void ctagSPDataModel::LoadPreset(const int num) {
     mp["activePatch"].SetInt(patchNum);
     storeJSON(mp, mpFileName);
     json.Clear();
-    Writer<StringBuffer> writer(json);
+    rj::Writer<rj::StringBuffer> writer(json);
     mp.Accept(writer);
 }
 
-void ctagSPDataModel::recursiveFindAndInsert(const Value &paramF, Value &paramI) {
+void ctagSPDataModel::recursiveFindAndInsert(const rj::Value &paramF, rj::Value &paramI) {
     if (!paramI.IsArray()) return;
     for (auto &v : paramI.GetArray()) {
         //printf("Matching for %s in with %s", paramF["id"].GetString(), v["id"].GetString());
@@ -172,19 +175,19 @@ void ctagSPDataModel::recursiveFindAndInsert(const Value &paramF, Value &paramI)
         if (!v.HasMember("id")) return;
         if (paramF["id"] == v["id"]) {
             //printf("Found, inserting data...");
-            Value::MemberIterator iter = v.FindMember("current");
+            rj::Value::MemberIterator iter = v.FindMember("current");
             if (iter == v.MemberEnd())
                 v.AddMember("current", paramF["current"].GetInt(), mui.GetAllocator());
             else
                 iter->value = paramF["current"].GetInt();
             if (v["type"] == "bool" && paramF.HasMember("trig")) {
-                Value::MemberIterator iter = v.FindMember("trig");
+                rj::Value::MemberIterator iter = v.FindMember("trig");
                 if (iter == v.MemberEnd())
                     v.AddMember("trig", paramF["trig"].GetInt(), mui.GetAllocator());
                 else
                     iter->value = paramF["trig"].GetInt();
             } else if (v["type"] == "int" && paramF.HasMember("cv")) {
-                Value::MemberIterator iter = v.FindMember("cv");
+                rj::Value::MemberIterator iter = v.FindMember("cv");
                 if (iter == v.MemberEnd())
                     v.AddMember("cv", paramF["cv"].GetInt(), mui.GetAllocator());
                 else
@@ -199,7 +202,7 @@ void ctagSPDataModel::recursiveFindAndInsert(const Value &paramF, Value &paramI)
 }
 
 
-void ctagSPDataModel::SavePreset(const string &name, const int number) {
+void ctagSPDataModel::SavePreset(const std::string &name, const int number) {
     //ESP_LOGE("Model", "Save preset %s %d", name.c_str(), number);
     //ESP_LOGE("MOdel", "Stored JSON before");
     //PrintSelf();
@@ -213,7 +216,7 @@ void ctagSPDataModel::SavePreset(const string &name, const int number) {
     activePreset["name"].SetString(name, activePreset.GetAllocator());
     //ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
     if (patchNum == mp["patches"].GetArray().Size()) {
-        Value copyOfPreset(activePreset, mp.GetAllocator());
+        rj::Value copyOfPreset(activePreset, mp.GetAllocator());
         //copyOfPreset["name"].SetString(name, mp.GetAllocator());
         mp["patches"].PushBack(copyOfPreset.Move(), mp.GetAllocator());
         /*
@@ -241,18 +244,18 @@ void ctagSPDataModel::PrintSelf() {
 }
 
 const char *ctagSPDataModel::GetCStrJSONAllPresetData() {
-    Document d;
+    rj::Document d;
     json.Clear();
     loadJSON(d, mpFileName);
-    Writer<StringBuffer> writer(json);
+    rj::Writer<rj::StringBuffer> writer(json);
     d.Accept(writer);
     //printf("%s\n", json.GetString());
     return json.GetString();
 }
 
-bool ctagSPDataModel::IsParamTrig(const string &id) {
+bool ctagSPDataModel::IsParamTrig(const std::string &id) {
     if (!activePreset.HasMember("params")) return false;
-    Value &patchParams = activePreset["params"];
+    rj::Value &patchParams = activePreset["params"];
     if (!patchParams.IsArray()) return false;
     for (auto &v : patchParams.GetArray()) {
         if (!v.HasMember("id")) return false;
@@ -264,9 +267,9 @@ bool ctagSPDataModel::IsParamTrig(const string &id) {
     return false;
 }
 
-bool ctagSPDataModel::IsParamCV(const string &id) {
+bool ctagSPDataModel::IsParamCV(const std::string &id) {
     if (!activePreset.HasMember("params")) return false;
-    Value &patchParams = activePreset["params"];
+    rj::Value &patchParams = activePreset["params"];
     if (!patchParams.IsArray()) return false;
     for (auto &v : patchParams.GetArray()) {
         if (!v.HasMember("id")) return false;
@@ -279,15 +282,18 @@ bool ctagSPDataModel::IsParamCV(const string &id) {
 }
 
 std::string ctagSPDataModel::GetActivePluginParameters() {
-    rapidjson::StringBuffer parameters;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(parameters);
+    rj::StringBuffer parameters;
+    rj::Writer<rj::StringBuffer> writer(parameters);
     activePreset.Accept(writer);
     return parameters.GetString();
 }
 
 void ctagSPDataModel::SetActivePluginParameters(const std::string &parameters) {
-    Document d;
+    rj::Document d;
     d.Parse(parameters.c_str());
     activePreset.GetAllocator().Clear();
     activePreset.CopyFrom(d, activePreset.GetAllocator());
+}
+
+}
 }

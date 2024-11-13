@@ -28,8 +28,6 @@
 
 #pragma once
 
-#include "stmlib/stmlib.h"
-
 #include "fx_engine.h"
 
 namespace mifx {

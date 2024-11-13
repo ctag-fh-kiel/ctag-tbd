@@ -29,8 +29,6 @@ respective component folders / files if different from this license.
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/document.h>
 
-using namespace rapidjson;
-using namespace std;
 
 namespace CTAG {
     namespace SP {
@@ -41,13 +39,13 @@ namespace CTAG {
             virtual ~ctagDataModelBase();
 
         protected:
-            StringBuffer json;
+            rapidjson::StringBuffer json;
 
-            void loadJSON(rapidjson::Document &d, const string &fn);
+            void loadJSON(rapidjson::Document &d, const std::string &fn);
 
             void printJSON(rapidjson::Value &v);
 
-            void storeJSON(rapidjson::Document &d, const string &fn);
+            void storeJSON(rapidjson::Document &d, const std::string &fn);
 
             char *buffer;
             FILE *fp = nullptr;

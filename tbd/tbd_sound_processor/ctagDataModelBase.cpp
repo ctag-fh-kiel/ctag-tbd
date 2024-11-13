@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 
-#include "esp_log.h"
+// #include "esp_log.h"
 #include "esp_heap_caps.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/stringbuffer.h"
@@ -32,18 +32,21 @@ respective component folders / files if different from this license.
 
 #define MB_BUF_SZ 4096
 
-void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
+namespace CTAG {
+namespace SP {
+
+void ctagDataModelBase::loadJSON(rapidjson::Document &d, const std::string &fn) {
     d.GetAllocator().Clear();
-    ESP_LOGD("JSON", "read buffer");
+    // ESP_LOGD("JSON", "read buffer");
     //FILE*
     fp = fopen(fn.c_str(), "r");
     if (fp == NULL) {
-        ESP_LOGE("JSON", "could not open file %s", fn.c_str());
+        // ESP_LOGE("JSON", "could not open file %s", fn.c_str());
         return;
     }
     //char readBuffer[512];
 //    ESP_LOGE("JSON", "read stream");
-    FileReadStream is(fp, buffer, MB_BUF_SZ);
+    rapidjson::FileReadStream is(fp, buffer, MB_BUF_SZ);
 //    ESP_LOGE("JSON", "trying to parse");
     d.ParseStream(is);
     fclose(fp);
@@ -56,17 +59,17 @@ void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
     // CONTENTS OF SPIFFS_IMAGE/DATA
     // IF THIS HAPPENS, ALL CONTENTS OF THE AFFECTED FILE ARE RESET TO FACTORY DEFAULT
     if(d.HasParseError()){
-        string backup_file_name = std::regex_replace(fn, std::regex("data"), "dbup");
-        ESP_LOGE("JSON", "File %s has a parse error!", fn.c_str());
-        ESP_LOGE("JSON", "Trying to replace with backup file %s", backup_file_name.c_str());
+        std::string backup_file_name = std::regex_replace(fn, std::regex("data"), "dbup");
+        // ESP_LOGE("JSON", "File %s has a parse error!", fn.c_str());
+        // ESP_LOGE("JSON", "Trying to replace with backup file %s", backup_file_name.c_str());
         fp = fopen(backup_file_name.c_str(), "r");
         if (fp == NULL) {
-            ESP_LOGE("JSON", "Could not open file %s", backup_file_name.c_str());
+            // ESP_LOGE("JSON", "Could not open file %s", backup_file_name.c_str());
             return;
         }
         //char readBuffer[512];
 //    ESP_LOGE("JSON", "read stream");
-        FileReadStream is(fp, buffer, MB_BUF_SZ);
+        rapidjson::FileReadStream is(fp, buffer, MB_BUF_SZ);
 //    ESP_LOGE("JSON", "trying to parse");
         d.ParseStream(is);
         fclose(fp);
@@ -74,38 +77,41 @@ void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
         if(!d.HasParseError()){
             storeJSON(d, fn);
         }else{
-            ESP_LOGE("JSON", "FATAL ERROR: Could not recover from backup file %s", backup_file_name.c_str());
+            // ESP_LOGE("JSON", "FATAL ERROR: Could not recover from backup file %s", backup_file_name.c_str());
         }
     }
 }
 
-void CTAG::SP::ctagDataModelBase::storeJSON(Document &d, const string &fn) {
+void ctagDataModelBase::storeJSON(rapidjson::Document &d, const std::string &fn) {
     //FILE*
     fp = fopen(fn.c_str(), "w"); // non-Windows use "w"
     if (fp == NULL) {
-        ESP_LOGE("JSON", "could not open file %s", fn.c_str());
+        // ESP_LOGE("JSON", "could not open file %s", fn.c_str());
         return;
     }
     //char writeBuffer[512];
-    FileWriteStream os(fp, buffer, MB_BUF_SZ);
-    Writer<FileWriteStream> writer(os);
+    rapidjson::FileWriteStream os(fp, buffer, MB_BUF_SZ);
+    rapidjson::Writer<rapidjson::FileWriteStream> writer(os);
     d.Accept(writer);
     fflush(fp);
     fclose(fp);
 }
 
-void CTAG::SP::ctagDataModelBase::printJSON(Value &v) {
-    StringBuffer buffer;
-    Writer<StringBuffer> writer(buffer);
+void ctagDataModelBase::printJSON(rapidjson::Value &v) {
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     v.Accept(writer);
-    ESP_LOGW("Model", "JSON string %s", buffer.GetString());
+    // ESP_LOGW("Model", "JSON string %s", buffer.GetString());
 }
 
-CTAG::SP::ctagDataModelBase::ctagDataModelBase() {
+ctagDataModelBase::ctagDataModelBase() {
     buffer = (char *) heap_caps_malloc(MB_BUF_SZ, MALLOC_CAP_SPIRAM);
-    if (buffer == nullptr) ESP_LOGE("Model Base", "Fatal: Out of mem!");
+    // if (buffer == nullptr) ESP_LOGE("Model Base", "Fatal: Out of mem!");
 }
 
-CTAG::SP::ctagDataModelBase::~ctagDataModelBase() {
+ctagDataModelBase::~ctagDataModelBase() {
     heap_caps_free(buffer);
+}
+
+}
 }

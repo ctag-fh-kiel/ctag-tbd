@@ -8,7 +8,7 @@ endif()
 
 idf_component_register(SRCS ${SRC_FILES}
         INCLUDE_DIRS "."
-        REQUIRES)
+        REQUIRES tbd_drivers tbd_network esp_http_server esp_partition nvs_flash app_update json)
 target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_version tbd_sound_registry)
 target_compile_options(${COMPONENT_LIB} PRIVATE
         -Wno-unused-local-typedefs

@@ -14,5 +14,5 @@ add_custom_command(
 
 add_library(tbd_sound_registry STATIC ${SRCS_FILES})
 target_include_directories(tbd_sound_registry PUBLIC include)
-target_link_libraries(tbd_sound_registry PUBLIC tbd_sound_processor)
+target_link_libraries(tbd_sound_registry PUBLIC tbd_sound_processor tbd_sounds)
 
