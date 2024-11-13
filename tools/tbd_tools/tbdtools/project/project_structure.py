@@ -22,12 +22,12 @@ class Platform(Enum):
 
 def get_platform_description(platform: Platform) -> str:
     descriptions = {
-        'v1'      : 'TBD mk1 rev2 (WM8978, ESP ADC)',
-        'v2'      : 'TBD mk1 rev2 (WM8731, ESP ADC)',
-        'str'     : 'CTAG Strämpler (WM8731, MCP3208)',
-        'aem'     : 'AE Modular (WM8974, ESP ADC)',
-        'mk2'     : 'TBD MK2 (WM8978, STM32 CVs/Trigs)',
-        'bba'     : 'TBD BBA (MIDI)',
+        'v1'      : 'TBD mk1 rev2 WM8978, ESP ADC',
+        'v2'      : 'TBD mk1 rev2 WM8731, ESP ADC',
+        'str'     : 'CTAG Strämpler WM8731, MCP3208',
+        'aem'     : 'AE Modular WM8974, ESP ADC',
+        'mk2'     : 'TBD MK2 WM8978, STM32 CVs/Trigs',
+        'bba'     : 'TBD BBA MIDI',
         'desktop' : 'Desktop App',
     }
     return descriptions[platform.name]
