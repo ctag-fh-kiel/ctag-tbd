@@ -1,23 +1,14 @@
 import os
 from typing import Optional
-from enum import Enum, unique
 import re
 
 from loguru import logger
 
-from tbdtools.project.get_project import find_project_root
+from .get_project import find_project_root
+from .project_structure import Platform
+
 
 PLATFORM_ENVVAR = 'TBD_PLATFORM'
-
-@unique
-class Platform(Enum):
-    v1      = 'TBD mk1 rev2 (WM8978, ESP ADC)'
-    v2      = 'TBD mk1 rev2 (WM8731, ESP ADC)'
-    str     = 'CTAG Strämpler (WM8731, MCP3208)'
-    aem     = 'AE Modular (WM8974, ESP ADC)'
-    mk2     = 'TBD MK2 (WM8978, STM32 CVs/Trigs)'
-    bba     = 'TBD BBA (MIDI)'
-    desktop = 'Desktop App'
 
 
 def _platform_from_string(config_str: str) -> Platform:
@@ -27,6 +18,7 @@ def _platform_from_string(config_str: str) -> Platform:
     raise ValueError(f'unknown platform {config_str}')
 
 _config_platform_expr = re.compile(r'config_tbd_platform_(?P<platform>\w+)\s*=\s*(?P<value>\w+)')
+
 
 def _get_platform_from_config_file() -> Optional[Platform]:
     project_root = find_project_root()    
@@ -66,4 +58,4 @@ def get_platform() -> Platform:
     return Platform.desktop
 
 
-__all__ = ['PLATFORM_ENVVAR', 'Platform', 'get_platform']
+__all__ = ['PLATFORM_ENVVAR', 'get_platform']

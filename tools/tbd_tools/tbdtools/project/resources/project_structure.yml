@@ -6,7 +6,7 @@ config:
   cmake: ./CMakeLists.txt
 
 src:
-  path: /components/
+  path: /tbd/
   sounds:
     path: ./tbd_sounds/
     headers: './include/tbd/sounds/'

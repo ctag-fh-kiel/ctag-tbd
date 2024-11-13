@@ -1,10 +1,36 @@
 from dataclasses import fields
+from enum import Enum, unique
 from pathlib import Path
 import copy
 
 from git import Optional
 from pydantic.dataclasses import dataclass
 
+
+
+@unique
+class Platform(Enum):
+    v1      = 'v1'
+    v2      = 'v2'
+    str     = 'str'
+    aem     = 'aem'
+    mk2     = 'mk2'
+    bba     = 'bba'
+    desktop = 'desktop'
+
+
+
+def get_platform_description(platform: Platform) -> str:
+    descriptions = {
+        'v1'      : 'TBD mk1 rev2 (WM8978, ESP ADC)',
+        'v2'      : 'TBD mk1 rev2 (WM8731, ESP ADC)',
+        'str'     : 'CTAG Strämpler (WM8731, MCP3208)',
+        'aem'     : 'AE Modular (WM8974, ESP ADC)',
+        'mk2'     : 'TBD MK2 (WM8978, STM32 CVs/Trigs)',
+        'bba'     : 'TBD BBA (MIDI)',
+        'desktop' : 'Desktop App',
+    }
+    return descriptions[platform.name]
 
 
 @dataclass(kw_only=True)
@@ -16,7 +42,7 @@ class ProjectFileTreeElement:
         """ translate paths to absolute paths if project path attribute exists """
 
         attr = super().__getattribute__(name)
-        if isinstance(attr, Path) and 'name' != 'project_root':
+        if isinstance(attr, Path) and name != 'project_root':
             project = super().__getattribute__('project_root')
             if project is not None:
                 return project / attr
@@ -25,13 +51,36 @@ class ProjectFileTreeElement:
         return attr
     
     def relative(self) -> 'ProjectFileTreeElement':
+        """ make subtree relative to project root """
+        return self.change_root(None)
+
+    def change_root(self, path: Optional[Path]) -> 'ProjectFileTreeElement':
+        """ change project root for subtree """
         relative = copy.copy(self)
         
-        relative.project_root = None
+        relative.project_root = path
         for field in fields(relative):
             if isinstance(attr := getattr(relative, field.name), ProjectFileTreeElement):
-                setattr(relative, field.name, attr.relative())
-        return relative        
+                setattr(relative, field.name, attr.change_root(path))
+        return relative      
+    
+    def relative_to(self, path: Path, new_root: Optional[Path] = None) -> 'ProjectFileTreeElement':
+        relative = copy.copy(self)
+
+        for field in fields(relative):
+            attr = getattr(relative, field.name)
+            if isinstance(attr, Path) and field.name != 'project_root':
+                if attr.is_relative_to(path):
+                    relative_path = attr.relative_to(path)
+                    setattr(relative, field.name, relative_path)
+            if isinstance(attr, ProjectFileTreeElement):
+                setattr(relative, field.name, attr.relative_to(path, new_root))
+
+        if new_root is not None:
+            relative.project_root = new_root
+        else:
+            relative.project_root = path
+        return relative   
 
 
 @dataclass
@@ -95,14 +144,28 @@ class BuildDocs(ProjectDir):
 
 
 @dataclass
-class BuildFirmware(ProjectDir):
+class PlatformBuildDir(ProjectDir):
     generated_sources: ProjectDir
 
 
 @dataclass
 class BuildRoot(ProjectDir):
     docs: BuildDocs
-    firmware: BuildFirmware
+    firmware: PlatformBuildDir
+
+    def platform_dir(self, platform: Platform) -> Path:
+        return self.path / platform.name
+    
+    def platform_tree(self, platform: Platform) -> PlatformBuildDir:
+        build_root = self.path
+        firmware_root = self.firmware.path
+        platform_build_root = build_root / platform.name
+        return self.firmware.relative_to(firmware_root, platform_build_root)
+
+    def __getattr__(self, name: str):
+        if name in Platform._member_names_:
+            return self.platform_tree(Platform[name])
+        return super().__getattribute__(name)
 
 
 @dataclass
@@ -116,8 +179,11 @@ class ProjectRoot(ProjectFileTreeElement):
 
 
 __all__ = [
+    'Platform',
+    'get_platform_description',
     'ProjectFileTreeElement',
     'ProjectDir', 
-    'ProjectROot',
+    'ProjectRoot',
     'ProjectFile',
+    'PlatformBuildDir',
 ]

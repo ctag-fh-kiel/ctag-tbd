@@ -1,6 +1,7 @@
 from pathlib import Path
 import typer
 
+from tbdtools.cmd_utils import get_ctx
 from tbdtools.project import ProjectRoot
 from tbdtools.preprocessor import (
     search_for_plugins, 
@@ -18,12 +19,12 @@ plugins_group = typer.Typer()
 
 @plugins_group.command('find')
 def find_plugins_cmd(
-    ctx: typer.Context,
+    _ctx: typer.Context,
     strict: bool = typer.Option(False)
 ):
     """ list all available plugins """
 
-    dirs: ProjectRoot = ctx.obj
+    dirs = get_ctx(_ctx).dirs
 
     headers = dirs.src.plugins.headers().glob('*.hpp')
     _, plugins = search_for_plugins(headers, strict)
@@ -33,12 +34,12 @@ def find_plugins_cmd(
 
 @plugins_group.command('update-config')
 def update_config_cmd(
-    ctx: typer.Context,
+    _ctx: typer.Context,
     strict: bool = typer.Option(False)
 ):
     """ update the plugin config to match plugins detected"""
 
-    dirs: ProjectRoot = ctx.obj
+    dirs = get_ctx(_ctx).dirs
 
     headers = dirs.src.sounds.headers().glob('*.hpp')
     _, plugins = search_for_plugins(headers, strict)
@@ -49,12 +50,12 @@ def update_config_cmd(
 
 @plugins_group.command('create-factory')
 def find_plugins_cmd(
-    ctx: typer.Context,
+    _ctx: typer.Context,
     strict: bool = typer.Option(False)
 ):
     """ create plugin factory """
 
-    dirs: ProjectRoot = ctx.obj
+    dirs = get_ctx(_ctx).dirs
 
     headers = dirs.src.sounds.headers().glob('*.hpp')
     headers, plugins = search_for_plugins(headers, strict)
@@ -65,12 +66,12 @@ def find_plugins_cmd(
 
 @plugins_group.command('create-meta')
 def create_meta_cmd(
-    ctx: typer.Context,
+    _ctx: typer.Context,
     strict: bool = typer.Option(False)
 ):
     """ create reflection information for plugins """
 
-    dirs: ProjectRoot = ctx.obj
+    dirs = get_ctx(_ctx).dirs
 
     headers = dirs.src.sounds.headers().glob('*.hpp')
     headers, plugins = search_for_plugins(headers, strict)
@@ -80,12 +81,12 @@ def create_meta_cmd(
 
 @plugins_group.command('pretty-configs')
 def pretty_configs_cmd(
-    ctx: typer.Context,
+    _ctx: typer.Context,
     out_dir: Path
 ):
     """ create reflection information for plugins """
 
-    dirs: ProjectRoot = ctx.obj
+    dirs = get_ctx(_ctx).dirs
 
     configs_path = dirs.resources.plugin_definitions()
 
@@ -94,7 +95,7 @@ def pretty_configs_cmd(
 
 @plugins_group.command('plugin-schema')
 def extract_configs_cmd(
-    ctx: typer.Context,
+    _ctx: typer.Context,
 ):
     """ create reflection information for plugins """
 
@@ -103,7 +104,7 @@ def extract_configs_cmd(
 
 @plugins_group.command('preset-schema')
 def presets_schema_cmd(
-    ctx: typer.Context,
+    _ctx: typer.Context,
 ):
     """ create reflection information for plugins """
 

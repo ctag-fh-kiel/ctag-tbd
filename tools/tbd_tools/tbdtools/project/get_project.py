@@ -124,7 +124,7 @@ def pretty_print_project_structure(root: ProjectRoot, depth: int = 0) -> str:
 
 
 def get_project_structure(project_root: Path, absolute: bool = True) -> ProjectRoot:
-    project_description_file_name = Path(__file__).parent / 'project_structure.yml'
+    project_description_file_name = Path(__file__).parent / 'resources' / 'project_structure.yml'
     with open(project_description_file_name, 'r') as f:
         try:
             config = yaml.safe_load(f)
@@ -141,7 +141,6 @@ def get_project_structure(project_root: Path, absolute: bool = True) -> ProjectR
 __all__ = [
     'get_project_repo', 
     'find_project_root',
-    'ProjectRoot', 
     'pretty_print_project_structure',
     'get_project_structure',
 ]

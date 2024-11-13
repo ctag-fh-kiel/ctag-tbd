@@ -4,14 +4,15 @@ from pydantic.dataclasses import dataclass
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 from git import List
 import jinja2 as ji
-from pydantic import ConfigDict, Field, RootModel
+from pydantic import ConfigDict, Field
 
 from .get_project import get_project_repo
-from .get_platform import Platform, get_platform
+from .project_structure import Platform, get_platform_description
+from .get_platform import get_platform
 
 
 def _get_template(template_name: str):
@@ -62,7 +63,7 @@ class DeviceCapabilities(DeviceHeader, DeviceInputs):
 
 
 def _get_device_inputs(platform: Platform) -> Dict:
-    if platform == Platform.v2 or platform == Platform.v2:
+    if platform == Platform.v1 or platform == Platform.v2:
         inputs_type = 'mk1'
     elif platform == Platform.str:
         inputs_type = 'str'
@@ -85,7 +86,7 @@ def _get_device_inputs(platform: Platform) -> Dict:
 def _get_device_capabilities(platform: Platform, firmware_version: Version) -> DeviceCapabilities:   
     inputs_dict = _get_device_inputs(platform)
     header = DeviceHeader(
-        hardware_type=platform.value, 
+        hardware_type=get_platform_description(platform), 
         firmware_version=firmware_version.tag,
         hardware_id=platform.name,
     )
@@ -127,9 +128,10 @@ def get_version_info() -> Version:
     return Version('unknown', commit.hexsha, is_dirty, -1)
 
 
-def get_build_info() -> BuildInfo:
+def get_build_info(*, platform: Optional[Platform] = None) -> BuildInfo:
     version = get_version_info()
-    platform = get_platform()
+    if platform is None:
+        platform = get_platform()
     device_capabilities = _get_device_capabilities_str(platform, version)
 
     build_date = datetime.now().replace(microsecond=0).isoformat()
@@ -144,14 +146,19 @@ def get_build_info() -> BuildInfo:
     )
 
 
-def get_readable_device_capabilities():
+def get_readable_device_capabilities(*, platform: Optional[Platform] = None):
     version = get_version_info()
-    platform = get_platform()
+    if platform is None:
+        platform = get_platform()
+
     return _get_device_capabilities_str(platform, version, readable=True)
 
 
-def write_build_info_header(build_info_header_path: Path):
-    build_info = get_build_info()
+def write_build_info_header(
+        build_info_header_path: Path, *, platform: Optional[Platform] = None
+    ):
+    
+    build_info = get_build_info(platform=platform)
 
     template = _get_template('build_info_source.jinja.cpp')
     header = template.render(build_info=build_info)

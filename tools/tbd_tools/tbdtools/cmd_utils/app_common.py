@@ -1,8 +1,18 @@
+from dataclasses import dataclass
 from pathlib import Path
+import click
 import typer
 from functools import cache
 
-from tbdtools.project import get_project_structure, find_project_root
+from tbdtools.project import (
+    get_platform, 
+    get_project_structure, 
+    find_project_root, 
+    Platform, 
+    PlatformBuildDir, 
+    ProjectRoot
+)
+
 
 greeting_header_full = r'''
 ________/\\\\\\\\\__/\\\\\\\\\\\\\\\_____/\\\\\\\\\________/\\\\\\\\\\\\____________/\\\\\\\\\\\\\\\__/\\\\\\\\\\\\\____/\\\\\\\\\\\\____        
@@ -42,11 +52,30 @@ greeting_header_tipped = r'''
 
 greeting_header = '\b\n'.join(greeting_header_tipped.split('\n'))
 
+@dataclass
+class AppContext:
+    dirs: ProjectRoot
+    platform: Platform
+
+
+def get_ctx(ctx: typer.Context) -> AppContext:
+    return ctx.obj
+
+
+def get_build_dir(ctx: typer.Context) -> PlatformBuildDir:
+    _ctx = get_ctx(ctx)
+    return _ctx.dirs.build.platform_tree(_ctx.platform)
+
+
 def common_callback(
     ctx: typer.Context,
-    project_dir: Path =  typer.Option(...,'-d', '--project-dir', default_factory=find_project_root)
+    project_dir: Path =  typer.Option(...,'-d', '--project-dir', default_factory=find_project_root),
+    platform: Platform =  typer.Option(...,'-p', '--platform', default_factory=lambda: get_platform().name),
 ):
-    ctx.obj = get_project_structure(project_dir)
+    ctx.obj = AppContext(
+        dirs=get_project_structure(project_dir),
+        platform=platform
+    )
     
 
 @cache  
@@ -61,4 +90,11 @@ def get_main() -> typer.Typer:
         pretty_exceptions_enable=False, help=greeting_header, no_args_is_help=True)
 
 
-__all__ = ['greeting_header', 'common_callback', 'get_main']
+__all__ = [
+    'greeting_header', 
+    'AppContext',
+    'get_ctx',
+    'get_build_dir',
+    'common_callback', 
+    'get_main'
+]
