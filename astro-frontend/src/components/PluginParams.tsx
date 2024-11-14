@@ -1,5 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import type { Plugin } from "../stores/pluginsStore";
+import useFetchQueue from "../hooks/useFetchQueue";
 
 type Parameter = {
   id: string;
@@ -158,6 +159,7 @@ interface PluginParamsProps {
 export default function PluginParams({ channel }: PluginParamsProps) {
   const [fetched, setFetched] = useState(false);
   const [params, setParams] = useState<Parameter[]>([]);
+  const { addToQueue } = useFetchQueue();
 
   useEffect(() => {
     if (!fetched) {
@@ -182,9 +184,9 @@ export default function PluginParams({ channel }: PluginParamsProps) {
       routeSuffix = "CV";
     }
 
-    fetch(
-      `/api/v1/setPluginParam${routeSuffix}/${channel}?id=${changedParam.id}&${type}=${newValue}`,
-    );
+    addToQueue({
+      url: `/api/v1/setPluginParam${routeSuffix}/${channel}?id=${changedParam.id}&${type}=${newValue}`,
+    });
   };
 
   return (
