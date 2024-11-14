@@ -19,3 +19,4 @@ _deps
 CMakeUserPresets.json
 __pycache__
 managed_components
+sdkconfig
