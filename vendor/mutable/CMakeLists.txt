@@ -80,10 +80,12 @@ file(GLOB SRCS_FILES
         eurorack/clouds/dsp/pvoc/stft.h
 )
 
+# __idf_esp_system
+
 add_library(mutable STATIC ${SRCS_FILES})
 target_include_directories(mutable PUBLIC eurorack)
 target_link_libraries(mutable 
-        PRIVATE tbd_helpers __idf_esp_system)
+        PRIVATE tbd_helpers)
 target_compile_options(mutable PRIVATE
         -Wno-unused-variable
         -Wno-shift-negative-value

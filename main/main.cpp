@@ -24,7 +24,6 @@ respective component folders / files if different from this license.
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
-#include "esp_log.h"
 #include "adc.hpp"
 #include "fs.hpp"
 #include "led_rgb.hpp"

@@ -21,7 +21,6 @@ respective component folders / files if different from this license.
 
 
 #include "SPManager.hpp"
-#include "esp_log.h"
 #include "esp_system.h"
 #include "stdint.h"
 #include "string.h"
@@ -38,6 +37,8 @@ respective component folders / files if different from this license.
 #include "helpers/ctagSampleRom.hpp"
 #include "freeverb3/efilter.hpp"
 #include "stmlib/dsp/dsp.h"
+#include <tbd/logging.hpp>
+
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
@@ -168,7 +169,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         // led indicator, green for input
         max = 255.f + 3.2f * CTAG::SP::HELPERS::fast_dBV(peakIn); // cut away at approx -80dB
         uint32_t ledData = 0;
-        //ESP_LOGI("SP", "Max %.9f %f", peakIn, max);
+        //TBD_LOGI("SP", "Max %.9f %f", peakIn, max);
         if (max > 0 && ngState == NG_OPEN) {
             ledData = ((uint32_t) max);
             ledData <<= 8; // green
@@ -261,7 +262,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         // just take first sample of block for level meter
         max = fabsf(fbuf[0] + fbuf[1]) / 2.f;
         peakOut = 0.9f * peakOut + 0.1f * max;
-        //ESP_LOGW("PEAK", "max %.12f, peak %.12f", max, peakOut);
+        //TBD_LOGW("PEAK", "max %.12f, peak %.12f", max, peakOut);
         max = 255.f + 3.2f * HELPERS::fast_dBV(peakOut);
         if (max > 0.f) ledData |= ((uint32_t) max) << 16; // red
         ledStatus = ledData;
@@ -285,7 +286,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
     if(chan == 1 && model->IsStereo(id)) return;
 
-    ESP_LOGI("SPManager", "Switching ch%d to plugin %s", chan, id.c_str());
+    TBD_LOGI("SPManager", "Switching ch%d to plugin %s", chan, id.c_str());
 
     // destroy active plugin
     xSemaphoreTake(processMutex, portMAX_DELAY);
@@ -310,7 +311,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     xSemaphoreGive(processMutex);
 
 
-    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    TBD_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -343,7 +344,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     if(gpio_get_level(GPIO_NUM_0) == 0){
         model->ResetNetworkConfiguration();
-        ESP_LOGE("SP", "Network credentials reset requested!");
+        TBD_LOGE("SP", "Network credentials reset requested!");
         DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
@@ -354,7 +355,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     if(GPIO::GetTrig1() == 0){
         DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
         model->ResetNetworkConfiguration();
-        ESP_LOGE("SP", "Network credentials reset requested!");
+        TBD_LOGE("SP", "Network credentials reset requested!");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     */
@@ -388,7 +389,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     // prepare threads and mutex
     processMutex = xSemaphoreCreateMutex();
     if (processMutex == NULL) {
-        ESP_LOGE("SPM", "Fatal couldn't create mutex!");
+        TBD_LOGE("SPM", "Fatal couldn't create mutex!");
     }
 #ifndef CONFIG_TBD_PLATFORM_STR
     // create led indicator thread
@@ -406,7 +407,7 @@ void SoundProcessorManager::StartSoundProcessor() {
 
     SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
     SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
-    ESP_LOGI("SPManager", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    TBD_LOGI("SPManager", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -558,7 +559,7 @@ void SoundProcessorManager::KillAudioTask() {
     vTaskDelay(100 / portTICK_PERIOD_MS);
     DRIVERS::LedRGB::SetLedRGB(255, 0, 255);
 #endif
-    ESP_LOGI("SPManager", "Audio Task Killed: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    TBD_LOGI("SPManager", "Audio Task Killed: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),

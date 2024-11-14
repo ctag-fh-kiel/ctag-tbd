@@ -22,8 +22,8 @@ respective component folders / files if different from this license.
 #include <string>
 
 #include "Display.hpp"
-#include "esp_log.h"
 #include <tbd/version.hpp>
+
 
 #if CONFIG_TBD_PLATFORM_MK2
     #define SCL_GPIO 32

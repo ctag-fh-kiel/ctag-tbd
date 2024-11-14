@@ -20,11 +20,12 @@ respective component folders / files if different from this license.
 ***************/
 
 
-#include "esp_log.h"
 #include "Calibration.hpp"
 #include "gpio.hpp"
 #include "led_rgb.hpp"
 #include "adc.hpp"
+#include <tbd/logging.hpp>
+
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
@@ -49,12 +50,12 @@ void Calibration::Init() {
     ConfigCVChannels(CVConfig::CVUnipolar, CVConfig::CVUnipolar, CVConfig::CVUnipolar, CVConfig::CVUnipolar);
     DRIVERS::ADC::SetCVINUnipolar(0);
     DRIVERS::ADC::SetCVINUnipolar(1);
-    ESP_LOGI("CAL", "Check calibration request");
+    TBD_LOGI("CAL", "Check calibration request");
     if (model->GetCalibrateOnReboot()) {
-        ESP_LOGI("CAL", "Starting calibration");
+        TBD_LOGI("CAL", "Starting calibration");
         DRIVERS::LedRGB::SetLedRGB(0, 0, 0);
         doCalibration();
-        ESP_LOGI("CAL", "Calibration completed");
+        TBD_LOGI("CAL", "Calibration completed");
         DRIVERS::LedRGB::SetLedRGB(0, 0, 0);
         model->SetCalibrateOnReboot(false);
     }
@@ -76,17 +77,17 @@ void Calibration::doCalibration() {
     DRIVERS::ADC::SetCVINUnipolar(0);
     DRIVERS::ADC::SetCVINUnipolar(1);
     // get mins
-    ESP_LOGW("CAL", "Adjust CV INs to min value (clock left resp. 0V CV in)");
+    TBD_LOGW("CAL", "Adjust CV INs to min value (clock left resp. 0V CV in)");
     acquireData(data);
     model->PushRow(data);
     // get maxs
     taskControl.store(2);
-    ESP_LOGW("CAL", "Adjust CV INs to middle / +2.5V");
+    TBD_LOGW("CAL", "Adjust CV INs to middle / +2.5V");
     acquireData(data);
     model->PushRow(data);
     taskControl.store(3);
     // get mid CV in
-    ESP_LOGW("CAL", "Adjust CV INs to max value (clock right resp. +5V CV in)");
+    TBD_LOGW("CAL", "Adjust CV INs to max value (clock right resp. +5V CV in)");
     acquireData(data);
     model->PushRow(data);
     model->StoreMatrix("Calibration_CV_05V");
@@ -95,17 +96,17 @@ void Calibration::doCalibration() {
     DRIVERS::ADC::SetCVINBipolar(1);
     model->CreateMatrix();
     // get mins
-    ESP_LOGW("CAL", "Adjust CV INs to min value (clock left resp. -5V CV in)");
+    TBD_LOGW("CAL", "Adjust CV INs to min value (clock left resp. -5V CV in)");
     acquireData(data);
     model->PushRow(data);
     // get maxs
     taskControl.store(5);
-    ESP_LOGW("CAL", "Adjust CV INs to 0V CV in");
+    TBD_LOGW("CAL", "Adjust CV INs to 0V CV in");
     acquireData(data);
     model->PushRow(data);
     taskControl.store(6);
     // get mid CV in
-    ESP_LOGW("CAL", "Adjust CV INs to max value (clock right resp. +5V CV in)");
+    TBD_LOGW("CAL", "Adjust CV INs to max value (clock right resp. +5V CV in)");
     acquireData(data);
     model->PushRow(data);
     model->StoreMatrix("Calibration_CV_10V");
@@ -125,7 +126,7 @@ void Calibration::doCalibration() {
 
 void Calibration::ledTask(void *params) {
     while (taskControl.load()) {
-        //ESP_LOGW("CAL", "Calibration LED %d", ledTaskControl.load());
+        //TBD_LOGW("CAL", "Calibration LED %d", ledTaskControl.load());
         int32_t blinks = taskControl;
         for (int32_t i = 0; i < blinks; i++) {
             DRIVERS::LedRGB::SetLedR(255);
@@ -169,7 +170,7 @@ void Calibration::acquireData(std::vector<uint32_t> &d) {
                 d.push_back(avgdata[i]);
             }
             //DRIVERS::LedRGB::SetLedG(8);
-            //ESP_LOGE("CAL", "Average values %d, %d, %d, %d", avgdata[0], avgdata[1], avgdata[2], avgdata[3]);
+            //TBD_LOGE("CAL", "Average values %d, %d, %d, %d", avgdata[0], avgdata[1], avgdata[2], avgdata[3]);
             vTaskDelay(50 / portTICK_PERIOD_MS); // satisfy idle task
         }
         cnt++;
@@ -181,7 +182,7 @@ void Calibration::calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvTyp
     vector<vector<float>> aCalMat;
     vector<vector<float>> bCalMat;
     xMat = model->GetMatrix(dataID);
-    ESP_LOGD("CM", "Matrix content:");
+    TBD_LOGD("CM", "Matrix content:");
     for (auto &i: xMat) {
         for (auto &j: i) {
             printf("%li\t", j);
@@ -205,7 +206,7 @@ void Calibration::calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvTyp
             // y = ax + b
             float a = (y2 - y1) / (x2 - x1);
             float b = (x2 * y1 - x1 * y2) / (x2 - x1);
-            ESP_LOGD("CAL", "y2 %f, y1 %f, x2 %f, y2 %f, a %f, b %f", y2, y1, x2, x1, a, b);
+            TBD_LOGD("CAL", "y2 %f, y1 %f, x2 %f, y2 %f, a %f, b %f", y2, y1, x2, x1, a, b);
             aRow.push_back(a);
             bRow.push_back(b);
         }

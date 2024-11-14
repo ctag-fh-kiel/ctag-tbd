@@ -24,6 +24,7 @@ respective component folders / files if different from this license.
 #include "Calibration.hpp"
 #include "gpio.hpp"
 #include "adc.hpp"
+#include <tbd/logging.hpp>
 
 
 #if CONFIG_TBD_PLATFORM_MK2
@@ -80,7 +81,7 @@ void CTAG::CTRL::Control::SetCVChannelBiPolar(const bool &v0, const bool &v1, co
 }
 
 void CTAG::CTRL::Control::Init() {
-    ESP_LOGI("Control", "Initializing control!");
+    TBD_LOGI("Control", "Initializing control!");
 #if CONFIG_TBD_PLATFORM_MK2
     DRIVERS::mk2::Init();
 #elif CONFIG_TBD_PLATFORM_BBA

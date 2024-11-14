@@ -28,14 +28,15 @@ respective component folders / files if different from this license.
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <dirent.h>
-#include "esp_log.h"
 #include "ctagResources.hpp"
+#include <tbd/logging.hpp>
+
 
 using namespace CTAG::AUDIO;
 
 
 SPManagerDataModel::SPManagerDataModel() {
-    ESP_LOGI("SPModel", "Trying to read config file");
+    TBD_LOGI("SPModel", "Trying to read config file");
     loadJSON(m, MODELJSONFN);
     getSoundProcessors();
     validateActiveProcessors();
@@ -56,7 +57,7 @@ void SPManagerDataModel::getSoundProcessors() {
         while ((ent = readdir(dir)) != NULL) {
             string fn(ent->d_name);
             if (fn.find("mui-") != string::npos) {
-                ESP_LOGD("SPModel", "Filename: %s", fn.c_str());
+                TBD_LOGD("SPModel", "Filename: %s", fn.c_str());
                 Document d;
                 loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/" + fn);
                 Value obj(kObjectType);
@@ -155,7 +156,7 @@ void SPManagerDataModel::validatePatches() {
     if (!m.HasMember("lastPatches")) return;
     if (!m["lastPatches"].IsArray()) return;
     for (auto &chanPatches : m["lastPatches"].GetArray()) {
-        //ESP_LOGD("SPModel", "chanP %d, avaiP %d", chanPatches.Size(), m["availableProcessors"].GetArray().Size());
+        //TBD_LOGD("SPModel", "chanP %d, avaiP %d", chanPatches.Size(), m["availableProcessors"].GetArray().Size());
         if (!m.HasMember("availableProcessors")) return;
         if (!m["availableProcessors"].IsArray()) return;
         if (chanPatches.Size() != m["availableProcessors"].GetArray().Size()) {
@@ -256,7 +257,7 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &i
 }
 
 void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const char* data) {
-    ESP_LOGD("Model", "String %s", data);
+    TBD_LOGD("Model", "String %s", data);
     Document presets;
     presets.Parse(data);
     if(presets.HasParseError()) return;

@@ -17,8 +17,7 @@
 
 #include "rapidjson.h"
 #include <iostream>
-#include "esp_heap_caps.h"
-#include "esp_log.h"
+#include "tbd/heaps.hpp"
 
 
 RAPIDJSON_NAMESPACE_BEGIN

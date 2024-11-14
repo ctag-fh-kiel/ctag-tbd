@@ -25,6 +25,8 @@ respective component folders / files if different from this license.
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include <tbd/logging.hpp>
+
 
 using namespace std;
 
@@ -77,7 +79,7 @@ void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id, const vector<vec
     for (auto i:mat) {
         Value col(kArrayType);
         for (auto j: i) {
-            ESP_LOGD("CM", "Storing %f", j);
+            TBD_LOGD("CM", "Storing %f", j);
             Value f(kNumberType);
             if (isinf(j) || isnan(j)) f.SetFloat(0);
             else f.SetFloat(j);
@@ -95,7 +97,7 @@ void CTAG::CAL::CalibrationModel::LoadMatrix(const string &id, float *data) {
     for (auto &i: m[id].GetArray()) {
         for (auto &j: i.GetArray()) {
             *data = j.GetFloat();
-            ESP_LOGD("Cal", "Value %f", *data);
+            TBD_LOGD("Cal", "Value %f", *data);
             data++;
         }
     }
@@ -133,7 +135,7 @@ void CTAG::CAL::CalibrationModel::SetJSONCalibration(const string &calData) {
     Document d;
     d.Parse(calData);
     if (!d.IsObject()) {
-        ESP_LOGE("CALMODEL", "Could not parse json string!");
+        TBD_LOGE("CALMODEL", "Could not parse json string!");
         return;
     }
     storeJSON(d, MODELJSONFN);
