@@ -28,7 +28,6 @@ respective component folders / files if different from this license.
 namespace heaps = tbd::heaps;
 
 using namespace CTAG::SP;
-using namespace std;
 
 void ctagSoundProcessorClaude::Process(const ProcessData &data) {
 

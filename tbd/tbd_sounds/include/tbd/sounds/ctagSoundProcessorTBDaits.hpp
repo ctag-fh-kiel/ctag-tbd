@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 #include <atomic>
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include "plaits/dsp/voice.h"
 
 namespace CTAG {
@@ -42,18 +42,18 @@ namespace CTAG {
             plaits::Patch patch = {};
             char *shared_buffer;
             // sectionHpp
-            atomic<int32_t> smodel, cv_smodel;
-            atomic<int32_t> trigger, trig_trigger;
-            atomic<int32_t> frequency, cv_frequency;
-            atomic<int32_t> level, cv_level;
-            atomic<int32_t> harmonics, cv_harmonics;
-            atomic<int32_t> timbre, cv_timbre;
-            atomic<int32_t> morph, cv_morph;
-            atomic<int32_t> lpg_color, cv_lpg_color;
-            atomic<int32_t> lpg_decay, cv_lpg_decay;
-            atomic<int32_t> mod_freq, cv_mod_freq;
-            atomic<int32_t> mod_timbre, cv_mod_timbre;
-            atomic<int32_t> mod_morph, cv_mod_morph;
+           std::atomic<int32_t> smodel, cv_smodel;
+           std::atomic<int32_t> trigger, trig_trigger;
+           std::atomic<int32_t> frequency, cv_frequency;
+           std::atomic<int32_t> level, cv_level;
+           std::atomic<int32_t> harmonics, cv_harmonics;
+           std::atomic<int32_t> timbre, cv_timbre;
+           std::atomic<int32_t> morph, cv_morph;
+           std::atomic<int32_t> lpg_color, cv_lpg_color;
+           std::atomic<int32_t> lpg_decay, cv_lpg_decay;
+           std::atomic<int32_t> mod_freq, cv_mod_freq;
+           std::atomic<int32_t> mod_timbre, cv_mod_timbre;
+           std::atomic<int32_t> mod_morph, cv_mod_morph;
             // sectionHpp
         };
     }

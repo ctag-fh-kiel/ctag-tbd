@@ -18,14 +18,13 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#include <tbd/sound_processor/data_model.hpp>
 
-
-#include "ctagSPDataModel.hpp"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <tbd/logging.hpp>
-#include "ctagResources.hpp"
+#include <tbd/sound_processor/resources.hpp>
 
 /*
 #ifndef TBD_SIM

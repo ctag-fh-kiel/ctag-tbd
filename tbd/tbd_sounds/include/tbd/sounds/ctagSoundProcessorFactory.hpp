@@ -25,7 +25,7 @@ respective component folders / files if different from this license.
 #include <memory>
 #include <iostream>
 #include <string>
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include "ctagSPAllocator.hpp"
 
 #include <tbd/sounds/ctagSoundProcessorTDelay.hpp>

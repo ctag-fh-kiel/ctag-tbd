@@ -1,5 +1,5 @@
 #include <atomic>
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 
 namespace CTAG {
     namespace SP {

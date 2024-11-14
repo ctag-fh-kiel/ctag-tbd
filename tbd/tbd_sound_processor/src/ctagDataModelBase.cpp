@@ -25,7 +25,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/filereadstream.h"
 #include <cstdio>
 #include <regex>
-#include "ctagDataModelBase.hpp"
+#include <tbd/sound_processor/data_model_base.hpp>
 #include <tbd/heaps.hpp>
 
 

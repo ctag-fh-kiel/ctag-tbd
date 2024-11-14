@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include <atomic>
 #include <string>
 #include "helpers/ctagWNoiseGen.hpp"
@@ -52,14 +52,14 @@ namespace CTAG {
             float w2[2];
 
             // sectionHpp
-            atomic<int32_t> bipolar, trig_bipolar;
-            atomic<int32_t> rate, cv_rate;
-            atomic<int32_t> level, cv_level;
-            atomic<int32_t> width, cv_width;
-            atomic<int32_t> smooth, cv_smooth;
-            atomic<int32_t> bp_enable, trig_bp_enable;
-            atomic<int32_t> bp_fcut, cv_bp_fcut;
-            atomic<int32_t> bp_q, cv_bp_q;
+           std::atomic<int32_t> bipolar, trig_bipolar;
+           std::atomic<int32_t> rate, cv_rate;
+           std::atomic<int32_t> level, cv_level;
+           std::atomic<int32_t> width, cv_width;
+           std::atomic<int32_t> smooth, cv_smooth;
+           std::atomic<int32_t> bp_enable, trig_bp_enable;
+           std::atomic<int32_t> bp_fcut, cv_bp_fcut;
+           std::atomic<int32_t> bp_q, cv_bp_q;
             // sectionHpp
         };
     }

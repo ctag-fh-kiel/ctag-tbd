@@ -33,7 +33,7 @@ respective component folders / files if different from this license.
 #include "codec.hpp"
 #include <vector>
 #include "SPManager.hpp"
-#include "ctagSPAllocator.hpp"
+#include <tbd/sound_processor/allocator.hpp>
 
 #if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     #include "Display.hpp"

@@ -28,6 +28,7 @@ respective component folders / files if different from this license.
 
 #include <tbd/sounds/ctagSoundProcessorBjorklund.hpp>
 
+using namespace std;
 using namespace CTAG::SP;
 
 #include "helpers/ctagNumUtil.hpp"

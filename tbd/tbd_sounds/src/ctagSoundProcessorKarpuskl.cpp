@@ -27,6 +27,7 @@ respective component folders / files if different from this license.
 #include <tbd/sounds/ctagSoundProcessorKarpuskl.hpp>
 #include <cstdlib>
 
+using namespace std;
 
 #define GATE_HIGH_NEW       2
 #define GATE_HIGH           1

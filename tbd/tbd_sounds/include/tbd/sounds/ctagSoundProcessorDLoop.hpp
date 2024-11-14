@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include "helpers/ctagWNoiseGen.hpp"
 #include "helpers/ctagEnvFollow.hpp"
 #include "helpers/ctagDecay.hpp"
@@ -51,19 +51,19 @@ namespace CTAG {
             uint32_t lastReset;
 
             // sectionHpp
-            atomic<int32_t> reset, trig_reset;
-            atomic<int32_t> loop, trig_loop;
-            atomic<int32_t> seed, cv_seed;
-            atomic<int32_t> level, cv_level;
-            atomic<int32_t> density, cv_density;
-            atomic<int32_t> slen, cv_slen;
-            atomic<int32_t> sspread, cv_sspread;
-            atomic<int32_t> ofssspread, cv_ofssspread;
-            atomic<int32_t> vspread, cv_vspread;
-            atomic<int32_t> ofsvspread, cv_ofsvspread;
-            atomic<int32_t> s_enable, trig_s_enable;
-            atomic<int32_t> s_rlevel, cv_s_rlevel;
-            atomic<int32_t> s_decay, cv_s_decay;
+           std::atomic<int32_t> reset, trig_reset;
+           std::atomic<int32_t> loop, trig_loop;
+           std::atomic<int32_t> seed, cv_seed;
+           std::atomic<int32_t> level, cv_level;
+           std::atomic<int32_t> density, cv_density;
+           std::atomic<int32_t> slen, cv_slen;
+           std::atomic<int32_t> sspread, cv_sspread;
+           std::atomic<int32_t> ofssspread, cv_ofssspread;
+           std::atomic<int32_t> vspread, cv_vspread;
+           std::atomic<int32_t> ofsvspread, cv_ofsvspread;
+           std::atomic<int32_t> s_enable, trig_s_enable;
+           std::atomic<int32_t> s_rlevel, cv_s_rlevel;
+           std::atomic<int32_t> s_decay, cv_s_decay;
             // sectionHpp
         };
     }

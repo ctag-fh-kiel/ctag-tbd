@@ -26,7 +26,7 @@ respective component folders / files if different from this license.
 #include <memory>
 #include <string>
 #include "ctagSoundProcessorFactory.hpp"
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include "SPManagerDataModel.hpp"
 #include "FavoritesModel.hpp"
 #include <RtAudio.h>

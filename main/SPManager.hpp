@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include <tbd/sound_registry/ctagSoundProcessorFactory.hpp>
 #include "SPManagerDataModel.hpp"
 #include <atomic>

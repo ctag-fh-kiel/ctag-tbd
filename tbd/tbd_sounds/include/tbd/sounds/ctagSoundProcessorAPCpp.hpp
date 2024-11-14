@@ -1,5 +1,5 @@
 #include <atomic>
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include "helpers/ctagSineSource.hpp"
 #include "helpers/ctagFastMath.hpp"
 #include "helpers/ctagADEnv.hpp"            // Needed for AD EG (Attack/Decay Enveloppe Generator)
@@ -76,28 +76,28 @@ namespace CTAG {
             inline float noteToFreq(float incoming_note) { return  (HELPERS::fastpow2 ((incoming_note - 69.f) / 12.f) *440.f); } // MIDItoFrequency, inspired by: https://github.com/little-scale/mtof/blob/master/mtof.cpp
 
             // sectionHpp
-            atomic<int32_t> MOD_freq_1, cv_MOD_freq_1;
-            atomic<int32_t> Freq_1, cv_Freq_1;
-            atomic<int32_t> MOD_active_1, trig_MOD_active_1;
-            atomic<int32_t> MOD_is_PWM_1, trig_MOD_is_PWM_1;
-            atomic<int32_t> SmoothOSC_1, trig_SmoothOSC_1;
-            atomic<int32_t> SmoothOSC_2, trig_SmoothOSC_2;
-            atomic<int32_t> MOD_is_PWM_2, trig_MOD_is_PWM_2;
-            atomic<int32_t> MOD_active_2, trig_MOD_active_2;
-            atomic<int32_t> Freq_2, cv_Freq_2;
-            atomic<int32_t> MOD_freq_2, cv_MOD_freq_2;
-            atomic<int32_t> Freqmod_amount_1, cv_Freqmod_amount_1;
-            atomic<int32_t> Freqmod_freq_1, cv_Freqmod_freq_1;
-            atomic<int32_t> FreqmodSquare_active_1, trig_FreqmodSquare_active_1;
-            atomic<int32_t> FreqmodSquare_active_2, trig_FreqmodSquare_active_2;
-            atomic<int32_t> Freqmod_freq_2, cv_Freqmod_freq_2;
-            atomic<int32_t> Freqmod_amount_2, cv_Freqmod_amount_2;
-            atomic<int32_t> Vol_amount, cv_Vol_amount;
-            atomic<int32_t> Env_active, trig_Env_active;
-            atomic<int32_t> Trigger_env, trig_Trigger_env;
-            atomic<int32_t> Env_Attack, cv_Env_Attack;
-            atomic<int32_t> Env_Decay, cv_Env_Decay;
-            atomic<int32_t> Env_loop_active, trig_Env_loop_active;
+           std::atomic<int32_t> MOD_freq_1, cv_MOD_freq_1;
+           std::atomic<int32_t> Freq_1, cv_Freq_1;
+           std::atomic<int32_t> MOD_active_1, trig_MOD_active_1;
+           std::atomic<int32_t> MOD_is_PWM_1, trig_MOD_is_PWM_1;
+           std::atomic<int32_t> SmoothOSC_1, trig_SmoothOSC_1;
+           std::atomic<int32_t> SmoothOSC_2, trig_SmoothOSC_2;
+           std::atomic<int32_t> MOD_is_PWM_2, trig_MOD_is_PWM_2;
+           std::atomic<int32_t> MOD_active_2, trig_MOD_active_2;
+           std::atomic<int32_t> Freq_2, cv_Freq_2;
+           std::atomic<int32_t> MOD_freq_2, cv_MOD_freq_2;
+           std::atomic<int32_t> Freqmod_amount_1, cv_Freqmod_amount_1;
+           std::atomic<int32_t> Freqmod_freq_1, cv_Freqmod_freq_1;
+           std::atomic<int32_t> FreqmodSquare_active_1, trig_FreqmodSquare_active_1;
+           std::atomic<int32_t> FreqmodSquare_active_2, trig_FreqmodSquare_active_2;
+           std::atomic<int32_t> Freqmod_freq_2, cv_Freqmod_freq_2;
+           std::atomic<int32_t> Freqmod_amount_2, cv_Freqmod_amount_2;
+           std::atomic<int32_t> Vol_amount, cv_Vol_amount;
+           std::atomic<int32_t> Env_active, trig_Env_active;
+           std::atomic<int32_t> Trigger_env, trig_Trigger_env;
+           std::atomic<int32_t> Env_Attack, cv_Env_Attack;
+           std::atomic<int32_t> Env_Decay, cv_Env_Decay;
+           std::atomic<int32_t> Env_loop_active, trig_Env_loop_active;
 	          // sectionHpp
         };
     }

@@ -1,40 +1,41 @@
 # add sources to config, headers added for intellij
 file(GLOB SRCS_FILES
-    *.cpp
-    *.hpp
-    helpers/*.cpp
-    helpers/*.hpp
-    gverb/*.c
-    gverb/*.h
-    freeverb/*.cc
-    freeverb/*.hh
-    freeverb/*.hpp
-    freeverb3/*.hpp
-    freeverb3/*.cpp
-    freeverb3/*.h
-    mifx/*.h
-    polypad/*.hpp
-    polypad/*.cpp
-    filters/*.hpp
-    filters/*.cpp
-    fx/*.hpp
-    fx/*.cpp
-    tesselode/*.h
-    tesselode/*.cpp
-    airwindows/*.hpp
-    airwindows/*.cpp
-    synthesis/*.hpp
-    synthesis/*.cpp
-    vult/*.cpp
-    vult/*.h
-    memory/*.h
-    memory/*.c
-    SimpleComp/*.h
-    SimpleComp/*.cpp
+    src/*.cpp
+    src/*.hpp
+    include/tbd/**/*.hpp
+    utils/gverb/*.c
+    utils/gverb/*.h
+    utils/freeverb/*.cc
+    utils/freeverb/*.hh
+    utils/freeverb/*.hpp
+    utils/freeverb3/*.hpp
+    utils/freeverb3/*.cpp
+    utils/freeverb3/*.h
+    utils/mifx/*.h
+    utils/polypad/*.hpp
+    utils/polypad/*.cpp
+    utils/filters/*.hpp
+    utils/filters/*.cpp
+    utils/fx/*.hpp
+    utils/fx/*.cpp
+    utils/tesselode/*.h
+    utils/tesselode/*.cpp
+    utils/airwindows/*.hpp
+    utils/airwindows/*.cpp
+    utils/synthesis/*.hpp
+    utils/synthesis/*.cpp
+    utils/vult/*.cpp
+    utils/vult/*.h
+    utils/memory/*.h
+    utils/memory/*.c
+    utils/SimpleComp/*.h
+    utils/SimpleComp/*.cpp
 )
 
 add_library(tbd_sound_processor STATIC ${SRCS_FILES})
-target_include_directories(tbd_sound_processor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(tbd_sound_processor 
+    PUBLIC include utils
+)
 target_link_libraries(tbd_sound_processor 
     PUBLIC rapidjson 
     PRIVATE tbd_helpers mutable moog 

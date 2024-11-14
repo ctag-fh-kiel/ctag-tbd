@@ -26,7 +26,7 @@ respective component folders / files if different from this license.
 #include <string>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
-#include "ctagResources.hpp"
+#include <tbd/sound_processor/resources.hpp>
 #include "SPManagerDataModel.hpp"
 
 using namespace std;

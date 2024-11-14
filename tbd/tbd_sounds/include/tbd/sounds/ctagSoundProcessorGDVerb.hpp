@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 
 #include <atomic>
 #include <cstdint>
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include "freeverb3/strev.hpp"
 #include "freeverb3/progenitor.hpp"
 
@@ -45,26 +45,26 @@ namespace CTAG::SP {
         float prefRevTime = 1.f;
 
         // sectionHpp
-        atomic<int32_t> revtime, cv_revtime;
-        atomic<int32_t> dccut, cv_dccut;
-        atomic<int32_t> idiffusion1, cv_idiffusion1;
-        atomic<int32_t> idiffusion2, cv_idiffusion2;
-        atomic<int32_t> diffusion1, cv_diffusion1;
-        atomic<int32_t> diffusion2, cv_diffusion2;
-        atomic<int32_t> inputdamp, cv_inputdamp;
-        atomic<int32_t> damp, cv_damp;
-        atomic<int32_t> outputdamp, cv_outputdamp;
-        atomic<int32_t> spin, cv_spin;
-        atomic<int32_t> spindiff, cv_spindiff;
-        atomic<int32_t> spinlimit, cv_spinlimit;
-        atomic<int32_t> wander, cv_wander;
-        atomic<int32_t> modnoise1, cv_modnoise1;
-        atomic<int32_t> modnoise2, cv_modnoise2;
-        atomic<int32_t> autodiff, trig_autodiff;
-        atomic<int32_t> dry, cv_dry;
-        atomic<int32_t> wet, cv_wet;
-        atomic<int32_t> width, cv_width;
-        atomic<int32_t> mono, trig_mono;
+       std::atomic<int32_t> revtime, cv_revtime;
+       std::atomic<int32_t> dccut, cv_dccut;
+       std::atomic<int32_t> idiffusion1, cv_idiffusion1;
+       std::atomic<int32_t> idiffusion2, cv_idiffusion2;
+       std::atomic<int32_t> diffusion1, cv_diffusion1;
+       std::atomic<int32_t> diffusion2, cv_diffusion2;
+       std::atomic<int32_t> inputdamp, cv_inputdamp;
+       std::atomic<int32_t> damp, cv_damp;
+       std::atomic<int32_t> outputdamp, cv_outputdamp;
+       std::atomic<int32_t> spin, cv_spin;
+       std::atomic<int32_t> spindiff, cv_spindiff;
+       std::atomic<int32_t> spinlimit, cv_spinlimit;
+       std::atomic<int32_t> wander, cv_wander;
+       std::atomic<int32_t> modnoise1, cv_modnoise1;
+       std::atomic<int32_t> modnoise2, cv_modnoise2;
+       std::atomic<int32_t> autodiff, trig_autodiff;
+       std::atomic<int32_t> dry, cv_dry;
+       std::atomic<int32_t> wet, cv_wet;
+       std::atomic<int32_t> width, cv_width;
+       std::atomic<int32_t> mono, trig_mono;
         // sectionHpp
     };
 }

@@ -25,8 +25,8 @@ respective component folders / files if different from this license.
 #include <memory>
 #include <iostream>
 #include <string>
-#include "ctagSoundProcessor.hpp"
-#include "ctagSPAllocator.hpp"
+#include <tbd/sound_processor.hpp>
+#include <tbd/sound_processor/allocator.hpp>
 {% for header in headers %}
 #include <tbd/sounds/{{ header }}>
 {%- endfor %}

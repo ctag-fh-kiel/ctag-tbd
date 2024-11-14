@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include <atomic>
 #include <string>
 #include "helpers/ctagFBDelayLine.hpp"
@@ -44,11 +44,11 @@ namespace CTAG {
             float fLength = 0.f, cvLength = 0.f;
             float fLevel = 1.f;
             // sectionHpp
-            atomic<int32_t> length, cv_length;
-            atomic<int32_t> feedback, cv_feedback;
-            atomic<int32_t> drywet, cv_drywet;
-            atomic<int32_t> level, cv_level;
-            atomic<int32_t> enable, trig_enable;
+           std::atomic<int32_t> length, cv_length;
+           std::atomic<int32_t> feedback, cv_feedback;
+           std::atomic<int32_t> drywet, cv_drywet;
+           std::atomic<int32_t> level, cv_level;
+           std::atomic<int32_t> enable, trig_enable;
             // sectionHpp
         };
     }

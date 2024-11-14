@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include <atomic>
 #include <string>
 #include "helpers/ctagWNoiseGen.hpp"
@@ -63,19 +63,19 @@ namespace CTAG {
             HELPERS::ctagBiQuad filterBP;
 
             // sectionHpp
-            atomic<int32_t> ntype, trig_ntype;
-            atomic<int32_t> frequency, cv_frequency;
-            atomic<int32_t> qfac, cv_qfac;
-            atomic<int32_t> loudness, cv_loudness;
-            atomic<int32_t> enableEG, trig_enableEG;
-            atomic<int32_t> loopEG, trig_loopEG;
-            atomic<int32_t> attack, cv_attack;
-            atomic<int32_t> decay, cv_decay;
-            atomic<int32_t> enableEG_p, trig_enableEG_p;
-            atomic<int32_t> loopEG_p, trig_loopEG_p;
-            atomic<int32_t> amount_p, cv_amount_p;
-            atomic<int32_t> attack_p, cv_attack_p;
-            atomic<int32_t> decay_p, cv_decay_p;
+           std::atomic<int32_t> ntype, trig_ntype;
+           std::atomic<int32_t> frequency, cv_frequency;
+           std::atomic<int32_t> qfac, cv_qfac;
+           std::atomic<int32_t> loudness, cv_loudness;
+           std::atomic<int32_t> enableEG, trig_enableEG;
+           std::atomic<int32_t> loopEG, trig_loopEG;
+           std::atomic<int32_t> attack, cv_attack;
+           std::atomic<int32_t> decay, cv_decay;
+           std::atomic<int32_t> enableEG_p, trig_enableEG_p;
+           std::atomic<int32_t> loopEG_p, trig_loopEG_p;
+           std::atomic<int32_t> amount_p, cv_amount_p;
+           std::atomic<int32_t> attack_p, cv_attack_p;
+           std::atomic<int32_t> decay_p, cv_decay_p;
             // sectionHpp
         };
     }

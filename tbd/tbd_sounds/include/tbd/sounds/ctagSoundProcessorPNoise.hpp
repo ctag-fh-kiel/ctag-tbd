@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include <atomic>
 #include <string>
 #include "helpers/ctagPNoiseGen.hpp"
@@ -44,8 +44,8 @@ namespace CTAG {
             float fFactor = 0.f;
 
             // sectionHpp
-            atomic<int32_t> enable, trig_enable;
-            atomic<int32_t> factor, cv_factor;
+           std::atomic<int32_t> enable, trig_enable;
+           std::atomic<int32_t> factor, cv_factor;
             // sectionHpp
         };
     }

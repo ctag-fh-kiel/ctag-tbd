@@ -23,7 +23,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <atomic>
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 #include "freeverb/revmodel.hpp"
 
 namespace CTAG::SP {
@@ -39,13 +39,13 @@ namespace CTAG::SP {
         revmodel freeverb;
 
         // sectionHpp
-        atomic<int32_t> roomsize, cv_roomsize;
-        atomic<int32_t> damp, cv_damp;
-        atomic<int32_t> dry, cv_dry;
-        atomic<int32_t> wet, cv_wet;
-        atomic<int32_t> width, cv_width;
-        atomic<int32_t> mode, trig_mode;
-        atomic<int32_t> mono, trig_mono;
+       std::atomic<int32_t> roomsize, cv_roomsize;
+       std::atomic<int32_t> damp, cv_damp;
+       std::atomic<int32_t> dry, cv_dry;
+       std::atomic<int32_t> wet, cv_wet;
+       std::atomic<int32_t> width, cv_width;
+       std::atomic<int32_t> mode, trig_mode;
+       std::atomic<int32_t> mono, trig_mono;
         // sectionHpp
 
     };

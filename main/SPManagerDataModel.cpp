@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <dirent.h>
-#include "ctagResources.hpp"
+#include <tbd/sound_processor/resources.hpp>
 #include <tbd/logging.hpp>
 
 

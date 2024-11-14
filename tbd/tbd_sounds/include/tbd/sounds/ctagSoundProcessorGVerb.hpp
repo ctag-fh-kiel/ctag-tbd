@@ -23,7 +23,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <atomic>
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 
 extern "C" {
 #include "gverb/gverb.h"
@@ -47,14 +47,14 @@ namespace CTAG::SP {
         // process only variables
         float fRoomSz, fRevTime, fDamping, fInputBW, fEarlyLvl, fTailLvl, fDryWet;
         // sectionHpp
-        atomic<int32_t> roomsize, cv_roomsize;
-        atomic<int32_t> revtime, cv_revtime;
-        atomic<int32_t> damping, cv_damping;
-        atomic<int32_t> inputbw, cv_inputbw;
-        atomic<int32_t> earlylvl, cv_earlylvl;
-        atomic<int32_t> taillvl, cv_taillvl;
-        atomic<int32_t> drywet, cv_drywet;
-        atomic<int32_t> mono, trig_mono;
+       std::atomic<int32_t> roomsize, cv_roomsize;
+       std::atomic<int32_t> revtime, cv_revtime;
+       std::atomic<int32_t> damping, cv_damping;
+       std::atomic<int32_t> inputbw, cv_inputbw;
+       std::atomic<int32_t> earlylvl, cv_earlylvl;
+       std::atomic<int32_t> taillvl, cv_taillvl;
+       std::atomic<int32_t> drywet, cv_drywet;
+       std::atomic<int32_t> mono, trig_mono;
         // sectionHpp
     };
 }

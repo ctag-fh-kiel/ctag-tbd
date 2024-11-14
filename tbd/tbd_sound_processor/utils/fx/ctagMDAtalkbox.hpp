@@ -32,7 +32,7 @@ Adapted by M. Brüssel from the Soundpipe version of the plugin at: https://gith
 #include <stdlib.h>
 #include <math.h>
 #include "helpers/ctagFastMath.hpp"
-#include "ctagSoundProcessor.hpp"
+#include <tbd/sound_processor.hpp>
 
 #ifndef SP_TALKBOX_BUFMAX
 #define SP_TALKBOX_BUFMAX 1600

@@ -34,7 +34,7 @@ respective component folders / files if different from this license.
 #include "xtensa/core-macros.h"
 #endif
 
-
+using namespace std;
 using namespace CTAG::SP;
 
 void ctagSoundProcessorSubSynth::Init(std::size_t blockSize, void *blockPtr) {

@@ -10,6 +10,7 @@ target_include_directories(tbd_helpers PUBLIC include)
 target_link_libraries(tbd_helpers 
     PRIVATE __idf_tbd_storage_port __idf_espressif__esp-dsp
 )
+
 target_compile_options(tbd_helpers PRIVATE 
         -Wno-unused-local-typedefs
         -ffast-math

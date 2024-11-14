@@ -30,26 +30,25 @@ respective component folders / files if different from this license.
 #include <rapidjson/document.h>
 
 
-namespace CTAG {
-    namespace SP {
-        class ctagDataModelBase {
-        public:
-            ctagDataModelBase();
+namespace CTAG::SP {
 
-            virtual ~ctagDataModelBase();
+class ctagDataModelBase {
+public:
+    ctagDataModelBase();
 
-        protected:
-            rapidjson::StringBuffer json;
+    virtual ~ctagDataModelBase();
 
-            void loadJSON(rapidjson::Document &d, const std::string &fn);
+protected:
+    rapidjson::StringBuffer json;
 
-            void printJSON(rapidjson::Value &v);
+    void loadJSON(rapidjson::Document &d, const std::string &fn);
 
-            void storeJSON(rapidjson::Document &d, const std::string &fn);
+    void printJSON(rapidjson::Value &v);
 
-            char *buffer;
-            FILE *fp = nullptr;
-        };
+    void storeJSON(rapidjson::Document &d, const std::string &fn);
 
-    }
+    char *buffer;
+    FILE *fp = nullptr;
+};
+
 }

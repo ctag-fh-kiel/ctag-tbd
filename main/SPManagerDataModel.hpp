@@ -25,7 +25,7 @@ respective component folders / files if different from this license.
 #include <string>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
-#include "ctagDataModelBase.hpp"
+#include <tbd/sound_processor/data_model_base.hpp>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -33,58 +33,58 @@ respective component folders / files if different from this license.
 using namespace std;
 using namespace rapidjson;
 
-namespace CTAG {
-    namespace AUDIO {
-        class SPManagerDataModel final : public CTAG::SP::ctagDataModelBase {
-        public:
-            SPManagerDataModel();
+namespace CTAG::AUDIO {
 
-            ~SPManagerDataModel();
+class SPManagerDataModel final : public CTAG::SP::ctagDataModelBase {
+public:
+    SPManagerDataModel();
 
-            const char *GetCStrJSONSoundProcessors();
+    ~SPManagerDataModel();
 
-            const char *GetCStrJSONConfiguration();
+    const char *GetCStrJSONSoundProcessors();
 
-            const char *GetCStrJSONSoundProcessorPresets(const string &id);
+    const char *GetCStrJSONConfiguration();
 
-            void SetCStrJSONSoundProcessorPreset(const char *id, const char* data);
+    const char *GetCStrJSONSoundProcessorPresets(const string &id);
 
-            string GetActiveProcessorID(const int chan);
+    void SetCStrJSONSoundProcessorPreset(const char *id, const char* data);
 
-            void SetConfigurationFromJSON(const string &data);
+    string GetActiveProcessorID(const int chan);
 
-            string GetConfigurationData(const string &id);
+    void SetConfigurationFromJSON(const string &data);
 
-            string GetNetworkConfigurationData(const string &which);
+    string GetConfigurationData(const string &id);
 
-            void ResetNetworkConfiguration();
+    string GetNetworkConfigurationData(const string &which);
 
-            void SetActivePluginID(const string &id, const int chan);
+    void ResetNetworkConfiguration();
 
-            int GetActivePatchNum(const int chan);
+    void SetActivePluginID(const string &id, const int chan);
 
-            void SetActivePatchNum(const int patchNum, const int chan);
+    int GetActivePatchNum(const int chan);
 
-            bool IsStereo(const string &id);
+    void SetActivePatchNum(const int patchNum, const int chan);
 
-            void PrintSelf();
+    bool IsStereo(const string &id);
 
-            bool HasPluginID(string const &id);
+    void PrintSelf();
 
-        private:
-            void getSoundProcessors();
+    bool HasPluginID(string const &id);
 
-            void validateActiveProcessors();
+private:
+    void getSoundProcessors();
 
-            void validatePatches();
+    void validateActiveProcessors();
 
-            Document m;
+    void validatePatches();
+
+    Document m;
 #ifndef TBD_SIM
             const string MODELJSONFN = "/spiffs/data/spm-config.jsn";
 #else
             const string MODELJSONFN = "../../spiffs_image/data/spm-config.jsn";
 #endif
-        };
-    }
+};
+
 }
 
