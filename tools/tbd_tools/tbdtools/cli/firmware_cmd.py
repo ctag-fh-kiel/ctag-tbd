@@ -39,18 +39,28 @@ def capabilities_cmd(_ctx: typer.Context):
     print(get_build_dir(_ctx)())
 
 
+@firmware_group.command('configure')
+def configure_cmd(_ctx: typer.Context):
+    """ configure firmware """
+    build_dir = get_build_dir(_ctx)
+    platform = get_ctx(_ctx).platform.name
+    run(['cmake', '-B', build_dir(), '-G', 'Ninja', f'-DTBD_PLATFORM={platform}'], stdout=sys.stdout, stderr=sys.stderr)
+
+
 @firmware_group.command('build')
 def build_cmd(_ctx: typer.Context):
     """ build firmware """
     build_dir = get_build_dir(_ctx)
-    run(['idf.py', '-B', build_dir(), 'build'], stdout=sys.stdout, stderr=sys.stderr)
+    platform = get_ctx(_ctx).platform.name
+    run(['cmake', '--build', build_dir()], stdout=sys.stdout, stderr=sys.stderr)
 
 
 @firmware_group.command('reconfigure')
 def reconfigure_cmd(_ctx: typer.Context):
-    """ build firmware """
+    """ reconfigure firmware """
     build_dir = get_build_dir(_ctx)
-    run(['idf.py', '-B', build_dir(), 'reconfigure'], stdout=sys.stdout, stderr=sys.stderr)
+    platform = get_ctx(_ctx).platform.name
+    run(['idf.py', '-B', build_dir(), f'-DTBD_PLATFORM={platform}', 'reconfigure'], stdout=sys.stdout, stderr=sys.stderr)
 
 
 @firmware_group.command('clean')
