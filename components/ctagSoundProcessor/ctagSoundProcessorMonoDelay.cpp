@@ -3,6 +3,8 @@
 #include "stmlib/stmlib.h"
 #include "stmlib/dsp/dsp.h"
 #include "helpers/ctagFastMath.hpp"
+#include "stmlib/dsp/units.h"
+
 
 using namespace CTAG::SP;
 
@@ -41,44 +43,55 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 		data.buf[i*2] = (1.f - fMix) * in + fMix * out;
 		data.buf[i*2 + 1] = data.buf[i*2];
 	}
-
-
 }
 */
 
 void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
-	fDelayTime = time_ms; if(cv_time_ms != -1) fDelayTime = fabsf(data.cv[cv_time_ms]) * 2.f;
 	MK_FLT_PAR_ABS(fFeedback, feedback, 4095.f, 1.05f)
-	MK_FLT_PAR_ABS(fTone, tone, 4095.f, 1.f)
+	MK_FLT_PAR_ABS_SFT(fTone, tone, 4095.f, 1.f)
 	MK_FLT_PAR_ABS(fMix, mix, 4095.f, 1.f)
 	MK_BOOL_PAR(bTapeDigital, tape_digital)
 	MK_BOOL_PAR(bFreeze, freeze)
 	bool bSync = sync;
 	bool bSyncTrig {false};
 	if(trig_sync != -1) bSyncTrig = data.trig[trig_sync] == 1 ? false : true;
-	fTime += 44100.f / 32.f;
-	if(bSyncTrig != pre_sync){
-		pre_sync = bSyncTrig;
-		if(bSyncTrig){
-
-			// get esp time in ms
-			// calculate the time difference between the last sync and now
-			float diff = fabsf(fTime - fSyncTimeStamp);
-			fSyncTimeStamp = fTime;
-			fTime = 0.f;
-			if(bSync){
-				fDelayTime = diff;
-				printf("fDelayTime %f\n", fDelayTime);
-			}
-		}
+	if(!bSync){
+		fDelayTime = time_ms;
+		if(cv_time_ms != -1) fDelayTime = fabsf(data.cv[cv_time_ms]) * 2000.f;
 	}
 
+
+	float toneFilterCutoff;
+	if(fTone > 0.f) toneFilterCutoff = stmlib::SemitonesToRatio(fabsf(fTone) * 120.f);
+	else toneFilterCutoff = 22000.f - 20.f * stmlib::SemitonesToRatio((fabsf(fTone)) * 120.f);
+	toneFilter.set_f<stmlib::FREQUENCY_ACCURATE>(toneFilterCutoff / 44100.f);
+	//printf("toneFilterCutoff %f\n", toneFilterCutoff);
+
+	// sync mechanism
+	if(bSyncTrig != pre_sync){
+		pre_sync = bSyncTrig;
+		if(bSyncTrig && bSync){
+			int delta = timer - pre_timer;
+			if(std::abs(delta) > 1){
+				fDelayTime = static_cast<float>(timer) * 32.f / 44.1f;
+			}
+			pre_timer = timer;
+			timer = 0;
+		}
+	}
+	timer++;
+
+	// audio data processing
 	CONSTRAIN(fDelayTime, 0.0001, 2000.f)
 	float ofs = fDelayTime * 44.1f;
+	if(fabsf(ofs - delayOffset) < 16) ofs = delayOffset;
 	for(int i=0; i<32; i++){
 		// Calculate the delay offset in samples
 		if(delayOffset != ofs){
 			if(bTapeDigital){
+				if(ofs != delayOffset){
+					duck = 1.f;
+				}
 				delayOffset = ofs;
 			} else {
 				delayOffset = ONE_POLE(delayOffset, ofs, 0.0001f);
@@ -88,19 +101,23 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 			if(readPos >= 88200.f) readPos -= 88200.f;
 		}
 
-		float inputSample = data.buf[i*2];
-		float outputSample = 0.0f;
+		float inputSample = data.buf[i*2 + this->processCh];
+		float outputSample;
 
 		MAKE_INTEGRAL_FRACTIONAL(readPos);
 		outputSample = HELPERS::InterpolateWaveLinearWrap(delayBuffer, readPos, 88200);
-		//outputSample = HELPERS::InterpolateWaveHermiteWrap(delayBuffer, readPos, 44100);
 		readPos += 1.f;
 		readPos > 88200.f ? readPos -= 88200.f : readPos;
 
-
+		duck = ONE_POLE(duck, 0.f, 0.35f)
+		outputSample = outputSample * (1.f - duck);
 		// Write the input sample to the delay buffer
-		if(!bFreeze)
-			delayBuffer[writeIndex] = inputSample + outputSample * fFeedback * fFeedback;
+		if(!bFreeze){
+			if(fTone <= 0.f)
+				delayBuffer[writeIndex] = inputSample + toneFilter.Process<stmlib::FILTER_MODE_LOW_PASS>(outputSample * fFeedback * fFeedback);
+			else
+				delayBuffer[writeIndex] = inputSample + toneFilter.Process<stmlib::FILTER_MODE_HIGH_PASS>( outputSample * fFeedback * fFeedback);
+		}
 		else
 			delayBuffer[writeIndex] = outputSample;
 		writeIndex = (writeIndex + 1) % 88200;
@@ -136,6 +153,7 @@ ctagSoundProcessorMonoDelay::~ctagSoundProcessorMonoDelay() {
     // explicit free is only needed when using heap_caps_malloc() with MALLOC_CAPS_SPIRAM
 
 	heap_caps_free(delayBuffer);
+	toneFilter.Init();
 }
 
 void ctagSoundProcessorMonoDelay::knowYourself(){

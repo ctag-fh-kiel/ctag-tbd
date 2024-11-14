@@ -1,7 +1,7 @@
 {
   "id": "MonoDelay",
   "isStereo": false,
-  "name": "Mono Delay",
+  "name": "MonoDelay",
   "hint": "Simple Mono Delay",
   "params": [
     {
@@ -38,7 +38,7 @@
       "id": "tone",
       "name": "Tone",
       "type": "int",
-      "min": 0,
+      "min": -4095,
       "max": 4095
     },
     {
