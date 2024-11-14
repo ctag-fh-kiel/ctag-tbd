@@ -20,7 +20,6 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagSPAllocator.hpp"
-#include "esp_heap_caps.h"
 #include <tbd/logging.hpp>
 #include <cstdint>
 #include <cassert>

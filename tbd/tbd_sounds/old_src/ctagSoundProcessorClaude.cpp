@@ -20,7 +20,6 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagSoundProcessorClaude.hpp"
-#include "esp_heap_caps.h"
 #include <algorithm>
 
 using namespace CTAG::SP;

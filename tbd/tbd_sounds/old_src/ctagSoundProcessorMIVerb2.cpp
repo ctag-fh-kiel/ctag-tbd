@@ -23,7 +23,6 @@ respective component folders / files if different from this license.
 #include <iostream>
 #include "clouds/dsp/frame.h"
 #include "helpers/ctagFastMath.hpp"
-#include "esp_heap_caps.h"
 
 using namespace CTAG::SP;
 

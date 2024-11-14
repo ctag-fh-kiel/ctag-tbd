@@ -21,9 +21,7 @@ respective component folders / files if different from this license.
 
 #include "ctagSoundProcessorMIVerb.hpp"
 #include <iostream>
-#include "esp_heap_caps.h"
 #include "helpers/ctagFastMath.hpp"
-#include "esp_heap_caps.h"
 
 using namespace CTAG::SP;
 

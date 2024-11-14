@@ -22,7 +22,6 @@ respective component folders / files if different from this license.
 #include <tbd/sounds/ctagSoundProcessorMIVerb.hpp>
 #include <iostream>
 #include "helpers/ctagFastMath.hpp"
-#include "esp_heap_caps.h"
 #include <tbd/logging.hpp>
 #include <tbd/heaps.hpp>
 

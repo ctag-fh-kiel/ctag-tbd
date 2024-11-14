@@ -22,7 +22,6 @@ respective component folders / files if different from this license.
 #include "tbd/helpers/ctagSampleRom.hpp"
 //#include "esp_spi_flash.h"
 #include <esp_flash.h>
-#include "esp_heap_caps.h"
 #include <cstring>
 
 #ifdef TBD_SIM
