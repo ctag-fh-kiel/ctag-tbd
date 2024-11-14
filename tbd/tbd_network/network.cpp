@@ -1,4 +1,5 @@
-#include "network.hpp"
+#include <tbd/network.hpp>
+
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_log.h"
@@ -13,9 +14,6 @@
 #include "esp_mac.h"
 #include "mdns.h"
 #include "lwip/apps/netbiosns.h"
-
-using namespace CTAG::NET;
-using namespace std;
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY  10
 
@@ -32,6 +30,35 @@ static const char *TAG = "wifi station";
 
 static int s_retry_num = 0;
 
+namespace {
+    struct Network::Impl {
+        std::string _ssid;
+        std::string _pwd;
+        std::string _mdns;
+        std::string _mdns_instance;
+        bool isAP;
+        std::string _ip;
+        esp_netif_t *netif;
+
+        void initialise_mdns(const string hostname, const string instance_name_set);
+
+        void wifi_init_softap();
+
+        void wifi_event_handler_ap(void *arg, esp_event_base_t event_base,
+                                        int32_t event_id, void *event_data);
+
+        void wifi_init_sta(void);
+
+        void event_handler_sta(void *arg, esp_event_base_t event_base,
+                                    int32_t event_id, void *event_data);
+    } instance;
+}
+
+namespace CTAG {
+namespace NET {
+
+
+
 void Network::event_handler_sta(void *arg, esp_event_base_t event_base,
                                 int32_t event_id, void *event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
@@ -40,14 +67,14 @@ void Network::event_handler_sta(void *arg, esp_event_base_t event_base,
         if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY) {
             esp_wifi_connect();
             s_retry_num++;
-            ESP_LOGI(TAG, "retry to connect to the AP");
+            TBD_LOGI(TAG, "retry to connect to the AP");
         } else {
             xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
         }
-        ESP_LOGI(TAG, "connect to the AP fail");
+        TBD_LOGI(TAG, "connect to the AP fail");
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
-        ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
+        TBD_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
@@ -75,7 +102,7 @@ void Network::wifi_init_sta(void) {
     vTaskDelay(esp_random() / (UINT32_MAX / 5000 * portTICK_PERIOD_MS));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    ESP_LOGI(TAG, "wifi_init_sta finished.");
+    TBD_LOGI(TAG, "wifi_init_sta finished.");
 
     /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
      * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
@@ -93,15 +120,15 @@ void Network::wifi_init_sta(void) {
     vEventGroupDelete(s_wifi_event_group);
 
     if (bits & WIFI_CONNECTED_BIT) {
-        ESP_LOGI(TAG, "connected");
+        TBD_LOGI(TAG, "connected");
     } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGI(TAG, "Could not connect, starting as AP");
+        TBD_LOGI(TAG, "Could not connect, starting as AP");
         Network::SetIsAccessPoint(true);
         Network::SetSSID(Network::_mdns);
         Network::SetPWD("");
         Network::wifi_init_softap();
     } else {
-        ESP_LOGE(TAG, "UNEXPECTED EVENT");
+        TBD_LOGE(TAG, "UNEXPECTED EVENT");
     }
 }
 
@@ -110,11 +137,11 @@ void Network::wifi_event_handler_ap(void *arg, esp_event_base_t event_base,
                                     int32_t event_id, void *event_data) {
     if (event_id == WIFI_EVENT_AP_STACONNECTED) {
         wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *) event_data;
-        ESP_LOGI("Network", "station " MACSTR" join, AID=%d",
+        TBD_LOGI("Network", "station " MACSTR" join, AID=%d",
                  MAC2STR(event->mac), event->aid);
     } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
         wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *) event_data;
-        ESP_LOGI("Network", "station " MACSTR" leave, AID=%d",
+        TBD_LOGI("Network", "station " MACSTR" leave, AID=%d",
                  MAC2STR(event->mac), event->aid);
     }
 }
@@ -160,11 +187,11 @@ void Network::wifi_init_softap(void) {
     char buf[256];
     esp_ip4addr_ntoa(&ip_info.gw, buf, 256);
 
-    ESP_LOGE("NET", "Gateway %s", buf);
+    TBD_LOGE("NET", "Gateway %s", buf);
     esp_ip4addr_ntoa(&ip_info.netmask, buf, 256);
-    ESP_LOGE("NET", "Netmask %s", buf);
+    TBD_LOGE("NET", "Netmask %s", buf);
     esp_ip4addr_ntoa(&ip_info.ip, buf, 256);
-    ESP_LOGE("NET", "IP %s", buf);
+    TBD_LOGE("NET", "IP %s", buf);
     */
     ESP_ERROR_CHECK(esp_wifi_start());
 }
@@ -184,7 +211,7 @@ void Network::initialise_mdns(const string hostname, const string instance_name_
 }
 
 void Network::Up() {
-    ESP_LOGI("Network", "Starting with ssid %s, pwd %s, mdns %s, ip %s, is %s",
+    TBD_LOGI("Network", "Starting with ssid %s, pwd %s, mdns %s, ip %s, is %s",
              _ssid.c_str(), _pwd.c_str(), _mdns.c_str(), _ip.c_str(), isAP ? "ap" : "sta");
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -203,7 +230,7 @@ void Network::Up() {
     } else {
         wifi_init_sta();
     }
-    ESP_LOGI("Network", "Disabling wifi power save mode");
+    TBD_LOGI("Network", "Disabling wifi power save mode");
     wifi_ps_type_t ps_mode = WIFI_PS_NONE;
     esp_wifi_set_ps(ps_mode);
 }
@@ -234,4 +261,7 @@ void Network::SetIP(const string ip) {
 void Network::SetMDNSName(const string name) {
     _mdns = name;
     _mdns_instance = _mdns + "TBD, you define what it is";
+}
+
+}
 }

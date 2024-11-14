@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 #include "codec.hpp"
 #include "esp_heap_caps.h"
 #include "led_rgb.hpp"
-#include "network.hpp"
+#include <tbd/network.hpp>
 #include "SerialAPI.hpp"
 #include "RestServer.hpp"
 #include "Control.hpp"
