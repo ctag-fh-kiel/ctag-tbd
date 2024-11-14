@@ -497,7 +497,7 @@ void ctagSoundProcessorFormantor::Init(std::size_t blockSize, void *blockPtr)
   Phasedist_real_process_init(pd_data);
   Phasedist_real_default(pd_data);              // Enable default settings for PD-Synth
 
-  Rescomb_process_init(rescomb_data);           // Modified to use heap_caps_malloc()
+  Rescomb_process_init(rescomb_data);           // Modified to use heaps::malloc()
   assert(blockSize >= sizeof(float)*675);
   rescomb_data._inst179._inst47a.bufferptr = (float*)blockPtr;
   memset(rescomb_data._inst179._inst47a.bufferptr, 0, sizeof(float)*675);

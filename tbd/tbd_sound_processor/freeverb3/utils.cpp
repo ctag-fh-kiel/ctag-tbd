@@ -19,6 +19,14 @@
  */
 
 #include "utils.hpp"
+
+#include <tbd/logging.hpp>
+#include <cassert>
+#include "memory/tinyalloc.h"
+#include <tbd/heaps.hpp>
+
+namespace heaps = tbd::heaps;
+
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
 
@@ -227,10 +235,6 @@ static void *allocsSPIRAM[MAX_ALLOCS];
 static int allocating = 0;
 static int freeing = 0;
 
-#include "esp_heap_caps.h"
-#include "esp_log.h"
-#include <cassert>
-#include "memory/tinyalloc.h"
 
 void FV3_(utils)::SetBlockMemory(size_t size, void* blockMemory){
     blockMemSize = size;
@@ -243,13 +247,13 @@ void FV3_(utils)::SetBlockMemory(size_t size, void* blockMemory){
 
 void *FV3_(utils)::fv3_malloc(size_t size){
     void *ptr = nullptr;
-    ESP_LOGD("fv3", "Trying Blockmemalloc");
+    TBD_LOGD("fv3", "Trying Blockmemalloc");
     ptr = ta_alloc(size);
     if(ptr != nullptr){
         return ptr;
     }
-    ESP_LOGD("fv3", "Falling back to regular malloc prefer internal, then SPIRAM");
-    ptr = heap_caps_malloc_prefer(size, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+    TBD_LOGD("fv3", "Falling back to regular malloc prefer internal, then SPIRAM");
+    ptr = heaps::malloc_prefer(size, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
     for(int i = 0; i < MAX_ALLOCS; i++){
         if(allocsSPIRAM[i] == nullptr){
             allocsSPIRAM[i] = ptr;
@@ -263,12 +267,12 @@ void FV3_(utils)::fv3_free(void *ptr){
     for(int i = 0; i < MAX_ALLOCS; i++){
         if(allocsSPIRAM[i] == ptr){
             allocsSPIRAM[i] = nullptr;
-            ESP_LOGD("fv3", "Freeing regular malloc");
-            heap_caps_free(ptr);
+            TBD_LOGD("fv3", "Freeing regular malloc");
+            heaps::free(ptr);
             return;
         }
     }
-    ESP_LOGD("fv3", "Freeing Blockmem");
+    TBD_LOGD("fv3", "Freeing Blockmem");
     ta_free(ptr);
 }
 

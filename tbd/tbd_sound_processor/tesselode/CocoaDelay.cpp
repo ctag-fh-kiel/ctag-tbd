@@ -29,10 +29,13 @@ SOFTWARE.
 #include "helpers/ctagFastMath.hpp"
 #include "stmlib/stmlib.h"
 #include "stmlib/dsp/dsp.h"
-#include "esp_heap_caps.h"
 #include <cstring>
-#include "esp_log.h"
+#include <tbd/logging.hpp>
 #include "stmlib/dsp/units.h"
+#include <tbd/heaps.hpp>
+
+
+namespace heaps = tbd::heaps;
 
 using namespace tesselode;
 using namespace CTAG::SP::HELPERS;
@@ -43,8 +46,8 @@ CocoaDelay::CocoaDelay() {
 }
 
 CocoaDelay::~CocoaDelay() {
-    heap_caps_free(bufferL);
-    heap_caps_free(bufferR);
+    heaps::free(bufferL);
+    heaps::free(bufferR);
 }
 
 float CocoaDelay::GetDelayTime() {
@@ -142,15 +145,15 @@ void CocoaDelay::InitBuffer() {
     std::fill(bufferL.begin(), bufferL.end(), 0.f);
     std::fill(bufferR.begin(), bufferR.end(), 0.f);
      */
-    bufferL = (float *) heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    bufferL = (float *) heaps::malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
     if(bufferL == NULL){
-        ESP_LOGE("CDelay", "Could not allocate buffer L in SPIRAM!");
+        TBD_LOGE("CDelay", "Could not allocate buffer L in SPIRAM!");
         return;
     }
     memset(bufferL, 0, sizeof(float) * GetSampleRate() * tapeLength);
-    bufferR = (float *) heap_caps_malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    bufferR = (float *) heaps::malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
     if(bufferL == NULL){
-        ESP_LOGE("CDelay", "Could not allocate buffer R in SPIRAM!");
+        TBD_LOGE("CDelay", "Could not allocate buffer R in SPIRAM!");
         return;
     }
     memset(bufferR, 0, sizeof(float) * GetSampleRate() * tapeLength);

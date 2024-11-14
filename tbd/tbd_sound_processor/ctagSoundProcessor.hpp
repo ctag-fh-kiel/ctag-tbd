@@ -171,10 +171,10 @@ namespace CTAG {
                     setParamValueInternal(kv.first, "current", model->GetParamValue(kv.first, "current"));
                     // check if cv and trig are set in preset, if so set in processor param
                     if (model->IsParamCV(kv.first)) {
-                        //ESP_LOGW("MOdel", "IntParam %s, %d", name.c_str(), model->GetParamValue(name, "cv"));
+                        //TBD_LOGW("MOdel", "IntParam %s, %d", name.c_str(), model->GetParamValue(name, "cv"));
                         setParamValueInternal(kv.first, "cv", model->GetParamValue(kv.first, "cv"));
                     } else if (model->IsParamTrig(kv.first)) {
-                        //ESP_LOGW("MOdel", "BoolParam %s, %d", name.c_str(), model->GetParamValue(name, "trig"));
+                        //TBD_LOGW("MOdel", "BoolParam %s, %d", name.c_str(), model->GetParamValue(name, "trig"));
                         setParamValueInternal(kv.first, "trig", model->GetParamValue(kv.first, "trig"));
                     }
                 }

@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-#include "esp_log.h"
+#include <tbd/logging.hpp>
 #include "ctagResources.hpp"
 
 /*
@@ -49,7 +49,7 @@ ctagSPDataModel::ctagSPDataModel(const std::string &id, const bool isStereo) {
     //std::cout << "Reading " << mpFileName << std::endl;
     loadJSON(mp, mpFileName);
     // load last activated preset
-    ESP_LOGD("Model", "Loading patch number %d", mp["activePatch"].GetInt());
+    TBD_LOGD("Model", "Loading patch number %d", mp["activePatch"].GetInt());
     LoadPreset(mp["activePatch"].GetInt());
 
 }
@@ -78,7 +78,7 @@ void ctagSPDataModel::mergeModels() {
 }
 
 void ctagSPDataModel::SetParamValue(const std::string &id, const std::string &key, const int val) {
-    ESP_LOGD("Model", "Setting id %s, with %s to %d", id.c_str(), key.c_str(), val);
+    TBD_LOGD("Model", "Setting id %s, with %s to %d", id.c_str(), key.c_str(), val);
     if (!activePreset.HasMember("params")) return;
     rj::Value &patchParams = activePreset["params"];
     if (!patchParams.IsArray()) return;
@@ -87,7 +87,7 @@ void ctagSPDataModel::SetParamValue(const std::string &id, const std::string &ke
         if (!v.HasMember("id")) return;
         if (!v["id"].IsString()) return;
         if (v["id"] == id) {
-            ESP_LOGD("Model", "I found the value");
+            TBD_LOGD("Model", "I found the value");
             if (!v.HasMember(key)) return;
             v[key] = val;
         }
@@ -152,12 +152,12 @@ void ctagSPDataModel::LoadPreset(const int num) {
     if (!mp.HasMember("patches")) return;
     if (!mp["patches"].IsArray()) return;
     if (patchNum >= mp["patches"].GetArray().Size()) {
-        ESP_LOGD("Model", "Bounds check patch num %d, size %d", patchNum, mp["patches"].GetArray().Size());
+        TBD_LOGD("Model", "Bounds check patch num %d, size %d", patchNum, mp["patches"].GetArray().Size());
         patchNum = mp["patches"].GetArray().Size() - 1;
     }
     activePreset.GetAllocator().Clear();
     activePreset.CopyFrom(mp["patches"].GetArray()[patchNum], activePreset.GetAllocator());
-    ESP_LOGD("Model", "Preset Name is %s number %d", activePreset["name"].GetString(), patchNum);
+    TBD_LOGD("Model", "Preset Name is %s number %d", activePreset["name"].GetString(), patchNum);
     // save currently loaded preset to model
     if (!mp.HasMember("activePatch")) return;
     mp["activePatch"].SetInt(patchNum);
@@ -203,8 +203,8 @@ void ctagSPDataModel::recursiveFindAndInsert(const rj::Value &paramF, rj::Value 
 
 
 void ctagSPDataModel::SavePreset(const std::string &name, const int number) {
-    //ESP_LOGE("Model", "Save preset %s %d", name.c_str(), number);
-    //ESP_LOGE("MOdel", "Stored JSON before");
+    //TBD_LOGE("Model", "Save preset %s %d", name.c_str(), number);
+    //TBD_LOGE("MOdel", "Stored JSON before");
     //PrintSelf();
     loadJSON(mp, mpFileName);
     int patchNum = number;
@@ -214,32 +214,32 @@ void ctagSPDataModel::SavePreset(const std::string &name, const int number) {
     if (patchNum > mp["patches"].GetArray().Size()) patchNum = mp["patches"].GetArray().Size();
     if (!activePreset.HasMember("name")) return;
     activePreset["name"].SetString(name, activePreset.GetAllocator());
-    //ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
+    //TBD_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum, mp["patches"].GetArray().Size());
     if (patchNum == mp["patches"].GetArray().Size()) {
         rj::Value copyOfPreset(activePreset, mp.GetAllocator());
         //copyOfPreset["name"].SetString(name, mp.GetAllocator());
         mp["patches"].PushBack(copyOfPreset.Move(), mp.GetAllocator());
         /*
-        ESP_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum,
+        TBD_LOGE("Model", "Adding new number %d, patchnum %d, patch array size %d", number, patchNum,
                  mp["patches"].GetArray().Size());
                  */
     } else {
         mp["patches"][patchNum].CopyFrom(activePreset, mp.GetAllocator()); // saved preset is current
-        //ESP_LOGE("Model", "Replace");
+        //TBD_LOGE("Model", "Replace");
     }
     if (!mp.HasMember("activePatch")) return;
     mp["activePatch"] = patchNum;
     storeJSON(mp, mpFileName);
-    //ESP_LOGE("MOdel", "Stored JSON after");
+    //TBD_LOGE("MOdel", "Stored JSON after");
     //PrintSelf();
 }
 
 void ctagSPDataModel::PrintSelf() {
-    ESP_LOGD("Model", "mp:");
+    TBD_LOGD("Model", "mp:");
     printJSON(mp);
-    ESP_LOGD("Model", "mui:");
+    TBD_LOGD("Model", "mui:");
     printJSON(mui);
-    ESP_LOGD("Model", "activePreset:");
+    TBD_LOGD("Model", "activePreset:");
     printJSON(activePreset);
 }
 

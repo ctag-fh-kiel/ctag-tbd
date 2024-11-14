@@ -128,7 +128,7 @@ void ctagSoundProcessorWTOscDuo::Process(const ProcessData &data) {
         sc = static_cast<int32_t>(fabsf(data.cv[cv_q_scale]) * 48.f);
         CONSTRAIN(sc, 0, 47);
     }
-    //ESP_LOGE("WTOscDuo", "Scale %d", sc);
+    //TBD_LOGE("WTOscDuo", "Scale %d", sc);
     pitchQuantizer.Configure(braids::scales[sc]);
     ipitch_1 = pitchQuantizer.Process(ipitch_1, ipitch_1_root);
     ipitch_2 = pitchQuantizer.Process(ipitch_2, ipitch_2_root);

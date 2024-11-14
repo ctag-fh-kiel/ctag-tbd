@@ -26,7 +26,6 @@ respective component folders / files if different from this license.
 
 #include "helpers/ctagDecay.hpp"
 #include "helpers/ctagFastMath.hpp"
-#include "esp_log.h"
 #include "math.h"
 
 
@@ -38,7 +37,7 @@ CTAG::SP::HELPERS::ctagDecay::ctagDecay() :
 void CTAG::SP::HELPERS::ctagDecay::SetDecay60dB(float val) {
     const float LOG001 = -3.f;
     SetCoeff(fastexp(LOG001 / (val * _fs))); // -60dB, accuracy with large vals is bad
-    //ESP_LOGE("calc", "val %.6f, _c %.6f", val, _c);
+    //TBD_LOGE("calc", "val %.6f, _c %.6f", val, _c);
 }
 
 float CTAG::SP::HELPERS::ctagDecay::Process(float in) {

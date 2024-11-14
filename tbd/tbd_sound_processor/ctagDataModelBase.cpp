@@ -19,9 +19,6 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-
-// #include "esp_log.h"
-#include "esp_heap_caps.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
@@ -29,25 +26,29 @@ respective component folders / files if different from this license.
 #include <cstdio>
 #include <regex>
 #include "ctagDataModelBase.hpp"
+#include <tbd/heaps.hpp>
+
 
 #define MB_BUF_SZ 4096
+
+namespace heaps = tbd::heaps;
 
 namespace CTAG {
 namespace SP {
 
 void ctagDataModelBase::loadJSON(rapidjson::Document &d, const std::string &fn) {
     d.GetAllocator().Clear();
-    // ESP_LOGD("JSON", "read buffer");
+    // TBD_LOGD("JSON", "read buffer");
     //FILE*
     fp = fopen(fn.c_str(), "r");
     if (fp == NULL) {
-        // ESP_LOGE("JSON", "could not open file %s", fn.c_str());
+        // TBD_LOGE("JSON", "could not open file %s", fn.c_str());
         return;
     }
     //char readBuffer[512];
-//    ESP_LOGE("JSON", "read stream");
+//    TBD_LOGE("JSON", "read stream");
     rapidjson::FileReadStream is(fp, buffer, MB_BUF_SZ);
-//    ESP_LOGE("JSON", "trying to parse");
+//    TBD_LOGE("JSON", "trying to parse");
     d.ParseStream(is);
     fclose(fp);
 
@@ -60,24 +61,24 @@ void ctagDataModelBase::loadJSON(rapidjson::Document &d, const std::string &fn) 
     // IF THIS HAPPENS, ALL CONTENTS OF THE AFFECTED FILE ARE RESET TO FACTORY DEFAULT
     if(d.HasParseError()){
         std::string backup_file_name = std::regex_replace(fn, std::regex("data"), "dbup");
-        // ESP_LOGE("JSON", "File %s has a parse error!", fn.c_str());
-        // ESP_LOGE("JSON", "Trying to replace with backup file %s", backup_file_name.c_str());
+        // TBD_LOGE("JSON", "File %s has a parse error!", fn.c_str());
+        // TBD_LOGE("JSON", "Trying to replace with backup file %s", backup_file_name.c_str());
         fp = fopen(backup_file_name.c_str(), "r");
         if (fp == NULL) {
-            // ESP_LOGE("JSON", "Could not open file %s", backup_file_name.c_str());
+            // TBD_LOGE("JSON", "Could not open file %s", backup_file_name.c_str());
             return;
         }
         //char readBuffer[512];
-//    ESP_LOGE("JSON", "read stream");
+//    TBD_LOGE("JSON", "read stream");
         rapidjson::FileReadStream is(fp, buffer, MB_BUF_SZ);
-//    ESP_LOGE("JSON", "trying to parse");
+//    TBD_LOGE("JSON", "trying to parse");
         d.ParseStream(is);
         fclose(fp);
         // if backup parsing was successful, copy backuped data to defective file
         if(!d.HasParseError()){
             storeJSON(d, fn);
         }else{
-            // ESP_LOGE("JSON", "FATAL ERROR: Could not recover from backup file %s", backup_file_name.c_str());
+            // TBD_LOGE("JSON", "FATAL ERROR: Could not recover from backup file %s", backup_file_name.c_str());
         }
     }
 }
@@ -86,7 +87,7 @@ void ctagDataModelBase::storeJSON(rapidjson::Document &d, const std::string &fn)
     //FILE*
     fp = fopen(fn.c_str(), "w"); // non-Windows use "w"
     if (fp == NULL) {
-        // ESP_LOGE("JSON", "could not open file %s", fn.c_str());
+        // TBD_LOGE("JSON", "could not open file %s", fn.c_str());
         return;
     }
     //char writeBuffer[512];
@@ -101,16 +102,16 @@ void ctagDataModelBase::printJSON(rapidjson::Value &v) {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     v.Accept(writer);
-    // ESP_LOGW("Model", "JSON string %s", buffer.GetString());
+    // TBD_LOGW("Model", "JSON string %s", buffer.GetString());
 }
 
 ctagDataModelBase::ctagDataModelBase() {
-    buffer = (char *) heap_caps_malloc(MB_BUF_SZ, MALLOC_CAP_SPIRAM);
-    // if (buffer == nullptr) ESP_LOGE("Model Base", "Fatal: Out of mem!");
+    buffer = (char *) heaps::malloc(MB_BUF_SZ, MALLOC_CAP_SPIRAM);
+    // if (buffer == nullptr) TBD_LOGE("Model Base", "Fatal: Out of mem!");
 }
 
 ctagDataModelBase::~ctagDataModelBase() {
-    heap_caps_free(buffer);
+    heaps::free(buffer);
 }
 
 }

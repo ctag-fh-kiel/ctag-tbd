@@ -20,8 +20,12 @@ respective component folders / files if different from this license.
 ***************/
 
 #include <tbd/sounds/ctagSoundProcessorClaude.hpp>
-#include "esp_heap_caps.h"
 #include <algorithm>
+#include <tbd/logging.hpp>
+#include <tbd/heaps.hpp>
+
+
+namespace heaps = tbd::heaps;
 
 using namespace CTAG::SP;
 using namespace std;
@@ -120,9 +124,9 @@ void ctagSoundProcessorClaude::Init(std::size_t blockSize, void *blockPtr) {
     LoadPreset(0);
 
     // memallocs
-    block_mem = (uint8_t *) heap_caps_malloc(memLen, MALLOC_CAP_SPIRAM);
+    block_mem = (uint8_t *) heaps::malloc(memLen, MALLOC_CAP_SPIRAM);
     if(block_mem == NULL){
-        ESP_LOGE("Claude", "Cannot alloc ram!");
+        TBD_LOGE("Claude", "Cannot alloc ram!");
     }
     memset(block_mem, 0, memLen);
 
@@ -134,7 +138,7 @@ void ctagSoundProcessorClaude::Init(std::size_t blockSize, void *blockPtr) {
 }
 
 ctagSoundProcessorClaude::~ctagSoundProcessorClaude() {
-    heap_caps_free(block_mem);
+    heaps::free(block_mem);
 }
 
 void ctagSoundProcessorClaude::knowYourself(){

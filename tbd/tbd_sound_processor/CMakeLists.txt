@@ -38,7 +38,7 @@ target_include_directories(tbd_sound_processor PUBLIC ${CMAKE_CURRENT_SOURCE_DIR
 target_link_libraries(tbd_sound_processor 
     PUBLIC rapidjson 
     PRIVATE tbd_helpers mutable moog 
-            __idf_log __idf_nvs_flash __idf_esp_system __idf_esp_system __idf_espressif__esp-dsp
+            __idf_tbd_system __idf_nvs_flash __idf_esp_system __idf_esp_system __idf_espressif__esp-dsp
 )
 target_compile_options(tbd_sound_processor PRIVATE
         -Wno-unused-local-typedefs

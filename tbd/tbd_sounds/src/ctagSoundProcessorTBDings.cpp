@@ -23,10 +23,10 @@ respective component folders / files if different from this license.
 #include <iostream>
 #include <cmath>
 #include "stmlib/stmlib.h"
+#include <tbd/heaps.hpp>
 
-
+namespace heaps = tbd::heaps;
 using namespace CTAG::SP;
-
 
 
 void ctagSoundProcessorTBDings::Init(std::size_t blockSize, void *blockPtr) {
@@ -39,7 +39,7 @@ void ctagSoundProcessorTBDings::Init(std::size_t blockSize, void *blockPtr) {
     reverb_buffer = (uint16_t *) blockPtr;
      */
 
-    reverb_buffer = (uint16_t *) heap_caps_malloc(32768 * sizeof(uint16_t), MALLOC_CAP_SPIRAM);
+    reverb_buffer = (uint16_t *) heaps::malloc(32768 * sizeof(uint16_t), MALLOC_CAP_SPIRAM);
     assert(reverb_buffer != nullptr);
 
     strummer.Init(0.01f, 44100.0f / bufSz);
@@ -198,7 +198,7 @@ void ctagSoundProcessorTBDings::updateParams(const ProcessData &data) {
 }
 
 ctagSoundProcessorTBDings::~ctagSoundProcessorTBDings() {
-    heap_caps_free(reverb_buffer);
+    heaps::free(reverb_buffer);
 }
 
 void ctagSoundProcessorTBDings::knowYourself() {

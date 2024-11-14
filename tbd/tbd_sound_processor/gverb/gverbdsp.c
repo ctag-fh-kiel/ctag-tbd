@@ -25,8 +25,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "esp_heap_caps.h"
-#include "esp_log.h"
+#include <tbd/heaps.hpp>
 
 #include "gverbdsp.h"
 
@@ -100,14 +99,14 @@ ty_fixeddelay *fixeddelay_make(int size) {
     p = (ty_fixeddelay *) gverb_malloc(sizeof(ty_fixeddelay));
     p->size = size;
     p->idx = 0;
-    p->buf = (float *) heap_caps_calloc(size * sizeof(float), 1, MALLOC_CAP_SPIRAM);
-    //ESP_LOGI("GVERB DSP", "Allocated %d bytes for delay line %p", size*sizeof(float), p->buf);
+    p->buf = (float *) tbd_heaps_calloc(size * sizeof(float), 1, MALLOC_CAP_SPIRAM);
+    //TBD_LOGI("GVERB DSP", "Allocated %d bytes for delay line %p", size*sizeof(float), p->buf);
     for (i = 0; i < size; i++) p->buf[i] = 0.0f;
     return (p);
 }
 
 void fixeddelay_free(ty_fixeddelay *p) {
-    heap_caps_free(p->buf);
+    tbd_heaps_free(p->buf);
     gverb_free_malloc(p);
 }
 

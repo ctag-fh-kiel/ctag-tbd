@@ -22,8 +22,11 @@ respective component folders / files if different from this license.
 /* based on ensemble chorus by Chris Johnson, see LICENSE file */
 
 #include "EChorus.hpp"
-#include "esp_heap_caps.h"
 #include "helpers/ctagFastMath.hpp"
+#include <tbd/heaps.hpp>
+
+namespace heaps = tbd::heaps;
+
 
 using namespace CTAG::SP::HELPERS;
 
@@ -140,8 +143,8 @@ namespace airwindows {
     }
 
     EChorus::EChorus() {
-        dL = (float *) heap_caps_malloc(totalsamples * sizeof(float), MALLOC_CAP_SPIRAM);
-        dR = (float *) heap_caps_malloc(totalsamples * sizeof(float), MALLOC_CAP_SPIRAM);
+        dL = (float *) heaps::malloc(totalsamples * sizeof(float), MALLOC_CAP_SPIRAM);
+        dR = (float *) heaps::malloc(totalsamples * sizeof(float), MALLOC_CAP_SPIRAM);
         for (int count = 0; count < totalsamples - 1; count++) {
             dL[count] = 0;
             dR[count] = 0;
@@ -166,8 +169,8 @@ namespace airwindows {
     }
 
     EChorus::~EChorus() {
-        heap_caps_free(dL);
-        heap_caps_free(dR);
+        heaps::free(dL);
+        heaps::free(dR);
     }
 
     void EChorus::SetSpeed(const float &v) {

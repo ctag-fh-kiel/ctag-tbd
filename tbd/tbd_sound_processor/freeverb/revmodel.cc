@@ -6,7 +6,6 @@
 
 #include <cassert>
 #include "revmodel.hpp"
-#include "esp_log.h"
 
 /*
 // Buffers for the combs

@@ -21,9 +21,7 @@
 #include "strev.hpp"
 #include "fv3_type_float.h"
 #include "fv3_ns_start.h"
-#include "esp_log.h"
 #include "esp_heap_caps.h"
-#include "esp_log.h"
 
 // Fs = 29.761 kHz
 const int32_t FV3_(strev)::allpCo[] = {142, 107, 379, 277, 672, 908, 1800, 2656,};

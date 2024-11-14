@@ -294,7 +294,7 @@ void ctagSoundProcessorRetroactor::Init(std::size_t blockSize, void *blockPtr)
   sine_B.SetFrequency(1.f);
 
   // --- Initialize VULT stuff ---
-  Rescomb_process_init(rescomb_data);   // Modified to use heap_caps_malloc()
+  Rescomb_process_init(rescomb_data);   // Modified to use heaps::malloc()
   assert(blockSize >= sizeof(float)*675);
   rescomb_data._inst179._inst47a.bufferptr = (float*) blockPtr;
   memset(rescomb_data._inst179._inst47a.bufferptr, 0, sizeof(float)*675);

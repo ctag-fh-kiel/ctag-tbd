@@ -184,7 +184,7 @@ void ctagSoundProcessorSubSynth::updateEGs(const ProcessData &data) {
         if (cv_eg_decay[i] != -1) {
             decayVal = data.cv[cv_eg_decay[i]] * data.cv[cv_eg_decay[i]];
         }
-        //ESP_LOGE("ad", "eg %d, Attackval %f, decayval %f", i, attackVal, decayVal);
+        //TBD_LOGE("ad", "eg %d, Attackval %f, decayval %f", i, attackVal, decayVal);
         eg[i].SetAttack(attackVal);
         eg[i].SetDecay(decayVal);
     }
@@ -336,7 +336,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
     index = id.rfind("_harm");
     if (index != string::npos) {
         index = stoi(id.substr(index - 1, 1)) - 1;
-        //ESP_LOGE("SS", "harm index %d", index);
+        //TBD_LOGE("SS", "harm index %d", index);
         if (key.compare("current") == 0) {
             p_harm[index] = val;
             return;
@@ -350,7 +350,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
     index = id.rfind("_bwidth");
     if (index != string::npos) {
         index = stoi(id.substr(index - 1, 1)) - 1;
-        //ESP_LOGE("SS", "bwidth index %d", index);
+        //TBD_LOGE("SS", "bwidth index %d", index);
         if (key.compare("current") == 0) {
             p_bwidth[index] = val;
             return;
@@ -364,7 +364,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
     index = id.rfind("_gain");
     if (index != string::npos) {
         index = stoi(id.substr(index - 1, 1)) - 1;
-        //ESP_LOGE("SS", "gain index %d", index);
+        //TBD_LOGE("SS", "gain index %d", index);
         if (key.compare("current") == 0) {
             p_gain[index] = val;
             return;
@@ -461,7 +461,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
         index = stoi(id.substr(index - 1, 1));
         if (key.compare("current") == 0) {
             eg_attack[index] = val;
-            //ESP_LOGE("AT", "attack %d is %d", index, val);
+            //TBD_LOGE("AT", "attack %d is %d", index, val);
             return;
         }
         if (key.compare("cv") == 0) {
@@ -475,7 +475,7 @@ void ctagSoundProcessorSubSynth::setParamValueInternal(const string &id, const s
         index = stoi(id.substr(index - 1, 1));
         if (key.compare("current") == 0) {
             eg_decay[index] = val;
-            //ESP_LOGE("dec", "decay %d is %d %d", index, val, eg_decay[index].load());
+            //TBD_LOGE("dec", "decay %d is %d %d", index, val, eg_decay[index].load());
             return;
         }
         if (key.compare("cv") == 0) {

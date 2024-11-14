@@ -24,10 +24,12 @@ respective component folders / files if different from this license.
 // Created by Robert Manzke on 10.02.20.
 //
 
-#include "esp_heap_caps.h"
-#include "esp_log.h"
 #include <cstring>
 #include "helpers/ctagFBDelayLine.hpp"
+#include <tbd/heaps.hpp>
+#include <tbd/logging.hpp>
+
+namespace heaps = tbd::heaps;
 
 void CTAG::SP::HELPERS::ctagFBDelayLine::SetFeedback(float fb) {
     feedback = fb;
@@ -47,16 +49,16 @@ void CTAG::SP::HELPERS::ctagFBDelayLine::Process(float *samples, const uint32_t 
 
 CTAG::SP::HELPERS::ctagFBDelayLine::ctagFBDelayLine(uint32_t maxLength) {
     maxLen = maxLength;
-    buffer = (float *) heap_caps_malloc(maxLength * sizeof(float), MALLOC_CAP_SPIRAM);
+    buffer = (float *) heaps::malloc(maxLength * sizeof(float), MALLOC_CAP_SPIRAM);
     if (buffer == nullptr) {
-        ESP_LOGE("FBDLYLINE", "Out of memory!");
+        TBD_LOGE("FBDLYLINE", "Out of memory!");
         return;
     }
     Clear();
 }
 
 CTAG::SP::HELPERS::ctagFBDelayLine::~ctagFBDelayLine() {
-    heap_caps_free(buffer);
+    heaps::free(buffer);
 }
 
 void CTAG::SP::HELPERS::ctagFBDelayLine::SetLength(const uint32_t length) {

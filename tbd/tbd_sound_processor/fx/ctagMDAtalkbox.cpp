@@ -28,6 +28,10 @@ Adapted by M. Brüssel from the Soundpipe version of the plugin at: https://gith
 */
 
 #include "fx/ctagMDAtalkbox.hpp"
+#include <tbd/heaps.hpp>
+
+
+namespace heaps = tbd::heaps;
 
 using namespace CTAG::SP::HELPERS;
 
@@ -47,22 +51,22 @@ typedef float TalkboxArray[SP_TALKBOX_BUFMAX];
 
 ctagMDAtalkbox::ctagMDAtalkbox()
 {
-  car0p = (float*)heap_caps_malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT );
-  car1p = (float*)heap_caps_malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
-  windowp = (float*)heap_caps_malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
-  buf0p = (float*)heap_caps_malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
-  buf1p = (float*)heap_caps_malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
+  car0p = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT );
+  car1p = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
+  windowp = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
+  buf0p = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
+  buf1p = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
   // --- Vocoder quality HiFi is 1.f, LoFi is 0.4 or worse ---
   Init(44100.f, 1.f );    // Internal call of Init - call Init again if you need a different samplerate or LoFi Vocoder Quality
 }
 
 ctagMDAtalkbox::~ctagMDAtalkbox()
 {
-  heap_caps_free(car0p);
-  heap_caps_free(car1p);
-  heap_caps_free(windowp);
-  heap_caps_free(buf0p);
-  heap_caps_free(buf1p);
+  heaps::free(car0p);
+  heaps::free(car1p);
+  heaps::free(windowp);
+  heaps::free(buf0p);
+  heaps::free(buf1p);
 }
 
 float ctagMDAtalkbox::fast_sqrt(float n)      // As seen here: https://www.gamedev.net/forums/topic/704525-3-quick-ways-to-calculate-the-square-root-in-c/

@@ -23,8 +23,11 @@ respective component folders / files if different from this license.
 #include <iostream>
 #include "clouds/dsp/frame.h"
 #include "helpers/ctagFastMath.hpp"
-#include "esp_log.h"
-#include "esp_heap_caps.h"
+#include <tbd/logging.hpp>
+#include <tbd/heaps.hpp>
+
+
+namespace heaps = tbd::heaps;
 
 using namespace CTAG::SP;
 
@@ -33,10 +36,10 @@ void ctagSoundProcessorMIVerb2::Init(std::size_t blockSize, void *blockPtr) {
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
-    reverb_buffer = (float *) heap_caps_malloc(32768 * sizeof(float),
+    reverb_buffer = (float *) heaps::malloc(32768 * sizeof(float),
                                                MALLOC_CAP_SPIRAM);//MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     if (reverb_buffer == NULL) {
-        ESP_LOGE("MIVerb", "Could not allocate shared buffer!");
+        TBD_LOGE("MIVerb", "Could not allocate shared buffer!");
     }
 
     reverb.Init(reverb_buffer);
@@ -116,7 +119,7 @@ void ctagSoundProcessorMIVerb2::Process(const ProcessData &data) {
 }
 
 ctagSoundProcessorMIVerb2::~ctagSoundProcessorMIVerb2() {
-    heap_caps_free(reverb_buffer);
+    heaps::free(reverb_buffer);
 }
 
 void ctagSoundProcessorMIVerb2::knowYourself() {

@@ -25,7 +25,6 @@ respective component folders / files if different from this license.
 #include <iostream>
 #include <cmath>
 #include "helpers/ctagFastMath.hpp"
-#include "esp_log.h"
 
 using namespace CTAG::SP;
 
@@ -40,13 +39,13 @@ void ctagSoundProcessorStrampDly::Init(std::size_t blockSize, void *blockPtr) {
     msLength = length;
     sampleRate = 44100.f;
     bufLen = ceilf(sampleRate * msMaxLength / 1000.0);
-    bufL = (float *) heap_caps_calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
+    bufL = (float *) heaps::calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
     if (bufL == NULL) {
-        ESP_LOGE("DELAY", "Could not allocate memory --> delay buffer!");
+        TBD_LOGE("DELAY", "Could not allocate memory --> delay buffer!");
     }
-    bufR = (float *) heap_caps_calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
+    bufR = (float *) heaps::calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
     if (bufR == NULL) {
-        ESP_LOGE("DELAY", "Could not allocate memory --> delay buffer!");
+        TBD_LOGE("DELAY", "Could not allocate memory --> delay buffer!");
     }
     mute();
 
@@ -161,8 +160,8 @@ void ctagSoundProcessorStrampDly::Process(const ProcessData &data) {
 }
 
 ctagSoundProcessorStrampDly::~ctagSoundProcessorStrampDly() {
-    heap_caps_free(bufL);
-    heap_caps_free(bufR);
+    heaps::free(bufL);
+    heaps::free(bufR);
 }
 
 void ctagSoundProcessorStrampDly::mute() {

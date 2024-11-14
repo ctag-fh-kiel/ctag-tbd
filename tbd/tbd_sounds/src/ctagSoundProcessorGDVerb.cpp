@@ -26,7 +26,6 @@ respective component folders / files if different from this license.
 
 #include <tbd/sounds/ctagSoundProcessorGDVerb.hpp>
 #include "esp_heap_caps.h"
-#include "esp_log.h"
 #include <iostream>
 #include <cmath>
 

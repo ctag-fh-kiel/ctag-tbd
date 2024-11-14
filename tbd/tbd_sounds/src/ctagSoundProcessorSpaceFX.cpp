@@ -28,11 +28,14 @@ respective component folders / files if different from this license.
 // --- Module dependant includes ---
 #include <tbd/sounds/ctagSoundProcessorSpaceFX.hpp>
 #include "plaits/dsp/engine/engine.h"
+#include <tbd/logging.hpp>
+#include <tbd/heaps.hpp>
 
 // --- VULT "Library for TBD" ---
 // #include "./vult/vult_formantor.cpp"  // Already defined in ctagSoundProcessorFormantor, so to avoid double defines we omit it here!
 // #include "./vult/vultin.cpp"          // Already defined in ctagSoundProcessorFormantor, so to avoid double defines we omit it here!
 
+namespace heaps = tbd::heaps;
 using namespace CTAG::SP;
 
 // --- Trigger/Gate values ---
@@ -509,9 +512,9 @@ void ctagSoundProcessorSpaceFX::Init(std::size_t blockSize, void *blockPtr)
   eg_adsr.Reset();
 
   // --- Initialize MI Verb ---
-  reverb_buffer = (float *) heap_caps_malloc(32768 * sizeof(float), MALLOC_CAP_SPIRAM);     // MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT
+  reverb_buffer = (float *) heaps::malloc(32768 * sizeof(float), MALLOC_CAP_SPIRAM);     // MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT
   if(!reverb_buffer)
-    ESP_LOGE("MIVerb", "Could not allocate shared buffer!");
+    TBD_LOGE("MIVerb", "Could not allocate shared buffer!");
   else
   {
     reverb.Init(reverb_buffer);
@@ -554,7 +557,7 @@ void ctagSoundProcessorSpaceFX::Init(std::size_t blockSize, void *blockPtr)
 ctagSoundProcessorSpaceFX::~ctagSoundProcessorSpaceFX() 
 {
     if(nullptr != reverb_buffer){
-        heap_caps_free(reverb_buffer);
+        heaps::free(reverb_buffer);
     }
 }
 

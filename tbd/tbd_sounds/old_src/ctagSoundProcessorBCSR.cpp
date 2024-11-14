@@ -24,7 +24,6 @@ respective component folders / files if different from this license.
 #include <cmath>
 #include "helpers/ctagFastMath.hpp"
 #include "esp_system.h"
-#include "esp_log.h"
 
 using namespace CTAG::SP;
 

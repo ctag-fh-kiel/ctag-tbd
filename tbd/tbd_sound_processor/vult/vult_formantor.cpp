@@ -379,7 +379,7 @@ void Rescomb__ctx_type_0_init(Rescomb__ctx_type_0 &_output_){
   Rescomb__ctx_type_0 _ctx;
   _ctx.write_pos = 0;
   /* moved this to caller!
-  _ctx.bufferptr = (float*)heap_caps_malloc(sizeof(float)*675, MALLOC_CAP_8BIT);
+  _ctx.bufferptr = (float*)heaps::malloc(sizeof(float)*675, MALLOC_CAP_8BIT);
   float_init_array(675,0.0f,_ctx.bufferptr);
    */
   _output_ = _ctx;

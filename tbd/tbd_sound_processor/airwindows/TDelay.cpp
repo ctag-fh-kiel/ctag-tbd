@@ -1,7 +1,10 @@
 #include "TDelay.hpp"
 #include <cmath>
 #include <cstdlib>
-#include "esp_heap_caps.h"
+#include <tbd/heaps.hpp>
+
+
+namespace heaps = tbd::heaps;
 
 namespace airwindows {
 
@@ -206,7 +209,7 @@ namespace airwindows {
     }
 
     TDelay::TDelay(){
-        d = (float *) heap_caps_malloc(length * sizeof(float), MALLOC_CAP_SPIRAM);
+        d = (float *) heaps::malloc(length * sizeof(float), MALLOC_CAP_SPIRAM);
         A = 1.0;
         B = 0.0;
         C = 0.5;
@@ -224,7 +227,7 @@ namespace airwindows {
     }
 
     TDelay::~TDelay() {
-        heap_caps_free(d);
+        heaps::free(d);
     }
 
     void TDelay::SetDry(const float &v) {

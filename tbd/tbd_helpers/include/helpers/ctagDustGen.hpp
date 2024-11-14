@@ -80,7 +80,7 @@ namespace CTAG::SP::HELPERS {
 
         float Process() {
             if (wCnt != 0) {
-                //ESP_LOGE("Dust", "wcnt %d", wCnt);
+                //TBD_LOGE("Dust", "wcnt %d", wCnt);
                 wCnt--;
                 if (wCnt > width / 2)
                     return zLast;

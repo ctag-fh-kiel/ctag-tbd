@@ -21,7 +21,7 @@ respective component folders / files if different from this license.
 
 #include "ctagDiodeLadderFilter3.hpp"
 #include <cstdio>
-#include "esp_log.h"
+#include <tbd/logging.hpp>
 #include <cmath>
 #include <limits>
 
@@ -72,7 +72,7 @@ float CTAG::SP::HELPERS::ctagDiodeLadderFilter3::Process(float in) {
 
     float b_rez = b_aflt4 - b_v; // no attenuation with rez, makes a stabler filter.
     if(b_fres > 10.f){
-        ESP_LOGE("FILT", "Error reso %f", b_fres);
+        TBD_LOGE("FILT", "Error reso %f", b_fres);
         b_fres = 0.f;
     }
     b_v = b_v - (b_rez *
