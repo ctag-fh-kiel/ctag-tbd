@@ -18,11 +18,10 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
-
 #pragma once
 
-#include "dsps_biquad.h"
+#include <cinttypes>
+
 
 namespace CTAG::SP::HELPERS {
     enum class BIQUAD_TYPE : uint32_t {

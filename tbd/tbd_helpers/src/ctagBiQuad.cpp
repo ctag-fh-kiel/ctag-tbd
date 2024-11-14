@@ -25,7 +25,9 @@ respective component folders / files if different from this license.
 //
 
 #include "helpers/ctagBiQuad.hpp"
+
 #include "helpers/ctagFastMath.hpp"
+#include <dsps_biquad.h>
 
 using namespace CTAG::SP::HELPERS;
 
