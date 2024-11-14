@@ -11,7 +11,6 @@
 #include "allpass.hpp"
 #include "tuning.hh"
 #include <cstdint>
-#include "esp_system.h"
 
 class revmodel {
 public:

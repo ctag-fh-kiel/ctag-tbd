@@ -34,7 +34,6 @@ respective component folders / files if different from this license.
 #include "xtensa/core-macros.h"
 #endif
 
-#include "esp_system.h"
 
 using namespace CTAG::SP;
 

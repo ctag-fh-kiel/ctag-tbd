@@ -8,7 +8,6 @@
 #define _allpass_
 
 #include "denormals.hh"
-#include "esp_system.h"
 
 class allpass {
 public:

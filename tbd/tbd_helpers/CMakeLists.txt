@@ -8,7 +8,7 @@ file(GLOB SRCS_FILES
 add_library(tbd_helpers STATIC ${SRCS_FILES})
 target_include_directories(tbd_helpers PUBLIC include)
 target_link_libraries(tbd_helpers 
-    PRIVATE __idf_tbd_system __idf_heap __idf_espressif__esp-dsp __idf_nvs_flash
+    PRIVATE __idf_tbd_storage_port __idf_tbd_system __idf_heap __idf_espressif__esp-dsp __idf_nvs_flash
 )
 target_compile_options(tbd_helpers PRIVATE 
         -Wno-unused-local-typedefs

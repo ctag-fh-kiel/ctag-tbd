@@ -24,7 +24,6 @@ respective component folders / files if different from this license.
 #include <cstring>
 #include <algorithm>
 #include <cmath>
-#include "esp_system.h"
 #include "braids/quantizer_scales.h"
 
 using namespace CTAG::SP;
