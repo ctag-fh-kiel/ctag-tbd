@@ -20,3 +20,4 @@ CMakeUserPresets.json
 __pycache__
 managed_components
 sdkconfig
+ctagSoundProcessorFactory.hpp
