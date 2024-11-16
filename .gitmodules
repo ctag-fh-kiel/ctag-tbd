@@ -2,10 +2,10 @@
 	path = vendor/mutable/eurorack
 	url = https://github.com/ctag-fh-kiel/eurorack.git
 [submodule "simulator/Simple-Web-Server"]
-	path = simulator/Simple-Web-Server
+	path = vendor/Simple-Web-Server
 	url = https://gitlab.com/eidheim/Simple-Web-Server.git
 [submodule "simulator/rtaudio"]
-	path = simulator/rtaudio
+	path = vendor/rtaudio
 	url = https://github.com/thestk/rtaudio.git
 [submodule "components/moog/MoogLadders"]
 	path = vendor/moog/MoogLadders
