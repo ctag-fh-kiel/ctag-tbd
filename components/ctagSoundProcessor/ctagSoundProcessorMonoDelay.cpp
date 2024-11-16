@@ -128,8 +128,8 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 		writeIndex = (writeIndex + 1) % 88200;
 
 		// Mix the dry (input) and wet (delayed) signal
-		data.buf[i*2] = (1.0f - fMix) * inputSample + fMix * outputSample;
-		data.buf[i*2 + 1] = data.buf[i*2];
+		data.buf[i*2 + this->processCh] = (1.0f - fMix) * inputSample + fMix * outputSample;
+		//data.buf[i*2 + 1] = data.buf[i*2];
 	}
 
 }
