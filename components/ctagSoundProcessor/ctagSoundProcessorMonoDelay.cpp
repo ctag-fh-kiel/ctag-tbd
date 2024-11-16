@@ -95,7 +95,8 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 				}
 				delayOffset = ofs;
 			} else {
-				delayOffset = ONE_POLE(delayOffset, ofs, 0.0001f);
+				float temp = delayOffset;
+				delayOffset = ONE_POLE(temp, ofs, 0.0001f);
 			}
 			readPos = static_cast<float>(writeIndex) - delayOffset;
 			if(readPos < 0.f) readPos += 88200.f;
@@ -105,12 +106,12 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 		float inputSample = data.buf[i*2 + this->processCh];
 		float outputSample;
 
-		MAKE_INTEGRAL_FRACTIONAL(readPos);
 		outputSample = HELPERS::InterpolateWaveLinearWrap(delayBuffer, readPos, 88200);
 		readPos += 1.f;
 		readPos > 88200.f ? readPos -= 88200.f : readPos;
 
-		duck = ONE_POLE(duck, 0.f, 0.35f)
+		float temp = duck;
+		duck = ONE_POLE(temp, 0.f, 0.35f)
 		outputSample = outputSample * (1.f - duck);
 		// Write the input sample to the delay buffer
 		float out;
