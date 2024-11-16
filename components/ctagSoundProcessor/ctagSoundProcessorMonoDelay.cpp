@@ -63,7 +63,8 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 
 	float toneFilterCutoff;
 	if(fTone > 0.f) toneFilterCutoff = stmlib::SemitonesToRatio(fabsf(fTone) * 120.f);
-	else toneFilterCutoff = 22000.f - 20.f * stmlib::SemitonesToRatio((fabsf(fTone)) * 120.f);
+	else toneFilterCutoff = 10000.f - 20.f * stmlib::SemitonesToRatio((fabsf(fTone)) * 120.f);
+	CONSTRAIN(toneFilterCutoff, 100.f, 22000.f)
 	toneFilter.set_f<stmlib::FREQUENCY_ACCURATE>(toneFilterCutoff / 44100.f);
 	//printf("toneFilterCutoff %f\n", toneFilterCutoff);
 
@@ -112,14 +113,18 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 		duck = ONE_POLE(duck, 0.f, 0.35f)
 		outputSample = outputSample * (1.f - duck);
 		// Write the input sample to the delay buffer
+		float out;
 		if(!bFreeze){
-			if(fTone <= 0.f)
-				delayBuffer[writeIndex] = inputSample + toneFilter.Process<stmlib::FILTER_MODE_LOW_PASS>(outputSample * fFeedback * fFeedback);
+			if(fTone <= -0.1f)
+				out = inputSample + toneFilter.Process<stmlib::FILTER_MODE_LOW_PASS>(outputSample * fFeedback * fFeedback);
+			else if(fTone >= 0.1f)
+				out = inputSample + toneFilter.Process<stmlib::FILTER_MODE_HIGH_PASS>( outputSample * fFeedback * fFeedback);
 			else
-				delayBuffer[writeIndex] = inputSample + toneFilter.Process<stmlib::FILTER_MODE_HIGH_PASS>( outputSample * fFeedback * fFeedback);
+				out = inputSample + outputSample * fFeedback * fFeedback;
 		}
 		else
-			delayBuffer[writeIndex] = outputSample;
+			out = outputSample;
+		delayBuffer[writeIndex] = stmlib::SoftLimit(out);
 		writeIndex = (writeIndex + 1) % 88200;
 
 		// Mix the dry (input) and wet (delayed) signal
