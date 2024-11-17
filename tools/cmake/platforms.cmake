@@ -1,169 +1,346 @@
 include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
 
-macro(tbd_activate_toolchain)
-    if (TBD_PLATFORM STREQUAL "str"
-        OR TBD_PLATFORM STREQUAL "v1"
-        OR TBD_PLATFORM STREQUAL "v2"
-        OR TBD_PLATFORM STREQUAL "mk2"
-        OR TBD_PLATFORM STREQUAL "aem"
-        OR TBD_PLATFORM STREQUAL "bba"
-    )
-        include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-        list(APPEND EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/ports/tbd_port_esp32)
-        
-        set(TBD_TOOLCHAIN "idf" CACHE STRING "" FORCE)
-        mark_as_advanced(TBD_TOOLCHAIN)
-    elseif (TBD_PLATFORM STREQUAL "desktop")
-        set(TBD_TOOLCHAIN "desktop" CACHE STRING "" FORCE)
-        mark_as_advanced(TBD_TOOLCHAIN)
-    else()
-        message(FATAL_ERROR "no platform selected")
+set(TBD_PLATFORM_SYSTEMS esp32 desktop)
+set(TBD_PLATFORM_CV_CHIPS adc mcp3208 stm32 midi)
+set(TBD_PLATFORM_AUDIO_CHIPS wm8xxx aic3254 es8388)
+set(TBD_PLATFORM_INDICATORS rgb neopixel)
+
+
+#### platform setup ####
+
+# check if platform has been set up
+#
+# `TBD_PLATFORM` has to refer to a valid platform preset platform.
+# 
+# @note: Use `tbd_platform_setup` make the selected platform globally available.
+#
+macro(tbd_platform_is_set)
+    if ("${TBD_PLATFORM}" STREQUAL "")
+        tbd_loge("TBD_PLATFORM not set, add '-DTBD_PLATFORM=<platform>' to idf.py or cmake")
     endif()
-
-
 endmacro()
 
 
-macro(tbd_add_compiler_options)
-    if(TBD_TOOLCHAIN STREQUAL "idf") 
-        idf_build_set_property(COMPILE_OPTIONS -Wno-unused-local-typedefs -ffast-math APPEND) # -ffast-math -fno-finite-math-only https://stackoverflow.com/questions/22931147/stdisinf-does-not-work-with-ffast-math-how-to-check-for-infinity    
+# determine which platform to build
+#
+# This should be the first thing to do in your main `CMakeLists.txt`.
+#
+# There is two options for specifying the platform to build (ordered by priority
+# 1. directly on the command line:
+#
+#   If you not using the TBD tools, set 
+#     `cmake -DTBD_PLATFORM=<platform>`
+#   or
+#      `idf.py -DTBD_PLATFORM`
+#   on the build tool you are using.
+# 2. as an environment variable:
+#
+#   export TBD_PLATFORM=<platform>
+#
+#
+macro(tbd_platform_setup)
+    tbd_logv("determining platform")
 
-        # FIXME: copying idf compiler options causes errors
-        # add_compile_options(${TBD_COMPILE_OPTIONS})
-        # idf_build_get_property(TBD_COMPILE_OPTIONS COMPILE_OPTIONS)
-        # foreach(opt ${TBD_COMPILE_OPTIONS})
-        #     message("IDF compiler option ${opt}")
-        # endforeach()
+    if (NOT "${TBD_PLATFORM}" STREQUAL "")
+        tbd_logv("using platform ${TBD_PLATFORM} from cmake variable")
+        set(platform_name ${TBD_PLATFORM})
+    elseif (NOT "$ENV{TBD_PLATFORM}" STREQUAL "")
+        tbd_logv("using platform ${TBD_PLATFORM} set from environment variable")
+        set(platform_name $ENV{TBD_PLATFORM})
+    else()
+        tbd_loge("TBD_PLATFORM not set, add '-DTBD_PLATFORM=<platform>' to idf.py or cmake")
+    endif()
 
-        # HOTFIX: manual compiler options
-        add_compile_options(
-            -O2 
-
-            # disable C++ dynamic features
-            -fno-exceptions 
-            -fno-rtti 
-
-            # enable
-            -mlongcalls  
-            -ffast-math 
-
-            # disable
-            -mdisable-hardware-atomics 
-            -fstrict-volatile-bitfields 
-            -fno-jump-tables 
-            -fno-tree-switch-conversion 
+    set(TBD_PLATFORM ${platform_name} CACHE STRING "" FORCE)
+    mark_as_advanced(TBD_PLATFORM)
+endmacro()
 
 
-            # binary layout
-            -ffunction-sections 
-            -fdata-sections 
+# activate platfom
+#
+# Make the platfom available to the entire project as `TBD_PLATFORM_OBJ`.
+#
+macro(tbd_platform_activate)
+    tbd_logv("activating platform")
 
-            # debugger
-            -gdwarf-4 
-            -ggdb 
+    if ("${TBD_PLATFORM}" STREQUAL "")
+        tbd_loge("TBD_PLATFORM not set: add '-DTBD_PLATFORM=<platform>' to idf.py or cmake or set TBD_PLATFORM envvar")
+    endif()
 
-            # disable certain stdlib features
-            -fno-builtin-memcpy 
-            -fno-builtin-memset 
-            -fno-builtin-bzero 
-            -fno-builtin-stpcpy 
-            -fno-builtin-strncpy 
+    tbd_platform_is_set()
+    tbd_platform_from_preset(${TBD_PLATFORM})
+    set(TBD_PLATFORM_OBJ "${_return}" CACHE STRING "" FORCE)
+    mark_as_advanced(TBD_PLATFORM_OBJ)
 
-            # errors and warnings
-            -fdiagnostics-color=always 
-            -Wall 
-            -Werror=all 
-            -Wextra
+    tbd_platform_print_info("${TBD_PLATFORM_OBJ}")
+endmacro()
 
-            -Wno-error=unused-function 
-            -Wno-error=unused-variable 
-            -Wno-error=unused-but-set-variable 
-            -Wno-error=deprecated-declarations 
-            -Wno-unused-parameter 
-            -Wno-sign-compare 
-            -Wno-enum-conversion 
-            -Wno-unused-local-typedefs
+
+# raise an error if plotform has not been activated
+#
+#
+macro(tbd_platform_activated)
+    if ("${TBD_PLATFORM_OBJ}" STREQUAL "")
+        tbd_loge("TBD_PLATFORM_OBJ not set, did you forget to call 'tbd_platform_actiate'?")
+    endif()
+endmacro()
+
+
+#### platform class ####
+
+# helper for accessing platform fields
+#
+#
+macro(tbd_platform_attrs)
+    set(bools 
+        FILE_SYSTEM 
+        DISPLAY
+    )
+    set(attrs
+        NAME 
+        SYSTEM 
+        CV_INPUT  
+        N_TRIGGERS 
+        N_CVS
+        AUDIO_OUTPUT 
+        INDICATOR
+    )
+    cmake_parse_arguments(arg "${bools}" "${attrs}" "" ${ARGV})
+    if (DEFINED arg_KEYWORDS_MISSING_VALUES)
+        tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
+    endif()
+endmacro()
+
+#
+#  constructor for platform description
+#
+function (tbd_platform var_name)
+    tbd_platform_attrs(${ARGN})
+
+    # check if speficied components are valid
+    list (FIND TBD_PLATFORM_SYSTEMS ${arg_SYSTEM} _index)
+    if (${_index} LESS 0) 
+        tbd_loge("unknwon system '${arg_SYSTEM}, has to be one of ${TBD_PLATFTBD_PLATFORM_SYSTEMS}")
+    endif()
+
+    list (FIND TBD_PLATFORM_CV_CHIPS ${arg_CV_INPUT} _index)
+    if (${_index} LESS 0) 
+        tbd_loge("unknwon CV chip '${arg_CV_INPUT}, has to be one of ${TBD_PLATFORM_CV_CHIPS}")
+    endif()
+
+    list (FIND TBD_PLATFORM_AUDIO_CHIPS ${arg_AUDIO_OUTPUT} _index)
+    if (${_index} LESS 0) 
+        tbd_loge("unknwon audio chip '${arg_AUDIO_OUTPUT}, has to be one of ${TBD_PLATFORM_AUDIO_CHIPS}")
+    endif()
+
+    list (FIND TBD_PLATFORM_INDICATORS ${arg_INDICATOR} _index)
+    if (${_index} LESS 0) 
+        tbd_loge("unknwon indicator '${arg_INDICATOR}, has to be one of ${TBD_PLATFORM_INDICATORS}")
+    endif()
+
+    set(${var_name} ${ARGN} PARENT_SCOPE)
+endfunction()
+
+# platform properties
+
+function(tbd_platform_name platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_NAME}" ${ARGN})
+endfunction()
+
+function(tbd_platform_system platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_SYSTEM}" ${ARGN})
+endfunction()
+
+function(tbd_platform_cv_input platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_CV_INPUT}" ${ARGN})
+endfunction()
+
+function(tbd_platform_n_cvs platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_N_CVS}" ${ARGN})
+endfunction()
+
+function(tbd_platform_n_triggers platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_N_TRIGGERS}" ${ARGN})
+endfunction()
+
+function(tbd_platform_audio_output platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_AUDIO_OUTPUT" ${ARGN})
+endfunction()
+
+function(tbd_platform_file_system platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_FILE_SYSTEM}" ${ARGN})
+endfunction()
+
+function(tbd_platform_display platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_DIPLAY}" ${ARGN})
+endfunction()
+
+function(tbd_platform_indicators platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_INDICATORS}" ${ARGN})
+endfunction()
+
+#### platform methods ####
+
+function(tbd_platform_get_features platform)
+    tbd_platform_attrs(${platform})
+    if ("${arg_CV_INPUT}" STREQUAL "adc" OR "${arg_CV_INPUT}" STREQUAL "mcp3208")
+        set(callibration TBD_CALIBRATION=1)
+        set(adc TBD_ADC=1)
+        set(stm32 TBD_STM32=0)
+        set(midi TBD_MIDI=0)
+    elseif ("${arg_CV_INPUT}" STREQUAL "stm32")
+        set(callibration TBD_CALIBRATION=0)
+        set(adc TBD_ADC=0)
+        set(stm32 TBD_STM32=1)
+        set(midi TBD_MIDI=0)
+    elseif ("${arg_CV_INPUT}" STREQUAL "midi")
+        set(callibration TBD_CALIBRATION=0)
+        set(adc TBD_ADC=0)
+        set(stm32 TBD_STM32=0)
+        set(midi TBD_MIDI=1)
+    else()
+        tbd_loge("failed to determine CV input, unknwon input chip ${arg_CV_INPUT}")
+    endif()
+
+    if (arg_DISPLAY)
+        set(display TBD_DISPLAY=1)
+    else()
+        set(display TBD_DISPLAY=0)
+    endif()
+
+    set(features
+        N_CVS=${arg_N_CVS}
+        N_TRIGS=${arg_N_TRIGGERS}
+        ${callibration}
+        ${adc}
+        ${stm32}
+        ${midi}
+        ${display}
+    )
+    tbd_store_or_return("${features}" ${ARGN})
+endfunction()
+
+function(tbd_platform_print_info platform)
+    tbd_platform_attrs(${platform})
+    message("
+TBD platform configuration
+--------------------------
+name: ${arg_NAME}
+system: ${arg_SYSTEM}
+CV chip: ${arg_CV_INPUT}
+num CVs: ${arg_N_CVS}
+num triggers: ${arg_N_TRIGGERS}
+audio chip: ${arg_AUDIO_OUTPUT}
+file system: ${arg_FILE_SYSTEM}
+indicators: ${arg_INDICATOR}
+--------------------------
+    ")
+endfunction()
+
+
+### platform presets ####
+
+function (tbd_platform_from_preset platform_name)
+    if (${platform_name} STREQUAL "v1")
+        tbd_platform(new_platform 
+            NAME "v1"
+            SYSTEM esp32
+            CV_INPUT adc 
+            N_CVS 4
+            N_TRIGGERS 2
+            AUDIO_OUTPUT wm8xxx 
+            FILE_SYSTEM 
+            DISPLAY 
+            INDICATOR rgb 
         )
 
-        # FIXME: verify and remove
-        idf_build_set_property(COMPILE_DEFINITIONS -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 APPEND)
-        idf_build_set_property(COMPILE_DEFINITIONS -DRAPIDJSON_HAS_STDSTRING=1 APPEND)
-    elseif (TBD_TOOLCHAIN STREQUAL "desktop")
-        # nothing for now
-    else()
-        message(FATAL_ERROR "invalid toolchain ${TBD_TOOLCHAIN}")
+    elseif (${platform_name} STREQUAL "v2")
+        tbd_platform(new_platform 
+            NAME "v2"
+            SYSTEM esp32
+            CV_INPUT adc 
+            N_CVS 4
+            N_TRIGGERS 2
+            AUDIO_OUTPUT wm8xxx 
+            FILE_SYSTEM 
+            DISPLAY 
+            INDICATOR rgb 
+        )
+
+    elseif (${platform_name} STREQUAL "str")
+        tbd_platform(new_platform 
+            NAME "str"
+            SYSTEM esp32
+            CV_INPUT mcp3208 
+            N_CVS 8
+            N_TRIGGERS 2
+            AUDIO_OUTPUT wm8xxx 
+            FILE_SYSTEM 
+            DISPLAY 
+            INDICATOR rgb 
+        )
+
+    elseif (${platform_name} STREQUAL "aem")
+        tbd_platform(new_platform 
+            NAME "aem"
+            SYSTEM esp32
+            CV_INPUT adc 
+            N_CVS 4
+            N_TRIGGERS 2
+            AUDIO_OUTPUT wm8xxx 
+            FILE_SYSTEM 
+            DISPLAY 
+            INDICATOR rgb 
+        )
+
+    elseif (${platform_name} STREQUAL "mk2")
+        tbd_platform(new_platform 
+            NAME "mk2"
+            SYSTEM esp32
+            CV_INPUT stm32 
+            N_CVS 22
+            N_TRIGGERS 12
+            AUDIO_OUTPUT wm8xxx 
+            FILE_SYSTEM 
+            DISPLAY 
+            INDICATOR rgb 
+        )
+
+    elseif (${platform_name} STREQUAL "bba1")
+        tbd_platform(new_platform 
+            NAME "bba1"
+            SYSTEM esp32
+            CV_INPUT midi 
+            N_CVS 90
+            N_TRIGGERS 40
+            AUDIO_OUTPUT es8388
+            FILE_SYSTEM 
+            DISPLAY 
+            INDICATOR neopixel
+        )
+
+    elseif (${platform_name} STREQUAL "bba2")
+        tbd_platform(new_platform 
+            NAME "bba2" 
+            SYSTEM esp32 
+            CV_INPUT midi 
+            N_CVS 90 
+            N_TRIGGERS 40 
+            AUDIO_OUTPUT es8388
+            FILE_SYSTEM 
+            DISPLAY 
+            INDICATOR neopixel
+        )
     endif()
-endmacro()
 
-
-macro(tbd_add_port_lib)        
-    if(TBD_TOOLCHAIN STREQUAL "idf") 
-        # IDF will handle discovery
-    elseif (TBD_TOOLCHAIN STREQUAL "desktop")
-        add_subdirectory(${CMAKE_SOURCE_DIR}/ports/tbd_port_desktop)
-    else()
-        message(FATAL_ERROR "invalid toolchain ${TBD_TOOLCHAIN}")
-    endif()
-endmacro()
-
-
-function(tbd_configure_platform)
-    if(CONFIG_TBD_PLATFORM_STR)
-        add_compile_definitions(N_CVS=8)
-        add_compile_definitions(N_TRIGS=2)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=8 APPEND)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
-
-        set(TBD_PORT_LIB tbd_port_esp32)
-        set(TBD_HW "Strampler")
-    elseif(CONFIG_TBD_PLATFORM_MK2)
-        add_compile_definitions(N_CVS=22)
-        add_compile_definitions(N_TRIGS=12)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=22 APPEND)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=12 APPEND)
-
-        set(TBD_PORT_LIB tbd_port_esp32)
-        set(TBD_HW "mk2")
-    elseif(CONFIG_TBD_PLATFORM_V2)
-        add_compile_definitions(N_CVS=4)
-        add_compile_definitions(N_TRIGS=2)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=4 APPEND)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
-
-        set(TBD_PORT_LIB tbd_port_esp32)
-        set(TBD_HW "V2")
-    elseif(CONFIG_TBD_PLATFORM_V1)
-        add_compile_definitions(N_CVS=4)
-        add_compile_definitions(N_TRIGS=2)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=4 APPEND)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
-
-        set(TBD_PORT_LIB tbd_port_esp32)
-        set(TBD_HW "V1")
-    elseif(CONFIG_TBD_PLATFORM_AEM)
-        add_compile_definitions(N_CVS=4)
-        add_compile_definitions(N_TRIGS=2)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=4 APPEND)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=2 APPEND)
-        set(TBD_PORT_LIB tbd_port_esp32)
-        set(TBD_HW "AEM")
-    elseif(CONFIG_TBD_PLATFORM_BBA)
-        tbd_set_define(N_CVS 90)
-        tbd_set_define(N_TRIGS 40)
-
-        tbd_set_param(TBD_HW "BBA")
-        set(TBD_PORT_LIB GLOBAL tbd_port_esp32)
-        mark_as_advanced(STAGE8)
-
-    elseif(CONFIG_TBD_PLATFORM_DESKTOP)
-        add_compile_definitions(N_CVS=90)
-        add_compile_definitions(N_TRIGS=40)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_CVS=90 APPEND)
-        idf_build_set_property(COMPILE_DEFINITIONS -DN_TRIGS=40 APPEND)
-        
-        set(TBD_PORT_LIB tbd_port_desktop)
-        set(TBD_HW "desktop")
-    else()
-        message("no platform selected")
-    endif()
+    tbd_store_or_return("${new_platform}" ${ARGN})
 endfunction()

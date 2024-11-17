@@ -1,27 +1,58 @@
-function(_tbd_get_driver_build_args)
-    set(options FILE_SYSTEM DISPLAY)
-    set(single_value_args CV_INPUT AUDIO_OUTPUT INDICATOR)
-    set(multi_value_args "")
-    cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${single_value_args}" "${multi_value_args}")
+include(${PROJECT_DIR}/tools/cmake/platforms.cmake)
 
-    if (DEFINED arg_KEYWORDS_MISSING_VALUES)
-        message(FATAL_ERROR "missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
-    endif()
+#### drivers setup ####
+
+# activate drivers
+#
+# Make the drivers available to the entire project as `TBD_DRIVERS_OBJ`.
+#
+function(tbd_drivers_activate platform)
+    tbd_drivers(drivers "${platform}")
+
+    set(TBD_DRIVERS_OBJ "${drivers}" CACHE STRING "" FORCE)
+    mark_as_advanced(TBD_DRIVERS_OBJ)
+
+    tbd_drivers_print_info("${TBD_DRIVERS_OBJ}")
+endfunction()
+
+
+#### drivers class ####
+
+# helper for accessing drivers fields
+#
+#
+macro(tbd_drivers_attrs)
+    set(file_lists
+        SRCS
+        ULP_SRCS
+        INCLUDES
+        LIBS
+    )
+
+    cmake_parse_arguments(arg "" "" "${file_lists}" ${ARGV})
+endmacro()
+
+
+#
+#  constructor for drivers description
+#
+function(tbd_drivers var_name platform)
+    tbd_platform_attrs(${platform})
+
+    # gather input and trigger sources
 
     set(libs driver)
-
-    # # gather CV input sources
 
     if (DEFINED arg_CV_INPUT)
         if (arg_CV_INPUT STREQUAL adc)
             set(cv_input_srcs adc.cpp)
             set(triggers_srcs gpio.cpp)
-            set(cv_ulp_srcs ulp/adc.S adc.cpp)
+            set(ulp_srcs ulp/adc.S adc.cpp)
             list(APPEND includes triggers)
             list(APPEND libs ulp)
         elseif (arg_CV_INPUT STREQUAL mcp3208)
             set(cv_input_srcs adc.cpp)
-            set(cv_ulp_srcs ulp/mcp3208.S adc.cpp)
+            set(ulp_srcs ulp/mcp3208.S adc.cpp)
             set(triggers_srcs gpio.cpp)
             list(APPEND includes triggers)
             list(APPEND libs ulp)
@@ -30,7 +61,7 @@ function(_tbd_get_driver_build_args)
             # no GPIO triggers
             # no ULP
         elseif (arg_CV_INPUT STREQUAL midi)
-            list(APPEND libs esp-tinyusb)
+            list(APPEND libs esp_tinyusb)
             set(cv_input_srcs  midiuart.cpp tusbmidi.cpp)
             # no GPIO triggers
             # no ULP
@@ -40,12 +71,12 @@ function(_tbd_get_driver_build_args)
 
         list(APPEND includes cv_inputs)
         list(TRANSFORM cv_input_srcs PREPEND cv_inputs/)
-        list(TRANSFORM cv_ulp_srcs PREPEND cv_inputs/)
+        list(TRANSFORM ulp_srcs PREPEND cv_inputs/)
         list(TRANSFORM triggers_srcs PREPEND triggers/)
         list(APPEND srcs ${cv_input_srcs} ${triggers_srcs})
     else ()
         message("no CV input specified")
-    endif ()  
+    endif ()
 
     # gather audio codec sources
 
@@ -70,8 +101,8 @@ function(_tbd_get_driver_build_args)
     # gather indicator
 
     if (DEFINED arg_INDICATOR)
-        if (arg_INDICATOR STREQUAL plain)
-            set(indicator_srcs led_rgb.cpp)        
+        if (arg_INDICATOR STREQUAL rgb)
+            set(indicator_srcs led_rgb.cpp)   
         elseif(arg_INDICATOR STREQUAL neopixel)
             set(indicator_srcs led_rgb_bba.cpp)  
         else()
@@ -97,106 +128,66 @@ function(_tbd_get_driver_build_args)
         list(APPEND srcs ${display_srcs})
     endif()
 
-    set(driver_srcs ${srcs} PARENT_SCOPE)
-    set(driver_includes ${includes} PARENT_SCOPE)
-    set(driver_libs ${libs} PARENT_SCOPE)
-    set(driver_ulp_srcs ${cv_ulp_srcs} PARENT_SCOPE)
+    set(${var_name}
+        SRCS ${srcs}
+        ULP_SRCS "${ulp_srcs}"
+        INCLUDES ${includes}
+        LIBS ${libs}
+        PARENT_SCOPE
+    )
 endfunction()
 
-function(tbd_driver_sources var_name)
-    _tbd_get_driver_build_args(${ARGN})
-    set(${var_name} ${driver_srcs} PARENT_SCOPE)
+# drivers properties
+
+function(tbd_drivers_sources drivers)
+    tbd_drivers_attrs(${drivers})
+    tbd_log("DRIVERS ${drivers}")
+    tbd_log("SRCS ${arg_SRCS}")
+    tbd_store_or_return("${arg_SRCS}" ${ARGN})
 endfunction()
 
-function(tbd_driver_includes var_name)
-    _tbd_get_driver_build_args(${ARGN})
-    set(${var_name} ${driver_includes} PARENT_SCOPE)
+function(tbd_drivers_includes drivers)
+    tbd_drivers_attrs(${drivers})
+    tbd_store_or_return("${arg_INCLUDES}" ${ARGN})
 endfunction()
 
-function(tbd_driver_libs var_name)
-    _tbd_get_driver_build_args(${ARGN})
-    set(${var_name} ${driver_libs} PARENT_SCOPE)
+function(tbd_drivers_libs drivers)
+    tbd_drivers_attrs(${drivers})
+    tbd_store_or_return("${arg_LIBS}" ${ARGN})
 endfunction()
 
-function(tbd_driver_embed_ulp)
-    _tbd_get_driver_build_args(${ARGV})
-    if (driver_ulp_srcs)
+# drivers methods
+
+function(tbd_drivers_embed_ulp drivers)
+    tbd_drivers_attrs(${drivers})
+    if (${arg_ULP_SRCS})
         set(ulp_app_name ulp_${COMPONENT_NAME})
-        ulp_embed_binary(${ulp_app_name} ${driver_ulp_srcs})
+        ulp_embed_binary(${ulp_app_name} ${$arg_ULP_SRCS})
     endif()
 endfunction()
 
+function(tbd_drivers_print_info drivers)
+    tbd_drivers_attrs(${drivers})
+message("
+TBD drivers configuration
+-------------------------
+sources: ${arg_SRCS}
+ULP sources: ${arg_ULP_SRCS}
+include dirs: ${arg_INCLUDES}
+dependencies: ${arg_LIBS}
+-------------------------
+    ")
+endfunction()
 
 
-if (CONFIG_TBD_PLATFORM_V1)
-    set(DRIVER_PARAMS 
-        CV_INPUT adc 
-        AUDIO_OUTPUT wm8xxx 
-        FILE_SYSTEM 
-        DISPLAY 
-        INDICATOR plain 
-    )
+### setup drivers library ####
 
-elseif (CONFIG_TBD_PLATFORM_V2)
-    set(DRIVER_PARAMS 
-        CV_INPUT adc 
-        AUDIO_OUTPUT wm8xxx 
-        FILE_SYSTEM 
-        DISPLAY 
-        INDICATOR plain 
-    )
+tbd_drivers_activate("${TBD_PLATFORM_OBJ}")
 
-elseif (CONFIG_TBD_PLATFORM_STR)
-    set(DRIVER_PARAMS 
-        CV_INPUT mcp3208 
-        AUDIO_OUTPUT wm8xxx 
-        FILE_SYSTEM 
-        DISPLAY 
-        INDICATOR plain 
-    )
-
-elseif (CONFIG_TBD_PLATFORM_AEM)
-    set(DRIVER_PARAMS 
-        CV_INPUT adc 
-        AUDIO_OUTPUT wm8xxx 
-        FILE_SYSTEM 
-        DISPLAY 
-        INDICATOR plain 
-    )
-
-elseif (CONFIG_TBD_PLATFORM_MK2)
-    set(DRIVER_PARAMS 
-        CV_INPUT stm32 
-        AUDIO_OUTPUT wm8xxx 
-        FILE_SYSTEM 
-        DISPLAY 
-        INDICATOR plain 
-    )
-
-elseif (CONFIG_TBD_PLATFORM_BBA)
-    if (CONFIG_TBD_BBA_CODEC_ES8388)
-        set(audio_output es8388)
-    else()
-        set(audio_output aic3254)
-    endif()
-
-    set(DRIVER_PARAMS
-        CV_INPUT midi 
-        AUDIO_OUTPUT ${audio_output} 
-        FILE_SYSTEM 
-        DISPLAY 
-        INDICATOR neopixel
-    )
-
-else()
-    message("platform unknown or not suported by TBD esp32 port")
-endif()
-
-tbd_driver_sources(SRCS_FILES ${DRIVER_PARAMS})
-tbd_driver_includes(INCLUDE_DIRS ${DRIVER_PARAMS})
-tbd_driver_libs(LIBS ${DRIVER_PARAMS})
-
-message(")))))))))))))))))))))))) ${INCLUDE_DIRS}")
+tbd_log("${TBD_DRIVERS_OBJ}")
+tbd_drivers_sources("${TBD_DRIVERS_OBJ}" VAR SRCS_FILES)
+tbd_drivers_includes("${TBD_DRIVERS_OBJ}" VAR INCLUDE_DIRS)
+tbd_drivers_libs("${TBD_DRIVERS_OBJ}" VAR LIBS)
 
 idf_component_register(
     SRCS ${SRCS_FILES}
@@ -204,4 +195,4 @@ idf_component_register(
     REQUIRES ${LIBS}
 )
 
-tbd_driver_embed_ulp(${DRIVER_PARAMS})
+tbd_drivers_embed_ulp("${TBD_DRIVERS_OBJ}")

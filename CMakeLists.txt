@@ -2,21 +2,31 @@
 # in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.13)
 
-# import all TBD macros and functions
-include(${CMAKE_SOURCE_DIR}/tools/cmake/platforms.cmake)
 
-# determine build generator to use (IDF/cmake)
-tbd_activate_toolchain()
+# import all TBD macros and functions
+include(${CMAKE_SOURCE_DIR}/tools/cmake/toolchains.cmake)
+
+
+# make sure which platform and which toolchain we are using
+tbd_platform_setup()
+tbd_toolchain_setup(${TBD_PLATFORM})
+
+
+# enable platform and toolchain for the entire project
+tbd_platform_activate()
+tbd_toolchain_activate(${TBD_TOOLCHAIN})
+
 
 # general project configuration
 project(ctag-tbd)
+
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # determine which hardware is targeted and adapt build config
-tbd_configure_platform()
-tbd_add_compiler_options()
+tbd_toolchain_add_options()
+tbd_toolchain_add_defines()
 
 # make the TBD helper tool available to CMake
 if(NOT TBD_TOOL)
@@ -27,8 +37,6 @@ endif()
 add_subdirectory(vendor)
 add_subdirectory(tbd)
 
-# import port specific libraries
-tbd_add_port_lib()
 
 # Create a SPIFFS image from the contents of the 'spiffs_image' directory
 # that fits the partition named 'storage'. FLASH_IN_PROJECT indicates that

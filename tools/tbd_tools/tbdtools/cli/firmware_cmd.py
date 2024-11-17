@@ -44,7 +44,11 @@ def configure_cmd(_ctx: typer.Context):
     """ configure firmware """
     build_dir = get_build_dir(_ctx)
     platform = get_ctx(_ctx).platform.name
-    run(['cmake', '-B', build_dir(), '-G', 'Ninja', f'-DTBD_PLATFORM={platform}'], stdout=sys.stdout, stderr=sys.stderr)
+    run(['cmake', 
+         '-B', build_dir(), 
+         '-G', 'Ninja', 
+         f'-DTBD_PLATFORM={platform}'], 
+         stdout=sys.stdout, stderr=sys.stderr)
 
 
 @firmware_group.command('build')
@@ -60,7 +64,12 @@ def reconfigure_cmd(_ctx: typer.Context):
     """ reconfigure firmware """
     build_dir = get_build_dir(_ctx)
     platform = get_ctx(_ctx).platform.name
-    run(['idf.py', '-B', build_dir(), f'-DTBD_PLATFORM={platform}', 'reconfigure'], stdout=sys.stdout, stderr=sys.stderr)
+    run(['cmake', 
+         '-B', build_dir(), 
+         '-G', 'Ninja', 
+         f'-DTBD_PLATFORM={platform}',
+         '--fresh'
+         ], stdout=sys.stdout, stderr=sys.stderr)
 
 
 @firmware_group.command('clean')

@@ -59,7 +59,7 @@ def find_plugins_cmd(
 
     headers = dirs.src.sounds.headers().glob('*.hpp')
     headers, plugins = search_for_plugins(headers, strict)
-    out_file = dirs.src.sound_registry.headers() / 'ctagSoundProcessorFactory.hpp'
+    out_file = dirs.src.sound_registry.headers() / 'sound_processor_factory.hpp'
     print(out_file)
     write_plugin_factory_header(headers, plugins, out_file)
 

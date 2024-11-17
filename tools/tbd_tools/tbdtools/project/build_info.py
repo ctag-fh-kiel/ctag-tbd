@@ -71,8 +71,10 @@ def _get_device_inputs(platform: Platform) -> Dict:
         raise ValueError(f'aem platform not yet supported {platform.name}')
     elif platform == Platform.mk2:
         inputs_type = 'mk2'
-    elif platform == Platform.bba:
-        inputs_type = 'bba'
+    elif platform == Platform.bba1:
+        inputs_type = 'bba1'
+    elif platform == Platform.bba2:
+        inputs_type = 'bba2'
     elif platform == Platform.desktop:
         raise ValueError(f'desktop platform not yet supported {platform.name}')
     else:
