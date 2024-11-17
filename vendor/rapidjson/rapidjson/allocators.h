@@ -17,7 +17,7 @@
 
 #include "rapidjson.h"
 #include <iostream>
-#include "tbd/heaps.hpp"
+#include <tbd/heaps.hpp>
 
 
 RAPIDJSON_NAMESPACE_BEGIN
