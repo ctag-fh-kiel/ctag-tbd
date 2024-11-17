@@ -6,7 +6,7 @@ file(GLOB SRCS_FILES
 
 idf_component_register(
     SRCS ${SRCS_FILES}
-    REQUIRES tbd_system nvs_flash esp_netif esp_wifi mdns
+    REQUIRES nvs_flash esp_netif esp_wifi mdns
 )
 
-target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_storage)
+target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_system tbd_storage)
