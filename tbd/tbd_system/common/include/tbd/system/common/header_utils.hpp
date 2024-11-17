@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef __cplusplus
 #define TBD_IS_CPP 1
 #define TBD_C_BEGIN extern "C" {
