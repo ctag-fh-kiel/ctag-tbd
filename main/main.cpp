@@ -27,15 +27,21 @@ respective component folders / files if different from this license.
 #include "adc.hpp"
 #include "fs.hpp"
 #include "led_rgb.hpp"
-#include "gpio.hpp"
 
-#include "Calibration.hpp"
 #include "codec.hpp"
 #include <vector>
-#include "SPManager.hpp"
+#include <tbd/sound_manager.hpp>
 #include <tbd/sound_processor/allocator.hpp>
 
-#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
+#if TDB_ADC
+#include "gpio.hpp"
+#endif
+
+#if TBD_CALIBRATION
+#include "Calibration.hpp"
+#endif
+
+#if TBD_DISPLAY
     #include "Display.hpp"
 #endif
 
@@ -53,7 +59,7 @@ https://www.embedded.com/modern-c-in-embedded-systems-part-1-myth-and-reality/
 
 void app_main() {
     // reserve large block of memory before anything else happens
-    ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
+    SP::ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
 
     // wait until power is somewhat more settled
     vTaskDelay(2000 / portTICK_PERIOD_MS);

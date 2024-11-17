@@ -71,9 +71,48 @@ respective component folders / files if different from this license.
 
 namespace CTAG::SP {
 
+/** @brief input and output data for sound processing
+ * 
+ *  Processing is invoked for chunks of 32 samples. Each call gets passed the current
+ *  binary input values (triggers) and the analogue input values (CVs). 
+ * 
+ *  - triggers can be used by buttons and other on/off states
+ *  - CVs typically represent ranges of input intensities like dials or input values
+ *    that relate directly to tone height like analogue control voltages in eurorack 
+ *    setups or the complex set of values associated with a MIDI channel.
+ * 
+ *  @NOTE: Plugins can receive input values either from a dynamic input (trigger or CV)
+ *         or plugin properties (typically set manually by users). This mapping is outside
+ *         of the plugins control and is done via presets and the TBD UI.
+ */
 struct ProcessData {
+    /** @brief output data
+     * 
+     *  The buffer is expected to be populated with the next 32 output sound samples, 
+     *  in a 'normalized' [-1, 1] range.
+     * 
+     *  For mono plugins the output is has a simple time progressive linear layout:
+     *  
+     *    [t_0, t_1, ..., t_31]
+     * 
+     *  For stereo plugins the output values are interleaved 
+     * 
+     *     [l_0, r_0, l_1, r_1, ..., l_31, l_31]
+     */
     float *buf;
+
+    /** @brief analogue input values
+     *  
+     *   The CV inputs have no predetermined order. The plugin defines a set of analogue 
+     *   input properties and will receive an up to date mapping on each processing call.
+     * 
+     *   The order can therefore be arbitrary:
+     * 
+     *    [prop_312, prop_17, ..., prop_2]
+     */
     float *cv;
+
+
     uint8_t *trig;
 };
 
@@ -87,19 +126,24 @@ public:
 
     virtual ~ctagSoundProcessor() {};
 
+    // FIXME: use placement new pull this out of ctagSoundProcessor's responsibility
     void* operator new (std::size_t size) {
         return ctagSPAllocator::Allocate(size);
     }
 
+    // FIXME: see new operator
     void operator delete (void *ptr) noexcept {
         // arena allocator will just reset the arena
     }
+
+    // FIXME: since plugins are managed anyway is there really anything to be gained
+    //        from preventing their use outside a managed context?
     void* operator new[] (std::size_t size) = delete;
     void* operator new[] (std::size_t size, const std::nothrow_t& tag) = delete;
     void operator delete[] (void *ptr) noexcept = delete;
 
+    
     int GetAudioBufferSize() { return bufSz; }
-
     void SetProcessChannel(int ch) { processCh = ch; }
 
     const char *GetCStrJSONParamSpecs() const { return model->GetCStrJSONParams(); }
@@ -133,8 +177,12 @@ public:
 
 protected:
 
+    // FIXME: introspection can be injected non-intrusively
+    // FIXME: method name is slightly misleading since it's actual purpose is populating 
+    //        the reflection data
     virtual void knowYourself() = 0;
 
+    // FIXME: see 'knowYourself'
     virtual void setParamValueInternal(const std::string &id, const std::string &key, const int val) {
         //printf("%s, %s, %d\n", id.c_str(), key.c_str(), val);
         if (key.compare("current") == 0) {
@@ -164,6 +212,7 @@ protected:
         }
     };
 
+    // FIXME: presets should be managed externally and not be part of the plugin state
     virtual void loadPresetInternal() {
         // iterate all parameters, take names from parameter map (first element)
         for (const auto &kv: pMapPar) {
@@ -179,9 +228,15 @@ protected:
         }
     };
 
+    // make this const or template argument
     bool isStereo = false;
+
+    // is this dynamic?
     int const bufSz = 32;
+
+    // will there ever be more than two channels? make this an enum
     int processCh = 0;
+
     int instance {0};
     std::unique_ptr<ctagSPDataModel> model = nullptr;
     std::string id = "";

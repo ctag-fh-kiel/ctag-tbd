@@ -38,8 +38,11 @@ target_include_directories(tbd_sound_processor
 )
 target_link_libraries(tbd_sound_processor 
     PUBLIC rapidjson 
-    PRIVATE tbd_helpers mutable moog 
-        __idf_tbd_system __idf_espressif__esp-dsp 
+    PRIVATE 
+        tbd_helpers
+        mutable
+        tbd_system
+        __idf_espressif__esp-dsp 
 )
 target_compile_options(tbd_sound_processor PRIVATE
         -Wno-unused-local-typedefs

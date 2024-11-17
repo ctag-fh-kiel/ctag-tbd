@@ -20,24 +20,34 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "Control.hpp"
-#include "Calibration.hpp"
-#include "gpio.hpp"
+#include "input_manager.hpp"
 #include "adc.hpp"
 #include <tbd/logging.hpp>
 
-
-#if CONFIG_TBD_PLATFORM_MK2
-#include "mk2.hpp"
-#elif CONFIG_TBD_PLATFORM_BBA
-#include "Midi.hpp"
-#else
-    uint8_t CTAG::CTRL::Control::trig_data[N_TRIGS];
-    float CTAG::CTRL::Control::cv_data[N_CVS];
+#if TBD_CALIBRATION
+#include "Calibration.hpp"
 #endif
 
-IRAM_ATTR void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs) {
-#if defined(CONFIG_TBD_PLATFORM_MK2)
+#if TBD_ADC
+    #include "gpio.hpp"
+
+    uint8_t CTAG::AUDIO::InputManager::trig_data[N_TRIGS];
+    float CTAG::AUDIO::InputManager::cv_data[N_CVS];
+#elif TBD_STM32
+#include "mk2.hpp"
+#elif TBD_MIDI
+#include "Midi.hpp"
+#else
+    #error "no CV inputs configured"
+#endif
+
+namespace CTAG::AUDIO {
+
+IRAM_ATTR void InputManager::Update(uint8_t **trigs, float **cvs) {
+
+#if TBD_ACD
+    CTAG::DRIVERS::ADC::Update();
+#elif TBD_STM32
     uint8_t *data = (uint8_t *) DRIVERS::mk2::Update();
     *cvs = (float*) data;
     *trigs = &data[N_CVS*4];
@@ -55,13 +65,13 @@ IRAM_ATTR void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs) {
         printf("\n");
     }
      */
-#elif defined(CONFIG_TBD_PLATFORM_BBA)
-    uint8_t *data = Midi::Update();
+#elif TBD_MIDI
+    uint8_t *data = CTRL::Midi::Update();
     *cvs = (float *) data;
     *trigs = &data[N_CVS * 4];
-#else
-    // update CVs
-        CTAG::DRIVERS::ADC::Update();
+#endif
+
+#if TBD_CALIBRATION
         CTAG::CAL::Calibration::MapCVData(CTAG::DRIVERS::ADC::data, cv_data);
         *cvs = cv_data;
 
@@ -72,29 +82,38 @@ IRAM_ATTR void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs) {
 #endif
 }
 
-void CTAG::CTRL::Control::SetCVChannelBiPolar(const bool &v0, const bool &v1, const bool &v2, const bool &v3) {
+void InputManager::SetCVChannelBiPolar(const bool &v0, const bool &v1, const bool &v2, const bool &v3) {
+#if TBD_CALIBRATION
     // ifdefs to exclude this from BBA and MK2 are in Calibration.hpp
     CTAG::CAL::Calibration::ConfigCVChannels(v0 ? CTAG::CAL::CVConfig::CVBipolar : CTAG::CAL::CVConfig::CVUnipolar,
                                              v1 ? CTAG::CAL::CVConfig::CVBipolar : CTAG::CAL::CVConfig::CVUnipolar,
                                              v2 ? CTAG::CAL::CVConfig::CVBipolar : CTAG::CAL::CVConfig::CVUnipolar,
                                              v3 ? CTAG::CAL::CVConfig::CVBipolar : CTAG::CAL::CVConfig::CVUnipolar);
+#endif
 }
 
-void CTAG::CTRL::Control::Init() {
+void InputManager::Init() {
     TBD_LOGI("Control", "Initializing control!");
-#if CONFIG_TBD_PLATFORM_MK2
-    DRIVERS::mk2::Init();
-#elif CONFIG_TBD_PLATFORM_BBA
-    Midi::Init();
-#else
+
+#if TBD_ADC
     DRIVERS::ADC::InitADCSystem();
     DRIVERS::GPIO::InitGPIO();
+#elif TBD_STM32
+    DRIVERS::mk2::Init();
+#elif TBD_MIDI
+    CTRL::Midi::Init();
+#endif
+
+#if TDB_CALLIBRARION
     CAL::Calibration::Init();
+#endif
+
+}
+
+void InputManager::FlushBuffers() {
+#if TBD_MIDI
+    CTRL::Midi::Flush();
 #endif
 }
 
-void CTAG::CTRL::Control::FlushBuffers() {
-#ifdef CONFIG_TBD_PLATFORM_BBA
-    Midi::Flush();
-#endif
 }

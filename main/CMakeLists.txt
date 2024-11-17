@@ -10,8 +10,20 @@ endif()
 
 idf_component_register(SRCS ${SRC_FILES}
         INCLUDE_DIRS "."
-        REQUIRES tbd_drivers tbd_network_port esp_http_server esp_partition nvs_flash app_update json)
-target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_version tbd_sound_registry)
+        REQUIRES 
+                tbd_network_port 
+                esp_http_server 
+                esp_partition 
+                nvs_flash 
+                tbd_drivers_port
+                app_update 
+                json
+)
+target_link_libraries(${COMPONENT_LIB} PUBLIC 
+        tbd_version 
+        tbd_sound_manager
+        tbd_presets
+)
 target_compile_options(${COMPONENT_LIB} PRIVATE
         -Wno-unused-local-typedefs
 )

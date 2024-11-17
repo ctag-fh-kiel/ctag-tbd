@@ -5,12 +5,18 @@
 #include "rapidjson/writer.h"
 #include <atomic>
 #include <cstdint>
-#include "SPManager.hpp"
-#include "Favorites.hpp"
-#include "Calibration.hpp"
-#include "driver/gpio.h"
+#include <tbd/sound_manager.hpp>
+#include <tbd/favourites.hpp>
 #include "driver/uart.h"
 #include <tbd/version.hpp>
+
+#if TBD_CALIBRATION
+    #include "Calibration.hpp"
+#endif
+
+#if TDB_ADC
+    #include "driver/gpio.h"
+#endif
 
 using namespace rapidjson;
 
@@ -157,8 +163,10 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         return;
     }
     if(s.find("/api/v1/reboot") == 0){
+#if TBD_CALIBRATION
         int doCal = d["calibration"].GetInt();
         if (doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
+#endif
         sendString("{}");
         esp_restart();
         // no return
@@ -173,7 +181,9 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         return;
     }
     if(s.find("/api/v1/getCalibration") == 0){
+#if TBD_CALIBRATION
         sendString(CTAG::CAL::Calibration::GetCStrJSONCalibration());
+#endif
         return;
     }
     if(s.find("/api/v1/getIOCaps") == 0){
@@ -185,7 +195,9 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
         calibrationData.Accept(writer);
+#if TBD_CALIBRATION
         CTAG::CAL::Calibration::SetJSONCalibration(buffer.GetString());
+#endif
         sendString("{}");
         return;
     }

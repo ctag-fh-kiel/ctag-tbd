@@ -19,10 +19,14 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "Favorites.hpp"
-#include "SPManager.hpp"
-#include "driver/gpio.h"
-#include "Display.hpp"
+#include <tbd/favourites.hpp>
+#include <tbd/sound_manager.hpp>
+#include <tbd/display.hpp>
+
+
+#if TBD_ADC
+    #include "gpio.h"
+#endif
 
 #define UI_TASK_PERIOD_MS 50
 #define LONG_PRESS_PERIOD_MS 1000
@@ -33,7 +37,7 @@ respective component folders / files if different from this license.
     #define PIN_PUSH_BTN GPIO_NUM_2
 #elif CONFIG_TBD_PLATFORM_MK2
     #define PIN_PUSH_BTN GPIO_NUM_34
-#elif CONFIG_TBD_PLATFORM_BBA
+#elif TBD_MIDI
     #include "driver/touch_pad.h"
     #define TOUCH_PAD TOUCH_PAD_NUM6 // is GPIO_NUM_6
     static uint32_t noTouch {0}, previousProgramChangeValue {0xFF000000};

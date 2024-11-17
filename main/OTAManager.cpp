@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "OTAManager.hpp"
-#include "SPManager.hpp"
+#include <tbd/sound_manager.hpp>
 #include "esp_partition.h"
 #include "esp_heap_caps.h"
 #include "esp_ota_ops.h"

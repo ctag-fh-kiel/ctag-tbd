@@ -18,12 +18,14 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#include <tbd/favourites/model.hpp>
 
-
-#include "FavoritesModel.hpp"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+
+#include <tbd/sound_processor/resources.hpp>
+
 
 string CTAG::FAV::FavoritesModel::GetAllFavorites() {
     loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");

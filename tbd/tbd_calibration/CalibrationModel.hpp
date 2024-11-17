@@ -22,30 +22,49 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-
 #include <string>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
-#include <tbd/sound_processor/resources.hpp>
-#include "SPManagerDataModel.hpp"
+#include <tbd/sound_manager/data_model.hpp>
+#include <iostream>
+#include <memory>
+#include <vector>
 
 using namespace std;
 using namespace rapidjson;
 
 namespace CTAG {
-    namespace FAV {
-        class FavoritesModel final : public CTAG::SP::ctagDataModelBase {
+    namespace CAL {
+        class CalibrationModel final : public CTAG::SP::ctagDataModelBase {
         public:
-            string GetAllFavorites();
-            string GetFavorite(int const &i);
-            string GetFavoriteName(int const &i);
-            string GetFavoriteUString(int const &i);
-            string GetFavoritePluginID(int const &i, int const &channel);
-            int GetFavoritePreset(int const &i, int const &channel);
-            void SetFavorite(int const &id, const string &data);
+            CalibrationModel();
+
+            void CreateMatrix();
+
+            void PushRow(const vector<uint32_t> data);
+
+            void StoreMatrix(const string &id);
+
+            void StoreMatrix(const string &id, const vector<vector<float>> mat);
+
+            vector<vector<uint32_t >> GetMatrix(const string &id);
+
+            void PrintSelf();
+
+            void LoadMatrix(const string &id, float *data);
+
+            bool GetCalibrateOnReboot();
+
+            void SetCalibrateOnReboot(bool val);
+
+            const char *GetCStrJSONCalibration();
+
+            void SetJSONCalibration(const string &calData);
 
         private:
             Document m;
+            const string MODELJSONFN = "/spiffs/data/calibration.jsn";
+            Document matrix;
         };
     }
 }

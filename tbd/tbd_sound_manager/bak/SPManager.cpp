@@ -42,7 +42,7 @@ respective component folders / files if different from this license.
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
-#define BUF_SZ 32
+
 //#define NOISE_GATE_LEVEL_CLOSE 0.000065f
 #define NOISE_GATE_LEVEL_CLOSE 0.0001f
 #define NOISE_GATE_LEVEL_OPEN 0.0003f
@@ -93,7 +93,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
     while (runAudioTask) {
         // update data from ADCs and GPIOs for real-time control
-        CTAG::CTRL::Control::Update(&pd.trig, &pd.cv);
+        InputManager::Update(&pd.trig, &pd.cv);
 
         // get normalized raw data from CODEC
         DRIVERS::Codec::ReadBuffer(fbuf, BUF_SZ);

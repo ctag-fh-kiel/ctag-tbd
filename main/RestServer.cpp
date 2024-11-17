@@ -35,15 +35,18 @@ respective component folders / files if different from this license.
 #include "esp_heap_caps.h"
 #include "esp_vfs.h"
 #include "cJSON.h"
-#include "SPManager.hpp"
-#include "Favorites.hpp"
-#include "Calibration.hpp"
+#include <tbd/sound_manager.hpp>
+#include <tbd/favourites.hpp>
+
 #include "OTAManager.hpp"
 #include "sdkconfig.h"
 #include "esp_flash.h"
 #include <tbd/version.hpp>
 #include <tbd/logging.hpp>
 
+#if TBD_CALIBRATION
+    #include "Calibration.hpp"
+#endif
 
 using namespace CTAG;
 using namespace CTAG::REST;
@@ -615,12 +618,14 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
     char query[128];
-    char calibration[16];
     httpd_req_get_url_query_str(req, query, 128);
+#if TDB_CALIBRATION
+    char calibration[16];
     httpd_query_key_value(query, "calibration", calibration, 16);
     int doCal = atoi(calibration);
     TBD_LOGW(REST_TAG, "Reboot requested with calibration = %d", doCal);
     if (doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
+#endif
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, NULL, 0);
     esp_restart();
@@ -635,11 +640,11 @@ esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     httpd_resp_set_type(req, "application/json");
 
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
-    httpd_resp_sendstr(req, "{}");
-#else
+#if TDB_CALIBRATION
     const char* res = CTAG::CAL::Calibration::GetCStrJSONCalibration();
     if(nullptr != res) httpd_resp_sendstr(req, res);
+#else
+    httpd_resp_sendstr(req, "{}");
 #endif
     return ESP_OK;
 }
@@ -714,8 +719,7 @@ esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
         return ESP_FAIL;
     }
     content[req->content_len] = 0;
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
-#else
+#if TBD_CALIBRATION
     CTAG::CAL::Calibration::SetJSONCalibration(string(content));
 #endif
     free(content);

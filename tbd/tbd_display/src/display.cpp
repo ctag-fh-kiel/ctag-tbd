@@ -21,9 +21,12 @@ respective component folders / files if different from this license.
 
 #include <string>
 
-#include "Display.hpp"
+#include <tbd/display.hpp>
 #include <tbd/version.hpp>
 
+extern "C" {
+    #include "ssd1306.h"
+}
 
 #if CONFIG_TBD_PLATFORM_MK2
     #define SCL_GPIO 32
@@ -36,11 +39,20 @@ respective component folders / files if different from this license.
     #define SDA_GPIO 5
 #endif
 
-using namespace CTAG::DRIVERS;
 
-SSD1306_t Display::I2CDisplay;
-std::vector<std::string> Display::userString_v;
-int Display::currentUserStringRow {0};
+namespace tbd::display {
+
+namespace {
+    SSD1306_t I2CDisplay;
+    std::vector<std::string> userString_v;
+    int currentUserStringRow = 0;
+
+    // FIXME: unused?
+    // int I2CDisplayAddress;
+    // int I2CDisplayWidth;
+    // int I2CDisplayHeight;
+    // int I2CResetPin;
+}
 
 void Display::Init() {
     i2c_master_init(&I2CDisplay, SDA_GPIO, SCL_GPIO, -1);
@@ -74,14 +86,14 @@ void Display::ShowFWVersion() {
     std::string s {"TBD fw:"};
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length(), false);
-    s = std::string(hardware_type);
+    s = std::string(CTAG::hardware_type);
     if(s.length()>16)s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 1, s.c_str(), s.length(), false);
     s = std::string("TBD hw:");
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 2, s.c_str(), s.length(), false);
-    s = std::string(hardware_type);
+    s = std::string(CTAG::hardware_type);
     if(s.length()>16)s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
     ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
@@ -181,4 +193,6 @@ void Display::UpdateFavoriteUStringScroll() {
     if(currentUserStringRow >= userString_v.size()) currentUserStringRow = 0;
     ssd1306_scroll_text(&I2CDisplay, userString_v[currentUserStringRow].c_str(), 16, false);
     currentUserStringRow++;
+}
+
 }

@@ -21,9 +21,17 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "Midi.hpp"
-#include "Favorites.hpp"
+
+#include <cstring>
+#include <algorithm>
+
+// FIXME: MIDI needs to set program change value
+// #include "Favorites.hpp"
 
 using namespace CTAG::CTRL;
+
+using std::max;
+using std::min;
 
 // === Private Helper-Funtions ===
 // --- Map incoming CCs for Voices A-D to CVs according their representation as used with the TBD BBA, to be distributed according to names mapped via the UI ---
@@ -464,7 +472,8 @@ void Midi::programChange(uint8_t* msg)
     else    // MIDI-mapping via GUI not possible on global channels =>Check if we can change a Favourite or a Plugin and its preset!
     {
         allNotesOff();      // First of all switch off any playing notes, because we don't want them to stay active during and after a sound-switch.
-        FAV::Favorites::SetProgramChangeValue(glob_bank << 16 | glob_sub_bank << 8 | *(msg+1)); // Set new value for programchange, we use the upper 8 bits for the sub-bank, the middle 8 bits for the bank and the lower 8 bits for the preset
+        // FIXME: see header include for <tbd/favourites.hpp>
+        //CTAG::FAV::Favorites::SetProgramChangeValue(glob_bank << 16 | glob_sub_bank << 8 | *(msg+1)); // Set new value for programchange, we use the upper 8 bits for the sub-bank, the middle 8 bits for the bank and the lower 8 bits for the preset
         return;
     }
     // === Get type and ID for CV and Trigger with using the Channel, if any (we use different CCs on Master and Voice-channel!) ===

@@ -1,5 +1,5 @@
 set(HEADER_DIR ${COMPONENT_DIR}/include/tbd/sound_registry)
-set(REGISTRY_HEADER ${HEADER_DIR}/ctagSoundProcessorFactory.hpp)
+set(REGISTRY_HEADER ${HEADER_DIR}/sound_processor_factory.hpp)
 file(GLOB SOUND_PROCESSORS ${CMAKE_SOURCE_DIR}/components/tbd_sounds/src/ctagSoundProcessor*.cpp)
 
 set(SRCS_FILES

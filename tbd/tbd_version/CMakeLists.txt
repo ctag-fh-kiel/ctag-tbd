@@ -9,5 +9,5 @@ set(SRCS_FILES
     ${VERSION_SRC}
 )
 
-add_library(tbd_version STATIC ${SRCS_FILES})
-target_include_directories(tbd_version PUBLIC include)
+add_library(tbd_version INTERFACE ${SRCS_FILES})
+target_include_directories(tbd_version INTERFACE include)
