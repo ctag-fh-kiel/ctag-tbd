@@ -30,7 +30,8 @@ using namespace CTAG::SP::HELPERS;
 void ctagSoundProcessorWTOsc::Process(const ProcessData &data) {
     // wave select
     currentBank = wavebank;
-    MK_FLT_PAR_ABS(fWave, wave, 4095.f, 1.f)
+	if(cv_wave != -1) ONE_POLE(fWave, fabsf(data.cv[cv_wave]), 0.1f)
+	else fWave = wave / 4095.f;
 
 
     if(lastBank != currentBank){ // this is slow, hence not modulated by CV

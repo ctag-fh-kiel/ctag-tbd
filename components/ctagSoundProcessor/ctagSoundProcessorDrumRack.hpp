@@ -6,6 +6,8 @@
 #include "plaits/dsp/drums/synthetic_snare_drum.h"
 #include "plaits/dsp/drums/hi_hat.h"
 #include "synthesis/RomplerVoiceMinimal.hpp"
+#include "synthesis/Clap.hpp"
+#include "synthesis/Rimshot.hpp"
 #include "helpers/ctagSampleRom.hpp"
 #include "SimpleComp/SimpleComp.h"
 
@@ -35,18 +37,23 @@ namespace CTAG {
             plaits::HiHat<plaits::SquareNoise, plaits::SwingVCA, true, false> hh1;
             plaits::HiHat<plaits::RingModNoise, plaits::LinearVCA, false, true> hh2;
 
+        	// own drum models
+        	CTAG::SYNTHESIS::Clap cl;
+        	CTAG::SYNTHESIS::Rimshot rs;
+
             float abd_out[32];
             float asd_out[32];
             float dbd_out[32];
             float dsd_out[32];
             float hh1_out[32];
             float hh2_out[32];
+        	float rs_out[32];
+        	float cl_out[32];
             float temp1_[32];
             float temp2_[32];
             float s1_out[32];
             float s2_out[32];
-            float s3_out[32];
-            float s4_out[32];
+        	float s3_out[32];
 
             bool abd_trig_prev {false};
             bool asd_trig_prev {false};
@@ -54,9 +61,11 @@ namespace CTAG {
             bool dsd_trig_prev {false};
             bool hh1_trig_prev {false};
             bool hh2_trig_prev {false};
+        	bool rs_trig_prev {false};
+        	bool cl_trig_prev {false};
 
             // rompler
-            CTAG::SYNTHESIS::RomplerVoiceMinimal rompler[4];
+            CTAG::SYNTHESIS::RomplerVoiceMinimal rompler[3];
             CTAG::SP::HELPERS::ctagSampleRom sampleRom;
 
 
@@ -120,6 +129,24 @@ namespace CTAG {
 	atomic<int32_t> hh2_tone, cv_hh2_tone;
 	atomic<int32_t> hh2_decay, cv_hh2_decay;
 	atomic<int32_t> hh2_noise, cv_hh2_noise;
+	atomic<int32_t> rs_trigger, trig_rs_trigger;
+	atomic<int32_t> rs_mute, trig_rs_mute;
+	atomic<int32_t> rs_lev, cv_rs_lev;
+	atomic<int32_t> rs_pan, cv_rs_pan;
+	atomic<int32_t> rs_accent, cv_rs_accent;
+	atomic<int32_t> rs_f0, cv_rs_f0;
+	atomic<int32_t> rs_tone, cv_rs_tone;
+	atomic<int32_t> rs_decay, cv_rs_decay;
+	atomic<int32_t> rs_noise, cv_rs_noise;
+	atomic<int32_t> cl_trigger, trig_cl_trigger;
+	atomic<int32_t> cl_mute, trig_cl_mute;
+	atomic<int32_t> cl_lev, cv_cl_lev;
+	atomic<int32_t> cl_pan, cv_cl_pan;
+	atomic<int32_t> cl_f0, cv_cl_f0;
+	atomic<int32_t> cl_tone, cv_cl_tone;
+	atomic<int32_t> cl_decay, cv_cl_decay;
+	atomic<int32_t> cl_scale, cv_cl_scale;
+	atomic<int32_t> cl_transient, cv_cl_transient;
 	atomic<int32_t> s1_gate, trig_s1_gate;
 	atomic<int32_t> s1_mute, trig_s1_mute;
 	atomic<int32_t> s1_lev, cv_s1_lev;
@@ -145,7 +172,7 @@ namespace CTAG {
 	atomic<int32_t> s2_lev, cv_s2_lev;
 	atomic<int32_t> s2_pan, cv_s2_pan;
 	atomic<int32_t> s2_speed, cv_s2_speed;
-    atomic<int32_t> s2_pitch, cv_s2_pitch;
+	atomic<int32_t> s2_pitch, cv_s2_pitch;
 	atomic<int32_t> s2_bank, cv_s2_bank;
 	atomic<int32_t> s2_slice, cv_s2_slice;
 	atomic<int32_t> s2_start, cv_s2_start;
@@ -165,7 +192,7 @@ namespace CTAG {
 	atomic<int32_t> s3_lev, cv_s3_lev;
 	atomic<int32_t> s3_pan, cv_s3_pan;
 	atomic<int32_t> s3_speed, cv_s3_speed;
-    atomic<int32_t> s3_pitch, cv_s3_pitch;
+	atomic<int32_t> s3_pitch, cv_s3_pitch;
 	atomic<int32_t> s3_bank, cv_s3_bank;
 	atomic<int32_t> s3_slice, cv_s3_slice;
 	atomic<int32_t> s3_start, cv_s3_start;
@@ -180,26 +207,6 @@ namespace CTAG {
 	atomic<int32_t> s3_ft, cv_s3_ft;
 	atomic<int32_t> s3_fc, cv_s3_fc;
 	atomic<int32_t> s3_fq, cv_s3_fq;
-	atomic<int32_t> s4_gate, trig_s4_gate;
-	atomic<int32_t> s4_mute, trig_s4_mute;
-	atomic<int32_t> s4_lev, cv_s4_lev;
-	atomic<int32_t> s4_pan, cv_s4_pan;
-	atomic<int32_t> s4_speed, cv_s4_speed;
-    atomic<int32_t> s4_pitch, cv_s4_pitch;
-	atomic<int32_t> s4_bank, cv_s4_bank;
-	atomic<int32_t> s4_slice, cv_s4_slice;
-	atomic<int32_t> s4_start, cv_s4_start;
-	atomic<int32_t> s4_end, cv_s4_end;
-	atomic<int32_t> s4_lp, trig_s4_lp;
-	atomic<int32_t> s4_lp_pp, trig_s4_lp_pp;
-	atomic<int32_t> s4_lp_pos, cv_s4_lp_pos;
-	atomic<int32_t> s4_atk, cv_s4_atk;
-	atomic<int32_t> s4_dcy, cv_s4_dcy;
-	atomic<int32_t> s4_eg2fm, cv_s4_eg2fm;
-	atomic<int32_t> s4_brr, cv_s4_brr;
-	atomic<int32_t> s4_ft, cv_s4_ft;
-	atomic<int32_t> s4_fc, cv_s4_fc;
-	atomic<int32_t> s4_fq, cv_s4_fq;
 	atomic<int32_t> c_thres, cv_c_thres;
 	atomic<int32_t> c_ratio, cv_c_ratio;
 	atomic<int32_t> c_atk, cv_c_atk;
