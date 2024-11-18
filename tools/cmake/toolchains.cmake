@@ -114,11 +114,14 @@ function (tbd_toolchain_add_defines)
     tbd_platform_activated()
     tbd_platform_get_features("${TBD_PLATFORM_OBJ}")   
     set(defs ${_return})
-
     add_compile_definitions(${defs})
-    if ("${TBD_TOOLCHAIN}" STREQUAL "esp32")
-        idf_build_set_property(COMPILE_DEFINITIONS ${defs} APPEND)
-    endif()
+
+    # if ("${TBD_TOOLCHAIN}" STREQUAL "esp32")
+    #     idf_build_set_property(TBD_GLOBAL_FLAGS ${defs} APPEND)
+    #     idf_build_set_property(TBD_GLOBAL_FLAGS RAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 APPEND)
+    #     idf_build_set_property(TBD_GLOBAL_FLAGS -DRAPIDJSON_HAS_STDSTRING=1 APPEND)
+    # endif()
+    tbd_platform_print_features("${TBD_PLATFORM_OBJ}")
 endfunction()
 
 
@@ -191,10 +194,6 @@ macro(tbd_toolchain_add_options)
             -Wno-enum-conversion 
             -Wno-unused-local-typedefs
         )
-
-        # FIXME: verify and remove
-        idf_build_set_property(COMPILE_DEFINITIONS -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 APPEND)
-        idf_build_set_property(COMPILE_DEFINITIONS -DRAPIDJSON_HAS_STDSTRING=1 APPEND)
     elseif ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
         # nothing for now
     else()

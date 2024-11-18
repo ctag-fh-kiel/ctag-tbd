@@ -18,25 +18,29 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
-
 #pragma once
 
-#include <stdint.h>
+#include <cinttypes>
 
-namespace CTAG {
-    namespace DRIVERS {
-        class GPIO {
-        public:
-            static void InitGPIO();
 
-            static uint8_t GetTrig0();
+namespace tbd :: drivers {
 
-            static uint8_t GetTrig1();
+struct Codec {
+    Codec() = delete;
+    
+    static void InitCodec();
 
-        private:
-            static uint32_t t0delay;
-            static uint32_t t1delay;
-        };
-    }
+    static void HighPassEnable();
+
+    static void HighPassDisable();
+
+    static void RecalibDCOffset();
+
+    static void SetOutputLevels(const uint32_t left, const uint32_t right);
+
+    static void ReadBuffer(float *buf, uint32_t sz);
+
+    static void WriteBuffer(float *buf, uint32_t sz);
+};
+
 }

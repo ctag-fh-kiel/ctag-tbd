@@ -19,26 +19,23 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "codec_bba.hpp"
+#include <tbd/drivers/codec.hpp>
 
+#include "freertos/FreeRTOS.h"
 #include <driver/i2s_std.h>
 #include "esp_log.h"
 #include "esp_attr.h"
-#include "freertos/FreeRTOS.h"
+
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
 
-using namespace CTAG::DRIVERS;
+namespace tbd::drivers {
 
 static i2s_chan_handle_t tx_handle = NULL;
 static i2s_chan_handle_t rx_handle = NULL;
 
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-es8388 Codec::codec;
-#else
 aic3254 Codec::codec;
-#endif
 
 void Codec::InitCodec() {
     ESP_LOGI("BBA Codec", "Starting i2s setup...");
@@ -62,11 +59,7 @@ void Codec::InitCodec() {
                     //.ext_clk_freq_hz = 0,
                     .mclk_multiple = I2S_MCLK_MULTIPLE_256
             },
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-            .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
-#else
             .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_STEREO),
-#endif
             .gpio_cfg = {
                     .mclk = GPIO_NUM_39,
                     .bclk = GPIO_NUM_45,
@@ -80,12 +73,7 @@ void Codec::InitCodec() {
                     },
             },
     };
-
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-    std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_384;
-#else
     std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
-#endif
 
     /* Initialize the channels */
     ESP_ERROR_CHECK(i2s_channel_init_std_mode(tx_handle, &std_cfg));
@@ -116,19 +104,6 @@ void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
 }
 
 void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-    int16_t tmp[sz * 2];
-    int16_t *ptrTmp = tmp;
-    size_t nb;
-    const float div = 3.0518509476E-5f;
-    // 16 bit word config stereo
-    i2s_channel_read(rx_handle, tmp, sz*2*2, &nb, portMAX_DELAY);
-    while (sz > 0) {
-        *buf++ = div * (float) *ptrTmp++;
-        *buf++ = div * (float) *ptrTmp++;
-        sz--;
-    }
-#else
     int32_t tmp[sz * 2];
     int32_t *ptrTmp = tmp;
     size_t nb;
@@ -140,28 +115,9 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
         *buf++ = div * (float) *ptrTmp++;
         sz--;
     }
-#endif
 }
 
 void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-    int16_t tmp[sz * 2];
-    int16_t tmp2;
-    size_t nb;
-    const float mult = 32767.f;
-    // 16 bit word config
-    for (int i = 0; i < sz; i++) {
-        tmp2 = (int32_t) (mult * buf[i * 2]);
-        tmp2 = MAX(tmp2, -32767);
-        tmp2 = MIN(tmp2, 32767);
-        tmp[i * 2] = tmp2;
-        tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
-        tmp2 = MAX(tmp2, -32767);
-        tmp2 = MIN(tmp2, 32767);
-        tmp[i * 2 + 1] = tmp2;
-    }
-    i2s_channel_write(tx_handle, tmp, sz*2*2, &nb, portMAX_DELAY);
-#else
     int32_t tmp[sz * 2];
     int32_t tmp2;
     size_t nb;
@@ -178,5 +134,6 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp[i * 2 + 1] = tmp2;
     }
     i2s_channel_write(tx_handle, tmp, sz*2*4, &nb, portMAX_DELAY);
-#endif
+}
+
 }

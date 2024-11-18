@@ -18,15 +18,22 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
-
 #pragma once
 
-namespace CTAG {
-    namespace DRIVERS {
-        class FileSystem {
-        public:
-            static void InitFS();
-        };
-    }
+
+namespace tbd::drivers {
+
+class Indicator {
+public:
+    // rgb are each 8 bit valued PWM
+    static void Init();
+
+    static void GetLedRGB(int &r, int &g, int &b);
+    static void SetLedRGB(int r, int g, int b);
+
+    static void SetLedR(int r);
+    static void SetLedG(int g);
+    static void SetLedB(int b);
+};
+
 }

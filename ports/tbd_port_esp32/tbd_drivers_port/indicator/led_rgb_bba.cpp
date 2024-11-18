@@ -18,17 +18,17 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#include <tbd/drivers/indicator.hpp>
 
-#include "led_rgb_bba.hpp"
 #include "led_strip.h"
 #include "esp_log.h"
 
-using namespace CTAG::DRIVERS;
+namespace tbd::drivers {
 
 static led_strip_handle_t led_strip;
 static int _r, _g, _b;
 
-void LedRGB::InitLedRGB() {
+void Indicator::Init() {
     ESP_LOGI("RGBLed", "RGB LED strip initialization");
     /* LED strip initialization with the GPIO and pixels number*/
     led_strip_config_t strip_config = {
@@ -54,13 +54,13 @@ void LedRGB::InitLedRGB() {
     _r = _g = _b = 0;
 }
 
-void LedRGB::GetLedRGB(int &r, int &g, int &b) {
+void Indicator::GetLedRGB(int &r, int &g, int &b) {
     r = _r;
     g = _g;
     b = _b;
 }
 
-void LedRGB::SetLedRGB(int r, int g, int b) {
+void Indicator::SetLedRGB(int r, int g, int b) {
     r >>= 2;
     g >>= 3;
     b >>= 2;
@@ -71,14 +71,16 @@ void LedRGB::SetLedRGB(int r, int g, int b) {
     led_strip_refresh(led_strip);
 }
 
-void LedRGB::SetLedR(int r) {
-    SetLedRGB(_r, _g, _b);
+void Indicator::SetLedR(int r) {
+    SetLedRGB(r, _g, _b);
 }
 
-void LedRGB::SetLedG(int g) {
-    SetLedRGB(_r, _g, _b);
+void Indicator::SetLedG(int g) {
+    SetLedRGB(_r, g, _b);
 }
 
-void LedRGB::SetLedB(int b) {
-    SetLedRGB(_r, _g, _b);
+void Indicator::SetLedB(int b) {
+    SetLedRGB(_r, _g, b);
+}
+
 }

@@ -1,4 +1,4 @@
- /***************
+/***************
 CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 
 A project conceived within the Creative Technologies Arbeitsgruppe of
@@ -18,46 +18,29 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
-
 #pragma once
 
-#include <cstdint>
-#include "sdkconfig.h"
+#include <cinttypes>
 
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-#include "es8388.hpp"
-#else
-#include "aic3254.hpp"
-#endif
 
-namespace CTAG {
-    namespace DRIVERS {
+namespace tbd :: drivers {
 
-        class Codec {
-        public:
-            Codec() = delete;
-            static void InitCodec();
+struct Codec {
+    Codec() = delete;
+    
+    static void InitCodec();
 
-            static void HighPassEnable();
+    static void HighPassEnable();
 
-            static void HighPassDisable();
+    static void HighPassDisable();
 
-            static void RecalibDCOffset();
+    static void RecalibDCOffset();
 
-            static void SetOutputLevels(const uint32_t left, const uint32_t right);
+    static void SetOutputLevels(const uint32_t left, const uint32_t right);
 
-            static void ReadBuffer(float *buf, uint32_t sz);
+    static void ReadBuffer(float *buf, uint32_t sz);
 
-            static void WriteBuffer(float *buf, uint32_t sz);
+    static void WriteBuffer(float *buf, uint32_t sz);
+};
 
-        private:
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-            static es8388 codec;
-#else
-            static aic3254 codec;
-#endif
-
-        };
-    }
 }

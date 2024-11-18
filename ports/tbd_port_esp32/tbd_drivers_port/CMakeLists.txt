@@ -25,6 +25,7 @@ macro(tbd_drivers_attrs)
     set(file_lists
         SRCS
         ULP_SRCS
+        ULP_ASM
         INCLUDES
         LIBS
     )
@@ -47,12 +48,14 @@ function(tbd_drivers var_name platform)
         if (arg_CV_INPUT STREQUAL adc)
             set(cv_input_srcs adc.cpp)
             set(triggers_srcs gpio.cpp)
-            set(ulp_srcs ulp/adc.S adc.cpp)
+            set(ulp_srcs adc.cpp)
+            set(ulp_asm ulp/adc.S)
             list(APPEND includes triggers)
             list(APPEND libs ulp)
         elseif (arg_CV_INPUT STREQUAL mcp3208)
             set(cv_input_srcs adc.cpp)
-            set(ulp_srcs ulp/mcp3208.S adc.cpp)
+            set(ulp_srcs adc.cpp)
+            set(ulp_asm ulp/mcp3208.S)
             set(triggers_srcs gpio.cpp)
             list(APPEND includes triggers)
             list(APPEND libs ulp)
@@ -72,6 +75,7 @@ function(tbd_drivers var_name platform)
         list(APPEND includes cv_inputs)
         list(TRANSFORM cv_input_srcs PREPEND cv_inputs/)
         list(TRANSFORM ulp_srcs PREPEND cv_inputs/)
+        list(TRANSFORM ulp_asm PREPEND cv_inputs/)
         list(TRANSFORM triggers_srcs PREPEND triggers/)
         list(APPEND srcs ${cv_input_srcs} ${triggers_srcs})
     else ()
@@ -81,18 +85,20 @@ function(tbd_drivers var_name platform)
     # gather audio codec sources
 
     if (DEFINED arg_AUDIO_OUTPUT)
-        if (arg_AUDIO_OUTPUT STREQUAL wm8xxx)
-            set(codec_srcs codec.cpp)        
+        if (arg_AUDIO_OUTPUT GREATER wm8)
+            set(codec_includes codecs/wm8xxx)
+            file(GLOB codec_srcs codecs/wm8xxx/*.?pp)
         elseif(arg_AUDIO_OUTPUT STREQUAL aic3254)
-            set(codec_srcs codec_bba.cpp aic3254.cpp)
+            set(codec_includes codecs/aic3254)
+            file(GLOB codec_srcs codecs/aic3254/*.?pp)
         elseif(arg_AUDIO_OUTPUT STREQUAL es8388)
-            set(codec_srcs codec_bba.cpp es8388.cpp)
+            set(codec_includes codecs/es8388)
+            file(GLOB codec_srcs codecs/es8388/*.?pp)
         else()
             message("invalid sound codec ${arg_AUDIO_OUTPUT}")
         endif()           
 
-        list(APPEND includes codecs)
-        list(TRANSFORM codec_srcs PREPEND codecs/)
+        list(APPEND includes ${codec_includes})
         list(APPEND srcs ${codec_srcs})
     else()
         message("no sound codec specified")
@@ -100,7 +106,7 @@ function(tbd_drivers var_name platform)
 
     # gather indicator
 
-    if (DEFINED arg_INDICATOR)
+    if (DEFINED arg_INDICATOR AND NOT arg_INDICATOR STREQUAL no)
         if (arg_INDICATOR STREQUAL rgb)
             set(indicator_srcs led_rgb.cpp)   
         elseif(arg_INDICATOR STREQUAL neopixel)
@@ -116,7 +122,7 @@ function(tbd_drivers var_name platform)
 
     if (arg_FILE_SYSTEM)
         list(APPEND includes file_system)
-        set(file_system_srcs fs.hpp fs.cpp)
+        set(file_system_srcs fs.cpp)
         list(TRANSFORM file_system_srcs PREPEND file_system/)
         list(APPEND srcs ${file_system_srcs})
     endif()
@@ -130,7 +136,8 @@ function(tbd_drivers var_name platform)
 
     set(${var_name}
         SRCS ${srcs}
-        ULP_SRCS "${ulp_srcs}"
+        ULP_SRCS ${ulp_srcs}
+        ULP_ASM ${ulp_asm}
         INCLUDES ${includes}
         LIBS ${libs}
         PARENT_SCOPE
@@ -160,9 +167,10 @@ endfunction()
 
 function(tbd_drivers_embed_ulp drivers)
     tbd_drivers_attrs(${drivers})
-    if (${arg_ULP_SRCS})
+    if (NOT "${arg_ULP_SRCS}" STREQUAL "")
         set(ulp_app_name ulp_${COMPONENT_NAME})
-        ulp_embed_binary(${ulp_app_name} ${$arg_ULP_SRCS})
+        tbd_log(${arg_ULP_SRCS})
+        ulp_embed_binary(${ulp_app_name} "${arg_ULP_ASM}" "${$arg_ULP_SRCS}")
     endif()
 endfunction()
 
@@ -182,9 +190,9 @@ endfunction()
 
 ### setup drivers library ####
 
+
 tbd_drivers_activate("${TBD_PLATFORM_OBJ}")
 
-tbd_log("${TBD_DRIVERS_OBJ}")
 tbd_drivers_sources("${TBD_DRIVERS_OBJ}" VAR SRCS_FILES)
 tbd_drivers_includes("${TBD_DRIVERS_OBJ}" VAR INCLUDE_DIRS)
 tbd_drivers_libs("${TBD_DRIVERS_OBJ}" VAR LIBS)
@@ -194,5 +202,6 @@ idf_component_register(
     INCLUDE_DIRS ${INCLUDE_DIRS}
     REQUIRES ${LIBS}
 )
+target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_drivers_common)
 
 tbd_drivers_embed_ulp("${TBD_DRIVERS_OBJ}")

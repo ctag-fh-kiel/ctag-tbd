@@ -18,17 +18,16 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
+#include <tbd/drivers/file_system.hpp>
 
 #include <sys/unistd.h>
 #include <sys/stat.h>
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_littlefs.h"
-#include "fs.hpp"
 
-using namespace CTAG::DRIVERS;
 
+namespace tbd::drivers {
 
 void FileSystem::InitFS() {
     ESP_LOGI("fs", "Initializing LITTLEFS");
@@ -65,4 +64,6 @@ void FileSystem::InitFS() {
     } else {
         ESP_LOGI("fs", "Partition size: total: %d, used: %d", total, used);
     }
+}
+
 }

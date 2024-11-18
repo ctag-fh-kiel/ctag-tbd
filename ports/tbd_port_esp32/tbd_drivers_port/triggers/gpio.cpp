@@ -18,9 +18,8 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#include <tbd/drivers/gpio.hpp>
 
-
-#include "gpio.hpp"
 #include "driver/gpio.h"
 #include <string.h>
 #include <esp_attr.h>
@@ -29,7 +28,14 @@ respective component folders / files if different from this license.
 #define TRIG1_PIN 36
 #define GPIO_INPUT_PIN_SEL  ((1ULL<<TRIG0_PIN)| (1ULL<<TRIG1_PIN ))
 
-using namespace CTAG::DRIVERS;
+namespace tbd::drivers {
+
+namespace {
+    
+DRAM_ATTR uint32_t t0delay;
+DRAM_ATTR uint32_t t1delay;
+
+}
 
 void GPIO::InitGPIO() {
     gpio_config_t io_conf;
@@ -72,5 +78,4 @@ uint8_t IRAM_ATTR GPIO::GetTrig1() {
 #endif
 }
 
-DRAM_ATTR uint32_t CTAG::DRIVERS::GPIO::t0delay;
-DRAM_ATTR uint32_t CTAG::DRIVERS::GPIO::t1delay;
+}

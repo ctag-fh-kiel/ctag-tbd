@@ -2,8 +2,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
 
 set(TBD_PLATFORM_SYSTEMS esp32 desktop)
 set(TBD_PLATFORM_CV_CHIPS adc mcp3208 stm32 midi)
-set(TBD_PLATFORM_AUDIO_CHIPS wm8xxx aic3254 es8388)
-set(TBD_PLATFORM_INDICATORS rgb neopixel)
+set(TBD_PLATFORM_AUDIO_CHIPS wm8731 wm8978 wm8974 aic3254 es8388)
+set(TBD_PLATFORM_INDICATORS no rgb neopixel)
 
 
 #### platform setup ####
@@ -92,7 +92,8 @@ endmacro()
 #
 #
 macro(tbd_platform_attrs)
-    set(bools 
+    set(bools
+        VOLUME_CONTROL 
         FILE_SYSTEM 
         DISPLAY
     )
@@ -111,8 +112,18 @@ macro(tbd_platform_attrs)
     endif()
 endmacro()
 
+# @brief constructor for platform description
 #
-#  constructor for platform description
+# @arg NAME [str]   name of the device
+# @arg SYSTEM [enum]   platform/toolchain (desktop/esp32)
+# @arg NAME [enum]   CV input type (adc/mcp3208/stm32/midi)
+# @arg NAME [int]   number if triggers
+# @arg NAME [int]   number of CV input channels
+# @arg AUDIO_OUTPUT [enum]   audio chip name (wm8731/wm8978/wm8974/aic3254/es8388)
+# @arg INDICATOR [enum]   indicator light type (no/rgb/neopixel)
+# @arg VOLUME_CONTROL [flag]   do not release the SPI connection to the audio chip
+# @arg FILE_SYSTEM [flag]   link file system driver
+# @arg DISPLAY [flag]   link display driver
 #
 function (tbd_platform var_name)
     tbd_platform_attrs(${ARGN})
@@ -158,6 +169,11 @@ function(tbd_platform_cv_input platform)
     tbd_store_or_return("${arg_CV_INPUT}" ${ARGN})
 endfunction()
 
+function(tbd_platform_volume_control platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_CV_INPUT}" ${ARGN})
+endfunction()
+
 function(tbd_platform_n_cvs platform)
     tbd_platform_attrs(${platform})
     tbd_store_or_return("${arg_N_CVS}" ${ARGN})
@@ -190,25 +206,63 @@ endfunction()
 
 #### platform methods ####
 
+# linearized summary of active features
+#
+# Creates a list of all active features 
+#
+#   [feature1=0, feature2=1 feature3=1, feature4=0, ...]
+#
+# to generate compiler defines etc.
+#
 function(tbd_platform_get_features platform)
     tbd_platform_attrs(${platform})
     if ("${arg_CV_INPUT}" STREQUAL "adc" OR "${arg_CV_INPUT}" STREQUAL "mcp3208")
         set(callibration TBD_CALIBRATION=1)
-        set(adc TBD_ADC=1)
-        set(stm32 TBD_STM32=0)
-        set(midi TBD_MIDI=0)
+        set(adc TBD_CV_ADC=1)
+        set(stm32 TBD_CV_STM32=0)
+        set(midi TBD_CV_MIDI=0)
     elseif ("${arg_CV_INPUT}" STREQUAL "stm32")
         set(callibration TBD_CALIBRATION=0)
-        set(adc TBD_ADC=0)
-        set(stm32 TBD_STM32=1)
-        set(midi TBD_MIDI=0)
+        set(adc TBD_CV_ADC=0)
+        set(stm32 TBD_CV_STM32=1)
+        set(midi TBD_CV_MIDI=0)
     elseif ("${arg_CV_INPUT}" STREQUAL "midi")
         set(callibration TBD_CALIBRATION=0)
-        set(adc TBD_ADC=0)
-        set(stm32 TBD_STM32=0)
-        set(midi TBD_MIDI=1)
+        set(adc TBD_CV_ADC=0)
+        set(stm32 TBD_CV_STM32=0)
+        set(midi TBD_CV_MIDI=1)
     else()
         tbd_loge("failed to determine CV input, unknwon input chip ${arg_CV_INPUT}")
+    endif()
+
+    foreach (audio_chip IN LISTS TBD_PLATFORM_AUDIO_CHIPS)
+        string(TOUPPER "${audio_chip}" audio_chip_upper)
+        if ("${audio_chip}" STREQUAL "${arg_AUDIO_OUTPUT}")
+            list(APPEND audio_chips "TBD_AUDIO_${audio_chip_upper}=1")
+        else()
+            list(APPEND audio_chips "TBD_AUDIO_${audio_chip_upper}=0")
+        endif()
+    endforeach()
+
+    foreach (indicator IN LISTS TBD_PLATFORM_INDICATORS)
+        string(TOUPPER "${indicator}" indicator_upper)
+        if ("${indicator}" STREQUAL "${arg_INDICATOR}" AND NOT "${indicator}" STREQUAL "no")
+            list(APPEND indicators "TBD_INDICATOR_${indicator_upper}=1")
+        else()
+            list(APPEND indicators "TBD_INDICATOR_${indicator_upper}=0")
+        endif()
+    endforeach()
+
+    if (arg_VOLUME_CONTROL)
+        set(volume_control TBD_VOLUME_CONTROL=1)
+    else()
+        set(volume_control TBD_VOLUME_CONTROL=0)
+    endif()
+
+    if (arg_FILE_SYSTEM)
+        set(file_system TBD_FILE_SYSTEM=1)
+    else()
+        set(file_system TBD_FILE_SYSTEM=0)
     endif()
 
     if (arg_DISPLAY)
@@ -225,8 +279,23 @@ function(tbd_platform_get_features platform)
         ${stm32}
         ${midi}
         ${display}
+        ${audio_chips}
+        ${volume_control}
+        ${indicators}
+        ${file_system}
     )
     tbd_store_or_return("${features}" ${ARGN})
+endfunction()
+
+function (tbd_platform_print_features platform)
+    tbd_log("${platform}")
+    tbd_platform_get_features("${platform}")
+    message("global feature flags")
+    message("--------------------")
+    foreach (feature IN LISTS _return)
+        message("${feature}")
+    endforeach()
+    message("--------------------")
 endfunction()
 
 function(tbd_platform_print_info platform)
@@ -255,12 +324,14 @@ function (tbd_platform_from_preset platform_name)
             NAME "v1"
             SYSTEM esp32
             CV_INPUT adc 
+            VOLUME_CONTROL
             N_CVS 4
             N_TRIGGERS 2
-            AUDIO_OUTPUT wm8xxx 
+            AUDIO_OUTPUT wm8731
             FILE_SYSTEM 
             DISPLAY 
             INDICATOR rgb 
+            VOLUME_CONTROL yes
         )
 
     elseif (${platform_name} STREQUAL "v2")
@@ -268,12 +339,14 @@ function (tbd_platform_from_preset platform_name)
             NAME "v2"
             SYSTEM esp32
             CV_INPUT adc 
+            VOLUME_CONTROL
             N_CVS 4
             N_TRIGGERS 2
-            AUDIO_OUTPUT wm8xxx 
+            AUDIO_OUTPUT wm8978
             FILE_SYSTEM 
             DISPLAY 
             INDICATOR rgb 
+
         )
 
     elseif (${platform_name} STREQUAL "str")
@@ -283,7 +356,7 @@ function (tbd_platform_from_preset platform_name)
             CV_INPUT mcp3208 
             N_CVS 8
             N_TRIGGERS 2
-            AUDIO_OUTPUT wm8xxx 
+            AUDIO_OUTPUT wm8731
             FILE_SYSTEM 
             DISPLAY 
             INDICATOR rgb 
@@ -293,23 +366,26 @@ function (tbd_platform_from_preset platform_name)
         tbd_platform(new_platform 
             NAME "aem"
             SYSTEM esp32
-            CV_INPUT adc 
+            CV_INPUT adc
+            VOLUME_CONTROL 
             N_CVS 4
             N_TRIGGERS 2
-            AUDIO_OUTPUT wm8xxx 
+            AUDIO_OUTPUT wm8974
             FILE_SYSTEM 
             DISPLAY 
             INDICATOR rgb 
+            VOLUME_CONTROL yes
         )
 
     elseif (${platform_name} STREQUAL "mk2")
         tbd_platform(new_platform 
             NAME "mk2"
             SYSTEM esp32
-            CV_INPUT stm32 
+            CV_INPUT stm32
+            VOLUME_CONTROL 
             N_CVS 22
             N_TRIGGERS 12
-            AUDIO_OUTPUT wm8xxx 
+            AUDIO_OUTPUT wm8978
             FILE_SYSTEM 
             DISPLAY 
             INDICATOR rgb 
@@ -320,6 +396,7 @@ function (tbd_platform_from_preset platform_name)
             NAME "bba1"
             SYSTEM esp32
             CV_INPUT midi 
+            VOLUME_CONTROL
             N_CVS 90
             N_TRIGGERS 40
             AUDIO_OUTPUT es8388
@@ -333,6 +410,7 @@ function (tbd_platform_from_preset platform_name)
             NAME "bba2" 
             SYSTEM esp32 
             CV_INPUT midi 
+            VOLUME_CONTROL
             N_CVS 90 
             N_TRIGGERS 40 
             AUDIO_OUTPUT es8388

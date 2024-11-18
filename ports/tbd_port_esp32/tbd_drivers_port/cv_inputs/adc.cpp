@@ -18,32 +18,32 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
-
 #include "adc.hpp"
-#include <string.h>
+
+#include "freertos/FreeRTOS.h"
 
 // otherwise linker error
 extern "C" {
-#include "soc/rtc_cntl_reg.h"
-#include "soc/rtc_io_reg.h"
-#include "soc/rtc.h"
-#include "driver/rtc_io.h"
-#include "driver/rtc_cntl.h"
-#include "driver/adc.h"
-//#include "driver/dac.h"
+
+// #include "soc/rtc_cntl_reg.h"
+// #include "soc/rtc_io_reg.h"
+// #include "soc/rtc.h"
+// #include "driver/rtc_io.h"
+// #include "driver/rtc_cntl.h"
+// #include "driver/adc.h"
 #include "driver/dac_oneshot.h"
-#include "soc/soc.h"
-#include "soc/rtc.h"
-#include "soc/rtc_cntl_reg.h"
-#include "soc/sens_reg.h"
-#include "esp32/ulp.h"
-#include "ulp_drivers.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/portmacro.h"
-#include "freertos/queue.h"
+// #include "soc/soc.h"
+// #include "soc/rtc.h"
+// #include "soc/rtc_cntl_reg.h"
+// #include "soc/sens_reg.h"
+// #include "esp32/ulp.h"
+// #include "ulp_drivers.h"
+// #include "freertos/FreeRTOS.h"
+// #include "freertos/task.h"
+// #include "freertos/portmacro.h"
+// #include "freertos/queue.h"
 #include "esp_log.h"
+
 }
 
 

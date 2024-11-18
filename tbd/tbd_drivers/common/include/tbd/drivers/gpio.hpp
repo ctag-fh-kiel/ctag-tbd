@@ -22,28 +22,16 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-#include "driver/ledc.h"
+#include <cstdint>
 
-namespace CTAG {
-    namespace DRIVERS {
-        class LedRGB {
-        public:
-            // rgb are each 8 bit valued PWM
-            static void InitLedRGB();
+namespace tbd::drivers {
 
-            static void GetLedRGB(int &r, int &g, int &b);
+class GPIO {
+public:
+    static void InitGPIO();
 
-            static void SetLedRGB(int r, int g, int b);
+    static uint8_t GetTrig0();
+    static uint8_t GetTrig1();
+};
 
-            static void SetLedR(int r);
-
-            static void SetLedG(int g);
-
-            static void SetLedB(int b);
-
-        private:
-            static ledc_channel_config_t ledc_channel[3];
-        };
-    }
 }
-
