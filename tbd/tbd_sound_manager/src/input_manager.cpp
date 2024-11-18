@@ -28,14 +28,14 @@ respective component folders / files if different from this license.
 #include "Calibration.hpp"
 #endif
 
-#if TBD_ADC
+#if TBD_CV_ADC
     #include "gpio.hpp"
 
     uint8_t CTAG::AUDIO::InputManager::trig_data[N_TRIGS];
     float CTAG::AUDIO::InputManager::cv_data[N_CVS];
-#elif TBD_STM32
+#elif TBD_CV_STM32
 #include "mk2.hpp"
-#elif TBD_MIDI
+#elif TBD_CV_MIDI
 #include "Midi.hpp"
 #else
     #error "no CV inputs configured"
@@ -47,7 +47,7 @@ IRAM_ATTR void InputManager::Update(uint8_t **trigs, float **cvs) {
 
 #if TBD_ACD
     CTAG::DRIVERS::ADC::Update();
-#elif TBD_STM32
+#elif TBD_CV_STM32
     uint8_t *data = (uint8_t *) DRIVERS::mk2::Update();
     *cvs = (float*) data;
     *trigs = &data[N_CVS*4];
@@ -65,7 +65,7 @@ IRAM_ATTR void InputManager::Update(uint8_t **trigs, float **cvs) {
         printf("\n");
     }
      */
-#elif TBD_MIDI
+#elif TBD_CV_MIDI
     uint8_t *data = CTAG::CTRL::Midi::Update();
     *cvs = (float *) data;
     *trigs = &data[N_CVS * 4];
@@ -95,12 +95,12 @@ void InputManager::SetCVChannelBiPolar(const bool &v0, const bool &v1, const boo
 void InputManager::Init() {
     TBD_LOGI("Control", "Initializing control!");
 
-#if TBD_ADC
+#if TBD_CV_ADC
     DRIVERS::ADC::InitADCSystem();
     DRIVERS::GPIO::InitGPIO();
-#elif TBD_STM32
+#elif TBD_CV_STM32
     DRIVERS::mk2::Init();
-#elif TBD_MIDI
+#elif TBD_CV_MIDI
     CTAG::CTRL::Midi::Init();
 #endif
 
@@ -111,7 +111,7 @@ void InputManager::Init() {
 }
 
 void InputManager::FlushBuffers() {
-#if TBD_MIDI
+#if TBD_CV_MIDI
     CTAG::CTRL::Midi::Flush();
 #endif
 }

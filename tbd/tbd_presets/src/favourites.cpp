@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 #include <tbd/display.hpp>
 
 
-#if TBD_ADC
+#if TBD_CV_ADC
     #include "gpio.h"
 #endif
 
@@ -37,7 +37,7 @@ respective component folders / files if different from this license.
     #define PIN_PUSH_BTN GPIO_NUM_2
 #elif CONFIG_TBD_PLATFORM_MK2
     #define PIN_PUSH_BTN GPIO_NUM_34
-#elif TBD_MIDI
+#elif TBD_CV_MIDI
     #include "driver/touch_pad.h"
     #define TOUCH_PAD TOUCH_PAD_NUM6 // is GPIO_NUM_6
     static uint32_t noTouch {0}, previousProgramChangeValue {0xFF000000};

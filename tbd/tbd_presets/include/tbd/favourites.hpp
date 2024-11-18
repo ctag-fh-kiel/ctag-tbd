@@ -39,7 +39,7 @@ public:
     static void EnableFavoritesUI();
     static void StartUI();
 
-#if TBD_MIDI
+#if TBD_CV_MIDI
     static void SetProgramChangeValue(uint32_t const &v);
 #endif
 
@@ -55,7 +55,7 @@ private:
     static TaskHandle_t uiTaskHandle;
 #endif
 
-#if TBD_MIDI
+#if TBD_CV_MIDI
     static std::atomic<uint32_t> programChangeValue;
 #endif
 
