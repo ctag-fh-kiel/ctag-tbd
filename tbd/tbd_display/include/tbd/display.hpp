@@ -21,14 +21,16 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-
+#if !TBD_DISPLAY
+    #error "display is not available"
+#endif
 
 #include <string>
 #include <vector>
 
-namespace tbd::display {
+namespace tbd {
 
-class Display {
+struct Display {
     Display() = delete;
     static void Init();
     static void Clear();

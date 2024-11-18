@@ -13,7 +13,7 @@ target_link_libraries(tbd_display
     PUBLIC
     PRIVATE 
         tbd_version
-        __idf_tbd_drivers_port
+        tbd_drivers
 )
 
 target_compile_options(tbd_display PRIVATE

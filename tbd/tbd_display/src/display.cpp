@@ -40,7 +40,7 @@ extern "C" {
 #endif
 
 
-namespace tbd::display {
+namespace tbd {
 
 namespace {
     SSD1306_t I2CDisplay;
