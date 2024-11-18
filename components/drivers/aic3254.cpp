@@ -105,7 +105,7 @@ aic3254::aic3254() : _pinsda{GPIO_NUM_41}, _pinscl{GPIO_NUM_40}, _pinreset{GPIO_
     };
 
     err |= i2c_param_config(i2c_port_t(I2C_PORT_NUM), &conf);
-    err |= i2c_driver_install(i2c_port_t(I2C_PORT_NUM), conf.mode, 0, 0, 0);
+    err |= i2c_driver_install(i2c_port_t(I2C_PORT_NUM), conf.mode, 0, 0, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED);
 
     /* implemented in hardware with RC circuit
     gpio_reset_pin(_pinreset);
