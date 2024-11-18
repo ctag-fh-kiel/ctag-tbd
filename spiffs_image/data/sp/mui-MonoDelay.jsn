@@ -35,10 +35,17 @@
       "max": 4095
     },
     {
-      "id": "tone",
-      "name": "Tone",
+      "id": "base",
+      "name": "Base",
       "type": "int",
-      "min": -4095,
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "width",
+      "name": "Width",
+      "type": "int",
+      "min": 0,
       "max": 4095
     },
     {
