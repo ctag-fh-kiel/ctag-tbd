@@ -1,0 +1,59 @@
+{
+  "id": "MonoDelay",
+  "isStereo": false,
+  "name": "MonoDelay",
+  "hint": "Simple Mono Delay",
+  "params": [
+    {
+      "id": "time_ms",
+      "name": "Delay/ms",
+      "type": "int",
+      "min": 1,
+      "max": 2000,
+      "step": 1
+    },
+    {
+      "id": "sync",
+      "name": "Sync",
+      "type": "bool"
+    },
+    {
+      "id": "freeze",
+      "name": "Freeze",
+      "type": "bool"
+    },
+    {
+      "id": "tape_digital",
+      "name": "Tape/Digital",
+      "type": "bool"
+    },
+    {
+      "id": "feedback",
+      "name": "Feedback",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "base",
+      "name": "Base",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "width",
+      "name": "Width",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "mix",
+      "name": "Mix",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    }
+  ]
+}

@@ -106,6 +106,9 @@ Midi::CV_id_glob Midi::ccToCVid_glob(uint8_t* msg)
             return g_softp_67;
         case 69:
             return g_holdp_69;
+        case 111:           // Not mappable, we use this as an external Control to switch "ignore channels 6-9" on/off!
+            ignore_channels_6to9 = (*(msg+2)) > 63;     // Turn bool flag on/off via CC 111 (on if >= 64)
+            return glob_cc_invalid;   // Unexpected value, so we know the incoming CC can't be mapped to values known for the globals
         case 120:           // All sounds off, not mappable, but used to directly reset current triggers to prevent hanging notes...
             allNotesOff();  // We listen to MIDI all notes off event on all channels! (Here channel 2-5 or indirectly 6-14)
             return glob_cc_invalid;   // Unexpected value, so we know the incoming CC can't be mapped to values known for the globals
@@ -216,16 +219,17 @@ void Midi::allNotesOff()                // Typically to be triggered by all note
     }
 }
 
-
 // --- Handle Noteoffs via MIDI (Either by noteoff-event or noteon-event with velocity 0), set Triggers accordinly and reset playing note ---
 void Midi::handleNoteOff(uint8_t*  msg)
 {
     // === Retrieve MIDI-channel (internally 0-15) by masking the MIDI status-byte, We cast the enum retrieved in order to use it as a regular array-index ===
     channel = msg[0]&0x0F;   // Please note: channel 0 is global, 2-5 are voices, 6-16 are mapped to 2-5, (16 may be global for MPE or unused, so that we don't get any data here anyhow)
+    if(IGNORE_CHAN_6_TO_9(channel))     // Check if processing of channels 6-9 is turned off, to give room for processing via MIDI Thru
+        return;
 
     // === Get type and ID for CV and/or Trigger with given CC and Channel, if any (we use different CCs on Master and Voice-channel) ===
     // --- Note off for percussion-voice? ---
-    if( IS_PERCUSSION(channel) )
+    if( IS_PERCUSSION(channel) )                         // ### MB20240911: Now MIDI-channels 10-13 are available for per-note triggers / typically percussions   
     {
         uint8_t drum_trigger = msg[1];                   // Remember current note-value
         if( (drum_trigger >= PERCUSSION_NOTE_LOW) && (drum_trigger <= PERCUSSION_NOTE_HIGH) )   // Check if we have percussion-notes within range on our drum-channel
@@ -364,6 +368,9 @@ void Midi::controlChange(uint8_t* msg)
     channel = msg[0]&0x0F;   // Please note: channel 0 is global, 2-5 are voices, 6-16 are mapped to 2-5, (16 may be global for MPE or unused, so that we don't get any data here anyhow)
     cc_num = msg[1];        // Continuous Controller Number is at second byte of the MIDI-message
 
+    if(IGNORE_CHAN_6_TO_9(channel))     // Check if processing of channels 6-9 is turned off, to give room for processing via MIDI Thru
+        return;
+
     // === Get type and ID for CV and/or Trigger with given CC and Channel, if any (we use different CCs on Master and Voice-channel) ===
     if( IS_UPPER_GLOBAL(channel) ) // Map additional global channels
         channel = MIDI_GLOBAL_CHANNEL;      // All CCs on MIDI Channels 15 or 16 work as global controllers, Channel 15 and 16 only use different voice-modes (Duophonic or 4-Voice Polyphonc)
@@ -420,6 +427,9 @@ void Midi::channelPressure(uint8_t* msg)
     // === Retrieve MIDI-channel (internally 0-15) by masking the MIDI status-byte, We cast the enum retrieved in order to use it as a regular array-index ===
     channel = msg[0]&0x0F;   // Please note: channel 0 is global, 2-5 are voices, 6-16 are mapped to 2-5, (16 may be global for MPE or unused, so that we don't get any data here anyhow)
 
+    if(IGNORE_CHAN_6_TO_9(channel))     // Check if processing of channels 6-9 is turned off, to give room for processing via MIDI Thru
+        return;
+
     // === Get type and ID for CV and/or Trigger with given CC and Channel, if any ===
     if( IS_UPPER_GLOBAL(channel) ) // Map additional global channels
         channel = MIDI_GLOBAL_CHANNEL;      // Aftertouch on MIDI Channels 15 or 16 work as global controllers, Channel 15 and 16 only use different voice-modes (Duophonic or 4-Voice Polyphonc)
@@ -445,6 +455,9 @@ void Midi::programChange(uint8_t* msg)
 {
     // === Retrieve MIDI-channel (internally 0-15) by masking the MIDI status-byte, We cast the enum retrieved in order to use it as a regular array-index ===
     channel = msg[0]&0x0F;   // Please note: channel 0 is global, 2-5 are voices, 6-16 are mapped to 2-5, (16 may be global for MPE or unused, so that we don't get any data here anyhow)
+
+    if(IGNORE_CHAN_6_TO_9(channel))     // Check if processing of channels 6-9 is turned off, to give room for processing via MIDI Thru
+        return;
 
     // === Get type and ID for CV and/or Trigger with given CC and Channel, if any ===
     if( channel != MIDI_GLOBAL_CHANNEL && !IS_UPPER_GLOBAL(channel) )    // Voices A-D (channel > 0 && channel < 14)
@@ -472,6 +485,9 @@ void Midi::pitchBend(uint8_t* msg)
     // === Retrieve MIDI-channel (internally 0-15) by masking the MIDI status-byte, We cast the enum retrieved in order to use it as a regular array-index ===
     channel = msg[0]&0x0F;   // Please note: channel 0 is global, 2-5 are voices, 6-16 are mapped to 2-5, (16 may be global for MPE or unused, so that we don't get any data here anyhow)
     pitchBend_val_raw = ((int16_t)msg[2]<<7 | (int16_t)msg[1]);    // Convert MSB and LSB to signed 14bit and adjust zero-position
+
+    if(IGNORE_CHAN_6_TO_9(channel))     // Check if processing of channels 6-9 is turned off, to give room for processing via MIDI Thru
+        return;
 
     // === Get type and ID for CV using the Channel, if any ===
     if( IS_UPPER_GLOBAL(channel) ) // Map additional global channels
@@ -510,8 +526,11 @@ void Midi::noteOn(uint8_t* msg)
     // --- Retrieve MIDI-channel (internally 0-15) by masking the MIDI status-byte, We cast the enum retrieved in order to use it as a regular array-index ---
     channel = msg[0]&0x0F;   // Please note: channel 0 is global, 2-5 are voices, 6-16 are mapped to 2-5, (16 may be global for MPE or unused, so that we don't get any data here anyhow)
 
+    if(IGNORE_CHAN_6_TO_9(channel))     // Check if processing of channels 6-9 is turned off, to give room for processing via MIDI Thru
+        return;
+
     // --- Check for Percussion Voice ---
-    if( IS_PERCUSSION(channel) )
+    if( IS_PERCUSSION(channel) )                         // ### MB20240911: Now MIDI-channels 10-13 are available for per-note triggers / typically percussions
     {
         uint8_t drum_trigger = msg[1];                   // Remember current note-value
         if( (drum_trigger >= PERCUSSION_NOTE_LOW) && (drum_trigger <= PERCUSSION_NOTE_HIGH) )   // Check if we have percussion-notes within range on our drum-channel
@@ -909,7 +928,7 @@ uint8_t *Midi::Update() {
                     else                            // Message is shorter than anticipaded
                     {
                         msgBuffer[0] = current_status;  // Add first databyte to beginning of new buffer
-                        missing_bytes_offset = 2;   // We add this offset to the biginning of the next buffer, to "stitch together" our new message in next round
+                        missing_bytes_offset = 1;   // ### MB20240911 changed from 2 to 1 - We add this offset to the biginning of the next buffer, to "stitch together" our new message in next round
                         len = 0;                    // Not enough data left (buffer underrun?), skip message
                     }
                     break;
@@ -966,7 +985,7 @@ uint8_t *Midi::Update() {
                     else                            // Message is shorter than anticipaded
                     {
                         msgBuffer[0] = current_status;  // Add first databyte to beginning of new buffer
-                        missing_bytes_offset = 2;   // We add this offset to the biginning of the next buffer, to "stitch together" our new message in next round
+                        missing_bytes_offset = 1;   // ### MB2024911 changed from 2 to 1 - We add this offset to the biginning of the next buffer, to "stitch together" our new message in next round
                         len = 0;                    // Not enough data left (buffer underrun?), skip message
                     }
                     break;
@@ -1106,8 +1125,21 @@ uint8_t *Midi::Update() {
                 }
                 break;
 
-            default:        // No relevant MIDI-message (status-byte with data) found, increase on for "better luck next time"
-                current_status = 0;             // This is a to us unknown statusbyte! We set it to zero, to also pass on that running-status can not be handled in next round!
+            default:        // No relevant MIDI-message (status-byte with data) found, increase on for "better luck next time" (Polypressure will be ignored for now)
+                bool was_realtime_message = false;    // Will only become true, if we find a real-time message status byte now...
+                switch(*ptr)                          // ### MB20240911: Added Edge-case detection: Realtime-Events are no valid status-bytes that to end a possible running-status byte situation!   
+                {
+                    case 0xfa:    // Start
+                    case 0xf8:    // Clock
+                    case 0xfb:    // Continue
+                    case 0xfc:    // Stop
+                    case 0xfe:    // Active Sensing
+                    case 0xff:    // System Reset
+                        was_realtime_message = true;    // Running-status may stay active for any Channel Voice Message that we handle!
+                        break;       
+                }               
+                if(!was_realtime_message && (*ptr & 0x80))   // Did we encounter a statusbyte, that was not a realtime event? Could be PolyPressure or System Common / SysEx
+                    current_status = 0;         // This is a to us unknown statusbyte! We set it to zero, to also pass on that running-status can not be handled in next round!
                 len--;                          // Shorten read-lenght for next round of parsing
                 ptr++;                          // Skip invalid byte, may be simply a MIDI-clock message for instance
         }
