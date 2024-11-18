@@ -25,7 +25,7 @@ respective component folders / files if different from this license.
 #include <cstdint>
 #include "esp_attr.h"
 
-namespace CTAG::AUDIO {
+namespace tbd::audio {
 
 class InputManager final{
 public:

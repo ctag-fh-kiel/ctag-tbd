@@ -41,7 +41,7 @@ respective component folders / files if different from this license.
     #error "no CV inputs configured"
 #endif
 
-namespace CTAG::AUDIO {
+namespace tbd::audio {
 
 IRAM_ATTR void InputManager::Update(uint8_t **trigs, float **cvs) {
 
@@ -66,13 +66,13 @@ IRAM_ATTR void InputManager::Update(uint8_t **trigs, float **cvs) {
     }
      */
 #elif TBD_MIDI
-    uint8_t *data = CTRL::Midi::Update();
+    uint8_t *data = CTAG::CTRL::Midi::Update();
     *cvs = (float *) data;
     *trigs = &data[N_CVS * 4];
 #endif
 
 #if TBD_CALIBRATION
-        CTAG::CAL::Calibration::MapCVData(CTAG::DRIVERS::ADC::data, cv_data);
+        CTAG::CTAG::CAL::Calibration::MapCVData(CTAG::DRIVERS::ADC::data, cv_data);
         *cvs = cv_data;
 
     // update trig data
@@ -101,18 +101,18 @@ void InputManager::Init() {
 #elif TBD_STM32
     DRIVERS::mk2::Init();
 #elif TBD_MIDI
-    CTRL::Midi::Init();
+    CTAG::CTRL::Midi::Init();
 #endif
 
 #if TDB_CALLIBRARION
-    CAL::Calibration::Init();
+    CTAG::CAL::Calibration::Init();
 #endif
 
 }
 
 void InputManager::FlushBuffers() {
 #if TBD_MIDI
-    CTRL::Midi::Flush();
+    CTAG::CTRL::Midi::Flush();
 #endif
 }
 

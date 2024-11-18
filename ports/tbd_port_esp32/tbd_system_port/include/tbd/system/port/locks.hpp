@@ -4,26 +4,49 @@
 
 namespace tbd::system {
 
-struct Lock {
+struct LockImpl {
 
-Lock() {
+LockImpl() {
     // prepare threads and mutex
     _handle = xSemaphoreCreateMutex();
-    if (processMutex == nullptr) {
-        TBD_LOGE("SPM", "Fatal couldn't create mutex!");
+    if (!is_valid()) {
+        TBD_LOGE("tbd_system", "lock creation failed");
     }
 }
 
-int take(uint32_t wait_time_ms = 0) {
-    if (wait_time_ms == portMAX_DELAY) {
-        return xSemaphoreTake(_handle, port) == pdTRUE;
-    } else {
-        return xSemaphoreTake(_handle, portTICK_PERIOD_MS(wait_time_ms)) == pdTRUE;
+~LockImpl() {
+    if (!is_valid()) {
+        TBD_LOGE("tbd_system", "attempting to delete invalid lock");
     }
-   
+    vSemaphoreDelete(_handle);
 }
 
-void give() {
+bool is_valid() const {
+    return _handle != nullptr;
+}
+
+bool try_lock(uint32_t wait_time_ms = 0) {
+    if (!is_valid()) {
+        TBD_LOGE("tbd_system", "attempting to lock invalid lock");
+        return false;
+    }
+
+    auto wait_time = wait_time_ms == 0 ? portMAX_DELAY : wait_time_ms;
+    return xSemaphoreTake(_handle, wait_time) == pdTRUE;
+}
+
+void lock(uint32_t wait_time_ms = 0) {
+    if (!try_lock(wait_time_ms)) {
+        TBD_LOGE("tbd_system", "failed to acquire lock");
+    }   
+}
+
+void unlock() {
+        if (!is_valid()) {
+        TBD_LOGE("tbd_system", "attempting to unlock invalid lock");
+        return;
+    }
+
     xSemaphoreGive(_handle);
 }
 
