@@ -48,7 +48,8 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 
 void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 	MK_FLT_PAR_ABS(fFeedback, feedback, 4095.f, 1.05f)
-	MK_FLT_PAR_ABS_SFT(fTone, tone, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fBase, base, 4095.f, 1.f)
+	MK_FLT_PAR_ABS(fWidth, width, 4095.f, 1.f)
 	MK_FLT_PAR_ABS(fMix, mix, 4095.f, 1.f)
 	MK_BOOL_PAR(bTapeDigital, tape_digital)
 	MK_BOOL_PAR(bFreeze, freeze)
@@ -60,13 +61,16 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 		if(cv_time_ms != -1) fDelayTime = fabsf(data.cv[cv_time_ms]) * 2000.f;
 	}
 
-
-	float toneFilterCutoff;
-	if(fTone > 0.f) toneFilterCutoff = stmlib::SemitonesToRatio(fabsf(fTone) * 120.f);
-	else toneFilterCutoff = 10000.f - 20.f * stmlib::SemitonesToRatio((fabsf(fTone)) * 120.f);
-	CONSTRAIN(toneFilterCutoff, 100.f, 22000.f)
-	toneFilter.set_f<stmlib::FREQUENCY_ACCURATE>(toneFilterCutoff / 44100.f);
-	//printf("toneFilterCutoff %f\n", toneFilterCutoff);
+	fBase = 20.f * stmlib::SemitonesToRatio(fBase * 120.f);
+	fWidth = 20.f * stmlib::SemitonesToRatio(fWidth * 120.f);
+	CONSTRAIN(fBase, 20.f, 20000.f)
+	CONSTRAIN(fWidth, 50.f, 20000.f)
+	float hp_cut = fBase;
+	float lp_cut = fBase + fWidth;
+	CONSTRAIN(lp_cut, 20.f, 20000.f)
+	CONSTRAIN(hp_cut, 20.f, 20000.f)
+	lp.set_f<stmlib::FREQUENCY_ACCURATE>(lp_cut / 44100.f);
+	hp.set_f<stmlib::FREQUENCY_ACCURATE>(hp_cut / 44100.f);
 
 	// sync mechanism
 	if(bSyncTrig != pre_sync){
@@ -116,12 +120,9 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 		// Write the input sample to the delay buffer
 		float out;
 		if(!bFreeze){
-			if(fTone <= -0.1f)
-				out = inputSample + toneFilter.Process<stmlib::FILTER_MODE_LOW_PASS>(outputSample * fFeedback * fFeedback);
-			else if(fTone >= 0.1f)
-				out = inputSample + toneFilter.Process<stmlib::FILTER_MODE_HIGH_PASS>( outputSample * fFeedback * fFeedback);
-			else
-				out = inputSample + outputSample * fFeedback * fFeedback;
+			out = inputSample + outputSample * fFeedback * fFeedback;
+			out = lp.Process<stmlib::FILTER_MODE_LOW_PASS>(out);
+			out = hp.Process<stmlib::FILTER_MODE_HIGH_PASS>(out);
 		}
 		else
 			out = outputSample;
@@ -130,7 +131,7 @@ void ctagSoundProcessorMonoDelay::Process(const ProcessData &data) {
 
 		// Mix the dry (input) and wet (delayed) signal
 		data.buf[i*2 + this->processCh] = (1.0f - fMix) * inputSample + fMix * outputSample;
-		//data.buf[i*2 + 1] = data.buf[i*2];
+		data.buf[i*2 + 1] = data.buf[i*2];
 	}
 
 }
@@ -159,7 +160,8 @@ ctagSoundProcessorMonoDelay::~ctagSoundProcessorMonoDelay() {
     // explicit free is only needed when using heap_caps_malloc() with MALLOC_CAPS_SPIRAM
 
 	heap_caps_free(delayBuffer);
-	toneFilter.Init();
+	lp.Init();
+	hp.Init();
 }
 
 void ctagSoundProcessorMonoDelay::knowYourself(){
@@ -175,8 +177,10 @@ void ctagSoundProcessorMonoDelay::knowYourself(){
 	pMapTrig.emplace("tape_digital", [&](const int val){ trig_tape_digital = val;});
 	pMapPar.emplace("feedback", [&](const int val){ feedback = val;});
 	pMapCv.emplace("feedback", [&](const int val){ cv_feedback = val;});
-	pMapPar.emplace("tone", [&](const int val){ tone = val;});
-	pMapCv.emplace("tone", [&](const int val){ cv_tone = val;});
+	pMapPar.emplace("base", [&](const int val){ base = val;});
+	pMapCv.emplace("base", [&](const int val){ cv_base = val;});
+	pMapPar.emplace("width", [&](const int val){ width = val;});
+	pMapCv.emplace("width", [&](const int val){ cv_width = val;});
 	pMapPar.emplace("mix", [&](const int val){ mix = val;});
 	pMapCv.emplace("mix", [&](const int val){ cv_mix = val;});
 	isStereo = false;
