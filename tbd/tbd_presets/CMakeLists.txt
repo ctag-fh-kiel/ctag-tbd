@@ -14,7 +14,7 @@ target_link_libraries(tbd_presets
     PRIVATE 
         tbd_display
         # tbd_system 
-        __idf_tbd_drivers_port
+        tbd_drivers
 )
 
 target_compile_options(tbd_presets PRIVATE

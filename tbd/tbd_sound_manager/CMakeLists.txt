@@ -13,7 +13,7 @@ target_link_libraries(tbd_sound_manager
     PUBLIC rapidjson tbd_sound_registry
     PRIVATE 
         tbd_system 
-        __idf_tbd_drivers_port
+        tbd_drivers
         # __idf_tbd_system __idf_espressif__esp-dsp 
 )
 
