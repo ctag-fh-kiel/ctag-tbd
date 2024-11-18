@@ -26,7 +26,6 @@ respective component folders / files if different from this license.
 #include "string.h"
 #include "codec.hpp"
 #include "esp_heap_caps.h"
-#include "led_rgb.hpp"
 #include <tbd/network.hpp>
 #include "SerialAPI.hpp"
 #include "RestServer.hpp"
@@ -39,6 +38,9 @@ respective component folders / files if different from this license.
 #include "stmlib/dsp/dsp.h"
 #include <tbd/logging.hpp>
 
+#if TBD_INDICATOR
+    #include <tbd/drivers/indicator.hpp>
+#endif
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
@@ -339,7 +341,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     model = std::make_unique<SPManagerDataModel>();
 
     // check for network reset at bootup
-#ifdef CONFIG_TBD_PLATFORM_BBA
+#ifdef TBD_INDICATOR
     // uses SW1 = BOOT of esp32-s3-devkitc to reset network credentials
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     if(gpio_get_level(GPIO_NUM_0) == 0){

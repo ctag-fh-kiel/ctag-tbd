@@ -1,7 +1,7 @@
 #include <tbd/sound_manager.hpp>
 
 #include <tbd/system/modules.hpp>
-#include <codec.hpp>
+#include <tbd/drivers/codec.hpp>
 
 // same compilation unit
 #include "sound_manager_impl.hpp"
@@ -12,7 +12,7 @@ using namespace tbd::audio;
 namespace CTAG::AUDIO {
 
 namespace {
-    tbd::system::ModuleTask<AudioManagerImpl<DRIVERS::Codec>> audio_task("audio_task");
+    tbd::system::ModuleTask<AudioManagerImpl<tbd::drivers::Codec>> audio_task("audio_task");
 }
 
 void SoundProcessorManager::StartSoundProcessor() {

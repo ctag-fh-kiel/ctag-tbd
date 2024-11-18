@@ -19,33 +19,39 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-
-#include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+#include <stdio.h>
+#include <vector>
+
 #include "esp_system.h"
 #include "adc.hpp"
-#include "fs.hpp"
-#include "led_rgb.hpp"
 
-#include "codec.hpp"
-#include <vector>
+#include <tbd/drivers/codec.hpp>
+
 #include <tbd/sound_manager.hpp>
 #include <tbd/sound_processor/allocator.hpp>
 
 #if TDB_ADC
-#include "gpio.hpp"
+    #include "gpio.hpp"
 #endif
 
 #if TBD_CALIBRATION
-#include "Calibration.hpp"
+    #include "Calibration.hpp"
 #endif
 
 #if TBD_DISPLAY
-    #include "Display.hpp"
+    #include <tbd/display.hpp>
 #endif
 
-using namespace CTAG;
+#if TBD_INDICATOR
+    #include <tbd/drivers/indicator.hpp>
+#endif
+
+#if TBD_FILE_SYSTEM
+    #include <tbd/drivers/file_system.hpp>
+#endif
 
 extern "C" {
 void app_main();
@@ -59,22 +65,25 @@ https://www.embedded.com/modern-c-in-embedded-systems-part-1-myth-and-reality/
 
 void app_main() {
     // reserve large block of memory before anything else happens
-    SP::ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
+    CTAG::SP::ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
 
     // wait until power is somewhat more settled
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 
+#if TBD_FILE_SYSTEM
     // init fs
-    DRIVERS::FileSystem::InitFS();
-
-#ifndef CONFIG_TBD_PLATFORM_STR
-    DRIVERS::LedRGB::InitLedRGB();
-    DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
+    tbd::drivers::FileSystem::InitFS();
 #endif
 
-#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
-    DRIVERS::Display::Init();
-    DRIVERS::Display::ShowFWVersion();
+
+#if TBD_INDICATOR
+    tbd::drivers::Indicator::Init();
+    tbd::drivers::Indicator::SetLedRGB(0, 0, 255);
+#endif
+
+#if TBD_DISPLAY
+    tbd::Display::Init();
+    tbd::Display::ShowFWVersion();
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 #endif
 
@@ -82,5 +91,5 @@ void app_main() {
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 #endif
 
-    AUDIO::SoundProcessorManager::StartSoundProcessor();
+    CTAG::AUDIO::SoundProcessorManager::StartSoundProcessor();
 }
