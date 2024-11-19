@@ -70,12 +70,12 @@ void CTAG::FAV::Favorites::ActivateFavorite(const int &id) {
     // NOTE: all checks if plugins exists and if presets exists are done in SPManager
     string p0id = model.GetFavoritePluginID(id, 0);
     int p0pre = model.GetFavoritePreset(id, 0);
-    CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(0, p0id);
-    CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(0, p0pre);
+    tbd::audio::SoundProcessorManager::SetSoundProcessorChannel(0, p0id);
+    tbd::audio::SoundProcessorManager::ChannelLoadPreset(0, p0pre);
     string p1id = model.GetFavoritePluginID(id, 1);
     int p1pre = model.GetFavoritePreset(id, 1);
-    CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(1, p1id);
-    CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(1, p1pre);
+    tbd::audio::SoundProcessorManager::SetSoundProcessorChannel(1, p1id);
+    tbd::audio::SoundProcessorManager::ChannelLoadPreset(1, p1pre);
     activeFav = id;
     uiMenuState = CLEAR;
 }

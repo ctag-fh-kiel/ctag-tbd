@@ -10,10 +10,9 @@ target_include_directories(tbd_presets
     PUBLIC include
 )
 target_link_libraries(tbd_presets
-    PUBLIC tbd_sound_manager rapidjson
+    PUBLIC tbd_sound_manager
     PRIVATE 
         tbd_display
-        # tbd_system 
         tbd_drivers
 )
 

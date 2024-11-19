@@ -27,15 +27,16 @@ respective component folders / files if different from this license.
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 
-#include <tbd/sound_processor/data_model_base.hpp>
+#include <tbd/config_base.hpp>
 
 using namespace std;
 using namespace rapidjson;
 
+
 namespace CTAG::FAV {
 
-class FavoritesModel final : public CTAG::SP::ctagDataModelBase {
-public:
+struct FavoritesModel final : public tbd::config::ConfigBase {
+
     string GetAllFavorites();
     string GetFavorite(int const &i);
     string GetFavoriteName(int const &i);

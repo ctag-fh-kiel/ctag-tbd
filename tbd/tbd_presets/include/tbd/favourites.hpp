@@ -21,10 +21,12 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-#include <tbd/favourites/model.hpp>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include <atomic>
+
+#include <tbd/favourites/model.hpp>
 
 namespace CTAG::FAV {
 
