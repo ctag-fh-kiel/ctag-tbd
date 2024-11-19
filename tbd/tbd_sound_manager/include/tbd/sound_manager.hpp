@@ -64,7 +64,6 @@ public:
     static void RefreshSampleRom();
 
 private:
-    static void led_task(void *pvParams);
     static void updateConfiguration();
 };
     
