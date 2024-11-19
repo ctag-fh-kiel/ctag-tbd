@@ -3,6 +3,6 @@
 
 namespace CTAG::RESOURCES {
         
-extern std::string spiffsRoot;
+std::string spiffsRoot = "/spiffs";
 
 }
