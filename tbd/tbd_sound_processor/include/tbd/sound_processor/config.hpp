@@ -22,7 +22,7 @@ respective component folders / files if different from this license.
 
 #pragma  once
 
-#include <tbd/sound_processor/data_model_base.hpp>
+#include <tbd/config_base.hpp>
 #include <string>
 #include <iostream>
 #include <memory>
@@ -32,11 +32,11 @@ respective component folders / files if different from this license.
 
 namespace CTAG::SP {
 
-class ctagSPDataModel : public ctagDataModelBase {
-public:
-    ctagSPDataModel(const std::string &id, const bool isStereo);
+struct SoundProcessorParams : tbd::config::ConfigBase {
 
-    ~ctagSPDataModel();
+    SoundProcessorParams(const std::string &id, const bool isStereo);
+
+    ~SoundProcessorParams();
 
     const char *GetCStrJSONParams();
 

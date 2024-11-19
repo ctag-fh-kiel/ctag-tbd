@@ -40,7 +40,7 @@ using namespace CTAG::SP;
 void ctagSoundProcessorSubSynth::Init(std::size_t blockSize, void *blockPtr) {
     isStereo = false;
     // acquire model from spiffs json, model auto loads last active preset
-    model = std::make_unique<ctagSPDataModel>(id, isStereo);
+    model = std::make_unique<SoundProcessorParams>(id, isStereo);
     // take preset values from model
     loadPresetInternal();
     // inits

@@ -30,7 +30,7 @@ using namespace CTAG::SP;
 
 void ctagSoundProcessorPolyPad::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
-    model = std::make_unique<ctagSPDataModel>(id, isStereo);
+    model = std::make_unique<SoundProcessorParams>(id, isStereo);
     LoadPreset(0);
 
     for(auto &s:v_voices){

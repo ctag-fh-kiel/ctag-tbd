@@ -37,7 +37,7 @@ target_include_directories(tbd_sound_processor
     PUBLIC include utils
 )
 target_link_libraries(tbd_sound_processor 
-    PUBLIC rapidjson 
+    PUBLIC tbd_config
     PRIVATE 
         tbd_helpers
         mutable

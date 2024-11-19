@@ -27,7 +27,7 @@ using namespace CTAG::SP;
 
 void ctagSoundProcessorMIChorus::Init(std::size_t blockSize, void *blockPtr) {
     knowYourself();
-    model = std::make_unique<ctagSPDataModel>(id, isStereo);
+    model = std::make_unique<SoundProcessorParams>(id, isStereo);
     LoadPreset(0);
 
     assert(blockSize >= 2048 * sizeof(float));

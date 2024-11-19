@@ -246,7 +246,7 @@ void ctagSoundProcessorWTOscDuo::Process(const ProcessData &data) {
 void ctagSoundProcessorWTOscDuo::Init(std::size_t blockSize, void *blockPtr) {
     // construct internal data model
     knowYourself();
-    model = std::make_unique<ctagSPDataModel>(id, isStereo);
+    model = std::make_unique<SoundProcessorParams>(id, isStereo);
     LoadPreset(0);
 
     lfo_1.SetSampleRate(44100.f / bufSz);

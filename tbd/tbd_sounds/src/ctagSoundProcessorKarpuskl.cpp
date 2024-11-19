@@ -390,7 +390,7 @@ void ctagSoundProcessorKarpuskl::Init(std::size_t blockSize, void *blockPtr)
 {
     // construct internal data model
     knowYourself();
-    model = std::make_unique<ctagSPDataModel>(id, isStereo);
+    model = std::make_unique<SoundProcessorParams>(id, isStereo);
     LoadPreset(0);
 
     // --- Initialize buffer for the initial frequency for Karplus Strong ! This is a kind of dummy only to get realistic sized, but it will not play ---

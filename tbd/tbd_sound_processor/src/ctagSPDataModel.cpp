@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include <tbd/sound_processor/data_model.hpp>
+#include <tbd/sound_processor/config.hpp>
 
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
@@ -39,7 +39,7 @@ namespace rj = rapidjson;
 namespace CTAG {
 namespace SP {
 
-ctagSPDataModel::ctagSPDataModel(const std::string &id, const bool isStereo) {
+SoundProcessorParams::SoundProcessorParams(const std::string &id, const bool isStereo) {
     // acquire data from json files ui model and patch model
     muiFileName = std::string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mui-") + id + std::string(".jsn");
     //std::cout << "Reading " << muiFileName << std::endl;
@@ -53,10 +53,10 @@ ctagSPDataModel::ctagSPDataModel(const std::string &id, const bool isStereo) {
 
 }
 
-ctagSPDataModel::~ctagSPDataModel() {
+SoundProcessorParams::~SoundProcessorParams() {
 }
 
-const char *ctagSPDataModel::GetCStrJSONParams() {
+const char *SoundProcessorParams::GetCStrJSONParams() {
     json.Clear();
     mergeModels();
     rj::Writer<rj::StringBuffer> writer(json);
@@ -65,7 +65,7 @@ const char *ctagSPDataModel::GetCStrJSONParams() {
     return json.GetString();
 }
 
-void ctagSPDataModel::mergeModels() {
+void SoundProcessorParams::mergeModels() {
     // iterate preset model for all parameters
     if (!activePreset.HasMember("params")) return;
     if (!mui.HasMember("params")) return;
@@ -76,7 +76,7 @@ void ctagSPDataModel::mergeModels() {
     }
 }
 
-void ctagSPDataModel::SetParamValue(const std::string &id, const std::string &key, const int val) {
+void SoundProcessorParams::SetParamValue(const std::string &id, const std::string &key, const int val) {
     TBD_LOGD("Model", "Setting id %s, with %s to %d", id.c_str(), key.c_str(), val);
     if (!activePreset.HasMember("params")) return;
     rj::Value &patchParams = activePreset["params"];
@@ -93,7 +93,7 @@ void ctagSPDataModel::SetParamValue(const std::string &id, const std::string &ke
     }
 }
 
-int ctagSPDataModel::GetParamValue(const std::string &id, const std::string &key) {
+int SoundProcessorParams::GetParamValue(const std::string &id, const std::string &key) {
     if (!activePreset.HasMember("params")) return 0;
     rj::Value &patchParams = activePreset["params"];
     if (!patchParams.IsArray()) return 0;
@@ -109,7 +109,7 @@ int ctagSPDataModel::GetParamValue(const std::string &id, const std::string &key
 }
 
 
-const char *ctagSPDataModel::GetCStrJSONPresets() {
+const char *SoundProcessorParams::GetCStrJSONPresets() {
     if (!mp.HasMember("activePatch")) return nullptr;
     if (!mp["activePatch"].IsInt()) return nullptr;
     json.Clear();
@@ -144,7 +144,7 @@ const char *ctagSPDataModel::GetCStrJSONPresets() {
     return json.GetString();
 }
 
-void ctagSPDataModel::LoadPreset(const int num) {
+void SoundProcessorParams::LoadPreset(const int num) {
     loadJSON(mp, mpFileName);
     int patchNum = num;
     if (patchNum < 0) patchNum = 0;
@@ -166,7 +166,7 @@ void ctagSPDataModel::LoadPreset(const int num) {
     mp.Accept(writer);
 }
 
-void ctagSPDataModel::recursiveFindAndInsert(const rj::Value &paramF, rj::Value &paramI) {
+void SoundProcessorParams::recursiveFindAndInsert(const rj::Value &paramF, rj::Value &paramI) {
     if (!paramI.IsArray()) return;
     for (auto &v : paramI.GetArray()) {
         //printf("Matching for %s in with %s", paramF["id"].GetString(), v["id"].GetString());
@@ -201,7 +201,7 @@ void ctagSPDataModel::recursiveFindAndInsert(const rj::Value &paramF, rj::Value 
 }
 
 
-void ctagSPDataModel::SavePreset(const std::string &name, const int number) {
+void SoundProcessorParams::SavePreset(const std::string &name, const int number) {
     //TBD_LOGE("Model", "Save preset %s %d", name.c_str(), number);
     //TBD_LOGE("MOdel", "Stored JSON before");
     //PrintSelf();
@@ -233,7 +233,7 @@ void ctagSPDataModel::SavePreset(const std::string &name, const int number) {
     //PrintSelf();
 }
 
-void ctagSPDataModel::PrintSelf() {
+void SoundProcessorParams::PrintSelf() {
     TBD_LOGD("Model", "mp:");
     printJSON(mp);
     TBD_LOGD("Model", "mui:");
@@ -242,7 +242,7 @@ void ctagSPDataModel::PrintSelf() {
     printJSON(activePreset);
 }
 
-const char *ctagSPDataModel::GetCStrJSONAllPresetData() {
+const char *SoundProcessorParams::GetCStrJSONAllPresetData() {
     rj::Document d;
     json.Clear();
     loadJSON(d, mpFileName);
@@ -252,7 +252,7 @@ const char *ctagSPDataModel::GetCStrJSONAllPresetData() {
     return json.GetString();
 }
 
-bool ctagSPDataModel::IsParamTrig(const std::string &id) {
+bool SoundProcessorParams::IsParamTrig(const std::string &id) {
     if (!activePreset.HasMember("params")) return false;
     rj::Value &patchParams = activePreset["params"];
     if (!patchParams.IsArray()) return false;
@@ -266,7 +266,7 @@ bool ctagSPDataModel::IsParamTrig(const std::string &id) {
     return false;
 }
 
-bool ctagSPDataModel::IsParamCV(const std::string &id) {
+bool SoundProcessorParams::IsParamCV(const std::string &id) {
     if (!activePreset.HasMember("params")) return false;
     rj::Value &patchParams = activePreset["params"];
     if (!patchParams.IsArray()) return false;
@@ -280,14 +280,14 @@ bool ctagSPDataModel::IsParamCV(const std::string &id) {
     return false;
 }
 
-std::string ctagSPDataModel::GetActivePluginParameters() {
+std::string SoundProcessorParams::GetActivePluginParameters() {
     rj::StringBuffer parameters;
     rj::Writer<rj::StringBuffer> writer(parameters);
     activePreset.Accept(writer);
     return parameters.GetString();
 }
 
-void ctagSPDataModel::SetActivePluginParameters(const std::string &parameters) {
+void SoundProcessorParams::SetActivePluginParameters(const std::string &parameters) {
     rj::Document d;
     d.Parse(parameters.c_str());
     activePreset.GetAllocator().Clear();

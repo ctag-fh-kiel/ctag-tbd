@@ -65,7 +65,7 @@ respective component folders / files if different from this license.
 #include <memory>
 #include <map>
 #include <functional>
-#include <tbd/sound_processor/data_model.hpp>
+#include <tbd/sound_processor/config.hpp>
 #include <tbd/sound_processor/allocator.hpp>
 
 
@@ -238,7 +238,7 @@ protected:
     int processCh = 0;
 
     int instance {0};
-    std::unique_ptr<ctagSPDataModel> model = nullptr;
+    std::unique_ptr<SoundProcessorParams> model = nullptr;
     std::string id = "";
     std::map<std::string, std::function<void(const int)>> pMapPar;
     std::map<std::string, std::function<void(const int)>> pMapCv;
