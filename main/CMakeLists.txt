@@ -24,6 +24,7 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC
         tbd_presets
         tbd_drivers
         tbd_display
+        tbd_network
 )
 target_compile_options(${COMPONENT_LIB} PRIVATE
         -Wno-unused-local-typedefs

@@ -53,6 +53,13 @@ respective component folders / files if different from this license.
     #include <tbd/drivers/file_system.hpp>
 #endif
 
+#ifdef CONFIG_WIFI_UI
+    #include <tbd/network.hpp>
+    #include <tbd/network/config.hpp>
+    #include "RestServer.hpp"
+#endif
+
+
 extern "C" {
 void app_main();
 }
@@ -91,5 +98,18 @@ void app_main() {
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 #endif
 
-    CTAG::AUDIO::SoundProcessorManager::StartSoundProcessor();
+    tbd::audio::SoundProcessorManager::StartSoundProcessor();
+
+    #ifdef CONFIG_WIFI_UI
+        tbd::network::NetworkConfig network_config;
+        CTAG::NET::Network::SetSSID(network_config.ssid());
+        CTAG::NET::Network::SetPWD(network_config.pwd());
+        CTAG::NET::Network::SetIsAccessPoint(network_config.is_access_point());
+        CTAG::NET::Network::SetIP(network_config.ip());
+        CTAG::NET::Network::SetMDNSName(network_config.mdns_name());
+        CTAG::NET::Network::Up();
+        CTAG::REST::RestServer::StartRestServer();
+    #elif CONFIG_SERIAL_UI
+        SAPI::SerialAPI::StartSerialAPI();
+    #endif
 }
