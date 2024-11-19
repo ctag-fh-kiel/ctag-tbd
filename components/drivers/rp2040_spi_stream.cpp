@@ -40,67 +40,67 @@ DMA_ATTR static uint8_t buf0[DATA_SZ];
 DMA_ATTR static uint8_t buf1[DATA_SZ];
 DMA_ATTR static uint8_t sendBuf[DATA_SZ];
 
-void CTAG::DRIVERS::rp2040_spi_stream::Init() {
+void CTAG::DRIVERS::rp2040_spi_stream::Init(){
     //Configuration for the SPI bus
     spi_bus_config_t buscfg = {
-            .mosi_io_num=GPIO_MOSI,
-            .miso_io_num=GPIO_MISO,
-            .sclk_io_num=GPIO_SCLK,
-            .quadwp_io_num = -1,
-            .quadhd_io_num = -1,
-            .data4_io_num = -1,
-            .data5_io_num = -1,
-            .data6_io_num = -1,
-            .data7_io_num = -1,
-            .max_transfer_sz = DATA_SZ,
-            .flags = 0,
-            .isr_cpu_id = intr_cpu_id_t::INTR_CPU_ID_AUTO,
-            .intr_flags = 0
+        .mosi_io_num = GPIO_MOSI,
+        .miso_io_num = GPIO_MISO,
+        .sclk_io_num = GPIO_SCLK,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .data4_io_num = -1,
+        .data5_io_num = -1,
+        .data6_io_num = -1,
+        .data7_io_num = -1,
+        .max_transfer_sz = DATA_SZ,
+        .flags = 0,
+        .isr_cpu_id = intr_cpu_id_t::INTR_CPU_ID_AUTO,
+        .intr_flags = 0
     };
 
     //Configuration for the SPI slave interface
     spi_slave_interface_config_t slvcfg = {
-            .spics_io_num=GPIO_CS,
-            .flags=0,
-            .queue_size=2,
-            .mode=0,
-            .post_setup_cb=0,
-            .post_trans_cb=0
+        .spics_io_num = GPIO_CS,
+        .flags = 0,
+        .queue_size = 2,
+        .mode = 3,
+        .post_setup_cb = 0,
+        .post_trans_cb = 0
     };
 
     ESP_LOGI("rp2040 spi", "Init()");
     auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
     assert(ret == ESP_OK);
 
-    transaction[0].length = DATA_SZ*8;
+    transaction[0].length = DATA_SZ * 8;
     transaction[0].rx_buffer = buf0;
     transaction[0].tx_buffer = sendBuf;
 
-    transaction[1].length = DATA_SZ*8;
+    transaction[1].length = DATA_SZ * 8;
     transaction[1].rx_buffer = buf1;
     transaction[1].tx_buffer = sendBuf;
 
     currentTransaction = 0;
 }
 
-IRAM_ATTR uint32_t CTAG::DRIVERS::rp2040_spi_stream::Read(uint8_t* data, uint32_t max_len) {
+IRAM_ATTR uint32_t CTAG::DRIVERS::rp2040_spi_stream::Read(uint8_t* data, uint32_t max_len){
     // this is all non-blocking
     spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], 0);
     currentTransaction ^= 0x1;
 
     // get result of last transaction
-    spi_slave_transaction_t *ret_trans;
+    spi_slave_transaction_t* ret_trans;
     auto ret = spi_slave_get_trans_result(RCV_HOST, &ret_trans, 0);
 
-    if (ESP_OK == ret) {
-        auto *ptr = (uint8_t *) ret_trans->rx_buffer;
+    if (ESP_OK == ret){
+        auto* ptr = (uint8_t*)ret_trans->rx_buffer;
         if (ptr[0] == 0xCA && ptr[1] == 0xFE && ptr[2] != 0){
             // TODO: check if max_len is enough
-            if(ptr[2] > max_len){
+            if (ptr[2] > max_len){
                 ESP_LOGE("rp2040 spi", "buffer too small");
                 return 0;
             }
-            memcpy(data, ptr+3, ptr[2]);
+            memcpy(data, ptr + 3, ptr[2]);
             return ptr[2];
         }
     }
