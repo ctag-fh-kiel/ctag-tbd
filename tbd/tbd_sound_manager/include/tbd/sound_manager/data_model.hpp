@@ -18,25 +18,18 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
-
 #pragma  once
 
 #include <string>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
-#include <tbd/sound_processor/data_model_base.hpp>
-#include <iostream>
-#include <memory>
-#include <vector>
+#include <tbd/config_base.hpp>
 
-using namespace std;
-using namespace rapidjson;
 
-namespace CTAG::AUDIO {
+namespace tbd::audio {
 
-class SPManagerDataModel final : public CTAG::SP::ctagDataModelBase {
-public:
+struct SPManagerDataModel final : config::ConfigBase {
+
     SPManagerDataModel();
 
     ~SPManagerDataModel();
@@ -45,31 +38,27 @@ public:
 
     const char *GetCStrJSONConfiguration();
 
-    const char *GetCStrJSONSoundProcessorPresets(const string &id);
+    const char *GetCStrJSONSoundProcessorPresets(const std::string &id);
 
     void SetCStrJSONSoundProcessorPreset(const char *id, const char* data);
 
-    string GetActiveProcessorID(const int chan);
+    std::string GetActiveProcessorID(const int chan);
 
-    void SetConfigurationFromJSON(const string &data);
+    void SetConfigurationFromJSON(const std::string &data);
 
-    string GetConfigurationData(const string &id);
+    std::string GetConfigurationData(const std::string &id);
 
-    string GetNetworkConfigurationData(const string &which);
-
-    void ResetNetworkConfiguration();
-
-    void SetActivePluginID(const string &id, const int chan);
+    void SetActivePluginID(const std::string &id, const int chan);
 
     int GetActivePatchNum(const int chan);
 
     void SetActivePatchNum(const int patchNum, const int chan);
 
-    bool IsStereo(const string &id);
+    bool IsStereo(const std::string &id);
 
     void PrintSelf();
 
-    bool HasPluginID(string const &id);
+    bool HasPluginID(std::string const &id);
 
 private:
     void getSoundProcessors();
@@ -78,11 +67,11 @@ private:
 
     void validatePatches();
 
-    Document m;
+    rapidjson::Document m;
 #ifndef TBD_SIM
-            const string MODELJSONFN = "/spiffs/data/spm-config.jsn";
+            const std::string MODELJSONFN = "/spiffs/data/spm-config.jsn";
 #else
-            const string MODELJSONFN = "../../spiffs_image/data/spm-config.jsn";
+            const std::string MODELJSONFN = "../../spiffs_image/data/spm-config.jsn";
 #endif
 };
 

@@ -18,22 +18,21 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
+#include <tbd/sound_manager/data_model.hpp>
 
 #include <cstdio>
-#include <string>
 #include <fstream>
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <dirent.h>
-#include <tbd/sound_manager/data_model.hpp>
 #include <tbd/sound_processor/resources.hpp>
 #include <tbd/logging.hpp>
 
+using namespace rapidjson;
 
-using namespace CTAG::AUDIO;
 
+namespace tbd::audio {
 
 SPManagerDataModel::SPManagerDataModel() {
     TBD_LOGI("SPModel", "Trying to read config file");
@@ -53,10 +52,10 @@ void SPManagerDataModel::getSoundProcessors() {
     struct dirent *ent;
     Value sparray(kArrayType);
     m.AddMember("availableProcessors", sparray, m.GetAllocator());
-    if ((dir = opendir(string(CTAG::RESOURCES::spiffsRoot + string("/data/sp")).c_str())) != NULL) {
+    if ((dir = opendir(std::string(CTAG::RESOURCES::spiffsRoot + std::string("/data/sp")).c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
-            string fn(ent->d_name);
-            if (fn.find("mui-") != string::npos) {
+            std::string fn(ent->d_name);
+            if (fn.find("mui-") != std::string::npos) {
                 TBD_LOGD("SPModel", "Filename: %s", fn.c_str());
                 Document d;
                 loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/" + fn);
@@ -88,15 +87,15 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessors() {
     return json.GetString();
 }
 
-string SPManagerDataModel::GetActiveProcessorID(const int chan) {
-    if (chan > 1 || chan < 0) return string("");
-    if (!m.HasMember("activeProcessors")) return string();
-    if (!m["activeProcessors"].IsArray()) return string();
-    if (m["activeProcessors"].GetArray().Size() == 0) return string();
+std::string SPManagerDataModel::GetActiveProcessorID(const int chan) {
+    if (chan > 1 || chan < 0) return std::string("");
+    if (!m.HasMember("activeProcessors")) return std::string();
+    if (!m["activeProcessors"].IsArray()) return std::string();
+    if (m["activeProcessors"].GetArray().Size() == 0) return std::string();
     return m["activeProcessors"].GetArray()[chan].GetString();
 }
 
-void SPManagerDataModel::SetActivePluginID(const string &id, const int chan) {
+void SPManagerDataModel::SetActivePluginID(const std::string &id, const int chan) {
     if (chan > 1 || chan < 0) return;
     if (!m.HasMember("activeProcessors")) return;
     if (!m["activeProcessors"].IsArray()) return;
@@ -107,7 +106,7 @@ void SPManagerDataModel::SetActivePluginID(const string &id, const int chan) {
 
 void SPManagerDataModel::SetActivePatchNum(const int patchNum, const int chan) {
     if (chan > 1 || chan < 0) return;
-    string id = GetActiveProcessorID(chan);
+    std::string id = GetActiveProcessorID(chan);
     if (!m.HasMember("lastPatches")) return;
     if (!m["lastPatches"].IsArray()) return;
     if (!m["lastPatches"][chan].IsArray()) return;
@@ -124,7 +123,7 @@ void SPManagerDataModel::SetActivePatchNum(const int patchNum, const int chan) {
 
 int SPManagerDataModel::GetActivePatchNum(const int chan) {
     if (chan > 1 || chan < 0) return 0;
-    string id = GetActiveProcessorID(chan);
+    std::string id = GetActiveProcessorID(chan);
     if (!m.HasMember("lastPatches")) return 0;
     if (!m["lastPatches"].IsArray()) return 0;
     if (!m["lastPatches"][chan].IsArray()) return 0;
@@ -140,7 +139,7 @@ int SPManagerDataModel::GetActivePatchNum(const int chan) {
     return 0;
 }
 
-bool SPManagerDataModel::IsStereo(const string &id) {
+bool SPManagerDataModel::IsStereo(const std::string &id) {
     if (!m.HasMember("availableProcessors")) return false;
     for(auto &v: m["availableProcessors"].GetArray()){
         if(v.HasMember("id")){
@@ -202,7 +201,7 @@ const char *SPManagerDataModel::GetCStrJSONConfiguration() {
     return json.GetString();
 }
 
-void SPManagerDataModel::SetConfigurationFromJSON(const string &data) {
+void SPManagerDataModel::SetConfigurationFromJSON(const std::string &data) {
     if (!m.HasMember("configuration")) return;
     Document d;
     d.Parse(data);
@@ -214,35 +213,15 @@ void SPManagerDataModel::SetConfigurationFromJSON(const string &data) {
     //PrintSelf();
 }
 
-string SPManagerDataModel::GetConfigurationData(const string &id) {
+std::string SPManagerDataModel::GetConfigurationData(const std::string &id) {
     //PrintSelf();
-    if (!m.HasMember("configuration")) return string();
+    if (!m.HasMember("configuration")) return std::string();
     Value s(kStringType);
     s.CopyFrom(m["configuration"][id], m.GetAllocator());
     return s.GetString();
 }
 
-string SPManagerDataModel::GetNetworkConfigurationData(const string &which) {
-    if (!m.HasMember("configuration")) return string();
-    if (!m["configuration"].HasMember("wifi")) return string();
-    Value s(kStringType);
-    s.CopyFrom(m["configuration"]["wifi"][which], m.GetAllocator());
-    return s.GetString();
-}
-
-void SPManagerDataModel::ResetNetworkConfiguration() {
-    if (!m.HasMember("configuration")) return;
-    if (!m["configuration"].HasMember("wifi")) return;
-    Value ssid("ctag-tbd");
-    Value pwd("");
-    Value mode("ap");
-    m["configuration"]["wifi"]["ssid"] = ssid.Move();
-    m["configuration"]["wifi"]["pwd"] = pwd.Move();
-    m["configuration"]["wifi"]["mode"] = mode.Move();
-    storeJSON(m, MODELJSONFN);
-}
-
-const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
+const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const std::string &id) {
     json.Clear();
     Document d1, d2;
     loadJSON(d1, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
@@ -261,10 +240,10 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
     Document presets;
     presets.Parse(data);
     if(presets.HasParseError()) return;
-    storeJSON(presets, string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn"));
+    storeJSON(presets, std::string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn"));
 }
 
-bool SPManagerDataModel::HasPluginID(const string &id) {
+bool SPManagerDataModel::HasPluginID(const std::string &id) {
     if (!m.HasMember("availableProcessors")) return false;
     for(auto &v: m["availableProcessors"].GetArray()){
         if(v.HasMember("id")){
@@ -272,4 +251,6 @@ bool SPManagerDataModel::HasPluginID(const string &id) {
         }
     }
     return false;
+}
+
 }

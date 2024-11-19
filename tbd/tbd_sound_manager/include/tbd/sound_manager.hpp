@@ -23,7 +23,7 @@ respective component folders / files if different from this license.
 #include <string>
 
 
-namespace CTAG::AUDIO {
+namespace tbd::audio {
 
 class SoundProcessorManager final {
 public:
@@ -64,9 +64,7 @@ public:
     static void RefreshSampleRom();
 
 private:
-
     static void led_task(void *pvParams);
-
     static void updateConfiguration();
 };
     

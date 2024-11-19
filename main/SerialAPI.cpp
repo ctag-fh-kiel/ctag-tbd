@@ -93,24 +93,24 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
     }
     string s(d["cmd"].GetString());
     if(s == "/api/v1/getPlugins"){
-        string s = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessors();
+        string s = tbd::audio::SoundProcessorManager::GetCStrJSONSoundProcessors();
         sendString(s);
         return;
     }
     if(s.find("/api/v1/getActivePlugin/") == 0){
         int ch = d["ch"].GetInt();
-        sendString("{\"id\":\"" + CTAG::AUDIO::SoundProcessorManager::GetStringID(ch) + "\"}");
+        sendString("{\"id\":\"" + tbd::audio::SoundProcessorManager::GetStringID(ch) + "\"}");
         return;
     }
     if(s.find("/api/v1/getPluginParams/") == 0){
         int ch = d["ch"].GetInt();
-        sendString(CTAG::AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(ch));
+        sendString(tbd::audio::SoundProcessorManager::GetCStrJSONActivePluginParams(ch));
         return;
     }
     if(s.find("/api/v1/setActivePlugin/") == 0){
         int ch = d["ch"].GetInt();
         string id = d["id"].GetString();
-        CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
+        tbd::audio::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
         sendString("{}");
         return;
     }
@@ -118,7 +118,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int ch = d["ch"].GetInt();
         int val = d["current"].GetInt();
         string id = d["id"].GetString();
-        CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, id, "current", val);
+        tbd::audio::SoundProcessorManager::SetChannelParamValue(ch, id, "current", val);
         sendString("{}");
         return;
     }
@@ -126,7 +126,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int ch = d["ch"].GetInt();
         int val = d["cv"].GetInt();
         string id = d["id"].GetString();
-        CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, id, "cv", val);
+        tbd::audio::SoundProcessorManager::SetChannelParamValue(ch, id, "cv", val);
         sendString("{}");
         return;
     }
@@ -134,19 +134,19 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int ch = d["ch"].GetInt();
         int val = d["trig"].GetInt();
         string id = d["id"].GetString();
-        CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, id, "trig", val);
+        tbd::audio::SoundProcessorManager::SetChannelParamValue(ch, id, "trig", val);
         sendString("{}");
         return;
     }
     if(s.find("/api/v1/getPresets/") == 0){
         int ch = d["ch"].GetInt();
-        sendString(CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch));
+        sendString(tbd::audio::SoundProcessorManager::GetCStrJSONGetPresets(ch));
         return;
     }
     if(s.find("/api/v1/loadPreset/") == 0){
         int ch = d["ch"].GetInt();
         int num = d["number"].GetInt();
-        CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(ch, num);
+        tbd::audio::SoundProcessorManager::ChannelLoadPreset(ch, num);
         sendString("{}");
         return;
     }
@@ -154,12 +154,12 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         int ch = d["ch"].GetInt();
         int num = d["number"].GetInt();
         string name = d["name"].GetString();
-        CTAG::AUDIO::SoundProcessorManager::ChannelSavePreset(ch, name, num);
+        tbd::audio::SoundProcessorManager::ChannelSavePreset(ch, name, num);
         sendString("{}");
         return;
     }
     if(s.find("/api/v1/getConfiguration") == 0){
-        sendString(CTAG::AUDIO::SoundProcessorManager::GetCStrJSONConfiguration());
+        sendString(tbd::audio::SoundProcessorManager::GetCStrJSONConfiguration());
         return;
     }
     if(s.find("/api/v1/reboot") == 0){
@@ -173,7 +173,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
     }
     if(s.find("/api/v1/getPresetData") == 0){
         string pluginID = d["id"].GetString();
-        const char *json = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string(pluginID));
+        const char *json = tbd::audio::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string(pluginID));
         if (json != NULL)
             sendString(json);
         else
@@ -206,7 +206,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
         configData.Accept(writer);
-        CTAG::AUDIO::SoundProcessorManager::SetConfigurationFromJSON(buffer.GetString());
+        tbd::audio::SoundProcessorManager::SetConfigurationFromJSON(buffer.GetString());
         sendString("{}");
         return;
     }
@@ -236,7 +236,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
         presetData.Accept(writer);
-        CTAG::AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(id.c_str(), buffer.GetString());
+        tbd::audio::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(id.c_str(), buffer.GetString());
         sendString("{\"id\":\"" + id + "\"}");
         return;
     }
@@ -252,11 +252,11 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
     // TODO: implement sample rom write with serial api, it is super slow...
     /*
     if(s.find("/api/v1/srom/erase") == 0){
-        CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+        tbd::audio::SoundProcessorManager::DisablePluginProcessing();
         // erase flash / lengthy operation
         ESP_LOGI("SERIAL", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
         //ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
-        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+        tbd::audio::SoundProcessorManager::EnablePluginProcessing();
         sendString("{}");
         return;
     }

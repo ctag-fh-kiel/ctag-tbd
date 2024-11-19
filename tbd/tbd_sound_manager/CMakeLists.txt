@@ -10,11 +10,12 @@ target_include_directories(tbd_sound_manager
     PUBLIC include
 )
 target_link_libraries(tbd_sound_manager 
-    PUBLIC rapidjson tbd_sound_registry
+    PUBLIC tbd_sound_registry
     PRIVATE 
         tbd_system 
         tbd_drivers
-        # __idf_tbd_system __idf_espressif__esp-dsp 
+        tbd_presets
+        tbd_config
 )
 
 target_compile_options(tbd_sound_manager PRIVATE

@@ -140,7 +140,7 @@ esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     httpd_resp_set_type(req, "application/json");
-    const char* res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessors();
+    const char* res = tbd::audio::SoundProcessorManager::GetCStrJSONSoundProcessors();
     if(nullptr != res) httpd_resp_sendstr(req, res);
     return ESP_OK;
 }
@@ -158,7 +158,7 @@ esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
     TBD_LOGD(REST_TAG, "Get active plugin for channel %d", ch);
     string res;
     if (ch == 0 || ch == 1) {
-        res = "{\"id\":\"" + CTAG::AUDIO::SoundProcessorManager::GetStringID(ch) + "\"}";
+        res = "{\"id\":\"" + tbd::audio::SoundProcessorManager::GetStringID(ch) + "\"}";
     }
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, res.c_str());
@@ -178,7 +178,7 @@ esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
     ch -= 0x30;
     TBD_LOGD(REST_TAG, "Get plugin params for channel %d", ch);
     if (ch == 0 || ch == 1){
-        const char *res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(ch);
+        const char *res = tbd::audio::SoundProcessorManager::GetCStrJSONActivePluginParams(ch);
         if(nullptr != res) httpd_resp_sendstr(req, res);
     }
 
@@ -204,7 +204,7 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
     ch -= 0x30;
     TBD_LOGD(REST_TAG, "Set active plugin for channel %d %s %s", ch, v, s);
     if (ch == 0 || ch == 1){
-        CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
+        tbd::audio::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
         FAV::Favorites::DeactivateFavorite();
     }
 
@@ -244,7 +244,7 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
     ch -= 0x30;
     TBD_LOGD(REST_TAG, "Setting chan %d param %s key %s value %d", ch, id, key.c_str(), val);
     if (ch == 0 || ch == 1)
-        CTAG::AUDIO::SoundProcessorManager::SetChannelParamValue(ch, sid, key, val);
+        tbd::audio::SoundProcessorManager::SetChannelParamValue(ch, sid, key, val);
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, NULL, 0);
     return ESP_OK;
@@ -260,7 +260,7 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
     ch -= 0x30;
     TBD_LOGD(REST_TAG, "Querying presets for channel %d", ch);
     if (ch == 0 || ch == 1){
-        const char* res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch);
+        const char* res = tbd::audio::SoundProcessorManager::GetCStrJSONGetPresets(ch);
         if(nullptr != res) httpd_resp_sendstr(req, res);
     }
 
@@ -286,7 +286,7 @@ esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
     ch -= 0x30;
     TBD_LOGD(REST_TAG, "Store preset for channel %s %d", req->uri, ch);
     if (ch == 0 || ch == 1)
-        CTAG::AUDIO::SoundProcessorManager::ChannelSavePreset(ch, string(name), atoi(number));
+        tbd::audio::SoundProcessorManager::ChannelSavePreset(ch, string(name), atoi(number));
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, NULL, 0);
     return ESP_OK;
@@ -308,7 +308,7 @@ esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
     ch -= 0x30;
     TBD_LOGD("HTTPD", "Load preset for channel %s %c", req->uri, ch);
     if (ch == 0 || ch == 1){
-        CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(ch, atoi(number));
+        tbd::audio::SoundProcessorManager::ChannelLoadPreset(ch, atoi(number));
         FAV::Favorites::DeactivateFavorite();
     }
     httpd_resp_set_type(req, "text/html");
@@ -575,7 +575,7 @@ esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
         return ESP_FAIL;
     }
     content[req->content_len] = 0;
-    CTAG::AUDIO::SoundProcessorManager::SetConfigurationFromJSON(string(content));
+    tbd::audio::SoundProcessorManager::SetConfigurationFromJSON(string(content));
     free(content);
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, NULL, 0);
@@ -589,7 +589,7 @@ esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
     httpd_resp_set_type(req, "application/json");
-    const char *res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONConfiguration();
+    const char *res = tbd::audio::SoundProcessorManager::GetCStrJSONConfiguration();
     if(nullptr != res) httpd_resp_sendstr(req, res);
     return ESP_OK;
 }
@@ -608,7 +608,7 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
     if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
         TBD_LOGD(REST_TAG, "Sending all preset data of plugin %s as JSON", pluginID);
-        const char *json = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string(pluginID));
+        const char *json = tbd::audio::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string(pluginID));
         if (nullptr != json)
             httpd_resp_sendstr(req, json);
     }
@@ -772,7 +772,7 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
         httpd_resp_sendstr(req, response.c_str());
         httpd_resp_send(req, NULL, 0);
         // call up and persist
-        CTAG::AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID, content);
+        tbd::audio::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID, content);
         // clear up
         heap_caps_free(content);
     } else {
@@ -794,7 +794,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
     }
 
     if(cmd.compare("erase") == 0){
-        CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+        tbd::audio::SoundProcessorManager::DisablePluginProcessing();
         CTAG::FAV::Favorites::DisableFavoritesUI();
         // erase flash / lengthy operation
         TBD_LOGI("REST", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
@@ -803,7 +803,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
         CTAG::FAV::Favorites::EnableFavoritesUI();
-        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+        tbd::audio::SoundProcessorManager::EnablePluginProcessing();
         return ESP_OK;
     }
 
@@ -815,7 +815,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
             httpd_resp_send_500(req);
             return ESP_ERR_NO_MEM;
         }
-        CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+        tbd::audio::SoundProcessorManager::DisablePluginProcessing();
         CTAG::FAV::Favorites::DisableFavoritesUI();
         int blockCnt = 0;
         while (remaining > 0) {
@@ -826,7 +826,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
                 httpd_resp_send_500(req);
                 heap_caps_free(buffer);
                 CTAG::FAV::Favorites::EnableFavoritesUI();
-                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                tbd::audio::SoundProcessorManager::EnablePluginProcessing();
                 heap_caps_free(buffer);
                 return ESP_ERR_INVALID_ARG;
             } else if (data_read > 0) {
@@ -841,7 +841,7 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
                     httpd_resp_send_500(req);
                     heap_caps_free(buffer);
                     CTAG::FAV::Favorites::EnableFavoritesUI();
-                    CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                    tbd::audio::SoundProcessorManager::EnablePluginProcessing();
                     heap_caps_free(buffer);
                     return ESP_ERR_INVALID_ARG;
                 }
@@ -851,9 +851,9 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
         heap_caps_free(buffer);
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
-        CTAG::AUDIO::SoundProcessorManager::RefreshSampleRom();
+        tbd::audio::SoundProcessorManager::RefreshSampleRom();
         CTAG::FAV::Favorites::EnableFavoritesUI();
-        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+        tbd::audio::SoundProcessorManager::EnablePluginProcessing();
         TBD_LOGI("REST", "Sample ROM flashing completed!");
         return ESP_OK;
     }

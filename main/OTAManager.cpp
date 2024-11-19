@@ -271,7 +271,7 @@ esp_err_t OTAManager::flashSPIFFS() {
 esp_err_t OTAManager::InitiateOTA(httpd_req_t *req) {
     // stop audio task
     TBD_LOGI("OTA", "Initiating OTA, stopping audio task.");
-    CTAG::AUDIO::SoundProcessorManager::KillAudioTask();
+    tbd::audio::SoundProcessorManager::KillAudioTask();
     return ESP_OK;
 }
 
