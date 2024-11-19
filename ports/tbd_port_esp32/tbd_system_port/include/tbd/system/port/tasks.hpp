@@ -3,6 +3,8 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/idf_additions.h>
 
+#include <tbd/system/cpu_cores.hpp>
+
 
 namespace tbd::system {
 
@@ -16,7 +18,12 @@ struct Task {
         vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 
-    void begin(task_func_type task_main, void* context, uint8_t priority = 0) {
+    void begin(
+        task_func_type task_main, 
+        void* context, 
+        CpuCore core_id = CpuCore::system,
+        uint8_t priority = 0) 
+    {
         xTaskCreatePinnedToCore(
             task_main, 
             _name, 
@@ -27,7 +34,7 @@ struct Task {
             0);
     }
 
-    void sleep(uint32_t time_ms) {
+    static void sleep(uint32_t time_ms) {
         vTaskDelay(time_ms / portTICK_PERIOD_MS);
     }
 
