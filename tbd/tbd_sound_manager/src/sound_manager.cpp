@@ -70,8 +70,13 @@ void SoundProcessorManager::StartSoundProcessor() {
     audio_worker.begin();
 }
 
+string SoundProcessorManager::GetStringID(const int chan) {
+   sound_level_worker.set_blink_duration(5);
+    return model->GetActiveProcessorID(chan);
+}
 
-void SetSoundProcessorChannel(int chan, const std::string& id) {
+
+void SoundProcessorManager::SetSoundProcessorChannel(int chan, const std::string& id) {
    sound_level_worker.set_blink_duration(5);
 
     // does the SP exist?
@@ -118,13 +123,13 @@ void SetSoundProcessorChannel(int chan, const std::string& id) {
 }
 
 
-void SetChannelParamValue(int chan, const std::string& id, const std::string& key, int val) {
+void SoundProcessorManager::SetChannelParamValue(int chan, const std::string& id, const std::string& key, int val) {
     sound_level_worker.set_blink_duration(3);
     sp[chan]->SetParamValue(id, key, val);
 }
 
 
-void ChannelSavePreset(int chan, const std::string& name, int number) {
+void SoundProcessorManager::ChannelSavePreset(int chan, const std::string& name, int number) {
     sound_level_worker.set_blink_duration(3);
     if (sp[chan] == nullptr) return;
     if (sp[chan] == nullptr) return;
@@ -139,7 +144,7 @@ void ChannelSavePreset(int chan, const std::string& name, int number) {
 }
 
 
-void ChannelLoadPreset(int chan, int number) {
+void SoundProcessorManager::ChannelLoadPreset(int chan, int number) {
     sound_level_worker.set_blink_duration(3);
     if (sp[chan] == nullptr) return;
     {
@@ -308,5 +313,11 @@ void SoundProcessorManager::SetConfigurationFromJSON(const std::string& data) {
         }
     }
 }
+
+void SoundProcessorManager::RefreshSampleRom() {
+    sound_level_worker.set_blink_duration(3);   
+    ctagSampleRom::RefreshDataStructure();
+}
+
 
 }
