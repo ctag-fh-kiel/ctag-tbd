@@ -1,15 +1,17 @@
 #pragma once
 
+#include <cstddef>
 #include <cinttypes>
 
-namespace tbd {
-namespace storage {
 
-using address_type = uint32_t;
-constexpr auto address_size = sizeof(int32_t);
+namespace tbd::storage {
+
+using address_type = size_t;
+constexpr auto address_size = sizeof(address_type);
+
 
 /**
- *  low level stateless flash storage interface
+ *  low level stateless flash ROM storage interface
  */
 struct FlashStorage {
     /**
@@ -25,6 +27,10 @@ struct FlashStorage {
  *   Just as with files, consecutive read and write operations are performed relative 
  *   starting at the end position of the previous read.
  * 
+ *   @arg storage         flash device (physical device)
+ *   @arg block_address   flash offset to start reading and writing (like a file or folder)
+ *   @arg magic_number    hash or magic number to verify the starting offset points to
+ *                        the data to be read (default 0 means no checking)
  */
 template<
     FlashStorage& storage, 
@@ -90,5 +96,4 @@ private:
 
 extern FlashStorage default_flash;
 
-}
 }

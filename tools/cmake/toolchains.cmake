@@ -1,3 +1,4 @@
+include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/platforms.cmake)
 
 # check if toolchain has been set up
@@ -85,6 +86,9 @@ macro(tbd_toolchain_activate)
     tbd_toolchain_is_set()
 
     if ("${TBD_TOOLCHAIN}" STREQUAL "esp32")
+        string(TOLOWER ${TBD_PLATFORM} _tbd_platform_lower)
+        set(SDKCONFIG_DEFAULT "sdkconfig.defaults.${_tbd_platform_lower}")
+
         include($ENV{IDF_PATH}/tools/cmake/project.cmake)
         list(APPEND EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/ports/tbd_port_esp32)
 
@@ -93,10 +97,21 @@ macro(tbd_toolchain_activate)
         idf_build_set_property(TBD_TOOLCHAIN ${TBD_TOOLCHAIN})
         idf_build_set_property(TBD_PLATFORM ${TBD_PLATFORM})
         idf_build_set_property(TBD_PLATFORM_OBJ "${TBD_PLATFORM_OBJ}")
+
+        tbd_set_param(TBD_DRIVERS_PORT_LIB __idf_tbd_drivers_port)    
+        tbd_set_param(TBD_SYSTEM_PORT_LIB __idf_tbd_system_port)      
+        tbd_set_param(TBD_STORAGE_PORT_LIB __idf_tbd_storage_port)  
+        tbd_set_param(TBD_DSP_LIB __idf_espressif__esp-dsp)
+        tbd_set_param(TBD_DISPLAY_PORT_LIB __idf_tbd_display_port)
     elseif ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
-        # no additional includes
+        tbd_set_param(TBD_DRIVERS_PORT_LIB tbd_drivers_port)  
+        tbd_set_param(TBD_SYSTEM_PORT_LIB tbd_system_port)   
+        tbd_set_param(TBD_STORAGE_PORT_LIB tbd_storage_port) 
+        tbd_set_param(TBD_DSP_LIB tbd_dsp) 
+        tbd_set_param(TBD_DISPLAY_PORT_LIB tbd_display_port) 
+ 
     else()
-        tbd_loge("toolchain can not be activated: '${toolchain}'")
+        tbd_loge("toolchain can not be activated: '${TBD_TOOLCHAIN}'")
     endif()
     tbd_toolchain_print_info()
 endmacro()
@@ -111,7 +126,7 @@ endmacro()
 function (tbd_toolchain_add_defines)
     tbd_logv("adding compilation defines")
 
-    tbd_platform_activated()
+    tbd_platform_check()
     tbd_platform_get_features("${TBD_PLATFORM_OBJ}")   
     set(defs ${_return})
     add_compile_definitions(${defs})
@@ -121,7 +136,6 @@ function (tbd_toolchain_add_defines)
     #     idf_build_set_property(TBD_GLOBAL_FLAGS RAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096 APPEND)
     #     idf_build_set_property(TBD_GLOBAL_FLAGS -DRAPIDJSON_HAS_STDSTRING=1 APPEND)
     # endif()
-    tbd_platform_print_features("${TBD_PLATFORM_OBJ}")
 endfunction()
 
 

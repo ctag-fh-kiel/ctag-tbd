@@ -9,4 +9,4 @@ idf_component_register(
     REQUIRES nvs_flash esp_netif esp_wifi mdns
 )
 
-target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_system tbd_storage)
+target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_system tbd_storage_common)

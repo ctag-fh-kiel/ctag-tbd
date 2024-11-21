@@ -2,31 +2,26 @@
 # in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.13)
 
-
 # import all TBD macros and functions
-include(${CMAKE_SOURCE_DIR}/tools/cmake/toolchains.cmake)
-
+include(${CMAKE_SOURCE_DIR}/tools/cmake/project.cmake)
 
 # make sure which platform and which toolchain we are using
 tbd_platform_setup()
 tbd_toolchain_setup(${TBD_PLATFORM})
 
-
 # enable platform and toolchain for the entire project
 tbd_platform_activate()
 tbd_toolchain_activate(${TBD_TOOLCHAIN})
-tbd_toolchain_add_defines()
 
-# general project configuration
-project(ctag-tbd)
+
+tbd_toolchain_add_defines()
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# determine which hardware is targeted and adapt build config
-tbd_toolchain_add_options()
-
+project(ctag-tbd)
+tbd_storages_setup()
 
 
 
@@ -34,6 +29,12 @@ tbd_toolchain_add_options()
 if(NOT TBD_TOOL)
     find_program(TBD_TOOL NAMES tbd PATHS ${CMAKE_SOURCE_DIR/tools/tbd_tools/bin} NO_CACHE)
 endif()
+
+if ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
+    add_subdirectory("${CMAKE_SOURCE_DIR}/apps/desktop")
+    add_subdirectory("${CMAKE_SOURCE_DIR}/ports/tbd_port_desktop")
+endif()
+
 
 # import libraries
 add_subdirectory(vendor)

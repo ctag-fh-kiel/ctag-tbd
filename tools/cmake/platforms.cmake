@@ -2,7 +2,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
 
 set(TBD_PLATFORM_SYSTEMS esp32 desktop)
 set(TBD_PLATFORM_CV_CHIPS adc mcp3208 stm32 midi)
-set(TBD_PLATFORM_AUDIO_CHIPS wm8731 wm8978 wm8974 aic3254 es8388)
+set(TBD_PLATFORM_AUDIO_CHIPS wm8731 wm8978 wm8974 aic3254 es8388 rtaudio)
 set(TBD_PLATFORM_INDICATORS no rgb neopixel)
 
 
@@ -79,7 +79,7 @@ endmacro()
 # raise an error if plotform has not been activated
 #
 #
-macro(tbd_platform_activated)
+macro(tbd_platform_check)
     if ("${TBD_PLATFORM_OBJ}" STREQUAL "")
         tbd_loge("TBD_PLATFORM_OBJ not set, did you forget to call 'tbd_platform_actiate'?")
     endif()
@@ -414,6 +414,19 @@ function (tbd_platform_from_preset platform_name)
             N_CVS 90 
             N_TRIGGERS 40 
             AUDIO_OUTPUT es8388
+            FILE_SYSTEM 
+            DISPLAY 
+            INDICATOR neopixel
+        )
+    elseif (${platform_name} STREQUAL "desktop")
+        tbd_platform(new_platform 
+            NAME "desktop" 
+            SYSTEM desktop
+            CV_INPUT midi 
+            VOLUME_CONTROL
+            N_CVS 90 
+            N_TRIGGERS 40 
+            AUDIO_OUTPUT rtaudio
             FILE_SYSTEM 
             DISPLAY 
             INDICATOR neopixel
