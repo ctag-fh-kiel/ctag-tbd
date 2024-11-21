@@ -123,7 +123,7 @@ void ctagSoundProcessorClaude::Init(std::size_t blockSize, void *blockPtr) {
     LoadPreset(0);
 
     // memallocs
-    block_mem = (uint8_t *) heaps::malloc(memLen, MALLOC_CAP_SPIRAM);
+    block_mem = (uint8_t *) heaps::malloc(memLen, TBD_HEAPS_SPIRAM);
     if(block_mem == NULL){
         TBD_LOGE("Claude", "Cannot alloc ram!");
     }

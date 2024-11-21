@@ -512,7 +512,7 @@ void ctagSoundProcessorSpaceFX::Init(std::size_t blockSize, void *blockPtr)
   eg_adsr.Reset();
 
   // --- Initialize MI Verb ---
-  reverb_buffer = (float *) heaps::malloc(32768 * sizeof(float), MALLOC_CAP_SPIRAM);     // MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT
+  reverb_buffer = (float *) heaps::malloc(32768 * sizeof(float), TBD_HEAPS_SPIRAM);     // MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT
   if(!reverb_buffer)
     TBD_LOGE("MIVerb", "Could not allocate shared buffer!");
   else

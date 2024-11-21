@@ -37,7 +37,7 @@ void ctagSoundProcessorMIVerb2::Init(std::size_t blockSize, void *blockPtr) {
     LoadPreset(0);
 
     reverb_buffer = (float *) heaps::malloc(32768 * sizeof(float),
-                                               MALLOC_CAP_SPIRAM);//MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+                                               TBD_HEAPS_SPIRAM);//MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     if (reverb_buffer == NULL) {
         TBD_LOGE("MIVerb", "Could not allocate shared buffer!");
     }

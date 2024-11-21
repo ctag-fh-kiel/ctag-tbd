@@ -43,11 +43,11 @@ void ctagSoundProcessorStrampDly::Init(std::size_t blockSize, void *blockPtr) {
     msLength = length;
     sampleRate = 44100.f;
     bufLen = ceilf(sampleRate * msMaxLength / 1000.0);
-    bufL = (float *) heaps::calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
+    bufL = (float *) heaps::calloc(bufLen, sizeof(float), TBD_HEAPS_SPIRAM); // mono
     if (bufL == NULL) {
         TBD_LOGE("DELAY", "Could not allocate memory --> delay buffer!");
     }
-    bufR = (float *) heaps::calloc(bufLen, sizeof(float), MALLOC_CAP_SPIRAM); // mono
+    bufR = (float *) heaps::calloc(bufLen, sizeof(float), TBD_HEAPS_SPIRAM); // mono
     if (bufR == NULL) {
         TBD_LOGE("DELAY", "Could not allocate memory --> delay buffer!");
     }

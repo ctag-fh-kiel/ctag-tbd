@@ -105,7 +105,7 @@ void ConfigBase::printJSON(rapidjson::Value &v) {
 }
 
 ConfigBase::ConfigBase() {
-    buffer = (char *) heaps::malloc(MB_BUF_SZ, MALLOC_CAP_SPIRAM);
+    buffer = (char *) heaps::malloc(MB_BUF_SZ, TBD_HEAPS_SPIRAM);
     // if (buffer == nullptr) TBD_LOGE("Model Base", "Fatal: Out of mem!");
 }
 

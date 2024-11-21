@@ -30,9 +30,7 @@ respective component folders / files if different from this license.
 #include "dsps_mulc.h"
 #include "dsps_addc.h"
 
-#ifndef TBD_SIM
-#include "xtensa/core-macros.h"
-#endif
+#include <tbd/system/random.hpp>
 
 using namespace std;
 using namespace CTAG::SP;
@@ -48,8 +46,8 @@ void ctagSoundProcessorSubSynth::Init(std::size_t blockSize, void *blockPtr) {
     memset(fCoeffs, 0, 6 * sizeof(float));
     wNoise.SetBipolar(true);
 #ifndef TBD_SIM
-    wNoise.ReSeed(XTHAL_GET_CCOUNT()); // seed random from CPU time ticks
-    pNoise.ReSeed(XTHAL_GET_CCOUNT());
+    wNoise.ReSeed(tbd::system::get_seed()); // seed random from CPU time ticks
+    pNoise.ReSeed(tbd::system::get_seed());
 #endif
     adsrEnvSum.SetSampleRate(44100.f);
     adsrEnvSum.SetModeExp();

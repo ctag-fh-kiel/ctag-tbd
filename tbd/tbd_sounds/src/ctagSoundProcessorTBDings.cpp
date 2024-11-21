@@ -39,7 +39,7 @@ void ctagSoundProcessorTBDings::Init(std::size_t blockSize, void *blockPtr) {
     reverb_buffer = (uint16_t *) blockPtr;
      */
 
-    reverb_buffer = (uint16_t *) heaps::malloc(32768 * sizeof(uint16_t), MALLOC_CAP_SPIRAM);
+    reverb_buffer = (uint16_t *) heaps::malloc(32768 * sizeof(uint16_t), TBD_HEAPS_SPIRAM);
     assert(reverb_buffer != nullptr);
 
     strummer.Init(0.01f, 44100.0f / bufSz);

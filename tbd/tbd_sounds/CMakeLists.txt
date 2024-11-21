@@ -17,5 +17,5 @@ target_link_libraries(tbd_sounds
         mutable
     PRIVATE 
         tbd_system
-        __idf_espressif__esp-dsp
+        ${TBD_DSP_LIB}
 )
