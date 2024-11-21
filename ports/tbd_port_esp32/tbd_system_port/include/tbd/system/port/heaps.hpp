@@ -40,8 +40,8 @@ inline void* tbd_heaps_malloc(unsigned int size, unsigned int caps) {
 }
 
 inline void* tbd_heaps_malloc_prefer(unsigned int size, unsigned int num, ...) {
-    va_list argp;
-    return heap_caps_malloc_prefer(size, num, argp);
+    va_list pref_list;
+    return heap_caps_malloc_prefer(size, num, pref_list);
 }
 
 inline void tbd_heaps_free(void* ptr) {

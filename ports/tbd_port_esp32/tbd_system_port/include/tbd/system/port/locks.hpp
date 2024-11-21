@@ -25,21 +25,30 @@ bool is_valid() const {
     return _handle != nullptr;
 }
 
-bool try_lock(uint32_t wait_time_ms = 0) {
+bool lock(uint32_t wait_time_ms = 0) {
     if (!is_valid()) {
         TBD_LOGE("tbd_system", "attempting to lock invalid lock");
         return false;
     }
 
     auto wait_time = wait_time_ms == 0 ? portMAX_DELAY : wait_time_ms;
-    return xSemaphoreTake(_handle, wait_time) == pdTRUE;
+    if (xSemaphoreTake(_handle, wait_time) != pdTRUE) {
+        TBD_LOGE("tbd_system", "failed to acquire lock");
+        return false;
+    }   
+
+    return true;
 }
 
-void lock(uint32_t wait_time_ms = 0) {
-    if (!try_lock(wait_time_ms)) {
-        TBD_LOGE("tbd_system", "failed to acquire lock");
-    }   
+bool try_lock() {
+    if (!is_valid()) {
+        TBD_LOGE("tbd_system", "attempting to lock invalid lock");
+        return false;
+    }
+    
+    return xSemaphoreTake(_handle, 0) == pdTRUE;
 }
+
 
 void unlock() {
         if (!is_valid()) {
