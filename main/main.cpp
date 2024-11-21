@@ -26,7 +26,7 @@ respective component folders / files if different from this license.
 #include <vector>
 
 #include "esp_system.h"
-#include "adc.hpp"
+#include <tbd/drivers/cv_inputs.hpp>
 
 #include <tbd/drivers/codec.hpp>
 
