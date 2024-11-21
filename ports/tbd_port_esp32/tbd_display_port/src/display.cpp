@@ -21,7 +21,7 @@ respective component folders / files if different from this license.
 
 #include <string>
 
-#include <tbd/display.hpp>
+#include <tbd/display/common/display.hpp>
 #include <tbd/version.hpp>
 
 extern "C" {
