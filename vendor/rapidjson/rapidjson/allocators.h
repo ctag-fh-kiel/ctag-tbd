@@ -81,7 +81,7 @@ public:
     void* Malloc(size_t size) {
         //ESP_LOGI("CrtAllocator", "Allocating %d bytes", size);
         if (size) //  behavior of malloc(0) is implementation defined.
-            return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+            return tbd_heaps_malloc(size, TBD_HEAPS_SPIRAM);
         else
             return NULL; // standardize to returning NULL.
     }
@@ -89,14 +89,14 @@ public:
         (void)originalSize;
         //ESP_LOGI("CrtAllocator", "Re-allocating %d bytes", newSize);
         if (newSize == 0) {
-            heap_caps_free(originalPtr);
+            tbd_heaps_free(originalPtr);
             return NULL;
         }
-        return heap_caps_realloc(originalPtr, newSize, MALLOC_CAP_SPIRAM);
+        return tbd_heaps_realloc(originalPtr, newSize, TBD_HEAPS_SPIRAM);
     }
     static void Free(void *ptr) {
         //ESP_LOGI("CrtAllocator", "Freeing");
-        heap_caps_free(ptr);
+        tbd_heaps_free(ptr);
     }
 };
 
