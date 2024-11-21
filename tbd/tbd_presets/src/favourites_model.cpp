@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include <tbd/favourites/model.hpp>
+#include <tbd/favorites/model.hpp>
 
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
@@ -27,7 +27,9 @@ respective component folders / files if different from this license.
 #include <tbd/sound_processor/resources.hpp>
 
 
-string CTAG::FAV::FavoritesModel::GetAllFavorites() {
+namespace tbd::favorites {
+
+string FavoritesModel::GetAllFavorites() {
     loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
     json.Clear();
     Writer<StringBuffer> writer(json);
@@ -36,7 +38,7 @@ string CTAG::FAV::FavoritesModel::GetAllFavorites() {
     return json.GetString();
 }
 
-string CTAG::FAV::FavoritesModel::GetFavorite(int const &i) {
+string FavoritesModel::GetFavorite(int const &i) {
     loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
     json.Clear();
     Writer<StringBuffer> writer(json);
@@ -46,21 +48,21 @@ string CTAG::FAV::FavoritesModel::GetFavorite(int const &i) {
     return json.GetString();
 }
 
-string CTAG::FAV::FavoritesModel::GetFavoriteName(int const &i) {
+string FavoritesModel::GetFavoriteName(int const &i) {
     loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
     if (!m.IsArray()) return "";
     Value o = m[i].GetObject();
     return o["name"].GetString();
 }
 
-string CTAG::FAV::FavoritesModel::GetFavoriteUString(int const &i) {
+string FavoritesModel::GetFavoriteUString(int const &i) {
     loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
     if (!m.IsArray()) return "";
     Value o = m[i].GetObject();
     return o["ustring"].GetString();
 }
 
-string CTAG::FAV::FavoritesModel::GetFavoritePluginID(int const &i, const int &channel) {
+string FavoritesModel::GetFavoritePluginID(int const &i, const int &channel) {
     loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
     if (!m.IsArray()) return "";
     if (!m[i].IsObject()) return "";
@@ -70,7 +72,7 @@ string CTAG::FAV::FavoritesModel::GetFavoritePluginID(int const &i, const int &c
     return "";
 }
 
-int CTAG::FAV::FavoritesModel::GetFavoritePreset(int const &i, const int &channel) {
+int FavoritesModel::GetFavoritePreset(int const &i, const int &channel) {
     loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
     if (!m.IsArray()) return 0;
     string key {"pre_0"};
@@ -79,11 +81,13 @@ int CTAG::FAV::FavoritesModel::GetFavoritePreset(int const &i, const int &channe
     return 0;
 }
 
-void CTAG::FAV::FavoritesModel::SetFavorite(int const &id, const string &data) {
+void FavoritesModel::SetFavorite(int const &id, const string &data) {
     loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
     if (!m.IsArray()) return;
     Document d;
     d.Parse(data);
     m[id] = d.Move();
     storeJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+}
+
 }

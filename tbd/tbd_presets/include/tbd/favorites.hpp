@@ -19,34 +19,39 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-
 #pragma once
 
 
-#include <string>
-#include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
+#include <atomic>
 
-#include <tbd/config_base.hpp>
-
-using namespace std;
-using namespace rapidjson;
+#include <tbd/favorites/model.hpp>
 
 
-namespace CTAG::FAV {
+namespace tbd {
 
-struct FavoritesModel final : public tbd::config::ConfigBase {
+class Favorites final {
+public:
+    Favorites() = delete;
+    static string GetAllFavorites();
+    static void StoreFavorite(int const &id, const string &fav);
+    static void ActivateFavorite(const int &id);
+    static void DeactivateFavorite();
+    static void DisableFavoritesUI();
+    static void EnableFavoritesUI();
+    static void StartUI();
 
-    string GetAllFavorites();
-    string GetFavorite(int const &i);
-    string GetFavoriteName(int const &i);
-    string GetFavoriteUString(int const &i);
-    string GetFavoritePluginID(int const &i, int const &channel);
-    int GetFavoritePreset(int const &i, int const &channel);
-    void SetFavorite(int const &id, const string &data);
+#if TBD_CV_MIDI
+    static void SetProgramChangeValue(uint32_t const &v);
+#endif
 
+    static void TouchPadHandler();
 private:
-    Document m;
+
+
+#if TBD_CV_MIDI
+    static std::atomic<uint32_t> programChangeValue;
+#endif
+
 };
 
 }
