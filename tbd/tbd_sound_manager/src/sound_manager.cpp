@@ -4,7 +4,7 @@
 
 #include <tbd/system/modules.hpp>
 #include <tbd/drivers/codec.hpp>
-#include <tbd/favourites.hpp>
+#include <tbd/favorites.hpp>
 
 // same compilation unit
 #include "audio_worker.hpp"
@@ -62,10 +62,10 @@ void SoundProcessorManager::StartSoundProcessor() {
     SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
     SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
     TBD_LOGI("SPManager", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
 
     audio_worker.begin();
 }
@@ -115,10 +115,10 @@ void SoundProcessorManager::SetSoundProcessorChannel(int chan, const std::string
 
 
     TBD_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
 
 }
 
@@ -158,7 +158,7 @@ void SoundProcessorManager::ChannelLoadPreset(int chan, int number) {
 
 
 void SoundProcessorManager::KillAudioTask() {
-    CTAG::FAV::Favorites::DisableFavoritesUI();
+    Favorites::DisableFavoritesUI();
     drivers::Codec::SetOutputLevels(0, 0);
     // stop audio Task, delete plugins
     audio_worker.end(true);
@@ -173,10 +173,10 @@ void SoundProcessorManager::KillAudioTask() {
     drivers::Indicator::SetLedRGB(255, 0, 255);
 #endif
     TBD_LOGI("SPManager", "Audio Task Killed: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
 }
 
 

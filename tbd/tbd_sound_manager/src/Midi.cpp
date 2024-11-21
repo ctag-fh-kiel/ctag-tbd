@@ -25,6 +25,10 @@ respective component folders / files if different from this license.
 #include <cstring>
 #include <algorithm>
 
+#include <tbd/drivers/midi_uart.hpp>
+#include <tbd/drivers/midi_usb.hpp>
+
+
 // FIXME: MIDI needs to set program change value
 // #include "Favorites.hpp"
 
@@ -749,9 +753,6 @@ void Midi::noteOff(uint8_t* msg)
     return; // We don't process note-off velocity!
 }
 
-#include "midiuart.hpp"
-#include "tusbmidi.hpp"
-
 // Provide methods and data for MIDI-message processing and communiction of detected events to audio-thread
 
 #define MIDI_BUF_SZ (RX_BUF_SIZE+32)
@@ -761,16 +762,16 @@ void Midi::noteOff(uint8_t* msg)
 #define DATA_SZ  (N_CVS * 4 + N_TRIGS + 2)
 
 // --- Instanciate objects for lowlevel and highlevel MIDI processing ---
-static CTAG::DRIVERS::midiuart midiuart_instance;              // UART reader (and writer) for MIDI-messages
-DRAM_ATTR static CTAG::CTRL::Midi distribute;     // Instanciate Midi-Class as object for MIDI-message distribution, according to events mapped via WebUI
+static tbd::drivers::MidiUart midiuart_instance;              // UART reader (and writer) for MIDI-messages
+TBD_DRAM static CTAG::CTRL::Midi distribute;     // Instanciate Midi-Class as object for MIDI-message distribution, according to events mapped via WebUI
 
 // === Buffer to pass on MIDI-Event as virtual CV and Gate 'voltages', normalized to -1.f...+1.f (CV) and 0 or 1 integers (Triggers/Gates) ===
-DRAM_ATTR static uint8_t buf0[DATA_SZ];     // Common Array of Data for CVs and Triggers, will be passed on at audio-rate, so that Plugins can process this data
-DRAM_ATTR static float *midi_data = (float *) buf0; // CVs: Array of floats, positioned directly before Triggers in a common array for CVs+Triggers
-DRAM_ATTR static uint8_t *midi_note_trig = &buf0[N_CVS * 4];  // Triggers: Array of Bytes, positioned directly behind CVs in a common array for CVs+Triggers
+TBD_DRAM static uint8_t buf0[DATA_SZ];     // Common Array of Data for CVs and Triggers, will be passed on at audio-rate, so that Plugins can process this data
+TBD_DRAM static float *midi_data = (float *) buf0; // CVs: Array of floats, positioned directly before Triggers in a common array for CVs+Triggers
+TBD_DRAM static uint8_t *midi_note_trig = &buf0[N_CVS * 4];  // Triggers: Array of Bytes, positioned directly behind CVs in a common array for CVs+Triggers
 
 // --- MIDI incomind messages buffer to be read via UART ---
-DRAM_ATTR static uint8_t msgBuffer[MIDI_BUF_SZ]; // ## ??? Message-buffer for MIDI-parsing with added alligned space, in principle we only need 130 (128+2) Byte, though...
+TBD_DRAM static uint8_t msgBuffer[MIDI_BUF_SZ]; // ## ??? Message-buffer for MIDI-parsing with added alligned space, in principle we only need 130 (128+2) Byte, though...
 
 #ifdef DEBUG_MIDI
 // debug queue
@@ -791,9 +792,9 @@ DRAM_ATTR static uint8_t msgBuffer[MIDI_BUF_SZ]; // ## ??? Message-buffer for MI
 
 
 // === Persistant variables for MIDI-parsing ===
-DRAM_ATTR static uint8_t missing_bytes_offset = 0;   // We may have to add that before we fetch our next buffer?
-DRAM_ATTR static int len = 0;
-DRAM_ATTR static uint8_t *ptr = NULL;
+TBD_DRAM static uint8_t missing_bytes_offset = 0;   // We may have to add that before we fetch our next buffer?
+TBD_DRAM static int len = 0;
+TBD_DRAM static uint8_t *ptr = NULL;
 static uint8_t current_status = 0;    // Current status byte to be remembered in case of a running-status situation
 static uint8_t loc_msg[8];            // Local message to be constructed in a running-status situation
 
@@ -822,7 +823,7 @@ void Midi::Init() {
     memset(midi_note_trig, 1,
            N_TRIGS);             // Reset "virtual Gate/Trigger"-data at startup (1==off aka TRIG_OFF)
     distribute.setCVandTriggerPointers(midi_data, midi_note_trig);    // Pass on pointer to CV and Trigger shared data
-    CTAG::DRIVERS::tusbmidi::Init();
+    tbd::drivers::MidiUsb::Init();
 }
 
 // ===  MIDI-parsing method (Please note: Running status is not processed correctly with this implementation!) ===
@@ -846,7 +847,7 @@ uint8_t *Midi::Update() {
             }
         }
         ================================================================== */
-        len2 =  CTAG::DRIVERS::tusbmidi::Read(&msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32);
+        len2 =  tbd::drivers::MidiUsb::Read(&msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32);
 
         // get all available MIDI messages from UART
         if (missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) // safety margin

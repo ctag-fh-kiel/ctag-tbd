@@ -21,7 +21,7 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "input_manager.hpp"
-#include "adc.hpp"
+#include <tbd/drivers/cv_inputs.hpp>
 #include <tbd/logging.hpp>
 
 #if TBD_CALIBRATION
@@ -34,7 +34,7 @@ respective component folders / files if different from this license.
     uint8_t CTAG::AUDIO::InputManager::trig_data[N_TRIGS];
     float CTAG::AUDIO::InputManager::cv_data[N_CVS];
 #elif TBD_CV_STM32
-#include "mk2.hpp"
+#include <tbd/drivers/cv_inputs_stm32.hpp>
 #elif TBD_CV_MIDI
 #include "Midi.hpp"
 #else

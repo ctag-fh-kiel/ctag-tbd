@@ -22,8 +22,8 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-#include "esp_attr.h"
-#include "midiuart.hpp"
+#include <tbd/drivers/midi_uart.hpp>
+#include <tbd/ram.hpp>
 
 
 // --- Define-contants for MIDI-mapping-related stuff --- 
@@ -72,7 +72,7 @@ namespace CTAG::CTRL
 
         static void Init();
 
-        IRAM_ATTR static uint8_t *Update();
+        TBD_IRAM static uint8_t *Update();
 
         static void Flush();
 
