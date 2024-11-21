@@ -23,7 +23,6 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <stdint.h>
-#include "sdkconfig.h"
 
 
 namespace tbd::drivers {
