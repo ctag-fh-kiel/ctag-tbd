@@ -49,7 +49,7 @@ void CTAG::SP::HELPERS::ctagFBDelayLine::Process(float *samples, const uint32_t 
 
 CTAG::SP::HELPERS::ctagFBDelayLine::ctagFBDelayLine(uint32_t maxLength) {
     maxLen = maxLength;
-    buffer = (float *) heaps::malloc(maxLength * sizeof(float), MALLOC_CAP_SPIRAM);
+    buffer = (float *) heaps::malloc(maxLength * sizeof(float), TBD_HEAPS_SPIRAM);
     if (buffer == nullptr) {
         TBD_LOGE("FBDLYLINE", "Out of memory!");
         return;

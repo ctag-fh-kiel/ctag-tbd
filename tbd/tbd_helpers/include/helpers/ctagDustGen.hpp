@@ -26,9 +26,10 @@ respective component folders / files if different from this license.
 #include <cstdint>
 #include "ctagWNoiseGen.hpp"
 
-#ifndef TBD_SIM
-#include "xtensa/core-macros.h"
-#endif
+// FIXME: tbd lib needed
+// #ifndef TBD_SIM
+// #include "xtensa/core-macros.h"
+// #endif
 
 // after supercollider dust
 
@@ -37,7 +38,7 @@ namespace CTAG::SP::HELPERS {
     public:
         ctagDustGen() :
 #ifndef TBD_SIM
-                wnoise(XTHAL_GET_CCOUNT()) // seed noise generator with system tick count
+                wnoise() // seed noise generator with system tick count
 #else
                 wnoise(42)
 #endif

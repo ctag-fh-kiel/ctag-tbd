@@ -46,13 +46,13 @@ namespace CTAG::SP::HELPERS{
         void BufferInSPIRAM();
         bool IsBufferedInSPIRAM();
     private:
-        static uint32_t totalSize;
+        static size_t totalSize;
         static uint32_t numberSlices;
-        static uint32_t headerSize;
-        static uint32_t *sliceSizes;
-        static uint32_t *sliceOffsets;
-        static uint32_t firstNonWtSlice;
-        static atomic<uint32_t>  nConsumers;
+        static size_t headerSize;
+        static size_t *sliceSizes;
+        static size_t *sliceOffsets;
+        static size_t firstNonWtSlice;
+        static atomic<uint32_t> nConsumers;
         static int16_t *ptrSPIRAM;
         static uint32_t nSlicesBuffered;
     };

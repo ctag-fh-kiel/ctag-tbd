@@ -18,8 +18,9 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
 #include "helpers/ctagSampleRom.hpp"
+
+#include <assert.h>
 #include <cstring>
 #include <tbd/logging.hpp>
 #include <tbd/heaps.hpp>
@@ -29,16 +30,16 @@ respective component folders / files if different from this license.
 namespace heaps = tbd::heaps;
 namespace storage = tbd::storage;
 
-using SampleReader = storage::FlashReader<storage::default_flash, CONFIG_SAMPLE_ROM_START_ADDRESS, 0xdeadface>;
+using SampleReader = storage::FlashReader<storage::default_flash, TBD_STORAGE_SAMPLES_ADDRESS, 0xdeadface>;
 
 namespace CTAG::SP::HELPERS {
     atomic<uint32_t> ctagSampleRom::nConsumers = 0;
-    uint32_t ctagSampleRom::totalSize = 0;
+    size_t ctagSampleRom::totalSize = 0;
     uint32_t ctagSampleRom::numberSlices = 0;
-    uint32_t ctagSampleRom::headerSize = 0;
-    uint32_t *ctagSampleRom::sliceSizes = nullptr;
-    uint32_t *ctagSampleRom::sliceOffsets = nullptr;
-    uint32_t ctagSampleRom::firstNonWtSlice = 0;
+    size_t ctagSampleRom::headerSize = 0;
+    size_t *ctagSampleRom::sliceSizes = nullptr;
+    size_t *ctagSampleRom::sliceOffsets = nullptr;
+    size_t ctagSampleRom::firstNonWtSlice = 0;
     int16_t *ctagSampleRom::ptrSPIRAM = nullptr;
     uint32_t ctagSampleRom::nSlicesBuffered = 0;
 
@@ -137,14 +138,14 @@ namespace CTAG::SP::HELPERS {
         }
 
         SampleReader reader;
-        auto total_size = reader.read<uint32_t>();
+        auto total_size = reader.read<size_t>();
         auto number_slices = reader.read<uint32_t>();
 
-        TBD_LOGD("SROM", "Number slices %li", numberSlices);
+        TBD_LOGD("SROM", "Number slices [ %" PRIu32" ]", numberSlices);
         // alloc memory
-        sliceOffsets = (uint32_t *) heaps::malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
+        sliceOffsets = (size_t*) heaps::malloc(numberSlices * sizeof(uint32_t), TBD_HEAPS_SPIRAM);
         assert(sliceOffsets != nullptr);
-        sliceSizes = (uint32_t *) heaps::malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
+        sliceSizes = (size_t*) heaps::malloc(numberSlices * sizeof(uint32_t), TBD_HEAPS_SPIRAM);
         assert(sliceSizes != nullptr);
         //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 12, &sliceOffsets[0], 4 * numberSlices);
 
@@ -156,7 +157,7 @@ namespace CTAG::SP::HELPERS {
             sliceSizes[i] = sliceOffsets[i] - lastOffset;
             lastOffset = sliceOffsets[i];
             sliceOffsets[i] -= sliceSizes[i];
-            TBD_LOGD("SROM", "Slice size %li, offset %li", sliceSizes[i], sliceOffsets[i]);
+            TBD_LOGD("SROM", "Slice size %zd offset %zd", sliceSizes[i], sliceOffsets[i]);
         }
         // get first non Wt Slice
         for (int i = 0; i < numberSlices; i++) {
@@ -204,22 +205,22 @@ namespace CTAG::SP::HELPERS {
 
     void ctagSampleRom::BufferInSPIRAM() {
         if(ptrSPIRAM != nullptr) return; // already buffered
-        size_t maxSizeBytes = heaps::get_largest_free_block(MALLOC_CAP_SPIRAM);
+        size_t maxSizeBytes = heaps::get_largest_free_block(TBD_HEAPS_SPIRAM);
         maxSizeBytes -= 128*1024; // reserve 128k for other stuff
         if(maxSizeBytes < 1024*1024) return; // not enough memory for this to make sense
-        ptrSPIRAM = (int16_t *)heaps::malloc(maxSizeBytes, MALLOC_CAP_SPIRAM);
+        ptrSPIRAM = (int16_t *)heaps::malloc(maxSizeBytes, TBD_HEAPS_SPIRAM);
         if(ptrSPIRAM == nullptr) return;
-        TBD_LOGI("SR", "Buffering %d bytes in SPIRAM", maxSizeBytes);
+        TBD_LOGI("SR", "Buffering %zd bytes in SPIRAM", maxSizeBytes);
         // figure out how many slices can be buffered
-        uint32_t maxSizeWords = maxSizeBytes / 2;
+        size_t maxSizeWords = maxSizeBytes / 2;
         nSlicesBuffered = 0;
-        uint32_t totalSizeWords = 0;
+        size_t totalSizeWords = 0;
         for(uint32_t i=0;i<numberSlices;i++){
             if(totalSizeWords + sliceSizes[i] > maxSizeWords) break;
             totalSizeWords += sliceSizes[i];
             nSlicesBuffered++;
         }
-        TBD_LOGI("SR", "Buffering %li slices of %li, consuming %li bytes", nSlicesBuffered, numberSlices, totalSizeWords*2);
+        TBD_LOGI("SR", "Buffering [%" PRIu32 "] slices of [%" PRIu32 "], consuming %zd bytes", nSlicesBuffered, numberSlices, totalSizeWords*2);
         Read(ptrSPIRAM, 0, totalSizeWords);
     }
 }
