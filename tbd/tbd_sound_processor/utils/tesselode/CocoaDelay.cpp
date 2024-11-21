@@ -145,13 +145,13 @@ void CocoaDelay::InitBuffer() {
     std::fill(bufferL.begin(), bufferL.end(), 0.f);
     std::fill(bufferR.begin(), bufferR.end(), 0.f);
      */
-    bufferL = (float *) heaps::malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    bufferL = (float *) heaps::malloc(sizeof(float) * GetSampleRate() * tapeLength, TBD_HEAPS_SPIRAM);
     if(bufferL == NULL){
         TBD_LOGE("CDelay", "Could not allocate buffer L in SPIRAM!");
         return;
     }
     memset(bufferL, 0, sizeof(float) * GetSampleRate() * tapeLength);
-    bufferR = (float *) heaps::malloc(sizeof(float) * GetSampleRate() * tapeLength, MALLOC_CAP_SPIRAM);
+    bufferR = (float *) heaps::malloc(sizeof(float) * GetSampleRate() * tapeLength, TBD_HEAPS_SPIRAM);
     if(bufferL == NULL){
         TBD_LOGE("CDelay", "Could not allocate buffer R in SPIRAM!");
         return;

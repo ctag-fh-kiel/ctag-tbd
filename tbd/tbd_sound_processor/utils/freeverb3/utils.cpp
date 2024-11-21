@@ -253,7 +253,7 @@ void *FV3_(utils)::fv3_malloc(size_t size){
         return ptr;
     }
     TBD_LOGD("fv3", "Falling back to regular malloc prefer internal, then SPIRAM");
-    ptr = heaps::malloc_prefer(size, MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM);
+    ptr = heaps::malloc_prefer(size, TBD_HEAPS_INTERNAL | TBD_HEAPS_8BIT, TBD_HEAPS_SPIRAM);
     for(int i = 0; i < MAX_ALLOCS; i++){
         if(allocsSPIRAM[i] == nullptr){
             allocsSPIRAM[i] = ptr;

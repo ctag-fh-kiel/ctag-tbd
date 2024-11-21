@@ -39,10 +39,10 @@ std::size_t ctagSPAllocator::size2 = 0;
 ctagSPAllocator::AllocationType ctagSPAllocator::allocationType = ctagSPAllocator::AllocationType::CH0;
 
 void ctagSPAllocator::AllocateInternalBuffer(std::size_t const &size) {
-    TBD_LOGI("ctagSPAllocator", "AllocateInternalBuffer: allocating %d bytes", size);
-    internalBuffer = heaps::malloc(size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    TBD_LOGI("ctagSPAllocator", "AllocateInternalBuffer: allocating %zd bytes", size);
+    internalBuffer = heaps::malloc(size, TBD_HEAPS_INTERNAL | TBD_HEAPS_8BIT);
     if(nullptr == internalBuffer){
-        TBD_LOGE("ctagSPAllocator", "AllocateInternalBuffer: could not allocate memory of size %d", size);
+        TBD_LOGE("ctagSPAllocator", "AllocateInternalBuffer: could not allocate memory of size %zd", size);
         assert(nullptr != internalBuffer);
     }
     totalSize = size;
@@ -67,7 +67,7 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer1 = static_cast<uint8_t *>(buffer1) + size;
             size1 -= size;
         }else{
-            TBD_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH0 request %d bytes, %d bytes free", size, size1);
+            TBD_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH0 request %zd bytes, %zd bytes free", size, size1);
             assert(false);
         }
     }else if(allocationType == AllocationType::CH1){
@@ -76,7 +76,7 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer2 = static_cast<uint8_t *>(buffer2) + size;
             size2 -= size;
         }else{
-            TBD_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH1 request %d bytes, %d bytes free", size, size1);
+            TBD_LOGE("ctagSPAllocator", "Allocate: not enough memory for CH1 request %zd bytes, %zd bytes free", size, size1);
             assert(false);
         }
     }else if(allocationType == AllocationType::STEREO){
@@ -85,19 +85,19 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
             buffer1 = static_cast<uint8_t *>(buffer1) + size;
             size1 -= size;
         }else{
-            TBD_LOGE("ctagSPAllocator", "Allocate: not enough memory for STEREO request %d bytes, %d bytes free", size, size1);
+            TBD_LOGE("ctagSPAllocator", "Allocate: not enough memory for STEREO request %zd bytes, %zd bytes free", size, size1);
             assert(false);
         }
     }
     switch(allocationType){
         case AllocationType::CH0:
-            TBD_LOGI("ctagSPAllocator", "Allocate: allocating CH0 %d bytes object size, ch0 %d bytes blockMem", size, size1);
+            TBD_LOGI("ctagSPAllocator", "Allocate: allocating CH0 %zd bytes object size, ch0 %zd bytes blockMem", size, size1);
             break;
         case AllocationType::CH1:
-            TBD_LOGI("ctagSPAllocator", "Allocate: allocating CH1 %d bytes object size, ch1 %d bytes blockMem", size, size2);
+            TBD_LOGI("ctagSPAllocator", "Allocate: allocating CH1 %zd bytes object size, ch1 %zd bytes blockMem", size, size2);
             break;
         case AllocationType::STEREO:
-            TBD_LOGI("ctagSPAllocator", "Allocate: allocating STEREO %d bytes object size, %d bytes blockMem", size, size1);
+            TBD_LOGI("ctagSPAllocator", "Allocate: allocating STEREO %zd bytes object size, %zd bytes blockMem", size, size1);
             break;
         default:
             TBD_LOGE("ctagSPAllocator", "Allocate: unknown allocation type");
@@ -108,10 +108,10 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
 
 std::size_t ctagSPAllocator::GetRemainingBufferSize() {
     if(allocationType == AllocationType::CH0 || allocationType == AllocationType::STEREO){
-        TBD_LOGD("ctagSPAllocator", "GetRemainingBuffer: CH0 or STEREO %d bytes free", size1);
+        TBD_LOGD("ctagSPAllocator", "GetRemainingBuffer: CH0 or STEREO %zd bytes free", size1);
         return size1;
     }else if(allocationType == AllocationType::CH1){
-        TBD_LOGD("ctagSPAllocator", "GetRemainingBuffer: CH1 %d bytes free", size2);
+        TBD_LOGD("ctagSPAllocator", "GetRemainingBuffer: CH1 %zd bytes free", size2);
         return size2;
     }else
         TBD_LOGE("ctagSPAllocator", "GetRemainingBufferSize: unknown allocation type");

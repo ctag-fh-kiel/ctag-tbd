@@ -23,8 +23,9 @@ respective component folders / files if different from this license.
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-#include <tbd/logging.hpp>
 #include <tbd/sound_processor/resources.hpp>
+
+#include <tbd/logging.hpp>
 
 /*
 #ifndef TBD_SIM

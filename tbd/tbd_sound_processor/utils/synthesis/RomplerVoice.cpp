@@ -27,6 +27,8 @@ respective component folders / files if different from this license.
 #include "dsps_biquad.h"
 #include "stmlib/dsp/units.h"
 #include "clouds/resources.h" // use fade lut
+#include <assert.h>
+
 
 namespace CTAG::SYNTHESIS {
     inline float InterpolateWave( // use this to save more cpu, however correct zdelays to 2 instead of 4

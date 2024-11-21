@@ -143,8 +143,8 @@ namespace airwindows {
     }
 
     EChorus::EChorus() {
-        dL = (float *) heaps::malloc(totalsamples * sizeof(float), MALLOC_CAP_SPIRAM);
-        dR = (float *) heaps::malloc(totalsamples * sizeof(float), MALLOC_CAP_SPIRAM);
+        dL = (float *) heaps::malloc(totalsamples * sizeof(float), TBD_HEAPS_SPIRAM);
+        dR = (float *) heaps::malloc(totalsamples * sizeof(float), TBD_HEAPS_SPIRAM);
         for (int count = 0; count < totalsamples - 1; count++) {
             dL[count] = 0;
             dR[count] = 0;

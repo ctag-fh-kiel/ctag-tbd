@@ -42,7 +42,7 @@ target_link_libraries(tbd_sound_processor
         tbd_helpers
         mutable
         tbd_system
-        __idf_espressif__esp-dsp 
+        ${TBD_DSP_LIB}
 )
 target_compile_options(tbd_sound_processor PRIVATE
         -Wno-unused-local-typedefs

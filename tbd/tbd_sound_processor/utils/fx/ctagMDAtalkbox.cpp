@@ -51,11 +51,11 @@ typedef float TalkboxArray[SP_TALKBOX_BUFMAX];
 
 ctagMDAtalkbox::ctagMDAtalkbox()
 {
-  car0p = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT );
-  car1p = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
-  windowp = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
-  buf0p = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
-  buf1p = (float*)heaps::malloc(sizeof(TalkboxArray), MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT  );
+  car0p = (float*)heaps::malloc(sizeof(TalkboxArray), TBD_HEAPS_INTERNAL | TBD_HEAPS_8BIT);
+  car1p = (float*)heaps::malloc(sizeof(TalkboxArray), TBD_HEAPS_INTERNAL | TBD_HEAPS_8BIT);
+  windowp = (float*)heaps::malloc(sizeof(TalkboxArray), TBD_HEAPS_INTERNAL | TBD_HEAPS_8BIT);
+  buf0p = (float*)heaps::malloc(sizeof(TalkboxArray), TBD_HEAPS_INTERNAL | TBD_HEAPS_8BIT);
+  buf1p = (float*)heaps::malloc(sizeof(TalkboxArray), TBD_HEAPS_INTERNAL | TBD_HEAPS_8BIT);
   // --- Vocoder quality HiFi is 1.f, LoFi is 0.4 or worse ---
   Init(44100.f, 1.f );    // Internal call of Init - call Init again if you need a different samplerate or LoFi Vocoder Quality
 }

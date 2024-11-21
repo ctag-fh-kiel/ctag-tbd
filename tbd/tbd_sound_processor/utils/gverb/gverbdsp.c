@@ -99,7 +99,7 @@ ty_fixeddelay *fixeddelay_make(int size) {
     p = (ty_fixeddelay *) gverb_malloc(sizeof(ty_fixeddelay));
     p->size = size;
     p->idx = 0;
-    p->buf = (float *) tbd_heaps_calloc(size * sizeof(float), 1, MALLOC_CAP_SPIRAM);
+    p->buf = (float *) tbd_heaps_calloc(size * sizeof(float), 1, TBD_HEAPS_SPIRAM);
     //TBD_LOGI("GVERB DSP", "Allocated %d bytes for delay line %p", size*sizeof(float), p->buf);
     for (i = 0; i < size; i++) p->buf[i] = 0.0f;
     return (p);

@@ -209,7 +209,7 @@ namespace airwindows {
     }
 
     TDelay::TDelay(){
-        d = (float *) heaps::malloc(length * sizeof(float), MALLOC_CAP_SPIRAM);
+        d = (float *) heaps::malloc(length * sizeof(float), TBD_HEAPS_SPIRAM);
         A = 1.0;
         B = 0.0;
         C = 0.5;
