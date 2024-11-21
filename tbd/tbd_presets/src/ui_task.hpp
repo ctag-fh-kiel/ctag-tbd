@@ -9,14 +9,6 @@
 #define TIMEOUT_PERIOD_MS 5000
 
 
-#if TBD_CV_MIDI
-    #include "driver/touch_pad.h"
-    #define TOUCH_PAD TOUCH_PAD_NUM6
-#endif
-
-
-
-
 namespace tbd::favorites {
 
 favorites::FavoritesModel model;
@@ -62,6 +54,7 @@ private:
 
 uint32_t UIWorker::do_begin() {
     Display::Clear();
+    _is_enabled = true;
     return 0;
 }
 
@@ -85,7 +78,7 @@ uint32_t UIWorker::do_work() {
     }
 #elif CONFIG_TBD_PLATFORM_BBA
     uint32_t touch_value;
-    touch_pad_read_raw_data(TOUCH_PAD, &touch_value);    // read raw data.
+        // read raw data.
     uint32_t pchgval = programChangeValue.load();
     if(pchgval != previousProgramChangeValue){
         previousProgramChangeValue = pchgval;

@@ -83,10 +83,7 @@ void Favorites::StartUI() {
 
         xTaskCreatePinnedToCore(&Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
 #elif CONFIG_TBD_PLATFORM_BBA
-        touch_pad_init();
-        touch_pad_config(TOUCH_PAD);
-        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-        touch_pad_fsm_start();
+        TouchPad::init();
         std::vector<std::string> vs;
         vs.emplace_back("Touch sensor");
         vs.emplace_back("calibration:");
@@ -94,13 +91,10 @@ void Favorites::StartUI() {
         Display::ShowUserString(vs);
         vTaskDelay(2000/ portTICK_PERIOD_MS);
         uint32_t touch_value;
-        for(int i=0;i<16;i++){
-            touch_pad_read_raw_data(TOUCH_PAD, &touch_value);
-            noTouch += touch_value;
-        }
-        noTouch /= 16;
+        TouchPad::calibrate();
         xTaskCreatePinnedToCore(&Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
 #endif
+    ui_worker.begin();
     ui_worker.enable();
 }
 
