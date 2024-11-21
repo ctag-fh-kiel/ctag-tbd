@@ -1,1 +1,5 @@
-add_subdirectory(tbd_system)
+add_subdirectory(tbd_system_port)
+add_subdirectory(tbd_drivers_port)
+add_subdirectory(tbd_storage_port)
+add_subdirectory(tbd_dsp)
+add_subdirectory(tbd_display_port)
