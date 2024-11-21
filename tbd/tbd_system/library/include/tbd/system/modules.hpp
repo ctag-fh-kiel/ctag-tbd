@@ -26,6 +26,7 @@ enum class TaskState {
     crashed      = 6,
 };
 
+
 template<ModuleType ModuleT, CpuCore core_id>
 struct ModuleTask : ModuleT {
     ModuleTask(const char* name): _task(name) {}
