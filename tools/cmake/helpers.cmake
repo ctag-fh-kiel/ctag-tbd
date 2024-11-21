@@ -59,7 +59,6 @@ endfunction()
 #
 function(tbd_get_from_config_file file var)
     file(STRINGS "${file}" file_lines)
-    message("FILE LINES ${file_lines}")
     string(REGEX MATCH ";\\s*${var}+\\s*=\\s*([^#\\s;]*)" value "${file_lines}")
     if (NOT "$value" STREQUAL "")
         tbd_store_or_return("${CMAKE_MATCH_1}" ${ARGN})
