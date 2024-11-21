@@ -1,3 +1,4 @@
+#pragma once
 /***************
 CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 
@@ -19,19 +20,18 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
+#include "driver/spi_slave.h"
 
-#pragma once
-
-#include <cstdint>
+#include <tbd/ram.hpp>
 
 namespace tbd::drivers {
 
-class GPIO {
-public:
-    static void InitGPIO();
+struct CVInputsStm32 final{
+    CVInputsStm32() = delete;
 
-    static uint8_t GetTrig0();
-    static uint8_t GetTrig1();
+    static void Init();
+    
+    TBD_IRAM static void* Update();
 };
 
 }

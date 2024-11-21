@@ -18,11 +18,11 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
+#include <tbd/drivers/common/cv_input_stm32.hpp>
 
 #include "esp_log.h"
 #include "esp_intr_alloc.h"
-#include "mk2.hpp"
+
 
 #define GPIO_MOSI 13
 #define GPIO_MISO 12
@@ -32,12 +32,16 @@ respective component folders / files if different from this license.
 #define DMA_CHAN    2
 #define DATA_SZ 102 //N_CVS*4 + N_TRIGS + 2 // is ncvs * 4 + ntrigs + 2 reserved
 
-DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::mk2::transaction[2];
-DRAM_ATTR uint32_t CTAG::DRIVERS::mk2::currentTransaction;
-DMA_ATTR uint8_t CTAG::DRIVERS::mk2::buf0[DATA_SZ];
-DMA_ATTR uint8_t CTAG::DRIVERS::mk2::buf1[DATA_SZ];
+namespace {
+    TBD_DRAM spi_slave_transaction_t transaction[2];
+    TBD_DRAM uint32_t currentTransaction;
+    TBD_DMA uint8_t buf0[DATA_SZ];
+    TBD_DMA uint8_t buf1[DATA_SZ];
+}
 
-void CTAG::DRIVERS::mk2::Init() {
+namespace tbd::drivers {
+
+void CVInputsStm32::Init() {
     //Configuration for the SPI bus
     spi_bus_config_t buscfg={
             .mosi_io_num=GPIO_MOSI,
@@ -75,7 +79,7 @@ void CTAG::DRIVERS::mk2::Init() {
     currentTransaction = 0;
 }
 
-IRAM_ATTR void * CTAG::DRIVERS::mk2::Update() {
+TBD_IRAM void * CVInputsStm32::Update() {
     esp_err_t ret;
     spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], portMAX_DELAY);
     currentTransaction ^= 0x1;
@@ -89,4 +93,6 @@ IRAM_ATTR void * CTAG::DRIVERS::mk2::Update() {
     }
 
     return transaction[currentTransaction].rx_buffer;
+}
+
 }

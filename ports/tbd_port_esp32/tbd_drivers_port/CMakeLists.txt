@@ -60,12 +60,12 @@ function(tbd_drivers var_name platform)
             list(APPEND includes triggers)
             list(APPEND libs ulp)
         elseif (arg_CV_INPUT STREQUAL stm32)
-            set(cv_input_srcs mk2.cpp)
+            set(cv_input_srcs cv_inputs_stm32.cpp)
             # no GPIO triggers
             # no ULP
         elseif (arg_CV_INPUT STREQUAL midi)
             list(APPEND libs esp_tinyusb)
-            set(cv_input_srcs  midiuart.cpp tusbmidi.cpp)
+            set(cv_input_srcs  midi_uart.cpp midi_usb.cpp)
             # no GPIO triggers
             # no ULP
         else ()

@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include <tbd/drivers/indicator.hpp>
+#include <tbd/drivers/common/indicator.hpp>
 
 #include "led_strip.h"
 #include "esp_log.h"

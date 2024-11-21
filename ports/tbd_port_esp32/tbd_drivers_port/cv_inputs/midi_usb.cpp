@@ -18,8 +18,8 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#include <tbd/drivers/common/midi_usb.hpp>
 
-#include "tusbmidi.hpp"
 #include "tinyusb.h"
 #include "esp_log.h"
 #include "esp_attr.h"
@@ -71,7 +71,9 @@ static const uint8_t s_midi_cfg_desc[] = {
         TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
 };
 
-void CTAG::DRIVERS::tusbmidi::Init() {
+namespace tbd::drivers {
+
+void MidiUsb::Init() {
     ESP_LOGI("TUSB", "USB initialization");
 
     tinyusb_config_t const tusb_cfg = {
@@ -86,10 +88,12 @@ void CTAG::DRIVERS::tusbmidi::Init() {
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 }
 
-IRAM_ATTR uint32_t CTAG::DRIVERS::tusbmidi::Read(uint8_t *data, uint32_t len) {
+IRAM_ATTR uint32_t MidiUsb::Read(uint8_t *data, uint32_t len) {
     return tud_midi_n_stream_read( ITF_NUM_MIDI, ITF_NUM_MIDI_STREAMING, data, len);
 }
 
-uint32_t CTAG::DRIVERS::tusbmidi::Write(const uint8_t *data, uint32_t len) {
+uint32_t MidiUsb::Write(const uint8_t *data, uint32_t len) {
     return tud_midi_stream_write(0, data, len);
+}
+
 }

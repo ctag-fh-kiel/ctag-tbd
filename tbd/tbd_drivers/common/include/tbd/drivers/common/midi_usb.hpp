@@ -18,29 +18,19 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+
 #pragma once
+#include <cstdint>
 
-#include <cinttypes>
+namespace tbd::drivers {
 
-
-namespace tbd :: drivers {
-
-struct Codec {
-    Codec() = delete;
+struct MidiUsb final {
+    MidiUsb() = delete;
     
-    static void InitCodec();
+    static void Init();
 
-    static void HighPassEnable();
-
-    static void HighPassDisable();
-
-    static void RecalibDCOffset();
-
-    static void SetOutputLevels(const uint32_t left, const uint32_t right);
-
-    static void ReadBuffer(float *buf, uint32_t sz);
-
-    static void WriteBuffer(float *buf, uint32_t sz);
+    static uint32_t Read(uint8_t *data, uint32_t len);
+    static uint32_t Write(uint8_t const *data, uint32_t len);
 };
 
 }

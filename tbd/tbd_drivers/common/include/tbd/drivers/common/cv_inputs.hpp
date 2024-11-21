@@ -1,4 +1,3 @@
-#pragma once
 /***************
 CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 
@@ -20,20 +19,35 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "driver/spi_slave.h"
-#include "esp_attr.h"
 
-namespace CTAG {
-    namespace DRIVERS {
-        class mk2 final{
-        public:
-            mk2() = delete;
-            static void Init();
-            IRAM_ATTR static void * Update();
-        private:
-            DRAM_ATTR static spi_slave_transaction_t transaction[2];
-            DRAM_ATTR static uint32_t currentTransaction;
-            DMA_ATTR static uint8_t buf0[], buf1[];
-        };
-    }
+#pragma once
+
+#include <stdint.h>
+#include "sdkconfig.h"
+
+
+namespace tbd::drivers {
+
+struct ADC {
+    
+    ADC() = delete;
+    static void InitADCSystem();
+
+    static void SetCVINUnipolar(int ch);
+
+    static void SetCVINBipolar(int ch);
+
+    static uint16_t GetChannelVal(int ch);
+
+    static void GetChannelVals(uint16_t *);
+
+    static void Update();
+
+    // exposed to get pointer access for speed
+    static uint16_t data[N_CVS];
+protected:
+    static void init_ulp_program();
+    static void init_analog_sub_system();
+};
+
 }

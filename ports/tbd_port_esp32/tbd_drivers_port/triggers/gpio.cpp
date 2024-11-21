@@ -22,11 +22,18 @@ respective component folders / files if different from this license.
 
 #include "driver/gpio.h"
 #include <string.h>
-#include <esp_attr.h>
+
 
 #define TRIG0_PIN 39
 #define TRIG1_PIN 36
 #define GPIO_INPUT_PIN_SEL  ((1ULL<<TRIG0_PIN)| (1ULL<<TRIG1_PIN ))
+
+#if CONFIG_TBD_PLATFORM_AEM
+    #define PIN_PUSH_BTN GPIO_NUM_2
+#elif CONFIG_TBD_PLATFORM_MK2
+    #define PIN_PUSH_BTN GPIO_NUM_34
+#endif
+
 
 namespace tbd::drivers {
 
@@ -77,5 +84,24 @@ uint8_t IRAM_ATTR GPIO::GetTrig1() {
     return (uint8_t) ((t1delay & 0x08) > 1);
 #endif
 }
+
+// FIXME: handle devices with no button properly
+uint8_t TBD_IRAM GPIO::GetPushButton() {
+#if defines(CONFIG_TBD_PLATFORM_AEM) \
+    || defined(CONFIG_TBD_PLATFORM_MK2) \
+    || defined(CONFIG_TBD_PLATFORM_STR)
+
+    t1delay <<= 1;
+    t1delay |= gpio_get_level((gpio_num_t) TRIG1_PIN);
+
+#ifdef CONFIG_TBD_PLATFORM_STR
+    return (uint8_t) ((t1delay & 0x10) > 1);
+#else
+    return (uint8_t) ((t1delay & 0x08) > 1);
+#endif
+}
+#else
+    return 0;
+#endif
 
 }

@@ -19,13 +19,14 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "midiuart.hpp"
+#include <tbd/drivers/common/midi_uart.hpp>
+
 #include "driver/uart.h"
 #include "esp_attr.h"
 
-using namespace CTAG::DRIVERS;
+namespace tbd::drivers {
 
-midiuart::midiuart() {
+MidiUart::MidiUart() {
     const uart_port_t uart_num = UART_NUM_1;
     uart_config_t uart_config = {
             .baud_rate = 31250,
@@ -46,22 +47,24 @@ midiuart::midiuart() {
                                         0, 0, NULL, ESP_INTR_FLAG_LOWMED|ESP_INTR_FLAG_SHARED));
 }
 
-midiuart::~midiuart(){
+MidiUart::~MidiUart(){
     uart_driver_delete(UART_NUM_1);
 }
 
-int midiuart::GetBufferSize() const{
+int MidiUart::GetBufferSize() const{
     return RX_BUF_SIZE;
 }
 
-void midiuart::write(uint8_t *data, std::size_t len){
+void MidiUart::write(uint8_t *data, std::size_t len){
     uart_write_bytes(UART_NUM_1, (const char *)data, len);
 }
 
-IRAM_ATTR void midiuart::read(uint8_t *data, int *len) {
+IRAM_ATTR void MidiUart::read(uint8_t *data, int *len) {
     *len = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 0);
 }
 
-void midiuart::flush() {
+void MidiUart::flush() {
     uart_flush(UART_NUM_1);
+}
+
 }

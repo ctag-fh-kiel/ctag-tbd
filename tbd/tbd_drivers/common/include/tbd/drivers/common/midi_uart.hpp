@@ -18,29 +18,26 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
 #pragma once
+
 #include <cstdint>
 
 #define RX_BUF_SIZE 128
 
-namespace CTAG {
-    namespace DRIVERS {
-        class midiuart final {
-        public:
-            midiuart();
+namespace tbd::drivers {
 
-            ~midiuart();
+struct MidiUart final {
 
-            // function to write midi message
-            void write(uint8_t *data, std::size_t len);
+    MidiUart();
+    ~MidiUart();
 
-            void read(uint8_t *data, int *len);
+    // function to write midi message
+    void write(uint8_t *data, std::size_t len);
+    void read(uint8_t *data, int *len);
+    void flush();
 
-            void flush();
+    int GetBufferSize() const;
+};
 
-            int GetBufferSize() const;
-        };
-    }
 }
 

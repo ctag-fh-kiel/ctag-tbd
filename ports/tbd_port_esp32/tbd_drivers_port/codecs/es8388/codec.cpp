@@ -19,7 +19,7 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include <tbd/drivers/codec.hpp>
+#include <tbd/drivers/common/codec.hpp>
 
 #include "freertos/FreeRTOS.h"
 #include <driver/i2s_std.h>
