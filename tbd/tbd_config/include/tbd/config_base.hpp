@@ -45,7 +45,7 @@ protected:
     void storeJSON(rapidjson::Document &d, const std::string &fn);
 
     char *buffer;
-    FILE *fp = nullptr;
+    FILE *fp = nullptr; 
 };
 
 }
