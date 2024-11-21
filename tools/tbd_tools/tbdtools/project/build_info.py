@@ -9,6 +9,7 @@ from typing import Dict, Optional
 from git import List
 import jinja2 as ji
 from pydantic import ConfigDict, Field
+from loguru import logger
 
 from .get_project import get_project_repo
 from .project_structure import Platform, get_platform_description
@@ -165,7 +166,7 @@ def write_build_info_header(
     template = _get_template('build_info_source.jinja.cpp')
     header = template.render(build_info=build_info)
     build_info_header_path.parent.mkdir(parents=True, exist_ok=True)
-    print(build_info_header_path.parent)
+    logger.info(f"generating version header: {build_info_header_path.parent}")
     with open(build_info_header_path, 'w') as f:
         f.write(header)    
 
