@@ -148,8 +148,6 @@ endfunction()
 
 function(tbd_drivers_sources drivers)
     tbd_drivers_attrs(${drivers})
-    tbd_log("DRIVERS ${drivers}")
-    tbd_log("SRCS ${arg_SRCS}")
     tbd_store_or_return("${arg_SRCS}" ${ARGN})
 endfunction()
 

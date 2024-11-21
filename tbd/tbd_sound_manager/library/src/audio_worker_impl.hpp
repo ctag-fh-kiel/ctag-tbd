@@ -10,10 +10,12 @@
 #include <helpers/ctagFastMath.hpp>
 #include <tbd/sound_manager/data_model.hpp>
 #include <tbd/sound_registry/sound_processor_factory.hpp>
+#include "audio_worker.hpp"
 
 #include "input_manager.hpp"
-#include "module_private.hpp"
+#include <tbd/sound_manager/common/module.hpp>
 #include "sound_level_worker.hpp"
+
 
 #define NOISE_GATE_LEVEL_CLOSE 0.0001f
 #define NOISE_GATE_LEVEL_OPEN 0.0003f
@@ -36,15 +38,14 @@ AudioProcessingParams params;
 CTAG::SP::ctagSoundProcessor *sp[2];
 system::Lock sound_processing_lock;
 
-template<typename CodecT>
-struct AudioWorker {
-    uint32_t do_begin();
-    uint32_t do_work();
-    uint32_t do_cleanup();
+
+struct AudioConsumer {
+    uint32_t startup();
+    uint32_t consume(float* audio_slice);
+    uint32_t cleanup();
 
 private:
     fv3::dccut_f in_dccutl, in_dccutr;
-    float fbuf[BUF_SZ * 2];
     float peakIn = 0.f, peakOut = 0.f;
     float peakL = 0.f, peakR = 0.f;
     int ngState = NG_OPEN;
@@ -53,8 +54,8 @@ private:
     CTAG::SP::ProcessData pd;
 };
 
-template<typename CodecT>
-uint32_t AudioWorker<CodecT>::do_begin() {
+
+uint32_t AudioConsumer::startup() {
 
     //fv3::dccut_f out_dccutl, out_dccutr;
     in_dccutl.setCutOnFreq(3.7f, 44100.f);
@@ -64,8 +65,6 @@ uint32_t AudioWorker<CodecT>::do_begin() {
     out_dccutr.setCutOnFreq(3.7f, 44100.f);
     */
 
-    pd.buf = fbuf;
-
     // generate linear ramp ]0,1[ squared
     for (uint32_t i = 0; i < BUF_SZ; i++) {
         lramp[i] = (float) (i + 1) / (float) (BUF_SZ + 1);
@@ -74,26 +73,24 @@ uint32_t AudioWorker<CodecT>::do_begin() {
     return 0;
 }
 
-template<typename CodecT>
-uint32_t AudioWorker<CodecT>::do_work() {
-    SoundLevel sound_level(sound_level_worker);    
+uint32_t AudioConsumer::consume(float* audio_slice) {
+    pd.buf = audio_slice;
 
     // update data from ADCs and GPIOs for real-time control
     InputManager::Update(&pd.trig, &pd.cv);
 
-    // get normalized raw data from CODEC
-    CodecT::ReadBuffer(fbuf, BUF_SZ);
+    SoundLevel sound_level(sound_level_worker);    
 
     // In peak detection
     // dc cut input
     float maxl = 0.f, maxr = 0.f;
     float max = 0.f;
     for (uint32_t i = 0; i < BUF_SZ; i++) {
-        fbuf[i * 2] = in_dccutl(fbuf[i * 2]);
-        float val = fabsf(fbuf[i * 2]);
+        audio_slice[i * 2] = in_dccutl(audio_slice[i * 2]);
+        float val = fabsf(audio_slice[i * 2]);
         if (val > maxl) maxl = val;
-        fbuf[i * 2 + 1] = in_dccutr(fbuf[i * 2 + 1]);
-        val = fabsf(fbuf[i * 2 + 1]);
+        audio_slice[i * 2 + 1] = in_dccutr(audio_slice[i * 2 + 1]);
+        val = fabsf(audio_slice[i * 2 + 1]);
         if (val > maxr) maxr = val;
     }
     max = maxl >= maxr ? maxl : maxr;
@@ -104,33 +101,33 @@ uint32_t AudioWorker<CodecT>::do_work() {
         if (ngState == NG_OPEN && peakIn < NOISE_GATE_LEVEL_CLOSE) {
             ngState = NG_BOTH;
             for (uint32_t i = 0; i < BUF_SZ; i++) { // linearly ramp down buffer
-                fbuf[i * 2] *= lramp[BUF_SZ - 1 - i];
-                fbuf[i * 2 + 1] *= lramp[BUF_SZ - 1 - i];
+                audio_slice[i * 2] *= lramp[BUF_SZ - 1 - i];
+                audio_slice[i * 2 + 1] *= lramp[BUF_SZ - 1 - i];
             }
         } else if (ngState != NG_OPEN && peakIn > NOISE_GATE_LEVEL_OPEN) {
             ngState = NG_OPEN;
             for (uint32_t i = 0; i < BUF_SZ; i++) { // linearly ramp up buffer
-                fbuf[i * 2] *= lramp[i];
-                fbuf[i * 2 + 1] *= lramp[i];
+                audio_slice[i * 2] *= lramp[i];
+                audio_slice[i * 2 + 1] *= lramp[i];
             }
         } else if (ngState != NG_OPEN) {
-            memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
+            memset(audio_slice, 0, BUF_SZ * 2 * sizeof(float));
         }
     } else if (params.noiseGateCfg == 2) { // left channel
         peakL = 0.95f * peakL + 0.05f * maxl;
         if (ngState == NG_OPEN && peakL < NOISE_GATE_LEVEL_CLOSE) {
             ngState = NG_LEFT;
             for (uint32_t i = 0; i < BUF_SZ; i++) {// linearly ramp down buffer
-                fbuf[i * 2] *= lramp[BUF_SZ - 1 - i];
+                audio_slice[i * 2] *= lramp[BUF_SZ - 1 - i];
             }
         } else if (ngState != NG_OPEN && peakL > NOISE_GATE_LEVEL_OPEN) {
             ngState = NG_OPEN;
             for (uint32_t i = 0; i < BUF_SZ; i++) { // linear ramp up
-                fbuf[i * 2] *= lramp[i];
+                audio_slice[i * 2] *= lramp[i];
             }
         } else if (ngState != NG_OPEN) {
             for (uint32_t i = 0; i < BUF_SZ; i++) {
-                fbuf[i * 2] = 0;
+                audio_slice[i * 2] = 0;
             }
         }
     } else if (params.noiseGateCfg == 3) { // right channel
@@ -138,16 +135,16 @@ uint32_t AudioWorker<CodecT>::do_work() {
         if (ngState == NG_OPEN && peakR < NOISE_GATE_LEVEL_CLOSE) {
             ngState = NG_RIGHT;
             for (uint32_t i = 0; i < BUF_SZ; i++) {// linearly ramp down buffer
-                fbuf[i * 2 + 1] *= lramp[BUF_SZ - 1 - i];
+                audio_slice[i * 2 + 1] *= lramp[BUF_SZ - 1 - i];
             }
         } else if (ngState != NG_OPEN && peakR > NOISE_GATE_LEVEL_OPEN) {
             ngState = NG_OPEN;
             for (uint32_t i = 0; i < BUF_SZ; i++) { // linear ramp up
-                fbuf[i * 2 + 1] *= lramp[i];
+                audio_slice[i * 2 + 1] *= lramp[i];
             }
         } else if (ngState != NG_OPEN) {
             for (uint32_t i = 0; i < BUF_SZ; i++) {
-                fbuf[i * 2 + 1] = 0;
+                audio_slice[i * 2 + 1] = 0;
             }
         }
     }
@@ -174,14 +171,14 @@ uint32_t AudioWorker<CodecT>::do_work() {
                 // check if ch0 -> ch1 daisy chain, i.e. use output of ch0 as input for ch1
                 if(params.ch01Daisy){
                     for (uint32_t i = 0; i < BUF_SZ; i++) {
-                        fbuf[i * 2 + 1] = fbuf[i * 2];
+                        audio_slice[i * 2 + 1] = audio_slice[i * 2];
                     }
                 }
                 if (sp[1] != nullptr) sp[1]->Process(pd); // 0 is not a stereo processor
             }
         } else {
             // mute audio
-            memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
+            memset(audio_slice, 0, BUF_SZ * 2 * sizeof(float));
         }
     }
 
@@ -189,45 +186,45 @@ uint32_t AudioWorker<CodecT>::do_work() {
     if (!isStereoCH0) {
         if (params.toStereoCH0 || params.toStereoCH1) {
             float sb[BUF_SZ * 2];
-            memcpy(sb, fbuf, BUF_SZ * 2 * sizeof(float));
+            memcpy(sb, audio_slice, BUF_SZ * 2 * sizeof(float));
             if (params.toStereoCH0 == 1 && params.toStereoCH1 == 0) { // spread CH0 to both channels
                 for (uint32_t i = 0; i < BUF_SZ; i++) {
-                    fbuf[i * 2] = 0.5f * sb[i * 2];
-                    fbuf[i * 2 + 1] = 0.5f * sb[i * 2] + sb[i * 2 + 1];
+                    audio_slice[i * 2] = 0.5f * sb[i * 2];
+                    audio_slice[i * 2 + 1] = 0.5f * sb[i * 2] + sb[i * 2 + 1];
                 }
             } else if (params.toStereoCH1 == 1 && params.toStereoCH0 == 0) { // spread CH1 to both channels
                 for (uint32_t i = 0; i < BUF_SZ; i++) {
-                    fbuf[i * 2] = 0.5f * sb[i * 2 + 1] + sb[i * 2];
-                    fbuf[i * 2 + 1] = 0.5f * sb[i * 2 + 1];
+                    audio_slice[i * 2] = 0.5f * sb[i * 2 + 1] + sb[i * 2];
+                    audio_slice[i * 2 + 1] = 0.5f * sb[i * 2 + 1];
                 }
             } else if (params.toStereoCH0 == 1 && params.toStereoCH1 == 1) { // spread CH0 + CH1 to both channels
                 for (uint32_t i = 0; i < BUF_SZ; i++) {
-                    fbuf[i * 2] = fbuf[i * 2 + 1] = 0.5f * (sb[i * 2] + sb[i * 2 + 1]);
+                    audio_slice[i * 2] = audio_slice[i * 2 + 1] = 0.5f * (sb[i * 2] + sb[i * 2 + 1]);
                 }
             } else if (params.toStereoCH0 == 2 && params.toStereoCH1 == 2) { // swap channels
                 for (uint32_t i = 0; i < BUF_SZ; i++) {
-                    fbuf[i * 2] = sb[i * 2 + 1];
-                    fbuf[i * 2 + 1] = sb[i * 2];
+                    audio_slice[i * 2] = sb[i * 2 + 1];
+                    audio_slice[i * 2 + 1] = sb[i * 2];
                 }
             } else if (params.toStereoCH0 == 2 && params.toStereoCH1 == 0) { // mix CH0 with CH1 on CH1
                 for (uint32_t i = 0; i < BUF_SZ; i++) {
-                    fbuf[i * 2] = 0.f;
-                    fbuf[i * 2 + 1] += sb[i * 2];
+                    audio_slice[i * 2] = 0.f;
+                    audio_slice[i * 2 + 1] += sb[i * 2];
                 }
             } else if (params.toStereoCH0 == 0 && params.toStereoCH1 == 2) { // mix CH1 with CH0 on CH0
                 for (uint32_t i = 0; i < BUF_SZ; i++) {
-                    fbuf[i * 2] += sb[i * 2 + 1];
-                    fbuf[i * 2 + 1] = 0.f;
+                    audio_slice[i * 2] += sb[i * 2 + 1];
+                    audio_slice[i * 2 + 1] = 0.f;
                 }
             } else if (params.toStereoCH0 == 2 && params.toStereoCH1 == 1) { // move CH0 to CH1, spread CH1 to both
                 for (uint32_t i = 0; i < BUF_SZ; i++) {
-                    fbuf[i * 2] = 0.5f * sb[i * 2 + 1];
-                    fbuf[i * 2 + 1] = 0.5f * sb[i * 2 + 1] + sb[i * 2];
+                    audio_slice[i * 2] = 0.5f * sb[i * 2 + 1];
+                    audio_slice[i * 2 + 1] = 0.5f * sb[i * 2 + 1] + sb[i * 2];
                 }
             } else if (params.toStereoCH0 == 1 && params.toStereoCH1 == 2) { // move CH1 to CH0, spread CH0 to both
                 for (uint32_t i = 0; i < BUF_SZ; i++) {
-                    fbuf[i * 2] = 0.5f * sb[i * 2] + sb[i * 2 + 1];
-                    fbuf[i * 2 + 1] = 0.5f * sb[i * 2];
+                    audio_slice[i * 2] = 0.5f * sb[i * 2] + sb[i * 2 + 1];
+                    audio_slice[i * 2 + 1] = 0.5f * sb[i * 2];
                 }
             }
         }
@@ -239,34 +236,34 @@ uint32_t AudioWorker<CodecT>::do_work() {
     for (uint32_t i = 0; i < BUF_SZ; i++) {
         // soft limiting
         if (params.ch0_outputSoftClip) {
-            fbuf[i * 2] = stmlib::SoftClip(fbuf[i * 2]);
+            audio_slice[i * 2] = stmlib::SoftClip(audio_slice[i * 2]);
         }
         if (params.ch1_outputSoftClip) {
-            fbuf[i * 2 + 1] = stmlib::SoftClip(fbuf[i * 2 + 1]);
+            audio_slice[i * 2 + 1] = stmlib::SoftClip(audio_slice[i * 2 + 1]);
         }
-        //if (fbuf[i * 2] > max) max = fbuf[i * 2];
-        //if (fbuf[i * 2 + 1] > max) max = fbuf[i * 2 + 1];
+        //if (audio_slice[i * 2] > max) max = audio_slice[i * 2];
+        //if (audio_slice[i * 2 + 1] > max) max = audio_slice[i * 2 + 1];
     }
     // just take first sample of block for level meter
-    max = fabsf(fbuf[0] + fbuf[1]) / 2.f;
+    max = fabsf(audio_slice[0] + audio_slice[1]) / 2.f;
     peakOut = 0.9f * peakOut + 0.1f * max;
     //TBD_LOGW("PEAK", "max %.12f, peak %.12f", max, peakOut);
     max = 255.f + 3.2f * CTAG::SP::HELPERS::fast_dBV(peakOut);
     if (max > 0.f) {
         sound_level.add_output_level(max);
     }
-
-    // write raw float data back to CODEC
-    CodecT::WriteBuffer(fbuf, BUF_SZ);
     return 0;
 }
 
-template<typename CodecT>
-uint32_t AudioWorker<CodecT>::do_cleanup() {
+
+uint32_t AudioConsumer::cleanup() {
     return 0;
 }
 
-system::ModuleTask<AudioWorker<tbd::drivers::Codec>, system::CpuCore::system> 
+
+AudioWorker<AudioConsumer, 
+            tbd::drivers::Codec, 
+            system::CpuCore::system> 
     audio_worker("audio_worker"); 
 
 }

@@ -7,8 +7,8 @@
 #include <tbd/favorites.hpp>
 
 // same compilation unit
-#include "audio_worker.hpp"
-#include "sound_level_worker.hpp"
+#include <tbd/sound_manager/data_model.hpp>
+#include "audio_worker_impl.hpp"
 
 
 

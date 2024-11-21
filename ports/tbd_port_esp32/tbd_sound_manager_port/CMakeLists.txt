@@ -1,0 +1,12 @@
+file(GLOB SRCS_FILES 
+    include/**/*.hpp
+    src/*.hpp
+    src/*.cpp
+)
+
+idf_component_register(
+    SRCS ${SRCS_FILES}
+    INCLUDE_DIRS src
+)
+
+target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_sound_manager_common)
