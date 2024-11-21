@@ -62,8 +62,8 @@ void SoundProcessorManager::StartSoundProcessor() {
     SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
     SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
     TBD_LOGI("SPManager", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_INTERNAL | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
              tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
 
@@ -115,8 +115,8 @@ void SoundProcessorManager::SetSoundProcessorChannel(int chan, const std::string
 
 
     TBD_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
              tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
 
@@ -173,8 +173,8 @@ void SoundProcessorManager::KillAudioTask() {
     drivers::Indicator::SetLedRGB(255, 0, 255);
 #endif
     TBD_LOGI("SPManager", "Audio Task Killed: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
              tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
 }

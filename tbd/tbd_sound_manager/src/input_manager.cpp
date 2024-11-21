@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 
 #include "input_manager.hpp"
 #include <tbd/drivers/cv_inputs.hpp>
+#include <tbd/ram.hpp>
 #include <tbd/logging.hpp>
 
 #if TBD_CALIBRATION
@@ -43,7 +44,7 @@ respective component folders / files if different from this license.
 
 namespace tbd::audio {
 
-IRAM_ATTR void InputManager::Update(uint8_t **trigs, float **cvs) {
+TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
 
 #if TBD_ACD
     CTAG::DRIVERS::ADC::Update();
