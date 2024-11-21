@@ -32,11 +32,11 @@ respective component folders / files if different from this license.
 #include <string.h>
 #include <fcntl.h>
 #include "esp_system.h"
-#include "esp_heap_caps.h"
+#include <tbd/heaps.hpp>
 #include "esp_vfs.h"
 #include "cJSON.h"
 #include <tbd/sound_manager.hpp>
-#include <tbd/favourites.hpp>
+#include <tbd/favorites.hpp>
 
 #include "OTAManager.hpp"
 #include "sdkconfig.h"
@@ -135,10 +135,10 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_plugins_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     httpd_resp_set_type(req, "application/json");
     const char* res = tbd::audio::SoundProcessorManager::GetCStrJSONSoundProcessors();
     if(nullptr != res) httpd_resp_sendstr(req, res);
@@ -147,10 +147,10 @@ esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_active_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     size_t qlen = httpd_req_get_url_query_len(req);
     size_t urilen = strlen(req->uri);
     char ch = req->uri[urilen - qlen - 1];
@@ -167,10 +167,10 @@ esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_params_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     size_t qlen = httpd_req_get_url_query_len(req);
     size_t urilen = strlen(req->uri);
     char ch = req->uri[urilen - qlen - 1];
@@ -188,10 +188,10 @@ esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
     TBD_LOGD("set_active_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     char s[128];
     char v[128];
     size_t qlen = httpd_req_get_url_query_len(req);
@@ -205,7 +205,7 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
     TBD_LOGD(REST_TAG, "Set active plugin for channel %d %s %s", ch, v, s);
     if (ch == 0 || ch == 1){
         tbd::audio::SoundProcessorManager::SetSoundProcessorChannel(ch, id);
-        FAV::Favorites::DeactivateFavorite();
+        tbd::Favorites::DeactivateFavorite();
     }
 
     httpd_resp_set_type(req, "text/html");
@@ -215,10 +215,10 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
     TBD_LOGD("set_plugin_param_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     char query[128];
     char id[128];
     char cstrvalue[128];
@@ -270,10 +270,10 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
     TBD_LOGD("save_preset_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     char query[128];
     char name[128];
     char number[16];
@@ -294,10 +294,10 @@ esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
     TBD_LOGD("load_preset_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     char query[128];
     char number[16];
     size_t qlen = httpd_req_get_url_query_len(req);
@@ -309,7 +309,7 @@ esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
     TBD_LOGD("HTTPD", "Load preset for channel %s %c", req->uri, ch);
     if (ch == 0 || ch == 1){
         tbd::audio::SoundProcessorManager::ChannelLoadPreset(ch, atoi(number));
-        FAV::Favorites::DeactivateFavorite();
+        tbd::Favorites::DeactivateFavorite();
     }
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, NULL, 0);
@@ -551,16 +551,16 @@ esp_err_t RestServer::StartRestServer() {
 
 esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
     TBD_LOGD("set_configuration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     /* Destination buffer for content of HTTP POST request.
      * httpd_req_recv() accepts char* only, but content could
      * as well be any binary data (needs type casting).
      * In case of string data, null termination will be absent, and
      * content length would give length of string */
-    char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+    char *content = (char *) tbd_heaps_malloc(req->content_len + 1, TBD_HEAPS_SPIRAM);
     int ret = httpd_req_recv(req, content, req->content_len);
     if (ret <= 0) {  /* 0 return value indicates connection closed */
         /* Check if timeout occurred */
@@ -584,10 +584,10 @@ esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_configuration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     httpd_resp_set_type(req, "application/json");
     const char *res = tbd::audio::SoundProcessorManager::GetCStrJSONConfiguration();
     if(nullptr != res) httpd_resp_sendstr(req, res);
@@ -596,10 +596,10 @@ esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
     TBD_LOGD("get_configuration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     char query[128];
     char pluginID[64];
     httpd_req_get_url_query_str(req, query, 128);
@@ -634,10 +634,10 @@ esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_calibration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     httpd_resp_set_type(req, "application/json");
 
 #if TDB_CALIBRATION
@@ -699,12 +699,12 @@ esp_err_t RestServer::ota_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
     TBD_LOGD("set_calibration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     TBD_LOGI("REST", "Set calibration post handler: content length %d", req->content_len);
-    char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+    char *content = (char *) tbd_heaps_malloc(req->content_len + 1, TBD_HEAPS_SPIRAM);
     int ret = httpd_req_recv(req, content, req->content_len);
     if (ret <= 0) {  /* 0 return value indicates connection closed */
         /* Check if timeout occurred */
@@ -737,7 +737,7 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
     char *pLastSlash = strrchr(req->uri, '/');
     if (pLastSlash) {
         strcpy(pluginID, pLastSlash + 1);
-        char *content = (char *) heap_caps_calloc(1, req->content_len + 1, MALLOC_CAP_SPIRAM);
+        char *content = (char *) tbd_heaps_calloc(1, req->content_len + 1, TBD_HEAPS_SPIRAM);
         TBD_LOGD(REST_TAG, "Storing data for %s as JSON, content length %d", pluginID, req->content_len);
         char *ptrContent = content;
         // get chunked data
@@ -757,7 +757,7 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
                 }
                 /* In case of error, returning ESP_FAIL will
                  * ensure that the underlying socket is closed */
-                heap_caps_free(content);
+                tbd_heaps_free(content);
                 return ESP_FAIL;
             }
             ptrContent += data_read;
@@ -774,7 +774,7 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
         // call up and persist
         tbd::audio::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID, content);
         // clear up
-        heap_caps_free(content);
+        tbd_heaps_free(content);
     } else {
         httpd_resp_send_404(req);
     }
@@ -795,14 +795,14 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
 
     if(cmd.compare("erase") == 0){
         tbd::audio::SoundProcessorManager::DisablePluginProcessing();
-        CTAG::FAV::Favorites::DisableFavoritesUI();
+        tbd::Favorites::DisableFavoritesUI();
         // erase flash / lengthy operation
         TBD_LOGI("REST", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
         //ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
         ESP_ERROR_CHECK(esp_flash_erase_region(NULL, CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
-        CTAG::FAV::Favorites::EnableFavoritesUI();
+        tbd::Favorites::EnableFavoritesUI();
         tbd::audio::SoundProcessorManager::EnablePluginProcessing();
         return ESP_OK;
     }
@@ -810,13 +810,13 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
     if(cmd.compare("upRaw") == 0){
         TBD_LOGI("REST", "Sample ROM flashing!");
         int data_read, remaining = req->content_len, offset = 0;
-        char *buffer = (char*)heap_caps_malloc(4096, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+        char *buffer = (char*)tbd_heaps_malloc(4096, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
         if(buffer == NULL){
             httpd_resp_send_500(req);
             return ESP_ERR_NO_MEM;
         }
         tbd::audio::SoundProcessorManager::DisablePluginProcessing();
-        CTAG::FAV::Favorites::DisableFavoritesUI();
+        tbd::Favorites::DisableFavoritesUI();
         int blockCnt = 0;
         while (remaining > 0) {
             // Read the data for the request
@@ -824,10 +824,10 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
             data_read = httpd_req_recv(req, buffer, size);
             if (data_read < 0) {
                 httpd_resp_send_500(req);
-                heap_caps_free(buffer);
-                CTAG::FAV::Favorites::EnableFavoritesUI();
+                tbd_heaps_free(buffer);
+                tbd::Favorites::EnableFavoritesUI();
                 tbd::audio::SoundProcessorManager::EnablePluginProcessing();
-                heap_caps_free(buffer);
+                tbd_heaps_free(buffer);
                 return ESP_ERR_INVALID_ARG;
             } else if (data_read > 0) {
                 //spi_flash_write(CONFIG_SAMPLE_ROM_START_ADDRESS + offset, buffer, data_read);
@@ -839,20 +839,20 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
                 if(((uint32_t*)buffer)[0] != 0xdeadface){
                     TBD_LOGE("REST", "Not a valid sample rom file!");
                     httpd_resp_send_500(req);
-                    heap_caps_free(buffer);
-                    CTAG::FAV::Favorites::EnableFavoritesUI();
+                    tbd_heaps_free(buffer);
+                    tbd::Favorites::EnableFavoritesUI();
                     tbd::audio::SoundProcessorManager::EnablePluginProcessing();
-                    heap_caps_free(buffer);
+                    tbd_heaps_free(buffer);
                     return ESP_ERR_INVALID_ARG;
                 }
             }
             blockCnt++;
         }
-        heap_caps_free(buffer);
+        tbd_heaps_free(buffer);
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
         tbd::audio::SoundProcessorManager::RefreshSampleRom();
-        CTAG::FAV::Favorites::EnableFavoritesUI();
+        tbd::Favorites::EnableFavoritesUI();
         tbd::audio::SoundProcessorManager::EnablePluginProcessing();
         TBD_LOGI("REST", "Sample ROM flashing completed!");
         return ESP_OK;
@@ -872,22 +872,22 @@ esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::favorite_post_handler(httpd_req_t *req) {
     TBD_LOGD("favorite_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+             tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
+             tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
     string cmd{req->uri};
 
     TBD_LOGD("REST", "Favorite handler cmd: %s", cmd.c_str());
 
     if(cmd.rfind("getAll") != string::npos){
         httpd_resp_set_type(req, "application/json");
-        httpd_resp_sendstr(req, FAV::Favorites::GetAllFavorites().c_str());
+        httpd_resp_sendstr(req, tbd::Favorites::GetAllFavorites().c_str());
         return ESP_OK;
     }
 
     if(cmd.rfind("store") != string::npos){
-        char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+        char *content = (char *) tbd_heaps_malloc(req->content_len + 1, TBD_HEAPS_SPIRAM);
         int ret = httpd_req_recv(req, content, req->content_len);
         if (ret <= 0) {  /* 0 return value indicates connection closed */
             /* Check if timeout occurred */
@@ -899,13 +899,13 @@ esp_err_t RestServer::favorite_post_handler(httpd_req_t *req) {
             }
             /* In case of error, returning ESP_FAIL will
              * ensure that the underlying socket is closed */
-            heap_caps_free(content);
+            tbd_heaps_free(content);
             return ESP_FAIL;
         }
         content[req->content_len] = 0;
         // call upstream API here
         int id = stoi((cmd.substr(cmd.length() - 1, 1)));
-        CTAG::FAV::Favorites::StoreFavorite(id, string(content));
+        tbd::Favorites::StoreFavorite(id, string(content));
         free(content);
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
@@ -915,7 +915,7 @@ esp_err_t RestServer::favorite_post_handler(httpd_req_t *req) {
     if(cmd.rfind("recall") != string::npos){
         // call upstream API here
         int id = stoi((cmd.substr(cmd.length() - 1, 1)));
-        FAV::Favorites::ActivateFavorite(id);
+        tbd::Favorites::ActivateFavorite(id);
         httpd_resp_set_type(req, "text/html");
         httpd_resp_send(req, NULL, 0);
         return ESP_OK;

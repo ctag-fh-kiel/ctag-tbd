@@ -17,6 +17,7 @@ idf_component_register(SRCS ${SRC_FILES}
                 nvs_flash 
                 app_update 
                 json
+                esp-dsp
 )
 target_link_libraries(${COMPONENT_LIB} PUBLIC 
         tbd_version 

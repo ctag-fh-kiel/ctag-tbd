@@ -6,7 +6,7 @@
 #include <atomic>
 #include <cstdint>
 #include <tbd/sound_manager.hpp>
-#include <tbd/favourites.hpp>
+#include <tbd/favorites.hpp>
 #include "driver/uart.h"
 #include <tbd/version.hpp>
 
@@ -51,7 +51,7 @@ void CTAG::SAPI::SerialAPI::serialTask(void *) {
     char data;
     // TODO: using a string here for storing cmd is bad, when large data is received, and a large plugin is loaded
     // TODO: one may run out of memory
-    // TODO: fix this with heap_caps_malloc
+    // TODO: fix this with tbd_heaps_malloc
     // TODO: currently Void preset is loaded from web-ui before a backup is send to the TBD
     // TODO: but Void may not exist in a custom firmware
     std::string cmd;
@@ -211,7 +211,7 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         return;
     }
     if(s.find("/api/v1/favorites/getAll") == 0) {
-        sendString(FAV::Favorites::GetAllFavorites().c_str());
+        sendString(tbd::Favorites::GetAllFavorites().c_str());
         return;
     }
     if(s.find("/api/v1/favorites/store") == 0) {
@@ -220,13 +220,13 @@ void CTAG::SAPI::SerialAPI::processAPICommand(const string &cmd) {
         StringBuffer buffer;
         Writer<StringBuffer> writer(buffer);
         data.Accept(writer);
-        CTAG::FAV::Favorites::StoreFavorite(fav, buffer.GetString());
+        tbd::Favorites::StoreFavorite(fav, buffer.GetString());
         sendString("{}");
         return;
     }
     if(s.find("/api/v1/favorites/recall") == 0) {
         int fav = d["fav"].GetInt();
-        FAV::Favorites::ActivateFavorite(fav);
+        tbd::Favorites::ActivateFavorite(fav);
         sendString("{}");
         return;
     }

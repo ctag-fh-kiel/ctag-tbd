@@ -22,7 +22,7 @@ respective component folders / files if different from this license.
 #include "OTAManager.hpp"
 #include <tbd/sound_manager.hpp>
 #include "esp_partition.h"
-#include "esp_heap_caps.h"
+#include <tbd/heaps.hpp>
 #include "esp_ota_ops.h"
 #include <tbd/logging.hpp>
 
@@ -37,7 +37,7 @@ esp_err_t OTAManager::PostHandlerSPIFFS(httpd_req_t *req) {
     int total_len = req->content_len;
     TBD_LOGI("OTA", "Post request size %d", total_len);
     int cur_len = 0;
-    largeBuf = (char *) heap_caps_malloc(total_len, MALLOC_CAP_SPIRAM);
+    largeBuf = (char *) tbd_heaps_malloc(total_len, TBD_HEAPS_SPIRAM);
     if (!largeBuf) {
         TBD_LOGE("OTA", "Could not allocate buffer in SPIRAM");
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
@@ -203,8 +203,8 @@ esp_err_t OTAManager::PostHandlerFlashCommit(httpd_req_t *req) {
 }
 
 void OTAManager::cleanup() {
-    if (largeBuf) heap_caps_free(largeBuf);
-    if (smallBuf) heap_caps_free(smallBuf);
+    if (largeBuf) tbd_heaps_free(largeBuf);
+    if (smallBuf) tbd_heaps_free(smallBuf);
 }
 
 esp_err_t OTAManager::flashSPIFFS() {
@@ -236,7 +236,7 @@ esp_err_t OTAManager::flashSPIFFS() {
     }
 
     TBD_LOGI("OTA", "Flashing...");
-    smallBuf = (char *) heap_caps_malloc(64 * 1024, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
+    smallBuf = (char *) tbd_heaps_malloc(64 * 1024, MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL);
     if (smallBuf == NULL) {
         TBD_LOGE("OTA", "Could not allocate internal buffer");
         cleanup();
