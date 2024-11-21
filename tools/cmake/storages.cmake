@@ -12,12 +12,13 @@ macro(tbd_storages_setup)
     tbd_toolchain_is_set()
 
     if ("${TBD_TOOLCHAIN}" STREQUAL "esp32")
-        # FIXME: read from sdkconfig
-        if ("${CONFIG_SAMPLES_START_ADDRESS}" STREQUAL "")
-            tbd_logw("no sample offset present in config")
-        else()
-            tbd_set_param(TBD_STORAGE_SAMPLES_ADDRESS "0xB00000")
+        set(sdkconfig_file "${CMAKE_SOURCE_DIR}/sdkconfig")
+        tbd_get_from_config_file("${sdkconfig_file}" CONFIG_SAMPLE_ROM_START_ADDRESS 
+            VAR address)
+        if ("${address}" STREQUAL "")
+            tbd_logw("no sample offset present in sdkconfig")
         endif()
+        tbd_set_param(TBD_STORAGE_SAMPLES_ADDRESS "${address}")
     elseif ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
 
         tbd_set_param(TBD_STORAGE_SAMPLES_ADDRESS 0)

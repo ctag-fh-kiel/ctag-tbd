@@ -12,8 +12,6 @@ tbd_toolchain_setup(${TBD_PLATFORM})
 # enable platform and toolchain for the entire project
 tbd_platform_activate()
 tbd_toolchain_activate(${TBD_TOOLCHAIN})
-
-
 tbd_toolchain_add_defines()
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -21,9 +19,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(ctag-tbd)
+
+tbd_toolchain_add_options()
 tbd_storages_setup()
-
-
 
 # make the TBD helper tool available to CMake
 if(NOT TBD_TOOL)

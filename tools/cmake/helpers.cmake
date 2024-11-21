@@ -12,7 +12,6 @@ function(tbd_set_param var value)
     mark_as_advanced(${var})
 
     if ("${TBD_TOOLCHAIN}" STREQUAL "esp32")
-        tbd_log("SETTING ${var}=${value}")
         idf_build_set_property(${var} "${value}")
     endif()
 endfunction()
@@ -38,6 +37,34 @@ function(tbd_set_compile_param var value)
     # endif()
 endfunction()
 
+
+# read a value from config file
+#
+# Config files should contain simple key-value pairs. Each line contains a single 
+# 
+#    key=value 
+#
+# Additionally empty lines, comment lines and lines with with trailing comments 
+# using `#` are allowed:
+#
+#    # I am a comment line
+#
+#    # there was an empty line here
+#    key = value # this is a trailing comment
+#
+# @arg file [path]       path to config file
+# @arg var [str]         name of the config value
+#
+# @return [none | str]   returns either value or nothing if value key is not in file
+#
+function(tbd_get_from_config_file file var)
+    file(STRINGS "${file}" file_lines)
+    message("FILE LINES ${file_lines}")
+    string(REGEX MATCH ";\\s*${var}+\\s*=\\s*([^#\\s;]*)" value "${file_lines}")
+    if (NOT "$value" STREQUAL "")
+        tbd_store_or_return("${CMAKE_MATCH_1}" ${ARGN})
+    endif()
+endfunction()
 
 
 # @brief function decorator for return values
