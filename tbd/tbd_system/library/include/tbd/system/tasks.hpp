@@ -18,15 +18,15 @@ concept TaskType = requires(
     task_handler_type _task_func, 
     void* _void_ptr
 ) {
+    { task.is_running() } -> std::same_as<bool>;
     { task.begin(_task_func, _void_ptr, core_id, _uint8_t) } -> std::same_as<void>;
     { task.begin(_task_func, _void_ptr, core_id) } -> std::same_as<void>;
     { task.begin(_task_func, _void_ptr) } -> std::same_as<void>;
-    { task.sleep(_uint32_t) } -> std::same_as<void>;
     { TaskT::sleep(_uint32_t) } -> std::same_as<void>;
-    { task.destroy() } -> std::same_as<void>;
 };
 
+
 // check if Task provided py port satisfies requirements
-static_assert(TaskType<Task>);
+static_assert(TaskType<Task>, "port task type does not fullfil requirements");
 
 }

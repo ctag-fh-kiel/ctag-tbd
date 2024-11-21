@@ -6,7 +6,7 @@
 namespace tbd::system {
 
 // check if Lock provided py port satisfies requirements
-static_assert(LockType<LockImpl>);
+static_assert(LockType<LockImpl>, "port lock type does not fullfil requirements");
 
 using LockGuard = LockGuardTemplate<LockImpl>;
 using Lock = LockDecorator<LockImpl>;

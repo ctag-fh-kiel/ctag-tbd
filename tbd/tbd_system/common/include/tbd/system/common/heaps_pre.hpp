@@ -1,6 +1,8 @@
 #pragma once
 
+#include <stdarg.h>
 #include <tbd/system/common/header_utils.hpp>
+
 
 // heap types
 
@@ -27,16 +29,15 @@ TBD_C_END
 
 #if TBD_IS_CPP
 
-namespace tbd {
-namespace heaps {
+namespace tbd::heaps {
 
 inline void* malloc(unsigned int size, unsigned int caps) {
-    return heap_caps_malloc(size, caps);
+    return tbd_heaps_malloc(size, caps);
 }
 
-inline void* malloc_prefer(unsigned int size, unsigned int num, ...) {
-    va_list argp;
-    return tbd_heaps_malloc_prefer(size, num, argp);
+inline void* malloc_prefer(unsigned int size, unsigned int num, ...) {;
+    va_list pref_list;
+    return tbd_heaps_malloc_prefer(size, num, pref_list);
 }
 
 inline void free(void* ptr) {
@@ -59,7 +60,6 @@ inline int get_largest_free_block(unsigned int caps) {
     return tbd_heaps_get_largest_free_block(caps);
 }
 
-}
 }
 
 #endif

@@ -5,6 +5,10 @@
 
 TBD_C_BEGIN
 
+#ifndef TBD_LOG_LEVEL
+#define TBD_LOG_LEVEL TBD_LOG_INFO
+#endif
+
 typedef enum {
     TBD_LOG_SILENT   = 0,   
     TBD_LOG_ERROR    = 1,   

@@ -135,7 +135,6 @@ protected:
     static void task_main_wrapper(void* param) {
         auto& instance = *reinterpret_cast<ModuleTask<ModuleT, core_id>*>(param);
         instance.task_main();
-        instance._task.destroy();
     }
 
     void task_main() {
