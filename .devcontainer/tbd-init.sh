@@ -163,7 +163,7 @@ integrate_vcpkg() {
     if [ -z "$completions_finds" ]; then
         echo "installing vcpkg bash completions"
 
-        echo 'if [ -z "$TBD_ENV_NO_VCPKG" ] || [ $TBD_ENV_NO_VCPKG != "1 ]"; then'  >> "$bash_rc"
+        echo 'if [ -z "$TBD_ENV_NO_VCPKG" ] || [ $TBD_ENV_NO_VCPKG != "1" ]"; then'  >> "$bash_rc"
         echo "    . $vcpkg_install_path/$completions" >> "$bash_rc"
         echo 'fi'                                     >> "$bash_rc"
     else
