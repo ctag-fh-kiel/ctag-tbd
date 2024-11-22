@@ -4,6 +4,7 @@ set(TBD_PLATFORM_SYSTEMS esp32 desktop)
 set(TBD_PLATFORM_CV_CHIPS adc mcp3208 stm32 midi)
 set(TBD_PLATFORM_AUDIO_CHIPS wm8731 wm8978 wm8974 aic3254 es8388 rtaudio)
 set(TBD_PLATFORM_INDICATORS no rgb neopixel)
+set(TBD_PLATFORM_APIS wifi serial)
 
 
 #### platform setup ####
@@ -106,7 +107,10 @@ macro(tbd_platform_attrs)
         AUDIO_OUTPUT 
         INDICATOR
     )
-    cmake_parse_arguments(arg "${bools}" "${attrs}" "" ${ARGV})
+    set(multi_attrs
+        APIS
+    )
+    cmake_parse_arguments(arg "${bools}" "${attrs}" "${multi_attrs}" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()
@@ -309,129 +313,98 @@ CV chip: ${arg_CV_INPUT}
 num CVs: ${arg_N_CVS}
 num triggers: ${arg_N_TRIGGERS}
 audio chip: ${arg_AUDIO_OUTPUT}
-file system: ${arg_FILE_SYSTEM}
+volume_control: ${arg_VOLUME_CONTROL}
 indicators: ${arg_INDICATOR}
+apis: ${arg_APIS}
+file system: ${arg_FILE_SYSTEM}
+display: ${arg_DISPLAY}
 --------------------------
     ")
 endfunction()
 
 
+function(tbd_platform_load_preset file)
+    file(READ "${file}" json_data)
+
+    string(JSON config_version GET "${json_data}" config_version)
+    if (NOT ${config_version} EQUAL 1)
+        tbd_loge("platform config file version '${config_version}' is not compatible! expected 1")
+    endif()
+
+    # get data from `info`
+    string(JSON info_obj GET "${json_data}" info)
+    string(JSON name GET "${info_obj}" name)
+
+    # get data from `config`
+    string(JSON config_obj GET "${json_data}" config)
+    string(JSON system GET "${config_obj}" system)
+    string(JSON arch GET "${config_obj}" arch)
+    string(JSON cv_inputs_obj GET "${config_obj}" cv_inputs)
+    string(JSON audio_output_obj GET "${config_obj}" audio_output)
+    string(JSON indicator GET "${config_obj}" indicator)
+    string(JSON apis_obj GET "${config_obj}" apis)
+
+    string(JSON file_system GET "${config_obj}" file_system)
+    if ("${file_system}") 
+        set(file_system "FILE_SYSTEM")
+    else()
+        unset(file_system)
+    endif()
+
+    string(JSON display GET "${config_obj}" display)
+    if ("${display}") 
+        set(display "DISPLAY")
+    else()
+        unset(display)
+    endif()
+
+    
+    # get data from `config.cv_inputs`
+    string(JSON cv_input GET "${cv_inputs_obj}" type)
+    string(JSON n_cvs GET "${cv_inputs_obj}" n_cvs)
+    string(JSON n_triggers GET "${cv_inputs_obj}" n_triggers)
+    
+    # get data form `config.audio_output`
+    string(JSON audio_output GET "${audio_output_obj}" type)
+    string(JSON volume_control GET "${audio_output_obj}" volume_control)
+    if ("${volume_control}") 
+        set(volume_control "VOLUME_CONTROL")
+    else()
+        unset(volume_control)
+    endif()
+
+    # extract data from `config.apis` array
+    string(JSON num_apis LENGTH "${config_obj}" apis)
+    foreach(i RANGE 1 "${num_apis}")
+        math(EXPR i "${i} - 1")
+        string(JSON api GET "${apis_obj}" ${i})
+        tbd_log("API ${api}")
+        list(APPEND apis "${api}")
+    endforeach()
+
+    tbd_platform(new_platform 
+        NAME "${name}"
+        SYSTEM "${system}"
+        ARCH "${arch}"
+        CV_INPUT "${cv_input}"
+        N_CVS "${n_cvs}"
+        N_TRIGGERS "${n_triggers}"
+        AUDIO_OUTPUT ${audio_output}
+        ${volume_control}
+        INDICATOR ${indicator}
+        APIS ${apis}
+        ${file_system}
+        ${display}
+    )    
+    tbd_store_or_return("${new_platform}" ${ARGN})
+endfunction()
+
+
+
 ### platform presets ####
 
 function (tbd_platform_from_preset platform_name)
-    if (${platform_name} STREQUAL "v1")
-        tbd_platform(new_platform 
-            NAME "v1"
-            SYSTEM esp32
-            CV_INPUT adc 
-            VOLUME_CONTROL
-            N_CVS 4
-            N_TRIGGERS 2
-            AUDIO_OUTPUT wm8731
-            FILE_SYSTEM 
-            DISPLAY 
-            INDICATOR rgb 
-            VOLUME_CONTROL yes
-        )
-
-    elseif (${platform_name} STREQUAL "v2")
-        tbd_platform(new_platform 
-            NAME "v2"
-            SYSTEM esp32
-            CV_INPUT adc 
-            VOLUME_CONTROL
-            N_CVS 4
-            N_TRIGGERS 2
-            AUDIO_OUTPUT wm8978
-            FILE_SYSTEM 
-            DISPLAY 
-            INDICATOR rgb 
-
-        )
-
-    elseif (${platform_name} STREQUAL "str")
-        tbd_platform(new_platform 
-            NAME "str"
-            SYSTEM esp32
-            CV_INPUT mcp3208 
-            N_CVS 8
-            N_TRIGGERS 2
-            AUDIO_OUTPUT wm8731
-            FILE_SYSTEM 
-            DISPLAY 
-            INDICATOR rgb 
-        )
-
-    elseif (${platform_name} STREQUAL "aem")
-        tbd_platform(new_platform 
-            NAME "aem"
-            SYSTEM esp32
-            CV_INPUT adc
-            VOLUME_CONTROL 
-            N_CVS 4
-            N_TRIGGERS 2
-            AUDIO_OUTPUT wm8974
-            FILE_SYSTEM 
-            DISPLAY 
-            INDICATOR rgb 
-            VOLUME_CONTROL yes
-        )
-
-    elseif (${platform_name} STREQUAL "mk2")
-        tbd_platform(new_platform 
-            NAME "mk2"
-            SYSTEM esp32
-            CV_INPUT stm32
-            VOLUME_CONTROL 
-            N_CVS 22
-            N_TRIGGERS 12
-            AUDIO_OUTPUT wm8978
-            FILE_SYSTEM 
-            DISPLAY 
-            INDICATOR rgb 
-        )
-
-    elseif (${platform_name} STREQUAL "bba1")
-        tbd_platform(new_platform 
-            NAME "bba1"
-            SYSTEM esp32
-            CV_INPUT midi 
-            VOLUME_CONTROL
-            N_CVS 90
-            N_TRIGGERS 40
-            AUDIO_OUTPUT es8388
-            FILE_SYSTEM 
-            DISPLAY 
-            INDICATOR neopixel
-        )
-
-    elseif (${platform_name} STREQUAL "bba2")
-        tbd_platform(new_platform 
-            NAME "bba2" 
-            SYSTEM esp32 
-            CV_INPUT midi 
-            VOLUME_CONTROL
-            N_CVS 90 
-            N_TRIGGERS 40 
-            AUDIO_OUTPUT es8388
-            FILE_SYSTEM 
-            DISPLAY 
-            INDICATOR neopixel
-        )
-    elseif (${platform_name} STREQUAL "desktop")
-        tbd_platform(new_platform 
-            NAME "desktop" 
-            SYSTEM desktop
-            CV_INPUT midi 
-            VOLUME_CONTROL
-            N_CVS 90 
-            N_TRIGGERS 40 
-            AUDIO_OUTPUT rtaudio
-            FILE_SYSTEM 
-            DISPLAY 
-            INDICATOR neopixel
-        )
-    endif()
-
+    set(config_file "${CMAKE_SOURCE_DIR}/config/platforms/platform.${platform_name}.json")
+    tbd_platform_load_preset("${config_file}" VAR new_platform)
     tbd_store_or_return("${new_platform}" ${ARGN})
 endfunction()

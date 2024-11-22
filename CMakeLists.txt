@@ -2,8 +2,10 @@
 # in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.13)
 
+
 # import all TBD macros and functions
 include(${CMAKE_SOURCE_DIR}/tools/cmake/project.cmake)
+
 
 # make sure which platform and which toolchain we are using
 tbd_platform_setup()

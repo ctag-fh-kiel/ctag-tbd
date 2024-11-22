@@ -163,10 +163,10 @@ macro(tbd_toolchain_add_options)
 
         # HOTFIX: manual compiler options
         add_compile_options(
+            -fno-exceptions 
             -O2 
 
             # disable C++ dynamic features
-            -fno-exceptions 
             -fno-rtti 
 
             # enable

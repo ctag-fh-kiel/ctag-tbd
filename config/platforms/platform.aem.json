@@ -1,0 +1,29 @@
+{
+    "config_version": 1,
+    "info": {
+        "name": "aem",
+        "full_name": "TBD aem",
+        "description": "TBD AE Modules module",
+        "mark": 1,
+        "rev": 1
+
+    },
+    "config": {
+        "system": "esp32",
+        "arch": "esp32",
+        "cv_inputs": {
+            "type": "adc",
+            "n_cvs": 4,
+            "n_triggers": 2
+        },
+        "audio_output": {
+            "type": "wm8974",
+            "volume_control": true
+        },
+        "indicator": "rgb",
+        "apis": ["serial"],
+        "volume_control": true,
+        "file_system": true,
+        "display": true
+    }
+}
