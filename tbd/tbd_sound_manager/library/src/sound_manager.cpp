@@ -3,7 +3,6 @@
 #define TBD_IS_AUDIO_LOOP_COMPILATION_UNIT
 
 #include <tbd/system/modules.hpp>
-#include <tbd/drivers/codec.hpp>
 #include <tbd/favorites.hpp>
 
 // same compilation unit
@@ -44,7 +43,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     // init control
     InputManager::Init();
     // init codec
-    drivers::Codec::InitCodec();
+
     // generate internal data
     updateConfiguration();
 
@@ -159,7 +158,7 @@ void SoundProcessorManager::ChannelLoadPreset(int chan, int number) {
 
 void SoundProcessorManager::KillAudioTask() {
     Favorites::DisableFavoritesUI();
-    drivers::Codec::SetOutputLevels(0, 0);
+
     // stop audio Task, delete plugins
     audio_worker.end(true);
     if(nullptr!=sp[0]) delete sp[0];
@@ -200,13 +199,13 @@ void SoundProcessorManager::updateConfiguration() {
     if (model->GetConfigurationData("ng_config").compare("off") == 0) {
         params.noiseGateCfg = 0;
     } else if (model->GetConfigurationData("ng_config").compare("dual") == 0) {
-        drivers::Codec::RecalibDCOffset();
+        audio_worker.let_signal_settle();
         params.noiseGateCfg = 1;
     } else if (model->GetConfigurationData("ng_config").compare("ch0") == 0) {
-        drivers::Codec::RecalibDCOffset();
+        audio_worker.let_signal_settle();
         params.noiseGateCfg = 2;
     } else if (model->GetConfigurationData("ng_config").compare("ch1") == 0) {
-        drivers::Codec::RecalibDCOffset();
+        audio_worker.let_signal_settle();
         params.noiseGateCfg = 3;
     }
 
@@ -256,7 +255,7 @@ void SoundProcessorManager::updateConfiguration() {
             CONSTRAIN(rLevel, 0, 63)
             CONSTRAIN(lLevel, 0, 63)
 #endif
-            drivers::Codec::SetOutputLevels(lLevel, rLevel);
+            audio_worker.set_output_levels(lLevel, rLevel);
         }
     }
 }

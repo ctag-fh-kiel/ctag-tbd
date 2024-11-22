@@ -19,9 +19,8 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
 #include "input_manager.hpp"
-#include <tbd/drivers/cv_inputs.hpp>
+
 #include <tbd/ram.hpp>
 #include <tbd/logging.hpp>
 
@@ -30,14 +29,15 @@ respective component folders / files if different from this license.
 #endif
 
 #if TBD_CV_ADC
+    #include <tbd/drivers/adc.hpp>
     #include "gpio.hpp"
 
     uint8_t CTAG::AUDIO::InputManager::trig_data[N_TRIGS];
     float CTAG::AUDIO::InputManager::cv_data[N_CVS];
 #elif TBD_CV_STM32
-#include <tbd/drivers/cv_inputs_stm32.hpp>
+#include <tbd/drivers/adc_stm32.hpp>
 #elif TBD_CV_MIDI
-#include "Midi.hpp"
+#include <tbd/drivers/midi.hpp>
 #else
     #error "no CV inputs configured"
 #endif
@@ -46,10 +46,10 @@ namespace tbd::audio {
 
 TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
 
-#if TBD_ACD
-    CTAG::DRIVERS::ADC::Update();
+#if TBD_ADC
+    drivers::ADC::Update();
 #elif TBD_CV_STM32
-    uint8_t *data = (uint8_t *) DRIVERS::mk2::Update();
+    uint8_t *data = (uint8_t *) DRIVERS::ADCStm32::Update();
     *cvs = (float*) data;
     *trigs = &data[N_CVS*4];
     /* for debug purposes
@@ -67,7 +67,7 @@ TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
     }
      */
 #elif TBD_CV_MIDI
-    uint8_t *data = CTAG::CTRL::Midi::Update();
+    uint8_t *data = drivers::Midi::Update();
     *cvs = (float *) data;
     *trigs = &data[N_CVS * 4];
 #endif
@@ -77,8 +77,8 @@ TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
         *cvs = cv_data;
 
     // update trig data
-        trig_data[0] = CTAG::DRIVERS::GPIO::GetTrig0();
-        trig_data[1] = CTAG::DRIVERS::GPIO::GetTrig1();
+        trig_data[0] = drivers::GPIO::GetTrig0();
+        trig_data[1] = drivers::GPIO::GetTrig1();
         *trigs = trig_data;
 #endif
 }
@@ -97,12 +97,12 @@ void InputManager::Init() {
     TBD_LOGI("Control", "Initializing control!");
 
 #if TBD_CV_ADC
-    DRIVERS::ADC::InitADCSystem();
-    DRIVERS::GPIO::InitGPIO();
+    drivers::ADC::InitADCSystem();
+    drivers::GPIO::InitGPIO();
 #elif TBD_CV_STM32
-    DRIVERS::mk2::Init();
+    drivers::ADCStm32::Init();
 #elif TBD_CV_MIDI
-    CTAG::CTRL::Midi::Init();
+    drivers::Midi::Init();
 #endif
 
 #if TDB_CALLIBRARION
@@ -113,7 +113,7 @@ void InputManager::Init() {
 
 void InputManager::FlushBuffers() {
 #if TBD_CV_MIDI
-    CTAG::CTRL::Midi::Flush();
+    drivers::Midi::Flush();
 #endif
 }
 
