@@ -298,11 +298,12 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_BOOL_PAR(bMuteS1, s1_mute)
     MK_BOOL_PAR(bGateS1, s1_gate)
     rompler[0].params.gate = bGateS1;
-    MK_FLT_PAR_ABS(fS1Lev, s1_lev, 4095.f, 2.f)
+    float fS1Lev = s1_lev / 4095.f * 1.5f;
+	if(cv_s1_lev != -1) fS1Lev += fabsf(data.cv[cv_s1_lev]);
     fS1Lev *= fS1Lev;
     MK_FLT_PAR_ABS_PAN(fS1Pan, s1_pan, 4095.f, 1.f)
     float fS1Speed = s1_speed / 4095.f * 2.f;
-    if (cv_s1_speed != -1) fS1Speed += (fabsf(data.cv[cv_s1_speed]) - 0.5f) * 2.f * 2.f;
+    if (cv_s1_speed != -1) fS1Speed += data.cv[cv_s1_speed] * 2.f;
     CONSTRAIN(fS1Speed, -2.f, 2.f)
     rompler[0].params.playbackSpeed = fS1Speed;
     float fS1Pitch = s1_pitch;
@@ -353,13 +354,13 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         MK_BOOL_PAR(bMuteS2, s2_mute)
         MK_BOOL_PAR(bGateS2, s2_gate)
         rompler[1].params.gate = bGateS2;
-        fS2Lev = s2_lev / 4095.f * 2.f;
-        if (cv_s2_lev != -1) fS2Lev = fabsf(data.cv[cv_s2_lev]) * 2.f;
+        fS2Lev = s2_lev / 4095.f * 1.5f;
+        if (cv_s2_lev != -1) fS2Lev += fabsf(data.cv[cv_s2_lev]);
         fS2Lev *= fS2Lev;
         fS2Pan = (s2_pan / 4095.f + 1.f) / 2.f * 1.f;
         if (cv_s2_pan != -1) fS2Pan = fabsf(data.cv[cv_s2_pan]) * 1.f;
         float fS2Speed = s2_speed / 4095.f * 2.f;
-        if (cv_s2_speed != -1) fS2Speed += (fabsf(data.cv[cv_s2_speed]) - 0.5f) * 2.f * 2.f;
+        if (cv_s2_speed != -1) fS2Speed += data.cv[cv_s2_speed] * 2.f;
         CONSTRAIN(fS2Speed, -2.f, 2.f)
         rompler[1].params.playbackSpeed = fS2Speed;
         float fS2Pitch = s2_pitch;
@@ -409,13 +410,13 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         MK_BOOL_PAR(bMuteS3, s3_mute)
         MK_BOOL_PAR(bGateS3, s3_gate)
         rompler[2].params.gate = bGateS3;
-    	fS3Lev = s3_lev / 4095.f * 2.f;
-        if (cv_s3_lev != -1) fS3Lev = fabsf(data.cv[cv_s3_lev]) * 2.f;
+    	fS3Lev = s3_lev / 4095.f * 1.5f;
+        if (cv_s3_lev != -1) fS3Lev += fabsf(data.cv[cv_s3_lev]);
         fS3Lev *= fS3Lev;
         fS3Pan = (s3_pan / 4095.f + 1.f) / 2.f * 1.f;
         if (cv_s3_pan != -1) fS3Pan = fabsf(data.cv[cv_s3_pan]) * 1.f;
         float fS3Speed = s3_speed / 4095.f * 2.f;
-        if (cv_s3_speed != -1) fS3Speed += (fabsf(data.cv[cv_s3_speed]) - 0.5f) * 2.f * 2.f;
+        if (cv_s3_speed != -1) fS3Speed += data.cv[cv_s3_speed] * 2.f;
         CONSTRAIN(fS3Speed, -2.f, 2.f)
         rompler[2].params.playbackSpeed = fS3Speed;
         float fS3Pitch = s3_pitch;
