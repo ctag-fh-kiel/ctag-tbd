@@ -45,8 +45,8 @@ macro(tbd_toolchain_setup platform_name)
         tbd_logW("TBD_PLATFORM not set, add '-DTBD_PLATFORM=<platform>' to idf.py or cmake")
     endif()
 
-    tbd_platform_from_preset(${platform_name})
-    tbd_platform_system("${_return}")
+    tbd_platform_from_preset(${platform_name} VAR _platform)
+    tbd_platform_system("${_platform}")
     tbd_logv("system for preset: ${_return}")
     if ("${_return}" STREQUAL "esp32")
         set(TBD_TOOLCHAIN "esp32" CACHE STRING "" FORCE)
@@ -68,6 +68,14 @@ macro(tbd_toolchain_setup platform_name)
         tbd_loge("toolchain not supported: '${_return}'")
     endif()
 
+    tbd_platform_arch("${_platform}")
+    if ("${_return}" STREQUAL "")
+        tbd_loge("invalid architecture ${_return}")
+    endif()
+    
+    set(TBD_ARCH "${_return}" CACHE STRING "" FORCE)
+    mark_as_advanced(TBD_ARCH)
+
 endmacro()
 
 
@@ -86,8 +94,9 @@ macro(tbd_toolchain_activate)
     tbd_toolchain_is_set()
 
     if ("${TBD_TOOLCHAIN}" STREQUAL "esp32")
-        string(TOLOWER ${TBD_PLATFORM} _tbd_platform_lower)
-        set(SDKCONFIG_DEFAULT "sdkconfig.defaults.${_tbd_platform_lower}")
+        set(SDKCONFIG_DEFAULTS "${CMAKE_SOURCE_DIR}/config/esp_sdkconfigs/sdkconfig.defaults.${TBD_PLATFORM}")
+        set(SDKCONFIG "${CMAKE_BINARY_DIR}/sdkconfig.${TBD_PLATFORM}")
+        set(IDF_TARGET "${TBD_ARCH}")
 
         include($ENV{IDF_PATH}/tools/cmake/project.cmake)
         list(APPEND EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/ports/tbd_port_esp32)

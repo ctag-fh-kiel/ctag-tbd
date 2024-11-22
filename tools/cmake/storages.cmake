@@ -12,7 +12,11 @@ macro(tbd_storages_setup)
     tbd_toolchain_is_set()
 
     if ("${TBD_TOOLCHAIN}" STREQUAL "esp32")
-        set(sdkconfig_file "${CMAKE_SOURCE_DIR}/sdkconfig")
+        if ("${SDKCONFIG}" STREQUAL "")
+            tbd_loge("no sdkconfig specified")
+        endif()
+        set(sdkconfig_file "${SDKCONFIG}")
+
         tbd_get_from_config_file("${sdkconfig_file}" CONFIG_SAMPLE_ROM_START_ADDRESS 
             VAR address)
         if ("${address}" STREQUAL "")
