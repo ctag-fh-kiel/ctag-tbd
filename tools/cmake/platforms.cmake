@@ -101,6 +101,7 @@ macro(tbd_platform_attrs)
     set(attrs
         NAME 
         SYSTEM 
+        ARCH
         CV_INPUT  
         N_TRIGGERS 
         N_CVS
@@ -166,6 +167,11 @@ endfunction()
 function(tbd_platform_system platform)
     tbd_platform_attrs(${platform})
     tbd_store_or_return("${arg_SYSTEM}" ${ARGN})
+endfunction()
+
+function(tbd_platform_arch platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_ARCH}" ${ARGN})
 endfunction()
 
 function(tbd_platform_cv_input platform)
@@ -397,6 +403,7 @@ function(tbd_platform_load_preset file)
         ${display}
     )    
     tbd_store_or_return("${new_platform}" ${ARGN})
+
 endfunction()
 
 
