@@ -77,7 +77,7 @@ def _get_device_inputs(platform: Platform) -> Dict:
     elif platform == Platform.bba2:
         inputs_type = 'bba2'
     elif platform == Platform.desktop:
-        raise ValueError(f'desktop platform not yet supported {platform.name}')
+        inputs_type = 'desktop'
     else:
         raise ValueError(f'unsupported platform {platform.name}')
     
@@ -131,10 +131,8 @@ def get_version_info() -> Version:
     return Version('unknown', commit.hexsha, is_dirty, -1)
 
 
-def get_build_info(*, platform: Optional[Platform] = None) -> BuildInfo:
+def get_build_info(*, platform) -> BuildInfo:
     version = get_version_info()
-    if platform is None:
-        platform = get_platform()
     device_capabilities = _get_device_capabilities_str(platform, version)
 
     build_date = datetime.now().replace(microsecond=0).isoformat()
@@ -149,16 +147,13 @@ def get_build_info(*, platform: Optional[Platform] = None) -> BuildInfo:
     )
 
 
-def get_readable_device_capabilities(*, platform: Optional[Platform] = None):
+def get_readable_device_capabilities(*, platform: Optional[Platform]):
     version = get_version_info()
-    if platform is None:
-        platform = get_platform()
-
     return _get_device_capabilities_str(platform, version, readable=True)
 
 
 def write_build_info_header(
-        build_info_header_path: Path, *, platform: Optional[Platform] = None
+        build_info_header_path: Path, *, platform: Optional[Platform]
     ):
     
     build_info = get_build_info(platform=platform)
