@@ -20,22 +20,22 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "Midi.hpp"
+#include <tbd/drivers/common/midi.hpp>
 
 #include <cstring>
 #include <algorithm>
 
-#include <tbd/drivers/midi_uart.hpp>
-#include <tbd/drivers/midi_usb.hpp>
+#include "midi_uart.hpp"
+#include "midi_usb.hpp"
 
 
 // FIXME: MIDI needs to set program change value
 // #include "Favorites.hpp"
 
-using namespace CTAG::CTRL;
-
 using std::max;
 using std::min;
+
+namespace tbd::drivers {
 
 // === Private Helper-Funtions ===
 // --- Map incoming CCs for Voices A-D to CVs according their representation as used with the TBD BBA, to be distributed according to names mapped via the UI ---
@@ -763,7 +763,7 @@ void Midi::noteOff(uint8_t* msg)
 
 // --- Instanciate objects for lowlevel and highlevel MIDI processing ---
 static tbd::drivers::MidiUart midiuart_instance;              // UART reader (and writer) for MIDI-messages
-TBD_DRAM static CTAG::CTRL::Midi distribute;     // Instanciate Midi-Class as object for MIDI-message distribution, according to events mapped via WebUI
+TBD_DRAM static Midi distribute;     // Instanciate Midi-Class as object for MIDI-message distribution, according to events mapped via WebUI
 
 // === Buffer to pass on MIDI-Event as virtual CV and Gate 'voltages', normalized to -1.f...+1.f (CV) and 0 or 1 integers (Triggers/Gates) ===
 TBD_DRAM static uint8_t buf0[DATA_SZ];     // Common Array of Data for CVs and Triggers, will be passed on at audio-rate, so that Plugins can process this data
@@ -1153,4 +1153,6 @@ uint8_t *Midi::Update() {
 
 void Midi::Flush() {
     midiuart_instance.flush();
+}
+
 }

@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include "adc.hpp"
+#include <tbd/drivers/common/adc.hpp>
 
 #include "freertos/FreeRTOS.h"
 
@@ -47,8 +47,7 @@ extern "C" {
 }
 
 
-using namespace CTAG;
-using namespace DRIVERS;
+namespace tbd::drivers {
 
 extern const uint8_t ulp_drivers_bin_start[] asm("_binary_ulp_drivers_bin_start");
 extern const uint8_t ulp_drivers_bin_end[]   asm("_binary_ulp_drivers_bin_end");
@@ -225,5 +224,7 @@ void ADC::init_analog_sub_system() {
     /* enable ULP on adc 1 */
 
     adc1_ulp_enable();
+
+}
 
 }

@@ -20,8 +20,6 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "driver/spi_slave.h"
-
 #include <tbd/ram.hpp>
 
 namespace tbd::drivers {

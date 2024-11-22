@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include <tbd/drivers/gpio.hpp>
+#include <tbd/drivers/common/gpio.hpp>
 
 #include "driver/gpio.h"
 #include <string.h>
@@ -87,7 +87,7 @@ uint8_t IRAM_ATTR GPIO::GetTrig1() {
 
 // FIXME: handle devices with no button properly
 uint8_t TBD_IRAM GPIO::GetPushButton() {
-#if defines(CONFIG_TBD_PLATFORM_AEM) \
+#if defined(CONFIG_TBD_PLATFORM_AEM) \
     || defined(CONFIG_TBD_PLATFORM_MK2) \
     || defined(CONFIG_TBD_PLATFORM_STR)
 
@@ -99,9 +99,10 @@ uint8_t TBD_IRAM GPIO::GetPushButton() {
 #else
     return (uint8_t) ((t1delay & 0x08) > 1);
 #endif
-}
+
 #else
     return 0;
 #endif
+}
 
 }

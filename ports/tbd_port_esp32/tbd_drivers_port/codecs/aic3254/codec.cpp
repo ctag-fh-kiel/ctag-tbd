@@ -18,8 +18,9 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#include <tbd/drivers/common/codec.hpp>
 
-#include <tbd/drivers/codec.hpp>
+#include "aic3254.hpp"
 
 #include "freertos/FreeRTOS.h"
 #include <driver/i2s_std.h>
@@ -30,12 +31,16 @@ respective component folders / files if different from this license.
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
 
+namespace {
+    aic3254 codec;
+}
+
 namespace tbd::drivers {
 
 static i2s_chan_handle_t tx_handle = NULL;
 static i2s_chan_handle_t rx_handle = NULL;
 
-aic3254 Codec::codec;
+
 
 void Codec::InitCodec() {
     ESP_LOGI("BBA Codec", "Starting i2s setup...");

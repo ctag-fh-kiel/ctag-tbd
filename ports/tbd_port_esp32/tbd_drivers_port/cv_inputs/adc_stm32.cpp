@@ -18,17 +18,18 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include <tbd/drivers/common/cv_input_stm32.hpp>
+#include <tbd/drivers/common/adc_stm32.hpp>
 
 #include "esp_log.h"
 #include "esp_intr_alloc.h"
+#include "driver/spi_slave.h"
 
 
 #define GPIO_MOSI 13
 #define GPIO_MISO 12
 #define GPIO_SCLK 14
 #define GPIO_CS 15
-#define RCV_HOST    HSPI_HOST
+#define RCV_HOST HSPI_HOST
 #define DMA_CHAN    2
 #define DATA_SZ 102 //N_CVS*4 + N_TRIGS + 2 // is ncvs * 4 + ntrigs + 2 reserved
 

@@ -65,7 +65,7 @@ function(tbd_drivers var_name platform)
             # no ULP
         elseif (arg_CV_INPUT STREQUAL midi)
             list(APPEND libs esp_tinyusb)
-            set(cv_input_srcs  midi_uart.cpp midi_usb.cpp)
+            set(cv_input_srcs  midi_uart.cpp midi_usb.cpp midi.cpp)
             # no GPIO triggers
             # no ULP
         else ()
@@ -200,6 +200,6 @@ idf_component_register(
     INCLUDE_DIRS ${INCLUDE_DIRS}
     REQUIRES ${LIBS}
 )
-target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_drivers_common)
+target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_drivers_common tbd_system)
 
 tbd_drivers_embed_ulp("${TBD_DRIVERS_OBJ}")

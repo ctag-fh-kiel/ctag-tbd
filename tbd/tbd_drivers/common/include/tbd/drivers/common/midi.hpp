@@ -22,7 +22,7 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-#include <tbd/drivers/midi_uart.hpp>
+#include <cinttypes>
 #include <tbd/ram.hpp>
 
 
@@ -64,15 +64,14 @@ respective component folders / files if different from this license.
 // On the GUI this is represented in the dropdown-list of mappable MIDI-events as "global voices": 'G' or "individual voices": 'A','B','C','D'
 // MIDI-notes on the global channels 1, 15 and 16 will be converted to be mappable as Voices A, B+C or B-D, depending on the 3 voicemodes
 
-namespace CTAG::CTRL
-{
+namespace tbd::drivers {
     class Midi final
     {
     public:
 
         static void Init();
 
-        TBD_IRAM static uint8_t *Update();
+        TBD_IRAM static uint8_t* Update();
 
         static void Flush();
 

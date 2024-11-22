@@ -19,7 +19,7 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include <tbd/drivers/common/midi_uart.hpp>
+#include "midi_uart.hpp"
 
 #include "driver/uart.h"
 #include "esp_attr.h"
