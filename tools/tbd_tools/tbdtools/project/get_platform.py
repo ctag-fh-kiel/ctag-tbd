@@ -51,10 +51,9 @@ def get_platform() -> Platform:
         return platform
 
 
-    if (platform := _get_platform_from_config_file()) is not None:
-        return platform
+    # if (platform := _get_platform_from_config_file()) is not None:
+    #     return platform
     
-    logger.warning('no TBD platform set, defaulting to "desktop"')
     return Platform.desktop
 
 

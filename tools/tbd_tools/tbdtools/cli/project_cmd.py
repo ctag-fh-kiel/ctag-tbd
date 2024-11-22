@@ -35,7 +35,7 @@ def root_cmd(_ctx: typer.Context):
 def build_info_cmd(_ctx: typer.Context):
     """ gather current project information to include in build """
 
-    platform = get_ctx(_ctx).platform
+    platform = get_ctx(_ctx)
     print(get_build_info(platform=platform))
 
 
@@ -49,7 +49,8 @@ def crate_build_info_cmd(
     if out_path is None:
         out_path = get_build_dir(_ctx).generated_sources() / 'version.cpp'
     
-    write_build_info_header(out_path) 
+    platform = get_ctx(_ctx).platform
+    write_build_info_header(out_path, platform=platform) 
 
 
 @project_group.command('structure')
