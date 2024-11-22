@@ -26,16 +26,12 @@ respective component folders / files if different from this license.
 #include <vector>
 
 #include "esp_system.h"
-#include <tbd/drivers/cv_inputs.hpp>
 
 #include <tbd/drivers/codec.hpp>
 
 #include <tbd/sound_manager.hpp>
 #include <tbd/sound_processor/allocator.hpp>
 
-#if TDB_ADC
-    #include "gpio.hpp"
-#endif
 
 #if TBD_CALIBRATION
     #include "Calibration.hpp"
