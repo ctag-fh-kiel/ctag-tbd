@@ -1,5 +1,6 @@
 file(GLOB SRCS_FILES 
-    src/dummy.cpp
+    src/*.hpp
+    src/*.cpp
 )
 
 add_library(tbd_drivers_port STATIC ${SRCS_FILES})
