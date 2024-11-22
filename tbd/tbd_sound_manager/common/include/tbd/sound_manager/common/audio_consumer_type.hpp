@@ -10,6 +10,7 @@ template<class AudioConsumerT>
 concept AudioConsumerType = requires(
     AudioConsumerT audio_consumer, 
     uint32_t _uint32_t, 
+    float _float,
     float* _float_ptr)
 {
     // deviation from std::mutex: lock timeout

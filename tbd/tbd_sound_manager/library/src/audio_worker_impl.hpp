@@ -10,11 +10,11 @@
 #include <helpers/ctagFastMath.hpp>
 #include <tbd/sound_manager/data_model.hpp>
 #include <tbd/sound_registry/sound_processor_factory.hpp>
-#include "audio_worker.hpp"
-
 #include "input_manager.hpp"
 #include <tbd/sound_manager/common/module.hpp>
 #include "sound_level_worker.hpp"
+
+#include "audio_worker.hpp"
 
 
 #define NOISE_GATE_LEVEL_CLOSE 0.0001f
@@ -261,9 +261,6 @@ uint32_t AudioConsumer::cleanup() {
 }
 
 
-AudioWorker<AudioConsumer, 
-            tbd::drivers::Codec, 
-            system::CpuCore::system> 
-    audio_worker("audio_worker"); 
+AudioWorker<AudioConsumer, system::CpuCore::system> audio_worker("audio_worker"); 
 
 }

@@ -18,6 +18,13 @@ template<AudioConsumerType AudioConsumerT>
 struct AudioFeeder {
     AudioFeeder(const char* name) : _name(name) {}
 
+    void set_output_levels(float left_level, float right_level) {
+
+    }
+
+    void let_signal_settle() {
+    
+    }
 
     uint32_t begin(bool wait = false) {
         RtAudio::DeviceInfo info;
@@ -131,9 +138,7 @@ private:
 };
 
 
-template<AudioConsumerType AudioConsumerT, 
-         class CodecT,  // FIXME: maybe remove this
-         system::CpuCore cpu_core>
+template<AudioConsumerType AudioConsumerT, system::CpuCore cpu_core>
 using AudioWorker = AudioFeeder<AudioConsumerT>;
 
 }
