@@ -34,9 +34,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
             fABSfm,
             abd_out,
             32);
+        data_ptrs[0] = abd_out;
     }
     else{
-        memset(abd_out, 0, 32 * sizeof(float));
+        data_ptrs[0] = silence;
     }
 
     // Analog Snare Drum
@@ -70,9 +71,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
             fASAspy,
             asd_out,
             32);
+        data_ptrs[1] = asd_out;
     }
     else{
-        memset(asd_out, 0, 32 * sizeof(float));
+        data_ptrs[1] = silence;
     }
 
     // Digital Bass Drum
@@ -109,9 +111,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
             fDBFmDcy,
             dbd_out,
             32);
+        data_ptrs[2] = dbd_out;
     }
     else{
-        memset(dbd_out, 0, 32 * sizeof(float));
+        data_ptrs[2] = silence;
     }
 
     // Digital Snare Drum
@@ -145,9 +148,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
             fDSSpy,
             dsd_out,
             32);
+        data_ptrs[3] = dsd_out;
     }
     else{
-        memset(dsd_out, 0, 32 * sizeof(float));
+        data_ptrs[3] = silence;
     }
 
     // HiHat 1
@@ -183,9 +187,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
             temp2_,
             hh1_out,
             32);
+        data_ptrs[4] = hh1_out;
     }
     else{
-        memset(hh1_out, 0, 32 * sizeof(float));
+        data_ptrs[4] = silence;
     }
 
     // HiHat 2
@@ -221,9 +226,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
             temp2_,
             hh2_out,
             32);
+        data_ptrs[5] = hh2_out;
     }
     else{
-        memset(hh2_out, 0, 32 * sizeof(float));
+        data_ptrs[5] = silence;
     }
 
     // rimshot
@@ -256,9 +262,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         }
 
         rs.Process(rs_out, 32);
+        data_ptrs[6] = rs_out;
     }
     else{
-        memset(cl_out, 0, 32 * sizeof(float));
+        data_ptrs[6] = silence;
     }
 
 
@@ -298,9 +305,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         }
 
         cl.Process(cl_out, 32);
+        data_ptrs[7] = cl_out;
     }
     else{
-        memset(cl_out, 0, 32 * sizeof(float));
+        data_ptrs[7] = silence;
     }
 
 
@@ -359,9 +367,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         CONSTRAIN(iS1FType, 0, 3);
         rompler[0].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS1FType);
         rompler[0].Process(s1_out, 32);
+        data_ptrs[8] = s1_out;
     }
     else{
-        memset(s1_out, 0, 32 * sizeof(float));
+        data_ptrs[8] = silence;
     }
 
     float fS2Lev = 0.f, fS2Pan = 0.f;
@@ -417,9 +426,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         CONSTRAIN(iS2FType, 0, 3);
         rompler[1].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS2FType);
         rompler[1].Process(s2_out, 32);
+        data_ptrs[9] = s2_out;
     }
     else{
-        memset(s2_out, 0, 32 * sizeof(float));
+        data_ptrs[9] = silence;
     }
 
     float fS3Lev = 0.f, fS3Pan = 0.f;;
@@ -475,9 +485,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         CONSTRAIN(iS3FType, 0, 3);
         rompler[2].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS3FType);
         rompler[2].Process(s3_out, 32);
+        data_ptrs[10] = s3_out;
     }
     else{
-        memset(s3_out, 0, 32 * sizeof(float));
+        data_ptrs[10] = silence;
     }
 
     float fS4Lev = 0.f, fS4Pan = 0.f;;
@@ -533,9 +544,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         CONSTRAIN(iS4FType, 0, 3);
         rompler[3].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS4FType);
         rompler[3].Process(s4_out, 32);
+        data_ptrs[11] = s4_out;
     }
     else{
-        memset(s4_out, 0, 32 * sizeof(float));
+        data_ptrs[11] = silence;
     }
 
 
@@ -599,33 +611,33 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     for (int i = 0; i < 32; i++){
         float fVal_l = 0.f;
         float fVal_r = 0.f;
-        fVal_l += abd_out[i] * lev_l[0];
-        fVal_l += asd_out[i] * lev_l[1];
-        fVal_l += dbd_out[i] * lev_l[2];
-        fVal_l += dsd_out[i] * lev_l[3];
-        fVal_l += hh1_out[i] * lev_l[4];
-        fVal_l += hh2_out[i] * lev_l[5];
-        fVal_l += rs_out[i] * lev_l[6];
-        fVal_l += cl_out[i] * lev_l[7];
+        fVal_l += data_ptrs[0][i] * lev_l[0];
+        fVal_l += data_ptrs[1][i] * lev_l[1];
+        fVal_l += data_ptrs[2][i] * lev_l[2];
+        fVal_l += data_ptrs[3][i] * lev_l[3];
+        fVal_l += data_ptrs[4][i] * lev_l[4];
+        fVal_l += data_ptrs[5][i] * lev_l[5];
+        fVal_l += data_ptrs[6][i] * lev_l[6];
+        fVal_l += data_ptrs[7][i] * lev_l[7];
 
-        fVal_l += s1_out[i] * lev_l[8];
-        fVal_l += s2_out[i] * lev_l[9];
-        fVal_l += s3_out[i] * lev_l[10];
-        fVal_l += s4_out[i] * lev_l[11];
+        fVal_l += data_ptrs[8][i] * lev_l[8];
+        fVal_l += data_ptrs[9][i] * lev_l[9];
+        fVal_l += data_ptrs[10][i] * lev_l[10];
+        fVal_l += data_ptrs[11][i] * lev_l[11];
 
-        fVal_r += abd_out[i] * lev_r[0];
-        fVal_r += asd_out[i] * lev_r[1];
-        fVal_r += dbd_out[i] * lev_r[2];
-        fVal_r += dsd_out[i] * lev_r[3];
-        fVal_r += hh1_out[i] * lev_r[4];
-        fVal_r += hh2_out[i] * lev_r[5];
-        fVal_r += rs_out[i] * lev_r[6];
-        fVal_r += cl_out[i] * lev_r[7];
+        fVal_r += data_ptrs[0][i] * lev_r[0];
+        fVal_r += data_ptrs[1][i] * lev_r[1];
+        fVal_r += data_ptrs[2][i] * lev_r[2];
+        fVal_r += data_ptrs[3][i] * lev_r[3];
+        fVal_r += data_ptrs[4][i] * lev_r[4];
+        fVal_r += data_ptrs[5][i] * lev_r[5];
+        fVal_r += data_ptrs[6][i] * lev_r[6];
+        fVal_r += data_ptrs[7][i] * lev_r[7];
 
-        fVal_r += s1_out[i] * lev_r[8];
-        fVal_r += s2_out[i] * lev_r[9];
-        fVal_r += s3_out[i] * lev_r[10];
-        fVal_r += s4_out[i] * lev_r[11];
+        fVal_r += data_ptrs[8][i] * lev_r[8];
+        fVal_r += data_ptrs[9][i] * lev_r[9];
+        fVal_r += data_ptrs[10][i] * lev_r[10];
+        fVal_r += data_ptrs[11][i] * lev_r[11];
 
         float dry_l = fVal_l;
         float dry_r = fVal_r;
@@ -670,6 +682,8 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     hh2.Init();
     rs.Init();
     cl.Init();
+
+    std::fill_n(silence, 32, 0.f);
 
     // init romplers
     for (auto& r : rompler){

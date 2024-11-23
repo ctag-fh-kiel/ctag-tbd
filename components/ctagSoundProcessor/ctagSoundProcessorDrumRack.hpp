@@ -55,6 +55,8 @@ namespace CTAG {
             float s2_out[32];
         	float s3_out[32];
         	float s4_out[32];
+        	float silence[32];
+        	float *data_ptrs[12] = {silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence};
 
             bool abd_trig_prev {false};
             bool asd_trig_prev {false};
