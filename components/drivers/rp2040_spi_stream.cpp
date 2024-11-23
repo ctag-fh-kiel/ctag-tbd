@@ -54,7 +54,7 @@ void CTAG::DRIVERS::rp2040_spi_stream::Init(){
         .data7_io_num = -1,
         .max_transfer_sz = DATA_SZ,
         .flags = 0,
-        .isr_cpu_id = intr_cpu_id_t::INTR_CPU_ID_AUTO,
+        .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
         .intr_flags = 0
     };
 
