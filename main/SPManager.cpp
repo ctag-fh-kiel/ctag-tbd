@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "SPManager.hpp"
 #include "esp_log.h"
 #include "esp_system.h"
+#include "esp_cpu.h"
 #include "stdint.h"
 #include "string.h"
 #include "codec.hpp"
@@ -54,6 +55,7 @@ using namespace CTAG::DRIVERS;
 #define NG_BOTH 1
 #define NG_LEFT 2
 #define NG_RIGHT 3
+#define CPU_MAX_ALLOWED_CYCLES 174150 // is 32/44100kHz * 240MHz
 
 // global variable, spiffs base directory
 namespace CTAG {
@@ -70,6 +72,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     int ngState = NG_OPEN;
     float lramp[BUF_SZ];
     bool isStereoCH0 = false;
+    esp_cpu_cycle_count_t start, diff;
 
 
     fv3::dccut_f in_dccutl, in_dccutr;
@@ -91,11 +94,15 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     }
 
     while (runAudioTask) {
+
         // update data from ADCs and GPIOs for real-time control
         CTAG::CTRL::Control::Update(&pd.trig, &pd.cv);
 
         // get normalized raw data from CODEC
         DRIVERS::Codec::ReadBuffer(fbuf, BUF_SZ);
+
+        // track the cpu cycles for audio task
+        start = esp_cpu_get_cycle_count();
 
         // In peak detection
         // dc cut input
@@ -258,12 +265,17 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
             //if (fbuf[i * 2] > max) max = fbuf[i * 2];
             //if (fbuf[i * 2 + 1] > max) max = fbuf[i * 2 + 1];
         }
+
         // just take first sample of block for level meter
         max = fabsf(fbuf[0] + fbuf[1]) / 2.f;
         peakOut = 0.9f * peakOut + 0.1f * max;
         //ESP_LOGW("PEAK", "max %.12f, peak %.12f", max, peakOut);
         max = 255.f + 3.2f * HELPERS::fast_dBV(peakOut);
         if (max > 0.f) ledData |= ((uint32_t) max) << 16; // red
+
+        // get cpu cycles for audio task and tone led
+        diff = esp_cpu_get_cycle_count() - start;
+        if(diff > CPU_MAX_ALLOWED_CYCLES) ledData = 0xB39134; // orange code for cpu overflow
         ledStatus = ledData;
 
         // write raw float data back to CODEC
@@ -522,7 +534,7 @@ void SoundProcessorManager::updateConfiguration() {
 }
 
 void SoundProcessorManager::led_task(void *pvParams) {
-    uint32_t r = 0, g = 0;
+    uint32_t r = 0, g = 0, b = 0;
     uint32_t data = 0;
     while (1) {
         data = ledStatus;
@@ -530,12 +542,13 @@ void SoundProcessorManager::led_task(void *pvParams) {
         r >>= 16;
         g = data & 0x0000FF00;
         g >>= 8;
+        b = data & 0x000000FF;
         if ((ledBlink % 2) == 1) {
-            DRIVERS::LedRGB::SetLedRGB(r, g, 0);
+            DRIVERS::LedRGB::SetLedRGB(r, g, b);
         } else {
             DRIVERS::LedRGB::SetLedRGB(r, g, 255);
         }
-        if (ledBlink > 1 && ledBlink != 42) ledBlink--; // >= 42 led blink doesn't stop
+        if (ledBlink > 1 && ledBlink < 42) ledBlink--; // >= 42 led blink doesn't stop
         if (ledBlink == 42) ledBlink = 44;
         vTaskDelay(50 / portTICK_PERIOD_MS); // 50ms refresh rate for led
     }
