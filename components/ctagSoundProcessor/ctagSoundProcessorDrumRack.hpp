@@ -54,6 +54,9 @@ namespace CTAG {
             float s1_out[32];
             float s2_out[32];
         	float s3_out[32];
+        	float s4_out[32];
+        	float silence[32];
+        	float *data_ptrs[12] = {silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence};
 
             bool abd_trig_prev {false};
             bool asd_trig_prev {false};
@@ -65,7 +68,7 @@ namespace CTAG {
         	bool cl_trig_prev {false};
 
             // rompler
-            CTAG::SYNTHESIS::RomplerVoiceMinimal rompler[3];
+            CTAG::SYNTHESIS::RomplerVoiceMinimal rompler[4];
             CTAG::SP::HELPERS::ctagSampleRom sampleRom;
 
 
@@ -207,6 +210,26 @@ namespace CTAG {
 	atomic<int32_t> s3_ft, cv_s3_ft;
 	atomic<int32_t> s3_fc, cv_s3_fc;
 	atomic<int32_t> s3_fq, cv_s3_fq;
+	atomic<int32_t> s4_gate, trig_s4_gate;
+	atomic<int32_t> s4_mute, trig_s4_mute;
+	atomic<int32_t> s4_lev, cv_s4_lev;
+	atomic<int32_t> s4_pan, cv_s4_pan;
+	atomic<int32_t> s4_speed, cv_s4_speed;
+	atomic<int32_t> s4_pitch, cv_s4_pitch;
+	atomic<int32_t> s4_bank, cv_s4_bank;
+	atomic<int32_t> s4_slice, cv_s4_slice;
+	atomic<int32_t> s4_start, cv_s4_start;
+	atomic<int32_t> s4_end, cv_s4_end;
+	atomic<int32_t> s4_lp, trig_s4_lp;
+	atomic<int32_t> s4_lp_pp, trig_s4_lp_pp;
+	atomic<int32_t> s4_lp_pos, cv_s4_lp_pos;
+	atomic<int32_t> s4_atk, cv_s4_atk;
+	atomic<int32_t> s4_dcy, cv_s4_dcy;
+	atomic<int32_t> s4_eg2fm, cv_s4_eg2fm;
+	atomic<int32_t> s4_brr, cv_s4_brr;
+	atomic<int32_t> s4_ft, cv_s4_ft;
+	atomic<int32_t> s4_fc, cv_s4_fc;
+	atomic<int32_t> s4_fq, cv_s4_fq;
 	atomic<int32_t> c_thres, cv_c_thres;
 	atomic<int32_t> c_ratio, cv_c_ratio;
 	atomic<int32_t> c_atk, cv_c_atk;
