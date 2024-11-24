@@ -21,7 +21,7 @@ def find_project_path() -> Path:
     return Path(__file__).parent.parent
 
 try:
-    import tbdtools.sphinx
+    import tbdtools.tbd_sphinx
 except:
     sys.path.append(find_project_path() / 'tools' / 'tbd_tool')
 
@@ -48,7 +48,7 @@ author = 'CTAG'
 extensions = [
     'sphinxcontrib.youtube',
     'breathe',
-    'tbdtools.sphinx',
+    'tbdtools.tbd_sphinx',
 ]
 
 exclude_patterns = []
