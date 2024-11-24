@@ -163,7 +163,7 @@ integrate_vcpkg() {
     if [ -z "$completions_finds" ]; then
         echo "installing vcpkg bash completions"
 
-        echo 'if [ -z "$TBD_ENV_NO_VCPKG" ] || [ $TBD_ENV_NO_VCPKG != "1" ]"; then'  >> "$bash_rc"
+        echo 'if [ -z "$TBD_ENV_NO_VCPKG" ] || [ $TBD_ENV_NO_VCPKG != "1" ]; then'  >> "$bash_rc"
         echo "    . $vcpkg_install_path/$completions" >> "$bash_rc"
         echo 'fi'                                     >> "$bash_rc"
     else
@@ -183,6 +183,29 @@ integrate_vcpkg() {
     fi
 
     return 0;
+}
+
+install_clang() {
+  local clang_installer_dir=/opt/clang_utils
+  local clang_installer="${clang_installer_dir}/llvm.sh"
+
+  # download installer
+  if ! mkdir -p "$clang_installer_dir"; then
+  	raise "failed to create clang utils dir"
+  fi
+
+  if ! curl -o "$clang_installer" "https://apt.llvm.org/llvm.sh"; then
+	raise "failed to download clang installer"
+  fi
+
+  if ! chmod +x "$clang_installer"; then
+	raise "failed to set permissions on clang installer"
+  fi
+   
+  # install
+  if ! "$clang_installer" 18 all; then 
+	raise "clang installation failed"
+  fi
 }
 
 local idf_install_path
@@ -230,6 +253,9 @@ case $command in
         ;;
     integrate-vcpkg)
         integrate_vcpkg $command_args
+        ;;
+    install-clang)
+        install_clang $command_args
         ;;
     *)
         raise "unknown command $command"
