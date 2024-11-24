@@ -1,4 +1,5 @@
 #include "ctagSoundProcessorDrumRack.hpp"
+#include "esp_dsp.h"
 
 using namespace CTAG::SP;
 
@@ -23,7 +24,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         MK_FLT_PAR_ABS(fABDecay, ab_decay, 4095.f, 1.f)
         MK_FLT_PAR_ABS_MIN_MAX(fABAfm, ab_a_fm, 4095.f, 0.f, 100.f)
         MK_FLT_PAR_ABS_MIN_MAX(fABSfm, ab_s_fm, 4095.f, 0.f, 100.f)
-        abd.Render(
+        abd.Rendger(
             false,
             bABTrig,
             fABAccent,
@@ -608,56 +609,51 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fS3Lev * fS3Pan,
         fS4Lev * fS4Pan
     };
+
+    float fVal_l[32], fVal_r[32];
+    std::fill_n(fVal_l, 32, 0.f);
+    std::fill_n(fVal_r, 32, 0.f);
+    for(int i=0;i<12;i++){
+        dsps_mulc_f32(data_ptrs[i], temp1_, 32, lev_l[i], 1, 1);
+        dsps_mulc_f32(data_ptrs[i], temp2_, 32, lev_r[i], 1, 1);
+        dsps_add_f32(temp1_, fVal_l, fVal_l, 32, 1, 1, 1);
+        dsps_add_f32(temp2_, fVal_r, fVal_r, 32, 1, 1, 1);
+    }
+    float dryLevel = (1.f - fCompMix);
+    dsps_mulc_f32(fVal_l, temp1_, 32, dryLevel, 1, 1);
+    dsps_mulc_f32(fVal_r, temp2_, 32, dryLevel, 1, 1);
+
     for (int i = 0; i < 32; i++){
-        float fVal_l = 0.f;
-        float fVal_r = 0.f;
-        fVal_l += data_ptrs[0][i] * lev_l[0];
-        fVal_l += data_ptrs[1][i] * lev_l[1];
-        fVal_l += data_ptrs[2][i] * lev_l[2];
-        fVal_l += data_ptrs[3][i] * lev_l[3];
-        fVal_l += data_ptrs[4][i] * lev_l[4];
-        fVal_l += data_ptrs[5][i] * lev_l[5];
-        fVal_l += data_ptrs[6][i] * lev_l[6];
-        fVal_l += data_ptrs[7][i] * lev_l[7];
-
-        fVal_l += data_ptrs[8][i] * lev_l[8];
-        fVal_l += data_ptrs[9][i] * lev_l[9];
-        fVal_l += data_ptrs[10][i] * lev_l[10];
-        fVal_l += data_ptrs[11][i] * lev_l[11];
-
-        fVal_r += data_ptrs[0][i] * lev_r[0];
-        fVal_r += data_ptrs[1][i] * lev_r[1];
-        fVal_r += data_ptrs[2][i] * lev_r[2];
-        fVal_r += data_ptrs[3][i] * lev_r[3];
-        fVal_r += data_ptrs[4][i] * lev_r[4];
-        fVal_r += data_ptrs[5][i] * lev_r[5];
-        fVal_r += data_ptrs[6][i] * lev_r[6];
-        fVal_r += data_ptrs[7][i] * lev_r[7];
-
-        fVal_r += data_ptrs[8][i] * lev_r[8];
-        fVal_r += data_ptrs[9][i] * lev_r[9];
-        fVal_r += data_ptrs[10][i] * lev_r[10];
-        fVal_r += data_ptrs[11][i] * lev_r[11];
-
-        float dry_l = fVal_l;
-        float dry_r = fVal_r;
         if (bSideChainLPF){
-            ONE_POLE(side_l, fVal_l, 0.0005f);
-            ONE_POLE(side_r, fVal_r, 0.0005f);
+            ONE_POLE(side_l, fVal_l[i], 0.0005f);
+            ONE_POLE(side_r, fVal_r[i], 0.0005f);
         }
         else{
-            side_l = fVal_l;
-            side_r = fVal_r;
+            side_l = fVal_l[i];
+            side_r = fVal_r[i];
         }
         side_l = fabsf(side_l);
         side_r = fabsf(side_r);
         float side = std::max(side_l, side_r);
-        sumCompressor.process(fVal_l, fVal_r, side);
-        fVal_l = fVal_l * fCompMUPGain * fCompMix + dry_l * (1.f - fCompMix);
-        fVal_r = fVal_r * fCompMUPGain * fCompMix + dry_r * (1.f - fCompMix);
-        data.buf[i * 2] = fVal_l * fMixLevel;
-        data.buf[i * 2 + 1] = fVal_r * fMixLevel;
+        sumCompressor.process(fVal_l[i], fVal_r[i], side);
     }
+
+    /*
+    fVal_l[i] = fVal_l[i] * fCompMUPGain * fCompMix + dry_l * (1.f - fCompMix);
+    fVal_r[i] = fVal_r[i] * fCompMUPGain * fCompMix + dry_r * (1.f - fCompMix);
+    */
+    float fSumGain = fCompMUPGain * fCompMix;
+    dsps_mulc_f32(fVal_l, fVal_l, 32, fSumGain, 1, 1);
+    dsps_mulc_f32(fVal_r, fVal_r, 32, fSumGain, 1, 1);
+    dsps_add_f32(fVal_l, temp1_, fVal_l, 32, 1, 1, 1);
+    dsps_add_f32(fVal_r, temp2_, fVal_r, 32, 1, 1, 1);
+
+    /*
+    data.buf[i * 2] = fVal_l[i] * fMixLevel;
+    data.buf[i * 2 + 1] = fVal_r[i] * fMixLevel;
+    */
+    dsps_mulc_f32(fVal_l, data.buf, 32, fMixLevel, 1, 2);
+    dsps_mulc_f32(fVal_r, data.buf + 1, 32, fMixLevel, 1, 2);
 }
 
 void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){

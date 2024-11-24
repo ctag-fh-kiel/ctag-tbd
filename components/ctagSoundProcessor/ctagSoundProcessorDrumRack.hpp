@@ -49,8 +49,8 @@ namespace CTAG {
             float hh2_out[32];
         	float rs_out[32];
         	float cl_out[32];
-            float temp1_[32];
-            float temp2_[32];
+            float temp1_[32]; // temp buffer for drum models, used for calcs
+            float temp2_[32]; // temp buffer for drum models, used for calcs
             float s1_out[32];
             float s2_out[32];
         	float s3_out[32];
