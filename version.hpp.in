@@ -1,6 +1,0 @@
-#pragma once
-
-#include <string.h>
-
-const std::string TBD_HW_VERSION("@TBD_HW@");
-const std::string TBD_FW_VERSION("@TBD_FW@");
