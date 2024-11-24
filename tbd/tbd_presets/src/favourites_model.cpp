@@ -24,13 +24,28 @@ respective component folders / files if different from this license.
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#include <tbd/sound_processor/resources.hpp>
+#include <tbd/storage/resources.hpp>
 
 
 namespace tbd::favorites {
 
+FavoritesModel::FavoritesModel() {
+    auto config_path = storage::get_fs_path("/data/favs.json");
+    if (!config_path) {
+        TBD_LOGE("favorites", "failed to load favorites config");
+        return;
+    }
+    _config_file = config_path->string();
+}
+
+
 string FavoritesModel::GetAllFavorites() {
-    loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+    if (_config_file) {
+        TBD_LOGE("favorites", "access to broken favourites");
+        return {};
+    }
+
+    loadJSON(m, *_config_file);
     json.Clear();
     Writer<StringBuffer> writer(json);
     if (!m.IsArray()) return "";
@@ -39,7 +54,12 @@ string FavoritesModel::GetAllFavorites() {
 }
 
 string FavoritesModel::GetFavorite(int const &i) {
-    loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+    if (_config_file) {
+        TBD_LOGE("favorites", "access to broken favourites");
+        return {};
+    }
+
+    loadJSON(m, *_config_file);
     json.Clear();
     Writer<StringBuffer> writer(json);
     if (!m.IsArray()) return "";
@@ -49,21 +69,36 @@ string FavoritesModel::GetFavorite(int const &i) {
 }
 
 string FavoritesModel::GetFavoriteName(int const &i) {
-    loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+    if (_config_file) {
+        TBD_LOGE("favorites", "access to broken favourites");
+        return {};
+    }
+
+    loadJSON(m, *_config_file);
     if (!m.IsArray()) return "";
     Value o = m[i].GetObject();
     return o["name"].GetString();
 }
 
 string FavoritesModel::GetFavoriteUString(int const &i) {
-    loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+    if (_config_file) {
+        TBD_LOGE("favorites", "access to broken favourites");
+        return {};
+    }
+
+    loadJSON(m, *_config_file);
     if (!m.IsArray()) return "";
     Value o = m[i].GetObject();
     return o["ustring"].GetString();
 }
 
 string FavoritesModel::GetFavoritePluginID(int const &i, const int &channel) {
-    loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+    if (_config_file) {
+        TBD_LOGE("favorites", "access to broken favourites");
+        return {};
+    }
+
+    loadJSON(m, *_config_file);
     if (!m.IsArray()) return "";
     if (!m[i].IsObject()) return "";
     string key {"plug_0"};
@@ -73,7 +108,12 @@ string FavoritesModel::GetFavoritePluginID(int const &i, const int &channel) {
 }
 
 int FavoritesModel::GetFavoritePreset(int const &i, const int &channel) {
-    loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+    if (_config_file) {
+        TBD_LOGE("favorites", "access to broken favourites");
+        return -1;
+    }
+
+    loadJSON(m, *_config_file);
     if (!m.IsArray()) return 0;
     string key {"pre_0"};
     if(channel == 1) key = string("pre_1");
@@ -82,12 +122,17 @@ int FavoritesModel::GetFavoritePreset(int const &i, const int &channel) {
 }
 
 void FavoritesModel::SetFavorite(int const &id, const string &data) {
-    loadJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+    if (_config_file) {
+        TBD_LOGE("favorites", "access to broken favourites");
+        return;
+    }
+
+    loadJSON(m, *_config_file);
     if (!m.IsArray()) return;
     Document d;
     d.Parse(data);
     m[id] = d.Move();
-    storeJSON(m, CTAG::RESOURCES::spiffsRoot + "/data/favs.jsn");
+    storeJSON(m, *_config_file);
 }
 
 }
