@@ -1,5 +1,4 @@
 set(ESP_DSP_DIR "${CMAKE_SOURCE_DIR}/managed_components/espressif__esp-dsp")
-tbd_logw("ESP_DSP ${ESP_DSP_DIR}")
 
 
 set(ESP_DSP_SRC_FILES  
