@@ -23,7 +23,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-#include <tbd/sound_processor/resources.hpp>
+#include <tbd/storage/resources.hpp>
 
 #include <tbd/logging.hpp>
 
@@ -41,21 +41,39 @@ namespace CTAG {
 namespace SP {
 
 SoundProcessorParams::SoundProcessorParams(const std::string &id, const bool isStereo) {
-    // acquire data from json files ui model and patch model
-    muiFileName = std::string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mui-") + id + std::string(".jsn");
-    //std::cout << "Reading " << muiFileName << std::endl;
-    loadJSON(mui, muiFileName);
-    mpFileName = std::string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-") + id + std::string(".jsn");
-    //std::cout << "Reading " << mpFileName << std::endl;
-    loadJSON(mp, mpFileName);
-    // load last activated preset
-    TBD_LOGD("Model", "Loading patch number %d", mp["activePatch"].GetInt());
-    LoadPreset(mp["activePatch"].GetInt());
+    // load config
 
+    auto mui_path = tbd::storage::get_fs_path("data/sp/mui-" + id + ".jsn");
+    if (!mui_path) {
+        TBD_LOGE("sound_processor", "config file for sound processor '%s' does not exist", id.c_str());
+        return;
+    }
+    muiFileName = mui_path->string();
+
+    TBD_LOGV("sound_processor", "loading sound processor config %s for %s", muiFileName.c_str(), id.c_str());
+    loadJSON(mui, muiFileName);
+
+    // load presets
+
+    auto mp_path = tbd::storage::get_fs_path("data/sp/mp-" + id + ".jsn");
+    if (!mp_path) {
+        TBD_LOGE("sound_processor", "preset file for sound processor '%s' does not exist", id.c_str());
+        return;
+    }
+    mpFileName = mp_path->string();
+
+    TBD_LOGV("sound_processor", "loading sound processor presets %s for %s", mpFileName.c_str(), id.c_str());
+    loadJSON(mp, mpFileName);
+
+    TBD_LOGD("Model", "loading preset %d for sound processor %s", mp["activePatch"].GetInt(), id.c_str());
+    LoadPreset(mp["activePatch"].GetInt());
 }
+
 
 SoundProcessorParams::~SoundProcessorParams() {
+
 }
+
 
 const char *SoundProcessorParams::GetCStrJSONParams() {
     json.Clear();

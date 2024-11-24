@@ -22,64 +22,98 @@ respective component folders / files if different from this license.
 
 #include <cstdio>
 #include <fstream>
+#include <format>
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-#include <dirent.h>
-#include <tbd/sound_processor/resources.hpp>
+#include <tbd/storage/resources.hpp>
 #include <tbd/logging.hpp>
+#include <tbd/storage/fileystem.hpp>
+
 
 using namespace rapidjson;
+namespace fs = tbd::storage::filesystem;
 
 
 namespace tbd::audio {
 
 SPManagerDataModel::SPManagerDataModel() {
-    TBD_LOGI("SPModel", "Trying to read config file");
-    loadJSON(m, MODELJSONFN);
+    TBD_LOGV("sound_manager", "loading sound manager config file");
+
+    auto config_path = storage::get_fs_path("data/spm-config.jsn");
+    if (!config_path) {
+        TBD_LOGE("sound_manager", "failed to load sound manager config");
+        return;
+    }
+    _config_file = config_path->string();
+    loadJSON(m, *_config_file);
+
     getSoundProcessors();
     validateActiveProcessors();
     validatePatches();
 }
 
 SPManagerDataModel::~SPManagerDataModel() {
+
 }
 
 // checks for available sound processors based on data/sp json file entries
 void SPManagerDataModel::getSoundProcessors() {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return;
+    }
+
     if (m.HasMember("availableProcessors")) return;
-    DIR *dir;
-    struct dirent *ent;
     Value sparray(kArrayType);
     m.AddMember("availableProcessors", sparray, m.GetAllocator());
-    if ((dir = opendir(std::string(CTAG::RESOURCES::spiffsRoot + std::string("/data/sp")).c_str())) != NULL) {
-        while ((ent = readdir(dir)) != NULL) {
-            std::string fn(ent->d_name);
-            if (fn.find("mui-") != std::string::npos) {
-                TBD_LOGD("SPModel", "Filename: %s", fn.c_str());
-                Document d;
-                loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/" + fn);
-                Value obj(kObjectType);
-                Value id(d["id"].GetString(), d.GetAllocator());
-                Value name(d["name"].GetString(), d.GetAllocator());
-                Value hint(kStringType);
-                obj.AddMember("id", id.Move(), m.GetAllocator());
-                obj.AddMember("name", name.Move(), m.GetAllocator());
-                obj.AddMember("isStereo", d["isStereo"], m.GetAllocator());
-                if (d.HasMember("hint")) {
-                    hint.SetString(d["hint"].GetString(), m.GetAllocator());
-                    obj.AddMember("hint", hint.Move(), m.GetAllocator());
-                }
-                m["availableProcessors"].PushBack(obj, m.GetAllocator());
-            }
-        }
-        closedir(dir);
+
+    auto sound_processor_configs_path = storage::get_fs_path("data/sp");
+    if (!sound_processor_configs_path || !fs::is_directory(*sound_processor_configs_path)) {
+        TBD_LOGE("sound_manager", "invalid sound processor config dir");
+        return;
     }
-    storeJSON(m, MODELJSONFN);
+
+    for (auto& plugin_description : fs::directory_iterator(*sound_processor_configs_path)) {
+        auto& file_path = plugin_description.path();
+        if (file_path.filename().string().rfind("mui-", 0) == 0) {
+            TBD_LOGW("sound_manager", "file: %s", file_path.filename().c_str());
+        }
+    }
+
+    // if ((dir = opendir(std::string(CTAG::RESOURCES::spiffsRoot + std::string("/data/sp")).c_str())) != NULL) {
+    //     while ((ent = readdir(dir)) != NULL) {
+    //         std::string fn(ent->d_name);
+    //         if (fn.find("mui-") != std::string::npos) {
+    //             TBD_LOGD("SPModel", "Filename: %s", fn.c_str());
+    //             Document d;
+    //             loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/" + fn);
+    //             Value obj(kObjectType);
+    //             Value id(d["id"].GetString(), d.GetAllocator());
+    //             Value name(d["name"].GetString(), d.GetAllocator());
+    //             Value hint(kStringType);
+    //             obj.AddMember("id", id.Move(), m.GetAllocator());
+    //             obj.AddMember("name", name.Move(), m.GetAllocator());
+    //             obj.AddMember("isStereo", d["isStereo"], m.GetAllocator());
+    //             if (d.HasMember("hint")) {
+    //                 hint.SetString(d["hint"].GetString(), m.GetAllocator());
+    //                 obj.AddMember("hint", hint.Move(), m.GetAllocator());
+    //             }
+    //             m["availableProcessors"].PushBack(obj, m.GetAllocator());
+    //         }
+    //     }
+    //     closedir(dir);
+    // }
+    // storeJSON(m, MODELJSONFN);
 }
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessors() {
-    loadJSON(m, MODELJSONFN);
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return "";
+    }
+
+    loadJSON(m, *_config_file);
     json.Clear();
     Writer<StringBuffer> writer(json);
     if (!m.HasMember("availableProcessors")) return nullptr;
@@ -88,23 +122,33 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessors() {
 }
 
 std::string SPManagerDataModel::GetActiveProcessorID(const int chan) {
-    if (chan > 1 || chan < 0) return std::string("");
-    if (!m.HasMember("activeProcessors")) return std::string();
-    if (!m["activeProcessors"].IsArray()) return std::string();
-    if (m["activeProcessors"].GetArray().Size() == 0) return std::string();
+    if (chan > 1 || chan < 0) return {};
+    if (!m.HasMember("activeProcessors")) return {};
+    if (!m["activeProcessors"].IsArray()) return {};
+    if (m["activeProcessors"].GetArray().Size() == 0) return {};
     return m["activeProcessors"].GetArray()[chan].GetString();
 }
 
 void SPManagerDataModel::SetActivePluginID(const std::string &id, const int chan) {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return;
+    }
+
     if (chan > 1 || chan < 0) return;
     if (!m.HasMember("activeProcessors")) return;
     if (!m["activeProcessors"].IsArray()) return;
     if (m["activeProcessors"].Size() == 0) return;
     m["activeProcessors"][chan].SetString(id, m.GetAllocator());
-    storeJSON(m, MODELJSONFN);
+    storeJSON(m, *_config_file);
 }
 
 void SPManagerDataModel::SetActivePatchNum(const int patchNum, const int chan) {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return;
+    }
+
     if (chan > 1 || chan < 0) return;
     std::string id = GetActiveProcessorID(chan);
     if (!m.HasMember("lastPatches")) return;
@@ -118,7 +162,7 @@ void SPManagerDataModel::SetActivePatchNum(const int patchNum, const int chan) {
             break;
         }
     }
-    storeJSON(m, MODELJSONFN);
+    storeJSON(m, *_config_file);
 }
 
 int SPManagerDataModel::GetActivePatchNum(const int chan) {
@@ -140,6 +184,11 @@ int SPManagerDataModel::GetActivePatchNum(const int chan) {
 }
 
 bool SPManagerDataModel::IsStereo(const std::string &id) {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return false;
+    }
+
     if (!m.HasMember("availableProcessors")) return false;
     for(auto &v: m["availableProcessors"].GetArray()){
         if(v.HasMember("id")){
@@ -152,6 +201,11 @@ bool SPManagerDataModel::IsStereo(const std::string &id) {
 }
 
 void SPManagerDataModel::validatePatches() {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return;
+    }
+
     if (!m.HasMember("lastPatches")) return;
     if (!m["lastPatches"].IsArray()) return;
     for (auto &chanPatches : m["lastPatches"].GetArray()) {
@@ -168,10 +222,15 @@ void SPManagerDataModel::validatePatches() {
             }
         }
     }
-    storeJSON(m, MODELJSONFN);
+    storeJSON(m, *_config_file);
 }
 
 void SPManagerDataModel::validateActiveProcessors() {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return;
+    }
+
     if (!m.HasMember("activeProcessors")) return;
     if (m["activeProcessors"].Size() != 2) {
         for (auto &v: m["availableProcessors"].GetArray()) {
@@ -186,7 +245,7 @@ void SPManagerDataModel::validateActiveProcessors() {
             }
         }
     }
-    storeJSON(m, MODELJSONFN);
+    storeJSON(m, *_config_file);
 }
 
 void SPManagerDataModel::PrintSelf() {
@@ -194,6 +253,11 @@ void SPManagerDataModel::PrintSelf() {
 }
 
 const char *SPManagerDataModel::GetCStrJSONConfiguration() {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return {};
+    }
+
     if (!m.HasMember("configuration")) return nullptr;
     json.Clear();
     Writer<StringBuffer> writer(json);
@@ -202,6 +266,11 @@ const char *SPManagerDataModel::GetCStrJSONConfiguration() {
 }
 
 void SPManagerDataModel::SetConfigurationFromJSON(const std::string &data) {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return;
+    }
+
     if (!m.HasMember("configuration")) return;
     Document d;
     d.Parse(data);
@@ -209,11 +278,16 @@ void SPManagerDataModel::SetConfigurationFromJSON(const std::string &data) {
     Value obj(kObjectType);
     obj.CopyFrom(d, m.GetAllocator());
     m["configuration"] = obj.Move();
-    storeJSON(m, MODELJSONFN);
+    storeJSON(m, *_config_file);
     //PrintSelf();
 }
 
 std::string SPManagerDataModel::GetConfigurationData(const std::string &id) {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return {};
+    }
+
     //PrintSelf();
     if (!m.HasMember("configuration")) return std::string();
     Value s(kStringType);
@@ -221,10 +295,28 @@ std::string SPManagerDataModel::GetConfigurationData(const std::string &id) {
     return s.GetString();
 }
 
-const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const std::string &id) {
+const char* SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const std::string &id) {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return "";
+    }
+
+    auto sound_processor_configs_dir = storage::get_fs_path("data/sp");
+    if (!sound_processor_configs_dir || !fs::is_directory(*sound_processor_configs_dir)) {
+        TBD_LOGE("sound_manager", "invalid sound processor config dir %s", sound_processor_configs_dir->c_str());
+        return "";
+    }
+
+    const std::string sound_processor_presets_filename = std::format("mp-{}.jsn", id);
+    auto sound_processor_presets_path = *sound_processor_configs_dir / sound_processor_presets_filename;
+    if (!fs::is_regular_file(sound_processor_presets_path)) {
+        TBD_LOGE("sound_manager", "invalid sound processor preset file %s", sound_processor_presets_path.c_str());
+        return "";
+    }
+
     json.Clear();
     Document d1, d2;
-    loadJSON(d1, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
+    loadJSON(d1, sound_processor_presets_path);
     d2.SetObject();
     Value s_id(kObjectType);
     s_id.SetString(id, d2.GetAllocator());
@@ -236,14 +328,38 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const std::stri
 }
 
 void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const char* data) {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return;
+    }
+
+    auto sound_processor_configs_dir = storage::get_fs_path("data/sp");
+    if (!sound_processor_configs_dir || !fs::is_directory(*sound_processor_configs_dir)) {
+        TBD_LOGE("sound_manager", "invalid sound processor config dir %s", sound_processor_configs_dir->c_str());
+        return;
+    }
+
+    // fixme replace with std::format when available
+    auto sound_processor_presets_filename = std::format("mp-{}.jsn", id);
+    auto sound_processor_presets_path = *sound_processor_configs_dir / sound_processor_presets_filename;
+    if (!fs::is_regular_file(sound_processor_presets_path)) {
+        TBD_LOGE("sound_manager", "invalid sound processor preset file %s", sound_processor_presets_path.c_str());
+        return;
+    }
+
     TBD_LOGD("Model", "String %s", data);
     Document presets;
     presets.Parse(data);
     if(presets.HasParseError()) return;
-    storeJSON(presets, std::string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn"));
+    storeJSON(presets, sound_processor_presets_path);
 }
 
 bool SPManagerDataModel::HasPluginID(const std::string &id) {
+    if (_config_file) {
+        TBD_LOGE("sound_manager", "access to broken sound manager config");
+        return false;
+    }
+
     if (!m.HasMember("availableProcessors")) return false;
     for(auto &v: m["availableProcessors"].GetArray()){
         if(v.HasMember("id")){
