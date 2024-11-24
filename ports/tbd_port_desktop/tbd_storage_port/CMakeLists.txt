@@ -1,4 +1,5 @@
 file(GLOB SRCS_FILES 
+    include/**/*.hpp
     src/*.hpp
     src/*.cpp
 )

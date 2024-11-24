@@ -1,4 +1,4 @@
-#include <tbd/storage/flash_storage.hpp>
+#include <tbd/storage/common/flash_storage.hpp>
 
 #include <tbd/logging.hpp>
 
