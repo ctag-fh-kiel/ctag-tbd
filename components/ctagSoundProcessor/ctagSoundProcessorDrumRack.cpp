@@ -361,7 +361,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         // filter params
         MK_FLT_PAR_ABS(fS1Cut, s1_fc, 4095.f, 1.f)
         rompler[0].params.cutoff = fS1Cut;
-        MK_FLT_PAR_ABS(fS1Reso, s1_fq, 4095.f, 20.f)
+        MK_FLT_PAR_ABS(fS1Reso, s1_fq, 4095.f, 10.f)
         rompler[0].params.resonance = fS1Reso;
         MK_INT_PAR_ABS(iS1FType, s1_ft, 4.f)
         CONSTRAIN(iS1FType, 0, 3);
@@ -420,7 +420,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         // filter params
         MK_FLT_PAR_ABS(fS2Cut, s2_fc, 4095.f, 1.f)
         rompler[1].params.cutoff = fS2Cut;
-        MK_FLT_PAR_ABS(fS2Reso, s2_fq, 4095.f, 20.f)
+        MK_FLT_PAR_ABS(fS2Reso, s2_fq, 4095.f, 10.f)
         rompler[1].params.resonance = fS2Reso;
         MK_INT_PAR_ABS(iS2FType, s2_ft, 4.f)
         CONSTRAIN(iS2FType, 0, 3);
@@ -479,7 +479,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         // filter params
         MK_FLT_PAR_ABS(fS3Cut, s3_fc, 4095.f, 1.f)
         rompler[2].params.cutoff = fS3Cut;
-        MK_FLT_PAR_ABS(fS3Reso, s3_fq, 4095.f, 20.f)
+        MK_FLT_PAR_ABS(fS3Reso, s3_fq, 4095.f, 10.f)
         rompler[2].params.resonance = fS3Reso;
         MK_INT_PAR_ABS(iS3FType, s3_ft, 4.f)
         CONSTRAIN(iS3FType, 0, 3);
@@ -538,7 +538,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         // filter params
         MK_FLT_PAR_ABS(fS4Cut, s4_fc, 4095.f, 1.f)
         rompler[3].params.cutoff = fS4Cut;
-        MK_FLT_PAR_ABS(fS4Reso, s4_fq, 4095.f, 20.f)
+        MK_FLT_PAR_ABS(fS4Reso, s4_fq, 4095.f, 10.f)
         rompler[3].params.resonance = fS4Reso;
         MK_INT_PAR_ABS(iS4FType, s4_ft, 4.f)
         CONSTRAIN(iS4FType, 0, 3);
