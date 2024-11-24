@@ -21,7 +21,6 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-
 #include <atomic>
 
 #include <tbd/favorites/model.hpp>
@@ -32,13 +31,16 @@ namespace tbd {
 class Favorites final {
 public:
     Favorites() = delete;
+
+    static void StartUI();
+
     static string GetAllFavorites();
     static void StoreFavorite(int const &id, const string &fav);
     static void ActivateFavorite(const int &id);
     static void DeactivateFavorite();
     static void DisableFavoritesUI();
     static void EnableFavoritesUI();
-    static void StartUI();
+
 
 #if TBD_CV_MIDI
     static void SetProgramChangeValue(uint32_t const &v);
@@ -46,7 +48,6 @@ public:
 
     static void TouchPadHandler();
 private:
-
 
 #if TBD_CV_MIDI
     static std::atomic<uint32_t> programChangeValue;
