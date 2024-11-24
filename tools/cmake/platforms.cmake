@@ -196,7 +196,7 @@ endfunction()
 
 function(tbd_platform_audio_output platform)
     tbd_platform_attrs(${platform})
-    tbd_store_or_return("${arg_AUDIO_OUTPUT" ${ARGN})
+    tbd_store_or_return("${arg_AUDIO_OUTPUT}" ${ARGN})
 endfunction()
 
 function(tbd_platform_file_system platform)
@@ -401,7 +401,7 @@ function(tbd_platform_load_preset file)
         APIS ${apis}
         ${file_system}
         ${display}
-    )    
+    )
     tbd_store_or_return("${new_platform}" ${ARGN})
 
 endfunction()
