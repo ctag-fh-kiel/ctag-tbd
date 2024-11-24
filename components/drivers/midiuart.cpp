@@ -35,6 +35,7 @@ midiuart::midiuart() {
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
             .rx_flow_ctrl_thresh = 0,
             .source_clk = UART_SCLK_DEFAULT,
+            .flags = 0
     };
 // Configure UART parameters
     ESP_ERROR_CHECK(uart_param_config(uart_num, &uart_config));
