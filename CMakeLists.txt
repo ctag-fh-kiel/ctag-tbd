@@ -2,10 +2,12 @@
 # in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.13)
 
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # import all TBD macros and functions
 include(${CMAKE_SOURCE_DIR}/tools/cmake/project.cmake)
-
 
 # make sure which platform and which toolchain we are using
 tbd_platform_setup()
@@ -15,10 +17,6 @@ tbd_toolchain_setup(${TBD_PLATFORM})
 tbd_platform_activate()
 tbd_toolchain_activate(${TBD_TOOLCHAIN})
 tbd_toolchain_add_defines()
-
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(ctag-tbd)
 
