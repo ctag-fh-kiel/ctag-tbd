@@ -22,12 +22,12 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-
+#include <optional>
 #include <string>
 #include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
 
 #include <tbd/config_base.hpp>
+
 
 using namespace std;
 using namespace rapidjson;
@@ -35,7 +35,8 @@ using namespace rapidjson;
 
 namespace tbd::favorites {
 
-struct FavoritesModel final : public tbd::config::ConfigBase {
+struct FavoritesModel final : config::ConfigBase {
+    FavoritesModel();
 
     string GetAllFavorites();
     string GetFavorite(int const &i);
@@ -46,6 +47,7 @@ struct FavoritesModel final : public tbd::config::ConfigBase {
     void SetFavorite(int const &id, const string &data);
 
 private:
+    std::optional<std::string> _config_file;
     Document m;
 };
 

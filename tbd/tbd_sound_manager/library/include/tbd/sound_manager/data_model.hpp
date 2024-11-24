@@ -20,9 +20,9 @@ respective component folders / files if different from this license.
 ***************/
 #pragma  once
 
+#include <optional>
 #include <string>
 #include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
 #include <tbd/config_base.hpp>
 
 
@@ -62,17 +62,14 @@ struct SPManagerDataModel final : config::ConfigBase {
 
 private:
     void getSoundProcessors();
-
     void validateActiveProcessors();
-
     void validatePatches();
 
+
+
     rapidjson::Document m;
-#ifndef TBD_SIM
-            const std::string MODELJSONFN = "/spiffs/data/spm-config.jsn";
-#else
-            const std::string MODELJSONFN = "../../spiffs_image/data/spm-config.jsn";
-#endif
+    std::optional<std::string> _config_file;
+
 };
 
 }
