@@ -220,7 +220,7 @@ macro(tbd_toolchain_add_options)
             -Wno-unused-local-typedefs
         )
     elseif ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
-        # nothing for now
+        # add_compile_options(-stdlib=libc++ -lc++abi)
     else()
         tbd_log(FATAL_ERROR "invalid toolchain ${TBD_TOOLCHAIN}")
     endif()

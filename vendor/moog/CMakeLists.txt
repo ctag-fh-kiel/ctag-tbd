@@ -18,5 +18,4 @@ set(SRCS_FILES
 
 add_library(moog STATIC ${SRCS_FILES})
 target_include_directories(moog PUBLIC "MoogLadders/src")
-target_compile_options(moog PRIVATE -ffast-math)
 set_target_properties(moog PROPERTIES LINKER_LANGUAGE CXX)

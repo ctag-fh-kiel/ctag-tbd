@@ -14,7 +14,8 @@ target_link_libraries(tbd_sound_manager
         tbd_sound_registry
         ${TBD_SOUND_MANAGER_PORT_LIB}
     PRIVATE 
-        tbd_system 
+        tbd_system
+        tbd_storage
         tbd_drivers
         tbd_presets
         tbd_config
@@ -22,5 +23,4 @@ target_link_libraries(tbd_sound_manager
 
 target_compile_options(tbd_sound_manager PRIVATE
         -Wno-unused-local-typedefs
-        -ffast-math
 )

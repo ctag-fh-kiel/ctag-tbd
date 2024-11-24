@@ -89,5 +89,4 @@ target_link_libraries(mutable
 target_compile_options(mutable PRIVATE
         -Wno-unused-variable
         -Wno-shift-negative-value
-        -ffast-math
 )

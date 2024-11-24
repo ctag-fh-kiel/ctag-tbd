@@ -40,11 +40,11 @@ target_link_libraries(tbd_sound_processor
     PUBLIC tbd_config
     PRIVATE 
         tbd_helpers
+        tbd_storage
         mutable
         tbd_system
         ${TBD_DSP_LIB}
 )
 target_compile_options(tbd_sound_processor PRIVATE
         -Wno-unused-local-typedefs
-        -ffast-math
 )

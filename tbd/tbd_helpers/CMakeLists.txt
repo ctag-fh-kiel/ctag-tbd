@@ -27,5 +27,4 @@ target_compile_definitions(tbd_helpers
 
 target_compile_options(tbd_helpers PRIVATE 
         -Wno-unused-local-typedefs
-        -ffast-math
 )

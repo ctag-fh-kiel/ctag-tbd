@@ -18,5 +18,4 @@ target_link_libraries(tbd_presets
 
 target_compile_options(tbd_presets PRIVATE
         -Wno-unused-local-typedefs
-        -ffast-math
 )
