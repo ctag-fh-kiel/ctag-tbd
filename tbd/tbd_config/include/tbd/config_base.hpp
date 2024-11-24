@@ -22,8 +22,6 @@ respective component folders / files if different from this license.
 
 #include <string>
 #include <iostream>
-#include <memory>
-#include <vector>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/document.h>
 
