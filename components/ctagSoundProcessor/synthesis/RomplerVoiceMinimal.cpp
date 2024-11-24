@@ -445,7 +445,7 @@ namespace CTAG::SYNTHESIS {
         CONSTRAIN(fCut, 0.f, 1.f)
         fCut = 20.f * stmlib::SemitonesToRatio(fCut * 120.f);
         float fReso = params.resonance;
-        CONSTRAIN(fReso, 1.f, 20.f)
+        CONSTRAIN(fReso, .5f, 20.f)
         svf.
                 set_f_q<stmlib::FREQUENCY_FAST>(fCut
                                                 / 44100.f, fReso);
