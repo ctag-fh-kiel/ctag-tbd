@@ -27,12 +27,13 @@
                 "idf.gitPath": "/usr/bin/git",
                 "idf.adapterTargetName": "esp32s3",
                 "idf.buildPath": "${workspaceFolder}/build/firmware",
-                "idf.pythonBinPath": "/opt/esp/python_env/idf5.3_py3.10_env/bin/python",
+                "idf.pythonBinPath": "/opt/esp/python_env/idf5.4_py3.12_env/bin/python",
                 "cmake.buildDirectory": "${workspaceFolder}/build/firmware",
                 "cmake.automaticReconfigure": false,
                 "esbonio.sphinx.buildDir": "${workspaceFolder}/build/docs",
                 "esbonio.sphinx.confDir": "${workspaceFolder}/docs/config",
-                "esbonio.sphinx.srcDir": "${workspaceFolder}/docs"
+                "esbonio.sphinx.srcDir": "${workspaceFolder}/docs",
+                "python.defaultInterpreterPath": "/opt/esp/python_env/idf5.4_py3.12_env/bin/python"
             },
             "extensions": [
                 "ms-vscode.cpptools-extension-pack",
@@ -53,6 +54,7 @@
         }
     },
     "runArgs": [
+        //    "--device /dev/snd"
         // required for flashing
         // "--privileged"
     ]

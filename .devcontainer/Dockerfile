@@ -1,9 +1,9 @@
-ARG TBD_IDF_VERSION=v5.3
+ARG TBD_IDF_VERSION=v5.4
 
 
 #### c++ build ####
 
-FROM espressif/idf:${TBD_IDF_VERSION} AS esp_idf_stage
+FROM espressif/idf:release-${TBD_IDF_VERSION} AS esp_idf_stage
 
 # tbd specifc configs
 ENV TBD_ENV_NO_TBD_CMD=0
@@ -20,7 +20,7 @@ ARG TBD_INIT=$TBD_PATH/tbd-init.sh
 
 RUN apt-get update -y && apt-get install -y \
     udev \
-    fish \
+    software-properties-common \
     bash-completion \
     libgcrypt20 \
     libglib2.0-0 \
@@ -28,15 +28,19 @@ RUN apt-get update -y && apt-get install -y \
     libsdl2-2.0-0 \
     libslirp0 \
     libboost-all-dev \
-    libasound2-dev
+    libasound2-dev \
+    fish \
+    micro
+
+
 
 COPY ./tbd-init.sh "$TBD_PATH/"
 ENV PATH="$PATH:$TBD_PATH"
 RUN "$TBD_INIT" integrate-idf
+RUN "$TBD_INIT" install-clang
 
 ENTRYPOINT [ "/opt/esp/entrypoint.sh" ]
 CMD ["/bin/bash", "-c"]
-
 
 #### tbd build tool ####
 
