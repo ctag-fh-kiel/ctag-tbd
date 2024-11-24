@@ -6,4 +6,8 @@ file(GLOB SRCS_FILES
 
 add_library(tbd_config STATIC ${SRCS_FILES})
 target_include_directories(tbd_config PUBLIC include)
-target_link_libraries(tbd_config PUBLIC rapidjson)
+target_link_libraries(tbd_config
+        PUBLIC
+            tbd_storage
+            rapidjson
+)

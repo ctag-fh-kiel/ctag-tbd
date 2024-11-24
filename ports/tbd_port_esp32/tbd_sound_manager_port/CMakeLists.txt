@@ -9,4 +9,7 @@ idf_component_register(
     INCLUDE_DIRS src
 )
 
-target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_sound_manager_common tbd_drivers)
+target_link_libraries(${COMPONENT_LIB}
+        PUBLIC
+            tbd_sound_manager_common tbd_drivers
+)
