@@ -6,7 +6,6 @@
         "description": "Strämpler Eurorack sampler",
         "mark": 1,
         "rev": 1
-
     },
     "config": {
         "system": "esp32",
@@ -24,7 +23,21 @@
         },
         "audio_output": {
             "type": "wm8731",
-            "volume_control": false
+            "volume_control": false,
+            "pins": {
+                "spi": {
+                    "cs": 4,
+                    "mosi": 13,
+                    "miso": 0,
+                    "clk": 12
+                },
+                "i2s": {
+                    "bclk": 21,
+                    "adcdat": 27,
+                    "dacdat": 22,
+                    "lrclk": 19
+                }
+            }
         },
         "indicator": {
             "type": "rgb",

@@ -105,6 +105,7 @@ macro(tbd_platform_attrs)
         AUDIO_OUTPUT 
     )
     set(multi_attrs
+        INPUTS
         CV_INPUT
         INDICATOR
         APIS
@@ -200,7 +201,7 @@ endfunction()
 
 function(tbd_platform_display platform)
     tbd_platform_attrs(${platform})
-    tbd_store_or_return("${arg_DIPLAY}" ${ARGN})
+    tbd_store_or_return("${arg_DISPLAY}" ${ARGN})
 endfunction()
 
 function(tbd_platform_indicators platform)

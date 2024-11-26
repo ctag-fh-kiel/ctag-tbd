@@ -6,7 +6,6 @@
         "description": "TBD standalone MIDI device",
         "mark": 1,
         "rev": 1
-
     },
     "config": {
         "system": "esp32",
@@ -18,10 +17,18 @@
         },
         "audio_output": {
             "type": "es8388",
-            "volume_control": true
+            "volume_control": true,
+            "i2c_bus": 1,
+            "pins": {
+                "sda": 40,
+                "scl": 41
+            }
         },
         "indicator": {
-            "type": "neopixel"
+            "type": "neopixel",
+            "pins": {
+                "dout": 38
+            }
         },
         "inputs": {
             "type": "gpio",

@@ -6,7 +6,6 @@
         "description": "TBD Eurorack module with plenty of inputs",
         "mark": 2,
         "rev": 1
-
     },
     "config": {
         "system": "esp32",
@@ -14,11 +13,31 @@
         "cv_input": {
             "type": "stm32",
             "n_cvs": 22,
-            "n_triggers": 12
+            "n_triggers": 12,
+            "pins": {
+                "cs": 15,
+                "mosi": 13,
+                "miso": 12,
+                "sclk": 14
+            }
         },
         "audio_output": {
             "type": "wm8978",
-            "volume_control": true
+            "volume_control": true,
+            "pins": {
+                "spi": {
+                    "cs": 5,
+                    "mosi": 23,
+                    "miso": 18,
+                    "sclk": -1
+                },
+                "i2s": {
+                    "bclk": 21,
+                    "adcdat": 27,
+                    "dacdat": 22,
+                    "lrclk": 19
+                }
+            }
         },
         "indicator": {
             "type": "rgb",

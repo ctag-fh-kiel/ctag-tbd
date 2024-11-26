@@ -1,4 +1,6 @@
 include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/pinouts.cmake)
+
 
 set(TBD_CV_INPUT_TYPES adc mcp3208 stm32 midi)
 set(TBD_CV_INPUT_GENERAL_ATTRS TYPE N_CVS N_TRIGGERS)
@@ -50,6 +52,7 @@ endfunction()
 
 #### Mcp3208 cv_input class ####
 
+set(TBD_MCP3208_PINS cs mosi miso sclk)
 
 # helper for accessing Mcp3208 fields
 #
@@ -57,12 +60,8 @@ endfunction()
 macro(tbd_mcp3208_attrs)
     set(attrs
         ${TBD_CV_INPUT_GENERAL_ATTRS}
-        CS
-        MOSI
-        MISO
-        SCLK
     )
-    cmake_parse_arguments(arg "" "${attrs}" "" ${ARGV})
+    cmake_parse_arguments(arg "" "${attrs}" "PINS" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()
@@ -71,11 +70,8 @@ endmacro()
 
 # @brief constructor for mcp3208 cv_input
 #
-# @arg TYPE [enum]   has to be 'mcp3208'
-# @arg cs [int]      chip select pin
-# @arg mosi [int]    SoC output pin
-# @arg miso [int]    SoC input pin
-# @arg sclk [int]    clock pin
+# @arg TYPE [enum]           has to be 'mcp3208'
+# @arg PINS [map<str,int>]   spi connection pinout
 #
 function(tbd_mcp3208 var_name)
     tbd_mcp3208_attrs(${ARGN})
@@ -83,11 +79,7 @@ function(tbd_mcp3208 var_name)
         tbd_loge("mcp3208 cv_input type has to be 'mcp3208' got '${arg_TYPE}'")
     endif()
 
-    tbd_check_int("${arg_CS}")
-    tbd_check_int("${arg_MOSI}")
-    tbd_check_int("${arg_MISO}")
-    tbd_check_int("${arg_SCLK}")
-
+    tbd_pinout_check("${arg_PINS}" PINS ${TBD_MCP3208_PINS})
     if (NOT "${var_name}" STREQUAL "CHECK")
         set(${var_name} ${ARGN} PARENT_SCOPE)
     endif()
@@ -95,65 +87,51 @@ endfunction()
 
 ## mcp3208 properties ##
 
-function(tbd_mcp3208_cs mcp3208)
+function(tbd_mcp3208_pins mcp3208)
     tbd_mcp3208_attrs(${mcp3208})
-    tbd_store_or_return("${arg_CS}" ${ARGN})
+    tbd_store_or_return("${arg_PINS}" ${ARGN})
 endfunction()
 
-function(tbd_mcp3208_mosi mcp3208)
+function(tbd_mcp3208_pin_flags mcp3208)
     tbd_mcp3208_attrs(${mcp3208})
-    tbd_store_or_return("${arg_MOSI}" ${ARGN})
+    tbd_pinout_flags("${arg_PINS}"
+            PINS ${TBD_MCP3208_PINS}
+            NAMESPACE TBD_MCP3208_PIN_
+            PREFIX GPIO_NUM_
+            VAR flags
+    )
+    tbd_store_or_return("${flags}" ${ARGN})
 endfunction()
 
-function(tbd_mcp3208_miso mcp3208)
-    tbd_mcp3208_attrs(${mcp3208})
-    tbd_store_or_return("${arg_MISO}" ${ARGN})
-endfunction()
-
-function(tbd_mcp3208_sclk mcp3208)
-    tbd_mcp3208_attrs(${mcp3208})
-    tbd_store_or_return("${arg_SCLK}" ${ARGN})
-endfunction()
-
-## rbg methods ##
+## Mcp3208 methods ##
 
 function(tbd_mcp3208_print_info mcp3208)
     tbd_mcp3208_attrs(${mcp3208})
+    tbd_pinout_info("${arg_PINS}" PINS ${TBD_MCP3208_PINS} VAR pins)
     message("
 TBD cv_input configuration
 ---------------------------
 type: mcp3208
-
-chip select pin: ${arg_CS}
-output pin:      ${arg_MOSI}
-input pin:       ${arg_MISO}
-clock pin:       ${arg_SCLK}
----------------------------
+${pins}---------------------------
     ")
 endfunction()
 
 function(_tbd_mcp3208_load json_data)
-    tbd_logw("${json_data}")
     string(JSON type GET "${json_data}" type)
     string(JSON pins_data GET "${json_data}" pins)
-
-    string(JSON cs GET "${pins_data}" cs)
-    string(JSON mosi GET "${pins_data}" mosi)
-    string(JSON miso GET "${pins_data}" miso)
-    string(JSON sclk GET "${pins_data}" sclk)
+    tbd_pinout_load("${pins_data}" PINS ${TBD_MCP3208_PINS} VAR pins)
 
     tbd_mcp3208(new_mcp3208 
         TYPE ${type}
-        CS ${cs}    
-        MOSI ${mosi}
-        MISO ${miso}
-        SCLK ${sclk}
+        PINS ${pins}
     )
     tbd_store_or_return("${new_mcp3208}" ${ARGN})
 endfunction()
 
 
 #### Stm32 cv_input class ####
+
+set(TBD_STM32_PINS cs mosi miso sclk)
 
 # helper for accessing Stm32 fields
 #
@@ -162,7 +140,7 @@ macro(tbd_stm32_attrs)
     set(attrs
         ${TBD_CV_INPUT_GENERAL_ATTRS}
     )
-    cmake_parse_arguments(arg "" "${attrs}" "" ${ARGV})
+    cmake_parse_arguments(arg "" "${attrs}" "PINS" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()
@@ -180,27 +158,54 @@ function (tbd_stm32 var_name)
         tbd_loge("stm32 cv_input type has to be 'stm32' got '${arg_TYPE}'")
     endif()
 
+    tbd_pinout_check("${arg_PINS}" PINS ${TBD_STM32_PINS})
     if (NOT "${var_name}" STREQUAL "CHECK")
         set(${var_name} ${ARGN} PARENT_SCOPE)
     endif()
 endfunction()
 
+## stm32 attrs ##
+
+function(tbd_stm32_pins stm32)
+    tbd_mcp3208_attrs(${stm32})
+    tbd_store_or_return("${arg_PINS}" ${ARGN})
+endfunction()
+
+function(tbd_stm32_pin_flags stm32)
+    tbd_mcp3208_attrs(${stm32})
+    tbd_pinout_flags("${arg_PINS}"
+            PINS ${TBD_STM32_PINS}
+            NAMESPACE TBD_STM32_PIN_
+            PREFIX GPIO_NUM_
+            VAR flags
+    )
+    tbd_store_or_return("${flags}" ${ARGN})
+endfunction()
+
 ## stm32 methods ##
 
 function(tbd_stm32_print_info stm32)
+    tbd_stm32_attrs(${stm32})
+    tbd_pinout_info("${arg_PINS}" PINS ${TBD_STM32_PINS} VAR pins)
     message("
 TBD cv_input configuration
 ---------------------------
 type: stm32
----------------------------
+${pins}---------------------------
     ")
 endfunction()
 
 
-function(tbd_stm32_load json_data)
+function(_tbd_stm32_load json_data)
     string(JSON type GET "${json_data}" type)
-    tbd_stm32(new_stm32 
-        TYPE ${type}
+    string(JSON pins_data GET "${json_data}" pins)
+    tbd_pinout_load("${pins_data}" PINS ${TBD_STM32_PINS} VAR pins)
+
+    tbd_log("############## ${pins}")
+
+    tbd_stm32(new_stm32
+            TYPE ${type}
+            PINS ${pins}
     )
     tbd_store_or_return("${new_stm32}" ${ARGN})
 endfunction()
@@ -344,13 +349,13 @@ function(tbd_cv_input_load json_data)
     string(JSON type GET "${json_data}" type)
 
     if ("${type}" STREQUAL "adc")
-        # tbd_adc_load("${json_data}" VAR specific)
+#        _tbd_adc_load("${json_data}" VAR specific)
     elseif("${type}" STREQUAL "mcp3208")
         _tbd_mcp3208_load("${json_data}" VAR specific)
     elseif("${type}" STREQUAL "stm32")
-        # tbd_stm32_load("${json_data}" VAR specific)
+        _tbd_stm32_load("${json_data}" VAR specific)
     elseif("${type}" STREQUAL "midi")
-        # tbd_midi_load("${json_data}" VAR specific)
+        _tbd_midi_load("${json_data}" VAR specific)
     else()
         tbd_loge("unknown cv_input type '${type}' in json")
     endif()

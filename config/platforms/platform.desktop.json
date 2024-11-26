@@ -6,7 +6,6 @@
         "description": "desktop TBD for plugin crafting and software testing",
         "mark": 1,
         "rev": 2
-
     },
     "config": {
         "system": "desktop",

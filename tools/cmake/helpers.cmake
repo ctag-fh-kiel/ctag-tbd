@@ -5,8 +5,17 @@
 # @exception FATAL_ERROR
 #
 function (tbd_check_int value)
+    cmake_parse_arguments(arg "" "ERR" "" ${ARGN})
     string(STRIP "${value}" stripped_value)
     if (NOT stripped_value MATCHES "^[0-9]+$")
+        set(retval no)
+    else()
+        set(retval yes)
+    endif()
+
+    if (retval)
+        set("${arg_ERR}" yes)
+    else()
         tbd_loge("expected integer got ${value}")
     endif()
 endfunction()
@@ -113,9 +122,9 @@ endfunction()
 # @args VARGS        all non explicit function arguments
 #
 macro(tbd_store_or_return value)
-    cmake_parse_arguments(arg "" "VAR" "" ${ARGN})
-    if (arg_VAR) 
-        set(${arg_VAR} "${value}" PARENT_SCOPE)
+    cmake_parse_arguments(_arg "" "VAR" "" ${ARGN})
+    if (_arg_VAR)
+        set(${_arg_VAR} "${value}" PARENT_SCOPE)
     else()
         set(_return "${value}" PARENT_SCOPE)
     endif()
