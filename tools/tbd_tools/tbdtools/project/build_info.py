@@ -64,12 +64,10 @@ class DeviceCapabilities(DeviceHeader, DeviceInputs):
 
 
 def _get_device_inputs(platform: Platform) -> Dict:
-    if platform == Platform.v1 or platform == Platform.v2:
+    if platform == Platform.v1 or platform == Platform.v2 or platform == Platform.aem:
         inputs_type = 'mk1'
     elif platform == Platform.str:
         inputs_type = 'str'
-    elif platform == Platform.aem:
-        raise ValueError(f'aem platform not yet supported {platform.name}')
     elif platform == Platform.mk2:
         inputs_type = 'mk2'
     elif platform == Platform.bba1:
