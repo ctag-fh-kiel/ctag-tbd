@@ -39,7 +39,7 @@ def capabilities_cmd(_ctx: typer.Context):
     print(get_build_dir(_ctx)())
 
 
-@firmware_group.command('configure')
+@firmware_group.command('configure', help='create application build files')
 def configure_cmd(_ctx: typer.Context):
     """ configure firmware """
     build_dir = get_build_dir(_ctx)
@@ -51,12 +51,24 @@ def configure_cmd(_ctx: typer.Context):
          stdout=sys.stdout, stderr=sys.stderr)
 
 
-@firmware_group.command('build')
+@firmware_group.command('build', help='build the application')
 def build_cmd(_ctx: typer.Context):
     """ build firmware """
     build_dir = get_build_dir(_ctx)
     platform = get_ctx(_ctx).platform.name
     run(['cmake', '--build', build_dir()], stdout=sys.stdout, stderr=sys.stderr)
+
+
+@firmware_group.command('emu', help='run the application in qemu')
+def emu_cmd(_ctx: typer.Context):
+    """ build firmware """
+    build_dir = get_build_dir(_ctx)
+    platform = get_ctx(_ctx).platform.name
+    run(['idf.py', 
+         '-B', build_dir(),
+         f'-DTBD_PLATFORM={platform}',
+         'qemu', 'monitor'], 
+         stdout=sys.stdout, stderr=sys.stderr)
 
 
 @firmware_group.command('reconfigure')
