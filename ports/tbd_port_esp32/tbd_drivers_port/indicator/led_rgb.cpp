@@ -21,19 +21,8 @@ respective component folders / files if different from this license.
 #include <tbd/drivers/common/indicator.hpp>
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "driver/ledc.h"
 
-
-#if defined(CONFIG_TBD_PLATFORM_MK2)
-    #define PIN_NUM_RED 26
-    #define PIN_NUM_GREEN 4
-    #define PIN_NUM_BLUE 25
-#else
-    #define PIN_NUM_RED 14
-    #define PIN_NUM_GREEN 15
-    #define PIN_NUM_BLUE 18
-#endif
 
 /*
 static void led_test_task(void *pvParameter)
@@ -59,7 +48,7 @@ void Indicator::Init() {
 
     // esp32sX does not support high speed mode
     #if SOC_LEDC_SUPPORT_HS_MODE
-        auto speed_mode = LEDC_HIGH_SPEED_MODE
+        auto speed_mode = LEDC_HIGH_SPEED_MODE;
     #else
         auto speed_mode = LEDC_LOW_SPEED_MODE;
     #endif
@@ -75,21 +64,21 @@ void Indicator::Init() {
 
     ledc_channel[0].channel = LEDC_CHANNEL_0;
     ledc_channel[0].duty = 0;
-    ledc_channel[0].gpio_num = PIN_NUM_RED;
+    ledc_channel[0].gpio_num = TBD_RGB_RED_PIN;
     ledc_channel[0].speed_mode = speed_mode;
     ledc_channel[0].hpoint = 0;
     ledc_channel[0].timer_sel = LEDC_TIMER_0;
 
     ledc_channel[1].channel = LEDC_CHANNEL_1;
     ledc_channel[1].duty = 0;
-    ledc_channel[1].gpio_num = PIN_NUM_GREEN;
+    ledc_channel[1].gpio_num = TBD_RGB_GREEN_PIN;
     ledc_channel[1].speed_mode = speed_mode;
     ledc_channel[1].hpoint = 0;
     ledc_channel[1].timer_sel = LEDC_TIMER_0;
 
     ledc_channel[2].channel = LEDC_CHANNEL_2;
     ledc_channel[2].duty = 0;
-    ledc_channel[2].gpio_num = PIN_NUM_BLUE;
+    ledc_channel[2].gpio_num = TBD_RGB_BLUE_PIN;
     ledc_channel[2].speed_mode = speed_mode;
     ledc_channel[2].hpoint = 0;
     ledc_channel[2].timer_sel = LEDC_TIMER_0;

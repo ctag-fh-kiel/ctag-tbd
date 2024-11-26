@@ -45,6 +45,9 @@ DRAM_ATTR uint32_t t1delay;
 }
 
 void GPIO::InitGPIO() {
+    // FIXME: this was found in the favourites task
+    //gpio_set_direction(PIN_PUSH_BTN, (gpio_mode_t)GPIO_MODE_DEF_INPUT);
+
     gpio_config_t io_conf;
     memset(&io_conf, 0, sizeof(io_conf));
     // inputs
