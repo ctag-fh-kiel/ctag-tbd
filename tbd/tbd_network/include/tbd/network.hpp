@@ -3,8 +3,7 @@
 #include <string>
 
 
-namespace CTAG {
-namespace NET {
+namespace tbd {
 
 struct Network {
     static void Up();
@@ -20,5 +19,4 @@ struct Network {
     static void SetMDNSName(const std::string name);
 };
 
-}
 }

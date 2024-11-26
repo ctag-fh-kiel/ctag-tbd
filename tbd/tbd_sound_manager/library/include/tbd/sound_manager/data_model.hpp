@@ -65,11 +65,8 @@ private:
     void validateActiveProcessors();
     void validatePatches();
 
-
-
     rapidjson::Document m;
     std::optional<std::string> _config_file;
-
 };
 
 }

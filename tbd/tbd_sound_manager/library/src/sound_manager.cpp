@@ -55,7 +55,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     audio_worker.begin();
 
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
-    FAV::Favorites::StartUI();
+    Favorites::StartUI();
 #endif
 
     SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));

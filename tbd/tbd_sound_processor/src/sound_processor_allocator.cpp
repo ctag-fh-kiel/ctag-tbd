@@ -27,7 +27,7 @@ respective component folders / files if different from this license.
 
 namespace heaps = tbd::heaps;
 
-using namespace CTAG::SP;
+namespace CTAG::SP {
 
 // create all definitions
 void *ctagSPAllocator::internalBuffer = nullptr;
@@ -90,18 +90,18 @@ void *ctagSPAllocator::Allocate(std::size_t const &size) {
         }
     }
     switch(allocationType){
-        case AllocationType::CH0:
-            TBD_LOGI("ctagSPAllocator", "Allocate: allocating CH0 %zd bytes object size, ch0 %zd bytes blockMem", size, size1);
-            break;
-        case AllocationType::CH1:
-            TBD_LOGI("ctagSPAllocator", "Allocate: allocating CH1 %zd bytes object size, ch1 %zd bytes blockMem", size, size2);
-            break;
-        case AllocationType::STEREO:
-            TBD_LOGI("ctagSPAllocator", "Allocate: allocating STEREO %zd bytes object size, %zd bytes blockMem", size, size1);
-            break;
-        default:
-            TBD_LOGE("ctagSPAllocator", "Allocate: unknown allocation type");
-            assert(false);
+    case AllocationType::CH0:
+        TBD_LOGI("ctagSPAllocator", "Allocate: allocating CH0 %zd bytes object size, ch0 %zd bytes blockMem", size, size1);
+        break;
+    case AllocationType::CH1:
+        TBD_LOGI("ctagSPAllocator", "Allocate: allocating CH1 %zd bytes object size, ch1 %zd bytes blockMem", size, size2);
+        break;
+    case AllocationType::STEREO:
+        TBD_LOGI("ctagSPAllocator", "Allocate: allocating STEREO %zd bytes object size, %zd bytes blockMem", size, size1);
+        break;
+    default:
+        TBD_LOGE("ctagSPAllocator", "Allocate: unknown allocation type");
+        assert(false);
     }
     return ptr;
 }
@@ -152,4 +152,6 @@ void ctagSPAllocator::PrepareAllocation(AllocationType const &type) {
         TBD_LOGE("ctagSPAllocator", "SetAllocationType: unknown allocation type");
         assert(false);
     }
+}
+
 }

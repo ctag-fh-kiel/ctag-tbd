@@ -24,9 +24,6 @@ respective component folders / files if different from this license.
 
 #include <tbd/config_base.hpp>
 #include <string>
-#include <iostream>
-#include <memory>
-#include <vector>
 #include <rapidjson/document.h>
 
 
@@ -34,7 +31,7 @@ namespace CTAG::SP {
 
 struct SoundProcessorParams : tbd::config::ConfigBase {
 
-    SoundProcessorParams(const std::string &id, const bool isStereo);
+    SoundProcessorParams(const std::string &id, bool isStereo);
 
     ~SoundProcessorParams();
 
@@ -43,11 +40,11 @@ struct SoundProcessorParams : tbd::config::ConfigBase {
     void LoadPreset(const int num);
 
     // set a preset value, "which" can be current, cv, trig
-    void SetParamValue(const std::string &id, const std::string &key, const int val);
+    void SetParamValue(const std::string &id, const std::string &key, int val);
 
     int GetParamValue(const std::string &id, const std::string &key);
 
-    void SavePreset(const std::string &name, const int number);
+    void SavePreset(const std::string &name, int number);
 
     const char *GetCStrJSONPresets(); // all presets
     const char *GetCStrJSONAllPresetData(); // current preset
