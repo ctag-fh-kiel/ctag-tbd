@@ -35,14 +35,17 @@ respective component folders / files if different from this license.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
 
+using tbd::system::Task;
+
 namespace {
 
 enum class Event : uint32_t {
     NONE, BTN_PRESS
 };
 
-TaskHandle_t ledTaskHandle;
-TaskHandle_t btnTaskHandle;
+std::unique_ptr<Task> led_task;
+std::unique_ptr<Task> button_task;
+
 std::atomic<int32_t> taskControl;
 
 using EventQueue = tbd::system::Queue<Event>;
@@ -54,6 +57,43 @@ TBD_DRAM float bCoeffs05V[4 * 2];
 TBD_DRAM float aCoeffs10V[4 * 2];
 TBD_DRAM float bCoeffs10V[4 * 2];
 TBD_DRAM tbd::calibration::CVConfig configCV[4];
+
+void led_task_func(void *params) {
+    using tbd::drivers::Indicator;
+
+    while (taskControl.load()) {
+
+        //TBD_LOGW("CAL", "Calibration LED %d", ledTaskControl.load());
+        int32_t blinks = taskControl;
+        for (int32_t i = 0; i < blinks; i++) {
+            Indicator::SetLedR(255);
+            Task::sleep(100);
+            if (!taskControl.load()) break;
+            Indicator::SetLedR(0);
+            Task::sleep(100);
+            if (!taskControl.load()) break;
+        }
+        Task::sleep(400);
+    }
+}
+
+void button_task_func(void *params) {
+    using tbd::drivers::GPIO;
+
+    Event event = Event::BTN_PRESS;
+    while (taskControl.load()) {
+        while (GPIO::GetTrig0() == 0) {
+            Task::sleep(50);
+        }
+        while (GPIO::GetTrig0() == 1) {
+            Task::sleep(50);
+        }
+        while (GPIO::GetTrig0() == 0) {
+            Task::sleep(50);
+        }
+        event_queue->push(event);
+    }
+}
 
 }
 
@@ -81,8 +121,12 @@ void Calibration::doCalibration() {
     // start tasks for ui
     taskControl.store(1);
     event_queue = std::make_unique<EventQueue>();
-    xTaskCreate(&Calibration::ledTask, "led_task", 4096, nullptr, 5, &ledTaskHandle);
-    xTaskCreate(&Calibration::btnTask, "btn_task", 4096, nullptr, 5, &btnTaskHandle);
+
+    led_task = std::make_unique<Task>("led_task");
+    led_task->begin(&led_task_func, nullptr);
+
+    button_task = std::make_unique<Task>("button_task");
+    button_task->begin(&button_task_func, nullptr);
 
     std::vector<uint32_t> data;
     model.CreateMatrix();
@@ -130,43 +174,13 @@ void Calibration::doCalibration() {
     calcPiecewiseLinearCoeffs("Calibration_CV_05V", calibration::CVConfig::CVUnipolar);
     calcPiecewiseLinearCoeffs("Calibration_CV_10V", calibration::CVConfig::CVBipolar);
 
+    led_task.reset();
+    button_task.reset();
+
     taskControl.store(0);
-    vTaskDelete(ledTaskHandle);
-    vTaskDelete(btnTaskHandle);
     event_queue.reset();
 }
 
-void Calibration::ledTask(void *params) {
-    while (taskControl.load()) {
-        //TBD_LOGW("CAL", "Calibration LED %d", ledTaskControl.load());
-        int32_t blinks = taskControl;
-        for (int32_t i = 0; i < blinks; i++) {
-            drivers::Indicator::SetLedR(255);
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-            if (!taskControl.load()) break;
-            drivers::Indicator::SetLedR(0);
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-            if (!taskControl.load()) break;
-        }
-        vTaskDelay(400 / portTICK_PERIOD_MS);
-    }
-}
-
-void Calibration::btnTask(void *params) {
-    Event event = Event::BTN_PRESS;
-    while (taskControl.load()) {
-        while (drivers::GPIO::GetTrig0() == 0) {
-            system::Task::sleep(50);
-        }
-        while (drivers::GPIO::GetTrig0() == 1) {
-            system::Task::sleep(50);
-        }
-        while (drivers::GPIO::GetTrig0() == 0) {
-            system::Task::sleep(50);
-        }
-        event_queue->push(event);
-    }
-}
 
 void Calibration::acquireData(std::vector<uint32_t> &d) {
     //drivers::LedRGB::SetLedG(0);
@@ -188,7 +202,7 @@ void Calibration::acquireData(std::vector<uint32_t> &d) {
             }
             //drivers::LedRGB::SetLedG(8);
             //TBD_LOGE("CAL", "Average values %d, %d, %d, %d", avgdata[0], avgdata[1], avgdata[2], avgdata[3]);
-            vTaskDelay(50 / portTICK_PERIOD_MS); // satisfy idle task
+            system::Task::sleep(50);
         }
         cnt++;
     }

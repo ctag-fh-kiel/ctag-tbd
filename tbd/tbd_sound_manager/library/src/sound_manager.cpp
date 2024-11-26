@@ -28,7 +28,7 @@ void SoundProcessorManager::StartSoundProcessor() {
         model->ResetNetworkConfiguration();
         TBD_LOGE("SP", "Network credentials reset requested!");
         drivers::LedRGB::SetLedRGB(255, 255, 255);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        system::Task::sleep(1000);
     }
 #endif
 

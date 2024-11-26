@@ -37,8 +37,7 @@ respective component folders / files if different from this license.
 
 namespace rj = rapidjson;
 
-namespace CTAG {
-namespace SP {
+namespace CTAG::SP {
 
 SoundProcessorParams::SoundProcessorParams(const std::string &id, const bool isStereo) {
     // load config
@@ -314,4 +313,4 @@ void SoundProcessorParams::SetActivePluginParameters(const std::string &paramete
 }
 
 }
-}
+

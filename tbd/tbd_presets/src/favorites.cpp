@@ -78,7 +78,7 @@ void Favorites::StartUI() {
         vs.emplace_back("calibration:");
         vs.emplace_back("Do not touch!");
         Display::ShowUserString(vs);
-        vTaskDelay(2000/ portTICK_PERIOD_MS);
+        system::Task::sleep(2000);
         uint32_t touch_value;
         TouchPad::calibrate();
         xTaskCreatePinnedToCore(&Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
