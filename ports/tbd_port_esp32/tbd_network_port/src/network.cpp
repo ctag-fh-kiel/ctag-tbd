@@ -14,6 +14,7 @@
 #include "mdns.h"
 #include "lwip/apps/netbiosns.h"
 #include <tbd/logging.hpp>
+#include <tbd/network/config.hpp>
 
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY  10
@@ -42,7 +43,7 @@
 
 namespace {
 
-static const char *TAG = "tbd_network";
+const char *TAG = "tbd_network";
 
 struct Impl {
     void set_is_access_point(bool is_access_point) {
@@ -292,8 +293,7 @@ void Impl::wifi_event_handler_ap(
 } // anonymous namespace 
 
 
-namespace CTAG {
-namespace NET {
+namespace tbd {
 
 void Network::Up() {
     instance.up();
@@ -324,5 +324,4 @@ void Network::SetMDNSName(const std::string mdns_name) {
     instance.set_mdns_name(mdns_name);
 }
 
-}
 }
