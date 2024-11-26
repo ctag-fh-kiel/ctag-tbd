@@ -27,7 +27,7 @@ respective component folders / files if different from this license.
 #include "esp_log.h"
 #include "esp_attr.h"
 
-#if !#if TBD_AUDIO_AIC3254
+#if !TBD_AUDIO_AIC3254
     #error "no aic3254 sound chip configured"
 #endif
 
