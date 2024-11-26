@@ -27,10 +27,15 @@ respective component folders / files if different from this license.
 #include "esp_attr.h"
 #include "es8388.hpp"
 
+
+#if !TBD_AUDIO_ES8388
+    #error "no es8388 sound chip configured"
+#endif
+
+
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
 
-namespace tbd::drivers {
 
 namespace {
 
@@ -39,6 +44,9 @@ static i2s_chan_handle_t rx_handle = NULL;
 es8388 codec;
 
 }
+
+
+namespace tbd::drivers {
 
 void Codec::InitCodec() {
     ESP_LOGI("BBA Codec", "Starting i2s setup...");
