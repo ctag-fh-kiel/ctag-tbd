@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 #include <tbd/calibration.hpp>
 #endif
 
-#if TBD_CV_ADC
+#if TBD_CV_ADC || TBD_CV_MCP_3208
     #include <tbd/drivers/adc.hpp>
     #include <tbd/drivers/gpio.hpp>
 
@@ -49,7 +49,7 @@ TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
 #if TBD_ADC
     drivers::ADC::Update();
 #elif TBD_CV_STM32
-    uint8_t *data = (uint8_t *) DRIVERS::ADCStm32::Update();
+    uint8_t *data = (uint8_t *) drivers::ADCStm32::Update();
     *cvs = (float*) data;
     *trigs = &data[N_CVS*4];
     /* for debug purposes
