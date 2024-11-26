@@ -11,7 +11,7 @@
     "config": {
         "system": "esp32",
         "arch": "esp32",
-        "cv_inputs": {
+        "cv_input": {
             "type": "stm32",
             "n_cvs": 22,
             "n_triggers": 12
@@ -20,7 +20,20 @@
             "type": "wm8978",
             "volume_control": true
         },
-        "indicator": "rgb",
+        "indicator": {
+            "type": "rgb",
+            "pins": {
+                "red": 26,
+                "green": 4,
+                "blue": 25
+            }
+        },
+        "inputs": {
+            "type": "gpio",
+            "button": 34,
+            "trigger0": 39,
+            "trigger1": 36
+        },
         "apis": ["wifi"],
         "file_system": true,
         "display": true

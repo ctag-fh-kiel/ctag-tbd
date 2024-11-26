@@ -1,3 +1,16 @@
+# @brief raise an error if value is not an integer
+#
+# @arg value [any]   value to be checked
+#
+# @exception FATAL_ERROR
+#
+function (tbd_check_int value)
+    string(STRIP "${value}" stripped_value)
+    if (NOT stripped_value MATCHES "^[0-9]+$")
+        tbd_loge("expected integer got ${value}")
+    endif()
+endfunction()
+
 # @brief set global parameter
 #
 # Set a global CMake variable visible in all parts of the build configuration:

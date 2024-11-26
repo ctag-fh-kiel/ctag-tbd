@@ -1,9 +1,9 @@
 include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/indicators.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cv_inputs.cmake)
 
 set(TBD_PLATFORM_SYSTEMS esp32 desktop)
-set(TBD_PLATFORM_CV_CHIPS adc mcp3208 stm32 midi)
 set(TBD_PLATFORM_AUDIO_CHIPS wm8731 wm8978 wm8974 aic3254 es8388 rtaudio)
-set(TBD_PLATFORM_INDICATORS no rgb neopixel)
 set(TBD_PLATFORM_APIS wifi serial)
 
 
@@ -102,13 +102,11 @@ macro(tbd_platform_attrs)
         NAME 
         SYSTEM 
         ARCH
-        CV_INPUT  
-        N_TRIGGERS 
-        N_CVS
         AUDIO_OUTPUT 
-        INDICATOR
     )
     set(multi_attrs
+        CV_INPUT
+        INDICATOR
         APIS
     )
     cmake_parse_arguments(arg "${bools}" "${attrs}" "${multi_attrs}" ${ARGV})
@@ -116,6 +114,7 @@ macro(tbd_platform_attrs)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()
 endmacro()
+
 
 # @brief constructor for platform description
 #
@@ -125,7 +124,7 @@ endmacro()
 # @arg NAME [int]   number if triggers
 # @arg NAME [int]   number of CV input channels
 # @arg AUDIO_OUTPUT [enum]   audio chip name (wm8731/wm8978/wm8974/aic3254/es8388)
-# @arg INDICATOR [enum]   indicator light type (no/rgb/neopixel)
+# @arg INDICATOR [Rgb]   indicator light type
 # @arg VOLUME_CONTROL [flag]   do not release the SPI connection to the audio chip
 # @arg FILE_SYSTEM [flag]   link file system driver
 # @arg DISPLAY [flag]   link display driver
@@ -139,25 +138,20 @@ function (tbd_platform var_name)
         tbd_loge("unknwon system '${arg_SYSTEM}, has to be one of ${TBD_PLATFTBD_PLATFORM_SYSTEMS}")
     endif()
 
-    list (FIND TBD_PLATFORM_CV_CHIPS ${arg_CV_INPUT} _index)
-    if (${_index} LESS 0) 
-        tbd_loge("unknwon CV chip '${arg_CV_INPUT}, has to be one of ${TBD_PLATFORM_CV_CHIPS}")
-    endif()
-
     list (FIND TBD_PLATFORM_AUDIO_CHIPS ${arg_AUDIO_OUTPUT} _index)
     if (${_index} LESS 0) 
         tbd_loge("unknwon audio chip '${arg_AUDIO_OUTPUT}, has to be one of ${TBD_PLATFORM_AUDIO_CHIPS}")
     endif()
 
-    list (FIND TBD_PLATFORM_INDICATORS ${arg_INDICATOR} _index)
-    if (${_index} LESS 0) 
-        tbd_loge("unknwon indicator '${arg_INDICATOR}, has to be one of ${TBD_PLATFORM_INDICATORS}")
+    tbd_indicator(CHECK "${arg_INDICATOR}")
+    tbd_cv_input(CHECK "${arg_CV_INPUT}")
+    
+    if (NOT "${var_name}" STREQUAL "_")
+        set(${var_name} ${ARGN} PARENT_SCOPE)
     endif()
-
-    set(${var_name} ${ARGN} PARENT_SCOPE)
 endfunction()
 
-# platform properties
+## platform properties ##
 
 function(tbd_platform_name platform)
     tbd_platform_attrs(${platform})
@@ -214,7 +208,7 @@ function(tbd_platform_indicators platform)
     tbd_store_or_return("${arg_INDICATORS}" ${ARGN})
 endfunction()
 
-#### platform methods ####
+## platform methods ##
 
 # linearized summary of active features
 #
@@ -226,23 +220,37 @@ endfunction()
 #
 function(tbd_platform_get_features platform)
     tbd_platform_attrs(${platform})
-    if ("${arg_CV_INPUT}" STREQUAL "adc" OR "${arg_CV_INPUT}" STREQUAL "mcp3208")
-        set(callibration TBD_CALIBRATION=1)
+    tbd_cv_input_type("${arg_CV_INPUT}" VAR cv_input)
+
+    if ("${cv_input}" STREQUAL "adc")
         set(adc TBD_CV_ADC=1)
+        set(mcp3208 TBD_CV_MCP_3208=0)
         set(stm32 TBD_CV_STM32=0)
         set(midi TBD_CV_MIDI=0)
-    elseif ("${arg_CV_INPUT}" STREQUAL "stm32")
-        set(callibration TBD_CALIBRATION=0)
+    elseif ("${cv_input}" STREQUAL "mcp3208")
         set(adc TBD_CV_ADC=0)
+        set(mcp3208 TBD_CV_MCP_3208=1)
+        set(stm32 TBD_CV_STM32=0)
+        set(midi TBD_CV_MIDI=0)
+    elseif ("${cv_input}" STREQUAL "stm32")
+        set(adc TBD_CV_ADC=0)
+        set(mcp3208 TBD_CV_MCP_3208=0)
         set(stm32 TBD_CV_STM32=1)
         set(midi TBD_CV_MIDI=0)
-    elseif ("${arg_CV_INPUT}" STREQUAL "midi")
-        set(callibration TBD_CALIBRATION=0)
+    elseif ("${cv_input}" STREQUAL "midi")
         set(adc TBD_CV_ADC=0)
+        set(mcp3208 TBD_CV_MCP_3208=0)
         set(stm32 TBD_CV_STM32=0)
         set(midi TBD_CV_MIDI=1)
     else()
         tbd_loge("failed to determine CV input, unknwon input chip ${arg_CV_INPUT}")
+    endif()
+
+    tbd_cv_input_needs_calibration("${arg_CV_INPUT}")
+    if (_return)
+        set(calibration TBD_CALIBRATION=1)
+    else()
+        set(calibration TBD_CALIBRATION=0)
     endif()
 
     foreach (audio_chip IN LISTS TBD_PLATFORM_AUDIO_CHIPS)
@@ -281,18 +289,34 @@ function(tbd_platform_get_features platform)
         set(display TBD_DISPLAY=0)
     endif()
 
+    if (wifi IN_LIST arg_APIS)
+        list(APPEND apis "TBD_API_WIFI=1")
+    else()
+        list(APPEND apis "TBD_API_WIFI=0")
+    endif()
+
+    if (serial IN_LIST arg_APIS)
+        list(APPEND apis "TBD_API_SERIAL=1")
+    else()
+        list(APPEND apis "TBD_API_SERIAL=0")
+    endif()
+
+    tbd_cv_input_n_cvs("${arg_CV_INPUT}" VAR n_cvs)
+    tbd_cv_input_n_triggers("${arg_CV_INPUT}" VAR n_triggers)
     set(features
-        N_CVS=${arg_N_CVS}
-        N_TRIGS=${arg_N_TRIGGERS}
-        ${callibration}
+        N_CVS=${n_cvs}
+        N_TRIGS=${n_triggers}
+        ${calibration}
         ${adc}
+        ${mcp3208}
         ${stm32}
         ${midi}
         ${display}
         ${audio_chips}
         ${volume_control}
-        ${indicators}
+        INDICATOR=${indicators}
         ${file_system}
+        ${apis}
     )
     tbd_store_or_return("${features}" ${ARGN})
 endfunction()
@@ -310,17 +334,22 @@ endfunction()
 
 function(tbd_platform_print_info platform)
     tbd_platform_attrs(${platform})
+    tbd_indicator_type("${arg_INDICATOR}" VAR indicator_type)
+    tbd_cv_input_type("${arg_CV_INPUT}" VAR indicator_type)
+    tbd_cv_input_n_cvs("${arg_CV_INPUT}" VAR n_cvs)
+    tbd_cv_input_n_triggers("${arg_CV_INPUT}" VAR n_triggers)
+
     message("
 TBD platform configuration
 --------------------------
 name: ${arg_NAME}
 system: ${arg_SYSTEM}
 CV chip: ${arg_CV_INPUT}
-num CVs: ${arg_N_CVS}
-num triggers: ${arg_N_TRIGGERS}
+num CVs: ${n_cvs}
+num triggers: ${n_triggers}
 audio chip: ${arg_AUDIO_OUTPUT}
 volume_control: ${arg_VOLUME_CONTROL}
-indicators: ${arg_INDICATOR}
+indicators: ${indicator_type}
 apis: ${arg_APIS}
 file system: ${arg_FILE_SYSTEM}
 display: ${arg_DISPLAY}
@@ -345,9 +374,7 @@ function(tbd_platform_load_preset file)
     string(JSON config_obj GET "${json_data}" config)
     string(JSON system GET "${config_obj}" system)
     string(JSON arch GET "${config_obj}" arch)
-    string(JSON cv_inputs_obj GET "${config_obj}" cv_inputs)
     string(JSON audio_output_obj GET "${config_obj}" audio_output)
-    string(JSON indicator GET "${config_obj}" indicator)
     string(JSON apis_obj GET "${config_obj}" apis)
 
     string(JSON file_system GET "${config_obj}" file_system)
@@ -364,11 +391,11 @@ function(tbd_platform_load_preset file)
         unset(display)
     endif()
 
-    
-    # get data from `config.cv_inputs`
-    string(JSON cv_input GET "${cv_inputs_obj}" type)
-    string(JSON n_cvs GET "${cv_inputs_obj}" n_cvs)
-    string(JSON n_triggers GET "${cv_inputs_obj}" n_triggers)
+    string(JSON indicator_obj GET "${config_obj}" indicator)
+    tbd_indicator_load("${indicator_obj}" VAR indicator)
+
+    string(JSON cv_input_obj GET "${config_obj}" cv_input)
+    tbd_cv_input_load("${cv_input_obj}" VAR cv_input)
     
     # get data form `config.audio_output`
     string(JSON audio_output GET "${audio_output_obj}" type)
@@ -393,8 +420,6 @@ function(tbd_platform_load_preset file)
         SYSTEM "${system}"
         ARCH "${arch}"
         CV_INPUT "${cv_input}"
-        N_CVS "${n_cvs}"
-        N_TRIGGERS "${n_triggers}"
         AUDIO_OUTPUT ${audio_output}
         ${volume_control}
         INDICATOR ${indicator}
@@ -403,12 +428,10 @@ function(tbd_platform_load_preset file)
         ${display}
     )
     tbd_store_or_return("${new_platform}" ${ARGN})
-
 endfunction()
 
 
-
-### platform presets ####
+#### platform presets ####
 
 function (tbd_platform_from_preset platform_name)
     set(config_file "${CMAKE_SOURCE_DIR}/config/platforms/platform.${platform_name}.json")

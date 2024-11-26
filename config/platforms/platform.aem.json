@@ -11,7 +11,7 @@
     "config": {
         "system": "esp32",
         "arch": "esp32",
-        "cv_inputs": {
+        "cv_input": {
             "type": "adc",
             "n_cvs": 4,
             "n_triggers": 2
@@ -20,7 +20,20 @@
             "type": "wm8974",
             "volume_control": true
         },
-        "indicator": "rgb",
+        "indicator": {
+            "type": "rgb",
+            "pins": {
+                "red": 14,
+                "green": 15,
+                "blue": 18
+            }
+        },
+        "inputs": {
+            "type": "gpio",
+            "button": 2,
+            "trigger0": 39,
+            "trigger1": 36
+        },
         "apis": ["serial"],
         "volume_control": true,
         "file_system": true,
