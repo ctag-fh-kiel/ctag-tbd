@@ -24,17 +24,9 @@ respective component folders / files if different from this license.
 #include <tbd/display.hpp>
 
 
-#if TBD_DISPLAY 
-    #include <tbd/display.hpp>
+#if TBD_DISPLAY
     #include "ui_task.hpp"
 #endif
-
-
-#if TBD_CV_ADC
-    #include "gpio.h"
-#endif
-
-
 
 #if TBD_CV_MIDI
     static uint32_t noTouch {0}, previousProgramChangeValue {0xFF000000};
@@ -78,11 +70,7 @@ void Favorites::ActivateFavorite(const int &id) {
 
 
 void Favorites::StartUI() {
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM)
-        gpio_set_direction(PIN_PUSH_BTN, (gpio_mode_t)GPIO_MODE_DEF_INPUT);
-
-        xTaskCreatePinnedToCore(&Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
-#elif CONFIG_TBD_PLATFORM_BBA
+#if CONFIG_TBD_PLATFORM_BBA
         TouchPad::init();
         std::vector<std::string> vs;
         vs.emplace_back("Touch sensor");
