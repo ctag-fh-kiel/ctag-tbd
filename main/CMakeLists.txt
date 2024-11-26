@@ -1,3 +1,10 @@
+include(${PROJECT_DIR}/tools/cmake/platforms.cmake)
+
+tbd_platform_display("${TBD_PLATFORM_OBJ}" VAR has_display)
+if (has_display)
+    set(display_lib tbd_display)
+endif()
+
 file(GLOB SRC_FILES *.cpp *.hpp)
 
 idf_component_register(SRCS ${SRC_FILES}
@@ -16,7 +23,7 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC
         tbd_sound_manager
         tbd_presets
         tbd_drivers
-        tbd_display
+        ${display_lib}
         tbd_network
         tbd_calibration
 )
