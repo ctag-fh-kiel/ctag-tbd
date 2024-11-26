@@ -46,7 +46,6 @@ struct ADC {
     static uint16_t data[N_CVS];
 protected:
     static void init_ulp_program();
-    static void init_analog_sub_system();
 };
 
 }
