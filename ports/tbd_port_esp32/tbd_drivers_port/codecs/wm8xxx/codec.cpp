@@ -21,7 +21,6 @@ respective component folders / files if different from this license.
 #include <tbd/drivers/common/codec.hpp>
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
 #include "driver/gpio.h"
 #include "driver/spi_master.h"

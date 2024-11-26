@@ -27,7 +27,7 @@ respective component folders / files if different from this license.
 namespace tbd::drivers {
 
 struct ADCStm32 final{
-    CVInputsStm32() = delete;
+    ADCStm32() = delete;
 
     static void Init();
     

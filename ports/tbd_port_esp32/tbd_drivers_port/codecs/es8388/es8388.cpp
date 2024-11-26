@@ -78,7 +78,7 @@ es8388::es8388() : _pinsda{GPIO_NUM_40}, _pinscl{GPIO_NUM_41}, _i2cspeed{400000}
             .sda_pullup_en = false,
             .scl_pullup_en = false,
             .master = {
-                    .clk_speed = _i2cspeed,
+                .clk_speed = _i2cspeed,
             },
             .clk_flags = 0,
     };
