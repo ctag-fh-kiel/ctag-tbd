@@ -45,7 +45,7 @@ respective component folders / files if different from this license.
 #include <tbd/logging.hpp>
 
 #if TBD_CALIBRATION
-    #include "Calibration.hpp"
+    #include <tbd/calibration.hpp>
 #endif
 
 using namespace CTAG;
@@ -720,7 +720,7 @@ esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
     }
     content[req->content_len] = 0;
 #if TBD_CALIBRATION
-    CTAG::CAL::Calibration::SetJSONCalibration(string(content));
+    tbd::Calibration::SetJSONCalibration(string(content));
 #endif
     free(content);
     httpd_resp_set_type(req, "text/html");

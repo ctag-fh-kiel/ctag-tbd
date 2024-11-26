@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace CTAG::SAPI{
+namespace CTAG::SAPI {
     class SerialAPI final {
     public:
         SerialAPI() = delete;

@@ -22,19 +22,13 @@ respective component folders / files if different from this license.
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include <stdio.h>
-#include <vector>
-
-#include "esp_system.h"
-
 #include <tbd/drivers/codec.hpp>
 
 #include <tbd/sound_manager.hpp>
 #include <tbd/sound_processor/allocator.hpp>
 
-
 #if TBD_CALIBRATION
-    #include "Calibration.hpp"
+    #include <tbd/calibration.hpp>
 #endif
 
 #if TBD_DISPLAY
@@ -49,22 +43,17 @@ respective component folders / files if different from this license.
     #include <tbd/drivers/file_system.hpp>
 #endif
 
-#ifdef CONFIG_WIFI_UI
+#ifdef TBD_API_WIFI
     #include <tbd/network.hpp>
     #include <tbd/network/config.hpp>
     #include "RestServer.hpp"
+#elif TBD_API_SERIAL
+    #include "SerialAPI.hpp"
 #endif
 
 
 extern "C" {
 void app_main();
-}
-
-/* as much as possible static:
-https://softwareengineering.stackexchange.com/questions/352624/static-vs-non-static-in-embedded-systems
-https://www.embedded.com/modern-c-embedded-systems-part-2-evaluating-c/
-https://www.embedded.com/modern-c-in-embedded-systems-part-1-myth-and-reality/
-*/
 
 void app_main() {
     // reserve large block of memory before anything else happens
@@ -90,22 +79,25 @@ void app_main() {
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 #endif
 
-#if defined(CONFIG_SERIAL_UI)
+#if defined(TBD_API_SERIAL)
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 #endif
 
     tbd::audio::SoundProcessorManager::StartSoundProcessor();
 
-    #ifdef CONFIG_WIFI_UI
+    #ifdef TBD_API_WIFI
         tbd::network::NetworkConfig network_config;
-        CTAG::NET::Network::SetSSID(network_config.ssid());
-        CTAG::NET::Network::SetPWD(network_config.pwd());
-        CTAG::NET::Network::SetIsAccessPoint(network_config.is_access_point());
-        CTAG::NET::Network::SetIP(network_config.ip());
-        CTAG::NET::Network::SetMDNSName(network_config.mdns_name());
-        CTAG::NET::Network::Up();
+        tbd::Network::SetSSID(network_config.ssid());
+        tbd::Network::SetPWD(network_config.pwd());
+        tbd::Network::SetIsAccessPoint(network_config.is_access_point());
+        tbd::Network::SetIP(network_config.ip());
+        tbd::Network::SetMDNSName(network_config.mdns_name());
+        tbd::Network::Up();
         CTAG::REST::RestServer::StartRestServer();
-    #elif CONFIG_SERIAL_UI
-        SAPI::SerialAPI::StartSerialAPI();
+    #elif TBD_API_SERIAL
+#error "whoops"
+        CTAG::SAPI::SerialAPI::StartSerialAPI();
     #endif
+}
+
 }
