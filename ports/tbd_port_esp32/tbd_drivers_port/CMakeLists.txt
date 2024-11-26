@@ -41,10 +41,10 @@ endmacro()
 function(tbd_drivers var_name platform)
     tbd_platform_attrs(${platform})
 
-    # gather input and trigger sources
-
     set(libs driver)
     set(defines TBD_DRIVERS_ESP32=1)
+
+    # gather input and trigger sources
 
     tbd_cv_input_type("${arg_CV_INPUT}" VAR cv_input_type)
 
@@ -63,9 +63,14 @@ function(tbd_drivers var_name platform)
             set(triggers_srcs gpio.cpp)
             list(APPEND includes triggers)
             list(APPEND libs ulp)
+            tbd_mcp3208_pin_flags("${arg_CV_INPUT}" VAR cv_input_pins)
+            list(APPEND defines ${cv_input_pins})
         elseif (cv_input_type STREQUAL stm32)
             set(cv_input_srcs adc_stm32.cpp)
             set(triggers_srcs gpio.cpp)
+            list(APPEND includes triggers)
+            tbd_stm32_pin_flags("${arg_CV_INPUT}" VAR cv_input_pins)
+            list(APPEND defines ${cv_input_pins})
             # no ULP
         elseif (cv_input_type STREQUAL midi)
             list(APPEND libs esp_tinyusb)
@@ -116,19 +121,14 @@ function(tbd_drivers var_name platform)
     if (DEFINED arg_INDICATOR AND NOT arg_INDICATOR STREQUAL no)
         tbd_indicator_type("${arg_INDICATOR}" VAR indicator_type)
         if (indicator_type STREQUAL rgb)
-            tbd_rgb_red("${arg_INDICATOR}" VAR rgb_red_pin)
-            tbd_rgb_green("${arg_INDICATOR}" VAR rgb_green_pin)
-            tbd_rgb_blue("${arg_INDICATOR}" VAR rgb_blue_pin)
-
             set(indicator_srcs led_rgb.cpp)
-            list(APPEND libs esp_driver_ledc)   
-            list(APPEND defines 
-                "TBD_RGB_RED_PIN=${rgb_red_pin}"
-                "TBD_RGB_GREEN_PIN=${rgb_green_pin}"
-                "TBD_RGB_BLUE_PIN=${rgb_blue_pin}"    
-            )   
+            list(APPEND libs esp_driver_ledc)
+            tbd_rgb_pin_flags("${arg_INDICATOR}" VAR indicator_pins)
+            list(APPEND defines ${indicator_pins})
         elseif(indicator_type STREQUAL neopixel)
-            set(indicator_srcs led_rgb_bba.cpp)  
+            set(indicator_srcs led_rgb_bba.cpp)
+            tbd_neopixel_pin_flags("${arg_INDICATOR}" VAR indicator_pins)
+            list(APPEND defines ${indicator_pins})
         else()
             tbd_loge("invalid indicator type ${indicator_type}")
         endif()           
@@ -212,8 +212,10 @@ TBD drivers configuration
 -------------------------
 sources: ${arg_SRCS}
 ULP sources: ${arg_ULP_SRCS}
+ULP asm: ${arg_ULP_ASM}
 include dirs: ${arg_INCLUDES}
 dependencies: ${arg_LIBS}
+defines: ${arg_DEFINES}
 -------------------------
     ")
 endfunction()
@@ -238,10 +240,3 @@ target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_drivers_common tbd_system)
 target_compile_definitions(${COMPONENT_LIB} PRIVATE ${DEFINES})
 
 tbd_drivers_embed_ulp("${TBD_DRIVERS_OBJ}")
-
-#tbd_drivers_attrs(${drivers})
-#if (NOT "${arg_ULP_SRCS}" STREQUAL "")
-#    set(ulp_app_name ulp_${COMPONENT_NAME})
-#    tbd_logw("ULP PROGRAM: ${ulp_app_name} ${arg_ULP_ASM} ${arg_ULP_SRCS}")
-#    ulp_embed_binary(${ulp_app_name} "${arg_ULP_ASM}" "${arg_ULP_SRCS}")
-#endif()
