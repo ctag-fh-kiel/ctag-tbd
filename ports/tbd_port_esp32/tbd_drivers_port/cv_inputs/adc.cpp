@@ -29,21 +29,21 @@ respective component folders / files if different from this license.
 extern "C" {
 
 #include "soc/rtc_cntl_reg.h"
+
 #include "soc/rtc_io_reg.h"
 #include "driver/rtc_io.h"
 #include "driver/rtc_cntl.h"
 #include "driver/adc.h"
 #include "soc/soc.h"
 #include "soc/rtc.h"
-#include "soc/rtc_cntl_reg.h"
-#include "soc/sens_reg.h"
-#include "esp32/ulp.h"
-#include "ulp_fsm_common.h"
-#include "freertos/FreeRTOS.h"
+// #include "ulp_main.h"
+
+// #include "ulp_fsm_common.h"
 #include "freertos/task.h"
 #include "freertos/portmacro.h"
 #include "freertos/queue.h"
 
+#include "ulp.h"
 #include "ulp_tbd_drivers_port.h"
 #include <tbd/logging.hpp>
 
@@ -57,9 +57,9 @@ extern "C" {
     #error "ULP onboard ADC is not available"
 #endif
 
-
-extern const uint8_t ulp_drivers_bin_start[] asm("_binary_ulp_drivers_bin_start");
-extern const uint8_t ulp_drivers_bin_end[]   asm("_binary_ulp_drivers_bin_end");
+// FIXME: having the directory name derived component name here is rather brittle
+extern const uint8_t ulp_drivers_bin_start[] asm("_binary_ulp_tbd_drivers_port_bin_start");
+extern const uint8_t ulp_drivers_bin_end[]   asm("_binary_ulp_tbd_drivers_port_bin_end");
 
 
 namespace {
@@ -119,6 +119,10 @@ void IRAM_ATTR ulp_isr(void *arg) {
     CLEAR_PERI_REG_MASK(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
 
 #if TBD_CV_MCP_3208
+
+// header generated from the mcp3208.S asm can not determine ulp_adc_data is an array
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
     data[0] = (uint16_t) *((&ulp_adc_data) + 0);
     data[1] = (uint16_t) *((&ulp_adc_data) + 1);
     data[2] = (uint16_t) *((&ulp_adc_data) + 2);
@@ -127,6 +131,7 @@ void IRAM_ATTR ulp_isr(void *arg) {
     data[5] = (uint16_t) *((&ulp_adc_data) + 6);
     data[6] = (uint16_t) *((&ulp_adc_data) + 5);
     data[7] = (uint16_t) *((&ulp_adc_data) + 7);
+#pragma GCC diagnostic pop
 #else
     for(int i=0; i < N_CVS; i++){
         data[i] = (uint16_t) *((&ulp_adc_data) + i);
@@ -208,10 +213,10 @@ void ADC::init_ulp_program() {
                                     (ulp_drivers_bin_end - ulp_drivers_bin_start) / sizeof(uint32_t)));
 
 #if TBD_CV_MCP_3208
-    const gpio_num_t GPIO_CS0 = GPIO_NUM_32;
-    const gpio_num_t GPIO_MOSI = GPIO_NUM_13;
-    const gpio_num_t GPIO_SCLK = GPIO_NUM_12;
-    const gpio_num_t GPIO_MISO = GPIO_NUM_0;
+    const gpio_num_t GPIO_CS0 = TBD_MCP3208_PIN_CS;
+    const gpio_num_t GPIO_MOSI = TBD_MCP3208_PIN_MOSI;
+    const gpio_num_t GPIO_SCLK = TBD_MCP3208_PIN_SCLK;
+    const gpio_num_t GPIO_MISO = TBD_MCP3208_PIN_MISO;
 
     rtc_gpio_init(GPIO_CS0);
     rtc_gpio_set_direction(GPIO_CS0, RTC_GPIO_MODE_OUTPUT_ONLY);

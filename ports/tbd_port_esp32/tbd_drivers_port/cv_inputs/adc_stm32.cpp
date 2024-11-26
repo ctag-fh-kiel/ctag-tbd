@@ -23,12 +23,8 @@ respective component folders / files if different from this license.
 #include "esp_log.h"
 #include "esp_intr_alloc.h"
 #include "driver/spi_slave.h"
+#include "soc/gpio_num.h"
 
-
-#define GPIO_MOSI 13
-#define GPIO_MISO 12
-#define GPIO_SCLK 14
-#define GPIO_CS 15
 #define RCV_HOST HSPI_HOST
 #define DMA_CHAN    2
 #define DATA_SZ 102 //N_CVS*4 + N_TRIGS + 2 // is ncvs * 4 + ntrigs + 2 reserved
@@ -42,12 +38,12 @@ namespace {
 
 namespace tbd::drivers {
 
-void CVInputsStm32::Init() {
+void ADCStm32::Init() {
     //Configuration for the SPI bus
     spi_bus_config_t buscfg={
-            .mosi_io_num=GPIO_MOSI,
-            .miso_io_num=GPIO_MISO,
-            .sclk_io_num=GPIO_SCLK,
+            .mosi_io_num=TBD_STM32_PIN_MOSI,
+            .miso_io_num=TBD_STM32_PIN_MISO,
+            .sclk_io_num=TBD_STM32_PIN_SCLK,
             .quadwp_io_num = -1,
             .quadhd_io_num = -1,
             .max_transfer_sz = DATA_SZ,
@@ -57,7 +53,7 @@ void CVInputsStm32::Init() {
 
     //Configuration for the SPI slave interface
     spi_slave_interface_config_t slvcfg={
-            .spics_io_num=GPIO_CS,
+            .spics_io_num=TBD_STM32_PIN_CS,
             .flags=0,
             .queue_size=2,
             .mode=0,
@@ -80,7 +76,7 @@ void CVInputsStm32::Init() {
     currentTransaction = 0;
 }
 
-TBD_IRAM void * CVInputsStm32::Update() {
+TBD_IRAM void* ADCStm32::Update() {
     esp_err_t ret;
     spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], portMAX_DELAY);
     currentTransaction ^= 0x1;
