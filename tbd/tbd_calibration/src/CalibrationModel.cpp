@@ -18,50 +18,50 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#include "tbd/calibration/calibration_model.hpp"
 
-
-#include "CalibrationModel.hpp"
 #include <cmath>
 #include "rapidjson/filereadstream.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 #include <tbd/logging.hpp>
 
+#include "rapidjson/writer.h"
 
-using namespace std;
 
-CTAG::CAL::CalibrationModel::CalibrationModel() {
+namespace rj = rapidjson;
+
+namespace tbd::calibration {
+CalibrationModel::CalibrationModel() {
     loadJSON(m, MODELJSONFN);
 }
 
-void CTAG::CAL::CalibrationModel::PrintSelf() {
+void CalibrationModel::PrintSelf() {
     printJSON(m);
 }
 
-void CTAG::CAL::CalibrationModel::CreateMatrix() {
+void CalibrationModel::CreateMatrix() {
     matrix.SetArray();
     matrix.Clear();
 }
 
-void CTAG::CAL::CalibrationModel::PushRow(const vector<uint32_t> data) {
-    Value matrixRow(kArrayType);
+void CalibrationModel::PushRow(const std::vector<uint32_t> data) {
+    rj::Value matrixRow(rj::kArrayType);
     for (auto &i : data) {
         matrixRow.PushBack(static_cast<unsigned int>(i), matrix.GetAllocator());
     }
     matrix.PushBack(matrixRow, matrix.GetAllocator());
 }
 
-void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id) {
+void CalibrationModel::StoreMatrix(const std::string &id) {
     if (m.HasMember(id)) m.RemoveMember(id);
-    Value sid(id, m.GetAllocator());
+    rj::Value sid(id, m.GetAllocator());
     m.GetObject().AddMember(sid, matrix.Move(), m.GetAllocator());
     storeJSON(m, MODELJSONFN);
 }
 
-vector<vector<uint32_t >> CTAG::CAL::CalibrationModel::GetMatrix(const string &id) {
-    vector<vector<uint32_t>> mat;
+std::vector<std::vector<uint32_t >> CalibrationModel::GetMatrix(const std::string &id) {
+    std::vector<std::vector<uint32_t>> mat;
     for (auto &i: m[id].GetArray()) {
-        vector<uint32_t> v;
+        std::vector<uint32_t> v;
         for (auto &j: i.GetArray()) {
             v.push_back(j.GetInt());
         }
@@ -70,18 +70,18 @@ vector<vector<uint32_t >> CTAG::CAL::CalibrationModel::GetMatrix(const string &i
     return mat;
 }
 
-void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id, const vector<vector<float>> mat) {
+void CalibrationModel::StoreMatrix(const std::string &id, const std::vector<std::vector<float>> mat) {
     if (m.HasMember(id)) m.RemoveMember(id);
 
-    Value rows(kArrayType);
-    Value sid(id, m.GetAllocator());
+    rj::Value rows(rj::kArrayType);
+    rj::Value sid(id, m.GetAllocator());
 
     for (auto i:mat) {
-        Value col(kArrayType);
+        rj::Value col(rj::kArrayType);
         for (auto j: i) {
             TBD_LOGD("CM", "Storing %f", j);
-            Value f(kNumberType);
-            if (isinf(j) || isnan(j)) f.SetFloat(0);
+            rj::Value f(rj::kNumberType);
+            if (std::isinf(j) || std::isnan(j)) f.SetFloat(0);
             else f.SetFloat(j);
             col.PushBack(f, m.GetAllocator());
         }
@@ -92,7 +92,7 @@ void CTAG::CAL::CalibrationModel::StoreMatrix(const string &id, const vector<vec
     storeJSON(m, MODELJSONFN);
 }
 
-void CTAG::CAL::CalibrationModel::LoadMatrix(const string &id, float *data) {
+void CalibrationModel::LoadMatrix(const std::string &id, float *data) {
     if (!m.HasMember(id)) return;
     for (auto &i: m[id].GetArray()) {
         for (auto &j: i.GetArray()) {
@@ -103,15 +103,15 @@ void CTAG::CAL::CalibrationModel::LoadMatrix(const string &id, float *data) {
     }
 }
 
-bool CTAG::CAL::CalibrationModel::GetCalibrateOnReboot() {
+bool CalibrationModel::GetCalibrateOnReboot() {
     if (!m.HasMember("CalibrationOnReboot")) return false;
     if (!m["CalibrationOnReboot"].IsBool()) return false;
     return m["CalibrationOnReboot"].GetBool() == true;
 }
 
-void CTAG::CAL::CalibrationModel::SetCalibrateOnReboot(bool val) {
+void CalibrationModel::SetCalibrateOnReboot(bool val) {
     if (!m.HasMember("CalibrationOnReboot")) {
-        Value b(val);
+        rj::Value b(val);
         m.AddMember(b, b.Move(), m.GetAllocator());
     } else {
         m["CalibrationOnReboot"].SetBool(val);
@@ -119,10 +119,10 @@ void CTAG::CAL::CalibrationModel::SetCalibrateOnReboot(bool val) {
     storeJSON(m, MODELJSONFN);
 }
 
-const char *CTAG::CAL::CalibrationModel::GetCStrJSONCalibration() {
+const char *CalibrationModel::GetCStrJSONCalibration() {
 #if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
     json.Clear();
-    Writer<StringBuffer> writer(json);
+    rapidjson::Writer<rapidjson::StringBuffer> writer(json);
     m.Accept(writer);
     return json.GetString();
 #else
@@ -131,8 +131,8 @@ const char *CTAG::CAL::CalibrationModel::GetCStrJSONCalibration() {
 #endif
 }
 
-void CTAG::CAL::CalibrationModel::SetJSONCalibration(const string &calData) {
-    Document d;
+void CalibrationModel::SetJSONCalibration(const std::string &calData) {
+    rj::Document d;
     d.Parse(calData);
     if (!d.IsObject()) {
         TBD_LOGE("CALMODEL", "Could not parse json string!");
@@ -140,4 +140,6 @@ void CTAG::CAL::CalibrationModel::SetJSONCalibration(const string &calData) {
     }
     storeJSON(d, MODELJSONFN);
     loadJSON(m, MODELJSONFN);
+}
+
 }

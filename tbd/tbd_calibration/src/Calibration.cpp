@@ -18,110 +18,122 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
-
-#include "Calibration.hpp"
-#include "gpio.hpp"
-#include "led_rgb.hpp"
-#include "adc.hpp"
+#include <memory>
+#include <atomic>
+#include <tbd/calibration.hpp>
+#include <tbd/ram.hpp>
 #include <tbd/logging.hpp>
+#include <tbd/system/tasks.hpp>
+#include <tbd/system/queues.hpp>
+#include <tbd/drivers/adc.hpp>
+#include <tbd/drivers/indicator.hpp>
+#include <tbd/drivers/gpio.hpp>
+#include <tbd/calibration/calibration_model.hpp>
+
 
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
 
-using namespace CTAG;
-using namespace CTAG::CAL;
+namespace {
 
-TaskHandle_t Calibration::ledTaskHandle;
-TaskHandle_t Calibration::btnTaskHandle;
-std::atomic_int32_t Calibration::taskControl;
-QueueHandle_t Calibration::evQueue;
-unique_ptr<CalibrationModel> Calibration::model;
-float Calibration::aCoeffs05V[4 * 2];
-float Calibration::bCoeffs05V[4 * 2];
-float Calibration::aCoeffs10V[4 * 2];
-float Calibration::bCoeffs10V[4 * 2];
-CVConfig Calibration::configCV[4];
+enum class Event : uint32_t {
+    NONE, BTN_PRESS
+};
 
+TaskHandle_t ledTaskHandle;
+TaskHandle_t btnTaskHandle;
+std::atomic<int32_t> taskControl;
 
+using EventQueue = tbd::system::Queue<Event>;
+std::unique_ptr<EventQueue> event_queue;
+
+tbd::calibration::CalibrationModel  model;
+TBD_DRAM float aCoeffs05V[4 * 2];
+TBD_DRAM float bCoeffs05V[4 * 2];
+TBD_DRAM float aCoeffs10V[4 * 2];
+TBD_DRAM float bCoeffs10V[4 * 2];
+TBD_DRAM tbd::calibration::CVConfig configCV[4];
+
+}
+
+namespace tbd {
 void Calibration::Init() {
-    model = std::make_unique<CalibrationModel>();
-    ConfigCVChannels(CVConfig::CVUnipolar, CVConfig::CVUnipolar, CVConfig::CVUnipolar, CVConfig::CVUnipolar);
-    DRIVERS::ADC::SetCVINUnipolar(0);
-    DRIVERS::ADC::SetCVINUnipolar(1);
+    ConfigCVChannels(calibration::CVConfig::CVUnipolar, calibration::CVConfig::CVUnipolar, calibration::CVConfig::CVUnipolar, calibration::CVConfig::CVUnipolar);
+    drivers::ADC::SetCVINUnipolar(0);
+    drivers::ADC::SetCVINUnipolar(1);
     TBD_LOGI("CAL", "Check calibration request");
-    if (model->GetCalibrateOnReboot()) {
+    if (model.GetCalibrateOnReboot()) {
         TBD_LOGI("CAL", "Starting calibration");
-        DRIVERS::LedRGB::SetLedRGB(0, 0, 0);
+        drivers::Indicator::SetLedRGB(0, 0, 0);
         doCalibration();
         TBD_LOGI("CAL", "Calibration completed");
-        DRIVERS::LedRGB::SetLedRGB(0, 0, 0);
-        model->SetCalibrateOnReboot(false);
+        drivers::Indicator::SetLedRGB(0, 0, 0);
+        model.SetCalibrateOnReboot(false);
     }
-    model->LoadMatrix("aCalCalibration_CV_05V", aCoeffs05V);
-    model->LoadMatrix("bCalCalibration_CV_05V", bCoeffs05V);
-    model->LoadMatrix("aCalCalibration_CV_10V", aCoeffs10V);
-    model->LoadMatrix("bCalCalibration_CV_10V", bCoeffs10V);
+    model.LoadMatrix("aCalCalibration_CV_05V", aCoeffs05V);
+    model.LoadMatrix("bCalCalibration_CV_05V", bCoeffs05V);
+    model.LoadMatrix("aCalCalibration_CV_10V", aCoeffs10V);
+    model.LoadMatrix("bCalCalibration_CV_10V", bCoeffs10V);
 }
 
 void Calibration::doCalibration() {
     // start tasks for ui
     taskControl.store(1);
-    evQueue = xQueueCreate(10, sizeof(Event));
+    event_queue = std::make_unique<EventQueue>();
     xTaskCreate(&Calibration::ledTask, "led_task", 4096, nullptr, 5, &ledTaskHandle);
     xTaskCreate(&Calibration::btnTask, "btn_task", 4096, nullptr, 5, &btnTaskHandle);
 
     std::vector<uint32_t> data;
-    model->CreateMatrix();
-    DRIVERS::ADC::SetCVINUnipolar(0);
-    DRIVERS::ADC::SetCVINUnipolar(1);
+    model.CreateMatrix();
+    drivers::ADC::SetCVINUnipolar(0);
+    drivers::ADC::SetCVINUnipolar(1);
     // get mins
     TBD_LOGW("CAL", "Adjust CV INs to min value (clock left resp. 0V CV in)");
     acquireData(data);
-    model->PushRow(data);
+    model.PushRow(data);
     // get maxs
     taskControl.store(2);
     TBD_LOGW("CAL", "Adjust CV INs to middle / +2.5V");
     acquireData(data);
-    model->PushRow(data);
+    model.PushRow(data);
     taskControl.store(3);
     // get mid CV in
     TBD_LOGW("CAL", "Adjust CV INs to max value (clock right resp. +5V CV in)");
     acquireData(data);
-    model->PushRow(data);
-    model->StoreMatrix("Calibration_CV_05V");
+    model.PushRow(data);
+    model.StoreMatrix("Calibration_CV_05V");
     taskControl.store(4);
-    DRIVERS::ADC::SetCVINBipolar(0);
-    DRIVERS::ADC::SetCVINBipolar(1);
-    model->CreateMatrix();
+    drivers::ADC::SetCVINBipolar(0);
+    drivers::ADC::SetCVINBipolar(1);
+    model.CreateMatrix();
     // get mins
     TBD_LOGW("CAL", "Adjust CV INs to min value (clock left resp. -5V CV in)");
     acquireData(data);
-    model->PushRow(data);
+    model.PushRow(data);
     // get maxs
     taskControl.store(5);
     TBD_LOGW("CAL", "Adjust CV INs to 0V CV in");
     acquireData(data);
-    model->PushRow(data);
+    model.PushRow(data);
     taskControl.store(6);
     // get mid CV in
     TBD_LOGW("CAL", "Adjust CV INs to max value (clock right resp. +5V CV in)");
     acquireData(data);
-    model->PushRow(data);
-    model->StoreMatrix("Calibration_CV_10V");
-    model->PrintSelf();
+    model.PushRow(data);
+    model.StoreMatrix("Calibration_CV_10V");
+    model.PrintSelf();
 
-    DRIVERS::ADC::SetCVINUnipolar(0);
-    DRIVERS::ADC::SetCVINUnipolar(1);
+    drivers::ADC::SetCVINUnipolar(0);
+    drivers::ADC::SetCVINUnipolar(1);
 
-    calcPiecewiseLinearCoeffs("Calibration_CV_05V", CVConfig::CVUnipolar);
-    calcPiecewiseLinearCoeffs("Calibration_CV_10V", CVConfig::CVBipolar);
+    calcPiecewiseLinearCoeffs("Calibration_CV_05V", calibration::CVConfig::CVUnipolar);
+    calcPiecewiseLinearCoeffs("Calibration_CV_10V", calibration::CVConfig::CVBipolar);
 
     taskControl.store(0);
     vTaskDelete(ledTaskHandle);
     vTaskDelete(btnTaskHandle);
-    vQueueDelete(evQueue);
+    event_queue.reset();
 }
 
 void Calibration::ledTask(void *params) {
@@ -129,10 +141,10 @@ void Calibration::ledTask(void *params) {
         //TBD_LOGW("CAL", "Calibration LED %d", ledTaskControl.load());
         int32_t blinks = taskControl;
         for (int32_t i = 0; i < blinks; i++) {
-            DRIVERS::LedRGB::SetLedR(255);
+            drivers::Indicator::SetLedR(255);
             vTaskDelay(100 / portTICK_PERIOD_MS);
             if (!taskControl.load()) break;
-            DRIVERS::LedRGB::SetLedR(0);
+            drivers::Indicator::SetLedR(0);
             vTaskDelay(100 / portTICK_PERIOD_MS);
             if (!taskControl.load()) break;
         }
@@ -141,24 +153,29 @@ void Calibration::ledTask(void *params) {
 }
 
 void Calibration::btnTask(void *params) {
-    Event ev = Event::BTN_PRESS;
+    Event event = Event::BTN_PRESS;
     while (taskControl.load()) {
-        while (DRIVERS::GPIO::GetTrig0() == 0) vTaskDelay(50 / portTICK_PERIOD_MS);
-        while (DRIVERS::GPIO::GetTrig0() == 1) vTaskDelay(50 / portTICK_PERIOD_MS);
-        while (DRIVERS::GPIO::GetTrig0() == 0) vTaskDelay(50 / portTICK_PERIOD_MS);
-        xQueueSend(evQueue, &ev, portMAX_DELAY);
+        while (drivers::GPIO::GetTrig0() == 0) {
+            system::Task::sleep(50);
+        }
+        while (drivers::GPIO::GetTrig0() == 1) {
+            system::Task::sleep(50);
+        }
+        while (drivers::GPIO::GetTrig0() == 0) {
+            system::Task::sleep(50);
+        }
+        event_queue->push(event);
     }
 }
 
 void Calibration::acquireData(std::vector<uint32_t> &d) {
-    Event ev = Event::NONE;
-    //DRIVERS::LedRGB::SetLedG(0);
+    //drivers::LedRGB::SetLedG(0);
     uint16_t data[4];
     int cnt = 0;
     uint32_t avgdata[4] = {0, 0, 0, 0};
-    while (!xQueueReceive(evQueue, &ev, 0)) {
-        DRIVERS::ADC::Update();
-        DRIVERS::ADC::GetChannelVals(data);
+    while (event_queue->try_pop()) {
+        drivers::ADC::Update();
+        drivers::ADC::GetChannelVals(data);
         for (int i = 0; i < 4; i++) {
             avgdata[i] += data[i];
         }
@@ -169,7 +186,7 @@ void Calibration::acquireData(std::vector<uint32_t> &d) {
                 avgdata[i] >>= 7;
                 d.push_back(avgdata[i]);
             }
-            //DRIVERS::LedRGB::SetLedG(8);
+            //drivers::LedRGB::SetLedG(8);
             //TBD_LOGE("CAL", "Average values %d, %d, %d, %d", avgdata[0], avgdata[1], avgdata[2], avgdata[3]);
             vTaskDelay(50 / portTICK_PERIOD_MS); // satisfy idle task
         }
@@ -177,11 +194,13 @@ void Calibration::acquireData(std::vector<uint32_t> &d) {
     }
 }
 
-void Calibration::calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvType) {
-    vector<vector<uint32_t >> xMat;
-    vector<vector<float>> aCalMat;
-    vector<vector<float>> bCalMat;
-    xMat = model->GetMatrix(dataID);
+void Calibration::calcPiecewiseLinearCoeffs(
+    const std::string &dataID, calibration::CVConfig cvType)
+{
+    std::vector<std::vector<uint32_t >> xMat;
+    std::vector<std::vector<float>> aCalMat;
+    std::vector<std::vector<float>> bCalMat;
+    xMat = model.GetMatrix(dataID);
     TBD_LOGD("CM", "Matrix content:");
     for (auto &i: xMat) {
         for (auto &j: i) {
@@ -191,15 +210,15 @@ void Calibration::calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvTyp
     }
     for (int i = 0; i < xMat.size() - 1; i++) {
         float y1 = 0.f, y2 = 0.f;
-        if (cvType == CVConfig::CVBipolar) {
+        if (cvType == calibration::CVConfig::CVBipolar) {
             y1 = (float) (i - 1);//(float)(i * 4096/2 - 1);
             y2 = (float) i;// ((i+1) * 4096/2 - 1);
-        } else if (cvType == CVConfig::CVUnipolar) {
+        } else if (cvType == calibration::CVConfig::CVUnipolar) {
             y1 = (float) i * 0.5f;//(float)(i * 4096/2 - 1);
             y2 = (float) (i + 1) * 0.5f;// ((i+1) * 4096/2 - 1);
         }
 
-        vector<float> aRow, bRow;
+        std::vector<float> aRow, bRow;
         for (int j = 0; j < xMat[i].size(); j++) {
             float x1 = xMat[i][j];
             float x2 = xMat[i + 1][j];
@@ -213,8 +232,8 @@ void Calibration::calcPiecewiseLinearCoeffs(const string &dataID, CVConfig cvTyp
         aCalMat.push_back(aRow);
         bCalMat.push_back(bRow);
     }
-    model->StoreMatrix("aCal" + dataID, aCalMat);
-    model->StoreMatrix("bCal" + dataID, bCalMat);
+    model.StoreMatrix("aCal" + dataID, aCalMat);
+    model.StoreMatrix("bCal" + dataID, bCalMat);
 }
 
 void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr) {
@@ -235,18 +254,18 @@ void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr
     // real-cv ins 0-1, pots 2-3
     for (int i = 0; i < N_CVS; i++) {
         if (*adcInPtr < 2048) { // which linear piece are we using
-            if (configCV[i] == CVConfig::CVUnipolar)
+            if (configCV[i] == calibration::CVConfig::CVUnipolar)
                 *mapOutPtr = aCoeffs05V[i] * (float) *adcInPtr + bCoeffs05V[i];
             else
                 *mapOutPtr = aCoeffs10V[i] * (float) *adcInPtr + bCoeffs10V[i];
         } else {
-            if (configCV[i] == CVConfig::CVUnipolar) {
+            if (configCV[i] == calibration::CVConfig::CVUnipolar) {
                 *mapOutPtr = aCoeffs05V[i + 4] * (float) *adcInPtr + bCoeffs05V[i + 4];
             } else
                 *mapOutPtr = aCoeffs10V[i + 4] * (float) *adcInPtr + bCoeffs10V[i + 4];
         }
         // constrain ranges
-        if (configCV[i] == CVConfig::CVUnipolar) {
+        if (configCV[i] == calibration::CVConfig::CVUnipolar) {
             if (*mapOutPtr < 0.002f) *mapOutPtr = 0.f;
         } else {
             if (*mapOutPtr < -0.998f) *mapOutPtr = -1.f;
@@ -258,16 +277,21 @@ void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr
 #endif
 }
 
-void Calibration::ConfigCVChannels(CVConfig ch0, CVConfig ch1, CVConfig ch2, CVConfig ch3) {
+void Calibration::ConfigCVChannels(
+    calibration::CVConfig ch0,
+    calibration::CVConfig ch1,
+    calibration::CVConfig ch2,
+    calibration::CVConfig ch3)
+{
 #if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
-    if (ch0 == CVConfig::CVUnipolar)
-        DRIVERS::ADC::SetCVINUnipolar(0);
+    if (ch0 == calibration::CVConfig::CVUnipolar)
+        drivers::ADC::SetCVINUnipolar(0);
     else
-        DRIVERS::ADC::SetCVINBipolar(0);
-    if (ch1 == CVConfig::CVUnipolar)
-        DRIVERS::ADC::SetCVINUnipolar(1);
+        drivers::ADC::SetCVINBipolar(0);
+    if (ch1 == calibration::CVConfig::CVUnipolar)
+        drivers::ADC::SetCVINUnipolar(1);
     else
-        DRIVERS::ADC::SetCVINBipolar(1);
+        drivers::ADC::SetCVINBipolar(1);
 
     configCV[0] = ch0;
     configCV[1] = ch1;
@@ -278,8 +302,24 @@ void Calibration::ConfigCVChannels(CVConfig ch0, CVConfig ch1, CVConfig ch2, CVC
 
 void Calibration::RequestCalibrationOnReboot() {
 #if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
-    model->SetCalibrateOnReboot(true);
+    model.SetCalibrateOnReboot(true);
 #endif
+}
+
+const char* Calibration::GetCStrJSONCalibration() {
+    return model.GetCStrJSONCalibration();
+}
+
+void Calibration::SetJSONCalibration(const std::string &calData) {
+    model.SetJSONCalibration(calData);
+    /* this is NOT thread safe !!! */
+    model.LoadMatrix("aCalCalibration_CV_05V", aCoeffs05V);
+    model.LoadMatrix("bCalCalibration_CV_05V", bCoeffs05V);
+    model.LoadMatrix("aCalCalibration_CV_10V", aCoeffs10V);
+    model.LoadMatrix("bCalCalibration_CV_10V", bCoeffs10V);
+    /* NOT THREAD SAFE END */
+}
+
 }
 
 #pragma GCC diagnostic pop
