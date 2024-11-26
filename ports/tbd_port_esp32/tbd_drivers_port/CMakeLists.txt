@@ -28,6 +28,7 @@ macro(tbd_drivers_attrs)
         ULP_ASM
         INCLUDES
         LIBS
+        DEFINES
     )
 
     cmake_parse_arguments(arg "" "" "${file_lists}" ${ARGV})
@@ -43,33 +44,36 @@ function(tbd_drivers var_name platform)
     # gather input and trigger sources
 
     set(libs driver)
+    set(defines TBD_DRIVERS_ESP32=1)
 
-    if (DEFINED arg_CV_INPUT)
-        if (arg_CV_INPUT STREQUAL adc)
+    tbd_cv_input_type("${arg_CV_INPUT}" VAR cv_input_type)
+
+    if (DEFINED cv_input_type)
+        if (cv_input_type STREQUAL adc)
             set(cv_input_srcs adc.cpp)
             set(triggers_srcs gpio.cpp)
             set(ulp_srcs adc.cpp)
             set(ulp_asm ulp/adc.S)
             list(APPEND includes triggers)
-            list(APPEND libs ulp)
-        elseif (arg_CV_INPUT STREQUAL mcp3208)
+            list(APPEND libs ulp esp_adc)
+        elseif (cv_input_type STREQUAL mcp3208)
             set(cv_input_srcs adc.cpp)
             set(ulp_srcs adc.cpp)
             set(ulp_asm ulp/mcp3208.S)
             set(triggers_srcs gpio.cpp)
             list(APPEND includes triggers)
             list(APPEND libs ulp)
-        elseif (arg_CV_INPUT STREQUAL stm32)
-            set(cv_input_srcs cv_inputs_stm32.cpp)
-            # no GPIO triggers
+        elseif (cv_input_type STREQUAL stm32)
+            set(cv_input_srcs adc_stm32.cpp)
+            set(triggers_srcs gpio.cpp)
             # no ULP
-        elseif (arg_CV_INPUT STREQUAL midi)
+        elseif (cv_input_type STREQUAL midi)
             list(APPEND libs esp_tinyusb)
             set(cv_input_srcs  midi_uart.cpp midi_usb.cpp midi.cpp)
-            # no GPIO triggers
+            set(triggers_srcs gpio.cpp)
             # no ULP
         else ()
-            message("invalid CV input ${arg_CV_INPUT}")
+            tbd_loge("invalid CV input ${arg_CV_INPUT}")
         endif ()   
 
         list(APPEND includes cv_inputs)
@@ -78,16 +82,19 @@ function(tbd_drivers var_name platform)
         list(TRANSFORM ulp_asm PREPEND cv_inputs/)
         list(TRANSFORM triggers_srcs PREPEND triggers/)
         list(APPEND srcs ${cv_input_srcs} ${triggers_srcs})
+
+        tbd_cv_input_print_info("${arg_CV_INPUT}")
     else ()
-        message("no CV input specified")
+        tbd_loge("no CV input specified")
     endif ()
 
     # gather audio codec sources
 
     if (DEFINED arg_AUDIO_OUTPUT)
-        if (arg_AUDIO_OUTPUT GREATER wm8)
+        if (arg_AUDIO_OUTPUT STRGREATER wm8)
             set(codec_includes codecs/wm8xxx)
             file(GLOB codec_srcs codecs/wm8xxx/*.?pp)
+            list(APPEND libs esp_driver_spi)
         elseif(arg_AUDIO_OUTPUT STREQUAL aic3254)
             set(codec_includes codecs/aic3254)
             file(GLOB codec_srcs codecs/aic3254/*.?pp)
@@ -95,29 +102,42 @@ function(tbd_drivers var_name platform)
             set(codec_includes codecs/es8388)
             file(GLOB codec_srcs codecs/es8388/*.?pp)
         else()
-            message("invalid sound codec ${arg_AUDIO_OUTPUT}")
+            tbd_loge("invalid sound codec ${arg_AUDIO_OUTPUT}")
         endif()           
 
         list(APPEND includes ${codec_includes})
         list(APPEND srcs ${codec_srcs})
     else()
-        message("no sound codec specified")
+        tbd_loge("no sound codec specified")
     endif()  
 
     # gather indicator
 
     if (DEFINED arg_INDICATOR AND NOT arg_INDICATOR STREQUAL no)
-        if (arg_INDICATOR STREQUAL rgb)
-            set(indicator_srcs led_rgb.cpp)   
-        elseif(arg_INDICATOR STREQUAL neopixel)
+        tbd_indicator_type("${arg_INDICATOR}" VAR indicator_type)
+        if (indicator_type STREQUAL rgb)
+            tbd_rgb_red("${arg_INDICATOR}" VAR rgb_red_pin)
+            tbd_rgb_green("${arg_INDICATOR}" VAR rgb_green_pin)
+            tbd_rgb_blue("${arg_INDICATOR}" VAR rgb_blue_pin)
+
+            set(indicator_srcs led_rgb.cpp)
+            list(APPEND libs esp_driver_ledc)   
+            list(APPEND defines 
+                "TBD_RGB_RED_PIN=${rgb_red_pin}"
+                "TBD_RGB_GREEN_PIN=${rgb_green_pin}"
+                "TBD_RGB_BLUE_PIN=${rgb_blue_pin}"    
+            )   
+        elseif(indicator_type STREQUAL neopixel)
             set(indicator_srcs led_rgb_bba.cpp)  
         else()
-            message("invalid indicator type ${arg_INDICATOR}")
+            tbd_loge("invalid indicator type ${indicator_type}")
         endif()           
 
         list(APPEND includes indicator)
         list(TRANSFORM indicator_srcs PREPEND indicator/)
         list(APPEND srcs ${indicator_srcs})
+
+        tbd_indicator_print_info("${arg_INDICATOR}")
     endif() 
 
     if (arg_FILE_SYSTEM)
@@ -134,14 +154,17 @@ function(tbd_drivers var_name platform)
         list(APPEND srcs ${display_srcs})
     endif()
 
-    set(${var_name}
-        SRCS ${srcs}
-        ULP_SRCS ${ulp_srcs}
-        ULP_ASM ${ulp_asm}
-        INCLUDES ${includes}
-        LIBS ${libs}
-        PARENT_SCOPE
-    )
+    if (NOT "${var_name}" STREQUAL "CHECK")
+        set(${var_name}
+            SRCS ${srcs}
+            ULP_SRCS ${ulp_srcs}
+            ULP_ASM ${ulp_asm}
+            INCLUDES ${includes}
+            LIBS ${libs}
+            DEFINES "${defines}"
+            PARENT_SCOPE
+        )
+    endif()
 endfunction()
 
 # drivers properties
@@ -161,14 +184,24 @@ function(tbd_drivers_libs drivers)
     tbd_store_or_return("${arg_LIBS}" ${ARGN})
 endfunction()
 
+function(tbd_drivers_defines drivers)
+    tbd_drivers_attrs(${drivers})
+    tbd_store_or_return("${arg_DEFINES}" ${ARGN})
+endfunction()
+
 # drivers methods
 
 function(tbd_drivers_embed_ulp drivers)
     tbd_drivers_attrs(${drivers})
     if (NOT "${arg_ULP_SRCS}" STREQUAL "")
         set(ulp_app_name ulp_${COMPONENT_NAME})
-        tbd_log(${arg_ULP_SRCS})
-        ulp_embed_binary(${ulp_app_name} "${arg_ULP_ASM}" "${$arg_ULP_SRCS}")
+        ulp_embed_binary("${ulp_app_name}" "${arg_ULP_ASM}" "${arg_ULP_SRCS}")
+        message("
+ulp program config
+------------------
+program name: ${ulp_app_name}
+------------------
+        ")
     endif()
 endfunction()
 
@@ -194,6 +227,7 @@ tbd_drivers_activate("${TBD_PLATFORM_OBJ}")
 tbd_drivers_sources("${TBD_DRIVERS_OBJ}" VAR SRCS_FILES)
 tbd_drivers_includes("${TBD_DRIVERS_OBJ}" VAR INCLUDE_DIRS)
 tbd_drivers_libs("${TBD_DRIVERS_OBJ}" VAR LIBS)
+tbd_drivers_defines("${TBD_DRIVERS_OBJ}" VAR DEFINES)
 
 idf_component_register(
     SRCS ${SRCS_FILES}
@@ -201,5 +235,13 @@ idf_component_register(
     REQUIRES ${LIBS}
 )
 target_link_libraries(${COMPONENT_LIB} PUBLIC tbd_drivers_common tbd_system)
+target_compile_definitions(${COMPONENT_LIB} PRIVATE ${DEFINES})
 
 tbd_drivers_embed_ulp("${TBD_DRIVERS_OBJ}")
+
+#tbd_drivers_attrs(${drivers})
+#if (NOT "${arg_ULP_SRCS}" STREQUAL "")
+#    set(ulp_app_name ulp_${COMPONENT_NAME})
+#    tbd_logw("ULP PROGRAM: ${ulp_app_name} ${arg_ULP_ASM} ${arg_ULP_SRCS}")
+#    ulp_embed_binary(${ulp_app_name} "${arg_ULP_ASM}" "${arg_ULP_SRCS}")
+#endif()
