@@ -25,15 +25,15 @@ respective component folders / files if different from this license.
 #include <tbd/logging.hpp>
 
 #if TBD_CALIBRATION
-#include "Calibration.hpp"
+#include <tbd/calibration.hpp>
 #endif
 
 #if TBD_CV_ADC
     #include <tbd/drivers/adc.hpp>
-    #include "gpio.hpp"
+    #include <tbd/drivers/gpio.hpp>
 
-    uint8_t CTAG::AUDIO::InputManager::trig_data[N_TRIGS];
-    float CTAG::AUDIO::InputManager::cv_data[N_CVS];
+    uint8_t tbd::audio::InputManager::trig_data[N_TRIGS];
+    float tbd::audio::InputManager::cv_data[N_CVS];
 #elif TBD_CV_STM32
 #include <tbd/drivers/adc_stm32.hpp>
 #elif TBD_CV_MIDI
@@ -73,7 +73,7 @@ TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
 #endif
 
 #if TBD_CALIBRATION
-        CTAG::CTAG::CAL::Calibration::MapCVData(CTAG::DRIVERS::ADC::data, cv_data);
+        Calibration::MapCVData(drivers::ADC::data, cv_data);
         *cvs = cv_data;
 
     // update trig data
@@ -86,10 +86,10 @@ TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
 void InputManager::SetCVChannelBiPolar(const bool &v0, const bool &v1, const bool &v2, const bool &v3) {
 #if TBD_CALIBRATION
     // ifdefs to exclude this from BBA and MK2 are in Calibration.hpp
-    CTAG::CAL::Calibration::ConfigCVChannels(v0 ? CTAG::CAL::CVConfig::CVBipolar : CTAG::CAL::CVConfig::CVUnipolar,
-                                             v1 ? CTAG::CAL::CVConfig::CVBipolar : CTAG::CAL::CVConfig::CVUnipolar,
-                                             v2 ? CTAG::CAL::CVConfig::CVBipolar : CTAG::CAL::CVConfig::CVUnipolar,
-                                             v3 ? CTAG::CAL::CVConfig::CVBipolar : CTAG::CAL::CVConfig::CVUnipolar);
+    Calibration::ConfigCVChannels(v0 ? calibration::CVConfig::CVBipolar : calibration::CVConfig::CVUnipolar,
+                                  v1 ? calibration::CVConfig::CVBipolar : calibration::CVConfig::CVUnipolar,
+                                  v2 ? calibration::CVConfig::CVBipolar : calibration::CVConfig::CVUnipolar,
+                                  v3 ? calibration::CVConfig::CVBipolar : calibration::CVConfig::CVUnipolar);
 #endif
 }
 

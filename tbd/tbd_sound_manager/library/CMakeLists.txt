@@ -19,6 +19,7 @@ target_link_libraries(tbd_sound_manager
         tbd_drivers
         tbd_presets
         tbd_config
+        tbd_calibration
 )
 
 target_compile_options(tbd_sound_manager PRIVATE
