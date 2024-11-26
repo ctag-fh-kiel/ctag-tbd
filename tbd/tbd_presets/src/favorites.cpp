@@ -21,11 +21,12 @@ respective component folders / files if different from this license.
 
 #include <tbd/favorites.hpp>
 #include <tbd/sound_manager.hpp>
-#include <tbd/display.hpp>
 
 
 #if TBD_DISPLAY
     #include "ui_task.hpp"
+#else
+    #include "ui_worker_dummy.hpp"
 #endif
 
 #if TBD_CV_MIDI

@@ -4,8 +4,7 @@ file(GLOB SRCS_FILES
         src/*.hpp
 )
 
-add_library(tbd_calibration STATIC ${SRCS_FILES}
-        src/module.hpp)
+add_library(tbd_calibration STATIC ${SRCS_FILES})
 target_include_directories(tbd_calibration
         PUBLIC include
 )
@@ -15,7 +14,6 @@ target_link_libraries(tbd_calibration
         tbd_config
         tbd_drivers
 )
-
 target_compile_options(tbd_calibration PRIVATE
         -Wno-unused-local-typedefs
 )

@@ -2,6 +2,7 @@
 
 #include <tbd/drivers/gpio.hpp>
 #include <tbd/favorites.hpp>
+#include <tbd/display.hpp>
 
 #define UI_TASK_PERIOD_MS 50
 #define LONG_PRESS_PERIOD_MS 1000
@@ -11,7 +12,7 @@
 
 namespace tbd::favorites {
 
-favorites::FavoritesModel model;
+FavoritesModel model;
 int32_t active_fav = -1;
 int32_t selected_fav = -1;
 
@@ -71,12 +72,12 @@ uint32_t UIWorker::do_work() {
     _state = CLEAR;
     _pre_state = CLEAR;
 
-    // check button state and generate events
-#if CONFIG_TBD_PLATFORM_MK2
-    if (!gpio_get_level(PIN_PUSH_BTN)) {
+// check button state and generate events
+#if TBD_PLATFORM_MK2
+    if (!drivers::GPIO::GetPushButton()) {
         return 0;
     }
-#elif CONFIG_TBD_PLATFORM_BBA
+#elif TBD_PLATFORM_BBA
     uint32_t touch_value;
         // read raw data.
     uint32_t pchgval = programChangeValue.load();
