@@ -73,7 +73,7 @@ static const uint8_t s_midi_cfg_desc[] = {
 
 namespace tbd::drivers {
 
-void MidiUsb::Init() {
+void MidiUsb::init() {
     ESP_LOGI("TUSB", "USB initialization");
 
     tinyusb_config_t const tusb_cfg = {
@@ -88,11 +88,11 @@ void MidiUsb::Init() {
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 }
 
-IRAM_ATTR uint32_t MidiUsb::Read(uint8_t *data, uint32_t len) {
+TBD_IRAM size_t MidiUsb::read(uint8_t *data, size_t len) {
     return tud_midi_n_stream_read( ITF_NUM_MIDI, ITF_NUM_MIDI_STREAMING, data, len);
 }
 
-uint32_t MidiUsb::Write(const uint8_t *data, uint32_t len) {
+size_t MidiUsb::write(const uint8_t* data, size_t len) {
     return tud_midi_stream_write(0, data, len);
 }
 

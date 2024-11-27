@@ -21,6 +21,12 @@ respective component folders / files if different from this license.
 ***************/
 
 #include <tbd/drivers/common/midi.hpp>
+// FIXME: remove this
+// =======
+// #include "Midi.hpp"
+// #include "Favorites.hpp"
+// #include "rp2040_spi_stream.hpp"
+// >>>>>>> origin/ediv:main/Midi.cpp
 
 #include <cstring>
 #include <algorithm>
@@ -28,6 +34,7 @@ respective component folders / files if different from this license.
 #include "midi_uart.hpp"
 #include "midi_usb.hpp"
 
+#include "rp2040_spi_stream.hpp"
 
 // FIXME: MIDI needs to set program change value
 // #include "Favorites.hpp"
@@ -755,14 +762,13 @@ void Midi::noteOff(uint8_t* msg)
 
 // Provide methods and data for MIDI-message processing and communiction of detected events to audio-thread
 
-#define MIDI_BUF_SZ (RX_BUF_SIZE+32)
+#define MIDI_BUF_SZ (RX_BUF_SIZE+32u)
 // ### #define DEBUG_MIDI  true    // ### MB20231219
 
 // --- Calculate size of buffer for "CV" and "Gate/Trigger" values to be exchanged with audio-thread / plugins ---
 #define DATA_SZ  (N_CVS * 4 + N_TRIGS + 2)
 
 // --- Instanciate objects for lowlevel and highlevel MIDI processing ---
-static tbd::drivers::MidiUart midiuart_instance;              // UART reader (and writer) for MIDI-messages
 TBD_DRAM static Midi distribute;     // Instanciate Midi-Class as object for MIDI-message distribution, according to events mapped via WebUI
 
 // === Buffer to pass on MIDI-Event as virtual CV and Gate 'voltages', normalized to -1.f...+1.f (CV) and 0 or 1 integers (Triggers/Gates) ===
@@ -795,6 +801,7 @@ TBD_DRAM static uint8_t msgBuffer[MIDI_BUF_SZ]; // ## ??? Message-buffer for MID
 TBD_DRAM static uint8_t missing_bytes_offset = 0;   // We may have to add that before we fetch our next buffer?
 TBD_DRAM static int len = 0;
 TBD_DRAM static uint8_t *ptr = NULL;
+
 static uint8_t current_status = 0;    // Current status byte to be remembered in case of a running-status situation
 static uint8_t loc_msg[8];            // Local message to be constructed in a running-status situation
 
@@ -823,7 +830,15 @@ void Midi::Init() {
     memset(midi_note_trig, 1,
            N_TRIGS);             // Reset "virtual Gate/Trigger"-data at startup (1==off aka TRIG_OFF)
     distribute.setCVandTriggerPointers(midi_data, midi_note_trig);    // Pass on pointer to CV and Trigger shared data
-    tbd::drivers::MidiUsb::Init();
+
+    // FIXME: do we really need all three of them all the time
+    MidiUart::init();
+    MidiUsb::init();
+    rp2040_spi_stream::init();
+}
+
+void Midi::deinit() {
+    MidiUart::deinit();
 }
 
 // ===  MIDI-parsing method (Please note: Running status is not processed correctly with this implementation!) ===
@@ -847,12 +862,15 @@ uint8_t *Midi::Update() {
             }
         }
         ================================================================== */
-        len2 =  tbd::drivers::MidiUsb::Read(&msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32);
+        len2 =  MidiUsb::read(&msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32u);
 
         // get all available MIDI messages from UART
         if (missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) // safety margin
-            midiuart_instance.read(&msgBuffer[missing_bytes_offset + len2], &len);  // Read UART data into MIDI-buffer
+            len = MidiUart::read(&msgBuffer[missing_bytes_offset + len2], len);  // Read UART data into MIDI-buffer
         len += len2;
+
+        // get all messages from rp2040
+        len += rp2040_spi_stream::read(&msgBuffer[missing_bytes_offset + len], MIDI_BUF_SZ - 32 - len);
 
         if (len == 0)                   // Nothing to process now, better luck next time?
             return buf0;                // We return the identical CV / Trigger data as last round
@@ -860,6 +878,7 @@ uint8_t *Midi::Update() {
         ptr = msgBuffer;                // We found a new message (or several new messages), reassign message-pointer!
         len += missing_bytes_offset;    // We may have incomplete messages from last round to process here, so we add their (partial) length, zero otherwise!
         missing_bytes_offset = 0;       // Reset missing-bytes counter, may be rearranged with next incomplete message due to incomplete buffering
+
     }
 #ifdef DEBUG_MIDI
     // debug buffer consumption
@@ -1152,7 +1171,7 @@ uint8_t *Midi::Update() {
 }
 
 void Midi::Flush() {
-    midiuart_instance.flush();
+    MidiUart::flush();
 }
 
 }

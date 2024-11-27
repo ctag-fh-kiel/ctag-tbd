@@ -74,7 +74,7 @@ function(tbd_drivers var_name platform)
             # no ULP
         elseif (cv_input_type STREQUAL midi)
             list(APPEND libs esp_tinyusb)
-            set(cv_input_srcs  midi_uart.cpp midi_usb.cpp midi.cpp)
+            set(cv_input_srcs midi_uart.cpp midi_usb.cpp rp2040_spi_stream.cpp midi.cpp)
             set(triggers_srcs gpio.cpp)
             # no ULP
         else ()

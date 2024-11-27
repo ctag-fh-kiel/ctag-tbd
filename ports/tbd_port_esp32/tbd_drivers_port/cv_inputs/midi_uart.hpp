@@ -20,23 +20,30 @@ respective component folders / files if different from this license.
 ***************/
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <tbd/ram.hpp>
 
-#define RX_BUF_SIZE 128
+
+// FIXME: this should be injected or defined in a global header
+// FIXME: naming: which buffer is this even referring to
+#define RX_BUF_SIZE 128u
+
 
 namespace tbd::drivers {
 
 struct MidiUart final {
+    MidiUart() = delete;
 
-    MidiUart();
-    ~MidiUart();
+    static void init();
+    static void deinit();
 
     // function to write midi message
-    void write(uint8_t *data, std::size_t len);
-    void read(uint8_t *data, int *len);
-    void flush();
+    static size_t write(uint8_t* data, size_t len);
+    static size_t read(uint8_t* data, size_t len);
+    static void flush();
 
-    int GetBufferSize() const;
+    static int get_buffer_size();
 };
 
 }

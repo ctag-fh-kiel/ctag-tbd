@@ -24,9 +24,10 @@ respective component folders / files if different from this license.
 #include "driver/uart.h"
 #include "esp_attr.h"
 
+
 namespace tbd::drivers {
 
-MidiUart::MidiUart() {
+void MidiUart::init() {
     const uart_port_t uart_num = UART_NUM_1;
     uart_config_t uart_config = {
             .baud_rate = 31250,
@@ -36,6 +37,7 @@ MidiUart::MidiUart() {
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
             .rx_flow_ctrl_thresh = 0,
             .source_clk = UART_SCLK_DEFAULT,
+            .flags = 0
     };
 // Configure UART parameters
     ESP_ERROR_CHECK(uart_param_config(uart_num, &uart_config));
@@ -47,20 +49,20 @@ MidiUart::MidiUart() {
                                         0, 0, NULL, ESP_INTR_FLAG_LOWMED|ESP_INTR_FLAG_SHARED));
 }
 
-MidiUart::~MidiUart(){
+void MidiUart::deinit(){
     uart_driver_delete(UART_NUM_1);
 }
 
-int MidiUart::GetBufferSize() const{
+int MidiUart::get_buffer_size() {
     return RX_BUF_SIZE;
 }
 
-void MidiUart::write(uint8_t *data, std::size_t len){
-    uart_write_bytes(UART_NUM_1, (const char *)data, len);
+size_t MidiUart::write(uint8_t* data, size_t len){
+    return uart_write_bytes(UART_NUM_1, (const char *)data, len);
 }
 
-IRAM_ATTR void MidiUart::read(uint8_t *data, int *len) {
-    *len = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 0);
+TBD_IRAM size_t MidiUart::read(uint8_t *data, size_t len) {
+    return uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 0);
 }
 
 void MidiUart::flush() {
