@@ -53,6 +53,11 @@ struct SoundLevel {
     SoundLevel(SoundLevelWorker& _task) : _color(0) {}
 
     ~SoundLevel() {
+        if (_warning_set) {
+            // set orange warning color
+            _task.set_color(0xB39134);
+            return;
+        }
         // set color and intensity for next hardware refresh cycle
         _task.set_color(_color);
     }
@@ -65,9 +70,14 @@ struct SoundLevel {
         _color |= level << 16; // red
     }
 
+    void set_warning() {
+
+    }
+
     private:
         SoundLevelWorker _task;
         uint32_t _color;
+        bool _warning_set;
 };
 
 system::ModuleTask<SoundLevelWorker, system::CpuCore::audio> 

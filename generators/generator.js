@@ -112,7 +112,7 @@ function parseData(el){
 }
 
 function hppSource(el){
-    sHeader += "\tatomic<int32_t> " + el.id + ", " + (el.type == "bool" ? "trig_" : "cv_") + el.id + ";\n";
+    sHeader += "    std::atomic<int32_t> " + el.id + ", " + (el.type == "bool" ? "trig_" : "cv_") + el.id + ";\n";
 }
 
 function cppSource1(el){

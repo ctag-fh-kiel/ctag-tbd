@@ -81,6 +81,7 @@ void SPManagerDataModel::getSoundProcessors() {
         }
     }
 
+    // FIXME: not implemented
     // if ((dir = opendir(std::string(CTAG::RESOURCES::spiffsRoot + std::string("/data/sp")).c_str())) != NULL) {
     //     while ((ent = readdir(dir)) != NULL) {
     //         std::string fn(ent->d_name);
@@ -339,7 +340,6 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
         return;
     }
 
-    // fixme replace with std::format when available
     auto sound_processor_presets_filename = std::format("mp-{}.jsn", id);
     auto sound_processor_presets_path = *sound_processor_configs_dir / sound_processor_presets_filename;
     if (!fs::is_regular_file(sound_processor_presets_path)) {

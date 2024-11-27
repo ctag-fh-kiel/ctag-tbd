@@ -1,5 +1,27 @@
+/***************
+CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
+
+A project conceived within the Creative Technologies Arbeitsgruppe of
+Kiel University of Applied Sciences: https://www.creative-technologies.de
+
+(c) 2020 by Robert Manzke. All rights reserved.
+
+The CTAG TBD software is licensed under the GNU General Public License
+(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
+
+The CTAG TBD hardware design is released under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+CTAG TBD is provided "as is" without any express or implied warranties.
+
+License and copyright details for specific submodules are included in their
+respective component folders / files if different from this license.
+***************/
 #include "helpers/ctagFastMath.hpp"
+
 #include <cstdio>
+#include <stmlib/dsp/dsp.h>
 
 namespace CTAG::SP::HELPERS {
 
@@ -417,6 +439,63 @@ namespace CTAG::SP::HELPERS {
         //float f = u.x; printf("True sqrt %f, fast pow %f, relative error %f%%\n", sqrtf(x), f,  (f/ sqrtf(x) - 1.f) * 100.f);
 
         return u.x;
+    }
+
+    // from Mutable Instruments
+    float InterpolateWaveLinear(
+        const float *table,
+        const int32_t index_integral,
+        const float index_fractional) {
+        const float a = table[index_integral];
+        const float b = table[index_integral + 1];
+        const float t = index_fractional;
+        return a + (b - a) * t;
+    }
+
+    // from Mutable Instruments
+    float InterpolateWaveHermite(
+            const float *table,
+            const int32_t index_integral,
+            const float index_fractional) {
+        const float xm1 = table[index_integral];
+        const float x0 = table[index_integral + 1];
+        const float x1 = table[index_integral + 2];
+        const float x2 = table[index_integral + 3];
+        const float c = (x1 - xm1) * 0.5f;
+        const float v = x0 - x1;
+        const float w = c + v;
+        const float a = w + v + (x2 - x0) * 0.5f;
+        const float b_neg = w + a;
+        const float f = index_fractional;
+        return (((a * f) - b_neg) * f + c) * f + x0;
+    }
+
+    float InterpolateWaveLinearWrap(
+    const float *table,
+    const float index, const uint32_t size) {
+        MAKE_INTEGRAL_FRACTIONAL(index)
+        const float a = table[index_integral%size];
+        const float b = table[(index_integral + 1)%size];
+        const float t = index_fractional;
+        return a + (b - a) * t;
+    }
+
+    float InterpolateWaveHermiteWrap(
+        const float *table,
+        const float index,
+        const uint32_t size){
+        MAKE_INTEGRAL_FRACTIONAL(index)
+        const float xm1 = table[index_integral%size];
+        const float x0 = table[(index_integral + 1)%size];
+        const float x1 = table[(index_integral + 2)%size];
+        const float x2 = table[(index_integral + 3)%size];
+        const float c = (x1 - xm1) * 0.5f;
+        const float v = x0 - x1;
+        const float w = c + v;
+        const float a = w + v + (x2 - x0) * 0.5f;
+        const float b_neg = w + a;
+        const float f = index_fractional;
+        return (((a * f) - b_neg) * f + c) * f + x0;
     }
 
 }

@@ -26,10 +26,6 @@ respective component folders / files if different from this license.
 #include <cstdint>
 #include "ctagWNoiseGen.hpp"
 
-// FIXME: tbd lib needed
-// #ifndef TBD_SIM
-// #include "xtensa/core-macros.h"
-// #endif
 
 // after supercollider dust
 

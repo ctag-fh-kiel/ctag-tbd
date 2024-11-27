@@ -8,14 +8,13 @@ file(GLOB SRCS_FILES
     src/*.cpp
 )
 
-
-
 add_library(tbd_helpers STATIC ${SRCS_FILES})
 target_include_directories(tbd_helpers PUBLIC include)
 target_link_libraries(tbd_helpers
     PRIVATE 
         tbd_system 
         tbd_storage 
+        mutable
         ${TBD_DSP_LIB}
 )
 

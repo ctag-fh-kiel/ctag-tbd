@@ -4,8 +4,10 @@
     #error "audio loop is performance critical, compile in a single compilation unit"
 #endif
 
-#include <tbd/sound_processor.hpp>
+#include "audio_worker.hpp"
 
+#include <tbd/sound_processor.hpp>
+#include <tbd/system/cpu_cores.hpp>
 #include <tbd/system/locks.hpp>
 #include <helpers/ctagFastMath.hpp>
 #include <tbd/sound_manager/data_model.hpp>
@@ -14,11 +16,12 @@
 #include <tbd/sound_manager/common/module.hpp>
 #include "sound_level_worker.hpp"
 
-#include "audio_worker.hpp"
 
 
 #define NOISE_GATE_LEVEL_CLOSE 0.0001f
 #define NOISE_GATE_LEVEL_OPEN 0.0003f
+#define CPU_MAX_ALLOWED_CYCLES 174150 // is 32/44100kHz * 240MHz
+
 
 namespace tbd::audio {
 
@@ -79,6 +82,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
     // update data from ADCs and GPIOs for real-time control
     InputManager::Update(&pd.trig, &pd.cv);
 
+    system::TimeoutGuard timeout(CPU_MAX_ALLOWED_CYCLES);
     SoundLevel sound_level(sound_level_worker);    
 
     // In peak detection
@@ -244,6 +248,8 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
         //if (audio_slice[i * 2] > max) max = audio_slice[i * 2];
         //if (audio_slice[i * 2 + 1] > max) max = audio_slice[i * 2 + 1];
     }
+
+
     // just take first sample of block for level meter
     max = fabsf(audio_slice[0] + audio_slice[1]) / 2.f;
     peakOut = 0.9f * peakOut + 0.1f * max;
@@ -251,6 +257,10 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
     max = 255.f + 3.2f * CTAG::SP::HELPERS::fast_dBV(peakOut);
     if (max > 0.f) {
         sound_level.add_output_level(max);
+    }
+
+    if (!timeout) {
+        sound_level.set_warning();
     }
     return 0;
 }

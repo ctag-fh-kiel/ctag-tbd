@@ -31,33 +31,6 @@ respective component folders / files if different from this license.
 
 
 namespace CTAG::SYNTHESIS {
-    inline float InterpolateWave( // use this to save more cpu, however correct zdelays to 2 instead of 4
-            const float *table,
-            int32_t index_integral,
-            float index_fractional) {
-        float a = static_cast<float>(table[index_integral]);
-        float b = static_cast<float>(table[index_integral + 1]);
-        float t = index_fractional;
-        return a + (b - a) * t;
-    }
-
-    inline float InterpolateWaveHermite( // better interpolation sounds better
-            const float *table,
-            int32_t index_integral,
-            float index_fractional) {
-        const float xm1 = table[index_integral];
-        const float x0 = table[index_integral + 1];
-        const float x1 = table[index_integral + 2];
-        const float x2 = table[index_integral + 3];
-        const float c = (x1 - xm1) * 0.5f;
-        const float v = x0 - x1;
-        const float w = c + v;
-        const float a = w + v + (x2 - x0) * 0.5f;
-        const float b_neg = w + a;
-        const float f = index_fractional;
-        return (((a * f) - b_neg) * f + c) * f + x0;
-    }
-
 
     void RomplerVoice::Process(float *out, const uint32_t size) {
         // check for trigger signal
