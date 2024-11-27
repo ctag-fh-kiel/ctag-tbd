@@ -1,6 +1,6 @@
 #include <tbd/sounds/ctagSoundProcessorMonoDelay.hpp>
 
-#include "esp_heap_caps.h"
+#include <tbd/heaps.hpp>
 #include "stmlib/stmlib.h"
 #include "stmlib/dsp/dsp.h"
 #include "helpers/ctagFastMath.hpp"
@@ -149,7 +149,7 @@ void ctagSoundProcessorMonoDelay::Init(std::size_t blockSize, void *blockPtr) {
     // assert(blockSize >= memLen);
     // if memory larger than blockMem is needed, use heap_caps_malloc() instead with MALLOC_CAPS_SPIRAM
 
-	delayBuffer = static_cast<float*>(heap_caps_malloc(88200 * sizeof(float), MALLOC_CAP_SPIRAM));
+	delayBuffer = static_cast<float*>(tbd_heaps_malloc(88200 * sizeof(float), TBD_HEAPS_SPIRAM));
 	assert(delayBuffer != nullptr);
 	// engine.Init(delayBuffer);
 
@@ -161,7 +161,7 @@ ctagSoundProcessorMonoDelay::~ctagSoundProcessorMonoDelay() {
     // no explicit freeing for blockMem needed, done by ctagSPAllocator
     // explicit free is only needed when using heap_caps_malloc() with MALLOC_CAPS_SPIRAM
 
-	heap_caps_free(delayBuffer);
+	tbd_heaps_free(delayBuffer);
 	lp.Init();
 	hp.Init();
 }

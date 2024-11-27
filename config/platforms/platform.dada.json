@@ -1,9 +1,9 @@
 {
     "config_version": 1,
     "info": {
-        "name": "bba1",
-        "full_name": "TBD BBA V1",
-        "description": "TBD standalone MIDI device",
+        "name": "dada",
+        "full_name": "TBD Dada",
+        "description": "TBD Raspi 2040 Midi host device",
         "mark": 1,
         "rev": 1
     },
@@ -14,7 +14,7 @@
             "type": "midi",
             "n_cvs": 90,
             "n_triggers": 40,
-            "inputs": ["uart", "usb"]
+            "inputs": ["uart", "usb", "rp2040"]
         },
         "audio_output": {
             "type": "es8388",

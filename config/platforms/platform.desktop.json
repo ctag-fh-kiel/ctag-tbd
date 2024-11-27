@@ -13,14 +13,15 @@
         "cv_input": {
             "type": "midi",
             "n_cvs": 90,
-            "n_triggers": 40
+            "n_triggers": 40,
+            "inputs": ["rtmidi"]
         },
         "audio_output": {
             "type": "rtaudio",
             "volume_control": false
         },
         "indicator": {
-            "type": "neopixel"
+            "type": "gui_indicator"
         },
         "inputs": {
           "type": "gui"

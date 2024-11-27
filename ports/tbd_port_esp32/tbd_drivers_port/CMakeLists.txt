@@ -76,6 +76,8 @@ function(tbd_drivers var_name platform)
             list(APPEND libs esp_tinyusb)
             set(cv_input_srcs midi_uart.cpp midi_usb.cpp rp2040_spi_stream.cpp midi.cpp)
             set(triggers_srcs gpio.cpp)
+            tbd_midi_inputs_flags("${arg_CV_INPUT}" VAR midi_inputs)
+            list(APPEND defines ${midi_inputs})
             # no ULP
         else ()
             tbd_loge("invalid CV input ${arg_CV_INPUT}")

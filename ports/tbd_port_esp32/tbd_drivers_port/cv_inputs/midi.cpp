@@ -31,10 +31,17 @@ respective component folders / files if different from this license.
 #include <cstring>
 #include <algorithm>
 
-#include "midi_uart.hpp"
-#include "midi_usb.hpp"
+#if TBD_MIDI_INPUT_UART
+    #include "midi_uart.hpp"
+#endif
 
-#include "rp2040_spi_stream.hpp"
+#if TBD_MIDI_INPUT_USB
+    #include "midi_usb.hpp"
+#endif
+
+#if TBD_MIDI_INPUT_RP2040
+    #include "rp2040_spi_stream.hpp"
+#endif
 
 // FIXME: MIDI needs to set program change value
 // #include "Favorites.hpp"
@@ -832,13 +839,23 @@ void Midi::Init() {
     distribute.setCVandTriggerPointers(midi_data, midi_note_trig);    // Pass on pointer to CV and Trigger shared data
 
     // FIXME: do we really need all three of them all the time
+#if TBD_MIDI_INPUT_UART
     MidiUart::init();
+#endif
+
+#if TBD_MIDI_INPUT_USB
     MidiUsb::init();
+#endif
+
+#if TBD_MIDI_INPUT_RP2040
     rp2040_spi_stream::init();
+#endif
 }
 
 void Midi::deinit() {
+#if TBD_MIDI_INPUT_UART
     MidiUart::deinit();
+#endif
 }
 
 // ===  MIDI-parsing method (Please note: Running status is not processed correctly with this implementation!) ===
@@ -847,7 +864,7 @@ uint8_t *Midi::Update() {
     if (len == 0)                        // Only read new buffer if we ran out of data
     {
         // get all available MIDI messages from USB
-        uint32_t len2{0};
+        uint32_t len2 = 0;
 
         /* ==================================================================
         while (tud_midi_available() && missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32))
@@ -862,15 +879,23 @@ uint8_t *Midi::Update() {
             }
         }
         ================================================================== */
+#if TBD_MIDI_INPUT_USB
         len2 =  MidiUsb::read(&msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32u);
+#endif
 
+#if TBD_MIDI_INPUT_UART
         // get all available MIDI messages from UART
-        if (missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) // safety margin
+        // safety margin
+        if (missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) {
             len = MidiUart::read(&msgBuffer[missing_bytes_offset + len2], len);  // Read UART data into MIDI-buffer
+        }
+#endif
         len += len2;
 
+#if TBD_MIDI_INPUT_RP2040
         // get all messages from rp2040
         len += rp2040_spi_stream::read(&msgBuffer[missing_bytes_offset + len], MIDI_BUF_SZ - 32 - len);
+#endif
 
         if (len == 0)                   // Nothing to process now, better luck next time?
             return buf0;                // We return the identical CV / Trigger data as last round
@@ -1171,7 +1196,9 @@ uint8_t *Midi::Update() {
 }
 
 void Midi::Flush() {
+#if TBD_MIDI_INPUT_UART
     MidiUart::flush();
+#endif
 }
 
 }
