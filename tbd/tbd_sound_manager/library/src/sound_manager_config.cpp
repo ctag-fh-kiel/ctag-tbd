@@ -78,34 +78,23 @@ void SPManagerDataModel::getSoundProcessors() {
         auto& file_path = plugin_description.path();
         if (file_path.filename().string().rfind("mui-", 0) == 0) {
             TBD_LOGW("sound_manager", "file: %s", file_path.filename().c_str());
+            Document d;
+            loadJSON(d, file_path);
+            Value obj(kObjectType);
+            Value id(d["id"].GetString(), d.GetAllocator());
+            Value name(d["name"].GetString(), d.GetAllocator());
+            Value hint(kStringType);
+            obj.AddMember("id", id.Move(), m.GetAllocator());
+            obj.AddMember("name", name.Move(), m.GetAllocator());
+            obj.AddMember("isStereo", d["isStereo"], m.GetAllocator());
+            if (d.HasMember("hint")) {
+                hint.SetString(d["hint"].GetString(), m.GetAllocator());
+                obj.AddMember("hint", hint.Move(), m.GetAllocator());
+            }
+            m["availableProcessors"].PushBack(obj, m.GetAllocator());
         }
     }
-
-    // FIXME: not implemented
-    // if ((dir = opendir(std::string(CTAG::RESOURCES::spiffsRoot + std::string("/data/sp")).c_str())) != NULL) {
-    //     while ((ent = readdir(dir)) != NULL) {
-    //         std::string fn(ent->d_name);
-    //         if (fn.find("mui-") != std::string::npos) {
-    //             TBD_LOGD("SPModel", "Filename: %s", fn.c_str());
-    //             Document d;
-    //             loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/" + fn);
-    //             Value obj(kObjectType);
-    //             Value id(d["id"].GetString(), d.GetAllocator());
-    //             Value name(d["name"].GetString(), d.GetAllocator());
-    //             Value hint(kStringType);
-    //             obj.AddMember("id", id.Move(), m.GetAllocator());
-    //             obj.AddMember("name", name.Move(), m.GetAllocator());
-    //             obj.AddMember("isStereo", d["isStereo"], m.GetAllocator());
-    //             if (d.HasMember("hint")) {
-    //                 hint.SetString(d["hint"].GetString(), m.GetAllocator());
-    //                 obj.AddMember("hint", hint.Move(), m.GetAllocator());
-    //             }
-    //             m["availableProcessors"].PushBack(obj, m.GetAllocator());
-    //         }
-    //     }
-    //     closedir(dir);
-    // }
-    // storeJSON(m, MODELJSONFN);
+    storeJSON(m, *_config_file);
 }
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessors() {

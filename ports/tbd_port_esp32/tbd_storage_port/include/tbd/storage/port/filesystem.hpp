@@ -53,7 +53,12 @@ struct path final {
     }
 
     path filename() const {
-        return "";
+        size_t lastSlash = _path.rfind("/");
+        if (lastSlash != std::string::npos){
+            return _path.substr(lastSlash + 1);
+            // std::string folder = _path.substr(0, lastSlash);
+        }
+        return _path;
     }
 
     operator const char* () {
