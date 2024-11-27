@@ -1,4 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
+import type { Channel } from "../stores/pluginsStore";
 
 type Preset = {
   name: string;
@@ -11,7 +12,7 @@ interface GetPresetsResponse {
 }
 
 interface SaveChannelPresetProps {
-  channel: string;
+  channel: Channel;
 }
 
 export default function SaveChannelPreset({ channel }: SaveChannelPresetProps) {
@@ -41,7 +42,9 @@ export default function SaveChannelPreset({ channel }: SaveChannelPresetProps) {
     }
   }, [fetched]);
 
-  const handleSave = () => {
+  const handleSave = (event: SubmitEvent) => {
+    event.preventDefault();
+
     if (newPreset === undefined) {
       return;
     }

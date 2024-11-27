@@ -1,23 +1,23 @@
 import { useStore } from "@nanostores/preact";
-import { currentFavorite, favorites } from "../stores/favoritesStore";
+import { $currentFavoriteNum, $favorites } from "../stores/favoritesStore";
 
 export default function FavoritesSelect() {
-  const $favorites = useStore(favorites);
-  const $currentFavorite = useStore(currentFavorite);
+  const favorites = useStore($favorites);
+  const currentFavorite = useStore($currentFavoriteNum);
 
   return (
     <select
       class="select w-full max-w-xs"
-      value={$currentFavorite}
+      value={currentFavorite}
       onChange={(event) => {
         const newFavorite = Number.parseInt(event.currentTarget.value, 10);
 
         if (!Number.isNaN(newFavorite)) {
-          currentFavorite.set(newFavorite);
+          $currentFavoriteNum.set(newFavorite);
         }
       }}
     >
-      {$favorites.map((favorite, i) => (
+      {favorites.map((favorite, i) => (
         <option value={i}>
           {i}: {favorite.name}
         </option>

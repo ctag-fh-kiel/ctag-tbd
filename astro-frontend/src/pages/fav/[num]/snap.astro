@@ -1,0 +1,18 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import SnapFavorite from "../../../components/SnapFavorite";
+
+export function getStaticPaths() {
+  const paths = [];
+  for (let num = 0; num < 10; num++) {
+    paths.push({ params: { num } });
+  }
+  return paths;
+}
+
+const { num } = Astro.params;
+---
+
+<Layout title="Edit favorite">
+  <SnapFavorite client:load num={num} />
+</Layout>

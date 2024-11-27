@@ -441,6 +441,13 @@ string SoundProcessorManager::GetStringID(const int chan) {
     return model->GetActiveProcessorID(chan);
 }
 
+bool SoundProcessorManager::IsStereo(const int chan) {
+    ledBlink = 3;
+    const auto id = GetStringID(chan);
+    return model->IsStereo(id);
+}
+
+
 void SoundProcessorManager::SetConfigurationFromJSON(const string &data) {
     ledBlink = 3;
     xSemaphoreTake(processMutex, portMAX_DELAY);

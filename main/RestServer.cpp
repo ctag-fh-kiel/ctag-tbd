@@ -62,8 +62,11 @@ typedef struct rest_server_context {
 /* Set HTTP response content type according to file extension */
 static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepath) {
     const char *type = "text/plain";
+    auto is_html = false;
+
     if (CHECK_FILE_EXTENSION(filepath, ".html")) {
         type = "text/html";
+        is_html = true;
     } else if (CHECK_FILE_EXTENSION(filepath, ".js")) {
         type = "application/javascript";
     } else if (CHECK_FILE_EXTENSION(filepath, ".css")) {
@@ -75,24 +78,19 @@ static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepa
     } else if (CHECK_FILE_EXTENSION(filepath, ".svg")) {
         type = "text/xml";
     }
+
+    if (is_html) {
+        httpd_resp_set_hdr(req, "Cache-Control", "max-age: 300, private");
+    } else {
+        httpd_resp_set_hdr(req, "Cache-Control", "max-age=31536000, immutable");
+    }
+
     return httpd_resp_set_type(req, type);
 }
 
-/* Send HTTP response with the contents of the requested file */
-static esp_err_t rest_common_get_handler(httpd_req_t *req) {
-    char filepath[FILE_PATH_MAX];
-
-    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
-    rest_server_context_t *rest_context = (rest_server_context_t *) req->user_ctx;
-    strlcpy(filepath, rest_context->base_path, sizeof(filepath));
-    if (req->uri[strlen(req->uri) - 1] == '/') {
-        strlcat(filepath, "/index.html", sizeof(filepath));
-    } else {
-        strlcat(filepath, req->uri, sizeof(filepath));
-    }
-    set_content_type_from_file(req, filepath);
-    strlcat(filepath, ".gz", sizeof(filepath));
-    int fd = open(filepath, O_RDONLY, 0);
+static esp_err_t send_file(const char *filepath, httpd_req_t *req, rest_server_context_t *rest_context) {
+    ESP_LOGD(REST_TAG, "Serving file: %s", filepath);
+    const int fd = open(filepath, O_RDONLY, 0);
     if (fd == -1) {
         ESP_LOGE(REST_TAG, "Failed to open file : %s", filepath);
         /* Respond with 500 Internal Server Error */
@@ -113,7 +111,7 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req) {
                 close(fd);
                 ESP_LOGE(REST_TAG, "File sending failed!");
                 /* Abort sending file */
-                httpd_resp_sendstr_chunk(req, NULL);
+                httpd_resp_sendstr_chunk(req, nullptr);
                 /* Respond with 500 Internal Server Error */
                 httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to send file");
                 return ESP_FAIL;
@@ -124,8 +122,25 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req) {
     close(fd);
     ESP_LOGD(REST_TAG, "File sending complete");
     /* Respond with an empty chunk to signal HTTP response completion */
-    httpd_resp_send_chunk(req, NULL, 0);
+    httpd_resp_send_chunk(req, nullptr, 0);
     return ESP_OK;
+}
+
+/* Send HTTP response with the contents of the requested file */
+static esp_err_t rest_common_get_handler(httpd_req_t *req) {
+    char filepath[FILE_PATH_MAX];
+
+    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+    auto *rest_context = static_cast<rest_server_context_t *>(req->user_ctx);
+    strlcpy(filepath, rest_context->base_path, sizeof(filepath));
+    strlcat(filepath, req->uri, sizeof(filepath));
+    if (req->uri[strlen(req->uri) - 1] == '/') {
+        strlcat(filepath, "index.html", sizeof(filepath));
+    }
+    set_content_type_from_file(req, filepath);
+    strlcat(filepath, ".gz", sizeof(filepath));
+
+    return send_file(filepath, req, rest_context);
 }
 
 esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
@@ -158,6 +173,58 @@ esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, res.c_str());
     return ESP_OK;
+}
+
+esp_err_t RestServer::get_params_ui_plugin_get_handler(httpd_req_t *req) {
+    ESP_LOGD("get_params_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+    size_t qlen = httpd_req_get_url_query_len(req);
+    size_t urilen = strlen(req->uri);
+    char ch = req->uri[urilen - qlen - 1];
+    ch -= 0x30;
+
+    if (ch != 0 && ch != 1) {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    httpd_resp_set_type(req, "application/json");
+    auto plugin = CTAG::AUDIO::SoundProcessorManager::GetStringID(ch);
+    ESP_LOGD(REST_TAG, "Get plugin params ui for channel %d and plugin %s", ch, plugin.c_str());
+
+    char filepath[FILE_PATH_MAX];
+    auto *rest_context = static_cast<rest_server_context_t *>(req->user_ctx);
+    strlcpy(filepath, (string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mui-") + plugin + string(".jsn")).c_str(), sizeof(filepath));
+
+    return send_file(filepath, req, rest_context);
+}
+
+esp_err_t RestServer::get_params_p_plugin_get_handler(httpd_req_t *req) {
+    ESP_LOGD("get_params_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+    size_t qlen = httpd_req_get_url_query_len(req);
+    size_t urilen = strlen(req->uri);
+    char ch = req->uri[urilen - qlen - 1];
+    ch -= 0x30;
+
+    if (ch != 0 && ch != 1) {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    httpd_resp_set_type(req, "application/json");
+    auto plugin = CTAG::AUDIO::SoundProcessorManager::GetStringID(ch);
+    ESP_LOGD(REST_TAG, "Get plugin params ui for channel %d and plugin %s", ch, plugin.c_str());
+
+    char filepath[FILE_PATH_MAX];
+    auto *rest_context = static_cast<rest_server_context_t *>(req->user_ctx);
+    strlcpy(filepath, (string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-") + plugin + string(".jsn")).c_str(), sizeof(filepath));
+
+    return send_file(filepath, req, rest_context);
 }
 
 esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
@@ -254,7 +321,11 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
     ch -= 0x30;
     ESP_LOGD(REST_TAG, "Querying presets for channel %d", ch);
-    if (ch == 0 || ch == 1){
+    if (ch == 0){
+        const char* res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch);
+        if(nullptr != res) httpd_resp_sendstr(req, res);
+    }
+    if (ch == 1 && !CTAG::AUDIO::SoundProcessorManager::IsStereo(0)){
         const char* res = CTAG::AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(ch);
         if(nullptr != res) httpd_resp_sendstr(req, res);
     }
@@ -322,7 +393,7 @@ esp_err_t RestServer::StartRestServer() {
     config.core_id = 0;
     config.uri_match_fn = httpd_uri_match_wildcard;
     config.task_priority = tskIDLE_PRIORITY + 4;
-    config.max_uri_handlers = 20;
+    config.max_uri_handlers = 22;
     config.stack_size = 8192;
     config.recv_wait_timeout   = 20;
     config.send_wait_timeout = 20;
@@ -379,8 +450,26 @@ esp_err_t RestServer::StartRestServer() {
     httpd_register_uri_handler(server, &get_active_plugin_get_uri);
 
     /* get plugin params of active plugin */
+    httpd_uri_t get_params_ui_plugin_get_uri = {
+        .uri = "/api/v1/getPluginParamsUI/*",
+        .method = HTTP_GET,
+        .handler = &RestServer::get_params_ui_plugin_get_handler,
+        .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &get_params_ui_plugin_get_uri);
+
+    /* get plugin params of active plugin */
+    httpd_uri_t get_params_p_plugin_get_uri = {
+        .uri = "/api/v1/getPluginParamsP/*",
+        .method = HTTP_GET,
+        .handler = &RestServer::get_params_p_plugin_get_handler,
+        .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &get_params_p_plugin_get_uri);
+
+    /* get plugin params of active plugin */
     httpd_uri_t get_params_plugin_get_uri = {
-            .uri = "/api/v1/getPluginParams*",
+            .uri = "/api/v1/getPluginParams/*",
             .method = HTTP_GET,
             .handler = &RestServer::get_params_plugin_get_handler,
             .user_ctx = rest_context

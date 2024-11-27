@@ -33,6 +33,43 @@ using namespace std;
 using namespace CTAG::AUDIO;
 using namespace boost::property_tree;
 
+void returnFile(boost::filesystem::path path, shared_ptr<HttpServer::Response> response, SimpleWeb::CaseInsensitiveMultimap header) {
+    auto ifs = make_shared<ifstream>();
+    ifs->open(path.string(), ifstream::in | ios::binary | ios::ate);
+
+    if (*ifs) {
+        auto length = ifs->tellg();
+        ifs->seekg(0, ios::beg);
+
+        header.emplace("Content-Length", to_string(length));
+        response->write(header);
+
+        // Trick to define a recursive function within this scope (for example purposes)
+        class FileServer {
+        public:
+            static void
+            read_and_send(const shared_ptr<HttpServer::Response> &response, const shared_ptr<ifstream> &ifs) {
+                // Read and send 128 KB at a time
+                static vector<char> buffer(131072); // Safe when server is running on one thread
+                streamsize read_length;
+                if ((read_length = ifs->read(&buffer[0], static_cast<streamsize>(buffer.size())).gcount()) >
+                    0) {
+                    response->write(&buffer[0], read_length);
+                    if (read_length == static_cast<streamsize>(buffer.size())) {
+                        response->send([response, ifs](const SimpleWeb::error_code &ec) {
+                            if (!ec)
+                                read_and_send(response, ifs);
+                            else
+                                cerr << "Connection interrupted" << endl;
+                        });
+                    }
+                    }
+            }
+        };
+        FileServer::read_and_send(response, ifs);
+    } else
+        throw invalid_argument("could not read file");
+}
 
 void WebServer::Start() {
     // HTTP-server at port 8080 using 1 thread
@@ -114,6 +151,60 @@ void WebServer::Start() {
         response->write(SimSPManager::GetCStrJSONActivePluginParams(ch));
     };
 
+    server.resource["^/api/v1/getPluginParamsUI/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                     shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        int ch = std::stoi(request->path_match[1].str());
+        auto activePlugin = CTAG::AUDIO::SimSPManager::GetStringID(ch);
+
+        try {
+            auto web_root_path = boost::filesystem::canonical("../../spiffs_image/data/sp");
+            auto path = boost::filesystem::canonical(web_root_path / ("mui-" + activePlugin + ".jsn"));
+            // Check if path is within web_root_path
+            if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
+                !equal(web_root_path.begin(), web_root_path.end(), path.begin()))
+                throw invalid_argument("path must be within root path");
+
+            SimpleWeb::CaseInsensitiveMultimap header;
+
+            // Uncomment the following line to enable Cache-Control
+            // header.emplace("Cache-Control", "max-age=86400");
+
+            returnFile(path, response, header);
+        }
+        catch (const exception &e) {
+            response->write(SimpleWeb::StatusCode::client_error_bad_request,
+                            "Could not open path " + request->path + ": " + e.what());
+        }
+    };
+
+    server.resource["^/api/v1/getPluginParamsP/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
+                                                                     shared_ptr<HttpServer::Request> request) {
+        // Retrieve string:
+        int ch = std::stoi(request->path_match[1].str());
+        auto activePlugin = CTAG::AUDIO::SimSPManager::GetStringID(ch);
+
+        try {
+            auto web_root_path = boost::filesystem::canonical("../../spiffs_image/data/sp");
+            auto path = boost::filesystem::canonical(web_root_path / ("mp-" + activePlugin + ".jsn"));
+            // Check if path is within web_root_path
+            if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
+                !equal(web_root_path.begin(), web_root_path.end(), path.begin()))
+                throw invalid_argument("path must be within root path");
+
+            SimpleWeb::CaseInsensitiveMultimap header;
+
+            // Uncomment the following line to enable Cache-Control
+            // header.emplace("Cache-Control", "max-age=86400");
+
+            returnFile(path, response, header);
+        }
+        catch (const exception &e) {
+            response->write(SimpleWeb::StatusCode::client_error_bad_request,
+                            "Could not open path " + request->path + ": " + e.what());
+        }
+    };
+
     server.resource["^/api/v1/setActivePlugin/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
                                                                      shared_ptr<HttpServer::Request> request) {
         // Retrieve string:
@@ -190,7 +281,12 @@ void WebServer::Start() {
         int ch = std::stoi(request->path_match[1].str());
         SimpleWeb::CaseInsensitiveMultimap header;
         header.emplace("Content-Type", "application/json");
-        response->write(SimSPManager::GetCStrJSONGetPresets(ch), header);
+
+        if (ch == 0 || (ch == 1 && !SimSPManager::IsStereo(0))) {
+            response->write(SimSPManager::GetCStrJSONGetPresets(ch), header);
+        }
+
+        response->write(SimpleWeb::StatusCode::success_ok);
     };
 
     server.resource["^/api/v1/loadPreset/([0-1])$"]["GET"] = [](shared_ptr<HttpServer::Response> response,
@@ -258,42 +354,7 @@ void WebServer::Start() {
             // Uncomment the following line to enable Cache-Control
             // header.emplace("Cache-Control", "max-age=86400");
 
-
-            auto ifs = make_shared<ifstream>();
-            ifs->open(path.string(), ifstream::in | ios::binary | ios::ate);
-
-            if (*ifs) {
-                auto length = ifs->tellg();
-                ifs->seekg(0, ios::beg);
-
-                header.emplace("Content-Length", to_string(length));
-                response->write(header);
-
-                // Trick to define a recursive function within this scope (for example purposes)
-                class FileServer {
-                public:
-                    static void
-                    read_and_send(const shared_ptr<HttpServer::Response> &response, const shared_ptr<ifstream> &ifs) {
-                        // Read and send 128 KB at a time
-                        static vector<char> buffer(131072); // Safe when server is running on one thread
-                        streamsize read_length;
-                        if ((read_length = ifs->read(&buffer[0], static_cast<streamsize>(buffer.size())).gcount()) >
-                            0) {
-                            response->write(&buffer[0], read_length);
-                            if (read_length == static_cast<streamsize>(buffer.size())) {
-                                response->send([response, ifs](const SimpleWeb::error_code &ec) {
-                                    if (!ec)
-                                        read_and_send(response, ifs);
-                                    else
-                                        cerr << "Connection interrupted" << endl;
-                                });
-                            }
-                        }
-                    }
-                };
-                FileServer::read_and_send(response, ifs);
-            } else
-                throw invalid_argument("could not read file");
+            returnFile(path, response, header);
         }
         catch (const exception &e) {
             response->write(SimpleWeb::StatusCode::client_error_bad_request,
@@ -342,41 +403,7 @@ void WebServer::Start() {
                 }
             }
 
-            auto ifs = make_shared<ifstream>();
-            ifs->open(path.string(), ifstream::in | ios::binary | ios::ate);
-
-            if (*ifs) {
-                auto length = ifs->tellg();
-                ifs->seekg(0, ios::beg);
-
-                header.emplace("Content-Length", to_string(length));
-                response->write(header);
-
-                // Trick to define a recursive function within this scope (for example purposes)
-                class FileServer {
-                public:
-                    static void
-                    read_and_send(const shared_ptr<HttpServer::Response> &response, const shared_ptr<ifstream> &ifs) {
-                        // Read and send 128 KB at a time
-                        static vector<char> buffer(131072); // Safe when server is running on one thread
-                        streamsize read_length;
-                        if ((read_length = ifs->read(&buffer[0], static_cast<streamsize>(buffer.size())).gcount()) >
-                            0) {
-                            response->write(&buffer[0], read_length);
-                            if (read_length == static_cast<streamsize>(buffer.size())) {
-                                response->send([response, ifs](const SimpleWeb::error_code &ec) {
-                                    if (!ec)
-                                        read_and_send(response, ifs);
-                                    else
-                                        cerr << "Connection interrupted" << endl;
-                                });
-                            }
-                        }
-                    }
-                };
-                FileServer::read_and_send(response, ifs);
-            } else
-                throw invalid_argument("could not read file");
+            returnFile(path, response, header);
         }
         catch (const exception &e) {
             response->write(SimpleWeb::StatusCode::client_error_bad_request,

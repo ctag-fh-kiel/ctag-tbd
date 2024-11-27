@@ -1,48 +1,32 @@
-import { useEffect, useState } from "preact/hooks";
-
-type Preset = {
-  name: string;
-  number: number;
-};
-
-interface GetPresetsResponse {
-  activePresetNumber: number;
-  presets: Preset[];
-}
+import { $channelPresets, type Channel } from "../stores/pluginsStore";
+import { useStore } from "@nanostores/preact";
 
 interface LoadChannelPresetProps {
-  channel: string;
+  channel: Channel;
 }
 
 export default function LoadChannelPreset({ channel }: LoadChannelPresetProps) {
-  const [fetched, setFetched] = useState(false);
-  const [activePresetNumber, setActivePresetNumber] = useState<number>();
-  const [presets, setPresets] = useState<Preset[]>([]);
-
-  useEffect(() => {
-    if (!fetched) {
-      setFetched(true);
-
-      fetch(`/api/v1/getPresets/${channel}`)
-        .then((r) => r.json())
-        .then((r: GetPresetsResponse) => {
-          setPresets(r.presets.toSorted((a, b) => a.number - b.number));
-          setActivePresetNumber(r.activePresetNumber);
-        });
-    }
-  }, [fetched]);
+  const { activePresetNumber, presets } =
+    useStore($channelPresets)[channel] ?? {};
 
   const handleClick = (presetNumber: number) => {
+    if (!presets) {
+      return;
+    }
+
     fetch(`/api/v1/loadPreset/${channel}?number=${presetNumber}`).then((r) => {
       if (r.ok) {
-        setActivePresetNumber(presetNumber);
+        $channelPresets.setKey(channel, {
+          presets,
+          activePresetNumber: presetNumber,
+        });
       }
     });
   };
 
   return (
     <ul class="menu bg-base-200 rounded-box">
-      {presets.map((preset) => (
+      {presets?.map((preset) => (
         <li
           key={preset.number}
           onClick={() => handleClick(preset.number)}

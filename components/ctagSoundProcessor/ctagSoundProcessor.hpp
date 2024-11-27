@@ -113,7 +113,10 @@ namespace CTAG {
                 model->SetParamValue(id, key, val);
             }
 
-            const char *GetCStrJSONPresets() { return model->GetCStrJSONPresets(); }
+            const char *GetCStrJSONPresets() {
+                if (model) return model->GetCStrJSONPresets();
+                return "";
+            }
 
             const char *GetCStrJSONAllPresetData() { return model->GetCStrJSONAllPresetData(); }
 

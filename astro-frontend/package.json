@@ -5,6 +5,7 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/preact": "^3.5.3",
     "@astrojs/tailwind": "^5.1.2",
+    "@nanostores/persistent": "^0.10.2",
     "@nanostores/preact": "^0.5.2",
     "astro": "^4.16.10",
     "daisyui": "^4.12.14",

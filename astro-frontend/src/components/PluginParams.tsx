@@ -2,46 +2,57 @@ import { useEffect, useState } from "preact/hooks";
 import type { Plugin } from "../stores/pluginsStore";
 import useFetchQueue from "../hooks/useFetchQueue";
 
-type Parameter = {
+type ParameterUi = {
   id: string;
   name: string;
 } & (
-  | {
+    | {
       type: "group";
-      params: Parameter[];
+      params: ParameterUi[];
     }
-  | {
+    | {
       type: "bool";
-      current: 0 | 1;
-      trig: number;
     }
-  | {
+    | {
       type: "int";
-      current: number;
       min: number;
       max: number;
       step: number;
-      cv: number;
     }
-);
+  );
+
+type ParameterCurrent = {
+  id: string;
+  current: number;
+  trig?: number;
+  cv?: number;
+};
 
 interface PluginWithParams extends Plugin {
-  params: Parameter[];
+  params: ParameterUi[];
+}
+
+interface PatchWithParams {
+  activePatch: number;
+  patches: {
+    name: string;
+    params: ParameterCurrent[];
+  }[];
 }
 
 interface PluginParamProps {
-  param: Parameter;
+  param: ParameterUi;
+  paramsCurrent: ParameterCurrent[];
   onChange: (
-    param: Parameter,
+    param: ParameterUi,
     value: number,
     type: "current" | "trig" | "cv",
   ) => void;
 }
 
-function PluginParam({ param, onChange }: PluginParamProps) {
-  const [current, setCurrent] = useState<number>(
-    "current" in param ? param.current : 0,
-  );
+function PluginParam({ param, paramsCurrent, onChange }: PluginParamProps) {
+  const paramCurrent = paramsCurrent.find((it) => it.id === param.id);
+  const [current, setCurrent] = useState<number>(paramCurrent?.current ?? 0);
 
   switch (param.type) {
     case "group":
@@ -52,7 +63,11 @@ function PluginParam({ param, onChange }: PluginParamProps) {
           <div class="divider" />
           <div>
             {param.params.map((it) => (
-              <PluginParam param={it} onChange={onChange} />
+              <PluginParam
+                param={it}
+                paramsCurrent={paramsCurrent}
+                onChange={onChange}
+              />
             ))}
           </div>
         </>
@@ -65,7 +80,7 @@ function PluginParam({ param, onChange }: PluginParamProps) {
             <input
               type="checkbox"
               class="toggle"
-              checked={param.current !== 0}
+              checked={current !== 0}
               onChange={(event) =>
                 onChange(param, event.currentTarget.checked ? 1 : 0, "current")
               }
@@ -74,7 +89,7 @@ function PluginParam({ param, onChange }: PluginParamProps) {
           <div class="flex-none w-1/12">
             <select
               class="select w-full max-w-xs"
-              value={param.trig}
+              value={paramCurrent?.trig}
               onChange={(event) => {
                 const newValue = Number.parseInt(event.currentTarget.value, 10);
 
@@ -129,7 +144,7 @@ function PluginParam({ param, onChange }: PluginParamProps) {
           <div class="flex-none w-1/12">
             <select
               class="select w-full max-w-xs"
-              value={param.cv}
+              value={paramCurrent?.cv}
               onChange={(event) => {
                 const newValue = Number.parseInt(event.currentTarget.value, 10);
 
@@ -158,16 +173,23 @@ interface PluginParamsProps {
 
 export default function PluginParams({ channel }: PluginParamsProps) {
   const [fetched, setFetched] = useState(false);
-  const [params, setParams] = useState<Parameter[]>([]);
+  const [paramsUi, setParamsUi] = useState<ParameterUi[]>();
+  const [paramsCurrent, setParamsCurrent] = useState<ParameterCurrent[]>();
   const { addToQueue } = useFetchQueue();
 
   useEffect(() => {
     if (!fetched) {
       setFetched(true);
 
-      fetch(`/api/v1/getPluginParams/${channel}`)
+      fetch(`/api/v1/getPluginParamsUI/${channel}`)
         .then((r) => r.json())
-        .then((plugin: PluginWithParams) => setParams(plugin.params));
+        .then((plugin: PluginWithParams) => setParamsUi(plugin.params));
+
+      fetch(`/api/v1/getPluginParamsP/${channel}`)
+        .then((r) => r.json())
+        .then((plugin: PatchWithParams) =>
+          setParamsCurrent(plugin.patches[0]?.params),
+        );
     }
   }, [fetched]);
 
@@ -189,10 +211,18 @@ export default function PluginParams({ channel }: PluginParamsProps) {
     });
   };
 
+  if (paramsUi === undefined || paramsCurrent === undefined) {
+    return <></>;
+  }
+
   return (
     <>
-      {params.map((param) => (
-        <PluginParam param={param} onChange={handleChange} />
+      {paramsUi.map((param) => (
+        <PluginParam
+          param={param}
+          paramsCurrent={paramsCurrent}
+          onChange={handleChange}
+        />
       ))}
     </>
   );

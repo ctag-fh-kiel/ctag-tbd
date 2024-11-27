@@ -1,4 +1,4 @@
-import { atom } from "nanostores";
+import { atom, onMount, task } from "nanostores";
 
 export interface FavoritePreset {
   name: string;
@@ -11,5 +11,17 @@ export interface FavoritePreset {
 
 type Favorites = FavoritePreset[];
 
-export const favorites = atom<Favorites>([]);
-export const currentFavorite = atom<number>(0);
+export const $favorites = atom<Favorites>([]);
+export const $currentFavoriteNum = atom<number>(0);
+
+onMount($favorites, () => {
+  task(async () => {
+    if (!globalThis.window) {
+      return;
+    }
+
+    const r = await fetch("/api/v1/favorites/getAll", { method: "POST" });
+    const json = await r.json();
+    $favorites.set(json);
+  });
+});

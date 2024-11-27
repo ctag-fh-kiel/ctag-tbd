@@ -1,32 +1,24 @@
 ---
 import PluginSelect from "../components/PluginSelect";
 import FavoritesSelect from "../components/FavoritesSelect";
+import FavoritesButtons from "../components/FavoritesButtons";
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="CTAG-TBD">
   <h4>Plugin Channel 0</h4>
   <PluginSelect client:load channel="0" />
-  <div>
-    <a role="button" class="btn" href="/0/edit/">Edit channel 0</a>
-    <a role="button" class="btn" href="/0/load/">Load preset</a>
-    <a role="button" class="btn" href="/0/save/">Save preset</a>
-  </div>
 
   <div class="divider"></div>
 
   <h4>Plugin Channel 1</h4>
   <PluginSelect client:load channel="1" />
-  <div>
-    <a role="button" class="btn" href="/1/edit/">Edit channel 1</a>
-    <a role="button" class="btn" href="/1/load/">Load preset</a>
-    <a role="button" class="btn" href="/1/save/">Save preset</a>
-  </div>
 
   <div class="divider"></div>
 
   <h4>Favorites</h4>
   <FavoritesSelect client:load />
+  <FavoritesButtons client:load />
 
   <script src="../load.ts"></script>
 </Layout>
