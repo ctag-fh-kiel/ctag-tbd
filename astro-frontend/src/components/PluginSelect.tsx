@@ -31,6 +31,20 @@ export default function PluginSelect({ channel }: PluginSelectProps) {
               $activePlugins.setKey(channel, { id: newId });
             }
           });
+
+          if (
+            channel === "0" &&
+            !plugins[newId]?.isStereo &&
+            activePlugins["1"]?.id !== undefined
+          ) {
+            fetch(`/api/v1/setActivePlugin/1?id=${activePlugins["1"].id}`).then(
+              (r) => {
+                if (r.ok) {
+                  $activePlugins.setKey(channel, { id: newId });
+                }
+              },
+            );
+          }
         }}
         disabled={isOtherPluginStereo}
       >
