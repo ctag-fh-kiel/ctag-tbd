@@ -13,8 +13,7 @@ enum class CpuCore: uint8_t {
 
 template<class CounterT>
 concept TimeoutGuardType = 
-    std::is_constructible_v<CounterT, uint32_t>
-    && std::is_nothrow_destructible_v<CounterT>
+    std::is_nothrow_destructible_v<CounterT>
     && requires(CounterT counter, uint32_t _uint32_t) 
 {
     { !counter } -> std::same_as<bool>;
