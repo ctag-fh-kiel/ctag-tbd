@@ -36,8 +36,14 @@ struct SoundLevelWorker {
         return 0;
     }
 
-    uint32_t do_begin() { return 0; }
-    uint32_t do_cleanup() { return 0; }
+    uint32_t do_begin() {
+        TBD_LOGI(tag, "initializing sound level worker");
+        return 0;
+    }
+    uint32_t do_cleanup() {
+        TBD_LOGI(tag, "shutting down sound level worker");
+        return 0;
+    }
 
 private:
     uint32_t _data = 0;
