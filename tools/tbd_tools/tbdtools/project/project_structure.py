@@ -10,27 +10,29 @@ from pydantic.dataclasses import dataclass
 
 @unique
 class Platform(Enum):
-    v1      = 'v1'
-    v2      = 'v2'
-    str     = 'str'
-    aem     = 'aem'
-    mk2     = 'mk2'
-    bba1    = 'bba1'
-    bba2    = 'bba2'  
-    desktop = 'desktop'
+    v1        = 'v1'
+    v2        = 'v2'
+    str       = 'str'
+    aem       = 'aem'
+    mk2       = 'mk2'
+    bba1      = 'bba1'
+    bba2      = 'bba2'
+    desktop   = 'desktop'
+    simulator = 'simulator'
 
 
 
 def get_platform_description(platform: Platform) -> str:
     descriptions = {
-        'v1'      : 'TBD mk1 rev2 WM8978, ESP ADC',
-        'v2'      : 'TBD mk1 rev2 WM8731, ESP ADC',
-        'str'     : 'CTAG Strämpler WM8731, MCP3208',
-        'aem'     : 'AE Modular WM8974, ESP ADC',
-        'mk2'     : 'TBD MK2 WM8978, STM32 CVs/Trigs',
-        'bba1'    : 'TBD BBA MIDI, es8388',
-        'bba2'    : 'TBD BBA MIDI, aic3254',
-        'desktop' : 'Desktop App',
+        'v1'       : 'TBD mk1 rev2 WM8978, ESP ADC',
+        'v2'       : 'TBD mk1 rev2 WM8731, ESP ADC',
+        'str'      : 'CTAG Strämpler WM8731, MCP3208',
+        'aem'      : 'AE Modular WM8974, ESP ADC',
+        'mk2'      : 'TBD MK2 WM8978, STM32 CVs/Trigs',
+        'bba1'     : 'TBD BBA MIDI, es8388',
+        'bba2'     : 'TBD BBA MIDI, aic3254',
+        'desktop'  : 'Desktop App',
+        'simulator': 'TBD firmware simulator'
     }
     return descriptions[platform.name]
 

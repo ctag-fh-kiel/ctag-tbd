@@ -1,19 +1,20 @@
 #include <tbd/sound_manager/common/module.hpp>
 
+#include <memory.h>
 #include <algorithm>
 #include <RtAudio.h>
 
 #include <tbd/system/cpu_cores.hpp>
 #include <tbd/sound_manager/common/audio_consumer_type.hpp>
 #include <tbd/portutils/file_audio_source.hpp>
-#include <tbd/sound_manager/port/sound_params.hpp>
+#include <tbd/sound_manager/port/push_audio_params.hpp>
 
 
 namespace tbd::audio {
 
 template<AudioConsumerType AudioConsumerT>
-struct AudioFeeder {
-    AudioFeeder(const char* name) : _name(name) {}
+struct PushAudioFeeder {
+    PushAudioFeeder(const char* name) : _name(name) {}
 
     void set_output_levels(float left_level, float right_level) {
 
@@ -23,7 +24,7 @@ struct AudioFeeder {
     
     }
 
-    uint32_t init(SoundParams&& sound_params) {
+    uint32_t init(PushAudioParams&& sound_params) {
         _params = sound_params;
         return 0;
     }
@@ -107,7 +108,7 @@ private:
         if (_self == nullptr) {
             return 1;
         }
-        auto& self = *reinterpret_cast<AudioFeeder*>(_self);
+        auto& self = *reinterpret_cast<PushAudioFeeder*>(_self);
 
         if (num_frames != TBD_SAMPLES_PER_CHUNK) {
             // FIXME: maybe something else
@@ -142,7 +143,7 @@ private:
         return 0;
     }
 
-    SoundParams _params;
+    PushAudioParams _params;
     const char* _name;
     RtAudio _audio;
     common::FileAudioSource _file_input;
@@ -154,9 +155,5 @@ private:
     float fbuf[TBD_SAMPLES_PER_CHUNK * 2];
     AudioConsumerT _consumer;
 };
-
-
-template<AudioConsumerType AudioConsumerT, system::CpuCore cpu_core>
-using AudioWorker = AudioFeeder<AudioConsumerT>;
 
 }

@@ -21,7 +21,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <string>
-#include <tbd/sound_manager/sound_params.hpp>
+#include <tbd/sound_manager/push_audio_feeder.hpp>
 
 namespace tbd::audio {
 
@@ -38,7 +38,7 @@ public:
      *
      *  When the in our output is live (not files) account for a small startup delay.
      */
-    static void begin(SoundParams&& sound_params = {});
+    static void begin(AudioParams&& sound_params = {});
 
 
     static void end();

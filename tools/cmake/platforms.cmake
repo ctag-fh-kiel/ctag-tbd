@@ -3,7 +3,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/indicators.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cv_inputs.cmake)
 
 set(TBD_PLATFORM_SYSTEMS esp32 desktop)
-set(TBD_PLATFORM_AUDIO_CHIPS wm8731 wm8978 wm8974 aic3254 es8388 rtaudio)
+set(TBD_PLATFORM_AUDIO_CHIPS wm8731 wm8978 wm8974 aic3254 es8388 rtaudio fileaudio)
 set(TBD_PLATFORM_APIS wifi serial)
 
 
@@ -263,6 +263,12 @@ function(tbd_platform_get_features platform)
         endif()
     endforeach()
 
+    if ("${arg_AUDIO_OUTPUT}" STREQUAL "rtaudio")
+        set(audio_mechanism "TBD_AUDIO_PULL=0" "TBD_AUDIO_PUSH=1")
+    else()
+        set(audio_mechanism "TBD_AUDIO_PULL=1" "TBD_AUDIO_PUSH=0")
+    endif()
+
     foreach (indicator IN LISTS TBD_PLATFORM_INDICATORS)
         string(TOUPPER "${indicator}" indicator_upper)
         if ("${indicator}" STREQUAL "${arg_INDICATOR}" AND NOT "${indicator}" STREQUAL "no")
@@ -318,6 +324,7 @@ function(tbd_platform_get_features platform)
         INDICATOR=${indicators}
         ${file_system}
         ${apis}
+        ${audio_mechanism}
     )
     tbd_store_or_return("${features}" ${ARGN})
 endfunction()

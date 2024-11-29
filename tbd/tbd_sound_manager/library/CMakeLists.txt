@@ -13,6 +13,7 @@ target_link_libraries(tbd_sound_manager
     PUBLIC
         tbd_common
         tbd_sound_registry
+        tbd_sound_manager_common
         ${TBD_SOUND_MANAGER_PORT_LIB}
     PRIVATE
         tbd_system

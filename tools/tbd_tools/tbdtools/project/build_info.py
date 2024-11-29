@@ -76,10 +76,13 @@ def _get_device_inputs(platform: Platform) -> Dict:
         inputs_type = 'bba2'
     elif platform == Platform.desktop:
         inputs_type = 'desktop'
+    elif platform == Platform.simulator:
+        inputs_type = 'simulator'
     else:
         raise ValueError(f'unsupported platform {platform.name}')
     
-    inputs_file = Path(__file__).parent / 'resources' / f'io_capabilities.{inputs_type}.json'
+    project_path = Path(__file__).parent.parent.parent.parent.parent
+    inputs_file = project_path / 'config' / 'capabilities' / f'io_capabilities.{inputs_type}.json'
     with open(inputs_file, 'r') as f:
         return json.load(f)
 

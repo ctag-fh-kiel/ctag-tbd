@@ -17,7 +17,7 @@ namespace {
 
 namespace tbd::audio {
 
-void SoundProcessorManager::begin(SoundParams&& sound_params) {
+void SoundProcessorManager::begin(AudioParams&& sound_params) {
     sound_level_worker.set_blink_duration(5);
     
     // check for network reset at bootup

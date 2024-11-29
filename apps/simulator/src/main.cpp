@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     // reserve large block of memory before anything else happens
     CTAG::SP::ctagSPAllocator::AllocateInternalBuffer(114688); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
 
-    tbd::audio::SoundProcessorManager::begin(tbd::audio::AudioParams(input_file));
+    tbd::audio::SoundProcessorManager::begin();
 
     std::cout << "\nRunning ... press <enter> to quit.\n";
     char input;

@@ -1,4 +1,9 @@
-file(GLOB SRCS_FILES 
+tbd_platform_audio_output("${TBD_PLATFORM_OBJ}")
+if ("${_return}" STREQUAL "rtaudio")
+    set(external_libs rtaudio)
+endif()
+
+file(GLOB SRCS_FILES
     include/**/*.hpp
     src/*.hpp
     src/*.cpp
@@ -17,5 +22,5 @@ target_link_libraries(tbd_sound_manager_port
             tbd_common
             tbd_portutils
         PRIVATE
-            rtaudio
+            ${external_libs}
 )

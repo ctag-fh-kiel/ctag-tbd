@@ -29,7 +29,7 @@ if(NOT TBD_TOOL)
 endif()
 
 if ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
-    add_subdirectory("${CMAKE_SOURCE_DIR}/apps/desktop")
+    add_subdirectory("${CMAKE_SOURCE_DIR}/apps/${TBD_PLATFORM}")
     add_subdirectory("${CMAKE_SOURCE_DIR}/ports/tbd_port_desktop")
 endif()
 

@@ -2,18 +2,16 @@
 
 
 #include <string>
-#include <cinttypes>
 #include <tbd/logging.hpp>
-#include <tbd/sound_manager/common/module.hpp>
 
 
 namespace tbd::audio {
 
-struct SoundParams{
+struct PushAudioParams{
     /** @brief default 'live' only sound processing
      *
      */
-    SoundParams(const std::string& input_file = "", const std::string& output_file = "", int32_t live_device = -1) {
+    PushAudioParams(const std::string& input_file = "", const std::string& output_file = "", int32_t live_device = -1) {
         auto input = input_file.empty() ? "live" : input_file;
         auto output = output_file.empty() ? "live" : output_file;
 
