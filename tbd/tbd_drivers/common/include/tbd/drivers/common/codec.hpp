@@ -36,7 +36,7 @@ struct Codec {
 
     static void RecalibDCOffset();
 
-    static void SetOutputLevels(const uint32_t left, const uint32_t right);
+    static void SetOutputLevels(uint32_t left, uint32_t right);
 
     static void ReadBuffer(float *buf, uint32_t sz);
 

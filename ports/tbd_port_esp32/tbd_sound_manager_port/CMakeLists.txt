@@ -6,7 +6,7 @@ file(GLOB SRCS_FILES
 
 idf_component_register(
     SRCS ${SRCS_FILES}
-    INCLUDE_DIRS src
+    INCLUDE_DIRS include
 )
 
 target_link_libraries(${COMPONENT_LIB}

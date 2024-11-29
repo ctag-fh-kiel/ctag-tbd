@@ -3,6 +3,7 @@
 using namespace CTAG::SP;
 
 void ctagSoundProcessorVoid::Process(const ProcessData &data) {
+	// do nothing
 }
 
 void ctagSoundProcessorVoid::Init(std::size_t blockSize, void *blockPtr) {

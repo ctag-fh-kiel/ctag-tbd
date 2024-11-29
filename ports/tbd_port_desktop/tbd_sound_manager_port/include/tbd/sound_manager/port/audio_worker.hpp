@@ -43,7 +43,7 @@ struct AudioFeeder {
         }
 
         auto sample_rates = info.sampleRates;
-        if (std::count(sample_rates.begin(), sample_rates.end(), 44100) == 0
+        if (std::count(sample_rates.begin(), sample_rates.end(), TBD_SAMPLE_RATE) == 0
             || (info.nativeFormats & RTAUDIO_FLOAT32) == 0)
         {
 
@@ -53,11 +53,15 @@ struct AudioFeeder {
 
         _consumer.startup();
 
+        input_params.deviceId = sound_card_id;
+        input_params.nChannels = 2;
+        output_params.deviceId = sound_card_id;
+        output_params.nChannels = 2;
         try {
             if (output_only) {
-                _audio.openStream(&output_params, nullptr, RTAUDIO_FLOAT32, 44100, &samples_per_channel, &processing_main, this);
+                _audio.openStream(&output_params, nullptr, RTAUDIO_FLOAT32, TBD_SAMPLE_RATE, &samples_per_channel, &processing_main, this);
             } else {
-                _audio.openStream(&output_params, &input_params, RTAUDIO_FLOAT32, 44100, &samples_per_channel, &processing_main, this);
+                _audio.openStream(&output_params, &input_params, RTAUDIO_FLOAT32, TBD_SAMPLE_RATE, &samples_per_channel, &processing_main, this);
             }
             // configure channels
             // model = std::make_unique<SPManagerDataModel>();
@@ -78,18 +82,11 @@ struct AudioFeeder {
         return 0;
     }
 
-    // uint32_t do_work() {
-    //     // get normalized raw data from CODEC
-    //     CodecT::ReadBuffer(fbuf, BUF_SZ);
-    
-    //     _consumer.consume(fbuf);
-
-    //     // write raw float data back to CODEC
-    //     CodecT::WriteBuffer(fbuf, BUF_SZ);
-    //     return 0;
-    // }
-
     uint32_t end(bool wait = false) {
+        if (_audio.isStreamRunning() && _audio.isStreamOpen()) {
+            _audio.stopStream();
+            _audio.closeStream();
+        }
         return 0;
     }
 
@@ -111,9 +108,19 @@ private:
         }
         auto self = reinterpret_cast<AudioFeeder*>(_self);
 
-        if (num_frames != BUF_SZ) {
+        if (num_frames != TBD_SAMPLES_PER_CHUNK) {
             // FIXME: maybe something else
             return 0;
+        }
+
+        // FIXME: should we clamp or reset these values?
+        // reset out of range sound values
+        auto& fbuf = self->fbuf;
+        for(int i=0;i<32;i++){
+            if(fbuf[i*2] > 1.f)fbuf[i*2] = 0.f;
+            if(fbuf[i*2] < -1.f)fbuf[i*2] = -0.f;
+            if(fbuf[i*2 + 1] > 1.f)fbuf[i*2 + 1] = 0.f;
+            if(fbuf[i*2 + 1] < -1.f)fbuf[i*2 + 1] = -0.f;
         }
 
         // FIXME: the simulator does more at this point... do we need a custom buffer?
@@ -122,18 +129,18 @@ private:
         
         // FIXME: looked like this
         // memcpy(outputBuffer, fbuf, BUF_SZ * 2 * 4);
-        memcpy(output_buffer, input_buffer, BUF_SZ * 2 * 4);
+        memcpy(output_buffer, input_buffer, TBD_SAMPLES_PER_CHUNK * 2 * 4);
         return 0;
     }
 
     const char* _name;
+    uint32_t sound_card_id;
     RtAudio _audio;
-    uint samples_per_channel = BUF_SZ;
-    int sound_card_id;
+    uint samples_per_channel = TBD_SAMPLES_PER_CHUNK;
     bool output_only;
     RtAudio::StreamParameters input_params;
     RtAudio::StreamParameters output_params;
-    float fbuf[BUF_SZ * 2];
+    float fbuf[TBD_SAMPLES_PER_CHUNK * 2];
     AudioConsumerT _consumer;
 };
 

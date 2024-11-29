@@ -250,7 +250,7 @@ void Calibration::calcPiecewiseLinearCoeffs(
     model.StoreMatrix("bCal" + dataID, bCalMat);
 }
 
-void IRAM_ATTR Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr) {
+void TBD_IRAM Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr) {
 #if defined(CONFIG_TBD_PLATFORM_STR)
     // -1.5V .. 5.5V unipolar
     mapOutPtr[0] = adcInPtr[0] * 0.00034188034188f;

@@ -29,12 +29,12 @@ struct AudioFeeder {
 
     uint32_t do_work() {
         // get normalized raw data from CODEC
-        drivers::Codec::ReadBuffer(fbuf, BUF_SZ);
+        drivers::Codec::ReadBuffer(fbuf, TBD_SAMPLES_PER_CHUNK);
     
         _consumer.consume(fbuf);
 
         // write raw float data back to CODEC
-        drivers::Codec::WriteBuffer(fbuf, BUF_SZ);
+        drivers::Codec::WriteBuffer(fbuf, TBD_SAMPLES_PER_CHUNK);
         return 0;
     }
 
@@ -44,7 +44,7 @@ struct AudioFeeder {
     }
 
 private:
-    float fbuf[BUF_SZ * 2];
+    float fbuf[TBD_SAMPLES_PER_CHUNK * 2];
     AudioConsumerT _consumer;
 };
 

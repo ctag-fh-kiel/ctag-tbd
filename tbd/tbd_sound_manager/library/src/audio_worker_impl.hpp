@@ -4,16 +4,16 @@
     #error "audio loop is performance critical, compile in a single compilation unit"
 #endif
 
-#include "audio_worker.hpp"
+#include <tbd/sound_manager/port/audio_worker.hpp>
 
 #include <tbd/sound_processor.hpp>
 #include <tbd/system/cpu_cores.hpp>
 #include <tbd/system/locks.hpp>
 #include <helpers/ctagFastMath.hpp>
-#include <tbd/sound_manager/data_model.hpp>
 #include <tbd/sound_registry/sound_processor_factory.hpp>
-#include "input_manager.hpp"
 #include <tbd/sound_manager/common/module.hpp>
+#include "module_private.hpp"
+#include "input_manager.hpp"
 #include "sound_level_worker.hpp"
 
 
@@ -52,7 +52,7 @@ private:
     float peakIn = 0.f, peakOut = 0.f;
     float peakL = 0.f, peakR = 0.f;
     int ngState = NG_OPEN;
-    float lramp[BUF_SZ];
+    float lramp[TBD_SAMPLES_PER_CHUNK];
     bool isStereoCH0 = false;
     CTAG::SP::ProcessData pd;
 };
@@ -69,10 +69,13 @@ uint32_t AudioConsumer::startup() {
     */
 
     // generate linear ramp ]0,1[ squared
-    for (uint32_t i = 0; i < BUF_SZ; i++) {
-        lramp[i] = (float) (i + 1) / (float) (BUF_SZ + 1);
+    for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
+        lramp[i] = (float) (i + 1) / (float) (TBD_SAMPLES_PER_CHUNK + 1);
         lramp[i] *= lramp[i];
     }
+
+    TBD_LOGI(tag, "initialized plugin audio worker");
+
     return 0;
 }
 
@@ -82,14 +85,14 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
     // update data from ADCs and GPIOs for real-time control
     InputManager::Update(&pd.trig, &pd.cv);
 
-    system::TimeoutGuard timeout(CPU_MAX_ALLOWED_CYCLES);
+    TBD_TIMEOUT_ENSURE_OPS_PER_SECOND(timeout, TBD_SAMPLE_RATE / TBD_SAMPLES_PER_CHUNK);
     SoundLevel sound_level(sound_level_worker);    
 
     // In peak detection
     // dc cut input
     float maxl = 0.f, maxr = 0.f;
     float max = 0.f;
-    for (uint32_t i = 0; i < BUF_SZ; i++) {
+    for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
         audio_slice[i * 2] = in_dccutl(audio_slice[i * 2]);
         float val = fabsf(audio_slice[i * 2]);
         if (val > maxl) maxl = val;
@@ -104,33 +107,33 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
     if (params.noiseGateCfg == 1) { // both channels noise gate
         if (ngState == NG_OPEN && peakIn < NOISE_GATE_LEVEL_CLOSE) {
             ngState = NG_BOTH;
-            for (uint32_t i = 0; i < BUF_SZ; i++) { // linearly ramp down buffer
-                audio_slice[i * 2] *= lramp[BUF_SZ - 1 - i];
-                audio_slice[i * 2 + 1] *= lramp[BUF_SZ - 1 - i];
+            for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) { // linearly ramp down buffer
+                audio_slice[i * 2] *= lramp[TBD_SAMPLES_PER_CHUNK - 1 - i];
+                audio_slice[i * 2 + 1] *= lramp[TBD_SAMPLES_PER_CHUNK - 1 - i];
             }
         } else if (ngState != NG_OPEN && peakIn > NOISE_GATE_LEVEL_OPEN) {
             ngState = NG_OPEN;
-            for (uint32_t i = 0; i < BUF_SZ; i++) { // linearly ramp up buffer
+            for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) { // linearly ramp up buffer
                 audio_slice[i * 2] *= lramp[i];
                 audio_slice[i * 2 + 1] *= lramp[i];
             }
         } else if (ngState != NG_OPEN) {
-            memset(audio_slice, 0, BUF_SZ * 2 * sizeof(float));
+            memset(audio_slice, 0, TBD_SAMPLES_PER_CHUNK * 2 * sizeof(float));
         }
     } else if (params.noiseGateCfg == 2) { // left channel
         peakL = 0.95f * peakL + 0.05f * maxl;
         if (ngState == NG_OPEN && peakL < NOISE_GATE_LEVEL_CLOSE) {
             ngState = NG_LEFT;
-            for (uint32_t i = 0; i < BUF_SZ; i++) {// linearly ramp down buffer
-                audio_slice[i * 2] *= lramp[BUF_SZ - 1 - i];
+            for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {// linearly ramp down buffer
+                audio_slice[i * 2] *= lramp[TBD_SAMPLES_PER_CHUNK - 1 - i];
             }
         } else if (ngState != NG_OPEN && peakL > NOISE_GATE_LEVEL_OPEN) {
             ngState = NG_OPEN;
-            for (uint32_t i = 0; i < BUF_SZ; i++) { // linear ramp up
+            for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) { // linear ramp up
                 audio_slice[i * 2] *= lramp[i];
             }
         } else if (ngState != NG_OPEN) {
-            for (uint32_t i = 0; i < BUF_SZ; i++) {
+            for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                 audio_slice[i * 2] = 0;
             }
         }
@@ -138,16 +141,16 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
         peakR = 0.95f * peakR + 0.05f * maxr;
         if (ngState == NG_OPEN && peakR < NOISE_GATE_LEVEL_CLOSE) {
             ngState = NG_RIGHT;
-            for (uint32_t i = 0; i < BUF_SZ; i++) {// linearly ramp down buffer
-                audio_slice[i * 2 + 1] *= lramp[BUF_SZ - 1 - i];
+            for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {// linearly ramp down buffer
+                audio_slice[i * 2 + 1] *= lramp[TBD_SAMPLES_PER_CHUNK - 1 - i];
             }
         } else if (ngState != NG_OPEN && peakR > NOISE_GATE_LEVEL_OPEN) {
             ngState = NG_OPEN;
-            for (uint32_t i = 0; i < BUF_SZ; i++) { // linear ramp up
+            for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) { // linear ramp up
                 audio_slice[i * 2 + 1] *= lramp[i];
             }
         } else if (ngState != NG_OPEN) {
-            for (uint32_t i = 0; i < BUF_SZ; i++) {
+            for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                 audio_slice[i * 2 + 1] = 0;
             }
         }
@@ -174,7 +177,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
             if (!isStereoCH0){
                 // check if ch0 -> ch1 daisy chain, i.e. use output of ch0 as input for ch1
                 if(params.ch01Daisy){
-                    for (uint32_t i = 0; i < BUF_SZ; i++) {
+                    for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                         audio_slice[i * 2 + 1] = audio_slice[i * 2];
                     }
                 }
@@ -182,51 +185,51 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
             }
         } else {
             // mute audio
-            memset(audio_slice, 0, BUF_SZ * 2 * sizeof(float));
+            memset(audio_slice, 0, TBD_SAMPLES_PER_CHUNK * 2 * sizeof(float));
         }
     }
 
     // to stereo conversion
     if (!isStereoCH0) {
         if (params.toStereoCH0 || params.toStereoCH1) {
-            float sb[BUF_SZ * 2];
-            memcpy(sb, audio_slice, BUF_SZ * 2 * sizeof(float));
+            float sb[TBD_SAMPLES_PER_CHUNK * 2];
+            memcpy(sb, audio_slice, TBD_SAMPLES_PER_CHUNK * 2 * sizeof(float));
             if (params.toStereoCH0 == 1 && params.toStereoCH1 == 0) { // spread CH0 to both channels
-                for (uint32_t i = 0; i < BUF_SZ; i++) {
+                for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                     audio_slice[i * 2] = 0.5f * sb[i * 2];
                     audio_slice[i * 2 + 1] = 0.5f * sb[i * 2] + sb[i * 2 + 1];
                 }
             } else if (params.toStereoCH1 == 1 && params.toStereoCH0 == 0) { // spread CH1 to both channels
-                for (uint32_t i = 0; i < BUF_SZ; i++) {
+                for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                     audio_slice[i * 2] = 0.5f * sb[i * 2 + 1] + sb[i * 2];
                     audio_slice[i * 2 + 1] = 0.5f * sb[i * 2 + 1];
                 }
             } else if (params.toStereoCH0 == 1 && params.toStereoCH1 == 1) { // spread CH0 + CH1 to both channels
-                for (uint32_t i = 0; i < BUF_SZ; i++) {
+                for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                     audio_slice[i * 2] = audio_slice[i * 2 + 1] = 0.5f * (sb[i * 2] + sb[i * 2 + 1]);
                 }
             } else if (params.toStereoCH0 == 2 && params.toStereoCH1 == 2) { // swap channels
-                for (uint32_t i = 0; i < BUF_SZ; i++) {
+                for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                     audio_slice[i * 2] = sb[i * 2 + 1];
                     audio_slice[i * 2 + 1] = sb[i * 2];
                 }
             } else if (params.toStereoCH0 == 2 && params.toStereoCH1 == 0) { // mix CH0 with CH1 on CH1
-                for (uint32_t i = 0; i < BUF_SZ; i++) {
+                for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                     audio_slice[i * 2] = 0.f;
                     audio_slice[i * 2 + 1] += sb[i * 2];
                 }
             } else if (params.toStereoCH0 == 0 && params.toStereoCH1 == 2) { // mix CH1 with CH0 on CH0
-                for (uint32_t i = 0; i < BUF_SZ; i++) {
+                for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                     audio_slice[i * 2] += sb[i * 2 + 1];
                     audio_slice[i * 2 + 1] = 0.f;
                 }
             } else if (params.toStereoCH0 == 2 && params.toStereoCH1 == 1) { // move CH0 to CH1, spread CH1 to both
-                for (uint32_t i = 0; i < BUF_SZ; i++) {
+                for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                     audio_slice[i * 2] = 0.5f * sb[i * 2 + 1];
                     audio_slice[i * 2 + 1] = 0.5f * sb[i * 2 + 1] + sb[i * 2];
                 }
             } else if (params.toStereoCH0 == 1 && params.toStereoCH1 == 2) { // move CH1 to CH0, spread CH0 to both
-                for (uint32_t i = 0; i < BUF_SZ; i++) {
+                for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
                     audio_slice[i * 2] = 0.5f * sb[i * 2] + sb[i * 2 + 1];
                     audio_slice[i * 2 + 1] = 0.5f * sb[i * 2];
                 }
@@ -237,7 +240,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
     // Out peak detection, red for output
     // limiting output
     max = 0.f;
-    for (uint32_t i = 0; i < BUF_SZ; i++) {
+    for (uint32_t i = 0; i < TBD_SAMPLES_PER_CHUNK; i++) {
         // soft limiting
         if (params.ch0_outputSoftClip) {
             audio_slice[i * 2] = stmlib::SoftClip(audio_slice[i * 2]);
@@ -267,6 +270,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
 
 
 uint32_t AudioConsumer::cleanup() {
+    TBD_LOGI(tag, "plugin audio worker shutting down");
     return 0;
 }
 
