@@ -3,7 +3,12 @@
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/ctag_tbd,type=bind",
     "workspaceFolder": "/workspaces/ctag_tbd",
     "mounts": [
-        "source=extensionCache,target=/root/.vscode-server/extensions,type=volume"
+        "source=extensionCache,target=/root/.vscode-server/extensions,type=volume",
+
+        // uncomment for desktop build sound output
+        // https://comp0016-team-24.github.io/dev/problem-solving/2020/10/30/passing-audio-into-docker.html
+        //
+        // "source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native,type=bind"
     ],
     "build": {
         "context": ".",
@@ -11,7 +16,8 @@
     },
     "containerEnv": {
         "TBD_PROJECT_DIR": "${containerWorkspaceFolder}",
-        "PYTHONPATH": "${containerWorkspaceFolder}/tools/tbd_tools"
+        "PYTHONPATH": "${containerWorkspaceFolder}/tools/tbd_tools",
+        "PULSE_SERVER": "unix:/run/user/1000/pulse/native"
     },
     "remoteEnv": {
         // setting PATH in container causes build error
@@ -54,8 +60,7 @@
         }
     },
     "runArgs": [
-        //    "--device /dev/snd"
-        // required for flashing
-        // "--privileged"
+        // uncomment for device flashing
+        "--privileged"
     ]
 }

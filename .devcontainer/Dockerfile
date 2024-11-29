@@ -21,7 +21,9 @@ ARG TBD_INIT=$TBD_PATH/tbd-init.sh
 RUN apt-get update -y && apt-get install -y \
     udev \
     software-properties-common \
+    alsa-utils \
     bash-completion \
+    pulseaudio \
     libgcrypt20 \
     libglib2.0-0 \
     libpixman-1-0 \
