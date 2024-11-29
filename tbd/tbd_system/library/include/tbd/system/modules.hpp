@@ -134,14 +134,14 @@ protected:
 
     // for use in child process
     static void task_main_wrapper(void* param) {
-        auto& instance = *reinterpret_cast<ModuleTask<ModuleT, core_id>*>(param);
+        auto& instance = *reinterpret_cast<ModuleTask*>(param);
         instance.task_main();
     }
 
     void task_main() {
         uint32_t err;
         _current_state = TaskState::initializing;
-        if ((err = ModuleT::do_begin()) != 0) {
+        if (ModuleT::do_begin() != 0) {
             _current_state = TaskState::crashed;
             return;
         }
@@ -158,7 +158,7 @@ protected:
         }
 
         _current_state = TaskState::initializing;
-        if ((err = ModuleT::do_cleanup()) != 0) {
+        if (ModuleT::do_cleanup() != 0) {
             _current_state = TaskState::crashed;
             return;
         }
@@ -166,7 +166,7 @@ protected:
     }
     
     std::atomic<TaskState> _current_state = TaskState::created;
-    tbd::system::Task _task;
+    Task _task;
 };
 
 }
