@@ -29,7 +29,7 @@ enum class TaskState {
 
 template<ModuleType ModuleT, CpuCore core_id>
 struct ModuleTask : ModuleT {
-    ModuleTask(const char* name): _task(name) {}
+    ModuleTask(const char* name): _task(name), _current_state(TaskState::created) {}
 
     TaskState state() const {
         return _current_state;
@@ -164,9 +164,9 @@ protected:
         }
         _current_state = TaskState::done;   
     }
-    
-    std::atomic<TaskState> _current_state = TaskState::created;
+
     Task _task;
+    std::atomic<TaskState> _current_state;;
 };
 
 }

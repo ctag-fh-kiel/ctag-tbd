@@ -1,3 +1,4 @@
+add_subdirectory(tbd_common)
 add_subdirectory(tbd_version)
 add_subdirectory(tbd_system)
 add_subdirectory(tbd_sound_processor)

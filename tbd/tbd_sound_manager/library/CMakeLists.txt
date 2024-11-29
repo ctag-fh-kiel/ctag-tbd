@@ -10,10 +10,11 @@ target_include_directories(tbd_sound_manager
     PUBLIC include
 )
 target_link_libraries(tbd_sound_manager 
-    PUBLIC 
+    PUBLIC
+        tbd_common
         tbd_sound_registry
         ${TBD_SOUND_MANAGER_PORT_LIB}
-    PRIVATE 
+    PRIVATE
         tbd_system
         tbd_storage
         tbd_drivers

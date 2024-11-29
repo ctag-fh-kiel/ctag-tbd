@@ -5,11 +5,8 @@
 
 #include <tbd/system/cpu_cores.hpp>
 #include <tbd/sound_manager/common/audio_consumer_type.hpp>
-
-
-namespace {
-    const char* tag = "tbd_sound_manager_port";
-}
+#include <tbd/portutils/file_audio_source.hpp>
+#include <tbd/sound_manager/port/sound_params.hpp>
 
 
 namespace tbd::audio {
@@ -26,20 +23,25 @@ struct AudioFeeder {
     
     }
 
+    uint32_t init(SoundParams&& sound_params) {
+        _params = sound_params;
+        return 0;
+    }
+
     uint32_t begin(bool wait = false) {
         RtAudio::DeviceInfo info;
-        info = _audio.getDeviceInfo(sound_card_id);
+        info = _audio.getDeviceInfo(_params.device());
         if (!info.probed) {
             TBD_LOGE(tag, "sound card probing failed");
             return 1;
         }
     
         // Print, for example, the maximum number of output channels for each device
-        TBD_LOGI(tag, "device %i %s", sound_card_id, info.name.c_str());
+        TBD_LOGI(tag, "device %i %s", _params.device(), info.name.c_str());
 
-        if (info.duplexChannels < 2) {
-            TBD_LOGI(tag, "No duplex device found, enabling output only!");
-            output_only = true;
+        if (_params.use_live_input() && info.duplexChannels < 2) {
+            TBD_LOGE(tag, "No duplex device found, enabling output only!");
+            return 1;
         }
 
         auto sample_rates = info.sampleRates;
@@ -53,30 +55,29 @@ struct AudioFeeder {
 
         _consumer.startup();
 
-        input_params.deviceId = sound_card_id;
+        input_params.deviceId = _params.device();
         input_params.nChannels = 2;
-        output_params.deviceId = sound_card_id;
+        output_params.deviceId = _params.device();
         output_params.nChannels = 2;
+
         try {
-            if (output_only) {
+            if (!_params.use_live_input()) {
+                _file_input.open(_params.input_file());
                 _audio.openStream(&output_params, nullptr, RTAUDIO_FLOAT32, TBD_SAMPLE_RATE, &samples_per_channel, &processing_main, this);
             } else {
                 _audio.openStream(&output_params, &input_params, RTAUDIO_FLOAT32, TBD_SAMPLE_RATE, &samples_per_channel, &processing_main, this);
             }
-            // configure channels
-            // model = std::make_unique<SPManagerDataModel>();
-            // SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
-            // SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
         }
         catch (RtAudioError &e) {
             e.printMessage();
-            exit(0);
+            return 1;
         }
         try {
             _audio.startStream();
         }
         catch (RtAudioError &e) {
             e.printMessage();
+            return 1;
         }
 
         return 0;
@@ -104,18 +105,27 @@ private:
         double stream_time, RtAudioStreamStatus status, void* _self
     ) {
         if (_self == nullptr) {
-            return 0;
+            return 1;
         }
-        auto self = reinterpret_cast<AudioFeeder*>(_self);
+        auto& self = *reinterpret_cast<AudioFeeder*>(_self);
 
         if (num_frames != TBD_SAMPLES_PER_CHUNK) {
             // FIXME: maybe something else
-            return 0;
+            return 1;
         }
 
         // FIXME: should we clamp or reset these values?
         // reset out of range sound values
-        auto& fbuf = self->fbuf;
+        auto fbuf = reinterpret_cast<float*>(output_buffer);
+
+        if (!self._params.use_live_input()) {
+            if (!self._file_input.read_chunk(fbuf, TBD_SAMPLES_PER_CHUNK)) {
+                return 1;
+            }
+        } else {
+            memcpy(fbuf, input_buffer, TBD_SAMPLES_PER_CHUNK * 2 * 4);
+        }
+
         for(int i=0;i<32;i++){
             if(fbuf[i*2] > 1.f)fbuf[i*2] = 0.f;
             if(fbuf[i*2] < -1.f)fbuf[i*2] = -0.f;
@@ -125,19 +135,20 @@ private:
 
         // FIXME: the simulator does more at this point... do we need a custom buffer?
 
-        self->_consumer.consume(reinterpret_cast<float*>(input_buffer));
+        self._consumer.consume(reinterpret_cast<float*>(output_buffer));
         
         // FIXME: looked like this
         // memcpy(outputBuffer, fbuf, BUF_SZ * 2 * 4);
-        memcpy(output_buffer, input_buffer, TBD_SAMPLES_PER_CHUNK * 2 * 4);
         return 0;
     }
 
+    SoundParams _params;
     const char* _name;
-    uint32_t sound_card_id;
     RtAudio _audio;
+    common::FileAudioSource _file_input;
+
+    // TODO: look into the mechanics of rtaudio: why can't this be const
     uint samples_per_channel = TBD_SAMPLES_PER_CHUNK;
-    bool output_only;
     RtAudio::StreamParameters input_params;
     RtAudio::StreamParameters output_params;
     float fbuf[TBD_SAMPLES_PER_CHUNK * 2];

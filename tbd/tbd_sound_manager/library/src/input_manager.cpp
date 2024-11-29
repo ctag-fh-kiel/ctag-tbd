@@ -21,8 +21,9 @@ respective component folders / files if different from this license.
 ***************/
 #include "input_manager.hpp"
 
-#include <tbd/ram.hpp>
 #include <tbd/logging.hpp>
+#include <tbd/sound_manager/common/module.hpp>
+
 
 #if TBD_CALIBRATION
 #include <tbd/calibration.hpp>
@@ -94,7 +95,7 @@ void InputManager::SetCVChannelBiPolar(const bool &v0, const bool &v1, const boo
 }
 
 void InputManager::Init() {
-    TBD_LOGI("Control", "Initializing control!");
+    TBD_LOGI(tag, "Initializing control!");
 
 #if TBD_CV_ADC
     drivers::ADC::InitADCSystem();

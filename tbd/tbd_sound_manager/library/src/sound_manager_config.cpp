@@ -29,6 +29,7 @@ respective component folders / files if different from this license.
 #include <tbd/storage/resources.hpp>
 #include <tbd/logging.hpp>
 #include <tbd/storage/fileystem.hpp>
+#include <tbd/sound_manager/common/module.hpp>
 
 
 using namespace rapidjson;
@@ -38,11 +39,11 @@ namespace fs = tbd::storage::filesystem;
 namespace tbd::audio {
 
 SPManagerDataModel::SPManagerDataModel() {
-    TBD_LOGV("sound_manager", "loading sound manager config file");
+    TBD_LOGV(tag, "loading sound manager config file");
 
     auto config_path = storage::get_fs_path("data/spm-config.jsn");
     if (!config_path) {
-        TBD_LOGE("sound_manager", "failed to load sound manager config");
+        TBD_LOGE(tag, "failed to load sound manager config");
         return;
     }
     _config_file = config_path->string();
@@ -59,8 +60,8 @@ SPManagerDataModel::~SPManagerDataModel() {
 
 // checks for available sound processors based on data/sp json file entries
 void SPManagerDataModel::getSoundProcessors() {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return;
     }
 
@@ -70,14 +71,14 @@ void SPManagerDataModel::getSoundProcessors() {
 
     auto sound_processor_configs_path = storage::get_fs_path("data/sp");
     if (!sound_processor_configs_path || !fs::is_directory(*sound_processor_configs_path)) {
-        TBD_LOGE("sound_manager", "invalid sound processor config dir");
+        TBD_LOGE(tag, "invalid sound processor config dir");
         return;
     }
 
     for (auto& plugin_description : fs::directory_iterator(*sound_processor_configs_path)) {
         auto& file_path = plugin_description.path();
         if (file_path.filename().string().rfind("mui-", 0) == 0) {
-            TBD_LOGW("sound_manager", "file: %s", file_path.filename().c_str());
+            TBD_LOGW(tag, "file: %s", file_path.filename().c_str());
             Document d;
             loadJSON(d, file_path);
             Value obj(kObjectType);
@@ -98,8 +99,8 @@ void SPManagerDataModel::getSoundProcessors() {
 }
 
 const char *SPManagerDataModel::GetCStrJSONSoundProcessors() {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return "";
     }
 
@@ -120,8 +121,8 @@ std::string SPManagerDataModel::GetActiveProcessorID(const int chan) {
 }
 
 void SPManagerDataModel::SetActivePluginID(const std::string &id, const int chan) {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return;
     }
 
@@ -134,8 +135,8 @@ void SPManagerDataModel::SetActivePluginID(const std::string &id, const int chan
 }
 
 void SPManagerDataModel::SetActivePatchNum(const int patchNum, const int chan) {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return;
     }
 
@@ -174,8 +175,8 @@ int SPManagerDataModel::GetActivePatchNum(const int chan) {
 }
 
 bool SPManagerDataModel::IsStereo(const std::string &id) {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return false;
     }
 
@@ -191,8 +192,8 @@ bool SPManagerDataModel::IsStereo(const std::string &id) {
 }
 
 void SPManagerDataModel::validatePatches() {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return;
     }
 
@@ -216,8 +217,8 @@ void SPManagerDataModel::validatePatches() {
 }
 
 void SPManagerDataModel::validateActiveProcessors() {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return;
     }
 
@@ -243,8 +244,8 @@ void SPManagerDataModel::PrintSelf() {
 }
 
 const char *SPManagerDataModel::GetCStrJSONConfiguration() {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return {};
     }
 
@@ -256,8 +257,8 @@ const char *SPManagerDataModel::GetCStrJSONConfiguration() {
 }
 
 void SPManagerDataModel::SetConfigurationFromJSON(const std::string &data) {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return;
     }
 
@@ -273,8 +274,8 @@ void SPManagerDataModel::SetConfigurationFromJSON(const std::string &data) {
 }
 
 std::string SPManagerDataModel::GetConfigurationData(const std::string &id) {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return {};
     }
 
@@ -286,21 +287,21 @@ std::string SPManagerDataModel::GetConfigurationData(const std::string &id) {
 }
 
 const char* SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const std::string &id) {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return "";
     }
 
     auto sound_processor_configs_dir = storage::get_fs_path("data/sp");
     if (!sound_processor_configs_dir || !fs::is_directory(*sound_processor_configs_dir)) {
-        TBD_LOGE("sound_manager", "invalid sound processor config dir %s", sound_processor_configs_dir->c_str());
+        TBD_LOGE(tag, "invalid sound processor config dir %s", sound_processor_configs_dir->c_str());
         return "";
     }
 
     const std::string sound_processor_presets_filename = std::format("mp-{}.jsn", id);
     auto sound_processor_presets_path = *sound_processor_configs_dir / sound_processor_presets_filename;
     if (!fs::is_regular_file(sound_processor_presets_path)) {
-        TBD_LOGE("sound_manager", "invalid sound processor preset file %s", sound_processor_presets_path.c_str());
+        TBD_LOGE(tag, "invalid sound processor preset file %s", sound_processor_presets_path.c_str());
         return "";
     }
 
@@ -318,25 +319,25 @@ const char* SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const std::stri
 }
 
 void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const char* data) {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return;
     }
 
     auto sound_processor_configs_dir = storage::get_fs_path("data/sp");
     if (!sound_processor_configs_dir || !fs::is_directory(*sound_processor_configs_dir)) {
-        TBD_LOGE("sound_manager", "invalid sound processor config dir %s", sound_processor_configs_dir->c_str());
+        TBD_LOGE(tag, "invalid sound processor config dir %s", sound_processor_configs_dir->c_str());
         return;
     }
 
     auto sound_processor_presets_filename = std::format("mp-{}.jsn", id);
     auto sound_processor_presets_path = *sound_processor_configs_dir / sound_processor_presets_filename;
     if (!fs::is_regular_file(sound_processor_presets_path)) {
-        TBD_LOGE("sound_manager", "invalid sound processor preset file %s", sound_processor_presets_path.c_str());
+        TBD_LOGE(tag, "invalid sound processor preset file %s", sound_processor_presets_path.c_str());
         return;
     }
 
-    TBD_LOGD("Model", "String %s", data);
+    TBD_LOGD(tag, "String %s", data);
     Document presets;
     presets.Parse(data);
     if(presets.HasParseError()) return;
@@ -344,8 +345,8 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
 }
 
 bool SPManagerDataModel::HasPluginID(const std::string &id) {
-    if (_config_file) {
-        TBD_LOGE("sound_manager", "access to broken sound manager config");
+    if (!_config_file) {
+        TBD_LOGE(tag, "access to broken sound manager config");
         return false;
     }
 

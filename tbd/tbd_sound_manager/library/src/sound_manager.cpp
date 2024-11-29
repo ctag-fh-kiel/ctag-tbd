@@ -26,7 +26,7 @@ void SoundProcessorManager::begin(SoundParams&& sound_params) {
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
     if(gpio_get_level(GPIO_NUM_0) == 0){
         model->ResetNetworkConfiguration();
-        TBD_LOGE("SP", "Network credentials reset requested!");
+        TBD_LOGE(tag, "Network credentials reset requested!");
         drivers::LedRGB::SetLedRGB(255, 255, 255);
         system::Task::sleep(1000);
     }
@@ -59,13 +59,14 @@ void SoundProcessorManager::begin(SoundParams&& sound_params) {
 
     SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
     SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
-    TBD_LOGI("SPManager", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    TBD_LOGI(tag, "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_largest_free_block(TBD_HEAPS_INTERNAL | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
              tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
 
     sound_level_worker.begin(true);
+    audio_worker.init(std::move(sound_params));
     audio_worker.begin(true);
 }
 
@@ -90,7 +91,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(int chan, const std::string
     if(chan == 1 && model->IsStereo(model->GetActiveProcessorID(0))) return;
     if(chan == 1 && model->IsStereo(id)) return;
 
-    TBD_LOGI("SPManager", "Switching ch%d to plugin %s", chan, id.c_str());
+    TBD_LOGI(tag, "Switching ch%d to plugin %s", chan, id.c_str());
 
     // destroy active plugin
     {
@@ -118,7 +119,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(int chan, const std::string
     }
 
 
-    TBD_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    TBD_LOGI(tag, "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_largest_free_block(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
@@ -176,7 +177,7 @@ void SoundProcessorManager::KillAudioTask() {
     system::Task::sleep(100);
     drivers::Indicator::SetLedRGB(255, 0, 255);
 #endif
-    TBD_LOGI("SPManager", "Audio Task Killed: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    TBD_LOGI(tag, "Audio Task Killed: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_largest_free_block(TBD_HEAPS_8BIT | TBD_HEAPS_INTERNAL),
              tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),

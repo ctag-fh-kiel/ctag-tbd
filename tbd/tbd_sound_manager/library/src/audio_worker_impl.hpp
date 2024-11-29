@@ -10,9 +10,9 @@
 #include <tbd/system/cpu_cores.hpp>
 #include <tbd/system/locks.hpp>
 #include <helpers/ctagFastMath.hpp>
+#include <tbd/common/audio.hpp>
 #include <tbd/sound_registry/sound_processor_factory.hpp>
 #include <tbd/sound_manager/common/module.hpp>
-#include "module_private.hpp"
 #include "input_manager.hpp"
 #include "sound_level_worker.hpp"
 
@@ -158,7 +158,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
 
     // led indicator, green for input
     max = 255.f + 3.2f * CTAG::SP::HELPERS::fast_dBV(peakIn); // cut away at approx -80dB
-    //TBD_LOGI("SP", "Max %.9f %f", peakIn, max);
+    //TBD_LOGI(tag, "Max %.9f %f", peakIn, max);
     if (max > 0 && ngState == NG_OPEN) {
         sound_level.add_input_level(max);
     }
@@ -256,7 +256,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
     // just take first sample of block for level meter
     max = fabsf(audio_slice[0] + audio_slice[1]) / 2.f;
     peakOut = 0.9f * peakOut + 0.1f * max;
-    //TBD_LOGW("PEAK", "max %.12f, peak %.12f", max, peakOut);
+    //TBD_LOGW(tag, "max %.12f, peak %.12f", max, peakOut);
     max = 255.f + 3.2f * CTAG::SP::HELPERS::fast_dBV(peakOut);
     if (max > 0.f) {
         sound_level.add_output_level(max);

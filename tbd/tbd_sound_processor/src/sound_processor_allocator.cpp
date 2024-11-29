@@ -24,6 +24,8 @@ respective component folders / files if different from this license.
 #include <cstdint>
 #include <cassert>
 #include <tbd/heaps.hpp>
+#include <tbd/sound_processor/module.hpp>
+
 
 namespace heaps = tbd::heaps;
 
@@ -39,6 +41,9 @@ std::size_t ctagSPAllocator::size2 = 0;
 ctagSPAllocator::AllocationType ctagSPAllocator::allocationType = ctagSPAllocator::AllocationType::CH0;
 
 void ctagSPAllocator::AllocateInternalBuffer(std::size_t const &size) {
+    if (internalBuffer != nullptr) {
+        TBD_LOGE(tbd::sound_processor::tag, "plugin buffers have already been allocated");
+    }
     TBD_LOGI("ctagSPAllocator", "AllocateInternalBuffer: allocating %zd bytes", size);
     internalBuffer = heaps::malloc(size, TBD_HEAPS_INTERNAL | TBD_HEAPS_8BIT);
     if(nullptr == internalBuffer){

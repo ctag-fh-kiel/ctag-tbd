@@ -2,6 +2,7 @@
 
 #include <tbd/drivers/codec.hpp>
 #include <tbd/system/cpu_cores.hpp>
+#include <tbd/common/audio.hpp>
 #include <tbd/sound_manager/common/audio_consumer_type.hpp>
 
 
@@ -21,9 +22,12 @@ struct AudioFeeder {
         drivers::Codec::RecalibDCOffset();
     }
 
+    uint32_t init(SoundParams&& sound_params) {
+        return 0;
+    }
 
     uint32_t do_begin() {
-        drivers::Codec::InitCodec();
+        drivers::Codec::init();
         return 0;
     }
 
@@ -40,6 +44,7 @@ struct AudioFeeder {
 
     uint32_t do_cleanup() {
         drivers::Codec::SetOutputLevels(0, 0);
+        drivers::Codec::deinit();
         return 0;
     }
 

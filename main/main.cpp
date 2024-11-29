@@ -83,7 +83,7 @@ void app_main() {
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 #endif
 
-    tbd::audio::SoundProcessorManager::StartSoundProcessor();
+    tbd::audio::SoundProcessorManager::begin();
 
     #ifdef TBD_API_WIFI
         tbd::network::NetworkConfig network_config;

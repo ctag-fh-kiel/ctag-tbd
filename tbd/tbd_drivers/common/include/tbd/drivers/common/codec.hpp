@@ -27,8 +27,9 @@ namespace tbd::drivers {
 
 struct Codec {
     Codec() = delete;
-    
-    static void InitCodec();
+
+    static void init();
+    static void deinit();
 
     static void HighPassEnable();
 

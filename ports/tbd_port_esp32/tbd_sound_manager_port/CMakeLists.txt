@@ -11,5 +11,7 @@ idf_component_register(
 
 target_link_libraries(${COMPONENT_LIB}
         PUBLIC
-            tbd_sound_manager_common tbd_drivers
+            tbd_common
+            tbd_sound_manager_common
+            tbd_drivers
 )
