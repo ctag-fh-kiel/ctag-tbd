@@ -1,7 +1,6 @@
 #pragma once
 
 #include <concepts>
-#include <cinttypes>
 
 
 namespace tbd::audio {
@@ -13,7 +12,6 @@ concept AudioConsumerType = requires(
     float _float,
     float* _float_ptr)
 {
-    // deviation from std::mutex: lock timeout
     { audio_consumer.startup() } -> std::same_as<uint32_t>;
     { audio_consumer.consume(_float_ptr) } -> std::same_as<uint32_t>;
     { audio_consumer.cleanup() } -> std::same_as<uint32_t>;

@@ -21,14 +21,27 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <string>
-
+#include <tbd/sound_manager/sound_params.hpp>
 
 namespace tbd::audio {
 
+/** @brief central audio processing module
+ *
+ *  This class is the main central module of all TBD applications.
+ *
+ */
 class SoundProcessorManager final {
 public:
     SoundProcessorManager() = delete;
-    static void StartSoundProcessor();
+
+    /*  @brief start audio processing
+     *
+     *  When the in our output is live (not files) account for a small startup delay.
+     */
+    static void begin(SoundParams&& sound_params = {});
+
+
+    static void end();
 
     static const char *GetCStrJSONSoundProcessors();
 

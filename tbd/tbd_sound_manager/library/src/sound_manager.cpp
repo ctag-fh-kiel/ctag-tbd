@@ -17,7 +17,7 @@ namespace {
 
 namespace tbd::audio {
 
-void SoundProcessorManager::StartSoundProcessor() {
+void SoundProcessorManager::begin(SoundParams&& sound_params) {
     sound_level_worker.set_blink_duration(5);
     
     // check for network reset at bootup
@@ -52,7 +52,6 @@ void SoundProcessorManager::StartSoundProcessor() {
 #endif
     InputManager::FlushBuffers();
     // create audio thread
-    audio_worker.begin();
 
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
     Favorites::StartUI();
@@ -66,7 +65,13 @@ void SoundProcessorManager::StartSoundProcessor() {
              tbd_heaps_get_free_size(TBD_HEAPS_SPIRAM),
              tbd_heaps_get_largest_free_block(TBD_HEAPS_SPIRAM));
 
-    audio_worker.begin();
+    sound_level_worker.begin(true);
+    audio_worker.begin(true);
+}
+
+void SoundProcessorManager::end() {
+    audio_worker.end(true);
+    sound_level_worker.end(true);
 }
 
 string SoundProcessorManager::GetStringID(const int chan) {
