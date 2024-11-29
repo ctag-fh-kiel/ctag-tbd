@@ -6,10 +6,9 @@
 
 TBD_C_BEGIN
 
-
 #define _TBD_LOG(level, tag, format, ...) do {                      \
     if (level <= TBD_LOG_LEVEL) {                                    \
-        printf("[%s]" format, tag __VA_OPT__(,) __VA_ARGS__);        \
+        printf("%s:%i [%s] " format "\n", __FILE__, __LINE__, tag __VA_OPT__(,) __VA_ARGS__); \
     }                                                                \
 } while(0)
 
