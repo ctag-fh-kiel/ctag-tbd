@@ -14,9 +14,9 @@ target_link_libraries(tbd_app_desktop
         tbd_display
         tbd_drivers
         tbd_helpers
-        tbd_network
         tbd_presets
         tbd_sound_processor
         tbd_system
+        tbd_api
         ${Boost_LIBRARIES}
 )

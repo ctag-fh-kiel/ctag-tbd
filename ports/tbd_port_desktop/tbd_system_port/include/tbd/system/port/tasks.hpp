@@ -20,9 +20,10 @@ struct Task {
 
     void begin(
         task_func_type task_main, 
-        void* context, 
+        void* context,
         CpuCore core_id = CpuCore::system,
-        uint8_t priority = 0) 
+        uint32_t stack_size = 0, // has no effect on desktop
+        uint8_t priority = 0) // has no effect on desktop
     {
         _thread = std::thread(task_main, context);
     }

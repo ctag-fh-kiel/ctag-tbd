@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-
+#include <tbd/api/common/rest_api.hpp>
 
 /* HTTP Restful API Server
 
@@ -28,17 +28,19 @@ respective component folders / files if different from this license.
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
-#include "RestServer.hpp"
 #include <string.h>
 #include <fcntl.h>
 #include "esp_system.h"
+#include "esp_http_server.h"
 #include <tbd/heaps.hpp>
 #include "esp_vfs.h"
 #include "cJSON.h"
 #include <tbd/sound_manager.hpp>
 #include <tbd/favorites.hpp>
 
-#include "OTAManager.hpp"
+// #include "OTAManager.hpp"
+#include "../../../tbd_port_desktop/tbd_api_port/include/tbd/api/port/rest_api.hpp"
+
 #include "sdkconfig.h"
 #include "esp_flash.h"
 #include <tbd/version.hpp>
@@ -48,21 +50,18 @@ respective component folders / files if different from this license.
     #include <tbd/calibration.hpp>
 #endif
 
-using namespace CTAG;
-using namespace CTAG::REST;
-
-
-static const char *REST_TAG = "esp-rest";
-
+#define CHECK_FILE_EXTENSION(filename, ext) (strcasecmp(&filename[strlen(filename) - strlen(ext)], ext) == 0)
 #define FILE_PATH_MAX (ESP_VFS_PATH_MAX + 128)
 #define SCRATCH_BUFSIZE (10240)
+
+namespace {
+
+const char *REST_TAG = "esp-rest";
 
 typedef struct rest_server_context {
     char base_path[ESP_VFS_PATH_MAX + 1];
     char scratch[SCRATCH_BUFSIZE];
 } rest_server_context_t;
-
-#define CHECK_FILE_EXTENSION(filename, ext) (strcasecmp(&filename[strlen(filename) - strlen(ext)], ext) == 0)
 
 /* Set HTTP response content type according to file extension */
 static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepath) {
@@ -133,7 +132,7 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
+esp_err_t get_plugins_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_plugins_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -145,7 +144,7 @@ esp_err_t RestServer::get_plugins_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
+esp_err_t get_active_plugin_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_active_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -165,7 +164,7 @@ esp_err_t RestServer::get_active_plugin_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
+esp_err_t get_params_plugin_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_params_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -186,7 +185,7 @@ esp_err_t RestServer::get_params_plugin_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
+esp_err_t set_active_plugin_get_handler(httpd_req_t *req) {
     TBD_LOGD("set_active_plugin_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -213,7 +212,7 @@ esp_err_t RestServer::set_active_plugin_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
+esp_err_t set_plugin_param_get_handler(httpd_req_t *req) {
     TBD_LOGD("set_plugin_param_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -250,7 +249,7 @@ esp_err_t RestServer::set_plugin_param_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
+esp_err_t get_presets_get_handler(httpd_req_t *req) {
     char query[128];
     size_t qlen = httpd_req_get_url_query_len(req);
     size_t urilen = strlen(req->uri);
@@ -268,7 +267,7 @@ esp_err_t RestServer::get_presets_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
+esp_err_t save_preset_get_handler(httpd_req_t *req) {
     TBD_LOGD("save_preset_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -292,7 +291,7 @@ esp_err_t RestServer::save_preset_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
+esp_err_t load_preset_get_handler(httpd_req_t *req) {
     TBD_LOGD("load_preset_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -316,240 +315,7 @@ esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::StartRestServer() {
-    const char *base_path = "/spiffs/www\0";
-    rest_server_context_t *rest_context = (rest_server_context_t *) calloc(1, sizeof(rest_server_context_t));
-    assert(rest_context);
-    strlcpy(rest_context->base_path, base_path, sizeof(rest_context->base_path));
-
-    httpd_handle_t server = NULL;
-    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.core_id = 0;
-    config.uri_match_fn = httpd_uri_match_wildcard;
-    config.task_priority = tskIDLE_PRIORITY + 4;
-    config.max_uri_handlers = 20;
-    config.stack_size = 8192;
-    config.recv_wait_timeout   = 20;
-    config.send_wait_timeout = 20;
-    /*
-    config.max_open_sockets   = 10;
-    config.max_resp_headers   = 10;
-
-    config.backlog_conn       = 10;
-    config.lru_purge_enable   = false;
-     */
-/*
-#define HTTPD_DEFAULT_CONFIG() {                        \
-        .task_priority      = tskIDLE_PRIORITY+5,       \
-        .stack_size         = 4096,                     \
-        .core_id            = tskNO_AFFINITY,           \
-        .server_port        = 80,                       \
-        .ctrl_port          = 32768,                    \
-        .max_open_sockets   = 7,                        \
-        .max_uri_handlers   = 8,                        \
-        .max_resp_headers   = 8,                        \
-        .backlog_conn       = 5,                        \
-        .lru_purge_enable   = false,                    \
-        .recv_wait_timeout  = 5,                        \
-        .send_wait_timeout  = 5,                        \
-        .global_user_ctx = NULL,                        \
-        .global_user_ctx_free_fn = NULL,                \
-        .global_transport_ctx = NULL,                   \
-        .global_transport_ctx_free_fn = NULL,           \
-        .open_fn = NULL,                                \
-        .close_fn = NULL,                               \
-        .uri_match_fn = NULL                            \
-}
-*/
-    TBD_LOGI(REST_TAG, "Starting HTTP Server");
-    if (httpd_start(&server, &config) != ESP_OK)
-        return ESP_FAIL;
-
-    /* URI handler for getting available sound processors */
-    httpd_uri_t get_plugins_get_uri = {
-            .uri = "/api/v1/getPlugins",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_plugins_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &get_plugins_get_uri);
-
-    /* get currently activated plugin */
-    httpd_uri_t get_active_plugin_get_uri = {
-            .uri = "/api/v1/getActivePlugin*",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_active_plugin_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &get_active_plugin_get_uri);
-
-    /* get plugin params of active plugin */
-    httpd_uri_t get_params_plugin_get_uri = {
-            .uri = "/api/v1/getPluginParams*",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_params_plugin_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &get_params_plugin_get_uri);
-
-    /* set active plugin */
-    httpd_uri_t set_active_plugin_get_uri = {
-            .uri = "/api/v1/setActivePlugin*",
-            .method = HTTP_GET,
-            .handler = &RestServer::set_active_plugin_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &set_active_plugin_get_uri);
-
-    /* set a plugin param*/
-    httpd_uri_t set_plugin_param_get_uri = {
-            .uri = "/api/v1/setPluginParam*",
-            .method = HTTP_GET,
-            .handler = &RestServer::set_plugin_param_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &set_plugin_param_get_uri);
-
-    /* get all presets */
-    httpd_uri_t get_presets_get_uri = {
-            .uri = "/api/v1/getPresets*",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_presets_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &get_presets_get_uri);
-
-    /* get all presets */
-    httpd_uri_t get_preset_json_get_uri = {
-            .uri = "/api/v1/getPresetData*",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_preset_json_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &get_preset_json_get_uri);
-
-    /* save a preset */
-    httpd_uri_t save_preset_get_uri = {
-            .uri = "/api/v1/savePreset*",
-            .method = HTTP_GET,
-            .handler = &RestServer::save_preset_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &save_preset_get_uri);
-
-    /* load a preset */
-    httpd_uri_t load_preset_get_uri = {
-            .uri = "/api/v1/loadPreset*",
-            .method = HTTP_GET,
-            .handler = &RestServer::load_preset_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &load_preset_get_uri);
-
-    /* get configuration*/
-    httpd_uri_t get_configuration_get_uri = {
-            .uri = "/api/v1/getConfiguration",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_configuration_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &get_configuration_get_uri);
-
-    /* get configuration*/
-    httpd_uri_t get_calibration_get_uri = {
-            .uri = "/api/v1/getCalibration",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_calibration_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &get_calibration_get_uri);
-
-    /* reboot with and without calibration request */
-    httpd_uri_t reboot_handler_get_uri = {
-            .uri = "/api/v1/reboot",
-            .method = HTTP_GET,
-            .handler = &RestServer::reboot_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &reboot_handler_get_uri);
-
-    /* get io caps */
-    httpd_uri_t io_caps_handler_get_uri = {
-            .uri = "/api/v1/getIOCaps",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_iocaps_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &io_caps_handler_get_uri);
-
-    /* set configuration */
-    httpd_uri_t set_configuration_post_uri = {
-            .uri = "/api/v1/setConfiguration",
-            .method = HTTP_POST,
-            .handler = &RestServer::set_configuration_post_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &set_configuration_post_uri);
-
-
-    /* set calibration */
-    httpd_uri_t set_calibration_post_uri = {
-            .uri = "/api/v1/setCalibration*",
-            .method = HTTP_POST,
-            .handler = &RestServer::set_calibration_post_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &set_calibration_post_uri);
-
-
-    httpd_uri_t set_preset_data_post_uri = {
-            .uri = "/api/v1/setPresetData*",
-            .method = HTTP_POST,
-            .handler = &RestServer::set_preset_json_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &set_preset_data_post_uri);
-
-    /* set spiffs upload */
-    httpd_uri_t ota_post_uri = {
-            .uri = "/api/v1/otaAPI*",
-            .method = HTTP_POST,
-            .handler = &RestServer::ota_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &ota_post_uri);
-
-    /* favorite handler*/
-    httpd_uri_t favorite_get_uri = {
-            .uri = "/api/v1/favorite*",
-            .method = HTTP_POST,
-            .handler = &RestServer::favorite_post_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &favorite_get_uri);
-
-    /* set sample upload */
-    httpd_uri_t srom_post_uri = {
-            .uri = "/api/v1/srom*",
-            .method = HTTP_POST,
-            .handler = &RestServer::srom_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &srom_post_uri);
-
-    /* URI handler for getting web server files */
-    httpd_uri_t common_get_uri = {
-            .uri = "/*",
-            .method = HTTP_GET,
-            .handler = rest_common_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &common_get_uri);
-
-    return ESP_OK;
-}
-
-esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
+esp_err_t set_configuration_post_handler(httpd_req_t *req) {
     TBD_LOGD("set_configuration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -582,7 +348,7 @@ esp_err_t RestServer::set_configuration_post_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
+esp_err_t get_configuration_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_configuration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -594,7 +360,7 @@ esp_err_t RestServer::get_configuration_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
+esp_err_t get_preset_json_handler(httpd_req_t *req) {
     TBD_LOGD("get_configuration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -616,7 +382,7 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
+esp_err_t reboot_handler(httpd_req_t *req) {
     char query[128];
     httpd_req_get_url_query_str(req, query, 128);
 #if TDB_CALIBRATION
@@ -632,7 +398,7 @@ esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
+esp_err_t get_calibration_get_handler(httpd_req_t *req) {
     TBD_LOGD("get_calibration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -649,55 +415,57 @@ esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::ota_handler(httpd_req_t *req) {
-    static int lastOtaRequest = 0;
-    size_t qlen = httpd_req_get_url_query_len(req);
-    size_t urilen = strlen(req->uri);
-    char otaRequest = req->uri[urilen - qlen - 1];
-    otaRequest -= 0x30;
-    esp_err_t err = ESP_ERR_NOT_FOUND;
-    TBD_LOGI("HTTPD", "OTA request type %d, last request was %d, expecting %d", otaRequest, lastOtaRequest,
-             lastOtaRequest + 1);
-    // stage 1, kill audio task and bring into ota update mode
-    if (lastOtaRequest == 0 && otaRequest == 1) {
-        CTAG::OTA::OTAManager::InitiateOTA(req);
-        lastOtaRequest++;
-        err = ESP_OK;
-    }
-    // stage 2, upload SPIFFS image
-    if (lastOtaRequest == 1 && otaRequest == 2) {
-        err = CTAG::OTA::OTAManager::PostHandlerSPIFFS(req);
-        lastOtaRequest++;
-    }
-    // stage 3, upload Flash image
-    if (lastOtaRequest == 2 && otaRequest == 3) {
-        err = CTAG::OTA::OTAManager::PostHandlerApp(req);
-        lastOtaRequest++;
-    }
-    // stage 4, upload Flash image
-    if (lastOtaRequest == 3 && otaRequest == 4) {
-        err = CTAG::OTA::OTAManager::PostHandlerFlashCommit(req);
-        if (err == ESP_OK) {
-            TBD_LOGI("REST", "OTA successful, rebooting!");
-            httpd_resp_set_type(req, "text/html");
-            httpd_resp_send(req, NULL, 0);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            esp_restart();
-        }
-    }
+// FIXME: make OTA updates available
 
-    if (err != ESP_OK) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error OTA error!");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        esp_restart();
-    }
-    httpd_resp_set_type(req, "text/html");
-    httpd_resp_send(req, NULL, 0);
+// esp_err_t ota_handler(httpd_req_t *req) {
+//     static int lastOtaRequest = 0;
+//     size_t qlen = httpd_req_get_url_query_len(req);
+//     size_t urilen = strlen(req->uri);
+//     char otaRequest = req->uri[urilen - qlen - 1];
+//     otaRequest -= 0x30;
+//     esp_err_t err = ESP_ERR_NOT_FOUND;
+//     TBD_LOGI("HTTPD", "OTA request type %d, last request was %d, expecting %d", otaRequest, lastOtaRequest,
+//              lastOtaRequest + 1);
+//     // stage 1, kill audio task and bring into ota update mode
+//     if (lastOtaRequest == 0 && otaRequest == 1) {
+//         CTAG::OTA::OTAManager::InitiateOTA(req);
+//         lastOtaRequest++;
+//         err = ESP_OK;
+//     }
+//     // stage 2, upload SPIFFS image
+//     if (lastOtaRequest == 1 && otaRequest == 2) {
+//         err = CTAG::OTA::OTAManager::PostHandlerSPIFFS(req);
+//         lastOtaRequest++;
+//     }
+//     // stage 3, upload Flash image
+//     if (lastOtaRequest == 2 && otaRequest == 3) {
+//         err = CTAG::OTA::OTAManager::PostHandlerApp(req);
+//         lastOtaRequest++;
+//     }
+//     // stage 4, upload Flash image
+//     if (lastOtaRequest == 3 && otaRequest == 4) {
+//         err = CTAG::OTA::OTAManager::PostHandlerFlashCommit(req);
+//         if (err == ESP_OK) {
+//             TBD_LOGI("REST", "OTA successful, rebooting!");
+//             httpd_resp_set_type(req, "text/html");
+//             httpd_resp_send(req, NULL, 0);
+//             vTaskDelay(1000 / portTICK_PERIOD_MS);
+//             esp_restart();
+//         }
+//     }
+//
+//     if (err != ESP_OK) {
+//         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error OTA error!");
+//         vTaskDelay(1000 / portTICK_PERIOD_MS);
+//         esp_restart();
+//     }
+//     httpd_resp_set_type(req, "text/html");
+//     httpd_resp_send(req, NULL, 0);
+//
+//     return ESP_OK;
+// }
 
-    return ESP_OK;
-}
-
-esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
+esp_err_t set_calibration_post_handler(httpd_req_t *req) {
     TBD_LOGD("set_calibration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -728,7 +496,7 @@ esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
+esp_err_t set_preset_json_handler(httpd_req_t *req) {
     char query[128];
     char pluginID[64];
     memset(query, 0, 128);
@@ -781,7 +549,7 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
-esp_err_t RestServer::srom_handler(httpd_req_t *req) {
+esp_err_t srom_handler(httpd_req_t *req) {
     char *s = strrchr(req->uri, '/');
     string cmd = ++s;
 
@@ -864,13 +632,13 @@ esp_err_t RestServer::srom_handler(httpd_req_t *req) {
 }
 
 // transmit io capabilities
-esp_err_t RestServer::get_iocaps_handler(httpd_req_t *req) {
+esp_err_t get_iocaps_handler(httpd_req_t *req) {
     httpd_resp_set_type(req, "application/json");
-    httpd_resp_sendstr(req, device_capabilities.c_str());
+    httpd_resp_sendstr(req, tbd::sysinfo::device_capabilities.c_str());
     return ESP_OK;
 }
 
-esp_err_t RestServer::favorite_post_handler(httpd_req_t *req) {
+esp_err_t favorite_post_handler(httpd_req_t *req) {
     TBD_LOGD("favorite_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              tbd_heaps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              tbd_heaps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -924,4 +692,255 @@ esp_err_t RestServer::favorite_post_handler(httpd_req_t *req) {
     httpd_resp_send_404(req);
 
     return ESP_OK;
+}
+
+esp_err_t register_handlers() {
+    const char *base_path = "/spiffs/www\0";
+    rest_server_context_t *rest_context = (rest_server_context_t *) calloc(1, sizeof(rest_server_context_t));
+    assert(rest_context);
+    strlcpy(rest_context->base_path, base_path, sizeof(rest_context->base_path));
+
+    httpd_handle_t server = NULL;
+    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+    config.core_id = 0;
+    config.uri_match_fn = httpd_uri_match_wildcard;
+    config.task_priority = tskIDLE_PRIORITY + 4;
+    config.max_uri_handlers = 20;
+    config.stack_size = 8192;
+    config.recv_wait_timeout   = 20;
+    config.send_wait_timeout = 20;
+    /*
+    config.max_open_sockets   = 10;
+    config.max_resp_headers   = 10;
+
+    config.backlog_conn       = 10;
+    config.lru_purge_enable   = false;
+     */
+    /*
+    #define HTTPD_DEFAULT_CONFIG() {                        \
+            .task_priority      = tskIDLE_PRIORITY+5,       \
+            .stack_size         = 4096,                     \
+            .core_id            = tskNO_AFFINITY,           \
+            .server_port        = 80,                       \
+            .ctrl_port          = 32768,                    \
+            .max_open_sockets   = 7,                        \
+            .max_uri_handlers   = 8,                        \
+            .max_resp_headers   = 8,                        \
+            .backlog_conn       = 5,                        \
+            .lru_purge_enable   = false,                    \
+            .recv_wait_timeout  = 5,                        \
+            .send_wait_timeout  = 5,                        \
+            .global_user_ctx = NULL,                        \
+            .global_user_ctx_free_fn = NULL,                \
+            .global_transport_ctx = NULL,                   \
+            .global_transport_ctx_free_fn = NULL,           \
+            .open_fn = NULL,                                \
+            .close_fn = NULL,                               \
+            .uri_match_fn = NULL                            \
+    }
+    */
+    TBD_LOGI(REST_TAG, "Starting HTTP Server");
+    if (httpd_start(&server, &config) != ESP_OK)
+        return ESP_FAIL;
+
+    /* URI handler for getting available sound processors */
+    httpd_uri_t get_plugins_get_uri = {
+        .uri = "/api/v1/getPlugins",
+        .method = HTTP_GET,
+        .handler = &get_plugins_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &get_plugins_get_uri);
+
+    /* get currently activated plugin */
+    httpd_uri_t get_active_plugin_get_uri = {
+        .uri = "/api/v1/getActivePlugin*",
+        .method = HTTP_GET,
+        .handler = &get_active_plugin_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &get_active_plugin_get_uri);
+
+    /* get plugin params of active plugin */
+    httpd_uri_t get_params_plugin_get_uri = {
+        .uri = "/api/v1/getPluginParams*",
+        .method = HTTP_GET,
+        .handler = &get_params_plugin_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &get_params_plugin_get_uri);
+
+    /* set active plugin */
+    httpd_uri_t set_active_plugin_get_uri = {
+        .uri = "/api/v1/setActivePlugin*",
+        .method = HTTP_GET,
+        .handler = &set_active_plugin_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &set_active_plugin_get_uri);
+
+    /* set a plugin param*/
+    httpd_uri_t set_plugin_param_get_uri = {
+        .uri = "/api/v1/setPluginParam*",
+        .method = HTTP_GET,
+        .handler = &set_plugin_param_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &set_plugin_param_get_uri);
+
+    /* get all presets */
+    httpd_uri_t get_presets_get_uri = {
+        .uri = "/api/v1/getPresets*",
+        .method = HTTP_GET,
+        .handler = &get_presets_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &get_presets_get_uri);
+
+    /* get all presets */
+    httpd_uri_t get_preset_json_get_uri = {
+        .uri = "/api/v1/getPresetData*",
+        .method = HTTP_GET,
+        .handler = &get_preset_json_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &get_preset_json_get_uri);
+
+    /* save a preset */
+    httpd_uri_t save_preset_get_uri = {
+        .uri = "/api/v1/savePreset*",
+        .method = HTTP_GET,
+        .handler = &save_preset_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &save_preset_get_uri);
+
+    /* load a preset */
+    httpd_uri_t load_preset_get_uri = {
+        .uri = "/api/v1/loadPreset*",
+        .method = HTTP_GET,
+        .handler = &load_preset_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &load_preset_get_uri);
+
+    /* get configuration*/
+    httpd_uri_t get_configuration_get_uri = {
+        .uri = "/api/v1/getConfiguration",
+        .method = HTTP_GET,
+        .handler = &get_configuration_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &get_configuration_get_uri);
+
+    /* get configuration*/
+    httpd_uri_t get_calibration_get_uri = {
+        .uri = "/api/v1/getCalibration",
+        .method = HTTP_GET,
+        .handler = &get_calibration_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &get_calibration_get_uri);
+
+    /* reboot with and without calibration request */
+    httpd_uri_t reboot_handler_get_uri = {
+        .uri = "/api/v1/reboot",
+        .method = HTTP_GET,
+        .handler = &reboot_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &reboot_handler_get_uri);
+
+    /* get io caps */
+    httpd_uri_t io_caps_handler_get_uri = {
+        .uri = "/api/v1/getIOCaps",
+        .method = HTTP_GET,
+        .handler = &get_iocaps_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &io_caps_handler_get_uri);
+
+    /* set configuration */
+    httpd_uri_t set_configuration_post_uri = {
+        .uri = "/api/v1/setConfiguration",
+        .method = HTTP_POST,
+        .handler = &set_configuration_post_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &set_configuration_post_uri);
+
+
+    /* set calibration */
+    httpd_uri_t set_calibration_post_uri = {
+        .uri = "/api/v1/setCalibration*",
+        .method = HTTP_POST,
+        .handler = &set_calibration_post_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &set_calibration_post_uri);
+
+
+    httpd_uri_t set_preset_data_post_uri = {
+        .uri = "/api/v1/setPresetData*",
+        .method = HTTP_POST,
+        .handler = &set_preset_json_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &set_preset_data_post_uri);
+
+    // FIXME: ota api
+    // /* set spiffs upload */
+    // httpd_uri_t ota_post_uri = {
+    //     .uri = "/api/v1/otaAPI*",
+    //     .method = HTTP_POST,
+    //     .handler = &ota_handler,
+    //     .user_ctx = rest_context
+    // };
+
+    // httpd_register_uri_handler(server, &ota_post_uri);
+
+    /* favorite handler*/
+    httpd_uri_t favorite_get_uri = {
+        .uri = "/api/v1/favorite*",
+        .method = HTTP_POST,
+        .handler = &favorite_post_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &favorite_get_uri);
+
+    /* set sample upload */
+    httpd_uri_t srom_post_uri = {
+        .uri = "/api/v1/srom*",
+        .method = HTTP_POST,
+        .handler = &srom_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &srom_post_uri);
+
+    /* URI handler for getting web server files */
+    httpd_uri_t common_get_uri = {
+        .uri = "/*",
+        .method = HTTP_GET,
+        .handler = rest_common_get_handler,
+        .user_ctx = rest_context
+};
+    httpd_register_uri_handler(server, &common_get_uri);
+
+    return ESP_OK;
+}
+
+}
+
+namespace tbd::api {
+
+void RestApi::begin(const RestApiParams&) {
+    register_handlers();
+}
+
+void RestApi::end() {
+
+}
+
+
+
 }

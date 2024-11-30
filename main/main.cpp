@@ -46,7 +46,7 @@ respective component folders / files if different from this license.
 #ifdef TBD_API_WIFI
     #include <tbd/network.hpp>
     #include <tbd/network/config.hpp>
-    #include "RestServer.hpp"
+    #include <tbd/api/rest_api.hpp>
 #elif TBD_API_SERIAL
     #include "SerialAPI.hpp"
 #endif
@@ -93,7 +93,7 @@ void app_main() {
         tbd::Network::SetIP(network_config.ip());
         tbd::Network::SetMDNSName(network_config.mdns_name());
         tbd::Network::Up();
-        CTAG::REST::RestServer::StartRestServer();
+        tbd::api::RestApi::begin();
     #elif TBD_API_SERIAL
 #error "whoops"
         CTAG::SAPI::SerialAPI::StartSerialAPI();

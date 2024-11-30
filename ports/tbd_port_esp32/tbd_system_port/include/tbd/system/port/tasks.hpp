@@ -26,8 +26,9 @@ struct Task {
 
     void begin(
         task_func_type task_main, 
-        void* context, 
+        void* context,
         CpuCore core_id = CpuCore::system,
+        uint32_t stack_size = 4096,
         uint8_t priority = 0) 
     {
         _task_data.task_main = task_main;
@@ -36,7 +37,7 @@ struct Task {
         auto err = xTaskCreatePinnedToCore(
             task_main, 
             _name, 
-            4096, 
+            stack_size,
             &_task_data, 
             tskIDLE_PRIORITY + priority,
             &_handle, 

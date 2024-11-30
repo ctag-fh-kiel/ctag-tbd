@@ -14,7 +14,7 @@ target_link_libraries(tbd_app_simulator
         tbd_display
         tbd_drivers
         tbd_helpers
-        tbd_network
+        tbd_api
         tbd_presets
         tbd_sound_processor
         tbd_system

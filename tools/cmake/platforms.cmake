@@ -209,6 +209,11 @@ function(tbd_platform_indicators platform)
     tbd_store_or_return("${arg_INDICATORS}" ${ARGN})
 endfunction()
 
+function(tbd_platform_apis platform)
+    tbd_platform_attrs(${platform})
+    tbd_store_or_return("${arg_APIS}" ${ARGN})
+endfunction()
+
 ## platform methods ##
 
 # linearized summary of active features
@@ -296,18 +301,6 @@ function(tbd_platform_get_features platform)
         set(display TBD_DISPLAY=0)
     endif()
 
-    if (wifi IN_LIST arg_APIS)
-        list(APPEND apis "TBD_API_WIFI=1")
-    else()
-        list(APPEND apis "TBD_API_WIFI=0")
-    endif()
-
-    if (serial IN_LIST arg_APIS)
-        list(APPEND apis "TBD_API_SERIAL=1")
-    else()
-        list(APPEND apis "TBD_API_SERIAL=0")
-    endif()
-
     tbd_cv_input_n_cvs("${arg_CV_INPUT}" VAR n_cvs)
     tbd_cv_input_n_triggers("${arg_CV_INPUT}" VAR n_triggers)
     set(features
@@ -323,7 +316,6 @@ function(tbd_platform_get_features platform)
         ${volume_control}
         INDICATOR=${indicators}
         ${file_system}
-        ${apis}
         ${audio_mechanism}
     )
     tbd_store_or_return("${features}" ${ARGN})

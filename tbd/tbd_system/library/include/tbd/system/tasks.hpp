@@ -19,7 +19,8 @@ concept TaskType = requires(
     void* _void_ptr
 ) {
     { task.is_running() } -> std::same_as<bool>;
-    { task.begin(_task_func, _void_ptr, core_id, _uint8_t) } -> std::same_as<void>;
+    { task.begin(_task_func, _void_ptr, core_id, _uint32_t, _uint8_t) } -> std::same_as<void>;
+    { task.begin(_task_func, _void_ptr, core_id, _uint32_t) } -> std::same_as<void>;
     { task.begin(_task_func, _void_ptr, core_id) } -> std::same_as<void>;
     { task.begin(_task_func, _void_ptr) } -> std::same_as<void>;
     { TaskT::sleep(_uint32_t) } -> std::same_as<void>;

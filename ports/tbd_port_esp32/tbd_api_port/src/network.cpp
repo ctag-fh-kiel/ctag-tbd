@@ -1,4 +1,4 @@
-#include <tbd/network.hpp>
+#include <tbd/api/common/network.hpp>
 
 #include "nvs_flash.h"
 #include "esp_netif.h"
@@ -14,7 +14,7 @@
 #include "mdns.h"
 #include "lwip/apps/netbiosns.h"
 #include <tbd/logging.hpp>
-#include <tbd/network/config.hpp>
+#include <tbd/api/common/config.hpp>
 
 
 #define EXAMPLE_ESP_MAXIMUM_RETRY  10

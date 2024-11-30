@@ -16,7 +16,7 @@ concept ModuleType = requires(ModuleT mod) {
     { mod.do_cleanup() } -> std::same_as<uint32_t>;
 };
 
-enum class TaskState {
+enum class TaskState : uint8_t {
     created      = 0,
     initializing = 1,
     running      = 2,
@@ -27,7 +27,7 @@ enum class TaskState {
 };
 
 
-template<ModuleType ModuleT, CpuCore core_id>
+template<ModuleType ModuleT, CpuCore core_id, uint32_t stack_size = 4096>
 struct ModuleTask : ModuleT {
     ModuleTask(const char* name): _task(name), _current_state(TaskState::created) {}
 
@@ -41,7 +41,7 @@ struct ModuleTask : ModuleT {
             return;
         }
         _desired_state = TaskState::running;
-        _task.begin(&task_main_wrapper, this);
+        _task.begin(&task_main_wrapper, this, core_id, stack_size);
     
         if (wait) {
             // wait until task main has started up

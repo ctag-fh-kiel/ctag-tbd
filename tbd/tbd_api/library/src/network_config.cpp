@@ -24,13 +24,10 @@ respective component folders / files if different from this license.
 #include <fstream>
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 #include <dirent.h>
 #include <tbd/logging.hpp>
 
-using namespace rapidjson;
-
-
+namespace rj = rapidjson;
 
 namespace tbd::network {
 
@@ -47,7 +44,7 @@ void NetworkConfig::print() {
 }
 
 void NetworkConfig::set_from_json(const std::string &data) {
-    Document d;
+    rj::Document d;
     d.Parse(data);
     if(d.HasParseError()) return;
     // Value obj(kObjectType);
@@ -57,7 +54,7 @@ void NetworkConfig::set_from_json(const std::string &data) {
 }
 
 std::string NetworkConfig::get(const std::string &id) {
-    Value s(kStringType);
+    rj::Value s(rj::kStringType);
     s.CopyFrom(m[id], m.GetAllocator());
     return s.GetString();
 }
@@ -65,9 +62,9 @@ std::string NetworkConfig::get(const std::string &id) {
 void NetworkConfig::reset() {
     if (!m.HasMember("configuration")) return;
     if (!m["configuration"].HasMember("wifi")) return;
-    Value ssid("ctag-tbd");
-    Value pwd("");
-    Value mode("ap");
+    rj::Value ssid("ctag-tbd");
+    rj::Value pwd("");
+    rj::Value mode("ap");
     m["configuration"]["wifi"]["ssid"] = ssid.Move();
     m["configuration"]["wifi"]["pwd"] = pwd.Move();
     m["configuration"]["wifi"]["mode"] = mode.Move();

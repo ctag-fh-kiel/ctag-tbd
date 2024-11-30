@@ -1,7 +1,6 @@
 #include <tbd/sound_manager/common/module.hpp>
 
 #include <tbd/drivers/codec.hpp>
-#include <tbd/system/cpu_cores.hpp>
 #include <tbd/common/audio.hpp>
 #include <tbd/sound_manager/common/audio_consumer_type.hpp>
 

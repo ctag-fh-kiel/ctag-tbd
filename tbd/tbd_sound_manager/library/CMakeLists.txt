@@ -1,4 +1,7 @@
-# add sources to config, headers added for intellij
+if ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
+    set(extra_libs tbd_sound_manager_port)
+endif()
+
 file(GLOB SRCS_FILES
     include/tbd/**/*.hpp    
     src/*.cpp
@@ -14,11 +17,12 @@ target_link_libraries(tbd_sound_manager
         tbd_common
         tbd_sound_registry
         tbd_sound_manager_common
-        ${TBD_SOUND_MANAGER_PORT_LIB}
+        tbd_drivers
+        ${extra_libs}
     PRIVATE
         tbd_system
         tbd_storage
-        tbd_drivers
+
         tbd_presets
         tbd_config
         tbd_calibration

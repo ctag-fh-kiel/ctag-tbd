@@ -1,7 +1,7 @@
 #include <tbd/version.hpp>
 
 
-namespace CTAG {
+namespace tbd::sysinfo {
 
 const std::string hardware_type("{{ build_info.hardware }}");
 const std::string firmware_version("{{ build_info.firmware }}");

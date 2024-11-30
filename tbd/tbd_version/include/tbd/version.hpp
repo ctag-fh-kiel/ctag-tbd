@@ -2,7 +2,7 @@
 #include <cstdint>
 
 
-namespace CTAG {
+namespace tbd::sysinfo {
 
 extern const std::string hardware_type;
 extern const std::string firmware_version;
