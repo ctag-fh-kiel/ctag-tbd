@@ -1,25 +1,8 @@
 /*
-MIT License
-
-Copyright (c) 2020 nopnop2002
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+ * font8x8_basic.h
+ *
+ *  Created on: 2017/05/03
+ *      Author: yanbe
  */
 
 #ifndef MAIN_FONT8X8_BASIC_H_
@@ -27,16 +10,16 @@ SOFTWARE.
 
 /*
    Constant: font8x8_basic_tr
-   Contains an 90 digree transposed 8x8 font map for unicode points 
+   Contains an 90 digree transposed 8x8 font map for unicode points
    U+0000 - U+007F (basic latin)
-   
+
    To make it easy to use with SSD1306's GDDRAM mapping and API,
    this constant is an 90 degree transposed.
    The original version written by Marcel Sondaar is availble at:
-   https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h 
+   https://github.com/dhepper/font8x8/blob/master/font8x8_basic.h
 
    Conversion is done via following procedure:
-   
+
 	for (int code = 0; code < 128; code++) {
 		uint8_t trans[8];
 		for (int w = 0; w < 8; w++) {
@@ -45,7 +28,7 @@ SOFTWARE.
 				trans[w] |= ((font8x8_basic[code][b] & (1 << w)) >> w) << b;
 			}
 		}
-	
+
 		for (int w = 0; w < 8; w++) {
 			if (w == 0) { printf("    { "); }
 			printf("0x%.2X", trans[w]);
@@ -55,7 +38,7 @@ SOFTWARE.
 	}
 */
 
-static const uint8_t font8x8_basic_tr[128][8] = {
+static uint8_t font8x8_basic_tr[128][8] = {
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },   // U+0000 (nul)
     { 0x00, 0x04, 0x02, 0xFF, 0x02, 0x04, 0x00, 0x00 },   // U+0001 (Up Allow)
     { 0x00, 0x20, 0x40, 0xFF, 0x40, 0x20, 0x00, 0x00 },   // U+0002 (Down Allow)
@@ -187,5 +170,3 @@ static const uint8_t font8x8_basic_tr[128][8] = {
 };
 
 #endif /* MAIN_FONT8X8_BASIC_H_ */
-
-
