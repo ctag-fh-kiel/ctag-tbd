@@ -74,6 +74,8 @@ def _get_device_inputs(platform: Platform) -> Dict:
         inputs_type = 'bba1'
     elif platform == Platform.bba2:
         inputs_type = 'bba2'
+    elif platform == Platform.dada:
+        inputs_type = 'bba2'
     elif platform == Platform.desktop:
         inputs_type = 'desktop'
     elif platform == Platform.simulator:

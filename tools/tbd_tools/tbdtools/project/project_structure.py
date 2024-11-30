@@ -7,7 +7,7 @@ from git import Optional
 from pydantic.dataclasses import dataclass
 
 
-
+# TODO: determine from files in config/platforms
 @unique
 class Platform(Enum):
     v1        = 'v1'
@@ -17,11 +17,12 @@ class Platform(Enum):
     mk2       = 'mk2'
     bba1      = 'bba1'
     bba2      = 'bba2'
+    dada      = 'dada'
     desktop   = 'desktop'
     simulator = 'simulator'
 
 
-
+# TODO: read form json file
 def get_platform_description(platform: Platform) -> str:
     descriptions = {
         'v1'       : 'TBD mk1 rev2 WM8978, ESP ADC',
@@ -31,6 +32,7 @@ def get_platform_description(platform: Platform) -> str:
         'mk2'      : 'TBD MK2 WM8978, STM32 CVs/Trigs',
         'bba1'     : 'TBD BBA MIDI, es8388',
         'bba2'     : 'TBD BBA MIDI, aic3254',
+        'dada'     : 'TBD DADA MIDI and MIDI host',
         'desktop'  : 'Desktop App',
         'simulator': 'TBD firmware simulator'
     }
