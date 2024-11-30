@@ -40,7 +40,7 @@ struct Task {
             &_task_data, 
             tskIDLE_PRIORITY + priority,
             &_handle, 
-            0);
+            static_cast<BaseType_t>(core_id));
         if (err != pdPASS) {
             TBD_LOGE("tbd_system", "failed to create task %s", _name);
             _handle = nullptr;
