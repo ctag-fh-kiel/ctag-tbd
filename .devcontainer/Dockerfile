@@ -84,12 +84,12 @@ CMD ["/bin/bash", "-c"]
 #### c++ package manger  ####
 
 # required to generate TBD documentation
-FROM sphinx_docs_stage AS tbd_package_manager_stage
+#FROM sphinx_docs_stage AS tbd_package_manager_stage
+#
+#ENV TBD_ENV_NO_VCPKG=0
+#ENV VCPKG_ROOT=/opt/vcpkg
+#
+#RUN "$TBD_INIT" install-vcpkg && "$TBD_INIT" integrate-vcpkg
 
-ENV TBD_ENV_NO_VCPKG=0
-ENV VCPKG_ROOT=/opt/vcpkg
-
-RUN "$TBD_INIT" install-vcpkg && "$TBD_INIT" integrate-vcpkg
-
-ENTRYPOINT [ "/opt/esp/entrypoint.sh" ]
-CMD ["/bin/bash", "-c"]
+#ENTRYPOINT [ "/opt/esp/entrypoint.sh" ]
+#CMD ["/bin/bash", "-c"]
