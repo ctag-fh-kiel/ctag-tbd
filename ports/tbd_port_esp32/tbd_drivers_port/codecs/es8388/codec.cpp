@@ -48,7 +48,7 @@ es8388 codec;
 
 namespace tbd::drivers {
 
-void Codec::InitCodec() {
+void Codec::init() {
     ESP_LOGI("BBA Codec", "Starting i2s setup...");
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(i2s_port_t(0), I2S_ROLE_MASTER);
     chan_cfg.auto_clear = false;
@@ -100,6 +100,10 @@ void Codec::InitCodec() {
         ESP_LOGE("BBA Codec", "Error: Could not find codec!");
     }
     codec.init();
+}
+
+void Codec::deinit() {
+
 }
 
 void Codec::HighPassEnable() {

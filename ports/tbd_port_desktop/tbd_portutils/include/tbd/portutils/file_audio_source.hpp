@@ -29,7 +29,7 @@ struct FileAudioSource {
         int nread = tinywav_read_f(&_file, sample_buffer, chunk_size);
 
         // too little data assume end of file
-        if (nread != 32) {
+        if (nread != chunk_size) {
             if(_file.f == nullptr) {
                 return false;
             }

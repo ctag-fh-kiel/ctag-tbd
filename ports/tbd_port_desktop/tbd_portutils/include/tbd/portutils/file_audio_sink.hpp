@@ -3,7 +3,9 @@
 #include <string>
 #include <tinywav.h>
 
+#include <tbd/logging.hpp>
 #include <tbd/common/audio.hpp>
+
 
 
 namespace tbd::common {
@@ -14,34 +16,21 @@ struct FileAudioSink {
     }
 
     bool open(const std::string& file_name) {
-        return tinywav_open_read(&_file, file_name.c_str(), TW_INTERLEAVED, TW_FLOAT32) == 0;
+        return tinywav_open_write(&_file, 2, TBD_SAMPLE_RATE,
+            TW_FLOAT32, TW_INTERLEAVED, file_name.c_str()) == 0;
     }
 
     void close() {
         if (_file.f == nullptr) {
             return;
         }
-        return tinywav_close_read(&_file);
+        return tinywav_close_write(&_file);
     }
 
-    bool read_chunk(float* sample_buffer, size_t chunk_size) {
-        // try to read chunk
-        int nread = tinywav_read_f(&_file, sample_buffer, chunk_size);
-
-        // too little data assume end of file
-        if (nread != 32) {
-            if(_file.f == nullptr) {
-                return false;
-            }
-            tinywav_read_reset(&_file);
-
-            // second attempt at reading chunk after rewinding
-            nread = tinywav_read_f(&_file, sample_buffer, chunk_size);
-        }
-
-        // something is wrong
-        if (nread != 32) {
-            return false;
+    bool write_chunk(float* sample_buffer, size_t chunk_size) {
+        auto nwrite = tinywav_write_f(&_file, sample_buffer, chunk_size);
+        if (nwrite != (chunk_size * _file.numChannels)) {
+            TBD_LOGV("portutils", "error writing to audio file");
         }
         return true;
     }

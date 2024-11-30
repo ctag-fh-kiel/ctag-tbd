@@ -21,6 +21,7 @@ void Codec::init() {
 
 void Codec::deinit() {
     input_file.close();
+    output_file.close();
 }
 
 void Codec::HighPassEnable() {
@@ -44,7 +45,7 @@ void Codec::ReadBuffer(float* buf, uint32_t sz) {
 }
 
 void Codec::WriteBuffer(float* buf, uint32_t sz) {
-    // no output
+    output_file.write_chunk(buf, sz);
 }
 
 }
