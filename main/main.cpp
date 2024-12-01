@@ -43,12 +43,14 @@ respective component folders / files if different from this license.
     #include <tbd/drivers/file_system.hpp>
 #endif
 
-#ifdef TBD_API_WIFI
+#if TBD_API_WIFI
     #include <tbd/network.hpp>
     #include <tbd/network/config.hpp>
     #include <tbd/api/rest_api.hpp>
-#elif TBD_API_SERIAL
-    #include "SerialAPI.hpp"
+#endif
+
+#if TBD_API_SERIAL
+    #include <tbd/api/serial_api.hpp>
 #endif
 
 
@@ -85,7 +87,7 @@ void app_main() {
 
     tbd::audio::SoundProcessorManager::begin();
 
-    #ifdef TBD_API_WIFI
+    #if TBD_API_WIFI
         tbd::network::NetworkConfig network_config;
         tbd::Network::SetSSID(network_config.ssid());
         tbd::Network::SetPWD(network_config.pwd());
@@ -94,9 +96,10 @@ void app_main() {
         tbd::Network::SetMDNSName(network_config.mdns_name());
         tbd::Network::Up();
         tbd::api::RestApi::begin();
-    #elif TBD_API_SERIAL
-#error "whoops"
-        CTAG::SAPI::SerialAPI::StartSerialAPI();
+    #endif
+
+    #if TBD_API_SERIAL
+        tbd::api::SerialApi::begin();
     #endif
 }
 
