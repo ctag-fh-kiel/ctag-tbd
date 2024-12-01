@@ -38,4 +38,5 @@ target_link_libraries(${COMPONENT_LIB}
             tbd_api_common
             tbd_sound_manager
             tbd_presets
+            tbd_calibration
 )

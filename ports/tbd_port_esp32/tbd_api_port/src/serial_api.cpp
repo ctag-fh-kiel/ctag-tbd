@@ -57,10 +57,9 @@ private:
     } pState = IDLE;
 
     std::string _cmd;
-    char _data;
 
-    static const char _stx = 0x02;
-    static const char _etx = 0x03;
+    static constexpr char _stx = 0x02;
+    static constexpr char _etx = 0x03;
 };
 
 // module task instance
@@ -84,6 +83,7 @@ void SerialApiImpl::send_string(const char* s) {
 
 uint32_t SerialApiImpl::do_begin() {
     init_uart();
+    return 0;
 }
 
 uint32_t SerialApiImpl::do_work() {
@@ -113,6 +113,11 @@ uint32_t SerialApiImpl::do_work() {
             uart_write_bytes(UART_NUM_0, &enq, 1);
         }
     }*/
+    return 0;
+}
+
+uint32_t SerialApiImpl::do_cleanup() {
+    return 0;
 }
 
 void SerialApiImpl::process_command(const std::string &cmd) {
@@ -316,7 +321,13 @@ void SerialApiImpl::process_command(const std::string &cmd) {
 
 namespace tbd::api {
 
-void SerialApi::
+void SerialApi::begin() {
+    serial_api.begin();
+}
+
+void SerialApi::end() {
+    serial_api.end();
+}
 
 
 }
