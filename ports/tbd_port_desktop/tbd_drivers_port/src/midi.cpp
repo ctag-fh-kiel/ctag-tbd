@@ -2,15 +2,15 @@
 
 namespace tbd::drivers {
 
-void Midi::Init() {
+void Midi::init() {
 
 }
 
-uint8_t* Midi::Update() {
+uint8_t* Midi::update() {
     return nullptr;
 }
 
-void Midi::Flush() {
+void Midi::flush() {
 
 }
 

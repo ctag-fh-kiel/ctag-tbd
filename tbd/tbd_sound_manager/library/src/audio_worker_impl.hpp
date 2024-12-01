@@ -83,7 +83,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
     pd.buf = audio_slice;
 
     // update data from ADCs and GPIOs for real-time control
-    InputManager::Update(&pd.trig, &pd.cv);
+    InputManager::update(&pd.trig, &pd.cv);
 
     TBD_TIMEOUT_ENSURE_OPS_PER_SECOND(timeout, TBD_SAMPLE_RATE / TBD_SAMPLES_PER_CHUNK);
     SoundLevel sound_level(sound_level_worker);    
@@ -118,7 +118,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
                 audio_slice[i * 2 + 1] *= lramp[i];
             }
         } else if (ngState != NG_OPEN) {
-            memset(audio_slice, 0, TBD_SAMPLES_PER_CHUNK * 2 * sizeof(float));
+            memset(audio_slice, 0, TBD_CHUNK_BUFFER_SIZE);
         }
     } else if (params.noiseGateCfg == 2) { // left channel
         peakL = 0.95f * peakL + 0.05f * maxl;

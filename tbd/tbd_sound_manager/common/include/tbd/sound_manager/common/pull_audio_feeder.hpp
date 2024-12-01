@@ -52,7 +52,7 @@ struct PullAudioFeeder {
     }
 
 private:
-    float fbuf[TBD_SAMPLES_PER_CHUNK * 2];
+    float fbuf[TBD_CHUNK_BUFFER_LENGTH];
     AudioConsumerT _consumer;
 };
 

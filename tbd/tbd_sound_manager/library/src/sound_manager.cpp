@@ -41,16 +41,13 @@ void SoundProcessorManager::begin(AudioParams&& sound_params) {
     // #else ...
 
     // init control
-    InputManager::Init();
+    InputManager::init();
     // init codec
 
     // generate internal data
     updateConfiguration();
 
-#ifndef CONFIG_TBD_PLATFORM_STR
-    
-#endif
-    InputManager::FlushBuffers();
+    InputManager::flush();
     // create audio thread
 
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)

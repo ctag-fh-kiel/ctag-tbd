@@ -67,12 +67,25 @@ respective component folders / files if different from this license.
 namespace tbd::drivers {
 
 struct Midi final {
-    static void Init();
+    static void init();
     static void deinit();
 
-    TBD_IRAM static uint8_t* Update();
+    /** @brief fetch current CV and trigger values
+     *
+     *  @warinig: The returned buffer is not owned by caller and multiple calls change
+     *            its contents, do not keep references to buffer.
+     *
+     *  @warning: Pay close attention since raw output data needs to be interpreted
+     *            correctly.
+     *
+     *  @note: The MIDI CV module returns both control voltages and triggers.
+     *
+     *  @return N_CVS float control voltage values followd by N_TRIGS uint8_t trigger
+     *          values
+     */
+    TBD_IRAM static uint8_t* update();
 
-    static void Flush();
+    static void flush();
 
     enum midiStatusValues
     {

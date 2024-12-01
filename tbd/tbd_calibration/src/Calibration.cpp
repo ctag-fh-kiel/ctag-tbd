@@ -188,7 +188,7 @@ void Calibration::acquireData(std::vector<uint32_t> &d) {
     int cnt = 0;
     uint32_t avgdata[4] = {0, 0, 0, 0};
     while (event_queue->try_pop()) {
-        drivers::ADC::Update();
+        drivers::ADC::update();
         drivers::ADC::GetChannelVals(data);
         for (int i = 0; i < 4; i++) {
             avgdata[i] += data[i];
@@ -251,7 +251,9 @@ void Calibration::calcPiecewiseLinearCoeffs(
 }
 
 void TBD_IRAM Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr) {
-#if defined(CONFIG_TBD_PLATFORM_STR)
+#if CONFIG_TBD_PLATFORM_STR
+    // use strämpler calibration preset
+
     // -1.5V .. 5.5V unipolar
     mapOutPtr[0] = adcInPtr[0] * 0.00034188034188f;
     mapOutPtr[1] = adcInPtr[1] * 0.00034188034188f;
@@ -263,7 +265,6 @@ void TBD_IRAM Calibration::MapCVData(const uint16_t *adcInPtr, float *mapOutPtr)
     mapOutPtr[5] = adcInPtr[5] * 0.0002442002442f;
     mapOutPtr[6] = adcInPtr[6] * 0.0002442002442f;
     mapOutPtr[7] = adcInPtr[7] * 0.0002442002442f;
-#elif defined(CONFIG_TBD_PLATFORM_MK2)
 #else
     // real-cv ins 0-1, pots 2-3
     for (int i = 0; i < N_CVS; i++) {
@@ -297,7 +298,7 @@ void Calibration::ConfigCVChannels(
     calibration::CVConfig ch2,
     calibration::CVConfig ch3)
 {
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
+#if TBD_CV_ADC
     if (ch0 == calibration::CVConfig::CVUnipolar)
         drivers::ADC::SetCVINUnipolar(0);
     else
@@ -315,7 +316,7 @@ void Calibration::ConfigCVChannels(
 }
 
 void Calibration::RequestCalibrationOnReboot() {
-#if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_AEM)
+#if TBD_CV_ADC
     model.SetCalibrateOnReboot(true);
 #endif
 }

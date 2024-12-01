@@ -21,12 +21,6 @@ respective component folders / files if different from this license.
 ***************/
 
 #include <tbd/drivers/common/midi.hpp>
-// FIXME: remove this
-// =======
-// #include "Midi.hpp"
-// #include "Favorites.hpp"
-// #include "rp2040_spi_stream.hpp"
-// >>>>>>> origin/ediv:main/Midi.cpp
 
 #include <cstring>
 #include <algorithm>
@@ -828,7 +822,7 @@ static uint8_t loc_msg[8];            // Local message to be constructed in a ru
                 { len--;  ptr++; break; }
 
 // --- General BBA Initialisation Method ---
-void Midi::Init() {
+void Midi::init() {
 #ifdef DEBUG_MIDI
     debug_queue = xQueueCreate(10, sizeof(debug_msg));
         xTaskCreatePinnedToCore(debug_task, "debug", 4096, NULL, 5, NULL, 0);
@@ -859,7 +853,7 @@ void Midi::deinit() {
 }
 
 // ===  MIDI-parsing method (Please note: Running status is not processed correctly with this implementation!) ===
-uint8_t *Midi::Update() {
+uint8_t* Midi::update() {
     // --- Check if we have "leftover" data to be processed or if we need to ask for new MIDI-messages via polling ---
     if (len == 0)                        // Only read new buffer if we ran out of data
     {
@@ -898,7 +892,7 @@ uint8_t *Midi::Update() {
 #endif
 
         if (len == 0)                   // Nothing to process now, better luck next time?
-            return buf0;                // We return the identical CV / Trigger data as last round
+            return reinterpret_cast<uint8_t*>(buf0);                // We return the identical CV / Trigger data as last round
 
         ptr = msgBuffer;                // We found a new message (or several new messages), reassign message-pointer!
         len += missing_bytes_offset;    // We may have incomplete messages from last round to process here, so we add their (partial) length, zero otherwise!
@@ -1192,10 +1186,10 @@ uint8_t *Midi::Update() {
                 ptr++;                          // Skip invalid byte, may be simply a MIDI-clock message for instance
         }
     }
-    return buf0;
+    return reinterpret_cast<uint8_t*>(buf0);
 }
 
-void Midi::Flush() {
+void Midi::flush() {
 #if TBD_MIDI_INPUT_UART
     MidiUart::flush();
 #endif

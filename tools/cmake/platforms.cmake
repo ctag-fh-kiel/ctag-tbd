@@ -229,29 +229,51 @@ function(tbd_platform_get_features platform)
     tbd_cv_input_type("${arg_CV_INPUT}" VAR cv_input)
 
     if ("${cv_input}" STREQUAL "adc")
-        set(adc TBD_CV_ADC=1)
-        set(mcp3208 TBD_CV_MCP_3208=0)
-        set(stm32 TBD_CV_STM32=0)
-        set(midi TBD_CV_MIDI=0)
+        set(cv_flags
+            TBD_CV_ADC=1
+            TBD_CV_MCP_3208=0
+            TBD_CV_STM32=0
+            TBD_CV_MIDI=0
+            TBD_CV_DYNAMIC=0
+        )
     elseif ("${cv_input}" STREQUAL "mcp3208")
-        set(adc TBD_CV_ADC=0)
-        set(mcp3208 TBD_CV_MCP_3208=1)
-        set(stm32 TBD_CV_STM32=0)
-        set(midi TBD_CV_MIDI=0)
+        set(cv_flags
+                TBD_CV_ADC=0
+                TBD_CV_MCP_3208=1
+                TBD_CV_STM32=0
+                TBD_CV_MIDI=0
+                TBD_CV_DYNAMIC=0
+        )
     elseif ("${cv_input}" STREQUAL "stm32")
-        set(adc TBD_CV_ADC=0)
-        set(mcp3208 TBD_CV_MCP_3208=0)
-        set(stm32 TBD_CV_STM32=1)
-        set(midi TBD_CV_MIDI=0)
+        set(cv_flags
+                TBD_CV_ADC=0
+                TBD_CV_MCP_3208=0
+                TBD_CV_STM32=1
+                TBD_CV_MIDI=0
+                TBD_CV_DYNAMIC=0
+        )
     elseif ("${cv_input}" STREQUAL "midi")
-        set(adc TBD_CV_ADC=0)
-        set(mcp3208 TBD_CV_MCP_3208=0)
-        set(stm32 TBD_CV_STM32=0)
-        set(midi TBD_CV_MIDI=1)
+        set(cv_flags
+                TBD_CV_ADC=0
+                TBD_CV_MCP_3208=0
+                TBD_CV_STM32=0
+                TBD_CV_MIDI=1
+                TBD_CV_DYNAMIC=0
+        )
+    elseif ("${cv_input}" STREQUAL "dynamic_cv")
+        set(cv_flags
+                TBD_CV_ADC=0
+                TBD_CV_MCP_3208=0
+                TBD_CV_STM32=0
+                TBD_CV_MIDI=0
+                TBD_CV_DYNAMIC=1
+        )
     else()
         tbd_loge("failed to determine CV input, unknwon input chip ${arg_CV_INPUT}")
     endif()
 
+    # FIXME: this should be either be done in the input library or all inputs should
+    #        allow calibration
     tbd_cv_input_needs_calibration("${arg_CV_INPUT}")
     if (_return)
         set(calibration TBD_CALIBRATION=1)
@@ -307,10 +329,7 @@ function(tbd_platform_get_features platform)
         N_CVS=${n_cvs}
         N_TRIGS=${n_triggers}
         ${calibration}
-        ${adc}
-        ${mcp3208}
-        ${stm32}
-        ${midi}
+        ${cv_flags}
         ${display}
         ${audio_chips}
         ${volume_control}

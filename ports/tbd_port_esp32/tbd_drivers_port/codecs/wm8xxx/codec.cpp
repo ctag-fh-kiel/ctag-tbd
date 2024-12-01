@@ -555,7 +555,7 @@ namespace tbd::drivers {
 
 //// public codec interface implementation ////
 
-void Codec::InitCodec() {
+void Codec::init() {
     init_config_bus();
     initialize_codec();
     maybe_wait_to_settle(50);
@@ -567,6 +567,11 @@ void Codec::InitCodec() {
     release_config_bus();
 #endif
     is_ready = true;
+}
+
+
+void Codec::deinit() {
+    // FIXME: release drivers for updates etc
 }
 
 

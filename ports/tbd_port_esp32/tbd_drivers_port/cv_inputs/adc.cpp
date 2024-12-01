@@ -105,12 +105,40 @@ void init_analog_sub_system() {
 }
 #endif
 
+void init_ulp_program() {
+    /* load ULP program */
+    ESP_ERROR_CHECK(ulp_load_binary(0, ulp_drivers_bin_start,
+                                    (ulp_drivers_bin_end - ulp_drivers_bin_start) / sizeof(uint32_t)));
+
+#if TBD_CV_MCP_3208
+    const gpio_num_t GPIO_CS0 = TBD_MCP3208_PIN_CS;
+    const gpio_num_t GPIO_MOSI = TBD_MCP3208_PIN_MOSI;
+    const gpio_num_t GPIO_SCLK = TBD_MCP3208_PIN_SCLK;
+    const gpio_num_t GPIO_MISO = TBD_MCP3208_PIN_MISO;
+
+    rtc_gpio_init(GPIO_CS0);
+    rtc_gpio_set_direction(GPIO_CS0, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(GPIO_CS0, 0);
+
+    rtc_gpio_init(GPIO_MOSI);
+    rtc_gpio_set_direction(GPIO_MOSI, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(GPIO_MOSI, 0);
+
+    rtc_gpio_init(GPIO_SCLK);
+    rtc_gpio_set_direction(GPIO_SCLK, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(GPIO_SCLK, 0);
+
+    rtc_gpio_init(GPIO_MISO);
+    rtc_gpio_set_direction(GPIO_MISO, RTC_GPIO_MODE_INPUT_ONLY);
+    rtc_gpio_pullup_en(GPIO_MISO);
+#endif
 }
 
+uint16_t cv_data[N_CVS];
+
+}
 
 namespace tbd::drivers {
-
-uint16_t ADC::data[N_CVS];
 
 void IRAM_ATTR ulp_isr(void *arg) {
     static uint16_t data[N_CVS];
@@ -141,17 +169,18 @@ void IRAM_ATTR ulp_isr(void *arg) {
     xQueueSendToFrontFromISR(adcDataQueue, data, NULL);
 }
 
-void IRAM_ATTR ADC::Update() {
-    xQueueReceive(adcDataQueue, data, portMAX_DELAY);
+uint8_t* ADC::update() {
+    xQueueReceive(adcDataQueue, cv_data, portMAX_DELAY);
     // restart ULP
     SET_PERI_REG_MASK(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
+    return reinterpret_cast<uint8_t*>(cv_data);
 }
 
 uint16_t ADC::GetChannelVal(int ch) {
-    return data[ch];
+    return cv_data[ch];
 }
 
-void ADC::InitADCSystem() {
+void ADC::init() {
     esp_err_t err;
 
     // create data queue
@@ -201,43 +230,15 @@ void ADC::SetCVINBipolar(int ch) {
         adc1_config_channel_atten(ADC1_CHANNEL_4, ADC_ATTEN_DB_6); // GPIO32
     } else if (ch == 1) {
         //dac_output_voltage(DAC_CHAN_1, 57);
+        //dac_output_voltage(DAC_CHAN_1, 57);
         ESP_ERROR_CHECK(dac_oneshot_output_voltage(chan1_handle, 57));
         adc1_config_channel_atten(ADC1_CHANNEL_5, ADC_ATTEN_DB_6); // GPIO33
     }
 #endif
 }
 
-void ADC::init_ulp_program() {
-    /* load ULP program */
-    ESP_ERROR_CHECK(ulp_load_binary(0, ulp_drivers_bin_start,
-                                    (ulp_drivers_bin_end - ulp_drivers_bin_start) / sizeof(uint32_t)));
-
-#if TBD_CV_MCP_3208
-    const gpio_num_t GPIO_CS0 = TBD_MCP3208_PIN_CS;
-    const gpio_num_t GPIO_MOSI = TBD_MCP3208_PIN_MOSI;
-    const gpio_num_t GPIO_SCLK = TBD_MCP3208_PIN_SCLK;
-    const gpio_num_t GPIO_MISO = TBD_MCP3208_PIN_MISO;
-
-    rtc_gpio_init(GPIO_CS0);
-    rtc_gpio_set_direction(GPIO_CS0, RTC_GPIO_MODE_OUTPUT_ONLY);
-    rtc_gpio_set_level(GPIO_CS0, 0);
-
-    rtc_gpio_init(GPIO_MOSI);
-    rtc_gpio_set_direction(GPIO_MOSI, RTC_GPIO_MODE_OUTPUT_ONLY);
-    rtc_gpio_set_level(GPIO_MOSI, 0);
-
-    rtc_gpio_init(GPIO_SCLK);
-    rtc_gpio_set_direction(GPIO_SCLK, RTC_GPIO_MODE_OUTPUT_ONLY);
-    rtc_gpio_set_level(GPIO_SCLK, 0);
-
-    rtc_gpio_init(GPIO_MISO);
-    rtc_gpio_set_direction(GPIO_MISO, RTC_GPIO_MODE_INPUT_ONLY);
-    rtc_gpio_pullup_en(GPIO_MISO);
-#endif
-}
-
 void ADC::GetChannelVals(uint16_t *d) {
-    memcpy(d, data, sizeof(uint16_t) * N_CVS);
+    memcpy(d, cv_data, sizeof(uint16_t) * N_CVS);
 }
 
 }

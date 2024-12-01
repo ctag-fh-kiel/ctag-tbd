@@ -1,4 +1,3 @@
-#pragma once
 /***************
 CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 
@@ -19,17 +18,22 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#pragma once
 
+#include <cinttypes>
 #include <tbd/ram.hpp>
+
 
 namespace tbd::drivers {
 
-struct CVInputsStm32 final{
-    CVInputsStm32() = delete;
+struct DynamicCV {
+    DynamicCV() = delete;
 
-    static void Init();
-    
-    TBD_IRAM static void* Update();
+    static void init();
+
+    TBD_IRAM static uint8_t* update();
+    static void flush();
 };
 
 }
+

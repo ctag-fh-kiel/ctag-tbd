@@ -1,4 +1,4 @@
-## Stm32 cv_input class ##
+## Stm32 CV input ##
 
 set(TBD_STM32_PINS cs mosi miso sclk)
 

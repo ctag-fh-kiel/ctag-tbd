@@ -38,7 +38,7 @@ namespace {
 
 namespace tbd::drivers {
 
-void ADCStm32::Init() {
+void ADCStm32::init() {
     //Configuration for the SPI bus
     spi_bus_config_t buscfg={
             .mosi_io_num=TBD_STM32_PIN_MOSI,
@@ -76,7 +76,7 @@ void ADCStm32::Init() {
     currentTransaction = 0;
 }
 
-TBD_IRAM void* ADCStm32::Update() {
+uint8_t* ADCStm32::update() {
     esp_err_t ret;
     spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], portMAX_DELAY);
     currentTransaction ^= 0x1;
@@ -86,10 +86,10 @@ TBD_IRAM void* ADCStm32::Update() {
     ret = spi_slave_get_trans_result(RCV_HOST, &ret_trans, 0);
 
     if(ESP_OK == ret){
-        return ret_trans->rx_buffer;
+        return reinterpret_cast<uint8_t*>(ret_trans->rx_buffer);
     }
 
-    return transaction[currentTransaction].rx_buffer;
+    return reinterpret_cast<uint8_t*>(transaction[currentTransaction].rx_buffer);
 }
 
 }

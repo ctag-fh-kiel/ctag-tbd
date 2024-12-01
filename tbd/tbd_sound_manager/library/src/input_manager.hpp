@@ -30,15 +30,13 @@ namespace tbd::audio {
 class InputManager final{
 public:
     InputManager() = delete;
-    static void Init();
-    static void FlushBuffers();
+
     static void SetCVChannelBiPolar(bool const &v0, bool const &v1, bool const &v2, bool const &v3);
-    TBD_IRAM static void Update(uint8_t **trigs, float **cvs);
-private:
-#ifndef CONFIG_TBD_PLATFORM_MK2
-    TBD_DRAM static uint8_t trig_data[N_TRIGS];
-    TBD_DRAM static float cv_data[N_CVS];
-#endif
+
+    static void init();
+
+    TBD_IRAM static void update(uint8_t **trigs, float **cvs);
+    static void flush();
 };
 
 }

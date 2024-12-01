@@ -24,35 +24,53 @@ respective component folders / files if different from this license.
 #include <tbd/logging.hpp>
 #include <tbd/sound_manager/common/module.hpp>
 
-
 #if TBD_CALIBRATION
-#include <tbd/calibration.hpp>
+    #include <tbd/calibration.hpp>
 #endif
 
 #if TBD_CV_ADC || TBD_CV_MCP_3208
+    #if !TBD_CALIBRATION
+        #error "calibration is mandatory for ADC and MCP3208"
+    #endif
+
     #include <tbd/drivers/adc.hpp>
     #include <tbd/drivers/gpio.hpp>
 
-    uint8_t tbd::audio::InputManager::trig_data[N_TRIGS];
-    float tbd::audio::InputManager::cv_data[N_CVS];
+    using CVInput = tbd::drivers::ADC;
 #elif TBD_CV_STM32
-#include <tbd/drivers/adc_stm32.hpp>
+    #include <tbd/drivers/adc_stm32.hpp>
+
+    using CVInput = tbd::drivers::ADCStm32;
 #elif TBD_CV_MIDI
-#include <tbd/drivers/midi.hpp>
+    #include <tbd/drivers/midi.hpp>
+
+    using CVInput = tbd::drivers::Midi;
+#elif TBD_CV_DYNAMIC
+    #include <tbd/drivers/dynamic_cv.hpp>
+
+    using CVInput = tbd::drivers::DynamicCV;
 #else
     #error "no CV inputs configured"
 #endif
 
+
+namespace {
+
+#if TBD_CV_ADC || TBD_CV_MCP_3208
+
+    // buffers for converted uint16 CVs and triggers
+    float cv_data[N_CVS];
+    uint8_t trigger_data[N_TRIGS];
+
+#endif
+
+}
+
+
 namespace tbd::audio {
 
-TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
+void TBD_IRAM InputManager::update(uint8_t **trigs, float **cvs) {
 
-#if TBD_ADC
-    drivers::ADC::Update();
-#elif TBD_CV_STM32
-    uint8_t *data = (uint8_t *) drivers::ADCStm32::Update();
-    *cvs = (float*) data;
-    *trigs = &data[N_CVS*4];
     /* for debug purposes
     uint16_t *magic_number = (uint16_t*) &data[98];
     if(*magic_number != 0xcafe){
@@ -67,21 +85,31 @@ TBD_IRAM void InputManager::Update(uint8_t **trigs, float **cvs) {
         printf("\n");
     }
      */
-#elif TBD_CV_MIDI
-    uint8_t *data = drivers::Midi::Update();
-    *cvs = (float *) data;
-    *trigs = &data[N_CVS * 4];
-#endif
 
+    auto data = CVInput::update();
+
+
+// FIXME: are we ever going to have a generalised calibration flow and can we integrate
+//        triggers into ADC to make this more consistent
 #if TBD_CALIBRATION
-        Calibration::MapCVData(drivers::ADC::data, cv_data);
-        *cvs = cv_data;
+    // output only contains CVs as uint16
 
-    // update trig data
-        trig_data[0] = drivers::GPIO::GetTrig0();
-        trig_data[1] = drivers::GPIO::GetTrig1();
-        *trigs = trig_data;
+    // convert uint16 raw CVs to calibrated floats
+    Calibration::MapCVData(reinterpret_cast<uint16_t*>(data), cv_data);
+    auto _cvs = cv_data;
+
+    // fetch trigger values from pins
+    trigger_data[0] = drivers::GPIO::GetTrig0();
+    trigger_data[1] = drivers::GPIO::GetTrig1();
+    auto _trigs = trigger_data;
+#else
+    // raw output contains both CVs and triggers in the correct format
+
+    auto _cvs = reinterpret_cast<float*>(data);
+    auto _trigs = &data[N_CVS * 4];
 #endif
+    *cvs = _cvs;
+    *trigs = _trigs;
 }
 
 void InputManager::SetCVChannelBiPolar(const bool &v0, const bool &v1, const bool &v2, const bool &v3) {
@@ -94,16 +122,12 @@ void InputManager::SetCVChannelBiPolar(const bool &v0, const bool &v1, const boo
 #endif
 }
 
-void InputManager::Init() {
+void InputManager::init() {
     TBD_LOGI(tag, "Initializing control!");
 
+    CVInput::init();
 #if TBD_CV_ADC
-    drivers::ADC::InitADCSystem();
     drivers::GPIO::InitGPIO();
-#elif TBD_CV_STM32
-    drivers::ADCStm32::Init();
-#elif TBD_CV_MIDI
-    drivers::Midi::Init();
 #endif
 
 #if TDB_CALLIBRARION
@@ -112,10 +136,8 @@ void InputManager::Init() {
 
 }
 
-void InputManager::FlushBuffers() {
-#if TBD_CV_MIDI
-    drivers::Midi::Flush();
-#endif
+void InputManager::flush() {
+    CVInput::flush();
 }
 
 }

@@ -1,4 +1,4 @@
-## Midi cv_input class ##
+## hardware MIDI CV input ##
 
 set(TBD_MIDI_INPUT_TYPES uart usb rp2040 rtmidi)
 

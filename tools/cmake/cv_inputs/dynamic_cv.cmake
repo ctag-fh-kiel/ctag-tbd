@@ -1,9 +1,9 @@
-## Adc CV input ##
+## run time switchable CV input ##
 
 # helper for accessing Adc fields
 #
 #
-macro(tbd_adc_attrs)
+macro(tbd_dynamic_cv_attrs)
     set(attrs
             ${TBD_CV_INPUT_GENERAL_ATTRS}
     )
@@ -18,11 +18,11 @@ endmacro()
 #
 # @arg TYPE [enum]   has to be 'adc'
 #
-function (tbd_adc var_name)
-    tbd_adc_attrs(${ARGN})
+function (tbd_dynamic_cv var_name)
+    tbd_dynamic_cv_attrs(${ARGN})
 
-    if (NOT "${arg_TYPE}" STREQUAL "adc")
-        tbd_loge("adc cv_input type has to be 'adc' got '${arg_TYPE}'")
+    if (NOT "${arg_TYPE}" STREQUAL "dynamic_cv")
+        tbd_loge("dynamic_cv input type has to be 'dynamic_cv' got '${arg_TYPE}'")
     endif()
 
     if (NOT "${var_name}" STREQUAL "CHECK")
@@ -32,15 +32,15 @@ endfunction()
 
 ## adc methods ##
 
-function(tbd_adc_print_info adc)
+function(tbd_dynamic_cv_print_info adc)
     message("
 TBD cv_input configuration
 ---------------------------
-type: adc
+type: dynamic_cv
 ---------------------------
     ")
 endfunction()
 
-function(_tbd_adc_load json_data)
+function(_tbd_dynamic_cv_load json_data)
     #    tbd_store_or_return("" ${ARGN})
 endfunction()

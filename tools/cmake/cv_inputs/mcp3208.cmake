@@ -1,4 +1,4 @@
-## Mcp3208 cv_input class ##
+## Mcp3208 CV input ##
 
 set(TBD_MCP3208_PINS cs mosi miso sclk)
 
