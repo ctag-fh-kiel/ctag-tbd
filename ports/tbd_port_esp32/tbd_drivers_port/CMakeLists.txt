@@ -140,13 +140,6 @@ function(tbd_drivers var_name platform)
         list(APPEND srcs ${indicator_srcs})
 
         tbd_indicator_print_info("${arg_INDICATOR}")
-    endif() 
-
-    if (arg_FILE_SYSTEM)
-        list(APPEND includes file_system)
-        set(file_system_srcs fs.cpp)
-        list(TRANSFORM file_system_srcs PREPEND file_system/)
-        list(APPEND srcs ${file_system_srcs})
     endif()
 
     if (arg_DISPLAY)

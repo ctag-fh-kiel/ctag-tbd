@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/stringbuffer.h"
 #include <tbd/storage/resources.hpp>
 #include <tbd/logging.hpp>
-#include <tbd/storage/fileystem.hpp>
+#include <tbd/storage/file_system.hpp>
 #include <tbd/sound_manager/common/module.hpp>
 
 

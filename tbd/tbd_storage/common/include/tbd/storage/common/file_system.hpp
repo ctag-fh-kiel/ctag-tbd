@@ -14,3 +14,12 @@ namespace filesystem = std::filesystem;
 }
 
 #endif
+
+namespace tbd::drivers {
+
+class FileSystem {
+public:
+    static void begin();
+};
+
+}
