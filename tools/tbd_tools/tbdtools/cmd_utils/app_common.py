@@ -101,7 +101,7 @@ def create_app(name: str) -> typer.Typer:
     """
     return typer.Typer(
         name=name,
-        callback=common_callback, 
+        # callback=common_callback,
         pretty_exceptions_enable=False, help=greeting_header, no_args_is_help=True)
 
 

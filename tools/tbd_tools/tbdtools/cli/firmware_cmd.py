@@ -67,7 +67,7 @@ def emu_cmd(_ctx: typer.Context):
     run(['idf.py', 
          '-B', build_dir(),
          f'-DTBD_PLATFORM={platform}',
-         'qemu', 'monitor'], 
+         'qemu'],
          stdout=sys.stdout, stderr=sys.stderr)
 
 
@@ -96,6 +96,29 @@ def fullclean_cmd(_ctx: typer.Context):
     """ remove all build files and build config """
     build_dir = get_build_dir(_ctx)
     run(['idf.py', '-B', build_dir(), 'fullclean'], stdout=sys.stdout, stderr=sys.stderr)
+
+
+@firmware_group.command('flash')
+def flash_cmd(_ctx: typer.Context):
+    """ remove all build files and build config """
+    build_dir = get_build_dir(_ctx)
+    print('BILD DIR', build_dir())
+    run(['idf.py', '-B', build_dir(), 'flash'], stdout=sys.stdout, stderr=sys.stderr)
+
+
+@firmware_group.command('flash-app')
+def flash_app_cmd(_ctx: typer.Context):
+    """ remove all build files and build config """
+    build_dir = get_build_dir(_ctx)
+    print('BILD DIR', build_dir())
+    run(['idf.py', '-B', build_dir(), 'app-flash'], stdout=sys.stdout, stderr=sys.stderr)
+
+
+@firmware_group.command('monitor')
+def flash_cmd(_ctx: typer.Context):
+    """ remove all build files and build config """
+    build_dir = get_build_dir(_ctx)
+    run(['idf.py', '-B', build_dir(), 'monitor'], stdout=sys.stdout, stderr=sys.stderr)
 
 
 __all__ = ['firmware_group']
