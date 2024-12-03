@@ -24,17 +24,15 @@ RUN apt-get update -y && apt-get install -y \
     alsa-utils \
     bash-completion \
     pulseaudio \
-    libgcrypt20 \
-    libglib2.0-0 \
     libpixman-1-0 \
     libsdl2-2.0-0 \
     libslirp0 \
     libboost-all-dev \
     libasound2-dev \
+    libglib2.0-dev \
+    libgcrypt20-dev \
     fish \
     micro
-
-
 
 COPY ./tbd-init.sh "$TBD_PATH/"
 ENV PATH="$PATH:$TBD_PATH"
@@ -81,10 +79,27 @@ ENTRYPOINT [ "/opt/esp/entrypoint.sh" ]
 CMD ["/bin/bash", "-c"]
 
 
+#### qemu for esp32 ####
+
+FROM sphinx_docs_stage AS quemu_latest_stage
+
+RUN cd /opt \
+		&& git clone --quiet https://github.com/espressif/qemu.git \
+		&& cd qemu \
+		&& mkdir -p build \
+		&& cd build \
+		&& ../configure --target-list=xtensa-softmmu --without-default-features --enable-slirp  --enable-gcrypt \
+		&& make -j $(nproc) vga=no \
+		&& make install
+
+ENTRYPOINT [ "/opt/esp/entrypoint.sh" ]
+CMD ["/bin/bash", "-c"]
+
+
 #### c++ package manger  ####
 
 # required to generate TBD documentation
-#FROM sphinx_docs_stage AS tbd_package_manager_stage
+#FROM quemu_latest_stage AS tbd_package_manager_stage
 #
 #ENV TBD_ENV_NO_VCPKG=0
 #ENV VCPKG_ROOT=/opt/vcpkg
