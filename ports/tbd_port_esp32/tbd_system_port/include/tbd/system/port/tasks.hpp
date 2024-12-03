@@ -52,6 +52,8 @@ struct Task {
         vTaskDelay(time_ms / portTICK_PERIOD_MS);
     }
 
+    const char* name() const { return _name; }
+
 private:
     struct Context {
         task_func_type task_main;

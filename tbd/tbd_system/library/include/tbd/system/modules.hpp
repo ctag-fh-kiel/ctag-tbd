@@ -36,35 +36,40 @@ struct ModuleTask : ModuleT {
     }
 
     void begin(bool wait = false) {
+        TBD_LOGV("module_task", "starting task %s", _task.name());
+
         if (_current_state != TaskState::created) {
             TBD_LOGE("module_task", "trying to start non idle task");
             return;
         }
         _desired_state = TaskState::running;
         _task.begin(&task_main_wrapper, this, core_id, stack_size);
-    
-        if (wait) {
-            // wait until task main has started up
-            while (_current_state != TaskState::created);
 
-            // task was too fast for us, but all is well
-            if (_current_state != TaskState::running) {
-                return;
-            }
-
-            if (_current_state != TaskState::initializing) {
-                TBD_LOGE("module_task", "task failed to start");
-                return;
-            }
-
-            // wait until task main has started up
-            while (wait && _current_state < TaskState::running) {
-
-            }
+        if (!wait) {
+            return;
         }
+
+        // wait until task main has started up
+        while (_current_state != TaskState::created) {}
+
+        // task was too fast for us, but all is well
+        if (_current_state != TaskState::running) {
+            return;
+        }
+
+        if (_current_state != TaskState::initializing) {
+            TBD_LOGE("module_task", "task failed to start");
+            return;
+        }
+
+        // wait until task main has started up
+        while (wait && _current_state < TaskState::running) {}
+        TBD_LOGV("module_task", "task %s has started", _task.name());
     }
 
     void end(bool wait = false) {
+        TBD_LOGV("module_task", "shutting down task %s", _task.name());
+
         if (_current_state > TaskState::paused) {
             TBD_LOGE("module_task", "trying to shut down dead task");
             return;
@@ -82,11 +87,18 @@ struct ModuleTask : ModuleT {
             return;
         }
 
+        if (!wait) {
+            return;
+        }
+
         // wait indefinitely
-        while (wait && _current_state < _desired_state);
+        while (_current_state < _desired_state) {}
+        TBD_LOGV("module_task", "task %s ended", _task.name());
     }
 
     void pause_processing() {
+        TBD_LOGV("module_task", "pausing task %s", _task.name());
+
         if (_current_state > TaskState::paused) {
             TBD_LOGE("module_task", "trying to pause a dead task");
             return;
@@ -96,6 +108,7 @@ struct ModuleTask : ModuleT {
             TBD_LOGW("module_task", "trying to pause a starting task");
             return;
         }
+
         _desired_state = TaskState::paused;
     }
 
@@ -122,9 +135,14 @@ struct ModuleTask : ModuleT {
             return;
         }
         _desired_state = TaskState::running;
-            
+
+        if (!wait) {
+            return;
+        }
+
         // wait indefinitely
-        while (wait && _current_state != TaskState::paused);
+        while (_current_state != TaskState::paused) {}
+        TBD_LOGV("module_task", "resumed task %s", _task.name());
     }
 
 

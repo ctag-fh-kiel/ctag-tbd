@@ -275,6 +275,6 @@ uint32_t AudioConsumer::cleanup() {
 }
 
 
-AudioWorker<AudioConsumer, system::CpuCore::system> audio_worker("audio_worker"); 
+AudioWorker<AudioConsumer, system::CpuCore::audio> audio_worker("audio_worker");
 
 }
