@@ -48,7 +48,7 @@
             "trigger1": 36
         },
         "apis": ["wifi"],
-        "file_system": true,
+        "file_system": "wrapper",
         "display": false
     }
 }

@@ -29,7 +29,7 @@ respective component folders / files if different from this license.
 
 namespace tbd::drivers {
 
-void FileSystem::InitFS() {
+void FileSystem::begin() {
     ESP_LOGI("fs", "Initializing LITTLEFS");
 
     esp_vfs_littlefs_conf_t conf = {

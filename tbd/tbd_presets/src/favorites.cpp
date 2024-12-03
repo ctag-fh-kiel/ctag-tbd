@@ -42,13 +42,36 @@ using namespace tbd::favorites;
 
 namespace tbd {
 
+void Favorites::init() {
+    model = std::make_unique<FavoritesModel>();
+}
+
+
+void Favorites::StartUI() {
+#if CONFIG_TBD_PLATFORM_BBA
+    TouchPad::init();
+    std::vector<std::string> vs;
+    vs.emplace_back("Touch sensor");
+    vs.emplace_back("calibration:");
+    vs.emplace_back("Do not touch!");
+    Display::ShowUserString(vs);
+    system::Task::sleep(2000);
+    uint32_t touch_value;
+    TouchPad::calibrate();
+    xTaskCreatePinnedToCore(&Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
+#endif
+    ui_worker.begin();
+    ui_worker.enable();
+}
+
+
 string Favorites::GetAllFavorites() {
-    return model.GetAllFavorites();
+    return model->GetAllFavorites();
 }
 
 
 void Favorites::StoreFavorite(int const &id, const string &fav) {
-    model.SetFavorite(id, fav);
+    model->SetFavorite(id, fav);
     active_fav = id;
     ui_worker.clear();
 }
@@ -57,34 +80,16 @@ void Favorites::StoreFavorite(int const &id, const string &fav) {
 void Favorites::ActivateFavorite(const int &id) {
     if(id < 0 || id > 9) return;
     // NOTE: all checks if plugins exists and if presets exists are done in SPManager
-    string p0id = model.GetFavoritePluginID(id, 0);
-    int p0pre = model.GetFavoritePreset(id, 0);
+    string p0id = model->GetFavoritePluginID(id, 0);
+    int p0pre = model->GetFavoritePreset(id, 0);
     tbd::audio::SoundProcessorManager::SetSoundProcessorChannel(0, p0id);
     tbd::audio::SoundProcessorManager::ChannelLoadPreset(0, p0pre);
-    string p1id = model.GetFavoritePluginID(id, 1);
-    int p1pre = model.GetFavoritePreset(id, 1);
+    string p1id = model->GetFavoritePluginID(id, 1);
+    int p1pre = model->GetFavoritePreset(id, 1);
     tbd::audio::SoundProcessorManager::SetSoundProcessorChannel(1, p1id);
     tbd::audio::SoundProcessorManager::ChannelLoadPreset(1, p1pre);
     active_fav = id;
     ui_worker.clear();
-}
-
-
-void Favorites::StartUI() {
-#if CONFIG_TBD_PLATFORM_BBA
-        TouchPad::init();
-        std::vector<std::string> vs;
-        vs.emplace_back("Touch sensor");
-        vs.emplace_back("calibration:");
-        vs.emplace_back("Do not touch!");
-        Display::ShowUserString(vs);
-        system::Task::sleep(2000);
-        uint32_t touch_value;
-        TouchPad::calibrate();
-        xTaskCreatePinnedToCore(&Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
-#endif
-    ui_worker.begin();
-    ui_worker.enable();
 }
 
 

@@ -12,7 +12,7 @@
 
 namespace tbd::favorites {
 
-FavoritesModel model;
+std::unique_ptr<FavoritesModel> model;
 int32_t active_fav = -1;
 int32_t selected_fav = -1;
 
@@ -143,7 +143,7 @@ uint32_t UIWorker::do_work() {
                 //if(_event == LONG) uiMenuState = FAV_SELECT;
                 break;
             case FAV_ACTIVE_USTRING:
-                Display::PrepareDisplayFavoriteUString(active_fav, model.GetFavoriteName(active_fav), model.GetFavoriteUString(selected_fav));
+                Display::PrepareDisplayFavoriteUString(active_fav, model->GetFavoriteName(active_fav), model->GetFavoriteUString(selected_fav));
                 if (_event == SHORT) _state = CLEAR;
                 if (_event == LONG){
                     _state = FAV_SELECT;
@@ -159,7 +159,7 @@ uint32_t UIWorker::do_work() {
                     selected_fav++;
                     if (selected_fav > 9) selected_fav = 0;
                 }
-                Display::LoadFavorite(selected_fav, model.GetFavoriteName(selected_fav));
+                Display::LoadFavorite(selected_fav, model->GetFavoriteName(selected_fav));
                 //Display::Confirm(favSel);
                 if (_event == LONG) {
                     active_fav = selected_fav;

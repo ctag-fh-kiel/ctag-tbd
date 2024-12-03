@@ -39,7 +39,7 @@ namespace fs = tbd::storage::filesystem;
 namespace tbd::audio {
 
 SPManagerDataModel::SPManagerDataModel() {
-    TBD_LOGV(tag, "loading sound manager config file");
+    TBD_LOGI(tag, "loading sound manager config file");
 
     auto config_path = storage::get_fs_path("data/spm-config.jsn");
     if (!config_path) {
@@ -48,6 +48,8 @@ SPManagerDataModel::SPManagerDataModel() {
     }
     _config_file = config_path->string();
     loadJSON(m, *_config_file);
+
+    TBD_LOGV(tag, "loaded sound manager config file");
 
     getSoundProcessors();
     validateActiveProcessors();

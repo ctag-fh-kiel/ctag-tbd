@@ -40,7 +40,6 @@ public:
      */
     static void begin(AudioParams&& sound_params = {});
 
-
     static void end();
 
     static const char *GetCStrJSONSoundProcessors();

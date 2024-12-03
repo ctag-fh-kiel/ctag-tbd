@@ -2,7 +2,7 @@
 
 #include <esp_flash.h>
 #include <tbd/logging.hpp>
-#include "sdkconfig.h"
+
 
 namespace tbd {
 namespace storage {

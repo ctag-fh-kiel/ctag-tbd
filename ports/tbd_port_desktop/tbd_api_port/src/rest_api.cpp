@@ -318,7 +318,8 @@ void RestApi::begin(const RestApiParams& params) {
                                         std::shared_ptr<HttpServer::Request> request) {
         try {
             auto web_root_path = std::filesystem::canonical("spiffs_image/www");
-            auto path = canonical(web_root_path / request->path);
+            auto path = canonical(
+                web_root_path / std::filesystem::path(request->path).relative_path());
             // Check if path is within web_root_path
             if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
                 !equal(web_root_path.begin(), web_root_path.end(), path.begin()))

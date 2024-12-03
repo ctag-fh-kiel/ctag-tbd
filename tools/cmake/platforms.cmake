@@ -4,7 +4,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/cv_inputs.cmake)
 
 set(TBD_PLATFORM_SYSTEMS esp32 desktop)
 set(TBD_PLATFORM_AUDIO_CHIPS wm8731 wm8978 wm8974 aic3254 es8388 rtaudio fileaudio)
-set(TBD_PLATFORM_APIS wifi serial)
+set(TBD_PLATFORM_APIS wifi serial shell)
+set(TBD_PLATFORM_FILE_SYSTEMS std wrapper)
 
 
 #### platform setup ####
@@ -94,15 +95,15 @@ endmacro()
 #
 macro(tbd_platform_attrs)
     set(bools
-        VOLUME_CONTROL 
-        FILE_SYSTEM 
+        VOLUME_CONTROL
         DISPLAY
     )
     set(attrs
         NAME 
         SYSTEM 
         ARCH
-        AUDIO_OUTPUT 
+        AUDIO_OUTPUT
+        FILE_SYSTEM
     )
     set(multi_attrs
         INPUTS
@@ -136,12 +137,16 @@ function (tbd_platform var_name)
     # check if speficied components are valid
     list (FIND TBD_PLATFORM_SYSTEMS ${arg_SYSTEM} _index)
     if (${_index} LESS 0) 
-        tbd_loge("unknwon system '${arg_SYSTEM}, has to be one of ${TBD_PLATFTBD_PLATFORM_SYSTEMS}")
+        tbd_loge("unknown system '${arg_SYSTEM}' has to be one of ${TBD_PLATFTBD_PLATFORM_SYSTEMS}")
     endif()
 
     list (FIND TBD_PLATFORM_AUDIO_CHIPS ${arg_AUDIO_OUTPUT} _index)
     if (${_index} LESS 0) 
-        tbd_loge("unknwon audio chip '${arg_AUDIO_OUTPUT}, has to be one of ${TBD_PLATFORM_AUDIO_CHIPS}")
+        tbd_loge("unknown audio chip '${arg_AUDIO_OUTPUT}' has to be one of ${TBD_PLATFORM_AUDIO_CHIPS}")
+    endif()
+
+    if (NOT "${arg_FILE_SYSTEM}" IN_LIST TBD_PLATFORM_FILE_SYSTEMS)
+        tbd_loge("unknown file system '${arg_FILE_SYSTEM}' has to be one of ${TBD_PLATFORM_FILE_SYSTEMS}")
     endif()
 
     tbd_indicator(CHECK "${arg_INDICATOR}")
@@ -311,12 +316,6 @@ function(tbd_platform_get_features platform)
         set(volume_control TBD_VOLUME_CONTROL=0)
     endif()
 
-    if (arg_FILE_SYSTEM)
-        set(file_system TBD_FILE_SYSTEM=1)
-    else()
-        set(file_system TBD_FILE_SYSTEM=0)
-    endif()
-
     if (arg_DISPLAY)
         set(display TBD_DISPLAY=1)
     else()
@@ -334,7 +333,6 @@ function(tbd_platform_get_features platform)
         ${audio_chips}
         ${volume_control}
         INDICATOR=${indicators}
-        ${file_system}
         ${audio_mechanism}
     )
     tbd_store_or_return("${features}" ${ARGN})
@@ -395,13 +393,7 @@ function(tbd_platform_load_preset file)
     string(JSON arch GET "${config_obj}" arch)
     string(JSON audio_output_obj GET "${config_obj}" audio_output)
     string(JSON apis_obj GET "${config_obj}" apis)
-
     string(JSON file_system GET "${config_obj}" file_system)
-    if ("${file_system}") 
-        set(file_system "FILE_SYSTEM")
-    else()
-        unset(file_system)
-    endif()
 
     string(JSON display GET "${config_obj}" display)
     if ("${display}") 
@@ -443,7 +435,7 @@ function(tbd_platform_load_preset file)
         ${volume_control}
         INDICATOR ${indicator}
         APIS ${apis}
-        ${file_system}
+        FILE_SYSTEM ${file_system}
         ${display}
     )
     tbd_store_or_return("${new_platform}" ${ARGN})

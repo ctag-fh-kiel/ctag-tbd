@@ -3,12 +3,15 @@
  */
 #pragma once
 
+#if !TBD_FILE_SYSTEM_USE_WRAPPER
+    #error "file system wrapper not available in config"
+#endif
+
 #include <string>
 #include <optional>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <tbd/logging.hpp>
-
 
 namespace tbd::storage::filesystem {
 
@@ -59,6 +62,13 @@ struct path final {
             // std::string folder = _path.substr(0, lastSlash);
         }
         return _path;
+    }
+
+    path relative_path() const {
+        // does not check for multiple slashes
+        if (_path.length() > 0 && _path[0] == '/')
+            return path(_path.substr(1));
+        return *this;
     }
 
     operator const char* () {
@@ -122,7 +132,7 @@ inline bool is_regular_file(const path& path) {
 
 inline bool exists(const path& path) {
     struct stat info;
-    return stat(path.c_str(), &info) != 0;
+    return stat(path.c_str(), &info) == 0;
 }
 
 struct directory_iterator {

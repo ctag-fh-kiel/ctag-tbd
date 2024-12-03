@@ -30,7 +30,7 @@ respective component folders / files if different from this license.
 namespace tbd::favorites {
 
 FavoritesModel::FavoritesModel() {
-    auto config_path = storage::get_fs_path("/data/favs.json");
+    auto config_path = storage::get_fs_path("/data/favs.jsn");
     if (!config_path) {
         TBD_LOGE("favorites", "failed to load favorites config");
         return;

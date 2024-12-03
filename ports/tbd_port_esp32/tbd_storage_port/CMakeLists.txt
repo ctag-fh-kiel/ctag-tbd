@@ -6,7 +6,6 @@ file(GLOB SRCS_FILES
 
 idf_component_register(
     SRCS ${SRCS_FILES}
-    INCLUDE_DIRS include
     REQUIRES 
         spi_flash
         esp_netif 

@@ -27,6 +27,7 @@ respective component folders / files if different from this license.
 #include <cstdio>
 #include <regex>
 #include <tbd/heaps.hpp>
+#include <tbd/logging.hpp>
 
 
 #define MB_BUF_SZ 4096
@@ -41,7 +42,7 @@ void ConfigBase::loadJSON(rapidjson::Document &d, const std::string &fn) {
     //FILE*
     fp = fopen(fn.c_str(), "r");
     if (fp == NULL) {
-        // TBD_LOGE("JSON", "could not open file %s", fn.c_str());
+        TBD_LOGE("config", "failed to open json file %s for reading", fn.c_str());
         return;
     }
     //char readBuffer[512];
@@ -64,7 +65,7 @@ void ConfigBase::loadJSON(rapidjson::Document &d, const std::string &fn) {
         // TBD_LOGE("JSON", "Trying to replace with backup file %s", backup_file_name.c_str());
         fp = fopen(backup_file_name.c_str(), "r");
         if (fp == NULL) {
-            // TBD_LOGE("JSON", "Could not open file %s", backup_file_name.c_str());
+            TBD_LOGE("config", "failed to open backup JSON file %s for reading", backup_file_name.c_str());
             return;
         }
         //char readBuffer[512];
@@ -77,7 +78,7 @@ void ConfigBase::loadJSON(rapidjson::Document &d, const std::string &fn) {
         if(!d.HasParseError()){
             storeJSON(d, fn);
         }else{
-            // TBD_LOGE("JSON", "FATAL ERROR: Could not recover from backup file %s", backup_file_name.c_str());
+            TBD_LOGE("config", "syntax error in JSON file %s", backup_file_name.c_str());
         }
     }
 }
@@ -86,7 +87,7 @@ void ConfigBase::storeJSON(rapidjson::Document &d, const std::string &fn) {
     //FILE*
     fp = fopen(fn.c_str(), "w"); // non-Windows use "w"
     if (fp == NULL) {
-        // TBD_LOGE("JSON", "could not open file %s", fn.c_str());
+        TBD_LOGE("config", "failed to open JSON file %s for saving", fn.c_str());
         return;
     }
     //char writeBuffer[512];
@@ -106,7 +107,9 @@ void ConfigBase::printJSON(rapidjson::Value &v) {
 
 ConfigBase::ConfigBase() {
     buffer = (char *) heaps::malloc(MB_BUF_SZ, TBD_HEAPS_SPIRAM);
-    // if (buffer == nullptr) TBD_LOGE("Model Base", "Fatal: Out of mem!");
+    if (buffer == nullptr) {
+        TBD_LOGE("config", "failed to acquire JSON data buffer");
+    }
 }
 
 ConfigBase::~ConfigBase() {

@@ -39,8 +39,8 @@
             "trigger0": 39,
             "trigger1": 36
         },
-        "apis": ["wifi"],
-        "file_system": true,
-        "display": true
+        "apis": ["wifi", "shell"],
+        "file_system": "wrapper",
+        "display": false
     }
 }

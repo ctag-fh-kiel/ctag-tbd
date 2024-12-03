@@ -32,6 +32,8 @@ class Favorites final {
 public:
     Favorites() = delete;
 
+    static void init();
+
     static void StartUI();
 
     static string GetAllFavorites();

@@ -20,14 +20,12 @@ respective component folders / files if different from this license.
 ***************/
 #pragma once
 
-#if !TBD_FILE_SYSTEM
-    #error "file system is not available"
-#endif
 
 namespace tbd::drivers {
+
 class FileSystem {
 public:
-    static void InitFS();
+    static void begin();
 };
 
 }
