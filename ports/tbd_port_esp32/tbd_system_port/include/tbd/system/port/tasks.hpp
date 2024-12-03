@@ -52,7 +52,7 @@ struct Task {
         vTaskDelay(time_ms / portTICK_PERIOD_MS);
     }
 
-    const char* name() const { return _name; }
+    [[nodiscard]] const char* name() const { return _name; }
 
 private:
     struct Context {

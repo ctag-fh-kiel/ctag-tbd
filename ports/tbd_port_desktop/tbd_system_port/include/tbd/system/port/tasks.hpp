@@ -32,6 +32,8 @@ struct Task {
         std::this_thread::sleep_for(std::chrono::milliseconds(time_ms));
     }
 
+    [[nodiscard]] const char* name() const { return _name; }
+
 private:
     const char* _name;
     std::thread _thread;
