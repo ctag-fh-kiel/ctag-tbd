@@ -60,15 +60,27 @@ def build_cmd(_ctx: typer.Context):
 
 
 @firmware_group.command('emu', help='run the application in qemu')
-def emu_cmd(_ctx: typer.Context):
+def emu_cmd(_ctx: typer.Context,
+    gdb: bool = typer.Option(False)
+):
     """ build firmware """
     build_dir = get_build_dir(_ctx)
     platform = get_ctx(_ctx).platform.name
-    run(['idf.py', 
-         '-B', build_dir(),
-         f'-DTBD_PLATFORM={platform}',
-         'qemu'],
-         stdout=sys.stdout, stderr=sys.stderr)
+
+    args = [
+                'idf.py',
+                '-B', build_dir(),
+                f'-DTBD_PLATFORM={platform}',
+                'qemu',
+                # '--gdb',
+                # 'monitor'
+            ]
+    if gdb:
+        args.append('gdb')
+    else:
+        args.append('monitor')
+
+    run(args, stdout=sys.stdout, stderr=sys.stderr)
 
 
 @firmware_group.command('reconfigure')
