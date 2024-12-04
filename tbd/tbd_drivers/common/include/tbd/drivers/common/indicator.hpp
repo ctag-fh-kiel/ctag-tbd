@@ -27,7 +27,7 @@ struct Indicator {
     Indicator() = delete;
 
     // rgb are each 8 bit valued PWM
-    static void Init();
+    static void init();
 
     static void GetLedRGB(int &r, int &g, int &b);
     static void SetLedRGB(int r, int g, int b);

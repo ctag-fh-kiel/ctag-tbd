@@ -3,7 +3,7 @@
 
 namespace tbd::drivers {
 
-void Indicator::Init() {
+void Indicator::init() {
 
 }
 

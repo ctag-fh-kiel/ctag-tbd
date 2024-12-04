@@ -21,7 +21,7 @@
                 "sclk": 14
             }
         },
-        "audio_output": {
+        "audio": {
             "type": "wm8978",
             "volume_control": true,
             "pins": {
@@ -29,7 +29,7 @@
                     "cs": 5,
                     "mosi": 23,
                     "miso": 18,
-                    "sclk": -1
+                    "clk": -1
                 },
                 "i2s": {
                     "bclk": 21,
@@ -55,6 +55,7 @@
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
-        "display": true
+        "display": true,
+        "network": true
     }
 }

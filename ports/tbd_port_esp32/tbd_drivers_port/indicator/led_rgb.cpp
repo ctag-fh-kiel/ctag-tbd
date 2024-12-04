@@ -44,7 +44,7 @@ ledc_channel_config_t ledc_channel[3];
 
 namespace tbd::drivers {
 
-void Indicator::Init() {
+void Indicator::init() {
 
     // esp32sX does not support high speed mode
     #if SOC_LEDC_SUPPORT_HS_MODE

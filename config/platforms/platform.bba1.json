@@ -16,7 +16,7 @@
             "n_triggers": 40,
             "inputs": ["uart", "usb"]
         },
-        "audio_output": {
+        "audio": {
             "type": "es8388",
             "volume_control": true,
             "i2c_bus": 1,
@@ -39,6 +39,7 @@
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
-        "display": true
+        "display": true,
+        "network": true
     }
 }

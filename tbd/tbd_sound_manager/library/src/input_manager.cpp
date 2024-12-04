@@ -45,10 +45,10 @@ respective component folders / files if different from this license.
     #include <tbd/drivers/midi.hpp>
 
     using CVInput = tbd::drivers::Midi;
-#elif TBD_CV_DYNAMIC
-    #include <tbd/drivers/dynamic_cv.hpp>
+#elif TBD_CV_SIM
+    #include <tbd/drivers/cv_input.hpp>
 
-    using CVInput = tbd::drivers::DynamicCV;
+    using CVInput = tbd::drivers::CVInput;
 #else
     #error "no CV inputs configured"
 #endif

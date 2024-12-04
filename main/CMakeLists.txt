@@ -9,7 +9,7 @@ file(GLOB SRC_FILES *.cpp *.hpp)
 
 idf_component_register(SRCS ${SRC_FILES}
         INCLUDE_DIRS "."
-        REQUIRES app_update
+        REQUIRES app_update esp_http_server
 )
 target_link_libraries(${COMPONENT_LIB} PUBLIC 
         tbd_version 

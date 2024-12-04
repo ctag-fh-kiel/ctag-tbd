@@ -1,5 +1,7 @@
 #include <tbd/system/modules.hpp>
 
+#include <memory>
+
 #include <tbd/drivers/gpio.hpp>
 #include <tbd/favorites.hpp>
 #include <tbd/display.hpp>

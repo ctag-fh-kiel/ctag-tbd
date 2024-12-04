@@ -21,7 +21,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <string>
-#include <tbd/sound_manager/push_audio_feeder.hpp>
+#include <tbd/sound_manager/audio_worker.hpp>
 
 namespace tbd::audio {
 

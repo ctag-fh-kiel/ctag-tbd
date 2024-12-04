@@ -34,7 +34,6 @@ respective component folders / files if different from this license.
 #include "esp_http_server.h"
 #include <tbd/heaps.hpp>
 #include "esp_vfs.h"
-#include "cJSON.h"
 #include <tbd/sound_manager.hpp>
 #include <tbd/favorites.hpp>
 

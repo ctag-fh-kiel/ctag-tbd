@@ -4,7 +4,7 @@
     #error "audio loop is performance critical, compile in a single compilation unit"
 #endif
 
-#include <tbd/sound_manager/push_audio_feeder.hpp>
+#include <tbd/sound_manager/audio_worker.hpp>
 
 #include <tbd/sound_processor.hpp>
 #include <tbd/system/cpu_cores.hpp>

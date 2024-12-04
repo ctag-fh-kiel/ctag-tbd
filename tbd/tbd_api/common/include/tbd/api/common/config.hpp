@@ -22,8 +22,6 @@ respective component folders / files if different from this license.
 
 #include <string>
 #include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
-
 #include <tbd/config_base.hpp>
 
 

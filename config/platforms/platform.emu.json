@@ -1,15 +1,15 @@
 {
     "config_version": 1,
     "info": {
-        "name": "simulator",
-        "full_name": "TBD simulator",
-        "description": "firmware style TBB application for testing with files as input",
+        "name": "emu",
+        "full_name": "TBD BBA emulator",
+        "description": "TBD with mock hardware interfaces for Qemu debugging and testing",
         "mark": 1,
         "rev": 2
     },
     "config": {
-        "system": "desktop",
-        "arch": "desktop",
+        "system": "esp32",
+        "arch": "esp32s3",
         "cv_input": {
             "type": "sim_cv",
             "n_cvs": 90,
@@ -17,17 +17,20 @@
         },
         "audio": {
             "type": "sim_codec",
-            "volume_control": false
+            "volume_control": true
         },
         "indicator": {
             "type": "sim_indicator"
         },
         "inputs": {
-          "type": "gui"
+            "type": "gpio",
+            "button": null,
+            "trigger0": 39,
+            "trigger1": 36
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
-        "display": true,
+        "display": false,
         "network": false
     }
 }

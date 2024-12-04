@@ -28,7 +28,7 @@ namespace tbd::drivers {
 static led_strip_handle_t led_strip;
 static int _r, _g, _b;
 
-void Indicator::Init() {
+void Indicator::init() {
     ESP_LOGI("RGBLed", "RGB LED strip initialization");
     /* LED strip initialization with the GPIO and pixels number*/
     led_strip_config_t strip_config = {

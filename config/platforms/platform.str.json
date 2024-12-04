@@ -21,7 +21,7 @@
                 "sclk": 12
             }
         },
-        "audio_output": {
+        "audio": {
             "type": "wm8731",
             "volume_control": false,
             "pins": {
@@ -55,6 +55,7 @@
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
-        "display": true
+        "display": true,
+        "network": true
     }
 }

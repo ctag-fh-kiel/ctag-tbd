@@ -79,6 +79,8 @@ function(tbd_drivers var_name platform)
             tbd_midi_inputs_flags("${arg_CV_INPUT}" VAR midi_inputs)
             list(APPEND defines ${midi_inputs})
             # no ULP
+        elseif (cv_input_type STREQUAL sim_cv)
+            # no hardware drivers needed
         else ()
             tbd_loge("invalid CV input ${arg_CV_INPUT}")
         endif ()   
@@ -97,23 +99,41 @@ function(tbd_drivers var_name platform)
 
     # gather audio codec sources
 
-    if (DEFINED arg_AUDIO_OUTPUT)
-        if (arg_AUDIO_OUTPUT STRGREATER wm8)
+    tbd_codec_type("${arg_AUDIO}" VAR audio_codec_type)
+    if (DEFINED audio_codec_type)
+        if (audio_codec_type STRGREATER wm8)
             set(codec_includes codecs/wm8xxx)
             file(GLOB codec_srcs codecs/wm8xxx/*.?pp)
             list(APPEND libs esp_driver_spi)
-        elseif(arg_AUDIO_OUTPUT STREQUAL aic3254)
+            tbd_wm8xxx_volume_control("${arg_AUDIO}" VAR volume_control)
+            if (volume_control)
+                set(volume_control TBD_VOLUME_CONTROL=1)
+            else()
+                set(volume_control TBD_VOLUME_CONTROL=0)
+            endif()
+            tbd_wm8xxx_pin_flags("${arg_AUDIO}" VAR codec_pins)
+            tbd_wm8xxx_type_flags("${arg_AUDIO}" VAR codec_flags)
+            list(APPEND defines ${codec_pins} ${codec_flags} ${volume_control})
+        elseif(audio_codec_type STREQUAL aic3254)
             set(codec_includes codecs/aic3254)
             file(GLOB codec_srcs codecs/aic3254/*.?pp)
-        elseif(arg_AUDIO_OUTPUT STREQUAL es8388)
+            tbd_aic3254_pin_flags("${arg_AUDIO}" VAR codec_pins)
+            list(APPEND defines ${codec_pins} TBD_AUDIO_AIC3254=1)
+        elseif(audio_codec_type STREQUAL es8388)
             set(codec_includes codecs/es8388)
             file(GLOB codec_srcs codecs/es8388/*.?pp)
+            tbd_es8388_pin_flags("${arg_AUDIO}" VAR codec_pins)
+            list(APPEND defines ${codec_pins} TBD_AUDIO_ES8388=1)
+        elseif(audio_codec_type STREQUAL sim_codec)
+            # no hardware drivers needed
         else()
-            tbd_loge("invalid sound codec ${arg_AUDIO_OUTPUT}")
+            tbd_loge("invalid sound codec ${audio_codec_type}")
         endif()           
 
         list(APPEND includes ${codec_includes})
         list(APPEND srcs ${codec_srcs})
+
+        tbd_codec_print_info("${arg_AUDIO}")
     else()
         tbd_loge("no sound codec specified")
     endif()  
@@ -131,6 +151,8 @@ function(tbd_drivers var_name platform)
             set(indicator_srcs led_rgb_bba.cpp)
             tbd_neopixel_pin_flags("${arg_INDICATOR}" VAR indicator_pins)
             list(APPEND defines ${indicator_pins})
+        elseif(indicator_type STREQUAL sim_indicator)
+            # no hardware drivers needed
         else()
             tbd_loge("invalid indicator type ${indicator_type}")
         endif()           
@@ -227,7 +249,7 @@ tbd_drivers_libs("${TBD_DRIVERS_OBJ}" VAR LIBS)
 tbd_drivers_defines("${TBD_DRIVERS_OBJ}" VAR DEFINES)
 
 idf_component_register(
-    SRCS ${SRCS_FILES}
+    SRCS src/dummy.cpp ${SRCS_FILES}
     INCLUDE_DIRS ${INCLUDE_DIRS}
     REQUIRES ${LIBS}
 )

@@ -22,26 +22,20 @@ namespace tbd::audio {
 void SoundProcessorManager::begin(AudioParams&& sound_params) {
     model = std::make_unique<SPManagerDataModel>();
     sound_level_worker.set_blink_duration(5);
-    
-    // check for network reset at bootup
-#ifdef TBD_INDICATOR
-    // uses SW1 = BOOT of esp32-s3-devkitc to reset network credentials
-    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
-    if(gpio_get_level(GPIO_NUM_0) == 0){
-        model->ResetNetworkConfiguration();
-        TBD_LOGE(tag, "Network credentials reset requested!");
-        drivers::LedRGB::SetLedRGB(255, 255, 255);
-        system::Task::sleep(1000);
-    }
-#endif
 
-    // FIXME: verfiy that this can be removed
+    // FIXME: network indicatation needs to be in main
     //
-    // #ifdef CONFIG_TBD_PLATFORM_STR
-    //     // inverted here as some pins are used twice --> check for issues
-    //     drivers::Codec::InitCodec();
-    //     CTRL::Control::Init();
-    // #else ...
+    //     // check for network reset at bootup
+    // #ifdef TBD_INDICATOR
+    //     // uses SW1 = BOOT of esp32-s3-devkitc to reset network credentials
+    //     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
+    //     if(gpio_get_level(GPIO_NUM_0) == 0){
+    //         model->ResetNetworkConfiguration();
+    //         TBD_LOGE(tag, "Network credentials reset requested!");
+    //         drivers::LedRGB::SetLedRGB(255, 255, 255);
+    //         system::Task::sleep(1000);
+    //     }
+    // #end
 
     // init control
     InputManager::init();

@@ -15,7 +15,7 @@
             "n_cvs": 4,
             "n_triggers": 2
         },
-        "audio_output": {
+        "audio": {
             "type": "wm8974",
             "volume_control": true,
             "pins": {
@@ -52,6 +52,7 @@
         "apis": ["serial"],
         "volume_control": true,
         "file_system": "wrapper",
-        "display": true
+        "display": true,
+        "network": false
     }
 }

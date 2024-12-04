@@ -18,11 +18,22 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#pragma  once
+#pragma once
 
-#if !TBD_NETWORK
-#error "tbd::Network module not available in config"
-#endif
+#include <cinttypes>
+#include <tbd/ram.hpp>
 
 
-#include <tbd/api/common/config.hpp>
+namespace tbd::drivers {
+
+struct CVInput {
+    CVInput() = delete;
+
+    static void init();
+
+    TBD_IRAM static uint8_t* update();
+    static void flush();
+};
+
+}
+

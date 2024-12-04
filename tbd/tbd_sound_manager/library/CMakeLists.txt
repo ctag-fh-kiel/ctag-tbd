@@ -3,7 +3,7 @@ if ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
 endif()
 
 file(GLOB SRCS_FILES
-    include/tbd/**/*.hpp    
+    include/tbd/**/*.hpp
     src/*.cpp
     src/*.hpp
 )

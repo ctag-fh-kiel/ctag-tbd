@@ -1,4 +1,5 @@
-tbd_platform_audio_output("${TBD_PLATFORM_OBJ}")
+tbd_platform_audio("${TBD_PLATFORM_OBJ}")
+tbd_codec_type("${_return}")
 if ("${_return}" STREQUAL "rtaudio")
     set(external_libs rtaudio)
 endif()

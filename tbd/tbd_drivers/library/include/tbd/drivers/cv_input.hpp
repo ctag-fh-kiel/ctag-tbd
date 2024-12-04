@@ -20,20 +20,4 @@ respective component folders / files if different from this license.
 ***************/
 #pragma once
 
-#include <cinttypes>
-#include <tbd/ram.hpp>
-
-
-namespace tbd::drivers {
-
-struct DynamicCV {
-    DynamicCV() = delete;
-
-    static void init();
-
-    TBD_IRAM static uint8_t* update();
-    static void flush();
-};
-
-}
-
+#include <tbd/drivers/common/cv_input.hpp>

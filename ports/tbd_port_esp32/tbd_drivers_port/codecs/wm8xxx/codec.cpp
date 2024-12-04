@@ -28,7 +28,6 @@ respective component folders / files if different from this license.
 #include "driver/i2s.h" // legacy I2S api
 #include "soc/io_mux_reg.h"
 #include <string.h>
-#include <cmath>
 
 
 #if (TBD_AUDIO_WM8731 + TBD_AUDIO_WM8974 + TBD_AUDIO_WM8978) == 0
@@ -57,29 +56,15 @@ respective component folders / files if different from this license.
     #define maybe_wait_to_settle(settle_time_ms) do {} while(0)
 #endif
 
-// SPI pins
-#if defined(CONFIG_TBD_PLATFORM_MK2)
-    #define PIN_NUM_CS_WM 5
-    #define PIN_NUM_MOSI 23
-    #define PIN_NUM_CLK 18
-    #define PIN_NUM_MISO -1
-#else
-    #define PIN_NUM_CS_WM 4
-    #define PIN_NUM_MOSI 13
-    #define PIN_NUM_CLK 12
-    #define PIN_NUM_MISO 0
-#endif
+#define PIN_NUM_CS_WM TBD_WM8XXX_SPI_PIN_CS
+#define PIN_NUM_MOSI  TBD_WM8XXX_SPI_PIN_MOSI
+#define PIN_NUM_MISO  TBD_WM8XXX_SPI_PIN_MISO
+#define PIN_NUM_CLK   TBD_WM8XXX_SPI_PIN_CLK
 
-
-// I2S
-#define I2S_BCLK_PIN 21
-#define I2S_ADCDAT_PIN 27
-#define I2S_DACDAT_PIN 22
-#if defined(CONFIG_TBD_PLATFORM_STR)
-    #define I2S_LRCLK_PIN 25
-#else
-    #define I2S_LRCLK_PIN 19
-#endif
+#define I2S_BCLK_PIN   TBD_WM8XXX_I2S_PIN_BCLK
+#define I2S_ADCDAT_PIN TBD_WM8XXX_I2S_PIN_ADCDAT
+#define I2S_DACDAT_PIN TBD_WM8XXX_I2S_PIN_DACDAT
+#define I2S_LRCLK_PIN  TBD_WM8XXX_I2S_PIN_LRCLK
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
@@ -563,7 +548,7 @@ void Codec::init() {
     maybe_wait_to_settle(1000);
 
 // release SPI on devices with no volume control
-#ifdef TBD_VOLUME_CONTROL
+#if !TBD_VOLUME_CONTROL
     release_config_bus();
 #endif
     is_ready = true;
