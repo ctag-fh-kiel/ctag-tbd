@@ -44,7 +44,7 @@ add_subdirectory(tbd)
 # the generated image should be flashed when the entire project is flashed to
 # the target with 'idf.py -p PORT flash'.
 
-if (TBD_BUILD_FS)
+if ("${TBD_TOOLCHAIN}" STREQUAL "esp32")
 
 file(GLOB_RECURSE WWW_FILES RELATIVE ${CMAKE_SOURCE_DIR}/spiffs_image ${CMAKE_SOURCE_DIR}/spiffs_image/www/*)
 foreach(WWW_FILE ${WWW_FILES})
