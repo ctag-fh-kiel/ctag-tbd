@@ -6,10 +6,18 @@ set(TBD_RGB_PINS red green blue)
 #
 #
 macro(tbd_rgb_attrs)
-    cmake_parse_arguments(arg "" "TYPE" "PINS" ${ARGV})
+    tbd_indicator_attrs(${ARGV})
+
+    cmake_parse_arguments(arg "" "" "PINS" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()
+
+    if (NOT "${arg_TYPE}" STREQUAL "rgb")
+        tbd_loge("rgb indicator type has to be 'rgb' got '${arg_TYPE}'")
+    endif()
+
+    tbd_pinout_check("${arg_PINS}" PINS ${TBD_RGB_PINS})
 endmacro()
 
 
@@ -20,11 +28,7 @@ endmacro()
 #
 function (tbd_rgb var_name)
     tbd_rgb_attrs(${ARGN})
-    if (NOT "${arg_TYPE}" STREQUAL "rgb")
-        tbd_loge("rgb indicator type has to be 'rgb' got '${arg_TYPE}'")
-    endif()
 
-    tbd_pinout_check("${arg_PINS}" PINS ${TBD_RGB_PINS})
     if (NOT "${var_name}" STREQUAL "CHECK")
         set(${var_name} ${ARGN} PARENT_SCOPE)
     endif()
@@ -63,16 +67,14 @@ ${pins}---------------------------
     ")
 endfunction()
 
-function(tbd_rgb_load json_data)
-    string(JSON type GET "${json_data}" type)
+function(_tbd_rgb_load json_data)
     string(JSON pins_data GET "${json_data}" pins)
     tbd_pinout_load("${pins_data}"
             PINS ${TBD_RGB_PINS}
             VAR pins
     )
 
-    tbd_rgb(new_rgb
-            TYPE ${type}
+    set(new_rgb
             PINS ${pins}
     )
     tbd_store_or_return("${new_rgb}" ${ARGN})

@@ -1,9 +1,9 @@
-## Adc CV input ##
+## simulated CV inputs ##
 
 # helper for accessing Adc fields
 #
 #
-macro(tbd_adc_attrs)
+macro(tbd_sim_cv_attrs)
     tbd_cv_input_attrs(${ARGV})
 
     cmake_parse_arguments(arg "" "" "" ${ARGV})
@@ -13,15 +13,15 @@ macro(tbd_adc_attrs)
 endmacro()
 
 
-# @brief constructor for adc cv_input
+# @brief constructor for adc sim_cv
 #
 # @arg TYPE [enum]   has to be 'adc'
 #
-function (tbd_adc var_name)
-    tbd_adc_attrs(${ARGN})
+function (tbd_sim_cv var_name)
+    tbd_sim_cv_attrs(${ARGN})
 
-    if (NOT "${arg_TYPE}" STREQUAL "adc")
-        tbd_loge("adc cv_input type has to be 'adc' got '${arg_TYPE}'")
+    if (NOT "${arg_TYPE}" STREQUAL "sim_cv")
+        tbd_loge("sim_cv input type has to be 'sim_cv' got '${arg_TYPE}'")
     endif()
 
     if (NOT "${var_name}" STREQUAL "CHECK")
@@ -31,15 +31,15 @@ endfunction()
 
 ## adc methods ##
 
-function(tbd_adc_print_info adc)
+function(tbd_sim_cv_print_info adc)
     message("
-TBD cv_input configuration
+TBD sim_cv configuration
 ---------------------------
-type: adc
+type: sim_cv
 ---------------------------
     ")
 endfunction()
 
-function(_tbd_adc_load json_data)
+function(_tbd_sim_cv_load json_data)
     #    tbd_store_or_return("" ${ARGN})
 endfunction()

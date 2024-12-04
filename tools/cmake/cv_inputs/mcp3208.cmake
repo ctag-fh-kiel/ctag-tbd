@@ -6,10 +6,9 @@ set(TBD_MCP3208_PINS cs mosi miso sclk)
 #
 #
 macro(tbd_mcp3208_attrs)
-    set(attrs
-            ${TBD_CV_INPUT_GENERAL_ATTRS}
-    )
-    cmake_parse_arguments(arg "" "${attrs}" "PINS" ${ARGV})
+    tbd_cv_input_attrs(${ARGV})
+
+    cmake_parse_arguments(arg "" "" "PINS" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()

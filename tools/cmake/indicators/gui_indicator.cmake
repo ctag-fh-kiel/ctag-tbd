@@ -4,9 +4,15 @@
 #
 #
 macro(tbd_gui_indicator_attrs)
-    cmake_parse_arguments(arg "" "TYPE" "" ${ARGV})
+    tbd_indicator_attrs(${ARGV})
+
+    cmake_parse_arguments(arg "" "" "" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
+    endif()
+
+    if (NOT "${arg_TYPE}" STREQUAL "gui_indicator")
+        tbd_loge("gui_indicator indicator type has to be 'gui_indicator' got '${arg_TYPE}'")
     endif()
 endmacro()
 
@@ -17,10 +23,6 @@ endmacro()
 #
 function (tbd_gui_indicator var_name)
     tbd_gui_indicator_attrs(${ARGN})
-
-    if (NOT "${arg_TYPE}" STREQUAL "gui_indicator")
-        tbd_loge("gui_indicator indicator type has to be 'gui_indicator' got '${arg_TYPE}'")
-    endif()
 
     if (NOT "${var_name}" STREQUAL "CHECK")
         set(${var_name} ${ARGN} PARENT_SCOPE)
@@ -40,10 +42,6 @@ type: gui_indicator
 endfunction()
 
 
-function(tbd_gui_indicator_load json_data)
-    string(JSON type GET "${json_data}" type)
-    tbd_gui_indicator(new_gui_indicator
-            TYPE ${type}
-    )
-    tbd_store_or_return("${new_gui_indicator}" ${ARGN})
+function(_tbd_gui_indicator_load json_data)
+    # no params
 endfunction()

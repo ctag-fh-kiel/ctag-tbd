@@ -1,3 +1,61 @@
+# @brief convert a subset of CMake's bools into true/false representation
+#
+# Accepted values are
+# - '1' and '0'
+# - 'true' and 'false'
+# - 'yes' and 'no'
+# - 'y' and 'n'
+# - 'on' and 'off'
+#
+# @note: This is not the full set of truthful values CMake supports.
+#        Only 'true booleans' are supported.
+#
+# @arg value [any]   value to convert
+#
+# @exception FATAL_ERROR
+#
+function (tbd_to_bool var_name)
+    set(value "${${var_name}}")
+    set(VALID_BOOLS 0 1 true false yes no y n on off)
+    string(TOLOWER "${value}" lower_value)
+    if(NOT lower_value IN_LIST VALID_BOOLS)
+        TBD_LOGE("bad boolean value '${lower_value}' must be one of ${VALID_BOOLS}")
+    endif()
+
+    if (lower_value)
+        set(normalized_value true)
+    else()
+        set(normalized_value false)
+    endif()
+
+    set("${var_name}" "${normalized_value}" PARENT_SCOPE)
+endfunction()
+
+# @brief raise an error if value is a boolean
+#
+# @note: Unlike CMake's default, we are restricting booleans to 'true' and 'false'
+#        for more consistency.
+#
+# @arg value [any]   value to be checked
+#
+# @exception FATAL_ERROR
+#
+function (tbd_check_bool value)
+    cmake_parse_arguments(arg "" "ERR" "" ${ARGN})
+    string(STRIP "${value}" stripped_value)
+    if (NOT (stripped_value STREQUAL true OR stripped_value STREQUAL false))
+        set(retval no)
+    else()
+        set(retval true)
+    endif()
+
+    if (retval)
+        set("${arg_ERR}" true)
+    else()
+        tbd_loge("expected boolean got ${value}")
+    endif()
+endfunction()
+
 # @brief raise an error if value is not an integer
 #
 # @arg value [any]   value to be checked
@@ -10,11 +68,11 @@ function (tbd_check_int value)
     if (NOT stripped_value MATCHES "^[0-9]+$")
         set(retval no)
     else()
-        set(retval yes)
+        set(retval true)
     endif()
 
     if (retval)
-        set("${arg_ERR}" yes)
+        set("${arg_ERR}" true)
     else()
         tbd_loge("expected integer got ${value}")
     endif()

@@ -6,10 +6,18 @@ set(TBD_NEOPIXEL_PINS dout)
 #
 #
 macro(tbd_neopixel_attrs)
-    cmake_parse_arguments(arg "" "TYPE" "PINS" ${ARGV})
+    tbd_indicator_attrs(${ARGV})
+
+    cmake_parse_arguments(arg "" "" "PINS" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()
+
+    if (NOT "${arg_TYPE}" STREQUAL "neopixel")
+        tbd_loge("neopixel indicator type has to be 'neopixel' got '${arg_TYPE}'")
+    endif()
+
+    tbd_pinout_check("${arg_PINS}" PINS ${TBD_NEOPIXEL_PINS})
 endmacro()
 
 
@@ -20,11 +28,6 @@ endmacro()
 function (tbd_neopixel var_name)
     tbd_neopixel_attrs(${ARGN})
 
-    if (NOT "${arg_TYPE}" STREQUAL "neopixel")
-        tbd_loge("neopixel indicator type has to be 'neopixel' got '${arg_TYPE}'")
-    endif()
-
-    tbd_pinout_check("${arg_PINS}" PINS ${TBD_NEOPIXEL_PINS})
     if (NOT "${var_name}" STREQUAL "CHECK")
         set(${var_name} ${ARGN} PARENT_SCOPE)
     endif()
@@ -62,15 +65,13 @@ ${pins}---------------------------
 endfunction()
 
 
-function(tbd_neopixel_load json_data)
-    string(JSON type GET "${json_data}" type)
+function(_tbd_neopixel_load json_data)
     string(JSON pins_data GET "${json_data}" pins)
     tbd_pinout_load("${pins_data}"
             PINS ${TBD_NEOPIXEL_PINS}
             VAR pins
     )
-    tbd_neopixel(new_neopixel
-            TYPE ${type}
+    set(new_neopixel
             PINS ${pins}
     )
     tbd_store_or_return("${new_neopixel}" ${ARGN})

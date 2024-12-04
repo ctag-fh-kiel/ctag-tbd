@@ -6,10 +6,9 @@ set(TBD_STM32_PINS cs mosi miso sclk)
 #
 #
 macro(tbd_stm32_attrs)
-    set(attrs
-            ${TBD_CV_INPUT_GENERAL_ATTRS}
-    )
-    cmake_parse_arguments(arg "" "${attrs}" "PINS" ${ARGV})
+    tbd_cv_input_attrs(${ARGV})
+
+    cmake_parse_arguments(arg "" "" "PINS" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()
@@ -66,7 +65,6 @@ endfunction()
 
 
 function(_tbd_stm32_load json_data)
-    string(JSON type GET "${json_data}" type)
     string(JSON pins_data GET "${json_data}" pins)
     tbd_pinout_load("${pins_data}" PINS ${TBD_STM32_PINS} VAR pins)
 

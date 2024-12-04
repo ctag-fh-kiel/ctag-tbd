@@ -6,10 +6,9 @@ set(TBD_MIDI_INPUT_TYPES uart usb rp2040 rtmidi)
 #
 #
 macro(tbd_midi_attrs)
-    set(attrs
-        ${TBD_CV_INPUT_GENERAL_ATTRS}
-    )
-    cmake_parse_arguments(arg "" "${attrs}" "MIDI_INPUTS" ${ARGV})
+    tbd_cv_input_attrs(${ARGV})
+
+    cmake_parse_arguments(arg "" "" "MIDI_INPUTS" ${ARGV})
     if (DEFINED arg_KEYWORDS_MISSING_VALUES)
         tbd_loge("missing argument value for ${arg_KEYWORDS_MISSING_VALUES}")
     endif()
