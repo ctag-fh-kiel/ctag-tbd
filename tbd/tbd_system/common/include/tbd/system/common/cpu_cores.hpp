@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cinttypes>
-#include <type_traits>
+#include <concepts>
 
 
 namespace tbd::system {

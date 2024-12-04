@@ -149,9 +149,6 @@ struct directory_iterator {
     }
 
     directory_iterator& begin() {
-        if (!_current._path.is_null()) {
-            TBD_LOGE("storage", "multiple calls to directory operator begin");
-        }
         return *this;
     }
 
@@ -160,17 +157,7 @@ struct directory_iterator {
     }
 
     directory_iterator& operator++() {
-        if (_handle == nullptr) {
-            return *this;
-        }
-
-        dirent* entry;
-        if ((entry = readdir(_handle)) == nullptr) {
-            _current._path.set_null();
-            close_dir();
-        }
-
-        _current._path = entry->d_name;
+        advance();
         return *this;
     }
 
@@ -206,8 +193,26 @@ struct directory_iterator {
             _handle = opendir(dir.c_str());
             if (_handle == nullptr) {
                 TBD_LOGE("storage", "invalid directory: %s", dir.c_str());
+                return;
             }
+            // get initial dir
+            advance();
         };
+
+        void advance() {
+            if (_handle == nullptr) {
+                return;
+            }
+
+            dirent* entry;
+            if ((entry = readdir(_handle)) == nullptr) {
+                _current._path.set_null();
+                close_dir();
+                return;
+            }
+
+            _current._path = entry->d_name;
+        }
 
         void close_dir() {
             if (_handle != nullptr) {
