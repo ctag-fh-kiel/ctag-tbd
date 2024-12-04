@@ -20,6 +20,7 @@ class Platform(Enum):
     dada      = 'dada'
     desktop   = 'desktop'
     simulator = 'simulator'
+    emu       = 'emu'
 
 
 # TODO: read form json file
@@ -34,7 +35,8 @@ def get_platform_description(platform: Platform) -> str:
         'bba2'     : 'TBD BBA MIDI, aic3254',
         'dada'     : 'TBD DADA MIDI and MIDI host',
         'desktop'  : 'Desktop App',
-        'simulator': 'TBD firmware simulator'
+        'simulator': 'TBD firmware simulator',
+        'emu'      : 'TBD ESP32 emulator'
     }
     return descriptions[platform.name]
 
