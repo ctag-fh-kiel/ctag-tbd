@@ -1,28 +1,74 @@
 {
-  "name": "esp-idf",
-  "image": "docker.io/sergiogasquez/esp-idf-env:v4.4_esp32",
-  // "build": {
-  //   "dockerfile": "Dockerfile",
-  //   "args": {
-  //     "ESP_BOARD": "esp32",
-  //     "ESP_IDF_VERSION": "release/v4.4"
-  //   }
-  // },
-  "settings": {
-    "editor.formatOnPaste": true,
-    "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "modifications",
-    "editor.formatOnType": true,
-    "lldb.executable": "/usr/bin/lldb",
-    "files.watcherExclude": {
-      "**/target/**": true
-    }
-  },
-  "extensions": [
-    "mutantdino.resourcemonitor",
-    "yzhang.markdown-all-in-one",
-    "espressif.esp-idf-extension"
-  ],
-  "workspaceMount": "source=${localWorkspaceFolder},target=/home/esp/workspace,type=bind,consistency=cached",
-  "workspaceFolder": "/home/esp/workspace/"
+    "name": "tbd-dev-container",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/ctag_tbd,type=bind",
+    "workspaceFolder": "/workspaces/ctag_tbd",
+    "mounts": [
+        "source=extensionCache,target=/root/.vscode-server/extensions,type=volume",
+
+        // flashing: uncomment for device flashing
+        // warning: this is potentially dangerous
+        //
+        // "type=bind,source=/dev,target=/dev",
+
+        // sound: uncomment for desktop build sound output
+        // https://comp0016-team-24.github.io/dev/problem-solving/2020/10/30/passing-audio-into-docker.html
+        //
+        // "source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native,type=bind"
+    ],
+    "forwardPorts": [2024],
+    "build": {
+        "context": ".",
+        "dockerfile": "Dockerfile"
+    },
+    "containerEnv": {
+        "TBD_PROJECT_DIR": "${containerWorkspaceFolder}",
+        "PYTHONPATH": "${containerWorkspaceFolder}/tools/tbd_tools",
+        "PULSE_SERVER": "unix:/run/user/1000/pulse/native"
+    },
+    "remoteEnv": {
+        // setting PATH in container causes build error
+        "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/tools/tbd_tools/bin"
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                // configure IDF plugin
+                "idf.espIdfPath": "/opt/esp/idf",
+                "idf.toolsPath": "/opt/esp",
+                "idf.gitPath": "/usr/bin/git",
+                "idf.adapterTargetName": "esp32s3",
+                "idf.buildPath": "${workspaceFolder}/build/firmware",
+                "idf.pythonBinPath": "/opt/esp/python_env/idf5.4_py3.12_env/bin/python",
+                "cmake.buildDirectory": "${workspaceFolder}/build/firmware",
+                "cmake.automaticReconfigure": false,
+                "esbonio.sphinx.buildDir": "${workspaceFolder}/build/docs",
+                "esbonio.sphinx.confDir": "${workspaceFolder}/docs/config",
+                "esbonio.sphinx.srcDir": "${workspaceFolder}/docs",
+                "python.defaultInterpreterPath": "/opt/esp/python_env/idf5.4_py3.12_env/bin/python"
+            },
+            "extensions": [
+                "ms-vscode.cpptools-extension-pack",
+                "espressif.esp-idf-extension",
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack",
+                "swyddfa.esbonio",
+                "ms-python.vscode-pylance",
+                "ms-python.python",
+                "ms-python.debugpy",
+                "lextudio.restructuredtext",
+                "trond-snekvik.simple-rst",
+                "ms-vscode.cpptools-themes",
+                "twxs.cmake",
+                "samuelcolvin.jinjahtml",
+                "tamasfe.even-better-toml"
+            ]
+        }
+    },
+    "runArgs": [
+        // flashing: uncomment for device flashing
+        // warning: this is potentially dangerous
+        //
+        // "--privileged",
+    ]
 }
