@@ -10,6 +10,8 @@
 namespace tbd::system {
 
 struct Task {
+    Task& operator=(const Task&) = delete;
+
     using task_func_type = void(*)(void*);
 
     Task(const char* name) : _name(name), _handle(nullptr) {}
@@ -35,7 +37,7 @@ struct Task {
         _task_data.contxt = context;
 
         auto err = xTaskCreatePinnedToCore(
-            task_main, 
+            task_wrapper,
             _name, 
             stack_size,
             &_task_data, 
