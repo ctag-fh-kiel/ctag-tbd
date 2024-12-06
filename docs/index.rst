@@ -126,11 +126,11 @@ this allows you to:
 
 .. toctree::
     :hidden:
-    :caption: Core Development
+    :caption: Development
     :maxdepth: 2
     :glob:
 
-    core_development/*
+    development/*
 
 
 Indices and tables
