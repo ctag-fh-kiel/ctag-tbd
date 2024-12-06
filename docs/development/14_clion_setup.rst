@@ -15,13 +15,13 @@ Building and Launching the Dev Container
 
 On the project selection screen of CMake navigate to ``Remote Development > Dev Containers``
 
-.. image:: images/cmake_new_dev_container.png
+.. image:: images/clion_new_dev_container.png
     :width: 40em
 
 After selecting ``New Dev Container`` you will have to switch to the ``From Local Project``
 tab and select the ``.devcontainers/devcontainer.json`` file in the TBD root dir.
 
-.. image:: images/cmake_build_dev_container.png
+.. image:: images/clion_build_dev_container.png
     :width: 35em
 
 After selecting ``Build Container and Continue`` the container is build and the project
