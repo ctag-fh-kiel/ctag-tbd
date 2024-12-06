@@ -9,10 +9,16 @@
 
 namespace tbd::system {
 
-struct Task {
+struct Task{
     using task_func_type = void(*)(void*);
 
     Task(const char* name) : _name(name) {}
+
+    ~Task() {
+        if (_thread.joinable()) {
+            _thread.join();
+        }
+    }
 
     bool is_running() {
         return _thread.joinable();
