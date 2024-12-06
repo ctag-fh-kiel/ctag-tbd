@@ -59,7 +59,6 @@ private:
 
 
 uint32_t AudioConsumer::startup() {
-
     //fv3::dccut_f out_dccutl, out_dccutr;
     in_dccutl.setCutOnFreq(3.7f, 44100.f);
     in_dccutr.setCutOnFreq(3.7f, 44100.f);

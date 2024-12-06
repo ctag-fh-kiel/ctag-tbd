@@ -1,4 +1,4 @@
-#include <tbd/system/modules.hpp>
+#include <tbd/system/task_module.hpp>
 
 #include <memory>
 
@@ -187,6 +187,6 @@ uint32_t UIWorker::do_work() {
     return 0;
 }
 
-system::ModuleTask<UIWorker, system::CpuCore::system> ui_worker("ui_worker");
+system::TaskModule<UIWorker, system::CpuCore::system> ui_worker("ui_worker");
 
 }

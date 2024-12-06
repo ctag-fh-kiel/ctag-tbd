@@ -1,22 +1,34 @@
-#include <tbd/drivers/common/codec.hpp>
+#include <tbd/drivers/common/file_codec.hpp>
 
-#include <tbd/portutils/file_audio_source.hpp>
-#include <tbd/portutils/file_audio_sink.hpp>
+#include <tbd/drivers/common/utils/file_audio_source.hpp>
+#include <tbd/drivers/common/utils/file_audio_sink.hpp>
 
 namespace {
     // TODO: make these runtime parameters
-    std::string INPUT_FILE_PATH = "simulator/wavInput.wav";
-    std::string OUTPUT_FILE_PATH = "sim_out.wav";
+    std::string _source_path = "simulator/wavInput.wav";
+    std::string _sink_path = "sim_out.wav";
 
 
     tbd::common::FileAudioSource input_file;
     tbd::common::FileAudioSink output_file;
 }
 
+namespace tbd::driver::file_codec {
+
+void set_source(const std::string& source_path) {
+    _source_path = source_path;
+}
+
+void set_sink(const std::string& sink_path) {
+    _sink_path = sink_path;
+}
+
+}
+
 namespace tbd::drivers {
 void Codec::init() {
-    input_file.open(INPUT_FILE_PATH);
-    output_file.open(OUTPUT_FILE_PATH);
+    input_file.open(_source_path);
+    output_file.open(_sink_path);
 }
 
 void Codec::deinit() {

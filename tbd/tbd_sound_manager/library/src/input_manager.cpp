@@ -123,7 +123,7 @@ void InputManager::SetCVChannelBiPolar(const bool &v0, const bool &v1, const boo
 }
 
 void InputManager::init() {
-    TBD_LOGI(tag, "Initializing control!");
+    TBD_LOGI(tag, "initializing input manager");
 
     CVInput::init();
 #if TBD_CV_ADC

@@ -4,17 +4,28 @@
 #include <algorithm>
 #include <RtAudio.h>
 
-#include <tbd/system/cpu_cores.hpp>
 #include <tbd/sound_manager/common/audio_consumer_type.hpp>
-#include <tbd/portutils/file_audio_source.hpp>
+#include <tbd/drivers/common/utils/file_audio_source.hpp>
 #include <tbd/sound_manager/port/push_audio_params.hpp>
 
 
 namespace tbd::audio {
 
+/** @brief callback based rtaudio audio source/sink
+ *
+ *  Implements efficient audio processing for the desktop port. Unlike the hardware
+ *  based audio that utilizes blocking calls to process data this implementation is
+ *  based on rtaudios callback functionality.
+ *
+ *  @warning: rtaudio does not make bulletproof guarantees about callback invocation
+ *            order. This could lead to CV time inversions. Albeit the lack of tight
+ *            audio and CV syncing makes this is a very niche consideration.
+ */
 template<AudioConsumerType AudioConsumerT>
-struct PushAudioFeeder {
-    PushAudioFeeder(const char* name) : _name(name) {}
+struct PushAudioWorker {
+    using params_type = PushAudioParams;
+
+    PushAudioWorker(const char* name) : _name(name) {}
 
     void set_output_levels(float left_level, float right_level) {
 
@@ -24,11 +35,19 @@ struct PushAudioFeeder {
     
     }
 
+    /** @brief prepare audio processing
+     *
+     *  Audio processing needs to be set up before starting.
+     */
     uint32_t init(PushAudioParams&& sound_params) {
         _params = sound_params;
         return 0;
     }
 
+    /** @brief start audio processing
+     *
+     *  @warning: make sure to call PushAudioWorker::init first.
+     */
     uint32_t begin(bool wait = false) {
         RtAudio::DeviceInfo info;
         info = _audio.getDeviceInfo(_params.device());
@@ -108,7 +127,7 @@ private:
         if (_self == nullptr) {
             return 1;
         }
-        auto& self = *reinterpret_cast<PushAudioFeeder*>(_self);
+        auto& self = *reinterpret_cast<PushAudioWorker*>(_self);
 
         if (num_frames != TBD_SAMPLES_PER_CHUNK) {
             // FIXME: maybe something else

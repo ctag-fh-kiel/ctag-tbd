@@ -21,7 +21,7 @@ target_link_libraries(tbd_sound_manager_port
             tbd_system
             tbd_sound_manager_common
             tbd_common
-            tbd_portutils
+            tbd_drivers
         PRIVATE
             ${external_libs}
 )

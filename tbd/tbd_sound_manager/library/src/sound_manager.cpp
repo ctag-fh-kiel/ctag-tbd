@@ -2,12 +2,12 @@
 
 #define TBD_IS_AUDIO_LOOP_COMPILATION_UNIT
 
-#include <tbd/system/modules.hpp>
+#include <tbd/system/task_module.hpp>
 #include <tbd/favorites.hpp>
 
 // same compilation unit
 #include <tbd/sound_manager/data_model.hpp>
-#include "audio_worker_impl.hpp"
+#include "plugin_audio_consumer.hpp"
 
 
 

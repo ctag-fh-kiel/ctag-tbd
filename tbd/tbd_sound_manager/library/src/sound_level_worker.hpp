@@ -40,6 +40,7 @@ struct SoundLevelWorker {
         TBD_LOGI(tag, "initializing sound level worker");
         return 0;
     }
+
     uint32_t do_cleanup() {
         TBD_LOGI(tag, "shutting down sound level worker");
         return 0;
@@ -56,7 +57,7 @@ private:
  * @brief simple scope guard that gathers sound levels and flushes them to worker task
  */
 struct SoundLevel {
-    SoundLevel(SoundLevelWorker& _task) : _color(0) {}
+    SoundLevel(SoundLevelWorker& task) : _task(task), _color(0), _warning_set(false) {}
 
     ~SoundLevel() {
         if (_warning_set) {
@@ -81,12 +82,12 @@ struct SoundLevel {
     }
 
     private:
-        SoundLevelWorker _task;
+        SoundLevelWorker& _task;
         uint32_t _color;
         bool _warning_set;
 };
 
-system::ModuleTask<SoundLevelWorker, system::CpuCore::audio> 
+system::TaskModule<SoundLevelWorker, system::CpuCore::audio>
     sound_level_worker("sound_level_worker");    
 
 }

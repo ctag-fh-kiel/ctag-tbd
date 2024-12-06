@@ -7,12 +7,16 @@
 
 namespace tbd::audio {
 
-struct PullSoundParams {
+struct PullAudioParams {
     // no params
 };
 
+/** @brief module task implementation for pulling audio task
+ *
+ */
 template<AudioConsumerType AudioConsumerT>
 struct PullAudioFeeder {
+    using params_type = PullAudioParams;
 
     void set_output_levels(float left_level, float right_level) {
         drivers::Codec::SetOutputLevels(left_level, right_level);
@@ -25,7 +29,7 @@ struct PullAudioFeeder {
         drivers::Codec::RecalibDCOffset();
     }
 
-    uint32_t init(PullSoundParams&& sound_params) {
+    uint32_t init(PullAudioParams&& sound_params) {
         return 0;
     }
 
@@ -55,5 +59,11 @@ private:
     float fbuf[TBD_CHUNK_BUFFER_LENGTH];
     AudioConsumerT _consumer;
 };
+
+/** @brief audio worker pulling samples from codec
+ *
+ */
+template<AudioConsumerType AudioConsumerT, system::CpuCore cpu_core>
+using PullAudioWorker = system::TaskModule<PullAudioFeeder<AudioConsumerT>, cpu_core>;
 
 }
