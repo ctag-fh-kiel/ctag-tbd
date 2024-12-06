@@ -235,7 +235,7 @@ integrate_idf() {
         echo '    TBD_PYTHON_ENV_PATH="$IDF_PYTHON_ENV_PATH"' >> "$bash_rc"
         echo 'fi'                                             >> "$bash_rc"
     else
-        echo "vcpkg completions already installed"
+        echo "idf integrations already installed"
     fi
 
     return 0;

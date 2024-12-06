@@ -5,11 +5,17 @@
     "mounts": [
         "source=extensionCache,target=/root/.vscode-server/extensions,type=volume",
 
-        // uncomment for desktop build sound output
+        // flashing: uncomment for device flashing
+        // warning: this is potentially dangerous
+        //
+        // "type=bind,source=/dev,target=/dev",
+
+        // sound: uncomment for desktop build sound output
         // https://comp0016-team-24.github.io/dev/problem-solving/2020/10/30/passing-audio-into-docker.html
         //
         // "source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native,type=bind"
     ],
+    "forwardPorts": [2024],
     "build": {
         "context": ".",
         "dockerfile": "Dockerfile"
@@ -60,7 +66,9 @@
         }
     },
     "runArgs": [
-        // uncomment for device flashing
-        "--privileged"
+        // flashing: uncomment for device flashing
+        // warning: this is potentially dangerous
+        //
+        // "--privileged",
     ]
 }
