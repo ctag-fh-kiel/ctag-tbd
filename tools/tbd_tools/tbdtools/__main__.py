@@ -57,7 +57,7 @@ def import_cli_with_added_module_search_path():
     """
         
     try:
-        new_search_path = str(Path(__file__).parent.parent)
+        new_search_path = str(Path(__file__).parent.parent.absolute())
         sys.path.append(new_search_path)
 
         from tbdtools import tbd_cli

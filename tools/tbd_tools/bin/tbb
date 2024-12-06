@@ -5,7 +5,4 @@ export LOGURU_LEVEL=WARNING
 platform="$1"
 shift
 
-echo "PLATFORM ${platform}"
-echo "ARGS $@"
-
 exec python "$TBD_TOOL_MAIN" -p "${platform}" firmware $@
