@@ -42,6 +42,8 @@ int main(int argc, char** argv) {
     char input;
     std::cin.get(input);
 
+    tbd::api::RestApi::end();
+
     tbd::audio::SoundProcessorManager::end();
     CTAG::SP::ctagSPAllocator::ReleaseInternalBuffer();
 }

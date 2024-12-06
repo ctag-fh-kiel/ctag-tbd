@@ -31,6 +31,6 @@
         "apis": ["wifi"],
         "file_system": "wrapper",
         "display": false,
-        "network": true
+        "network": false
     }
 }

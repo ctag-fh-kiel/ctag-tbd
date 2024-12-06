@@ -38,10 +38,12 @@ int main(int argc, char** argv) {
 
     std::cout << "\nRunning ... press <enter> to quit.\n";
     char input;
+    
     std::cin.get(input);
 
     tbd::api::RestApi::end();
 
     tbd::audio::SoundProcessorManager::end();
+
     CTAG::SP::ctagSPAllocator::ReleaseInternalBuffer();
 }

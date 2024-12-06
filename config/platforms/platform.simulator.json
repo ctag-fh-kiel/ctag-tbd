@@ -16,7 +16,7 @@
             "n_triggers": 40
         },
         "audio": {
-            "type": "sim_codec",
+            "type": "file_codec",
             "volume_control": false
         },
         "indicator": {

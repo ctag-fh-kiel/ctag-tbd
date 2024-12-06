@@ -28,7 +28,7 @@
             }
         },
         "indicator": {
-            "type": "neopixel",
+            "type": "sim_indicator",
             "pins": {
                 "dout": 38
             }
