@@ -17,7 +17,7 @@
 #include <tbd/api/common/config.hpp>
 
 
-#define EXAMPLE_ESP_MAXIMUM_RETRY  10
+#define WIFI_CONNECTION_MAX_RETRIES  10
 
 /* FreeRTOS event group to signal when we are connected*/
 
@@ -71,7 +71,7 @@ struct Impl {
 
 private:
     bool should_retry() { 
-        if (_num_retries < EXAMPLE_ESP_MAXIMUM_RETRY) {
+        if (_num_retries < WIFI_CONNECTION_MAX_RETRIES) {
             _num_retries++;
             return true;
         }

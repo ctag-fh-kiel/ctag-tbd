@@ -5,8 +5,13 @@
 tbd_platform_network("${TBD_PLATFORM_OBJ}" VAR has_network)
 
 if (has_network)
-    list(APPEND extra_srcs src/network.cpp)
-    list(APPEND extra_components esp_wifi esp_netif nvs_flash mdns)
+    if ("${TBD_PLATFORM}" STREQUAL "emu")
+        list(APPEND extra_srcs src/network_eth.cpp)
+        list(APPEND extra_components esp_eth esp_netif)
+    else ()
+        list(APPEND extra_srcs src/network_wifi.cpp)
+        list(APPEND extra_components esp_wifi esp_netif nvs_flash mdns)
+    endif()
 endif()
 
 
