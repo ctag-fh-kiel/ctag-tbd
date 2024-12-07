@@ -6,6 +6,8 @@ phy_init, data, phy,      0xf000,  0x1000
 ota_0,    app,  ota_0,    0x10000,     3M
 ota_1,    app,  ota_1,           ,     3M
 storage,  data, spiffs,          ,     3M
+#samples, data, raw       0xB0000,     5M
+
 # note that by default 5 MB of flash are used outside of partition table for sample ROM
 # starts at 0xB00000 until 0xFFFFFF
 # of the 16MB WROVER FLASH, we still have about 1MB left in case eg. spiffs needs to be increased
