@@ -29,7 +29,7 @@ fi
 
 cd "$TBD_RUN_CODE_PATH"
 
-tbd_tools_dir=$TBD_RUN_CODE_PATH/tools/tbd_tools/bin
+tbd_tools_dir=$TBD_RUN_CODE_PATH/tools/bin
 
 if ! [ -d "$tbd_tools_dir" ]; then
     handle_failure "tools directory not found in TBD root" $@

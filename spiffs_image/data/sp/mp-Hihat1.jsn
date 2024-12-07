@@ -1,2 +1,1 @@
-
 {"activePatch":0,"patches":[{"name":"Default","params":[{"id":"ntype","current":0,"trig":-1},{"id":"frequency","current":440,"cv":-1},{"id":"qfac","current":2048,"cv":-1},{"id":"loudness","current":2048,"cv":-1},{"id":"enableEG","current":1,"trig":-1},{"id":"loopEG","current":0},{"id":"attack","current":0,"cv":-1},{"id":"decay","current":4095,"cv":-1},{"id":"enableEG_p","current":1,"trig":-1},{"id":"loopEG_p","current":0},{"id":"attack_p","current":0,"cv":-1},{"id":"decay_p","current":4095,"cv":-1},{"id":"amount_p","current":4095,"cv":-1}]}]}

@@ -1,2 +1,1 @@
-
 {"activePatch":0,"patches":[{"name":"Default","params":[{"id":"roomsize","current":1024},{"id":"revtime","current":1024,"cv":-1},{"id":"damping","current":1024,"cv":-1},{"id":"inputbw","current":1024,"cv":-1},{"id":"earlylvl","current":1024,"cv":-1},{"id":"taillvl","current":1024,"cv":-1},{"id":"drywet","current":2048,"cv":-1},{"id":"mono","current":0}]}]}

@@ -25,7 +25,7 @@ tbd_storages_setup()
 
 # make the TBD helper tool available to CMake
 if(NOT TBD_TOOL)
-    find_program(TBD_TOOL NAMES tbd PATHS ${CMAKE_SOURCE_DIR/tools/tbd_tools/bin} NO_CACHE)
+    find_program(TBD_TOOL NAMES tbd PATHS ${CMAKE_SOURCE_DIR/tools/bin} NO_CACHE)
 endif()
 
 if ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
@@ -33,11 +33,9 @@ if ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
     add_subdirectory("${CMAKE_SOURCE_DIR}/ports/tbd_port_desktop")
 endif()
 
-
 # import libraries
 add_subdirectory(vendor)
 add_subdirectory(tbd)
-
 
 # Create a SPIFFS image from the contents of the 'spiffs_image' directory
 # that fits the partition named 'storage'. FLASH_IN_PROJECT indicates that

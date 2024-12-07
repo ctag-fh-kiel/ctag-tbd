@@ -9,7 +9,7 @@ SPHINXOPTS         ?=
 SPHINXBUILD        ?= sphinx-build
 SPHINXCONF         = --conf-dir "$(CONFDIR)"
 
-CODE_DIRS          =  $(TBD_PROJECT_DIR)/components/ctagSoundProcessor
+CODE_DIRS          =  $(TBD_PROJECT_DIR)/tbd/tbd_sound_processor
 CPP_SOURCES        := $(shell find $(CODE_DIRS) -type f -name \*.cpp -or -name \*.c -or -name \*.hpp -or -name \*.h)
 
 builddir:

@@ -85,7 +85,7 @@ def _get_device_inputs(platform: Platform) -> Dict:
     else:
         raise ValueError(f'unsupported platform {platform.name}')
     
-    project_path = Path(__file__).parent.parent.parent.parent.parent
+    project_path = Path(__file__).parent.parent.parent.parent
     inputs_file = project_path / 'config' / 'capabilities' / f'io_capabilities.{inputs_type}.json'
     with open(inputs_file, 'r') as f:
         return json.load(f)

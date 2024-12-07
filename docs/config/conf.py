@@ -23,8 +23,8 @@ def find_project_path() -> Path:
 try:
     import tbdtools.tbd_sphinx
 except:
-    sys.path.append(find_project_path() / 'tools' / 'tbd_tool')
-
+    sys.path.append(str(find_project_path() / 'tools'))
+    import tbdtools.tbd_sphinx
 
 def get_build_dir() -> Path:
     return find_project_path() / 'build' / 'docs'
