@@ -83,11 +83,16 @@ directory
 
 .. code-block:: shell
 
-    cmake -Bbuild/dada -DTBD_PLATFORM=dada
+    cmake -G Ninja -Bbuild/dada  -DTBD_PLATFORM=dada
 
 replacing ``dada`` with the desired TBD variant.
 
-Both options to cmake are important:
+All three options to cmake are important:
+
+``-G Ninja``:
+    Use Ninja as the builder and build description format. This is not only strongly
+    advised but also required for some of the esp32 tools that automatically get invoked
+    by the esp32 CMake library.
 
 ``-B``: 
     Specify the build directory. If you do not provide this option all build files will be
