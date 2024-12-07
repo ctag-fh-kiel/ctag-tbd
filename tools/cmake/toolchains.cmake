@@ -97,6 +97,7 @@ macro(tbd_toolchain_activate)
         set(SDKCONFIG_DEFAULTS "${CMAKE_SOURCE_DIR}/config/esp_sdkconfigs/sdkconfig.defaults.${TBD_PLATFORM}")
         set(SDKCONFIG "${CMAKE_BINARY_DIR}/sdkconfig.${TBD_PLATFORM}")
         set(IDF_TARGET "${TBD_ARCH}")
+        set(EXTRA_COMPONENT_DIRS apps/esp32)
 
         include($ENV{IDF_PATH}/tools/cmake/project.cmake)
         list(APPEND EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/ports/tbd_port_esp32)
