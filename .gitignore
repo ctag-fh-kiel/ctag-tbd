@@ -2,6 +2,7 @@ build/
 *.bak
 *.old
 *.tmp
+*.nogit
 ~*
 .idea
 .vscode
