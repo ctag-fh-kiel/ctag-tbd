@@ -10,3 +10,6 @@
 [submodule "components/moog/MoogLadders"]
 	path = vendor/moog/MoogLadders
 	url = https://github.com/ctag-fh-kiel/MoogLadders.git
+[submodule "vendor/microshell"]
+	path = vendor/microshell
+	url = https://github.com/marcinbor85/microshell.git
