@@ -22,7 +22,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: html_docs
-          path: build/docs/html
+          path: |
+            build/docs/html/**/*.html
+            build/docs/html/**/*.js
+            build/docs/html/**/*.css
+            build/docs/html/**/*.jpe?g
+            build/docs/html/**/*.png
+            build/docs/html/**/*.woff2
+            build/docs/html/**/*.ttf
           overwrite: true
 
   deploy:
