@@ -2,7 +2,9 @@
 TBD_PROJECT_DIR    ?= $(PWD)
 
 SOURCEDIR          =  $(TBD_PROJECT_DIR)/docs
-BUILDDIR           =  $(TBD_PROJECT_DIR)/build/docs
+TBD_BUILD_DIR      ?= $(TBD_PROJECT_DIR)/build
+BUILDDIR           =  $(TBD_BUILD_DIR)/docs
+
 CONFDIR            =  "$(SOURCEDIR)/config"
 
 SPHINXOPTS         ?=

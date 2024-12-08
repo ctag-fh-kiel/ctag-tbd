@@ -1,30 +1,59 @@
 import os
 from pathlib import Path
-import git
 import sys
+from sphinx.util import logging
+
+logger = logging.getLogger(__name__)
 
 
 def find_project_path() -> Path:
+    logger.verbose('determining project source root')
+
+    logger.verbose('checking for TBD_PROJECT_DIR')
     # try env var
     if (project_path := os.getenv('TBD_PROJECT_DIR')) is not None:
+        logger.info(f'TBD_PROJECT_DIR project root set: {project_path}')            
         return Path(project_path).resolve()
     
+
+    logger.verbose('checking for git repo root')
     # try to find git root
     try:
+        import git
         git_repo = git.Repo(os.getcwd(), search_parent_directories=True)
         git_root = git_repo.git.rev_parse("--show-toplevel")
+        logger.info(f'git repo project root found: {project_path}')  
         return Path(git_root).resolve()
     except:
         pass
 
     # try relative to current file
-    return Path(__file__).parent.parent
+    project_path = Path(__file__).parent.parent
+    logger.verbose(f'falling back to relative location: {project_path}')
+    return project_path  
 
-try:
-    import tbdtools.tbd_sphinx
-except:
-    sys.path.append(str(find_project_path() / 'tools'))
-    import tbdtools.tbd_sphinx
+def check_tbd_tools_import():
+    logger.info('checking if tbd_sphinx is in module path')
+    try:
+        import tbdtools.tbd_sphinx
+        logger.info('loaded tbd_sphinx')
+        return
+    except:
+        pass
+
+    logger.info('trying to find tbd_sphinx in project files')
+    try:
+        tbd_python_path = find_project_path() / 'tools'
+        logger.info(f'adding project folder {tbd_python_path} to module search path')
+        sys.path.append(str(tbd_python_path))
+
+        import tbdtools.tbd_sphinx
+        logger.info('loaded tbd_sphinx')
+        return
+    except Exception as e:
+        print(e)
+
+    raise ImportError('failed to import TBD sphinx plugin tbdtools.tbd_sphinx')
 
 def get_build_dir() -> Path:
     return find_project_path() / 'build' / 'docs'
@@ -33,6 +62,8 @@ def get_build_dir() -> Path:
 def get_doxygen_xml_dir() -> Path:
     return get_build_dir() / 'code_xml'
 
+
+# check_tbd_tools_import()
 
 doxygen_xml_dir = get_doxygen_xml_dir()
 
@@ -48,7 +79,7 @@ author = 'CTAG'
 extensions = [
     'sphinxcontrib.youtube',
     'breathe',
-    'tbdtools.tbd_sphinx',
+    # 'tbdtools.tbd_sphinx',
 ]
 
 exclude_patterns = []

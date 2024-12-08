@@ -1,9 +1,9 @@
 from __future__ import annotations
 import importlib
 import re
+from typing import Optional
 
 from docutils import nodes
-from git import Optional
 from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
 from sphinx.util.typing import ExtensionMetadata
