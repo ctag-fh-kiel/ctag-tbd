@@ -1,0 +1,20 @@
+---
+export interface Props {
+  title: string;
+}
+
+const { url, props } = Astro;
+---
+
+<div class="navbar bg-base-100">
+  <div class="navbar-start">
+    {
+      url.pathname !== "/" && (
+        <a href="/" role="button" class="btn">
+          &lsaquo; Back
+        </a>
+      )
+    }
+  </div>
+  <div class="navbar-center">{props.title.toUpperCase()}</div>
+</div>

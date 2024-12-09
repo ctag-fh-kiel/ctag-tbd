@@ -61,6 +61,8 @@ public:
 
     static std::string GetStringID(int chan);
 
+    static bool is_stereo(int chan);
+
     static void SetSoundProcessorChannel(int chan, const std::string& id);
 
     static void SetChannelParamValue(int chan, const std::string& id, const std::string& key, int val);
