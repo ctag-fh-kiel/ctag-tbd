@@ -1,13 +1,12 @@
-import json
 import sys
 import typer
 from subprocess import run
 
-from tbdtools.cmd_utils import get_ctx, get_build_dir, create_app
+from tbdtools.cmd_utils import get_ctx, get_build_dir
 from tbdtools.project import get_readable_device_capabilities
 
 
-firmware_group = create_app('firmware')
+firmware_group = typer.Typer()
 
 
 @firmware_group.command('caps')

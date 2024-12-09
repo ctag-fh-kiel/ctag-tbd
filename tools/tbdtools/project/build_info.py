@@ -13,7 +13,6 @@ from loguru import logger
 
 from .get_project import get_project_repo
 from .project_structure import Platform, get_platform_description
-from .get_platform import get_platform
 
 
 def _get_template(template_name: str):

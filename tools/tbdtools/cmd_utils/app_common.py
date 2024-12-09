@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from pathlib import Path
-import click
 import typer
 from functools import cache
 
@@ -90,21 +89,6 @@ def get_main() -> typer.Typer:
         pretty_exceptions_enable=False, help=greeting_header, no_args_is_help=True)
 
 
-# allow subcommands to be run as standalone apps with the same global arguments
-#
-#
-@cache  
-def create_app(name: str) -> typer.Typer:
-    """ get the tbd app object
-    
-        ensures that only one instance is present and allows cnddocs to 
-    """
-    return typer.Typer(
-        name=name,
-        # callback=common_callback,
-        pretty_exceptions_enable=False, help=greeting_header, no_args_is_help=True)
-
-
 __all__ = [
     'greeting_header', 
     'AppContext',
@@ -112,5 +96,4 @@ __all__ = [
     'get_build_dir',
     'common_callback', 
     'get_main',
-    'create_app',
 ]
