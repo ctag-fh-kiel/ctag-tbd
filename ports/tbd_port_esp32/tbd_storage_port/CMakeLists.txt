@@ -1,4 +1,4 @@
-file(GLOB SRCS_FILES 
+file(GLOB SRCS_FILES
     include/tbd/storage/*.hpp
     src/*.hpp
     src/*.cpp

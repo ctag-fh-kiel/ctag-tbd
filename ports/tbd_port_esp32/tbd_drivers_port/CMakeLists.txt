@@ -1,4 +1,4 @@
-include(${PROJECT_DIR}/tools/cmake/platforms.cmake)
+include(${PROJECT_DIR}/tools/cmake/build_config/platforms.cmake)
 
 #### drivers setup ####
 

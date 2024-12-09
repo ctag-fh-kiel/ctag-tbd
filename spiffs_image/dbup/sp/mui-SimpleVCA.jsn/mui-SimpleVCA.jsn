@@ -1,0 +1,16 @@
+{
+  "id": "SimpleVCA",
+  "isStereo": false,
+  "name": "Simple VCA",
+  "hint": "A Simple VCA",
+  "params": [
+    {
+      "id": "loudness",
+      "name": "Loudness",
+      "hint": "This is for loudness",
+      "type": "int",
+      "min": 0,
+      "max": 4095
+    }
+  ]
+}

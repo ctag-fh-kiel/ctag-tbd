@@ -1,0 +1,108 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "reson_model",
+          "current": 2,
+          "cv": -1
+        },
+        {
+          "id": "frequency",
+          "current": 800,
+          "cv": -1
+        },
+        {
+          "id": "polyphony",
+          "current": 1
+        },
+        {
+          "id": "structure",
+          "current": 2047
+        },
+        {
+          "id": "brightness",
+          "current": 2047
+        },
+        {
+          "id": "damping",
+          "current": 2047
+        },
+        {
+          "id": "position",
+          "current": 2047
+        },
+        {
+          "id": "chords",
+          "current": 5,
+          "cv": -1
+        },
+        {
+          "id": "easter",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ex_int",
+          "current": 1
+        },
+        {
+          "id": "strum_int",
+          "current": 1,
+          "trig": 0
+        },
+        {
+          "id": "note_int",
+          "current": 0
+        },
+        {
+          "id": "eg_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_loop",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "eg_attack",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "eg_decay",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "mod_brightness",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_frequency",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_damping",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_structure",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mod_position",
+          "current": 0,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

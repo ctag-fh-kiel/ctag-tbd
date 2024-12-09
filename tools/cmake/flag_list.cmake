@@ -1,4 +1,4 @@
-include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
+include(${TBD_CMAKE_DIR}/helpers.cmake)
 
 
 function(tbd_flag_list_load json_data)

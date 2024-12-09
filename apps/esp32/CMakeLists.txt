@@ -1,4 +1,4 @@
-include(${PROJECT_DIR}/tools/cmake/platforms.cmake)
+include(${TBD_CMAKE_DIR}/build_config/platforms.cmake)
 
 tbd_platform_display("${TBD_PLATFORM_OBJ}" VAR has_display)
 if (has_display)

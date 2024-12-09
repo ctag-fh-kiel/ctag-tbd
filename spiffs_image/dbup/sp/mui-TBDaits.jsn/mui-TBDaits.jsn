@@ -1,0 +1,105 @@
+{
+  "id": "TBDaits",
+  "isStereo": true,
+  "name": "TBDaits",
+  "hint": "Mutable Instruments Plaits Port",
+  "params": [
+    {
+      "id": "smodel",
+      "type": "int",
+      "name": "Model",
+      "hint": "Select model",
+      "min": 0,
+      "max": 23
+    },
+    {
+      "id": "trigger",
+      "type": "bool",
+      "name": "External Trigger"
+    },
+    {
+      "id": "frequency",
+      "type": "int",
+      "name": "Frequency",
+      "hint": "Frequency",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "level",
+      "type": "int",
+      "name": "Level",
+      "hint": "Level",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "harmonics",
+      "type": "int",
+      "name": "Harmonics",
+      "hint": "Harmonics",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "timbre",
+      "type": "int",
+      "name": "Timbre",
+      "hint": "Timbre",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "morph",
+      "type": "int",
+      "name": "Morph",
+      "hint": "Morph",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "lpg_color",
+      "type": "int",
+      "name": "LPG Color",
+      "hint": "Low pass gate response",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "lpg_decay",
+      "type": "int",
+      "name": "LPG Decay",
+      "hint": "Low pass gate decay",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "mod",
+      "type": "group",
+      "name": "Modulation",
+      "params": [
+        {
+          "id": "mod_freq",
+          "type": "int",
+          "name": "Mod Frequency",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "mod_timbre",
+          "type": "int",
+          "name": "Mod Timbre",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "mod_morph",
+          "type": "int",
+          "name": "Mod Morph",
+          "min": -4095,
+          "max": 4095
+        }
+      ]
+    }
+  ]
+}

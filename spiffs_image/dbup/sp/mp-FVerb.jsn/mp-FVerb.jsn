@@ -1,0 +1,2 @@
+
+{"activePatch":0,"patches":[{"name":"Default","params":[{"id":"roomsize","current":1024,"cv":-1},{"id":"damp","current":1024,"cv":-1},{"id":"dry","current":1024,"cv":-1},{"id":"wet","current":1024,"cv":-1},{"id":"width","current":1024,"cv":-1},{"id":"mode","current":0,"trig":-1},{"id":"mono","current":0}]}]}

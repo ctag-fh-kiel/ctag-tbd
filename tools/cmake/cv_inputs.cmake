@@ -1,6 +1,6 @@
-include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/pinouts.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/flag_list.cmake)
+include(${TBD_CMAKE_DIR}/helpers.cmake)
+include(${TBD_CMAKE_DIR}/pinouts.cmake)
+include(${TBD_CMAKE_DIR}/flag_list.cmake)
 
 if ("${TBD_CV_INPUT_TYPES}" STREQUAL "")
     file(GLOB cv_input_files

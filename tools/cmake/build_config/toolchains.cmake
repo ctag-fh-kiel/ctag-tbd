@@ -1,5 +1,5 @@
-include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/platforms.cmake)
+include(${TBD_CMAKE_DIR}/helpers.cmake)
+include(${TBD_CMAKE_DIR}/build_config/platforms.cmake)
 
 # check if toolchain has been set up
 #
@@ -104,6 +104,7 @@ macro(tbd_toolchain_activate)
 
         # make project globals available to ESP IDF components
         idf_build_set_property(IDF_VERSION ${TBD_TOOLCHAIN_VERSION})
+        idf_build_set_property(TBD_CMAKE_DIR ${TBD_CMAKE_DIR})
         idf_build_set_property(TBD_TOOLCHAIN ${TBD_TOOLCHAIN})
         idf_build_set_property(TBD_PLATFORM ${TBD_PLATFORM})
         idf_build_set_property(TBD_PLATFORM_OBJ "${TBD_PLATFORM_OBJ}")

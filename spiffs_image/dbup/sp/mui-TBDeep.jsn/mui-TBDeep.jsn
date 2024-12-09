@@ -1,0 +1,161 @@
+{
+  "id": "TBDeep",
+  "isStereo": true,
+  "name": "TBDeeps",
+  "hint": "Port of mutable instruments sheep",
+  "params": [
+    {
+      "id": "trigger",
+      "type": "bool",
+      "name": "Trig"
+    },
+    {
+      "id": "clock",
+      "type": "bool",
+      "name": "Clock"
+    },
+    {
+      "id": "out0",
+      "type": "int",
+      "name": "Output 0",
+      "min": 0,
+      "max": 3
+    },
+    {
+      "id": "out0_level",
+      "type": "int",
+      "name": "Output 0 Level",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "out1",
+      "type": "int",
+      "name": "Output 1",
+      "min": 0,
+      "max": 3
+    },
+    {
+      "id": "out1_level",
+      "type": "int",
+      "name": "Output 1 Level",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "frequency",
+      "type": "int",
+      "name": "Frequency",
+      "min": -48,
+      "max": 48
+    },
+    {
+      "id": "shape",
+      "type": "int",
+      "name": "Shape",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "slope",
+      "type": "int",
+      "name": "Slope",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "smoothness",
+      "type": "int",
+      "name": "Smoothness",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "shift",
+      "type": "int",
+      "name": "Shift",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "EG",
+      "type": "group",
+      "name": "EG",
+      "params": [
+        {
+          "id": "eg_trigger",
+          "type": "bool",
+          "name": "Trigger"
+        },
+        {
+          "id": "eg_loop",
+          "type": "bool",
+          "name": "Loop"
+        },
+        {
+          "id": "eg_attack",
+          "type": "int",
+          "name": "Attack",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "eg_decay",
+          "type": "int",
+          "name": "Decay",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "modulation",
+      "type": "group",
+      "name": "Modulation",
+      "params": [
+        {
+          "id": "mod_level",
+          "type": "int",
+          "name": "AM",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "mod_frequency",
+          "type": "int",
+          "name": "FM",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "mod_shape",
+          "type": "int",
+          "name": "Mod Shape",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "mod_slope",
+          "type": "int",
+          "name": "Mod Slope",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "mod_smoothness",
+          "type": "int",
+          "name": "Mod Smoothness",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "mod_shift",
+          "type": "int",
+          "name": "Mod Shift",
+          "min": -4095,
+          "max": 4095
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "MIDifu",
+  "isStereo": false,
+  "name": "MIDifu",
+  "hint": "Diffuser adopted from mutable instruments",
+  "params": [
+    {
+      "id": "amount",
+      "type": "int",
+      "name": "Amount",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "time",
+      "type": "int",
+      "name": "Time",
+      "min": 0,
+      "max": 4095
+    }
+  ]
+}

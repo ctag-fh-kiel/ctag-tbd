@@ -1,0 +1,215 @@
+{
+ "activePatch": 0,
+ "patches": [
+  {
+   "name": "Default",
+   "params": [
+    {
+     "id": "Volume",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "EGactiv",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "Attack",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "Decay",
+     "current": 299,
+     "cv": -1
+    },
+    {
+     "id": "StepAndEGtrigger",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "VoiceVol",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "PitchSaw",
+     "current": 12,
+     "cv": -1
+    },
+    {
+     "id": "ExtSawMix",
+     "current": 914,
+     "cv": -1
+    },
+    {
+     "id": "SawNoiseMix",
+     "current": 414,
+     "cv": -1
+    },
+    {
+     "id": "Cutoff",
+     "current": 1275,
+     "cv": -1
+    },
+    {
+     "id": "Resonance",
+     "current": 299,
+     "cv": -1
+    },
+    {
+     "id": "Drive",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "BitsToCrush",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "DownsampleFactor",
+     "current": 268,
+     "cv": -1
+    },
+    {
+     "id": "SnHamount",
+     "current": 709,
+     "cv": -1
+    },
+    {
+     "id": "StepperActive",
+     "current": 1,
+     "trig": -1
+    },
+    {
+     "id": "RecPlay",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "CurrentStep",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "NumberOfSteps",
+     "current": 4,
+     "cv": -1
+    },
+    {
+     "id": "BPMint",
+     "current": 1200,
+     "cv": -1
+    }
+   ]
+  },
+  {
+   "name": "Stepper",
+   "params": [
+    {
+     "id": "Volume",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "EGactiv",
+     "current": 1,
+     "trig": -1
+    },
+    {
+     "id": "Attack",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "Decay",
+     "current": 461,
+     "cv": -1
+    },
+    {
+     "id": "StepAndEGtrigger",
+     "current": 0,
+     "trig": 0
+    },
+    {
+     "id": "VoiceVol",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "PitchSaw",
+     "current": 0,
+     "cv": -1
+    },
+    {
+     "id": "ExtSawMix",
+     "current": 2054,
+     "cv": -1
+    },
+    {
+     "id": "SawNoiseMix",
+     "current": 694,
+     "cv": -1
+    },
+    {
+     "id": "Cutoff",
+     "current": 692,
+     "cv": -1
+    },
+    {
+     "id": "Resonance",
+     "current": 1484,
+     "cv": -1
+    },
+    {
+     "id": "Drive",
+     "current": 1024,
+     "cv": -1
+    },
+    {
+     "id": "BitsToCrush",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "DownsampleFactor",
+     "current": 1760,
+     "cv": -1
+    },
+    {
+     "id": "SnHamount",
+     "current": 268,
+     "cv": -1
+    },
+    {
+     "id": "StepperActive",
+     "current": 1,
+     "trig": -1
+    },
+    {
+     "id": "RecPlay",
+     "current": 0,
+     "trig": -1
+    },
+    {
+     "id": "CurrentStep",
+     "current": 1,
+     "cv": -1
+    },
+    {
+     "id": "NumberOfSteps",
+     "current": 4,
+     "cv": -1
+    },
+    {
+     "id": "BPMint",
+     "current": 1095,
+     "cv": -1
+    }
+   ]
+  }
+ ]
+}

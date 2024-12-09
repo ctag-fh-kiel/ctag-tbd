@@ -1,0 +1,9 @@
+# Generated file! Do not edit!
+
+# main TBD project configuration
+#
+# Has no effect on build, only for use by external tools.
+#
+TBD_TOOLCHAIN=@TBD_TOOLCHAIN@
+TBD_PLATFORM=@TBD_PLATFORM@
+TBD_PLATFORM_FILE=@TBD_PLATFORM_FILE@

@@ -1,9 +1,9 @@
-include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/pinouts.cmake)
+include(${TBD_CMAKE_DIR}/helpers.cmake)
+include(${TBD_CMAKE_DIR}/pinouts.cmake)
 
 if ("${TBD_INDICATOR_TYPES}" STREQUAL "")
     file(GLOB indicator_files
-        ${CMAKE_CURRENT_LIST_DIR}/indicators/*.cmake
+        ${TBD_CMAKE_DIR}/indicators/*.cmake
     )
     foreach(indicator_file ${indicator_files})
         get_filename_component(indicator_name "${indicator_file}" NAME_WLE)

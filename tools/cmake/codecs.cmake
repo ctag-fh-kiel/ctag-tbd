@@ -1,5 +1,5 @@
-include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/pinouts.cmake)
+include(${TBD_CMAKE_DIR}/helpers.cmake)
+include(${TBD_CMAKE_DIR}/pinouts.cmake)
 
 if ("${TBD_CODEC_TYPES}" STREQUAL "")
     file(GLOB codec_files

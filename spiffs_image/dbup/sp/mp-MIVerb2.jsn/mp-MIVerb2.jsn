@@ -1,0 +1,65 @@
+{
+ "activePatch": 0,
+ "patches": [
+  {
+   "name": "Default",
+   "params": [
+    {
+     "id": "decay",
+     "current": 3292,
+     "cv": -1
+    },
+    {
+     "id": "amount",
+     "current": 3362,
+     "cv": -1
+    },
+    {
+     "id": "size",
+     "current": 2141,
+     "cv": -1
+    },
+    {
+     "id": "in_gain",
+     "current": 2290,
+     "cv": -1
+    },
+    {
+     "id": "diffusion",
+     "current": 2156,
+     "cv": -1
+    },
+    {
+     "id": "lp",
+     "current": 4095,
+     "cv": -1
+    },
+    {
+     "id": "hp",
+     "current": 185,
+     "cv": -1
+    },
+    {
+     "id": "mod_amount",
+     "current": 770,
+     "cv": -1
+    },
+    {
+     "id": "mod_rate",
+     "current": 737,
+     "cv": -1
+    },
+    {
+     "id": "ratio",
+     "current": 427,
+     "cv": -1
+    },
+    {
+     "id": "p_shift_amt",
+     "current": 0,
+     "cv": -1
+    }
+   ]
+  }
+ ]
+}

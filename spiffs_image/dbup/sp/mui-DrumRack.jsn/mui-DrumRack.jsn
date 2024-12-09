@@ -1,0 +1,1186 @@
+{
+  "id": "DrumRack",
+  "isStereo": true,
+  "name": "DrumRack",
+  "hint": "A mix of drums and samples",
+  "params": [
+    {
+      "id": "ab_group",
+      "name": "Analogue Bass Drum",
+      "type": "group",
+      "params": [
+        {
+          "id": "ab_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ab_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ab_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ab_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ab_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ab_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ab_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ab_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ab_a_fm",
+          "name": "Attack FM",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ab_s_fm",
+          "name": "Self FM",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "db_group",
+      "name": "Digital Bass Drum",
+      "type": "group",
+      "params": [
+        {
+          "id": "db_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "db_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "db_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "db_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "db_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "db_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "db_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "db_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "db_dirty",
+          "name": "Dirtiness",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "db_fm_env",
+          "name": "FM Envelope",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "db_fm_dcy",
+          "name": "FM Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "as_group",
+      "name": "Analogue Snare",
+      "type": "group",
+      "params": [
+        {
+          "id": "as_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "as_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "as_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "as_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "as_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "as_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "as_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "as_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "as_a_spy",
+          "name": "Snappy",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ds_group",
+      "name": "Digital Snare",
+      "type": "group",
+      "params": [
+        {
+          "id": "ds_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ds_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ds_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ds_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ds_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ds_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ds_fm_amt",
+          "name": "FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ds_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ds_spy",
+          "name": "Snappy",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "hh1_group",
+      "name": "HiHat 1",
+      "type": "group",
+      "params": [
+        {
+          "id": "hh1_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "hh1_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "hh1_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh1_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "hh1_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh1_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh1_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh1_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh1_noise",
+          "name": "Noise Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "hh2_group",
+      "name": "HiHat 2",
+      "type": "group",
+      "params": [
+        {
+          "id": "hh2_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "hh2_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "hh2_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh2_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "hh2_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh2_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh2_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh2_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh2_noise",
+          "name": "Noise Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "rs_group",
+      "name": "RimShot",
+        "type": "group",
+        "params": [
+          {
+            "id": "rs_trigger",
+            "name": "Trigger",
+            "type": "bool"
+          },
+          {
+            "id": "rs_mute",
+            "name": "Mute",
+            "type": "bool"
+          },
+          {
+            "id": "rs_lev",
+            "name": "Level",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "rs_pan",
+            "name": "Pan",
+            "type": "int",
+            "min": -4095,
+            "max": 4095
+          },
+          {
+            "id": "rs_accent",
+            "name": "Accent",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "rs_f0",
+            "name": "Base Frequency",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "rs_tone",
+            "name": "Tone",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "rs_decay",
+            "name": "Decay",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "rs_noise",
+            "name": "Noise Level",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          }
+        ]
+    },
+    {
+      "id": "cl_group",
+      "name": "Clap",
+        "type": "group",
+        "params": [
+          {
+            "id": "cl_trigger",
+            "name": "Trigger",
+            "type": "bool"
+          },
+          {
+            "id": "cl_mute",
+            "name": "Mute",
+            "type": "bool"
+          },
+          {
+            "id": "cl_lev",
+            "name": "Level",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "cl_pan",
+            "name": "Pan",
+            "type": "int",
+            "min": -4095,
+            "max": 4095
+          },
+          {
+            "id": "cl_f0",
+            "name": "Base Frequency",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "cl_tone",
+            "name": "Tone",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "cl_decay",
+            "name": "Decay",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "cl_scale",
+            "name": "Scale",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+          },
+          {
+            "id": "cl_transient",
+            "name": "Transient",
+            "type": "int",
+            "min": 0,
+            "max": 15
+          }
+        ]
+    },
+    {
+      "id": "s1_group",
+      "name": "Sample 1",
+      "type": "group",
+      "params": [
+        {
+          "id": "s1_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "s1_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "s1_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s1_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s1_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s1_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "s1_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "s1_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "s1_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s1_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s1_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "s1_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "s1_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s1_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s1_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s1_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s1_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "s1_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "s1_fc",
+          "name": "Filter Cutoff",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+        },
+        {
+          "id": "s1_fq",
+          "name": "Filter Q",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "s2_group",
+      "name": "Sample 2",
+      "type": "group",
+      "params": [
+        {
+          "id": "s2_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "s2_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "s2_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s2_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s2_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s2_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -24,
+          "max": 24
+        },
+        {
+          "id": "s2_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "s2_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "s2_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s2_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s2_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "s2_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "s2_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s2_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s2_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s2_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s2_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "s2_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "s2_fc",
+          "name": "Filter Cutoff",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+        },
+        {
+          "id": "s2_fq",
+          "name": "Filter Q",
+            "type": "int",
+            "min": 0,
+            "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "s3_group",
+      "name": "Sample 3",
+      "type": "group",
+      "params": [
+        {
+          "id": "s3_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "s3_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "s3_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s3_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s3_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -48,
+          "max": 48
+        },
+        {
+          "id": "s3_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "s3_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "s3_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "s3_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "s3_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "s3_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "s3_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "s4_group",
+      "name": "Sample 4",
+      "type": "group",
+      "params": [
+        {
+          "id": "s4_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "s4_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "s4_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s4_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s4_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "s4_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "s4_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "s4_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "s4_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "s4_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "s4_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "s4_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "c_group",
+      "name": "Compressor",
+      "type": "group",
+      "params": [
+        {
+          "id": "c_thres",
+          "name": "Threshold",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_ratio",
+          "name": "Ratio",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_rel",
+          "name": "Release",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_lpf",
+          "name": "Sidechain LPF",
+          "type": "bool"
+        },
+        {
+          "id": "c_gain",
+          "name": "Gain",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_mix",
+          "name": "Mix",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "sum",
+      "name": "Overall Mix",
+      "type": "group",
+      "params": [
+        {
+          "id": "sum_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "sum_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    }
+  ]
+}

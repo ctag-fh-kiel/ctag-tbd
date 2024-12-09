@@ -1,7 +1,7 @@
-include(${CMAKE_CURRENT_LIST_DIR}/helpers.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/indicators.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/cv_inputs.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/codecs.cmake)
+include(${TBD_CMAKE_DIR}/helpers.cmake)
+include(${TBD_CMAKE_DIR}/indicators.cmake)
+include(${TBD_CMAKE_DIR}/cv_inputs.cmake)
+include(${TBD_CMAKE_DIR}/codecs.cmake)
 
 set(TBD_PLATFORM_SYSTEMS esp32 desktop)
 set(TBD_PLATFORM_APIS wifi serial shell)
@@ -19,6 +19,10 @@ set(TBD_PLATFORM_FILE_SYSTEMS std wrapper)
 macro(tbd_platform_is_set)
     if ("${TBD_PLATFORM}" STREQUAL "")
         tbd_loge("TBD_PLATFORM not set, add '-DTBD_PLATFORM=<platform>' to idf.py or cmake")
+    endif()
+
+    if ("${TBD_PLATFORM_FILE}" STREQUAL "")
+        tbd_loge("TBD_PLATFORM_FILE not set, tbd_platform_setup must be called")
     endif()
 endmacro()
 
@@ -55,6 +59,13 @@ macro(tbd_platform_setup)
 
     set(TBD_PLATFORM ${platform_name} CACHE STRING "" FORCE)
     mark_as_advanced(TBD_PLATFORM)
+
+    set(TBD_PLATFORM_FILE "${CMAKE_SOURCE_DIR}/config/platforms/platform.${platform_name}.json" CACHE STRING "" FORCE)
+    mark_as_advanced(TBD_PLATFORM_FILE)
+
+    if (NOT EXISTS "${TBD_PLATFORM_FILE}")
+        tbd_loge("no such platform: platform configuration file '${TBD_PLATFORM_FILE}' does not exist")
+    endif()
 endmacro()
 
 

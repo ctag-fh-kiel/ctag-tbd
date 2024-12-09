@@ -1,0 +1,85 @@
+{
+  "id": "MIVerb2",
+  "isStereo": true,
+  "name": "MIVerb2",
+  "hint": "Griesinger Topology Reverb based on Oliverb implementation",
+  "params": [
+    {
+      "id": "decay",
+      "type": "int",
+      "name": "Decay",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "amount",
+      "type": "int",
+      "name": "Amount",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "size",
+      "type": "int",
+      "name": "Size",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "in_gain",
+      "type": "int",
+      "name": "Input Gain",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "diffusion",
+      "type": "int",
+      "name": "Diffusion",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "lp",
+      "type": "int",
+      "name": "Low Pass",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "hp",
+      "type": "int",
+      "name": "High Pass",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "mod_amount",
+      "type": "int",
+      "name": "Modulation amount",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "mod_rate",
+      "type": "int",
+      "name": "Modulation rate",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "ratio",
+      "type": "int",
+      "name": "Ratio",
+      "min": 0,
+      "max": 4095
+    },
+    {
+      "id": "p_shift_amt",
+      "type": "int",
+      "name": "Pitch Shift Amount",
+      "min": 0,
+      "max": 4095
+    }
+  ]
+}

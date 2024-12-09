@@ -1,0 +1,2 @@
+
+{"activePatch":0,"patches":[{"name":"Default","params":[{"id":"length","current":10000,"cv":-1},{"id":"feedback","current":2048,"cv":-1},{"id":"drywet","current":2048,"cv":-1},{"id":"level","current":2048,"cv":-1},{"id":"enable","current":1,"trig":-1}]}]}

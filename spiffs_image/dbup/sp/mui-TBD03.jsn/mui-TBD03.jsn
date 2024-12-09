@@ -1,0 +1,175 @@
+{
+  "id": "TBD03",
+  "isStereo": false,
+  "name": "TBD03",
+  "hint": "TB303 Emulation",
+  "params": [
+    {
+      "id": "gr_osc",
+      "type": "group",
+      "name": "Oscillator",
+      "params": [
+        {
+          "id": "trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "sync_trig",
+          "name": "Sync on Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": 0,
+          "max": 16383,
+          "step": 1
+        },
+        {
+          "id": "shape",
+          "name": "Shape",
+          "type": "int",
+          "min": 0,
+          "max": 46,
+          "step": 1
+        },
+        {
+          "id": "param_0",
+          "name": "Osc Morph 0",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "param_1",
+          "name": "Osc Morph 1",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "gr_filter",
+      "type": "group",
+      "name": "Filter",
+      "params": [
+        {
+          "id": "gain",
+          "name": "Gain",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "filter_type",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 4
+        },
+        {
+          "id": "cutoff",
+          "name": "Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "resonance",
+          "name": "Resonance",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "envelope",
+          "name": "Env Mod VCF",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "saturation",
+          "name": "Saturation",
+          "type": "int",
+          "min": 0,
+          "max": 65535
+        },
+        {
+          "id": "drive",
+          "name": "Overdrive",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "accent",
+          "name": "Accent",
+          "type": "bool"
+        },
+        {
+          "id": "accent_level",
+          "name": "Accent Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "slide",
+          "name": "Slide",
+          "type": "bool"
+        },
+        {
+          "id": "slide_level",
+          "name": "Slide Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "gr_eg",
+      "type": "group",
+      "name": "Envelope",
+      "params": [
+        {
+          "id": "decay_vca",
+          "name": "Decay VCA",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "decay_vcf",
+          "name": "Decay VCF",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "p0_amt",
+          "name": "P0 Amount",
+          "hint": "P0 EG VCF MOD",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "p1_amt",
+          "name": "P1 Amount",
+          "hint": "P1 EG VCF MOD",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        }
+      ]
+    }
+  ]
+}

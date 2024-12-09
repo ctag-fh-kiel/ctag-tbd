@@ -1,0 +1,94 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "shape",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "gain",
+          "current": 3500
+        },
+        {
+          "id": "pitch",
+          "current": 6130,
+          "cv": -1
+        },
+        {
+          "id": "decimation",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "bit_reduction",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "q_scale",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "param_0",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "param_1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "waveshaping",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "fm_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "am_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "p0_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "p1_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "enableEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "loopEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "attack",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "decay",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

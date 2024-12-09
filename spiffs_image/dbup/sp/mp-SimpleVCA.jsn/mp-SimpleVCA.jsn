@@ -1,0 +1,15 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "loudness",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

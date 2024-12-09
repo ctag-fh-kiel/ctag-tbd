@@ -1,4 +1,4 @@
-include(${CMAKE_SOURCE_DIR}/tools/cmake/platforms.cmake)
+include(${CMAKE_SOURCE_DIR}/tools/cmake/build_config/platforms.cmake)
 
 
 tbd_platform_audio("${TBD_PLATFORM_OBJ}" VAR codec_type)
