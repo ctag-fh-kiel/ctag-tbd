@@ -57,7 +57,7 @@ tbd_abort() {
 
 # @brief run a bash command with output
 #
-# @args [enum]    display or hide stdout of command (SILENT/VERBOSE)
+# @arg 1 [enum]    display or hide stdout of command (SILENT/VERBOSE)
 # @tail [array]   command to run and its arguments
 #
 tbd_run() {
@@ -70,4 +70,59 @@ tbd_run() {
   else
       tbd_loge "unknown output verbosity '${silent}'"
   fi
+}
+
+# @brief quick check if the given directory looks like a TBD project root
+#
+# A tbd, ports and apps folder and CMakeLists.txt file should be present.
+#
+# @arg 1 [str]   path to be checked
+#
+tbd_is_project_root() {
+  if [ -d "$1/tbd" ] && [ -d "$1/ports" ]  && [ -d "$1/apps" ]  && [ -f "$1/CMakeLists.txt" ]
+  then
+    return 0
+  fi
+  return 1
+}
+
+# @brief determine the project root directory from within a TBD project tree
+#
+# The directory can be (in order of priority)
+# - set by TBD_PROJECT_DIR environment variable
+# - root of the current git repository
+# - current working dir
+#
+tbd_project_root() {
+  local path="${TBD_PROJECT_DIR}"
+  if [ -n "${TBD_PROJECT_DIR}" ]; then
+    if ! tbd_is_project_root $path; then
+      return 1
+    else
+      echo "$path"
+      return 0
+    fi
+  fi
+
+  path=$(git rev-parse --show-toplevel 2> /dev/null || echo "")
+  if [ -n "$path" ]; then
+    if ! tbd_is_project_root $path; then
+      return 1
+    else
+      echo "$path"
+      return 0
+    fi
+  fi
+
+  path=$PWD
+  if [ -d "$PWD/tbd" ] && [ -d "$PWD/ports" ]; then
+    if ! tbd_is_project_root $path; then
+      return 1
+    else
+      echo "$path"
+      return 0
+    fi
+  fi
+
+  return 1
 }

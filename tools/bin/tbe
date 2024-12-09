@@ -4,7 +4,16 @@ set -e
 
 tbd_logging_tag="tbd_emu"
 
-bin_dir=$(pwd)/build/emu
+resource_path=$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))/resources
+source "$resource_path/helpers.sh"
+
+
+project_dir=$(tbd_project_root)
+if [ -z "$project_dir" ]; then
+    tbd_abort "could not find TBD project in path"
+fi
+
+bin_dir=${project_dir}/build/emu
 qemu_dir=/opt/qemu/build
 
 build_only=false
@@ -13,10 +22,7 @@ qemu_extra_args=()
 refresh=false
 tbd_cmd_verbosity="VERBOSE"
 
-load_includes() {
-  resource_path=$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))/resources
-  source "$resource_path/helpers.sh"
-}
+
 
 # @brief parse command line options
 #
@@ -49,6 +55,8 @@ parse_args() {
 
 
 refresh_build() {
+    tbd_run pushd ${project_dir}
+
     tbd_logi "refreshing target build"
     #  -drive file="${bin_dir}/qemu_efuse.bin,if=none,format=raw,id=efuse" \
 
@@ -74,6 +82,7 @@ refresh_build() {
     fi
 
     tbd_run popd
+    tbd_run popd
 }
 
 
@@ -93,7 +102,6 @@ run_emulator() {
           ${qemu_args[@]}
 }
 
-load_includes
 parse_args $@
 
 if $refresh; then
