@@ -39,7 +39,7 @@ struct PushAudioWorker {
      *
      *  Audio processing needs to be set up before starting.
      */
-    uint32_t init(PushAudioParams&& sound_params) {
+    uint32_t init(const PushAudioParams& sound_params) {
         _params = sound_params;
         return 0;
     }

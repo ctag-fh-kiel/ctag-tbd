@@ -13,6 +13,7 @@ endif()
 
 file(GLOB SRCS_FILES
         include/tbd/storage/*.hpp
+        src/dummy.cpp
         ${extra_srcs}
 )
 

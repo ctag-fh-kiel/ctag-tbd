@@ -20,7 +20,6 @@ namespace tbd::audio {
  *    @note: sound params are immutable and can not be modified on the fly.
  */
 struct PushAudioParams{
-
     /** @brief define sound params
      *
      *  Defaults to input = `live` and output = `live`
@@ -32,18 +31,24 @@ struct PushAudioParams{
      *
      */
     PushAudioParams(const std::string& input_file = "", const std::string& output_file = "", int32_t live_device = -1) {
+        // unspecified arguments default to live output
         auto input = input_file.empty() ? "live" : input_file;
         auto output = output_file.empty() ? "live" : output_file;
 
-        if (input != "liv3e" && output != "live") {
+        // if an explicit device was specified but no live output is being performed
+        // assume this to be an unintentional error
+        if (input != "live" && output != "live") {
             if (live_device != -1) {
                 TBD_LOGW(tag, "sound config has two files and live device parameter");
             }
             _input = -1;
         }
 
+        // if live output was selected but no device specified, use default 0
         if (live_device < 0 && (input == "live" || output == "live")) {
             _device = 0;
+        } else {
+            _device = live_device;
         }
 
         _input = input;

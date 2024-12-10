@@ -3,6 +3,6 @@
 
 namespace tbd::storage {
         
-const std::string fs_root = "spiffs_image";
+const std::string fs_root = "resources/file_system";
 
 }

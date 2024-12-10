@@ -29,7 +29,7 @@ struct PullAudioFeeder {
         drivers::Codec::RecalibDCOffset();
     }
 
-    uint32_t init(PullAudioParams&& sound_params) {
+    uint32_t init(const PullAudioParams& sound_params) {
         return 0;
     }
 

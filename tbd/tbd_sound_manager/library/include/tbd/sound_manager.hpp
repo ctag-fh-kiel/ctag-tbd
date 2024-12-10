@@ -38,7 +38,7 @@ public:
      *
      *  When the in our output is live (not files) account for a small startup delay.
      */
-    static void begin(AudioParams&& sound_params = {});
+    static void begin(const AudioParams& sound_params = {});
 
     static void end();
 

@@ -19,7 +19,7 @@ std::unique_ptr<tbd::audio::SPManagerDataModel> model;
 
 namespace tbd::audio {
 
-void SoundProcessorManager::begin(AudioParams&& sound_params) {
+void SoundProcessorManager::begin(const AudioParams& sound_params) {
     model = std::make_unique<SPManagerDataModel>();
     sound_level_worker.set_blink_duration(5);
 
