@@ -27,7 +27,7 @@ tbd_storages_activate()
 
 # make the TBD helper tool available to CMake
 if(NOT TBD_TOOL)
-    find_program(TBD_TOOL NAMES tbd PATHS ${CMAKE_SOURCE_DIR/tools/bin} NO_CACHE)
+    find_program(TBD_TOOL NAMES tbd PATHS "${CMAKE_SOURCE_DIR}/tools/bin")
 endif()
 
 if ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
