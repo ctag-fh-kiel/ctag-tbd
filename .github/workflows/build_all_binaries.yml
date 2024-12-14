@@ -1,0 +1,12 @@
+name: build all tbd binaries
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-bba2-firmware:
+    uses: ./.github/workflows/build_firmware.yml
+    with:
+      tbd-platform: bba2

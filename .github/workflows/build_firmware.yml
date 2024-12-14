@@ -1,0 +1,29 @@
+name: build tbd firmware
+
+on:
+  workflow_call:
+    inputs:
+      tbd-platform:
+        required: true
+        type: string
+
+jobs:
+  build-firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v3
+
+      - name: setup build container
+        run: ls -1 tools/docker/build.Dockerfile && docker build -t tbd_firmware -f tools/docker/build.Dockerfile $PWD
+
+      - name: build firmware
+        run: docker run -v $PWD:/code tbd_build ${{ inputs.tbd-platform }} configure && docker run -v $PWD:/code tbd_build ${{ inputs.tbd-platform }} build
+
+      - name: upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: tbd_firmware_${{ inputs.tbd-platform }}
+          path: |
+            build/${{ inputs.tbd-platform }}/ctag-tbd.elf
+          overwrite: true
