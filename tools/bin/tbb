@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 
+if [ -z "$ESP_IDF_VERSION" ] && [ $TBD_IN_CONTAINER -eq 1 ]; then
+  source "$TBD_IDF_ACTIVATE"
+fi
 
-TBD_TOOL_MAIN="$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))/tbdtools/__main__.py"
-export LOGURU_LEVEL=WARNING
+if [ -z "$TBD_PROJECT_DIR" ]; then
+  TBD_TOOL_MAIN="$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))/tbdtools/__main__.py"
+else
+  cd "$TBD_PROJECT_DIR"
+  TBD_TOOL_MAIN="$TBD_PROJECT_DIR/tools/tbdtools/__main__.py"
+fi
+
+export
+
+export LOGURU_LEVEL=DEBUG
 platform="$1"
 shift
 
