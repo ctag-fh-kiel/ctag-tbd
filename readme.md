@@ -3,6 +3,8 @@
 
 ![CTAG-TBD](tbd.png)
 
+![docs build](https://github.com/ctag-fh-kiel/ctag-tbd/actions/workflows/build_docs.yml/badge.svg)
+
 ## Documentation (in the works):
 [Summary table](https://docs.google.com/spreadsheets/d/1dBZtuBIdtgMqoRruYX-VDdDirdTQ6RD-oz-j79q-bmQ/edit?usp=sharing) of all available plugins.
 Documentation on TBD usage can be found [here (Google Docs)](https://docs.google.com/document/d/1c8mjxWjdiJNP0xpkU2CxRUp9av6V4W39wARJf3_SMSo/edit?usp=sharing)
