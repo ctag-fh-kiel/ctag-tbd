@@ -18,7 +18,7 @@ jobs:
         run: ls -1 tools/docker/build.Dockerfile && docker build -t tbd_firmware -f tools/docker/build.Dockerfile $PWD
 
       - name: build firmware
-        run: docker run -v $PWD:/code tbd_build ${{ inputs.tbd-platform }} configure && docker run -v $PWD:/code tbd_build ${{ inputs.tbd-platform }} build
+        run: docker run -v $PWD:/code tbd_firmware ${{ inputs.tbd-platform }} configure && docker run -v $PWD:/code tbd_firmware ${{ inputs.tbd-platform }} build
 
       - name: upload firmware
         uses: actions/upload-artifact@v4
