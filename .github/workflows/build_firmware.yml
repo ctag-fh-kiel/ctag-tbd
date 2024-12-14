@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: check out repo
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: setup build container
         run: ls -1 tools/docker/build.Dockerfile && docker build -t tbd_firmware -f tools/docker/build.Dockerfile $PWD
