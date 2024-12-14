@@ -44,6 +44,7 @@ int Display::currentUserStringRow {0};
 
 void Display::Init() {
     i2c_master_init(&I2CDisplay, SDA_GPIO, SCL_GPIO, 42);
+    I2CDisplay._flip = true;
     ssd1306_init(&I2CDisplay, 128, 64);
     ssd1306_clear_screen(&I2CDisplay, false);
     ssd1306_contrast(&I2CDisplay, 0xff);

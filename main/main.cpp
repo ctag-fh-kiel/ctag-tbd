@@ -57,7 +57,7 @@ void app_main() {
     ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
 
     // wait until power is somewhat more settled
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    //vTaskDelay(2000 / portTICK_PERIOD_MS);
 
     // init fs
     DRIVERS::FileSystem::InitFS();
