@@ -18,20 +18,26 @@ jobs:
       - name: build docs
         run: docker run -v $PWD:/code tbd_docs
 
-      - name: upload html
-        uses: actions/upload-artifact@v4
+      # - name: upload html
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: html_docs
+      #     path: |
+      #       build/docs/html/**/*.html
+      #       build/docs/html/**/*.js
+      #       build/docs/html/**/*.css
+      #       build/docs/html/**/*.jpe?g
+      #       build/docs/html/**/*.png
+      #       build/docs/html/**/*.woff2
+      #       build/docs/html/**/*.ttf
+      #       build/docs/html/.nojekyll
+      #     overwrite: true
+
+      - name: upload static web content
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: html_docs
-          path: |
-            build/docs/html/**/*.html
-            build/docs/html/**/*.js
-            build/docs/html/**/*.css
-            build/docs/html/**/*.jpe?g
-            build/docs/html/**/*.png
-            build/docs/html/**/*.woff2
-            build/docs/html/**/*.ttf
-            build/docs/html/.nojekyll
-          overwrite: true
+          path: build/docs/html/
 
   deploy:
     needs: build
@@ -49,5 +55,5 @@ jobs:
       - name: deploy docs
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          artifact_name: html_docs
+        # with:
+        #   artifact_name: html_docs
