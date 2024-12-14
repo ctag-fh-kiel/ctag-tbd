@@ -74,6 +74,12 @@ project = 'TBD'
 copyright = '2024 CTAG'
 author = 'CTAG'
 
+rst_prolog = """.. attention::
+    This is the documentation stub to the upcoming TBD **V2 release**.
+
+    It is incomplete and subject to future changes.
+"""
+
 # -- General configuration ---------------------------------------------------
 
 extensions = [
