@@ -30,6 +30,7 @@ jobs:
             build/docs/html/**/*.png
             build/docs/html/**/*.woff2
             build/docs/html/**/*.ttf
+            build/docs/html/.nojekyll
           overwrite: true
 
   deploy:
