@@ -2,7 +2,7 @@ set(VERSION_SRC "${CMAKE_BINARY_DIR}/gen_src/version.cpp")
 
 add_custom_command(
     OUTPUT "${VERSION_SRC}"
-    COMMAND ${TBD_TOOL} -p "${TBD_PLATFORM}" project create-build-info
+    COMMAND ${TBD_TOOL} -p "${TBD_PLATFORM}" project create-build-info -o "${VERSION_SRC}"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"    
 )
 

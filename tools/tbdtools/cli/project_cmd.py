@@ -42,7 +42,7 @@ def build_info_cmd(_ctx: typer.Context):
 @project_group.command('create-build-info')
 def crate_build_info_cmd(
     _ctx: typer.Context,
-    out_path: Optional[Path] = typer.Option(None, '-o' '--out-file')                         
+    out_path: Optional[Path] = typer.Option(None, '-o', '--out-file')                         
 ):
     """ write build information header """
 
