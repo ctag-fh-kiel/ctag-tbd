@@ -79,6 +79,7 @@ author = 'CTAG'
 extensions = [
     'sphinxcontrib.youtube',
     'breathe',
+    'sphinx.ext.githubpages'
     # 'tbdtools.tbd_sphinx',
 ]
 
