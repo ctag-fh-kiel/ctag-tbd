@@ -1,5 +1,5 @@
 # **CTAG TBD >>to be determined<<**
-![draft-release](https://github.com/ctag-fh-kiel/ctag-tbd/workflows/draft-release/badge.svg)
+![build docs](https://github.com/ctag-fh-kiel/ctag-tbd/workflows/build_docs/badge.svg)
 
 ![CTAG-TBD](tbd.png)
 
