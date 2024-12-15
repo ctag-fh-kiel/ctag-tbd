@@ -28,7 +28,7 @@ In a terminal Navigate to the desired parent directory of your code and run Git 
 .. code-block:: shell
 
     cd desired_parent_dir
-    git clone -b dev -recursive https://github.com/ctag-fh-kiel/ctag-tbd.git
+    git clone -b dev --recursive https://github.com/ctag-fh-kiel/ctag-tbd.git
 
 Navigate to the TBD project root
 
