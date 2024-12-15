@@ -1,3 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+
+#### logging utils ####
+
 c_none="0"
 c_black="0;30"
 c_red="0;31"
@@ -55,6 +61,8 @@ tbd_abort() {
     exit 1
 }
 
+#### script execution utils ####
+
 # @brief run a bash command with output
 #
 # @arg 1 [enum]    display or hide stdout of command (SILENT/VERBOSE)
@@ -71,6 +79,8 @@ tbd_run() {
       tbd_loge "unknown output verbosity '${silent}'"
   fi
 }
+
+#### TBD project utils ####
 
 # @brief quick check if the given directory looks like a TBD project root
 #
@@ -125,4 +135,22 @@ tbd_project_root() {
   fi
 
   return 1
+}
+
+tbd_get_platforms() {
+  local project_dir=$1
+  if [ -z "$project_dir" ]; then
+    project_dir=$(tbd_project_root)
+  fi
+
+  if [ -z "$project_dir" ]; then
+    return 1
+  fi
+
+  for platform_file in "$project_dir"/config/platforms/platform.*.json; do
+    platform=$(basename -- ${platform_file%.json})
+    platform=${platform#platform.}
+    echo $platform
+  done
+
 }
