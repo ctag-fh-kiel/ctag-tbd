@@ -113,4 +113,18 @@ where ``build/dada`` is your previously defined build directory.
     The build target ``ctag-tbd.elf`` is common for all device firmware builds. For desktop 
     builds the target name can differ.
 
+Alternatively you can use the idf.py tool to build, flash and monitor the firmware:
+
+.. code-block:: shell
+
+    idf.py -B build/dada -D TBD_PLATFORM=dada build flash monitor
+
+To install all Python dada dependencies on top of the IDF dependencies, run
+
+.. code-block:: shell
+
+    ./tools/resources/src/tbd_deps.sh
+
+copy the output in the command line to install the dependencies.
+
 
