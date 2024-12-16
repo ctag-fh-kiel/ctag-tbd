@@ -95,10 +95,10 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 
 
-html_theme = 'pydata_sphinx_theme'
-html_sidebars = {
-    '**': ['globaltoc.html', 'localtoc.html', 'relations.html', 'searchbox.html']
-}
+html_theme = 'furo'
+# html_sidebars = {
+#     '**': ['globaltoc.html', 'localtoc.html', 'relations.html', 'searchbox.html']
+# }
 
 html_context = {
     'default_mode': 'auto'

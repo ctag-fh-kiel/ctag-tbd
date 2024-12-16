@@ -62,6 +62,7 @@ RUN apt-get install -y \
 RUN . "$TBD_IDF_ACTIVATE" && pip install \
     sphinx \
     pydata-sphinx-theme \
+    furo \
     sphinxcontrib-youtube \
     esbonio \
     breathe
