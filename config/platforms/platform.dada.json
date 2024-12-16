@@ -40,20 +40,18 @@
         },
         "inputs": {
             "type": "gpio",
-            "button": null,
-            "trigger0": 39,
-            "trigger1": 36
+            "button": 6,
+            "trigger0": -1,
+            "trigger1": -1
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
         "display": {
-            "type": "ssd1306_spi",
+            "type": "ssd1306_i2c",
             "pins": {
-                "mosi": -1,
-                "sclk": -1,
-                "cs": -1,
-                "dc": -1,
-                "reset": 1
+                "sda": 5,
+                "scl": 4,
+                "reset": 42
             }
         },
         "network": true

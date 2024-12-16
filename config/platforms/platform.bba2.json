@@ -33,16 +33,16 @@
             }
         },
         "indicator": {
-            "type": "sim_indicator",
+            "type": "neopixel",
             "pins": {
                 "dout": 38
             }
         },
         "inputs": {
             "type": "gpio",
-            "button": null,
-            "trigger0": 39,
-            "trigger1": 36
+            "button": -1,
+            "trigger0": -1,
+            "trigger1": -1
         },
         "apis": ["wifi"],
         "file_system": "wrapper",

@@ -57,7 +57,7 @@
           "pins": {
             "sda": 5,
             "scl": 23,
-            "reset": 42
+            "reset": -1
           }
         },
         "network": false
