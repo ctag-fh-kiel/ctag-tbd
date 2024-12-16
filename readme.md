@@ -1,9 +1,13 @@
 # **CTAG TBD >>to be determined<<**
 ![build docs](https://github.com/ctag-fh-kiel/ctag-tbd/workflows/build_docs/badge.svg)
 
+A hackable fully open source universal music and sound machine based on the esp32 family of SoC
+
 ![CTAG-TBD](tbd.png)
 
-![docs build](https://github.com/ctag-fh-kiel/ctag-tbd/actions/workflows/build_docs.yml/badge.svg)
+> [!NOTE]  
+> Find a sneak preview of the documentation for the upcoming TBD v2 docs [here](https://ctag-fh-kiel.github.io/)
+
 
 ## Documentation (in the works):
 [Summary table](https://docs.google.com/spreadsheets/d/1dBZtuBIdtgMqoRruYX-VDdDirdTQ6RD-oz-j79q-bmQ/edit?usp=sharing) of all available plugins.

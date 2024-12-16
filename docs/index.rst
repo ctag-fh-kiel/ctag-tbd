@@ -2,9 +2,7 @@
 CTAG TBD hackable audio processor
 #################################
 
-Hardware reference designs and sof
-
-tware suite for a series of highly hackable electronic musical devices, built around the 
+Hardware reference designs and software suite for a series of highly hackable electronic musical devices, built around the 
 **ESP32** family of systems on a chip (SoC).
 
 Everything to build your own audio processor device for MIDI or Eruorack. Add sounds and plugins, extend, hack, redesign 

@@ -5,6 +5,7 @@ ENV TBD_BUILD_DIR=/code/build
 
 WORKDIR /code
 RUN python3 -m pip install \
+    furo \
     pydata-sphinx-theme \
     sphinxcontrib-youtube \
     breathe
