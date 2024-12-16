@@ -1,5 +1,6 @@
 from pathlib import Path
 import typer
+from typing import Optional
 
 from tbdtools.cmd_utils import get_ctx
 from tbdtools.project import ProjectRoot
@@ -49,9 +50,10 @@ def update_config_cmd(
 
 
 @plugins_group.command('create-factory')
-def find_plugins_cmd(
+def create_factory_cmd(
     _ctx: typer.Context,
-    strict: bool = typer.Option(False)
+    strict: bool = typer.Option(False),
+    out_file: Optional[Path] = typer.Option(None, '--out', '-o')
 ):
     """ create plugin factory """
 
@@ -59,7 +61,8 @@ def find_plugins_cmd(
 
     headers = dirs.src.sounds.headers().glob('*.hpp')
     headers, plugins = search_for_plugins(headers, strict)
-    out_file = dirs.src.sound_registry.headers() / 'sound_processor_factory.hpp'
+    if out_file is None:
+        out_file = dirs.src.sound_registry.headers() / 'sound_processor_factory.hpp'
     print(out_file)
     write_plugin_factory_header(headers, plugins, out_file)
 

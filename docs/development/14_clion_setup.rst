@@ -48,7 +48,8 @@ Enter ``/opt/esp/idf/export.sh`` and apply settings.
 
 
 Finally in ``Build, Execution, Deployment > CMake`` create some profiles. If the TBD variant
-is a firmware select your ``IDF`` toolchain for those targets.
+is a firmware select your ``IDF`` toolchain for those targets. Note that if no CMake profiles can be created
+one has to right click on CMakeLists.txt from within the CLion IDE in the project tree and **reload CMake project**.
 
 .. image:: images/clion_target_options.png
     :width: 45em

@@ -3,11 +3,11 @@ file(GLOB SRCS_FILES
         rapidjson/*.h
 )
 
-add_library(rapidjson STATIC ${SRCS_FILES})
-target_include_directories(rapidjson PUBLIC .)
-target_link_libraries(rapidjson PUBLIC tbd_system)
-target_compile_definitions(rapidjson 
-        PUBLIC RAPIDJSON_HAS_STDSTRING=1 
+add_library(rapidjson INTERFACE ${SRCS_FILES})
+target_include_directories(rapidjson INTERFACE .)
+target_link_libraries(rapidjson INTERFACE tbd_system)
+target_compile_definitions(rapidjson
+        INTERFACE RAPIDJSON_HAS_STDSTRING=1
         DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=4096        
 )
 set_target_properties(rapidjson PROPERTIES LINKER_LANGUAGE CXX)

@@ -16,6 +16,6 @@ set(SRCS_FILES
         MoogLadders/src/util.h
         )
 
-add_library(moog STATIC ${SRCS_FILES})
-target_include_directories(moog PUBLIC "MoogLadders/src")
+add_library(moog INTERFACE ${SRCS_FILES})
+target_include_directories(moog INTERFACE "MoogLadders/src")
 set_target_properties(moog PROPERTIES LINKER_LANGUAGE CXX)
