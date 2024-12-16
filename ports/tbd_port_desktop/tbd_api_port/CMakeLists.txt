@@ -1,5 +1,5 @@
 # configure source files
-
+find_package(Boost 1.67.0 COMPONENTS system REQUIRED)
 tbd_platform_apis("${TBD_PLATFORM_OBJ}" VAR api_list)
 
 if (wifi IN_LIST api_list)
@@ -22,7 +22,7 @@ file(GLOB SRCS_HEADERS
 add_library(tbd_api_port STATIC ${SRCS_FILES} ${SRCS_HEADERS})
 target_include_directories(tbd_api_port
         PUBLIC include
-        PRIVATE ${CMAKE_SOURCE_DIR}/vendor/Simple-Web-Server
+        PRIVATE ${CMAKE_SOURCE_DIR}/vendor/Simple-Web-Server ${Boost_INCLUDE_DIR}
 )
 target_link_libraries(tbd_api_port
         PUBLIC
