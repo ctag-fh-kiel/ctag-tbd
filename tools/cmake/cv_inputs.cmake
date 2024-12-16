@@ -74,6 +74,17 @@ function(tbd_cv_input_needs_calibration cv_input)
     endif()
 endfunction()
 
+function(tbd_cv_input_type_flags cv_input)
+    tbd_cv_input_attrs(${cv_input})
+
+    tbd_flag_list_flags("${arg_TYPE}"
+            FLAGS ${TBD_CV_INPUT_TYPES}
+            NAMESPACE TBD_CV_
+            VAR flags
+    )
+    tbd_store_or_return("${flags}" ${ARGN})
+endfunction()
+
 ## cv_input methods ##
 
 function(tbd_cv_input_print_info cv_input)
