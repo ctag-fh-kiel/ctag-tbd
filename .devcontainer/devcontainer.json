@@ -27,7 +27,7 @@
     },
     "remoteEnv": {
         // setting PATH in container causes build error
-        "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/tools/tbd_tools/bin"
+        "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/tools/bin"
     },
     "customizations": {
         "vscode": {
