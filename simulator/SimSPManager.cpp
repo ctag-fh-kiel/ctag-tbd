@@ -250,6 +250,12 @@ string SimSPManager::GetStringID(const int chan) {
     return model->GetActiveProcessorID(chan);
 }
 
+bool SimSPManager::IsStereo(const int chan) {
+    const auto id = GetStringID(chan);
+    return model->IsStereo(id);
+}
+
+
 void SimSPManager::ListSoundCards() {
     // Determine the number of devices available
     unsigned int devices = audio.getDeviceCount();

@@ -19,7 +19,7 @@ std::unique_ptr<tbd::audio::SPManagerDataModel> model;
 
 namespace tbd::audio {
 
-void SoundProcessorManager::begin(AudioParams&& sound_params) {
+void SoundProcessorManager::begin(const AudioParams& sound_params) {
     model = std::make_unique<SPManagerDataModel>();
     sound_level_worker.set_blink_duration(5);
 
@@ -69,11 +69,15 @@ void SoundProcessorManager::end() {
     sound_level_worker.end(true);
 }
 
-string SoundProcessorManager::GetStringID(const int chan) {
+string SoundProcessorManager::GetStringID(int chan) {
    sound_level_worker.set_blink_duration(5);
     return model->GetActiveProcessorID(chan);
 }
 
+bool SoundProcessorManager::is_stereo(int chan) {
+    const auto id = GetStringID(chan);
+    return model->IsStereo(id);
+}
 
 void SoundProcessorManager::SetSoundProcessorChannel(int chan, const std::string& id) {
    sound_level_worker.set_blink_duration(5);

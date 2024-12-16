@@ -21,7 +21,7 @@ respective component folders / files if different from this license.
 
 #include <tbd/api/port/rest_api.hpp>
 #include <algorithm>
-#include <filesystem>
+#include <tbd/storage/resources.hpp>
 #include <fstream>
 #include <vector>
 #include <server_http.hpp>
@@ -32,8 +32,11 @@ respective component folders / files if different from this license.
 using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 using SoundProcessorManager = tbd::audio::SoundProcessorManager;
 using Favorites = tbd::Favorites;
+namespace fs = tbd::storage::filesystem;
 
 namespace {
+
+constexpr char* tag = "rest_api";
 
 HttpServer server;
 std::thread server_thread;
@@ -41,6 +44,7 @@ std::thread server_thread;
 }
 
 namespace tbd::api {
+
 void RestApi::begin(const RestApiParams& params) {
     // HTTP-server at port 8080 using 1 thread
     // Unless you do more heavy non-threaded processing in the resources,
@@ -254,11 +258,20 @@ void RestApi::begin(const RestApiParams& params) {
     server.resource["^/ctrl"]["GET"] = [](std::shared_ptr<HttpServer::Response> response,
                                           std::shared_ptr<HttpServer::Request> request) {
         try {
-            auto web_root_path = std::filesystem::canonical("../www");
-            auto path = canonical(web_root_path / "ui.html");
+            auto web_root_path = storage::get_fs_path("www");
+            if (!web_root_path) {
+                TBD_LOGE(tag, "static web data root does not exist");
+                response->write(SimpleWeb::StatusCode::client_error_not_found);
+                return;
+            }
+
+            auto path = canonical(*web_root_path / "ui.html");
+
             // Check if path is within web_root_path
-            if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
-                !equal(web_root_path.begin(), web_root_path.end(), path.begin()))
+            auto path_starts_with_root = equal(web_root_path->begin(), web_root_path->end(), path.begin());
+            auto root_path_depth = distance(web_root_path->begin(), web_root_path->end());
+            auto path_depth = distance(path.begin(), path.end());
+            if (root_path_depth > path_depth || !path_starts_with_root)
                 throw invalid_argument("path must be within root path");
 
             SimpleWeb::CaseInsensitiveMultimap header;
@@ -317,13 +330,23 @@ void RestApi::begin(const RestApiParams& params) {
     server.default_resource["GET"] = [](std::shared_ptr<HttpServer::Response> response,
                                         std::shared_ptr<HttpServer::Request> request) {
         try {
-            auto web_root_path = std::filesystem::canonical("spiffs_image/www");
+            auto web_root_path = storage::get_fs_path("www");
+            if (!web_root_path) {
+                TBD_LOGE(tag, "static web data root does not exist");
+                response->write(SimpleWeb::StatusCode::client_error_not_found);
+                return;
+            }
+
             auto path = canonical(
-                web_root_path / std::filesystem::path(request->path).relative_path());
+                *web_root_path / fs::path(request->path).relative_path());
+
             // Check if path is within web_root_path
-            if (distance(web_root_path.begin(), web_root_path.end()) > distance(path.begin(), path.end()) ||
-                !equal(web_root_path.begin(), web_root_path.end(), path.begin()))
+            auto path_starts_with_root = equal(web_root_path->begin(), web_root_path->end(), path.begin());
+            auto root_path_depth = distance(web_root_path->begin(), web_root_path->end());
+            auto path_depth = distance(path.begin(), path.end());
+            if (root_path_depth > path_depth || !path_starts_with_root)
                 throw invalid_argument("path must be within root path");
+
             if (is_directory(path))
                 path /= "index.html";
 

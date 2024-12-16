@@ -40,7 +40,7 @@ FavoritesModel::FavoritesModel() {
 
 
 string FavoritesModel::GetAllFavorites() {
-    if (_config_file) {
+    if (!_config_file) {
         TBD_LOGE("favorites", "access to broken favourites");
         return {};
     }
@@ -54,7 +54,7 @@ string FavoritesModel::GetAllFavorites() {
 }
 
 string FavoritesModel::GetFavorite(int const &i) {
-    if (_config_file) {
+    if (!_config_file) {
         TBD_LOGE("favorites", "access to broken favourites");
         return {};
     }
@@ -69,7 +69,7 @@ string FavoritesModel::GetFavorite(int const &i) {
 }
 
 string FavoritesModel::GetFavoriteName(int const &i) {
-    if (_config_file) {
+    if (!_config_file) {
         TBD_LOGE("favorites", "access to broken favourites");
         return {};
     }
@@ -81,7 +81,7 @@ string FavoritesModel::GetFavoriteName(int const &i) {
 }
 
 string FavoritesModel::GetFavoriteUString(int const &i) {
-    if (_config_file) {
+    if (!_config_file) {
         TBD_LOGE("favorites", "access to broken favourites");
         return {};
     }
@@ -93,7 +93,7 @@ string FavoritesModel::GetFavoriteUString(int const &i) {
 }
 
 string FavoritesModel::GetFavoritePluginID(int const &i, const int &channel) {
-    if (_config_file) {
+    if (!_config_file) {
         TBD_LOGE("favorites", "access to broken favourites");
         return {};
     }
@@ -108,7 +108,7 @@ string FavoritesModel::GetFavoritePluginID(int const &i, const int &channel) {
 }
 
 int FavoritesModel::GetFavoritePreset(int const &i, const int &channel) {
-    if (_config_file) {
+    if (!_config_file) {
         TBD_LOGE("favorites", "access to broken favourites");
         return -1;
     }
@@ -122,7 +122,7 @@ int FavoritesModel::GetFavoritePreset(int const &i, const int &channel) {
 }
 
 void FavoritesModel::SetFavorite(int const &id, const string &data) {
-    if (_config_file) {
+    if (!_config_file) {
         TBD_LOGE("favorites", "access to broken favourites");
         return;
     }

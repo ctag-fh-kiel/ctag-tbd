@@ -38,7 +38,7 @@ public:
      *
      *  When the in our output is live (not files) account for a small startup delay.
      */
-    static void begin(AudioParams&& sound_params = {});
+    static void begin(const AudioParams& sound_params = {});
 
     static void end();
 
@@ -60,6 +60,8 @@ public:
     static void SetConfigurationFromJSON(const std::string& data);
 
     static std::string GetStringID(int chan);
+
+    static bool is_stereo(int chan);
 
     static void SetSoundProcessorChannel(int chan, const std::string& id);
 
