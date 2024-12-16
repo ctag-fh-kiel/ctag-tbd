@@ -92,7 +92,7 @@ run_emulator() {
           -drive file="${bin_dir}/qemu_efuse.bin,if=none,format=raw,id=efuse" \
           -global driver=nvram.esp32s3.efuse,property=drive,value=efuse \
           -global driver=timer.esp32c3.timg,property=wdt_disable,value=true \
-          -nic user,model=open_eth \
+          -nic user,model=open_eth,id=lo0,hostfwd=tcp:127.0.0.1:2024-:80 \
           -nographic \
           -serial mon:stdio \
           ${qemu_extra_args[@]} \
