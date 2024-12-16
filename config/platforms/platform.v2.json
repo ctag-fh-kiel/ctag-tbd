@@ -49,7 +49,7 @@
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
-        "display": false,
+        "display": null,
         "network": true
     }
 }

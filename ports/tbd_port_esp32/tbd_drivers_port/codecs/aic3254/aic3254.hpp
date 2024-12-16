@@ -5,7 +5,7 @@
 #include "driver/gpio.h"
 
 class aic3254 final {
-    gpio_num_t _pinsda, _pinscl, _pinreset;
+    gpio_num_t _pinsda, _pinscl;
     uint32_t _i2cspeed;
     void write_reg(uint8_t reg_add, uint8_t data);
     void write_AIC32X4_reg(uint8_t reg_add, uint8_t data);

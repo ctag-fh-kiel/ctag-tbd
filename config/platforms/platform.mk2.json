@@ -55,7 +55,14 @@
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
-        "display": true,
+        "display": {
+            "type": "ssd1306_i2c",
+            "pins": {
+                "sda": 33,
+                "scl": 32,
+                "reset": 42
+            }
+        },
         "network": true
     }
 }

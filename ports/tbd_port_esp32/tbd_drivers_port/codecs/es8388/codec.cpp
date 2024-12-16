@@ -72,11 +72,11 @@ void Codec::init() {
             },
             .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
             .gpio_cfg = {
-                    .mclk = GPIO_NUM_39,
-                    .bclk = GPIO_NUM_45,
-                    .ws   = GPIO_NUM_1,
-                    .dout = GPIO_NUM_2,
-                    .din  = GPIO_NUM_21,
+                    .mclk = TBD_ES8388_I2S_PIN_MCLK,
+                    .bclk = TBD_ES8388_I2S_PIN_BCLK,
+                    .ws   = TBD_ES8388_I2S_PIN_WS,
+                    .dout = TBD_ES8388_I2S_PIN_DOUT,
+                    .din  = TBD_ES8388_I2S_PIN_DIN,
                     .invert_flags = {
                             .mclk_inv = false,
                             .bclk_inv = false,

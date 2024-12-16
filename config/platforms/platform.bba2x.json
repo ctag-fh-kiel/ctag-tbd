@@ -1,11 +1,11 @@
 {
     "config_version": 1,
     "info": {
-        "name": "bba1",
-        "full_name": "TBD BBA V1",
+        "name": "bba2",
+        "full_name": "TBD BBA V2",
         "description": "TBD standalone MIDI device",
         "mark": 1,
-        "rev": 1
+        "rev": 2
     },
     "config": {
         "system": "esp32",
@@ -17,7 +17,7 @@
             "inputs": ["uart", "usb"]
         },
         "audio": {
-            "type": "es8388",
+            "type": "aic3254",
             "pins": {
                 "i2c": {
                     "sda": 41,
@@ -33,7 +33,7 @@
             }
         },
         "indicator": {
-            "type": "neopixel",
+            "type": "sim_indicator",
             "pins": {
                 "dout": 38
             }
@@ -46,7 +46,14 @@
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
-        "display": null,
+        "display": {
+            "type": "ssd1306_i2c",
+            "pins": {
+                "sda": 5,
+                "scl": 4,
+                "rest": 42
+            }
+        },
         "network": true
     }
 }

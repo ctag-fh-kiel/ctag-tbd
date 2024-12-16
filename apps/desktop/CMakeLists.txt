@@ -11,7 +11,6 @@ target_link_libraries(tbd_app_desktop
     PUBLIC
         tbd_sound_manager
         tbd_config
-        tbd_display
         tbd_drivers
         tbd_helpers
         tbd_presets

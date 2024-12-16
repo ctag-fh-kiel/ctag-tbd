@@ -24,26 +24,13 @@ respective component folders / files if different from this license.
 #include <tbd/display/common/display.hpp>
 #include <tbd/version.hpp>
 
-extern "C" {
-    #include "ssd1306.h"
-}
 
-#if CONFIG_TBD_PLATFORM_MK2
-    #define SCL_GPIO 32
-    #define SDA_GPIO 33
-#elif CONFIG_TBD_PLATFORM_BBA
-    #define SCL_GPIO 4
-    #define SDA_GPIO 5
-#else
-    #define SCL_GPIO 23
-    #define SDA_GPIO 5
-#endif
-
+#include <tbd/drivers/port/ssd1306.h>
 
 namespace tbd {
 
 namespace {
-    SSD1306_t I2CDisplay;
+    SSD1306_t display;
     std::vector<std::string> userString_v;
     int currentUserStringRow = 0;
 
@@ -55,59 +42,60 @@ namespace {
 }
 
 void Display::Init() {
-    i2c_master_init(&I2CDisplay, SDA_GPIO, SCL_GPIO, -1);
-    ssd1306_init(&I2CDisplay, 128, 32);
-    ssd1306_clear_screen(&I2CDisplay, false);
-    ssd1306_contrast(&I2CDisplay, 0xff);
+    ssd1306_master_init(&display);
+    display._flip = true;
+    ssd1306_init(&display, 128, 64);
+    ssd1306_clear_screen(&display, false);
+    ssd1306_contrast(&display, 0xff);
 }
 
 void Display::Clear() {
-    ssd1306_clear_screen(&I2CDisplay, false);
+    ssd1306_clear_screen(&display, false);
 }
 
 void Display::ShowFavorite(const int &id, const std::string &name) {
     std::string s {"Active Favorite:"};
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 0, s.c_str(), s.length(), false);
     s = std::string("");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 1, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 1, s.c_str(), s.length(), false);
     s = std::string(std::to_string(id) + ": " + name);
     s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 2, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 2, s.c_str(), s.length(), false);
     s = std::string("");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 3, s.c_str(), s.length(), false);
 }
 
 void Display::ShowFWVersion() {
-    ssd1306_clear_screen(&I2CDisplay, false);
+    ssd1306_clear_screen(&display, false);
     std::string s {"TBD fw:"};
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 0, s.c_str(), s.length(), false);
     s = std::string(sysinfo::hardware_type);
     if(s.length()>16)s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 1, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 1, s.c_str(), s.length(), false);
     s = std::string("TBD hw:");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 2, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 2, s.c_str(), s.length(), false);
     s = std::string(sysinfo::hardware_type);
     if(s.length()>16)s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 3, s.c_str(), s.length(), false);
 }
 
 void Display::ShowUserString(std::string const &s) {
-    ssd1306_clear_screen(&I2CDisplay, false);
-    ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length() > 16 ? 16 : s.length(), false);
+    ssd1306_clear_screen(&display, false);
+    ssd1306_display_text(&display, 0, s.c_str(), s.length() > 16 ? 16 : s.length(), false);
 }
 
 void Display::ShowUserString(std::vector<std::string> const &sv) {
-    ssd1306_clear_screen(&I2CDisplay, false);
+    ssd1306_clear_screen(&display, false);
     for(int i=0;i<sv.size();i++){
-        ssd1306_display_text(&I2CDisplay, i, sv[i].c_str(), sv[i].length() > 16 ? 16 : sv[i].length(), false);
+        ssd1306_display_text(&display, i, sv[i].c_str(), sv[i].length() > 16 ? 16 : sv[i].length(), false);
     }
 }
 
@@ -133,8 +121,8 @@ void Display::PrepareDisplayFavoriteUString(int const &id, std::string const &na
     }
     userString_v.shrink_to_fit();
     currentUserStringRow = 0;
-    ssd1306_clear_screen(&I2CDisplay, false);
-    ssd1306_software_scroll(&I2CDisplay, I2CDisplay._pages - 1, 0);
+    ssd1306_clear_screen(&display, false);
+    ssd1306_software_scroll(&display, display._pages - 1, 0);
     UpdateFavoriteUStringScroll();
     UpdateFavoriteUStringScroll();
     UpdateFavoriteUStringScroll();
@@ -144,54 +132,54 @@ void Display::PrepareDisplayFavoriteUString(int const &id, std::string const &na
 void Display::Confirm(const int &id) {
     std::string s {"Load Fav: " + std::to_string(id)};
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 0, s.c_str(), s.length(), false);
     s = std::string("Confirm?");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 1, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 1, s.c_str(), s.length(), false);
     s = std::string("y -> Long Press");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 2, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 2, s.c_str(), s.length(), false);
     s = std::string("n -> Short Press");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 3, s.c_str(), s.length(), false);
 }
 
 void Display::UserMode() {
     std::string s {"User Mode"};
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 0, s.c_str(), s.length(), false);
     s = std::string("");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 1, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 1, s.c_str(), s.length(), false);
     s = std::string("No Fav Active!");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 2, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 2, s.c_str(), s.length(), false);
     s = std::string("");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 3, s.c_str(), s.length(), false);
 }
 
 void Display::LoadFavorite(int const &id, const std::string &name) {
     std::string s {"Load Favorite:"};
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 0, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 0, s.c_str(), s.length(), false);
     s = std::string(std::to_string(id) + ": " + name);
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 1, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 1, s.c_str(), s.length(), false);
     s = std::string("");
     s = s.substr(0, 16);
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 2, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 2, s.c_str(), s.length(), false);
     s = std::string("-> Long Press");
     s.append(16-s.length(), ' ');
-    ssd1306_display_text(&I2CDisplay, 3, s.c_str(), s.length(), false);
+    ssd1306_display_text(&display, 3, s.c_str(), s.length(), false);
 }
 
 void Display::UpdateFavoriteUStringScroll() {
     if(userString_v.size() == 0) return;
     if(userString_v.size() <= 4 && currentUserStringRow == userString_v.size()) return;
     if(currentUserStringRow >= userString_v.size()) currentUserStringRow = 0;
-    ssd1306_scroll_text(&I2CDisplay, userString_v[currentUserStringRow].c_str(), 16, false);
+    ssd1306_scroll_text(&display, userString_v[currentUserStringRow].c_str(), 16, false);
     currentUserStringRow++;
 }
 

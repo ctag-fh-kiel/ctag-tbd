@@ -1,7 +1,8 @@
 include(${TBD_CMAKE_DIR}/build_config/platforms.cmake)
 
-tbd_platform_display("${TBD_PLATFORM_OBJ}" VAR has_display)
-if (has_display)
+tbd_platform_display("${TBD_PLATFORM_OBJ}" VAR display)
+
+if(NOT "${display}" STREQUAL no)
     set(display_lib tbd_display)
 endif()
 

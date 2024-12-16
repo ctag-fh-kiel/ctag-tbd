@@ -4,13 +4,15 @@
 
 #include <tbd/drivers/gpio.hpp>
 #include <tbd/favorites.hpp>
-#include <tbd/display.hpp>
 
 #define UI_TASK_PERIOD_MS 50
 #define LONG_PRESS_PERIOD_MS 1000
 #define SCROLL_RATE_MS 1000
 #define TIMEOUT_PERIOD_MS 5000
 
+#if TBD_DISPLAY
+    #include <tbd/display.hpp>
+#endif
 
 namespace tbd::favorites {
 

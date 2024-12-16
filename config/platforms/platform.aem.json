@@ -52,7 +52,14 @@
         "apis": ["serial"],
         "volume_control": true,
         "file_system": "wrapper",
-        "display": true,
+        "display": {
+          "type": "ssd1306_i2c",
+          "pins": {
+            "sda": 5,
+            "scl": 23,
+            "reset": 42
+          }
+        },
         "network": false
     }
 }

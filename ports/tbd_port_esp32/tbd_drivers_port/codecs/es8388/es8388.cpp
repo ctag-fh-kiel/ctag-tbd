@@ -69,7 +69,7 @@
 #define ES8388_DACCONTROL29     0x33
 #define ES8388_DACCONTROL30     0x34
 
-es8388::es8388() : _pinsda{GPIO_NUM_40}, _pinscl{GPIO_NUM_41}, _i2cspeed{400000} {
+es8388::es8388() : _pinsda{TBD_ES8388_I2C_PIN_SDA}, _pinscl{TBD_ES8388_I2C_PIN_SCL}, _i2cspeed{400000} {
     esp_err_t err = ESP_OK;
     i2c_config_t conf = {
             .mode = I2C_MODE_MASTER,

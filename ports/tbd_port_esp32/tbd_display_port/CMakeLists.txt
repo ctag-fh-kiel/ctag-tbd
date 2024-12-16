@@ -1,7 +1,7 @@
 include(${PROJECT_DIR}/tools/cmake/build_config/platforms.cmake)
 
 tbd_platform_display("${TBD_PLATFORM_OBJ}" VAR has_display)
-if (has_display)
+if (NOT has_display STREQUAL no)
 
 file(GLOB SRCS_FILES
     src/*.cpp

@@ -45,7 +45,7 @@ respective component folders / files if different from this license.
     #include <tbd/drivers/midi.hpp>
 
     using CVInput = tbd::drivers::Midi;
-#elif TBD_CV_SIM
+#elif TBD_CV_SIM_CV
     #include <tbd/drivers/cv_input.hpp>
 
     using CVInput = tbd::drivers::CVInput;

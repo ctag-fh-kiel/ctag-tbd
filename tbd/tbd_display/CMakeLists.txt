@@ -1,5 +1,5 @@
-tbd_platform_display("${TBD_PLATFORM_OBJ}" VAR has_display)
-if (has_display)
+tbd_platform_display("${TBD_PLATFORM_OBJ}" VAR display)
+if(NOT "$display" STREQUAL no)
     add_subdirectory(common)
     add_subdirectory(library)
 endif()

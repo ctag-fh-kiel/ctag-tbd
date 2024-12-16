@@ -90,7 +90,7 @@
 #define AIC32X4_RMICPGAVOL    AIC32X4_REG(1, 60)
 #define AIC32X4_REFPOWERUP    AIC32X4_REG(1, 123)
 
-aic3254::aic3254() : _pinsda{GPIO_NUM_41}, _pinscl{GPIO_NUM_40}, _pinreset{GPIO_NUM_42}, _i2cspeed{400000} {
+aic3254::aic3254() : _pinsda{TBD_AIC3254_I2C_PIN_SDA}, _pinscl{TBD_AIC3254_I2C_PIN_SCL}, _i2cspeed{400000} {
     esp_err_t err = ESP_OK;
     i2c_config_t conf = {
             .mode = I2C_MODE_MASTER,
@@ -106,15 +106,6 @@ aic3254::aic3254() : _pinsda{GPIO_NUM_41}, _pinscl{GPIO_NUM_40}, _pinreset{GPIO_
 
     err |= i2c_param_config(i2c_port_t(I2C_PORT_NUM), &conf);
     err |= i2c_driver_install(i2c_port_t(I2C_PORT_NUM), conf.mode, 0, 0, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED);
-
-    /* implemented in hardware with RC circuit
-    gpio_reset_pin(_pinreset);
-    gpio_set_direction(_pinreset, GPIO_MODE_OUTPUT);
-    gpio_set_level(_pinreset, 0);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-    gpio_set_level(_pinreset, 1);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-     */
 }
 
 aic3254::~aic3254() {

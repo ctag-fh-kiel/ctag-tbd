@@ -164,11 +164,38 @@ function(tbd_drivers var_name platform)
         tbd_indicator_print_info("${arg_INDICATOR}")
     endif()
 
-    if (arg_DISPLAY)
-        list(APPEND includes display)
-        set(display_srcs ssd1306.c ssd1306_i2c.c)
-        list(TRANSFORM display_srcs PREPEND display/)
-        list(APPEND srcs ${display_srcs})
+    if (DEFINED arg_DISPLAY AND NOT "${arg_DISPLAY}" STREQUAL no)
+        tbd_display_type("${arg_DISPLAY}" VAR display_type)
+        file(GLOB display_srcs
+            display/include/**/*.h
+            display/src/*.h
+            display/src/ssd1306.c
+            display/src/ssd1306_hal.h
+        )
+        list(APPEND includes display/include)
+
+        tbd_display_type_flags("${arg_DISPLAY}" VAR type_flags)
+        list(APPEND defines ${type_flags})
+
+        if(display_type STREQUAL ssd1306_i2c)
+            file(GLOB display_extra_srcs
+                display/src/ssd1306_i2c.c
+            )
+            tbd_ssd1306_i2c_pin_flags("${arg_DISPLAY}" VAR display_pins)
+            list(APPEND defines ${display_pins})
+        elseif(display_type STREQUAL ssd1306_spi)
+            file(GLOB display_extra_srcs
+                display/src/ssd1306_spi.c
+            )
+            tbd_ssd1306_spi_pin_flags("${arg_DISPLAY}" VAR display_pins)
+            list(APPEND defines ${display_pins})
+        else()
+            tbd_loge("display type ${display_type} not supported on esp32 port")
+        endif()
+
+        list(APPEND srcs ${display_srcs} ${display_extra_srcs})
+
+        tbd_display_print_info("${arg_DISPLAY}")
     endif()
 
     if (NOT "${var_name}" STREQUAL "CHECK")

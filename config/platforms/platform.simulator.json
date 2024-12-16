@@ -27,7 +27,7 @@
         },
         "apis": ["wifi"],
         "file_system": "wrapper",
-        "display": true,
+        "display": null,
         "network": false
     }
 }
