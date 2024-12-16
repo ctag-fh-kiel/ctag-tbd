@@ -3,12 +3,12 @@ file(GLOB SRCS_FILES
     src/dummy.cpp
 )
 
-add_library(tbd_system_port STATIC ${SRCS_FILES})
+add_library(tbd_system_port INTERFACE ${SRCS_FILES})
 target_include_directories(tbd_system_port
-        PUBLIC include
+        INTERFACE include
 
 )
 target_link_libraries(tbd_system_port
-        PUBLIC tbd_system_common
+        INTERFACE tbd_system_common
 
 )
