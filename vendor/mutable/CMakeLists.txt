@@ -90,3 +90,4 @@ target_compile_options(mutable PRIVATE
         -Wno-unused-variable
         -Wno-shift-negative-value
 )
+target_compile_definitions(mutable PUBLIC MUTABLE_STD_CPP=1)
