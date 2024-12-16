@@ -8,7 +8,7 @@
  *         power saving features enabled.
  */
 #define TBD_TIMEOUT_ENSURE_OPS_PER_SECOND(timeout_name, ops_per_second) \
-tbd::system::TimeoutGuard timeout_name(std::chrono::high_resolution_clock::duration(1s) / ops_per_second);
+tbd::system::TimeoutGuard timeout_name(std::chrono::seconds(1) / ops_per_second);
 
 namespace tbd::system {
 
