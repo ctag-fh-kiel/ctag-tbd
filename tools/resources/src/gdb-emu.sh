@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
+resource_path=$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))
+source "$resource_path/common_header.sh"
 
-tbd_logging_tag="tbd_gbd_emu"
+# -- END OF HEADER --
 
-resource_path=$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))/resources
-source "$resource_path/helpers.sh"
+tbd_logging_tag="tbd gdb emu"
 
 project_dir=$(tbd_project_root)
 if [ -z "$project_dir" ]; then
@@ -22,6 +22,6 @@ if ! [ -f "$symbols_file" ]; then
 fi
 
 exec xtensa-esp32s3-elf-gdb \
-  -x "$resource_path/emu.gdb" \
+  -x "$project_dir/tools/resources/emu.gdb" \
   "$symbols_file" \
   $@

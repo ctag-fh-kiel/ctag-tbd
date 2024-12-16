@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-set -e
+resource_path=$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))
+source "$resource_path/common_header.sh"
 
-tbd_logging_tag="tbd_gbd_emu"
+# -- END OF HEADER --
 
-resource_path=$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))/resources
-source "$resource_path/helpers.sh"
+tbd_logging_tag="tbd gdb device"
 
 project_dir=$(tbd_project_root)
 if [ -z "$project_dir" ]; then
@@ -16,12 +16,12 @@ if ! which xtensa-esp32s3-elf-gdb; then
   tbd_abort "debugger 'xtensa-esp32s3-elf-gdb' not in PATH, please activate ESP IDF using '. <idf-path>/export.sh'"
 fi
 
-symbols_file=${project_dir}/build/$1/ctag-tbd.elf
+symbols_file=$project_dir/build/$1/ctag-tbd.elf
 if ! [ -f "$symbols_file" ]; then
   tbd_abort "symbols file does not exist, no file ${symbols_file}"
 fi
 
 exec xtensa-esp32s3-elf-gdb \
-  -x "$resource_path/device.gdb" \
+  -x "$project_dir/tools/resources/device.gdb" \
   "$symbols_file" \
   $@
