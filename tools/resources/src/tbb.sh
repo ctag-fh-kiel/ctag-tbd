@@ -9,6 +9,7 @@ tbd_logging_tag="tbd build"
 
 comands=
 tbd_cmd_verbosity=VERBOSE
+build_dir=build
 
 # @brief parse command line options
 #
@@ -20,6 +21,10 @@ parse_args() {
         case $arg in
             -p|--project-dir)
                 project_dir=$2
+                shift
+                ;;
+            -b|--build-dir)
+                build_dir=$2
                 shift
                 ;;
             --silent)
@@ -55,6 +60,10 @@ if ! tbd_is_project_root "$project_dir"; then
   tbd_abort "not a valid project root: $project_dir"
 fi
 
+if [ -z "$build_dir"]; then
+  tbd_abort "build directory not specified"
+fi
+
 if ! tbd_is_valid_platform "$project_dir" "$platform"; then
   tbd_abort "no such platform: $platform"
 fi
@@ -74,12 +83,12 @@ fi
 
 if tbd_is_item_in_list "configure" $commands; then
   tbd_logi "configuring build"
-  tbd_run cmake -GNinja -Bbuild/"$platform" -DTBD_PLATFORM="$platform"
+  tbd_run cmake -GNinja -B"$build_dir/$platform" -DTBD_PLATFORM="$platform"
 fi
 
 if tbd_is_item_in_list "build" $commands; then
   tbd_logi "building project"
-  tbd_run cmake --build build/"$platform"
+  tbd_run cmake --build "$build_dir/$platform"
 fi
 
 if tbd_is_item_in_list "flash" $commands; then

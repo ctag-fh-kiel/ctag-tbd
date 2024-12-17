@@ -2,6 +2,13 @@
 Building the Firmware
 *********************
 
+There are multiple ways to build and flash TBB applications:
+
+- using an IDE with the provided dev container (advised option)
+- using an IDE without a dev container (requires installing all dependencies)
+- in terminal using provided build container
+- in terminal not using the build container (requires installing all dependencies)
+
 The easiest way to build the firmware is using the TBD  `dev container <https://containers.dev/>`_
 provided by the TBD repo. This offers the following advantages:
 
@@ -48,8 +55,7 @@ project root dir as
 
 .. code-block:: shell
 
-    docker run -it -v$PWD:/code tbddev tbb dada configure
-    docker run -it -v$PWD:/code tbddev tbb dada build
+    docker run -it -v$PWD:/code tbddev tbb dada configure build
 
 Note that in order to build any other TBD variant just replace ``dada`` with the desired 
 variant.
@@ -74,8 +80,54 @@ You can then view the device log using
     docker run --device /dev/ttyUSB0 -it -v$PWD:/code tbddev tbb dada monitor
 
 
-Building the Firmware without Helpers
-=====================================
+Building the Firmware without Docker
+====================================
+
+Building using tbb Helper
+-------------------------
+
+The ``tbb`` tool is a small utility that helps building for different platforms, without
+having to enter long ``cmake`` invocations. The tool is located in ``tools/bin``. Add
+the tool to your system ``PATH`` or enter full path to tool.
+
+To setup and build use
+
+.. code-block:: shell
+
+    tbb some_platform configure build
+
+tbb Tool Arguments
+------------------
+
+Usage: ``tbb [-p DIR] [-b DIR] [--silent] stage1 [stage2 ...]``
+
+You need to specify at least one or multiple build stages as arguments. The order of those
+arguments does not have any effect and build stages will be performed in the required order.
+Build stages can be
+
+- ``configure``: rum cmake to generate build description
+- ``build``: build the binaries and on embedded platforms create binary image
+
+Options
+.......
+
+``--silent`` do not show processing output
+  The processing steps generate a lot of output. To hide this output set this flag.
+
+``-p DIR``, ``--project-dir DIR`` project directory
+  The root directory of the TBD source code. If this option is not present the directory
+  will be determined in the following order:
+
+  1. value of the ``TBD_PROJECT_DIR`` environment variable
+  2. root of the Git repository containing the current working directory
+  3. current working directory
+
+``-b DIR``, ``--build-dir DIR`` shared root directory for all builds
+  Default is ``build/`` relative to the current working directory.  
+
+
+Building Manually using CMake
+-----------------------------
 
 This can be done from the dev container or from your host system (if all required dependencies
 for building are installed). First set up the build files using CMake from your project
