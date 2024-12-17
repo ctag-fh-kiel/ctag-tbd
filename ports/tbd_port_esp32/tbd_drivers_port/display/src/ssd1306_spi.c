@@ -37,7 +37,6 @@ void ssd1306_hal_master_init(SSD1306_t * dev)
 {
 	esp_err_t ret;
 
-	gpio_reset_pin(TBD_SSD1306_SPI_PIN_RESET);
 	gpio_set_direction(TBD_SSD1306_SPI_PIN_CS, GPIO_MODE_OUTPUT);
 	gpio_set_level(TBD_SSD1306_SPI_PIN_CS, 0);
 
@@ -45,13 +44,13 @@ void ssd1306_hal_master_init(SSD1306_t * dev)
 	gpio_set_direction(TBD_SSD1306_SPI_PIN_DC, GPIO_MODE_OUTPUT);
 	gpio_set_level(TBD_SSD1306_SPI_PIN_DC, 0);
 
-	if ( TBD_SSD1306_SPI_PIN_RESET >= 0 ) {
+	#if TBD_SSD1306_SPI_PIN_RESET >= 0
 		gpio_reset_pin( TBD_SSD1306_SPI_PIN_RESET );
 		gpio_set_direction( TBD_SSD1306_SPI_PIN_RESET, GPIO_MODE_OUTPUT );
 		gpio_set_level( TBD_SSD1306_SPI_PIN_RESET, 0 );
 		vTaskDelay( pdMS_TO_TICKS( 100 ) );
 		gpio_set_level( TBD_SSD1306_SPI_PIN_RESET, 1 );
-	}
+	#endif
 
 	spi_bus_config_t spi_bus_config = {
 		.mosi_io_num = TBD_SSD1306_SPI_PIN_MOSI,

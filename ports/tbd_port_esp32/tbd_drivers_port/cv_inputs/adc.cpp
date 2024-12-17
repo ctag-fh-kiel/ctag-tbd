@@ -53,7 +53,7 @@ extern "C" {
 #include "esp_adc/adc_oneshot.h"
 #endif
 
-#if !(TBD_CV_ADC || TBD_CV_MCP_3208)
+#if !(TBD_CV_ADC || TBD_CV_MCP3208)
     #error "ULP onboard ADC is not available"
 #endif
 
@@ -110,7 +110,7 @@ void init_ulp_program() {
     ESP_ERROR_CHECK(ulp_load_binary(0, ulp_drivers_bin_start,
                                     (ulp_drivers_bin_end - ulp_drivers_bin_start) / sizeof(uint32_t)));
 
-#if TBD_CV_MCP_3208
+#if TBD_CV_MCP3208
     const gpio_num_t GPIO_CS0 = TBD_MCP3208_PIN_CS;
     const gpio_num_t GPIO_MOSI = TBD_MCP3208_PIN_MOSI;
     const gpio_num_t GPIO_SCLK = TBD_MCP3208_PIN_SCLK;
@@ -146,25 +146,24 @@ void IRAM_ATTR ulp_isr(void *arg) {
     // disable ULP timer, should get 10 us to settle
     CLEAR_PERI_REG_MASK(RTC_CNTL_STATE0_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
 
-#if TBD_CV_MCP_3208
-
-// header generated from the mcp3208.S asm can not determine ulp_adc_data is an array
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-    data[0] = (uint16_t) *((&ulp_adc_data) + 0);
-    data[1] = (uint16_t) *((&ulp_adc_data) + 1);
-    data[2] = (uint16_t) *((&ulp_adc_data) + 2);
-    data[3] = (uint16_t) *((&ulp_adc_data) + 3);
-    data[4] = (uint16_t) *((&ulp_adc_data) + 4);
-    data[5] = (uint16_t) *((&ulp_adc_data) + 6);
-    data[6] = (uint16_t) *((&ulp_adc_data) + 5);
-    data[7] = (uint16_t) *((&ulp_adc_data) + 7);
-#pragma GCC diagnostic pop
-#else
-    for(int i=0; i < N_CVS; i++){
-        data[i] = (uint16_t) *((&ulp_adc_data) + i);
-    }
-#endif
+    #if TBD_CV_MCP3208
+        // header generated from the mcp3208.S asm can not determine ulp_adc_data is an array
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Warray-bounds"
+            data[0] = (uint16_t) *((&ulp_adc_data) + 0);
+            data[1] = (uint16_t) *((&ulp_adc_data) + 1);
+            data[2] = (uint16_t) *((&ulp_adc_data) + 2);
+            data[3] = (uint16_t) *((&ulp_adc_data) + 3);
+            data[4] = (uint16_t) *((&ulp_adc_data) + 4);
+            data[5] = (uint16_t) *((&ulp_adc_data) + 6);
+            data[6] = (uint16_t) *((&ulp_adc_data) + 5);
+            data[7] = (uint16_t) *((&ulp_adc_data) + 7);
+        #pragma GCC diagnostic pop
+    #else
+        for(int i=0; i < N_CVS; i++){
+            data[i] = (uint16_t) *((&ulp_adc_data) + i);
+        }
+    #endif
 
     xQueueSendToFrontFromISR(adcDataQueue, data, NULL);
 }

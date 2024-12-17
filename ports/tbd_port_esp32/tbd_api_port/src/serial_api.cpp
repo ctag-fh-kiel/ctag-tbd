@@ -63,7 +63,7 @@ private:
 };
 
 // module task instance
-tbd::system::ModuleTask<SerialApiImpl, tbd::system::CpuCore::system, 4096 * 2> serial_api("serial_api");
+tbd::system::TaskModule<SerialApiImpl, tbd::system::CpuCore::system, 4096 * 2> serial_api("serial_api");
 
 void SerialApiImpl::send_string(const std::string& s) {
     string cmd = _stx + s + _etx;

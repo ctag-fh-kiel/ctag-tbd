@@ -34,14 +34,14 @@ void ssd1306_hal_master_init(SSD1306_t * dev)
 	ESP_ERROR_CHECK(i2c_param_config(I2C_NUM, &i2c_config));
 	ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM, I2C_MODE_MASTER, 0, 0, ESP_INTR_FLAG_SHARED|ESP_INTR_FLAG_LOWMED));
 
-	if (TBD_SSD1306_I2C_PIN_RESET >= 0) {
+	#if TBD_SSD1306_I2C_PIN_RESET >= 0
 		//gpio_pad_select_gpio(reset);
 		gpio_reset_pin(TBD_SSD1306_I2C_PIN_RESET);
 		gpio_set_direction(TBD_SSD1306_I2C_PIN_RESET, GPIO_MODE_OUTPUT);
 		gpio_set_level(TBD_SSD1306_I2C_PIN_RESET, 0);
 		vTaskDelay(50 / portTICK_PERIOD_MS);
 		gpio_set_level(TBD_SSD1306_I2C_PIN_RESET, 1);
-	}
+	#endif
 
 	dev->_address = I2C_ADDRESS;
 	dev->_flip = false;

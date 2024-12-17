@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
     #include <tbd/calibration.hpp>
 #endif
 
-#if TBD_CV_ADC || TBD_CV_MCP_3208
+#if TBD_CV_ADC || TBD_CV_MCP3208
     #if !TBD_CALIBRATION
         #error "calibration is mandatory for ADC and MCP3208"
     #endif
@@ -56,7 +56,7 @@ respective component folders / files if different from this license.
 
 namespace {
 
-#if TBD_CV_ADC || TBD_CV_MCP_3208
+#if TBD_CV_ADC || TBD_CV_MCP3208
 
     // buffers for converted uint16 CVs and triggers
     float cv_data[N_CVS];

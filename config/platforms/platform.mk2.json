@@ -60,7 +60,7 @@
             "pins": {
                 "sda": 33,
                 "scl": 32,
-                "reset": 42
+                "reset": -1
             }
         },
         "network": true
