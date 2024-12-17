@@ -6,7 +6,7 @@ A hackable fully open source universal music and sound machine based on the esp3
 ![CTAG-TBD](tbd.png)
 
 > [!NOTE]  
-> Find a sneak preview of the documentation for the upcoming TBD v2 docs [here](https://ctag-fh-kiel.github.io/)
+> Find a sneak preview of the documentation for the upcoming TBD v2 docs [here](https://ctag-fh-kiel.github.io/ctag-tbd)
 
 
 ## Documentation (in the works):
