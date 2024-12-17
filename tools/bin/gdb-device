@@ -63,6 +63,9 @@ tbd_abort() {
 
 #### script execution utils ####
 
+tbd_cmd_verbosity=VERBOSE
+tbd_quit_on_error=true
+
 # @brief run a bash command with output
 #
 # @arg 1 [enum]    display or hide stdout of command (SILENT/VERBOSE)
@@ -70,14 +73,21 @@ tbd_abort() {
 #
 tbd_run() {
   if [ "$tbd_cmd_verbosity" = "SILENT" ]; then
-      tbd_logv "[cmd] $@"
-      $@ > /dev/null
+    cmd=$@ > /dev/null
   elif [ "$tbd_cmd_verbosity" = "VERBOSE" ]; then
-      tbd_logv "[cmd] $@"
-      $@
-  else
-      tbd_loge "unknown output verbosity '${silent}'"
+    cmd=$@
   fi
+  tbd_logv "[cmd] $@"
+  if ! $cmd; then
+    tbd_logv "[$(change_color $c_red)failed$(change_color $c_lgray)] $@$(reset_color)"
+    if $tbd_quit_on_error; then
+      exit 1
+    else
+      return 1
+    fi
+  fi
+
+  tbd_logv "[$(change_color $c_green)done$(change_color $c_lgray)] $@$(reset_color)"
 }
 
 #### TBD project utils ####
@@ -137,6 +147,26 @@ tbd_project_root() {
   return 1
 }
 
+tbd_ensure_idf() {
+  if [ -n "$IDF_DEACTIVATE_FILE_PATH" ]; then
+    return 0
+  fi
+
+  if [ "$TBD_IN_CONTAINER" = 1 ]; then
+    . "$TBD_IDF_ACTIVATE"
+  fi
+
+  if [ -z "$IDF_DEACTIVATE_FILE_PATH" ]; then
+    return 1
+  fi
+}
+
+# @brief get list of all available platforms in project dir
+#
+# List is newline separated.
+#
+# @arg $1 [path]   project directory
+#
 tbd_get_platforms() {
   local project_dir=$1
   if [ -z "$project_dir" ]; then
@@ -152,8 +182,37 @@ tbd_get_platforms() {
     platform=${platform#platform.}
     echo $platform
   done
-
 }
+
+# @brief check if config exists for platform name
+#
+# @arg $1 [path]   project directory
+# @arg $2 [str]  platform name
+#
+tbd_is_valid_platform() {
+  local project_dir=$1
+  local platform_name=$2
+  for platform in $(tbd_get_platforms "$project_dir"); do
+    if [ "$platform_name" == "$platform" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+tbd_is_item_in_list() {
+  item=$1
+  shift
+  list=$@
+
+  for list_item in $list; do
+    if [ "$list_item" == "$item" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 # -- END OF HEADER --
 
 tbd_logging_tag="tbd gdb device"

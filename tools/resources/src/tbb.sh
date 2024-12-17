@@ -7,12 +7,8 @@ source "$resource_path/common_header.sh"
 
 tbd_logging_tag="tbd build"
 
-project_dir=$(tbd_project_root)
-if [ -z "$project_dir" ]; then
-    tbd_abort "could not find TBD project in path"
-fi
-
-cmake_args=
+comands=
+tbd_cmd_verbosity=VERBOSE
 
 # @brief parse command line options
 #
@@ -22,8 +18,9 @@ parse_args() {
     while [ $# -gt 0 ]; do
         arg=$1
         case $arg in
-            --refresh)
-                refresh=true
+            -p|--project-dir)
+                project_dir=$2
+                shift
                 ;;
             --silent)
                 tbd_cmd_verbosity="SILENT"
@@ -41,29 +38,51 @@ parse_args() {
     platform=$1
     shift
 
-    cmake_args=$@
+    commands=$@
 }
 
 parse_args $@
-tbd_get_platforms "$project_dir"
 
+if [ -z "$project_dir"]; then
+  project_dir=$(tbd_project_root)
+fi
 
+if [ -z "$project_dir" ]; then
+  tbd_abort "could not find TBD project in path"
+fi
 
-# if [ -z "$ESP_IDF_VERSION" ] && [ $TBD_IN_CONTAINER -eq 1 ]; then
-#   source "$TBD_IDF_ACTIVATE"
-# fi
+if ! tbd_is_project_root "$project_dir"; then
+  tbd_abort "not a valid project root: $project_dir"
+fi
 
-# if [ -z "$TBD_PROJECT_DIR" ]; then
-#   TBD_TOOL_MAIN="$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))/tbdtools/__main__.py"
-# else
-#   cd "$TBD_PROJECT_DIR"
-#   TBD_TOOL_MAIN="$TBD_PROJECT_DIR/tools/tbdtools/__main__.py"
-# fi
+if ! tbd_is_valid_platform "$project_dir" "$platform"; then
+  tbd_abort "no such platform: $platform"
+fi
 
-# export
+if ! tbd_ensure_idf; then
+  tbd_abort "failed to find ESP IDF"
+fi
 
-# export LOGURU_LEVEL=DEBUG
-# platform="$1"
-# shift
+# run commands in order
 
-# exec python "$TBD_TOOL_MAIN" -p "${platform}" firmware $@
+pushd "$project_dir"
+
+if tbd_is_item_in_list "install" $commands; then
+  tbd_logi "installing dependencies"
+  tbd_loge "not implemented"
+fi
+
+if tbd_is_item_in_list "configure" $commands; then
+  tbd_logi "configuring build"
+  tbd_run cmake -GNinja -Bbuild/"$platform" -DTBD_PLATFORM="$platform"
+fi
+
+if tbd_is_item_in_list "build" $commands; then
+  tbd_logi "building project"
+  tbd_run cmake --build build/"$platform"
+fi
+
+if tbd_is_item_in_list "flash" $commands; then
+  tbd_logi "flashing to device"
+  tbd_loge "not implemented"
+fi

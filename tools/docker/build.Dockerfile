@@ -41,19 +41,3 @@ RUN git config --global --add safe.directory "$TBD_PROJECT_DIR"
 COPY --chmod=755 tools/bin/tbb /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
-
-# RUN apt-get update -y && apt-get install -y \
-#     udev \
-#     software-properties-common \
-#     alsa-utils \
-#     bash-completion \
-#     pulseaudio \
-#     libpixman-1-0 \
-#     libsdl2-2.0-0 \
-#     libslirp0 \
-#     libboost-all-dev \
-#     libasound2-dev \
-#     libglib2.0-dev \
-#     libgcrypt20-dev \
-#     fish \
-#     micro
