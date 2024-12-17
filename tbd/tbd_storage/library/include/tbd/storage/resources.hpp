@@ -15,8 +15,8 @@ inline std::optional<tbd::storage::filesystem::path> get_fs_path(const std::stri
     //     return {};
     // }
 
-    auto full_path = absolute(root_path / fs::path(path).relative_path());
-    if (!exists(full_path)) {
+    auto full_path = root_path / fs::path(path).relative_path();
+    if (!fs::exists(full_path)) {
         TBD_LOGE("storage", "path %s does not exist", full_path.c_str());
         return {};
     }
