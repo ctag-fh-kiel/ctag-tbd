@@ -1,4 +1,4 @@
-name: build all tbd binaries
+name: build-all-tbd-binaries
 
 on:
   push:

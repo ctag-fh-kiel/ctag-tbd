@@ -1,5 +1,6 @@
 # **CTAG TBD >>to be determined<<**
-![build docs](https://github.com/ctag-fh-kiel/ctag-tbd/workflows/build_docs/badge.svg)
+![build docs](https://github.com/ctag-fh-kiel/ctag-tbd/workflows/build-docs/badge.svg)
+![build docs](https://github.com/ctag-fh-kiel/ctag-tbd/workflows/build-all-tbd-binaries/badge.svg)
 
 A hackable fully open source universal music and sound machine based on the esp32 family of SoC
 
