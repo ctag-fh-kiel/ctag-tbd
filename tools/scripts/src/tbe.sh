@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-resource_path=$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))
-source "$resource_path/common_header.sh" 
+scripts_path=$(dirname -- $(dirname -- ${BASH_SOURCE[0]}))
+source "$scripts_path/lib/common_header.sh"
 
 # -- END OF HEADER --
 
