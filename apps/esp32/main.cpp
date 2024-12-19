@@ -70,7 +70,7 @@ void app_main() {
     tbd::drivers::FileSystem::begin();
 
     #if TBD_INDICATOR
-        tbd::drivers::Indicator::Init();
+        tbd::drivers::Indicator::init();
         tbd::drivers::Indicator::SetLedRGB(0, 0, 255);
     #endif
 

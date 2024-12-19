@@ -258,6 +258,12 @@ function(tbd_platform_get_features platform)
     tbd_cv_input_n_cvs("${arg_CV_INPUT}" VAR n_cvs)
     tbd_cv_input_n_triggers("${arg_CV_INPUT}" VAR n_triggers)
 
+    if("${arg_INDICATOR}" STREQUAL no)
+        set(indicator TBD_INDICATOR=0)
+    else()
+        set(indicator TBD_INDICATOR=1)
+    endif()
+
     if("${arg_DISPLAY}" STREQUAL no)
         set(display TBD_DISPLAY=0)
     else()
@@ -269,10 +275,8 @@ function(tbd_platform_get_features platform)
         N_TRIGS=${n_triggers}
         ${calibration}
         ${cv_flags}
+        ${indicator}
         ${display}
-        ${volume_control}
-        INDICATOR=${indicators}
-        ${audio_mechanism}
     )
 
     tbd_store_or_return("${features}" ${ARGN})
@@ -290,11 +294,17 @@ endfunction()
 
 function(tbd_platform_print_info platform)
     tbd_platform_attrs(${platform})
-    tbd_indicator_type("${arg_INDICATOR}" VAR indicator_type)
     tbd_cv_input_type("${arg_CV_INPUT}" VAR cv_type)
     tbd_cv_input_n_cvs("${arg_CV_INPUT}" VAR n_cvs)
     tbd_cv_input_n_triggers("${arg_CV_INPUT}" VAR n_triggers)
     tbd_codec_type("${arg_AUDIO}" VAR codec_type)
+
+    if(NOT "${arg_INDICATOR}" STREQUAL no)
+        tbd_indicator_type("${arg_INDICATOR}" VAR indicator_type)
+    else()
+        set(indicator_type -)
+    endif()
+
     if(NOT "${arg_DISPLAY}" STREQUAL no)
         tbd_display_type("${arg_DISPLAY}" VAR display_type)
     else()
@@ -339,6 +349,14 @@ function(tbd_platform_load_preset file)
     string(JSON apis_obj GET "${config_obj}" apis)
     string(JSON file_system GET "${config_obj}" file_system)
 
+    string(JSON indicator_type TYPE "${config_obj}" indicator)
+    if("${indicator_type}" STREQUAL NULL)
+        set(indicator no)
+    else()
+        string(JSON indicator_obj GET "${config_obj}" indicator)
+        tbd_indicator_load("${indicator_obj}" VAR indicator)
+    endif()
+
     string(JSON display_type TYPE "${config_obj}" display)
     if("${display_type}" STREQUAL NULL)
         set(display no)
@@ -349,9 +367,6 @@ function(tbd_platform_load_preset file)
 
     string(JSON network GET "${config_obj}" network)
     tbd_to_bool(network)
-
-    string(JSON indicator_obj GET "${config_obj}" indicator)
-    tbd_indicator_load("${indicator_obj}" VAR indicator)
 
     string(JSON cv_input_obj GET "${config_obj}" cv_input)
     tbd_cv_input_load("${cv_input_obj}" VAR cv_input)

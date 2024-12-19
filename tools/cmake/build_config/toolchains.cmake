@@ -99,8 +99,14 @@ macro(tbd_toolchain_activate)
         set(IDF_TARGET "${TBD_ARCH}")
         set(EXTRA_COMPONENT_DIRS apps/esp32)
 
+        # start ESP IDF project file parsing
+        # WARNING: component CMake files do not share the same scope and close attention
+        #          needs to be payed to set globals using 'idf_build_set_property'
         include($ENV{IDF_PATH}/tools/cmake/project.cmake)
         list(APPEND EXTRA_COMPONENT_DIRS ${CMAKE_SOURCE_DIR}/ports/tbd_port_esp32)
+
+        # give each esp32 target a dedicated lock file
+        idf_build_set_property(DEPENDENCIES_LOCK "${CMAKE_SOURCE_DIR}/config/dependencies/dependencies.${TBD_PLATFORM}.lock")
 
         # make project globals available to ESP IDF components
         idf_build_set_property(IDF_VERSION ${TBD_TOOLCHAIN_VERSION})

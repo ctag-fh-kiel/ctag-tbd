@@ -51,6 +51,17 @@ function(tbd_indicator_type indicator)
     tbd_store_or_return("${arg_TYPE}" ${ARGN})
 endfunction()
 
+function(tbd_indicator_type_flags indicator)
+    tbd_indicator_attrs(${indicator})
+
+    tbd_flag_list_flags("${arg_TYPE}"
+            FLAGS ${TBD_INDICATOR_TYPES}
+            NAMESPACE TBD_INDICATOR_
+            VAR flags
+    )
+    tbd_store_or_return("${flags}" ${ARGN})
+endfunction()
+
 ## indicator methods ##
 
 function(tbd_indicator_print_info indicator)

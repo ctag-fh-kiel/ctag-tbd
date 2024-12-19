@@ -23,6 +23,10 @@ respective component folders / files if different from this license.
 #include "led_strip.h"
 #include "esp_log.h"
 
+#if ! TBD_INDICATOR_NEOPIXEL
+    #error "neopixel indicator not available"
+#endif
+
 namespace tbd::drivers {
 
 static led_strip_handle_t led_strip;

@@ -23,7 +23,9 @@ respective component folders / files if different from this license.
 #include "freertos/FreeRTOS.h"
 #include "driver/ledc.h"
 
-
+#if ! TBD_INDICATOR_RGB
+    #error "neopixel indicator not available"
+#endif
 /*
 static void led_test_task(void *pvParameter)
 {
