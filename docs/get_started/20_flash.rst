@@ -16,49 +16,49 @@ device when asked for permission by browser.
         src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"
         ></script>
 
-        <esp-web-install-button manifest="/_static/device_manifests/manifest-tbd-dada.json">
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-dada.json">
             <button slot="activate">flash TBD dada</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="/_static/device_manifests/manifest-tbd-bba2.json">
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-bba2.json">
             <button slot="activate">flash TBD BBA 2</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="/_static/device_manifests/manifest-tbd-bba1.json">
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-bba1.json">
             <button slot="activate">flash TBD BBA 1</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="/_static/device_manifests/manifest-tbd-mk2.json">
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-mk2.json">
             <button slot="activate">flash TBD MK 2</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="/_static/device_manifests/manifest-tbd-aem.json">
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-aem.json">
             <button slot="activate">flash TBD AEM</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="/_static/device_manifests/manifest-tbd-str.json">
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-str.json">
             <button slot="activate">flash TBD Strämpler</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="/_static/device_manifests/manifest-tbd-v2.json">
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-v2.json">
             <button slot="activate">flash TBD v2</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="/_static/device_manifests/manifest-tbd-v1.json">
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-v1.json">
             <button slot="activate">flash TBD v1</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
