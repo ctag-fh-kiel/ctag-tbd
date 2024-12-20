@@ -1,9 +1,7 @@
 name: documentation
 
 on:
-  push:
-    branches:
-      - dev
+  workflow_call:
 
 jobs:
   build:

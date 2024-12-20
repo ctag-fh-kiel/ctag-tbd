@@ -1,0 +1,14 @@
+name: dev build all
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+    build-all-binaries:
+        uses: ./.github/workflows/build-all-binaries.yml   
+
+    deploy-documentation:
+        needs: build-all-binaries
+        uses:  ./.github/workflows/build-docs.yml   
