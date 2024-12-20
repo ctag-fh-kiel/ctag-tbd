@@ -20,7 +20,7 @@ tbd_platform_activate()
 tbd_toolchain_activate(${TBD_TOOLCHAIN})
 tbd_toolchain_add_defines()
 
-project(ctag-tbd)
+project(tbd-${TBD_PLATFORM})
 
 tbd_toolchain_add_options()
 tbd_storages_activate()
