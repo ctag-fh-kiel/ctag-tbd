@@ -10,6 +10,9 @@ jobs:
       - name: check out repo
         uses: actions/checkout@v3
 
+      - name: create downloads dir
+        run: mkdir -p build/docs/html/downloads
+
       - name: build tbd docs image
         run: ls -1 docs/config/tbd_docs.Dockerfile && docker build -t tbd_docs -f docs/config/tbd_docs.Dockerfile docs/config
 
