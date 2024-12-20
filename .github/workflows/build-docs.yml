@@ -18,6 +18,13 @@ jobs:
       - name: build docs
         run: docker run -v $PWD:/code tbd_docs
 
+      - name: fetch builds
+        uses: actions/download-artifact@v4
+        with:
+          path: /build/docs/html/downloads
+          pattern: tbd_firmware_*
+          merge-multiple: true
+
       - name: upload static web content
         id: deployment
         uses: actions/upload-pages-artifact@v3

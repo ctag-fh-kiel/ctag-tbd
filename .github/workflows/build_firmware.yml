@@ -20,12 +20,12 @@ jobs:
         run: ls -1 tools/docker/build.Dockerfile && docker build -t tbd_firmware -f tools/docker/build.Dockerfile $PWD
 
       - name: build firmware
-        run: docker run -v $PWD:/code tbd_firmware ${{ inputs.tbd-platform }} configure build
+        run: docker run -v $PWD:/code tbd_firmware ${{ inputs.tbd-platform }} configure bin
 
       - name: upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: tbd_firmware_${{ inputs.tbd-platform }}
           path: |
-            build/${{ inputs.tbd-platform }}/ctag-tbd.elf
+            build/${{ inputs.tbd-platform }}/tbd-${{ inputs.tbd-platform }}-flash.bin
           overwrite: true
