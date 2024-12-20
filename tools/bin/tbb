@@ -415,6 +415,21 @@ if tbd_is_item_in_list "build" $commands; then
   tbd_run cmake --build "$build_dir/$platform"
 fi
 
+if tbd_is_item_in_list "bin" $commands; then
+  tbd_logi "creating merged binary"
+  if ! pushd "$build_dir/$platform" > /dev/null ; then
+    tbd_abort "failed to enter build directory"
+  fi
+
+  tbd_run cmake --build "$PWD" \
+    -t bootloader \
+    -t partition_table_bin \
+    -t gen_project_binary \
+    -t littlefs_storage_bin \
+    -t blank_ota_data
+  tbd_run esptool.py --chip esp32 merge_bin -o "tbd-${platform}-flash.bin" @flash_args
+fi
+
 if tbd_is_item_in_list "flash" $commands; then
   tbd_logi "flashing to device"
   tbd_abort "not implemented"
