@@ -19,7 +19,7 @@ jobs:
       - name: fetch builds
         uses: actions/download-artifact@v4
         with:
-          path: /build/docs/html/downloads
+          path: build/docs/html/downloads
           pattern: tbd_firmware_*
           merge-multiple: true
 
