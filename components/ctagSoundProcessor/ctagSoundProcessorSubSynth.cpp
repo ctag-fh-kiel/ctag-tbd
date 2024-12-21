@@ -31,7 +31,7 @@ respective component folders / files if different from this license.
 #include "dsps_addc.h"
 
 #ifndef TBD_SIM
-#include "xtensa/core-macros.h"
+//#include "xtensa/core-macros.h"
 #endif
 
 #include "esp_system.h"
@@ -48,10 +48,12 @@ void ctagSoundProcessorSubSynth::Init(std::size_t blockSize, void *blockPtr) {
     memset(filterZs, 0, 10 * 3 * 2 * sizeof(float));
     memset(fCoeffs, 0, 6 * sizeof(float));
     wNoise.SetBipolar(true);
+    /*
 #ifndef TBD_SIM
     wNoise.ReSeed(XTHAL_GET_CCOUNT()); // seed random from CPU time ticks
     pNoise.ReSeed(XTHAL_GET_CCOUNT());
 #endif
+     */
     adsrEnvSum.SetSampleRate(44100.f);
     adsrEnvSum.SetModeExp();
     eg[0].SetModeLin();

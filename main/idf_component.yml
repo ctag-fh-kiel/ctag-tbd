@@ -1,7 +1,9 @@
 ## IDF Component Manager Manifest File
 dependencies:
-  joltwallet/littlefs: "==1.14.8"
+  joltwallet/littlefs: "^1.16.0"
   espressif/mdns: "*"
+  espressif/esp_hosted: "*"
+  espressif/esp_wifi_remote: "^0.5.2"
   ## Required IDF version
   idf:
     version: ">=5.1.1"

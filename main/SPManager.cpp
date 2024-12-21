@@ -413,7 +413,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
 
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
-    FAV::Favorites::StartUI();
+    //FAV::Favorites::StartUI();
 #endif
 
     SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
