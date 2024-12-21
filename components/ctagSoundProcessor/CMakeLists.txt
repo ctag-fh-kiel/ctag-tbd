@@ -75,7 +75,8 @@ if (TBD_SIM)
 else ()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
-            PRIV_REQUIRES rapidjson esp-dsp mutable moog spi_flash)
+            REQUIRES mutable esp-dsp moog
+            PRIV_REQUIRES rapidjson spi_flash)
     target_compile_options(${COMPONENT_LIB} PRIVATE
             -Wno-unused-local-typedefs
             -ffast-math

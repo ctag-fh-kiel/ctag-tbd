@@ -67,11 +67,13 @@ void app_main() {
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
 #endif
 
+    /*
 #if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
     DRIVERS::Display::Init();
     DRIVERS::Display::ShowFWVersion();
     vTaskDelay(2000 / portTICK_PERIOD_MS);
 #endif
+*/
 
 #if defined(CONFIG_SERIAL_UI)
     vTaskDelay(2000 / portTICK_PERIOD_MS);

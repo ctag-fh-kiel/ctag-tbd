@@ -8,7 +8,7 @@ endif()
 
 idf_component_register(SRCS ${SRC_FILES}
         INCLUDE_DIRS "."
-        REQUIRES)
+        REQUIRES esp_psram network spi_flash esp_http_server drivers rapidjson app_update ctagSoundProcessor)
 
 target_compile_options(${COMPONENT_LIB} PRIVATE
         -Wno-unused-local-typedefs
