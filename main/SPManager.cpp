@@ -350,6 +350,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     model = std::make_unique<SPManagerDataModel>();
 
     // check for network reset at bootup
+    /*
 #ifdef CONFIG_TBD_PLATFORM_BBA
     // uses SW1 = BOOT of esp32-s3-devkitc to reset network credentials
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
@@ -360,6 +361,7 @@ void SoundProcessorManager::StartSoundProcessor() {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 #endif
+     */
 
     /* there should be an extra pin for this!
     // check if network reset requested trig 1 pressed at startup

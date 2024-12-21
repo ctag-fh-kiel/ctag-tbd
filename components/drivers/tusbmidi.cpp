@@ -71,6 +71,32 @@ static const uint8_t s_midi_cfg_desc[] = {
         TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
 };
 
+// HighSpeed configuration descriptor
+static const uint8_t s_midi_hs_cfg_desc[] = {
+        // Configuration number, interface count, string index, total length, attribute, power in mA
+        TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 100),
+
+        // Interface number, string index, EP Out & EP In address, EP size
+        TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 512),
+};
+
+void CTAG::DRIVERS::tusbmidi::Init() {
+    ESP_LOGI("TUSB", "USB initialization");
+
+    tinyusb_config_t const tusb_cfg = {
+            .device_descriptor = NULL, // If device_descriptor is NULL, tinyusb_driver_install() will use Kconfig
+            .string_descriptor = s_str_desc,
+            .string_descriptor_count = sizeof(s_str_desc) / sizeof(s_str_desc[0]),
+            .external_phy = false,
+            .configuration_descriptor = s_midi_cfg_desc,
+            .hs_configuration_descriptor = s_midi_hs_cfg_desc, // Add HighSpeed configuration descriptor
+            .self_powered = false,
+            .vbus_monitor_io = 0
+    };
+    ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
+}
+/*
+
 void CTAG::DRIVERS::tusbmidi::Init() {
     ESP_LOGI("TUSB", "USB initialization");
 
@@ -85,7 +111,7 @@ void CTAG::DRIVERS::tusbmidi::Init() {
     };
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 }
-
+*/
 IRAM_ATTR uint32_t CTAG::DRIVERS::tusbmidi::Read(uint8_t *data, uint32_t len) {
     return tud_midi_n_stream_read( ITF_NUM_MIDI, ITF_NUM_MIDI_STREAMING, data, len);
 }
@@ -93,3 +119,5 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::tusbmidi::Read(uint8_t *data, uint32_t len) {
 uint32_t CTAG::DRIVERS::tusbmidi::Write(const uint8_t *data, uint32_t len) {
     return tud_midi_stream_write(0, data, len);
 }
+
+
