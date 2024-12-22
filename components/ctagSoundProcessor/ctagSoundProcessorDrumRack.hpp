@@ -10,6 +10,7 @@
 #include "synthesis/Rimshot.hpp"
 #include "helpers/ctagSampleRom.hpp"
 #include "SimpleComp/SimpleComp.h"
+#include "mifx/reverb.h"
 
 namespace CTAG {
     namespace SP {
@@ -40,6 +41,9 @@ namespace CTAG {
         	// own drum models
         	CTAG::SYNTHESIS::Clap cl;
         	CTAG::SYNTHESIS::Rimshot rs;
+
+            // reverb
+            mifx::Reverb reverb;
 
             float abd_out[32];
             float asd_out[32];
