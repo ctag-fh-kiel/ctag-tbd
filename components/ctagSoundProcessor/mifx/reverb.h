@@ -139,6 +139,96 @@ namespace mifx {
             lp_decay_2_ = lp_2;
         }
 
+        void Process(const float* in, float *left, float *right, size_t size) {
+            // This is the Griesinger topology described in the Dattorro paper
+            // (4 AP diffusers on the input, then a loop of 2x 2AP+1Delay).
+            // Modulation is applied in the loop of the first diffuser AP for additional
+            // smearing; and to the two long delays for a slow shimmer/chorus effect.
+            typedef E::Reserve<150,
+                    E::Reserve<214,
+                            E::Reserve < 319,
+                            E::Reserve < 527,
+                            E::Reserve < 2182,
+                            E::Reserve < 2690,
+                            E::Reserve < 4501,
+                            E::Reserve < 2525,
+                            E::Reserve < 2197,
+                            E::Reserve < 6312> > > > > > > > > > Memory;
+            E::DelayLine<Memory, 0> ap1;
+            E::DelayLine<Memory, 1> ap2;
+            E::DelayLine<Memory, 2> ap3;
+            E::DelayLine<Memory, 3> ap4;
+            E::DelayLine<Memory, 4> dap1a;
+            E::DelayLine<Memory, 5> dap1b;
+            E::DelayLine<Memory, 6> del1;
+            E::DelayLine<Memory, 7> dap2a;
+            E::DelayLine<Memory, 8> dap2b;
+            E::DelayLine<Memory, 9> del2;
+            E::Context c;
+
+            const float kap = diffusion_;
+            const float klp = lp_;
+            const float krt = reverb_time_;
+            const float gain = input_gain_;
+
+            float lp_1 = lp_decay_1_;
+            float lp_2 = lp_decay_2_;
+
+            while (size--) {
+                float wet;
+                float apout = 0.0f;
+                engine_.Start(&c);
+
+                // Smear AP1 inside the loop.
+                c.Interpolate(ap1, 10.0f, LFO_1, 80.0f, 1.0f);
+                c.Write(ap1, 100, 0.0f);
+
+                c.Read(*in, gain);
+                in++;
+                // Diffuse through 4 allpasses.
+                c.Read(ap1 TAIL, kap);
+                c.WriteAllPass(ap1, -kap);
+                c.Read(ap2 TAIL, kap);
+                c.WriteAllPass(ap2, -kap);
+                c.Read(ap3 TAIL, kap);
+                c.WriteAllPass(ap3, -kap);
+                c.Read(ap4 TAIL, kap);
+                c.WriteAllPass(ap4, -kap);
+                c.Write(apout);
+
+                // Main reverb loop.
+                c.Load(apout);
+                c.Interpolate(del2, 6261.0f, LFO_2, 50.0f, krt);
+                c.Lp(lp_1, klp);
+                c.Read(dap1a TAIL, -kap);
+                c.WriteAllPass(dap1a, kap);
+                c.Read(dap1b TAIL, kap);
+                c.WriteAllPass(dap1b, -kap);
+                c.Write(del1, 2.0f);
+                c.Write(wet, 0.0f);
+
+                *left = wet;
+
+                c.Load(apout);
+                c.Interpolate(del1, 4460.0f, LFO_1, 40.0f, krt);
+                c.Lp(lp_2, klp);
+                c.Read(dap2a TAIL, kap);
+                c.WriteAllPass(dap2a, -kap);
+                c.Read(dap2b TAIL, -kap);
+                c.WriteAllPass(dap2b, kap);
+                c.Write(del2, 2.0f);
+                c.Write(wet, 0.0f);
+
+                *right += wet;
+
+                ++left;
+                ++right;
+            }
+
+            lp_decay_1_ = lp_1;
+            lp_decay_2_ = lp_2;
+        }
+
         inline void set_amount(float amount) {
             amount_ = amount;
         }
