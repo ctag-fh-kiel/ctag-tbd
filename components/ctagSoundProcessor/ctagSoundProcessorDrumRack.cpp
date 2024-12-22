@@ -16,6 +16,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fABLev, ab_lev, 4095.f, 2.f)
     fABLev *= fABLev;
     MK_FLT_PAR_ABS_PAN(fABPan, ab_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fABFX1Send, ab_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fABFX2Send, ab_fx2, 4095.f, 1.f)
     if (!bABMute){
         MK_FLT_PAR_ABS(fABAccent, ab_accent, 4095.f, 1.f)
         MK_FLT_PAR_ABS_MIN_MAX(fABF0, ab_f0, 4095.f, 0.0001f, 0.01f)
@@ -53,7 +55,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fASLev, as_lev, 4095.f, 2.f)
     fASLev *= fASLev;
     MK_FLT_PAR_ABS_PAN(fASPan, as_pan, 4095.f, 1.f)
-
+    MK_FLT_PAR_ABS(fASFX1Send, as_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fASFX2Send, as_fx2, 4095.f, 1.f)
 
     if (!bASMute){
         MK_FLT_PAR_ABS(fASAccent, as_accent, 4095.f, 1.f)
@@ -90,6 +93,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fDBLev, db_lev, 4095.f, 2.f)
     fDBLev *= fDBLev;
     MK_FLT_PAR_ABS_PAN(fDBPan, db_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDBFX1Send, db_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDBFX2Send, db_fx2, 4095.f, 1.f)
 
     if (!bDBMute){
         MK_FLT_PAR_ABS(fDBAccent, db_accent, 4095.f, 1.f)
@@ -130,7 +135,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fDSLev, ds_lev, 4095.f, 2.f)
     fDSLev *= fDSLev;
     MK_FLT_PAR_ABS_PAN(fDSPan, ds_pan, 4095.f, 1.f)
-
+    MK_FLT_PAR_ABS(fDSFX1Send, ds_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDSFX2Send, ds_fx2, 4095.f, 1.f)
 
     if (!bDSMute){
         MK_FLT_PAR_ABS(fDSAccent, ds_accent, 4095.f, 1.f)
@@ -167,7 +173,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fHH1Lev, hh1_lev, 4095.f, 2.f)
     fHH1Lev *= fHH1Lev;
     MK_FLT_PAR_ABS_PAN(fHH1Pan, hh1_pan, 4095.f, 1.f)
-
+    MK_FLT_PAR_ABS(fHH1FX1Send, hh1_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH1FX2Send, hh1_fx2, 4095.f, 1.f)
 
     if (!bHH1Mute){
         MK_FLT_PAR_ABS(fHH1Accent, hh1_accent, 4095.f, 1.f)
@@ -206,7 +213,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fHH2Lev, hh2_lev, 4095.f, 2.f)
     fHH2Lev *= fHH2Lev;
     MK_FLT_PAR_ABS_PAN(fHH2Pan, hh2_pan, 4095.f, 1.f)
-
+    MK_FLT_PAR_ABS(fHH2FX1Send, hh2_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH2FX2Send, hh2_fx2, 4095.f, 1.f)
 
     if (!bHH2Mute){
         MK_FLT_PAR_ABS(fHH2Accent, hh2_accent, 4095.f, 1.f)
@@ -237,6 +245,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fRSLev, rs_lev, 4095.f, 2.f)
     fRSLev *= fRSLev;
     MK_FLT_PAR_ABS_PAN(fRSPan, rs_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRSFX1Send, rs_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRSFX2Send, rs_fx2, 4095.f, 1.f)
+
     if (!bRSMute){
         MK_FLT_PAR_ABS_MIN_MAX(rs_f0_, rs_f0, 4095.f, 70.f, 350.f)
         MK_FLT_PAR_ABS_MIN_MAX(rs_decay_, rs_decay, 4095.f, .1f, .75f)
@@ -274,6 +285,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fCLLev, cl_lev, 4095.f, 2.f)
     fCLLev *= fCLLev;
     MK_FLT_PAR_ABS_PAN(fCLPan, cl_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fCLFX1Send, cl_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fCLFX2Send, cl_fx2, 4095.f, 1.f)
+
     if (!bCLMute){
         MK_FLT_PAR_ABS_MIN_MAX(cl_pitch1_, cl_f0, 4095.f, 350.f, 4000.f)
         MK_FLT_PAR_ABS_MIN_MAX(cl_pitch2_, cl_f0, 4095.f, 300.f, 3000.f)
@@ -316,6 +330,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
     float fS1Lev = 0.f, fS1Pan = 0.f;
     MK_BOOL_PAR(bMuteS1, s1_mute)
+    MK_FLT_PAR_ABS(fS1FX1Send, s1_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fS1FX2Send, s1_fx2, 4095.f, 1.f)
     if (!bMuteS1){
         MK_BOOL_PAR(bGateS1, s1_gate)
         rompler[0].params.gate = bGateS1;
@@ -375,6 +391,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 
     float fS2Lev = 0.f, fS2Pan = 0.f;
     MK_BOOL_PAR(bMuteS2, s2_mute)
+    MK_FLT_PAR_ABS(fS2FX1Send, s2_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fS2FX2Send, s2_fx2, 4095.f, 1.f)
+
     if (!bMuteS2){
         MK_BOOL_PAR(bGateS2, s2_gate)
         rompler[1].params.gate = bGateS2;
@@ -434,6 +453,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 
     float fS3Lev = 0.f, fS3Pan = 0.f;;
     MK_BOOL_PAR(bMuteS3, s3_mute)
+    MK_FLT_PAR_ABS(fS3FX1Send, s3_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fS3FX2Send, s3_fx2, 4095.f, 1.f)
+
     if (!bMuteS3){
         MK_BOOL_PAR(bGateS3, s3_gate)
         rompler[2].params.gate = bGateS3;
@@ -493,6 +515,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 
     float fS4Lev = 0.f, fS4Pan = 0.f;;
     MK_BOOL_PAR(bMuteS4, s4_mute)
+    MK_FLT_PAR_ABS(fS4FX1Send, s4_fx1, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fS4FX2Send, s4_fx2, 4095.f, 1.f)
     if (!bMuteS4){
         MK_BOOL_PAR(bGateS4, s4_gate)
         rompler[3].params.gate = bGateS4;
@@ -568,6 +592,23 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fCompMUPGain_pre = fCompMUPGain;
     }
 
+
+    // reverb
+    MK_FLT_PAR_ABS(fRevTime, fx2_time, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRevAmount, fx2_amount, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRefInputGain, fx2_in_gain, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDiffusion, fx2_diffusion, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fReverbLPF, fx2_lp, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRevLFO1, fx2_lfo1_f, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRevLFO2, fx2_lfo2_f, 4095.f, 1.f)
+    reverb.set_time(fRevTime);
+    reverb.set_amount(fRevAmount);
+    reverb.set_input_gain(fRefInputGain);
+    reverb.set_diffusion(fDiffusion);
+    reverb.set_lp(fReverbLPF);
+    reverb.set_lfo1_freq(fRevLFO1);
+    reverb.set_lfo2_freq(fRevLFO2);
+
     // overall mix
     MK_BOOL_PAR(bSumMute, sum_mute)
     MK_FLT_PAR_ABS(fMixLevel, sum_lev, 4095.f, 3.f)
@@ -608,7 +649,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fS3Lev * fS3Pan,
         fS4Lev * fS4Pan
     };
-    float buf_l[32], buf_r[32];
+    float buf_fx1[32], buf_fx2[32];
     for (int i = 0; i < 32; i++){
         float fVal_l = 0.f;
         float fVal_r = 0.f;
@@ -640,6 +681,34 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fVal_r += data_ptrs[10][i] * lev_r[10];
         fVal_r += data_ptrs[11][i] * lev_r[11];
 
+        // FX1
+        buf_fx1[i] = data_ptrs[0][i] * fABFX1Send;
+        buf_fx1[i] += data_ptrs[1][i] * fASFX1Send;
+        buf_fx1[i] += data_ptrs[2][i] * fDBFX1Send;
+        buf_fx1[i] += data_ptrs[3][i] * fDSFX1Send;
+        buf_fx1[i] += data_ptrs[4][i] * fHH1FX1Send;
+        buf_fx1[i] += data_ptrs[5][i] * fHH2FX1Send;
+        buf_fx1[i] += data_ptrs[6][i] * fRSFX1Send;
+        buf_fx1[i] += data_ptrs[7][i] * fCLFX1Send;
+        buf_fx1[i] += data_ptrs[8][i] * fS1FX1Send;
+        buf_fx1[i] += data_ptrs[9][i] * fS2FX1Send;
+        buf_fx1[i] += data_ptrs[10][i] * fS3FX1Send;
+        buf_fx1[i] += data_ptrs[11][i] * fS4FX1Send;
+        // FX2
+        buf_fx2[i] = data_ptrs[0][i] * fABFX2Send;
+        buf_fx2[i] += data_ptrs[1][i] * fASFX2Send;
+        buf_fx2[i] += data_ptrs[2][i] * fDBFX2Send;
+        buf_fx2[i] += data_ptrs[3][i] * fDSFX2Send;
+        buf_fx2[i] += data_ptrs[4][i] * fHH1FX2Send;
+        buf_fx2[i] += data_ptrs[5][i] * fHH2FX2Send;
+        buf_fx2[i] += data_ptrs[6][i] * fRSFX2Send;
+        buf_fx2[i] += data_ptrs[7][i] * fCLFX2Send;
+        buf_fx2[i] += data_ptrs[8][i] * fS1FX2Send;
+        buf_fx2[i] += data_ptrs[9][i] * fS2FX2Send;
+        buf_fx2[i] += data_ptrs[10][i] * fS3FX2Send;
+        buf_fx2[i] += data_ptrs[11][i] * fS4FX2Send;
+
+
         float dry_l = fVal_l;
         float dry_r = fVal_r;
         if (bSideChainLPF){
@@ -656,17 +725,14 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         sumCompressor.process(fVal_l, fVal_r, side);
         fVal_l = fVal_l * fCompMUPGain * fCompMix + dry_l * (1.f - fCompMix);
         fVal_r = fVal_r * fCompMUPGain * fCompMix + dry_r * (1.f - fCompMix);
-        /*
         data.buf[i * 2] = fVal_l * fMixLevel;
         data.buf[i * 2 + 1] = fVal_r * fMixLevel;
-         */
-        buf_l[i] = fVal_l * fMixLevel;
-        buf_r[i] = fVal_r * fMixLevel;
     }
-    reverb.Process(buf_l, buf_r, 32);
+    float buf_l[32], buf_r[32];
+    reverb.Process(buf_fx2, buf_l, buf_r, 32);
     for (int i = 0; i < 32; i++) {
-        data.buf[i * 2] = buf_l[i];
-        data.buf[i * 2 + 1] = buf_r[i];
+        data.buf[i * 2] += buf_l[i] * fRevAmount;
+        data.buf[i * 2 + 1] += buf_r[i] *fRevAmount;
     }
 }
 
@@ -731,335 +797,413 @@ ctagSoundProcessorDrumRack::~ctagSoundProcessorDrumRack(){
 void ctagSoundProcessorDrumRack::knowYourself(){
     // autogenerated code here
     // sectionCpp0
-    pMapPar.emplace("ab_trigger", [&](const int val){ ab_trigger = val; });
-    pMapTrig.emplace("ab_trigger", [&](const int val){ trig_ab_trigger = val; });
-    pMapPar.emplace("ab_mute", [&](const int val){ ab_mute = val; });
-    pMapTrig.emplace("ab_mute", [&](const int val){ trig_ab_mute = val; });
-    pMapPar.emplace("ab_lev", [&](const int val){ ab_lev = val; });
-    pMapCv.emplace("ab_lev", [&](const int val){ cv_ab_lev = val; });
-    pMapPar.emplace("ab_pan", [&](const int val){ ab_pan = val; });
-    pMapCv.emplace("ab_pan", [&](const int val){ cv_ab_pan = val; });
-    pMapPar.emplace("ab_accent", [&](const int val){ ab_accent = val; });
-    pMapCv.emplace("ab_accent", [&](const int val){ cv_ab_accent = val; });
-    pMapPar.emplace("ab_f0", [&](const int val){ ab_f0 = val; });
-    pMapCv.emplace("ab_f0", [&](const int val){ cv_ab_f0 = val; });
-    pMapPar.emplace("ab_tone", [&](const int val){ ab_tone = val; });
-    pMapCv.emplace("ab_tone", [&](const int val){ cv_ab_tone = val; });
-    pMapPar.emplace("ab_decay", [&](const int val){ ab_decay = val; });
-    pMapCv.emplace("ab_decay", [&](const int val){ cv_ab_decay = val; });
-    pMapPar.emplace("ab_a_fm", [&](const int val){ ab_a_fm = val; });
-    pMapCv.emplace("ab_a_fm", [&](const int val){ cv_ab_a_fm = val; });
-    pMapPar.emplace("ab_s_fm", [&](const int val){ ab_s_fm = val; });
-    pMapCv.emplace("ab_s_fm", [&](const int val){ cv_ab_s_fm = val; });
-    pMapPar.emplace("db_trigger", [&](const int val){ db_trigger = val; });
-    pMapTrig.emplace("db_trigger", [&](const int val){ trig_db_trigger = val; });
-    pMapPar.emplace("db_mute", [&](const int val){ db_mute = val; });
-    pMapTrig.emplace("db_mute", [&](const int val){ trig_db_mute = val; });
-    pMapPar.emplace("db_lev", [&](const int val){ db_lev = val; });
-    pMapCv.emplace("db_lev", [&](const int val){ cv_db_lev = val; });
-    pMapPar.emplace("db_pan", [&](const int val){ db_pan = val; });
-    pMapCv.emplace("db_pan", [&](const int val){ cv_db_pan = val; });
-    pMapPar.emplace("db_accent", [&](const int val){ db_accent = val; });
-    pMapCv.emplace("db_accent", [&](const int val){ cv_db_accent = val; });
-    pMapPar.emplace("db_f0", [&](const int val){ db_f0 = val; });
-    pMapCv.emplace("db_f0", [&](const int val){ cv_db_f0 = val; });
-    pMapPar.emplace("db_tone", [&](const int val){ db_tone = val; });
-    pMapCv.emplace("db_tone", [&](const int val){ cv_db_tone = val; });
-    pMapPar.emplace("db_decay", [&](const int val){ db_decay = val; });
-    pMapCv.emplace("db_decay", [&](const int val){ cv_db_decay = val; });
-    pMapPar.emplace("db_dirty", [&](const int val){ db_dirty = val; });
-    pMapCv.emplace("db_dirty", [&](const int val){ cv_db_dirty = val; });
-    pMapPar.emplace("db_fm_env", [&](const int val){ db_fm_env = val; });
-    pMapCv.emplace("db_fm_env", [&](const int val){ cv_db_fm_env = val; });
-    pMapPar.emplace("db_fm_dcy", [&](const int val){ db_fm_dcy = val; });
-    pMapCv.emplace("db_fm_dcy", [&](const int val){ cv_db_fm_dcy = val; });
-    pMapPar.emplace("as_trigger", [&](const int val){ as_trigger = val; });
-    pMapTrig.emplace("as_trigger", [&](const int val){ trig_as_trigger = val; });
-    pMapPar.emplace("as_mute", [&](const int val){ as_mute = val; });
-    pMapTrig.emplace("as_mute", [&](const int val){ trig_as_mute = val; });
-    pMapPar.emplace("as_lev", [&](const int val){ as_lev = val; });
-    pMapCv.emplace("as_lev", [&](const int val){ cv_as_lev = val; });
-    pMapPar.emplace("as_pan", [&](const int val){ as_pan = val; });
-    pMapCv.emplace("as_pan", [&](const int val){ cv_as_pan = val; });
-    pMapPar.emplace("as_accent", [&](const int val){ as_accent = val; });
-    pMapCv.emplace("as_accent", [&](const int val){ cv_as_accent = val; });
-    pMapPar.emplace("as_f0", [&](const int val){ as_f0 = val; });
-    pMapCv.emplace("as_f0", [&](const int val){ cv_as_f0 = val; });
-    pMapPar.emplace("as_tone", [&](const int val){ as_tone = val; });
-    pMapCv.emplace("as_tone", [&](const int val){ cv_as_tone = val; });
-    pMapPar.emplace("as_decay", [&](const int val){ as_decay = val; });
-    pMapCv.emplace("as_decay", [&](const int val){ cv_as_decay = val; });
-    pMapPar.emplace("as_a_spy", [&](const int val){ as_a_spy = val; });
-    pMapCv.emplace("as_a_spy", [&](const int val){ cv_as_a_spy = val; });
-    pMapPar.emplace("ds_trigger", [&](const int val){ ds_trigger = val; });
-    pMapTrig.emplace("ds_trigger", [&](const int val){ trig_ds_trigger = val; });
-    pMapPar.emplace("ds_mute", [&](const int val){ ds_mute = val; });
-    pMapTrig.emplace("ds_mute", [&](const int val){ trig_ds_mute = val; });
-    pMapPar.emplace("ds_lev", [&](const int val){ ds_lev = val; });
-    pMapCv.emplace("ds_lev", [&](const int val){ cv_ds_lev = val; });
-    pMapPar.emplace("ds_pan", [&](const int val){ ds_pan = val; });
-    pMapCv.emplace("ds_pan", [&](const int val){ cv_ds_pan = val; });
-    pMapPar.emplace("ds_accent", [&](const int val){ ds_accent = val; });
-    pMapCv.emplace("ds_accent", [&](const int val){ cv_ds_accent = val; });
-    pMapPar.emplace("ds_f0", [&](const int val){ ds_f0 = val; });
-    pMapCv.emplace("ds_f0", [&](const int val){ cv_ds_f0 = val; });
-    pMapPar.emplace("ds_fm_amt", [&](const int val){ ds_fm_amt = val; });
-    pMapCv.emplace("ds_fm_amt", [&](const int val){ cv_ds_fm_amt = val; });
-    pMapPar.emplace("ds_decay", [&](const int val){ ds_decay = val; });
-    pMapCv.emplace("ds_decay", [&](const int val){ cv_ds_decay = val; });
-    pMapPar.emplace("ds_spy", [&](const int val){ ds_spy = val; });
-    pMapCv.emplace("ds_spy", [&](const int val){ cv_ds_spy = val; });
-    pMapPar.emplace("hh1_trigger", [&](const int val){ hh1_trigger = val; });
-    pMapTrig.emplace("hh1_trigger", [&](const int val){ trig_hh1_trigger = val; });
-    pMapPar.emplace("hh1_mute", [&](const int val){ hh1_mute = val; });
-    pMapTrig.emplace("hh1_mute", [&](const int val){ trig_hh1_mute = val; });
-    pMapPar.emplace("hh1_lev", [&](const int val){ hh1_lev = val; });
-    pMapCv.emplace("hh1_lev", [&](const int val){ cv_hh1_lev = val; });
-    pMapPar.emplace("hh1_pan", [&](const int val){ hh1_pan = val; });
-    pMapCv.emplace("hh1_pan", [&](const int val){ cv_hh1_pan = val; });
-    pMapPar.emplace("hh1_accent", [&](const int val){ hh1_accent = val; });
-    pMapCv.emplace("hh1_accent", [&](const int val){ cv_hh1_accent = val; });
-    pMapPar.emplace("hh1_f0", [&](const int val){ hh1_f0 = val; });
-    pMapCv.emplace("hh1_f0", [&](const int val){ cv_hh1_f0 = val; });
-    pMapPar.emplace("hh1_tone", [&](const int val){ hh1_tone = val; });
-    pMapCv.emplace("hh1_tone", [&](const int val){ cv_hh1_tone = val; });
-    pMapPar.emplace("hh1_decay", [&](const int val){ hh1_decay = val; });
-    pMapCv.emplace("hh1_decay", [&](const int val){ cv_hh1_decay = val; });
-    pMapPar.emplace("hh1_noise", [&](const int val){ hh1_noise = val; });
-    pMapCv.emplace("hh1_noise", [&](const int val){ cv_hh1_noise = val; });
-    pMapPar.emplace("hh2_trigger", [&](const int val){ hh2_trigger = val; });
-    pMapTrig.emplace("hh2_trigger", [&](const int val){ trig_hh2_trigger = val; });
-    pMapPar.emplace("hh2_mute", [&](const int val){ hh2_mute = val; });
-    pMapTrig.emplace("hh2_mute", [&](const int val){ trig_hh2_mute = val; });
-    pMapPar.emplace("hh2_lev", [&](const int val){ hh2_lev = val; });
-    pMapCv.emplace("hh2_lev", [&](const int val){ cv_hh2_lev = val; });
-    pMapPar.emplace("hh2_pan", [&](const int val){ hh2_pan = val; });
-    pMapCv.emplace("hh2_pan", [&](const int val){ cv_hh2_pan = val; });
-    pMapPar.emplace("hh2_accent", [&](const int val){ hh2_accent = val; });
-    pMapCv.emplace("hh2_accent", [&](const int val){ cv_hh2_accent = val; });
-    pMapPar.emplace("hh2_f0", [&](const int val){ hh2_f0 = val; });
-    pMapCv.emplace("hh2_f0", [&](const int val){ cv_hh2_f0 = val; });
-    pMapPar.emplace("hh2_tone", [&](const int val){ hh2_tone = val; });
-    pMapCv.emplace("hh2_tone", [&](const int val){ cv_hh2_tone = val; });
-    pMapPar.emplace("hh2_decay", [&](const int val){ hh2_decay = val; });
-    pMapCv.emplace("hh2_decay", [&](const int val){ cv_hh2_decay = val; });
-    pMapPar.emplace("hh2_noise", [&](const int val){ hh2_noise = val; });
-    pMapCv.emplace("hh2_noise", [&](const int val){ cv_hh2_noise = val; });
-    pMapPar.emplace("rs_trigger", [&](const int val){ rs_trigger = val; });
-    pMapTrig.emplace("rs_trigger", [&](const int val){ trig_rs_trigger = val; });
-    pMapPar.emplace("rs_mute", [&](const int val){ rs_mute = val; });
-    pMapTrig.emplace("rs_mute", [&](const int val){ trig_rs_mute = val; });
-    pMapPar.emplace("rs_lev", [&](const int val){ rs_lev = val; });
-    pMapCv.emplace("rs_lev", [&](const int val){ cv_rs_lev = val; });
-    pMapPar.emplace("rs_pan", [&](const int val){ rs_pan = val; });
-    pMapCv.emplace("rs_pan", [&](const int val){ cv_rs_pan = val; });
-    pMapPar.emplace("rs_accent", [&](const int val){ rs_accent = val; });
-    pMapCv.emplace("rs_accent", [&](const int val){ cv_rs_accent = val; });
-    pMapPar.emplace("rs_f0", [&](const int val){ rs_f0 = val; });
-    pMapCv.emplace("rs_f0", [&](const int val){ cv_rs_f0 = val; });
-    pMapPar.emplace("rs_tone", [&](const int val){ rs_tone = val; });
-    pMapCv.emplace("rs_tone", [&](const int val){ cv_rs_tone = val; });
-    pMapPar.emplace("rs_decay", [&](const int val){ rs_decay = val; });
-    pMapCv.emplace("rs_decay", [&](const int val){ cv_rs_decay = val; });
-    pMapPar.emplace("rs_noise", [&](const int val){ rs_noise = val; });
-    pMapCv.emplace("rs_noise", [&](const int val){ cv_rs_noise = val; });
-    pMapPar.emplace("cl_trigger", [&](const int val){ cl_trigger = val; });
-    pMapTrig.emplace("cl_trigger", [&](const int val){ trig_cl_trigger = val; });
-    pMapPar.emplace("cl_mute", [&](const int val){ cl_mute = val; });
-    pMapTrig.emplace("cl_mute", [&](const int val){ trig_cl_mute = val; });
-    pMapPar.emplace("cl_lev", [&](const int val){ cl_lev = val; });
-    pMapCv.emplace("cl_lev", [&](const int val){ cv_cl_lev = val; });
-    pMapPar.emplace("cl_pan", [&](const int val){ cl_pan = val; });
-    pMapCv.emplace("cl_pan", [&](const int val){ cv_cl_pan = val; });
-    pMapPar.emplace("cl_f0", [&](const int val){ cl_f0 = val; });
-    pMapCv.emplace("cl_f0", [&](const int val){ cv_cl_f0 = val; });
-    pMapPar.emplace("cl_tone", [&](const int val){ cl_tone = val; });
-    pMapCv.emplace("cl_tone", [&](const int val){ cv_cl_tone = val; });
-    pMapPar.emplace("cl_decay", [&](const int val){ cl_decay = val; });
-    pMapCv.emplace("cl_decay", [&](const int val){ cv_cl_decay = val; });
-    pMapPar.emplace("cl_scale", [&](const int val){ cl_scale = val; });
-    pMapCv.emplace("cl_scale", [&](const int val){ cv_cl_scale = val; });
-    pMapPar.emplace("cl_transient", [&](const int val){ cl_transient = val; });
-    pMapCv.emplace("cl_transient", [&](const int val){ cv_cl_transient = val; });
-    pMapPar.emplace("s1_gate", [&](const int val){ s1_gate = val; });
-    pMapTrig.emplace("s1_gate", [&](const int val){ trig_s1_gate = val; });
-    pMapPar.emplace("s1_mute", [&](const int val){ s1_mute = val; });
-    pMapTrig.emplace("s1_mute", [&](const int val){ trig_s1_mute = val; });
-    pMapPar.emplace("s1_lev", [&](const int val){ s1_lev = val; });
-    pMapCv.emplace("s1_lev", [&](const int val){ cv_s1_lev = val; });
-    pMapPar.emplace("s1_pan", [&](const int val){ s1_pan = val; });
-    pMapCv.emplace("s1_pan", [&](const int val){ cv_s1_pan = val; });
-    pMapPar.emplace("s1_speed", [&](const int val){ s1_speed = val; });
-    pMapCv.emplace("s1_speed", [&](const int val){ cv_s1_speed = val; });
-    pMapPar.emplace("s1_pitch", [&](const int val){ s1_pitch = val; });
-    pMapCv.emplace("s1_pitch", [&](const int val){ cv_s1_pitch = val; });
-    pMapPar.emplace("s1_bank", [&](const int val){ s1_bank = val; });
-    pMapCv.emplace("s1_bank", [&](const int val){ cv_s1_bank = val; });
-    pMapPar.emplace("s1_slice", [&](const int val){ s1_slice = val; });
-    pMapCv.emplace("s1_slice", [&](const int val){ cv_s1_slice = val; });
-    pMapPar.emplace("s1_start", [&](const int val){ s1_start = val; });
-    pMapCv.emplace("s1_start", [&](const int val){ cv_s1_start = val; });
-    pMapPar.emplace("s1_end", [&](const int val){ s1_end = val; });
-    pMapCv.emplace("s1_end", [&](const int val){ cv_s1_end = val; });
-    pMapPar.emplace("s1_lp", [&](const int val){ s1_lp = val; });
-    pMapTrig.emplace("s1_lp", [&](const int val){ trig_s1_lp = val; });
-    pMapPar.emplace("s1_lp_pp", [&](const int val){ s1_lp_pp = val; });
-    pMapTrig.emplace("s1_lp_pp", [&](const int val){ trig_s1_lp_pp = val; });
-    pMapPar.emplace("s1_lp_pos", [&](const int val){ s1_lp_pos = val; });
-    pMapCv.emplace("s1_lp_pos", [&](const int val){ cv_s1_lp_pos = val; });
-    pMapPar.emplace("s1_atk", [&](const int val){ s1_atk = val; });
-    pMapCv.emplace("s1_atk", [&](const int val){ cv_s1_atk = val; });
-    pMapPar.emplace("s1_dcy", [&](const int val){ s1_dcy = val; });
-    pMapCv.emplace("s1_dcy", [&](const int val){ cv_s1_dcy = val; });
-    pMapPar.emplace("s1_eg2fm", [&](const int val){ s1_eg2fm = val; });
-    pMapCv.emplace("s1_eg2fm", [&](const int val){ cv_s1_eg2fm = val; });
-    pMapPar.emplace("s1_brr", [&](const int val){ s1_brr = val; });
-    pMapCv.emplace("s1_brr", [&](const int val){ cv_s1_brr = val; });
-    pMapPar.emplace("s1_ft", [&](const int val){ s1_ft = val; });
-    pMapCv.emplace("s1_ft", [&](const int val){ cv_s1_ft = val; });
-    pMapPar.emplace("s1_fc", [&](const int val){ s1_fc = val; });
-    pMapCv.emplace("s1_fc", [&](const int val){ cv_s1_fc = val; });
-    pMapPar.emplace("s1_fq", [&](const int val){ s1_fq = val; });
-    pMapCv.emplace("s1_fq", [&](const int val){ cv_s1_fq = val; });
-    pMapPar.emplace("s2_gate", [&](const int val){ s2_gate = val; });
-    pMapTrig.emplace("s2_gate", [&](const int val){ trig_s2_gate = val; });
-    pMapPar.emplace("s2_mute", [&](const int val){ s2_mute = val; });
-    pMapTrig.emplace("s2_mute", [&](const int val){ trig_s2_mute = val; });
-    pMapPar.emplace("s2_lev", [&](const int val){ s2_lev = val; });
-    pMapCv.emplace("s2_lev", [&](const int val){ cv_s2_lev = val; });
-    pMapPar.emplace("s2_pan", [&](const int val){ s2_pan = val; });
-    pMapCv.emplace("s2_pan", [&](const int val){ cv_s2_pan = val; });
-    pMapPar.emplace("s2_speed", [&](const int val){ s2_speed = val; });
-    pMapCv.emplace("s2_speed", [&](const int val){ cv_s2_speed = val; });
-    pMapPar.emplace("s2_pitch", [&](const int val){ s2_pitch = val; });
-    pMapCv.emplace("s2_pitch", [&](const int val){ cv_s2_pitch = val; });
-    pMapPar.emplace("s2_bank", [&](const int val){ s2_bank = val; });
-    pMapCv.emplace("s2_bank", [&](const int val){ cv_s2_bank = val; });
-    pMapPar.emplace("s2_slice", [&](const int val){ s2_slice = val; });
-    pMapCv.emplace("s2_slice", [&](const int val){ cv_s2_slice = val; });
-    pMapPar.emplace("s2_start", [&](const int val){ s2_start = val; });
-    pMapCv.emplace("s2_start", [&](const int val){ cv_s2_start = val; });
-    pMapPar.emplace("s2_end", [&](const int val){ s2_end = val; });
-    pMapCv.emplace("s2_end", [&](const int val){ cv_s2_end = val; });
-    pMapPar.emplace("s2_lp", [&](const int val){ s2_lp = val; });
-    pMapTrig.emplace("s2_lp", [&](const int val){ trig_s2_lp = val; });
-    pMapPar.emplace("s2_lp_pp", [&](const int val){ s2_lp_pp = val; });
-    pMapTrig.emplace("s2_lp_pp", [&](const int val){ trig_s2_lp_pp = val; });
-    pMapPar.emplace("s2_lp_pos", [&](const int val){ s2_lp_pos = val; });
-    pMapCv.emplace("s2_lp_pos", [&](const int val){ cv_s2_lp_pos = val; });
-    pMapPar.emplace("s2_atk", [&](const int val){ s2_atk = val; });
-    pMapCv.emplace("s2_atk", [&](const int val){ cv_s2_atk = val; });
-    pMapPar.emplace("s2_dcy", [&](const int val){ s2_dcy = val; });
-    pMapCv.emplace("s2_dcy", [&](const int val){ cv_s2_dcy = val; });
-    pMapPar.emplace("s2_eg2fm", [&](const int val){ s2_eg2fm = val; });
-    pMapCv.emplace("s2_eg2fm", [&](const int val){ cv_s2_eg2fm = val; });
-    pMapPar.emplace("s2_brr", [&](const int val){ s2_brr = val; });
-    pMapCv.emplace("s2_brr", [&](const int val){ cv_s2_brr = val; });
-    pMapPar.emplace("s2_ft", [&](const int val){ s2_ft = val; });
-    pMapCv.emplace("s2_ft", [&](const int val){ cv_s2_ft = val; });
-    pMapPar.emplace("s2_fc", [&](const int val){ s2_fc = val; });
-    pMapCv.emplace("s2_fc", [&](const int val){ cv_s2_fc = val; });
-    pMapPar.emplace("s2_fq", [&](const int val){ s2_fq = val; });
-    pMapCv.emplace("s2_fq", [&](const int val){ cv_s2_fq = val; });
-    pMapPar.emplace("s3_gate", [&](const int val){ s3_gate = val; });
-    pMapTrig.emplace("s3_gate", [&](const int val){ trig_s3_gate = val; });
-    pMapPar.emplace("s3_mute", [&](const int val){ s3_mute = val; });
-    pMapTrig.emplace("s3_mute", [&](const int val){ trig_s3_mute = val; });
-    pMapPar.emplace("s3_lev", [&](const int val){ s3_lev = val; });
-    pMapCv.emplace("s3_lev", [&](const int val){ cv_s3_lev = val; });
-    pMapPar.emplace("s3_pan", [&](const int val){ s3_pan = val; });
-    pMapCv.emplace("s3_pan", [&](const int val){ cv_s3_pan = val; });
-    pMapPar.emplace("s3_speed", [&](const int val){ s3_speed = val; });
-    pMapCv.emplace("s3_speed", [&](const int val){ cv_s3_speed = val; });
-    pMapPar.emplace("s3_pitch", [&](const int val){ s3_pitch = val; });
-    pMapCv.emplace("s3_pitch", [&](const int val){ cv_s3_pitch = val; });
-    pMapPar.emplace("s3_bank", [&](const int val){ s3_bank = val; });
-    pMapCv.emplace("s3_bank", [&](const int val){ cv_s3_bank = val; });
-    pMapPar.emplace("s3_slice", [&](const int val){ s3_slice = val; });
-    pMapCv.emplace("s3_slice", [&](const int val){ cv_s3_slice = val; });
-    pMapPar.emplace("s3_start", [&](const int val){ s3_start = val; });
-    pMapCv.emplace("s3_start", [&](const int val){ cv_s3_start = val; });
-    pMapPar.emplace("s3_end", [&](const int val){ s3_end = val; });
-    pMapCv.emplace("s3_end", [&](const int val){ cv_s3_end = val; });
-    pMapPar.emplace("s3_lp", [&](const int val){ s3_lp = val; });
-    pMapTrig.emplace("s3_lp", [&](const int val){ trig_s3_lp = val; });
-    pMapPar.emplace("s3_lp_pp", [&](const int val){ s3_lp_pp = val; });
-    pMapTrig.emplace("s3_lp_pp", [&](const int val){ trig_s3_lp_pp = val; });
-    pMapPar.emplace("s3_lp_pos", [&](const int val){ s3_lp_pos = val; });
-    pMapCv.emplace("s3_lp_pos", [&](const int val){ cv_s3_lp_pos = val; });
-    pMapPar.emplace("s3_atk", [&](const int val){ s3_atk = val; });
-    pMapCv.emplace("s3_atk", [&](const int val){ cv_s3_atk = val; });
-    pMapPar.emplace("s3_dcy", [&](const int val){ s3_dcy = val; });
-    pMapCv.emplace("s3_dcy", [&](const int val){ cv_s3_dcy = val; });
-    pMapPar.emplace("s3_eg2fm", [&](const int val){ s3_eg2fm = val; });
-    pMapCv.emplace("s3_eg2fm", [&](const int val){ cv_s3_eg2fm = val; });
-    pMapPar.emplace("s3_brr", [&](const int val){ s3_brr = val; });
-    pMapCv.emplace("s3_brr", [&](const int val){ cv_s3_brr = val; });
-    pMapPar.emplace("s3_ft", [&](const int val){ s3_ft = val; });
-    pMapCv.emplace("s3_ft", [&](const int val){ cv_s3_ft = val; });
-    pMapPar.emplace("s3_fc", [&](const int val){ s3_fc = val; });
-    pMapCv.emplace("s3_fc", [&](const int val){ cv_s3_fc = val; });
-    pMapPar.emplace("s3_fq", [&](const int val){ s3_fq = val; });
-    pMapCv.emplace("s3_fq", [&](const int val){ cv_s3_fq = val; });
-    pMapPar.emplace("s4_gate", [&](const int val){ s4_gate = val; });
-    pMapTrig.emplace("s4_gate", [&](const int val){ trig_s4_gate = val; });
-    pMapPar.emplace("s4_mute", [&](const int val){ s4_mute = val; });
-    pMapTrig.emplace("s4_mute", [&](const int val){ trig_s4_mute = val; });
-    pMapPar.emplace("s4_lev", [&](const int val){ s4_lev = val; });
-    pMapCv.emplace("s4_lev", [&](const int val){ cv_s4_lev = val; });
-    pMapPar.emplace("s4_pan", [&](const int val){ s4_pan = val; });
-    pMapCv.emplace("s4_pan", [&](const int val){ cv_s4_pan = val; });
-    pMapPar.emplace("s4_speed", [&](const int val){ s4_speed = val; });
-    pMapCv.emplace("s4_speed", [&](const int val){ cv_s4_speed = val; });
-    pMapPar.emplace("s4_pitch", [&](const int val){ s4_pitch = val; });
-    pMapCv.emplace("s4_pitch", [&](const int val){ cv_s4_pitch = val; });
-    pMapPar.emplace("s4_bank", [&](const int val){ s4_bank = val; });
-    pMapCv.emplace("s4_bank", [&](const int val){ cv_s4_bank = val; });
-    pMapPar.emplace("s4_slice", [&](const int val){ s4_slice = val; });
-    pMapCv.emplace("s4_slice", [&](const int val){ cv_s4_slice = val; });
-    pMapPar.emplace("s4_start", [&](const int val){ s4_start = val; });
-    pMapCv.emplace("s4_start", [&](const int val){ cv_s4_start = val; });
-    pMapPar.emplace("s4_end", [&](const int val){ s4_end = val; });
-    pMapCv.emplace("s4_end", [&](const int val){ cv_s4_end = val; });
-    pMapPar.emplace("s4_lp", [&](const int val){ s4_lp = val; });
-    pMapTrig.emplace("s4_lp", [&](const int val){ trig_s4_lp = val; });
-    pMapPar.emplace("s4_lp_pp", [&](const int val){ s4_lp_pp = val; });
-    pMapTrig.emplace("s4_lp_pp", [&](const int val){ trig_s4_lp_pp = val; });
-    pMapPar.emplace("s4_lp_pos", [&](const int val){ s4_lp_pos = val; });
-    pMapCv.emplace("s4_lp_pos", [&](const int val){ cv_s4_lp_pos = val; });
-    pMapPar.emplace("s4_atk", [&](const int val){ s4_atk = val; });
-    pMapCv.emplace("s4_atk", [&](const int val){ cv_s4_atk = val; });
-    pMapPar.emplace("s4_dcy", [&](const int val){ s4_dcy = val; });
-    pMapCv.emplace("s4_dcy", [&](const int val){ cv_s4_dcy = val; });
-    pMapPar.emplace("s4_eg2fm", [&](const int val){ s4_eg2fm = val; });
-    pMapCv.emplace("s4_eg2fm", [&](const int val){ cv_s4_eg2fm = val; });
-    pMapPar.emplace("s4_brr", [&](const int val){ s4_brr = val; });
-    pMapCv.emplace("s4_brr", [&](const int val){ cv_s4_brr = val; });
-    pMapPar.emplace("s4_ft", [&](const int val){ s4_ft = val; });
-    pMapCv.emplace("s4_ft", [&](const int val){ cv_s4_ft = val; });
-    pMapPar.emplace("s4_fc", [&](const int val){ s4_fc = val; });
-    pMapCv.emplace("s4_fc", [&](const int val){ cv_s4_fc = val; });
-    pMapPar.emplace("s4_fq", [&](const int val){ s4_fq = val; });
-    pMapCv.emplace("s4_fq", [&](const int val){ cv_s4_fq = val; });
-    pMapPar.emplace("c_thres", [&](const int val){ c_thres = val; });
-    pMapCv.emplace("c_thres", [&](const int val){ cv_c_thres = val; });
-    pMapPar.emplace("c_ratio", [&](const int val){ c_ratio = val; });
-    pMapCv.emplace("c_ratio", [&](const int val){ cv_c_ratio = val; });
-    pMapPar.emplace("c_atk", [&](const int val){ c_atk = val; });
-    pMapCv.emplace("c_atk", [&](const int val){ cv_c_atk = val; });
-    pMapPar.emplace("c_rel", [&](const int val){ c_rel = val; });
-    pMapCv.emplace("c_rel", [&](const int val){ cv_c_rel = val; });
-    pMapPar.emplace("c_lpf", [&](const int val){ c_lpf = val; });
-    pMapTrig.emplace("c_lpf", [&](const int val){ trig_c_lpf = val; });
-    pMapPar.emplace("c_gain", [&](const int val){ c_gain = val; });
-    pMapCv.emplace("c_gain", [&](const int val){ cv_c_gain = val; });
-    pMapPar.emplace("c_mix", [&](const int val){ c_mix = val; });
-    pMapCv.emplace("c_mix", [&](const int val){ cv_c_mix = val; });
-    pMapPar.emplace("sum_mute", [&](const int val){ sum_mute = val; });
-    pMapTrig.emplace("sum_mute", [&](const int val){ trig_sum_mute = val; });
-    pMapPar.emplace("sum_lev", [&](const int val){ sum_lev = val; });
-    pMapCv.emplace("sum_lev", [&](const int val){ cv_sum_lev = val; });
-    isStereo = true;
-    id = "DrumRack";
-    // sectionCpp0
+	pMapPar.emplace("ab_trigger", [&](const int val){ ab_trigger = val;});
+	pMapTrig.emplace("ab_trigger", [&](const int val){ trig_ab_trigger = val;});
+	pMapPar.emplace("ab_mute", [&](const int val){ ab_mute = val;});
+	pMapTrig.emplace("ab_mute", [&](const int val){ trig_ab_mute = val;});
+	pMapPar.emplace("ab_lev", [&](const int val){ ab_lev = val;});
+	pMapCv.emplace("ab_lev", [&](const int val){ cv_ab_lev = val;});
+	pMapPar.emplace("ab_pan", [&](const int val){ ab_pan = val;});
+	pMapCv.emplace("ab_pan", [&](const int val){ cv_ab_pan = val;});
+	pMapPar.emplace("ab_fx1", [&](const int val){ ab_fx1 = val;});
+	pMapCv.emplace("ab_fx1", [&](const int val){ cv_ab_fx1 = val;});
+	pMapPar.emplace("ab_fx2", [&](const int val){ ab_fx2 = val;});
+	pMapCv.emplace("ab_fx2", [&](const int val){ cv_ab_fx2 = val;});
+	pMapPar.emplace("ab_accent", [&](const int val){ ab_accent = val;});
+	pMapCv.emplace("ab_accent", [&](const int val){ cv_ab_accent = val;});
+	pMapPar.emplace("ab_f0", [&](const int val){ ab_f0 = val;});
+	pMapCv.emplace("ab_f0", [&](const int val){ cv_ab_f0 = val;});
+	pMapPar.emplace("ab_tone", [&](const int val){ ab_tone = val;});
+	pMapCv.emplace("ab_tone", [&](const int val){ cv_ab_tone = val;});
+	pMapPar.emplace("ab_decay", [&](const int val){ ab_decay = val;});
+	pMapCv.emplace("ab_decay", [&](const int val){ cv_ab_decay = val;});
+	pMapPar.emplace("ab_a_fm", [&](const int val){ ab_a_fm = val;});
+	pMapCv.emplace("ab_a_fm", [&](const int val){ cv_ab_a_fm = val;});
+	pMapPar.emplace("ab_s_fm", [&](const int val){ ab_s_fm = val;});
+	pMapCv.emplace("ab_s_fm", [&](const int val){ cv_ab_s_fm = val;});
+	pMapPar.emplace("db_trigger", [&](const int val){ db_trigger = val;});
+	pMapTrig.emplace("db_trigger", [&](const int val){ trig_db_trigger = val;});
+	pMapPar.emplace("db_mute", [&](const int val){ db_mute = val;});
+	pMapTrig.emplace("db_mute", [&](const int val){ trig_db_mute = val;});
+	pMapPar.emplace("db_lev", [&](const int val){ db_lev = val;});
+	pMapCv.emplace("db_lev", [&](const int val){ cv_db_lev = val;});
+	pMapPar.emplace("db_pan", [&](const int val){ db_pan = val;});
+	pMapCv.emplace("db_pan", [&](const int val){ cv_db_pan = val;});
+	pMapPar.emplace("db_fx1", [&](const int val){ db_fx1 = val;});
+	pMapCv.emplace("db_fx1", [&](const int val){ cv_db_fx1 = val;});
+	pMapPar.emplace("db_fx2", [&](const int val){ db_fx2 = val;});
+	pMapCv.emplace("db_fx2", [&](const int val){ cv_db_fx2 = val;});
+	pMapPar.emplace("db_accent", [&](const int val){ db_accent = val;});
+	pMapCv.emplace("db_accent", [&](const int val){ cv_db_accent = val;});
+	pMapPar.emplace("db_f0", [&](const int val){ db_f0 = val;});
+	pMapCv.emplace("db_f0", [&](const int val){ cv_db_f0 = val;});
+	pMapPar.emplace("db_tone", [&](const int val){ db_tone = val;});
+	pMapCv.emplace("db_tone", [&](const int val){ cv_db_tone = val;});
+	pMapPar.emplace("db_decay", [&](const int val){ db_decay = val;});
+	pMapCv.emplace("db_decay", [&](const int val){ cv_db_decay = val;});
+	pMapPar.emplace("db_dirty", [&](const int val){ db_dirty = val;});
+	pMapCv.emplace("db_dirty", [&](const int val){ cv_db_dirty = val;});
+	pMapPar.emplace("db_fm_env", [&](const int val){ db_fm_env = val;});
+	pMapCv.emplace("db_fm_env", [&](const int val){ cv_db_fm_env = val;});
+	pMapPar.emplace("db_fm_dcy", [&](const int val){ db_fm_dcy = val;});
+	pMapCv.emplace("db_fm_dcy", [&](const int val){ cv_db_fm_dcy = val;});
+	pMapPar.emplace("as_trigger", [&](const int val){ as_trigger = val;});
+	pMapTrig.emplace("as_trigger", [&](const int val){ trig_as_trigger = val;});
+	pMapPar.emplace("as_mute", [&](const int val){ as_mute = val;});
+	pMapTrig.emplace("as_mute", [&](const int val){ trig_as_mute = val;});
+	pMapPar.emplace("as_lev", [&](const int val){ as_lev = val;});
+	pMapCv.emplace("as_lev", [&](const int val){ cv_as_lev = val;});
+	pMapPar.emplace("as_pan", [&](const int val){ as_pan = val;});
+	pMapCv.emplace("as_pan", [&](const int val){ cv_as_pan = val;});
+	pMapPar.emplace("as_fx1", [&](const int val){ as_fx1 = val;});
+	pMapCv.emplace("as_fx1", [&](const int val){ cv_as_fx1 = val;});
+	pMapPar.emplace("as_fx2", [&](const int val){ as_fx2 = val;});
+	pMapCv.emplace("as_fx2", [&](const int val){ cv_as_fx2 = val;});
+	pMapPar.emplace("as_accent", [&](const int val){ as_accent = val;});
+	pMapCv.emplace("as_accent", [&](const int val){ cv_as_accent = val;});
+	pMapPar.emplace("as_f0", [&](const int val){ as_f0 = val;});
+	pMapCv.emplace("as_f0", [&](const int val){ cv_as_f0 = val;});
+	pMapPar.emplace("as_tone", [&](const int val){ as_tone = val;});
+	pMapCv.emplace("as_tone", [&](const int val){ cv_as_tone = val;});
+	pMapPar.emplace("as_decay", [&](const int val){ as_decay = val;});
+	pMapCv.emplace("as_decay", [&](const int val){ cv_as_decay = val;});
+	pMapPar.emplace("as_a_spy", [&](const int val){ as_a_spy = val;});
+	pMapCv.emplace("as_a_spy", [&](const int val){ cv_as_a_spy = val;});
+	pMapPar.emplace("ds_trigger", [&](const int val){ ds_trigger = val;});
+	pMapTrig.emplace("ds_trigger", [&](const int val){ trig_ds_trigger = val;});
+	pMapPar.emplace("ds_mute", [&](const int val){ ds_mute = val;});
+	pMapTrig.emplace("ds_mute", [&](const int val){ trig_ds_mute = val;});
+	pMapPar.emplace("ds_lev", [&](const int val){ ds_lev = val;});
+	pMapCv.emplace("ds_lev", [&](const int val){ cv_ds_lev = val;});
+	pMapPar.emplace("ds_pan", [&](const int val){ ds_pan = val;});
+	pMapCv.emplace("ds_pan", [&](const int val){ cv_ds_pan = val;});
+	pMapPar.emplace("ds_fx1", [&](const int val){ ds_fx1 = val;});
+	pMapCv.emplace("ds_fx1", [&](const int val){ cv_ds_fx1 = val;});
+	pMapPar.emplace("ds_fx2", [&](const int val){ ds_fx2 = val;});
+	pMapCv.emplace("ds_fx2", [&](const int val){ cv_ds_fx2 = val;});
+	pMapPar.emplace("ds_accent", [&](const int val){ ds_accent = val;});
+	pMapCv.emplace("ds_accent", [&](const int val){ cv_ds_accent = val;});
+	pMapPar.emplace("ds_f0", [&](const int val){ ds_f0 = val;});
+	pMapCv.emplace("ds_f0", [&](const int val){ cv_ds_f0 = val;});
+	pMapPar.emplace("ds_fm_amt", [&](const int val){ ds_fm_amt = val;});
+	pMapCv.emplace("ds_fm_amt", [&](const int val){ cv_ds_fm_amt = val;});
+	pMapPar.emplace("ds_decay", [&](const int val){ ds_decay = val;});
+	pMapCv.emplace("ds_decay", [&](const int val){ cv_ds_decay = val;});
+	pMapPar.emplace("ds_spy", [&](const int val){ ds_spy = val;});
+	pMapCv.emplace("ds_spy", [&](const int val){ cv_ds_spy = val;});
+	pMapPar.emplace("hh1_trigger", [&](const int val){ hh1_trigger = val;});
+	pMapTrig.emplace("hh1_trigger", [&](const int val){ trig_hh1_trigger = val;});
+	pMapPar.emplace("hh1_mute", [&](const int val){ hh1_mute = val;});
+	pMapTrig.emplace("hh1_mute", [&](const int val){ trig_hh1_mute = val;});
+	pMapPar.emplace("hh1_lev", [&](const int val){ hh1_lev = val;});
+	pMapCv.emplace("hh1_lev", [&](const int val){ cv_hh1_lev = val;});
+	pMapPar.emplace("hh1_pan", [&](const int val){ hh1_pan = val;});
+	pMapCv.emplace("hh1_pan", [&](const int val){ cv_hh1_pan = val;});
+	pMapPar.emplace("hh1_fx1", [&](const int val){ hh1_fx1 = val;});
+	pMapCv.emplace("hh1_fx1", [&](const int val){ cv_hh1_fx1 = val;});
+	pMapPar.emplace("hh1_fx2", [&](const int val){ hh1_fx2 = val;});
+	pMapCv.emplace("hh1_fx2", [&](const int val){ cv_hh1_fx2 = val;});
+	pMapPar.emplace("hh1_accent", [&](const int val){ hh1_accent = val;});
+	pMapCv.emplace("hh1_accent", [&](const int val){ cv_hh1_accent = val;});
+	pMapPar.emplace("hh1_f0", [&](const int val){ hh1_f0 = val;});
+	pMapCv.emplace("hh1_f0", [&](const int val){ cv_hh1_f0 = val;});
+	pMapPar.emplace("hh1_tone", [&](const int val){ hh1_tone = val;});
+	pMapCv.emplace("hh1_tone", [&](const int val){ cv_hh1_tone = val;});
+	pMapPar.emplace("hh1_decay", [&](const int val){ hh1_decay = val;});
+	pMapCv.emplace("hh1_decay", [&](const int val){ cv_hh1_decay = val;});
+	pMapPar.emplace("hh1_noise", [&](const int val){ hh1_noise = val;});
+	pMapCv.emplace("hh1_noise", [&](const int val){ cv_hh1_noise = val;});
+	pMapPar.emplace("hh2_trigger", [&](const int val){ hh2_trigger = val;});
+	pMapTrig.emplace("hh2_trigger", [&](const int val){ trig_hh2_trigger = val;});
+	pMapPar.emplace("hh2_mute", [&](const int val){ hh2_mute = val;});
+	pMapTrig.emplace("hh2_mute", [&](const int val){ trig_hh2_mute = val;});
+	pMapPar.emplace("hh2_lev", [&](const int val){ hh2_lev = val;});
+	pMapCv.emplace("hh2_lev", [&](const int val){ cv_hh2_lev = val;});
+	pMapPar.emplace("hh2_pan", [&](const int val){ hh2_pan = val;});
+	pMapCv.emplace("hh2_pan", [&](const int val){ cv_hh2_pan = val;});
+	pMapPar.emplace("hh2_fx1", [&](const int val){ hh2_fx1 = val;});
+	pMapCv.emplace("hh2_fx1", [&](const int val){ cv_hh2_fx1 = val;});
+	pMapPar.emplace("hh2_fx2", [&](const int val){ hh2_fx2 = val;});
+	pMapCv.emplace("hh2_fx2", [&](const int val){ cv_hh2_fx2 = val;});
+	pMapPar.emplace("hh2_accent", [&](const int val){ hh2_accent = val;});
+	pMapCv.emplace("hh2_accent", [&](const int val){ cv_hh2_accent = val;});
+	pMapPar.emplace("hh2_f0", [&](const int val){ hh2_f0 = val;});
+	pMapCv.emplace("hh2_f0", [&](const int val){ cv_hh2_f0 = val;});
+	pMapPar.emplace("hh2_tone", [&](const int val){ hh2_tone = val;});
+	pMapCv.emplace("hh2_tone", [&](const int val){ cv_hh2_tone = val;});
+	pMapPar.emplace("hh2_decay", [&](const int val){ hh2_decay = val;});
+	pMapCv.emplace("hh2_decay", [&](const int val){ cv_hh2_decay = val;});
+	pMapPar.emplace("hh2_noise", [&](const int val){ hh2_noise = val;});
+	pMapCv.emplace("hh2_noise", [&](const int val){ cv_hh2_noise = val;});
+	pMapPar.emplace("rs_trigger", [&](const int val){ rs_trigger = val;});
+	pMapTrig.emplace("rs_trigger", [&](const int val){ trig_rs_trigger = val;});
+	pMapPar.emplace("rs_mute", [&](const int val){ rs_mute = val;});
+	pMapTrig.emplace("rs_mute", [&](const int val){ trig_rs_mute = val;});
+	pMapPar.emplace("rs_lev", [&](const int val){ rs_lev = val;});
+	pMapCv.emplace("rs_lev", [&](const int val){ cv_rs_lev = val;});
+	pMapPar.emplace("rs_pan", [&](const int val){ rs_pan = val;});
+	pMapCv.emplace("rs_pan", [&](const int val){ cv_rs_pan = val;});
+	pMapPar.emplace("rs_fx1", [&](const int val){ rs_fx1 = val;});
+	pMapCv.emplace("rs_fx1", [&](const int val){ cv_rs_fx1 = val;});
+	pMapPar.emplace("rs_fx2", [&](const int val){ rs_fx2 = val;});
+	pMapCv.emplace("rs_fx2", [&](const int val){ cv_rs_fx2 = val;});
+	pMapPar.emplace("rs_accent", [&](const int val){ rs_accent = val;});
+	pMapCv.emplace("rs_accent", [&](const int val){ cv_rs_accent = val;});
+	pMapPar.emplace("rs_f0", [&](const int val){ rs_f0 = val;});
+	pMapCv.emplace("rs_f0", [&](const int val){ cv_rs_f0 = val;});
+	pMapPar.emplace("rs_tone", [&](const int val){ rs_tone = val;});
+	pMapCv.emplace("rs_tone", [&](const int val){ cv_rs_tone = val;});
+	pMapPar.emplace("rs_decay", [&](const int val){ rs_decay = val;});
+	pMapCv.emplace("rs_decay", [&](const int val){ cv_rs_decay = val;});
+	pMapPar.emplace("rs_noise", [&](const int val){ rs_noise = val;});
+	pMapCv.emplace("rs_noise", [&](const int val){ cv_rs_noise = val;});
+	pMapPar.emplace("cl_trigger", [&](const int val){ cl_trigger = val;});
+	pMapTrig.emplace("cl_trigger", [&](const int val){ trig_cl_trigger = val;});
+	pMapPar.emplace("cl_mute", [&](const int val){ cl_mute = val;});
+	pMapTrig.emplace("cl_mute", [&](const int val){ trig_cl_mute = val;});
+	pMapPar.emplace("cl_lev", [&](const int val){ cl_lev = val;});
+	pMapCv.emplace("cl_lev", [&](const int val){ cv_cl_lev = val;});
+	pMapPar.emplace("cl_pan", [&](const int val){ cl_pan = val;});
+	pMapCv.emplace("cl_pan", [&](const int val){ cv_cl_pan = val;});
+	pMapPar.emplace("cl_fx1", [&](const int val){ cl_fx1 = val;});
+	pMapCv.emplace("cl_fx1", [&](const int val){ cv_cl_fx1 = val;});
+	pMapPar.emplace("cl_fx2", [&](const int val){ cl_fx2 = val;});
+	pMapCv.emplace("cl_fx2", [&](const int val){ cv_cl_fx2 = val;});
+	pMapPar.emplace("cl_f0", [&](const int val){ cl_f0 = val;});
+	pMapCv.emplace("cl_f0", [&](const int val){ cv_cl_f0 = val;});
+	pMapPar.emplace("cl_tone", [&](const int val){ cl_tone = val;});
+	pMapCv.emplace("cl_tone", [&](const int val){ cv_cl_tone = val;});
+	pMapPar.emplace("cl_decay", [&](const int val){ cl_decay = val;});
+	pMapCv.emplace("cl_decay", [&](const int val){ cv_cl_decay = val;});
+	pMapPar.emplace("cl_scale", [&](const int val){ cl_scale = val;});
+	pMapCv.emplace("cl_scale", [&](const int val){ cv_cl_scale = val;});
+	pMapPar.emplace("cl_transient", [&](const int val){ cl_transient = val;});
+	pMapCv.emplace("cl_transient", [&](const int val){ cv_cl_transient = val;});
+	pMapPar.emplace("s1_gate", [&](const int val){ s1_gate = val;});
+	pMapTrig.emplace("s1_gate", [&](const int val){ trig_s1_gate = val;});
+	pMapPar.emplace("s1_mute", [&](const int val){ s1_mute = val;});
+	pMapTrig.emplace("s1_mute", [&](const int val){ trig_s1_mute = val;});
+	pMapPar.emplace("s1_lev", [&](const int val){ s1_lev = val;});
+	pMapCv.emplace("s1_lev", [&](const int val){ cv_s1_lev = val;});
+	pMapPar.emplace("s1_pan", [&](const int val){ s1_pan = val;});
+	pMapCv.emplace("s1_pan", [&](const int val){ cv_s1_pan = val;});
+	pMapPar.emplace("s1_fx1", [&](const int val){ s1_fx1 = val;});
+	pMapCv.emplace("s1_fx1", [&](const int val){ cv_s1_fx1 = val;});
+	pMapPar.emplace("s1_fx2", [&](const int val){ s1_fx2 = val;});
+	pMapCv.emplace("s1_fx2", [&](const int val){ cv_s1_fx2 = val;});
+	pMapPar.emplace("s1_speed", [&](const int val){ s1_speed = val;});
+	pMapCv.emplace("s1_speed", [&](const int val){ cv_s1_speed = val;});
+	pMapPar.emplace("s1_pitch", [&](const int val){ s1_pitch = val;});
+	pMapCv.emplace("s1_pitch", [&](const int val){ cv_s1_pitch = val;});
+	pMapPar.emplace("s1_bank", [&](const int val){ s1_bank = val;});
+	pMapCv.emplace("s1_bank", [&](const int val){ cv_s1_bank = val;});
+	pMapPar.emplace("s1_slice", [&](const int val){ s1_slice = val;});
+	pMapCv.emplace("s1_slice", [&](const int val){ cv_s1_slice = val;});
+	pMapPar.emplace("s1_start", [&](const int val){ s1_start = val;});
+	pMapCv.emplace("s1_start", [&](const int val){ cv_s1_start = val;});
+	pMapPar.emplace("s1_end", [&](const int val){ s1_end = val;});
+	pMapCv.emplace("s1_end", [&](const int val){ cv_s1_end = val;});
+	pMapPar.emplace("s1_lp", [&](const int val){ s1_lp = val;});
+	pMapTrig.emplace("s1_lp", [&](const int val){ trig_s1_lp = val;});
+	pMapPar.emplace("s1_lp_pp", [&](const int val){ s1_lp_pp = val;});
+	pMapTrig.emplace("s1_lp_pp", [&](const int val){ trig_s1_lp_pp = val;});
+	pMapPar.emplace("s1_lp_pos", [&](const int val){ s1_lp_pos = val;});
+	pMapCv.emplace("s1_lp_pos", [&](const int val){ cv_s1_lp_pos = val;});
+	pMapPar.emplace("s1_atk", [&](const int val){ s1_atk = val;});
+	pMapCv.emplace("s1_atk", [&](const int val){ cv_s1_atk = val;});
+	pMapPar.emplace("s1_dcy", [&](const int val){ s1_dcy = val;});
+	pMapCv.emplace("s1_dcy", [&](const int val){ cv_s1_dcy = val;});
+	pMapPar.emplace("s1_eg2fm", [&](const int val){ s1_eg2fm = val;});
+	pMapCv.emplace("s1_eg2fm", [&](const int val){ cv_s1_eg2fm = val;});
+	pMapPar.emplace("s1_brr", [&](const int val){ s1_brr = val;});
+	pMapCv.emplace("s1_brr", [&](const int val){ cv_s1_brr = val;});
+	pMapPar.emplace("s1_ft", [&](const int val){ s1_ft = val;});
+	pMapCv.emplace("s1_ft", [&](const int val){ cv_s1_ft = val;});
+	pMapPar.emplace("s1_fc", [&](const int val){ s1_fc = val;});
+	pMapCv.emplace("s1_fc", [&](const int val){ cv_s1_fc = val;});
+	pMapPar.emplace("s1_fq", [&](const int val){ s1_fq = val;});
+	pMapCv.emplace("s1_fq", [&](const int val){ cv_s1_fq = val;});
+	pMapPar.emplace("s2_gate", [&](const int val){ s2_gate = val;});
+	pMapTrig.emplace("s2_gate", [&](const int val){ trig_s2_gate = val;});
+	pMapPar.emplace("s2_mute", [&](const int val){ s2_mute = val;});
+	pMapTrig.emplace("s2_mute", [&](const int val){ trig_s2_mute = val;});
+	pMapPar.emplace("s2_lev", [&](const int val){ s2_lev = val;});
+	pMapCv.emplace("s2_lev", [&](const int val){ cv_s2_lev = val;});
+	pMapPar.emplace("s2_pan", [&](const int val){ s2_pan = val;});
+	pMapCv.emplace("s2_pan", [&](const int val){ cv_s2_pan = val;});
+	pMapPar.emplace("s2_fx1", [&](const int val){ s2_fx1 = val;});
+	pMapCv.emplace("s2_fx1", [&](const int val){ cv_s2_fx1 = val;});
+	pMapPar.emplace("s2_fx2", [&](const int val){ s2_fx2 = val;});
+	pMapCv.emplace("s2_fx2", [&](const int val){ cv_s2_fx2 = val;});
+	pMapPar.emplace("s2_speed", [&](const int val){ s2_speed = val;});
+	pMapCv.emplace("s2_speed", [&](const int val){ cv_s2_speed = val;});
+	pMapPar.emplace("s2_pitch", [&](const int val){ s2_pitch = val;});
+	pMapCv.emplace("s2_pitch", [&](const int val){ cv_s2_pitch = val;});
+	pMapPar.emplace("s2_bank", [&](const int val){ s2_bank = val;});
+	pMapCv.emplace("s2_bank", [&](const int val){ cv_s2_bank = val;});
+	pMapPar.emplace("s2_slice", [&](const int val){ s2_slice = val;});
+	pMapCv.emplace("s2_slice", [&](const int val){ cv_s2_slice = val;});
+	pMapPar.emplace("s2_start", [&](const int val){ s2_start = val;});
+	pMapCv.emplace("s2_start", [&](const int val){ cv_s2_start = val;});
+	pMapPar.emplace("s2_end", [&](const int val){ s2_end = val;});
+	pMapCv.emplace("s2_end", [&](const int val){ cv_s2_end = val;});
+	pMapPar.emplace("s2_lp", [&](const int val){ s2_lp = val;});
+	pMapTrig.emplace("s2_lp", [&](const int val){ trig_s2_lp = val;});
+	pMapPar.emplace("s2_lp_pp", [&](const int val){ s2_lp_pp = val;});
+	pMapTrig.emplace("s2_lp_pp", [&](const int val){ trig_s2_lp_pp = val;});
+	pMapPar.emplace("s2_lp_pos", [&](const int val){ s2_lp_pos = val;});
+	pMapCv.emplace("s2_lp_pos", [&](const int val){ cv_s2_lp_pos = val;});
+	pMapPar.emplace("s2_atk", [&](const int val){ s2_atk = val;});
+	pMapCv.emplace("s2_atk", [&](const int val){ cv_s2_atk = val;});
+	pMapPar.emplace("s2_dcy", [&](const int val){ s2_dcy = val;});
+	pMapCv.emplace("s2_dcy", [&](const int val){ cv_s2_dcy = val;});
+	pMapPar.emplace("s2_eg2fm", [&](const int val){ s2_eg2fm = val;});
+	pMapCv.emplace("s2_eg2fm", [&](const int val){ cv_s2_eg2fm = val;});
+	pMapPar.emplace("s2_brr", [&](const int val){ s2_brr = val;});
+	pMapCv.emplace("s2_brr", [&](const int val){ cv_s2_brr = val;});
+	pMapPar.emplace("s2_ft", [&](const int val){ s2_ft = val;});
+	pMapCv.emplace("s2_ft", [&](const int val){ cv_s2_ft = val;});
+	pMapPar.emplace("s2_fc", [&](const int val){ s2_fc = val;});
+	pMapCv.emplace("s2_fc", [&](const int val){ cv_s2_fc = val;});
+	pMapPar.emplace("s2_fq", [&](const int val){ s2_fq = val;});
+	pMapCv.emplace("s2_fq", [&](const int val){ cv_s2_fq = val;});
+	pMapPar.emplace("s3_gate", [&](const int val){ s3_gate = val;});
+	pMapTrig.emplace("s3_gate", [&](const int val){ trig_s3_gate = val;});
+	pMapPar.emplace("s3_mute", [&](const int val){ s3_mute = val;});
+	pMapTrig.emplace("s3_mute", [&](const int val){ trig_s3_mute = val;});
+	pMapPar.emplace("s3_lev", [&](const int val){ s3_lev = val;});
+	pMapCv.emplace("s3_lev", [&](const int val){ cv_s3_lev = val;});
+	pMapPar.emplace("s3_pan", [&](const int val){ s3_pan = val;});
+	pMapCv.emplace("s3_pan", [&](const int val){ cv_s3_pan = val;});
+	pMapPar.emplace("s3_fx1", [&](const int val){ s3_fx1 = val;});
+	pMapCv.emplace("s3_fx1", [&](const int val){ cv_s3_fx1 = val;});
+	pMapPar.emplace("s3_fx2", [&](const int val){ s3_fx2 = val;});
+	pMapCv.emplace("s3_fx2", [&](const int val){ cv_s3_fx2 = val;});
+	pMapPar.emplace("s3_speed", [&](const int val){ s3_speed = val;});
+	pMapCv.emplace("s3_speed", [&](const int val){ cv_s3_speed = val;});
+	pMapPar.emplace("s3_pitch", [&](const int val){ s3_pitch = val;});
+	pMapCv.emplace("s3_pitch", [&](const int val){ cv_s3_pitch = val;});
+	pMapPar.emplace("s3_bank", [&](const int val){ s3_bank = val;});
+	pMapCv.emplace("s3_bank", [&](const int val){ cv_s3_bank = val;});
+	pMapPar.emplace("s3_slice", [&](const int val){ s3_slice = val;});
+	pMapCv.emplace("s3_slice", [&](const int val){ cv_s3_slice = val;});
+	pMapPar.emplace("s3_start", [&](const int val){ s3_start = val;});
+	pMapCv.emplace("s3_start", [&](const int val){ cv_s3_start = val;});
+	pMapPar.emplace("s3_end", [&](const int val){ s3_end = val;});
+	pMapCv.emplace("s3_end", [&](const int val){ cv_s3_end = val;});
+	pMapPar.emplace("s3_lp", [&](const int val){ s3_lp = val;});
+	pMapTrig.emplace("s3_lp", [&](const int val){ trig_s3_lp = val;});
+	pMapPar.emplace("s3_lp_pp", [&](const int val){ s3_lp_pp = val;});
+	pMapTrig.emplace("s3_lp_pp", [&](const int val){ trig_s3_lp_pp = val;});
+	pMapPar.emplace("s3_lp_pos", [&](const int val){ s3_lp_pos = val;});
+	pMapCv.emplace("s3_lp_pos", [&](const int val){ cv_s3_lp_pos = val;});
+	pMapPar.emplace("s3_atk", [&](const int val){ s3_atk = val;});
+	pMapCv.emplace("s3_atk", [&](const int val){ cv_s3_atk = val;});
+	pMapPar.emplace("s3_dcy", [&](const int val){ s3_dcy = val;});
+	pMapCv.emplace("s3_dcy", [&](const int val){ cv_s3_dcy = val;});
+	pMapPar.emplace("s3_eg2fm", [&](const int val){ s3_eg2fm = val;});
+	pMapCv.emplace("s3_eg2fm", [&](const int val){ cv_s3_eg2fm = val;});
+	pMapPar.emplace("s3_brr", [&](const int val){ s3_brr = val;});
+	pMapCv.emplace("s3_brr", [&](const int val){ cv_s3_brr = val;});
+	pMapPar.emplace("s3_ft", [&](const int val){ s3_ft = val;});
+	pMapCv.emplace("s3_ft", [&](const int val){ cv_s3_ft = val;});
+	pMapPar.emplace("s3_fc", [&](const int val){ s3_fc = val;});
+	pMapCv.emplace("s3_fc", [&](const int val){ cv_s3_fc = val;});
+	pMapPar.emplace("s3_fq", [&](const int val){ s3_fq = val;});
+	pMapCv.emplace("s3_fq", [&](const int val){ cv_s3_fq = val;});
+	pMapPar.emplace("s4_gate", [&](const int val){ s4_gate = val;});
+	pMapTrig.emplace("s4_gate", [&](const int val){ trig_s4_gate = val;});
+	pMapPar.emplace("s4_mute", [&](const int val){ s4_mute = val;});
+	pMapTrig.emplace("s4_mute", [&](const int val){ trig_s4_mute = val;});
+	pMapPar.emplace("s4_lev", [&](const int val){ s4_lev = val;});
+	pMapCv.emplace("s4_lev", [&](const int val){ cv_s4_lev = val;});
+	pMapPar.emplace("s4_pan", [&](const int val){ s4_pan = val;});
+	pMapCv.emplace("s4_pan", [&](const int val){ cv_s4_pan = val;});
+	pMapPar.emplace("s4_fx1", [&](const int val){ s4_fx1 = val;});
+	pMapCv.emplace("s4_fx1", [&](const int val){ cv_s4_fx1 = val;});
+	pMapPar.emplace("s4_fx2", [&](const int val){ s4_fx2 = val;});
+	pMapCv.emplace("s4_fx2", [&](const int val){ cv_s4_fx2 = val;});
+	pMapPar.emplace("s4_speed", [&](const int val){ s4_speed = val;});
+	pMapCv.emplace("s4_speed", [&](const int val){ cv_s4_speed = val;});
+	pMapPar.emplace("s4_pitch", [&](const int val){ s4_pitch = val;});
+	pMapCv.emplace("s4_pitch", [&](const int val){ cv_s4_pitch = val;});
+	pMapPar.emplace("s4_bank", [&](const int val){ s4_bank = val;});
+	pMapCv.emplace("s4_bank", [&](const int val){ cv_s4_bank = val;});
+	pMapPar.emplace("s4_slice", [&](const int val){ s4_slice = val;});
+	pMapCv.emplace("s4_slice", [&](const int val){ cv_s4_slice = val;});
+	pMapPar.emplace("s4_start", [&](const int val){ s4_start = val;});
+	pMapCv.emplace("s4_start", [&](const int val){ cv_s4_start = val;});
+	pMapPar.emplace("s4_end", [&](const int val){ s4_end = val;});
+	pMapCv.emplace("s4_end", [&](const int val){ cv_s4_end = val;});
+	pMapPar.emplace("s4_lp", [&](const int val){ s4_lp = val;});
+	pMapTrig.emplace("s4_lp", [&](const int val){ trig_s4_lp = val;});
+	pMapPar.emplace("s4_lp_pp", [&](const int val){ s4_lp_pp = val;});
+	pMapTrig.emplace("s4_lp_pp", [&](const int val){ trig_s4_lp_pp = val;});
+	pMapPar.emplace("s4_lp_pos", [&](const int val){ s4_lp_pos = val;});
+	pMapCv.emplace("s4_lp_pos", [&](const int val){ cv_s4_lp_pos = val;});
+	pMapPar.emplace("s4_atk", [&](const int val){ s4_atk = val;});
+	pMapCv.emplace("s4_atk", [&](const int val){ cv_s4_atk = val;});
+	pMapPar.emplace("s4_dcy", [&](const int val){ s4_dcy = val;});
+	pMapCv.emplace("s4_dcy", [&](const int val){ cv_s4_dcy = val;});
+	pMapPar.emplace("s4_eg2fm", [&](const int val){ s4_eg2fm = val;});
+	pMapCv.emplace("s4_eg2fm", [&](const int val){ cv_s4_eg2fm = val;});
+	pMapPar.emplace("s4_brr", [&](const int val){ s4_brr = val;});
+	pMapCv.emplace("s4_brr", [&](const int val){ cv_s4_brr = val;});
+	pMapPar.emplace("s4_ft", [&](const int val){ s4_ft = val;});
+	pMapCv.emplace("s4_ft", [&](const int val){ cv_s4_ft = val;});
+	pMapPar.emplace("s4_fc", [&](const int val){ s4_fc = val;});
+	pMapCv.emplace("s4_fc", [&](const int val){ cv_s4_fc = val;});
+	pMapPar.emplace("s4_fq", [&](const int val){ s4_fq = val;});
+	pMapCv.emplace("s4_fq", [&](const int val){ cv_s4_fq = val;});
+	pMapPar.emplace("c_thres", [&](const int val){ c_thres = val;});
+	pMapCv.emplace("c_thres", [&](const int val){ cv_c_thres = val;});
+	pMapPar.emplace("c_ratio", [&](const int val){ c_ratio = val;});
+	pMapCv.emplace("c_ratio", [&](const int val){ cv_c_ratio = val;});
+	pMapPar.emplace("c_atk", [&](const int val){ c_atk = val;});
+	pMapCv.emplace("c_atk", [&](const int val){ cv_c_atk = val;});
+	pMapPar.emplace("c_rel", [&](const int val){ c_rel = val;});
+	pMapCv.emplace("c_rel", [&](const int val){ cv_c_rel = val;});
+	pMapPar.emplace("c_lpf", [&](const int val){ c_lpf = val;});
+	pMapTrig.emplace("c_lpf", [&](const int val){ trig_c_lpf = val;});
+	pMapPar.emplace("c_gain", [&](const int val){ c_gain = val;});
+	pMapCv.emplace("c_gain", [&](const int val){ cv_c_gain = val;});
+	pMapPar.emplace("c_mix", [&](const int val){ c_mix = val;});
+	pMapCv.emplace("c_mix", [&](const int val){ cv_c_mix = val;});
+	pMapPar.emplace("fx1_time_ms", [&](const int val){ fx1_time_ms = val;});
+	pMapCv.emplace("fx1_time_ms", [&](const int val){ cv_fx1_time_ms = val;});
+	pMapPar.emplace("fx1_sync", [&](const int val){ fx1_sync = val;});
+	pMapTrig.emplace("fx1_sync", [&](const int val){ trig_fx1_sync = val;});
+	pMapPar.emplace("fx1_freeze", [&](const int val){ fx1_freeze = val;});
+	pMapTrig.emplace("fx1_freeze", [&](const int val){ trig_fx1_freeze = val;});
+	pMapPar.emplace("fx1_tape_digital", [&](const int val){ fx1_tape_digital = val;});
+	pMapTrig.emplace("fx1_tape_digital", [&](const int val){ trig_fx1_tape_digital = val;});
+	pMapPar.emplace("fx1_feedback", [&](const int val){ fx1_feedback = val;});
+	pMapCv.emplace("fx1_feedback", [&](const int val){ cv_fx1_feedback = val;});
+	pMapPar.emplace("fx1_base", [&](const int val){ fx1_base = val;});
+	pMapCv.emplace("fx1_base", [&](const int val){ cv_fx1_base = val;});
+	pMapPar.emplace("fx1_width", [&](const int val){ fx1_width = val;});
+	pMapCv.emplace("fx1_width", [&](const int val){ cv_fx1_width = val;});
+	pMapPar.emplace("fx1_mix", [&](const int val){ fx1_mix = val;});
+	pMapCv.emplace("fx1_mix", [&](const int val){ cv_fx1_mix = val;});
+	pMapPar.emplace("fx2_time", [&](const int val){ fx2_time = val;});
+	pMapCv.emplace("fx2_time", [&](const int val){ cv_fx2_time = val;});
+	pMapPar.emplace("fx2_amount", [&](const int val){ fx2_amount = val;});
+	pMapCv.emplace("fx2_amount", [&](const int val){ cv_fx2_amount = val;});
+	pMapPar.emplace("fx2_in_gain", [&](const int val){ fx2_in_gain = val;});
+	pMapCv.emplace("fx2_in_gain", [&](const int val){ cv_fx2_in_gain = val;});
+	pMapPar.emplace("fx2_diffusion", [&](const int val){ fx2_diffusion = val;});
+	pMapCv.emplace("fx2_diffusion", [&](const int val){ cv_fx2_diffusion = val;});
+	pMapPar.emplace("fx2_lp", [&](const int val){ fx2_lp = val;});
+	pMapCv.emplace("fx2_lp", [&](const int val){ cv_fx2_lp = val;});
+	pMapPar.emplace("fx2_lfo1_f", [&](const int val){ fx2_lfo1_f = val;});
+	pMapCv.emplace("fx2_lfo1_f", [&](const int val){ cv_fx2_lfo1_f = val;});
+	pMapPar.emplace("fx2_lfo2_f", [&](const int val){ fx2_lfo2_f = val;});
+	pMapCv.emplace("fx2_lfo2_f", [&](const int val){ cv_fx2_lfo2_f = val;});
+	pMapPar.emplace("sum_mute", [&](const int val){ sum_mute = val;});
+	pMapTrig.emplace("sum_mute", [&](const int val){ trig_sum_mute = val;});
+	pMapPar.emplace("sum_lev", [&](const int val){ sum_lev = val;});
+	pMapCv.emplace("sum_lev", [&](const int val){ cv_sum_lev = val;});
+	isStereo = true;
+	id = "DrumRack";
+	// sectionCpp0
 }

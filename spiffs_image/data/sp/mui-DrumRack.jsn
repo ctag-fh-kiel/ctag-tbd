@@ -34,6 +34,20 @@
           "max": 4095
         },
         {
+          "id": "ab_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ab_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
           "id": "ab_accent",
           "name": "Accent",
           "type": "int",
@@ -104,6 +118,20 @@
           "name": "Pan",
           "type": "int",
           "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "db_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "db_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
           "max": 4095
         },
         {
@@ -187,6 +215,20 @@
           "max": 4095
         },
         {
+          "id": "as_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "as_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
           "id": "as_accent",
           "name": "Accent",
           "type": "int",
@@ -250,6 +292,20 @@
           "name": "Pan",
           "type": "int",
           "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ds_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ds_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
           "max": 4095
         },
         {
@@ -319,6 +375,20 @@
           "max": 4095
         },
         {
+          "id": "hh1_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh1_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
           "id": "hh1_accent",
           "name": "Accent",
           "type": "int",
@@ -385,6 +455,20 @@
           "max": 4095
         },
         {
+          "id": "hh2_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "hh2_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
           "id": "hh2_accent",
           "name": "Accent",
           "type": "int",
@@ -424,134 +508,162 @@
     {
       "id": "rs_group",
       "name": "RimShot",
-        "type": "group",
-        "params": [
-          {
-            "id": "rs_trigger",
-            "name": "Trigger",
-            "type": "bool"
-          },
-          {
-            "id": "rs_mute",
-            "name": "Mute",
-            "type": "bool"
-          },
-          {
-            "id": "rs_lev",
-            "name": "Level",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "rs_pan",
-            "name": "Pan",
-            "type": "int",
-            "min": -4095,
-            "max": 4095
-          },
-          {
-            "id": "rs_accent",
-            "name": "Accent",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "rs_f0",
-            "name": "Base Frequency",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "rs_tone",
-            "name": "Tone",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "rs_decay",
-            "name": "Decay",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "rs_noise",
-            "name": "Noise Level",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          }
-        ]
+      "type": "group",
+      "params": [
+        {
+          "id": "rs_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "rs_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "rs_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "rs_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "rs_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "rs_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "rs_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "rs_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "rs_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "rs_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "rs_noise",
+          "name": "Noise Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
     },
     {
       "id": "cl_group",
       "name": "Clap",
-        "type": "group",
-        "params": [
-          {
-            "id": "cl_trigger",
-            "name": "Trigger",
-            "type": "bool"
-          },
-          {
-            "id": "cl_mute",
-            "name": "Mute",
-            "type": "bool"
-          },
-          {
-            "id": "cl_lev",
-            "name": "Level",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "cl_pan",
-            "name": "Pan",
-            "type": "int",
-            "min": -4095,
-            "max": 4095
-          },
-          {
-            "id": "cl_f0",
-            "name": "Base Frequency",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "cl_tone",
-            "name": "Tone",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "cl_decay",
-            "name": "Decay",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "cl_scale",
-            "name": "Scale",
-            "type": "int",
-            "min": 0,
-            "max": 4095
-          },
-          {
-            "id": "cl_transient",
-            "name": "Transient",
-            "type": "int",
-            "min": 0,
-            "max": 15
-          }
-        ]
+      "type": "group",
+      "params": [
+        {
+          "id": "cl_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "cl_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "cl_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "cl_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "cl_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "cl_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "cl_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "cl_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "cl_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "cl_scale",
+          "name": "Scale",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "cl_transient",
+          "name": "Transient",
+          "type": "int",
+          "min": 0,
+          "max": 15
+        }
+      ]
     },
     {
       "id": "s1_group",
@@ -580,6 +692,20 @@
           "name": "Pan",
           "type": "int",
           "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s1_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s1_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
           "max": 4095
         },
         {
@@ -679,16 +805,16 @@
         {
           "id": "s1_fc",
           "name": "Filter Cutoff",
-            "type": "int",
-            "min": 0,
-            "max": 4095
+          "type": "int",
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "s1_fq",
           "name": "Filter Q",
-            "type": "int",
-            "min": 0,
-            "max": 4095
+          "type": "int",
+          "min": 0,
+          "max": 4095
         }
       ]
     },
@@ -719,6 +845,20 @@
           "name": "Pan",
           "type": "int",
           "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s2_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s2_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
           "max": 4095
         },
         {
@@ -818,16 +958,16 @@
         {
           "id": "s2_fc",
           "name": "Filter Cutoff",
-            "type": "int",
-            "min": 0,
-            "max": 4095
+          "type": "int",
+          "min": 0,
+          "max": 4095
         },
         {
           "id": "s2_fq",
           "name": "Filter Q",
-            "type": "int",
-            "min": 0,
-            "max": 4095
+          "type": "int",
+          "min": 0,
+          "max": 4095
         }
       ]
     },
@@ -858,6 +998,20 @@
           "name": "Pan",
           "type": "int",
           "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s3_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s3_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
           "max": 4095
         },
         {
@@ -997,6 +1151,20 @@
           "name": "Pan",
           "type": "int",
           "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s4_fx1",
+          "name": "FX1 send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "s4_fx2",
+          "name": "FX2 send",
+          "type": "int",
+          "min": 0,
           "max": 4095
         },
         {
@@ -1159,6 +1327,120 @@
           "name": "Mix",
           "type": "int",
           "min": -4095,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "fx1_group",
+      "name": "Delay",
+      "type": "group",
+      "params": [
+        {
+          "id": "fx1_time_ms",
+          "name": "Delay/ms",
+          "type": "int",
+          "min": 1,
+          "max": 2000,
+          "step": 1
+        },
+        {
+          "id": "fx1_sync",
+          "name": "Sync",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_freeze",
+          "name": "Freeze",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_tape_digital",
+          "name": "Tape/Digital",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_feedback",
+          "name": "Feedback",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_base",
+          "name": "Base",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_width",
+          "name": "Width",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_mix",
+          "name": "Mix",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "fx2_group",
+      "name": "Reverb",
+      "type": "group",
+      "params": [
+        {
+          "id": "fx2_time",
+          "type": "int",
+          "name": "Time",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_amount",
+          "type": "int",
+          "name": "Amount",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_in_gain",
+          "type": "int",
+          "name": "Input Gain",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_diffusion",
+          "type": "int",
+          "name": "Diffusion",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_lp",
+          "type": "int",
+          "name": "Low Pass",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_lfo1_f",
+          "type": "int",
+          "name": "LFO 1 Frequency",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_lfo2_f",
+          "type": "int",
+          "name": "LFO 2 Frequency",
+          "min": 0,
           "max": 4095
         }
       ]
