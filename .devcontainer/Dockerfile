@@ -34,6 +34,8 @@ RUN apt-get update -y && apt-get install -y \
     libasound2-dev \
     libglib2.0-dev \
     libgcrypt20-dev \
+    jq \
+    yq \
     fish \
     micro
 

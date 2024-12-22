@@ -20,6 +20,10 @@ ENV TBD_IDF_PATH=/opt/esp/idf
 ENV TBD_IDF_ACTIVATE=$TBD_IDF_PATH/export.sh
 ARG TBD_INIT=$TBD_PATH/tbd-init.sh
 
+RUN apt-get update -y && apt-get install -y \
+    jq \
+    yq
+
 RUN . "$TBD_IDF_ACTIVATE" && pip install \
     sphinx \
     pydata-sphinx-theme \
