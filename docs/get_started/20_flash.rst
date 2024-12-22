@@ -22,6 +22,12 @@ device when asked for permission by browser.
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
+        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-dadax.json">
+            <button slot="activate">flash TBD dadax</button>
+            <span slot="unsupported">error: unsupported browser</span>
+            <span slot="not-allowed">error: permission denied</span>
+        </esp-web-install-button>
+        </br>
         <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-bba2.json">
             <button slot="activate">flash TBD BBA 2</button>
             <span slot="unsupported">error: unsupported browser</span>
@@ -70,6 +76,8 @@ Download Latest Firmware Builds
 ===============================
 
 `dada <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-dada-flash.bin>`_
+
+`dadax <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-dadax-flash.bin>`_
 
 `BBA 2 <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-bba2-flash.bin>`_
 
