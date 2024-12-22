@@ -36,6 +36,8 @@ static i2s_chan_handle_t rx_handle = NULL;
 
 #ifdef CONFIG_TBD_BBA_CODEC_ES8388
 es8388 Codec::codec;
+#elifdef CONFIG_TBD_BBA_CODEC_ES8311
+es8311 Codec::codec;
 #else
 aic3254 Codec::codec;
 #endif
@@ -54,7 +56,37 @@ void Codec::InitCodec() {
     // Note that GPIO33 ~ GPIO37 and GPIO47 ~ GPIO48 can be powered either by VDD_SPI or VDD3P3_CPU.
     // compare pg. 469 https://www.espressif.com/sites/default/files/documentation/esp32-s3_technical_reference_manual_en.pdf
     // https://github.com/micropython/micropython/issues/7928
+#ifdef CONFIG_TBD_BBA_CODEC_ES8311
+#define I2S_NUM         (0)
+#define I2S_MCK_IO      (GPIO_NUM_13)
+#define I2S_BCK_IO      (GPIO_NUM_12)
+#define I2S_WS_IO       (GPIO_NUM_10)
+#define I2S_DO_IO       (GPIO_NUM_9)
+#define I2S_DI_IO       (GPIO_NUM_11)
 
+    i2s_std_config_t std_cfg = {
+            .clk_cfg = {
+                    .sample_rate_hz = 44100,
+                    .clk_src = I2S_CLK_SRC_DEFAULT,
+                    .ext_clk_freq_hz = 0,
+                    .mclk_multiple = I2S_MCLK_MULTIPLE_256,
+            },
+            .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
+            .gpio_cfg = {
+                    .mclk = I2S_MCK_IO,
+                    .bclk = I2S_BCK_IO,
+                    .ws = I2S_WS_IO,
+                    .dout = I2S_DO_IO,
+                    .din = I2S_DI_IO,
+                    .invert_flags = {
+                            .mclk_inv = false,
+                            .bclk_inv = false,
+                            .ws_inv = false,
+                    },
+            },
+    };
+    std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
+#else
     i2s_std_config_t std_cfg = {
             .clk_cfg = {
                     .sample_rate_hz = 44100,
@@ -86,19 +118,21 @@ void Codec::InitCodec() {
 #else
     std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256;
 #endif
-
+#endif
     /* Initialize the channels */
     ESP_ERROR_CHECK(i2s_channel_init_std_mode(tx_handle, &std_cfg));
     ESP_ERROR_CHECK(i2s_channel_init_std_mode(rx_handle, &std_cfg));
 
     ESP_ERROR_CHECK(i2s_channel_enable(tx_handle));
     ESP_ERROR_CHECK(i2s_channel_enable(rx_handle));
+    ESP_LOGE("BBA Codec", "Identifying Codec!");
 
     if(codec.identify()){
         ESP_LOGI("BBA Codec", "Found codec...");
     }else{
         ESP_LOGE("BBA Codec", "Error: Could not find codec!");
     }
+
     codec.init();
 }
 
@@ -116,19 +150,7 @@ void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
 }
 
 void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-    int16_t tmp[sz * 2];
-    int16_t *ptrTmp = tmp;
-    size_t nb;
-    const float div = 3.0518509476E-5f;
-    // 16 bit word config stereo
-    i2s_channel_read(rx_handle, tmp, sz*2*2, &nb, portMAX_DELAY);
-    while (sz > 0) {
-        *buf++ = div * (float) *ptrTmp++;
-        *buf++ = div * (float) *ptrTmp++;
-        sz--;
-    }
-#else
+#ifdef CONFIG_TBD_BBA_CODEC_AIC3254
     int32_t tmp[sz * 2];
     int32_t *ptrTmp = tmp;
     size_t nb;
@@ -140,28 +162,23 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
         *buf++ = div * (float) *ptrTmp++;
         sz--;
     }
+#else
+    int16_t tmp[sz * 2];
+    int16_t *ptrTmp = tmp;
+    size_t nb;
+    const float div = 3.0518509476E-5f;
+    // 16 bit word config stereo
+    i2s_channel_read(rx_handle, tmp, sz*2*2, &nb, portMAX_DELAY);
+    while (sz > 0) {
+        *buf++ = div * (float) *ptrTmp++;
+        *buf++ = div * (float) *ptrTmp++;
+        sz--;
+    }
 #endif
 }
 
 void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-    int16_t tmp[sz * 2];
-    int16_t tmp2;
-    size_t nb;
-    const float mult = 32767.f;
-    // 16 bit word config
-    for (int i = 0; i < sz; i++) {
-        tmp2 = (int32_t) (mult * buf[i * 2]);
-        tmp2 = MAX(tmp2, -32767);
-        tmp2 = MIN(tmp2, 32767);
-        tmp[i * 2] = tmp2;
-        tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
-        tmp2 = MAX(tmp2, -32767);
-        tmp2 = MIN(tmp2, 32767);
-        tmp[i * 2 + 1] = tmp2;
-    }
-    i2s_channel_write(tx_handle, tmp, sz*2*2, &nb, portMAX_DELAY);
-#else
+#ifdef CONFIG_TBD_BBA_CODEC_AIC3254
     int32_t tmp[sz * 2];
     int32_t tmp2;
     size_t nb;
@@ -178,5 +195,22 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp[i * 2 + 1] = tmp2;
     }
     i2s_channel_write(tx_handle, tmp, sz*2*4, &nb, portMAX_DELAY);
+#else
+    int16_t tmp[sz * 2];
+    int16_t tmp2;
+    size_t nb;
+    const float mult = 32767.f;
+    // 16 bit word config
+    for (int i = 0; i < sz; i++) {
+        tmp2 = (int32_t) (mult * buf[i * 2]);
+        tmp2 = MAX(tmp2, -32767);
+        tmp2 = MIN(tmp2, 32767);
+        tmp[i * 2] = tmp2;
+        tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
+        tmp2 = MAX(tmp2, -32767);
+        tmp2 = MIN(tmp2, 32767);
+        tmp[i * 2 + 1] = tmp2;
+    }
+    i2s_channel_write(tx_handle, tmp, sz*2*2, &nb, portMAX_DELAY);
 #endif
 }

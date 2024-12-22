@@ -27,6 +27,8 @@ respective component folders / files if different from this license.
 
 #ifdef CONFIG_TBD_BBA_CODEC_ES8388
 #include "es8388.hpp"
+#elifdef CONFIG_TBD_BBA_CODEC_ES8311
+#include "es8311.hpp"
 #else
 #include "aic3254.hpp"
 #endif
@@ -54,6 +56,8 @@ namespace CTAG {
         private:
 #ifdef CONFIG_TBD_BBA_CODEC_ES8388
             static es8388 codec;
+#elifdef CONFIG_TBD_BBA_CODEC_ES8311
+            static es8311 codec;
 #else
             static aic3254 codec;
 #endif
