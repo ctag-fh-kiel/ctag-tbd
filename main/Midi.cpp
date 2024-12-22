@@ -22,7 +22,7 @@ respective component folders / files if different from this license.
 
 #include "Midi.hpp"
 #include "Favorites.hpp"
-#include "rp2040_spi_stream.hpp"
+//#include "rp2040_spi_stream.hpp"
 
 using namespace CTAG::CTRL;
 
@@ -815,7 +815,7 @@ void Midi::Init() {
            N_TRIGS);             // Reset "virtual Gate/Trigger"-data at startup (1==off aka TRIG_OFF)
     distribute.setCVandTriggerPointers(midi_data, midi_note_trig);    // Pass on pointer to CV and Trigger shared data
     CTAG::DRIVERS::tusbmidi::Init();
-    DRIVERS::rp2040_spi_stream::Init();
+    //DRIVERS::rp2040_spi_stream::Init();
 }
 
 // ===  MIDI-parsing method (Please note: Running status is not processed correctly with this implementation!) ===
@@ -847,7 +847,7 @@ uint8_t *Midi::Update() {
         len += len2;
 
         // get all messages from rp2040
-        len += DRIVERS::rp2040_spi_stream::Read(&msgBuffer[missing_bytes_offset + len], MIDI_BUF_SZ - 32 - len);
+        //len += DRIVERS::rp2040_spi_stream::Read(&msgBuffer[missing_bytes_offset + len], MIDI_BUF_SZ - 32 - len);
 
         if (len == 0)                   // Nothing to process now, better luck next time?
             return buf0;                // We return the identical CV / Trigger data as last round
