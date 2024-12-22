@@ -167,63 +167,119 @@ macro(tbd_toolchain_add_options)
     if("${TBD_TOOLCHAIN}" STREQUAL "esp32") 
         idf_build_set_property(COMPILE_OPTIONS -Wno-unused-local-typedefs -ffast-math APPEND) # -ffast-math -fno-finite-math-only https://stackoverflow.com/questions/22931147/stdisinf-does-not-work-with-ffast-math-how-to-check-for-infinity    
 
-        # FIXME: copying idf compiler options causes errors
-        #
-        # add_compile_options(${TBD_COMPILE_OPTIONS})
-        # idf_build_get_property(TBD_COMPILE_OPTIONS COMPILE_OPTIONS)
-        # foreach(opt ${TBD_COMPILE_OPTIONS})
-        #     message("IDF compiler option ${opt}")
-        # endforeach()
+        if ("${IDF_TARGET}" STREQUAL "esp32p4")
+            add_compile_options(
+                -fno-exceptions 
+                -Og
 
-        # HOTFIX: manual compiler options
-        add_compile_options(
-            -fno-exceptions 
-            -O2 
+                # disable C++ dynamic features
+                -fno-rtti 
 
-            # disable C++ dynamic features
-            -fno-rtti 
+                # enable
+                -ffast-math 
 
-            # enable
-            -mlongcalls  
-            -ffast-math 
-
-            # disable
-            -mdisable-hardware-atomics 
-            -fstrict-volatile-bitfields 
-            -fno-jump-tables 
-            -fno-tree-switch-conversion 
+                # disable
+                -fstrict-volatile-bitfields 
+                -fno-jump-tables 
+                -fno-tree-switch-conversion 
 
 
-            # binary layout
-            -ffunction-sections 
-            -fdata-sections 
+                # binary layout
+                -ffunction-sections 
+                -fdata-sections 
 
-            # debugger
-            -gdwarf-4 
-            -ggdb 
+                # debugger
+                -gdwarf-4 
+                -ggdb 
 
-            # disable certain stdlib features
-            -fno-builtin-memcpy 
-            -fno-builtin-memset 
-            -fno-builtin-bzero 
-            -fno-builtin-stpcpy 
-            -fno-builtin-strncpy 
+                # disable certain stdlib features
+                # -fno-builtin-memcpy 
+                # -fno-builtin-memset 
+                # -fno-builtin-bzero 
+                # -fno-builtin-stpcpy 
+                # -fno-builtin-strncpy 
 
-            # errors and warnings
-            -fdiagnostics-color=always 
-            -Wall 
-            -Werror=all 
-            -Wextra
+                # -march=rv32imafc_zicsr_zifencei_xesppie 
+                # -mabi=ilp32f  
+                # -nostartfiles
+                # -fno-shrink-wrap
+                #  -fmacro-prefix-map=/workspaces/ctag_tbd=. 
+                # -fmacro-prefix-map=/opt/esp/idf=/IDF 
 
-            -Wno-error=unused-function 
-            -Wno-error=unused-variable 
-            -Wno-error=unused-but-set-variable 
-            -Wno-error=deprecated-declarations 
-            -Wno-unused-parameter 
-            -Wno-sign-compare 
-            -Wno-enum-conversion 
-            -Wno-unused-local-typedefs
-        )
+                # -fuse-cxa-atexit 
+                # -DCFG_TUSB_MCU=OPT_MCU_ESP32P4
+
+                # errors and warnings
+                -fdiagnostics-color=always 
+                -Wall 
+                -Werror=all 
+                -Wextra
+
+                -Wno-error=unused-function 
+                -Wno-error=unused-variable 
+                -Wno-error=unused-but-set-variable 
+                -Wno-error=deprecated-declarations 
+                -Wno-unused-parameter 
+                -Wno-sign-compare 
+                -Wno-enum-conversion 
+                -Wno-unused-local-typedefs
+            )
+        else()
+            # HOTFIX: manual compiler options
+            add_compile_options(
+                -fno-exceptions 
+                -O2 
+
+                # disable C++ dynamic features
+                -fno-rtti 
+
+                # enable
+                -mlongcalls  
+                -ffast-math 
+
+                # disable
+                -mdisable-hardware-atomics 
+                -fstrict-volatile-bitfields 
+                -fno-jump-tables 
+                -fno-tree-switch-conversion 
+
+
+                # binary layout
+                -ffunction-sections 
+                -fdata-sections 
+
+                # debugger
+                -gdwarf-4 
+                -ggdb 
+
+                # disable certain stdlib features
+                -fno-builtin-memcpy 
+                -fno-builtin-memset 
+                -fno-builtin-bzero 
+                -fno-builtin-stpcpy 
+                -fno-builtin-strncpy 
+
+                # errors and warnings
+                -fdiagnostics-color=always 
+                -Wall 
+                -Werror=all 
+                -Wextra
+
+                -Wno-error=unused-function 
+                -Wno-error=unused-variable 
+                -Wno-error=unused-but-set-variable 
+                -Wno-error=deprecated-declarations 
+                -Wno-unused-parameter 
+                -Wno-sign-compare 
+                -Wno-enum-conversion 
+                -Wno-unused-local-typedefs
+
+                # HOTFIX: this riscv compiler misdetects varargs as uninitialized
+                -Wno-error=uninitialized
+            )
+        endif()
+
+
     elseif ("${TBD_TOOLCHAIN}" STREQUAL "desktop")
         # add_compile_options(-stdlib=libc++ -lc++abi)
     else()

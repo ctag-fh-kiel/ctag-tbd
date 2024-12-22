@@ -8,12 +8,12 @@
         // flashing: uncomment for device flashing
         // warning: this is potentially dangerous
         //
-        // "type=bind,source=/dev,target=/dev",
+        "type=bind,source=/dev,target=/dev",
 
         // sound: uncomment for desktop build sound output
         // https://comp0016-team-24.github.io/dev/problem-solving/2020/10/30/passing-audio-into-docker.html
         //
-        // "source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native,type=bind"
+        "source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native,type=bind"
     ],
     "forwardPorts": [2024],
     "build": {
@@ -69,6 +69,6 @@
         // flashing: uncomment for device flashing
         // warning: this is potentially dangerous
         //
-        // "--privileged",
+        "--privileged"
     ]
 }

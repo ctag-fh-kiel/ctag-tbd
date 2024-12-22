@@ -37,7 +37,9 @@ inline void* malloc(unsigned int size, unsigned int caps) {
 
 inline void* malloc_prefer(unsigned int size, unsigned int num, ...) {;
     va_list pref_list;
-    return tbd_heaps_malloc_prefer(size, num, pref_list);
+    va_start(pref_list, size);
+        return tbd_heaps_malloc_prefer(size, num, pref_list);
+    va_end(pref_list);
 }
 
 inline void free(void* ptr) {

@@ -9,6 +9,11 @@ jobs:
     with:
       tbd-platform: dada
 
+  build-dadax-firmware:
+    uses: ./.github/workflows/build-firmware.yml
+    with:
+      tbd-platform: dadax
+
   build-bba2-firmware:
     uses: ./.github/workflows/build-firmware.yml
     with:

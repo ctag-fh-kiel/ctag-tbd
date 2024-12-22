@@ -9,7 +9,7 @@
     },
     "config": {
         "system": "esp32",
-        "arch": "esp32s3",
+        "arch": "esp32p4",
         "cv_input": {
             "type": "midi",
             "n_cvs": 90,
@@ -44,9 +44,9 @@
             "trigger0": 39,
             "trigger1": 36
         },
-        "apis": ["wifi"],
+        "apis": ["serial"],
         "file_system": "wrapper",
         "display": null,
-        "network": true
+        "network": false
     }
 }

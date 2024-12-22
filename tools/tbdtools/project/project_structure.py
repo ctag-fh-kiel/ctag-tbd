@@ -18,6 +18,7 @@ class Platform(Enum):
     bba1      = 'bba1'
     bba2      = 'bba2'
     dada      = 'dada'
+    dadax     = 'dadax'
     desktop   = 'desktop'
     simulator = 'simulator'
     emu       = 'emu'
@@ -34,6 +35,7 @@ def get_platform_description(platform: Platform) -> str:
         'bba1'     : 'TBD BBA MIDI, es8388',
         'bba2'     : 'TBD BBA MIDI, aic3254',
         'dada'     : 'TBD DADA MIDI and MIDI host',
+        'dadax'     : 'TBD DADA MIDI and MIDI host with control panel',
         'desktop'  : 'Desktop App',
         'simulator': 'TBD firmware simulator',
         'emu'      : 'TBD ESP32 emulator'
