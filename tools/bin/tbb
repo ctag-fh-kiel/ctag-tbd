@@ -267,6 +267,48 @@ tbd_is_valid_platform() {
   return 1
 }
 
+# @brief determine platform system
+#
+# The system can be 'esp32' or 'desktop'.
+#
+# @arg $1 [path]   project directory
+# @arg $2 [str]    platform name
+#
+tbd_platform_get_system() {
+  local project_dir=$1
+  local platform_name=$2
+  local config_file="$project_dir/config/platforms/platform.$platform_name.json"
+
+  local system=$(jq -r .config.system "$config_file") || echo ""
+  if [ -z "$system" ]; then
+    return 1
+  fi
+
+  echo "$system"
+  return 0
+}
+
+# @brief determine platform architecture
+#
+# For desktop this will always be 'desktop' for esp32 platforms it will return the specific chip.
+#
+# @arg $1 [path]   project directory
+# @arg $2 [str]    platform name
+#
+tbd_platform_get_arch() {
+  local project_dir=$1
+  local platform_name=$2
+  local config_file="$project_dir/config/platforms/platform.$platform_name.json"
+
+  local arch=$(jq -r .config.arch "$config_file") || echo ""
+  if [ -z "$arch" ]; then
+    return 1
+  fi
+
+  echo "$arch"
+  return 0
+}
+
 tbd_is_item_in_list() {
   local item=$1
   shift
@@ -387,6 +429,13 @@ if ! tbd_is_valid_platform "$project_dir" "$platform"; then
   tbd_abort "no such platform: $platform"
 fi
 
+platform_arch=$(tbd_platform_get_arch "$project_dir" "$platform") || echo ""
+if [ -z "$platform_arch" ]; then
+  tbd_logw "could not determine platform architecture: can not override IDF_TARGET, which can cause problems"
+else
+  export IDF_TARGET=$platform_arch
+fi
+
 if ! tbd_ensure_idf; then
   tbd_abort "failed to find ESP IDF"
 fi
@@ -397,6 +446,7 @@ fi
 pushd "$project_dir"
 
 if tbd_is_item_in_list "selftest" $commands; then
+  tbd_platform_get_arch "$project_dir" "$platform"
   exit 0
 fi
 

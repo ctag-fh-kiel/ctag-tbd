@@ -110,6 +110,13 @@ if ! tbd_is_valid_platform "$project_dir" "$platform"; then
   tbd_abort "no such platform: $platform"
 fi
 
+platform_arch=$(tbd_platform_get_arch "$project_dir" "$platform") || echo ""
+if [ -z "$platform_arch" ]; then
+  tbd_logw "could not determine platform architecture: can not override IDF_TARGET, which can cause problems"
+else
+  export IDF_TARGET=$platform_arch
+fi
+
 if ! tbd_ensure_idf; then
   tbd_abort "failed to find ESP IDF"
 fi
@@ -120,6 +127,7 @@ fi
 pushd "$project_dir"
 
 if tbd_is_item_in_list "selftest" $commands; then
+  tbd_platform_get_arch "$project_dir" "$platform"
   exit 0
 fi
 
