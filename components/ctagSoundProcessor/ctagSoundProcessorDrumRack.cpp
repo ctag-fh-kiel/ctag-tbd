@@ -608,6 +608,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fS3Lev * fS3Pan,
         fS4Lev * fS4Pan
     };
+    float buf_l[32], buf_r[32];
     for (int i = 0; i < 32; i++){
         float fVal_l = 0.f;
         float fVal_r = 0.f;
@@ -655,8 +656,17 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         sumCompressor.process(fVal_l, fVal_r, side);
         fVal_l = fVal_l * fCompMUPGain * fCompMix + dry_l * (1.f - fCompMix);
         fVal_r = fVal_r * fCompMUPGain * fCompMix + dry_r * (1.f - fCompMix);
+        /*
         data.buf[i * 2] = fVal_l * fMixLevel;
         data.buf[i * 2 + 1] = fVal_r * fMixLevel;
+         */
+        buf_l[i] = fVal_l * fMixLevel;
+        buf_r[i] = fVal_r * fMixLevel;
+    }
+    reverb.Process(buf_l, buf_r, 32);
+    for (int i = 0; i < 32; i++) {
+        data.buf[i * 2] = buf_l[i];
+        data.buf[i * 2 + 1] = buf_r[i];
     }
 }
 
@@ -665,6 +675,21 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     knowYourself();
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
+
+    // reverb
+    assert(blockSize >= 32768 * 4);
+    reverb.Init((float*)blockPtr); // requires 32768*4 bytes = 128KB
+    reverb.Clear();
+    blockPtr = static_cast<void*>(static_cast<uint8_t*>(blockPtr) + 32768 * 4);
+    blockSize -= 32768 * 4;
+    reverb.set_diffusion(0.5f);
+    reverb.set_input_gain(0.6f);
+    reverb.set_amount(0.6f);
+    reverb.set_lp(0.5f);
+    reverb.set_time(0.4f);
+    reverb.set_lfo1_freq(0.5f);
+    reverb.set_lfo2_freq(0.5f);
+
 
     // preload samples
     sampleRom.BufferInSPIRAM();
