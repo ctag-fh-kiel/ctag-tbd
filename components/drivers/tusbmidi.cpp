@@ -57,7 +57,6 @@ static const char *s_str_desc[5] = {
         "123456",              // 3: Serials, should use chip ID
         "MIDI device", // 4: MIDI
 };
-
 /**
  * @brief Configuration descriptor
  *
@@ -71,13 +70,18 @@ static const uint8_t s_midi_cfg_desc[] = {
         TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
 };
 
-// HighSpeed configuration descriptor
-static const uint8_t s_midi_hs_cfg_desc[] = {
-        // Configuration number, interface count, string index, total length, attribute, power in mA
-        TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 100),
 
-        // Interface number, string index, EP Out & EP In address, EP size
-        TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 512),
+/**
+ * @brief High Speed configuration descriptor
+ *
+ * This is a simple configuration descriptor that defines 1 configuration and a MIDI interface
+ */
+static const uint8_t s_midi_hs_cfg_desc[] = {
+    // Configuration number, interface count, string index, total length, attribute, power in mA
+    TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 100),
+
+    // Interface number, string index, EP Out & EP In address, EP size
+    TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 512),
 };
 
 void CTAG::DRIVERS::tusbmidi::Init() {
@@ -88,10 +92,10 @@ void CTAG::DRIVERS::tusbmidi::Init() {
             .string_descriptor = s_str_desc,
             .string_descriptor_count = sizeof(s_str_desc) / sizeof(s_str_desc[0]),
             .external_phy = false,
-            .configuration_descriptor = s_midi_cfg_desc,
-            .hs_configuration_descriptor = s_midi_hs_cfg_desc, // Add HighSpeed configuration descriptor
+            .fs_configuration_descriptor = s_midi_cfg_desc, // HID configuration descriptor for full-speed and high-speed are the same
+            .hs_configuration_descriptor = s_midi_hs_cfg_desc,
+            .qualifier_descriptor = NULL,
             .self_powered = false,
-            .vbus_monitor_io = 0
     };
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 }

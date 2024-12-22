@@ -134,7 +134,7 @@ void Codec::InitCodec() {
     int v;
     es8311_voice_volume_set(es_handle, 70, &v);
     es8311_microphone_config(es_handle, false);
-    es8311_microphone_gain_set(es_handle, ES8311_MIC_GAIN_MAX);
+    es8311_microphone_gain_set(es_handle, ES8311_MIC_GAIN_42DB);
 }
 
 void Codec::HighPassEnable() {
