@@ -1355,30 +1355,9 @@
           "max": 4095
         },
         {
-          "id": "fx2_diffusion",
-          "type": "int",
-          "name": "Diffusion",
-          "min": 0,
-          "max": 4095
-        },
-        {
           "id": "fx2_lp",
           "type": "int",
           "name": "Low Pass",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx2_lfo1_f",
-          "type": "int",
-          "name": "LFO 1 Frequency",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx2_lfo2_f",
-          "type": "int",
-          "name": "LFO 2 Frequency",
           "min": 0,
           "max": 4095
         }
