@@ -42,6 +42,20 @@ namespace CTAG {
         	CTAG::SYNTHESIS::Clap cl;
         	CTAG::SYNTHESIS::Rimshot rs;
 
+            // delay
+            float *delayBuffer_l, *delayBuffer_r;
+            const uint32_t delayBufferSizeMax {88200};
+            uint32_t writeIndex {0};
+            float readPos {0.0f}, readPosFiltered {0.0f};
+            float delayOffset {0.0f};
+            float duck {0.f};
+            float delayTime_ms {0.0f};
+            bool pre_sync {false};
+            float fDelayTime {0.0f};
+            float fSyncTimeStamp {0.0f};
+            int32_t timer {0}, pre_timer {0};
+            stmlib::OnePole lp, hp;
+
             // reverb
             mifx::Reverb reverb;
 

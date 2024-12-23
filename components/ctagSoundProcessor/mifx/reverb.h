@@ -219,7 +219,7 @@ namespace mifx {
                 c.Write(del2, 2.0f);
                 c.Write(wet, 0.0f);
 
-                *right += wet;
+                *right = wet;
 
                 ++left;
                 ++right;
