@@ -70,10 +70,17 @@ RUN . "$TBD_IDF_ACTIVATE" && pip install \
     breathe
 
 
+#### web app build stage ####
+
+FROM sphinx_docs_stage AS web_app_build_stage
+
+COPY ./tbd-init.sh "$TBD_PATH/"
+RUN "$TBD_INIT" install-bun
+
 #### TBD tools ####
 
 # required to build TBD software
-FROM sphinx_docs_stage AS tbd_tools_stage
+FROM web_app_build_stage AS tbd_tools_stage
 
 RUN . "$TBD_IDF_ACTIVATE" && pip install \
     typer \
@@ -86,7 +93,6 @@ RUN . "$TBD_IDF_ACTIVATE" && pip install \
     pyyaml
 
 # setup container shell environment
-COPY ./tbd-init.sh "$TBD_PATH/"
 ENV PATH="$PATH:$TBD_PATH"
 RUN "$TBD_INIT" integrate-idf
 

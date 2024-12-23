@@ -195,16 +195,22 @@ install_clang() {
   fi
 
   if ! curl -o "$clang_installer" "https://apt.llvm.org/llvm.sh"; then
-	raise "failed to download clang installer"
+	  raise "failed to download clang installer"
   fi
 
   if ! chmod +x "$clang_installer"; then
-	raise "failed to set permissions on clang installer"
+	  raise "failed to set permissions on clang installer"
   fi
    
   # install
   if ! "$clang_installer" 18 all; then 
-	raise "clang installation failed"
+	  raise "clang installation failed"
+  fi
+}
+
+install_bun() {
+  if ! curl -fsSL https://bun.sh/install | bash -s "bun-v1.1.4"; then
+    raise "bun installation failed"
   fi
 }
 
@@ -256,6 +262,9 @@ case $command in
         ;;
     install-clang)
         install_clang $command_args
+        ;;
+    install-bun)
+        install_bun $command_args
         ;;
     *)
         raise "unknown command $command"
