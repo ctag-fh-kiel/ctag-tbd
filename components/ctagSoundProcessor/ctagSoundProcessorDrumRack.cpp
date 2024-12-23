@@ -16,8 +16,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fABLev, ab_lev, 4095.f, 2.f)
     fABLev *= fABLev;
     MK_FLT_PAR_ABS_PAN(fABPan, ab_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fABFX1Send, ab_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fABFX2Send, ab_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fABFX1Send, ab_fx1, 4095.f, 10.f)
+    fABFX1Send *= fABFX1Send;
+    MK_FLT_PAR_ABS(fABFX2Send, ab_fx2, 4095.f, 10.f)
+    fABFX2Send *= fABFX2Send;
     if (!bABMute){
         MK_FLT_PAR_ABS(fABAccent, ab_accent, 4095.f, 1.f)
         MK_FLT_PAR_ABS_MIN_MAX(fABF0, ab_f0, 4095.f, 0.0001f, 0.01f)
@@ -55,8 +57,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fASLev, as_lev, 4095.f, 2.f)
     fASLev *= fASLev;
     MK_FLT_PAR_ABS_PAN(fASPan, as_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fASFX1Send, as_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fASFX2Send, as_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fASFX1Send, as_fx1, 4095.f, 10.f)
+    fASFX1Send *= fASFX1Send;
+    MK_FLT_PAR_ABS(fASFX2Send, as_fx2, 4095.f, 10.f)
+    fASFX2Send *= fASFX2Send;
 
     if (!bASMute){
         MK_FLT_PAR_ABS(fASAccent, as_accent, 4095.f, 1.f)
@@ -93,8 +97,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fDBLev, db_lev, 4095.f, 2.f)
     fDBLev *= fDBLev;
     MK_FLT_PAR_ABS_PAN(fDBPan, db_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDBFX1Send, db_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDBFX2Send, db_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDBFX1Send, db_fx1, 4095.f, 10.f)
+    fDBFX1Send *= fDBFX1Send;
+    MK_FLT_PAR_ABS(fDBFX2Send, db_fx2, 4095.f, 10.f)
+    fDBFX2Send *= fDBFX2Send;
 
     if (!bDBMute){
         MK_FLT_PAR_ABS(fDBAccent, db_accent, 4095.f, 1.f)
@@ -135,8 +141,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fDSLev, ds_lev, 4095.f, 2.f)
     fDSLev *= fDSLev;
     MK_FLT_PAR_ABS_PAN(fDSPan, ds_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDSFX1Send, ds_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDSFX2Send, ds_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDSFX1Send, ds_fx1, 4095.f, 10.f)
+    fDSFX1Send *= fDSFX1Send;
+    MK_FLT_PAR_ABS(fDSFX2Send, ds_fx2, 4095.f, 10.f)
+    fDSFX2Send *= fDSFX2Send;
 
     if (!bDSMute){
         MK_FLT_PAR_ABS(fDSAccent, ds_accent, 4095.f, 1.f)
@@ -173,8 +181,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fHH1Lev, hh1_lev, 4095.f, 2.f)
     fHH1Lev *= fHH1Lev;
     MK_FLT_PAR_ABS_PAN(fHH1Pan, hh1_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH1FX1Send, hh1_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH1FX2Send, hh1_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH1FX1Send, hh1_fx1, 4095.f, 10.f)
+    fHH1FX1Send *= fHH1FX1Send;
+    MK_FLT_PAR_ABS(fHH1FX2Send, hh1_fx2, 4095.f, 10.f)
+    fHH1FX2Send *= fHH1FX2Send;
 
     if (!bHH1Mute){
         MK_FLT_PAR_ABS(fHH1Accent, hh1_accent, 4095.f, 1.f)
@@ -213,8 +223,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fHH2Lev, hh2_lev, 4095.f, 2.f)
     fHH2Lev *= fHH2Lev;
     MK_FLT_PAR_ABS_PAN(fHH2Pan, hh2_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH2FX1Send, hh2_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH2FX2Send, hh2_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH2FX1Send, hh2_fx1, 4095.f, 10.f)
+    fHH2FX1Send *= fHH2FX1Send;
+    MK_FLT_PAR_ABS(fHH2FX2Send, hh2_fx2, 4095.f, 10.f)
+    fHH2FX2Send *= fHH2FX2Send;
 
     if (!bHH2Mute){
         MK_FLT_PAR_ABS(fHH2Accent, hh2_accent, 4095.f, 1.f)
@@ -245,8 +257,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fRSLev, rs_lev, 4095.f, 2.f)
     fRSLev *= fRSLev;
     MK_FLT_PAR_ABS_PAN(fRSPan, rs_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRSFX1Send, rs_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRSFX2Send, rs_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRSFX1Send, rs_fx1, 4095.f, 10.f)
+    fRSFX1Send *= fRSFX1Send;
+    MK_FLT_PAR_ABS(fRSFX2Send, rs_fx2, 4095.f, 10.f)
+    fRSFX2Send *= fRSFX2Send;
 
     if (!bRSMute){
         MK_FLT_PAR_ABS_MIN_MAX(rs_f0_, rs_f0, 4095.f, 70.f, 350.f)
@@ -285,8 +299,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     MK_FLT_PAR_ABS(fCLLev, cl_lev, 4095.f, 2.f)
     fCLLev *= fCLLev;
     MK_FLT_PAR_ABS_PAN(fCLPan, cl_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fCLFX1Send, cl_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fCLFX2Send, cl_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fCLFX1Send, cl_fx1, 4095.f, 10.f)
+    fCLFX1Send *= fCLFX1Send;
+    MK_FLT_PAR_ABS(fCLFX2Send, cl_fx2, 4095.f, 10.f)
+    fCLFX2Send *= fCLFX2Send;
 
     if (!bCLMute){
         MK_FLT_PAR_ABS_MIN_MAX(cl_pitch1_, cl_f0, 4095.f, 350.f, 4000.f)
@@ -330,8 +346,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
     float fS1Lev = 0.f, fS1Pan = 0.f;
     MK_BOOL_PAR(bMuteS1, s1_mute)
-    MK_FLT_PAR_ABS(fS1FX1Send, s1_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fS1FX2Send, s1_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fS1FX1Send, s1_fx1, 4095.f, 10.f)
+    fS1FX1Send *= fS1FX1Send;
+    MK_FLT_PAR_ABS(fS1FX2Send, s1_fx2, 4095.f, 10.f)
+    fS1FX2Send *= fS1FX2Send;
     if (!bMuteS1){
         MK_BOOL_PAR(bGateS1, s1_gate)
         rompler[0].params.gate = bGateS1;
@@ -391,8 +409,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 
     float fS2Lev = 0.f, fS2Pan = 0.f;
     MK_BOOL_PAR(bMuteS2, s2_mute)
-    MK_FLT_PAR_ABS(fS2FX1Send, s2_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fS2FX2Send, s2_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fS2FX1Send, s2_fx1, 4095.f, 10.f)
+    fS2FX1Send *= fS2FX1Send;
+    MK_FLT_PAR_ABS(fS2FX2Send, s2_fx2, 4095.f, 10.f)
+    fS2FX2Send *= fS2FX2Send;
 
     if (!bMuteS2){
         MK_BOOL_PAR(bGateS2, s2_gate)
@@ -453,8 +473,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 
     float fS3Lev = 0.f, fS3Pan = 0.f;;
     MK_BOOL_PAR(bMuteS3, s3_mute)
-    MK_FLT_PAR_ABS(fS3FX1Send, s3_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fS3FX2Send, s3_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fS3FX1Send, s3_fx1, 4095.f, 10.f)
+    fS3FX1Send *= fS3FX1Send;
+    MK_FLT_PAR_ABS(fS3FX2Send, s3_fx2, 4095.f, 10.f)
+    fS3FX2Send *= fS3FX2Send;
 
     if (!bMuteS3){
         MK_BOOL_PAR(bGateS3, s3_gate)
@@ -515,8 +537,11 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 
     float fS4Lev = 0.f, fS4Pan = 0.f;;
     MK_BOOL_PAR(bMuteS4, s4_mute)
-    MK_FLT_PAR_ABS(fS4FX1Send, s4_fx1, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fS4FX2Send, s4_fx2, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fS4FX1Send, s4_fx1, 4095.f, 10.f)
+    fS4FX1Send *= fS4FX1Send;
+    MK_FLT_PAR_ABS(fS4FX2Send, s4_fx2, 4095.f, 10.f)
+    fS4FX2Send *= fS4FX2Send;
+
     if (!bMuteS4){
         MK_BOOL_PAR(bGateS4, s4_gate)
         rompler[3].params.gate = bGateS4;
@@ -574,6 +599,59 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         data_ptrs[11] = silence;
     }
 
+    // delay
+    MK_FLT_PAR_ABS(fFeedback, fx1_feedback, 4095.f, 1.05f)
+    MK_FLT_PAR_ABS(fBase, fx1_base, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fWidth, fx1_width, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDelayAmount, fx1_mix, 4095.f, 2.f)
+    MK_BOOL_PAR(bTapeDigital, fx1_tape_digital)
+    MK_BOOL_PAR(bFreeze, fx1_freeze)
+    bool bSync = fx1_sync;
+    bool bSyncTrig {false};
+    if(trig_fx1_sync != -1) bSyncTrig = data.trig[trig_fx1_sync] == 1 ? false : true;
+    if(!bSync){
+        fDelayTime = fx1_time_ms;
+        if(cv_fx1_time_ms != -1) fDelayTime = fabsf(data.cv[cv_fx1_time_ms]) * 2000.f;
+    }
+
+    fBase = 20.f * stmlib::SemitonesToRatio(fBase * 120.f);
+    fWidth = 20.f * stmlib::SemitonesToRatio(fWidth * 120.f);
+    CONSTRAIN(fBase, 20.f, 20000.f)
+    CONSTRAIN(fWidth, 50.f, 20000.f)
+    float hp_cut = fBase;
+    float lp_cut = fBase + fWidth;
+    CONSTRAIN(lp_cut, 20.f, 20000.f)
+    CONSTRAIN(hp_cut, 20.f, 20000.f)
+    lp.set_f<stmlib::FREQUENCY_ACCURATE>(lp_cut / 44100.f);
+    hp.set_f<stmlib::FREQUENCY_ACCURATE>(hp_cut / 44100.f);
+
+    // sync mechanism
+    if(bSyncTrig != pre_sync){
+        pre_sync = bSyncTrig;
+        if(bSyncTrig && bSync){
+            int delta = timer - pre_timer;
+            if(std::abs(delta) > 1){
+                fDelayTime = static_cast<float>(timer) * 32.f / 44.1f;
+            }
+            pre_timer = timer;
+            timer = 0;
+        }
+    }
+    timer++;
+
+    // reverb
+    MK_FLT_PAR_ABS(fRevTime, fx2_time, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRevAmount, fx2_amount, 4095.f, 2.f)
+    MK_FLT_PAR_ABS(fRefInputGain, fx2_in_gain, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDiffusion, fx2_diffusion, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fReverbLPF, fx2_lp, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRevLFO1, fx2_lfo1_f, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRevLFO2, fx2_lfo2_f, 4095.f, 1.f)
+    reverb.set_time(fRevTime);
+    reverb.set_diffusion(fDiffusion);
+    reverb.set_lp(fReverbLPF);
+    reverb.set_lfo1_freq(fRevLFO1);
+    reverb.set_lfo2_freq(fRevLFO2);
 
     // sum compressor
     MK_FLT_PAR_ABS_MIN_MAX(fCompThresdB, c_thres, 4095.f, -80.f, 0.f)
@@ -592,22 +670,6 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fCompMUPGain_pre = fCompMUPGain;
     }
 
-
-    // reverb
-    MK_FLT_PAR_ABS(fRevTime, fx2_time, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRevAmount, fx2_amount, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRefInputGain, fx2_in_gain, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDiffusion, fx2_diffusion, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fReverbLPF, fx2_lp, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRevLFO1, fx2_lfo1_f, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRevLFO2, fx2_lfo2_f, 4095.f, 1.f)
-    reverb.set_time(fRevTime);
-    reverb.set_amount(fRevAmount);
-    reverb.set_input_gain(fRefInputGain);
-    reverb.set_diffusion(fDiffusion);
-    reverb.set_lp(fReverbLPF);
-    reverb.set_lfo1_freq(fRevLFO1);
-    reverb.set_lfo2_freq(fRevLFO2);
 
     // overall mix
     MK_BOOL_PAR(bSumMute, sum_mute)
@@ -728,11 +790,69 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         data.buf[i * 2] = fVal_l * fMixLevel;
         data.buf[i * 2 + 1] = fVal_r * fMixLevel;
     }
-    float buf_l[32], buf_r[32];
-    reverb.Process(buf_fx2, buf_l, buf_r, 32);
+
+
+    // delay
+    float dly_buf_l[32], dly_buf_r[32];
+    std::fill_n(dly_buf_l, 32, 0.f);
+    std::fill_n(dly_buf_r, 32, 0.f);
+    CONSTRAIN(fDelayTime, 0.0001, 2000.f)
+    float ofs = fDelayTime * 44.1f;
+    if(fabsf(ofs - delayOffset) < 16) ofs = delayOffset;
+    for(int i=0; i<32; i++){
+        // Calculate the delay offset in samples
+        if(delayOffset != ofs){
+            if(bTapeDigital){
+                if(ofs != delayOffset){
+                    duck = 1.f;
+                }
+                delayOffset = ofs;
+            } else {
+                float temp = delayOffset;
+                delayOffset = ONE_POLE(temp, ofs, 0.0001f);
+            }
+            readPos = static_cast<float>(writeIndex) - delayOffset;
+            if(readPos < 0.f) readPos += float(delayBufferSizeMax);
+            if(readPos >= float(delayBufferSizeMax)) readPos -= float(delayBufferSizeMax);
+        }
+
+        float inputSample = buf_fx1[i];
+        float outputSample;
+
+        outputSample = HELPERS::InterpolateWaveLinearWrap(delayBuffer_l, readPos, delayBufferSizeMax);
+        readPos += 1.f;
+        readPos > float(delayBufferSizeMax) ? readPos -= float(delayBufferSizeMax) : readPos;
+
+        float temp = duck;
+        duck = ONE_POLE(temp, 0.f, 0.35f)
+        outputSample = outputSample * (1.f - duck);
+        // Write the input sample to the delay buffer
+        float out;
+        if(!bFreeze){
+            out = inputSample + outputSample * fFeedback * fFeedback;
+            out = lp.Process<stmlib::FILTER_MODE_LOW_PASS>(out);
+            out = hp.Process<stmlib::FILTER_MODE_HIGH_PASS>(out);
+        }
+        else
+            out = outputSample;
+        delayBuffer_l[writeIndex] = stmlib::SoftLimit(out);
+        writeIndex = (writeIndex + 1) % delayBufferSizeMax;
+
+        // Mix the dry (input) and wet (delayed) signal
+        dly_buf_l[i] = outputSample;
+        dly_buf_r[i] = outputSample;
+    }
+
+    // reverb
+    float rev_buf_l[32], rev_buf_r[32];
+    reverb.Process(buf_fx2, rev_buf_l, rev_buf_r, 32);
+
+    // add fx to sum
+    fRevAmount *= fRevAmount;
+    fDelayAmount *= fDelayAmount;
     for (int i = 0; i < 32; i++) {
-        data.buf[i * 2] += buf_l[i] * fRevAmount;
-        data.buf[i * 2 + 1] += buf_r[i] *fRevAmount;
+        data.buf[i * 2] += rev_buf_l[i] * fRevAmount + dly_buf_l[i] * fDelayAmount;
+        data.buf[i * 2 + 1] += rev_buf_r[i] * fRevAmount + dly_buf_r[i] * fDelayAmount;
     }
 }
 
@@ -742,6 +862,15 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     model = std::make_unique<ctagSPDataModel>(id, isStereo);
     LoadPreset(0);
 
+    // delay
+    delayBuffer_l = static_cast<float*>(heap_caps_malloc(delayBufferSizeMax * sizeof(float), MALLOC_CAP_SPIRAM));
+    assert(delayBuffer_l != nullptr);
+    std::fill_n(delayBuffer_l, delayBufferSizeMax, 0.f);
+    delayBuffer_r = static_cast<float*>(heap_caps_malloc(delayBufferSizeMax * sizeof(float), MALLOC_CAP_SPIRAM));
+    assert(delayBuffer_r != nullptr);
+    std::fill_n(delayBuffer_r, delayBufferSizeMax, 0.f);
+
+
     // reverb
     assert(blockSize >= 32768 * 4);
     reverb.Init((float*)blockPtr); // requires 32768*4 bytes = 128KB
@@ -749,8 +878,8 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     blockPtr = static_cast<void*>(static_cast<uint8_t*>(blockPtr) + 32768 * 4);
     blockSize -= 32768 * 4;
     reverb.set_diffusion(0.5f);
-    reverb.set_input_gain(0.6f);
-    reverb.set_amount(0.6f);
+    reverb.set_input_gain(1.f);
+    reverb.set_amount(1.f);
     reverb.set_lp(0.5f);
     reverb.set_time(0.4f);
     reverb.set_lfo1_freq(0.5f);
