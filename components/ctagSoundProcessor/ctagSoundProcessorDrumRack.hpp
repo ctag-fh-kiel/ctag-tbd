@@ -272,6 +272,20 @@ namespace CTAG {
 	atomic<int32_t> s4_ft, cv_s4_ft;
 	atomic<int32_t> s4_fc, cv_s4_fc;
 	atomic<int32_t> s4_fq, cv_s4_fq;
+	atomic<int32_t> fx1_time_ms, cv_fx1_time_ms;
+	atomic<int32_t> fx1_sync, trig_fx1_sync;
+	atomic<int32_t> fx1_freeze, trig_fx1_freeze;
+	atomic<int32_t> fx1_tape_digital, trig_fx1_tape_digital;
+	atomic<int32_t> fx1_st_width, cv_fx1_st_width;
+	atomic<int32_t> fx1_fx_send, cv_fx1_fx_send;
+	atomic<int32_t> fx1_feedback, cv_fx1_feedback;
+	atomic<int32_t> fx1_base, cv_fx1_base;
+	atomic<int32_t> fx1_width, cv_fx1_width;
+	atomic<int32_t> fx2_time, cv_fx2_time;
+	atomic<int32_t> fx2_diffusion, cv_fx2_diffusion;
+	atomic<int32_t> fx2_lp, cv_fx2_lp;
+	atomic<int32_t> fx2_lfo1_f, cv_fx2_lfo1_f;
+	atomic<int32_t> fx2_lfo2_f, cv_fx2_lfo2_f;
 	atomic<int32_t> c_thres, cv_c_thres;
 	atomic<int32_t> c_ratio, cv_c_ratio;
 	atomic<int32_t> c_atk, cv_c_atk;
@@ -279,23 +293,12 @@ namespace CTAG {
 	atomic<int32_t> c_lpf, trig_c_lpf;
 	atomic<int32_t> c_gain, cv_c_gain;
 	atomic<int32_t> c_mix, cv_c_mix;
-	atomic<int32_t> fx1_time_ms, cv_fx1_time_ms;
-	atomic<int32_t> fx1_sync, trig_fx1_sync;
-	atomic<int32_t> fx1_freeze, trig_fx1_freeze;
-	atomic<int32_t> fx1_tape_digital, trig_fx1_tape_digital;
-	atomic<int32_t> fx1_feedback, cv_fx1_feedback;
-	atomic<int32_t> fx1_base, cv_fx1_base;
-	atomic<int32_t> fx1_width, cv_fx1_width;
-	atomic<int32_t> fx1_mix, cv_fx1_mix;
-	atomic<int32_t> fx2_time, cv_fx2_time;
-	atomic<int32_t> fx2_amount, cv_fx2_amount;
-	atomic<int32_t> fx2_in_gain, cv_fx2_in_gain;
-	atomic<int32_t> fx2_diffusion, cv_fx2_diffusion;
-	atomic<int32_t> fx2_lp, cv_fx2_lp;
-	atomic<int32_t> fx2_lfo1_f, cv_fx2_lfo1_f;
-	atomic<int32_t> fx2_lfo2_f, cv_fx2_lfo2_f;
+	atomic<int32_t> c_rev_level, cv_c_rev_level;
+	atomic<int32_t> c_dly_level, cv_c_dly_level;
 	atomic<int32_t> sum_mute, trig_sum_mute;
 	atomic<int32_t> sum_lev, cv_sum_lev;
+	atomic<int32_t> fx1_amount, cv_fx1_amount;
+	atomic<int32_t> fx2_amount, cv_fx2_amount;
 	// sectionHpp
         };
     }

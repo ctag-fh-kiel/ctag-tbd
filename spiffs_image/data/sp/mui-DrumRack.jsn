@@ -35,14 +35,14 @@
         },
         {
           "id": "ab_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "ab_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -122,14 +122,14 @@
         },
         {
           "id": "db_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "db_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -216,14 +216,14 @@
         },
         {
           "id": "as_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "as_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -296,14 +296,14 @@
         },
         {
           "id": "ds_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "ds_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -376,14 +376,14 @@
         },
         {
           "id": "hh1_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "hh1_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -456,14 +456,14 @@
         },
         {
           "id": "hh2_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "hh2_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -536,14 +536,14 @@
         },
         {
           "id": "rs_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "rs_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -616,14 +616,14 @@
         },
         {
           "id": "cl_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "cl_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -696,14 +696,14 @@
         },
         {
           "id": "s1_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "s1_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -849,14 +849,14 @@
         },
         {
           "id": "s2_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "s2_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -1002,14 +1002,14 @@
         },
         {
           "id": "s3_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "s3_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -1155,14 +1155,14 @@
         },
         {
           "id": "s4_fx1",
-          "name": "FX1 send",
+          "name": "Delay Send",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
           "id": "s4_fx2",
-          "name": "FX2 send",
+          "name": "Reverb Send",
           "type": "int",
           "min": 0,
           "max": 4095
@@ -1278,6 +1278,113 @@
       ]
     },
     {
+      "id": "fx1_group",
+      "name": "Delay",
+      "type": "group",
+      "params": [
+        {
+          "id": "fx1_time_ms",
+          "name": "Delay/ms",
+          "type": "int",
+          "min": 1,
+          "max": 2000,
+          "step": 1
+        },
+        {
+          "id": "fx1_sync",
+          "name": "Sync",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_freeze",
+          "name": "Freeze",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_tape_digital",
+          "name": "Tape/Digital",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_st_width",
+          "name": "Stereo Width",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_fx_send",
+          "name": "Reverb Send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_feedback",
+          "name": "Feedback",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_base",
+          "name": "Filter Base",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_width",
+          "name": "Filter Width",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "fx2_group",
+      "name": "Reverb",
+      "type": "group",
+      "params": [
+        {
+          "id": "fx2_time",
+          "type": "int",
+          "name": "Time",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_diffusion",
+          "type": "int",
+          "name": "Diffusion",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_lp",
+          "type": "int",
+          "name": "Low Pass",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_lfo1_f",
+          "type": "int",
+          "name": "LFO 1 Frequency",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_lfo2_f",
+          "type": "int",
+          "name": "LFO 2 Frequency",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
       "id": "c_group",
       "name": "Compressor",
       "type": "group",
@@ -1328,118 +1435,18 @@
           "type": "int",
           "min": -4095,
           "max": 4095
-        }
-      ]
-    },
-    {
-      "id": "fx1_group",
-      "name": "Delay",
-      "type": "group",
-      "params": [
-        {
-          "id": "fx1_time_ms",
-          "name": "Delay/ms",
-          "type": "int",
-          "min": 1,
-          "max": 2000,
-          "step": 1
         },
         {
-          "id": "fx1_sync",
-          "name": "Sync",
-          "type": "bool"
-        },
-        {
-          "id": "fx1_freeze",
-          "name": "Freeze",
-          "type": "bool"
-        },
-        {
-          "id": "fx1_tape_digital",
-          "name": "Tape/Digital",
-          "type": "bool"
-        },
-        {
-          "id": "fx1_feedback",
-          "name": "Feedback",
+          "id": "c_dly_level",
+          "name": "Delay Level",
           "type": "int",
           "min": 0,
           "max": 4095
         },
         {
-          "id": "fx1_base",
-          "name": "Base",
+          "id": "c_rev_level",
+          "name": "Reverb Level",
           "type": "int",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx1_width",
-          "name": "Width",
-          "type": "int",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx1_mix",
-          "name": "Mix",
-          "type": "int",
-          "min": 0,
-          "max": 4095
-        }
-      ]
-    },
-    {
-      "id": "fx2_group",
-      "name": "Reverb",
-      "type": "group",
-      "params": [
-        {
-          "id": "fx2_time",
-          "type": "int",
-          "name": "Time",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx2_amount",
-          "type": "int",
-          "name": "Amount",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx2_in_gain",
-          "type": "int",
-          "name": "Input Gain",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx2_diffusion",
-          "type": "int",
-          "name": "Diffusion",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx2_lp",
-          "type": "int",
-          "name": "Low Pass",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx2_lfo1_f",
-          "type": "int",
-          "name": "LFO 1 Frequency",
-          "min": 0,
-          "max": 4095
-        },
-        {
-          "id": "fx2_lfo2_f",
-          "type": "int",
-          "name": "LFO 2 Frequency",
           "min": 0,
           "max": 4095
         }
@@ -1458,6 +1465,20 @@
         {
           "id": "sum_lev",
           "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_amount",
+          "name": "Delay Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_amount",
+          "name": "Reverb Level",
           "type": "int",
           "min": 0,
           "max": 4095
