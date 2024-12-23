@@ -7,42 +7,6 @@ from git import Optional
 from pydantic.dataclasses import dataclass
 
 
-# TODO: determine from files in config/platforms
-@unique
-class Platform(Enum):
-    v1        = 'v1'
-    v2        = 'v2'
-    str       = 'str'
-    aem       = 'aem'
-    mk2       = 'mk2'
-    bba1      = 'bba1'
-    bba2      = 'bba2'
-    dada      = 'dada'
-    dadax     = 'dadax'
-    desktop   = 'desktop'
-    simulator = 'simulator'
-    emu       = 'emu'
-
-
-# TODO: read form json file
-def get_platform_description(platform: Platform) -> str:
-    descriptions = {
-        'v1'       : 'TBD mk1 rev2 WM8978, ESP ADC',
-        'v2'       : 'TBD mk1 rev2 WM8731, ESP ADC',
-        'str'      : 'CTAG Strämpler WM8731, MCP3208',
-        'aem'      : 'AE Modular WM8974, ESP ADC',
-        'mk2'      : 'TBD MK2 WM8978, STM32 CVs/Trigs',
-        'bba1'     : 'TBD BBA MIDI, es8388',
-        'bba2'     : 'TBD BBA MIDI, aic3254',
-        'dada'     : 'TBD DADA MIDI and MIDI host',
-        'dadax'     : 'TBD DADA MIDI and MIDI host with control panel',
-        'desktop'  : 'Desktop App',
-        'simulator': 'TBD firmware simulator',
-        'emu'      : 'TBD ESP32 emulator'
-    }
-    return descriptions[platform.name]
-
-
 @dataclass(kw_only=True)
 class ProjectFileTreeElement:
     project_root: Optional[Path]
@@ -117,7 +81,10 @@ class CppLibrary(ProjectDir):
 
 @dataclass
 class ProjectConfig(ProjectDir):
-    cmake: ProjectFile
+    capabilities: ProjectDir
+    esp_sdkconfigs: ProjectDir
+    platforms: ProjectDir
+    storage: ProjectDir
 
 
 @dataclass
@@ -163,18 +130,16 @@ class BuildRoot(ProjectDir):
     docs: BuildDocs
     firmware: PlatformBuildDir
 
-    def platform_dir(self, platform: Platform) -> Path:
-        return self.path / platform.name
+    def platform_dir(self, platform: str) -> Path:
+        return self.path / platform
     
-    def platform_tree(self, platform: Platform) -> PlatformBuildDir:
+    def platform_tree(self, platform: str) -> PlatformBuildDir:
         build_root = self.path
         firmware_root = self.firmware.path
-        platform_build_root = build_root / platform.name
+        platform_build_root = build_root / platform
         return self.firmware.relative_to(firmware_root, platform_build_root)
 
     def __getattr__(self, name: str):
-        if name in Platform._member_names_:
-            return self.platform_tree(Platform[name])
         return super().__getattribute__(name)
 
 
@@ -189,8 +154,6 @@ class ProjectRoot(ProjectFileTreeElement):
 
 
 __all__ = [
-    'Platform',
-    'get_platform_description',
     'ProjectFileTreeElement',
     'ProjectDir', 
     'ProjectRoot',

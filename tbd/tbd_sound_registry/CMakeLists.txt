@@ -8,7 +8,7 @@ set(SRCS_FILES
 
 add_custom_command(
     OUTPUT ${REGISTRY_HEADER} 
-    COMMAND ${TBD_TOOL} plugins create-factory -o "${REGISTRY_HEADER}"
+    COMMAND ${TBD_TOOL} -p "${TBD_PLATFORM}" plugins create-factory -o "${REGISTRY_HEADER}"
     DEPENDS ${SOUND_PROCESSORS}   
 )
 

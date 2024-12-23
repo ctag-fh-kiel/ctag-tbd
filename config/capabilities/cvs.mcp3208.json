@@ -1,7 +1,4 @@
 {
-    "HWV": "{{ hardware_type }}",
-    "FWV": "{{ firmware_version }}",
-    "p": "str",
     "t": ["TRIG0", "TRIG1"], 
     "cv": ["CV1", "CV2", "CV3", "CV4", "CV5", "CV6", "CV7", "CV8"]
 }

@@ -1,11 +1,10 @@
 
-from tbdtools.cmd_utils import greeting_header
+from tbdtools.cmd_utils import greeting_header, get_main
 from .docs_cmd import docs_group
 from .plugins_cmd import plugins_group
 from .firmware_cmd import firmware_group
 from .config_cmd import config_group
 from .project_cmd import project_group
-from tbdtools.cmd_utils import get_main
 
 app = get_main()
 

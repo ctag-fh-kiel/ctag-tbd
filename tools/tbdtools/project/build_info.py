@@ -11,8 +11,7 @@ import jinja2 as ji
 from pydantic import ConfigDict, Field
 from loguru import logger
 
-from .get_project import get_project_repo
-from .project_structure import Platform, get_platform_description
+from .get_project import get_project_repo, get_project
 
 
 def _get_template(template_name: str):
@@ -62,49 +61,36 @@ class DeviceCapabilities(DeviceHeader, DeviceInputs):
         return DeviceCapabilities(**header_dict, **inputs_dict)
 
 
-def _get_device_inputs(platform: Platform) -> Dict:
-    if platform == Platform.v1 or platform == Platform.v2 or platform == Platform.aem:
-        inputs_type = 'mk1'
-    elif platform == Platform.str:
-        inputs_type = 'str'
-    elif platform == Platform.mk2:
-        inputs_type = 'mk2'
-    elif platform == Platform.bba1:
-        inputs_type = 'bba1'
-    elif platform == Platform.bba2:
-        inputs_type = 'bba2'
-    elif platform == Platform.dada:
-        inputs_type = 'bba2'
-    elif platform == Platform.dadax:
-        inputs_type = 'bba2'
-    elif platform == Platform.emu:
-        inputs_type = 'bba2'
-    elif platform == Platform.desktop:
-        inputs_type = 'desktop'
-    elif platform == Platform.simulator:
-        inputs_type = 'simulator'
-    else:
-        raise ValueError(f'unsupported platform {platform.name}')
-    
-    project_path = Path(__file__).parent.parent.parent.parent
-    inputs_file = project_path / 'config' / 'capabilities' / f'io_capabilities.{inputs_type}.json'
+def _get_device_inputs(platform: str) -> Dict:
+    platform_config = get_project().config.platforms() / f'platform.{platform}.json'
+    with open(platform_config, 'r') as f:
+        config_data = json.load(f)
+        inputs_type = config_data['config']['cv_input']['type']
+
+    inputs_file = get_project().config.capabilities() / f'cvs.{inputs_type}.json'
     with open(inputs_file, 'r') as f:
         return json.load(f)
 
+def _get_platform_description(platform: str) -> str:
+    config_file = get_project().config.platforms() / f'platform.{platform}.json'
+    with open(config_file, 'r') as f:
+        config_data = json.load(f)
+        return config_data['info']['description']
 
-def _get_device_capabilities(platform: Platform, firmware_version: Version) -> DeviceCapabilities:   
+
+def _get_device_capabilities(platform: str, firmware_version: Version) -> DeviceCapabilities:
     inputs_dict = _get_device_inputs(platform)
     header = DeviceHeader(
-        hardware_type=get_platform_description(platform), 
+        hardware_type=_get_platform_description(platform),
         firmware_version=firmware_version.tag,
-        hardware_id=platform.name,
+        hardware_id=platform,
     )
     inputs = DeviceInputs(**inputs_dict)
     return DeviceCapabilities.from_header_and_inputs(header, inputs)
 
 
 def _get_device_capabilities_str(
-        platform: Platform, firmware_version: Version, *, readable: bool = False
+        platform: str, firmware_version: Version, *, readable: bool = False
     ):
 
     capabilities = _get_device_capabilities(platform, firmware_version)
@@ -137,13 +123,13 @@ def get_version_info() -> Version:
     return Version('unknown', commit.hexsha, is_dirty, -1)
 
 
-def get_build_info(*, platform) -> BuildInfo:
+def get_build_info(*, platform: str) -> BuildInfo:
     version = get_version_info()
     device_capabilities = _get_device_capabilities_str(platform, version)
 
     build_date = datetime.now().replace(microsecond=0).isoformat()
     return BuildInfo(
-        hardware=platform.name, 
+        hardware=platform,
         firmware=version.tag, 
         commit=version.commit, 
         post_commit_changes=version.post_commit_changes,
@@ -153,13 +139,13 @@ def get_build_info(*, platform) -> BuildInfo:
     )
 
 
-def get_readable_device_capabilities(*, platform: Optional[Platform]):
+def get_readable_device_capabilities(*, platform: Optional[str]):
     version = get_version_info()
     return _get_device_capabilities_str(platform, version, readable=True)
 
 
 def write_build_info_header(
-        build_info_header_path: Path, *, platform: Optional[Platform]
+        build_info_header_path: Path, *, platform: Optional[str]
     ):
     
     build_info = get_build_info(platform=platform)

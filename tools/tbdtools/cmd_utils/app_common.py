@@ -4,12 +4,12 @@ import typer
 from functools import cache
 
 from tbdtools.project import (
-    get_platform, 
-    get_project_structure, 
+    get_project,
+    get_platform,
+    init_project_structure,
+    init_platform,
     find_project_root, 
-    Platform, 
-    PlatformBuildDir, 
-    ProjectRoot
+    PlatformBuildDir,
 )
 
 
@@ -51,30 +51,18 @@ greeting_header_tipped = r'''
 
 greeting_header = '\b\n'.join(greeting_header_tipped.split('\n'))
 
-@dataclass
-class AppContext:
-    dirs: ProjectRoot
-    platform: Platform
-
-
-def get_ctx(ctx: typer.Context) -> AppContext:
-    return ctx.obj
-
-
-def get_build_dir(ctx: typer.Context) -> PlatformBuildDir:
-    _ctx = get_ctx(ctx)
-    return _ctx.dirs.build.platform_tree(_ctx.platform)
+def get_build_dir(_ctx: typer.Context) -> PlatformBuildDir:
+    dirs = get_project()
+    platform = get_platform()
+    return dirs.build.platform_tree(_)
 
 
 def common_callback(
-    ctx: typer.Context,
     project_dir: Path =  typer.Option(...,'-d', '--project-dir', default_factory=find_project_root),
-    platform: Platform =  typer.Option(...,'-p', '--platform', default_factory=lambda: get_platform().name),
+    platform: str =  typer.Option(...,'-p', '--platform'),
 ):
-    ctx.obj = AppContext(
-        dirs=get_project_structure(project_dir),
-        platform=platform
-    )
+    init_project_structure(project_dir)
+    init_platform(platform)
     
 
 @cache  
@@ -90,9 +78,7 @@ def get_main() -> typer.Typer:
 
 
 __all__ = [
-    'greeting_header', 
-    'AppContext',
-    'get_ctx',
+    'greeting_header',
     'get_build_dir',
     'common_callback', 
     'get_main',

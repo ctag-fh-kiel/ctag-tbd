@@ -1,7 +1,4 @@
 {
-    "HWV": "{{ hardware_type }}",
-    "FWV": "{{ firmware_version }}",
-    "p": "mk2",
     "t": [
         "TRIG0",
         "TRIG1",

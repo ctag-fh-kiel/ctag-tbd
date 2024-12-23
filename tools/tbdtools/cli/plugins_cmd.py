@@ -2,8 +2,7 @@ from pathlib import Path
 import typer
 from typing import Optional
 
-from tbdtools.cmd_utils import get_ctx
-from tbdtools.project import ProjectRoot
+from tbdtools.project import get_project
 from tbdtools.preprocessor import (
     search_for_plugins, 
     write_plugin_factory_header, 
@@ -25,7 +24,7 @@ def find_plugins_cmd(
 ):
     """ list all available plugins """
 
-    dirs = get_ctx(_ctx).dirs
+    dirs = get_project()
 
     headers = dirs.src.plugins.headers().glob('*.hpp')
     _, plugins = search_for_plugins(headers, strict)
@@ -40,7 +39,7 @@ def update_config_cmd(
 ):
     """ update the plugin config to match plugins detected"""
 
-    dirs = get_ctx(_ctx).dirs
+    dirs = get_project()
 
     headers = dirs.src.sounds.headers().glob('*.hpp')
     _, plugins = search_for_plugins(headers, strict)
@@ -57,7 +56,7 @@ def create_factory_cmd(
 ):
     """ create plugin factory """
 
-    dirs = get_ctx(_ctx).dirs
+    dirs = get_project()
 
     headers = dirs.src.sounds.headers().glob('*.hpp')
     headers, plugins = search_for_plugins(headers, strict)
@@ -74,7 +73,7 @@ def create_meta_cmd(
 ):
     """ create reflection information for plugins """
 
-    dirs = get_ctx(_ctx).dirs
+    dirs = get_project()
 
     headers = dirs.src.sounds.headers().glob('*.hpp')
     headers, plugins = search_for_plugins(headers, strict)
@@ -89,7 +88,7 @@ def pretty_configs_cmd(
 ):
     """ create reflection information for plugins """
 
-    dirs = get_ctx(_ctx).dirs
+    dirs = get_project()
 
     configs_path = dirs.resources.plugin_definitions()
 

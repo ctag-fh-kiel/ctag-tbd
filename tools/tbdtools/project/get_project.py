@@ -123,7 +123,15 @@ def pretty_print_project_structure(root: ProjectRoot, depth: int = 0) -> str:
     return '\n'.join(retval)
 
 
-def get_project_structure(project_root: Path, absolute: bool = True) -> ProjectRoot:
+_project_root: Optional[ProjectRoot] = None
+
+def get_project() -> ProjectRoot:
+    if _project_root is None:
+        raise ValueError('project has not been initialized')
+    return _project_root
+
+def init_project_structure(project_root: Path, absolute: bool = True) -> None:
+    global _project_root
     project_description_file_name = Path(__file__).parent / 'resources' / 'project_structure.yml'
     with open(project_description_file_name, 'r') as f:
         try:
@@ -133,14 +141,14 @@ def get_project_structure(project_root: Path, absolute: bool = True) -> ProjectR
             else:
                 structure = traverse_path_tree(config)
 
-            return ProjectRoot(**structure)
+            _project_root = ProjectRoot(**structure)
         except yaml.YAMLError as exc:
             print("Error in configuration file:", exc)
-
 
 __all__ = [
     'get_project_repo', 
     'find_project_root',
     'pretty_print_project_structure',
-    'get_project_structure',
+    'get_project',
+    'init_project_structure',
 ]
