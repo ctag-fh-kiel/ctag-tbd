@@ -44,7 +44,9 @@
             "trigger0": -1,
             "trigger1": -1
         },
-        "apis": ["wifi"],
+        "apis": [{
+            "type": "rest"
+        }],
         "file_system": "wrapper",
         "display": {
             "type": "ssd1306_i2c",

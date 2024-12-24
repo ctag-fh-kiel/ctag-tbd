@@ -10,7 +10,7 @@ endif()
 
 # api srcs
 
-tbd_platform_apis("${TBD_PLATFORM_OBJ}" VAR api_list)
+tbd_platform_api_types("${TBD_PLATFORM_OBJ}" VAR api_list)
 
 if (shell IN_LIST api_list)
     file(GLOB microshell_srcs

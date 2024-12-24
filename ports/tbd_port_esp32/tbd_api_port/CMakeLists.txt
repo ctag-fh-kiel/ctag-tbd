@@ -1,4 +1,4 @@
-## configure srcs ##
+include(${PROJECT_DIR}/tools/cmake/build_config/platforms.cmake)
 
 # network
 
@@ -17,9 +17,9 @@ endif()
 
 # APIs
 
-tbd_platform_apis("${TBD_PLATFORM_OBJ}" VAR api_list)
+tbd_platform_api_types("${TBD_PLATFORM_OBJ}" VAR api_list)
 
-if (wifi IN_LIST api_list)
+if (rest IN_LIST api_list)
     list(APPEND extra_srcs src/rest_api.cpp)
     list(APPEND extra_components json esp_http_server)
 endif()

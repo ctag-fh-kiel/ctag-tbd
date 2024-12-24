@@ -189,6 +189,31 @@ macro(tbd_store_or_return value)
 endmacro()
 
 
+# @brief unpack sub argument enclosed in [...]
+#
+# To allow nesting of complex structured data for use with CMake's argument mechanics
+# you can simple enclose a nested section in square brackets
+#
+# ... NAME_OF_SUBOB [ SUBOBJ_KEY_1 ... ] NEXT_NORMAL_KEY ...
+#
+# This can also be used for lists of lists
+#
+# ... item_{n-1} [item_{n,0}, ... item_{n,m}] item_{n+2}
+#
+# This function removes the square brackets of such nested elements.
+#
+# @arg subarg [str]   subarg string surrounded by square brackets
+#
+# @return [none | str]   trimmed subarg with brackets removed
+#
+function(tbd_unpack_sub_arg subarg)
+    file(STRINGS "${file}" file_lines)
+    string(REGEX MATCH "^\\s*\\[\\s*(.*)\\s*\\]\\s*" value "${subarg}")
+    if (NOT "$value" STREQUAL "")
+        tbd_store_or_return("${CMAKE_MATCH_1}" ${ARGN})
+    endif()
+endfunction()
+
 
 # @brief raise an error if last function call returned nothing
 #

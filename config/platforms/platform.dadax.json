@@ -44,7 +44,9 @@
             "trigger0": 39,
             "trigger1": 36
         },
-        "apis": ["serial"],
+        "apis": [{
+            "type": "serial"
+        }],
         "file_system": "wrapper",
         "display": null,
         "network": false

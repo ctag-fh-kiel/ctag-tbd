@@ -1,8 +1,10 @@
 # configure source files
 find_package(Boost 1.67.0 COMPONENTS system REQUIRED)
-tbd_platform_apis("${TBD_PLATFORM_OBJ}" VAR api_list)
+tbd_platform_api_types("${TBD_PLATFORM_OBJ}" VAR api_list)
 
-if (wifi IN_LIST api_list)
+
+
+if (rest IN_LIST api_list)
     list(APPEND SRCS_FILES src/rest_api.cpp)
     set(extra_libs INTERFACE simple-web-server)
 endif()

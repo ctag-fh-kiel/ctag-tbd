@@ -49,7 +49,9 @@
               "trigger1": 36
             }
         },
-        "apis": ["serial"],
+        "apis": [{
+            "type": "serial"
+        }],
         "volume_control": true,
         "file_system": "wrapper",
         "display": {

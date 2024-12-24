@@ -13,18 +13,14 @@ endif()
 
 # api options
 
-tbd_platform_apis("${TBD_PLATFORM_OBJ}" VAR api_list)
+tbd_platform_api_types("${TBD_PLATFORM_OBJ}" VAR api_list)
 
-set(wifi_flag TBD_API_WIFI=0)
+set(rest_flag TBD_API_REST=0)
 set(serial_flag TBD_API_SERIAL=0)
 set(shell_flag TBD_API_SERIAL=0)
 
-# the network module is only available on embedded devices if the 'wifi' api is present
-if (wifi IN_LIST api_list AND "${TBD_TOOLCHAIN}" STREQUAL "esp32")
-    set(wifi_flag TBD_API_WIFI=1)
-
-elseif (wifi IN_LIST api_list)
-    set(wifi_flag TBD_API_WIFI=1)
+if (rest IN_LIST api_list)
+    set(rest_flag TBD_API_REST=1)
 endif()
 
 if (serial IN_LIST api_list)
@@ -48,7 +44,7 @@ add_library(tbd_api_common INTERFACE ${SRCS_FILES})
 target_include_directories(tbd_api_common INTERFACE include)
 target_compile_definitions(tbd_api_common
         INTERFACE
-            ${wifi_flag}
+            ${rest_flag}
             ${network_flag}
             ${serial_flag}
             ${shell_flag}

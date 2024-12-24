@@ -44,7 +44,9 @@
             "trigger0": 39,
             "trigger1": 36
         },
-        "apis": ["wifi"],
+        "apis": [{
+            "type": "rest"
+        }],
         "file_system": "wrapper",
         "display": null,
         "network": true

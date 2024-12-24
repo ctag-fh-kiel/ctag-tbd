@@ -3,9 +3,9 @@ include(${TBD_CMAKE_DIR}/indicators.cmake)
 include(${TBD_CMAKE_DIR}/cv_inputs.cmake)
 include(${TBD_CMAKE_DIR}/codecs.cmake)
 include(${TBD_CMAKE_DIR}/displays.cmake)
+include(${TBD_CMAKE_DIR}/apis.cmake)
 
 set(TBD_PLATFORM_SYSTEMS esp32 desktop)
-set(TBD_PLATFORM_APIS wifi serial shell)
 set(TBD_PLATFORM_FILE_SYSTEMS std wrapper)
 
 
@@ -221,9 +221,27 @@ function(tbd_platform_indicator platform)
     tbd_store_or_return("${arg_INDICATOR}" ${ARGN})
 endfunction()
 
-function(tbd_platform_apis platform)
+function(tbd_platform_api_types platform)
     tbd_platform_attrs(${platform})
-    tbd_store_or_return("${arg_APIS}" ${ARGN})
+    foreach(api ${arg_APIS})
+        tbd_unpack_sub_arg("${api}" VAR api)
+        tbd_api_type("${api}" VAR api_type)
+        list(APPEND api_type_list "${api_type}")
+    endforeach()
+    tbd_store_or_return("${api_type_list}" ${ARGN})
+endfunction()
+
+function(tbd_platform_num_apis platform)
+    tbd_platform_attrs(${platform})
+    list(LENGTH arg_APIS num_apis)
+    tbd_store_or_return("${num_apis}" ${ARGN})
+endfunction()
+
+function(tbd_platform_api platform index)
+    tbd_platform_attrs(${platform})
+    list(GET arg_APIS ${index} api)
+    tbd_unpack_sub_arg("${api}" VAR api)
+    tbd_store_or_return("${api}" ${ARGN})
 endfunction()
 
 function(tbd_platform_network platform)
@@ -298,6 +316,7 @@ function(tbd_platform_print_info platform)
     tbd_cv_input_n_cvs("${arg_CV_INPUT}" VAR n_cvs)
     tbd_cv_input_n_triggers("${arg_CV_INPUT}" VAR n_triggers)
     tbd_codec_type("${arg_AUDIO}" VAR codec_type)
+    tbd_platform_api_types("${platform}" VAR apis)
 
     if(NOT "${arg_INDICATOR}" STREQUAL no)
         tbd_indicator_type("${arg_INDICATOR}" VAR indicator_type)
@@ -321,7 +340,7 @@ num CVs: ${n_cvs}
 num triggers: ${n_triggers}
 audio chip: ${codec_type}
 indicators: ${indicator_type}
-apis: ${arg_APIS}
+apis: ${apis}
 file system: ${arg_FILE_SYSTEM}
 display: ${display_type}
 netwrok: ${arg_NETWORK}
@@ -378,8 +397,10 @@ function(tbd_platform_load_preset file)
     string(JSON num_apis LENGTH "${config_obj}" apis)
     foreach(i RANGE 1 "${num_apis}")
         math(EXPR i "${i} - 1")
-        string(JSON api GET "${apis_obj}" ${i})
-        list(APPEND apis "${api}")
+        string(JSON api_obj GET "${apis_obj}" ${i})
+        tbd_api_load("${api_obj}" VAR api)
+        tbd_api_type("${api}")
+        list(APPEND apis "[${api}]")
     endforeach()
 
     tbd_platform(new_platform 

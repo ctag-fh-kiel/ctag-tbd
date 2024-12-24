@@ -25,7 +25,12 @@
         "inputs": {
           "type": "gui"
         },
-        "apis": ["wifi"],
+        "apis": [{
+          "type": "rest"
+        },
+        {
+          "type": "websocket"
+        }],
         "file_system": "std",
         "display": null,
         "network": false

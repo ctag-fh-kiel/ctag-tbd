@@ -25,7 +25,9 @@
         "inputs": {
           "type": "gui"
         },
-        "apis": ["wifi"],
+        "apis": [{
+          "type": "rest"
+        }],
         "file_system": "wrapper",
         "display": null,
         "network": false

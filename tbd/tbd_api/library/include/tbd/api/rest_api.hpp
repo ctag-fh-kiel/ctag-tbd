@@ -1,6 +1,6 @@
 #pragma once
 
-#if !TBD_API_WIFI
+#if !TBD_API_REST
     #error "RestApi module not available in config"
 #endif
 
