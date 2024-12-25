@@ -96,6 +96,7 @@ else()
             PRIV_REQUIRES ctagSoundProcessor)
 
     target_compile_options(${COMPONENT_LIB} PRIVATE
+            -DMUTABLE_STD_CPP
             -Wno-unused-variable
             -Wno-shift-negative-value
             -Wno-unused-local-typedefs
