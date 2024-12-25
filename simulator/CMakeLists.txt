@@ -12,7 +12,7 @@ add_definitions(
         -DRAPIDJSON_HAS_STDSTRING=1 # rapidjson
         -DTBD_SIM=1
         -Wno-unused-local-typedefs
-        -DTEST
+        -DMUTABLE_STD_CPP
         -DCONFIG_DSP_ANSI=1
         -DN_CVS=4
         -DN_TRIGS=2
