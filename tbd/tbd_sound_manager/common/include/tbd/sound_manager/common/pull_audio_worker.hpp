@@ -64,6 +64,6 @@ private:
  *
  */
 template<AudioConsumerType AudioConsumerT, system::CpuCore cpu_core>
-using PullAudioWorker = system::TaskModule<PullAudioFeeder<AudioConsumerT>, cpu_core>;
+using PullAudioWorker = system::TaskModule<PullAudioFeeder<AudioConsumerT>, cpu_core, 4095, 23>;
 
 }

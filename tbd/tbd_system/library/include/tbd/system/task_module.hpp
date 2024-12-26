@@ -38,7 +38,7 @@ enum class TaskState : uint8_t {
 };
 
 
-template<TaskModuleImplType ModuleT, CpuCore core_id, uint32_t stack_size = 4096>
+template<TaskModuleImplType ModuleT, CpuCore core_id, uint32_t stack_size = 4096, uint8_t priority = 0>
 struct TaskModule : ModuleT {
     TaskModule& operator=(const TaskModule&) = delete;
 
@@ -58,7 +58,7 @@ struct TaskModule : ModuleT {
             return 1;
         }
         _desired_state.store(TaskState::running);
-        _task.begin(&task_main_wrapper, this, core_id, stack_size);
+        _task.begin(&task_main_wrapper, this, core_id, stack_size, priority);
 
         if (!wait) {
             return 0;

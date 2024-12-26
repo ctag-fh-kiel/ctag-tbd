@@ -85,7 +85,7 @@ uint32_t AudioConsumer::consume(float* audio_slice) {
     InputManager::update(&pd.trig, &pd.cv);
 
     TBD_TIMEOUT_ENSURE_OPS_PER_SECOND(timeout, TBD_SAMPLE_RATE / TBD_SAMPLES_PER_CHUNK);
-    SoundLevel sound_level(sound_level_worker);    
+    SoundLevel sound_level(sound_level_worker);
 
     // In peak detection
     // dc cut input

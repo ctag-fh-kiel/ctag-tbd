@@ -87,7 +87,7 @@ struct SoundLevel {
         bool _warning_set;
 };
 
-system::TaskModule<SoundLevelWorker, system::CpuCore::audio>
+system::TaskModule<SoundLevelWorker, system::CpuCore::system, 4096, 2>
     sound_level_worker("sound_level_worker");    
 
 }

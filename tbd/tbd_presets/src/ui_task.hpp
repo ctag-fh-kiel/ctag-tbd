@@ -189,6 +189,6 @@ uint32_t UIWorker::do_work() {
     return 0;
 }
 
-system::TaskModule<UIWorker, system::CpuCore::system> ui_worker("ui_worker");
+system::TaskModule<UIWorker, system::CpuCore::system, 4095, 3> ui_worker("ui_worker");
 
 }

@@ -115,11 +115,12 @@ void app_main() {
     TBD_LOGI("main", "serial api begin");
     tbd::api::SerialApi::begin();
 #endif
-    // start the audio processing
-    TBD_LOGI("main", "SoundProcessorManager::begin");
-    tbd::audio::SoundProcessorManager::begin();
 
     TBD_LOGI("main", "favorites init");
     tbd::Favorites::init();
+
+    // start the audio processing
+    TBD_LOGI("main", "SoundProcessorManager::begin");
+    tbd::audio::SoundProcessorManager::begin();
 }
 }
