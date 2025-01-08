@@ -30,6 +30,7 @@ respective component folders / files if different from this license.
 #include "esp_heap_caps.h"
 #include "led_rgb.hpp"
 #include "network.hpp"
+#include "tusb.hpp"
 #include "SerialAPI.hpp"
 #include "RestServer.hpp"
 #include "Control.hpp"
@@ -63,6 +64,7 @@ namespace CTAG {
         std::string spiffsRoot {"/spiffs"};
     }
 }
+
 
 // audio real-time task
 void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
@@ -373,6 +375,11 @@ void SoundProcessorManager::StartSoundProcessor() {
     }
     */
 
+#ifdef CONFIG_TBD_PLATFORM_BBA
+    // init tinyusb
+    CTAG::DRIVERS::tusb::Init();
+#endif
+
 #ifdef CONFIG_TBD_PLATFORM_STR
     // inverted here as some pins are used twice --> check for issues
     DRIVERS::Codec::InitCodec();
@@ -387,10 +394,19 @@ void SoundProcessorManager::StartSoundProcessor() {
     updateConfiguration();
 
 #ifdef CONFIG_WIFI_UI
-    // boot network
+    // start network
     NET::Network::SetSSID(model->GetNetworkConfigurationData("ssid"));
     NET::Network::SetPWD(model->GetNetworkConfigurationData("pwd"));
-    NET::Network::SetIsAccessPoint(model->GetNetworkConfigurationData("mode").compare("ap") == 0);
+    if(model->GetNetworkConfigurationData("mode").compare("ap") == 0) {
+        NET::Network::SetIfType(NET::Network::IF_TYPE::IF_TYPE_AP);
+    }else if(model->GetNetworkConfigurationData("mode").compare("sta") == 0){
+        NET::Network::SetIfType(NET::Network::IF_TYPE::IF_TYPE_STA);
+    }else if(model->GetNetworkConfigurationData("mode").compare("usbncm") == 0){
+        NET::Network::SetIfType(NET::Network::IF_TYPE::IF_TYPE_USBNCM);
+    }else{
+        ESP_LOGE("SPM", "Fatal: unknown network mode!");
+        assert(0);
+    }
     NET::Network::SetIP(model->GetNetworkConfigurationData("ip"));
     NET::Network::SetMDNSName(model->GetNetworkConfigurationData("mdns_name"));
     NET::Network::Up();
