@@ -19,7 +19,7 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "tusbmidi.hpp"
+#include "tusb.hpp"
 #include "tinyusb.h"
 #include "esp_log.h"
 #include "esp_attr.h"
@@ -29,6 +29,10 @@ enum interface_count {
 #if CFG_TUD_MIDI
     ITF_NUM_MIDI = 0,
     ITF_NUM_MIDI_STREAMING,
+#endif
+#if CFG_TUD_NCM
+    ITF_NUM_NET,
+    ITF_NUM_NET_DATA,
 #endif
     ITF_COUNT
 };
@@ -40,23 +44,30 @@ enum usb_endpoints {
 #if CFG_TUD_MIDI
     EPNUM_MIDI,
 #endif
+#if CFG_TUD_NCM
+    EPNUM_NET_NOTIF,
+    EPNUM_NET_DATA,
+#endif
 };
 
 /** TinyUSB descriptors **/
 
-#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN)
+#define TUSB_DESCRIPTOR_TOTAL_LEN (TUD_CONFIG_DESC_LEN + CFG_TUD_MIDI * TUD_MIDI_DESC_LEN + CFG_TUD_NCM * TUD_CDC_NCM_DESC_LEN)
 
 /**
  * @brief String descriptor
  */
-static const char *s_str_desc[5] = {
+static const char *s_str_desc[7] = {
         // array of pointer to string descriptors
         (char[]) {0x09, 0x04},  // 0: is supported language is English (0x0409)
-        "CTAG",             // 1: Manufacturer
-        "CTAG-TBD-BBA",      // 2: Product
+        "TBD",             // 1: Manufacturer
+        "TBD-BBA",      // 2: Product
         "123456",              // 3: Serials, should use chip ID
-        "MIDI device", // 4: MIDI
+        "TBD midi", // 4: MIDI
+        "TBD net", // 5: NCM
+        "", // 6: MAC
 };
+
 /**
  * @brief Configuration descriptor
  *
@@ -64,50 +75,22 @@ static const char *s_str_desc[5] = {
  */
 static const uint8_t s_midi_cfg_desc[] = {
         // Configuration number, interface count, string index, total length, attribute, power in mA
-        TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 100),
+        TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, 100),
 
-        // Interface number, string index, EP Out & EP In address, EP size
+        // MIDI Interface number, string index, EP Out & EP In address, EP size
         TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 64),
+
+        // NCM Interface number, description string index, MAC address string index, EP notification address and size, EP data address (out, in), and size, max segment size
+        TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NET, 5, 6, (0x80 | EPNUM_NET_NOTIF), 64, EPNUM_NET_DATA, (0x80 | EPNUM_NET_DATA), 64, CFG_TUD_NET_MTU),
 };
 
-
-/**
- * @brief High Speed configuration descriptor
- *
- * This is a simple configuration descriptor that defines 1 configuration and a MIDI interface
- */
-static const uint8_t s_midi_hs_cfg_desc[] = {
-    // Configuration number, interface count, string index, total length, attribute, power in mA
-    TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 100),
-
-    // Interface number, string index, EP Out & EP In address, EP size
-    TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 512),
-};
-
-void CTAG::DRIVERS::tusbmidi::Init() {
+void CTAG::DRIVERS::tusb::Init() {
     ESP_LOGI("TUSB", "USB initialization");
 
     tinyusb_config_t const tusb_cfg = {
             .device_descriptor = NULL, // If device_descriptor is NULL, tinyusb_driver_install() will use Kconfig
             .string_descriptor = s_str_desc,
-            .string_descriptor_count = sizeof(s_str_desc) / sizeof(s_str_desc[0]),
-            .external_phy = false,
-            .fs_configuration_descriptor = s_midi_cfg_desc, // HID configuration descriptor for full-speed and high-speed are the same
-            .hs_configuration_descriptor = s_midi_hs_cfg_desc,
-            .qualifier_descriptor = NULL,
-            .self_powered = false,
-    };
-    ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
-}
-/*
-
-void CTAG::DRIVERS::tusbmidi::Init() {
-    ESP_LOGI("TUSB", "USB initialization");
-
-    tinyusb_config_t const tusb_cfg = {
-            .device_descriptor = NULL, // If device_descriptor is NULL, tinyusb_driver_install() will use Kconfig
-            .string_descriptor = s_str_desc,
-            .string_descriptor_count = sizeof(s_str_desc) / sizeof(s_str_desc[0]),
+            .string_descriptor_count = 7,
             .external_phy = false,
             .configuration_descriptor = s_midi_cfg_desc,
             .self_powered = false,
@@ -115,13 +98,12 @@ void CTAG::DRIVERS::tusbmidi::Init() {
     };
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 }
-*/
-IRAM_ATTR uint32_t CTAG::DRIVERS::tusbmidi::Read(uint8_t *data, uint32_t len) {
+
+IRAM_ATTR uint32_t CTAG::DRIVERS::tusb::Read(uint8_t *data, uint32_t len) {
     return tud_midi_n_stream_read( ITF_NUM_MIDI, ITF_NUM_MIDI_STREAMING, data, len);
+    return 0;
 }
 
-uint32_t CTAG::DRIVERS::tusbmidi::Write(const uint8_t *data, uint32_t len) {
+uint32_t CTAG::DRIVERS::tusb::Write(const uint8_t *data, uint32_t len) {
     return tud_midi_stream_write(0, data, len);
 }
-
-

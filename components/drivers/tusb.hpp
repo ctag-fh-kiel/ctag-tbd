@@ -24,9 +24,9 @@ respective component folders / files if different from this license.
 
 namespace CTAG {
     namespace DRIVERS {
-        class tusbmidi final {
+        class tusb final {
         public:
-            tusbmidi() = delete;
+            tusb() = delete;
             static void Init();
             static uint32_t Read(uint8_t *data, uint32_t len);
             static uint32_t Write(uint8_t const *data, uint32_t len);
