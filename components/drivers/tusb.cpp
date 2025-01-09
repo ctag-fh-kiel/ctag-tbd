@@ -101,7 +101,6 @@ void CTAG::DRIVERS::tusb::Init() {
 
 IRAM_ATTR uint32_t CTAG::DRIVERS::tusb::Read(uint8_t *data, uint32_t len) {
     return tud_midi_n_stream_read( ITF_NUM_MIDI, ITF_NUM_MIDI_STREAMING, data, len);
-    return 0;
 }
 
 uint32_t CTAG::DRIVERS::tusb::Write(const uint8_t *data, uint32_t len) {
