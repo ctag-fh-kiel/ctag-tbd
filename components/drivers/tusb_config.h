@@ -1,0 +1,2 @@
+#define CFG_TUD_NCM_OUT_NTB_N 3
+#define CFG_TUD_NCM_IN_NTB_N 3
