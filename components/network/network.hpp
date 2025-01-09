@@ -24,7 +24,7 @@ namespace CTAG {
 
             static void SetPWD(const string pwd);
 
-            static void SetIP(const string ip);
+            static void SetIP(string ip);
 
             static void SetMDNSName(const string name);
 
@@ -43,10 +43,12 @@ namespace CTAG {
 
             static void if_init_usbncm(void);
 
+            static esp_err_t netif_recv_callback(void *buffer, uint16_t len, void *ctx);
 
             static string _ssid, _pwd, _mdns, _mdns_instance;
             static IF_TYPE _if_type;
             static string _ip;
+            static uint32_t _ip_addr;
             static esp_netif_t *netif;
         };
     }
