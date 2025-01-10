@@ -216,7 +216,7 @@ namespace CTAG::SP::HELPERS {
     void ctagSampleRom::BufferInSPIRAM() {
         if(ptrSPIRAM != nullptr) return; // already buffered
         size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-        maxSizeBytes -= 128*1024; // reserve 128k for other stuff
+        maxSizeBytes -= 512*1024; // reserve 512K for other stuff
         if(maxSizeBytes < 1024*1024) return; // not enough memory for this to make sense
         ptrSPIRAM = (int16_t *)heap_caps_malloc(maxSizeBytes, MALLOC_CAP_SPIRAM);
         if(ptrSPIRAM == nullptr) return;
