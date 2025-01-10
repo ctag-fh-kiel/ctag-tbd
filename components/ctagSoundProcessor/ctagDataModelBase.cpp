@@ -42,10 +42,11 @@ void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
         return;
     }
     //char readBuffer[512];
-//    ESP_LOGE("JSON", "read stream");
+    //ESP_LOGE("JSON", "read stream");
     FileReadStream is(fp, buffer, MB_BUF_SZ);
-//    ESP_LOGE("JSON", "trying to parse");
+    //ESP_LOGE("JSON", "trying to parse");
     d.ParseStream(is);
+    //ESP_LOGE("JSON", "document parsed");
     fclose(fp);
 
     // error checks and reading backup if error

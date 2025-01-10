@@ -81,10 +81,17 @@ public:
     static const bool kNeedFree = true;
     void* Malloc(size_t size) {
         //ESP_LOGI("CrtAllocator", "Allocating %d bytes", size);
-        if (size) //  behavior of malloc(0) is implementation defined.
-            return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
-        else
+        if (size){
+            //ESP_LOGE("CrtAllocator", "Allocating %d bytes", size);
+            void *mptr = heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+            assert(mptr != NULL);
+            return mptr;
+        } //  behavior of malloc(0) is implementation defined.
+        else{
+            //ESP_LOGE("CrtAllocator", "Allocating 0 bytes");
             return NULL; // standardize to returning NULL.
+        }
+
     }
     void* Realloc(void* originalPtr, size_t originalSize, size_t newSize) {
         (void)originalSize;
