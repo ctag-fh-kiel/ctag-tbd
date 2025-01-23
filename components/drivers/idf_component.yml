@@ -3,6 +3,6 @@ dependencies:
   joltwallet/littlefs: "==1.14.8"
   espressif/led_strip: "^2.4.1"
   espressif/esp_tinyusb:
-    version: "^1.6.0"
+    version: "^1.7.1"
     rules:
       - if: "target in [esp32s3, esp32p4]"
