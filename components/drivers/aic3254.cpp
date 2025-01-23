@@ -254,10 +254,10 @@ bool aic3254::setOutputVolume(uint8_t lvol, uint8_t rvol) {
     // incoming range 0 to 63 for lvol and rvol, default 0dB is 58
     uint8_t dac_mute = 0x00;
     if(lvol == 0x00) {
-        dac_mute |= 0b00000010; // mute left channel
+        dac_mute |= 0b00001000; // mute left channel
     }
     if(rvol == 0x00) {
-        dac_mute |= 0b00000001; // mute right channel
+        dac_mute |= 0b00000100; // mute right channel
     }
     write_AIC32X4_reg(AIC32X4_DACMUTE, dac_mute);
     lvol = lvol > 63 ? 63 : lvol;
