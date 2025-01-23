@@ -252,6 +252,14 @@ uint8_t aic3254::read_16bit_reg(uint8_t reg_add) {
 bool aic3254::setOutputVolume(uint8_t lvol, uint8_t rvol) {
     // range 0b00110000 = 0x30 (+24dB) to 0b10000001 = 0x81 (-63.5dB), if msb is set the attenuation
     // incoming range 0 to 63 for lvol and rvol, default 0dB is 58
+    uint8_t dac_mute = 0x00;
+    if(lvol == 0x00) {
+        dac_mute |= 0b00000010; // mute left channel
+    }
+    if(rvol == 0x00) {
+        dac_mute |= 0b00000001; // mute right channel
+    }
+    write_AIC32X4_reg(AIC32X4_DACMUTE, dac_mute);
     lvol = lvol > 63 ? 63 : lvol;
     rvol = rvol > 63 ? 63 : rvol;
     //ESP_LOGE("AIC3254", "Setting volume to %d, %d", lvol, rvol);
