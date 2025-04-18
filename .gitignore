@@ -23,3 +23,7 @@ managed_components
 sdkconfig
 ctagSoundProcessorFactory.hpp
 tbd/tbd_sound_registry/include/tbd/sound_registry/sound_processor_factory.hpp
+.venv
+.esphome
+secrets.yaml
+.pioenvs
