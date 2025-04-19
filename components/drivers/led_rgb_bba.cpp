@@ -32,7 +32,7 @@ void LedRGB::InitLedRGB() {
     ESP_LOGI("RGBLed", "RGB LED strip initialization");
     /* LED strip initialization with the GPIO and pixels number*/
     led_strip_config_t strip_config = {
-            .strip_gpio_num = GPIO_NUM_38,
+            .strip_gpio_num = GPIO_NUM_6,
             .max_leds = 1, // at least one LED on board
             .led_pixel_format = LED_PIXEL_FORMAT_GRB,
             .led_model = LED_MODEL_WS2812,

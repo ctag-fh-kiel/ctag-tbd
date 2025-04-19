@@ -29,7 +29,7 @@ respective component folders / files if different from this license.
 #define SCROLL_RATE_MS 1000
 #define TIMEOUT_PERIOD_MS 5000
 
-#define PIN_PUSH_BTN GPIO_NUM_6
+#define PIN_PUSH_BTN GPIO_NUM_46 // is not connected on dada-tbd-p4, should come from rp2350
 static uint32_t previousProgramChangeValue {0xFF000000};
 std::atomic<uint32_t> CTAG::FAV::Favorites::programChangeValue {0xFF000000};
 void CTAG::FAV::Favorites::SetProgramChangeValue(uint32_t const &v) {

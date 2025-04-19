@@ -23,9 +23,6 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <cstdint>
-#include "sdkconfig.h"
-#include "es8311.h"
-
 
 namespace CTAG {
     namespace DRIVERS {
