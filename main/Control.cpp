@@ -93,7 +93,5 @@ void CTAG::CTRL::Control::Init() {
 }
 
 void CTAG::CTRL::Control::FlushBuffers() {
-#ifdef CONFIG_TBD_PLATFORM_BBA
-    Midi::Flush();
-#endif
+
 }
