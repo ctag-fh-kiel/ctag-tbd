@@ -25,27 +25,24 @@ respective component folders / files if different from this license.
 #include "esp_log.h"
 #include "esp_intr_alloc.h"
 #include <cstring>
+#include "soc/gpio_num.h"
 
 
-#define GPIO_MOSI 17
-#define GPIO_MISO 16
-#define GPIO_SCLK 15
-#define GPIO_CS 18
 #define RCV_HOST    SPI2_HOST
 #define DATA_SZ 64 // midi data buffer with header
 
 DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2040_spi_stream::transaction[2];
 DRAM_ATTR uint32_t CTAG::DRIVERS::rp2040_spi_stream::currentTransaction;
-DMA_ATTR static uint8_t buf0[DATA_SZ];
-DMA_ATTR static uint8_t buf1[DATA_SZ];
-DMA_ATTR static uint8_t sendBuf[DATA_SZ];
+DMA_ATTR static uint8_t *buf0;
+DMA_ATTR static uint8_t *buf1;
+DMA_ATTR static uint8_t *sendBuf;
 
 void CTAG::DRIVERS::rp2040_spi_stream::Init(){
     //Configuration for the SPI bus
     spi_bus_config_t buscfg = {
-        .mosi_io_num = GPIO_MOSI,
-        .miso_io_num = GPIO_MISO,
-        .sclk_io_num = GPIO_SCLK,
+        .mosi_io_num = GPIO_NUM_31,
+        .miso_io_num = GPIO_NUM_29,
+        .sclk_io_num = GPIO_NUM_30,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .data4_io_num = -1,
@@ -60,13 +57,17 @@ void CTAG::DRIVERS::rp2040_spi_stream::Init(){
 
     //Configuration for the SPI slave interface
     spi_slave_interface_config_t slvcfg = {
-        .spics_io_num = GPIO_CS,
+        .spics_io_num = GPIO_NUM_28,
         .flags = 0,
         .queue_size = 2,
         .mode = 3,
         .post_setup_cb = 0,
         .post_trans_cb = 0
     };
+
+    buf0 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, DATA_SZ, 0);
+    buf1 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, DATA_SZ, 0);
+    sendBuf = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, DATA_SZ, 0);
 
     ESP_LOGI("rp2040 spi", "Init()");
     auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
