@@ -741,19 +741,17 @@ void Midi::noteOff(uint8_t* msg)
     return; // We don't process note-off velocity!
 }
 
-#include "midiuart.hpp"
 #include "tusb.hpp"
 
 // Provide methods and data for MIDI-message processing and communiction of detected events to audio-thread
-
+#define RX_BUF_SIZE 128
 #define MIDI_BUF_SZ (RX_BUF_SIZE+32)
 // ### #define DEBUG_MIDI  true    // ### MB20231219
 
 // --- Calculate size of buffer for "CV" and "Gate/Trigger" values to be exchanged with audio-thread / plugins ---
 #define DATA_SZ  (N_CVS * 4 + N_TRIGS + 2)
 
-// --- Instanciate objects for lowlevel and highlevel MIDI processing ---
-static CTAG::DRIVERS::midiuart midiuart_instance;              // UART reader (and writer) for MIDI-messages
+// --- Instanciate objects for lowlevel and highlevel MIDI processing ---// UART reader (and writer) for MIDI-messages
 DRAM_ATTR static CTAG::CTRL::Midi distribute;     // Instanciate Midi-Class as object for MIDI-message distribution, according to events mapped via WebUI
 
 // === Buffer to pass on MIDI-Event as virtual CV and Gate 'voltages', normalized to -1.f...+1.f (CV) and 0 or 1 integers (Triggers/Gates) ===
@@ -839,10 +837,6 @@ uint8_t *Midi::Update() {
         }
         ================================================================== */
         len2 = CTAG::DRIVERS::tusb::Read(&msgBuffer[missing_bytes_offset], MIDI_BUF_SZ - 32);
-
-        // get all available MIDI messages from UART
-        if (missing_bytes_offset + len2 < (MIDI_BUF_SZ - 32)) // safety margin
-            midiuart_instance.read(&msgBuffer[missing_bytes_offset + len2], &len);  // Read UART data into MIDI-buffer
         len += len2;
 
         // get all messages from rp2040
@@ -1144,8 +1138,4 @@ uint8_t *Midi::Update() {
         }
     }
     return buf0;
-}
-
-void Midi::Flush() {
-    midiuart_instance.flush();
 }

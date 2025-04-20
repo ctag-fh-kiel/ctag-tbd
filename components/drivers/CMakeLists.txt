@@ -9,7 +9,7 @@ elseif (CONFIG_TBD_PLATFORM_BBA)
         set(codec_src aic3254.cpp)
     endif()
 
-    idf_component_register(SRCS fs.cpp led_rgb_bba.cpp codec_bba.cpp ${codec_src} midiuart.cpp tusb.cpp ssd1306.c ssd1306_i2c.c ssd1306_spi.c rp2040_spi_stream.cpp
+    idf_component_register(SRCS fs.cpp led_rgb_bba.cpp codec_bba.cpp ${codec_src} tusb.cpp ssd1306.c ssd1306_i2c.c ssd1306_spi.c rp2040_spi_stream.cpp
             INCLUDE_DIRS "."
             REQUIRES driver  esp-dsp esp-tinyusb)
 else()

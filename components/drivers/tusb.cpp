@@ -84,6 +84,18 @@ static const uint8_t s_midi_cfg_desc[] = {
         TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NET, 5, 6, (0x80 | EPNUM_NET_NOTIF), 64, EPNUM_NET_DATA, (0x80 | EPNUM_NET_DATA), 64, CFG_TUD_NET_MTU),
 };
 
+static const uint8_t s_midi_hs_cfg_desc[] = {
+    // Configuration number, interface count, string index, total length, attribute, power in mA
+    TUD_CONFIG_DESCRIPTOR(1, ITF_COUNT, 0, TUSB_DESCRIPTOR_TOTAL_LEN, 0, 100),
+
+    // Interface number, string index, EP Out & EP In address, EP size
+    TUD_MIDI_DESCRIPTOR(ITF_NUM_MIDI, 4, EPNUM_MIDI, (0x80 | EPNUM_MIDI), 512),
+
+    // NCM Interface number, description string index, MAC address string index, EP notification address and size, EP data address (out, in), and size, max segment size
+    TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NET, 5, 6, (0x80 | EPNUM_NET_NOTIF), 512, EPNUM_NET_DATA, (0x80 | EPNUM_NET_DATA), 512, CFG_TUD_NET_MTU),
+
+};
+
 void CTAG::DRIVERS::tusb::Init() {
     ESP_LOGI("TUSB", "USB initialization");
 
@@ -92,7 +104,8 @@ void CTAG::DRIVERS::tusb::Init() {
             .string_descriptor = s_str_desc,
             .string_descriptor_count = 7,
             .external_phy = false,
-            .configuration_descriptor = s_midi_cfg_desc,
+            .fs_configuration_descriptor = s_midi_cfg_desc,
+            .hs_configuration_descriptor = s_midi_hs_cfg_desc,
             .self_powered = false,
             .vbus_monitor_io = 0
     };

@@ -74,8 +74,6 @@ namespace CTAG::CTRL
 
         IRAM_ATTR static uint8_t *Update();
 
-        static void Flush();
-
         enum midiStatusValues
         {
             // --- Channel Voice Messages ---
