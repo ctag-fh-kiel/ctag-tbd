@@ -110,6 +110,7 @@ void CTAG::DRIVERS::tusb::Init() {
             .vbus_monitor_io = 0
     };
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
+    vTaskDelay(500 / portTICK_PERIOD_MS);
 }
 
 IRAM_ATTR uint32_t CTAG::DRIVERS::tusb::Read(uint8_t *data, uint32_t len) {
