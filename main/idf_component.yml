@@ -3,7 +3,7 @@ dependencies:
   joltwallet/littlefs: "^1.19.1"
   espressif/mdns: "*"
   espressif/esp_hosted: "*"
-  espressif/esp_wifi_remote: "^0.5.2"
+  espressif/esp_wifi_remote: "^0.8.5"
   ## Required IDF version
   idf:
     version: ">=5.4"
