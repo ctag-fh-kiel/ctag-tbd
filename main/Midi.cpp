@@ -744,8 +744,9 @@ void Midi::noteOff(uint8_t* msg)
 #include "tusb.hpp"
 
 // Provide methods and data for MIDI-message processing and communiction of detected events to audio-thread
-#define RX_BUF_SIZE 128
-#define MIDI_BUF_SZ (RX_BUF_SIZE+32)
+//#define RX_BUF_SIZE 128
+//#define MIDI_BUF_SZ (RX_BUF_SIZE+32)
+#define MIDI_BUF_SZ (256)
 // ### #define DEBUG_MIDI  true    // ### MB20231219
 
 // --- Calculate size of buffer for "CV" and "Gate/Trigger" values to be exchanged with audio-thread / plugins ---
