@@ -32,7 +32,7 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
-static const char *TAG = "wifi station";
+static const char *TAG = "network";
 
 static int s_retry_num = 0;
 
@@ -103,6 +103,7 @@ void Network::event_handler_sta(void *arg, esp_event_base_t event_base,
 }
 
 void Network::wifi_init_sta(void) {
+    ESP_LOGI("Network", "Starting sta interface");
     s_wifi_event_group = xEventGroupCreate();
 
     netif = esp_netif_create_default_wifi_sta();
@@ -170,6 +171,7 @@ void Network::wifi_event_handler_ap(void *arg, esp_event_base_t event_base,
 
 
 void Network::wifi_init_softap(void) {
+    ESP_LOGI("Network", "Starting softap interface");
     netif = esp_netif_create_default_wifi_ap();
 
 
@@ -247,6 +249,7 @@ void Network::initialise_mdns(const string hostname, const string instance_name_
 }
 
 void Network::if_init_usbncm(void){
+    ESP_LOGI("Network", "Starting USB NCM interface");
     const tinyusb_net_config_t net_config = {
             // locally administrated address for the ncm device as it's going to be used internally
             // for configuration only
