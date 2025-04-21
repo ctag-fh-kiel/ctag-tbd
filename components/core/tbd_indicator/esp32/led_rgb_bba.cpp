@@ -22,8 +22,10 @@ respective component folders / files if different from this license.
 ***************/
 #include <tbd/indicator.hpp>
 
-#include "led_strip.h"
 #include "esp_log.h"
+
+#include "led_strip_types.h"
+#include "led_strip.h"
 
 namespace tbd::drivers {
 
@@ -36,7 +38,7 @@ void Indicator::init() {
     led_strip_config_t strip_config = {
             .strip_gpio_num = TBD_NEOPIXEL_PIN_DOUT,
             .max_leds = 1, // at least one LED on board
-            .led_pixel_format = LED_PIXEL_FORMAT_GRB,
+            // .led_pixel_format = 0,
             .led_model = LED_MODEL_WS2812,
             .flags = {
                     .invert_out = 0,

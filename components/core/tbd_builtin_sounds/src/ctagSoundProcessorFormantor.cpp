@@ -36,8 +36,10 @@ respective component folders / files if different from this license.
 #include "plaits/dsp/engine/engine.h"
 
 // --- VULT "Library for TBD" ---
-#include "./vult/vult_formantor.cpp"
-#include "./vult/vultin.cpp"
+
+// FIXME: why are the source files included here?
+// #include <tbd/sound_utils/vult/vult_formantor.cpp>
+// #include <tbd/sound_utils/vult/vultin.cpp"
 
 using namespace CTAG::SP;
 

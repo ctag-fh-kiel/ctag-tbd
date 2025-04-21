@@ -2,6 +2,7 @@ from esphome.core import CORE
 import esphome.config_validation as cv
 import esphome.codegen as cg
 from esphome import pins
+from pathlib import Path
 
 from esphome.components.tbd_module import new_tbd_component
 
@@ -51,5 +52,16 @@ async def to_code(config):
             add_rgb_pins(config[CONF_PINS])
         else:
             cg.add_build_flag('-DTBD_INDICATOR_USE_NEOPIXEL=1')
-            cg.add_build_flag(f'-DTBD_NEOPIXEL_PIN_DOUT={pin}')
+            cg.add_build_flag(f'-DTBD_NEOPIXEL_PIN_DOUT=GPIO_NUM_{pin['number']}')
+
+            from esphome.components.esp32 import add_idf_component
+            add_idf_component(
+                name="led_strip",
+                repo="https://github.com/espressif/idf-extra-components.git",
+                path="led_strip"
+                # refresh='1day'
+            )
+
+            led_strip_include = Path(CORE.build_path) / 'components' / 'led_strip' / 'include'
+            cg.add_build_flag(f'-I{led_strip_include}')
 

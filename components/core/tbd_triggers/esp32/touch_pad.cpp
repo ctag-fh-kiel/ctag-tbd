@@ -1,4 +1,6 @@
-#include <tbd/drivers/common/touch_pad.hpp>
+#ifdef TBD_USE_TOUCHPAD
+
+#include <tbd/private/touch_pad.hpp>
 
 #include <driver/touch_pad.h>
 
@@ -20,7 +22,7 @@ void TouchPad::init() {
 
 void TouchPad::calibrate() {
     for(int i = 0; i < 16; i++) {
-        auto touch_value = touch_intensity(TOUCH_PAD, &touch_value);
+        auto touch_value = touch_intensity();
         touch_threshold += touch_value;
     }
     touch_threshold /= 16;
@@ -32,6 +34,10 @@ uint16_t TouchPad::touch_intensity() {
     return touch_value;
 }
 
-bool TouchPad::is_being_pressed();
+bool TouchPad::is_being_pressed() {
     touch_value > noTouch + 1000
 }
+
+}
+
+#endif

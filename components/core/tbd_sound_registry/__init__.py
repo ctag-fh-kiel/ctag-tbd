@@ -30,9 +30,6 @@ def add_tbd_sounds(file: str, config: cv.Schema):
 
     _, plugins = search_for_plugins(headers, False)
 
-    for header in headers:
-        print(header)
-
     if (whitelist := config.get(CONF_WHITELIST)) is not None:
         whitelist = set(plugin.lower() for plugin in whitelist)
         plugins = [plugin for plugin in plugins if plugin.name.lower() in whitelist]

@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include <tbd/drivers/common/gpio.hpp>
+#include <tbd/gpio_triggers.hpp>
 
 #include "driver/gpio.h"
 #include <string.h>

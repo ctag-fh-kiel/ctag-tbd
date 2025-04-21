@@ -299,6 +299,7 @@ const char* SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const std::stri
         return "";
     }
 
+    // FIXME: back to square 1, no c++ 20 libs
     const std::string sound_processor_presets_filename = "";//fmt::format("mp-{}.jsn", id);
     auto sound_processor_presets_path = *sound_processor_configs_dir / sound_processor_presets_filename;
     if (!fs::is_regular_file(sound_processor_presets_path)) {
@@ -331,6 +332,7 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
         return;
     }
 
+    // FIXME: back to square 1, no c++ 20 libs
     auto sound_processor_presets_filename = "";//fmt::format("mp-{}.jsn", id);
     auto sound_processor_presets_path = *sound_processor_configs_dir / sound_processor_presets_filename;
     if (!fs::is_regular_file(sound_processor_presets_path)) {

@@ -14,7 +14,7 @@ async def to_code(config):
     utils_include_dir = component.include_dir / 'tbd' / 'sound_utils'
     component.add_include_dir(utils_include_dir)
 
-    component.add_include_dir(component.source_dir)
+    # component.add_include_dir(component.source_dir)
      
     if CORE.is_esp32: 
         from esphome.components.esp32 import add_idf_component

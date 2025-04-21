@@ -25,3 +25,4 @@ async def to_code(config):
 
     sound_manager = cg.global_ns.namespace('tbd').namespace('audio').namespace('SoundProcessorManager')
     cg.add(sound_manager.begin())
+

@@ -1,0 +1,14 @@
+esphome:
+    name: tbddesktop
+
+host:
+
+external_components:
+  - source: ${TBD_ROOT}/components/core
+  - source: ${TBD_ROOT}/components/audio
+
+tbd_config:
+
+tbd_storage:
+
+tbd_system:

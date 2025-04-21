@@ -1,0 +1,37 @@
+esphome:
+  name: tbdv2
+    
+esp32:
+  variant: esp32
+  board: esp32-devkit
+  framework: 
+    type: esp-idf
+
+external_components:
+  - source: ${TBD_ROOT}/components/core
+  - source: ${TBD_ROOT}/components/audio
+
+tbd_wm8xxx:
+  type: wm8978
+  pins:
+    spi:
+      sclk: 12
+      mosi: 13
+      miso: 0
+      cs: 4
+    i2s:
+      bclk: 21
+      ws: 19
+      dout: 22
+      din: 27
+
+
+tbd_config:
+
+tbd_control_inputs:
+
+
+# tbd_codec:
+#   type: 
+
+tbd_sound_manager:

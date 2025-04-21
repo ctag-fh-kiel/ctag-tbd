@@ -7,7 +7,6 @@ esp32:
   framework: 
     type: esp-idf
     version: latest
-    # platform_version: 54.3.20 # IDF 5.4.1
 
 external_components:
   - source: ${TBD_ROOT}/components/core
@@ -31,13 +30,12 @@ tbd_midi:
   inputs:
     - UART
     - USB
+    - RP2040
 
 tbd_indicator:
   pin: 38
 
 tbd_triggers:
-
-# tbd_storage:
 
 tbd_builtin_sounds:
   whitelist:
@@ -47,8 +45,3 @@ tbd_builtin_sounds:
 
 
 tbd_sound_manager:
-
-# tbd_instruments:
-
-# tbd_presets:
-
