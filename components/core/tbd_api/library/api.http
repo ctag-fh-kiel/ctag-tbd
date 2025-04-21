@@ -1,0 +1,22 @@
+GET localhost:2024/api/v1/getPlugins
+accept: application/json
+
+###
+
+GET localhost:2024/api/v1/getIOCaps
+accept: application/json
+
+###
+
+GET localhost:2024/api/v1/getActivePlugin/1
+accept: application/json
+
+###
+
+GET localhost:2024/api/v1/getActivePlugin/1
+accept: application/json
+
+### Set Mono Delay Plugin
+
+GET localhost:2024/api/v1/setActivePlugin/0?id=Delay
+accept: application/json

@@ -1,0 +1,54 @@
+esphome:
+  name: tbdbba2
+    
+esp32:
+  variant: esp32s3
+  board: esp32-s3-devkitc-1
+  framework: 
+    type: esp-idf
+    version: latest
+    # platform_version: 54.3.20 # IDF 5.4.1
+
+external_components:
+  - source: ${TBD_ROOT}/components/core
+  - source: ${TBD_ROOT}/components/audio
+  - source: ${TBD_ROOT}/components/control_inputs
+  - source: ${TBD_ROOT}/components/vendor
+
+tbd_aic3254:
+  pins:
+    i2c:
+      sda: 41
+      scl: 20
+    i2s:
+      mclk: 39
+      bclk: 45
+      ws: 1
+      dout: 2
+      din: 21
+
+tbd_midi:
+  inputs:
+    - UART
+    - USB
+
+tbd_indicator:
+  pin: 38
+
+tbd_triggers:
+
+# tbd_storage:
+
+tbd_builtin_sounds:
+  whitelist:
+    - void 
+    - cstrip
+    - spacefx
+
+
+tbd_sound_manager:
+
+# tbd_instruments:
+
+# tbd_presets:
+
