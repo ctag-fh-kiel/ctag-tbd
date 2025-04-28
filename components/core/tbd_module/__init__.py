@@ -1,12 +1,14 @@
-# helpers to convert TBD cmake libraries to esphome modules
+""" Main helper component for all TBD esphome components.
+
+    
+"""
 
 from pathlib import Path
 import logging
-from esphome.core import CORE, EsphomeError
+from esphome.core import CORE
 from dataclasses import dataclass
 from functools import lru_cache
-from esphome.helpers import walk_files
-import os
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +24,6 @@ def get_tbd_source_root() -> Path:
 @lru_cache
 def get_vendor_root():
     return get_tbd_source_root / 'vendor'
-
 
 @dataclass(frozen=True)
 class ComponentInfo:
@@ -133,7 +134,16 @@ class ComponentInfo:
 
 
 def new_tbd_component(init_file: str, *, auto_include=True, auto_sources=True):
-    """ helper to easily create a new TBD module
+    """ Convenience function to create a TBD component.
+
+        arguments:
+
+        :param str init_file: the `__file__` special variable of the component's `__init__.py`
+
+        :param bool auto_include: add default include paths
+        :param bool auto_sources: add default source paths
+
+        :return ComponentInfo: the newly created component
     """
 
     module = ComponentInfo.for_init_file(init_file)
