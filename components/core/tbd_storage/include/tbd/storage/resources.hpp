@@ -1,10 +1,13 @@
 #pragma once
 
-#include <tbd/storage/common/resources.hpp>
+#include <optional>
 #include <tbd/storage/file_system.hpp>
+#include <tbd/logging.hpp>
 
 
 namespace tbd::storage {
+
+extern const std::string fs_root;
 
 inline std::optional<tbd::storage::filesystem::path> get_fs_path(const std::string& path) {
     namespace fs = tbd::storage::filesystem;

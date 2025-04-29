@@ -1,6 +1,6 @@
 #ifdef USE_ESP32
 
-#include <tbd/storage/common/flash_storage.hpp>
+#include <tbd/storage/flash_storage.hpp>
 
 #include <esp_flash.h>
 #include <tbd/logging.hpp>

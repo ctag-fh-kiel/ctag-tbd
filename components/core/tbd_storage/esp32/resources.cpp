@@ -1,6 +1,6 @@
 #ifdef USE_ESP32
 
-#include <tbd/storage/common/resources.hpp>
+#include <tbd/storage/resources.hpp>
 
 
 namespace tbd::storage {

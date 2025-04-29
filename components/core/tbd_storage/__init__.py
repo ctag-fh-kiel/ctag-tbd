@@ -8,6 +8,9 @@ from esphome.components.tbd_module import new_tbd_component
 
 AUTO_LOAD = ['tbd_module']
 
+if CORE.is_esp32:
+    DEPENDENCIES = ['esp32']
+
 CONF_USE_FILESYSTEM_WRAPPER = 'use_filesystem_wrapper'
 CONF_SAMPLES_ADDRESS        = 'sample_rom_start'
 CONF_SAMPLES_SIZE           = 'sample_rom_size'
@@ -18,6 +21,7 @@ DEFAULT_SAMPLE_ROM_SIZE=0x1500000
 if CORE.is_host:
     CONFIG_SCHEMA = cv.Schema({
         cv.Optional(CONF_USE_FILESYSTEM_WRAPPER, default=False): bool, 
+        cv.Optional(CONF_SAMPLES_SIZE, default=DEFAULT_SAMPLE_ROM_SIZE): cv.int_range(min=0),
     })
 else:
     CONFIG_SCHEMA = cv.Schema(cv.Schema({
@@ -34,6 +38,8 @@ async def to_code(config):
             CORE.add_build_flag('-DTBD_FILE_SYSTEM_USE_WRAPPER=1')
         else:
             CORE.add_build_flag('-DTBD_FILE_SYSTEM_USE_WRAPPER=0')
+        cg.add_build_flag(f'-DTBD_STORAGE_SAMPLES_ADDRESS={0}')
+        cg.add_build_flag(f'-DTBD_DEFAULT_SAMPLE_ROM_SIZE={config[CONF_SAMPLES_SIZE]}')
     else:
         from esphome.components.esp32 import add_idf_component
 

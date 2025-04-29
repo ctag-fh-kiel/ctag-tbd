@@ -1,6 +1,6 @@
 #ifdef USE_HOST
 
-#include <tbd/storage/common/resources.hpp>
+#include <tbd/storage/resources.hpp>
 
 
 namespace tbd::storage {

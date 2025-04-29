@@ -20,7 +20,7 @@ respective component folders / files if different from this license.
 ***************/
 #ifdef USE_ESP32
 
-#include <tbd/storage/common/file_system.hpp>
+#include <tbd/storage/file_system.hpp>
 
 #include <sys/unistd.h>
 #include <sys/stat.h>

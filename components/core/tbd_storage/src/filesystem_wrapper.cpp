@@ -1,4 +1,4 @@
-#include <tbd/storage/common/filesystem_wrapper.hpp>
+#include <tbd/storage/filesystem_wrapper.hpp>
 
 #ifndef TBD_FILE_SYSTEM_USE_WRAPPER
     #error "file system wrapper not available in config"
