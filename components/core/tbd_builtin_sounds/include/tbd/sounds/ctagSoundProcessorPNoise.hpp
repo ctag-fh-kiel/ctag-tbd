@@ -23,30 +23,28 @@ respective component folders / files if different from this license.
 #include <tbd/sound_processor.hpp>
 #include <atomic>
 #include <string>
-#include "tbd/helpers/ctagPNoiseGen.hpp"
+#include <tbd/sound_utils/ctagPNoiseGen.hpp>
 
-using namespace CTAG::SP::HELPERS;
+using namespace tbd::sound_utils;
 
-namespace CTAG {
-    namespace SP {
-        class ctagSoundProcessorPNoise : public ctagSoundProcessor {
-        public:
-            void Process(const ProcessData &) override;
+namespace tbd::sounds {
+    
+struct SoundProcessorPNoise : audio::SoundProcessor {
 
-           virtual void Init(std::size_t blockSize, void *blockPtr) override;
+    void Process(const audio::ProcessData&) override;
 
-        private:
+    virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-            virtual void knowYourself() override;
+protected:
 
-            ctagPNoiseGen noiseGen;
-            // process only variables
-            float fFactor = 0.f;
+    ctagPNoiseGen noiseGen;
+    // process only variables
+    float fFactor = 0.f;
 
-            // sectionHpp
-           std::atomic<int32_t> enable, trig_enable;
-           std::atomic<int32_t> factor, cv_factor;
-            // sectionHpp
-        };
-    }
+    // sectionHpp
+    std::atomic<int32_t> enable, trig_enable;
+    std::atomic<int32_t> factor, cv_factor;
+    // sectionHpp
+};
+
 }

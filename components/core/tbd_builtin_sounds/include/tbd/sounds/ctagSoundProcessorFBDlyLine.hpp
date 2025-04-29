@@ -23,33 +23,31 @@ respective component folders / files if different from this license.
 #include <tbd/sound_processor.hpp>
 #include <atomic>
 #include <string>
-#include "tbd/helpers/ctagFBDelayLine.hpp"
+#include <tbd/sound_utils/ctagFBDelayLine.hpp>
 
 
-namespace CTAG {
-    namespace SP {
-        class ctagSoundProcessorFBDlyLine : public ctagSoundProcessor {
-        public:
-            void Process(const ProcessData &) override;
+namespace tbd::sounds {
+    
+struct SoundProcessorFBDlyLine : audio::SoundProcessor {
 
-           virtual void Init(std::size_t blockSize, void *blockPtr) override;
+    void Process(const audio::ProcessData&) override;
 
-        private:
+    virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-            virtual void knowYourself() override;
+protected:
 
-            const uint32_t maxLength {88200};
-            HELPERS::ctagFBDelayLine dlyLine {maxLength};
-            // process only variables
-            float fLength = 0.f, cvLength = 0.f;
-            float fLevel = 1.f;
-            // sectionHpp
-           std::atomic<int32_t> length, cv_length;
-           std::atomic<int32_t> feedback, cv_feedback;
-           std::atomic<int32_t> drywet, cv_drywet;
-           std::atomic<int32_t> level, cv_level;
-           std::atomic<int32_t> enable, trig_enable;
-            // sectionHpp
-        };
-    }
+    const uint32_t maxLength {88200};
+    sound_utils::ctagFBDelayLine dlyLine {maxLength};
+    // process only variables
+    float fLength = 0.f, cvLength = 0.f;
+    float fLevel = 1.f;
+    // sectionHpp
+    std::atomic<int32_t> length, cv_length;
+    std::atomic<int32_t> feedback, cv_feedback;
+    std::atomic<int32_t> drywet, cv_drywet;
+    std::atomic<int32_t> level, cv_level;
+    std::atomic<int32_t> enable, trig_enable;
+    // sectionHpp
+};
+
 }

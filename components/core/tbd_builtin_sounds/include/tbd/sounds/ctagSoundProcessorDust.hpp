@@ -23,44 +23,42 @@ respective component folders / files if different from this license.
 #include <tbd/sound_processor.hpp>
 #include <atomic>
 #include <string>
-#include "tbd/helpers/ctagWNoiseGen.hpp"
-#include "tbd/helpers/ctagGNoiseGen.hpp"
-#include "tbd/helpers/ctagDustGen.hpp"
+#include <tbd/sound_utils/ctagWNoiseGen.hpp>
+#include <tbd/sound_utils/ctagGNoiseGen.hpp>
+#include <tbd/sound_utils/ctagDustGen.hpp>
 
-using namespace CTAG::SP::HELPERS;
+using namespace tbd::sound_utils;
 
-namespace CTAG {
-    namespace SP {
-        class ctagSoundProcessorDust : public ctagSoundProcessor {
-        public:
-            void Process(const ProcessData &) override;
+namespace tbd::sounds {
+    
+struct SoundProcessorDust : audio::SoundProcessor {
 
-           virtual void Init(std::size_t blockSize, void *blockPtr) override;
+    void Process(const audio::ProcessData&) override;
 
-        private:
+    virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-            virtual void knowYourself() override;
+protected:
 
-            // process only variables
+    // process only variables
 
-            // random sources
-            ctagDustGen dust;
+    // random sources
+    ctagDustGen dust;
 
-            // filter coefs
-            float coeffs[6];
-            float w1[2];
-            float w2[2];
+    // filter coefs
+    float coeffs[6];
+    float w1[2];
+    float w2[2];
 
-            // sectionHpp
-           std::atomic<int32_t> bipolar, trig_bipolar;
-           std::atomic<int32_t> rate, cv_rate;
-           std::atomic<int32_t> level, cv_level;
-           std::atomic<int32_t> width, cv_width;
-           std::atomic<int32_t> smooth, cv_smooth;
-           std::atomic<int32_t> bp_enable, trig_bp_enable;
-           std::atomic<int32_t> bp_fcut, cv_bp_fcut;
-           std::atomic<int32_t> bp_q, cv_bp_q;
-            // sectionHpp
-        };
-    }
+    // sectionHpp
+    std::atomic<int32_t> bipolar, trig_bipolar;
+    std::atomic<int32_t> rate, cv_rate;
+    std::atomic<int32_t> level, cv_level;
+    std::atomic<int32_t> width, cv_width;
+    std::atomic<int32_t> smooth, cv_smooth;
+    std::atomic<int32_t> bp_enable, trig_bp_enable;
+    std::atomic<int32_t> bp_fcut, cv_bp_fcut;
+    std::atomic<int32_t> bp_q, cv_bp_q;
+    // sectionHpp
+};
+
 }

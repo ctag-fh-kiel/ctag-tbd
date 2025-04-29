@@ -26,28 +26,29 @@ respective component folders / files if different from this license.
 #include <tbd/sound_processor.hpp>
 #include "freeverb/revmodel.hpp"
 
-namespace CTAG::SP {
-    class ctagSoundProcessorFVerb : public ctagSoundProcessor {
-    public:
-        void Process(const ProcessData &) override;
+namespace tbd::sounds {
 
-       virtual void Init(std::size_t blockSize, void *blockPtr) override;
+struct SoundProcessorFVerb : audio::SoundProcessor {
 
-    private:
-        virtual void knowYourself() override;
+    void Process(const audio::ProcessData&) override;
 
-        revmodel freeverb;
+    virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-        // sectionHpp
-       std::atomic<int32_t> roomsize, cv_roomsize;
-       std::atomic<int32_t> damp, cv_damp;
-       std::atomic<int32_t> dry, cv_dry;
-       std::atomic<int32_t> wet, cv_wet;
-       std::atomic<int32_t> width, cv_width;
-       std::atomic<int32_t> mode, trig_mode;
-       std::atomic<int32_t> mono, trig_mono;
-        // sectionHpp
+protected:
 
-    };
+    revmodel freeverb;
+
+    // sectionHpp
+    std::atomic<int32_t> roomsize, cv_roomsize;
+    std::atomic<int32_t> damp, cv_damp;
+    std::atomic<int32_t> dry, cv_dry;
+    std::atomic<int32_t> wet, cv_wet;
+    std::atomic<int32_t> width, cv_width;
+    std::atomic<int32_t> mode, trig_mode;
+    std::atomic<int32_t> mono, trig_mono;
+    // sectionHpp
+
+};
+
 }
 

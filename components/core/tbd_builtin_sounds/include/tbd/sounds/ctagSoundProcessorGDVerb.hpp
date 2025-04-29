@@ -28,44 +28,44 @@ respective component folders / files if different from this license.
 #include "freeverb3/strev.hpp"
 #include "freeverb3/progenitor.hpp"
 
-namespace CTAG::SP {
-    class ctagSoundProcessorGDVerb : public ctagSoundProcessor {
-    public:
-        void Process(const ProcessData &) override;
+namespace tbd::sounds {
 
-       virtual void Init(std::size_t blockSize, void *blockPtr) override;
+struct SoundProcessorGDVerb : audio::SoundProcessor {
 
-    private:
+    void Process(const audio::ProcessData&) override;
 
-        virtual void knowYourself() override;
+    virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-        // stereo reverb object
-        fv3::strev_f strev;
+protected:
 
-        float prefRevTime = 1.f;
+    // stereo reverb object
+    fv3::strev_f strev;
 
-        // sectionHpp
-       std::atomic<int32_t> revtime, cv_revtime;
-       std::atomic<int32_t> dccut, cv_dccut;
-       std::atomic<int32_t> idiffusion1, cv_idiffusion1;
-       std::atomic<int32_t> idiffusion2, cv_idiffusion2;
-       std::atomic<int32_t> diffusion1, cv_diffusion1;
-       std::atomic<int32_t> diffusion2, cv_diffusion2;
-       std::atomic<int32_t> inputdamp, cv_inputdamp;
-       std::atomic<int32_t> damp, cv_damp;
-       std::atomic<int32_t> outputdamp, cv_outputdamp;
-       std::atomic<int32_t> spin, cv_spin;
-       std::atomic<int32_t> spindiff, cv_spindiff;
-       std::atomic<int32_t> spinlimit, cv_spinlimit;
-       std::atomic<int32_t> wander, cv_wander;
-       std::atomic<int32_t> modnoise1, cv_modnoise1;
-       std::atomic<int32_t> modnoise2, cv_modnoise2;
-       std::atomic<int32_t> autodiff, trig_autodiff;
-       std::atomic<int32_t> dry, cv_dry;
-       std::atomic<int32_t> wet, cv_wet;
-       std::atomic<int32_t> width, cv_width;
-       std::atomic<int32_t> mono, trig_mono;
-        // sectionHpp
-    };
+    float prefRevTime = 1.f;
+
+    // sectionHpp
+    std::atomic<int32_t> revtime, cv_revtime;
+    std::atomic<int32_t> dccut, cv_dccut;
+    std::atomic<int32_t> idiffusion1, cv_idiffusion1;
+    std::atomic<int32_t> idiffusion2, cv_idiffusion2;
+    std::atomic<int32_t> diffusion1, cv_diffusion1;
+    std::atomic<int32_t> diffusion2, cv_diffusion2;
+    std::atomic<int32_t> inputdamp, cv_inputdamp;
+    std::atomic<int32_t> damp, cv_damp;
+    std::atomic<int32_t> outputdamp, cv_outputdamp;
+    std::atomic<int32_t> spin, cv_spin;
+    std::atomic<int32_t> spindiff, cv_spindiff;
+    std::atomic<int32_t> spinlimit, cv_spinlimit;
+    std::atomic<int32_t> wander, cv_wander;
+    std::atomic<int32_t> modnoise1, cv_modnoise1;
+    std::atomic<int32_t> modnoise2, cv_modnoise2;
+    std::atomic<int32_t> autodiff, trig_autodiff;
+    std::atomic<int32_t> dry, cv_dry;
+    std::atomic<int32_t> wet, cv_wet;
+    std::atomic<int32_t> width, cv_width;
+    std::atomic<int32_t> mono, trig_mono;
+    // sectionHpp
+};
+
 }
 

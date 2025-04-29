@@ -21,50 +21,48 @@ respective component folders / files if different from this license.
 
 
 #include <tbd/sound_processor.hpp>
-#include "tbd/helpers/ctagWNoiseGen.hpp"
-#include "tbd/helpers/ctagEnvFollow.hpp"
-#include "tbd/helpers/ctagDecay.hpp"
+#include <tbd/sound_utils/ctagWNoiseGen.hpp>
+#include <tbd/sound_utils/ctagEnvFollow.hpp>
+#include <tbd/sound_utils/ctagDecay.hpp>
 #include "freeverb3/efilter.hpp"
 #include <atomic>
 #include <string>
 
-using namespace CTAG::SP::HELPERS;
+using namespace tbd::sound_utils;
 
-namespace CTAG {
-    namespace SP {
-        class ctagSoundProcessorDLoop : public ctagSoundProcessor {
-        public:
-            void Process(const ProcessData &) override;
+namespace tbd::sounds {
+    
+struct SoundProcessorDLoop : audio::SoundProcessor {
 
-           virtual void Init(std::size_t blockSize, void *blockPtr) override;
+    void Process(const audio::ProcessData&) override;
+
+    virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
 
-        private:
+protected:
 
-            virtual void knowYourself() override;
+    // process only objects
+    ctagWNoiseGen d, d_pan, d_level, s_l, s_r;
+    ctagDecay decL, decR;
+    fv3::dccut_f dccutl, dccutr;
+    uint32_t loopCntr;
+    uint32_t lastReset;
 
-            // process only objects
-            ctagWNoiseGen d, d_pan, d_level, s_l, s_r;
-            ctagDecay decL, decR;
-            fv3::dccut_f dccutl, dccutr;
-            uint32_t loopCntr;
-            uint32_t lastReset;
+    // sectionHpp
+    std::atomic<int32_t> reset, trig_reset;
+    std::atomic<int32_t> loop, trig_loop;
+    std::atomic<int32_t> seed, cv_seed;
+    std::atomic<int32_t> level, cv_level;
+    std::atomic<int32_t> density, cv_density;
+    std::atomic<int32_t> slen, cv_slen;
+    std::atomic<int32_t> sspread, cv_sspread;
+    std::atomic<int32_t> ofssspread, cv_ofssspread;
+    std::atomic<int32_t> vspread, cv_vspread;
+    std::atomic<int32_t> ofsvspread, cv_ofsvspread;
+    std::atomic<int32_t> s_enable, trig_s_enable;
+    std::atomic<int32_t> s_rlevel, cv_s_rlevel;
+    std::atomic<int32_t> s_decay, cv_s_decay;
+    // sectionHpp
+};
 
-            // sectionHpp
-           std::atomic<int32_t> reset, trig_reset;
-           std::atomic<int32_t> loop, trig_loop;
-           std::atomic<int32_t> seed, cv_seed;
-           std::atomic<int32_t> level, cv_level;
-           std::atomic<int32_t> density, cv_density;
-           std::atomic<int32_t> slen, cv_slen;
-           std::atomic<int32_t> sspread, cv_sspread;
-           std::atomic<int32_t> ofssspread, cv_ofssspread;
-           std::atomic<int32_t> vspread, cv_vspread;
-           std::atomic<int32_t> ofsvspread, cv_ofsvspread;
-           std::atomic<int32_t> s_enable, trig_s_enable;
-           std::atomic<int32_t> s_rlevel, cv_s_rlevel;
-           std::atomic<int32_t> s_decay, cv_s_decay;
-            // sectionHpp
-        };
-    }
 }

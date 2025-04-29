@@ -23,38 +23,36 @@ respective component folders / files if different from this license.
 #include <tbd/sound_processor.hpp>
 #include "plaits/dsp/voice.h"
 
-namespace CTAG {
-    namespace SP {
-        class ctagSoundProcessorTBDaits : public ctagSoundProcessor {
-        public:
-            virtual void Process(const ProcessData &) override;
+namespace tbd::sounds {
+    
+struct SoundProcessorTBDaits : audio::SoundProcessor {
 
-            virtual ~ctagSoundProcessorTBDaits();
+    virtual void Process(const audio::ProcessData&) override;
 
-           virtual void Init(std::size_t blockSize, void *blockPtr) override;
+    virtual ~SoundProcessorTBDaits();
+
+    virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
 
-        private:
-            virtual void knowYourself() override;
+protected:
+    // private attributes could go here
+    plaits::Voice voice;
+    plaits::Patch patch = {};
+    char *shared_buffer;
+    // sectionHpp
+    std::atomic<int32_t> smodel, cv_smodel;
+    std::atomic<int32_t> trigger, trig_trigger;
+    std::atomic<int32_t> frequency, cv_frequency;
+    std::atomic<int32_t> level, cv_level;
+    std::atomic<int32_t> harmonics, cv_harmonics;
+    std::atomic<int32_t> timbre, cv_timbre;
+    std::atomic<int32_t> morph, cv_morph;
+    std::atomic<int32_t> lpg_color, cv_lpg_color;
+    std::atomic<int32_t> lpg_decay, cv_lpg_decay;
+    std::atomic<int32_t> mod_freq, cv_mod_freq;
+    std::atomic<int32_t> mod_timbre, cv_mod_timbre;
+    std::atomic<int32_t> mod_morph, cv_mod_morph;
+    // sectionHpp
+};
 
-            // private attributes could go here
-            plaits::Voice voice;
-            plaits::Patch patch = {};
-            char *shared_buffer;
-            // sectionHpp
-           std::atomic<int32_t> smodel, cv_smodel;
-           std::atomic<int32_t> trigger, trig_trigger;
-           std::atomic<int32_t> frequency, cv_frequency;
-           std::atomic<int32_t> level, cv_level;
-           std::atomic<int32_t> harmonics, cv_harmonics;
-           std::atomic<int32_t> timbre, cv_timbre;
-           std::atomic<int32_t> morph, cv_morph;
-           std::atomic<int32_t> lpg_color, cv_lpg_color;
-           std::atomic<int32_t> lpg_decay, cv_lpg_decay;
-           std::atomic<int32_t> mod_freq, cv_mod_freq;
-           std::atomic<int32_t> mod_timbre, cv_mod_timbre;
-           std::atomic<int32_t> mod_morph, cv_mod_morph;
-            // sectionHpp
-        };
-    }
 }

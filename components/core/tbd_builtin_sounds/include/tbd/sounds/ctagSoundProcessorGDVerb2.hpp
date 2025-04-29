@@ -28,58 +28,56 @@ respective component folders / files if different from this license.
 #include "freeverb3/strev.hpp"
 #include "freeverb3/progenitor.hpp"
 
-namespace CTAG::SP {
-    class ctagSoundProcessorGDVerb2 : public ctagSoundProcessor {
-    public:
-        void Process(const ProcessData &) override;
+namespace tbd::sounds {
+struct SoundProcessorGDVerb2 : audio::SoundProcessor {
 
-       virtual void Init(std::size_t blockSize, void *blockPtr) override;
+	void Process(const audio::ProcessData&) override;
 
-    private:
+	virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-        virtual void knowYourself() override;
+protected:
 
-        // stereo reverb object
-        fv3::progenitor_f prog_rev;
+	// stereo reverb object
+	fv3::progenitor_f prog_rev;
 
-        float prefSpinToWander = 0.f;
-        float prefRevTime = 1.f;
+	float prefSpinToWander = 0.f;
+	float prefRevTime = 1.f;
 
-        // sectionHpp
-		std::atomic<int32_t> exprtdecay, trig_exprtdecay;
-		std::atomic<int32_t> revtime, cv_revtime;
-		std::atomic<int32_t> decay0, cv_decay0;
-		std::atomic<int32_t> decay1, cv_decay1;
-		std::atomic<int32_t> decay2, cv_decay2;
-		std::atomic<int32_t> decay3, cv_decay3;
-		std::atomic<int32_t> decayf, cv_decayf;
-		std::atomic<int32_t> exprtdiffu, trig_exprtdiffu;
-		std::atomic<int32_t> diffusion1, cv_diffusion1;
-		std::atomic<int32_t> diffusion2, cv_diffusion2;
-		std::atomic<int32_t> diffusion3, cv_diffusion3;
-		std::atomic<int32_t> diffusion4, cv_diffusion4;
-		std::atomic<int32_t> exprtdamp, trig_exprtdamp;
-		std::atomic<int32_t> dccut, cv_dccut;
-		std::atomic<int32_t> inputdamp, cv_inputdamp;
-		std::atomic<int32_t> damp, cv_damp;
-		std::atomic<int32_t> outputdamp, cv_outputdamp;
-		std::atomic<int32_t> outputdampbw, cv_outputdampbw;
-		std::atomic<int32_t> bassboost, cv_bassboost;
-		std::atomic<int32_t> damp2, cv_damp2;
-		std::atomic<int32_t> bassbw, cv_bassbw;
-		std::atomic<int32_t> exprtmod, trig_exprtmod;
-		std::atomic<int32_t> spin, cv_spin;
-		std::atomic<int32_t> spinlimit, cv_spinlimit;
-		std::atomic<int32_t> wander, cv_wander;
-		std::atomic<int32_t> spin2, cv_spin2;
-		std::atomic<int32_t> spinlimit2, cv_spinlimit2;
-		std::atomic<int32_t> wander2, cv_wander2;
-		std::atomic<int32_t> spin2wander, cv_spin2wander;
-		std::atomic<int32_t> dry, cv_dry;
-		std::atomic<int32_t> wet, cv_wet;
-		std::atomic<int32_t> width, cv_width;
-		std::atomic<int32_t> mono, trig_mono;
-		// sectionHpp
-    };
+	// sectionHpp
+	std::atomic<int32_t> exprtdecay, trig_exprtdecay;
+	std::atomic<int32_t> revtime, cv_revtime;
+	std::atomic<int32_t> decay0, cv_decay0;
+	std::atomic<int32_t> decay1, cv_decay1;
+	std::atomic<int32_t> decay2, cv_decay2;
+	std::atomic<int32_t> decay3, cv_decay3;
+	std::atomic<int32_t> decayf, cv_decayf;
+	std::atomic<int32_t> exprtdiffu, trig_exprtdiffu;
+	std::atomic<int32_t> diffusion1, cv_diffusion1;
+	std::atomic<int32_t> diffusion2, cv_diffusion2;
+	std::atomic<int32_t> diffusion3, cv_diffusion3;
+	std::atomic<int32_t> diffusion4, cv_diffusion4;
+	std::atomic<int32_t> exprtdamp, trig_exprtdamp;
+	std::atomic<int32_t> dccut, cv_dccut;
+	std::atomic<int32_t> inputdamp, cv_inputdamp;
+	std::atomic<int32_t> damp, cv_damp;
+	std::atomic<int32_t> outputdamp, cv_outputdamp;
+	std::atomic<int32_t> outputdampbw, cv_outputdampbw;
+	std::atomic<int32_t> bassboost, cv_bassboost;
+	std::atomic<int32_t> damp2, cv_damp2;
+	std::atomic<int32_t> bassbw, cv_bassbw;
+	std::atomic<int32_t> exprtmod, trig_exprtmod;
+	std::atomic<int32_t> spin, cv_spin;
+	std::atomic<int32_t> spinlimit, cv_spinlimit;
+	std::atomic<int32_t> wander, cv_wander;
+	std::atomic<int32_t> spin2, cv_spin2;
+	std::atomic<int32_t> spinlimit2, cv_spinlimit2;
+	std::atomic<int32_t> wander2, cv_wander2;
+	std::atomic<int32_t> spin2wander, cv_spin2wander;
+	std::atomic<int32_t> dry, cv_dry;
+	std::atomic<int32_t> wet, cv_wet;
+	std::atomic<int32_t> width, cv_width;
+	std::atomic<int32_t> mono, trig_mono;
+	// sectionHpp
+};
+
 }
-

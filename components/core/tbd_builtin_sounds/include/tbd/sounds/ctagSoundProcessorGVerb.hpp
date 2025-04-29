@@ -29,33 +29,32 @@ extern "C" {
 #include "gverb/gverb.h"
 }
 
-namespace CTAG::SP {
-    class ctagSoundProcessorGVerb : public ctagSoundProcessor {
-    public:
-        void Process(const ProcessData &) override;
+namespace tbd::sounds {
 
-       virtual void Init(std::size_t blockSize, void *blockPtr) override;
+struct SoundProcessorGVerb : audio::SoundProcessor {
 
-        ~ctagSoundProcessorGVerb() override;
+    void Process(const audio::ProcessData&) override;
+    virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-    private:
-        virtual void knowYourself() override;
+    ~SoundProcessorGVerb() override;
 
-        float maxRoomSize = 500.f;
-        // gverb objects
-        ty_gverb *gverb;
-        // process only variables
-        float fRoomSz, fRevTime, fDamping, fInputBW, fEarlyLvl, fTailLvl, fDryWet;
-        // sectionHpp
-       std::atomic<int32_t> roomsize, cv_roomsize;
-       std::atomic<int32_t> revtime, cv_revtime;
-       std::atomic<int32_t> damping, cv_damping;
-       std::atomic<int32_t> inputbw, cv_inputbw;
-       std::atomic<int32_t> earlylvl, cv_earlylvl;
-       std::atomic<int32_t> taillvl, cv_taillvl;
-       std::atomic<int32_t> drywet, cv_drywet;
-       std::atomic<int32_t> mono, trig_mono;
-        // sectionHpp
-    };
+protected:
+
+    float maxRoomSize = 500.f;
+    // gverb objects
+    ty_gverb *gverb;
+    // process only variables
+    float fRoomSz, fRevTime, fDamping, fInputBW, fEarlyLvl, fTailLvl, fDryWet;
+    // sectionHpp
+    std::atomic<int32_t> roomsize, cv_roomsize;
+    std::atomic<int32_t> revtime, cv_revtime;
+    std::atomic<int32_t> damping, cv_damping;
+    std::atomic<int32_t> inputbw, cv_inputbw;
+    std::atomic<int32_t> earlylvl, cv_earlylvl;
+    std::atomic<int32_t> taillvl, cv_taillvl;
+    std::atomic<int32_t> drywet, cv_drywet;
+    std::atomic<int32_t> mono, trig_mono;
+    // sectionHpp
+};
+
 }
-
