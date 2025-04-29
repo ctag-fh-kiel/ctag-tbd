@@ -1,0 +1,20 @@
+#include <tbd/sound_processor/parameters.hpp>
+
+
+namespace tbd::audio::parameters {
+
+const uint32_t NUM_PLUGINS = {{plugins|length}};
+
+const PluginInfo PLUGIN_LIST[] = { {%- for plugin in plugins %}
+    { "{{plugin.name}}", {{plugin.param_offset}}, {{plugin.num_params}}, {{plugin.num_ints}}, {{plugin.num_uints}}, {{plugin.num_triggers}}, {{plugin.num_floats}}, {{plugin.num_ufloats}} },
+{%- endfor %} 
+};
+
+const uint32_t NUM_PARAMETERS = {{params|length}};
+
+const ParamInfo PARAMETER_LIST[] = { {%- for param in params %}
+    { "{{param.name}}", {{param.plugin_id}}, {{param.type.name}}},
+{%- endfor %} 
+};
+
+}
