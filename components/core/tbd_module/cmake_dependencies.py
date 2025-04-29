@@ -26,22 +26,30 @@ class Library:
     build: Build
 
 
-def cmake_dependency(name: str, url: str, ref: str, *, refresh:TimePeriod = TimePeriod(days=1), cmake_parameters: list[tuple[str, str]] = []):
+def cmake_dependency(
+        name: str, 
+        url: str, 
+        ref: str, 
+        *,
+        refresh:TimePeriod = TimePeriod(days=1), 
+        cmake_parameters: list[tuple[str, str]] = []
+    ) -> str:
+
     repo_dir, *_ = git.clone_or_update(
-        url='https://github.com/thestk/rtaudio.git',
-        ref='6.0.1',
+        url=url,
+        ref=ref,
         refresh=refresh,
         domain=f'cmake_libs/{name}',
     )
     commands = generate_compilation_commands_with_cmake(repo_dir, cmake_parameters)
     write_library_json_from_compilation_commands(repo_dir, name, ref, commands)
-    CORE.add_platformio_option('lib_deps', [f'file:///{repo_dir}'])
+    CORE.add_platformio_option('lib_deps', [f'{name}=file:///{repo_dir}'])
+    return repo_dir
 
 
-def generate_compilation_commands_with_cmake(repo_dir: Path, cmake_parameters: list[tuple[str, str]]) -> list[BuildCommand]:
+def generate_compilation_commands_with_cmake(repo_dir: Path, cmake_parameters: dict[str, str] = {}) -> list[BuildCommand]:
     cmake_file = repo_dir / 'CMakeLists.txt'
-    print('REPO DIR', repo_dir)
-    parameters = [f'-D{param[0]}={param[1]}' for param in cmake_parameters]
+    parameters = [f'-D{param}={value}' for param, value in cmake_parameters.items()]
     cmd = ['cmake', '-DCMAKE_EXPORT_COMPILE_COMMANDS=1', f'-B{repo_dir}'] + parameters + [cmake_file]
     ret = subprocess.run(cmd, cwd=repo_dir, capture_output=True, check=False)
     if ret.returncode != 0 and ret.stderr:
@@ -65,7 +73,7 @@ def write_library_json_from_compilation_commands(repo_dir: Path, name: str, vers
         command_parts = command.command.split()
         for arg in command_parts:
             if arg.startswith('-D'):
-                defines.add(arg[2:])
+                defines.add(arg)
             if arg.startswith('-I'):
                 include_path = Path(arg[2:])
                 include_path = f'-I{include_path.relative_to(repo_dir) if include_path.absolute() else include_path}'
@@ -76,10 +84,9 @@ def write_library_json_from_compilation_commands(repo_dir: Path, name: str, vers
         files.add(command_file)
 
     build_obj = Build(flags=[*includes, *defines], srcFilter=files)
+
     library_obj = Library(name=name, version=version, build=build_obj)
     library_data = TypeAdapter(Library).dump_json(library_obj, indent=4)
-    print(library_data)
-
     with open(repo_dir / 'library.json', 'wb') as f:
         f.write(library_data)
 
