@@ -19,7 +19,7 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include <tbd/audio_device/codec.hpp>
+#include <tbd/audio_device.hpp>
 
 #include "freertos/FreeRTOS.h"
 #include <driver/i2s_std.h>
@@ -46,9 +46,9 @@ es8388 codec;
 }
 
 
-namespace tbd::drivers {
+namespace tbd {
 
-void Codec::init() {
+void AudioDevice::init() {
     ESP_LOGI("BBA Codec", "Starting i2s setup...");
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(i2s_port_t(0), I2S_ROLE_MASTER);
     chan_cfg.auto_clear = false;
@@ -102,24 +102,23 @@ void Codec::init() {
     codec.init();
 }
 
-void Codec::deinit() {
+void AudioDevice::deinit() {
 
 }
 
-void Codec::HighPassEnable() {
+void AudioDevice::set_high_pass(bool is_enabled) {
+
 }
 
-void Codec::HighPassDisable() {
-}
-
-void Codec::RecalibDCOffset() {
-}
-
-void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
+void AudioDevice::set_output_levels(const uint32_t left, const uint32_t right) {
     codec.setOutputVolume(static_cast<uint8_t>(left), static_cast<uint8_t>(right));
 }
 
-void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
+void AudioDevice::recalib_dc_offset() {
+
+}
+
+void IRAM_ATTR AudioDevice::read_buffer(float *buf, uint32_t sz) {
     int16_t tmp[sz * 2];
     int16_t *ptrTmp = tmp;
     size_t nb;
@@ -133,7 +132,7 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
     }
 }
 
-void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
+void IRAM_ATTR AudioDevice::write_buffer(float *buf, uint32_t sz) {
     int16_t tmp[sz * 2];
     int16_t tmp2;
     size_t nb;

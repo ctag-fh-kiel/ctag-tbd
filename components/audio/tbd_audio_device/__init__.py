@@ -1,11 +1,22 @@
+from esphome.components.tbd_module.python_dependencies import python_dependencies
+python_dependencies('jinja2')
+
+from functools import lru_cache
+from pathlib import Path
 from enum import IntEnum
-from esphome.components.tbd_module import new_tbd_component, ComponentInfo
+from esphome.components.tbd_module import new_tbd_component, ComponentInfo, get_generated_include_path
 from esphome import pins
 import esphome.config_validation as cv
 import esphome.codegen as cg
-from dataclasses import dataclass
+import dataclasses
+import jinja2 as ji
 
 AUTO_LOAD = ['tbd_module']
+
+DEFAULT_SAMPLE_RATE = 44100
+DEFAULT_CHUNK_SIZE = 32
+
+CONF_CHUNK_SIZE = 'chunk_size'
 
 CONF_PINS = 'pins'
 CONF_TYPE = 'type'
@@ -27,6 +38,7 @@ CONF_BCLK_PIN = 'bclk'
 CONF_WS_PIN = 'ws'
 CONF_DOUT_PIN = 'dout'
 CONF_DIN_PIN = 'din'
+
 
 # SPI device config pinout
 SPIPinConfig = {
@@ -67,11 +79,15 @@ class SampleIO(IntEnum):
     WORKER = 0
     CALLBACK = 1
 
-@dataclass
+@dataclasses.dataclass
 class AudioDevice:
     module: ComponentInfo
+    sample_rate: int
+    num_channels: int
+    chunk_size: int
     sample_io: SampleIO
     subtype: str | None = None
+
 
     def add_flag(self):
         name = (self.subtype if self.subtype is not None else self.module.name).upper()
@@ -88,8 +104,10 @@ class AudioDevice:
             return f'GPIO_NUM_{config[key]['number']}'
 
         codec_name = self.module.name.upper()  
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2C_PIN_SDA={get_pin_number(CONF_SDA_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2C_PIN_SCL={get_pin_number(CONF_SCL_PIN)}')
+        cg.add_build_flag(f'-DTBD_{codec_name}_SPI_PIN_CLK={get_pin_number(CONF_SCLK_PIN)}')
+        cg.add_build_flag(f'-DTBD_{codec_name}_SPI_PIN_MOSI={get_pin_number(CONF_MOSI_PIN)}')
+        cg.add_build_flag(f'-DTBD_{codec_name}_SPI_PIN_MISO={get_pin_number(CONF_MISO_PIN)}')
+        cg.add_build_flag(f'-DTBD_{codec_name}_SPI_PIN_CS={get_pin_number(CONF_CS_PIN)}')
 
     def add_i2c(self, config):
         def get_pin_number(key):
@@ -104,19 +122,53 @@ class AudioDevice:
             return f'GPIO_NUM_{config[key]['number']}'
 
         codec_name = self.module.name.upper()  
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_MCLK={get_pin_number(CONF_MCLK_PIN)}')
+        if CONF_MCLK_PIN in config:
+            cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_MCLK={get_pin_number(CONF_MCLK_PIN)}')
         cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_BCLK={get_pin_number(CONF_BCLK_PIN)}')
         cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_WS={get_pin_number(CONF_WS_PIN)}')
         cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_DOUT={get_pin_number(CONF_DOUT_PIN)}')
         cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_DIN={get_pin_number(CONF_DIN_PIN)}')
 
-def new_tbd_audio_device(init_file: str, sample_io: SampleIO, config: cv.Schema):  
+    def add_config_header(self):
+        base_module = get_tbdd_audio_device_base_module()
+        template_path = base_module.path / 'templates'
+        header = ji.Environment(loader=ji.FileSystemLoader(template_path), autoescape=ji.select_autoescape()) \
+                    .get_template('audio_settings.j2.hpp') \
+                    .render(sample_rate=self.sample_rate, num_channels=self.num_channels, chunk_size=self.chunk_size)
+        
+        gen_include_path = get_generated_include_path() / 'tbd' / base_module.name
+        gen_include_path.mkdir(parents=True, exist_ok=True)
+        module_header = gen_include_path / 'audio_settings.hpp'
+
+        with open(module_header, 'w') as f:
+            f.write(header)
+
+@dataclasses.dataclass(frozen=True)
+class AudioDeviceParams:
+    sample_rate: int
+    num_channels: int
+    chunk_size: int
+    sample_io: SampleIO
+    subtype: str | None = None
+
+def new_tbd_audio_device(init_file: str, params: AudioDeviceParams):  
     module = new_tbd_component(init_file)
-     
-    subtype = config[CONF_TYPE] if CONF_TYPE in config else None
-    device = AudioDevice(module, sample_io, subtype)
+
+    device = AudioDevice(
+        module=module, 
+        **dataclasses.asdict(params),
+    )
     device.add_flag()
     device.add_sample_io_flag()
+    device.add_config_header()
     return device
 
-new_tbd_component(__file__)
+@lru_cache
+def get_tbdd_audio_device_base_module():
+    return new_tbd_component(__file__)
+
+async def to_code(config):
+    module = get_tbdd_audio_device_base_module()
+    module.add_include_dir('tinywav')
+    module.add_source_dir('tinywav')
+

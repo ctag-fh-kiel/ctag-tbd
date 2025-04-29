@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include <tbd/audio_device/codec.hpp>
+#include <tbd/audio_device.hpp>
 
 #include "freertos/FreeRTOS.h"
 
@@ -536,11 +536,11 @@ void enable_master_clock_on_pin0() {
 
 }
 
-namespace tbd::drivers {
+namespace tbd {
 
 //// public codec interface implementation ////
 
-void Codec::init() {
+void AudioDevice::init() {
     init_config_bus();
     initialize_codec();
     maybe_wait_to_settle(50);
@@ -555,164 +555,153 @@ void Codec::init() {
 }
 
 
-void Codec::deinit() {
+void AudioDevice::deinit() {
     // FIXME: release drivers for updates etc
 }
 
 
-void Codec::HighPassEnable() {
-// #if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
-#if TBD_AUDIO_WM8731
-    unsigned char cmd;
-    trans.flags = 0;
-    trans.length = 8;
-    trans.rxlength = 0;
-    trans.tx_buffer = &cmd;
-    trans.rx_buffer = NULL;
-    trans.addr = 0x05 << 1;
-    cmd = 0x00; // disable HPF and store last DC value
-    ESP_ERROR_CHECK(spi_device_transmit(codec_h, &trans));
-#endif
+void AudioDevice::set_high_pass(bool is_enabled) {
+    #if TBD_AUDIO_WM8731
+        if (is_enabled) {
+            unsigned char cmd;
+            trans.flags = 0;
+            trans.length = 8;
+            trans.rxlength = 0;
+            trans.tx_buffer = &cmd;
+            trans.rx_buffer = NULL;
+            trans.addr = 0x05 << 1;
+            cmd = 0x00; // disable HPF and store last DC value
+            ESP_ERROR_CHECK(spi_device_transmit(codec_h, &trans));
+        } else {
+            unsigned char cmd;
+            trans.flags = 0;
+            trans.length = 8;
+            trans.rxlength = 0;
+            trans.tx_buffer = &cmd;
+            trans.rx_buffer = NULL;
+            trans.addr = 0x05 << 1;
+            cmd = 0x11; // disable HPF and store last DC value`
+            ESP_ERROR_CHECK(spi_device_transmit(codec_h, &trans));
+        }
+    #endif
 }
 
 
-void Codec::HighPassDisable() {
-// #if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
-#if TBD_AUDIO_WM8731
-    unsigned char cmd;
-    trans.flags = 0;
-    trans.length = 8;
-    trans.rxlength = 0;
-    trans.tx_buffer = &cmd;
-    trans.rx_buffer = NULL;
-    trans.addr = 0x05 << 1;
-    cmd = 0x11; // disable HPF and store last DC value`
-    ESP_ERROR_CHECK(spi_device_transmit(codec_h, &trans));
-#endif
+
+void AudioDevice::SetOutputLevels(const uint32_t left, const uint32_t right) {
+    #if TBD_AUDIO_WM8978
+        if(!is_ready){
+            ESP_LOGD("CODEC", "Codec not initialized");
+        }
+        ESP_LOGD("CODEC", "Setting levels to %li, %li", left, right);
+        WM8978_HPvol_Set(static_cast<uint8_t>(left), static_cast<uint8_t>(right));
+    #endif
 }
 
-
-void Codec::RecalibDCOffset() {
-// #if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
-#if TBD_AUDIO_WM8731
-    if(!is_ready) return;
-    HighPassEnable();
-    vTaskDelay(50 / portTICK_PERIOD_MS); // wait until system is settled a bit
-    HighPassDisable();
-#endif
+void AudioDevice::recalib_dc_offset() {
+    #if TBD_AUDIO_WM8731
+        if(!is_ready) return;
+        HighPassEnable();
+        vTaskDelay(50 / portTICK_PERIOD_MS); // wait until system is settled a bit
+        HighPassDisable();
+    #endif
 }
 
-
-void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
-// #if defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
-#if TBD_AUDIO_WM8978
-    if(!is_ready){
-        ESP_LOGD("CODEC", "Codec not initialized");
-    }
-    ESP_LOGD("CODEC", "Setting levels to %li, %li", left, right);
-    WM8978_HPvol_Set(static_cast<uint8_t>(left), static_cast<uint8_t>(right));
-#endif
-}
-
-
-void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
-// #if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
-#if TBD_AUDIO_WM8731
-    int32_t tmp[sz * 2];
-    int32_t tmp2;
-    size_t nb;
-    const float mult = 8388608.f;
-    // 32 bit word config
-    for (int i = 0; i < sz; i++) {
-        tmp2 = (int32_t) (mult * buf[i * 2]);
-        tmp2 = MAX(tmp2, -8388608);
-        tmp2 = MIN(tmp2, 8388607);
-        tmp[i * 2] = tmp2 << 8;
-        tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
-        tmp2 = MAX(tmp2, -8388608);
-        tmp2 = MIN(tmp2, 8388607);
-        tmp[i * 2 + 1] = tmp2 << 8;
-    }
-    i2s_write(I2S_NUM_0, tmp, sz * 4 * 2, &nb, portMAX_DELAY);
+void IRAM_ATTR AudioDevice::read_buffer(float *buf, uint32_t sz) {
+    #if TBD_AUDIO_WM8731
+        int32_t tmp[sz * 2];
+        int32_t *ptrTmp = tmp;
+        size_t nb;
+        const float div = 0.0000000004656612873077392578125f;
+        // 32 bit word config
+        i2s_read(I2S_NUM_0, tmp, sz * 4 * 2, &nb, portMAX_DELAY);
+        while(sz > 0){
+            *buf++ = div * (float) *ptrTmp++;
+            *buf++ = div * (float) *ptrTmp++;
+            sz--;
+        }
     // #elif CONFIG_TBD_PLATFORM_AEM
-#elif TBD_AUDIO_WM8974
-    int16_t tmp[sz * 2];
-    int16_t tmp2;
-    size_t nb;
-    const float mult = 32767.f;
-    // 16 bit word config
-    for (int i = 0; i < sz; i++) {
-        tmp2 = (int32_t) (mult * buf[i * 2]);
-        tmp2 = MAX(tmp2, -32767);
-        tmp2 = MIN(tmp2, 32767);
-        tmp[i * 2] = tmp2;
-        //tmp[i * 2 + 1] = 0; // not used in mono codec
-    }
-    i2s_write(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
-// #elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
-#elif TBD_AUDIO_WM8978
-    int16_t tmp[sz * 2];
-    int16_t tmp2;
-    size_t nb;
-    const float mult = 32767.f;
-    // 16 bit word config
-    for (int i = 0; i < sz; i++) {
-        tmp2 = (int32_t) (mult * buf[i * 2]);
-        tmp2 = MAX(tmp2, -32767);
-        tmp2 = MIN(tmp2, 32767);
-        tmp[i * 2] = tmp2;
-        tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
-        tmp2 = MAX(tmp2, -32767);
-        tmp2 = MIN(tmp2, 32767);
-        tmp[i * 2 + 1] = tmp2;
-    }
-    i2s_write(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
-#endif
+    #elif TBD_AUDIO_WM8974
+        int16_t tmp[sz * 2];
+        int16_t *ptrTmp = tmp;
+        size_t nb;
+        const float div = 3.0518509476E-5f;
+        i2s_read(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
+        while (sz > 0) {
+            float s = div * (float) *ptrTmp++;
+            ptrTmp++;
+            *buf++ = s;
+            *buf++ = s;
+            sz--;
+        }
+    // #elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
+    #elif TBD_AUDIO_WM8978
+        int16_t tmp[sz * 2];
+        int16_t *ptrTmp = tmp;
+        size_t nb;
+        const float div = 3.0518509476E-5f;
+        // 16 bit word config stereo
+        i2s_read(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
+        while (sz > 0) {
+            *buf++ = div * (float) *ptrTmp++;
+            *buf++ = div * (float) *ptrTmp++;
+            sz--;
+        }
+    #endif
 }
 
-
-void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
-// #if defined(CONFIG_TBD_PLATFORM_V1) || defined(CONFIG_TBD_PLATFORM_STR)
-#if TBD_AUDIO_WM8731
-    int32_t tmp[sz * 2];
-    int32_t *ptrTmp = tmp;
-    size_t nb;
-    const float div = 0.0000000004656612873077392578125f;
-    // 32 bit word config
-    i2s_read(I2S_NUM_0, tmp, sz * 4 * 2, &nb, portMAX_DELAY);
-    while(sz > 0){
-        *buf++ = div * (float) *ptrTmp++;
-        *buf++ = div * (float) *ptrTmp++;
-        sz--;
-    }
-// #elif CONFIG_TBD_PLATFORM_AEM
-#elif TBD_AUDIO_WM8974
-    int16_t tmp[sz * 2];
-    int16_t *ptrTmp = tmp;
-    size_t nb;
-    const float div = 3.0518509476E-5f;
-    i2s_read(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
-    while (sz > 0) {
-        float s = div * (float) *ptrTmp++;
-        ptrTmp++;
-        *buf++ = s;
-        *buf++ = s;
-        sz--;
-    }
-// #elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
-#elif TBD_AUDIO_WM8978
-    int16_t tmp[sz * 2];
-    int16_t *ptrTmp = tmp;
-    size_t nb;
-    const float div = 3.0518509476E-5f;
-    // 16 bit word config stereo
-    i2s_read(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
-    while (sz > 0) {
-        *buf++ = div * (float) *ptrTmp++;
-        *buf++ = div * (float) *ptrTmp++;
-        sz--;
-    }
-#endif
+void IRAM_ATTR AudioDevice::write_buffer(float *buf, uint32_t sz) {
+    #if TBD_AUDIO_WM8731
+        int32_t tmp[sz * 2];
+        int32_t tmp2;
+        size_t nb;
+        const float mult = 8388608.f;
+        // 32 bit word config
+        for (int i = 0; i < sz; i++) {
+            tmp2 = (int32_t) (mult * buf[i * 2]);
+            tmp2 = MAX(tmp2, -8388608);
+            tmp2 = MIN(tmp2, 8388607);
+            tmp[i * 2] = tmp2 << 8;
+            tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
+            tmp2 = MAX(tmp2, -8388608);
+            tmp2 = MIN(tmp2, 8388607);
+            tmp[i * 2 + 1] = tmp2 << 8;
+        }
+        i2s_write(I2S_NUM_0, tmp, sz * 4 * 2, &nb, portMAX_DELAY);
+        // #elif CONFIG_TBD_PLATFORM_AEM
+    #elif TBD_AUDIO_WM8974
+        int16_t tmp[sz * 2];
+        int16_t tmp2;
+        size_t nb;
+        const float mult = 32767.f;
+        // 16 bit word config
+        for (int i = 0; i < sz; i++) {
+            tmp2 = (int32_t) (mult * buf[i * 2]);
+            tmp2 = MAX(tmp2, -32767);
+            tmp2 = MIN(tmp2, 32767);
+            tmp[i * 2] = tmp2;
+            //tmp[i * 2 + 1] = 0; // not used in mono codec
+        }
+        i2s_write(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
+    // #elif defined(CONFIG_TBD_PLATFORM_V2) || defined(CONFIG_TBD_PLATFORM_MK2)
+    #elif TBD_AUDIO_WM8978
+        int16_t tmp[sz * 2];
+        int16_t tmp2;
+        size_t nb;
+        const float mult = 32767.f;
+        // 16 bit word config
+        for (int i = 0; i < sz; i++) {
+            tmp2 = (int32_t) (mult * buf[i * 2]);
+            tmp2 = MAX(tmp2, -32767);
+            tmp2 = MIN(tmp2, 32767);
+            tmp[i * 2] = tmp2;
+            tmp2 = (int32_t) (mult * buf[i * 2 + 1]);
+            tmp2 = MAX(tmp2, -32767);
+            tmp2 = MIN(tmp2, 32767);
+            tmp[i * 2 + 1] = tmp2;
+        }
+        i2s_write(I2S_NUM_0, tmp, sz * 2 * 2, &nb, portMAX_DELAY);
+    #endif
 }
 
 }
