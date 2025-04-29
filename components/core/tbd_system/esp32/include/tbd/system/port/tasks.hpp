@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tbd/esp32_only.hpp>
+
 #include <freertos/FreeRTOS.h>
 #include <freertos/idf_additions.h>
 

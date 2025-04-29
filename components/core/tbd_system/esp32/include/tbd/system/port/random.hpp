@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tbd/esp32_only.hpp>
+
 #include <tbd/system/common/random_pre.hpp>
 #include "xtensa/core-macros.h"
 

@@ -1,5 +1,10 @@
 #pragma once
 
+#include <tbd/esp32_only.hpp>
+
+#include <tbd/logging.hpp>
+
+#include <FreeRTOS.h>
 #include <freertos/semphr.h>
 
 namespace tbd::system {

@@ -1,3 +1,7 @@
+#pragma once
+
+#include <tbd/host_only.hpp>
+
 #include <tbd/system/common/cpu_cores.hpp>
 
 #include <chrono>

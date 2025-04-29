@@ -1,3 +1,7 @@
+#pragma once
+
+#include <tbd/esp32_only.hpp>
+
 #include <tbd/system/common/cpu_cores.hpp>
 
 #include "esp_cpu.h"

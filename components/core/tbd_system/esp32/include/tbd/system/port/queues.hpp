@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tbd/esp32_only.hpp>
+
 #include <optional>
 #include <portmacro.h>
 #include <freertos/queue.h>

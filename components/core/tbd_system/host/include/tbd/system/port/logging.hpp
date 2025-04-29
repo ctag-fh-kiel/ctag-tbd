@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tbd/host_only.hpp>
+
 #include <tbd/system/common/logging_pre.hpp>
 
 #include <stdio.h>

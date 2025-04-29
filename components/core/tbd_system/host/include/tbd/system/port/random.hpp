@@ -1,5 +1,7 @@
 #pragma once
 
+#include <tbd/host_only.hpp>
+
 #include <tbd/system/common/random_pre.hpp>
 #include <random>
 

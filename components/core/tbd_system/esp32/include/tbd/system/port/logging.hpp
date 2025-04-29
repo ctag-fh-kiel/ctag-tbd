@@ -1,3 +1,7 @@
+#pragma once
+
+#include <tbd/esp32_only.hpp>
+
 #include <esp_log.h>
 
 #include <tbd/system/common/logging_pre.hpp>
