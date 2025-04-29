@@ -1,0 +1,115 @@
+https://www.kvraudio.com/forum/viewtopic.php?t=348999
+Tanh - continued fraction:
+x2 = x*x;
+a = (((x2+378)*x2+17325)*135135)*x;
+b = ((28*x2+3150)*x2+62370)*x2+135135;
+tanh_out = a/b;
+
+Tanh - Cody & Waite's rational approximation:
+x2 = x*x;
+p0 = -1613.119023996228053;
+p1 = -99.225929672236083313;
+p2 = -0.96437492777225469787;
+q0 = 4840.357071988688686;
+q1 = 2233.7720718962312926;
+q2 = 112.74474380534949335;
+
+b = x2*((p2*x2+p1)*x2+p0)/(((x2+q2)*x2+q1)*x2+q0);
+tanh_out = x+x*b;
+
+Atan - rational approximation:
+x2 = x*x;
+x4 = x2*x2;
+a = x*(105+55*x2);
+b = 105+90*x2+9*x4;
+atan_out = a/b;
+
+Other useful functions:
+
+Inverse sqrt:
+out = x/sqrt((x*x)+1);
+
+Cubic Soft Clipper: (Julius Smith)
+
+a = clip(x,-1,1);
+out = 1.5*a*(1-(a*a)*0.3333333);
+
+My "non-boosting" sigmoid:
+out = tanh(sinh(x));
+//rewrite as -> out = 1-2/(exp(exp(x)-1/exp(x))+1)
+
+Fast tanh-like 3rd term: (mentioned by C.Budde)
+a = abs(x);
+b = 6+a*(3+a);
+out = (x*b)/(a*b+12);
+
+Langevin Function: (mind your singularities here!)
+out = coth(x) - (1/x);
+
+My nasty symmetrical 'non-limiting' distortion: (based on asinh)
+a = x*2;
+out = (ln(a+sqrt(a*a)+1))*0.5;
+
+My supressor dist:
+a = sin(atan(x));
+b = cos(tanh(x*x+0.4342944819));
+out = atan(a/b);
+
+Some Asym types:
+
+My 'real' inv_sqrt clipper: (nasty)
+a = clip(x,-1,1);
+b = a+1;
+c = a*1.8;
+d = inv_sqrt(c);
+out = a/(c-0.48);
+
+My Asym nr7:
+a = atan2(cosh(x),sinh(x)+1);
+out = tanh(x*-a*0.32*-a)*0.56;
+
+if(samp > 1.0) samp = calcmax;
+else if(samp > curvethresh)
+{
+	//vfloat curveamp = ;
+	samp = function(samp) * calcexposcale + curvethresh;
+}
+
+//Asym variation
+a = ((0.0515*x+0.03899)*x)+x;
+a2 = a*a;
+out = x/sqrt(a2+0.6211);
+
+Final version, Stenseth, 17. february, 2006.
+
+
+// Fast differential amplifier approximation
+
+    double b_inr = b_in * b_filterdrive;
+    if (b_inr < 0) {b_inr = -b_inr;}
+    double b_inrns = b_inr;
+    if (b_inr > 1) {b_inr = 1;}
+    double b_dax = b_inr - ((b_inr * b_inr) * 0.5);
+    b_dax = b_dax - b_inr;
+    b_inr = b_inr + b_dax;
+
+    b_inr = b_inr * 0.24;
+
+    if (b_inr > 1) {b_inr = 1;}
+    b_dax = b_inr - ((b_inr * 0.33333333) * (b_inr * b_inr));
+    b_dax = b_dax - b_inr;
+    b_inr = b_inr + b_dax;
+
+    b_inr = b_inr / 0.24;
+
+    double b_mul = b_inrns / b_inr; // beware of zero
+    b_sbuf1 = ((b_sbuf1 - (b_sbuf1 * 0.4300)) + (b_mul * 0.4300));
+
+    b_mul = b_sbuf1 + ((b_mul - b_sbuf1) * 0.6910);
+    b_in = b_in / b_mul;
+
+    //double tanh
+    a = tanh(x);
+    out = a /((a*a)+1);
+
+    //note control the (a*a)level with an envelope follower for some dynamic fun.
