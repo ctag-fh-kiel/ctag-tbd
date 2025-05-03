@@ -5,7 +5,7 @@ import jinja2 as ji
 
 from .reflectables import Headers
 from .reflectable_parser import ReflectableFinder
-from .reflectables import Reflectables
+from .reflectables import Reflectables, ReflectableDescription
 from .plugin_meta_generator import PluginReflectionGenerator, ParamEntry
 
 
@@ -13,7 +13,7 @@ __LOGGER = logging.getLogger(__file__)
 
 
 def setter_name(param: ParamEntry):
-    return f'set_{param.name}'
+    return f'set_{param.snake_name}'
 
 @lru_cache
 def templates() -> ji.Environment:
@@ -27,7 +27,7 @@ def get_template(name: str) -> ji.Template:
     return templates().get_template(name)
 
 
-def search_for_plugins(headers: Headers, strict: bool) -> PluginReflectionGenerator:
+def search_for_plugins(headers: Headers, strict: bool) -> list[ReflectableDescription]:
     collector = ReflectableFinder()
 
     for header in headers:
@@ -38,7 +38,7 @@ def search_for_plugins(headers: Headers, strict: bool) -> PluginReflectionGenera
                 collector.add_from_file(header)
             except Exception as e:
                 __LOGGER.error(f'error parsing {header}: {e}')
-    return PluginReflectionGenerator(collector.reflectables)
+    return collector.reflectables
 
 def write_plugin_reflection_info(processor: PluginReflectionGenerator, out_folder: Path):
     template = get_template('plugin_info.jinja.cpp')

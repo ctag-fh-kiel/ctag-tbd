@@ -1,10 +1,10 @@
-import dataclasses
+from dataclasses import dataclass
 from pathlib import Path
 import re
 from typing import Final
 
 import humps
-from .reflectables import ScopeDescription, PropertyDescription, ReflectableDescription, Reflectables, Attributes
+from .reflectables import ScopeType, ScopeDescription, PropertyDescription, ReflectableDescription, Reflectables, Attributes
 import cxxheaderparser.simple as cpplib
 import logging
 import voluptuous as vol
@@ -12,6 +12,126 @@ from enum import Enum, unique
 
 
 _LOGGER = logging.getLogger(__file__)
+
+
+@dataclass(frozen=True)
+class ScopePathSegment:
+    name: str
+    type: ScopeType
+
+    def namespace(self) -> str:
+        if self.type != ScopeType.NAMESPACE:
+            raise ValueError(f'scope segment is not a namespace: {self.type}')
+        return self.name
+    
+    def cls(self) -> str:
+        if self.type != ScopeType.CLASS:
+            raise ValueError(f'scope segment is not a namespace: {self.type}')
+        return self.name
+
+
+@dataclass(frozen=True)
+class ScopePath:
+    segments: list[ScopePathSegment]
+
+    @staticmethod
+    def root() -> 'ScopePath':
+        return ScopePath([])
+
+    def add_namespace(self, namespace: str) -> 'ScopePath':
+        if self.segments and self.segments[-1].type != ScopeType.NAMESPACE:
+            raise ValueError('namespaces can only be declared in namespaces')
+        return ScopePath([*self.segments, ScopePathSegment(namespace, ScopeType.NAMESPACE)])
+    
+    def add_class(self, cls: str) -> 'ScopePath':
+        if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE, ScopeType.CLASS]:
+            raise ValueError('classes can only be declared in namespaces or other classes')
+        return ScopePath([*self.segments, ScopePathSegment(cls, ScopeType.CLASS)])
+    
+    def add_field(self, field: str) -> 'ScopePath':
+        if self.segments and self.segments[-1].type not in [ScopeType.CLASS, ScopeType.FIELD]:
+            raise ValueError('fields can only be declared in classes and fields')
+
+        return ScopePath([*self.segments, ScopePathSegment(field, ScopeType.FIELD)])
+    
+    def add_static_field(self, field: str) -> 'ScopePath':
+        if self.segments and self.segments[-1].type != ScopeType.CLASS:
+            raise ValueError('static fields can only be declared in classes')
+
+        return ScopePath([*self.segments, ScopePathSegment(field, ScopeType.STATIC_FIELD)])
+
+    def namespace(self) -> str:
+        return self.segments[-1].namespace()
+
+    def cls(self) -> str:
+        return self.segments[-1].cls()
+
+    @property
+    def namespaces(self):
+        retval, _, _ = self.split()
+        return retval
+    
+    @property
+    def classes(self):
+        _, retval, _ = self.split()
+        return retval
+    
+    @property
+    def fields(self):
+        _, _, retval = self.split()
+        return retval
+
+    @property
+    def path(self) -> str:
+        if not self.segments:
+            return ''
+        
+        fst, *tail = self.segments
+        retval = fst.name
+        for elem in tail:
+            if elem.type == ScopeType.FIELD:
+                retval += f'.{elem.name}'
+            else:
+                 retval += f'::{elem.name}'
+        return retval
+    
+    def __str__(self) -> str:
+        return self.path
+    
+    def __repr__(self) -> str:
+        return f'ScopePath({self.path})'
+
+    def split(self) -> tuple['ScopePath', 'ScopePath', 'ScopePath']:
+        class SplitDone(BaseException):
+            pass
+
+        namespaces = []
+        classes = []
+        fields = []
+
+        try:
+            pos, *rest = self.segments
+            while pos.type == ScopeType.NAMESPACE:
+                namespaces.append(pos)
+                if not rest:
+                    raise SplitDone
+                pos, *rest = rest
+
+            while pos.type == ScopeType.CLASS:
+                classes.append(pos)
+                if not rest:
+                    raise SplitDone
+                pos, *rest = rest
+
+            while pos.type == ScopeType.FIELD:
+                fields.append(pos)
+                if not rest:
+                    raise SplitDone
+                pos, *rest = rest
+        except SplitDone:
+            return ScopePath(namespaces), ScopePath(classes), ScopePath(fields)
+
+        raise ValueError('bad segment order in scope')
 
 
 @unique
@@ -72,7 +192,7 @@ ATTR_NEGATIVES_SCHEMA = {
 
 VALID_PARAM_ATTRS = set(['name', 'description', 'norm', 'scale', 'min', 'max', 'cut_negative', 'sft', 'pan', 'add'])
 
-@dataclasses.dataclass(frozen=True)
+@dataclass(frozen=True)
 class ParamEntry:
     name: str
     plugin_id: int
@@ -153,7 +273,7 @@ class ParamEntry:
         return ParamEntry(name=name, plugin_id=plugin_id, type=type, operation=operation, cut_negatives=cut_negatives, **filtered_attrs)
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclass(frozen=True)
 class PluginParams:
     int_params: list[ParamEntry]
     uint_params: list[ParamEntry]
@@ -214,7 +334,7 @@ class PluginParams:
             ufloat_params=params[ParamType.UFLOAT_PARAM],
         )
 
-@dataclasses.dataclass(frozen=True)
+@dataclass(frozen=True)
 class PluginEntry:
     name: str
     full_name: str
@@ -333,30 +453,36 @@ def get_param_type(param_type: str) -> ParamType | None:
     return PARAM_TYPES.get(param_type)
 
 class PluginReflectionGenerator:
-    def __init__(self, reflectables: Reflectables):
-        self._reflectables: Final = reflectables
-        self._plugins: list[ReflectableDescription] | None = None
+    def __init__(self):
+        self._reflectables: list[ReflectableDescription] = []
+        self._plugins: list[ReflectableDescription] = []
         self._headers: set[Path] | None = None
         self._plugin_entries: list[PluginEntry] | None = None
         self._num_params: int = -1
 
-    def prefilter(self, *, whitelist: list[str] | None = None, blacklist: list[str] | None = None):
+    def add(self, reflectables: Reflectables, *, whitelist: list[str] | None = None, blacklist: list[str] | None = None) -> Reflectables:
         """ Find all plugin classes from all known classes with optional whitelisting or blacklisting. """
+
+        self._reflectables += reflectables
 
         if whitelist and blacklist:
             raise ValueError('provide either blacklist or whitelist for plugin prefiltering')
         
         if whitelist is not None:
             whitelist = set(plugin_name.lower() for plugin_name in whitelist)
-            self._plugins = [cls for cls in self._reflectables if is_plugin_class(cls.raw) and is_in_list(cls, whitelist)]
-            return
+            added_plugins = [cls for cls in reflectables if is_plugin_class(cls.raw) and is_in_list(cls, whitelist)]
+            self._plugins += added_plugins
+            return added_plugins
 
         if blacklist is not None:
             blacklist = set(plugin_name.lower() for plugin_name in blacklist)
-            self._plugins = [cls for cls in self._reflectables if is_plugin_class(cls.raw) and not is_in_list(cls, blacklist)]
-            return
+            added_plugins= [cls for cls in reflectables if is_plugin_class(cls.raw) and not is_in_list(cls, blacklist)]
+            self._plugins += added_plugins
+            return added_plugins
 
-        self._plugins = [cls for cls in self._reflectables if is_plugin_class(cls.raw)]
+        added_plugins = [cls for cls in reflectables if is_plugin_class(cls.raw)]
+        self._plugins += added_plugins
+        return added_plugins
 
 
     def preprocess(self):
@@ -382,7 +508,7 @@ class PluginReflectionGenerator:
         return self._plugin_entries
     
     @property
-    def param_list(self):
+    def param_list(self) -> list[ParamEntry]:
         if self._num_params < 0:
             raise ValueError('parameter list present, need to run process')
         return [param for plugin in self._plugin_entries for param in plugin.param_list()]
@@ -392,7 +518,7 @@ class PluginReflectionGenerator:
         self._num_params = 0
         self._headers = set()
         for plugin_id, plugin in enumerate(self._plugins):
-            field_scope = ScopeDescription.root()
+            field_scope = ScopePath.root()
             unsorted_params = self._flatten_plugin_params(plugin_id, plugin, field_scope)
             plugin_params = PluginParams.from_unsorted(unsorted_params)
 
@@ -407,7 +533,7 @@ class PluginReflectionGenerator:
             self._headers.add(plugin.header)
             self._num_params += plugin_params.num_params
 
-    def _flatten_plugin_params(self, plugin_id: int, plugin: ReflectableDescription, scope: ScopeDescription) -> list[ParamEntry]:
+    def _flatten_plugin_params(self, plugin_id: int, plugin: ReflectableDescription, scope: ScopePath) -> list[ParamEntry]:
         flattened_params = []
         for field in plugin.properties:
             param_scope = scope.add_field(field.field_name)
@@ -436,7 +562,7 @@ class PluginReflectionGenerator:
     def _find_field_type(self, field_type: str) -> list[ReflectableDescription]:
         found_types = []
         for cls in self._reflectables:
-            if field_type in cls.full_name.path:
+            if field_type == cls.full_name.path:
                 found_types.append(cls)
         return found_types
               

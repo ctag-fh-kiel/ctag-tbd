@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Final, List, Optional
 import logging
@@ -7,11 +8,13 @@ import cxxheaderparser.simple as cpplib
 import cxxheaderparser.types as cpptypes
 
 from .reflectables import (
+    normalize_typename,
     Properties, 
     PropertyDescription, 
     ReflectableDescription, 
     ScopeDescription,
-    Headers
+    Headers,
+    Attributes
 )
 
 _LOGGER = logging.getLogger(__file__)
@@ -59,7 +62,7 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
         self._attrs = None
         
 
-    def _parse_attrs(self):
+    def _parse_attrs(self) -> Attributes:
         tokens = self._attrs
         if tokens is None or len(tokens) < 3:
             return None
@@ -266,17 +269,17 @@ class LazyScopeCollector:
     @property
     def path(self):
         return self._scope.path
-    
+
+
 
 ClassFilter = Callable[[cpplib.ClassScope], bool]
-
 
 class ReflectableFinder:
     def __init__(self):
         self._headers: List[str] = []
         self._fields: Properties = []
         self._classes: list[ReflectableDescription] = []
-        self._scopes: list[ScopeDescription] = []
+        # self._scopes: list[ScopeDescription] = []
 
     @property
     def reflectables(self) -> List[ReflectableDescription]:
@@ -297,35 +300,25 @@ class ReflectableFinder:
         code = ''.join(lines)
         Parser(file_name, code, visitor).parse()
         parsed = visitor.data
-        self._find_classes(parsed.namespace, ScopeDescription.root(), file_name)
+        self._find_classes(ScopeDescription.from_root(parsed.namespace), file_name)
 
     # private
 
-    def _find_classes(self, namespace: cpplib.NamespaceScope, scope: ScopeDescription, header: Path) -> None:
-        self._collect_classes_in_namespace(namespace, scope, header)
-        for ns_name, ns in namespace.namespaces.items():
-            sub_namespace = scope.add_namespace(ns_name)
-            self._collect_classes_in_namespace(namespace, sub_namespace, header)
+    def _find_classes(self, scope: ScopeDescription, header: Path) -> None:
+        self._collect_classes_in_namespace(scope, header)
+        for ns in scope.namespace().namespaces.values():
+            sub_namespace_scope = scope.add_namespace(ns)
+            self._find_classes(sub_namespace_scope, header)
 
-            self._find_classes(ns, sub_namespace, header)
+    def _collect_classes_in_namespace(self, scope: ScopeDescription, header: Path):
+        for cls in scope.namespace().classes:
+            cls_scope = scope.add_class(cls)
+            self._collect_class_and_nested_classes(cls_scope, header)
 
-    def _collect_classes_in_namespace(self, namespace: cpplib.NamespaceScope, scope: ScopeDescription, header: Path):
-        for cls in namespace.classes:
-            self._collect_class_and_nested_classes(cls, scope, header)
 
-
-    def _collect_class_and_nested_classes(self, cls: cpplib.ClassScope, scope: ScopeDescription, header: Path):
-        cls_name = cls.class_decl.typename.segments[-1]
-        
-        # annonymous groups need to be handled differently
-        if isinstance(cls_name, cpptypes.AnonymousName):
-            annon_id = cls_name.id
-            cls_name = f'__struct_{annon_id}'
-        else:
-            cls_name = cls_name.format()
-
-        cls_scope = scope.add_class(cls_name)
-        attrs = cls.class_decl.attrs
+    def _collect_class_and_nested_classes(self, scope: ScopeDescription, header: Path):
+        cls = scope.cls()
+        attrs = scope.attrs()
         name = None
         description = None
 
@@ -335,10 +328,10 @@ class ReflectableFinder:
             if 'description' in attrs:
                 description = attrs['description']
 
-        properties = self._extract_properties(cls, cls_scope)
+        properties = self._extract_properties(scope, header)
         reflectable = ReflectableDescription(
-            cls_name=cls_name, 
-            full_name = cls_scope,
+            cls_name=scope.name(), 
+            full_name = scope,
             header=header,
             raw=cls,
             friendly_name=name, 
@@ -348,16 +341,19 @@ class ReflectableFinder:
         self._classes.append(reflectable)
 
         for nested_cls in cls.classes:
-            self._collect_class_and_nested_classes(nested_cls, cls_scope, header)
-
+            nested_cls_scope = scope.add_class(nested_cls)
+            self._collect_class_and_nested_classes(nested_cls_scope, header)
 
 
     def _collect_nested_classes(self):
         pass
         
-    def _extract_properties(self, cls: cpplib.ClassScope, scope: LazyScopeCollector) -> Properties:
+    def _extract_properties(self, scope: ScopeDescription, header: Path) -> Properties:
+        cls = scope.cls()
         properties = []
         for field in cls.fields:
+            field_scope = scope.add_field(field)
+
             # attributes can not be pointers, references, arrays etc
             if not isinstance(field.type, cpptypes.Type):
                 continue
@@ -367,17 +363,10 @@ class ReflectableFinder:
                 continue
 
             field_name = field.name.format()
-            field_scope = scope.add_field(field_name)
-            type_name = field.type.typename.format()
+
+            type_name = self._full_find_field_type(field_scope)
             name = None
             description = None
-
-            # annonymous groups need to be handled differently
-            type_segments = field.type.typename.segments
-            if len(type_segments) == 1 and isinstance(type_segments[0], cpptypes.AnonymousName):
-                annon_id = type_segments[0].id
-                type_name = f'__struct_{annon_id}'
-
 
             # only annotated fields are considered properties
             attrs = field.attrs
@@ -400,6 +389,23 @@ class ReflectableFinder:
             properties.append(prop)
 
         return properties
+
+    def _full_find_field_type(self, scope: ScopeDescription):
+        field = scope.field()
+        field_type, is_anonymous = normalize_typename(field.type.typename)
+        if is_anonymous:
+            return f'{scope.parent}::{field_type}'
+        
+        for cls in self._classes:
+            cls_name = cls.full_name.path
+            encl_scope = scope.parent
+            while encl_scope:
+                full_name = f'{encl_scope}::{field_type}'
+                if cls_name == full_name:
+                    return cls_name
+                encl_scope = encl_scope.parent
+
+        return field_type        
 
     @staticmethod
     def _read_code_from_file(header_path: Path) -> str:

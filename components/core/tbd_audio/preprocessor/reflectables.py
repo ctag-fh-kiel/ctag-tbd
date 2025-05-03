@@ -2,7 +2,12 @@ from dataclasses import dataclass
 from enum import IntEnum, Enum, unique
 from typing import List, Set, Optional
 from pathlib import Path
+import cxxheaderparser.simple as cpplib
 import cxxheaderparser.types as cpptypes
+
+
+Attribute = int | float | bool | str
+Attributes = dict[str, Attribute]
 
 
 @unique
@@ -13,39 +18,141 @@ class ScopeType(IntEnum):
     FIELD        = 3
 
 
-@dataclass
-class ScopeSegment:
-    name: str
-    type: ScopeType
+def normalize_typename(typename: cpptypes.PQName) -> tuple[str, bool]:
+    typename = typename.segments[-1]
+    # handle anonymous data types
+    if isinstance(typename, cpptypes.AnonymousName):
+        annon_id = typename.id
+        return f'__struct_{annon_id}', True
+    else:
+        return typename.format(), False
+
+@dataclass(frozen=True)
+class ScopeDescriptionSegment:
+    raw: cpplib.NamespaceScope | cpplib.ClassScope | cpplib.NamespaceScope
+
+    @property
+    def name(self) -> str:
+        match self.raw:
+            case cpplib.NamespaceScope() as namespace:
+                return namespace.name
+            case cpplib.ClassScope() as cls:
+                typename, _ = normalize_typename(cls.class_decl.typename)
+                return typename
+            case cpptypes.Field() as field:
+                return field.name
+            case _:
+                raise ValueError(f'invalid scope segment type {type(self.raw)}')
+
+    @property
+    def type(self) -> ScopeType:
+        match self.raw:
+            case cpplib.NamespaceScope():
+                return ScopeType.NAMESPACE
+            case cpplib.ClassScope():
+                return ScopeType.CLASS
+            case cpptypes.Field() as field:
+                if field.static:
+                    return ScopeType.STATIC_FIELD
+                else:
+                    return ScopeType.FIELD
+            case _:
+                raise ValueError(f'invalid scope segment type {type(self.raw)}')
+            
+    @property
+    def attrs(self) -> Attributes | None:
+        match self.raw:
+            case cpplib.NamespaceScope() as namespace:
+                return namespace.attrs
+            case cpplib.ClassScope() as cls:
+                return cls.class_decl.attrs
+            case cpptypes.Field() as field:
+                return field.attrs
+            case _:
+                raise ValueError(f'invalid scope segment type {type(self.raw)}')
+            
+    @property
+    def is_root(self):
+        return self.type == ScopeType.NAMESPACE and self.name == ''
     
+    def namespace(self) -> cpplib.NamespaceScope:
+        if self.type != ScopeType.NAMESPACE:
+            raise ValueError(f'scope segment is not a namespace: {self.type}')
+        return self.raw
+    
+    def cls(self) -> cpplib.ClassScope:
+        if self.type != ScopeType.CLASS:
+            raise ValueError(f'scope segment is not a class: {self.type}')
+        return self.raw
+    
+    def field(self) -> cpptypes.Field:
+        if self.type != ScopeType.FIELD:
+            raise ValueError(f'scope segment is not a field: {self.type}')
+        return self.raw
+
+
 @dataclass(frozen=True)
 class ScopeDescription:
-    segments: list[ScopeSegment]
+    segments: list[ScopeDescriptionSegment]
 
     @staticmethod
-    def root():
-        return ScopeDescription([])
+    def from_root(root_namespace: cpplib.NamespaceScope) -> 'ScopeDescription':
+        if root_namespace.name != '':
+            raise ValueError('namespace is not root')
+        return ScopeDescription([ScopeDescriptionSegment(root_namespace)])
 
-    def add_namespace(self, namespace_name: str) -> 'ScopeDescription':
+    def add_namespace(self, namespace: cpplib.NamespaceScope) -> 'ScopeDescription':
         if self.segments and self.segments[-1].type != ScopeType.NAMESPACE:
             raise ValueError('namespaces can only be declared in namespaces')
-        return ScopeDescription([*self.segments, ScopeSegment(namespace_name, ScopeType.NAMESPACE)])
+        return ScopeDescription([*self.segments, ScopeDescriptionSegment(namespace)])
     
-    def add_class(self, namespace_name: str) -> 'ScopeDescription':
+    def add_class(self, cls: cpplib.ClassScope) -> 'ScopeDescription':
         if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE, ScopeType.CLASS]:
             raise ValueError('classes can only be declared in namespaces or other classes')
-        return ScopeDescription([*self.segments, ScopeSegment(namespace_name, ScopeType.CLASS)])
+        return ScopeDescription([*self.segments, ScopeDescriptionSegment(cls)])
     
-    def add_field(self, field_name: str) -> 'ScopeDescription':
+    def add_field(self, field: cpptypes.Field) -> 'ScopeDescription':
         if self.segments and self.segments[-1].type not in [ScopeType.CLASS, ScopeType.FIELD]:
             raise ValueError('fields can only be declared in classes and fields')
-        return ScopeDescription([*self.segments, ScopeSegment(field_name, ScopeType.FIELD)])
+        if field.static:
+            raise ValueError('field is static')
+
+        return ScopeDescription([*self.segments, ScopeDescriptionSegment(field)])
     
-    def add_static_field(self, field_name: str) -> 'ScopeDescription':
+    def add_static_field(self, field: cpptypes.Field) -> 'ScopeDescription':
         if self.segments and self.segments[-1].type != ScopeType.CLASS:
             raise ValueError('static fields can only be declared in classes')
-        return ScopeDescription([*self.segments, ScopeSegment(field_name, ScopeType.STATIC_FIELD)])
+        if not field.static:
+            raise ValueError('field is static') 
 
+        return ScopeDescription([*self.segments, ScopeDescriptionSegment(field)])
+
+    def namespace(self) -> cpplib.NamespaceScope:
+        return self.segments[-1].namespace()
+
+    def name(self):
+        return self.segments[-1].name
+
+    def cls(self) -> cpplib.ClassScope:
+        return self.segments[-1].cls()
+
+    def field(self) -> cpptypes.Field:
+        return self.segments[-1].field()
+
+    def attrs(self) -> Attributes | None:
+        return self.segments[-1].attrs
+
+    def root(self) -> cpplib.NamespaceScope:
+        if len(self.segments) < 1:
+            raise ValueError('empty scope description has no root')
+        return self.segments[0].namespace()
+
+    @property
+    def parent(self) -> 'ScopeDescription':
+        if len(self.segments) < 2:
+            return None
+        return ScopeDescription(self.segments[:-1])
+    
     @property
     def namespaces(self):
         retval, _, _ = self.split()
@@ -60,6 +167,30 @@ class ScopeDescription:
     def fields(self):
         _, _, retval = self.split()
         return retval
+
+    @property
+    def path(self) -> str:
+        fst, *tail = self.segments
+        if fst.is_root:
+            if len(tail) == 0:
+                return ''
+            else:
+                fst, *tail = tail
+
+        retval = fst.name
+        for elem in tail:
+            elem_name = elem.name 
+            if elem.type == ScopeType.FIELD:
+                retval += f'.{elem_name}'
+            else:
+                 retval += f'::{elem_name}'
+        return retval
+    
+    def __str__(self) -> str:
+        return self.path
+    
+    def __repr__(self) -> str:
+        return f'ScopeDescription({self.path})'
 
     def split(self) -> tuple['ScopeDescription', 'ScopeDescription', 'ScopeDescription']:
         class SplitDone(BaseException):
@@ -94,41 +225,6 @@ class ScopeDescription:
         raise ValueError('bad segment order in scope')
 
 
-    @property
-    def path(self) -> str:
-        fst, *tail = self.segments
-        retval = fst.name
-        for elem in tail:
-            if elem.type == ScopeType.FIELD:
-                retval += f'.{elem.name}'
-            else:
-                 retval += f'::{elem.name}'
-        return retval
-    
-    def __str__(self) -> str:
-        return self.path
-    
-    def __repr__(self) -> str:
-        return f'Scope({self.path})'
-
-@unique
-class PropertyType(Enum):
-    """ valid C++ types for properties """
-
-    int_type    = 'int32_t'
-    uint_type   = 'uint32_t'
-    float_type  = 'float'
-
-type_map = {t.value: t.name for t in PropertyType}
-
-def get_property_type(cpp_type: str):
-    if cpp_type not in type_map:
-        raise ValueError(f'{cpp_type} is not a supported property type')
-
-Attribute = int | float | bool | str
-Attributes = dict[str, Attribute]
-
-
 @dataclass
 class PropertyDescription:
     field_name: str
@@ -148,16 +244,6 @@ class PropertyDescription:
 
     def __repr__(self) -> str:
         return f'Field({self.full_name.path})'
-
-
-# @dataclass
-# class GroupDescription:
-#     field_name: str
-#     full_name: ScopeDescription
-#     raw: cpptypes.Field
-#     friendly_name: Optional[str] = None
-#     description: Optional[str] = None
-#     Properties: int = list
 
 
 Properties = List[PropertyDescription]
@@ -185,6 +271,7 @@ class ReflectableDescription:
 
     def __repr__(self) -> str:
         return f'Plugin({self.full_name.path})'
+    
 
 Reflectables = list[ReflectableDescription]
 
@@ -192,8 +279,7 @@ Headers = Set[str]
 
 
 __all__ = [
-    'PropertyType', 
-    'get_property_type', 
+    'normalize_typename',
     'PropertyDescription', 
     'Properties', 
     'Attribute',
