@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+enum RequestType {
+  REQUEST_TYPE_READ = 0;  
+  REQUEST_TYPE_WRITE = 1;
+}
+
+message Request {
+  RequestType type = 1;
+  RequestType request_id = 2;
+}
+
+enum ParamTypes {
+  PARAM_TYPE_TRIGGER = 0;
+  PARAM_TYPE_UINT = 1;
+  PARAM_TYPE_INT = 2;
+  PARAM_TYPE_UFLOAT = 3;
+  PARAM_TYPE_FLOAT = 4;
+}
+
+message ReadParamRequest {
+  int32 value_id = 1;
+}
+
+message DeviceInfo {
+  int32 api_version = 1;
+  int32 api_hash = 2;
+}
