@@ -1,29 +1,12 @@
 import json
 from pathlib import Path
 from typing import Any
-from pydantic.dataclasses import dataclass
 from pydantic import TypeAdapter
 from esphome.core import TimePeriod, CORE
 import esphome.git as git
 import subprocess
+from .library_manifest import *
 
-@dataclass
-class BuildCommand:
-    directory: str
-    command: str
-    file: str
-    output: str
-
-@dataclass(frozen=True)
-class Build:
-    flags: list[str]    
-    srcFilter: list[str]
-
-@dataclass(frozen=True)
-class Library:
-    name: str
-    version: str
-    build: Build
 
 
 def cmake_dependency(
@@ -48,6 +31,8 @@ def cmake_dependency(
 
 
 def generate_compilation_commands_with_cmake(repo_dir: Path, cmake_parameters: dict[str, str] = {}) -> list[BuildCommand]:
+    cmake_parameters = { 'BUILD_TESTING': 'OFF', **cmake_parameters}
+
     cmake_file = repo_dir / 'CMakeLists.txt'
     parameters = [f'-D{param}={value}' for param, value in cmake_parameters.items()]
     cmd = ['cmake', '-DCMAKE_EXPORT_COMPILE_COMMANDS=1', f'-B{repo_dir}'] + parameters + [cmake_file]
@@ -63,6 +48,7 @@ def generate_compilation_commands_with_cmake(repo_dir: Path, cmake_parameters: d
         raise ValueError(f'expected compile command to be list, got {type(json_data)}')
 
     return [BuildCommand(**command) for command in json_data]
+
 
 def write_library_json_from_compilation_commands(repo_dir: Path, name: str, version: str, commands: list[BuildCommand]):
     includes = set()
@@ -86,9 +72,9 @@ def write_library_json_from_compilation_commands(repo_dir: Path, name: str, vers
     build_obj = Build(flags=[*includes, *defines], srcFilter=files)
 
     library_obj = Library(name=name, version=version, build=build_obj)
-    library_data = TypeAdapter(Library).dump_json(library_obj, indent=4)
+    library_data = TypeAdapter(Library).dump_json(library_obj, indent=4, by_alias=True)
     with open(repo_dir / 'library.json', 'wb') as f:
         f.write(library_data)
 
 
-__all___ = []
+__all__ = ['cmake_dependency']

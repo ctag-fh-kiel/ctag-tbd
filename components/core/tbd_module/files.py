@@ -1,0 +1,100 @@
+import logging
+from pathlib import Path
+import shutil
+from esphome.core import CORE
+
+from .registry import generated_tbd_global 
+
+_LOGGER = logging.getLogger(__file__)
+
+
+PATHS_DOMAIN = 'paths'
+
+
+@generated_tbd_global(PATHS_DOMAIN)
+def get_build_path() -> Path:
+    return Path(CORE.build_path)
+
+
+@generated_tbd_global(PATHS_DOMAIN)
+def get_components_build_path():
+    return Path() / 'src' / 'components'
+
+
+@generated_tbd_global(PATHS_DOMAIN)
+def get_tbd_components_root():
+    return Path(__file__).parent.parent.parent
+
+
+@generated_tbd_global(PATHS_DOMAIN)
+def get_tbd_source_root() -> Path:
+    return get_tbd_components_root().parent
+
+
+@generated_tbd_global(PATHS_DOMAIN)
+def get_vendor_root():
+    return get_tbd_source_root / 'vendor'
+
+
+@generated_tbd_global(PATHS_DOMAIN)
+def get_generated_sources_path() -> Path:
+    PATH_RELATIVE_TO_BUILD_DIR = Path() / 'src' / 'generated'
+    source_path = get_build_path() / PATH_RELATIVE_TO_BUILD_DIR
+    source_path.mkdir(parents=True, exist_ok=True)
+    # CORE.add_platformio_option('build_src_filter', [f'+<{PATH_RELATIVE_TO_BUILD_DIR}>'])
+    return source_path
+
+
+@generated_tbd_global(PATHS_DOMAIN)
+def get_generated_include_path() -> Path:
+    PATH_RELATIVE_TO_BUILD_DIR = Path() / 'src' / 'generated' / 'include'
+    include_path = get_generated_sources_path() / 'include'
+    include_path.mkdir(parents=True, exist_ok=True)
+    CORE.add_build_flag(f'-I{PATH_RELATIVE_TO_BUILD_DIR}')
+    return include_path
+
+
+def copy_file_if_outdated(source_file: Path | str, dest_file: Path | str) -> bool:
+    source_file = Path(source_file)
+    build_path = get_build_path()
+    dest_file = build_path / dest_file
+    dest_file.parent.mkdir(parents=True, exist_ok=True)
+    if dest_file.exists() and  source_file.stat().st_mtime <= dest_file.stat().st_mtime:
+        return False
+    _LOGGER.debug(f'copy to sources: {source_file}')
+    shutil.copyfile(source_file, dest_file)
+    return True
+
+
+def copy_tree_if_outdated(source_dir: Path | str, dest_dir: Path | str, *, patterns: str = ['*']) -> bool:
+    source_dir = Path(source_dir)
+    dest_dir = Path(dest_dir)
+
+    build_path = get_build_path()
+    dest_dir = build_path / dest_dir
+
+    retval = False
+    for pattern in patterns:
+        for source_file in source_dir.rglob(pattern):
+            relative_source_file = source_file.relative_to(source_dir)
+            dest_file = dest_dir / relative_source_file
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            if dest_file.exists() and source_file.stat().st_mtime <= dest_file.stat().st_mtime:
+                continue
+            _LOGGER.debug(f'copy to sources: {source_file}')
+            shutil.copyfile(source_file, dest_file)
+            retval = True
+    return retval
+
+
+__all__ = [
+    'get_build_path', 
+    'get_components_build_path',
+    'get_tbd_components_root', 
+    'get_tbd_source_root', 
+    'get_vendor_root', 
+    'get_generated_sources_path', 
+    'get_generated_include_path',
+    'copy_file_if_outdated',
+    'copy_tree_if_outdated',
+]
