@@ -91,31 +91,31 @@ class AudioDevice:
 
     def add_flag(self):
         name = (self.subtype if self.subtype is not None else self.module.name).upper()
-        cg.add_build_flag(f'-DTBD_AUDIO_{name.upper()}=1')
+        self.module.add_define(f'TBD_AUDIO_{name.upper()}')
 
     def add_sample_io_flag(self):
         if self.sample_io == SampleIO.WORKER:
-            cg.add_build_flag(f'-DTBD_AUDIO_PULL=1')
+            self.module.add_define(f'TBD_AUDIO_PULL')
         elif self.sample_io == SampleIO.CALLBACK:
-            cg.add_build_flag(f'-DTBD_AUDIO_PUSH=1')
+            self.module.add_define(f'TBD_AUDIO_PUSH')
 
     def add_spi(self, config):
         def get_pin_number(key):
             return f'GPIO_NUM_{config[key]['number']}'
 
         codec_name = self.module.name.upper()  
-        cg.add_build_flag(f'-DTBD_{codec_name}_SPI_PIN_CLK={get_pin_number(CONF_SCLK_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_SPI_PIN_MOSI={get_pin_number(CONF_MOSI_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_SPI_PIN_MISO={get_pin_number(CONF_MISO_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_SPI_PIN_CS={get_pin_number(CONF_CS_PIN)}')
+        self.module.add_define(f'TBD_{codec_name}_SPI_PIN_CLK', get_pin_number(CONF_SCLK_PIN))
+        self.module.add_define(f'TBD_{codec_name}_SPI_PIN_MOSI', get_pin_number(CONF_MOSI_PIN))
+        self.module.add_define(f'TBD_{codec_name}_SPI_PIN_MISO', get_pin_number(CONF_MISO_PIN))
+        self.module.add_define(f'TBD_{codec_name}_SPI_PIN_CS', get_pin_number(CONF_CS_PIN))
 
     def add_i2c(self, config):
         def get_pin_number(key):
             return f'GPIO_NUM_{config[key]['number']}'
 
         codec_name = self.module.name.upper()  
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2C_PIN_SDA={get_pin_number(CONF_SDA_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2C_PIN_SCL={get_pin_number(CONF_SCL_PIN)}')
+        self.module.add_define(f'TBD_{codec_name}_I2C_PIN_SDA', get_pin_number(CONF_SDA_PIN))
+        self.module.add_define(f'TBD_{codec_name}_I2C_PIN_SCL', get_pin_number(CONF_SCL_PIN))
 
     def add_i2s(self, config):
         def get_pin_number(key):
@@ -123,11 +123,11 @@ class AudioDevice:
 
         codec_name = self.module.name.upper()  
         if CONF_MCLK_PIN in config:
-            cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_MCLK={get_pin_number(CONF_MCLK_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_BCLK={get_pin_number(CONF_BCLK_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_WS={get_pin_number(CONF_WS_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_DOUT={get_pin_number(CONF_DOUT_PIN)}')
-        cg.add_build_flag(f'-DTBD_{codec_name}_I2S_PIN_DIN={get_pin_number(CONF_DIN_PIN)}')
+            self.module.add_define(f'TBD_{codec_name}_I2S_PIN_MCLK', get_pin_number(CONF_MCLK_PIN))
+        self.module.add_define(f'TBD_{codec_name}_I2S_PIN_BCLK', get_pin_number(CONF_BCLK_PIN))
+        self.module.add_define(f'TBD_{codec_name}_I2S_PIN_WS', get_pin_number(CONF_WS_PIN))
+        self.module.add_define(f'TBD_{codec_name}_I2S_PIN_DOUT', get_pin_number(CONF_DOUT_PIN))
+        self.module.add_define(f'TBD_{codec_name}_I2S_PIN_DIN', get_pin_number(CONF_DIN_PIN))
 
     def add_config_header(self):
         base_module = get_tbdd_audio_device_base_module()

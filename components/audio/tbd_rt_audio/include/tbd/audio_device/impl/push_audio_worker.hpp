@@ -1,4 +1,4 @@
-#include <tbd/sound_manager/common/module.hpp>
+#include <tbd/audio_device/module.hpp>
 
 #include <memory.h>
 #include <algorithm>

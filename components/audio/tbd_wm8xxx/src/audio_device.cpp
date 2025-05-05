@@ -48,9 +48,9 @@ respective component folders / files if different from this license.
     // CodecManager has noise issues with highpass on
     // https://hackaday.io/project/7936-cortex-guitar-board/log/44553-this-adc-makes-weird-noises
     #define maybe_wait_to_settle(settle_time_ms) do { \
-            HighPassEnable(); \
+            set_high_pass(true); \
             vTaskDelay(settle_time_ms / portTICK_PERIOD_MS); \
-            HighPassDisable(); \
+            set_high_pass(false); \
         } while(0)
 #else
     #define maybe_wait_to_settle(settle_time_ms) do {} while(0)
@@ -588,7 +588,7 @@ void AudioDevice::set_high_pass(bool is_enabled) {
 
 
 
-void AudioDevice::SetOutputLevels(const uint32_t left, const uint32_t right) {
+void AudioDevice::set_output_levels(const uint32_t left, const uint32_t right) {
     #if TBD_AUDIO_WM8978
         if(!is_ready){
             ESP_LOGD("CODEC", "Codec not initialized");
@@ -601,9 +601,9 @@ void AudioDevice::SetOutputLevels(const uint32_t left, const uint32_t right) {
 void AudioDevice::recalib_dc_offset() {
     #if TBD_AUDIO_WM8731
         if(!is_ready) return;
-        HighPassEnable();
+        set_high_pass(true);
         vTaskDelay(50 / portTICK_PERIOD_MS); // wait until system is settled a bit
-        HighPassDisable();
+        set_high_pass(false);
     #endif
 }
 

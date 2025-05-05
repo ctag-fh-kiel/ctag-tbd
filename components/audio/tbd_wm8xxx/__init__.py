@@ -25,3 +25,7 @@ async def to_code(config):
     device = ad.new_tbd_audio_device(__file__, params)
     device.add_spi(pins[ad.CONF_SPI])
     device.add_i2s(pins[ad.CONF_I2S])
+
+    device_type_flag = f'TBD_AUDIO_{config[ad.CONF_TYPE].upper()}'
+    device.module.add_define(device_type_flag)
+    
