@@ -19,6 +19,7 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
+#include <tbd/sound_processor/parameter_types.h>
 #include <atomic>
 #include <tbd/sound_processor.hpp>
 #include "synthesis/RomplerVoice.hpp"
@@ -26,7 +27,7 @@ respective component folders / files if different from this license.
 #include <memory>
 #include <vector>
 
-using namespace CTAG::SYNTHESIS;
+using namespace tbd::audio::parameters;
 
 namespace tbd::sounds {
 
@@ -37,7 +38,6 @@ struct SoundProcessorRompler : audio::SoundProcessor {
 	virtual ~SoundProcessorRompler();
 
 protected:
-
 	[[tbd(name="Gain", abs, norm=4095, scale=2)]] 
 	ufloat_par gain;
 
@@ -126,7 +126,7 @@ protected:
 
 protected:
 
-	RomplerVoice romplers[2];
+	sound_utils::synthesis::RomplerVoice romplers[2];
 	float out[32];
 	bool preGate = false;
 	bool bGate2 = false;

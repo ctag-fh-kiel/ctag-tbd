@@ -146,8 +146,7 @@ void SoundProcessorWTOscDuo::Process(const audio::ProcessData&data) {
             plaits::NoteToFrequency(fpitch_2 + fTune_2 * 12.f + fLFOFM * valLFO_2 + fEGFM * valADSR_2) * 0.998f;
 
     // filter
-    MK_FLT_PAR_ABS_ADD(fCut_1, fcut_1, 4095.f,
-                       1.f);      // This is a special variant where the GUI-parameter and the corresponding CV get added
+    MK_FLT_PAR_ABS_ADD(fCut_1, fcut_1, 4095.f, 1.f);      // This is a special variant where the GUI-parameter and the corresponding CV get added
     MK_FLT_PAR_ABS_ADD(fCut_2, fcut_2, 4095.f, 1.f);
     MK_FLT_PAR_ABS(fReso, freso, 4095.f, 20.f)
     // filter modulation

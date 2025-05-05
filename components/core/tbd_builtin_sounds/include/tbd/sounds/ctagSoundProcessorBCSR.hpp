@@ -25,7 +25,8 @@ respective component folders / files if different from this license.
 
 namespace tbd::sounds {
 
-struct SoundProcessorBCSR : audio::SoundProcessor {
+[[tbd(name="BCSR", description="Bit crushing and sample rate reducing")]]
+struct SoundProcessorBCSR : audio::MonoSoundProcessor {
 
     virtual void Process(const audio::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;

@@ -231,8 +231,7 @@ void SoundProcessorFreakwaves::Process(const audio::ProcessData&data) {
     MK_FLT_PAR_ABS(f_Vol_Ext, Vol_Ext, 4095.f, 3.f);
     MK_FLT_PAR_ABS(f_ExternalWet, ExternalWet, 4095.f, 1.f);
     MK_FLT_PAR_ABS(f_BalanceAB_C, BalanceAB_C, 4095.f, 1.f);
-    MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f,
-                   4.f);   // We use a high value to have headroom, so lower the volume normally
+    MK_FLT_PAR_ABS(f_Volume, Volume, 4095.f, 4.f);   // We use a high value to have headroom, so lower the volume normally
 
     // --- Oscillators ---
     MK_INT_CONSTRAIN(i_WaveTblA, WaveTblA, 31);    // Only selectable via GUI because of possibly slow performance!
@@ -311,46 +310,45 @@ void SoundProcessorFreakwaves::Process(const audio::ProcessData&data) {
     MK_FLT_PAR_ABS(f_ResonatorDamping, ResonatorDamping, 4095.f, 1.f);                              // Values 0-1
 
     // --- LFOs ---
-    MK_TRIG_PAR_LOC(t_lfoActive[0], lfoActive_1);MK_INT_CONSTRAIN_LOC(i_lfoDestination[0], lfoDestination_1,
-                                                                      17);   // Destinations 0-17 are currently available
-    MK_INT_CONSTRAIN_LOC(i_lfoType[0], lfoType_1,
-                         6);                 // LFO-wavetype i_lfoType[x] is fixed to 0-6, 6 == S&H and initialized already
+    MK_TRIG_PAR_LOC(t_lfoActive[0], lfoActive_1);MK_INT_CONSTRAIN_LOC(i_lfoDestination[0], lfoDestination_1, 17);   // Destinations 0-17 are currently available
+    MK_INT_CONSTRAIN_LOC(i_lfoType[0], lfoType_1, 6);                 // LFO-wavetype i_lfoType[x] is fixed to 0-6, 6 == S&H and initialized already
     MK_FLT_PAR_ABS_MIN_MAX_LOC(f_lfoSpeed[0], lfoSpeed_1, 4095.f, MIN_LFO_SPEED, MAX_LFO_SPEED);
     MK_FLT_PAR_ABS_LOC(f_lfoAmnt[0], lfoAmnt_1, 4095.f, 1.f);
 
-    MK_TRIG_PAR_LOC(t_lfoActive[1], lfoActive_2);MK_INT_CONSTRAIN_LOC(i_lfoDestination[1], lfoDestination_2,
-                                                                      17);MK_INT_CONSTRAIN_LOC(i_lfoType[1], lfoType_2,
-                                                                                               6);
+    MK_TRIG_PAR_LOC(t_lfoActive[1], lfoActive_2);
+    MK_INT_CONSTRAIN_LOC(i_lfoDestination[1], lfoDestination_2, 17);
+    MK_INT_CONSTRAIN_LOC(i_lfoType[1], lfoType_2, 6);
     MK_FLT_PAR_ABS_MIN_MAX_LOC(f_lfoSpeed[1], lfoSpeed_2, 4095.f, MIN_LFO_SPEED, MAX_LFO_SPEED);
     MK_FLT_PAR_ABS_LOC(f_lfoAmnt[1], lfoAmnt_2, 4095.f, 1.f);
 
-    MK_TRIG_PAR_LOC(t_lfoActive[2], lfoActive_3);MK_INT_CONSTRAIN_LOC(i_lfoDestination[2], lfoDestination_3,
-                                                                      17);MK_INT_CONSTRAIN_LOC(i_lfoType[2], lfoType_3,
-                                                                                               6);
+    MK_TRIG_PAR_LOC(t_lfoActive[2], lfoActive_3);
+    MK_INT_CONSTRAIN_LOC(i_lfoDestination[2], lfoDestination_3, 17);
+    MK_INT_CONSTRAIN_LOC(i_lfoType[2], lfoType_3, 6);
     MK_FLT_PAR_ABS_MIN_MAX_LOC(f_lfoSpeed[2], lfoSpeed_3, 4095.f, MIN_LFO_SPEED, MAX_LFO_SPEED);
     MK_FLT_PAR_ABS_LOC(f_lfoAmnt[2], lfoAmnt_3, 4095.f, 1.f);
 
-    MK_TRIG_PAR_LOC(t_lfoActive[3], lfoActive_4);MK_INT_CONSTRAIN_LOC(i_lfoDestination[3], lfoDestination_4,
+    MK_TRIG_PAR_LOC(t_lfoActive[3], lfoActive_4);
+    MK_INT_CONSTRAIN_LOC(i_lfoDestination[3], lfoDestination_4,
                                                                       17);MK_INT_CONSTRAIN_LOC(i_lfoType[3], lfoType_4,
                                                                                                6);
     MK_FLT_PAR_ABS_MIN_MAX_LOC(f_lfoSpeed[3], lfoSpeed_4, 4095.f, MIN_LFO_SPEED, MAX_LFO_SPEED);
     MK_FLT_PAR_ABS_LOC(f_lfoAmnt[3], lfoAmnt_4, 4095.f, 1.f);
 
-    MK_TRIG_PAR_LOC(t_lfoActive[4], lfoActive_5);MK_INT_CONSTRAIN_LOC(i_lfoDestination[4], lfoDestination_5,
-                                                                      17);MK_INT_CONSTRAIN_LOC(i_lfoType[4], lfoType_5,
-                                                                                               6);
+    MK_TRIG_PAR_LOC(t_lfoActive[4], lfoActive_5);
+    MK_INT_CONSTRAIN_LOC(i_lfoDestination[4], lfoDestination_5, 17);
+    MK_INT_CONSTRAIN_LOC(i_lfoType[4], lfoType_5, 6);
     MK_FLT_PAR_ABS_MIN_MAX_LOC(f_lfoSpeed[4], lfoSpeed_5, 4095.f, MIN_LFO_SPEED, MAX_LFO_SPEED);
     MK_FLT_PAR_ABS_LOC(f_lfoAmnt[4], lfoAmnt_5, 4095.f, 1.f);
 
-    MK_TRIG_PAR_LOC(t_lfoActive[5], lfoActive_6);MK_INT_CONSTRAIN_LOC(i_lfoDestination[5], lfoDestination_6,
-                                                                      17);MK_INT_CONSTRAIN_LOC(i_lfoType[5], lfoType_6,
-                                                                                               6);
+    MK_TRIG_PAR_LOC(t_lfoActive[5], lfoActive_6);
+    MK_INT_CONSTRAIN_LOC(i_lfoDestination[5], lfoDestination_6, 17);
+    MK_INT_CONSTRAIN_LOC(i_lfoType[5], lfoType_6, 6);
     MK_FLT_PAR_ABS_MIN_MAX_LOC(f_lfoSpeed[5], lfoSpeed_6, 4095.f, MIN_LFO_SPEED, MAX_LFO_SPEED);
     MK_FLT_PAR_ABS_LOC(f_lfoAmnt[5], lfoAmnt_6, 4095.f, 1.f);
 
-    MK_TRIG_PAR_LOC(t_lfoActive[6], lfoActive_7);MK_INT_CONSTRAIN_LOC(i_lfoDestination[6], lfoDestination_7,
-                                                                      17);MK_INT_CONSTRAIN_LOC(i_lfoType[6], lfoType_7,
-                                                                                               6);
+    MK_TRIG_PAR_LOC(t_lfoActive[6], lfoActive_7);
+    MK_INT_CONSTRAIN_LOC(i_lfoDestination[6], lfoDestination_7, 17);
+    MK_INT_CONSTRAIN_LOC(i_lfoType[6], lfoType_7, 6);
     MK_FLT_PAR_ABS_MIN_MAX_LOC(f_lfoSpeed[6], lfoSpeed_7, 4095.f, MIN_LFO_SPEED, MAX_LFO_SPEED);
     MK_FLT_PAR_ABS_LOC(f_lfoAmnt[6], lfoAmnt_7, 4095.f, 1.f);
 

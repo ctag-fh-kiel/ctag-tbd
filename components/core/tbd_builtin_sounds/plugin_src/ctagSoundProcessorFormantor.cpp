@@ -259,7 +259,7 @@ bool b_use_fix_formants = true;
   MK_FLT_PAR_ABS(f_FormantAmount, FormantAmount, 4095.f, 1.f);
   MK_TRIG_PAR(t_FormantFilterOn, FormantFilterOn);
   // --- Check for formant-selection via black keys ---
-  MK_TRIG_PAR( t_KeyLogic, KeyLogic );
+  MK_TRIG_PAR(t_KeyLogic, KeyLogic);
   int formant_selected = 0;
   if( t_KeyLogic )    // Select formants via notes on a keyboard or the slider on the GUI
     formant_selected = i_current_note%12;    // We have max 12 formants, one associated to every key, regardless of its octave

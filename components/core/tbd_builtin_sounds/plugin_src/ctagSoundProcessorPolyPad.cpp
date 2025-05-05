@@ -27,6 +27,7 @@ respective component folders / files if different from this license.
 #include "braids/quantizer_scales.h"
 
 using namespace tbd::sounds;
+using namespace tbd::sound_utils;
 
 void SoundProcessorPolyPad::Init(std::size_t blockSize, void *blockPtr) {
     for(auto &s:v_voices){

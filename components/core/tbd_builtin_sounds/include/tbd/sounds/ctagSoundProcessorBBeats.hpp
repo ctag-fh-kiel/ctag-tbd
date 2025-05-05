@@ -33,7 +33,8 @@ respective component folders / files if different from this license.
 
 namespace tbd::sounds {
 
-struct SoundProcessorBBeats : audio::SoundProcessor {
+[[tbd(name="BBeats", description="ByteBeats with Xfade")]]
+struct SoundProcessorBBeats : audio::MonoSoundProcessor {
 
     virtual void Process(const audio::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;

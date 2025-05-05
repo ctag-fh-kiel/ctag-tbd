@@ -34,7 +34,7 @@ struct SoundProcessorPolyPad : audio::SoundProcessor {
 
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-    void PrintParams(ChordSynth::ChordParams &params);
+    void PrintParams(sound_utils::ChordSynth::ChordParams &params);
 
 protected:
 
@@ -68,7 +68,7 @@ protected:
     // sectionHpp
 
     // private attributes could go here
-    array<ChordSynth, 8> v_voices;
+    array<sound_utils::ChordSynth, 8> v_voices;
     bool latchVoice = false;
     bool latched = false;
     bool toggle = false;

@@ -22,7 +22,8 @@ using namespace tbd::sound_utils;
 
 namespace tbd::sounds {
 
-struct SoundProcessorBjorklund : audio::SoundProcessor {
+[[tbd(name="Bjorklund", description="Combining Patterns based on Bjorklund's implementation of Euclidian rhythms and mathematical palindromes")]]
+struct SoundProcessorBjorklund : audio::StereoSoundProcessor {
     virtual void Process(const audio::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
     virtual ~SoundProcessorBjorklund();

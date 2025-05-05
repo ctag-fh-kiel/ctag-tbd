@@ -27,6 +27,7 @@ respective component folders / files if different from this license.
 #include <stmlib/stmlib.h>
 
 using namespace tbd::sounds;
+using namespace tbd::sound_utils;
 
 // --- Trigger/Gate values ---
 #define GATE_HIGH_NEW       2

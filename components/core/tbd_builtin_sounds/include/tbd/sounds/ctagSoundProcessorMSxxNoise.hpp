@@ -7,7 +7,7 @@
 
 #include "filters/ctagWPkorg35.hpp"
 #include "fx/ctagPebble.hpp"
-#include "../mutable/eurorack/stmlib/stmlib.h"      // for CONSTRAIN Macro...
+#include "stmlib/stmlib.h"      // for CONSTRAIN Macro...
 
 using namespace tbd::sound_utils;
 

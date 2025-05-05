@@ -115,8 +115,7 @@ void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
     // === Global section ===
     MK_ADEG_PAR(t_Trigger, Trigger);     // We may have a new trigger
     MK_TRIG_PAR(t_InternalClock, InternalClock);
-    MK_FLT_PAR_ABS_MIN_MAX(f_ClockSpeed, ClockSpeed, 4095.f, 1.f,
-                           128.f); // Equivalent to 60 to 240 BPM and quarters to 32ths...
+    MK_FLT_PAR_ABS_MIN_MAX(f_ClockSpeed, ClockSpeed, 4095.f, 1.f, 128.f); // Equivalent to 60 to 240 BPM and quarters to 32ths...
     MK_BEAT_PAR(i_BeatDivider, BeatDivider);
     MK_PITCH_PAR(f_MasterPitch, MasterPitch);
     MK_FLT_PAR_ABS_SFT(f_MasterTune, MasterTune, 1200.f, 1.f);
@@ -338,8 +337,7 @@ void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
     // === AD Envelopes section ===
     // --- Volume EG ---
     float vol_eg_process = 1.f;              // Set to max, in case if EG is unused this will work, too!
-    MK_TRIG_PAR(t_EGvolActive,
-                EGvolActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
+    MK_TRIG_PAR(t_EGvolActive, EGvolActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
     MK_TRIG_PAR(t_EGvolNegative, EGvolNegative);
     MK_FLT_PAR_ABS(f_VolAttack, VolAttack, 4095.f, 8.f);
     MK_FLT_PAR_ABS(f_VolDecay, VolDecay, 4095.f, 14.f);
@@ -358,8 +356,7 @@ void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
     }   // Please note: we don't constrain the volume level from the EG, because this will be evaluated in combination with the master-volume
 
     // --- Noise EG ---
-    MK_TRIG_PAR(t_EGnoiseActive,
-                EGnoiseActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
+    MK_TRIG_PAR(t_EGnoiseActive, EGnoiseActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
     MK_TRIG_PAR(t_EGnoiseNegative, EGnoiseNegative);
     MK_FLT_PAR_ABS(f_NoiseAttack, NoiseAttack, 4095.f, 8.f);
     MK_FLT_PAR_ABS(f_NoiseDecay, NoiseDecay, 4095.f, 10.f);
@@ -377,8 +374,7 @@ void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
                                                                                              f_NoiseEnvAmount;
     }
     // --- OSCmixEnv EG ---
-    MK_TRIG_PAR(t_EGoscMixActive,
-                EGoscMixActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
+    MK_TRIG_PAR(t_EGoscMixActive, EGoscMixActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
     MK_TRIG_PAR(t_EGoscMixNegative, EGoscMixNegative);
     MK_FLT_PAR_ABS(f_OscMixAttack, OscMixAttack, 4095.f, 8.f);
     MK_FLT_PAR_ABS(f_OscMixDecay, OscMixDecay, 4095.f, 10.f);
@@ -396,8 +392,7 @@ void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
                                                                                                f_OscMixEnvAmount;
     }
     // --- Ringmod EG ---
-    MK_TRIG_PAR(t_EGringActive,
-                EGringActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
+    MK_TRIG_PAR(t_EGringActive, EGringActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
     MK_TRIG_PAR(t_EGringNegative, EGringNegative);
     MK_FLT_PAR_ABS(f_RingAttack, RingAttack, 4095.f, 8.f);
     MK_FLT_PAR_ABS(f_RingDecay, RingDecay, 4095.f, 10.f);
@@ -414,8 +409,7 @@ void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
                                                                                                  f_RingAmount;
     }
     // --- Wavesfolder EG ---
-    MK_TRIG_PAR(t_EGwfActive,
-                EGwfActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
+    MK_TRIG_PAR(t_EGwfActive, EGwfActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
     MK_TRIG_PAR(t_EGwfNegative, EGwfNegative);
     MK_FLT_PAR_ABS(f_WfAttack, WfAttack, 4095.f, 8.f);
     MK_FLT_PAR_ABS(f_WfDecay, WfDecay, 4095.f, 10.f);
@@ -432,8 +426,7 @@ void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
                                                                                               f_WfEnvAmount;
     }
     // --- Filter EG ---
-    MK_TRIG_PAR(t_EGfiltActive,
-                EGfiltActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
+    MK_TRIG_PAR(t_EGfiltActive, EGfiltActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
     MK_TRIG_PAR(t_EGfiltNegative, EGfiltNegative);
     MK_FLT_PAR_ABS(f_FiltAttack, FiltAttack, 4095.f, 8.f);
     MK_FLT_PAR_ABS(f_FiltDecay, FiltDecay, 4095.f, 10.f);
@@ -450,8 +443,7 @@ void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
                                                                                            f_FiltAmount;
     }
     // --- Filter Leakage EG ---
-    MK_TRIG_PAR(t_EGfilterLeakActive,
-                EGfilterLeakActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
+    MK_TRIG_PAR(t_EGfilterLeakActive, EGfilterLeakActive); // If active we also "precalculate" the Process() values for our main loop (Vol EG first)
     MK_TRIG_PAR(t_EGfilterLeakNegative, EGfilterLeakNegative);
     MK_FLT_PAR_ABS(f_FilterLeakAttack, FilterLeakAttack, 4095.f, 8.f);
     MK_FLT_PAR_ABS(f_FilterLeakDecay, FilterLeakDecay, 4095.f, 10.f);

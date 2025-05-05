@@ -6,7 +6,8 @@
 
 namespace tbd::sounds {
 
-struct SoundProcessorAPCpp : audio::SoundProcessor {
+[[tbd(name="APCpp", description="APCpp")]]
+struct SoundProcessorAPCpp : audio::MonoSoundProcessor {
 
     virtual void Process(const audio::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;

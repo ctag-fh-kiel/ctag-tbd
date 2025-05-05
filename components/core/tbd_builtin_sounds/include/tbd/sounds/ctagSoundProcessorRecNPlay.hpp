@@ -36,7 +36,7 @@ protected:
     float f_BPMint_mem = 0.f;
 
     // --- Decimator ---
-    ctagDecimator decimator;
+    sound_utils::ctagDecimator decimator;
 
     // --- White Noise ---
     sound_utils::ctagWNoiseGen wNoise;

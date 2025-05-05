@@ -241,23 +241,18 @@ void SoundProcessorVctrSnt::Process(const audio::ProcessData&data) {
     MK_TRIG_PAR(t_SubOscPWM_C, SubOscPWM_C);
     MK_TRIG_PAR(t_SubOsc2VCF_C, SubOsc2VCF_C);
     MK_FLT_PAR_ABS(f_SubOscFade_C, SubOscFade_C, 4095.f, 1.f);
-    float f_PitchSubOsc_C = PitchSubOsc_C / 100.f +
-                            60.f;               // Range is -3600...3600 as "MIDI notes"..., relative to "middle C"
+    float f_PitchSubOsc_C = PitchSubOsc_C / 100.f + 60.f;               // Range is -3600...3600 as "MIDI notes"..., relative to "middle C"
     if (cv_PitchSubOsc_C != -1)
         f_PitchSubOsc_C += data.cv[cv_PitchSubOsc_C] *
                            60.f;          // We expect "MIDI"-notes 0-59 for 5 octaves (5*12) which fit into 0...+5V with 1V/Oct logic!
 
     MK_FLT_PAR_ABS(f_VolWT_A, VolWT_A, 4095.f, 1.f);
-    MK_FLT_PAR_ABS(f_VolOsc_B, VolOsc_B, 4095.f,
-                   2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
+    MK_FLT_PAR_ABS(f_VolOsc_B, VolOsc_B, 4095.f, 2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
     MK_FLT_PAR_ABS(f_VolWT_C, VolWT_C, 4095.f, 1.f);
-    MK_FLT_PAR_ABS(f_VolOsc_D, VolOsc_D, 4095.f,
-                   2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
+    MK_FLT_PAR_ABS(f_VolOsc_D, VolOsc_D, 4095.f, 2.f);     // Samples may be recorded at lower volume, so we leave a headroom option by scaling by 2
 
-    MK_TRIG_PAR(t_StereoSplit,
-                StereoSplit);                          // If activated the oscillator-groups will be panned left/right
-    MK_FLT_PAR_ABS_PAN(f_XfadeWaveTbls, XfadeWaveTbls, 2048.f,
-                       1.f);     // We have a middle-centered scale, but we need 0-1.0 for mixing
+    MK_TRIG_PAR(t_StereoSplit, StereoSplit);                          // If activated the oscillator-groups will be panned left/right
+    MK_FLT_PAR_ABS_PAN(f_XfadeWaveTbls, XfadeWaveTbls, 2048.f, 1.f);     // We have a middle-centered scale, but we need 0-1.0 for mixing
     MK_FLT_PAR_ABS_PAN(f_XfadeSamples, XfadeSamples, 2048.f, 1.f);
 
     // --- Vector Modulators WaveTables ---
@@ -316,8 +311,7 @@ void SoundProcessorVctrSnt::Process(const audio::ProcessData&data) {
     MK_INT_PAR_ABS(i_FreqModType, FreqModType, 7.f)
     CONSTRAIN(i_FreqModType, 0, 6);      // 7 possible types of LFOs
     MK_FLT_PAR_ABS(f_FreqModAmnt, FreqModAmnt, 4095.f, 7.f);    // Apply max a 5th of modulation
-    MK_FLT_PAR_ABS_MIN_MAX(f_FreqModSpeed, FreqModSpeed, 4095.f, 0.01f,
-                           20.f);   // LFO will have frequencies from 0.05 to 100 Hz
+    MK_FLT_PAR_ABS_MIN_MAX(f_FreqModSpeed, FreqModSpeed, 4095.f, 0.01f, 20.f);   // LFO will have frequencies from 0.05 to 100 Hz
     MK_FLT_PAR_ABS(f_FreqModAnalog, FreqModAnalog, 4095.f, 1.f);
 
     // --- Calculate values for optional frequency modulation ---
