@@ -14,7 +14,7 @@ namespace tbd::audio_loop {
     /** @brief Get the current sound processor for channel.
      * 
      */
-    audio::SoundProcessor& get_sound_processor(uint8_t audio_channel);
+    audio::SoundProcessor* get_sound_processor(uint8_t audio_channel);
 
     void begin();
     void end();

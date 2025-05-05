@@ -4,11 +4,14 @@
 
 #include <tbd/system/task_module.hpp>
 #include <tbd/favorites.hpp>
-#include <tbd/helpers/ctagSampleRom.hpp>
+#include <tbd/sound_utils/ctagSampleRom.hpp>
+#include <tbd/sound_utils/ctagCVtranscode.hpp>
+
+#include <tbd/sound_registry/sound_processor_factory.hpp>
 
 // same compilation unit
 #include <tbd/sound_manager/data_model.hpp>
-#include "private/plugin_audio_consumer.hpp"
+#include <tbd/audio_loop/audio_consumer.hpp>
 
 
 
@@ -111,7 +114,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(int chan, const std::string
             CTAG::SP::ctagSPAllocator::AllocationType aType = CTAG::SP::ctagSPAllocator::AllocationType::CH0;
             if(chan == 1) aType = CTAG::SP::ctagSPAllocator::AllocationType::CH1;
             if(model->IsStereo(id)) aType = CTAG::SP::ctagSPAllocator::AllocationType::STEREO;
-            sp[chan] = CTAG::SP::ctagSoundProcessorFactory::Create(id, aType);
+            sp[chan] = CTAG::SP:SoundProcessorFactory::Create(id, aType);
             model->SetActivePluginID(id, chan);
             sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
         }

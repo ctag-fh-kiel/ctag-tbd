@@ -1,29 +1,40 @@
-import logging
-from pathlib import Path
+from esphome.components.tbd_module.python_dependencies import python_dependencies
+python_dependencies(('humps', 'pyhumps'))
 
+import logging
 import humps
 
 import esphome.config_validation as cv
-import esphome.codegen as cg
-from esphome.core import CORE
-from esphome.components.tbd_module import new_tbd_component
-from esphome.components.tbd_sound_processor.preprocessor import (
+
+import esphome.components.tbd_module as tbd
+
+from esphome.components.tbd_audio.preprocessor import (
     search_for_plugins, 
     write_plugin_factory_header, 
     write_plugin_reflection_info,
     write_meta_classes,
-  )
+    PluginReflectionGenerator,
+)
+import esphome.components.tbd_api
 
 
 _LOGGER = logging.getLogger(__name__)
 
+SOUND_REGISTRY_GLOBAL = 'sound_registry'
 
 CONF_WHITELIST = 'whitelist'
 CONF_BLACKLIST = 'blacklist'
 
+
 SOUND_COLLECTION_SCHEMA = cv.Schema({
     cv.Optional(cv.Exclusive('whitelist', 'blacklist')): cv.ensure_list(cv.string)
 })
+
+
+@tbd.generated_tbd_global(SOUND_REGISTRY_GLOBAL)
+def get_plugin_registry() -> PluginReflectionGenerator:
+    return PluginReflectionGenerator()
+
 
 def add_tbd_sounds(init_file: str, config):
     """ Add a sound plugin module.
@@ -53,49 +64,55 @@ def add_tbd_sounds(init_file: str, config):
         :return tbd_module.ComponentInfo: the newly created component
     """
 
-    component = new_tbd_component(init_file)
+    component = tbd.new_tbd_component(init_file)
 
     # find all plugins in this source tree
-    include_dirs = component.get_include_dirs()
+    include_dirs = component.get_default_include_dirs()
     headers = [file 
                 for include_path in include_dirs
                 for file in include_path.rglob('*.hpp')
               ]
-    processor = search_for_plugins(headers, True)
+    reflectables = search_for_plugins(headers, True)
+    processor = get_plugin_registry()
 
     # filter plugins if inclusion rules present
     whitelist = config.get(CONF_WHITELIST)
     blacklist = config.get(CONF_BLACKLIST)
-    processor.prefilter(whitelist=whitelist, blacklist=blacklist)
-    selected_plugins = processor.plugins
-
-    processor.preprocess()
-    selected_headers = processor.headers
-
-    # generate plugin factory
-    gen_source_path = Path(CORE.build_path) / 'src' / 'generated'
-    gen_include_path = gen_source_path / 'include'
-
-    cg.add_build_flag(f'-I{gen_include_path}')
-    gen_include_path.mkdir(parents=True, exist_ok=True)
-    out_file = gen_include_path / 'tbd' / 'sound_registry' / 'sound_processor_factory.hpp'
-    write_plugin_factory_header(selected_headers, selected_plugins, out_file)
-    write_plugin_reflection_info(processor, gen_source_path)
-    write_meta_classes(processor, gen_source_path)
+    selected_module_plugins = processor.add(reflectables, whitelist=whitelist, blacklist=blacklist)
 
     # add sources for selected plugins
+    plugin_names = [plugin.cls_name for plugin in selected_module_plugins]
     sources = (component.path / 'plugin_src').rglob('*.cpp')
-    plugin_names = [plugin.cls_name for plugin in selected_plugins]
-    _LOGGER.info('using plugins:')
-    for plugin_name in plugin_names:
-        _LOGGER.info(f'>>> {plugin_name}')
-
     for source_file in sources:
         for plugin_name in plugin_names:
             file_name = source_file.stem
             if plugin_name.lower() in [file_name.lower(), humps.decamelize(file_name), humps.kebabize(file_name)]:
                 component.add_source_file(source_file)
                 _LOGGER.info(f'adding extra plugin source {source_file}')
-    
+
     return component
-    
+
+
+@tbd.build_job_with_priority(tbd.GenerationStages.PLUGINS)
+def finalize_plugin_registry_job():
+    processor = get_plugin_registry()
+    selected_plugins = processor.plugins
+
+    processor.preprocess()
+    selected_headers = processor.headers
+
+    # generate plugin factory
+    gen_source_path = tbd.get_generated_sources_path()
+    gen_include_path = tbd.get_generated_include_path()
+
+    out_file = gen_include_path / 'tbd' / 'sound_registry' / 'sound_processor_factory.hpp'
+    write_plugin_factory_header(selected_headers, selected_plugins, out_file)
+    write_plugin_reflection_info(processor, gen_source_path)
+    write_meta_classes(processor, gen_source_path)
+
+    plugin_names = [plugin.cls_name for plugin in selected_plugins]
+    _LOGGER.info('using plugins:')
+    for plugin_name in plugin_names:
+        _LOGGER.info(f'>>> {plugin_name}')
+
+tbd.add_generation_job(finalize_plugin_registry_job)

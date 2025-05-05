@@ -6,7 +6,6 @@
 
 #include <tbd/audio/module.hpp>
 #include <tbd/audio_device/audio_settings.hpp>
-#include <tbd/audio_device.hpp>
 #include <tbd/control_inputs.hpp>
 #include <tbd/sound_processor.hpp>
 #include <tbd/system/locks.hpp>

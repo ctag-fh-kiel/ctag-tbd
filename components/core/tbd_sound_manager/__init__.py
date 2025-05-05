@@ -4,18 +4,16 @@ import esphome.codegen as cg
 
 from esphome.components.tbd_module import new_tbd_component
 
-DEPENDENCIES = ['tbd_indicator', 'tbd_triggers']
+DEPENDENCIES = ['tbd_indicator', 'tbd_control_inputs']
 
 AUTO_LOAD = [
     'tbd_module', 
     'tbd_system', 
-    'tbd_common', 
     'tbd_config',
     'tbd_presets', 
     'tbd_storage', 
-    'tbd_helpers',
+    'tbd_sound_utils',
     'tbd_sound_processor',
-    'formatlib'
 ]
 
 CONFIG_SCHEMA = {}

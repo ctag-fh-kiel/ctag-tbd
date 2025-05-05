@@ -117,6 +117,8 @@ struct ProcessData {
 };
 
 struct SoundProcessor {
+    SoundProcessor() {}
+
     /** process an audio sample window
      *  
      *  This is the core functionality of every sound processor and needs to be implemented by plugins.
@@ -152,17 +154,26 @@ struct SoundProcessor {
 
     int GetAudioBufferSize() { return bufSz; } 
     void SetProcessChannel(int ch) { processCh = ch; }
-    bool GetIsStereo() const { return isStereo; }
+    bool GetIsStereo() const { return is_stereo; }
 
 protected:
-    // make this const or template argument
-    bool isStereo = false;
+    SoundProcessor(bool is_stereo) : is_stereo(is_stereo) {}
+
+    bool is_stereo;
 
     // is this dynamic?
     int const bufSz = 32;
 
     // will there ever be more than two channels? make this an enum
     int processCh = 0;
+};
+
+struct MonoSoundProcessor : SoundProcessor {
+    MonoSoundProcessor() : SoundProcessor(false) {}
+};
+
+struct StereoSoundProcessor : SoundProcessor {
+    StereoSoundProcessor() : SoundProcessor(true) {}
 };
 
 }

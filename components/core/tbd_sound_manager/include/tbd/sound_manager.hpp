@@ -21,7 +21,7 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <string>
-#include <tbd/sound_manager/audio_worker.hpp>
+#include <tbd/audio_loop/audio_worker.hpp>
 
 namespace tbd::audio {
 
