@@ -4,7 +4,7 @@ import esphome.codegen as cg
 from pathlib import Path
 
 
-from esphome.components.tbd_module import new_tbd_component
+import esphome.components.tbd_module as tbd
 
 AUTO_LOAD = ['tbd_module']
 
@@ -31,21 +31,22 @@ else:
 
 
 async def to_code(config):
-    new_tbd_component(__file__)
+    component = tbd.new_tbd_component(__file__)
 
     if CORE.is_host:
         if config[CONF_USE_FILESYSTEM_WRAPPER]:
-            CORE.add_build_flag('-DTBD_FILE_SYSTEM_USE_WRAPPER=1')
+            component.add_define('TBD_FILE_SYSTEM_USE_WRAPPER')
         else:
-            CORE.add_build_flag('-DTBD_FILE_SYSTEM_USE_WRAPPER=0')
-        cg.add_build_flag(f'-DTBD_STORAGE_SAMPLES_ADDRESS={0}')
-        cg.add_build_flag(f'-DTBD_DEFAULT_SAMPLE_ROM_SIZE={config[CONF_SAMPLES_SIZE]}')
+            component.add_define('TBD_FILE_SYSTEM_USE_WRAPPER', 0)
+
+        component.add_define('TBD_STORAGE_SAMPLES_ADDRESS', 0)
+        component.add_define('TBD_DEFAULT_SAMPLE_ROM_SIZE', config[CONF_SAMPLES_SIZE])
     else:
         from esphome.components.esp32 import add_idf_component
 
-        CORE.add_build_flag('-DTBD_FILE_SYSTEM_USE_WRAPPER=1')
-        cg.add_build_flag(f'-DTBD_STORAGE_SAMPLES_ADDRESS={config[CONF_SAMPLES_ADDRESS]}')
-        cg.add_build_flag(f'-DTBD_DEFAULT_SAMPLE_ROM_SIZE={config[CONF_SAMPLES_SIZE]}')
+        component.add_define('TBD_FILE_SYSTEM_USE_WRAPPER')
+        component.add_define('TBD_STORAGE_SAMPLES_ADDRESS', config[CONF_SAMPLES_ADDRESS])
+        component.add_define('TBD_DEFAULT_SAMPLE_ROM_SIZE', config[CONF_SAMPLES_SIZE])
 
         cg.add_define('USE_LITTLEFS')
         add_idf_component(
@@ -56,5 +57,5 @@ async def to_code(config):
             # refresh='1day'
         )
 
-        littlefs_include = Path(CORE.build_path) / 'components' / 'littlefs' / 'include'
+        littlefs_include = tbd.get_build_path() / 'components' / 'littlefs' / 'include'
         cg.add_build_flag(f'-I{littlefs_include}')
