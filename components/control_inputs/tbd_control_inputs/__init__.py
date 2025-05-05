@@ -1,7 +1,7 @@
 from esphome.components.tbd_module import new_tbd_component, ComponentInfo
 from esphome import pins
 import esphome.config_validation as cv
-from esphome.core import CORE
+import esphome.codegen as cg
 from dataclasses import dataclass
 
 AUTO_LOAD = ['tbd_module', 'tbd_system']
@@ -70,13 +70,13 @@ class ControlInputs:
     # subtype: str | None = None
 
     def add_flag(self):
-        CORE.add_build_flag(f'-DTBD_CV_{self.module.name.upper()}=1')
+        self.module.add_define(f'TBD_CV_{self.module.name.upper()}')
 
     def add_num_channels_flag(self):
-        CORE.add_build_flag(f'-DN_CVS={self.num_channels}')
+        self.module.add_define(f'N_CVS', self.num_channels)
 
     def add_num_triggers_flag(self):
-        CORE.add_build_flag(f'-DN_TRIGS={self.num_triggers}')
+        self.module.add_define(f'N_TRIGS', self.num_triggers)
 
 def new_tbd_control_input(init_file: str, num_channels: int, num_triggers: int, config, **kwargs):  
     module = new_tbd_component(init_file, **kwargs)
@@ -86,6 +86,10 @@ def new_tbd_control_input(init_file: str, num_channels: int, num_triggers: int, 
     device.add_flag()
     device.add_num_channels_flag()
     device.add_num_triggers_flag()
+
+    control_inputs = cg.global_ns.namespace('tbd').namespace('ControlInputs')
+    cg.add(control_inputs.init())
     return device
 
-new_tbd_component(__file__)
+def to_code(config):
+    new_tbd_component(__file__)

@@ -18,7 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
-#include <tbd/drivers/common/adc.hpp>
+#include <tbd/control_inputs/impl/adc.hpp>
 
 #include "freertos/FreeRTOS.h"
 
@@ -36,16 +36,20 @@ extern "C" {
 #include "driver/adc.h"
 #include "soc/soc.h"
 #include "soc/rtc.h"
-// #include "ulp_main.h"
 
 // #include "ulp_fsm_common.h"
 #include "freertos/task.h"
 #include "freertos/portmacro.h"
 #include "freertos/queue.h"
 
-#include "ulp.h"
-#include "ulp_tbd_drivers_port.h"
+// #include "ulp.h"
+// #include "ulp.h"
+// #include "ulp_tbd_drivers_port.h"
+#include "esp32/ulp.h"
+#include "ulp_main.h"
 #include <tbd/logging.hpp>
+
+// #include "esp32/ulp_main.h"
 
 }
 

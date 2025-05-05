@@ -23,9 +23,12 @@ CONFIG_SCHEMA = cv.Schema({
 })
 
 async def to_code(config):
+    control_input = new_tbd_control_input(__file__, NUM_CHANNELS, NUM_TRIGGERS, config)
+    component = control_input.module
+
     buffer_size = config[CONF_BUFFER_SIZE]
     # fixme this define could easily clash with other defines in the code
-    cg.add_build_flag(f'-DRX_BUF_SIZE={buffer_size}u')
+    component.add_define('RX_BUF_SIZE', f'{buffer_size}u')
 
     inputs = config[CONF_INPUTS]
 
@@ -36,12 +39,12 @@ async def to_code(config):
     if CONF_INPUT_UART in inputs:
         # TODO: allow configuration
 
-        cg.add_build_flag('-DTBD_MIDI_INPUT_UART=1')
+        component.add_define('TBD_MIDI_INPUT_UART')
     
     if CONF_INPUT_USB in inputs:
         # confusingly there are two tinyusb packages by espressif and both are required
 
-        cg.add_define('USE_ESP_TINYUSB')
+        component.add_define('USE_ESP_TINYUSB')
         add_idf_component(
             name="esp_tinyusb",
             repo="https://github.com/espressif/esp-usb.git",
@@ -50,7 +53,7 @@ async def to_code(config):
             # refresh='1day'
         )
 
-        cg.add_define('USE_TINYUSB')
+        component.add_define('USE_TINYUSB')
         add_idf_component(
             name="tinyusb",
             repo="https://github.com/espressif/tinyusb.git",
@@ -60,11 +63,10 @@ async def to_code(config):
 
         # required to enable USB MIDI in IDF
         add_idf_sdkconfig_option('CONFIG_TINYUSB_MIDI_COUNT', 1)
-        cg.add_build_flag('-DTBD_MIDI_INPUT_USB=1')
+        component.add_define('TBD_MIDI_INPUT_USB')
     
     if CONF_INPUT_RP2040 in inputs:
         # TODO: allow pin configuration
 
-        cg.add_build_flag('-DTBD_MIDI_INPUT_RP2040=1')
+        component.add_define('TBD_MIDI_INPUT_RP2040')
 
-    new_tbd_control_input(__file__, NUM_CHANNELS, NUM_TRIGGERS, config)
