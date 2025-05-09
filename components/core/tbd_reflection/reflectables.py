@@ -6,16 +6,33 @@ import cxxheaderparser.simple as cpplib
 import cxxheaderparser.types as cpptypes
 
 
-Attribute = int | float | bool | str
-Attributes = dict[str, Attribute]
+AttributeArgTypes = int | float | bool | str
+
+@dataclass
+class Attribute:
+    name_segments: list[str]
+    params: dict[str, AttributeArgTypes]
+
+    @property
+    def name(self) -> str:
+        return '::'.join(self.name_segments)
+    
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return f'Attribute({self.name})'
+
+Attributes = list[Attribute]
 
 
 @unique
 class ScopeType(IntEnum):
     NAMESPACE    = 0
-    CLASS        = 1
-    STATIC_FIELD = 2
-    FIELD        = 3
+    FUNCTION     = 1
+    CLASS        = 2
+    STATIC_FIELD = 3
+    FIELD        = 4
 
 
 def normalize_typename(typename: cpptypes.PQName) -> tuple[str, bool]:
@@ -36,6 +53,8 @@ class ScopeDescriptionSegment:
         match self.raw:
             case cpplib.NamespaceScope() as namespace:
                 return namespace.name
+            case cpptypes.Function() as func:
+                return func.name.format()
             case cpplib.ClassScope() as cls:
                 typename, _ = normalize_typename(cls.class_decl.typename)
                 return typename
@@ -49,6 +68,8 @@ class ScopeDescriptionSegment:
         match self.raw:
             case cpplib.NamespaceScope():
                 return ScopeType.NAMESPACE
+            case cpptypes.Function():
+                return ScopeType.FUNCTION
             case cpplib.ClassScope():
                 return ScopeType.CLASS
             case cpptypes.Field() as field:
@@ -64,6 +85,8 @@ class ScopeDescriptionSegment:
         match self.raw:
             case cpplib.NamespaceScope() as namespace:
                 return namespace.attrs
+            case cpptypes.Function() as func:
+                return func.attrs
             case cpplib.ClassScope() as cls:
                 return cls.class_decl.attrs
             case cpptypes.Field() as field:
@@ -80,6 +103,11 @@ class ScopeDescriptionSegment:
             raise ValueError(f'scope segment is not a namespace: {self.type}')
         return self.raw
     
+    def func(self) -> cpplib.NamespaceScope:
+        if self.type != ScopeType.FUNCTION:
+            raise ValueError(f'scope segment is not a function: {self.type}')
+        return self.raw
+
     def cls(self) -> cpplib.ClassScope:
         if self.type != ScopeType.CLASS:
             raise ValueError(f'scope segment is not a class: {self.type}')
@@ -106,6 +134,11 @@ class ScopeDescription:
             raise ValueError('namespaces can only be declared in namespaces')
         return ScopeDescription([*self.segments, ScopeDescriptionSegment(namespace)])
     
+    def add_function(self, func: cpptypes.Function) -> 'ScopeDescription':
+        if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE]:
+            raise ValueError('function can only be declared in namespaces')
+        return ScopeDescription([*self.segments, ScopeDescriptionSegment(func)])
+
     def add_class(self, cls: cpplib.ClassScope) -> 'ScopeDescription':
         if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE, ScopeType.CLASS]:
             raise ValueError('classes can only be declared in namespaces or other classes')
@@ -132,6 +165,9 @@ class ScopeDescription:
 
     def name(self):
         return self.segments[-1].name
+    
+    def func(self) -> cpptypes.Function:
+        return self.segments[-1].func()
 
     def cls(self) -> cpplib.ClassScope:
         return self.segments[-1].cls()
@@ -208,6 +244,10 @@ class ScopeDescription:
                     raise SplitDone
                 pos, *rest = rest
 
+            if pos.type == ScopeType.FUNCTION:
+                classes.append(pos)
+                return
+
             while pos.type == ScopeType.CLASS:
                 classes.append(pos)
                 if not rest:
@@ -223,6 +263,35 @@ class ScopeDescription:
             return ScopeDescription(namespaces), ScopeDescription(classes), ScopeDescription(fields)
 
         raise ValueError('bad segment order in scope')
+
+
+@dataclass
+class FunctionDescription:
+    func_name: str
+    full_name: ScopeDescription
+    header: Path
+    raw: cpptypes.Function
+    friendly_name: str | None = None
+    description: str | None = None
+    attrs: Attributes | None = None
+    
+    @property
+    def return_type(self) -> str:
+        return self.raw.return_type.typename.format()
+
+    @property
+    def name(self):
+        return self.friendly_name if self.friendly_name else self.func_name
+
+    @property
+    def arguments(self) -> list[cpptypes.Parameter]:
+        return self.raw.parameters
+
+    def __str__(self) -> str:
+        return self.full_name.path
+
+    def __repr__(self) -> str:
+        return f'Function({self.full_name.path})'
 
 
 @dataclass
@@ -279,11 +348,13 @@ Headers = Set[str]
 
 
 __all__ = [
-    'normalize_typename',
-    'PropertyDescription', 
-    'Properties', 
     'Attribute',
     'Attributes',
+    'normalize_typename',
+    'ScopeDescription',
+    'PropertyDescription', 
+    'Properties', 
+    'FunctionDescription',
     'ReflectableDescription',
     'Headers',
 ]

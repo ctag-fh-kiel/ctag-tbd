@@ -4,7 +4,8 @@ import re
 from typing import Final
 
 import humps
-from .reflectables import ScopeType, ScopeDescription, PropertyDescription, ReflectableDescription, Reflectables, Attributes
+from .reflectables import ScopeType, PropertyDescription, ReflectableDescription, Reflectables, Attributes
+from .parameters import ParamType, PARAM_TYPES
 import cxxheaderparser.simple as cpplib
 import logging
 import voluptuous as vol
@@ -135,21 +136,13 @@ class ScopePath:
 
 
 @unique
-class ParamType(Enum):
-    INT_PARAM     = 'int_par'
-    UINT_PARAM    = 'uint_par'
-    TRIGGER_PARAM = 'trigger_par'
-    FLOAT_PARAM   = 'float_par'
-    UFLOAT_PARAM  = 'ufloat_par'
-
-PARAM_TYPES = {param_type.value: param_type for param_type in ParamType}
-
 class ParamOperations(Enum):
     NO_OP  = 'NO_OP'
     ABS_OP = 'ABS_OP'
     ADD_OP = 'ADD_OP'
     SFT_OP = 'SFT_OP'
     PAN_OP = 'PAN_OP'
+
 
 ATTR_NAME = 'name'
 ATTR_DESCRIPTION = 'description'
@@ -230,6 +223,8 @@ class ParamEntry:
     
     @staticmethod
     def new_param_entry(name: str, plugin_id: int, type: ParamType, attrs: Attributes | None):
+        attrs = {name: value for attr in attrs for name, value in attr.params.items() if attr.name[0] == 'tbd'}
+
         if not attrs:
             return ParamEntry(name=name, plugin_id=plugin_id, type=type)
 
