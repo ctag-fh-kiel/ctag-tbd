@@ -18,7 +18,7 @@ def get_build_path() -> Path:
 
 @generated_tbd_global(PATHS_DOMAIN)
 def get_components_build_path():
-    return Path() / 'src' / 'components'
+    return Path() / 'src' / 'tbd'
 
 
 @generated_tbd_global(PATHS_DOMAIN)
@@ -54,36 +54,30 @@ def get_generated_include_path() -> Path:
     return include_path
 
 
-def copy_file_if_outdated(source_file: Path | str, dest_file: Path | str) -> bool:
+def copy_file_if_outdated(source_file: Path | str, dest_file: Path | str) -> list[Path]:
     source_file = Path(source_file)
     build_path = get_build_path()
     dest_file = build_path / dest_file
     dest_file.parent.mkdir(parents=True, exist_ok=True)
     if dest_file.exists() and  source_file.stat().st_mtime <= dest_file.stat().st_mtime:
-        return False
+        return [dest_file]
     _LOGGER.debug(f'copy to sources: {source_file}')
     shutil.copyfile(source_file, dest_file)
-    return True
+    return [dest_file]
 
 
-def copy_tree_if_outdated(source_dir: Path | str, dest_dir: Path | str, *, patterns: str = ['*']) -> bool:
+def copy_tree_if_outdated(source_dir: Path | str, dest_dir: Path | str, *, patterns: str = ['*'], flatten=False) -> list[Path]:
     source_dir = Path(source_dir)
     dest_dir = Path(dest_dir)
 
-    build_path = get_build_path()
-    dest_dir = build_path / dest_dir
-
-    retval = False
+    retval = []
     for pattern in patterns:
         for source_file in source_dir.rglob(pattern):
-            relative_source_file = source_file.relative_to(source_dir)
+            relative_source_file = dest_dir / source_file.name if flatten else source_file.relative_to(source_dir)
             dest_file = dest_dir / relative_source_file
-            dest_file.parent.mkdir(parents=True, exist_ok=True)
-            if dest_file.exists() and source_file.stat().st_mtime <= dest_file.stat().st_mtime:
-                continue
-            _LOGGER.debug(f'copy to sources: {source_file}')
-            shutil.copyfile(source_file, dest_file)
-            retval = True
+            if copy_file_if_outdated(source_file, dest_file):
+                retval.append(dest_file)
+
     return retval
 
 

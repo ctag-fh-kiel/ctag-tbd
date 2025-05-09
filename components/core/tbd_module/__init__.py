@@ -108,16 +108,19 @@ def new_tbd_component(init_file: str, *, auto_include: bool = True, auto_sources
 
     module.add_module_header()
 
-    # FIXME: remove this hack once esphome itself has switched from C++ 17 to C++ 20
-    CORE.add_build_flag('-std=c++20')
-
     register_tbd_component(module)
     return module
 
 
 @build_job_with_priority(GenerationStages.COMPONENTS)
 def to_code(config):
-    new_tbd_component(__file__)
+    new_tbd_component(__file__)    
+
+    EXCEPTION_FLAG = '-fno-exceptions'
+    CPP_STD_FLAG='-std=c++20'
+    build_flags = [flag for flag in CORE.build_flags if not (flag.startswith('-std=') or flag == EXCEPTION_FLAG)]
+    CORE.build_flags = set(build_flags)
+    CORE.add_build_flag(CPP_STD_FLAG)
 
     _LOGGER.info('adding global TBD defines')
     for module in get_tbd_domain(COMPONENTS_DOMAIN).values():
@@ -142,14 +145,4 @@ def to_code(config):
                 copy_tree_if_outdated(source_path, dest_path, patterns=['*.cpp', '*.hpp', '*.cc', '*.hh', '*.c', '*.h', '*.inl'])
             else:
                 raise ValueError(f'unknown source path type {path}')
-            
-        sources = set([*module.include_dirs, *module.sources])
-        for path in sources:
-            dest_path = component_build_dir / path
-            source_path = module.path / path
-            if source_path.is_file():
-                copy_file_if_outdated(source_path, dest_path)
-            elif source_path.is_dir():
-                copy_tree_if_outdated(source_path, dest_path, patterns=['*.cpp', '*.hpp', '*.cc', '*.hh', '*.c', '*.h', '*.inl'])
-            else:
-                raise ValueError(f'unknown source path type {path}')
+

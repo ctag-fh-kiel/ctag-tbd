@@ -15,7 +15,7 @@ def cmake_dependency(
         ref: str, 
         *,
         refresh:TimePeriod = TimePeriod(days=1), 
-        cmake_parameters: list[tuple[str, str]] = []
+        cmake_parameters: dict[str, Any] = {}
     ) -> str:
 
     repo_dir, *_ = git.clone_or_update(
