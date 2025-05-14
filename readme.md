@@ -3,10 +3,10 @@
 
 ![CTAG-TBD](tbd.png)
 
-## Documentation (in the works):
-[Summary table](https://docs.google.com/spreadsheets/d/1dBZtuBIdtgMqoRruYX-VDdDirdTQ6RD-oz-j79q-bmQ/edit?usp=sharing) of all available plugins.
-Documentation on TBD usage can be found [here (Google Docs)](https://docs.google.com/document/d/1c8mjxWjdiJNP0xpkU2CxRUp9av6V4W39wARJf3_SMSo/edit?usp=sharing)
-Tutorial videos in [YouTube playlist](https://www.youtube.com/playlist?list=PLB5iCbhcvJ2qdD7s1o9wsvQ9qtsCUWVLR)
+## Documentation:
+- [User's Manual](doc/CTAG%20TBD%20User's%20Manual.md)
+- [Summary table of all available plugins.](doc/TBD%20Plugin%20Overview.md)
+- [Tutorial videos in YouTube playlist](https://www.youtube.com/playlist?list=PLB5iCbhcvJ2qdD7s1o9wsvQ9qtsCUWVLR)
 
 ## Update procedure
 Easiest way to update is to use the ready made [releases from github](https://github.com/ctag-fh-kiel/ctag-tbd/releases).
