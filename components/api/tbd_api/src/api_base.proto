@@ -1,88 +1,14 @@
 syntax = "proto3";
 
-// header types
-
-message EmptyRequest {
-  uint32 request_id = 1;
-  uint32 endpoint = 2; 
-}
-
-message EmptyResponse {
-  uint32 request_id = 1;
-  uint32 status = 2;
-}
-
-message EmtpyEvent {
-  uint32 event_id = 1;
-}
-
-// scalar parameter requests
-
-message IntRequest {
-  uint32 request_id = 1;
-  uint32 endpoint = 3; 
-  int32 payload = 4;
-}
-
-message UIntRequest {
-  uint32 request_id = 1;
-  uint32 endpoint = 3; 
-  uint32 payload = 4;
-}
-
-message TriggerRequest {
-  uint32 request_id = 1;
-  uint32 endpoint = 3; 
-  bool payload = 4;
-}
-
-message FloatRequest {
-  uint32 request_id = 1;
-  uint32 endpoint = 3; 
-  bool payload = 4;
-}
-
-message UFloatRequest {
-  uint32 request_id = 1;
-  uint32 endpoint = 3; 
-  bool payload = 4;
-}
-
-// scalar parameter responses
-
-message IntResponse {
-  uint32 request_id = 1;
-  uint32 status = 2;
-  int32 payload = 3;
-}
-
-message UIntResponse {
-  uint32 request_id = 1;
-  uint32 status = 2;
-  uint32 payload = 3;
-}
-
-message TriggerResponse {
-  uint32 request_id = 1;
-  uint32 status = 2;
-  bool payload = 3;
-}
-
-message FloatResponse {
-  uint32 request_id = 1;
-  uint32 status = 2;
-  float payload = 3;
-}
-
-message UFloatResponse {
-  uint32 request_id = 1;
-  uint32 status = 2;
-  float payload = 3;
-}
-
 // payloads
 
 message DeviceInfo {
   int32 api_version = 1;
   int32 api_hash = 2;
+}
+
+message Something {
+  uint32 request_id = 1;
+  uint32 endpoint = 2;
+  bytes payload = 3;
 }
