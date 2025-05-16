@@ -1,16 +1,28 @@
-{% import 'handlers.j2' as hs with context %}
+{% import 'handlers.cpp.j2' as hs with context %}
 #include <tbd/api/api_all_endpoints.hpp>
 
 #include <tbd/api.hpp>
-
+#include <tbd/reflection/parameter_types.h>
 #include <tbd/logging.hpp>
+
 
 #include <pb_encode.h>
 #include <pb_decode.h>
 
-#include <wrappers.pb.h>
-{% for header in registry.proto_headers %}
-#include <{{header}}>{%- endfor %}
+#include <api_types.pb.h>
+
+namespace {
+
+bool encode_string(pb_ostream_t* stream, const pb_field_t* field, void* const* arg) {
+    auto str = reinterpret_cast<const tbd::str_par*>(*arg);
+
+    if (!pb_encode_tag_for_field(stream, field))
+        return false;
+
+    return pb_encode_string(stream, reinterpret_cast<const uint8_t*>(str->data()), str->length());
+}
+
+}
 
 namespace tbd::api { 
 {%- for endpoint in registry.endpoints %}
@@ -18,29 +30,36 @@ namespace tbd::api {
 {%- endfor %}
 
 {% for request in registry.request_types %}
-// message {{request.name}}
+// request {{request.name}}
+{%- if request.name != 'str_par_request' -%}
 template<> 
 bool decode_message({{ request.name }}& message, const uint8_t* in_buffer, size_t len) {
     pb_istream_t stream = pb_istream_from_buffer(in_buffer, len);
+
     if (!pb_decode(&stream, {{request.name}}_fields, &message)) {
         TBD_LOGE("api", "failed to deserialize {{request.message_name}}: %s", PB_GET_ERROR(&stream));
-        return false;
+        return true;
     }
     return true;
 }
+{%- endif -%}
 {% endfor %}
 
 {% for response in registry.response_types %}
+// response {{response.name}}
+{%- if response.name != 'str_par_response' -%}
 template<>
 bool encode_message(const {{ response.name }}& message, uint8_t* buffer, size_t& buffer_size) {
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
     if (!pb_encode(&stream, {{response.name}}_fields, &message)) {
         TBD_LOGE("api", "failed to serialize {{response.message_name}}: %s", PB_GET_ERROR(&stream));
-        return false;
+        buffer_size = stream.bytes_written;
+        return true;
     }
     buffer_size = stream.bytes_written;
     return true;
 }
+{%- endif -%}
 {% endfor %}
 
 {% for endpoint in registry.endpoints %}
@@ -48,19 +67,29 @@ bool encode_message(const {{ response.name }}& message, uint8_t* buffer, size_t&
 {% endfor %}
 
 const size_t NUM_ENDPOINTS = {{ registry.endpoints | length }};
-
 const Endpoint ENDPOINT_LIST[] = { {%- for endpoint in registry.endpoints %}
     { "{{ endpoint.name }}", {{ endpoint | request_id }}, {{ endpoint | response_id }}, &{{ endpoint | callback }} },
 {%- endfor %} 
 };
 
-const MessageInfo REQUEST_LIST[] = { {%- for request in registry.request_types %}
+const size_t NUM_REQUEST_MESSAGES = {{ registry.request_types | length }};
+const MessageInfo REQUEST_MESSAGE_LIST[] = { {%- for request in registry.request_types %}
+    {%- if request.name == 'str_par_request' -%}
+    { "{{ request.name }}", MESSAGE_TYPE_REQUEST, 0 },
+    {%- else -%}
     { "{{ request.name }}", MESSAGE_TYPE_REQUEST, {{ request.name }}_size },
-    {%- endfor %}
+    {% endif -%}
+    {% endfor %}
 };
-const MessageInfo RESPONSE_LIST[] = { {%- for response in registry.response_types %}
+
+const size_t NUM_RESPONSE_MESSAGES = {{ registry.response_types | length }};
+const MessageInfo RESPONSE_MESSAGE_LIST[] = { {%- for response in registry.response_types %}
+    {%- if response.name == 'str_par_response' -%}
+    { "{{ response.name }}", MESSAGE_TYPE_REQUEST, 0 },
+    {%- else -%}
     { "{{ response.name }}", MESSAGE_TYPE_REQUEST, {{ response.name }}_size },
-    {%- endfor %} 
+    {% endif -%}
+    {% endfor %} 
 };
 
 }

@@ -1,0 +1,86 @@
+{%- macro predeclare_endpoint(endpoint) -%}
+{%- set htype = endpoint | endpoint_type -%}
+    {%- if htype == 'FUNCTION' -%}
+    uint32_t {{ endpoint.name }}(const {{ endpoint.in_message }}&, {{ endpoint.out_message }}&);
+    {%- elif htype == 'GETTER' -%}
+    uint32_t {{ endpoint.name }}({{ endpoint.out_message }}&);
+    {%- elif htype == 'SETTER' -%}
+    uint32_t {{ endpoint.name }}(const {{ endpoint.in_message }}&);
+    {%- else -%}
+    uint32_t {{ endpoint.name }}();
+    {%- endif %}
+{%- endmacro -%}
+
+
+{%- macro handler_call(endpoint) -%}
+{%- set htype = endpoint | endpoint_type -%}
+{%- if htype == "FUNCTION" -%}
+{{ endpoint.name }}(in_message.payload, out_message.payload)
+{%- elif htype == "GETTER" -%}
+{{ endpoint.name }}(out_message.payload)
+{%- elif htype == "SETTER" -%}
+{{ endpoint.name }}(in_message.payload)
+{%- elif htype == "TRIGGER" -%}
+{{ endpoint.name }}()
+{%- endif -%}
+{%- endmacro -%}
+
+
+{%- macro _handler_wrapper_impl(endpoint) -%}
+uint32_t {{endpoint | callback}}(uint8_t* buffer, size_t& length) {
+    {{ endpoint | get_request }} in_message;
+    if (!decode_message(in_message, buffer, length)) {
+        return errors::API_DECODE;
+    }
+    {{ endpoint | get_response }} out_message;
+    out_message.request_id = in_message.request_id;
+    if (auto err = {{ handler_call(endpoint) }}; err != errors::SUCCESS) {
+        void_response error_response = {in_message.request_id, err};
+        if (!encode_message(error_response, buffer, length)) {
+            return errors::API_ENCODE;
+        }
+        return errors::SUCCESS;
+    }
+    if (!encode_message(out_message, buffer, length)) {
+        return errors::API_ENCODE;
+    }
+    return errors::SUCCESS;
+}
+{%- endmacro -%}
+
+{%- macro _str_handler_wrapper_impl(endpoint) -%}
+uint32_t {{endpoint | callback}}(uint8_t* buffer, size_t& length) {
+    {{ endpoint | get_request }} in_message;
+    if (!decode_message(in_message, buffer, length)) {
+        return errors::API_DECODE;
+    }
+    {{ endpoint | get_response }} out_message;
+    out_message.request_id = in_message.request_id;
+    str_par response_payload;
+    if (auto err = {{ endpoint.name }}(in_message.payload, response_payload); err != errors::SUCCESS) {
+        void_response error_response = {in_message.request_id, err};
+        if (!encode_message(error_response, buffer, length)) {
+            return errors::API_ENCODE;
+        }
+        return errors::SUCCESS;
+    }
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, length);
+    out_message.payload.funcs.encode = encode_string;
+    out_message.payload.arg = &response_payload;
+    if (!pb_encode(&stream, str_par_response_fields, &out_message)) {
+        TBD_LOGE("api", "failed to serialize : %s", PB_GET_ERROR(&stream));
+        length = stream.bytes_written;
+        return errors::API_ENCODE;
+    }
+    length = stream.bytes_written;
+    return errors::SUCCESS;
+}
+{%- endmacro -%}
+
+{%- macro handler_wrapper_impl(endpoint) -%}
+{%- if endpoint.in_message == 'str_par' or endpoint.out_message == 'str_par' -%}
+{{ _str_handler_wrapper_impl(endpoint) }}
+{%- else -%}
+{{ _handler_wrapper_impl(endpoint) }}
+{%- endif -%}
+{%- endmacro -%}

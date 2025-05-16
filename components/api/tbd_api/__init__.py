@@ -2,11 +2,11 @@ from esphome.components.tbd_module.python_dependencies import python_dependencie
 python_dependencies('proto-schema-parser')
 
 
-from dataclasses import dataclass
 from pathlib import Path
 import esphome.config_validation as cv
 import esphome.components.tbd_module as tbd
 import esphome.codegen as cg
+import subprocess
 import logging
 
 from .registry import *
@@ -56,19 +56,27 @@ async def to_code(config):
 @tbd.build_job_with_priority(tbd.GenerationStages.API)
 def finalize_api_registry():
     MESSAGE_BUILD_DIR = Path() / 'src' / 'messages'
+    PYTHON_API_PATH = tbd.get_build_path() / 'apis' / 'python'
+
 
     api_registry = get_api_registry()
 
-    proto_build_files = []
-    for proto_file in api_registry.proto_files:
-            tbd.copy_file_if_outdated(proto_file, MESSAGE_BUILD_DIR / proto_file.name)
-            proto_build_file = MESSAGE_BUILD_DIR / proto_file.name
-            cg.add_platformio_option('custom_nanopb_protos', [f'+<{proto_build_file}>'])
-            proto_build_files.append(proto_build_file)
+    # proto_build_files = []
+    # for proto_file in api_registry.proto_files:
+    #         tbd.copy_file_if_outdated(proto_file, MESSAGE_BUILD_DIR / proto_file.name)
+    #         proto_build_file = MESSAGE_BUILD_DIR / proto_file.name
+    #         cg.add_platformio_option('custom_nanopb_protos', [f'+<{proto_build_file}>'])
+    #         proto_build_files.append(proto_build_file)
 
     generator = ApiGenerator(api_registry)
 
-    WRAPPERS_FILE = tbd.get_build_path() / MESSAGE_BUILD_DIR / 'wrappers.proto'
     generator.write_endpoints(tbd.get_generated_sources_path())
-    generator.write_protos(WRAPPERS_FILE)
-    cg.add_platformio_option('custom_nanopb_protos', [f'+<{WRAPPERS_FILE}>'])
+    generator.write_protos(tbd.get_build_path() / MESSAGE_BUILD_DIR)
+    generator.write_python_client(PYTHON_API_PATH)
+    # --proto_path=$SRC_DIR --python_out=$DST_DIR $SRC_DIR/addressbook.proto
+    API_TYPES_PATH = tbd.get_build_path() / MESSAGE_BUILD_DIR / generator.wrappers_proto
+
+    print(['protoc', f'--proto_path={MESSAGE_BUILD_DIR}', f'--python_out={PYTHON_API_PATH}', generator.wrappers_proto])
+
+    subprocess.run(['protoc', f'--proto_path={tbd.get_build_path() / MESSAGE_BUILD_DIR}', f'--python_out={PYTHON_API_PATH}', generator.wrappers_proto])
+    cg.add_platformio_option('custom_nanopb_protos', [f'+<{ API_TYPES_PATH }>'])
