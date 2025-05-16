@@ -1,0 +1,34 @@
+{%- import 'endpoints.py.j2' as hs with context -%}
+import asyncio
+from websockets.asyncio.client import connect
+import api_types_pb2
+
+int_par     = int
+uint_par    = int
+float_par   = float
+ufloat_par  = float
+trigger_par = bool
+str_par     = str
+
+{# class TbdApi:
+    def __init__(self):
+        self._websocket = None
+
+    async def connect(): #}
+
+
+def print_data(data):
+    print(data)
+    print(data.hex())
+
+{%- for endpoint in registry.endpoints %}
+{{hs.request_func(endpoint)}}
+{% endfor %} 
+
+
+if __name__ == "__main__":
+    # asyncio.run(trigger_blub())
+    req = api_types_pb2.void_request()
+    req.request_id = 52
+    req.endpoint = 12
+    print(req.SerializeToString())

@@ -1,0 +1,60 @@
+{%- macro request_func(endpoint) -%}
+{%- set htype = endpoint | endpoint_type -%}
+{%- if htype == 'FUNCTION' %}
+async def {{ endpoint.name }}(req_message: {{ endpoint | py_arg }}) -> {{ endpoint | py_return }}:
+    async with connect("ws://localhost:7777/ws") as websocket:
+        request = {{ endpoint | py_request }}()
+        request.request_id = 42
+        request.endpoint = {{ endpoint | endpoint_id }}
+        request.payload = req_message
+        req_data = request.SerializeToString()
+        await websocket.send(req_data)
+        result = {{ endpoint | py_response }}()
+        res_data = await websocket.recv()
+        result.ParseFromString(res_data)
+        return result.payload
+{%- elif htype == 'GETTER' %}
+async def {{ endpoint.name }}() -> {{ endpoint | py_return }}:
+    async with connect("ws://localhost:7777/ws") as websocket:
+        request = api_types_pb2.void_request()
+        request.request_id = 42
+        request.endpoint = {{ endpoint | endpoint_id }}
+        req_data = request.SerializeToString()
+        print(req_data)
+        await websocket.send(req_data)
+        result = {{ endpoint | py_response }}()
+        res_data = await websocket.recv()
+        print(res_data)
+        result.ParseFromString(res_data)
+        return result.payload
+{%- elif htype == 'SETTER' %}
+async def {{ endpoint.name }}(req_message: {{ endpoint | py_arg }}) -> None:
+    async with connect("ws://localhost:7777/ws") as websocket:
+        request = {{ endpoint | py_request }}()
+        request.request_id = 42
+        request.endpoint = {{ endpoint | endpoint_id }}
+        request.payload = req_message
+        req_data = request.SerializeToString()
+        await websocket.send(req_data)
+        result = api_types_pb2.void_response()
+        res_data = await websocket.recv()
+        result.ParseFromString(res_data)
+        return None
+{%- else %}
+async def {{ endpoint.name }}() -> None:
+    async with connect("ws://localhost:7777/ws") as websocket:
+        request = api_types_pb2.void_request()
+        request.request_id = 42
+        request.endpoint = {{ endpoint | endpoint_id }}
+        req_data = request.SerializeToString()
+        print_data(req_data)
+        await websocket.send(req_data)
+        res_data = await websocket.recv()
+        print(res_data)
+        result = api_types_pb2.void_response()
+        result.ParseFromString(res_data)
+        print(result.request_id)
+        print(result.status)
+        return None
+{%- endif %}
+{%- endmacro -%}
