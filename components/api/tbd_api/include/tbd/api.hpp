@@ -2,18 +2,14 @@
 
 #include <cstdlib>
 #include <cinttypes>
+#include <tbd/errors.hpp>
+
+TBD_NEW_ERR(API_BAD_ENDPOINT, "failed to parse endpoint header");
+TBD_NEW_ERR(API_BUFFER_SIZE, "message size exceeds max buffer size");
+TBD_NEW_ERR(API_DECODE, "failed to deserialize message");
+TBD_NEW_ERR(API_ENCODE, "failed to serialize message");
 
 namespace tbd {
-
-namespace errors {
-    constexpr uint32_t SUCCESS = 0;
-    constexpr uint32_t FAILURE = 1;
-    constexpr uint32_t API_BAD_ENDPOINT = 1;
-    constexpr uint32_t API_BAD_HEADER = 2;
-    constexpr uint32_t API_BUFFER_SIZE = 3;
-    constexpr uint32_t API_DECODE = 4;
-    constexpr uint32_t API_ENCODE = 5;
-}
 
 struct Api {
     Api() = delete;

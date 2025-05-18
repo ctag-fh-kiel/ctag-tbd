@@ -23,4 +23,4 @@ def python_dependencies(*packages: list[str | tuple[str, str]]):
     for package in packages:
         ensure_package_is_installed(package)
 
-__all__ = [python_dependencies]
+__all__ = ['python_dependencies']

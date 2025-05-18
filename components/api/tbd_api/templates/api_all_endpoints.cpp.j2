@@ -2,7 +2,7 @@
 #include <tbd/api/api_all_endpoints.hpp>
 
 #include <tbd/api.hpp>
-#include <tbd/reflection/parameter_types.h>
+#include <tbd/parameter_types.h>
 #include <tbd/logging.hpp>
 
 
@@ -24,11 +24,12 @@ bool encode_string(pb_ostream_t* stream, const pb_field_t* field, void* const* a
 
 }
 
-namespace tbd::api { 
+// endpoint declarations
 {%- for endpoint in registry.endpoints %}
 {{hs.predeclare_endpoint(endpoint)}}
 {%- endfor %}
 
+namespace tbd::api { 
 {% for request in registry.request_types %}
 // request {{request.name}}
 {%- if request.name != 'str_par_request' -%}

@@ -66,7 +66,11 @@ class ApiGenerator:
 
         wrappers = protog.Generator().generate(proto.File(
             syntax='proto3',
-            file_elements=[*payload_types, *request_types, *response_types]
+            file_elements=[
+                *payload_types, 
+                *request_types, 
+                *response_types
+            ]
         ))
 
         out_file = out_dir / self.wrappers_proto
@@ -98,7 +102,7 @@ class ApiGenerator:
         out_folder.mkdir(exist_ok=True, parents=True)
         out_file = out_folder / 'tbd_client.py'
         with open(out_file, 'w') as f:
-            f.write(source)     
+            f.write(source)
 
     ## filters ##
 

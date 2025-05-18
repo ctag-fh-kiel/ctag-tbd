@@ -19,12 +19,12 @@ uint32_t Api::handle_stream_input(uint8_t* buffer, size_t& length) {
     // FIXME: the parser does not ignore unknown fields as expected
     // if (!pb_decode(&header_stream, void_request_fields, &header)) {
     //     TBD_LOGE("api", "failed to deserialize header: %s", PB_GET_ERROR(&header_stream));
-    //     return errors::API_BAD_HEADER;
+    //     return TBD_ERR(API_BAD_HEADER);
     // }
 
     pb_istream_t stream = pb_istream_from_buffer(buffer, length);
     if (header.endpoint >= api::NUM_ENDPOINTS) {
-        return errors::API_BAD_ENDPOINT;
+        return TBD_ERR(API_BAD_ENDPOINT);
     }
     const auto& endpoint = api::ENDPOINT_LIST[header.endpoint];
     const auto request_type_id = endpoint.request_type;
@@ -40,7 +40,7 @@ uint32_t Api::handle_stream_input(uint8_t* buffer, size_t& length) {
         required_buffer_size = response_size > required_buffer_size ? response_size : required_buffer_size;
     }
     if (length < required_buffer_size) {
-        return errors::API_BUFFER_SIZE;
+        return TBD_ERR(API_BUFFER_SIZE);
     }
     
     auto handler = endpoint.callback;

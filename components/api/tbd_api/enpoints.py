@@ -20,7 +20,40 @@ class EndpointType(Enum):
 
 @dataclass
 class Endpoint:
-    """ Remotely callable procedure. """
+    """ Remotely callable procedure. 
+    
+        Functions annotated with `[[tbd::endpoint(...)]]` that adhere to the following 
+        argument convention:
+
+        1. Return type has to be `tbd::Error` to signify failures.
+        2. A single `const SomeType&` input argument (also referred to as request, req or 
+           simply arg) can be present.
+        3. A single `SomeOtherType&` non const output (also reffered to as return or 
+           response) argument can be present.
+        4. If both are present the first argument has to be the input argument and
+           the the input argument is the first and the output argument is the second 
+           argument.
+        5. Argument types need to be valid TBD DTO types (see DtoTag docs for more)
+        
+        Therefore there are four general types of endpoints:
+
+        `FUNCTION`: input and output
+
+            tbd::Error some_func(const SomeType& input, SomeOtherType& output);
+
+        `GETTERS`: only output
+
+            tbd::Error some_getter(SomeOtherType& output);
+
+        `SETTERS`: only input
+
+            tbd::Error some_getter(const SomeType& input);
+
+        `TRIGGERS`: no arguments
+
+            tbd::Error some_trigger();
+
+    """
 
     func: tbr.FunctionDescription
     in_message: str | None
@@ -28,19 +61,25 @@ class Endpoint:
 
     @property
     def name(self) -> str:
+        """ Plain function name. """
         return self.func.name
 
     @property
     def full_name(self) -> tbr.ScopeDescription:
-        """ Full path to c++ function. """
+        """ Full namespace path to c++ function. """
         return self.func.full_name
 
     @property
     def description(self) -> str:
+        """ Description provided by annotation or `None` """
         return self.func.description
 
     @property
     def source(self) -> Path:
+        """ File containing the declaration or implementation of the endpoint.
+         
+            This is the file provided to the C++ parser to extract this endpoint from.  
+        """
         return self.func.header
 
     @property

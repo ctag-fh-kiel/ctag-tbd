@@ -209,6 +209,7 @@ empty_request = EmptyRequest(
         elements=[
             proto.Field(name=REQUEST_ID_FIELD_NAME, number=1, type='uint32'),
             proto.Field(name=ENDPOINT_FIELD_NAME, number=2, type='uint32'),
+            # proto.Field(name=PAYLOAD_FIELD_NAME, number=3, type='google.protobuf.Any'),
         ]
     ),
     file_path=None,
@@ -263,6 +264,7 @@ empty_response = EmptyResponse(
         elements=[
             proto.Field(name=REQUEST_ID_FIELD_NAME, number=1, type='uint32'),
             proto.Field(name=STATUS_FIELD_NAME, number=2, type='uint32'),
+            # proto.Field(name=PAYLOAD_FIELD_NAME, number=3, type='google.protobuf.Any')
         ]
     ),
     file_path=None,
@@ -339,9 +341,9 @@ def dto_from_message(message: proto.Message, file_path: Path) -> AnyMessageDto:
 
 
 __all__ = [
-    'WrapperType'
+    'WrapperType',
     'MessagePayload',
-    'ScalarPayload',
+    'ParamPayload',
     'Payload',
     'empty_request',
     'MessageRequest',

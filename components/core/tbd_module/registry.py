@@ -6,7 +6,6 @@
 
     This module provides a hack that extends the ESPHome `CORE` object which will not be
     reset by imports, to provide such a value storage facility.
-
 """
 
 import functools
@@ -21,10 +20,12 @@ _LOGGER = logging.getLogger(__file__)
 
 
 GLOBAL_DOMAIN = 'globals'
+TBD_REGISTRY_FIELD_NAME = 'tbd_registry'
 
 
 def get_tbd_registry() -> dict[str, dict[str, Any]]:
-    TBD_REGISTRY_FIELD_NAME = 'tbd_registry'
+    """ Get storage location of all TBD globals. """
+
     if not hasattr(CORE, TBD_REGISTRY_FIELD_NAME):
         setattr(CORE, TBD_REGISTRY_FIELD_NAME, {GLOBAL_DOMAIN: {}}),
     return getattr(CORE, TBD_REGISTRY_FIELD_NAME)
@@ -47,7 +48,7 @@ def has_tbd_global(name: str, *, domain: str = GLOBAL_DOMAIN) -> bool:
     return domain in domains and name in domains[domain]
 
 
-def get_tbd_domain(domain: str = GLOBAL_DOMAIN, missing_ok: bool = False) -> dict[Any]:
+def get_tbd_domain(domain: str = GLOBAL_DOMAIN, missing_ok: bool = False) -> dict[str, Any] | None:
     domains = get_tbd_registry()
 
     if domain not in domains:
@@ -82,6 +83,18 @@ class TBDRegistry:
 
 
 def generated_tbd_global(domain: str = GLOBAL_DOMAIN):
+    """ Define lazily generated TBD global.
+
+        Annotation for simple getter functions that create a global value to allow for the following semantics:
+
+        - on first call anywhere, global gets created and stored
+        - subsequent calls return the global
+
+        This can be used for either simple value caching or singletons.
+
+        :note: Due to the way in which esphome loads modules, the usual cache decorators can not be used these purposes.
+    """
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper():

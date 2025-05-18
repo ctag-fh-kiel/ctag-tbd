@@ -27,13 +27,11 @@ void WebsocketServer::begin() {
     server.config.port = TBD_WEBSOCKET_PORT;
     auto &echo = server.endpoint["^/ws/?$"];
     echo.on_message = [](std::shared_ptr<WSServer::Connection> connection, std::shared_ptr<WSServer::InMessage> request) {
-        TBD_LOGI(tag, "got request");
         std::string in_message = request->string();
         size_t in_length = in_message.length();
         size_t length = in_length > 128 ? in_length : 128;
         uint8_t buffer[length];
         for (size_t i = 0; i < in_message.length(); ++i) {
-          TBD_LOGI(tag, "%02x", in_message[i]);
           buffer[i] = in_message[i];
         }
         if (Api::handle_stream_input(buffer, length) != errors::SUCCESS) {
@@ -45,7 +43,6 @@ void WebsocketServer::begin() {
     
 
     server_thread = std::thread([]() {
-
         server.start([](unsigned short port) {
           server_port.set_value(TBD_WEBSOCKET_PORT);
         });

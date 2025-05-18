@@ -23,6 +23,7 @@ from .dtos import (
     dto_from_message 
 )
 from .enpoints import Endpoint, endpoint_from_function
+from .base_endpoints import BASE_ENDPOINTS, BASE_ENDPOINT_IDS
 
 
 _LOGGER = logging.getLogger(__file__)
@@ -30,7 +31,7 @@ _LOGGER = logging.getLogger(__file__)
 
 class ApiRegistry:
     def __init__(self):
-        self._endpoints: list[Endpoint] = []
+        self._endpoints: list[Endpoint] = [None for _ in BASE_ENDPOINTS]
         self._payload_types: OrderedDict[str, Payload] = OrderedDict((message.name, message) for message in ParamPayload.scalar_messages())
         self._request_types: OrderedDict[str, Request] = OrderedDict({empty_request.name: empty_request})
         self._response_types: OrderedDict[str, Response] = OrderedDict({empty_response.name: empty_response})
@@ -188,7 +189,12 @@ class ApiRegistry:
             
             self._add_proto_file_if_needed(out_message)
 
-        self.endpoints.append(endpoint)
+        endpoint_name = endpoint.name
+        if endpoint_name in BASE_ENDPOINTS:
+            endpoint_id = BASE_ENDPOINT_IDS[endpoint_name]
+            self._endpoints[endpoint_id] = endpoint
+        else:
+            self._endpoints.append(endpoint)
     
     def _add_proto_file_if_needed(self, dto: AnyDto):
         match dto:

@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 import shutil
 from esphome.core import CORE
@@ -54,7 +55,7 @@ def get_generated_include_path() -> Path:
     return include_path
 
 
-def copy_file_if_outdated(source_file: Path | str, dest_file: Path | str) -> list[Path]:
+def copy_file_if_outdated(source_file: Path | str, dest_file: Path | str, *, symlink=True) -> list[Path]:
     source_file = Path(source_file)
     build_path = get_build_path()
     dest_file = build_path / dest_file
@@ -62,11 +63,26 @@ def copy_file_if_outdated(source_file: Path | str, dest_file: Path | str) -> lis
     if dest_file.exists() and  source_file.stat().st_mtime <= dest_file.stat().st_mtime:
         return [dest_file]
     _LOGGER.debug(f'copy to sources: {source_file}')
-    shutil.copyfile(source_file, dest_file)
+    if symlink:
+        os.symlink(source_file, dest_file)
+    else:
+        shutil.copyfile(source_file, dest_file)
+
     return [dest_file]
 
 
-def copy_tree_if_outdated(source_dir: Path | str, dest_dir: Path | str, *, patterns: str = ['*'], flatten=False) -> list[Path]:
+def copy_tree_if_outdated(
+    source_dir: Path | str,
+    dest_dir: Path | str,
+    *,
+    patterns: list[str] | None = None,
+    flatten: bool = False,
+    symlink: bool = True
+) -> list[Path]:
+
+    if patterns is None:
+        patterns = ['*']
+
     source_dir = Path(source_dir)
     dest_dir = Path(dest_dir)
 
@@ -75,7 +91,7 @@ def copy_tree_if_outdated(source_dir: Path | str, dest_dir: Path | str, *, patte
         for source_file in source_dir.rglob(pattern):
             relative_source_file = dest_dir / source_file.name if flatten else source_file.relative_to(source_dir)
             dest_file = dest_dir / relative_source_file
-            if copy_file_if_outdated(source_file, dest_file):
+            if copy_file_if_outdated(source_file, dest_file, symlink=symlink):
                 retval.append(dest_file)
 
     return retval

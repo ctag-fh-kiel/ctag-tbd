@@ -8,12 +8,14 @@ from pathlib import Path
 import logging
 from typing import Callable
 from esphome.core import CORE
-import shutil
 from esphome.coroutine import coroutine
 
 from .registry import *
 from .files import *
 from .component_info import *
+from .collect_errors import collect_errors
+from .prepare_build import *
+
 
 AUTO_LOAD = ['tbd_system']
 
@@ -30,18 +32,48 @@ def is_desktop():
 
 @unique
 class GenerationStages(Enum):
-    COMPONENTS = -10.0
-    PLUGINS = -20.0
-    API = -30.0
+    """ Priority of tbd build setup stages.
 
-COMPONENTS_DOMAIN = 'components'
+        Stages with higher priority run first with default value `0.0`.
+
+        TBD does a lot of processing and code generation. This processing needs to be done in a defined order, since
+        the output of one processing stage may be required by a subsequent stage. For this purpose esphome allows
+        build jobs to be assigned priorities. The default priority assigned to by esphome for calling `to_code` of
+        each component is `0.0`.
+
+        The priority represent the following stages:
+
+        `DEFAULT`: Components registering and config stage.
+            Priority of `to_code` call if not specified. Normal components `to_code` module level function
+            evaluates the component config if present and registers the component, including sources, include paths
+            and defines.
+
+        `COMPONENT`: Component registry build setup stage.
+            Component registry gets evaluated and all code is copied or symlinked to build dir. Additionally, the
+            PlatformIO config file is populated with defines, include paths and libraries.
+
+        'REFLECTION': Reflection parsing and metadata generation stage.
+            Functionality like the plugin registry, parse C++ code and generate additional wrapper or metadata files.
+
+        'API': Api registry stage.
+            With all other code generation and the build set up, the API registry will parse selected files for API
+            endpoint declarations and read DTO definitions for endpoint and DTO code generation.
+    """
+
+    DEFAULT = 0.0
+    COMPONENTS = -10.0
+    REFLECTION = -20.0
+    ERRORS = -30.0
+    API = -40.0
+
+
 
 
 GenerationJob = Callable[[], None]
 
 
 def add_generation_job(job: GenerationJob):
-    CORE.add_job((job))
+    CORE.add_job(job)
 
 
 def build_job_with_priority(priority: GenerationStages):
@@ -112,37 +144,18 @@ def new_tbd_component(init_file: str, *, auto_include: bool = True, auto_sources
     return module
 
 
+@build_job_with_priority(GenerationStages.ERRORS)
+def errors_job():
+    collect_errors()
+
+
 @build_job_with_priority(GenerationStages.COMPONENTS)
+def prepare_build_job():
+    prepare_build()
+
+
 def to_code(config):
-    new_tbd_component(__file__)    
+    new_tbd_component(__file__)
 
-    EXCEPTION_FLAG = '-fno-exceptions'
-    CPP_STD_FLAG='-std=c++20'
-    build_flags = [flag for flag in CORE.build_flags if not (flag.startswith('-std=') or flag == EXCEPTION_FLAG)]
-    CORE.build_flags = set(build_flags)
-    CORE.add_build_flag(CPP_STD_FLAG)
-
-    _LOGGER.info('adding global TBD defines')
-    for module in get_tbd_domain(COMPONENTS_DOMAIN).values():
-        if not isinstance(module, ComponentInfo):
-            raise ValueError(f'bad module type in TBD modules list {type(module)}')
-
-        for key, value in module.defines.items():
-            _LOGGER.info(f'>>> {key} {value}')
-            CORE.add_build_flag(f'-D{key}={value}')
-        
-        component_build_dir = get_components_build_path() / module.full_name
-        for path in module.include_dirs:
-            CORE.add_build_flag(f'-I{component_build_dir / path}')
-
-        sources = set([*module.include_dirs, *module.sources])
-        for path in sources:
-            dest_path = component_build_dir / path
-            source_path = module.path / path
-            if source_path.is_file():
-                copy_file_if_outdated(source_path, dest_path)
-            elif source_path.is_dir():
-                copy_tree_if_outdated(source_path, dest_path, patterns=['*.cpp', '*.hpp', '*.cc', '*.hh', '*.c', '*.h', '*.inl'])
-            else:
-                raise ValueError(f'unknown source path type {path}')
-
+    add_generation_job(prepare_build_job)
+    add_generation_job(errors_job)

@@ -1,0 +1,53 @@
+#pragma once
+
+#if !USE_TBD_ERR
+#error "error info not available, did you accidentally include all_errors.hpp directly?"
+#endif
+
+#include <cinttypes>
+#include <cstdlib>
+
+#include <tbd/logging.hpp>
+
+
+#define TBD_NEW_ERR(err, msg)
+#define TBD_ERR(err) ::tbd::errors::err
+#define TBD_ERRMSG(err, msg) ::tbd::errors::err
+
+namespace tbd::errors {
+
+enum Errors {
+{%- for index , name, _ in errors %}
+    {{ name }} = {{ index }},
+{%- endfor %}
+};
+
+struct ErrorInfo {
+    char* name;
+    char* message;
+};
+
+extern const size_t NUM_ERRORS;
+extern const ErrorInfo ERROR_LIST[];
+
+inline size_t get_num_errors() {
+    return NUM_ERRORS;
+}
+
+inline const char* get_error_name(Error err) {
+    if (err >= NUM_ERRORS) {
+        TBD_LOGE("errors", "requested name for invalid error code");
+        return ERROR_LIST[FAILURE].name;
+    }
+    return ERROR_LIST[err].name;
+}
+
+inline const char* get_error_message(Error err) {
+    if (err >= NUM_ERRORS) {
+        TBD_LOGE("errors", "requested name for invalid error code");
+        return ERROR_LIST[FAILURE].message;
+    }
+    return ERROR_LIST[err].message;
+}
+
+}

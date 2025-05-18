@@ -51,3 +51,4 @@ def write_library_json_from_compilation_commands(
 
 
 __all__ = ['plain_dependency']
+
