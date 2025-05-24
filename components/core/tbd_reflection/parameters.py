@@ -8,9 +8,8 @@ class ParamType(Enum):
     TRIGGER_PARAM = 'trigger_par'
     FLOAT_PARAM   = 'float_par'
     UFLOAT_PARAM  = 'ufloat_par'
-
+    STR_PARAM     = 'str_par'
 
 PARAM_TYPES = {param_type.value: param_type for param_type in ParamType}
-
 
 __all__ = ['ParamType', 'PARAM_TYPES']

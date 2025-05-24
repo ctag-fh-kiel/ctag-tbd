@@ -1,3 +1,4 @@
+import functools
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Final, Optional
@@ -23,9 +24,15 @@ _LOGGER = logging.getLogger(__file__)
 
 
 class Parser(cpplib.CxxParser):
+    """ Hack to implement missing attribute parsing/processing of cxxheaderparser lib.
+
+        This hack will intercept any `[[` sequence and forward the enclosed tokens to visitor for processing.
+    """
+
     def _consume_attribute_specifier_seq(
         self, tok: lexer.LexToken, doxygen: Optional[str] = None
     ) -> None:
+
         while True:
             if tok.type == "DBL_LBRACKET":
                 tokens = self._consume_balanced_tokens(tok)
@@ -42,8 +49,14 @@ class Parser(cpplib.CxxParser):
 
 
 class AnnotationParser(cpplib.SimpleCxxVisitor):
+    """ C++ visitor with additional processing of attributes.
+
+        Attributes will be added to context and picked up/associated with the next declaration. Attributes will be
+        added to
+    """
+
     def __init__(self, lines) -> None:
-        self._attrs: list[lexer.LexToken] | None = None
+        self._attrs: list[list[lexer.LexToken]] | None = None
         super().__init__()
 
     def on_class_start(self, state:cpplib.SClassBlockState):
@@ -62,109 +75,6 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
             f.attrs = None
 
         self._reset_attrs()
-        
-    def _parse_attrs(self) -> Attributes:
-        if not self._attrs:
-            return []
-        return [attr for tokens in self._attrs if (attr := self._parse_attr(tokens)) is not None]
-
-    def _parse_attr(self, tokens) -> Attribute | None:
-        args = tokens
-        name_segments = []
-
-        while True:
-            if not args:
-                raise ValueError('expected attribute name')
-
-            name, *args = args
-            if name.type != 'NAME':
-                raise ValueError('expected attribute name segment')
-            # ignore non tbd attributes
-            if not name_segments and name.value != 'tbd':
-                return None
-
-            name_segments.append(name.value)
-            if not args:
-                return Attribute(name_segments=name_segments, params=[])
-
-            delim, *args = args
-            if delim.type == '(':
-                break
-            elif delim.type == 'DBL_COLON':
-                continue
-            else:
-                raise ValueError('expected "(" or "::" in attribute name')
-
-        if not args:
-            raise ValueError('missing closing ")" for arg list')
-    
-        *args, last = args
-        if last.type != ')':
-            raise ValueError('encountered invalid attribute')
-
-        params = {}
-        while len(args) > 0:
-            # get argument name
-            key, *args = args
-            if key.type != 'NAME':
-                raise ValueError(f'expected argument name, got {key}')  
-            key = key.value
-
-            # last arg is a flag
-            if not args:
-                params[key] = True
-                break
-            
-            op, *args = args
-            if op.type == ',':
-                params[key] = True
-                continue
-            
-            # expecting key value pair
-            if op.type != '=':
-                raise ValueError(f'expected "=" got {op.value}')
-            
-            if not args:
-                raise ValueError(f'unexpected end of argument, missing value')
-
-            value, *args = args
-
-            if value.type == 'STRING_LITERAL':
-                value = value.value[1:-1]
-                params[key] = value
-            elif value.type == 'INT_CONST_DEC':
-                params[key] = int(value.value)
-            elif value.type =="INT_CONST_HEX":
-                params[key] = int(value.value)
-            elif value.type == "INT_CONST_BIN":
-                params[key] = int(value.value)
-            elif value.type ==   "INT_CONST_OCT":
-                params[key] = int(value.value)
-            elif value.type == "FLOAT_CONST":
-                params[key] = float(value.value)
-            elif value.type =="HEX_FLOAT_CONST":
-                params[key] = float(value.value)
-            elif value.type == "true":
-                params[key] = True
-            elif value.type == "false":
-                params[key] = True
-            else:
-                raise ValueError(f'unsopported literal type {value.type}') 
-
-            if not args:
-                break
-
-            comma, *args = args
-            if comma.type != ',':
-                raise ValueError('expected comma after key-value pair')
-                
-        return Attribute(name_segments=name_segments, params=params)    
-
-    def _reset_attrs(self) -> None:
-        self._attrs = []
-
-    def on_attributes(self, tokens: list[lexer.LexToken]) -> None:
-        self._attrs.append(tokens)
 
     def on_parse_start(self, state: cpplib.SNamespaceBlockState) -> None:
         self._reset_attrs()
@@ -257,19 +167,112 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
         self._reset_attrs()
         return super().on_deduction_guide(state, guide)
 
+    def on_attributes(self, tokens: list[lexer.LexToken]) -> None:
+        self._attrs.append(tokens)
 
-class LazyHeaderCollector:
-    def __init__(self, parser: 'ReflectableFinder', header: str):
-        self._parser: Final = parser
-        self._header: Final = header
-        self._header_id: Optional[str] = None
+    # private
 
-    def use_id(self) -> int:
-        if self._header_id is None:
-            self._header_id = len(self._parser._headers)
-            self._parser._headers.append(self._header)
-            
-        return self._header_id
+    def _parse_attrs(self) -> Attributes:
+        if not self._attrs:
+            return []
+        return [attr for tokens in self._attrs if (attr := self._parse_attr(tokens)) is not None]
+
+    @staticmethod
+    def _parse_attr(tokens) -> Attribute | None:
+        args = tokens
+        name_segments = []
+
+        while True:
+            if not args:
+                raise ValueError('expected attribute name')
+
+            name, *args = args
+            if name.type != 'NAME':
+                raise ValueError('expected attribute name segment')
+            # ignore non tbd attributes
+            if not name_segments and name.value != 'tbd':
+                return None
+
+            name_segments.append(name.value)
+            if not args:
+                return Attribute(name_segments=name_segments, params={})
+
+            delim, *args = args
+            if delim.type == '(':
+                break
+            elif delim.type == 'DBL_COLON':
+                continue
+            else:
+                raise ValueError('expected "(" or "::" in attribute name')
+
+        if not args:
+            raise ValueError('missing closing ")" for arg list')
+
+        *args, last = args
+        if last.type != ')':
+            raise ValueError('encountered invalid attribute')
+
+        params = {}
+        while len(args) > 0:
+            # get argument name
+            key, *args = args
+            if key.type != 'NAME':
+                raise ValueError(f'expected argument name, got {key}')
+            key = key.value
+
+            # last arg is a flag
+            if not args:
+                params[key] = True
+                break
+
+            op, *args = args
+            if op.type == ',':
+                params[key] = True
+                continue
+
+            # expecting key value pair
+            if op.type != '=':
+                raise ValueError(f'expected "=" got {op.value}')
+
+            if not args:
+                raise ValueError(f'unexpected end of argument, missing value')
+
+            value, *args = args
+
+            if value.type == 'STRING_LITERAL':
+                value = value.value[1:-1]
+                params[key] = value
+            elif value.type == 'INT_CONST_DEC':
+                params[key] = int(value.value)
+            elif value.type == "INT_CONST_HEX":
+                params[key] = int(value.value)
+            elif value.type == "INT_CONST_BIN":
+                params[key] = int(value.value)
+            elif value.type == "INT_CONST_OCT":
+                params[key] = int(value.value)
+            elif value.type == "FLOAT_CONST":
+                params[key] = float(value.value)
+            elif value.type == "HEX_FLOAT_CONST":
+                params[key] = float(value.value)
+            elif value.type == "true":
+                params[key] = True
+            elif value.type == "false":
+                params[key] = True
+            else:
+                raise ValueError(f'unsopported literal type {value.type}')
+
+            if not args:
+                break
+
+            comma, *args = args
+            if comma.type != ',':
+                raise ValueError('expected comma after key-value pair')
+
+        return Attribute(name_segments=name_segments, params=params)
+
+    def _reset_attrs(self) -> None:
+        self._attrs = []
+
     
 class LazyScopeCollector:
     def __init__(self, parser: 'ReflectableFinder', scope: ScopeDescription):
@@ -301,6 +304,23 @@ class LazyScopeCollector:
         return self._scope.path
 
 
+def name_and_description_from_attrs(attrs: Attributes | None) -> tuple[str | None, str | None]:
+    """ Given a list of attributes, return the first 'name' and 'description' field values if present. """
+
+    name = None
+    description = None
+
+    if attrs is None:
+        return name, description
+
+    for attr in attrs:
+        attr_params = attr.params
+        if 'name' in attr_params:
+            name = attr_params['name']
+        if 'description' in attr_params:
+            description = attr_params['description']
+    return name, description
+
 
 ClassFilter = Callable[[cpplib.ClassScope], bool]
 
@@ -317,7 +337,7 @@ class ReflectableFinder:
         return self._classes
 
     @property
-    def headers(self) -> Headers:
+    def headers(self) -> list[str]:
         return self._headers
      
     @property
@@ -332,7 +352,7 @@ class ReflectableFinder:
         lines = self._read_code_from_file(file_name)
         visitor = AnnotationParser(lines)
         code = ''.join(lines)
-        Parser(file_name, code, visitor).parse()
+        Parser(str(file_name), code, visitor).parse()
         parsed = visitor.data
         root_scope = ScopeDescription.from_root(parsed.namespace)
         self._find_classes(root_scope, file_name)
@@ -353,14 +373,7 @@ class ReflectableFinder:
 
     def _collect_function(self, scope: ScopeDescription, header: Path) -> None:
         attrs = scope.attrs()
-
-        name = None
-        description = None
-        if attrs is not None:
-            if 'name' in attrs:
-                name = attrs['name'] 
-            if 'description' in attrs:
-                description = attrs['description']
+        name, description = name_and_description_from_attrs(attrs)
 
         func = FunctionDescription(
             func_name=scope.name(), 
@@ -388,14 +401,7 @@ class ReflectableFinder:
     def _collect_class_and_nested_classes(self, scope: ScopeDescription, header: Path):
         cls = scope.cls()
         attrs = scope.attrs()
-        name = None
-        description = None
-
-        if attrs is not None:
-            if 'name' in attrs:
-                name = attrs['name'] 
-            if 'description' in attrs:
-                description = attrs['description']
+        name, description = name_and_description_from_attrs(attrs)
 
         properties = self._extract_properties(scope, header)
         reflectable = ReflectableDescription(
@@ -434,16 +440,8 @@ class ReflectableFinder:
             field_name = field.name.format()
 
             type_name = self._full_find_field_type(field_scope)
-            name = None
-            description = None
-
-            # only annotated fields are considered properties
-            attrs = field.attrs
-            if attrs is not None:
-                if 'name' in attrs:
-                    name = attrs['name']
-                if 'description' in attrs:
-                    description = attrs['description']
+            attrs = field_scope.attrs()
+            name, description = name_and_description_from_attrs(attrs)
 
             prop = PropertyDescription(
                 field_name=field_name, 
@@ -477,7 +475,7 @@ class ReflectableFinder:
         return field_type        
 
     @staticmethod
-    def _read_code_from_file(header_path: Path) -> str:
+    def _read_code_from_file(header_path: Path) -> list[str]:
         code = []
         with open(header_path) as f:
             for line in f:

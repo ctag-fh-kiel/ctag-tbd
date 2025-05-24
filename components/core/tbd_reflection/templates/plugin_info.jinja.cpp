@@ -1,7 +1,7 @@
 #include <tbd/sound_processor/parameters.hpp>
 
 
-namespace tbd::audio::parameters {
+namespace tbd::sound_processor::parameters::impl {
 
 const uint32_t NUM_PLUGINS = {{plugins|length}};
 

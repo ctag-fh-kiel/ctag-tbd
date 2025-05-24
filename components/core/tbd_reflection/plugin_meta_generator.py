@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 import re
-from typing import Final
 
 import humps
 from .reflectables import ScopeType, PropertyDescription, ReflectableDescription, Reflectables, Attributes
@@ -305,7 +304,7 @@ class PluginParams:
         return len(self.params)
 
     @property
-    def params(self) -> int:
+    def params(self) -> list[ParamEntry]:
         return [param for param_set in self.param_sets for param in param_set]
 
     @staticmethod
@@ -564,7 +563,6 @@ class PluginReflectionGenerator:
 
 
 __all__ = [
-    'ParamType',
     'ParamEntry',
     'PluginParams',
     'PluginEntry',

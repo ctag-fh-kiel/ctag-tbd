@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import IntEnum, Enum, unique
-from typing import List, Set, Optional
+from typing import List, Set, Optional, Self
 from pathlib import Path
 import cxxheaderparser.simple as cpplib
 import cxxheaderparser.types as cpptypes
@@ -10,6 +10,13 @@ AttributeArgTypes = int | float | bool | str
 
 @dataclass
 class Attribute:
+    """ C++ attribute declaration.
+
+        Attribute van be plain or have arguments as key value list:
+
+        `[[ tbd::some_attr(key1="value", key2=12, key3=3.141) ]]`
+    """
+
     name_segments: list[str]
     params: dict[str, AttributeArgTypes]
 
@@ -46,7 +53,17 @@ def normalize_typename(typename: cpptypes.PQName) -> tuple[str, bool]:
 
 @dataclass(frozen=True)
 class ScopeDescriptionSegment:
-    raw: cpplib.NamespaceScope | cpplib.ClassScope | cpplib.NamespaceScope
+    """ Single element in a c++ scope.
+
+        Scope segments can be any name not associated with a value. These are
+
+        - namespaces
+        - functions
+        - classes
+        - static fields
+        - fields
+    """
+    raw: cpplib.NamespaceScope | cpplib.ClassScope | cpplib.NamespaceScope | cpplib.Field | cpplib.Function
 
     @property
     def name(self) -> str:
@@ -103,7 +120,7 @@ class ScopeDescriptionSegment:
             raise ValueError(f'scope segment is not a namespace: {self.type}')
         return self.raw
     
-    def func(self) -> cpplib.NamespaceScope:
+    def func(self) -> cpplib.Function:
         if self.type != ScopeType.FUNCTION:
             raise ValueError(f'scope segment is not a function: {self.type}')
         return self.raw
@@ -121,6 +138,10 @@ class ScopeDescriptionSegment:
 
 @dataclass(frozen=True)
 class ScopeDescription:
+    """ Description of a C++ scope.
+
+        Scopes describe the nesting of named scopes. See `ScopeDescriptionSegment` for segment types.
+    """
     segments: list[ScopeDescriptionSegment]
 
     @staticmethod
@@ -184,7 +205,7 @@ class ScopeDescription:
         return self.segments[0].namespace()
 
     @property
-    def parent(self) -> 'ScopeDescription':
+    def parent(self) -> Self | None:
         if len(self.segments) < 2:
             return None
         return ScopeDescription(self.segments[:-1])
@@ -229,6 +250,8 @@ class ScopeDescription:
         return f'ScopeDescription({self.path})'
 
     def split(self) -> tuple['ScopeDescription', 'ScopeDescription', 'ScopeDescription']:
+        """ Split the scope description into scope segment type groups  in order. """
+
         class SplitDone(BaseException):
             pass
 
@@ -253,6 +276,9 @@ class ScopeDescription:
                 if not rest:
                     raise SplitDone
                 pos, *rest = rest
+
+            while pos.type == ScopeType.STATIC_FIELD:
+                classes.append(pos)
 
             while pos.type == ScopeType.FIELD:
                 fields.append(pos)
@@ -322,7 +348,7 @@ class ReflectableDescription:
     cls_name: str
     full_name: ScopeDescription
     header: Path
-    raw: cpptypes.ClassDecl
+    raw: cpplib.ClassScope
     friendly_name: Optional[str] = None
     description: Optional[str] = None
     properties: Optional[List[PropertyDescription]] = list

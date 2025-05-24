@@ -11,16 +11,16 @@
 
 namespace tbd::sounds::meta {
 
-class {{ meta_name }} : public {{ plugin.full_name }}, public audio::DynamicSoundProcessor {
-    {{ meta_name }}() : audio::DynamicSoundProcessor({{ plugin_id }}) {}
+class {{ meta_name }} : public {{ plugin.full_name }}, public sound_processor::DynamicSoundProcessor {
+    {{ meta_name }}() : sound_processor::DynamicSoundProcessor({{ plugin_id }}) {}
 
-    virtual void Process(const audio::ProcessData& data) {
+    virtual void Process(const sound_processor::ProcessData& data) {
         process_updates();
         populate_parameters(data);
         {{ plugin.name }}::Process(data);
     }
 
-    void populate_parameters(const audio::ProcessData& data) {
+    void populate_parameters(const sound_processor::ProcessData& data) {
         {%- for index, param in params %}
          // mapping parameter {{index}}: {{param.name}}
         if (mappings_[{{index}}] >= 0) {
@@ -106,15 +106,15 @@ class {{ meta_name }} : public {{ plugin.full_name }}, public audio::DynamicSoun
     {% endif %} 
 
 private:
-    audio::parameters::Mapping mappings_[{{ plugin.num_params }}];
+    sound_processor::parameters::Mapping mappings_[{{ plugin.num_params }}];
     
-    using IntSetter = void(*)({{ meta_name }}&, audio::parameters::int_par);
+    using IntSetter = void(*)({{ meta_name }}&, int_par);
     static IntSetter int_setters[{{ plugin.num_ints }}];
 
-    using UIntSetter = void(*)({{ meta_name }}&, audio::parameters::uint_par);
+    using UIntSetter = void(*)({{ meta_name }}&, uint_par);
     static UIntSetter uint_setters[{{ plugin.num_uints }}];
     
-    using TriggerSetter = void(*)({{ meta_name }}&, audio::parameters::trigger_par);
+    using TriggerSetter = void(*)({{ meta_name }}&, trigger_par);
     static TriggerSetter trigger_setters[{{ plugin.num_triggers }}];
     
     using FloatSetter = void(*)({{ meta_name }}&, float);

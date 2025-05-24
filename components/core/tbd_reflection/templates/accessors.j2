@@ -1,13 +1,13 @@
 {% macro int_setter_impl(plugin, param) -%}
-static void set_{{ param.snake_name }}({{ meta_name }}& self, audio::parameters::int_par value) { self.{{ param.name }} = value; }
+static void set_{{ param.snake_name }}({{ meta_name }}& self, int_par value) { self.{{ param.name }} = value; }
 {%- endmacro -%}
 
 {% macro uint_setter_impl(plugin, param) -%}
-static void set_{{ param.snake_name }}({{ meta_name }}& self, audio::parameters::uint_par value) { self.{{ param.name }} = value; }
+static void set_{{ param.snake_name }}({{ meta_name }}& self, uint_par value) { self.{{ param.name }} = value; }
 {%- endmacro %}
 
 {% macro trigger_setter_impl(plugin, param) -%}
-static void set_{{ param.snake_name }}({{ meta_name }}& self, audio::parameters::trigger_par value) { self.{{ param.name }} = value; }
+static void set_{{ param.snake_name }}({{ meta_name }}& self, trigger_par value) { self.{{ param.name }} = value; }
 {%- endmacro %}
 
 {% macro float_setter_impl(plugin, param) -%}
@@ -30,9 +30,9 @@ static void set_{{ param.snake_name }}({{ meta_name }}& self, float value) {
 
 {%- macro cast_value(param, value) -%}
     {%- if param.is_int -%}
-        static_cast<audio::parameters::int_par>({{ value }})
+        static_cast<int_par>({{ value }})
     {%- elif param.is_uint -%}
-        static_cast<audio::parameters::uint_par>({{ value }})
+        static_cast<uint_par>({{ value }})
     {%- elif param.is_trigger -%}
         {{ value }} == 1
     {%- elif param.is_float -%}

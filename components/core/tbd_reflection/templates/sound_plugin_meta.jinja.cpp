@@ -1,7 +1,5 @@
 #include "{{ meta_header }}"
 
-using namespace tbd::audio::parameters;
-
 namespace tbd::sounds::meta {
 
 {{ meta_name }}::IntSetter {{ meta_name }}::int_setters[{{ plugin.num_ints }}] = { {%- for param in plugin.int_params %}
