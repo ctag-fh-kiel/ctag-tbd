@@ -29,7 +29,7 @@ respective component folders / files if different from this license.
 
 
 #define RCV_HOST    SPI2_HOST
-#define DATA_SZ 64 // midi data buffer with header
+#define DATA_SZ 2048 // midi data buffer with header
 
 DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2040_spi_stream::transaction[2];
 DRAM_ATTR uint32_t CTAG::DRIVERS::rp2040_spi_stream::currentTransaction;
