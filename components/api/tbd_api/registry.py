@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 import logging
 from collections import OrderedDict
@@ -9,37 +10,57 @@ import proto_schema_parser.ast as proto
 import esphome.components.tbd_reflection as tbr
 
 from .dtos import (
-    MessagePayload, 
     ParamPayload,
-    Payload, 
+    Payload,
     empty_request,
-    Request, 
-    request_for_payload,
+    Request,
     empty_response,
-    Response, 
-    response_for_payload,
-    AnyMessageDto, 
-    AnyDto,
-    dto_from_message 
+    Response,
+    response_for_output,
+    AnyMessageDto,
+    dto_from_message,
+    request_for_single_arg, MessagePayload, request_for_arguments, SingleArgRequest, MultiArgRequest
 )
 from .enpoints import Endpoint, endpoint_from_function
-from .base_endpoints import BASE_ENDPOINTS, BASE_ENDPOINT_IDS
-
+from .base_endpoints import BaseEndpoints
+from .api import Api
 
 _LOGGER = logging.getLogger(__file__)
 
 
+def guaranteed_payload_types() -> OrderedDict[str, Payload]:
+    return OrderedDict((message.name, message)
+        for message in ParamPayload.param_messages())
+
+
+def guaranteed_request_types() -> OrderedDict[str, Request]:
+    return OrderedDict({empty_request.name: empty_request})
+
+
+def guaranteed_response_types() -> OrderedDict[str, Response]:
+    return OrderedDict({empty_response.name: empty_response})
+
+
 class ApiRegistry:
     def __init__(self):
-        self._endpoints: list[Endpoint] = [None for _ in BASE_ENDPOINTS]
-        self._payload_types: OrderedDict[str, Payload] = OrderedDict((message.name, message) for message in ParamPayload.scalar_messages())
-        self._request_types: OrderedDict[str, Request] = OrderedDict({empty_request.name: empty_request})
-        self._response_types: OrderedDict[str, Response] = OrderedDict({empty_response.name: empty_response})
-        self._predefined_wrapper_names: set[str] = set()
-        self._required_proto_files: set[Path] = set()
+        self._base_endpoints: list[Endpoint | None] = [None] * BaseEndpoints.num_reserved_ids()
+        self._endpoints: list[Endpoint] = []
+        self._payload_types: OrderedDict[str, Payload] = guaranteed_payload_types()
+        self._shared_request_types: OrderedDict[str, Request] = guaranteed_request_types()
+        self._endpoint_request_types: OrderedDict[str, MultiArgRequest] = OrderedDict()
+        self._response_types: OrderedDict[str, Response] = guaranteed_response_types()
 
-        self._cached_request_types: list[Request] | None = None
-        self._cached_response_types: list[Response] | None = None
+    def get_api(self) -> Api:
+        shared_requests = OrderedDict((request.name, request) for request in self._shared_request_types.values())
+        endpoint_requests = OrderedDict((request.name, request) for request in self._endpoint_request_types.values())
+        responses = OrderedDict((response.name, response) for response in self._response_types.values())
+
+        return Api(
+            endpoints=self._endpoints,
+            payload_types=self._payload_types,
+            request_types= shared_requests | endpoint_requests,
+            response_types=responses,
+        )
 
     @property
     def endpoints(self) -> list[Endpoint]:
@@ -52,64 +73,11 @@ class ApiRegistry:
     @property
     def payload_names(self) -> list[str]:
         return [message_name for message_name in self._payload_types]
-    
-    @property
-    def proto_files(self) -> set[Path]:
-        return self._required_proto_files
 
-    @property
-    def request_types(self) -> list[Request]:
-        if not self._cached_request_types:
-            required_request_names = set(endpoint.in_message for endpoint in self.endpoints if endpoint.in_message)
-            self._cached_request_types = [request for request in self._request_types.values() 
-                                          if request == empty_request or request.payload in required_request_names]
-        return self._cached_request_types
-    
-    @property
-    def response_types(self) -> list[Response]:
-        if not self._cached_response_types:
-            required_response_names = set(endpoint.out_message for endpoint in self.endpoints if endpoint.out_message)
-            self._cached_response_types = [response for response in self._response_types.values() 
-                                           if response == empty_response or response.payload in required_response_names]
-        return self._cached_response_types
-    
-    def get_endpoint_id(self, endpoint_name: str) -> int:
-        try:
-            return next(index for index, endpoint in enumerate(self._endpoints) if endpoint.name == endpoint_name)
-        except StopIteration:
-            raise ValueError(f'unknown endpoint {endpoint_name}')
-
-    def get_payload(self, payload_name: str) -> Payload:
-        return self._payload_types[payload_name]
-    
-    def get_payload_id(self, payload_name: str) -> int:
-        try:
-            return next(index for index, name in enumerate(self._payload_types) if name == payload_name)
-        except StopIteration:
-            raise ValueError(f'unknown payload type {payload_name}')
-    
-    def get_request(self, payload_name: str) -> Request:
-        return self._request_types[payload_name]
-
-    def get_request_id(self, payload_name: str) -> int:
-        try:
-            return next(index for index, request in enumerate(self.request_types) if request.payload == payload_name)
-        except StopIteration:
-            raise ValueError(f'no request type for payload type {payload_name}')
-
-    def get_response(self, payload_name: str) -> Response:
-        return self._response_types[payload_name]
-
-    def get_response_id(self, payload_name: str) -> int:
-        try:
-            return next(index for index, response in enumerate(self.response_types) if response.payload == payload_name)
-        except StopIteration:
-            raise ValueError(f'no response type for payload type {payload_name}')
-
-    def add_message_types(self, proto_path: Path | str):
-        """ Find all message descriptions in proto file and add to registry.
+    def add_message_types(self, proto_path: Path | str) -> None:
+        """ Find all message types in proto file and add them as payloads to registry.
         
-            This method will determine whether each message is a payload, request, or response.
+            :note: Message name postfixes `_request` and `_response` are reserved for internal use.
         """
 
         proto_path = Path(proto_path)
@@ -130,6 +98,7 @@ class ApiRegistry:
 
             :note: No public header for endpoints is required, so they can be kept hidden from the rest of the firmware.
         """
+
         source = Path(source)
         if not source.exists():
             raise ValueError(f'endpoint source {source} does not exist')
@@ -140,21 +109,11 @@ class ApiRegistry:
 
     # private
 
+    def _find_payload(self, payload_name: str) -> Payload:
+        return self._payload_types[payload_name]
+
     def _add_message(self, dto: AnyMessageDto) -> None:
         match dto:
-            case Request() as request:
-                payload_name = request.payload
-                print(payload_name)
-                if payload_name in self._request_types:
-                    raise ValueError(f'duplicate request type {request.name}')
-                self._request_types[payload_name] = request
-                self._cached_request_types = None
-            case Response() as response:
-                payload_name = response.payload
-                if payload_name in self._response_types:
-                    raise ValueError(f'duplicate response type {response.name}')
-                self._response_types[payload_name] = response
-                self._cached_response_types = None
             case MessagePayload() as payload:
                 payload_name = payload.name
                 if payload_name in self._payload_types:
@@ -163,47 +122,83 @@ class ApiRegistry:
             case _:
                 raise ValueError(f'can not add request class {type(dto)}')
 
-    def _add_endpoint(self, func: tbr.FunctionDescription):
+    def _add_endpoint(self, func: tbr.FunctionDescription) -> None:
+        """ Add a C++ function annotated as endpoint to endpoints.
+
+            This will analyze the function signature and generate DTOs for inputs and output, if no predefined
+            DTOs are found in `.proto` files.
+        """
+
         if not (endpoint := endpoint_from_function(func)):
             return
-        
-        in_message_name = endpoint.in_message
-        if in_message_name:
-            in_message = self.get_payload(in_message_name)
-            if (request_wrapper := self._request_types.get(in_message_name)):
-                self._add_proto_file_if_needed(request_wrapper)
-            else:
-                request_wrapper = self._request_types[in_message_name] = request_for_payload(in_message)
-                self._cached_response_types = None
-
-            self._add_proto_file_if_needed(in_message)
-
-        out_message_name = endpoint.out_message
-        if out_message_name:
-            out_message = self.get_payload(out_message_name)
-            if (response_wrapper := self._response_types.get(out_message_name)): 
-                self._add_proto_file_if_needed(response_wrapper)
-            else:
-                response_wrapper = self._response_types[out_message_name] = response_for_payload(out_message)
-                self._cached_response_types = None
-            
-            self._add_proto_file_if_needed(out_message)
 
         endpoint_name = endpoint.name
-        if endpoint_name in BASE_ENDPOINTS:
-            endpoint_id = BASE_ENDPOINT_IDS[endpoint_name]
-            self._endpoints[endpoint_id] = endpoint
+        args = endpoint.args
+
+        if args:
+            request = self._add_endpoint_args(endpoint_name, args)
+        else:
+            request = empty_request
+
+        output = endpoint.output
+        if output:
+            response = self._add_response_type(output)
+        else:
+            response = empty_response
+
+        endpoint.request_type = request.name
+        endpoint.response_type = response.name
+
+        # check if the endpoint has guaranteed id
+        if endpoint_name in BaseEndpoints:
+            endpoint_id = BaseEndpoints[endpoint_name]
+            self._base_endpoints[endpoint_id] = endpoint
         else:
             self._endpoints.append(endpoint)
-    
-    def _add_proto_file_if_needed(self, dto: AnyDto):
-        match dto:
-            case AnyMessageDto():
-                file_path = dto.file_path
-            case _:
-                return
-        if file_path:
-            self._required_proto_files.add(file_path)
+
+    def _add_endpoint_args(self, endpoint_name: str, args: OrderedDict[str, str]) -> Request:
+        if len(args) == 1:
+            request = self._add_single_arg_type(next(iter(args.values())))
+        else:
+            request = self._add_multi_arg_type(endpoint_name, args)
+        return request
+
+    def _add_single_arg_type(self, output_name: str) -> Request:
+        """ Add reusable request for a specific single argument type.
+
+            Request type is only created if no request type for argument type exists. Unlike multi argument request
+            call signatures these request types will be shared across multiple endpoints to avoid redundancy.
+        """
+
+        in_message = self._find_payload(output_name)
+        request = self._shared_request_types.get(output_name)
+        if not request:
+            request = request_for_single_arg(in_message)
+            self._shared_request_types[output_name] = request
+        return request
+
+    def _add_multi_arg_type(self, endpoint_name: str, args: OrderedDict[str, str]) -> Request:
+        arg_messages = OrderedDict()
+        for arg_name, arg_type_name in args.items():
+            in_message = self._find_payload(arg_type_name)
+            arg_messages[arg_name] = in_message
+        request = request_for_arguments(endpoint_name, arg_messages)
+        if endpoint_name in self._shared_request_types:
+            raise RuntimeError(f'request type for endpoint {endpoint_name} already exists')
+        self._endpoint_request_types[endpoint_name] = request
+        return request
+
+    def _add_response_type(self, output_name: str) -> Response:
+        """ Add reusable request for a specific response type.
+
+            Response type is only created if no response for payload type exists.
+        """
+        out_message = self._find_payload(output_name)
+        response = self._response_types.get(output_name)
+        if not response:
+            response = response_for_output(out_message)
+            self._response_types[output_name] = response
+        return response
 
 
 __all__ = [

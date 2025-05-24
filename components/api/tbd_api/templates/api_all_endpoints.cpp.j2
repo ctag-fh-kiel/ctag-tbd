@@ -1,4 +1,3 @@
-{% import 'handlers.cpp.j2' as hs with context %}
 #include <tbd/api/api_all_endpoints.hpp>
 
 #include <tbd/api.hpp>
@@ -25,20 +24,20 @@ bool encode_string(pb_ostream_t* stream, const pb_field_t* field, void* const* a
 }
 
 // endpoint declarations
-{%- for endpoint in registry.endpoints %}
-{{hs.predeclare_endpoint(endpoint)}}
+{%- for endpoint in api.endpoints %}
+{{ endpoint | handler_declaration }}
 {%- endfor %}
 
 namespace tbd::api { 
-{% for request in registry.request_types %}
-// request {{request.name}}
-{%- if request.name != 'str_par_request' -%}
+{% for request in api.request_types %}
+// request {{ request.name }}
+{% if request.name != 'str_par_request' -%}
 template<> 
 bool decode_message({{ request.name }}& message, const uint8_t* in_buffer, size_t len) {
     pb_istream_t stream = pb_istream_from_buffer(in_buffer, len);
 
-    if (!pb_decode(&stream, {{request.name}}_fields, &message)) {
-        TBD_LOGE("api", "failed to deserialize {{request.message_name}}: %s", PB_GET_ERROR(&stream));
+    if (!pb_decode(&stream, {{ request.name }}_fields, &message)) {
+        TBD_LOGE("api", "failed to deserialize {{ request.message_name }}: %s", PB_GET_ERROR(&stream));
         return true;
     }
     return true;
@@ -46,14 +45,14 @@ bool decode_message({{ request.name }}& message, const uint8_t* in_buffer, size_
 {%- endif -%}
 {% endfor %}
 
-{% for response in registry.response_types %}
-// response {{response.name}}
-{%- if response.name != 'str_par_response' -%}
+{% for response in api.response_types %}
+// response {{ response.name }}
+{% if response.name != 'str_par_response' -%}
 template<>
 bool encode_message(const {{ response.name }}& message, uint8_t* buffer, size_t& buffer_size) {
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
     if (!pb_encode(&stream, {{response.name}}_fields, &message)) {
-        TBD_LOGE("api", "failed to serialize {{response.message_name}}: %s", PB_GET_ERROR(&stream));
+        TBD_LOGE("api", "failed to serialize {{ response.message_name }}: %s", PB_GET_ERROR(&stream));
         buffer_size = stream.bytes_written;
         return true;
     }
@@ -63,18 +62,18 @@ bool encode_message(const {{ response.name }}& message, uint8_t* buffer, size_t&
 {%- endif -%}
 {% endfor %}
 
-{% for endpoint in registry.endpoints %}
-{{ hs.handler_wrapper_impl(endpoint) }}
+{% for endpoint in api.endpoints %}
+{{ endpoint | callback_implementation }}
 {% endfor %}
 
-const size_t NUM_ENDPOINTS = {{ registry.endpoints | length }};
-const Endpoint ENDPOINT_LIST[] = { {%- for endpoint in registry.endpoints %}
-    { "{{ endpoint.name }}", {{ endpoint | request_id }}, {{ endpoint | response_id }}, &{{ endpoint | callback }} },
+const size_t NUM_ENDPOINTS = {{ api.endpoints | length }};
+const Endpoint ENDPOINT_LIST[] = { {%- for endpoint in api.endpoints %}
+    { "{{ endpoint.name }}", {{ endpoint | request_id }}, {{ endpoint | response_id }}, &{{ endpoint | callback_name }} },
 {%- endfor %} 
 };
 
-const size_t NUM_REQUEST_MESSAGES = {{ registry.request_types | length }};
-const MessageInfo REQUEST_MESSAGE_LIST[] = { {%- for request in registry.request_types %}
+const size_t NUM_REQUEST_MESSAGES = {{ api.request_types | length }};
+const MessageInfo REQUEST_MESSAGE_LIST[] = { {%- for request in api.request_types %}
     {%- if request.name == 'str_par_request' -%}
     { "{{ request.name }}", MESSAGE_TYPE_REQUEST, 0 },
     {%- else -%}
@@ -83,12 +82,12 @@ const MessageInfo REQUEST_MESSAGE_LIST[] = { {%- for request in registry.request
     {% endfor %}
 };
 
-const size_t NUM_RESPONSE_MESSAGES = {{ registry.response_types | length }};
-const MessageInfo RESPONSE_MESSAGE_LIST[] = { {%- for response in registry.response_types %}
+const size_t NUM_RESPONSE_MESSAGES = {{ api.response_types | length }};
+const MessageInfo RESPONSE_MESSAGE_LIST[] = { {%- for response in api.response_types %}
     {%- if response.name == 'str_par_response' -%}
-    { "{{ response.name }}", MESSAGE_TYPE_REQUEST, 0 },
+    { "{{ response.name }}", MESSAGE_TYPE_RESPONSE, 0 },
     {%- else -%}
-    { "{{ response.name }}", MESSAGE_TYPE_REQUEST, {{ response.name }}_size },
+    { "{{ response.name }}", MESSAGE_TYPE_RESPONSE, {{ response.name }}_size },
     {% endif -%}
     {% endfor %} 
 };

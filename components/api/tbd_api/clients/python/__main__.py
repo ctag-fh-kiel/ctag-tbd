@@ -1,7 +1,7 @@
 import asyncio
 import nest_asyncio
 import IPython
-from tbd_client import open_tbd
+from .client import open_tbd
 
 nest_asyncio.apply()
 

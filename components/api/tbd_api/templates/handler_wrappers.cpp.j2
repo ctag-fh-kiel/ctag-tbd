@@ -1,0 +1,20 @@
+uint32_t {{ endpoint | callback_name }}(uint8_t* buffer, size_t& length) {
+    {{ endpoint | request_type }} in_message;
+    if (!decode_message(in_message, buffer, length)) {
+        return TBD_ERR(API_DECODE);
+    }
+    {{ endpoint | response_type }} out_message;
+    out_message.request_id = in_message.request_id;
+    out_message.status = TBD_ERR(SUCCESS);
+    if (auto err = {{ endpoint | invoke_handler }}; err != errors::SUCCESS) {
+        void_response error_response = {in_message.request_id, err};
+        if (!encode_message(error_response, buffer, length)) {
+            return TBD_ERR(API_ENCODE);
+        }
+        return TBD_ERR(SUCCESS);
+    }
+    if (!encode_message(out_message, buffer, length)) {
+        return TBD_ERR(API_ENCODE);
+    }
+    return TBD_ERR(SUCCESS);
+}

@@ -1,8 +1,8 @@
 import asyncio
 from typing import Final
 from websockets.asyncio.client import ClientConnection
-import api_types_pb2
-from base_endpoints import BASE_ENDPOINT_IDS
+from .base_endpoints import BaseEndpoints
+from . import api_types_pb2 as dtos
 
 int_par     = int
 uint_par    = int
@@ -25,20 +25,20 @@ class TbdClientBase:
         asyncio.get_running_loop().create_task(self.process_responses())
 
     async def get_endpoints(self):
-        request = api_types_pb2.void_request()
-        request.endpoint = BASE_ENDPOINT_IDS['get_num_endpoints']
+        request = dtos.void_request()
+        request.endpoint = BaseEndpoints.get_num_endpoints
         res_data = await self.send(request)
-        response = api_types_pb2.uint_par_response()
+        response = dtos.uint_par_response()
         response.ParseFromString(res_data)
         num_requests = response.payload
 
         requests = []
         for request_id in range(num_requests):
-            request = api_types_pb2.uint_par_request()
-            request.endpoint = BASE_ENDPOINT_IDS['get_endpoint_name']
+            request = dtos.uint_par_request()
+            request.endpoint = BaseEndpoints.get_endpoint_name
             request.payload = request_id
             res_data = await self.send(request)
-            response = api_types_pb2.str_par_response()
+            response = dtos.str_par_response()
             response.ParseFromString(res_data)
             requests.append(response.payload)
         return requests
@@ -61,7 +61,7 @@ class TbdClientBase:
         try:
             while True:
                 response_data = await self._websocket.recv()                
-                headers = api_types_pb2.void_response()
+                headers = dtos.void_response()
                 headers.ParseFromString(response_data)
                 request_id = headers.request_id
                 status = headers.status
@@ -83,4 +83,5 @@ __all__ = [
     'trigger_par',
     'str_par',
     'TbdClientBase',
+    'dtos',
 ]

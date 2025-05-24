@@ -1,6 +1,7 @@
 from enum import Enum, unique
 from dataclasses import dataclass
 from pathlib import Path
+from typing import OrderedDict
 
 import cxxheaderparser.types as cpptypes
 
@@ -26,18 +27,14 @@ class Endpoint:
         argument convention:
 
         1. Return type has to be `tbd::Error` to signify failures.
-        2. A single `const SomeType&` input argument (also referred to as request, req or 
-           simply arg) can be present.
-        3. A single `SomeOtherType&` non const output (also reffered to as return or 
-           response) argument can be present.
-        4. If both are present the first argument has to be the input argument and
-           the the input argument is the first and the output argument is the second 
-           argument.
+        2. Multiple or no `const SomeType&` input arguments (also referred to as inputs) can be present.
+        3. A single `SomeOtherType&` non const output (also referred to as return or response) argument can be present.
+        4. If both are present the output argument has to be last in the argument list.
         5. Argument types need to be valid TBD DTO types (see DtoTag docs for more)
         
         Therefore there are four general types of endpoints:
 
-        `FUNCTION`: input and output
+        `FUNCTION`: inputs and output
 
             tbd::Error some_func(const SomeType& input, SomeOtherType& output);
 
@@ -45,7 +42,7 @@ class Endpoint:
 
             tbd::Error some_getter(SomeOtherType& output);
 
-        `SETTERS`: only input
+        `SETTERS`: only inputs
 
             tbd::Error some_getter(const SomeType& input);
 
@@ -56,8 +53,10 @@ class Endpoint:
     """
 
     func: tbr.FunctionDescription
-    in_message: str | None
-    out_message: str | None
+    args: OrderedDict[str, str] | None
+    output: str | None
+    request_type: str | None = None
+    response_type: str | None = None
 
     @property
     def name(self) -> str:
@@ -83,20 +82,20 @@ class Endpoint:
         return self.func.header
 
     @property
-    def has_arg(self):
-        return self.in_message is not None
+    def has_args(self) -> bool:
+        return self.args is not None
 
     @property
-    def has_return(self):
-        return self.out_message is not None
+    def has_output(self) -> bool:
+        return self.output is not None
 
     @property
     def type(self) -> EndpointType:
-        if self.in_message and self.out_message:
+        if self.has_args and self.has_output:
             return EndpointType.FUNCTION
-        elif self.out_message:
+        elif self.has_output:
             return EndpointType.GETTER
-        elif self.in_message:
+        elif self.has_args:
             return EndpointType.SETTER
         else:
             return EndpointType.TRIGGER
@@ -127,13 +126,13 @@ def endpoint_from_function(func: tbr.FunctionDescription) -> Endpoint | None:
 
         There are 4 types of valid RPC signatures:
 
-        FUNCTION: argument and return 
+        FUNCTION: arguments and return
             `tbd::Error f(const ArgType&, ResType&);`
-        GETTER: only argument
+        GETTER: only arguments
             `tbd::Error f(const ArgType&);`
         SETTER: only return
             `tbd::Error f(ResType&);
-        TRIGGER: no argument and no return
+        TRIGGER: no arguments and no return
             `tbd::Error`
 
         :param func: parsed c++ function signature
@@ -148,42 +147,35 @@ def endpoint_from_function(func: tbr.FunctionDescription) -> Endpoint | None:
             
     if func.return_type != HANDLER_RETURN_TYPE:
         raise ValueError(f'handlers must return "{HANDLER_RETURN_TYPE}"')
-    
-    num_args = len(func.arguments)
-    if num_args == 0:
-        in_message = None
-        out_message = None
-    elif num_args == 1:
-        is_const, arg_type = get_arg_type(func.arguments[0])
-        if is_const:
-            in_message = arg_type
-            out_message = None
-        else:
-            in_message = None
-            out_message = arg_type
 
-    elif num_args == 2:
-        is_fst_const, fst_arg = get_arg_type(func.arguments[0])
-        if not is_fst_const:
-            raise ValueError('input argument of handler has to be const reference')
-        in_message = fst_arg
+    args = OrderedDict()
+    output = None
 
-        is_snd_const, snd_arg = get_arg_type(func.arguments[1])
-        if is_snd_const:
+    *func_args, last_func_arg = func.arguments
+
+    # process input args
+    for func_arg in func_args:
+        is_const, arg_type = get_arg_type(func_arg)
+        if not is_const:
             raise ValueError('output argument of handler has to be non-const const reference')
-        out_message = snd_arg
+        args[func_arg.name] = arg_type
 
+    # process last arg as either input or output
+    is_const, arg_type = get_arg_type(last_func_arg)
+    if is_const:
+        args[last_func_arg.name] = arg_type
     else:
-        raise ValueError('endpoints must have one or two arguments')
+        output = arg_type
+
     
     return Endpoint(
         func=func,
-        in_message=in_message,
-        out_message=out_message,
+        args=args if args else None,
+        output=output,
     )
 
 __all__ = [
-    'Endpointtype',
+    'EndpointType',
     'Endpoint',
     'endpoint_from_function',
 ]

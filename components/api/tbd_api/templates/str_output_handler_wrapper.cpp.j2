@@ -1,0 +1,27 @@
+uint32_t {{ endpoint | callback_name }}(uint8_t* buffer, size_t& length) {
+    {{ endpoint | request_type }} in_message;
+    if (!decode_message(in_message, buffer, length)) {
+        return TBD_ERR(API_DECODE);
+    }
+    {{ endpoint | response_type }} out_message;
+    out_message.request_id = in_message.request_id;
+    out_message.status = TBD_ERR(SUCCESS);
+    str_par response_payload;
+    if (auto err = {{ endpoint | invoke_handler }}; err != errors::SUCCESS) {
+        void_response error_response = {in_message.request_id, err};
+        if (!encode_message(error_response, buffer, length)) {
+            return TBD_ERR(API_ENCODE);
+        }
+        return TBD_ERR(SUCCESS);
+    }
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, length);
+    out_message.output.funcs.encode = encode_string;
+    out_message.output.arg = &response_payload;
+    if (!pb_encode(&stream, str_par_response_fields, &out_message)) {
+        TBD_LOGE("api", "failed to serialize : %s", PB_GET_ERROR(&stream));
+        length = stream.bytes_written;
+        return TBD_ERR(API_ENCODE);
+    }
+    length = stream.bytes_written;
+    return TBD_ERR(SUCCESS);
+}

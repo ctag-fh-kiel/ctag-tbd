@@ -1,13 +1,11 @@
-{%- import 'endpoints.py.j2' as hs with context -%}
-from tbd_client_base import *
 from contextlib import asynccontextmanager
 from websockets.asyncio.client import connect
-import api_types_pb2
-
+import google.protobuf.message as proto
+from .client_base import *
 
 class TbdClient(TbdClientBase):
-{%- for endpoint in registry.endpoints %}
-{{hs.request_func(endpoint)}}
+{%- for endpoint in api.endpoints %}
+    {{ endpoint | request_func | indent }}
 {% endfor %} 
 
 
@@ -15,3 +13,6 @@ class TbdClient(TbdClientBase):
 async def open_tbd(url: str = 'ws://localhost:7777/ws'):
     async with connect(url) as websocket:
         yield TbdClient(websocket)
+
+
+__all__ = ['TbdClient', 'open_tbd']

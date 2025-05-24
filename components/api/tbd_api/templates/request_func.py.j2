@@ -1,0 +1,8 @@
+async def {{ endpoint.name }}({{ endpoint | request_func_args }}) -> {{ endpoint | request_func_return }}:
+    request = dtos.{{ endpoint | request_type }}()
+    request.endpoint = {{ endpoint | endpoint_id }}
+    {{ endpoint | forward_args | indent }}
+    res_data = await self.send(request)
+    result = dtos.{{ endpoint | response_type }}()
+    result.ParseFromString(res_data)
+    return {{ endpoint | result_value }}
