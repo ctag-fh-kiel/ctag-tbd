@@ -25,7 +25,7 @@ respective component folders / files if different from this license.
 
 using namespace tbd::sounds;
 
-void SoundProcessorMacOscDuo::Process(const audio::ProcessData&data) {
+void SoundProcessorMacOscDuo::Process(const sound_processor::ProcessData&data) {
     // ad envelope and loop
     float a = attack / 4095.f * 5.f;
     float d = decay / 4095.f * 5.f;

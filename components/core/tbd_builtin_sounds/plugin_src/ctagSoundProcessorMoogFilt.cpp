@@ -41,7 +41,7 @@ void SoundProcessorMoogFilt::Init(std::size_t blockSize, void *blockPtr) {
     adEnv.SetModeExp();
 }
 
-void SoundProcessorMoogFilt::Process(const audio::ProcessData&data) {
+void SoundProcessorMoogFilt::Process(const sound_processor::ProcessData&data) {
     float buf[bufSz];
 
     int mode = flt_model;

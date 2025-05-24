@@ -65,7 +65,7 @@ using namespace tbd::sounds;
 #define X_FADE(fader, val_left, val_right)            ((1.f-fader)*val_left + fader*val_right)
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorFormantor::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
+inline int SoundProcessorFormantor::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
 {
  int trig_status = 0;
   
@@ -194,7 +194,7 @@ void SoundProcessorFormantor::set3BPfilters(int id, float cut1, float cut2, floa
 }
 
 // --- Main processing function for Formantor ---
-void SoundProcessorFormantor::Process(const audio::ProcessData&data)
+void SoundProcessorFormantor::Process(const sound_processor::ProcessData&data)
 {
 // --- Main processing output ---
 float f_val_result = 0.f;

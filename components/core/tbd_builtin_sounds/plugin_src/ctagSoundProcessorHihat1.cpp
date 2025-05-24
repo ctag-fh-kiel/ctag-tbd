@@ -40,7 +40,7 @@ void SoundProcessorHihat1::Init(std::size_t blockSize, void *blockPtr) {
     pitchEnv.SetModeLin();
 }
 
-void SoundProcessorHihat1::Process(const audio::ProcessData&data) {
+void SoundProcessorHihat1::Process(const sound_processor::ProcessData&data) {
     float deltaCVLoud = (data.cv[cv_loudness] - preCVLoudness) / (float) bufSz; // for linear CV interpolation
     freq = (float) frequency; // frequency
     // cv frequency

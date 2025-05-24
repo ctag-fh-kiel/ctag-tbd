@@ -37,7 +37,7 @@ void SoundProcessorGDVerb2::Init(std::size_t blockSize, void *blockPtr) {
     prog_rev.mute();
 }
 
-void SoundProcessorGDVerb2::Process(const audio::ProcessData&data) {
+void SoundProcessorGDVerb2::Process(const sound_processor::ProcessData&data) {
     // decay
     float fRevTime = revtime / 4095.f * 30.f;
     if(cv_revtime != -1){

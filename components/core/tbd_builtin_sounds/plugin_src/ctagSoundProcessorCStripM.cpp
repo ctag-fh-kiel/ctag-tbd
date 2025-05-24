@@ -26,7 +26,7 @@ respective component folders / files if different from this license.
 
 using namespace tbd::sounds;
 
-void SoundProcessorCStripM::Process(const audio::ProcessData&data) {
+void SoundProcessorCStripM::Process(const sound_processor::ProcessData&data) {
 
     float fTreble = treble / 4095.f;
     if (cv_treble != -1) {

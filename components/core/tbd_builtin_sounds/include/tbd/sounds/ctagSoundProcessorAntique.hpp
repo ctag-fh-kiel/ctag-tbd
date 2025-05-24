@@ -41,7 +41,7 @@ namespace tbd::sounds {
 
 [[tbd(name="BBeats", description="ByteBeats with Xfade")]]
 struct SoundProcessorAntique : audio::MonoSoundProcessor {
-	virtual void Process(const audio::ProcessData&) override;
+	virtual void Process(const sound_processor::ProcessData&) override;
 	virtual void Init(std::size_t blockSize, void *blockPtr) override;
 	virtual ~SoundProcessorAntique();
 

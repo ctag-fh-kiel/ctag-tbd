@@ -29,7 +29,7 @@ void SoundProcessorSimpleVCA::Init(std::size_t blockSize, void *blockPtr) {
 
 }
 
-void SoundProcessorSimpleVCA::Process(const audio::ProcessData&data) {
+void SoundProcessorSimpleVCA::Process(const sound_processor::ProcessData&data) {
     float fLoudness = loudness / 4095.f;
     if (cv_loudness != -1) {
         fLoudness = data.cv[cv_loudness]; // range 0 ..1 or -1 .. 1

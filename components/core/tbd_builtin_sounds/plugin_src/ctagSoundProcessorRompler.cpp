@@ -25,7 +25,7 @@ using namespace tbd::sounds;
 
 // TODO add switch to include wavetables
 
-void SoundProcessorRompler::Process(const audio::ProcessData&data) {
+void SoundProcessorRompler::Process(const sound_processor::ProcessData&data) {
 
     // duo or monophonic
     // MK_BOOL_PAR(bDuo, duo)

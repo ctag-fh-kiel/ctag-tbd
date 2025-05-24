@@ -125,7 +125,7 @@ float SoundProcessorSubbotnik::applySnH(float sine_lfo_val, int enum_val)
 }
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorSubbotnik::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
+inline int SoundProcessorSubbotnik::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
 {
   int trig_status = 0;
 
@@ -171,7 +171,7 @@ inline int SoundProcessorSubbotnik::process_param_trig(const audio::ProcessData&
 }
 
 
-void SoundProcessorSubbotnik::Process(const audio::ProcessData&data)
+void SoundProcessorSubbotnik::Process(const sound_processor::ProcessData&data)
 {
   // === Process all parameters from the GUI ---
   // --- Global settings ---

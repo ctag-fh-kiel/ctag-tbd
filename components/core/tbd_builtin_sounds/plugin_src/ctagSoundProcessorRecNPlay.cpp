@@ -50,7 +50,7 @@ using namespace tbd::sound_utils;
 #define MK_INT_CONSTRAIN_0(outname, inname, factor); MK_INT_PAR_ABS(outname, inname, (float)(factor+1)); CONSTRAIN(outname, 0, factor);
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorRecNPlay::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
+inline int SoundProcessorRecNPlay::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
 {
   int trig_status = 0;
 
@@ -112,7 +112,7 @@ inline int SoundProcessorRecNPlay::process_param_trig(const audio::ProcessData&d
 
 }
 
-void SoundProcessorRecNPlay::Process(const audio::ProcessData&data)
+void SoundProcessorRecNPlay::Process(const sound_processor::ProcessData&data)
 {
 float f_val_saw = 0.f;
 float f_val_result = 0.f;

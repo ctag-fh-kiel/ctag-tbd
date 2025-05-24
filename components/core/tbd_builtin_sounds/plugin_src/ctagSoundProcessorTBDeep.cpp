@@ -70,7 +70,7 @@ void SoundProcessorTBDeep::Init(std::size_t blockSize, void *blockPtr) {
     paramAD.SetModeLin();
 }
 
-void SoundProcessorTBDeep::Process(const audio::ProcessData&data) {
+void SoundProcessorTBDeep::Process(const sound_processor::ProcessData&data) {
     // ad envelope
     float fAttack = eg_attack / 4095.f * 5.f;
     if (cv_eg_attack != -1) {

@@ -10,7 +10,7 @@ void SoundProcessorMISVF::Init(std::size_t blockSize, void *blockPtr) {
     svf.Init();
 }
 
-void SoundProcessorMISVF::Process(const audio::ProcessData&data) {
+void SoundProcessorMISVF::Process(const sound_processor::ProcessData&data) {
     int mode = flt_mode;
     if (cv_flt_mode != -1) {
         mode = fabsf(data.cv[cv_flt_mode]) * 3;

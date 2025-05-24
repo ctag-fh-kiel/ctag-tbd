@@ -2,7 +2,7 @@
 
 using namespace tbd::sounds;
 
-void SoundProcessorVoid::Process(const audio::ProcessData&data) {
+void SoundProcessorVoid::Process(const sound_processor::ProcessData&data) {
 	// do nothing
 }
 

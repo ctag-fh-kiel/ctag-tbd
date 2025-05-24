@@ -42,7 +42,7 @@ void SoundProcessorBCSR::Init(std::size_t blockSize, void *blockPtr) {
 
 // adapted from https://www.musicdsp.org/en/latest/Effects/139-lo-fi-crusher.html
 
-void SoundProcessorBCSR::Process(const audio::ProcessData&data) {
+void SoundProcessorBCSR::Process(const sound_processor::ProcessData&data) {
     updateParams(data);
     // process values
     for (int i = 0; i < bufSz; ++i) {
@@ -82,7 +82,7 @@ void SoundProcessorBCSR::Process(const audio::ProcessData&data) {
 }
 
 
-void SoundProcessorBCSR::updateParams(const audio::ProcessData&data) {
+void SoundProcessorBCSR::updateParams(const sound_processor::ProcessData&data) {
     // Sample rate reduce params
     if (cv_sr_amount != -1) {
         fNormFreq = 0.51f * (1.f - sound_utils::fastfabs(data.cv[cv_sr_amount]));

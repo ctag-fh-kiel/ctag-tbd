@@ -27,13 +27,13 @@ respective component folders / files if different from this license.
 #include <memory>
 #include <vector>
 
-using namespace tbd::audio::parameters;
+
 
 namespace tbd::sounds {
 
-struct SoundProcessorRompler : audio::SoundProcessor {
+struct SoundProcessorRompler : sound_processor::SoundProcessor {
 
-	virtual void Process(const audio::ProcessData&) override;
+	virtual void Process(const sound_processor::ProcessData&) override;
 	virtual void Init(std::size_t blockSize, void *blockPtr) override;
 	virtual ~SoundProcessorRompler();
 

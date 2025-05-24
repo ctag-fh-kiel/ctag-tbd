@@ -57,7 +57,7 @@ void SoundProcessorTBD03::Init(std::size_t blockSize, void *blockPtr) {
     ws.Init(0xcafe);
 }   
 
-void SoundProcessorTBD03::Process(const audio::ProcessData&data) {
+void SoundProcessorTBD03::Process(const sound_processor::ProcessData&data) {
     float dvcf, dvca;
     bool trg;
 

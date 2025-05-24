@@ -29,9 +29,9 @@ respective component folders / files if different from this license.
 #include "freeverb3/progenitor.hpp"
 
 namespace tbd::sounds {
-struct SoundProcessorGDVerb2 : audio::SoundProcessor {
+struct SoundProcessorGDVerb2 : sound_processor::SoundProcessor {
 
-	void Process(const audio::ProcessData&) override;
+	void Process(const sound_processor::ProcessData&) override;
 
 	virtual void Init(std::size_t blockSize, void *blockPtr) override;
 

@@ -36,7 +36,7 @@ namespace tbd::sounds {
 [[tbd(name="BBeats", description="ByteBeats with Xfade")]]
 struct SoundProcessorBBeats : audio::MonoSoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
     virtual ~SoundProcessorBBeats();
 
@@ -47,9 +47,9 @@ struct SoundProcessorBBeats : audio::MonoSoundProcessor {
 
 protected:
 
-    int process_param( const audio::ProcessData&data, int cv_myparm, int my_parm, int parm_range, int max_idx ); // rescale incoming data
-    float process_param_float( const audio::ProcessData&data, int cv_myparm, int my_parm, int max_idx ); // rescale incoming data to 0.0-1.0
-    bool process_param_bool( const audio::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, bool direct_eg_trigger=false ); // rescale incoming data to bool
+    int process_param( const sound_processor::ProcessData&data, int cv_myparm, int my_parm, int parm_range, int max_idx ); // rescale incoming data
+    float process_param_float( const sound_processor::ProcessData&data, int cv_myparm, int my_parm, int max_idx ); // rescale incoming data to 0.0-1.0
+    bool process_param_bool( const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, bool direct_eg_trigger=false ); // rescale incoming data to bool
     float logic_operation_on_beat( );   // Logical operation on the bytebeats
 
     enum trig_states {e_stop_beatA, e_reverse_beatA, e_stop_beatB, e_reverse_beatB, e_reset_bbeats_on_stop,

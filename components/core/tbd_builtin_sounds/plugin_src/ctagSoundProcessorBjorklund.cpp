@@ -62,7 +62,7 @@ using namespace tbd::sounds;
 #define X_FADE(fader, val_left, val_right)            ((1.f-fader)*val_left + fader*val_right)
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorBjorklund::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm,
+inline int SoundProcessorBjorklund::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm,
                                                            int enum_trigger_id, int gate_type = 0) {
     int trig_status = 0;
 
@@ -104,7 +104,7 @@ inline int SoundProcessorBjorklund::process_param_trig(const audio::ProcessData&
     return (prev_trig_state[enum_trigger_id]);            // No change (1 for active, 0 for inactive)
 }
 
-void SoundProcessorBjorklund::Process(const audio::ProcessData&data) {
+void SoundProcessorBjorklund::Process(const sound_processor::ProcessData&data) {
 // --- Main processing output ---
     float f_val_result = 0.f;         // Sum of results for DSP-output
     float f_val_saw = 0.f;            // Results for Saw Osc

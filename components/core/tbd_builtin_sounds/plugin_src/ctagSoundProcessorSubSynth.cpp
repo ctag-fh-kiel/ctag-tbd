@@ -60,7 +60,7 @@ void SoundProcessorSubSynth::Init(std::size_t blockSize, void *blockPtr) {
 
 }
 
-void SoundProcessorSubSynth::Process(const audio::ProcessData&data) {
+void SoundProcessorSubSynth::Process(const sound_processor::ProcessData&data) {
     fetchControlData(data);
     updateEGs(data);
     float tmpIn[bufSz], tmpOut[bufSz], acc[bufSz];
@@ -128,7 +128,7 @@ void SoundProcessorSubSynth::Process(const audio::ProcessData&data) {
 }
 
 
-void SoundProcessorSubSynth::updateEGs(const audio::ProcessData&data) {
+void SoundProcessorSubSynth::updateEGs(const sound_processor::ProcessData&data) {
     //  eg loud sum
     if (enableEG == 1 && trig_enableEG != -1) {
         adsrEnvSum.Gate(data.trig[trig_enableEG] == 1 ? false : true);
@@ -585,7 +585,7 @@ float SoundProcessorSubSynth::computeRolloff(float freq) {
     return (1.0f - sound_utils::fastcos(M_PI * (freq - upper_limit) / upper_width)) / 2.0f;
 }
 
-void SoundProcessorSubSynth::fetchControlData(const audio::ProcessData&data) {
+void SoundProcessorSubSynth::fetchControlData(const sound_processor::ProcessData&data) {
     if (cv_root_bwidth == -1)
         fRootBWidth = (float) root_bwidth / 4095.f;
     else

@@ -37,7 +37,7 @@ void SoundProcessorMacOsc::Init(std::size_t blockSize, void *blockPtr) {
     quantizer.Init();
 }
 
-void SoundProcessorMacOsc::Process(const audio::ProcessData&data) {
+void SoundProcessorMacOsc::Process(const sound_processor::ProcessData&data) {
     // ad envelope and loop
     float a = attack / 4095.f * 5.f;
     float d = decay / 4095.f * 5.f;

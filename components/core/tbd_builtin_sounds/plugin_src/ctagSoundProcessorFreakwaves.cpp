@@ -106,7 +106,7 @@ float SoundProcessorFreakwaves::applySnH(float sine_lfo_val, int enum_val) {
 
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorFreakwaves::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm,
+inline int SoundProcessorFreakwaves::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm,
                                                             int enum_trigger_id, int gate_type = 0) {
     int trig_status = 0;
 
@@ -204,7 +204,7 @@ void SoundProcessorFreakwaves::prepareWavetable(const int16_t **wavetables, int 
     *isWaveTableGood = true;
 }
 
-void SoundProcessorFreakwaves::Process(const audio::ProcessData&data) {
+void SoundProcessorFreakwaves::Process(const sound_processor::ProcessData&data) {
     float vol_eg_A = 1.f;
     float vol_eg_B = 1.f;
     float vol_eg_C = 1.f;

@@ -51,7 +51,7 @@ void SoundProcessorStrampDly::Init(std::size_t blockSize, void *blockPtr) {
 
 }
 
-void SoundProcessorStrampDly::Process(const audio::ProcessData&data) {
+void SoundProcessorStrampDly::Process(const sound_processor::ProcessData&data) {
     float tempL, tempR;
     if (cv_length != -1) {
         msLength = data.cv[cv_length] * data.cv[cv_length] * msMaxLength;

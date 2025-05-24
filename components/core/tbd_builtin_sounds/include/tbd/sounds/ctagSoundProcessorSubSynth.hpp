@@ -31,9 +31,9 @@ respective component folders / files if different from this license.
 
 namespace tbd::sounds {
 
-struct SoundProcessorSubSynth : audio::SoundProcessor {
+struct SoundProcessorSubSynth : sound_processor::SoundProcessor {
 
-    void Process(const audio::ProcessData&) override;
+    void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
 protected:
@@ -95,9 +95,9 @@ protected:
     uint8_t prevTrigStateEG[2];
     uint8_t prevMode[2];
 
-    void fetchControlData(const audio::ProcessData&data);
+    void fetchControlData(const sound_processor::ProcessData&data);
 
-    void updateEGs(const audio::ProcessData&data);
+    void updateEGs(const sound_processor::ProcessData&data);
 
     void computeFilterCoefs(float *coeffs, float freq, float bw, float gain);
 

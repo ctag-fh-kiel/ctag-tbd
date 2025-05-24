@@ -29,15 +29,15 @@ respective component folders / files if different from this license.
 
 namespace tbd::sounds {
 
-struct SoundProcessorTBDings : audio::SoundProcessor {
+struct SoundProcessorTBDings : sound_processor::SoundProcessor {
 
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
 
     virtual ~SoundProcessorTBDings();
 
 protected:
-    void updateParams(const audio::ProcessData&);
+    void updateParams(const sound_processor::ProcessData&);
 
     // private attributes could go here
     uint16_t *reverb_buffer;

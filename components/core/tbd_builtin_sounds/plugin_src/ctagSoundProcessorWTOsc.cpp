@@ -27,7 +27,7 @@ respective component folders / files if different from this license.
 using namespace tbd::sounds;
 using namespace tbd::sound_utils;
 
-void SoundProcessorWTOsc::Process(const audio::ProcessData&data) {
+void SoundProcessorWTOsc::Process(const sound_processor::ProcessData&data) {
     // wave select
     currentBank = wavebank;
 	if(cv_wave != -1) ONE_POLE(fWave, fabsf(data.cv[cv_wave]), 0.1f)

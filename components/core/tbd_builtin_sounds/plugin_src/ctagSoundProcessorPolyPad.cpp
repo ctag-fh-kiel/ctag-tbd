@@ -37,7 +37,7 @@ void SoundProcessorPolyPad::Init(std::size_t blockSize, void *blockPtr) {
     quantizer.Init();
 }
 
-void SoundProcessorPolyPad::Process(const audio::ProcessData&data) {
+void SoundProcessorPolyPad::Process(const sound_processor::ProcessData&data) {
     // zero input
     for (int i = 0; i < 32; i++) {
         data.buf[i * 2 + processCh] = 0.f;

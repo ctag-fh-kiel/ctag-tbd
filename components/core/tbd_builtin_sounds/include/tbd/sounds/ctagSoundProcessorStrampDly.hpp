@@ -27,9 +27,9 @@ respective component folders / files if different from this license.
 
 namespace tbd::sounds {
 
-struct SoundProcessorStrampDly : audio::SoundProcessor {
+struct SoundProcessorStrampDly : sound_processor::SoundProcessor {
 
-    void Process(const audio::ProcessData&) override;
+    void Process(const sound_processor::ProcessData&) override;
 
     ~SoundProcessorStrampDly();
 

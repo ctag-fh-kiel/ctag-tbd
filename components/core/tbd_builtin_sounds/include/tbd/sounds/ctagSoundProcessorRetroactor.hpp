@@ -11,16 +11,16 @@ using namespace tbd::sound_utils;
 
 namespace tbd::sounds {
 
-struct SoundProcessorRetroactor : audio::SoundProcessor {
+struct SoundProcessorRetroactor : sound_processor::SoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
     virtual ~SoundProcessorRetroactor();
 
 protected:
 
     // --- Remember status of triggers / buttons ---
-    inline int process_param_trig( const audio::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
+    inline int process_param_trig( const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
     enum trig_states
     {
         e_VintageFilter, e_ResetFeedbackLoop, e_IsolateFeedback, e_SineDisable, e_SineBisDistorted, e_Retroactor_options_max

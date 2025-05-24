@@ -29,7 +29,7 @@ void SoundProcessorPNoise::Init(std::size_t blockSize, void *blockPtr) {
 
 }
 
-void SoundProcessorPNoise::Process(const audio::ProcessData&data) {
+void SoundProcessorPNoise::Process(const sound_processor::ProcessData&data) {
     fFactor = factor / (float) 1023.f;
     if (cv_factor != -1) {
         fFactor = data.cv[cv_factor];

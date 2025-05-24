@@ -32,7 +32,7 @@ void SoundProcessorMIDifu::Init(std::size_t blockSize, void *blockPtr) {
     fx.Clear();
 }
 
-void SoundProcessorMIDifu::Process(const audio::ProcessData&data) {
+void SoundProcessorMIDifu::Process(const sound_processor::ProcessData&data) {
     float fTime = time / 4095.f;
     float fAmount = amount / 4095.f;
 

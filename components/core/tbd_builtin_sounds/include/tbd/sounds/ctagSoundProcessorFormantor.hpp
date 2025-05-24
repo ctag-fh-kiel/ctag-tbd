@@ -19,9 +19,9 @@ using namespace tbd::sound_utils;
 
 namespace tbd::sounds {
     
-struct SoundProcessorFormantor : audio::SoundProcessor {
+struct SoundProcessorFormantor : sound_processor::SoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
     virtual ~SoundProcessorFormantor();
 
@@ -42,7 +42,7 @@ protected:
     inline void formant_filter_set_formant(int formant_idx) {coeff_cur = coeff_array[formant_idx];}  // Used to set the current vowel before the main loop
 
     // --- Remember status of triggers / buttons ---
-    inline int process_param_trig( const audio::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
+    inline int process_param_trig( const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
     enum trig_states
     {
         e_Gate, e_EGvolActive, e_EGvolSlow, e_TremoloActive, e_TremoloAfterResonator, e_VoicesDirectOut, e_TremoloPDisSQW,

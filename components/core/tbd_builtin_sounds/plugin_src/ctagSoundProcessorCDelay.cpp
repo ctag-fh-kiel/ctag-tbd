@@ -30,7 +30,7 @@ void SoundProcessorCDelay::Init(std::size_t blockSize, void *blockPtr) {
     delay.Reset();
 }
 
-void SoundProcessorCDelay::Process(const audio::ProcessData&data) {
+void SoundProcessorCDelay::Process(const sound_processor::ProcessData&data) {
     float dlyTime = dly_time / 1000.f;
     if (cv_dly_time != -1) {
         dlyTime = fabsf(data.cv[cv_dly_time]) * 1000.f;

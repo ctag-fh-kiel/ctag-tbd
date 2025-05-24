@@ -26,7 +26,7 @@ respective component folders / files if different from this license.
 
 using namespace tbd::sounds;
 
-void SoundProcessorEveryTrim::Process(const audio::ProcessData&data) {
+void SoundProcessorEveryTrim::Process(const sound_processor::ProcessData&data) {
 
     float fLeft = left / 4095.f;
     if (cv_left != -1) {

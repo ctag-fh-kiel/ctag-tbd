@@ -41,7 +41,7 @@ void SoundProcessorMIVerb2::Init(std::size_t blockSize, void *blockPtr) {
     reverb.Init(reverb_buffer);
 }
 
-void SoundProcessorMIVerb2::Process(const audio::ProcessData&data) {
+void SoundProcessorMIVerb2::Process(const sound_processor::ProcessData&data) {
     float fDecay = decay / 4095.f;
     if (cv_decay != -1) {
         fDecay = sound_utils::fastfabs(data.cv[cv_decay]);

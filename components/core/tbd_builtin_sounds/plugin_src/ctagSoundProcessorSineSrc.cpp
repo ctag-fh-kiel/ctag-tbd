@@ -39,7 +39,7 @@ void SoundProcessorSineSrc::Init(std::size_t blockSize, void *blockPtr) {
     pitchEnv.SetModeExp();
 }
 
-void SoundProcessorSineSrc::Process(const audio::ProcessData&data) {
+void SoundProcessorSineSrc::Process(const sound_processor::ProcessData&data) {
     float deltaCVLoud = (data.cv[cv_loudness] - preCVLoudness) / (float) bufSz; // for linear CV interpolation
     freq = (float) frequency; // frequency
     // cv frequency

@@ -9,7 +9,7 @@ namespace tbd::sounds {
 [[tbd(name="APCpp", description="APCpp")]]
 struct SoundProcessorAPCpp : audio::MonoSoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
     virtual ~SoundProcessorAPCpp();
 
@@ -53,8 +53,8 @@ protected:
     float f_val_result = 0.f;
     // === End of pseudo local variables ===
 
-    inline int process_param_trig( const audio::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
-    inline float process_param_float( const audio::ProcessData&data, int cv_myparm, int my_parm, float out_min = 0.f, float out_max = 1.f, bool exponential = false ); // rescale incoming data to 0.0-1.0
+    inline int process_param_trig( const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
+    inline float process_param_float( const sound_processor::ProcessData&data, int cv_myparm, int my_parm, float out_min = 0.f, float out_max = 1.f, bool exponential = false ); // rescale incoming data to 0.0-1.0
 
     sound_utils::ctagSineSource osc_1;  // Main Oscillators
     sound_utils::ctagSineSource osc_2;

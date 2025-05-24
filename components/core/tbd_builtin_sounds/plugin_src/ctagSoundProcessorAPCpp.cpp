@@ -35,7 +35,7 @@ respective component folders / files if different from this license.
 using namespace tbd::sounds;
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorAPCpp::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
+inline int SoundProcessorAPCpp::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
 {
   int trig_status = 0;
 
@@ -81,7 +81,7 @@ inline int SoundProcessorAPCpp::process_param_trig(const audio::ProcessData&data
 }
 
 // --- Helper function: rescale CV or Pot to float 0...1.0 (CV is already in correct format, we still keep it inside this method for convenience ---
-inline float SoundProcessorAPCpp::process_param_float(const audio::ProcessData&data, int cv_myparm, int my_parm, float out_min, float out_max, bool exponential )
+inline float SoundProcessorAPCpp::process_param_float(const sound_processor::ProcessData&data, int cv_myparm, int my_parm, float out_min, float out_max, bool exponential )
 {
   if(cv_myparm != -1)
   {
@@ -104,7 +104,7 @@ inline float SoundProcessorAPCpp::process_param_float(const audio::ProcessData&d
   }
 }
 
-void SoundProcessorAPCpp::Process(const audio::ProcessData&data)
+void SoundProcessorAPCpp::Process(const sound_processor::ProcessData&data)
 {
   // --- Read and buffer triggers/options for APC ---
   // Use sinus or square for pitch-modulation of each of the two oscillators

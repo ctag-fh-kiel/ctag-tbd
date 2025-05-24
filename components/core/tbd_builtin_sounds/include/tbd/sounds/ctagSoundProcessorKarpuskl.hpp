@@ -6,17 +6,17 @@
 
 namespace tbd::sounds {
 
-struct SoundProcessorKarpuskl : audio::SoundProcessor {
+struct SoundProcessorKarpuskl : sound_processor::SoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
     virtual ~SoundProcessorKarpuskl();
 
 protected:
 
-    inline int process_param_trig( const audio::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id ); // rescale incoming data to bool
-    inline float process_param_float( const audio::ProcessData&data, int cv_myparm, int my_parm, float out_min = 0.f, float out_max = 1.f ); // rescale incoming data to 0.0-1.0
-    inline float process_center_param_float( const audio::ProcessData&data, int cv_myparm, int my_parm ); // rescale incoming data to -0.5-0.5
+    inline int process_param_trig( const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id ); // rescale incoming data to bool
+    inline float process_param_float( const sound_processor::ProcessData&data, int cv_myparm, int my_parm, float out_min = 0.f, float out_max = 1.f ); // rescale incoming data to 0.0-1.0
+    inline float process_center_param_float( const sound_processor::ProcessData&data, int cv_myparm, int my_parm ); // rescale incoming data to -0.5-0.5
     sound_utils::ctagSineSource ringModCarrier;
     sound_utils::ctagSineSource ringModLFO;
 

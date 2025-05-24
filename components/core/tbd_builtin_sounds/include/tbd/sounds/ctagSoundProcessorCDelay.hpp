@@ -28,8 +28,8 @@ using namespace tesselode;
 namespace tbd::sounds {
 
 [[tbd(name="BBeats", description="ByteBeats with Xfade")]]
-struct SoundProcessorCDelay : audio::SoundProcessor {
-    virtual void Process(const audio::ProcessData&) override;
+struct SoundProcessorCDelay : sound_processor::SoundProcessor {
+    virtual void Process(const sound_processor::ProcessData&) override;
 
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
 

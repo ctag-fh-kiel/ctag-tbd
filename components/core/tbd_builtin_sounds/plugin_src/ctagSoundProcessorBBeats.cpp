@@ -28,7 +28,7 @@ using namespace tbd::sounds;
 // data.buf[i * 2 + processCh] = (float)((byte)(t & 128));    // Square wave, working ok!
 
 // --- Helper function: rescale CV or Pot to integer of given range 0...max ---
-int SoundProcessorBBeats::process_param(const audio::ProcessData&data, int cv_myparm, int my_parm, int parm_range, int max_idx )
+int SoundProcessorBBeats::process_param(const sound_processor::ProcessData&data, int cv_myparm, int my_parm, int parm_range, int max_idx )
 {
   if (cv_myparm != -1) 
   {
@@ -42,7 +42,7 @@ int SoundProcessorBBeats::process_param(const audio::ProcessData&data, int cv_my
 }
 
 // --- Helper function: rescale CV or Pot to float 0...1.0 (CV is already in correct format, we still keep it inside this method for convenience ---
-float SoundProcessorBBeats::process_param_float(const audio::ProcessData&data, int cv_myparm, int my_parm, int max_idx )
+float SoundProcessorBBeats::process_param_float(const sound_processor::ProcessData&data, int cv_myparm, int my_parm, int max_idx )
 {
   if(cv_myparm != -1)
   {
@@ -56,7 +56,7 @@ float SoundProcessorBBeats::process_param_float(const audio::ProcessData&data, i
 }
 
 
-bool SoundProcessorBBeats::process_param_bool(const audio::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, bool direct_eg_trigger )
+bool SoundProcessorBBeats::process_param_bool(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, bool direct_eg_trigger )
 {
   if(trig_myparm != -1)       // Trigger given via CV/Gate or button?
   {
@@ -91,7 +91,7 @@ bool SoundProcessorBBeats::process_param_bool(const audio::ProcessData&data, int
   }
 }
 
-void SoundProcessorBBeats::Process(const audio::ProcessData&data)
+void SoundProcessorBBeats::Process(const sound_processor::ProcessData&data)
 {
   // --- Read triggers or bools from GUI about every 3 milliseconds and buffer results as private member variables ---
   if( ++cv_counter%11 == 0)

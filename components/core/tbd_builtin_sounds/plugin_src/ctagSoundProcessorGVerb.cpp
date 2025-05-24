@@ -37,7 +37,7 @@ void SoundProcessorGVerb::Init(std::size_t blockSize, void *blockPtr) {
     gverb_new(gverb, 44100, maxRoomSize, 50.0f, 7.0f, 0.5f, 15.0f, 0.5f, 0.5f, 0.5f);
 }
 
-void SoundProcessorGVerb::Process(const audio::ProcessData&data) {
+void SoundProcessorGVerb::Process(const sound_processor::ProcessData&data) {
     float revout_l, revout_r;
     fRoomSz = (float) roomsize / 4095.f * maxRoomSize;
     fRevTime = (float) revtime / 4095.f * 30.f;

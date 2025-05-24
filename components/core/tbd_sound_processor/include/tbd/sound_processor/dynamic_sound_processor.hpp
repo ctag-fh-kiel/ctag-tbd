@@ -3,7 +3,7 @@
 
 #include <atomic>
 
-namespace tbd::audio {
+namespace tbd::sound_processor {
 
 class DynamicSoundProcessor {
 public:

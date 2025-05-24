@@ -56,7 +56,7 @@ using namespace tbd::sounds;
 using namespace tbd::sounds;
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorTalkbox::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm,
+inline int SoundProcessorTalkbox::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm,
                                                          int enum_trigger_id, int gate_type = 0) {
     int trig_status = 0;
 
@@ -99,7 +99,7 @@ inline int SoundProcessorTalkbox::process_param_trig(const audio::ProcessData&da
 }
 
 
-void SoundProcessorTalkbox::Process(const audio::ProcessData&data) {
+void SoundProcessorTalkbox::Process(const sound_processor::ProcessData&data) {
     // === Process all parameters from the GUI ===
     // --- Global / Mixer ---
     MK_PITCH_PAR(f_MasterPitch, MasterPitch)

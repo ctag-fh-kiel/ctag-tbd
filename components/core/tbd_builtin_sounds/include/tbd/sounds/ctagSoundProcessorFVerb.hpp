@@ -28,9 +28,9 @@ respective component folders / files if different from this license.
 
 namespace tbd::sounds {
 
-struct SoundProcessorFVerb : audio::SoundProcessor {
+struct SoundProcessorFVerb : sound_processor::SoundProcessor {
 
-    void Process(const audio::ProcessData&) override;
+    void Process(const sound_processor::ProcessData&) override;
 
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
 

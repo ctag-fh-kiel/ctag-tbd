@@ -31,9 +31,9 @@ extern "C" {
 
 namespace tbd::sounds {
 
-struct SoundProcessorGVerb : audio::SoundProcessor {
+struct SoundProcessorGVerb : sound_processor::SoundProcessor {
 
-    void Process(const audio::ProcessData&) override;
+    void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
     ~SoundProcessorGVerb() override;

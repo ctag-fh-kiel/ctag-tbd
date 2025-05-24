@@ -14,7 +14,7 @@ using namespace tbd::sounds;
 #define MK_TRIG_PAR(outname, inname)            int outname = process_param_trig(data, trig_##inname, inname, e_##inname);
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorMSxxNoise::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
+inline int SoundProcessorMSxxNoise::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
 {
   int trig_status = 0;
 
@@ -60,7 +60,7 @@ inline int SoundProcessorMSxxNoise::process_param_trig(const audio::ProcessData&
 }
 
 
-void SoundProcessorMSxxNoise::Process(const audio::ProcessData&data)
+void SoundProcessorMSxxNoise::Process(const sound_processor::ProcessData&data)
 {
   // === Process all parameters from the GUI ===
   // --- Soundsources ---

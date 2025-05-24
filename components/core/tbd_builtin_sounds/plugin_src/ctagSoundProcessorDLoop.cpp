@@ -51,7 +51,7 @@ void SoundProcessorDLoop::Init(std::size_t blockSize, void *blockPtr) {
 
 }
 
-void SoundProcessorDLoop::Process(const audio::ProcessData&data) {
+void SoundProcessorDLoop::Process(const sound_processor::ProcessData&data) {
     // params and CV / trig mods
     float thres = (float) density / 4095.f;
     if (cv_density != -1) thres = data.cv[cv_density];

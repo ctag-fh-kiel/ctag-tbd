@@ -1,15 +1,15 @@
 #include <atomic>
-#include <tbd/sound_processor/parameter_types.h>
+#include <tbd/parameter_types.h>
 #include <tbd/sound_processor.hpp>
 
 namespace tbd::sounds {
     
-using namespace tbd::audio::parameters;
+
 
 [[tbd(name="Void", description="Output input signal unaltered")]]
-struct SoundProcessorVoid : audio::SoundProcessor {
+struct SoundProcessorVoid : sound_processor::SoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
     virtual ~SoundProcessorVoid();
 

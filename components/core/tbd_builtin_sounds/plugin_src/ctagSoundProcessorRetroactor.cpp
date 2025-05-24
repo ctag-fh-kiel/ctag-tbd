@@ -47,7 +47,7 @@ using namespace tbd::sounds;
 #define MK_ADEG_PAR(outname, inname) int outname = process_param_trig(data, trig_##inname, inname, e_##inname, 2);
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorRetroactor::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
+inline int SoundProcessorRetroactor::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
 {
   int trig_status = 0;
 
@@ -92,7 +92,7 @@ inline int SoundProcessorRetroactor::process_param_trig(const audio::ProcessData
   return(prev_trig_state[enum_trigger_id]);            // No change (1 for active, 0 for inactive)
 }
 
-void SoundProcessorRetroactor::Process(const audio::ProcessData&data)
+void SoundProcessorRetroactor::Process(const sound_processor::ProcessData&data)
 {
 float f_val_result = 0.f;             // Sum of results for DSP-output
 float rough_sine_B_processed = 0.f;   // Simply precalculate the sine-wave outside of the main loop for "distorted sine" effect

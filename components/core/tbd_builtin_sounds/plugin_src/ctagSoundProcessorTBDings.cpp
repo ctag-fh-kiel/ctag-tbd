@@ -49,7 +49,7 @@ void SoundProcessorTBDings::Init(std::size_t blockSize, void *blockPtr) {
     paramAD.SetModeLin();
 }
 
-void SoundProcessorTBDings::Process(const audio::ProcessData&data) {
+void SoundProcessorTBDings::Process(const sound_processor::ProcessData&data) {
     updateParams(data);
 
     bool isEaster = easter;
@@ -82,7 +82,7 @@ void SoundProcessorTBDings::Process(const audio::ProcessData&data) {
 }
 
 
-void SoundProcessorTBDings::updateParams(const audio::ProcessData&data) {
+void SoundProcessorTBDings::updateParams(const sound_processor::ProcessData&data) {
     if (cv_reson_model != -1) {
         resonatorModel = (rings::ResonatorModel) ((int) (floorf(data.cv[cv_reson_model] * 7.f)) % 6);
     } else {

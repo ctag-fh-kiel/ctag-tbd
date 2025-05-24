@@ -65,11 +65,11 @@ respective component folders / files if different from this license.
 #include <memory>
 #include <map>
 #include <functional>
-#include <tbd/sound_processor/parameter_types.h>
+#include <tbd/parameter_types.h>
 #include <tbd/sound_processor/allocator.hpp>
 
 
-namespace tbd::audio {
+namespace tbd::sound_processor {
 
 /** @brief input and output data for sound processing
  * 
@@ -138,7 +138,7 @@ struct SoundProcessor {
 
     // FIXME: use placement new pull this out of ctagSoundProcessor's responsibility
     void* operator new (std::size_t size) {
-        return ctagSPAllocator::Allocate(size);
+        return SoundProcessorAllocator::allocate(size);
     }
 
     // FIXME: see new operator

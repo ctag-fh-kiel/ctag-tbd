@@ -35,7 +35,7 @@ void SoundProcessorFVerb::Init(std::size_t blockSize, void *blockPtr) {
     freeverb.init(blockSize, blockPtr);
 }
 
-void SoundProcessorFVerb::Process(const audio::ProcessData&data) {
+void SoundProcessorFVerb::Process(const sound_processor::ProcessData&data) {
     float val = (float) roomsize / 4095.f;
     if (cv_roomsize != -1) val = data.cv[cv_roomsize] * data.cv[cv_roomsize];
     freeverb.setroomsize(val);

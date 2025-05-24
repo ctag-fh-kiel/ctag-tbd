@@ -28,7 +28,7 @@ respective component folders / files if different from this license.
 
 using namespace tbd::sounds;
 
-void SoundProcessorAntique::Process(const audio::ProcessData&data) {
+void SoundProcessorAntique::Process(const sound_processor::ProcessData&data) {
     // dry buffer
     float dry[32];
     // input shaping

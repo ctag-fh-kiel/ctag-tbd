@@ -46,7 +46,7 @@ void SoundProcessorMIVerb::Init(std::size_t blockSize, void *blockPtr) {
     reverb.set_diffusion(0.5f);
 }
 
-void SoundProcessorMIVerb::Process(const audio::ProcessData&data) {
+void SoundProcessorMIVerb::Process(const sound_processor::ProcessData&data) {
 
     float fTime = time / 4095.f;
     float fDiffusion = diffusion / 4095.f;

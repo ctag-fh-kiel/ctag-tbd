@@ -25,7 +25,7 @@ respective component folders / files if different from this license.
 using namespace tbd::sounds;
 
 
-void SoundProcessorEChorus::Process(const audio::ProcessData&data) {
+void SoundProcessorEChorus::Process(const sound_processor::ProcessData&data) {
     float fRange = pdepth / 4095.f;
     if (cv_pdepth != -1) {
         fRange = 0.05f * fabsf(data.cv[cv_pdepth]) + 0.95f * preRange;

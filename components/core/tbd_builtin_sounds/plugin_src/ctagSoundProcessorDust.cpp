@@ -43,7 +43,7 @@ void SoundProcessorDust::Init(std::size_t blockSize, void *blockPtr) {
     w2[1] = 0.f;
 }
 
-void SoundProcessorDust::Process(const audio::ProcessData&data) {
+void SoundProcessorDust::Process(const sound_processor::ProcessData&data) {
     float fRate = (float) rate / 100000.f;
     if (cv_rate != -1) {
         fRate = data.cv[cv_rate];

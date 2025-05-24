@@ -31,7 +31,7 @@ void SoundProcessorFBDlyLine::Init(std::size_t blockSize, void *blockPtr){
 
 }
 
-void SoundProcessorFBDlyLine::Process(const audio::ProcessData&data) {
+void SoundProcessorFBDlyLine::Process(const sound_processor::ProcessData&data) {
     if (trig_enable != -1) {
         if (data.trig[trig_enable] == 1 && enable == 1) return;
         else if (data.trig[trig_enable] == 0 && enable == 0) return;

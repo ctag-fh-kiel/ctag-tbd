@@ -34,36 +34,29 @@ respective component folders / files if different from this license.
 
 #include <cstddef>
 
-namespace tbd::audio {
+namespace tbd::sound_processor {
 
-class ctagSPAllocator final {
-public:
+struct SoundProcessorAllocator final {
     // allocator can allocate memory for different type of sound processor creation
     enum AllocationType {
         CH0,
         CH1,
         STEREO
     };
-    ctagSPAllocator() = delete;
+    SoundProcessorAllocator() = delete;
 
     // allocate large block of memory which is used by the sound processors
-    static void AllocateInternalBuffer(std::size_t const &size);
+    static void allocate_buffers(std::size_t const &size);
     // release large block of memory
-    static void ReleaseInternalBuffer();
+    static void release_buffers();
     // called by new operator of sound processors
-    static void *Allocate(std::size_t const &size);
+    static void *allocate(std::size_t const &size);
     // called to determine remaining size after new allocation for other heap allocations of sound processor
-    static std::size_t GetRemainingBufferSize();
+    static std::size_t get_remaining_buffer_size();
     // called to pass heap available to sound processor
-    static void *GetRemainingBuffer();
+    static void *get_remaining_buffer();
     // prepare allocation type, must be called before creating new sound processor
-    static void PrepareAllocation(AllocationType const &type);
-
-private:
-    static void *internalBuffer; // main ptr to large buffer
-    static void *buffer1, *buffer2; // ptrs pointing at memory available for sound processor
-    static std::size_t totalSize, size1, size2; // size of large buffer and size of memory available for sound processor
-    static AllocationType allocationType; // type of sound processor to create, is state variable
+    static void prepare_allocation(AllocationType const &type);
 };
 
 }

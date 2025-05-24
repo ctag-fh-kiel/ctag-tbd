@@ -29,7 +29,7 @@ namespace heaps = tbd::heaps;
 
 using namespace tbd::sounds;
 
-void SoundProcessorClaude::Process(const audio::ProcessData&data) {
+void SoundProcessorClaude::Process(const sound_processor::ProcessData&data) {
 
     // setup processor
     clouds::PlaybackMode playbackMode = static_cast<clouds::PlaybackMode>(mode.load());

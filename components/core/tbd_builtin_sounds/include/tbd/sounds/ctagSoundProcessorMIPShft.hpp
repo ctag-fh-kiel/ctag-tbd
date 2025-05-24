@@ -25,9 +25,9 @@ respective component folders / files if different from this license.
 
 namespace tbd::sounds {
 
-struct SoundProcessorMIPShft : audio::SoundProcessor {
+struct SoundProcessorMIPShft : sound_processor::SoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
 
     ~SoundProcessorMIPShft();
 

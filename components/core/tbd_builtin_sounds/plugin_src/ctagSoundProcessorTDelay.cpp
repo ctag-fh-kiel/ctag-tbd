@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 
 using namespace tbd::sounds;
 
-void SoundProcessorTDelay::Process(const audio::ProcessData&data) {
+void SoundProcessorTDelay::Process(const sound_processor::ProcessData&data) {
     float fDelay = delay / 4095.f;
     if(cv_delay != -1){
         fDelay = 0.05f * fabsf(data.cv[cv_delay]) + 0.95f * preDelay;

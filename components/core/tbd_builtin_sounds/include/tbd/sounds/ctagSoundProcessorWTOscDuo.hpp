@@ -33,9 +33,9 @@ using namespace tbd::sound_utils;
 
 namespace tbd::sounds {
 
-struct SoundProcessorWTOscDuo : audio::SoundProcessor {
+struct SoundProcessorWTOscDuo : sound_processor::SoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
     virtual ~SoundProcessorWTOscDuo();
 

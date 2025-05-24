@@ -3,7 +3,7 @@
 
 using namespace tbd::sounds;
 
-void SoundProcessorDrumRack::Process(const audio::ProcessData& data){
+void SoundProcessorDrumRack::Process(const sound_processor::ProcessData& data){
     // Analog Bass Drum
     MK_BOOL_PAR(bABMute, ab_mute)
     MK_BOOL_PAR(bABTrig, ab_trigger)

@@ -33,7 +33,7 @@ void SoundProcessorMIPShft::Init(std::size_t blockSize, void *blockPtr) {
     fx.Init(fx_buffer);
 }
 
-void SoundProcessorMIPShft::Process(const audio::ProcessData&data) {
+void SoundProcessorMIPShft::Process(const sound_processor::ProcessData&data) {
     float fRatio = ratio / 4095.f;
     float fSize = size / 4095.f;
     if (cv_ratio != -1) {

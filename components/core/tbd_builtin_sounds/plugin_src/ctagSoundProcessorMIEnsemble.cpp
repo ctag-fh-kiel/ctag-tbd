@@ -32,7 +32,7 @@ void SoundProcessorMIEnsemble::Init(std::size_t blockSize, void *blockPtr) {
     fx.Init(fx_buffer);
 }
 
-void SoundProcessorMIEnsemble::Process(const audio::ProcessData&data) {
+void SoundProcessorMIEnsemble::Process(const sound_processor::ProcessData&data) {
     float fAmount = amount / 4095.f;
     float fDepth = depth / 4095.f;
     if (cv_amount != -1) {

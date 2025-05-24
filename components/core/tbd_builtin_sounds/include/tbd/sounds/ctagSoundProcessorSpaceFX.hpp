@@ -17,15 +17,15 @@
 using namespace tbd::sound_utils;
 namespace tbd::sounds {
 
-struct SoundProcessorSpaceFX : audio::SoundProcessor {
+struct SoundProcessorSpaceFX : sound_processor::SoundProcessor {
 
-	virtual void Process(const audio::ProcessData&) override;
+	virtual void Process(const sound_processor::ProcessData&) override;
 	virtual void Init(std::size_t blockSize, void *blockPtr) override;
 	virtual ~SoundProcessorSpaceFX();
 
 protected:
 	// --- Remember status of triggers / buttons ---
-	inline int process_param_trig( const audio::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
+	inline int process_param_trig( const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id, int gate_type ); // rescale incoming data to bool
 	enum trig_states
 	{
 		e_Trigger, e_Gate, e_ADenvNegative, e_ADtoSawLFOfrequ, e_ADSRtoSineLFOfrequ, e_ADSRenvNegative, e_ADegLoop, e_ADenvToVCA, e_ADSRenvToVCA,

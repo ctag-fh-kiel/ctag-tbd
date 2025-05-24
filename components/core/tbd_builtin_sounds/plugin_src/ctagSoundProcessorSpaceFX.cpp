@@ -63,7 +63,7 @@ using namespace tbd::sounds;
         hysteresis_memory = outname; }
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorSpaceFX::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
+inline int SoundProcessorSpaceFX::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int enum_trigger_id, int gate_type = 0 )
 {
   int trig_status = 0;
 
@@ -109,7 +109,7 @@ inline int SoundProcessorSpaceFX::process_param_trig(const audio::ProcessData&da
 }
 
 // --- Plugin runtime entry point (process CV/Gate and audio) ---
-void SoundProcessorSpaceFX::Process(const audio::ProcessData&data) 
+void SoundProcessorSpaceFX::Process(const sound_processor::ProcessData&data)
 {
 float f_val_result = 0.f;             // Sum of results for DSP-output
 float f_val_saw = 0.f;                // Saw wave

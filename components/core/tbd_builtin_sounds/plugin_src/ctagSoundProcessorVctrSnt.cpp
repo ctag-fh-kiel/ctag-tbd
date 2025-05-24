@@ -93,7 +93,7 @@ float SoundProcessorVctrSnt::applySnH(float sine_lfo_val, int enum_val) {
 }
 
 // --- Process trigger signals and keep their state internally ---
-inline int SoundProcessorVctrSnt::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm,
+inline int SoundProcessorVctrSnt::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm,
                                                          int enum_trig_state_id, int gate_type = 0) {
     int trig_status = 0;
 
@@ -179,7 +179,7 @@ void SoundProcessorVctrSnt::prepareWavetable(const int16_t **wavetables, int cur
 }
 
 // --- Main processing routine for VctrSnt ---
-void SoundProcessorVctrSnt::Process(const audio::ProcessData&data) {
+void SoundProcessorVctrSnt::Process(const sound_processor::ProcessData&data) {
     // --- DSP calculation results ---
     float f_val_result = 0.f;
 

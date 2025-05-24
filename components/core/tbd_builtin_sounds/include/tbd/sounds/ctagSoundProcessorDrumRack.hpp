@@ -14,9 +14,9 @@
 
 namespace tbd::sounds {
     
-struct SoundProcessorDrumRack : audio::SoundProcessor {
+struct SoundProcessorDrumRack : sound_processor::SoundProcessor {
 
-	virtual void Process(const audio::ProcessData&) override;
+	virtual void Process(const sound_processor::ProcessData&) override;
 	// no ctor, use Init() instead, is called from factory after successful creation
 	virtual void Init(std::size_t blockSize, void *blockPtr) override;
 	virtual ~SoundProcessorDrumRack();

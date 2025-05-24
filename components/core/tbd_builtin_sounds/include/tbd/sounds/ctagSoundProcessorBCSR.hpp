@@ -28,12 +28,12 @@ namespace tbd::sounds {
 [[tbd(name="BCSR", description="Bit crushing and sample rate reducing")]]
 struct SoundProcessorBCSR : audio::MonoSoundProcessor {
 
-    virtual void Process(const audio::ProcessData&) override;
+    virtual void Process(const sound_processor::ProcessData&) override;
     virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
 protected:
 
-    void updateParams(const audio::ProcessData&data);
+    void updateParams(const sound_processor::ProcessData&data);
 
     // private attributes could go here
     float phase;

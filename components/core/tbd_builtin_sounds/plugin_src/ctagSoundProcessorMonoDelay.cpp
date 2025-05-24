@@ -13,7 +13,7 @@ using namespace tbd::sounds;
 // https://www.kvraudio.com/forum/viewtopic.php?t=382266
 
 /* mifx engine version
-void SoundProcessorMonoDelay::Process(const audio::ProcessData&data) {
+void SoundProcessorMonoDelay::Process(const sound_processor::ProcessData&data) {
 	float fDelayTime = time_ms; if(cv_time_ms != -1) fDelayTime = fabsf(data.cv[cv_time_ms]);
 	// convert fDelayTime to taps
 	float ofs = fDelayTime * 44.1f;
@@ -47,7 +47,7 @@ void SoundProcessorMonoDelay::Process(const audio::ProcessData&data) {
 }
 */
 
-void SoundProcessorMonoDelay::Process(const audio::ProcessData&data) {
+void SoundProcessorMonoDelay::Process(const sound_processor::ProcessData&data) {
 	MK_FLT_PAR_ABS(fFeedback, feedback, 4095.f, 1.05f)
 	MK_FLT_PAR_ABS(fBase, base, 4095.f, 1.f)
 	MK_FLT_PAR_ABS(fWidth, width, 4095.f, 1.f)

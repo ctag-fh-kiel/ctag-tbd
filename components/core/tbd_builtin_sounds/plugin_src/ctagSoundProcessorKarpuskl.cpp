@@ -36,7 +36,7 @@ using namespace std;
 
 using namespace tbd::sounds;
 
-inline int SoundProcessorKarpuskl::process_param_trig(const audio::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id )
+inline int SoundProcessorKarpuskl::process_param_trig(const sound_processor::ProcessData&data, int trig_myparm, int my_parm, int prev_trig_state_id )
 {
   if(trig_myparm != -1)       // Trigger given via CV/Gate or button?
   {
@@ -64,7 +64,7 @@ inline int SoundProcessorKarpuskl::process_param_trig(const audio::ProcessData&d
 }
 
 // --- Helper function: rescale CV or Pot to float 0...1.0 (CV is already in correct format, we still keep it inside this method for convenience ---
-inline float SoundProcessorKarpuskl::process_param_float(const audio::ProcessData&data, int cv_myparm, int my_parm, float out_min, float out_max )
+inline float SoundProcessorKarpuskl::process_param_float(const sound_processor::ProcessData&data, int cv_myparm, int my_parm, float out_min, float out_max )
 {
   if(cv_myparm != -1)
   {
@@ -78,7 +78,7 @@ inline float SoundProcessorKarpuskl::process_param_float(const audio::ProcessDat
 }
 
 // --- Helper function: rescale CV or Pot to float -0.5...+0.5 (CV is already in correct format, we still keep it inside this method for convenience ---
-inline float SoundProcessorKarpuskl::process_center_param_float(const audio::ProcessData&data, int cv_myparm, int my_parm )
+inline float SoundProcessorKarpuskl::process_center_param_float(const sound_processor::ProcessData&data, int cv_myparm, int my_parm )
 {
   if(cv_myparm != -1)
   {
@@ -91,7 +91,7 @@ inline float SoundProcessorKarpuskl::process_center_param_float(const audio::Pro
     return ((my_parm+2048)/4095.f) - 0.5f;     // convert to float of 0.0..1.0 and scale to min..max output-range
 }
 
-void SoundProcessorKarpuskl::Process(const audio::ProcessData&data)
+void SoundProcessorKarpuskl::Process(const sound_processor::ProcessData&data)
 {
 // --- Trigger/Gate input String Synth, RingMod and Pitchoptions ---
 int chord_notes = 0;

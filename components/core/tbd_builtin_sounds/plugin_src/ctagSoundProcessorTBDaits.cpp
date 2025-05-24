@@ -37,7 +37,7 @@ void SoundProcessorTBDaits::Init(std::size_t blockSize, void *blockPtr) {
     patch.decay = 0.5f;
 }
 
-void SoundProcessorTBDaits::Process(const audio::ProcessData&data) {
+void SoundProcessorTBDaits::Process(const sound_processor::ProcessData&data) {
     patch.note = frequency / 4095.f * 96.f;
 
     if (cv_lpg_decay != -1) {
