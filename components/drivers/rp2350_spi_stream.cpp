@@ -20,7 +20,9 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include "rp2040_spi_stream.hpp"
+#include "rp2350_spi_stream.hpp"
+
+#include <algorithm>
 
 #include "esp_log.h"
 #include "esp_intr_alloc.h"
@@ -28,16 +30,17 @@ respective component folders / files if different from this license.
 #include "soc/gpio_num.h"
 
 
-#define RCV_HOST    SPI2_HOST
-#define DATA_SZ 2048 // midi data buffer with header
+#define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
+#define SPI_DATA_SZ 512 // midi data buffer with header
 
-DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2040_spi_stream::transaction[2];
-DRAM_ATTR uint32_t CTAG::DRIVERS::rp2040_spi_stream::currentTransaction;
+DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2350_spi_stream::transaction[2];
+DRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::currentTransaction;
 DMA_ATTR static uint8_t *buf0;
 DMA_ATTR static uint8_t *buf1;
 DMA_ATTR static uint8_t *sendBuf;
 
-void CTAG::DRIVERS::rp2040_spi_stream::Init(){
+
+void CTAG::DRIVERS::rp2350_spi_stream::Init(){
     //Configuration for the SPI bus
     spi_bus_config_t buscfg = {
         .mosi_io_num = GPIO_NUM_31,
@@ -49,7 +52,7 @@ void CTAG::DRIVERS::rp2040_spi_stream::Init(){
         .data5_io_num = -1,
         .data6_io_num = -1,
         .data7_io_num = -1,
-        .max_transfer_sz = DATA_SZ,
+        .max_transfer_sz = SPI_DATA_SZ,
         .flags = 0,
         .isr_cpu_id = ESP_INTR_CPU_AFFINITY_AUTO,
         .intr_flags = 0
@@ -65,46 +68,72 @@ void CTAG::DRIVERS::rp2040_spi_stream::Init(){
         .post_trans_cb = 0
     };
 
-    buf0 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, DATA_SZ, 0);
-    buf1 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, DATA_SZ, 0);
-    sendBuf = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, DATA_SZ, 0);
+    buf0 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
+    buf1 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
+    sendBuf = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
 
-    ESP_LOGI("rp2040 spi", "Init()");
+    ESP_LOGI("rp2350 spi", "Init()");
     auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
     assert(ret == ESP_OK);
 
-    transaction[0].length = DATA_SZ * 8;
+    transaction[0].length = SPI_DATA_SZ * 8;
     transaction[0].rx_buffer = buf0;
     transaction[0].tx_buffer = sendBuf;
 
-    transaction[1].length = DATA_SZ * 8;
+    transaction[1].length = SPI_DATA_SZ * 8;
     transaction[1].rx_buffer = buf1;
     transaction[1].tx_buffer = sendBuf;
 
     currentTransaction = 0;
 }
 
-IRAM_ATTR uint32_t CTAG::DRIVERS::rp2040_spi_stream::Read(uint8_t* data, uint32_t max_len){
+uint32_t CTAG::DRIVERS::rp2350_spi_stream::Read(uint8_t* data, uint32_t max_len){
     // this is all non-blocking
-    spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], 0);
+    spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], portMAX_DELAY);
     currentTransaction ^= 0x1;
 
     // get result of last transaction
     spi_slave_transaction_t* ret_trans;
-    auto ret = spi_slave_get_trans_result(RCV_HOST, &ret_trans, 0);
+    auto ret = spi_slave_get_trans_result(RCV_HOST, &ret_trans, portMAX_DELAY);
 
     if (ESP_OK == ret){
         auto* ptr = (uint8_t*)ret_trans->rx_buffer;
-        if (ptr[0] == 0xCA && ptr[1] == 0xFE && ptr[2] != 0){
-            // TODO: check if max_len is enough
-            if (ptr[2] > max_len){
-                ESP_LOGE("rp2040 spi", "buffer too small");
-                return 0;
-            }
-            memcpy(data, ptr + 3, ptr[2]);
-            return ptr[2];
-        }
+        memcpy(data, ptr, max_len);
+        return max_len;
     }
 
     return 0;
+}
+
+IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(uint8_t *dst, uint32_t const max_len) {
+    if (max_len > SPI_DATA_SZ - 2) {
+        //ESP_LOGE("rp2350_spi_stream", "max_len %d is too large, max is %d", max_len, DATA_SZ - 2);
+        return 0; // Invalid length
+    }
+    esp_err_t ret;
+
+    ret = spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], 0);
+    if (ESP_OK != ret) {
+        //ESP_LOGE("rp2350_spi_stream", "Failed to queue transaction: %s", esp_err_to_name(ret));
+        return 0; // Failed to queue transaction
+    }
+    currentTransaction ^= 0x1;
+
+    // get result of last transaction
+    spi_slave_transaction_t* ret_trans;
+    ret = spi_slave_get_trans_result(RCV_HOST, &ret_trans, 0);
+    if (ESP_OK != ret) {
+        //ESP_LOGE("rp2350_spi_stream", "Failed receive transaction: %s", esp_err_to_name(ret));
+        return 0; // Failed to queue transaction
+    }
+
+    uint8_t* ret_buf = (uint8_t*)ret_trans->rx_buffer;
+
+    if (ret_buf[0] != 0xCA || ret_buf[1] != 0xFE) {
+        //ESP_LOGE("rp2350_spi_stream", "Invalid transaction received, expected CA FE, got %02X %02X", ret_buf[0], ret_buf[1]);
+        return 0; // Invalid transaction
+    }
+
+    memcpy(dst, ret_buf+2, max_len); // skip the first two bytes (fingerprint)
+    return max_len;
 }

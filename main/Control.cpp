@@ -29,7 +29,12 @@ respective component folders / files if different from this license.
 #if CONFIG_TBD_PLATFORM_MK2
 #include "mk2.hpp"
 #elif CONFIG_TBD_PLATFORM_BBA
-#include "Midi.hpp"
+#include "rp2350_spi_stream.hpp"
+#define BUF_SZ (N_CVS*4 + N_TRIGS)
+static uint8_t buffer[BUF_SZ];
+float *CTAG::CTRL::Control::cv_data = (float*) &buffer[0];
+uint8_t *CTAG::CTRL::Control::trig_data = &buffer[N_CVS*4];
+
 #else
     uint8_t CTAG::CTRL::Control::trig_data[N_TRIGS];
     float CTAG::CTRL::Control::cv_data[N_CVS];
@@ -55,9 +60,14 @@ IRAM_ATTR void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs) {
     }
      */
 #elif defined(CONFIG_TBD_PLATFORM_BBA)
-    uint8_t *data = Midi::Update();
-    *cvs = (float *) data;
-    *trigs = &data[N_CVS * 4];
+    uint32_t size = CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(buffer, BUF_SZ);
+    /*
+    if (size == 0) {
+        ESP_LOGE("Control", "No data received from BBA SPI stream!");
+    }
+    */
+    *cvs = cv_data;
+    *trigs = trig_data;
 #else
     // update CVs
         CTAG::DRIVERS::ADC::Update();
@@ -81,17 +91,14 @@ void CTAG::CTRL::Control::SetCVChannelBiPolar(const bool &v0, const bool &v1, co
 
 void CTAG::CTRL::Control::Init() {
     ESP_LOGI("Control", "Initializing control!");
+    std::fill_n(buffer, BUF_SZ, 0);
 #if CONFIG_TBD_PLATFORM_MK2
     DRIVERS::mk2::Init();
 #elif CONFIG_TBD_PLATFORM_BBA
-    Midi::Init();
+    CTAG::DRIVERS::rp2350_spi_stream::Init();
 #else
     DRIVERS::ADC::InitADCSystem();
     DRIVERS::GPIO::InitGPIO();
     CAL::Calibration::Init();
 #endif
-}
-
-void CTAG::CTRL::Control::FlushBuffers() {
-
 }
