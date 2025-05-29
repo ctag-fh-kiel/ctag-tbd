@@ -33,6 +33,7 @@ respective component folders / files if different from this license.
 #include "tusb.hpp"
 #include "SerialAPI.hpp"
 #include "RestServer.hpp"
+#include "SpiAPI.hpp"
 #include "Control.hpp"
 #include "Favorites.hpp"
 #include <math.h>
@@ -411,6 +412,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     NET::Network::SetMDNSName(model->GetNetworkConfigurationData("mdns_name"));
     NET::Network::Up();
     REST::RestServer::StartRestServer();
+    SPIAPI::SpiAPI::StartSpiAPI();
 #elif CONFIG_SERIAL_UI
     SAPI::SerialAPI::StartSerialAPI();
 #endif
