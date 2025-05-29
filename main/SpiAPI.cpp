@@ -132,8 +132,7 @@ namespace CTAG::SPIAPI{
             const uint8_t preset_number = uint8_param_1; // bounds check in subsequent class
             const uint8_t favorite_number = uint8_param_0; // bounds check in subsequent class
             const int32_t param_value = int32_param_2; // value is the third parameter, e.g. for setting a parameter value
-            const std::string parameter_name {string_param_3};
-            const std::string plugin_name {string_param_3};
+            const std::string string_parameter {string_param_3};
 
 
             // handle request
@@ -151,24 +150,24 @@ namespace CTAG::SPIAPI{
                 transmitCString(requestType, cstring);
                 break;
             case RequestType::SetActivePlugin:
-                AUDIO::SoundProcessorManager::SetSoundProcessorChannel(channel, plugin_name);
+                AUDIO::SoundProcessorManager::SetSoundProcessorChannel(channel, string_parameter);
                 FAV::Favorites::DeactivateFavorite();
                 break;
             case RequestType::SetPluginParam:
-                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, parameter_name, "current", param_value);
+                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "current", param_value);
                 break;
             case RequestType::SetPluginParamCV:
-                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, parameter_name, "cv", param_value);
+                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "cv", param_value);
                 break;
             case RequestType::SetPluginParamTRIG:
-                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, parameter_name, "trig", param_value);
+                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "trig", param_value);
                 break;
             case RequestType::GetPresets:
                 cstring = AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(channel);
                 transmitCString(requestType, cstring);
                 break;
             case RequestType::GetPresetData:
-                cstring = AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(plugin_name);
+                cstring = AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string_parameter);
                 transmitCString(requestType, cstring);
                 break;
             case RequestType::SetPresetData:
@@ -179,14 +178,14 @@ namespace CTAG::SPIAPI{
                 FAV::Favorites::DeactivateFavorite();
                 break;
             case RequestType::SavePreset:
-                //AUDIO::SoundProcessorManager::ChannelSavePreset(ch, string(name), atoi(number));
+                AUDIO::SoundProcessorManager::ChannelSavePreset(channel, string_parameter, preset_number);
                 break;
             case RequestType::GetAllFavorites:
                 cstring = FAV::Favorites::GetAllFavorites().c_str();
                 transmitCString(requestType, cstring);
                 break;
             case RequestType::SaveFavorite:
-                //FAV::Favorites::StoreFavorite(id, string(content));
+                //FAV::Favorites::StoreFavorite(preset_number, string_parameter);
                 break;
             case RequestType::LoadFavorite:
                 FAV::Favorites::ActivateFavorite(favorite_number);
@@ -202,8 +201,8 @@ namespace CTAG::SPIAPI{
                 transmitCString(requestType, s.c_str());
                 break;
             case RequestType::Reboot:
-                //ESP_LOGI("SpiAPI", "Rebooting device!");
-                //esp_restart();
+                ESP_LOGI("SpiAPI", "Rebooting device!");
+                esp_restart();
                 break;
             }
 
