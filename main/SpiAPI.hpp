@@ -55,7 +55,7 @@ namespace CTAG::SPIAPI{
         static spi_slave_transaction_t transaction;
         static uint8_t *send_buffer, *receive_buffer;
         static void api_task(void *pvParameters);
-        static void transmitCString(const RequestType reqType, const char *str);
+        static bool transmitCString(const RequestType reqType, const char *str);
         static bool receiveString(const RequestType reqType, std::string &str);
     public:
         SpiAPI() = delete;

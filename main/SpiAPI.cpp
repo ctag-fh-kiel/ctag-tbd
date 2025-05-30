@@ -85,6 +85,7 @@ namespace CTAG::SPIAPI{
     }
 
     bool SpiAPI::receiveString(const RequestType reqType, std::string& str){
+        send_buffer[2] = (uint8_t) reqType;
         spi_slave_transmit(SPI3_HOST, &transaction, portMAX_DELAY);
 
         // fingerprint check
@@ -139,7 +140,7 @@ namespace CTAG::SPIAPI{
         return true;
     }
 
-    void SpiAPI::transmitCString(const RequestType reqType, const char* str){
+    bool SpiAPI::transmitCString(const RequestType reqType, const char* str){
         uint32_t len = strlen(str);
         // fields are: // 0xCA, 0xFE, request type, length (uint32_t), cstring
         uint8_t* requestTypeField = send_buffer + 2;
@@ -155,7 +156,17 @@ namespace CTAG::SPIAPI{
             len -= bytes_to_send;
             bytes_sent += bytes_to_send;
             spi_slave_transmit(SPI3_HOST, &transaction, portMAX_DELAY);
+            // fingerprint check
+            if (receive_buffer[0] != 0xCA || receive_buffer[1] != 0xFE){
+                return false;
+            }
+            // check request type acknowledgment
+            const uint8_t requestType = receive_buffer[2];
+            if (requestType != (uint8_t)reqType){
+                return false;
+            }
         }
+        return true;
     }
 
     void SpiAPI::api_task(void* pvParameters){
@@ -203,18 +214,15 @@ namespace CTAG::SPIAPI{
             switch (requestType){
             case RequestType::GetPlugins:
                 cstring = AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessors();
-                transmitCString(requestType, cstring);
-                result = true;
+                result = transmitCString(requestType, cstring);
                 break;
             case RequestType::GetActivePlugin:
                 cstring = AUDIO::SoundProcessorManager::GetStringID(channel).c_str();
-                transmitCString(requestType, cstring);
-                result = true;
+                result = transmitCString(requestType, cstring);
                 break;
             case RequestType::GetActivePluginParams:
                 cstring = AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(channel);
-                transmitCString(requestType, cstring);
-                result = true;
+                result = transmitCString(requestType, cstring);
                 break;
             case RequestType::SetActivePlugin:
                 AUDIO::SoundProcessorManager::SetSoundProcessorChannel(channel, string_parameter);
@@ -235,13 +243,11 @@ namespace CTAG::SPIAPI{
                 break;
             case RequestType::GetPresets:
                 cstring = AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(channel);
-                transmitCString(requestType, cstring);
-                result = true;
+                result = transmitCString(requestType, cstring);
                 break;
             case RequestType::GetPresetData:
                 cstring = AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string_parameter);
-                transmitCString(requestType, cstring);
-                result = true;
+                result = transmitCString(requestType, cstring);
                 break;
             case RequestType::SetPresetData:{
                 std::string pluginID = string_parameter;
@@ -262,8 +268,7 @@ namespace CTAG::SPIAPI{
                 break;
             case RequestType::GetAllFavorites:
                 cstring = FAV::Favorites::GetAllFavorites().c_str();
-                transmitCString(requestType, cstring);
-                result = true;
+                result = transmitCString(requestType, cstring);
                 break;
             case RequestType::SaveFavorite:
                 string_parameter.clear();
@@ -277,8 +282,7 @@ namespace CTAG::SPIAPI{
                 break;
             case RequestType::GetConfiguration:
                 cstring = AUDIO::SoundProcessorManager::GetCStrJSONConfiguration();
-                transmitCString(requestType, cstring);
-                result = true;
+                result = transmitCString(requestType, cstring);
                 break;
             case RequestType::SetConfiguration:
                 string_parameter.clear();
@@ -287,8 +291,7 @@ namespace CTAG::SPIAPI{
                 ESP_LOGI("SpiAPI", "Result %d, Saving config %s", result, string_parameter.c_str());
                 break;
             case RequestType::GetIOCapabilities:
-                transmitCString(requestType, s.c_str());
-                result = true;
+                result = transmitCString(requestType, s.c_str());
                 break;
             case RequestType::Reboot:
                 ESP_LOGI("SpiAPI", "Rebooting device!");
