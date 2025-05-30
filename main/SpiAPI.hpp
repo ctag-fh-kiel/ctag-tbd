@@ -21,6 +21,8 @@ respective component folders / files if different from this license.
 
 #pragma once
 #include <cstdint>
+#include <string>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/spi_slave.h"
@@ -54,6 +56,7 @@ namespace CTAG::SPIAPI{
         static uint8_t *send_buffer, *receive_buffer;
         static void api_task(void *pvParameters);
         static void transmitCString(const RequestType reqType, const char *str);
+        static bool receiveString(const RequestType reqType, std::string &str);
     public:
         SpiAPI() = delete;
         static void StartSpiAPI();
