@@ -4,11 +4,17 @@ import { copy } from 'esbuild-plugin-copy'
 import process from 'node:process'
 import Fastify from 'fastify'
 import proxy from '@fastify/http-proxy'
-import http from 'node:http'
-import urlParse from 'url-parse'
 
 dotenv.config();
 const args = process.argv;
+const vars = process.env
+
+const BUILD_TYPE = args.NODE_ENV || 'production'
+const TBD_HOST = vars.TBD_HOST || 'localhost'
+const TBD_PORT_STR = vars.TBD_PORT || '7777'
+const TBD_PORT = parseInt(TBD_PORT_STR)
+const TBD_URL = `${TBD_HOST}:${TBD_PORT}/ws`
+
 
 const config = {
   logLevel: 'info',
@@ -16,7 +22,7 @@ const config = {
   outfile: 'public/main.js',
   bundle: true,
   define: {
-    NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'production'),
+    NODE_ENV: JSON.stringify(BUILD_TYPE),
   },
   plugins: [
     copy({
@@ -51,43 +57,23 @@ if (args.includes('--start')) {
       sourcemap: true,
     })
     await ctx.watch()
-    const {hosts, port} = await ctx.serve({
+    const {hosts: webapp_hosts, port: webapp_port} = await ctx.serve({
       servedir: 'public',
       onRequest: ({remoteAddress, method, path, status, timeInMS}) => {
         console.info(remoteAddress, status, `"${method} ${path}" [${timeInMS}ms]`)
       },
     })
-
-    // const proxy = httpProxy.createProxyServer({ws: true})
-    // proxy.on('upgrade', (req, socket, head) => {
-    //     socket.on('error', (error) => {
-    //        console.error(error);
-    //    });
-    //
-    //   console.log('[WS] Redirecting (upgrade)...', req.url);
-    //   proxy.ws(req, socket, head, {target: 'ws://localhost:7777/ws'});
-    // });
-    // const server = http.createServer((req, res) => {
-    //   const { query } = urlParse(req.url, true);
-    //   const redirectParams = { target: { host: query.csHost, port: parseInt(query.csPort, 10) } };
-    //   console.log('[HTTP] Redirecting...', req.url);
-    //   if (req.url.startsWith('/ws')) {
-    //     proxy.ws(req, res, {target: 'ws://localhost:7777/ws'})
-    //   }
-    //   proxy.web(req, res, {target: 'http://localhost:8000'})
-    // })
-    // console.log('listening on :3000')
-    // server.listen(3000)
+    const webapp_url = `http://${webapp_hosts[0]}:${webapp_port}/`
 
     const server = Fastify()
     server.register(proxy, {
-      upstream: 'http://localhost:8000/',
+      upstream: webapp_url,
     })
     server.register(proxy, {
       websocket: true,
       prefix: '/ws',
-      upstream: 'http://localhost:7777/ws',
-      wsUpstream: 'ws://localhost:7777/ws',
+      upstream: `http://${TBD_URL}`,
+      wsUpstream: `ws://${TBD_URL}`,
       // wsHooks: {
       //   onDisconnect: () => {
       //     console.log('onDisconnect')
@@ -108,6 +94,7 @@ if (args.includes('--start')) {
         reconnectOnClose: true,
       }
     })
+    console.log(`forwarding tbd requests to ${TBD_URL}`)
     await server.listen({port: 3000})
   } catch (e) {
     console.error(e)
