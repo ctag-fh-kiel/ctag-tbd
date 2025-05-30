@@ -74,6 +74,7 @@ namespace CTAG::SPIAPI{
         xTaskCreatePinnedToCore(api_task, "SpiAPI", 4096 * 2, nullptr, 10, &hTask, 0);
     }
 
+    /*
     static QueueHandle_t dbg_queue;
 
     static void dbg_task(void* pvParameters){
@@ -83,6 +84,7 @@ namespace CTAG::SPIAPI{
             ESP_LOGI("SpiAPI", "Received request type: %d", data);
         }
     }
+    */
 
     bool SpiAPI::receiveString(const RequestType reqType, std::string& str){
         send_buffer[2] = (uint8_t) reqType;
@@ -171,8 +173,8 @@ namespace CTAG::SPIAPI{
 
     void SpiAPI::api_task(void* pvParameters){
 #include "IOCapabilities.hpp"
-        dbg_queue = xQueueCreate(20, sizeof(uint8_t));
-        xTaskCreatePinnedToCore(dbg_task, "SpiAPIDbg", 4096, nullptr, 5, &hTask, 0);
+        //dbg_queue = xQueueCreate(20, sizeof(uint8_t));
+        //xTaskCreatePinnedToCore(dbg_task, "SpiAPIDbg", 4096, nullptr, 5, &hTask, 0);
         bool result = true;
         while (1){
             if (result) spi_slave_transmit(SPI3_HOST, &transaction, portMAX_DELAY); // recycle last transaction, if previous was not successful, sometimes data gets stuck
@@ -181,16 +183,18 @@ namespace CTAG::SPIAPI{
             // check integrity of transaction
             if (transaction.trans_len != 2048 * 8){
                 ESP_LOGE("spiapi", "Received transaction length %d, expected 2048 * 8", transaction.trans_len);
+                result = true;
                 continue;
             }
             if (rcv_data[0] != 0xCA || rcv_data[1] != 0xFE){
                 ESP_LOGE("spiapi", "Received data %x %x, expected 0xCA 0xFE", rcv_data[0], rcv_data[1]);
+                result = true;
                 continue;
             }
 
             // parse request
             const RequestType requestType = static_cast<RequestType>(rcv_data[2]);
-            xQueueSend(dbg_queue, &requestType, 0);
+            //xQueueSend(dbg_queue, &requestType, 0);
             const char* cstring = nullptr;
 
             // params
@@ -253,8 +257,8 @@ namespace CTAG::SPIAPI{
                 std::string pluginID = string_parameter;
                 string_parameter.clear();
                 result = receiveString(RequestType::SetPresetData, string_parameter);
-                ESP_LOGI("SpiAPI", "Result %d, Saving preset %s %s", result, pluginID.c_str(), string_parameter.c_str());
-                //AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID, content);
+                //ESP_LOGI("SpiAPI", "Result %d, Saving preset %s %s", result, pluginID.c_str(), string_parameter.c_str());
+                if (true == result) AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID.c_str(), string_parameter.c_str());
             }
                 break;
             case RequestType::LoadPreset:
@@ -273,8 +277,8 @@ namespace CTAG::SPIAPI{
             case RequestType::SaveFavorite:
                 string_parameter.clear();
                 result = receiveString(RequestType::SaveFavorite, string_parameter);
-                ESP_LOGI("SpiAPI", "Result %d, Saving favorite %s", result, string_parameter.c_str());
-                //FAV::Favorites::StoreFavorite(preset_number, string_parameter);
+                //ESP_LOGI("SpiAPI", "Result %d, Saving favorite# %d as %s", result, favorite_number, string_parameter.c_str());
+                if (true == result) FAV::Favorites::StoreFavorite(preset_number, string_parameter);
                 break;
             case RequestType::LoadFavorite:
                 FAV::Favorites::ActivateFavorite(favorite_number);
@@ -287,8 +291,8 @@ namespace CTAG::SPIAPI{
             case RequestType::SetConfiguration:
                 string_parameter.clear();
                 result = receiveString(RequestType::SetConfiguration, string_parameter);
-                //AUDIO::SoundProcessorManager::SetConfigurationFromJSON(string(content));
-                ESP_LOGI("SpiAPI", "Result %d, Saving config %s", result, string_parameter.c_str());
+                if (true == result) AUDIO::SoundProcessorManager::SetConfigurationFromJSON(string_parameter);
+                //ESP_LOGI("SpiAPI", "Result %d, Saving config %s", result, string_parameter.c_str());
                 break;
             case RequestType::GetIOCapabilities:
                 result = transmitCString(requestType, s.c_str());
