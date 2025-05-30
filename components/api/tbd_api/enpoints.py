@@ -8,7 +8,7 @@ import cxxheaderparser.types as cpptypes
 import esphome.components.tbd_reflection as tbr
 
 
-HANDLER_RETURN_TYPE = 'uint32_t'
+HANDLER_RETURN_TYPE = 'Error'
 
 
 @unique
@@ -99,7 +99,19 @@ class Endpoint:
             return EndpointType.SETTER
         else:
             return EndpointType.TRIGGER
-        
+
+    def signature(self) -> str:
+        arg_signatures = ''
+        if self.has_args:
+            args = []
+            for arg_name, arg_type in self.args.items():
+                args.append(f'{arg_name}:{arg_type}')
+            arg_signatures = ','.join(args)
+        output_signature = 'void'
+        if self.has_output:
+            output_signature = self.output
+        return f'{self.name}({arg_signatures})->{output_signature}'
+
 
 def get_arg_type(arg: cpptypes.Parameter) -> tuple[bool, str]:
     arg_type = arg.type
@@ -144,28 +156,26 @@ def endpoint_from_function(func: tbr.FunctionDescription) -> Endpoint | None:
         return None
     elif len(handler_attrs) > 1:
         raise ValueError('multiple handler attributes on function')
-            
-    if func.return_type != HANDLER_RETURN_TYPE:
-        raise ValueError(f'handlers must return "{HANDLER_RETURN_TYPE}"')
 
     args = OrderedDict()
     output = None
 
-    *func_args, last_func_arg = func.arguments
+    if func.arguments:
+        *func_args, last_func_arg = func.arguments
 
-    # process input args
-    for func_arg in func_args:
-        is_const, arg_type = get_arg_type(func_arg)
-        if not is_const:
-            raise ValueError('output argument of handler has to be non-const const reference')
-        args[func_arg.name] = arg_type
+        # process input args
+        for func_arg in func_args:
+            is_const, arg_type = get_arg_type(func_arg)
+            if not is_const:
+                raise ValueError('output argument of handler has to be non-const const reference')
+            args[func_arg.name] = arg_type
 
-    # process last arg as either input or output
-    is_const, arg_type = get_arg_type(last_func_arg)
-    if is_const:
-        args[last_func_arg.name] = arg_type
-    else:
-        output = arg_type
+        # process last arg as either input or output
+        is_const, arg_type = get_arg_type(last_func_arg)
+        if is_const:
+            args[last_func_arg.name] = arg_type
+        else:
+            output = arg_type
 
     
     return Endpoint(

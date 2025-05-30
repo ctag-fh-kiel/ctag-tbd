@@ -55,24 +55,14 @@ class ApiRegistry:
         endpoint_requests = OrderedDict((request.name, request) for request in self._endpoint_request_types.values())
         responses = OrderedDict((response.name, response) for response in self._response_types.values())
 
+        endpoints = [*self._get_guaranteed_endpoints(), *self._get_optional_endpoints()]
+
         return Api(
-            endpoints=self._endpoints,
+            endpoints=endpoints,
             payload_types=self._payload_types,
             request_types= shared_requests | endpoint_requests,
             response_types=responses,
         )
-
-    @property
-    def endpoints(self) -> list[Endpoint]:
-        return self._endpoints
-
-    @property
-    def payload_types(self) -> list[Payload]:
-        return [payload for payload in self._payload_types.values()]
-
-    @property
-    def payload_names(self) -> list[str]:
-        return [message_name for message_name in self._payload_types]
 
     def add_message_types(self, proto_path: Path | str) -> None:
         """ Find all message types in proto file and add them as payloads to registry.
@@ -111,6 +101,24 @@ class ApiRegistry:
 
     def _find_payload(self, payload_name: str) -> Payload:
         return self._payload_types[payload_name]
+
+    def _get_guaranteed_endpoints(self) -> list[Endpoint]:
+        endpoints: list[Endpoint | None] = [None] * BaseEndpoints.num_reserved_ids()
+        endpoint_mapping = BaseEndpoints.id_mapping()
+
+        for endpoint in self._endpoints:
+            endpoint_id = endpoint_mapping.get(endpoint.name)
+            if endpoint_id is not None:
+                endpoints[endpoint_id] = endpoint
+        if None in endpoints:
+            found_endpoints = set(endpoint.name for endpoint in endpoints)
+            required_endpoints = set(BaseEndpoints.names())
+            raise RuntimeError(f'missing required endpoints {required_endpoints - found_endpoints}')
+        return endpoints
+
+    def _get_optional_endpoints(self) -> list[Endpoint]:
+        required_endpoints = set(BaseEndpoints.names())
+        return [endpoint for endpoint in self._endpoints if endpoint.name not in required_endpoints]
 
     def _add_message(self, dto: AnyMessageDto) -> None:
         match dto:

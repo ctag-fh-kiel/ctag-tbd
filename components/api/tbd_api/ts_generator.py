@@ -1,18 +1,8 @@
-from unittest import case
-
-from .enpoints import Endpoint
-from .generator_base import GeneratorBase, jilter
 from .dtos import MessagePayload, ParamPayload
-# {% macro set_payload() %}
-# if isinstance(request.payload, proto.Message):
-#     request.payload.MergeFrom(req_message)
-# else:
-#     request.payload = req_message
-# {% endmacro %}
+from .generator_base import GeneratorBase, jilter
+from .enpoints import Endpoint
 
-
-
-class PyGenerator(GeneratorBase):
+class TSGenerator(GeneratorBase):
     def payload_type(self, payload_type: str) -> str:
         payload = self._api.get_payload(payload_type)
         match payload:
@@ -26,11 +16,11 @@ class PyGenerator(GeneratorBase):
 
     @jilter
     def request_func(self, endpoint: Endpoint):
-        return self._env.get_template('request_func.py.j2').render(endpoint=endpoint)
+        return self._env.get_template('request_func.ts.j2').render(endpoint=endpoint)
 
     @jilter
     def request_func_args(self, endpoint: Endpoint):
-        arg_list = ['self']
+        arg_list = []
         if endpoint.has_args:
             for arg_name, arg_type in endpoint.args.items():
                 arg_type = self.payload_type(arg_type)
@@ -40,30 +30,29 @@ class PyGenerator(GeneratorBase):
 
 
     @jilter
-    def forward_args(self, endpoint: Endpoint):
+    def forward_args(self, endpoint: Endpoint) -> list[str]:
         if not endpoint.has_args:
-            return ''
+            return []
         if len(endpoint.args) == 1:
             arg_name = next(iter(endpoint.args))
-            return f'request.input = {arg_name}'
+            return [f'input: {arg_name}']
 
         arg_list = []
         for arg_name in endpoint.args:
-            arg_list.append(f'request.{arg_name} = {arg_name}')
-
-        return '\n'.join(arg_list)
+            arg_list.append(f'{arg_name}: {arg_name}')
+        return arg_list
 
     @jilter
     def result_value(self, endpoint: Endpoint) -> str:
         if not endpoint.output:
-            return 'None'
+            return 'null'
         else:
-            return 'result.output'
+            return 'response.output'
 
     @jilter
     def request_func_return(self, endpoint: Endpoint) -> str:
         if not endpoint.output:
-            return 'None'
+            return 'null'
         return self.payload_type(endpoint.output)
 
     def request(self, endpoint: Endpoint):
@@ -71,4 +60,4 @@ class PyGenerator(GeneratorBase):
 
 
 
-__all__ = ['PyGenerator']
+__all__ = ['TSGenerator']

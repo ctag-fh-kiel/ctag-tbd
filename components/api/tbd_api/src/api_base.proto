@@ -1,6 +1,11 @@
 syntax = "proto3";
 
-// payloads
+// NEVER change this
+message ApiVersion {
+  uint32 version = 1;
+  uint32 base_hash = 2;
+  uint32 api_hash = 3;
+};
 
 message DeviceInfo {
   int32 api_version = 1;

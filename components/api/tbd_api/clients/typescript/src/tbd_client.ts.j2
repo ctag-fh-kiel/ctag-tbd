@@ -1,0 +1,33 @@
+import type {MessageInitShape} from '@bufbuild/protobuf/dist/esm/types'
+import {GenMessage} from "@bufbuild/protobuf/codegenv2"
+import {
+    int_par,
+    uint_par,
+    float_par,
+    ufloat_par,
+    trigger_par,
+    str_par,
+    ClientBase
+} from "./client_base";
+import * as dtos from './api_types_pb'
+
+
+export class Client extends ClientBase {
+    constructor() {
+        super()
+    }
+
+    {%- for endpoint in api.endpoints %}
+    {{ endpoint | request_func | indent }}
+    {% endfor %}
+}
+
+export async function connect_tbd(): Promise<Client> {
+    const client = new Client()
+    await client.wait_for_connection()
+    const api_version = await client.get_version()
+    if (api_version.apiHash != {{ api.calculate_hash() }}) {
+        throw Error('tbd device has incompatible API')
+    }
+    return client
+}

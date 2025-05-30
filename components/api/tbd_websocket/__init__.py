@@ -4,12 +4,18 @@ from esphome.components.tbd_module.cmake_dependencies import cmake_dependency
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.const import CONF_PORT, CONF_PATH
+from esphome.const import CONF_PORT, CONF_PATH, CONF_ID
 
 
 AUTO_LOAD = ['tbd_api']
+DEPENDENCIES = ['network']
+
+
+tbd_websocket_ns = cg.esphome_ns.namespace("tbd_websocket")
+WebsocketServer = tbd_websocket_ns.class_("WebsocketServer", cg.Component)
 
 CONFIG_SCHEMA = cv.Schema({
+    cv.GenerateID(): cv.declare_id(WebsocketServer),
     cv.Optional(CONF_PORT, default='7777'): cv.port,
     cv.Optional(CONF_PATH, '/ws'): str,
 })
@@ -23,8 +29,8 @@ async def to_code(config):
     component.add_define('TBD_WEBSOCKET_PORT', config[CONF_PORT])
     component.add_define('TBD_WEBSOCKET_PATH', f'"{websocket_path}"')
 
-    websocket_server = cg.global_ns.namespace('tbd').namespace('api').namespace('WebsocketServer')
-    cg.add(websocket_server.begin())
+    var = cg.new_Pvariable(config[CONF_ID])
+    await cg.register_component(var, config)
 
     if tbd.is_desktop():
         # cmake_dependency(

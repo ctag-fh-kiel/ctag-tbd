@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "module": "commonjs",
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "moduleResolution": "node",
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "jsx": "react"
+  },
+  "include": ["src"],
+  "exclude": ["**/node_modules", "**/.*/"]
+}

@@ -24,25 +24,6 @@ class TbdClientBase:
         self._active_requests: dict[int, asyncio.Future] = {}
         asyncio.get_running_loop().create_task(self.process_responses())
 
-    async def get_endpoints(self):
-        request = dtos.void_request()
-        request.endpoint = BaseEndpoints.get_num_endpoints
-        res_data = await self.send(request)
-        response = dtos.uint_par_response()
-        response.ParseFromString(res_data)
-        num_requests = response.payload
-
-        requests = []
-        for request_id in range(num_requests):
-            request = dtos.uint_par_request()
-            request.endpoint = BaseEndpoints.get_endpoint_name
-            request.payload = request_id
-            res_data = await self.send(request)
-            response = dtos.str_par_response()
-            response.ParseFromString(res_data)
-            requests.append(response.payload)
-        return requests
-
     async def receive(self):
         return await self._websocket.recv()
 
@@ -55,7 +36,6 @@ class TbdClientBase:
         self._active_requests[request_id] = response_future
         await self._websocket.send(request.SerializeToString())
         return await response_future
-
 
     async def process_responses(self):
         try:

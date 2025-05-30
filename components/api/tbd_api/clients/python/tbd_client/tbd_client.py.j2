@@ -1,6 +1,5 @@
 from contextlib import asynccontextmanager
 from websockets.asyncio.client import connect
-import google.protobuf.message as proto
 from .client_base import *
 
 class TbdClient(TbdClientBase):
@@ -10,7 +9,8 @@ class TbdClient(TbdClientBase):
 
 
 @asynccontextmanager
-async def open_tbd(url: str = 'ws://localhost:7777/ws'):
+async def open_tbd(host: str = 'localhost', port: int = 7777):
+    url = f'ws://{host}:{port}/ws'
     async with connect(url) as websocket:
         yield TbdClient(websocket)
 

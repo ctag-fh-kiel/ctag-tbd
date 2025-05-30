@@ -19,9 +19,9 @@ std::promise<unsigned short> server_port;
 
 }
 
-namespace tbd::api {
+namespace tbd::api::websocket_server {
 
-void WebsocketServer::begin() {
+void begin() {
     TBD_LOGI(tag, "starting websocket server");
     
     server.config.port = TBD_WEBSOCKET_PORT;
@@ -40,7 +40,18 @@ void WebsocketServer::begin() {
         auto out_message = std::string_view(reinterpret_cast<char*>(buffer), length);
         connection->send(out_message, nullptr, 130);
       };
-    
+
+    echo.on_open = [](std::shared_ptr<WSServer::Connection> connection) {
+        TBD_LOGI(tag, "opened connection %p", connection.get());
+    };
+
+    echo.on_close = [](std::shared_ptr<WSServer::Connection> connection, int status, const std::string& reason) {
+        TBD_LOGI(tag, "closed connection %p, %i, %s", connection.get(), status, reason.c_str());
+    };
+
+    echo.on_error = [](std::shared_ptr<WSServer::Connection> connection, const SimpleWeb::error_code &ec) {
+        TBD_LOGE(tag, "connection error: %p, %s", connection.get(), ec.message().c_str());
+    };
 
     server_thread = std::thread([]() {
         server.start([](unsigned short port) {
@@ -50,7 +61,7 @@ void WebsocketServer::begin() {
     
 }
     
-void WebsocketServer::end() {
+void end() {
 
 }
 

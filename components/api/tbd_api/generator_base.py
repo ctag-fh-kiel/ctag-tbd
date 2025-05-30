@@ -8,8 +8,8 @@ from .api import Api
 from .enpoints import Endpoint
 
 
-def get_env() -> ji.Environment:
-    template_path = Path(__file__).parent / 'templates'
+def get_env(srcs_path: Path) -> ji.Environment:
+    template_path = Path(__file__).parent / srcs_path
     env = ji.Environment(loader=ji.FileSystemLoader(template_path), autoescape=ji.select_autoescape())
     return env
 
@@ -21,9 +21,9 @@ def jilter(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
 
 
 class GeneratorBase:
-    def __init__(self, api: Api):
+    def __init__(self, api: Api, srcs_path: Path):
         self._api = api
-        self._env = get_env()
+        self._env = get_env(srcs_path)
         self._env.filters |= self._filters()
 
     def render(self, template_name: str) -> str:

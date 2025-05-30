@@ -29,6 +29,10 @@ struct MessageInfo {
     size_t size;
 };
 
+extern const uint32_t API_VERSION;
+extern const uint32_t BASE_API_HASH;
+extern const uint32_t API_HASH;
+
 extern const size_t NUM_ENDPOINTS;
 extern const Endpoint ENDPOINT_LIST[];
 

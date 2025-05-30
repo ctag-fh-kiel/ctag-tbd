@@ -11,7 +11,7 @@ using tbd::api::tag;
 
 namespace tbd {
     
-uint32_t Api::handle_stream_input(uint8_t* buffer, size_t& length) {
+Error Api::handle_stream_input(uint8_t* buffer, size_t& length) {
     void_request header;
     pb_istream_t header_stream = pb_istream_from_buffer(buffer, void_request_size);
     pb_decode(&header_stream, void_request_fields, &header);
@@ -23,10 +23,13 @@ uint32_t Api::handle_stream_input(uint8_t* buffer, size_t& length) {
     // }
 
     pb_istream_t stream = pb_istream_from_buffer(buffer, length);
+    const auto endpoint_id = header.endpoint;
     if (header.endpoint >= api::NUM_ENDPOINTS) {
+        TBD_LOGE(tag, "invalid endpoint: %i", endpoint_id);
         return TBD_ERR(API_BAD_ENDPOINT);
     }
-    const auto& endpoint = api::ENDPOINT_LIST[header.endpoint];
+
+    const auto& endpoint = api::ENDPOINT_LIST[endpoint_id];
     const auto request_type_id = endpoint.request_type;
     const auto response_type_id = endpoint.response_type;
 
@@ -40,11 +43,17 @@ uint32_t Api::handle_stream_input(uint8_t* buffer, size_t& length) {
         required_buffer_size = response_size > required_buffer_size ? response_size : required_buffer_size;
     }
     if (length < required_buffer_size) {
+        TBD_LOGE(tag, "api IO buffer for endpoint %i has insufficient size: required %i, provided %i",
+                 endpoint_id, length, required_buffer_size);
         return TBD_ERR(API_BUFFER_SIZE);
     }
     
     auto handler = endpoint.callback;
-    return handler(buffer, length);
+    if (auto err = handler(buffer, length); err != errors::SUCCESS) {
+        TBD_LOGE(tag, "handler for endpoint %i failed", endpoint_id);
+        return err;
+    }
+    return errors::SUCCESS;
 }
 
 }

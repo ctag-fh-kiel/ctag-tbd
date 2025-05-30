@@ -1,8 +1,10 @@
 from collections import OrderedDict
 from typing import Final
+from zlib import crc32
 
+from .base_endpoints import BaseEndpoints
 from .enpoints import Endpoint
-from .dtos import Payload, Request, Response, MultiArgRequest
+from .dtos import Payload, Request, Response
 
 
 class Api:
@@ -40,6 +42,25 @@ class Api:
     @property
     def payload_names(self):
         return [message_name for message_name in self._payload_types]
+
+    @staticmethod
+    def get_version():
+        return 1
+
+    def calculate_base_hash(self) -> int:
+        signatures = []
+        for endpoint in self._endpoints[:BaseEndpoints.num_reserved_ids()]:
+            signatures.append(endpoint.signature())
+        data = '\n'.join(signatures)
+        return crc32(data.encode())
+
+    def calculate_hash(self) -> int:
+        signatures = []
+        for endpoint in self._endpoints:
+            signatures.append(endpoint.signature())
+        data = '\n'.join(signatures)
+        return crc32(data.encode())
+
 
     def get_endpoint_id(self, endpoint_name: str) -> int:
         try:

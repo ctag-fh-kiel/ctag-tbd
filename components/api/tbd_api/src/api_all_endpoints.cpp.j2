@@ -66,6 +66,10 @@ bool encode_message(const {{ response.name }}& message, uint8_t* buffer, size_t&
 {{ endpoint | callback_implementation }}
 {% endfor %}
 
+const uint32_t API_VERSION = {{ api.get_version() }};
+const uint32_t BASE_API_HASH = {{ api.calculate_base_hash() }};
+const uint32_t API_HASH = {{ api.calculate_hash() }};
+
 const size_t NUM_ENDPOINTS = {{ api.endpoints | length }};
 const Endpoint ENDPOINT_LIST[] = { {%- for endpoint in api.endpoints %}
     { "{{ endpoint.name }}", {{ endpoint | request_id }}, {{ endpoint | response_id }}, &{{ endpoint | callback_name }} },

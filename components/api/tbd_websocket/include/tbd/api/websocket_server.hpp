@@ -1,10 +1,8 @@
 #pragma once
 
-namespace tbd::api {
+namespace tbd::api::websocket_server {
 
-struct WebsocketServer {
-    static void begin();
-    static void end();
-};
+void begin();
+void end();
 
 }
