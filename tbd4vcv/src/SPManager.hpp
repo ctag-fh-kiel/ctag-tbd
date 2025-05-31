@@ -37,7 +37,7 @@ namespace CTAG {
     namespace AUDIO {
         class SPManager {
         public:
-            SPManager();
+            SPManager(const string& path);
             ~SPManager();
 
             void Process(const CTAG::SP::ProcessData &);
@@ -91,7 +91,7 @@ namespace CTAG {
 
             void updateConfiguration();
             bool blue {false};
-
+            string pluginPath;
             std::unique_ptr<ctagSoundProcessor> sp[2];
             std::unique_ptr<SPManagerDataModel> model;
         };

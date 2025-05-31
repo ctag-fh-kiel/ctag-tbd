@@ -36,12 +36,14 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
-ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo) {
+ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo, const string &path) {
+    pluginPath = path;
+    spiffsPath = pluginPath + "spiffs_image";
     // acquire data from json files ui model and patch model
-    muiFileName = string(string(SPIFFS_PATH) + "/data/sp/mui-") + id + string(".jsn");
+    muiFileName = string(pluginPath + "/data/sp/mui-") + id + string(".jsn");
     //std::cout << "Reading " << muiFileName << std::endl;
     loadJSON(mui, muiFileName);
-    mpFileName = string(string(SPIFFS_PATH) + "/data/sp/mp-") + id + string(".jsn");
+    mpFileName = string(pluginPath + "/data/sp/mp-") + id + string(".jsn");
     //std::cout << "Reading " << mpFileName << std::endl;
     loadJSON(mp, mpFileName);
     // load last activated preset

@@ -37,7 +37,7 @@ namespace CTAG {
     namespace AUDIO {
         class SPManagerDataModel final : public CTAG::SP::ctagDataModelBase {
         public:
-            SPManagerDataModel(const string &);
+            SPManagerDataModel(const string &, const string &path);
             void SetSPManagerDataModel(const string&);
 
             ~SPManagerDataModel();
@@ -81,6 +81,8 @@ namespace CTAG {
 
             void validatePatches();
 
+            string pluginPath;
+            string spiffsPath;
             Document m;
         };
     }

@@ -29,11 +29,12 @@ using namespace CTAG::AUDIO;
 
 std::mutex audioMutex;
 
-SPManager::SPManager(){
-    spi_flash_emu_init("./plugins/tbd4vcv/sample-rom/sample-rom.tbd");
+SPManager::SPManager(const string &path) : pluginPath(path){
+    string f = pluginPath + "sample-rom/sample-rom.tbd";
+    spi_flash_emu_init(f.c_str());
 
     // configure channels
-    model = std::make_unique<SPManagerDataModel>("{\"activeProcessors\":[],\"lastPatches\":[[],[]]}");
+    model = std::make_unique<SPManagerDataModel>("{\"activeProcessors\":[],\"lastPatches\":[[],[]]}", path);
     sp[0] = ctagSoundProcessorFactory::Create(model->GetActiveProcessorID(0));
     sp[0]->SetProcessChannel(0);
     sp[0]->LoadPreset(model->GetActivePatchNum(0));

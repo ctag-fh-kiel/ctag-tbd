@@ -28,12 +28,13 @@ using HttpServer = SimpleWeb::Server<SimpleWeb::HTTP>;
 
 class WebServer {
 private:
+    std::string pluginPath;
     HttpServer server;
     std::thread server_thread;
     bool isRunning {false};
     CTAG::AUDIO::SPManager* currentSPManager {nullptr};
 public:
-    void Start(const int);
+    void Start(const int, const std::string &pathV);
     void SetCurrentSPManager(CTAG::AUDIO::SPManager*);
     void Stop();
 };

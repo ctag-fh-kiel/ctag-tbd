@@ -35,7 +35,7 @@ struct tbd4vcv : rack::Module {
 
 	tbd4vcv() {
         if(instanceCount == 0){
-            server.Start(3000);
+            server.Start(3000, rack::asset::plugin(pluginInstance, ""));
             activeServerInstance = this;
             server.SetCurrentSPManager(&this->spManager);
         }
@@ -74,7 +74,7 @@ struct tbd4vcv : rack::Module {
     rack::dsp::DoubleRingBuffer<rack::dsp::Frame<2>, 256> outputBuffer;
     rack::dsp::VuMeter2 chMeters[2];
     int blueDecay {0};
-    CTAG::AUDIO::SPManager spManager;
+    CTAG::AUDIO::SPManager spManager = CTAG::AUDIO::SPManager(rack::asset::plugin(pluginInstance, "")) ;
 
 	void process(const ProcessArgs& args) override {
         // Get input

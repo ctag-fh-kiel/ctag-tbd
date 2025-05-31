@@ -35,7 +35,7 @@ namespace CTAG {
     namespace SP {
         class ctagSPDataModel : public ctagDataModelBase {
         public:
-            ctagSPDataModel(const string &id, const bool isStereo);
+            ctagSPDataModel(const string &id, const bool isStereo, const string &path);
 
             ~ctagSPDataModel();
 
@@ -63,7 +63,8 @@ namespace CTAG {
 
             // merge ui and preset models
             void mergeModels();
-
+            std::string pluginPath;
+            std::string spiffsPath;
             Document mui, mp;
             string mpFileName, muiFileName;
             Document activePreset;
