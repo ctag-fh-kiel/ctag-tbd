@@ -40,7 +40,7 @@ uint8_t *CTAG::CTRL::Control::trig_data = &buffer[N_CVS*4];
     float CTAG::CTRL::Control::cv_data[N_CVS];
 #endif
 
-IRAM_ATTR void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs) {
+IRAM_ATTR void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs, uint32_t ledStatus) {
 #if defined(CONFIG_TBD_PLATFORM_MK2)
     uint8_t *data = (uint8_t *) DRIVERS::mk2::Update();
     *cvs = (float*) data;
@@ -60,7 +60,7 @@ IRAM_ATTR void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs) {
     }
      */
 #elif defined(CONFIG_TBD_PLATFORM_BBA)
-    uint32_t size = CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(buffer, BUF_SZ);
+    uint32_t size = CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(buffer, BUF_SZ, ledStatus);
     /*
     if (size == 0) {
         ESP_LOGE("Control", "No data received from BBA SPI stream!");

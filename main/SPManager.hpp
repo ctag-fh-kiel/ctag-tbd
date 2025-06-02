@@ -108,6 +108,7 @@ namespace CTAG {
             static SemaphoreHandle_t processMutex;
             static atomic<uint32_t> ledBlink;
             static atomic<uint32_t> ledStatus;
+            static atomic<uint32_t> ledStatusUI;
             static atomic<uint32_t> noiseGateCfg;
             static atomic<uint32_t> ch01Daisy;
             static atomic<uint32_t> toStereoCH0;
