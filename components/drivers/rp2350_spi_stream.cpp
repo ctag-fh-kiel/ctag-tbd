@@ -28,6 +28,7 @@ respective component folders / files if different from this license.
 #include "esp_intr_alloc.h"
 #include <cstring>
 #include "soc/gpio_num.h"
+#include "tusb.hpp"
 
 
 #define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
@@ -118,11 +119,20 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(uint8_t *
         //ESP_LOGE("rp2350_spi_stream", "max_len %d is too large, max is %d", max_len, DATA_SZ - 2);
         return 0; // Invalid length
     }
-    esp_err_t ret;
+
+    // pack led status for current frame
     uint8_t* tx_buf = currentTransaction == 0 ? sendBuf0 : sendBuf1;
     uint32_t *led = (uint32_t*) &tx_buf[2];
     *led = ledStatus;
 
+    // pack midi data from USB device midi
+    uint32_t *midi_len = (uint32_t*) &tx_buf[6]; // amount of midi bytes to package
+    uint8_t *midi_buf = (uint8_t*) &tx_buf[10];
+    const uint32_t buf_size = SPI_DATA_SZ - 2 - 4 - 4; // 2 bytes for fingerprint, 4 bytes for led status, 4 bytes for midi length
+    *midi_len = tusb::Read(midi_buf, buf_size);
+
+    // queue transaction of transceive
+    esp_err_t ret;
     ret = spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], 0);
     if (ESP_OK != ret) {
         //ESP_LOGE("rp2350_spi_stream", "Failed to queue transaction: %s", esp_err_to_name(ret));
