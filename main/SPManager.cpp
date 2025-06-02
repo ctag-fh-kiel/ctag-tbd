@@ -99,7 +99,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     while (runAudioTask) {
 
         // update data from ADCs and GPIOs for real-time control
-        CTAG::CTRL::Control::Update(&pd.trig, &pd.cv);
+        CTAG::CTRL::Control::Update(&pd.trig, &pd.cv, ledStatusUI);
 
         // get normalized raw data from CODEC
         DRIVERS::Codec::ReadBuffer(fbuf, BUF_SZ);
@@ -340,6 +340,7 @@ std::unique_ptr<SPManagerDataModel> SoundProcessorManager::model;
 DRAM_ATTR SemaphoreHandle_t SoundProcessorManager::processMutex;
 atomic<uint32_t> SoundProcessorManager::ledBlink;
 atomic<uint32_t> SoundProcessorManager::ledStatus;
+atomic<uint32_t> SoundProcessorManager::ledStatusUI {0};
 atomic<uint32_t> SoundProcessorManager::noiseGateCfg;
 atomic<uint32_t> SoundProcessorManager::ch01Daisy;
 atomic<uint32_t> SoundProcessorManager::toStereoCH0;
@@ -562,11 +563,11 @@ void SoundProcessorManager::led_task(void *pvParams) {
         g = data & 0x0000FF00;
         g >>= 8;
         b = data & 0x000000FF;
-        if ((ledBlink % 2) == 1) {
-            DRIVERS::LedRGB::SetLedRGB(r, g, b);
-        } else {
-            DRIVERS::LedRGB::SetLedRGB(r, g, 255);
+        if ((ledBlink % 2) != 1) {
+            b = 255;
         }
+        DRIVERS::LedRGB::SetLedRGB(r, g, b);
+        ledStatusUI = r << 16 | g << 8 | b; // update UI with current led status, to be sent to rp2350 periphery
         if (ledBlink > 1 && ledBlink < 42) ledBlink--; // >= 42 led blink doesn't stop
         if (ledBlink == 42) ledBlink = 44;
         vTaskDelay(50 / portTICK_PERIOD_MS); // 50ms refresh rate for led

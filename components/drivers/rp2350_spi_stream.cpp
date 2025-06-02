@@ -37,7 +37,8 @@ DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2350_spi_stream::transaction[
 DRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::currentTransaction;
 DMA_ATTR static uint8_t *buf0;
 DMA_ATTR static uint8_t *buf1;
-DMA_ATTR static uint8_t *sendBuf;
+DMA_ATTR static uint8_t *sendBuf0;
+DMA_ATTR static uint8_t *sendBuf1;
 
 
 void CTAG::DRIVERS::rp2350_spi_stream::Init(){
@@ -70,19 +71,24 @@ void CTAG::DRIVERS::rp2350_spi_stream::Init(){
 
     buf0 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
     buf1 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
-    sendBuf = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
+    sendBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
+    sendBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
 
     ESP_LOGI("rp2350 spi", "Init()");
     auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
     assert(ret == ESP_OK);
 
+    sendBuf0[0] = 0xCA; sendBuf0[1] = 0xFE;
+    sendBuf1[0] = 0xCA; sendBuf1[1] = 0xFE;
+
     transaction[0].length = SPI_DATA_SZ * 8;
     transaction[0].rx_buffer = buf0;
-    transaction[0].tx_buffer = sendBuf;
+    transaction[0].tx_buffer = sendBuf0;
+
 
     transaction[1].length = SPI_DATA_SZ * 8;
     transaction[1].rx_buffer = buf1;
-    transaction[1].tx_buffer = sendBuf;
+    transaction[1].tx_buffer = sendBuf1;
 
     currentTransaction = 0;
 }
@@ -105,12 +111,17 @@ uint32_t CTAG::DRIVERS::rp2350_spi_stream::Read(uint8_t* data, uint32_t max_len)
     return 0;
 }
 
-IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(uint8_t *dst, uint32_t const max_len) {
+// receive buffer is 0xCA, 0xFE, then N_CVS * floats + NTRIGS * uint8_t
+// transmit buffer is 0xCA, 0xFE, then uint32_t ledStatus, then uint32_t length of midi data, then midi data
+IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(uint8_t *dst, uint32_t const max_len, uint32_t ledStatus) {
     if (max_len > SPI_DATA_SZ - 2) {
         //ESP_LOGE("rp2350_spi_stream", "max_len %d is too large, max is %d", max_len, DATA_SZ - 2);
         return 0; // Invalid length
     }
     esp_err_t ret;
+    uint8_t* tx_buf = currentTransaction == 0 ? sendBuf0 : sendBuf1;
+    uint32_t *led = (uint32_t*) &tx_buf[2];
+    *led = ledStatus;
 
     ret = spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], 0);
     if (ESP_OK != ret) {
