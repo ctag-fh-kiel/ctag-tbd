@@ -2,7 +2,7 @@
 
 namespace tbd::errors {
 
-const size_t NUM_ERRORS = {{ errors | length + 2 }};
+const size_t NUM_ERRORS = {{ errors | length }};
 
 const ErrorInfo ERROR_LIST[] = {
 {%- for _, name, description in errors %}

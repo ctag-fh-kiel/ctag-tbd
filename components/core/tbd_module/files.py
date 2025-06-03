@@ -89,6 +89,8 @@ def copy_tree_if_outdated(
     retval = []
     for pattern in patterns:
         for source_file in source_dir.rglob(pattern):
+            if not source_file.is_file():
+                continue
             relative_source_file = dest_dir / source_file.name if flatten else source_file.relative_to(source_dir)
             dest_file = dest_dir / relative_source_file
             if copy_file_if_outdated(source_file, dest_file, symlink=symlink):
