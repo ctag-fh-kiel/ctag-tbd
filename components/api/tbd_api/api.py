@@ -77,7 +77,9 @@ class Api:
         except StopIteration:
             raise ValueError(f'unknown payload type {payload_name}')
 
-    def get_request(self, endpoint: Endpoint) -> Request:
+    def get_request(self, endpoint: Endpoint) -> Request | None:
+        if not endpoint.request_type:
+            return None
         return self._request_types[endpoint.request_type]
 
     def get_request_id(self, endpoint: Endpoint) -> int:
@@ -86,7 +88,9 @@ class Api:
         except StopIteration:
             raise ValueError(f'no response type {endpoint.request_type} for endpoint {endpoint.name}')
 
-    def get_response(self, endpoint: Endpoint) -> Response:
+    def get_response(self, endpoint: Endpoint) -> Response | None:
+        if not endpoint.response_type:
+            return None
         return self._response_types[endpoint.response_type]
 
     def get_response_id(self, endpoint: Endpoint) -> int:

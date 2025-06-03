@@ -1,12 +1,15 @@
 #include <tbd/api/websocket_server.hpp>
 #include <tbd/websocket/module.hpp>
 
+#include <tbd/api/packet_parser.hpp>
+#include <tbd/api/packet_writers.hpp>
 #include <tbd/api.hpp>
 
 #include <tbd/logging.hpp>
 #include <server_ws.hpp>
 
 #include <memory>
+
 
 namespace {
 
@@ -27,18 +30,19 @@ void begin() {
     server.config.port = TBD_WEBSOCKET_PORT;
     auto &echo = server.endpoint["^/ws/?$"];
     echo.on_message = [](std::shared_ptr<WSServer::Connection> connection, std::shared_ptr<WSServer::InMessage> request) {
-        std::string in_message = request->string();
-        size_t in_length = in_message.length();
-        size_t length = in_length > 128 ? in_length : 128;
-        uint8_t buffer[length];
-        for (size_t i = 0; i < in_message.length(); ++i) {
-          buffer[i] = in_message[i];
+        auto in_data = request->string();
+        PacketParser parser;
+        if (!parser.parse_from_string(in_data)) {
+            return;
         }
-        if (Api::handle_stream_input(buffer, length) != errors::SUCCESS) {
+
+        PacketBufferWriter writer;
+        Packet response;
+        if (Api::handle_rpc(parser.packet(), response, writer.payload_buffer(), writer.payload_buffer_size()) != errors::SUCCESS) {
           return;
         }
-        auto out_message = std::string_view(reinterpret_cast<char*>(buffer), length);
-        connection->send(out_message, nullptr, 130);
+        writer.write(response);
+        connection->send(writer.buffer_view(), nullptr, 130);
       };
 
     echo.on_open = [](std::shared_ptr<WSServer::Connection> connection) {

@@ -40,7 +40,7 @@ class GeneratorBase:
 
     @jilter
     def request_type(self, endpoint: Endpoint) -> str:
-        return self._api.get_request(endpoint).name
+        return endpoint.request_type
 
     @jilter
     def response_id(self, endpoint: Endpoint) -> int:
@@ -48,7 +48,7 @@ class GeneratorBase:
 
     @jilter
     def response_type(self, endpoint: Endpoint) -> str:
-        return self._api.get_response(endpoint).name
+        return endpoint.response_type
 
     def _filters(self):
         filters = {}

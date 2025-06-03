@@ -34,8 +34,11 @@ Error get_num_endpoints(uint_par& num_endpoints) {
 }
 
 [[tbd::endpoint]]
-Error get_endpoint_name(const uint_par& endpoint, str_par& name) {
-    name = ENDPOINT_LIST[endpoint].path;
+Error get_endpoint_name(const uint_par& endpoint_id, str_par& name) {
+    if (endpoint_id >= NUM_ENDPOINTS) {
+        return TBD_ERR(API_BAD_ENDPOINT);
+    }
+    name = ENDPOINT_LIST[endpoint_id].path;
     return TBD_OK;
 }
 
@@ -53,14 +56,20 @@ Error get_num_errors(uint_par& num_errors) {
 }
 
 [[tbd::endpoint]]
-Error get_error_name(const uint_par& err, str_par& name) {
-    name = errors::get_error_name(err);
+Error get_error_name(const uint_par& err_id, str_par& name) {
+    if (err_id >= errors::get_num_errors()) {
+        return TBD_ERR(API_BAD_ERROR);
+    }
+    name = errors::get_error_name(err_id);
     return TBD_OK;
 }
 
 [[tbd::endpoint]]
-Error get_error_message(const uint_par& err, str_par& msg) {
-    msg = errors::get_error_message(err);
+Error get_error_message(const uint_par& err_id, str_par& msg) {
+    if (err_id >= errors::get_num_errors()) {
+        return TBD_ERR(API_BAD_ERROR);
+    }
+    msg = errors::get_error_message(err_id);
     return TBD_OK;
 }
 

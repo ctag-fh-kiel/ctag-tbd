@@ -14,8 +14,12 @@ from .generator import ApiWriter
 
 _LOGGER = logging.getLogger(__file__)
 
+CONF_MAX_PAYLOAD_SIZE = 'max_payload_size'
+
 AUTO_LOAD = ['tbd_module', 'tbd_api']
-CONFIG_SCHEMA = cv.Schema({})
+CONFIG_SCHEMA = cv.Schema({
+    cv.Optional(CONF_MAX_PAYLOAD_SIZE, 128): cv.positive_int,
+})
 
 APIS_GLOBAL = 'api'
 
@@ -28,6 +32,8 @@ def get_api_registry() -> ApiRegistry:
 async def to_code(config):
     component = tbd.new_tbd_component(__file__)
     cg.add_library('nanopb/Nanopb', '^0.4.91')
+
+    component.add_define('TBD_API_MAX_PAYLOAD_SIZE', config[CONF_MAX_PAYLOAD_SIZE])
 
     # add core endpoints implementations and types
     get_api_registry().add_message_types(component.path / 'src' / 'api_base.proto')

@@ -10,16 +10,12 @@ import esphome.components.tbd_reflection as tbr
 REQUEST_ID_FIELD_NAME = 'request_id'
 ENDPOINT_FIELD_NAME = 'endpoint'
 STATUS_FIELD_NAME = 'status'
-OUTPUT_FIELD_NAME = 'output'
 SINGLE_ARG_FIELD_NAME = 'input'
+WRAPPER_FIELD_NAME = 'value'
 
 REQUEST_NAME_POSTFIX = '_request'
-RESPONSE_NAME_POSTFIX = '_response'
-WRAPPER_NAME_EXPR = re.compile(r'^\w+(?P<wrapper_type>_request|_response)$')
-
-EMPTY_PAYLOAD_NAME = 'void'
-EMPTY_REQUEST_NAME = EMPTY_PAYLOAD_NAME + REQUEST_NAME_POSTFIX
-EMPTY_RESPONSE_NAME = EMPTY_PAYLOAD_NAME + RESPONSE_NAME_POSTFIX
+WRAPPER_NAME_POSTFIX = '_wrapper'
+WRAPPER_NAME_EXPR = re.compile(r'^\w+(?P<wrapper_type>_request|_wrapper)$')
 
 PARAM_TO_PROTO = {
     tbr.ParamType.INT_PARAM: 'int32',
@@ -39,12 +35,6 @@ def is_data_field(element: proto.MessageElement):
         case proto.OneOf():
             raise ValueError('OneOf fields not supported')
     return False
-
-@unique
-class DtoType(Enum):
-    MESSAGE = 'MESSAGE'
-    REQUEST = 'REQUEST'
-    RESPONSE = 'RESPONSE'
 
 
 # message base types
@@ -119,6 +109,8 @@ class MessageDto:
         return [element for element in self.proto_type.elements if is_data_field(element)]
 
     def next_field_id(self) -> int:
+        if not self.fields:
+            return 1
         return max(getattr(field, 'number', 0) for field in self.fields) + 1
 
 # payloads
@@ -191,27 +183,6 @@ class RequestBase(MessageDto, DtoTag):
         raise RuntimeError('Not implemented')
 
 
-class EmptyRequest(RequestBase):
-    @property
-    def num_args(self) -> int:
-        return 0
-
-    @property
-    def args(self) -> OrderedDict[str, str] | None:
-        return None
-
-empty_request = EmptyRequest(
-    proto_type=proto.Message(
-        name=EMPTY_REQUEST_NAME,
-        elements=[
-            proto.Field(name=REQUEST_ID_FIELD_NAME, number=1, type='uint32'),
-            proto.Field(name=ENDPOINT_FIELD_NAME, number=2, type='uint32'),
-        ]
-    ),
-    file_path=None,
-)
-
-
 class SingleArgRequest(RequestBase):
     @property
     def num_args(self) -> int:
@@ -253,11 +224,10 @@ def request_for_single_arg(payload: Payload) -> Request:
     message = proto.Message(
         name=payload.name + REQUEST_NAME_POSTFIX,
         elements=[
-            *empty_request.fields,
             proto.Field(
                 name=SINGLE_ARG_FIELD_NAME,
                 type=payload.proto_type_name,
-                number=empty_request.next_field_id(),
+                number=1,
             )
         ]
     )
@@ -272,18 +242,14 @@ def request_for_single_arg(payload: Payload) -> Request:
 
 
 def request_for_arguments(endpoint_name: str, args: OrderedDict[str, Payload]) -> MultiArgRequest:
-    first_arg_id = empty_request.next_field_id()
     arg_fields = [proto.Field(
         name=arg_name,
         type=arg.proto_type_name,
-        number=first_arg_id + offset,
+        number=offset + 1,
     ) for offset, (arg_name, arg) in enumerate(args.items())]
     message = proto.Message(
         name=endpoint_name + REQUEST_NAME_POSTFIX,
-        elements=[
-            *empty_request.fields,
-            *arg_fields
-        ]
+        elements=[*arg_fields]
     )
     return MultiArgRequest(proto_type=message, file_path=None)
 
@@ -300,30 +266,10 @@ class ResponseBase(MessageDto, DtoTag):
         """ Payload type name in C++. """
         raise RuntimeError('Not implemented')
 
-
-class EmptyResponse(ResponseBase):
     @property
-    def payload(self) -> None:
-        return None
+    def is_wrapper(self):
+        raise RuntimeError('Not implemented')
 
-empty_response = EmptyResponse(
-    proto_type=proto.Message(
-        name=EMPTY_RESPONSE_NAME,
-        elements=[
-            proto.Field(name=REQUEST_ID_FIELD_NAME, number=1, type='uint32'),
-            proto.Field(name=STATUS_FIELD_NAME, number=2, type='uint32'),
-        ]
-    ),
-    file_path=None,
-)
-
-
-class MessageResponse(ResponseBase):
-    @property
-    def payload(self) -> str:
-        if not (payload_name := get_output_type(self.proto_type)):
-            raise ValueError(f'message response {self.name} nas not payload')
-        return payload_name
 
 
 class ParamResponse(ResponseBase):
@@ -339,27 +285,41 @@ class ParamResponse(ResponseBase):
     def param_type(self) -> tbr.ParamType:
         return self.param_type
 
+    @property
+    def is_wrapper(self):
+        return True
+
+
+class MessageResponse(ResponseBase):
+    def __init__(self, payload: MessageDto):
+        super().__init__(payload.proto_type, payload.file_path)
+
+    @property
+    def payload(self) -> str | None:
+        return self.name
+
+    @property
+    def is_wrapper(self):
+        return False
 
 Response = ResponseBase
 
 
 def response_for_output(payload: Payload) -> Response:
-    message = proto.Message(
-        name=payload.name + RESPONSE_NAME_POSTFIX,
-        elements=[
-            *empty_response.fields,
-            proto.Field(
-                name=OUTPUT_FIELD_NAME,
-                type=payload.proto_type_name,
-                number=empty_response.next_field_id(),
-            )
-        ]
-    )
-    
     match payload:
         case MessagePayload():
-           return MessageResponse(proto_type=message, file_path=None) 
+           return MessageResponse(payload)
         case ParamPayload():
+            message = proto.Message(
+                name=payload.name + WRAPPER_NAME_POSTFIX,
+                elements=[
+                    proto.Field(
+                        name=WRAPPER_FIELD_NAME,
+                        type=payload.proto_type_name,
+                        number=1,
+                    )
+                ]
+            )
             return ParamResponse(proto_type=message, param_type=payload.param_type)
         case _:
             raise ValueError(f'can not create response for payload class {type(payload)}')
@@ -376,7 +336,7 @@ def get_output_type(message: proto.Message) -> str | None:
         if not is_data_field(element):
             continue
 
-        if element.name == OUTPUT_FIELD_NAME:
+        if element.name == WRAPPER_FIELD_NAME:
             return element.type
     return None
 
@@ -386,25 +346,22 @@ def dto_from_message(message: proto.Message, file_path: Path) -> AnyMessageDto:
 
     if WRAPPER_NAME_EXPR.match(message.name):
         raise ValueError(f'message {message.name}: requests and responses can not be declared explicitly and '
-                         f'postfixes {REQUEST_NAME_POSTFIX}, {RESPONSE_NAME_POSTFIX} are prohibited for messages.')
+                         f'postfixes {REQUEST_NAME_POSTFIX}, {WRAPPER_NAME_POSTFIX} are prohibited for messages.')
 
     return MessagePayload(proto_type=message, file_path=file_path)
 
 
 
 __all__ = [
-    'DtoType',
     'MessagePayload',
     'ParamPayload',
     'Payload',
-    'empty_request',
     'SingleArgRequest',
     'MultiArgRequest',
     'ParamRequest',
     'Request',
     'request_for_single_arg',
     'request_for_arguments',
-    'empty_response',
     'MessageResponse',
     'ParamResponse',
     'Response',

@@ -1,20 +1,22 @@
-uint32_t {{ endpoint | callback_name }}(uint8_t* buffer, size_t& length) {
+Error {{ endpoint | callback_name }}(const Packet& request, uint8_t* out_buffer, size_t& out_buffer_size) {
+    {% if endpoint | request_type %}
     {{ endpoint | request_type }} in_message;
-    if (!decode_message(in_message, buffer, length)) {
+    if (!decode_message(in_message, request)) {
         return TBD_ERR(API_DECODE);
     }
+    {%- endif %}
+
+    {%- if endpoint | response_type -%}
     {{ endpoint | response_type }} out_message;
-    out_message.request_id = in_message.request_id;
-    out_message.status = TBD_ERR(SUCCESS);
+    auto& out_value = {{ endpoint | unwrap_response }};
+    {%- endif %}
     if (auto err = {{ endpoint | invoke_handler }}; err != errors::SUCCESS) {
-        void_response error_response = {in_message.request_id, err};
-        if (!encode_message(error_response, buffer, length)) {
-            return TBD_ERR(API_ENCODE);
-        }
-        return TBD_ERR(SUCCESS);
+        return err;
     }
-    if (!encode_message(out_message, buffer, length)) {
+    {%- if endpoint | response_type %}
+    if (!encode_message(out_message, out_buffer, out_buffer_size)) {
         return TBD_ERR(API_ENCODE);
     }
+    {%- endif %}
     return TBD_ERR(SUCCESS);
 }

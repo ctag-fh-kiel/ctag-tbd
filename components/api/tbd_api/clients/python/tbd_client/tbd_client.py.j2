@@ -1,6 +1,12 @@
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, contextmanager
+
+from serial import Serial
 from websockets.asyncio.client import connect
+
+from .transport import WebsocketTransport, SerialTransport
 from .client_base import *
+
+from . import api_types_pb2 as dtos
 
 class TbdClient(TbdClientBase):
 {%- for endpoint in api.endpoints %}
@@ -9,10 +15,18 @@ class TbdClient(TbdClientBase):
 
 
 @asynccontextmanager
-async def open_tbd(host: str = 'localhost', port: int = 7777):
+async def connect_tbd_via_websocket(host: str = 'localhost', port: int = 7777):
     url = f'ws://{host}:{port}/ws'
     async with connect(url) as websocket:
-        yield TbdClient(websocket)
+        yield TbdClient(WebsocketTransport(websocket))
 
+@contextmanager
+def connect_tbd_via_serial(port: str):
+    with Serial(port=port, baudrate=9600) as serial:
+        yield TbdClient(SerialTransport(serial))
 
-__all__ = ['TbdClient', 'open_tbd']
+__all__ = [
+    'TbdClient',
+    'connect_tbd_via_websocket',
+    'connect_tbd_via_serial',
+]

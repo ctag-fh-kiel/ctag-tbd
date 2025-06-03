@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tbd/api.hpp>
+#include <tbd/api/packet.hpp>
 
 #include <cinttypes>
 #include <cstdlib>
@@ -43,9 +44,9 @@ extern const size_t NUM_RESPONSE_MESSAGES;
 extern const MessageInfo RESPONSE_MESSAGE_LIST[];
 
 template<typename Message> 
-bool decode_message(Message& in_message, const uint8_t* in_buffer, size_t len);
+bool decode_message(Message& in_message, const Packet& request);
 
 template<typename Message>
-bool encode_message(const Message& out_message, uint8_t* buffer, size_t& buffer_size);
+bool encode_message(const Message& out_message, uint8_t* out_buffer, size_t& out_buffer_size);
 
 }

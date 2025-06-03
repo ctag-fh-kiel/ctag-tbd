@@ -27,6 +27,12 @@ class CppGenerator(GeneratorBase):
             return self._env.get_template('handler_wrappers.cpp.j2').render(endpoint=endpoint)
 
     @jilter
+    def unwrap_response(self, endpoint: Endpoint) -> str:
+        response = self._api.get_response(endpoint)
+        return 'out_message.value' if response.is_wrapper else 'out_message'
+
+
+    @jilter
     def invoke_handler(self, endpoint: Endpoint) -> str:
         arg_list = []
 
@@ -38,10 +44,8 @@ class CppGenerator(GeneratorBase):
                     arg_list.append(f'in_message.{arg_name}')
 
         if endpoint.has_output:
-            if endpoint.output == 'str_par':
-                arg_list.append('response_payload')
-            else:
-                arg_list.append('out_message.output')
+            arg_list.append('out_value')
+
         args = ', '.join(arg_list)
 
         return f'{endpoint.full_name}({args})'
@@ -50,21 +54,6 @@ class CppGenerator(GeneratorBase):
     @jilter
     def callback_name(endpoint: Endpoint) -> str:
         return f'handle_{endpoint.name}'
-
-    def _filters(self):
-        filters = {}
-        for name, _ in inspect.getmembers(self, predicate=inspect.isroutine):
-            if name.startswith('_'):
-                continue
-            method = self.__getattribute__(name)
-            if not hasattr(method, '_is_jilter'):
-                continue
-
-            sig = inspect.signature(method)
-            if len(sig.parameters) != 1:
-                raise RuntimeError(f'filter {name} must have exactly 1 parameter')
-            filters[name] = method
-        return filters
 
 
 __all__ = ['CppGenerator']

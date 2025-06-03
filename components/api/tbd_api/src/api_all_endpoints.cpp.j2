@@ -1,4 +1,5 @@
 #include <tbd/api/api_all_endpoints.hpp>
+#include <tbd/api/module.hpp>
 
 #include <tbd/api.hpp>
 #include <tbd/parameter_types.h>
@@ -9,6 +10,12 @@
 #include <pb_decode.h>
 
 #include <api_types.pb.h>
+
+#if API_TYPES_PB_H_MAX_SIZE > TBD_API_MAX_PAYLOAD_SIZE
+    #error "maximum payload size is less than largest payload"
+#endif
+
+using tbd::api::tag;
 
 namespace {
 
@@ -33,8 +40,8 @@ namespace tbd::api {
 // request {{ request.name }}
 {% if request.name != 'str_par_request' -%}
 template<> 
-bool decode_message({{ request.name }}& message, const uint8_t* in_buffer, size_t len) {
-    pb_istream_t stream = pb_istream_from_buffer(in_buffer, len);
+bool decode_message({{ request.name }}& message, const Packet& request) {
+    pb_istream_t stream = pb_istream_from_buffer(request.payload, request.payload_length);
 
     if (!pb_decode(&stream, {{ request.name }}_fields, &message)) {
         TBD_LOGE("api", "failed to deserialize {{ request.message_name }}: %s", PB_GET_ERROR(&stream));
@@ -49,14 +56,14 @@ bool decode_message({{ request.name }}& message, const uint8_t* in_buffer, size_
 // response {{ response.name }}
 {% if response.name != 'str_par_response' -%}
 template<>
-bool encode_message(const {{ response.name }}& message, uint8_t* buffer, size_t& buffer_size) {
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
+bool encode_message(const {{ response.name }}& message, uint8_t* out_buffer, size_t& out_buffer_size) {
+    pb_ostream_t stream = pb_ostream_from_buffer(out_buffer, out_buffer_size);
     if (!pb_encode(&stream, {{response.name}}_fields, &message)) {
         TBD_LOGE("api", "failed to serialize {{ response.message_name }}: %s", PB_GET_ERROR(&stream));
-        buffer_size = stream.bytes_written;
+        out_buffer_size = stream.bytes_written;
         return true;
     }
-    buffer_size = stream.bytes_written;
+    out_buffer_size = stream.bytes_written;
     return true;
 }
 {%- endif -%}
@@ -88,7 +95,7 @@ const MessageInfo REQUEST_MESSAGE_LIST[] = { {%- for request in api.request_type
 
 const size_t NUM_RESPONSE_MESSAGES = {{ api.response_types | length }};
 const MessageInfo RESPONSE_MESSAGE_LIST[] = { {%- for response in api.response_types %}
-    {%- if response.name == 'str_par_response' -%}
+    {%- if response.name == 'str_par_wrapper' -%}
     { "{{ response.name }}", MESSAGE_TYPE_RESPONSE, 0 },
     {%- else -%}
     { "{{ response.name }}", MESSAGE_TYPE_RESPONSE, {{ response.name }}_size },
@@ -97,4 +104,3 @@ const MessageInfo RESPONSE_MESSAGE_LIST[] = { {%- for response in api.response_t
 };
 
 }
-

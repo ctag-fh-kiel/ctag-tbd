@@ -1,8 +1,8 @@
 import asyncio
 from typing import Final
-from websockets.asyncio.client import ClientConnection
-from .base_endpoints import BaseEndpoints
-from . import api_types_pb2 as dtos
+
+from .transport import TransportBase
+from .packets import Packet, PacketType
 
 int_par     = int
 uint_par    = int
@@ -18,41 +18,52 @@ class RequestFailedError(Exception):
 
 
 class TbdClientBase:
-    def __init__(self, websocket: ClientConnection):
+    def __init__(self, transport: TransportBase):
         self._request_counter: int = 1
-        self._websocket: Final = websocket
+        self._transport: Final = transport
         self._active_requests: dict[int, asyncio.Future] = {}
-        asyncio.get_running_loop().create_task(self.process_responses())
+        asyncio.get_running_loop().create_task(self.process_incoming())
 
-    async def receive(self):
-        return await self._websocket.recv()
+    # async def receive(self):
+    #     return await self._transport.read()
 
-    async def send(self, request):
+    async def send_rpc(self, endpoint_id: int, payload: bytes | None) -> bytes | None:
         request_id = self._request_counter
         self._request_counter += 1
-        request.request_id = request_id
 
         response_future = asyncio.get_running_loop().create_future()
         self._active_requests[request_id] = response_future
-        await self._websocket.send(request.SerializeToString())
+        await self._transport.write(Packet(
+            type=PacketType.TYPE_RPC,
+            handler=endpoint_id,
+            id=request_id,
+            payload_length=len(payload) if payload else 0,
+            payload=payload,
+            crc=0,
+        ))
         return await response_future
 
-    async def process_responses(self):
+    async def process_incoming(self):
         try:
             while True:
-                response_data = await self._websocket.recv()                
-                headers = dtos.void_response()
-                headers.ParseFromString(response_data)
-                request_id = headers.request_id
-                status = headers.status
-                future = self._active_requests[request_id]
-                if status != 0:
-                    future.set_exception(RequestFailedError(status))
-                else:
-                    future.set_result(response_data)
+                packet = await self._transport.read()
+                self._process_incoming(packet)
                     
         except asyncio.CancelledError as cancelled:
             raise cancelled
+
+    def _process_incoming(self, packet: Packet):
+        match packet.type:
+            case PacketType.TYPE_RPC:
+                raise RuntimeError('client does not respond to RPCs')
+            case PacketType.TYPE_RESPONSE:
+                future = self._active_requests[packet.id]
+                future.set_result(packet.payload)
+            case PacketType.TYPE_ERROR:
+                future = self._active_requests[packet.id]
+                future.set_exception(RequestFailedError(f'request {packet.id} failed, error {packet.handler}'))
+            case _ as unknown_type:
+                raise RuntimeError(f'packet type {unknown_type.name} not supported')
 
 
 __all__ = [
@@ -63,5 +74,4 @@ __all__ = [
     'trigger_par',
     'str_par',
     'TbdClientBase',
-    'dtos',
 ]

@@ -1,27 +1,26 @@
-uint32_t {{ endpoint | callback_name }}(uint8_t* buffer, size_t& length) {
+Error {{ endpoint | callback_name }}(const Packet& request, uint8_t* out_buffer, size_t& out_buffer_size) {
+    {%- if endpoint | request_type %}
     {{ endpoint | request_type }} in_message;
-    if (!decode_message(in_message, buffer, length)) {
+    if (!decode_message(in_message, request)) {
         return TBD_ERR(API_DECODE);
     }
-    {{ endpoint | response_type }} out_message;
-    out_message.request_id = in_message.request_id;
-    out_message.status = TBD_ERR(SUCCESS);
-    str_par response_payload;
+    {%- endif %}
+
+    str_par out_value;
     if (auto err = {{ endpoint | invoke_handler }}; err != errors::SUCCESS) {
-        void_response error_response = {in_message.request_id, err};
-        if (!encode_message(error_response, buffer, length)) {
-            return TBD_ERR(API_ENCODE);
-        }
-        return TBD_ERR(SUCCESS);
+        return err;
     }
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, length);
-    out_message.output.funcs.encode = encode_string;
-    out_message.output.arg = &response_payload;
-    if (!pb_encode(&stream, str_par_response_fields, &out_message)) {
+
+    pb_ostream_t stream = pb_ostream_from_buffer(out_buffer, out_buffer_size);
+
+    str_par_wrapper out_message;
+    out_message.value.funcs.encode = encode_string;
+    out_message.value.arg = &out_value;
+    if (!pb_encode(&stream, str_par_wrapper_fields, &out_message)) {
         TBD_LOGE("api", "failed to serialize : %s", PB_GET_ERROR(&stream));
-        length = stream.bytes_written;
+        out_buffer_size = stream.bytes_written;
         return TBD_ERR(API_ENCODE);
     }
-    length = stream.bytes_written;
+    out_buffer_size = stream.bytes_written;
     return TBD_ERR(SUCCESS);
 }

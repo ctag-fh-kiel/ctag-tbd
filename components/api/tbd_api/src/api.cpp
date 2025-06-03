@@ -8,23 +8,18 @@
 #include <api_types.pb.h>
 
 using tbd::api::tag;
+using tbd::api::Packet;
 
 namespace tbd {
     
-Error Api::handle_stream_input(uint8_t* buffer, size_t& length) {
-    void_request header;
-    pb_istream_t header_stream = pb_istream_from_buffer(buffer, void_request_size);
-    pb_decode(&header_stream, void_request_fields, &header);
+Error Api::handle_rpc(const Packet& request, Packet& response, uint8_t* out_buffer, size_t out_buffer_size) {
+    if (request.type != Packet::TYPE_RPC) {
+        TBD_LOGE(tag, "request type is not RPC: %i", request.type);
+        return TBD_ERR(API_WRONG_PACKET_TYPE);
+    }
 
-    // FIXME: the parser does not ignore unknown fields as expected
-    // if (!pb_decode(&header_stream, void_request_fields, &header)) {
-    //     TBD_LOGE("api", "failed to deserialize header: %s", PB_GET_ERROR(&header_stream));
-    //     return TBD_ERR(API_BAD_HEADER);
-    // }
-
-    pb_istream_t stream = pb_istream_from_buffer(buffer, length);
-    const auto endpoint_id = header.endpoint;
-    if (header.endpoint >= api::NUM_ENDPOINTS) {
+    auto endpoint_id = request.handler;
+    if (endpoint_id >= api::NUM_ENDPOINTS) {
         TBD_LOGE(tag, "invalid endpoint: %i", endpoint_id);
         return TBD_ERR(API_BAD_ENDPOINT);
     }
@@ -33,26 +28,37 @@ Error Api::handle_stream_input(uint8_t* buffer, size_t& length) {
     const auto request_type_id = endpoint.request_type;
     const auto response_type_id = endpoint.response_type;
 
-    size_t required_buffer_size = 0;
-    if (request_type_id != api::NO_MESSAGE) {
-        const auto request_size = api::REQUEST_MESSAGE_LIST[request_type_id].size;
-        required_buffer_size = request_size > required_buffer_size ? request_size : required_buffer_size;
+    auto required_buffer_size = api::RESPONSE_MESSAGE_LIST[response_type_id].size;
+    if (response_type_id != api::NO_MESSAGE
+        && required_buffer_size > out_buffer_size)
+    {
+        TBD_LOGE(tag, "api response buffer for endpoint %i has insufficient size: required %i, provided %i",
+                 endpoint_id, required_buffer_size, out_buffer_size);
+        response.type = Packet::TYPE_RESPONSE;
+        response.handler = TBD_ERR(API_RESPONSE_BUFFER_SIZE);
+        response.payload_length = 0;
+        response.payload = nullptr;
+        return errors::SUCCESS;
     }
-    if (response_type_id != api::NO_MESSAGE) {
-        const auto response_size = api::RESPONSE_MESSAGE_LIST[response_type_id].size;
-        required_buffer_size = response_size > required_buffer_size ? response_size : required_buffer_size;
-    }
-    if (length < required_buffer_size) {
-        TBD_LOGE(tag, "api IO buffer for endpoint %i has insufficient size: required %i, provided %i",
-                 endpoint_id, length, required_buffer_size);
-        return TBD_ERR(API_BUFFER_SIZE);
-    }
-    
+
+    response.id = request.id;
+    response.crc = 0;
     auto handler = endpoint.callback;
-    if (auto err = handler(buffer, length); err != errors::SUCCESS) {
+
+    size_t length = out_buffer_size;
+    if (auto err = handler(request, out_buffer, length); err != errors::SUCCESS) {
         TBD_LOGE(tag, "handler for endpoint %i failed", endpoint_id);
-        return err;
+        response.type = Packet::TYPE_ERROR;
+        response.handler = err;
+        response.payload_length = 0;
+        response.payload = nullptr;
+        return errors::SUCCESS;
     }
+    response.type = Packet::TYPE_RESPONSE;
+    response.handler = 0;
+    response.payload_length = length;
+    response.payload = out_buffer;
+
     return errors::SUCCESS;
 }
 

@@ -54,11 +54,9 @@ class PyGenerator(GeneratorBase):
         return '\n'.join(arg_list)
 
     @jilter
-    def result_value(self, endpoint: Endpoint) -> str:
-        if not endpoint.output:
-            return 'None'
-        else:
-            return 'result.output'
+    def unwrap_response(self, endpoint: Endpoint) -> str:
+        response = self._api.get_response(endpoint)
+        return 'result.value' if response.is_wrapper else 'result'
 
     @jilter
     def request_func_return(self, endpoint: Endpoint) -> str:

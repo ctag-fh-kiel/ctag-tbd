@@ -13,19 +13,10 @@ from .py_generator import PyGenerator
 from .ts_generator import TSGenerator
 
 
-# EMPTY_REQUEST_TYPE = 'EmptyRequest'
-# EMPTY_RESPONSE_TYPE = 'EmptyResponse'
-# PAYLOAD_FIELD_NAME = 'payload'
-# NO_MESSAGE_INDEX = 'NO_MESSAGE'
-# PROTO_POSTFIX = '.proto'
-# PROTO_CPP_POSTFIX = '.pb.h'
-# PROTO_PY_POSTFIX = '_pb2'
-
 PROTOS_FILE_NAME = 'api_types'
 PYTHON_MODULE_NAME = 'tbd_client'
 TYPESCRIPT_SRC_DIR = 'src'
 BASE_ENDPOINTS_FILE_NAME = 'base_endpoints.py'
-
 
 
 class ApiWriter:
@@ -42,14 +33,15 @@ class ApiWriter:
 
         payload_types = [payload.proto_type for payload in api_registry.payload_types if not payload.is_builtin]
         request_types = [request.proto_type for request in api_registry.request_types if not request.is_builtin]
-        response_types = [response.proto_type for response in api_registry.response_types if not response.is_builtin]
+        wrapper_types = [response.proto_type for response in api_registry.response_types
+                         if not response.is_builtin and response.is_wrapper]
 
         wrappers = protog.Generator().generate(proto.File(
             syntax='proto3',
             file_elements=[
-                *payload_types, 
+                *payload_types,
                 *request_types, 
-                *response_types
+                *wrapper_types,
             ]
         ))
 

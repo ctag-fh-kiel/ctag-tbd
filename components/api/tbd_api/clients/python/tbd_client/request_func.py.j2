@@ -1,8 +1,16 @@
 async def {{ endpoint.name }}({{ endpoint | request_func_args }}) -> {{ endpoint | request_func_return }}:
+    {%- if endpoint | request_type %}
     request = dtos.{{ endpoint | request_type }}()
-    request.endpoint = {{ endpoint | endpoint_id }}
     {{ endpoint | forward_args | indent }}
-    res_data = await self.send(request)
+    payload = request.SerializeToString()
+    {%- else %}
+    payload = None
+    {%- endif %}
+    {%- if endpoint | response_type %}
+    res_data = await self.send_rpc({{ endpoint | endpoint_id }}, payload)
     result = dtos.{{ endpoint | response_type }}()
     result.ParseFromString(res_data)
-    return {{ endpoint | result_value }}
+    return {{ endpoint | unwrap_response }}
+    {%- else %}
+    await self.send_rpc({{ endpoint | endpoint_id }}, payload)
+    {%- endif %}

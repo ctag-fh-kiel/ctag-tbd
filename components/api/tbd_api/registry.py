@@ -12,9 +12,7 @@ import esphome.components.tbd_reflection as tbr
 from .dtos import (
     ParamPayload,
     Payload,
-    empty_request,
     Request,
-    empty_response,
     Response,
     response_for_output,
     AnyMessageDto,
@@ -34,11 +32,11 @@ def guaranteed_payload_types() -> OrderedDict[str, Payload]:
 
 
 def guaranteed_request_types() -> OrderedDict[str, Request]:
-    return OrderedDict({empty_request.name: empty_request})
+    return OrderedDict()
 
 
 def guaranteed_response_types() -> OrderedDict[str, Response]:
-    return OrderedDict({empty_response.name: empty_response})
+    return OrderedDict()
 
 
 class ApiRegistry:
@@ -142,20 +140,10 @@ class ApiRegistry:
 
         endpoint_name = endpoint.name
         args = endpoint.args
-
-        if args:
-            request = self._add_endpoint_args(endpoint_name, args)
-        else:
-            request = empty_request
-
         output = endpoint.output
-        if output:
-            response = self._add_response_type(output)
-        else:
-            response = empty_response
 
-        endpoint.request_type = request.name
-        endpoint.response_type = response.name
+        endpoint.request_type = self._add_endpoint_args(endpoint_name, args).name if args else None
+        endpoint.response_type = self._add_response_type(output).name if output else None
 
         # check if the endpoint has guaranteed id
         if endpoint_name in BaseEndpoints:
