@@ -1,14 +1,14 @@
 from esphome.components.tbd_module.python_dependencies import python_dependencies
 python_dependencies(('proto_schema_parser', 'proto-schema-parser'), 'pybind11')
 
-import subprocess
 from pathlib import Path
 import esphome.config_validation as cv
-import esphome.components.tbd_module as tbd
 import esphome.codegen as cg
 import logging
 
-from .registry import *
+import tbd_core.buildgen as tbd
+
+from tbd_core.api import ApiRegistry
 from .generator import ApiWriter
 
 
@@ -38,7 +38,8 @@ async def to_code(config):
     # add core endpoints implementations and types
     get_api_registry().add_message_types(component.path / 'src' / 'api_base.proto')
     get_api_registry().add_message_types(component.path / 'src' / 'api_test.proto')
-    get_api_registry().add_endpoints(component.path / 'src' / 'base_endpoints.cpp')
+    get_api_registry().add_source(component.path / 'src' / 'base_endpoints.cpp')
+    get_api_registry().add_source(component.path / 'src' / 'api_test.cpp')
 
     tbd.add_generation_job(finalize_api_registry)
 
@@ -53,7 +54,9 @@ def finalize_api_registry():
     api = get_api_registry().get_api()
     api_gen = ApiWriter(api)
 
+    api_gen.write_messages(tbd.get_generated_sources_path())
     api_gen.write_endpoints(tbd.get_generated_sources_path())
+    api_gen.write_events(tbd.get_generated_sources_path())
     api_gen.write_protos(tbd.get_build_path() / message_files_dir)
 
     messages_dir = tbd.get_build_path() / message_files_dir

@@ -65,7 +65,7 @@ respective component folders / files if different from this license.
 #include <memory>
 #include <map>
 #include <functional>
-#include <tbd/parameter_types.h>
+#include <tbd/parameter_types.hpp>
 #include <tbd/sound_processor/allocator.hpp>
 
 

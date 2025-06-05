@@ -1,0 +1,80 @@
+from pathlib import Path
+
+from tbd_core.api import Api, MessagePayload, ParamPayload, GeneratorBase, jilter, Endpoint
+import tbd_core.buildgen as tbd
+
+TYPESCRIPT_SRC_DIR = Path('src')
+
+
+class TSGenerator(GeneratorBase):
+    def __init__(self, api: Api):
+        templates_path = Path(__file__).parent / 'ts_files'
+        super(TSGenerator, self).__init__(api, templates_path)
+
+    def payload_type(self, payload_type: str) -> str:
+        payload = self._api.get_payload(payload_type)
+        match payload:
+            case MessagePayload():
+                return f'dtos.{payload_type}'
+            case ParamPayload():
+                return payload_type
+            case _:
+                raise Exception(f'unknown payload type: {type(payload)}')
+
+
+    @jilter
+    def request_func(self, endpoint: Endpoint):
+        return self.render(TYPESCRIPT_SRC_DIR / 'request_func.ts.j2', endpoint=endpoint)
+
+    @jilter
+    def request_func_args(self, endpoint: Endpoint):
+        arg_list = []
+        if endpoint.has_args:
+            for arg_name, arg_type in endpoint.args.items():
+                arg_type = self.payload_type(arg_type)
+                arg_list.append(f'{arg_name}: {arg_type}')
+
+        return ', '.join(arg_list)
+
+
+    @jilter
+    def forward_args(self, endpoint: Endpoint) -> list[str]:
+        if not endpoint.has_args:
+            return []
+        if len(endpoint.args) == 1:
+            arg_name = next(iter(endpoint.args))
+            return [f'input: {arg_name}']
+
+        arg_list = []
+        for arg_name in endpoint.args:
+            arg_list.append(f'{arg_name}: {arg_name}')
+        return arg_list
+
+    @jilter
+    def unwrap_response(self, endpoint: Endpoint) -> str:
+        response = self._api.get_response(endpoint)
+        return 'result.value' if response.is_wrapper else 'result'
+
+    @jilter
+    def request_func_return(self, endpoint: Endpoint) -> str:
+        if not endpoint.output:
+            return 'void'
+        return self.payload_type(endpoint.output)
+
+    def write_client(self, out_dir: Path, messages_file: Path):
+        # symlinks will result in bad esbuild module lookups
+        tbd.copy_tree_if_outdated(self._templates, out_dir, symlink=False, ignore=['*.j2'])
+        tbd.copy_file_if_outdated(messages_file, out_dir / TYPESCRIPT_SRC_DIR / messages_file.name, symlink=False)
+
+        self._write_typescript_client_class(out_dir)
+
+    def _write_typescript_client_class(self, out_srcs_dir: Path):
+        source = self.render(TYPESCRIPT_SRC_DIR / 'tbd_client.ts.j2')
+
+        out_srcs_dir.mkdir(exist_ok=True, parents=True)
+        out_file = out_srcs_dir / TYPESCRIPT_SRC_DIR / 'client.ts'
+        with open(out_file, 'w') as f:
+            f.write(source)
+
+
+__all__ = ['TSGenerator']

@@ -16,7 +16,13 @@ struct Api {
     Api() = delete;
 
     using EndpointCallback = uint32_t(*)(const api::Packet&, uint8_t*, size_t&);
-    static uint32_t handle_rpc(const api::Packet& request, api::Packet& response, uint8_t* out_buffer, size_t out_buffer_size);
+    static Error handle_rpc(const api::Packet& request, api::Packet& response, uint8_t* out_buffer, size_t out_buffer_size);
+
+    using EventCallback = uint32_t(*)(const api::Packet&);
+    static Error emit_event(const api::Packet& event);
+
+    template<class Message>
+    Error emit(const Message& message);
 
 };
 

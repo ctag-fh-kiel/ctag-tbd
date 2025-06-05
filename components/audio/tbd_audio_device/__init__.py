@@ -151,8 +151,8 @@ class AudioDeviceParams:
     sample_io: SampleIO
     subtype: str | None = None
 
-def new_tbd_audio_device(init_file: str, params: AudioDeviceParams):  
-    module = new_tbd_component(init_file)
+def new_tbd_audio_device(init_file: str, params: AudioDeviceParams, *, needs_exceptions=False):
+    module = new_tbd_component(init_file, needs_exceptions=needs_exceptions)
 
     device = AudioDevice(
         module=module, 

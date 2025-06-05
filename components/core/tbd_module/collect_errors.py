@@ -1,14 +1,11 @@
-from .prepare_build import COMPONENTS_DOMAIN, SOURCE_PATTERNS
-from .registry import get_tbd_domain
-from .component_info import ComponentInfo
-from .files import get_generated_sources_path
-from esphome.core import CORE, Define
-
 from pathlib import Path
 import jinja2 as ji
 from collections import OrderedDict
 import re
 import logging
+
+from tbd_core.buildgen import get_generated_sources_path, ComponentInfo, get_tbd_domain, COMPONENTS_DOMAIN, add_define
+from tbd_core.buildgen.prepare_build import SOURCE_PATTERNS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,4 +84,4 @@ def collect_errors():
         collect_errors_for_component(component)
 
     write_error_info()
-    CORE.add_build_flag(f'-DUSE_TBD_ERR=1')
+    add_define('USE_TBD_ERR', True)

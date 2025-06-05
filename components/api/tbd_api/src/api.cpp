@@ -2,6 +2,7 @@
 #include <tbd/api/module.hpp>
 
 #include <tbd/api/api_all_endpoints.hpp>
+#include <tbd/api/api_all_events.hpp>
 #include <tbd/logging.hpp>
 
 #include <pb_decode.h>
@@ -59,6 +60,10 @@ Error Api::handle_rpc(const Packet& request, Packet& response, uint8_t* out_buff
     response.payload_length = length;
     response.payload = out_buffer;
 
+    return errors::SUCCESS;
+}
+
+Error Api::emit_event(const Packet& event) {
     return errors::SUCCESS;
 }
 

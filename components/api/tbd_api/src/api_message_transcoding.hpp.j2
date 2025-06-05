@@ -1,0 +1,67 @@
+#include <tbd/api/messages.hpp>
+#include <tbd/api/module.hpp>
+
+#include <tbd/api.hpp>
+#include <tbd/parameter_types.hpp>
+#include <tbd/logging.hpp>
+
+
+#include <pb_encode.h>
+#include <pb_decode.h>
+
+#include <api_types.pb.h>
+
+#if API_TYPES_PB_H_MAX_SIZE > TBD_API_MAX_PAYLOAD_SIZE
+    #error "maximum payload size is less than largest payload"
+#endif
+
+using tbd::api::tag;
+
+namespace {
+
+inline bool encode_string(pb_ostream_t* stream, const pb_field_t* field, void* const* arg) {
+    auto str = reinterpret_cast<const tbd::str_par*>(*arg);
+
+    if (!pb_encode_tag_for_field(stream, field))
+        return false;
+
+    return pb_encode_string(stream, reinterpret_cast<const uint8_t*>(str->data()), str->length());
+}
+
+}
+
+namespace tbd::api { 
+{% for request in api.request_types %}
+// request {{ request.name }}
+{% if request.name != 'str_par_request' -%}
+template<> 
+inline bool decode_message({{ request.name }}& message, const Packet& request) {
+    pb_istream_t stream = pb_istream_from_buffer(request.payload, request.payload_length);
+
+    if (!pb_decode(&stream, {{ request.name }}_fields, &message)) {
+        TBD_LOGE("api", "failed to deserialize {{ request.message_name }}: %s", PB_GET_ERROR(&stream));
+        return true;
+    }
+    return true;
+}
+{%- endif -%}
+{% endfor %}
+
+{% for response in api.response_types %}
+// response {{ response.name }}
+{% if response.name != 'str_par_response' -%}
+template<>
+inline bool encode_message(const {{ response.name }}& message, uint8_t* out_buffer, size_t& out_buffer_size) {
+    pb_ostream_t stream = pb_ostream_from_buffer(out_buffer, out_buffer_size);
+    if (!pb_encode(&stream, {{response.name}}_fields, &message)) {
+        TBD_LOGE("api", "failed to serialize {{ response.message_name }}: %s", PB_GET_ERROR(&stream));
+        out_buffer_size = stream.bytes_written;
+        return true;
+    }
+    out_buffer_size = stream.bytes_written;
+    return true;
+}
+{%- endif -%}
+{% endfor %}
+
+}

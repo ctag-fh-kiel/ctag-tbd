@@ -1,4 +1,4 @@
-#include <tbd/parameter_types.h>
+#include <tbd/parameter_types.hpp>
 #include <tbd/api/api_all_endpoints.hpp>
 
 #include <api_types.pb.h>

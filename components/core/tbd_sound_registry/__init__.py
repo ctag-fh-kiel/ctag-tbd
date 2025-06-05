@@ -6,16 +6,16 @@ import humps
 
 import esphome.config_validation as cv
 
-import esphome.components.tbd_module as tbd
+import tbd_core.buildgen as tbd
 
-from esphome.components.tbd_audio.preprocessor import (
+from esphome.components.tbd_api import get_api_registry
+from tbd_core.reflection import (
     search_for_plugins, 
     write_plugin_factory_header, 
     write_plugin_reflection_info,
     write_meta_classes,
     PluginReflectionGenerator,
 )
-import esphome.components.tbd_api
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ def add_tbd_sounds(init_file: str, config):
     return component
 
 
-@tbd.build_job_with_priority(tbd.GenerationStages.PLUGINS)
+@tbd.build_job_with_priority(tbd.GenerationStages.REFLECTION)
 def finalize_plugin_registry_job():
     processor = get_plugin_registry()
     selected_plugins = processor.plugins
@@ -115,4 +115,13 @@ def finalize_plugin_registry_job():
     for plugin_name in plugin_names:
         _LOGGER.info(f'>>> {plugin_name}')
 
-tbd.add_generation_job(finalize_plugin_registry_job)
+
+async def to_code(config):
+    component = tbd.new_tbd_component(__file__)
+
+    api_registry = get_api_registry()
+
+    api_registry.add_message_types(component.path / 'src' / 'plugins.proto')
+    api_registry.add_source(component.path / 'src' / 'plugins_endpoints.cpp')
+
+    tbd.add_generation_job(finalize_plugin_registry_job)

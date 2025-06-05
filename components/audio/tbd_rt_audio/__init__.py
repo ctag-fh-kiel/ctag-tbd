@@ -19,7 +19,6 @@ CONFIG_SCHEMA = cv.Schema({
 })
 
 async def to_code(config):
-    ad.ComponentInfo.enable_exceptions()
     # TODO: utilize a vanilla WAV library instead of something modified
     #
 
@@ -40,4 +39,4 @@ async def to_code(config):
         chunk_size=config[ad.CONF_CHUNK_SIZE],
         sample_io=ad.SampleIO.CALLBACK,
     )
-    device = ad.new_tbd_audio_device(__file__, params)
+    device = ad.new_tbd_audio_device(__file__, params, needs_exceptions=True)

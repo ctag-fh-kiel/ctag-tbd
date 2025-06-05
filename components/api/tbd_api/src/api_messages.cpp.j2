@@ -1,0 +1,30 @@
+#include <tbd/api/api_all_endpoints.hpp>
+#include <tbd/api/module.hpp>
+
+#include <api_types.pb.h>
+
+using tbd::api::tag;
+
+namespace tbd::api {
+
+const size_t NUM_REQUEST_MESSAGES = {{ api.request_types | length }};
+const MessageInfo REQUEST_MESSAGE_LIST[] = { {% for request in api.request_types %}
+    {% if request.name == 'str_par_request' -%}
+    { "{{ request.name }}", MESSAGE_TYPE_REQUEST, 0 },
+    {%- else -%}
+    { "{{ request.name }}", MESSAGE_TYPE_REQUEST, {{ request.name }}_size },
+    {%- endif -%}
+    {%- endfor %}
+};
+
+const size_t NUM_RESPONSE_MESSAGES = {{ api.response_types | length }};
+const MessageInfo RESPONSE_MESSAGE_LIST[] = { {% for response in api.response_types %}
+    {% if response.name == 'str_par_wrapper' -%}
+    { "{{ response.name }}", MESSAGE_TYPE_RESPONSE, 0 },
+    {%- else -%}
+    { "{{ response.name }}", MESSAGE_TYPE_RESPONSE, {{ response.name }}_size },
+    {%- endif -%}
+    {%- endfor %}
+};
+
+}

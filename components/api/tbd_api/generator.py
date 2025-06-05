@@ -7,16 +7,13 @@ import proto_schema_parser.generator as protog
 
 import esphome.components.tbd_module as tbd
 
-from .api import Api
-from .cpp_generator import CppGenerator
-from .py_generator import PyGenerator
-from .ts_generator import TSGenerator
+from tbd_core.api import Api
+from tbd_core.api.cpp_generator import CppGenerator
+from tbd_core.api.py_generator import PyGenerator
+from tbd_core.api.ts_generator import TSGenerator
 
 
 PROTOS_FILE_NAME = 'api_types'
-PYTHON_MODULE_NAME = 'tbd_client'
-TYPESCRIPT_SRC_DIR = 'src'
-BASE_ENDPOINTS_FILE_NAME = 'base_endpoints.py'
 
 
 class ApiWriter:
@@ -50,60 +47,49 @@ class ApiWriter:
         with open(out_file, 'w') as f:
             f.write(wrappers)
 
+    def write_messages(self, out_folder: Path):
+        srcs_path = Path(__file__).parent / 'src'
+        gen = CppGenerator(self._api, srcs_path)
+        hpp_source = gen.render('api_message_transcoding.hpp.j2')
+        cpp_source = gen.render('api_messages.cpp.j2')
+
+        out_folder.mkdir(exist_ok=True, parents=True)
+        hpp_file = out_folder / 'api_message_transcoding.hpp'
+        with open(hpp_file, 'w') as f:
+            f.write(hpp_source)
+        cpp_file = out_folder / 'api_messages.cpp'
+        with open(cpp_file, 'w') as f:
+            f.write(cpp_source)
+
     def write_endpoints(self, out_folder: Path):
-        gen = CppGenerator(self._api, Path('src'))
+        srcs_path = Path(__file__).parent / 'src'
+        gen = CppGenerator(self._api, srcs_path)
         source = gen.render('api_all_endpoints.cpp.j2')
 
         out_folder.mkdir(exist_ok=True, parents=True)
         out_file = out_folder / 'api_all_endpoints.cpp'
         with open(out_file, 'w') as f:
-            f.write(source)   
+            f.write(source)
+
+    def write_events(self, out_folder: Path):
+        srcs_path = Path(__file__).parent / 'src'
+        gen = CppGenerator(self._api, srcs_path)
+        source = gen.render('api_all_events.cpp.j2')
+
+        out_folder.mkdir(exist_ok=True, parents=True)
+        out_file = out_folder / 'api_all_events.cpp'
+        with open(out_file, 'w') as f:
+            f.write(source)
 
     def write_python_client(self, out_dir: Path, messages_dir: Path):
-        out_module_dir = out_dir / PYTHON_MODULE_NAME
-        base_endpoints_file = self._in_srcs / BASE_ENDPOINTS_FILE_NAME
-
-        tbd.copy_tree_if_outdated(self._python_in_dir(), out_dir)
-        tbd.copy_file_if_outdated(base_endpoints_file, out_module_dir / BASE_ENDPOINTS_FILE_NAME)
-        self._generate_python_protobuf(out_module_dir, messages_dir)
-        self._write_python_client_class(out_module_dir)
+        gen = PyGenerator(self._api)
+        gen.write_client(out_dir, messages_dir / self.dtos_proto)
 
     def write_typescript_client(self, out_dir: Path, messages_dir: Path):
-        # symlinks will result in bad esbuild module lookups
-        tbd.copy_tree_if_outdated(self._typescript_in_dir(), out_dir, symlink=False)
-        tbd.copy_file_if_outdated(messages_dir / self.dtos_proto, out_dir / TYPESCRIPT_SRC_DIR / self.dtos_proto, symlink=False)
+        gen = TSGenerator(self._api)
+        gen.write_client(out_dir, messages_dir / self.dtos_proto)
 
-        self._write_typescript_client_class(out_dir)
 
-    def _python_in_dir(self) -> Path:
-        return self._in_srcs / 'clients' / 'python'
-
-    def _generate_python_protobuf(self, out_module_dir: Path, messages_dir: Path):
-        subprocess.run(['protoc', f'--proto_path={messages_dir}',
-                        f'--python_out={out_module_dir}', self.dtos_proto])
-
-    def _write_python_client_class(self, out_module_dir: Path):
-        template_dir = self._python_in_dir() / PYTHON_MODULE_NAME
-        gen = PyGenerator(self._api, template_dir)
-        source = gen.render('tbd_client.py.j2')
-
-        out_module_dir.mkdir(exist_ok=True, parents=True)
-        out_file = out_module_dir / 'client.py'
-        with open(out_file, 'w') as f:
-            f.write(source)
-
-    def _typescript_in_dir(self) -> Path:
-        return self._in_srcs / 'clients' / 'typescript'
-
-    def _write_typescript_client_class(self, out_srcs_dir: Path):
-        template_dir = self._typescript_in_dir() / TYPESCRIPT_SRC_DIR
-        gen = TSGenerator(self._api, template_dir)
-        source = gen.render('tbd_client.ts.j2')
-
-        out_srcs_dir.mkdir(exist_ok=True, parents=True)
-        out_file = out_srcs_dir / TYPESCRIPT_SRC_DIR / 'client.ts'
-        with open(out_file, 'w') as f:
-            f.write(source)
 
 
 __all__ = ['ApiWriter']

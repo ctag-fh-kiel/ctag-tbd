@@ -1,0 +1,13 @@
+Error {{ event | react_name }}(const Packet& event) {
+    {% if event | request_type %}
+    {{ event | request_type }} in_message;
+    if (!decode_message(in_message, event)) {
+        return TBD_ERR(API_DECODE);
+    }
+    {%- endif %}
+
+    if (auto err = {{ event | invoke_handler }}; err != errors::SUCCESS) {
+        return err;
+    }
+    return TBD_ERR(SUCCESS);
+}

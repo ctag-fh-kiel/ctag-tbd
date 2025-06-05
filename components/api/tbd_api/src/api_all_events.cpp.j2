@@ -1,0 +1,29 @@
+#include <tbd/api/api_all_events.hpp>
+#include <tbd/api/module.hpp>
+
+#include <tbd/api.hpp>
+#include <tbd/logging.hpp>
+
+#include "api_message_transcoding.hpp"
+
+
+// endpoint declarations
+{%- for event in api.events %}
+namespace {{ event.full_name.parent }} { {{ event | handler_signature }} {
+    return tbd::errors::SUCCESS;
+} }
+{%- endfor %}
+
+namespace tbd::api {
+
+{% for event in api.events %}
+{{ event | react_implementation }}
+{% endfor %}
+
+const size_t NUM_EVENTS = {{ api.events | length }};
+const Event EVENT_LIST[] = { {%- for event in api.events %}
+    { "{{ event.name }}", {{ event | request_id }}, &{{ event | react_name }} },
+{%- endfor %} 
+};
+
+}
