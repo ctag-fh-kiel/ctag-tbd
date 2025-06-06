@@ -30,11 +30,13 @@ inline bool encode_string(pb_ostream_t* stream, const pb_field_t* field, void* c
 
 }
 
-namespace tbd::api { 
+namespace tbd::api {
+
+//// rpc message decoding ////
 {% for request in api.request_types %}
 // request {{ request.name }}
-{% if request.name != 'str_par_request' -%}
-template<> 
+{%- if request.name != 'str_par_request' %}
+template<>
 inline bool decode_message({{ request.name }}& message, const Packet& request) {
     pb_istream_t stream = pb_istream_from_buffer(request.payload, request.payload_length);
 
@@ -44,12 +46,13 @@ inline bool decode_message({{ request.name }}& message, const Packet& request) {
     }
     return true;
 }
-{%- endif -%}
+{% endif -%}
 {% endfor %}
 
+//// rpc message encoding ////
 {% for response in api.response_types %}
 // response {{ response.name }}
-{% if response.name != 'str_par_response' -%}
+{%- if response.name != 'str_par_response' %}
 template<>
 inline bool encode_message(const {{ response.name }}& message, uint8_t* out_buffer, size_t& out_buffer_size) {
     pb_ostream_t stream = pb_ostream_from_buffer(out_buffer, out_buffer_size);
@@ -61,7 +64,36 @@ inline bool encode_message(const {{ response.name }}& message, uint8_t* out_buff
     out_buffer_size = stream.bytes_written;
     return true;
 }
-{%- endif -%}
+{% endif -%}
+{% endfor %}
+
+//// event message transcoding ////
+{% for event_payload in api.event_payloads %}
+// event {{ event_payload.name }} //
+{% if event_payload.name != 'str_par_request' %}
+template<>
+inline bool decode_message({{ event_payload.name }}& message, const Packet& request) {
+    pb_istream_t stream = pb_istream_from_buffer(request.payload, request.payload_length);
+
+    if (!pb_decode(&stream, {{ event_payload.name }}_fields, &message)) {
+        TBD_LOGE("api", "failed to deserialize {{ event_payload.message_name }}: %s", PB_GET_ERROR(&stream));
+        return true;
+    }
+    return true;
+}
+
+template<>
+inline bool encode_message(const {{ event_payload.name }}& message, uint8_t* out_buffer, size_t& out_buffer_size) {
+    pb_ostream_t stream = pb_ostream_from_buffer(out_buffer, out_buffer_size);
+    if (!pb_encode(&stream, {{event_payload.name}}_fields, &message)) {
+        TBD_LOGE("api", "failed to serialize {{ event_payload.message_name }}: %s", PB_GET_ERROR(&stream));
+        out_buffer_size = stream.bytes_written;
+        return true;
+    }
+    out_buffer_size = stream.bytes_written;
+    return true;
+}
+{% endif -%}
 {% endfor %}
 
 }

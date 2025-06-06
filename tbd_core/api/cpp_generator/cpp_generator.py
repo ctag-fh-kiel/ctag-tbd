@@ -19,15 +19,6 @@ class CppGenerator(GeneratorBase):
     @staticmethod
     @jilter
     def handler_declaration(endpoint: Endpoint) -> str:
-        arg_list = []
-        if endpoint.has_args:
-            for arg_name, arg_type in endpoint.args.items():
-                arg_list.append(f'const {arg_type}& {arg_name}')
-
-        if endpoint.has_output:
-            arg_list.append(f'{endpoint.output}& output')
-        args = ', '.join(arg_list)
-
         return f'namespace {endpoint.full_name.parent} {{ {CppGenerator.handler_signature(endpoint)}; }}'
 
     @jilter
@@ -38,11 +29,11 @@ class CppGenerator(GeneratorBase):
             return self._env.get_template('handler_wrappers.cpp.j2').render(endpoint=endpoint)
 
     @jilter
-    def react_implementation(self, event:  Endpoint) -> str:
+    def dispatcher_implementation(self, event:  Endpoint) -> str:
         if event.has_args and event.output == 'str_par':
             raise ValueError('strings not allowed as event parameters')
         else:
-            return self._env.get_template('react_wrappers.cpp.j2').render(event=event)
+            return self._env.get_template('dispatcher_wrapper.cpp.j2').render(event=event)
 
     @jilter
     def unwrap_response(self, endpoint: Endpoint) -> str:
@@ -75,8 +66,8 @@ class CppGenerator(GeneratorBase):
 
     @staticmethod
     @jilter
-    def react_name(event: Endpoint) -> str:
-        return f'react_{event.name}'
+    def dispatcher_name(event: Endpoint) -> str:
+        return f'dispatch_{event.name}'
 
 
 __all__ = ['CppGenerator']

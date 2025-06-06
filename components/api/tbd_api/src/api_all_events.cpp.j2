@@ -6,23 +6,37 @@
 
 #include "api_message_transcoding.hpp"
 
+using tbd::api::Packet;
 
-// endpoint declarations
-{%- for event in api.events %}
+//// emitters ////
+{% for event in api.events %}
 namespace {{ event.full_name.parent }} { {{ event | handler_signature }} {
+    tbd::api::Packet::PayloadBuffer payload_buffer;
+    size_t payload_size = Packet::MAX_PAYLOAD_SIZE;
+    {% if event | event_type %}
+    {{ event | event_type }} _payload;
+    if (!tbd::api::encode_message(_payload, payload_buffer, payload_size)) {
+        return TBD_ERR(API_ENCODE);
+    }
+    {%- endif %}
+
+    Packet _packet;
+    _packet.type == Packet::TYPE_EVENT;
+
     return tbd::errors::SUCCESS;
 } }
-{%- endfor %}
+{% endfor %}
 
 namespace tbd::api {
 
+//// dispatchers ////
 {% for event in api.events %}
-{{ event | react_implementation }}
+{{ event | dispatcher_implementation }}
 {% endfor %}
 
 const size_t NUM_EVENTS = {{ api.events | length }};
 const Event EVENT_LIST[] = { {%- for event in api.events %}
-    { "{{ event.name }}", {{ event | request_id }}, &{{ event | react_name }} },
+    { "{{ event.name }}", {{ event | event_id }}, &{{ event | dispatcher_name }} },
 {%- endfor %} 
 };
 

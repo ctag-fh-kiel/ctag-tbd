@@ -1,5 +1,6 @@
 #include <tbd/parameter_types.hpp>
 #include <tbd/api/api_all_endpoints.hpp>
+#include <tbd/api/api_all_events.hpp>
 
 #include <api_types.pb.h>
 #include <cinttypes>
@@ -70,6 +71,21 @@ Error get_error_message(const uint_par& err_id, str_par& msg) {
         return TBD_ERR(API_BAD_ERROR);
     }
     msg = errors::get_error_message(err_id);
+    return TBD_OK;
+}
+
+[[tbd::endpoint]]
+Error get_num_events(uint_par& num_endpoints) {
+    num_endpoints = NUM_EVENTS;
+    return TBD_OK;
+}
+
+[[tbd::endpoint]]
+Error get_event_name(const uint_par& event_id, str_par& name) {
+    if (event_id >= NUM_EVENTS) {
+        return TBD_ERR(API_BAD_EVENT);
+    }
+    name = EVENT_LIST[event_id].path;
     return TBD_OK;
 }
 

@@ -21,4 +21,10 @@ extern const uint32_t API_HASH;
 extern const size_t NUM_ENDPOINTS;
 extern const Endpoint ENDPOINT_LIST[];
 
+extern const size_t NUM_REQUEST_MESSAGES;
+extern const MessageInfo REQUEST_MESSAGE_LIST[];
+
+extern const size_t NUM_RESPONSE_MESSAGES;
+extern const MessageInfo RESPONSE_MESSAGE_LIST[];
+
 }

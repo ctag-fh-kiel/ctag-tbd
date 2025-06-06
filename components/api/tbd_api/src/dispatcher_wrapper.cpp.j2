@@ -1,6 +1,6 @@
-Error {{ event | react_name }}(const Packet& event) {
-    {% if event | request_type %}
-    {{ event | request_type }} in_message;
+Error {{ event | dispatcher_name }}(const Packet& event) {
+    {% if event | event_type %}
+    {{ event | event_type }} in_message;
     if (!decode_message(in_message, event)) {
         return TBD_ERR(API_DECODE);
     }

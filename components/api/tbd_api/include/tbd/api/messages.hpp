@@ -9,6 +9,7 @@ constexpr int32_t NO_MESSAGE = -1;
 enum MessageType {
     MESSAGE_TYPE_REQUEST,
     MESSAGE_TYPE_RESPONSE,
+    MESSAGE_TYPE_EVENT,
 };
 
 struct MessageInfo {
@@ -22,11 +23,5 @@ bool decode_message(Message& in_message, const Packet& request);
 
 template<typename Message>
 bool encode_message(const Message& out_message, uint8_t* out_buffer, size_t& out_buffer_size);
-
-extern const size_t NUM_REQUEST_MESSAGES;
-extern const MessageInfo REQUEST_MESSAGE_LIST[];
-
-extern const size_t NUM_RESPONSE_MESSAGES;
-extern const MessageInfo RESPONSE_MESSAGE_LIST[];
 
 }

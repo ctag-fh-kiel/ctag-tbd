@@ -16,4 +16,7 @@ struct Event {
 extern const size_t NUM_EVENTS;
 extern const Event EVENT_LIST[];
 
+extern const size_t NUM_EVENT_MESSAGES;
+extern const MessageInfo EVENT_MESSAGE_LIST[];
+
 }

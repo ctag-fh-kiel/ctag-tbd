@@ -10,24 +10,22 @@ from .dtos import Payload, Request, Response
 class Api:
     def __init__(self,
         endpoints: list[Endpoint],
-        events: list[Endpoint],
         payload_types: OrderedDict[str, Payload],
         request_types: OrderedDict[str, Request],
         response_types: OrderedDict[str, Response],
+        events: list[Endpoint],
+        event_payloads: OrderedDict[str, Request],
     ):
         self._endpoints: Final = endpoints
         self._events: Final = events
         self._payload_types: Final = payload_types
         self._request_types: Final = request_types
         self._response_types: Final = response_types
+        self._event_payloads: Final = event_payloads
 
     @property
     def endpoints(self) -> list[Endpoint]:
         return self._endpoints
-
-    @property
-    def events(self) -> list[Endpoint]:
-        return self._events
 
     @property
     def payload_types(self) -> list[Payload]:
@@ -48,6 +46,14 @@ class Api:
     @property
     def payload_names(self):
         return [message_name for message_name in self._payload_types]
+
+    @property
+    def events(self) -> list[Endpoint]:
+        return self._events
+
+    @property
+    def event_payloads(self) -> list[Request]:
+        return [*self._event_payloads.values()]
 
     @staticmethod
     def get_version():

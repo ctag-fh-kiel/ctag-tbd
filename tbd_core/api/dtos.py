@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 import abc
-from typing import Final, OrderedDict
+from typing import Final, OrderedDict, Literal
 import proto_schema_parser.ast as proto
 
 import tbd_core.reflection as tbr
@@ -14,7 +14,8 @@ WRAPPER_FIELD_NAME = 'value'
 
 REQUEST_NAME_POSTFIX = '_request'
 WRAPPER_NAME_POSTFIX = '_wrapper'
-WRAPPER_NAME_EXPR = re.compile(r'^\w+(?P<wrapper_type>_request|_wrapper)$')
+EVENT_NAME_POSTFIX = '_event'
+WRAPPER_NAME_EXPR = re.compile(r'^\w+(?P<wrapper_type>_request|_wrapper|_event)$')
 
 PARAM_TO_PROTO = {
     tbr.ParamType.INT_PARAM: 'int32',
@@ -218,10 +219,15 @@ class ParamRequest(RequestBase):
 
 Request = RequestBase
 
-
 def request_for_single_arg(payload: Payload) -> Request:
+    return _request_for_single_arg(payload, REQUEST_NAME_POSTFIX)
+
+def event_for_single_arg(payload: Payload) -> Request:
+    return _request_for_single_arg(payload, EVENT_NAME_POSTFIX)
+
+def _request_for_single_arg(payload: Payload, postfix: str) -> Request:
     message = proto.Message(
-        name=payload.name + REQUEST_NAME_POSTFIX,
+        name=payload.name + postfix,
         elements=[
             proto.Field(
                 name=SINGLE_ARG_FIELD_NAME,
@@ -239,15 +245,20 @@ def request_for_single_arg(payload: Payload) -> Request:
         case _:
             raise ValueError(f'can not create response for payload class {type(payload)}')
 
-
 def request_for_arguments(endpoint_name: str, args: OrderedDict[str, Payload]) -> MultiArgRequest:
+    return _request_for_arguments(endpoint_name, args, REQUEST_NAME_POSTFIX)
+
+def event_for_arguments(event_name: str, args: OrderedDict[str, Payload]) -> MultiArgRequest:
+    return _request_for_arguments(event_name, args, EVENT_NAME_POSTFIX)
+
+def _request_for_arguments(endpoint_name: str, args: OrderedDict[str, Payload], postfix: str) -> MultiArgRequest:
     arg_fields = [proto.Field(
         name=arg_name,
         type=arg.proto_type_name,
         number=offset + 1,
     ) for offset, (arg_name, arg) in enumerate(args.items())]
     message = proto.Message(
-        name=endpoint_name + REQUEST_NAME_POSTFIX,
+        name=endpoint_name + postfix,
         elements=[*arg_fields]
     )
     return MultiArgRequest(proto_type=message, file_path=None)
@@ -361,6 +372,8 @@ __all__ = [
     'Request',
     'request_for_single_arg',
     'request_for_arguments',
+    'event_for_single_arg',
+    'event_for_arguments',
     'MessageResponse',
     'ParamResponse',
     'Response',

@@ -32,6 +32,7 @@ class ApiWriter:
         request_types = [request.proto_type for request in api_registry.request_types if not request.is_builtin]
         wrapper_types = [response.proto_type for response in api_registry.response_types
                          if not response.is_builtin and response.is_wrapper]
+        event_payloads = [request.proto_type for request in api_registry.event_payloads]
 
         wrappers = protog.Generator().generate(proto.File(
             syntax='proto3',
@@ -39,6 +40,7 @@ class ApiWriter:
                 *payload_types,
                 *request_types, 
                 *wrapper_types,
+                *event_payloads,
             ]
         ))
 
@@ -50,16 +52,12 @@ class ApiWriter:
     def write_messages(self, out_folder: Path):
         srcs_path = Path(__file__).parent / 'src'
         gen = CppGenerator(self._api, srcs_path)
-        hpp_source = gen.render('api_message_transcoding.hpp.j2')
-        cpp_source = gen.render('api_messages.cpp.j2')
+        source = gen.render('api_message_transcoding.hpp.j2')
 
         out_folder.mkdir(exist_ok=True, parents=True)
         hpp_file = out_folder / 'api_message_transcoding.hpp'
         with open(hpp_file, 'w') as f:
-            f.write(hpp_source)
-        cpp_file = out_folder / 'api_messages.cpp'
-        with open(cpp_file, 'w') as f:
-            f.write(cpp_source)
+            f.write(source)
 
     def write_endpoints(self, out_folder: Path):
         srcs_path = Path(__file__).parent / 'src'

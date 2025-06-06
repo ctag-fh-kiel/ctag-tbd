@@ -17,7 +17,8 @@ from .dtos import (
     response_for_output,
     AnyMessageDto,
     dto_from_message,
-    request_for_single_arg, MessagePayload, request_for_arguments, MultiArgRequest
+    request_for_single_arg, MessagePayload, request_for_arguments, MultiArgRequest, event_for_single_arg,
+    event_for_arguments
 )
 from .enpoints import Endpoint, endpoint_from_function
 from .base_endpoints import BaseEndpoints
@@ -34,23 +35,17 @@ def guaranteed_payload_types() -> OrderedDict[str, Payload]:
         for message in ParamPayload.param_messages())
 
 
-def guaranteed_request_types() -> OrderedDict[str, Request]:
-    return OrderedDict()
-
-
-def guaranteed_response_types() -> OrderedDict[str, Response]:
-    return OrderedDict()
-
-
 class ApiRegistry:
     def __init__(self):
         self._base_endpoints: list[Endpoint | None] = [None] * BaseEndpoints.num_reserved_ids()
         self._endpoints: list[Endpoint] = []
-        self._events: list[Endpoint] = []
         self._payload_types: OrderedDict[str, Payload] = guaranteed_payload_types()
-        self._shared_request_types: OrderedDict[str, Request] = guaranteed_request_types()
+        self._shared_request_types: OrderedDict[str, Request] = OrderedDict()
         self._endpoint_request_types: OrderedDict[str, MultiArgRequest] = OrderedDict()
-        self._response_types: OrderedDict[str, Response] = guaranteed_response_types()
+        self._response_types: OrderedDict[str, Response] = OrderedDict()
+
+        self._events: list[Endpoint] = []
+        self._event_payloads: OrderedDict[str, Request] = OrderedDict()
 
     def get_api(self) -> Api:
         shared_requests = OrderedDict((request.name, request) for request in self._shared_request_types.values())
@@ -61,10 +56,11 @@ class ApiRegistry:
 
         return Api(
             endpoints=endpoints,
-            events=self._events,
             payload_types=self._payload_types,
             request_types= shared_requests | endpoint_requests,
             response_types=responses,
+            events=self._events,
+            event_payloads=self._event_payloads,
         )
 
     def add_message_types(self, proto_path: Path | str) -> None:
@@ -134,12 +130,6 @@ class ApiRegistry:
                 raise ValueError(f'can not add request class {type(dto)}')
 
     def _add_idc(self, func: tbr.FunctionDescription) -> None:
-        """ Add a C++ function annotated as endpoint to endpoints.
-
-            This will analyze the function signature and generate DTOs for inputs and output, if no predefined
-            DTOs are found in `.proto` files.
-        """
-
         if not (idc_func := endpoint_from_function(func, [ENDPOINT_ATTR, EVENT_ATTR])):
             return
 
@@ -151,6 +141,11 @@ class ApiRegistry:
 
 
     def _add_endpoint(self, endpoint: Endpoint) -> None:
+        """ Add a C++ function annotated as `tbd::endpoint` to endpoints.
+
+            This will analyze the function signature and generate DTOs for inputs and output, if no predefined
+            DTOs are found in `.proto` files.
+        """
         endpoint_name = endpoint.name
         args = endpoint.args
         output = endpoint.output
@@ -165,18 +160,6 @@ class ApiRegistry:
         else:
             self._endpoints.append(endpoint)
 
-    def _add_event(self, event: Endpoint) -> None:
-        event_name = event.name
-        args = event.args
-
-        if event.output is not None:
-            raise ValueError('events can not have non const output arguments')
-
-        event.request_type = self._add_endpoint_args(event_name, args).name if args else None
-
-        # check if the endpoint has guaranteed id
-        self._events.append(event)
-
     def _add_endpoint_args(self, endpoint_name: str, args: OrderedDict[str, str]) -> Request:
         if len(args) == 1:
             request = self._add_single_arg_type(next(iter(args.values())))
@@ -184,25 +167,22 @@ class ApiRegistry:
             request = self._add_multi_arg_type(endpoint_name, args)
         return request
 
-    def _add_single_arg_type(self, output_name: str) -> Request:
+    def _add_single_arg_type(self, arg_type: str) -> Request:
         """ Add reusable request for a specific single argument type.
 
             Request type is only created if no request type for argument type exists. Unlike multi argument request
             call signatures these request types will be shared across multiple endpoints to avoid redundancy.
         """
 
-        in_message = self._find_payload(output_name)
-        request = self._shared_request_types.get(output_name)
+        request = self._shared_request_types.get(arg_type)
         if not request:
+            in_message = self._find_payload(arg_type)
             request = request_for_single_arg(in_message)
-            self._shared_request_types[output_name] = request
+            self._shared_request_types[arg_type] = request
         return request
 
     def _add_multi_arg_type(self, endpoint_name: str, args: OrderedDict[str, str]) -> Request:
-        arg_messages = OrderedDict()
-        for arg_name, arg_type_name in args.items():
-            in_message = self._find_payload(arg_type_name)
-            arg_messages[arg_name] = in_message
+        arg_messages = self._find_arg_payloads(args)
         request = request_for_arguments(endpoint_name, arg_messages)
         if endpoint_name in self._shared_request_types:
             raise RuntimeError(f'request type for endpoint {endpoint_name} already exists')
@@ -214,13 +194,58 @@ class ApiRegistry:
 
             Response type is only created if no response for payload type exists.
         """
-        out_message = self._find_payload(output_name)
         response = self._response_types.get(output_name)
         if not response:
+            out_message = self._find_payload(output_name)
             response = response_for_output(out_message)
             self._response_types[output_name] = response
         return response
 
+    def _add_event(self, event: Endpoint) -> None:
+        """ Add a C++ function annotated as `tbd::event` to events.
+
+            This will analyze the function signature and generate DTOs for inputs and output, if no predefined
+            DTOs are found in `.proto` files.
+        """
+        event_name = event.name
+        args = event.args
+
+        if event.output is not None:
+            raise ValueError('events can not have non const output arguments')
+
+        event.request_type = self._add_event_payload(event_name, args).name if args else None
+
+        # check if the endpoint has guaranteed id
+        self._events.append(event)
+
+    def _add_event_payload(self, event_name: str, args: OrderedDict[str, str]) -> Request:
+        if self._event_payloads.get(event_name) is not None:
+            raise ValueError(f'event payload for {event_name} already exists')
+
+        if len(args) == 1:
+            event_payload = self._add_single_arg_event_payload(event_name, next(iter(args.values())))
+        else:
+            event_payload = self._add_multi_arg_event_payload(event_name, args)
+        return event_payload
+
+    def _add_single_arg_event_payload(self, event_name: str, event_payload_name: str) -> Request:
+        in_message = self._find_payload(event_payload_name)
+        event_payload = event_for_single_arg(in_message)
+        self._event_payloads[event_name] = event_payload
+        return event_payload
+
+    def _add_multi_arg_event_payload(self, event_name: str, args: OrderedDict[str, str]) -> Request:
+        arg_messages = self._find_arg_payloads(args)
+        event_payload = event_for_arguments(event_name, arg_messages)
+        self._event_payloads[event_name] = event_payload
+        return event_payload
+
+    def _find_arg_payloads(self, args: OrderedDict[str, str]) -> OrderedDict[str, Payload]:
+        arg_messages = OrderedDict()
+        for arg_name, arg_type_name in args.items():
+            in_message = self._find_payload(arg_type_name)
+            arg_messages[arg_name] = in_message
+        return arg_messages
 
 __all__ = [
     'ApiRegistry', 

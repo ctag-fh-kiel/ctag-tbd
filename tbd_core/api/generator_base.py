@@ -45,6 +45,14 @@ class GeneratorBase:
     def response_type(self, endpoint: Endpoint) -> str:
         return endpoint.response_type
 
+    @jilter
+    def event_id(self, endpoint: Endpoint) -> int:
+        return self._api.get_event_id(endpoint.name)
+
+    @jilter
+    def event_type(self, endpoint: Endpoint) -> str:
+        return endpoint.request_type
+
     def _filters(self):
         filters = {}
         for name, _ in inspect.getmembers(self, predicate=inspect.isroutine):
