@@ -8,36 +8,67 @@
 
 using tbd::api::Packet;
 
+//// declare responders ////
+{% for event in api.events %}
+{%- for responder in event | responders %}
+{{ responder | shadow_declaration }}
+{%- endfor %}
+{%- endfor %}
+
+namespace tbd::api {
+
+//// dispatchers ////
+{% for event in api.events %}
+Error {{ event | dispatcher_name }}({{ event | func_args }}) {
+    {% for responder in event | responders -%}
+    {{ responder.full_name }}({{ event | forward_args }});
+    {% endfor -%}
+    return TBD_ERR(SUCCESS);
+}
+{% endfor %}
+
+//// handlers ////
+{% for event in api.events %}
+Error {{ event | event_handler_name }}(const Packet& event_packet) {
+    {%- if event | event_payload %}
+    {{ event | event_payload }} in_message;
+    if (!decode_message(in_message, event_packet)) {
+        return TBD_ERR(API_DECODE);
+    }
+    {%- endif %}
+    if (auto err = {{ event | invoke_dispatcher_from_message }}; err != errors::SUCCESS) { return err; }
+    return TBD_ERR(SUCCESS);
+}
+{% endfor %}
+}
+
 //// emitters ////
 {% for event in api.events %}
-namespace {{ event.full_name.parent }} { {{ event | handler_signature }} {
+namespace {{ event.full_name.parent }} { void {{ event | emitter_name }}({{ event | func_args }}) {
     tbd::api::Packet::PayloadBuffer payload_buffer;
     size_t payload_size = Packet::MAX_PAYLOAD_SIZE;
-    {% if event | event_type %}
-    {{ event | event_type }} _payload;
+    {% if event | event_payload %}
+    {{ event | event_payload }} _payload;
     if (!tbd::api::encode_message(_payload, payload_buffer, payload_size)) {
-        return TBD_ERR(API_ENCODE);
+        return;
     }
     {%- endif %}
 
     Packet _packet;
     _packet.type == Packet::TYPE_EVENT;
 
-    return tbd::errors::SUCCESS;
+    {%- if event | responders %}
+    {{ event | invoke_dispatcher_from_args }};
+    {%- endif %}
 } }
 {% endfor %}
 
 namespace tbd::api {
 
-//// dispatchers ////
-{% for event in api.events %}
-{{ event | dispatcher_implementation }}
-{% endfor %}
-
 const size_t NUM_EVENTS = {{ api.events | length }};
 const Event EVENT_LIST[] = { {%- for event in api.events %}
-    { "{{ event.name }}", {{ event | event_id }}, &{{ event | dispatcher_name }} },
-{%- endfor %} 
+    { "{{ event.name }}", {{ event | event_id }}, &{{ event | event_handler_name }} },
+{%- endfor %}
 };
 
 }

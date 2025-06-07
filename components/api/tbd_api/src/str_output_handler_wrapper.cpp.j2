@@ -1,4 +1,4 @@
-Error {{ endpoint | callback_name }}(const Packet& request, uint8_t* out_buffer, size_t& out_buffer_size) {
+Error {{ endpoint | rpc_handler_name }}(const Packet& request, uint8_t* out_buffer, size_t& out_buffer_size) {
     {%- if endpoint | request_type %}
     {{ endpoint | request_type }} in_message;
     if (!decode_message(in_message, request)) {

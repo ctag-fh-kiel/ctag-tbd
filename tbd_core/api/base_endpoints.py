@@ -15,18 +15,29 @@ class BaseEndpoints(IntEnum):
 
     """
 
-    # NEVER change these
+    # recovery API
+    # NEVER change these (breaks legacy device remote recovery)
     get_api_version   = 0
     update_device     = 1
     reset_device      = 2
 
-    # avoid changing these
+    # core API
+    # ONLY change for good reasons (breaks dynamic API)
     get_num_endpoints = 3
     get_endpoint_name = 4
-    get_device_info   = 5
-    get_num_errors    = 6
-    get_error_name    = 7
-    get_error_message = 8
+    get_num_events    = 5
+    get_event_name    = 6
+    get_num_errors    = 7
+    get_error_name    = 8
+    get_error_message = 9
+
+    # base API
+    # non critical
+    get_device_info   = 10
+
+    @staticmethod
+    def num_critical_ids() -> int:
+        return BaseEndpoints.get_error_message + 1
 
     @staticmethod
     def num_reserved_ids() -> int:

@@ -30,19 +30,26 @@ void begin() {
     server.config.port = TBD_WEBSOCKET_PORT;
     auto &echo = server.endpoint["^/ws/?$"];
     echo.on_message = [](std::shared_ptr<WSServer::Connection> connection, std::shared_ptr<WSServer::InMessage> request) {
-        auto in_data = request->string();
+        const auto in_data = request->string();
         PacketParser parser;
         if (!parser.parse_from_string(in_data)) {
             return;
         }
 
-        PacketBufferWriter writer;
-        Packet response;
-        if (Api::handle_rpc(parser.packet(), response, writer.payload_buffer(), writer.payload_buffer_size()) != errors::SUCCESS) {
-          return;
+        if (const auto& packet = parser.packet(); packet.type == Packet::TYPE_RPC) {
+            PacketBufferWriter writer;
+            Packet response;
+            if (Api::handle_rpc(parser.packet(), response, writer.payload_buffer(), writer.payload_buffer_size()) != errors::SUCCESS) {
+                return;
+            }
+            writer.write(response);
+            connection->send(writer.buffer_view(), nullptr, 130);
+        } else if (packet.type == Packet::TYPE_EVENT) {
+            Api::handle_event(packet);
+        } else {
+            TBD_LOGE(tag, "server can not handle %i packets", packet.type);
         }
-        writer.write(response);
-        connection->send(writer.buffer_view(), nullptr, 130);
+
       };
 
     echo.on_open = [](std::shared_ptr<WSServer::Connection> connection) {
@@ -66,7 +73,16 @@ void begin() {
 }
     
 void end() {
+    server.stop();
+}
 
+Error emit_event(const Packet& event) {
+    PacketBufferWriter writer;
+    writer.write(event);
+    for (auto& connection : server.get_connections()) {
+        connection->send(writer.buffer_view(), nullptr, 130);
+    }
+    return errors::SUCCESS;
 }
 
 }

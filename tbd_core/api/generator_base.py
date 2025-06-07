@@ -5,7 +5,7 @@ from typing import Callable, Any, Final
 import jinja2 as ji
 
 from .api import Api
-from .enpoints import Endpoint
+from .idc_interfaces import Endpoint, Event, Responder
 
 
 def jilter(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
@@ -46,12 +46,17 @@ class GeneratorBase:
         return endpoint.response_type
 
     @jilter
-    def event_id(self, endpoint: Endpoint) -> int:
-        return self._api.get_event_id(endpoint.name)
+    def event_id(self, event: Event) -> int:
+        return self._api.get_event_id(event.name)
 
     @jilter
-    def event_type(self, endpoint: Endpoint) -> str:
-        return endpoint.request_type
+    def event_payload(self, event: Event) -> str:
+        return event.payload_type
+
+    @jilter
+    def responders(self, event: Event) -> list[Responder]:
+        responders = self._api.get_responders(event.name)
+        return responders if responders else []
 
     def _filters(self):
         filters = {}
@@ -62,9 +67,9 @@ class GeneratorBase:
             if not hasattr(method, '_is_jilter'):
                 continue
 
-            sig = inspect.signature(method)
-            if len(sig.parameters) != 1:
-                raise RuntimeError(f'filter {name} must have exactly 1 parameter')
+            # sig = inspect.signature(method)
+            # if len(sig.parameters) != 1:
+            #     raise RuntimeError(f'filter {name} must have exactly 1 parameter')
             filters[name] = method
         return filters
 

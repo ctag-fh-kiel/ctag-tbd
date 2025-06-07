@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 import logging
 from collections import OrderedDict
@@ -20,15 +19,12 @@ from .dtos import (
     request_for_single_arg, MessagePayload, request_for_arguments, MultiArgRequest, event_for_single_arg,
     event_for_arguments
 )
-from .enpoints import Endpoint, endpoint_from_function
+from .idc_interfaces import Endpoint, idc_from_function, Event, Responder
 from .base_endpoints import BaseEndpoints
 from .api import Api
 
 _LOGGER = logging.getLogger(__file__)
 
-
-ENDPOINT_ATTR = 'tbd::endpoint'
-EVENT_ATTR = 'tbd::event'
 
 def guaranteed_payload_types() -> OrderedDict[str, Payload]:
     return OrderedDict((message.name, message)
@@ -44,7 +40,8 @@ class ApiRegistry:
         self._endpoint_request_types: OrderedDict[str, MultiArgRequest] = OrderedDict()
         self._response_types: OrderedDict[str, Response] = OrderedDict()
 
-        self._events: list[Endpoint] = []
+        self._events: list[Event] = []
+        self._responders: list[Responder] = []
         self._event_payloads: OrderedDict[str, Request] = OrderedDict()
 
     def get_api(self) -> Api:
@@ -61,6 +58,7 @@ class ApiRegistry:
             response_types=responses,
             events=self._events,
             event_payloads=self._event_payloads,
+            event_responders=self._get_event_responders()
         )
 
     def add_message_types(self, proto_path: Path | str) -> None:
@@ -130,14 +128,18 @@ class ApiRegistry:
                 raise ValueError(f'can not add request class {type(dto)}')
 
     def _add_idc(self, func: tbr.FunctionDescription) -> None:
-        if not (idc_func := endpoint_from_function(func, [ENDPOINT_ATTR, EVENT_ATTR])):
+        if not (idc := idc_from_function(func)):
             return
 
-        idc_type, idc = idc_func
-        if idc_type == 'tbd::endpoint':
-            self._add_endpoint(idc)
-        elif idc_type == 'tbd::event':
-            self._add_event(idc)
+        match idc:
+            case Endpoint():
+                self._add_endpoint(idc)
+            case Event():
+                self._add_event(idc)
+            case Responder():
+                self._add_responder(idc)
+            case _:
+                raise ValueError(f'unknown IDC type {type(idc)}')
 
 
     def _add_endpoint(self, endpoint: Endpoint) -> None:
@@ -201,7 +203,7 @@ class ApiRegistry:
             self._response_types[output_name] = response
         return response
 
-    def _add_event(self, event: Endpoint) -> None:
+    def _add_event(self, event: Event) -> None:
         """ Add a C++ function annotated as `tbd::event` to events.
 
             This will analyze the function signature and generate DTOs for inputs and output, if no predefined
@@ -210,10 +212,7 @@ class ApiRegistry:
         event_name = event.name
         args = event.args
 
-        if event.output is not None:
-            raise ValueError('events can not have non const output arguments')
-
-        event.request_type = self._add_event_payload(event_name, args).name if args else None
+        event.payload_type = self._add_event_payload(event_name, args).name if args else None
 
         # check if the endpoint has guaranteed id
         self._events.append(event)
@@ -246,6 +245,24 @@ class ApiRegistry:
             in_message = self._find_payload(arg_type_name)
             arg_messages[arg_name] = in_message
         return arg_messages
+
+    def _add_responder(self, responder: Responder) -> None:
+        self._responders.append(responder)
+
+    def _get_event_responders(self) -> dict[str, list[Responder]]:
+        event_names = set(event.name for event in self._events)
+        responder_event_names = set(responder.event_name for responder in self._responders)
+        invalid_events = responder_event_names - event_names
+        if invalid_events:
+            raise ValueError(f'responders for unknown events: {invalid_events}')
+
+        event_responders = {}
+        for responder in self._responders:
+            event_name = responder.event_name
+            responders_for_event = event_responders.get(event_name, [])
+            responders_for_event.append(responder)
+            event_responders[event_name] = responders_for_event
+        return event_responders
 
 __all__ = [
     'ApiRegistry', 

@@ -1,0 +1,32 @@
+from dataclasses import dataclass
+from typing import Final, Callable
+
+from .client import *
+
+from . import api_types_pb2 as dtos
+
+def default_event_handler(*args, **kwargs):
+    print(f'got event with args {args, kwargs}')
+
+class TbdEvent:
+    def __init__(self, client: TbdClient):
+        self._client: Final = client
+{% for event in api.events %}
+        self.on_{{ event.name }}: Callable[[{{ event | event_signature }}], None] = default_event_handler
+{%- endfor %}
+
+{% for event in api.events %}
+    async def {{ event.name }}({{event | func_args}}):
+        {%- if event | event_payload %}
+        request = dtos.{{ event | event_payload }}()
+        {%- for arg in event | forward_args('request') %}
+        {{ arg }}
+        {%- endfor %}
+        payload = request.SerializeToString()
+        {%- else %}
+        payload = None
+        {%- endif %}
+        await self._client.send_event({{ event | event_id }}, payload)
+{%  endfor %}
+
+__all__ = ['TbdEvent']

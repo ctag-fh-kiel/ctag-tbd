@@ -13,6 +13,7 @@ namespace tbd::api {
 [[tbd::endpoint]]
 Error get_api_version(ApiVersion& version) {
     version.version = API_VERSION;
+    version.core_hash = CORE_API_HASH;
     version.base_hash = BASE_API_HASH;
     version.api_hash = API_HASH;
     return TBD_OK;

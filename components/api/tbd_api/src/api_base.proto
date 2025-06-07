@@ -3,17 +3,12 @@ syntax = "proto3";
 // NEVER change this
 message ApiVersion {
   uint32 version = 1;
-  uint32 base_hash = 2;
-  uint32 api_hash = 3;
+  uint32 core_hash = 2;
+  uint32 base_hash = 3;
+  uint32 api_hash = 4;
 };
 
 message DeviceInfo {
   int32 api_version = 1;
   int32 api_hash = 2;
-}
-
-message Something {
-  uint32 request_id = 1;
-  uint32 endpoint = 2;
-  bytes payload = 3;
 }

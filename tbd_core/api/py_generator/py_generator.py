@@ -1,8 +1,11 @@
 import subprocess
 from pathlib import Path
 
-from tbd_core.api import Api, Endpoint, GeneratorBase, jilter, MessagePayload, ParamPayload
+from typing import Callable
+
+from tbd_core.api import Api, Endpoint, GeneratorBase, jilter, MessagePayload, ParamPayload, Event
 import tbd_core.buildgen as tbd
+from tbd_core.api.idc_interfaces import IDCBase
 
 MODULE_NAME = 'tbd_client'
 BASE_ENDPOINTS_FILE = 'base_endpoints.py'
@@ -30,29 +33,33 @@ class PyGenerator(GeneratorBase):
         return self._env.get_template('request_func.py.j2').render(endpoint=endpoint)
 
     @jilter
-    def request_func_args(self, endpoint: Endpoint):
+    def func_args(self, idc: IDCBase):
         arg_list = ['self']
-        if endpoint.has_args:
-            for arg_name, arg_type in endpoint.args.items():
+        if idc.has_args:
+            for arg_name, arg_type in idc.args.items():
                 arg_type = self.payload_type(arg_type)
                 arg_list.append(f'{arg_name}: {arg_type}')
 
         return ', '.join(arg_list)
 
+    @jilter
+    def event_signature(self, event: Event):
+        arg_list = []
+        if event.has_args:
+            for arg_name, arg_type in event.args.items():
+                arg_list.append(self.payload_type(arg_type))
+
+        return ', '.join(arg_list)
 
     @jilter
-    def forward_args(self, endpoint: Endpoint):
-        if not endpoint.has_args:
-            return ''
-        if len(endpoint.args) == 1:
-            arg_name = next(iter(endpoint.args))
-            return f'request.input = {arg_name}'
+    def forward_args(self, idc: IDCBase, obj: str) -> list[str]:
+        if not idc.has_args:
+            return []
+        if len(idc.args) == 1:
+            arg_name = next(iter(idc.args))
+            return [f'{obj}.input = {arg_name}']
 
-        arg_list = []
-        for arg_name in endpoint.args:
-            arg_list.append(f'request.{arg_name} = {arg_name}')
-
-        return '\n'.join(arg_list)
+        return [f'{obj}.{arg_name} = {arg_name}' for arg_name in idc.args]
 
     @jilter
     def unwrap_response(self, endpoint: Endpoint) -> str:
@@ -73,18 +80,26 @@ class PyGenerator(GeneratorBase):
         srcs_path = Path(__file__).parent.parent
         tbd.copy_tree_if_outdated(
             srcs_path / MODULE_NAME, out_module_dir,
-            patterns=['*.py'], ignore=['api_types_pb2.py', 'client.py']
+            patterns=['*.py'], ignore=['api_types_pb2.py', 'tbd_rpc.py', 'tbd_event.py']
         )
         tbd.copy_file_if_outdated(srcs_path / BASE_ENDPOINTS_FILE, out_module_dir / BASE_ENDPOINTS_FILE)
         tbd.copy_file_if_outdated(self._templates / PROJECT_FILE, out_dir / PROJECT_FILE)
 
         self._generate_protobuf(out_module_dir, messages_file)
-        self._write_client_class(out_module_dir)
+        self._write_rpc_class(out_module_dir)
+        self._write_event_class(out_module_dir)
 
-    def _write_client_class(self, out_module_dir: Path):
-        source = self.render('tbd_client.py.j2')
+    def _write_rpc_class(self, out_module_dir: Path):
+        source = self.render('tbd_rpc.py.j2')
 
-        out_file = out_module_dir / 'client.py'
+        out_file = out_module_dir / 'tbd_rpc.py'
+        with open(out_file, 'w') as f:
+            f.write(source)
+
+    def _write_event_class(self, out_module_dir: Path):
+        source = self.render('tbd_event.py.j2')
+
+        out_file = out_module_dir / 'tbd_event.py'
         with open(out_file, 'w') as f:
             f.write(source)
 

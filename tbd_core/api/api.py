@@ -3,7 +3,7 @@ from typing import Final
 from zlib import crc32
 
 from .base_endpoints import BaseEndpoints
-from .enpoints import Endpoint
+from .idc_interfaces import Endpoint, Event, Responder
 from .dtos import Payload, Request, Response
 
 
@@ -13,8 +13,9 @@ class Api:
         payload_types: OrderedDict[str, Payload],
         request_types: OrderedDict[str, Request],
         response_types: OrderedDict[str, Response],
-        events: list[Endpoint],
+        events: list[Event],
         event_payloads: OrderedDict[str, Request],
+        event_responders: dict[str, list[Responder]],
     ):
         self._endpoints: Final = endpoints
         self._events: Final = events
@@ -22,6 +23,7 @@ class Api:
         self._request_types: Final = request_types
         self._response_types: Final = response_types
         self._event_payloads: Final = event_payloads
+        self._event_responders: Final = event_responders
 
     @property
     def endpoints(self) -> list[Endpoint]:
@@ -48,7 +50,7 @@ class Api:
         return [message_name for message_name in self._payload_types]
 
     @property
-    def events(self) -> list[Endpoint]:
+    def events(self) -> list[Event]:
         return self._events
 
     @property
@@ -58,6 +60,13 @@ class Api:
     @staticmethod
     def get_version():
         return 1
+
+    def calculate_core_hash(self) -> int:
+        signatures = []
+        for endpoint in self._endpoints[:BaseEndpoints.num_critical_ids()]:
+            signatures.append(endpoint.signature())
+        data = '\n'.join(signatures)
+        return crc32(data.encode())
 
     def calculate_base_hash(self) -> int:
         signatures = []
@@ -87,6 +96,9 @@ class Api:
             return next(index for index, event in enumerate(self._events) if event.name == event_name)
         except StopIteration:
             raise ValueError(f'unknown event {event_name}')
+
+    def get_responders(self, event_name: str) -> list[Responder] | None:
+        return self._event_responders.get(event_name)
 
     def get_payload(self, payload_name: str) -> Payload:
         return self._payload_types[payload_name]

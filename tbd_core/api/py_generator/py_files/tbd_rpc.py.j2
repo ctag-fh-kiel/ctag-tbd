@@ -1,0 +1,15 @@
+from typing import Final
+
+from .client import *
+
+from . import api_types_pb2 as dtos
+
+class TbdRpc:
+    def __init__(self, client: TbdClient):
+        self._client: Final = client
+{% for endpoint in api.endpoints %}
+    {{ endpoint | request_func | indent }}
+{% endfor %} 
+
+
+__all__ = ['TbdRpc']

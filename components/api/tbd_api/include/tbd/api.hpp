@@ -20,10 +20,7 @@ struct Api {
 
     using EventCallback = uint32_t(*)(const api::Packet&);
     static Error emit_event(const api::Packet& event);
-
-    template<class Message>
-    Error emit(const Message& message);
-
+    static Error handle_event(const api::Packet& event);
 };
 
 }

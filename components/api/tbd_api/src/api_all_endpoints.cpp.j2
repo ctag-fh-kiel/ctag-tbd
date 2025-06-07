@@ -11,7 +11,7 @@ using tbd::api::tag;
 
 // endpoint declarations
 {%- for endpoint in api.endpoints %}
-{{ endpoint | handler_declaration }}
+{{ endpoint | shadow_declaration }}
 {%- endfor %}
 
 namespace tbd::api {
@@ -21,12 +21,13 @@ namespace tbd::api {
 {% endfor %}
 
 const uint32_t API_VERSION = {{ api.get_version() }};
+const uint32_t CORE_API_HASH = {{ api.calculate_core_hash() }};
 const uint32_t BASE_API_HASH = {{ api.calculate_base_hash() }};
 const uint32_t API_HASH = {{ api.calculate_hash() }};
 
 const size_t NUM_ENDPOINTS = {{ api.endpoints | length }};
 const Endpoint ENDPOINT_LIST[] = { {%- for endpoint in api.endpoints %}
-    { "{{ endpoint.name }}", {{ endpoint | request_id }}, {{ endpoint | response_id }}, &{{ endpoint | callback_name }} },
+    { "{{ endpoint.name }}", {{ endpoint | request_id }}, {{ endpoint | response_id }}, &{{ endpoint | rpc_handler_name }} },
 {%- endfor %} 
 };
 

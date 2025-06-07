@@ -1,5 +1,4 @@
 import asyncio
-import struct
 from abc import ABC, abstractmethod
 from typing import Final
 

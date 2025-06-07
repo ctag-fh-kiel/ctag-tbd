@@ -66,7 +66,7 @@ protected:
     }
 
     bool read_type(const uint8_t* buffer) {
-        uint8_t type = buffer[Packet::OFFSET_TYPE] && Packet::TYPE_MASK;
+        uint8_t type = buffer[Packet::OFFSET_TYPE] & Packet::TYPE_MASK;
         if (type < Packet::TYPE_INVALID) {
             packet_.type = static_cast<Packet::PacketType>(type);
             return true;

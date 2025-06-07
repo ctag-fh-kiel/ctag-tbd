@@ -26,18 +26,22 @@ type ErrorDescription = [string, string]
 
 
 enum BaseEndpoints {
-    // core API
+    // recover API
     get_api_version   = 0,
     update_device     = 1,
     reset_device      = 2,
 
-    // base API
+    // core API
     get_num_endpoints = 3,
     get_endpoint_name = 4,
-    get_device_info   = 5,
-    get_num_errors    = 6,
-    get_error_name    = 7,
-    get_error_message = 8,
+    get_num_events    = 5,
+    get_event_name    = 6,
+    get_num_errors    = 7,
+    get_error_name    = 8,
+    get_error_message = 9,
+
+    // base API
+    get_device_info   = 10,
 }
 
 

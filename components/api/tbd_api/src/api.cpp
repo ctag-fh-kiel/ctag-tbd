@@ -19,19 +19,18 @@ Error Api::handle_rpc(const Packet& request, Packet& response, uint8_t* out_buff
         return TBD_ERR(API_WRONG_PACKET_TYPE);
     }
 
-    auto endpoint_id = request.handler;
+    const auto endpoint_id = request.handler;
     if (endpoint_id >= api::NUM_ENDPOINTS) {
         TBD_LOGE(tag, "invalid endpoint: %i", endpoint_id);
         return TBD_ERR(API_BAD_ENDPOINT);
     }
 
     const auto& endpoint = api::ENDPOINT_LIST[endpoint_id];
-    const auto request_type_id = endpoint.request_type;
     const auto response_type_id = endpoint.response_type;
 
-    auto required_buffer_size = api::RESPONSE_MESSAGE_LIST[response_type_id].size;
-    if (response_type_id != api::NO_MESSAGE
-        && required_buffer_size > out_buffer_size)
+
+    if (const auto required_buffer_size = api::RESPONSE_MESSAGE_LIST[response_type_id].size;
+        response_type_id != api::NO_MESSAGE && required_buffer_size > out_buffer_size)
     {
         TBD_LOGE(tag, "api response buffer for endpoint %i has insufficient size: required %i, provided %i",
                  endpoint_id, required_buffer_size, out_buffer_size);
@@ -44,27 +43,48 @@ Error Api::handle_rpc(const Packet& request, Packet& response, uint8_t* out_buff
 
     response.id = request.id;
     response.crc = 0;
-    auto handler = endpoint.callback;
+    const auto handler = endpoint.callback;
 
     size_t length = out_buffer_size;
-    if (auto err = handler(request, out_buffer, length); err != errors::SUCCESS) {
+    if (const auto err = handler(request, out_buffer, length); err != errors::SUCCESS) {
         TBD_LOGE(tag, "handler for endpoint %i failed", endpoint_id);
         response.type = Packet::TYPE_ERROR;
         response.handler = err;
         response.payload_length = 0;
         response.payload = nullptr;
-        return errors::SUCCESS;
+        return TBD_OK;
     }
     response.type = Packet::TYPE_RESPONSE;
     response.handler = 0;
     response.payload_length = length;
     response.payload = out_buffer;
 
-    return errors::SUCCESS;
+    return TBD_OK;
 }
 
 Error Api::emit_event(const Packet& event) {
-    return errors::SUCCESS;
+    return TBD_OK;
+}
+
+Error Api::handle_event(const Packet& request) {
+    if (request.type != Packet::TYPE_EVENT) {
+        TBD_LOGE(tag, "request type is not event: %i", request.type);
+        return TBD_ERR(API_WRONG_PACKET_TYPE);
+    }
+
+    const auto event_id = request.handler;
+    if (event_id >= api::NUM_EVENTS) {
+        TBD_LOGE(tag, "invalid event: %i", event_id);
+        return TBD_ERR(API_BAD_EVENT);
+    }
+
+    auto& event = api::EVENT_LIST[event_id];
+    const auto handler = event.callback;
+
+    if (const auto err = handler(request); err != errors::SUCCESS) {
+        TBD_LOGE(tag, "handler for event %i failed", event_id);
+    }
+    return TBD_OK;
 }
 
 }

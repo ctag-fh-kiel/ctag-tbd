@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 import abc
-from typing import Final, OrderedDict, Literal
+from typing import Final, OrderedDict
 import proto_schema_parser.ast as proto
 
 import tbd_core.reflection as tbr
@@ -12,9 +12,9 @@ STATUS_FIELD_NAME = 'status'
 SINGLE_ARG_FIELD_NAME = 'input'
 WRAPPER_FIELD_NAME = 'value'
 
-REQUEST_NAME_POSTFIX = '_request'
+REQUEST_NAME_POSTFIX = '_args'
 WRAPPER_NAME_POSTFIX = '_wrapper'
-EVENT_NAME_POSTFIX = '_event'
+EVENT_NAME_POSTFIX = '_payload'
 WRAPPER_NAME_EXPR = re.compile(r'^\w+(?P<wrapper_type>_request|_wrapper|_event)$')
 
 PARAM_TO_PROTO = {

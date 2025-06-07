@@ -157,4 +157,5 @@ __all__ = [
     'parse_header',
     'parse_tail',
     'parse_packet',
+    'dump_packet',
 ]
