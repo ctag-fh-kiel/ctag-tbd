@@ -26,7 +26,6 @@ class GlobalRegistry:
 
     def __new__(cls):
         if cls._instance is None:
-            print('XXXXXXXXXXX creating global registry')
             cls._instance = super(GlobalRegistry, cls).__new__(cls)
             cls._instance.domains = {GLOBAL_DOMAIN: {}}
         return cls._instance
