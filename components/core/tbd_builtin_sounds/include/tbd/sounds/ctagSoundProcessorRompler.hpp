@@ -19,7 +19,7 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-#include <tbd/sound_processor/parameter_types.h>
+#include <tbd/sound_processor/parameter_types.hpp>
 #include <atomic>
 #include <tbd/sound_processor.hpp>
 #include "synthesis/RomplerVoice.hpp"

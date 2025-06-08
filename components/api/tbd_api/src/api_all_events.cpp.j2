@@ -37,7 +37,6 @@ Error dispatch_to_sinks(const uint8_t* buffer, size_t length) {
 {% for event in api.events %}
 Error {{ event | dispatcher_name }}({{ event | func_args }}) {
     {% for responder in event | responders -%}
-    // {{ event | forward_args  }}
     {{ responder.full_name }}({{ event | forward_args }});
     {% endfor -%}
     return TBD_OK;

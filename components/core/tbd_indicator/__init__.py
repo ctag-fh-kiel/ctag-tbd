@@ -1,12 +1,12 @@
-from esphome.core import CORE
 import esphome.config_validation as cv
-from esphome import pins
+import esphome.pins as pins
 
 import esphome.components.tbd_module as tbd
 
 
 AUTO_LOAD = ['tbd_module']
 
+CONF_SIMULATE = 'simulate'
 CONF_PINS     = 'pins'
 CONF_PIN      = 'pin'
 CONF_RED_PIN  = 'red'
@@ -15,6 +15,7 @@ CONF_BLUE_PIN = 'blue'
 
 
 CONFIG_SCHEMA = cv.Schema({
+    cv.Optional(CONF_SIMULATE, default=False): bool, 
     cv.Optional(CONF_PINS): cv.All(cv.only_on_esp32, {
         cv.Required(CONF_RED_PIN): pins.gpio_output_pin_schema,
         cv.Required(CONF_GREEN_PN): pins.gpio_output_pin_schema,
@@ -33,9 +34,12 @@ def add_rgb_pins(config, module: tbd.ComponentInfo):
     module.add_define(f'TBD_RGB_PIN_BLUE', get_pin_number(CONF_BLUE_PIN))
 
 async def to_code(config):
-    module = tbd.new_tbd_component(__file__)
+    module = tbd.new_tbd_component(__file__, auto_sources=False)
 
-    if not tbd.is_desktop():
+    if tbd.is_desktop() or config[CONF_SIMULATE]:
+        module.add_source_dir('host')
+    else:
+        module.add_source_dir(module.platform_source_dir)
         pin = config.get(CONF_PIN)
         pins = config.get(CONF_PINS)
 

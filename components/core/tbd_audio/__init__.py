@@ -8,7 +8,7 @@ import esphome.config_validation as cv
 from esphome.core import CORE
 from pathlib import Path
 
-AUTO_LOAD = ['tbd_system', 'tbd_sound_utils', 'tbd_dsp']
+AUTO_LOAD = ['tbd_system', 'tbd_sound_utils']
 
 CONF_AUTOSTART = 'autostart'
 

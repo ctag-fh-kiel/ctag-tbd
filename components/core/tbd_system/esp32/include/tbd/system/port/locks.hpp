@@ -4,7 +4,7 @@
 
 #include <tbd/logging.hpp>
 
-#include <FreeRTOS.h>
+#include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 
 namespace tbd::system {

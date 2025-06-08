@@ -1,5 +1,5 @@
 #include <atomic>
-#include <tbd/parameter_types.h>
+#include <tbd/parameter_types.hpp>
 #include <tbd/sound_processor.hpp>
 
 namespace tbd::sounds {

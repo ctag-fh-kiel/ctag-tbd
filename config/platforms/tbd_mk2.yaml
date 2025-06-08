@@ -3,13 +3,18 @@ esphome:
     
 esp32:
   variant: esp32
-  board: esp32-devkit
+  board: esp-wrover-kit
   framework: 
     type: esp-idf
+    version: latest
 
 external_components:
   - source: ${TBD_ROOT}/components/core
   - source: ${TBD_ROOT}/components/audio
+  - source: ${TBD_ROOT}/components/control_inputs
+  - source: ${TBD_ROOT}/components/vendor
+
+tbd_adc:
 
 tbd_wm8xxx:
   type: wm8978

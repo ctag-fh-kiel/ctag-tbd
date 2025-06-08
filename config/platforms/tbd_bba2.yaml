@@ -44,7 +44,7 @@ tbd_midi:
 tbd_indicator:
   pin: 38
 
-tbd_builtin_sounds:
+# tbd_builtin_sounds:
 
 tbd_test_plugins:
 

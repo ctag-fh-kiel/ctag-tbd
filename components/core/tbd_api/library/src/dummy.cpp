@@ -1,1 +1,0 @@
-int _tbd_mac_api_dummy = 0; // to generate a symbol

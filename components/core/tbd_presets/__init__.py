@@ -3,7 +3,7 @@ import esphome.config_validation as cv
 
 from esphome.components.tbd_module import new_tbd_component
 
-AUTO_LOAD = ['tbd_module', 'rapidjson', 'tbd_sound_manager']
+AUTO_LOAD = ['tbd_module', 'rapidjson']
 
 CONFIG_SCHEMA = {}
 
