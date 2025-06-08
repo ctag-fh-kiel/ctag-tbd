@@ -1,7 +1,7 @@
 async def {{ endpoint.name }}({{ endpoint | func_args }}) -> {{ endpoint | request_func_return }}:
     {%- if endpoint | request_type %}
     request = dtos.{{ endpoint | request_type }}()
-    {%- for assignment in endpoint | forward_args('request') %}
+    {%- for assignment in endpoint | apply_args('request', single_arg_name='input') %}
     {{ assignment }}
     {%- endfor %}
     payload = request.SerializeToString()

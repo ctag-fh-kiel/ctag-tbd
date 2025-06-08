@@ -3,7 +3,7 @@ from typing import Final
 from zlib import crc32
 
 from .base_endpoints import BaseEndpoints
-from .idc_interfaces import Endpoint, Event, Responder
+from .idc_interfaces import Endpoint, Event, Responder, EventSink
 from .dtos import Payload, Request, Response
 
 
@@ -16,6 +16,7 @@ class Api:
         events: list[Event],
         event_payloads: OrderedDict[str, Request],
         event_responders: dict[str, list[Responder]],
+        event_sinks: list[EventSink],
     ):
         self._endpoints: Final = endpoints
         self._events: Final = events
@@ -24,6 +25,7 @@ class Api:
         self._response_types: Final = response_types
         self._event_payloads: Final = event_payloads
         self._event_responders: Final = event_responders
+        self._event_sinks: Final = event_sinks
 
     @property
     def endpoints(self) -> list[Endpoint]:
@@ -56,6 +58,10 @@ class Api:
     @property
     def event_payloads(self) -> list[Request]:
         return [*self._event_payloads.values()]
+
+    @property
+    def event_sinks(self) -> list[EventSink]:
+        return self._event_sinks
 
     @staticmethod
     def get_version():

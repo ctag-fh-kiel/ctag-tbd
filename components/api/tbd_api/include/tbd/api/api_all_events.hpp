@@ -1,16 +1,17 @@
 #pragma once
 
-#include <tbd/api.hpp>
 #include <tbd/api/packet.hpp>
 #include <tbd/api/messages.hpp>
 
 
 namespace tbd::api {
 
+using EventCallback = uint32_t(*)(const api::Packet&);
+
 struct Event {
     const char* path;
     int32_t event_type;
-    Api::EventCallback callback;
+    EventCallback callback;
 };
 
 extern const size_t NUM_EVENTS;

@@ -32,6 +32,12 @@ void handle_some_event3() {
     TBD_LOGI("some event", "called handler 3");
 }
 
+[[tbd::endpoint]]
+Error trig_trig(uint_par& output) {
+    some_trigger_event();
+    output = 52;
+    return TBD_OK;
+}
 
 [[tbd::event]]
 void blub_event(const uint_par& a, const float_par& b);

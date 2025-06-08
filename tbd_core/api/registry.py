@@ -19,7 +19,7 @@ from .dtos import (
     request_for_single_arg, MessagePayload, request_for_arguments, MultiArgRequest, event_for_single_arg,
     event_for_arguments
 )
-from .idc_interfaces import Endpoint, idc_from_function, Event, Responder
+from .idc_interfaces import Endpoint, idc_from_function, Event, Responder, EventSink
 from .base_endpoints import BaseEndpoints
 from .api import Api
 
@@ -43,6 +43,7 @@ class ApiRegistry:
         self._events: list[Event] = []
         self._responders: list[Responder] = []
         self._event_payloads: OrderedDict[str, Request] = OrderedDict()
+        self._event_sinks: list[EventSink] = []
 
     def get_api(self) -> Api:
         shared_requests = OrderedDict((request.name, request) for request in self._shared_request_types.values())
@@ -58,7 +59,8 @@ class ApiRegistry:
             response_types=responses,
             events=self._events,
             event_payloads=self._event_payloads,
-            event_responders=self._get_event_responders()
+            event_responders=self._get_event_responders(),
+            event_sinks=self._event_sinks,
         )
 
     def add_message_types(self, proto_path: Path | str) -> None:
@@ -138,6 +140,8 @@ class ApiRegistry:
                 self._add_event(idc)
             case Responder():
                 self._add_responder(idc)
+            case EventSink():
+                self._add_event_sink(idc)
             case _:
                 raise ValueError(f'unknown IDC type {type(idc)}')
 
@@ -263,6 +267,9 @@ class ApiRegistry:
             responders_for_event.append(responder)
             event_responders[event_name] = responders_for_event
         return event_responders
+
+    def _add_event_sink(self, sink: EventSink) -> None:
+        self._event_sinks.append(sink)
 
 __all__ = [
     'ApiRegistry', 

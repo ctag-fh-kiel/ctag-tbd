@@ -3,8 +3,7 @@
 #include <esphome/core/component.h>
 #include <esphome/components/uart/uart.h>
 
-#include <tbd/api/packet_stream_parser.hpp>
-#include <tbd/api/packet_writers.hpp>
+#include <tbd/api.hpp>
 
 
 namespace esphome::tbd_uart {
@@ -53,14 +52,12 @@ private:
  */
 class UARTServer : public UARTPacketStream, public Component {
 public:
-    UARTServer() : parser_(*this), writer_(*this) {}
+    UARTServer() : stream_handler_(*this, *this) {}
 
     void loop() override;
 
 private:
-    tbd::api::Packet::PayloadBuffer payload_buffer_;
-    tbd::api::PacketStreamParser<UARTPacketStream> parser_;
-    tbd::api::PacketStreamWriter<UARTPacketStream> writer_;
+    tbd::api::ApiStreamHandler<UARTPacketStream, UARTPacketStream> stream_handler_;
 };
 
 }

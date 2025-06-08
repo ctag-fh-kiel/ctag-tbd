@@ -1,17 +1,18 @@
 #pragma once
 
-#include <tbd/api.hpp>
 #include <tbd/api/packet.hpp>
 #include <tbd/api/messages.hpp>
 
 
 namespace tbd::api {
 
+using EndpointCallback = uint32_t(*)(const api::Packet&, uint8_t*, size_t&);
+
 struct Endpoint {
     const char* path;
     int32_t request_type;
     int32_t response_type;
-    Api::EndpointCallback callback;
+    EndpointCallback callback;
 };
 
 extern const uint32_t API_VERSION;

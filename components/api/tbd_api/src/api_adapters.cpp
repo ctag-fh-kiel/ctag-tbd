@@ -1,4 +1,4 @@
-#include <tbd/api.hpp>
+#include <tbd/api/api_adapters.hpp>
 #include <tbd/api/module.hpp>
 
 #include <tbd/api/api_all_endpoints.hpp>
@@ -8,12 +8,10 @@
 #include <pb_decode.h>
 #include <api_types.pb.h>
 
-using tbd::api::tag;
-using tbd::api::Packet;
 
-namespace tbd {
+namespace tbd::api::impl {
     
-Error Api::handle_rpc(const Packet& request, Packet& response, uint8_t* out_buffer, size_t out_buffer_size) {
+Error handle_rpc(const Packet& request, Packet& response, uint8_t* out_buffer, size_t out_buffer_size) {
     if (request.type != Packet::TYPE_RPC) {
         TBD_LOGE(tag, "request type is not RPC: %i", request.type);
         return TBD_ERR(API_WRONG_PACKET_TYPE);
@@ -62,11 +60,7 @@ Error Api::handle_rpc(const Packet& request, Packet& response, uint8_t* out_buff
     return TBD_OK;
 }
 
-Error Api::emit_event(const Packet& event) {
-    return TBD_OK;
-}
-
-Error Api::handle_event(const Packet& request) {
+Error handle_event(const Packet& request) {
     if (request.type != Packet::TYPE_EVENT) {
         TBD_LOGE(tag, "request type is not event: %i", request.type);
         return TBD_ERR(API_WRONG_PACKET_TYPE);

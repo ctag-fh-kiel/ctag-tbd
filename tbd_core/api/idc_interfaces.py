@@ -13,6 +13,7 @@ from tbd_core.reflection import Attribute
 ENDPOINT_RETURN_TYPES = Literal['Error']
 EVENT_RETURN_TYPES = Literal['void']
 RESPONDER_RETURN_TYPES = Literal['void', 'Error']
+SINK_RETURN_TYPES = Literal['void']
 
 EVENT_PARAM_NAME = 'event'
 
@@ -20,12 +21,12 @@ EVENT_PARAM_NAME = 'event'
 ENDPOINT_ATTR = 'tbd::endpoint'
 EVENT_ATTR = 'tbd::event'
 RESPONDER_ATTR = 'tbd::responder'
+SINK_ATTR = 'tbd::sink'
 
 
 @dataclass
 class IDCBase:
     func: tbr.FunctionDescription
-    args: OrderedDict[str, str] | None
 
     @property
     def name(self) -> str:
@@ -54,6 +55,10 @@ class IDCBase:
         """
         return self.func.header
 
+@dataclass
+class IDCHandler(IDCBase):
+    args: OrderedDict[str, str] | None
+
     @property
     def has_args(self) -> bool:
         return self.args is not None
@@ -77,7 +82,7 @@ class EndpointType(Enum):
 
 
 @dataclass
-class Endpoint(IDCBase):
+class Endpoint(IDCHandler):
     """ Remotely callable procedure.
 
         Functions annotated with `[[tbd::endpoint(...)]]` that adhere to the following
@@ -137,7 +142,7 @@ class Endpoint(IDCBase):
 
 
 @dataclass
-class Event(IDCBase):
+class Event(IDCHandler):
     payload_type: str | None = None
     _event_name: str | None = None
 
@@ -158,7 +163,12 @@ class Event(IDCBase):
 
 
 @dataclass
-class Responder(IDCBase):
+class EventSink(IDCBase):
+    pass
+
+
+@dataclass
+class Responder(IDCHandler):
     event_name: str
     payload_type: str | None = None
 
@@ -200,8 +210,8 @@ def get_idc_args(func_args: list[cpptypes.Parameter]) -> tuple[OrderedDict[str, 
     return args, output
 
 
-def idc_from_function(func: tbr.FunctionDescription) -> Endpoint | Event | Responder | None:
-    handler_attrs = [attr for attr in func.attrs if attr.name in [ENDPOINT_ATTR, EVENT_ATTR, RESPONDER_ATTR]]
+def idc_from_function(func: tbr.FunctionDescription) -> Endpoint | Event | Responder | EventSink | None:
+    handler_attrs = [attr for attr in func.attrs if attr.name in [ENDPOINT_ATTR, EVENT_ATTR, RESPONDER_ATTR, SINK_ATTR]]
     if len(handler_attrs) == 0:
         return None
     elif len(handler_attrs) > 1:
@@ -214,6 +224,8 @@ def idc_from_function(func: tbr.FunctionDescription) -> Endpoint | Event | Respo
         return event_from_function(func, attr)
     elif attr.name == RESPONDER_ATTR:
         return responder_from_function(func, attr)
+    elif attr.name == SINK_ATTR:
+        return sink_from_function(func, attr)
     return None
 
 
@@ -300,10 +312,31 @@ def responder_from_function(func: tbr.FunctionDescription, attr: Attribute) -> R
     )
 
 
+def sink_from_function(func: tbr.FunctionDescription, attr: Attribute) -> EventSink:
+    valid_return_types = get_args(SINK_RETURN_TYPES)
+    if func.return_type not in valid_return_types:
+        raise ValueError(f'sink functions have to return {valid_return_types} type')
+
+    if len(func.arguments) != 2:
+        raise ValueError('sink function must have two arguments')
+
+    buffer_arg, size_arg = func.arguments
+    if buffer_arg.type.format() != 'const uint8_t*':
+        raise ValueError('first sink function argument must be "const uint8_t*" buffer pointer')
+    if size_arg.type.format() != 'size_t':
+        raise ValueError('second sink function argument must be "size_t" data length')
+
+    return EventSink(
+        func=func,
+    )
+
+
 __all__ = [
+    'IDCHandler',
     'EndpointType',
     'Endpoint',
     'Event',
     'Responder',
+    'EventSink',
     'idc_from_function',
 ]

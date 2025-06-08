@@ -5,7 +5,6 @@
 
 #include <tbd/logging.hpp>
 #include <tbd/errors.hpp>
-#include <tbd/api.hpp>
 
 #include <concepts>
 
@@ -26,9 +25,6 @@
 } while(0)
 
 namespace tbd::api {
-
-using tbd::api::tag;
-
 
 template<class ImplT>
 concept PacketInputStream = requires(

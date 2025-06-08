@@ -6,7 +6,16 @@
 
 #include "api_message_transcoding.hpp"
 
+namespace {
+
+tbd::api::PacketBufferWriter event_writer;
+
+}
+
 using tbd::api::Packet;
+{% for sink in api.event_sinks %}
+namespace {{ sink.full_name.parent }} { void {{ sink.name }}(const uint8_t* buffer, size_t length); }
+{%- endfor %}
 
 //// declare responders ////
 {% for event in api.events %}
@@ -17,13 +26,21 @@ using tbd::api::Packet;
 
 namespace tbd::api {
 
+Error dispatch_to_sinks(const uint8_t* buffer, size_t length) {
+    {%- for sink in api.event_sinks %}
+    {{ sink.full_name }}(buffer, length);
+    {%- endfor %}
+    return TBD_OK;
+}
+
 //// dispatchers ////
 {% for event in api.events %}
 Error {{ event | dispatcher_name }}({{ event | func_args }}) {
     {% for responder in event | responders -%}
+    // {{ event | forward_args  }}
     {{ responder.full_name }}({{ event | forward_args }});
     {% endfor -%}
-    return TBD_ERR(SUCCESS);
+    return TBD_OK;
 }
 {% endfor %}
 
@@ -37,7 +54,7 @@ Error {{ event | event_handler_name }}(const Packet& event_packet) {
     }
     {%- endif %}
     if (auto err = {{ event | invoke_dispatcher_from_message }}; err != errors::SUCCESS) { return err; }
-    return TBD_ERR(SUCCESS);
+    return TBD_OK;
 }
 {% endfor %}
 }
@@ -45,21 +62,33 @@ Error {{ event | event_handler_name }}(const Packet& event_packet) {
 //// emitters ////
 {% for event in api.events %}
 namespace {{ event.full_name.parent }} { void {{ event | emitter_name }}({{ event | func_args }}) {
-    tbd::api::Packet::PayloadBuffer payload_buffer;
-    size_t payload_size = Packet::MAX_PAYLOAD_SIZE;
-    {% if event | event_payload %}
-    {{ event | event_payload }} _payload;
-    if (!tbd::api::encode_message(_payload, payload_buffer, payload_size)) {
-        return;
-    }
-    {%- endif %}
-
-    Packet _packet;
-    _packet.type == Packet::TYPE_EVENT;
-
     {%- if event | responders %}
     {{ event | invoke_dispatcher_from_args }};
-    {%- endif %}
+    {% endif %}
+
+    {%- if api.event_sinks %}
+    Packet _packet;
+    _packet.type = Packet::TYPE_EVENT;
+    _packet.handler = {{ event | event_id }};
+    _packet.crc = 0;
+    _packet.id = 0;
+    {%- if event | event_payload %}
+
+    {{ event | event_payload }} _payload;
+    {% for assignment in event | apply_args('_payload', single_arg_name = 'input') -%}
+    {{ assignment }};
+    {% endfor %}
+    size_t _length = event_writer.payload_buffer_size();
+    if (!tbd::api::encode_message(_payload, event_writer.payload_buffer(), _length)) {
+        return;
+    }
+    _packet.payload_length = _length;
+    {% else %}
+    _packet.payload_length = 0;
+    {% endif %}
+    event_writer.write(_packet);
+    tbd::api::dispatch_to_sinks(event_writer.buffer(), event_writer.serialized_length());
+    {% endif %}
 } }
 {% endfor %}
 

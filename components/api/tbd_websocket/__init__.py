@@ -6,6 +6,7 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import CONF_PORT, CONF_PATH, CONF_ID
 
+import esphome.components.tbd_api as tbd_api
 
 AUTO_LOAD = ['tbd_api']
 DEPENDENCIES = ['network']
@@ -31,6 +32,8 @@ async def to_code(config):
 
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
+
+    tbd_api.get_api_registry().add_source(component.platform_source_dir / 'websocket_server.cpp')
 
     if tbd.is_desktop():
         # cmake_dependency(

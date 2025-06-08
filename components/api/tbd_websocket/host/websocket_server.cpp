@@ -1,8 +1,6 @@
 #include <tbd/api/websocket_server.hpp>
 #include <tbd/websocket/module.hpp>
 
-#include <tbd/api/packet_parser.hpp>
-#include <tbd/api/packet_writers.hpp>
 #include <tbd/api.hpp>
 
 #include <tbd/logging.hpp>
@@ -12,6 +10,8 @@
 
 
 namespace {
+
+struct WEBSOCKET_SERVER {};
 
 using tbd::websocket::tag;
 using WSServer = SimpleWeb::SocketServer<SimpleWeb::WS>;
@@ -31,24 +31,13 @@ void begin() {
     auto &echo = server.endpoint["^/ws/?$"];
     echo.on_message = [](std::shared_ptr<WSServer::Connection> connection, std::shared_ptr<WSServer::InMessage> request) {
         const auto in_data = request->string();
-        PacketParser parser;
-        if (!parser.parse_from_string(in_data)) {
+        tbd::api::ApiPacketHandler<WEBSOCKET_SERVER, true> packet_handler;
+            const auto response_length = packet_handler.handle(in_data);
+        if (response_length == 0) {
             return;
         }
 
-        if (const auto& packet = parser.packet(); packet.type == Packet::TYPE_RPC) {
-            PacketBufferWriter writer;
-            Packet response;
-            if (Api::handle_rpc(parser.packet(), response, writer.payload_buffer(), writer.payload_buffer_size()) != errors::SUCCESS) {
-                return;
-            }
-            writer.write(response);
-            connection->send(writer.buffer_view(), nullptr, 130);
-        } else if (packet.type == Packet::TYPE_EVENT) {
-            Api::handle_event(packet);
-        } else {
-            TBD_LOGE(tag, "server can not handle %i packets", packet.type);
-        }
+        connection->send(packet_handler.buffer_view(), nullptr, 130);
 
       };
 
@@ -76,13 +65,22 @@ void end() {
     server.stop();
 }
 
-Error emit_event(const Packet& event) {
-    PacketBufferWriter writer;
-    writer.write(event);
+[[tbd::sink]]
+void emit_on_websocket(const uint8_t* buffer, size_t length) {
+    const std::string_view buffer_view(reinterpret_cast<const char*>(buffer), length);
     for (auto& connection : server.get_connections()) {
-        connection->send(writer.buffer_view(), nullptr, 130);
+        connection->send(buffer_view, nullptr, 130);
     }
-    return errors::SUCCESS;
+}
+
+[[tbd::sink]]
+void foo_sink(const uint8_t* buffer, size_t length) {
+
+}
+
+[[tbd::sink]]
+void bar_sink(const uint8_t* buffer, size_t length) {
+
 }
 
 }

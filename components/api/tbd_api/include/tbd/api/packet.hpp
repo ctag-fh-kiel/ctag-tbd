@@ -53,7 +53,7 @@ namespace tbd::api {
  *  [n+1]: packet end (0xff)
  *
  */
-struct Packet {
+struct Header {
     static constexpr uint8_t START_BYTE = 0xf0;
     static constexpr uint8_t HEADER_END_BYTE = 0xe7;
     static constexpr uint8_t END_BYTE = 0xff;
@@ -99,14 +99,17 @@ struct Packet {
 
     PacketType type;
     uint16_t handler;
-    uint16_t id;
-    uint16_t payload_length;
-    const uint8_t* payload;
     uint8_t crc;
+    uint16_t payload_length;
+    uint16_t id;
 
     size_t total_size() const {
         return HEADER_SIZE + payload_length + END_SIZE;
     }
+};
+
+struct Packet : Header {
+    const uint8_t* payload;
 };
 
 }

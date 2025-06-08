@@ -1,0 +1,18 @@
+#pragma once
+
+#include "esphome/core/automation.h"
+#include "api_all_events_declarations.hpp"
+
+
+namespace tbd::api {
+
+{% for event in api.events %}
+template<typename... Ts> class {{ event.name }}_action : public esphome::Action<Ts...> {
+public:
+void play(Ts... x) override {
+  ::{{ event.full_name }}(x...);
+}
+};
+{% endfor %}
+
+}

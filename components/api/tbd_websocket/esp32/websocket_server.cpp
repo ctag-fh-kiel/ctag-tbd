@@ -3,8 +3,6 @@
 
 #include <tbd/logging.hpp>
 #include <tbd/api.hpp>
-#include <tbd/api/packet_parser.hpp>
-#include <tbd/api/packet_writers.hpp>
 
 #include <esp_http_server.h>
 
@@ -14,10 +12,30 @@ namespace {
 
 httpd_handle_t server = nullptr;
 
-// esp httpd is single threaded, so no need to risk stack overflows
-tbd::api::Packet::PacketBuffer input_buffer;
-tbd::api::PacketBufferWriter writer;
+struct WEBSOCKET_SERVER {};
 
+// IDF httpd is single threaded, use fixed buffers
+tbd::api::Packet::PacketBuffer input_buffer;
+
+esp_err_t broadcast_send(httpd_ws_frame_t *ws_pkt) {
+    size_t num_active_clients = CONFIG_LWIP_MAX_LISTENING_TCP;
+    int client_fds[CONFIG_LWIP_MAX_LISTENING_TCP] = {0};
+
+    if (const auto ret = httpd_get_client_list(server, &num_active_clients, client_fds); ret != ESP_OK) {
+        TBD_LOGE(tag, "failed to retrieve list of connected clients");
+        return ret;
+    }
+
+    for (int i = 0; i < num_active_clients; i++) {
+        if (const auto client_info = httpd_ws_get_fd_info(server, client_fds[i]);
+            client_info == HTTPD_WS_CLIENT_WEBSOCKET)
+        {
+            httpd_ws_send_frame_async(server, client_fds[i], ws_pkt);
+        }
+    }
+
+    return ESP_OK;
+}
 
 esp_err_t websocket_handler(httpd_req_t *req) {
     if (req->method == HTTP_GET) {
@@ -40,29 +58,21 @@ esp_err_t websocket_handler(httpd_req_t *req) {
         return ESP_ERR_INVALID_ARG;
     }
 
-//    size_t length = ws_pkt.len + 1; // just to ensure bad string payloads do not result in bad outcomes add 0
-//    size_t buffer_size = length > 128 ? length : 128;
-//    uint8_t packet_buffer[buffer_size + 1];
     ws_pkt.payload = input_buffer;
-
     if (err = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len); err != ESP_OK) {
         TBD_LOGE(tag, "httpd_ws_recv_frame failed with %d", err);
         return err;
     }
 
-    tbd::api::PacketParser parser;
-    if (!parser.parse_from_buffer(input_buffer, tbd::api::Packet::BUFFER_SIZE)) {
-        return ESP_FAIL;
+    tbd::api::ApiPacketHandler<WEBSOCKET_SERVER, false> packet_handler;
+    const auto response_length = packet_handler.handle(input_buffer, ws_pkt.len);
+    if (response_length == 0) {
+        return ESP_OK;
     }
 
-    tbd::api::Packet response;
-    if (tbd::Api::handle_rpc(parser.packet(), response, writer.payload_buffer(), writer.payload_buffer_size()) != tbd::errors::SUCCESS) {
-        return ESP_FAIL;
-    }
-    writer.write(response);
+    ws_pkt.payload = const_cast<uint8_t*>(packet_handler.output_buffer());
+    ws_pkt.len = response_length;
 
-    ws_pkt.payload = const_cast<uint8_t*>(writer.buffer());
-    ws_pkt.len = writer.serialized_length();
     TBD_LOGI(tag, "Sending packet with message: %i", ws_pkt.len);
     if (err = httpd_ws_send_frame(req, &ws_pkt); err != ESP_OK) {
         TBD_LOGE(tag, "httpd_ws_send_frame failed with %d", err);
@@ -100,6 +110,18 @@ void begin() {
     
 void end() {
     auto err = httpd_stop(server);
+}
+
+[[tbd::sink]]
+void emit_event(const uint8_t* buffer, size_t length) {
+    httpd_ws_frame_t ws_pkt = {};
+    ws_pkt.type = HTTPD_WS_TYPE_BINARY;
+    ws_pkt.payload = const_cast<uint8_t*>(buffer);
+    ws_pkt.len = length;
+    TBD_LOGI(tag, "Sending packet with message: %i", ws_pkt.len);
+    if (const auto err = broadcast_send(&ws_pkt); err != ESP_OK) {
+        ESP_LOGE(tag, "failed to send event");
+    }
 }
 
 }

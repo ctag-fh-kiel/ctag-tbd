@@ -5,7 +5,7 @@ from typing import Callable
 
 from tbd_core.api import Api, Endpoint, GeneratorBase, jilter, MessagePayload, ParamPayload, Event
 import tbd_core.buildgen as tbd
-from tbd_core.api.idc_interfaces import IDCBase
+from tbd_core.api.idc_interfaces import IDCHandler
 
 MODULE_NAME = 'tbd_client'
 BASE_ENDPOINTS_FILE = 'base_endpoints.py'
@@ -33,7 +33,7 @@ class PyGenerator(GeneratorBase):
         return self._env.get_template('request_func.py.j2').render(endpoint=endpoint)
 
     @jilter
-    def func_args(self, idc: IDCBase):
+    def func_args(self, idc: IDCHandler):
         arg_list = ['self']
         if idc.has_args:
             for arg_name, arg_type in idc.args.items():
@@ -50,16 +50,6 @@ class PyGenerator(GeneratorBase):
                 arg_list.append(self.payload_type(arg_type))
 
         return ', '.join(arg_list)
-
-    @jilter
-    def forward_args(self, idc: IDCBase, obj: str) -> list[str]:
-        if not idc.has_args:
-            return []
-        if len(idc.args) == 1:
-            arg_name = next(iter(idc.args))
-            return [f'{obj}.input = {arg_name}']
-
-        return [f'{obj}.{arg_name} = {arg_name}' for arg_name in idc.args]
 
     @jilter
     def unwrap_response(self, endpoint: Endpoint) -> str:

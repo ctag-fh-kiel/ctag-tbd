@@ -9,22 +9,13 @@
 
 namespace tbd::api {
 
-using tbd::api::tag;
-
-
 struct PacketParser {
     const Packet& packet() const { return packet_; }
 
-    bool parse_from_string(const std::string& str) { return _parse_from_string(str); }
-    bool parse_from_buffer(const uint8_t* buffer, size_t buffer_size) { return _parse_from_buffer(buffer, buffer_size); }
+    bool parse(const uint8_t* buffer, size_t buffer_size) { return _parse_from_buffer(buffer, buffer_size); }
     bool parse_header(const uint8_t* buffer) { return _parse_header(buffer); }
 
 protected:
-    bool _parse_from_string(const std::string& str) {
-        const uint8_t* buffer = reinterpret_cast<const uint8_t*>(str.data());
-        return parse_from_buffer(buffer, str.length());
-    }
-
     bool _parse_from_buffer(const uint8_t* buffer, size_t buffer_size) {
         if (buffer_size < Packet::HEADER_SIZE) {
             TBD_LOGE(tag, "input length insufficient for request header");

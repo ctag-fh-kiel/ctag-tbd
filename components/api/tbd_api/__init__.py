@@ -1,14 +1,17 @@
 from esphome.components.tbd_module.python_dependencies import python_dependencies
+from esphome.const import CONF_ID
+
 python_dependencies(('proto_schema_parser', 'proto-schema-parser'), 'pybind11')
 
 from pathlib import Path
 import esphome.config_validation as cv
 import esphome.codegen as cg
+from esphome import automation
 import logging
 
 import tbd_core.buildgen as tbd
 
-from tbd_core.api import ApiRegistry
+from tbd_core.api import ApiRegistry, find_events
 from .generator import ApiWriter
 
 
@@ -23,11 +26,32 @@ CONFIG_SCHEMA = cv.Schema({
 
 APIS_GLOBAL = 'api'
 
+API_NAMESPACE = cg.global_ns.namespace('tbd').namespace('api')
+
 
 @tbd.generated_tbd_global(APIS_GLOBAL)
 def get_api_registry() -> ApiRegistry:
     return ApiRegistry()
 
+def register_actions_for_module(*source_files: Path | str, base_path: Path | str | None = None) -> None:
+    """ Call this in module loading code! """
+
+    events = find_events(*source_files, base_path=base_path)
+
+    for event in events:
+        action_name = f'tbd_api.{event.name}'
+        cls_name = f'{event.event_name}_action'
+        action = API_NAMESPACE.class_(cls_name, automation.Action)
+
+        @automation.register_action(action_name, action, {})
+        async def new_action(config, action_id, template_arg, args):
+            var = cg.new_Pvariable(action_id, template_arg)
+            return var
+
+def _register_actions():
+    base_path = Path(__file__).parent / 'src'
+    register_actions_for_module('base_endpoints.cpp', 'api_test.cpp', base_path=base_path)
+_register_actions()
 
 async def to_code(config):
     component = tbd.new_tbd_component(__file__)
@@ -42,7 +66,6 @@ async def to_code(config):
     get_api_registry().add_source(component.path / 'src' / 'api_test.cpp')
 
     tbd.add_generation_job(finalize_api_registry)
-
 
 
 @tbd.build_job_with_priority(tbd.GenerationStages.API)

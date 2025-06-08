@@ -1,0 +1,11 @@
+#include <tbd/api/api_all_events.hpp>
+#include <tbd/api/module.hpp>
+
+#include <tbd/api.hpp>
+#include <tbd/logging.hpp>
+
+#include "api_message_transcoding.hpp"
+
+{% for event in api.events %}
+{{ event | shadow_declaration }}
+{%- endfor %}

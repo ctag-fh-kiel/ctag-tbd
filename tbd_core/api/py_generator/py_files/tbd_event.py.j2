@@ -19,7 +19,7 @@ class TbdEvent:
     async def {{ event.name }}({{event | func_args}}):
         {%- if event | event_payload %}
         request = dtos.{{ event | event_payload }}()
-        {%- for arg in event | forward_args('request') %}
+        {%- for arg in event | apply_args('request') %}
         {{ arg }}
         {%- endfor %}
         payload = request.SerializeToString()

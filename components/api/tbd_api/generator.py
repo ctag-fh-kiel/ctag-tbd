@@ -72,12 +72,17 @@ class ApiWriter:
     def write_events(self, out_folder: Path):
         srcs_path = Path(__file__).parent / 'src'
         gen = CppGenerator(self._api, srcs_path)
-        source = gen.render('api_all_events.cpp.j2')
+        all_events_cpp = gen.render('api_all_events.cpp.j2')
+        all_dispatchers_hpp = gen.render('api_all_events_declarations.hpp.j2')
+        all_actions_hpp = gen.render('api_all_esphome_actions.hpp.j2')
 
         out_folder.mkdir(exist_ok=True, parents=True)
-        out_file = out_folder / 'api_all_events.cpp'
-        with open(out_file, 'w') as f:
-            f.write(source)
+        with open(out_folder / 'api_all_events.cpp', 'w') as f:
+            f.write(all_events_cpp)
+        with open(out_folder / 'api_all_events_declarations.hpp', 'w') as f:
+            f.write(all_dispatchers_hpp)
+        with open(out_folder / 'api_all_esphome_actions.hpp', 'w') as f:
+            f.write(all_actions_hpp)
 
     def write_python_client(self, out_dir: Path, messages_dir: Path):
         gen = PyGenerator(self._api)

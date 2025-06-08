@@ -71,6 +71,8 @@ class TbdClient:
             case PacketType.TYPE_RESPONSE:
                 future = self._active_requests[packet.id]
                 future.set_result(packet.payload)
+            case PacketType.TYPE_EVENT:
+                print('got event', packet.handler)
             case PacketType.TYPE_ERROR:
                 future = self._active_requests[packet.id]
                 future.set_exception(RequestFailedError(f'request {packet.id} failed, error {packet.handler}'))
