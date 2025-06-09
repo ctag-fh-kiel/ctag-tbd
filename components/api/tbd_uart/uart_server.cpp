@@ -13,4 +13,16 @@ void UARTServer::loop() {
     stream_handler_.do_work();
 }
 
+UARTServer* UARTServer::inst_;
+
+[[tbd::sink]]
+void emit_on_uart(const uint8_t* buffer, size_t length) {
+    if (UARTServer::inst_ == nullptr) {
+        TBD_LOGE(tag, "uart server instance not initialized");
+        return;
+    }
+    UARTServer::inst_->put(buffer, length);
+    UARTServer::inst_->send();
+}
+
 }

@@ -5,6 +5,9 @@ import esphome.config_validation as cv
 import esphome.components.uart as uart
 from esphome.const import CONF_ID
 
+import esphome.components.tbd_api as tbd_api
+
+
 AUTO_LOAD = ['tbd_api']
 DEPENDENCIES = ["uart"]
 
@@ -25,4 +28,6 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
+
+    tbd_api.get_api_registry().add_source(component.path / 'uart_server.cpp')
 

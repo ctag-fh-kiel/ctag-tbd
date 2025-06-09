@@ -52,11 +52,16 @@ private:
  */
 class UARTServer : public UARTPacketStream, public Component {
 public:
-    UARTServer() : stream_handler_(*this, *this) {}
+    UARTServer() : stream_handler_(*this, *this) {
+        inst_ = this;
+    }
 
     void loop() override;
 
 private:
+    friend void emit_on_uart(const uint8_t*, size_t);
+
+    static UARTServer* inst_;
     tbd::api::ApiStreamHandler<UARTPacketStream, UARTPacketStream> stream_handler_;
 };
 
