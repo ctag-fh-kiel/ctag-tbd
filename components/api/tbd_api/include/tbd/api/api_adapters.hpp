@@ -25,7 +25,11 @@ struct ApiWriter<tag, false, output_type> {
     size_t write(const Packet& packet) { return inst_.write(packet); }
 
     const uint8_t* buffer() const { return inst_.buffer(); }
+
+    #ifdef __cpp_lib_string_view
     const std::string_view buffer_view() const { return inst_.buffer_view(); }
+    #endif
+
     size_t serialized_length() const { return inst_.serialized_length(); }
 
     /**
@@ -86,9 +90,11 @@ struct ApiPacketHandler {
         return writer_.buffer();
     }
 
+    #ifdef __cpp_lib_string_view
     const std::string_view buffer_view() const {
         return writer_.buffer_view();
     }
+    #endif
 
 private:
     ResponseWriter<tag, allow_multithreading> writer_;

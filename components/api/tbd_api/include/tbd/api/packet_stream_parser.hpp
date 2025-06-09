@@ -1,12 +1,14 @@
 #pragma once
-#include <tbd/api/module.hpp>
 
+#include <tbd/api/module.hpp>
 #include <tbd/api/packet_parser.hpp>
 
 #include <tbd/logging.hpp>
 #include <tbd/errors.hpp>
 
+#ifdef __cpp_concepts
 #include <concepts>
+#endif
 
 
 // on success continue with next step without turning back control to main loop
@@ -26,6 +28,7 @@
 
 namespace tbd::api {
 
+#ifdef __cpp_concepts
 template<class ImplT>
 concept PacketInputStream = requires(
     ImplT impl,
@@ -38,11 +41,13 @@ concept PacketInputStream = requires(
     { impl.skip_until(_uint8_t) } -> std::same_as<bool>;
     { impl.take(_uint8_t_ptr, _size_t) } -> std::same_as<bool>;
 };
-
+#else
+#define PacketInputStream class
+#endif
 
 template<PacketInputStream StreamT>
 struct PacketStreamParser : PacketParser {
-    PacketStreamParser(StreamT& stream) : stream_(stream) {
+    explicit PacketStreamParser(StreamT& stream) : stream_(stream) {
         reset_state();
     }
 
@@ -83,7 +88,6 @@ private:
         tbd_packet_parser_step(EXPECT_PACKET_START, READ_PAYLOAD, fetch_header());
         tbd_packet_parser_step(READ_PAYLOAD, EXPECT_PACKET_END, fetch_payload());
         tbd_packet_parser_step(EXPECT_PACKET_END, EXPECT_PACKET_START, check_end());
-
 
         // yield with new parsed packet
         return true;
@@ -147,4 +151,9 @@ private:
     Packet::PayloadBuffer buffer_;
 };
 
+#ifdef PacketInputStream
+#undef PacketInputStream
+#endif
+
 }
+

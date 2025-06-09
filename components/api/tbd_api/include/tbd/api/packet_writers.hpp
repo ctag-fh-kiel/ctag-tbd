@@ -2,7 +2,9 @@
 
 #include <tbd/api/packet.hpp>
 
+#ifdef __cpp_concepts
 #include <concepts>
+#endif
 
 
 namespace tbd::api {
@@ -38,11 +40,14 @@ struct PacketBufferWriter {
     }
 
     const uint8_t* buffer() const { return buffer_; }
+
+    #ifdef __cpp_lib_string_view
     const std::string_view buffer_view() const {
         return std::string_view(reinterpret_cast<const char*>(buffer_), serialized_length_);
     }
-    size_t serialized_length() const { return serialized_length_; }
+    #endif
 
+    size_t serialized_length() const { return serialized_length_; }
 
     /**
      *  allow access to payload buffer for direct writing
@@ -63,7 +68,7 @@ private:
     Packet::PacketBuffer buffer_;
 };
 
-
+#ifdef __cpp_concepts
 /** Required concept for stream classes used by PacketStreamWriter
  *
  */
@@ -72,6 +77,10 @@ concept PacketOutputStream = requires(ImplT& impl, size_t _size_t, const uint8_t
     { impl.put(_const_uint8_t_ptr, _size_t) } -> std::same_as<void>;
     { impl.send() } -> std::same_as<void>;
 };
+#else
+#define PacketOutputStream class
+#endif
+
 
 /** Packet writer for output streams.
  *
@@ -107,5 +116,9 @@ private:
 
     StreamT& stream_;
 };
+
+#ifdef PacketOutputStream
+#undef PacketOutputStream
+#endif
 
 }
