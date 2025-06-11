@@ -1,5 +1,6 @@
 import asyncio
-from typing import Final
+from collections.abc import Awaitable
+from typing import Final, Callable, Any
 
 from .transport import TransportBase
 from .packets import Packet, PacketType
@@ -22,6 +23,7 @@ class TbdClient:
         self._request_counter: int = 1
         self._transport: Final[TransportBase] = transport
         self._active_requests: dict[int, asyncio.Future] = {}
+        self.on_event: Callable[[int, bytes], Awaitable[Any] | Any] | None = None
         asyncio.get_running_loop().create_task(self.process_incoming())
 
     # async def receive(self):
@@ -72,7 +74,12 @@ class TbdClient:
                 future = self._active_requests[packet.id]
                 future.set_result(packet.payload)
             case PacketType.TYPE_EVENT:
-                print('got event', packet.handler)
+                if self.on_event is not None:
+                    if asyncio.iscoroutinefunction(self.on_event):
+                        asyncio.get_running_loop().create_task(self.on_event(packet.handler, packet.payload))
+                    else:
+                        self.on_event(packet.handler, packet.payload)
+
             case PacketType.TYPE_ERROR:
                 future = self._active_requests[packet.id]
                 future.set_exception(RequestFailedError(f'request {packet.id} failed, error {packet.handler}'))

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from typing import Callable
 
-from tbd_core.api import Api, Endpoint, GeneratorBase, jilter, MessagePayload, ParamPayload, Event
+from tbd_core.api import Api, Endpoint, GeneratorBase, jilter, MessagePayload, ParamPayload, Event, FiltersBase
 import tbd_core.buildgen as tbd
 from tbd_core.api.idc_interfaces import IDCHandler
 
@@ -12,11 +12,7 @@ BASE_ENDPOINTS_FILE = 'base_endpoints.py'
 PROJECT_FILE = 'pyproject.toml'
 
 
-class PyGenerator(GeneratorBase):
-    def __init__(self, api: Api):
-        templates_path = Path(__file__).parent / 'py_files'
-        super(PyGenerator, self).__init__(api, templates_path)
-
+class PyFilters(FiltersBase):
     def payload_type(self, payload_type: str) -> str:
         payload = self._api.get_payload(payload_type)
         match payload:
@@ -26,11 +22,6 @@ class PyGenerator(GeneratorBase):
                 return payload_type
             case _:
                 raise Exception(f'unknown payload type: {type(payload)}')
-
-
-    @jilter
-    def request_func(self, endpoint: Endpoint):
-        return self._env.get_template('request_func.py.j2').render(endpoint=endpoint)
 
     @jilter
     def func_args(self, idc: IDCHandler):
@@ -52,15 +43,16 @@ class PyGenerator(GeneratorBase):
         return ', '.join(arg_list)
 
     @jilter
-    def unwrap_response(self, endpoint: Endpoint) -> str:
-        response = self._api.get_response(endpoint)
-        return 'result.value' if response.is_wrapper else 'result'
-
-    @jilter
     def request_func_return(self, endpoint: Endpoint) -> str:
         if not endpoint.output:
             return 'None'
         return self.payload_type(endpoint.output)
+
+
+class PyGenerator(GeneratorBase):
+    def __init__(self, api: Api):
+        templates_path = Path(__file__).parent / 'py_files'
+        super(PyGenerator, self).__init__(api, templates_path, PyFilters(api))
 
     def write_client(self, out_dir: Path, messages_file: Path):
         out_dir.mkdir(parents=True, exist_ok=True)

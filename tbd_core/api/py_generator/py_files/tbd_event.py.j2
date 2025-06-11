@@ -1,32 +1,57 @@
+from collections.abc import Awaitable
 from dataclasses import dataclass
-from typing import Final, Callable
+from typing import Final, Callable, Any
 
 from .client import *
 
 from . import api_types_pb2 as dtos
 
-def default_event_handler(*args, **kwargs):
-    print(f'got event with args {args, kwargs}')
+async def default_event_handler(*args):
+    for arg in args:
+        print(arg)
+
+EventHandler = Callable[[bytes], Awaitable[None]]
 
 class TbdEvent:
     def __init__(self, client: TbdClient):
         self._client: Final = client
-{% for event in api.events %}
-        self.on_{{ event.name }}: Callable[[{{ event | event_signature }}], None] = default_event_handler
-{%- endfor %}
+        client.on_event = self._handle_event
 
+        self._handlers: Final[list[EventHandler]] = [
+            {%- for event in api.events %}
+            TbdEvent._handle_{{ event.name }},
+            {%- endfor %}
+        ]
+        {% for event in api.events %}
+        self.on_{{ event.name }}: Callable[[{{ event | event_signature }}], Awaitable[Any]] = default_event_handler
+        {%- endfor %}
 {% for event in api.events %}
     async def {{ event.name }}({{event | func_args}}):
         {%- if event | event_payload %}
         request = dtos.{{ event | event_payload }}()
-        {%- for arg in event | apply_args('request') %}
+        {%- for arg in event | apply_args('request', single_arg_name='input') %}
         {{ arg }}
         {%- endfor %}
         payload = request.SerializeToString()
-        {%- else %}
-        payload = None
-        {%- endif %}
         await self._client.send_event({{ event | event_id }}, payload)
-{%  endfor %}
+        {%- else %}
+        await self._client.send_event({{ event | event_id }}, None)
+        {%- endif %}
+{%  endfor -%}
+
+{% for event in api.events %}
+    async def _handle_{{ event.name }}(self, payload: bytes):
+        {%- if event | event_payload %}
+        event = dtos.{{ event | event_payload }}()
+        event.ParseFromString(payload)
+        {%- endif %}
+        if self.on_{{ event.name }} is not None:
+            await self.on_{{ event.name }}({{ event | forward_args(prefix='event.', single_arg_name='input') }})
+{% endfor %}
+    async def _handle_event(self, event_id: int, payload: bytes) -> None:
+        if event_id >= len(self._handlers):
+            raise ValueError(f'invalid event id {event_id}')
+        await self._handlers[event_id](self, payload)
+
 
 __all__ = ['TbdEvent']

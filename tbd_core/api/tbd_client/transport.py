@@ -59,7 +59,6 @@ class SerialTransport(TransportBase):
         tail_size = header.tail_size
         while True:
             if self._serial.in_waiting >= tail_size:
-                print('done')
                 return parse_tail(header, self._serial.read(tail_size))
 
 
