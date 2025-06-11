@@ -1,0 +1,34 @@
+#pragma once
+
+#include <tbd/client/module.hpp>
+#include "api_types.pb.h"
+
+#include <tbd/parameter_types.hpp>
+#include <tbd/client/client.hpp>
+
+#include <functional>
+
+
+namespace tbd::client {
+
+struct RPC {
+    template<typename ReturnT>
+    using Callback = const std::function<void(const ReturnT&)>&;
+
+    using VoidCallback = const std::function<void()>&;
+
+    explicit RPC(ClientBase& sender): sender_(sender) {}
+
+    void handle_response(const api::Packet& response);
+
+    //// remote function calls ////
+    {% for endpoint in api.endpoints %}
+    Error {{ endpoint | client_rpc_method }};
+    {%- endfor %}
+
+private:
+    api::Packet::PayloadBuffer payload_buffer_;
+    ClientBase& sender_;
+};
+
+}

@@ -168,7 +168,8 @@ def register_tbd_component(component: ComponentInfo):
     set_tbd_global(name, component, domain=COMPONENTS_DOMAIN)
 
 
-def new_tbd_component(init_file: str, *, auto_include: bool = True, auto_sources: bool = True, needs_exceptions=False):
+def new_tbd_component(init_file: str, *,
+                      auto_include: bool = True, auto_sources: bool = True, needs_exceptions=False) -> ComponentInfo:
     """ Convenience function to create a TBD component.
 
         arguments:

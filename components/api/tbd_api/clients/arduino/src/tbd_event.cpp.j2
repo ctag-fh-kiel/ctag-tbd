@@ -1,0 +1,77 @@
+#include <tbd/client/tbd_event.hpp>
+#include "api_message_transcoding.hpp"
+
+#include <tbd/errors.hpp>
+
+
+using tbd::api::Packet;
+using tbd::api::encode_message;
+
+namespace tbd::client {
+
+namespace {
+
+using EventHandler = void(*)(const Event&, const Packet&);
+{% for event in api.events %}
+void handle_{{ event.name }}(const Event& target, const Packet& event_packet) {
+    if (!target.on_{{ event.name }}) {
+        TBD_LOGW(tag, "no handler registered for event {{ event.name }}");
+        return;
+    }
+    {%- if event | event_payload %}
+    {{ event | event_payload }} event;
+    if (!decode_message(event, event_packet)) {
+        return;
+    }
+    target.on_{{ event.name }}({{ event | forward_args(prefix='event.', single_arg_name='input') }});
+    {%- else %}
+    target.on_{{ event.name }}();
+    {%- endif %}
+}
+{% endfor %}
+const size_t NUM_EVENT_HANDLERS = {{ api.events | length }};
+const EventHandler EVENT_HANDLERS[] = {
+{%- for event in api.events %}
+    &handle_{{ event.name }},
+{%- endfor %}
+};
+
+}
+
+void Event::handle_event(const Packet& event_packet) const {
+    const auto event_id = event_packet.handler;
+    if (event_id >= NUM_EVENT_HANDLERS) {
+        TBD_LOGE(tag, "invalid event ID %i", event_id);
+        return;
+    }
+    EVENT_HANDLERS[event_id](*this, event_packet);
+}
+{% for event in api.events %}
+Error Event::{{ event.name }}({{ event | func_args }}) {
+    {%- if event | event_payload %}
+    {{ event | event_payload }} out_message;
+    {%- for arg in event | apply_args('out_message', single_arg_name='input') %}
+    {{ arg }};
+    {%- endfor %}
+    size_t length = Packet::MAX_PAYLOAD_SIZE;
+    if (!encode_message(out_message, payload_buffer_, length)) {
+        return TBD_ERR(API_DECODE);
+    }
+    {% endif %}
+    Packet request;
+    request.type = Packet::TYPE_EVENT;
+    request.handler = {{ event | event_id }};
+    {%- if event | event_payload %}
+    request.payload_length = length;
+    request.payload = payload_buffer_;
+    {%- else %}
+    request.payload_length = 0;
+    request.payload = nullptr;
+    {%- endif %}
+    sender_.send(request);
+
+    return TBD_OK;
+}
+{% endfor %}
+
+}

@@ -1,7 +1,8 @@
+#pragma once
+
 #include <tbd/api/messages.hpp>
 #include <tbd/api/module.hpp>
 
-#include <tbd/api.hpp>
 #include <tbd/parameter_types.hpp>
 #include <tbd/logging.hpp>
 
@@ -22,17 +23,30 @@ namespace {
 inline bool encode_string(pb_ostream_t* stream, const pb_field_t* field, void* const* arg) {
     auto str = reinterpret_cast<const tbd::str_par*>(*arg);
 
-    if (!pb_encode_tag_for_field(stream, field))
+    if (!pb_encode_tag_for_field(stream, field)) {
         return false;
+    }
 
     return pb_encode_string(stream, reinterpret_cast<const uint8_t*>(str->data()), str->length());
+}
+
+inline bool decode_string(pb_istream_t* stream, const pb_field_t* field, void** arg) {
+    auto str = reinterpret_cast<tbd::str_par*>(*arg);
+    str->reserve(stream->bytes_left);
+    auto buffer = reinterpret_cast<uint8_t*>(&(*str)[0]);
+    if (!pb_read(stream, buffer, stream->bytes_left)) {
+        return false;
+    }
+    return true;
 }
 
 }
 
 namespace tbd::api {
 
-//// rpc message decoding ////
+{% if server_types -%}
+
+//// rpc server message decoding ////
 {% for request in api.request_types %}
 // request {{ request.name }}
 {%- if request.name != 'str_par_request' %}
@@ -49,7 +63,7 @@ inline bool decode_message({{ request.name }}& message, const Packet& request) {
 {% endif -%}
 {% endfor %}
 
-//// rpc message encoding ////
+//// rpc server message encoding ////
 {% for response in api.response_types %}
 // response {{ response.name }}
 {%- if response.name != 'str_par_response' %}
@@ -66,6 +80,46 @@ inline bool encode_message(const {{ response.name }}& message, uint8_t* out_buff
 }
 {% endif -%}
 {% endfor %}
+
+{%- endif %}
+{% if client_types -%}
+
+//// rpc client message decoding ////
+{% for response in api.response_types %}
+// request {{ response.name }}
+{%- if response.name != 'str_par_response' %}
+template<>
+inline bool decode_message({{ response.name }}& message, const Packet& request) {
+    pb_istream_t stream = pb_istream_from_buffer(request.payload, request.payload_length);
+
+    if (!pb_decode(&stream, {{ response.name }}_fields, &message)) {
+        TBD_LOGE("api", "failed to deserialize {{ response.message_name }}: %s", PB_GET_ERROR(&stream));
+        return true;
+    }
+    return true;
+}
+{% endif -%}
+{% endfor %}
+
+//// rpc client message encoding ////
+{% for request in api.request_types %}
+// request {{ request.name }}
+{%- if request.name != 'str_par_request' %}
+template<>
+inline bool encode_message(const {{ request.name }}& message, uint8_t* out_buffer, size_t& out_buffer_size) {
+    pb_ostream_t stream = pb_ostream_from_buffer(out_buffer, out_buffer_size);
+    if (!pb_encode(&stream, {{request.name}}_fields, &message)) {
+        TBD_LOGE("api", "failed to serialize {{ request.message_name }}: %s", PB_GET_ERROR(&stream));
+        out_buffer_size = stream.bytes_written;
+        return true;
+    }
+    out_buffer_size = stream.bytes_written;
+    return true;
+}
+{% endif -%}
+{% endfor %}
+
+{%- endif %}
 
 //// event message transcoding ////
 {% for event_payload in api.event_payloads %}

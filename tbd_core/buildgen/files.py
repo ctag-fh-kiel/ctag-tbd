@@ -25,7 +25,7 @@ def get_components_build_path():
 
 @generated_tbd_global(PATHS_DOMAIN)
 def get_tbd_components_root():
-    return Path(__file__).parent.parent.parent
+    return Path(__file__).parent.parent.parent / 'components'
 
 
 @generated_tbd_global(PATHS_DOMAIN)
@@ -104,6 +104,46 @@ def copy_tree_if_outdated(
     return retval
 
 
+def copy_batch(
+        source_dir: Path | str,
+        dest_dir: Path | str,
+        files: list[Path | str],
+        *,
+        sub_dir: Path | str | None = None,
+        flatten: bool = False,
+        symlink: bool = True,
+        ignore: list[str] | None = None,
+) -> list[Path]:
+
+    search_dir = Path(source_dir) / sub_dir if sub_dir else source_dir
+
+    retval = []
+    for file in files:
+        source_path = Path(search_dir) / file
+
+        source_path_str = str(file)
+        if '*' in source_path_str:
+            source_files = []
+            for source_file in search_dir.glob(source_path_str):
+                source_files.append(source_file)
+        else:
+            source_files = [source_path]
+
+        for source_file in source_files:
+            if not source_file.is_file():
+                _LOGGER.error(f'{source_file} is not a file')
+                continue
+            if ignore and any(fnmatch.fnmatch(source_file.name, pattern) for pattern in ignore):
+                continue
+            relative_source_file = dest_dir / source_file.name if flatten else source_file.relative_to(source_dir)
+            dest_file = dest_dir / relative_source_file
+            if copy_file_if_outdated(source_file, dest_file, symlink=symlink):
+                retval.append(dest_file)
+
+    return retval
+
+
+
 __all__ = [
     'get_build_path', 
     'get_components_build_path',
@@ -114,4 +154,5 @@ __all__ = [
     'get_generated_include_path',
     'copy_file_if_outdated',
     'copy_tree_if_outdated',
+    'copy_batch',
 ]
