@@ -1,0 +1,36 @@
+esphome:
+  name: tbdesp32s3emu
+    
+esp32:
+  variant: esp32s3
+  board: esp32-s3-devkitc-1
+  flash_size: 16MB
+
+  framework: 
+    type: esp-idf
+    version: latest
+
+# external_components:
+#   - source: ${TBD_ROOT}/components/core
+#   - source: ${TBD_ROOT}/components/api
+#   - source: ${TBD_ROOT}/components/audio
+#   - source: ${TBD_ROOT}/components/control_inputs
+#   - source: ${TBD_ROOT}/components/vendor
+
+ethernet:
+  type: OPENETH
+
+tbd_sim_audio:
+
+tbd_sim_inputs:
+
+tbd_indicator:
+  simulate: true
+
+tbd_builtin_sounds:
+
+tbd_test_plugins:
+
+tbd_audio:
+
+tbd_websocket:
