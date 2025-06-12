@@ -9,16 +9,14 @@ import cxxheaderparser.simple as cpplib
 import cxxheaderparser.types as cpptypes
 
 from .reflectables import (
-    normalize_typename,
     Properties, 
     PropertyDescription, 
-    ReflectableDescription, 
-    ScopeDescription,
-    Headers,
-    Attributes,
-    Attribute,
+    ReflectableDescription,
     FunctionDescription,
 )
+from .scopes import ScopeDescription, normalize_typename
+from .attributes import Attribute, Attributes
+
 
 _LOGGER = logging.getLogger(__file__)
 

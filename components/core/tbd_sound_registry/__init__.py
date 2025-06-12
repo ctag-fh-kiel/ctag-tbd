@@ -9,7 +9,7 @@ import esphome.config_validation as cv
 import tbd_core.buildgen as tbd
 
 from esphome.components.tbd_api import get_api_registry
-from tbd_core.reflection import (
+from tbd_core.plugins import (
     search_for_plugins, 
     write_plugin_factory_header, 
     write_plugin_reflection_info,
@@ -120,8 +120,6 @@ async def to_code(config):
     component = tbd.new_tbd_component(__file__)
 
     api_registry = get_api_registry()
-
-    api_registry.add_message_types(component.path / 'src' / 'plugins.proto')
     api_registry.add_source(component.path / 'src' / 'plugins_endpoints.cpp')
 
     tbd.add_generation_job(finalize_plugin_registry_job)

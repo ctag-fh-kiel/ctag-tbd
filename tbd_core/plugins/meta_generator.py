@@ -1,137 +1,18 @@
 from dataclasses import dataclass
 from pathlib import Path
 import re
+from enum import Enum, unique
+import logging
 
 import humps
-from .reflectables import ScopeType, PropertyDescription, ReflectableDescription, Reflectables, Attributes
-from .parameters import ParamType, PARAM_TYPES
 import cxxheaderparser.simple as cpplib
-import logging
 import voluptuous as vol
-from enum import Enum, unique
 
+from tbd_core.reflection import ParamType, ReflectableDescription, Attributes, PropertyDescription, PARAM_TYPES, \
+    ScopePath
+from tbd_core.reflection.reflectables import Reflectables
 
 _LOGGER = logging.getLogger(__file__)
-
-
-@dataclass(frozen=True)
-class ScopePathSegment:
-    name: str
-    type: ScopeType
-
-    def namespace(self) -> str:
-        if self.type != ScopeType.NAMESPACE:
-            raise ValueError(f'scope segment is not a namespace: {self.type}')
-        return self.name
-    
-    def cls(self) -> str:
-        if self.type != ScopeType.CLASS:
-            raise ValueError(f'scope segment is not a namespace: {self.type}')
-        return self.name
-
-
-@dataclass(frozen=True)
-class ScopePath:
-    segments: list[ScopePathSegment]
-
-    @staticmethod
-    def root() -> 'ScopePath':
-        return ScopePath([])
-
-    def add_namespace(self, namespace: str) -> 'ScopePath':
-        if self.segments and self.segments[-1].type != ScopeType.NAMESPACE:
-            raise ValueError('namespaces can only be declared in namespaces')
-        return ScopePath([*self.segments, ScopePathSegment(namespace, ScopeType.NAMESPACE)])
-    
-    def add_class(self, cls: str) -> 'ScopePath':
-        if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE, ScopeType.CLASS]:
-            raise ValueError('classes can only be declared in namespaces or other classes')
-        return ScopePath([*self.segments, ScopePathSegment(cls, ScopeType.CLASS)])
-    
-    def add_field(self, field: str) -> 'ScopePath':
-        if self.segments and self.segments[-1].type not in [ScopeType.CLASS, ScopeType.FIELD]:
-            raise ValueError('fields can only be declared in classes and fields')
-
-        return ScopePath([*self.segments, ScopePathSegment(field, ScopeType.FIELD)])
-    
-    def add_static_field(self, field: str) -> 'ScopePath':
-        if self.segments and self.segments[-1].type != ScopeType.CLASS:
-            raise ValueError('static fields can only be declared in classes')
-
-        return ScopePath([*self.segments, ScopePathSegment(field, ScopeType.STATIC_FIELD)])
-
-    def namespace(self) -> str:
-        return self.segments[-1].namespace()
-
-    def cls(self) -> str:
-        return self.segments[-1].cls()
-
-    @property
-    def namespaces(self):
-        retval, _, _ = self.split()
-        return retval
-    
-    @property
-    def classes(self):
-        _, retval, _ = self.split()
-        return retval
-    
-    @property
-    def fields(self):
-        _, _, retval = self.split()
-        return retval
-
-    @property
-    def path(self) -> str:
-        if not self.segments:
-            return ''
-        
-        fst, *tail = self.segments
-        retval = fst.name
-        for elem in tail:
-            if elem.type == ScopeType.FIELD:
-                retval += f'.{elem.name}'
-            else:
-                 retval += f'::{elem.name}'
-        return retval
-    
-    def __str__(self) -> str:
-        return self.path
-    
-    def __repr__(self) -> str:
-        return f'ScopePath({self.path})'
-
-    def split(self) -> tuple['ScopePath', 'ScopePath', 'ScopePath']:
-        class SplitDone(BaseException):
-            pass
-
-        namespaces = []
-        classes = []
-        fields = []
-
-        try:
-            pos, *rest = self.segments
-            while pos.type == ScopeType.NAMESPACE:
-                namespaces.append(pos)
-                if not rest:
-                    raise SplitDone
-                pos, *rest = rest
-
-            while pos.type == ScopeType.CLASS:
-                classes.append(pos)
-                if not rest:
-                    raise SplitDone
-                pos, *rest = rest
-
-            while pos.type == ScopeType.FIELD:
-                fields.append(pos)
-                if not rest:
-                    raise SplitDone
-                pos, *rest = rest
-        except SplitDone:
-            return ScopePath(namespaces), ScopePath(classes), ScopePath(fields)
-
-        raise ValueError('bad segment order in scope')
 
 
 @unique

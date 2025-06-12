@@ -3,10 +3,8 @@ import logging
 from pathlib import Path
 import jinja2 as ji
 
-from .reflectables import Headers
-from .reflectable_parser import ReflectableFinder
-from .reflectables import Reflectables, ReflectableDescription
-from .plugin_meta_generator import PluginReflectionGenerator, ParamEntry
+from tbd_core.reflection import Headers, ReflectableFinder, Reflectables, ReflectableDescription
+from .meta_generator import PluginReflectionGenerator, ParamEntry
 
 
 __LOGGER = logging.getLogger(__file__)
@@ -94,6 +92,6 @@ def write_meta_classes(processor: PluginReflectionGenerator, out_folder: Path) -
         'search_for_plugins', 
         'write_plugin_reflection_info', 
         'write_plugin_factory_header', 
-        'write_meta_class'
+        'write_meta_classes',
     ]
     
