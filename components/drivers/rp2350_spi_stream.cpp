@@ -30,6 +30,8 @@ respective component folders / files if different from this license.
 #include "soc/gpio_num.h"
 #include "tusb.hpp"
 
+#include "driver/gpio.h"
+
 
 #define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
 #define SPI_DATA_SZ 512 // midi data buffer with header
@@ -43,6 +45,18 @@ DMA_ATTR static uint8_t *sendBuf1;
 
 
 void CTAG::DRIVERS::rp2350_spi_stream::Init(){
+/*
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << GPIO_NUM_29),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io_conf);
+    gpio_set_level(GPIO_NUM_29, 0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+*/
     //Configuration for the SPI bus
     spi_bus_config_t buscfg = {
         .mosi_io_num = GPIO_NUM_31,
@@ -54,6 +68,7 @@ void CTAG::DRIVERS::rp2350_spi_stream::Init(){
         .data5_io_num = -1,
         .data6_io_num = -1,
         .data7_io_num = -1,
+        .data_io_default_level = false,
         .max_transfer_sz = SPI_DATA_SZ,
         .flags = 0,
         .isr_cpu_id = ESP_INTR_CPU_AFFINITY_1,
@@ -70,10 +85,10 @@ void CTAG::DRIVERS::rp2350_spi_stream::Init(){
         .post_trans_cb = 0
     };
 
-    buf0 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
-    buf1 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
-    sendBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
-    sendBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(SPI2_HOST, SPI_DATA_SZ, 0);
+    buf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+    buf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+    sendBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+    sendBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
 
     ESP_LOGI("rp2350 spi", "Init()");
     auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
