@@ -26,6 +26,8 @@ respective component folders / files if different from this license.
 #include "soc/gpio_num.h"
 #include "esp_log.h"
 
+#define RCV_HOST    SPI3_HOST // SPI2 connects to rp2350 spi1
+
 namespace CTAG::SPIAPI{
     TaskHandle_t SpiAPI::hTask;
     spi_slave_transaction_t SpiAPI::transaction;
@@ -44,6 +46,7 @@ namespace CTAG::SPIAPI{
             .data5_io_num = -1,
             .data6_io_num = -1,
             .data7_io_num = -1,
+            .data_io_default_level = false,
             .max_transfer_sz = 2048,
             .flags = 0,
             .isr_cpu_id = ESP_INTR_CPU_AFFINITY_0,
@@ -60,15 +63,15 @@ namespace CTAG::SPIAPI{
             .post_trans_cb = 0
         };
 
-        send_buffer = (uint8_t*)spi_bus_dma_memory_alloc(SPI3_HOST, 2048, 0);
+        send_buffer = (uint8_t*)spi_bus_dma_memory_alloc(RCV_HOST, 2048, 0);
         send_buffer[0] = 0xCA;
         send_buffer[1] = 0xFE;
-        receive_buffer = (uint8_t*)spi_bus_dma_memory_alloc(SPI3_HOST, 2048, 0);
+        receive_buffer = (uint8_t*)spi_bus_dma_memory_alloc(RCV_HOST, 2048, 0);
         transaction.length = 2048 * 8;
         transaction.tx_buffer = send_buffer;
         transaction.rx_buffer = receive_buffer;
 
-        auto ret = spi_slave_initialize(SPI3_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
+        auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
         assert(ret == ESP_OK);
 
         xTaskCreatePinnedToCore(api_task, "SpiAPI", 4096 * 2, nullptr, 10, &hTask, 0);
@@ -88,7 +91,7 @@ namespace CTAG::SPIAPI{
 
     bool SpiAPI::receiveString(const RequestType reqType, std::string& str){
         send_buffer[2] = (uint8_t) reqType;
-        spi_slave_transmit(SPI3_HOST, &transaction, portMAX_DELAY);
+        spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
 
         // fingerprint check
         if (receive_buffer[0] != 0xCA || receive_buffer[1] != 0xFE){
@@ -112,7 +115,7 @@ namespace CTAG::SPIAPI{
         str.append((char*)&receive_buffer[7], bytes_received); // skip the first 7 bytes (fingerprint and length)
 
         while (bytes_to_be_received > 0){
-            spi_slave_transmit(SPI3_HOST, &transaction, portMAX_DELAY);
+            spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
 
 
             // fingerprint check
@@ -157,7 +160,7 @@ namespace CTAG::SPIAPI{
             memcpy(send_buffer + 7, ptr_cstring_section, bytes_to_send);
             len -= bytes_to_send;
             bytes_sent += bytes_to_send;
-            spi_slave_transmit(SPI3_HOST, &transaction, portMAX_DELAY);
+            spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
             // fingerprint check
             if (receive_buffer[0] != 0xCA || receive_buffer[1] != 0xFE){
                 return false;
@@ -177,7 +180,7 @@ namespace CTAG::SPIAPI{
         //xTaskCreatePinnedToCore(dbg_task, "SpiAPIDbg", 4096, nullptr, 5, &hTask, 0);
         bool result = true;
         while (1){
-            if (result) spi_slave_transmit(SPI3_HOST, &transaction, portMAX_DELAY); // recycle last transaction, if previous was not successful, sometimes data gets stuck
+            if (result) spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY); // recycle last transaction, if previous was not successful, sometimes data gets stuck
             const uint8_t* rcv_data = (uint8_t*)transaction.rx_buffer;
 
             // check integrity of transaction
