@@ -101,14 +101,14 @@ void CTAG::CTRL::Control::Init() {
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
-    gpio_config(&io_conf);
-    gpio_set_level(GPIO_NUM_4, 0); // reset rp2350
+    //gpio_config(&io_conf);
+    //gpio_set_level(GPIO_NUM_4, 0); // reset rp2350
     std::fill_n(buffer, BUF_SZ, 0);
 #if CONFIG_TBD_PLATFORM_MK2
     DRIVERS::mk2::Init();
 #elif CONFIG_TBD_PLATFORM_BBA
     CTAG::DRIVERS::rp2350_spi_stream::Init();
-    gpio_set_level(GPIO_NUM_4, 1);
+    //gpio_set_level(GPIO_NUM_4, 1);
 #else
     DRIVERS::ADC::InitADCSystem();
     DRIVERS::GPIO::InitGPIO();
