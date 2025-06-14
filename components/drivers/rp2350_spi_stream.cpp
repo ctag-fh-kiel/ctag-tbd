@@ -5,7 +5,6 @@ A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
 (c) 2020, 2024 by Robert Manzke. All rights reserved.
-(c) 2023 MIDI-Message-Parser aka 'bba_update()' by Mathias Brüssel.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
