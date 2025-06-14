@@ -109,6 +109,8 @@ void CTAG::DRIVERS::rp2350_spi_stream::Init(){
     currentTransaction = 0;
 }
 
+
+// TODO: not used? -> remove?
 uint32_t CTAG::DRIVERS::rp2350_spi_stream::Read(uint8_t* data, uint32_t max_len){
     // this is all non-blocking
     spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], portMAX_DELAY);
@@ -127,6 +129,7 @@ uint32_t CTAG::DRIVERS::rp2350_spi_stream::Read(uint8_t* data, uint32_t max_len)
     return 0;
 }
 
+// TODO: Avoid buffer copy, use DMA buffers directly?
 // receive buffer is 0xCA, 0xFE, then N_CVS * floats + NTRIGS * uint8_t
 // transmit buffer is 0xCA, 0xFE, then uint32_t ledStatus, then uint32_t length of midi data, then midi data
 IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(uint8_t *dst, uint32_t const max_len, uint32_t ledStatus) {
