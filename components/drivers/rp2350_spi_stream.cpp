@@ -138,13 +138,16 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **
         return 0;
     }
 
+    // grab received buffer
     uint8_t* ret_buf = (uint8_t*)ret_trans->rx_buffer;
 
+    // check watermark for valid transaction, if not *dst remains unchanged on previous buffer
     if (ret_buf[0] != 0xCA || ret_buf[1] != 0xFE) {
         //ESP_LOGE("rp2350_spi_stream", "Invalid transaction received, expected CA FE, got %02X %02X", ret_buf[0], ret_buf[1]);
         return 0; // Invalid transaction
     }
 
+    // data was valid, return new buffer pointer
     *dst = &ret_buf[2];
 
     return max_len;
