@@ -38,25 +38,14 @@ respective component folders / files if different from this license.
 
 DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2350_spi_stream::transaction[2];
 DRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::currentTransaction;
-DMA_ATTR static uint8_t *buf0;
-DMA_ATTR static uint8_t *buf1;
+DMA_ATTR static uint8_t *rcvBuf0;
+DMA_ATTR static uint8_t *rcvBuf1;
 DMA_ATTR static uint8_t *sendBuf0;
 DMA_ATTR static uint8_t *sendBuf1;
 
 
-void CTAG::DRIVERS::rp2350_spi_stream::Init(){
-/*
-    gpio_config_t io_conf = {
-        .pin_bit_mask = (1ULL << GPIO_NUM_29),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .intr_type = GPIO_INTR_DISABLE
-    };
-    gpio_config(&io_conf);
-    gpio_set_level(GPIO_NUM_29, 0);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-*/
+uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
+
     //Configuration for the SPI bus
     spi_bus_config_t buscfg = {
         .mosi_io_num = GPIO_NUM_31,
@@ -85,10 +74,15 @@ void CTAG::DRIVERS::rp2350_spi_stream::Init(){
         .post_trans_cb = 0
     };
 
-    buf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
-    buf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+    rcvBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+    rcvBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
     sendBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
     sendBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+
+    std::fill_n(rcvBuf0, SPI_DATA_SZ, 0);
+    std::fill_n(rcvBuf1, SPI_DATA_SZ, 0);
+    std::fill_n(sendBuf0, SPI_DATA_SZ, 0);
+    std::fill_n(sendBuf1, SPI_DATA_SZ, 0);
 
     ESP_LOGI("rp2350 spi", "Init()");
     auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
@@ -98,41 +92,19 @@ void CTAG::DRIVERS::rp2350_spi_stream::Init(){
     sendBuf1[0] = 0xCA; sendBuf1[1] = 0xFE;
 
     transaction[0].length = SPI_DATA_SZ * 8;
-    transaction[0].rx_buffer = buf0;
+    transaction[0].rx_buffer = rcvBuf0;
     transaction[0].tx_buffer = sendBuf0;
 
 
     transaction[1].length = SPI_DATA_SZ * 8;
-    transaction[1].rx_buffer = buf1;
+    transaction[1].rx_buffer = rcvBuf1;
     transaction[1].tx_buffer = sendBuf1;
 
     currentTransaction = 0;
+    return &rcvBuf0[2]; // skip watermark bytes
 }
 
-
-// TODO: not used? -> remove?
-uint32_t CTAG::DRIVERS::rp2350_spi_stream::Read(uint8_t* data, uint32_t max_len){
-    // this is all non-blocking
-    spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], portMAX_DELAY);
-    currentTransaction ^= 0x1;
-
-    // get result of last transaction
-    spi_slave_transaction_t* ret_trans;
-    auto ret = spi_slave_get_trans_result(RCV_HOST, &ret_trans, portMAX_DELAY);
-
-    if (ESP_OK == ret){
-        auto* ptr = (uint8_t*)ret_trans->rx_buffer;
-        memcpy(data, ptr, max_len);
-        return max_len;
-    }
-
-    return 0;
-}
-
-// TODO: Avoid buffer copy, use DMA buffers directly?
-// receive buffer is 0xCA, 0xFE, then N_CVS * floats + NTRIGS * uint8_t
-// transmit buffer is 0xCA, 0xFE, then uint32_t ledStatus, then uint32_t length of midi data, then midi data
-IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(uint8_t *dst, uint32_t const max_len, uint32_t ledStatus) {
+IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **dst, uint32_t const max_len, uint32_t ledStatus) {
     if (max_len > SPI_DATA_SZ - 2) {
         //ESP_LOGE("rp2350_spi_stream", "max_len %d is too large, max is %d", max_len, DATA_SZ - 2);
         return 0; // Invalid length
@@ -163,7 +135,7 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(uint8_t *
     ret = spi_slave_get_trans_result(RCV_HOST, &ret_trans, 0);
     if (ESP_OK != ret) {
         //ESP_LOGE("rp2350_spi_stream", "Failed receive transaction: %s", esp_err_to_name(ret));
-        return 0; // Failed to queue transaction
+        return 0;
     }
 
     uint8_t* ret_buf = (uint8_t*)ret_trans->rx_buffer;
@@ -173,6 +145,7 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::CopyCurrentBuffer(uint8_t *
         return 0; // Invalid transaction
     }
 
-    memcpy(dst, ret_buf+2, max_len); // skip the first two bytes (fingerprint)
+    *dst = &ret_buf[2];
+
     return max_len;
 }

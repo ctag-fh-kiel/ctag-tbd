@@ -29,9 +29,8 @@ namespace CTAG {
         class rp2350_spi_stream final{
         public:
             rp2350_spi_stream() = delete;
-            static void Init();
-            static uint32_t Read(uint8_t* data, uint32_t max_len);
-            static uint32_t CopyCurrentBuffer(uint8_t *dst, uint32_t const max_len, uint32_t ledStatus);
+            static uint8_t* Init(); // Initialize the SPI stream, returns pointer to the buffer
+            static uint32_t GetCurrentBuffer(uint8_t **dst, uint32_t const max_len, uint32_t ledStatus);
         private:
             static spi_slave_transaction_t transaction[2];
             static uint32_t currentTransaction;
