@@ -81,6 +81,7 @@ void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
 }
 
 void CTAG::SP::ctagDataModelBase::storeJSON(Document &d, const string &fn) {
+    // TODO: go with native fatfs methods, use f_sync after write to SD-card
     //FILE*
     fp = fopen(fn.c_str(), "w"); // non-Windows use "w"
     if (fp == NULL) {
