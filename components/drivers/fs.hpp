@@ -27,6 +27,7 @@ namespace CTAG {
         class FileSystem {
         public:
             static void InitFS();
+            static bool SDMounted();
         };
     }
 }
