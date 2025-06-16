@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdlib>
+#include <cstddef>
 #include <cinttypes>
 
 namespace tbd { using Error = uint32_t; }
@@ -13,7 +13,7 @@ const char* get_error_message(Error err);
 
 }
 
-#define TBD_OK ::tbd::errors::SUCCESS;
+#define TBD_OK ::tbd::errors::SUCCESS
 
 #if USE_TBD_ERR
 #include <tbd/errors/all_errors.hpp>
@@ -34,11 +34,11 @@ const char* get_error_message(Error err);
  */
 #define TBD_ERRMSG(err, msg) ::tbd::errors::FAILURE
 
-namespace tbd::errors { y6
+namespace tbd::errors {
 
 enum Errors {
-    Error SUCCESS = 0,
-    Error FAILURE = 1,
+    SUCCESS = 0,
+    FAILURE = 1,
 };
 
 inline size_t get_num_errors() {

@@ -35,7 +35,7 @@ def generate_compilation_commands_with_cmake(repo_dir: Path, cmake_parameters: d
 
     cmake_file = repo_dir / 'CMakeLists.txt'
     parameters = [f'-D{param}={value}' for param, value in cmake_parameters.items()]
-    cmd = ['cmake', '-DCMAKE_EXPORT_COMPILE_COMMANDS=1', f'-B{repo_dir}'] + parameters + [cmake_file]
+    cmd = ['cmake', '-DCMAKE_EXPORT_COMPILE_COMMANDS=1', f'-B{repo_dir}'] + parameters + [cmake_file.parent]
     ret = subprocess.run(cmd, cwd=repo_dir, capture_output=True, check=False)
     if ret.returncode != 0 and ret.stderr:
         err_str = ret.stderr.decode("utf-8")

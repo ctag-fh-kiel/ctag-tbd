@@ -1,27 +1,23 @@
 [tool.poetry]
-name = "ctagtbd"
+name = "tbd"
 version = "0.1.0"
-description = "CTAG TBD python library and CLI"
+description = "TBD Audio Processor"
 authors = ["Michael Jonathan Lee <code.mjlee@gmail.com>"]
 license = "GPL 3.0"
-readme = "README.md"
 
 packages = [
-    { include = "tbd_tools", from = "tools" },
+    { include = "tbd_core" }
 ]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-typer = "^0.12.5"
-gitpython = "^3.1.43"
-jinja2 = "^3.1.4"
-kconfiglib = "^14.1.0"
+esphome = "^2025.5.2"
+nanopb = "^0.4.9.1"
+proto-schema-parser = "^1.6.0"
 pyhumps = "^3.8.0"
-cxxheaderparser = "^1.4.1"
-pydantic = "^2.9.2"
-
-[tool.poetry.scripts]
-tbd = 'tbd_tools:tbd_tool'
+jinja2 = "^3.1.6"
+cxxheaderparser = "^1.5.0"
+pydantic = "^2.11.6"
 
 [build-system]
 requires = ["poetry-core"]

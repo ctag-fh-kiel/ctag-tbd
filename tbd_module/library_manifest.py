@@ -8,7 +8,7 @@ class BuildCommand:
     directory: str
     command: str
     file: str
-    output: str
+    output: str | None = None
 
 @dataclass(frozen=True)
 class Build:

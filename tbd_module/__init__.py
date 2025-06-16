@@ -3,17 +3,31 @@
     
 """
 import logging
-from esphome.core import CORE
+from pathlib import Path
 
-from tbd_core.buildgen import *
+from esphome.core import CORE
+from esphome import loader
 
 from .collect_errors import collect_errors
 from .esphome_build_generator import EsphomeBuildGenerator
 
+
+def setup_tbd_build():
+    tbd_core_dir = Path(__file__).parent.parent
+    print('ROOOOOOT', tbd_core_dir)
+    loader.install_meta_finder(tbd_core_dir / 'components' / 'api')
+    loader.install_meta_finder(tbd_core_dir / 'components' / 'audio')
+    loader.install_meta_finder(tbd_core_dir / 'components' / 'control_inputs')
+    loader.install_meta_finder(tbd_core_dir / 'components' / 'core')
+    print('TBD', tbd_core_dir)
+
+setup_tbd_build()
+from tbd_core.buildgen import *
+
 set_build_generator(EsphomeBuildGenerator())
 
 AUTO_LOAD = ['tbd_system']
-
+CONFIG_SCHEMA = {}
 
 _LOGGER = logging.getLogger(__name__)
 

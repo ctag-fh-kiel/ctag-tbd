@@ -24,13 +24,13 @@ def get_components_build_path():
 
 
 @generated_tbd_global(PATHS_DOMAIN)
-def get_tbd_components_root():
-    return Path(__file__).parent.parent.parent / 'components'
+def get_tbd_source_root() -> Path:
+    return Path(__file__).parent.parent.parent
 
 
 @generated_tbd_global(PATHS_DOMAIN)
-def get_tbd_source_root() -> Path:
-    return get_tbd_components_root().parent
+def get_tbd_components_root():
+    return get_tbd_source_root() / 'components'
 
 
 @generated_tbd_global(PATHS_DOMAIN)
