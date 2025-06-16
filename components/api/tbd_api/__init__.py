@@ -59,10 +59,11 @@ async def to_code(config):
     component.add_define('TBD_API_MAX_PAYLOAD_SIZE', config[CONF_MAX_PAYLOAD_SIZE])
 
     # add core endpoints implementations and types
-    get_api_registry().add_message_types(component.path / 'src' / 'api_base.proto')
-    get_api_registry().add_message_types(component.path / 'src' / 'api_test.proto')
-    get_api_registry().add_source(component.path / 'src' / 'base_endpoints.cpp')
-    get_api_registry().add_source(component.path / 'src' / 'api_test.cpp')
+    api_registry = get_api_registry()
+    api_registry.add_message_types(component.path / 'src' / 'api_base.proto')
+    api_registry.add_message_types(component.path / 'src' / 'api_test.proto')
+    api_registry.add_source(component.path / 'src' / 'base_endpoints.cpp')
+    api_registry.add_source(component.path / 'src' / 'api_test.cpp')
 
     tbd.add_generation_job(finalize_api_registry)
 
