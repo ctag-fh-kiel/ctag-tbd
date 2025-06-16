@@ -4,9 +4,12 @@
 
 #include <mutex>
 #include <chrono>
+#include <atomic>
 
 #include <tbd/logging.hpp>
 
+// TBD relies heavily on atomics for thread safety, make sure they are lock free
+static_assert(std::atomic<bool>::is_always_lock_free);
 
 namespace tbd::system {
 
