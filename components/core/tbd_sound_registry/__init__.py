@@ -14,7 +14,7 @@ from tbd_core.plugins import (
     write_plugin_factory_header, 
     write_plugin_reflection_info,
     write_meta_classes,
-    PluginReflectionGenerator,
+    PluginRegistry,
 )
 
 
@@ -32,8 +32,8 @@ SOUND_COLLECTION_SCHEMA = cv.Schema({
 
 
 @tbd.generated_tbd_global(SOUND_REGISTRY_GLOBAL)
-def get_plugin_registry() -> PluginReflectionGenerator:
-    return PluginReflectionGenerator()
+def get_plugin_registry() -> PluginRegistry:
+    return PluginRegistry()
 
 
 def add_tbd_sounds(init_file: str, config):
@@ -68,25 +68,32 @@ def add_tbd_sounds(init_file: str, config):
 
     # find all plugins in this source tree
     include_dirs = component.get_default_include_dirs()
-    headers = [file 
+    headers = set(file
                 for include_path in include_dirs
                 for file in include_path.rglob('*.hpp')
-              ]
+              )
     reflectables = search_for_plugins(headers, True)
-    processor = get_plugin_registry()
+    registry = get_plugin_registry()
 
     # filter plugins if inclusion rules present
     whitelist = config.get(CONF_WHITELIST)
     blacklist = config.get(CONF_BLACKLIST)
-    selected_module_plugins = processor.add(reflectables, whitelist=whitelist, blacklist=blacklist)
+    selected_module_plugins = registry.add_plugins(reflectables, whitelist=whitelist, blacklist=blacklist)
 
     # add sources for selected plugins
-    plugin_names = [plugin.cls_name for plugin in selected_module_plugins]
     sources = (component.path / 'plugin_src').rglob('*.cpp')
     for source_file in sources:
-        for plugin_name in plugin_names:
-            file_name = source_file.stem
-            if plugin_name.lower() in [file_name.lower(), humps.decamelize(file_name), humps.kebabize(file_name)]:
+        file_name = source_file.stem.lower()
+        for plugin in selected_module_plugins:
+            plugin_name = plugin.cls_name
+            possible_cpp_file_names = [
+                plugin.header.stem.lower(),
+                plugin_name.lower(),
+                humps.decamelize(plugin_name),
+                humps.kebabize(plugin_name),
+            ]
+            print(possible_cpp_file_names, file_name, plugin_name)
+            if file_name in possible_cpp_file_names:
                 component.add_source_file(source_file)
                 _LOGGER.info(f'adding extra plugin source {source_file}')
 
@@ -95,20 +102,18 @@ def add_tbd_sounds(init_file: str, config):
 
 @tbd.build_job_with_priority(tbd.GenerationStages.REFLECTION)
 def finalize_plugin_registry_job():
-    processor = get_plugin_registry()
-    selected_plugins = processor.plugins
-
-    processor.preprocess()
-    selected_headers = processor.headers
+    plugins = get_plugin_registry().get_plugins()
+    selected_plugins = plugins.plugins
+    selected_headers = plugins.headers
 
     # generate plugin factory
     gen_source_path = tbd.get_generated_sources_path()
     gen_include_path = tbd.get_generated_include_path()
 
     out_file = gen_include_path / 'tbd' / 'sound_registry' / 'sound_processor_factory.hpp'
-    write_plugin_factory_header(selected_headers, selected_plugins, out_file)
-    write_plugin_reflection_info(processor, gen_source_path)
-    write_meta_classes(processor, gen_source_path)
+    write_plugin_factory_header(selected_headers, plugins, gen_source_path)
+    write_plugin_reflection_info(plugins, gen_source_path)
+    write_meta_classes(plugins, gen_source_path)
 
     plugin_names = [plugin.cls_name for plugin in selected_plugins]
     _LOGGER.info('using plugins:')
@@ -120,6 +125,7 @@ async def to_code(config):
     component = tbd.new_tbd_component(__file__)
 
     api_registry = get_api_registry()
+    api_registry.add_message_types(component.path / 'src' / 'sound_registry.proto')
     api_registry.add_source(component.path / 'src' / 'plugins_endpoints.cpp')
 
     tbd.add_generation_job(finalize_plugin_registry_job)

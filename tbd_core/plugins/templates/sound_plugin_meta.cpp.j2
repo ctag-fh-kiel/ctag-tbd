@@ -1,6 +1,6 @@
 #include "{{ meta_header }}"
 
-namespace tbd::sounds::meta {
+namespace tbd::sound_registry::meta {
 
 {{ meta_name }}::IntSetter {{ meta_name }}::int_setters[{{ plugin.num_ints }}] = { {%- for param in plugin.int_params %}
     {{ meta_name }}::set_{{ param.snake_name }},

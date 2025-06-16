@@ -62,11 +62,7 @@ respective component folders / files if different from this license.
 
 #include <stdint.h>
 #include <string>
-#include <memory>
-#include <map>
-#include <functional>
 #include <tbd/parameter_types.hpp>
-#include <tbd/sound_processor/allocator.hpp>
 
 
 namespace tbd::sound_processor {
@@ -117,14 +113,15 @@ struct ProcessData {
 };
 
 struct SoundProcessor {
-    SoundProcessor() {}
+    virtual ~SoundProcessor() {}
 
     /** process an audio sample window
      *  
      *  This is the core functionality of every sound processor and needs to be implemented by plugins.
      *  
      */
-    virtual void Process(const ProcessData &) = 0;
+    virtual void process(const ProcessData &) = 0;
+
 
     /** plugin initialization
      * 
@@ -132,48 +129,22 @@ struct SoundProcessor {
      *  the entirety of its lifetinme and can be used for any purpose desired. Any other necessary setup
      *  steps can be performed in this method prior to receiving any audio samples.
      */
-    virtual void Init(std::size_t blockSize, void *blockPtr) = 0;
+    virtual void init() = 0;
 
-    virtual ~SoundProcessor() {}
 
-    // FIXME: use placement new pull this out of ctagSoundProcessor's responsibility
-    void* operator new (std::size_t size) {
-        return SoundProcessorAllocator::allocate(size);
-    }
-
-    // FIXME: see new operator
-    void operator delete (void *ptr) noexcept {
-        // arena allocator will just reset the arena
-    }
-
-    // FIXME: since plugins are managed anyway is there really anything to be gained
-    //        from preventing their use outside a managed context?
-    void* operator new[] (std::size_t size) = delete;
-    void* operator new[] (std::size_t size, const std::nothrow_t& tag) = delete;
-    void operator delete[] (void *ptr) noexcept = delete;
-
-    int GetAudioBufferSize() { return bufSz; } 
-    void SetProcessChannel(int ch) { processCh = ch; }
-    bool GetIsStereo() const { return is_stereo; }
-
-protected:
-    SoundProcessor(bool is_stereo) : is_stereo(is_stereo) {}
-
-    bool is_stereo;
-
-    // is this dynamic?
-    int const bufSz = 32;
-
-    // will there ever be more than two channels? make this an enum
-    int processCh = 0;
+    virtual bool is_stereo() const = 0;
 };
 
 struct MonoSoundProcessor : SoundProcessor {
-    MonoSoundProcessor() : SoundProcessor(false) {}
+    MonoSoundProcessor() : SoundProcessor() {}
+
+    bool is_stereo() const override { return false; }
 };
 
 struct StereoSoundProcessor : SoundProcessor {
-    StereoSoundProcessor() : SoundProcessor(true) {}
+    StereoSoundProcessor() : SoundProcessor() {}
+
+    bool is_stereo() const override { return true; }
 };
 
 }

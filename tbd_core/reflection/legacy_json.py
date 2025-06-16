@@ -1,7 +1,5 @@
 from enum import Enum, unique
 from pydantic.dataclasses import dataclass, Field
-from typing import Optional
-
 
 @unique
 class ParamTypeJson(Enum):
@@ -16,10 +14,10 @@ class ParamJson:
     name: str
     type: ParamTypeJson
     hint: str | None = None
-    min: Optional[int] = None
-    max: Optional[int] = None
-    step: Optional[int] = None
-    params: Optional[list['ParamJson']] = None
+    min: int | None = None
+    max: int | None = None
+    step: int | None = None
+    params: list['ParamJson'] | None = None
 
     def __str__(self):
         return self.id
@@ -66,8 +64,8 @@ class PluginJson:
 class PluginPatchParamJson:
     id: str
     current: int
-    cv: Optional[int] = None
-    trig: Optional[int] = None
+    cv: int | None = None
+    trig: int | None = None
 
 
 @dataclass

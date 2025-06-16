@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+
+message ActivePlugins {
+  bool is_stereo = 1;
+  int32 left = 2;
+  int32 right = 3;
+}

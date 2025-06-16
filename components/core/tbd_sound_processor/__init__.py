@@ -13,12 +13,7 @@ CONFIG_SCHEMA = cv.Schema({
 })
 
 async def to_code(config):
-    new_tbd_component(__file__)
-
-    # max_memory of 0 reverts to normal heap allocation
-    if buffer_size := config.get(CONF_MAX_MEMORY):
-        allocator = cg.global_ns.namespace('tbd').namespace('audio').namespace('SoundProcessorAllocator')
-        allocator.allocate_buffers(buffer_size)
-
+    component = new_tbd_component(__file__)
+    component.add_define('TBD_SOUND_PROCESSOR_MAX_MEMORY', config[CONF_MAX_MEMORY])
 
 

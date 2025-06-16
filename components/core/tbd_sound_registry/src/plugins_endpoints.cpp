@@ -1,13 +1,11 @@
 #include <tbd/parameter_types.hpp>
-#include <tbd/sound_processor/parameters.hpp>
+#include <tbd/sound_registry/factory.hpp>
 #include <api_types.pb.h>
 
-#include "errors.hpp"
 
+namespace sp_pars = tbd::sound_registry::parameters;
 
-namespace sp_pars = tbd::sound_processor::parameters;
-
-namespace tbd::sounds {
+namespace tbd::sound_registry {
 
 [[tbd::endpoint]]
 Error get_num_sounds(uint_par& num_sounds) {
@@ -42,6 +40,24 @@ Error get_sound_params_name(const uint_par& sound_id, const uint_par& param_id, 
         return TBD_ERR(INVALID_SOUND_PARAM_ID);
     }
     param_name = param_info->name;
+    return TBD_OK;
+}
+
+[[tbd::endpoint]]
+Error set_sound_plugin(const uint_par& channel, const uint_par& sound_id) {
+    const auto _channel = channels::channel_mapping_from_int(channel);
+    if (_channel == channels::INVALID_MAPPING) {
+        return TBD_ERR(SOUND_REGISTRY_BAD_CHANNEL_MAPPING);
+    }
+    return factory::set_plugin(_channel, sound_id);
+}
+
+
+[[tbd::endpoint]]
+Error get_active_plugins(ActivePlugins& active_plugins) {
+    active_plugins.is_stereo = ActiveSoundProcessors::is_stereo();
+    active_plugins.left = ActiveSoundProcessors::on_left();
+    active_plugins.right = ActiveSoundProcessors::on_right();
     return TBD_OK;
 }
 

@@ -1,7 +1,5 @@
-import functools
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Final, Optional
+from typing import Callable, Final
 import logging
 
 import cxxheaderparser.lexer as lexer
@@ -28,7 +26,7 @@ class Parser(cpplib.CxxParser):
     """
 
     def _consume_attribute_specifier_seq(
-        self, tok: lexer.LexToken, doxygen: Optional[str] = None
+        self, tok: lexer.LexToken, doxygen: str | None = None
     ) -> None:
 
         while True:
@@ -276,7 +274,7 @@ class LazyScopeCollector:
     def __init__(self, parser: 'ReflectableFinder', scope: ScopeDescription):
         self._parser: Final = parser
         self._scope: Final = scope
-        self._scope_id: Optional[str] = None
+        self._scope_id: str | None = None
 
     def use_id(self) -> int:
         if self._scope_id is None:

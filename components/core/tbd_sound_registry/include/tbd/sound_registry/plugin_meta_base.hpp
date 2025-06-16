@@ -1,18 +1,17 @@
+#pragma once
+
 #include <tbd/sound_processor.hpp>
-#include <tbd/sound_processor/parameters.hpp>
+#include <tbd/sound_registry/all_sound_processors.hpp>
 
 #include <atomic>
 
-namespace tbd::sound_processor {
+namespace tbd::sound_registry {
 
-class DynamicSoundProcessor {
-public:
-    DynamicSoundProcessor(parameters::PluginID plugin_id) : id_(plugin_id), operation_cleared_(true) {}
-    virtual ~DynamicSoundProcessor() {} 
+struct PluginMetaBase : sound_processor::SoundProcessor {
+    explicit PluginMetaBase(const parameters::PluginID id) : id_(id), operation_cleared_(true) {}
+    virtual ~PluginMetaBase() = default;
 
-    virtual parameters::PluginID id() const {
-        return id_;
-    };
+    virtual parameters::PluginID id() const { return id_; };
 
     bool map_param(parameters::ParameterID parameter_id, parameters::InputID input_id) {
         if (!parameters::verify_mapping(id_, parameter_id, input_id)) {
@@ -26,6 +25,7 @@ public:
         operation_.parameter = parameter_id;
         operation_.value.int_param = input_id;
         operation_cleared_ = false;
+        return true;
     };
 
     bool set_param(parameters::ParameterID parameter_id, int32_t value) {
@@ -40,6 +40,7 @@ public:
         operation_.parameter = parameter_id;
         operation_.value.int_param = value;
         operation_cleared_ = false;
+        return true;
     };
 
     bool set_param(parameters::ParameterID parameter_id, uint32_t value) {
@@ -54,6 +55,7 @@ public:
         operation_.parameter = parameter_id;
         operation_.value.uint_param = value;
         operation_cleared_ = false;
+        return true;
     };
 
     bool set_param(parameters::ParameterID parameter_id, bool value) {
@@ -68,6 +70,7 @@ public:
         operation_.parameter = parameter_id;
         operation_.value.trigger_param = value;
         operation_cleared_ = false;
+        return true;
     };
 
     bool set_param(parameters::ParameterID parameter_id, float value) {
@@ -82,11 +85,10 @@ public:
         operation_.parameter = parameter_id;
         operation_.value.float_param = value;
         operation_cleared_ = false;
+        return true;
     };
 
 protected:
-    parameters::PluginID id_;
-
     struct WriteOperation{
         enum {
             SET_MAPPING,
@@ -105,6 +107,7 @@ protected:
         } value;
     } operation_;
 
+    parameters::PluginID id_;
     std::atomic<bool> operation_cleared_;
 };
 

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from typing import List, Set, Optional
 from pathlib import Path
 import cxxheaderparser.types as cpptypes
 import cxxheaderparser.simple as cpplib
@@ -60,7 +59,7 @@ class PropertyDescription:
         return f'Field({self.full_name.path})'
 
 
-Properties = List[PropertyDescription]
+Properties = list[PropertyDescription]
 
 @dataclass
 class ReflectableDescription:
@@ -68,9 +67,9 @@ class ReflectableDescription:
     full_name: ScopeDescription
     header: Path
     raw: cpplib.ClassScope
-    friendly_name: Optional[str] = None
-    description: Optional[str] = None
-    properties: Optional[List[PropertyDescription]] = list
+    friendly_name: str | None = None
+    description: str | None = None
+    properties: list[PropertyDescription] | None = list
 
     @property
     def name(self):
@@ -89,7 +88,7 @@ class ReflectableDescription:
 
 Reflectables = list[ReflectableDescription]
 
-Headers = Set[str]
+Headers = set[Path]
 
 
 __all__ = [

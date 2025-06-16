@@ -1,2 +1,4 @@
 from .meta_generator import *
-from .process_plugins import *
+from .plugin_entry import *
+from .plugins import *
+from .registry import *
