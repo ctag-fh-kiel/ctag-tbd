@@ -344,15 +344,17 @@ class ReflectableFinder:
     def funcs(self) -> list[FunctionDescription]:
         return self._funcs
 
-    def add_from_file(self, file_name: Path) -> None:
+    def add_from_file(self, file_name: Path, *, include_base: Path | None = None) -> None:
         lines = self._read_code_from_file(file_name)
         visitor = AnnotationParser(lines)
         code = ''.join(lines)
         Parser(str(file_name), code, visitor).parse()
         parsed = visitor.data
         root_scope = ScopeDescription.from_root(parsed.namespace)
-        self._find_classes(root_scope, file_name)
-        self._find_functions(root_scope, file_name)
+
+        relative_header = file_name.relative_to(include_base) if include_base else file_name
+        self._find_classes(root_scope, relative_header)
+        self._find_functions(root_scope, relative_header)
 
     # private
 

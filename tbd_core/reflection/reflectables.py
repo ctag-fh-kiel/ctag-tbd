@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
 from pathlib import Path
+from zlib import crc32
+
 import cxxheaderparser.types as cpptypes
 import cxxheaderparser.simple as cpplib
 
@@ -31,6 +33,9 @@ class FunctionDescription:
     def arguments(self) -> list[cpptypes.Parameter]:
         return self.raw.parameters
 
+    def hash(self):
+        return crc32(str(self.full_name).encode())
+
     def __str__(self) -> str:
         return self.full_name.path
 
@@ -51,6 +56,9 @@ class PropertyDescription:
     @property
     def name(self):
         return self.friendly_name if self.friendly_name else self.field_name
+
+    def hash(self):
+        return crc32(str(self.full_name).encode())
 
     def __str__(self) -> str:
         return self.full_name.path
@@ -78,6 +86,9 @@ class ReflectableDescription:
     @property
     def meta_name(self):
         return f'{self.cls_name}Meta'
+
+    def hash(self):
+        return crc32(str(self.full_name).encode())
 
     def __str__(self) -> str:
         return self.full_name.path

@@ -30,6 +30,24 @@ class ScopeType(IntEnum):
     STATIC_FIELD = 3
     FIELD = 4
 
+VALID_CHILD_TYPES = {
+    ScopeType.NAMESPACE: [ScopeType.NAMESPACE, ScopeType.FUNCTION, ScopeType.CLASS],
+    ScopeType.FUNCTION: [],
+    ScopeType.CLASS: [ScopeType.FUNCTION, ScopeType.CLASS, ScopeType.STATIC_FIELD, ScopeType.FIELD],
+    ScopeType.STATIC_FIELD: [ScopeType.STATIC_FIELD, ScopeType.FIELD],
+    ScopeType.FIELD: [ScopeType.FIELD],
+}
+
+VALID_PARENT_TYPES = {
+    scope_type: [parent for parent, children in VALID_CHILD_TYPES.items() if scope_type in children]
+    for scope_type in ScopeType
+}
+
+def is_valid_child(child_type: ScopeType, parent_type: ScopeType) -> bool:
+    return child_type in VALID_CHILD_TYPES[parent_type]
+
+def is_valid_parent(parent_type: ScopeType, child_type: ScopeType) -> bool:
+    return parent_type in VALID_PARENT_TYPES[child_type]
 
 class ScopeSegmentBase(ABC):
     @property
@@ -172,35 +190,45 @@ class ScopeDescription:
         return ScopeDescription([ScopeDescriptionSegment(root_namespace)])
 
     def add_namespace(self, namespace: cpplib.NamespaceScope) -> 'ScopeDescription':
-        if self.segments and self.segments[-1].type != ScopeType.NAMESPACE:
+        if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.NAMESPACE):
             raise ValueError('namespaces can only be declared in namespaces')
         return ScopeDescription([*self.segments, ScopeDescriptionSegment(namespace)])
 
     def add_function(self, func: cpptypes.Function) -> 'ScopeDescription':
-        if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE, ScopeType.CLASS]:
+        if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.FUNCTION):
             raise ValueError('function can only be declared in namespaces')
         return ScopeDescription([*self.segments, ScopeDescriptionSegment(func)])
 
     def add_class(self, cls: cpplib.ClassScope) -> 'ScopeDescription':
-        if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE, ScopeType.CLASS]:
+        if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.CLASS):
             raise ValueError('classes can only be declared in namespaces or other classes')
         return ScopeDescription([*self.segments, ScopeDescriptionSegment(cls)])
-
-    def add_field(self, field: cpptypes.Field) -> 'ScopeDescription':
-        if self.segments and self.segments[-1].type not in [ScopeType.CLASS, ScopeType.FIELD]:
-            raise ValueError('fields can only be declared in classes and fields')
-        if field.static:
-            raise ValueError('field is static')
-
-        return ScopeDescription([*self.segments, ScopeDescriptionSegment(field)])
 
     def add_static_field(self, field: cpptypes.Field) -> 'ScopeDescription':
         if self.segments and self.segments[-1].type != ScopeType.CLASS:
             raise ValueError('static fields can only be declared in classes')
         if not field.static:
-            raise ValueError('field is static')
-
+            raise ValueError('field is not static')
         return ScopeDescription([*self.segments, ScopeDescriptionSegment(field)])
+
+    def add_field(self, field: cpptypes.Field) -> 'ScopeDescription':
+        if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.FIELD):
+            raise ValueError('fields can only be declared in classes and fields')
+        if field.static:
+            raise ValueError('field is static')
+        return ScopeDescription([*self.segments, ScopeDescriptionSegment(field)])
+
+    def __add__(self, other: 'ScopeDescription') -> 'ScopeDescription':
+        if len(self.segments) == 0:
+            return ScopeDescription([*other.segments])
+        if len(other.segments) == 0:
+            return ScopeDescription([*self.segments])
+
+        self_type = self.segments[-1].type
+        other_type = other.segments[0].type
+        if not is_valid_child(other_type, self_type):
+            raise ValueError(f'can not merge scopes of type {self_type.name} and {other_type.name}')
+        return ScopeDescription([*self.segments, *other.segments])
 
     def namespace(self) -> cpplib.NamespaceScope:
         return self.segments[-1].namespace()
