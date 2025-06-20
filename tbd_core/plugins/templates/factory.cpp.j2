@@ -7,14 +7,14 @@
 namespace tbd::sound_registry::factory {
 {%- for plugin in plugins %}
 template<>
-Error activate_sound_processor<meta::{{ plugin.name }}Meta>(channels::ChannelMapping channel) {
-    return ActiveSoundProcessors::set_plugin<meta::{{ plugin.name }}Meta>(channel);
+Error activate_sound_processor<meta::{{ plugin.name }}Meta>(const channels::Channels channels) {
+    return ActiveSoundProcessors::set_plugin<meta::{{ plugin.name }}Meta>(channels);
 }
 {%- endfor %}
 
 Activator ACTIVATORS[] {
 {%- for plugin in plugins %}
-&activate_sound_processor<meta::{{ plugin.name }}Meta>,
+    &activate_sound_processor<meta::{{ plugin.name }}Meta>,
 {%- endfor %}
 };
 

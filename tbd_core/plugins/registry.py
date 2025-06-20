@@ -193,11 +193,11 @@ class PluginRegistry:
     def _flatten_plugin_params(self,
         acc: PluginsOptions,
         plugin_id: int,
-        plugin: ReflectableDescription,
+        struct: ReflectableDescription,
         scope: ScopePath
     ) -> list[ParamEntry]:
         flattened_params = []
-        for field in plugin.properties:
+        for field in struct.properties:
             param_scope = scope.add_field(field.field_name)
             found = self._find_field_type(field.type)
             if found:
@@ -212,9 +212,14 @@ class PluginRegistry:
                 if (field_type := get_param_type(field_type)) is None:
                     _LOGGER.warning(f'field {field.full_name} type {field.type} not known')
                     continue
-                # new_field = dataclasses.replace(field, full_name=field_scope)
+
+                plugin = self._plugins[plugin_id]
+                name = f'{plugin.cls_name}.{param_scope}'
+                full_name = f'{plugin.full_name}.{param_scope}'
                 flattened_params.append(ParamEntry.new_param_entry(
-                    name=param_scope.path, 
+                    name=name,
+                    full_name=full_name,
+                    path=param_scope.path,
                     plugin_id=plugin_id, 
                     type=field_type,
                     attrs=field.attrs,

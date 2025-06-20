@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from enum import unique, StrEnum
 from pathlib import Path
+from zlib import crc32
 
-from tbd_core.reflection import ParamType, Attributes
+from tbd_core.reflection import ParamType, Attributes, ScopeDescription
 
 
 @unique
@@ -17,6 +18,8 @@ class ParamOperations(StrEnum):
 @dataclass(frozen=True)
 class ParamEntry:
     name: str
+    full_name: str
+    path: str
     plugin_id: int
     type: ParamType
     norm: float | None = None
@@ -28,7 +31,7 @@ class ParamEntry:
 
     @property
     def snake_name(self):
-        return self.name.replace('.', '__')
+        return self.path.replace('.', '__')
 
     @property
     def is_int(self):
@@ -51,11 +54,11 @@ class ParamEntry:
         return self.type == ParamType.UFLOAT_PARAM
 
     @staticmethod
-    def new_param_entry(name: str, plugin_id: int, type: ParamType, attrs: Attributes | None):
+    def new_param_entry(name: str, full_name: str, path: str, plugin_id: int, type: ParamType, attrs: Attributes | None):
         attrs = {name: value for attr in attrs for name, value in attr.params.items() if attr.name[0] == 'tbd'}
 
         if not attrs:
-            return ParamEntry(name=name, plugin_id=plugin_id, type=type)
+            return ParamEntry(name=name, full_name=full_name, path=path, plugin_id=plugin_id, type=type)
 
         # validate attributes
         if type == ParamType.TRIGGER_PARAM:
@@ -70,7 +73,7 @@ class ParamEntry:
         vol.Schema(schema)(attrs)
 
         if type == ParamType.TRIGGER_PARAM:
-            return ParamEntry(name=name, plugin_id=plugin_id, type=type)
+            return ParamEntry(name=name, full_name=full_name, path=path, plugin_id=plugin_id, type=type)
 
         filtered_attrs = {key: float(value) for key, value in attrs.items() if key in ATTR_NUMBER_SCHEMA.keys()}
 
@@ -84,7 +87,7 @@ class ParamEntry:
             operation = ParamOperations.NO_OP
 
         if type in [ParamType.INT_PARAM, ParamType.FLOAT_PARAM]:
-            return ParamEntry(name=name, plugin_id=plugin_id, type=type, operation=operation, **filtered_attrs)
+            return ParamEntry(name=name, full_name=full_name, path=path, plugin_id=plugin_id, type=type, operation=operation, **filtered_attrs)
 
         if attrs.get(ATTR_ABS):
             cut_negatives = False
@@ -94,9 +97,11 @@ class ParamEntry:
             cut_negatives = False
 
         # [ParamType.UINT_PARAM, ParamType.UFLOAT_PARAM]:
-        return ParamEntry(name=name, plugin_id=plugin_id, type=type, operation=operation, cut_negatives=cut_negatives,
+        return ParamEntry(name=name, full_name=full_name, path=path, plugin_id=plugin_id, type=type, operation=operation, cut_negatives=cut_negatives,
                           **filtered_attrs)
 
+    def hash(self):
+        return crc32(self.name.encode())
 
 @dataclass(frozen=True)
 class PluginParams:
@@ -215,5 +220,7 @@ class PluginEntry:
     def param_list(self) -> list[ParamEntry]:
         return self.params.params
 
+    def hash(self):
+        return crc32(self.name.encode())
 
 __all__ = ['ParamEntry', 'PluginEntry']

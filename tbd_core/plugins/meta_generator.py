@@ -27,15 +27,15 @@ def get_template(name: str) -> ji.Template:
     return templates().get_template(name)
 
 
-def search_for_plugins(headers: Headers, strict: bool) -> list[ReflectableDescription]:
+def search_for_plugins(headers: Headers, strict: bool, *, include_base: Path | None = None) -> list[ReflectableDescription]:
     collector = ReflectableFinder()
 
     for header in headers:
         if strict:
-            collector.add_from_file(header)
+            collector.add_from_file(header, include_base=include_base)
         else:
             try:
-                collector.add_from_file(header)
+                collector.add_from_file(header, include_base=include_base)
             except Exception as e:
                 __LOGGER.error(f'error parsing {header}: {e}')
     return collector.reflectables
@@ -73,7 +73,7 @@ def write_meta_classes(plugins: Plugins, out_folder: Path) -> None:
             meta_name=meta_name, 
             plugin=plugin, 
             params=plugin_params, 
-            plugin_header=plugin.header.name,
+            plugin_header=plugin.header,
         )
         header_name = f'{plugin.name}_meta.hpp'
         header_path = out_folder / header_name
