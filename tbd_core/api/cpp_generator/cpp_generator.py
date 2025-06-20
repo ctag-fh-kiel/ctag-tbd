@@ -159,7 +159,7 @@ class CppGenerator(GeneratorBase):
             sub_dir='include/tbd/api'
         )
         tbd.copy_batch(
-            tbd.get_tbd_components_root() / 'core' / 'tbd_module',
+            tbd.get_tbd_source_root() / 'tbd_module',
             out_dir,
             [
                 'errors.hpp',
