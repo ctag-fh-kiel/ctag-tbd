@@ -32,6 +32,7 @@ enum ParamType {
 
 struct PluginInfo {
     const char* name;
+    uint32_t hash;
     ParameterID parameter_offset;
     ParameterCount num_parameters;
     ParameterCount num_ints;
@@ -43,6 +44,7 @@ struct PluginInfo {
 
 struct ParamInfo {
     const char* name;
+    uint32_t hash;
     PluginID plugin_id;
     ParamType field_type;
 };
