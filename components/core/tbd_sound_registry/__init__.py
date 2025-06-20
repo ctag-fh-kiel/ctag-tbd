@@ -1,10 +1,12 @@
 from esphome.components.tbd_module.python_dependencies import python_dependencies
+from esphome.const import CONF_ID
+import esphome.config_validation as cv
+import esphome.codegen as cg
+
 python_dependencies(('humps', 'pyhumps'))
 
-import logging
 import humps
-
-import esphome.config_validation as cv
+import logging
 
 import tbd_core.buildgen as tbd
 
@@ -19,6 +21,16 @@ from tbd_core.plugins import (
 
 
 _LOGGER = logging.getLogger(__name__)
+
+tbd_sound_registry_ns = cg.esphome_ns.namespace("sound_registry")
+SoundRegistry = tbd_sound_registry_ns.class_("SoundRegistryProxy", cg.Component)
+
+CONFIG_SCHEMA = (
+    cv.Schema({
+        cv.GenerateID(): cv.declare_id(SoundRegistry),
+    })
+    .extend(cv.COMPONENT_SCHEMA)
+)
 
 SOUND_REGISTRY_GLOBAL = 'sound_registry'
 
@@ -68,11 +80,12 @@ def add_tbd_sounds(init_file: str, config):
 
     # find all plugins in this source tree
     include_dirs = component.get_default_include_dirs()
-    headers = set(file
-                for include_path in include_dirs
-                for file in include_path.rglob('*.hpp')
-              )
-    reflectables = search_for_plugins(headers, True)
+
+    reflectables = []
+    for include_dir in include_dirs:
+        headers = set(file for file in include_dir.rglob('*.hpp'))
+        reflectables += search_for_plugins(headers, True, include_base=include_dir)
+
     registry = get_plugin_registry()
 
     # filter plugins if inclusion rules present
@@ -92,7 +105,6 @@ def add_tbd_sounds(init_file: str, config):
                 humps.decamelize(plugin_name),
                 humps.kebabize(plugin_name),
             ]
-            print(possible_cpp_file_names, file_name, plugin_name)
             if file_name in possible_cpp_file_names:
                 component.add_source_file(source_file)
                 _LOGGER.info(f'adding extra plugin source {source_file}')
@@ -110,7 +122,6 @@ def finalize_plugin_registry_job():
     gen_source_path = tbd.get_generated_sources_path()
     gen_include_path = tbd.get_generated_include_path()
 
-    out_file = gen_include_path / 'tbd' / 'sound_registry' / 'sound_processor_factory.hpp'
     write_plugin_factory_header(selected_headers, plugins, gen_source_path)
     write_plugin_reflection_info(plugins, gen_source_path)
     write_meta_classes(plugins, gen_source_path)
@@ -123,6 +134,9 @@ def finalize_plugin_registry_job():
 
 async def to_code(config):
     component = tbd.new_tbd_component(__file__)
+
+    var = cg.new_Pvariable(config[CONF_ID])
+    await cg.register_component(var, config)
 
     api_registry = get_api_registry()
     api_registry.add_message_types(component.path / 'src' / 'sound_registry.proto')

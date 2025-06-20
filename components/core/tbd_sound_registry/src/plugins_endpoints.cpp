@@ -34,7 +34,17 @@ Error get_sound_num_params(const uint_par& sound_id, int_par& num_params) {
 }
 
 [[tbd::endpoint]]
-Error get_sound_params_name(const uint_par& sound_id, const uint_par& param_id, str_par& param_name) {
+Error get_sound_param_name(const uint_par& sound_id, const uint_par& param_id, str_par& param_name) {
+    auto param_info = sp_pars::get_plugin_parameter_info(sound_id, param_id);
+    if (param_info == nullptr) {
+        return TBD_ERR(INVALID_SOUND_PARAM_ID);
+    }
+    param_name = param_info->name;
+    return TBD_OK;
+}
+
+[[tbd::endpoint]]
+Error get_sound_param_info(const uint_par& sound_id, const uint_par& param_id, str_par& param_name) {
     auto param_info = sp_pars::get_plugin_parameter_info(sound_id, param_id);
     if (param_info == nullptr) {
         return TBD_ERR(INVALID_SOUND_PARAM_ID);

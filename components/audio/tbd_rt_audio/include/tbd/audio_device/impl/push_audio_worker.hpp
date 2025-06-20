@@ -8,6 +8,8 @@
 #include <tbd/audio_device/file_audio_source.hpp>
 #include <tbd/audio_device/impl/push_audio_params.hpp>
 
+#include "tbd/audio/audio_consumer.hpp"
+
 
 namespace tbd::audio {
 
@@ -155,7 +157,8 @@ private:
 
         // FIXME: the simulator does more at this point... do we need a custom buffer?
 
-        self._consumer.consume(reinterpret_cast<float*>(output_buffer));
+        AudioMetrics metrics;
+        self._consumer.consume(reinterpret_cast<float*>(output_buffer), metrics);
         
         // FIXME: looked like this
         // memcpy(outputBuffer, fbuf, BUF_SZ * 2 * 4);

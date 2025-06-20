@@ -1,12 +1,11 @@
-from esphome.components.tbd_module.python_dependencies import python_dependencies
+from tbd_module.python_dependencies import python_dependencies
 python_dependencies('pydantic', 'cxxheaderparser', 'jinja2', ('humps', 'pyhumps'))
 
-from esphome.components.tbd_module import new_tbd_component
+from tbd_module import new_tbd_component
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.core import CORE
-from pathlib import Path
+
 
 AUTO_LOAD = ['tbd_system', 'tbd_sound_utils']
 

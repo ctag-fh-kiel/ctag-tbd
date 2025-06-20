@@ -15,5 +15,3 @@ CONFIG_SCHEMA = cv.Schema({
 async def to_code(config):
     component = new_tbd_component(__file__)
     component.add_define('TBD_SOUND_PROCESSOR_MAX_MEMORY', config[CONF_MAX_MEMORY])
-
-

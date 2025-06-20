@@ -225,19 +225,19 @@ bool ActiveSoundProcessors::is_stereo() {
 }
 
 parameters::PluginID ActiveSoundProcessors::on_left() {
-    const auto on_left = impl.on_left();
-    if (on_left == nullptr) {
+    const auto _on_left = impl.on_left();
+    if (_on_left == nullptr) {
         return -1;
     }
-    return on_left->id();
+    return _on_left->id();
 }
 
 parameters::PluginID ActiveSoundProcessors::on_right() {
-    const auto on_right = impl.on_right();
-    if (on_right == nullptr) {
+    const auto _on_right = impl.on_right();
+    if (_on_right == nullptr) {
         return -1;
     }
-    return on_right->id();
+    return _on_right->id();
 }
 
 std::tuple<Error, void*> ActiveSoundProcessors::reserve_plugin_memory(const ChannelMapping channels, size_t plugin_size) {

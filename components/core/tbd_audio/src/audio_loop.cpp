@@ -1,10 +1,12 @@
 #define TBD_IS_AUDIO_LOOP_COMPILATION_UNIT
 
-#include <tbd/audio_loop/audio_loop.hpp>
-#include <tbd/audio_loop/impl/audio_worker.hpp>
-
+#include <tbd/audio/audio_loop.hpp>
+#include <tbd/audio/impl/audio_worker.hpp>
 
 namespace tbd::audio_loop {
+
+using namespace tbd::audio::channels;
+using namespace tbd::sound_processor;
 
 void begin() {
     audio::audio_worker.begin();
@@ -15,11 +17,11 @@ void end() {
     audio::audio_worker.end();
 }
 
-audio::SoundProcessor* set_sound_processor(uint8_t audio_channel, audio::SoundProcessor* sound_processor) {
+SoundProcessor* set_sound_processor(const Channels channels, SoundProcessor* sound_processor) {
     return nullptr;
 }
 
-audio::SoundProcessor* get_sound_processor(uint8_t audio_channel) {
+SoundProcessor* get_sound_processor(const Channels channels) {
     return nullptr;
 }
 

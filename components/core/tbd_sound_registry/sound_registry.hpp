@@ -1,0 +1,1 @@
+#include <tbd/esphome/sound_registry.hpp>
