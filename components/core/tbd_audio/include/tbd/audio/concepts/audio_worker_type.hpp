@@ -1,6 +1,9 @@
 #pragma once
 
 #include <tbd/audio_device/concepts/audio_consumer_type.hpp>
+#include <tbd/audio//channels.hpp>
+#include <tbd/sound_processor.hpp>
+#include <tbd/errors.hpp>
 #include <tbd/system/cpu_cores.hpp>
 
 #include <utility>
@@ -11,8 +14,15 @@ template<template<AudioConsumerType AudioConsumerT, system::CpuCore> class Audio
 concept AudioWorkerType = requires(
     AudioWorkerTypeT<VoidAudioConsumer, system::CpuCore::audio> audio_worker,
     bool _bool,
-    AudioWorkerTypeT<VoidAudioConsumer, system::CpuCore::audio>::params_type _params)
+    AudioWorkerTypeT<VoidAudioConsumer, system::CpuCore::audio>::params_type _params,
+    channels::ChannelID channel,
+    channels::Channels channels,
+    sound_processor::SoundProcessor* sound_processor)
 {
+    { audio_worker.get_sound_processor(channel) } -> std::same_as<sound_processor::SoundProcessor*>;
+    { audio_worker.set_sound_processor(channels, sound_processor) } -> std::same_as<Error>;
+    { audio_worker.reset_sound_processor(channels) } -> std::same_as<Error>;
+
     { audio_worker.init(std::move(_params)) } -> std::same_as<uint32_t>;
 
     // begin just as task module

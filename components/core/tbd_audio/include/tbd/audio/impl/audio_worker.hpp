@@ -1,6 +1,6 @@
 #pragma once
 
-#include <tbd/audio/concepts/audio_feeder_type.hpp>
+#include <tbd/audio/concepts/audio_worker_type.hpp>
 #include <tbd/audio/impl/audio_consumer.hpp>
 
 #if TBD_AUDIO_PULL

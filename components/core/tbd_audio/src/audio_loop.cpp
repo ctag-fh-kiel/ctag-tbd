@@ -17,12 +17,16 @@ void end() {
     audio::audio_worker.end();
 }
 
-SoundProcessor* set_sound_processor(const Channels channels, SoundProcessor* sound_processor) {
-    return nullptr;
+SoundProcessor* get_sound_processor(const ChannelID channel) {
+    return audio::audio_worker.get_sound_processor(channel);
 }
 
-SoundProcessor* get_sound_processor(const Channels channels) {
-    return nullptr;
+Error set_sound_processor(const Channels channels, SoundProcessor* sound_processor) {
+    return audio::audio_worker.set_sound_processor(channels, sound_processor);
+}
+
+Error reset_sound_processor(const Channels channels) {
+    return audio::audio_worker.reset_sound_processor(channels);
 }
 
 }

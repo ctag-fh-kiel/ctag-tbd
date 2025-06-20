@@ -1,6 +1,5 @@
 #include <tbd/audio_device/module.hpp>
 
-#include <memory.h>
 #include <algorithm>
 #include <RtAudio.h>
 
@@ -28,6 +27,18 @@ struct PushAudioWorker {
     using params_type = PushAudioParams;
 
     PushAudioWorker(const char* name) : _name(name) {}
+
+    sound_processor::SoundProcessor* get_sound_processor(const channels::ChannelID channel) {
+        return _consumer.get_sound_processor(channel);
+    }
+
+    Error set_sound_processor(const channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
+        return _consumer.set_sound_processor(channels, sound_processor);
+    }
+
+    Error reset_sound_processor(const channels::Channels channels) {
+        return _consumer.reset_sound_processor(channels);
+    }
 
     void set_output_levels(float left_level, float right_level) {
 

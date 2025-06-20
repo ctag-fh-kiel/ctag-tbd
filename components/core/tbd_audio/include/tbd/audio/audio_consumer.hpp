@@ -2,7 +2,6 @@
 
 #include <tbd/audio_device/audio_settings.hpp>
 #include <tbd/audio/channels.hpp>
-#include <tbd/control_inputs.hpp>
 #include <tbd/sound_processor.hpp>
 #include <tbd/system/locks.hpp>
 #include <tbd/errors.hpp>
@@ -10,10 +9,6 @@
 #include <freeverb3/efilter.hpp>
 #include <stmlib/dsp/dsp.h>
 #include <atomic>
-
-
-
-
 
 
 namespace tbd::audio {
@@ -41,6 +36,11 @@ struct AudioMetrics {
 };
 
 struct AudioConsumer {
+    sound_processor::SoundProcessor* get_sound_processor(channels::ChannelID channel);
+    Error set_sound_processor(channels::Channels, sound_processor::SoundProcessor* sound_processor);
+    Error reset_sound_processor(channels::Channels);
+
+
     Error startup();
     Error consume(float* audio_slice, AudioMetrics& metrics);
     Error cleanup();

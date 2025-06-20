@@ -3,7 +3,11 @@
 #include <tbd/audio_device/audio_settings.hpp>
 #include <tbd/audio_device.hpp>
 #include <tbd/audio_device/concepts/audio_consumer_type.hpp>
+#include <tbd/audio/channels.hpp>
+#include <tbd/sound_processor.hpp>
+#include <tbd/errors.hpp>
 
+#include "tbd/audio/audio_consumer.hpp"
 
 namespace tbd::audio {
 
@@ -14,9 +18,20 @@ struct PullAudioParams {
 /** @brief module task implementation for pulling audio task
  *
  */
-template<AudioConsumerType AudioConsumerT>
 struct PullAudioFeeder {
     using params_type = PullAudioParams;
+
+    sound_processor::SoundProcessor* get_sound_processor(const channels::ChannelID channel) {
+        return _consumer.get_sound_processor(channel);
+    }
+
+    Error set_sound_processor(const channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
+        return _consumer.set_sound_processor(channels, sound_processor);
+    }
+
+    Error reset_sound_processor(const channels::Channels channels) {
+        return _consumer.reset_sound_processor(channels);
+    }
 
     void set_output_levels(float left_level, float right_level) {
         AudioDevice::set_output_levels(left_level, right_level);
@@ -57,13 +72,13 @@ struct PullAudioFeeder {
 
 private:
     float fbuf[TBD_CHUNK_BUFFER_LENGTH];
-    AudioConsumerT _consumer;
+    AudioConsumer _consumer;
 };
 
 /** @brief audio worker pulling samples from codec
  *
  */
-template<AudioConsumerType AudioConsumerT, system::CpuCore cpu_core>
-using PullAudioWorker = system::TaskModule<PullAudioFeeder<AudioConsumerT>, cpu_core>;
+template<system::CpuCore cpu_core>
+using PullAudioWorker = system::TaskModule<PullAudioFeeder, cpu_core>;
 
 }

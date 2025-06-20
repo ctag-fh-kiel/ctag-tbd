@@ -16,13 +16,83 @@
 #include <freeverb3/efilter.hpp>
 #include <stmlib/dsp/dsp.h>
 
-#include "tbd/audio/channels.hpp"
-
 #define NOISE_GATE_LEVEL_CLOSE 0.0001f
 #define NOISE_GATE_LEVEL_OPEN 0.0003f
 #define CPU_MAX_ALLOWED_CYCLES 174150 // is 32/44100kHz * 240MHz
 
+
+TBD_NEW_ERR(SOUND_FAILED_TO_ACQUIRE_LOCK, "failed to acquire audio lock");
+TBD_NEW_ERR(SOUND_INVALID_SOUND_PROCESSOR, "sound processor is null");
+TBD_NEW_ERR(SOUND_BAD_CHANNEL_ASSIGNMENT, "bad channel selection for plugin");
+
 namespace tbd::audio {
+
+inline sound_processor::SoundProcessor* AudioConsumer::get_sound_processor(channels::ChannelID channel) {
+    using namespace channels;
+
+    const auto sound_processing_guard = sound_processing_lock.guard();
+    if (!sound_processing_guard) {
+        return nullptr;
+    }
+    if (channel == CH_0) {
+        return left;
+    }
+    if (channel == CH_1) {
+        if (left != nullptr && left->is_stereo()) {
+            return left;
+        }
+        return right;
+    }
+    return nullptr;
+}
+
+inline Error AudioConsumer::set_sound_processor(const channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
+    using namespace channels;
+
+    const auto sound_processing_guard = sound_processing_lock.guard();
+    if (!sound_processing_guard) {
+        return TBD_ERR(SOUND_FAILED_TO_ACQUIRE_LOCK);
+    }
+    if (sound_processor == nullptr) {
+        return TBD_ERR(SOUND_INVALID_SOUND_PROCESSOR);
+    }
+    if (sound_processor->is_stereo()) {
+        if (channels != CM_BOTH) {
+            return TBD_ERR(SOUND_BAD_CHANNEL_ASSIGNMENT);
+        }
+        left = sound_processor;
+        right = nullptr;
+    }
+    if (channels == CM_LEFT) {
+        left = sound_processor;
+    }
+    if (channels == CM_RIGHT) {
+        right = sound_processor;
+    }
+    return TBD_ERR(SOUND_BAD_CHANNEL_ASSIGNMENT);
+}
+
+inline Error AudioConsumer::reset_sound_processor(const channels::Channels channels) {
+    using namespace channels;
+
+    const auto sound_processing_guard = sound_processing_lock.guard();
+    if (!sound_processing_guard) {
+        return TBD_ERR(SOUND_FAILED_TO_ACQUIRE_LOCK);
+    }
+
+    if (!(channels & CM_BOTH)) {
+        return TBD_ERR(SOUND_BAD_CHANNEL_ASSIGNMENT);
+    }
+
+    if (channels & CM_LEFT) {
+        left = nullptr;
+    }
+    if (channels & CM_RIGHT) {
+        right = nullptr;
+    }
+    return TBD_OK;
+}
+
 
 Error AudioConsumer::startup() {
     //fv3::dccut_f out_dccutl, out_dccutr;
