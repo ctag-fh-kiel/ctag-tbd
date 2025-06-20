@@ -9,7 +9,7 @@ from .registry import get_tbd_domain
 
 def prepare_tests():
     indent = ' ' * 4
-    unittest_path = get_tests_build_path() / 'unittests'
+    unittest_path = get_tests_build_path()
     all_tests_header_dir = get_generated_include_path() / 'tbd' / 'unittests'
 
     test_env_block = [

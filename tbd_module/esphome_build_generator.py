@@ -1,16 +1,28 @@
 from pathlib import Path
+from typing import override
 
 from esphome.coroutine import coroutine
 
 from tbd_core.buildgen import BuildGenerator
 
 from esphome.core import CORE
+from esphome.writer import INI_AUTO_GENERATE_BEGIN, INI_AUTO_GENERATE_END, INI_BASE_FORMAT
 
 NO_EXCEPTION_FLAG = '-fno-exceptions'
 CPP_STD_FLAG = '-std=c++20'
 
 
 class EsphomeBuildGenerator(BuildGenerator):
+    @override
+    def write_config(self):
+        if not self._platformio_raw:
+            return
+
+        with open(self.build_path / 'platformio.ini', 'w') as f:
+            lines = [*INI_BASE_FORMAT, *self._platformio_raw, '', INI_AUTO_GENERATE_BEGIN, INI_AUTO_GENERATE_END]
+            data = '\n'.join(lines)
+            f.write(data)
+
     @property
     def build_path(self) -> Path:
         return Path(CORE.build_path)
@@ -49,6 +61,9 @@ class EsphomeBuildGenerator(BuildGenerator):
                 raise ValueError('exceptions can only be disabled on host platform')
         else:
             CORE.add_build_flag(NO_EXCEPTION_FLAG)
+
+    def add_platformio_option(self, key: str, value: str | list[str]) -> None:
+        CORE.add_platformio_option(key, value)
 
     def add_job(self, job) -> None:
         CORE.add_job(job)
