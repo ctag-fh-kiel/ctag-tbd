@@ -14,12 +14,11 @@ from .esphome_build_generator import EsphomeBuildGenerator
 
 def setup_tbd_build():
     tbd_core_dir = Path(__file__).parent.parent
-    print('ROOOOOOT', tbd_core_dir)
     loader.install_meta_finder(tbd_core_dir / 'components' / 'api')
     loader.install_meta_finder(tbd_core_dir / 'components' / 'audio')
+    loader.install_meta_finder(tbd_core_dir / 'components' / 'builtin_sounds')
     loader.install_meta_finder(tbd_core_dir / 'components' / 'control_inputs')
     loader.install_meta_finder(tbd_core_dir / 'components' / 'core')
-    print('TBD', tbd_core_dir)
 
 setup_tbd_build()
 from tbd_core.buildgen import *
@@ -48,8 +47,14 @@ def prepare_build_job():
     prepare_build()
 
 
+@build_job_with_priority(GenerationStages.FINALIZE)
+def finalize_build_job():
+    finalize_build()
+
+
 def to_code(config):
     new_tbd_component(__file__)
 
     add_generation_job(prepare_build_job)
+    add_generation_job(finalize_build_job)
     add_generation_job(errors_job)
