@@ -53,11 +53,21 @@ class ComponentInfo:
     def source_dir(self) -> Path | None:
         path = self.path / 'src'
         return path if path.is_dir() else None
-    
+
+    @property
+    def esphome_dir(self) -> Path | None:
+        path = self.path / 'esphome'
+        return path if path.is_dir() else None
+
     @property
     def platform_source_dir(self) -> Path | None:
         platform = get_target_platform()
         path = self.path / platform
+        return path if path.is_dir() else None
+
+    @property
+    def tests_dir(self) -> Path | None:
+        path = self.path / 'test'
         return path if path.is_dir() else None
 
     @property
@@ -120,6 +130,7 @@ class ComponentInfo:
                 self.include_dir,
                 self.common_include_dir,
                 self.platform_include_dir,
+                self.esphome_dir,
             ]
             if path is not None
         ]
@@ -127,7 +138,8 @@ class ComponentInfo:
     def get_default_source_dirs(self) -> list[Path]:
         return [path for path in [
                 self.source_dir,
-                self.platform_source_dir
+                self.platform_source_dir,
+                self.esphome_dir,
             ]
             if path is not None
         ]

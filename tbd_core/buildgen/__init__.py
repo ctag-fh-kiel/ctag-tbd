@@ -11,5 +11,6 @@ from .build_generator import (
 )
 from .component_info import *
 from .files import *
-from .prepare_build import prepare_build
+from .prepare_build import *
+from .prepare_tests import *
 from .registry import *

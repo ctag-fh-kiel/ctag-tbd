@@ -41,11 +41,13 @@ class GenerationStages(Enum):
             endpoint declarations and read DTO definitions for endpoint and DTO code generation.
     """
 
-    DEFAULT = 0.0
+    DEFAULT    =  0.0
     COMPONENTS = -10.0
-    REFLECTION = -20.0
-    ERRORS = -30.0
-    API = -40.0
+    TESTS      = -20.0
+    REFLECTION = -30.0
+    ERRORS     = -40.0
+    API        = -50.0
+    FINALIZE   = -60.0
 
 
 GenerationJobFunction = Callable[[], None]
@@ -53,6 +55,14 @@ GenerationJob = Callable[[], Awaitable[None]]
 
 
 class BuildGenerator(ABC):
+    def __init__(self):
+        super().__init__()
+        self._platformio_raw: list[str] = []
+
+    @abstractmethod
+    def write_config(self):
+        raise NotImplementedError()
+
     @property
     @abstractmethod
     def build_path(self) -> Path:
@@ -89,6 +99,18 @@ class BuildGenerator(ABC):
         raise NotImplementedError()
 
     @abstractmethod
+    def add_platformio_option(self, key: str, value: str | list[str]) -> None:
+        raise NotImplementedError()
+
+    def add_platformio_block(self, block: list[str] | str) -> None:
+        if isinstance(block, str):
+            self._platformio_raw.append(block)
+        elif isinstance(block, list):
+            self._platformio_raw.extend(block)
+        else:
+            raise ValueError('platformio blocks must be str or list')
+
+    @abstractmethod
     def add_job(self, job):
         raise NotImplementedError()
 
@@ -107,6 +129,10 @@ def set_build_generator(build_generator: BuildGenerator) -> None:
     if has_tbd_global(BUILD_GENERATOR_GLOBAL):
         return
     set_tbd_global(BUILD_GENERATOR_GLOBAL, build_generator)
+
+
+def write_build_config():
+    get_build_generator().write_config()
 
 
 def get_target_platform() -> str:
@@ -129,6 +155,14 @@ def set_compiler_options(*, std: int = 20, exceptions: bool = False) -> None:
     get_build_generator().set_compiler_options(std=std, exceptions=exceptions)
 
 
+def add_platformio_option(key: str, value: str | list[str]) -> None:
+    get_build_generator().add_platformio_option(key, value)
+
+
+def add_platformio_block(block: list[str] | str) -> None:
+    get_build_generator().add_platformio_block(block)
+
+
 def add_generation_job(job: GenerationJob):
     get_build_generator().add_job(job)
 
@@ -148,6 +182,7 @@ __all__ = [
     'GenerationJob',
     'GenerationJobFunction',
     'BuildGenerator',
+    'write_build_config',
     'get_build_generator',
     'set_build_generator',
     'get_target_platform',
@@ -155,6 +190,8 @@ __all__ = [
     'add_build_flag',
     'add_include_dir',
     'set_compiler_options',
+    'add_platformio_option',
+    'add_platformio_block',
     'add_generation_job',
     'build_job_with_priority',
 ]

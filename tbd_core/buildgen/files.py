@@ -24,6 +24,11 @@ def get_components_build_path():
 
 
 @generated_tbd_global(PATHS_DOMAIN)
+def get_tests_build_path():
+    return Path() / 'test'
+
+
+@generated_tbd_global(PATHS_DOMAIN)
 def get_tbd_source_root() -> Path:
     return Path(__file__).parent.parent.parent
 
@@ -143,10 +148,10 @@ def copy_batch(
     return retval
 
 
-
 __all__ = [
     'get_build_path', 
     'get_components_build_path',
+    'get_tests_build_path',
     'get_tbd_components_root', 
     'get_tbd_source_root', 
     'get_vendor_root', 
