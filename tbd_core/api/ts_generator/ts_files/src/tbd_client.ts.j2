@@ -23,7 +23,25 @@ export class Client extends ClientBase{
     }
 
     {%- for endpoint in api.endpoints %}
-    {{ endpoint | request_func | indent }}
+    async {{ endpoint.name }}({{ endpoint | request_func_args }}): Promise<{{ endpoint | request_func_return }}> {
+        {%- if endpoint | request_type %}
+        const request = create(dtos.{{ endpoint | request_type }}Schema, {
+            {%- for arg in endpoint | forward_args %}
+            {{ arg }},
+            {%- endfor %}
+        })
+        const payload = toBinary(dtos.{{ endpoint | request_type }}Schema, request)
+        {%- else %}
+        const payload = null
+        {%- endif %}
+        {%- if endpoint | response_type %}
+        const res_data = await this.send_rpc({{ endpoint | endpoint_id }}, payload)
+        const result = fromBinary(dtos.{{ endpoint | response_type }}Schema, res_data)
+        return {{ endpoint | unwrap_response('result') }}
+        {%- else %}
+        await this.send_rpc({{ endpoint | endpoint_id }}, payload)
+        {%- endif %}
+    }
     {% endfor %}
 }
 

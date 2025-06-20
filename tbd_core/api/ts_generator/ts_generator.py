@@ -1,16 +1,12 @@
 from pathlib import Path
 
-from tbd_core.api import Api, MessagePayload, ParamPayload, GeneratorBase, jilter, Endpoint
+from tbd_core.api import Api, MessagePayload, ParamPayload, GeneratorBase, jilter, Endpoint, FiltersBase
 import tbd_core.buildgen as tbd
 
 TYPESCRIPT_SRC_DIR = Path('src')
 
 
-class TSGenerator(GeneratorBase):
-    def __init__(self, api: Api):
-        templates_path = Path(__file__).parent / 'ts_files'
-        super(TSGenerator, self).__init__(api, templates_path)
-
+class TSFilters(FiltersBase):
     def payload_type(self, payload_type: str) -> str:
         payload = self._api.get_payload(payload_type)
         match payload:
@@ -20,11 +16,6 @@ class TSGenerator(GeneratorBase):
                 return payload_type
             case _:
                 raise Exception(f'unknown payload type: {type(payload)}')
-
-
-    @jilter
-    def request_func(self, endpoint: Endpoint):
-        return self.render(TYPESCRIPT_SRC_DIR / 'request_func.ts.j2', endpoint=endpoint)
 
     @jilter
     def request_func_args(self, endpoint: Endpoint):
@@ -51,15 +42,16 @@ class TSGenerator(GeneratorBase):
         return arg_list
 
     @jilter
-    def unwrap_response(self, endpoint: Endpoint) -> str:
-        response = self._api.get_response(endpoint)
-        return 'result.value' if response.is_wrapper else 'result'
-
-    @jilter
     def request_func_return(self, endpoint: Endpoint) -> str:
         if not endpoint.output:
             return 'void'
         return self.payload_type(endpoint.output)
+
+
+class TSGenerator(GeneratorBase):
+    def __init__(self, api: Api):
+        templates_path = Path(__file__).parent / 'ts_files'
+        super(TSGenerator, self).__init__(api, templates_path, TSFilters(api))
 
     def write_client(self, out_dir: Path, messages_file: Path):
         # symlinks will result in bad esbuild module lookups
