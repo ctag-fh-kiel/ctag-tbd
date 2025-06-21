@@ -57,10 +57,8 @@ def prepare_tests():
     add_platformio_block([
         *test_env_block,
         'build_src_filter = ',
-        f'{indent}+<tbd/tbd_unittests/src/test_main.cpp>',
         f'{indent}+<../{unittest_path}/**/test_*.cpp>',
         f'test_dir = {unittest_path}',
-        'debug_test = *',
     ])
 
 
