@@ -69,13 +69,22 @@ VALID_PARAM_ATTRS = set(['name', 'description', 'norm', 'scale', 'min', 'max', '
 
 
 def is_plugin_class(cls: cpplib.ClassScope) -> bool:
-    """ All plugins must be direct decendatns of `audio::SoundProcessor`. """
-
     for base in cls.class_decl.bases:
         parent_name = base.typename.segments[-1].name
         if parent_name in ['MonoSoundProcessor', 'StereoSoundProcessor']:
             return True
     return False
+
+
+def is_stereo_plugin(cls: cpplib.ClassScope) -> bool:
+    for base in cls.class_decl.bases:
+        parent_name = base.typename.segments[-1].name
+        if parent_name == 'MonoSoundProcessor':
+            return False
+        if parent_name == 'StereoSoundProcessor':
+            return True
+
+    raise ValueError(f'not a valid plugin type')
 
 
 def is_in_list(plugin: ReflectableDescription, plugin_list: set[str]):
@@ -176,6 +185,7 @@ class PluginRegistry:
             field_scope = ScopePath.root()
             unsorted_params = self._flatten_plugin_params(acc, plugin_id, plugin, field_scope)
             plugin_params = PluginParams.from_unsorted(unsorted_params)
+            is_stereo = is_stereo_plugin(plugin.raw)
 
             acc.plugin_entries.append(PluginEntry(
                 name=plugin.cls_name, 
@@ -183,6 +193,7 @@ class PluginRegistry:
                 param_offset=acc.num_params,
                 params=plugin_params,
                 header=plugin.header,
+                is_stereo=is_stereo,
             ))
 
             acc.headers.add(plugin.header)

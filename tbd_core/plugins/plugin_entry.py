@@ -172,6 +172,7 @@ class PluginEntry:
     param_offset: int
     params: PluginParams
     header: Path
+    is_stereo: bool
 
     @property
     def num_ints(self) -> int:

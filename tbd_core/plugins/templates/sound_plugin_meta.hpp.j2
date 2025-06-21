@@ -3,6 +3,7 @@
 
 #include <cmath>
 
+#include <tbd/parameter_types.hpp>
 #include <tbd/errors.hpp>
 
 #include <tbd/sound_registry/plugin_meta_base.hpp>
@@ -14,19 +15,31 @@ namespace tbd::sound_registry::meta {
 
 struct {{ meta_name }} : PluginMetaBase {
     {{ meta_name }}() : PluginMetaBase({{ plugin_id }}) {}
-    virtual ~{{ meta_name }}() = default;
+    ~{{ meta_name }}() override = default;
 
     void init() override {
         plugin_.init();
     }
 
-    void process(const sound_processor::ProcessData& data) override {
+    void process(const sound_processor::channels::Channels channels,
+                 const sound_processor::ProcessData& data) override
+    {
+        using namespace sound_processor::channels;
+
         process_updates();
         populate_parameters(data);
-        plugin_.process(data);
+        {% if plugin.is_stereo -%}
+        plugin_.process_stereo(data.both(), data.both());
+        {% else -%}
+        if (channels == CM_LEFT) {
+            plugin_.process_mono(data.both(), data.left());
+        } else if (channels == CM_RIGHT) {
+            plugin_.process_mono(data.both(), data.right());
+        }
+        {%- endif %}
     }
 
-    bool is_stereo() const override {
+    [[nodiscard]] bool is_stereo() const override {
         return plugin_.is_stereo();
     }
 
@@ -51,22 +64,22 @@ protected:
                 break;
             }
             case WriteOperation::SET_INT: {
-                auto setter_id = operation_.parameter;
+                const auto setter_id = operation_.parameter;
                 int_setters[setter_id](plugin_, operation_.value.int_param);
                 break;
             }
             case WriteOperation::SET_UINT: {
-                auto setter_id = operation_.parameter - {{ plugin.num_ints }};
+                const auto setter_id = operation_.parameter - {{ plugin.num_ints }};
                 uint_setters[setter_id](plugin_, operation_.value.uint_param);
                 break;
             }
             case WriteOperation::SET_TRIGGER: {
-                auto setter_id = operation_.parameter - {{ plugin.num_ints }} - {{ plugin.num_uints }};
+                const auto setter_id = operation_.parameter - {{ plugin.num_ints }} - {{ plugin.num_uints }};
                 trigger_setters[setter_id](plugin_, operation_.value.trigger_param);
                 break;
             }
             case WriteOperation::SET_FLOAT: {
-                auto setter_id = operation_.parameter - {{ plugin.num_ints }} - {{ plugin.num_uints }} - {{ plugin.num_triggers }}; 
+                const auto setter_id = operation_.parameter - {{ plugin.num_ints }} - {{ plugin.num_uints }} - {{ plugin.num_triggers }};
                 int_setters[setter_id](plugin_, operation_.value.float_param);
                 break;
             }
