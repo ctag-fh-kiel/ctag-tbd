@@ -1,4 +1,3 @@
-#include <tbd/unittests.hpp>
 #include <gtest/gtest.h>
 
 #include <tbd/sound_processor/samples.hpp>

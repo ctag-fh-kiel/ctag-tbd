@@ -56,9 +56,11 @@ def prepare_tests():
 
     add_platformio_block([
         *test_env_block,
+        'lib_deps = ',
+        f'{indent}google/googletest@^1.15.2',
         'build_src_filter = ',
         f'{indent}+<../{unittest_path}/**/test_*.cpp>',
-        f'test_dir = {unittest_path}',
+        # f'{indent}test_dir = {unittest_path}',
     ])
 
 
