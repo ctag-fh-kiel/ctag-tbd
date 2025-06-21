@@ -7,6 +7,9 @@ namespace sp_pars = tbd::sound_registry::parameters;
 
 namespace tbd::sound_registry {
 
+using namespace sound_processor::channels;
+
+
 [[tbd::endpoint]]
 Error get_num_sounds(uint_par& num_sounds) {
     num_sounds = sp_pars::get_num_plugins();
@@ -55,8 +58,8 @@ Error get_sound_param_info(const uint_par& sound_id, const uint_par& param_id, s
 
 [[tbd::endpoint]]
 Error set_sound_plugin(const uint_par& channel, const uint_par& sound_id) {
-    const auto _channel = channels::channel_mapping_from_int(channel);
-    if (_channel == channels::INVALID_MAPPING) {
+    const auto _channel = channels_from_int(channel);
+    if (_channel == CM_INVALID) {
         return TBD_ERR(SOUND_REGISTRY_BAD_CHANNEL_MAPPING);
     }
     return factory::set_plugin(_channel, sound_id);

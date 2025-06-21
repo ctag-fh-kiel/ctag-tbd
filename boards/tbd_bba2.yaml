@@ -4,25 +4,31 @@ esphome:
 esp32:
   variant: esp32s3
   board: esp32-s3-devkitc-1
-  framework: 
+  framework:
     type: esp-idf
     version: latest
-
-# external_components:
-#   - source: ${TBD_ROOT}/components/core
-#   - source: ${TBD_ROOT}/components/api
-#   - source: ${TBD_ROOT}/components/audio
-#   - source: ${TBD_ROOT}/components/control_inputs
-#   - source: ${TBD_ROOT}/components/vendor
 
 ota:
   platform: esphome
   password: !secret api_password
-    
+
 wifi:
   ssid: !secret ssid
   password: !secret wifi_password
 
+external_components:
+  - source: ${TBD_ROOT}
+
+tbd_module:
+
+tbd_sound_processor:
+
+tbd_basic_sounds:
+  whitelist:
+    - void
+
+tbd_audio:
+  autostart: true
 
 tbd_aic3254:
   pins:
@@ -41,13 +47,8 @@ tbd_midi:
     - UART
     - USB
 
-tbd_indicator:
-  pin: 38
-
-# tbd_builtin_sounds:
-
-tbd_test_plugins:
-
-tbd_audio:
+tbd_api:
 
 tbd_websocket:
+
+tbd_unittests:

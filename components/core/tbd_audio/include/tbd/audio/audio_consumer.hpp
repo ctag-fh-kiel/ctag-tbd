@@ -1,7 +1,7 @@
 #pragma once
 
 #include <tbd/audio_device/audio_settings.hpp>
-#include <tbd/audio/channels.hpp>
+#include <tbd/sound_processor/channels.hpp>
 #include <tbd/sound_processor.hpp>
 #include <tbd/system/locks.hpp>
 #include <tbd/errors.hpp>
@@ -36,9 +36,9 @@ struct AudioMetrics {
 };
 
 struct AudioConsumer {
-    sound_processor::SoundProcessor* get_sound_processor(channels::ChannelID channel);
-    Error set_sound_processor(channels::Channels, sound_processor::SoundProcessor* sound_processor);
-    Error reset_sound_processor(channels::Channels);
+    sound_processor::SoundProcessor* get_sound_processor(sound_processor::channels::ChannelID channel);
+    Error set_sound_processor(sound_processor::channels::Channels, sound_processor::SoundProcessor* sound_processor);
+    Error reset_sound_processor(sound_processor::channels::Channels);
 
 
     Error startup();
@@ -49,7 +49,7 @@ protected:
     void apply_bandwidth_filter(float* audio_slice);
     void determine_input_level(AudioMetrics& metrics);
     void apply_noise_gate(float* audio_slice);
-    channels::Channels run_processors(float* audio_slice);
+    sound_processor::channels::Channels run_processors(float* audio_slice);
     void apply_output_mapping(float* audio_slice);
     void apply_softclip(float* audio_slice);
     void determine_output_level(float* audio_slice, AudioMetrics& metrics);

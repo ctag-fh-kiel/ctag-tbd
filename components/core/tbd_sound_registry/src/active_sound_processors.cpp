@@ -1,6 +1,7 @@
 #include <tbd/sound_registry/active_sound_processors.hpp>
 
 #include <tbd/sound_processor/module.hpp>
+#include <tbd/errors.hpp>
 
 
 using tbd::sound_processor::tag;
@@ -9,7 +10,7 @@ namespace tbd::sound_registry {
 
 namespace {
 
-using namespace channels;
+using namespace sound_processor::channels;
 
 constexpr size_t TOTAL_SIZE = TBD_SOUND_PROCESSOR_MAX_MEMORY;
 
@@ -156,17 +157,17 @@ struct ActiveSoundProcessorsImpl {
     [[nodiscard]] PluginMetaBase* on_left() const { return left_.get_processor(); }
     [[nodiscard]] PluginMetaBase* on_right() const { return right_.get_processor(); }
 
-    std::tuple<Error, void*> reserve_plugin_memory(const ChannelMapping channels, const size_t plugin_size) {
-        const ChannelMapping to_reset = is_stereo_ ? TO_BOTH : channels;
-        if (to_reset & TO_LEFT) {
+    std::tuple<Error, void*> reserve_plugin_memory(const Channels channels, const size_t plugin_size) {
+        const Channels to_reset = is_stereo_ ? CM_BOTH : channels;
+        if (to_reset & CM_LEFT) {
             right_.grow(left_.reset());
         }
-        if (to_reset & TO_RIGHT) {
+        if (to_reset & CM_RIGHT) {
             left_.grow(right_.reset());
         }
 
-        is_stereo_ = channels == TO_BOTH;
-        if (is_stereo_ || channels == TO_LEFT) {
+        is_stereo_ = channels == CM_BOTH;
+        if (is_stereo_ || channels == CM_LEFT) {
             const auto [err, result] = left_.reserve_plugin_memory(plugin_size);
             if (err != TBD_OK) {
                 return {err, nullptr};
@@ -174,7 +175,7 @@ struct ActiveSoundProcessorsImpl {
             right_.shrink(plugin_size);
             return {TBD_OK, result};
         }
-        if (channels == TO_RIGHT) {
+        if (channels == CM_RIGHT) {
             const auto [err, result] =  right_.reserve_plugin_memory(plugin_size);
             if (err != TBD_OK) {
                 return {err, nullptr};
@@ -188,14 +189,14 @@ struct ActiveSoundProcessorsImpl {
         };
     }
 
-    Error set_active_plugin(const ChannelMapping channels, PluginMetaBase* plugin) {
-        if (channels == TO_BOTH && (!right_.is_empty() || !left_.is_empty())) {
+    Error set_active_plugin(const Channels channels, PluginMetaBase* plugin) {
+        if (channels == CM_BOTH && (!right_.is_empty() || !left_.is_empty())) {
             return TBD_ERR(SOUND_REGISTRY_CHANNEL_IN_USE);
         }
-        if (channels == TO_LEFT || channels == TO_BOTH) {
+        if (channels == CM_LEFT || channels == CM_BOTH) {
             return left_.set_processor(plugin);
         }
-        if (channels == TO_RIGHT) {
+        if (channels == CM_RIGHT) {
             return right_.set_processor(plugin);
         }
         return TBD_ERR(SOUND_REGISTRY_BAD_CHANNEL_MAPPING);
@@ -240,11 +241,11 @@ parameters::PluginID ActiveSoundProcessors::on_right() {
     return _on_right->id();
 }
 
-std::tuple<Error, void*> ActiveSoundProcessors::reserve_plugin_memory(const ChannelMapping channels, size_t plugin_size) {
+std::tuple<Error, void*> ActiveSoundProcessors::reserve_plugin_memory(const Channels channels, size_t plugin_size) {
     return impl.reserve_plugin_memory(channels, plugin_size);
 }
 
-Error ActiveSoundProcessors::set_active_plugin(const ChannelMapping channels, PluginMetaBase* plugin) {
+Error ActiveSoundProcessors::set_active_plugin(const Channels channels, PluginMetaBase* plugin) {
     return impl.set_active_plugin(channels, plugin);
 }
 

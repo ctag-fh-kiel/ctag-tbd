@@ -60,12 +60,13 @@ respective component folders / files if different from this license.
     if(cv_##inname != -1) outname = fabsf(data.cv[cv_##inname]) * scale; 
 
 
-#include <stdint.h>
-#include <string>
-#include <tbd/parameter_types.hpp>
+#include <cinttypes>
+#include <tbd/sound_processor/channels.hpp>
+#include <tbd/sound_processor/samples.hpp>
 
 
 namespace tbd::sound_processor {
+struct MonoSampleView;
 
 /** @brief input and output data for sound processing
  * 
@@ -82,6 +83,10 @@ namespace tbd::sound_processor {
  *         of the plugins control and is done via presets and the TBD UI.
  */
 struct ProcessData {
+    MonoSampleView left() const { return MonoSampleView(buf + channels::CH_0, TBD_SAMPLES_PER_CHUNK); }
+    MonoSampleView right() const { return MonoSampleView(buf + channels::CH_1, TBD_SAMPLES_PER_CHUNK); };
+    StereoSampleView both() const { return StereoSampleView(buf, TBD_SAMPLES_PER_CHUNK); };
+
     /** @brief output data
      * 
      *  The buffer is expected to be populated with the next 32 output sound samples, 
@@ -112,19 +117,11 @@ struct ProcessData {
     uint8_t *trig;
 };
 
-struct SoundProcessor {
-    virtual ~SoundProcessor() {}
-
-    /** process an audio sample window
-     *  
-     *  This is the core functionality of every sound processor and needs to be implemented by plugins.
-     *  
-     */
-    virtual void process(const ProcessData &) = 0;
-
+struct AnySoundProcessor {
+    virtual ~AnySoundProcessor() = default;
 
     /** plugin initialization
-     * 
+     *
      *  This method hands the plugin a large chunk of preallocated memory that is owned by the plugin for
      *  the entirety of its lifetinme and can be used for any purpose desired. Any other necessary setup
      *  steps can be performed in this method prior to receiving any audio samples.
@@ -135,15 +132,28 @@ struct SoundProcessor {
     virtual bool is_stereo() const = 0;
 };
 
-struct MonoSoundProcessor : SoundProcessor {
-    MonoSoundProcessor() : SoundProcessor() {}
+struct SoundProcessor : AnySoundProcessor {
+    ~SoundProcessor() override = default;
 
+    /** process an audio sample window
+     *  
+     *  This is the core functionality of every sound processor and needs to be implemented by plugins.
+     *  
+     */
+    virtual void process(channels::Channels channels, const ProcessData& data) = 0;
+};
+
+struct MonoSoundProcessor : AnySoundProcessor {
+    ~MonoSoundProcessor() override = default;
+
+    virtual void process_mono(const StereoSampleView& input, const MonoSampleView& output) = 0;
     bool is_stereo() const override { return false; }
 };
 
-struct StereoSoundProcessor : SoundProcessor {
-    StereoSoundProcessor() : SoundProcessor() {}
+struct StereoSoundProcessor : AnySoundProcessor {
+    ~StereoSoundProcessor() override = default;
 
+    virtual void process_stereo(const StereoSampleView& input, const StereoSampleView& output) = 0;
     bool is_stereo() const override { return true; }
 };
 

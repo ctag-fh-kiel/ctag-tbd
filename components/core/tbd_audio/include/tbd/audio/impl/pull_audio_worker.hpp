@@ -2,12 +2,16 @@
 
 #include <tbd/audio_device/audio_settings.hpp>
 #include <tbd/audio_device.hpp>
-#include <tbd/audio_device/concepts/audio_consumer_type.hpp>
-#include <tbd/audio/channels.hpp>
+#include <tbd/sound_processor/channels.hpp>
 #include <tbd/sound_processor.hpp>
 #include <tbd/errors.hpp>
+#include <tbd/system/task_module.hpp>
 
-#include "tbd/audio/audio_consumer.hpp"
+#include <tbd/audio/audio_consumer.hpp>
+
+namespace tbd::system {
+enum class CpuCore : uint8_t;
+}
 
 namespace tbd::audio {
 
@@ -21,15 +25,15 @@ struct PullAudioParams {
 struct PullAudioFeeder {
     using params_type = PullAudioParams;
 
-    sound_processor::SoundProcessor* get_sound_processor(const channels::ChannelID channel) {
+    sound_processor::SoundProcessor* get_sound_processor(const sound_processor::channels::ChannelID channel) {
         return _consumer.get_sound_processor(channel);
     }
 
-    Error set_sound_processor(const channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
+    Error set_sound_processor(const sound_processor::channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
         return _consumer.set_sound_processor(channels, sound_processor);
     }
 
-    Error reset_sound_processor(const channels::Channels channels) {
+    Error reset_sound_processor(const sound_processor::channels::Channels channels) {
         return _consumer.reset_sound_processor(channels);
     }
 
@@ -56,8 +60,9 @@ struct PullAudioFeeder {
     uint32_t do_work() {
         // get normalized raw data from CODEC
         AudioDevice::read_buffer(fbuf, TBD_SAMPLES_PER_CHUNK);
-    
-        _consumer.consume(fbuf);
+
+        AudioMetrics metrics;
+        _consumer.consume(fbuf, metrics);
 
         // write raw float data back to CODEC
         AudioDevice::write_buffer(fbuf, TBD_SAMPLES_PER_CHUNK);

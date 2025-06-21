@@ -4,8 +4,8 @@
 #include <tbd/sound_registry/all_sound_processors.hpp>
 
 #include <tbd/audio/audio_loop.hpp>
-#include <tbd/audio/channels.hpp>
-#include <tbd/errors.hpp>
+#include <tbd/sound_processor/channels.hpp>
+#include <tuple>
 #include <concepts>
 
 
@@ -26,7 +26,7 @@ struct ActiveSoundProcessors final {
      *
      */
     template<std::derived_from<PluginMetaBase> PluginT>
-    static Error set_plugin(const audio::channels::Channels channels) {
+    static Error set_plugin(const sound_processor::channels::Channels channels) {
         if (const auto err = audio_loop::reset_sound_processor(channels); err) {
             return err;
         }
@@ -51,9 +51,9 @@ struct ActiveSoundProcessors final {
     [[nodiscard]] static size_t remaining_buffer_size();
 
 private:
-    static std::tuple<Error, void*> reserve_plugin_memory(audio::channels::Channels channels, size_t plugin_size);
-    static Error set_active_plugin(audio::channels::Channels channels, PluginMetaBase* plugin);
-    static std::tuple<Error, void*> reserve_chunk(audio::channels::Channels channels, size_t plugin_size);
+    static std::tuple<Error, void*> reserve_plugin_memory(sound_processor::channels::Channels channels, size_t plugin_size);
+    static Error set_active_plugin(sound_processor::channels::Channels channels, PluginMetaBase* plugin);
+    static std::tuple<Error, void*> reserve_chunk(sound_processor::channels::Channels channels, size_t plugin_size);
 };
 
 }

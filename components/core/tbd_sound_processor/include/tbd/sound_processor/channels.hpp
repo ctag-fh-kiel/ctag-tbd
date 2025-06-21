@@ -2,7 +2,7 @@
 
 #include <cinttypes>
 
-namespace tbd::audio::channels {
+namespace tbd::sound_processor::channels {
 
 enum ChannelID {
     CH_0       = 0,

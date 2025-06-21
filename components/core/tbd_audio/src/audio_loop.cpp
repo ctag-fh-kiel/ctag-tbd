@@ -5,7 +5,7 @@
 
 namespace tbd::audio_loop {
 
-using namespace tbd::audio::channels;
+using namespace tbd::sound_processor::channels;
 using namespace tbd::sound_processor;
 
 void begin() {

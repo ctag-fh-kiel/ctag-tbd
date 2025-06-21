@@ -4,14 +4,12 @@
 #include <tbd/audio/impl/audio_consumer.hpp>
 
 #if TBD_AUDIO_PULL
-    #include <tbd/audio_loop/impl/pull_audio_worker.hpp>
+    #include <tbd/audio/impl/pull_audio_worker.hpp>
 
     namespace tbd::audio {
 
     using AudioParams = PullAudioParams;
-
-    template<AudioConsumerType AudioConsumerT, system::CpuCore cpu_core>
-    using AudioWorker = PullAudioWorker<AudioConsumerT, cpu_core>;
+    using AudioWorker = PullAudioWorker<system::CpuCore::audio>;
 
     }
 
@@ -21,9 +19,7 @@
     namespace tbd::audio {
 
     using AudioParams = PushAudioParams;
-
-    template<AudioConsumerType AudioConsumerT, system::CpuCore cpu_core>
-    using AudioWorker = PushAudioWorker<AudioConsumerT>;
+    using AudioWorker = PushAudioWorker;
 
     }
 #else
@@ -34,7 +30,7 @@ namespace tbd::audio {
 
 static_assert(AudioWorkerType<AudioWorker>, "audio worker type does not satisfy requirements");
 
-AudioWorker<AudioConsumer, system::CpuCore::audio> audio_worker("audio_worker");
+AudioWorker audio_worker("audio_worker");
 
 }
 

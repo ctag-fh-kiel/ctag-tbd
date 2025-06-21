@@ -22,21 +22,20 @@ namespace tbd::audio {
  *            order. This could lead to CV time inversions. Albeit the lack of tight
  *            audio and CV syncing makes this is a very niche consideration.
  */
-template<AudioConsumerType AudioConsumerT>
 struct PushAudioWorker {
     using params_type = PushAudioParams;
 
     PushAudioWorker(const char* name) : _name(name) {}
 
-    sound_processor::SoundProcessor* get_sound_processor(const channels::ChannelID channel) {
+    sound_processor::SoundProcessor* get_sound_processor(const sound_processor::channels::ChannelID channel) {
         return _consumer.get_sound_processor(channel);
     }
 
-    Error set_sound_processor(const channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
+    Error set_sound_processor(const sound_processor::channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
         return _consumer.set_sound_processor(channels, sound_processor);
     }
 
-    Error reset_sound_processor(const channels::Channels channels) {
+    Error reset_sound_processor(const sound_processor::channels::Channels channels) {
         return _consumer.reset_sound_processor(channels);
     }
 
@@ -186,7 +185,7 @@ private:
     RtAudio::StreamParameters input_params;
     RtAudio::StreamParameters output_params;
     float fbuf[TBD_SAMPLES_PER_CHUNK * 2];
-    AudioConsumerT _consumer;
+    AudioConsumer _consumer;
 };
 
 }

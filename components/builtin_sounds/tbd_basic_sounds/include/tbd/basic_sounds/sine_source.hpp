@@ -9,7 +9,8 @@ struct SineSource : sound_processor::MonoSoundProcessor {
     ~SineSource() override = default;
 
     void init() override;
-    void process(const sound_processor::ProcessData&data) override;
+    void process_mono(const sound_processor::StereoSampleView& input,
+                      const sound_processor::MonoSampleView& output) override;
 };
 
 

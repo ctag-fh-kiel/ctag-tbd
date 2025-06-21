@@ -27,8 +27,8 @@ TBD_NEW_ERR(SOUND_BAD_CHANNEL_ASSIGNMENT, "bad channel selection for plugin");
 
 namespace tbd::audio {
 
-inline sound_processor::SoundProcessor* AudioConsumer::get_sound_processor(channels::ChannelID channel) {
-    using namespace channels;
+inline sound_processor::SoundProcessor* AudioConsumer::get_sound_processor(sound_processor::channels::ChannelID channel) {
+    using namespace sound_processor::channels;
 
     const auto sound_processing_guard = sound_processing_lock.guard();
     if (!sound_processing_guard) {
@@ -46,8 +46,8 @@ inline sound_processor::SoundProcessor* AudioConsumer::get_sound_processor(chann
     return nullptr;
 }
 
-inline Error AudioConsumer::set_sound_processor(const channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
-    using namespace channels;
+inline Error AudioConsumer::set_sound_processor(const sound_processor::channels::Channels channels, sound_processor::SoundProcessor* sound_processor) {
+    using namespace tbd::sound_processor::channels;
 
     const auto sound_processing_guard = sound_processing_lock.guard();
     if (!sound_processing_guard) {
@@ -62,18 +62,21 @@ inline Error AudioConsumer::set_sound_processor(const channels::Channels channel
         }
         left = sound_processor;
         right = nullptr;
+        return TBD_OK;
     }
     if (channels == CM_LEFT) {
         left = sound_processor;
+        return TBD_OK;
     }
     if (channels == CM_RIGHT) {
         right = sound_processor;
+        return TBD_OK;
     }
     return TBD_ERR(SOUND_BAD_CHANNEL_ASSIGNMENT);
 }
 
-inline Error AudioConsumer::reset_sound_processor(const channels::Channels channels) {
-    using namespace channels;
+inline Error AudioConsumer::reset_sound_processor(const sound_processor::channels::Channels channels) {
+    using namespace sound_processor::channels;
 
     const auto sound_processing_guard = sound_processing_lock.guard();
     if (!sound_processing_guard) {
@@ -195,15 +198,15 @@ inline void AudioConsumer::apply_noise_gate(float* audio_slice) {
     }
 }
 
-inline channels::Channels AudioConsumer::run_processors(float* audio_slice) {
-    using namespace channels;
+inline sound_processor::channels::Channels AudioConsumer::run_processors(float* audio_slice) {
+    using namespace sound_processor::channels;
 
     const auto sound_processing_guard = sound_processing_lock.guard();
     Channels channels = CM_NONE;
     if (sound_processing_guard) {
         if (left != nullptr) {
             channels = left->is_stereo() ? CM_BOTH : CM_LEFT;
-            left->process(pd);
+            left->process(channels, pd);
         }
         if (!(channels & CM_RIGHT)){
             // check if ch0 -> ch1 daisy chain, i.e. use output of ch0 as input for ch1
@@ -213,7 +216,7 @@ inline channels::Channels AudioConsumer::run_processors(float* audio_slice) {
                 }
             }
             if (right != nullptr) {
-                right->process(pd);
+                right->process(CM_RIGHT, pd);
                 channels = static_cast<Channels>(channels | CM_RIGHT);
             }
         }
@@ -297,7 +300,7 @@ inline void AudioConsumer::determine_output_level(float* audio_slice, AudioMetri
 }
 
 Error AudioConsumer::consume(float* audio_slice, AudioMetrics& metrics) {
-    using namespace channels;
+    using namespace sound_processor::channels;
     pd.buf = audio_slice;
 
     // update data from ADCs and GPIOs for real-time control

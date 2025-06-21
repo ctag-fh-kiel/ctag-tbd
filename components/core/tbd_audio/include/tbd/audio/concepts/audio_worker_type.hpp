@@ -1,7 +1,7 @@
 #pragma once
 
 #include <tbd/audio_device/concepts/audio_consumer_type.hpp>
-#include <tbd/audio//channels.hpp>
+#include <tbd/sound_processor/channels.hpp>
 #include <tbd/sound_processor.hpp>
 #include <tbd/errors.hpp>
 #include <tbd/system/cpu_cores.hpp>
@@ -10,13 +10,13 @@
 
 namespace tbd::audio {
 
-template<template<AudioConsumerType AudioConsumerT, system::CpuCore> class AudioWorkerTypeT>
+template<class AudioWorkerTypeT>
 concept AudioWorkerType = requires(
-    AudioWorkerTypeT<VoidAudioConsumer, system::CpuCore::audio> audio_worker,
+    AudioWorkerTypeT audio_worker,
     bool _bool,
-    AudioWorkerTypeT<VoidAudioConsumer, system::CpuCore::audio>::params_type _params,
-    channels::ChannelID channel,
-    channels::Channels channels,
+    AudioWorkerTypeT::params_type _params,
+    sound_processor::channels::ChannelID channel,
+    sound_processor::channels::Channels channels,
     sound_processor::SoundProcessor* sound_processor)
 {
     { audio_worker.get_sound_processor(channel) } -> std::same_as<sound_processor::SoundProcessor*>;
