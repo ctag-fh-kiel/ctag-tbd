@@ -14,7 +14,7 @@ tbd::api::PacketBufferWriter event_writer;
 
 using tbd::api::Packet;
 {% for sink in api.event_sinks %}
-namespace {{ sink.full_name.parent }} { void {{ sink.name }}(const uint8_t* buffer, size_t length); }
+namespace {{ sink.scope.parent }} { void {{ sink.name }}(const uint8_t* buffer, size_t length); }
 {%- endfor %}
 
 //// declare responders ////
@@ -60,7 +60,7 @@ Error {{ event | event_handler_name }}(const Packet& event_packet) {
 
 //// emitters ////
 {% for event in api.events %}
-namespace {{ event.full_name.parent }} { void {{ event | emitter_name }}({{ event | func_args }}) {
+namespace {{ event.scope.parent }} { void {{ event | emitter_name }}({{ event | func_args }}) {
     {%- if event | responders %}
     {{ event | invoke_dispatcher_from_args }};
     {% endif %}

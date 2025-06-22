@@ -2,6 +2,7 @@
 
 #include <tbd/sound_processor.hpp>
 #include <tbd/sound_registry/all_sound_processors.hpp>
+#include <tbd/parameter_types.hpp>
 
 #include <atomic>
 
@@ -13,7 +14,7 @@ struct PluginMetaBase : sound_processor::SoundProcessor {
 
     virtual parameters::PluginID id() const { return id_; };
 
-    bool map_param(parameters::ParameterID parameter_id, parameters::InputID input_id) {
+    Error map_param(const parameters::ParameterID parameter_id, const parameters::InputID input_id) {
         if (!parameters::verify_mapping(id_, parameter_id, input_id)) {
             return false;
         }
@@ -28,7 +29,7 @@ struct PluginMetaBase : sound_processor::SoundProcessor {
         return true;
     };
 
-    bool set_param(parameters::ParameterID parameter_id, int32_t value) {
+    Error set_param(const parameters::ParameterID parameter_id, const int_par value) {
         if (!parameters::verify_int_parameter(id_, parameter_id)) {
             return false;
         }
@@ -43,7 +44,7 @@ struct PluginMetaBase : sound_processor::SoundProcessor {
         return true;
     };
 
-    bool set_param(parameters::ParameterID parameter_id, uint32_t value) {
+    Error set_param(const parameters::ParameterID parameter_id, const uint_par value) {
         if (!parameters::verify_uint_parameter(id_, parameter_id)) {
             return false;
         }
@@ -58,22 +59,9 @@ struct PluginMetaBase : sound_processor::SoundProcessor {
         return true;
     };
 
-    bool set_param(parameters::ParameterID parameter_id, bool value) {
-        if (!parameters::verify_trigger_parameter(id_, parameter_id)) {
-            return false;
-        }
 
-        if (!operation_cleared_) {
-            return false;
-        }
-        operation_.type = WriteOperation::SET_TRIGGER;
-        operation_.parameter = parameter_id;
-        operation_.value.trigger_param = value;
-        operation_cleared_ = false;
-        return true;
-    };
 
-    bool set_param(parameters::ParameterID parameter_id, float value) {
+    Error set_param(const parameters::ParameterID parameter_id, const float_par value) {
         if (!parameters::verify_float_parameter(id_, parameter_id)) {
             return false;
         }
@@ -84,6 +72,21 @@ struct PluginMetaBase : sound_processor::SoundProcessor {
         operation_.type = WriteOperation::SET_FLOAT;
         operation_.parameter = parameter_id;
         operation_.value.float_param = value;
+        operation_cleared_ = false;
+        return true;
+    };
+
+    Error set_param(const parameters::ParameterID parameter_id, const trigger_par value) {
+        if (!parameters::verify_trigger_parameter(id_, parameter_id)) {
+            return false;
+        }
+
+        if (!operation_cleared_) {
+            return false;
+        }
+        operation_.type = WriteOperation::SET_TRIGGER;
+        operation_.parameter = parameter_id;
+        operation_.value.trigger_param = value;
         operation_cleared_ = false;
         return true;
     };

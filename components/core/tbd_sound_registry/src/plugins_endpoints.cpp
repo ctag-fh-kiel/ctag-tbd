@@ -20,7 +20,7 @@ Error get_num_sounds(uint_par& num_sounds) {
 Error get_sound_name(const uint_par& sound_id, str_par& sound_name) {
     const auto plugin_info = sp_pars::get_plugin_info(sound_id);
     if (plugin_info == nullptr) {
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     sound_name = plugin_info->name;
     return TBD_OK;
@@ -30,7 +30,7 @@ Error get_sound_name(const uint_par& sound_id, str_par& sound_name) {
 Error get_sound_num_params(const uint_par& sound_id, int_par& num_params) {
     const auto plugin_info = sp_pars::get_plugin_info(sound_id);
     if (plugin_info == nullptr) {
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     num_params = plugin_info->num_parameters;
     return TBD_OK;

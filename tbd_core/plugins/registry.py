@@ -6,67 +6,22 @@ from typing import Final
 
 import humps
 import cxxheaderparser.simple as cpplib
-import voluptuous as vol
 
 from tbd_core.reflection import (
     ParamType,
     ReflectableDescription,
     PropertyDescription,
     PARAM_TYPES,
-    ScopePath, Reflectables, Headers, ReflectableFinder
+    ScopePath,
+    Reflectables,
+    Headers,
+    ReflectableFinder,
 )
 from .plugin_entry import PluginEntry, PluginParams, ParamEntry
 
 from .plugins import Plugins, PluginsOptions
 
 _LOGGER = logging.getLogger(__file__)
-
-
-
-
-
-ATTR_NAME = 'name'
-ATTR_DESCRIPTION = 'description'
-ATTR_NORM = 'norm'
-ATTR_SCALE = 'scale'
-ATTR_MIN = 'min'
-ATTR_MAX = 'max'
-ATTR_SFT = 'sft'
-ATTR_PAN = 'pan'
-ATTR_ADD = 'add'
-ATTR_ABS = 'abs'
-ATTR_CUT = 'cut'
-
-ATTR_ALT_NEGATIVES = 'negatives'
-ATTR_ALT_OPS = 'oeprations'
-
-ATTR_BASE_SCHEMA = {
-    vol.Optional(ATTR_NAME): str,
-    vol.Optional(ATTR_DESCRIPTION): str
-}
-
-ATTR_NUMBER_SCHEMA = {
-    vol.Optional(ATTR_NORM): vol.Or(int, float),
-    vol.Optional(ATTR_SCALE) :vol.Or(int, float),
-    vol.Optional(ATTR_MIN): vol.Or(int, float),
-    vol.Optional(ATTR_MAX): vol.Or(int, float),
-}
-
-ATTR_OPERATIONS_SCHEMA = {
-    vol.Exclusive(ATTR_SFT, ATTR_ALT_OPS): True,
-    vol.Exclusive(ATTR_PAN, ATTR_ALT_OPS): True,
-    vol.Exclusive(ATTR_ADD, ATTR_ALT_OPS): True,
-}
-
-ATTR_NEGATIVES_SCHEMA = {
-    vol.Exclusive(ATTR_ABS, ATTR_ALT_NEGATIVES): True, 
-    vol.Exclusive(ATTR_CUT, ATTR_ALT_NEGATIVES): True,
-}
-
-
-VALID_PARAM_ATTRS = set(['name', 'description', 'norm', 'scale', 'min', 'max', 'cut_negative', 'sft', 'pan', 'add'])
-
-
 
 
 def is_plugin_class(cls: cpplib.ClassScope) -> bool:
@@ -111,8 +66,8 @@ def is_in_list(plugin: ReflectableDescription, plugin_list: set[str]):
     cls_name = plugin.cls_name 
     possible_names = get_name_variants(cls_name)
 
-     # convenience for plugins with obsolete prefix
-     # TODO: remove once all plugins with old naming convention have been updated
+    # convenience for plugins with obsolete prefix
+    # TODO: remove once all plugins with old naming convention have been updated
     PLUGIN_NAME_PREFIX = 'soundprocessor'
     if cls_name.lower().startswith(PLUGIN_NAME_PREFIX):
         possible_names += get_name_variants(plugin.cls_name[len(PLUGIN_NAME_PREFIX):])
@@ -144,13 +99,7 @@ def get_param_type(param_type: str) -> ParamType | None:
 class PluginRegistry:
     def __init__(self):
         self._collector: Final = ReflectableFinder()
-        # self._reflectables: list[ReflectableDescription] = []
         self._plugins: list[ReflectableDescription] = []
-        # self._headers: set[Path] | None = None
-        # self._plugin_entries: list[PluginEntry] | None = None
-        # self._num_params: int = -1
-        # self._whitelist: set[str] = set()
-        # self._blacklist: set[str] = set()
 
     def search_for_plugins(self,
         headers: Headers, strict: bool, *,
@@ -178,7 +127,7 @@ class PluginRegistry:
         return Plugins(self._get_plugins())
 
     def _get_plugins(self) -> PluginsOptions:
-        acc = PluginsOptions()
+        acc = PluginsOptions(reflectables=self._collector.reflectables)
 
         for plugin_id, plugin in enumerate(self._plugins):
             field_scope = ScopePath.root()
@@ -186,9 +135,8 @@ class PluginRegistry:
             plugin_params = PluginParams.from_unsorted(unsorted_params)
             is_stereo = is_stereo_plugin(plugin.raw)
 
-            acc.plugin_entries.append(PluginEntry(
-                name=plugin.cls_name, 
-                full_name=plugin.full_name.path,
+            acc.plugins.append(PluginEntry(
+                cls=plugin,
                 param_offset=acc.num_params,
                 params=plugin_params,
                 header=plugin.header,
@@ -230,7 +178,7 @@ class PluginRegistry:
     ) -> list[ParamEntry]:
         flattened_params = []
         for field in struct.properties:
-            param_scope = scope.add_field(field.field_name)
+            param_scope = scope.add_field(field.field_name, None)
             found = self._find_field_type(field.type)
             if found:
                 if len(found) > 1:
@@ -245,14 +193,10 @@ class PluginRegistry:
                     _LOGGER.warning(f'field {field.full_name} type {field.type} not known')
                     continue
 
-                plugin = self._plugins[plugin_id]
-                name = f'{plugin.cls_name}.{param_scope}'
-                full_name = f'{plugin.full_name}.{param_scope}'
                 flattened_params.append(ParamEntry.new_param_entry(
-                    name=name,
-                    full_name=full_name,
-                    path=param_scope.path,
-                    plugin_id=plugin_id, 
+                    field=field,
+                    path=param_scope,
+                    plugin_id=plugin_id,
                     type=field_type,
                     attrs=field.attrs,
                 ))
@@ -261,7 +205,7 @@ class PluginRegistry:
     def _find_field_type(self, field_type: str) -> list[ReflectableDescription]:
         found_types = []
         for cls in self._reflectables:
-            if field_type == cls.full_name.path:
+            if field_type == cls.full_name:
                 found_types.append(cls)
         return found_types
 

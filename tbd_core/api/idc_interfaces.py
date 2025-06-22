@@ -34,9 +34,14 @@ class IDCBase:
         return self.func.name
 
     @property
-    def full_name(self) -> tbr.ScopeDescription:
-        """ Full namespace path to c++ function. """
+    def full_name(self) -> str:
+        """ Full scope and name of function. """
         return self.func.full_name
+
+    @property
+    def scope(self) -> tbr.ScopeDescription:
+        """ Full namespace path to c++ function. """
+        return self.func.scope
 
     @property
     def return_type(self) -> str:

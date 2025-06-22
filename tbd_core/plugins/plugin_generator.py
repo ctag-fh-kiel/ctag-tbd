@@ -1,11 +1,11 @@
 from pathlib import Path
+from typing import Final
 
 from .plugin_entry import ParamEntry
 from .plugins import Plugins
 
 import tbd_core.buildgen as tbd
 from tbd_core.generators import jilter, GeneratorBase
-from ..reflection import Headers
 
 
 class PluginFilters:
@@ -16,31 +16,42 @@ class PluginFilters:
     def setter(self, param: ParamEntry):
         return f'set_{param.snake_name}'
 
+    @jilter
+    def full_path(self, param: ParamEntry) -> str:
+        return f'{self._plugins.plugin_list[param.plugin_id].name}.{param.path}'
+
+    @jilter
+    def offset(self, param: ParamEntry) -> str:
+        plugin_name = self._plugins.plugin_list[param.plugin_id].name
+        return f'offsetof({plugin_name}.{param.offset})'
+
 
 class PluginGenerator(GeneratorBase):
     def __init__(self, plugins: Plugins):
         super().__init__(tbd.get_tbd_components_root() / 'core' / 'tbd_sound_registry' / 'src', PluginFilters(plugins))
+        self._plugins: Final = plugins
 
-    def write_plugin_reflection_info(self, plugins: Plugins, out_folder: Path):
+    def write_plugin_reflection_info(self, out_folder: Path):
         source = self.render('all_sound_processors.cpp.j2',
-                             plugins=plugins.plugin_list, params=plugins.param_list)
+                             plugins=self._plugins.plugin_list, params=self._plugins.param_list)
 
         out_folder.mkdir(exist_ok=True, parents=True)
         out_file = out_folder / 'plugin_info.cpp'
         with open(out_file, 'w') as f:
             f.write(source)
 
-    def write_plugin_factory_header(self, headers: Headers, plugins: Plugins, out_folder: Path) -> None:
-        source = self.render('factory.cpp.j2', plugins=plugins.plugin_list, headers=headers)
+    def write_plugin_factory_header(self, out_folder: Path) -> None:
+        source = self.render('factory.cpp.j2',
+                             plugins=self._plugins.plugin_list, headers=self._plugins.headers)
 
         out_folder.parent.mkdir(parents=True, exist_ok=True)
         with open(out_folder / 'factory.cpp', 'w') as f:
             f.write(source)
 
-    def write_meta_classes(self, plugins: Plugins, out_folder: Path) -> None:
+    def write_meta_classes(self, out_folder: Path) -> None:
         out_folder.parent.mkdir(parents=True, exist_ok=True)
 
-        for plugin_id, plugin in enumerate(plugins.plugin_list):
+        for plugin_id, plugin in enumerate(self._plugins.plugin_list):
             plugin_params = [(param_index, param) for param_index, param in enumerate(plugin.param_list())]
             meta_name = plugin.name + 'Meta'
 

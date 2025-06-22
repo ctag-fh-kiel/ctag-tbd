@@ -3,8 +3,57 @@ from enum import unique, StrEnum
 from pathlib import Path
 from zlib import crc32
 
-from tbd_core.reflection import ParamType, Attributes, ScopeDescription
+from tbd_core.reflection import (
+    ParamType,
+    Attributes,
+    ScopeDescription,
+    ReflectableDescription,
+    PropertyDescription,
+    ScopePath,
+)
+import voluptuous as vol
 
+
+ATTR_NAME = 'name'
+ATTR_DESCRIPTION = 'description'
+ATTR_NORM = 'norm'
+ATTR_SCALE = 'scale'
+ATTR_MIN = 'min'
+ATTR_MAX = 'max'
+ATTR_SFT = 'sft'
+ATTR_PAN = 'pan'
+ATTR_ADD = 'add'
+ATTR_ABS = 'abs'
+ATTR_CUT = 'cut'
+
+ATTR_ALT_NEGATIVES = 'negatives'
+ATTR_ALT_OPS = 'oeprations'
+
+ATTR_BASE_SCHEMA = {
+    vol.Optional(ATTR_NAME): str,
+    vol.Optional(ATTR_DESCRIPTION): str
+}
+
+ATTR_NUMBER_SCHEMA = {
+    vol.Optional(ATTR_NORM): vol.Or(int, float),
+    vol.Optional(ATTR_SCALE) :vol.Or(int, float),
+    vol.Optional(ATTR_MIN): vol.Or(int, float),
+    vol.Optional(ATTR_MAX): vol.Or(int, float),
+}
+
+ATTR_OPERATIONS_SCHEMA = {
+    vol.Exclusive(ATTR_SFT, ATTR_ALT_OPS): True,
+    vol.Exclusive(ATTR_PAN, ATTR_ALT_OPS): True,
+    vol.Exclusive(ATTR_ADD, ATTR_ALT_OPS): True,
+}
+
+ATTR_NEGATIVES_SCHEMA = {
+    vol.Exclusive(ATTR_ABS, ATTR_ALT_NEGATIVES): True,
+    vol.Exclusive(ATTR_CUT, ATTR_ALT_NEGATIVES): True,
+}
+
+
+VALID_PARAM_ATTRS = set(['name', 'description', 'norm', 'scale', 'min', 'max', 'cut_negative', 'sft', 'pan', 'add'])
 
 @unique
 class ParamOperations(StrEnum):
@@ -17,9 +66,8 @@ class ParamOperations(StrEnum):
 
 @dataclass(frozen=True)
 class ParamEntry:
-    name: str
-    full_name: str
-    path: str
+    field: PropertyDescription
+    path: ScopePath
     plugin_id: int
     type: ParamType
     norm: float | None = None
@@ -30,8 +78,16 @@ class ParamEntry:
     operation: ParamOperations = ParamOperations.NO_OP
 
     @property
+    def name(self) -> str:
+        return self.field.name
+
+    @property
+    def full_name(self) -> ScopeDescription:
+        return self.field.full_name
+
+    @property
     def snake_name(self):
-        return self.path.replace('.', '__')
+        return self.path.path.replace('.', '__')
 
     @property
     def is_int(self):
@@ -54,11 +110,17 @@ class ParamEntry:
         return self.type == ParamType.UFLOAT_PARAM
 
     @staticmethod
-    def new_param_entry(name: str, full_name: str, path: str, plugin_id: int, type: ParamType, attrs: Attributes | None):
+    def new_param_entry(
+            field: PropertyDescription,
+            path: ScopePath,
+            plugin_id: int,
+            type: ParamType,
+            attrs: Attributes | None
+    ):
         attrs = {name: value for attr in attrs for name, value in attr.params.items() if attr.name[0] == 'tbd'}
 
         if not attrs:
-            return ParamEntry(name=name, full_name=full_name, path=path, plugin_id=plugin_id, type=type)
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=type)
 
         # validate attributes
         if type == ParamType.TRIGGER_PARAM:
@@ -73,7 +135,7 @@ class ParamEntry:
         vol.Schema(schema)(attrs)
 
         if type == ParamType.TRIGGER_PARAM:
-            return ParamEntry(name=name, full_name=full_name, path=path, plugin_id=plugin_id, type=type)
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=type)
 
         filtered_attrs = {key: float(value) for key, value in attrs.items() if key in ATTR_NUMBER_SCHEMA.keys()}
 
@@ -87,7 +149,7 @@ class ParamEntry:
             operation = ParamOperations.NO_OP
 
         if type in [ParamType.INT_PARAM, ParamType.FLOAT_PARAM]:
-            return ParamEntry(name=name, full_name=full_name, path=path, plugin_id=plugin_id, type=type, operation=operation, **filtered_attrs)
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=type, operation=operation, **filtered_attrs)
 
         if attrs.get(ATTR_ABS):
             cut_negatives = False
@@ -167,12 +229,19 @@ class PluginParams:
 
 @dataclass(frozen=True)
 class PluginEntry:
-    name: str
-    full_name: str
+    cls: ReflectableDescription
     param_offset: int
     params: PluginParams
     header: Path
     is_stereo: bool
+
+    @property
+    def name(self) -> str:
+        return self.cls.name
+
+    @property
+    def full_name(self) -> ScopeDescription:
+        return self.cls.full_name
 
     @property
     def num_ints(self) -> int:
@@ -224,4 +293,4 @@ class PluginEntry:
     def hash(self):
         return crc32(self.name.encode())
 
-__all__ = ['ParamEntry', 'PluginEntry']
+__all__ = ['ParamEntry', 'PluginParams', 'PluginEntry']

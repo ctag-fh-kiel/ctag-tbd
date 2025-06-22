@@ -16,7 +16,7 @@ extern Activator ACTIVATORS[];
 
 inline Error set_plugin(const sound_processor::channels::Channels channels, const parameters::PluginID plugin_id) {
     if (plugin_id >= parameters::NUM_PLUGINS) {
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     return ACTIVATORS[plugin_id](channels);
 }

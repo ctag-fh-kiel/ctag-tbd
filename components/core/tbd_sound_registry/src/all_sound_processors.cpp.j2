@@ -13,7 +13,7 @@ const PluginInfo PLUGIN_LIST[] = { {%- for plugin in plugins %}
 const uint32_t NUM_PARAMETERS = {{params|length}};
 
 const ParamInfo PARAMETER_LIST[] = { {%- for param in params %}
-    {"{{param.name}}", 0x{{ '%08x' % param.hash() }}, {{ param.plugin_id }}, {{ param.type.name }}, 0},
+    {"{{param | full_path }}", 0x{{ '%08x' % param.hash() }}, {{ param.plugin_id }}, par_tags::{{ param.type.name }}},
 {%- endfor %} 
 };
 

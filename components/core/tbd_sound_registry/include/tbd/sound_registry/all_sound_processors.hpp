@@ -3,13 +3,10 @@
 #include <tbd/logging.hpp>
 #include <tbd/sound_registry/module.hpp>
 #include <tbd/errors.hpp>
+#include <tbd/parameter_types.hpp>
 
-#include <cinttypes>
 
-TBD_NEW_ERR(INVALID_INPUT_ID, "invalid input id");
-TBD_NEW_ERR(INVALID_SOUND_ID, "invalid sound id");
-TBD_NEW_ERR(INVALID_PARAM_ID, "invalid parameter id");
-TBD_NEW_ERR(INVALID_SOUND_PARAM_ID, "invalid sound parameter id");
+
 
 
 namespace tbd::sound_registry::parameters {
@@ -21,14 +18,6 @@ using Mapping           = int32_t;
 using InputID           = uint32_t;
 
 using PluginParameterID = uint32_t;
-
-enum ParamType {
-    INT_PARAM     = 0,
-    UINT_PARAM    = 1,
-    TRIGGER_PARAM = 2,
-    FLOAT_PARAM   = 3,
-    UFLOAT_PARAM  = 4,
-};
 
 struct PluginInfo {
     const char* name;
@@ -46,7 +35,7 @@ struct ParamInfo {
     const char* name;
     uint32_t hash;
     PluginID plugin_id;
-    ParamType field_type;
+    par_tags::ParamTypeTag field_type;
 };
 
 extern const uint32_t NUM_PLUGINS;
@@ -81,7 +70,7 @@ inline const ParamInfo* get_param_info(const ParameterID parameter_id) {
 inline Error verify_parameter(const PluginID plugin_id, const ParameterID parameter_number) {
     if (plugin_id >= NUM_PLUGINS) {
         TBD_LOGE(tag, "plugin ID %i is out of range", plugin_id);
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     auto& plugin_info = PLUGIN_LIST[plugin_id];
     if (parameter_number >= plugin_info.num_parameters) {
@@ -98,7 +87,7 @@ inline Error verify_mapping(const PluginID plugin_id, const ParameterID paramete
     }
     if (plugin_id >= NUM_PLUGINS) {
         TBD_LOGE(tag, "plugin ID %i is out of range", plugin_id);
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     auto& plugin_info = PLUGIN_LIST[plugin_id];
     if (parameter_number >= plugin_info.num_parameters) {
@@ -111,7 +100,7 @@ inline Error verify_mapping(const PluginID plugin_id, const ParameterID paramete
 inline Error verify_int_parameter(const PluginID plugin_id, const uint32_t parameter_number) {
     if (plugin_id >= NUM_PLUGINS) {
         TBD_LOGE(tag, "plugin ID %i is out of range", plugin_id);
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     auto& plugin_info = PLUGIN_LIST[plugin_id];
     if (parameter_number >= plugin_info.num_ints) {
@@ -124,7 +113,7 @@ inline Error verify_int_parameter(const PluginID plugin_id, const uint32_t param
 inline Error verify_uint_parameter(const PluginID plugin_id, const uint32_t parameter_number) {
     if (plugin_id >= NUM_PLUGINS) {
         TBD_LOGE(tag, "plugin ID %i is out of range", plugin_id);
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     auto& plugin_info = PLUGIN_LIST[plugin_id];
     if (parameter_number >= plugin_info.num_uints) {
@@ -137,7 +126,7 @@ inline Error verify_uint_parameter(const PluginID plugin_id, const uint32_t para
 inline Error verify_trigger_parameter(const PluginID plugin_id, const uint32_t parameter_number) {
     if (plugin_id >= NUM_PLUGINS) {
         TBD_LOGE(tag, "plugin ID %i is out of range", plugin_id);
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     auto& plugin_info = PLUGIN_LIST[plugin_id];
     if (parameter_number >= plugin_info.num_triggers) {
@@ -150,7 +139,7 @@ inline Error verify_trigger_parameter(const PluginID plugin_id, const uint32_t p
 inline Error verify_float_parameter(const PluginID plugin_id, const uint32_t parameter_number) {
     if (plugin_id >= NUM_PLUGINS) {
         TBD_LOGE(tag, "plugin ID %i is out of range", plugin_id);
-        return TBD_ERR(INVALID_SOUND_ID);
+        return TBD_ERR(INVALID_PLUGIN_ID);
     }
     auto& plugin_info = PLUGIN_LIST[plugin_id];
     if (parameter_number >= plugin_info.num_floats + plugin_info.num_ufloats) {

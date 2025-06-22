@@ -70,16 +70,16 @@ struct ChannelData {
 
     Error set_processor(PluginMetaBase* processor) {
         if (processor == nullptr) {
-            return TBD_ERRMSG(SOUND_REGISTRY_BAD_SOUND_PROCESSOR, "sound processor pointer is null");
+            return TBD_ERR(SOUND_REGISTRY_BAD_SOUND_PROCESSOR);
         }
         if (processor != processor_address()) {
-            return TBD_ERRMSG(SOUND_REGISTRY_BAD_SOUND_PROCESSOR_ADDRESS, "sound processor pointer is at wrong address");
+            return TBD_ERR(SOUND_REGISTRY_BAD_SOUND_PROCESSOR_ADDRESS);
         }
         if (!is_empty()) {
             return TBD_ERR(SOUND_REGISTRY_CHANNEL_IN_USE);
         }
         if (buffer_base_ == nullptr) {
-            return TBD_ERRMSG(SOUND_REGISTRY_CHANNEL_NOT_RESERVED, "trying to emplace sound processor in channel without reserving memory");
+            return TBD_ERR(SOUND_REGISTRY_CHANNEL_NOT_RESERVED);
         }
         processor_ = processor;
         return TBD_OK;

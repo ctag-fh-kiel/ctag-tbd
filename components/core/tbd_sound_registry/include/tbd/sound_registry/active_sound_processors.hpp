@@ -5,12 +5,9 @@
 
 #include <tbd/audio/audio_loop.hpp>
 #include <tbd/sound_processor/channels.hpp>
+#include <tbd/parameter_types.hpp>
 #include <tuple>
 #include <concepts>
-
-
-TBD_NEW_ERR(SOUND_REGISTRY_CHANNEL_IN_USE, "trying to emplace sound processor in channel that is in use");
-TBD_NEW_ERR(SOUND_REGISTRY_BAD_CHANNEL_MAPPING, "channel mapping is invalid value");
 
 
 namespace tbd::sound_registry {

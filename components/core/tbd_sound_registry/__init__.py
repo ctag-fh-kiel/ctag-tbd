@@ -124,19 +124,15 @@ async def to_code(config):
 @tbd.build_job_with_priority(tbd.GenerationStages.REFLECTION)
 def finalize_plugin_registry_job():
     plugins = get_plugin_registry().get_plugins()
-    selected_plugins = plugins.plugins
-    selected_headers = plugins.headers
 
-    # generate plugin factory
     gen_source_path = tbd.get_generated_sources_path()
-    gen_include_path = tbd.get_generated_include_path()
 
     gen = PluginGenerator(plugins)
-    gen.write_plugin_factory_header(selected_headers, plugins, gen_source_path)
-    gen.write_plugin_reflection_info(plugins, gen_source_path)
-    gen.write_meta_classes(plugins, gen_source_path)
+    gen.write_plugin_factory_header(gen_source_path)
+    gen.write_plugin_reflection_info(gen_source_path)
+    gen.write_meta_classes(gen_source_path)
 
-    plugin_names = [plugin.cls_name for plugin in selected_plugins]
+    plugin_names = [plugin.name for plugin in plugins.plugin_list]
     _LOGGER.info('using plugins:')
     for plugin_name in plugin_names:
         _LOGGER.info(f'>>> {plugin_name}')
