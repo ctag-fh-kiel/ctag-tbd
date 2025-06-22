@@ -2,9 +2,6 @@ import subprocess
 from pathlib import Path
 from typing import Final
 
-import proto_schema_parser.ast as proto
-import proto_schema_parser.generator as protog
-
 import esphome.components.tbd_module as tbd
 
 from tbd_core.api import Api

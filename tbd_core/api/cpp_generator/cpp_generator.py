@@ -2,7 +2,7 @@ from pathlib import Path
 import proto_schema_parser.ast as proto
 import proto_schema_parser.generator as protog
 
-from tbd_core.api import Endpoint, jilter, GeneratorBase, Event, Api, generate_protos, FiltersBase
+from tbd_core.api import Endpoint, jilter, ApiGeneratorBase, Event, Api, generate_protos, FiltersBase
 from tbd_core.api.idc_interfaces import IDCHandler
 
 import tbd_core.buildgen as tbd
@@ -96,7 +96,7 @@ class CppFilters(FiltersBase):
         return f'dispatch__{event.name}'
 
 
-class CppGenerator(GeneratorBase):
+class CppGenerator(ApiGeneratorBase):
     def __init__(self, api: Api):
         super().__init__(api, tbd.get_tbd_components_root() / 'api' / 'tbd_api', CppFilters(api))
 

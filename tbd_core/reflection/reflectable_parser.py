@@ -1,3 +1,4 @@
+import dataclasses
 from pathlib import Path
 from typing import Callable, Final
 import logging
@@ -318,7 +319,11 @@ def name_and_description_from_attrs(attrs: Attributes | None) -> tuple[str | Non
     return name, description
 
 
-ClassFilter = Callable[[cpplib.ClassScope], bool]
+@dataclasses.dataclass(frozen=True)
+class ReflectableSubset:
+    classes: list[ReflectableDescription]
+    funcs: list[FunctionDescription]
+
 
 class ReflectableFinder:
     def __init__(self):
@@ -344,7 +349,7 @@ class ReflectableFinder:
     def funcs(self) -> list[FunctionDescription]:
         return self._funcs
 
-    def add_from_file(self, file_name: Path, *, include_base: Path | None = None) -> None:
+    def add_from_file(self, file_name: Path, *, include_base: Path | None = None) -> ReflectableSubset:
         lines = self._read_code_from_file(file_name)
         visitor = AnnotationParser(lines)
         code = ''.join(lines)
@@ -353,23 +358,29 @@ class ReflectableFinder:
         root_scope = ScopeDescription.from_root(parsed.namespace)
 
         relative_header = file_name.relative_to(include_base) if include_base else file_name
-        self._find_classes(root_scope, relative_header)
-        self._find_functions(root_scope, relative_header)
+        return ReflectableSubset(
+            classes=self._find_classes(root_scope, relative_header),
+            funcs=self._find_functions(root_scope, relative_header),
+        )
 
     # private
 
-    def _find_functions(self, scope: ScopeDescription, header: Path):
-        self._collect_functions_in_namespace(scope, header)
+    def _find_functions(self, scope: ScopeDescription, header: Path) -> list[FunctionDescription]:
+        ret = []
+        ret += self._collect_functions_in_namespace(scope, header)
         for ns in scope.namespace().namespaces.values():
             sub_namespace_scope = scope.add_namespace(ns)
-            self._find_functions(sub_namespace_scope, header)
+            ret += self._find_functions(sub_namespace_scope, header)
+        return ret
      
-    def _collect_functions_in_namespace(self, scope: ScopeDescription, header: Path) -> None:
+    def _collect_functions_in_namespace(self, scope: ScopeDescription, header: Path) -> list[FunctionDescription]:
+        ret = []
         for raw_func in scope.namespace().functions:
             func_scope = scope.add_function(raw_func)
-            self._collect_function(func_scope, header)
+            ret.append(self._collect_function(func_scope, header))
+        return ret
 
-    def _collect_function(self, scope: ScopeDescription, header: Path) -> None:
+    def _collect_function(self, scope: ScopeDescription, header: Path) -> FunctionDescription:
         attrs = scope.attrs()
         name, description = name_and_description_from_attrs(attrs)
 
@@ -383,20 +394,26 @@ class ReflectableFinder:
             attrs=attrs,
         )
         self._funcs.append(func)
+        return func
 
-    def _find_classes(self, scope: ScopeDescription, header: Path) -> None:
-        self._collect_classes_in_namespace(scope, header)
+    def _find_classes(self, scope: ScopeDescription, header: Path) -> list[ReflectableDescription]:
+        ret = []
+        ret += self._collect_classes_in_namespace(scope, header)
         for ns in scope.namespace().namespaces.values():
             sub_namespace_scope = scope.add_namespace(ns)
-            self._find_classes(sub_namespace_scope, header)
+            ret += self._find_classes(sub_namespace_scope, header)
+        return ret
 
-    def _collect_classes_in_namespace(self, scope: ScopeDescription, header: Path):
+    def _collect_classes_in_namespace(self, scope: ScopeDescription, header: Path) -> list[ReflectableDescription]:
+        ret = []
         for cls in scope.namespace().classes:
             cls_scope = scope.add_class(cls)
-            self._collect_class_and_nested_classes(cls_scope, header)
+            ret += self._collect_class_and_nested_classes(cls_scope, header)
+        return ret
 
 
-    def _collect_class_and_nested_classes(self, scope: ScopeDescription, header: Path):
+    def _collect_class_and_nested_classes(self, scope: ScopeDescription, header: Path) -> list[ReflectableDescription]:
+        ret = []
         cls = scope.cls()
         attrs = scope.attrs()
         name, description = name_and_description_from_attrs(attrs)
@@ -412,14 +429,12 @@ class ReflectableFinder:
             properties=properties
         )
         self._classes.append(reflectable)
+        ret.append(reflectable)
 
         for nested_cls in cls.classes:
             nested_cls_scope = scope.add_class(nested_cls)
-            self._collect_class_and_nested_classes(nested_cls_scope, header)
-
-
-    def _collect_nested_classes(self):
-        pass
+            ret += self._collect_class_and_nested_classes(nested_cls_scope, header)
+        return ret
         
     def _extract_properties(self, scope: ScopeDescription, header: Path) -> Properties:
         cls = scope.cls()
@@ -450,7 +465,6 @@ class ReflectableFinder:
                 description=description,
                 attrs=attrs,
             )
-            # self._fields.append(prop)
             properties.append(prop)
 
         return properties

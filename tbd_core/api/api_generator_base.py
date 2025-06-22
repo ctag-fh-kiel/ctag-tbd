@@ -7,12 +7,7 @@ import jinja2 as ji
 
 from .api import Api
 from .idc_interfaces import Endpoint, Event, Responder, IDCHandler
-
-
-def jilter(f: Callable[[Any], Any]) -> Callable[[Any], Any]:
-    """ Mark method as jinja filter. """
-    f._is_jilter = True
-    return f
+from tbd_core.generators import jilter, GeneratorBase
 
 
 def forward_args(idc: IDCHandler, *,
@@ -146,36 +141,13 @@ class FiltersBase:
         return responders if responders else []
 
 
-class GeneratorBase:
+class ApiGeneratorBase(GeneratorBase[FiltersBase]):
     def __init__(self, api: Api, templates_path: Path, filters: FiltersBase | None = None) -> None:
-        self._templates: Final[Path] = templates_path
+        super().__init__(templates_path, filters)
         self._api: Final[Api] = api
-        self._env = ji.Environment(loader=ji.FileSystemLoader(templates_path), autoescape=ji.select_autoescape())
-        if filters:
-            self._filters = self._filters(filters)
-            self._env.filters |= self._filters
-        else:
-            self._filters = None
 
     def render(self, template_file: Path | str, **args) -> str:
-        template = self._env.get_template(str(template_file))
-        return template.render(api=self._api, **args)
-
-    @staticmethod
-    def _filters(obj):
-        filters = {}
-        for name, _ in inspect.getmembers(obj, predicate=inspect.isroutine):
-            if name.startswith('_'):
-                continue
-            method = obj.__getattribute__(name)
-            if not hasattr(method, '_is_jilter'):
-                continue
-
-            # sig = inspect.signature(method)
-            # if len(sig.parameters) != 1:
-            #     raise RuntimeError(f'filter {name} must have exactly 1 parameter')
-            filters[name] = method
-        return filters
+        return super().render(template_file, api=self._api, **args)
 
 
 __all__ = [
@@ -184,6 +156,6 @@ __all__ = [
     'apply_args',
     'arg_dict',
     'generate_protos',
-    'GeneratorBase',
+    'ApiGeneratorBase',
     'FiltersBase',
 ]

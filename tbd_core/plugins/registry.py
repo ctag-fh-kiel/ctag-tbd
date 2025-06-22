@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 import logging
+from typing import Final
 
 import humps
 import cxxheaderparser.simple as cpplib
@@ -12,7 +13,7 @@ from tbd_core.reflection import (
     ReflectableDescription,
     PropertyDescription,
     PARAM_TYPES,
-    ScopePath, Reflectables
+    ScopePath, Reflectables, Headers, ReflectableFinder
 )
 from .plugin_entry import PluginEntry, PluginParams, ParamEntry
 
@@ -142,38 +143,36 @@ def get_param_type(param_type: str) -> ParamType | None:
 
 class PluginRegistry:
     def __init__(self):
-        self._reflectables: list[ReflectableDescription] = []
+        self._collector: Final = ReflectableFinder()
+        # self._reflectables: list[ReflectableDescription] = []
         self._plugins: list[ReflectableDescription] = []
-        self._headers: set[Path] | None = None
-        self._plugin_entries: list[PluginEntry] | None = None
-        self._num_params: int = -1
+        # self._headers: set[Path] | None = None
+        # self._plugin_entries: list[PluginEntry] | None = None
+        # self._num_params: int = -1
+        # self._whitelist: set[str] = set()
+        # self._blacklist: set[str] = set()
 
-    def add_plugins(self, reflectables: Reflectables, *,
-            whitelist: list[str] | None = None,
-            blacklist: list[str] | None = None
-        ) -> Reflectables:
-        """ Find all plugin classes from all known classes with optional whitelisting or blacklisting. """
+    def search_for_plugins(self,
+        headers: Headers, strict: bool, *,
+        include_base: Path | None = None,
+        whitelist: list[str] | None = None,
+        blacklist: list[str] | None = None
+    ) -> list[ReflectableDescription]:
+        new_classes = []
 
-        self._reflectables += reflectables
-
-        if whitelist and blacklist:
-            raise ValueError('provide either blacklist or whitelist for plugin prefiltering')
-        
-        if whitelist is not None:
-            whitelist = set(plugin_name.lower() for plugin_name in whitelist)
-            added_plugins = [cls for cls in reflectables if is_plugin_class(cls.raw) and is_in_list(cls, whitelist)]
-            self._plugins += added_plugins
-            return added_plugins
-
-        if blacklist is not None:
-            blacklist = set(plugin_name.lower() for plugin_name in blacklist)
-            added_plugins= [cls for cls in reflectables if is_plugin_class(cls.raw) and not is_in_list(cls, blacklist)]
-            self._plugins += added_plugins
-            return added_plugins
-
-        added_plugins = [cls for cls in reflectables if is_plugin_class(cls.raw)]
-        self._plugins += added_plugins
-        return added_plugins
+        for header in headers:
+            if strict:
+                added = self._collector.add_from_file(header, include_base=include_base)
+                new_classes += added.classes
+            else:
+                try:
+                    added = self._collector.add_from_file(header, include_base=include_base)
+                    new_classes += added.classes
+                except Exception as e:
+                    _LOGGER.error(f'error parsing {header}: {e}')
+        new_plugins = PluginRegistry._add_filtered_plugins(new_classes, whitelist=whitelist, blacklist=blacklist)
+        self._plugins += new_plugins
+        return new_plugins
 
     def get_plugins(self) -> Plugins:
         return Plugins(self._get_plugins())
@@ -200,6 +199,28 @@ class PluginRegistry:
             acc.num_params += plugin_params.num_params
 
         return acc
+
+    @staticmethod
+    def _add_filtered_plugins(classes: list[ReflectableDescription], *,
+        whitelist: list[str] | None = None,
+        blacklist: list[str] | None = None,
+    ) -> list[ReflectableDescription]:
+        """ Find all plugin classes from all known classes with optional whitelisting or blacklisting. """
+        if whitelist and blacklist:
+            raise ValueError('provide either blacklist or whitelist for plugin prefiltering')
+
+        if whitelist is not None:
+            whitelist = set(plugin_name.lower() for plugin_name in whitelist)
+            added_plugins = [cls for cls in classes if is_plugin_class(cls.raw) and is_in_list(cls, whitelist)]
+            return added_plugins
+
+        if blacklist is not None:
+            blacklist = set(plugin_name.lower() for plugin_name in blacklist)
+            added_plugins = [cls for cls in classes if is_plugin_class(cls.raw) and not is_in_list(cls, blacklist)]
+            return added_plugins
+
+        added_plugins = [cls for cls in classes if is_plugin_class(cls.raw)]
+        return added_plugins
 
     def _flatten_plugin_params(self,
         acc: PluginsOptions,
@@ -244,5 +265,8 @@ class PluginRegistry:
                 found_types.append(cls)
         return found_types
 
+    @property
+    def _reflectables(self) -> list[ReflectableDescription]:
+        return self._collector.reflectables
 
 __all__ = ['PluginRegistry']

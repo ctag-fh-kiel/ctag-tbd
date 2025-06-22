@@ -16,21 +16,22 @@ from .generator import ApiWriter
 
 _LOGGER = logging.getLogger(__file__)
 
+
+APIS_GLOBAL = 'api'
+API_NAMESPACE = cg.global_ns.namespace('tbd').namespace('api')
 CONF_MAX_PAYLOAD_SIZE = 'max_payload_size'
+
 
 AUTO_LOAD = ['tbd_module', 'tbd_api']
 CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_MAX_PAYLOAD_SIZE, 128): cv.positive_int,
 })
 
-APIS_GLOBAL = 'api'
-
-API_NAMESPACE = cg.global_ns.namespace('tbd').namespace('api')
-
 
 @tbd.generated_tbd_global(APIS_GLOBAL)
 def get_api_registry() -> ApiRegistry:
     return ApiRegistry()
+
 
 def register_actions_for_module(*source_files: Path | str, base_path: Path | str | None = None) -> None:
     """ Call this in module loading code! """
@@ -47,10 +48,12 @@ def register_actions_for_module(*source_files: Path | str, base_path: Path | str
             var = cg.new_Pvariable(action_id, template_arg)
             return var
 
+
 def _register_actions():
     base_path = Path(__file__).parent / 'src'
     register_actions_for_module('base_endpoints.cpp', 'api_test.cpp', base_path=base_path)
 _register_actions()
+
 
 async def to_code(config):
     component = tbd.new_tbd_component(__file__)

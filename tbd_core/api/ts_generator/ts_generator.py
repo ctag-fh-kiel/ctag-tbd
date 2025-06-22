@@ -1,7 +1,9 @@
 from pathlib import Path
 
-from tbd_core.api import Api, MessagePayload, ParamPayload, GeneratorBase, jilter, Endpoint, FiltersBase
+from tbd_core.api import MessagePayload, ParamPayload, Api, jilter, Endpoint, FiltersBase
 import tbd_core.buildgen as tbd
+from tbd_core.api.api_generator_base import ApiGeneratorBase
+
 
 TYPESCRIPT_SRC_DIR = Path('src')
 
@@ -48,7 +50,7 @@ class TSFilters(FiltersBase):
         return self.payload_type(endpoint.output)
 
 
-class TSGenerator(GeneratorBase):
+class TSGenerator(ApiGeneratorBase):
     def __init__(self, api: Api):
         templates_path = Path(__file__).parent / 'ts_files'
         super(TSGenerator, self).__init__(api, templates_path, TSFilters(api))

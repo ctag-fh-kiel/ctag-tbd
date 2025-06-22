@@ -1,11 +1,10 @@
 import subprocess
 from pathlib import Path
 
-from typing import Callable
-
-from tbd_core.api import Api, Endpoint, GeneratorBase, jilter, MessagePayload, ParamPayload, Event, FiltersBase
+from tbd_core.api import Api, Endpoint, ApiGeneratorBase, jilter, MessagePayload, ParamPayload, Event, FiltersBase
 import tbd_core.buildgen as tbd
 from tbd_core.api.idc_interfaces import IDCHandler
+
 
 MODULE_NAME = 'tbd_client'
 BASE_ENDPOINTS_FILE = 'base_endpoints.py'
@@ -49,7 +48,7 @@ class PyFilters(FiltersBase):
         return self.payload_type(endpoint.output)
 
 
-class PyGenerator(GeneratorBase):
+class PyGenerator(ApiGeneratorBase):
     def __init__(self, api: Api):
         templates_path = Path(__file__).parent / 'py_files'
         super(PyGenerator, self).__init__(api, templates_path, PyFilters(api))
