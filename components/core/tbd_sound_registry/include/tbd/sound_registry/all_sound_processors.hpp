@@ -11,11 +11,11 @@
 
 namespace tbd::sound_registry::parameters {
 
-using PluginID          = int32_t;
-using ParameterID       = int32_t;
-using ParameterCount    = uint32_t;
-using Mapping           = int32_t;
-using InputID           = uint32_t;
+using PluginID          = uint16_t;
+using ParameterID       = uint16_t;
+using ParameterCount    = uint16_t;
+using Mapping           = int16_t;
+using InputID           = uint16_t;
 
 using PluginParameterID = uint32_t;
 

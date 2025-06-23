@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from enum import IntEnum, unique
 from typing import Self
 from abc import ABC, abstractmethod
+from zlib import crc32
 
 import cxxheaderparser.types as cpptypes
 import cxxheaderparser.simple as cpplib
@@ -292,6 +293,10 @@ class ScopeDescription:
                 retval += f'::{elem_name}'
         return retval
 
+    @property
+    def hash(self) -> int:
+        return crc32(self.path.encode())
+
     def __str__(self) -> str:
         return self.path
 
@@ -341,9 +346,10 @@ class ScopeDescription:
 
 
 class ScopePathSegment(ScopeSegmentBase):
-    def __init__(self, name: str, type: ScopeType) -> None:
-        self._name = name
-        self._type = type
+    def __init__(self, name: str, _type: ScopeType, _id: int | None) -> None:
+        self._name: str = name
+        self._type: ScopeType = _type
+        self._id: int | None = _id
 
     @property
     def name(self) -> str:
@@ -372,27 +378,27 @@ class ScopePath:
     def root() -> 'ScopePath':
         return ScopePath([])
 
-    def add_namespace(self, namespace: str) -> 'ScopePath':
+    def add_namespace(self, namespace: str, _id: int | None = None) -> 'ScopePath':
         if self.segments and self.segments[-1].type != ScopeType.NAMESPACE:
             raise ValueError('namespaces can only be declared in namespaces')
-        return ScopePath([*self.segments, ScopePathSegment(namespace, ScopeType.NAMESPACE)])
+        return ScopePath([*self.segments, ScopePathSegment(namespace, ScopeType.NAMESPACE, _id)])
 
-    def add_class(self, cls: str) -> 'ScopePath':
+    def add_class(self, cls: str, _id: int | None = None) -> 'ScopePath':
         if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE, ScopeType.CLASS]:
             raise ValueError('classes can only be declared in namespaces or other classes')
-        return ScopePath([*self.segments, ScopePathSegment(cls, ScopeType.CLASS)])
+        return ScopePath([*self.segments, ScopePathSegment(cls, ScopeType.CLASS, _id)])
 
-    def add_field(self, field: str) -> 'ScopePath':
+    def add_field(self, field: str, _id: int | None = None) -> 'ScopePath':
         if self.segments and self.segments[-1].type not in [ScopeType.CLASS, ScopeType.FIELD]:
             raise ValueError('fields can only be declared in classes and fields')
 
-        return ScopePath([*self.segments, ScopePathSegment(field, ScopeType.FIELD)])
+        return ScopePath([*self.segments, ScopePathSegment(field, ScopeType.FIELD, _id)])
 
-    def add_static_field(self, field: str) -> 'ScopePath':
+    def add_static_field(self, field: str, _id: int | None = None) -> 'ScopePath':
         if self.segments and self.segments[-1].type != ScopeType.CLASS:
             raise ValueError('static fields can only be declared in classes')
 
-        return ScopePath([*self.segments, ScopePathSegment(field, ScopeType.STATIC_FIELD)])
+        return ScopePath([*self.segments, ScopePathSegment(field, ScopeType.STATIC_FIELD, _id)])
 
     def namespace(self) -> str:
         return self.segments[-1].namespace()

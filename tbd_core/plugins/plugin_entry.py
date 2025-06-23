@@ -9,10 +9,11 @@ from tbd_core.reflection import (
     ScopeDescription,
     ReflectableDescription,
     PropertyDescription,
-    ScopePath,
+    ScopePath, MappableParamType,
 )
 import voluptuous as vol
 
+from tbd_core.reflection.parameters import PARAM_TYPE_FROM_MAPPABLE
 
 ATTR_NAME = 'name'
 ATTR_DESCRIPTION = 'description'
@@ -70,6 +71,7 @@ class ParamEntry:
     path: ScopePath
     plugin_id: int
     type: ParamType
+    is_mappable: bool
     norm: float | None = None
     scale: float | None = None
     min: float | None = None
@@ -82,60 +84,79 @@ class ParamEntry:
         return self.field.name
 
     @property
-    def full_name(self) -> ScopeDescription:
+    def full_name(self) -> str:
         return self.field.full_name
 
     @property
-    def snake_name(self):
+    def scope(self) -> ScopeDescription:
+        return self.field.scope
+
+    @property
+    def snake_name(self) -> str:
         return self.path.path.replace('.', '__')
 
     @property
-    def is_int(self):
+    def is_int(self) -> bool:
         return self.type == ParamType.INT_PARAM
 
     @property
-    def is_uint(self):
+    def is_uint(self) -> bool:
         return self.type == ParamType.UINT_PARAM
 
     @property
-    def is_trigger(self):
+    def is_trigger(self) -> bool:
         return self.type == ParamType.TRIGGER_PARAM
 
     @property
-    def is_float(self):
+    def is_float(self) -> bool:
         return self.type == ParamType.FLOAT_PARAM
 
     @property
-    def is_ufloat(self):
+    def is_ufloat(self) -> bool:
         return self.type == ParamType.UFLOAT_PARAM
+
+    @property
+    def is_any_float(self) -> bool:
+        return self.type.is_float
 
     @staticmethod
     def new_param_entry(
             field: PropertyDescription,
             path: ScopePath,
             plugin_id: int,
-            type: ParamType,
+            type: ParamType | MappableParamType,
             attrs: Attributes | None
-    ):
-        attrs = {name: value for attr in attrs for name, value in attr.params.items() if attr.name[0] == 'tbd'}
+    ) -> 'ParamEntry':
+        match type:
+            case ParamType():
+                is_mappable = False
+                underlying_type = type
+            case MappableParamType():
+                is_mappable = True
+                underlying_type = PARAM_TYPE_FROM_MAPPABLE[type]
+            case _:
+                raise TypeError(f"unexpected parameter type {type}")
+
 
         if not attrs:
-            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=type)
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type, is_mappable=is_mappable)
+        attrs = {name: value for attr in attrs for name, value in attr.params.items() if attr.name == 'tbd'}
 
         # validate attributes
-        if type == ParamType.TRIGGER_PARAM:
+        if underlying_type == ParamType.TRIGGER_PARAM:
             schema = ATTR_BASE_SCHEMA
-        elif type in [ParamType.INT_PARAM, ParamType.FLOAT_PARAM]:
+        elif underlying_type in [ParamType.INT_PARAM, ParamType.FLOAT_PARAM]:
             schema = ATTR_BASE_SCHEMA | ATTR_NUMBER_SCHEMA | ATTR_OPERATIONS_SCHEMA
-        elif type in [ParamType.UINT_PARAM, ParamType.UFLOAT_PARAM]:
+        elif underlying_type in [ParamType.UINT_PARAM, ParamType.UFLOAT_PARAM]:
             schema = ATTR_BASE_SCHEMA | ATTR_NUMBER_SCHEMA | ATTR_OPERATIONS_SCHEMA | ATTR_NEGATIVES_SCHEMA
         else:
-            raise ValueError(f"unsupported parameter type: {type.name}")
+            raise ValueError(f"unsupported parameter type: {underlying_type.name}")
 
         vol.Schema(schema)(attrs)
 
-        if type == ParamType.TRIGGER_PARAM:
-            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=type)
+        if underlying_type == ParamType.TRIGGER_PARAM:
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id,
+                              type=underlying_type, is_mappable=is_mappable)
 
         filtered_attrs = {key: float(value) for key, value in attrs.items() if key in ATTR_NUMBER_SCHEMA.keys()}
 
@@ -148,8 +169,9 @@ class ParamEntry:
         else:
             operation = ParamOperations.NO_OP
 
-        if type in [ParamType.INT_PARAM, ParamType.FLOAT_PARAM]:
-            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=type, operation=operation, **filtered_attrs)
+        if underlying_type in [ParamType.INT_PARAM, ParamType.FLOAT_PARAM]:
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type,
+                              is_mappable=is_mappable, operation=operation, **filtered_attrs)
 
         if attrs.get(ATTR_ABS):
             cut_negatives = False
@@ -159,8 +181,8 @@ class ParamEntry:
             cut_negatives = False
 
         # [ParamType.UINT_PARAM, ParamType.UFLOAT_PARAM]:
-        return ParamEntry(name=name, full_name=full_name, path=path, plugin_id=plugin_id, type=type, operation=operation, cut_negatives=cut_negatives,
-                          **filtered_attrs)
+        return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type, is_mappable=is_mappable,
+                          operation=operation, cut_negatives=cut_negatives, **filtered_attrs)
 
     def hash(self):
         return crc32(self.name.encode())
@@ -240,8 +262,12 @@ class PluginEntry:
         return self.cls.name
 
     @property
-    def full_name(self) -> ScopeDescription:
+    def full_name(self) -> str:
         return self.cls.full_name
+
+    @property
+    def scope(self) -> ScopeDescription:
+        return self.cls.scope
 
     @property
     def num_ints(self) -> int:

@@ -13,28 +13,33 @@ struct Test1 : sound_processor::MonoSoundProcessor {
     void process_mono(const sound_processor::StereoSampleView& input,
                       const sound_processor::MonoSampleView& output) override;
 
+
+    [[tbd(name="Param 1", description="Some Parameter")]]
     int_par p1;
-    int_par p2;
-    int_par p3;
-    int_par p4;
+    mint_par p2;
+
+    [[tbd(min=-12, max=22)]]
+    mint_par p3;
+    mint_par p4;
 
     struct {
+        [[tbd(min=-12, max=22)]]
         uint_par g1_p1;
         uint_par g1_p2;
     } group1;
 
     struct {
-        uint_par g2_p1;
-        float_par g2_p2;
-        trigger_par g2_p3;
+        muint_par g2_p1;
+        mfloat_par g2_p2;
+        mtrigger_par g2_p3;
     } group2;
 
     SharedGroupType2 group3;
     SharedGroupType2 group4;
     SharedGroupType2 group5;
 
-    ufloat_par p5;
-    float_par p6;
+    mufloat_par p5;
+    mfloat_par p6;
     int_par p7;
 };
 

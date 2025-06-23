@@ -13,8 +13,20 @@ class PluginFilters:
         self._plugins = plugins
 
     @jilter
-    def setter(self, param: ParamEntry):
+    def param_type(self, param: ParamEntry):
+        return param.type.value
+
+    @jilter
+    def param_value_field(self, param: ParamEntry):
+        return param.type.value_field()
+
+    @jilter
+    def setter_name(self, param: ParamEntry):
         return f'set_{param.snake_name}'
+
+    @jilter
+    def mapping_name(self, param: ParamEntry):
+        return f'cv_{param.snake_name}'
 
     @jilter
     def full_path(self, param: ParamEntry) -> str:
@@ -24,6 +36,24 @@ class PluginFilters:
     def offset(self, param: ParamEntry) -> str:
         plugin_name = self._plugins.plugin_list[param.plugin_id].name
         return f'offsetof({plugin_name}.{param.offset})'
+
+    @jilter
+    def setter_impl(self, param: ParamEntry):
+        plugin_name = self._plugins.plugin_list[param.plugin_id].full_name
+        indent = '    '
+        f = [
+            f'static void set_{param.snake_name}({plugin_name}& plugin, {param.type.value} value) {{'
+        ]
+        if param.scale:
+            f.append(f'{indent * 2}value *= scale;')
+        if param.min:
+            f.append(f'{indent * 2}value = (value >= {param.min}) * value + (value < {param.min}) * {param.min};')
+        if param.max:
+            f.append(f'{indent * 2}value = (value <= {param.max}) * value + (value > {param.max}) * {param.max};')
+        f.append(f'{indent * 2}plugin.{param.path} = value;')
+        f.append(f'{indent}}}')
+
+        return '\n'.join(f)
 
 
 class PluginGenerator(GeneratorBase):

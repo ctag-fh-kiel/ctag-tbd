@@ -2,27 +2,36 @@
 
 namespace tbd::sound_registry::meta {
 
-{{ meta_name }}::IntSetter {{ meta_name }}::int_setters[{{ plugin.num_ints }}] = { {%- for param in plugin.int_params %}
-    {{ meta_name }}::set_{{ param.snake_name }},
-{%- endfor %}
+const {{ meta_name }}::ParamSetter {{ meta_name }}::value_setters_[] = {
+    {%- for param in  plugin.param_list() %}
+    // {{ param.path }}
+    {% if param.is_mappable -%}
+    {%- if param.is_any_float  -%}
+    []({{ plugin.full_name }}& plugin, const ParamValue value) -> void {
+        {{ param | setter_name }}(plugin, value.float_value);
+    },
+    {%- else  -%}
+    []({{ plugin.full_name }}& plugin, const ParamValue value) -> void {
+        {{ param | setter_name }}(plugin, value.{{ param | param_value_field }});
+    },
+    {%- endif -%}
+    {%- else -%}
+    nullptr,
+    {%- endif  -%}
+    {%- endfor %}
 };
 
-{{ meta_name }}::UIntSetter {{ meta_name }}::uint_setters[{{ plugin.num_uints }}] = { {%- for param in plugin.uint_params %}
-    {{ meta_name }}::set_{{ param.snake_name }},
-{%- endfor %}
+const {{ meta_name }}::MappingSetter {{ meta_name }}::mapping_setters_[] = {
+    {%- for param in  plugin.param_list() %}
+    // {{ param.path }}
+    {%- if param.is_mappable %}
+    []({{ meta_name }}& self, const parameters::Mapping mapping) -> void {
+        self.{{ param | mapping_name }} = mapping;
+    },
+    {%- else %}
+    nullptr,
+    {%- endif  -%}
+    {%- endfor %}
 };
 
-{{ meta_name }}::TriggerSetter {{ meta_name }}::trigger_setters[{{ plugin.num_triggers }}] = { {%- for param in plugin.trigger_params %}
-    {{ meta_name }}::set_{{ param.snake_name }},
-{%- endfor %}
-};
-
-{{ meta_name }}::FloatSetter {{ meta_name }}::float_setters[{{ plugin.num_floats + plugin.num_ufloats }}] = { 
-{%- for param in plugin.float_params %}
-    {{ meta_name }}::set_{{ param.snake_name }},
-{%- endfor %}
-{%- for param in plugin.ufloat_params %}
-    {{ meta_name }}::set_{{ param.snake_name }},
-{%- endfor %}
-};
 }

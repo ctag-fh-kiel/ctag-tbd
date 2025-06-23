@@ -1,6 +1,7 @@
 import dataclasses
+
 from pathlib import Path
-from typing import Callable, Final
+from typing import Final, OrderedDict
 import logging
 
 import cxxheaderparser.lexer as lexer
@@ -8,6 +9,7 @@ import cxxheaderparser.simple as cpplib
 import cxxheaderparser.types as cpptypes
 
 from .reflectables import (
+    NamespaceDescription,
     Properties, 
     PropertyDescription, 
     ReflectableDescription,
@@ -236,21 +238,26 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
 
             value, *args = args
 
+            sign = 1
+            if value.type == '-':
+                value, *args = args
+                sign = -1
+
             if value.type == 'STRING_LITERAL':
                 value = value.value[1:-1]
                 params[key] = value
             elif value.type == 'INT_CONST_DEC':
-                params[key] = int(value.value)
+                params[key] = sign * int(value.value)
             elif value.type == "INT_CONST_HEX":
-                params[key] = int(value.value)
+                params[key] = sign * int(value.value)
             elif value.type == "INT_CONST_BIN":
-                params[key] = int(value.value)
+                params[key] = sign * int(value.value)
             elif value.type == "INT_CONST_OCT":
-                params[key] = int(value.value)
+                params[key] = sign * int(value.value)
             elif value.type == "FLOAT_CONST":
-                params[key] = float(value.value)
+                params[key] = sign * float(value.value)
             elif value.type == "HEX_FLOAT_CONST":
-                params[key] = float(value.value)
+                params[key] = sign * float(value.value)
             elif value.type == "true":
                 params[key] = True
             elif value.type == "false":
@@ -269,36 +276,6 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
 
     def _reset_attrs(self) -> None:
         self._attrs = []
-
-    
-class LazyScopeCollector:
-    def __init__(self, parser: 'ReflectableFinder', scope: ScopeDescription):
-        self._parser: Final = parser
-        self._scope: Final = scope
-        self._scope_id: str | None = None
-
-    def use_id(self) -> int:
-        if self._scope_id is None:
-            self._scope_id = len(self._parser._scopes)
-            self._parser._scopes.append(self._scope)
-            
-        return self._scope_id
-    
-    def add_namespace(self, namespace_name: str) -> 'ReflectableFinder.LazyScopeCollector':
-        sub_namespace = self._scope.add_namespace(namespace_name)
-        return LazyScopeCollector(self._parser, sub_namespace)
-        
-    def add_class(self, class_name: str) -> 'ReflectableFinder.LazyScopeCollector':
-        sub_class = self._scope.add_class(class_name)
-        return LazyScopeCollector(self._parser, sub_class)
-    
-    def add_field(self, field_name: str) -> 'ReflectableFinder.LazyScopeCollector':
-        sub_field = self._scope.add_field(field_name)
-        return LazyScopeCollector(self._parser, sub_field)
-    
-    @property
-    def path(self):
-        return self._scope.path
 
 
 def name_and_description_from_attrs(attrs: Attributes | None) -> tuple[str | None, str | None]:
@@ -319,23 +296,24 @@ def name_and_description_from_attrs(attrs: Attributes | None) -> tuple[str | Non
     return name, description
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class ReflectableSubset:
-    classes: list[ReflectableDescription]
-    funcs: list[FunctionDescription]
+    namespaces: list[NamespaceDescription] = dataclasses.field(default_factory=list)
+    classes: list[ReflectableDescription] = dataclasses.field(default_factory=list)
+    funcs: list[FunctionDescription] = dataclasses.field(default_factory=list)
 
 
 class ReflectableFinder:
     def __init__(self):
         self._headers: list[str] = []
-        self._fields: Properties = []
-        self._classes: list[ReflectableDescription] = []
-        self._funcs: list[FunctionDescription] = []
-        # self._scopes: list[ScopeDescription] = []
+        self._namespaces: OrderedDict[int, NamespaceDescription] = OrderedDict()
+        self._fields: OrderedDict[int, PropertyDescription] = OrderedDict()
+        self._classes: OrderedDict[int, ReflectableDescription] = OrderedDict()
+        self._funcs: OrderedDict[int, FunctionDescription] = OrderedDict()
 
     @property
     def reflectables(self) -> list[ReflectableDescription]:
-        return self._classes
+        return [v for v in self._classes.values()]
 
     @property
     def headers(self) -> list[str]:
@@ -343,11 +321,11 @@ class ReflectableFinder:
      
     @property
     def fields(self) -> Properties:
-        return self._fields
+        return [v for v in self._fields.values()]
     
     @property
     def funcs(self) -> list[FunctionDescription]:
-        return self._funcs
+        return [v for v in self._funcs.values()]
 
     def add_from_file(self, file_name: Path, *, include_base: Path | None = None) -> ReflectableSubset:
         lines = self._read_code_from_file(file_name)
@@ -355,88 +333,92 @@ class ReflectableFinder:
         code = ''.join(lines)
         Parser(str(file_name), code, visitor).parse()
         parsed = visitor.data
-        root_scope = ScopeDescription.from_root(parsed.namespace)
 
+        scope = ScopeDescription.from_root(parsed.namespace)
         relative_header = file_name.relative_to(include_base) if include_base else file_name
-        return ReflectableSubset(
-            classes=self._find_classes(root_scope, relative_header),
-            funcs=self._find_functions(root_scope, relative_header),
-        )
+
+        added = ReflectableSubset()
+        self._find_entities_in_namespace(scope, relative_header, added)
+        return added
 
     # private
 
-    def _find_functions(self, scope: ScopeDescription, header: Path) -> list[FunctionDescription]:
-        ret = []
-        ret += self._collect_functions_in_namespace(scope, header)
+    def _find_entities_in_namespace(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
+        self._add_namespace(scope, added)
+        self._collect_functions_in_namespace(scope, header, added)
+        self._collect_classes_in_namespace(scope, header, added)
+
         for ns in scope.namespace().namespaces.values():
             sub_namespace_scope = scope.add_namespace(ns)
-            ret += self._find_functions(sub_namespace_scope, header)
-        return ret
-     
-    def _collect_functions_in_namespace(self, scope: ScopeDescription, header: Path) -> list[FunctionDescription]:
-        ret = []
+
+            self._find_entities_in_namespace(sub_namespace_scope, header, added)
+
+    def _add_namespace(self, scope: ScopeDescription, added: ReflectableSubset) -> None:
+        raw = scope.namespace()
+        ns_hash = scope.hash
+        if ns_hash not in self._namespaces:
+            namespace = NamespaceDescription(scope, raw)
+            self._namespaces[ns_hash] = namespace
+            added.namespaces.append(namespace)
+
+    def _collect_functions_in_namespace(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
         for raw_func in scope.namespace().functions:
             func_scope = scope.add_function(raw_func)
-            ret.append(self._collect_function(func_scope, header))
-        return ret
+            self._collect_function(func_scope, header, added)
 
-    def _collect_function(self, scope: ScopeDescription, header: Path) -> FunctionDescription:
+    def _collect_function(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
+        func_hash = scope.hash
+        if func_hash not in self._funcs:
+            _LOGGER.warning(f'already encountered function {scope.path}')
+
         attrs = scope.attrs()
         name, description = name_and_description_from_attrs(attrs)
 
         func = FunctionDescription(
-            func_name=scope.name(), 
-            full_name = scope,
-            header=header,
             raw=scope.func(),
+            scope = scope,
+            header=header,
             friendly_name=name, 
             description=description,
             attrs=attrs,
         )
-        self._funcs.append(func)
-        return func
 
-    def _find_classes(self, scope: ScopeDescription, header: Path) -> list[ReflectableDescription]:
-        ret = []
-        ret += self._collect_classes_in_namespace(scope, header)
-        for ns in scope.namespace().namespaces.values():
-            sub_namespace_scope = scope.add_namespace(ns)
-            ret += self._find_classes(sub_namespace_scope, header)
-        return ret
+        self._funcs[func_hash] = func
+        added.funcs.append(func)
 
-    def _collect_classes_in_namespace(self, scope: ScopeDescription, header: Path) -> list[ReflectableDescription]:
-        ret = []
+    def _collect_classes_in_namespace(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
         for cls in scope.namespace().classes:
             cls_scope = scope.add_class(cls)
-            ret += self._collect_class_and_nested_classes(cls_scope, header)
-        return ret
+            self._collect_class_and_nested_classes(cls_scope, header, added)
 
+    def _collect_class_and_nested_classes(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
+        cls_hash = scope.hash
+        if cls_hash not in self._classes:
+            _LOGGER.warning(f'already encountered class {scope.path}')
 
-    def _collect_class_and_nested_classes(self, scope: ScopeDescription, header: Path) -> list[ReflectableDescription]:
-        ret = []
         cls = scope.cls()
         attrs = scope.attrs()
         name, description = name_and_description_from_attrs(attrs)
 
-        properties = self._extract_properties(scope, header)
+        type_id = scope.hash
+        properties = self._extract_properties(scope, type_id)
         reflectable = ReflectableDescription(
-            cls_name=scope.name(), 
-            full_name = scope,
-            header=header,
             raw=cls,
+            scope = scope,
+            header=header,
             friendly_name=name, 
             description=description, 
             properties=properties
         )
-        self._classes.append(reflectable)
-        ret.append(reflectable)
+        self._classes[scope.hash] = reflectable
+        added.classes.append(reflectable)
 
         for nested_cls in cls.classes:
             nested_cls_scope = scope.add_class(nested_cls)
-            ret += self._collect_class_and_nested_classes(nested_cls_scope, header)
-        return ret
+            self._collect_class_and_nested_classes(nested_cls_scope, header, added)
+
         
-    def _extract_properties(self, scope: ScopeDescription, header: Path) -> Properties:
+    def _extract_properties(self, scope: ScopeDescription, cls_id: int) -> Properties:
         cls = scope.cls()
         properties = []
         for field in cls.fields:
@@ -450,16 +432,14 @@ class ReflectableFinder:
             if field.access == 'private':
                 continue
 
-            field_name = field.name.format()
-
             type_name = self._full_find_field_type(field_scope)
             attrs = field_scope.attrs()
             name, description = name_and_description_from_attrs(attrs)
 
             prop = PropertyDescription(
-                field_name=field_name, 
-                full_name=field_scope,
+                scope=field_scope,
                 raw=field,
+                cls_id=cls_id,
                 type=type_name, 
                 friendly_name=name, 
                 description=description,
@@ -475,8 +455,8 @@ class ReflectableFinder:
         if is_anonymous:
             return f'{scope.parent}::{field_type}'
         
-        for cls in self._classes:
-            cls_name = cls.full_name.path
+        for cls in self._classes.values():
+            cls_name = cls.full_name
             encl_scope = scope.parent
             while encl_scope:
                 full_name = f'{encl_scope}::{field_type}'

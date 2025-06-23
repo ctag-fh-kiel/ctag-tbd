@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 import re
 import logging
@@ -11,15 +10,14 @@ from tbd_core.reflection import (
     ParamType,
     ReflectableDescription,
     PropertyDescription,
-    PARAM_TYPES,
     ScopePath,
-    Reflectables,
     Headers,
     ReflectableFinder,
 )
 from .plugin_entry import PluginEntry, PluginParams, ParamEntry
 
 from .plugins import Plugins, PluginsOptions
+from ..reflection.parameters import ALL_PARAM_TYPES
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -93,7 +91,7 @@ def get_underlying_param_type(field: PropertyDescription) -> str:
 def get_param_type(param_type: str) -> ParamType | None:
     """ Get parameter_type ID for typename string. """
 
-    return PARAM_TYPES.get(param_type)
+    return ALL_PARAM_TYPES.get(param_type)
 
 
 class PluginRegistry:

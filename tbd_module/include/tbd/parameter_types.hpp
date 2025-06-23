@@ -41,10 +41,49 @@
 #include <cinttypes>
 
 namespace tbd {
-    using int_par     = int32_t;
-    using uint_par    = uint32_t;
-    using float_par   = float;
-    using ufloat_par  = float;
-    using trigger_par = bool;
-    using str_par     = std::string;
+
+// parameter identification type aliases //
+
+// non mappable
+using int_par     = int32_t;
+using uint_par    = uint32_t;
+using float_par   = float;
+using ufloat_par  = float;
+using trigger_par = bool;
+using str_par     = std::string;
+
+//  mappable
+using mint_par     = int_par;
+using muint_par    = uint_par;
+using mfloat_par   = float_par;
+using mufloat_par  = ufloat_par;
+using mtrigger_par = trigger_par;
+
+// helper types //
+
+namespace par_tags {
+
+enum ParamTypeTag {
+    INT_PARAM     = 0,
+    UINT_PARAM    = 1,
+    FLOAT_PARAM   = 2,
+    UFLOAT_PARAM  = 3,
+    TRIGGER_PARAM = 4,
 };
+
+};
+
+union ParamValue {
+    int_par int_value;
+    uint_par uint_value;
+    float_par float_value;
+    ufloat_par ufloat_value;
+    trigger_par trigger_value;
+};
+
+struct Param {
+    par_tags::ParamTypeTag type;
+    ParamValue value;
+};
+
+}

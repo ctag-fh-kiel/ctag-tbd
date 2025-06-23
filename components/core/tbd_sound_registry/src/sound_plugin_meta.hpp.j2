@@ -45,12 +45,23 @@ struct {{ meta_name }} : PluginMetaBase {
 
 protected:
     void populate_parameters(const sound_processor::ProcessData& data) {
-        {%- for index, param in params %}
-         // mapping parameter {{index}}: {{param.name}}
-        if (mappings_[{{index}}] >= 0) {
-            auto value = {{ac.value_from_cv(index, param)}};
-            {{param|setter}}(plugin_, data.cv[mappings_[{{index}}]]);
+        {%- for index, param in params -%}
+        {% if param.is_mappable %}
+        {
+            // mapping parameter {{index}}: {{param.name}}
+            const bool has_cv = {{ param | mapping_name }} >= 0;
+            const float cv_switch = has_cv;
+            const {{ param | param_type }} value_switch = !has_cv;
+            const size_t cv_index = {{ param | mapping_name }} * ({{ param | mapping_name }} >= 0); // for no mapping just read CV 0 as dummy
+            {% if param.is_any_float -%}
+            const auto value = cv_switch * data.cv[cv_index] + value_switch * plugin_.{{ param.path }};
+            {{ param | setter_name }}(plugin_, value);
+            {%- else -%}
+            const auto value = cv_switch * data.cv[cv_index] + static_cast<float>(value_switch * plugin_.{{ param.path }});
+            {{ param | setter_name }}(plugin_, static_cast<{{ param | param_type }}>(value));
+            {% endif %}
         }
+        {%- endif -%}
         {%- endfor %}
     }
 
@@ -59,28 +70,16 @@ protected:
             return;
         }
         switch (operation_.type) {
+            case WriteOperation::SET_VALUE: {
+                if (const auto setter = value_setters_[operation_.parameter]; setter != nullptr) {
+                    setter(plugin_, operation_.payload.param);
+                }
+                break;
+            }
             case WriteOperation::SET_MAPPING: {
-                mappings_[operation_.parameter] = operation_.value.mapping;
-                break;
-            }
-            case WriteOperation::SET_INT: {
-                const auto setter_id = operation_.parameter;
-                int_setters[setter_id](plugin_, operation_.value.int_param);
-                break;
-            }
-            case WriteOperation::SET_UINT: {
-                const auto setter_id = operation_.parameter - {{ plugin.num_ints }};
-                uint_setters[setter_id](plugin_, operation_.value.uint_param);
-                break;
-            }
-            case WriteOperation::SET_TRIGGER: {
-                const auto setter_id = operation_.parameter - {{ plugin.num_ints }} - {{ plugin.num_uints }};
-                trigger_setters[setter_id](plugin_, operation_.value.trigger_param);
-                break;
-            }
-            case WriteOperation::SET_FLOAT: {
-                const auto setter_id = operation_.parameter - {{ plugin.num_ints }} - {{ plugin.num_uints }} - {{ plugin.num_triggers }};
-                int_setters[setter_id](plugin_, operation_.value.float_param);
+                if (const auto setter = mapping_setters_[operation_.parameter]; setter != nullptr) {
+                    setter(*this, operation_.payload.mapping);
+                }
                 break;
             }
             default:
@@ -89,60 +88,59 @@ protected:
         operation_cleared_ = true;
     }
 
-    {% if plugin.num_ints %}
-     // {{plugin.num_ints}} int params
+    {% if plugin.num_ints -%}
+    // {{plugin.num_ints}} int params
     {%- for param in plugin.int_params %}
-    {{ac.int_setter_impl(plugin, param)}}
-    {%- endfor %}
-    {% else %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- else -%}
      // no int params 
-    {% endif %}
+    {%- endif %}
     
-    {% if plugin.num_uints %}
+    {% if plugin.num_uints -%}
      // {{plugin.num_uints}} uint params
-    {% for param in plugin.uint_params %}
-    {{ac.uint_setter_impl(plugin, param)}}
-    {%- endfor %}
-    {% else %}
+    {%- for param in plugin.uint_params %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- else -%}
      // no uint params 
-    {% endif %}
+    {%- endif %}
 
 
-    {% if plugin.num_triggers %}
+    {% if plugin.num_triggers -%}
      // {{plugin.num_triggers}} trigger params
-    {% for param in plugin.trigger_params %}
-    {{ac.trigger_setter_impl(plugin, param)}}
-    {%- endfor %}
-    {% else %}
+    {%- for param in plugin.trigger_params %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- else -%}
      // no trigger params 
-    {% endif %}
+    {%- endif %}
     
-    {% if plugin.num_floats or plugin.num_ufloats %}
+    {% if plugin.num_floats or plugin.num_ufloats -%}
      // {{plugin.num_floats + plugin.num_ufloats }} float params
-    {% for param in plugin.float_params %}
-    {{ac.float_setter_impl(plugin, param)}}
-    {%- endfor %}
+    {%- for param in plugin.float_params %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
     {%- for param in plugin.ufloat_params %}
-    {{ac.float_setter_impl(plugin, param)}}
-    {%- endfor %}
-    {% else %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- else -%}
      // no float params 
-    {% endif %} 
+    {%- endif %}
 
 private:
-    parameters::Mapping mappings_[{{ plugin.num_params }}];
-    
-    using IntSetter = void(*)({{ plugin.full_name }}&, int_par);
-    static IntSetter int_setters[{{ plugin.num_ints }}];
+    using ParamSetter = void(*)({{ plugin.full_name }}&, ParamValue);
+    using MappingSetter = void(*)({{ meta_name }}&, parameters::Mapping);
 
-    using UIntSetter = void(*)({{ plugin.full_name }}&, uint_par);
-    static UIntSetter uint_setters[{{ plugin.num_uints }}];
-    
-    using TriggerSetter = void(*)({{ plugin.full_name }}&, trigger_par);
-    static TriggerSetter trigger_setters[{{ plugin.num_triggers }}];
-    
-    using FloatSetter = void(*)({{ plugin.full_name }}&, float);
-    static FloatSetter float_setters[{{ plugin.num_floats + plugin.num_ufloats}}];
+    static const ParamSetter value_setters_[];
+    static const MappingSetter mapping_setters_[];
+
+    // parameter mappings
+    {% for param in  plugin.param_list() -%}
+    {% if param.is_mappable %}
+    parameters::Mapping {{ param | mapping_name }};
+    {%- endif  -%}
+    {%- endfor %}
 
     {{ plugin.full_name }} plugin_;
 };

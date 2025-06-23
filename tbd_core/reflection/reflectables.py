@@ -5,18 +5,37 @@ from zlib import crc32
 
 import cxxheaderparser.types as cpptypes
 import cxxheaderparser.simple as cpplib
-
+from rich import scope
 
 from .attributes import Attributes
 from .scopes import ScopeDescription
 
 
 @dataclass
+class NamespaceDescription:
+    scope: ScopeDescription
+    raw: cpplib.NamespaceScope
+
+    @property
+    def full_name(self) -> str:
+        return self.scope.path
+
+    @property
+    def hash(self) -> int:
+        return self.scope.hash
+
+    def __str__(self) -> str:
+        return self.full_name
+
+    def __repr__(self) -> str:
+        return f'Namespace({self.full_name})'
+
+
+@dataclass
 class FunctionDescription:
-    func_name: str
-    full_name: ScopeDescription
-    header: Path
     raw: cpptypes.Function
+    scope: ScopeDescription
+    header: Path
     friendly_name: str | None = None
     description: str | None = None
     attrs: Attributes | None = None
@@ -26,75 +45,101 @@ class FunctionDescription:
         return self.raw.return_type.typename.format()
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.friendly_name if self.friendly_name else self.func_name
+
+    @property
+    def full_name(self) -> str:
+        return self.scope.path
+
+    @property
+    def func_name(self) -> str:
+        return self.scope.name()
 
     @property
     def arguments(self) -> list[cpptypes.Parameter]:
         return self.raw.parameters
 
-    def hash(self):
-        return crc32(str(self.full_name).encode())
+    @property
+    def hash(self) -> int:
+        return self.scope.hash
 
     def __str__(self) -> str:
-        return self.full_name.path
+        return self.full_name
 
     def __repr__(self) -> str:
-        return f'Function({self.full_name.path})'
+        return f'Function({self.full_name})'
 
 
 @dataclass
 class PropertyDescription:
-    field_name: str
-    full_name: ScopeDescription
+    scope: ScopeDescription
     type: str
     raw: cpptypes.Field
+    cls_id: int
     friendly_name: str | None = None
     description: str | None = None
     attrs: Attributes | None = None
     
     @property
-    def name(self):
+    def name(self) -> str:
         return self.friendly_name if self.friendly_name else self.field_name
 
-    def hash(self):
-        return crc32(str(self.full_name).encode())
+    @property
+    def full_name(self) -> str:
+        return self.scope.path
+
+    @property
+    def field_name(self) -> str:
+        return self.raw.name.format()
+
+    @property
+    def hash(self) -> int:
+        return self.scope.hash
 
     def __str__(self) -> str:
-        return self.full_name.path
+        return self.full_name
 
     def __repr__(self) -> str:
-        return f'Field({self.full_name.path})'
+        return f'Field({self.full_name})'
 
 
 Properties = list[PropertyDescription]
 
 @dataclass
 class ReflectableDescription:
-    cls_name: str
-    full_name: ScopeDescription
-    header: Path
     raw: cpplib.ClassScope
+    scope: ScopeDescription
+    header: Path
     friendly_name: str | None = None
     description: str | None = None
     properties: list[PropertyDescription] | None = list
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.friendly_name if self.friendly_name else self.cls_name
 
     @property
-    def meta_name(self):
+    def cls_name(self) -> str:
+        return self.scope.name()
+
+    @property
+    def full_name(self) -> str:
+        return self.scope.path
+
+    @property
+    def meta_name(self) -> str:
         return f'{self.cls_name}Meta'
 
-    def hash(self):
-        return crc32(str(self.full_name).encode())
+    @property
+    def hash(self) -> int:
+        return self.scope.hash
 
     def __str__(self) -> str:
-        return self.full_name.path
+        return self.full_name
 
     def __repr__(self) -> str:
-        return f'Plugin({self.full_name.path})'
+        return f'Plugin({self.full_name})'
     
 
 Reflectables = list[ReflectableDescription]
@@ -103,6 +148,7 @@ Headers = set[Path]
 
 
 __all__ = [
+    'NamespaceDescription',
     'PropertyDescription', 
     'Properties', 
     'FunctionDescription',
