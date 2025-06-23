@@ -10,6 +10,16 @@ enum ChannelID {
     CH_INVALID = 2,
 };
 
+inline ChannelID channel_id_from_int(const uint32_t value) {
+    if (value == CH_0) {
+        return CH_0;
+    }
+    if (value == CH_1) {
+        return CH_1;
+    }
+    return CH_INVALID;
+}
+
 enum Channels {
     CM_NONE    = 0,
     CM_LEFT    = 1 << CH_0,

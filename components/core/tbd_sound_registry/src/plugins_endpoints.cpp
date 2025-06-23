@@ -67,35 +67,61 @@ Error set_sound_plugin(const uint_par& channel, const uint_par& sound_id) {
 
 [[tbd::endpoint]]
 Error get_active_plugins(ActivePlugins& active_plugins) {
-    active_plugins.is_stereo = ActiveSoundProcessors::is_stereo();
-    active_plugins.left = ActiveSoundProcessors::on_left();
-    active_plugins.right = ActiveSoundProcessors::on_right();
+    const auto is_stereo = ActiveSoundProcessors::is_stereo();
+    active_plugins.is_stereo = is_stereo;
+    if (is_stereo) {
+        active_plugins.left = ActiveSoundProcessors::get_processor_on_channels(CM_BOTH);
+        active_plugins.right = active_plugins.left;
+    } else {
+        active_plugins.left = ActiveSoundProcessors::get_processor_on_channels(CM_LEFT);
+        active_plugins.right = ActiveSoundProcessors::get_processor_on_channels(CM_RIGHT);
+    }
     return TBD_OK;
 }
 
 [[tbd::endpoint]]
 Error set_plugin_int_param(const uint_par& channel, const uint_par& param_id, const int_par& value) {
-    return TBD_OK;
+    const auto channels = channels_from_int(channel);
+    if (channels == CM_INVALID) {
+        return TBD_ERR(INVALID_CHANNEL_ID);
+    }
+    return ActiveSoundProcessors::set_param(channels, param_id, value);
 }
 
 [[tbd::endpoint]]
 Error set_plugin_uint_param(const uint_par& channel, const uint_par& param_id, const uint_par& value) {
-    return TBD_OK;
+    const auto channels = channels_from_int(channel);
+    if (channels == CM_INVALID) {
+        return TBD_ERR(INVALID_CHANNEL_ID);
+    }
+    return ActiveSoundProcessors::set_param(channels, param_id, value);
 }
 
 [[tbd::endpoint]]
 Error set_plugin_float_param(const uint_par& channel, const uint_par& param_id, const float_par& value) {
-    return TBD_OK;
+    const auto channels = channels_from_int(channel);
+    if (channels == CM_INVALID) {
+        return TBD_ERR(INVALID_CHANNEL_ID);
+    }
+    return ActiveSoundProcessors::set_param(channels, param_id, value);
 }
 
 [[tbd::endpoint]]
 Error set_plugin_ufloat_param(const uint_par& channel, const uint_par& param_id, const ufloat_par& value) {
-    return TBD_OK;
+    const auto channels = channels_from_int(channel);
+    if (channels == CM_INVALID) {
+        return TBD_ERR(INVALID_CHANNEL_ID);
+    }
+    return ActiveSoundProcessors::set_param(channels, param_id, value);
 }
 
 [[tbd::endpoint]]
 Error set_plugin_trigger_param(const uint_par& channel, const uint_par& param_id, const trigger_par& value) {
-    return TBD_OK;
+    const auto channels = channels_from_int(channel);
+    if (channels == CM_INVALID) {
+        return TBD_ERR(INVALID_CHANNEL_ID);
+    }
+    return ActiveSoundProcessors::set_param(channels, param_id, value);
 }
 
 }

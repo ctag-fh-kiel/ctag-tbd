@@ -11,6 +11,7 @@ namespace tbd::sound_registry {
 namespace {
 
 using namespace sound_processor::channels;
+using namespace sound_registry::parameters;
 
 constexpr size_t TOTAL_SIZE = TBD_SOUND_PROCESSOR_MAX_MEMORY;
 
@@ -154,7 +155,18 @@ struct ActiveSoundProcessorsImpl {
     {}
 
     [[nodiscard]] bool is_stereo() const { return is_stereo_; }
-    [[nodiscard]] PluginMetaBase* on_left() const { return left_.get_processor(); }
+    [[nodiscard]] PluginMetaBase* get_processor_on_channels(const Channels channels) const {
+        if (channels & CM_LEFT) {
+            if (is_stereo() && channels != CM_BOTH) {
+                return nullptr;
+            }
+            return left_.get_processor();
+        }
+        if (channels & CM_RIGHT) {
+            return right_.get_processor();
+        }
+        return nullptr;
+    }
     [[nodiscard]] PluginMetaBase* on_right() const { return right_.get_processor(); }
 
     std::tuple<Error, void*> reserve_plugin_memory(const Channels channels, const size_t plugin_size) {
@@ -225,23 +237,47 @@ bool ActiveSoundProcessors::is_stereo() {
     return impl.is_stereo();
 }
 
-parameters::PluginID ActiveSoundProcessors::on_left() {
-    const auto _on_left = impl.on_left();
-    if (_on_left == nullptr) {
+int16_t ActiveSoundProcessors::get_processor_on_channels(Channels channels) {
+    const auto processor = impl.get_processor_on_channels(channels);
+    if (processor == nullptr) {
         return -1;
     }
-    return _on_left->id();
+    return processor->id();
 }
 
-parameters::PluginID ActiveSoundProcessors::on_right() {
-    const auto _on_right = impl.on_right();
-    if (_on_right == nullptr) {
-        return -1;
+Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterID param_id, const int_par value) {
+    const auto processor = impl.get_processor_on_channels(channels);
+    if (processor == nullptr) {
+        return TBD_ERR(SOUND_REGISTRY_NO_PLUGIN_PRESENT);
     }
-    return _on_right->id();
+    return processor->set_param(param_id, value);
 }
 
-std::tuple<Error, void*> ActiveSoundProcessors::reserve_plugin_memory(const Channels channels, size_t plugin_size) {
+Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterID param_id, const uint_par value) {
+    const auto processor = impl.get_processor_on_channels(channels);
+    if (processor == nullptr) {
+        return TBD_ERR(SOUND_REGISTRY_NO_PLUGIN_PRESENT);
+    }
+    return processor->set_param(param_id, value);
+}
+
+Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterID param_id, const float_par value) {
+    const auto processor = impl.get_processor_on_channels(channels);
+    if (processor == nullptr) {
+        return TBD_ERR(SOUND_REGISTRY_NO_PLUGIN_PRESENT);
+    }
+    return processor->set_param(param_id, value);
+}
+
+Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterID param_id, const trigger_par value) {
+    const auto processor = impl.get_processor_on_channels(channels);
+    if (processor == nullptr) {
+        return TBD_ERR(SOUND_REGISTRY_NO_PLUGIN_PRESENT);
+    }
+    return processor->set_param(param_id, value);
+}
+
+std::tuple<Error, void*> ActiveSoundProcessors::reserve_plugin_memory(const Channels channels, const size_t plugin_size) {
     return impl.reserve_plugin_memory(channels, plugin_size);
 }
 

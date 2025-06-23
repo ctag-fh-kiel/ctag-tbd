@@ -12,12 +12,18 @@
 
 namespace tbd::sound_registry {
 
+namespace channels = sound_processor::channels;
+
 struct ActiveSoundProcessors final {
     ActiveSoundProcessors() = delete;
 
     [[nodiscard]] static bool is_stereo();
-    [[nodiscard]] static parameters::PluginID on_left();
-    [[nodiscard]] static parameters::PluginID on_right();
+    [[nodiscard]] static int16_t get_processor_on_channels(channels::Channels channels);
+
+    static Error set_param(channels::Channels channels, parameters::ParameterID param_id, int_par value);
+    static Error set_param(channels::Channels channels, parameters::ParameterID param_id, uint_par value);
+    static Error set_param(channels::Channels channels, parameters::ParameterID param_id, float_par value);
+    static Error set_param(channels::Channels channels, parameters::ParameterID param_id, trigger_par value);
 
     /** Create a new sound processor and assign to channel(s).
      *
