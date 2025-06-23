@@ -218,6 +218,8 @@ static void identify() {
     esp_err_t err =  test_reg(0, 0);
     if (err == ESP_OK) {
         ESP_LOGI(TAG, "AIC3254 found");
+        write_AIC32X4_reg(AIC32X4_LOLGAIN, 0b1000000); // mute lout drivers
+        write_AIC32X4_reg(AIC32X4_LORGAIN, 0b1000000); // mute lout drivers
     } else {
         ESP_LOGE(TAG, "AIC3254 not found");
     }
@@ -260,8 +262,6 @@ static void cfg_codec() {
     write_AIC32X4_reg(AIC32X4_OUTPWRCTL, 0b00001100); // (P1_R9) power up HPL, HPR, LOL and LOR [0b00111100]
     write_AIC32X4_reg(AIC32X4_HPLGAIN, 0x00); // (P1_R16) unmute HPL, set 0dB gain
     write_AIC32X4_reg(AIC32X4_HPRGAIN, 0x00); // (P1_R16) unmute HPL, set 0dB gain
-    write_AIC32X4_reg(AIC32X4_LOLGAIN, 0x06); // (P1_R18) unmute LOL, set 6dB gain
-    write_AIC32X4_reg(AIC32X4_LORGAIN, 0x06); // (P1_R18 ) unmute LOL, set 6dB gain
 
     // ADC routing and power up
     write_AIC32X4_reg(AIC32X4_LMICPGAPIN, 0b01000000); // IN1L routed to left MICPGA with 10k
@@ -272,7 +272,10 @@ static void cfg_codec() {
     write_AIC32X4_reg(AIC32X4_RMICPGAVOL, 0x80); // 0dB gain for left MICPGA
     write_AIC32X4_reg(AIC32X4_ADCSETUP, 0b11000000); // (P0_R81) power up left and right ADCs
     write_AIC32X4_reg(AIC32X4_ADCFGA, 0x00); // (P0_R82) unmute left and right ADCs
-    vTaskDelay(10 / portTICK_PERIOD_MS); // wait for device to initialize registers
+
+    // unmute output drivers
+    write_AIC32X4_reg(AIC32X4_LOLGAIN, 0x06); // (P1_R18) unmute LOL, set 6dB gain
+    write_AIC32X4_reg(AIC32X4_LORGAIN, 0x06); // (P1_R18 ) unmute LOL, set 6dB gain
 }
 
 void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
@@ -282,8 +285,8 @@ void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {
         0x81, 0x83, 0x85, 0x87, 0x89, 0x8B, 0x8D, 0x8F, 0x91, 0x93, 0x95, 0x97, 0x99, 0x9B, 0x9D, 0x9F,
         0xA1, 0xA3, 0xA5, 0xA7, 0xA9, 0xAB, 0xAD, 0xAF, 0xB1, 0xB3, 0xB5, 0xB7, 0xB9, 0xBB, 0xBD, 0xBF,
         0xC1, 0xC3, 0xC5, 0xC7, 0xC9, 0xCB, 0xCD, 0xCF, 0xD1, 0xD3, 0xD5, 0xD7, 0xD9, 0xDB, 0xDD, 0xDF,
-        0xE1, 0xE3, 0xE5, 0xE7, 0xE9, 0xEB, 0xED, 0xEF, 0xF5, 0xFC, 0x00, 0x09, 0x12, 0x1B, 0x24, 0x2D};
-    // range 0b00110000 = 0x30 (+24dB) to 0b10000001 = 0x81 (-63.5dB), if msb is set the attenuation
+        0xE1, 0xE3, 0xE5, 0xE7, 0xE9, 0xEB, 0xED, 0xEF, 0xF5, 0xFC, 0x00, 0x03, 0x06, 0x09, 12, 13};
+
     // incoming range 0 to 63 for lvol and rvol, default 0dB is 58
     uint8_t dac_mute = 0x00;
     if(lvol == 0x00) {
@@ -378,8 +381,9 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
 
 void Codec::InitCodec() {
     cfg_i2c();
-    cfg_i2s();
     identify();
+    SetOutputLevels(0, 0);
+    cfg_i2s();
     cfg_codec();
     SetOutputLevels(58, 58);
 }
