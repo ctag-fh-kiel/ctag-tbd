@@ -98,7 +98,7 @@ inline Error verify_int_parameter(const PluginID plugin_id, const uint32_t param
         return err;
     }
     if (!parameter_has_type(plugin_id, parameter_number, par_tags::INT_PARAM)) {
-        return TBD_ERR(SOUND_REGISTRY_INT_EXPECTED);
+        return TBD_ERR(SOUND_REGISTRY_PARAM_NOT_INT);
     }
     return TBD_OK;
 }
@@ -108,7 +108,7 @@ inline Error verify_uint_parameter(const PluginID plugin_id, const uint32_t para
         return err;
     }
     if (!parameter_has_type(plugin_id, parameter_number, par_tags::INT_PARAM)) {
-        return TBD_ERR(SOUND_REGISTRY_UINT_EXPECTED);
+        return TBD_ERR(SOUND_REGISTRY_PARAM_NOT_UINT);
     }
     return TBD_OK;
 }
@@ -120,7 +120,7 @@ inline Error verify_float_parameter(const PluginID plugin_id, const uint32_t par
     if (!parameter_has_type(plugin_id, parameter_number, par_tags::FLOAT_PARAM)
         && !parameter_has_type(plugin_id, parameter_number, par_tags::UFLOAT_PARAM))
     {
-        return TBD_ERR(SOUND_REGISTRY_FLOAT_EXPECTED);
+        return TBD_ERR(SOUND_REGISTRY_PARAM_NOT_FLOAT);
     }
     return TBD_OK;
 }
@@ -130,7 +130,7 @@ inline Error verify_trigger_parameter(const PluginID plugin_id, const uint32_t p
         return err;
     }
     if (!parameter_has_type(plugin_id, parameter_number, par_tags::INT_PARAM)) {
-        return TBD_ERR(SOUND_REGISTRY_TRIGGER_EXPECTED);
+        return TBD_ERR(SOUND_REGISTRY_PARAM_NOT_TRIGGER);
     }
     return TBD_OK;
 }

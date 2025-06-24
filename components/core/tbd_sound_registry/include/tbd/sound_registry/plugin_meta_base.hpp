@@ -17,80 +17,82 @@ struct PluginMetaBase : sound_processor::SoundProcessor {
     // value setters //
 
     Error set_param(const parameters::ParameterID parameter_id, const int_par value) {
-        if (!parameters::verify_int_parameter(id_, parameter_id)) {
-            return false;
+        if (const auto err = parameters::verify_int_parameter(id_, parameter_id); err != TBD_OK) {
+            return err;
+        }
+        if (!operation_cleared_) {
+            return TBD_ERR(SOUND_REGISTRY_PENDING_OPERATION);
         }
 
-        if (!operation_cleared_) {
-            return false;
-        }
         operation_.type = WriteOperation::SET_VALUE;
         operation_.parameter = parameter_id;
         operation_.payload.param = {.int_value = value};
         operation_cleared_ = false;
-        return true;
+        return TBD_OK;
     }
 
     Error set_param(const parameters::ParameterID parameter_id, const uint_par value) {
-        if (!parameters::verify_uint_parameter(id_, parameter_id)) {
-            return false;
+        if (const auto err = parameters::verify_uint_parameter(id_, parameter_id); err != TBD_OK) {
+            return err;
+        }
+        if (!operation_cleared_) {
+            return TBD_ERR(SOUND_REGISTRY_PENDING_OPERATION);
         }
 
-        if (!operation_cleared_) {
-            return false;
-        }
         operation_.type = WriteOperation::SET_VALUE;
         operation_.parameter = parameter_id;
         operation_.payload.param = {.uint_value = value};
         operation_cleared_ = false;
-        return true;
+        return TBD_OK;
     }
 
     Error set_param(const parameters::ParameterID parameter_id, const float_par value) {
-        if (!parameters::verify_float_parameter(id_, parameter_id)) {
-            return false;
+        if (const auto err = parameters::verify_float_parameter(id_, parameter_id); err != TBD_OK) {
+            return err;
+        }
+        if (!operation_cleared_) {
+            return TBD_ERR(SOUND_REGISTRY_PENDING_OPERATION);
         }
 
-        if (!operation_cleared_) {
-            return false;   
-        }
         operation_.type = WriteOperation::SET_VALUE;
         operation_.parameter = parameter_id;
         operation_.payload.param = {.float_value = value};
         operation_cleared_ = false;
-        return true;
+        return TBD_OK;
     }
 
     Error set_param(const parameters::ParameterID parameter_id, const trigger_par value) {
-        if (!parameters::verify_trigger_parameter(id_, parameter_id)) {
-            return false;
+        if (const auto err = parameters::verify_trigger_parameter(id_, parameter_id); err != TBD_OK) {
+            return err;
+        }
+        if (!operation_cleared_) {
+            return TBD_ERR(SOUND_REGISTRY_PENDING_OPERATION);
         }
 
-        if (!operation_cleared_) {
-            return false;
-        }
         operation_.type = WriteOperation::SET_VALUE;
         operation_.parameter = parameter_id;
         operation_.payload.param = {.trigger_value = value};
         operation_cleared_ = false;
-        return true;
+        return TBD_OK;
     }
 
     // parameter mapping //
 
     Error map_param(const parameters::ParameterID parameter_id, const parameters::InputID input_id) {
-        if (!parameters::verify_mapping(id_, parameter_id, input_id)) {
-            return false;
+        if (const auto err = parameters::verify_mapping(id_, parameter_id, input_id);
+            err != TBD_OK)
+        {
+            return err;
+        }
+        if (!operation_cleared_) {
+            return TBD_ERR(SOUND_REGISTRY_PENDING_OPERATION);
         }
 
-        if (!operation_cleared_) {
-            return false;
-        }
         operation_.type = WriteOperation::SET_MAPPING;
         operation_.parameter = parameter_id;
         operation_.payload.mapping = input_id;
         operation_cleared_ = false;
-        return true;
+        return TBD_OK;
     }
 
 protected:
