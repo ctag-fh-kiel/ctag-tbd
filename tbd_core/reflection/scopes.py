@@ -383,6 +383,11 @@ class ScopePath:
             raise ValueError('namespaces can only be declared in namespaces')
         return ScopePath([*self.segments, ScopePathSegment(namespace, ScopeType.NAMESPACE, _id)])
 
+    def add_function(self, func: str, _id: int | None = None) -> 'ScopeDescription':
+        if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.FUNCTION):
+            raise ValueError('function can only be declared in namespaces')
+        return ScopeDescription([*self.segments, ScopePathSegment(func, ScopeType.FUNCTION, _id)])
+
     def add_class(self, cls: str, _id: int | None = None) -> 'ScopePath':
         if self.segments and self.segments[-1].type not in [ScopeType.NAMESPACE, ScopeType.CLASS]:
             raise ValueError('classes can only be declared in namespaces or other classes')
@@ -420,6 +425,12 @@ class ScopePath:
     def fields(self):
         _, _, retval = self.split()
         return retval
+
+    @property
+    def parent(self) -> Self | None:
+        if len(self.segments) < 2:
+            return None
+        return ScopePath(self.segments[:-1])
 
     @property
     def path(self) -> str:

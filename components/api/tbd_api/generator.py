@@ -60,7 +60,7 @@ class ApiWriter:
 
     def write_arduino_client(self, out_dir: Path, messages_dir: Path):
         gen = CppGenerator(self._api)
-        gen.write_arduino_client(out_dir, messages_dir)
+        gen.write_arduino_client(out_dir)
 
     def write_python_client(self, out_dir: Path, messages_dir: Path):
         gen = PyGenerator(self._api)

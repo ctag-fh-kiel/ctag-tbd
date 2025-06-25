@@ -122,7 +122,9 @@ class CppGenerator(ApiGeneratorBase):
         with open(protos_file_name, 'w') as f:
             f.write(wrappers)
 
-    def write_arduino_client(self, out_dir: Path, messages_file: Path):
+        generate_protos(out_dir, out_dir, [protos_file_name.name])
+
+    def write_arduino_client(self, out_dir: Path):
         client_component_dir = tbd.get_tbd_components_root() / 'api' / 'tbd_api' / 'clients' / 'arduino'
         tbd.copy_batch(
             client_component_dir,

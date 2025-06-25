@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from . import get_generated_include_path
-from .files import get_components_build_path, copy_tree_if_outdated, get_tests_build_path
+from . import get_generated_include_path, get_messages_path
+from .files import get_components_build_path, get_build_path, copy_tree_if_outdated, get_tests_build_path
 from .build_generator import add_platformio_block
 from .component_info import COMPONENTS_DOMAIN, ComponentInfo
 from .registry import get_tbd_domain
@@ -10,7 +10,7 @@ from .registry import get_tbd_domain
 def prepare_tests():
     indent = ' ' * 4
     unittest_path = get_tests_build_path()
-    all_tests_header_dir = get_generated_include_path() / 'tbd' / 'unittests'
+    all_tests_header_dir = get_build_path() / get_generated_include_path() / 'tbd' / 'unittests'
 
     test_env_block = [
         '[env:tests]',
@@ -20,7 +20,8 @@ def prepare_tests():
         f'{indent}; core flags',
         f'{indent}-DTBD_UNITTEST_BUILD',
         f'{indent}-DUSE_HOST',
-        f'{indent}-Isrc/generated/include',
+        f'{indent}-I{get_generated_include_path()}',
+        f'{indent}-I{get_messages_path()}',
         f'{indent}-I{unittest_path}',
         ''
     ]

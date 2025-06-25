@@ -20,15 +20,6 @@ WRAPPER_NAME_POSTFIX = '_wrapper'
 EVENT_NAME_POSTFIX = '_payload'
 WRAPPER_NAME_EXPR = re.compile(r'^\w+(?P<wrapper_type>_request|_wrapper|_event)$')
 
-PARAM_TO_PROTO = {
-    tbr.ParamType.INT_PARAM: 'int32',
-    tbr.ParamType.UINT_PARAM: 'uint32',
-    tbr.ParamType.FLOAT_PARAM: 'float',
-    tbr.ParamType.UFLOAT_PARAM: 'float',
-    tbr.ParamType.TRIGGER_PARAM: 'bool',
-    tbr.ParamType.STR_PARAM: 'string',
-}
-
 
 def is_data_field(element: proto.MessageElement) -> bool:
     """ Check if element in Protobuf message AST is allowed scalar field type.
@@ -121,11 +112,11 @@ class TransmittableParam:
 
     @property
     def proto_type(self) -> str:
-        return PARAM_TO_PROTO[self._param_type]
+        return tbr.PARAM_TO_PROTO[self._param_type]
 
     @property
     def proto_type_name(self) -> str:
-        return PARAM_TO_PROTO[self._param_type]
+        return tbr.PARAM_TO_PROTO[self._param_type]
 
     @property
     def needs_generating(self) -> bool:

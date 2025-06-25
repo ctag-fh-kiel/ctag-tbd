@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from .registry import has_tbd_global, set_tbd_global
 from .build_generator import get_target_platform, DefineValue
-from .files import get_tbd_source_root, get_generated_include_path
+from .files import get_tbd_source_root, get_generated_include_path, get_build_path
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -161,7 +161,7 @@ class ComponentInfo:
         )
     
     def add_module_header(self):
-        gen_include_path = get_generated_include_path() / 'tbd' / self.name
+        gen_include_path = get_build_path() / get_generated_include_path() / 'tbd' / self.name
         gen_include_path.mkdir(parents=True, exist_ok=True)
         module_header = gen_include_path / 'module.hpp'
 

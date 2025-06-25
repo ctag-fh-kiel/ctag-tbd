@@ -73,7 +73,6 @@ async def to_code(config):
 
 @tbd.build_job_with_priority(tbd.GenerationStages.API)
 def finalize_api_registry():
-    message_files_dir = Path() / 'src' / 'messages'
     python_client_path = tbd.get_build_path() / 'clients' / 'python'
     typescript_client_path = tbd.get_build_path() / 'clients' / 'typescript'
     arduino_client_path = tbd.get_build_path() / 'clients' / 'arduino'
@@ -81,15 +80,16 @@ def finalize_api_registry():
     api = get_api_registry().get_api()
     api_gen = ApiWriter(api)
 
-    messages_dir = tbd.get_build_path() / message_files_dir
-    api_gen.write_messages(tbd.get_generated_sources_path())
-    api_gen.write_endpoints(tbd.get_generated_sources_path())
-    api_gen.write_events(tbd.get_generated_sources_path())
-    api_gen.write_protos(messages_dir)
+    gen_sources_dir = tbd.get_build_path() / tbd.get_generated_sources_path()
+    api_gen.write_messages(gen_sources_dir)
+    api_gen.write_endpoints(gen_sources_dir)
+    api_gen.write_events(gen_sources_dir)
 
+    messages_dir = tbd.get_build_path() / tbd.get_messages_path() / 'api'
+    api_gen.write_protos(messages_dir)
 
     api_gen.write_python_client(python_client_path, messages_dir)
     api_gen.write_typescript_client(typescript_client_path, messages_dir)
     api_gen.write_arduino_client(arduino_client_path, messages_dir)
 
-    cg.add_platformio_option('custom_nanopb_protos', [f'+<{ messages_dir / api_gen.dtos_proto }>'])
+    # cg.add_platformio_option('custom_nanopb_protos', [f'+<{ messages_dir / api_gen.dtos_proto }>'])

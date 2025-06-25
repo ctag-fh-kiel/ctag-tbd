@@ -1,18 +1,20 @@
 from pathlib import Path
 import re
 import logging
-from typing import Final
+from typing import Final, OrderedDict
 
 import humps
 import cxxheaderparser.simple as cpplib
 
 from tbd_core.reflection import (
     ParamType,
-    ReflectableDescription,
+    ClassDescription,
     PropertyDescription,
     ScopePath,
     Headers,
     ReflectableFinder,
+    ClassDescriptions,
+    Reflectables,
 )
 from .plugin_entry import PluginEntry, PluginParams, ParamEntry
 
@@ -41,7 +43,7 @@ def is_stereo_plugin(cls: cpplib.ClassScope) -> bool:
     raise ValueError(f'not a valid plugin type')
 
 
-def is_in_list(plugin: ReflectableDescription, plugin_list: set[str]):
+def is_in_list(plugin: ClassDescription, plugin_list: set[str]):
     """ Check if plugin is in list of plugins tolerating different word separators.
 
         Plugin names in `plugin_list` can be class names or friendly names. The comparison
@@ -97,39 +99,43 @@ def get_param_type(param_type: str) -> ParamType | None:
 class PluginRegistry:
     def __init__(self):
         self._collector: Final = ReflectableFinder()
-        self._plugins: list[ReflectableDescription] = []
+        self._plugins: list[int] = []
 
     def search_for_plugins(self,
         headers: Headers, strict: bool, *,
         include_base: Path | None = None,
         whitelist: list[str] | None = None,
         blacklist: list[str] | None = None
-    ) -> list[ReflectableDescription]:
-        new_classes = []
+    ) -> list[ClassDescription]:
+        new_classes = {}
 
         for header in headers:
             if strict:
                 added = self._collector.add_from_file(header, include_base=include_base)
-                new_classes += added.classes
+                new_classes |= added.classes
             else:
                 try:
                     added = self._collector.add_from_file(header, include_base=include_base)
-                    new_classes += added.classes
+                    new_classes |= added.classes
                 except Exception as e:
                     _LOGGER.error(f'error parsing {header}: {e}')
         new_plugins = PluginRegistry._add_filtered_plugins(new_classes, whitelist=whitelist, blacklist=blacklist)
-        self._plugins += new_plugins
-        return new_plugins
+        self._plugins += list(new_plugins.keys())
+        return list(new_plugins.values())
 
     def get_plugins(self) -> Plugins:
         return Plugins(self._get_plugins())
 
     def _get_plugins(self) -> PluginsOptions:
-        acc = PluginsOptions(reflectables=self._collector.reflectables)
+        reflectables = self._collector.get_reflectables()
+        acc = PluginsOptions(reflectables=reflectables)
 
-        for plugin_id, plugin in enumerate(self._plugins):
+
+        for plugin_id, plugin_ref in enumerate(self._plugins):
+            plugin = reflectables.classes[plugin_ref]
+
             field_scope = ScopePath.root()
-            unsorted_params = self._flatten_plugin_params(acc, plugin_id, plugin, field_scope)
+            unsorted_params = self._flatten_plugin_params(reflectables, acc, plugin_id, plugin, field_scope)
             plugin_params = PluginParams.from_unsorted(unsorted_params)
             is_stereo = is_stereo_plugin(plugin.raw)
 
@@ -147,44 +153,48 @@ class PluginRegistry:
         return acc
 
     @staticmethod
-    def _add_filtered_plugins(classes: list[ReflectableDescription], *,
+    def _add_filtered_plugins(classes: ClassDescriptions, *,
         whitelist: list[str] | None = None,
         blacklist: list[str] | None = None,
-    ) -> list[ReflectableDescription]:
+    ) -> ClassDescriptions:
         """ Find all plugin classes from all known classes with optional whitelisting or blacklisting. """
         if whitelist and blacklist:
             raise ValueError('provide either blacklist or whitelist for plugin prefiltering')
 
         if whitelist is not None:
             whitelist = set(plugin_name.lower() for plugin_name in whitelist)
-            added_plugins = [cls for cls in classes if is_plugin_class(cls.raw) and is_in_list(cls, whitelist)]
+            added_plugins = OrderedDict((ref, cls) for ref, cls in classes.items()
+                                        if is_plugin_class(cls.raw) and is_in_list(cls, whitelist))
             return added_plugins
 
         if blacklist is not None:
             blacklist = set(plugin_name.lower() for plugin_name in blacklist)
-            added_plugins = [cls for cls in classes if is_plugin_class(cls.raw) and not is_in_list(cls, blacklist)]
+            added_plugins = OrderedDict((ref, cls) for ref, cls in classes.items()
+                                        if is_plugin_class(cls.raw) and not is_in_list(cls, blacklist))
             return added_plugins
 
-        added_plugins = [cls for cls in classes if is_plugin_class(cls.raw)]
+        added_plugins = OrderedDict((ref, cls) for ref, cls in classes.items()
+                                    if is_plugin_class(cls.raw))
         return added_plugins
 
     def _flatten_plugin_params(self,
+        reflectables: Reflectables,
         acc: PluginsOptions,
         plugin_id: int,
-        struct: ReflectableDescription,
+        struct: ClassDescription,
         scope: ScopePath
     ) -> list[ParamEntry]:
         flattened_params = []
-        for field in struct.properties:
+        for field_ref in struct.properties:
+            field = reflectables.properties[field_ref]
             param_scope = scope.add_field(field.field_name, None)
-            found = self._find_field_type(field.type)
-            if found:
-                if len(found) > 1:
-                    _LOGGER.warning(f'ambigous field type for field {field.full_name}')
-                    continue
-                field_cls = found[0]
+            field_cls = self._find_field_type(field.type, reflectables)
+            if field_cls:
+                # if len(found) > 1:
+                #     _LOGGER.warning(f'ambigous field type for field {field.full_name}')
+                #     continue
                 acc.headers.add(field_cls.header)
-                flattened_params += self._flatten_plugin_params(acc, plugin_id, field_cls, param_scope)
+                flattened_params += self._flatten_plugin_params(reflectables, acc, plugin_id, field_cls, param_scope)
             else:
                 field_type = get_underlying_param_type(field)
                 if (field_type := get_param_type(field_type)) is None:
@@ -200,15 +210,20 @@ class PluginRegistry:
                 ))
         return flattened_params
 
-    def _find_field_type(self, field_type: str) -> list[ReflectableDescription]:
+    def _find_field_type(self, field_type: str | int, reflectables: Reflectables) -> ClassDescription | None:
         found_types = []
-        for cls in self._reflectables:
-            if field_type == cls.full_name:
-                found_types.append(cls)
-        return found_types
+        if isinstance(field_type, int) and field_type in reflectables.classes:
+            return reflectables.classes[field_type]
+        return None
+        # for cls in reflectables.class_list:
+        #     if field_type
+        #
+        #     if field_type == cls.full_name:
+        #         found_types.append(cls)
+        # return found_types
 
-    @property
-    def _reflectables(self) -> list[ReflectableDescription]:
-        return self._collector.reflectables
+    # @property
+    # def _reflectables(self) -> ClassDescriptions:
+    #     return self._collector.reflectables
 
 __all__ = ['PluginRegistry']

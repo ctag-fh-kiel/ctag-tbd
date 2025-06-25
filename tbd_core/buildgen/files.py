@@ -48,17 +48,23 @@ def get_generated_sources_path() -> Path:
     relative_to_build_path = Path() / 'src' / 'generated'
     source_path = get_build_path() / relative_to_build_path
     source_path.mkdir(parents=True, exist_ok=True)
-    # CORE.add_platformio_option('build_src_filter', [f'+<{PATH_RELATIVE_TO_BUILD_DIR}>'])
-    return source_path
+    return relative_to_build_path
 
 
 @generated_tbd_global(PATHS_DOMAIN)
 def get_generated_include_path() -> Path:
-    relative_to_build_dir = Path() / 'src' / 'generated' / 'include'
-    include_path = get_generated_sources_path() / 'include'
+    relative_to_build_dir = get_generated_sources_path() / 'include'
+    include_path = get_build_path() / relative_to_build_dir
     include_path.mkdir(parents=True, exist_ok=True)
-    add_include_dir(relative_to_build_dir)
-    return include_path
+    return relative_to_build_dir
+
+
+@generated_tbd_global(PATHS_DOMAIN)
+def get_messages_path() -> Path:
+    relative_to_build_dir = get_generated_sources_path() / 'messages'
+    message_dir = get_build_path() / relative_to_build_dir
+    message_dir.mkdir(parents=True, exist_ok=True)
+    return relative_to_build_dir
 
 
 def copy_file_if_outdated(source_file: Path | str, dest_file: Path | str, *, symlink=True) -> list[Path]:
@@ -153,7 +159,8 @@ __all__ = [
     'get_components_build_path',
     'get_tests_build_path',
     'get_tbd_components_root', 
-    'get_tbd_source_root', 
+    'get_tbd_source_root',
+    'get_messages_path',
     'get_vendor_root', 
     'get_generated_sources_path', 
     'get_generated_include_path',

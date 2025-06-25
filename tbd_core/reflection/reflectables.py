@@ -1,11 +1,11 @@
+import dataclasses
 from dataclasses import dataclass
 
 from pathlib import Path
-from zlib import crc32
+from typing import OrderedDict
 
 import cxxheaderparser.types as cpptypes
 import cxxheaderparser.simple as cpplib
-from rich import scope
 
 from .attributes import Attributes
 from .scopes import ScopeDescription
@@ -20,8 +20,7 @@ class NamespaceDescription:
     def full_name(self) -> str:
         return self.scope.path
 
-    @property
-    def hash(self) -> int:
+    def ref(self) -> int:
         return self.scope.hash
 
     def __str__(self) -> str:
@@ -29,6 +28,8 @@ class NamespaceDescription:
 
     def __repr__(self) -> str:
         return f'Namespace({self.full_name})'
+
+NamespaceDescriptions = OrderedDict[int, NamespaceDescription]
 
 
 @dataclass
@@ -60,8 +61,7 @@ class FunctionDescription:
     def arguments(self) -> list[cpptypes.Parameter]:
         return self.raw.parameters
 
-    @property
-    def hash(self) -> int:
+    def ref(self) -> int:
         return self.scope.hash
 
     def __str__(self) -> str:
@@ -70,12 +70,14 @@ class FunctionDescription:
     def __repr__(self) -> str:
         return f'Function({self.full_name})'
 
+FunctionDescriptions = OrderedDict[int, FunctionDescription]
+
 
 @dataclass
 class PropertyDescription:
     scope: ScopeDescription
-    type: str
     raw: cpptypes.Field
+    type: int | str
     cls_id: int
     friendly_name: str | None = None
     description: str | None = None
@@ -93,8 +95,7 @@ class PropertyDescription:
     def field_name(self) -> str:
         return self.raw.name.format()
 
-    @property
-    def hash(self) -> int:
+    def ref(self) -> int:
         return self.scope.hash
 
     def __str__(self) -> str:
@@ -103,17 +104,17 @@ class PropertyDescription:
     def __repr__(self) -> str:
         return f'Field({self.full_name})'
 
+PropertyDescriptions = OrderedDict[int, PropertyDescription]
 
-Properties = list[PropertyDescription]
 
 @dataclass
-class ReflectableDescription:
+class ClassDescription:
     raw: cpplib.ClassScope
     scope: ScopeDescription
     header: Path
     friendly_name: str | None = None
     description: str | None = None
-    properties: list[PropertyDescription] | None = list
+    properties: list[int] | None = list
 
     @property
     def name(self) -> str:
@@ -131,28 +132,51 @@ class ReflectableDescription:
     def meta_name(self) -> str:
         return f'{self.cls_name}Meta'
 
-    @property
-    def hash(self) -> int:
+    def ref(self) -> int:
         return self.scope.hash
 
     def __str__(self) -> str:
         return self.full_name
 
     def __repr__(self) -> str:
-        return f'Plugin({self.full_name})'
+        return f'Class({self.full_name})'
     
 
-Reflectables = list[ReflectableDescription]
+ClassDescriptions = OrderedDict[int, ClassDescription]
+
 
 Headers = set[Path]
 
 
+@dataclasses.dataclass
+class Reflectables:
+    namespaces: NamespaceDescriptions= dataclasses.field(default_factory=OrderedDict)
+    funcs: FunctionDescriptions = dataclasses.field(default_factory=OrderedDict)
+    classes: ClassDescriptions = dataclasses.field(default_factory=OrderedDict)
+    properties: PropertyDescriptions = dataclasses.field(default_factory=OrderedDict)
+
+    @property
+    def class_list(self) -> list[ClassDescription]:
+        return [v for v in self.classes.values()]
+
+    @property
+    def property_list(self) -> list[PropertyDescription]:
+        return [v for v in self.properties.values()]
+
+    @property
+    def func_list(self) -> list[FunctionDescription]:
+        return [v for v in self.funcs.values()]
+
+
 __all__ = [
     'NamespaceDescription',
+    'NamespaceDescriptions',
     'PropertyDescription', 
-    'Properties', 
+    'PropertyDescriptions',
     'FunctionDescription',
-    'ReflectableDescription',
-    'Reflectables',
+    'FunctionDescriptions',
+    'ClassDescription',
+    'ClassDescriptions',
     'Headers',
+    'Reflectables',
 ]

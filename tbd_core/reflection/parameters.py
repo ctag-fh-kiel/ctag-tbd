@@ -60,10 +60,25 @@ PARAM_TYPE_FROM_MAPPABLE: dict[MappableParamType, ParamType] = {
 ALL_PARAM_TYPES: dict[str, ParamType | MappableParamType] = {**PARAM_TYPES, **MAPPABLE_PARAM_TYPES}
 
 
+PARAM_TO_PROTO = {
+    ParamType.INT_PARAM: 'int32',
+    ParamType.UINT_PARAM: 'uint32',
+    ParamType.FLOAT_PARAM: 'float',
+    ParamType.UFLOAT_PARAM: 'float',
+    ParamType.TRIGGER_PARAM: 'bool',
+    ParamType.STR_PARAM: 'string',
+    MappableParamType.MINT_PARAM: 'int32',
+    MappableParamType.MUINT_PARAM: 'uint32',
+    MappableParamType.MFLOAT_PARAM: 'float',
+    MappableParamType.MUFLOAT_PARAM: 'float',
+    MappableParamType.MTRIGGER_PARAM: 'bool',
+}
+
 __all__ = [
     'ParamType',
     'PARAM_TYPES',
     'MappableParamType',
     'MAPPABLE_PARAM_TYPES',
     'ALL_PARAM_TYPES',
+    'PARAM_TO_PROTO',
 ]

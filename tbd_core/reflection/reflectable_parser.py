@@ -1,21 +1,9 @@
-import dataclasses
-
-from pathlib import Path
-from typing import Final, OrderedDict
 import logging
 
 import cxxheaderparser.lexer as lexer
 import cxxheaderparser.simple as cpplib
-import cxxheaderparser.types as cpptypes
 
-from .reflectables import (
-    NamespaceDescription,
-    Properties, 
-    PropertyDescription, 
-    ReflectableDescription,
-    FunctionDescription,
-)
-from .scopes import ScopeDescription, normalize_typename
+from .attribute_parser import parse_attributes
 from .attributes import Attribute, Attributes
 
 
@@ -174,7 +162,8 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
     def _parse_attrs(self) -> Attributes:
         if not self._attrs:
             return []
-        return [attr for tokens in self._attrs if (attr := self._parse_attr(tokens)) is not None]
+
+        return [attr for tokens in self._attrs for attr in parse_attributes(tokens)]
 
     @staticmethod
     def _parse_attr(tokens) -> Attribute | None:
@@ -278,202 +267,4 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
         self._attrs = []
 
 
-def name_and_description_from_attrs(attrs: Attributes | None) -> tuple[str | None, str | None]:
-    """ Given a list of attributes, return the first 'name' and 'description' field values if present. """
-
-    name = None
-    description = None
-
-    if attrs is None:
-        return name, description
-
-    for attr in attrs:
-        attr_params = attr.params
-        if 'name' in attr_params:
-            name = attr_params['name']
-        if 'description' in attr_params:
-            description = attr_params['description']
-    return name, description
-
-
-@dataclasses.dataclass
-class ReflectableSubset:
-    namespaces: list[NamespaceDescription] = dataclasses.field(default_factory=list)
-    classes: list[ReflectableDescription] = dataclasses.field(default_factory=list)
-    funcs: list[FunctionDescription] = dataclasses.field(default_factory=list)
-
-
-class ReflectableFinder:
-    def __init__(self):
-        self._headers: list[str] = []
-        self._namespaces: OrderedDict[int, NamespaceDescription] = OrderedDict()
-        self._fields: OrderedDict[int, PropertyDescription] = OrderedDict()
-        self._classes: OrderedDict[int, ReflectableDescription] = OrderedDict()
-        self._funcs: OrderedDict[int, FunctionDescription] = OrderedDict()
-
-    @property
-    def reflectables(self) -> list[ReflectableDescription]:
-        return [v for v in self._classes.values()]
-
-    @property
-    def headers(self) -> list[str]:
-        return self._headers
-     
-    @property
-    def fields(self) -> Properties:
-        return [v for v in self._fields.values()]
-    
-    @property
-    def funcs(self) -> list[FunctionDescription]:
-        return [v for v in self._funcs.values()]
-
-    def add_from_file(self, file_name: Path, *, include_base: Path | None = None) -> ReflectableSubset:
-        lines = self._read_code_from_file(file_name)
-        visitor = AnnotationParser(lines)
-        code = ''.join(lines)
-        Parser(str(file_name), code, visitor).parse()
-        parsed = visitor.data
-
-        scope = ScopeDescription.from_root(parsed.namespace)
-        relative_header = file_name.relative_to(include_base) if include_base else file_name
-
-        added = ReflectableSubset()
-        self._find_entities_in_namespace(scope, relative_header, added)
-        return added
-
-    # private
-
-    def _find_entities_in_namespace(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
-        self._add_namespace(scope, added)
-        self._collect_functions_in_namespace(scope, header, added)
-        self._collect_classes_in_namespace(scope, header, added)
-
-        for ns in scope.namespace().namespaces.values():
-            sub_namespace_scope = scope.add_namespace(ns)
-
-            self._find_entities_in_namespace(sub_namespace_scope, header, added)
-
-    def _add_namespace(self, scope: ScopeDescription, added: ReflectableSubset) -> None:
-        raw = scope.namespace()
-        ns_hash = scope.hash
-        if ns_hash not in self._namespaces:
-            namespace = NamespaceDescription(scope, raw)
-            self._namespaces[ns_hash] = namespace
-            added.namespaces.append(namespace)
-
-    def _collect_functions_in_namespace(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
-        for raw_func in scope.namespace().functions:
-            func_scope = scope.add_function(raw_func)
-            self._collect_function(func_scope, header, added)
-
-    def _collect_function(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
-        func_hash = scope.hash
-        if func_hash not in self._funcs:
-            _LOGGER.warning(f'already encountered function {scope.path}')
-
-        attrs = scope.attrs()
-        name, description = name_and_description_from_attrs(attrs)
-
-        func = FunctionDescription(
-            raw=scope.func(),
-            scope = scope,
-            header=header,
-            friendly_name=name, 
-            description=description,
-            attrs=attrs,
-        )
-
-        self._funcs[func_hash] = func
-        added.funcs.append(func)
-
-    def _collect_classes_in_namespace(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
-        for cls in scope.namespace().classes:
-            cls_scope = scope.add_class(cls)
-            self._collect_class_and_nested_classes(cls_scope, header, added)
-
-    def _collect_class_and_nested_classes(self, scope: ScopeDescription, header: Path, added: ReflectableSubset) -> None:
-        cls_hash = scope.hash
-        if cls_hash not in self._classes:
-            _LOGGER.warning(f'already encountered class {scope.path}')
-
-        cls = scope.cls()
-        attrs = scope.attrs()
-        name, description = name_and_description_from_attrs(attrs)
-
-        type_id = scope.hash
-        properties = self._extract_properties(scope, type_id)
-        reflectable = ReflectableDescription(
-            raw=cls,
-            scope = scope,
-            header=header,
-            friendly_name=name, 
-            description=description, 
-            properties=properties
-        )
-        self._classes[scope.hash] = reflectable
-        added.classes.append(reflectable)
-
-        for nested_cls in cls.classes:
-            nested_cls_scope = scope.add_class(nested_cls)
-            self._collect_class_and_nested_classes(nested_cls_scope, header, added)
-
-        
-    def _extract_properties(self, scope: ScopeDescription, cls_id: int) -> Properties:
-        cls = scope.cls()
-        properties = []
-        for field in cls.fields:
-            field_scope = scope.add_field(field)
-
-            # attributes can not be pointers, references, arrays etc
-            if not isinstance(field.type, cpptypes.Type):
-                continue
-
-            # TODO: should private fields be reflected?
-            if field.access == 'private':
-                continue
-
-            type_name = self._full_find_field_type(field_scope)
-            attrs = field_scope.attrs()
-            name, description = name_and_description_from_attrs(attrs)
-
-            prop = PropertyDescription(
-                scope=field_scope,
-                raw=field,
-                cls_id=cls_id,
-                type=type_name, 
-                friendly_name=name, 
-                description=description,
-                attrs=attrs,
-            )
-            properties.append(prop)
-
-        return properties
-
-    def _full_find_field_type(self, scope: ScopeDescription):
-        field = scope.field()
-        field_type, is_anonymous = normalize_typename(field.type.typename)
-        if is_anonymous:
-            return f'{scope.parent}::{field_type}'
-        
-        for cls in self._classes.values():
-            cls_name = cls.full_name
-            encl_scope = scope.parent
-            while encl_scope:
-                full_name = f'{encl_scope}::{field_type}'
-                if cls_name == full_name:
-                    return cls_name
-                encl_scope = encl_scope.parent
-
-        return field_type        
-
-    @staticmethod
-    def _read_code_from_file(header_path: Path) -> list[str]:
-        code = []
-        with open(header_path) as f:
-            for line in f:
-                if not line.strip().startswith('#'):
-                    code.append(line)
-        return code
-
-
-__all__ = ['Parser', 'AnnotationParser', 'ReflectableFinder']
+__all__ = ['Parser', 'AnnotationParser']

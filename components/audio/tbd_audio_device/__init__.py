@@ -1,13 +1,14 @@
 from esphome.components.tbd_module.python_dependencies import python_dependencies
+
+from tbd_core.buildgen import get_build_path
+
 python_dependencies('jinja2')
 
 from functools import lru_cache
-from pathlib import Path
 from enum import IntEnum
 from esphome.components.tbd_module import new_tbd_component, ComponentInfo, get_generated_include_path
 from esphome import pins
 import esphome.config_validation as cv
-import esphome.codegen as cg
 import dataclasses
 import jinja2 as ji
 
@@ -136,7 +137,7 @@ class AudioDevice:
                     .get_template('audio_settings.j2.hpp') \
                     .render(sample_rate=self.sample_rate, num_channels=self.num_channels, chunk_size=self.chunk_size)
         
-        gen_include_path = get_generated_include_path() / 'tbd' / base_module.name
+        gen_include_path = get_build_path() / get_generated_include_path() / 'tbd' / base_module.name
         gen_include_path.mkdir(parents=True, exist_ok=True)
         module_header = gen_include_path / 'audio_settings.hpp'
 

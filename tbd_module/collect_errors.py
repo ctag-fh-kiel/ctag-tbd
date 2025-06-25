@@ -4,7 +4,8 @@ from collections import OrderedDict
 import re
 import logging
 
-from tbd_core.buildgen import get_generated_sources_path, ComponentInfo, get_tbd_domain, COMPONENTS_DOMAIN, add_define
+from tbd_core.buildgen import get_generated_sources_path, ComponentInfo, get_tbd_domain, COMPONENTS_DOMAIN, add_define, \
+    get_build_path, get_generated_include_path
 from tbd_core.buildgen.prepare_build import SOURCE_PATTERNS
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,11 +24,12 @@ def write_error_info():
     indexed_errors = [(index, name, description) for index, (name, description) in enumerate(sorted_errors)]
 
     source = env.get_template('all_errors.cpp.j2').render(errors=indexed_errors)
-    with open(get_generated_sources_path() / 'all_errors.cpp', 'w') as f:
+    source_path = get_build_path() / get_generated_sources_path() / 'all_errors.cpp'
+    with open(source_path, 'w') as f:
         f.write(source)
 
     source = env.get_template('all_errors.hpp.j2').render(errors=indexed_errors)
-    header_path = get_generated_sources_path() / 'include' / 'tbd' / 'errors'
+    header_path = get_build_path() / get_generated_include_path() / 'tbd' / 'errors'
     header_path.mkdir(parents=True, exist_ok=True)
     with open(header_path /  'all_errors.hpp', 'w') as f:
         f.write(source)

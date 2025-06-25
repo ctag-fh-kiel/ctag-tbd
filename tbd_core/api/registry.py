@@ -33,6 +33,8 @@ def guaranteed_payload_types() -> OrderedDict[str, Payload]:
 
 class ApiRegistry:
     def __init__(self):
+        self._collector = tbr.ReflectableFinder()
+
         self._base_endpoints: list[Endpoint | None] = [None] * BaseEndpoints.num_reserved_ids()
         self._endpoints: list[Endpoint] = []
         self._payload_types: OrderedDict[str, Payload] = guaranteed_payload_types()
@@ -91,9 +93,9 @@ class ApiRegistry:
         source = Path(source)
         if not source.exists():
             raise ValueError(f'endpoint source {source} does not exist')
-        collector = tbr.ReflectableFinder()
-        collector.add_from_file(source)
-        for func in collector.funcs:
+
+        added = self._collector.add_from_file(source)
+        for func in added.func_list:
             self._add_idc(func)
 
     # private

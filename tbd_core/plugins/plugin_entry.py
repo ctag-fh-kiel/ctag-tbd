@@ -7,7 +7,7 @@ from tbd_core.reflection import (
     ParamType,
     Attributes,
     ScopeDescription,
-    ReflectableDescription,
+    ClassDescription,
     PropertyDescription,
     ScopePath, MappableParamType,
 )
@@ -251,7 +251,7 @@ class PluginParams:
 
 @dataclass(frozen=True)
 class PluginEntry:
-    cls: ReflectableDescription
+    cls: ClassDescription
     param_offset: int
     params: PluginParams
     header: Path

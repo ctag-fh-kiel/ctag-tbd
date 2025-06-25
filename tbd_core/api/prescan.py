@@ -22,7 +22,7 @@ def _find_event(source_file: Path) -> list[Event]:
         raise ValueError(f'endpoint source {source_file} does not exist')
     collector = tbr.ReflectableFinder()
     collector.add_from_file(source_file)
-    for func in collector.funcs:
+    for func in collector.get_reflectables().func_list:
         if not (idc := idc_from_function(func)):
             continue
         if not isinstance(idc, Event):

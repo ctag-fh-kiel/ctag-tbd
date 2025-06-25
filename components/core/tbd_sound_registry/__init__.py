@@ -125,12 +125,13 @@ async def to_code(config):
 def finalize_plugin_registry_job():
     plugins = get_plugin_registry().get_plugins()
 
-    gen_source_path = tbd.get_generated_sources_path()
+    gen_source_path = tbd.get_build_path() / tbd.get_generated_sources_path()
 
     gen = PluginGenerator(plugins)
     gen.write_plugin_factory_header(gen_source_path)
     gen.write_plugin_reflection_info(gen_source_path)
     gen.write_meta_classes(gen_source_path)
+    gen.write_preset_protos(gen_source_path)
 
     plugin_names = [plugin.name for plugin in plugins.plugin_list]
     _LOGGER.info('using plugins:')

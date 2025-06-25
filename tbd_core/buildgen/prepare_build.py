@@ -1,5 +1,6 @@
 import logging
 
+from . import get_generated_include_path, get_messages_path
 from .registry import get_tbd_domain
 from .files import get_components_build_path, copy_file_if_outdated, copy_tree_if_outdated
 from .component_info import ComponentInfo, COMPONENTS_DOMAIN
@@ -29,6 +30,9 @@ def prepare_build():
         set_compiler_options()
 
     _LOGGER.info('adding global TBD defines')
+
+    add_include_dir(get_generated_include_path())
+    add_include_dir(get_messages_path())
 
     for module in get_tbd_domain(COMPONENTS_DOMAIN).values():
         if not isinstance(module, ComponentInfo):
