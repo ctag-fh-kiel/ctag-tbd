@@ -1,0 +1,51 @@
+#pragma once
+
+#include <tbd/presets/serializables.hpp>
+
+{% for serializable in serializables -%}
+#include <{{ serializable.header }}>
+{% endfor %}
+#include <tbd/errors.hpp>
+
+
+namespace tbd::presets {
+
+{% for serializable in serializables %}
+{%- set full_name = serializable.full_name -%}
+
+template<>
+struct SerializableImpl<{{ full_name }}> {
+    SerializableImpl() = delete;
+
+    static size_t serialized_size(const {{ full_name }}& obj);
+    static constexpr TypeID type_id() { return {{ serializable.ref() }}; }
+    static constexpr bool is_plain_type() { return false; };
+
+    static Error read_serializable(std::istream& in_stream, {{ full_name }}& in_message);
+    static Error write_serializable(std::ostream& out_stream, const {{ full_name }}& out_message);
+    static Error to_dto(const {{ full_name }}& obj, PropertyData<{{ full_name }}>& dto);
+    static Error from_dto(const PropertyData<{{ full_name }}>& dto, {{ full_name }}& obj);
+};
+{% endfor %}
+
+{% for serializable in serializables %}
+{%- set full_name = serializable.full_name -%}
+
+{%  if serializable.properties %}
+inline size_t SerializableImpl<{{ full_name }}>::serialized_size(const {{ full_name }}& obj) {
+    return {% for path, property in serializable | flattened_properties -%}
+    {{ '+'  if not loop.first }} sizeof({{ property.type }}){{ ';' if loop.last }}
+    {% endfor %}
+}
+{%- else -%}
+inline size_t SerializableImpl<{{ full_name }}>::serialized_size(const {{ full_name }}& obj) { return 0; }
+{%  endif %}
+
+template<>
+struct PropertyData<{{ full_name }}> {
+    {% for path, prop in serializable | flattened_properties -%}
+    {{ prop.type }} {{ path | snake_name }};
+    {% endfor %}
+};
+{% endfor %}
+}
