@@ -14,6 +14,8 @@
 namespace tbd::sound_registry::meta {
 
 struct {{ meta_name }} : PluginMetaBase {
+    using StateManipulator = std::function<void({{ meta_name }}&)>;
+
     {{ meta_name }}() : PluginMetaBase({{ plugin_id }}) {}
     ~{{ meta_name }}() override = default;
 
@@ -43,6 +45,14 @@ struct {{ meta_name }} : PluginMetaBase {
         return plugin_.is_stereo();
     }
 
+    Error change_state(StateManipulator&& f) {
+        if (operation_pending_.test_and_set()) {
+            return TBD_ERR(SOUND_REGISTRY_PENDING_OPERATION);
+        }
+        operation_.type = WriteOperation::CALL;
+        return TBD_OK;
+    }
+
 protected:
     void populate_parameters(const sound_processor::ProcessData& data) {
         {%- for index, param in params -%}
@@ -66,9 +76,6 @@ protected:
     }
 
     void process_updates() {
-        if (operation_cleared_) {
-            return;
-        }
         switch (operation_.type) {
             case WriteOperation::SET_VALUE: {
                 if (const auto setter = value_setters_[operation_.parameter]; setter != nullptr) {
@@ -82,10 +89,16 @@ protected:
                 }
                 break;
             }
+            case WriteOperation::CALL: {
+                if (manipulator_) {
+                    manipulator_(*this);
+                }
+                break;
+            }
             default:
                 break;
         }
-        operation_cleared_ = true;
+        operation_pending_.clear();
     }
 
     {% if plugin.num_ints -%}
@@ -142,6 +155,7 @@ private:
     {%- endif  -%}
     {%- endfor %}
 
+    StateManipulator manipulator_;
     {{ plugin.full_name }} plugin_;
 };
 
