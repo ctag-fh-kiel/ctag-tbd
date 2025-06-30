@@ -71,7 +71,7 @@ def update_build_file_if_outdated(
         dest_file: Path | str,
         *,
         symlink=True
-) -> list[Path]:
+) -> Path:
     """ Copy or symlink source files to build directory.
 
     Target has to be in project build directory. If dest_file is relative path, it will be appended to build directory

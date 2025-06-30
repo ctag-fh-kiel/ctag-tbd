@@ -44,11 +44,11 @@ def prepare_tests():
         for path in component.include_dirs:
             test_env_block.append(f'{indent}-I{component_build_dir / path}')
 
-
         if component.tests_dir:
-            test_sources.extend(update_build_tree_if_outdated(component.tests_dir, unittest_path))
+            test_sources += update_build_tree_if_outdated(component.tests_dir, unittest_path)
 
-    test_sources = [source_file.relative_to(unittest_path) for source_file in test_sources]
+    absolute_test_build_path = get_build_path() / unittest_path
+    test_sources += [source.relative_to(absolute_test_build_path) for source in test_sources]
 
     all_tests_header_dir.mkdir(parents=True, exist_ok=True)
     with open(all_tests_header_dir / 'all_unittests.hpp', 'w') as f:

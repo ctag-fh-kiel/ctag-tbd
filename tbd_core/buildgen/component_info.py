@@ -198,7 +198,7 @@ def register_tbd_component(component: ComponentInfo):
 
 
 def get_tbd_components() -> OrderedDict[str, ComponentInfo]:
-    return OrderedDict((name, info) for name, info in get_tbd_domain())
+    return OrderedDict((name, info) for name, info in get_tbd_domain(COMPONENTS_DOMAIN).items())
 
 
 def new_tbd_component(
