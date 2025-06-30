@@ -25,7 +25,7 @@ struct Test1 : sound_processor::MonoSoundProcessor {
     struct {
         [[tbd(min=-12, max=22)]]
         uint_par g1_p1;
-        uint_par g1_p2;
+        ufloat_par g1_p2;
     } group1;
 
     struct {

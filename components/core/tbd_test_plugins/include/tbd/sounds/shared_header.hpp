@@ -14,9 +14,9 @@ struct SharedGroupType1 {
 struct SharedGroupType2 {
     trigger_par sg2_p1;
     trigger_par sg2_p2;
-    trigger_par sg2_p3;
+    float_par sg2_p3;
     trigger_par sg2_p4;
-    trigger_par sg2_p5;
+    uint_par sg2_p5;
 };
 
 }
