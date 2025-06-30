@@ -1,8 +1,10 @@
 import logging
+from enum import unique, StrEnum
 from pathlib import Path
 from dataclasses import dataclass, field
+from typing import OrderedDict
 
-from .registry import has_tbd_global, set_tbd_global
+from .registry import has_tbd_global, set_tbd_global, get_tbd_domain
 from .build_generator import get_target_platform, DefineValue
 from .files import get_tbd_source_root, get_generated_include_path, get_build_path
 
@@ -13,10 +15,19 @@ _LOGGER = logging.getLogger(__name__)
 COMPONENTS_DOMAIN = 'components'
 
 
+@unique
+class AutoReflection(StrEnum):
+    OFF = 'OFF'
+    HEADERS = 'HEADERS'
+    SOURCES = 'SOURCES'
+    ALL = 'ALL'
+
+
 @dataclass(frozen=True)
 class ComponentInfo:
     full_name: str  # including tbd prefix if present
     path: Path
+    reflect: AutoReflection
     needs_exceptions: bool = False
     defines: dict[str, str] = field(default_factory=dict)
     _includes: list[Path] = field(default_factory=list)
@@ -72,11 +83,11 @@ class ComponentInfo:
 
     @property
     def include_dirs(self) -> list[Path]:
-        return [dir.relative_to(self.path) for dir in self._includes]
+        return [_dir.relative_to(self.path) for _dir in self._includes]
     
     @property
     def sources(self) -> list[Path]:
-        return [dir.relative_to(self.path) for dir in self._sources]
+        return [_dir.relative_to(self.path) for _dir in self._sources]
 
     def add_define(self, key: str, value: DefineValue = 1) -> None:
         self.defines[key] = value
@@ -151,12 +162,18 @@ class ComponentInfo:
         return f'Component({self.full_name})'
 
     @staticmethod
-    def for_init_file(init_file: str, *, needs_exceptions=False) -> 'ComponentInfo':
+    def for_init_file(
+            init_file: str, *,
+            reflect: AutoReflection,
+            needs_exceptions,
+    ) -> 'ComponentInfo':
+
         module_path = Path(init_file).absolute().parent
         full_module_name = module_path.name 
         return ComponentInfo(
             full_name=full_module_name,
             path=module_path,
+            reflect=reflect,
             needs_exceptions=needs_exceptions,
         )
     
@@ -180,8 +197,17 @@ def register_tbd_component(component: ComponentInfo):
     set_tbd_global(name, component, domain=COMPONENTS_DOMAIN)
 
 
-def new_tbd_component(init_file: str, *,
-                      auto_include: bool = True, auto_sources: bool = True, needs_exceptions=False) -> ComponentInfo:
+def get_tbd_components() -> OrderedDict[str, ComponentInfo]:
+    return OrderedDict((name, info) for name, info in get_tbd_domain())
+
+
+def new_tbd_component(
+        init_file: str, *,
+        auto_include: bool = True,
+        auto_sources: bool = True,
+        auto_reflect: AutoReflection = AutoReflection.OFF,
+        needs_exceptions=False,
+) -> ComponentInfo:
     """ Convenience function to create a TBD component.
 
         arguments:
@@ -190,36 +216,37 @@ def new_tbd_component(init_file: str, *,
 
         :param bool auto_include: add default include paths
         :param bool auto_sources: add default source paths
+        :param bool auto_reflect: reflect all headers by default
         :param bool needs_exceptions: this module needs exceptions enabled (host platform only)
 
         :return ComponentInfo: the newly created component
     """
 
-    module = ComponentInfo.for_init_file(init_file, needs_exceptions=needs_exceptions)
+    component = ComponentInfo.for_init_file(init_file, reflect=auto_reflect, needs_exceptions=needs_exceptions)
 
-    _LOGGER.info(f'adding TBD module {module.name}: {module.path}')
+    _LOGGER.info(f'adding TBD component {component.name}: {component.path}')
 
     if auto_include:
-        include_dirs = module.get_default_include_dirs()
+        include_dirs = component.get_default_include_dirs()
         for include_dir in include_dirs:
-            module.add_include_dir(include_dir)
+            component.add_include_dir(include_dir)
             _LOGGER.info(f'additional include dir: {include_dir}')
 
     if auto_sources:
-        include_dirs = module.get_default_source_dirs()
+        include_dirs = component.get_default_source_dirs()
         for source_dir in include_dirs:
-            module.add_source_dir(source_dir)
+            component.add_source_dir(source_dir)
             _LOGGER.info(f'additional source dir: {source_dir}')
 
-    module.add_module_header()
+    component.add_module_header()
 
-    register_tbd_component(module)
-    return module
-
+    register_tbd_component(component)
+    return component
 
 
 __all__ = [
-    'COMPONENTS_DOMAIN',
+    'AutoReflection',
     'ComponentInfo',
+    'get_tbd_components',
     'new_tbd_component',
 ]

@@ -1,8 +1,7 @@
-import fnmatch
 import logging
-import os
 from pathlib import Path
-import shutil
+
+import tbd_core.utils as utils
 
 from .registry import generated_tbd_global
 from .build_generator import get_build_generator, add_include_dir
@@ -67,55 +66,55 @@ def get_messages_path() -> Path:
     return relative_to_build_dir
 
 
-def copy_file_if_outdated(source_file: Path | str, dest_file: Path | str, *, symlink=True) -> list[Path]:
-    source_file = Path(source_file)
-    build_path = get_build_path()
-    dest_file = build_path / dest_file
-    dest_file.parent.mkdir(parents=True, exist_ok=True)
-    if dest_file.exists() and  source_file.stat().st_mtime <= dest_file.stat().st_mtime:
-        return [dest_file]
-    _LOGGER.debug(f'copy to sources: {source_file}')
-    if symlink:
-        os.symlink(source_file, dest_file)
-    else:
-        shutil.copyfile(source_file, dest_file)
-
-    return [dest_file]
-
-
-def copy_tree_if_outdated(
-    source_dir: Path | str,
-    dest_dir: Path | str,
-    *,
-    patterns: list[str] | None = None,
-    flatten: bool = False,
-    symlink: bool = True,
-    ignore: list[str] | None = None,
+def update_build_file_if_outdated(
+        source_file: Path | str,
+        dest_file: Path | str,
+        *,
+        symlink=True
 ) -> list[Path]:
+    """ Copy or symlink source files to build directory.
 
-    if patterns is None:
-        patterns = ['*']
+    Target has to be in project build directory. If dest_file is relative path, it will be appended to build directory
+    path. See tbd_core.utils.update_file_if_outdated for details.
+    """
 
-    source_dir = Path(source_dir)
+    build_path = get_build_path()
+
+    dest_file = Path(dest_file)
+    dest_file = dest_file if dest_file.is_absolute() else build_path / dest_file
+    if not dest_file.is_relative_to(build_path):
+        raise RuntimeError(f'absolute build file paths have to be relative to build dir, got {dest_file}')
+
+    return utils.update_file_if_outdated(source_file, build_path, dest_file, symlink=symlink)
+
+
+def update_build_tree_if_outdated(
+        source_dir: Path | str,
+        dest_dir: Path | str,
+        *,
+        patterns: list[str] | None = None,
+        flatten: bool = False,
+        symlink: bool = True,
+        ignore: list[str] | None = None,
+) -> list[Path]:
+    """ Copy or symlink sources in path to build directory.
+
+    Target directory dest_dir has to be in project build directory. If dest_dir is relative path, it will be appended
+    to build directory path. See tbd_core.utils.update_tree_if_outdated for details.
+    """
+
+    build_path = get_build_path()
+
     dest_dir = Path(dest_dir)
+    dest_dir = dest_dir if dest_dir.is_absolute() else build_path / dest_dir
+    if not dest_dir.is_relative_to(build_path):
+        raise RuntimeError(f'absolute build dir paths have to be relative to build dir, got {dest_dir}')
 
-    retval = []
-    for pattern in patterns:
-        for source_file in source_dir.rglob(pattern):
-            if not source_file.is_file():
-                continue
-            if ignore and any(fnmatch.fnmatch(source_file.name, pattern) for pattern in ignore):
-                continue
-
-            relative_source_file = dest_dir / source_file.name if flatten else source_file.relative_to(source_dir)
-            dest_file = dest_dir / relative_source_file
-            if copy_file_if_outdated(source_file, dest_file, symlink=symlink):
-                retval.append(dest_file)
-
-    return retval
+    return utils.update_tree_if_outdated(source_dir, dest_dir,
+                                         patterns=patterns, flatten=flatten, symlink=symlink, ignore=ignore)
 
 
-def copy_batch(
+def batch_update_build_files_if_outdated(
         source_dir: Path | str,
         dest_dir: Path | str,
         files: list[Path | str],
@@ -123,35 +122,23 @@ def copy_batch(
         sub_dir: Path | str | None = None,
         flatten: bool = False,
         symlink: bool = True,
-        ignore: list[str] | None = None,
+        ignore: list[str] | None = None
 ) -> list[Path]:
+    """ Copy or symlink list of sources to build directory.
 
-    search_dir = Path(source_dir) / sub_dir if sub_dir else source_dir
+    Target directory dest_dir has to be in project build directory. If dest_dir is relative path, it will be appended
+    to build directory path. See tbd_core.utils.batch_update_files_if_outdated for details.
+    """
 
-    retval = []
-    for file in files:
-        source_path = Path(search_dir) / file
+    build_path = get_build_path()
 
-        source_path_str = str(file)
-        if '*' in source_path_str:
-            source_files = []
-            for source_file in search_dir.glob(source_path_str):
-                source_files.append(source_file)
-        else:
-            source_files = [source_path]
+    dest_dir = Path(dest_dir)
+    dest_dir = dest_dir if dest_dir.is_absolute() else build_path / dest_dir
+    if not dest_dir.is_relative_to(build_path):
+        raise RuntimeError(f'absolute build dir paths have to be relative to build dir, got {dest_dir}')
 
-        for source_file in source_files:
-            if not source_file.is_file():
-                _LOGGER.error(f'{source_file} is not a file')
-                continue
-            if ignore and any(fnmatch.fnmatch(source_file.name, pattern) for pattern in ignore):
-                continue
-            relative_source_file = dest_dir / source_file.name if flatten else source_file.relative_to(source_dir)
-            dest_file = dest_dir / relative_source_file
-            if copy_file_if_outdated(source_file, dest_file, symlink=symlink):
-                retval.append(dest_file)
-
-    return retval
+    return utils.batch_update_files_if_outdated(source_dir, dest_dir, files,
+                                                sub_dir=sub_dir, flatten=flatten, symlink=symlink, ignore=ignore)
 
 
 __all__ = [
@@ -164,7 +151,7 @@ __all__ = [
     'get_vendor_root', 
     'get_generated_sources_path', 
     'get_generated_include_path',
-    'copy_file_if_outdated',
-    'copy_tree_if_outdated',
-    'copy_batch',
+    'update_build_file_if_outdated',
+    'update_build_tree_if_outdated',
+    'batch_update_build_files_if_outdated'
 ]

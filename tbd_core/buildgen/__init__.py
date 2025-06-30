@@ -1,6 +1,5 @@
 from .build_generator import (
     DefineValue,
-    GenerationStages,
     BuildGenerator,
     set_build_generator,
     get_target_platform,
@@ -11,6 +10,8 @@ from .build_generator import (
 )
 from .component_info import *
 from .files import *
+from .generation_stages import *
 from .prepare_build import *
 from .prepare_tests import *
+from .reflection import *
 from .registry import *

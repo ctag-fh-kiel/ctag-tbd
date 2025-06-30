@@ -1,10 +1,13 @@
-from pathlib import Path
-
-from . import get_generated_include_path, get_messages_path
-from .files import get_components_build_path, get_build_path, copy_tree_if_outdated, get_tests_build_path
+from .files import (
+    get_components_build_path,
+    get_build_path,
+    update_build_tree_if_outdated,
+    get_tests_build_path,
+    get_generated_include_path,
+    get_messages_path,
+)
 from .build_generator import add_platformio_block
-from .component_info import COMPONENTS_DOMAIN, ComponentInfo
-from .registry import get_tbd_domain
+from .component_info import ComponentInfo, get_tbd_components
 
 
 def prepare_tests():
@@ -27,23 +30,23 @@ def prepare_tests():
     ]
     test_sources = []
 
-    for module in get_tbd_domain(COMPONENTS_DOMAIN).values():
-        if not isinstance(module, ComponentInfo):
-            raise ValueError(f'bad module type in TBD modules list {type(module)}')
+    for component in get_tbd_components().values():
+        if not isinstance(component, ComponentInfo):
+            raise ValueError(f'bad component type in TBD modules list {type(component)}')
 
-        if module.defines:
-            test_env_block.append(f'{indent}; set by {module.name}')
+        if component.defines:
+            test_env_block.append(f'{indent}; set by {component.name}')
 
-        for key, value in module.defines.items():
+        for key, value in component.defines.items():
             test_env_block.append(f'{indent}-D{key}={value}')
 
-        component_build_dir = get_components_build_path() / module.full_name
-        for path in module.include_dirs:
+        component_build_dir = get_components_build_path() / component.full_name
+        for path in component.include_dirs:
             test_env_block.append(f'{indent}-I{component_build_dir / path}')
 
 
-        if module.tests_dir:
-            test_sources.extend(copy_tree_if_outdated(module.tests_dir, unittest_path))
+        if component.tests_dir:
+            test_sources.extend(update_build_tree_if_outdated(component.tests_dir, unittest_path))
 
     test_sources = [source_file.relative_to(unittest_path) for source_file in test_sources]
 

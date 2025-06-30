@@ -1,53 +1,13 @@
 from abc import ABC, abstractmethod
-from enum import unique, Enum
 from pathlib import Path
 from typing import Callable, Awaitable
 
-from .registry import set_tbd_global, has_tbd_global, get_tbd_global
-
+from .generation_stages import GenerationStages
+from .registry import set_tbd_global, has_tbd_global, get_tbd_global, _set_generation_stage
 
 BUILD_GENERATOR_GLOBAL = 'build_generator'
 
 DefineValue = bool | float | int | str
-
-
-@unique
-class GenerationStages(Enum):
-    """ Priority of tbd build setup stages.
-
-        Stages with higher priority run first with default value `0.0`.
-
-        TBD does a lot of processing and code generation. This processing needs to be done in a defined order, since
-        the output of one processing stage may be required by a subsequent stage. For this purpose esphome allows
-        build jobs to be assigned priorities. The default priority assigned to by esphome for calling `to_code` of
-        each component is `0.0`.
-
-        The priority represent the following stages:
-
-        `DEFAULT`: Components registering and config stage.
-            Priority of `to_code` call if not specified. Normal components `to_code` module level function
-            evaluates the component config if present and registers the component, including sources, include paths
-            and defines.
-
-        `COMPONENT`: Component registry build setup stage.
-            Component registry gets evaluated and all code is copied or symlinked to build dir. Additionally, the
-            PlatformIO config file is populated with defines, include paths and libraries.
-
-        'REFLECTION': Reflection parsing and metadata generation stage.
-            Functionality like the plugin registry, parse C++ code and generate additional wrapper or metadata files.
-
-        'API': Api registry stage.
-            With all other code generation and the build set up, the API registry will parse selected files for API
-            endpoint declarations and read DTO definitions for endpoint and DTO code generation.
-    """
-
-    DEFAULT    =  0.0
-    COMPONENTS = -10.0
-    TESTS      = -20.0
-    REFLECTION = -30.0
-    ERRORS     = -40.0
-    API        = -50.0
-    FINALIZE   = -60.0
 
 
 GenerationJobFunction = Callable[[], None]
@@ -169,7 +129,11 @@ def add_generation_job(job: GenerationJob):
 
 def build_job_with_priority(priority: GenerationStages) -> Callable[[GenerationJobFunction], GenerationJob]:
     def decorator(func: GenerationJobFunction) -> GenerationJob:
-        job = get_build_generator().function_to_job(func)
+        def stage_wrapper() -> None:
+            _set_generation_stage(priority)
+            func()
+
+        job = get_build_generator().function_to_job(stage_wrapper)
         job.priority = priority.value
         return job
 
@@ -178,7 +142,6 @@ def build_job_with_priority(priority: GenerationStages) -> Callable[[GenerationJ
 
 __all__ = [
     'DefineValue',
-    'GenerationStages',
     'GenerationJob',
     'GenerationJobFunction',
     'BuildGenerator',

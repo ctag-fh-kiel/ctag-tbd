@@ -1,6 +1,6 @@
 import cxxheaderparser.lexer as lexer
 
-from .attributes import Attribute, Attributes, AttributeArgTypes
+from tbd_core.reflection.reflectables import Attribute, Attributes, AttributeArgTypes
 
 Token = lexer.LexToken
 Tokens = list[lexer.LexToken]

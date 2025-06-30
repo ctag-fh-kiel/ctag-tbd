@@ -3,8 +3,9 @@ import logging
 import cxxheaderparser.lexer as lexer
 import cxxheaderparser.simple as cpplib
 
+from tbd_core.reflection.reflectables.attributes import Attributes
+
 from .attribute_parser import parse_attributes
-from .attributes import Attribute, Attributes
 
 
 _LOGGER = logging.getLogger(__file__)
@@ -24,6 +25,10 @@ class Parser(cpplib.CxxParser):
             if tok.type == "DBL_LBRACKET":
                 tokens = self._consume_balanced_tokens(tok)
                 self.visitor.on_attributes(tokens[1:-1])
+            elif tok.type == "alignas":
+                next_tok = self._next_token_must_be("(")
+                tokens = self._consume_balanced_tokens(next_tok)
+                # attrs.append(AlignasAttribute(tokens))
             else:
                 self.lex.return_token(tok)
                 break
@@ -164,104 +169,6 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
             return []
 
         return [attr for tokens in self._attrs for attr in parse_attributes(tokens)]
-
-    @staticmethod
-    def _parse_attr(tokens) -> Attribute | None:
-        args = tokens
-        name_segments = []
-
-        while True:
-            if not args:
-                raise ValueError('expected attribute name')
-
-            name, *args = args
-            if name.type != 'NAME':
-                raise ValueError('expected attribute name segment')
-            # ignore non tbd attributes
-            if not name_segments and name.value != 'tbd':
-                return None
-
-            name_segments.append(name.value)
-            if not args:
-                return Attribute(name_segments=name_segments, params={})
-
-            delim, *args = args
-            if delim.type == '(':
-                break
-            elif delim.type == 'DBL_COLON':
-                continue
-            else:
-                raise ValueError('expected "(" or "::" in attribute name')
-
-        if not args:
-            raise ValueError('missing closing ")" for arg list')
-
-        *args, last = args
-        if last.type != ')':
-            raise ValueError('encountered invalid attribute')
-
-        params = {}
-        while len(args) > 0:
-            # get argument name
-            key, *args = args
-            if key.type != 'NAME':
-                raise ValueError(f'expected argument name, got {key}')
-            key = key.value
-
-            # last arg is a flag
-            if not args:
-                params[key] = True
-                break
-
-            op, *args = args
-            if op.type == ',':
-                params[key] = True
-                continue
-
-            # expecting key value pair
-            if op.type != '=':
-                raise ValueError(f'expected "=" got {op.value}')
-
-            if not args:
-                raise ValueError(f'unexpected end of argument, missing value')
-
-            value, *args = args
-
-            sign = 1
-            if value.type == '-':
-                value, *args = args
-                sign = -1
-
-            if value.type == 'STRING_LITERAL':
-                value = value.value[1:-1]
-                params[key] = value
-            elif value.type == 'INT_CONST_DEC':
-                params[key] = sign * int(value.value)
-            elif value.type == "INT_CONST_HEX":
-                params[key] = sign * int(value.value)
-            elif value.type == "INT_CONST_BIN":
-                params[key] = sign * int(value.value)
-            elif value.type == "INT_CONST_OCT":
-                params[key] = sign * int(value.value)
-            elif value.type == "FLOAT_CONST":
-                params[key] = sign * float(value.value)
-            elif value.type == "HEX_FLOAT_CONST":
-                params[key] = sign * float(value.value)
-            elif value.type == "true":
-                params[key] = True
-            elif value.type == "false":
-                params[key] = True
-            else:
-                raise ValueError(f'unsopported literal type {value.type}')
-
-            if not args:
-                break
-
-            comma, *args = args
-            if comma.type != ',':
-                raise ValueError('expected comma after key-value pair')
-
-        return Attribute(name_segments=name_segments, params=params)
 
     def _reset_attrs(self) -> None:
         self._attrs = []

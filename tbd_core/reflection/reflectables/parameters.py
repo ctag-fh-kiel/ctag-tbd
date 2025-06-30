@@ -79,6 +79,7 @@ __all__ = [
     'PARAM_TYPES',
     'MappableParamType',
     'MAPPABLE_PARAM_TYPES',
+    'PARAM_TYPE_FROM_MAPPABLE',
     'ALL_PARAM_TYPES',
     'PARAM_TO_PROTO',
 ]
