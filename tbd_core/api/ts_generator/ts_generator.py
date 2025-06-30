@@ -1,7 +1,7 @@
 from pathlib import Path
 
+import tbd_core.buildgen as tbb
 from tbd_core.api import MessagePayload, ParamPayload, Api, jilter, Endpoint, FiltersBase
-import tbd_core.buildgen as tbd
 from tbd_core.api.api_generator_base import ApiGeneratorBase
 
 
@@ -57,8 +57,8 @@ class TSGenerator(ApiGeneratorBase):
 
     def write_client(self, out_dir: Path, messages_file: Path):
         # symlinks will result in bad esbuild module lookups
-        tbd.copy_tree_if_outdated(self._templates, out_dir, symlink=False, ignore=['*.j2'])
-        tbd.copy_file_if_outdated(messages_file, out_dir / TYPESCRIPT_SRC_DIR / messages_file.name, symlink=False)
+        tbb.update_build_tree_if_outdated(self._templates, out_dir, symlink=False, ignore=['*.j2'])
+        tbb.update_build_file_if_outdated(messages_file, out_dir / TYPESCRIPT_SRC_DIR / messages_file.name, symlink=False)
 
         self._write_typescript_client_class(out_dir)
 

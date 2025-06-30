@@ -5,8 +5,7 @@
 #include <tbd/api/api_all_events.hpp>
 #include <tbd/logging.hpp>
 
-#include <pb_decode.h>
-#include <api_types.pb.h>
+#include <api/api_types.pb.h>
 
 
 namespace tbd::api::impl {

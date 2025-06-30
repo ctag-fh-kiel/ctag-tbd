@@ -2,10 +2,12 @@ from pathlib import Path
 import proto_schema_parser.ast as proto
 import proto_schema_parser.generator as protog
 
-from tbd_core.api import Endpoint, jilter, ApiGeneratorBase, Event, Api, generate_protos, FiltersBase
+import tbd_core.buildgen as tbb
+from tbd_core.api import Endpoint, jilter, ApiGeneratorBase, Event, Api, FiltersBase
 from tbd_core.api.idc_interfaces import IDCHandler
 
 import tbd_core.buildgen as tbd
+from tbd_core.generators import generate_protos
 
 
 class CppFilters(FiltersBase):
@@ -126,7 +128,7 @@ class CppGenerator(ApiGeneratorBase):
 
     def write_arduino_client(self, out_dir: Path):
         client_component_dir = tbd.get_tbd_components_root() / 'api' / 'tbd_api' / 'clients' / 'arduino'
-        tbd.copy_batch(
+        tbb.batch_update_build_files_if_outdated(
             client_component_dir,
             out_dir,
             [
@@ -138,7 +140,7 @@ class CppGenerator(ApiGeneratorBase):
             ],
             sub_dir='include/tbd'
         )
-        tbd.copy_batch(
+        tbb.batch_update_build_files_if_outdated(
             client_component_dir,
             out_dir,
             [
@@ -148,7 +150,7 @@ class CppGenerator(ApiGeneratorBase):
             ignore=['*.pb.h', '*.pb.c'],
         )
 
-        tbd.copy_batch(
+        tbb.batch_update_build_files_if_outdated(
             tbd.get_tbd_components_root() / 'api' / 'tbd_api',
             out_dir,
             [
@@ -160,7 +162,7 @@ class CppGenerator(ApiGeneratorBase):
             ],
             sub_dir='include/tbd/api'
         )
-        tbd.copy_batch(
+        tbb.batch_update_build_files_if_outdated(
             tbd.get_tbd_source_root() / 'tbd_module',
             out_dir,
             [

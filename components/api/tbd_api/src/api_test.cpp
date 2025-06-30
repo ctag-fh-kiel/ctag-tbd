@@ -2,7 +2,7 @@
 #include <tbd/errors.hpp>
 #include <tbd/logging.hpp>
 
-#include <api_types.pb.h>
+#include <api/api_types.pb.h>
 
 
 namespace tbd {

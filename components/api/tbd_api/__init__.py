@@ -1,5 +1,8 @@
 from esphome.components.tbd_module.python_dependencies import python_dependencies
 
+from tbd_core.buildgen import get_reflection_registry
+from tbd_core.buildgen.component_info import AutoReflection
+
 python_dependencies(('proto_schema_parser', 'proto-schema-parser'), 'pybind11')
 
 from pathlib import Path
@@ -30,13 +33,13 @@ CONFIG_SCHEMA = cv.Schema({
 
 @tbd.generated_tbd_global(APIS_GLOBAL)
 def get_api_registry() -> ApiRegistry:
-    return ApiRegistry()
+    return ApiRegistry(get_reflection_registry())
 
 
 def register_actions_for_module(*source_files: Path | str, base_path: Path | str | None = None) -> None:
     """ Call this in module loading code! """
 
-    events = find_events(*source_files, base_path=base_path)
+    events = find_events(*source_files, base_path=base_path, collector=get_reflection_registry())
 
     for event in events:
         action_name = f'tbd_api.{event.name}'
@@ -52,11 +55,11 @@ def register_actions_for_module(*source_files: Path | str, base_path: Path | str
 def _register_actions():
     base_path = Path(__file__).parent / 'src'
     register_actions_for_module('base_endpoints.cpp', 'api_test.cpp', base_path=base_path)
-_register_actions()
+# _register_actions()
 
 
 async def to_code(config):
-    component = tbd.new_tbd_component(__file__)
+    component = tbd.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)
     cg.add_library('nanopb/Nanopb', '^0.4.91')
 
     component.add_define('TBD_API_MAX_PAYLOAD_SIZE', config[CONF_MAX_PAYLOAD_SIZE])
@@ -65,8 +68,8 @@ async def to_code(config):
     api_registry = get_api_registry()
     api_registry.add_message_types(component.path / 'src' / 'api_base.proto')
     api_registry.add_message_types(component.path / 'src' / 'api_test.proto')
-    api_registry.add_source(component.path / 'src' / 'base_endpoints.cpp')
-    api_registry.add_source(component.path / 'src' / 'api_test.cpp')
+    # api_registry.add_source(component.path / 'src' / 'base_endpoints.cpp')
+    # api_registry.add_source(component.path / 'src' / 'api_test.cpp')
 
     tbd.add_generation_job(finalize_api_registry)
 

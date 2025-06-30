@@ -2,11 +2,12 @@
 
 #include <tbd/api/packet.hpp>
 #include <tbd/api/messages.hpp>
+#include <tbd/errors.hpp>
 
 
 namespace tbd::api {
 
-using EndpointCallback = uint32_t(*)(const api::Packet&, uint8_t*, size_t&);
+using EndpointCallback = Error(*)(const api::Packet&, uint8_t*, size_t&);
 
 struct Endpoint {
     const char* path;

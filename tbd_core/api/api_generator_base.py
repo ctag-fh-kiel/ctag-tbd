@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path
 from typing import Final
 
@@ -62,18 +61,6 @@ def arg_dict(idc: IDCHandler, *,
         arg_list.append(f'{output_arg_name}{key_sep}{output_arg_name} = {output_arg_name}')
 
     return arg_list
-
-
-def generate_protos(out_dir: Path | str, input_dir: Path | str, input_files: list[Path | str]) -> None:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    import tbd_core.buildgen.build_deps as build_deps
-    build_deps.python_dependencies('nanopb')
-    subprocess.run([
-        'python', '-m', 'nanopb.generator.nanopb_generator',
-        '--output-dir', out_dir,
-        '--proto-path', input_dir,
-        *input_files,
-    ])
 
 
 class FiltersBase:
@@ -152,7 +139,6 @@ __all__ = [
     'forward_args',
     'apply_args',
     'arg_dict',
-    'generate_protos',
     'ApiGeneratorBase',
     'FiltersBase',
 ]

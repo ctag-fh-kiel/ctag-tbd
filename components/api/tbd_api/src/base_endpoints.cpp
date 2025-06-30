@@ -2,7 +2,7 @@
 #include <tbd/api/api_all_endpoints.hpp>
 #include <tbd/api/api_all_events.hpp>
 
-#include <api_types.pb.h>
+#include <api/api_types.pb.h>
 #include <cinttypes>
 
 #include <tbd/errors.hpp>

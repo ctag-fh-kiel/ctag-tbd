@@ -5,7 +5,7 @@ import abc
 from typing import Final, OrderedDict
 import proto_schema_parser.ast as proto
 
-import tbd_core.reflection as tbr
+import tbd_core.reflection.reflectables as rfs
 
 #### defines ####
 
@@ -103,7 +103,7 @@ class TransmittableParam:
         encodable/decodable message types (descended from Transcodable).
     """
 
-    def __init__(self, param_type: tbr.ParamType):
+    def __init__(self, param_type: rfs.ParamType):
         self._param_type: Final = param_type
 
     @property
@@ -112,11 +112,11 @@ class TransmittableParam:
 
     @property
     def proto_type(self) -> str:
-        return tbr.PARAM_TO_PROTO[self._param_type]
+        return rfs.PARAM_TO_PROTO[self._param_type]
 
     @property
     def proto_type_name(self) -> str:
-        return tbr.PARAM_TO_PROTO[self._param_type]
+        return rfs.PARAM_TO_PROTO[self._param_type]
 
     @property
     def needs_generating(self) -> bool:
@@ -129,7 +129,7 @@ class TransmittableParam:
     # specific methods
 
     @property
-    def param_type(self) -> tbr.ParamType:
+    def param_type(self) -> rfs.ParamType:
         return self._param_type
 
 
@@ -212,7 +212,7 @@ class ParamPayload(TransmittableParam, PayloadTag):
     @staticmethod
     def param_messages() -> list['ParamPayload']:
         """ Return list of payloads for every TBD parameter type."""
-        return [ParamPayload(param_type=param_type) for param_type in tbr.ParamType]
+        return [ParamPayload(param_type=param_type) for param_type in rfs.ParamType]
 
 Payload = PayloadTag
 
@@ -265,12 +265,12 @@ class ParamRequest(SingleArgRequest):
 
         Special case of single argument lists, for TBD parameter types. Intended for transport optimization.
     """
-    def __init__(self, proto_type: proto.Message, param_type: tbr.ParamType):
+    def __init__(self, proto_type: proto.Message, param_type: rfs.ParamType):
         super().__init__(proto_type, None)
         self._param_type = param_type
 
     @property
-    def param_type(self) -> tbr.ParamType:
+    def param_type(self) -> rfs.ParamType:
         return self._param_type
 
 
@@ -354,7 +354,7 @@ class ResponseBase(TransmittableStruct, Transcodable):
 
 
 class ParamResponse(ResponseBase):
-    def __init__(self, proto_type: proto.Message, param_type: tbr.ParamType):
+    def __init__(self, proto_type: proto.Message, param_type: rfs.ParamType):
         super().__init__(proto_type, None)
         self._param_type = param_type
 
@@ -363,7 +363,7 @@ class ParamResponse(ResponseBase):
         return self._param_type.value
 
     @property
-    def param_type(self) -> tbr.ParamType:
+    def param_type(self) -> rfs.ParamType:
         return self.param_type
 
     @property

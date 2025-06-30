@@ -2,11 +2,12 @@
 
 #include <tbd/api/packet.hpp>
 #include <tbd/api/messages.hpp>
+#include <tbd/errors.hpp>
 
 
 namespace tbd::api {
 
-using EventCallback = uint32_t(*)(const api::Packet&);
+using EventCallback = Error(*)(const api::Packet&);
 
 struct Event {
     const char* path;

@@ -1,19 +1,19 @@
 from enum import Enum, unique
 from dataclasses import dataclass
 from pathlib import Path
-from typing import OrderedDict, Literal, get_args
+from typing import OrderedDict
 from zlib import crc32
 
 import cxxheaderparser.types as cpptypes
 
-import tbd_core.reflection as tbr
-from tbd_core.reflection import Attribute
+from tbd_core.reflection.db import FunctionPtr, ArgumentPtr
+from tbd_core.reflection.reflectables import Attribute, ScopePath, ArgumentCategory
 
 # expected return types
-ENDPOINT_RETURN_TYPES = Literal['Error']
-EVENT_RETURN_TYPES = Literal['void']
-RESPONDER_RETURN_TYPES = Literal['void', 'Error']
-SINK_RETURN_TYPES = Literal['void']
+ENDPOINT_RETURN_TYPES = [None, 'Error']
+EVENT_RETURN_TYPES = [None]
+RESPONDER_RETURN_TYPES = [None, 'Error']
+SINK_RETURN_TYPES = [None]
 
 EVENT_PARAM_NAME = 'event'
 
@@ -26,7 +26,7 @@ SINK_ATTR = 'tbd::sink'
 
 @dataclass
 class IDCBase:
-    func: tbr.FunctionDescription
+    func: FunctionPtr
 
     @property
     def name(self) -> str:
@@ -39,13 +39,13 @@ class IDCBase:
         return self.func.full_name
 
     @property
-    def scope(self) -> tbr.ScopeDescription:
+    def scope(self) -> ScopePath:
         """ Full namespace path to c++ function. """
         return self.func.scope
 
     @property
     def return_type(self) -> str:
-        return self.func.return_type
+        return str(self.func.return_type)
 
     @property
     def description(self) -> str:
@@ -182,15 +182,15 @@ class Responder(IDCHandler):
         return self.payload_type is not None
 
 
-def get_arg_type(arg: cpptypes.Parameter) -> tuple[bool, str]:
-    arg_type = arg.type
-    if not isinstance(arg_type, cpptypes.Reference):
-        raise ValueError('handler arguments have to be references')
-    arg_type = arg_type.ref_to
-    return arg_type.const, arg_type.typename.format()
+# def get_arg_type(arg: cpptypes.Parameter) -> tuple[bool, str]:
+#     arg_type = arg.type
+#     if not isinstance(arg_type, cpptypes.Reference):
+#         raise ValueError('handler arguments have to be references')
+#     arg_type = arg_type.ref_to
+#     return arg_type.const, arg_type.typename.format()
 
 
-def get_idc_args(func_args: list[cpptypes.Parameter]) -> tuple[OrderedDict[str, str] | None, str | None]:
+def get_idc_args(func_args: list[ArgumentPtr]) -> tuple[OrderedDict[str, str] | None, str | None]:
     if not func_args:
         return None, None
 
@@ -199,23 +199,23 @@ def get_idc_args(func_args: list[cpptypes.Parameter]) -> tuple[OrderedDict[str, 
 
     # process input args
     for func_arg in func_args:
-        is_const, arg_type = get_arg_type(func_arg)
-        if not is_const:
-            raise ValueError('output argument of handler has to be non-const const reference')
-        args[func_arg.name] = arg_type
+        if func_arg.category != ArgumentCategory.INPUT:
+            raise ValueError('input argument of IDC has to be const reference')
+        args[func_arg.arg_name] = str(func_arg.type)
 
     # process last arg as either input or
     output = None
-    is_const, arg_type = get_arg_type(last_func_arg)
-    if is_const:
-        args[last_func_arg.name] = arg_type
+    if last_func_arg.category == ArgumentCategory.INPUT:
+        args[last_func_arg.arg_name] = str(last_func_arg.type)
+    elif last_func_arg.category == ArgumentCategory.OUTPUT:
+        output = str(last_func_arg.type)
     else:
-        output = arg_type
+        raise ValueError('last function argument has to be reference type')
 
     return args, output
 
 
-def idc_from_function(func: tbr.FunctionDescription) -> Endpoint | Event | Responder | EventSink | None:
+def idc_from_function(func: FunctionPtr) -> Endpoint | Event | Responder | EventSink | None:
     handler_attrs = [attr for attr in func.attrs if attr.name in [ENDPOINT_ATTR, EVENT_ATTR, RESPONDER_ATTR, SINK_ATTR]]
     if len(handler_attrs) == 0:
         return None
@@ -234,7 +234,7 @@ def idc_from_function(func: tbr.FunctionDescription) -> Endpoint | Event | Respo
     return None
 
 
-def endpoint_from_function(func: tbr.FunctionDescription, attr: Attribute) -> Endpoint:
+def endpoint_from_function(func: FunctionPtr, attr: Attribute) -> Endpoint:
     """ Convert compatible C++ function signature to RPC description.
     
         Functions with `tbd::endpoint` attributes will be considered endpoints:
@@ -263,9 +263,8 @@ def endpoint_from_function(func: tbr.FunctionDescription, attr: Attribute) -> En
         :param func: parsed c++ function signature
         :return: enpoint description or `None` if function has no endpoint attribute
     """
-    valid_return_types = get_args(ENDPOINT_RETURN_TYPES)
-    if func.return_type not in valid_return_types:
-        raise ValueError(f'endpoint functions have to return {valid_return_types} type')
+    if func.return_type not in ENDPOINT_RETURN_TYPES:
+        raise ValueError(f'endpoint functions have to return {ENDPOINT_RETURN_TYPES} type')
 
     args, output = get_idc_args(func.arguments)
     return Endpoint(
@@ -275,10 +274,9 @@ def endpoint_from_function(func: tbr.FunctionDescription, attr: Attribute) -> En
     )
 
 
-def event_from_function(func: tbr.FunctionDescription, attr: Attribute) -> Event:
-    valid_return_types = get_args(EVENT_RETURN_TYPES)
-    if func.return_type not in valid_return_types:
-        raise ValueError(f'event triggers declarations have to return {valid_return_types} type')
+def event_from_function(func: FunctionPtr, attr: Attribute) -> Event:
+    if func.return_type not in EVENT_RETURN_TYPES:
+        raise ValueError(f'event triggers declarations have to return {EVENT_RETURN_TYPES} type')
 
     args, output = get_idc_args(func.arguments)
 
@@ -296,10 +294,9 @@ def event_from_function(func: tbr.FunctionDescription, attr: Attribute) -> Event
     )
 
 
-def responder_from_function(func: tbr.FunctionDescription, attr: Attribute) -> Responder:
-    valid_return_types = get_args(RESPONDER_RETURN_TYPES)
-    if func.return_type not in valid_return_types:
-        raise ValueError(f'event responder functions have to return {valid_return_types} type')
+def responder_from_function(func: FunctionPtr, attr: Attribute) -> Responder:
+    if func.return_type not in RESPONDER_RETURN_TYPES:
+        raise ValueError(f'event responder functions have to return {RESPONDER_RETURN_TYPES} type')
 
     args, output = get_idc_args(func.arguments)
 
@@ -317,10 +314,9 @@ def responder_from_function(func: tbr.FunctionDescription, attr: Attribute) -> R
     )
 
 
-def sink_from_function(func: tbr.FunctionDescription, attr: Attribute) -> EventSink:
-    valid_return_types = get_args(SINK_RETURN_TYPES)
-    if func.return_type not in valid_return_types:
-        raise ValueError(f'sink functions have to return {valid_return_types} type')
+def sink_from_function(func: FunctionPtr, attr: Attribute) -> EventSink:
+    if func.return_type not in SINK_RETURN_TYPES:
+        raise ValueError(f'sink functions have to return {SINK_RETURN_TYPES} type')
 
     if len(func.arguments) != 2:
         raise ValueError('sink function must have two arguments')

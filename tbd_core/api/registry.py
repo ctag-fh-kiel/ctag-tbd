@@ -1,12 +1,10 @@
 from pathlib import Path
 import logging
 from collections import OrderedDict
-
+from typing import Final
 
 import proto_schema_parser.parser as protop
 import proto_schema_parser.ast as proto
-
-import tbd_core.reflection as tbr
 
 from .dtos import (
     ParamPayload,
@@ -22,6 +20,8 @@ from .dtos import (
 from .idc_interfaces import Endpoint, idc_from_function, Event, Responder, EventSink
 from .base_endpoints import BaseEndpoints
 from .api import Api
+from tbd_core.reflection.db import FunctionPtr
+from tbd_core.reflection.registry import ReflectableFinder
 
 _LOGGER = logging.getLogger(__file__)
 
@@ -32,8 +32,8 @@ def guaranteed_payload_types() -> OrderedDict[str, Payload]:
 
 
 class ApiRegistry:
-    def __init__(self):
-        self._collector = tbr.ReflectableFinder()
+    def __init__(self, collector: ReflectableFinder):
+        self._collector: Final[ReflectableFinder] = collector
 
         self._base_endpoints: list[Endpoint | None] = [None] * BaseEndpoints.num_reserved_ids()
         self._endpoints: list[Endpoint] = []
@@ -48,6 +48,9 @@ class ApiRegistry:
         self._event_sinks: list[EventSink] = []
 
     def get_api(self) -> Api:
+        for func in self._collector.get_reflectables().functions():
+            self._add_idc(func)
+
         shared_requests = OrderedDict((request.name, request) for request in self._shared_request_types.values())
         endpoint_requests = OrderedDict((request.name, request) for request in self._endpoint_request_types.values())
         responses = OrderedDict((response.name, response) for response in self._response_types.values())
@@ -82,21 +85,21 @@ class ApiRegistry:
         for message in messages:
             self._add_message(dto_from_message(message, proto_path))
 
-    def add_source(self, source: Path | str) -> None:
-        """ Find all endpoints in C++ file. 
-        
-            File can either be source or header file. 
-
-            :note: No public header for endpoints is required, so they can be kept hidden from the rest of the firmware.
-        """
-
-        source = Path(source)
-        if not source.exists():
-            raise ValueError(f'endpoint source {source} does not exist')
-
-        added = self._collector.add_from_file(source)
-        for func in added.func_list:
-            self._add_idc(func)
+    # def add_source(self, source: Path | str) -> None:
+    #     """ Find all endpoints in C++ file.
+    #
+    #         File can either be source or header file.
+    #
+    #         :note: No public header for endpoints is required, so they can be kept hidden from the rest of the firmware.
+    #     """
+    #
+    #     source = Path(source)
+    #     if not source.exists():
+    #         raise ValueError(f'endpoint source {source} does not exist')
+    #
+    #     added = self._collector.add_from_file(source)
+    #     for func in added.functions():
+    #         self._add_idc(func)
 
     # private
 
@@ -131,7 +134,7 @@ class ApiRegistry:
             case _:
                 raise ValueError(f'can not add request class {type(dto)}')
 
-    def _add_idc(self, func: tbr.FunctionDescription) -> None:
+    def _add_idc(self, func: FunctionPtr) -> None:
         if not (idc := idc_from_function(func)):
             return
 

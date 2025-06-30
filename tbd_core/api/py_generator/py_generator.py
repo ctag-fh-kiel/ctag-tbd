@@ -1,8 +1,8 @@
 import subprocess
 from pathlib import Path
 
+import tbd_core.buildgen as tbb
 from tbd_core.api import Api, Endpoint, ApiGeneratorBase, jilter, MessagePayload, ParamPayload, Event, FiltersBase
-import tbd_core.buildgen as tbd
 from tbd_core.api.idc_interfaces import IDCHandler
 
 
@@ -59,12 +59,12 @@ class PyGenerator(ApiGeneratorBase):
         out_module_dir.mkdir(exist_ok=True, parents=True)
 
         srcs_path = Path(__file__).parent.parent
-        tbd.copy_tree_if_outdated(
+        tbb.update_build_tree_if_outdated(
             srcs_path / MODULE_NAME, out_module_dir,
             patterns=['*.py'], ignore=['api_types_pb2.py', 'tbd_rpc.py', 'tbd_event.py']
         )
-        tbd.copy_file_if_outdated(srcs_path / BASE_ENDPOINTS_FILE, out_module_dir / BASE_ENDPOINTS_FILE)
-        tbd.copy_file_if_outdated(self._templates / PROJECT_FILE, out_dir / PROJECT_FILE)
+        tbb.update_build_file_if_outdated(srcs_path / BASE_ENDPOINTS_FILE, out_module_dir / BASE_ENDPOINTS_FILE)
+        tbb.update_build_file_if_outdated(self._templates / PROJECT_FILE, out_dir / PROJECT_FILE)
 
         self._generate_protobuf(out_module_dir, messages_file)
         self._write_rpc_class(out_module_dir)
