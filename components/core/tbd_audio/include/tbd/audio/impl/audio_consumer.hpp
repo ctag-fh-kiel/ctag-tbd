@@ -114,7 +114,7 @@ Error AudioConsumer::startup() {
 
     TBD_LOGI(tag, "initialized plugin audio worker");
 
-    return 0;
+    return TBD_OK;
 }
 
 inline void AudioConsumer::apply_bandwidth_filter(float* audio_slice) {
