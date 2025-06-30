@@ -42,6 +42,11 @@ def errors_job():
     collect_errors()
 
 
+@build_job_with_priority(GenerationStages.REFLECTION)
+def auto_reflection_job():
+    auto_reflect_component()
+
+
 @build_job_with_priority(GenerationStages.COMPONENTS)
 def prepare_build_job():
     prepare_build()
@@ -55,6 +60,7 @@ def finalize_build_job():
 def to_code(config):
     new_tbd_component(__file__)
 
+    add_generation_job(auto_reflection_job)
     add_generation_job(prepare_build_job)
     add_generation_job(finalize_build_job)
     add_generation_job(errors_job)
