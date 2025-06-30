@@ -42,6 +42,8 @@
 
 namespace tbd {
 
+using TypeID = uint32_t;
+
 // parameter identification type aliases //
 
 // non mappable

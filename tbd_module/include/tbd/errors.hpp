@@ -1,17 +1,7 @@
 #pragma once
 
-#include <cstddef>
-#include <cinttypes>
+#include <tbd/parameter_types.hpp>
 
-namespace tbd { using Error = uint32_t; }
-
-namespace tbd::errors {
-
-size_t get_num_errors();
-const char* get_error_name(Error err);
-const char* get_error_message(Error err);
-
-}
 
 #define TBD_OK ::tbd::errors::SUCCESS
 
@@ -37,22 +27,41 @@ const char* get_error_message(Error err);
 namespace tbd::errors {
 
 enum Errors {
-    SUCCESS = 0,
-    FAILURE = 1,
+    SUCCESS    = 0,
+    FAILURE    = 1,
+    NUM_ERRORS = 2,
 };
 
 inline size_t get_num_errors() {
-    return 2;
+    return NUM_ERRORS;
 }
 
-inline const char* get_error_name(Error err) {
+inline const char* get_error_name(const Errors err) {
     return "FAILURE";
 }
 
-inline const char* get_error_message(Error err) {
+inline const char* get_error_message(const Errors err) {
     return "unknown error";
+}
+
+inline Errors err_from_int(const uint_par err) {
+    return err == SUCCESS ? SUCCESS : FAILURE;
 }
 
 }
 
 #endif
+
+namespace tbd { using Error = errors::Errors; }
+
+namespace tbd::errors {
+
+inline const char* get_error_name(const uint_par err) {
+    return get_error_name(err_from_int(err));
+}
+
+inline const char* get_error_message(const uint_par err) {
+    return get_error_message(err_from_int(err));
+}
+
+}

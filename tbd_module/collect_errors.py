@@ -4,9 +4,16 @@ from collections import OrderedDict
 import re
 import logging
 
-from tbd_core.buildgen import get_generated_sources_path, ComponentInfo, get_tbd_domain, COMPONENTS_DOMAIN, add_define, \
-    get_build_path, get_generated_include_path
-from tbd_core.buildgen.prepare_build import SOURCE_PATTERNS
+import tbd_core.utils as utils
+
+from tbd_core.buildgen import (
+    get_generated_sources_path,
+    ComponentInfo,
+    add_define,
+    get_build_path,
+    get_generated_include_path,
+    get_tbd_components
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,7 +69,7 @@ def collect_errors_for_file(source_file: Path):
 
 
 def collect_errors_for_dir(source_dir: Path):
-    for pattern in SOURCE_PATTERNS:
+    for pattern in utils.cpp_patterns():
         for source_file in source_dir.rglob(pattern):
             collect_errors_for_file(source_file)
 
@@ -80,7 +87,7 @@ def collect_errors_for_component(component: ComponentInfo):
 
 
 def collect_errors():
-    for component in get_tbd_domain(COMPONENTS_DOMAIN).values():
+    for component in get_tbd_components().values():
         if not isinstance(component, ComponentInfo):
             raise ValueError(f'bad module type in TBD modules list {type(component)}')
         collect_errors_for_component(component)
