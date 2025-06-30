@@ -47,7 +47,7 @@ class CppFilters(FiltersBase):
     @jilter
     def shadow_declaration(self, idc: IDCHandler) -> str:
         namespace = idc.scope.parent
-        ret = idc.return_type
+        ret = idc.return_type if idc.return_type else 'void'
         name = idc.name
         args = self.func_args(idc)
         return f'namespace {namespace} {{ {ret} {name}({args}); }}'

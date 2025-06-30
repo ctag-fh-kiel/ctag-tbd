@@ -44,8 +44,8 @@ class IDCBase:
         return self.func.scope
 
     @property
-    def return_type(self) -> str:
-        return str(self.func.return_type)
+    def return_type(self) -> str | None:
+        return str(self.func.return_type) if self.func.return_type else None
 
     @property
     def description(self) -> str:
