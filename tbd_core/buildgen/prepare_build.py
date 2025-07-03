@@ -1,6 +1,7 @@
 import logging
 
 import tbd_core.utils as utils
+from . import add_build_flag
 
 from .files import (
     get_components_build_path,
@@ -30,6 +31,8 @@ def prepare_build():
         set_compiler_options(exceptions=True)
     else:
         set_compiler_options()
+
+    add_build_flag('-Wno-attributes=tbd::')
 
     _LOGGER.info('adding global TBD defines')
 
