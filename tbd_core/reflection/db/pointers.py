@@ -9,19 +9,10 @@ from typing import (
     Optional, Iterator
 )
 
-from tbd_core.reflection.reflectables import (
-    Attributes,
-    ScopePath,
-    NamespaceEntry,
-    FunctionEntry,
-    PropertyEntry,
-    ClassEntry,
-    EntryBase,
-    CppTypeId, ArgumentEntry, ArgumentCategory,
-)
+from tbd_core.reflection.reflectables import *
 
 
-CppTypePtr = Union['ClassPtr', str]
+CppTypePtr = Union['ClassPtr', Param, UnknownType]
 
 
 class MissingCppEntry(LookupError):
@@ -29,13 +20,14 @@ class MissingCppEntry(LookupError):
 
 
 class ReflectableDB(Protocol):
-    def get_header(self, header_id: int) -> Path: ...
-    def get_namespace(self, namespace_id: int) -> 'NamespacePtr': ...
-    def get_function(self, function_id: int) -> 'FunctionPtr': ...
-    def get_argument(self, argument_id: int) -> 'ArgumentPtr': ...
-    def get_type(self, type_id: CppTypeId) -> CppTypePtr: ...
-    def get_class(self, class_id: int) -> 'ClassPtr': ...
-    def get_property(self, property_id: int) -> 'PropertyPtr': ...
+    def get_component(self, component_id: ComponentID) -> str: ...
+    def get_file(self, file_id: FileID) -> 'FilePtr': ...
+    def get_namespace(self, namespace_id: NamespaceID) -> 'NamespacePtr': ...
+    def get_function(self, function_id: FunctionID) -> 'FunctionPtr': ...
+    def get_argument(self, argument_id: ArgumentID) -> 'ArgumentPtr': ...
+    def get_type(self, type_id: CppType) -> CppTypePtr: ...
+    def get_class(self, class_id: ClassID) -> 'ClassPtr': ...
+    def get_property(self, property_id: PropertyID) -> 'PropertyPtr': ...
 
     def namespaces(self) -> Iterator['NamespacePtr']: ...
     def functions(self) -> Iterator['FunctionPtr']: ...
@@ -43,11 +35,41 @@ class ReflectableDB(Protocol):
     def classes(self) -> Iterator['ClassPtr']: ...
     def properties(self) -> Iterator['PropertyPtr']: ...
 
-    def get_raw_namespace(self, namespace_id: int) -> Optional['NamespaceEntry']: ...
-    def get_raw_function(self, function_id: int) -> Optional['FunctionEntry']: ...
-    def get_raw_argument(self, argument_id: int) -> Optional['ArgumentEntry']: ...
-    def get_raw_class(self, class_id: int) -> Optional['ClassEntry']: ...
-    def get_raw_property(self, property_id: int) -> Optional['PropertyEntry']: ...
+    def get_raw_file(self, file_id: FileID) -> Optional[FileEntry]: ...
+    def get_raw_namespace(self, namespace_id: NamespaceID) -> Optional['NamespaceEntry']: ...
+    def get_raw_function(self, function_id: FunctionID) -> Optional['FunctionEntry']: ...
+    def get_raw_argument(self, argument_id: ArgumentID) -> Optional['ArgumentEntry']: ...
+    def get_raw_class(self, class_id: ClassID) -> Optional['ClassEntry']: ...
+    def get_raw_property(self, property_id: PropertyID) -> Optional['PropertyEntry']: ...
+
+
+class FilePtr:
+    def __init__(self, _id: FileID, _db: ReflectableDB):
+        self._id = _id
+        self._db = _db
+
+    @property
+    def file(self) -> Path:
+        return Path(self._obj().file)
+
+    @property
+    def component(self) -> str:
+        obj = self._obj()
+        return self._db.get_component(obj.component)
+
+    def __str__(self) -> str:
+        obj = self._obj()
+        return str(obj.file)
+
+    def ref(self) -> int:
+        return self._id
+
+    def _obj(self) -> FileEntry:
+        raw = self._db.get_raw_file(self._id)
+        if raw is None:
+            raise LookupError(f'no file with ID {self._id}')
+        return raw
+
 
 PtrType = TypeVar("PtrType", bound=EntryBase)
 class PtrBase(Generic[PtrType], ABC):
@@ -56,8 +78,20 @@ class PtrBase(Generic[PtrType], ABC):
         self._db: Final[ReflectableDB] = _db
 
     @property
-    def header(self) -> Path:
-        return self._db.get_header(self._obj().header)
+    def header(self) -> FilePtr:
+        obj = self._obj()
+        return FilePtr(obj.files[0], self._db)
+
+    @property
+    def files(self) -> Iterator[FilePtr]:
+        obj = self._obj()
+        for file_id in obj.files:
+            yield FilePtr(file_id, self._db)
+
+    @property
+    def component(self) -> str:
+        file = next(self.files)
+        return file.component
 
     @property
     @abstractmethod
@@ -90,7 +124,7 @@ class PtrBase(Generic[PtrType], ABC):
         raise NotImplementedError()
 
     def ref(self) -> int:
-        return self.scope.hash()
+        return self._id
 
     def __str__(self):
         return self.full_name
@@ -131,7 +165,7 @@ class NamespacePtr(PtrBase[NamespaceEntry]):
         return raw
 
 
-class ArgumentPtr(PtrBase[ArgumentEntry]):
+class ArgumentPtr(PtrBase[ArgumentEntry], Typed):
     @property
     def arg_name(self) -> str:
         return self._obj().arg_name
@@ -143,6 +177,10 @@ class ArgumentPtr(PtrBase[ArgumentEntry]):
     @property
     def type(self) -> CppTypePtr:
         return self._db.get_type(self._obj().type)
+
+    @property
+    def typename(self) -> str:
+        return self._db.get_type(self._obj().type).typename
 
     @property
     def parent(self) -> Optional['ClassPtr']:
@@ -198,15 +236,19 @@ class FunctionPtr(PtrBase[FunctionEntry]):
         return raw
 
 
-class PropertyPtr(PtrBase[PropertyEntry]):
+class PropertyPtr(PtrBase[PropertyEntry], Typed):
     @property
     def field_name(self) -> str:
         return self._obj().field_name
 
     @property
-    def type(self) -> 'CppTypePtr':
+    def type(self) -> CppTypePtr:
         type_id = self._obj().type
         return self._db.get_type(type_id)
+
+    @property
+    def typename(self) -> str:
+        return str(self._db.get_type(self._obj().type))
 
     @property
     def parent(self) -> 'ClassPtr':
@@ -227,10 +269,14 @@ class PropertyPtr(PtrBase[PropertyEntry]):
         return raw
 
 
-class ClassPtr(PtrBase):
+class ClassPtr(PtrBase, Typed):
     @property
     def cls_name(self) -> str:
         return self._obj().cls_name
+
+    @property
+    def typename(self) -> str:
+        return str(self.scope)
 
     @property
     def bases(self) -> list[CppTypePtr]:
@@ -266,10 +312,12 @@ class ClassPtr(PtrBase):
             raise LookupError(f'no class with ID {self._id}')
         return raw
 
+
 __all__ = [
     'CppTypePtr',
     'MissingCppEntry',
     'ReflectableDB',
+    'FilePtr',
     'NamespacePtr',
     'ArgumentPtr',
     'FunctionPtr',

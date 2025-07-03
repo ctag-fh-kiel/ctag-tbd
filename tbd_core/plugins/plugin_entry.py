@@ -1,19 +1,18 @@
 from dataclasses import dataclass
 from enum import unique, StrEnum
 from pathlib import Path
-from zlib import crc32
 
-from tbd_core.reflection import (
-    ParamType,
-    Attributes,
-    ScopeDescription,
-    ClassDescription,
-    PropertyDescription,
-    ScopePath, MappableParamType,
-)
 import voluptuous as vol
 
-from tbd_core.reflection.parameters import PARAM_TYPE_FROM_MAPPABLE
+from tbd_core.reflection.reflectables import (
+    ParamType,
+    Attributes,
+    ScopePath,
+    MappableParamType,
+    PARAM_TYPE_FROM_MAPPABLE,
+)
+from tbd_core.reflection.db import PropertyPtr, ClassPtr
+
 
 ATTR_NAME = 'name'
 ATTR_DESCRIPTION = 'description'
@@ -67,7 +66,7 @@ class ParamOperations(StrEnum):
 
 @dataclass(frozen=True)
 class ParamEntry:
-    field: PropertyDescription
+    field: PropertyPtr
     path: ScopePath
     plugin_id: int
     type: ParamType
@@ -88,7 +87,7 @@ class ParamEntry:
         return self.field.full_name
 
     @property
-    def scope(self) -> ScopeDescription:
+    def scope(self) -> ScopePath:
         return self.field.scope
 
     @property
@@ -121,7 +120,7 @@ class ParamEntry:
 
     @staticmethod
     def new_param_entry(
-            field: PropertyDescription,
+            field: PropertyPtr,
             path: ScopePath,
             plugin_id: int,
             type: ParamType | MappableParamType,
@@ -184,8 +183,8 @@ class ParamEntry:
         return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type, is_mappable=is_mappable,
                           operation=operation, cut_negatives=cut_negatives, **filtered_attrs)
 
-    def hash(self):
-        return crc32(self.name.encode())
+    def ref(self) -> int:
+        return self.field.ref()
 
 @dataclass(frozen=True)
 class PluginParams:
@@ -251,7 +250,7 @@ class PluginParams:
 
 @dataclass(frozen=True)
 class PluginEntry:
-    cls: ClassDescription
+    cls: ClassPtr
     param_offset: int
     params: PluginParams
     header: Path
@@ -266,7 +265,7 @@ class PluginEntry:
         return self.cls.full_name
 
     @property
-    def scope(self) -> ScopeDescription:
+    def scope(self) -> ScopePath:
         return self.cls.scope
 
     @property
@@ -316,7 +315,7 @@ class PluginEntry:
     def param_list(self) -> list[ParamEntry]:
         return self.params.params
 
-    def hash(self):
-        return crc32(self.name.encode())
+    def ref(self) -> int:
+        return self.cls.ref()
 
 __all__ = ['ParamEntry', 'PluginParams', 'PluginEntry']

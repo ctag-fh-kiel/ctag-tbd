@@ -1,6 +1,7 @@
 from typing import Iterator
 
 from .pointers import ClassPtr, PropertyPtr
+from tbd_core.reflection.reflectables import Param
 
 
 def flattened_properties(cls: ClassPtr, path: list[str] | None = None) -> Iterator[tuple[list[str], PropertyPtr]]:
@@ -11,6 +12,8 @@ def flattened_properties(cls: ClassPtr, path: list[str] | None = None) -> Iterat
         this_path = [*path, prop.field_name]
         prop_type = prop.type
         match prop_type:
+            case Param():
+                yield this_path, prop
             case str():
                 yield this_path, prop
             case ClassPtr():

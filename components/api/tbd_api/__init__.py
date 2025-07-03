@@ -95,4 +95,3 @@ def finalize_api_registry():
     api_gen.write_typescript_client(typescript_client_path, messages_dir)
     api_gen.write_arduino_client(arduino_client_path, messages_dir)
 
-    # cg.add_platformio_option('custom_nanopb_protos', [f'+<{ messages_dir / api_gen.dtos_proto }>'])

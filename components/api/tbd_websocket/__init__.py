@@ -8,6 +8,8 @@ from esphome.const import CONF_PORT, CONF_PATH, CONF_ID
 
 import esphome.components.tbd_api as tbd_api
 
+from tbd_core.buildgen import AutoReflection
+
 AUTO_LOAD = ['tbd_api']
 DEPENDENCIES = ['network']
 
@@ -26,14 +28,12 @@ async def to_code(config):
     if not websocket_path.is_absolute:
         websocket_path = Path('/') / websocket_path
 
-    component = tbd.new_tbd_component(__file__)
+    component = tbd.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)
     component.add_define('TBD_WEBSOCKET_PORT', config[CONF_PORT])
     component.add_define('TBD_WEBSOCKET_PATH', f'"{websocket_path}"')
 
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
-
-    tbd_api.get_api_registry().add_source(component.platform_source_dir / 'websocket_server.cpp')
 
     if tbd.is_desktop():
         # cmake_dependency(

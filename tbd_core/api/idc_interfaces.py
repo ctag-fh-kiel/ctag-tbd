@@ -4,10 +4,8 @@ from pathlib import Path
 from typing import OrderedDict
 from zlib import crc32
 
-import cxxheaderparser.types as cpptypes
-
 from tbd_core.reflection.db import FunctionPtr, ArgumentPtr
-from tbd_core.reflection.reflectables import Attribute, ScopePath, ArgumentCategory
+from tbd_core.reflection.reflectables import Attribute, ScopePath, ArgumentCategory, Param
 
 # expected return types
 ENDPOINT_RETURN_TYPES = [None, 'Error']
@@ -195,20 +193,22 @@ def get_idc_args(func_args: list[ArgumentPtr]) -> tuple[OrderedDict[str, str] | 
         return None, None
 
     *func_args, last_func_arg = func_args
-    args = OrderedDict()
+    args: OrderedDict[str, str] = OrderedDict()
 
     # process input args
     for func_arg in func_args:
         if func_arg.category != ArgumentCategory.INPUT:
             raise ValueError('input argument of IDC has to be const reference')
-        args[func_arg.arg_name] = str(func_arg.type)
+        arg_type = func_arg.type
+        args[func_arg.arg_name] = arg_type.typename
 
     # process last arg as either input or
     output = None
+    arg_type = last_func_arg.type
     if last_func_arg.category == ArgumentCategory.INPUT:
-        args[last_func_arg.arg_name] = str(last_func_arg.type)
+        args[last_func_arg.arg_name] = arg_type.typename
     elif last_func_arg.category == ArgumentCategory.OUTPUT:
-        output = str(last_func_arg.type)
+        output = arg_type.typename
     else:
         raise ValueError('last function argument has to be reference type')
 
@@ -263,7 +263,7 @@ def endpoint_from_function(func: FunctionPtr, attr: Attribute) -> Endpoint:
         :param func: parsed c++ function signature
         :return: enpoint description or `None` if function has no endpoint attribute
     """
-    if func.return_type not in ENDPOINT_RETURN_TYPES:
+    if func.return_type and func.return_type.typename not in ENDPOINT_RETURN_TYPES:
         raise ValueError(f'endpoint functions have to return {ENDPOINT_RETURN_TYPES} type')
 
     args, output = get_idc_args(func.arguments)
@@ -275,8 +275,8 @@ def endpoint_from_function(func: FunctionPtr, attr: Attribute) -> Endpoint:
 
 
 def event_from_function(func: FunctionPtr, attr: Attribute) -> Event:
-    if func.return_type not in EVENT_RETURN_TYPES:
-        raise ValueError(f'event triggers declarations have to return {EVENT_RETURN_TYPES} type')
+    if func.return_type:
+        raise ValueError(f'event triggers declarations have to return void')
 
     args, output = get_idc_args(func.arguments)
 
@@ -295,7 +295,7 @@ def event_from_function(func: FunctionPtr, attr: Attribute) -> Event:
 
 
 def responder_from_function(func: FunctionPtr, attr: Attribute) -> Responder:
-    if func.return_type not in RESPONDER_RETURN_TYPES:
+    if func.return_type and func.return_type.typename not in RESPONDER_RETURN_TYPES:
         raise ValueError(f'event responder functions have to return {RESPONDER_RETURN_TYPES} type')
 
     args, output = get_idc_args(func.arguments)
@@ -315,16 +315,16 @@ def responder_from_function(func: FunctionPtr, attr: Attribute) -> Responder:
 
 
 def sink_from_function(func: FunctionPtr, attr: Attribute) -> EventSink:
-    if func.return_type not in SINK_RETURN_TYPES:
-        raise ValueError(f'sink functions have to return {SINK_RETURN_TYPES} type')
+    if func.return_type:
+        raise ValueError(f'sink functions have to return void')
 
     if len(func.arguments) != 2:
         raise ValueError('sink function must have two arguments')
 
     buffer_arg, size_arg = func.arguments
-    if buffer_arg.type.format() != 'const uint8_t*':
+    if buffer_arg.typename != 'const uint8_t*':
         raise ValueError('first sink function argument must be "const uint8_t*" buffer pointer')
-    if size_arg.type.format() != 'size_t':
+    if size_arg.typename != 'size_t':
         raise ValueError('second sink function argument must be "size_t" data length')
 
     return EventSink(

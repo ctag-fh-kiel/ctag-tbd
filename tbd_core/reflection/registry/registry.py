@@ -4,16 +4,17 @@ from typing import Iterable
 
 from tbd_core.reflection.parser import AnnotationParser, Parser
 
-from tbd_core.reflection.reflectables import Reflectables, ScopePath, PropertyEntry, ClassEntry
+from tbd_core.reflection.reflectables import Reflectables, ScopePath, PropertyEntry, ClassEntry, UnknownType
 from tbd_core.reflection.db import ReflectableDB, InMemoryReflectableDB
 
 from .contexts import (
+    FileContext,
     NamespaceContext,
     FunctionContext,
     ClassContext,
     FieldContext,
     ArgumentContext,
-    is_anon_struct_field, ref_for_file, FilesContext,
+    is_anon_struct_field,
 )
 
 
@@ -32,31 +33,25 @@ class ReflectableFinder:
         self._amend_base_types(self._reflectables)
         return InMemoryReflectableDB(self._reflectables)
 
-    def add_from_file(self, module: str, file_name: Path, *, include_base: Path | None = None) -> ReflectableDB:
+    def add_from_file(self, component: str, file_name: Path, *, include_base: Path | None = None) -> ReflectableDB:
         added = Reflectables()
-        files_context = self._get_file_context(module, file_name)
-        self._add_from_file(module, file_name, added, include_base=include_base)
+        self._add_from_file(component, file_name, added, include_base=include_base)
         return InMemoryReflectableDB(added)
 
-    def add_from_files(self, module: str, file_names: Iterable[Path], *, include_base: Path | None = None) -> ReflectableDB:
+    def add_from_files(self, component: str, file_names: Iterable[Path], *, include_base: Path | None = None) -> ReflectableDB:
         added = Reflectables()
         for file_name in file_names:
-            added = Reflectables()
-            files_context = self._get_files_context(module, file_name)
-            self._add_from_file(module, file_name, added, include_base=include_base)
+            self._add_from_file(component, file_name, added, include_base=include_base)
         return InMemoryReflectableDB(added)
 
     ## acquisition phase methods ##
 
-    def _get_files_context(self, module: str, file_name: Path) -> FilesContext:
-        pass
-
-    def _add_from_file(self, module: str, file_name: Path, added: Reflectables, *, include_base: Path | None) -> None:
+    def _add_from_file(self, component: str, file_name: Path, added: Reflectables, *, include_base: Path | None) -> None:
         try:
+            maybe_added = Reflectables()
             relative_file_path = file_name.relative_to(include_base) if include_base else file_name
-            file_ref = ref_for_file(relative_file_path)
-            if file_ref in self._reflectables.headers:
-                _LOGGER.warning(f'reflection already parsed header {file_name}')
+            file_ctx = self._collect_module_and_file(component, relative_file_path, maybe_added)
+
                 # return
             print(f'>>>>>>>>>>>>>>>>>>>> {file_name}')
 
@@ -66,11 +61,25 @@ class ReflectableFinder:
             Parser(str(file_name), code, visitor).parse()
             parsed = visitor.data
 
-            self._find_entities_in_namespace(NamespaceContext.root(relative_file_path, parsed.namespace), added)
-            self._reflectables |= added
-            self._reflectables.headers[file_ref] = relative_file_path
+            self._find_entities_in_namespace(NamespaceContext.root(file_ctx, parsed.namespace), maybe_added)
+
+            added |= maybe_added
+            self._reflectables |= maybe_added
         except Exception as e:
             _LOGGER.error(f"reflection parsing failed for file {file_name}: {e}")
+
+    def _collect_module_and_file(self, component: str, file_name: Path, added: Reflectables) -> FileContext:
+        file_ctx = FileContext(component, file_name)
+        component_id = file_ctx.component_ref()
+        self._reflectables.components[component_id] = component
+
+        file_id = file_ctx.ref()
+        if file_id in self._reflectables.files:
+            if file_id in self._reflectables.files:
+                _LOGGER.warning(f'reflection already parsed file {file_name}')
+
+        added.files[file_id] = file_ctx.entry()
+        return file_ctx
 
     def _find_entities_in_namespace(self, namespace_ctx: NamespaceContext, added: Reflectables) -> None:
         self._collect_namespace(namespace_ctx, added)
@@ -97,7 +106,7 @@ class ReflectableFinder:
         if func_id in added.functions:
             _LOGGER.error(f'duplicate function {function_ctx.full_name} in file {function_ctx.file}')
         if (func_entry := self._reflectables.arguments.get(func_id)) is not None:
-            first_seen_in_file = self._reflectables.headers[func_entry.header]
+            first_seen_in_file = self._reflectables.files[func_entry.files[0]].file
             _LOGGER.error(f'duplicate function {function_ctx.full_name} in database [{first_seen_in_file} and {function_ctx.file}]')
 
         added.functions[func_id] = func
@@ -112,7 +121,7 @@ class ReflectableFinder:
         if argument_id in added.arguments:
             _LOGGER.error(f'duplicate argument {argument_ctx.full_name} in file {argument_ctx.file}')
         if (argument_entry := self._reflectables.arguments.get(argument_id)) is not None:
-            first_seen_in_file = self._reflectables.headers[argument_entry.header]
+            first_seen_in_file = self._reflectables.files[argument_entry.files[0]].file
             _LOGGER.error(f'duplicate argument {argument_ctx.full_name} in database [{first_seen_in_file} and {argument_ctx.file}]')
 
         added.arguments[argument_id] = argument
@@ -128,7 +137,7 @@ class ReflectableFinder:
         if cls_id in added.classes:
             _LOGGER.error(f'duplicate class {class_ctx.full_name} in file {class_ctx.file}')
         if (class_entry := self._reflectables.classes.get(cls_id)) is not None:
-            first_seen_in_file = self._reflectables.headers[class_entry.header]
+            first_seen_in_file = self._reflectables.files[class_entry.files[0]].file
             _LOGGER.error(f'duplicate class {class_ctx.full_name} in database [{first_seen_in_file} and {class_ctx.file}]')
 
         self._cached_scopes[cls_id] = class_ctx.scope
@@ -147,7 +156,7 @@ class ReflectableFinder:
         if prop_id in added.properties:
             _LOGGER.error(f'duplicate property {property_ctx.full_name} in file {property_ctx.file}')
         if (prop_entry := self._reflectables.properties.get(prop_id)) is not None:
-            first_seen_in_file = self._reflectables.headers[prop_entry.header]
+            first_seen_in_file = self._reflectables.files[prop_entry.files[0]].file
             _LOGGER.error(f'duplicate property {property_ctx.full_name} in database [{first_seen_in_file} and {property_ctx.file}]')
 
         self._cached_scopes[prop_id] = property_ctx.scope
@@ -155,53 +164,43 @@ class ReflectableFinder:
 
     def _amend_property_types(self, reflectables: Reflectables) -> None:
         for prop_id, prop in reflectables.properties.items():
-            if isinstance(prop.type, str):
-                prop.type = self._find_property_type(prop_id, prop)
+            if isinstance(prop.type, UnknownType):
+                prop.type = self._find_property_type(prop_id, prop.type)
 
-    def _find_property_type(self, prop_id, prop: PropertyEntry) -> str | int:
+    def _find_property_type(self, prop_id: int, prop_type: UnknownType) -> UnknownType | int:
         field_scope = self._cached_scopes[prop_id]
-        prop_type = prop.type
 
         if is_anon_struct_field(prop_type):
-            field_type_scope = field_scope.parent.add_class(prop_type)
+            field_type_scope = field_scope.parent.add_class(prop_type.type)
             field_type_id = field_type_scope.hash()
             if field_type_id not in self._reflectables.classes:
                 _LOGGER.error(f'missing anonymous type {field_type_scope}')
                 return prop_type
             return field_type_id
         else:
-            # print('==============')
-            for cls_id, cls in self._reflectables.classes.items():
-                cls_path = self._cached_scopes[cls_id].path
-                pos = field_scope
-                while (pos := pos.parent) is not None:
-                    combined_scope = f'{pos.path}::{prop_type}'
-                    if combined_scope == cls_path:
-                        # print('field found:', field_scope.path, prop_type, cls_path)
-                        return cls_id
-        # print('field not found:', field_scope.path, prop_type)
-        return prop_type
+            prop_cls_id = self._find_class_from_scope(field_scope, prop_type)
+            return  prop_cls_id if prop_cls_id is not None else prop_type
 
     def _amend_base_types(self, reflectables: Reflectables) -> None:
         for cls_id, cls in reflectables.classes.items():
             cls.bases = [self._find_base_type(cls_id, base_id) for base_id in cls.bases]
 
-    def _find_base_type(self, child_id: int, base_id: str | int) -> str | int:
+    def _find_base_type(self, child_id: int, base_id: UnknownType | int) -> str | int:
         if isinstance(base_id, int):
             return base_id
-
         child_scope = self._cached_scopes[child_id]
-        # print('==============')
+        base_cls_id = self._find_class_from_scope(child_scope, base_id)
+        return base_cls_id if base_cls_id is not None else base_id
+
+    def _find_class_from_scope(self, scope: ScopePath, _type: UnknownType) -> int | None:
         for cls_id, cls in self._reflectables.classes.items():
             cls_path = self._cached_scopes[cls_id].path
-            pos = child_scope
+            pos = scope
             while (pos := pos.parent) is not None:
-                combined_scope = f'{pos.path}::{base_id}'
+                combined_scope = f'{pos.path}::{_type.type}'
                 if combined_scope == cls_path:
-                    # print('base found:', child_scope.path, base_id, cls_path)
                     return cls_id
-        # print('base not found:', child_scope.path, base_id)
-        return base_id
+        return None
 
     @staticmethod
     def _read_code_from_file(header_path: Path) -> list[str]:

@@ -7,7 +7,7 @@ import proto_schema_parser.ast as proto
 import proto_schema_parser.generator as protog
 
 from tbd_core.reflection.db import ReflectableDB, ClassPtr
-from tbd_core.reflection.reflectables import ALL_PARAM_TYPES, PARAM_TO_PROTO
+from tbd_core.reflection.reflectables import ALL_PARAM_TYPES, PARAM_TO_PROTO, Param
 from tbd_core.generators import generate_protos
 
 from .cpp_generator import CppGenerator
@@ -34,16 +34,14 @@ class DTOGenerator:
                         type=prop_type.name,
                         number=field_number + 1,
                     ))
-                case str():
-                    if prop_type not in ALL_PARAM_TYPES:
-                        _LOGGER.warning(f'property {prop.full_name} has unserializable type {prop_type}')
-                        continue
-                    param_type = ALL_PARAM_TYPES[prop_type]
+                case Param():
                     elements.append(proto.Field(
                         name=prop.field_name,
-                        type=PARAM_TO_PROTO[param_type],
+                        type=prop_type.param_type,
                         number=field_number + 1,
                     ))
+                case str():
+                    pass
                 case _:
                     raise ValueError(f'invalid type ID {type(prop_type)}, must be class or str')
 
@@ -67,7 +65,7 @@ class DTOGenerator:
     def write_cpp_code(self, out_dir: Path, serializables: list[int]) -> None:
         gen = CppGenerator(self._reflectable_db)
 
-        serializables = [self._reflectable_db.classes[type_id] for type_id in serializables]
+        serializables = [self._reflectable_db.get_class(type_id) for type_id in serializables]
         source = gen.render('serializables.cpp.j2', serializables=serializables)
 
         source_file = out_dir / 'serializables.cpp'

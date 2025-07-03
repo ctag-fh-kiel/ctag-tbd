@@ -74,6 +74,10 @@ PARAM_TO_PROTO = {
     MappableParamType.MTRIGGER_PARAM: 'bool',
 }
 
+
+PARAM_NAMESPACE = 'tbd'
+
+
 __all__ = [
     'ParamType',
     'PARAM_TYPES',
@@ -82,4 +86,5 @@ __all__ = [
     'PARAM_TYPE_FROM_MAPPABLE',
     'ALL_PARAM_TYPES',
     'PARAM_TO_PROTO',
+    'PARAM_NAMESPACE'
 ]

@@ -6,7 +6,6 @@ from .plugins import Plugins
 
 import tbd_core.buildgen as tbd
 from tbd_core.generators import jilter, GeneratorBase
-from tbd_core.serialization.dto_generator import DTOGenerator
 
 
 class PluginFilters:
@@ -108,14 +107,6 @@ class PluginGenerator(GeneratorBase):
             source_path = out_folder / f'{plugin.name}_meta.cpp'
             with open(source_path, 'w') as f:
                 f.write(source)
-
-    def write_preset_protos(self, out_folder: Path) -> None:
-        gen = DTOGenerator(self._plugins.reflectables)
-        for plugin_id, plugin in enumerate(self._plugins.plugin_list):
-            gen.add_serializable(plugin.cls)
-
-        with open(out_folder / 'presets.proto', 'w') as f:
-            gen.write(f)
 
 
 __all__ = ['PluginGenerator']

@@ -2,14 +2,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Final, OrderedDict
 
-from tbd_core.reflection import Reflectables
+from tbd_core.reflection.db import ReflectableDB
 
 from .plugin_entry import PluginEntry, ParamEntry
 
 
 @dataclass
 class PluginsOptions:
-    reflectables: Reflectables = field(default_factory=OrderedDict)
+    reflectables: ReflectableDB = field(default_factory=OrderedDict)
     headers: set[Path] = field(default_factory=set)
     plugins: list[PluginEntry] = field(default_factory=list)
     num_params: int = 0
@@ -34,7 +34,7 @@ class Plugins:
         return [param for plugin in self._plugin_entries for param in plugin.param_list()]
 
     @property
-    def reflectables(self) -> Reflectables:
+    def reflectables(self) -> ReflectableDB:
         return self._reflectables
 
 __all__ = ['Plugins', 'PluginsOptions']
