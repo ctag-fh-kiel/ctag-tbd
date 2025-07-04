@@ -1,9 +1,9 @@
 #pragma once
-#include "DrumModel.h"
+#include "DrumModel.hpp"
 #include "plaits/dsp/fm/operator.h"
 
 namespace CTAG::SYNTHESIS{
-class FmKickModel : public DrumModel {
+class FmKick : public DrumModel {
 public:
     void Init() override;
     void Trigger() override;

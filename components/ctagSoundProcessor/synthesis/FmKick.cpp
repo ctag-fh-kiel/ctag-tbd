@@ -1,9 +1,9 @@
-#include "FmKickModel.h"
+#include "FmKick.hpp"
 #include <cmath>
 
 using namespace CTAG::SYNTHESIS;
 
-void FmKickModel::Init() {
+void FmKick::Init() {
     t = 0.0f;
     // Reset iterative decays
     amp_env = 1.0f;
@@ -16,7 +16,7 @@ void FmKickModel::Init() {
     fb_state[1] = 0.0f;
 }
 
-void FmKickModel::Trigger() {
+void FmKick::Trigger() {
     Init();
     // Calculate decay constants for iterative envelopes WITHOUT std::expf
     float dt = 1.0f / (44100.f * 32); // Assuming 44100Hz sample rate and 32 samples per block
@@ -30,7 +30,7 @@ void FmKickModel::Trigger() {
     if (freq_decay_const < 0.0f) freq_decay_const = 0.0f;
 }
 
-void FmKickModel::Process(float* out, uint32_t size) {
+void FmKick::Process(float* out, uint32_t size) {
     // Iterative decay
     amp_env *= amp_decay_const;
     mod_env *= mod_decay_const;

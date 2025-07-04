@@ -21,7 +21,7 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-#include "DrumModel.h"
+#include "DrumModel.hpp"
 #include "stmlib/dsp/filter.h"
 #include "helpers/ctagADEnv.hpp"
 #include "plaits/dsp/oscillator/sine_oscillator.h"
