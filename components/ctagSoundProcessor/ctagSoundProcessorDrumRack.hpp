@@ -8,6 +8,7 @@
 #include "synthesis/RomplerVoiceMinimal.hpp"
 #include "synthesis/Clap.hpp"
 #include "synthesis/Rimshot.hpp"
+#include "synthesis/FmKick.hpp"
 #include "helpers/ctagSampleRom.hpp"
 #include "SimpleComp/SimpleComp.h"
 #include "mifx/reverb.h"
@@ -41,6 +42,7 @@ namespace CTAG {
         	// own drum models
         	CTAG::SYNTHESIS::Clap cl;
         	CTAG::SYNTHESIS::Rimshot rs;
+            CTAG::SYNTHESIS::FmKick fmb;
 
             // delay
             float *delayBuffer_l, *delayBuffer_r;
@@ -69,6 +71,7 @@ namespace CTAG {
             float hh2_out[32];
         	float rs_out[32];
         	float cl_out[32];
+            float fmb_out[32];
             float temp1_[32];
             float temp2_[32];
             float s1_out[32];
@@ -76,7 +79,7 @@ namespace CTAG {
         	float s3_out[32];
         	float s4_out[32];
         	float silence[32];
-        	float *data_ptrs[12] = {silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence};
+        	float *data_ptrs[13] = {silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence};
 
             bool abd_trig_prev {false};
             bool asd_trig_prev {false};
@@ -86,6 +89,7 @@ namespace CTAG {
             bool hh2_trig_prev {false};
         	bool rs_trig_prev {false};
         	bool cl_trig_prev {false};
+            bool fmb_trig_prev {false};
 
             // rompler
             CTAG::SYNTHESIS::RomplerVoiceMinimal rompler[4];
@@ -318,3 +322,4 @@ namespace CTAG {
         };
     }
 }
+
