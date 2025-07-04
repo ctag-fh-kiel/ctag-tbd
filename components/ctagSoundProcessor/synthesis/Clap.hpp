@@ -22,16 +22,17 @@ respective component folders / files if different from this license.
 #pragma once
 
 #include <cstdint>
+#include "DrumModel.h"
 #include "stmlib/dsp/filter.h"
 #include "helpers/ctagADEnv.hpp"
 #include "helpers/ctagTimer.hpp"
 
 namespace CTAG::SYNTHESIS{
-    class Clap {
+    class Clap : public DrumModel{
     public:
-        void Init();
-        void Trigger();
-        void Process(float* out, uint32_t size);
+        void Init() override;
+        void Trigger() override;
+        void Process(float* out, uint32_t size) override;
         struct Params{
             float pitch1, pitch2; // 350/44100.f - 4000/44100.f, 300/44100.f - 3000/44100.f
             float reso1, reso2; // 1 - 2.5, 0.75 - 6.5
