@@ -21,16 +21,17 @@ respective component folders / files if different from this license.
 
 #pragma once
 
+#include "DrumModel.h"
 #include "stmlib/dsp/filter.h"
 #include "helpers/ctagADEnv.hpp"
 #include "plaits/dsp/oscillator/sine_oscillator.h"
 
 namespace CTAG::SYNTHESIS{
-    class Rimshot {
+    class Rimshot : public DrumModel{
 		public:
-			void Init();
-    		void Trigger();
-    		void Process(float* out, uint32_t size);
+			void Init() override;
+    		void Trigger() override;
+    		void Process(float* out, uint32_t size) override;
 
     		struct Params{
     			float f0; // 70/44100 .. 350/44100
