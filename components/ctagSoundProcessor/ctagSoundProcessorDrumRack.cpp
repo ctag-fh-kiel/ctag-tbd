@@ -367,23 +367,28 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     if (!bFMBMute){
 	    MK_BOOL_PAR(bFMBUseRatioMode, fmb_use_ratio_mode)
 	    MK_BOOL_PAR(bFMBModEnvSync, fmb_mod_env_sync)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBF0, fmb_f_b, 4095.f, 20.f, 100.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayBase, fmb_d_b, 4095.f, 0.001f, 2.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBFMod, fmb_f_m, 4095.f, 40.f, 200.f)
+	    MK_FLT_PAR_ABS_MIN_MAX(fFMBF0, fmb_f_b, 4095.f, 20.f, 200.f)
+	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayBase, fmb_d_b, 4095.f, 0.001f, 1.f)
+	    MK_FLT_PAR_ABS_MIN_MAX(fFMBFMod, fmb_f_m, 4095.f, 40.f, 2000.f)
+    	MK_FLT_PAR_ABS(fFMBRatioModIndex, fmb_f_m, 4095.f, 63.f)
+    	int iModIndex = static_cast<int>(fFMBRatioModIndex);
+    	CONSTRAIN(iModIndex, 0, 63)
 	    MK_FLT_PAR_ABS_MIN_MAX(fFMBI, fmb_I, 4095.f, 0.f, 10.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayMod, fmb_d_m, 4095.f, 0.001f, 2.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBFeedback, fmb_b_m, 4095.f, 0.f, 16.f)
+	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayMod, fmb_d_m, 4095.f, 0.001f, .5f)
+		MK_INT_PAR(iModFeedback, fmb_b_m, 16.f)
+    	MK_FLT_PAR_ABS_MIN_MAX(fFMBFeedback, fmb_b_m, 4095.f, 0.f, 16.f)
 	    MK_FLT_PAR_ABS_MIN_MAX(fFMBAmpFreq, fmb_A_f, 4095.f, 0.f, 1000.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayFreq, fmb_d_f, 4095.f, 0.001f, 2.f)
+	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayFreq, fmb_d_f, 4095.f, 0.001f, .1f)
 
 	    fmb.params.use_ratio_mode = bFMBUseRatioMode;
 	    fmb.params.mod_env_sync = bFMBModEnvSync;
 	    fmb.params.f_b = fFMBF0;
 	    fmb.params.d_b = fFMBDecayBase;
 	    fmb.params.f_m = fFMBFMod;
+    	fmb.params.mod_ratio_index = iModIndex;
 	    fmb.params.I = fFMBI;
 	    fmb.params.d_m = fFMBDecayMod;
-	    fmb.params.b_m = fFMBFeedback;
+	    fmb.params.b_m = static_cast<float>(iModFeedback);
 	    fmb.params.A_f = fFMBAmpFreq;
 	    fmb.params.d_f = fFMBDecayFreq;
 
