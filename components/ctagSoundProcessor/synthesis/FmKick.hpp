@@ -10,16 +10,16 @@ public:
     void Process(float* out, uint32_t size) override;
 
     struct Params {
-        bool use_ratio_mode = false;
-        bool mod_env_sync = false;
-        float f_b = 50.0f;
-        float d_b = 0.5f;
-        float f_m = 180.0f;
-        float I = 20.0f;
-        float d_m = 0.15f;
-        float b_m = 0.5f;
-        float A_f = 60.0f;
-        float d_f = 0.1f;
+        bool use_ratio_mode = false; // Use frequency ratios for modulator frequency
+        bool mod_env_sync = false; // Sync modulator frequency envelope to carrier frequency
+        float f_b = 35.0f; // Base frequency for carrier (Hz) 20...100
+        float d_b = 0.5f; // Decay time for carrier amplitude (seconds) (0.001...2.0)
+        float f_m = 180.0f; // Modulator frequency (Hz) 40 ... 200
+        float I = 0.1f; // Modulation index (modulator amplitude) 0...10
+        float d_m = 0.15f; // Decay time for modulator amplitude (seconds) (0.001...2.0)
+        float b_m = 0.5f; // Feedback amount for modulator (0-7) 0 ... 16
+        float A_f = 60.0f; // Amplitude envelope scaling for carrier frequency (Hz) 0 ... 1000
+        float d_f = 0.1f; // Decay time for carrier frequency envelope (seconds) (0.001...2.0)
     };
     Params params;
 
