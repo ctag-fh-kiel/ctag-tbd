@@ -9,12 +9,22 @@ public:
     void Trigger() override;
     void Process(float* out, uint32_t size) override;
 
-private:
-    float f_b = 50.0f, d_b = 0.5f, f_m = 180.0f, I = 20.0f;
-    float d_m = 0.15f, b_m = 0.5f, A_f = 60.0f, d_f = 0.1f;
+    struct Params {
+        bool use_ratio_mode = false;
+        bool mod_env_sync = false;
+        float f_b = 50.0f;
+        float d_b = 0.5f;
+        float f_m = 180.0f;
+        float I = 20.0f;
+        float d_m = 0.15f;
+        float b_m = 0.5f;
+        float A_f = 60.0f;
+        float d_f = 0.1f;
+    };
+    Params params;
 
+private:
     // Ratio mode for modulator frequency
-    bool use_ratio_mode = false;
     int ratio_index = 0; // Index into ratio array
     static constexpr int num_ratios = 64;
     static constexpr float ratios[num_ratios][2] = {
@@ -38,8 +48,5 @@ private:
     // Plaits FM operator state
     plaits::fm::Operator ops[2]; // [0]=modulator, [1]=carrier
     float fb_state[2] = {0.0f, 0.0f};
-    float t = 0.0f;
-
-    bool mod_env_sync = false;
 };
 }
