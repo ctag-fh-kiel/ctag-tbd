@@ -13,14 +13,14 @@ public:
         bool use_ratio_mode = false; // Use frequency ratios for modulator frequency
         bool mod_env_sync = false; // Sync modulator frequency envelope to carrier frequency
         int mod_ratio_index = 0; // Index into ratio array (0-63)
-        float f_b = 35.0f; // Base frequency for carrier (Hz) 20...100
-        float d_b = 0.5f; // Decay time for carrier amplitude (seconds) (0.001...2.0)
-        float f_m = 180.0f; // Modulator frequency (Hz) 40 ... 2000
-        float I = 0.1f; // Modulation index (modulator amplitude) 0...10
-        float d_m = 0.15f; // Decay time for modulator amplitude (seconds) (0.001...2.0)
-        float b_m = 0.5f; // Feedback amount for modulator (0-7) 0 ... 16
-        float A_f = 60.0f; // Amplitude envelope scaling for carrier frequency (Hz) 0 ... 1000
-        float d_f = 0.1f; // Decay time for carrier frequency envelope (seconds) (0.001...2.0)
+        float f_b = 20.0f; // Base frequency for carrier (Hz) 20...100
+        float d_b = 0.f; // Decay time for carrier amplitude (seconds) (0.001...2.0)
+        float f_m = 0.f; // Modulator frequency (Hz) 40 ... 2000
+        float I = 0.f; // Modulation index (modulator amplitude) 0...10
+        float d_m = 0.f; // Decay time for modulator amplitude (seconds) (0.001...2.0)
+        float b_m = 0.f; // Feedback amount for modulator (0-7) 0 ... 16
+        float A_f = 0.f; // Amplitude envelope scaling for carrier frequency (Hz) 0 ... 1000
+        float d_f = 0.f; // Decay time for carrier frequency envelope (seconds) (0.001...2.0)
     };
     Params params;
 
