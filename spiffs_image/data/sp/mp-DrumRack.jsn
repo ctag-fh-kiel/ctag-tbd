@@ -2,12 +2,12 @@
   "activePatch": 0,
   "patches": [
     {
-      "name": "Test",
+      "name": "Default",
       "params": [
         {
           "id": "ab_trigger",
           "current": 0,
-          "trig": 16
+          "trig": -1
         },
         {
           "id": "ab_mute",
@@ -16,22 +16,22 @@
         },
         {
           "id": "ab_lev",
-          "current": 876,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "ab_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "ab_fx1",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "ab_fx2",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -41,7 +41,7 @@
         },
         {
           "id": "ab_f0",
-          "current": 708,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -51,23 +51,23 @@
         },
         {
           "id": "ab_decay",
-          "current": 806,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "ab_a_fm",
-          "current": 47,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "ab_s_fm",
-          "current": 30,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_trigger",
           "current": 0,
-          "trig": 17
+          "trig": -1
         },
         {
           "id": "db_mute",
@@ -76,63 +76,143 @@
         },
         {
           "id": "db_lev",
-          "current": 598,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "db_fx1",
-          "current": 914,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_fx2",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_accent",
-          "current": 1353,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_f0",
-          "current": 898,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_tone",
-          "current": 3596,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_decay",
-          "current": 801,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_dirty",
-          "current": 775,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_fm_env",
-          "current": 23,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "db_fm_dcy",
-          "current": 29,
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "fmb_mute",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "fmb_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_pan",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "fmb_fx1",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_fx2",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_use_ratio_mode",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "fmb_mod_env_sync",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "fmb_f_b",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_d_b",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_f_m",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_I",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_d_m",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_b_m",
+          "current": 8,
+          "cv": -1
+        },
+        {
+          "id": "fmb_A_f",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fmb_d_f",
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "as_trigger",
           "current": 0,
-          "trig": 18
+          "trig": -1
         },
         {
           "id": "as_mute",
@@ -141,12 +221,12 @@
         },
         {
           "id": "as_lev",
-          "current": 546,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "as_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
@@ -187,7 +267,7 @@
         {
           "id": "ds_trigger",
           "current": 0,
-          "trig": 19
+          "trig": -1
         },
         {
           "id": "ds_mute",
@@ -196,22 +276,22 @@
         },
         {
           "id": "ds_lev",
-          "current": 825,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "ds_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "ds_fx1",
-          "current": 3267,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "ds_fx2",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -221,7 +301,7 @@
         },
         {
           "id": "ds_f0",
-          "current": 1268,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -231,18 +311,18 @@
         },
         {
           "id": "ds_decay",
-          "current": 615,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "ds_spy",
-          "current": 3406,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "hh1_trigger",
           "current": 0,
-          "trig": 20
+          "trig": -1
         },
         {
           "id": "hh1_mute",
@@ -251,17 +331,17 @@
         },
         {
           "id": "hh1_lev",
-          "current": 933,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "hh1_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "hh1_fx1",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -281,7 +361,7 @@
         },
         {
           "id": "hh1_tone",
-          "current": 3466,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -297,7 +377,7 @@
         {
           "id": "hh2_trigger",
           "current": 0,
-          "trig": 21
+          "trig": -1
         },
         {
           "id": "hh2_mute",
@@ -306,12 +386,12 @@
         },
         {
           "id": "hh2_lev",
-          "current": 936,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "hh2_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
@@ -321,7 +401,7 @@
         },
         {
           "id": "hh2_fx2",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -352,7 +432,7 @@
         {
           "id": "rs_trigger",
           "current": 0,
-          "trig": 23
+          "trig": -1
         },
         {
           "id": "rs_mute",
@@ -361,27 +441,27 @@
         },
         {
           "id": "rs_lev",
-          "current": 608,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "rs_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "rs_fx1",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "rs_fx2",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "rs_accent",
-          "current": 3734,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -396,18 +476,18 @@
         },
         {
           "id": "rs_decay",
-          "current": 524,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "rs_noise",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "cl_trigger",
           "current": 0,
-          "trig": 21
+          "trig": -1
         },
         {
           "id": "cl_mute",
@@ -416,53 +496,53 @@
         },
         {
           "id": "cl_lev",
-          "current": 851,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "cl_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "cl_fx1",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "cl_fx2",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "cl_f0",
-          "current": 1886,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "cl_tone",
-          "current": 1893,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "cl_decay",
-          "current": 332,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "cl_scale",
-          "current": 629,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "cl_transient",
-          "current": 0,
+          "current": 7,
           "cv": -1
         },
         {
           "id": "s1_gate",
           "current": 0,
-          "trig": 22
+          "trig": -1
         },
         {
           "id": "s1_mute",
@@ -471,52 +551,52 @@
         },
         {
           "id": "s1_lev",
-          "current": 974,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s1_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "s1_fx1",
-          "current": 3691,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s1_fx2",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s1_speed",
-          "current": 2028,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "s1_pitch",
-          "current": 0,
+          "current": 12,
           "cv": -1
         },
         {
           "id": "s1_bank",
-          "current": 1,
+          "current": 15,
           "cv": -1
         },
         {
           "id": "s1_slice",
-          "current": 1,
+          "current": 15,
           "cv": -1
         },
         {
           "id": "s1_start",
-          "current": 674,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s1_end",
-          "current": 4095,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -526,42 +606,42 @@
         },
         {
           "id": "s1_lp_pp",
-          "current": 1,
+          "current": 0,
           "trig": -1
         },
         {
           "id": "s1_lp_pos",
-          "current": 216,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s1_atk",
-          "current": 182,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s1_dcy",
-          "current": 485,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s1_eg2fm",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s1_brr",
-          "current": 0,
+          "current": 7,
           "cv": -1
         },
         {
           "id": "s1_ft",
-          "current": 0,
+          "current": 1,
           "cv": -1
         },
         {
           "id": "s1_fc",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -572,7 +652,7 @@
         {
           "id": "s2_gate",
           "current": 0,
-          "trig": 23
+          "trig": -1
         },
         {
           "id": "s2_mute",
@@ -581,52 +661,52 @@
         },
         {
           "id": "s2_lev",
-          "current": 689,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s2_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "s2_fx1",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s2_fx2",
-          "current": 496,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s2_speed",
-          "current": 1186,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "s2_pitch",
-          "current": 0,
+          "current": 24,
           "cv": -1
         },
         {
           "id": "s2_bank",
-          "current": 1,
+          "current": 15,
           "cv": -1
         },
         {
           "id": "s2_slice",
-          "current": 3,
+          "current": 15,
           "cv": -1
         },
         {
           "id": "s2_start",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s2_end",
-          "current": 4095,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -646,43 +726,43 @@
         },
         {
           "id": "s2_atk",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s2_dcy",
-          "current": 1755,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s2_eg2fm",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s2_brr",
-          "current": 11,
+          "current": 7,
           "cv": -1
         },
         {
           "id": "s2_ft",
-          "current": 2,
+          "current": 1,
           "cv": -1
         },
         {
           "id": "s2_fc",
-          "current": 1935,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s2_fq",
-          "current": 1636,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_gate",
           "current": 0,
-          "trig": 24
+          "trig": -1
         },
         {
           "id": "s3_mute",
@@ -691,27 +771,27 @@
         },
         {
           "id": "s3_lev",
-          "current": 720,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "s3_fx1",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_fx2",
-          "current": 640,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_speed",
-          "current": 530,
+          "current": 4095,
           "cv": -1
         },
         {
@@ -721,32 +801,32 @@
         },
         {
           "id": "s3_bank",
-          "current": 1,
+          "current": 15,
           "cv": -1
         },
         {
           "id": "s3_slice",
-          "current": 4,
+          "current": 15,
           "cv": -1
         },
         {
           "id": "s3_start",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_end",
-          "current": 4095,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_lp",
-          "current": 1,
+          "current": 0,
           "trig": -1
         },
         {
           "id": "s3_lp_pp",
-          "current": 1,
+          "current": 0,
           "trig": -1
         },
         {
@@ -756,43 +836,43 @@
         },
         {
           "id": "s3_atk",
-          "current": 954,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_dcy",
-          "current": 369,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_eg2fm",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_brr",
-          "current": 0,
+          "current": 7,
           "cv": -1
         },
         {
           "id": "s3_ft",
-          "current": 2,
+          "current": 1,
           "cv": -1
         },
         {
           "id": "s3_fc",
-          "current": 2764,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s3_fq",
-          "current": 1530,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_gate",
           "current": 0,
-          "trig": 25
+          "trig": -1
         },
         {
           "id": "s4_mute",
@@ -801,22 +881,22 @@
         },
         {
           "id": "s4_lev",
-          "current": 334,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_pan",
-          "current": 0,
+          "current": 4095,
           "cv": -1
         },
         {
           "id": "s4_fx1",
-          "current": 3521,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_fx2",
-          "current": 370,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -831,27 +911,27 @@
         },
         {
           "id": "s4_bank",
-          "current": 1,
+          "current": 15,
           "cv": -1
         },
         {
           "id": "s4_slice",
-          "current": 10,
+          "current": 15,
           "cv": -1
         },
         {
           "id": "s4_start",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_end",
-          "current": 4095,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_lp",
-          "current": 1,
+          "current": 0,
           "trig": -1
         },
         {
@@ -861,47 +941,47 @@
         },
         {
           "id": "s4_lp_pos",
-          "current": 3130,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_atk",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_dcy",
-          "current": 771,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_eg2fm",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_brr",
-          "current": 0,
+          "current": 7,
           "cv": -1
         },
         {
           "id": "s4_ft",
-          "current": 2,
+          "current": 1,
           "cv": -1
         },
         {
           "id": "s4_fc",
-          "current": 2214,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "s4_fq",
-          "current": 2142,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "fx1_time_ms",
-          "current": 333,
+          "current": 999,
           "cv": -1
         },
         {
@@ -916,72 +996,72 @@
         },
         {
           "id": "fx1_tape_digital",
-          "current": 1,
+          "current": 0,
           "trig": -1
         },
         {
           "id": "fx1_st_width",
-          "current": 2443,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "fx1_fx_send",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "fx1_feedback",
-          "current": 1284,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "fx1_base",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "fx1_width",
-          "current": 3308,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "fx2_time",
-          "current": 1939,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "fx2_lp",
-          "current": 52,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "c_thres",
-          "current": 1105,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "c_ratio",
-          "current": 1304,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "c_atk",
-          "current": 494,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "c_rel",
-          "current": 488,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "c_lpf",
-          "current": 1,
+          "current": 0,
           "trig": -1
         },
         {
           "id": "c_gain",
-          "current": 1168,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -991,12 +1071,12 @@
         },
         {
           "id": "c_dly_level",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "c_rev_level",
-          "current": 0,
+          "current": 2047,
           "cv": -1
         },
         {
@@ -1011,12 +1091,12 @@
         },
         {
           "id": "fx1_amount",
-          "current": 2803,
+          "current": 2047,
           "cv": -1
         },
         {
           "id": "fx2_amount",
-          "current": 2051,
+          "current": 2047,
           "cv": -1
         }
       ]

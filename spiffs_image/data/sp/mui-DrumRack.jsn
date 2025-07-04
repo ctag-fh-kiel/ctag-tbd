@@ -186,6 +186,117 @@
       ]
     },
     {
+      "id": "fmb_group",
+      "name": "FM Bass Drum",
+      "type": "group",
+      "params": [
+        {
+          "id": "fmb_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "fmb_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "fmb_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "fmb_fx1",
+          "name": "Delay Send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_fx2",
+          "name": "Reverb Send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_use_ratio_mode",
+          "name": "Use Ratio Mode",
+          "type": "bool"
+        },
+        {
+          "id": "fmb_mod_env_sync",
+          "name": "Mod Env Sync",
+          "type": "bool"
+        },
+        {
+          "id": "fmb_f_b",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_d_b",
+          "name": "Carrier Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_f_m",
+          "name": "Modulator Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_I",
+          "name": "Modulation Index",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_d_m",
+          "name": "Modulator Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_b_m",
+          "name": "Modulator Feedback",
+          "type": "int",
+          "min": 0,
+          "max": 16
+        },
+        {
+          "id": "fmb_A_f",
+          "name": "Freq Env Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fmb_d_f",
+          "name": "Freq Env Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
       "id": "as_group",
       "name": "Analogue Snare",
       "type": "group",
