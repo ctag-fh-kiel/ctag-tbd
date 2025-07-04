@@ -18,7 +18,7 @@ void FmKick::Init() {
 void FmKick::Trigger() {
     Init();
     // Calculate decay constants for iterative envelopes WITHOUT std::expf
-    float dt = 1.0f / (44100.f * 32); // Assuming 44100Hz sample rate and 32 samples per block
+    float dt = 32.0f / 44100.f; // Assuming 44100Hz sample rate and 32 samples per block
     // For small x, exp(-x) ≈ 1 - x
     amp_decay_const = 1.0f - (dt / params.d_b);
     mod_decay_const = 1.0f - (dt / params.d_m);
@@ -37,6 +37,7 @@ void FmKick::Process(float* out, uint32_t size) {
     // Modulator frequency selection
     float mod_freq = params.f_m;
     if (params.use_ratio_mode) {
+        ratio_index = params.mod_ratio_index;
         mod_freq = params.f_b * (ratios[ratio_index][0] / ratios[ratio_index][1]);
     }
     // Sync modulator freq envelope to carrier if enabled
@@ -48,7 +49,7 @@ void FmKick::Process(float* out, uint32_t size) {
     a[0] = params.I * mod_env; // modulator amplitude (mod index)
     a[1] = amp_env;     // carrier amplitude
 
-    // Feedback amount for modulator (0-7)
+    // Feedback amount for modulator (0-16)
     int fb_amt = static_cast<int>(params.b_m);
     // Render a single sample using Plaits FM operator (2-op, modulator feeds carrier)
     plaits::fm::RenderOperators<2, 0, false>(
