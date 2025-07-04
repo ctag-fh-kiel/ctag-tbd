@@ -97,7 +97,7 @@ int SimSPManager::inout(void *outputBuffer, void *inputBuffer, unsigned int nBuf
 }
 
 void SimSPManager::StartSoundProcessor(int iSoundCardID, string wavFile, string sromFile, bool bOutOnly) {
-    ctagSPAllocator::AllocateInternalBuffer(112*1024); // TBDings has highest needs of 113944 bytes, this is 112k=114688 bytes
+    ctagSPAllocator::AllocateInternalBuffer(300*1024); // TBDings has highest needs of 113944 bytes, this is 112k=114688 bytes
     // start fake sample rom
     cout << "Trying to open sample rom file (define own with -s command line option): " << sromFile << endl;
     spi_flash_emu_init(sromFile.c_str());
@@ -220,6 +220,7 @@ void SimSPManager::SetSoundProcessorChannel(const int chan, const string &id) {
     ctagSPAllocator::AllocationType aType = ctagSPAllocator::AllocationType::CH0;
     if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
     if(model->IsStereo(id)) aType = ctagSPAllocator::AllocationType::STEREO;
+    sp[chan] = ctagSoundProcessorFactory::Create(id, aType);
     sp[chan] = ctagSoundProcessorFactory::Create(id, aType);
     model->SetActivePluginID(id, chan);
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
