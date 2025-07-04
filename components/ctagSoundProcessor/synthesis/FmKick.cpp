@@ -29,10 +29,6 @@ void FmKick::Trigger() {
 }
 
 void FmKick::Process(float* out, uint32_t size) {
-    // Iterative decay
-    amp_env *= amp_decay_const;
-    mod_env *= mod_decay_const;
-    freq_env *= freq_decay_const;
     float freq_env_scaled = params.A_f * freq_env;
 
     // Prepare Plaits FM operator parameters
@@ -57,4 +53,9 @@ void FmKick::Process(float* out, uint32_t size) {
     // Render a single sample using Plaits FM operator (2-op, modulator feeds carrier)
     plaits::fm::RenderOperators<2, 0, false>(
         ops, f, a, fb_state, fb_amt, nullptr, out, size);
+
+    // Iterative decay
+    amp_env *= amp_decay_const;
+    mod_env *= mod_decay_const;
+    freq_env *= freq_decay_const;
 }
