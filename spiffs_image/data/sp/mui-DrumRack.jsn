@@ -618,7 +618,7 @@
     },
     {
       "id": "rs_group",
-      "name": "RimShot",
+      "name": "Rim Shot",
       "type": "group",
       "params": [
         {

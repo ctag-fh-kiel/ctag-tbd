@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DrumRack Control</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="-1"/>
+    <link rel="stylesheet" href="css/sample-rom.css"/>
+    <link rel="stylesheet" href="css/drumrack.css"/>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/ajaxq.js"></script>
+    <script src="js/drumrack.js"></script>
+</head>
+<body>
+    <div id="preset-icon-bar">
+        <button id="drumrack-preset-load" title="Load Preset">
+            <img src="img/upload.svg" alt="Load" width="28" height="28"/>
+        </button>
+        <button id="drumrack-preset-save" title="Save Preset">
+            <img src="img/download.svg" alt="Save" width="28" height="28"/>
+        </button>
+        <button id="drumrack-help" title="Help">
+            <img src="img/help_outline.svg" alt="Help" width="28" height="28"/>
+        </button>
+        <button id="drumrack-mapping-toggle" title="Show/Hide Mappings">
+            <img id="drumrack-mapping-toggle-img" src="img/toggle_on.svg" alt="Toggle" width="28" height="28"/>
+        </button>
+    </div>
+    <header style="display:none"></header>
+    <main id="drumrack-ui">
+        <!-- Dynamic UI will be injected here -->
+    </main>
+</body>
+</html>

@@ -13,12 +13,12 @@ foreach (VAR ${SOUND_PROCESSORS})
     # get_filename_component(MYFILE_WITHOUT_EXT ${VAR} NAME_WLE) # needs newer CMake Version > 3.13 which is not in IDF r4.1 docker image
     get_filename_component(MYFILE_WITHOUT_EXT ${VAR} NAME_WE)
     # if CONFIG_TBD_PLATFORM_BBA is not defined, skip ctagSoundProcessorDrumRack.cpp
-    if (NOT CONFIG_TBD_PLATFORM_BBA)
-        if ("${VAR}" MATCHES "ctagSoundProcessorDrumRack")
-            message(STATUS "Skipping ctagSoundProcessorDrumRack")
-            continue()
-        endif()
-    endif()
+    #if (NOT CONFIG_TBD_PLATFORM_BBA)
+    #    if ("${VAR}" MATCHES "ctagSoundProcessorDrumRack")
+    #        message(STATUS "Skipping ctagSoundProcessorDrumRack")
+    #        continue()
+    #    endif()
+    #endif()
     message(STATUS "Processing ${MYFILE_WITHOUT_EXT}")
     string(REGEX REPLACE "\\.[^.]*$" "" MYFILE_WITHOUT_EXT ${MYFILE_WITHOUT_EXT}) # using regex instead of NAME_WLE
     string(REGEX REPLACE "ctagSoundProcessor+" "" SP_ID ${MYFILE_WITHOUT_EXT})

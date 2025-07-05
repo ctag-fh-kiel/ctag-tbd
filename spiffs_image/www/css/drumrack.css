@@ -1,0 +1,369 @@
+/* drumrack.css - Modern neutral palette and improved UI for DrumRack */
+
+body {
+    background: #f6f7f9;
+    color: #222;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1.5rem 2rem 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+h1 {
+    margin: 0 0 0.2em 0;
+    font-size: 2.2em;
+    font-weight: 600;
+    color: #444;
+}
+.subtitle {
+    color: #888;
+    font-size: 1.1em;
+    margin-bottom: 0.5em;
+}
+
+main#drumrack-ui {
+    max-width: 1600px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    margin-left: 56px;
+}
+
+#drumrack-preset-bar {
+    margin-bottom: 2.5rem;
+    background: #f0f3f8;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    padding: 1.2rem 2rem 1rem 2rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+.preset-bar-group {
+    display: flex;
+    align-items: center;
+    gap: 1.2em;
+    width: 100%;
+}
+.preset-bar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7em;
+    margin-right: 1.5em;
+}
+.preset-bar-actions button {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: none;
+    background: #e3e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: background 0.2s;
+    padding: 0;
+}
+.preset-bar-actions button:hover {
+    background: #bfc7d1;
+}
+#drumrack-preset-select, #drumrack-preset-name {
+    font-size: 1em;
+    padding: 0.3em 0.7em;
+    border-radius: 5px;
+    border: 1px solid #bfc7d1;
+    background: #fff;
+    margin-right: 0.5em;
+}
+#drumrack-preset-load, #drumrack-preset-save {
+    font-size: 1em;
+    padding: 0.35em 1.1em;
+    border-radius: 5px;
+    border: none;
+    background: #bfc7d1;
+    color: #222;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#drumrack-preset-load:hover, #drumrack-preset-save:hover {
+    background: #8fa1b7;
+}
+
+#preset-icon-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 100vh;
+    background: #f0f3f8;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2000;
+    padding-top: 1.5rem;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+}
+#preset-icon-bar button {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: none;
+    background: #e3e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2em;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    cursor: pointer;
+    transition: background 0.2s;
+    padding: 0;
+}
+#preset-icon-bar button:hover {
+    background: #bfc7d1;
+}
+#preset-icon-bar .material-icons {
+    font-size: 28px;
+    color: #444;
+}
+#preset-icon-bar button img {
+    filter: none;
+    /* Force black stroke/fill for SVG icons */
+    /* Use filter: brightness(0) saturate(100%); for pure black */
+    filter: brightness(0) saturate(100%);
+}
+
+.drumrack-group {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 2rem;
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    border-left: 6px solid #bfc7d1;
+    transition: box-shadow 0.2s;
+}
+.drumrack-group:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+.drumrack-group.collapsed {
+    padding-bottom: 0.5rem;
+}
+.drumrack-group-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 1.3em;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: #2a3a4d;
+    padding: 0.5em 1em;
+}
+.drumrack-group-header .toggle {
+    margin-right: 0.7em;
+    font-size: 1.2em;
+    color: #bfc7d1;
+    transition: transform 0.2s;
+}
+.drumrack-group.collapsed .drumrack-group-header .toggle {
+    transform: rotate(-90deg);
+}
+.drumrack-section-label {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #5a6a7d;
+    margin-bottom: 0.7em;
+    padding: 0.4em 1em 0.4em 0.5em;
+}
+.drumrack-params {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2em 2em;
+}
+.drumrack-param {
+    flex: 1 1 220px;
+    min-width: 180px;
+    margin-bottom: 1.2em;
+}
+.drumrack-param label {
+    display: block;
+    font-size: 1em;
+    margin-bottom: 0.3em;
+    color: #444;
+}
+.drumrack-param input[type="range"] {
+    width: 100%;
+}
+.drumrack-param input[type="checkbox"] {
+    margin-right: 0.5em;
+}
+.drumrack-param .param-value {
+    float: right;
+    color: #888;
+    font-size: 0.95em;
+}
+.drumrack-param .param-tooltip {
+    margin-left: 0.4em;
+    color: #bfc7d1;
+    cursor: help;
+    font-size: 1.1em;
+}
+footer {
+    text-align: center;
+    color: #aaa;
+    padding: 1.5em 0 1em 0;
+    font-size: 0.95em;
+}
+
+.drumrack-groups-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem 2.5rem;
+    align-items: start;
+}
+@media (max-width: 1300px) {
+    .drumrack-groups-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 900px) {
+    .drumrack-groups-grid {
+        grid-template-columns: 1fr;
+    }
+    main#drumrack-ui {
+        padding: 0 0.2rem;
+    }
+    .drumrack-group {
+        padding: 1rem 0.5rem 0.5rem 0.5rem;
+    }
+    .drumrack-params {
+        gap: 0.7em 1em;
+    }
+}
+.param-inline-input {
+    text-align: right;
+    width: 60px;
+    float: right;
+    margin-left: 0.5em;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+#drumrack-preset-modal {
+    /* ...existing styles... */
+    left: 56px !important;
+    width: calc(100vw - 56px) !important;
+}
+
+.mapping-indicator {
+    display: inline-block;
+    width: 0.7em;
+    height: 0.7em;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    border-radius: 50%;
+    background: #e53935;
+    vertical-align: middle;
+    box-shadow: 0 0 2px #b71c1c;
+    position: relative;
+    top: -0.1em;
+}
+
+#drumrack-preset-modal-content {
+    padding: 2.2em 2.2em 1.7em 2.2em !important;
+    border-radius: 12px !important;
+    background: #f8fafc !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.04);
+    min-width: 320px;
+    max-width: 96vw;
+    font-size: 1.07em;
+    color: #222;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.1em;
+}
+#drumrack-preset-modal-content h3 {
+    margin: 0 0 1em 0;
+    font-size: 1.18em;
+    font-weight: 600;
+    color: #2a3a4d;
+    text-align: center;
+}
+#drumrack-preset-modal-content ul {
+    margin: 0 0 1.1em 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7em;
+}
+#drumrack-preset-modal-content li {
+    display: flex;
+    justify-content: center;
+}
+#drumrack-preset-modal-content button {
+    margin: 0.3em 0 0.3em 0;
+    padding: 0.55em 1.3em;
+    border-radius: 7px;
+    border: none;
+    background: #bfc7d1;
+    color: #222;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    min-width: 110px;
+    line-height: 1.4;
+}
+#drumrack-preset-modal-content button:hover {
+    background: #8fa1b7;
+}
+#drumrack-preset-modal-content input[type="number"],
+#drumrack-preset-modal-content input[type="text"] {
+    padding: 0.45em 0.8em;
+    border-radius: 6px;
+    border: 1px solid #bfc7d1;
+    font-size: 1em;
+    margin-bottom: 0.7em;
+    margin-top: 0.1em;
+    width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    line-height: 1.5;
+}
+#drumrack-preset-modal-content input[type="number"] {
+    background: #fff;
+    border: none;
+    box-shadow: none;
+    color: #2a3a4d;
+    font-size: 1.13em;
+    font-weight: 600;
+    margin-bottom: 0.7em;
+    margin-top: 0.1em;
+    width: 4.5em;
+    box-sizing: border-box;
+    text-align: center;
+    outline: none;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    /* Restore default browser appearance for spin buttons */
+    -webkit-appearance: number-input;
+       -moz-appearance: number-input;
+            appearance: number-input;
+}
+#drumrack-preset-modal-content label {
+    margin-bottom: 0.4em;
+    font-weight: 500;
+    color: #444;
+}
+#drumrack-preset-modal-content .param-inline-input {
+    margin-bottom: 0.7em;
+}
