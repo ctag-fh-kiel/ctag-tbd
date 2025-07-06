@@ -1,13 +1,13 @@
 from esphome.components.tbd_module.python_dependencies import python_dependencies
+
 from esphome.const import CONF_ID
 import esphome.config_validation as cv
 import esphome.codegen as cg
 
-from tbd_core.buildgen import GenerationStages, get_reflection_registry, AutoReflection, ComponentInfo
+from tbd_core.buildgen import GenerationStages, get_reflection_registry, AutoReflection, ComponentInfo, get_reflectables
 
 python_dependencies(('humps', 'pyhumps'))
 
-import humps
 import logging
 
 import tbd_core.buildgen as tbd
@@ -15,7 +15,8 @@ import tbd_core.buildgen as tbd
 from esphome.components.tbd_api import get_api_registry
 from tbd_core.plugins import (
     PluginRegistry,
-    PluginGenerator, Plugins,
+    PluginGenerator,
+    Plugins,
 )
 
 
@@ -48,9 +49,9 @@ def get_plugin_registry() -> PluginRegistry:
     return PluginRegistry()
 
 
-@tbd.generated_tbd_global(SOUND_PLUGINS_GLOBAL, stage=GenerationStages.PLUGINS)
+@tbd.generated_tbd_global(SOUND_PLUGINS_GLOBAL, after_stage=GenerationStages.PLUGINS)
 def get_plugins() -> Plugins:
-    return get_plugin_registry().get_plugins(get_reflection_registry().get_reflectables())
+    return get_plugin_registry().get_plugins(get_reflectables())
 
 
 def new_plugin_registry(init_file: str, config) -> ComponentInfo:
@@ -120,10 +121,6 @@ async def to_code(config):
 
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
-
-    api_registry = get_api_registry()
-    api_registry.add_message_types(component.path / 'src' / 'sound_registry.proto')
-
     tbd.add_generation_job(finalize_plugin_registry_job)
 
 

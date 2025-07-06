@@ -1,22 +1,25 @@
 from pathlib import Path
 from typing import Final
 
-from .api import Api
-from .idc_interfaces import Endpoint, Event, Responder, IDCHandler
 from tbd_core.generators import jilter, GeneratorBase
+from tbd_core.serialization import is_param_wrapper
+
+from .api import Api
+from .idc_interfaces import Endpoint, Event, Responder, IDCFunc
+from ..reflection.db import ClassPtr
 
 
-def forward_args(idc: IDCHandler, *,
+def forward_args(idc: IDCFunc, *,
                  prefix: str,
                  single_arg_name: str | None,
                  output_arg_name: str | None) -> str:
 
     arg_list = []
-    if idc.has_args:
-        if single_arg_name and len(idc.args) == 1:
+    if idc.has_inputs:
+        if single_arg_name and len(idc.inputs) == 1:
             arg_list.append(f'{prefix}{single_arg_name}')
         else:
-            arg_list = [f'{prefix}{arg_name}' for arg_name, arg_type in idc.args.items()]
+            arg_list = [f'{prefix}{_input.arg_name}' for _input in idc.inputs]
 
     if output_arg_name and isinstance(idc, Endpoint) and idc.has_output:
         arg_list.append(f'{output_arg_name}')
@@ -24,17 +27,17 @@ def forward_args(idc: IDCHandler, *,
     return ', '.join(arg_list)
 
 
-def apply_args(idc: IDCHandler, obj: str, *,
+def apply_args(idc: IDCFunc, obj: str, *,
                single_arg_name: str | None,
                output_arg_name: str | None) -> list[str]:
 
     arg_list = []
-    if idc.has_args:
-        if single_arg_name and len(idc.args) == 1:
-            arg_name = next(iter(idc.args))
+    if idc.has_inputs:
+        if single_arg_name and len(idc.inputs) == 1:
+            arg_name = idc.inputs[0].arg_name
             arg_list.append(f'{obj}.{single_arg_name} = {arg_name}')
         else:
-            arg_list = [f'{obj}.{arg_name} = {arg_name}' for arg_name, arg_type in idc.args.items()]
+            arg_list = [f'{obj}.{_input.arg_name} = {_input.arg_name}' for _input in idc.inputs]
 
 
     if output_arg_name and isinstance(idc, Endpoint) and idc.has_output:
@@ -43,15 +46,15 @@ def apply_args(idc: IDCHandler, obj: str, *,
     return arg_list
 
 
-def arg_dict(idc: IDCHandler, *,
+def arg_dict(idc: IDCFunc, *,
              key_sep: str,
              single_arg_name: str | None,
              output_arg_name: str | None) -> list[str]:
 
     arg_list = []
-    if idc.has_args:
-        if single_arg_name and len(idc.args) == 1:
-            arg_name = next(iter(idc.args))
+    if idc.has_inputs:
+        if single_arg_name and len(idc.inputs) == 1:
+            arg_name = idc.inputs[0].arg_name
             arg_list.append(f'{single_arg_name}{key_sep}{single_arg_name} = {arg_name}')
         else:
             arg_list = [f'{arg_name}{key_sep}{arg_name}' for arg_name, arg_type in idc.args.items()]
@@ -68,60 +71,67 @@ class FiltersBase:
         self._api: Final[Api] = api
 
     @jilter
-    def forward_args(self, idc: IDCHandler, *,
+    def forward_args(self, idc: IDCFunc, *,
                      prefix: str = '',
                      single_arg_name: str | None = None,
                      output_arg_name: str | None = None) -> str:
         return forward_args(idc, prefix=prefix, single_arg_name=single_arg_name, output_arg_name=output_arg_name)
 
     @jilter
-    def apply_args(self, idc: IDCHandler, obj: str, *,
+    def apply_args(self, idc: IDCFunc, obj: str, *,
                    single_arg_name: str | None = None,
                    output_arg_name: str = None) -> list[str]:
         return apply_args(idc, obj, single_arg_name=single_arg_name, output_arg_name=output_arg_name)
 
     @jilter
-    def arg_dict(self, idc: IDCHandler, *, key_sep: str,
+    def arg_dict(self, idc: IDCFunc, *, key_sep: str,
                  single_arg_name: str | None = None,
                  output_arg_name: str = None) -> list[str]:
         return arg_dict(idc, key_sep=key_sep, single_arg_name=single_arg_name, output_arg_name=output_arg_name)
 
     @jilter
     def unwrap_response(self, endpoint: Endpoint, obj: str) -> str:
-        response = self._api.get_response(endpoint)
-        return f'{obj}.value' if response.is_wrapper else obj
+        response = self._api.get_request(endpoint)
+        return f'{obj}.value' if is_param_wrapper(response) else obj
 
     @jilter
     def endpoint_id(self, endpoint: Endpoint) -> int:
-        return self._api.get_endpoint_id(endpoint.name)
+        return self._api.get_endpoint_id(endpoint)
 
     @jilter
     def request_id(self, endpoint: Endpoint) -> int:
-        return -1
+        return self._api.get_request_id(endpoint)
 
     @jilter
-    def request_type(self, endpoint: Endpoint) -> str:
-        return endpoint.request_type
+    def request_type(self, endpoint: Endpoint) -> str | None:
+        request_type = self._api.get_request(endpoint)
+        if request_type is None:
+            return None
+        return str(self._api.get_request(endpoint))
 
     @jilter
-    def response_id(self, endpoint: Endpoint) -> int:
-        return -1
+    def output_id(self, endpoint: Endpoint) -> int:
+        return self._api.get_response_id(endpoint)
 
     @jilter
-    def response_type(self, endpoint: Endpoint) -> str:
-        return endpoint.response_type
+    def response_type(self, endpoint: Endpoint) -> str | None:
+        if not endpoint.has_output:
+            return None
+        return endpoint.output_typename
 
     @jilter
     def event_id(self, event: Event) -> int:
-        return self._api.get_event_id(event.name)
+        return self._api.get_event_id(event)
 
     @jilter
-    def event_payload(self, event: Event) -> str:
-        return event.payload_type
+    def event_payload(self, event: Event) -> str | None:
+        if event.inputs is None:
+            return None
+        return self._api.get_payload(event).full_name
 
     @jilter
     def responders(self, event: Event) -> list[Responder]:
-        responders = self._api.get_responders(event.name)
+        responders = self._api.get_responders(event)
         return responders if responders else []
 
 

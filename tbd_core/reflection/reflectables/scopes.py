@@ -37,301 +37,7 @@ def is_valid_child(child_type: ScopeType, parent_type: ScopeType) -> bool:
 def is_valid_parent(parent_type: ScopeType, child_type: ScopeType) -> bool:
     return parent_type in VALID_PARENT_TYPES[child_type]
 
-# class ScopeSegmentBase(ABC):
-#     @property
-#     @abstractmethod
-#     def name(self) -> str:
-#         raise NotImplementedError()
-#
-#     @property
-#     @abstractmethod
-#     def type(self) -> ScopeType:
-#         raise NotImplementedError()
 
-
-# class ScopeDescriptionSegment(ScopeSegmentBase):
-#     """ Single element in a c++ scope.
-#
-#         Scope segments can be any name not associated with a value. These are
-#
-#         - namespaces
-#         - functions
-#         - classes
-#         - static fields
-#         - fields
-#     """
-#
-#     def __init__(self, raw: cpplib.NamespaceScope | cpplib.ClassScope | cpplib.NamespaceScope | cpplib.Field | cpplib.Function):
-#         self._raw = raw
-#
-#     @property
-#     def raw(self) -> cpplib.NamespaceScope | cpplib.ClassScope | cpplib.NamespaceScope | cpplib.Field | cpplib.Function:
-#         return self._raw
-#
-#     @property
-#     def name(self) -> str:
-#         match self._raw:
-#             case cpplib.NamespaceScope() as namespace:
-#                 return namespace.name
-#             case cpptypes.Function() as func:
-#                 return func.name.format()
-#             case cpplib.ClassScope() as cls:
-#                 typename, _ = normalize_typename(cls.class_decl.typename)
-#                 return typename
-#             case cpptypes.Field() as field:
-#                 return field.name
-#             case _:
-#                 raise ValueError(f'invalid scope segment type {type(self._raw)}')
-#
-#     @property
-#     def type(self) -> ScopeType:
-#         match self._raw:
-#             case cpplib.NamespaceScope():
-#                 return ScopeType.NAMESPACE
-#             case cpptypes.Function():
-#                 return ScopeType.FUNCTION
-#             case cpplib.ClassScope():
-#                 return ScopeType.CLASS
-#             case cpptypes.Field() as field:
-#                 if field.static:
-#                     return ScopeType.STATIC_FIELD
-#                 else:
-#                     return ScopeType.FIELD
-#             case _:
-#                 raise ValueError(f'invalid scope segment type {type(self._raw)}')
-#
-#     @property
-#     def attrs(self) -> Attributes | None:
-#         match self._raw:
-#             case cpplib.NamespaceScope() as namespace:
-#                 return namespace.attrs
-#             case cpptypes.Function() as func:
-#                 return func.attrs
-#             case cpplib.ClassScope() as cls:
-#                 return cls.class_decl.attrs
-#             case cpptypes.Field() as field:
-#                 return field.attrs
-#             case _:
-#                 raise ValueError(f'invalid scope segment type {type(self._raw)}')
-#
-#     @property
-#     def is_root(self):
-#         return self.type == ScopeType.NAMESPACE and self.name == ''
-#
-#     # convert to tail type
-#
-#     def namespace(self) -> cpplib.NamespaceScope:
-#         if self.type != ScopeType.NAMESPACE:
-#             raise ValueError(f'scope segment is not a namespace: {self.type}')
-#         return self._raw
-#
-#     def func(self) -> cpplib.Function:
-#         if self.type != ScopeType.FUNCTION:
-#             raise ValueError(f'scope segment is not a function: {self.type}')
-#         return self._raw
-#
-#     def cls(self) -> cpplib.ClassScope:
-#         if self.type != ScopeType.CLASS:
-#             raise ValueError(f'scope segment is not a class: {self.type}')
-#         return self._raw
-#
-#     def field(self) -> cpptypes.Field:
-#         if self.type != ScopeType.FIELD:
-#             raise ValueError(f'scope segment is not a field: {self.type}')
-#         return self._raw
-#
-#
-# class ScopeDescription:
-#     """ Description of a C++ scope.
-#
-#         Scopes describe the nesting of named scopes. See `ScopeDescriptionSegment` for segment types. Note that the
-#         word 'scope' is used more loosely here than in C++: It can refer both to a scope in the C++ sense of the word
-#         but also to classes and functions within a scope and paths/nested paths to nested fields. For scopes in the
-#         traditional sense the string representation of scopes uses `::` to indicate nesting, for paths to fields `.`
-#         is used.
-#
-#         Examples:
-#         ---------
-#
-#         - namespaces: `ns1::ns2::ns2`
-#         - classes `ns1::ns2::Cls1`
-#         - nested classes: `ns1::ns2::Cls1::NestedCls1`
-#         - fields: `ns1::ns2::Cls1.field1`
-#         - field in field of type struct: `ns1::ns2::Cls1.field1.nested_field1`
-#         - field of nested class `ns1::ns2::Cls1::nested_Cls1.field1`
-#         - free functions: `ns1::ns2::free_function1`
-#         - static methods: `ns1::ns2::Cls1.method1`
-#         - static methods of nested classes: `ns1::ns2::Cls1.NestedCls1.nested_method1`
-#
-#     """
-#     def __init__(self, segments: list[ScopeDescriptionSegment]):
-#         self._segments = segments
-#
-#     @property
-#     def segments(self) -> list[ScopeDescriptionSegment]:
-#         return self._segments
-#
-#     @staticmethod
-#     def from_root(root_namespace: cpplib.NamespaceScope) -> 'ScopeDescription':
-#         if root_namespace.name != '':
-#             raise ValueError('namespace is not root')
-#         return ScopeDescription([ScopeDescriptionSegment(root_namespace)])
-#
-#     def add_namespace(self, namespace: cpplib.NamespaceScope) -> 'ScopeDescription':
-#         if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.NAMESPACE):
-#             raise ValueError('namespaces can only be declared in namespaces')
-#         return ScopeDescription([*self.segments, ScopeDescriptionSegment(namespace)])
-#
-#     def add_function(self, func: cpptypes.Function) -> 'ScopeDescription':
-#         if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.FUNCTION):
-#             raise ValueError('function can only be declared in namespaces')
-#         return ScopeDescription([*self.segments, ScopeDescriptionSegment(func)])
-#
-#     def add_class(self, cls: cpplib.ClassScope) -> 'ScopeDescription':
-#         if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.CLASS):
-#             raise ValueError('classes can only be declared in namespaces or other classes')
-#         return ScopeDescription([*self.segments, ScopeDescriptionSegment(cls)])
-#
-#     def add_static_field(self, field: cpptypes.Field) -> 'ScopeDescription':
-#         if self.segments and self.segments[-1].type != ScopeType.CLASS:
-#             raise ValueError('static fields can only be declared in classes')
-#         if not field.static:
-#             raise ValueError('field is not static')
-#         return ScopeDescription([*self.segments, ScopeDescriptionSegment(field)])
-#
-#     def add_field(self, field: cpptypes.Field) -> 'ScopeDescription':
-#         if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.FIELD):
-#             raise ValueError('fields can only be declared in classes and fields')
-#         if field.static:
-#             raise ValueError('field is static')
-#         return ScopeDescription([*self.segments, ScopeDescriptionSegment(field)])
-#
-#     def __add__(self, other: 'ScopeDescription') -> 'ScopeDescription':
-#         if len(self.segments) == 0:
-#             return ScopeDescription([*other.segments])
-#         if len(other.segments) == 0:
-#             return ScopeDescription([*self.segments])
-#
-#         self_type = self.segments[-1].type
-#         other_type = other.segments[0].type
-#         if not is_valid_child(other_type, self_type):
-#             raise ValueError(f'can not merge scopes of type {self_type.name} and {other_type.name}')
-#         return ScopeDescription([*self.segments, *other.segments])
-#
-#     def namespace(self) -> cpplib.NamespaceScope:
-#         return self.segments[-1].namespace()
-#
-#     def name(self):
-#         return self.segments[-1].name
-#
-#     def func(self) -> cpptypes.Function:
-#         return self.segments[-1].func()
-#
-#     def cls(self) -> cpplib.ClassScope:
-#         return self.segments[-1].cls()
-#
-#     def field(self) -> cpptypes.Field:
-#         return self.segments[-1].field()
-#
-#     def attrs(self) -> Attributes | None:
-#         return self.segments[-1].attrs
-#
-#     def root(self) -> cpplib.NamespaceScope:
-#         if len(self.segments) < 1:
-#             raise ValueError('empty scope description has no root')
-#         return self.segments[0].namespace()
-#
-#     @property
-#     def parent(self) -> Self | None:
-#         if len(self.segments) < 2:
-#             return None
-#         return ScopeDescription(self.segments[:-1])
-#
-#     @property
-#     def namespaces(self):
-#         retval, _, _ = self.split()
-#         return retval
-#
-#     @property
-#     def classes(self):
-#         _, retval, _ = self.split()
-#         return retval
-#
-#     @property
-#     def fields(self):
-#         _, _, retval = self.split()
-#         return retval
-#
-#     @property
-#     def path(self) -> str:
-#         fst, *tail = self.segments
-#         if fst.is_root:
-#             if len(tail) == 0:
-#                 return ''
-#             else:
-#                 fst, *tail = tail
-#
-#         retval = fst.name
-#         for elem in tail:
-#             elem_name = elem.name
-#             if elem.type == ScopeType.FIELD:
-#                 retval += f'.{elem_name}'
-#             else:
-#                 retval += f'::{elem_name}'
-#         return retval
-#
-#     @property
-#     def hash(self) -> int:
-#         return crc32(self.path.encode())
-#
-#     def __str__(self) -> str:
-#         return self.path
-#
-#     def __repr__(self) -> str:
-#         return f'ScopeDescription({self.path})'
-#
-#     def split(self) -> tuple['ScopeDescription', 'ScopeDescription', 'ScopeDescription']:
-#         """ Split the scope description into scope segment type groups  in order. """
-#
-#         class SplitDone(BaseException):
-#             pass
-#
-#         namespaces = []
-#         classes = []
-#         fields = []
-#
-#         try:
-#             pos, *rest = self.segments
-#             while pos.type == ScopeType.NAMESPACE:
-#                 namespaces.append(pos)
-#                 if not rest:
-#                     raise SplitDone
-#                 pos, *rest = rest
-#
-#             if pos.type == ScopeType.FUNCTION:
-#                 classes.append(pos)
-#                 return
-#
-#             while pos.type == ScopeType.CLASS:
-#                 classes.append(pos)
-#                 if not rest:
-#                     raise SplitDone
-#                 pos, *rest = rest
-#
-#             while pos.type == ScopeType.STATIC_FIELD:
-#                 classes.append(pos)
-#
-#             while pos.type == ScopeType.FIELD:
-#                 fields.append(pos)
-#                 if not rest:
-#                     raise SplitDone
-#                 pos, *rest = rest
-#         except SplitDone:
-#             return ScopeDescription(namespaces), ScopeDescription(classes), ScopeDescription(fields)
-#
-#         raise ValueError('bad segment order in scope')
-#
-#
 class ScopePathSegment:
     def __init__(self, name: str, _type: ScopeType, _id: int | None) -> None:
         self._name: str = name
@@ -346,14 +52,52 @@ class ScopePathSegment:
     def type(self) -> ScopeType:
         return self._type
 
+    def is_namespace(self) -> bool:
+        return self.type is ScopeType.NAMESPACE
+
     def namespace(self) -> str:
         if self._type != ScopeType.NAMESPACE:
             raise ValueError(f'scope segment is not a namespace: {self._type}')
         return self._name
 
+    def is_function(self) -> bool:
+        return self.type is ScopeType.FUNCTION
+
+    def function(self) -> str:
+        if self._type != ScopeType.FUNCTION:
+            raise ValueError(f'scope segment is not a function: {self._type}')
+        return self._name
+
+    def is_argument(self) -> bool:
+        return self.type is ScopeType.ARGUMENT
+
+    def argument(self) -> str:
+        if self._type != ScopeType.ARGUMENT:
+            raise ValueError(f'scope segment is not an argument: {self._type}')
+        return self._name
+
+    def is_cls(self) -> bool:
+        return self.type is ScopeType.CLASS
+
     def cls(self) -> str:
         if self._type != ScopeType.CLASS:
-            raise ValueError(f'scope segment is not a namespace: {self._type}')
+            raise ValueError(f'scope segment is not a class: {self._type}')
+        return self._name
+
+    def is_static_field(self) -> bool:
+        return self.type is ScopeType.STATIC_FIELD
+
+    def static_field(self) -> str:
+        if self._type != ScopeType.STATIC_FIELD:
+            raise ValueError(f'scope segment is not a static field: {self._type}')
+        return self._name
+
+    def is_field(self) -> bool:
+        return self.type is ScopeType.FIELD
+
+    def field(self) -> str:
+        if self._type != ScopeType.FIELD:
+            raise ValueError(f'scope segment is not a static field: {self._type}')
         return self._name
 
 
@@ -397,11 +141,35 @@ class ScopePath:
             raise ValueError('arguments can only be declared for functions')
         return ScopePath([*self.segments, ScopePathSegment(arg, ScopeType.ARGUMENT, _id)])
 
+    def is_namespace(self) -> bool:
+        return self.segments[-1].is_namespace()
+
     def namespace(self) -> str:
         return self.segments[-1].namespace()
 
+    def is_function(self) -> bool:
+        return self.segments[-1].is_function()
+
+    def function(self) -> str:
+        return self.segments[-1].function()
+
+    def is_cls(self) -> bool:
+        return self.segments[-1].is_cls()
+
     def cls(self) -> str:
         return self.segments[-1].cls()
+
+    def is_static_field(self) -> bool:
+        return self.segments[-1].is_static_field()
+
+    def static_field(self) -> str:
+        return self.segments[-1].static_field()
+
+    def is_field(self) -> bool:
+        return self.segments[-1].is_field()
+
+    def field(self) -> str:
+        return self.segments[-1].field()
 
     @property
     def namespaces(self):

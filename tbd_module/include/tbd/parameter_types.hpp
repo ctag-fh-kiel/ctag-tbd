@@ -71,7 +71,19 @@ enum ParamTypeTag {
     FLOAT_PARAM   = 2,
     UFLOAT_PARAM  = 3,
     TRIGGER_PARAM = 4,
+    INVALID_PARAM = 5,
 };
+
+template<ParamTypeTag tag> struct _param_type_from_tag;
+
+template<> struct _param_type_from_tag<INT_PARAM> { using type = int_par; };
+template<> struct _param_type_from_tag<UINT_PARAM> { using type = uint_par; };
+template<> struct _param_type_from_tag<FLOAT_PARAM> { using type = float_par; };
+template<> struct _param_type_from_tag<UFLOAT_PARAM> { using type = ufloat_par; };
+template<> struct _param_type_from_tag<TRIGGER_PARAM> { using type = trigger_par; };
+
+template<ParamTypeTag tag>
+using param_type_from_tag = typename _param_type_from_tag<tag>::type ;
 
 };
 

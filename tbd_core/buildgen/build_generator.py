@@ -55,6 +55,10 @@ class BuildGenerator(ABC):
         self.add_build_flag(f'-I{include_dir}')
 
     @abstractmethod
+    def add_library(self, name: str, version: str | None = None, repository: str | None = None) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
     def set_compiler_options(self, *, std: int = 20, exceptions: bool = False) -> None:
         raise NotImplementedError()
 
@@ -111,6 +115,10 @@ def add_include_dir(include_dir: Path) -> None:
     get_build_generator().add_include_dir(include_dir)
 
 
+def add_library(name: str, version: str | None = None, repository: str | None = None) -> None:
+    get_build_generator().add_library(name, version, repository)
+
+
 def set_compiler_options(*, std: int = 20, exceptions: bool = False) -> None:
     get_build_generator().set_compiler_options(std=std, exceptions=exceptions)
 
@@ -152,6 +160,7 @@ __all__ = [
     'add_define',
     'add_build_flag',
     'add_include_dir',
+    'add_library',
     'set_compiler_options',
     'add_platformio_option',
     'add_platformio_block',

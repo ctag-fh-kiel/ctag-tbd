@@ -1,64 +1,66 @@
 from pathlib import Path
 
 import tbd_core.buildgen as tbb
-from tbd_core.api import MessagePayload, ParamPayload, Api, jilter, Endpoint, FiltersBase
+from tbd_core.api import Api, jilter, Endpoint, FiltersBase
 from tbd_core.api.api_generator_base import ApiGeneratorBase
-
+from tbd_core.serialization import SerializableGenerator
 
 TYPESCRIPT_SRC_DIR = Path('src')
 
 
 class TSFilters(FiltersBase):
-    def payload_type(self, payload_type: str) -> str:
-        payload = self._api.get_payload(payload_type)
-        match payload:
-            case MessagePayload():
-                return f'dtos.{payload_type}'
-            case ParamPayload():
-                return payload_type
-            case _:
-                raise Exception(f'unknown payload type: {type(payload)}')
+    # def payload_type(self, payload_type: str) -> str:
+    #     payload = self._api.get_payload(payload_type)
+    #     match payload:
+    #         case MessagePayload():
+    #             return f'dtos.{payload_type}'
+    #         case ParamPayload():
+    #             return payload_type
+    #         case _:
+    #             raise Exception(f'unknown payload type: {type(payload)}')
 
     @jilter
     def request_func_args(self, endpoint: Endpoint):
         arg_list = []
-        if endpoint.has_args:
-            for arg_name, arg_type in endpoint.args.items():
-                arg_type = self.payload_type(arg_type)
-                arg_list.append(f'{arg_name}: {arg_type}')
+        if endpoint.has_inputs:
+            for _input in endpoint.inputs:
+                # arg_type = self.payload_type()
+                arg_list.append(f'{_input.arg_name}: {_input.cls_name}')
 
         return ', '.join(arg_list)
 
 
     @jilter
     def forward_args(self, endpoint: Endpoint) -> list[str]:
-        if not endpoint.has_args:
+        if not endpoint.has_inputs:
             return []
-        if len(endpoint.args) == 1:
-            arg_name = next(iter(endpoint.args))
-            return [f'input: {arg_name}']
+        inputs = endpoint.inputs
+        if len(inputs) == 1:
+            input_name = inputs[0].arg_name
+            return [f'input: {input_name}']
 
         arg_list = []
-        for arg_name in endpoint.args:
-            arg_list.append(f'{arg_name}: {arg_name}')
+        for _input in inputs:
+            arg_list.append(f'{_input.arg_name}: {_input.cls_name}')
         return arg_list
 
     @jilter
     def request_func_return(self, endpoint: Endpoint) -> str:
-        if not endpoint.output:
+        if not endpoint.has_output:
             return 'void'
-        return self.payload_type(endpoint.output)
+        return endpoint.output.cls_name
 
 
 class TSGenerator(ApiGeneratorBase):
-    def __init__(self, api: Api):
+    def __init__(self, api: Api, serializables: SerializableGenerator):
         templates_path = Path(__file__).parent / 'ts_files'
         super(TSGenerator, self).__init__(api, templates_path, TSFilters(api))
+        self._serializables = serializables
 
-    def write_client(self, out_dir: Path, messages_file: Path):
+    def write_client(self, out_dir: Path):
         # symlinks will result in bad esbuild module lookups
         tbb.update_build_tree_if_outdated(self._templates, out_dir, symlink=False, ignore=['*.j2'])
-        tbb.update_build_file_if_outdated(messages_file, out_dir / TYPESCRIPT_SRC_DIR / messages_file.name, symlink=False)
+        self._serializables.write_protos(out_dir / TYPESCRIPT_SRC_DIR / 'dtos.proto')
 
         self._write_typescript_client_class(out_dir)
 

@@ -180,6 +180,7 @@ def batch_update_files_if_outdated(
 
     search_dir = source_dir
     if sub_dir is not None:
+        sub_dir = Path(sub_dir)
         if sub_dir.is_absolute():
             raise RuntimeError(f'sub_dir paths have to be relative, got {sub_dir}')
         search_dir = source_dir / sub_dir
@@ -200,7 +201,6 @@ def batch_update_files_if_outdated(
                                                        flatten=flatten, symlink=symlink, ignore=ignore)
 
     return retval
-
 
 
 __all__ = [

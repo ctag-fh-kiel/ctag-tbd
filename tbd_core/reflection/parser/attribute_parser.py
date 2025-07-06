@@ -1,6 +1,8 @@
+from typing import OrderedDict
+
 import cxxheaderparser.lexer as lexer
 
-from tbd_core.reflection.reflectables import Attribute, Attributes, AttributeArgTypes
+from tbd_core.reflection.reflectables import Attribute, Attributes, AttributeOptions
 
 Token = lexer.LexToken
 Tokens = list[lexer.LexToken]
@@ -95,10 +97,10 @@ def feed_attribute(tokens: Tokens) -> tuple[list[str], Tokens, Tokens]:
 
     return name, arg_list, tail
 
-def parse_arg_list(tokens: Tokens) -> dict[str, AttributeArgTypes]:
+def parse_arg_list(tokens: Tokens) -> AttributeOptions:
     tail = tokens
 
-    params = {}
+    params = OrderedDict()
     while tail:
         # get argument name
         key, *tail = tail
@@ -161,15 +163,15 @@ def parse_arg_list(tokens: Tokens) -> dict[str, AttributeArgTypes]:
     return params
 
 def parse_attributes(tokens: Tokens) -> Attributes:
-    attributes = []
+    attributes = {}
     tail = tokens
     while tail:
         name, arg_list, tail = feed_attribute(tail)
         if name[0] != 'tbd':
             continue
         args = parse_arg_list(arg_list)
-        attributes.append(Attribute(name_segments=name, params=args))
-
+        attribute = Attribute(name_segments=name, options=args)
+        attributes[attribute.name] = attribute
     return attributes
 
 __all__ = [

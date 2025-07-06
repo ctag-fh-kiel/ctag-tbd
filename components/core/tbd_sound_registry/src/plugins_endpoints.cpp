@@ -9,6 +9,11 @@ namespace tbd::sound_registry {
 
 using namespace sound_processor::channels;
 
+struct ActivePlugins {
+    trigger_par is_stereo;
+    int_par left;
+    int_par right;
+};
 
 [[tbd::endpoint]]
 Error get_num_sounds(uint_par& num_sounds) {

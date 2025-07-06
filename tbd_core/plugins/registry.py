@@ -104,9 +104,6 @@ class PluginRegistry:
         for plugin_set in self._plugin_sets:
             plugins += self._add_filtered_plugins(plugin_set, reflectables.classes())
 
-        for cls in reflectables.classes():
-            print(f'+++ {cls.cls_name, cls.component}')
-
         acc = PluginsOptions(reflectables=reflectables)
 
         for plugin_id, plugin in enumerate(plugins):
@@ -187,20 +184,5 @@ class PluginRegistry:
                     raise ValueError(f'unknown param type {field_type}')
         return flattened_params
 
-    # def _find_field_type(self, field_type: str | int, reflectables: Reflectables) -> ClassDescription | None:
-    #     found_types = []
-    #     if isinstance(field_type, int) and field_type in reflectables.classes:
-    #         return reflectables.classes[field_type]
-    #     return None
-    #     # for cls in reflectables.class_list:
-    #     #     if field_type
-    #     #
-    #     #     if field_type == cls.full_name:
-    #     #         found_types.append(cls)
-    #     # return found_types
-
-    # @property
-    # def _reflectables(self) -> ClassDescriptions:
-    #     return self._collector.reflectables
 
 __all__ = ['PluginRegistry']

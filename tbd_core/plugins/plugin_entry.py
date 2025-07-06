@@ -139,7 +139,7 @@ class ParamEntry:
 
         if not attrs:
             return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type, is_mappable=is_mappable)
-        attrs = {name: value for attr in attrs for name, value in attr.params.items() if attr.name == 'tbd'}
+        attrs = {name: value for attr in attrs.values() for name, value in attr.options.items() if attr.name == 'tbd'}
 
         # validate attributes
         if underlying_type == ParamType.TRIGGER_PARAM:

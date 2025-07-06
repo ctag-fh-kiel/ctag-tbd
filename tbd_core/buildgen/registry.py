@@ -19,7 +19,6 @@ _LOGGER = logging.getLogger(__file__)
 
 
 GLOBAL_DOMAIN = 'globals'
-# TBD_REGISTRY_FIELD_NAME = 'tbd_registry'
 
 
 class GlobalRegistry:
@@ -38,7 +37,9 @@ def get_generation_stage() -> GenerationStages:
 
 
 def _set_generation_stage(stage: GenerationStages) -> None:
-    GlobalRegistry().stage = stage
+    if GlobalRegistry().stage > stage:
+        _LOGGER.info(f'[[==== entering generation stage {stage.name} ====]]')
+        GlobalRegistry().stage = stage
 
 
 def get_tbd_registry() -> dict[str, dict[str, Any]]:
@@ -66,8 +67,9 @@ def set_tbd_global(name: str, value: Any, *, domain: str = GLOBAL_DOMAIN, reset_
 
 
 def has_tbd_global(name: str, *, domain: str = GLOBAL_DOMAIN) -> bool:
-    domains = get_tbd_registry()
-    return domain in domains and name in domains[domain]
+    if (values := get_tbd_domain(domain, missing_ok=True)) is None:
+        return False
+    return name in values
 
 
 def get_tbd_domain(domain: str = GLOBAL_DOMAIN, missing_ok: bool = False) -> OrderedDict[str, Any] | None:
@@ -94,17 +96,7 @@ def get_tbd_global(name: str, *, domain: str = GLOBAL_DOMAIN, missing_ok: bool =
     return values[name]
 
 
-class TBDRegistry:
-    def __init__(self):
-        self._registry = get_tbd_registry()
-
-    def __getattribute__(self, name: str):
-        if name.startswith('_'):
-            raise ValueError('private attribute requested')
-        
-
-
-def generated_tbd_global(domain: str = GLOBAL_DOMAIN, *, stage: GenerationStages | None = None):
+def generated_tbd_global(domain: str = GLOBAL_DOMAIN, *, after_stage: GenerationStages | None = None):
     """ Define lazily generated TBD global.
 
         Annotation for simple getter functions that create a global value to allow for the following semantics:
@@ -125,9 +117,9 @@ def generated_tbd_global(domain: str = GLOBAL_DOMAIN, *, stage: GenerationStages
                 raise ValueError(f'{name} is not a valid TBD global getter name, needs to start with "get_')
             name = name[4:]
 
-            if stage is not None:
-                if get_generation_stage() > stage:
-                    raise ValueError(f'{name} not available in stage {get_generation_stage().name}, becomes available at stage {stage.name}')
+            if after_stage is not None:
+                if get_generation_stage() > after_stage:
+                    raise ValueError(f'{name} not available in stage {get_generation_stage().name}, becomes available at stage {after_stage.name}')
 
             if not has_tbd_global(name, domain=domain):
                 set_tbd_global(name, func(), domain=domain)

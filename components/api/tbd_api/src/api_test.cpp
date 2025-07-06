@@ -2,10 +2,18 @@
 #include <tbd/errors.hpp>
 #include <tbd/logging.hpp>
 
-#include <api/api_types.pb.h>
-
 
 namespace tbd {
+
+struct Foo {
+    int_par foo1;
+    trigger_par foo2;
+};
+
+struct Bar {
+    float_par bar1;
+    uint_par bar2;
+};
 
 [[tbd::endpoint]]
 Error foo_rpc(const Foo& foo) {

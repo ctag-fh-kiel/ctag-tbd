@@ -1,59 +1,86 @@
 from pathlib import Path
-from typing import Final, Optional, Iterator
+from typing import Final, Optional, Iterator, OrderedDict
 
-from tbd_core.reflection.reflectables import (
-    NamespaceEntry,
-    FunctionEntry,
-    PropertyEntry,
-    ClassEntry,
-    Reflectables,
-    CppType,
-    FileEntry,
-    Param, PropertyID, ComponentID, FileID, NamespaceID, FunctionID, ArgumentID, ClassID, UnknownType,
-)
-from .pointers import (
-    CppTypePtr,
-    MissingCppEntry,
-    NamespacePtr,
-    ReflectableDB,
-    FunctionPtr,
-    ClassPtr,
-    PropertyPtr,
-    ArgumentPtr,
-    FilePtr
-)
+from tbd_core.reflection.reflectables import *
+from .pointers import *
 
 
 class InMemoryReflectableDB(ReflectableDB):
     def __init__(self, data: Reflectables):
         self._data: Final[Reflectables] = data
 
-    ## accessors ##
+    # component
+
+    def has_component(self, component: str) -> bool:
+        component_id = component_ref(component)
+        return component_id in self._data.components
 
     def get_component(self, component_id: ComponentID) -> str:
         if (component := self._data.components.get(component_id)) is None:
             raise MissingCppEntry(f'no header with ID {component_id}')
         return component
 
+    # file
+
+    def has_file(self, component: str, file: Path) -> bool:
+        file_id = file_ref(component, str(file))
+        return file_id in self._data.files
+
     def get_file(self, file_id: FileID) -> FilePtr:
         if file_id not in self._data.files:
             raise MissingCppEntry(f'no file with ID {file_id}')
         return FilePtr(file_id, self)
+
+    def add_file(self, component: str, file: str) -> FilePtr:
+        if component not in self._data.components:
+            component_id = component_ref(component)
+            self._data.components[component_id] = component
+        new_file_id = file_ref(component, file)
+        self._data.files[new_file_id] = FileEntry(component=component_ref(component), file=file)
+        return FilePtr(new_file_id, self)
+
+    # namespace
+
+    def has_namespace(self, namespace: ScopePath) -> bool:
+        return namespace.hash() in self._data.namespaces
 
     def get_namespace(self, namespace_id: NamespaceID) -> NamespacePtr:
         if namespace_id not in self._data.namespaces:
             raise MissingCppEntry(f'no namespace with ID {namespace_id}')
         return NamespacePtr(namespace_id, self)
 
+    def add_namespace(self, namespace: ScopePath) -> NamespacePtr:
+        namespace_id = namespace.hash()
+        if not self.has_namespace(namespace):
+            parent = self.add_namespace(namespace.parent).ref() if namespace.parent else -1
+            self._data.namespaces[namespace_id] = NamespaceEntry(
+                parent=parent,
+                namespace_name=namespace.namespace(),
+            )
+
+        return NamespacePtr(namespace_id, self)
+
+    # function
+
+    def has_function(self, function: ScopePath) -> bool:
+        return function.hash() in self._data.functions
+
     def get_function(self, function_id: FunctionID) -> FunctionPtr:
         if function_id not in self._data.functions:
             raise MissingCppEntry(f'no function with ID {function_id}')
         return FunctionPtr(function_id, self)
 
+    # argument
+
+    def has_argument(self, argument: ScopePath) -> bool:
+        return argument.hash() in self._data.arguments
+
     def get_argument(self, argument_id: ArgumentID) -> ArgumentPtr:
         if argument_id not in self._data.arguments:
             raise MissingCppEntry(f'no argument with ID {argument_id}')
         return ArgumentPtr(argument_id, self)
+
+    # types
 
     def get_type(self, type_id: CppType) -> CppTypePtr:
         match type_id:
@@ -68,10 +95,60 @@ class InMemoryReflectableDB(ReflectableDB):
             case _:
                 raise ValueError(f'type ID is neither class ID nor typename, expected str or int')
 
+    def has_class(self, cls: ScopePath) -> bool:
+        return cls.hash() in self._data.classes
+
     def get_class(self, class_id: ClassID) -> ClassPtr:
         if class_id not in self._data.classes:
             raise MissingCppEntry(f'no class with ID {class_id}')
         return ClassPtr(class_id, self)
+
+    def add_class(self,
+        cls: ScopePath,
+        properties: OrderedDict[str, CppType],
+        *,
+        component: str,
+        files: list[str],
+        bases: list[ScopePath] | None,
+    ) -> ClassPtr:
+        file_ids = [self.add_file(component=component, file=file).ref() for file in files]
+
+        cls_name = cls.cls()
+        cls_id = cls.hash()
+
+        namespace = cls.parent
+        if not namespace.is_namespace():
+            raise ValueError(f'{namespace} is not a namespace')
+        namespace_id = namespace.hash()
+
+        if bases is not None:
+            bases = [self.get_type(base.hash()) for base in bases]
+
+        prop_ids = []
+        for prop_name, prop_type in properties.items():
+            prop_id = cls.add_field(prop_name).hash()
+            self._data.properties[prop_id] = PropertyEntry(
+                files=file_ids,
+                parent=cls_id,
+                field_name=prop_name,
+                type=prop_type,
+            )
+            prop_ids.append(prop_id)
+
+        self._data.classes[cls_id] = ClassEntry(
+            files=file_ids,
+            parent=namespace_id,
+            cls_name=cls_name,
+            bases=bases,
+            properties=prop_ids,
+            generated=True,
+        )
+        return ClassPtr(cls_id, self)
+
+    # property
+
+    def has_property(self, prop: ScopePath) -> bool:
+        return prop.hash() in self._data.properties
 
     def get_property(self, property_id: PropertyID) -> PropertyPtr:
         if property_id not in self._data.properties:

@@ -33,13 +33,14 @@ class GenerationStages(IntEnum):
 
     DEFAULT       =  0
     REFLECTION    = -10
-    COMPONENTS    = -20
-    TESTS         = -30
-    PLUGINS       = -40
-    SERIALIZATION = -50
-    ERRORS        = -60
-    API           = -70
-    FINALIZE      = -80
+    COMPONENTS    = -15
+    TESTS         = -20
+    PLUGINS       = -25
+    ERRORS        = -30
+    FINALIZE      = -35
+    API           = -40
+    SERIALIZATION = -45
+    CLIENTS       = -50
 
 
 __all__ = ['GenerationStages']

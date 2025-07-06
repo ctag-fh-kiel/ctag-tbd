@@ -2,11 +2,15 @@ import logging
 from pathlib import Path
 from typing import Iterable
 
+from cxxheaderparser.errors import CxxParseError
+
 from tbd_core.reflection.parser import AnnotationParser, Parser
 
-from tbd_core.reflection.reflectables import Reflectables, ScopePath, PropertyEntry, ClassEntry, UnknownType
-from tbd_core.reflection.db import ReflectableDB, InMemoryReflectableDB
-
+from tbd_core.reflection.reflectables import Reflectables, ScopePath, UnknownType
+from tbd_core.reflection.db import (
+    ReflectableDB,
+    InMemoryReflectableDB
+)
 from .contexts import (
     FileContext,
     NamespaceContext,
@@ -31,6 +35,7 @@ class ReflectableFinder:
 
         self._amend_property_types(self._reflectables)
         self._amend_base_types(self._reflectables)
+        self._amend_arg_types(self._reflectables)
         return InMemoryReflectableDB(self._reflectables)
 
     def add_from_file(self, component: str, file_name: Path, *, include_base: Path | None = None) -> ReflectableDB:
@@ -52,9 +57,6 @@ class ReflectableFinder:
             relative_file_path = file_name.relative_to(include_base) if include_base else file_name
             file_ctx = self._collect_module_and_file(component, relative_file_path, maybe_added)
 
-                # return
-            print(f'>>>>>>>>>>>>>>>>>>>> {file_name}')
-
             lines = self._read_code_from_file(file_name)
             visitor = AnnotationParser(lines)
             code = '\n'.join(lines)
@@ -65,7 +67,7 @@ class ReflectableFinder:
 
             added |= maybe_added
             self._reflectables |= maybe_added
-        except Exception as e:
+        except CxxParseError as e:
             _LOGGER.error(f"reflection parsing failed for file {file_name}: {e}")
 
     def _collect_module_and_file(self, component: str, file_name: Path, added: Reflectables) -> FileContext:
@@ -109,6 +111,7 @@ class ReflectableFinder:
             first_seen_in_file = self._reflectables.files[func_entry.files[0]].file
             _LOGGER.error(f'duplicate function {function_ctx.full_name} in database [{first_seen_in_file} and {function_ctx.file}]')
 
+        self._cached_scopes[func_id] = function_ctx.scope
         added.functions[func_id] = func
 
         for argument in function_ctx.arguments():
@@ -191,6 +194,17 @@ class ReflectableFinder:
         child_scope = self._cached_scopes[child_id]
         base_cls_id = self._find_class_from_scope(child_scope, base_id)
         return base_cls_id if base_cls_id is not None else base_id
+
+    def _amend_arg_types(self, reflectables: Reflectables) -> None:
+        for arg in reflectables.arguments.values():
+            if isinstance(arg.type, UnknownType):
+                func_id = arg.parent
+                arg.type = self._find_arg_type(func_id, arg.type)
+
+    def _find_arg_type(self, func_id: int, arg_id: UnknownType | int) -> str | int:
+        func_scope = self._cached_scopes[func_id]
+        arg_cls_id = self._find_class_from_scope(func_scope, arg_id)
+        return arg_cls_id if arg_cls_id is not None else arg_id
 
     def _find_class_from_scope(self, scope: ScopePath, _type: UnknownType) -> int | None:
         for cls_id, cls in self._reflectables.classes.items():

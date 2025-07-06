@@ -4,7 +4,7 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import OrderedDict
 
-from .registry import has_tbd_global, set_tbd_global, get_tbd_domain
+from .registry import has_tbd_global, set_tbd_global, get_tbd_domain, get_tbd_global
 from .build_generator import get_target_platform, DefineValue
 from .files import get_tbd_source_root, get_generated_include_path, get_build_path
 
@@ -24,15 +24,23 @@ class AutoReflection(StrEnum):
 
 
 @dataclass(frozen=True)
+class ExternalDependency:
+    ref: str
+    version: str | None
+    repository: str | None
+
+
+@dataclass(frozen=True)
 class ComponentInfo:
     full_name: str  # including tbd prefix if present
     path: Path
     reflect: AutoReflection
     needs_exceptions: bool = False
-    defines: dict[str, str] = field(default_factory=dict)
+
+    _defines: dict[str, DefineValue] = field(default_factory=dict)
     _includes: list[Path] = field(default_factory=list)
     _sources: list[Path] = field(default_factory=list)
-
+    _external_dependencies: list[ExternalDependency] = field(default_factory=list)
 
     @property
     def name(self) -> str:
@@ -89,8 +97,23 @@ class ComponentInfo:
     def sources(self) -> list[Path]:
         return [_dir.relative_to(self.path) for _dir in self._sources]
 
+    @property
+    def defines(self) -> dict[str, str]:
+        return self._defines
+
     def add_define(self, key: str, value: DefineValue = 1) -> None:
-        self.defines[key] = value
+        self._defines[key] = value
+
+    @property
+    def external_dependencies(self) -> list[ExternalDependency]:
+        return self._external_dependencies
+
+    def add_external_dependency(self, ref: str, version: str | None = None, repository: str | None = None) -> None:
+        self._external_dependencies.append(ExternalDependency(
+            ref=ref,
+            version=version,
+            repository=repository,
+        ))
 
     def add_include_dir(self, path: Path | str, *, if_exists: bool = False) -> bool:
         absolute_path = self.ensure_component_path(path)
@@ -160,22 +183,6 @@ class ComponentInfo:
     
     def __repr__(self):
         return f'Component({self.full_name})'
-
-    @staticmethod
-    def for_init_file(
-            init_file: str, *,
-            reflect: AutoReflection,
-            needs_exceptions,
-    ) -> 'ComponentInfo':
-
-        module_path = Path(init_file).absolute().parent
-        full_module_name = module_path.name 
-        return ComponentInfo(
-            full_name=full_module_name,
-            path=module_path,
-            reflect=reflect,
-            needs_exceptions=needs_exceptions,
-        )
     
     def add_module_header(self):
         gen_include_path = get_build_path() / get_generated_include_path() / 'tbd' / self.name
@@ -188,6 +195,25 @@ class ComponentInfo:
             f.write(f'namespace tbd::{self.name} {'{'}\n')
             f.write(f'    constexpr const char* tag = "{self.full_name}";\n')
             f.write('}\n')
+
+
+def get_or_create(
+            init_file: str, *,
+            reflect: AutoReflection,
+            needs_exceptions,
+    ) -> tuple[bool, 'ComponentInfo']:
+
+        module_path = Path(init_file).absolute().parent
+        full_module_name = module_path.name
+        if has_tbd_global(full_module_name, domain=COMPONENTS_DOMAIN):
+            return False, get_tbd_global(full_module_name, domain=COMPONENTS_DOMAIN)
+
+        return True, ComponentInfo(
+            full_name=full_module_name,
+            path=module_path,
+            reflect=reflect,
+            needs_exceptions=needs_exceptions,
+        )
 
 
 def register_tbd_component(component: ComponentInfo):
@@ -222,7 +248,9 @@ def new_tbd_component(
         :return ComponentInfo: the newly created component
     """
 
-    component = ComponentInfo.for_init_file(init_file, reflect=auto_reflect, needs_exceptions=needs_exceptions)
+    is_new, component = get_or_create(init_file, reflect=auto_reflect, needs_exceptions=needs_exceptions)
+    if not is_new:
+        return component
 
     _LOGGER.info(f'adding TBD component {component.name}: {component.path}')
 
@@ -246,6 +274,7 @@ def new_tbd_component(
 
 __all__ = [
     'AutoReflection',
+    'ExternalDependency',
     'ComponentInfo',
     'get_tbd_components',
     'new_tbd_component',

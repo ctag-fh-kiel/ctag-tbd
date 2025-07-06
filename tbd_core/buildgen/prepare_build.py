@@ -10,12 +10,13 @@ from .files import (
     get_generated_include_path,
     get_messages_path
 )
-from .component_info import ComponentInfo, get_tbd_components
+from .component_info import ComponentInfo, get_tbd_components, ExternalDependency
 from .build_generator import (
     set_compiler_options,
     add_define,
     add_include_dir,
     write_build_config,
+    add_library,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,6 +39,8 @@ def prepare_build():
 
     add_include_dir(get_generated_include_path())
     add_include_dir(get_messages_path())
+
+    external_dependencies: list[ExternalDependency] = []
 
     for component in components.values():
         if not isinstance(component, ComponentInfo):
@@ -62,6 +65,10 @@ def prepare_build():
             else:
                 raise ValueError(f'unknown source path type {path}')
 
+        external_dependencies += component.external_dependencies
+
+    for external_dependency in external_dependencies:
+        add_library(external_dependency.ref, external_dependency.version, external_dependency.repository)
 
 def finalize_build():
     """ Final steps when the entire build is set up. """

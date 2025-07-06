@@ -8,23 +8,14 @@ from tbd_core.api import Api
 from tbd_core.api.cpp_generator import CppGenerator
 from tbd_core.api.py_generator import PyGenerator
 from tbd_core.api.ts_generator import TSGenerator
-
-
-PROTOS_FILE_NAME = 'api_types'
+from tbd_core.serialization import SerializableGenerator
 
 
 class ApiWriter:
-    def __init__(self, api: Api):
-        self._api: Final = api
+    def __init__(self, api: Api, serializables: SerializableGenerator):
+        self._api: Api = api
+        self._serializables: SerializableGenerator = serializables
         self._in_srcs: Final = Path(__file__).parent
-
-    @property
-    def dtos_proto(self):
-        return f'{PROTOS_FILE_NAME}.proto'
-
-    def write_protos(self, out_dir: Path):
-        gen = CppGenerator(self._api)
-        gen.write_protos(out_dir / self.dtos_proto)
 
     def write_messages(self, out_dir: Path):
         gen = CppGenerator(self._api)
@@ -63,12 +54,12 @@ class ApiWriter:
         gen.write_arduino_client(out_dir)
 
     def write_python_client(self, out_dir: Path, messages_dir: Path):
-        gen = PyGenerator(self._api)
-        gen.write_client(out_dir, messages_dir / self.dtos_proto)
+        gen = PyGenerator(self._api, self._serializables)
+        gen.write_client(out_dir)
 
     def write_typescript_client(self, out_dir: Path, messages_dir: Path):
-        gen = TSGenerator(self._api)
-        gen.write_client(out_dir, messages_dir / self.dtos_proto)
+        gen = TSGenerator(self._api, self._serializables)
+        gen.write_client(out_dir)
 
 
 

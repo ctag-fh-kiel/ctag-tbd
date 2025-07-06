@@ -4,7 +4,7 @@ import proto_schema_parser.generator as protog
 
 import tbd_core.buildgen as tbb
 from tbd_core.api import Endpoint, jilter, ApiGeneratorBase, Event, Api, FiltersBase
-from tbd_core.api.idc_interfaces import IDCHandler
+from tbd_core.api.idc_interfaces import IDCFunc
 
 import tbd_core.buildgen as tbd
 from tbd_core.generators import generate_protos
@@ -12,50 +12,50 @@ from tbd_core.generators import generate_protos
 
 class CppFilters(FiltersBase):
     @jilter
-    def func_args(self, idc: IDCHandler, *, with_output: bool = True) -> str:
+    def func_args(self, idc: IDCFunc, *, with_output: bool = True) -> str:
         arg_list = []
-        if idc.has_args:
-            for arg_name, arg_type in idc.args.items():
-                arg_list.append(f'const {arg_type}& {arg_name}')
+        if idc.has_inputs:
+            for _input in idc.inputs:
+                arg_list.append(f'const {_input.typename}& {_input.arg_name}')
 
         if with_output and isinstance(idc, Endpoint) and idc.has_output:
-            arg_list.append(f'{idc.output}& output')
+            arg_list.append(f'{idc.output.typename}& output')
         return ', '.join(arg_list)
 
     @jilter
-    def func_arg_types(self, idc: IDCHandler, *, with_output: bool = True) -> str:
+    def func_arg_types(self, idc: IDCFunc, *, with_output: bool = True) -> str:
         arg_list = []
-        if idc.has_args:
-            for arg_type in idc.args.values():
-                arg_list.append(f'const {arg_type}&')
+        if idc.has_inputs:
+            for _input in idc.inputs:
+                arg_list.append(f'const {_input.typename}&')
 
         if with_output and isinstance(idc, Endpoint) and idc.has_output:
-            arg_list.append(f'{idc.output}&')
+            arg_list.append(f'{idc.output.typename}&')
         return ', '.join(arg_list)
 
     @jilter
-    def func_plain_arg_types(self, idc: IDCHandler, *, with_output: bool = True) -> str:
+    def func_plain_arg_types(self, idc: IDCFunc, *, with_output: bool = True) -> str:
         arg_list = []
-        if idc.has_args:
-            for arg_type in idc.args.values():
-                arg_list.append(arg_type)
+        if idc.has_inputs:
+            for _input in idc.inputs:
+                arg_list.append(_input.typename)
 
         if with_output and isinstance(idc, Endpoint) and idc.has_output:
             arg_list.append(idc.output)
         return ', '.join(arg_list)
 
     @jilter
-    def shadow_declaration(self, idc: IDCHandler) -> str:
+    def shadow_declaration(self, idc: IDCFunc) -> str:
         namespace = idc.scope.parent
         ret = idc.return_type if idc.return_type else 'void'
-        name = idc.name
+        name = idc.func_name
         args = self.func_args(idc)
         return f'namespace {namespace} {{ {ret} {name}({args}); }}'
 
     @jilter
     def client_rpc_method(self, endpoint: Endpoint) -> str:
-        method_name = endpoint.name
-        inputs_args = f'{self.func_args(endpoint, with_output=False)}, ' if endpoint.has_args else ''
+        method_name = endpoint.func_name
+        inputs_args = f'{self.func_args(endpoint, with_output=False)}, ' if endpoint.has_inputs else ''
         callback = f'Callback<{endpoint.output}> callback' if endpoint.has_output else 'VoidCallback callback'
 
         return f'{method_name}({inputs_args}{callback})'
@@ -80,51 +80,27 @@ class CppFilters(FiltersBase):
     @staticmethod
     @jilter
     def rpc_handler_name(endpoint: Endpoint) -> str:
-        return f'handle_rpc__{endpoint.name}'
+        return f'handle_rpc__{endpoint.func_name}'
 
     @staticmethod
     @jilter
     def event_handler_name(endpoint: Endpoint) -> str:
-        return f'handle_event__{endpoint.name}'
+        return f'handle_event__{endpoint.func_name}'
 
     @staticmethod
     @jilter
     def emitter_name(event: Event) -> str:
-        return f'{event.func.name}'
+        return f'{event.func_name}'
 
     @staticmethod
     @jilter
     def dispatcher_name(event: Event) -> str:
-        return f'dispatch__{event.name}'
+        return f'dispatch__{event.func_name}'
 
 
 class CppGenerator(ApiGeneratorBase):
     def __init__(self, api: Api):
         super().__init__(api, tbd.get_tbd_components_root() / 'api' / 'tbd_api', CppFilters(api))
-
-    def write_protos(self, protos_file_name: Path) -> None:
-        payload_types = [payload.proto_type for payload in self._api.payload_types if not payload.is_builtin]
-        request_types = [request.proto_type for request in self._api.request_types if not request.is_builtin]
-        wrapper_types = [response.proto_type for response in self._api.response_types
-                         if not response.is_builtin and response.is_wrapper]
-        event_payloads = [request.proto_type for request in self._api.event_payloads]
-
-        wrappers = protog.Generator().generate(proto.File(
-            syntax='proto3',
-            file_elements=[
-                *payload_types,
-                *request_types,
-                *wrapper_types,
-                *event_payloads,
-            ]
-        ))
-
-        out_dir = protos_file_name.parent
-        out_dir.mkdir(exist_ok=True, parents=True)
-        with open(protos_file_name, 'w') as f:
-            f.write(wrappers)
-
-        generate_protos(out_dir, out_dir, [protos_file_name.name])
 
     def write_arduino_client(self, out_dir: Path):
         client_component_dir = tbd.get_tbd_components_root() / 'api' / 'tbd_api' / 'clients' / 'arduino'
@@ -209,8 +185,8 @@ class CppGenerator(ApiGeneratorBase):
         client_cpp_path = out_dir / 'src'
         client_protos_file = client_cpp_path / 'api_types.proto'
 
-        self.write_protos(client_protos_file)
-        generate_protos(client_cpp_path, client_cpp_path, [client_protos_file.name])
+        # self.write_protos(client_protos_file)
+        # generate_protos(client_cpp_path, client_cpp_path, [client_protos_file.name])
 
         source = self.render('src/api_message_transcoding.hpp.j2', client_types=True)
         client_cpp_path.mkdir(exist_ok=True, parents=True)

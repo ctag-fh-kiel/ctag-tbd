@@ -166,9 +166,9 @@ class AnnotationParser(cpplib.SimpleCxxVisitor):
 
     def _parse_attrs(self) -> Attributes:
         if not self._attrs:
-            return []
+            return {}
 
-        return [attr for tokens in self._attrs for attr in parse_attributes(tokens)]
+        return {attr_name: attr for tokens in self._attrs for attr_name, attr in parse_attributes(tokens).items()}
 
     def _reset_attrs(self) -> None:
         self._attrs = []

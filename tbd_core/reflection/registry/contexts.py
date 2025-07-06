@@ -6,18 +6,7 @@ from zlib import crc32
 import cxxheaderparser.types as cpptypes
 import cxxheaderparser.simple as cpplib
 
-from tbd_core.reflection.reflectables import (
-    FileEntry,
-    Attributes,
-    ArgumentCategory,
-    NamespaceEntry,
-    ClassEntry,
-    PropertyEntry,
-    ArgumentEntry,
-    ScopePath,
-    FunctionEntry, ALL_PARAM_TYPES, PARAM_TYPE_FROM_MAPPABLE, MAPPABLE_PARAM_TYPES, PropertyID, ClassID, ArgumentID,
-    FunctionID, NamespaceID, UnknownType,
-)
+from tbd_core.reflection.reflectables import *
 from tbd_core.reflection.reflectables import PARAM_NAMESPACE, Param
 
 
@@ -91,12 +80,12 @@ def name_and_description_from_attrs(attrs: Attributes | None) -> tuple[str | Non
     if attrs is None:
         return name, description
 
-    for attr in attrs:
-        attr_params = attr.params
-        if 'name' in attr_params:
-            name = attr_params['name']
-        if 'description' in attr_params:
-            description = attr_params['description']
+    for attr in attrs.values():
+        attr_options = attr.options
+        if 'name' in attr_options:
+            name = attr_options['name']
+        if 'description' in attr_options:
+            description = attr_options['description']
     return name, description
 
 
@@ -113,10 +102,10 @@ class FileContext:
         )
 
     def ref(self):
-        return crc32(f'{self.component}/{self.file}'.encode())
+        return file_ref(self.component, str(self.file))
 
     def component_ref(self):
-        return crc32(self.component.encode())
+        return component_ref(self.component)
 
 
 @dataclass
@@ -191,6 +180,7 @@ class ClassContext(ScopeContext):
             cls_name=self.name,
             bases=self.bases(),
             properties=props,
+            generated=False,
         )
 
     def classes(self) -> Iterator['ClassContext']:
@@ -296,6 +286,7 @@ class FunctionContext(ScopeContext):
             func_name=self.name,
             arguments=arguments,
             return_type=self.result,
+            generated=False,
         )
 
     def arguments(self) -> Iterator[ArgumentContext]:
@@ -323,9 +314,7 @@ class NamespaceContext(ScopeContext):
 
     def entry(self) -> NamespaceEntry:
         return NamespaceEntry(
-            files=[],
             parent=self.parent,
-            attrs=None,
             namespace_name=self.name,
         )
 

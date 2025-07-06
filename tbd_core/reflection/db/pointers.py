@@ -6,7 +6,7 @@ from typing import (
     Generic,
     Union,
     Protocol,
-    Optional, Iterator
+    Optional, Iterator, OrderedDict
 )
 
 from tbd_core.reflection.reflectables import *
@@ -20,20 +20,48 @@ class MissingCppEntry(LookupError):
 
 
 class ReflectableDB(Protocol):
+    def has_component(self, component: str) -> bool: ...
     def get_component(self, component_id: ComponentID) -> str: ...
+
+    def has_file(self, component: str, file: Path) -> bool: ...
     def get_file(self, file_id: FileID) -> 'FilePtr': ...
+    def add_file(self, component: str, file: str) -> 'FilePtr': ...
+
+    def has_namespace(self, namespace: ScopePath) -> bool: ...
     def get_namespace(self, namespace_id: NamespaceID) -> 'NamespacePtr': ...
+    def add_namespace(self, namespace: ScopePath) -> 'NamespacePtr': ...
+
+    def has_function(self, function: ScopePath) -> bool: ...
     def get_function(self, function_id: FunctionID) -> 'FunctionPtr': ...
+
+    def has_argument(self, argument: ScopePath) -> bool: ...
     def get_argument(self, argument_id: ArgumentID) -> 'ArgumentPtr': ...
+
     def get_type(self, type_id: CppType) -> CppTypePtr: ...
+
+    def has_class(self, cls: ScopePath) -> bool: ...
     def get_class(self, class_id: ClassID) -> 'ClassPtr': ...
+    def add_class(self,
+        cls: ScopePath,
+        properties: OrderedDict[str, CppType],
+        *,
+        component: str,
+        files: list[str],
+        bases: list[ScopePath] | None,
+    ) -> 'ClassPtr': ...
+
+    def has_property(self, prop: ScopePath) -> bool: ...
     def get_property(self, property_id: PropertyID) -> 'PropertyPtr': ...
+
+    # iterators
 
     def namespaces(self) -> Iterator['NamespacePtr']: ...
     def functions(self) -> Iterator['FunctionPtr']: ...
     def arguments(self) -> Iterator['ArgumentPtr']: ...
     def classes(self) -> Iterator['ClassPtr']: ...
     def properties(self) -> Iterator['PropertyPtr']: ...
+
+    # raw getters
 
     def get_raw_file(self, file_id: FileID) -> Optional[FileEntry]: ...
     def get_raw_namespace(self, namespace_id: NamespaceID) -> Optional['NamespaceEntry']: ...
@@ -126,7 +154,7 @@ class PtrBase(Generic[PtrType], ABC):
     def ref(self) -> int:
         return self._id
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.full_name
 
     @abstractmethod
@@ -150,10 +178,6 @@ class NamespacePtr(PtrBase[NamespaceEntry]):
         parent = self.parent
         parent_scope = parent.scope if parent else ScopePath.root()
         return parent_scope.add_namespace(self.namespace_name, self._id)
-
-
-    def __str__(self) -> str:
-        return self.full_name
 
     def __repr__(self) -> str:
         return f'Namespace({self.full_name})'
@@ -183,8 +207,8 @@ class ArgumentPtr(PtrBase[ArgumentEntry], Typed):
         return self._db.get_type(self._obj().type).typename
 
     @property
-    def parent(self) -> Optional['ClassPtr']:
-        return self._db.get_class(self._obj().parent)
+    def parent(self) -> Optional['FunctionPtr']:
+        return self._db.get_function(self._obj().parent)
 
     @property
     def scope(self) -> ScopePath:
@@ -216,8 +240,16 @@ class FunctionPtr(PtrBase[FunctionEntry]):
         return parent_scope.add_function(self.func_name, self._id)
 
     @property
+    def has_arguments(self) -> bool:
+        return len(self._obj().arguments) > 0
+
+    @property
     def arguments(self) -> list[ArgumentPtr]:
         return [ArgumentPtr(arg_id, self._db) for arg_id in self._obj().arguments]
+
+    @property
+    def argument_typenames(self) -> list[str]:
+        return [ArgumentPtr(arg_id, self._db).typename for arg_id in self._obj().arguments]
 
     @property
     def return_type(self) -> CppTypePtr | None:
@@ -225,6 +257,17 @@ class FunctionPtr(PtrBase[FunctionEntry]):
         if return_type_id is not None:
             return self._db.get_type(return_type_id)
         return None
+
+    @property
+    def return_typename(self) -> str:
+        return_type_id = self._obj().return_type
+        if return_type_id is not None:
+            return self._db.get_type(return_type_id).typename
+        return 'void'
+
+    @property
+    def generated(self) -> bool:
+        return self._obj().generated
 
     def __repr__(self) -> str:
         return f'Function({self.full_name})'
@@ -285,6 +328,15 @@ class ClassPtr(PtrBase, Typed):
     @property
     def properties(self) -> list[PropertyPtr]:
         obj = self._obj()
+        properties = []
+        for base in self.bases:
+            properties += base.all_properties
+        properties += [PropertyPtr(prop_id, self._db) for prop_id in obj.properties]
+        return properties
+
+    @property
+    def all_properties(self) -> list[PropertyPtr]:
+        obj = self._obj()
         return [PropertyPtr(prop_id, self._db) for prop_id in obj.properties]
 
     @property
@@ -300,8 +352,8 @@ class ClassPtr(PtrBase, Typed):
         return parent_scope.add_class(self.cls_name, self._id)
 
     @property
-    def meta_name(self) -> str:
-        return f'{self.cls_name}Meta'
+    def generated(self) -> bool:
+        return self._obj().generated
 
     def __repr__(self) -> str:
         return f'Class({self.full_name})'

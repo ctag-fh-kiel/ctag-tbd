@@ -5,7 +5,7 @@ from esphome.coroutine import coroutine
 
 from tbd_core.buildgen import BuildGenerator
 
-from esphome.core import CORE
+import esphome.core as ehc
 from esphome.writer import INI_AUTO_GENERATE_BEGIN, INI_AUTO_GENERATE_END, INI_BASE_FORMAT
 
 NO_EXCEPTION_FLAG = '-fno-exceptions'
@@ -23,16 +23,19 @@ class EsphomeBuildGenerator(BuildGenerator):
             data = '\n'.join(lines)
             f.write(data)
 
+    def add_library(self, name: str, version: str | None = None, repository: str | None = None) -> None:
+        ehc.CORE.add_library(ehc.Library(name, version, repository))
+
     @property
     def build_path(self) -> Path:
-        return Path(CORE.build_path)
+        return Path(ehc.CORE.build_path)
 
     @property
     def target_platform(self) -> str:
-        return CORE.target_platform
+        return ehc.CORE.target_platform
 
     def add_build_flag(self, flag: str) -> None:
-        CORE.add_build_flag(flag)
+        ehc.CORE.add_build_flag(flag)
 
     def set_compiler_options(self, *, std: int = 20, exceptions: bool = False) -> None:
         """ Set compiler options.
@@ -51,22 +54,22 @@ class EsphomeBuildGenerator(BuildGenerator):
         """
 
         # throw out build flags we want to overwrite
-        build_flags = [flag for flag in CORE.build_flags if not (flag.startswith('-std=') or flag == NO_EXCEPTION_FLAG)]
-        CORE.build_flags = set(build_flags)
+        build_flags = [flag for flag in ehc.CORE.build_flags if not (flag.startswith('-std=') or flag == NO_EXCEPTION_FLAG)]
+        ehc.CORE.build_flags = set(build_flags)
 
         # replace build flags with new ones
-        CORE.add_build_flag(CPP_STD_FLAG)
+        ehc.CORE.add_build_flag(CPP_STD_FLAG)
         if exceptions:
-            if not CORE.is_host:
+            if not ehc.CORE.is_host:
                 raise ValueError('exceptions can only be disabled on host platform')
         else:
-            CORE.add_build_flag(NO_EXCEPTION_FLAG)
+            ehc.CORE.add_build_flag(NO_EXCEPTION_FLAG)
 
     def add_platformio_option(self, key: str, value: str | list[str]) -> None:
-        CORE.add_platformio_option(key, value)
+        ehc.CORE.add_platformio_option(key, value)
 
     def add_job(self, job) -> None:
-        CORE.add_job(job)
+        ehc.CORE.add_job(job)
 
     def function_to_job(self, func):
         return coroutine(func)

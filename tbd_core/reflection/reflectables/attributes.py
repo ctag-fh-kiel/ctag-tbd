@@ -1,7 +1,10 @@
+from collections import OrderedDict
 from dataclasses import dataclass
 
 
 AttributeArgTypes = int | float | bool | str
+
+AttributeOptions = OrderedDict[str, AttributeArgTypes]
 
 @dataclass
 class Attribute:
@@ -13,7 +16,7 @@ class Attribute:
     """
 
     name_segments: list[str]
-    params: dict[str, AttributeArgTypes]
+    options: AttributeOptions
 
     @property
     def name(self) -> str:
@@ -26,11 +29,12 @@ class Attribute:
         return f'Attribute({self.name})'
 
 
-Attributes = list[Attribute]
+Attributes = dict[str, Attribute]
 
 
 __all__ = [
     'AttributeArgTypes',
+    'AttributeOptions',
     'Attribute',
     'Attributes',
 ]

@@ -1,7 +1,11 @@
 from esphome.components.tbd_module.python_dependencies import python_dependencies
 
-from tbd_core.buildgen import get_reflection_registry
+from esphome.components.tbd_serialization import get_dto_registry
+from esphome.components.tbd_serialization import get_dtos
+
+from tbd_core.buildgen import GenerationStages, get_reflectables
 from tbd_core.buildgen.component_info import AutoReflection
+from tbd_core.serialization import SerializableGenerator
 
 python_dependencies(('proto_schema_parser', 'proto-schema-parser'), 'pybind11')
 
@@ -13,14 +17,16 @@ import logging
 
 import tbd_core.buildgen as tbd
 
-from tbd_core.api import ApiRegistry, find_events
+from tbd_core.api import ApiRegistry, find_events, Api
 from .generator import ApiWriter
 
 
 _LOGGER = logging.getLogger(__file__)
 
 
-APIS_GLOBAL = 'api'
+API_REGISTRY_GLOBAL = 'api_registry'
+APIS_GLOBAL = 'apis'
+
 API_NAMESPACE = cg.global_ns.namespace('tbd').namespace('api')
 CONF_MAX_PAYLOAD_SIZE = 'max_payload_size'
 
@@ -31,67 +37,45 @@ CONFIG_SCHEMA = cv.Schema({
 })
 
 
-@tbd.generated_tbd_global(APIS_GLOBAL)
+@tbd.generated_tbd_global(API_REGISTRY_GLOBAL, after_stage=GenerationStages.REFLECTION)
 def get_api_registry() -> ApiRegistry:
-    return ApiRegistry(get_reflection_registry())
+    return ApiRegistry(get_dto_registry())
 
 
-def register_actions_for_module(*source_files: Path | str, base_path: Path | str | None = None) -> None:
-    """ Call this in module loading code! """
-
-    events = find_events(*source_files, base_path=base_path, collector=get_reflection_registry())
-
-    for event in events:
-        action_name = f'tbd_api.{event.name}'
-        cls_name = f'{event.event_name}_action'
-        action = API_NAMESPACE.class_(cls_name, automation.Action)
-
-        @automation.register_action(action_name, action, {})
-        async def new_action(config, action_id, template_arg, args):
-            var = cg.new_Pvariable(action_id, template_arg)
-            return var
-
-
-def _register_actions():
-    base_path = Path(__file__).parent / 'src'
-    register_actions_for_module('base_endpoints.cpp', 'api_test.cpp', base_path=base_path)
-# _register_actions()
+@tbd.generated_tbd_global(APIS_GLOBAL, after_stage=GenerationStages.API)
+def get_api() -> Api:
+    return ApiRegistry(get_dto_registry()).get_api()
 
 
 async def to_code(config):
     component = tbd.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)
-    cg.add_library('nanopb/Nanopb', '^0.4.91')
-
+    component.add_external_dependency('nanopb/Nanopb', '^0.4.91')
     component.add_define('TBD_API_MAX_PAYLOAD_SIZE', config[CONF_MAX_PAYLOAD_SIZE])
-
-    # add core endpoints implementations and types
-    api_registry = get_api_registry()
-    api_registry.add_message_types(component.path / 'src' / 'api_base.proto')
-    api_registry.add_message_types(component.path / 'src' / 'api_test.proto')
-    # api_registry.add_source(component.path / 'src' / 'base_endpoints.cpp')
-    # api_registry.add_source(component.path / 'src' / 'api_test.cpp')
-
     tbd.add_generation_job(finalize_api_registry)
+    tbd.add_generation_job(generate_clients)
 
 
 @tbd.build_job_with_priority(tbd.GenerationStages.API)
 def finalize_api_registry():
-    python_client_path = tbd.get_build_path() / 'clients' / 'python'
-    typescript_client_path = tbd.get_build_path() / 'clients' / 'typescript'
-    arduino_client_path = tbd.get_build_path() / 'clients' / 'arduino'
-
-    api = get_api_registry().get_api()
-    api_gen = ApiWriter(api)
+    api_gen = ApiWriter(get_api(), get_dtos())
 
     gen_sources_dir = tbd.get_build_path() / tbd.get_generated_sources_path()
     api_gen.write_messages(gen_sources_dir)
     api_gen.write_endpoints(gen_sources_dir)
     api_gen.write_events(gen_sources_dir)
 
+
+@tbd.build_job_with_priority(tbd.GenerationStages.CLIENTS)
+def generate_clients():
+    python_client_path = tbd.get_build_path() / 'clients' / 'python'
+    typescript_client_path = tbd.get_build_path() / 'clients' / 'typescript'
+    arduino_client_path = tbd.get_build_path() / 'clients' / 'arduino'
+
+    dto_gen = SerializableGenerator(get_dtos()['api'], get_reflectables())
+    api_gen = ApiWriter(get_api(), dto_gen)
+
     messages_dir = tbd.get_build_path() / tbd.get_messages_path() / 'api'
-    api_gen.write_protos(messages_dir)
 
     api_gen.write_python_client(python_client_path, messages_dir)
     api_gen.write_typescript_client(typescript_client_path, messages_dir)
     api_gen.write_arduino_client(arduino_client_path, messages_dir)
-
