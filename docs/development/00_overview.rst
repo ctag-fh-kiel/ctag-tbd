@@ -12,6 +12,11 @@ Hardware Developers [basic]
 
     TODO: add link to section
 
+Custom Frontend Developers [basic]
+    Writing your own arduino app for Raspberry Pi 2xxx based TBD control boards using the tbd_client library to
+    communicate with the TBD core audio processing unit. Can be utilized to use custom front panels or
+    custom high level applications like samplers.
+
 Audio Enthusiast [basic]
     Writing sound processing functions for custom audio plugins to add your own sound plugins. Mathematically generate
     output samples from plugin parameters and input audio samples.
