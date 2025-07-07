@@ -119,6 +119,8 @@ class ScopeContext:
         return self.scope.path
 
     def ref(self) -> PropertyID | ClassID | ArgumentID | FunctionID | NamespaceID:
+        if self.scope.is_root():
+            return NO_PARENT_ID
         return self.scope.hash()
 
 

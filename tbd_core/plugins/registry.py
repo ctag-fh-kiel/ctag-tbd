@@ -107,7 +107,7 @@ class PluginRegistry:
         acc = PluginsOptions(reflectables=reflectables)
 
         for plugin_id, plugin in enumerate(plugins):
-            field_scope = ScopePath.root()
+            field_scope = ScopePath.relative_root()
             unsorted_params = self._flatten_plugin_params(reflectables, acc, plugin_id, plugin, field_scope)
             plugin_params = PluginParams.from_unsorted(unsorted_params)
             is_stereo = is_stereo_plugin(plugin)

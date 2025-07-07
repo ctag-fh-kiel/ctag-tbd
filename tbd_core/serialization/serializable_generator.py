@@ -40,17 +40,17 @@ class SerializableGenerator(GeneratorBase[CppFilters]):
     def render(self, template_file: Path | str, **args) -> str:
         return super().render(template_file, reflectables=self._reflectable_db, **args)
 
-    def write_cpp_code(self, out_dir: Path) -> None:
+    def write_cpp_code(self, headers_dir: Path, srcs_dir: Path) -> None:
         serializables = [self._reflectable_db.get_class(cls_id) for cls_id in self._serializables.classes]
         source = self.render('serializables.cpp.j2', serializables=serializables)
 
-        source_file = out_dir / 'serializables.cpp'
+        source_file = srcs_dir / 'serializables.cpp'
         with open(source_file, 'w') as f:
             f.write(source)
 
         source = self.render('serialized.hpp.j2', serializables=serializables)
 
-        source_file = out_dir / 'serialized.hpp'
+        source_file = headers_dir / 'serialized.hpp'
         with open(source_file, 'w') as f:
             f.write(source)
 

@@ -1,24 +1,26 @@
 from dataclasses import dataclass
 from enum import IntEnum, unique
 from typing import Self
-from abc import ABC, abstractmethod
 from zlib import crc32
 
-import cxxheaderparser.types as cpptypes
 
-
+NO_PARENT_ID = -1
 
 
 @unique
 class ScopeType(IntEnum):
-    NAMESPACE = 0
-    FUNCTION = 1
-    ARGUMENT = 2
-    CLASS = 3
-    STATIC_FIELD = 4
-    FIELD = 5
+    ROOT = 0
+    RELATIVE_ROOT = 1
+    NAMESPACE = 2
+    FUNCTION = 3
+    ARGUMENT = 4
+    CLASS = 5
+    STATIC_FIELD = 6
+    FIELD = 7
 
 VALID_CHILD_TYPES = {
+    ScopeType.ROOT: [ScopeType.NAMESPACE, ScopeType.FUNCTION, ScopeType.CLASS],
+    ScopeType.RELATIVE_ROOT: [ScopeType.NAMESPACE, ScopeType.FUNCTION, ScopeType.ARGUMENT, ScopeType.CLASS, ScopeType.STATIC_FIELD, ScopeType.FIELD],
     ScopeType.NAMESPACE: [ScopeType.NAMESPACE, ScopeType.FUNCTION, ScopeType.CLASS],
     ScopeType.FUNCTION: [ScopeType.ARGUMENT],
     ScopeType.CLASS: [ScopeType.FUNCTION, ScopeType.CLASS, ScopeType.STATIC_FIELD, ScopeType.FIELD],
@@ -51,6 +53,12 @@ class ScopePathSegment:
     @property
     def type(self) -> ScopeType:
         return self._type
+
+    def is_root(self) -> bool:
+        return self.type == ScopeType.ROOT
+
+    def is_relative_root(self) -> bool:
+        return self.type == ScopeType.RELATIVE_ROOT
 
     def is_namespace(self) -> bool:
         return self.type is ScopeType.NAMESPACE
@@ -107,7 +115,11 @@ class ScopePath:
 
     @staticmethod
     def root() -> 'ScopePath':
-        return ScopePath([])
+        return ScopePath([ScopePathSegment(name='', _type=ScopeType.ROOT, _id=NO_PARENT_ID)])
+
+    @staticmethod
+    def relative_root() -> 'ScopePath':
+        return ScopePath([ScopePathSegment(name='', _type=ScopeType.RELATIVE_ROOT, _id=NO_PARENT_ID),])
 
     def add_namespace(self, namespace: str, _id: int | None = None) -> 'ScopePath':
         if self.segments and not is_valid_parent(self.segments[-1].type, ScopeType.NAMESPACE):
@@ -141,6 +153,15 @@ class ScopePath:
             raise ValueError('arguments can only be declared for functions')
         return ScopePath([*self.segments, ScopePathSegment(arg, ScopeType.ARGUMENT, _id)])
 
+    def is_root(self) -> bool:
+        return len(self.segments) == 1 and self.segments[0].is_root()
+
+    def is_absolute(self) -> bool:
+        return self.segments[0].is_root()
+
+    def is_relative(self) -> bool:
+        return self.segments[0].is_relative_root()
+
     def is_namespace(self) -> bool:
         return self.segments[-1].is_namespace()
 
@@ -171,33 +192,40 @@ class ScopePath:
     def field(self) -> str:
         return self.segments[-1].field()
 
-    @property
-    def namespaces(self):
-        retval, _, _ = self.split()
-        return retval
-
-    @property
-    def classes(self):
-        _, retval, _ = self.split()
-        return retval
-
-    @property
-    def fields(self):
-        _, _, retval = self.split()
-        return retval
+    # @property
+    # def namespaces(self):
+    #     retval, _, _ = self.split()
+    #     return retval
+    #
+    # @property
+    # def classes(self):
+    #     _, retval, _ = self.split()
+    #     return retval
+    #
+    # @property
+    # def fields(self):
+    #     _, _, retval = self.split()
+    #     return retval
 
     @property
     def parent(self) -> Self | None:
-        if len(self.segments) < 2:
-            return None
-        return ScopePath(self.segments[:-1])
+        *parents, elem = self.segments
+        if len(parents) > 1:
+            return ScopePath(parents)
+        if len(parents) == 1 and not parents[0].is_root():
+            return ScopePath(parents)
+        return None
 
     @property
     def path(self) -> str:
-        if not self.segments:
-            return ''
-
         fst, *tail = self.segments
+        if not fst.is_root() and not fst.is_relative_root():
+            raise RuntimeError(f'first segment is not root namespace: {fst.type.name}')
+
+        if len(tail) < 1:
+            raise RuntimeError(f'empty scope path encountered')
+
+        fst, *tail = tail
         retval = fst.name
         for elem in tail:
             if elem.type == ScopeType.FIELD:
@@ -257,6 +285,7 @@ class ScopePath:
 
 
 __all__ = [
+    'NO_PARENT_ID',
     'ScopeType',
     'ScopePath',
     'ScopePathSegment',

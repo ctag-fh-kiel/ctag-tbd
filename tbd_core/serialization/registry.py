@@ -87,7 +87,8 @@ class DTORegistry:
         """
 
         file_path = Path('tbd', 'dtos', domain, 'dtos.hpp')
-        cls_scope = ScopePath.root().add_namespace('tbd').add_namespace(domain).add_namespace('dtos').add_class(name)
+        namespace_scope = ScopePath.root().add_namespace('tbd').add_namespace(domain).add_namespace('dtos')
+        cls_scope = namespace_scope.add_class(name)
 
         new_properties = OrderedDict()
         for prop_name, prop_type in types.items():
@@ -100,6 +101,7 @@ class DTORegistry:
                     _LOGGER.warning(f'skipping unknown type {prop_type} for field {prop_name}')
             new_properties[prop_name] = prop_type
 
+
         cls = self._reflectables.add_class(
             cls=cls_scope,
             properties=new_properties,
@@ -107,6 +109,7 @@ class DTORegistry:
             files=[str(file_path)],
             bases=None,
         )
+        self._reflectables.add_namespace(namespace_scope)
         self._add_class_messages(domain, cls)
         return cls
 
@@ -141,11 +144,6 @@ class DTORegistry:
                     raise RuntimeError(f'type {prop_type} is not a valid protobuffer message field type')
             field_number += 1
         serializables.messages[cls.ref()] = proto.Message(name=cls.cls_name, elements=fields)
-
-
-    @staticmethod
-    def write_cpp_dtos(out_dir: Path, proto_file_name: Path) -> None:
-        generate_protos(out_dir, out_dir, [proto_file_name.name])
 
 
 __all__ = [

@@ -92,8 +92,10 @@ class ReflectableFinder:
             self._find_entities_in_namespace(sub_namespace, added)
 
     def _collect_namespace(self, namespace_ctx: NamespaceContext, added: Reflectables) -> None:
-        entry = namespace_ctx.entry()
+        if namespace_ctx.scope.is_root():
+            return
 
+        entry = namespace_ctx.entry()
         namespace_id = namespace_ctx.ref()
         added.namespaces[namespace_id] = entry
 
@@ -206,13 +208,14 @@ class ReflectableFinder:
         arg_cls_id = self._find_class_from_scope(func_scope, arg_id)
         return arg_cls_id if arg_cls_id is not None else arg_id
 
-    def _find_class_from_scope(self, scope: ScopePath, _type: UnknownType) -> int | None:
+    def _find_class_from_scope(self, parent_scope: ScopePath, _type: UnknownType) -> int | None:
         for cls_id, cls in self._reflectables.classes.items():
             cls_path = self._cached_scopes[cls_id].path
-            pos = scope
+            pos = parent_scope
             while (pos := pos.parent) is not None:
                 combined_scope = f'{pos.path}::{_type.type}'
                 if combined_scope == cls_path:
+                    print(cls_path)
                     return cls_id
         return None
 
