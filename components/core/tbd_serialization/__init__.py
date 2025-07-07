@@ -21,10 +21,15 @@ def get_dtos() -> dict[str, Serializables]:
 def generate_serialization():
     for domain, serializables in get_dtos().items():
         gen = SerializableGenerator(serializables, get_reflectables())
-        out_dir = get_build_path() / get_generated_sources_path() / 'dtos' / domain
-        out_dir.mkdir(parents=True, exist_ok=True)
-        gen.write_cpp_code(out_dir)
-        gen.write_protos(out_dir / 'dtos.proto')
+
+        headers_dir = get_build_path() / get_generated_sources_path() / 'include' / 'tbd' / domain / 'dtos'
+        headers_dir.mkdir(parents=True, exist_ok=True)
+
+        srcs_dir = get_build_path() / get_generated_sources_path() / 'dtos'
+        srcs_dir.mkdir(parents=True, exist_ok=True)
+
+        gen.write_cpp_code(headers_dir, srcs_dir)
+        # gen.write_protos( / 'dtos.proto')
 
 
 tbb.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)
