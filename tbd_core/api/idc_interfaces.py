@@ -42,7 +42,7 @@ class IDCFunc(FunctionPtr):
         if not self.has_arguments:
             return None
         args = self.arguments
-        if args[-1].category != ArgumentCategory.OUTPUT:
+        if args[-1].category == ArgumentCategory.OUTPUT:
             args = args[:-1]
         return args if len(args) > 0 else None
 

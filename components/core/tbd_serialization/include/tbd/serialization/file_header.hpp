@@ -5,7 +5,7 @@
 
 #include "serializables.hpp"
 
-namespace tbd::presets {
+namespace tbd::serialization {
 
 constexpr uint32_t HEADER_START_BYTES = 0xc12304de;
 constexpr uint32_t HEADER_END_BYTES = 0xab8b7601;

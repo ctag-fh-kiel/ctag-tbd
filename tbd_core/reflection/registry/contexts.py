@@ -1,16 +1,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
-from zlib import crc32
 
 import cxxheaderparser.types as cpptypes
 import cxxheaderparser.simple as cpplib
 
 from tbd_core.reflection.reflectables import *
-from tbd_core.reflection.reflectables import PARAM_NAMESPACE, Param
-
-
-ANONYMOUS_STRUCT_PREFIX = '__struct_'
 
 
 def is_anon_struct_field(type_name: UnknownType) -> bool:
@@ -171,6 +166,7 @@ class ClassContext(ScopeContext):
         return self._cls.class_decl.attrs
 
     def entry(self) -> ClassEntry:
+        print('creating', self.name, '>>', self.file.file)
         props = [prop.ref() for prop in self.fields()]
         name, description = name_and_description_from_attrs(self.attrs)
         return ClassEntry(

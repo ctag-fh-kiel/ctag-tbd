@@ -1,10 +1,8 @@
+#include <tbd/api/dtos.hpp>
+
 #include <tbd/parameter_types.hpp>
 #include <tbd/api/api_all_endpoints.hpp>
 #include <tbd/api/api_all_events.hpp>
-
-#include <api/api_types.pb.h>
-#include <cinttypes>
-
 #include <tbd/errors.hpp>
 
 

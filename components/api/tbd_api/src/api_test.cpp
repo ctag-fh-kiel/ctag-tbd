@@ -1,3 +1,5 @@
+#include <tbd/api/dtos.hpp>
+
 #include <tbd/parameter_types.hpp>
 #include <tbd/errors.hpp>
 #include <tbd/logging.hpp>
@@ -5,18 +7,8 @@
 
 namespace tbd {
 
-struct Foo {
-    int_par foo1;
-    trigger_par foo2;
-};
-
-struct Bar {
-    float_par bar1;
-    uint_par bar2;
-};
-
 [[tbd::endpoint]]
-Error foo_rpc(const Foo& foo) {
+Error foo_rpc(const api::Foo& foo) {
     TBD_LOGI("foo_rpc", "foo1 %i", foo.foo1);
     TBD_LOGI("foo_rpc", "foo2 %i", foo.foo2);
     return TBD_OK;
@@ -81,24 +73,24 @@ void foo_responder3(const uint_par& a, const float_par& b) {
 }
 
 [[tbd::event]]
-void bar_event(const Bar& event);
+void bar_event(const api::Bar& event);
 
 [[tbd::endpoint]]
 Error test_bar_event() {
-    Bar bar;
+    api::Bar bar;
     bar.bar1 = 90.2;
-    bar.bar2 = -23;
+    bar.bar3 = -23;
     bar_event(bar);
     return TBD_OK;
 }
 
 [[tbd::responder(event="bar_event")]]
-Error bar_responder1(const Bar& event) {
+Error bar_responder1(const api::Bar& event) {
     return TBD_OK;
 }
 
 [[tbd::responder(event="bar_event")]]
-void bar_responder2(const Bar& event) {
+void bar_responder2(const api::Bar& event) {
 
 }
 

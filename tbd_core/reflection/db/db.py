@@ -111,6 +111,9 @@ class InMemoryReflectableDB(ReflectableDB):
         files: list[str],
         bases: list[ScopePath] | None,
     ) -> ClassPtr:
+        if bases is None:
+            bases = []
+
         file_ids = [self.add_file(component=component, file=file).ref() for file in files]
 
         cls_name = cls.cls()

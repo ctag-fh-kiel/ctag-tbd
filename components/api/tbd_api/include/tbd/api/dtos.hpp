@@ -16,4 +16,15 @@ struct DeviceInfo {
     int_par api_hash;
 };
 
+struct Foo {
+    int_par foo1;
+    trigger_par foo2;
+};
+
+struct Bar {
+    float_par bar1;
+    Foo bar2;
+    uint_par bar3;
+};
+
 }

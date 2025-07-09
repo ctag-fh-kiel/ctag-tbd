@@ -25,10 +25,10 @@ def generate_serialization():
         headers_dir = get_build_path() / get_generated_sources_path() / 'include' / 'tbd' / domain / 'dtos'
         headers_dir.mkdir(parents=True, exist_ok=True)
 
-        srcs_dir = get_build_path() / get_generated_sources_path() / 'dtos'
+        srcs_dir = get_build_path() / get_generated_sources_path() / 'serialization' / domain
         srcs_dir.mkdir(parents=True, exist_ok=True)
 
-        gen.write_cpp_code(headers_dir, srcs_dir)
+        gen.write_cpp_code(domain, headers_dir, srcs_dir)
         # gen.write_protos( / 'dtos.proto')
 
 

@@ -6,7 +6,6 @@ from tbd_core.serialization import is_param_wrapper
 
 from .api import Api
 from .idc_interfaces import Endpoint, Event, Responder, IDCFunc
-from ..reflection.db import ClassPtr
 
 
 def forward_args(idc: IDCFunc, *,
@@ -91,7 +90,7 @@ class FiltersBase:
 
     @jilter
     def unwrap_response(self, endpoint: Endpoint, obj: str) -> str:
-        response = self._api.get_request(endpoint)
+        response = self._api.get_response(endpoint)
         return f'{obj}.value' if is_param_wrapper(response) else obj
 
     @jilter

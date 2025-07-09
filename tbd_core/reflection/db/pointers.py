@@ -322,6 +322,10 @@ class ClassPtr(PtrBase, Typed):
         return str(self.scope)
 
     @property
+    def is_anonymous(self) -> bool:
+        return self.cls_name.startswith(ANONYMOUS_STRUCT_PREFIX)
+
+    @property
     def bases(self) -> list[CppTypePtr]:
         return [self._db.get_type(type_id) for type_id in self._obj().bases]
 

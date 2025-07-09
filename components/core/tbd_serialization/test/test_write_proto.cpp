@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <tbd/serialization/messages.hpp>
+#include <tbd/serialization/message_transcoding.hpp>
 
 using namespace tbd;
 using namespace tbd::serialization;

@@ -20,7 +20,7 @@ async def to_code(config):
     # api_registry.add_source(component.source_dir / 'presets.cpp')
 
 
-@tbd.build_job_with_priority(tbd.GenerationStages.SERIALIZATION)
+@tbd.build_job_with_priority(tbd.GenerationStages.FINALIZE)
 def generate_presets_meta():
     plugins = get_plugins()
 

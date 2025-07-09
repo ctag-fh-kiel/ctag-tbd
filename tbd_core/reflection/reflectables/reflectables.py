@@ -9,6 +9,9 @@ from .parameters import ParamType, PARAM_NAMESPACE
 from .attributes import Attributes
 
 
+ANONYMOUS_STRUCT_PREFIX = '__struct_'
+
+
 ComponentID = int
 FileID = int
 NamespaceID = int
@@ -23,7 +26,7 @@ class Typed(Protocol):
     def typename(self) -> str: ...
 
     @property
-    def scope(self) -> str: ...
+    def scope(self) -> ScopePath: ...
 
     @property
     def cls_name(self) -> str: ...
@@ -189,6 +192,7 @@ class Reflectables:
 
 
 __all__ = [
+    'ANONYMOUS_STRUCT_PREFIX',
     'ComponentID',
     'FileID',
     'NamespaceID',

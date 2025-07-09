@@ -1,0 +1,53 @@
+#pragma once
+
+#include <tbd/serialization/serializables.hpp>
+
+{% for cls_header in cls_headers -%}
+#include <{{ cls_header }}>
+{% endfor %}
+#include <tbd/errors.hpp>
+
+//// anonymous class DTOs ////
+{%- for serializable in serializables.anonymous_class_dtos -%}
+{%- set anon_dto = serializable.dto_cls -%}
+{%- set full_name = anon_dto.full_name %}
+// {{ full_name }}
+
+namespace {{ anon_dto.scope.parent }} { struct {{ anon_dto.cls_name }} {
+    {% for prop in anon_dto.properties -%}
+    {{ prop.typename }} {{ prop.field_name }};
+    {% endfor %}
+}; }
+
+{% endfor -%}
+
+//// types with associated DTOs ////
+{% for serializable in serializables.class_dtos %}
+{%- set cls = serializable.cls -%}
+{%- set cls_dto = serializable.dto_cls -%}
+{%- set full_cls_name = cls.full_name -%}
+{%- set full_dto_name = cls_dto.full_name -%}
+
+// {{ full_cls_name }}
+
+namespace {{ cls_dto.scope.parent }} { struct {{ cls_dto.cls_name }} {
+    {% for prop in cls_dto.properties -%}
+    {{ prop.typename }} {{ prop.field_name }};
+    {% endfor %}
+}; }
+{% endfor %}
+
+//// generated DTO types ////
+{% for serializable in serializables.generated_dtos %}
+{%- set gen_dto = serializable.dto_cls -%}
+{%- set full_name = gen_dto.full_name %}
+// {{ full_name }}
+
+namespace {{ gen_dto.scope.parent }} { struct {{ gen_dto.cls_name }} {
+    {% for prop in gen_dto.properties -%}
+    {{ prop.typename }} {{ prop.field_name }};
+    {% endfor %}
+}; }
+
+{% endfor -%}
+

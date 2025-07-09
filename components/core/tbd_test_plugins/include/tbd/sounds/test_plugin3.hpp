@@ -29,7 +29,7 @@ struct Test3 : sound_processor::MonoSoundProcessor {
         trigger_par g2_p3;
     } group2;
 
-    SharedGroupType2 group3;
+    SharedGroupType1 group3;
     SharedGroupType2 group4;
     SharedGroupType2 group5;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pb_decode.h"
+
 #include <tbd/parameter_types.hpp>
 #include <tbd/errors.hpp>
 
@@ -9,6 +11,9 @@ namespace tbd::serialization {
 
 template<par_tags::ParamTypeTag type>
 Error write_par(uint8_t field_number, par_tags::param_type_from_tag<type> value, pb_ostream_t& stream);
+
+template<class MessageT>
+Error decode_message(MessageT& dto, pb_istream_s& stream);
 
 template<>
 inline Error write_par<par_tags::INT_PARAM>(const uint8_t field_number, const int_par value, pb_ostream_t& stream) {
