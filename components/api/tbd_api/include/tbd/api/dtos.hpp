@@ -16,15 +16,24 @@ struct DeviceInfo {
     int_par api_hash;
 };
 
-struct Foo {
-    int_par foo1;
-    trigger_par foo2;
+struct SimpleCls {
+    int_par simple1;
+    trigger_par simple2;
 };
 
-struct Bar {
-    float_par bar1;
-    Foo bar2;
-    uint_par bar3;
+struct ComplexCls {
+    int_par complex1;
+    SimpleCls complex2;
+    trigger_par complex3;
+};
+
+struct VeryComplexCls {
+    float_par vcomplex1;
+    ComplexCls vcomplex2;
+    SimpleCls vcomplex3;
+    uint_par vcomplex4;
+    ComplexCls vcomplex5;
+    uint_par vcomplex6;
 };
 
 }

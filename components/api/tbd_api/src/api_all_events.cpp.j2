@@ -4,13 +4,9 @@
 #include <tbd/api.hpp>
 #include <tbd/logging.hpp>
 
-#include "api_message_transcoding.hpp"
+#include <tbd/api/packet_transcoding.hpp>
 
-namespace {
-
-tbd::api::PacketBufferWriter event_writer;
-
-}
+namespace { tbd::api::PacketBufferWriter event_writer; }
 
 using tbd::api::Packet;
 {% for sink in api.event_sinks %}
@@ -26,14 +22,17 @@ namespace {{ sink.scope.parent }} { void {{ sink.name }}(const uint8_t* buffer, 
 
 namespace tbd::api {
 
-Error dispatch_to_sinks(const uint8_t* buffer, size_t length) {
+Error dispatch_to_sinks(const uint8_t* buffer, const size_t length) {
     {%- for sink in api.event_sinks %}
     {{ sink.full_name }}(buffer, length);
     {%- endfor %}
     return TBD_OK;
 }
 
-//// dispatchers ////
+}
+
+//// event dispatchers ////
+namespace tbd::api::event_dispatchers {
 {% for event in api.events %}
 Error {{ event | dispatcher_name }}({{ event | func_args }}) {
     {% for responder in event | responders -%}
@@ -42,13 +41,15 @@ Error {{ event | dispatcher_name }}({{ event | func_args }}) {
     return TBD_OK;
 }
 {% endfor %}
+}
 
-//// handlers ////
+//// external event handlers ////
+namespace tbd::api::event_handlers {
 {% for event in api.events %}
 Error {{ event | event_handler_name }}(const Packet& event_packet) {
     {%- if event | event_payload %}
     {{ event | event_payload }} in_message;
-    if (!decode_message(in_message, event_packet)) {
+    if (!decode_packet(in_message, event_packet)) {
         return TBD_ERR(API_DECODE);
     }
     {%- endif %}
@@ -71,16 +72,22 @@ namespace {{ event.scope.parent }} { void {{ event | emitter_name }}({{ event | 
     _packet.handler = {{ event | event_id }};
     _packet.crc = 0;
     _packet.id = 0;
-    {%- if event | event_payload %}
-
+    {% if event | event_payload -%}
+    {%- if event | needs_request_dto or event | needs_param_wrapper %}
     {{ event | event_payload }} _payload;
-    {% for assignment in event | apply_args('_payload', single_arg_name = 'input') -%}
+    {%- for assignment in event | apply_args('_payload', single_arg_name = 'value') %}
     {{ assignment }};
-    {% endfor %}
+    {%- endfor %}
     size_t _length = event_writer.payload_buffer_size();
-    if (!tbd::api::encode_message(_payload, event_writer.payload_buffer(), _length)) {
+    if (!tbd::api::encode_packet(_payload, event_writer.payload_buffer(), _length)) {
         return;
     }
+    {%- else -%}
+    size_t _length = event_writer.payload_buffer_size();
+    if (!tbd::api::encode_packet({{ event.inputs[0].arg_name  }}, event_writer.payload_buffer(), _length)) {
+        return;
+    }
+    {%- endif %}
     _packet.payload_length = _length;
     {% else %}
     _packet.payload_length = 0;
@@ -95,7 +102,7 @@ namespace tbd::api {
 
 const size_t NUM_EVENTS = {{ api.events | length }};
 const Event EVENT_LIST[] = { {%- for event in api.events %}
-    { "{{ event.name }}", {{ event | event_id }}, &{{ event | event_handler_name }} },
+    { "{{ event.name }}", {{ event | event_id }}, &{{ event | event_handler_full_name }} },
 {%- endfor %}
 };
 

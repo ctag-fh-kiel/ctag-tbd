@@ -1,13 +1,15 @@
 from pathlib import Path
-import proto_schema_parser.ast as proto
-import proto_schema_parser.generator as protog
 
 import tbd_core.buildgen as tbb
 from tbd_core.api import Endpoint, jilter, ApiGeneratorBase, Event, Api, FiltersBase
 from tbd_core.api.idc_interfaces import IDCFunc
 
 import tbd_core.buildgen as tbd
-from tbd_core.generators import generate_protos
+from tbd_core.reflection.reflectables import ScopePath, Param
+
+RPC_HANDLER_NAMESPACE = ScopePath.root().add_namespace('tbd').add_namespace('api').add_namespace('rpc_handlers')
+EVENT_DISPATCHER_NAMESPACE = ScopePath.root().add_namespace('tbd').add_namespace('api').add_namespace('event_dispatchers')
+EVENT_HANDLER_NAMESPACE = ScopePath.root().add_namespace('tbd').add_namespace('api').add_namespace('event_handlers')
 
 
 class CppFilters(FiltersBase):
@@ -52,6 +54,8 @@ class CppFilters(FiltersBase):
         args = self.func_args(idc)
         return f'namespace {namespace} {{ {ret} {name}({args}); }}'
 
+    # RPCs
+
     @jilter
     def client_rpc_method(self, endpoint: Endpoint) -> str:
         method_name = endpoint.func_name
@@ -61,41 +65,58 @@ class CppFilters(FiltersBase):
         return f'{method_name}({inputs_args}{callback})'
 
     @jilter
-    def invoke_dispatcher_from_args(self, event: Event) -> str:
-        args = self.forward_args(event)
-        dispatcher_name = self.dispatcher_name(event)
-        return f'tbd::api::{dispatcher_name}({args})'
-
-    @jilter
-    def invoke_dispatcher_from_message(self, event: Event) -> str:
-        args = self.forward_args(event, prefix='in_message.', single_arg_name='input')
-        dispatcher_name = self.dispatcher_name(event)
-        return f'tbd::api::{dispatcher_name}({args})'
-
-    @jilter
     def invoke_handler(self, endpoint: Endpoint) -> str:
-        args = self.forward_args(endpoint, prefix='in_message.', single_arg_name='input', output_arg_name='out_value')
+        args = self.forward_args(endpoint, obj='in_message', single_arg_name='value', output_arg_name='out_value')
         return f'{endpoint.full_name}({args})'
 
     @staticmethod
     @jilter
     def rpc_handler_name(endpoint: Endpoint) -> str:
-        return f'handle_rpc__{endpoint.func_name}'
+        return endpoint.endpoint_name
 
     @staticmethod
     @jilter
-    def event_handler_name(endpoint: Endpoint) -> str:
-        return f'handle_event__{endpoint.func_name}'
+    def rpc_handler_full_name(endpoint: Endpoint) -> str:
+        return str(RPC_HANDLER_NAMESPACE.add_function(endpoint.endpoint_name))
+
+    # events
+
+    @staticmethod
+    @jilter
+    def event_handler_name(event: Event) -> str:
+        return event.event_name
+
+    @staticmethod
+    @jilter
+    def event_handler_full_name(event: Event) -> str:
+        return str(EVENT_HANDLER_NAMESPACE.add_function(event.event_name))
 
     @staticmethod
     @jilter
     def emitter_name(event: Event) -> str:
-        return f'{event.func_name}'
+        return event.event_name
 
     @staticmethod
     @jilter
     def dispatcher_name(event: Event) -> str:
-        return f'dispatch__{event.func_name}'
+        return event.event_name
+
+    @staticmethod
+    @jilter
+    def dispatcher_full_name(event: Event) -> str:
+        return str(EVENT_DISPATCHER_NAMESPACE.add_function(event.event_name))
+
+    @jilter
+    def invoke_dispatcher_from_args(self, event: Event) -> str:
+        args = self.forward_args(event)
+        dispatcher = self.dispatcher_full_name(event)
+        return f'{dispatcher}({args})'
+
+    @jilter
+    def invoke_dispatcher_from_message(self, event: Event) -> str:
+        args = self.forward_args(event, obj='in_message', single_arg_name='value')
+        dispatcher = self.dispatcher_full_name(event)
+        return f'{dispatcher}({args})'
 
 
 class CppGenerator(ApiGeneratorBase):

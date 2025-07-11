@@ -15,6 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 PARAM_MESSAGE_POSTFIX = 'Wrapper'
 DTO_POSTFIX = 'Dto'
+DTO_ATTR = 'tbd::dto'
 
 
 def is_param_wrapper(cls: ClassPtr) -> bool:
@@ -33,6 +34,7 @@ class DTORegistry:
         return self._reflectables
 
     def get_dtos(self) -> dict[str, Serializables]:
+        self._find_in_component('serialization')
         return self._serializables
 
     def make_type_serializable(
@@ -123,8 +125,15 @@ class DTORegistry:
                 raise RuntimeError(
                     f'serializable for {serializable.cls.full_name} redeclared with different serialization type')
             return
-        print(f'added serializable for {serializable.cls.full_name}')
         serialzables[serializable.ref()] = serializable
+
+    def _find_in_component(self, component_name: str):
+        for cls in self._reflectables.classes():
+            if cls.component != component_name:
+                continue
+            if DTO_ATTR in cls.attrs:
+                self.make_type_serializable(component_name, cls)
+
 
     def _make_type_serializable(
             self, serializables: Serializables,

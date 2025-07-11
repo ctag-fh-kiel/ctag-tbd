@@ -29,7 +29,7 @@ def generate_serialization():
         srcs_dir.mkdir(parents=True, exist_ok=True)
 
         gen.write_cpp_code(domain, headers_dir, srcs_dir)
-        # gen.write_protos( / 'dtos.proto')
+        gen.write_protos(headers_dir / 'dtos.proto')
 
 
 tbb.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)

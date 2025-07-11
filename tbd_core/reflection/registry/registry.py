@@ -215,7 +215,6 @@ class ReflectableFinder:
             while (pos := pos.parent) is not None:
                 combined_scope = f'{pos.path}::{_type.type}'
                 if combined_scope == cls_path:
-                    print(cls_path)
                     return cls_id
         return None
 

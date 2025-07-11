@@ -1,10 +1,6 @@
-#include <tbd/api/api_all_events.hpp>
-#include <tbd/api/module.hpp>
+#pragma once
 
-#include <tbd/api.hpp>
-#include <tbd/logging.hpp>
-
-#include "api_message_transcoding.hpp"
+#include <tbd/api/dtos/dtos.hpp>
 
 {% for event in api.events %}
 {{ event | shadow_declaration }}

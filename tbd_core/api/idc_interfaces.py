@@ -1,6 +1,6 @@
 from enum import Enum, unique
 from dataclasses import dataclass
-from typing import OrderedDict, Final
+from typing import Final
 from zlib import crc32
 
 from tbd_core.reflection.db import FunctionPtr, ArgumentPtr, ReflectableDB

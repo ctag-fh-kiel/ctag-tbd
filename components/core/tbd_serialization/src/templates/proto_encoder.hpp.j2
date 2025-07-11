@@ -1,0 +1,12 @@
+template<>
+inline Error encode_message(const {{ dto_type }}& dto, pb_ostream_t& stream) {
+    using namespace tbd::par_tags;
+    {%- for field_num, prop in fields -%}
+    {%- if prop | is_param %}
+    if (const auto err = write_par<{{ prop | param_tag }}>({{ field_num }}, dto.{{ prop.field_name }}, stream); err != TBD_OK) { return err; }
+    {%- else -%}
+    if (const auto err = encode_field<{{ prop.typename }}>({{ field_num }}, dto.{{ prop.field_name }}, stream); err != TBD_OK) { return err; }
+    {%- endif -%}
+    {%- endfor %}
+    return TBD_OK;
+}

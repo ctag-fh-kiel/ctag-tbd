@@ -23,7 +23,7 @@ void handle_{{ event.name }}(const Event& target, const Packet& event_packet) {
     if (!decode_message(event, event_packet)) {
         return;
     }
-    target.on_{{ event.name }}({{ event | forward_args(prefix='event.', single_arg_name='input') }});
+    target.on_{{ event.name }}({{ event | forward_args(obj='event.', single_arg_name='input') }});
     {%- else %}
     target.on_{{ event.name }}();
     {%- endif %}

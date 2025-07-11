@@ -1,0 +1,31 @@
+template<>
+inline Error decode_message({{ dto_type }}& dto, pb_istream_t& stream) {
+    using namespace tbd::par_tags;
+    while (stream.bytes_left) {
+        uint32_t tag;
+        pb_wire_type_t wire_type;
+        bool eof;
+
+        if (!pb_decode_tag(&stream, &wire_type, &tag, &eof)) {
+            if (eof) { break; } else { return TBD_ERR(SERIALIZATION_BAD_TAG); }
+        }
+
+        if (tag == 0) { return TBD_ERR(SERIALIZATION_ZERO_TAG); }
+
+        Error err = TBD_OK;
+        switch (tag) {
+        {%- for field_num, prop in fields -%}
+        {%- if prop | is_param %}
+            case {{ field_num }}: { err = decode_par_data<{{ prop | param_tag }}>(wire_type, dto.{{ prop.field_name }}, stream); }
+        {%- else -%}
+            case {{ field_num }}: { err = decode_submessage_data<{{ prop.typename }}>(wire_type, dto.{{ prop.field_name }}, stream); break; }
+        {%- endif -%}
+        {%- endfor %}
+            default: { err = pb_skip_field(&stream, wire_type) ? TBD_OK : errors::FAILURE; }
+        }
+        if (err != TBD_OK) {
+            return err;
+        }
+    }
+    return TBD_OK;
+}

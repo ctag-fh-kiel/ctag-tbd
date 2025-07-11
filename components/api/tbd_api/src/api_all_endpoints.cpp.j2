@@ -5,7 +5,7 @@
 #include <tbd/parameter_types.hpp>
 #include <tbd/logging.hpp>
 
-#include "api_message_transcoding.hpp"
+#include <tbd/api/packet_transcoding.hpp>
 
 using tbd::api::tag;
 
@@ -14,61 +14,34 @@ using tbd::api::tag;
 {{ endpoint | shadow_declaration }}
 {%- endfor %}
 
-namespace tbd::api {
+namespace tbd::api::rpc_handlers {
 
 {% for endpoint in api.endpoints %}
-{%- if endpoint.output == 'str_par' %}
 Error {{ endpoint | rpc_handler_name }}(const Packet& request, uint8_t* out_buffer, size_t& out_buffer_size) {
     {%- if endpoint | request_type %}
     {{ endpoint | request_type }} in_message;
-    if (!decode_message(in_message, request)) {
+    if (!decode_packet(in_message, request)) {
         return TBD_ERR(API_DECODE);
     }
-    {%- endif %}
-
-    str_par out_value;
-    if (auto err = {{ endpoint | invoke_handler }}; err != errors::SUCCESS) {
-        return err;
-    }
-
-    pb_ostream_t stream = pb_ostream_from_buffer(out_buffer, out_buffer_size);
-
-    str_par_wrapper out_message;
-    out_message.value.funcs.encode = encode_string;
-    out_message.value.arg = &out_value;
-    if (!pb_encode(&stream, str_par_wrapper_fields, &out_message)) {
-        TBD_LOGE("api", "failed to serialize : %s", PB_GET_ERROR(&stream));
-        out_buffer_size = stream.bytes_written;
-        return TBD_ERR(API_ENCODE);
-    }
-    out_buffer_size = stream.bytes_written;
-    return TBD_ERR(SUCCESS);
-}
-{%- else %}
-Error {{ endpoint | rpc_handler_name }}(const Packet& request, uint8_t* out_buffer, size_t& out_buffer_size) {
-    {%- if endpoint | request_type %}
-    {{ endpoint | request_type }} in_message;
-    if (!decode_message(in_message, request)) {
-        return TBD_ERR(API_DECODE);
-    }
-    {%- endif %}
-
-    {%- if endpoint | response_type -%}
+    {%- endif -%}
+    {%- if endpoint | response_type %}
     {{ endpoint | response_type }} out_message;
     auto& out_value = {{ endpoint | unwrap_response('out_message') }};
     {%- endif %}
-    if (auto err = {{ endpoint | invoke_handler }}; err != errors::SUCCESS) {
+    if (const auto err = {{ endpoint | invoke_handler }}; err != errors::SUCCESS) {
         return err;
     }
     {%- if endpoint | response_type %}
-    if (!encode_message(out_message, out_buffer, out_buffer_size)) {
+    if (!encode_packet(out_message, out_buffer, out_buffer_size)) {
         return TBD_ERR(API_ENCODE);
     }
     {%- endif %}
     return TBD_ERR(SUCCESS);
 }
-{%- endif %}
 {% endfor %}
+}
+
+namespace tbd::api {
 
 const uint32_t API_VERSION = {{ api.get_version() }};
 const uint32_t CORE_API_HASH = {{ api.calculate_core_hash() }};
@@ -77,7 +50,7 @@ const uint32_t API_HASH = {{ api.calculate_hash() }};
 
 const size_t NUM_ENDPOINTS = {{ api.endpoints | length }};
 const Endpoint ENDPOINT_LIST[] = { {%- for endpoint in api.endpoints %}
-    { "{{ endpoint.endpoint_name }}", {{ endpoint | request_id }}, {{ endpoint | output_id }}, &{{ endpoint | rpc_handler_name }} },
+    { "{{ endpoint.endpoint_name }}", {{ endpoint | request_id }}, {{ endpoint | output_id }}, &{{ endpoint | rpc_handler_full_name }} },
 {%- endfor %} 
 };
 

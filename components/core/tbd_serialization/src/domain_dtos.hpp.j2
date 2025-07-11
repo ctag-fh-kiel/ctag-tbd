@@ -15,7 +15,7 @@
 
 namespace {{ anon_dto.scope.parent }} { struct {{ anon_dto.cls_name }} {
     {% for prop in anon_dto.properties -%}
-    {{ prop.typename }} {{ prop.field_name }};
+    {{ prop.type | map_anonymous }} {{ prop.field_name }};
     {% endfor %}
 }; }
 
@@ -32,7 +32,7 @@ namespace {{ anon_dto.scope.parent }} { struct {{ anon_dto.cls_name }} {
 
 namespace {{ cls_dto.scope.parent }} { struct {{ cls_dto.cls_name }} {
     {% for prop in cls_dto.properties -%}
-    {{ prop.typename }} {{ prop.field_name }};
+    {{ prop.type | map_anonymous }} {{ prop.field_name }};
     {% endfor %}
 }; }
 {% endfor %}
@@ -45,7 +45,7 @@ namespace {{ cls_dto.scope.parent }} { struct {{ cls_dto.cls_name }} {
 
 namespace {{ gen_dto.scope.parent }} { struct {{ gen_dto.cls_name }} {
     {% for prop in gen_dto.properties -%}
-    {{ prop.typename }} {{ prop.field_name }};
+    {{ prop.type | map_anonymous }} {{ prop.field_name }};
     {% endfor %}
 }; }
 

@@ -1,6 +1,8 @@
 import logging
 from collections import OrderedDict
 
+import humps
+
 from tbd_core.reflection.reflectables import ClassID, FunctionID
 from tbd_core.reflection.db import FunctionPtr, ArgumentPtr, ClassPtr
 from tbd_core.serialization import DTORegistry
@@ -122,7 +124,8 @@ class ApiRegistry:
 
     def _add_multi_input_request(self, endpoint_name: str, inputs: list[ArgumentPtr]) -> ClassPtr:
         field_list = OrderedDict((_input.arg_name, _input.type) for _input in inputs)
-        return self._dto_registry.create_dto_from_field_list(API_DOMAIN, endpoint_name, field_list)
+        dto_name = f'{humps.pascalize(endpoint_name)}Args'
+        return self._dto_registry.create_dto_from_field_list(API_DOMAIN, dto_name, field_list)
 
     def _add_response(self, output: ArgumentPtr) -> ClassPtr:
         """ Add reusable dto for a specific output type. """
@@ -154,7 +157,8 @@ class ApiRegistry:
 
     def _add_multi_input_payload(self, event_name: str, inputs: list[ArgumentPtr]) -> ClassPtr:
         field_list = OrderedDict((_input.arg_name, _input.type) for _input in inputs)
-        return self._dto_registry.create_dto_from_field_list(API_DOMAIN, event_name, field_list)
+        dto_name = f'{humps.pascalize(event_name)}Payload'
+        return self._dto_registry.create_dto_from_field_list(API_DOMAIN, dto_name, field_list)
 
     def _add_responder(self, responder: Responder) -> None:
         self._responders.append(responder)

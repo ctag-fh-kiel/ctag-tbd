@@ -46,7 +46,7 @@ class TbdEvent:
         event.ParseFromString(payload)
         {%- endif %}
         if self.on_{{ event.name }} is not None:
-            await self.on_{{ event.name }}({{ event | forward_args(prefix='event.', single_arg_name='input') }})
+            await self.on_{{ event.name }}({{ event | forward_args(obj='event.', single_arg_name='input') }})
 {% endfor %}
     async def _handle_event(self, event_id: int, payload: bytes) -> None:
         if event_id >= len(self._handlers):

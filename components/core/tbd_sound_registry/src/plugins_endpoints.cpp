@@ -1,7 +1,6 @@
 #include <tbd/parameter_types.hpp>
 #include <tbd/sound_registry/factory.hpp>
-#include <api/api_types.pb.h>
-
+#include <tbd/sound_registry/dtos.hpp>
 
 namespace sp_pars = tbd::sound_registry::parameters;
 

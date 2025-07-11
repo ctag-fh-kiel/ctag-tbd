@@ -51,7 +51,7 @@ def convert_parameter_types(type_name:  cpptypes.DecoratedType) -> Param | None:
     if ns != PARAM_NAMESPACE:
         return None
 
-    param_type = ALL_PARAM_TYPES.get(name)
+    param_type = PARAM_TYPES.get(name)
     if param_type is not None:
         return Param(
             param_type=param_type,
@@ -166,7 +166,6 @@ class ClassContext(ScopeContext):
         return self._cls.class_decl.attrs
 
     def entry(self) -> ClassEntry:
-        print('creating', self.name, '>>', self.file.file)
         props = [prop.ref() for prop in self.fields()]
         name, description = name_and_description_from_attrs(self.attrs)
         return ClassEntry(
