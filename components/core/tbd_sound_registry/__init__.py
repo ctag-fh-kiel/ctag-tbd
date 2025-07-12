@@ -1,26 +1,23 @@
-from esphome.components.tbd_module.python_dependencies import python_dependencies
+import logging
+
+from esphome.components.tbd_api import get_api_registry
 
 from esphome.const import CONF_ID
 import esphome.config_validation as cv
 import esphome.codegen as cg
 
-from tbd_core.buildgen import GenerationStages, get_reflection_registry, AutoReflection, ComponentInfo, get_reflectables
-
-python_dependencies(('humps', 'pyhumps'))
-
-import logging
-
 import tbd_core.buildgen as tbd
-
-from esphome.components.tbd_api import get_api_registry
 from tbd_core.plugins import (
     PluginRegistry,
     PluginGenerator,
-    Plugins,
+    Plugins, find_plugin_source_file,
 )
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+
 
 tbd_sound_registry_ns = cg.esphome_ns.namespace("sound_registry")
 SoundRegistry = tbd_sound_registry_ns.class_("SoundRegistryProxy", cg.Component)
@@ -49,12 +46,12 @@ def get_plugin_registry() -> PluginRegistry:
     return PluginRegistry()
 
 
-@tbd.generated_tbd_global(SOUND_PLUGINS_GLOBAL, after_stage=GenerationStages.PLUGINS)
+@tbd.generated_tbd_global(SOUND_PLUGINS_GLOBAL, after_stage=tbd.GenerationStages.PLUGINS)
 def get_plugins() -> Plugins:
-    return get_plugin_registry().get_plugins(get_reflectables())
+    return get_plugin_registry().get_plugins(tbd.get_reflectables())
 
 
-def new_plugin_registry(init_file: str, config) -> ComponentInfo:
+def new_plugin_registry(init_file: str, config) -> tbd.ComponentInfo:
     """ Add a sound plugin module.
 
         Every class in a sound plugin component folder that inherits from `ctagSoundProcessor` 
@@ -82,42 +79,16 @@ def new_plugin_registry(init_file: str, config) -> ComponentInfo:
         :return tbd_module.ComponentInfo: the newly created component
     """
 
-    component = tbd.new_tbd_component(init_file, auto_reflect=AutoReflection.HEADERS)
-
-    # find all plugins in this source tree
-    include_dirs = component.get_default_include_dirs()
+    component = tbd.new_tbd_component(init_file, auto_reflect=tbd.AutoReflection.HEADERS)
 
     whitelist = config.get(CONF_WHITELIST)
     blacklist = config.get(CONF_BLACKLIST)
     get_plugin_registry().add_plugin_set(component.name, whitelist=whitelist, blacklist=blacklist)
-
-    # selected_module_plugins = []
-    # for include_dir in include_dirs:
-    #     headers = set(file for file in include_dir.rglob('*.hpp'))
-    #     selected_module_plugins += registry.search_for_plugins(headers, include_base=include_dir,
-    #                                                            whitelist=whitelist, blacklist=blacklist)
-
-    # add sources for selected plugins
-    # sources = (component.path / 'plugin_src').rglob('*.cpp')
-    # for source_file in sources:
-    #     file_name = source_file.stem.lower()
-    #     for plugin in selected_module_plugins:
-    #         plugin_name = plugin.cls_name
-    #         possible_cpp_file_names = [
-    #             plugin.header.stem.lower(),
-    #             plugin_name.lower(),
-    #             humps.decamelize(plugin_name),
-    #             humps.kebabize(plugin_name),
-    #         ]
-    #         if file_name in possible_cpp_file_names:
-    #             component.add_source_file(source_file)
-    #             _LOGGER.info(f'adding extra plugin source {source_file}')
-
     return component
 
 
 async def to_code(config):
-    component = tbd.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)
+    component = tbd.new_tbd_component(__file__, auto_reflect=tbd.AutoReflection.ALL)
 
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
@@ -135,7 +106,22 @@ def finalize_plugin_registry_job():
     gen.write_plugin_reflection_info(gen_source_path)
     gen.write_meta_classes(gen_source_path)
 
-    plugin_names = [plugin.name for plugin in plugins.plugin_list]
-    _LOGGER.info('using plugins:')
-    for plugin_name in plugin_names:
-        _LOGGER.info(f'>>> {plugin_name}')
+    plugin_list = plugins.plugin_list
+
+    # plugin add source files to build
+    _LOGGER.info('[[ adding plugins ]]')
+    for component in tbd.get_tbd_components().values():
+        component_name = component.name
+
+        selected_module_plugins = []
+        for plugin in plugin_list:
+            if plugin.cls.component == component_name:
+                selected_module_plugins.append(plugin)
+        if selected_module_plugins:
+            _LOGGER.info(f'[ adding plugins from module {component_name} ]')
+            for plugin in selected_module_plugins:
+                source_file = find_plugin_source_file(component.path / 'plugin_src', plugin)
+                component.add_source_file(source_file)
+                source_file = source_file.relative_to(component.path)
+                _LOGGER.info(f'{plugin.name} ({plugin.header}, {source_file})')
+

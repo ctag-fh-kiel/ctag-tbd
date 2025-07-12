@@ -1,11 +1,33 @@
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Final, OrderedDict
+
+import humps
 
 from tbd_core.reflection.db import ReflectableDB
 
 from .plugin_entry import PluginEntry, ParamEntry
 
+
+
+
+
+def find_plugin_source_file(source_dir: Path, plugin: PluginEntry) -> Path:
+    plugin_sources = (source_dir).rglob('*.cpp')
+    plugin_name = plugin.cls.cls_name
+    for source_file in plugin_sources:
+        file_name = source_file.stem.lower()
+        possible_cpp_file_names = [
+            plugin.header.stem.lower(),
+            plugin_name.lower(),
+            humps.decamelize(plugin_name),
+            humps.kebabize(plugin_name),
+        ]
+        if file_name in possible_cpp_file_names:
+            return source_file
+
+    raise RuntimeError(f'no source file found for plugin {plugin_name}')
 
 @dataclass
 class PluginsOptions:
@@ -37,4 +59,4 @@ class Plugins:
     def reflectables(self) -> ReflectableDB:
         return self._reflectables
 
-__all__ = ['Plugins', 'PluginsOptions']
+__all__ = ['find_plugin_source_file', 'Plugins', 'PluginsOptions']
