@@ -33,13 +33,13 @@ class GenerationStages(IntEnum):
 
     DEFAULT       =  0
     REFLECTION    = -10
-    COMPONENTS    = -15
-    TESTS         = -20
-    PLUGINS       = -25
-    ERRORS        = -30
-    FINALIZE      = -35
-    API           = -40
-    SERIALIZATION = -45
+    TESTS         = -15
+    PLUGINS       = -20
+    ERRORS        = -25
+    FINALIZE      = -30
+    API           = -35
+    SERIALIZATION = -40
+    COMPONENTS    = -45
     CLIENTS       = -50
 
 
