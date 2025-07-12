@@ -9,7 +9,7 @@ from tbd_core.generators import GeneratorBase, jilter
 from tbd_core.reflection.reflectables import Param
 from tbd_core.reflection.db import ReflectableDB, ClassPtr, flattened_properties, PropertyPtr, CppTypePtr
 
-from .serializables import Serializables, Serializable, AnonymousClassDto
+from .serializables import Serializables, Serializable
 
 HEADER_NOTE = \
 """/** 
@@ -117,27 +117,29 @@ class SerializableGenerator(GeneratorBase[CppFilters]):
             f.write(HEADER_NOTE)
             f.write(streams_source)
 
-        messages_header = self.render(
-            'domain_messages.hpp.j2',
+        message_encoding = self.render(
+            'domain_message_encoding.hpp.j2',
             serializables=self._serializables,
             domain=domain,
             cls_headers=cls_headers,
 
         )
-        messages_header_file = headers_dir / f'messages.hpp'
-        with open(messages_header_file, 'w') as f:
+        message_encoding_header_file = headers_dir / f'message_encoding.hpp'
+        with open(message_encoding_header_file, 'w') as f:
             f.write(HEADER_NOTE)
-            f.write(messages_header)
+            f.write(message_encoding)
 
-        messages_source = self.render(
-            'domain_messages.cpp.j2',
+        message_decoding = self.render(
+            'domain_message_decoding.hpp.j2',
             serializables=self._serializables,
             domain=domain,
-            cls_headers=cls_headers)
-        messages_source_file = srcs_dir / f'messages.cpp'
-        with open(messages_source_file, 'w') as f:
+            cls_headers=cls_headers,
+
+        )
+        message_decoding_header_file = headers_dir / f'message_decoding.hpp'
+        with open(message_decoding_header_file, 'w') as f:
             f.write(HEADER_NOTE)
-            f.write(messages_source)
+            f.write(message_decoding)
 
 
     def write_protos(self, out_file: Path) -> None:

@@ -2,7 +2,6 @@ from typing import Final
 from pathlib import Path
 
 from tbd_core.generators import jilter, GeneratorBase
-from tbd_core.serialization import is_param_wrapper
 from tbd_core.reflection.reflectables import Param
 
 from .api import Api

@@ -16,7 +16,7 @@ inline Error decode_message({{ dto_type }}& dto, pb_istream_t& stream) {
         switch (tag) {
         {%- for field_num, prop in fields -%}
         {%- if prop | is_param %}
-            case {{ field_num }}: { err = decode_par_data<{{ prop | param_tag }}>(wire_type, dto.{{ prop.field_name }}, stream); }
+            case {{ field_num }}: { err = decode_par<{{ prop | param_tag }}>(wire_type, dto.{{ prop.field_name }}, stream); }
         {%- else -%}
             case {{ field_num }}: { err = decode_submessage_data<{{ prop.typename }}>(wire_type, dto.{{ prop.field_name }}, stream); break; }
         {%- endif -%}

@@ -1,7 +1,11 @@
 #pragma once
 
 #include <tbd/{{ domain }}/dtos/dtos.hpp>
-#include <tbd/serialization/messages.hpp>
+{% if domain != 'serialization' -%}
+#include <tbd/serialization/dtos/message_encoding.hpp>
+{%- else -%}
+#include <tbd/serialization/message_encoding.hpp>
+{% endif %}
 
 namespace tbd::serialization {
 
@@ -11,8 +15,6 @@ namespace tbd::serialization {
 // anonymous class DTO {{ serializable.dto_cls.typename }}
 
 {{ serializable | proto_encoder_impl }}
-
-{{ serializable | proto_decoder_impl }}
 {% endfor %}
 {%- else %}
 //// no anonymous class DTOs ////
@@ -24,8 +26,6 @@ namespace tbd::serialization {
 // serializable class {{ serializable.dto_cls.typename }}
 
 {{ serializable | proto_encoder_impl }}
-
-{{ serializable | proto_decoder_impl }}
 {% endfor %}
 {%- else %}
 //// no directly serializable types ////
@@ -37,8 +37,6 @@ namespace tbd::serialization {
 // class DTO {{ serializable.dto_cls.typename }}
 
 {{ serializable | proto_encoder_impl }}
-
-{{ serializable | proto_decoder_impl }}
 {% endfor %}
 {%- else %}
 //// no types with associated DTOs ////
@@ -50,8 +48,6 @@ namespace tbd::serialization {
 // generated DTO {{ serializable.dto_cls.typename }}
 
 {{ serializable | proto_encoder_impl }}
-
-{{ serializable | proto_decoder_impl }}
 {% endfor %}
 {%- else %}
 //// no generated DTO types ////

@@ -3,10 +3,25 @@ inline Error encode_message(const {{ dto_type }}& dto, pb_ostream_t& stream) {
     using namespace tbd::par_tags;
     {%- for field_num, prop in fields -%}
     {%- if prop | is_param %}
-    if (const auto err = write_par<{{ prop | param_tag }}>({{ field_num }}, dto.{{ prop.field_name }}, stream); err != TBD_OK) { return err; }
+    if (const auto err = encode_par_field<{{ prop | param_tag }}>({{ field_num }}, dto.{{ prop.field_name }}, stream); err != TBD_OK) { return err; }
     {%- else -%}
-    if (const auto err = encode_field<{{ prop.typename }}>({{ field_num }}, dto.{{ prop.field_name }}, stream); err != TBD_OK) { return err; }
+    if (const auto err = encode_class_field<{{ prop.typename }}>({{ field_num }}, dto.{{ prop.field_name }}, stream); err != TBD_OK) { return err; }
     {%- endif -%}
     {%- endfor %}
     return TBD_OK;
+}
+
+template<>
+inline Error encode_class_field(uint8_t field_number, const {{ dto_type }}& dto, pb_ostream_t& stream) {
+    if (!pb_encode_tag(&stream, PB_WT_STRING, field_number)) {
+        return TBD_ERR(SERIALIZATION_FAILED_TAG_WRITE);
+    }
+    pb_ostream_t substream = PB_OSTREAM_SIZING;
+    if (encode_message(dto, substream) != TBD_OK) {
+        return TBD_ERR(SERIALIZATION_DETERMINE_SUBMESSAGE_SIZE_FAILED);
+    }
+    if (const uint32_t size = substream.bytes_written; !pb_encode_varint(&stream, size)) {
+        return TBD_ERR(SERIALIZATION_WRITE_SUBMESSAGE_SIZE_FAILED);
+    }
+    return encode_message(dto, stream);
 }
