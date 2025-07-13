@@ -1,16 +1,13 @@
-from typing import Final
-
+from .base_rpcs import Rpcs
 from .client import *
 
-from . import api_types_pb2 as dtos
+from . import dtos_pb2 as dtos
 
-class TbdRpc:
-    def __init__(self, client: TbdClient):
-        self._client: Final = client
+class FirmwareRpcs(Rpcs):
 {% for endpoint in api.endpoints %}
     async def {{ endpoint.name }}({{ endpoint | func_args }}) -> {{ endpoint | request_func_return }}:
-        {%- if endpoint | request_type %}
-        request = dtos.{{ endpoint | request_type }}()
+        {%- if endpoint | endpoint_request %}
+        request = dtos.{{ endpoint | endpoint_request }}()
         {%- for assignment in endpoint | apply_args('request', single_arg_name='input') %}
         {{ assignment }}
         {%- endfor %}
@@ -18,15 +15,19 @@ class TbdRpc:
         {%- else %}
         payload = None
         {%- endif %}
-        {%- if endpoint | response_type %}
+        {%- if endpoint | endpoint_response %}
         res_data = await self._client.send_rpc({{ endpoint | endpoint_id }}, payload)
-        result = dtos.{{ endpoint | response_type }}()
+        result = dtos.{{ endpoint | endpoint_response }}()
         result.ParseFromString(res_data)
         return {{ endpoint | unwrap_response('result') }}
         {%- else %}
         await self._client.send_rpc({{ endpoint | endpoint_id }}, payload)
         {%- endif %}
-{% endfor %} 
+{%- endfor %}
 
 
-__all__ = ['TbdRpc']
+def get_firmware_rpcs(client: TbdClient) -> FirmwareRpcs:
+    return FirmwareRpcs(client)
+
+
+__all__ = ['FirmwareRpcs', 'get_firmware_rpcs']

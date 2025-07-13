@@ -326,6 +326,12 @@ class ClassPtr(PtrBase, Typed):
         return self.cls_name.startswith(ANONYMOUS_STRUCT_PREFIX)
 
     @property
+    def anonymous_id(self) -> int | None:
+        if not self.cls_name.startswith(ANONYMOUS_STRUCT_PREFIX):
+            return None
+        return int(self.cls_name[len(ANONYMOUS_STRUCT_PREFIX):])
+
+    @property
     def bases(self) -> list[CppTypePtr]:
         return [self._db.get_type(type_id) for type_id in self._obj().bases]
 

@@ -4,8 +4,9 @@ from pathlib import Path
 import tbd_core.buildgen as tbb
 from tbd_core.api import Api, Endpoint, ApiGeneratorBase, jilter, Event, FiltersBase
 from tbd_core.api.idc_interfaces import IDCFunc
-from tbd_core.reflection.db import ReflectableDB
-from tbd_core.serialization import Serializables, SerializableGenerator
+from tbd_core.reflection.db import ClassPtr
+from tbd_core.reflection.reflectables import Param
+from tbd_core.serialization import SerializableGenerator
 
 MODULE_NAME = 'tbd_client'
 BASE_ENDPOINTS_FILE = 'base_endpoints.py'
@@ -26,27 +27,61 @@ class PyFilters(FiltersBase):
     @jilter
     def func_args(self, idc: IDCFunc):
         arg_list = ['self']
-        if idc.has_inputs:
-            for _input in idc.inputs:
-                # arg_type = self.payload_type(arg.type)
-                arg_list.append(f'{_input.arg_name}: {_input.type.cls_name}')
+        if not idc.has_inputs:
+            return ', '.join(arg_list)
 
+        for _input in idc.inputs:
+            input_type = _input.type
+            match input_type:
+                case ClassPtr():
+                    arg_type = f'dtos.{input_type.cls_name}'
+                case Param():
+                    arg_type = input_type.param_type
+                case _:
+                    raise RuntimeError(f'not a valid IDC argument: {input_type}')
+            arg_list.append(f'{_input.arg_name}: {arg_type}')
         return ', '.join(arg_list)
 
     @jilter
-    def event_signature(self, event: Event):
-        arg_list = []
-        if event.has_inputs:
-            for _input in event.inputs:
-                arg_list.append(_input.type.cls_name)
+    def endpoint_request(self, endpoint: Endpoint) -> str | None:
+        if endpoint.inputs is None:
+            return None
+        return self._api.get_request(endpoint).cls_name
 
-        return ', '.join(arg_list)
+    @jilter
+    def endpoint_response(self, endpoint: Endpoint) -> str | None:
+        if endpoint.output is None:
+            return None
+        return self._api.get_response(endpoint).cls_name
 
     @jilter
     def request_func_return(self, endpoint: Endpoint) -> str:
         if not endpoint.output:
             return 'None'
         return endpoint.output.cls_name
+
+    @jilter
+    def event_signature(self, event: Event):
+        if not event.has_inputs:
+            return ''
+        arg_list = []
+        for _input in event.inputs:
+            input_type = _input.type
+            match input_type:
+                case ClassPtr():
+                    arg_type = f'dtos.{input_type.cls_name}'
+                case Param():
+                    arg_type = input_type.param_type
+                case _:
+                    raise RuntimeError(f'not a valid event argument: {input_type}')
+            arg_list.append(arg_type)
+        return ', '.join(arg_list)
+
+    @jilter
+    def event_payload(self, event: Event) -> str | None:
+        if event.inputs is None:
+            return None
+        return self._api.get_payload(event).cls_name
 
 
 class PyGenerator(ApiGeneratorBase):
@@ -63,7 +98,7 @@ class PyGenerator(ApiGeneratorBase):
         srcs_path = Path(__file__).parent.parent
         tbb.update_build_tree_if_outdated(
             srcs_path / MODULE_NAME, out_module_dir,
-            patterns=['*.py'], ignore=['api_types_pb2.py', 'tbd_rpc.py', 'tbd_event.py']
+            patterns=['*.py'], ignore=['api_types_pb2.py', 'tbd_rpc.py', 'tbd_event.py', 'dtos_pb2.py'],
         )
         tbb.update_build_file_if_outdated(srcs_path / BASE_ENDPOINTS_FILE, out_module_dir / BASE_ENDPOINTS_FILE)
         tbb.update_build_file_if_outdated(self._templates / PROJECT_FILE, out_dir / PROJECT_FILE)
@@ -73,16 +108,16 @@ class PyGenerator(ApiGeneratorBase):
         self._write_event_class(out_module_dir)
 
     def _write_rpc_class(self, out_module_dir: Path):
-        source = self.render('tbd_rpc.py.j2')
+        source = self.render('firmware_rpcs.py.j2')
 
-        out_file = out_module_dir / 'tbd_rpc.py'
+        out_file = out_module_dir / 'firmware_rpcs.py'
         with open(out_file, 'w') as f:
             f.write(source)
 
     def _write_event_class(self, out_module_dir: Path):
-        source = self.render('tbd_event.py.j2')
+        source = self.render('firmware_events.py.j2')
 
-        out_file = out_module_dir / 'tbd_event.py'
+        out_file = out_module_dir / 'firmware_events.py'
         with open(out_file, 'w') as f:
             f.write(source)
 

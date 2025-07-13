@@ -218,7 +218,7 @@ class DTORegistry:
 
         properties = OrderedDict((prop.field_name, prop.type)
                                  for prop in _type.all_properties)
-        dto_name = _type.parent.cls_name + _type.cls_name
+        dto_name = f'{_type.parent.cls_name}Anon{_type.anonymous_id}'
         generated_dto = self._create_dto(serializables, dto_name, properties, add_message=add_message, recursive=True)
 
         anon_cls_dto = AnonymousClassDto(

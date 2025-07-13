@@ -9,16 +9,16 @@ END_BYTE        = 0xff
 
 @unique
 class HeaderBytes(IntEnum):
-    OFFSET_START = 0
-    OFFSET_TYPE = 1
-    OFFSET_HANDLER_LOW = 2
+    OFFSET_START        = 0
+    OFFSET_TYPE         = 1
+    OFFSET_HANDLER_LOW  = 2
     OFFSET_HANDLER_HIGH = 3
-    OFFSET_CRC = 4
-    OFFSET_LENGTH_LOW = 5
-    OFFSET_LENGTH_HIGH = 6
-    OFFSET_ID_LOW = 7
-    OFFSET_ID_HIGH = 8
-    OFFSET_HEADER_END = 9
+    OFFSET_CRC          = 4
+    OFFSET_LENGTH_LOW   = 5
+    OFFSET_LENGTH_HIGH  = 6
+    OFFSET_ID_LOW       = 7
+    OFFSET_ID_HIGH      = 8
+    OFFSET_HEADER_END   = 9
 
 HEADER_SIZE = len(HeaderBytes)
 
@@ -153,6 +153,7 @@ __all__ = [
     'EndBytes',
     'END_SIZE',
     'PacketType',
+    'Header',
     'Packet',
     'parse_header',
     'parse_tail',

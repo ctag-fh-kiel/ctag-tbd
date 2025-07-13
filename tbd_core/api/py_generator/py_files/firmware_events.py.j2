@@ -1,29 +1,22 @@
 from collections.abc import Awaitable
-from dataclasses import dataclass
-from typing import Final, Callable, Any
+from typing import Callable, Any
 
+from .base_events import Events, EventHandlers, default_event_handler
 from .client import *
 
-from . import api_types_pb2 as dtos
+from . import dtos_pb2 as dtos
 
-async def default_event_handler(*args):
-    for arg in args:
-        print(arg)
 
-EventHandler = Callable[[bytes], Awaitable[None]]
-
-class TbdEvent:
+class FirmwareEvents(Events):
     def __init__(self, client: TbdClient):
-        self._client: Final = client
-        client.on_event = self._handle_event
-
-        self._handlers: Final[list[EventHandler]] = [
+        handlers: EventHandlers = [
             {%- for event in api.events %}
-            TbdEvent._handle_{{ event.name }},
+            self._handle_{{ event.name }},
             {%- endfor %}
         ]
+        super().__init__(client, handlers)
         {% for event in api.events %}
-        self.on_{{ event.name }}: Callable[[{{ event | event_signature }}], Awaitable[Any]] = default_event_handler
+        self.on_{{ event.event_name }}: Callable[[{{ event | event_signature }}], Awaitable[Any]] = default_event_handler('{{ event.name }}')
         {%- endfor %}
 {% for event in api.events %}
     async def {{ event.name }}({{event | func_args}}):
@@ -46,12 +39,10 @@ class TbdEvent:
         event.ParseFromString(payload)
         {%- endif %}
         if self.on_{{ event.name }} is not None:
-            await self.on_{{ event.name }}({{ event | forward_args(obj='event.', single_arg_name='input') }})
-{% endfor %}
-    async def _handle_event(self, event_id: int, payload: bytes) -> None:
-        if event_id >= len(self._handlers):
-            raise ValueError(f'invalid event id {event_id}')
-        await self._handlers[event_id](self, payload)
+            await self.on_{{ event.name }}({{ event | forward_args(obj='event', single_arg_name='value') }})
+{%- endfor %}
 
+def get_firmware_events(client: TbdClient) -> FirmwareEvents:
+    return FirmwareEvents(client)
 
-__all__ = ['TbdEvent']
+__all__ = ['FirmwareEvents', 'get_firmware_events']

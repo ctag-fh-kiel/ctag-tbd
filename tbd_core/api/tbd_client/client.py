@@ -35,6 +35,7 @@ class TbdClient:
 
         response_future = asyncio.get_running_loop().create_future()
         self._active_requests[request_id] = response_future
+        print(request_id, self._active_requests[request_id])
         await self._transport.write(Packet(
             type=PacketType.TYPE_RPC,
             handler=endpoint_id,

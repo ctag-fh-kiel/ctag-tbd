@@ -1,2 +1,3 @@
 from .connect import *
-from . import api_types_pb2 as dtos
+from .packets import *
+from . import dtos_pb2 as dtos
