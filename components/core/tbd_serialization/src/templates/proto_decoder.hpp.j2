@@ -17,8 +17,8 @@ inline Error decode_message({{ dto_type }}& dto, pb_istream_t& stream) {
         {%- for field_num, prop in fields -%}
         {%- if prop | is_param %}
             case {{ field_num }}: { err = decode_par<{{ prop | param_tag }}>(wire_type, dto.{{ prop.field_name }}, stream); }
-        {%- else -%}
-            case {{ field_num }}: { err = decode_submessage_data<{{ prop.typename }}>(wire_type, dto.{{ prop.field_name }}, stream); break; }
+        {%- else %}
+            case {{ field_num }}: { err = decode_submessage_data<{{ prop.type | map_anonymous }}>(wire_type, dto.{{ prop.field_name }}, stream); break; }
         {%- endif -%}
         {%- endfor %}
             default: { err = pb_skip_field(&stream, wire_type) ? TBD_OK : errors::FAILURE; }

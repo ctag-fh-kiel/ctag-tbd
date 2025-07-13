@@ -1,6 +1,8 @@
 #include <tbd/parameter_types.hpp>
 #include <tbd/errors.hpp>
 
+#include <tbd/presets/dtos/message_encoding.hpp>
+#include <tbd/presets/dtos/message_decoding.hpp>
 
 namespace tbd::presets {
 

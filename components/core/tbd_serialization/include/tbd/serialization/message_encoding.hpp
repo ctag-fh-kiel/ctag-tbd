@@ -26,7 +26,9 @@ inline Error encode_par_field<par_tags::INT_PARAM>(const uint8_t field_number, c
     if (!pb_encode_tag(&stream, PB_WT_VARINT, field_number)) {
         return TBD_ERR(SERIALIZATION_FAILED_TAG_WRITE);
     }
-    if (!pb_encode_svarint(&stream, value)) { return errors::FAILURE; }
+    if (!pb_encode_svarint(&stream, value)) {
+        return TBD_ERR(SERIALIZATION_ENCODING_INT_FAILED);
+    }
     return TBD_OK;
 }
 
@@ -35,7 +37,9 @@ inline Error encode_par_field<par_tags::UINT_PARAM>(const uint8_t field_number, 
     if (!pb_encode_tag(&stream, PB_WT_VARINT, field_number)) {
         return TBD_ERR(SERIALIZATION_FAILED_TAG_WRITE);
     }
-    if (!pb_encode_varint(&stream, value)) { return errors::FAILURE; }
+    if (!pb_encode_varint(&stream, value)) {
+        return TBD_ERR(SERIALIZATION_ENCODING_UINT_FAILED);
+    }
     return TBD_OK;
 }
 
@@ -44,21 +48,18 @@ inline Error encode_par_field<par_tags::FLOAT_PARAM>(const uint8_t field_number,
     if (!pb_encode_tag(&stream, PB_WT_VARINT, field_number)) {
         return TBD_ERR(SERIALIZATION_FAILED_TAG_WRITE);
     }
-    if (!pb_encode_fixed32(&stream, &value)) { return errors::FAILURE; }
+    if (!pb_encode_fixed32(&stream, &value)) {
+        return TBD_ERR(SERIALIZATION_ENCODING_FLOAT_FAILED);
+    }
     return TBD_OK;
 }
 
 template<>
 inline Error encode_par_field<par_tags::UFLOAT_PARAM>(const uint8_t field_number, const ufloat_par& value, pb_ostream_t& stream) {
     if (value < 0) {
-        return errors::FAILURE;
+        return TBD_ERR(SERIALIZATION_UFLOAT_VALUE_FOR_ENCODING_IS_NEGATIVE);
     }
-
-    if (!pb_encode_tag(&stream, PB_WT_VARINT, field_number)) {
-        return TBD_ERR(SERIALIZATION_FAILED_TAG_WRITE);
-    }
-    if (!pb_encode_fixed32(&stream, &value)) { return errors::FAILURE; }
-    return TBD_OK;
+    return encode_par_field<par_tags::UFLOAT_PARAM>(field_number, value, stream);
 }
 
 template<>
@@ -66,7 +67,9 @@ inline Error encode_par_field<par_tags::TRIGGER_PARAM>(const uint8_t field_numbe
     if (!pb_encode_tag(&stream, PB_WT_VARINT, field_number)) {
         return TBD_ERR(SERIALIZATION_FAILED_TAG_WRITE);
     }
-    if (!pb_encode_varint(&stream, value)) { return errors::FAILURE; }
+    if (!pb_encode_varint(&stream, value)) {
+        return TBD_ERR(SERIALIZATION_ENCODING_BOOL_FAILED);
+    }
     return TBD_OK;
 }
 
