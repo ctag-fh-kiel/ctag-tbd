@@ -6,6 +6,20 @@
 
 namespace tbd::test_sounds {
 
+struct SineGen {
+    void process_mono(const sound_processor::StereoSampleView& input,
+                      const sound_processor::MonoSampleView& output);
+
+    ufloat_par freq_hz;
+};
+
+struct LowPass {
+    void process_mono(const sound_processor::StereoSampleView& input,
+                      const sound_processor::MonoSampleView& output);
+
+    ufloat_par freq_hz;
+};
+
 struct Test2 : sound_processor::MonoSoundProcessor {
     ~Test2() override = default;
 
@@ -15,27 +29,10 @@ struct Test2 : sound_processor::MonoSoundProcessor {
 
     int_par p1;
     int_par p2;
-    int_par p3;
-    int_par p4;
 
-    struct {
-        uint_par g1_p1;
-        uint_par g1_p2;
-    } group1;
-
-    struct {
-        uint_par g2_p1;
-        float_par g2_p2;
-        trigger_par g2_p3;
-    } group2;
-
-    SharedGroupType2 group3;
-    SharedGroupType2 group4;
-    SharedGroupType2 group5;
-
-    ufloat_par p5;
-    float_par p6;
-    int_par p7;
+    SineGen gen1;
+    SineGen gen2;
+    LowPass low_pass;
 };
 
 }
