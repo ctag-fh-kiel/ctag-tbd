@@ -33,7 +33,7 @@ CONF_MAX_PAYLOAD_SIZE = 'max_payload_size'
 
 AUTO_LOAD = ['tbd_module', 'tbd_api']
 CONFIG_SCHEMA = cv.Schema({
-    cv.Optional(CONF_MAX_PAYLOAD_SIZE, 128): cv.positive_int,
+    cv.Optional(CONF_MAX_PAYLOAD_SIZE, 1024): cv.positive_int,
 })
 
 
