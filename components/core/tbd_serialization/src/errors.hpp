@@ -5,6 +5,7 @@
 TBD_NEW_ERR(SERIALIZATION_BAD_TAG, "failed to decode message tag")
 TBD_NEW_ERR(SERIALIZATION_FAILED_TAG_WRITE, "failed encode message tag")
 TBD_NEW_ERR(SERIALIZATION_ZERO_TAG, "zero tag in encoded message")
+TBD_NEW_ERR(SERIALIZATION_UNKNOWN_FIELD, "tag number does not match any defined field")
 
 TBD_NEW_ERR(SERIALIZATION_BAD_WIRE_TYPE_FOR_INT, "wire type is not suitable for int");
 TBD_NEW_ERR(SERIALIZATION_ENCODING_INT_FAILED, "failed to encode int value");

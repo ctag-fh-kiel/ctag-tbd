@@ -9,7 +9,13 @@ namespace tbd::api {
 template<typename MessageT>
 Error encode_packet(const MessageT& out_message, uint8_t* out_buffer, size_t& out_buffer_size) {
     pb_ostream_t stream = pb_ostream_from_buffer(out_buffer, out_buffer_size);
-    return serialization::encode_message<MessageT>(out_message, stream);
+    if (const auto err = serialization::encode_message<MessageT>(out_message, stream); err != TBD_OK) {
+        out_buffer_size = 0;
+        return err;
+    }
+    out_buffer_size = stream.bytes_written;
+    return TBD_OK;
+
 }
 
 template<typename MessageT>

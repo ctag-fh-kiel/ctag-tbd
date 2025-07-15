@@ -1,8 +1,8 @@
 #include <tbd/api/dtos.hpp>
 
 #include <tbd/parameter_types.hpp>
-#include <tbd/api/api_all_endpoints.hpp>
-#include <tbd/api/api_all_events.hpp>
+#include <tbd/api/endpoint_index.hpp>
+#include <tbd/api/event_index.hpp>
 #include <tbd/errors.hpp>
 
 
@@ -58,6 +58,7 @@ Error get_num_errors(uint_par& num_errors) {
 [[tbd::endpoint]]
 Error get_error_name(const uint_par& err_id, str_par& name) {
     if (err_id >= errors::get_num_errors()) {
+        TBD_LOGI("errors", "name %i", err_id);
         return TBD_ERR(API_BAD_ERROR);
     }
     name = errors::get_error_name(err_id);
@@ -67,6 +68,7 @@ Error get_error_name(const uint_par& err_id, str_par& name) {
 [[tbd::endpoint]]
 Error get_error_message(const uint_par& err_id, str_par& msg) {
     if (err_id >= errors::get_num_errors()) {
+        TBD_LOGI("errors", "message %i", err_id);
         return TBD_ERR(API_BAD_ERROR);
     }
     msg = errors::get_error_message(err_id);

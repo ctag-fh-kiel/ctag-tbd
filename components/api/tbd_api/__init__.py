@@ -1,5 +1,3 @@
-from esphome.components.tbd_module.python_dependencies import python_dependencies
-
 from esphome.components.tbd_serialization import get_dto_registry
 from esphome.components.tbd_serialization import get_dtos
 
@@ -7,17 +5,13 @@ from tbd_core.buildgen import GenerationStages, get_reflectables
 from tbd_core.buildgen.component_info import AutoReflection
 from tbd_core.serialization import SerializableGenerator
 
-python_dependencies(('proto_schema_parser', 'proto-schema-parser'), 'pybind11')
-
-from pathlib import Path
 import esphome.config_validation as cv
 import esphome.codegen as cg
-from esphome import automation
 import logging
 
 import tbd_core.buildgen as tbd
 
-from tbd_core.api import ApiRegistry, find_events, Api
+from tbd_core.api import ApiRegistry, Api
 from .generator import ApiWriter
 
 
@@ -49,7 +43,7 @@ def get_api() -> Api:
 
 async def to_code(config):
     component = tbd.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)
-    component.add_external_dependency('nanopb/Nanopb', '^0.4.91')
+    component.add_external_library('nanopb/Nanopb', '^0.4.91')
     component.add_define('TBD_API_MAX_PAYLOAD_SIZE', config[CONF_MAX_PAYLOAD_SIZE])
     tbd.add_generation_job(finalize_api_registry)
     tbd.add_generation_job(generate_clients)
@@ -60,9 +54,9 @@ def finalize_api_registry():
     api_gen = ApiWriter(get_api(), get_dtos())
 
     gen_sources_dir = tbd.get_build_path() / tbd.get_generated_sources_path()
-    api_gen.write_messages(gen_sources_dir)
-    api_gen.write_endpoints(gen_sources_dir)
-    api_gen.write_events(gen_sources_dir)
+    gen_headers_dir = gen_sources_dir / 'include' / 'tbd' / 'api'
+    api_gen.write_endpoints(gen_headers_dir, gen_sources_dir)
+    api_gen.write_events(gen_headers_dir, gen_sources_dir)
 
 
 @tbd.build_job_with_priority(tbd.GenerationStages.CLIENTS)
@@ -74,8 +68,6 @@ def generate_clients():
     dto_gen = SerializableGenerator(get_dtos()['api'], get_reflectables())
     api_gen = ApiWriter(get_api(), dto_gen)
 
-    messages_dir = tbd.get_build_path() / tbd.get_messages_path() / 'api'
-
-    api_gen.write_python_client(python_client_path, messages_dir)
-    api_gen.write_typescript_client(typescript_client_path, messages_dir)
-    api_gen.write_arduino_client(arduino_client_path, messages_dir)
+    api_gen.write_python_client(python_client_path)
+    api_gen.write_typescript_client(typescript_client_path)
+    api_gen.write_arduino_client(arduino_client_path)

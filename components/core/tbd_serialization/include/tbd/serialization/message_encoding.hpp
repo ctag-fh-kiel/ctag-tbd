@@ -45,7 +45,7 @@ inline Error encode_par_field<par_tags::UINT_PARAM>(const uint8_t field_number, 
 
 template<>
 inline Error encode_par_field<par_tags::FLOAT_PARAM>(const uint8_t field_number, const float_par& value, pb_ostream_t& stream) {
-    if (!pb_encode_tag(&stream, PB_WT_VARINT, field_number)) {
+    if (!pb_encode_tag(&stream, PB_WT_32BIT, field_number)) {
         return TBD_ERR(SERIALIZATION_FAILED_TAG_WRITE);
     }
     if (!pb_encode_fixed32(&stream, &value)) {

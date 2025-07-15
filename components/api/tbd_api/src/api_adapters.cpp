@@ -1,8 +1,8 @@
 #include <tbd/api/api_adapters.hpp>
 #include <tbd/api/module.hpp>
 
-#include <tbd/api/api_all_endpoints.hpp>
-#include <tbd/api/api_all_events.hpp>
+#include <tbd/api/endpoint_index.hpp>
+#include <tbd/api/event_index.hpp>
 #include <tbd/logging.hpp>
 
 

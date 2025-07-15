@@ -17,47 +17,44 @@ class ApiWriter:
         self._serializables: SerializableGenerator = serializables
         self._in_srcs: Final = Path(__file__).parent
 
-    def write_messages(self, out_dir: Path):
+    def write_endpoints(self, headers_dir: Path, sources_dir: Path):
         gen = CppGenerator(self._api)
-        source = gen.render('src/api_message_transcoding.hpp.j2', server_types=True)
 
-        out_dir.mkdir(exist_ok=True, parents=True)
-        hpp_file = out_dir / 'api_message_transcoding.hpp'
-        with open(hpp_file, 'w') as f:
-            f.write(source)
-
-    def write_endpoints(self, out_dir: Path):
-        gen = CppGenerator(self._api)
-        source = gen.render('src/api_all_endpoints.cpp.j2')
-
-        out_dir.mkdir(exist_ok=True, parents=True)
-        out_file = out_dir / 'api_all_endpoints.cpp'
+        source = gen.render('src/endpoint_index.hpp.j2')
+        headers_dir.mkdir(exist_ok=True, parents=True)
+        out_file = headers_dir / 'endpoint_index.hpp'
         with open(out_file, 'w') as f:
             f.write(source)
 
-    def write_events(self, out_dir: Path):
-        gen = CppGenerator(self._api)
-        all_events_cpp = gen.render('src/api_all_events.cpp.j2')
-        all_dispatchers_hpp = gen.render('src/api_all_events_declarations.hpp.j2')
-        all_actions_hpp = gen.render('src/api_all_esphome_actions.hpp.j2')
+        source = gen.render('src/endpoint_index.cpp.j2')
+        sources_dir.mkdir(exist_ok=True, parents=True)
+        out_file = sources_dir / 'endpoint_index.cpp'
+        with open(out_file, 'w') as f:
+            f.write(source)
 
-        out_dir.mkdir(exist_ok=True, parents=True)
-        with open(out_dir / 'api_all_events.cpp', 'w') as f:
+    def write_events(self, headers_dir: Path, sources_dir: Path):
+        gen = CppGenerator(self._api)
+        all_events_hpp = gen.render('src/event_index.hpp.j2')
+        all_events_cpp = gen.render('src/event_index.cpp.j2')
+        all_actions_hpp = gen.render('src/action_index.hpp.j2')
+
+        sources_dir.mkdir(exist_ok=True, parents=True)
+        with open(headers_dir / 'event_index.hpp', 'w') as f:
+            f.write(all_events_hpp)
+        with open(sources_dir / 'event_index.cpp', 'w') as f:
             f.write(all_events_cpp)
-        with open(out_dir / 'api_all_events_declarations.hpp', 'w') as f:
-            f.write(all_dispatchers_hpp)
-        with open(out_dir / 'api_all_esphome_actions.hpp', 'w') as f:
+        with open(headers_dir / 'action_index.hpp', 'w') as f:
             f.write(all_actions_hpp)
 
-    def write_arduino_client(self, out_dir: Path, messages_dir: Path):
+    def write_arduino_client(self, out_dir: Path):
         gen = CppGenerator(self._api)
         gen.write_arduino_client(out_dir)
 
-    def write_python_client(self, out_dir: Path, messages_dir: Path):
+    def write_python_client(self, out_dir: Path):
         gen = PyGenerator(self._api, self._serializables)
         gen.write_client(out_dir)
 
-    def write_typescript_client(self, out_dir: Path, messages_dir: Path):
+    def write_typescript_client(self, out_dir: Path):
         gen = TSGenerator(self._api, self._serializables)
         gen.write_client(out_dir)
 
