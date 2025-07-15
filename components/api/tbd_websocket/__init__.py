@@ -1,6 +1,5 @@
 from pathlib import Path
 import esphome.components.tbd_module as tbd
-from esphome.components.tbd_module.cmake_dependencies import cmake_dependency
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
@@ -8,6 +7,7 @@ from esphome.const import CONF_PORT, CONF_PATH, CONF_ID
 
 import esphome.components.tbd_api as tbd_api
 
+from tbd_core.buildgen.build_deps import cmake_dependency
 from tbd_core.buildgen import AutoReflection
 
 AUTO_LOAD = ['tbd_api']
@@ -42,13 +42,13 @@ async def to_code(config):
         #     ref='v3.1.1',
         # )        
         
-        cmake_dependency(
+        component.add_dependency(cmake_dependency(
             name='simplewebsocketserver',
             url='https://gitlab.com/eidheim/Simple-WebSocket-Server.git',
             ref='v2.0.2',
-        )
+        ))
         # cg.add_build_flag('-lssl')
-        cg.add_build_flag('-lcrypto')
+        component.add_system_library('crypto')
     elif tbd.is_esp32():
         from esphome.components.esp32 import add_idf_sdkconfig_option
         add_idf_sdkconfig_option('CONFIG_HTTPD_WS_SUPPORT', True)
