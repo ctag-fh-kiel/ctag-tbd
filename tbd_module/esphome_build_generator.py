@@ -4,6 +4,7 @@ from typing import override
 from esphome.coroutine import coroutine
 
 from tbd_core.buildgen import BuildGenerator
+from tbd_core.buildgen.build_deps import ExternalDependency, ExternalLibrary, SystemLibrary
 
 import esphome.core as ehc
 from esphome.writer import INI_AUTO_GENERATE_BEGIN, INI_AUTO_GENERATE_END, INI_BASE_FORMAT
@@ -23,8 +24,12 @@ class EsphomeBuildGenerator(BuildGenerator):
             data = '\n'.join(lines)
             f.write(data)
 
-    def add_library(self, name: str, version: str | None = None, repository: str | None = None) -> None:
-        ehc.CORE.add_library(ehc.Library(name, version, repository))
+    def add_library(self, lib: ExternalDependency) -> None:
+        match lib:
+            case ExternalLibrary():
+                ehc.CORE.add_library(ehc.Library(lib.name, lib.version, lib.repository))
+            case SystemLibrary():
+                ehc.CORE.add_build_flag(f'-l{lib.name}')
 
     @property
     def build_path(self) -> Path:

@@ -1,8 +1,7 @@
-from pathlib import Path
-import esphome.codegen as cg
+from tbd_core.buildgen import new_tbd_component, get_tbd_vendor_root
 
-from esphome.components.tbd_module import get_tbd_source_root
 
-# lib_dir = get_tbd_source_root() / 'vendor' / 'moog'
-lib_dir = Path('/home/mlee/code/tbd-esphome/vendor/moog/MoogLadders')
-cg.add_platformio_option('lib_deps', [f'moog=file://{lib_dir}'])
+async def to_code():
+    component = new_tbd_component(__file__)
+    lib_dir = get_tbd_vendor_root() / 'moog' / 'MoogLadders'
+    component.add_external_dependency(name='moog', repository=f'file://{lib_dir}')

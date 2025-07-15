@@ -1,5 +1,6 @@
 import esphome.components.tbd_module as tbd
-from esphome.components.tbd_module.plain_dependencies import plain_dependency
+
+from tbd_core.buildgen.build_deps import plain_dependency
 
 from esphome.core import CORE
 import esphome.codegen as cg
@@ -85,7 +86,7 @@ def to_code(config):
 
     if CORE.is_esp32: 
         from esphome.components.esp32 import add_idf_component
-        cg.add_define('USE_ESP_DSP')
+
         add_idf_component(
             name=ESP_DSP_NAME,
             repo=ESP_DSP_URL,
@@ -93,11 +94,15 @@ def to_code(config):
             # refresh='1day'
         )
         
-        dsp_include = tbd.get_build_path() / 'components' / 'esp-dsp' / ESP_DSP_PATH
-        cg.add_build_flag(f'-I{dsp_include}')
+        # dsp_include = tbd.get_build_path() / 'components' / 'esp-dsp' / ESP_DSP_PATH
+        component.add_include_dir(ESP_DSP_PATH)
+        # cg.add_build_flag(f'-I{dsp_include}')
 
     elif CORE.is_host:
-        plain_dependency(ESP_DSP_NAME, ESP_DSP_URL, ESP_DSP_VERSION, includes=ESP_DSP_INC_DIRS, sources=ESP_DSP_SRC_FILES)
+        component.add_dependency(plain_dependency(
+            ESP_DSP_NAME, ESP_DSP_URL, ESP_DSP_VERSION, includes=ESP_DSP_INC_DIRS, sources=ESP_DSP_SRC_FILES
+        ))
 
+    component.add_define('USE_ESP_DSP')
 
     

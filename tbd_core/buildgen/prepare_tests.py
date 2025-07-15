@@ -1,23 +1,27 @@
+from .build_deps import ExternalLibrary, SystemLibrary
 from .files import (
     get_components_build_path,
     get_build_path,
     update_build_tree_if_outdated,
     get_tests_build_path,
     get_generated_include_path,
-    get_messages_path,
 )
+from tbd_core.utils import source_extensions
 from .build_generator import add_platformio_block
 from .component_info import ComponentInfo, get_tbd_components, ExternalDependency
 
-
 INDENT_ONE = ' ' * 4
-GOOGLE_TEST_DEP = ExternalDependency(ref='google/googletest', version='^1.15.2', repository=None)
+GOOGLE_TEST_DEP = ExternalLibrary(name='google/googletest', version='^1.15.2')
 
 
 def lib_dep_line(lib_dep: ExternalDependency, *, indent: str = INDENT_ONE) -> str:
+    if lib_dep.repository:
+        if lib_dep.version:
+            return f'{indent}{lib_dep.name}={lib_dep.repository}#{lib_dep.version}'
+        return f'{indent}{lib_dep.name}={lib_dep.repository}'
     if lib_dep.version:
-        return f'{indent}{lib_dep.ref}@{lib_dep.version}'
-    return f'f{indent}{lib_dep.ref}'
+        return f'{indent}{lib_dep.name}@{lib_dep.version}'
+    return f'f{indent}{lib_dep.name}'
 
 
 def prepare_tests():
@@ -33,8 +37,8 @@ def prepare_tests():
         f'{indent}; core flags',
         f'{indent}-DTBD_UNITTEST_BUILD',
         f'{indent}-DUSE_HOST',
+        f'{indent}-DUSE_TBD_ERR',
         f'{indent}-I{get_generated_include_path()}',
-        f'{indent}-I{get_messages_path()}',
         f'{indent}-I{unittest_path}',
         ''
     ]
@@ -59,7 +63,14 @@ def prepare_tests():
         if component.tests_dir:
             test_sources += update_build_tree_if_outdated(component.tests_dir, unittest_path)
 
-        external_dependencies += component.external_dependencies
+        for external_dependency in component.external_dependencies:
+            match external_dependency:
+                case ExternalLibrary():
+                    external_dependencies.append(external_dependency)
+                case SystemLibrary():
+                    test_env_block.append(f'{indent}-l{external_dependency.name}')
+                case _:
+                    raise ValueError(f'not a valid external dependency {external_dependency}')
 
     absolute_test_build_path = get_build_path() / unittest_path
     test_sources += [source.relative_to(absolute_test_build_path) for source in test_sources]
@@ -78,7 +89,10 @@ def prepare_tests():
         'lib_deps = ',
         *lib_deps,
         'build_src_filter = ',
+        *[f'{indent}+<**/*.{ext}>' for ext in source_extensions()],
         f'{indent}+<../{unittest_path}/**/test_*.cpp>',
+        f'{indent}-<main.cpp>',
+        f'{indent}-<esphome/>',
         # f'{indent}test_dir = {unittest_path}',
     ])
 

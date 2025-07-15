@@ -1,9 +1,8 @@
 from esphome.components.tbd_module import new_tbd_component
 import esphome.config_validation as cv
 from esphome.components.tbd_api import get_api_registry
-import esphome.codegen as cg
 
-from tbd_core.buildgen import get_reflection_registry, AutoReflection
+from tbd_core.buildgen import AutoReflection
 
 # TBDings has requires the most memory at 113944 bytes
 # use 112k=114688 bytes as default

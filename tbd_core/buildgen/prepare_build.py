@@ -8,7 +8,6 @@ from .files import (
     update_build_file_if_outdated,
     update_build_tree_if_outdated,
     get_generated_include_path,
-    get_messages_path
 )
 from .component_info import ComponentInfo, get_tbd_components, ExternalDependency
 from .build_generator import (
@@ -38,7 +37,6 @@ def prepare_build():
     _LOGGER.info('adding global TBD defines')
 
     add_include_dir(get_generated_include_path())
-    add_include_dir(get_messages_path())
 
     external_dependencies: list[ExternalDependency] = []
 
@@ -68,7 +66,7 @@ def prepare_build():
         external_dependencies += component.external_dependencies
 
     for external_dependency in external_dependencies:
-        add_library(external_dependency.ref, external_dependency.version, external_dependency.repository)
+        add_library(external_dependency)
 
 def finalize_build():
     """ Final steps when the entire build is set up. """

@@ -1,6 +1,3 @@
-from tbd_module.python_dependencies import python_dependencies
-python_dependencies('pydantic', 'cxxheaderparser', 'jinja2', ('humps', 'pyhumps'))
-
 from tbd_module import new_tbd_component
 
 import esphome.codegen as cg

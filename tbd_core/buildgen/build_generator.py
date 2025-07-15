@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable, Awaitable
 
+from tbd_core.buildgen.build_deps import ExternalDependency
 from .generation_stages import GenerationStages
 from .registry import set_tbd_global, has_tbd_global, get_tbd_global, _set_generation_stage
 
 BUILD_GENERATOR_GLOBAL = 'build_generator'
 
-DefineValue = bool | float | int | str
+DefineValue = bool | float | int | str | None
 
 
 GenerationJobFunction = Callable[[], None]
@@ -33,7 +34,10 @@ class BuildGenerator(ABC):
     def target_platform(self) -> str:
         raise NotImplementedError()
 
-    def add_define(self, key: str, value: DefineValue) -> None:
+    def add_define(self, key: str, value: DefineValue = None) -> None:
+        if value is None:
+            self.add_build_flag(f'-D{key}')
+
         match value:
             case bool():
                 _value = 0 if not value else 1
@@ -55,7 +59,7 @@ class BuildGenerator(ABC):
         self.add_build_flag(f'-I{include_dir}')
 
     @abstractmethod
-    def add_library(self, name: str, version: str | None = None, repository: str | None = None) -> None:
+    def add_library(self, lib: ExternalDependency) -> None:
         raise NotImplementedError()
 
     @abstractmethod
@@ -115,8 +119,8 @@ def add_include_dir(include_dir: Path) -> None:
     get_build_generator().add_include_dir(include_dir)
 
 
-def add_library(name: str, version: str | None = None, repository: str | None = None) -> None:
-    get_build_generator().add_library(name, version, repository)
+def add_library(lib: ExternalDependency) -> None:
+    get_build_generator().add_library(lib)
 
 
 def set_compiler_options(*, std: int = 20, exceptions: bool = False) -> None:

@@ -38,8 +38,8 @@ def get_tbd_components_root():
 
 
 @generated_tbd_global(PATHS_DOMAIN)
-def get_vendor_root():
-    return get_tbd_source_root / 'vendor'
+def get_tbd_vendor_root():
+    return get_tbd_source_root() / 'vendor'
 
 
 @generated_tbd_global(PATHS_DOMAIN)
@@ -55,14 +55,6 @@ def get_generated_include_path() -> Path:
     relative_to_build_dir = get_generated_sources_path() / 'include'
     include_path = get_build_path() / relative_to_build_dir
     include_path.mkdir(parents=True, exist_ok=True)
-    return relative_to_build_dir
-
-
-@generated_tbd_global(PATHS_DOMAIN)
-def get_messages_path() -> Path:
-    relative_to_build_dir = get_generated_sources_path() / 'messages'
-    message_dir = get_build_path() / relative_to_build_dir
-    message_dir.mkdir(parents=True, exist_ok=True)
     return relative_to_build_dir
 
 
@@ -147,8 +139,7 @@ __all__ = [
     'get_tests_build_path',
     'get_tbd_components_root', 
     'get_tbd_source_root',
-    'get_messages_path',
-    'get_vendor_root', 
+    'get_tbd_vendor_root',
     'get_generated_sources_path', 
     'get_generated_include_path',
     'update_build_file_if_outdated',

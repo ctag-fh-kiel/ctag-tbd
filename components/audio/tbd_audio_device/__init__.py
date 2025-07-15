@@ -1,8 +1,4 @@
-from esphome.components.tbd_module.python_dependencies import python_dependencies
-
 from tbd_core.buildgen import get_build_path
-
-python_dependencies('jinja2')
 
 from functools import lru_cache
 from enum import IntEnum

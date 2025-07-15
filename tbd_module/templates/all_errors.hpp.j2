@@ -33,20 +33,20 @@ inline size_t get_num_errors() {
 }
 
 inline Errors err_from_int(const uint_par err) {
-    return err == err < NUM_ERRORS ? static_cast<Errors>(err) : NUM_ERRORS;
+    return err < NUM_ERRORS ? static_cast<Errors>(err) : NUM_ERRORS;
 }
 
-inline const char* get_error_name(Errors err) {
+inline const char* get_error_name(const Errors err) {
     if (err >= NUM_ERRORS) {
-        TBD_LOGE("errors", "requested name for invalid error code");
+        TBD_LOGE("errors", "requested name for invalid error code %i", err);
         return ERROR_LIST[FAILURE].name;
     }
     return ERROR_LIST[err].name;
 }
 
-inline const char* get_error_message(Errors err) {
+inline const char* get_error_message(const Errors err) {
     if (err >= NUM_ERRORS) {
-        TBD_LOGE("errors", "requested name for invalid error code");
+        TBD_LOGE("errors", "requested name for invalid error code %i", err);
         return ERROR_LIST[FAILURE].message;
     }
     return ERROR_LIST[err].message;

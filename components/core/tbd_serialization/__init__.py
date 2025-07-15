@@ -31,7 +31,7 @@ def generate_serialization():
         gen.write_cpp_code(domain, headers_dir, srcs_dir)
         gen.write_protos(headers_dir / 'dtos.proto')
 
-
-tbb.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)
-tbb.add_define('PB_WITHOUT_64BIT', 1)
-tbb.add_generation_job(generate_serialization)
+def to_code(config):
+    component = tbb.new_tbd_component(__file__, auto_reflect=AutoReflection.ALL)
+    component.add_define('PB_WITHOUT_64BIT', 1)
+    tbb.add_generation_job(generate_serialization)

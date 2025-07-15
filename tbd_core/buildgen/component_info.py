@@ -7,7 +7,7 @@ from typing import OrderedDict
 from .registry import has_tbd_global, set_tbd_global, get_tbd_domain, get_tbd_global
 from .build_generator import get_target_platform, DefineValue
 from .files import get_tbd_source_root, get_generated_include_path, get_build_path
-
+from tbd_core.buildgen.build_deps import ExternalDependency, SystemLibrary, ExternalLibrary
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,13 +21,6 @@ class AutoReflection(StrEnum):
     HEADERS = 'HEADERS'
     SOURCES = 'SOURCES'
     ALL = 'ALL'
-
-
-@dataclass(frozen=True)
-class ExternalDependency:
-    ref: str
-    version: str | None
-    repository: str | None
 
 
 @dataclass(frozen=True)
@@ -108,12 +101,18 @@ class ComponentInfo:
     def external_dependencies(self) -> list[ExternalDependency]:
         return self._external_dependencies
 
-    def add_external_dependency(self, ref: str, version: str | None = None, repository: str | None = None) -> None:
-        self._external_dependencies.append(ExternalDependency(
-            ref=ref,
+    def add_external_library(self, name: str, version: str | None = None, repository: str | None = None) -> None:
+        self._external_dependencies.append(ExternalLibrary(
+            name=name,
             version=version,
             repository=repository,
         ))
+
+    def add_system_library(self, name: str) -> None:
+        self._external_dependencies.append(SystemLibrary(name=name))
+
+    def add_dependency(self, lib: ExternalDependency) -> None:
+        self._external_dependencies.append(lib)
 
     def add_include_dir(self, path: Path | str, *, if_exists: bool = False) -> bool:
         absolute_path = self.ensure_component_path(path)

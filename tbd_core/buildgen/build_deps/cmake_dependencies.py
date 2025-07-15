@@ -2,11 +2,11 @@ import json
 from pathlib import Path
 from typing import Any
 from pydantic import TypeAdapter
-from esphome.core import TimePeriod, CORE
+from esphome.core import TimePeriod
 import esphome.git as git
 import subprocess
-from .library_manifest import *
 
+from .external_dependency import ExternalLibrary, Build, BuildCommand, LibraryJson
 
 
 def cmake_dependency(
@@ -15,9 +15,10 @@ def cmake_dependency(
         ref: str, 
         *,
         refresh:TimePeriod = TimePeriod(days=1), 
-        cmake_parameters: dict[str, Any] = {}
-    ) -> str:
+        cmake_parameters: dict[str, Any] | None = None
+    ) -> ExternalLibrary:
 
+    cmake_parameters = cmake_parameters or {}
     repo_dir, *_ = git.clone_or_update(
         url=url,
         ref=ref,
@@ -26,11 +27,11 @@ def cmake_dependency(
     )
     commands = generate_compilation_commands_with_cmake(repo_dir, cmake_parameters)
     write_library_json_from_compilation_commands(repo_dir, name, ref, commands)
-    CORE.add_platformio_option('lib_deps', [f'{name}=file:///{repo_dir}'])
-    return repo_dir
+    return ExternalLibrary(name=name, repository=f'file:///{repo_dir}')
 
 
-def generate_compilation_commands_with_cmake(repo_dir: Path, cmake_parameters: dict[str, str] = {}) -> list[BuildCommand]:
+def generate_compilation_commands_with_cmake(repo_dir: Path, cmake_parameters: dict[str, str] | None) -> list[BuildCommand]:
+    cmake_parameters = cmake_parameters or {}
     cmake_parameters = { 'BUILD_TESTING': 'OFF', **cmake_parameters}
 
     cmake_file = repo_dir / 'CMakeLists.txt'
@@ -50,7 +51,13 @@ def generate_compilation_commands_with_cmake(repo_dir: Path, cmake_parameters: d
     return [BuildCommand(**command) for command in json_data]
 
 
-def write_library_json_from_compilation_commands(repo_dir: Path, name: str, version: str, commands: list[BuildCommand]):
+def write_library_json_from_compilation_commands(
+        repo_dir: Path,
+        name: str,
+        version: str,
+        commands: list[BuildCommand]
+):
+
     includes = set()
     defines = set()
     files = set()
@@ -69,12 +76,11 @@ def write_library_json_from_compilation_commands(repo_dir: Path, name: str, vers
         command_file = f'+<{src_file.relative_to(repo_dir) if src_file.absolute else src_file}>'
         files.add(command_file)
 
-    build_obj = Build(flags=[*includes, *defines], srcFilter=files)
+    build_obj = Build(flags=[*includes, *defines], srcFilter=list(files))
 
-    library_obj = Library(name=name, version=version, build=build_obj)
-    library_data = TypeAdapter(Library).dump_json(library_obj, indent=4, by_alias=True)
+    library_obj = LibraryJson(name=name, version=version, build=build_obj)
+    library_data = TypeAdapter(LibraryJson).dump_json(library_obj, indent=4, by_alias=True)
     with open(repo_dir / 'library.json', 'wb') as f:
         f.write(library_data)
-
 
 __all__ = ['cmake_dependency']

@@ -1,8 +1,7 @@
-from pathlib import Path
-import esphome.codegen as cg
+from tbd_core.buildgen import new_tbd_component, get_tbd_vendor_root
 
 
 async def to_code(config):
-    # cg.add_platformio_option('lib_deps', [f'mutable=https://github.com/ctag-fh-kiel/eurorack.git#tbd-esphome'])
-    lib_dir = Path('/home/mlee/code/tbd-esphome/vendor/mutable/eurorack')
-    cg.add_platformio_option('lib_deps', [f'mutable=file://{lib_dir}'])
+    component = new_tbd_component(__file__)
+    lib_dir = get_tbd_vendor_root() / 'mutable' / 'eurorack'
+    component.add_external_library(name='mutable', repository=f'file://{lib_dir}')
