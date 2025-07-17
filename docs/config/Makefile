@@ -1,9 +1,9 @@
+TBD_CODE           ?= $(PWD)
 
-TBD_PROJECT_DIR    ?= $(PWD)
+SOURCEDIR          =  $(TBD_CODE)/docs
 
-SOURCEDIR          =  $(TBD_PROJECT_DIR)/docs
-TBD_BUILD_DIR      ?= $(TBD_PROJECT_DIR)/build
-BUILDDIR           =  $(TBD_BUILD_DIR)/docs
+TBD_BUILD          ?= $(TBD_CODE)/build
+BUILDDIR           =  $(TBD_BUILD)/docs
 
 CONFDIR            =  "$(SOURCEDIR)/config"
 
@@ -11,14 +11,14 @@ SPHINXOPTS         ?=
 SPHINXBUILD        ?= sphinx-build
 SPHINXCONF         = --conf-dir "$(CONFDIR)"
 
-CODE_DIRS          =  $(TBD_PROJECT_DIR)/tbd/tbd_sound_processor
+CODEDIRS          =  $(TBD_CODE)/components
 CPP_SOURCES        := $(shell find $(CODE_DIRS) -type f -name \*.cpp -or -name \*.c -or -name \*.hpp -or -name \*.h)
 
 builddir:
 	mkdir -p "$(BUILDDIR)"
 
 doxygen: builddir $(CPP_SOURCES)
-	(cat $(SOURCEDIR)/config/static_doxyfile; echo "OUTPUT_DIRECTORY = $(BUILDDIR)"; echo "INPUT = $(CODE_DIRS)") > $(SOURCEDIR)/config/Doxyfile
+	(cat $(SOURCEDIR)/config/static_doxyfile; echo "OUTPUT_DIRECTORY = $(BUILDDIR)"; echo "INPUT = $(CODEDIRS)") > $(SOURCEDIR)/config/Doxyfile
 	doxygen "$(SOURCEDIR)/config/Doxyfile"
 
 help:
@@ -27,7 +27,6 @@ help:
 .PHONY: help Makefile
 
 html: Makefile
-	
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(SPHINXCONF) $(O)
 
 
