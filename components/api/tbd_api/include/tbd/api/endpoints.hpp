@@ -21,7 +21,7 @@ extern const uint32_t CORE_API_HASH;
 extern const uint32_t BASE_API_HASH;
 extern const uint32_t API_HASH;
 
-extern const size_t NUM_ENDPOINTS;
+extern const uint16_t NUM_ENDPOINTS;
 extern const Endpoint ENDPOINT_LIST[];
 
 extern const size_t NUM_REQUEST_MESSAGES;

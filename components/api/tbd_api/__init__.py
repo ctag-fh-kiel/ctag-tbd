@@ -25,7 +25,9 @@ API_NAMESPACE = cg.global_ns.namespace('tbd').namespace('api')
 CONF_MAX_PAYLOAD_SIZE = 'max_payload_size'
 
 
-AUTO_LOAD = ['tbd_module', 'tbd_api']
+AUTO_LOAD = ['tbd_serialization']
+REQUIRES = ['tbd_module']
+
 CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_MAX_PAYLOAD_SIZE, 1024): cv.positive_int,
 })

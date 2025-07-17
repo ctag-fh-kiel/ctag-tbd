@@ -97,7 +97,7 @@ namespace {{ event.scope.parent }} { void {{ event | emitter_name }}({{ event | 
 
 namespace tbd::api {
 
-const size_t NUM_EVENTS = {{ api.events | length }};
+const uint16_t NUM_EVENTS = {{ api.events | length }};
 const Event EVENT_LIST[] = { {%- for event in api.events %}
     { "{{ event.name }}", {{ event | event_id }}, &{{ event | event_handler_full_name }} },
 {%- endfor %}

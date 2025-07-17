@@ -110,6 +110,15 @@ struct Header {
 
 struct Packet : Header {
     const uint8_t* payload;
+
+    void set_error(const uint16_t error, const uint16_t request_id) {
+        type = TYPE_ERROR;
+        handler = error;
+        crc = 0;
+        payload_length = 0;
+        id = request_id;
+        payload = nullptr;
+    }
 };
 
 }

@@ -15,7 +15,7 @@ struct Event {
     EventCallback callback;
 };
 
-extern const size_t NUM_EVENTS;
+extern const uint16_t NUM_EVENTS;
 extern const Event EVENT_LIST[];
 
 extern const size_t NUM_EVENT_MESSAGES;
