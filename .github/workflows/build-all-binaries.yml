@@ -4,47 +4,52 @@ on:
   workflow_call:
 
 jobs:
-  build-dada-firmware:
+  build-desktop-app:
     uses: ./.github/workflows/build-firmware.yml
     with:
-      tbd-platform: dada
+      tbd-platform: tbd_desktop
 
-  build-dadax-firmware:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      tbd-platform: dadax
-
-  build-bba2-firmware:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      tbd-platform: bba2
-
-  build-bba1-firmware:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      tbd-platform: bba1  
-
-  build-mk2-firmware:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      tbd-platform: mk2
-
-  build-aem-firmware:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      tbd-platform: aem 
-
-  build-str-firmware:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      tbd-platform: str
-
-  build-v2-firmware:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      tbd-platform: v2
-
-  build-v1-firmware:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      tbd-platform: v1
+#  build-dada-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: dada
+#
+#  build-dadax-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: dadax
+#
+#  build-bba2-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: bba2
+#
+#  build-bba1-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: bba1
+#
+#  build-mk2-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: mk2
+#
+#  build-aem-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: aem
+#
+#  build-str-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: str
+#
+#  build-v2-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: v2
+#
+#  build-v1-firmware:
+#    uses: ./.github/workflows/build-firmware.yml
+#    with:
+#      tbd-platform: v1
