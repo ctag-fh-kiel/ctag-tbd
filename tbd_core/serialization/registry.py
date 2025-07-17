@@ -4,9 +4,10 @@ from typing import OrderedDict
 
 import humps
 import proto_schema_parser.ast as proto
+from esphome.components.opentherm.generate import add_messages
 
 from tbd_core.reflection.db import ReflectableDB, ClassPtr, CppTypePtr
-from tbd_core.reflection.reflectables import Param, ScopePath, PARAM_TO_PROTO
+from tbd_core.reflection.reflectables import Param, ScopePath, PARAM_TO_PROTO, MAX_PARAM_PROTO_SIZE
 
 from .serializables import Serializables, SerializableClass, ClassDto, GeneratedDto, AnonymousClassDto, Serializable, \
     ParamWrapper
@@ -16,6 +17,10 @@ _LOGGER = logging.getLogger(__name__)
 PARAM_MESSAGE_POSTFIX = 'Wrapper'
 DTO_POSTFIX = 'Dto'
 DTO_ATTR = 'tbd::dto'
+
+
+class VariableLengthMessage(Exception):
+    pass
 
 
 def is_param_wrapper(cls: ClassPtr) -> bool:
@@ -87,7 +92,7 @@ class DTORegistry:
 
         properties = OrderedDict((prop.field_name, prop.type) for prop in _type.all_properties)
         generated_dto = self._create_dto(serializables, name, properties, add_message=add_message, recursive=recursive)
-        class_dto = ClassDto(cls=_type, dto_cls=generated_dto.cls, message=generated_dto.message)
+        class_dto = ClassDto(cls=_type, dto_cls=generated_dto.cls, message=generated_dto.message, message_size=generated_dto.message_size)
         self._add_serializable(serializables, class_dto)
         return class_dto.dto_cls
 
@@ -159,7 +164,8 @@ class DTORegistry:
                                                                        add_message=add_message)
                 else:
                     message = self._create_message(_type) if add_message else None
-                    serializable = SerializableClass(cls=_type, message=message)
+                    message_size = self._determine_max_message_size(_type) if add_message else 0
+                    serializable = SerializableClass(cls=_type, message=message, message_size=message_size)
             case Param():
                 # ensure wrapper type for this parameter type is present
                 serializable = self._find_param_wrapper(_type)
@@ -206,7 +212,10 @@ class DTORegistry:
             files=[str(file_path)],
             bases=None,
         )
-        return GeneratedDto(dto_cls=generated_dto, message=self._create_message(generated_dto))
+
+        message = self._create_message(generated_dto) if add_message else None
+        message_size = self._determine_max_message_size(generated_dto) if add_message else 0
+        return GeneratedDto(dto_cls=generated_dto, message=message, message_size=message_size)
 
     def _create_anonymous_serializable(
             self,
@@ -221,18 +230,24 @@ class DTORegistry:
         dto_name = f'{_type.parent.cls_name}Anon{_type.anonymous_id}'
         generated_dto = self._create_dto(serializables, dto_name, properties, add_message=add_message, recursive=True)
 
+        message = self._create_message(generated_dto.dto_cls) if add_message else None
+        message_size = self._determine_max_message_size(generated_dto.dto_cls) if add_message else 0
         anon_cls_dto = AnonymousClassDto(
             anon_cls=_type,
             dto_cls=generated_dto.dto_cls,
-            message=self._create_message(generated_dto.dto_cls)
+            message=message,
+            message_size=message_size,
         )
         return anon_cls_dto
 
     def _find_param_wrapper(self, param: Param) -> ParamWrapper:
         class_name = humps.pascalize(param.cls_name) + PARAM_MESSAGE_POSTFIX
         for cls in self._reflectables.classes():
+            print(cls)
             if cls.name == class_name:
-                return ParamWrapper(param_type=param.param_type, wrapper_cls=cls, message=self._create_message(cls))
+                message = self._create_message(cls)
+                message_size = self._determine_max_message_size(cls)
+                return ParamWrapper(param_type=param.param_type, wrapper_cls=cls, message=message, message_size=message_size)
         raise ValueError(f'no DTO wrapper {class_name} for parameter type {param.typename} present')
 
     @staticmethod
@@ -252,6 +267,29 @@ class DTORegistry:
             field_number += 1
         return proto.Message(name=cls.cls_name, elements=fields)
 
+    @staticmethod
+    def _determine_max_message_size(cls: ClassPtr) -> int:
+        try:
+            return DTORegistry._determine_max_message_size_inner(cls)
+        except VariableLengthMessage:
+            return -1
+
+    @staticmethod
+    def _determine_max_message_size_inner(cls: ClassPtr) -> int:
+        message_size = 0
+        for prop in cls.all_properties:
+            prop_type = prop.type
+            match prop_type:
+                case ClassPtr():
+                    message_size += DTORegistry._determine_max_message_size_inner(prop_type)
+                case Param():
+                    param_size = MAX_PARAM_PROTO_SIZE[prop_type.param_type]
+                    if param_size < 0:
+                        raise VariableLengthMessage()
+                    message_size += param_size
+                case _:
+                    raise RuntimeError(f'type {prop_type} is not a valid protobuffer message field type')
+        return message_size
 
 __all__ = [
     'is_param_wrapper',

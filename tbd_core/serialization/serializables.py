@@ -9,9 +9,10 @@ from tbd_core.reflection.reflectables import ParamType, ClassID
 
 
 class SerializableBase(metaclass=ABCMeta):
-    def __init__(self, cls: ClassPtr, message: proto.Message):
+    def __init__(self, cls: ClassPtr, message: proto.Message, message_size: int):
         self._cls = cls
         self._message = message
+        self._message_size = message_size
 
     @property
     def cls(self) -> ClassPtr:
@@ -25,13 +26,17 @@ class SerializableBase(metaclass=ABCMeta):
     def message(self) -> proto.Message:
         return self._message
 
+    @property
+    def message_size(self) -> int:
+        return self._message_size
+
     def ref(self) -> ClassID:
         return self._cls.ref()
 
 
 class SerializableClass(SerializableBase):
-    def __init__(self, cls: ClassPtr, message: proto.Message):
-        super().__init__(cls, message)
+    def __init__(self, cls: ClassPtr, message: proto.Message, message_size: int):
+        super().__init__(cls, message, message_size)
 
     @property
     def dto_cls(self) -> ClassPtr:
@@ -43,8 +48,8 @@ class SerializableClass(SerializableBase):
 
 
 class ClassDto(SerializableBase):
-    def __init__(self, cls: ClassPtr, dto_cls: ClassPtr, message: proto.Message):
-        super().__init__(cls, message)
+    def __init__(self, cls: ClassPtr, dto_cls: ClassPtr, message: proto.Message, message_size: int):
+        super().__init__(cls, message, message_size)
         self._dto: ClassPtr = dto_cls
 
     @property
@@ -57,8 +62,8 @@ class ClassDto(SerializableBase):
 
 
 class GeneratedDto(SerializableBase):
-    def __init__(self, dto_cls: ClassPtr, message: proto.Message):
-        super().__init__(dto_cls, message)
+    def __init__(self, dto_cls: ClassPtr, message: proto.Message, message_size: int):
+        super().__init__(dto_cls, message, message_size)
 
     @property
     def dto_cls(self) -> ClassPtr:
@@ -66,8 +71,8 @@ class GeneratedDto(SerializableBase):
 
 
 class ParamWrapper(SerializableBase):
-    def __init__(self, param_type: ParamType, wrapper_cls: ClassPtr, message: proto.Message):
-        super().__init__(wrapper_cls, message)
+    def __init__(self, param_type: ParamType, wrapper_cls: ClassPtr, message: proto.Message, message_size: int):
+        super().__init__(wrapper_cls, message, message_size)
         self._param_type = param_type
 
     @property
@@ -80,8 +85,8 @@ class ParamWrapper(SerializableBase):
 
 
 class AnonymousClassDto(SerializableBase):
-    def __init__(self, anon_cls: ClassPtr, dto_cls: ClassPtr, message: proto.Message):
-        super().__init__(anon_cls, message)
+    def __init__(self, anon_cls: ClassPtr, dto_cls: ClassPtr, message: proto.Message, message_size: int):
+        super().__init__(anon_cls, message, message_size)
         self._dto: ClassPtr = dto_cls
 
     @property

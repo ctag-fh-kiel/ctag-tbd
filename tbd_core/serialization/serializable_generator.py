@@ -117,6 +117,18 @@ class SerializableGenerator(GeneratorBase[CppFilters]):
             f.write(HEADER_NOTE)
             f.write(streams_source)
 
+        messages = self.render(
+            'domain_messages.hpp.j2',
+            serializables=self._serializables,
+            domain=domain,
+            cls_headers=cls_headers,
+
+        )
+        messages_header_file = headers_dir / f'messages.hpp'
+        with open(messages_header_file, 'w') as f:
+            f.write(HEADER_NOTE)
+            f.write(messages)
+
         message_encoding = self.render(
             'domain_message_encoding.hpp.j2',
             serializables=self._serializables,
