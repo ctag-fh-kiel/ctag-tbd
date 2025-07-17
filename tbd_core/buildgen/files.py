@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 import tbd_core.utils as utils
+from .settings import get_build_settings
 
 from .registry import generated_tbd_global
 from .build_generator import get_build_generator, add_include_dir
@@ -62,7 +63,7 @@ def update_build_file_if_outdated(
         source_file: Path | str,
         dest_file: Path | str,
         *,
-        symlink=True
+        symlink: bool | None = None,
 ) -> Path:
     """ Copy or symlink source files to build directory.
 
@@ -70,6 +71,7 @@ def update_build_file_if_outdated(
     path. See tbd_core.utils.update_file_if_outdated for details.
     """
 
+    symlink = symlink if symlink else get_build_settings().use_symlinks
     build_path = get_build_path()
 
     dest_file = Path(dest_file)
@@ -86,7 +88,7 @@ def update_build_tree_if_outdated(
         *,
         patterns: list[str] | None = None,
         flatten: bool = False,
-        symlink: bool = True,
+        symlink: bool | None = None,
         ignore: list[str] | None = None,
 ) -> list[Path]:
     """ Copy or symlink sources in path to build directory.
@@ -95,6 +97,7 @@ def update_build_tree_if_outdated(
     to build directory path. See tbd_core.utils.update_tree_if_outdated for details.
     """
 
+    symlink = symlink if symlink else get_build_settings().use_symlinks
     build_path = get_build_path()
 
     dest_dir = Path(dest_dir)
@@ -113,7 +116,7 @@ def batch_update_build_files_if_outdated(
         *,
         sub_dir: Path | str | None = None,
         flatten: bool = False,
-        symlink: bool = True,
+        symlink: bool | None = None,
         ignore: list[str] | None = None
 ) -> list[Path]:
     """ Copy or symlink list of sources to build directory.
@@ -122,6 +125,7 @@ def batch_update_build_files_if_outdated(
     to build directory path. See tbd_core.utils.batch_update_files_if_outdated for details.
     """
 
+    symlink = symlink if symlink else get_build_settings().use_symlinks
     build_path = get_build_path()
 
     dest_dir = Path(dest_dir)

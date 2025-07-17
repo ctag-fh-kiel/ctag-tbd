@@ -7,10 +7,10 @@ from pathlib import Path
 
 from esphome.core import CORE
 from esphome import loader
+import esphome.config_validation as cv
 
 from .collect_errors import collect_errors
 from .esphome_build_generator import EsphomeBuildGenerator
-
 
 def setup_tbd_build():
     tbd_core_dir = Path(__file__).parent.parent
@@ -19,6 +19,7 @@ def setup_tbd_build():
     loader.install_meta_finder(tbd_core_dir / 'components' / 'builtin_sounds')
     loader.install_meta_finder(tbd_core_dir / 'components' / 'control_inputs')
     loader.install_meta_finder(tbd_core_dir / 'components' / 'core')
+    loader.install_meta_finder(tbd_core_dir / 'components' / 'vendor')
 
 setup_tbd_build()
 from tbd_core.buildgen import *
@@ -26,7 +27,9 @@ from tbd_core.buildgen import *
 set_build_generator(EsphomeBuildGenerator())
 
 AUTO_LOAD = ['tbd_system']
-CONFIG_SCHEMA = {}
+CONFIG_SCHEMA = cv.Schema({
+    cv.Optional('symlinks', True): bool,
+})
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +61,7 @@ def finalize_build_job():
 
 
 def to_code(config):
+    get_build_settings().use_symlinks = config['symlinks']
     new_tbd_component(__file__)
 
     add_generation_job(auto_reflection_job)

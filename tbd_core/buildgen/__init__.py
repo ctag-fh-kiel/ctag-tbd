@@ -15,3 +15,4 @@ from .prepare_build import *
 from .prepare_tests import *
 from .reflection import *
 from .registry import *
+from .settings import *

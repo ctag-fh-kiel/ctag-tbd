@@ -1,7 +1,7 @@
 import logging
 
 import tbd_core.utils as utils
-from . import add_build_flag
+from .build_generator import add_build_flag
 
 from .files import (
     get_components_build_path,

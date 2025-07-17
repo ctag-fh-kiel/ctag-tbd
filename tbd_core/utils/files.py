@@ -13,7 +13,7 @@ def update_file_if_outdated(
         dest_dir: Path | str,
         dest_file: Path | str,
         *,
-        symlink=True
+        symlink: bool = False,
 ) -> Path:
     """ Copy or symlink a file.
 
@@ -68,7 +68,7 @@ def update_files_if_outdated_with_filter(
     files: Iterable[Path],
     *,
     flatten: bool = False,
-    symlink: bool = True,
+    symlink: bool = False,
     ignore: list[str] | None = None
 ) -> list[Path]:
     """ Copy or symlink list of files.
@@ -112,7 +112,7 @@ def update_tree_if_outdated(
     *,
     patterns: list[str] | None = None,
     flatten: bool = False,
-    symlink: bool = True,
+    symlink: bool = False,
     ignore: list[str] | None = None,
 ) -> list[Path]:
     """ Copy or symlink files in paths.
@@ -152,7 +152,7 @@ def batch_update_files_if_outdated(
         *,
         sub_dir: Path | str | None = None,
         flatten: bool = False,
-        symlink: bool = True,
+        symlink: bool = False,
         ignore: list[str] | None = None,
 ) -> list[Path]:
     """ Copy or symlink files from patterns.

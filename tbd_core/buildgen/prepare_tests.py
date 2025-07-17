@@ -81,6 +81,7 @@ def prepare_tests():
         for test_source in test_sources:
             f.write(f'#include <{test_source}>\n')
 
+    test_env_block.append(f'{indent}-Wno-attributes=tbd::')
     test_env_block.append(f'{indent}-std=c++20')
 
     lib_deps = [lib_dep_line(dep) for dep in [GOOGLE_TEST_DEP, *external_dependencies]]
