@@ -1,18 +1,17 @@
 esphome:
-    name: tbddesktop
+    name: tbd_desktop
 
 host:
   mac_address: "06:35:69:ab:f6:79"
 
 external_components:
   - source: ${TBD_ROOT}
-#  - source: /home/mlee/code/tbd_example/components
 
 tbd_module:
 
-
-
 tbd_sound_processor:
+
+tbd_presets:
 
 tbd_audio:
   autostart: true
@@ -27,16 +26,16 @@ tbd_rt_audio:
 
 tbd_rt_midi:
 
-tbd_api:
-
-tbd_websocket:
+tbd_uart:
+  uart_id: host_uart
 
 uart:
   id: host_uart
   baud_rate: 9600
   port: "/dev/ttyUSB0"
 
-tbd_uart:
-  uart_id: host_uart
+tbd_api:
+
+tbd_websocket:
 
 tbd_unittests:
