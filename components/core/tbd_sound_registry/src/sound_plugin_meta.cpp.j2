@@ -1,0 +1,33 @@
+#include "{{ meta_header }}"
+
+namespace tbd::sound_registry::meta {
+
+const {{ meta_name }}::ParamSetter {{ meta_name }}::value_setters_[] = {
+    {%- for param in  plugin.param_list() -%}
+    // {{ param.path }}
+    {% if param.is_any_float  -%}
+    []({{ plugin.full_name }}& plugin, const ParamValue value) -> void {
+        {{ param | setter_name }}(plugin, value.float_value);
+    },
+    {%- else  -%}
+    []({{ plugin.full_name }}& plugin, const ParamValue value) -> void {
+        {{ param | setter_name }}(plugin, value.{{ param | param_value_field }});
+    },
+    {%- endif -%}
+    {%- endfor %}
+};
+
+const {{ meta_name }}::MappingSetter {{ meta_name }}::mapping_setters_[] = {
+    {%- for param in  plugin.param_list() %}
+    // {{ param.path }}
+    {%- if param.is_mappable %}
+    []({{ meta_name }}& self, const parameters::Mapping mapping) -> void {
+        self.{{ param | mapping_name }} = mapping;
+    },
+    {%- else %}
+    nullptr,
+    {%- endif  -%}
+    {%- endfor %}
+};
+
+}

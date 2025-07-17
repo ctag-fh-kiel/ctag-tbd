@@ -1,0 +1,53 @@
+#pragma once
+
+#include <tbd/{{ domain }}/dtos/dtos.hpp>
+{% if domain != 'serialization' -%}
+#include <tbd/serialization/dtos/messages.hpp>
+{%- else -%}
+#include <tbd/serialization/messages.hpp>
+{% endif %}
+
+
+namespace tbd::serialization {
+
+{% if serializables.anonymous_class_dtos -%}
+//// anonymous class DTOs ////
+{%- for serializable in serializables.anonymous_class_dtos %}
+template<>
+constexpr int32_t max_message_size<{{ serializable.dto_cls.typename }}>() { return {{ serializable.message_size }}; }
+{% endfor %}
+{%- else %}
+//// no anonymous class DTOs ////
+{%- endif %}
+
+{% if serializables.serializable_classes -%}
+//// directly serializable types ////
+{%- for serializable in serializables.serializable_classes %}
+template<>
+constexpr int32_t max_message_size<{{ serializable.dto_cls.typename }}>() { return {{ serializable.message_size }}; }
+{% endfor %}
+{%- else %}
+//// no directly serializable types ////
+{%- endif %}
+
+{% if serializables.class_dtos %}
+//// types with associated DTOs ////
+{% for serializable in serializables.class_dtos %}
+template<>
+constexpr int32_t max_message_size<{{ serializable.dto_cls.typename }}>() { return {{ serializable.message_size }}; }
+{% endfor %}
+{%- else %}
+//// no types with associated DTOs ////
+{%- endif %}
+
+{% if serializables.generated_dtos %}
+//// generated DTO types ////
+{% for serializable in serializables.generated_dtos %}
+template<>
+constexpr int32_t max_message_size<{{ serializable.dto_cls.typename }}>() { return {{ serializable.message_size }}; }
+{% endfor %}
+{%- else %}
+//// no generated DTO types ////
+{%- endif %}
+
+}

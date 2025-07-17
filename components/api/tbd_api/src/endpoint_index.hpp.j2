@@ -1,0 +1,9 @@
+#pragma once
+
+#include <tbd/api/endpoints.hpp>
+#include <tbd/api/packet_transcoding.hpp>
+
+// endpoint declarations
+{%- for endpoint in api.endpoints %}
+{{ endpoint | shadow_declaration }}
+{%- endfor %}

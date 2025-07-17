@@ -1,7 +1,7 @@
 {
     "name": "tbd-dev-container",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/ctag_tbd,type=bind",
-    "workspaceFolder": "/workspaces/ctag_tbd",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/tbd,type=bind",
+    "workspaceFolder": "/workspaces/tbd",
     "mounts": [
         "source=extensionCache,target=/root/.vscode-server/extensions,type=volume",
 
@@ -15,9 +15,8 @@
         //
         "source=/run/user/1000/pulse/native,target=/run/user/1000/pulse/native,type=bind"
     ],
-    "forwardPorts": [2024],
     "build": {
-        "context": ".",
+        "context": "..",
         "dockerfile": "Dockerfile"
     },
     "containerEnv": {
@@ -33,26 +32,13 @@
         "vscode": {
             "settings": {
                 "terminal.integrated.defaultProfile.linux": "bash",
-                // configure IDF plugin
-                "idf.espIdfPath": "/opt/esp/idf",
-                "idf.toolsPath": "/opt/esp",
-                "idf.gitPath": "/usr/bin/git",
-                "idf.adapterTargetName": "esp32s3",
-                "idf.buildPath": "${workspaceFolder}/build/firmware",
-                "idf.pythonBinPath": "/opt/esp/python_env/idf5.4_py3.12_env/bin/python",
-                "cmake.buildDirectory": "${workspaceFolder}/build/firmware",
-                "cmake.automaticReconfigure": false,
-                "esbonio.sphinx.buildDir": "${workspaceFolder}/build/docs",
-                "esbonio.sphinx.confDir": "${workspaceFolder}/docs/config",
-                "esbonio.sphinx.srcDir": "${workspaceFolder}/docs",
-                "python.defaultInterpreterPath": "/opt/esp/python_env/idf5.4_py3.12_env/bin/python"
+                "python.defaultInterpreterPath": "/tbd/.venv/bin/python"
             },
             "extensions": [
                 "ms-vscode.cpptools-extension-pack",
-                "espressif.esp-idf-extension",
                 "ms-vscode.cpptools",
                 "ms-vscode.cpptools-extension-pack",
-                "swyddfa.esbonio",
+                // "swyddfa.esbonio",
                 "ms-python.vscode-pylance",
                 "ms-python.python",
                 "ms-python.debugpy",

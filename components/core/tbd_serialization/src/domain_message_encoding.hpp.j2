@@ -1,0 +1,56 @@
+#pragma once
+
+#include <tbd/{{ domain }}/dtos/dtos.hpp>
+{% if domain != 'serialization' -%}
+#include <tbd/serialization/dtos/message_encoding.hpp>
+{%- else -%}
+#include <tbd/serialization/message_encoding.hpp>
+{% endif %}
+
+namespace tbd::serialization {
+
+{% if serializables.anonymous_class_dtos -%}
+//// anonymous class DTOs ////
+{%- for serializable in serializables.anonymous_class_dtos -%}
+// anonymous class DTO {{ serializable.dto_cls.typename }}
+
+{{ serializable | proto_encoder_impl }}
+{% endfor %}
+{%- else %}
+//// no anonymous class DTOs ////
+{%- endif %}
+
+{% if serializables.serializable_classes -%}
+//// directly serializable types ////
+{%- for serializable in serializables.serializable_classes -%}
+// serializable class {{ serializable.dto_cls.typename }}
+
+{{ serializable | proto_encoder_impl }}
+{% endfor %}
+{%- else %}
+//// no directly serializable types ////
+{%- endif %}
+
+{% if serializables.class_dtos %}
+//// types with associated DTOs ////
+{% for serializable in serializables.class_dtos %}
+// class DTO {{ serializable.dto_cls.typename }}
+
+{{ serializable | proto_encoder_impl }}
+{% endfor %}
+{%- else %}
+//// no types with associated DTOs ////
+{%- endif %}
+
+{% if serializables.generated_dtos %}
+//// generated DTO types ////
+{% for serializable in serializables.generated_dtos %}
+// generated DTO {{ serializable.dto_cls.typename }}
+
+{{ serializable | proto_encoder_impl }}
+{% endfor %}
+{%- else %}
+//// no generated DTO types ////
+{%- endif %}
+
+}

@@ -1,0 +1,312 @@
+from dataclasses import dataclass
+from enum import unique, StrEnum
+from pathlib import Path
+
+import voluptuous as vol
+
+from tbd_core.reflection.reflectables import (
+    ParamType,
+    Attributes,
+    ScopePath,
+    MappableParamType,
+    PARAM_TYPE_FROM_MAPPABLE,
+)
+from tbd_core.reflection.db import PropertyPtr, ClassPtr
+
+
+ATTR_NAME = 'name'
+ATTR_DESCRIPTION = 'description'
+ATTR_NORM = 'norm'
+ATTR_SCALE = 'scale'
+ATTR_MIN = 'min'
+ATTR_MAX = 'max'
+ATTR_SFT = 'sft'
+ATTR_PAN = 'pan'
+ATTR_ADD = 'add'
+ATTR_ABS = 'abs'
+ATTR_CUT = 'cut'
+
+ATTR_ALT_NEGATIVES = 'negatives'
+ATTR_ALT_OPS = 'oeprations'
+
+ATTR_BASE_SCHEMA = {
+    vol.Optional(ATTR_NAME): str,
+    vol.Optional(ATTR_DESCRIPTION): str
+}
+
+ATTR_NUMBER_SCHEMA = {
+    vol.Optional(ATTR_NORM): vol.Or(int, float),
+    vol.Optional(ATTR_SCALE) :vol.Or(int, float),
+    vol.Optional(ATTR_MIN): vol.Or(int, float),
+    vol.Optional(ATTR_MAX): vol.Or(int, float),
+}
+
+ATTR_OPERATIONS_SCHEMA = {
+    vol.Exclusive(ATTR_SFT, ATTR_ALT_OPS): True,
+    vol.Exclusive(ATTR_PAN, ATTR_ALT_OPS): True,
+    vol.Exclusive(ATTR_ADD, ATTR_ALT_OPS): True,
+}
+
+ATTR_NEGATIVES_SCHEMA = {
+    vol.Exclusive(ATTR_ABS, ATTR_ALT_NEGATIVES): True,
+    vol.Exclusive(ATTR_CUT, ATTR_ALT_NEGATIVES): True,
+}
+
+
+VALID_PARAM_ATTRS = set(['name', 'description', 'norm', 'scale', 'min', 'max', 'cut_negative', 'sft', 'pan', 'add'])
+
+@unique
+class ParamOperations(StrEnum):
+    NO_OP  = 'NO_OP'
+    ABS_OP = 'ABS_OP'
+    ADD_OP = 'ADD_OP'
+    SFT_OP = 'SFT_OP'
+    PAN_OP = 'PAN_OP'
+
+
+@dataclass(frozen=True)
+class ParamEntry:
+    field: PropertyPtr
+    path: ScopePath
+    plugin_id: int
+    type: ParamType
+    is_mappable: bool
+    norm: float | None = None
+    scale: float | None = None
+    min: float | None = None
+    max: float | None = None
+    cut_negatives: bool = False
+    operation: ParamOperations = ParamOperations.NO_OP
+
+    @property
+    def name(self) -> str:
+        return self.field.name
+
+    @property
+    def full_name(self) -> str:
+        return self.field.full_name
+
+    @property
+    def scope(self) -> ScopePath:
+        return self.field.scope
+
+    @property
+    def snake_name(self) -> str:
+        return self.path.path.replace('.', '__')
+
+    @property
+    def is_int(self) -> bool:
+        return self.type == ParamType.INT_PARAM
+
+    @property
+    def is_uint(self) -> bool:
+        return self.type == ParamType.UINT_PARAM
+
+    @property
+    def is_trigger(self) -> bool:
+        return self.type == ParamType.TRIGGER_PARAM
+
+    @property
+    def is_float(self) -> bool:
+        return self.type == ParamType.FLOAT_PARAM
+
+    @property
+    def is_ufloat(self) -> bool:
+        return self.type == ParamType.UFLOAT_PARAM
+
+    @property
+    def is_any_float(self) -> bool:
+        return self.type.is_float
+
+    @staticmethod
+    def new_param_entry(
+            field: PropertyPtr,
+            path: ScopePath,
+            plugin_id: int,
+    ) -> 'ParamEntry':
+        attrs = field.attrs
+        underlying_type = field.type.param_type
+        is_mappable = field.type.is_mappable
+
+        if not attrs:
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type, is_mappable=is_mappable)
+        attrs = {name: value for attr in attrs.values() for name, value in attr.options.items() if attr.name == 'tbd'}
+
+        # validate attributes
+        if underlying_type == ParamType.TRIGGER_PARAM:
+            schema = ATTR_BASE_SCHEMA
+        elif underlying_type in [ParamType.INT_PARAM, ParamType.FLOAT_PARAM]:
+            schema = ATTR_BASE_SCHEMA | ATTR_NUMBER_SCHEMA | ATTR_OPERATIONS_SCHEMA
+        elif underlying_type in [ParamType.UINT_PARAM, ParamType.UFLOAT_PARAM]:
+            schema = ATTR_BASE_SCHEMA | ATTR_NUMBER_SCHEMA | ATTR_OPERATIONS_SCHEMA | ATTR_NEGATIVES_SCHEMA
+        else:
+            raise ValueError(f"unsupported parameter type: {underlying_type.name}")
+
+        vol.Schema(schema)(attrs)
+
+        if underlying_type == ParamType.TRIGGER_PARAM:
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id,
+                              type=underlying_type, is_mappable=is_mappable)
+
+        filtered_attrs = {key: float(value) for key, value in attrs.items() if key in ATTR_NUMBER_SCHEMA.keys()}
+
+        if attrs.get(ATTR_SFT):
+            operation = ParamOperations.SFT_OP
+        elif attrs.get(ATTR_PAN):
+            operation = ParamOperations.PAN_OP
+        elif attrs.get(ATTR_ADD):
+            operation = ParamOperations.ADD_OP
+        else:
+            operation = ParamOperations.NO_OP
+
+        if underlying_type in [ParamType.INT_PARAM, ParamType.FLOAT_PARAM]:
+            return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type,
+                              is_mappable=is_mappable, operation=operation, **filtered_attrs)
+
+        if attrs.get(ATTR_ABS):
+            cut_negatives = False
+        elif attrs.get(ATTR_CUT):
+            cut_negatives = True
+        else:
+            cut_negatives = False
+
+        # [ParamType.UINT_PARAM, ParamType.UFLOAT_PARAM]:
+        return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type, is_mappable=is_mappable,
+                          operation=operation, cut_negatives=cut_negatives, **filtered_attrs)
+
+    def ref(self) -> int:
+        return self.field.ref()
+
+@dataclass(frozen=True)
+class PluginParams:
+    int_params: list[ParamEntry]
+    uint_params: list[ParamEntry]
+    trigger_params: list[ParamEntry]
+    float_params: list[ParamEntry]
+    ufloat_params: list[ParamEntry]
+
+    @property
+    def param_sets(self) -> list[list[ParamEntry]]:
+        return [self.int_params, self.uint_params, self.trigger_params, self.float_params, self.ufloat_params]
+
+    @property
+    def num_ints(self) -> int:
+        return len(self.int_params)
+
+    @property
+    def num_uints(self) -> int:
+        return len(self.uint_params)
+
+    @property
+    def num_triggers(self) -> int:
+        return len(self.trigger_params)
+
+    @property
+    def num_floats(self) -> int:
+        return len(self.float_params)
+
+    @property
+    def num_ufloats(self) -> int:
+        return len(self.ufloat_params)
+
+    @property
+    def num_params(self) -> int:
+        return len(self.params)
+
+    @property
+    def params(self) -> list[ParamEntry]:
+        return [param for param_set in self.param_sets for param in param_set]
+
+    @staticmethod
+    def from_unsorted(param_list: list[ParamEntry]) -> 'PluginParams':
+        params = {
+            ParamType.INT_PARAM: [],
+            ParamType.UINT_PARAM: [],
+            ParamType.TRIGGER_PARAM: [],
+            ParamType.FLOAT_PARAM: [],
+            ParamType.UFLOAT_PARAM: [],
+        }
+
+        for param in param_list:
+            params[param.type].append(param)
+
+        return PluginParams(
+            int_params=params[ParamType.INT_PARAM],
+            uint_params=params[ParamType.UINT_PARAM],
+            trigger_params=params[ParamType.TRIGGER_PARAM],
+            float_params=params[ParamType.FLOAT_PARAM],
+            ufloat_params=params[ParamType.UFLOAT_PARAM],
+        )
+
+
+@dataclass(frozen=True)
+class PluginEntry:
+    cls: ClassPtr
+    param_offset: int
+    params: PluginParams
+    header: Path
+    is_stereo: bool
+
+    @property
+    def name(self) -> str:
+        return self.cls.name
+
+    @property
+    def full_name(self) -> str:
+        return self.cls.full_name
+
+    @property
+    def scope(self) -> ScopePath:
+        return self.cls.scope
+
+    @property
+    def num_ints(self) -> int:
+        return self.params.num_ints
+
+    @property
+    def int_params(self) -> list[ParamEntry]:
+        return self.params.int_params
+
+    @property
+    def num_uints(self) -> int:
+        return self.params.num_uints
+
+    @property
+    def uint_params(self) -> list[ParamEntry]:
+        return self.params.uint_params
+
+    @property
+    def num_triggers(self) -> int:
+        return self.params.num_triggers
+
+    @property
+    def trigger_params(self) -> list[ParamEntry]:
+        return self.params.trigger_params
+
+    @property
+    def num_floats(self) -> int:
+        return self.params.num_floats
+
+    @property
+    def float_params(self) -> list[ParamEntry]:
+        return self.params.float_params
+
+    @property
+    def num_ufloats(self) -> int:
+        return self.params.num_ufloats
+
+    @property
+    def ufloat_params(self) -> list[ParamEntry]:
+        return self.params.ufloat_params
+
+    @property
+    def num_params(self) -> int:
+        return self.params.num_params
+
+    def param_list(self) -> list[ParamEntry]:
+        return self.params.params
+
+    def ref(self) -> int:
+        return self.cls.ref()
+
+__all__ = ['ParamEntry', 'PluginParams', 'PluginEntry']

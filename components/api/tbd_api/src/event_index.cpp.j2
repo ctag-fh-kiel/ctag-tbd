@@ -1,0 +1,106 @@
+#include <tbd/api/event_index.hpp>
+
+#include <tbd/api.hpp>
+
+
+namespace { tbd::api::PacketBufferWriter event_writer; }
+
+using tbd::api::Packet;
+{% for sink in api.event_sinks %}
+namespace {{ sink.scope.parent }} { void {{ sink.name }}(const uint8_t* buffer, size_t length); }
+{%- endfor %}
+
+//// declare responders ////
+{% for event in api.events %}
+{%- for responder in event | responders %}
+{{ responder | shadow_declaration }}
+{%- endfor %}
+{%- endfor %}
+
+namespace tbd::api {
+
+Error dispatch_to_sinks(const uint8_t* buffer, const size_t length) {
+    {%- for sink in api.event_sinks %}
+    {{ sink.full_name }}(buffer, length);
+    {%- endfor %}
+    return TBD_OK;
+}
+
+}
+
+//// event dispatchers ////
+namespace tbd::api::event_dispatchers {
+{% for event in api.events %}
+Error {{ event | dispatcher_name }}({{ event | func_args }}) {
+    {% for responder in event | responders -%}
+    {{ responder.full_name }}({{ event | forward_args }});
+    {% endfor -%}
+    return TBD_OK;
+}
+{% endfor %}
+}
+
+//// external event handlers ////
+namespace tbd::api::event_handlers {
+{% for event in api.events %}
+Error {{ event | event_handler_name }}(const Packet& event_packet) {
+    {%- if event | event_payload %}
+    {{ event | event_payload }} in_message;
+    if (!decode_packet(in_message, event_packet)) {
+        return TBD_ERR(API_DECODE);
+    }
+    {%- endif %}
+    if (auto err = {{ event | invoke_dispatcher_from_message }}; err != errors::SUCCESS) { return err; }
+    return TBD_OK;
+}
+{% endfor %}
+}
+
+//// emitters ////
+{% for event in api.events %}
+namespace {{ event.scope.parent }} { void {{ event | emitter_name }}({{ event | func_args }}) {
+    {%- if event | responders %}
+    {{ event | invoke_dispatcher_from_args }};
+    {% endif %}
+
+    {%- if api.event_sinks %}
+    Packet _packet;
+    _packet.type = Packet::TYPE_EVENT;
+    _packet.handler = {{ event | event_id }};
+    _packet.crc = 0;
+    _packet.id = 0;
+    {% if event | event_payload -%}
+    {%- if event | needs_request_dto or event | needs_param_wrapper %}
+    {{ event | event_payload }} _payload;
+    {%- for assignment in event | apply_args('_payload', single_arg_name = 'value') %}
+    {{ assignment }};
+    {%- endfor %}
+    size_t _length = event_writer.payload_buffer_size();
+    if (!tbd::api::encode_packet(_payload, event_writer.payload_buffer(), _length)) {
+        return;
+    }
+    {%- else -%}
+    size_t _length = event_writer.payload_buffer_size();
+    if (!tbd::api::encode_packet({{ event.inputs[0].arg_name  }}, event_writer.payload_buffer(), _length)) {
+        return;
+    }
+    {%- endif %}
+    _packet.payload_length = _length;
+    {% else %}
+    _packet.payload_length = 0;
+    {% endif %}
+    event_writer.write(_packet);
+    tbd::api::dispatch_to_sinks(event_writer.buffer(), event_writer.serialized_length());
+    {% endif %}
+} }
+{% endfor %}
+
+namespace tbd::api {
+
+const uint16_t NUM_EVENTS = {{ api.events | length }};
+const Event EVENT_LIST[] = { {%- for event in api.events %}
+    { "{{ event.name }}", {{ event | event_id }}, &{{ event | event_handler_full_name }} },
+{%- endfor %}
+};
+
+}

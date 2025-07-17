@@ -1,0 +1,48 @@
+from collections.abc import Awaitable
+from typing import Callable, Any
+
+from .base_events import Events, EventHandlers, default_event_handler
+from .client import *
+
+from . import dtos_pb2 as dtos
+
+
+class FirmwareEvents(Events):
+    def __init__(self, client: TbdClient):
+        handlers: EventHandlers = [
+            {%- for event in api.events %}
+            self._handle_{{ event.name }},
+            {%- endfor %}
+        ]
+        super().__init__(client, handlers)
+        {% for event in api.events %}
+        self.on_{{ event.event_name }}: Callable[[{{ event | event_signature }}], Awaitable[Any]] = default_event_handler('{{ event.name }}')
+        {%- endfor %}
+{% for event in api.events %}
+    async def {{ event.name }}({{event | func_args}}):
+        {%- if event | event_payload %}
+        request = dtos.{{ event | event_payload }}()
+        {%- for arg in event | apply_args('request', single_arg_name='input') %}
+        {{ arg }}
+        {%- endfor %}
+        payload = request.SerializeToString()
+        await self._client.send_event({{ event | event_id }}, payload)
+        {%- else %}
+        await self._client.send_event({{ event | event_id }}, None)
+        {%- endif %}
+{%  endfor -%}
+
+{% for event in api.events %}
+    async def _handle_{{ event.name }}(self, payload: bytes):
+        {%- if event | event_payload %}
+        event = dtos.{{ event | event_payload }}()
+        event.ParseFromString(payload)
+        {%- endif %}
+        if self.on_{{ event.name }} is not None:
+            await self.on_{{ event.name }}({{ event | forward_args(obj='event', single_arg_name='value') }})
+{%- endfor %}
+
+def get_firmware_events(client: TbdClient) -> FirmwareEvents:
+    return FirmwareEvents(client)
+
+__all__ = ['FirmwareEvents', 'get_firmware_events']

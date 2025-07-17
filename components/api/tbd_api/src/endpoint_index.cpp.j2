@@ -1,0 +1,68 @@
+#include <tbd/api/endpoint_index.hpp>
+#include <tbd/api/module.hpp>
+
+#include <tbd/api/dtos/messages.hpp>
+#include <tbd/api.hpp>
+#include <tbd/parameter_types.hpp>
+
+
+using tbd::api::tag;
+
+// endpoint declarations
+{%- for endpoint in api.endpoints %}
+{{ endpoint | shadow_declaration }}
+{%- endfor %}
+
+namespace tbd::api::rpc_handlers {
+
+{% for endpoint in api.endpoints %}
+Error {{ endpoint | rpc_handler_name }}(const Packet& request, uint8_t* out_buffer, size_t& out_buffer_size) {
+    {%- if endpoint | request_type %}
+    {{ endpoint | request_type }} in_message;
+    if (const auto err = decode_packet(in_message, request); err != TBD_OK) { return err; }
+    {%- endif -%}
+    {%- if endpoint | response_type %}
+    {{ endpoint | response_type }} out_message;
+    auto& out_value = {{ endpoint | unwrap_response('out_message') }};
+    {%- else %}
+    out_buffer_size = 0;
+    {%- endif %}
+    if (const auto err = {{ endpoint | invoke_handler }};
+        err != TBD_OK)
+    {
+        return err;
+    }
+    {%- if endpoint | response_type %}
+    if (const auto err = encode_packet(out_message, out_buffer, out_buffer_size); err != TBD_OK) { return err; }
+    {%- endif %}
+    return TBD_OK;
+}
+{% endfor %}
+}
+
+namespace tbd::api {
+
+const uint32_t API_VERSION = {{ api.get_version() }};
+const uint32_t CORE_API_HASH = {{ api.calculate_core_hash() }};
+const uint32_t BASE_API_HASH = {{ api.calculate_base_hash() }};
+const uint32_t API_HASH = {{ api.calculate_hash() }};
+
+const uint16_t NUM_ENDPOINTS = {{ api.endpoints | length }};
+const Endpoint ENDPOINT_LIST[] = { {%- for endpoint in api.endpoints %}
+    { "{{ endpoint.endpoint_name }}", {{ endpoint | request_id }}, {{ endpoint | output_id }}, &{{ endpoint | rpc_handler_full_name }} },
+{%- endfor %} 
+};
+
+const size_t NUM_REQUEST_MESSAGES = {{ api.request_types | length }};
+const MessageInfo REQUEST_MESSAGE_LIST[] = { {% for request in api.endpoint_requests %}
+    { "{{ request.name }}", serialization::max_message_size<{{ request.full_name }}>() },
+    {%- endfor %}
+};
+
+const size_t NUM_RESPONSE_MESSAGES = {{ api.response_types | length }};
+const MessageInfo RESPONSE_MESSAGE_LIST[] = { {% for response in api.endpoint_responses %}
+    { "{{ response.name }}", serialization::max_message_size<{{ response.full_name }}>() },
+    {%- endfor %}
+};
+
+}

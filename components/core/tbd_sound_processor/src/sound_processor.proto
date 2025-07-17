@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+message SoundProcessorInfoResponse {
+  int32 id = 1;
+  bool is_stereo = 2;
+  string name = 3;
+  string description = 4;
+  int32 num_params = 5;
+}
+

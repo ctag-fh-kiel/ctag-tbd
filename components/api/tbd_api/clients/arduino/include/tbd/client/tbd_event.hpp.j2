@@ -1,0 +1,38 @@
+#pragma once
+
+#include <tbd/client/client.hpp>
+#include "api_message_transcoding.hpp"
+
+
+namespace tbd::client {
+
+struct Event {
+    template<typename ...ArgsT>
+    using Responder = std::function<void(ArgsT...)>;
+
+    using VoidResponder = std::function<void()>;
+
+    explicit Event(ClientBase& sender) : sender_(sender) {}
+
+    void handle_event(const api::Packet& event) const;
+
+    //// event triggers ////
+    {% for event in api.events %}
+    Error {{ event.name }}({{ event | func_args }});
+    {%- endfor %}
+
+    //// event responders ////
+    {% for event in api.events %}
+    {%- if event | event_payload %}
+    Responder<{{ event | func_plain_arg_types }}> on_{{ event.name }};
+    {%- else %}
+    VoidResponder on_{{ event.name }};
+    {%- endif -%}
+    {%- endfor %}
+
+private:
+    api::Packet::PayloadBuffer payload_buffer_;
+    ClientBase& sender_;
+};
+
+}

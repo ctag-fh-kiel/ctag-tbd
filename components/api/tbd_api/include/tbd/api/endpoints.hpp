@@ -1,0 +1,33 @@
+#pragma once
+
+#include <tbd/api/packet.hpp>
+#include <tbd/api/messages.hpp>
+#include <tbd/errors.hpp>
+
+
+namespace tbd::api {
+
+using EndpointCallback = Error(*)(const api::Packet&, uint8_t*, size_t&);
+
+struct Endpoint {
+    const char* path;
+    int32_t request_type;
+    int32_t response_type;
+    EndpointCallback callback;
+};
+
+extern const uint32_t API_VERSION;
+extern const uint32_t CORE_API_HASH;
+extern const uint32_t BASE_API_HASH;
+extern const uint32_t API_HASH;
+
+extern const uint16_t NUM_ENDPOINTS;
+extern const Endpoint ENDPOINT_LIST[];
+
+extern const size_t NUM_REQUEST_MESSAGES;
+extern const MessageInfo REQUEST_MESSAGE_LIST[];
+
+extern const size_t NUM_RESPONSE_MESSAGES;
+extern const MessageInfo RESPONSE_MESSAGE_LIST[];
+
+}

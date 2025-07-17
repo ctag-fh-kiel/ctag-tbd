@@ -1,0 +1,74 @@
+#include <tbd/client/tbd_rpc.hpp>
+
+#include "api_message_transcoding.hpp"
+
+#include <tbd/logging.hpp>
+#include <tbd/errors.hpp>
+
+using tbd::api::encode_message;
+using tbd::api::Packet;
+
+namespace tbd::client {
+
+{% for endpoint in api.endpoints %}
+Error RPC::{{ endpoint | client_rpc_method }} {
+    {% if endpoint | request_type -%}
+    {{ endpoint | request_type }} out_message;
+    {% for assignment in endpoint | apply_args('out_message', single_arg_name='input') -%}
+    {{ assignment }};
+    {% endfor %}
+    size_t length = Packet::MAX_PAYLOAD_SIZE;
+    if (!encode_message(out_message, payload_buffer_, length)) {
+        return TBD_ERR(API_DECODE);
+    }
+    {%- endif %}
+    Packet request;
+    request.type = Packet::TYPE_RPC;
+    request.handler = {{ endpoint | endpoint_id }};
+    {%- if endpoint | request_type %}
+    request.payload_length = length;
+    request.payload = payload_buffer_;
+    {%- else %}
+    request.payload_length = 0;
+    request.payload = nullptr;
+    {%- endif %}
+    {%- if endpoint | response_type %}
+    sender_.send(request, [callback](const Packet& response){
+            {{ endpoint | response_type }} in_message;
+            {%- if endpoint.output == 'str_par' %}
+            std::string value;
+            in_message.value.funcs.decode = decode_string;
+            in_message.value.arg = &value;
+            if (!decode_message(in_message, response)) {
+                return;
+            }
+            callback(value);
+            {%- else %}
+            if (!decode_message(in_message, response)) {
+                return;
+            }
+            callback({{ endpoint | unwrap_response('in_message') }});
+            {%- endif %}
+    });
+    {%- else %}
+    sender_.send(request, [callback](const Packet& response){ callback(); });
+    {%- endif %}
+    return TBD_ERR(SUCCESS);
+}
+{% endfor %}
+
+}
+
+
+{#    {%- if endpoint | response_type -%}#}
+{#    {{ endpoint | response_type }} out_message;#}
+{#    auto& out_value = {{ endpoint | unwrap_response }};#}
+{#    {%- endif %}#}
+{#    if (auto err = {{ endpoint | invoke_handler }}; err != errors::SUCCESS) {#}
+{#        return err;#}
+{#    }#}
+{#    {%- if endpoint | response_type %}#}
+{#    if (!encode_message(out_message, out_buffer, out_buffer_size)) {#}
+{#        return TBD_ERR(API_ENCODE);#}
+{#    }#}
+{#    {%- endif %}#}

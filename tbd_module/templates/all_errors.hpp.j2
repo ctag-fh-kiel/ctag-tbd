@@ -1,0 +1,55 @@
+#pragma once
+
+#if !USE_TBD_ERR
+#error "error info not available, did you accidentally include all_errors.hpp directly?"
+#endif
+
+#include <tbd/parameter_types.hpp>
+#include <tbd/logging.hpp>
+
+
+#define TBD_NEW_ERR(err, msg)
+#define TBD_ERR(err) ::tbd::errors::err
+#define TBD_ERRMSG(err, msg) ::tbd::errors::err
+
+namespace tbd::errors {
+
+enum Errors {
+{%- for index , name, _ in errors %}
+    {{ name }} = {{ index }},
+{%- endfor %}
+    NUM_ERRORS = {{ errors | length }},
+};
+
+struct ErrorInfo {
+    const char* name;
+    const char* message;
+};
+
+extern const ErrorInfo ERROR_LIST[];
+
+inline uint16_t get_num_errors() {
+    return NUM_ERRORS;
+}
+
+inline Errors err_from_int(const uint_par err) {
+    return err < NUM_ERRORS ? static_cast<Errors>(err) : NUM_ERRORS;
+}
+
+inline const char* get_error_name(const Errors err) {
+    if (err >= NUM_ERRORS) {
+        TBD_LOGE("errors", "requested name for invalid error code %i", err);
+        return ERROR_LIST[FAILURE].name;
+    }
+    return ERROR_LIST[err].name;
+}
+
+inline const char* get_error_message(const Errors err) {
+    if (err >= NUM_ERRORS) {
+        TBD_LOGE("errors", "requested name for invalid error code %i", err);
+        return ERROR_LIST[FAILURE].message;
+    }
+    return ERROR_LIST[err].message;
+}
+
+}

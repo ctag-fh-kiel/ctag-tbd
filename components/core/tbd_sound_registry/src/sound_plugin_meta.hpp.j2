@@ -1,0 +1,162 @@
+{% import 'accessors.j2' as ac with context %}
+#pragma once
+
+#include <cmath>
+
+#include <tbd/parameter_types.hpp>
+#include <tbd/errors.hpp>
+
+#include <tbd/sound_registry/plugin_meta_base.hpp>
+#include <tbd/sound_registry/all_sound_processors.hpp>
+
+#include <{{ plugin_header }}>
+
+namespace tbd::sound_registry::meta {
+
+struct {{ meta_name }} : PluginMetaBase {
+    using StateManipulator = std::function<void({{ meta_name }}&)>;
+
+    {{ meta_name }}() : PluginMetaBase({{ plugin_id }}) {}
+    ~{{ meta_name }}() override = default;
+
+    void init() override {
+        plugin_.init();
+    }
+
+    void process(const sound_processor::channels::Channels channels,
+                 const sound_processor::ProcessData& data) override
+    {
+        using namespace sound_processor::channels;
+
+        process_updates();
+        populate_parameters(data);
+        {% if plugin.is_stereo -%}
+        plugin_.process_stereo(data.both(), data.both());
+        {% else -%}
+        if (channels == CM_LEFT) {
+            plugin_.process_mono(data.both(), data.left());
+        } else if (channels == CM_RIGHT) {
+            plugin_.process_mono(data.both(), data.right());
+        }
+        {%- endif %}
+    }
+
+    [[nodiscard]] bool is_stereo() const override {
+        return plugin_.is_stereo();
+    }
+
+    Error change_state(StateManipulator&& f) {
+        if (operation_pending_.test_and_set()) {
+            return TBD_ERR(SOUND_REGISTRY_PENDING_OPERATION);
+        }
+        operation_.type = WriteOperation::CALL;
+        return TBD_OK;
+    }
+
+protected:
+    void populate_parameters(const sound_processor::ProcessData& data) {
+        {%- for index, param in params -%}
+        {% if param.is_mappable %}
+        {
+            // mapping parameter {{index}}: {{param.name}}
+            const bool has_cv = {{ param | mapping_name }} >= 0;
+            const float cv_switch = has_cv;
+            const {{ param | param_type }} value_switch = !has_cv;
+            const size_t cv_index = {{ param | mapping_name }} * ({{ param | mapping_name }} >= 0); // for no mapping just read CV 0 as dummy
+            {% if param.is_any_float -%}
+            const auto value = cv_switch * data.cv[cv_index] + value_switch * plugin_.{{ param.path }};
+            {{ param | setter_name }}(plugin_, value);
+            {%- else -%}
+            const auto value = cv_switch * data.cv[cv_index] + static_cast<float>(value_switch * plugin_.{{ param.path }});
+            {{ param | setter_name }}(plugin_, static_cast<{{ param | param_type }}>(value));
+            {% endif %}
+        }
+        {%- endif -%}
+        {%- endfor %}
+    }
+
+    void process_updates() {
+        switch (operation_.type) {
+            case WriteOperation::SET_VALUE: {
+                if (const auto setter = value_setters_[operation_.parameter]; setter != nullptr) {
+                    setter(plugin_, operation_.payload.param);
+                }
+                break;
+            }
+            case WriteOperation::SET_MAPPING: {
+                if (const auto setter = mapping_setters_[operation_.parameter]; setter != nullptr) {
+                    setter(*this, operation_.payload.mapping);
+                }
+                break;
+            }
+            case WriteOperation::CALL: {
+                if (manipulator_) {
+                    manipulator_(*this);
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        operation_pending_.clear();
+    }
+
+    {% if plugin.num_ints -%}
+    // {{plugin.num_ints}} int params
+    {%- for param in plugin.int_params %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- else -%}
+     // no int params 
+    {%- endif %}
+    
+    {% if plugin.num_uints -%}
+     // {{plugin.num_uints}} uint params
+    {%- for param in plugin.uint_params %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- else -%}
+     // no uint params 
+    {%- endif %}
+
+
+    {% if plugin.num_triggers -%}
+     // {{plugin.num_triggers}} trigger params
+    {%- for param in plugin.trigger_params %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- else -%}
+     // no trigger params 
+    {%- endif %}
+    
+    {% if plugin.num_floats or plugin.num_ufloats -%}
+     // {{plugin.num_floats + plugin.num_ufloats }} float params
+    {%- for param in plugin.float_params %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- for param in plugin.ufloat_params %}
+    {{ param | setter_impl }}
+    {%- endfor -%}
+    {%- else -%}
+     // no float params 
+    {%- endif %}
+
+private:
+    using ParamSetter = void(*)({{ plugin.full_name }}&, ParamValue);
+    using MappingSetter = void(*)({{ meta_name }}&, parameters::Mapping);
+
+    static const ParamSetter value_setters_[];
+    static const MappingSetter mapping_setters_[];
+
+    // parameter mappings
+    {% for param in  plugin.param_list() -%}
+    {% if param.is_mappable %}
+    parameters::Mapping {{ param | mapping_name }};
+    {%- endif  -%}
+    {%- endfor %}
+
+    StateManipulator manipulator_;
+    {{ plugin.full_name }} plugin_;
+};
+
+}

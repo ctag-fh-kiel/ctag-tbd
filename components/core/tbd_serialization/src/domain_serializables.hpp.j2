@@ -1,0 +1,133 @@
+#pragma once
+
+#include <tbd/{{ domain }}/dtos/dtos.hpp>
+#include <tbd/serialization/serializables.hpp>
+
+{% for cls_header in cls_headers -%}
+#include <{{ cls_header }}>
+{% endfor %}
+#include <tbd/errors.hpp>
+
+
+namespace tbd::serialization {
+
+//// directly serializable types ////
+{% if serializables.serializable_classes %}
+{%- for serializable in serializables.serializable_classes -%}
+{%- set cls = serializable.cls %}
+{%- set full_name = cls.full_name %}
+template<>
+struct SerializableImpl<{{ full_name }}> {
+    SerializableImpl() = delete;
+
+    static size_t serialized_size(const {{ full_name }}& obj);
+    static constexpr TypeID type_id() { return {{ serializable.ref() }}; }
+    static constexpr bool is_directly_serializable() { return true; };
+
+    static Error read_serializable(std::istream& in_stream, {{ full_name }}& in_message);
+    static Error write_serializable(std::ostream& out_stream, const {{ full_name }}& out_message);
+    static Error to_dto(const {{ full_name }}& obj, {{ full_name }}& dto);
+    static Error from_dto(const {{ full_name }}& dto, {{ full_name }}& obj);
+};
+
+{%  if serializable.properties %}
+inline size_t SerializableImpl<{{ full_name }}>::serialized_size(const {{ full_name }}& obj) {
+    return {% for path, property in cls | flattened_properties -%}
+    {{ '+'  if not loop.first }} sizeof({{ property.type }}){{ ';' if loop.last }}
+    {% endfor %}
+}
+{%- else -%}
+inline size_t SerializableImpl<{{ full_name }}>::serialized_size(const {{ full_name }}& obj) { return 0; }
+{%  endif %}
+{% endfor %}
+{% else %}
+// none
+{% endif %}
+
+
+//// types with associated DTOs ////
+{% if serializables.class_dtos %}
+{% for serializable in serializables.class_dtos %}
+{%- set cls = serializable.cls -%}
+{%- set cls_dto = serializable.dto_cls -%}
+{%- set full_cls_name = cls.full_name -%}
+{%- set full_dto_name = cls_dto.full_name -%}
+// {{ full_cls_name }}
+
+template<>
+struct SerializableImpl<{{ full_dto_name }}> {
+    SerializableImpl() = delete;
+
+    static size_t serialized_size(const {{ full_dto_name }}& obj);
+    static constexpr TypeID type_id() { return {{ cls_dto.ref() }}; }
+    static constexpr bool is_directly_serializable() { return true; };
+
+    static Error read_serializable(std::istream& in_stream, {{ full_dto_name }}& in_message);
+    static Error write_serializable(std::ostream& out_stream, const {{ full_dto_name }}& out_message);
+    static Error to_dto(const {{ full_dto_name }}& obj, {{ full_dto_name }}& cls_dto);
+    static Error from_dto(const {{ full_dto_name }}& cls_dto, {{ full_dto_name }}& obj);
+};
+
+{%  if cls_dto.properties %}
+inline size_t SerializableImpl<{{ full_dto_name }}>::serialized_size(const {{ full_dto_name }}& obj) {
+    return {% for path, property in cls_dto | flattened_properties -%}
+    {{ '+'  if not loop.first }} sizeof({{ property.type }}){{ ';' if loop.last }}
+    {% endfor %}
+}
+{%- else -%}
+inline size_t SerializableImpl<{{ full_dto_name }}>::serialized_size(const {{ full_dto_name }}& obj) { return 0; }
+{%  endif %}
+
+template<>
+struct SerializableImpl<{{ full_cls_name }}> {
+    SerializableImpl() = delete;
+
+    static size_t serialized_size(const {{ full_cls_name }}& obj);
+    static constexpr TypeID type_id() { return {{ cls_dto.ref() }}; }
+    static constexpr bool is_directly_serializable() { return false; };
+
+    static Error read_serializable(std::istream& in_stream, {{ full_cls_name }}& obj);
+    static Error write_serializable(std::ostream& out_stream, const {{ full_cls_name }}& obj);
+    static Error to_dto(const {{ full_cls_name }}& obj, {{ full_dto_name }}& cls_dto);
+    static Error from_dto(const {{ full_dto_name }}& cls_dto, {{ full_cls_name }}& obj);
+};
+{% endfor %}
+{% else %}
+// none
+{% endif %}
+
+
+//// generated DTO types ////
+{% if serializables.generated_dtos -%}
+{%- for serializable in serializables.generated_dtos -%}
+{%- set gen_dto = serializable.dto_cls %}
+{%- set full_name = gen_dto.full_name %}
+// {{ full_name }}
+
+template<>
+struct SerializableImpl<{{ full_name }}> {
+    SerializableImpl() = delete;
+
+    static size_t serialized_size(const {{ full_name }}& obj);
+    static constexpr TypeID type_id() { return {{ gen_dto.ref() }}; }
+    static constexpr bool is_directly_serializable() { return true; };
+
+    static Error read_serializable(std::istream& in_stream, {{ full_name }}& in_message);
+    static Error write_serializable(std::ostream& out_stream, const {{ full_name }}& out_message);
+    static Error to_dto(const {{ full_name }}& obj, {{ full_name }}& dto);
+    static Error from_dto(const {{ full_name }}& dto, {{ full_name }}& obj);
+};
+{%  if gen_dto.properties %}
+inline size_t SerializableImpl<{{ full_name }}>::serialized_size(const {{ full_name }}& obj) {
+    return {% for path, property in gen_dto | flattened_properties -%}
+    {{ '+'  if not loop.first }} sizeof({{ property.type }}){{ ';' if loop.last }}
+    {% endfor %}
+}
+{%- else -%}
+inline size_t SerializableImpl<{{ full_name }}>::serialized_size(const {{ full_name }}& obj) { return 0; }
+{%  endif %}
+
+{% endfor -%}
+{%- endif %}
+
+}

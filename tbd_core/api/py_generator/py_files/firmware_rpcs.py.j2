@@ -1,0 +1,33 @@
+from .base_rpcs import Rpcs
+from .client import *
+
+from . import dtos_pb2 as dtos
+
+class FirmwareRpcs(Rpcs):
+{% for endpoint in api.endpoints %}
+    async def {{ endpoint.name }}({{ endpoint | func_args }}) -> {{ endpoint | request_func_return }}:
+        {%- if endpoint | endpoint_request %}
+        request = dtos.{{ endpoint | endpoint_request }}()
+        {%- for assignment in endpoint | apply_args('request', single_arg_name='value') %}
+        {{ assignment }}
+        {%- endfor %}
+        payload = request.SerializeToString()
+        {%- else %}
+        payload = None
+        {%- endif %}
+        {%- if endpoint | endpoint_response %}
+        res_data = await self._client.send_rpc({{ endpoint | endpoint_id }}, payload)
+        result = dtos.{{ endpoint | endpoint_response }}()
+        result.ParseFromString(res_data)
+        return {{ endpoint | unwrap_response('result') }}
+        {%- else %}
+        await self._client.send_rpc({{ endpoint | endpoint_id }}, payload)
+        {%- endif %}
+{%- endfor %}
+
+
+def get_firmware_rpcs(client: TbdClient) -> FirmwareRpcs:
+    return FirmwareRpcs(client)
+
+
+__all__ = ['FirmwareRpcs', 'get_firmware_rpcs']

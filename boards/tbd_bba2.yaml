@@ -1,0 +1,54 @@
+esphome:
+  name: tbdbba2
+    
+esp32:
+  variant: esp32s3
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+    version: latest
+
+ota:
+  platform: esphome
+  password: !secret api_password
+
+wifi:
+  ssid: !secret ssid
+  password: !secret wifi_password
+
+external_components:
+  - source: ${TBD_ROOT}
+
+tbd_module:
+
+tbd_sound_processor:
+
+tbd_basic_sounds:
+  whitelist:
+    - void
+
+tbd_audio:
+  autostart: true
+
+tbd_aic3254:
+  pins:
+    i2c:
+      sda: 41
+      scl: 20
+    i2s:
+      mclk: 39
+      bclk: 45
+      ws: 1
+      dout: 2
+      din: 21
+
+tbd_midi:
+  inputs:
+    - UART
+    - USB
+
+tbd_api:
+
+tbd_websocket:
+
+tbd_unittests:

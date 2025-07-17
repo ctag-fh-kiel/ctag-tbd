@@ -1,0 +1,8 @@
+#pragma once
+
+#include <tbd/api/events.hpp>
+#include <tbd/api/packet_transcoding.hpp>
+
+{% for event in api.events %}
+{{ event | shadow_declaration }}
+{%- endfor %}

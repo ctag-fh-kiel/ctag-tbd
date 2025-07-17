@@ -1,0 +1,56 @@
+{% macro int_setter_impl(plugin, param) -%}
+static void set_{{ param.snake_name }}({{ plugin.full_name }}& self, int_par value) { self.{{ param.path }} = value; }
+{%- endmacro -%}
+
+{% macro uint_setter_impl(plugin, param) -%}
+static void set_{{ param.snake_name }}({{ plugin.full_name }}& self, uint_par value) { self.{{ param.path }} = value; }
+{%- endmacro %}
+
+{% macro trigger_setter_impl(plugin, param) -%}
+static void set_{{ param.snake_name }}({{ plugin.full_name }}& self, trigger_par value) { self.{{ param.path }} = value; }
+{%- endmacro %}
+
+{% macro float_setter_impl(plugin, param) -%}
+static void set_{{ param.snake_name }}({{ plugin.full_name }}& self, float value) { self.{{ param.path }} = value; }
+{%- endmacro %}
+
+{% macro ufloat_setter_impl(plugin, param) -%}
+static void set_{{ param.snake_name }}({{ plugin.full_name }}& self, float value) {
+    self.{{ param.name }} = std::fabs(value); 
+}
+{%- endmacro -%}
+
+
+{%- macro value_from_cv(index, param) -%}
+    {%- set value -%}
+        {{ get_from_cv(index, param) }}{{ scale_cv(param) }}
+    {%- endset -%}
+    {{cast_value(param, value)}}
+{%- endmacro -%}
+
+{%- macro cast_value(param, value) -%}
+    {%- if param.is_int -%}
+        static_cast<int_par>({{ value }})
+    {%- elif param.is_uint -%}
+        static_cast<uint_par>({{ value }})
+    {%- elif param.is_trigger -%}
+        {{ value }} == 1
+    {%- elif param.is_float -%}
+        {{ value }}
+    {%- elif param.is_ufloat -%}
+        {{ value }}
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro get_from_cv(index, param) -%}
+    {%- if param.is_uint or param.is_ufloat -%}
+        fabs(data.cv[{{ index }}])
+    {%- else -%}
+        data.cv[{{ index }}]
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro scale_cv(param) -%}
+    {%- if param.norm is not none %} / {{param.norm}}f {%- endif %}
+    {%- if param.scale is not none %} * {{param.scale}}f {%- endif -%}
+{%- endmacro -%}

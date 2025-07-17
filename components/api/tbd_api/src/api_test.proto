@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message Foo {
+    int32 foo1 = 1;
+    bool foo2 = 2;
+  }
+  
+  message Bar {
+    float bar1 = 1;
+    int32 bar2 = 2;
+  }

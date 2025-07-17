@@ -1,0 +1,24 @@
+#include <tbd/sound_registry/factory.hpp>
+
+{%- for plugin in plugins %}
+#include "{{ plugin.name }}_meta.hpp"
+{%- endfor %}
+
+namespace tbd::sound_registry::factory {
+
+using namespace sound_processor::channels;
+
+{%- for plugin in plugins %}
+template<>
+Error activate_sound_processor<meta::{{ plugin.name }}Meta>(const Channels channels) {
+    return ActiveSoundProcessors::set_plugin<meta::{{ plugin.name }}Meta>(channels);
+}
+{%- endfor %}
+
+Activator ACTIVATORS[] {
+{%- for plugin in plugins %}
+    &activate_sound_processor<meta::{{ plugin.name }}Meta>,
+{%- endfor %}
+};
+
+}

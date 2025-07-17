@@ -1,0 +1,37 @@
+template<>
+inline Error decode_message({{ dto_type }}& dto, pb_istream_t& stream) {
+    using namespace tbd::par_tags;
+
+    size_t fields_processed = 0;
+    while (stream.bytes_left) {
+        uint32_t tag;
+        pb_wire_type_t wire_type;
+        bool eof;
+
+        if (!pb_decode_tag(&stream, &wire_type, &tag, &eof)) {
+            if (eof) { break; } else { return TBD_ERR(SERIALIZATION_BAD_TAG); }
+        }
+
+        if (tag == 0) { return TBD_ERR(SERIALIZATION_ZERO_TAG); }
+
+        Error err = TBD_OK;
+        switch (tag) {
+        {%- for field_num, prop in fields -%}
+        {%- if prop | is_param %}
+            case {{ field_num }}: { err = decode_par<{{ prop | param_tag }}>(wire_type, dto.{{ prop.field_name }}, stream); break; }
+        {%- else %}
+            case {{ field_num }}: { err = decode_submessage_data<{{ prop.type | map_anonymous }}>(wire_type, dto.{{ prop.field_name }}, stream); break; }
+        {%- endif -%}
+        {%- endfor %}
+            default: { return TBD_ERR(SERIALIZATION_UNKNOWN_FIELD); }
+        }
+        if (err != TBD_OK) {
+            return err;
+        }
+        fields_processed += 1;
+        if (fields_processed >= {{ fields | length }}) {
+            break;
+        }
+    }
+    return TBD_OK;
+}
