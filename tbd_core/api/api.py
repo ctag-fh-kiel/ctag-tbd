@@ -90,7 +90,7 @@ class Api:
 
     def get_endpoint_id(self, endpoint: Endpoint) -> int:
         try:
-            return next(index for index, endpoint in enumerate(self._endpoints) if endpoint.ref() == endpoint.ref())
+            return next(index for index, _endpoint in enumerate(self._endpoints) if _endpoint.ref() == endpoint.ref())
         except StopIteration:
             raise ValueError(f'unknown endpoint {endpoint}')
 

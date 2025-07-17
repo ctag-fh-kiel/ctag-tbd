@@ -56,9 +56,9 @@ class PyFilters(FiltersBase):
 
     @jilter
     def request_func_return(self, endpoint: Endpoint) -> str:
-        if not endpoint.output:
+        if not endpoint.has_output:
             return 'None'
-        return endpoint.output.cls_name
+        return f'dtos.{self._api.get_response(endpoint).cls_name}'
 
     @jilter
     def event_signature(self, event: Event):

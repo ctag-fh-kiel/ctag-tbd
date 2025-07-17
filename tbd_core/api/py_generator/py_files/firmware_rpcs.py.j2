@@ -8,7 +8,7 @@ class FirmwareRpcs(Rpcs):
     async def {{ endpoint.name }}({{ endpoint | func_args }}) -> {{ endpoint | request_func_return }}:
         {%- if endpoint | endpoint_request %}
         request = dtos.{{ endpoint | endpoint_request }}()
-        {%- for assignment in endpoint | apply_args('request', single_arg_name='input') %}
+        {%- for assignment in endpoint | apply_args('request', single_arg_name='value') %}
         {{ assignment }}
         {%- endfor %}
         payload = request.SerializeToString()
