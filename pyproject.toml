@@ -11,13 +11,33 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.12"
-esphome = "^2025.5.2"
-nanopb = "^0.4.9.1"
+
+
+[tool.poetry.group.build.dependencies]
+esphome = "^2025.7.0"
 proto-schema-parser = "^1.6.0"
 pyhumps = "^3.8.0"
 jinja2 = "^3.1.6"
 cxxheaderparser = "^1.5.0"
 pydantic = "^2.11.6"
+platformio = "^6.1.18"
+
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^8.2.3"
+pydata-sphinx-theme = "^0.16.1"
+sphinxcontrib-youtube = "^1.4.1"
+
+
+[tool.poetry.group.cli]
+optional = true
+
+[tool.poetry.group.cli.dependencies]
+typer = "^0.16.0"
+
 
 [build-system]
 requires = ["poetry-core"]
