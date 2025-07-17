@@ -27,3 +27,5 @@ tbd/tbd_sound_registry/include/tbd/sound_registry/sound_processor_factory.hpp
 .esphome
 secrets.yaml
 .pioenvs
+.pio
+

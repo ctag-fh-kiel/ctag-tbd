@@ -1,0 +1,14 @@
+build
+.github
+.run
+.vscode
+.venv
+venv
+.vscode
+apps
+config.old
+docs
+resources
+sample_rom
+spiffs_image
+
