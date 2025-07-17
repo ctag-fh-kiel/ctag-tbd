@@ -122,4 +122,13 @@ Error set_plugin_trigger_param(const uint_par& channel, const uint_par& param_id
     return ActiveSoundProcessors::set_param(channels, param_id, value);
 }
 
+[[tbd::endpoint]]
+Error map_plugin_parameter(const uint_par& channel, const uint_par& param_id, const uint_par& input_id) {
+    const auto channels = channels_from_int(channel);
+    if (channels == CM_INVALID) {
+        return TBD_ERR(INVALID_CHANNEL_ID);
+    }
+    return ActiveSoundProcessors::map_param(channels, param_id, input_id);
+}
+
 }

@@ -10,9 +10,6 @@ from tbd_core.reflection.db import ReflectableDB
 from .plugin_entry import PluginEntry, ParamEntry
 
 
-
-
-
 def find_plugin_source_file(source_dir: Path, plugin: PluginEntry) -> Path:
     plugin_sources = (source_dir).rglob('*.cpp')
     plugin_name = plugin.cls.cls_name

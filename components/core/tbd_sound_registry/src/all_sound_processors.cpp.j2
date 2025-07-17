@@ -13,7 +13,7 @@ const PluginInfo PLUGIN_LIST[] = { {%- for plugin in plugins %}
 const uint32_t NUM_PARAMETERS = {{params|length}};
 
 const ParamInfo PARAMETER_LIST[] = { {%- for param in params %}
-    {"{{param | full_path }}", 0x{{ '%08x' % param.ref() }}, {{ param.plugin_id }}, par_tags::{{ param.type.name }}},
+    {"{{param | full_path }}", 0x{{ '%08x' % param.ref() }}, {{ param.plugin_id }}, par_tags::{{ param.type.name }}, {{ 'true' if param.is_mappable else 'false'}}},
 {%- endfor %} 
 };
 

@@ -6,9 +6,6 @@
 #include <tbd/parameter_types.hpp>
 
 
-
-
-
 namespace tbd::sound_registry::parameters {
 
 using PluginID          = uint16_t;
@@ -36,6 +33,7 @@ struct ParamInfo {
     uint32_t hash;
     PluginID plugin_id;
     par_tags::ParamTypeTag field_type;
+    bool is_mappable;
 };
 
 extern const uint32_t NUM_PLUGINS;
@@ -79,12 +77,19 @@ inline Error verify_parameter(const PluginID plugin_id, const ParameterID parame
     return TBD_OK;
 }
 
-inline Error verify_mapping(const PluginID plugin_id, const ParameterID parameter_number, InputID input_id) {
+inline Error verify_mapping(const PluginID plugin_id, const ParameterID parameter_number, const InputID input_id) {
     if (input_id >= N_CVS) {
         TBD_LOGE(tag, "input number %i is larger than number of available inputs", input_id);
         return TBD_ERR(INVALID_INPUT_ID);
     }
-    return verify_parameter(plugin_id, parameter_number);
+    if (const auto err = verify_parameter(plugin_id, parameter_number); err != TBD_OK) {
+        return err;
+    }
+    const auto offset = PLUGIN_LIST[plugin_id].parameter_offset;
+    if (const auto& param_info = PARAMETER_LIST[offset + parameter_number]; !param_info.is_mappable) {
+        return TBD_ERR(SOUND_REGISTRY_PARAMETER_NOT_MAPPABLE);
+    }
+    return TBD_OK;
 }
 
 inline bool parameter_has_type(const PluginID plugin_id, const ParameterID parameter_number, const par_tags::ParamTypeTag type) {

@@ -251,7 +251,11 @@ Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterI
     if (!processor) {
         return {processor.error()};
     }
-    return processor->set_param(param_id, value);
+    if (const auto err = processor->set_param(param_id, value); err != TBD_OK) {
+        return err;
+    }
+    sound_processor_param_changed(channels, param_id, value);
+    return TBD_OK;
 }
 
 Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterID param_id, const uint_par value) {
@@ -259,7 +263,11 @@ Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterI
     if (!processor) {
         return {processor.error()};
     }
-    return processor->set_param(param_id, value);
+    if (const auto err = processor->set_param(param_id, value); err != TBD_OK) {
+        return err;
+    }
+    sound_processor_param_changed(channels, param_id, value);
+    return TBD_OK;
 }
 
 Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterID param_id, const float_par value) {
@@ -267,7 +275,12 @@ Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterI
     if (!processor) {
         return {processor.error()};
     }
-    return processor->set_param(param_id, value);
+    const uint_par value_data = *reinterpret_cast<const uint32_t*>(&value);
+    if (const auto err = processor->set_param(param_id, value_data); err != TBD_OK) {
+        return err;
+    }
+    sound_processor_param_changed(channels, param_id, value_data);
+    return TBD_OK;
 }
 
 Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterID param_id, const trigger_par value) {
@@ -275,7 +288,23 @@ Error ActiveSoundProcessors::set_param(const Channels channels, const ParameterI
     if (!processor) {
         return {processor.error()};
     }
-    return processor->set_param(param_id, value);
+    if (const auto err = processor->set_param(param_id, value); err != TBD_OK) {
+        return err;
+    }
+    sound_processor_param_changed(channels, param_id, value);
+    return TBD_OK;
+}
+
+Error ActiveSoundProcessors::map_param(const Channels channels, const ParameterID param_id, const InputID input_id) {
+    auto processor = impl.get_processor_on_channels(channels);
+    if (!processor) {
+        return {processor.error()};
+    }
+    if (const auto err = processor->map_param(param_id, input_id); err != TBD_OK) {
+        return err;
+    }
+    sound_processor_mapping_changed(channels, param_id, input_id);
+    return TBD_OK;
 }
 
 Maybe<void*> ActiveSoundProcessors::reserve_plugin_memory(const Channels channels, const size_t plugin_size) {
@@ -288,6 +317,7 @@ Error ActiveSoundProcessors::set_active_plugin(const Channels channels, PluginMe
 
 void ActiveSoundProcessors::reset() {
     impl.reset();
+    sound_processors_reset();
 }
 
 size_t ActiveSoundProcessors::remaining_buffer_size() {

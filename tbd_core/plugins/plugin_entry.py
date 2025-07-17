@@ -123,19 +123,10 @@ class ParamEntry:
             field: PropertyPtr,
             path: ScopePath,
             plugin_id: int,
-            type: ParamType | MappableParamType,
-            attrs: Attributes | None
     ) -> 'ParamEntry':
-        match type:
-            case ParamType():
-                is_mappable = False
-                underlying_type = type
-            case MappableParamType():
-                is_mappable = True
-                underlying_type = PARAM_TYPE_FROM_MAPPABLE[type]
-            case _:
-                raise TypeError(f"unexpected parameter type {type}")
-
+        attrs = field.attrs
+        underlying_type = field.type.param_type
+        is_mappable = field.type.is_mappable
 
         if not attrs:
             return ParamEntry(field=field, path=path, plugin_id=plugin_id, type=underlying_type, is_mappable=is_mappable)

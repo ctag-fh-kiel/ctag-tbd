@@ -14,8 +14,19 @@ namespace tbd::sound_registry {
 
 namespace channels = sound_processor::channels;
 
+
 [[tbd::event]]
 void sound_processor_changed(const uint_par& channels, const uint_par& new_plugin_id);
+
+[[tbd::event]]
+void sound_processor_param_changed(const uint_par& channels, const uint_par& param_id, const uint_par& new_value);
+
+[[tbd::event]]
+void sound_processor_mapping_changed(const uint_par& channels, const uint_par& param_id, const uint_par& new_cv);
+
+[[tbd::event]]
+void sound_processors_reset();
+
 
 struct ActiveSoundProcessors final {
     ActiveSoundProcessors() = delete;
@@ -27,6 +38,7 @@ struct ActiveSoundProcessors final {
     static Error set_param(channels::Channels channels, parameters::ParameterID param_id, uint_par value);
     static Error set_param(channels::Channels channels, parameters::ParameterID param_id, float_par value);
     static Error set_param(channels::Channels channels, parameters::ParameterID param_id, trigger_par value);
+    static Error map_param(channels::Channels channels, parameters::ParameterID param_id, parameters::InputID input_id);
 
     /** Create a new sound processor and assign to channel(s).
      *
@@ -50,6 +62,7 @@ struct ActiveSoundProcessors final {
             return err;
         }
         sound_processor_changed(channels, plugin->id());
+        return TBD_OK;
     }
 
     /** Delete all sound processors.

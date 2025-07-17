@@ -175,8 +175,6 @@ class PluginRegistry:
                         field=prop,
                         path=param_scope,
                         plugin_id=plugin_id,
-                        type=prop.type.param_type,
-                        attrs=prop.attrs,
                     ))
                 case str():
                     pass

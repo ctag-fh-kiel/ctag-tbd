@@ -16,8 +16,8 @@ from tbd_core.plugins import (
 
 _LOGGER = logging.getLogger(__name__)
 
-
-
+AUTO_LOAD = ['tbd_serialization']
+REQUIRES = ['tbd_module']
 
 tbd_sound_registry_ns = cg.esphome_ns.namespace("sound_registry")
 SoundRegistry = tbd_sound_registry_ns.class_("SoundRegistryProxy", cg.Component)
