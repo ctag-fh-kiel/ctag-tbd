@@ -2,8 +2,10 @@ from pathlib import Path
 from esphome.components.tbd_control_inputs import new_tbd_control_input
 import esphome.components.tbd_module as tbd
 import esphome.config_validation as cv
-from esphome.components.esp32 import add_idf_component, add_idf_sdkconfig_option
+from esphome.components.esp32 import add_idf_sdkconfig_option
 import esphome.codegen as cg
+
+import tbd_core.buildgen as tbb
 
 
 DEPENDENCIES = ['esp32']
@@ -24,11 +26,11 @@ async def to_code(config):
         cg.add_define('TBD_CALIBRATION', 1)
 
     cmake_file = control_input.module.path / 'CMakeLists.txt'
-    tbd.copy_file_if_outdated(cmake_file, Path() / 'src' / 'CMakeLists.txt')
+    tbb.update_build_file_if_outdated(cmake_file, Path() / 'src' / 'CMakeLists.txt')
     adc_src_file = control_input.module.path / 'ulp' / 'adc.cpp'
-    tbd.copy_file_if_outdated(adc_src_file, Path() / 'src'/ 'adc.cpp')
+    tbb.update_build_file_if_outdated(adc_src_file, Path() / 'src'/ 'adc.cpp')
     ulp_src_file = control_input.module.path / 'ulp' / 'adc.S'
-    tbd.copy_file_if_outdated(ulp_src_file, Path() / 'ulp'/ 'adc.S')
+    tbb.update_build_file_if_outdated(ulp_src_file, Path() / 'ulp'/ 'adc.S')
     control_input.module.add_define('TBD_CV_ADC')
 
 

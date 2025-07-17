@@ -1,7 +1,7 @@
 from esphome.components.tbd_module import get_tbd_source_root
 import esphome.codegen as cg
 
-AUTO_LOAD = ['tbd_module']
+REQUIRES = ['tbd_module']
 
 rapidjson_path = get_tbd_source_root() / 'vendor' / 'rapidjson'
 

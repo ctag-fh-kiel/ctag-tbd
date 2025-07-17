@@ -9,7 +9,7 @@ import esphome.git as git
 from esphome.const import CONF_REFRESH
 from pathlib import Path
 
-AUTO_LOAD = ['tbd_module']
+REQUIRES = ['tbd_module']
 
 
 ESP_DSP_SRC_FILES = [
@@ -95,7 +95,7 @@ def to_code(config):
         )
         
         # dsp_include = tbd.get_build_path() / 'components' / 'esp-dsp' / ESP_DSP_PATH
-        component.add_include_dir(ESP_DSP_PATH)
+        # component.add_include_dir(ESP_DSP_PATH)
         # cg.add_build_flag(f'-I{dsp_include}')
 
     elif CORE.is_host:

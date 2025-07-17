@@ -4,7 +4,7 @@ import esphome.pins as pins
 import esphome.components.tbd_module as tbd
 
 
-AUTO_LOAD = ['tbd_module']
+REQUIRES = ['tbd_module']
 
 CONF_SIMULATE = 'simulate'
 CONF_PINS     = 'pins'

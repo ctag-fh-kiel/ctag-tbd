@@ -4,7 +4,8 @@ import esphome.config_validation as cv
 import esphome.codegen as cg
 from dataclasses import dataclass
 
-AUTO_LOAD = ['tbd_module', 'tbd_system']
+AUTO_LOAD = ['tbd_system']
+REQUIRES = ['tbd_module']
 
 CONF_PINS = 'pins'
 CONF_TYPE = 'type'

@@ -6,7 +6,9 @@ from esphome.components.tbd_sound_registry import get_plugins
 from esphome.components.tbd_api import get_api_registry
 
 
-AUTO_LOAD = ['tbd_module', 'tbd_serialization']
+AUTO_LOAD = ['tbd_serialization']
+REQUIRES = ['tbd_module']
+
 
 CONFIG_SCHEMA = {}
 

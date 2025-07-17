@@ -8,7 +8,7 @@ import esphome.config_validation as cv
 import dataclasses
 import jinja2 as ji
 
-AUTO_LOAD = ['tbd_module']
+REQUIRES = ['tbd_module']
 
 DEFAULT_SAMPLE_RATE = 44100
 DEFAULT_CHUNK_SIZE = 32

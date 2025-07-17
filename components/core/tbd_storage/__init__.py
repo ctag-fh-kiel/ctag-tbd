@@ -6,7 +6,7 @@ from pathlib import Path
 
 import esphome.components.tbd_module as tbd
 
-AUTO_LOAD = ['tbd_module']
+REQUIRES = ['tbd_module']
 
 if CORE.is_esp32:
     DEPENDENCIES = ['esp32']
