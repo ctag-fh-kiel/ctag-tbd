@@ -17,15 +17,15 @@ jobs:
           submodules: recursive
 
       - name: setup build container
-        run: ls -1 tools/docker/build.Dockerfile && docker build -t tbd_firmware -f tools/docker/build.Dockerfile $PWD
+        run: ls -1 tools/docker/ci_builder.Dockerfile && docker build -t tbd_ci_builder -f tools/docker/ci_builder.Dockerfile $PWD
 
       - name: build firmware
-        run: docker run -v$PWD:/code tbd_firmware ${{ inputs.tbd-platform }} configure bin
+        run: docker run -v$PWD:/code -v$PWD/build:/build tbd_ci_builder ${{ inputs.tbd-platform }}
 
       - name: upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: tbd_firmware_${{ inputs.tbd-platform }}
+          name: build/${{ inputs.tbd-platform }}
           path: |
-            build/${{ inputs.tbd-platform }}/tbd-${{ inputs.tbd-platform }}-flash.bin
+            build/${{ inputs.tbd-platform }}/.pioenvs/${{ inputs.tbd-platform }}/program
           overwrite: true

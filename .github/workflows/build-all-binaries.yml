@@ -7,7 +7,7 @@ jobs:
   build-desktop-app:
     uses: ./.github/workflows/build-firmware.yml
     with:
-      tbd-platform: tbd_desktop
+      tbd-platform: "tbd_desktop"
 
 #  build-dada-firmware:
 #    uses: ./.github/workflows/build-firmware.yml
