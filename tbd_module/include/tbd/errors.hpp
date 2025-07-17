@@ -32,7 +32,7 @@ enum Errors {
     NUM_ERRORS = 2,
 };
 
-inline size_t get_num_errors() {
+inline uint16_t get_num_errors() {
     return NUM_ERRORS;
 }
 
