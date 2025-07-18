@@ -19,10 +19,10 @@ jobs:
 #    with:
 #      tbd-platform: dadax
 #
-#  build-bba2-firmware:
-#    uses: ./.github/workflows/build-firmware.yml
-#    with:
-#      tbd-platform: bba2
+  build-bba2-firmware:
+    uses: ./.github/workflows/build-firmware.yml
+    with:
+      tbd-platform: "tbd_bba2"
 #
 #  build-bba1-firmware:
 #    uses: ./.github/workflows/build-firmware.yml

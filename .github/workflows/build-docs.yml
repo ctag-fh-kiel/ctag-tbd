@@ -23,7 +23,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: build/docs/html/downloads
-          pattern: tbd_firmware_*
+          pattern: "*_firmware"
           merge-multiple: true
 
       - name: upload static web content
