@@ -243,7 +243,6 @@ class DTORegistry:
     def _find_param_wrapper(self, param: Param) -> ParamWrapper:
         class_name = humps.pascalize(param.cls_name) + PARAM_MESSAGE_POSTFIX
         for cls in self._reflectables.classes():
-            print(cls)
             if cls.name == class_name:
                 message = self._create_message(cls)
                 message_size = self._determine_max_message_size(cls)

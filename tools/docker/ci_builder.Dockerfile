@@ -3,6 +3,7 @@ FROM ubuntu:24.04 AS tbd_ci_builder
 RUN apt-get update
 RUN apt-get install -y  \
     python3-poetry \
+    python3-venv \
     protobuf-compiler \
     git \
     cmake \

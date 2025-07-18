@@ -2,8 +2,9 @@ from pathlib import Path
 from typing import override
 
 from esphome.coroutine import coroutine
+from esphome.components.esp32 import get_board
 
-from tbd_core.buildgen import BuildGenerator
+from tbd_core.buildgen import BuildGenerator, TargetPlatform
 from tbd_core.buildgen.build_deps import ExternalDependency, ExternalLibrary, SystemLibrary
 
 import esphome.core as ehc
@@ -36,8 +37,17 @@ class EsphomeBuildGenerator(BuildGenerator):
         return Path(ehc.CORE.build_path)
 
     @property
-    def target_platform(self) -> str:
-        return ehc.CORE.target_platform
+    def target_platform(self) -> TargetPlatform:
+        if ehc.CORE.is_esp32:
+            return TargetPlatform.ESP32
+        elif ehc.CORE.is_host:
+            return TargetPlatform.HOST
+        else:
+            raise RuntimeError(f"platform {ehc.CORE} not supported by TBD")
+
+    @property
+    def board(self) -> str:
+        return get_board()
 
     def add_build_flag(self, flag: str) -> None:
         ehc.CORE.add_build_flag(flag)

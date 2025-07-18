@@ -1,13 +1,13 @@
 import esphome.components.tbd_module as tbd
 
+from tbd_core.buildgen import is_esp32
 from tbd_core.buildgen.build_deps import plain_dependency
 
 from esphome.core import CORE
-import esphome.codegen as cg
 import esphome.config_validation as cv
-import esphome.git as git
 from esphome.const import CONF_REFRESH
 from pathlib import Path
+
 
 REQUIRES = ['tbd_module']
 
@@ -84,7 +84,7 @@ def to_code(config):
     ESP_DSP_PATH = Path('modules') / 'iir' / 'include'
     ESP_DSP_VERSION = 'v1.6.1'
 
-    if CORE.is_esp32: 
+    if is_esp32():
         from esphome.components.esp32 import add_idf_component
 
         add_idf_component(

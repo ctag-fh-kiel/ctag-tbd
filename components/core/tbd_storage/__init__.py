@@ -1,15 +1,16 @@
 from esphome.core import CORE
 import esphome.config_validation as cv
 import esphome.codegen as cg
-from pathlib import Path
-
-
 import esphome.components.tbd_module as tbd
+
+from tbd_core.buildgen.build_generator import is_esp32, is_host
 
 REQUIRES = ['tbd_module']
 
-if CORE.is_esp32:
+
+if is_esp32():
     DEPENDENCIES = ['esp32']
+
 
 CONF_USE_FILESYSTEM_WRAPPER = 'use_filesystem_wrapper'
 CONF_SAMPLES_ADDRESS        = 'sample_rom_start'
@@ -18,7 +19,8 @@ CONF_SAMPLES_SIZE           = 'sample_rom_size'
 DEFAULT_SAMPLE_ROM_START_ADDRESS=0xB00000
 DEFAULT_SAMPLE_ROM_SIZE=0x1500000
 
-if CORE.is_host:
+
+if is_host():
     CONFIG_SCHEMA = cv.Schema({
         cv.Optional(CONF_USE_FILESYSTEM_WRAPPER, default=False): bool, 
         cv.Optional(CONF_SAMPLES_SIZE, default=DEFAULT_SAMPLE_ROM_SIZE): cv.int_range(min=0),

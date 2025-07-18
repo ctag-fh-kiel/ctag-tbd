@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import unique, StrEnum
 from pathlib import Path
 from typing import Callable, Awaitable
 
@@ -13,6 +15,12 @@ DefineValue = bool | float | int | str | None
 
 GenerationJobFunction = Callable[[], None]
 GenerationJob = Callable[[], Awaitable[None]]
+
+
+@unique
+class TargetPlatform(StrEnum):
+    HOST  = 'host'
+    ESP32 = 'esp32'
 
 
 class BuildGenerator(ABC):
@@ -31,7 +39,12 @@ class BuildGenerator(ABC):
 
     @property
     @abstractmethod
-    def target_platform(self) -> str:
+    def target_platform(self) -> TargetPlatform:
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def board(self) -> str:
         raise NotImplementedError()
 
     def add_define(self, key: str, value: DefineValue = None) -> None:
@@ -103,9 +116,20 @@ def write_build_config():
     get_build_generator().write_config()
 
 
-def get_target_platform() -> str:
+def get_target_platform() -> TargetPlatform:
     return get_build_generator().target_platform
 
+
+def is_esp32() -> bool:
+    return get_target_platform() == TargetPlatform.ESP32
+
+
+def is_host() -> bool:
+    return get_target_platform() == TargetPlatform.HOST
+
+
+def get_board() -> str:
+    return get_build_generator().board
 
 def add_define(key: str, value: DefineValue) -> None:
     get_build_generator().add_define(key, value)
@@ -156,11 +180,15 @@ __all__ = [
     'DefineValue',
     'GenerationJob',
     'GenerationJobFunction',
+    'TargetPlatform',
     'BuildGenerator',
     'write_build_config',
     'get_build_generator',
     'set_build_generator',
     'get_target_platform',
+    'is_esp32',
+    'is_host',
+    'get_board',
     'add_define',
     'add_build_flag',
     'add_include_dir',

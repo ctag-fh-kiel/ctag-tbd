@@ -5,12 +5,12 @@
 import logging
 from pathlib import Path
 
-from esphome.core import CORE
 from esphome import loader
 import esphome.config_validation as cv
 
 from .collect_errors import collect_errors
 from .esphome_build_generator import EsphomeBuildGenerator
+
 
 def setup_tbd_build():
     tbd_core_dir = Path(__file__).parent.parent
@@ -32,12 +32,6 @@ CONFIG_SCHEMA = cv.Schema({
 })
 
 _LOGGER = logging.getLogger(__name__)
-
-def is_esp32():
-    return CORE.is_esp32
-
-def is_desktop():
-    return CORE.is_host
 
 
 @build_job_with_priority(GenerationStages.ERRORS)

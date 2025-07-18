@@ -7,7 +7,7 @@ from .files import (
     get_generated_include_path,
 )
 from tbd_core.utils import source_extensions
-from .build_generator import add_platformio_block
+from .build_generator import add_platformio_block, is_host
 from .component_info import ComponentInfo, get_tbd_components, ExternalDependency
 
 INDENT_ONE = ' ' * 4
@@ -25,6 +25,10 @@ def lib_dep_line(lib_dep: ExternalDependency, *, indent: str = INDENT_ONE) -> st
 
 
 def prepare_tests():
+    # FIXME: extract all relevant build config options to build tests for embedded devices
+    if not is_host():
+        return
+
     indent = INDENT_ONE
     unittest_path = get_tests_build_path()
     all_tests_header_dir = get_build_path() / get_generated_include_path() / 'tbd' / 'unittests'

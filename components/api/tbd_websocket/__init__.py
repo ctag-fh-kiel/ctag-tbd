@@ -1,14 +1,15 @@
 from pathlib import Path
-import esphome.components.tbd_module as tbd
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import CONF_PORT, CONF_PATH, CONF_ID
 
+import esphome.components.tbd_module as tbd
 import esphome.components.tbd_api as tbd_api
 
 from tbd_core.buildgen.build_deps import cmake_dependency
-from tbd_core.buildgen import AutoReflection
+from tbd_core.buildgen import AutoReflection, is_host
+from tbd_module import is_esp32
 
 AUTO_LOAD = ['tbd_api']
 DEPENDENCIES = ['network']
@@ -35,7 +36,7 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
 
-    if tbd.is_desktop():
+    if is_host():
         # cmake_dependency(
         #     name='simplewebserver',
         #     url='https://gitlab.com/eidheim/Simple-Web-Server.git',
@@ -49,6 +50,7 @@ async def to_code(config):
         ))
         # cg.add_build_flag('-lssl')
         component.add_system_library('crypto')
-    elif tbd.is_esp32():
+
+    elif is_esp32():
         from esphome.components.esp32 import add_idf_sdkconfig_option
         add_idf_sdkconfig_option('CONFIG_HTTPD_WS_SUPPORT', True)
