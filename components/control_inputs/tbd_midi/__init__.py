@@ -44,22 +44,28 @@ async def to_code(config):
     if CONF_INPUT_USB in inputs:
         # confusingly there are two tinyusb packages by espressif and both are required
 
+        # component.add_define('USE_ESP_TINYUSB')
+        # add_idf_component(
+        #     name="esp_tinyusb",
+        #     repo="https://github.com/espressif/esp-usb.git",
+        #     ref="f2e6b70aa3a9c439397d5c0f56b7c4d462f62c0c", # no version tags available in repo
+        #     path="device/esp_tinyusb",
+        #     # refresh='1day'
+        # )
+
         component.add_define('USE_ESP_TINYUSB')
         add_idf_component(
             name="esp_tinyusb",
-            repo="https://github.com/espressif/esp-usb.git",
-            ref="f2e6b70aa3a9c439397d5c0f56b7c4d462f62c0c", # no version tags available in repo
-            path="device/esp_tinyusb",
-            # refresh='1day'
+            ref="1.7.6",
         )
 
-        component.add_define('USE_TINYUSB')
-        add_idf_component(
-            name="tinyusb",
-            repo="https://github.com/espressif/tinyusb.git",
-            ref="v0.18.0.2",
-            # refresh='1day'
-        )
+        # component.add_define('USE_TINYUSB')
+        # add_idf_component(
+        #     name="tinyusb",
+        #     repo="https://github.com/espressif/tinyusb.git",
+        #     ref="v0.18.0.2",
+        #     # refresh='1day'
+        # )
 
         # required to enable USB MIDI in IDF
         add_idf_sdkconfig_option('CONFIG_TINYUSB_MIDI_COUNT', 1)

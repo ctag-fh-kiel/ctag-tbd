@@ -18,6 +18,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#if TBD_MIDI_INPUT_USB
 
 #include "midi_usb.hpp"
 
@@ -99,3 +100,5 @@ size_t MidiUsb::write(const uint8_t* data, size_t len) {
 }
 
 }
+
+#endif

@@ -19,6 +19,7 @@ CTAG TBD is provided "as is" without any express or implied warranties.
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
+#if TBD_MIDI_INPUT_RP2040
 
 #include "rp2040_spi_stream.hpp"
 
@@ -117,3 +118,5 @@ IRAM_ATTR size_t rp2040_spi_stream::read(uint8_t* data, size_t max_len){
 }
 
 }
+
+#endif

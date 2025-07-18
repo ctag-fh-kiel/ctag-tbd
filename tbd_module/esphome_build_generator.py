@@ -62,6 +62,9 @@ class EsphomeBuildGenerator(BuildGenerator):
         build_flags = [flag for flag in ehc.CORE.build_flags if not (flag.startswith('-std=') or flag == NO_EXCEPTION_FLAG)]
         ehc.CORE.build_flags = set(build_flags)
 
+        build_unflags = [flag for flag in ehc.CORE.build_unflags if not (flag.startswith('-std=') or flag == NO_EXCEPTION_FLAG)]
+        ehc.CORE.build_unflags = set(build_unflags)
+
         # replace build flags with new ones
         ehc.CORE.add_build_flag(CPP_STD_FLAG)
         if exceptions:
