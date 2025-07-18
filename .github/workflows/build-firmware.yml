@@ -25,7 +25,7 @@ jobs:
       - name: upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: build/${{ inputs.tbd-platform }}
+          name: ${{ inputs.tbd-platform }}_firmware
           path: |
             build/${{ inputs.tbd-platform }}/.pioenvs/${{ inputs.tbd-platform }}/program
           overwrite: true
