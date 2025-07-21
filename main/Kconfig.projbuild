@@ -17,20 +17,6 @@ menu "CTAG TBD Configuration"
                 bool "MK2 (WM8978 + STM32 CVs + Trigs)"
             config TBD_PLATFORM_BBA
                 bool "BBA (Midi)"
-            choice TBD_BBA_CODEC
-                prompt "Codec selection"
-                default TBD_BBA_CODEC_AIC3254
-                depends on TBD_PLATFORM_BBA
-                help
-                    Which codec should be used?
-
-                config TBD_BBA_CODEC_ES8388
-                    bool "Everest Semiconductor ES8388"
-                config TBD_BBA_CODEC_ES8311
-                    bool "Everest Semiconductor ES8311"
-                config TBD_BBA_CODEC_AIC3254
-                    bool "TI TLV320AIC3254"
-            endchoice
 
             config TBD_TOUCH_BUTTON_THRESHOLD
                 int "Touch Button Threshold"
