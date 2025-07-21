@@ -57,7 +57,7 @@ using namespace CTAG::DRIVERS;
 #define NG_BOTH 1
 #define NG_LEFT 2
 #define NG_RIGHT 3
-#define CPU_MAX_ALLOWED_CYCLES 174150 // is 32/44100kHz * 240MHz
+#define CPU_MAX_ALLOWED_CYCLES 261224 // is 32/44100kHz * 360MHz
 
 // global variable, spiffs base directory
 namespace CTAG {
