@@ -33,14 +33,16 @@ respective component folders / files if different from this license.
 
 
 #define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
-#define SPI_DATA_SZ 1024 // midi data buffer with header
+#define SPI_DATA_SZ 2048 // midi data buffer with header
 
-DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2350_spi_stream::transaction[2];
+DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2350_spi_stream::transaction[3];
 DRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::currentTransaction;
 DMA_ATTR static uint8_t *rcvBuf0;
 DMA_ATTR static uint8_t *rcvBuf1;
+DMA_ATTR static uint8_t *rcvBuf2;
 DMA_ATTR static uint8_t *sendBuf0;
 DMA_ATTR static uint8_t *sendBuf1;
+DMA_ATTR static uint8_t *sendBuf2;
 
 
 uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
@@ -67,7 +69,7 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
     spi_slave_interface_config_t slvcfg = {
         .spics_io_num = GPIO_NUM_28,
         .flags = 0,
-        .queue_size = 2,
+        .queue_size = 3,
         .mode = 3,
         .post_setup_cb = 0,
         .post_trans_cb = 0
@@ -75,13 +77,17 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
 
     rcvBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
     rcvBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+    rcvBuf2 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
     sendBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
     sendBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+    sendBuf2 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
 
     std::fill_n(rcvBuf0, SPI_DATA_SZ, 0);
     std::fill_n(rcvBuf1, SPI_DATA_SZ, 0);
+    std::fill_n(rcvBuf2, SPI_DATA_SZ, 0);
     std::fill_n(sendBuf0, SPI_DATA_SZ, 0);
     std::fill_n(sendBuf1, SPI_DATA_SZ, 0);
+    std::fill_n(sendBuf2, SPI_DATA_SZ, 0);
 
     ESP_LOGI("rp2350 spi", "Init()");
     auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
@@ -89,17 +95,22 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
 
     sendBuf0[0] = 0xCA; sendBuf0[1] = 0xFE;
     sendBuf1[0] = 0xCA; sendBuf1[1] = 0xFE;
+    sendBuf2[0] = 0xCA; sendBuf2[1] = 0xFE;
 
     transaction[0].length = SPI_DATA_SZ * 8;
     transaction[0].rx_buffer = rcvBuf0;
     transaction[0].tx_buffer = sendBuf0;
 
-
     transaction[1].length = SPI_DATA_SZ * 8;
     transaction[1].rx_buffer = rcvBuf1;
     transaction[1].tx_buffer = sendBuf1;
 
+    transaction[2].length = SPI_DATA_SZ * 8;
+    transaction[2].rx_buffer = rcvBuf2;
+    transaction[2].tx_buffer = sendBuf2;
+
     currentTransaction = 0;
+
     return &rcvBuf0[2]; // skip watermark bytes
 }
 
@@ -110,7 +121,7 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **
     }
 
     // pack led status for current frame
-    uint8_t* tx_buf = currentTransaction == 0 ? sendBuf0 : sendBuf1;
+    uint8_t* tx_buf = (uint8_t*) transaction[currentTransaction].tx_buffer;
     uint32_t *led = (uint32_t*) &tx_buf[2];
     *led = ledStatus;
 
@@ -127,7 +138,7 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **
         //ESP_LOGE("rp2350_spi_stream", "Failed to queue transaction: %s", esp_err_to_name(ret));
         return 0; // Failed to queue transaction
     }
-    currentTransaction ^= 0x1;
+    currentTransaction = (currentTransaction + 1) % 3; // switch to next transaction buffer
 
     // get result of last transaction
     spi_slave_transaction_t* ret_trans;
