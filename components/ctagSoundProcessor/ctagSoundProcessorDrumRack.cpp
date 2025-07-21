@@ -367,7 +367,12 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     if (!bFMBMute){
 	    MK_BOOL_PAR(bFMBUseRatioMode, fmb_use_ratio_mode)
 	    MK_BOOL_PAR(bFMBModEnvSync, fmb_mod_env_sync)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBF0, fmb_f_b, 4095.f, 20.f, 200.f)
+	    float fFMBF0 = fmb_f_b/4095.f * (200.f-20.f)+20.f;
+    	if(cv_fmb_f_b != -1){
+    		float fMod = data.cv[cv_fmb_f_b] * 5.f;
+    		fMod = CTAG::SP::HELPERS::fastpow2(fMod);
+    		fFMBF0 *= fMod;
+    	}
 	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayBase, fmb_d_b, 4095.f, 0.001f, 1.f)
 	    MK_FLT_PAR_ABS_MIN_MAX(fFMBFMod, fmb_f_m, 4095.f, 40.f, 2000.f)
     	MK_FLT_PAR_ABS(fFMBRatioModIndex, fmb_f_m, 4095.f, 63.f)
@@ -376,7 +381,6 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 	    MK_FLT_PAR_ABS_MIN_MAX(fFMBI, fmb_I, 4095.f, 0.f, 10.f)
 	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayMod, fmb_d_m, 4095.f, 0.001f, .5f)
 		MK_INT_PAR(iModFeedback, fmb_b_m, 16.f)
-    	MK_FLT_PAR_ABS_MIN_MAX(fFMBFeedback, fmb_b_m, 4095.f, 0.f, 16.f)
 	    MK_FLT_PAR_ABS_MIN_MAX(fFMBAmpFreq, fmb_A_f, 4095.f, 0.f, 1000.f)
 	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayFreq, fmb_d_f, 4095.f, 0.001f, .1f)
 

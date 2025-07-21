@@ -33,7 +33,7 @@ respective component folders / files if different from this license.
 
 
 #define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
-#define SPI_DATA_SZ 2048 // midi data buffer with header
+#define SPI_DATA_SZ 1024 // midi data buffer with header
 
 DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2350_spi_stream::transaction[3];
 DRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::currentTransaction;
