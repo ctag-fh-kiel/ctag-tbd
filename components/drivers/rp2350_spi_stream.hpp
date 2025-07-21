@@ -32,7 +32,7 @@ namespace CTAG {
             static uint8_t* Init(); // Initialize the SPI stream, returns pointer to the buffer
             static uint32_t GetCurrentBuffer(uint8_t **dst, uint32_t const max_len, uint32_t ledStatus);
         private:
-            static spi_slave_transaction_t transaction[2];
+            static spi_slave_transaction_t transaction[3];
             static uint32_t currentTransaction;
         };
     }
