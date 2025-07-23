@@ -1,5 +1,5 @@
-#include <tbd/api/websocket_server.hpp>
-#include <tbd/websocket/module.hpp>
+#include <tbd/websocket_api/websocket_server.hpp>
+#include <tbd/websocket_api/module.hpp>
 
 #include <tbd/api.hpp>
 
@@ -13,7 +13,7 @@ namespace {
 
 struct WEBSOCKET_SERVER {};
 
-using tbd::websocket::tag;
+using tbd::websocket_api::tag;
 using WSServer = SimpleWeb::SocketServer<SimpleWeb::WS>;
 
 WSServer server;
@@ -22,7 +22,7 @@ std::promise<unsigned short> server_port;
 
 }
 
-namespace tbd::api::websocket_server {
+namespace tbd::websocket_api {
 
 void begin() {
     TBD_LOGI(tag, "starting websocket server");

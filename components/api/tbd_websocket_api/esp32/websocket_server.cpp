@@ -1,12 +1,12 @@
-#include <tbd/api/websocket_server.hpp>
-#include <tbd/websocket/module.hpp>
+#include <tbd/websocket_api/websocket_server.hpp>
+#include <tbd/websocket_api/module.hpp>
 
 #include <tbd/logging.hpp>
 #include <tbd/api.hpp>
 
 #include <esp_http_server.h>
 
-using tbd::websocket::tag;
+using tbd::websocket_api::tag;
 
 namespace {
 
@@ -91,7 +91,7 @@ const httpd_uri_t websocket_endpoint = {
 
 }
 
-namespace tbd::api::websocket_server {
+namespace tbd::websocket_api {
 
 void begin() {
     TBD_LOGI(tag, "Starting server");

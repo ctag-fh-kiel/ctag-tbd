@@ -11,11 +11,11 @@ AUTO_LOAD = ['tbd_api']
 DEPENDENCIES = ["uart"]
 
 tbd_websocket_ns = cg.esphome_ns.namespace("tbd_uart")
-WebsocketServer = tbd_websocket_ns.class_("UARTServer", cg.Component)
+UartServer = tbd_websocket_ns.class_("UARTServer", cg.Component)
 
 CONFIG_SCHEMA = (
     cv.Schema({
-        cv.GenerateID(): cv.declare_id(WebsocketServer),
+        cv.GenerateID(): cv.declare_id(UartServer),
     })
     .extend(uart.UART_DEVICE_SCHEMA)
     .extend(cv.COMPONENT_SCHEMA)

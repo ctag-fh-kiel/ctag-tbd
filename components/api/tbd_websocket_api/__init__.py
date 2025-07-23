@@ -15,7 +15,7 @@ AUTO_LOAD = ['tbd_api']
 DEPENDENCIES = ['network']
 
 
-tbd_websocket_ns = cg.esphome_ns.namespace("tbd_websocket")
+tbd_websocket_ns = cg.esphome_ns.namespace("tbd_websocket_api")
 WebsocketServer = tbd_websocket_ns.class_("WebsocketServer", cg.Component)
 
 CONFIG_SCHEMA = cv.Schema({

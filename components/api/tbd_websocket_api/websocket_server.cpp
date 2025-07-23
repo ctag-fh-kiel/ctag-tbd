@@ -1,15 +1,15 @@
 #include "websocket_server.hpp"
 
-#include <tbd/api/websocket_server.hpp>
+#include <tbd/websocket_api/websocket_server.hpp>
 
-namespace esphome::tbd_websocket {
+namespace esphome::tbd_websocket_api {
 
 WebsocketServer::WebsocketServer() {
 
 }
 
 void WebsocketServer::setup() {
-    tbd::api::websocket_server::begin();
+    tbd::websocket_api::begin();
 }
 
 float WebsocketServer::get_setup_priority() const {
@@ -17,7 +17,7 @@ float WebsocketServer::get_setup_priority() const {
 }
 
 void WebsocketServer::on_shutdown() {
-    tbd::api::websocket_server::end();
+    tbd::websocket_api::end();
 }
 
 }

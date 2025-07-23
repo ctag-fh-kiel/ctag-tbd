@@ -1,9 +1,8 @@
 #pragma once
 
 #include <esphome/core/component.h>
-#include <tbd/api/websocket_server.hpp>
 
-namespace esphome::tbd_websocket {
+namespace esphome::tbd_websocket_api {
 
 class WebsocketServer  : public Component {
 public:
