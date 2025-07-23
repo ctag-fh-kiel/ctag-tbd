@@ -34,12 +34,13 @@ FLAG_MASK = 0b11111000
 
 @unique
 class PacketType(IntEnum):
-    TYPE_RPC      = 0
-    TYPE_RESPONSE = 1
-    TYPE_ERROR    = 2
-    TYPE_ACTION   = 3
-    TYPE_EVENT    = 4
-    TYPE_INVALID  = 5
+    TYPE_NOOP     = 0
+    TYPE_RPC      = 1
+    TYPE_RESPONSE = 2
+    TYPE_ERROR    = 3
+    TYPE_ACTION   = 4
+    TYPE_EVENT    = 5
+    TYPE_INVALID  = 6
 
     @staticmethod
     def from_binary(bin_value: int) -> 'PacketType':

@@ -37,7 +37,7 @@ namespace tbd::api {
  *  Transport Format
  *  ----------------
  *
- *  For sending packets over any bi-directional binary data stream the following binary representation is used:
+ *  For sending packets over any bidirectional binary data stream the following binary representation is used:
  *
  *  [0]: packet start (0xf0)
  *  [1]: packet type and flags
@@ -85,12 +85,13 @@ struct Header {
     using PacketBuffer = uint8_t[BUFFER_SIZE + 1];
 
     enum PacketType {
-        TYPE_RPC      = 0,
-        TYPE_RESPONSE = 1,
-        TYPE_ERROR    = 2,
-        TYPE_ACTION   = 3,
-        TYPE_EVENT    = 4,
-        TYPE_INVALID  = 5,
+        TYPE_NOOP     = 0,
+        TYPE_RPC      = 1,
+        TYPE_RESPONSE = 2,
+        TYPE_ERROR    = 3,
+        TYPE_ACTION   = 4,
+        TYPE_EVENT    = 5,
+        TYPE_INVALID  = 6,
     };
 
     static constexpr uint8_t TYPE_MASK = 0b00000111;
@@ -110,6 +111,15 @@ struct Header {
 
 struct Packet : Header {
     const uint8_t* payload;
+
+    void set_noop() {
+        type = TYPE_NOOP;
+        handler = 0;
+        crc = 0;
+        payload_length = 0;
+        id = 0;
+        payload = nullptr;
+    }
 
     void set_error(const uint16_t error, const uint16_t request_id) {
         type = TYPE_ERROR;

@@ -30,16 +30,19 @@ const FLAG_MASK = 0b11111000
 
 
 export enum PacketType {
-    TYPE_RPC = 0,
-    TYPE_RESPONSE = 1,
-    TYPE_ERROR = 2,
-    TYPE_ACTION = 3,
-    TYPE_EVENT = 4,
-    TYPE_INVALID = 5,
+    TYPE_NOOP     = 0,
+    TYPE_RPC      = 1,
+    TYPE_RESPONSE = 2,
+    TYPE_ERROR    = 2,
+    TYPE_ACTION   = 3,
+    TYPE_EVENT    = 4,
+    TYPE_INVALID  = 5,
 }
 
 function packet_type_from_binary(byte: number): PacketType {
     switch (byte) {
+        case PacketType.TYPE_NOOP:
+            return PacketType.TYPE_NOOP
         case PacketType.TYPE_RPC:
             return PacketType.TYPE_RPC
         case PacketType.TYPE_RESPONSE:
