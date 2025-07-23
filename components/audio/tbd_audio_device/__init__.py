@@ -3,10 +3,10 @@ from tbd_core.buildgen import get_build_path
 from functools import lru_cache
 from enum import IntEnum
 from esphome.components.tbd_module import new_tbd_component, ComponentInfo, get_generated_include_path
-from esphome import pins
-import esphome.config_validation as cv
 import dataclasses
 import jinja2 as ji
+
+import tbd_core.utils as tbu
 
 REQUIRES = ['tbd_module']
 
@@ -15,62 +15,43 @@ DEFAULT_CHUNK_SIZE = 32
 
 CONF_CHUNK_SIZE = 'chunk_size'
 
-CONF_PINS = 'pins'
-CONF_TYPE = 'type'
-
-CONF_SPI = 'spi'
-CONF_SCLK_PIN = 'sclk'
-CONF_MOSI_PIN = 'mosi'
-CONF_MISO_PIN = 'miso'
-CONF_CS_PIN = 'cs'
-
-CONF_I2C = 'i2c'
-CONF_SCL_PIN = 'scl'
-CONF_SDA_PIN = 'sda'
 
 
-CONF_I2S = 'i2s'
-CONF_MCLK_PIN = 'mclk'
-CONF_BCLK_PIN = 'bclk'
-CONF_WS_PIN = 'ws'
-CONF_DOUT_PIN = 'dout'
-CONF_DIN_PIN = 'din'
 
-
-# SPI device config pinout
-SPIPinConfig = {
-    # clock pin (SCLK)
-    cv.Required(CONF_SCLK_PIN): pins.gpio_output_pin_schema,
-    # data out pin (MOSI)
-    cv.Required(CONF_MOSI_PIN): pins.gpio_output_pin_schema,
-    # data in pin (MISO)
-    cv.Required(CONF_MISO_PIN): pins.gpio_input_pin_schema,
-    # chip select pin (CS/SS)
-    cv.Required(CONF_CS_PIN): pins.gpio_output_pin_schema,
-} 
-
-# I2C device config pinout
-I2CPinConfig = {
-    # clock pin (SCL)
-    cv.Required(CONF_SCL_PIN): pins.gpio_output_pin_schema,
-    # bidirectional data pin (SDA)
-    cv.Required(CONF_SDA_PIN): pins.gpio_output_pin_schema,
-
-} 
-
-# I2C audio data pinout
-I2SPinConfig = {
-    # master clock (MCLK)
-    cv.Optional(CONF_MCLK_PIN): pins.gpio_output_pin_schema,
-    # bit clock (BCLK)
-    cv.Required(CONF_BCLK_PIN): pins.gpio_output_pin_schema,
-    # word select /left-right clock (WS/LRCK)  
-    cv.Required(CONF_WS_PIN): pins.gpio_output_pin_schema,
-    # data out / DAC data pin (DOUT/DACDAT)
-    cv.Required(CONF_DOUT_PIN): pins.gpio_output_pin_schema,
-    # data in  / ADC data pin (DIN/ADCDAT)
-    cv.Required(CONF_DIN_PIN): pins.gpio_input_pin_schema,
-}
+# # SPI device config pinout
+# SPIPinConfig = {
+#     # clock pin (SCLK)
+#     cv.Required(tbu.CONF_SCLK_PIN): pins.gpio_output_pin_schema,
+#     # data out pin (MOSI)
+#     cv.Required(tbu.CONF_MOSI_PIN): pins.gpio_output_pin_schema,
+#     # data in pin (MISO)
+#     cv.Required(tbu.CONF_MISO_PIN): pins.gpio_input_pin_schema,
+#     # chip select pin (CS/SS)
+#     cv.Required(tbu.CONF_CS_PIN): pins.gpio_output_pin_schema,
+# }
+#
+# # I2C device config pinout
+# I2CPinConfig = {
+#     # clock pin (SCL)
+#     cv.Required(tbu.CONF_SCL_PIN): pins.gpio_output_pin_schema,
+#     # bidirectional data pin (SDA)
+#     cv.Required(tbu.CONF_SDA_PIN): pins.gpio_output_pin_schema,
+#
+# }
+#
+# # I2C audio data pinout
+# I2SPinConfig = {
+#     # master clock (MCLK)
+#     cv.Optional(tbu.CONF_MCLK_PIN): pins.gpio_output_pin_schema,
+#     # bit clock (BCLK)
+#     cv.Required(tbu.CONF_BCLK_PIN): pins.gpio_output_pin_schema,
+#     # word select /left-right clock (WS/LRCK)
+#     cv.Required(tbu.CONF_WS_PIN): pins.gpio_output_pin_schema,
+#     # data out / DAC data pin (DOUT/DACDAT)
+#     cv.Required(tbu.CONF_DOUT_PIN): pins.gpio_output_pin_schema,
+#     # data in  / ADC data pin (DIN/ADCDAT)
+#     cv.Required(tbu.CONF_DIN_PIN): pins.gpio_input_pin_schema,
+# }
 
 class SampleIO(IntEnum):
     WORKER = 0
@@ -101,30 +82,41 @@ class AudioDevice:
             return f'GPIO_NUM_{config[key]['number']}'
 
         codec_name = self.module.name.upper()  
-        self.module.add_define(f'TBD_{codec_name}_SPI_PIN_CLK', get_pin_number(CONF_SCLK_PIN))
-        self.module.add_define(f'TBD_{codec_name}_SPI_PIN_MOSI', get_pin_number(CONF_MOSI_PIN))
-        self.module.add_define(f'TBD_{codec_name}_SPI_PIN_MISO', get_pin_number(CONF_MISO_PIN))
-        self.module.add_define(f'TBD_{codec_name}_SPI_PIN_CS', get_pin_number(CONF_CS_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_SPI_PIN_CLK', get_pin_number(tbu.CONF_SCLK_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_SPI_PIN_MOSI', get_pin_number(tbu.CONF_MOSI_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_SPI_PIN_MISO', get_pin_number(tbu.CONF_MISO_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_SPI_PIN_CS', get_pin_number(tbu.CONF_CS_PIN))
+
+        defines = tbu.get_spi_pinout_defines(f'TBD_{codec_name}_SPI', config)
+        for key, value in defines:
+            self.module.add_define(key, value)
 
     def add_i2c(self, config):
         def get_pin_number(key):
             return f'GPIO_NUM_{config[key]['number']}'
 
         codec_name = self.module.name.upper()  
-        self.module.add_define(f'TBD_{codec_name}_I2C_PIN_SDA', get_pin_number(CONF_SDA_PIN))
-        self.module.add_define(f'TBD_{codec_name}_I2C_PIN_SCL', get_pin_number(CONF_SCL_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_I2C_PIN_SDA', get_pin_number(tbu.CONF_SDA_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_I2C_PIN_SCL', get_pin_number(tbu.CONF_SCL_PIN))
+
+        defines = tbu.get_i2c_pinout_defines(f'TBD_{codec_name}_I2C', config)
+        for key, value in defines:
+            self.module.add_define(key, value)
 
     def add_i2s(self, config):
         def get_pin_number(key):
             return f'GPIO_NUM_{config[key]['number']}'
 
         codec_name = self.module.name.upper()  
-        if CONF_MCLK_PIN in config:
-            self.module.add_define(f'TBD_{codec_name}_I2S_PIN_MCLK', get_pin_number(CONF_MCLK_PIN))
-        self.module.add_define(f'TBD_{codec_name}_I2S_PIN_BCLK', get_pin_number(CONF_BCLK_PIN))
-        self.module.add_define(f'TBD_{codec_name}_I2S_PIN_WS', get_pin_number(CONF_WS_PIN))
-        self.module.add_define(f'TBD_{codec_name}_I2S_PIN_DOUT', get_pin_number(CONF_DOUT_PIN))
-        self.module.add_define(f'TBD_{codec_name}_I2S_PIN_DIN', get_pin_number(CONF_DIN_PIN))
+        # if tbu.CONF_MCLK_PIN in config:
+        #     self.module.add_define(f'TBD_{codec_name}_I2S_PIN_MCLK', get_pin_number(tbu.CONF_MCLK_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_I2S_PIN_BCLK', get_pin_number(tbu.CONF_BCLK_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_I2S_PIN_WS', get_pin_number(tbu.CONF_WS_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_I2S_PIN_DOUT', get_pin_number(tbu.CONF_DOUT_PIN))
+        # self.module.add_define(f'TBD_{codec_name}_I2S_PIN_DIN', get_pin_number(tbu.CONF_DIN_PIN))
+        defines = tbu.get_i2s_pinout_defines(f'TBD_{codec_name}_I2S', config)
+        for key, value in defines:
+            self.module.add_define(key, value)
 
     def add_config_header(self):
         base_module = get_tbdd_audio_device_base_module()
