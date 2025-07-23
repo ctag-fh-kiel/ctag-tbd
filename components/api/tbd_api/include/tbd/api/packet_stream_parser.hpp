@@ -29,6 +29,10 @@
 namespace tbd::api {
 
 #ifdef __cpp_concepts
+
+/**
+ *
+ */
 template<class ImplT>
 concept PacketInputStream = requires(
     ImplT impl,
@@ -46,8 +50,8 @@ concept PacketInputStream = requires(
 #endif
 
 template<PacketInputStream StreamT>
-struct PacketStreamParser : PacketParser {
-    explicit PacketStreamParser(StreamT& stream) : stream_(stream) {
+struct PacketStreamParser : PacketBufferParser {
+    explicit PacketStreamParser(StreamT& stream) : PacketBufferParser(buffer_, Packet::BUFFER_SIZE), stream_(stream) {
         reset_state();
     }
 
@@ -103,13 +107,12 @@ private:
             return WAIT;
         }
 
-        uint8_t* buffer = buffer_;
-        if (!stream_.take(buffer, Packet::HEADER_SIZE)) {
+        if (uint8_t* buffer = buffer_; !stream_.take(buffer, Packet::HEADER_SIZE)) {
             TBD_LOGE(tag, "failed to read header data from stream");
             return FAILED;
         }
 
-        if (!parse_header(buffer)) {
+        if (!parse_header()) {
             TBD_LOGE(tag, "parse error in header");
             return FAILED;
         }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <tbd/api/packet.hpp>
 #include <tbd/errors.hpp>
 
 namespace tbd::api {

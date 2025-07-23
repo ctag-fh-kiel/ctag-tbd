@@ -2,13 +2,14 @@
 
 #include <tbd/api/packet.hpp>
 
+#include "../../../../../../../../components/core/tbd_system/esp32/include/tbd/system/port/ram.hpp"
+
 #ifdef __cpp_concepts
 #include <concepts>
 #endif
 
 
 namespace tbd::api {
-
 namespace impl {
 
 inline void write_packet_header_to_buffer(const Header& packet, uint8_t* buffer) {
@@ -24,38 +25,42 @@ inline void write_packet_header_to_buffer(const Header& packet, uint8_t* buffer)
     buffer[Packet::OFFSET_HEADER_END] = Packet::HEADER_END_BYTE;
 }
 
-}
+};
 
-/** Packet writer for packet based communication.
+/** Convenience class to serialize packages to output buffer for sending.
  *
- *  PacketBufferWriter writes packages to a single buffer, for later transfer via a communication channel that has its
- *  own package semantics. This allows the transfer of TBD packages as a single integral communication packet.
+ *  Class wraps an output buffer, that
  *
- *
+ *  - can be accessed for sending
+ *  - payload section can be accessed for external payload serialization
  *
  */
 struct PacketBufferWriter {
+    explicit PacketBufferWriter(uint8_t* buffer, const size_t buffer_size)
+        : serialized_length_(0), buffer_size_(buffer_size), buffer_(buffer) {}
+
     size_t write(const Packet& packet) {
         return _write(packet);
     }
 
     const uint8_t* buffer() const { return buffer_; }
+    size_t buffer_size() const { return buffer_size_; }
 
-    #ifdef __cpp_lib_string_view
+    size_t serialized_length() const { return serialized_length_; }
+
+#ifdef __cpp_lib_string_view
     const std::string_view buffer_view() const {
         return std::string_view(reinterpret_cast<const char*>(buffer_), serialized_length_);
     }
-    #endif
-
-    size_t serialized_length() const { return serialized_length_; }
+#endif
 
     /**
      *  allow access to payload buffer for direct writing
      */
-    uint8_t* payload_buffer() { return buffer_ + Packet::HEADER_SIZE; }
-    size_t payload_buffer_size() const { return Packet::MAX_PAYLOAD_SIZE; }
+    uint8_t* payload_buffer() const { return buffer_ + Packet::HEADER_SIZE; }
+    size_t payload_buffer_size() const { return buffer_size_ - (Packet::HEADER_SIZE + Packet::END_SIZE); }
 
-private:
+protected:
 
     size_t _write(const Header& packet) {
         impl::write_packet_header_to_buffer(packet, buffer_);
@@ -65,7 +70,24 @@ private:
     }
 
     size_t serialized_length_;
-    Packet::PacketBuffer buffer_;
+    const size_t buffer_size_;
+    uint8_t* buffer_;
+};
+
+template<class tag>
+struct StaticBufferWriter: PacketBufferWriter {
+    StaticBufferWriter(): PacketBufferWriter(owned_buffer_, Packet::BUFFER_SIZE) {}
+    static TBD_DMA Packet::PacketBuffer owned_buffer_;
+};
+
+template<class tag>
+Packet::PacketBuffer StaticBufferWriter<tag>::owned_buffer_;
+
+template<class tag>
+struct StackBufferWriter: PacketBufferWriter {
+    StackBufferWriter(): PacketBufferWriter(owned_buffer_, Packet::BUFFER_SIZE) {}
+
+    Packet::PacketBuffer owned_buffer_;
 };
 
 #ifdef __cpp_concepts
@@ -82,13 +104,7 @@ concept PacketOutputStream = requires(ImplT& impl, size_t _size_t, const uint8_t
 #endif
 
 
-/** Packet writer for output streams.
- *
- *  Using PacketStreamWriter avoids unnecessary payload copying and writes packages to stream in three chunks:
- *
- *  - header block
- *  - payload
- *  - end block
+/** Convenience class to serialize packages to stream for sending.
  *
  */
 template<PacketOutputStream StreamT>

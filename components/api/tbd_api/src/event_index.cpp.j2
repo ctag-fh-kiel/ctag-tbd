@@ -2,8 +2,13 @@
 
 #include <tbd/api.hpp>
 
+namespace {
 
-namespace { tbd::api::PacketBufferWriter event_writer; }
+struct ALL_CHANNELS {};
+
+tbd::api::EventWriter<ALL_CHANNELS, false> event_writer;
+
+}
 
 using tbd::api::Packet;
 {% for sink in api.event_sinks %}
