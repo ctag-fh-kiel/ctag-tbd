@@ -44,6 +44,16 @@ DMA_ATTR static uint8_t *sendBuf0;
 DMA_ATTR static uint8_t *sendBuf1;
 DMA_ATTR static uint8_t *sendBuf2;
 
+/*
+QueueHandle_t debug_queue = nullptr;
+static void debug_thread(void* arg) {
+    int val = 0;
+    while (true){
+        xQueueReceive(debug_queue, &val, portMAX_DELAY);
+        ESP_LOGI("rp2350_spi_stream", "debug_thread: %d", val);
+    }
+}
+*/
 
 uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
 
@@ -111,6 +121,11 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
 
     currentTransaction = 0;
 
+    /*
+    debug_queue = xQueueCreate(20, sizeof(int));
+    xTaskCreatePinnedToCore(debug_thread, "debug_thread", 2048, NULL, 5, NULL, 0);
+    */
+
     return &rcvBuf0[2]; // skip watermark bytes
 }
 
@@ -159,6 +174,14 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **
 
     // data was valid, return new buffer pointer
     *dst = &ret_buf[2];
+
+    /*
+    static int val = 0;
+    if (ret_buf[2+N_CVS*4] != val) {
+        val = ret_buf[2+N_CVS*4];
+        xQueueSend(debug_queue, &val, 0);
+    }
+    */
 
     return max_len;
 }
