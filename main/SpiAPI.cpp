@@ -133,7 +133,7 @@ namespace CTAG::SPIAPI{
 
             // append the received data to the json string
             bytes_received = *resLength > 2048 - 7 ? 2048 - 7 : *resLength; // 7 bytes for fingerprint and length
-            str.append((char*)&receive_buffer[3], bytes_received);
+            str.append((char*)&receive_buffer[7], bytes_received);
             bytes_to_be_received -= bytes_received;
             ESP_LOGW("spiapi", "resLength %li, totalResponseLength %li, bytes_received %li, bytes_to_be_received %li",
                  *resLength, totalResponseLength, bytes_received, bytes_to_be_received);
