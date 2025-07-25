@@ -135,8 +135,10 @@ namespace CTAG::SPIAPI{
             bytes_received = *resLength > 2048 - 7 ? 2048 - 7 : *resLength; // 7 bytes for fingerprint and length
             str.append((char*)&receive_buffer[7], bytes_received);
             bytes_to_be_received -= bytes_received;
-            ESP_LOGW("spiapi", "resLength %li, totalResponseLength %li, bytes_received %li, bytes_to_be_received %li",
+            /*
+            ESP_LOGI("spiapi", "resLength %li, totalResponseLength %li, bytes_received %li, bytes_to_be_received %li",
                  *resLength, totalResponseLength, bytes_received, bytes_to_be_received);
+            */
         }
         if (str.size() != totalResponseLength){
             str = "LEN error: " + std::to_string(totalResponseLength) + ", got " + std::to_string(str.size());
