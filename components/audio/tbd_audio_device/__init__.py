@@ -1,8 +1,8 @@
+from tbd_module import new_tbd_component, ComponentInfo, get_generated_include_path
 from tbd_core.buildgen import get_build_path
 
 from functools import lru_cache
 from enum import IntEnum
-from esphome.components.tbd_module import new_tbd_component, ComponentInfo, get_generated_include_path
 import dataclasses
 import jinja2 as ji
 

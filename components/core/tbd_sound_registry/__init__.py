@@ -1,7 +1,5 @@
 import logging
 
-from esphome.components.tbd_api import get_api_registry
-
 from esphome.const import CONF_ID
 import esphome.config_validation as cv
 import esphome.codegen as cg
@@ -16,7 +14,7 @@ from tbd_core.plugins import (
 
 _LOGGER = logging.getLogger(__name__)
 
-AUTO_LOAD = ['tbd_serialization']
+AUTO_LOAD = ['tbd_serialization', 'tbd_audio']
 REQUIRES = ['tbd_module']
 
 tbd_sound_registry_ns = cg.esphome_ns.namespace("sound_registry")

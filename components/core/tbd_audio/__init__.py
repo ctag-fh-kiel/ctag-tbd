@@ -4,7 +4,13 @@ import esphome.codegen as cg
 import esphome.config_validation as cv
 
 
-AUTO_LOAD = ['tbd_system', 'tbd_sound_utils']
+AUTO_LOAD = [
+    'tbd_module',
+    'tbd_sound_processor',
+    'tbd_control_inputs',
+    'tbd_audio_device',
+    'tbd_sound_utils',
+]
 
 CONF_AUTOSTART = 'autostart'
 
