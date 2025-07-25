@@ -1,8 +1,7 @@
 #pragma once
 
 #include <tbd/api/packet.hpp>
-
-#include "../../../../../../../../components/core/tbd_system/esp32/include/tbd/system/port/ram.hpp"
+#include <tbd/ram.hpp>
 
 #ifdef __cpp_concepts
 #include <concepts>
