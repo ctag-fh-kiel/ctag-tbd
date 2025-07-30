@@ -262,8 +262,13 @@ namespace CTAG::SPIAPI{
                 std::string pluginID = string_parameter;
                 string_parameter.clear();
                 result = receiveString(RequestType::SetPresetData, string_parameter);
-                //ESP_LOGI("SpiAPI", "Result %d, Saving preset %s %s", result, pluginID.c_str(), string_parameter.c_str());
+                // ESP_LOGI("SpiAPI", "Result %d, Saving preset %s %s", result, pluginID.c_str(), string_parameter.c_str());
                 if (true == result) AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID.c_str(), string_parameter.c_str());
+            }
+                break;
+            case RequestType::SetPluginParamsJSON:{
+                // ESP_LOGI("SpiAPI", "Result %d, Updating channel %d with \"%s\"", result, channel, string_parameter.c_str());
+                AUDIO::SoundProcessorManager::SetChannelParamsCstrJSON(channel, string_parameter.c_str());
             }
                 break;
             case RequestType::LoadPreset:

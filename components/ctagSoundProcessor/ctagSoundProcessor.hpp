@@ -113,6 +113,47 @@ namespace CTAG {
                 model->SetParamValue(id, key, val);
             }
 
+            void SetChannelParamsFromCStrJSON(const string &json) {
+                rapidjson::Document d;
+                d.Parse(json.c_str());
+                if (!d.IsObject()) {
+                    ESP_LOGE("SP", "Invalid JSON for SetChannelParamsFromCStrJSON");
+                    return;
+                }
+
+                ESP_LOGI("SP", "SetChannelParamsFromCStrJSON %s", json.c_str());
+
+                if (!d.HasMember("params")) {
+                    ESP_LOGE("SP", "Invalid JSON for SetChannelParamsFromCStrJSON");
+                    return;
+                }
+
+                Value &params = d["params"];
+                for (auto &v : params.GetArray()) {
+                    if (!v.HasMember("id")) continue;
+                    if (!v["id"].IsString()) continue;
+                    string id = v["id"].GetString();
+
+                    if (v.HasMember("current")) {
+                        int current = v["current"].GetInt();
+                        setParamValueInternal(id, "current", current);
+                        model->SetParamValue(id, "current", current);
+                    }
+
+                    if (v.HasMember("cv")) {
+                        int cv = v["cv"].GetInt();
+                        setParamValueInternal(id, "cv", cv);
+                        model->SetParamValue(id, "cv", cv);
+                    }
+
+                    if (v.HasMember("trig")) {
+                        int trig = v["trig"].GetInt();
+                        setParamValueInternal(id, "trig", trig);
+                        model->SetParamValue(id, "trig", trig);
+                    }
+                }
+            }
+
             const char *GetCStrJSONPresets() { return model->GetCStrJSONPresets(); }
 
             const char *GetCStrJSONAllPresetData() { return model->GetCStrJSONAllPresetData(); }
