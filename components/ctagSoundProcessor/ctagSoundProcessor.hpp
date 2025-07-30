@@ -120,13 +120,12 @@ namespace CTAG {
                     ESP_LOGE("SP", "Invalid JSON for SetChannelParamsFromCStrJSON");
                     return;
                 }
-
-                ESP_LOGI("SP", "SetChannelParamsFromCStrJSON %s", json.c_str());
-
                 if (!d.HasMember("params")) {
                     ESP_LOGE("SP", "Invalid JSON for SetChannelParamsFromCStrJSON");
                     return;
                 }
+
+                ESP_LOGD("SP", "SetChannelParamsFromCStrJSON %s", json.c_str());
 
                 Value &params = d["params"];
                 for (auto &v : params.GetArray()) {
