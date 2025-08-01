@@ -77,6 +77,11 @@ namespace CTAG {
                 model->SetCStrJSONSoundProcessorPreset(id, data);
             }
 
+            static void SetChannelParamsCstrJSON(const int chan, const char *data) {
+                ledBlink = 1;
+                return sp[chan]->SetChannelParamsFromCStrJSON(data);
+            }
+
             static void SetConfigurationFromJSON(const string &data);
 
             static string GetStringID(const int chan);

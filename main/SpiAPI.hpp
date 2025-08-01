@@ -49,6 +49,7 @@ namespace CTAG::SPIAPI{
             SetConfiguration = 0x11, // sets the configuration, args [json cstring with configuration data]
             GetIOCapabilities = 0x12, // returns json cstring with IO capabilities
             Reboot = 0x13, // reboots the device
+            SetPluginParamsJSON = 0x14, // updates running plugin data, args [channel (uint8_t), presetData (json cstring)]
         };
 
         static TaskHandle_t hTask;

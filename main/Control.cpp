@@ -45,6 +45,6 @@ void CTAG::CTRL::Control::SetCVChannelBiPolar(const bool &v0, const bool &v1, co
 }
 
 void CTAG::CTRL::Control::Init() {
-    ESP_LOGI("Control", "Initializing control!");
+    ESP_LOGI("Control", "Initializing control! %d CVs, %d Trigs", N_CVS, N_TRIGS);
     buf_ptr = DRIVERS::rp2350_spi_stream::Init();
 }
