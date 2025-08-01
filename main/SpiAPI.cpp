@@ -266,6 +266,10 @@ namespace CTAG::SPIAPI{
                 if (true == result) AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID.c_str(), string_parameter.c_str());
             }
                 break;
+            case RequestType::SetPluginParamsJSON:{
+                AUDIO::SoundProcessorManager::SetChannelParamsCstrJSON(channel, string_parameter.c_str());
+            }
+                break;
             case RequestType::LoadPreset:
                 AUDIO::SoundProcessorManager::ChannelLoadPreset(channel, preset_number);
                 FAV::Favorites::DeactivateFavorite();
