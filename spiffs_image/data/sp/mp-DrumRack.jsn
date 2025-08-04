@@ -980,6 +980,31 @@
           "cv": -1
         },
         {
+          "id": "in_mute",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "in_lev",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "in_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "in_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "in_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
           "id": "fx1_time_ms",
           "current": 464,
           "cv": -1

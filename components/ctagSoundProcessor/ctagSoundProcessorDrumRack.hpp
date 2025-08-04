@@ -78,8 +78,9 @@ namespace CTAG {
             float s2_out[32];
         	float s3_out[32];
         	float s4_out[32];
+        	float in_out[32];
         	float silence[32];
-        	float *data_ptrs[13] = {silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence};
+        	float *data_ptrs[14] = {silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence, silence};
 
             bool abd_trig_prev {false};
             bool asd_trig_prev {false};
@@ -294,6 +295,11 @@ namespace CTAG {
 	atomic<int32_t> s4_ft, cv_s4_ft;
 	atomic<int32_t> s4_fc, cv_s4_fc;
 	atomic<int32_t> s4_fq, cv_s4_fq;
+	atomic<int32_t> in_mute, trig_in_mute;
+	atomic<int32_t> in_lev, cv_in_lev;
+	atomic<int32_t> in_pan, cv_in_pan;
+	atomic<int32_t> in_fx1, cv_in_fx1;
+	atomic<int32_t> in_fx2, cv_in_fx2;
 	atomic<int32_t> fx1_time_ms, cv_fx1_time_ms;
 	atomic<int32_t> fx1_sync, trig_fx1_sync;
 	atomic<int32_t> fx1_freeze, trig_fx1_freeze;
