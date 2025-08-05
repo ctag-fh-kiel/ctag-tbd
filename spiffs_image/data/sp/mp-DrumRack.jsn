@@ -1231,6 +1231,92 @@
             "current": 2047,
             "cv": -1
         },
+
+        {
+          "id": "mo_shape",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_gain",
+          "current": 3500
+        },
+        {
+          "id": "mo_pitch",
+          "current": 6130,
+          "cv": -1
+        },
+        {
+          "id": "mo_decimation",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "mo_bit_reduction",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_q_scale",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_param_0",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_param_1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_waveshaping",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_fm_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_am_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_p0_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_p1_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "mo_enableEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "mo_loopEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "mo_attack",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "mo_decay",
+          "current": 2047,
+          "cv": -1
+        },
+
         {
           "id": "fx1_time_ms",
           "current": 464,
