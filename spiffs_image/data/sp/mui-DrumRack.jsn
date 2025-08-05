@@ -1582,6 +1582,201 @@
       ]
     },
     {
+      "id": "pp_group",
+      "name": "Polypad",
+      "type": "group",
+      "params": [
+        {
+        "id": "pp_gain",
+        "name": "Gain",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_pitch",
+        "name": "Pitch",
+        "type": "int",
+        "min": 0,
+        "max": 16383,
+        "step": 1
+        },
+        {
+        "id": "pp_q_scale",
+        "name": "Quantization Scale",
+        "type": "int",
+        "min": 0,
+        "max": 47,
+        "step": 1
+        },
+        {
+        "id": "pp_chord",
+        "name": "Chord",
+        "type": "int",
+        "min": 0,
+        "max": 17,
+        "step": 1
+        },
+        {
+        "id": "pp_inversion",
+        "name": "Inversion",
+        "type": "int",
+        "min": -2,
+        "max": 2,
+        "step": 1
+        },
+        {
+        "id": "pp_detune",
+        "name": "Detune",
+        "type": "int",
+        "min": 0,
+        "max": 32767,
+        "step": 1
+        },
+        {
+        "id": "pp_nnotes",
+        "name": "Number Notes",
+        "type": "int",
+        "min": 1,
+        "max": 4,
+        "step": 1
+        },
+        {
+        "id": "pp_ncvoices",
+        "name": "Number Chord Voices",
+        "type": "int",
+        "min": 1,
+        "max": 8,
+        "step": 1
+        },
+        {
+        "id": "pp_voicehold",
+        "name": "Hold Pre Voice",
+        "type": "bool",
+        "hint": "hold previous voice"
+        },
+        {
+        "id": "pp_lfo1_freq",
+        "name": "Vibrato Frequency",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_lfo1_amt",
+        "name": "Vibrato Amount",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_filter_type",
+        "name": "Filter Type",
+        "type": "int",
+        "min": 0,
+        "max": 2,
+        "step": 1
+        },
+        {
+        "id": "pp_cutoff",
+        "name": "Cutoff",
+        "type": "int",
+        "min": 1750,
+        "max": 16383,
+        "step": 1
+        },
+        {
+        "id": "pp_resonance",
+        "name": "Resonance",
+        "type": "int",
+        "min": 0,
+        "max": 32767,
+        "step": 1
+        },
+        {
+        "id": "pp_lfo2_freq",
+        "name": "Filter FM Frequency",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_lfo2_amt",
+        "name": "Filter FM Amount",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_lfo2_rphase",
+        "name": "Filter FM Random Phase",
+        "type": "bool"
+        },
+        {
+        "id": "pp_eg_filt_amt",
+        "name": "Filter EG Amount",
+        "type": "int",
+        "min": -4095,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_enableEG",
+        "name": "Trigger EG",
+        "type": "bool"
+        },
+        {
+        "id": "pp_latchEG",
+        "name": "EG Latch Mode",
+        "type": "bool",
+        "hint": "latches trigger"
+        },
+        {
+        "id": "pp_eg_slow_fast",
+        "name": "EG Fast / Slow",
+        "type": "bool",
+        "hint": "slow or fast"
+        },
+        {
+        "id": "pp_attack",
+        "name": "Attack",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_decay",
+        "name": "Decay",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_sustain",
+        "name": "Sustain",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        },
+        {
+        "id": "pp_release",
+        "name": "Release",
+        "type": "int",
+        "min": 0,
+        "max": 4095,
+        "step": 1
+        }
+      ]
+    },
+    {
       "id": "fx1_group",
       "name": "Delay",
       "type": "group",
