@@ -12,7 +12,7 @@ const float minVolume {0.000001f};
 #define td3_kAccentVCAFactor 1.5f
 
 void ctagSoundProcessorDrumRack::mixRenderOutputMono(float *source, float level, float pan, float fx1, float fx2) {
-    float mL = (1.0 - pan) * level;
+    float mL = (1.0f - pan) * level;
     float mR = pan * level;
     float sL1 = mL * fx1;
     float sR1 = mR * fx1;
@@ -30,7 +30,7 @@ void ctagSoundProcessorDrumRack::mixRenderOutputMono(float *source, float level,
 }
 
 void ctagSoundProcessorDrumRack::mixRenderOutputStereo(float *source, float level, float pan, float fx1, float fx2) {
-    float mL = (1.0 - pan) * level;
+    float mL = (1.0f - pan) * level;
     float mR = pan * level;
     float sL1 = mL * fx1;
     float sR1 = mR * fx1;
@@ -1454,6 +1454,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     memset(send2_out, 0, 32 * 2 * sizeof(float));
 
     // Render sound generators
+    renderIN(data); // audio input
     renderABD(data);
     renderASD(data); // analog snare drum
     renderDBD(data); // digital bass drum
@@ -1467,7 +1468,6 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     renderS2(data);
     renderS3(data);
     renderS4(data);
-    renderIN(data); // audio input
     renderTD3(data);
     renderPP(data);
     renderMO(data);
