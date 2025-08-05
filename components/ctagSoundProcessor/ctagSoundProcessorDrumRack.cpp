@@ -89,7 +89,6 @@ void ctagSoundProcessorDrumRack::renderABD(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderASD(const ProcessData& data) {
-   
     MK_BOOL_PAR(bASMute, as_mute)
     MK_BOOL_PAR(bASTrig, as_trigger)
     if (bASTrig != asd_trig_prev){
@@ -128,7 +127,6 @@ void ctagSoundProcessorDrumRack::renderASD(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderDBD(const ProcessData& data) {
-   
     MK_BOOL_PAR(bDBMute, db_mute)
     MK_BOOL_PAR(bDBTrig, db_trigger)
     if (bDBTrig != dbd_trig_prev){
@@ -171,7 +169,6 @@ void ctagSoundProcessorDrumRack::renderDBD(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderDSD(const ProcessData& data) {
-   
     MK_BOOL_PAR(bDSMute, ds_mute)
     MK_BOOL_PAR(bDSTrig, ds_trigger)
     if (bDSTrig != dsd_trig_prev){
@@ -210,7 +207,6 @@ void ctagSoundProcessorDrumRack::renderDSD(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderFMB(const ProcessData& data) {
-   
     MK_BOOL_PAR(bFMBMute, fmb_mute)
     MK_BOOL_PAR(bFMBTrig, fmb_trigger)
     if (bFMBTrig != fmb_trig_prev && bFMBTrig){
@@ -266,7 +262,6 @@ void ctagSoundProcessorDrumRack::renderFMB(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderHH1(const ProcessData& data) {
-   
     MK_BOOL_PAR(bHH1Mute, hh1_mute)
     MK_BOOL_PAR(bHH1Trig, hh1_trigger)
     if (bHH1Trig != hh1_trig_prev){
@@ -307,7 +302,7 @@ void ctagSoundProcessorDrumRack::renderHH1(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderHH2(const ProcessData& data) {
-     MK_BOOL_PAR(bHH2Mute, hh2_mute)
+    MK_BOOL_PAR(bHH2Mute, hh2_mute)
     MK_BOOL_PAR(bHH2Trig, hh2_trigger)
     if (bHH2Trig != hh2_trig_prev){
         hh2_trig_prev = bHH2Trig;
@@ -428,7 +423,7 @@ void ctagSoundProcessorDrumRack::renderRS(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderS1(const ProcessData& data) {
-     uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
+    uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
     float fS1Lev = 0.f, fS1Pan = 0.f;
     MK_BOOL_PAR(bMuteS1, s1_mute)
     fS1Lev = s1_lev / 4095.f * 1.5f;
@@ -495,7 +490,7 @@ void ctagSoundProcessorDrumRack::renderS1(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderS2(const ProcessData& data) {
-   uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
+    uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
     float fS2Lev = 0.f, fS2Pan = 0.f;
     MK_BOOL_PAR(bMuteS2, s2_mute)
     fS2Lev = s2_lev / 4095.f * 1.5f;
@@ -562,8 +557,7 @@ void ctagSoundProcessorDrumRack::renderS2(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderS3(const ProcessData& data) {
-   uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
-
+    uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
     MK_BOOL_PAR(bMuteS3, s3_mute)
     float fS3Lev = 0.f, fS3Pan = 0.f;
     fS3Lev = s3_lev / 4095.f * 1.5f;
@@ -631,7 +625,6 @@ void ctagSoundProcessorDrumRack::renderS3(const ProcessData& data) {
 
 void ctagSoundProcessorDrumRack::renderS4(const ProcessData& data) {
     uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
-
     MK_BOOL_PAR(bMuteS4, s4_mute)
     float fS4Lev = 0.f, fS4Pan = 0.f;
     fS4Lev = s4_lev / 4095.f * 1.5f;
@@ -698,7 +691,6 @@ void ctagSoundProcessorDrumRack::renderS4(const ProcessData& data) {
 }
 
 void ctagSoundProcessorDrumRack::renderIN(const ProcessData& data) {
-    float in_out[32];
     MK_BOOL_PAR(bMuteIN, in_mute)
 
     float fINLev = 0.f, fINPan = 0.f;
@@ -714,13 +706,10 @@ void ctagSoundProcessorDrumRack::renderIN(const ProcessData& data) {
         return;
     }
 
-    fINLev = in_lev / 4095.f * 1.5f;
-    if (cv_in_lev != -1) fINLev += fabsf(data.cv[cv_in_lev]);
-    fINLev *= fINLev;
-    fINPan = (in_pan / 4095.f + 1.f) / 2.f * 1.f;
-    if (cv_in_pan != -1) fINPan = fabsf(data.cv[cv_in_pan]) * 1.f;
+    float in_out[32 * 2];
+    memcpy(in_out, data.buf, sizeof(float) * 32 * 2);
 
-    mixRenderOutputStereo(data.buf, fINLev, fINPan, fINFX1Send, fINFX2Send);
+    mixRenderOutputStereo(in_out, fINLev, fINPan, fINFX1Send, fINFX2Send);
 }
 
 void ctagSoundProcessorDrumRack::renderTD3(const ProcessData& data) {
