@@ -1389,6 +1389,46 @@
       ]
     },
     {
+      "id": "in_group",
+      "name": "Input",
+      "type": "group",
+      "params": [
+                {
+          "id": "in_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "in_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "in_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "in_fx1",
+          "name": "Delay Send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "in_fx2",
+          "name": "Reverb Send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
       "id": "fx1_group",
       "name": "Delay",
       "type": "group",

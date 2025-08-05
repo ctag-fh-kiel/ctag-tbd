@@ -661,6 +661,32 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         data_ptrs[12] = silence;
     }
 
+    // audio input
+    float fINLev = 0.f, fINPan = 0.f;
+    MK_BOOL_PAR(bMuteIN, in_mute)
+    MK_FLT_PAR_ABS(fINFX1Send, in_fx1, 4095.f, maxFXSendLevelDly)
+    fINFX1Send *= fINFX1Send;
+    MK_FLT_PAR_ABS(fINFX2Send, in_fx2, 4095.f, maxFXSendLevelRev)
+    fINFX2Send *= fINFX2Send;
+
+    if (!bMuteIN){
+        fINLev = in_lev / 4095.f * 1.5f;
+        if (cv_in_lev != -1) fINLev += fabsf(data.cv[cv_in_lev]);
+        fINLev *= fINLev;
+        fINPan = (in_pan / 4095.f + 1.f) / 2.f * 1.f;
+        if (cv_in_pan != -1) fINPan = fabsf(data.cv[cv_in_pan]) * 1.f;
+
+        for(int k=0; k<32; k++){
+            in_out[k * 2+  0] = data.buf[k * 2 + 0] * fINLev;
+            in_out[k * 2+  1] = data.buf[k * 2 + 1] * fINLev;
+        }
+
+        data_ptrs[13] = in_out;
+    }
+    else{
+        data_ptrs[13] = silence;
+    }
+
     // delay
     MK_FLT_PAR_ABS(fFeedback, fx1_feedback, 4095.f, 1.5f)
     MK_FLT_PAR_ABS(fBase, fx1_base, 4095.f, 1.f)
@@ -748,7 +774,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 
     // render final buffer
     // calc volumes
-    float lev_l[13] = {
+    float lev_l[14] = {
 	    fABLev * (1.f - fABPan),
 	    fASLev * (1.f - fASPan),
 	    fDBLev * (1.f - fDBPan),
@@ -761,9 +787,10 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 	    fS1Lev * (1.f - fS1Pan),
 	    fS2Lev * (1.f - fS2Pan),
 	    fS3Lev * (1.f - fS3Pan),
-	    fS4Lev * (1.f - fS4Pan)
+	    fS4Lev * (1.f - fS4Pan),
+	    fINLev * (1.f - fINPan)
     };
-    float lev_r[13] = {
+    float lev_r[14] = {
 	    fABLev * fABPan,
 	    fASLev * fASPan,
 	    fDBLev * fDBPan,
@@ -776,7 +803,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fS1Lev * fS1Pan,
         fS2Lev * fS2Pan,
         fS3Lev * fS3Pan,
-        fS4Lev * fS4Pan
+        fS4Lev * fS4Pan,
+        fINLev * fINPan
     };
     float buf_fx1_l[32], buf_fx1_r[32], buf_fx2[32];
     for (int i = 0; i < 32; i++){
@@ -797,6 +825,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fVal_l += data_ptrs[10][i] * lev_l[10];
         fVal_l += data_ptrs[11][i] * lev_l[11];
         fVal_l += data_ptrs[12][i] * lev_l[12];
+		// input
+        fVal_l += data_ptrs[13][i] * lev_l[13];
 		// models
         fVal_r += data_ptrs[0][i] * lev_r[0];
         fVal_r += data_ptrs[1][i] * lev_r[1];
@@ -812,6 +842,8 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         fVal_r += data_ptrs[10][i] * lev_r[10];
         fVal_r += data_ptrs[11][i] * lev_r[11];
         fVal_r += data_ptrs[12][i] * lev_r[12];
+		// input
+        fVal_r += data_ptrs[13][i] * lev_r[13];
 
 
         // FX1 models
@@ -831,6 +863,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         buf_fx1_l[i] += data_ptrs[11][i] * fS3FX1Send * lev_l[11];
         buf_fx1_l[i] += data_ptrs[12][i] * fS4FX1Send * lev_l[12];
 
+        // input
+        buf_fx1_l[i] += data_ptrs[13][i] * fINFX1Send * lev_l[13];
+
     	// FX1 models
         buf_fx1_r[i] = data_ptrs[0][i] * fABFX1Send * lev_r[0];
         buf_fx1_r[i] += data_ptrs[1][i] * fASFX1Send * lev_r[1];
@@ -848,6 +883,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         buf_fx1_r[i] += data_ptrs[11][i] * fS3FX1Send * lev_r[11];
         buf_fx1_r[i] += data_ptrs[12][i] * fS4FX1Send * lev_r[12];
         
+        // input
+        buf_fx1_r[i] += data_ptrs[13][i] * fINFX1Send * lev_r[13];
+
         // FX2 models, reverb is mono in stereo out
         buf_fx2[i] = data_ptrs[0][i] * fABFX2Send;
         buf_fx2[i] += data_ptrs[1][i] * fASFX2Send;
@@ -864,6 +902,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         buf_fx2[i] += data_ptrs[11][i] * fS3FX2Send;
         buf_fx2[i] += data_ptrs[12][i] * fS4FX2Send;
 
+        buf_fx2[i] += data_ptrs[13][i] * fINFX2Send;
 
         float dry_l = fVal_l;
         float dry_r = fVal_r;
@@ -1420,6 +1459,16 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("s4_fc", [&](const int val){ cv_s4_fc = val;});
 	pMapPar.emplace("s4_fq", [&](const int val){ s4_fq = val;});
 	pMapCv.emplace("s4_fq", [&](const int val){ cv_s4_fq = val;});
+	pMapPar.emplace("in_mute", [&](const int val){ in_mute = val;});
+	pMapTrig.emplace("in_mute", [&](const int val){ trig_in_mute = val;});
+	pMapPar.emplace("in_lev", [&](const int val){ in_lev = val;});
+	pMapCv.emplace("in_lev", [&](const int val){ cv_in_lev = val;});
+	pMapPar.emplace("in_pan", [&](const int val){ in_pan = val;});
+	pMapCv.emplace("in_pan", [&](const int val){ cv_in_pan = val;});
+	pMapPar.emplace("in_fx1", [&](const int val){ in_fx1 = val;});
+	pMapCv.emplace("in_fx1", [&](const int val){ cv_in_fx1 = val;});
+	pMapPar.emplace("in_fx2", [&](const int val){ in_fx2 = val;});
+	pMapCv.emplace("in_fx2", [&](const int val){ cv_in_fx2 = val;});
 	pMapPar.emplace("fx1_time_ms", [&](const int val){ fx1_time_ms = val;});
 	pMapCv.emplace("fx1_time_ms", [&](const int val){ cv_fx1_time_ms = val;});
 	pMapPar.emplace("fx1_sync", [&](const int val){ fx1_sync = val;});
