@@ -1476,14 +1476,6 @@
           "step": 1
         },
         {
-          "id": "td3_gain",
-          "name": "Gain",
-          "type": "int",
-          "min": 0,
-          "max": 4095,
-          "step": 1
-        },
-        {
           "id": "td3_filter_type",
           "name": "Filter Type",
           "type": "int",
@@ -1615,12 +1607,9 @@
       "type": "group",
       "params": [
         {
-          "id": "pp_gain",
-          "name": "Gain",
-          "type": "int",
-          "min": 0,
-          "max": 4095,
-          "step": 1
+          "id": "pp_enableEG",
+          "name": "Trigger",
+          "type": "bool"
         },
         {
           "id": "pp_pitch",
@@ -1754,11 +1743,6 @@
           "step": 1
         },
         {
-          "id": "pp_enableEG",
-          "name": "Trigger EG",
-          "type": "bool"
-        },
-        {
           "id": "pp_latchEG",
           "name": "EG Latch Mode",
           "type": "bool",
@@ -1837,6 +1821,11 @@
       "name": "Macro Oscillator",
       "type": "group",
       "params": [
+        {
+          "id": "mo_enableEG",
+          "name": "Trigger",
+          "type": "bool"
+        },
         {
           "id": "mo_shape",
           "name": "Shape",
@@ -1932,11 +1921,6 @@
           "type": "int",
           "min": -64,
           "max": 64
-        },
-        {
-          "id": "mo_enableEG",
-          "name": "Enable EG",
-          "type": "bool"
         },
         {
           "id": "mo_loopEG",

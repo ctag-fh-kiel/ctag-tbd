@@ -372,7 +372,6 @@ namespace CTAG {
 	atomic<int32_t> td3_shape, cv_td3_shape;
 	atomic<int32_t> td3_param_0, cv_td3_param_0;
 	atomic<int32_t> td3_param_1, cv_td3_param_1;
-	atomic<int32_t> td3_gain, cv_td3_gain;
 	atomic<int32_t> td3_filter_type, cv_td3_filter_type;
 	atomic<int32_t> td3_cutoff, cv_td3_cutoff;
 	atomic<int32_t> td3_resonance, cv_td3_resonance;
@@ -391,7 +390,6 @@ namespace CTAG {
 	atomic<int32_t> td3_pan, cv_td3_pan;
 	atomic<int32_t> td3_fx1, cv_td3_fx1;
 	atomic<int32_t> td3_fx2, cv_td3_fx2;
-	atomic<int32_t> pp_gain, cv_pp_gain;
 	atomic<int32_t> pp_pitch, cv_pp_pitch;
 	atomic<int32_t> pp_q_scale, cv_pp_q_scale;
 	atomic<int32_t> pp_chord, cv_pp_chord;
@@ -421,7 +419,6 @@ namespace CTAG {
 	atomic<int32_t> pp_fx1, cv_pp_fx1;
 	atomic<int32_t> pp_fx2, cv_pp_fx2;
 	atomic<int32_t> mo_shape, cv_mo_shape;
-	atomic<int32_t> mo_gain, cv_mo_gain;
 	atomic<int32_t> mo_pitch, cv_mo_pitch;
 	atomic<int32_t> mo_decimation, cv_mo_decimation;
 	atomic<int32_t> mo_bit_reduction, cv_mo_bit_reduction;

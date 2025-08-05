@@ -922,11 +922,6 @@ void ctagSoundProcessorDrumRack::renderTD3(const ProcessData& data) {
     filter->SetResonance(r);
     filter->SetGain(dri);
 
-    float fgain = td3_gain / 4095.f * 2.f;
-    if (cv_td3_gain != -1) {
-        fgain = fabsf(data.cv[cv_td3_gain]) * 2.f;
-    }
-
     for (int i = 0; i < bufSz; i++) {
         float eg = td3_pre_eg_val +
                    (egvalVCA - td3_pre_eg_val) / (float) bufSz * i; // linear fade from previous eg value to avoid glitches
@@ -936,7 +931,7 @@ void ctagSoundProcessorDrumRack::renderTD3(const ProcessData& data) {
         // filter, EG and clip
         const float div = 3.0518509476E-5f;
 
-        float f = fgain * stmlib::SoftClip(eg * filter->Process(buffer[i] * div));
+        float f = stmlib::SoftClip(eg * filter->Process(buffer[i] * div));
         td3_out[i] = f;
     }
     td3_pre_eg_val = egvalVCA;
@@ -2072,8 +2067,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("td3_fx1", [&](const int val){ cv_td3_fx1 = val;});
 	pMapPar.emplace("td3_fx2", [&](const int val){ td3_fx2 = val;});
 	pMapCv.emplace("td3_fx2", [&](const int val){ cv_td3_fx2 = val;});
-    pMapPar.emplace("pp_gain", [&](const int val) { pp_gain = val; });
-    pMapCv.emplace("pp_gain", [&](const int val) { cv_pp_gain = val; });
     pMapPar.emplace("pp_pitch", [&](const int val) { pp_pitch = val; });
     pMapCv.emplace("pp_pitch", [&](const int val) { cv_pp_pitch = val; });
     pMapPar.emplace("pp_q_scale", [&](const int val) { pp_q_scale = val; });
