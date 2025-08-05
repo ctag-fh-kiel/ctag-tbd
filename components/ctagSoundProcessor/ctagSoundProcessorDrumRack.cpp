@@ -7,6 +7,8 @@ using namespace CTAG::SP;
 const float maxFXSendLevelDly {4.f};
 const float maxFXSendLevelRev {2.f};
 const float minVolume {0.000001f};
+#define td3_kAccentDecay 0.5f
+#define td3_kAccentVCAFactor 1.5f
 
 void ctagSoundProcessorDrumRack::mixRenderOutputMono(float *source, float level, float pan, float fx1, float fx2) {
     float mL = (1.0 - pan) * level;
@@ -738,6 +740,212 @@ void ctagSoundProcessorDrumRack::renderIN(const ProcessData& data) {
     mixRenderOutputStereo(data.buf, fINLev, fINPan, fINFX1Send, fINFX2Send);
 }
 
+void ctagSoundProcessorDrumRack::renderTD3(const ProcessData& data) {
+    float dvcf, dvca;
+    bool trg;
+    float td3_out[  32];
+
+    MK_FLT_PAR_ABS_PAN(fTD3Pan, td3_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fTD3Lev, td3_lev, 4095.f, 2.f); fTD3Lev *= fTD3Lev;
+    MK_FLT_PAR_ABS(fTD3FX1Send, td3_fx1, 4095.f, maxFXSendLevelDly); fTD3FX1Send *= fTD3FX1Send;
+    MK_FLT_PAR_ABS(fTD3FX2Send, td3_fx2, 4095.f, maxFXSendLevelRev); fTD3FX2Send *= fTD3FX2Send;
+
+    if (trig_td3_trigger != -1) {
+        trg = data.trig[trig_td3_trigger] == 1 ? 0 : 1; // negative logic
+    } else {
+        trg = td3_trigger;
+    }
+
+    if (trg && !td3_pre_trig) {
+        td3_isAccent = td3_accent;
+        if (trig_td3_accent != -1) {
+            td3_isAccent = data.trig[trig_td3_accent] == 0 ? 1 : 0;
+        }
+        dvcf = td3_decay_vcf / 4095.f * 5.f;
+        if (cv_td3_decay_vcf != -1) {
+            dvcf = fabsf(data.cv[cv_td3_decay_vcf]) * 5.f;
+        }
+        // if accent shorten decay of filter eg
+        if (td3_isAccent) {
+            dvcf = td3_kAccentDecay;
+        }
+        td3_adVCF.SetDecay(dvcf);
+        dvca = td3_decay_vca / 4095.f * 5.f;
+        if (cv_td3_decay_vca != -1) {
+            dvca = fabsf(data.cv[cv_td3_decay_vca]) * 5.f;
+        }
+        td3_adVCA.SetDecay(dvca);
+        td3_adVCF.Trigger();
+        td3_adVCA.Trigger();
+        // sync on trigger
+        if (td3_sync_trig) td3_sync[0] = 1;
+        td3_osc.Strike();
+        td3_pre_trig = true;
+    } else if (!trg) {
+        td3_pre_trig = false;
+    }
+
+    float egvalVCA = td3_adVCA.Process();
+    // if accent make slightly louder
+    if (td3_isAccent) {
+        egvalVCA *= td3_kAccentVCAFactor;
+    }
+    float egvalVCF = td3_adVCF.Process();
+
+    // shape
+    int s = td3_shape;
+    if (cv_td3_shape != -1) {
+        s = fabsf(data.cv[cv_td3_shape]) * (braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META + 1);
+    }
+    braids::MacroOscillatorShape ms = static_cast<braids::MacroOscillatorShape>(s);
+    if (ms >= braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META)
+        ms = braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META;
+    td3_osc.set_shape(ms);
+
+    // Set timbre and color: CV + internal modulation.
+    int16_t parameters[2];
+    parameters[0] = td3_param_0;
+    parameters[1] = td3_param_1;
+    if (cv_td3_param_0 != -1) {
+        parameters[0] = static_cast<int16_t>(fabsf(data.cv[cv_td3_param_0] * 32767));
+    }
+    if (cv_td3_param_1 != -1) {
+        parameters[1] = static_cast<int16_t>(fabsf(data.cv[cv_td3_param_1] * 32767));
+    }
+    int32_t mod_amt[2];
+    mod_amt[0] = td3_p0_amt;
+    mod_amt[1] = td3_p1_amt;
+    int32_t mod[2];
+    if (cv_td3_p0_amt != -1) {
+        mod[0] = static_cast<int32_t >(data.cv[cv_td3_p0_amt] * 65535.f);
+    } else {
+        mod[0] = static_cast<int32_t >(egvalVCF * 65535.f);
+    }
+    if (cv_td3_p1_amt != -1) {
+        mod[1] = static_cast<int32_t >(data.cv[cv_td3_p1_amt] * 65535.f);
+    } else {
+        mod[1] = static_cast<int32_t >(egvalVCF * 65535.f);
+    }
+    for (int i = 0; i < 2; ++i) {
+        int32_t value = parameters[i];
+        value += (mod[i] * mod_amt[i]) / 8192;
+        CONSTRAIN(value, 0, 32767);
+        parameters[i] = value;
+    }
+    td3_osc.set_parameters(parameters[0], parameters[1]);
+
+    // pitch calculation and quantization
+    MK_BOOL_PAR(isSlide, td3_slide)
+    MK_FLT_PAR_ABS(fSlideLevel, td3_slide_level, 4095.f, 0.099f)
+    fSlideLevel += 0.9f;
+    int32_t ipitch = td3_pitch;
+    if (cv_td3_pitch != -1) {
+        float fPitch = data.cv[cv_td3_pitch] * 12.f * 5.f; // five octaves
+        if(isSlide){
+            fPitch = fSlideLevel * td3_pre_pitch_val + (1.f - fSlideLevel) * fPitch;
+        }
+        td3_pre_pitch_val = fPitch;
+        ipitch += static_cast<int32_t>(fPitch * 128.f);
+    }
+    CONSTRAIN(ipitch, 0, 16383);
+    td3_osc.set_pitch(ipitch);
+
+    // render audio data
+    int16_t buffer[32];
+    td3_osc.Render(td3_sync, buffer, bufSz);
+
+    // apply filter and EGs
+    int ftype = td3_filter_type;
+    if (cv_td3_filter_type != -1) {
+        ftype = static_cast<int>(fabsf(data.cv[cv_td3_filter_type]) * 5.f);
+    }
+    CONSTRAIN(ftype, 0, 4)
+    float c = td3_cutoff / 4095.f;
+    if (cv_td3_cutoff != -1) {
+        c = fabsf(data.cv[cv_td3_cutoff]);
+    }
+    c *= 27000.f;
+    c -= 5000.f;
+    float fenv = td3_envelope / 4095.f;
+    if (cv_td3_envelope != -1) {
+        fenv = fabsf(data.cv[cv_td3_envelope]);
+    }
+    c += fenv * egvalVCF * 22000.f;
+    // if accent add to VCF envelope
+    float facclev = td3_accent_level / 4095.f;
+    if (cv_td3_accent_level != -1) {
+        facclev = fabsf(data.cv[cv_td3_accent_level]);
+    }
+    if (td3_isAccent) {
+        c += facclev * egvalVCF * 22000.f;
+    }
+
+    float r = td3_resonance / 4095.f;
+    if (cv_td3_resonance != -1) {
+        r = fabsf(data.cv[cv_td3_resonance]);
+    }
+
+    int32_t signature = td3_saturation;
+    if (cv_td3_saturation != -1) {
+        signature = static_cast<int32_t>(fabsf(data.cv[cv_td3_saturation]) * 65535.f);
+    }
+    CONSTRAIN(signature, 0, 65535)
+
+    float dri = td3_drive / 4095.f * 30.f;
+    if (cv_td3_drive != -1) {
+        dri = fabsf(data.cv[cv_td3_drive]) * 30.f;
+    }
+
+    CONSTRAIN(c, 20.f, 22000.f)
+    CONSTRAIN(r, 0.f, 1.f)
+    CONSTRAIN(dri, 1.f, 30.f)
+    ctagFilterBase *filter = &td3_pirkle_zdf_boost;
+    switch(ftype){
+        case 0:
+            filter = &td3_pirkle_zdf_boost;
+            break;
+        case 1:
+            filter = &td3_karlson;
+            break;
+        case 2:
+            filter = &td3_blaukraut;
+            break;
+        case 3:
+            filter = &td3_pirkle_zdf;
+            break;
+        case 4:
+            filter = &td3_zavalishin;
+            break;
+    }
+    filter->SetCutoff(c);
+    filter->SetResonance(r);
+    filter->SetGain(dri);
+
+    float fgain = td3_gain / 4095.f * 2.f;
+    if (cv_td3_gain != -1) {
+        fgain = fabsf(data.cv[cv_td3_gain]) * 2.f;
+    }
+
+    for (int i = 0; i < bufSz; i++) {
+        float eg = td3_pre_eg_val +
+                   (egvalVCA - td3_pre_eg_val) / (float) bufSz * i; // linear fade from previous eg value to avoid glitches
+        // apply non linearity to filter input
+        int16_t warped = td3_ws.Transform(buffer[i]);
+        buffer[i] = stmlib::Mix(buffer[i], warped, signature);
+        // filter, EG and clip
+        const float div = 3.0518509476E-5f;
+
+        float f = fgain * stmlib::SoftClip(eg * filter->Process(buffer[i] * div));
+        td3_out[i] = f;
+    }
+    td3_pre_eg_val = egvalVCA;
+    // sync on trigger
+    td3_sync[0] = 0;
+
+    mixRenderOutputMono(td3_out, fTD3Lev, fTD3Pan, fTD3FX1Send, fTD3FX2Send);
+
+}
+
 void ctagSoundProcessorDrumRack::preprocessFX1(const ProcessData& data) {
     MK_FLT_PAR_ABS(fBase, fx1_base, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fWidth, fx1_width, 4095.f, 1.f)
@@ -1437,6 +1645,56 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("in_fx1", [&](const int val){ cv_in_fx1 = val;});
 	pMapPar.emplace("in_fx2", [&](const int val){ in_fx2 = val;});
 	pMapCv.emplace("in_fx2", [&](const int val){ cv_in_fx2 = val;});
+	pMapPar.emplace("td3_trigger", [&](const int val){ td3_trigger = val;});
+	pMapTrig.emplace("td3_trigger", [&](const int val){ trig_td3_trigger = val;});
+	pMapPar.emplace("td3_sync_trig", [&](const int val){ td3_sync_trig = val;});
+	pMapTrig.emplace("td3_sync_trig", [&](const int val){ trig_td3_sync_trig = val;});
+	pMapPar.emplace("td3_pitch", [&](const int val){ td3_pitch = val;});
+	pMapCv.emplace("td3_pitch", [&](const int val){ cv_td3_pitch = val;});
+	pMapPar.emplace("td3_shape", [&](const int val){ td3_shape = val;});
+	pMapCv.emplace("td3_shape", [&](const int val){ cv_td3_shape = val;});
+	pMapPar.emplace("td3_param_0", [&](const int val){ td3_param_0 = val;});
+	pMapCv.emplace("td3_param_0", [&](const int val){ cv_td3_param_0 = val;});
+	pMapPar.emplace("td3_param_1", [&](const int val){ td3_param_1 = val;});
+	pMapCv.emplace("td3_param_1", [&](const int val){ cv_td3_param_1 = val;});
+	pMapPar.emplace("td3_gain", [&](const int val){ td3_gain = val;});
+	pMapCv.emplace("td3_gain", [&](const int val){ cv_td3_gain = val;});
+	pMapPar.emplace("td3_filter_type", [&](const int val){ td3_filter_type = val;});
+	pMapCv.emplace("td3_filter_type", [&](const int val){ cv_td3_filter_type = val;});
+	pMapPar.emplace("td3_cutoff", [&](const int val){ td3_cutoff = val;});
+	pMapCv.emplace("td3_cutoff", [&](const int val){ cv_td3_cutoff = val;});
+	pMapPar.emplace("td3_resonance", [&](const int val){ td3_resonance = val;});
+	pMapCv.emplace("td3_resonance", [&](const int val){ cv_td3_resonance = val;});
+	pMapPar.emplace("td3_envelope", [&](const int val){ td3_envelope = val;});
+	pMapCv.emplace("td3_envelope", [&](const int val){ cv_td3_envelope = val;});
+	pMapPar.emplace("td3_saturation", [&](const int val){ td3_saturation = val;});
+	pMapCv.emplace("td3_saturation", [&](const int val){ cv_td3_saturation = val;});
+	pMapPar.emplace("td3_drive", [&](const int val){ td3_drive = val;});
+	pMapCv.emplace("td3_drive", [&](const int val){ cv_td3_drive = val;});
+	pMapPar.emplace("td3_accent", [&](const int val){ td3_accent = val;});
+	pMapTrig.emplace("td3_accent", [&](const int val){ trig_td3_accent = val;});
+	pMapPar.emplace("td3_accent_level", [&](const int val){ td3_accent_level = val;});
+	pMapCv.emplace("td3_accent_level", [&](const int val){ cv_td3_accent_level = val;});
+	pMapPar.emplace("td3_slide", [&](const int val){ td3_slide = val;});
+	pMapTrig.emplace("td3_slide", [&](const int val){ trig_td3_slide = val;});
+	pMapPar.emplace("td3_slide_level", [&](const int val){ td3_slide_level = val;});
+	pMapCv.emplace("td3_slide_level", [&](const int val){ cv_td3_slide_level = val;});
+	pMapPar.emplace("td3_decay_vca", [&](const int val){ td3_decay_vca = val;});
+	pMapCv.emplace("td3_decay_vca", [&](const int val){ cv_td3_decay_vca = val;});
+	pMapPar.emplace("td3_decay_vcf", [&](const int val){ td3_decay_vcf = val;});
+	pMapCv.emplace("td3_decay_vcf", [&](const int val){ cv_td3_decay_vcf = val;});
+	pMapPar.emplace("td3_p0_amt", [&](const int val){ td3_p0_amt = val;});
+	pMapCv.emplace("td3_p0_amt", [&](const int val){ cv_td3_p0_amt = val;});
+	pMapPar.emplace("td3_p1_amt", [&](const int val){ td3_p1_amt = val;});
+	pMapCv.emplace("td3_p1_amt", [&](const int val){ cv_td3_p1_amt = val;});
+	pMapPar.emplace("td3_lev", [&](const int val){ td3_lev = val;});
+	pMapCv.emplace("td3_lev", [&](const int val){ cv_td3_lev = val;});
+	pMapPar.emplace("td3_pan", [&](const int val){ td3_pan = val;});
+	pMapCv.emplace("td3_pan", [&](const int val){ cv_td3_pan = val;});
+	pMapPar.emplace("td3_fx1", [&](const int val){ td3_fx1 = val;});
+	pMapCv.emplace("td3_fx1", [&](const int val){ cv_td3_fx1 = val;});
+	pMapPar.emplace("td3_fx2", [&](const int val){ td3_fx2 = val;});
+	pMapCv.emplace("td3_fx2", [&](const int val){ cv_td3_fx2 = val;});
 	pMapPar.emplace("fx1_time_ms", [&](const int val){ fx1_time_ms = val;});
 	pMapCv.emplace("fx1_time_ms", [&](const int val){ cv_fx1_time_ms = val;});
 	pMapPar.emplace("fx1_sync", [&](const int val){ fx1_sync = val;});
