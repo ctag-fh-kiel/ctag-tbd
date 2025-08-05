@@ -1222,6 +1222,25 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     cl.Init();
     fmb.Init();
 
+    // td3
+    td3_pirkle_zdf_boost.Init();
+    td3_karlson.Init();
+    td3_blaukraut.Init();
+    td3_pirkle_zdf.Init();
+    td3_zavalishin.Init();
+    td3_osc.Init();
+    td3_osc.set_pitch(100);
+    td3_osc.set_shape(braids::MacroOscillatorShape::MACRO_OSC_SHAPE_CSAW);
+    td3_adVCA.SetSampleRate(44100.f / bufSz);
+    td3_adVCA.SetModeExp();
+    td3_adVCA.SetAttack(0.f);
+    td3_adVCA.SetDecay(0.5f);
+    td3_adVCF.SetSampleRate(44100.f / bufSz);
+    td3_adVCF.SetModeExp();
+    td3_adVCF.SetAttack(0.f);
+    td3_adVCF.SetDecay(0.5f);
+    td3_ws.Init(0xcafe);
+
     std::fill_n(silence, 32, 0.f);
 
     // init romplers
