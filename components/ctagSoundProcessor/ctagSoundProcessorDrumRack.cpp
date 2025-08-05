@@ -1163,6 +1163,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     renderS3(data);
     renderS4(data);
     renderIN(data); // audio input
+    renderTD3(data);
 
     // Process effects
     preprocessFX1(data); // delay
