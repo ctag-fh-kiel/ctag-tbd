@@ -1899,14 +1899,6 @@
           "max": 64
         },
         {
-          "id": "mo_am_amt",
-          "name": "AM Amount",
-          "hint": "AM Amount",
-          "type": "int",
-          "min": -64,
-          "max": 64
-        },
-        {
           "id": "mo_p0_amt",
           "name": "P0 Amount",
           "hint": "P0 Amount",

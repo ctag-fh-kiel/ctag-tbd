@@ -21,9 +21,9 @@ void ctagSoundProcessorDrumRack::mixRenderOutputMono(float *source, float level,
 
     for (int i = 0; i < 32; i++){
         combined_out[i*2+0] += source[i] * mL;
-        combined_out[i*2+0] += source[i] * mR;
+        combined_out[i*2+1] += source[i] * mR;
         send1_out[i*2+0] += source[i] * sL1;
-        send1_out[i*2+0] += source[i] * sR1;
+        send1_out[i*2+1] += source[i] * sR1;
         send2_out[i*2+0] += source[i] * sL2;
         send2_out[i*2+1] += source[i] * sR2;
     }
@@ -66,7 +66,6 @@ void ctagSoundProcessorDrumRack::renderABD(const ProcessData& data) {
     MK_FLT_PAR_ABS(fABFX2Send, ab_fx2, 4095.f, maxFXSendLevelRev); fABFX2Send *= fABFX2Send;
 
     if (bABMute || fABLev < minVolume) {
-        memcpy(abd_out, silence, 32 * 2 * sizeof(float));
         return;
     }
 
@@ -429,13 +428,10 @@ void ctagSoundProcessorDrumRack::renderRS(const ProcessData& data) {
     rs.params.noise_level = rs_noise_;
 
     MK_BOOL_PAR(bRSTrig, rs_trigger)
-    if (bRSTrig != rs_trig_prev && bRSTrig){
-        rs_trig_prev = true;
+    if (bRSTrig != rs_trig_prev && bRSTrig) {
         rs.Trigger();
     }
-    else if (!bRSTrig){
-        rs_trig_prev = false;
-    }
+    rs_trig_prev = bRSTrig;
 
     rs.Process(rs_out, 32);
     mixRenderOutputMono(rs_out, fRSLev, fRSPan, fRSFX1Send, fRSFX2Send);
@@ -1178,25 +1174,19 @@ void ctagSoundProcessorDrumRack::renderMO(const ProcessData &data) {
         ms = braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META;
     mo_osc.set_shape(ms);
 
-    // trigger
-    if (mo_enableEG == 1 && trig_mo_enableEG == -1) {
-        if (mo_prevTrigger == false) {
-            //envelope.Trigger(braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
-            mo_envelope.Trigger();
-            mo_osc.Strike();
-        }
-        mo_prevTrigger = true;
-    } else if (mo_enableEG == 1 && trig_mo_enableEG != -1) {
-        bool trigger = data.trig[trig_mo_enableEG] == 1 ? false : true;
-        if (mo_prevTrigger == false && trigger) {
-            //envelope.Trigger(braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
-            mo_envelope.Trigger();
-            mo_osc.Strike();
-        }
-        mo_prevTrigger = trigger;
+    bool trigger = false;
+    if (trig_mo_enableEG != -1) {
+        trigger = data.trig[trig_mo_enableEG] == 1 ? false : true;
     } else {
-        mo_prevTrigger = false;
+        trigger = mo_enableEG;
     }
+
+    if (!mo_prevTrigger && trigger) {
+        //envelope.Trigger(braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
+        mo_envelope.Trigger();
+        mo_osc.Strike();
+    }
+    mo_prevTrigger = trigger;
 
     // Set timbre and color: CV + internal modulation.
     int16_t parameters[2];
@@ -1256,13 +1246,8 @@ void ctagSoundProcessorDrumRack::renderMO(const ProcessData &data) {
     mo_osc.Render(mo_sync, buffer, bufSz);
 
     // calculate amplitude modulation
-    int32_t am = mo_am_amt;
     int32_t mod_gain = 65535;
-    if (am > 0) mod_gain -= am * (65535 - ad_value) / 64;
-    if (am < 0) mod_gain += am * ad_value / 64;
-    if (cv_mo_am_amt != -1) {
-        mod_gain = static_cast<int32_t>(data.cv[cv_mo_am_amt] * 65535.f);
-    }
+    mod_gain = (ad_value) / 16;
 
     // convert final audio buffer
     int32_t sample = 0;
@@ -1511,6 +1496,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     renderIN(data); // audio input
     renderTD3(data);
     renderPP(data);
+    renderMO(data);
 
     // Process effects
     preprocessFX1(data); // delay
@@ -1588,11 +1574,22 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     td3_adVCF.SetAttack(0.f);
     td3_adVCF.SetDecay(0.5f);
     td3_ws.Init(0xcafe);
+
     // polypad
     for(auto &s:pp_v_voices){
         s.Reset();
     }
     pp_quantizer.Init();
+
+    // macosc
+    mo_osc.Init();
+    mo_osc.set_pitch(100);
+    mo_osc.set_shape(braids::MacroOscillatorShape::MACRO_OSC_SHAPE_CSAW);
+    mo_ws.Init(0xcafe);
+    //envelope.Init();
+    mo_envelope.SetSampleRate(44100.f / 32.f);
+    mo_envelope.SetModeExp();
+    mo_quantizer.Init();
 
     std::fill_n(silence, 32, 0.f);
 
@@ -2029,8 +2026,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("td3_param_0", [&](const int val){ cv_td3_param_0 = val;});
 	pMapPar.emplace("td3_param_1", [&](const int val){ td3_param_1 = val;});
 	pMapCv.emplace("td3_param_1", [&](const int val){ cv_td3_param_1 = val;});
-	pMapPar.emplace("td3_gain", [&](const int val){ td3_gain = val;});
-	pMapCv.emplace("td3_gain", [&](const int val){ cv_td3_gain = val;});
 	pMapPar.emplace("td3_filter_type", [&](const int val){ td3_filter_type = val;});
 	pMapCv.emplace("td3_filter_type", [&](const int val){ cv_td3_filter_type = val;});
 	pMapPar.emplace("td3_cutoff", [&](const int val){ td3_cutoff = val;});
@@ -2125,8 +2120,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
     pMapCv.emplace("pp_fx2", [&](const int val){ cv_pp_fx2 = val;});
     pMapPar.emplace("mo_shape", [&](const int val) { mo_shape = val; });
     pMapCv.emplace("mo_shape", [&](const int val) { cv_mo_shape = val; });
-    pMapPar.emplace("mo_gain", [&](const int val) { mo_gain = val; });
-    pMapCv.emplace("mo_gain", [&](const int val) { cv_mo_gain = val; });
     pMapPar.emplace("mo_pitch", [&](const int val) { mo_pitch = val; });
     pMapCv.emplace("mo_pitch", [&](const int val) { cv_mo_pitch = val; });
     pMapPar.emplace("mo_decimation", [&](const int val) { mo_decimation = val; });
@@ -2143,8 +2136,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
     pMapCv.emplace("mo_waveshaping", [&](const int val) { cv_mo_waveshaping = val; });
     pMapPar.emplace("mo_fm_amt", [&](const int val) { mo_fm_amt = val; });
     pMapCv.emplace("mo_fm_amt", [&](const int val) { cv_mo_fm_amt = val; });
-    pMapPar.emplace("mo_am_amt", [&](const int val) { mo_am_amt = val; });
-    pMapCv.emplace("mo_am_amt", [&](const int val) { cv_mo_am_amt = val; });
     pMapPar.emplace("mo_p0_amt", [&](const int val) { mo_p0_amt = val; });
     pMapCv.emplace("mo_p0_amt", [&](const int val) { cv_mo_p0_amt = val; });
     pMapPar.emplace("mo_p1_amt", [&](const int val) { mo_p1_amt = val; });
@@ -2157,6 +2148,14 @@ void ctagSoundProcessorDrumRack::knowYourself(){
     pMapCv.emplace("mo_attack", [&](const int val) { cv_mo_attack = val; });
     pMapPar.emplace("mo_decay", [&](const int val) { mo_decay = val; });
     pMapCv.emplace("mo_decay", [&](const int val) { cv_mo_decay = val; });
+	pMapPar.emplace("mo_lev", [&](const int val){ mo_lev = val;});
+	pMapCv.emplace("mo_lev", [&](const int val){ cv_mo_lev = val;});
+	pMapPar.emplace("mo_pan", [&](const int val){ mo_pan = val;});
+	pMapCv.emplace("mo_pan", [&](const int val){ cv_mo_pan = val;});
+	pMapPar.emplace("mo_fx1", [&](const int val){ mo_fx1 = val;});
+	pMapCv.emplace("mo_fx1", [&](const int val){ cv_mo_fx1 = val;});
+	pMapPar.emplace("mo_fx2", [&](const int val){ mo_fx2 = val;});
+	pMapCv.emplace("mo_fx2", [&](const int val){ cv_mo_fx2 = val;});
     pMapPar.emplace("fx1_time_ms", [&](const int val){ fx1_time_ms = val;});
 	pMapCv.emplace("fx1_time_ms", [&](const int val){ cv_fx1_time_ms = val;});
 	pMapPar.emplace("fx1_sync", [&](const int val){ fx1_sync = val;});

@@ -427,7 +427,6 @@ namespace CTAG {
 	atomic<int32_t> mo_param_1, cv_mo_param_1;
 	atomic<int32_t> mo_waveshaping, cv_mo_waveshaping;
 	atomic<int32_t> mo_fm_amt, cv_mo_fm_amt;
-	atomic<int32_t> mo_am_amt, cv_mo_am_amt;
 	atomic<int32_t> mo_p0_amt, cv_mo_p0_amt;
 	atomic<int32_t> mo_p1_amt, cv_mo_p1_amt;
 	atomic<int32_t> mo_enableEG, trig_mo_enableEG;
