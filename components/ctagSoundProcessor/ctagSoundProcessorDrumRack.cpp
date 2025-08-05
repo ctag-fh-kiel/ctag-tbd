@@ -1,4 +1,5 @@
 #include "ctagSoundProcessorDrumRack.hpp"
+#include "braids/quantizer_scales.h"
 
 using namespace CTAG::SP;
 
@@ -943,7 +944,207 @@ void ctagSoundProcessorDrumRack::renderTD3(const ProcessData& data) {
     td3_sync[0] = 0;
 
     mixRenderOutputMono(td3_out, fTD3Lev, fTD3Pan, fTD3FX1Send, fTD3FX2Send);
+}
 
+void ctagSoundProcessorDrumRack::renderPP(const ProcessData& data) {
+    MK_FLT_PAR_ABS_PAN(fPPPan, pp_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fPPLev, pp_lev, 4095.f, 2.f); fPPLev *= fPPLev;
+    MK_FLT_PAR_ABS(fPPFX1Send, pp_fx1, 4095.f, maxFXSendLevelDly); fPPFX1Send *= fPPFX1Send;
+    MK_FLT_PAR_ABS(fPPFX2Send, pp_fx2, 4095.f, maxFXSendLevelRev); fPPFX2Send *= fPPFX2Send;
+
+    // zero input
+    float pp_out[32];
+    float pp_out_stereo[32 * 2];
+    for (int i = 0; i < 32; i++) {
+        pp_out[i] = 0.f;
+        pp_out_stereo[i * 2 + 0] = 0.f;
+        pp_out_stereo[i * 2 + 1] = 0.f;
+    }
+
+    int32_t NCVoices = pp_ncvoices;
+    CONSTRAIN(NCVoices, 1, 8)
+    if(pp_preNCVoices != NCVoices){
+        for(auto &s:pp_v_voices){
+            s.Reset();
+        }
+        pp_preNCVoices = NCVoices;
+    }
+
+    // start chord
+    bool shouldTrigger = pp_enableEG;
+    if (trig_pp_enableEG != -1) shouldTrigger = data.trig[trig_pp_enableEG] == 1 ? 0 : 1; // inverted logic
+    if (pp_latchEG) {
+        if (!pp_toggle && shouldTrigger) {
+            pp_latched = !pp_latched;
+            pp_toggle = true;
+        } else if (!shouldTrigger) {
+            pp_toggle = false;
+        }
+        if (pp_latched && shouldTrigger) {
+            shouldTrigger = false;
+        }
+    } else {
+        pp_latched = true;
+        pp_toggle = false;
+    }
+    shouldTrigger = shouldTrigger && (pp_latchVoice == false);
+    // start processing voices
+    if (shouldTrigger) {
+        // check if voice needs to be killed because too many are active
+
+        // sort array according to voice time to live, last in array has shortest TTL
+        sort(begin(pp_v_voices), end(pp_v_voices) - (8-NCVoices),
+             [](ChordSynth &a, ChordSynth &b) { return a.GetTTL() > b.GetTTL(); }
+        );
+
+        // hold voices
+        bool shouldHold = pp_voicehold;
+        if (trig_pp_voicehold != -1) { shouldHold = data.trig[trig_pp_voicehold] == 0 ? 1 : 0; } // inverted logic
+        if (shouldHold) {
+            for (int i=0;i<NCVoices-1;i++) {
+                if(!pp_v_voices[i].IsDead())
+                    pp_v_voices[i].Hold();
+            }
+        }
+
+        // start new voice with current parameter settings including cv mod capture
+        ChordSynth::ChordParams params;
+
+        // pitch calculation and quantization + fm
+        params.pitch = pp_pitch;
+        if (cv_pp_pitch != -1) { params.pitch += static_cast<int16_t>(data.cv[cv_pp_pitch] * 5.f * 12.f * 128.f); }
+        int32_t sc = pp_q_scale;
+        if (cv_pp_q_scale != -1) {
+            sc = static_cast<int32_t>(fabsf(data.cv[cv_pp_q_scale]) * 48.f);
+        }
+        CONSTRAIN(sc, 0, 47);
+        pp_quantizer.Configure(braids::scales[sc]);
+        params.pitch = pp_quantizer.Process(params.pitch, pp_pitch);
+        CONSTRAIN(params.pitch, 0, 16383);
+
+        // which chord
+        params.chord = pp_chord;
+        if (cv_pp_chord != -1) { params.chord = static_cast<int16_t>(fabsf(data.cv[cv_pp_chord]) * kChordNumChords); }
+        CONSTRAIN(params.chord, 0, kChordNumChords - 1)
+        params.nnotes = pp_nnotes;
+        if (cv_pp_nnotes != -1) { params.nnotes = static_cast<int16_t>(fabsf(data.cv[cv_pp_nnotes]) * 4.f) + 1; }
+        CONSTRAIN(params.nnotes, 1, 4)
+
+        params.detune = pp_detune;
+        if (cv_pp_detune != -1) { params.detune = static_cast<int16_t>(fabsf(data.cv[cv_pp_detune]) * 32767.f); }
+        CONSTRAIN(params.detune, 0, 32767)
+        params.inversion = pp_inversion;
+        if (cv_pp_inversion != -1) { params.inversion = static_cast<int16_t>(fabsf(data.cv[cv_pp_inversion]) * 6.f - 3.f); }
+        CONSTRAIN(params.inversion, -2, 2)
+        float maxA, maxD, maxR;
+        if (pp_eg_slow_fast) {
+            maxA = 60.f;
+            maxD = 40.f;
+            maxR = 40.f;
+        } else {
+            maxA = 10.f;
+            maxD = 10.f;
+            maxR = 10.f;
+        }
+        params.attack = static_cast<float>(pp_attack) / 4095.f * maxA;
+        if (cv_pp_attack != -1) { params.attack = fabsf(data.cv[cv_pp_attack]) * maxA; }
+        CONSTRAIN(params.attack, 0.f, maxA)
+        params.decay = static_cast<float>(pp_decay) / 4095.f * maxD;
+        if (cv_pp_decay != -1) { params.decay = fabsf(data.cv[cv_pp_decay]) * maxD; }
+        CONSTRAIN(params.decay, 0.f, maxD)
+        params.sustain = static_cast<float>(pp_sustain) / 4095.f;
+        if (cv_pp_sustain != -1) { params.sustain = fabsf(data.cv[cv_pp_sustain]); }
+        CONSTRAIN(params.sustain, 0.f, 1.f)
+        params.release = static_cast<float>(pp_release) / 4095.f * maxR;
+        if (cv_pp_release != -1) { params.release = fabsf(data.cv[cv_pp_release]) * maxR; }
+        CONSTRAIN(params.release, 0.f, maxR)
+
+        // vibrato
+        params.lfo1_freq = static_cast<float>(pp_lfo1_freq) / 4095.f * 5.f;
+        if (cv_pp_lfo1_freq != -1) { params.lfo1_freq = fabsf(data.cv[cv_pp_lfo1_freq]) * 5.f; }
+        CONSTRAIN(params.lfo1_freq, 0.f, 5.f)
+        params.lfo1_amt = static_cast<float>(pp_lfo1_amt) / 4095.f * 5.f;
+        if (cv_pp_lfo1_amt != -1) { params.lfo1_amt = fabsf(data.cv[cv_pp_lfo1_amt]) * 5.f; }
+        CONSTRAIN(params.lfo1_amt, 0.f, 5.f)
+
+        // filter fm chopper
+        params.lfo2_freq = static_cast<float>(pp_lfo2_freq) / 4095.f * 5.f;
+        if (cv_pp_lfo2_freq != -1) { params.lfo2_freq = fabsf(data.cv[cv_pp_lfo2_freq]) * 5.f; }
+        CONSTRAIN(params.lfo2_freq, 0.f, 5.f)
+        params.lfo2_amt = static_cast<float>(pp_lfo2_amt) / 4095.f;
+        if (cv_pp_lfo2_amt != -1) { params.lfo2_amt = fabsf(data.cv[cv_pp_lfo2_amt]); }
+        CONSTRAIN(params.lfo2_amt, 0.f, 1.f)
+        params.lfo2_random_phase = pp_lfo2_rphase;
+        params.eg_filt_amt = static_cast<float>(pp_eg_filt_amt) / 4095.f;
+        if (cv_pp_eg_filt_amt != -1) { params.eg_filt_amt = data.cv[cv_pp_eg_filt_amt]; }
+        CONSTRAIN(params.eg_filt_amt, -1.f, 1.f)
+        params.filter_type = pp_filter_type;
+        if (cv_pp_filter_type != -1) { params.filter_type = fabsf(data.cv[cv_pp_filter_type]) * 3.f; }
+        CONSTRAIN(params.filter_type, 0, 2)
+
+        // find a silent voice and activate
+        for(int i=0;i<NCVoices;i++){
+            // find a dead voice
+            if(pp_v_voices[i].IsDead()){
+                pp_v_voices[i].Init(params);
+                break;
+            }
+            // if none found, activate the last one
+            if(i == NCVoices-1){
+                pp_v_voices[i].Init(params);
+            }
+        }
+
+        pp_latchVoice = true;
+    }
+
+    // render buffers with updated cutoff, resonance and detune
+    uint32_t c = pp_cutoff;
+    if (cv_pp_cutoff != -1) {
+        c = static_cast<int32_t>(1750.f + fabsf(data.cv[cv_pp_cutoff]) * (16384.f - 1750.f));
+        CONSTRAIN(c, 1750, 16384)
+    }
+    int32_t r = pp_resonance;
+    if (cv_pp_resonance != -1) {
+        r = static_cast<int32_t>(fabsf(data.cv[cv_pp_resonance]) * 32767.f);
+        CONSTRAIN(r, 0, 32767)
+    }
+    int32_t d = pp_detune;
+    if (cv_pp_detune != -1) {
+        d = static_cast<int32_t>(fabsf(data.cv[cv_pp_detune]) * 32767.f);
+        CONSTRAIN(d, 0, 32767)
+    }
+
+    for (int i=0;i<NCVoices;i++) {
+        if(pp_v_voices[i].IsDead()) continue;
+        pp_v_voices[i].SetCutoff(c);
+        pp_v_voices[i].SetResonance(r);
+        pp_v_voices[i].SetDetune(d);
+        pp_v_voices[i].Process(pp_out_stereo, 0);
+    }
+
+    // note off including latched mode
+    bool shouldNoteOff = !pp_enableEG;
+    if (trig_pp_enableEG != -1) shouldNoteOff = data.trig[trig_pp_enableEG]; // already inverted
+    if (pp_latchEG) {
+        shouldNoteOff = !shouldNoteOff;
+        if (!pp_latched && shouldNoteOff)
+            shouldNoteOff = false;
+    }
+    shouldNoteOff = shouldNoteOff && (pp_latchVoice == true);
+
+    if (shouldNoteOff) {
+        for (auto &v:pp_v_voices) {
+            v.NoteOff();
+        }
+        pp_latchVoice = false;
+    }
+
+    // convert to stereo and output
+    for (int i = 0; i < bufSz; i++) {
+        pp_out_stereo[i * 2 + 1] = pp_out_stereo[i * 2 + 0];
+    }
+    mixRenderOutputStereo(pp_out_stereo, fPPLev, fPPPan, fPPFX1Send, fPPFX2Send);
 }
 
 void ctagSoundProcessorDrumRack::preprocessFX1(const ProcessData& data) {
@@ -1164,6 +1365,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     renderS4(data);
     renderIN(data); // audio input
     renderTD3(data);
+    renderPP(data);
 
     // Process effects
     preprocessFX1(data); // delay
@@ -1241,6 +1443,11 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     td3_adVCF.SetAttack(0.f);
     td3_adVCF.SetDecay(0.5f);
     td3_ws.Init(0xcafe);
+    // polypad
+    for(auto &s:pp_v_voices){
+        s.Reset();
+    }
+    pp_quantizer.Init();
 
     std::fill_n(silence, 32, 0.f);
 
@@ -1715,6 +1922,64 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapCv.emplace("td3_fx1", [&](const int val){ cv_td3_fx1 = val;});
 	pMapPar.emplace("td3_fx2", [&](const int val){ td3_fx2 = val;});
 	pMapCv.emplace("td3_fx2", [&](const int val){ cv_td3_fx2 = val;});
+    pMapPar.emplace("pp_gain", [&](const int val) { pp_gain = val; });
+    pMapCv.emplace("pp_gain", [&](const int val) { cv_pp_gain = val; });
+    pMapPar.emplace("pp_pitch", [&](const int val) { pp_pitch = val; });
+    pMapCv.emplace("pp_pitch", [&](const int val) { cv_pp_pitch = val; });
+    pMapPar.emplace("pp_q_scale", [&](const int val) { pp_q_scale = val; });
+    pMapCv.emplace("pp_q_scale", [&](const int val) { cv_pp_q_scale = val; });
+    pMapPar.emplace("pp_chord", [&](const int val) { pp_chord = val; });
+    pMapCv.emplace("pp_chord", [&](const int val) { cv_pp_chord = val; });
+    pMapPar.emplace("pp_inversion", [&](const int val) { pp_inversion = val; });
+    pMapCv.emplace("pp_inversion", [&](const int val) { cv_pp_inversion = val; });
+    pMapPar.emplace("pp_detune", [&](const int val) { pp_detune = val; });
+    pMapCv.emplace("pp_detune", [&](const int val) { cv_pp_detune = val; });
+    pMapPar.emplace("pp_nnotes", [&](const int val) { pp_nnotes = val; });
+    pMapCv.emplace("pp_nnotes", [&](const int val) { cv_pp_nnotes = val; });
+    pMapPar.emplace("pp_ncvoices", [&](const int val) { pp_ncvoices = val; });
+    pMapCv.emplace("pp_ncvoices", [&](const int val) { cv_pp_ncvoices = val; });
+    pMapPar.emplace("pp_voicehold", [&](const int val) { pp_voicehold = val; });
+    pMapTrig.emplace("pp_voicehold", [&](const int val) { trig_pp_voicehold = val; });
+    pMapPar.emplace("pp_lfo1_freq", [&](const int val) { pp_lfo1_freq = val; });
+    pMapCv.emplace("pp_lfo1_freq", [&](const int val) { cv_pp_lfo1_freq = val; });
+    pMapPar.emplace("pp_lfo1_amt", [&](const int val) { pp_lfo1_amt = val; });
+    pMapCv.emplace("pp_lfo1_amt", [&](const int val) { cv_pp_lfo1_amt = val; });
+    pMapPar.emplace("pp_filter_type", [&](const int val) { pp_filter_type = val; });
+    pMapCv.emplace("pp_filter_type", [&](const int val) { cv_pp_filter_type = val; });
+    pMapPar.emplace("pp_cutoff", [&](const int val) { pp_cutoff = val; });
+    pMapCv.emplace("pp_cutoff", [&](const int val) { cv_pp_cutoff = val; });
+    pMapPar.emplace("pp_resonance", [&](const int val) { pp_resonance = val; });
+    pMapCv.emplace("pp_resonance", [&](const int val) { cv_pp_resonance = val; });
+    pMapPar.emplace("pp_lfo2_freq", [&](const int val) { pp_lfo2_freq = val; });
+    pMapCv.emplace("pp_lfo2_freq", [&](const int val) { cv_pp_lfo2_freq = val; });
+    pMapPar.emplace("pp_lfo2_amt", [&](const int val) { pp_lfo2_amt = val; });
+    pMapCv.emplace("pp_lfo2_amt", [&](const int val) { cv_pp_lfo2_amt = val; });
+    pMapPar.emplace("pp_lfo2_rphase", [&](const int val) { pp_lfo2_rphase = val; });
+    pMapTrig.emplace("pp_lfo2_rphase", [&](const int val) { trig_pp_lfo2_rphase = val; });
+    pMapPar.emplace("pp_eg_filt_amt", [&](const int val) { pp_eg_filt_amt = val; });
+    pMapCv.emplace("pp_eg_filt_amt", [&](const int val) { cv_pp_eg_filt_amt = val; });
+    pMapPar.emplace("pp_enableEG", [&](const int val) { pp_enableEG = val; });
+    pMapTrig.emplace("pp_enableEG", [&](const int val) { trig_pp_enableEG = val; });
+    pMapPar.emplace("pp_latchEG", [&](const int val) { pp_latchEG = val; });
+    pMapTrig.emplace("pp_latchEG", [&](const int val) { trig_pp_latchEG = val; });
+    pMapPar.emplace("pp_eg_slow_fast", [&](const int val) { pp_eg_slow_fast = val; });
+    pMapTrig.emplace("pp_eg_slow_fast", [&](const int val) { trig_pp_eg_slow_fast = val; });
+    pMapPar.emplace("pp_attack", [&](const int val) { pp_attack = val; });
+    pMapCv.emplace("pp_attack", [&](const int val) { cv_pp_attack = val; });
+    pMapPar.emplace("pp_decay", [&](const int val) { pp_decay = val; });
+    pMapCv.emplace("pp_decay", [&](const int val) { cv_pp_decay = val; });
+    pMapPar.emplace("pp_sustain", [&](const int val) { pp_sustain = val; });
+    pMapCv.emplace("pp_sustain", [&](const int val) { cv_pp_sustain = val; });
+    pMapPar.emplace("pp_release", [&](const int val) { pp_release = val; });
+    pMapCv.emplace("pp_release", [&](const int val) { cv_pp_release = val; });
+    pMapPar.emplace("pp_lev", [&](const int val){ pp_lev = val;});
+    pMapCv.emplace("pp_lev", [&](const int val){ cv_pp_lev = val;});
+    pMapPar.emplace("pp_pan", [&](const int val){ pp_pan = val;});
+    pMapCv.emplace("pp_pan", [&](const int val){ cv_pp_pan = val;});
+    pMapPar.emplace("pp_fx1", [&](const int val){ pp_fx1 = val;});
+    pMapCv.emplace("pp_fx1", [&](const int val){ cv_pp_fx1 = val;});
+    pMapPar.emplace("pp_fx2", [&](const int val){ pp_fx2 = val;});
+    pMapCv.emplace("pp_fx2", [&](const int val){ cv_pp_fx2 = val;});
 	pMapPar.emplace("fx1_time_ms", [&](const int val){ fx1_time_ms = val;});
 	pMapCv.emplace("fx1_time_ms", [&](const int val){ cv_fx1_time_ms = val;});
 	pMapPar.emplace("fx1_sync", [&](const int val){ fx1_sync = val;});
