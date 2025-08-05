@@ -4,9 +4,49 @@ using namespace CTAG::SP;
 
 // TODOs: fx return before compressor, stereo panning with delay -> when panned right, levels are lower, metallic sound of reverb.
 
-void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
-    const float maxFXSendLevelDly {4.f};
-    const float maxFXSendLevelRev {2.f};
+const float maxFXSendLevelDly {4.f};
+const float maxFXSendLevelRev {2.f};
+const float minVolume {0.000001f};
+
+void ctagSoundProcessorDrumRack::mixRenderOutputMono(float *source, float level, float pan, float fx1, float fx2) {
+    float mL = (1.0 - pan) * level;
+    float mR = pan * level;
+    float sL1 = mL * fx1;
+    float sR1 = mR * fx1;
+    float sL2 = mL * fx2;
+    float sR2 = mR * fx2;
+
+    for (int i = 0; i < 32; i++){
+        combined_out[i*2+0] += source[i] * mL;
+        combined_out[i*2+0] += source[i] * mR;
+        send1_out[i*2+0] += source[i] * sL1;
+        send1_out[i*2+0] += source[i] * sR1;
+        send2_out[i*2+0] += source[i] * sL2;
+        send2_out[i*2+1] += source[i] * sR2;
+    }
+}
+
+void ctagSoundProcessorDrumRack::mixRenderOutputStereo(float *source, float level, float pan, float fx1, float fx2) {
+    float mL = (1.0 - pan) * level;
+    float mR = pan * level;
+    float sL1 = mL * fx1;
+    float sR1 = mR * fx1;
+    float sL2 = mL * fx2;
+    float sR = mR * fx2;
+
+    for (int i = 0; i < 32; i++){
+        combined_out[i*2+0] += source[i*2+0] * mL;
+        combined_out[i*2+1] += source[i*2+1] * mR;
+        send1_out[i*2+0] += source[i*2+0] * sL1;
+        send1_out[i*2+1] += source[i*2+1] * sR1;
+        send2_out[i*2+0] += source[i*2+0] * sL2;
+        send2_out[i*2+1] += source[i*2+1] * sR;
+    }
+}
+
+void ctagSoundProcessorDrumRack::renderABD(const ProcessData& data) {
+    float abd_out[32];
+
     // Analog Bass Drum
     MK_BOOL_PAR(bABMute, ab_mute)
     MK_BOOL_PAR(bABTrig, ab_trigger)
@@ -17,38 +57,40 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         bABTrig = false;
     }
 
-    MK_FLT_PAR_ABS(fABLev, ab_lev, 4095.f, 2.f)
-    fABLev *= fABLev;
     MK_FLT_PAR_ABS_PAN(fABPan, ab_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fABFX1Send, ab_fx1, 4095.f, maxFXSendLevelDly)
-    fABFX1Send *= fABFX1Send;
-    MK_FLT_PAR_ABS(fABFX2Send, ab_fx2, 4095.f, maxFXSendLevelRev)
-    fABFX2Send *= fABFX2Send;
-    if (!bABMute){
-        MK_FLT_PAR_ABS(fABAccent, ab_accent, 4095.f, 1.f)
-        MK_FLT_PAR_ABS_MIN_MAX(fABF0, ab_f0, 4095.f, 0.0001f, 0.01f)
-        MK_FLT_PAR_ABS(fABTone, ab_tone, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fABDecay, ab_decay, 4095.f, 1.f)
-        MK_FLT_PAR_ABS_MIN_MAX(fABAfm, ab_a_fm, 4095.f, 0.f, 100.f)
-        MK_FLT_PAR_ABS_MIN_MAX(fABSfm, ab_s_fm, 4095.f, 0.f, 100.f)
-        abd.Render(
-            false,
-            bABTrig,
-            fABAccent,
-            fABF0,
-            fABTone,
-            fABDecay,
-            fABAfm,
-            fABSfm,
-            abd_out,
-            32);
-        data_ptrs[0] = abd_out;
-    }
-    else{
-        data_ptrs[0] = silence;
+    MK_FLT_PAR_ABS(fABLev, ab_lev, 4095.f, 2.f); fABLev *= fABLev;
+    MK_FLT_PAR_ABS(fABFX1Send, ab_fx1, 4095.f, maxFXSendLevelDly); fABFX1Send *= fABFX1Send;
+    MK_FLT_PAR_ABS(fABFX2Send, ab_fx2, 4095.f, maxFXSendLevelRev); fABFX2Send *= fABFX2Send;
+
+    if (bABMute || fABLev < minVolume) {
+        memcpy(abd_out, silence, 32 * 2 * sizeof(float));
+        return;
     }
 
-    // Analog Snare Drum
+    MK_FLT_PAR_ABS(fABAccent, ab_accent, 4095.f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fABF0, ab_f0, 4095.f, 0.0001f, 0.01f)
+    MK_FLT_PAR_ABS(fABTone, ab_tone, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fABDecay, ab_decay, 4095.f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fABAfm, ab_a_fm, 4095.f, 0.f, 100.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fABSfm, ab_s_fm, 4095.f, 0.f, 100.f)
+    abd.Render(
+        false,
+        bABTrig,
+        fABAccent,
+        fABF0,
+        fABTone,
+        fABDecay,
+        fABAfm,
+        fABSfm,
+        abd_out,
+        32);
+
+    mixRenderOutputMono(abd_out, fABLev, fABPan, fABFX1Send, fABFX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderASD(const ProcessData& data) {
+    float asd_out[32];
+
     MK_BOOL_PAR(bASMute, as_mute)
     MK_BOOL_PAR(bASTrig, as_trigger)
     if (bASTrig != asd_trig_prev){
@@ -58,37 +100,37 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         bASTrig = false;
     }
 
-    MK_FLT_PAR_ABS(fASLev, as_lev, 4095.f, 2.f)
-    fASLev *= fASLev;
-    MK_FLT_PAR_ABS_PAN(fASPan, as_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fASFX1Send, as_fx1, 4095.f, maxFXSendLevelDly)
-    fASFX1Send *= fASFX1Send;
-    MK_FLT_PAR_ABS(fASFX2Send, as_fx2, 4095.f, maxFXSendLevelRev)
-    fASFX2Send *= fASFX2Send;
+    MK_FLT_PAR_ABS_PAN(fASPan, as_pan, 4095.f, 1.f);
+    MK_FLT_PAR_ABS(fASLev, as_lev, 4095.f, 2.f); fASLev *= fASLev;
+    MK_FLT_PAR_ABS(fASFX1Send, as_fx1, 4095.f, maxFXSendLevelDly); fASFX1Send *= fASFX1Send;
+    MK_FLT_PAR_ABS(fASFX2Send, as_fx2, 4095.f, maxFXSendLevelRev); fASFX2Send *= fASFX2Send;
 
-    if (!bASMute){
-        MK_FLT_PAR_ABS(fASAccent, as_accent, 4095.f, 1.f)
-        MK_FLT_PAR_ABS_MIN_MAX(fASF0, as_f0, 4095.f, 0.001f, 0.01f)
-        MK_FLT_PAR_ABS(fASTone, as_tone, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fASDecay, as_decay, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fASAspy, as_a_spy, 4095.f, 1.f)
-        asd.Render(
-            false,
-            bASTrig,
-            fASAccent,
-            fASF0,
-            fASTone,
-            fASDecay,
-            fASAspy,
-            asd_out,
-            32);
-        data_ptrs[1] = asd_out;
-    }
-    else{
-        data_ptrs[1] = silence;
+    if (bASMute || fASLev < minVolume) {
+        return;
     }
 
-    // Digital Bass Drum
+    MK_FLT_PAR_ABS(fASAccent, as_accent, 4095.f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fASF0, as_f0, 4095.f, 0.001f, 0.01f)
+    MK_FLT_PAR_ABS(fASTone, as_tone, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fASDecay, as_decay, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fASAspy, as_a_spy, 4095.f, 1.f)
+    asd.Render(
+        false,
+        bASTrig,
+        fASAccent,
+        fASF0,
+        fASTone,
+        fASDecay,
+        fASAspy,
+        asd_out,
+        32);
+
+    mixRenderOutputMono(asd_out, fASLev, fASPan, fASFX1Send, fASFX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderDBD(const ProcessData& data) {
+    float dbd_out[32];
+
     MK_BOOL_PAR(bDBMute, db_mute)
     MK_BOOL_PAR(bDBTrig, db_trigger)
     if (bDBTrig != dbd_trig_prev){
@@ -98,41 +140,41 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         bDBTrig = false;
     }
 
-    MK_FLT_PAR_ABS(fDBLev, db_lev, 4095.f, 2.f)
-    fDBLev *= fDBLev;
     MK_FLT_PAR_ABS_PAN(fDBPan, db_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDBFX1Send, db_fx1, 4095.f, maxFXSendLevelDly)
-    fDBFX1Send *= fDBFX1Send;
-    MK_FLT_PAR_ABS(fDBFX2Send, db_fx2, 4095.f, maxFXSendLevelRev)
-    fDBFX2Send *= fDBFX2Send;
+    MK_FLT_PAR_ABS(fDBLev, db_lev, 4095.f, 2.f); fDBLev *= fDBLev;
+    MK_FLT_PAR_ABS(fDBFX1Send, db_fx1, 4095.f, maxFXSendLevelDly); fDBFX1Send *= fDBFX1Send;
+    MK_FLT_PAR_ABS(fDBFX2Send, db_fx2, 4095.f, maxFXSendLevelRev); fDBFX2Send *= fDBFX2Send;
 
-    if (!bDBMute){
-        MK_FLT_PAR_ABS(fDBAccent, db_accent, 4095.f, 1.f)
-        MK_FLT_PAR_ABS_MIN_MAX(fDBF0, db_f0, 4095.f, 0.0005f, 0.01f)
-        MK_FLT_PAR_ABS(fDBTone, db_tone, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fDBDecay, db_decay, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fDBDirty, db_dirty, 4095.f, 5.f)
-        MK_FLT_PAR_ABS(fDBFmEnv, db_fm_env, 4095.f, 5.f)
-        MK_FLT_PAR_ABS(fDBFmDcy, db_fm_dcy, 4095.f, 4.f)
-        dbd.Render(
-            false,
-            bDBTrig,
-            fDBAccent,
-            fDBF0,
-            fDBTone,
-            fDBDecay,
-            fDBDirty,
-            fDBFmEnv,
-            fDBFmDcy,
-            dbd_out,
-            32);
-        data_ptrs[2] = dbd_out;
-    }
-    else{
-        data_ptrs[2] = silence;
+    if (bDBMute || fDBLev < minVolume) {
+        return;
     }
 
-    // Digital Snare Drum
+    MK_FLT_PAR_ABS(fDBAccent, db_accent, 4095.f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fDBF0, db_f0, 4095.f, 0.0005f, 0.01f)
+    MK_FLT_PAR_ABS(fDBTone, db_tone, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDBDecay, db_decay, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDBDirty, db_dirty, 4095.f, 5.f)
+    MK_FLT_PAR_ABS(fDBFmEnv, db_fm_env, 4095.f, 5.f)
+    MK_FLT_PAR_ABS(fDBFmDcy, db_fm_dcy, 4095.f, 4.f)
+    dbd.Render(
+        false,
+        bDBTrig,
+        fDBAccent,
+        fDBF0,
+        fDBTone,
+        fDBDecay,
+        fDBDirty,
+        fDBFmEnv,
+        fDBFmDcy,
+        dbd_out,
+        32);
+
+    mixRenderOutputMono(dbd_out, fDBLev, fDBPan, fDBFX1Send, fDBFX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderDSD(const ProcessData& data) {
+    float dsd_out[32];
+
     MK_BOOL_PAR(bDSMute, ds_mute)
     MK_BOOL_PAR(bDSTrig, ds_trigger)
     if (bDSTrig != dsd_trig_prev){
@@ -142,210 +184,37 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         bDSTrig = false;
     }
 
-    MK_FLT_PAR_ABS(fDSLev, ds_lev, 4095.f, 2.f)
-    fDSLev *= fDSLev;
     MK_FLT_PAR_ABS_PAN(fDSPan, ds_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDSFX1Send, ds_fx1, 4095.f, maxFXSendLevelDly)
-    fDSFX1Send *= fDSFX1Send;
-    MK_FLT_PAR_ABS(fDSFX2Send, ds_fx2, 4095.f, maxFXSendLevelRev)
-    fDSFX2Send *= fDSFX2Send;
+    MK_FLT_PAR_ABS(fDSLev, ds_lev, 4095.f, 2.f); fDSLev *= fDSLev;
+    MK_FLT_PAR_ABS(fDSFX1Send, ds_fx1, 4095.f, maxFXSendLevelDly); fDSFX1Send *= fDSFX1Send;
+    MK_FLT_PAR_ABS(fDSFX2Send, ds_fx2, 4095.f, maxFXSendLevelRev); fDSFX2Send *= fDSFX2Send;
 
-    if (!bDSMute){
-        MK_FLT_PAR_ABS(fDSAccent, ds_accent, 4095.f, 1.f)
-        MK_FLT_PAR_ABS_MIN_MAX(fDSF0, ds_f0, 4095.f, 0.0008f, 0.01f)
-        MK_FLT_PAR_ABS(fDSFmAmt, ds_fm_amt, 4095.f, 1.5f)
-        MK_FLT_PAR_ABS(fDSDecay, ds_decay, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fDSSpy, ds_spy, 4095.f, 1.f)
-        dsd.Render(
-            false,
-            bDSTrig,
-            fDSAccent,
-            fDSF0,
-            fDSFmAmt,
-            fDSDecay,
-            fDSSpy,
-            dsd_out,
-            32);
-        data_ptrs[3] = dsd_out;
-    }
-    else{
-        data_ptrs[3] = silence;
+    if (bDSMute || fDSLev < minVolume) {
+        return;
     }
 
-    // HiHat 1
-    MK_BOOL_PAR(bHH1Mute, hh1_mute)
-    MK_BOOL_PAR(bHH1Trig, hh1_trigger)
-    if (bHH1Trig != hh1_trig_prev){
-        hh1_trig_prev = bHH1Trig;
-    }
-    else{
-        bHH1Trig = false;
-    }
+    MK_FLT_PAR_ABS(fDSAccent, ds_accent, 4095.f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fDSF0, ds_f0, 4095.f, 0.0008f, 0.01f)
+    MK_FLT_PAR_ABS(fDSFmAmt, ds_fm_amt, 4095.f, 1.5f)
+    MK_FLT_PAR_ABS(fDSDecay, ds_decay, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDSSpy, ds_spy, 4095.f, 1.f)
+    dsd.Render(
+        false,
+        bDSTrig,
+        fDSAccent,
+        fDSF0,
+        fDSFmAmt,
+        fDSDecay,
+        fDSSpy,
+        dsd_out,
+        32);
 
-    MK_FLT_PAR_ABS(fHH1Lev, hh1_lev, 4095.f, 2.f)
-    fHH1Lev *= fHH1Lev;
-    MK_FLT_PAR_ABS_PAN(fHH1Pan, hh1_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH1FX1Send, hh1_fx1, 4095.f, maxFXSendLevelDly)
-    fHH1FX1Send *= fHH1FX1Send;
-    MK_FLT_PAR_ABS(fHH1FX2Send, hh1_fx2, 4095.f, maxFXSendLevelRev)
-    fHH1FX2Send *= fHH1FX2Send;
+    mixRenderOutputMono(dsd_out, fDSLev, fDSPan, fDSFX1Send, fDSFX2Send);
+}
 
-    if (!bHH1Mute){
-        MK_FLT_PAR_ABS(fHH1Accent, hh1_accent, 4095.f, 1.f)
-        MK_FLT_PAR_ABS_MIN_MAX(fHH1F0, hh1_f0, 4095.f, 0.0005f, 0.1f)
-        MK_FLT_PAR_ABS(fHH1Tone, hh1_tone, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fHH1Decay, hh1_decay, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fHH1Noise, hh1_noise, 4095.f, 1.f)
-        hh1.Render(
-            false,
-            bHH1Trig,
-            fHH1Accent,
-            fHH1F0,
-            fHH1Tone,
-            fHH1Decay,
-            fHH1Noise,
-            temp1_,
-            temp2_,
-            hh1_out,
-            32);
-        data_ptrs[4] = hh1_out;
-    }
-    else{
-        data_ptrs[4] = silence;
-    }
+void ctagSoundProcessorDrumRack::renderFMB(const ProcessData& data) {
+    float fmb_out[32];
 
-    // HiHat 2
-    MK_BOOL_PAR(bHH2Mute, hh2_mute)
-    MK_BOOL_PAR(bHH2Trig, hh2_trigger)
-    if (bHH2Trig != hh2_trig_prev){
-        hh2_trig_prev = bHH2Trig;
-    }
-    else{
-        bHH2Trig = false;
-    }
-
-    MK_FLT_PAR_ABS(fHH2Lev, hh2_lev, 4095.f, 2.f)
-    fHH2Lev *= fHH2Lev;
-    MK_FLT_PAR_ABS_PAN(fHH2Pan, hh2_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fHH2FX1Send, hh2_fx1, 4095.f, maxFXSendLevelDly)
-    fHH2FX1Send *= fHH2FX1Send;
-    MK_FLT_PAR_ABS(fHH2FX2Send, hh2_fx2, 4095.f, maxFXSendLevelRev)
-    fHH2FX2Send *= fHH2FX2Send;
-
-    if (!bHH2Mute){
-        MK_FLT_PAR_ABS(fHH2Accent, hh2_accent, 4095.f, 1.f)
-        MK_FLT_PAR_ABS_MIN_MAX(fHH2F0, hh2_f0, 4095.f, .00001f, .1f)
-        MK_FLT_PAR_ABS(fHH2Tone, hh2_tone, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fHH2Decay, hh2_decay, 4095.f, 1.f)
-        MK_FLT_PAR_ABS(fHH2Noise, hh2_noise, 4095.f, 1.f)
-        hh2.Render(
-            false,
-            bHH2Trig,
-            fHH2Accent,
-            fHH2F0,
-            fHH2Tone,
-            fHH2Decay,
-            fHH2Noise,
-            temp1_,
-            temp2_,
-            hh2_out,
-            32);
-        data_ptrs[5] = hh2_out;
-    }
-    else{
-        data_ptrs[5] = silence;
-    }
-
-    // rimshot
-    MK_BOOL_PAR(bRSMute, rs_mute)
-    MK_FLT_PAR_ABS(fRSLev, rs_lev, 4095.f, 2.f)
-    fRSLev *= fRSLev;
-    MK_FLT_PAR_ABS_PAN(fRSPan, rs_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRSFX1Send, rs_fx1, 4095.f, maxFXSendLevelDly)
-    fRSFX1Send *= fRSFX1Send;
-    MK_FLT_PAR_ABS(fRSFX2Send, rs_fx2, 4095.f, maxFXSendLevelRev)
-    fRSFX2Send *= fRSFX2Send;
-
-    if (!bRSMute){
-        MK_FLT_PAR_ABS_MIN_MAX(rs_f0_, rs_f0, 4095.f, 70.f, 350.f)
-        MK_FLT_PAR_ABS_MIN_MAX(rs_decay_, rs_decay, 4095.f, .1f, .75f)
-        MK_FLT_PAR_ABS_MIN_MAX(rs_noise_, rs_noise, 4095.f, 0.f, .2f)
-        MK_FLT_PAR_ABS_MIN_MAX(rs_accent_, rs_accent, 4095.f, 0.1f, 1.f)
-        MK_FLT_PAR_ABS_MIN_MAX(rs_base_, rs_tone, 4095.f, .35f, .65f)
-        MK_FLT_PAR_ABS_MIN_MAX(rs_reso_hp_, rs_tone, 4095.f, 5.f, 1.f)
-
-        rs.params.f0 = rs_f0_ / 44100.f;
-        rs.params.decay = rs_decay_;
-        rs.params.accent = rs_accent_;
-        rs.params.reso_hp = rs_reso_hp_;
-        rs.params.base = rs_base_;
-        rs.params.noise_level = rs_noise_;
-
-        MK_BOOL_PAR(bRSTrig, rs_trigger)
-        if (bRSTrig != rs_trig_prev && bRSTrig){
-            rs_trig_prev = true;
-            rs.Trigger();
-        }
-        else if (!bRSTrig){
-            rs_trig_prev = false;
-        }
-
-        rs.Process(rs_out, 32);
-        data_ptrs[6] = rs_out;
-    }
-    else{
-        data_ptrs[6] = silence;
-    }
-
-
-    // clap
-    MK_BOOL_PAR(bCLMute, cl_mute)
-    MK_FLT_PAR_ABS(fCLLev, cl_lev, 4095.f, 2.f)
-    fCLLev *= fCLLev;
-    MK_FLT_PAR_ABS_PAN(fCLPan, cl_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fCLFX1Send, cl_fx1, 4095.f, maxFXSendLevelDly)
-    fCLFX1Send *= fCLFX1Send;
-    MK_FLT_PAR_ABS(fCLFX2Send, cl_fx2, 4095.f, maxFXSendLevelRev)
-    fCLFX2Send *= fCLFX2Send;
-
-    if (!bCLMute){
-        MK_FLT_PAR_ABS_MIN_MAX(cl_pitch1_, cl_f0, 4095.f, 350.f, 4000.f)
-        MK_FLT_PAR_ABS_MIN_MAX(cl_pitch2_, cl_f0, 4095.f, 300.f, 3000.f)
-        MK_FLT_PAR_ABS_MIN_MAX(cl_reso1_, cl_tone, 4095.f, 1.f, 2.5f)
-        MK_FLT_PAR_ABS_MIN_MAX(cl_reso2_, cl_tone, 4095.f, 0.75f, 6.5f)
-        MK_FLT_PAR_ABS_MIN_MAX(cl_decay1_, cl_decay, 4095.f, 0.05f, 0.3f)
-        MK_FLT_PAR_ABS_MIN_MAX(cl_decay2_, cl_decay, 4095.f, 0.05f, 2.f)
-        MK_FLT_PAR_ABS_MIN_MAX(cl_scale_attack_, cl_scale, 4095.f, 0.f, 0.1f)
-        MK_FLT_PAR_ABS_MIN_MAX(cl_scale_trans, cl_scale, 4095.f, 1.f, 3.f)
-        MK_INT_PAR_ABS(cl_trans_, cl_transient, 16)
-
-        cl.params.pitch1 = cl_pitch1_ / 44100.f;
-        cl.params.pitch2 = cl_pitch2_ / 44100.f;
-        cl.params.reso1 = cl_reso1_;
-        cl.params.reso2 = cl_reso2_;
-        cl.params.decay1 = cl_decay1_;
-        cl.params.decay2 = cl_decay2_;
-        cl.params.attack = cl_scale_attack_;
-        cl.params.scale = cl_scale_trans;
-        cl.params.transient = cl_trans_ % 16;
-
-        MK_BOOL_PAR(bCLTrig, cl_trigger)
-        if (bCLTrig != cl_trig_prev && bCLTrig){
-            cl_trig_prev = true;
-            cl.Trigger();
-        }
-        else if (!bCLTrig){
-            cl_trig_prev = false;
-        }
-
-        cl.Process(cl_out, 32);
-        data_ptrs[7] = cl_out;
-    }
-    else{
-        data_ptrs[7] = silence;
-    }
-
-	// FM Bass Drum
     MK_BOOL_PAR(bFMBMute, fmb_mute)
     MK_BOOL_PAR(bFMBTrig, fmb_trigger)
     if (bFMBTrig != fmb_trig_prev && bFMBTrig){
@@ -356,347 +225,522 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 	    fmb_trig_prev = false;
     }
 
-    MK_FLT_PAR_ABS(fFMBLev, fmb_lev, 4095.f, 2.f)
-    fFMBLev *= fFMBLev;
     MK_FLT_PAR_ABS_PAN(fFMBPan, fmb_pan, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fFMBFX1Send, fmb_fx1, 4095.f, maxFXSendLevelDly)
-    fFMBFX1Send *= fFMBFX1Send;
-    MK_FLT_PAR_ABS(fFMBFX2Send, fmb_fx2, 4095.f, maxFXSendLevelRev)
-    fFMBFX2Send *= fFMBFX2Send;
+    MK_FLT_PAR_ABS(fFMBLev, fmb_lev, 4095.f, 2.f); fFMBLev *= fFMBLev;
+    MK_FLT_PAR_ABS(fFMBFX1Send, fmb_fx1, 4095.f, maxFXSendLevelDly); fFMBFX1Send *= fFMBFX1Send;
+    MK_FLT_PAR_ABS(fFMBFX2Send, fmb_fx2, 4095.f, maxFXSendLevelRev); fFMBFX2Send *= fFMBFX2Send;    MK_FLT_PAR_ABS_PAN(fHH1Pan, hh1_pan, 4095.f, 1.f)
 
-    if (!bFMBMute){
-	    MK_BOOL_PAR(bFMBUseRatioMode, fmb_use_ratio_mode)
-	    MK_BOOL_PAR(bFMBModEnvSync, fmb_mod_env_sync)
-	    float fFMBF0 = fmb_f_b/4095.f * (200.f-20.f)+20.f;
-    	if(cv_fmb_f_b != -1){
-    		float fMod = data.cv[cv_fmb_f_b] * 5.f;
-    		fMod = CTAG::SP::HELPERS::fastpow2(fMod);
-    		fFMBF0 *= fMod;
-    	}
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayBase, fmb_d_b, 4095.f, 0.001f, 1.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBFMod, fmb_f_m, 4095.f, 40.f, 2000.f)
-    	MK_FLT_PAR_ABS(fFMBRatioModIndex, fmb_f_m, 4095.f, 63.f)
-    	int iModIndex = static_cast<int>(fFMBRatioModIndex);
-    	CONSTRAIN(iModIndex, 0, 63)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBI, fmb_I, 4095.f, 0.f, 10.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayMod, fmb_d_m, 4095.f, 0.001f, .5f)
-		MK_INT_PAR(iModFeedback, fmb_b_m, 16.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBAmpFreq, fmb_A_f, 4095.f, 0.f, 1000.f)
-	    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayFreq, fmb_d_f, 4095.f, 0.001f, .1f)
+    if (bFMBMute || fFMBLev < minVolume) {
+        return;
+    }
 
-	    fmb.params.use_ratio_mode = bFMBUseRatioMode;
-	    fmb.params.mod_env_sync = bFMBModEnvSync;
-	    fmb.params.f_b = fFMBF0;
-	    fmb.params.d_b = fFMBDecayBase;
-	    fmb.params.f_m = fFMBFMod;
-    	fmb.params.mod_ratio_index = iModIndex;
-	    fmb.params.I = fFMBI;
-	    fmb.params.d_m = fFMBDecayMod;
-	    fmb.params.b_m = static_cast<float>(iModFeedback);
-	    fmb.params.A_f = fFMBAmpFreq;
-	    fmb.params.d_f = fFMBDecayFreq;
+    MK_BOOL_PAR(bFMBUseRatioMode, fmb_use_ratio_mode)
+    MK_BOOL_PAR(bFMBModEnvSync, fmb_mod_env_sync)
+    float fFMBF0 = fmb_f_b/4095.f * (200.f-20.f)+20.f;
+    if(cv_fmb_f_b != -1){
+        float fMod = data.cv[cv_fmb_f_b] * 5.f;
+        fMod = CTAG::SP::HELPERS::fastpow2(fMod);
+        fFMBF0 *= fMod;
+    }
+    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayBase, fmb_d_b, 4095.f, 0.001f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fFMBFMod, fmb_f_m, 4095.f, 40.f, 2000.f)
+    MK_FLT_PAR_ABS(fFMBRatioModIndex, fmb_f_m, 4095.f, 63.f)
+    int iModIndex = static_cast<int>(fFMBRatioModIndex);
+    CONSTRAIN(iModIndex, 0, 63)
+    MK_FLT_PAR_ABS_MIN_MAX(fFMBI, fmb_I, 4095.f, 0.f, 10.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayMod, fmb_d_m, 4095.f, 0.001f, .5f)
+    MK_INT_PAR(iModFeedback, fmb_b_m, 16.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fFMBAmpFreq, fmb_A_f, 4095.f, 0.f, 1000.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fFMBDecayFreq, fmb_d_f, 4095.f, 0.001f, .1f)
 
-	    fmb.Process(fmb_out, 32);
-	    data_ptrs[8] = fmb_out;
+    fmb.params.use_ratio_mode = bFMBUseRatioMode;
+    fmb.params.mod_env_sync = bFMBModEnvSync;
+    fmb.params.f_b = fFMBF0;
+    fmb.params.d_b = fFMBDecayBase;
+    fmb.params.f_m = fFMBFMod;
+    fmb.params.mod_ratio_index = iModIndex;
+    fmb.params.I = fFMBI;
+    fmb.params.d_m = fFMBDecayMod;
+    fmb.params.b_m = static_cast<float>(iModFeedback);
+    fmb.params.A_f = fFMBAmpFreq;
+    fmb.params.d_f = fFMBDecayFreq;
+
+    fmb.Process(fmb_out, 32);
+    mixRenderOutputMono(fmb_out, fFMBLev, fFMBPan, fFMBFX1Send, fFMBFX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderHH1(const ProcessData& data) {
+    float hh1_out[32];
+
+    MK_BOOL_PAR(bHH1Mute, hh1_mute)
+    MK_BOOL_PAR(bHH1Trig, hh1_trigger)
+    if (bHH1Trig != hh1_trig_prev){
+        hh1_trig_prev = bHH1Trig;
     }
     else{
-	    data_ptrs[8] = silence;
+        bHH1Trig = false;
     }
 
+    MK_FLT_PAR_ABS_PAN(fHH1Pan, hh1_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH1Lev, hh1_lev, 4095.f, 2.f); fHH1Lev *= fHH1Lev;
+    MK_FLT_PAR_ABS(fHH1FX1Send, hh1_fx1, 4095.f, maxFXSendLevelDly); fHH1FX1Send *= fHH1FX1Send;
+    MK_FLT_PAR_ABS(fHH1FX2Send, hh1_fx2, 4095.f, maxFXSendLevelRev); fHH1FX2Send *= fHH1FX2Send;
 
-    // romplers
+    if (bHH1Mute || fHH1Lev < minVolume) {
+        return;
+    }
+
+    MK_FLT_PAR_ABS(fHH1Accent, hh1_accent, 4095.f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fHH1F0, hh1_f0, 4095.f, 0.0005f, 0.1f)
+    MK_FLT_PAR_ABS(fHH1Tone, hh1_tone, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH1Decay, hh1_decay, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH1Noise, hh1_noise, 4095.f, 1.f)
+    hh1.Render(
+        false,
+        bHH1Trig,
+        fHH1Accent,
+        fHH1F0,
+        fHH1Tone,
+        fHH1Decay,
+        fHH1Noise,
+        temp1_,
+        temp2_,
+        hh1_out,
+        32);
+
+    mixRenderOutputMono(hh1_out, fHH1Lev, fHH1Pan, fHH1FX1Send, fHH1FX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderHH2(const ProcessData& data) {
+    float hh2_out[32];
+    MK_BOOL_PAR(bHH2Mute, hh2_mute)
+    MK_BOOL_PAR(bHH2Trig, hh2_trigger)
+    if (bHH2Trig != hh2_trig_prev){
+        hh2_trig_prev = bHH2Trig;
+    }
+    else{
+        bHH2Trig = false;
+    }
+
+    MK_FLT_PAR_ABS_PAN(fHH2Pan, hh2_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH2Lev, hh2_lev, 4095.f, 2.f); fHH2Lev *= fHH2Lev;
+    MK_FLT_PAR_ABS(fHH2FX1Send, hh2_fx1, 4095.f, maxFXSendLevelDly); fHH2FX1Send *= fHH2FX1Send;
+    MK_FLT_PAR_ABS(fHH2FX2Send, hh2_fx2, 4095.f, maxFXSendLevelRev); fHH2FX2Send *= fHH2FX2Send;
+
+    if (bHH2Mute || fHH2Lev < minVolume) {
+        return;
+    }
+
+    MK_FLT_PAR_ABS(fHH2Accent, hh2_accent, 4095.f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(fHH2F0, hh2_f0, 4095.f, .00001f, .1f)
+    MK_FLT_PAR_ABS(fHH2Tone, hh2_tone, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH2Decay, hh2_decay, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fHH2Noise, hh2_noise, 4095.f, 1.f)
+    hh2.Render(
+        false,
+        bHH2Trig,
+        fHH2Accent,
+        fHH2F0,
+        fHH2Tone,
+        fHH2Decay,
+        fHH2Noise,
+        temp1_,
+        temp2_,
+        hh2_out,
+        32);
+
+    mixRenderOutputMono(hh2_out, fHH2Lev, fHH2Pan, fHH2FX1Send, fHH2FX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderCL(const ProcessData& data) {
+    float cl_out[32];
+    MK_BOOL_PAR(bCLMute, cl_mute)
+
+    MK_FLT_PAR_ABS_PAN(fCLPan, cl_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fCLLev, cl_lev, 4095.f, 2.f); fCLLev *= fCLLev;
+    MK_FLT_PAR_ABS(fCLFX1Send, cl_fx1, 4095.f, maxFXSendLevelDly); fCLFX1Send *= fCLFX1Send;
+    MK_FLT_PAR_ABS(fCLFX2Send, cl_fx2, 4095.f, maxFXSendLevelRev); fCLFX2Send *= fCLFX2Send;
+
+    if (bCLMute || fCLLev < minVolume) {
+        return;
+    }
+
+    MK_FLT_PAR_ABS_MIN_MAX(cl_pitch1_, cl_f0, 4095.f, 350.f, 4000.f)
+    MK_FLT_PAR_ABS_MIN_MAX(cl_pitch2_, cl_f0, 4095.f, 300.f, 3000.f)
+    MK_FLT_PAR_ABS_MIN_MAX(cl_reso1_, cl_tone, 4095.f, 1.f, 2.5f)
+    MK_FLT_PAR_ABS_MIN_MAX(cl_reso2_, cl_tone, 4095.f, 0.75f, 6.5f)
+    MK_FLT_PAR_ABS_MIN_MAX(cl_decay1_, cl_decay, 4095.f, 0.05f, 0.3f)
+    MK_FLT_PAR_ABS_MIN_MAX(cl_decay2_, cl_decay, 4095.f, 0.05f, 2.f)
+    MK_FLT_PAR_ABS_MIN_MAX(cl_scale_attack_, cl_scale, 4095.f, 0.f, 0.1f)
+    MK_FLT_PAR_ABS_MIN_MAX(cl_scale_trans, cl_scale, 4095.f, 1.f, 3.f)
+    MK_INT_PAR_ABS(cl_trans_, cl_transient, 16)
+
+    cl.params.pitch1 = cl_pitch1_ / 44100.f;
+    cl.params.pitch2 = cl_pitch2_ / 44100.f;
+    cl.params.reso1 = cl_reso1_;
+    cl.params.reso2 = cl_reso2_;
+    cl.params.decay1 = cl_decay1_;
+    cl.params.decay2 = cl_decay2_;
+    cl.params.attack = cl_scale_attack_;
+    cl.params.scale = cl_scale_trans;
+    cl.params.transient = cl_trans_ % 16;
+
+    MK_BOOL_PAR(bCLTrig, cl_trigger)
+    if (bCLTrig != cl_trig_prev && bCLTrig){
+        cl_trig_prev = true;
+        cl.Trigger();
+    }
+    else if (!bCLTrig){
+        cl_trig_prev = false;
+    }
+
+    cl.Process(cl_out, 32);
+    mixRenderOutputMono(cl_out, fCLLev, fCLPan, fCLFX1Send, fCLFX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderRS(const ProcessData& data) {
+    float rs_out[32];
+    MK_BOOL_PAR(bRSMute, rs_mute)
+
+    MK_FLT_PAR_ABS_PAN(fRSPan, rs_pan, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fRSLev, rs_lev, 4095.f, 2.f); fRSLev *= fRSLev;
+    MK_FLT_PAR_ABS(fRSFX1Send, rs_fx1, 4095.f, maxFXSendLevelDly); fRSFX1Send *= fRSFX1Send;
+    MK_FLT_PAR_ABS(fRSFX2Send, rs_fx2, 4095.f, maxFXSendLevelRev); fRSFX2Send *= fRSFX2Send;
+
+    if (bRSMute || fRSLev < minVolume) {
+        return;
+    }
+
+    MK_FLT_PAR_ABS_MIN_MAX(rs_f0_, rs_f0, 4095.f, 70.f, 350.f)
+    MK_FLT_PAR_ABS_MIN_MAX(rs_decay_, rs_decay, 4095.f, .1f, .75f)
+    MK_FLT_PAR_ABS_MIN_MAX(rs_noise_, rs_noise, 4095.f, 0.f, .2f)
+    MK_FLT_PAR_ABS_MIN_MAX(rs_accent_, rs_accent, 4095.f, 0.1f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX(rs_base_, rs_tone, 4095.f, .35f, .65f)
+    MK_FLT_PAR_ABS_MIN_MAX(rs_reso_hp_, rs_tone, 4095.f, 5.f, 1.f)
+
+    rs.params.f0 = rs_f0_ / 44100.f;
+    rs.params.decay = rs_decay_;
+    rs.params.accent = rs_accent_;
+    rs.params.reso_hp = rs_reso_hp_;
+    rs.params.base = rs_base_;
+    rs.params.noise_level = rs_noise_;
+
+    MK_BOOL_PAR(bRSTrig, rs_trigger)
+    if (bRSTrig != rs_trig_prev && bRSTrig){
+        rs_trig_prev = true;
+        rs.Trigger();
+    }
+    else if (!bRSTrig){
+        rs_trig_prev = false;
+    }
+
+    rs.Process(rs_out, 32);
+    mixRenderOutputMono(rs_out, fRSLev, fRSPan, fRSFX1Send, fRSFX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderS1(const ProcessData& data) {
+    float s1_out[32];
     uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
     float fS1Lev = 0.f, fS1Pan = 0.f;
     MK_BOOL_PAR(bMuteS1, s1_mute)
-    MK_FLT_PAR_ABS(fS1FX1Send, s1_fx1, 4095.f, maxFXSendLevelDly)
-    fS1FX1Send *= fS1FX1Send;
-    MK_FLT_PAR_ABS(fS1FX2Send, s1_fx2, 4095.f, maxFXSendLevelRev)
-    fS1FX2Send *= fS1FX2Send;
-    if (!bMuteS1){
-        MK_BOOL_PAR(bGateS1, s1_gate)
-        rompler[0].params.gate = bGateS1;
-        fS1Lev = s1_lev / 4095.f * 1.5f;
-        if (cv_s1_lev != -1) fS1Lev += fabsf(data.cv[cv_s1_lev]);
-        fS1Lev *= fS1Lev;
-        fS1Pan = (s1_pan / 4095.f + 1.f) / 2.f * 1.f;
-        if (cv_s1_pan != -1) fS1Pan = fabsf(data.cv[cv_s1_pan]) * 1.f;
-        float fS1Speed = s1_speed / 4095.f * 2.f;
-        if (cv_s1_speed != -1) fS1Speed += data.cv[cv_s1_speed] * 2.f;
-        CONSTRAIN(fS1Speed, -2.f, 2.f)
-        rompler[0].params.playbackSpeed = fS1Speed;
-        float fS1Pitch = s1_pitch;
-        if (cv_s1_pitch != -1){
-            fS1Pitch += data.cv[cv_s1_pitch] * 12.f * 5.f;
-        }
-        rompler[0].params.pitch = fS1Pitch;
-        MK_INT_PAR_ABS(iS1Bank, s1_bank, 32.f)
-        CONSTRAIN(iS1Bank, 0, 31)
-        MK_INT_PAR_ABS(iS1Slice, s1_slice, 32.f)
-        CONSTRAIN(iS1Slice, 0, 31)
-        iS1Slice = iS1Bank * 32 + iS1Slice + firstNonWtSlice;
-        rompler[0].params.slice = iS1Slice;
-        MK_FLT_PAR_ABS(fS1Start, s1_start, 4095.f, 1.f)
-        rompler[0].params.startOffsetRelative = fS1Start;
-        MK_FLT_PAR_ABS(fS1Length, s1_end, 4095.f, 1.f)
-        rompler[0].params.lengthRelative = fS1Length;
-        MK_FLT_PAR_ABS(fS1LoopPos, s1_lp_pos, 4095.f, 1.f)
-        rompler[0].params.loopMarker = fS1LoopPos;
-        MK_BOOL_PAR(bS1Loop, s1_lp)
-        rompler[0].params.loop = bS1Loop;
-        MK_BOOL_PAR(bS1LoopPipo, s1_lp_pp)
-        rompler[0].params.loopPiPo = bS1LoopPipo;
-        MK_FLT_PAR_ABS(fS1Attack, s1_atk, 4095.f, 2.f)
-        rompler[0].params.a = fS1Attack;
-        MK_FLT_PAR_ABS(fS1Decay, s1_dcy, 4095.f, 50.f)
-        rompler[0].params.d = fS1Decay;
-        MK_FLT_PAR_ABS_SFT(fS1EGFM, s1_eg2fm, 4095.f, 12.f)
-        rompler[0].params.egFM = fS1EGFM;
-        MK_INT_PAR_ABS(iS1Brr, s1_brr, 16)
-        CONSTRAIN(iS1Brr, 0, 14)
-        rompler[0].params.bitReduction = iS1Brr;
-        // filter params
-        MK_FLT_PAR_ABS(fS1Cut, s1_fc, 4095.f, 1.f)
-        rompler[0].params.cutoff = fS1Cut;
-        MK_FLT_PAR_ABS(fS1Reso, s1_fq, 4095.f, 10.f)
-        rompler[0].params.resonance = fS1Reso;
-        MK_INT_PAR_ABS(iS1FType, s1_ft, 4.f)
-        CONSTRAIN(iS1FType, 0, 3);
-        rompler[0].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS1FType);
-        rompler[0].Process(s1_out, 32);
-        data_ptrs[9] = s1_out;
-    }
-    else{
-        data_ptrs[9] = silence;
+    fS1Lev = s1_lev / 4095.f * 1.5f;
+    if (cv_s1_lev != -1) fS1Lev += fabsf(data.cv[cv_s1_lev]);
+    fS1Lev *= fS1Lev;
+    fS1Pan = (s1_pan / 4095.f + 1.f) / 2.f * 1.f;
+    if (cv_s1_pan != -1) fS1Pan = fabsf(data.cv[cv_s1_pan]) * 1.f;
+    MK_FLT_PAR_ABS(fS1FX1Send, s1_fx1, 4095.f, maxFXSendLevelDly); fS1FX1Send *= fS1FX1Send;
+    MK_FLT_PAR_ABS(fS1FX2Send, s1_fx2, 4095.f, maxFXSendLevelRev); fS1FX2Send *= fS1FX2Send;
+
+    if (bMuteS1 || fS1Lev < minVolume) {
+        return;
     }
 
+    MK_BOOL_PAR(bGateS1, s1_gate)
+    rompler[0].params.gate = bGateS1;
+    fS1Lev = s1_lev / 4095.f * 1.5f;
+    if (cv_s1_lev != -1) fS1Lev += fabsf(data.cv[cv_s1_lev]);
+    fS1Lev *= fS1Lev;
+    float fS1Speed = s1_speed / 4095.f * 2.f;
+    if (cv_s1_speed != -1) fS1Speed += data.cv[cv_s1_speed] * 2.f;
+    CONSTRAIN(fS1Speed, -2.f, 2.f)
+    rompler[0].params.playbackSpeed = fS1Speed;
+    float fS1Pitch = s1_pitch;
+    if (cv_s1_pitch != -1){
+        fS1Pitch += data.cv[cv_s1_pitch] * 12.f * 5.f;
+    }
+    rompler[0].params.pitch = fS1Pitch;
+    MK_INT_PAR_ABS(iS1Bank, s1_bank, 32.f)
+    CONSTRAIN(iS1Bank, 0, 31)
+    MK_INT_PAR_ABS(iS1Slice, s1_slice, 32.f)
+    CONSTRAIN(iS1Slice, 0, 31)
+    iS1Slice = iS1Bank * 32 + iS1Slice + firstNonWtSlice;
+    rompler[0].params.slice = iS1Slice;
+    MK_FLT_PAR_ABS(fS1Start, s1_start, 4095.f, 1.f)
+    rompler[0].params.startOffsetRelative = fS1Start;
+    MK_FLT_PAR_ABS(fS1Length, s1_end, 4095.f, 1.f)
+    rompler[0].params.lengthRelative = fS1Length;
+    MK_FLT_PAR_ABS(fS1LoopPos, s1_lp_pos, 4095.f, 1.f)
+    rompler[0].params.loopMarker = fS1LoopPos;
+    MK_BOOL_PAR(bS1Loop, s1_lp)
+    rompler[0].params.loop = bS1Loop;
+    MK_BOOL_PAR(bS1LoopPipo, s1_lp_pp)
+    rompler[0].params.loopPiPo = bS1LoopPipo;
+    MK_FLT_PAR_ABS(fS1Attack, s1_atk, 4095.f, 2.f)
+    rompler[0].params.a = fS1Attack;
+    MK_FLT_PAR_ABS(fS1Decay, s1_dcy, 4095.f, 50.f)
+    rompler[0].params.d = fS1Decay;
+    MK_FLT_PAR_ABS_SFT(fS1EGFM, s1_eg2fm, 4095.f, 12.f)
+    rompler[0].params.egFM = fS1EGFM;
+    MK_INT_PAR_ABS(iS1Brr, s1_brr, 16)
+    CONSTRAIN(iS1Brr, 0, 14)
+    rompler[0].params.bitReduction = iS1Brr;
+    // filter params
+    MK_FLT_PAR_ABS(fS1Cut, s1_fc, 4095.f, 1.f)
+    rompler[0].params.cutoff = fS1Cut;
+    MK_FLT_PAR_ABS(fS1Reso, s1_fq, 4095.f, 10.f)
+    rompler[0].params.resonance = fS1Reso;
+    MK_INT_PAR_ABS(iS1FType, s1_ft, 4.f)
+    CONSTRAIN(iS1FType, 0, 3);
+    rompler[0].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS1FType);
+    rompler[0].Process(s1_out, 32);
+    mixRenderOutputMono(s1_out, fS1Lev, fS1Pan, fS1FX1Send, fS1FX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderS2(const ProcessData& data) {
+    float s2_out[32];
+    uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
     float fS2Lev = 0.f, fS2Pan = 0.f;
     MK_BOOL_PAR(bMuteS2, s2_mute)
-    MK_FLT_PAR_ABS(fS2FX1Send, s2_fx1, 4095.f, maxFXSendLevelDly)
-    fS2FX1Send *= fS2FX1Send;
-    MK_FLT_PAR_ABS(fS2FX2Send, s2_fx2, 4095.f, maxFXSendLevelRev)
-    fS2FX2Send *= fS2FX2Send;
+    fS2Lev = s2_lev / 4095.f * 1.5f;
+    if (cv_s2_lev != -1) fS2Lev += fabsf(data.cv[cv_s2_lev]);
+    fS2Lev *= fS2Lev;
+    fS2Pan = (s2_pan / 4095.f + 1.f) / 2.f * 1.f;
+    if (cv_s2_pan != -1) fS2Pan = fabsf(data.cv[cv_s2_pan]) * 1.f;
+    MK_FLT_PAR_ABS(fS2FX1Send, s2_fx1, 4095.f, maxFXSendLevelDly); fS2FX1Send *= fS2FX1Send;
+    MK_FLT_PAR_ABS(fS2FX2Send, s2_fx2, 4095.f, maxFXSendLevelRev); fS2FX2Send *= fS2FX2Send;
 
-    if (!bMuteS2){
-        MK_BOOL_PAR(bGateS2, s2_gate)
-        rompler[1].params.gate = bGateS2;
-        fS2Lev = s2_lev / 4095.f * 1.5f;
-        if (cv_s2_lev != -1) fS2Lev += fabsf(data.cv[cv_s2_lev]);
-        fS2Lev *= fS2Lev;
-        fS2Pan = (s2_pan / 4095.f + 1.f) / 2.f * 1.f;
-        if (cv_s2_pan != -1) fS2Pan = fabsf(data.cv[cv_s2_pan]) * 1.f;
-        float fS2Speed = s2_speed / 4095.f * 2.f;
-        if (cv_s2_speed != -1) fS2Speed += data.cv[cv_s2_speed] * 2.f;
-        CONSTRAIN(fS2Speed, -2.f, 2.f)
-        rompler[1].params.playbackSpeed = fS2Speed;
-        float fS2Pitch = s2_pitch;
-        if (cv_s2_pitch != -1){
-            fS2Pitch += data.cv[cv_s2_pitch] * 12.f * 5.f;
-        }
-        rompler[1].params.pitch = fS2Pitch;
-        MK_INT_PAR_ABS(iS2Bank, s2_bank, 32.f)
-        CONSTRAIN(iS2Bank, 0, 31)
-        MK_INT_PAR_ABS(iS2Slice, s2_slice, 32.f)
-        CONSTRAIN(iS2Slice, 0, 31)
-        iS2Slice = iS2Bank * 32 + iS2Slice + firstNonWtSlice;
-        rompler[1].params.slice = iS2Slice;
-        MK_FLT_PAR_ABS(fS2Start, s2_start, 4095.f, 1.f)
-        rompler[1].params.startOffsetRelative = fS2Start;
-        MK_FLT_PAR_ABS(fS2Length, s2_end, 4095.f, 1.f)
-        rompler[1].params.lengthRelative = fS2Length;
-        MK_FLT_PAR_ABS(fS2LoopPos, s2_lp_pos, 4095.f, 1.f)
-        rompler[1].params.loopMarker = fS2LoopPos;
-        MK_BOOL_PAR(bS2Loop, s2_lp)
-        rompler[1].params.loop = bS2Loop;
-        MK_BOOL_PAR(bS2LoopPipo, s2_lp_pp)
-        rompler[1].params.loopPiPo = bS2LoopPipo;
-        MK_FLT_PAR_ABS(fS2Attack, s2_atk, 4095.f, 2.f)
-        rompler[1].params.a = fS2Attack;
-        MK_FLT_PAR_ABS(fS2Decay, s2_dcy, 4095.f, 50.f)
-        rompler[1].params.d = fS2Decay;
-        MK_FLT_PAR_ABS_SFT(fS2EGFM, s2_eg2fm, 4095.f, 12.f)
-        rompler[1].params.egFM = fS2EGFM;
-        MK_INT_PAR_ABS(iS2Brr, s2_brr, 16)
-        CONSTRAIN(iS2Brr, 0, 14)
-        rompler[1].params.bitReduction = iS2Brr;
-        // filter params
-        MK_FLT_PAR_ABS(fS2Cut, s2_fc, 4095.f, 1.f)
-        rompler[1].params.cutoff = fS2Cut;
-        MK_FLT_PAR_ABS(fS2Reso, s2_fq, 4095.f, 10.f)
-        rompler[1].params.resonance = fS2Reso;
-        MK_INT_PAR_ABS(iS2FType, s2_ft, 4.f)
-        CONSTRAIN(iS2FType, 0, 3);
-        rompler[1].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS2FType);
-        rompler[1].Process(s2_out, 32);
-        data_ptrs[10] = s2_out;
-    }
-    else{
-        data_ptrs[10] = silence;
+    if (bMuteS2 || fS2Lev < minVolume) {
+        return;
     }
 
-    float fS3Lev = 0.f, fS3Pan = 0.f;;
+    MK_BOOL_PAR(bGateS2, s2_gate)
+    rompler[1].params.gate = bGateS2;
+    fS2Lev = s2_lev / 4095.f * 1.5f;
+    if (cv_s2_lev != -1) fS2Lev += fabsf(data.cv[cv_s2_lev]);
+    fS2Lev *= fS2Lev;
+    float fS2Speed = s2_speed / 4095.f * 2.f;
+    if (cv_s2_speed != -1) fS2Speed += data.cv[cv_s2_speed] * 2.f;
+    CONSTRAIN(fS2Speed, -2.f, 2.f)
+    rompler[1].params.playbackSpeed = fS2Speed;
+    float fS2Pitch = s2_pitch;
+    if (cv_s2_pitch != -1){
+        fS2Pitch += data.cv[cv_s2_pitch] * 12.f * 5.f;
+    }
+    rompler[1].params.pitch = fS2Pitch;
+    MK_INT_PAR_ABS(iS2Bank, s2_bank, 32.f)
+    CONSTRAIN(iS2Bank, 0, 31)
+    MK_INT_PAR_ABS(iS2Slice, s2_slice, 32.f)
+    CONSTRAIN(iS2Slice, 0, 31)
+    iS2Slice = iS2Bank * 32 + iS2Slice + firstNonWtSlice;
+    rompler[1].params.slice = iS2Slice;
+    MK_FLT_PAR_ABS(fS2Start, s2_start, 4095.f, 1.f)
+    rompler[1].params.startOffsetRelative = fS2Start;
+    MK_FLT_PAR_ABS(fS2Length, s2_end, 4095.f, 1.f)
+    rompler[1].params.lengthRelative = fS2Length;
+    MK_FLT_PAR_ABS(fS2LoopPos, s2_lp_pos, 4095.f, 1.f)
+    rompler[1].params.loopMarker = fS2LoopPos;
+    MK_BOOL_PAR(bS2Loop, s2_lp)
+    rompler[1].params.loop = bS2Loop;
+    MK_BOOL_PAR(bS2LoopPipo, s2_lp_pp)
+    rompler[1].params.loopPiPo = bS2LoopPipo;
+    MK_FLT_PAR_ABS(fS2Attack, s2_atk, 4095.f, 2.f)
+    rompler[1].params.a = fS2Attack;
+    MK_FLT_PAR_ABS(fS2Decay, s2_dcy, 4095.f, 50.f)
+    rompler[1].params.d = fS2Decay;
+    MK_FLT_PAR_ABS_SFT(fS2EGFM, s2_eg2fm, 4095.f, 12.f)
+    rompler[1].params.egFM = fS2EGFM;
+    MK_INT_PAR_ABS(iS2Brr, s2_brr, 16)
+    CONSTRAIN(iS2Brr, 0, 14)
+    rompler[1].params.bitReduction = iS2Brr;
+    // filter params
+    MK_FLT_PAR_ABS(fS2Cut, s2_fc, 4095.f, 1.f)
+    rompler[1].params.cutoff = fS2Cut;
+    MK_FLT_PAR_ABS(fS2Reso, s2_fq, 4095.f, 10.f)
+    rompler[1].params.resonance = fS2Reso;
+    MK_INT_PAR_ABS(iS2FType, s2_ft, 4.f)
+    CONSTRAIN(iS2FType, 0, 3);
+    rompler[1].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS2FType);
+    rompler[1].Process(s2_out, 32);
+    mixRenderOutputMono(s2_out, fS2Lev, fS2Pan, fS2FX1Send, fS2FX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderS3(const ProcessData& data) {
+    float s3_out[32];
+    uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
+
     MK_BOOL_PAR(bMuteS3, s3_mute)
-    MK_FLT_PAR_ABS(fS3FX1Send, s3_fx1, 4095.f, maxFXSendLevelDly)
-    fS3FX1Send *= fS3FX1Send;
-    MK_FLT_PAR_ABS(fS3FX2Send, s3_fx2, 4095.f, maxFXSendLevelRev)
-    fS3FX2Send *= fS3FX2Send;
+    float fS3Lev = 0.f, fS3Pan = 0.f;
+    fS3Lev = s3_lev / 4095.f * 1.5f;
+    if (cv_s3_lev != -1) fS3Lev += fabsf(data.cv[cv_s3_lev]);
+    fS3Lev *= fS3Lev;
+    fS3Pan = (s3_pan / 4095.f + 1.f) / 2.f * 1.f;
+    if (cv_s3_pan != -1) fS3Pan = fabsf(data.cv[cv_s3_pan]) * 1.f;
+    MK_FLT_PAR_ABS(fS3FX1Send, s3_fx1, 4095.f, maxFXSendLevelDly); fS3FX1Send *= fS3FX1Send;
+    MK_FLT_PAR_ABS(fS3FX2Send, s3_fx2, 4095.f, maxFXSendLevelRev); fS3FX2Send *= fS3FX2Send;
 
-    if (!bMuteS3){
-        MK_BOOL_PAR(bGateS3, s3_gate)
-        rompler[2].params.gate = bGateS3;
-        fS3Lev = s3_lev / 4095.f * 1.5f;
-        if (cv_s3_lev != -1) fS3Lev += fabsf(data.cv[cv_s3_lev]);
-        fS3Lev *= fS3Lev;
-        fS3Pan = (s3_pan / 4095.f + 1.f) / 2.f * 1.f;
-        if (cv_s3_pan != -1) fS3Pan = fabsf(data.cv[cv_s3_pan]) * 1.f;
-        float fS3Speed = s3_speed / 4095.f * 2.f;
-        if (cv_s3_speed != -1) fS3Speed += data.cv[cv_s3_speed] * 2.f;
-        CONSTRAIN(fS3Speed, -2.f, 2.f)
-        rompler[2].params.playbackSpeed = fS3Speed;
-        float fS3Pitch = s3_pitch;
-        if (cv_s3_pitch != -1){
-            fS3Pitch += data.cv[cv_s3_pitch] * 12.f * 5.f;
-        }
-        rompler[2].params.pitch = fS3Pitch;
-        MK_INT_PAR_ABS(iS3Bank, s3_bank, 32.f)
-        CONSTRAIN(iS3Bank, 0, 31)
-        MK_INT_PAR_ABS(iS3Slice, s3_slice, 32.f)
-        CONSTRAIN(iS3Slice, 0, 31)
-        iS3Slice = iS3Bank * 32 + iS3Slice + firstNonWtSlice;
-        rompler[2].params.slice = iS3Slice;
-        MK_FLT_PAR_ABS(fS3Start, s3_start, 4095.f, 1.f)
-        rompler[2].params.startOffsetRelative = fS3Start;
-        MK_FLT_PAR_ABS(fS3Length, s3_end, 4095.f, 1.f)
-        rompler[2].params.lengthRelative = fS3Length;
-        MK_FLT_PAR_ABS(fS3LoopPos, s3_lp_pos, 4095.f, 1.f)
-        rompler[2].params.loopMarker = fS3LoopPos;
-        MK_BOOL_PAR(bS3Loop, s3_lp)
-        rompler[2].params.loop = bS3Loop;
-        MK_BOOL_PAR(bS3LoopPipo, s3_lp_pp)
-        rompler[2].params.loopPiPo = bS3LoopPipo;
-        MK_FLT_PAR_ABS(fS3Attack, s3_atk, 4095.f, 2.f)
-        rompler[2].params.a = fS3Attack;
-        MK_FLT_PAR_ABS(fS3Decay, s3_dcy, 4095.f, 50.f)
-        rompler[2].params.d = fS3Decay;
-        MK_FLT_PAR_ABS_SFT(fS3EGFM, s3_eg2fm, 4095.f, 12.f)
-        rompler[2].params.egFM = fS3EGFM;
-        MK_INT_PAR_ABS(iS3Brr, s3_brr, 16)
-        CONSTRAIN(iS3Brr, 0, 14)
-        rompler[2].params.bitReduction = iS3Brr;
-        // filter params
-        MK_FLT_PAR_ABS(fS3Cut, s3_fc, 4095.f, 1.f)
-        rompler[2].params.cutoff = fS3Cut;
-        MK_FLT_PAR_ABS(fS3Reso, s3_fq, 4095.f, 10.f)
-        rompler[2].params.resonance = fS3Reso;
-        MK_INT_PAR_ABS(iS3FType, s3_ft, 4.f)
-        CONSTRAIN(iS3FType, 0, 3);
-        rompler[2].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS3FType);
-        rompler[2].Process(s3_out, 32);
-        data_ptrs[11] = s3_out;
-    }
-    else{
-        data_ptrs[11] = silence;
+    if (bMuteS3 || fS3Lev < minVolume) {
+        return;
     }
 
-    float fS4Lev = 0.f, fS4Pan = 0.f;;
+    MK_BOOL_PAR(bGateS3, s3_gate)
+    rompler[2].params.gate = bGateS3;
+    fS3Lev = s3_lev / 4095.f * 1.5f;
+    if (cv_s3_lev != -1) fS3Lev += fabsf(data.cv[cv_s3_lev]);
+    fS3Lev *= fS3Lev;
+    float fS3Speed = s3_speed / 4095.f * 2.f;
+    if (cv_s3_speed != -1) fS3Speed += data.cv[cv_s3_speed] * 2.f;
+    CONSTRAIN(fS3Speed, -2.f, 2.f)
+    rompler[2].params.playbackSpeed = fS3Speed;
+    float fS3Pitch = s3_pitch;
+    if (cv_s3_pitch != -1){
+        fS3Pitch += data.cv[cv_s3_pitch] * 12.f * 5.f;
+    }
+    rompler[2].params.pitch = fS3Pitch;
+    MK_INT_PAR_ABS(iS3Bank, s3_bank, 32.f)
+    CONSTRAIN(iS3Bank, 0, 31)
+    MK_INT_PAR_ABS(iS3Slice, s3_slice, 32.f)
+    CONSTRAIN(iS3Slice, 0, 31)
+    iS3Slice = iS3Bank * 32 + iS3Slice + firstNonWtSlice;
+    rompler[2].params.slice = iS3Slice;
+    MK_FLT_PAR_ABS(fS3Start, s3_start, 4095.f, 1.f)
+    rompler[2].params.startOffsetRelative = fS3Start;
+    MK_FLT_PAR_ABS(fS3Length, s3_end, 4095.f, 1.f)
+    rompler[2].params.lengthRelative = fS3Length;
+    MK_FLT_PAR_ABS(fS3LoopPos, s3_lp_pos, 4095.f, 1.f)
+    rompler[2].params.loopMarker = fS3LoopPos;
+    MK_BOOL_PAR(bS3Loop, s3_lp)
+    rompler[2].params.loop = bS3Loop;
+    MK_BOOL_PAR(bS3LoopPipo, s3_lp_pp)
+    rompler[2].params.loopPiPo = bS3LoopPipo;
+    MK_FLT_PAR_ABS(fS3Attack, s3_atk, 4095.f, 2.f)
+    rompler[2].params.a = fS3Attack;
+    MK_FLT_PAR_ABS(fS3Decay, s3_dcy, 4095.f, 50.f)
+    rompler[2].params.d = fS3Decay;
+    MK_FLT_PAR_ABS_SFT(fS3EGFM, s3_eg2fm, 4095.f, 12.f)
+    rompler[2].params.egFM = fS3EGFM;
+    MK_INT_PAR_ABS(iS3Brr, s3_brr, 16)
+    CONSTRAIN(iS3Brr, 0, 14)
+    rompler[2].params.bitReduction = iS3Brr;
+    // filter params
+    MK_FLT_PAR_ABS(fS3Cut, s3_fc, 4095.f, 1.f)
+    rompler[2].params.cutoff = fS3Cut;
+    MK_FLT_PAR_ABS(fS3Reso, s3_fq, 4095.f, 10.f)
+    rompler[2].params.resonance = fS3Reso;
+    MK_INT_PAR_ABS(iS3FType, s3_ft, 4.f)
+    CONSTRAIN(iS3FType, 0, 3);
+    rompler[2].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS3FType);
+    rompler[2].Process(s3_out, 32);
+    mixRenderOutputMono(s3_out, fS3Lev, fS3Pan, fS3FX1Send, fS3FX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderS4(const ProcessData& data) {
+    float s4_out[32];
+    uint32_t firstNonWtSlice = sampleRom.GetFirstNonWaveTableSlice();
+
     MK_BOOL_PAR(bMuteS4, s4_mute)
-    MK_FLT_PAR_ABS(fS4FX1Send, s4_fx1, 4095.f, maxFXSendLevelDly)
-    fS4FX1Send *= fS4FX1Send;
-    MK_FLT_PAR_ABS(fS4FX2Send, s4_fx2, 4095.f, maxFXSendLevelRev)
-    fS4FX2Send *= fS4FX2Send;
+    float fS4Lev = 0.f, fS4Pan = 0.f;
+    fS4Lev = s4_lev / 4095.f * 1.5f;
+    if (cv_s4_lev != -1) fS4Lev += fabsf(data.cv[cv_s4_lev]);
+    fS4Lev *= fS4Lev;
+    fS4Pan = (s4_pan / 4095.f + 1.f) / 2.f * 1.f;
+    if (cv_s4_pan != -1) fS4Pan = fabsf(data.cv[cv_s4_pan]) * 1.f;
+    MK_FLT_PAR_ABS(fS4FX1Send, s4_fx1, 4095.f, maxFXSendLevelDly); fS4FX1Send *= fS4FX1Send;
+    MK_FLT_PAR_ABS(fS4FX2Send, s4_fx2, 4095.f, maxFXSendLevelRev); fS4FX2Send *= fS4FX2Send;
 
-    if (!bMuteS4){
-        MK_BOOL_PAR(bGateS4, s4_gate)
-        rompler[3].params.gate = bGateS4;
-        fS4Lev = s4_lev / 4095.f * 1.5f;
-        if (cv_s4_lev != -1) fS4Lev += fabsf(data.cv[cv_s4_lev]);
-        fS4Lev *= fS4Lev;
-        fS4Pan = (s4_pan / 4095.f + 1.f) / 2.f * 1.f;
-        if (cv_s4_pan != -1) fS4Pan = fabsf(data.cv[cv_s4_pan]) * 1.f;
-        float fS4Speed = s4_speed / 4095.f * 2.f;
-        if (cv_s4_speed != -1) fS4Speed += data.cv[cv_s4_speed] * 2.f;
-        CONSTRAIN(fS4Speed, -2.f, 2.f)
-        rompler[3].params.playbackSpeed = fS4Speed;
-        float fS4Pitch = s4_pitch;
-        if (cv_s4_pitch != -1){
-            fS4Pitch += data.cv[cv_s4_pitch] * 12.f * 5.f;
-        }
-        rompler[3].params.pitch = fS4Pitch;
-        MK_INT_PAR_ABS(iS4Bank, s4_bank, 32.f)
-        CONSTRAIN(iS4Bank, 0, 31)
-        MK_INT_PAR_ABS(iS4Slice, s4_slice, 32.f)
-        CONSTRAIN(iS4Slice, 0, 31)
-        iS4Slice = iS4Bank * 32 + iS4Slice + firstNonWtSlice;
-        rompler[3].params.slice = iS4Slice;
-        MK_FLT_PAR_ABS(fS4Start, s4_start, 4095.f, 1.f)
-        rompler[3].params.startOffsetRelative = fS4Start;
-        MK_FLT_PAR_ABS(fS4Length, s4_end, 4095.f, 1.f)
-        rompler[3].params.lengthRelative = fS4Length;
-        MK_FLT_PAR_ABS(fS4LoopPos, s4_lp_pos, 4095.f, 1.f)
-        rompler[3].params.loopMarker = fS4LoopPos;
-        MK_BOOL_PAR(bS4Loop, s4_lp)
-        rompler[3].params.loop = bS4Loop;
-        MK_BOOL_PAR(bS4LoopPipo, s4_lp_pp)
-        rompler[3].params.loopPiPo = bS4LoopPipo;
-        MK_FLT_PAR_ABS(fS4Attack, s4_atk, 4095.f, 2.f)
-        rompler[3].params.a = fS4Attack;
-        MK_FLT_PAR_ABS(fS4Decay, s4_dcy, 4095.f, 50.f)
-        rompler[3].params.d = fS4Decay;
-        MK_FLT_PAR_ABS_SFT(fS4EGFM, s4_eg2fm, 4095.f, 12.f)
-        rompler[3].params.egFM = fS4EGFM;
-        MK_INT_PAR_ABS(iS4Brr, s4_brr, 16)
-        CONSTRAIN(iS4Brr, 0, 14)
-        rompler[3].params.bitReduction = iS4Brr;
-        // filter params
-        MK_FLT_PAR_ABS(fS4Cut, s4_fc, 4095.f, 1.f)
-        rompler[3].params.cutoff = fS4Cut;
-        MK_FLT_PAR_ABS(fS4Reso, s4_fq, 4095.f, 10.f)
-        rompler[3].params.resonance = fS4Reso;
-        MK_INT_PAR_ABS(iS4FType, s4_ft, 4.f)
-        CONSTRAIN(iS4FType, 0, 3);
-        rompler[3].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS4FType);
-        rompler[3].Process(s4_out, 32);
-        data_ptrs[12] = s4_out;
-    }
-    else{
-        data_ptrs[12] = silence;
+    if (bMuteS4 || fS4Lev < minVolume) {
+        return;
     }
 
-    // audio input
-    float fINLev = 0.f, fINPan = 0.f;
+    MK_BOOL_PAR(bGateS4, s4_gate)
+    rompler[3].params.gate = bGateS4;
+    fS4Lev = s4_lev / 4095.f * 1.5f;
+    if (cv_s4_lev != -1) fS4Lev += fabsf(data.cv[cv_s4_lev]);
+    fS4Lev *= fS4Lev;
+    float fS4Speed = s4_speed / 4095.f * 2.f;
+    if (cv_s4_speed != -1) fS4Speed += data.cv[cv_s4_speed] * 2.f;
+    CONSTRAIN(fS4Speed, -2.f, 2.f)
+    rompler[3].params.playbackSpeed = fS4Speed;
+    float fS4Pitch = s4_pitch;
+    if (cv_s4_pitch != -1){
+        fS4Pitch += data.cv[cv_s4_pitch] * 12.f * 5.f;
+    }
+    rompler[3].params.pitch = fS4Pitch;
+    MK_INT_PAR_ABS(iS4Bank, s4_bank, 32.f)
+    CONSTRAIN(iS4Bank, 0, 31)
+    MK_INT_PAR_ABS(iS4Slice, s4_slice, 32.f)
+    CONSTRAIN(iS4Slice, 0, 31)
+    iS4Slice = iS4Bank * 32 + iS4Slice + firstNonWtSlice;
+    rompler[3].params.slice = iS4Slice;
+    MK_FLT_PAR_ABS(fS4Start, s4_start, 4095.f, 1.f)
+    rompler[3].params.startOffsetRelative = fS4Start;
+    MK_FLT_PAR_ABS(fS4Length, s4_end, 4095.f, 1.f)
+    rompler[3].params.lengthRelative = fS4Length;
+    MK_FLT_PAR_ABS(fS4LoopPos, s4_lp_pos, 4095.f, 1.f)
+    rompler[3].params.loopMarker = fS4LoopPos;
+    MK_BOOL_PAR(bS4Loop, s4_lp)
+    rompler[3].params.loop = bS4Loop;
+    MK_BOOL_PAR(bS4LoopPipo, s4_lp_pp)
+    rompler[3].params.loopPiPo = bS4LoopPipo;
+    MK_FLT_PAR_ABS(fS4Attack, s4_atk, 4095.f, 2.f)
+    rompler[3].params.a = fS4Attack;
+    MK_FLT_PAR_ABS(fS4Decay, s4_dcy, 4095.f, 50.f)
+    rompler[3].params.d = fS4Decay;
+    MK_FLT_PAR_ABS_SFT(fS4EGFM, s4_eg2fm, 4095.f, 12.f)
+    rompler[3].params.egFM = fS4EGFM;
+    MK_INT_PAR_ABS(iS4Brr, s4_brr, 16)
+    CONSTRAIN(iS4Brr, 0, 14)
+    rompler[3].params.bitReduction = iS4Brr;
+    // filter params
+    MK_FLT_PAR_ABS(fS4Cut, s4_fc, 4095.f, 1.f)
+    rompler[3].params.cutoff = fS4Cut;
+    MK_FLT_PAR_ABS(fS4Reso, s4_fq, 4095.f, 10.f)
+    rompler[3].params.resonance = fS4Reso;
+    MK_INT_PAR_ABS(iS4FType, s4_ft, 4.f)
+    CONSTRAIN(iS4FType, 0, 3);
+    rompler[3].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS4FType);
+    rompler[3].Process(s4_out, 32);
+    mixRenderOutputMono(s4_out, fS4Lev, fS4Pan, fS4FX1Send, fS4FX2Send);
+}
+
+void ctagSoundProcessorDrumRack::renderIN(const ProcessData& data) {
+    float in_out[32];
     MK_BOOL_PAR(bMuteIN, in_mute)
-    MK_FLT_PAR_ABS(fINFX1Send, in_fx1, 4095.f, maxFXSendLevelDly)
-    fINFX1Send *= fINFX1Send;
-    MK_FLT_PAR_ABS(fINFX2Send, in_fx2, 4095.f, maxFXSendLevelRev)
-    fINFX2Send *= fINFX2Send;
 
-    if (!bMuteIN){
-        fINLev = in_lev / 4095.f * 1.5f;
-        if (cv_in_lev != -1) fINLev += fabsf(data.cv[cv_in_lev]);
-        fINLev *= fINLev;
-        fINPan = (in_pan / 4095.f + 1.f) / 2.f * 1.f;
-        if (cv_in_pan != -1) fINPan = fabsf(data.cv[cv_in_pan]) * 1.f;
+    float fINLev = 0.f, fINPan = 0.f;
+    fINLev = in_lev / 4095.f * 1.5f;
+    if (cv_in_lev != -1) fINLev += fabsf(data.cv[cv_in_lev]);
+    fINLev *= fINLev;
+    fINPan = (in_pan / 4095.f + 1.f) / 2.f * 1.f;
+    if (cv_in_pan != -1) fINPan = fabsf(data.cv[cv_in_pan]) * 1.f;
+    MK_FLT_PAR_ABS(fINFX1Send, in_fx1, 4095.f, maxFXSendLevelDly); fINFX1Send *= fINFX1Send;
+    MK_FLT_PAR_ABS(fINFX2Send, in_fx2, 4095.f, maxFXSendLevelRev); fINFX2Send *= fINFX2Send;
 
-        for(int k=0; k<32; k++){
-            in_out[k * 2+  0] = data.buf[k * 2 + 0] * fINLev;
-            in_out[k * 2+  1] = data.buf[k * 2 + 1] * fINLev;
-        }
-
-        data_ptrs[13] = in_out;
-    }
-    else{
-        data_ptrs[13] = silence;
+    if (bMuteIN || fINLev < minVolume) {
+        return;
     }
 
-    // delay
-    MK_FLT_PAR_ABS(fFeedback, fx1_feedback, 4095.f, 1.5f)
+    fINLev = in_lev / 4095.f * 1.5f;
+    if (cv_in_lev != -1) fINLev += fabsf(data.cv[cv_in_lev]);
+    fINLev *= fINLev;
+    fINPan = (in_pan / 4095.f + 1.f) / 2.f * 1.f;
+    if (cv_in_pan != -1) fINPan = fabsf(data.cv[cv_in_pan]) * 1.f;
+
+    mixRenderOutputStereo(data.buf, fINLev, fINPan, fINFX1Send, fINFX2Send);
+}
+
+void ctagSoundProcessorDrumRack::preprocessFX1(const ProcessData& data) {
     MK_FLT_PAR_ABS(fBase, fx1_base, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fWidth, fx1_width, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDelayStereoWidth, fx1_st_width, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fDelayReverbSend, fx1_fx_send, 4095.f, maxFXSendLevelRev)
-    fDelayReverbSend *= fDelayReverbSend;
-    MK_FLT_PAR_ABS(fDelayAmount, fx1_amount, 4095.f, 2.f)
-    MK_BOOL_PAR(bTapeDigital, fx1_tape_digital)
-    MK_BOOL_PAR(bFreeze, fx1_freeze)
     bool bSync = fx1_sync;
     bool bSyncTrig {false};
     if(trig_fx1_sync != -1) bSyncTrig = data.trig[trig_fx1_sync] == 1 ? false : true;
@@ -717,7 +761,6 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     hp_l.set_f<stmlib::FREQUENCY_ACCURATE>(hp_cut / 44100.f);
     lp_r.copy_f(lp_l);
     hp_r.copy_f(hp_l);
-    
 
     // sync mechanism
     if(bSyncTrig != pre_sync){
@@ -732,15 +775,16 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         }
     }
     timer++;
+}
 
-    // reverb
+void ctagSoundProcessorDrumRack::preprocessFX2(const ProcessData& data) {
     MK_FLT_PAR_ABS(fRevTime, fx2_time, 4095.f, 1.f)
-    MK_FLT_PAR_ABS(fRevAmount, fx2_amount, 4095.f, 2.f)
     MK_FLT_PAR_ABS(fReverbLPF, fx2_lp, 4095.f, 1.f)
     reverb.set_time(fRevTime);
     reverb.set_lp(fReverbLPF);
+}
 
-    // sum compressor
+void ctagSoundProcessorDrumRack::preprocessMaster(const ProcessData& data) {
     MK_FLT_PAR_ABS_MIN_MAX(fCompThresdB, c_thres, 4095.f, -80.f, 0.f)
     sumCompressor.setThresh(fCompThresdB);
     MK_FLT_PAR_ABS_MIN_MAX(fCompAtk, c_atk, 4095.f, 0.3f, 30.f)
@@ -749,160 +793,50 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     sumCompressor.setRelease(fCompRel);
     MK_FLT_PAR_ABS_MIN_MAX(fCompRatio, c_ratio, 4095.f, 0.0001f, 1.25f)
     sumCompressor.setRatio(fCompRatio);
+}
+ 
+void ctagSoundProcessorDrumRack::renderMasterOutput(const ProcessData& data) {
+    // delay
+    MK_BOOL_PAR(bFreeze, fx1_freeze)
+    MK_FLT_PAR_ABS(fDelayStereoWidth, fx1_st_width, 4095.f, 1.f)
+    MK_FLT_PAR_ABS(fDelayReverbSend, fx1_fx_send, 4095.f, maxFXSendLevelRev)
+    fDelayReverbSend *= fDelayReverbSend;
+    MK_FLT_PAR_ABS(fFeedback, fx1_feedback, 4095.f, 1.5f)
+    MK_FLT_PAR_ABS(fDelayAmount, fx1_amount, 4095.f, 2.f)
+
+    // reverb
+    MK_FLT_PAR_ABS(fRevAmount, fx2_amount, 4095.f, 2.f)
+
+    // sum compressor
+    float buf_fx1_l[32], buf_fx1_r[32], buf_fx2[32];
+    MK_BOOL_PAR(bTapeDigital, fx1_tape_digital)
     MK_BOOL_PAR(bSideChainLPF, c_lpf)
-    MK_FLT_PAR_ABS_PAN(fCompMix, c_mix, 4095.f, 1.f)
     MK_FLT_PAR_ABS_MIN_MAX(fCompMUPGain, c_gain, 4095.f, 0.f, 60.f) // in dB
     if (fCompMUPGain != fCompMUPGain_pre){
         fCompMUPGain = chunkware_simple::dB2lin(fCompMUPGain);
         fCompMUPGain_pre = fCompMUPGain;
     }
+    MK_FLT_PAR_ABS_PAN(fCompMix, c_mix, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fCompDlyLevel, c_dly_level, 4095.f, 2.f)
     fCompDlyLevel *= fCompDlyLevel;
     MK_FLT_PAR_ABS(fCompRevLevel, c_rev_level, 4095.f, 2.f)
     fCompRevLevel *= fCompRevLevel;
 
-
     // overall mix
-    MK_BOOL_PAR(bSumMute, sum_mute)
     MK_FLT_PAR_ABS(fMixLevel, sum_lev, 4095.f, 3.f)
     fMixLevel *= fMixLevel;
 
-    if (bSumMute){
-        memset(data.buf, 0, 32 * 2 * sizeof(float));
-        return;
-    }
-
-    // render final buffer
-    // calc volumes
-    float lev_l[14] = {
-	    fABLev * (1.f - fABPan),
-	    fASLev * (1.f - fASPan),
-	    fDBLev * (1.f - fDBPan),
-	    fDSLev * (1.f - fDSPan),
-	    fHH1Lev * (1.f - fHH1Pan),
-	    fHH2Lev * (1.f - fHH2Pan),
-	    fRSLev * (1.f - fRSPan),
-	    fCLLev * (1.f - fCLPan),
-	    fFMBLev * (1.f - fFMBPan),
-	    fS1Lev * (1.f - fS1Pan),
-	    fS2Lev * (1.f - fS2Pan),
-	    fS3Lev * (1.f - fS3Pan),
-	    fS4Lev * (1.f - fS4Pan),
-	    fINLev * (1.f - fINPan)
-    };
-    float lev_r[14] = {
-	    fABLev * fABPan,
-	    fASLev * fASPan,
-	    fDBLev * fDBPan,
-	    fDSLev * fDSPan,
-	    fHH1Lev * fHH1Pan,
-	    fHH2Lev * fHH2Pan,
-        fRSLev * fRSPan,
-        fCLLev * fCLPan,
-        fFMBLev * fFMBPan,
-        fS1Lev * fS1Pan,
-        fS2Lev * fS2Pan,
-        fS3Lev * fS3Pan,
-        fS4Lev * fS4Pan,
-        fINLev * fINPan
-    };
-    float buf_fx1_l[32], buf_fx1_r[32], buf_fx2[32];
+    // Render final buffer
     for (int i = 0; i < 32; i++){
-        float fVal_l = 0.f;
-        float fVal_r = 0.f;
-    	// models
-        fVal_l += data_ptrs[0][i] * lev_l[0];
-        fVal_l += data_ptrs[1][i] * lev_l[1];
-        fVal_l += data_ptrs[2][i] * lev_l[2];
-        fVal_l += data_ptrs[3][i] * lev_l[3];
-        fVal_l += data_ptrs[4][i] * lev_l[4];
-        fVal_l += data_ptrs[5][i] * lev_l[5];
-        fVal_l += data_ptrs[6][i] * lev_l[6];
-        fVal_l += data_ptrs[7][i] * lev_l[7];
-    	fVal_l += data_ptrs[8][i] * lev_l[8];
-		// romplers
-    	fVal_l += data_ptrs[9][i] * lev_l[9];
-        fVal_l += data_ptrs[10][i] * lev_l[10];
-        fVal_l += data_ptrs[11][i] * lev_l[11];
-        fVal_l += data_ptrs[12][i] * lev_l[12];
-		// input
-        fVal_l += data_ptrs[13][i] * lev_l[13];
-		// models
-        fVal_r += data_ptrs[0][i] * lev_r[0];
-        fVal_r += data_ptrs[1][i] * lev_r[1];
-        fVal_r += data_ptrs[2][i] * lev_r[2];
-        fVal_r += data_ptrs[3][i] * lev_r[3];
-        fVal_r += data_ptrs[4][i] * lev_r[4];
-        fVal_r += data_ptrs[5][i] * lev_r[5];
-        fVal_r += data_ptrs[6][i] * lev_r[6];
-        fVal_r += data_ptrs[7][i] * lev_r[7];
-    	fVal_r += data_ptrs[8][i] * lev_r[8];
-		// romplers
-    	fVal_r += data_ptrs[9][i] * lev_r[9];
-        fVal_r += data_ptrs[10][i] * lev_r[10];
-        fVal_r += data_ptrs[11][i] * lev_r[11];
-        fVal_r += data_ptrs[12][i] * lev_r[12];
-		// input
-        fVal_r += data_ptrs[13][i] * lev_r[13];
-
+        float fVal_l = combined_out[i * 2 + 0];
+        float fVal_r = combined_out[i * 2 + 1];
 
         // FX1 models
-        buf_fx1_l[i] = data_ptrs[0][i] * fABFX1Send * lev_l[0];
-        buf_fx1_l[i] += data_ptrs[1][i] * fASFX1Send * lev_l[1];
-        buf_fx1_l[i] += data_ptrs[2][i] * fDBFX1Send * lev_l[2];
-        buf_fx1_l[i] += data_ptrs[3][i] * fDSFX1Send * lev_l[3];
-        buf_fx1_l[i] += data_ptrs[4][i] * fHH1FX1Send * lev_l[4];
-        buf_fx1_l[i] += data_ptrs[5][i] * fHH2FX1Send * lev_l[5];
-        buf_fx1_l[i] += data_ptrs[6][i] * fRSFX1Send * lev_l[6];
-        buf_fx1_l[i] += data_ptrs[7][i] * fCLFX1Send * lev_l[7];
-        buf_fx1_l[i] += data_ptrs[8][i] * fFMBFX1Send * lev_l[8];
+        buf_fx1_l[i] = send1_out[i * 2 + 0];
+        buf_fx1_r[i] = send1_out[i * 2 + 1];
 
-    	// FX1 romplers
-        buf_fx1_l[i] += data_ptrs[9][i] * fS1FX1Send * lev_l[9];
-        buf_fx1_l[i] += data_ptrs[10][i] * fS2FX1Send * lev_l[10];
-        buf_fx1_l[i] += data_ptrs[11][i] * fS3FX1Send * lev_l[11];
-        buf_fx1_l[i] += data_ptrs[12][i] * fS4FX1Send * lev_l[12];
-
-        // input
-        buf_fx1_l[i] += data_ptrs[13][i] * fINFX1Send * lev_l[13];
-
-    	// FX1 models
-        buf_fx1_r[i] = data_ptrs[0][i] * fABFX1Send * lev_r[0];
-        buf_fx1_r[i] += data_ptrs[1][i] * fASFX1Send * lev_r[1];
-        buf_fx1_r[i] += data_ptrs[2][i] * fDBFX1Send * lev_r[2];
-        buf_fx1_r[i] += data_ptrs[3][i] * fDSFX1Send * lev_r[3];
-        buf_fx1_r[i] += data_ptrs[4][i] * fHH1FX1Send * lev_r[4];
-        buf_fx1_r[i] += data_ptrs[5][i] * fHH2FX1Send * lev_r[5];
-        buf_fx1_r[i] += data_ptrs[6][i] * fRSFX1Send * lev_r[6];
-        buf_fx1_r[i] += data_ptrs[7][i] * fCLFX1Send * lev_r[7];
-        buf_fx1_r[i] += data_ptrs[8][i] * fFMBFX1Send * lev_r[8];
-
-    	// FX1 romplers
-        buf_fx1_r[i] += data_ptrs[9][i] * fS1FX1Send * lev_r[9];
-        buf_fx1_r[i] += data_ptrs[10][i] * fS2FX1Send * lev_r[10];
-        buf_fx1_r[i] += data_ptrs[11][i] * fS3FX1Send * lev_r[11];
-        buf_fx1_r[i] += data_ptrs[12][i] * fS4FX1Send * lev_r[12];
-        
-        // input
-        buf_fx1_r[i] += data_ptrs[13][i] * fINFX1Send * lev_r[13];
-
-        // FX2 models, reverb is mono in stereo out
-        buf_fx2[i] = data_ptrs[0][i] * fABFX2Send;
-        buf_fx2[i] += data_ptrs[1][i] * fASFX2Send;
-        buf_fx2[i] += data_ptrs[2][i] * fDBFX2Send;
-        buf_fx2[i] += data_ptrs[3][i] * fDSFX2Send;
-        buf_fx2[i] += data_ptrs[4][i] * fHH1FX2Send;
-        buf_fx2[i] += data_ptrs[5][i] * fHH2FX2Send;
-        buf_fx2[i] += data_ptrs[6][i] * fRSFX2Send;
-        buf_fx2[i] += data_ptrs[7][i] * fCLFX2Send;
-        buf_fx2[i] += data_ptrs[8][i] * fFMBFX2Send;
-		// FX2 romplers
-        buf_fx2[i] += data_ptrs[9][i] * fS1FX2Send;
-        buf_fx2[i] += data_ptrs[10][i] * fS2FX2Send;
-        buf_fx2[i] += data_ptrs[11][i] * fS3FX2Send;
-        buf_fx2[i] += data_ptrs[12][i] * fS4FX2Send;
-
-        buf_fx2[i] += data_ptrs[13][i] * fINFX2Send;
+        // FX2 models, reverb is mono in stereo out, but input buffer is stereo
+        buf_fx2[i] = send2_out[i * 2 + 0];
 
         float dry_l = fVal_l;
         float dry_r = fVal_r;
@@ -1000,6 +934,42 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     }
 }
 
+void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
+    memset(combined_out, 0, 32 * 2 * sizeof(float));
+    memset(send1_out, 0, 32 * 2 * sizeof(float));
+    memset(send2_out, 0, 32 * 2 * sizeof(float));
+    memset(silence, 0, 32 * 2 * sizeof(float));
+
+    // Render sound generators
+    renderABD(data);
+    renderASD(data); // analog snare drum
+    renderDBD(data); // digital bass drum
+    renderDSD(data); // digital snare drum
+    renderHH1(data); // hihat 1
+    renderHH2(data); // hihat 2
+    renderRS(data); // rimshot
+    renderCL(data); // clap
+    renderFMB(data); // fm bass drum
+    renderS1(data);
+    renderS2(data);
+    renderS3(data);
+    renderS4(data);
+    renderIN(data); // audio input
+
+    // Process effects
+    preprocessFX1(data); // delay
+    preprocessFX2(data); // reverb
+    preprocessMaster(data); // sum compressor
+
+    MK_BOOL_PAR(bSumMute, sum_mute)
+    if (bSumMute){
+        memset(data.buf, 0, 32 * 2 * sizeof(float));
+        return;
+    }
+
+    renderMasterOutput(data);
+}
+
 void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     // construct internal data model
     knowYourself();
@@ -1014,7 +984,6 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     assert(delayBuffer_r != nullptr);
     std::fill_n(delayBuffer_r, delayBufferSizeMax, 0.f);
 
-
     // reverb
     assert(blockSize >= 32768 * 4);
     reverb.Init((float*)blockPtr); // requires 32768*4 bytes = 128KB
@@ -1026,7 +995,6 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     reverb.set_amount(1.f);
     reverb.set_lp(0.5f);
     reverb.set_time(0.4f);
-
 
     // preload samples
     sampleRom.BufferInSPIRAM();
