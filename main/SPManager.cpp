@@ -315,7 +315,13 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
         }
     }
 
-    // create new plugin
+    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
+             // create new plugin
     ctagSPAllocator::AllocationType aType = ctagSPAllocator::AllocationType::CH0;
     if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
     if(model->IsStereo(id)) aType = ctagSPAllocator::AllocationType::STEREO;
@@ -430,7 +436,7 @@ void SoundProcessorManager::StartSoundProcessor() {
 #endif
     // create audio thread
     runAudioTask = 1;
-    xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
+    xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 8192, nullptr, 23, &audioTaskH, 1);
 
 #if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
     //FAV::Favorites::StartUI();
