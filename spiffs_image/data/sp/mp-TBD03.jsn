@@ -1,1 +1,115 @@
-{"activePatch":0,"patches":[{"name":"Default","params":[{"id":"trigger","current":0,"trig":0},{"id":"sync_trig","current":0,"trig":-1},{"id":"pitch","current":3060,"cv":0},{"id":"shape","current":0,"cv":-1},{"id":"param_0","current":0,"cv":-1},{"id":"param_1","current":0,"cv":-1},{"id":"gain","current":2047,"cv":-1},{"id":"filter_type","current":1,"cv":-1},{"id":"cutoff","current":800,"cv":-1},{"id":"resonance","current":1200,"cv":-1},{"id":"envelope","current":1000,"cv":-1},{"id":"saturation","current":0,"cv":-1},{"id":"drive","current":0,"cv":-1},{"id":"accent","current":0,"trig":1},{"id":"accent_level","current":2000,"cv":-1},{"id":"slide","current":0,"trig":-1},{"id":"slide_level","current":3000,"cv":-1},{"id":"decay_vca","current":1600,"cv":-1},{"id":"decay_vcf","current":1300,"cv":-1},{"id":"p0_amt","current":0,"cv":-1},{"id":"p1_amt","current":0,"cv":-1}]}]}
+{
+    "activePatch": 0,
+    "patches": [
+        {
+            "name": "Default",
+            "params": [
+                {
+                    "id": "td3_trigger",
+                    "current": 0,
+                    "trig": 0
+                },
+                {
+                    "id": "td3_sync_trig",
+                    "current": 0,
+                    "trig": -1
+                },
+                {
+                    "id": "td3_pitch",
+                    "current": 3060,
+                    "cv": 0
+                },
+                {
+                    "id": "td3_shape",
+                    "current": 0,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_param_0",
+                    "current": 0,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_param_1",
+                    "current": 0,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_gain",
+                    "current": 2047,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_filter_type",
+                    "current": 1,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_cutoff",
+                    "current": 800,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_resonance",
+                    "current": 1200,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_envelope",
+                    "current": 1000,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_saturation",
+                    "current": 0,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_drive",
+                    "current": 0,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_accent",
+                    "current": 0,
+                    "trig": 1
+                },
+                {
+                    "id": "td3_accent_level",
+                    "current": 2000,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_slide",
+                    "current": 0,
+                    "trig": -1
+                },
+                {
+                    "id": "td3_slide_level",
+                    "current": 3000,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_decay_vca",
+                    "current": 1600,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_decay_vcf",
+                    "current": 1300,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_p0_amt",
+                    "current": 0,
+                    "cv": -1
+                },
+                {
+                    "id": "td3_p1_amt",
+                    "current": 0,
+                    "cv": -1
+                }
+            ]
+        }
+    ]
+}

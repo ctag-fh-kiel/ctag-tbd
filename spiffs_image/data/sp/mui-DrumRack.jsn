@@ -1429,6 +1429,159 @@
       ]
     },
     {
+      "id": "td3_group",
+      "name": "Input",
+      "type": "group",
+      "params": [
+        {
+          "id": "td3_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "td3_sync_trig",
+          "name": "Sync on Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "td3_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": 0,
+          "max": 16383,
+          "step": 1
+        },
+        {
+          "id": "td3_shape",
+          "name": "Shape",
+          "type": "int",
+          "min": 0,
+          "max": 46,
+          "step": 1
+        },
+        {
+          "id": "td3_param_0",
+          "name": "Osc Morph 0",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "td3_param_1",
+          "name": "Osc Morph 1",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "td3_gain",
+          "name": "Gain",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "td3_filter_type",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 4
+        },
+        {
+          "id": "td3_cutoff",
+          "name": "Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "td3_resonance",
+          "name": "Resonance",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "td3_envelope",
+          "name": "Env Mod VCF",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "td3_saturation",
+          "name": "Saturation",
+          "type": "int",
+          "min": 0,
+          "max": 65535
+        },
+        {
+          "id": "td3_drive",
+          "name": "Overdrive",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "td3_accent",
+          "name": "Accent",
+          "type": "bool"
+        },
+        {
+          "id": "td3_accent_level",
+          "name": "Accent Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "td3_slide",
+          "name": "Slide",
+          "type": "bool"
+        },
+        {
+          "id": "td3_slide_level",
+          "name": "Slide Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "td3_decay_vca",
+          "name": "Decay VCA",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "td3_decay_vcf",
+          "name": "Decay VCF",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "td3_p0_amt",
+          "name": "P0 Amount",
+          "hint": "P0 EG VCF MOD",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "td3_p1_amt",
+          "name": "P1 Amount",
+          "hint": "P1 EG VCF MOD",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        }
+      ]
+    },
+    {
       "id": "fx1_group",
       "name": "Delay",
       "type": "group",
