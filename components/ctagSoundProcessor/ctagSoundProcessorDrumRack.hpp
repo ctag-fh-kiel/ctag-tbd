@@ -80,6 +80,22 @@ namespace CTAG {
             int32_t pp_preNCVoices = 0;
             braids::Quantizer pp_quantizer;
 
+			// macro oscillator
+            braids::MacroOscillator mo_osc;
+            braids::SignatureWaveshaper mo_ws;
+            braids::Quantizer mo_quantizer;
+            CTAG::SP::HELPERS::ctagADEnv mo_envelope;
+            const uint8_t mo_sync[32] = {0};
+            bool mo_prevTrigger = false;
+            const uint16_t mo_bit_reduction_masks[7] = {
+                    0xc000,
+                    0xe000,
+                    0xf000,
+                    0xf800,
+                    0xff00,
+                    0xfff0,
+                    0xffff};
+
 			void renderABD(const ProcessData& data);
 			void renderASD(const ProcessData& data);
 			void renderDBD(const ProcessData& data);
@@ -96,6 +112,7 @@ namespace CTAG {
 			void renderIN(const ProcessData& data);
 			void renderTD3(const ProcessData& data);
 			void renderPP(const ProcessData& data);
+			void renderMO(const ProcessData& data);
 			void mixRenderOutputMono(float *source, float level, float pan, float fx1, float fx2);
 			void mixRenderOutputStereo(float *source, float level, float pan, float fx1, float fx2);
 
@@ -403,6 +420,27 @@ namespace CTAG {
 	atomic<int32_t> pp_pan, cv_pp_pan;
 	atomic<int32_t> pp_fx1, cv_pp_fx1;
 	atomic<int32_t> pp_fx2, cv_pp_fx2;
+	atomic<int32_t> mo_shape, cv_mo_shape;
+	atomic<int32_t> mo_gain, cv_mo_gain;
+	atomic<int32_t> mo_pitch, cv_mo_pitch;
+	atomic<int32_t> mo_decimation, cv_mo_decimation;
+	atomic<int32_t> mo_bit_reduction, cv_mo_bit_reduction;
+	atomic<int32_t> mo_q_scale, cv_mo_q_scale;
+	atomic<int32_t> mo_param_0, cv_mo_param_0;
+	atomic<int32_t> mo_param_1, cv_mo_param_1;
+	atomic<int32_t> mo_waveshaping, cv_mo_waveshaping;
+	atomic<int32_t> mo_fm_amt, cv_mo_fm_amt;
+	atomic<int32_t> mo_am_amt, cv_mo_am_amt;
+	atomic<int32_t> mo_p0_amt, cv_mo_p0_amt;
+	atomic<int32_t> mo_p1_amt, cv_mo_p1_amt;
+	atomic<int32_t> mo_enableEG, trig_mo_enableEG;
+	atomic<int32_t> mo_loopEG, trig_mo_loopEG;
+	atomic<int32_t> mo_attack, cv_mo_attack;
+	atomic<int32_t> mo_decay, cv_mo_decay;
+	atomic<int32_t> mo_lev, cv_mo_lev;
+	atomic<int32_t> mo_pan, cv_mo_pan;
+	atomic<int32_t> mo_fx1, cv_mo_fx1;
+	atomic<int32_t> mo_fx2, cv_mo_fx2;
 	atomic<int32_t> fx1_time_ms, cv_fx1_time_ms;
 	atomic<int32_t> fx1_sync, trig_fx1_sync;
 	atomic<int32_t> fx1_freeze, trig_fx1_freeze;
