@@ -693,12 +693,8 @@ void ctagSoundProcessorDrumRack::renderS4(const ProcessData& data) {
 void ctagSoundProcessorDrumRack::renderIN(const ProcessData& data) {
     MK_BOOL_PAR(bMuteIN, in_mute)
 
-    float fINLev = 0.f, fINPan = 0.f;
-    fINLev = in_lev / 4095.f * 1.5f;
-    if (cv_in_lev != -1) fINLev += fabsf(data.cv[cv_in_lev]);
-    fINLev *= fINLev;
-    fINPan = (in_pan / 4095.f + 1.f) / 2.f * 1.f;
-    if (cv_in_pan != -1) fINPan = fabsf(data.cv[cv_in_pan]) * 1.f;
+    MK_FLT_PAR_ABS_PAN(fINPan, in_pan, 4095.f, 1.f);
+    MK_FLT_PAR_ABS(fINLev, in_lev, 4095.f, 2.f); fINLev *= fINLev;
     MK_FLT_PAR_ABS(fINFX1Send, in_fx1, 4095.f, maxFXSendLevelDly); fINFX1Send *= fINFX1Send;
     MK_FLT_PAR_ABS(fINFX2Send, in_fx2, 4095.f, maxFXSendLevelRev); fINFX2Send *= fINFX2Send;
 
