@@ -73,43 +73,43 @@ namespace CTAG {
 
   
 			// td003
-			// ctagDiodeLadderFilter5 td3_pirkle_zdf_boost; // Pirkle ZDF with boost
-            // ctagDiodeLadderFilter3 td3_karlson; // Karlson
-            // ctagDiodeLadderFilter4 td3_blaukraut; // Blaukraut
-            // ctagDiodeLadderFilter td3_pirkle_zdf; // Pirkle ZDF
-            // ctagDiodeLadderFilter2 td3_zavalishin; // Zavalishin ZDF
-            // ctagADEnv td3_adVCA, td3_adVCF;
-            // braids::MacroOscillator td3_osc;
-            // braids::SignatureWaveshaper td3_ws;
-            // uint8_t td3_sync[32] = {0};
-            // bool td3_pre_trig = false;
-            // bool td3_isAccent = false;
-            // float td3_pre_eg_val = 0.f;
-            // float td3_pre_pitch_val = 0.f;
+			ctagDiodeLadderFilter5 td3_pirkle_zdf_boost; // Pirkle ZDF with boost
+            ctagDiodeLadderFilter3 td3_karlson; // Karlson
+            ctagDiodeLadderFilter4 td3_blaukraut; // Blaukraut
+            ctagDiodeLadderFilter td3_pirkle_zdf; // Pirkle ZDF
+            ctagDiodeLadderFilter2 td3_zavalishin; // Zavalishin ZDF
+            ctagADEnv td3_adVCA, td3_adVCF;
+            braids::MacroOscillator td3_osc;
+            braids::SignatureWaveshaper td3_ws;
+            uint8_t td3_sync[32] = {0};
+            bool td3_pre_trig = false;
+            bool td3_isAccent = false;
+            float td3_pre_eg_val = 0.f;
+            float td3_pre_pitch_val = 0.f;
 
 			// polypad
-			// array<ChordSynth, 8> pp_v_voices;
-            // bool pp_latchVoice = false;
-            // bool pp_latched = false;
-            // bool pp_toggle = false;
-            // int32_t pp_preNCVoices = 0;
-            // braids::Quantizer pp_quantizer;
+			array<ChordSynth, 8> pp_v_voices;
+            bool pp_latchVoice = false;
+            bool pp_latched = false;
+            bool pp_toggle = false;
+            int32_t pp_preNCVoices = 0;
+            braids::Quantizer pp_quantizer;
 
 			// macro oscillator
-            // braids::MacroOscillator mo_osc;
-            // braids::SignatureWaveshaper mo_ws;
-            // braids::Quantizer mo_quantizer;
-            // CTAG::SP::HELPERS::ctagADEnv mo_envelope;
-            // const uint8_t mo_sync[32] = {0};
-            // bool mo_prevTrigger = false;
-            // const uint16_t mo_bit_reduction_masks[7] = {
-            //         0xc000,
-            //         0xe000,
-            //         0xf000,
-            //         0xf800,
-            //         0xff00,
-            //         0xfff0,
-            //         0xffff};
+            braids::MacroOscillator mo_osc;
+            braids::SignatureWaveshaper mo_ws;
+            braids::Quantizer mo_quantizer;
+            CTAG::SP::HELPERS::ctagADEnv mo_envelope;
+            const uint8_t mo_sync[32] = {0};
+            bool mo_prevTrigger = false;
+            const uint16_t mo_bit_reduction_masks[7] = {
+                    0xc000,
+                    0xe000,
+                    0xf000,
+                    0xf800,
+                    0xff00,
+                    0xfff0,
+                    0xffff};
 
 			void renderABD(const ProcessData& data);
 			void renderASD(const ProcessData& data);
@@ -382,77 +382,77 @@ namespace CTAG {
 	atomic<int32_t> in_pan, cv_in_pan;
 	atomic<int32_t> in_fx1, cv_in_fx1;
 	atomic<int32_t> in_fx2, cv_in_fx2;
-	// atomic<int32_t> td3_trigger, trig_td3_trigger;
-	// atomic<int32_t> td3_sync_trig, trig_td3_sync_trig;
-	// atomic<int32_t> td3_pitch, cv_td3_pitch;
-	// atomic<int32_t> td3_shape, cv_td3_shape;
-	// atomic<int32_t> td3_param_0, cv_td3_param_0;
-	// atomic<int32_t> td3_param_1, cv_td3_param_1;
-	// atomic<int32_t> td3_filter_type, cv_td3_filter_type;
-	// atomic<int32_t> td3_cutoff, cv_td3_cutoff;
-	// atomic<int32_t> td3_resonance, cv_td3_resonance;
-	// atomic<int32_t> td3_envelope, cv_td3_envelope;
-	// atomic<int32_t> td3_saturation, cv_td3_saturation;
-	// atomic<int32_t> td3_drive, cv_td3_drive;
-	// atomic<int32_t> td3_accent, trig_td3_accent;
-	// atomic<int32_t> td3_accent_level, cv_td3_accent_level;
-	// atomic<int32_t> td3_slide, trig_td3_slide;
-	// atomic<int32_t> td3_slide_level, cv_td3_slide_level;
-	// atomic<int32_t> td3_decay_vca, cv_td3_decay_vca;
-	// atomic<int32_t> td3_decay_vcf, cv_td3_decay_vcf;
-	// atomic<int32_t> td3_p0_amt, cv_td3_p0_amt;
-	// atomic<int32_t> td3_p1_amt, cv_td3_p1_amt;
-	// atomic<int32_t> td3_lev, cv_td3_lev;
-	// atomic<int32_t> td3_pan, cv_td3_pan;
-	// atomic<int32_t> td3_fx1, cv_td3_fx1;
-	// atomic<int32_t> td3_fx2, cv_td3_fx2;
-	// atomic<int32_t> pp_pitch, cv_pp_pitch;
-	// atomic<int32_t> pp_q_scale, cv_pp_q_scale;
-	// atomic<int32_t> pp_chord, cv_pp_chord;
-	// atomic<int32_t> pp_inversion, cv_pp_inversion;
-	// atomic<int32_t> pp_detune, cv_pp_detune;
-	// atomic<int32_t> pp_nnotes, cv_pp_nnotes;
-	// atomic<int32_t> pp_ncvoices, cv_pp_ncvoices;
-	// atomic<int32_t> pp_voicehold, trig_pp_voicehold;
-	// atomic<int32_t> pp_lfo1_freq, cv_pp_lfo1_freq;
-	// atomic<int32_t> pp_lfo1_amt, cv_pp_lfo1_amt;
-	// atomic<int32_t> pp_filter_type, cv_pp_filter_type;
-	// atomic<int32_t> pp_cutoff, cv_pp_cutoff;
-	// atomic<int32_t> pp_resonance, cv_pp_resonance;
-	// atomic<int32_t> pp_lfo2_freq, cv_pp_lfo2_freq;
-	// atomic<int32_t> pp_lfo2_amt, cv_pp_lfo2_amt;
-	// atomic<int32_t> pp_lfo2_rphase, trig_pp_lfo2_rphase;
-	// atomic<int32_t> pp_eg_filt_amt, cv_pp_eg_filt_amt;
-	// atomic<int32_t> pp_enableEG, trig_pp_enableEG;
-	// atomic<int32_t> pp_latchEG, trig_pp_latchEG;
-	// atomic<int32_t> pp_eg_slow_fast, trig_pp_eg_slow_fast;
-	// atomic<int32_t> pp_attack, cv_pp_attack;
-	// atomic<int32_t> pp_decay, cv_pp_decay;
-	// atomic<int32_t> pp_sustain, cv_pp_sustain;
-	// atomic<int32_t> pp_release, cv_pp_release;
-	// atomic<int32_t> pp_lev, cv_pp_lev;
-	// atomic<int32_t> pp_pan, cv_pp_pan;
-	// atomic<int32_t> pp_fx1, cv_pp_fx1;
-	// atomic<int32_t> pp_fx2, cv_pp_fx2;
-	// atomic<int32_t> mo_shape, cv_mo_shape;
-	// atomic<int32_t> mo_pitch, cv_mo_pitch;
-	// atomic<int32_t> mo_decimation, cv_mo_decimation;
-	// atomic<int32_t> mo_bit_reduction, cv_mo_bit_reduction;
-	// atomic<int32_t> mo_q_scale, cv_mo_q_scale;
-	// atomic<int32_t> mo_param_0, cv_mo_param_0;
-	// atomic<int32_t> mo_param_1, cv_mo_param_1;
-	// atomic<int32_t> mo_waveshaping, cv_mo_waveshaping;
-	// atomic<int32_t> mo_fm_amt, cv_mo_fm_amt;
-	// atomic<int32_t> mo_p0_amt, cv_mo_p0_amt;
-	// atomic<int32_t> mo_p1_amt, cv_mo_p1_amt;
-	// atomic<int32_t> mo_enableEG, trig_mo_enableEG;
-	// atomic<int32_t> mo_loopEG, trig_mo_loopEG;
-	// atomic<int32_t> mo_attack, cv_mo_attack;
-	// atomic<int32_t> mo_decay, cv_mo_decay;
-	// atomic<int32_t> mo_lev, cv_mo_lev;
-	// atomic<int32_t> mo_pan, cv_mo_pan;
-	// atomic<int32_t> mo_fx1, cv_mo_fx1;
-	// atomic<int32_t> mo_fx2, cv_mo_fx2;
+	atomic<int32_t> td3_trigger, trig_td3_trigger;
+	atomic<int32_t> td3_sync_trig, trig_td3_sync_trig;
+	atomic<int32_t> td3_pitch, cv_td3_pitch;
+	atomic<int32_t> td3_shape, cv_td3_shape;
+	atomic<int32_t> td3_param_0, cv_td3_param_0;
+	atomic<int32_t> td3_param_1, cv_td3_param_1;
+	atomic<int32_t> td3_filter_type, cv_td3_filter_type;
+	atomic<int32_t> td3_cutoff, cv_td3_cutoff;
+	atomic<int32_t> td3_resonance, cv_td3_resonance;
+	atomic<int32_t> td3_envelope, cv_td3_envelope;
+	atomic<int32_t> td3_saturation, cv_td3_saturation;
+	atomic<int32_t> td3_drive, cv_td3_drive;
+	atomic<int32_t> td3_accent, trig_td3_accent;
+	atomic<int32_t> td3_accent_level, cv_td3_accent_level;
+	atomic<int32_t> td3_slide, trig_td3_slide;
+	atomic<int32_t> td3_slide_level, cv_td3_slide_level;
+	atomic<int32_t> td3_decay_vca, cv_td3_decay_vca;
+	atomic<int32_t> td3_decay_vcf, cv_td3_decay_vcf;
+	atomic<int32_t> td3_p0_amt, cv_td3_p0_amt;
+	atomic<int32_t> td3_p1_amt, cv_td3_p1_amt;
+	atomic<int32_t> td3_lev, cv_td3_lev;
+	atomic<int32_t> td3_pan, cv_td3_pan;
+	atomic<int32_t> td3_fx1, cv_td3_fx1;
+	atomic<int32_t> td3_fx2, cv_td3_fx2;
+	atomic<int32_t> pp_pitch, cv_pp_pitch;
+	atomic<int32_t> pp_q_scale, cv_pp_q_scale;
+	atomic<int32_t> pp_chord, cv_pp_chord;
+	atomic<int32_t> pp_inversion, cv_pp_inversion;
+	atomic<int32_t> pp_detune, cv_pp_detune;
+	atomic<int32_t> pp_nnotes, cv_pp_nnotes;
+	atomic<int32_t> pp_ncvoices, cv_pp_ncvoices;
+	atomic<int32_t> pp_voicehold, trig_pp_voicehold;
+	atomic<int32_t> pp_lfo1_freq, cv_pp_lfo1_freq;
+	atomic<int32_t> pp_lfo1_amt, cv_pp_lfo1_amt;
+	atomic<int32_t> pp_filter_type, cv_pp_filter_type;
+	atomic<int32_t> pp_cutoff, cv_pp_cutoff;
+	atomic<int32_t> pp_resonance, cv_pp_resonance;
+	atomic<int32_t> pp_lfo2_freq, cv_pp_lfo2_freq;
+	atomic<int32_t> pp_lfo2_amt, cv_pp_lfo2_amt;
+	atomic<int32_t> pp_lfo2_rphase, trig_pp_lfo2_rphase;
+	atomic<int32_t> pp_eg_filt_amt, cv_pp_eg_filt_amt;
+	atomic<int32_t> pp_enableEG, trig_pp_enableEG;
+	atomic<int32_t> pp_latchEG, trig_pp_latchEG;
+	atomic<int32_t> pp_eg_slow_fast, trig_pp_eg_slow_fast;
+	atomic<int32_t> pp_attack, cv_pp_attack;
+	atomic<int32_t> pp_decay, cv_pp_decay;
+	atomic<int32_t> pp_sustain, cv_pp_sustain;
+	atomic<int32_t> pp_release, cv_pp_release;
+	atomic<int32_t> pp_lev, cv_pp_lev;
+	atomic<int32_t> pp_pan, cv_pp_pan;
+	atomic<int32_t> pp_fx1, cv_pp_fx1;
+	atomic<int32_t> pp_fx2, cv_pp_fx2;
+	atomic<int32_t> mo_shape, cv_mo_shape;
+	atomic<int32_t> mo_pitch, cv_mo_pitch;
+	atomic<int32_t> mo_decimation, cv_mo_decimation;
+	atomic<int32_t> mo_bit_reduction, cv_mo_bit_reduction;
+	atomic<int32_t> mo_q_scale, cv_mo_q_scale;
+	atomic<int32_t> mo_param_0, cv_mo_param_0;
+	atomic<int32_t> mo_param_1, cv_mo_param_1;
+	atomic<int32_t> mo_waveshaping, cv_mo_waveshaping;
+	atomic<int32_t> mo_fm_amt, cv_mo_fm_amt;
+	atomic<int32_t> mo_p0_amt, cv_mo_p0_amt;
+	atomic<int32_t> mo_p1_amt, cv_mo_p1_amt;
+	atomic<int32_t> mo_enableEG, trig_mo_enableEG;
+	atomic<int32_t> mo_loopEG, trig_mo_loopEG;
+	atomic<int32_t> mo_attack, cv_mo_attack;
+	atomic<int32_t> mo_decay, cv_mo_decay;
+	atomic<int32_t> mo_lev, cv_mo_lev;
+	atomic<int32_t> mo_pan, cv_mo_pan;
+	atomic<int32_t> mo_fx1, cv_mo_fx1;
+	atomic<int32_t> mo_fx2, cv_mo_fx2;
 	atomic<int32_t> fx1_time_ms, cv_fx1_time_ms;
 	atomic<int32_t> fx1_sync, trig_fx1_sync;
 	atomic<int32_t> fx1_freeze, trig_fx1_freeze;
