@@ -62,6 +62,10 @@ void TBD_IRAM ControlInputs::update(uint8_t **trigs, float **cvs) {
     *trigs = &data[N_CVS * 4];
 }
 
+void ControlInputs::update_metrics(const sound_processor::ProcessingMetrics& metrics) {
+
+}
+
 void ControlInputs::SetCVChannelBiPolar(const bool &v0, const bool &v1, const bool &v2, const bool &v3) {
 
 }

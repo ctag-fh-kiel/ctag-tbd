@@ -27,7 +27,7 @@ TBD_NEW_ERR(SOUND_BAD_CHANNEL_ASSIGNMENT, "bad channel selection for plugin");
 
 namespace tbd::audio {
 
-inline sound_processor::SoundProcessor* AudioConsumer::get_sound_processor(sound_processor::channels::ChannelID channel) {
+inline sound_processor::SoundProcessor* AudioConsumer::get_sound_processor(const sound_processor::channels::ChannelID channel) {
     using namespace sound_processor::channels;
 
     const auto sound_processing_guard = sound_processing_lock.guard();
@@ -138,7 +138,7 @@ inline void AudioConsumer::apply_bandwidth_filter(float* audio_slice) {
     peakR = 0.95f * peakR + 0.05f * maxr;
 }
 
-inline void AudioConsumer::determine_input_level(AudioMetrics& metrics) {
+inline void AudioConsumer::determine_input_level(sound_processor::ProcessingMetrics& metrics) {
     float max = 255.f + 3.2f * sound_utils::fast_dBV(peakIn); // cut away at approx -80dB
     //TBD_LOGI(tag, "Max %.9f %f", peakIn, max);
     if (max > 0 && noise_gate_is_open) {
@@ -288,7 +288,7 @@ inline void AudioConsumer::apply_softclip(float* audio_slice) {
     }
 }
 
-inline void AudioConsumer::determine_output_level(float* audio_slice, AudioMetrics& metrics) {
+inline void AudioConsumer::determine_output_level(float* audio_slice, sound_processor::ProcessingMetrics& metrics) {
     // just take first sample of block for level meter
     float max = fabsf(audio_slice[0] + audio_slice[1]) / 2.f;
     peakOut = 0.9f * peakOut + 0.1f * max;
@@ -299,11 +299,11 @@ inline void AudioConsumer::determine_output_level(float* audio_slice, AudioMetri
     }
 }
 
-Error AudioConsumer::consume(float* audio_slice, AudioMetrics& metrics) {
+Error AudioConsumer::consume(float* audio_slice, sound_processor::ProcessingMetrics& metrics) {
     using namespace sound_processor::channels;
     pd.buf = audio_slice;
 
-    // update data from ADCs and GPIOs for real-time control
+    // update data from ADCs and GPIOs for real-time control    
     ControlInputs::update(&pd.trig, &pd.cv);
 
     TBD_TIMEOUT_ENSURE_OPS_PER_SECOND(timeout, TBD_SAMPLE_RATE / TBD_SAMPLES_PER_CHUNK);
@@ -325,6 +325,7 @@ Error AudioConsumer::consume(float* audio_slice, AudioMetrics& metrics) {
     if (!timeout) {
         metrics.warning = true;
     }
+    ControlInputs::update_metrics(metrics);
     return TBD_OK;
 }
 

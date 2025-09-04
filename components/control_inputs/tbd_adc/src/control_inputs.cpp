@@ -80,6 +80,10 @@ void TBD_IRAM ControlInputs::update(uint8_t **trigs, float **cvs) {
     *trigs = _trigs;
 }
 
+void ControlInputs::update_metrics(const sound_processor::ProcessingMetrics& metrics) {
+
+}
+
 void ControlInputs::SetCVChannelBiPolar(const bool &v0, const bool &v1, const bool &v2, const bool &v3) {
     #if TBD_CALIBRATION
         // ifdefs to exclude this from BBA and MK2 are in Calibration.hpp

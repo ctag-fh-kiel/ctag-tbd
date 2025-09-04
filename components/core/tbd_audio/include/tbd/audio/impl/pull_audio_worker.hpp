@@ -61,7 +61,7 @@ struct PullAudioFeeder {
         // get normalized raw data from CODEC
         AudioDevice::read_buffer(fbuf, TBD_SAMPLES_PER_CHUNK);
 
-        AudioMetrics metrics;
+        sound_processor::ProcessingMetrics metrics;
         _consumer.consume(fbuf, metrics);
 
         // write raw float data back to CODEC

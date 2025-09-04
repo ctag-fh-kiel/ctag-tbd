@@ -15,6 +15,10 @@ uint8_t* CVInput::update() {
     return cv_data;
 }
 
+void ControlInputs::update_metrics(const sound_processor::ProcessingMetrics& metrics) {
+
+}
+
 void CVInput::flush() {
 
 }

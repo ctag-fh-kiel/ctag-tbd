@@ -2,6 +2,7 @@
 
 #include <tbd/audio_device/audio_settings.hpp>
 #include <tbd/sound_processor/channels.hpp>
+#include <tbd/sound_processor/processing_metrics.hpp>
 #include <tbd/sound_processor.hpp>
 #include <tbd/system/locks.hpp>
 #include <tbd/errors.hpp>
@@ -29,11 +30,7 @@ struct AudioProcessingParams {
     std::atomic<uint32_t> ch1_outputSoftClip;
 };
 
-struct AudioMetrics {
-    bool warning = false;
-    float input_level = 0.f;
-    float output_level = 0.f;
-};
+
 
 struct AudioConsumer {
     sound_processor::SoundProcessor* get_sound_processor(sound_processor::channels::ChannelID channel);
@@ -42,17 +39,17 @@ struct AudioConsumer {
 
 
     Error startup();
-    Error consume(float* audio_slice, AudioMetrics& metrics);
+    Error consume(float* audio_slice, sound_processor::ProcessingMetrics& metrics);
     Error cleanup();
 
 protected:
     void apply_bandwidth_filter(float* audio_slice);
-    void determine_input_level(AudioMetrics& metrics);
+    void determine_input_level(sound_processor::ProcessingMetrics& metrics);
     void apply_noise_gate(float* audio_slice);
     sound_processor::channels::Channels run_processors(float* audio_slice);
     void apply_output_mapping(float* audio_slice);
     void apply_softclip(float* audio_slice);
-    void determine_output_level(float* audio_slice, AudioMetrics& metrics);
+    void determine_output_level(float* audio_slice, sound_processor::ProcessingMetrics& metrics);
 
     AudioProcessingParams params;
 

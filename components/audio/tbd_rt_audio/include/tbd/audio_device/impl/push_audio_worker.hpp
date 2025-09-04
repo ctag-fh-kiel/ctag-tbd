@@ -167,7 +167,7 @@ private:
 
         // FIXME: the simulator does more at this point... do we need a custom buffer?
 
-        AudioMetrics metrics;
+        sound_processor::ProcessingMetrics metrics;
         self._consumer.consume(reinterpret_cast<float*>(output_buffer), metrics);
         
         // FIXME: looked like this

@@ -1,13 +1,12 @@
 #include <tbd/spi_inputs/spi_inputs.hpp>
 
+#include <tbd/system/port/heaps.hpp>
+#include <tbd/api/api_adapters.hpp>
+
 #include <driver/spi_common.h>
 #include <driver/spi_slave.h>
 #include <soc/gpio_num.h>
 
-#include <tbd/system/port/heaps.hpp>
-#include <tbd/api/api_adapters.hpp>
-
-#include <tbd/ram.hpp>
 
 namespace tbd::spi_api {
 
@@ -52,7 +51,7 @@ Error begin() {
 }
 
 Error end() {
-    if (spi_slave_free(TBD_SPI_INPUTS_SPI_HOST) != ESP_OK) {
+    if (spi_slave_free(TBD_SPI_API_HOST) != ESP_OK) {
         return TBD_ERR(SPI_INPUTS_FAILED_TO_DEINITIALIZE_SPI);
     }
     return TBD_OK;
@@ -68,9 +67,9 @@ void do_work() {
 
 Error init_bus() {
     spi_bus_config_t buscfg = {
-        .mosi_io_num = TBD_SPI_INPUTS_SPI_PIN_MOSI,
-        .miso_io_num = TBD_SPI_INPUTS_SPI_PIN_MISO,
-        .sclk_io_num = TBD_SPI_INPUTS_SPI_PIN_SCLK,
+        .mosi_io_num = TBD_SPI_API_PIN_MOSI,
+        .miso_io_num = TBD_SPI_API_PIN_MISO,
+        .sclk_io_num = TBD_SPI_API_PIN_SCLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .data4_io_num = -1,
@@ -85,7 +84,7 @@ Error init_bus() {
     };
 
     spi_slave_interface_config_t slvcfg = {
-        .spics_io_num = GPIO_NUM_20,
+        .spics_io_num = TBD_SPI_API_PIN_CS,
         .flags = 0,
         .queue_size = 1,
         .mode = 3,
@@ -93,15 +92,7 @@ Error init_bus() {
         .post_trans_cb = nullptr,
     };
 
-    // send_buffer = (uint8_t*)spi_bus_dma_memory_alloc(RCV_HOST, 2048, 0);
-    // send_buffer[0] = 0xCA;
-    // send_buffer[1] = 0xFE;
-    // receive_buffer = (uint8_t*)spi_bus_dma_memory_alloc(RCV_HOST, 2048, 0);
-    // transaction.length = 2048 * 8;
-    // transaction.tx_buffer = send_buffer;
-    // transaction.rx_buffer = receive_buffer;
-
-    if (spi_slave_initialize(TBD_SPI_INPUTS_SPI_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO) != ESP_OK) {
+    if (spi_slave_initialize(TBD_SPI_API_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO) != ESP_OK) {
         return TBD_ERR(SPI_INPUTS_FAILED_TO_INITIALIZE_SPI);
     }
 
@@ -110,7 +101,7 @@ Error init_bus() {
 }
 
 void do_handshake_transaction() {
-    if (spi_slave_transmit(TBD_SPI_INPUTS_SPI_HOST, &header_transaction_, portMAX_DELAY) != ESP_OK) {
+    if (spi_slave_transmit(TBD_SPI_API_HOST, &header_transaction_, portMAX_DELAY) != ESP_OK) {
         //
     }
     if (packet_reader.type_peek() != api::Header::TYPE_NOOP && data_transaction_.length != 0) {
@@ -120,7 +111,7 @@ void do_handshake_transaction() {
 }
 
 void do_data_transaction() {
-    if (spi_slave_transmit(TBD_SPI_INPUTS_SPI_HOST, &data_transaction_, portMAX_DELAY) != ESP_OK) {
+    if (spi_slave_transmit(TBD_SPI_API_HOST, &data_transaction_, portMAX_DELAY) != ESP_OK) {
         api::impl::ApiPacketHandler<SPI_SERVER, true> packet_handler;
         const auto response_length = packet_handler.handle(packet_reader.input_buffer(), data_transaction_.trans_len);
         if (response_length == 0) {
