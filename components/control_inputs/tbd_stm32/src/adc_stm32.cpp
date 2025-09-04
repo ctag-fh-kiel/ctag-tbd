@@ -38,7 +38,7 @@ namespace {
 
 namespace tbd::drivers {
 
-void ADCStm32::init() {
+void ControlInputs::init() {
     //Configuration for the SPI bus
     spi_bus_config_t buscfg={
             .mosi_io_num=TBD_STM32_PIN_MOSI,
@@ -76,7 +76,7 @@ void ADCStm32::init() {
     currentTransaction = 0;
 }
 
-uint8_t* ADCStm32::update() {
+void TBD_IRAM ControlInputs::update(uint8_t **trigs, float** cvs) {
     esp_err_t ret;
     spi_slave_queue_trans(RCV_HOST, &transaction[currentTransaction], portMAX_DELAY);
     currentTransaction ^= 0x1;
@@ -90,6 +90,10 @@ uint8_t* ADCStm32::update() {
     }
 
     return reinterpret_cast<uint8_t*>(transaction[currentTransaction].rx_buffer);
+}
+
+void ControlInputs::update_metrics(const sound_processor::ProcessingMetrics& metrics) {
+
 }
 
 }
