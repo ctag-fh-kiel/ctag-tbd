@@ -26,16 +26,14 @@ tbd_rt_audio:
 
 tbd_rt_midi:
 
-tbd_uart:
-  uart_id: host_uart
-
 uart:
   id: host_uart
   baud_rate: 9600
   port: "/dev/ttyUSB0"
 
-tbd_api:
+tbd_uart_api:
+  uart_id: host_uart
 
-tbd_websocket:
+tbd_websocket_api:
 
 tbd_unittests:

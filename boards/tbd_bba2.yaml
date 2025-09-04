@@ -49,8 +49,6 @@ tbd_midi:
     - UART
     - USB
 
-tbd_api:
-
-tbd_websocket:
+tbd_websocket_api:
 
 tbd_unittests:
