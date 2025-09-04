@@ -38,6 +38,8 @@ optional = true
 [tool.poetry.group.cli.dependencies]
 typer = "^0.16.0"
 
+[tool.poetry.scripts]
+tbd = "tbd_core.cli:run_tbd"
 
 [build-system]
 requires = ["poetry-core"]
