@@ -69,7 +69,9 @@ def write_library_json_from_compilation_commands(
                 defines.add(arg)
             if arg.startswith('-I'):
                 include_path = Path(arg[2:])
-                include_path = f'-I{include_path.relative_to(repo_dir) if include_path.absolute() else include_path}'
+                include_path = f'-I{include_path.relative_to(repo_dir) 
+                    if include_path.absolute() and include_path.is_relative_to(repo_dir) 
+                    else include_path}'
                 includes.add(include_path)
         
         src_file = Path(command.file)
