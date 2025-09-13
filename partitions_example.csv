@@ -3,8 +3,8 @@
 nvs,      data, nvs,      0x9000,  0x4000
 otadata,  data, ota,      0xd000,  0x2000
 phy_init, data, phy,      0xf000,  0x1000
-ota_0,    app,  ota_0,    0x10000,     3M
-ota_1,    app,  ota_1,           ,     3M
+ota_0,    app,  ota_0,    0x10000,     5M
+ota_1,    app,  ota_1,           ,     1M
 storage,  data, spiffs,          ,     3M
 # note that by default 5 MB of flash are used outside of partition table for sample ROM
 # starts at 0xB00000 until 0xFFFFFF
