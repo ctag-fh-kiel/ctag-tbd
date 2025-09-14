@@ -25,8 +25,20 @@ respective component folders / files if different from this license.
 
 #include "soc/gpio_num.h"
 #include "esp_log.h"
+#include "esp_ota_ops.h"
 
 #define RCV_HOST    SPI3_HOST // SPI2 connects to rp2350 spi1
+
+static void boot_into_slot(int slot) { // slot 0 or 1
+    esp_partition_subtype_t st = (slot == 0)
+        ? ESP_PARTITION_SUBTYPE_APP_OTA_0
+        : ESP_PARTITION_SUBTYPE_APP_OTA_1;
+    const esp_partition_t *p = esp_partition_find_first(ESP_PARTITION_TYPE_APP, st, NULL);
+    if (!p) return;
+    printf("Try to boot into %s\n", p->label);
+    if (esp_ota_set_boot_partition(p) == ESP_OK) esp_restart();
+    printf("Boot into %s\n not successful", p->label);
+}
 
 namespace CTAG::SPIAPI{
     TaskHandle_t SpiAPI::hTask;
@@ -309,6 +321,11 @@ namespace CTAG::SPIAPI{
             case RequestType::Reboot:
                 ESP_LOGI("SpiAPI", "Rebooting device!");
                 esp_restart();
+                break;
+            case RequestType::RebootToOTA1:
+                ESP_LOGI("SpiAPI", "Rebooting device to OTA1!");
+                CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                boot_into_slot(1);
                 break;
             }
         }
