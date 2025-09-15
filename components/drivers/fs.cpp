@@ -51,6 +51,19 @@ static sdmmc_card_t* card = nullptr;
 static char* buffer = nullptr;
 
 static bool MountSDCard(const char *mnt_pt = "/spiffs"){
+    // configure gpio 45 as output and toggle to reset the sd card
+    gpio_config_t io_conf{};
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pin_bit_mask = (1ULL << GPIO_NUM_45);
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&io_conf);
+    gpio_set_level(GPIO_NUM_45, 1);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    gpio_set_level(GPIO_NUM_45, 0);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
     host.slot = SDMMC_HOST_SLOT_0;
     host.max_freq_khz = SDMMC_FREQ_DDR50;
