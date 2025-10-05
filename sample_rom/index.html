@@ -82,9 +82,6 @@
         <span id="currentName" class="muted">Nothing selected</span>
         <span id="duration" class="pill">--:--</span>
       </div>
-      <div class="row">
-        <button id="playBtn" disabled>Play</button>
-      </div>
     </div>
     <div id="waveform"></div>
   </section>
@@ -117,7 +114,6 @@
     const capacityInfo = document.getElementById('capacityInfo');
     const currentNameEl = document.getElementById('currentName');
     const durationEl = document.getElementById('duration');
-    const playBtn = document.getElementById('playBtn');
     const warningsEl = document.getElementById('warnings');
     const enableAudioBtn = document.getElementById('enableAudioBtn');
 
@@ -137,11 +133,7 @@
     });
     wavesurfer.on('ready', () => {
       durationEl.textContent = formatTime(wavesurfer.getDuration());
-      playBtn.disabled = false;
     });
-    wavesurfer.on('play', () => (playBtn.textContent = 'Pause'));
-    wavesurfer.on('pause', () => (playBtn.textContent = 'Play'));
-    wavesurfer.on('finish', () => (playBtn.textContent = 'Play'));
 
     let entries = []; // {filename, path, nsamples, offset? , _idx}
     let selection = []; // { entry, file }
@@ -220,7 +212,6 @@
       bankListEl.innerHTML = '';
       currentNameEl.textContent = 'Nothing selected';
       durationEl.textContent = '--:--';
-      playBtn.disabled = true;
       counter.textContent = '0/128 selected';
       capacityInfo.textContent = '';
       warningsEl.style.display = 'none';
@@ -312,17 +303,15 @@
       });
     }
 
-    // RIGHT: selection as a tree
+    // RIGHT: selection as a flat, linear list with slots
     function renderRightTree() {
       bankListEl.innerHTML = '';
-      const tree = buildTree(selection, (s) => ((s.entry.path ? s.entry.path + '/' : '') + s.entry.filename));
-      renderFolder(tree, bankListEl, (s, parent) => {
+      selection.forEach((s, slot) => {
         const row = document.createElement('div');
         row.className = 'leaf';
         // Size color coding (no free constraint on right)
         applySizeColor(row, bytesForEntry(s.entry), LIMIT_BYTES, false);
-        // Determine slot index from selection order
-        const slot = selection.findIndex((x) => x.entry._idx === s.entry._idx);
+        // DnD wiring
         row.dataset.slot = String(slot);
         row.setAttribute('draggable', 'true');
         row.addEventListener('dragstart', (ev) => {
@@ -355,24 +344,24 @@
         meta.textContent = `nsamples: ${s.entry.nsamples} · ${bytesTxt}` + (s.entry.offset != null ? ` · offset: ${s.entry.offset}` : '');
         left.appendChild(name);
         left.appendChild(meta);
+
         const right = document.createElement('div');
         right.className = 'right-actions';
-        const prevBtn = document.createElement('button');
-        prevBtn.textContent = 'Preview';
-        prevBtn.className = 'btn';
-        prevBtn.addEventListener('click', (ev) => { ev.stopPropagation(); previewBlob(s.entry, s.file); });
+        // Removed Preview button; keep only Remove
         const rmBtn = document.createElement('button');
         rmBtn.textContent = 'Remove';
         rmBtn.className = 'btn';
         rmBtn.addEventListener('click', () => { removeFromBank(s.entry._idx); });
-        right.appendChild(prevBtn);
         right.appendChild(rmBtn);
+
         row.appendChild(left);
         row.appendChild(right);
+        // Hover preview on right and row click still supported
         row.addEventListener('mouseenter', () => { if (autoPreviewEnabled) previewBlob(s.entry, s.file); });
         row.addEventListener('mouseleave', () => stopPreview());
         row.addEventListener('click', () => previewBlob(s.entry, s.file));
-        parent.appendChild(row);
+
+        bankListEl.appendChild(row);
       });
     }
 
@@ -433,7 +422,6 @@
     async function previewBlob(entry, file) {
       currentNameEl.textContent = (entry.path ? entry.path + '/' : '') + entry.filename;
       durationEl.textContent = '--:--';
-      playBtn.disabled = true;
       try {
         wavesurfer.empty();
         await wavesurfer.loadBlob(file);
@@ -446,8 +434,6 @@
     }
 
     function stopPreview() { try { wavesurfer.pause(); } catch {} }
-
-    playBtn.addEventListener('click', () => { if (!wavesurfer) return; wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play(); });
 
     // Export JSON (download)
     function buildSelectionJson() {
