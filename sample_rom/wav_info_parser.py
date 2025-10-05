@@ -2,6 +2,7 @@ import os
 import json
 from pathlib import Path
 import struct
+import shutil
 
 # Parse WAV chunks in a streaming way to extract format info, data size, and RIFF INFO metadata
 
@@ -165,6 +166,7 @@ def main():
     # Find .wav files case-insensitively (e.g., .wav, .WAV, .WaV)
     wav_files = [p for p in base_dir.rglob('*.[Ww][Aa][Vv]')]
     results = []
+    srcs = []
     for wav_path in wav_files:
         try:
             info = get_wav_info(wav_path, base_dir)
@@ -183,10 +185,38 @@ def main():
                 'error': str(e),
             }
         results.append(info)
+        srcs.append(wav_path)
     out_path = base_dir / 'wav_info.json'
     with open(out_path, 'w') as f:
         json.dump(results, f, indent=2)
-    print(f"Processed {len(results)} wav files. Output: {out_path.name}")
+
+    # Copy files matching format_ok == True into tbdsamples, preserving directory structure
+    tbds_dir = base_dir / 'tbdsamples'
+    selected = [(info, src) for info, src in zip(results, srcs) if info.get('format_ok') is True]
+    short_entries = []
+    for info, src in selected:
+        dest_dir = tbds_dir if info['path'] == '' else tbds_dir / info['path']
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest_path = dest_dir / src.name
+        try:
+            shutil.copy2(src, dest_path)
+        except Exception as e:
+            # Skip copy errors but continue building JSON
+            pass
+        short_entries.append({
+            'filename': info['filename'],
+            'path': info['path'],
+            'nsamples': info['nsamples'],
+            'offset': info['offset'],
+        })
+
+    # Write shortened JSON into tbdsamples folder
+    tbds_dir.mkdir(parents=True, exist_ok=True)
+    short_path = tbds_dir / 'wav_info_short.json'
+    with open(short_path, 'w') as f:
+        json.dump(short_entries, f, indent=2)
+
+    print(f"Processed {len(results)} wav files. Output: {out_path.name}. Copied {len(selected)} files to {tbds_dir.name} and wrote {short_path.name}.")
 
 if __name__ == '__main__':
     main()
