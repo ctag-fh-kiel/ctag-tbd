@@ -66,6 +66,8 @@
         <strong>Selected bank</strong>
         <div class="row">
           <span id="capacityInfo" class="capacity"></span>
+          <input id="loadInput" type="file" accept="application/json" hidden />
+          <button id="loadBtn" disabled>Load JSON</button>
           <button id="clearBtn" disabled>Clear</button>
           <button id="exportBtn" disabled>Export JSON</button>
           <button id="saveToFolderBtn" disabled>Save to folder</button>
@@ -111,6 +113,8 @@
     const clearBtn = document.getElementById('clearBtn');
     const exportBtn = document.getElementById('exportBtn');
     const saveBtn = document.getElementById('saveToFolderBtn');
+    const loadBtn = document.getElementById('loadBtn');
+    const loadInput = document.getElementById('loadInput');
     const capacityInfo = document.getElementById('capacityInfo');
     const currentNameEl = document.getElementById('currentName');
     const durationEl = document.getElementById('duration');
@@ -202,6 +206,7 @@
       renderRightTree();
       updateCapacity();
       summary.textContent = `Loaded ${entries.length} entries from wav_info_short.json`;
+      loadBtn.disabled = false;
     });
 
     function resetUI() {
@@ -216,6 +221,7 @@
       capacityInfo.textContent = '';
       warningsEl.style.display = 'none';
       warningsEl.textContent = '';
+      loadBtn.disabled = true;
       try { wavesurfer.empty(); } catch {}
     }
 
@@ -467,6 +473,69 @@
         summary.textContent = 'Saved sample_bank.json to selected folder';
       } catch (e) { showWarning('Failed to save to folder: ' + (e?.message || e)); }
     });
+
+    // Load JSON handlers
+    loadBtn.addEventListener('click', () => loadInput.click());
+    loadInput.addEventListener('change', async () => {
+      const file = loadInput.files && loadInput.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        await loadBankFromJson(data);
+      } catch (e) {
+        showWarning('Failed to load bank JSON: ' + (e?.message || e));
+      } finally {
+        loadInput.value = '';
+      }
+    });
+
+    async function loadBankFromJson(arr) {
+      if (!Array.isArray(arr)) throw new Error('Bank JSON must be an array');
+      if (!entries.length) throw new Error('Load a tbdsamples folder first');
+      // Replace current bank
+      selection = [];
+      const usedIdx = new Set();
+      let warnings = [];
+      let usedBytes = 0;
+      for (let i = 0; i < arr.length && selection.length < MAX_BANK; i++) {
+        const it = arr[i] || {};
+        const name = it.filename;
+        const ns = it.nsamples;
+        const off = Object.prototype.hasOwnProperty.call(it, 'offset') ? it.offset : undefined;
+        if (!name || typeof ns !== 'number') { warnings.push(`Item ${i}: missing filename/nsamples`); continue; }
+        // Candidates by filename + nsamples (+offset if provided)
+        let cands = entries.filter(e => e.filename === name && e.nsamples === ns);
+        if (off !== undefined) cands = cands.filter(e => e.offset === off);
+        // If still ambiguous, prefer not-yet-used
+        let chosen = cands.find(e => !usedIdx.has(e._idx));
+        // If still ambiguous or none, try filename only when unique
+        if (!chosen) {
+          const byName = entries.filter(e => e.filename === name);
+          if (byName.length === 1) chosen = byName[0];
+        }
+        if (!chosen) { warnings.push(`Item ${i}: no unique match for "${name}"`); continue; }
+        // Ensure file exists
+        const key = ((chosen.path ? chosen.path + '/' : '') + chosen.filename).toLowerCase();
+        const fileObj = wavMap.get(key);
+        if (!fileObj) { warnings.push(`Item ${i}: file not found for ${key}`); continue; }
+        // Capacity check
+        const need = chosen.nsamples * BYTES_PER_SAMPLE;
+        if (usedBytes + need > LIMIT_BYTES) { warnings.push(`Item ${i}: capacity exceeded, skipping`); continue; }
+        selection.push({ entry: chosen, file: fileObj });
+        usedIdx.add(chosen._idx);
+        usedBytes += need;
+      }
+      renderLeftTree();
+      renderRightTree();
+      updateSelectionUI();
+      if (warnings.length) {
+        showWarning(warnings.join('\n'));
+      } else {
+        warningsEl.style.display = 'none';
+        warningsEl.textContent = '';
+      }
+    }
 
     // Helpers: size and color coding
     function bytesForEntry(e) { return (e.nsamples || 0) * BYTES_PER_SAMPLE; }
