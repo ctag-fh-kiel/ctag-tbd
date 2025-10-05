@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 #include "SpiAPI.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
+#include "helpers/ctagSampleRom.hpp"
 
 #include "soc/gpio_num.h"
 #include "esp_log.h"
@@ -227,6 +228,7 @@ namespace CTAG::SPIAPI{
             }
             const uint8_t preset_number = uint8_param_1; // bounds check in subsequent class
             const uint8_t favorite_number = uint8_param_0; // bounds check in subsequent class
+            const uint8_t bank_number = uint8_param_0; // bounds check in subsequent class
             const int32_t param_value = int32_param_2;
             // value is the third parameter, e.g. for setting a parameter value
             std::string string_parameter{string_param_3};
@@ -326,6 +328,27 @@ namespace CTAG::SPIAPI{
                 ESP_LOGI("SpiAPI", "Rebooting device to OTA1!");
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 boot_into_slot(1);
+                break;
+            case RequestType::GetSampleRomDescriptor:
+                ESP_LOGI("SpiAPI", "GetSampleRomDescriptor");
+                {
+                    std::string desc = HELPERS::ctagSampleRom::GetSampleRomDescriptorJSON();
+                    result = transmitCString(requestType, desc.c_str());
+                }
+                break;
+            case RequestType::SetActiveWaveTableBank:
+                ESP_LOGI("SpiAPI", "Setting active wavetable bank to %d", bank_number);
+                CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                HELPERS::ctagSampleRom::SetActiveWaveTableBank(uint8_param_0);
+                HELPERS::ctagSampleRom::RefreshDataStructure();
+                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                break;
+            case RequestType::SetActiveSampleRomBank:
+                ESP_LOGI("SpiAPI", "Setting active sample bank to %d", bank_number);
+                CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                HELPERS::ctagSampleRom::SetActiveSampleBank(uint8_param_0);
+                HELPERS::ctagSampleRom::RefreshDataStructure();
+                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 break;
             }
         }

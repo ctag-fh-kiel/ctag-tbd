@@ -1,0 +1,2112 @@
+[
+  {
+    "filename": "TWIST31",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ASSYMETR",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BRAIDS02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "QUACK",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PD101",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "WHERE_NO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BRAIDS03",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SOHLER11",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "QUX_FMY",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ESQ1_HI",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BRAIDS01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RADIUS",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNTHARP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PD103",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SAW_BEND",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "303",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ALIEN_SP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PD102",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BASS_BY",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ALTO_SAX",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDAL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VOXSYNTH",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TALKING",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BANK_B",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BRAIDS04",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LOFIRISE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB009",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ENSHTURZ",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "111",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "STREICHF",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "CYBERNET",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "CLOCK_MU",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB008",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GLITCHBO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BANK_C",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "G2_ASTRA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "CYBORG",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BANK_A",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BANK_410",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNTH_VO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "AUDIOTER",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "KYMA_PAR",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MODDROP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "KOMPLE01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "UHPSY",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PD104",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "111_00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "JUST_RAN",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HARMONIX",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAVITYM",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP28",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP73",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_MUT",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C5",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA25",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ADDITIVE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA31",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA19",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MUTATION",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RRLYRQ7",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TRON_MAL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RRLYRQ6",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RESO_ANA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA18",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "KUATO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA30",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA24",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "A_55HZ",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY001",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY003",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ISOLDE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TWISTED",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C6",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B2",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BBELLS",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA26",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RRLYRQ5",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA27",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B3",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C7",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY002",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY006",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY012",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C3",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B7",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ALPHA_2",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "DIRTY_00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA23",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VINCENT",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LOM_A",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BOWING",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA22",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "DIRTY_01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B6",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C2",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "FMADDI02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SUPERSAW",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY013",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY007",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TELEPHON",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY011",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY005",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "AMEN_LOO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "KAWAI_K1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A8",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B4",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SAND_EYE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA08",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA20",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN09",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MELLOW_D",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VOCAL_FO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ALIEN_VO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ORGANIC",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "DIRTY_02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN08",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA21",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LFO_PLAY",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA09",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B5",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "WAVETRIP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A9",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY004",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY010",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "DOSE_WIT",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY009",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TEXTURE4",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A4",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B8",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA04",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN05",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "FOLDFEED",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN11",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "AMEN",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ELOB_A",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MAGNETIC",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "JUNOX_HO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PD1_1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN04",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "WOWEE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA11",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA05",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GENTLE_M",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_B9",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A5",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDY008",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TABLE_TI",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "KONBANWA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "CHEBYSHE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A7",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "CRUSH_AD",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA13",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA07",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PD1_3",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN06",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MICROBRU",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_UPPE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LIGHT_YE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VPS",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ELOB_B",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ELOB_C",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VOCAL_00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RINGSHAP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN07",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PD1_2",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA06",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA12",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SAW_RING",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A6",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "FOURIER",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A2",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN03",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA16",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "NOMAD",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE2SAW",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA03",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA17",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HORROR",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PWN_SAW",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ESQ1_LO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A3",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HMMMMMMM",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TEZZALOG",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_SPE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LSDJ_WAV",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GEOMETRI",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C9",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA29",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA15",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "AAHWOHYE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBNK0",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "FAIRLI01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "KERMIT_R",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VIRUS_SA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "DIRTY_HA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA14",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA28",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PD1_4",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYBN01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_C8",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ROFL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "FRED_DUR",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ITERATIV",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "BEST_OF",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TWIST1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ACID_SP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RETRO_SP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "FOLDING",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB006",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB012",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB013",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB007",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PISTON_H",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HARMONIC",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MS2K",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SITAR",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP153",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP32",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VIRAL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MICRO_Q",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SQ8_SH",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB011",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB005",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "EUCLIDEA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "REALIZE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB004",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB010",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HVOICEA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PROPHET",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "FMADDITI",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SMOOTH_T",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TWIST02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_A02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LIGHT_00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "FOURIER2",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PLAITS03",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ZAP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PLAITS02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB001",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TWIST6",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_A03",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_A01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB003",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LFO_PL00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HYPERBOL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ENSHTU03",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PHANTOMS",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ENSHTU02",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PLAITS01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SNAKE_EY",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "AKWF_FMS",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB002",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MK_DWG_H",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PUSH_THE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNTHESI",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ISOBELLE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "a4_dub_091",
+    "path": "a4_dub",
+    "nsamples": 28384
+  },
+  {
+    "filename": "a4_dub_085",
+    "path": "a4_dub",
+    "nsamples": 6295
+  },
+  {
+    "filename": "a4_dub_052",
+    "path": "a4_dub",
+    "nsamples": 18262
+  },
+  {
+    "filename": "a4_dub_046",
+    "path": "a4_dub",
+    "nsamples": 132882
+  },
+  {
+    "filename": "a4_dub_047",
+    "path": "a4_dub",
+    "nsamples": 13862
+  },
+  {
+    "filename": "a4_dub_053",
+    "path": "a4_dub",
+    "nsamples": 131782
+  },
+  {
+    "filename": "a4_dub_084",
+    "path": "a4_dub",
+    "nsamples": 22088
+  },
+  {
+    "filename": "a4_dub_090",
+    "path": "a4_dub",
+    "nsamples": 5103
+  },
+  {
+    "filename": "a4_dub_086",
+    "path": "a4_dub",
+    "nsamples": 9902
+  },
+  {
+    "filename": "a4_dub_092",
+    "path": "a4_dub",
+    "nsamples": 23256
+  },
+  {
+    "filename": "a4_dub_079",
+    "path": "a4_dub",
+    "nsamples": 13190
+  },
+  {
+    "filename": "a4_dub_045",
+    "path": "a4_dub",
+    "nsamples": 165882
+  },
+  {
+    "filename": "a4_dub_051",
+    "path": "a4_dub",
+    "nsamples": 157962
+  },
+  {
+    "filename": "a4_dub_050",
+    "path": "a4_dub",
+    "nsamples": 11914
+  },
+  {
+    "filename": "a4_dub_044",
+    "path": "a4_dub",
+    "nsamples": 147622
+  },
+  {
+    "filename": "a4_dub_078",
+    "path": "a4_dub",
+    "nsamples": 8453
+  },
+  {
+    "filename": "a4_dub_093",
+    "path": "a4_dub",
+    "nsamples": 22991
+  },
+  {
+    "filename": "a4_dub_087",
+    "path": "a4_dub",
+    "nsamples": 3323
+  },
+  {
+    "filename": "a4_dub_108",
+    "path": "a4_dub",
+    "nsamples": 4940
+  },
+  {
+    "filename": "a4_dub_083",
+    "path": "a4_dub",
+    "nsamples": 7577
+  },
+  {
+    "filename": "a4_dub_097",
+    "path": "a4_dub",
+    "nsamples": 19795
+  },
+  {
+    "filename": "a4_dub_040",
+    "path": "a4_dub",
+    "nsamples": 124962
+  },
+  {
+    "filename": "a4_dub_054",
+    "path": "a4_dub",
+    "nsamples": 114622
+  },
+  {
+    "filename": "a4_dub_068",
+    "path": "a4_dub",
+    "nsamples": 170942
+  },
+  {
+    "filename": "a4_dub_069",
+    "path": "a4_dub",
+    "nsamples": 293262
+  },
+  {
+    "filename": "a4_dub_055",
+    "path": "a4_dub",
+    "nsamples": 128262
+  },
+  {
+    "filename": "a4_dub_041",
+    "path": "a4_dub",
+    "nsamples": 89410
+  },
+  {
+    "filename": "a4_dub_096",
+    "path": "a4_dub",
+    "nsamples": 14393
+  },
+  {
+    "filename": "a4_dub_082",
+    "path": "a4_dub",
+    "nsamples": 8863
+  },
+  {
+    "filename": "a4_dub_109",
+    "path": "a4_dub",
+    "nsamples": 3556
+  },
+  {
+    "filename": "a4_dub_094",
+    "path": "a4_dub",
+    "nsamples": 24607
+  },
+  {
+    "filename": "a4_dub_080",
+    "path": "a4_dub",
+    "nsamples": 26546
+  },
+  {
+    "filename": "a4_dub_057",
+    "path": "a4_dub",
+    "nsamples": 78322
+  },
+  {
+    "filename": "a4_dub_043",
+    "path": "a4_dub",
+    "nsamples": 49282
+  },
+  {
+    "filename": "a4_dub_042",
+    "path": "a4_dub",
+    "nsamples": 52487
+  },
+  {
+    "filename": "a4_dub_056",
+    "path": "a4_dub",
+    "nsamples": 183702
+  },
+  {
+    "filename": "a4_dub_081",
+    "path": "a4_dub",
+    "nsamples": 33073
+  },
+  {
+    "filename": "a4_dub_095",
+    "path": "a4_dub",
+    "nsamples": 21836
+  },
+  {
+    "filename": "a4_dub_019",
+    "path": "a4_dub",
+    "nsamples": 44002
+  },
+  {
+    "filename": "a4_dub_031",
+    "path": "a4_dub",
+    "nsamples": 72316
+  },
+  {
+    "filename": "a4_dub_025",
+    "path": "a4_dub",
+    "nsamples": 62445
+  },
+  {
+    "filename": "a4_dub_024",
+    "path": "a4_dub",
+    "nsamples": 59401
+  },
+  {
+    "filename": "a4_dub_030",
+    "path": "a4_dub",
+    "nsamples": 37495
+  },
+  {
+    "filename": "a4_dub_018",
+    "path": "a4_dub",
+    "nsamples": 36082
+  },
+  {
+    "filename": "a4_dub_026",
+    "path": "a4_dub",
+    "nsamples": 81928
+  },
+  {
+    "filename": "a4_dub_032",
+    "path": "a4_dub",
+    "nsamples": 62417
+  },
+  {
+    "filename": "a4_dub_033",
+    "path": "a4_dub",
+    "nsamples": 55411
+  },
+  {
+    "filename": "a4_dub_027",
+    "path": "a4_dub",
+    "nsamples": 67102
+  },
+  {
+    "filename": "a4_dub_023",
+    "path": "a4_dub",
+    "nsamples": 67316
+  },
+  {
+    "filename": "a4_dub_037",
+    "path": "a4_dub",
+    "nsamples": 99821
+  },
+  {
+    "filename": "a4_dub_036",
+    "path": "a4_dub",
+    "nsamples": 98562
+  },
+  {
+    "filename": "a4_dub_022",
+    "path": "a4_dub",
+    "nsamples": 54477
+  },
+  {
+    "filename": "a4_dub_034",
+    "path": "a4_dub",
+    "nsamples": 160602
+  },
+  {
+    "filename": "a4_dub_020",
+    "path": "a4_dub",
+    "nsamples": 60948
+  },
+  {
+    "filename": "a4_dub_008",
+    "path": "a4_dub",
+    "nsamples": 131782
+  },
+  {
+    "filename": "a4_dub_009",
+    "path": "a4_dub",
+    "nsamples": 81842
+  },
+  {
+    "filename": "a4_dub_021",
+    "path": "a4_dub",
+    "nsamples": 61658
+  },
+  {
+    "filename": "a4_dub_035",
+    "path": "a4_dub",
+    "nsamples": 229242
+  },
+  {
+    "filename": "a4_dub_038",
+    "path": "a4_dub",
+    "nsamples": 69742
+  },
+  {
+    "filename": "a4_dub_010",
+    "path": "a4_dub",
+    "nsamples": 52881
+  },
+  {
+    "filename": "a4_dub_004",
+    "path": "a4_dub",
+    "nsamples": 99550
+  },
+  {
+    "filename": "a4_dub_005",
+    "path": "a4_dub",
+    "nsamples": 379282
+  },
+  {
+    "filename": "a4_dub_011",
+    "path": "a4_dub",
+    "nsamples": 79605
+  },
+  {
+    "filename": "a4_dub_039",
+    "path": "a4_dub",
+    "nsamples": 126502
+  },
+  {
+    "filename": "a4_dub_007",
+    "path": "a4_dub",
+    "nsamples": 36728
+  },
+  {
+    "filename": "a4_dub_013",
+    "path": "a4_dub",
+    "nsamples": 115722
+  },
+  {
+    "filename": "a4_dub_012",
+    "path": "a4_dub",
+    "nsamples": 99002
+  },
+  {
+    "filename": "a4_dub_006",
+    "path": "a4_dub",
+    "nsamples": 328682
+  },
+  {
+    "filename": "a4_dub_002",
+    "path": "a4_dub",
+    "nsamples": 6531
+  },
+  {
+    "filename": "a4_dub_016",
+    "path": "a4_dub",
+    "nsamples": 110882
+  },
+  {
+    "filename": "a4_dub_017",
+    "path": "a4_dub",
+    "nsamples": 26402
+  },
+  {
+    "filename": "a4_dub_003",
+    "path": "a4_dub",
+    "nsamples": 88922
+  },
+  {
+    "filename": "a4_dub_015",
+    "path": "a4_dub",
+    "nsamples": 59182
+  },
+  {
+    "filename": "a4_dub_001",
+    "path": "a4_dub",
+    "nsamples": 84864
+  },
+  {
+    "filename": "a4_dub_029",
+    "path": "a4_dub",
+    "nsamples": 11413
+  },
+  {
+    "filename": "a4_dub_028",
+    "path": "a4_dub",
+    "nsamples": 53070
+  },
+  {
+    "filename": "a4_dub_014",
+    "path": "a4_dub",
+    "nsamples": 53143
+  },
+  {
+    "filename": "a4_dub_107",
+    "path": "a4_dub",
+    "nsamples": 8582
+  },
+  {
+    "filename": "a4_dub_098",
+    "path": "a4_dub",
+    "nsamples": 19923
+  },
+  {
+    "filename": "a4_dub_073",
+    "path": "a4_dub",
+    "nsamples": 245082
+  },
+  {
+    "filename": "a4_dub_067",
+    "path": "a4_dub",
+    "nsamples": 41582
+  },
+  {
+    "filename": "a4_dub_066",
+    "path": "a4_dub",
+    "nsamples": 100322
+  },
+  {
+    "filename": "a4_dub_072",
+    "path": "a4_dub",
+    "nsamples": 95186
+  },
+  {
+    "filename": "a4_dub_099",
+    "path": "a4_dub",
+    "nsamples": 2983
+  },
+  {
+    "filename": "a4_dub_112",
+    "path": "a4_dub",
+    "nsamples": 4663
+  },
+  {
+    "filename": "a4_dub_106",
+    "path": "a4_dub",
+    "nsamples": 2844
+  },
+  {
+    "filename": "a4_dub_110",
+    "path": "a4_dub",
+    "nsamples": 8955
+  },
+  {
+    "filename": "a4_dub_104",
+    "path": "a4_dub",
+    "nsamples": 2766
+  },
+  {
+    "filename": "a4_dub_058",
+    "path": "a4_dub",
+    "nsamples": 91962
+  },
+  {
+    "filename": "a4_dub_064",
+    "path": "a4_dub",
+    "nsamples": 8802
+  },
+  {
+    "filename": "a4_dub_070",
+    "path": "a4_dub",
+    "nsamples": 303822
+  },
+  {
+    "filename": "a4_dub_071",
+    "path": "a4_dub",
+    "nsamples": 274562
+  },
+  {
+    "filename": "a4_dub_065",
+    "path": "a4_dub",
+    "nsamples": 204822
+  },
+  {
+    "filename": "a4_dub_059",
+    "path": "a4_dub",
+    "nsamples": 268402
+  },
+  {
+    "filename": "a4_dub_105",
+    "path": "a4_dub",
+    "nsamples": 2729
+  },
+  {
+    "filename": "a4_dub_111",
+    "path": "a4_dub",
+    "nsamples": 8581
+  },
+  {
+    "filename": "a4_dub_101",
+    "path": "a4_dub",
+    "nsamples": 3293
+  },
+  {
+    "filename": "a4_dub_061",
+    "path": "a4_dub",
+    "nsamples": 22662
+  },
+  {
+    "filename": "a4_dub_075",
+    "path": "a4_dub",
+    "nsamples": 71890
+  },
+  {
+    "filename": "a4_dub_049",
+    "path": "a4_dub",
+    "nsamples": 25645
+  },
+  {
+    "filename": "a4_dub_048",
+    "path": "a4_dub",
+    "nsamples": 60282
+  },
+  {
+    "filename": "a4_dub_074",
+    "path": "a4_dub",
+    "nsamples": 226382
+  },
+  {
+    "filename": "a4_dub_060",
+    "path": "a4_dub",
+    "nsamples": 101642
+  },
+  {
+    "filename": "a4_dub_100",
+    "path": "a4_dub",
+    "nsamples": 3847
+  },
+  {
+    "filename": "a4_dub_102",
+    "path": "a4_dub",
+    "nsamples": 2581
+  },
+  {
+    "filename": "a4_dub_089",
+    "path": "a4_dub",
+    "nsamples": 13715
+  },
+  {
+    "filename": "a4_dub_076",
+    "path": "a4_dub",
+    "nsamples": 3453
+  },
+  {
+    "filename": "a4_dub_062",
+    "path": "a4_dub",
+    "nsamples": 70182
+  },
+  {
+    "filename": "a4_dub_063",
+    "path": "a4_dub",
+    "nsamples": 297662
+  },
+  {
+    "filename": "a4_dub_077",
+    "path": "a4_dub",
+    "nsamples": 17986
+  },
+  {
+    "filename": "a4_dub_088",
+    "path": "a4_dub",
+    "nsamples": 3714
+  },
+  {
+    "filename": "a4_dub_103",
+    "path": "a4_dub",
+    "nsamples": 3140
+  },
+  {
+    "filename": "basssynth",
+    "path": "other/factory",
+    "nsamples": 15876
+  },
+  {
+    "filename": "516898_marydsava_uhm",
+    "path": "other/factory",
+    "nsamples": 42696
+  },
+  {
+    "filename": "72609_vrezerino_phere_finlandpad",
+    "path": "other/factory",
+    "nsamples": 441000
+  },
+  {
+    "filename": "213525_garzul_n_nalog_synth_stab",
+    "path": "other/factory",
+    "nsamples": 88166
+  },
+  {
+    "filename": "320046_staticpo_nalog_bass_vel_2",
+    "path": "other/factory",
+    "nsamples": 15876
+  },
+  {
+    "filename": "34178_dalibor_e_tor_rythm_loop_2",
+    "path": "other/factory",
+    "nsamples": 153122
+  },
+  {
+    "filename": "476908_saltbear_itbuiltfrompiece",
+    "path": "other/factory",
+    "nsamples": 133326
+  },
+  {
+    "filename": "516897_marydsava_uh_ha",
+    "path": "other/factory",
+    "nsamples": 17325
+  },
+  {
+    "filename": "456284_stratocu_surface_noise_02",
+    "path": "other/factory",
+    "nsamples": 74386
+  },
+  {
+    "filename": "BD1",
+    "path": "drums/factory",
+    "nsamples": 32193
+  },
+  {
+    "filename": "CHH4",
+    "path": "drums/factory",
+    "nsamples": 3528
+  },
+  {
+    "filename": "OHH4",
+    "path": "drums/factory",
+    "nsamples": 31752
+  },
+  {
+    "filename": "CB1",
+    "path": "drums/factory",
+    "nsamples": 6615
+  },
+  {
+    "filename": "CB0",
+    "path": "drums/factory",
+    "nsamples": 4851
+  },
+  {
+    "filename": "OHH5",
+    "path": "drums/factory",
+    "nsamples": 26460
+  },
+  {
+    "filename": "BD0",
+    "path": "drums/factory",
+    "nsamples": 11466
+  },
+  {
+    "filename": "BD2",
+    "path": "drums/factory",
+    "nsamples": 11466
+  },
+  {
+    "filename": "OHH6",
+    "path": "drums/factory",
+    "nsamples": 20286
+  },
+  {
+    "filename": "CHH2",
+    "path": "drums/factory",
+    "nsamples": 7497
+  },
+  {
+    "filename": "OHH2",
+    "path": "drums/factory",
+    "nsamples": 20727
+  },
+  {
+    "filename": "CLP0",
+    "path": "drums/factory",
+    "nsamples": 9702
+  },
+  {
+    "filename": "OHH3",
+    "path": "drums/factory",
+    "nsamples": 10584
+  },
+  {
+    "filename": "CHH3",
+    "path": "drums/factory",
+    "nsamples": 2646
+  },
+  {
+    "filename": "BD6",
+    "path": "drums/factory",
+    "nsamples": 6615
+  },
+  {
+    "filename": "BD4",
+    "path": "drums/factory",
+    "nsamples": 10584
+  },
+  {
+    "filename": "CHH1",
+    "path": "drums/factory",
+    "nsamples": 6174
+  },
+  {
+    "filename": "OHH1",
+    "path": "drums/factory",
+    "nsamples": 18522
+  },
+  {
+    "filename": "RIM0",
+    "path": "drums/factory",
+    "nsamples": 2205
+  },
+  {
+    "filename": "OHH0",
+    "path": "drums/factory",
+    "nsamples": 17640
+  },
+  {
+    "filename": "CHH0",
+    "path": "drums/factory",
+    "nsamples": 9261
+  },
+  {
+    "filename": "BD5",
+    "path": "drums/factory",
+    "nsamples": 8820
+  },
+  {
+    "filename": "RS1",
+    "path": "drums/factory",
+    "nsamples": 2205
+  },
+  {
+    "filename": "MITOM2",
+    "path": "drums/factory",
+    "nsamples": 4851
+  },
+  {
+    "filename": "MITOM0",
+    "path": "drums/factory",
+    "nsamples": 11466
+  },
+  {
+    "filename": "HITOM0",
+    "path": "drums/factory",
+    "nsamples": 5733
+  },
+  {
+    "filename": "SHK0",
+    "path": "drums/factory",
+    "nsamples": 2646
+  },
+  {
+    "filename": "SD3",
+    "path": "drums/factory",
+    "nsamples": 9261
+  },
+  {
+    "filename": "SD2",
+    "path": "drums/factory",
+    "nsamples": 7497
+  },
+  {
+    "filename": "SD0",
+    "path": "drums/factory",
+    "nsamples": 13671
+  },
+  {
+    "filename": "SD1",
+    "path": "drums/factory",
+    "nsamples": 6174
+  },
+  {
+    "filename": "LOTOM0",
+    "path": "drums/factory",
+    "nsamples": 18522
+  }
+]
