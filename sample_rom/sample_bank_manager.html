@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sample Bank Builder (128)</title>
+  <style>
+    :root { --b:#e5e7eb; --t:#111827; --muted:#6b7280; --pri:#334155; --acc:#1d4ed8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color: var(--t); }
+    header, section { padding: 12px 16px; }
+    header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid var(--b); z-index: 10; }
+    h1 { font-size: 16px; margin: 0 0 8px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    button { padding: 6px 10px; border: 1px solid var(--b); background: #fff; border-radius: 6px; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    .pill { background: #eef; border: 1px solid #cfe; border-radius: 999px; padding: 2px 8px; font-size: 12px; }
+    .muted { color: var(--muted); }
+    #browser { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    #fileList, #bankList { border: 1px solid var(--b); border-radius: 6px; overflow: auto; height: 360px; padding: 6px; }
+    .item { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 6px 4px; border-bottom: 1px dotted var(--b); }
+    .item:last-child { border-bottom: 0; }
+    .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .meta { font-size: 12px; color: var(--muted); }
+    #preview { border-top: 1px solid var(--b); padding-top: 12px; }
+    #waveform { height: 120px; border: 1px solid var(--b); border-radius: 6px; }
+  #lowResRow { margin-top: 8px; }
+  #lowResLabel { font-weight: 600; margin-right: 8px; }
+  #lowResPreview { height: 120px; width: 100%; border: 1px solid var(--b); border-radius: 6px; display: block; }
+    #warnings { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 6px; padding: 8px; display: none; }
+    .folder { margin: 4px 0; }
+    .folder > summary { cursor: pointer; font-weight: 600; }
+    .leaf { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 4px 2px; border-bottom: 1px dotted var(--b); }
+    .leaf .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .leaf .meta { font-size: 12px; color: var(--muted); }
+    .right-actions .btn { margin-left: 6px; }
+    .capacity { font-size: 12px; color: var(--muted); }
+    .cap-ok { color: #065f46; }
+    .cap-warn { color: #92400e; }
+    .cap-err { color: #991b1b; }
+    .toggle-on { background: #e0f2fe; border-color: #7dd3fc; }
+    .toggle-off { background: #f3f4f6; border-color: #d1d5db; }
+    .slot-badge { display: inline-block; min-width: 1.8em; text-align: right; margin-right: 8px; color: #374151; font-weight: 600; }
+    .drop-target { outline: 2px dashed #60a5fa; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sample Bank Builder (128)</h1>
+    <div class="row">
+      <input id="dirInput" type="file" webkitdirectory multiple hidden />
+      <button id="pickBtn">Pick tbdsamples folder…</button>
+      <span id="summary" class="muted">No folder loaded</span>
+      <span id="counter" class="pill">0/128 selected</span>
+      <button id="enableAudioBtn" title="Click once if your browser blocks autoplay">Enable audio</button>
+    </div>
+  </header>
+
+  <section id="browser">
+    <div>
+      <div class="row" style="margin-bottom:6px; justify-content: space-between;">
+        <strong>Converted files</strong>
+        <span class="muted">Hover to preview • Click Add to select</span>
+      </div>
+      <div id="fileList"></div>
+    </div>
+    <div>
+      <div class="row" style="margin-bottom:6px; justify-content: space-between; align-items: baseline;">
+        <strong>Selected bank</strong>
+        <div class="row">
+          <span id="capacityInfo" class="capacity"></span>
+          <input id="loadInput" type="file" accept="application/json" hidden />
+          <button id="loadBtn" disabled>Load JSON</button>
+          <button id="clearBtn" disabled>Clear</button>
+          <button id="exportBtn" disabled>Export JSON</button>
+          <button id="saveToFolderBtn" disabled>Save to folder</button>
+        </div>
+      </div>
+      <div id="bankList"></div>
+    </div>
+  </section>
+
+  <section id="preview">
+    <div class="row" style="justify-content: space-between;">
+      <div class="row">
+        <strong>Preview:</strong>
+        <span id="currentName" class="muted">Nothing selected</span>
+        <span id="duration" class="pill">--:--</span>
+      </div>
+    </div>
+    <div id="waveform"></div>
+    <div id="lowResRow" class="row">
+      <span id="lowResLabel">Low-res (256 × int8):</span>
+      <canvas id="lowResPreview" width="512" height="120"></canvas>
+    </div>
+  </section>
+
+  <section style="padding-top:0;">
+    <div id="warnings"></div>
+  </section>
+
+  <script type="module">
+    import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js';
+
+    // Constants
+    const MAX_BANK = 128;
+    const LIMIT_BYTES = 26 * 1024 * 1024; // 26 MiB
+    const BYTES_PER_SAMPLE = 2; // mono 16-bit
+    const SAMPLE_RATE = 44100;
+    const BYTES_PER_SECOND = BYTES_PER_SAMPLE * SAMPLE_RATE; // 88200
+    const FS_AVAILABLE = 'showDirectoryPicker' in window && window.isSecureContext;
+
+    // Elements
+    const pickBtn = document.getElementById('pickBtn');
+    const dirInput = document.getElementById('dirInput');
+    const summary = document.getElementById('summary');
+    const counter = document.getElementById('counter');
+    const fileListEl = document.getElementById('fileList');
+    const bankListEl = document.getElementById('bankList');
+    const clearBtn = document.getElementById('clearBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const saveBtn = document.getElementById('saveToFolderBtn');
+    const loadBtn = document.getElementById('loadBtn');
+    const loadInput = document.getElementById('loadInput');
+    const capacityInfo = document.getElementById('capacityInfo');
+    const currentNameEl = document.getElementById('currentName');
+    const durationEl = document.getElementById('duration');
+    const warningsEl = document.getElementById('warnings');
+    const enableAudioBtn = document.getElementById('enableAudioBtn');
+  const lowResCanvas = document.getElementById('lowResPreview');
+
+    if (!FS_AVAILABLE) {
+      // Hide save button if filesystem access API is not available (e.g., file:// or non-Chromium)
+      saveBtn.style.display = 'none';
+    }
+
+    // State
+    let wavesurfer = WaveSurfer.create({
+      container: '#waveform',
+      waveColor: '#9CA3AF',
+      progressColor: '#1D4ED8',
+      cursorColor: '#EF4444',
+      height: 120,
+      normalize: true,
+    });
+    wavesurfer.on('ready', () => {
+      durationEl.textContent = formatTime(wavesurfer.getDuration());
+    });
+
+    let entries = []; // {filename, path, nsamples, offset? , _idx}
+  let selection = []; // { entry, file, sname?: string, preview256?: number[] }
+    let wavMap = new Map(); // key: path/stem (lower) -> File
+    let dirHandle = null; // for FS save
+    let autoPreviewEnabled = false; // controlled by Enable audio toggle
+
+    // Wire enable audio as an auto-preview toggle
+    function updateAutoPreviewBtn() {
+      enableAudioBtn.textContent = autoPreviewEnabled ? 'Autopreview: On' : 'Autopreview: Off';
+      enableAudioBtn.className = autoPreviewEnabled ? 'toggle-on' : 'toggle-off';
+    }
+    updateAutoPreviewBtn();
+
+    enableAudioBtn.addEventListener('click', async () => {
+      autoPreviewEnabled = !autoPreviewEnabled;
+      updateAutoPreviewBtn();
+      if (autoPreviewEnabled) {
+        // Try to unlock audio context by a programmatic gesture
+        try { await wavesurfer.play(); wavesurfer.pause(); } catch {}
+      } else {
+        // Stop any current playback
+        try { wavesurfer.pause(); } catch {}
+      }
+    });
+
+    pickBtn.addEventListener('click', () => dirInput.click());
+
+    dirInput.addEventListener('change', async () => {
+      resetUI();
+      const files = Array.from(dirInput.files || []);
+      if (!files.length) return;
+
+      const top = files[0].webkitRelativePath?.split('/')[0] || '';
+      const stripTop = (p) => (p.startsWith(top + '/') ? p.slice(top.length + 1) : p);
+
+      wavMap.clear();
+      let shortJsonFile = null;
+      for (const f of files) {
+        const rel = stripTop(f.webkitRelativePath || f.name);
+        if (/(^|\/)wav_info_short\.json$/i.test(rel)) shortJsonFile = f;
+        if (/\.(wav|wave)$/i.test(f.name)) {
+          const idx = rel.lastIndexOf('/');
+          const dir = idx >= 0 ? rel.slice(0, idx) : '';
+          const base = idx >= 0 ? rel.slice(idx + 1) : rel;
+          const stem = base.replace(/\.[^.]+$/, '');
+          const key = (dir ? dir + '/' : '') + stem;
+          if (!wavMap.has(key.toLowerCase())) wavMap.set(key.toLowerCase(), f);
+        }
+      }
+      if (!shortJsonFile) {
+        summary.textContent = 'Could not find wav_info_short.json';
+        showWarning('Select the tbdsamples folder that contains wav_info_short.json.');
+        return;
+      }
+      try {
+        const text = await shortJsonFile.text();
+        const json = JSON.parse(text);
+        if (!Array.isArray(json)) throw new Error('wav_info_short.json must be an array');
+        entries = json.map((e, i) => ({ ...e, _idx: i }));
+      } catch (e) {
+        showWarning('Failed to parse wav_info_short.json: ' + e.message);
+        return;
+      }
+      renderLeftTree();
+      renderRightTree();
+      updateCapacity();
+      summary.textContent = `Loaded ${entries.length} entries from wav_info_short.json`;
+      loadBtn.disabled = false;
+    });
+
+    function resetUI() {
+      entries = [];
+      selection = [];
+      wavMap.clear();
+      fileListEl.innerHTML = '';
+      bankListEl.innerHTML = '';
+      currentNameEl.textContent = 'Nothing selected';
+      durationEl.textContent = '--:--';
+      counter.textContent = '0/128 selected';
+      capacityInfo.textContent = '';
+      warningsEl.style.display = 'none';
+      warningsEl.textContent = '';
+      loadBtn.disabled = true;
+      try { wavesurfer.empty(); } catch {}
+      clearLowResCanvas();
+    }
+
+    // Tree building helpers
+    function buildTree(items, getPathKey) {
+      const root = { name: '', folders: new Map(), files: [] };
+      for (const item of items) {
+        const rel = getPathKey(item); // e.g., path/filename
+        const segs = rel.split('/').filter(Boolean);
+        const fname = segs.pop();
+        let node = root;
+        for (const seg of segs) {
+          if (!node.folders.has(seg)) node.folders.set(seg, { name: seg, folders: new Map(), files: [] });
+          node = node.folders.get(seg);
+        }
+        node.files.push(item);
+      }
+      // Sort folders and files
+      function sortNode(node) {
+        node.files.sort((a, b) => getPathKey(a).localeCompare(getPathKey(b)));
+        for (const child of node.folders.values()) sortNode(child);
+      }
+      sortNode(root);
+      return root;
+    }
+
+    function renderFolder(node, container, onLeaf) {
+      // Render folders first
+      const folderNames = Array.from(node.folders.keys()).sort((a, b) => a.localeCompare(b));
+      for (const name of folderNames) {
+        const child = node.folders.get(name);
+        const details = document.createElement('details');
+        details.className = 'folder';
+        details.open = true;
+        const summaryEl = document.createElement('summary');
+        summaryEl.textContent = name;
+        details.appendChild(summaryEl);
+        renderFolder(child, details, onLeaf);
+        container.appendChild(details);
+      }
+      // Render files
+      for (const item of node.files) onLeaf(item, container);
+    }
+
+    // LEFT: entries not in selection
+    function renderLeftTree() {
+      fileListEl.innerHTML = '';
+      const selectedIdx = new Set(selection.map((s) => s.entry._idx));
+      const leftItems = entries.filter((e) => !selectedIdx.has(e._idx));
+      const tree = buildTree(leftItems, (e) => ((e.path ? e.path + '/' : '') + e.filename));
+      const freeBytes = Math.max(0, LIMIT_BYTES - totalUsedBytes());
+      renderFolder(tree, fileListEl, (e, parent) => {
+        const key = ((e.path ? e.path + '/' : '') + e.filename).toLowerCase();
+        const f = wavMap.get(key);
+        const row = document.createElement('div');
+        row.className = 'leaf';
+        // Size-based background color
+        applySizeColor(row, bytesForEntry(e), freeBytes, true);
+        const left = document.createElement('div');
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = (e.path ? e.path + '/' : '') + e.filename;
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const bytesTxt = formatBytes(bytesForEntry(e));
+        meta.textContent = `nsamples: ${e.nsamples} · ${bytesTxt}` + (e.offset != null ? ` · offset: ${e.offset}` : '');
+        left.appendChild(name);
+        left.appendChild(meta);
+        const right = document.createElement('div');
+        right.className = 'right-actions';
+        const btn = document.createElement('button');
+        btn.textContent = 'Add';
+        btn.disabled = !f;
+        btn.className = 'btn';
+        btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (f) addToBank(e, f); });
+        right.appendChild(btn);
+        row.appendChild(left);
+        row.appendChild(right);
+        if (f) {
+          row.addEventListener('mouseenter', () => { if (autoPreviewEnabled) previewBlob(e, f); });
+          row.addEventListener('mouseleave', () => stopPreview());
+          row.addEventListener('click', () => previewBlob(e, f));
+        }
+        parent.appendChild(row);
+      });
+    }
+
+    // RIGHT: selection as a flat, linear list with slots
+    function renderRightTree() {
+      bankListEl.innerHTML = '';
+      selection.forEach((s, slot) => {
+        const row = document.createElement('div');
+        row.className = 'leaf';
+        // Size color coding (no free constraint on right)
+        applySizeColor(row, bytesForEntry(s.entry), LIMIT_BYTES, false);
+        // DnD wiring
+        row.dataset.slot = String(slot);
+        row.setAttribute('draggable', 'true');
+        row.addEventListener('dragstart', (ev) => {
+          ev.dataTransfer.setData('text/plain', String(slot));
+          ev.dataTransfer.effectAllowed = 'move';
+        });
+        row.addEventListener('dragover', (ev) => { ev.preventDefault(); row.classList.add('drop-target'); ev.dataTransfer.dropEffect = 'move'; });
+        row.addEventListener('dragleave', () => row.classList.remove('drop-target'));
+        row.addEventListener('drop', (ev) => {
+          ev.preventDefault(); row.classList.remove('drop-target');
+          const src = parseInt(ev.dataTransfer.getData('text/plain'), 10);
+          const dst = parseInt(row.dataset.slot || '0', 10);
+          reorderSlots(src, dst);
+        });
+
+        const left = document.createElement('div');
+        const name = document.createElement('div');
+        name.className = 'name';
+        // Slot badge
+        const badge = document.createElement('span');
+        badge.className = 'slot-badge';
+        badge.textContent = String(slot + 1).padStart(2, ' ');
+        const label = document.createElement('span');
+        label.textContent = (s.entry.path ? s.entry.path + '/' : '') + s.entry.filename;
+        name.appendChild(badge);
+        name.appendChild(label);
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const bytesTxt = formatBytes(bytesForEntry(s.entry));
+        meta.textContent = `nsamples: ${s.entry.nsamples} · ${bytesTxt}` + (s.entry.offset != null ? ` · offset: ${s.entry.offset}` : '');
+        left.appendChild(name);
+        left.appendChild(meta);
+
+        const right = document.createElement('div');
+        right.className = 'right-actions';
+        // Short name (max 8 chars) editor
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.maxLength = 8;
+        nameInput.placeholder = 'sname';
+        nameInput.value = (typeof s.sname === 'string') ? s.sname : '';
+        nameInput.style.width = '8.5ch';
+        nameInput.title = 'Short name (max 8 chars)';
+        nameInput.addEventListener('input', () => {
+          let v = nameInput.value || '';
+          if (v.length > 8) v = v.slice(0, 8);
+          nameInput.value = v;
+          const idx = parseInt(row.dataset.slot || String(slot), 10);
+          if (!isNaN(idx) && selection[idx]) selection[idx].sname = v;
+        });
+        right.appendChild(nameInput);
+        // Remove button
+        const rmBtn = document.createElement('button');
+        rmBtn.textContent = 'Remove';
+        rmBtn.className = 'btn';
+        rmBtn.addEventListener('click', () => { removeFromBank(s.entry._idx); });
+        right.appendChild(rmBtn);
+
+        row.appendChild(left);
+        row.appendChild(right);
+        // Hover preview on right and row click still supported
+        row.addEventListener('mouseenter', () => { if (autoPreviewEnabled) previewBlob(s.entry, s.file); });
+        row.addEventListener('mouseleave', () => stopPreview());
+        row.addEventListener('click', () => previewBlob(s.entry, s.file));
+
+        bankListEl.appendChild(row);
+      });
+    }
+
+    function removeFromBank(idx) {
+      const i = selection.findIndex((s) => s.entry._idx === idx);
+      if (i >= 0) selection.splice(i, 1);
+      renderLeftTree();
+      renderRightTree();
+      updateSelectionUI();
+    }
+
+    function addToBank(entry, file) {
+      if (selection.length >= MAX_BANK) { alert('Bank is full (128 samples).'); return; }
+      // Capacity check
+      const bytesNeeded = entry.nsamples * BYTES_PER_SAMPLE;
+      const used = totalUsedBytes();
+      if (used + bytesNeeded > LIMIT_BYTES) {
+        const over = used + bytesNeeded - LIMIT_BYTES;
+        showWarning(`Cannot add: capacity exceeded by ${formatBytes(over)}.`);
+        return;
+      }
+      if (selection.find((s) => s.entry._idx === entry._idx)) return;
+      const selItem = { entry, file, sname: '' };
+      selection.push(selItem);
+      // Generate and store 256-byte int8 preview asynchronously
+      generatePreviewForFile(entry, file)
+        .then((arr) => {
+          selItem.preview256 = Array.from(arr);
+          // If this item is currently shown in preview, redraw
+          if (currentNameEl.textContent.endsWith(entry.filename)) {
+            try { drawInt8Preview(lowResCanvas, arr); } catch {}
+          }
+        })
+        .catch(() => {/* ignore preview failure */});
+      renderLeftTree(); // remove from left
+      renderRightTree();
+      updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+      counter.textContent = `${selection.length}/128 selected`;
+      clearBtn.disabled = selection.length === 0;
+      exportBtn.disabled = selection.length === 0;
+      saveBtn.disabled = selection.length === 0 || !FS_AVAILABLE;
+      updateCapacity();
+    }
+
+    clearBtn.addEventListener('click', () => { selection = []; renderLeftTree(); renderRightTree(); updateSelectionUI(); });
+
+    function totalUsedBytes() {
+      return selection.reduce((acc, s) => acc + (s.entry.nsamples * BYTES_PER_SAMPLE), 0);
+    }
+
+    function updateCapacity() {
+      const used = totalUsedBytes();
+      const free = Math.max(0, LIMIT_BYTES - used);
+      const secs = Math.floor(free / BYTES_PER_SECOND);
+      const cls = used < LIMIT_BYTES * 0.9 ? 'cap-ok' : (used <= LIMIT_BYTES ? 'cap-warn' : 'cap-err');
+      capacityInfo.className = `capacity ${cls}`;
+      capacityInfo.textContent = `Used ${formatBytes(used)} · Free ${formatBytes(free)} (~${secs}s)`;
+    }
+
+    function formatBytes(n) {
+      if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(2) + ' MiB';
+      if (n >= 1024) return (n / 1024).toFixed(1) + ' KiB';
+      return n + ' B';
+    }
+
+    async function previewBlob(entry, file) {
+      currentNameEl.textContent = (entry.path ? entry.path + '/' : '') + entry.filename;
+      durationEl.textContent = '--:--';
+      try {
+        wavesurfer.empty();
+        await wavesurfer.loadBlob(file);
+        if (autoPreviewEnabled) {
+          try { wavesurfer.play(0); } catch {}
+        }
+      } catch (e) {
+        showWarning('Failed to preview: ' + (e?.message || e));
+      }
+      // Generate/draw low-res preview for the current file
+      try {
+        // If in selection and already computed, draw immediately
+        const inSel = selection.find((s) => s.entry._idx === entry._idx && s.preview256);
+        if (inSel && inSel.preview256) {
+          drawInt8Preview(lowResCanvas, new Int8Array(inSel.preview256));
+        } else {
+          const arr = await generatePreviewForFile(entry, file);
+          drawInt8Preview(lowResCanvas, arr);
+        }
+      } catch {
+        clearLowResCanvas();
+      }
+    }
+
+    function stopPreview() { try { wavesurfer.pause(); } catch {} }
+
+    // Export: JSON (no previews) + BIN (concatenated 256-byte int8 previews)
+    async function ensureAllPreviews() {
+      await Promise.all(selection.map(async (s) => {
+        if (!s.preview256) {
+          try {
+            const arr = await generatePreviewForFile(s.entry, s.file);
+            s.preview256 = Array.from(arr);
+          } catch {/* ignore */}
+        }
+      }));
+    }
+
+    function buildSelectionJsonNoPreview() {
+      const out = selection.map((s) => {
+        const o = { filename: s.entry.filename, path: s.entry.path, nsamples: s.entry.nsamples };
+        if (s.entry.offset != null) o.offset = s.entry.offset;
+        o.sname = (typeof s.sname === 'string') ? s.sname.slice(0, 8) : '';
+        return o;
+      });
+      return JSON.stringify(out, null, 2);
+    }
+
+    function buildPreviewBin() {
+      const count = selection.length;
+      const bin = new Int8Array(count * 256);
+      for (let i = 0; i < count; i++) {
+        const pv = selection[i].preview256 || [];
+        for (let j = 0; j < 256; j++) {
+          const v = (pv[j] != null ? pv[j] : 0);
+          bin[i * 256 + j] = (v < -128 ? -128 : (v > 127 ? 127 : v)) | 0;
+        }
+      }
+      return bin;
+    }
+
+    exportBtn.addEventListener('click', async () => {
+      await ensureAllPreviews();
+      const json = buildSelectionJsonNoPreview();
+      const bin = buildPreviewBin();
+      const jsonBlob = new Blob([json], { type: 'application/json' });
+      const binBlob = new Blob([bin.buffer], { type: 'application/octet-stream' });
+      downloadBlob(jsonBlob, 'sample_bank.json');
+      downloadBlob(binBlob, 'sample_bank_preview.bin');
+    });
+
+    // Save to folder (FS API)
+    async function ensureDirHandle() {
+      if (!FS_AVAILABLE) throw new Error('File System Access API not available in this context');
+      if (!dirHandle) dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      const perm = await dirHandle.queryPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') {
+        const p2 = await dirHandle.requestPermission({ mode: 'readwrite' });
+        if (p2 !== 'granted') throw new Error('Write permission denied for selected folder');
+      }
+      return dirHandle;
+    }
+    async function verifyTbdsamples(handle) { try { await handle.getFileHandle('wav_info_short.json'); return true; } catch { return false; } }
+    saveBtn.addEventListener('click', async () => {
+      if (!selection.length) return;
+      try {
+        await ensureAllPreviews();
+        const handle = await ensureDirHandle();
+        const isTbds = await verifyTbdsamples(handle);
+        if (!isTbds) showWarning('Selected folder does not contain wav_info_short.json. Saving sample_bank.json anyway.');
+        // Write JSON without previews
+        const jsonHandle = await handle.getFileHandle('sample_bank.json', { create: true });
+        const jsonWritable = await jsonHandle.createWritable();
+        const json = buildSelectionJsonNoPreview();
+        await jsonWritable.write(json);
+        await jsonWritable.close();
+        // Write BIN with concatenated 256-byte previews
+        const binHandle = await handle.getFileHandle('sample_bank_preview.bin', { create: true });
+        const binWritable = await binHandle.createWritable();
+        const bin = buildPreviewBin();
+        await binWritable.write(new Blob([bin.buffer], { type: 'application/octet-stream' }));
+        await binWritable.close();
+        summary.textContent = 'Saved sample_bank.json to selected folder';
+      } catch (e) { showWarning('Failed to save to folder: ' + (e?.message || e)); }
+    });
+
+    // Load JSON handlers
+    loadBtn.addEventListener('click', () => loadInput.click());
+    loadInput.addEventListener('change', async () => {
+      const file = loadInput.files && loadInput.files[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        await loadBankFromJson(data);
+      } catch (e) {
+        showWarning('Failed to load bank JSON: ' + (e?.message || e));
+      } finally {
+        loadInput.value = '';
+      }
+    });
+
+    async function loadBankFromJson(arr) {
+      if (!Array.isArray(arr)) throw new Error('Bank JSON must be an array');
+      if (!entries.length) throw new Error('Load a tbdsamples folder first');
+      // Replace current bank
+      selection = [];
+      const usedIdx = new Set();
+      let warnings = [];
+      let usedBytes = 0;
+      for (let i = 0; i < arr.length && selection.length < MAX_BANK; i++) {
+        const it = arr[i] || {};
+  const name = it.filename;
+        const ns = it.nsamples;
+        const off = Object.prototype.hasOwnProperty.call(it, 'offset') ? it.offset : undefined;
+        const pv = Array.isArray(it.preview256) && it.preview256.length === 256 ? it.preview256.slice(0, 256) : null;
+  const sname = (typeof it.sname === 'string') ? it.sname.slice(0, 8) : '';
+        if (!name || typeof ns !== 'number') { warnings.push(`Item ${i}: missing filename/nsamples`); continue; }
+        // Candidates by filename + nsamples (+offset if provided)
+        let cands = entries.filter(e => e.filename === name && e.nsamples === ns);
+        if (off !== undefined) cands = cands.filter(e => e.offset === off);
+        // If still ambiguous, prefer not-yet-used
+        let chosen = cands.find(e => !usedIdx.has(e._idx));
+        // If still ambiguous or none, try filename only when unique
+        if (!chosen) {
+          const byName = entries.filter(e => e.filename === name);
+          if (byName.length === 1) chosen = byName[0];
+        }
+        if (!chosen) { warnings.push(`Item ${i}: no unique match for "${name}"`); continue; }
+        // Ensure file exists
+        const key = ((chosen.path ? chosen.path + '/' : '') + chosen.filename).toLowerCase();
+        const fileObj = wavMap.get(key);
+        if (!fileObj) { warnings.push(`Item ${i}: file not found for ${key}`); continue; }
+        // Capacity check
+        const need = chosen.nsamples * BYTES_PER_SAMPLE;
+        if (usedBytes + need > LIMIT_BYTES) { warnings.push(`Item ${i}: capacity exceeded, skipping`); continue; }
+  const selItem = { entry: chosen, file: fileObj, sname };
+        if (pv) selItem.preview256 = pv;
+        selection.push(selItem);
+        usedIdx.add(chosen._idx);
+        usedBytes += need;
+      }
+      renderLeftTree();
+      renderRightTree();
+      updateSelectionUI();
+      if (warnings.length) {
+        showWarning(warnings.join('\n'));
+      } else {
+        warningsEl.style.display = 'none';
+        warningsEl.textContent = '';
+      }
+    }
+
+    // Helpers: size and color coding
+    function bytesForEntry(e) { return (e.nsamples || 0) * BYTES_PER_SAMPLE; }
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+    function hsl(h, s, l){ return `hsl(${h} ${s}% ${l}%)`; }
+    function applySizeColor(rowEl, bytes, freeBytes, isLeft) {
+      // If left and file doesn't fit, hard red
+      if (isLeft && bytes > freeBytes) {
+        rowEl.style.backgroundColor = '#fee2e2'; // light red
+        rowEl.style.border = '1px solid #ef4444';
+        return;
+      }
+      const ratio = clamp01(bytes / LIMIT_BYTES);
+      // Map 0->210 (blue) to 1->0 (red)
+      const hue = Math.round((1 - ratio) * 210);
+      rowEl.style.backgroundColor = hsl(hue, 85, 95);
+      rowEl.style.border = '1px solid #e5e7eb';
+    }
+
+    function reorderSlots(src, dst) {
+      if (isNaN(src) || isNaN(dst) || src === dst) return;
+      const item = selection.splice(src, 1)[0];
+      selection.splice(dst, 0, item);
+      // Re-render right and update slot numbers, left unchanged
+      renderRightTree();
+      updateSelectionUI();
+    }
+
+    // Utils
+    function downloadBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 0); }
+    function showWarning(msg) { warningsEl.style.display = 'block'; warningsEl.textContent = msg; }
+    function formatTime(sec) { if (!isFinite(sec)) return '--:--'; const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
+
+    // Low-res preview generation and rendering
+    function clearLowResCanvas() {
+      const ctx = lowResCanvas.getContext('2d');
+      ctx.clearRect(0, 0, lowResCanvas.width, lowResCanvas.height);
+    }
+
+    async function generatePreviewForFile(entry, file) {
+      const buf = await file.arrayBuffer();
+      const offset = (entry && typeof entry.offset === 'number') ? entry.offset : 44;
+      const nsamples = Math.max(0, entry?.nsamples | 0);
+      return previewFromPcm16MonoBuffer(buf, offset, nsamples);
+    }
+
+    function previewFromPcm16MonoBuffer(buffer, offset, nsamples) {
+      const dv = new DataView(buffer);
+      const bytesPerSample = 2;
+      const dataBytes = Math.max(0, dv.byteLength - offset);
+      const maxSamplesFromFile = Math.floor(dataBytes / bytesPerSample);
+      const total = Math.min(nsamples || maxSamplesFromFile, maxSamplesFromFile);
+      const out = new Int8Array(256);
+      if (total <= 0) return out;
+      for (let i = 0; i < 256; i++) {
+        const idx = Math.min(total - 1, Math.max(0, Math.floor((i + 0.5) * total / 256)));
+        const byteOff = offset + idx * bytesPerSample;
+        if (byteOff + 1 >= dv.byteLength) { out[i] = 0; continue; }
+        const v16 = dv.getInt16(byteOff, true);
+        let v = Math.max(-32768, Math.min(32767, v16)) / 32768;
+        let i8 = Math.round(v * 127);
+        if (i8 < -128) i8 = -128; else if (i8 > 127) i8 = 127;
+        out[i] = i8;
+      }
+      return out;
+    }
+
+    function drawInt8Preview(canvas, data) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      // Background grid (optional light center line)
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, Math.floor(h / 2) + 0.5);
+      ctx.lineTo(w, Math.floor(h / 2) + 0.5);
+      ctx.stroke();
+
+      // Waveform
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i < 256; i++) {
+        const x = Math.round(i * (w - 1) / 255);
+        const v = (data && data[i] != null) ? data[i] : 0; // -128..127
+        const y = Math.round((1 - (v + 128) / 255) * (h - 1));
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+  </script>
+</body>
+</html>

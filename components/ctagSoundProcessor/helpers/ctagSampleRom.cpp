@@ -20,11 +20,13 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "ctagSampleRom.hpp"
+#include "ctagSampleRomModel.hpp"
 //#include "esp_spi_flash.h"
 #include <esp_flash.h>
 #include "esp_log.h"
 #include "esp_heap_caps.h"
 #include <cstring>
+#include <filesystem>
 
 #ifdef TBD_SIM
 #define CONFIG_SAMPLE_ROM_START_ADDRESS 0
@@ -42,12 +44,14 @@ namespace CTAG::SP::HELPERS {
     uint32_t ctagSampleRom::firstNonWtSlice = 0;
     int16_t *ctagSampleRom::ptrSPIRAM = nullptr;
     uint32_t ctagSampleRom::nSlicesBuffered = 0;
+    bool ctagSampleRom::readFromSD = false;
 
     ctagSampleRom::ctagSampleRom() {
         //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
         nConsumers++;
-        if(nConsumers == 1)
+        if(nConsumers == 1){
             RefreshDataStructure();
+        }
     }
 
     uint32_t ctagSampleRom::GetNumberSlices() {
@@ -61,11 +65,11 @@ namespace CTAG::SP::HELPERS {
 
     uint32_t ctagSampleRom::GetSliceGroupSize(const uint32_t startSlice, const uint32_t endSlice) {
         if (endSlice <= startSlice) return 0;
-        uint32_t totalSize = 0;
+        uint32_t totalSizeBytes = 0;
         for (uint32_t i = startSlice; i <= endSlice; i++) {
-            totalSize += sliceSizes[i];
+            totalSizeBytes += sliceSizes[i];
         }
-        return totalSize;
+        return totalSizeBytes;
     }
 
     uint32_t ctagSampleRom::GetSliceOffset(const uint32_t slice) {
@@ -125,6 +129,13 @@ namespace CTAG::SP::HELPERS {
         }
     }
 
+    // legacy API
+    void ctagSampleRom::BufferInSPIRAM(){
+        if (!readFromSD){
+            BufferInSPIRAMFromFlash();
+        }
+    }
+
     void ctagSampleRom::RefreshDataStructure() {
         if(nConsumers == 0) return;
         if (sliceOffsets != nullptr) {
@@ -135,6 +146,75 @@ namespace CTAG::SP::HELPERS {
             heap_caps_free(sliceSizes);
             sliceSizes = nullptr;
         }
+
+        // check if sample folder exists and contains json descriptor file
+        if(CTAG::SP::ctagSampleRomModel::IsSampleRomSDValid()){
+            readFromSD = true;
+            ESP_LOGI("SROM", "Reading sample data structure from SD card");
+            RefreshDataStructureFromSDCard();
+            return;
+        }
+        ESP_LOGI("SROM", "Reading sample data structure from SD card");
+        readFromSD = false;
+        RefreshDataStructureFromFlash();
+    }
+
+    std::string ctagSampleRom::GetSampleRomDescriptorJSON(){
+        if (!CTAG::SP::ctagSampleRomModel::IsSampleRomSDValid()) return "{}";
+        ctagSampleRomModel sample_rom_model;
+        return sample_rom_model.GetSampleRomDescriptorJSON();
+    }
+
+    ctagSampleRom::~ctagSampleRom() {
+        //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
+        nConsumers--;
+
+        if (nConsumers > 0) return;
+        //ESP_LOGE("SR", "freeing up SR data structure");
+        if (sliceOffsets != nullptr) {
+            heap_caps_free(sliceOffsets);
+        }
+        if (sliceSizes != nullptr) {
+            heap_caps_free(sliceSizes);
+        }
+        totalSize = 0;
+        numberSlices = 0;
+        headerSize = 0;
+        sliceSizes = nullptr;
+        sliceOffsets = nullptr;
+        firstNonWtSlice = 0;
+
+        if(ptrSPIRAM != nullptr){
+            heap_caps_free(ptrSPIRAM);
+            ptrSPIRAM = nullptr;
+            nSlicesBuffered = 0;
+        }
+    }
+
+    uint32_t ctagSampleRom::GetFirstNonWaveTableSlice() {
+        return firstNonWtSlice;
+    }
+
+    bool ctagSampleRom::IsBufferedInSPIRAM() {
+        if(ptrSPIRAM == nullptr) return false;
+        return true;
+    }
+
+    void ctagSampleRom::SetActiveWaveTableBank(uint8_t index){
+        if (!ctagSampleRomModel::IsSampleRomSDValid()) return;
+        ctagSampleRomModel sample_rom_model;
+        if (index >= sample_rom_model.GetTotalNumberWTBanks()) return;
+        sample_rom_model.SetActiveWTBankIndex(index);
+    }
+
+    void ctagSampleRom::SetActiveSampleBank(uint8_t index){
+        if (!ctagSampleRomModel::IsSampleRomSDValid()) return;
+        ctagSampleRomModel sample_rom_model;
+        if (index >= sample_rom_model.GetTotalNumberSampleBanks()) return;
+        sample_rom_model.SetActiveSampleBankIndex(index);
+    }
+
+    void ctagSampleRom::RefreshDataStructureFromFlash(){
         uint32_t deadface = 0;
         totalSize = 0;
         numberSlices = 0;
@@ -178,42 +258,128 @@ namespace CTAG::SP::HELPERS {
         }
     }
 
-    ctagSampleRom::~ctagSampleRom() {
-        //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
-        nConsumers--;
+    void ctagSampleRom::RefreshDataStructureFromSDCard(){
+        ctagSampleRomModel sample_rom_model;
 
-        if (nConsumers > 0) return;
-        //ESP_LOGE("SR", "freeing up SR data structure");
-        if (sliceOffsets != nullptr) {
-            heap_caps_free(sliceOffsets);
-        }
-        if (sliceSizes != nullptr) {
-            heap_caps_free(sliceSizes);
-        }
-        totalSize = 0;
-        numberSlices = 0;
+
+        // get total number of slices and samples
+        uint32_t size_wt_bytes = sample_rom_model.GetTotalNumberWTSamples() * 2;
+        uint32_t size_samples_bytes = sample_rom_model.GetTotalNumberSampleSamples() * 2;
+        uint32_t slices_wt = sample_rom_model.GetTotalNumberWTSlices(); // each wt slice contains 64 wavetables each 256 bytes large
+        uint32_t slices_samples = sample_rom_model.GetTotalNumberSampleSlices();
+
+        totalSize = size_wt_bytes + size_samples_bytes;
+        numberSlices = slices_wt * 64 + slices_samples;
         headerSize = 0;
-        sliceSizes = nullptr;
-        sliceOffsets = nullptr;
-        firstNonWtSlice = 0;
 
-        if(ptrSPIRAM != nullptr){
-            heap_caps_free(ptrSPIRAM);
-            ptrSPIRAM = nullptr;
-            nSlicesBuffered = 0;
+        // alloc memory for data structure in memory
+        sliceOffsets = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
+        assert(sliceOffsets != nullptr);
+        sliceSizes = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
+        assert(sliceSizes != nullptr);
+
+        // generate offsets and sizes, start with wavetables, sizes and offsets are words (due to 16 bit samples)
+        uint32_t slice_in_mem_index = 0;
+        uint32_t slice_in_mem_offset = 0;
+        for (uint32_t i = 0; i < slices_wt; i++) {
+            uint32_t sliceSize = sample_rom_model.GetWTSliceSize(i);
+            for (uint32_t j = 0; j < 64; j++) {
+                sliceSizes[slice_in_mem_index] = sliceSize / 64; // should be 256
+                sliceOffsets[slice_in_mem_index] = slice_in_mem_offset;
+                slice_in_mem_offset += sliceSizes[slice_in_mem_index];
+                slice_in_mem_index++;
+            }
         }
+        // add samples
+        for (uint32_t i = 0; i < slices_samples; i++) {
+            uint32_t sliceSize = sample_rom_model.GetSampleSliceSize(i);
+            sliceSizes[slice_in_mem_index] = sliceSize;
+            sliceOffsets[slice_in_mem_index] = slice_in_mem_offset;
+            slice_in_mem_offset += sliceSizes[slice_in_mem_index];
+            slice_in_mem_index++;
+        }
+
+        // first non Wt Slice
+        firstNonWtSlice = slices_wt * 64;
+
+        // read slices from files and buffer in PSRAM
+        if(ptrSPIRAM != nullptr) heap_caps_free(ptrSPIRAM);
+        size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+        maxSizeBytes -= 2*1024*1024; // reserve 2MiByte for other stuff
+        assert(maxSizeBytes >= totalSize); // check if sample data fits in PSRAM
+        ptrSPIRAM = (int16_t *)heap_caps_malloc(totalSize, MALLOC_CAP_SPIRAM);
+        assert(ptrSPIRAM != nullptr);
+        // init with zeros
+        memset(ptrSPIRAM, 0, totalSize);
+        maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+        ESP_LOGI("SR", "Buffering %li bytes in PSRAM, largest block free %li", totalSize, maxSizeBytes);
+
+        // load all wavetable files
+        for (uint32_t i = 0; i < slices_wt; i++) {
+            std::string filename = sample_rom_model.GetFilenameForWTSlice(i);
+            if (filename == "") {
+                ESP_LOGE("SROM", "No filename for slice %li", i);
+                continue;
+            }
+            if (!std::filesystem::exists(filename)) {
+                ESP_LOGE("SROM", "File %s does not exist!", filename.c_str());
+                continue;
+            }
+            uint32_t dataOffset = sample_rom_model.GetDataOffsetForWTSlice(i);
+            uint32_t nSamples = sample_rom_model.GetWTSliceSize(i);
+            FILE *f = fopen(filename.c_str(), "rb");
+            if (f == nullptr) {
+                ESP_LOGE("SROM", "Could not open file %s", filename.c_str());
+                continue;
+            }
+            fseek(f, dataOffset, SEEK_SET);
+            uint32_t ofs = sliceOffsets[i*64];
+            size_t nRead = fread(&ptrSPIRAM[ofs], 2, nSamples, f);
+            if (nRead != nSamples) {
+                ESP_LOGE("SROM", "Could not read all samples from file %s, read %li of %li", filename.c_str(), nRead,
+                         nSamples);
+            } else {
+                ESP_LOGI("SROM", "Loaded file %s, read %li samples", filename.c_str(), nRead);
+            }
+            fclose(f);
+        }
+
+        // load all sample files
+        for (uint32_t i = 0; i < slices_samples; i++) {
+            uint32_t j = i + firstNonWtSlice;
+            std::string filename = sample_rom_model.GetFilenameForSampleSlice(i);
+            if (filename == "") {
+                ESP_LOGE("SROM", "No filename for slice %li", j);
+                continue;
+            }
+            if (!std::filesystem::exists(filename)) {
+                ESP_LOGE("SROM", "File %s does not exist!", filename.c_str());
+                continue;
+            }
+            uint32_t dataOffset = sample_rom_model.GetDataOffsetForSampleSlice(i);
+            uint32_t nSamples = sample_rom_model.GetSampleSliceSize(i);
+            FILE *f = fopen(filename.c_str(), "rb");
+            if (f == nullptr) {
+                ESP_LOGE("SROM", "Could not open file %s", filename.c_str());
+                continue;
+            }
+            fseek(f, dataOffset, SEEK_SET);
+            uint32_t ofs = sliceOffsets[j];
+            size_t nRead = fread(&ptrSPIRAM[ofs], 2, nSamples, f);
+            if (nRead != nSamples) {
+                ESP_LOGE("SROM", "Could not read all samples from file %s, read %li of %li", filename.c_str(), nRead,
+                         nSamples);
+            } else {
+                ESP_LOGI("SROM", "Loaded file %s, read %li samples", filename.c_str(), nRead);
+            }
+            fclose(f);
+        }
+
+        // everything is buffered
+        nSlicesBuffered = numberSlices;
     }
 
-    uint32_t ctagSampleRom::GetFirstNonWaveTableSlice() {
-        return firstNonWtSlice;
-    }
-
-    bool ctagSampleRom::IsBufferedInSPIRAM() {
-        if(ptrSPIRAM == nullptr) return false;
-        return true;
-    }
-
-    void ctagSampleRom::BufferInSPIRAM() {
+    void ctagSampleRom::BufferInSPIRAMFromFlash() {
         if(ptrSPIRAM != nullptr) return; // already buffered
         size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
         maxSizeBytes -= 512*1024; // reserve 512K for other stuff

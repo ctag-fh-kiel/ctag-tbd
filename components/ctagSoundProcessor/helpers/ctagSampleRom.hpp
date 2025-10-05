@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include <cstdint>
 #include <vector>
 #include <atomic>
+#include <string>
 
 using namespace std;
 
@@ -30,6 +31,9 @@ namespace CTAG::SP::HELPERS{
     class ctagSampleRom {
     public:
         static void RefreshDataStructure(); // forces refresh of data structure, not thread safe!
+        static std::string GetSampleRomDescriptorJSON();
+        static void SetActiveWaveTableBank(uint8_t index);
+        static void SetActiveSampleBank(uint8_t index);
         ctagSampleRom();
         ~ctagSampleRom();
         uint32_t GetNumberSlices();
@@ -45,7 +49,11 @@ namespace CTAG::SP::HELPERS{
         void ReadSliceAsFloat(float *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples);
         void BufferInSPIRAM();
         bool IsBufferedInSPIRAM();
+
     private:
+        static void RefreshDataStructureFromFlash();
+        static void RefreshDataStructureFromSDCard();
+        void BufferInSPIRAMFromFlash();
         static uint32_t totalSize;
         static uint32_t numberSlices;
         static uint32_t headerSize;
@@ -55,5 +63,7 @@ namespace CTAG::SP::HELPERS{
         static atomic<uint32_t>  nConsumers;
         static int16_t *ptrSPIRAM;
         static uint32_t nSlicesBuffered;
+        static bool readFromSD;
+
     };
 }

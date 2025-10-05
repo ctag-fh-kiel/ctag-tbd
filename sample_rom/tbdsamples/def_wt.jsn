@@ -1,0 +1,162 @@
+[
+  {
+    "filename": "GRAV_A10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A7",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HARMONIC",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HYPERBOL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ITERATIV",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "JUNOX_HO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "KAWAI_K1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LIGHT_00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MAGNETIC",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MODDROP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA23",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RADIUS",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RESO_ANA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_A01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_SPE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SITAR",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SOHLER11",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP153",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP28",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP32",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP73",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TELEPHON",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TEXTURE4",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDAL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB012",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TRON_MAL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TWIST1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VIRUS_SA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VOCAL_00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VOXSYNTH",
+    "path": "wavetables",
+    "nsamples": 16384
+  }
+]
