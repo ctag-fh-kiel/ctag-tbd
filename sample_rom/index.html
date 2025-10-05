@@ -37,6 +37,8 @@
     .cap-err { color: #991b1b; }
     .toggle-on { background: #e0f2fe; border-color: #7dd3fc; }
     .toggle-off { background: #f3f4f6; border-color: #d1d5db; }
+    .slot-badge { display: inline-block; min-width: 1.8em; text-align: right; margin-right: 8px; color: #374151; font-weight: 600; }
+    .drop-target { outline: 2px dashed #60a5fa; outline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -273,18 +275,22 @@
       const selectedIdx = new Set(selection.map((s) => s.entry._idx));
       const leftItems = entries.filter((e) => !selectedIdx.has(e._idx));
       const tree = buildTree(leftItems, (e) => ((e.path ? e.path + '/' : '') + e.filename));
+      const freeBytes = Math.max(0, LIMIT_BYTES - totalUsedBytes());
       renderFolder(tree, fileListEl, (e, parent) => {
         const key = ((e.path ? e.path + '/' : '') + e.filename).toLowerCase();
         const f = wavMap.get(key);
         const row = document.createElement('div');
         row.className = 'leaf';
+        // Size-based background color
+        applySizeColor(row, bytesForEntry(e), freeBytes, true);
         const left = document.createElement('div');
         const name = document.createElement('div');
         name.className = 'name';
         name.textContent = (e.path ? e.path + '/' : '') + e.filename;
         const meta = document.createElement('div');
         meta.className = 'meta';
-        meta.textContent = `nsamples: ${e.nsamples}` + (e.offset != null ? `, offset: ${e.offset}` : '');
+        const bytesTxt = formatBytes(bytesForEntry(e));
+        meta.textContent = `nsamples: ${e.nsamples} · ${bytesTxt}` + (e.offset != null ? ` · offset: ${e.offset}` : '');
         left.appendChild(name);
         left.appendChild(meta);
         const right = document.createElement('div');
@@ -313,13 +319,40 @@
       renderFolder(tree, bankListEl, (s, parent) => {
         const row = document.createElement('div');
         row.className = 'leaf';
+        // Size color coding (no free constraint on right)
+        applySizeColor(row, bytesForEntry(s.entry), LIMIT_BYTES, false);
+        // Determine slot index from selection order
+        const slot = selection.findIndex((x) => x.entry._idx === s.entry._idx);
+        row.dataset.slot = String(slot);
+        row.setAttribute('draggable', 'true');
+        row.addEventListener('dragstart', (ev) => {
+          ev.dataTransfer.setData('text/plain', String(slot));
+          ev.dataTransfer.effectAllowed = 'move';
+        });
+        row.addEventListener('dragover', (ev) => { ev.preventDefault(); row.classList.add('drop-target'); ev.dataTransfer.dropEffect = 'move'; });
+        row.addEventListener('dragleave', () => row.classList.remove('drop-target'));
+        row.addEventListener('drop', (ev) => {
+          ev.preventDefault(); row.classList.remove('drop-target');
+          const src = parseInt(ev.dataTransfer.getData('text/plain'), 10);
+          const dst = parseInt(row.dataset.slot || '0', 10);
+          reorderSlots(src, dst);
+        });
+
         const left = document.createElement('div');
         const name = document.createElement('div');
         name.className = 'name';
-        name.textContent = (s.entry.path ? s.entry.path + '/' : '') + s.entry.filename;
+        // Slot badge
+        const badge = document.createElement('span');
+        badge.className = 'slot-badge';
+        badge.textContent = String(slot + 1).padStart(2, ' ');
+        const label = document.createElement('span');
+        label.textContent = (s.entry.path ? s.entry.path + '/' : '') + s.entry.filename;
+        name.appendChild(badge);
+        name.appendChild(label);
         const meta = document.createElement('div');
         meta.className = 'meta';
-        meta.textContent = `nsamples: ${s.entry.nsamples}` + (s.entry.offset != null ? `, offset: ${s.entry.offset}` : '');
+        const bytesTxt = formatBytes(bytesForEntry(s.entry));
+        meta.textContent = `nsamples: ${s.entry.nsamples} · ${bytesTxt}` + (s.entry.offset != null ? ` · offset: ${s.entry.offset}` : '');
         left.appendChild(name);
         left.appendChild(meta);
         const right = document.createElement('div');
@@ -336,7 +369,6 @@
         right.appendChild(rmBtn);
         row.appendChild(left);
         row.appendChild(right);
-        // Hover preview on right as well
         row.addEventListener('mouseenter', () => { if (autoPreviewEnabled) previewBlob(s.entry, s.file); });
         row.addEventListener('mouseleave', () => stopPreview());
         row.addEventListener('click', () => previewBlob(s.entry, s.file));
@@ -449,6 +481,33 @@
         summary.textContent = 'Saved sample_bank.json to selected folder';
       } catch (e) { showWarning('Failed to save to folder: ' + (e?.message || e)); }
     });
+
+    // Helpers: size and color coding
+    function bytesForEntry(e) { return (e.nsamples || 0) * BYTES_PER_SAMPLE; }
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+    function hsl(h, s, l){ return `hsl(${h} ${s}% ${l}%)`; }
+    function applySizeColor(rowEl, bytes, freeBytes, isLeft) {
+      // If left and file doesn't fit, hard red
+      if (isLeft && bytes > freeBytes) {
+        rowEl.style.backgroundColor = '#fee2e2'; // light red
+        rowEl.style.border = '1px solid #ef4444';
+        return;
+      }
+      const ratio = clamp01(bytes / LIMIT_BYTES);
+      // Map 0->210 (blue) to 1->0 (red)
+      const hue = Math.round((1 - ratio) * 210);
+      rowEl.style.backgroundColor = hsl(hue, 85, 95);
+      rowEl.style.border = '1px solid #e5e7eb';
+    }
+
+    function reorderSlots(src, dst) {
+      if (isNaN(src) || isNaN(dst) || src === dst) return;
+      const item = selection.splice(src, 1)[0];
+      selection.splice(dst, 0, item);
+      // Re-render right and update slot numbers, left unchanged
+      renderRightTree();
+      updateSelectionUI();
+    }
 
     // Utils
     function downloadBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 0); }
