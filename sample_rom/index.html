@@ -437,7 +437,7 @@
 
     // Export JSON (download)
     function buildSelectionJson() {
-      const out = selection.map((s) => { const o = { filename: s.entry.filename, nsamples: s.entry.nsamples }; if (s.entry.offset != null) o.offset = s.entry.offset; return o; });
+      const out = selection.map((s) => { const o = { filename: s.entry.filename, path: s.entry.path, nsamples: s.entry.nsamples }; if (s.entry.offset != null) o.offset = s.entry.offset; return o; });
       return JSON.stringify(out, null, 2);
     }
     exportBtn.addEventListener('click', () => { const blob = new Blob([buildSelectionJson()], { type: 'application/json' }); downloadBlob(blob, 'sample_bank.json'); });
