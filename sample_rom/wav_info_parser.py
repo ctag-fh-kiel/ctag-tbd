@@ -15,6 +15,7 @@ def parse_wav(filepath):
         'data_bytes': 0,
         'fact_samples': None,
         'data_offset': None,
+        'pcm': None,
     }
     meta = {}
 
@@ -46,14 +47,22 @@ def parse_wav(filepath):
                     fmt['sample_rate'] = int(nSamplesPerSec)
                     fmt['block_align'] = int(nBlockAlign)
                     bits_per_sample = int(wBitsPerSample)
-                    # If extensible and we have enough bytes, attempt to read wValidBitsPerSample
-                    if fmt['format_tag'] == 0xFFFE and len(fmt_data) >= 20:
-                        # after base 16, next 2 bytes are cbSize, then wValidBitsPerSample
-                        cbSize = struct.unpack(endian + 'H', fmt_data[16:18])[0]
-                        if cbSize >= 2 and len(fmt_data) >= 20:
-                            wValidBitsPerSample = struct.unpack(endian + 'H', fmt_data[18:20])[0]
-                            if wValidBitsPerSample:
-                                bits_per_sample = int(wValidBitsPerSample)
+                    # Default PCM detection
+                    fmt['pcm'] = (fmt['format_tag'] == 0x0001)
+                    # If extensible and we have enough bytes, attempt to read wValidBitsPerSample and SubFormat GUID
+                    if fmt['format_tag'] == 0xFFFE:
+                        if len(fmt_data) >= 20:
+                            cbSize = struct.unpack(endian + 'H', fmt_data[16:18])[0]
+                            if cbSize >= 2:
+                                wValidBitsPerSample = struct.unpack(endian + 'H', fmt_data[18:20])[0]
+                                if wValidBitsPerSample:
+                                    bits_per_sample = int(wValidBitsPerSample)
+                            # Check SubFormat GUID if available (requires 22 bytes: 2+4+16)
+                            if cbSize >= 22 and len(fmt_data) >= 40:
+                                subformat = fmt_data[24:40]
+                                # KSDATAFORMAT_SUBTYPE_PCM GUID in little-endian byte order
+                                PCM_GUID_LE = b'\x01\x00\x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71'
+                                fmt['pcm'] = (subformat == PCM_GUID_LE)
                     fmt['sample_resolution'] = bits_per_sample if bits_per_sample != 0 else None
                 # Seek to end of chunk (consider padding byte for odd sizes)
                 f.seek(chunk_start + chunk_size + (chunk_size % 2))
@@ -124,7 +133,6 @@ def get_wav_info(filepath, base_dir):
     info['sample_rate'] = fmt['sample_rate']
     info['sample_resolution'] = fmt['sample_resolution']
     info['channels'] = fmt['channels']
-
     # mono: True if exactly 1 channel, else False
     info['mono'] = True if fmt['channels'] == 1 else False
 
@@ -141,7 +149,13 @@ def get_wav_info(filepath, base_dir):
 
     # offset: byte offset to the beginning of sample data
     info['offset'] = fmt.get('data_offset')
-
+    # Add format_ok: 44.1kHz, mono, 16-bit, PCM
+    info['format_ok'] = (
+        (fmt.get('sample_rate') == 44100)
+        and (fmt.get('channels') == 1)
+        and (fmt.get('sample_resolution') == 16)
+        and (fmt.get('pcm') is True)
+    )
     info['meta_data'] = meta
     return info
 
@@ -164,6 +178,7 @@ def main():
                 'mono': False,
                 'nsamples': None,
                 'offset': None,
+                'format_ok': False,
                 'meta_data': {},
                 'error': str(e),
             }
