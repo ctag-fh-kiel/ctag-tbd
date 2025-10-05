@@ -27,6 +27,10 @@ def parse_wav(filepath):
         'fact_samples': None,
         'data_offset': None,
         'pcm': None,
+        'ieee_float': None,
+        'sampwidth': None,
+        'data_chunks': [],  # list of (payload_offset, size)
+        'little_endian': True,
     }
     meta = {}
 
@@ -36,6 +40,7 @@ def parse_wav(filepath):
         if len(header) < 12 or header[0:4] not in (b'RIFF', b'RIFX') or header[8:12] != b'WAVE':
             return fmt, meta  # Not a standard RIFF/WAVE
         little = header[0:4] == b'RIFF'
+        fmt['little_endian'] = little
         endian = '<' if little else '>'
 
         # Iterate over chunks
@@ -60,6 +65,7 @@ def parse_wav(filepath):
                     bits_per_sample = int(wBitsPerSample)
                     # Default PCM detection
                     fmt['pcm'] = (fmt['format_tag'] == 0x0001)
+                    fmt['ieee_float'] = (fmt['format_tag'] == 0x0003)
                     # If extensible and we have enough bytes, attempt to read wValidBitsPerSample and SubFormat GUID
                     if fmt['format_tag'] == 0xFFFE:
                         if len(fmt_data) >= 20:
@@ -71,10 +77,14 @@ def parse_wav(filepath):
                             # Check SubFormat GUID if available (requires 22 bytes: 2+4+16)
                             if cbSize >= 22 and len(fmt_data) >= 40:
                                 subformat = fmt_data[24:40]
-                                # KSDATAFORMAT_SUBTYPE_PCM GUID in little-endian byte order
+                                # GUIDs in little-endian byte order
                                 PCM_GUID_LE = b'\x01\x00\x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71'
+                                FLOAT_GUID_LE = b'\x03\x00\x00\x00\x00\x00\x10\x00\x80\x00\x00\xAA\x00\x38\x9B\x71'
                                 fmt['pcm'] = (subformat == PCM_GUID_LE)
+                                fmt['ieee_float'] = (subformat == FLOAT_GUID_LE)
                     fmt['sample_resolution'] = bits_per_sample if bits_per_sample != 0 else None
+                    if fmt['sample_resolution']:
+                        fmt['sampwidth'] = max(1, fmt['sample_resolution'] // 8)
                 # Seek to end of chunk (consider padding byte for odd sizes)
                 f.seek(chunk_start + chunk_size + (chunk_size % 2))
                 continue
@@ -109,6 +119,8 @@ def parse_wav(filepath):
                 continue
 
             if chunk_id == b'data':
+                # record the payload offset
+                fmt['data_chunks'].append((chunk_start, chunk_size))
                 # Record the start of sample data (first data chunk)
                 if fmt['data_offset'] is None:
                     fmt['data_offset'] = chunk_start
@@ -128,6 +140,9 @@ def parse_wav(filepath):
             # Skip other chunks
             f.seek(chunk_start + chunk_size + (chunk_size % 2))
 
+    # fallback sampwidth if missing
+    if fmt['sampwidth'] is None and fmt['block_align'] and fmt['channels']:
+        fmt['sampwidth'] = max(1, fmt['block_align'] // fmt['channels'])
     return fmt, meta
 
 
@@ -275,6 +290,27 @@ def _bytes_to_mono_float(data: bytes, sampwidth: int, channels: int) -> list:
     return floats
 
 
+def _bytes_to_mono_float_ieee(data: bytes, sampwidth: int, channels: int) -> list:
+    if sampwidth not in (4, 8):
+        raise ValueError(f"Unsupported IEEE float width: {sampwidth}")
+    frame_size = sampwidth * channels
+    n_frames = len(data) // frame_size
+    floats = []
+    for i in range(n_frames):
+        acc = 0.0
+        base = i * frame_size
+        for ch in range(channels):
+            off = base + ch * sampwidth
+            if sampwidth == 4:
+                # little-endian float32
+                v = struct.unpack_from('<f', data, off)[0]
+            else:
+                v = struct.unpack_from('<d', data, off)[0]
+            acc += v
+        floats.append(acc / channels)
+    return floats
+
+
 def _resample_linear_py(samples: list, in_rate: int, out_rate: int) -> list:
     """Simple linear interpolation resampler in pure Python.
     Input: list of float samples; Output: list of float samples.
@@ -308,42 +344,59 @@ def _float_to_int16_bytes(samples) -> bytes:
     return bytes(out)
 
 
+def _read_data_chunks(filepath: Path, data_chunks):
+    # Concatenate all data chunk payloads in order
+    out = bytearray()
+    with open(filepath, 'rb') as f:
+        for payload_off, size in data_chunks:
+            f.seek(payload_off)
+            # skip 0: we are already at payload offset immediately after 8-byte header
+            out += f.read(size)
+    return bytes(out)
+
+
 def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path) -> int:
-    """Convert a WAV file to 44.1kHz, mono, 16-bit PCM and write to dest_path.
-    Returns the number of output samples (frames). Raises on failure.
-    Uses numpy if available; otherwise falls back to pure-Python linear resampling.
-    """
-    with wave.open(str(src_path), 'rb') as r:
-        in_rate = r.getframerate()
-        in_width = r.getsampwidth()
-        in_channels = r.getnchannels()
-        n_frames = r.getnframes()
-        raw = r.readframes(n_frames)
+    """Convert a WAV file to 44.1kHz, mono, 16-bit PCM and write to dest_path."""
+    fmt_info, _ = parse_wav(src_path)
+    if not fmt_info.get('little_endian'):
+        raise ValueError('Big-endian RIFX WAV not supported for conversion')
+    is_float = bool(fmt_info.get('ieee_float'))
+    in_rate = int(fmt_info.get('sample_rate') or 0)
+    in_channels = int(fmt_info.get('channels') or 0)
+    in_width = int(fmt_info.get('sampwidth') or 0)
+    if not in_rate or not in_channels or not in_width:
+        raise ValueError('Missing essential format fields for conversion')
+    if not fmt_info.get('data_chunks'):
+        raise ValueError('No data chunks found')
+    raw = _read_data_chunks(src_path, fmt_info['data_chunks'])
 
     out_rate = 44100
     # Fast path with numpy if available
     if _np is not None:
-        # Build numpy array from interleaved PCM
-        if in_width == 1:
-            arr = _np.frombuffer(raw, dtype=_np.uint8)
-            arr = (arr.astype(_np.float64) - 128.0) / 128.0
-        elif in_width == 2:
-            arr = _np.frombuffer(raw, dtype='<i2').astype(_np.float64) / 32768.0
-        elif in_width == 3:
-            # Convert 24-bit little-endian to int32 via padding
-            b = _np.frombuffer(raw, dtype=_np.uint8).reshape(-1, 3)
-            # Pad with sign byte
-            sign = (b[:, 2] >= 128).astype(_np.uint8) * 255
-            b4 = _np.column_stack((b, sign))
-            arr = b4.view('<i4').reshape(-1).astype(_np.float64) / 8388608.0
-        elif in_width == 4:
-            arr = _np.frombuffer(raw, dtype='<i4').astype(_np.float64) / 2147483648.0
+        if is_float:
+            if in_width == 4:
+                arr = _np.frombuffer(raw, dtype='<f4').astype(_np.float64)
+            elif in_width == 8:
+                arr = _np.frombuffer(raw, dtype='<f8').astype(_np.float64)
+            else:
+                raise ValueError(f'Unsupported IEEE float width: {in_width}')
         else:
-            raise ValueError(f"Unsupported sample width: {in_width}")
+            if in_width == 1:
+                arr = _np.frombuffer(raw, dtype=_np.uint8)
+                arr = (arr.astype(_np.float64) - 128.0) / 128.0
+            elif in_width == 2:
+                arr = _np.frombuffer(raw, dtype='<i2').astype(_np.float64) / 32768.0
+            elif in_width == 3:
+                b = _np.frombuffer(raw, dtype=_np.uint8).reshape(-1, 3)
+                sign = (b[:, 2] >= 128).astype(_np.uint8) * 255
+                b4 = _np.column_stack((b, sign))
+                arr = b4.view('<i4').reshape(-1).astype(_np.float64) / 8388608.0
+            elif in_width == 4:
+                arr = _np.frombuffer(raw, dtype='<i4').astype(_np.float64) / 2147483648.0
+            else:
+                raise ValueError(f'Unsupported sample width: {in_width}')
         if in_channels > 1:
-            arr = arr.reshape(-1, in_channels)
-            arr = arr.mean(axis=1)
-        # Resample using linear interpolation
+            arr = arr.reshape(-1, in_channels).mean(axis=1)
         if in_rate != out_rate:
             in_len = arr.shape[0]
             out_len = int(round(in_len * (out_rate / in_rate)))
@@ -351,14 +404,16 @@ def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path) -> int:
                 x = _np.linspace(0, 1, in_len, endpoint=True)
                 xi = _np.linspace(0, 1, out_len, endpoint=True)
                 arr = _np.interp(xi, x, arr)
-        # Convert to int16 bytes
         arr = _np.clip(arr, -1.0, 1.0)
         int16 = (arr * 32767.0).round().astype('<i2')
         out_bytes = int16.tobytes()
         nsamples = len(int16)
     else:
         # Pure Python fallback
-        mono = _bytes_to_mono_float(raw, in_width, in_channels)
+        if is_float:
+            mono = _bytes_to_mono_float_ieee(raw, in_width, in_channels)
+        else:
+            mono = _bytes_to_mono_float(raw, in_width, in_channels)
         res = _resample_linear_py(mono, in_rate, out_rate) if in_rate != out_rate else mono
         out_bytes = _float_to_int16_bytes(res)
         nsamples = len(res)
