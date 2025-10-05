@@ -25,7 +25,18 @@
     #preview { border-top: 1px solid var(--b); padding-top: 12px; }
     #waveform { height: 120px; border: 1px solid var(--b); border-radius: 6px; }
     #warnings { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 6px; padding: 8px; display: none; }
-    @media (max-width: 900px) { #browser { grid-template-columns: 1fr; } }
+    .folder { margin: 4px 0; }
+    .folder > summary { cursor: pointer; font-weight: 600; }
+    .leaf { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 4px 2px; border-bottom: 1px dotted var(--b); }
+    .leaf .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .leaf .meta { font-size: 12px; color: var(--muted); }
+    .right-actions .btn { margin-left: 6px; }
+    .capacity { font-size: 12px; color: var(--muted); }
+    .cap-ok { color: #065f46; }
+    .cap-warn { color: #92400e; }
+    .cap-err { color: #991b1b; }
+    .toggle-on { background: #e0f2fe; border-color: #7dd3fc; }
+    .toggle-off { background: #f3f4f6; border-color: #d1d5db; }
   </style>
 </head>
 <body>
@@ -49,11 +60,13 @@
       <div id="fileList"></div>
     </div>
     <div>
-      <div class="row" style="margin-bottom:6px; justify-content: space-between;">
+      <div class="row" style="margin-bottom:6px; justify-content: space-between; align-items: baseline;">
         <strong>Selected bank</strong>
         <div class="row">
+          <span id="capacityInfo" class="capacity"></span>
           <button id="clearBtn" disabled>Clear</button>
           <button id="exportBtn" disabled>Export JSON</button>
+          <button id="saveToFolderBtn" disabled>Save to folder</button>
         </div>
       </div>
       <div id="bankList"></div>
@@ -81,8 +94,15 @@
   <script type="module">
     import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js';
 
+    // Constants
     const MAX_BANK = 128;
+    const LIMIT_BYTES = 26 * 1024 * 1024; // 26 MiB
+    const BYTES_PER_SAMPLE = 2; // mono 16-bit
+    const SAMPLE_RATE = 44100;
+    const BYTES_PER_SECOND = BYTES_PER_SAMPLE * SAMPLE_RATE; // 88200
+    const FS_AVAILABLE = 'showDirectoryPicker' in window && window.isSecureContext;
 
+    // Elements
     const pickBtn = document.getElementById('pickBtn');
     const dirInput = document.getElementById('dirInput');
     const summary = document.getElementById('summary');
@@ -91,12 +111,20 @@
     const bankListEl = document.getElementById('bankList');
     const clearBtn = document.getElementById('clearBtn');
     const exportBtn = document.getElementById('exportBtn');
+    const saveBtn = document.getElementById('saveToFolderBtn');
+    const capacityInfo = document.getElementById('capacityInfo');
     const currentNameEl = document.getElementById('currentName');
     const durationEl = document.getElementById('duration');
     const playBtn = document.getElementById('playBtn');
     const warningsEl = document.getElementById('warnings');
     const enableAudioBtn = document.getElementById('enableAudioBtn');
 
+    if (!FS_AVAILABLE) {
+      // Hide save button if filesystem access API is not available (e.g., file:// or non-Chromium)
+      saveBtn.style.display = 'none';
+    }
+
+    // State
     let wavesurfer = WaveSurfer.create({
       container: '#waveform',
       waveColor: '#9CA3AF',
@@ -109,13 +137,34 @@
       durationEl.textContent = formatTime(wavesurfer.getDuration());
       playBtn.disabled = false;
     });
-    wavesurfer.on('play', () => playBtn.textContent = 'Pause');
-    wavesurfer.on('pause', () => playBtn.textContent = 'Play');
-    wavesurfer.on('finish', () => playBtn.textContent = 'Play');
+    wavesurfer.on('play', () => (playBtn.textContent = 'Pause'));
+    wavesurfer.on('pause', () => (playBtn.textContent = 'Play'));
+    wavesurfer.on('finish', () => (playBtn.textContent = 'Play'));
 
-    let entries = []; // from wav_info_short.json
+    let entries = []; // {filename, path, nsamples, offset? , _idx}
     let selection = []; // { entry, file }
     let wavMap = new Map(); // key: path/stem (lower) -> File
+    let dirHandle = null; // for FS save
+    let autoPreviewEnabled = false; // controlled by Enable audio toggle
+
+    // Wire enable audio as an auto-preview toggle
+    function updateAutoPreviewBtn() {
+      enableAudioBtn.textContent = autoPreviewEnabled ? 'Autopreview: On' : 'Autopreview: Off';
+      enableAudioBtn.className = autoPreviewEnabled ? 'toggle-on' : 'toggle-off';
+    }
+    updateAutoPreviewBtn();
+
+    enableAudioBtn.addEventListener('click', async () => {
+      autoPreviewEnabled = !autoPreviewEnabled;
+      updateAutoPreviewBtn();
+      if (autoPreviewEnabled) {
+        // Try to unlock audio context by a programmatic gesture
+        try { await wavesurfer.play(); wavesurfer.pause(); } catch {}
+      } else {
+        // Stop any current playback
+        try { wavesurfer.pause(); } catch {}
+      }
+    });
 
     pickBtn.addEventListener('click', () => dirInput.click());
 
@@ -124,18 +173,14 @@
       const files = Array.from(dirInput.files || []);
       if (!files.length) return;
 
-      // Determine top folder to strip from webkitRelativePath
       const top = files[0].webkitRelativePath?.split('/')[0] || '';
-      const stripTop = p => p.startsWith(top + '/') ? p.slice(top.length + 1) : p;
+      const stripTop = (p) => (p.startsWith(top + '/') ? p.slice(top.length + 1) : p);
 
-      // Build wav map and locate short JSON
       wavMap.clear();
       let shortJsonFile = null;
       for (const f of files) {
         const rel = stripTop(f.webkitRelativePath || f.name);
-        if (/(^|\/)wav_info_short\.json$/i.test(rel)) {
-          shortJsonFile = f;
-        }
+        if (/(^|\/)wav_info_short\.json$/i.test(rel)) shortJsonFile = f;
         if (/\.(wav|wave)$/i.test(f.name)) {
           const idx = rel.lastIndexOf('/');
           const dir = idx >= 0 ? rel.slice(0, idx) : '';
@@ -145,14 +190,11 @@
           if (!wavMap.has(key.toLowerCase())) wavMap.set(key.toLowerCase(), f);
         }
       }
-
       if (!shortJsonFile) {
         summary.textContent = 'Could not find wav_info_short.json';
         showWarning('Select the tbdsamples folder that contains wav_info_short.json.');
         return;
       }
-
-      // Parse entries
       try {
         const text = await shortJsonFile.text();
         const json = JSON.parse(text);
@@ -162,8 +204,9 @@
         showWarning('Failed to parse wav_info_short.json: ' + e.message);
         return;
       }
-
-      renderFileList();
+      renderLeftTree();
+      renderRightTree();
+      updateCapacity();
       summary.textContent = `Loaded ${entries.length} entries from wav_info_short.json`;
     });
 
@@ -177,24 +220,64 @@
       durationEl.textContent = '--:--';
       playBtn.disabled = true;
       counter.textContent = '0/128 selected';
+      capacityInfo.textContent = '';
       warningsEl.style.display = 'none';
       warningsEl.textContent = '';
       try { wavesurfer.empty(); } catch {}
     }
 
-    function renderFileList() {
+    // Tree building helpers
+    function buildTree(items, getPathKey) {
+      const root = { name: '', folders: new Map(), files: [] };
+      for (const item of items) {
+        const rel = getPathKey(item); // e.g., path/filename
+        const segs = rel.split('/').filter(Boolean);
+        const fname = segs.pop();
+        let node = root;
+        for (const seg of segs) {
+          if (!node.folders.has(seg)) node.folders.set(seg, { name: seg, folders: new Map(), files: [] });
+          node = node.folders.get(seg);
+        }
+        node.files.push(item);
+      }
+      // Sort folders and files
+      function sortNode(node) {
+        node.files.sort((a, b) => getPathKey(a).localeCompare(getPathKey(b)));
+        for (const child of node.folders.values()) sortNode(child);
+      }
+      sortNode(root);
+      return root;
+    }
+
+    function renderFolder(node, container, onLeaf) {
+      // Render folders first
+      const folderNames = Array.from(node.folders.keys()).sort((a, b) => a.localeCompare(b));
+      for (const name of folderNames) {
+        const child = node.folders.get(name);
+        const details = document.createElement('details');
+        details.className = 'folder';
+        details.open = true;
+        const summaryEl = document.createElement('summary');
+        summaryEl.textContent = name;
+        details.appendChild(summaryEl);
+        renderFolder(child, details, onLeaf);
+        container.appendChild(details);
+      }
+      // Render files
+      for (const item of node.files) onLeaf(item, container);
+    }
+
+    // LEFT: entries not in selection
+    function renderLeftTree() {
       fileListEl.innerHTML = '';
-      const sorted = [...entries].sort((a, b) => (
-        ((a.path || '') + '/' + a.filename).localeCompare((b.path || '') + '/' + b.filename)
-      ));
-      let missing = 0;
-      for (const e of sorted) {
+      const selectedIdx = new Set(selection.map((s) => s.entry._idx));
+      const leftItems = entries.filter((e) => !selectedIdx.has(e._idx));
+      const tree = buildTree(leftItems, (e) => ((e.path ? e.path + '/' : '') + e.filename));
+      renderFolder(tree, fileListEl, (e, parent) => {
         const key = ((e.path ? e.path + '/' : '') + e.filename).toLowerCase();
         const f = wavMap.get(key);
-
         const row = document.createElement('div');
-        row.className = 'item';
-
+        row.className = 'leaf';
         const left = document.createElement('div');
         const name = document.createElement('div');
         name.className = 'name';
@@ -204,67 +287,32 @@
         meta.textContent = `nsamples: ${e.nsamples}` + (e.offset != null ? `, offset: ${e.offset}` : '');
         left.appendChild(name);
         left.appendChild(meta);
-
         const right = document.createElement('div');
-        right.className = 'row';
-        const addBtn = document.createElement('button');
-        addBtn.textContent = 'Add';
-        addBtn.disabled = !f;
-        addBtn.addEventListener('click', (ev) => { ev.stopPropagation(); if (f) addToBank(e, f); });
-        right.appendChild(addBtn);
-
+        right.className = 'right-actions';
+        const btn = document.createElement('button');
+        btn.textContent = 'Add';
+        btn.disabled = !f;
+        btn.className = 'btn';
+        btn.addEventListener('click', (ev) => { ev.stopPropagation(); if (f) addToBank(e, f); });
+        right.appendChild(btn);
         row.appendChild(left);
         row.appendChild(right);
-
-        // Hover preview
         if (f) {
-          row.addEventListener('mouseenter', () => previewBlob(e, f));
+          row.addEventListener('mouseenter', () => { if (autoPreviewEnabled) previewBlob(e, f); });
           row.addEventListener('mouseleave', () => stopPreview());
           row.addEventListener('click', () => previewBlob(e, f));
         }
-
-        fileListEl.appendChild(row);
-        if (!f) missing++;
-      }
-      if (missing) {
-        showWarning(`${missing} referenced file(s) could not be found in the selected folder.`);
-      }
+        parent.appendChild(row);
+      });
     }
 
-    async function previewBlob(entry, file) {
-      currentNameEl.textContent = (entry.path ? entry.path + '/' : '') + entry.filename;
-      durationEl.textContent = '--:--';
-      playBtn.disabled = true;
-      try {
-        wavesurfer.empty();
-        await wavesurfer.loadBlob(file);
-        try { wavesurfer.play(0); } catch {}
-      } catch (e) {
-        showWarning('Failed to preview: ' + (e?.message || e));
-      }
-    }
-
-    function stopPreview() {
-      try { wavesurfer.pause(); } catch {}
-    }
-
-    playBtn.addEventListener('click', () => {
-      if (!wavesurfer) return;
-      wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play();
-    });
-
-    function addToBank(entry, file) {
-      if (selection.length >= MAX_BANK) { alert('Bank is full (128 samples).'); return; }
-      if (selection.find(s => s.entry._idx === entry._idx)) return;
-      selection.push({ entry, file });
-      renderBank();
-    }
-
-    function renderBank() {
+    // RIGHT: selection as a tree
+    function renderRightTree() {
       bankListEl.innerHTML = '';
-      selection.forEach((s, idx) => {
-        const li = document.createElement('div');
-        li.className = 'item';
+      const tree = buildTree(selection, (s) => ((s.entry.path ? s.entry.path + '/' : '') + s.entry.filename));
+      renderFolder(tree, bankListEl, (s, parent) => {
+        const row = document.createElement('div');
+        row.className = 'leaf';
         const left = document.createElement('div');
         const name = document.createElement('div');
         name.className = 'name';
@@ -275,60 +323,137 @@
         left.appendChild(name);
         left.appendChild(meta);
         const right = document.createElement('div');
-        right.className = 'row';
+        right.className = 'right-actions';
         const prevBtn = document.createElement('button');
         prevBtn.textContent = 'Preview';
+        prevBtn.className = 'btn';
         prevBtn.addEventListener('click', (ev) => { ev.stopPropagation(); previewBlob(s.entry, s.file); });
         const rmBtn = document.createElement('button');
         rmBtn.textContent = 'Remove';
-        rmBtn.addEventListener('click', () => { selection.splice(idx, 1); renderBank(); });
+        rmBtn.className = 'btn';
+        rmBtn.addEventListener('click', () => { removeFromBank(s.entry._idx); });
         right.appendChild(prevBtn);
         right.appendChild(rmBtn);
-        li.appendChild(left); li.appendChild(right);
-        bankListEl.appendChild(li);
+        row.appendChild(left);
+        row.appendChild(right);
+        // Hover preview on right as well
+        row.addEventListener('mouseenter', () => { if (autoPreviewEnabled) previewBlob(s.entry, s.file); });
+        row.addEventListener('mouseleave', () => stopPreview());
+        row.addEventListener('click', () => previewBlob(s.entry, s.file));
+        parent.appendChild(row);
       });
+    }
+
+    function removeFromBank(idx) {
+      const i = selection.findIndex((s) => s.entry._idx === idx);
+      if (i >= 0) selection.splice(i, 1);
+      renderLeftTree();
+      renderRightTree();
+      updateSelectionUI();
+    }
+
+    function addToBank(entry, file) {
+      if (selection.length >= MAX_BANK) { alert('Bank is full (128 samples).'); return; }
+      // Capacity check
+      const bytesNeeded = entry.nsamples * BYTES_PER_SAMPLE;
+      const used = totalUsedBytes();
+      if (used + bytesNeeded > LIMIT_BYTES) {
+        const over = used + bytesNeeded - LIMIT_BYTES;
+        showWarning(`Cannot add: capacity exceeded by ${formatBytes(over)}.`);
+        return;
+      }
+      if (selection.find((s) => s.entry._idx === entry._idx)) return;
+      selection.push({ entry, file });
+      renderLeftTree(); // remove from left
+      renderRightTree();
+      updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
       counter.textContent = `${selection.length}/128 selected`;
       clearBtn.disabled = selection.length === 0;
       exportBtn.disabled = selection.length === 0;
+      saveBtn.disabled = selection.length === 0 || !FS_AVAILABLE;
+      updateCapacity();
     }
 
-    clearBtn.addEventListener('click', () => { selection = []; renderBank(); });
+    clearBtn.addEventListener('click', () => { selection = []; renderLeftTree(); renderRightTree(); updateSelectionUI(); });
 
-    exportBtn.addEventListener('click', () => {
-      const out = selection.map(s => {
-        const o = { filename: s.entry.filename, nsamples: s.entry.nsamples };
-        if (s.entry.offset != null) o.offset = s.entry.offset;
-        return o;
-      });
-      const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
-      downloadBlob(blob, 'sample_bank.json');
+    function totalUsedBytes() {
+      return selection.reduce((acc, s) => acc + (s.entry.nsamples * BYTES_PER_SAMPLE), 0);
+    }
+
+    function updateCapacity() {
+      const used = totalUsedBytes();
+      const free = Math.max(0, LIMIT_BYTES - used);
+      const secs = Math.floor(free / BYTES_PER_SECOND);
+      const cls = used < LIMIT_BYTES * 0.9 ? 'cap-ok' : (used <= LIMIT_BYTES ? 'cap-warn' : 'cap-err');
+      capacityInfo.className = `capacity ${cls}`;
+      capacityInfo.textContent = `Used ${formatBytes(used)} · Free ${formatBytes(free)} (~${secs}s)`;
+    }
+
+    function formatBytes(n) {
+      if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(2) + ' MiB';
+      if (n >= 1024) return (n / 1024).toFixed(1) + ' KiB';
+      return n + ' B';
+    }
+
+    async function previewBlob(entry, file) {
+      currentNameEl.textContent = (entry.path ? entry.path + '/' : '') + entry.filename;
+      durationEl.textContent = '--:--';
+      playBtn.disabled = true;
+      try {
+        wavesurfer.empty();
+        await wavesurfer.loadBlob(file);
+        if (autoPreviewEnabled) {
+          try { wavesurfer.play(0); } catch {}
+        }
+      } catch (e) {
+        showWarning('Failed to preview: ' + (e?.message || e));
+      }
+    }
+
+    function stopPreview() { try { wavesurfer.pause(); } catch {} }
+
+    playBtn.addEventListener('click', () => { if (!wavesurfer) return; wavesurfer.isPlaying() ? wavesurfer.pause() : wavesurfer.play(); });
+
+    // Export JSON (download)
+    function buildSelectionJson() {
+      const out = selection.map((s) => { const o = { filename: s.entry.filename, nsamples: s.entry.nsamples }; if (s.entry.offset != null) o.offset = s.entry.offset; return o; });
+      return JSON.stringify(out, null, 2);
+    }
+    exportBtn.addEventListener('click', () => { const blob = new Blob([buildSelectionJson()], { type: 'application/json' }); downloadBlob(blob, 'sample_bank.json'); });
+
+    // Save to folder (FS API)
+    async function ensureDirHandle() {
+      if (!FS_AVAILABLE) throw new Error('File System Access API not available in this context');
+      if (!dirHandle) dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      const perm = await dirHandle.queryPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') {
+        const p2 = await dirHandle.requestPermission({ mode: 'readwrite' });
+        if (p2 !== 'granted') throw new Error('Write permission denied for selected folder');
+      }
+      return dirHandle;
+    }
+    async function verifyTbdsamples(handle) { try { await handle.getFileHandle('wav_info_short.json'); return true; } catch { return false; } }
+    saveBtn.addEventListener('click', async () => {
+      if (!selection.length) return;
+      try {
+        const handle = await ensureDirHandle();
+        const isTbds = await verifyTbdsamples(handle);
+        if (!isTbds) showWarning('Selected folder does not contain wav_info_short.json. Saving sample_bank.json anyway.');
+        const fileHandle = await handle.getFileHandle('sample_bank.json', { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(buildSelectionJson());
+        await writable.close();
+        summary.textContent = 'Saved sample_bank.json to selected folder';
+      } catch (e) { showWarning('Failed to save to folder: ' + (e?.message || e)); }
     });
 
-    function downloadBlob(blob, name) {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = name;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 0);
-    }
-
-    function showWarning(msg) {
-      warningsEl.style.display = 'block';
-      warningsEl.textContent = msg;
-    }
-
-    enableAudioBtn.addEventListener('click', async () => {
-      try { await wavesurfer.play(); wavesurfer.pause(); enableAudioBtn.disabled = true; enableAudioBtn.textContent = 'Audio enabled'; } catch {}
-    });
-
-    function formatTime(sec) {
-      if (!isFinite(sec)) return '--:--';
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return `${m}:${s.toString().padStart(2, '0')}`;
-    }
+    // Utils
+    function downloadBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 0); }
+    function showWarning(msg) { warningsEl.style.display = 'block'; warningsEl.textContent = msg; }
+    function formatTime(sec) { if (!isFinite(sec)) return '--:--'; const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
   </script>
 </body>
 </html>
