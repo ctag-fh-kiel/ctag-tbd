@@ -7,6 +7,7 @@ import re
 import unicodedata
 # import audioop  # removed: Python 3.13 no longer includes audioop
 import wave
+import sys
 
 # Try optional numpy for faster conversion/resampling
 try:
@@ -355,8 +356,11 @@ def _read_data_chunks(filepath: Path, data_chunks):
     return bytes(out)
 
 
-def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path) -> int:
-    """Convert a WAV file to 44.1kHz, mono, 16-bit PCM and write to dest_path."""
+def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path, progress_cb=None) -> int:
+    """Convert a WAV file to 44.1kHz, mono, 16-bit PCM and write to dest_path.
+    progress_cb: optional callable(percent:int) to receive progress updates 0..100.
+    Returns the number of output samples (frames). Raises on failure.
+    """
     fmt_info, _ = parse_wav(src_path)
     if not fmt_info.get('little_endian'):
         raise ValueError('Big-endian RIFX WAV not supported for conversion')
@@ -368,9 +372,36 @@ def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path) -> int:
         raise ValueError('Missing essential format fields for conversion')
     if not fmt_info.get('data_chunks'):
         raise ValueError('No data chunks found')
-    raw = _read_data_chunks(src_path, fmt_info['data_chunks'])
+
+    # Stream-read raw bytes with progress (map read progress to 0..90)
+    total_bytes = sum(sz for _, sz in fmt_info['data_chunks'])
+    read_bytes = 0
+    raw_buf = bytearray()
+    with open(src_path, 'rb') as f:
+        for payload_off, size in fmt_info['data_chunks']:
+            remaining = size
+            pos = 0
+            while remaining > 0:
+                to_read = 1024 * 1024 if remaining >= 1024 * 1024 else remaining
+                f.seek(payload_off + pos)
+                chunk = f.read(to_read)
+                if not chunk:
+                    break
+                raw_buf += chunk
+                pos += len(chunk)
+                remaining -= len(chunk)
+                read_bytes += len(chunk)
+                if progress_cb and total_bytes:
+                    pct = int((read_bytes / total_bytes) * 90)
+                    if pct > 90:
+                        pct = 90
+                    progress_cb(pct)
+    raw = bytes(raw_buf)
 
     out_rate = 44100
+    # Indicate conversion phase start (90..95)
+    if progress_cb:
+        progress_cb(92)
     # Fast path with numpy if available
     if _np is not None:
         if is_float:
@@ -409,7 +440,6 @@ def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path) -> int:
         out_bytes = int16.tobytes()
         nsamples = len(int16)
     else:
-        # Pure Python fallback
         if is_float:
             mono = _bytes_to_mono_float_ieee(raw, in_width, in_channels)
         else:
@@ -417,14 +447,26 @@ def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path) -> int:
         res = _resample_linear_py(mono, in_rate, out_rate) if in_rate != out_rate else mono
         out_bytes = _float_to_int16_bytes(res)
         nsamples = len(res)
+    # Indicate nearing write (95)
+    if progress_cb:
+        progress_cb(95)
 
-    # Write output WAV
     with wave.open(str(dest_path), 'wb') as w:
         w.setnchannels(1)
         w.setsampwidth(2)
         w.setframerate(out_rate)
-        w.writeframes(out_bytes)
-
+        # Write in chunks to avoid large syscalls and update final progress to 100
+        mv = memoryview(out_bytes)
+        offset = 0
+        total = len(out_bytes)
+        while offset < total:
+            end = offset + 1024 * 1024
+            if end > total:
+                end = total
+            w.writeframes(mv[offset:end])
+            offset = end
+    if progress_cb:
+        progress_cb(100)
     return nsamples
 
 
@@ -480,11 +522,18 @@ def main():
                 warnings.append(f"Copy failed: {src} -> {dest_path}: {e}")
                 continue
         else:
-            # Attempt conversion using wave+numpy (or pure-Python fallback). If fails, skip.
+            # Show single-line progress for this conversion
+            def _print_progress(pct: int):
+                msg = f"Converting {src.name[:40]:<40} {pct:3d}%"
+                print("\r" + msg, end='', flush=True)
             try:
-                ns = convert_to_pcm16_mono_44100(src, dest_path)
+                ns = convert_to_pcm16_mono_44100(src, dest_path, progress_cb=_print_progress)
                 off = 44  # standard header for files we write
+                # Finish line
+                print("\r" + f"Converting {src.name[:40]:<40} 100%", end='\n', flush=True)
             except Exception as e:
+                # Ensure we end the in-place line with a newline for clarity
+                print("\r" + f"Converting {src.name[:40]:<40} ERR", end='\n', flush=True)
                 warnings.append(f"Convert failed: {src} -> {dest_path}: {e}")
                 continue
         entry = {
