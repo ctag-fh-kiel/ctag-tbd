@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 import struct
 import shutil
+import re
+import unicodedata
 
 # Parse WAV chunks in a streaming way to extract format info, data size, and RIFF INFO metadata
 
@@ -161,6 +163,48 @@ def get_wav_info(filepath, base_dir):
     return info
 
 
+def _normalize_stem(name: str) -> str:
+    # Normalize unicode to ASCII where possible
+    n = unicodedata.normalize('NFKD', name)
+    n = n.encode('ascii', 'ignore').decode('ascii')
+    # Replace separators with underscore
+    n = re.sub(r'[\s\-]+', '_', n)
+    # Remove any character not alnum or underscore
+    n = re.sub(r'[^A-Za-z0-9_]', '', n)
+    # Collapse multiple underscores and trim
+    n = re.sub(r'_+', '_', n).strip('_')
+    # If empty after sanitization, fallback to 'SAMPLE'
+    return n if n else 'SAMPLE'
+
+
+def _shorten_stem(name: str, max_len: int = 32) -> str:
+    n = _normalize_stem(name)
+    if len(n) <= max_len:
+        return n
+    # Preserve start and end around an underscore separator
+    keep = max_len - 1  # space for the underscore
+    first = keep // 2
+    last = keep - first
+    return f"{n[:first]}_{n[-last:]}"
+
+
+def _unique_dest_stem(dest_dir: Path, stem: str, ext: str, max_len: int = 32) -> str:
+    base = _shorten_stem(stem, max_len)
+    candidate = base
+    i = 2
+    # If file exists, append _2, _3, ... while keeping <= max_len
+    while (dest_dir / f"{candidate}{ext}").exists():
+        suffix = f"_{i}"
+        # Truncate base to allow suffix
+        allowed = max_len - len(suffix)
+        truncated = base[:allowed]
+        # Avoid trailing underscore
+        truncated = truncated.rstrip('_')
+        candidate = f"{truncated}{suffix}"
+        i += 1
+    return candidate
+
+
 def main():
     base_dir = Path(__file__).parent
     # Find .wav files case-insensitively (e.g., .wav, .WAV, .WaV)
@@ -190,21 +234,23 @@ def main():
     with open(out_path, 'w') as f:
         json.dump(results, f, indent=2)
 
-    # Copy files matching format_ok == True into tbdsamples, preserving directory structure
+    # Copy files matching format_ok == True into tbdsamples, preserving directory structure, renaming to <=32 chars
     tbds_dir = base_dir / 'tbdsamples'
     selected = [(info, src) for info, src in zip(results, srcs) if info.get('format_ok') is True]
     short_entries = []
     for info, src in selected:
         dest_dir = tbds_dir if info['path'] == '' else tbds_dir / info['path']
         dest_dir.mkdir(parents=True, exist_ok=True)
-        dest_path = dest_dir / src.name
+        ext = src.suffix  # preserve original extension and casing
+        new_stem = _unique_dest_stem(dest_dir, src.stem, ext, 32)
+        dest_path = dest_dir / f"{new_stem}{ext}"
         try:
             shutil.copy2(src, dest_path)
-        except Exception as e:
+        except Exception:
             # Skip copy errors but continue building JSON
-            pass
+            continue
         short_entries.append({
-            'filename': info['filename'],
+            'filename': new_stem,
             'path': info['path'],
             'nsamples': info['nsamples'],
             'offset': info['offset'],
@@ -216,7 +262,7 @@ def main():
     with open(short_path, 'w') as f:
         json.dump(short_entries, f, indent=2)
 
-    print(f"Processed {len(results)} wav files. Output: {out_path.name}. Copied {len(selected)} files to {tbds_dir.name} and wrote {short_path.name}.")
+    print(f"Processed {len(results)} wav files. Output: {out_path.name}. Copied {len(short_entries)} files to {tbds_dir.name} and wrote {short_path.name}.")
 
 if __name__ == '__main__':
     main()
