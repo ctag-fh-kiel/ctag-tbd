@@ -178,10 +178,10 @@ def get_wav_info(filepath, base_dir):
     info['offset'] = fmt.get('data_offset')
     # Add format_ok: 44.1kHz, mono, 16-bit, PCM
     info['format_ok'] = (
-        (fmt.get('sample_rate') == 44100)
-        and (fmt.get('channels') == 1)
-        and (fmt.get('sample_resolution') == 16)
-        and (fmt.get('pcm') is True)
+            (fmt.get('sample_rate') == 44100)
+            and (fmt.get('channels') == 1)
+            and (fmt.get('sample_resolution') == 16)
+            and (fmt.get('pcm') is True)
     )
     info['meta_data'] = meta
     return info
@@ -470,10 +470,18 @@ def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path, progress_cb=Non
     return nsamples
 
 
+def _is_under(p: Path, root: Path) -> bool:
+    try:
+        return p.resolve().relative_to(root.resolve()) is not None
+    except Exception:
+        return False
+
+
 def main():
     base_dir = Path(__file__).parent
-    # Find .wav files case-insensitively (e.g., .wav, .WAV, .WaV)
-    wav_files = [p for p in base_dir.rglob('*.[Ww][Aa][Vv]')]
+    tbds_dir = base_dir / 'tbdsamples'
+    # Find .wav files case-insensitively, excluding tbdsamples (output) directory
+    wav_files = [p for p in base_dir.rglob('*.[Ww][Aa][Vv]') if not _is_under(p, tbds_dir)]
     results = []
     srcs = []
     for wav_path in wav_files:
@@ -500,7 +508,6 @@ def main():
         json.dump(results, f, indent=2)
 
     # Ensure destination base folder exists
-    tbds_dir = base_dir / 'tbdsamples'
     tbds_dir.mkdir(parents=True, exist_ok=True)
 
     # Build short entries and copy/convert into tbdsamples preserving structure and shortening names
@@ -537,7 +544,7 @@ def main():
                 warnings.append(f"Convert failed: {src} -> {dest_path}: {e}")
                 continue
         entry = {
-            'filename': f"{new_stem}{ext}",
+            'filename': new_stem,
             'path': info['path'],
             'nsamples': ns,
         }
@@ -546,7 +553,7 @@ def main():
         short_entries.append(entry)
 
     # Write shortened JSON into tbdsamples folder
-    short_path = tbds_dir / 'wav_info.jsn'
+    short_path = tbds_dir / 'wav_info_short.json'
     with open(short_path, 'w') as f:
         json.dump(short_entries, f, indent=2)
 
