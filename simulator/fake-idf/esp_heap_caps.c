@@ -41,7 +41,7 @@ int heap_caps_get_free_size(unsigned int caps){
 }
 
 int heap_caps_get_largest_free_block(unsigned int caps){
-    return 3*1024*1024; // 3 Megs
+    return 32*1024*1024; // 3 Megs
 }
 
 void *heap_caps_malloc_prefer( unsigned int size, unsigned int num, ... )
