@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include <cstdint>
 #include <vector>
 #include <atomic>
+#include <string>
 
 using namespace std;
 
@@ -46,6 +47,9 @@ namespace CTAG::SP::HELPERS{
         void BufferInSPIRAM();
         bool IsBufferedInSPIRAM();
     private:
+        static void RefreshDataStructureFromFlash();
+        static void RefreshDataStructureFromSDCard();
+        void BufferInSPIRAMFromFlash();
         static uint32_t totalSize;
         static uint32_t numberSlices;
         static uint32_t headerSize;
@@ -55,5 +59,9 @@ namespace CTAG::SP::HELPERS{
         static atomic<uint32_t>  nConsumers;
         static int16_t *ptrSPIRAM;
         static uint32_t nSlicesBuffered;
+        static string wtDescriptorFile;
+        static string samplesDescriptorFile;
+        static bool readFromSD;
+
     };
 }
