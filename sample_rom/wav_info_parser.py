@@ -544,7 +544,7 @@ def main():
                 warnings.append(f"Convert failed: {src} -> {dest_path}: {e}")
                 continue
         entry = {
-            'filename': new_stem,
+            'filename': f"{new_stem}{ext}",
             'path': info['path'],
             'nsamples': ns,
         }
@@ -553,7 +553,7 @@ def main():
         short_entries.append(entry)
 
     # Write shortened JSON into tbdsamples folder
-    short_path = tbds_dir / 'wav_info_short.json'
+    short_path = tbds_dir / 'wav_info.jsn'
     with open(short_path, 'w') as f:
         json.dump(short_entries, f, indent=2)
 
