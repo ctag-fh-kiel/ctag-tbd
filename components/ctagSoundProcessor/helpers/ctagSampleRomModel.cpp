@@ -41,7 +41,7 @@ std::string CTAG::SP::ctagSampleRomModel::GetFilenameForSlice(uint32_t slice){
 }
 
 uint32_t CTAG::SP::ctagSampleRomModel::GetDataOffsetForSlice(uint32_t slice){
-    uint32_t offset = 44;
+    uint32_t offset = 44; // standard offset in .wav files
     if(desc.IsArray()){
         if(slice < desc.GetArray().Size()){
             Value& v = desc[slice];

@@ -70,11 +70,11 @@ namespace CTAG::SP::HELPERS {
 
     uint32_t ctagSampleRom::GetSliceGroupSize(const uint32_t startSlice, const uint32_t endSlice) {
         if (endSlice <= startSlice) return 0;
-        uint32_t totalSize = 0;
+        uint32_t totalSizeBytes = 0;
         for (uint32_t i = startSlice; i <= endSlice; i++) {
-            totalSize += sliceSizes[i];
+            totalSizeBytes += sliceSizes[i];
         }
-        return totalSize;
+        return totalSizeBytes;
     }
 
     uint32_t ctagSampleRom::GetSliceOffset(const uint32_t slice) {
@@ -151,6 +151,7 @@ namespace CTAG::SP::HELPERS {
             heap_caps_free(sliceSizes);
             sliceSizes = nullptr;
         }
+
         // check if sample folder exists and contains json descriptor file
         if(std::filesystem::exists(SD_CARD_SAMPLE_FOLDER) && std::filesystem::is_directory(SD_CARD_SAMPLE_FOLDER)){
             if (std::filesystem::exists(std::string(SD_CARD_SAMPLE_FOLDER) + "/" + wtDescriptorFile) &&
@@ -247,21 +248,18 @@ namespace CTAG::SP::HELPERS {
     }
 
     void ctagSampleRom::RefreshDataStructureFromSDCard(){
-        totalSize = 0;
-        numberSlices = 0;
-        headerSize = 0;
-
         ctagSampleRomModel wt_model(std::string(SD_CARD_SAMPLE_FOLDER) + "/" + wtDescriptorFile);
         ctagSampleRomModel sample_model(std::string(SD_CARD_SAMPLE_FOLDER) + "/" + samplesDescriptorFile);
 
         // get total number of slices and samples
         uint32_t size_wt_bytes = wt_model.GetTotalNumberSamples() * 2;
         uint32_t size_samples_bytes = sample_model.GetTotalNumberSamples() * 2;
-        uint32_t slices_wt = wt_model.GetTotalNumberSlices();
+        uint32_t slices_wt = wt_model.GetTotalNumberSlices(); // each wt slice contains 64 wavetables each 256 bytes large
         uint32_t slices_samples = sample_model.GetTotalNumberSlices();
 
         totalSize = size_wt_bytes + size_samples_bytes;
-        numberSlices = slices_wt + slices_samples;
+        numberSlices = slices_wt * 64 + slices_samples;
+        headerSize = 0;
 
         // alloc memory for data structure in memory
         sliceOffsets = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
@@ -269,21 +267,29 @@ namespace CTAG::SP::HELPERS {
         sliceSizes = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceSizes != nullptr);
 
-        // generate offsets and sizes
-        for (uint32_t i = 0; i < numberSlices; i++) {
-            if (i < slices_wt) {
-                sliceSizes[i] = wt_model.GetSliceSize(i);
-                sliceOffsets[i] = (i == 0) ? 0 : (sliceOffsets[i - 1] + sliceSizes[i - 1]);
-            } else {
-                uint32_t j = i - slices_wt;
-                sliceSizes[i] = sample_model.GetSliceSize(j);
-                sliceOffsets[i] = (i == 0) ? 0 : (sliceOffsets[i - 1] + sliceSizes[i - 1]);
+        // generate offsets and sizes, start with wavetables, sizes and offsets are words (due to 16 bit samples)
+        uint32_t slice_in_mem_index = 0;
+        uint32_t slice_in_mem_offset = 0;
+        for (uint32_t i = 0; i < slices_wt; i++) {
+            uint32_t sliceSize = wt_model.GetSliceSize(i);
+            for (uint32_t j = 0; j < 64; j++) {
+                sliceSizes[slice_in_mem_index] = sliceSize / 64; // should be 256
+                sliceOffsets[slice_in_mem_index] = slice_in_mem_offset;
+                slice_in_mem_offset += sliceSizes[slice_in_mem_index];
+                slice_in_mem_index++;
             }
-            ESP_LOGD("SROM", "Slice size %li, offset %li", sliceSizes[i], sliceOffsets[i]);
+        }
+        // add samples
+        for (uint32_t i = 0; i < slices_samples; i++) {
+            uint32_t sliceSize = sample_model.GetSliceSize(i);
+            sliceSizes[slice_in_mem_index] = sliceSize;
+            sliceOffsets[slice_in_mem_index] = slice_in_mem_offset;
+            slice_in_mem_offset += sliceSizes[slice_in_mem_index];
+            slice_in_mem_index++;
         }
 
         // first non Wt Slice
-        firstNonWtSlice = slices_wt;
+        firstNonWtSlice = slices_wt * 64;
 
         // read slices from files and buffer in PSRAM
         if(ptrSPIRAM != nullptr) heap_caps_free(ptrSPIRAM);
@@ -292,7 +298,10 @@ namespace CTAG::SP::HELPERS {
         assert(maxSizeBytes >= totalSize); // check if sample data fits in PSRAM
         ptrSPIRAM = (int16_t *)heap_caps_malloc(totalSize, MALLOC_CAP_SPIRAM);
         assert(ptrSPIRAM != nullptr);
-        ESP_LOGI("SR", "Buffering %d bytes in SPIRAM", totalSize);
+        // init with zeros
+        memset(ptrSPIRAM, 0, totalSize);
+        maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+        ESP_LOGI("SR", "Buffering %li bytes in PSRAM, largest block free %li", totalSize, maxSizeBytes);
 
         // load all wavetable files
         for (uint32_t i = 0; i < slices_wt; i++) {
@@ -314,7 +323,8 @@ namespace CTAG::SP::HELPERS {
                 continue;
             }
             fseek(f, dataOffset, SEEK_SET);
-            size_t nRead = fread(&ptrSPIRAM[sliceOffsets[i]], 2, nSamples, f);
+            uint32_t ofs = sliceOffsets[i*64];
+            size_t nRead = fread(&ptrSPIRAM[ofs], 2, nSamples, f);
             if (nRead != nSamples) {
                 ESP_LOGE("SROM", "Could not read all samples from file %s, read %li of %li", fullpath.c_str(), nRead,
                          nSamples);
@@ -326,7 +336,7 @@ namespace CTAG::SP::HELPERS {
 
         // load all sample files
         for (uint32_t i = 0; i < slices_samples; i++) {
-            uint32_t j = i + slices_wt;
+            uint32_t j = i + firstNonWtSlice;
             std::string filename = sample_model.GetFilenameForSlice(i);
             if (filename == "") {
                 ESP_LOGE("SROM", "No filename for slice %li", j);
@@ -345,7 +355,8 @@ namespace CTAG::SP::HELPERS {
                 continue;
             }
             fseek(f, dataOffset, SEEK_SET);
-            size_t nRead = fread(&ptrSPIRAM[sliceOffsets[j]], 2, nSamples, f);
+            uint32_t ofs = sliceOffsets[j];
+            size_t nRead = fread(&ptrSPIRAM[ofs], 2, nSamples, f);
             if (nRead != nSamples) {
                 ESP_LOGE("SROM", "Could not read all samples from file %s, read %li of %li", fullpath.c_str(), nRead,
                          nSamples);
@@ -355,9 +366,8 @@ namespace CTAG::SP::HELPERS {
             fclose(f);
         }
 
-        // everything will be buffered
+        // everything is buffered
         nSlicesBuffered = numberSlices;
-
     }
 
     void ctagSampleRom::BufferInSPIRAMFromFlash() {
