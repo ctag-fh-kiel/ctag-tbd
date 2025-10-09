@@ -356,6 +356,34 @@ def _read_data_chunks(filepath: Path, data_chunks):
     return bytes(out)
 
 
+def copy_with_progress(src: Path, dest: Path, progress_cb=None):
+    """Copy file src -> dest in chunks and call progress_cb(percent) if provided."""
+    total = 0
+    try:
+        total = src.stat().st_size
+    except Exception:
+        total = 0
+    copied = 0
+    # Stream copy to allow progress reporting
+    with open(src, 'rb') as fsrc, open(dest, 'wb') as fdst:
+        while True:
+            buf = fsrc.read(1024 * 1024)
+            if not buf:
+                break
+            fdst.write(buf)
+            copied += len(buf)
+            if progress_cb and total:
+                pct = int((copied / total) * 100)
+                if pct > 100:
+                    pct = 100
+                progress_cb(pct)
+    # Preserve metadata where possible
+    try:
+        shutil.copystat(src, dest)
+    except Exception:
+        pass
+
+
 def convert_to_pcm16_mono_44100(src_path: Path, dest_path: Path, progress_cb=None) -> int:
     """Convert a WAV file to 44.1kHz, mono, 16-bit PCM and write to dest_path.
     progress_cb: optional callable(percent:int) to receive progress updates 0..100.
@@ -522,10 +550,18 @@ def main():
         if info.get('format_ok') is True:
             # Copy as-is
             try:
-                shutil.copy2(src, dest_path)
+                # Show single-line progress for this copy
+                def _print_progress(pct: int):
+                    msg = f"Copying   {src.name[:40]:<40} {pct:3d}%"
+                    print("\r" + msg, end='', flush=True)
+                copy_with_progress(src, dest_path, progress_cb=_print_progress)
+                # Ensure final line ends with 100%
+                print("\r" + f"Copying   {src.name[:40]:<40} 100%", end='\n', flush=True)
                 ns = info.get('nsamples')
                 off = info.get('offset')
             except Exception as e:
+                # Ensure we end the in-place line with a newline for clarity
+                print("\r" + f"Copying   {src.name[:40]:<40} ERR", end='\n', flush=True)
                 warnings.append(f"Copy failed: {src} -> {dest_path}: {e}")
                 continue
         else:
