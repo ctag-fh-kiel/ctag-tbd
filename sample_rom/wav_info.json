@@ -1,0 +1,1017 @@
+[
+  {
+    "filename": "SOHLER11",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "RADIUS",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "TIDAL",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "VOXSYNTH",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "MODDROP",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "SYNLP28",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "SYNLP73",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "TRON_MAL",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "RESO_ANA",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "PPG_WA23",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "TELEPHON",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "KAWAI_K1",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "GRAV-A10",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "TEXTURE4",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "PPG_WA10",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "MAGNETIC",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "JUNOX_HO",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "GRAV-A7",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "VOCAL_00",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "SINE_SPE",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "VIRUS_SA",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "PPG_WA00",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "ITERATIV",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "TWIST1",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "TIDYB012",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "HARMONIC",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "SITAR",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "SYNLP153",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "SYNLP32",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "LIGHT_00",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "SINE_A01",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "HYPERBOL",
+    "path": "wavetables",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 16384,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
+    "filename": "basssynth",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 15876,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": " 1",
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
+      "ITRK": "1"
+    }
+  },
+  {
+    "filename": "516898__marydsava__uhm",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 42696,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "516898__marydsava__uhm",
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
+      "ITRK": "8"
+    }
+  },
+  {
+    "filename": "72609__vrezerino__atmosphere-finlandpad",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 2,
+    "mono": false,
+    "nsamples": 441000,
+    "offset": 44,
+    "format_ok": false,
+    "meta_data": {
+      "INAM": "72609__vrezerino__atmosphere-finlandpad",
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
+      "ITRK": "9"
+    }
+  },
+  {
+    "filename": "213525__garzul__noisy-analog-synth-stab",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 88166,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "213525__garzul__noisy-analog-synth-stab",
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
+      "ITRK": "2"
+    }
+  },
+  {
+    "filename": "320046__staticpony1__analog-bass-vel-2",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 15876,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "320046__staticpony1__analog-bass-vel-2",
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
+      "ITRK": "3"
+    }
+  },
+  {
+    "filename": "34178__dalibor__escalator-rythm-loop-2",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 153122,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "34178__dalibor__escalator-rythm-loop-2",
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
+      "ITRK": "4"
+    }
+  },
+  {
+    "filename": "476908__saltbearer__pertiverbhitbuiltfrompiece",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 133326,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)"
+    }
+  },
+  {
+    "filename": "516897__marydsava__uh-ha",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 17325,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "516897__marydsava__uh-ha",
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
+      "ITRK": "7"
+    }
+  },
+  {
+    "filename": "456284__stratocube__vinyl-surface-noise-02",
+    "path": "other/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 2,
+    "mono": false,
+    "nsamples": 74386,
+    "offset": 44,
+    "format_ok": false,
+    "meta_data": {
+      "INAM": "456284__stratocube__vinyl-surface-noise-02",
+      "ICRD": "2009-05-12",
+      "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
+      "ITRK": "5"
+    }
+  },
+  {
+    "filename": "BD1",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 32193,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "13",
+      "ITRK": "13"
+    }
+  },
+  {
+    "filename": "CHH4",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 3528,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "45",
+      "ITRK": "45"
+    }
+  },
+  {
+    "filename": "OHH4",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 31752,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "35",
+      "ITRK": "35"
+    }
+  },
+  {
+    "filename": "CB1",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 6615,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "32",
+      "ITRK": "32"
+    }
+  },
+  {
+    "filename": "CB0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 4851,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "8",
+      "ITRK": "8"
+    }
+  },
+  {
+    "filename": "OHH5",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 26460,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "36",
+      "ITRK": "36"
+    }
+  },
+  {
+    "filename": "BD0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 11466,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "1",
+      "ITRK": "1"
+    }
+  },
+  {
+    "filename": "BD2",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 11466,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "25",
+      "ITRK": "25"
+    }
+  },
+  {
+    "filename": "OHH6",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 20286,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "46",
+      "ITRK": "46"
+    }
+  },
+  {
+    "filename": "CHH2",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 7497,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "28",
+      "ITRK": "28"
+    }
+  },
+  {
+    "filename": "OHH2",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 20727,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "24",
+      "ITRK": "24"
+    }
+  },
+  {
+    "filename": "CLP0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 9702,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "18",
+      "ITRK": "18"
+    }
+  },
+  {
+    "filename": "OHH3",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 10584,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "34",
+      "ITRK": "34"
+    }
+  },
+  {
+    "filename": "CHH3",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 2646,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "30",
+      "ITRK": "30"
+    }
+  },
+  {
+    "filename": "BD6",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 6615,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "1",
+      "ITRK": "1"
+    }
+  },
+  {
+    "filename": "BD4",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 10584,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "29",
+      "ITRK": "29"
+    }
+  },
+  {
+    "filename": "CHH1",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 6174,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "21",
+      "ITRK": "21"
+    }
+  },
+  {
+    "filename": "OHH1",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 18522,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "23",
+      "ITRK": "23"
+    }
+  },
+  {
+    "filename": "RIM0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 2205,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "7",
+      "ITRK": "7"
+    }
+  },
+  {
+    "filename": "OHH0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 17640,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "22",
+      "ITRK": "22"
+    }
+  },
+  {
+    "filename": "CHH0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 9261,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "6",
+      "ITRK": "6"
+    }
+  },
+  {
+    "filename": "BD5",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 8820,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "41",
+      "ITRK": "41"
+    }
+  },
+  {
+    "filename": "RS1",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 2205,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "27",
+      "ITRK": "27"
+    }
+  },
+  {
+    "filename": "MITOM2",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 4851,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "31",
+      "ITRK": "31"
+    }
+  },
+  {
+    "filename": "MITOM0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 11466,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "4",
+      "ITRK": "4"
+    }
+  },
+  {
+    "filename": "HITOM0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 5733,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "3",
+      "ITRK": "3"
+    }
+  },
+  {
+    "filename": "SHK0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 2646,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "9",
+      "ITRK": "9"
+    }
+  },
+  {
+    "filename": "SD3",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 9261,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "42",
+      "ITRK": "42"
+    }
+  },
+  {
+    "filename": "SD2",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 7497,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "26",
+      "ITRK": "26"
+    }
+  },
+  {
+    "filename": "SD0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 13671,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "2",
+      "ITRK": "2"
+    }
+  },
+  {
+    "filename": "SD1",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 6174,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "14",
+      "ITRK": "14"
+    }
+  },
+  {
+    "filename": "LOTOM0",
+    "path": "drums/factory",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 18522,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {
+      "INAM": "5",
+      "ITRK": "5"
+    }
+  }
+]

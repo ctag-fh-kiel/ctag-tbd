@@ -1,0 +1,367 @@
+[
+  {
+    "filename": "SOHLER11",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RADIUS",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDAL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VOXSYNTH",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MODDROP",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP28",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP73",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TRON_MAL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "RESO_ANA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA23",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TELEPHON",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "KAWAI_K1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TEXTURE4",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA10",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "MAGNETIC",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "JUNOX_HO",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "GRAV_A7",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VOCAL_00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_SPE",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "VIRUS_SA",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "PPG_WA00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "ITERATIV",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TWIST1",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "TIDYB012",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HARMONIC",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SITAR",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP153",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SYNLP32",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "LIGHT_00",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "SINE_A01",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "HYPERBOL",
+    "path": "wavetables",
+    "nsamples": 16384
+  },
+  {
+    "filename": "basssynth",
+    "path": "other/factory",
+    "nsamples": 15876
+  },
+  {
+    "filename": "516898_marydsava_uhm",
+    "path": "other/factory",
+    "nsamples": 42696
+  },
+  {
+    "filename": "72609_vrezerino_phere_finlandpad",
+    "path": "other/factory",
+    "nsamples": 441000
+  },
+  {
+    "filename": "213525_garzul_n_nalog_synth_stab",
+    "path": "other/factory",
+    "nsamples": 88166
+  },
+  {
+    "filename": "320046_staticpo_nalog_bass_vel_2",
+    "path": "other/factory",
+    "nsamples": 15876
+  },
+  {
+    "filename": "34178_dalibor_e_tor_rythm_loop_2",
+    "path": "other/factory",
+    "nsamples": 153122
+  },
+  {
+    "filename": "476908_saltbear_itbuiltfrompiece",
+    "path": "other/factory",
+    "nsamples": 133326
+  },
+  {
+    "filename": "516897_marydsava_uh_ha",
+    "path": "other/factory",
+    "nsamples": 17325
+  },
+  {
+    "filename": "456284_stratocu_surface_noise_02",
+    "path": "other/factory",
+    "nsamples": 74386
+  },
+  {
+    "filename": "BD1",
+    "path": "drums/factory",
+    "nsamples": 32193
+  },
+  {
+    "filename": "CHH4",
+    "path": "drums/factory",
+    "nsamples": 3528
+  },
+  {
+    "filename": "OHH4",
+    "path": "drums/factory",
+    "nsamples": 31752
+  },
+  {
+    "filename": "CB1",
+    "path": "drums/factory",
+    "nsamples": 6615
+  },
+  {
+    "filename": "CB0",
+    "path": "drums/factory",
+    "nsamples": 4851
+  },
+  {
+    "filename": "OHH5",
+    "path": "drums/factory",
+    "nsamples": 26460
+  },
+  {
+    "filename": "BD0",
+    "path": "drums/factory",
+    "nsamples": 11466
+  },
+  {
+    "filename": "BD2",
+    "path": "drums/factory",
+    "nsamples": 11466
+  },
+  {
+    "filename": "OHH6",
+    "path": "drums/factory",
+    "nsamples": 20286
+  },
+  {
+    "filename": "CHH2",
+    "path": "drums/factory",
+    "nsamples": 7497
+  },
+  {
+    "filename": "OHH2",
+    "path": "drums/factory",
+    "nsamples": 20727
+  },
+  {
+    "filename": "CLP0",
+    "path": "drums/factory",
+    "nsamples": 9702
+  },
+  {
+    "filename": "OHH3",
+    "path": "drums/factory",
+    "nsamples": 10584
+  },
+  {
+    "filename": "CHH3",
+    "path": "drums/factory",
+    "nsamples": 2646
+  },
+  {
+    "filename": "BD6",
+    "path": "drums/factory",
+    "nsamples": 6615
+  },
+  {
+    "filename": "BD4",
+    "path": "drums/factory",
+    "nsamples": 10584
+  },
+  {
+    "filename": "CHH1",
+    "path": "drums/factory",
+    "nsamples": 6174
+  },
+  {
+    "filename": "OHH1",
+    "path": "drums/factory",
+    "nsamples": 18522
+  },
+  {
+    "filename": "RIM0",
+    "path": "drums/factory",
+    "nsamples": 2205
+  },
+  {
+    "filename": "OHH0",
+    "path": "drums/factory",
+    "nsamples": 17640
+  },
+  {
+    "filename": "CHH0",
+    "path": "drums/factory",
+    "nsamples": 9261
+  },
+  {
+    "filename": "BD5",
+    "path": "drums/factory",
+    "nsamples": 8820
+  },
+  {
+    "filename": "RS1",
+    "path": "drums/factory",
+    "nsamples": 2205
+  },
+  {
+    "filename": "MITOM2",
+    "path": "drums/factory",
+    "nsamples": 4851
+  },
+  {
+    "filename": "MITOM0",
+    "path": "drums/factory",
+    "nsamples": 11466
+  },
+  {
+    "filename": "HITOM0",
+    "path": "drums/factory",
+    "nsamples": 5733
+  },
+  {
+    "filename": "SHK0",
+    "path": "drums/factory",
+    "nsamples": 2646
+  },
+  {
+    "filename": "SD3",
+    "path": "drums/factory",
+    "nsamples": 9261
+  },
+  {
+    "filename": "SD2",
+    "path": "drums/factory",
+    "nsamples": 7497
+  },
+  {
+    "filename": "SD0",
+    "path": "drums/factory",
+    "nsamples": 13671
+  },
+  {
+    "filename": "SD1",
+    "path": "drums/factory",
+    "nsamples": 6174
+  },
+  {
+    "filename": "LOTOM0",
+    "path": "drums/factory",
+    "nsamples": 18522
+  }
+]
