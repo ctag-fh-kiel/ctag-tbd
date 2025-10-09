@@ -24,6 +24,9 @@
     .meta { font-size: 12px; color: var(--muted); }
     #preview { border-top: 1px solid var(--b); padding-top: 12px; }
     #waveform { height: 120px; border: 1px solid var(--b); border-radius: 6px; }
+  #lowResRow { margin-top: 8px; }
+  #lowResLabel { font-weight: 600; margin-right: 8px; }
+  #lowResPreview { height: 120px; width: 100%; border: 1px solid var(--b); border-radius: 6px; display: block; }
     #warnings { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 6px; padding: 8px; display: none; }
     .folder { margin: 4px 0; }
     .folder > summary { cursor: pointer; font-weight: 600; }
@@ -86,6 +89,10 @@
       </div>
     </div>
     <div id="waveform"></div>
+    <div id="lowResRow" class="row">
+      <span id="lowResLabel">Low-res (256 × int8):</span>
+      <canvas id="lowResPreview" width="512" height="120"></canvas>
+    </div>
   </section>
 
   <section style="padding-top:0;">
@@ -120,6 +127,7 @@
     const durationEl = document.getElementById('duration');
     const warningsEl = document.getElementById('warnings');
     const enableAudioBtn = document.getElementById('enableAudioBtn');
+  const lowResCanvas = document.getElementById('lowResPreview');
 
     if (!FS_AVAILABLE) {
       // Hide save button if filesystem access API is not available (e.g., file:// or non-Chromium)
@@ -140,7 +148,7 @@
     });
 
     let entries = []; // {filename, path, nsamples, offset? , _idx}
-    let selection = []; // { entry, file }
+  let selection = []; // { entry, file, preview256?: number[] }
     let wavMap = new Map(); // key: path/stem (lower) -> File
     let dirHandle = null; // for FS save
     let autoPreviewEnabled = false; // controlled by Enable audio toggle
@@ -223,6 +231,7 @@
       warningsEl.textContent = '';
       loadBtn.disabled = true;
       try { wavesurfer.empty(); } catch {}
+      clearLowResCanvas();
     }
 
     // Tree building helpers
@@ -390,7 +399,18 @@
         return;
       }
       if (selection.find((s) => s.entry._idx === entry._idx)) return;
-      selection.push({ entry, file });
+      const selItem = { entry, file };
+      selection.push(selItem);
+      // Generate and store 256-byte int8 preview asynchronously
+      generatePreviewForFile(entry, file)
+        .then((arr) => {
+          selItem.preview256 = Array.from(arr);
+          // If this item is currently shown in preview, redraw
+          if (currentNameEl.textContent.endsWith(entry.filename)) {
+            try { drawInt8Preview(lowResCanvas, arr); } catch {}
+          }
+        })
+        .catch(() => {/* ignore preview failure */});
       renderLeftTree(); // remove from left
       renderRightTree();
       updateSelectionUI();
@@ -437,16 +457,66 @@
       } catch (e) {
         showWarning('Failed to preview: ' + (e?.message || e));
       }
+      // Generate/draw low-res preview for the current file
+      try {
+        // If in selection and already computed, draw immediately
+        const inSel = selection.find((s) => s.entry._idx === entry._idx && s.preview256);
+        if (inSel && inSel.preview256) {
+          drawInt8Preview(lowResCanvas, new Int8Array(inSel.preview256));
+        } else {
+          const arr = await generatePreviewForFile(entry, file);
+          drawInt8Preview(lowResCanvas, arr);
+        }
+      } catch {
+        clearLowResCanvas();
+      }
     }
 
     function stopPreview() { try { wavesurfer.pause(); } catch {} }
 
-    // Export JSON (download)
-    function buildSelectionJson() {
-      const out = selection.map((s) => { const o = { filename: s.entry.filename, path: s.entry.path, nsamples: s.entry.nsamples }; if (s.entry.offset != null) o.offset = s.entry.offset; return o; });
+    // Export: JSON (no previews) + BIN (concatenated 256-byte int8 previews)
+    async function ensureAllPreviews() {
+      await Promise.all(selection.map(async (s) => {
+        if (!s.preview256) {
+          try {
+            const arr = await generatePreviewForFile(s.entry, s.file);
+            s.preview256 = Array.from(arr);
+          } catch {/* ignore */}
+        }
+      }));
+    }
+
+    function buildSelectionJsonNoPreview() {
+      const out = selection.map((s) => {
+        const o = { filename: s.entry.filename, path: s.entry.path, nsamples: s.entry.nsamples };
+        if (s.entry.offset != null) o.offset = s.entry.offset;
+        return o;
+      });
       return JSON.stringify(out, null, 2);
     }
-    exportBtn.addEventListener('click', () => { const blob = new Blob([buildSelectionJson()], { type: 'application/json' }); downloadBlob(blob, 'sample_bank.json'); });
+
+    function buildPreviewBin() {
+      const count = selection.length;
+      const bin = new Int8Array(count * 256);
+      for (let i = 0; i < count; i++) {
+        const pv = selection[i].preview256 || [];
+        for (let j = 0; j < 256; j++) {
+          const v = (pv[j] != null ? pv[j] : 0);
+          bin[i * 256 + j] = (v < -128 ? -128 : (v > 127 ? 127 : v)) | 0;
+        }
+      }
+      return bin;
+    }
+
+    exportBtn.addEventListener('click', async () => {
+      await ensureAllPreviews();
+      const json = buildSelectionJsonNoPreview();
+      const bin = buildPreviewBin();
+      const jsonBlob = new Blob([json], { type: 'application/json' });
+      const binBlob = new Blob([bin.buffer], { type: 'application/octet-stream' });
+      downloadBlob(jsonBlob, 'sample_bank.json');
+      downloadBlob(binBlob, 'sample_bank_preview.bin');
+    });
 
     // Save to folder (FS API)
     async function ensureDirHandle() {
@@ -463,13 +533,22 @@
     saveBtn.addEventListener('click', async () => {
       if (!selection.length) return;
       try {
+        await ensureAllPreviews();
         const handle = await ensureDirHandle();
         const isTbds = await verifyTbdsamples(handle);
         if (!isTbds) showWarning('Selected folder does not contain wav_info_short.json. Saving sample_bank.json anyway.');
-        const fileHandle = await handle.getFileHandle('sample_bank.json', { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(buildSelectionJson());
-        await writable.close();
+        // Write JSON without previews
+        const jsonHandle = await handle.getFileHandle('sample_bank.json', { create: true });
+        const jsonWritable = await jsonHandle.createWritable();
+        const json = buildSelectionJsonNoPreview();
+        await jsonWritable.write(json);
+        await jsonWritable.close();
+        // Write BIN with concatenated 256-byte previews
+        const binHandle = await handle.getFileHandle('sample_bank_preview.bin', { create: true });
+        const binWritable = await binHandle.createWritable();
+        const bin = buildPreviewBin();
+        await binWritable.write(new Blob([bin.buffer], { type: 'application/octet-stream' }));
+        await binWritable.close();
         summary.textContent = 'Saved sample_bank.json to selected folder';
       } catch (e) { showWarning('Failed to save to folder: ' + (e?.message || e)); }
     });
@@ -503,6 +582,7 @@
         const name = it.filename;
         const ns = it.nsamples;
         const off = Object.prototype.hasOwnProperty.call(it, 'offset') ? it.offset : undefined;
+        const pv = Array.isArray(it.preview256) && it.preview256.length === 256 ? it.preview256.slice(0, 256) : null;
         if (!name || typeof ns !== 'number') { warnings.push(`Item ${i}: missing filename/nsamples`); continue; }
         // Candidates by filename + nsamples (+offset if provided)
         let cands = entries.filter(e => e.filename === name && e.nsamples === ns);
@@ -522,7 +602,9 @@
         // Capacity check
         const need = chosen.nsamples * BYTES_PER_SAMPLE;
         if (usedBytes + need > LIMIT_BYTES) { warnings.push(`Item ${i}: capacity exceeded, skipping`); continue; }
-        selection.push({ entry: chosen, file: fileObj });
+        const selItem = { entry: chosen, file: fileObj };
+        if (pv) selItem.preview256 = pv;
+        selection.push(selItem);
         usedIdx.add(chosen._idx);
         usedBytes += need;
       }
@@ -568,6 +650,66 @@
     function downloadBlob(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 0); }
     function showWarning(msg) { warningsEl.style.display = 'block'; warningsEl.textContent = msg; }
     function formatTime(sec) { if (!isFinite(sec)) return '--:--'; const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
+
+    // Low-res preview generation and rendering
+    function clearLowResCanvas() {
+      const ctx = lowResCanvas.getContext('2d');
+      ctx.clearRect(0, 0, lowResCanvas.width, lowResCanvas.height);
+    }
+
+    async function generatePreviewForFile(entry, file) {
+      const buf = await file.arrayBuffer();
+      const offset = (entry && typeof entry.offset === 'number') ? entry.offset : 44;
+      const nsamples = Math.max(0, entry?.nsamples | 0);
+      return previewFromPcm16MonoBuffer(buf, offset, nsamples);
+    }
+
+    function previewFromPcm16MonoBuffer(buffer, offset, nsamples) {
+      const dv = new DataView(buffer);
+      const bytesPerSample = 2;
+      const dataBytes = Math.max(0, dv.byteLength - offset);
+      const maxSamplesFromFile = Math.floor(dataBytes / bytesPerSample);
+      const total = Math.min(nsamples || maxSamplesFromFile, maxSamplesFromFile);
+      const out = new Int8Array(256);
+      if (total <= 0) return out;
+      for (let i = 0; i < 256; i++) {
+        const idx = Math.min(total - 1, Math.max(0, Math.floor((i + 0.5) * total / 256)));
+        const byteOff = offset + idx * bytesPerSample;
+        if (byteOff + 1 >= dv.byteLength) { out[i] = 0; continue; }
+        const v16 = dv.getInt16(byteOff, true);
+        let v = Math.max(-32768, Math.min(32767, v16)) / 32768;
+        let i8 = Math.round(v * 127);
+        if (i8 < -128) i8 = -128; else if (i8 > 127) i8 = 127;
+        out[i] = i8;
+      }
+      return out;
+    }
+
+    function drawInt8Preview(canvas, data) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      // Background grid (optional light center line)
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, Math.floor(h / 2) + 0.5);
+      ctx.lineTo(w, Math.floor(h / 2) + 0.5);
+      ctx.stroke();
+
+      // Waveform
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i < 256; i++) {
+        const x = Math.round(i * (w - 1) / 255);
+        const v = (data && data[i] != null) ? data[i] : 0; // -128..127
+        const y = Math.round((1 - (v + 128) / 255) * (h - 1));
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
   </script>
 </body>
 </html>
