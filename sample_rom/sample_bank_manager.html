@@ -148,7 +148,7 @@
     });
 
     let entries = []; // {filename, path, nsamples, offset? , _idx}
-  let selection = []; // { entry, file, preview256?: number[] }
+  let selection = []; // { entry, file, sname?: string, preview256?: number[] }
     let wavMap = new Map(); // key: path/stem (lower) -> File
     let dirHandle = null; // for FS save
     let autoPreviewEnabled = false; // controlled by Enable audio toggle
@@ -362,7 +362,23 @@
 
         const right = document.createElement('div');
         right.className = 'right-actions';
-        // Removed Preview button; keep only Remove
+        // Short name (max 8 chars) editor
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.maxLength = 8;
+        nameInput.placeholder = 'sname';
+        nameInput.value = (typeof s.sname === 'string') ? s.sname : '';
+        nameInput.style.width = '8.5ch';
+        nameInput.title = 'Short name (max 8 chars)';
+        nameInput.addEventListener('input', () => {
+          let v = nameInput.value || '';
+          if (v.length > 8) v = v.slice(0, 8);
+          nameInput.value = v;
+          const idx = parseInt(row.dataset.slot || String(slot), 10);
+          if (!isNaN(idx) && selection[idx]) selection[idx].sname = v;
+        });
+        right.appendChild(nameInput);
+        // Remove button
         const rmBtn = document.createElement('button');
         rmBtn.textContent = 'Remove';
         rmBtn.className = 'btn';
@@ -399,7 +415,7 @@
         return;
       }
       if (selection.find((s) => s.entry._idx === entry._idx)) return;
-      const selItem = { entry, file };
+      const selItem = { entry, file, sname: '' };
       selection.push(selItem);
       // Generate and store 256-byte int8 preview asynchronously
       generatePreviewForFile(entry, file)
@@ -490,6 +506,7 @@
       const out = selection.map((s) => {
         const o = { filename: s.entry.filename, path: s.entry.path, nsamples: s.entry.nsamples };
         if (s.entry.offset != null) o.offset = s.entry.offset;
+        o.sname = (typeof s.sname === 'string') ? s.sname.slice(0, 8) : '';
         return o;
       });
       return JSON.stringify(out, null, 2);
@@ -579,10 +596,11 @@
       let usedBytes = 0;
       for (let i = 0; i < arr.length && selection.length < MAX_BANK; i++) {
         const it = arr[i] || {};
-        const name = it.filename;
+  const name = it.filename;
         const ns = it.nsamples;
         const off = Object.prototype.hasOwnProperty.call(it, 'offset') ? it.offset : undefined;
         const pv = Array.isArray(it.preview256) && it.preview256.length === 256 ? it.preview256.slice(0, 256) : null;
+  const sname = (typeof it.sname === 'string') ? it.sname.slice(0, 8) : '';
         if (!name || typeof ns !== 'number') { warnings.push(`Item ${i}: missing filename/nsamples`); continue; }
         // Candidates by filename + nsamples (+offset if provided)
         let cands = entries.filter(e => e.filename === name && e.nsamples === ns);
@@ -602,7 +620,7 @@
         // Capacity check
         const need = chosen.nsamples * BYTES_PER_SAMPLE;
         if (usedBytes + need > LIMIT_BYTES) { warnings.push(`Item ${i}: capacity exceeded, skipping`); continue; }
-        const selItem = { entry: chosen, file: fileObj };
+  const selItem = { entry: chosen, file: fileObj, sname };
         if (pv) selItem.preview256 = pv;
         selection.push(selItem);
         usedIdx.add(chosen._idx);
