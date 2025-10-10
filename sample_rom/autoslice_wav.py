@@ -234,10 +234,36 @@ def peak_normalize_int16(mono_bytes: bytes, target_dbfs: float = 0.0) -> bytes:
     return bytes(out)
 
 
+def apply_fade_out_int16(mono_bytes: bytes, tail_samples: int) -> bytes:
+    """Apply a linear fade to zero over the last tail_samples of an int16 PCM slice."""
+    if not mono_bytes or tail_samples <= 0:
+        return mono_bytes
+    n = len(mono_bytes) // 2
+    if n <= 0:
+        return mono_bytes
+    tail = min(tail_samples, n)
+    start = n - tail
+    out = bytearray(mono_bytes)
+    # If tail==1, set last sample to zero
+    denom = (tail - 1) if tail > 1 else 1
+    for i in range(tail):
+        idx = start + i
+        v = struct.unpack_from('<h', mono_bytes, idx * 2)[0]
+        gain = 1.0 - (i / denom)
+        f = v * gain
+        if f > 32767:
+            f = 32767
+        elif f < -32768:
+            f = -32768
+        struct.pack_into('<h', out, idx * 2, int(round(f)))
+    return bytes(out)
+
+
 def slice_and_write(channel_bytes: bytes, sr: int, out_dir: Path, base: str, tag: str,
                     threshold_db: float, window_ms: float, hop_ms: float,
                     min_silence_ms: float, min_sound_ms: float, prepad_ms: float, postpad_ms: float,
-                    normalize: bool, target_dbfs: float) -> int:
+                    normalize: bool, target_dbfs: float,
+                    fade_out_samples: int) -> int:
     floats = int16_bytes_to_float_list_le(channel_bytes)
     segs = detect_segments(floats, sr, threshold_db, window_ms, hop_ms, min_silence_ms, min_sound_ms, prepad_ms, postpad_ms)
     count = 0
@@ -251,6 +277,8 @@ def slice_and_write(channel_bytes: bytes, sr: int, out_dir: Path, base: str, tag
         slice_bytes = channel_bytes[s_bytes:e_bytes]
         if normalize:
             slice_bytes = peak_normalize_int16(slice_bytes, target_dbfs=target_dbfs)
+        if fade_out_samples and fade_out_samples > 0:
+            slice_bytes = apply_fade_out_int16(slice_bytes, fade_out_samples)
         out_name = f"{base}_{tag}_{idx:03d}.wav"
         out_path = out_dir / out_name
         write_wav_int16(out_path, sr, slice_bytes)
@@ -271,6 +299,7 @@ def main():
     ap.add_argument('--postpad-ms', type=float, default=10.0, help='Padding after end in ms (default: 10)')
     ap.add_argument('--no-normalize', action='store_true', help='Disable peak normalization of slices (default: enabled)')
     ap.add_argument('--normalize-db', type=float, default=0.0, help='Target peak dBFS for normalization (default: 0.0)')
+    ap.add_argument('--fade-out-samples', type=int, default=32, help='Apply linear fade over last N samples of each slice (default: 32; 0 disables)')
     args = ap.parse_args()
 
     in_path = Path(args.input)
@@ -294,11 +323,14 @@ def main():
     for ch_idx, ch_bytes in enumerate(chans):
         tag = 'L' if ch_idx == 0 else ('R' if ch_idx == 1 else f'C{ch_idx+1}')
         print(f'Analyzing channel {ch_idx+1} ({tag})...')
-        n = slice_and_write(ch_bytes.tobytes(), sr, out_dir, base, tag,
-                            args.threshold_db, args.window_ms, args.hop_ms,
-                            args.min_silence_ms, args.min_sound_ms,
-                            args.prepad_ms, args.postpad_ms,
-                            normalize=(not args.no_normalize), target_dbfs=args.normalize_db)
+        n = slice_and_write(
+            ch_bytes.tobytes(), sr, out_dir, base, tag,
+            args.threshold_db, args.window_ms, args.hop_ms,
+            args.min_silence_ms, args.min_sound_ms,
+            args.prepad_ms, args.postpad_ms,
+            normalize=(not args.no_normalize), target_dbfs=args.normalize_db,
+            fade_out_samples=max(0, int(args.fade_out_samples))
+        )
         print(f'  -> wrote {n} slice(s).')
         total += n
 
