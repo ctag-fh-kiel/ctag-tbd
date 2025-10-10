@@ -198,9 +198,46 @@ def write_wav_int16(path: Path, sr: int, mono_bytes: bytes):
         w.writeframes(mono_bytes)
 
 
+def peak_normalize_int16(mono_bytes: bytes, target_dbfs: float = 0.0) -> bytes:
+    """Normalize int16 PCM to a target peak dBFS (default 0 dBFS).
+    Keeps zeros unchanged; if peak is 0, returns original bytes.
+    """
+    if not mono_bytes:
+        return mono_bytes
+    n = len(mono_bytes) // 2
+    max_abs = 0
+    # Find peak
+    for i in range(n):
+        v = struct.unpack_from('<h', mono_bytes, i*2)[0]
+        av = abs(v)
+        if av > max_abs:
+            max_abs = av
+    if max_abs == 0:
+        return mono_bytes
+    # Target peak linear
+    target_peak = min(0.9999, 10.0 ** (target_dbfs / 20.0))
+    # Input peak normalized to 1.0 is max_abs / 32767
+    current_peak = max_abs / 32767.0
+    if current_peak <= 0:
+        return mono_bytes
+    gain = target_peak / current_peak
+    # Apply gain and clamp
+    out = bytearray(len(mono_bytes))
+    for i in range(n):
+        v = struct.unpack_from('<h', mono_bytes, i*2)[0]
+        f = v * gain
+        if f > 32767:
+            f = 32767
+        elif f < -32768:
+            f = -32768
+        struct.pack_into('<h', out, i*2, int(round(f)))
+    return bytes(out)
+
+
 def slice_and_write(channel_bytes: bytes, sr: int, out_dir: Path, base: str, tag: str,
                     threshold_db: float, window_ms: float, hop_ms: float,
-                    min_silence_ms: float, min_sound_ms: float, prepad_ms: float, postpad_ms: float) -> int:
+                    min_silence_ms: float, min_sound_ms: float, prepad_ms: float, postpad_ms: float,
+                    normalize: bool, target_dbfs: float) -> int:
     floats = int16_bytes_to_float_list_le(channel_bytes)
     segs = detect_segments(floats, sr, threshold_db, window_ms, hop_ms, min_silence_ms, min_sound_ms, prepad_ms, postpad_ms)
     count = 0
@@ -212,6 +249,8 @@ def slice_and_write(channel_bytes: bytes, sr: int, out_dir: Path, base: str, tag
         if e_bytes <= s_bytes:
             continue
         slice_bytes = channel_bytes[s_bytes:e_bytes]
+        if normalize:
+            slice_bytes = peak_normalize_int16(slice_bytes, target_dbfs=target_dbfs)
         out_name = f"{base}_{tag}_{idx:03d}.wav"
         out_path = out_dir / out_name
         write_wav_int16(out_path, sr, slice_bytes)
@@ -230,6 +269,8 @@ def main():
     ap.add_argument('--min-sound-ms', type=float, default=50.0, help='Min segment length in ms to keep (default: 50)')
     ap.add_argument('--prepad-ms', type=float, default=5.0, help='Padding before start in ms (default: 5)')
     ap.add_argument('--postpad-ms', type=float, default=10.0, help='Padding after end in ms (default: 10)')
+    ap.add_argument('--no-normalize', action='store_true', help='Disable peak normalization of slices (default: enabled)')
+    ap.add_argument('--normalize-db', type=float, default=0.0, help='Target peak dBFS for normalization (default: 0.0)')
     args = ap.parse_args()
 
     in_path = Path(args.input)
@@ -256,7 +297,8 @@ def main():
         n = slice_and_write(ch_bytes.tobytes(), sr, out_dir, base, tag,
                             args.threshold_db, args.window_ms, args.hop_ms,
                             args.min_silence_ms, args.min_sound_ms,
-                            args.prepad_ms, args.postpad_ms)
+                            args.prepad_ms, args.postpad_ms,
+                            normalize=(not args.no_normalize), target_dbfs=args.normalize_db)
         print(f'  -> wrote {n} slice(s).')
         total += n
 
