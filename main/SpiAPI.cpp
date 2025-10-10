@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 #include "SpiAPI.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
+#include "helpers/ctagSampleRom.hpp"
 
 #include "soc/gpio_num.h"
 #include "esp_log.h"
@@ -326,6 +327,24 @@ namespace CTAG::SPIAPI{
                 ESP_LOGI("SpiAPI", "Rebooting device to OTA1!");
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 boot_into_slot(1);
+                break;
+            case RequestType::SetSampleRomDescriptor:
+                ESP_LOGI("SpiAPI", "Setting sample ROM descriptor!");
+                string_parameter.clear();
+                result = receiveString(RequestType::SetSampleRomDescriptor, string_parameter);
+                if (result == false) break;
+                CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                HELPERS::ctagSampleRom::SetSampleRomDescriptorFile(string_parameter);
+                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                break;
+            case RequestType::SetWaveTableDescriptor:
+                ESP_LOGI("SpiAPI", "Setting wave table descriptor!");
+                string_parameter.clear();
+                result = receiveString(RequestType::SetWaveTableDescriptor, string_parameter);
+                if (result == false) break;
+                CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                HELPERS::ctagSampleRom::SetWaveTableDescriptorFile(string_parameter);
+                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 break;
             }
         }

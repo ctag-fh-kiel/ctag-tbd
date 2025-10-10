@@ -50,6 +50,11 @@ namespace CTAG::SP::HELPERS {
     std::string ctagSampleRom::samplesDescriptorFile = "def_smp.jsn";
     bool ctagSampleRom::readFromSD = false;
 
+    void ctagSampleRom::SetWaveTableDescriptorFile(const string& waveTableDescriptorFile){
+        ctagSampleRom::wtDescriptorFile = waveTableDescriptorFile;
+        RefreshDataStructure();
+    }
+
     ctagSampleRom::ctagSampleRom() {
         //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
         nConsumers++;
@@ -166,6 +171,11 @@ namespace CTAG::SP::HELPERS {
         ESP_LOGI("SROM", "Reading sample data structure from SD card");
         readFromSD = false;
         RefreshDataStructureFromFlash();
+    }
+
+    void ctagSampleRom::SetSampleRomDescriptorFile(const string& sampleDescriptorFile){
+        ctagSampleRom::samplesDescriptorFile = sampleDescriptorFile;
+        RefreshDataStructure();
     }
 
     ctagSampleRom::~ctagSampleRom() {

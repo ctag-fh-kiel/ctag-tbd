@@ -51,6 +51,8 @@ namespace CTAG::SPIAPI{
             Reboot = 0x13, // reboots the device
             SetPluginParamsJSON = 0x14, // updates running plugin data, args [channel (uint8_t), presetData (json cstring)]
             RebootToOTA1 = 0x15, // reboots the device to OTA1
+            SetSampleRomDescriptor = 0x16, // sets the sample rom descriptor, args [json cstring with sample rom descriptor file name]
+            SetWaveTableDescriptor = 0x17, // sets the wave table descriptor, args [json cstring with wave table descriptor file name]
         };
 
         static TaskHandle_t hTask;
