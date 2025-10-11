@@ -31,8 +31,6 @@ namespace CTAG::SP::HELPERS{
     class ctagSampleRom {
     public:
         static void RefreshDataStructure(); // forces refresh of data structure, not thread safe!
-        static void SetSampleRomDescriptorFile(const string &sampleDescriptorFile);
-        static void SetWaveTableDescriptorFile(const string &waveTableDescriptorFile);
         ctagSampleRom();
         ~ctagSampleRom();
         uint32_t GetNumberSlices();
@@ -61,8 +59,6 @@ namespace CTAG::SP::HELPERS{
         static atomic<uint32_t>  nConsumers;
         static int16_t *ptrSPIRAM;
         static uint32_t nSlicesBuffered;
-        static string wtDescriptorFile;
-        static string samplesDescriptorFile;
         static bool readFromSD;
 
     };

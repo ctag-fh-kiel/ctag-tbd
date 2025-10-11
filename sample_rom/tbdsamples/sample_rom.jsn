@@ -1,0 +1,6 @@
+{
+  "wt_banks": ["def_wt.jsn"],
+  "smp_banks": ["def_smp.jsn", "a4_dub.jsn"],
+  "active_wt_bank": 0,
+  "active_smp_bank": 0
+}
