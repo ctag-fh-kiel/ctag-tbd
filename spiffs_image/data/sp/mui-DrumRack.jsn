@@ -839,7 +839,7 @@
           "type": "bool"
         },
         {
-          "id": "s1_ts_value",
+          "id": "s1_ts_amount",
           "name": "Timestretch Amount",
           "type": "int",
           "min": -4095,
@@ -1009,7 +1009,7 @@
           "type": "bool"
         },
         {
-          "id": "s2_ts_value",
+          "id": "s2_ts_amount",
           "name": "Timestretch Amount",
           "type": "int",
           "min": -4095,
@@ -1179,7 +1179,7 @@
           "type": "bool"
         },
         {
-          "id": "s3_ts_value",
+          "id": "s3_ts_amount",
           "name": "Timestretch Amount",
           "type": "int",
           "min": -4095,
@@ -1349,7 +1349,7 @@
           "type": "bool"
         },
         {
-          "id": "s4_ts_value",
+          "id": "s4_ts_amount",
           "name": "Timestretch Amount",
           "type": "int",
           "min": -4095,

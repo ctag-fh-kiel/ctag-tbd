@@ -585,7 +585,7 @@
           "trig": -1
         },
         {
-          "id": "s1_ts_value",
+          "id": "s1_ts_amount",
           "current": 0,
           "cv": -1
         },
@@ -710,7 +710,7 @@
           "trig": -1
         },
         {
-          "id": "s2_ts_value",
+          "id": "s2_ts_amount",
           "current": 0,
           "cv": -1
         },
@@ -835,7 +835,7 @@
           "trig": -1
         },
         {
-          "id": "s3_ts_value",
+          "id": "s3_ts_amount",
           "current": 0,
           "cv": -1
         },
@@ -960,7 +960,7 @@
           "trig": -1
         },
         {
-          "id": "s4_ts_value",
+          "id": "s4_ts_amount",
           "current": 0,
           "cv": -1
         },
