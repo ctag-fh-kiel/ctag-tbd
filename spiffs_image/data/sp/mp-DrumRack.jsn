@@ -580,6 +580,21 @@
           "cv": -1
         },
         {
+          "id": "s1_ts",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "s1_ts_amount",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s1_ts_wsz",
+          "current": 0,
+          "trig": -1
+        },
+        {
           "id": "s1_bank",
           "current": 0,
           "cv": -1
@@ -688,6 +703,21 @@
           "id": "s2_pitch",
           "current": 0,
           "cv": -1
+        },
+        {
+          "id": "s2_ts",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "s2_ts_amount",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s2_ts_wsz",
+          "current": 0,
+          "trig": -1
         },
         {
           "id": "s2_bank",
@@ -800,6 +830,21 @@
           "cv": -1
         },
         {
+          "id": "s3_ts",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "s3_ts_amount",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s3_ts_wsz",
+          "current": 0,
+          "trig": -1
+        },
+        {
           "id": "s3_bank",
           "current": 1,
           "cv": -1
@@ -908,6 +953,21 @@
           "id": "s4_pitch",
           "current": 0,
           "cv": -1
+        },
+        {
+          "id": "s4_ts",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "s4_ts_amount",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "s4_ts_wsz",
+          "current": 0,
+          "trig": -1
         },
         {
           "id": "s4_bank",

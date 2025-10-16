@@ -834,6 +834,23 @@
           "max": 12
         },
         {
+          "id": "s1_ts",
+          "name": "Timestretch",
+          "type": "bool"
+        },
+        {
+          "id": "s1_ts_amount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s1_ts_wsz",
+          "name": "Timestretch Mode",
+          "type": "bool"
+        },
+        {
           "id": "s1_bank",
           "name": "Bank",
           "type": "int",
@@ -985,6 +1002,23 @@
           "type": "int",
           "min": -24,
           "max": 24
+        },
+        {
+          "id": "s2_ts",
+          "name": "Timestretch",
+          "type": "bool"
+        },
+        {
+          "id": "s2_ts_amount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s2_ts_wsz",
+          "name": "Timestretch Mode",
+          "type": "bool"
         },
         {
           "id": "s2_bank",
@@ -1140,6 +1174,23 @@
           "max": 48
         },
         {
+          "id": "s3_ts",
+          "name": "Timestretch",
+          "type": "bool"
+        },
+        {
+          "id": "s3_ts_amount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s3_ts_wsz",
+          "name": "Timestretch Mode",
+          "type": "bool"
+        },
+        {
           "id": "s3_bank",
           "name": "Bank",
           "type": "int",
@@ -1291,6 +1342,23 @@
           "type": "int",
           "min": -12,
           "max": 12
+        },
+        {
+          "id": "s4_ts",
+          "name": "Timestretch",
+          "type": "bool"
+        },
+        {
+          "id": "s4_ts_amount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "s4_ts_wsz",
+          "name": "Timestretch Mode",
+          "type": "bool"
         },
         {
           "id": "s4_bank",
