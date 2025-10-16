@@ -34,6 +34,12 @@ respective component folders / files if different from this license.
 #include "sdkconfig.h"
 #endif
 
+// let's assume that we have 28MiB of PSRAM for samples
+#define TOTAL_SIZE_PSRAM_BYTES 32*1024*1024
+#define MAX_ALLOC_BYTES_SAFETY_MARGIN 4*1024*1024
+#define MAX_ALLOC_BYTES_PSRAM (TOTAL_SIZE_PSRAM_BYTES - MAX_ALLOC_BYTES_SAFETY_MARGIN)
+#define MAX_SLICES_SAMPLES 128 // maximum number of samples to be available
+
 namespace CTAG::SP::HELPERS {
     atomic<uint32_t> ctagSampleRom::nConsumers = 0;
     uint32_t ctagSampleRom::totalSize = 0;
@@ -137,16 +143,6 @@ namespace CTAG::SP::HELPERS {
     }
 
     void ctagSampleRom::RefreshDataStructure() {
-        if(nConsumers == 0) return;
-        if (sliceOffsets != nullptr) {
-            heap_caps_free(sliceOffsets);
-            sliceOffsets = nullptr;
-        }
-        if (sliceSizes != nullptr) {
-            heap_caps_free(sliceSizes);
-            sliceSizes = nullptr;
-        }
-
         // check if sample folder exists and contains json descriptor file
         if(CTAG::SP::ctagSampleRomModel::IsSampleRomSDValid()){
             readFromSD = true;
@@ -235,8 +231,10 @@ namespace CTAG::SP::HELPERS {
         headerSize += 4;
         ESP_LOGD("SROM", "Number slices %li", numberSlices);
         // alloc memory
+        if (sliceOffsets != nullptr) {heap_caps_free(sliceOffsets); sliceOffsets = nullptr;}
         sliceOffsets = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceOffsets != nullptr);
+        if (sliceSizes != nullptr) {heap_caps_free(sliceSizes); sliceSizes = nullptr;}
         sliceSizes = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceSizes != nullptr);
         //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 12, &sliceOffsets[0], 4 * numberSlices);
@@ -261,7 +259,6 @@ namespace CTAG::SP::HELPERS {
     void ctagSampleRom::RefreshDataStructureFromSDCard(){
         ctagSampleRomModel sample_rom_model;
 
-
         // get total number of slices and samples
         uint32_t size_wt_bytes = sample_rom_model.GetTotalNumberWTSamples() * 2;
         uint32_t size_samples_bytes = sample_rom_model.GetTotalNumberSampleSamples() * 2;
@@ -272,11 +269,27 @@ namespace CTAG::SP::HELPERS {
         numberSlices = slices_wt * 64 + slices_samples;
         headerSize = 0;
 
+        const uint32_t maxSlices = 32 * 64 + MAX_SLICES_SAMPLES; // wavetable max 32 slices
+
         // alloc memory for data structure in memory
-        sliceOffsets = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
+        if (sliceOffsets == nullptr) sliceOffsets = (uint32_t *) heap_caps_malloc(maxSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceOffsets != nullptr);
-        sliceSizes = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
+        if (sliceSizes == nullptr) sliceSizes = (uint32_t *) heap_caps_malloc(maxSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceSizes != nullptr);
+
+        // allocatate large block of PSRAM
+        assert(MAX_ALLOC_BYTES_PSRAM >= totalSize);
+        if(ptrSPIRAM == nullptr){
+            size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+            ESP_LOGI("SR", "Max Bytes free in PSRAM: %li", maxSizeBytes);
+            assert(maxSizeBytes >= MAX_ALLOC_BYTES_PSRAM); // check if sample data fits in PSRAM
+            ptrSPIRAM = (int16_t *)heap_caps_malloc(MAX_ALLOC_BYTES_PSRAM, MALLOC_CAP_SPIRAM);
+            assert(ptrSPIRAM != nullptr);
+            // init with zeros
+            memset(ptrSPIRAM, 0, MAX_ALLOC_BYTES_PSRAM);
+            maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+            ESP_LOGI("SR", "Overall bytes for wt+sample %li, allocated in PSRAM %li, largest block free in PSRAM %li", totalSize, MAX_ALLOC_BYTES_PSRAM, maxSizeBytes);
+        }
 
         // generate offsets and sizes, start with wavetables, sizes and offsets are words (due to 16 bit samples)
         uint32_t slice_in_mem_index = 0;
@@ -303,17 +316,6 @@ namespace CTAG::SP::HELPERS {
         firstNonWtSlice = slices_wt * 64;
 
         // read slices from files and buffer in PSRAM
-        if(ptrSPIRAM != nullptr) heap_caps_free(ptrSPIRAM);
-        size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-        maxSizeBytes -= 2*1024*1024; // reserve 2MiByte for other stuff
-        assert(maxSizeBytes >= totalSize); // check if sample data fits in PSRAM
-        ptrSPIRAM = (int16_t *)heap_caps_malloc(totalSize, MALLOC_CAP_SPIRAM);
-        assert(ptrSPIRAM != nullptr);
-        // init with zeros
-        memset(ptrSPIRAM, 0, totalSize);
-        maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-        ESP_LOGI("SR", "Buffering %li bytes in PSRAM, largest block free %li", totalSize, maxSizeBytes);
-
         // load all wavetable files
         for (uint32_t i = 0; i < slices_wt; i++) {
             std::string filename = sample_rom_model.GetFilenameForWTSlice(i);
@@ -380,10 +382,12 @@ namespace CTAG::SP::HELPERS {
     }
 
     void ctagSampleRom::BufferInSPIRAMFromFlash() {
+        // TODO rework this as due to memory fragmentation mem allocation may fail even though enough memory is available
         if(ptrSPIRAM != nullptr) return; // already buffered
         size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
         maxSizeBytes -= 512*1024; // reserve 512K for other stuff
         if(maxSizeBytes < 1024*1024) return; // not enough memory for this to make sense
+        if (ptrSPIRAM == nullptr) { heap_caps_free(ptrSPIRAM); ptrSPIRAM = nullptr; }
         ptrSPIRAM = (int16_t *)heap_caps_malloc(maxSizeBytes, MALLOC_CAP_SPIRAM);
         if(ptrSPIRAM == nullptr) return;
         ESP_LOGI("SR", "Buffering %d bytes in SPIRAM", maxSizeBytes);

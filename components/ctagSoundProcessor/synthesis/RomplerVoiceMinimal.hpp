@@ -24,19 +24,21 @@ respective component folders / files if different from this license.
 #include "helpers/ctagSampleRom.hpp"
 #include "helpers/ctagADEnv.hpp"
 #include "stmlib/dsp/filter.h"
+#include "PitchShifterTD.h" // ADD: time-domain pitch shifter
 
 using namespace CTAG::SP::HELPERS;
 
 namespace CTAG::SYNTHESIS{
     class RomplerVoiceMinimal {
     public:
-        enum class FilterType : uint32_t {NONE = 0x00, LP, BP, HP};
         struct Params{
             uint32_t slice;
             float playbackSpeed, pitch;
             float startOffsetRelative, lengthRelative; // relative to entire sliceLength
             float a, d;
+            bool disableADEnvelopeVolume = false;
             float cutoff, resonance;
+            enum class FilterType : uint32_t {NONE = 0x00, LP, BP, HP};
             FilterType filterType;
             bool loop, loopPiPo;
             float loopMarker; // relative to length of subsection, not sliceLength
@@ -44,6 +46,13 @@ namespace CTAG::SYNTHESIS{
             uint32_t bitReduction;
             // struct for filter type
             bool gate;
+            // Time-stretch controls
+            float timeStretch = 1.f;        // 1.0 = no stretch, >1 faster transport, <1 slower
+            bool timeStretchEnable = false; // bypass when false (no extra CPU)
+            float timeStretchWindowMs = 12.f; // window size in ms (latency/quality trade-off)
+            enum class TSQuality : uint8_t { Custom = 0, Low, Balanced, Smooth };
+            TSQuality timeStretchQuality = TSQuality::Balanced; // presets override windowMs unless Custom
+            float timeStretchSmoothingMs = 12.f; // smoothing time constant for timeStretch changes
         };
 
         void Init(const float samplingRate);
@@ -65,6 +74,8 @@ namespace CTAG::SYNTHESIS{
 
         // process methods for modes
         void processBlock(float *out, const uint32_t size);
+        // Dry variant used for time-stretch priming and pitch-correct input (no envelope advance)
+        void processBlockDry(float *out, const uint32_t size);
         // sample data
         ctagSampleRom sampleRom;
         uint32_t slice = 0;
@@ -87,7 +98,7 @@ namespace CTAG::SYNTHESIS{
         int16_t readBufferInt16[2048];
         int32_t readBufferLength;
         float readBufferPhase = 0.f;
-        float phaseIncrement = 0.f; // depending on pitch
+        float phaseIncrement = 0.f; // depending on pitch or transport
         int32_t readPos = 0;
         // bit reduction masks
         const uint16_t bit_reduction_masks[15] = {
@@ -106,6 +117,15 @@ namespace CTAG::SYNTHESIS{
                 0xfffc,
                 0xfffe,
                 0xffff};
+        // --- Time-stretch state ---
+        static constexpr uint32_t kTSMaxBlock = 256; // matches typical audio block sizes (adjust as needed)
+        float tsIn[kTSMaxBlock];       // input to shifter
+        float tsScratch[kTSMaxBlock];  // discard buffer during priming
+        PitchShifterTD shifter{2048, 256, 44100.f}; // maxDelay, window, fs (fs informational only)
+        float tsWindowMsApplied = 0.f; // track applied window to reconfigure on next gate
+        // Smoothing and flip polish
+        float tsCurrentStretch = 1.f; // smoothed |timeStretch|
+        static constexpr int kFlipFadeLen = 16;
+        int tsFlipFadeCount = 0; // samples left to fade after a ping-pong flip
     };
 }
-
