@@ -43,6 +43,18 @@ namespace CTAG::SYNTHESIS {
             const float Sabs = fabsf(params.timeStretch);
             const bool useTS = params.timeStretchEnable && (fabsf(Sabs - 1.0f) >= 1e-4f);
             if (useTS) {
+                // Apply window update from params (in ms) safely on gate
+                const float maxMs = (PitchShifterTD::MAX_WINDOW_SIZE * 1000.0f) / fs;
+                const float minMs = 2.0f; // practical floor
+                float reqMs = std::clamp(params.timeStretchWindowMs, minMs, maxMs);
+                if (fabsf(reqMs - tsWindowMsApplied) > 0.01f) {
+                    int w = static_cast<int>(reqMs * (fs * 0.001f) + 0.5f);
+                    if (w < 8) w = 8;
+                    if (w > PitchShifterTD::MAX_WINDOW_SIZE) w = PitchShifterTD::MAX_WINDOW_SIZE;
+                    if (w & 1) ++w; // even length preferred
+                    shifter.setWindowSize(w);
+                    tsWindowMsApplied = reqMs;
+                }
                 // Prepare priming for pitch shifter latency; delay envelope trigger until primed
                 shifter.reset();
                 tsPriming = true;
@@ -558,6 +570,16 @@ namespace CTAG::SYNTHESIS {
         pipoFlip = false;
         tsPriming = false;
         tsPrimeLeft = 0;
+        // Configure initial window from params in ms (clamped to shifter bounds)
+        const float maxMs = (PitchShifterTD::MAX_WINDOW_SIZE * 1000.0f) / fs;
+        const float minMs = 2.0f;
+        float reqMs = std::clamp(params.timeStretchWindowMs, minMs, maxMs);
+        int w = static_cast<int>(reqMs * (fs * 0.001f) + 0.5f);
+        if (w < 8) w = 8;
+        if (w > PitchShifterTD::MAX_WINDOW_SIZE) w = PitchShifterTD::MAX_WINDOW_SIZE;
+        if (w & 1) ++w;
+        shifter.setWindowSize(w);
+        tsWindowMsApplied = reqMs;
     }
 
     RomplerVoiceMinimal::RomplerVoiceMinimal() {

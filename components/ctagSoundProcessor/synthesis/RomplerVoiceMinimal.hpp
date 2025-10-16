@@ -48,6 +48,7 @@ namespace CTAG::SYNTHESIS{
             // Time-stretch controls
             float timeStretch = 1.f;        // 1.0 = no stretch, >1 faster transport, <1 slower
             bool timeStretchEnable = false; // bypass when false (no extra CPU)
+            float timeStretchWindowMs = 12.f; // NEW: window size in ms (latency/quality trade-off)
         };
 
         void Init(const float samplingRate);
@@ -119,5 +120,6 @@ namespace CTAG::SYNTHESIS{
         PitchShifterTD shifter{2048, 256, 44100.f}; // maxDelay, window, fs (fs informational only)
         bool tsPriming = false;
         int tsPrimeLeft = 0; // samples left to prime before valid output
+        float tsWindowMsApplied = 0.f; // track applied window to reconfigure on next gate
     };
 }
