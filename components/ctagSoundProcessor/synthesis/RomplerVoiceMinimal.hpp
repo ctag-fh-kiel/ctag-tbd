@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 #include "helpers/ctagSampleRom.hpp"
 #include "helpers/ctagADEnv.hpp"
 #include "stmlib/dsp/filter.h"
-#include "pitch_shifter_td.h" // ADD: time-domain pitch shifter
+#include "PitchShifterTD.h" // ADD: time-domain pitch shifter
 
 using namespace CTAG::SP::HELPERS;
 
@@ -48,7 +48,10 @@ namespace CTAG::SYNTHESIS{
             // Time-stretch controls
             float timeStretch = 1.f;        // 1.0 = no stretch, >1 faster transport, <1 slower
             bool timeStretchEnable = false; // bypass when false (no extra CPU)
-            float timeStretchWindowMs = 12.f; // NEW: window size in ms (latency/quality trade-off)
+            float timeStretchWindowMs = 12.f; // window size in ms (latency/quality trade-off)
+            enum class TSQuality : uint8_t { Custom = 0, Low, Balanced, Smooth };
+            TSQuality timeStretchQuality = TSQuality::Balanced; // presets override windowMs unless Custom
+            float timeStretchSmoothingMs = 12.f; // smoothing time constant for timeStretch changes
         };
 
         void Init(const float samplingRate);
@@ -121,5 +124,9 @@ namespace CTAG::SYNTHESIS{
         bool tsPriming = false;
         int tsPrimeLeft = 0; // samples left to prime before valid output
         float tsWindowMsApplied = 0.f; // track applied window to reconfigure on next gate
+        // Smoothing and flip polish
+        float tsCurrentStretch = 1.f; // smoothed |timeStretch|
+        static constexpr int kFlipFadeLen = 16;
+        int tsFlipFadeCount = 0; // samples left to fade after a ping-pong flip
     };
 }

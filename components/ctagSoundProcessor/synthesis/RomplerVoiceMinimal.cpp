@@ -22,6 +22,7 @@ respective component folders / files if different from this license.
 #include "RomplerVoiceMinimal.hpp"
 #include <cmath>
 #include <cstring>
+#include <cassert>
 #include "stmlib/dsp/dsp.h"
 #include "helpers/ctagFastMath.hpp"
 #include "dsps_biquad.h"
@@ -30,9 +31,19 @@ respective component folders / files if different from this license.
 
 namespace CTAG::SYNTHESIS {
 
+
     void RomplerVoiceMinimal::Process(float *out, const uint32_t size) {
         // Ensure internal temp buffers are large enough (adjust kTSMaxBlock if this asserts)
         assert(size <= kTSMaxBlock);
+
+        // Smooth target stretch each block
+        float SabsTarget = fabsf(params.timeStretch);
+        if (!params.timeStretchEnable) SabsTarget = 1.f;
+        // time constant in samples
+        const float tauSamples = std::max(1.f, params.timeStretchSmoothingMs * (fs * 0.001f));
+        const float alpha = expf(-static_cast<float>(size) / tauSamples);
+        tsCurrentStretch = alpha * tsCurrentStretch + (1.f - alpha) * SabsTarget;
+        if (tsCurrentStretch < 0.01f) tsCurrentStretch = 0.01f;
 
         // check for trigger signal
         if (params.gate == true && params.gate != preGate) { // trigger happened reset to beginning of sample
@@ -40,13 +51,23 @@ namespace CTAG::SYNTHESIS {
             readBufferPhase = 0.f;
             pipoFlip = false;
             fmDecay = 1.f;
-            const float Sabs = fabsf(params.timeStretch);
-            const bool useTS = params.timeStretchEnable && (fabsf(Sabs - 1.0f) >= 1e-4f);
+            // On gate snap smoothing state to current target to avoid long ramp-in
+            tsCurrentStretch = SabsTarget;
+            const bool useTS = params.timeStretchEnable && (fabsf(SabsTarget - 1.0f) >= 1e-4f);
             if (useTS) {
-                // Apply window update from params (in ms) safely on gate
+                // Apply preset window unless Custom
+                float reqMs;
+                switch (params.timeStretchQuality) {
+                    case Params::TSQuality::Low:      reqMs = 8.f;  break;
+                    case Params::TSQuality::Balanced: reqMs = 12.f; break;
+                    case Params::TSQuality::Smooth:   reqMs = 20.f; break;
+                    case Params::TSQuality::Custom:
+                    default:                          reqMs = params.timeStretchWindowMs; break;
+                }
+                // Clamp and set window
                 const float maxMs = (PitchShifterTD::MAX_WINDOW_SIZE * 1000.0f) / fs;
                 const float minMs = 2.0f; // practical floor
-                float reqMs = std::clamp(params.timeStretchWindowMs, minMs, maxMs);
+                reqMs = std::clamp(reqMs, minMs, maxMs);
                 if (fabsf(reqMs - tsWindowMsApplied) > 0.01f) {
                     int w = static_cast<int>(reqMs * (fs * 0.001f) + 0.5f);
                     if (w < 8) w = 8;
@@ -85,8 +106,8 @@ namespace CTAG::SYNTHESIS {
         ad.SetDecay(params.d);
 
         // calculate playback speed = dt = phase increment (transport)
-        const float Sabs = fabsf(params.timeStretch);
-        const bool useTS = params.timeStretchEnable && (fabsf(Sabs - 1.0f) >= 1e-4f);
+        const bool useTS = params.timeStretchEnable && (fabsf(SabsTarget - 1.0f) >= 1e-4f);
+        const float Suse = useTS ? tsCurrentStretch : 1.0f;
 
         // Direction is based solely on playbackSpeed sign (timeStretch >= 0)
         const float dirVal = params.playbackSpeed;
@@ -108,12 +129,12 @@ namespace CTAG::SYNTHESIS {
             playBackDir = dirVal >= 0.f ? PlayBackDirection::FWD : PlayBackDirection::BWD;
         }
 
-        // Build original transport as in legacy path, then apply S if time-stretch is active
+        // Build original transport as in legacy path, then apply smoothed S if time-stretch is active
         float baseRate = fabsf(params.playbackSpeed) * stmlib::SemitonesToRatio(params.pitch);
         if (baseRate >= 6.f) baseRate = 6.f;
-        float fmAdd = fmDecay * params.egFM * 4.f; // same additive behavior as legacy
+        float fmAdd = fmDecay * params.egFM * 4.f; // legacy additive behavior retained
         float transportNoStretch = baseRate + fmAdd; // legacy effective increment
-        float transportRate = useTS ? (transportNoStretch * Sabs) : transportNoStretch;
+        float transportRate = transportNoStretch * Suse;
 
         phaseIncrement = transportRate; // used by interpolation and AA
 
@@ -344,6 +365,7 @@ namespace CTAG::SYNTHESIS {
                         // interpolate process buffer
                         if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         pipoFlip ^= true; // toggle flip
+                        tsFlipFadeCount = kFlipFadeLen; // request short declick fade after flip
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                     } else {
                         sampleRom.ReadSlice(readBufferInt16, slice, readPos, remainBuffer);
@@ -368,6 +390,7 @@ namespace CTAG::SYNTHESIS {
                         if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                         pipoFlip ^= true;
+                        tsFlipFadeCount = kFlipFadeLen; // request short declick fade after flip
                     }
                 } else {
                     // obtain sample rom data
@@ -408,6 +431,7 @@ namespace CTAG::SYNTHESIS {
                         if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         readPos += readBufferLength;
                         pipoFlip ^= true;
+                        tsFlipFadeCount = kFlipFadeLen; // request short declick fade after flip
                     } else {
                         int16_t *bufPos = readBufferInt16;
                         sampleRom.ReadSlice(bufPos, slice, readPos, remainBuffer);
@@ -434,6 +458,7 @@ namespace CTAG::SYNTHESIS {
                         // interpolate process buffer
                         if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         pipoFlip ^= true;
+                        tsFlipFadeCount = kFlipFadeLen; // request short declick fade after flip
                     }
                 } else { // normal reverse read
                     // obtain sample rom forward
@@ -463,7 +488,7 @@ namespace CTAG::SYNTHESIS {
 
         if (useTS) {
             // Apply pitch correction via shifter: correct only the stretch, keep legacy pitch behavior
-            const float correction = 1.0f / std::clamp(Sabs, 0.01f, 64.f);
+            const float correction = 1.0f / std::clamp(Suse, 0.01f, 64.f);
             if (tsPriming) {
                 shifter.process(tsIn, tsScratch, size, correction);
                 memset(out, 0, size * sizeof(float));
@@ -474,6 +499,18 @@ namespace CTAG::SYNTHESIS {
                 // Apply envelope post-shifter
                 for (uint32_t i = 0; i < size; ++i) out[i] *= ad.Process();
             }
+        }
+
+        // Apply short fade after ping-pong flips to reduce clicks (both TS and non-TS paths)
+        if (tsFlipFadeCount > 0) {
+            int n = tsFlipFadeCount < static_cast<int>(size) ? tsFlipFadeCount : static_cast<int>(size);
+            // Use clouds LUT if available, else linear ramp
+            for (int i = 0; i < n; ++i) {
+                float w;
+                if (i < LUT_XFADE_IN_SIZE) w = clouds::lut_xfade_in[i]; else w = (i + 1) / static_cast<float>(n);
+                out[i] *= w;
+            }
+            tsFlipFadeCount -= n;
         }
 
         // filter
