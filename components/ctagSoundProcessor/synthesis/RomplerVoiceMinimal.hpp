@@ -24,6 +24,7 @@ respective component folders / files if different from this license.
 #include "helpers/ctagSampleRom.hpp"
 #include "helpers/ctagADEnv.hpp"
 #include "stmlib/dsp/filter.h"
+#include "pitch_shifter_td.h" // ADD: time-domain pitch shifter
 
 using namespace CTAG::SP::HELPERS;
 
@@ -44,6 +45,9 @@ namespace CTAG::SYNTHESIS{
             uint32_t bitReduction;
             // struct for filter type
             bool gate;
+            // Time-stretch controls
+            float timeStretch = 1.f;        // 1.0 = no stretch, >1 faster transport, <1 slower
+            bool timeStretchEnable = false; // bypass when false (no extra CPU)
         };
 
         void Init(const float samplingRate);
@@ -65,6 +69,8 @@ namespace CTAG::SYNTHESIS{
 
         // process methods for modes
         void processBlock(float *out, const uint32_t size);
+        // Dry variant used for time-stretch priming and pitch-correct input (no envelope advance)
+        void processBlockDry(float *out, const uint32_t size);
         // sample data
         ctagSampleRom sampleRom;
         uint32_t slice = 0;
@@ -87,7 +93,7 @@ namespace CTAG::SYNTHESIS{
         int16_t readBufferInt16[2048];
         int32_t readBufferLength;
         float readBufferPhase = 0.f;
-        float phaseIncrement = 0.f; // depending on pitch
+        float phaseIncrement = 0.f; // depending on pitch or transport
         int32_t readPos = 0;
         // bit reduction masks
         const uint16_t bit_reduction_masks[15] = {
@@ -106,6 +112,12 @@ namespace CTAG::SYNTHESIS{
                 0xfffc,
                 0xfffe,
                 0xffff};
+        // --- Time-stretch state ---
+        static constexpr uint32_t kTSMaxBlock = 256; // matches typical audio block sizes (adjust as needed)
+        float tsIn[kTSMaxBlock];       // input to shifter
+        float tsScratch[kTSMaxBlock];  // discard buffer during priming
+        PitchShifterTD shifter{2048, 256, 44100.f}; // maxDelay, window, fs (fs informational only)
+        bool tsPriming = false;
+        int tsPrimeLeft = 0; // samples left to prime before valid output
     };
 }
-

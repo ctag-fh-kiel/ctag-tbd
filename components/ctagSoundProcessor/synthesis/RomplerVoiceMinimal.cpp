@@ -31,13 +31,27 @@ respective component folders / files if different from this license.
 namespace CTAG::SYNTHESIS {
 
     void RomplerVoiceMinimal::Process(float *out, const uint32_t size) {
+        // Ensure internal temp buffers are large enough (adjust kTSMaxBlock if this asserts)
+        assert(size <= kTSMaxBlock);
+
         // check for trigger signal
         if (params.gate == true && params.gate != preGate) { // trigger happened reset to beginning of sample
-            ad.Trigger();
             bufferStatus = BufferStatus::READFIRST;
             readBufferPhase = 0.f;
             pipoFlip = false;
             fmDecay = 1.f;
+            const float Sabs = fabsf(params.timeStretch);
+            const bool useTS = params.timeStretchEnable && (fabsf(Sabs - 1.0f) >= 1e-4f);
+            if (useTS) {
+                // Prepare priming for pitch shifter latency; delay envelope trigger until primed
+                shifter.reset();
+                tsPriming = true;
+                tsPrimeLeft = shifter.getLatencySamples() + (shifter.getWindowSize() >> 1);
+            } else {
+                tsPriming = false;
+                tsPrimeLeft = 0;
+                ad.Trigger();
+            }
         }
         preGate = params.gate;
 
@@ -54,19 +68,20 @@ namespace CTAG::SYNTHESIS {
         // bit reduction
         int16_t brr_mask = bit_reduction_masks[14 - params.bitReduction];
 
-        //  set eg and lfo parameters
+        //  set eg parameters
         ad.SetAttack(params.a);
         ad.SetDecay(params.d);
 
-        // calculate playback speed = dt = phase increment
-        phaseIncrement = params.playbackSpeed; // speed
-        phaseIncrement *= stmlib::SemitonesToRatio( params.pitch); // includes pitch FM
+        // calculate playback speed = dt = phase increment (transport)
+        const float Sabs = fabsf(params.timeStretch);
+        const bool useTS = params.timeStretchEnable && (fabsf(Sabs - 1.0f) >= 1e-4f);
 
-        // evaluate loop settings
+        // Direction is based solely on playbackSpeed sign (timeStretch >= 0)
+        const float dirVal = params.playbackSpeed;
         if (params.loop) {
             if (params.loopPiPo) {
-                playBackDir = phaseIncrement >= 0.f ? PlayBackDirection::LOOPFWDPIPO
-                                                    : PlayBackDirection::LOOPBWDPIPO;
+                playBackDir = dirVal >= 0.f ? PlayBackDirection::LOOPFWDPIPO
+                                            : PlayBackDirection::LOOPBWDPIPO;
                 if (pipoFlip) { // flip direction if currently already in pipo
                     if (playBackDir == PlayBackDirection::LOOPFWDPIPO)
                         playBackDir = PlayBackDirection::LOOPBWDPIPO;
@@ -74,17 +89,23 @@ namespace CTAG::SYNTHESIS {
                         playBackDir = PlayBackDirection::LOOPFWDPIPO;
                 }
             } else {
-                playBackDir = phaseIncrement >= 0.f ? PlayBackDirection::LOOPFWD
-                                                    : PlayBackDirection::LOOPBWD;
+                playBackDir = dirVal >= 0.f ? PlayBackDirection::LOOPFWD
+                                            : PlayBackDirection::LOOPBWD;
             }
         } else {
-            playBackDir = phaseIncrement >= 0.f ? PlayBackDirection::FWD : PlayBackDirection::BWD; // playing fwd or bwd
+            playBackDir = dirVal >= 0.f ? PlayBackDirection::FWD : PlayBackDirection::BWD;
         }
-        // now take abs
-        phaseIncrement = fabsf(phaseIncrement);
-        // TODO: adapt this also in Rompler?
-        if(phaseIncrement >= 6.f) phaseIncrement = 6.f; // limit to stay in memory and CPU capability bounds
-        phaseIncrement += fmDecay * params.egFM * 4;
+
+        // Build original transport as in legacy path, then apply S if time-stretch is active
+        float baseRate = fabsf(params.playbackSpeed) * stmlib::SemitonesToRatio(params.pitch);
+        if (baseRate >= 6.f) baseRate = 6.f;
+        float fmAdd = fmDecay * params.egFM * 4.f; // same additive behavior as legacy
+        float transportNoStretch = baseRate + fmAdd; // legacy effective increment
+        float transportRate = useTS ? (transportNoStretch * Sabs) : transportNoStretch;
+
+        phaseIncrement = transportRate; // used by interpolation and AA
+
+        // update FM decay
         fmDecay *= (0.9f + 0.0999999f * params.d / 50.f);
 
         // calc relative positions and bounds check
@@ -93,35 +114,21 @@ namespace CTAG::SYNTHESIS {
         int32_t playLength = static_cast<int32_t>(params.lengthRelative * sliceLength);
         if (playLength >= sliceLength) playLength = sliceLength;
         int32_t endPos = startPos + playLength;
-        if (endPos >= sliceLength) endPos = sliceLength; // end beyond slice length?
-        // loop calculations
-        int32_t loopPos = startPos + static_cast<int32_t >(params.loopMarker *
-                                                           playLength); // relative to play length, could be also relative to sliceLength
+        if (endPos >= sliceLength) endPos = sliceLength;
+        int32_t loopPos = startPos + static_cast<int32_t >(params.loopMarker * playLength);
         if (loopPos > endPos) loopPos = endPos;
 
         // in this cases return silence
-        if (bufferStatus == BufferStatus::STOPPED) {
-            memset(out, 0, size * sizeof(float));
-            return;
-        }
-        if (startPos >= endPos - 1) {
-            memset(out, 0, size * sizeof(float));
-            return;
-        }
-        if (playLength == 0) {
-            memset(out, 0, size * sizeof(float));
-            return;
-        }
-        if (loopPos >= endPos - 1) {
-            memset(out, 0, size * sizeof(float));
-            return;
-        }
+        if (bufferStatus == BufferStatus::STOPPED) { memset(out, 0, size * sizeof(float)); return; }
+        if (startPos >= endPos - 1) { memset(out, 0, size * sizeof(float)); return; }
+        if (playLength == 0) { memset(out, 0, size * sizeof(float)); return; }
+        if (loopPos >= endPos - 1) { memset(out, 0, size * sizeof(float)); return; }
 
         // calculate required buffer length
-        // TODO: check if phase increment is within bounds for buffer max size --> partially done with asserts
-        //  phaseIncrementMax*size*sizeof(datatype)+4), 32(5octaves up)*32(standard buffer size) --> > 1k words, we use 2k words
         readBufferLength = static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
 
+        // Choose output sink for the interpolation stage
+        float* procOut = useTS ? tsIn : out;
 
         // calc marks and read assemble buffers depending on playback mode
         // readPos semantic is: start read position from linear rom buffer, updated after every read cycle
@@ -155,7 +162,7 @@ namespace CTAG::SYNTHESIS {
                 }
 
                 // interpolate process buffer
-                processBlock(out, size);
+                if (useTS) processBlockDry(procOut, size); else processBlock(procOut, size);
 
                 // update read position
                 readPos += readBufferLength;
@@ -196,7 +203,7 @@ namespace CTAG::SYNTHESIS {
                 }
 
                 // interpolate process buffer
-                processBlock(out, size);
+                if (useTS) processBlockDry(procOut, size); else processBlock(procOut, size);
 
                 // update read position
                 readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
@@ -243,7 +250,7 @@ namespace CTAG::SYNTHESIS {
                 }
 
                 // interpolate process buffer
-                processBlock(out, size);
+                if (useTS) processBlockDry(procOut, size); else processBlock(procOut, size);
 
                 bufferStatus = BufferStatus::RUNNING;
                 break;
@@ -265,7 +272,7 @@ namespace CTAG::SYNTHESIS {
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
-                        processBlock(out, size);
+                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                     } else {
                         readPos = loopPos;
@@ -284,7 +291,7 @@ namespace CTAG::SYNTHESIS {
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
-                        processBlock(out, size);
+                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                     }
                 } else { // normal reverse read
@@ -297,7 +304,7 @@ namespace CTAG::SYNTHESIS {
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
-                    processBlock(out, size);
+                    if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                     // update read position
                     readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                 }
@@ -323,7 +330,7 @@ namespace CTAG::SYNTHESIS {
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
-                        processBlock(out, size);
+                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         pipoFlip ^= true; // toggle flip
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                     } else {
@@ -346,7 +353,7 @@ namespace CTAG::SYNTHESIS {
                             }
                         }
                         // interpolate process buffer
-                        processBlock(out, size);
+                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                         pipoFlip ^= true;
                     }
@@ -362,7 +369,7 @@ namespace CTAG::SYNTHESIS {
                                 static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
-                    processBlock(out, size);
+                    if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                 }
 
                 bufferStatus = BufferStatus::RUNNING;
@@ -386,7 +393,7 @@ namespace CTAG::SYNTHESIS {
                                     0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
-                        processBlock(out, size);
+                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         readPos += readBufferLength;
                         pipoFlip ^= true;
                     } else {
@@ -413,7 +420,7 @@ namespace CTAG::SYNTHESIS {
                             }
                         }
                         // interpolate process buffer
-                        processBlock(out, size);
+                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                         pipoFlip ^= true;
                     }
                 } else { // normal reverse read
@@ -426,7 +433,7 @@ namespace CTAG::SYNTHESIS {
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
-                    processBlock(out, size);
+                    if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
                     // update read position
                     readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                 }
@@ -439,52 +446,37 @@ namespace CTAG::SYNTHESIS {
         if (bufferStatus == BufferStatus::READLAST) {
             bufferStatus = BufferStatus::STOPPED;
         }
-        if (!ad.GetIsRunning()) bufferStatus = BufferStatus::STOPPED;
+        // Don't stop while priming time-stretch (envelope intentionally idle then)
+        if (!ad.GetIsRunning() && !(useTS && tsPriming)) bufferStatus = BufferStatus::STOPPED;
 
+        if (useTS) {
+            // Apply pitch correction via shifter: correct only the stretch, keep legacy pitch behavior
+            const float correction = 1.0f / std::clamp(Sabs, 0.01f, 64.f);
+            if (tsPriming) {
+                shifter.process(tsIn, tsScratch, size, correction);
+                memset(out, 0, size * sizeof(float));
+                tsPrimeLeft -= static_cast<int>(size);
+                if (tsPrimeLeft <= 0) { tsPriming = false; ad.Trigger(); }
+            } else {
+                shifter.process(tsIn, out, size, correction);
+                // Apply envelope post-shifter
+                for (uint32_t i = 0; i < size; ++i) out[i] *= ad.Process();
+            }
+        }
+
+        // filter
         float fCut = params.cutoff;
         CONSTRAIN(fCut, 0.f, 1.f)
         fCut = 20.f * stmlib::SemitonesToRatio(fCut * 120.f);
         float fReso = params.resonance;
         CONSTRAIN(fReso, .5f, 20.f)
-        svf.
-                set_f_q<stmlib::FREQUENCY_FAST>(fCut
-                                                / 44100.f, fReso);
+        svf.set_f_q<stmlib::FREQUENCY_FAST>(fCut / 44100.f, fReso);
         switch (params.filterType) {
-            case FilterType::LP:
-                svf.
-                        Process<stmlib::FILTER_MODE_LOW_PASS>(out, out, size
-                );
-                break;
-            case FilterType::BP:
-                svf.
-                        Process<stmlib::FILTER_MODE_BAND_PASS>(out, out, size
-                );
-                break;
-            case FilterType::HP:
-                svf.
-                        Process<stmlib::FILTER_MODE_HIGH_PASS>(out, out, size
-                );
-                break;
-            default:
-                break;
+            case FilterType::LP: svf.Process<stmlib::FILTER_MODE_LOW_PASS>(out, out, size); break;
+            case FilterType::BP: svf.Process<stmlib::FILTER_MODE_BAND_PASS>(out, out, size); break;
+            case FilterType::HP: svf.Process<stmlib::FILTER_MODE_HIGH_PASS>(out, out, size); break;
+            default: break;
         }
-    }
-
-    void RomplerVoiceMinimal::Init(const float samplingRate) {
-        fs = samplingRate;
-        ad.SetSampleRate(fs);
-        ad.SetModeExp();
-        ad.SetLoop(false);
-        bufferStatus = BufferStatus::STOPPED;
-        pipoFlip = false;
-    }
-
-    RomplerVoiceMinimal::RomplerVoiceMinimal() {
-        memset(&params, 0, sizeof(Params));
-        Reset();
-    }
-
-    RomplerVoiceMinimal::~RomplerVoiceMinimal() {
     }
 
     void RomplerVoiceMinimal::processBlock(float *out, const uint32_t size) {
@@ -536,6 +528,46 @@ namespace CTAG::SYNTHESIS {
         readBufferFloat[1] = readBufferFloat[readBufferLength + 1];
     }
 
+    void RomplerVoiceMinimal::processBlockDry(float *out, const uint32_t size) {
+        // Same as processBlock but without envelope (AM) advance and fades applied
+        // Anti-aliasing low-pass when downsampling, i.e. pitch up, not required if pitch down (upsampling)
+        float fAntiAlias = 0.5f / phaseIncrement;
+        if (fAntiAlias < 0.5f && fAntiAlias > 0.1f && params.filterType == FilterType::NONE) {
+            dsps_biquad_gen_lpf_f32(coeffs_lpf, fAntiAlias, .5f);
+            dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf1);
+        }
+        for (uint32_t i = 0; i < size; i++) {
+            const float p = readBufferPhase;
+            MAKE_INTEGRAL_FRACTIONAL(p);
+            float x = InterpolateWaveLinear(readBufferFloat, p_integral, p_fractional);
+            out[i] = x; // no envelope here
+            readBufferPhase += phaseIncrement;
+        }
+        // Maintain state like processBlock
+        readBufferPhase = readBufferPhase - static_cast<int32_t >(readBufferPhase);
+        readBufferFloat[0] = readBufferFloat[readBufferLength];
+        readBufferFloat[1] = readBufferFloat[readBufferLength + 1];
+    }
+
+    void RomplerVoiceMinimal::Init(const float samplingRate) {
+        fs = samplingRate;
+        ad.SetSampleRate(fs);
+        ad.SetModeExp();
+        ad.SetLoop(false);
+        bufferStatus = BufferStatus::STOPPED;
+        pipoFlip = false;
+        tsPriming = false;
+        tsPrimeLeft = 0;
+    }
+
+    RomplerVoiceMinimal::RomplerVoiceMinimal() {
+        memset(&params, 0, sizeof(Params));
+        Reset();
+    }
+
+    RomplerVoiceMinimal::~RomplerVoiceMinimal() {
+    }
+
     void RomplerVoiceMinimal::Reset() {
         ad.Reset();
         readBufferFloat[0] = readBufferFloat[1] = 0.f;
@@ -546,3 +578,4 @@ namespace CTAG::SYNTHESIS {
     }
 
 }
+
