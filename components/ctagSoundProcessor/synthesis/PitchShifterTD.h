@@ -21,15 +21,14 @@ respective component folders / files if different from this license.
 
 #pragma once
 #include <cmath>
-#include <algorithm>
 
-/// Time-domain pitch shifter following the "two sliding heads + Hann crossfade"
+/// Time-domain pitch shifter following the "two sliding heads + tri crossfade"
 /// algorithm popularized by Katja https://www.katjaas.nl/pitchshift/pitchshift.html
 /// Mono in/out. Use one instance per channel for stereo.
 class PitchShifterTD {
 public:
     static constexpr int MAX_BUF_SIZE = 4096;      // Set as needed
-    static constexpr int MAX_WINDOW_SIZE = 512;    // Set as needed
+    static constexpr int MAX_WINDOW_SIZE = 1024;    // Set as needed
 
     /// @param maxDelaySamples Size of circular buffer (must be >= 2*windowSize + margin)
     /// @param windowSize Number of samples per Hann window cycle (even number recommended)

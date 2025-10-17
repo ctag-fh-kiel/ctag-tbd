@@ -36,14 +36,7 @@ namespace CTAG::SYNTHESIS {
         // Ensure internal temp buffers are large enough (adjust kTSMaxBlock if this asserts)
         assert(size <= kTSMaxBlock);
 
-        // Smooth target stretch each block
-        float SabsTarget = fabsf(params.timeStretch);
-        if (!params.timeStretchEnable) SabsTarget = 1.f;
-        // time constant in samples
-        const float tauSamples = std::max(1.f, params.timeStretchSmoothingMs * (fs * 0.001f));
-        const float alpha = expf(-static_cast<float>(size) / tauSamples);
-        tsCurrentStretch = alpha * tsCurrentStretch + (1.f - alpha) * SabsTarget;
-        if (tsCurrentStretch < 0.01f) tsCurrentStretch = 0.01f;
+        tsCurrentStretch = params.timeStretch;
 
         // check for trigger signal
         if (params.gate == true && params.gate != preGate) { // trigger happened reset to beginning of sample
@@ -51,16 +44,15 @@ namespace CTAG::SYNTHESIS {
             readBufferPhase = 0.f;
             pipoFlip = false;
             fmDecay = 1.f;
-            // On gate snap smoothing state to current target to avoid long ramp-in
-            tsCurrentStretch = SabsTarget;
-            const bool useTS = params.timeStretchEnable && (fabsf(SabsTarget - 1.0f) >= 1e-4f);
-            if (useTS) {
+
+            // when time stretching enabled
+            if (params.timeStretchEnable) {
                 // Apply preset window unless Custom
                 float reqMs;
                 switch (params.timeStretchQuality) {
-                    case Params::TSQuality::Low:      reqMs = 8.f;  break;
-                    case Params::TSQuality::Balanced: reqMs = 12.f; break;
-                    case Params::TSQuality::Smooth:   reqMs = 20.f; break;
+                    case Params::TSQuality::Low:      reqMs = 6.f;  break;
+                    case Params::TSQuality::Balanced: reqMs = 8.f; break;
+                    case Params::TSQuality::Smooth:   reqMs = 12.f; break;
                     case Params::TSQuality::Custom:
                     default:                          reqMs = params.timeStretchWindowMs; break;
                 }
@@ -99,8 +91,7 @@ namespace CTAG::SYNTHESIS {
         ad.SetDecay(params.d);
 
         // calculate playback speed = dt = phase increment (transport)
-        const bool useTS = params.timeStretchEnable && (fabsf(SabsTarget - 1.0f) >= 1e-4f);
-        const float Suse = useTS ? tsCurrentStretch : 1.0f;
+        const float Suse = params.timeStretchEnable ? tsCurrentStretch : 1.0f;
 
         // Direction is based solely on playbackSpeed sign (timeStretch >= 0)
         const float dirVal = params.playbackSpeed;
@@ -154,7 +145,7 @@ namespace CTAG::SYNTHESIS {
         readBufferLength = static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
 
         // Choose output sink for the interpolation stage
-        float* procOut = useTS ? tsIn : out;
+        float* procOut = params.timeStretchEnable ? tsIn : out;
 
         // calc marks and read assemble buffers depending on playback mode
         // readPos semantic is: start read position from linear rom buffer, updated after every read cycle
@@ -479,7 +470,7 @@ namespace CTAG::SYNTHESIS {
         // Don't stop while priming time-stretch (envelope intentionally idle then)
         if (!ad.GetIsRunning()) bufferStatus = BufferStatus::STOPPED;
 
-        if (useTS) {
+        if (params.timeStretchEnable) {
             // Apply pitch correction via shifter: correct only the stretch, keep legacy pitch behavior
             const float correction = 1.0f / std::clamp(Suse, 0.01f, 64.f);
             shifter.process(tsIn, out, size, correction);
