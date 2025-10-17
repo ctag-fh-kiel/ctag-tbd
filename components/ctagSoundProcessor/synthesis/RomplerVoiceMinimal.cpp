@@ -77,7 +77,7 @@ namespace CTAG::SYNTHESIS {
                     tsWindowMsApplied = reqMs;
                 }
                 // Prepare priming for pitch shifter latency; delay envelope trigger until primed
-                shifter.reset();
+                //shifter.reset();
                 tsPriming = true;
                 tsPrimeLeft = shifter.getLatencySamples() + (shifter.getWindowSize() >> 1);
             } else {
@@ -491,7 +491,7 @@ namespace CTAG::SYNTHESIS {
             const float correction = 1.0f / std::clamp(Suse, 0.01f, 64.f);
             if (tsPriming) {
                 shifter.process(tsIn, tsScratch, size, correction);
-                memset(out, 0, size * sizeof(float));
+                //memset(out, 0, size * sizeof(float));
                 tsPrimeLeft -= static_cast<int>(size);
                 if (tsPrimeLeft <= 0) { tsPriming = false; ad.Trigger(); }
             } else {
