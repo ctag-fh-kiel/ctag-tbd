@@ -479,7 +479,6 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         rompler[0].params.d = fS1Decay;
         MK_FLT_PAR_ABS_SFT(fS1EGFM, s1_eg2fm, 4095.f, 12.f)
         rompler[0].params.egFM = fS1EGFM;
-        rompler[0].params.egFM = 0.f;
         MK_INT_PAR_ABS(iS1Brr, s1_brr, 16)
         CONSTRAIN(iS1Brr, 0, 14)
         rompler[0].params.bitReduction = iS1Brr;
