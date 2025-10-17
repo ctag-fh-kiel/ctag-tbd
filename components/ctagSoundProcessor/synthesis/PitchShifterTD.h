@@ -1,3 +1,24 @@
+/***************
+CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
+
+A project conceived within the Creative Technologies Arbeitsgruppe of
+Kiel University of Applied Sciences: https://www.creative-technologies.de
+
+(c) 2025 by Robert Manzke. All rights reserved.
+
+The CTAG TBD software is licensed under the GNU General Public License
+(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
+
+The CTAG TBD hardware design is released under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+CTAG TBD is provided "as is" without any express or implied warranties.
+
+License and copyright details for specific submodules are included in their
+respective component folders / files if different from this license.
+***************/
+
 #pragma once
 #include <cmath>
 #include <algorithm>
@@ -52,10 +73,8 @@ private:
     float dMin;
     float sweepRange;
 
-    // Precomputed Hann window over [0..windowSize)
-    float window[MAX_WINDOW_SIZE];
-
     void initWindowsAndDelays();
     float hannAtPhase(float phase) const { return 0.5f * (1.0f - cosf(2.0f * 3.14159265359f * phase)); }
+    float triAtPhase(float phase) const { return 2.0f * (phase >= 0.5f ? 1.0f - phase : phase);}
     float readInterp(float index) const;
 };

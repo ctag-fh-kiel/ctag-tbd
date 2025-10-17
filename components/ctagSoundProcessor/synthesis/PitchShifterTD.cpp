@@ -13,7 +13,6 @@ PitchShifterTD::PitchShifterTD(int maxDelaySamples, int windowSize_, float sampl
     if (windowSize > MAX_WINDOW_SIZE) windowSize = MAX_WINDOW_SIZE;
     halfWindow = windowSize / 2;
     std::fill(buffer, buffer + bufSize, 0.0f);
-    std::fill(window, window + MAX_WINDOW_SIZE, 0.0f);
     initWindowsAndDelays();
 }
 
@@ -37,11 +36,7 @@ void PitchShifterTD::setWindowSize(int newWin) {
 }
 
 void PitchShifterTD::initWindowsAndDelays() {
-    for (int n = 0; n < windowSize; ++n) {
-        float phase = float(n) / float(windowSize);
-        window[n] = hannAtPhase(phase);
-    }
-    // Delay bounds: sweep over exactly one window size for perfect Hann overlap-add
+    // Delay bounds: sweep over exactly one window size for perfect overlap-add
     sweepRange = float(windowSize);
     dMin = float(windowSize); // keep at least one window delay for safety
     dA = dMin;                // Head A starts at beginning of its window
@@ -71,8 +66,10 @@ void PitchShifterTD::process(const float* in, float* out, unsigned int n, float 
         float phaseA = (dA - dMin) / sweepRange;
         float phaseB = phaseA + 0.5f;
         if (phaseB >= 1.0f) phaseB -= 1.0f;
-        float wA = hannAtPhase(phaseA);
-        float wB = hannAtPhase(phaseB);
+        //float wA = hannAtPhase(phaseA);
+        float wA = triAtPhase(phaseA);
+        //float wB = hannAtPhase(phaseB);
+        float wB = triAtPhase(phaseB);
         float y = wA * sA + wB * sB;
         out[k] = y;
         writeIndex++;
