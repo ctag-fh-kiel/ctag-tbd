@@ -68,7 +68,7 @@ namespace CTAG::SYNTHESIS {
                 const float maxMs = (PitchShifterTD::MAX_WINDOW_SIZE * 1000.0f) / fs;
                 const float minMs = 2.0f; // practical floor
                 reqMs = std::clamp(reqMs, minMs, maxMs);
-                if (fabsf(reqMs - tsWindowMsApplied) > 0.01f) {
+                if (fabsf(reqMs - tsWindowMsApplied) > 0.01f){
                     int w = static_cast<int>(reqMs * (fs * 0.001f) + 0.5f);
                     if (w < 8) w = 8;
                     if (w > PitchShifterTD::MAX_WINDOW_SIZE) w = PitchShifterTD::MAX_WINDOW_SIZE;
@@ -76,15 +76,8 @@ namespace CTAG::SYNTHESIS {
                     shifter.setWindowSize(w);
                     tsWindowMsApplied = reqMs;
                 }
-                // Prepare priming for pitch shifter latency; delay envelope trigger until primed
-                //shifter.reset();
-                tsPriming = true;
-                tsPrimeLeft = shifter.getLatencySamples() + (shifter.getWindowSize() >> 1);
-            } else {
-                tsPriming = false;
-                tsPrimeLeft = 0;
-                ad.Trigger();
             }
+            ad.Trigger();
         }
         preGate = params.gate;
 
@@ -484,19 +477,12 @@ namespace CTAG::SYNTHESIS {
             bufferStatus = BufferStatus::STOPPED;
         }
         // Don't stop while priming time-stretch (envelope intentionally idle then)
-        if (!ad.GetIsRunning() && !(useTS && tsPriming)) bufferStatus = BufferStatus::STOPPED;
+        if (!ad.GetIsRunning()) bufferStatus = BufferStatus::STOPPED;
 
         if (useTS) {
             // Apply pitch correction via shifter: correct only the stretch, keep legacy pitch behavior
             const float correction = 1.0f / std::clamp(Suse, 0.01f, 64.f);
-            if (tsPriming) {
-                shifter.process(tsIn, tsScratch, size, correction);
-                //memset(out, 0, size * sizeof(float));
-                tsPrimeLeft -= static_cast<int>(size);
-                if (tsPrimeLeft <= 0) { tsPriming = false; ad.Trigger(); }
-            } else {
-                shifter.process(tsIn, out, size, correction);
-            }
+            shifter.process(tsIn, out, size, correction);
         }
 
         // Apply short fade after ping-pong flips to reduce clicks (both TS and non-TS paths)
@@ -583,8 +569,6 @@ namespace CTAG::SYNTHESIS {
         ad.SetLoop(false);
         bufferStatus = BufferStatus::STOPPED;
         pipoFlip = false;
-        tsPriming = false;
-        tsPrimeLeft = 0;
         // Configure initial window from params in ms (clamped to shifter bounds)
         const float maxMs = (PitchShifterTD::MAX_WINDOW_SIZE * 1000.0f) / fs;
         const float minMs = 2.0f;

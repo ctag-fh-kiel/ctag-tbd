@@ -1,6 +1,8 @@
 #include "PitchShifterTD.h"
 #include <algorithm>
 #include <cmath>
+#include "esp_heap_caps.h"
+#include <cassert>
 
 PitchShifterTD::PitchShifterTD(int maxDelaySamples, int windowSize_, float sampleRate)
 : bufSize(std::max(maxDelaySamples, windowSize_*3)),
@@ -12,13 +14,12 @@ PitchShifterTD::PitchShifterTD(int maxDelaySamples, int windowSize_, float sampl
     if (bufSize > MAX_BUF_SIZE) bufSize = MAX_BUF_SIZE;
     if (windowSize > MAX_WINDOW_SIZE) windowSize = MAX_WINDOW_SIZE;
     halfWindow = windowSize / 2;
-    std::fill(buffer, buffer + bufSize, 0.0f);
-    initWindowsAndDelays();
-}
 
-void PitchShifterTD::reset() {
+    // allocate buffer in PSRAM
+    buffer = (float*)heap_caps_malloc(MAX_BUF_SIZE * sizeof(float), MALLOC_CAP_SPIRAM);
+    assert(nullptr != buffer);
+
     std::fill(buffer, buffer + bufSize, 0.0f);
-    writeIndex = 0;
     initWindowsAndDelays();
 }
 

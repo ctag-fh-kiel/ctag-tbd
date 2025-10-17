@@ -36,9 +36,6 @@ public:
     /// @param sampleRate Audio sample rate
     PitchShifterTD(int maxDelaySamples, int windowSize, float sampleRate);
 
-    /// Reset internal state (clears buffer, resets phases)
-    void reset();
-
     /// Process a block of mono samples.
     /// @param in  input buffer (mono)
     /// @param out output buffer (mono)
@@ -49,20 +46,13 @@ public:
     /// Set window size on the fly (will reinit windows; slight click possible)
     void setWindowSize(int newWin);
 
-    int getWindowSize() const { return windowSize; }
-    int getBufferSize() const { return bufSize; }
-    float getSampleRate() const { return fs; }
-
-    /// Algorithmic latency in samples (number of input samples to prime before valid output)
-    int getLatencySamples() const { return windowSize; }
-
 private:
     int bufSize;
     int windowSize;
     int halfWindow;
     float fs;
 
-    float buffer[MAX_BUF_SIZE];
+    float *buffer;
     int writeIndex;
 
     // Two delay values in samples (floating), swept linearly

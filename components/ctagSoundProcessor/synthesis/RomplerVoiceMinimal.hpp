@@ -122,8 +122,6 @@ namespace CTAG::SYNTHESIS{
         float tsIn[kTSMaxBlock];       // input to shifter
         float tsScratch[kTSMaxBlock];  // discard buffer during priming
         PitchShifterTD shifter{2048, 256, 44100.f}; // maxDelay, window, fs (fs informational only)
-        bool tsPriming = false;
-        int tsPrimeLeft = 0; // samples left to prime before valid output
         float tsWindowMsApplied = 0.f; // track applied window to reconfigure on next gate
         // Smoothing and flip polish
         float tsCurrentStretch = 1.f; // smoothed |timeStretch|
