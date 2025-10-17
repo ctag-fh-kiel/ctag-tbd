@@ -34,6 +34,7 @@ public:
     /// @param windowSize Number of samples per Hann window cycle (even number recommended)
     /// @param sampleRate Audio sample rate
     PitchShifterTD(int maxDelaySamples, int windowSize, float sampleRate);
+    ~PitchShifterTD();
 
     /// Process a block of mono samples.
     /// @param in  input buffer (mono)

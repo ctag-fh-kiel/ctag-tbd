@@ -23,6 +23,11 @@ PitchShifterTD::PitchShifterTD(int maxDelaySamples, int windowSize_, float sampl
     initWindowsAndDelays();
 }
 
+PitchShifterTD::~PitchShifterTD(){
+    heap_caps_free(buffer);
+    buffer = nullptr;
+}
+
 void PitchShifterTD::setWindowSize(int newWin) {
     windowSize = std::max(8, newWin);
     if (windowSize > MAX_WINDOW_SIZE) windowSize = MAX_WINDOW_SIZE;
