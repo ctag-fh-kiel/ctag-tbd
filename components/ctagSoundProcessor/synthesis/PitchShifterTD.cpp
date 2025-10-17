@@ -64,7 +64,7 @@ void PitchShifterTD::process(const float* in, float* out, unsigned int n, float 
     float m = 1.0f - r; // samples of delay change per output sample
     float dMax = dMin + sweepRange;
     for (unsigned int k = 0; k < n; ++k) {
-        buffer[writeIndex] = in ? in[k] : 0.0f;
+        buffer[writeIndex] = in[k];
         float readPosA = float(writeIndex) - dA;
         float readPosB = float(writeIndex) - dB;
         float sA = readInterp(readPosA);
