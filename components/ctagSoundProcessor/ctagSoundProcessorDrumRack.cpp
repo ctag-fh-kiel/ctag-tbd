@@ -490,7 +490,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         rompler[0].params.resonance = fS1Reso;
         MK_INT_PAR_ABS(iS1FType, s1_ft, 4.f)
         CONSTRAIN(iS1FType, 0, 3);
-        rompler[0].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS1FType);
+        rompler[0].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::FilterType>(iS1FType);
         rompler[0].Process(s1_out, 32);
         data_ptrs[9] = s1_out;
     }
@@ -581,7 +581,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         rompler[1].params.resonance = fS2Reso;
         MK_INT_PAR_ABS(iS2FType, s2_ft, 4.f)
         CONSTRAIN(iS2FType, 0, 3);
-        rompler[1].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS2FType);
+        rompler[1].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::FilterType>(iS2FType);
         rompler[1].Process(s2_out, 32);
         data_ptrs[10] = s2_out;
     }
@@ -673,7 +673,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         rompler[2].params.resonance = fS3Reso;
         MK_INT_PAR_ABS(iS3FType, s3_ft, 4.f)
         CONSTRAIN(iS3FType, 0, 3);
-        rompler[2].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS3FType);
+        rompler[2].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::FilterType>(iS3FType);
         rompler[2].Process(s3_out, 32);
         data_ptrs[11] = s3_out;
     }
@@ -765,7 +765,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         rompler[3].params.resonance = fS4Reso;
         MK_INT_PAR_ABS(iS4FType, s4_ft, 4.f)
         CONSTRAIN(iS4FType, 0, 3);
-        rompler[3].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::FilterType>(iS4FType);
+        rompler[3].params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::FilterType>(iS4FType);
         rompler[3].Process(s4_out, 32);
         data_ptrs[12] = s4_out;
     }
