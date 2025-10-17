@@ -1,5 +1,10 @@
 [
   {
+    "filename": "mfb_dom1_3",
+    "path": "",
+    "nsamples": 7027099
+  },
+  {
     "filename": "TWIST31",
     "path": "wavetables",
     "nsamples": 16384
@@ -1948,6 +1953,41 @@
     "filename": "456284_stratocu_surface_noise_02",
     "path": "other/factory",
     "nsamples": 74386
+  },
+  {
+    "filename": "cw_amen09_175",
+    "path": "drums/loops",
+    "nsamples": 120960,
+    "bpm": 175,
+    "bars": 2
+  },
+  {
+    "filename": "cw_amen01_175",
+    "path": "drums/loops",
+    "nsamples": 120960,
+    "bpm": 175,
+    "bars": 2
+  },
+  {
+    "filename": "cw_amen02_165",
+    "path": "drums/loops",
+    "nsamples": 128290,
+    "bpm": 165,
+    "bars": 2
+  },
+  {
+    "filename": "cw_amen13_173",
+    "path": "drums/loops",
+    "nsamples": 244716,
+    "bpm": 173,
+    "bars": 4
+  },
+  {
+    "filename": "cw_amen04_170",
+    "path": "drums/loops",
+    "nsamples": 124517,
+    "bpm": 170,
+    "bars": 2
   },
   {
     "filename": "BD1",

@@ -1,5 +1,17 @@
 [
   {
+    "filename": "mfb_dom1",
+    "path": "",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 1,
+    "mono": true,
+    "nsamples": 7027099,
+    "offset": 44,
+    "format_ok": true,
+    "meta_data": {}
+  },
+  {
     "filename": "TWIST31",
     "path": "wavetables",
     "sample_rate": 44100,
@@ -4721,6 +4733,66 @@
       "ISFT": "Sony Sound Forge 7.0 (libsndfile-1.0.24)",
       "ITRK": "5"
     }
+  },
+  {
+    "filename": "cw_amen09_175",
+    "path": "drums/loops",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 2,
+    "mono": false,
+    "nsamples": 120960,
+    "offset": 44,
+    "format_ok": false,
+    "meta_data": {}
+  },
+  {
+    "filename": "cw_amen01_175",
+    "path": "drums/loops",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 2,
+    "mono": false,
+    "nsamples": 120960,
+    "offset": 44,
+    "format_ok": false,
+    "meta_data": {}
+  },
+  {
+    "filename": "cw_amen02_165",
+    "path": "drums/loops",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 2,
+    "mono": false,
+    "nsamples": 128290,
+    "offset": 44,
+    "format_ok": false,
+    "meta_data": {}
+  },
+  {
+    "filename": "cw_amen13_173",
+    "path": "drums/loops",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 2,
+    "mono": false,
+    "nsamples": 244716,
+    "offset": 44,
+    "format_ok": false,
+    "meta_data": {}
+  },
+  {
+    "filename": "cw_amen04_170",
+    "path": "drums/loops",
+    "sample_rate": 44100,
+    "sample_resolution": 16,
+    "channels": 2,
+    "mono": false,
+    "nsamples": 124517,
+    "offset": 44,
+    "format_ok": false,
+    "meta_data": {}
   },
   {
     "filename": "BD1",
