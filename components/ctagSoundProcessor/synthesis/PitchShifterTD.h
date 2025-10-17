@@ -3,7 +3,7 @@
 #include <algorithm>
 
 /// Time-domain pitch shifter following the "two sliding heads + Hann crossfade"
-/// algorithm popularized by Katja (katjaas.nl/pitchshift).
+/// algorithm popularized by Katja https://www.katjaas.nl/pitchshift/pitchshift.html
 /// Mono in/out. Use one instance per channel for stereo.
 class PitchShifterTD {
 public:

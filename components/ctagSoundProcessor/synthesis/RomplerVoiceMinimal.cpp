@@ -620,7 +620,7 @@ namespace CTAG::SYNTHESIS {
     }
 
     RomplerVoiceMinimal::RomplerVoiceMinimal() {
-        memset(&params, 0, sizeof(Params));
+        params = Params{};
         Reset();
     }
 
