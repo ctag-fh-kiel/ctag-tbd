@@ -31,13 +31,14 @@ using namespace CTAG::SP::HELPERS;
 namespace CTAG::SYNTHESIS{
     class RomplerVoiceMinimal {
     public:
-        enum class FilterType : uint32_t {NONE = 0x00, LP, BP, HP};
         struct Params{
             uint32_t slice;
             float playbackSpeed, pitch;
             float startOffsetRelative, lengthRelative; // relative to entire sliceLength
             float a, d;
+            bool disableADEnvelopeVolume = false;
             float cutoff, resonance;
+            enum class FilterType : uint32_t {NONE = 0x00, LP, BP, HP};
             FilterType filterType;
             bool loop, loopPiPo;
             float loopMarker; // relative to length of subsection, not sliceLength

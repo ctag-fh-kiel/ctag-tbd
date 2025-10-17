@@ -195,7 +195,7 @@ namespace CTAG::SYNTHESIS {
                 }
 
                 // interpolate process buffer
-                if (useTS) processBlockDry(procOut, size); else processBlock(procOut, size);
+                processBlock(procOut, size);
 
                 // update read position
                 readPos += readBufferLength;
@@ -236,7 +236,7 @@ namespace CTAG::SYNTHESIS {
                 }
 
                 // interpolate process buffer
-                if (useTS) processBlockDry(procOut, size); else processBlock(procOut, size);
+                processBlock(procOut, size);
 
                 // update read position
                 readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
@@ -283,7 +283,7 @@ namespace CTAG::SYNTHESIS {
                 }
 
                 // interpolate process buffer
-                if (useTS) processBlockDry(procOut, size); else processBlock(procOut, size);
+                processBlock(procOut, size);
 
                 bufferStatus = BufferStatus::RUNNING;
                 break;
@@ -305,7 +305,7 @@ namespace CTAG::SYNTHESIS {
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
-                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                        processBlock(procOut, size);
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                     } else {
                         readPos = loopPos;
@@ -324,7 +324,7 @@ namespace CTAG::SYNTHESIS {
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
-                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                        processBlock(procOut, size);
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                     }
                 } else { // normal reverse read
@@ -337,7 +337,7 @@ namespace CTAG::SYNTHESIS {
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
-                    if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                    processBlock(procOut, size);
                     // update read position
                     readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                 }
@@ -363,7 +363,7 @@ namespace CTAG::SYNTHESIS {
                                                      0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
-                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                        processBlock(procOut, size);
                         pipoFlip ^= true; // toggle flip
                         tsFlipFadeCount = kFlipFadeLen; // request short declick fade after flip
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
@@ -387,7 +387,7 @@ namespace CTAG::SYNTHESIS {
                             }
                         }
                         // interpolate process buffer
-                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                        processBlock(procOut, size);
                         readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                         pipoFlip ^= true;
                         tsFlipFadeCount = kFlipFadeLen; // request short declick fade after flip
@@ -404,7 +404,7 @@ namespace CTAG::SYNTHESIS {
                                 static_cast<float>(readBufferInt16[i]&brr_mask) * 0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
-                    if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                    processBlock(procOut, size);
                 }
 
                 bufferStatus = BufferStatus::RUNNING;
@@ -428,7 +428,7 @@ namespace CTAG::SYNTHESIS {
                                     0.000030518509476f; // only 2 for linear interp
                         }
                         // interpolate process buffer
-                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                        processBlock(procOut, size);
                         readPos += readBufferLength;
                         pipoFlip ^= true;
                         tsFlipFadeCount = kFlipFadeLen; // request short declick fade after flip
@@ -456,7 +456,7 @@ namespace CTAG::SYNTHESIS {
                             }
                         }
                         // interpolate process buffer
-                        if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                        processBlock(procOut, size);
                         pipoFlip ^= true;
                         tsFlipFadeCount = kFlipFadeLen; // request short declick fade after flip
                     }
@@ -470,7 +470,7 @@ namespace CTAG::SYNTHESIS {
                                                  0.000030518509476f; // only 2 for linear interp
                     }
                     // interpolate process buffer
-                    if (params.timeStretchEnable) processBlockDry(procOut, size); else processBlock(procOut, size);
+                    processBlock(procOut, size);
                     // update read position
                     readPos -= static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
                 }
@@ -496,8 +496,6 @@ namespace CTAG::SYNTHESIS {
                 if (tsPrimeLeft <= 0) { tsPriming = false; ad.Trigger(); }
             } else {
                 shifter.process(tsIn, out, size, correction);
-                // Apply envelope post-shifter
-                for (uint32_t i = 0; i < size; ++i) out[i] *= ad.Process();
             }
         }
 
@@ -521,9 +519,9 @@ namespace CTAG::SYNTHESIS {
         CONSTRAIN(fReso, .5f, 20.f)
         svf.set_f_q<stmlib::FREQUENCY_FAST>(fCut / 44100.f, fReso);
         switch (params.filterType) {
-            case FilterType::LP: svf.Process<stmlib::FILTER_MODE_LOW_PASS>(out, out, size); break;
-            case FilterType::BP: svf.Process<stmlib::FILTER_MODE_BAND_PASS>(out, out, size); break;
-            case FilterType::HP: svf.Process<stmlib::FILTER_MODE_HIGH_PASS>(out, out, size); break;
+            case Params::FilterType::LP: svf.Process<stmlib::FILTER_MODE_LOW_PASS>(out, out, size); break;
+            case Params::FilterType::BP: svf.Process<stmlib::FILTER_MODE_BAND_PASS>(out, out, size); break;
+            case Params::FilterType::HP: svf.Process<stmlib::FILTER_MODE_HIGH_PASS>(out, out, size); break;
             default: break;
         }
     }
@@ -539,7 +537,7 @@ namespace CTAG::SYNTHESIS {
         // > 0.1f to limit processing power at high pitch, has aliasing then
         // TODO anti aliasing could possibly completely be removed
         float fAntiAlias = 0.5f / phaseIncrement;
-        if (fAntiAlias < 0.5f && fAntiAlias > 0.1f && params.filterType == FilterType::NONE) {
+        if (fAntiAlias < 0.5f && fAntiAlias > 0.1f && params.filterType == Params::FilterType::NONE) {
             // the more cascades the better, but beware of cost
             dsps_biquad_gen_lpf_f32(coeffs_lpf, fAntiAlias, .5f);
             dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf1);
@@ -554,7 +552,8 @@ namespace CTAG::SYNTHESIS {
             // use this to save more cpu, however correct zdelays to 2 instead of 4
             float x = InterpolateWaveLinear(readBufferFloat, p_integral, p_fractional);
             // apply AM
-            out[i] = x * ad.Process();
+            if (!params.disableADEnvelopeVolume)  x *= ad.Process();
+            out[i] = x;
             readBufferPhase += phaseIncrement;
         }
         // first buffer, fade in, TODO check for buffer sizes (LUT is 17 default, size is 32 default)
@@ -573,27 +572,6 @@ namespace CTAG::SYNTHESIS {
         // update phase
         readBufferPhase = readBufferPhase - static_cast<int32_t >(readBufferPhase); // phase remainder for next cycle
         // update Zs
-        readBufferFloat[0] = readBufferFloat[readBufferLength];
-        readBufferFloat[1] = readBufferFloat[readBufferLength + 1];
-    }
-
-    void RomplerVoiceMinimal::processBlockDry(float *out, const uint32_t size) {
-        // Same as processBlock but without envelope (AM) advance and fades applied
-        // Anti-aliasing low-pass when downsampling, i.e. pitch up, not required if pitch down (upsampling)
-        float fAntiAlias = 0.5f / phaseIncrement;
-        if (fAntiAlias < 0.5f && fAntiAlias > 0.1f && params.filterType == FilterType::NONE) {
-            dsps_biquad_gen_lpf_f32(coeffs_lpf, fAntiAlias, .5f);
-            dsps_biquad_f32(&readBufferFloat[2], &readBufferFloat[2], readBufferLength, coeffs_lpf, w_lpf1);
-        }
-        for (uint32_t i = 0; i < size; i++) {
-            const float p = readBufferPhase;
-            MAKE_INTEGRAL_FRACTIONAL(p);
-            float x = InterpolateWaveLinear(readBufferFloat, p_integral, p_fractional);
-            out[i] = x; // no envelope here
-            readBufferPhase += phaseIncrement;
-        }
-        // Maintain state like processBlock
-        readBufferPhase = readBufferPhase - static_cast<int32_t >(readBufferPhase);
         readBufferFloat[0] = readBufferFloat[readBufferLength];
         readBufferFloat[1] = readBufferFloat[readBufferLength + 1];
     }
@@ -637,4 +615,3 @@ namespace CTAG::SYNTHESIS {
     }
 
 }
-
