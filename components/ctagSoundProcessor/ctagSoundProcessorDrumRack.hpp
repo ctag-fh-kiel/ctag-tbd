@@ -216,7 +216,6 @@ namespace CTAG {
 	atomic<int32_t> s1_pitch, cv_s1_pitch;
 	atomic<int32_t> s1_ts, trig_s1_ts;
 	atomic<int32_t> s1_ts_amount, cv_s1_ts_amount;
-	atomic<int32_t> s1_ts_wsz, trig_s1_ts_wsz;
 	atomic<int32_t> s1_bank, cv_s1_bank;
 	atomic<int32_t> s1_slice, cv_s1_slice;
 	atomic<int32_t> s1_start, cv_s1_start;
@@ -241,7 +240,6 @@ namespace CTAG {
 	atomic<int32_t> s2_pitch, cv_s2_pitch;
 	atomic<int32_t> s2_ts, trig_s2_ts;
 	atomic<int32_t> s2_ts_amount, cv_s2_ts_amount;
-	atomic<int32_t> s2_ts_wsz, trig_s2_ts_wsz;
 	atomic<int32_t> s2_bank, cv_s2_bank;
 	atomic<int32_t> s2_slice, cv_s2_slice;
 	atomic<int32_t> s2_start, cv_s2_start;
@@ -266,7 +264,6 @@ namespace CTAG {
 	atomic<int32_t> s3_pitch, cv_s3_pitch;
 	atomic<int32_t> s3_ts, trig_s3_ts;
 	atomic<int32_t> s3_ts_amount, cv_s3_ts_amount;
-	atomic<int32_t> s3_ts_wsz, trig_s3_ts_wsz;
 	atomic<int32_t> s3_bank, cv_s3_bank;
 	atomic<int32_t> s3_slice, cv_s3_slice;
 	atomic<int32_t> s3_start, cv_s3_start;
@@ -291,7 +288,6 @@ namespace CTAG {
 	atomic<int32_t> s4_pitch, cv_s4_pitch;
 	atomic<int32_t> s4_ts, trig_s4_ts;
 	atomic<int32_t> s4_ts_amount, cv_s4_ts_amount;
-	atomic<int32_t> s4_ts_wsz, trig_s4_ts_wsz;
 	atomic<int32_t> s4_bank, cv_s4_bank;
 	atomic<int32_t> s4_slice, cv_s4_slice;
 	atomic<int32_t> s4_start, cv_s4_start;

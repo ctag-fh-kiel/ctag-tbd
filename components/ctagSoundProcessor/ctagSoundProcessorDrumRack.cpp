@@ -419,29 +419,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
 		MK_BOOL_PAR(bTS1Enable, s1_ts)
     	rompler[0].params.timeStretchEnable = bTS1Enable;
 
-    	// input: -4095 .. 4095
-    	// output: 0.25 .. 4.0, 0 -> 1.0
-    	float fTS1Amount = static_cast<float>(s1_ts_amount) / 4095.f; // t in [-1, 1]
-    	// Actually, (input < 0) maps to [0.25, 1.0], (input > 0) maps to [1.0, 4.0]
-    	if (fTS1Amount < 0.f)
-    		fTS1Amount = 1.0f + fTS1Amount * 0.75f; // 0.75 = (1.0 - 0.25)
-    	else
-    		fTS1Amount = 1.0f + fTS1Amount * 3.0f;  // 3.0 = (4.0 - 1.0)
-    	if (cv_s1_ts_amount != -1){
-    		if (data.cv[cv_s1_ts_amount] < 0.f) // input < 0
-    			fTS1Amount = 1.0f + data.cv[cv_s1_ts_amount] * 0.75f; // 0.75 = (1.0 - 0.25)
-    		else
-    			fTS1Amount = 1.0f + data.cv[cv_s1_ts_amount] * 3.0f;  // 3.0 = (4.0 - 1.0)
-    	}
-
-    	rompler[0].params.timeStretch = fTS1Amount;
-
-    	MK_BOOL_PAR(bTS1Mode, s1_ts_wsz)
-    	if (bTS1Mode){
-    		rompler[0].params.timeStretchQuality = CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::TSQuality::Smooth;
-    	}else{
-    		rompler[0].params.timeStretchQuality = CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::TSQuality::Low;
-    	}
+		float fTS1Amount = 0.005f + s1_ts_amount / 4095.f * 0.995f;
+    	if(cv_s1_ts_amount != -1) fTS1Amount = 0.005f + fabsf(data.cv[cv_s1_ts_amount]) * 0.995f;
+    	rompler[0].params.timeStretchWindowSize = fTS1Amount;
 
         fS1Lev = s1_lev / 4095.f * 1.5f;
         if (cv_s1_lev != -1) fS1Lev += fabsf(data.cv[cv_s1_lev]);
@@ -453,6 +433,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         CONSTRAIN(fS1Speed, -2.f, 2.f)
         rompler[0].params.playbackSpeed = fS1Speed;
         float fS1Pitch = s1_pitch;
+    	fS1Pitch /= 10.f;
         if (cv_s1_pitch != -1){
             fS1Pitch += data.cv[cv_s1_pitch] * 12.f * 5.f;
         }
@@ -511,28 +492,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     	MK_BOOL_PAR(bTS2Enable, s2_ts)
 		rompler[1].params.timeStretchEnable = bTS2Enable;
 
-    	// input: -4095 .. 4095
-    	// output: 0.25 .. 4.0, 0 -> 1.0
-    	float fTS2Amount = static_cast<float>(s2_ts_amount) / 4095.f; // t in [-1, 1]
-    	// Actually, (input < 0) maps to [0.25, 1.0], (input > 0) maps to [1.0, 4.0]
-    	if (fTS2Amount < 0.f)
-    		fTS2Amount = 1.0f + fTS2Amount * 0.75f; // 0.75 = (1.0 - 0.25)
-    	else
-    		fTS2Amount = 1.0f + fTS2Amount * 3.0f;  // 3.0 = (4.0 - 1.0)
-    	if (cv_s2_ts_amount != -1){
-    		if (data.cv[cv_s2_ts_amount] < 0.f) // input < 0
-    			fTS2Amount = 1.0f + data.cv[cv_s2_ts_amount] * 0.75f; // 0.75 = (1.0 - 0.25)
-    		else
-    			fTS2Amount = 1.0f + data.cv[cv_s2_ts_amount] * 3.0f;  // 3.0 = (4.0 - 1.0)
-    	}
-    	rompler[1].params.timeStretch = fTS2Amount;
-
-    	MK_BOOL_PAR(bTS2Mode, s2_ts_wsz)
-		if (bTS2Mode){
-			rompler[1].params.timeStretchQuality = CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::TSQuality::Smooth;
-		}else{
-			rompler[1].params.timeStretchQuality = CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::TSQuality::Low;
-		}
+    	float fTS2Amount = 0.005f + s2_ts_amount / 4095.f * 0.995f;
+    	if(cv_s2_ts_amount != -1) fTS2Amount = 0.005f + fabsf(data.cv[cv_s2_ts_amount]) * 0.995f;
+    	rompler[1].params.timeStretchWindowSize = fTS2Amount;
 
         fS2Lev = s2_lev / 4095.f * 1.5f;
         if (cv_s2_lev != -1) fS2Lev += fabsf(data.cv[cv_s2_lev]);
@@ -544,6 +506,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         CONSTRAIN(fS2Speed, -2.f, 2.f)
         rompler[1].params.playbackSpeed = fS2Speed;
         float fS2Pitch = s2_pitch;
+    	fS2Pitch /= 10.f;
         if (cv_s2_pitch != -1){
             fS2Pitch += data.cv[cv_s2_pitch] * 12.f * 5.f;
         }
@@ -602,29 +565,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     	MK_BOOL_PAR(bTS3Enable, s3_ts)
 		rompler[2].params.timeStretchEnable = bTS3Enable;
 
-    	// input: -4095 .. 4095
-    	// output: 0.25 .. 4.0, 0 -> 1.0
-    	float fTS3Amount = static_cast<float>(s3_ts_amount) / 4095.f; // t in [-1, 1]
-    	// Actually, (input < 0) maps to [0.25, 1.0], (input > 0) maps to [1.0, 4.0]
-    	if (fTS3Amount < 0.f)
-    		fTS3Amount = 1.0f + fTS3Amount * 0.75f; // 0.75 = (1.0 - 0.25)
-    	else
-    		fTS3Amount = 1.0f + fTS3Amount * 3.0f;  // 3.0 = (4.0 - 1.0)
-    	if (cv_s3_ts_amount != -1){
-    		if (data.cv[cv_s3_ts_amount] < 0.f) // input < 0
-    			fTS3Amount = 1.0f + data.cv[cv_s3_ts_amount] * 0.75f; // 0.75 = (1.0 - 0.25)
-    		else
-    			fTS3Amount = 1.0f + data.cv[cv_s3_ts_amount] * 3.0f;  // 3.0 = (4.0 - 1.0)
-    	}
-
-    	rompler[2].params.timeStretch = fTS3Amount;
-
-    	MK_BOOL_PAR(bTS3Mode, s3_ts_wsz)
-		if (bTS3Mode){
-			rompler[2].params.timeStretchQuality = CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::TSQuality::Smooth;
-		}else{
-			rompler[2].params.timeStretchQuality = CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::TSQuality::Low;
-		}
+    	float fTS3Amount = 0.005f + s3_ts_amount / 4095.f * 0.995f;
+    	if(cv_s3_ts_amount != -1) fTS3Amount = 0.005f + fabsf(data.cv[cv_s3_ts_amount]) * 0.995f;
+    	rompler[2].params.timeStretchWindowSize = fTS3Amount;
 
         fS3Lev = s3_lev / 4095.f * 1.5f;
         if (cv_s3_lev != -1) fS3Lev += fabsf(data.cv[cv_s3_lev]);
@@ -636,6 +579,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         CONSTRAIN(fS3Speed, -2.f, 2.f)
         rompler[2].params.playbackSpeed = fS3Speed;
         float fS3Pitch = s3_pitch;
+    	fS3Pitch /= 10.f;
         if (cv_s3_pitch != -1){
             fS3Pitch += data.cv[cv_s3_pitch] * 12.f * 5.f;
         }
@@ -694,29 +638,9 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     	MK_BOOL_PAR(bTS4Enable, s4_ts)
 		rompler[3].params.timeStretchEnable = bTS4Enable;
 
-    	// input: -4095 .. 4095
-    	// output: 0.25 .. 4.0, 0 -> 1.0
-    	float fTS4Amount = static_cast<float>(s4_ts_amount) / 4095.f; // t in [-1, 1]
-    	// Actually, (input < 0) maps to [0.25, 1.0], (input > 0) maps to [1.0, 4.0]
-    	if (fTS4Amount < 0.f)
-    		fTS4Amount = 1.0f + fTS4Amount * 0.75f; // 0.75 = (1.0 - 0.25)
-    	else
-    		fTS4Amount = 1.0f + fTS4Amount * 3.0f;  // 3.0 = (4.0 - 1.0)
-    	if (cv_s4_ts_amount != -1){
-    		if (data.cv[cv_s4_ts_amount] < 0.f) // input < 0
-    			fTS4Amount = 1.0f + data.cv[cv_s4_ts_amount] * 0.75f; // 0.75 = (1.0 - 0.25)
-    		else
-    			fTS4Amount = 1.0f + data.cv[cv_s4_ts_amount] * 3.0f;  // 3.0 = (4.0 - 1.0)
-    	}
-
-    	rompler[3].params.timeStretch = fTS4Amount;
-
-    	MK_BOOL_PAR(bTS4Mode, s4_ts_wsz)
-		if (bTS4Mode){
-			rompler[3].params.timeStretchQuality = CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::TSQuality::Smooth;
-		}else{
-			rompler[3].params.timeStretchQuality = CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::TSQuality::Low;
-		}
+    	float fTS4Amount = 0.005f + s4_ts_amount / 4095.f * 0.995f;
+    	if(cv_s4_ts_amount != -1) fTS4Amount = 0.005f + fabsf(data.cv[cv_s4_ts_amount]) * 0.995f;
+    	rompler[3].params.timeStretchWindowSize = fTS4Amount;
 
         fS4Lev = s4_lev / 4095.f * 1.5f;
         if (cv_s4_lev != -1) fS4Lev += fabsf(data.cv[cv_s4_lev]);
@@ -728,6 +652,7 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
         CONSTRAIN(fS4Speed, -2.f, 2.f)
         rompler[3].params.playbackSpeed = fS4Speed;
         float fS4Pitch = s4_pitch;
+    	fS4Pitch /= 10.f;
         if (cv_s4_pitch != -1){
             fS4Pitch += data.cv[cv_s4_pitch] * 12.f * 5.f;
         }
@@ -1375,8 +1300,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapTrig.emplace("s1_ts", [&](const int val){ trig_s1_ts = val;});
 	pMapPar.emplace("s1_ts_amount", [&](const int val){ s1_ts_amount = val;});
 	pMapCv.emplace("s1_ts_amount", [&](const int val){ cv_s1_ts_amount = val;});
-	pMapPar.emplace("s1_ts_wsz", [&](const int val){ s1_ts_wsz = val;});
-	pMapTrig.emplace("s1_ts_wsz", [&](const int val){ trig_s1_ts_wsz = val;});
 	pMapPar.emplace("s1_bank", [&](const int val){ s1_bank = val;});
 	pMapCv.emplace("s1_bank", [&](const int val){ cv_s1_bank = val;});
 	pMapPar.emplace("s1_slice", [&](const int val){ s1_slice = val;});
@@ -1425,8 +1348,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapTrig.emplace("s2_ts", [&](const int val){ trig_s2_ts = val;});
 	pMapPar.emplace("s2_ts_amount", [&](const int val){ s2_ts_amount = val;});
 	pMapCv.emplace("s2_ts_amount", [&](const int val){ cv_s2_ts_amount = val;});
-	pMapPar.emplace("s2_ts_wsz", [&](const int val){ s2_ts_wsz = val;});
-	pMapTrig.emplace("s2_ts_wsz", [&](const int val){ trig_s2_ts_wsz = val;});
 	pMapPar.emplace("s2_bank", [&](const int val){ s2_bank = val;});
 	pMapCv.emplace("s2_bank", [&](const int val){ cv_s2_bank = val;});
 	pMapPar.emplace("s2_slice", [&](const int val){ s2_slice = val;});
@@ -1475,8 +1396,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapTrig.emplace("s3_ts", [&](const int val){ trig_s3_ts = val;});
 	pMapPar.emplace("s3_ts_amount", [&](const int val){ s3_ts_amount = val;});
 	pMapCv.emplace("s3_ts_amount", [&](const int val){ cv_s3_ts_amount = val;});
-	pMapPar.emplace("s3_ts_wsz", [&](const int val){ s3_ts_wsz = val;});
-	pMapTrig.emplace("s3_ts_wsz", [&](const int val){ trig_s3_ts_wsz = val;});
 	pMapPar.emplace("s3_bank", [&](const int val){ s3_bank = val;});
 	pMapCv.emplace("s3_bank", [&](const int val){ cv_s3_bank = val;});
 	pMapPar.emplace("s3_slice", [&](const int val){ s3_slice = val;});
@@ -1525,8 +1444,6 @@ void ctagSoundProcessorDrumRack::knowYourself(){
 	pMapTrig.emplace("s4_ts", [&](const int val){ trig_s4_ts = val;});
 	pMapPar.emplace("s4_ts_amount", [&](const int val){ s4_ts_amount = val;});
 	pMapCv.emplace("s4_ts_amount", [&](const int val){ cv_s4_ts_amount = val;});
-	pMapPar.emplace("s4_ts_wsz", [&](const int val){ s4_ts_wsz = val;});
-	pMapTrig.emplace("s4_ts_wsz", [&](const int val){ trig_s4_ts_wsz = val;});
 	pMapPar.emplace("s4_bank", [&](const int val){ s4_bank = val;});
 	pMapCv.emplace("s4_bank", [&](const int val){ cv_s4_bank = val;});
 	pMapPar.emplace("s4_slice", [&](const int val){ s4_slice = val;});

@@ -345,6 +345,17 @@ namespace mifx {
             }
         }
 
+        inline void StartNoLFO(Context *c) {
+            --write_ptr_;
+            if (write_ptr_ < 0) {
+                write_ptr_ += size;
+            }
+            c->accumulator_ = 0.0f;
+            c->previous_read_ = 0.0f;
+            c->buffer_ = buffer_;
+            c->write_ptr_ = write_ptr_;
+        }
+
     private:
         enum {
             MASK = size - 1
