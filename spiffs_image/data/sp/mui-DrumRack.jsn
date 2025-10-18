@@ -830,8 +830,8 @@
           "id": "s1_pitch",
           "name": "Pitch",
           "type": "int",
-          "min": -12,
-          "max": 12
+          "min": -120,
+          "max": 120
         },
         {
           "id": "s1_ts",
@@ -840,15 +840,10 @@
         },
         {
           "id": "s1_ts_amount",
-          "name": "Timestretch Amount",
+          "name": "Timestretch Q",
           "type": "int",
-          "min": -4095,
+          "min": 0,
           "max": 4095
-        },
-        {
-          "id": "s1_ts_wsz",
-          "name": "Timestretch Mode",
-          "type": "bool"
         },
         {
           "id": "s1_bank",
@@ -1000,8 +995,8 @@
           "id": "s2_pitch",
           "name": "Pitch",
           "type": "int",
-          "min": -24,
-          "max": 24
+          "min": -120,
+          "max": 120
         },
         {
           "id": "s2_ts",
@@ -1010,15 +1005,10 @@
         },
         {
           "id": "s2_ts_amount",
-          "name": "Timestretch Amount",
+          "name": "Timestretch Q",
           "type": "int",
-          "min": -4095,
+          "min": 0,
           "max": 4095
-        },
-        {
-          "id": "s2_ts_wsz",
-          "name": "Timestretch Mode",
-          "type": "bool"
         },
         {
           "id": "s2_bank",
@@ -1170,8 +1160,8 @@
           "id": "s3_pitch",
           "name": "Pitch",
           "type": "int",
-          "min": -48,
-          "max": 48
+          "min": -120,
+          "max": 120
         },
         {
           "id": "s3_ts",
@@ -1180,15 +1170,10 @@
         },
         {
           "id": "s3_ts_amount",
-          "name": "Timestretch Amount",
+          "name": "Timestretch Q",
           "type": "int",
-          "min": -4095,
+          "min": 0,
           "max": 4095
-        },
-        {
-          "id": "s3_ts_wsz",
-          "name": "Timestretch Mode",
-          "type": "bool"
         },
         {
           "id": "s3_bank",
@@ -1340,8 +1325,8 @@
           "id": "s4_pitch",
           "name": "Pitch",
           "type": "int",
-          "min": -12,
-          "max": 12
+          "min": -120,
+          "max": 120
         },
         {
           "id": "s4_ts",
@@ -1350,15 +1335,10 @@
         },
         {
           "id": "s4_ts_amount",
-          "name": "Timestretch Amount",
+          "name": "Timestretch Q",
           "type": "int",
-          "min": -4095,
+          "min": 0,
           "max": 4095
-        },
-        {
-          "id": "s4_ts_wsz",
-          "name": "Timestretch Mode",
-          "type": "bool"
         },
         {
           "id": "s4_bank",
