@@ -41,6 +41,24 @@ static void boot_into_slot(int slot) { // slot 0 or 1
     printf("Boot into %s\n not successful", p->label);
 }
 
+static const char *esp_get_current_ota_label(void) {
+    static char label[8] = {0};
+
+    const esp_partition_t *running = esp_ota_get_running_partition();
+
+    if (running->type == ESP_PARTITION_TYPE_APP &&
+        running->subtype >= ESP_PARTITION_SUBTYPE_APP_OTA_MIN &&
+        running->subtype <= ESP_PARTITION_SUBTYPE_APP_OTA_MAX) {
+
+        int ota_num = running->subtype - ESP_PARTITION_SUBTYPE_APP_OTA_MIN;
+        snprintf(label, sizeof(label), "ota%d", ota_num);
+        return label;
+
+        } else {
+            return "factory";   // or return NULL if you prefer
+        }
+}
+
 namespace CTAG::SPIAPI{
     TaskHandle_t SpiAPI::hTask;
     spi_slave_transaction_t SpiAPI::transaction;
@@ -349,6 +367,13 @@ namespace CTAG::SPIAPI{
                 HELPERS::ctagSampleRom::SetActiveSampleBank(uint8_param_0);
                 HELPERS::ctagSampleRom::RefreshDataStructure();
                 CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                break;
+            case RequestType::GetFirmwareInfo:
+                ESP_LOGI("SpiAPI", "GetFirmwareInfo");
+                {
+                    std::string info("{\"HWV\":\"" + TBD_HW_VERSION + "\",\"FWV\":\"" + TBD_FW_VERSION + "\",\"OTA\":\"" + std::string(esp_get_current_ota_label()) + "\"}");
+                    result = transmitCString(requestType, info.c_str());
+                }
                 break;
             }
         }

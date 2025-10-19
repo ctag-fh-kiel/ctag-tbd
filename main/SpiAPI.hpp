@@ -54,6 +54,7 @@ namespace CTAG::SPIAPI{
             GetSampleRomDescriptor = 0x16, // returns json cstring with sample rom descriptor
             SetActiveWaveTableBank = 0x17, // sets active wavetable bank, args [bank index (uint8_t)]
             SetActiveSampleRomBank = 0x18, // sets active sample rom bank, args [bank index (uint8_t)]
+            GetFirmwareInfo = 0x19, // returns json {"HWV": hardware version, "FWV": firmware version, "OTA": active ota partition}
         };
 
         static TaskHandle_t hTask;
