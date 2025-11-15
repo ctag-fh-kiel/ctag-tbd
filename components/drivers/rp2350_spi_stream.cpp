@@ -34,6 +34,11 @@ respective component folders / files if different from this license.
 
 #define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
 #define SPI_DATA_SZ 1024 // midi data buffer with header
+#define GPIO_HANDSHAKE GPIO_NUM_51 // handshake line, P4_PICO_03 which is GPIO22 on rp2350
+#define GPIO_MOSI GPIO_NUM_31
+#define GPIO_MISO GPIO_NUM_29
+#define GPIO_SCLK GPIO_NUM_30
+#define GPIO_CS GPIO_NUM_28
 
 DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2350_spi_stream::transaction[3];
 DRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::currentTransaction;
@@ -55,13 +60,23 @@ static void debug_thread(void* arg) {
 }
 */
 
+// Called after a transaction is queued and ready for pickup by master. We use this to set the handshake line high.
+IRAM_ATTR static void spi_post_setup_cb(spi_slave_transaction_t *trans){
+    gpio_set_level(GPIO_HANDSHAKE, 1);
+}
+
+// Called after transaction is sent/received. We use this to set the handshake line low.
+IRAM_ATTR static void spi_post_trans_cb(spi_slave_transaction_t *trans){
+    gpio_set_level(GPIO_HANDSHAKE, 0);
+}
+
 uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
 
     //Configuration for the SPI bus
     spi_bus_config_t buscfg = {
-        .mosi_io_num = GPIO_NUM_31,
-        .miso_io_num = GPIO_NUM_29,
-        .sclk_io_num = GPIO_NUM_30,
+        .mosi_io_num = GPIO_MOSI,
+        .miso_io_num = GPIO_MISO,
+        .sclk_io_num = GPIO_SCLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .data4_io_num = -1,
@@ -77,13 +92,31 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
 
     //Configuration for the SPI slave interface
     spi_slave_interface_config_t slvcfg = {
-        .spics_io_num = GPIO_NUM_28,
+        .spics_io_num = GPIO_CS,
         .flags = 0,
         .queue_size = 3,
         .mode = 3,
-        .post_setup_cb = 0,
-        .post_trans_cb = 0
+        .post_setup_cb = spi_post_setup_cb,
+        .post_trans_cb = spi_post_trans_cb
     };
+
+    //Configuration for the handshake line
+    gpio_config_t io_conf = {
+        .pin_bit_mask = BIT64(GPIO_HANDSHAKE),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+        .hys_ctrl_mode = GPIO_HYS_SOFT_DISABLE
+    };
+
+    //Configure handshake line as output
+    gpio_config(&io_conf);
+
+    //Enable pull-ups on SPI lines so we don't detect rogue pulses when no master is connected.
+    gpio_set_pull_mode(GPIO_MOSI, GPIO_PULLUP_ONLY);
+    gpio_set_pull_mode(GPIO_SCLK, GPIO_PULLUP_ONLY);
+    gpio_set_pull_mode(GPIO_CS, GPIO_PULLUP_ONLY);
 
     rcvBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
     rcvBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
