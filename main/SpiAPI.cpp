@@ -123,6 +123,7 @@ namespace CTAG::SPIAPI{
 
         //Configure handshake line as output
         gpio_config(&io_conf);
+        gpio_set_level(GPIO_HANDSHAKE, 0);
 
         //Enable pull-ups on SPI lines so we don't detect rogue pulses when no master is connected.
         gpio_set_pull_mode(GPIO_MOSI, GPIO_PULLUP_ONLY);
