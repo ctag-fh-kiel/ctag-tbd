@@ -33,7 +33,7 @@ respective component folders / files if different from this license.
 
 
 #define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
-#define SPI_DATA_SZ 1024 // midi data buffer with header
+#define SPI_DATA_SZ 2048 // midi data buffer with header
 #define GPIO_HANDSHAKE GPIO_NUM_51 // handshake line, P4_PICO_03 which is GPIO22 on rp2350
 #define GPIO_MOSI GPIO_NUM_31
 #define GPIO_MISO GPIO_NUM_29
