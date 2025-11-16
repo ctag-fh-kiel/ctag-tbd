@@ -1,8 +1,8 @@
 ## IDF Component Manager Manifest File
 dependencies:
-  joltwallet/littlefs: "^1.19.1"
-  espressif/led_strip: "^2.4.1"
+  joltwallet/littlefs: "^1.20.3"
+  espressif/led_strip: "^2.5.5"
   espressif/esp_tinyusb:
-    version: "^1.7.2"
+    version: "^1.7.6~2"
     rules:
       - if: "target in [esp32s3, esp32p4]"
