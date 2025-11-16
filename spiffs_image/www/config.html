@@ -79,6 +79,12 @@
             <input id="uploadBackup" type="file" hidden/>
         </div>
     </ons-list-item>
+    <ons-list-header>Firmware version</ons-list-header>
+    <ons-list-item>
+        <div style="text-align: left;">
+            <div style="color: orangered; margin: 1em" id="version"></div>
+        </div>
+    </ons-list-item>
     <ons-list-header>System Reboot</ons-list-header>
     <ons-list-item>
         <div style="text-align: center; margin-top: 10px;">
@@ -91,47 +97,10 @@
     </ons-modal>
     <script>
         ons.getScriptPage().onInit = function () {
-            let cal_modal = $('#cal-modal');
             let modal_busy = $('#modal-busy');
-            this.querySelector('#go-cal-backup').onclick = function () {
-                window.open('calib.html', '_blank');
-            };
             $('#version').text('Current FW: ' + window.ioCaps.FWV + " HW: " + window.ioCaps.HWV);
             $.getq('myq', 'api/v1/getConfiguration',
                 data => {
-                    if(window.ioCaps.p == 'mk1'){
-                        $('#cv0-config').val(data["cv_ch0"]);
-                        $('#cv1-config').val(data["cv_ch1"]);
-                        $('#cv2-config').val(data["cv_ch2"]);
-                        $('#cv3-config').val(data["cv_ch3"]);
-                        $('#cv0-config').on('change', function () {
-                            cfgData.cv_ch0 = $('#cv0-config').val();
-                            $.postq('myq', 'api/v1/setConfiguration',
-                                JSON.stringify(cfgData), 'json'
-                            );
-                        });
-                        $('#cv1-config').on('change', function () {
-                            cfgData.cv_ch1 = $('#cv1-config').val();
-                            $.postq('myq', 'api/v1/setConfiguration',
-                                JSON.stringify(cfgData), 'json'
-                            );
-                        });
-                        $('#cv2-config').on('change', function () {
-                            cfgData.cv_ch2 = $('#cv2-config').val();
-                            $.postq('myq', 'api/v1/setConfiguration',
-                                JSON.stringify(cfgData), 'json'
-                            );
-                        });
-                        $('#cv3-config').on('change', function () {
-                            cfgData.cv_ch3 = $('#cv3-config').val();
-                            $.postq('myq', 'api/v1/setConfiguration',
-                                JSON.stringify(cfgData), 'json'
-                            );
-                        });
-                    }else{
-                        $('.mk1').remove();
-                    }
-                    $('#ng-config').val(data["ng_config"]);
                     $('#ch01-daisy').val(data["ch01_daisy"]);
                     $('#ch0-stereo-config').val(data["ch0_toStereo"]);
                     $('#ch1-stereo-config').val(data["ch1_toStereo"]);
@@ -313,13 +282,6 @@
                             animation: 'fall'
                         });
                     });
-                    $('#reboot-calibration').on('click', function () {
-                        cal_modal.show();
-                        $.getq('myq',
-                            '/api/v1/reboot',
-                            {'calibration': '1'}
-                        );
-                    });
                     $('#upload-backup').click(function () {
                         ons.notification.toast('Select all.jsn!', {
                             timeout: 3000,
@@ -339,122 +301,6 @@
                             performUploadBackup(jsn);
                         }
                         reader.readAsText($('#uploadBackup').prop('files')[0]);
-                    });
-                    $('#upgrade-firmware').on('click', function () {
-                        let spiffsImage = $('#spiffs-binary').get(0).files[0];
-                        let fwImage = $('#app-binary').get(0).files[0];
-                        if(spiffsImage == undefined || fwImage == undefined){
-                            ons.notification.toast('Binary image files not defined', {
-                                timeout: 250,
-                                animation: 'fall'
-                            });
-                            return;
-                        }
-                        $('ons-button').each((index, el) => {
-                            $(el).attr("disabled", true);
-                        });
-                        $.ajaxq('myq', {
-                            url: '/api/v1/otaAPI/1',
-                            type: 'post',
-                            data: null,
-                            success: function () {
-                                ons.notification.toast('Please wait some time until update is completed, I will notify you! DO NOT POWER DOWN!!!', {
-                                    timeout: 2500,
-                                    animation: 'fall'
-                                });
-                            },
-                            error: function () {
-                                ons.notification.toast('Error OTA 1!', {
-                                    timeout: 250,
-                                    animation: 'fall'
-                                });
-                            }
-                        });
-                        $.ajaxq('myq', {
-                            xhr: function()
-                            {
-                                let xhr = new window.XMLHttpRequest();
-                                //Upload progress
-                                xhr.upload.addEventListener("progress", function(evt){
-                                    if (evt.lengthComputable) {
-                                        let percentComplete = evt.loaded / evt.total * 100;
-                                        $('#fw-progress').attr('value', percentComplete);
-                                        $('#fw-progress').attr('secondary-value', '33');
-                                    }
-                                }, false);
-                                return xhr;
-                            },
-                            url: '/api/v1/otaAPI/2',
-                            type: 'post',
-                            data: spiffsImage,
-                            processData: false,
-                            contentType: false,
-                            timeout: 60*1000,
-                            success: function () {
-                                console.log('OTA init stage 2 success');
-                            },
-                            error: function () {
-                                ons.notification.toast('Error OTA 2!', {
-                                    timeout: 250,
-                                    animation: 'fall'
-                                });
-                            }
-                        });
-                        $.ajaxq('myq', {
-                            xhr: function()
-                            {
-                                let xhr = new window.XMLHttpRequest();
-                                //Upload progress
-                                xhr.upload.addEventListener("progress", function(evt){
-                                    if (evt.lengthComputable) {
-                                        let percentComplete = evt.loaded / evt.total * 100;
-                                        $('#fw-progress').attr('value', percentComplete);
-                                        $('#fw-progress').attr('secondary-value', '66');
-                                    }
-                                }, false);
-                                return xhr;
-                            },
-                            url: '/api/v1/otaAPI/3',
-                            type: 'post',
-                            data: fwImage,
-                            processData: false,
-                            contentType: false,
-                            timeout: 60*1000,
-                            success: function () {
-                                ons.notification.toast('Please wait some time until update is completed, I will notify you! DO NOT POWER DOWN!!!', {
-                                    timeout: 2500,
-                                    animation: 'fall'
-                                });
-                                $('#fw-progress').attr('value', '80');
-                                $('#fw-progress').attr('secondary-value', '100');
-                            },
-                            error: function () {
-                                ons.notification.toast('Error OTA 3!', {
-                                    timeout: 250,
-                                    animation: 'fall'
-                                });
-                            }
-                        });
-                        $.ajaxq('myq', {
-                            url: '/api/v1/otaAPI/4',
-                            type: 'post',
-                            data: null,
-                            success: function () {
-                                $('#fw-progress').attr('value', '100');
-                                $('#fw-progress').attr('secondary-value', '100');
-                                ons.notification.toast('Update success, rebooting!', {
-                                    timeout: 250,
-                                    animation: 'fall'
-                                });
-                                setTimeout(function(){location.reload()}, 10000);
-                            },
-                            error: function () {
-                                ons.notification.toast('Error OTA 4!', {
-                                    timeout: 250,
-                                    animation: 'fall'
-                                });
-                            }
-                        });
                     });
                 }
             );
