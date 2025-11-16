@@ -59,6 +59,7 @@ static bool MountSDCard(const char *mnt_pt = "/spiffs"){
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
     gpio_config(&io_conf);
+    // toggle power of SD card to reset
     gpio_set_level(GPIO_NUM_45, 1);
     vTaskDelay(100 / portTICK_PERIOD_MS);
     gpio_set_level(GPIO_NUM_45, 0);
