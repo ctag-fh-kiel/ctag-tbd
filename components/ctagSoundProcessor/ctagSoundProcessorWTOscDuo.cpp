@@ -296,10 +296,10 @@ void ctagSoundProcessorWTOscDuo::prepareWavetables() {
         isWaveTableGood = false;
         return;
     }
-    int bankOffset = currentBank * 64 * 256;
+    int bankOffset = currentBank * 64;
     int bufferOffset =
             4 * 64; // load sample data into buffer at offset, due to pre-calculation each wave will be 260 words long
-    sample_rom_1.Read(&buffer[bufferOffset], bankOffset, 256 * 64);
+    sample_rom_1.ReadSlice(&buffer[bufferOffset], bankOffset, 0, 256*64);
     // start conversion of data
     // 64 wavetables per bank
     int c = 0;
