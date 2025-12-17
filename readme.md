@@ -1,5 +1,4 @@
 # **CTAG TBD >>to be determined<<**
-![draft-release](https://github.com/ctag-fh-kiel/ctag-tbd/workflows/draft-release/badge.svg)
 
 ![CTAG-TBD](tbd.png)
 
@@ -58,9 +57,6 @@ In order to use the sample rom, you can upload from the edit sample rom page [fa
 - More ideas?
 
 ## How to build
-**NEW!!!** You can build custom firmwares with plugin subsets and to increase sample-rom using the [cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/).
-No need for a toolchain on your own system.
-
 For developing your own plugins / make TBD yours, you need C/C++ skills.
 You may want to check the [TBD simulator](simulator/readme.md) for easy plugin development without TBD hardware.
 
@@ -70,34 +66,7 @@ Upon successful completion, your binaries will be available as .zip archive as o
 
 If you prefer to have a dev environment on your own, install espressif esp-idf, instructions are [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html).
 Then clone the ctag-tbd repo with all dependencies and build firmware with cmake.
-Firmware release v1.0.0 was build with ESP-IDF 5.1.1 release.
-
-### Devcontainers
-Devcontainers allow users to develop in an isolated container, with all the
-dependencies installed and with the features of an IDE. Currently there are two
-methods supported.
-
-Currently both devcontainers are using [release/v4.4](https://github.com/espressif/esp-idf/tree/release/v4.4) version of [esp-idf](https://github.com/espressif/esp-idf)
-#### Gitpod
-Gitpod offers free online workspaces, just by pressing this button, you'll have
-access to a development environment for ctag-tbd in a browser tab:
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/github.com/ctag-fh-kiel/ctag-tbd)
-#### VsCode Devcontainers
-Visual Studio Code also offers [developing inside a Container](https://code.visualstudio.com/docs/remote/containers),
-but for this approach, the user will need to install:
-- [Visual Studio Code](https://code.visualstudio.com/download)
-  - [Remote - Container Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-- [Docker](https://docs.docker.com/get-docker/)
-
-Open the repository folder with Visual Studio Code and open the container, there are several ways to open the container:
-- When opening Visual Studio Code, a popup will come up asking to open reopen the folder in a Container, click `Reopen in Container`
-- Open the Command Palette and select `Remote-Containers: Reopen in Container`
-- Use the open in a remote window button on the bottom left corner to `Reopen in Container`
-
-By default, the image will be pulled from [esp-idf-env](https://hub.docker.com/r/sergiogasquez/esp-idf-env), but users can also build
-it from the Dockerfile by editing the [`.devcontainer.json`](https://github.com/ctag-fh-kiel/ctag-tbd/blob/master/.devcontainer/devcontainer.json#L3-L10)
-### tbd cloud compiler
-The [tbd cloud compiler](https://fxwiegand.github.io/tbd-cloud-compiler/) allows you to reduce the size of the ctag-tbd firmware, therefore making up more free space for your samples, by removing one or multiple plug-ins that you don't want to use with your module via a web ui. It makes use of GitHub actions running in your own forked repository and therefore doesn't depend on any toolchain installed on your own system. For more information take a look at the [user guide](https://fxwiegand.github.io/tbd-cloud-compiler/user-guide).
+Firmware release v1.0.0 was build with ESP-IDF 5.5.1 release.
 
 ## How to flash
 Either use the binaries available from the [releases at github](https://github.com/ctag-fh-kiel/ctag-tbd/releases) to flash through the TBD's web ui.

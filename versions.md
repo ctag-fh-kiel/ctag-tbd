@@ -7,7 +7,7 @@
 - WTOsc and WTOscDuo have improved transient response for fast wavetable changes
 - Support for new hardware version TBD-BBA (BlackBoxAudio), which is a TBD controlled by USB MIDI and DIN MIDI with a comprehensive [MIDI implementation](https://docs.google.com/document/d/1nE06D81PKwmRPWvzO2XH71YJTlkTrWKaK04dhERxskg/edit?usp=sharing) and duo/quadrophonic output
 - Custom memory allocator for significantly improved stability
-- Switched to ESP-IDF 5.1
+- Switched to ESP-IDF 5.5
 - Swapped flash file system to LittleFS from SPIFFS, much improved stability of flash file system
 - Fixed many bugs with backup / restore mechanism
 - Bug fixes in several plugins
