@@ -55,6 +55,7 @@ namespace CTAG::SPIAPI{
             SetActiveWaveTableBank = 0x17, // sets active wavetable bank, args [bank index (uint8_t)]
             SetActiveSampleRomBank = 0x18, // sets active sample rom bank, args [bank index (uint8_t)]
             GetFirmwareInfo = 0x19, // returns json {"HWV": hardware version, "FWV": firmware version, "OTA": active ota partition}
+            SetAbletonLinkTempo = 0x20 // sets Ableton Link tempo, args [tempo (float bpm)]
         };
 
         static TaskHandle_t hTask;

@@ -64,4 +64,19 @@ menu "CTAG TBD Configuration"
                 Define sound processor fixed memory size allocated at startup.
                 Sound processors are allocated from this memory pool.
 
+        config ABLETON_LINK
+            bool "Enable Ableton Link Support"
+            default y
+            select COMPILER_CXX_EXCEPTIONS
+            help
+                Enable Ableton Link support for tempo synchronization over network.
+                Requires C++ exceptions to be enabled.
+
+        config ABLETON_LINK_DEBUG
+            bool "Enable Ableton Link Debug Output"
+            default n
+            depends on ABLETON_LINK
+            help
+                Enable debug output for Ableton Link.
+
 endmenu

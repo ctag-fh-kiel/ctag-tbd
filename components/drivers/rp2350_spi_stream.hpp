@@ -5,7 +5,6 @@ A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
 (c) 2020, 2024 by Robert Manzke. All rights reserved.
-(c) 2023 MIDI-Message-Parser aka 'bba_update()' by Mathias Brüssel.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -26,6 +25,7 @@ respective component folders / files if different from this license.
 
 namespace CTAG {
     namespace DRIVERS {
+
         class rp2350_spi_stream final{
         public:
             rp2350_spi_stream() = delete;
@@ -34,6 +34,7 @@ namespace CTAG {
         private:
             static spi_slave_transaction_t transaction[3];
             static uint32_t currentTransaction;
+            static uint32_t buf_sz_dynamic; // remaining dynamic size of buffer after default data fields (watermark, ableton ...)
         };
     }
 }
