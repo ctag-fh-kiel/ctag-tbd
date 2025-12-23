@@ -10,3 +10,6 @@
 [submodule "components/moog/MoogLadders"]
 	path = components/moog/MoogLadders
 	url = https://github.com/ctag-fh-kiel/MoogLadders.git
+[submodule "components/ableton_link/link"]
+	path = components/ableton_link/link
+	url = https://github.com/Ableton/link.git

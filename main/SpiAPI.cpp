@@ -29,6 +29,8 @@ respective component folders / files if different from this license.
 #include "esp_ota_ops.h"
 #include "driver/gpio.h"
 
+#include "link.hpp"
+
 #define RCV_HOST    SPI3_HOST // SPI2 connects to rp2350 spi1
 #define GPIO_HANDSHAKE GPIO_NUM_50 // GPIO50 is used for handshake line, P4_PICO_02 which is GPIO18 on rp2350
 #define GPIO_MOSI GPIO_NUM_23
@@ -274,6 +276,7 @@ namespace CTAG::SPIAPI{
             const int uint8_param_1 = rcv_data[4];; // second request parameter, e.g. preset number, ...
             const int int32_param_2 = *(int32_t*)&rcv_data[5]; // third request parameter, e.g. value, ...
             const char* string_param_3 = (char*)&rcv_data[9];
+            const float float_param_0 = *(float*)&rcv_data[3];
             // fourth request parameter, e.g. plugin name, parameter name, ...
 
             int channel = uint8_param_0; // channel is the first parameter
@@ -409,6 +412,12 @@ namespace CTAG::SPIAPI{
                 {
                     std::string info("{\"HWV\":\"" + TBD_HW_VERSION + "\",\"FWV\":\"" + TBD_FW_VERSION + "\",\"OTA\":\"" + std::string(esp_get_current_ota_label()) + "\"}");
                     result = transmitCString(requestType, info.c_str());
+                }
+                break;
+            case RequestType::SetAbletonLinkTempo:
+                {
+                    ESP_LOGI("SpiAPI", "Set Ableton Link bpm: %3.2f", float_param_0);
+                    CTAG::LINK::link::SetLinkTempo(float_param_0);
                 }
                 break;
             }

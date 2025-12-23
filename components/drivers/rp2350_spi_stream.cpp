@@ -31,6 +31,7 @@ respective component folders / files if different from this license.
 
 #include "driver/gpio.h"
 
+#include "link.hpp"
 
 #define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
 #define SPI_DATA_SZ 1024 // midi data buffer with header
@@ -39,6 +40,11 @@ respective component folders / files if different from this license.
 #define GPIO_MISO GPIO_NUM_29
 #define GPIO_SCLK GPIO_NUM_30
 #define GPIO_CS GPIO_NUM_28
+
+#define BUF_OFFSET_LED 2 // two bytes for led status
+#define BUF_OFFSET_ABLETON_LINK_DATA (BUF_OFFSET_LED + 4) // 4 bytes for led data
+#define BUF_OFFSET_MIDI_LENGTH (BUF_OFFSET_ABLETON_LINK_DATA + sizeof(CTAG::LINK::link_session_data_t)) //  bytes for link data
+#define BUF_OFFSET_MIDI_DATA (BUF_OFFSET_MIDI_LENGTH + 4) // 4 bytes for midi length
 
 DRAM_ATTR spi_slave_transaction_t CTAG::DRIVERS::rp2350_spi_stream::transaction[3];
 DRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::currentTransaction;
@@ -155,6 +161,8 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
 
     currentTransaction = 0;
 
+    // check size of remaining dynamic midi buffer
+    assert(BUF_OFFSET_MIDI_DATA <= SPI_DATA_SZ / 2); // at least half of buffer for midi data
     /*
     debug_queue = xQueueCreate(20, sizeof(int));
     xTaskCreatePinnedToCore(debug_thread, "debug_thread", 2048, NULL, 5, NULL, 0);
@@ -171,13 +179,17 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **
 
     // pack led status for current frame
     uint8_t* tx_buf = (uint8_t*) transaction[currentTransaction].tx_buffer;
-    uint32_t *led = (uint32_t*) &tx_buf[2];
+    uint32_t *led = (uint32_t*) &tx_buf[BUF_OFFSET_LED];
     *led = ledStatus;
 
+    // pack ableton link data
+    LINK::link_session_data_t *link_data = (LINK::link_session_data_t*) &tx_buf[BUF_OFFSET_ABLETON_LINK_DATA];
+    LINK::link::GetLinkRtSessionData(link_data);
+
     // pack midi data from USB device midi
-    uint32_t *midi_len = (uint32_t*) &tx_buf[6]; // amount of midi bytes to package
-    uint8_t *midi_buf = (uint8_t*) &tx_buf[10];
-    const uint32_t buf_size = SPI_DATA_SZ - 2 - 4 - 4; // 2 bytes for fingerprint, 4 bytes for led status, 4 bytes for midi length
+    uint32_t *midi_len = (uint32_t*) &tx_buf[BUF_OFFSET_MIDI_LENGTH]; // amount of midi bytes to package
+    uint8_t *midi_buf = (uint8_t*) &tx_buf[BUF_OFFSET_MIDI_DATA];
+    const uint32_t buf_size = SPI_DATA_SZ - BUF_OFFSET_MIDI_DATA; // 2 bytes for fingerprint, 4 bytes for led status, 4 bytes for midi length
     *midi_len = tusb::Read(midi_buf, buf_size);
 
     // queue transaction of transceive
