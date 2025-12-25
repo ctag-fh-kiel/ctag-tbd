@@ -1024,10 +1024,6 @@ void ctagSoundProcessorDrumRack::Init(std::size_t blockSize, void* blockPtr){
     reverb.set_lp(0.5f);
     reverb.set_time(0.4f);
 
-
-    // preload samples
-    sampleRom.BufferInSPIRAM();
-
     // init compressor
     sumCompressor.setSampleRate(44100.f);
     sumCompressor.initRuntime();

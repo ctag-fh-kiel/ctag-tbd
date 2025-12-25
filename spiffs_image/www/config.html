@@ -189,15 +189,8 @@
                                 'api/v1/getPlugins',
                                 data => {
                                     let presets = [];
-                                    let calibration = {};
                                     let configuration = {};
                                     let favorites = {};
-                                    $.getq('myq',
-                                        'api/v1/getCalibration',
-                                        data => {
-                                            calibration = data;
-                                        }
-                                    );
                                     $.getq('myq',
                                         'api/v1/getConfiguration',
                                         data => {
@@ -232,7 +225,6 @@
                                         });
                                         let all = {
                                             presets: presets,
-                                            calibration: calibration,
                                             configuration: configuration,
                                             favorites: favorites
                                         }
@@ -323,27 +315,7 @@
                 document.body.appendChild(myScript);
             }
             function performUploadBackup(data){
-                // console.log(JSON.stringify(data.calibration));
                 modal_busy.show();
-                if(data.calibration !== null){
-                    $.ajaxq('myq', {
-                        url: '/api/v1/setCalibration',
-                        type: 'post',
-                        data: JSON.stringify(data.calibration),
-                        success: function () {
-                            ons.notification.toast('Calibration data persisted!', {
-                                timeout: 250,
-                                animation: 'fall'
-                            });
-                        },
-                        error: function () {
-                            ons.notification.toast('Error persisting calibration data!', {
-                                timeout: 250,
-                                animation: 'fall'
-                            });
-                        }
-                    });
-                }
                 if(data.configuration !== null){
                     $.ajaxq('myq', {
                         url: '/api/v1/setConfiguration',

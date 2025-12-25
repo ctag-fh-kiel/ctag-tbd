@@ -22,16 +22,14 @@ respective component folders / files if different from this license.
 
 #include "SPManager.hpp"
 #include "esp_log.h"
-#include "esp_system.h"
 #include "esp_cpu.h"
 #include "stdint.h"
 #include "string.h"
-#include "codec.hpp"
+#include "codec_bba.hpp"
 #include "esp_heap_caps.h"
-#include "led_rgb.hpp"
+#include "led_rgb_bba.hpp"
 #include "network.hpp"
 #include "tusb.hpp"
-#include "SerialAPI.hpp"
 #include "RestServer.hpp"
 #include "SpiAPI.hpp"
 #include "Control.hpp"
@@ -354,49 +352,15 @@ void SoundProcessorManager::StartSoundProcessor() {
     ledBlink = 5;
     model = std::make_unique<SPManagerDataModel>();
 
-    // check for network reset at bootup
-    /*
-#ifdef CONFIG_TBD_PLATFORM_BBA
-    // uses SW1 = BOOT of esp32-s3-devkitc to reset network credentials
-    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
-    if(gpio_get_level(GPIO_NUM_0) == 0){
-        model->ResetNetworkConfiguration();
-        ESP_LOGE("SP", "Network credentials reset requested!");
-        DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-#endif
-     */
-
-    /* there should be an extra pin for this!
-    // check if network reset requested trig 1 pressed at startup
-    if(GPIO::GetTrig1() == 0){
-        DRIVERS::LedRGB::SetLedRGB(255, 255, 255);
-        model->ResetNetworkConfiguration();
-        ESP_LOGE("SP", "Network credentials reset requested!");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-    */
-
-#ifdef CONFIG_TBD_PLATFORM_BBA
     // init tinyusb
     CTAG::DRIVERS::tusb::Init();
-#endif
-
-#ifdef CONFIG_TBD_PLATFORM_STR
-    // inverted here as some pins are used twice --> check for issues
-    DRIVERS::Codec::InitCodec();
-    CTRL::Control::Init();
-#else
     // init control
     CTRL::Control::Init();
     // init codec
     DRIVERS::Codec::InitCodec();
-#endif
     // generate internal data
     updateConfiguration();
 
-#ifdef CONFIG_WIFI_UI
     // start network
     NET::Network::SetSSID(model->GetNetworkConfigurationData("ssid"));
     NET::Network::SetPWD(model->GetNetworkConfigurationData("pwd"));
@@ -419,27 +383,18 @@ void SoundProcessorManager::StartSoundProcessor() {
     // Ableton Link
     CTAG::LINK::link::Init();
 
-#elif CONFIG_SERIAL_UI
-    SAPI::SerialAPI::StartSerialAPI();
-#endif
-
     // prepare threads and mutex
     processMutex = xSemaphoreCreateMutex();
     if (processMutex == NULL) {
         ESP_LOGE("SPM", "Fatal couldn't create mutex!");
     }
-#ifndef CONFIG_TBD_PLATFORM_STR
+
     // create led indicator thread
     xTaskCreatePinnedToCore(&SoundProcessorManager::led_task, "led_task", 4096, nullptr, tskIDLE_PRIORITY + 2,
                             &ledTaskH, 0);
-#endif
     // create audio thread
     runAudioTask = 1;
     xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
-
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
-    //FAV::Favorites::StartUI();
-#endif
 
     SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
     SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
@@ -488,10 +443,6 @@ void SoundProcessorManager::SetConfigurationFromJSON(const string &data) {
 
 void SoundProcessorManager::updateConfiguration() {
     ledBlink = 3;
-    CTRL::Control::SetCVChannelBiPolar(model->GetConfigurationData("cv_ch0") == "bipolar",
-                              model->GetConfigurationData("cv_ch1") == "bipolar",
-                              model->GetConfigurationData("cv_ch2") == "bipolar",
-                              model->GetConfigurationData("cv_ch3") == "bipolar");
 
     // noise gate configuration
     if (model->GetConfigurationData("ng_config").compare("off") == 0) {
@@ -546,13 +497,8 @@ void SoundProcessorManager::updateConfiguration() {
         if(model->GetConfigurationData("ch0_codecLvlOut").compare("") != 0){
             int lLevel = std::stoi(model->GetConfigurationData("ch0_codecLvlOut"));
             int rLevel = std::stoi(model->GetConfigurationData("ch1_codecLvlOut"));
-#ifdef CONFIG_TBD_BBA_CODEC_ES8388
-            CONSTRAIN(rLevel, 0, 36)
-            CONSTRAIN(lLevel, 0, 36)
-#else
             CONSTRAIN(rLevel, 0, 63)
             CONSTRAIN(lLevel, 0, 63)
-#endif
             DRIVERS::Codec::SetOutputLevels(lLevel, rLevel);
         }
     }
@@ -580,7 +526,6 @@ void SoundProcessorManager::led_task(void *pvParams) {
 }
 
 void SoundProcessorManager::KillAudioTask() {
-    FAV::Favorites::DisableFavoritesUI();
     Codec::SetOutputLevels(0, 0);
     // stop audio Task, delete plugins
     runAudioTask = 0;
@@ -590,12 +535,10 @@ void SoundProcessorManager::KillAudioTask() {
     sp[0] = nullptr;
     sp[1] = nullptr;
     ctagSPAllocator::ReleaseInternalBuffer();
-#ifndef CONFIG_TBD_PLATFORM_STR
     vTaskDelete(ledTaskH);
     ledTaskH = NULL;
     vTaskDelay(100 / portTICK_PERIOD_MS);
     DRIVERS::LedRGB::SetLedRGB(255, 0, 255);
-#endif
     ESP_LOGI("SPManager", "Audio Task Killed: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),

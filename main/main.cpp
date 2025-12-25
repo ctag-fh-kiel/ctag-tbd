@@ -20,25 +20,16 @@ respective component folders / files if different from this license.
 ***************/
 
 
-#include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_log.h"
-#include "adc.hpp"
 #include "fs.hpp"
-#include "led_rgb.hpp"
-#include "gpio.hpp"
+#include "led_rgb_bba.hpp"
 
-#include "Calibration.hpp"
-#include "codec.hpp"
-#include <vector>
 #include "SPManager.hpp"
 #include "ctagSPAllocator.hpp"
 
-#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
-    #include "Display.hpp"
-#endif
 
 using namespace CTAG;
 
@@ -56,28 +47,11 @@ void app_main() {
     // reserve large block of memory before anything else happens
     ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
 
-    // wait until power is somewhat more settled
-    //vTaskDelay(2000 / portTICK_PERIOD_MS);
-
     // init fs
     DRIVERS::FileSystem::InitFS();
 
-#ifndef CONFIG_TBD_PLATFORM_STR
     DRIVERS::LedRGB::InitLedRGB();
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
-#endif
-
-    /*
-#if defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
-    DRIVERS::Display::Init();
-    DRIVERS::Display::ShowFWVersion();
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
-#endif
-*/
-
-#if defined(CONFIG_SERIAL_UI)
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
-#endif
 
     AUDIO::SoundProcessorManager::StartSoundProcessor();
 }

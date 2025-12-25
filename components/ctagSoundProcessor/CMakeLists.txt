@@ -3,22 +3,13 @@ file(GLOB SOUND_PROCESSORS ctagSoundProcessor*.cpp)
 # remove item matching "ctagSoundProcessor.cpp" from ${SOUND_PROCESSORS}
 # list(FILTER SOUND_PROCESSORS EXCLUDE REGEX "ctagSoundProcessor\\.cpp$")
 # clean generated directory
-# remove line containing ctagSoundProcessorDrumRack.cpp from SOUND_PROCESSORS
 file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/gen_include)
 # convert JSON descriptors to c headers and extract processor IDs
 set(SP_INCLUDES "" PARENT_SCOPE)
 set(BIG_IF "" PARENT_SCOPE)
 foreach (VAR ${SOUND_PROCESSORS})
     # check if JSON file for sound processor exists
-    # get_filename_component(MYFILE_WITHOUT_EXT ${VAR} NAME_WLE) # needs newer CMake Version > 3.13 which is not in IDF r4.1 docker image
     get_filename_component(MYFILE_WITHOUT_EXT ${VAR} NAME_WE)
-    # if CONFIG_TBD_PLATFORM_BBA is not defined, skip ctagSoundProcessorDrumRack.cpp
-    #if (NOT CONFIG_TBD_PLATFORM_BBA)
-    #    if ("${VAR}" MATCHES "ctagSoundProcessorDrumRack")
-    #        message(STATUS "Skipping ctagSoundProcessorDrumRack")
-    #        continue()
-    #    endif()
-    #endif()
     message(STATUS "Processing ${MYFILE_WITHOUT_EXT}")
     string(REGEX REPLACE "\\.[^.]*$" "" MYFILE_WITHOUT_EXT ${MYFILE_WITHOUT_EXT}) # using regex instead of NAME_WLE
     string(REGEX REPLACE "ctagSoundProcessor+" "" SP_ID ${MYFILE_WITHOUT_EXT})

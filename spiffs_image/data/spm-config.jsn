@@ -12,10 +12,6 @@
       "mdns_name": "ctag-tbd",
       "ip": "192.168.4.1"
     },
-    "cv_ch0": "unipolar",
-    "cv_ch1": "unipolar",
-    "cv_ch2": "unipolar",
-    "cv_ch3": "unipolar",
     "ng_config": "off",
     "ch01_daisy": "off",
     "ch0_toStereo": "off",
