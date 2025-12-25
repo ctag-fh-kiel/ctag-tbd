@@ -5,7 +5,7 @@ A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
 (c) 2020 by Robert Manzke. All rights reserved.
-(c) 2023 MIDI-Message-Parser aka 'bba_update()' by Mathias Brüssel. 
+(c) 2023 MIDI-Message-Parser aka 'bba_update()' by Mathias Brüssel.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -22,14 +22,11 @@ respective component folders / files if different from this license.
 
 #include "Control.hpp"
 #include "rp2350_spi_stream.hpp"
-#define BUF_SZ (N_CVS*4 + N_TRIGS)
 
 uint8_t *CTAG::CTRL::Control::buf_ptr = nullptr; // buffer pointer for current cv + trig data
 
-IRAM_ATTR void CTAG::CTRL::Control::Update(uint8_t **trigs, float **cvs, uint32_t ledStatus) {
-    CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(&buf_ptr, BUF_SZ, ledStatus);
-    *cvs = (float*) buf_ptr;
-    *trigs = &buf_ptr[N_CVS*4];
+IRAM_ATTR void CTAG::CTRL::Control::Update(void **data, uint32_t ledStatus) {
+    CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(data, ledStatus);
 }
 
 void CTAG::CTRL::Control::Init() {

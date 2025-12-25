@@ -29,9 +29,13 @@ namespace CTAG {
         class rp2350_spi_stream final{
         public:
             rp2350_spi_stream() = delete;
-            static uint8_t* Init(); // Initialize the SPI stream, returns pointer to the buffer
-            static uint32_t GetCurrentBuffer(uint8_t **dst, uint32_t const max_len, uint32_t ledStatus);
+            // Initialize the SPI stream, returns pointer to the buffer
+            static uint8_t* Init();
+            // returns effective length of buffer, first arg is pointer to buffer, second arg is led status, which is sent to subsystem
+            static uint32_t GetCurrentBuffer(void **dst, uint32_t ledStatus);
+            static uint32_t GetBufferSize() {return STREAM_BUFFER_SIZE_ - 2;}
         private:
+            static const uint32_t STREAM_BUFFER_SIZE_ {1024}; // midi data buffer with header
             static spi_slave_transaction_t transaction[3];
             static uint32_t currentTransaction;
             static uint32_t buf_sz_dynamic; // remaining dynamic size of buffer after default data fields (watermark, ableton ...)

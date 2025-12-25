@@ -34,7 +34,6 @@ respective component folders / files if different from this license.
 #include "link.hpp"
 
 #define RCV_HOST    SPI2_HOST // SPI2 connects to rp2350 spi1
-#define SPI_DATA_SZ 1024 // midi data buffer with header
 #define GPIO_HANDSHAKE GPIO_NUM_51 // handshake line, P4_PICO_03 which is GPIO22 on rp2350
 #define GPIO_MOSI GPIO_NUM_31
 #define GPIO_MISO GPIO_NUM_29
@@ -90,7 +89,7 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
         .data6_io_num = -1,
         .data7_io_num = -1,
         .data_io_default_level = false,
-        .max_transfer_sz = SPI_DATA_SZ,
+        .max_transfer_sz = STREAM_BUFFER_SIZE_,
         .flags = 0,
         .isr_cpu_id = ESP_INTR_CPU_AFFINITY_1,
         .intr_flags = 0
@@ -125,19 +124,19 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
     gpio_set_pull_mode(GPIO_SCLK, GPIO_PULLUP_ONLY);
     gpio_set_pull_mode(GPIO_CS, GPIO_PULLUP_ONLY);
 
-    rcvBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
-    rcvBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
-    rcvBuf2 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
-    sendBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
-    sendBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
-    sendBuf2 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, SPI_DATA_SZ, 0);
+    rcvBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, STREAM_BUFFER_SIZE_, 0);
+    rcvBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, STREAM_BUFFER_SIZE_, 0);
+    rcvBuf2 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, STREAM_BUFFER_SIZE_, 0);
+    sendBuf0 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, STREAM_BUFFER_SIZE_, 0);
+    sendBuf1 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, STREAM_BUFFER_SIZE_, 0);
+    sendBuf2 = (uint8_t*) spi_bus_dma_memory_alloc(RCV_HOST, STREAM_BUFFER_SIZE_, 0);
 
-    std::fill_n(rcvBuf0, SPI_DATA_SZ, 0);
-    std::fill_n(rcvBuf1, SPI_DATA_SZ, 0);
-    std::fill_n(rcvBuf2, SPI_DATA_SZ, 0);
-    std::fill_n(sendBuf0, SPI_DATA_SZ, 0);
-    std::fill_n(sendBuf1, SPI_DATA_SZ, 0);
-    std::fill_n(sendBuf2, SPI_DATA_SZ, 0);
+    std::fill_n(rcvBuf0, STREAM_BUFFER_SIZE_, 0);
+    std::fill_n(rcvBuf1, STREAM_BUFFER_SIZE_, 0);
+    std::fill_n(rcvBuf2, STREAM_BUFFER_SIZE_, 0);
+    std::fill_n(sendBuf0, STREAM_BUFFER_SIZE_, 0);
+    std::fill_n(sendBuf1, STREAM_BUFFER_SIZE_, 0);
+    std::fill_n(sendBuf2, STREAM_BUFFER_SIZE_, 0);
 
     ESP_LOGI("rp2350 spi", "Init()");
     auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
@@ -147,22 +146,22 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
     sendBuf1[0] = 0xCA; sendBuf1[1] = 0xFE;
     sendBuf2[0] = 0xCA; sendBuf2[1] = 0xFE;
 
-    transaction[0].length = SPI_DATA_SZ * 8;
+    transaction[0].length = STREAM_BUFFER_SIZE_ * 8;
     transaction[0].rx_buffer = rcvBuf0;
     transaction[0].tx_buffer = sendBuf0;
 
-    transaction[1].length = SPI_DATA_SZ * 8;
+    transaction[1].length = STREAM_BUFFER_SIZE_ * 8;
     transaction[1].rx_buffer = rcvBuf1;
     transaction[1].tx_buffer = sendBuf1;
 
-    transaction[2].length = SPI_DATA_SZ * 8;
+    transaction[2].length = STREAM_BUFFER_SIZE_ * 8;
     transaction[2].rx_buffer = rcvBuf2;
     transaction[2].tx_buffer = sendBuf2;
 
     currentTransaction = 0;
 
     // check size of remaining dynamic midi buffer
-    assert(BUF_OFFSET_MIDI_DATA <= SPI_DATA_SZ / 2); // at least half of buffer for midi data
+    assert(BUF_OFFSET_MIDI_DATA <= STREAM_BUFFER_SIZE_ / 2); // at least half of buffer for midi data
     /*
     debug_queue = xQueueCreate(20, sizeof(int));
     xTaskCreatePinnedToCore(debug_thread, "debug_thread", 2048, NULL, 5, NULL, 0);
@@ -171,12 +170,8 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
     return &rcvBuf0[2]; // skip watermark bytes
 }
 
-IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **dst, uint32_t const max_len, uint32_t ledStatus) {
-    if (max_len > SPI_DATA_SZ - 2) {
-        //ESP_LOGE("rp2350_spi_stream", "max_len %d is too large, max is %d", max_len, DATA_SZ - 2);
-        return 0; // Invalid length
-    }
-
+IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(void **dst, uint32_t ledStatus) {
+    static_assert(STREAM_BUFFER_SIZE_ > N_CVS * sizeof(float) + N_TRIGS + 2, "Buffer too small for spi real-time stream data!");
     // pack led status for current frame
     uint8_t* tx_buf = (uint8_t*) transaction[currentTransaction].tx_buffer;
     uint32_t *led = (uint32_t*) &tx_buf[BUF_OFFSET_LED];
@@ -189,7 +184,7 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **
     // pack midi data from USB device midi
     uint32_t *midi_len = (uint32_t*) &tx_buf[BUF_OFFSET_MIDI_LENGTH]; // amount of midi bytes to package
     uint8_t *midi_buf = (uint8_t*) &tx_buf[BUF_OFFSET_MIDI_DATA];
-    const uint32_t buf_size = SPI_DATA_SZ - BUF_OFFSET_MIDI_DATA; // 2 bytes for fingerprint, 4 bytes for led status, 4 bytes for midi length
+    const uint32_t buf_size = STREAM_BUFFER_SIZE_ - BUF_OFFSET_MIDI_DATA; // 2 bytes for fingerprint, 4 bytes for led status, 4 bytes for midi length
     *midi_len = tusb::Read(midi_buf, buf_size);
 
     // queue transaction of transceive
@@ -229,5 +224,5 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(uint8_t **
     }
     */
 
-    return max_len;
+    return STREAM_BUFFER_SIZE_ - 2;
 }
