@@ -46,14 +46,10 @@ namespace CTAG::SP::HELPERS{
         bool HasSliceGroup(const uint32_t startSlice, const uint32_t endSlice);
         void ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples);
         void ReadSliceAsFloat(float *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples);
-        void BufferInSPIRAM();
         bool IsBufferedInSPIRAM();
 
     private:
-        static void RefreshDataStructureFromFlash();
         static void RefreshDataStructureFromSDCard();
-        void Read(int16_t *dst, uint32_t offset, const uint32_t n_samples);
-        void BufferInSPIRAMFromFlash();
         static uint32_t totalSize;
         static uint32_t numberSlices;
         static uint32_t headerSize;

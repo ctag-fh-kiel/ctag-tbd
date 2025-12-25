@@ -32,7 +32,6 @@ namespace CTAG{
         public:
             Control() = delete;
             static void Init();
-            static void SetCVChannelBiPolar(bool const &v0, bool const &v1, bool const &v2, bool const &v3);
             IRAM_ATTR static void Update(uint8_t **trigs, float **cvs, uint32_t ledStatus);
         private:
             DRAM_ATTR static uint8_t *buf_ptr; // buffer pointer for current cv + trig data

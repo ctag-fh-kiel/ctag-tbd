@@ -48,12 +48,6 @@
         </ons-list-item>
     </ons-list>
     <ons-list>
-        <ons-list-header>Sample ROM</ons-list-header>
-        <ons-list-item>
-            <ons-button id="go-sample-rom" style="margin: 2px;">Edit sample ROM</ons-button>
-        </ons-list-item>
-    </ons-list>
-    <ons-list>
         <ons-list-header>Configuration</ons-list-header>
         <ons-list-item>
             <ons-button id="go-config" style="margin: 2px;">Edit configuration</ons-button>
@@ -418,10 +412,6 @@
                         }
                     }
                 );
-            };
-
-            this.querySelector('#go-sample-rom').onclick = function () {
-                window.open('sample-rom.html', '_blank');
             };
 
             this.querySelector('#go-config').onclick = function () {

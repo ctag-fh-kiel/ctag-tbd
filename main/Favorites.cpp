@@ -21,26 +21,10 @@ respective component folders / files if different from this license.
 
 #include "Favorites.hpp"
 #include "SPManager.hpp"
-#include "driver/gpio.h"
-#include "Display.hpp"
 
-#define UI_TASK_PERIOD_MS 50
-#define LONG_PRESS_PERIOD_MS 1000
-#define SCROLL_RATE_MS 1000
-#define TIMEOUT_PERIOD_MS 5000
 
-#define PIN_PUSH_BTN GPIO_NUM_46 // is not connected on dada-tbd-p4, should come from rp2350
-static uint32_t previousProgramChangeValue {0xFF000000};
-std::atomic<uint32_t> CTAG::FAV::Favorites::programChangeValue {0xFF000000};
-void CTAG::FAV::Favorites::SetProgramChangeValue(uint32_t const &v) {
-    programChangeValue.store(v);
-}
-
-bool CTAG::FAV::Favorites::isUIEnabled {false};
 CTAG::FAV::FavoritesModel CTAG::FAV::Favorites::model;
 int32_t CTAG::FAV::Favorites::activeFav {-1};
-TaskHandle_t CTAG::FAV::Favorites::uiTaskHandle {nullptr};
-CTAG::FAV::Favorites::MenuStates CTAG::FAV::Favorites::uiMenuState {CLEAR};
 
 string CTAG::FAV::Favorites::GetAllFavorites() {
     return model.GetAllFavorites();
@@ -49,7 +33,6 @@ string CTAG::FAV::Favorites::GetAllFavorites() {
 void CTAG::FAV::Favorites::StoreFavorite(int const &id, const string &fav) {
     model.SetFavorite(id, fav);
     activeFav = id;
-    uiMenuState = CLEAR;
 }
 
 void CTAG::FAV::Favorites::ActivateFavorite(const int &id) {
@@ -64,145 +47,8 @@ void CTAG::FAV::Favorites::ActivateFavorite(const int &id) {
     CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(1, p1id);
     CTAG::AUDIO::SoundProcessorManager::ChannelLoadPreset(1, p1pre);
     activeFav = id;
-    uiMenuState = CLEAR;
-}
-void CTAG::FAV::Favorites::StartUI() {
-    gpio_set_direction(PIN_PUSH_BTN, (gpio_mode_t)GPIO_MODE_DEF_INPUT);
-    gpio_set_pull_mode(PIN_PUSH_BTN, (gpio_pull_mode_t)GPIO_PULLUP_ONLY);
-    xTaskCreatePinnedToCore(&CTAG::FAV::Favorites::ui_task, "ui_task", 4096, nullptr, tskIDLE_PRIORITY + 3, &uiTaskHandle, 0);
-    isUIEnabled = true;
 }
 
 void CTAG::FAV::Favorites::DeactivateFavorite() {
     activeFav = -1;
-    uiMenuState = CLEAR;
-}
-
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_AEM) || defined(CONFIG_TBD_PLATFORM_BBA)
-// UI task menu state machine
-[[noreturn]] void CTAG::FAV::Favorites::ui_task(void *pvParams) {
-    int timer {0}; // btn event timer
-    int timer2 {0}; // scroll timer
-    int timer3 {0}; // timeout timer
-    int favSel {0};
-    enum Event {NONE, SHORT, LONG, WAIT, TIMEOUT} event {NONE};
-    MenuStates pre_state {CLEAR};
-    MenuStates return_state {CLEAR};
-    DRIVERS::Display::Clear();
-    while (true) {
-        if(!isUIEnabled){
-            DRIVERS::Display::Clear();
-            uiMenuState = CLEAR;
-            pre_state = CLEAR;
-        }
-        // check button state and generate events
-        uint32_t pchgval = programChangeValue.load();
-        if(pchgval != previousProgramChangeValue){
-            previousProgramChangeValue = pchgval;
-            int fav = previousProgramChangeValue & 0xFF;
-            fav++; // to match fav1 = 1, fav0 = 10
-            activeFav = favSel;
-            ActivateFavorite(fav % 10);
-        }
-        if(!gpio_get_level(PIN_PUSH_BTN)){
-            if (timer != -1) timer++;
-            if (timer >= LONG_PRESS_PERIOD_MS / UI_TASK_PERIOD_MS) {
-                event = LONG;
-                timer = -1;
-            } else {
-                event = NONE;
-            }
-            timer3 = 0;
-        } else {
-            if (timer > 0 && timer < LONG_PRESS_PERIOD_MS / UI_TASK_PERIOD_MS) {
-                event = SHORT;
-            } else event = NONE;
-            timer = 0;
-            timer3++;
-            // generate timeout event if in fav select
-            if (uiMenuState == FAV_SELECT_CONFIRM){
-                if (timer3 >= TIMEOUT_PERIOD_MS / UI_TASK_PERIOD_MS) {
-                    event = TIMEOUT;
-                    timer3 = 0;
-                }
-            }
-        }
-
-        // any key event? or new state? --> process state machine for menu
-        // only once if an event is not NONE or state is changing
-        if (event != NONE || pre_state != uiMenuState) {
-            pre_state = uiMenuState;
-            switch (uiMenuState) {
-                case CLEAR:
-                    DRIVERS::Display::Clear();
-                    if (event == SHORT) uiMenuState = FAV_ACTIVE_NAME;
-                    if (event == LONG){
-                        uiMenuState = FAV_SELECT;
-                        return_state = CLEAR;
-                    }
-                    break;
-                case FAV_ACTIVE_NAME:
-                    if (activeFav != -1) {
-                        //DRIVERS::Display::ShowFavorite(activeFav, model.GetFavoriteName(activeFav));
-                        uiMenuState = FAV_ACTIVE_USTRING;
-                    } else {
-                        DRIVERS::Display::UserMode();
-                        if (event == SHORT) uiMenuState = CLEAR;
-                        if (event == LONG){
-                            uiMenuState = FAV_SELECT;
-                            return_state = FAV_ACTIVE_NAME;
-                        }
-                    }
-                    //if(event == LONG) uiMenuState = FAV_SELECT;
-                    break;
-                case FAV_ACTIVE_USTRING:
-                    DRIVERS::Display::PrepareDisplayFavoriteUString(activeFav, model.GetFavoriteName(activeFav), model.GetFavoriteUString(activeFav));
-                    if (event == SHORT) uiMenuState = CLEAR;
-                    if (event == LONG){
-                        uiMenuState = FAV_SELECT;
-                        return_state = FAV_ACTIVE_NAME;
-                    }
-                    break;
-                case FAV_SELECT:
-                    if (activeFav != -1) favSel = activeFav;
-                    uiMenuState = FAV_SELECT_CONFIRM;
-                    break;
-                case FAV_SELECT_CONFIRM:
-                    if (event == SHORT) {
-                        favSel++;
-                        if (favSel > 9) favSel = 0;
-                    }
-                    DRIVERS::Display::LoadFavorite(favSel, model.GetFavoriteName(favSel));
-                    //DRIVERS::Display::Confirm(favSel);
-                    if (event == LONG) {
-                        activeFav = favSel;
-                        ActivateFavorite(favSel);
-                        uiMenuState = FAV_ACTIVE_NAME;
-                    }
-                    if (event == TIMEOUT) {
-                        uiMenuState = return_state;
-                    }
-                    break;
-            }
-        }
-        // generate scroll events
-        if (uiMenuState == FAV_ACTIVE_USTRING) {
-            timer2++;
-            timer2 %= SCROLL_RATE_MS / UI_TASK_PERIOD_MS;
-            if (timer2 == 0) {
-                DRIVERS::Display::UpdateFavoriteUStringScroll();
-            }
-        }
-        vTaskDelay(UI_TASK_PERIOD_MS / portTICK_PERIOD_MS);
-    }
-}
-
-#endif
-
-void CTAG::FAV::Favorites::DisableFavoritesUI() {
-    isUIEnabled = false;
-}
-
-void CTAG::FAV::Favorites::EnableFavoritesUI() {
-    isUIEnabled = true;
 }

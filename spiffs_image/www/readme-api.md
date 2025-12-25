@@ -296,34 +296,6 @@ Set the module configuration
 }
 ```
 
-####URL: `/getCalibration`
-
-Get the module's calibration
-
-**Method** : `GET`
-
-**Data example** returns calibration json
-
-```json
-{
-  ...
-}
-```
-
-####URL: `/setCalibration`
-
-Set the module's calibration
-
-**Method** : `POST`
-
-**Data example** 
-
-```json
-{
-  ...
-}
-```
-
 ####URL: `/reboot`
 
 Reboot module
@@ -332,63 +304,12 @@ Reboot module
 
 **Data example**
 - calibration = 0 --> just reboot
-- calibration = 1 --> reboot and perform CV calibration
 
 ```json
 {
  "calibration": "1"
 }
 ```
-
-####URL: `/otaAPI/1`
-
-Initialize OTA
-
-**Method** : `POST`
-
-**Data example**
-
-####URL: `/otaAPI/2`
-
-Upload SPIFFS image
-
-**Method** : `POST`
-
-**Data example**
-spiffs blob
-
-####URL: `/otaAPI/3`
-
-Upload firmware image
-
-**Method** : `POST`
-
-**Data example**
-fw blob
-
-####URL: `/otaAPI/4`
-
-Finalize OTA update
-
-**Method** : `POST`
-
-**Data example**
-
-####URL: `/srom/getSize`
-
-Gets size of sample rom in bytes
-
-**Method** : `POST`
-
-####URL: `/srom/erase`
-
-Erases sample rom flash area
-
-**Method** : `POST`
-
-####URL: `/srom/upRaw`
-
-Uploads raw sample blob
 
 **Method** : `POST`
 

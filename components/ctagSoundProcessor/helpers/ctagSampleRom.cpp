@@ -83,16 +83,6 @@ namespace CTAG::SP::HELPERS {
         return sliceOffsets[slice];
     }
 
-    // reads words, offset in words not bytes
-    void ctagSampleRom::Read(int16_t *dst, uint32_t offset, const uint32_t n_samples) {
-        assert(dst != nullptr);
-        offset *= 2; // from int16 to bytes
-        offset += headerSize; // add header size
-        offset += CONFIG_SAMPLE_ROM_START_ADDRESS; // add start offset
-        //spi_flash_read(offset, dst, n_samples * 2);
-        esp_flash_read(nullptr, dst, offset, n_samples * 2);
-    }
-
     bool ctagSampleRom::HasSlice(const uint32_t slice) {
         if (slice >= numberSlices) return false;
         return true;
@@ -111,7 +101,7 @@ namespace CTAG::SP::HELPERS {
         }
         if (len <= 0) return; // nothing to read!
         if(slice >= nSlicesBuffered) // nSlicesBuffered > 0 if SPIRAM Buffer is used
-            Read(dst, start, len);
+            memset(dst, 0, len*2);
         else
             memcpy(dst, &ptrSPIRAM[start], n_samples*2);
     }
@@ -127,18 +117,11 @@ namespace CTAG::SP::HELPERS {
         int16_t idst[len];
         int16_t *dptr = idst;
         if(slice >= nSlicesBuffered)
-            Read(idst, start, len);
+            memset(idst, 0, len*2);
         else
             memcpy(idst, &ptrSPIRAM[start], n_samples*2);
         while (len--) {
             *dst++ = float(*dptr++) * 0.000030518509476f;
-        }
-    }
-
-    // legacy API
-    void ctagSampleRom::BufferInSPIRAM(){
-        if (!readFromSD){
-            BufferInSPIRAMFromFlash();
         }
     }
 
@@ -150,9 +133,8 @@ namespace CTAG::SP::HELPERS {
             RefreshDataStructureFromSDCard();
             return;
         }
-        ESP_LOGI("SROM", "Reading sample data structure from SD card");
+        ESP_LOGI("SROM", "Could not read sample data structure from SD card");
         readFromSD = false;
-        RefreshDataStructureFromFlash();
     }
 
     std::string ctagSampleRom::GetSampleRomDescriptorJSON(){
@@ -208,52 +190,6 @@ namespace CTAG::SP::HELPERS {
         ctagSampleRomModel sample_rom_model;
         if (index >= sample_rom_model.GetTotalNumberSampleBanks()) return;
         sample_rom_model.SetActiveSampleBankIndex(index);
-    }
-
-    void ctagSampleRom::RefreshDataStructureFromFlash(){
-        uint32_t deadface = 0;
-        totalSize = 0;
-        numberSlices = 0;
-        headerSize = 0;
-        //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS, &deadface, 4);
-        esp_flash_read(nullptr, &deadface, CONFIG_SAMPLE_ROM_START_ADDRESS, 4);
-        if (deadface != 0xdeadface) {
-            ESP_LOGE("SROM", "Magic number wrong!");
-            return;
-        }
-        headerSize += 4;
-        //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 4, &totalSize, 4);
-        esp_flash_read(nullptr,&totalSize, CONFIG_SAMPLE_ROM_START_ADDRESS + 4, 4);
-        headerSize += 4;
-        ESP_LOGD("SROM", "Total sample data size %li bytes", totalSize);
-        //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 8, &numberSlices, 4);
-        esp_flash_read(nullptr, &numberSlices, CONFIG_SAMPLE_ROM_START_ADDRESS + 8, 4);
-        headerSize += 4;
-        ESP_LOGD("SROM", "Number slices %li", numberSlices);
-        // alloc memory
-        if (sliceOffsets != nullptr) {heap_caps_free(sliceOffsets); sliceOffsets = nullptr;}
-        sliceOffsets = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
-        assert(sliceOffsets != nullptr);
-        if (sliceSizes != nullptr) {heap_caps_free(sliceSizes); sliceSizes = nullptr;}
-        sliceSizes = (uint32_t *) heap_caps_malloc(numberSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
-        assert(sliceSizes != nullptr);
-        //spi_flash_read(CONFIG_SAMPLE_ROM_START_ADDRESS + 12, &sliceOffsets[0], 4 * numberSlices);
-        esp_flash_read(nullptr, &sliceOffsets[0], CONFIG_SAMPLE_ROM_START_ADDRESS + 12, 4 * numberSlices);
-        headerSize += 4 * numberSlices;
-        int lastOffset = 0;
-        for (uint32_t i = 0; i < numberSlices; i++) {
-            sliceSizes[i] = sliceOffsets[i] - lastOffset;
-            lastOffset = sliceOffsets[i];
-            sliceOffsets[i] -= sliceSizes[i];
-            ESP_LOGD("SROM", "Slice size %li, offset %li", sliceSizes[i], sliceOffsets[i]);
-        }
-        // get first non Wt Slice
-        for (int i = 0; i < numberSlices; i++) {
-            if (sliceSizes[i] > 256){
-                firstNonWtSlice = i;
-                break;
-            }
-        }
     }
 
     void ctagSampleRom::RefreshDataStructureFromSDCard(){
@@ -379,28 +315,5 @@ namespace CTAG::SP::HELPERS {
 
         // everything is buffered
         nSlicesBuffered = numberSlices;
-    }
-
-    void ctagSampleRom::BufferInSPIRAMFromFlash() {
-        // TODO rework this as due to memory fragmentation mem allocation may fail even though enough memory is available
-        if(ptrSPIRAM != nullptr) return; // already buffered
-        size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-        maxSizeBytes -= 512*1024; // reserve 512K for other stuff
-        if(maxSizeBytes < 1024*1024) return; // not enough memory for this to make sense
-        if (ptrSPIRAM == nullptr) { heap_caps_free(ptrSPIRAM); ptrSPIRAM = nullptr; }
-        ptrSPIRAM = (int16_t *)heap_caps_malloc(maxSizeBytes, MALLOC_CAP_SPIRAM);
-        if(ptrSPIRAM == nullptr) return;
-        ESP_LOGI("SR", "Buffering %d bytes in SPIRAM", maxSizeBytes);
-        // figure out how many slices can be buffered
-        uint32_t maxSizeWords = maxSizeBytes / 2;
-        nSlicesBuffered = 0;
-        uint32_t totalSizeWords = 0;
-        for(uint32_t i=0;i<numberSlices;i++){
-            if(totalSizeWords + sliceSizes[i] > maxSizeWords) break;
-            totalSizeWords += sliceSizes[i];
-            nSlicesBuffered++;
-        }
-        ESP_LOGI("SR", "Buffering %li slices of %li, consuming %li bytes", nSlicesBuffered, numberSlices, totalSizeWords*2);
-        Read(ptrSPIRAM, 0, totalSizeWords);
     }
 }

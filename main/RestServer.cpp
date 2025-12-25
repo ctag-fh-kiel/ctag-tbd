@@ -37,8 +37,6 @@ respective component folders / files if different from this license.
 #include "esp_vfs.h"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
-#include "Calibration.hpp"
-#include "OTAManager.hpp"
 #include "sdkconfig.h"
 #include "esp_flash.h"
 
@@ -449,14 +447,6 @@ esp_err_t RestServer::StartRestServer() {
     };
     httpd_register_uri_handler(server, &get_configuration_get_uri);
 
-    /* get configuration*/
-    httpd_uri_t get_calibration_get_uri = {
-            .uri = "/api/v1/getCalibration",
-            .method = HTTP_GET,
-            .handler = &RestServer::get_calibration_get_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &get_calibration_get_uri);
 
     /* reboot with and without calibration request */
     httpd_uri_t reboot_handler_get_uri = {
@@ -486,16 +476,6 @@ esp_err_t RestServer::StartRestServer() {
     httpd_register_uri_handler(server, &set_configuration_post_uri);
 
 
-    /* set calibration */
-    httpd_uri_t set_calibration_post_uri = {
-            .uri = "/api/v1/setCalibration*",
-            .method = HTTP_POST,
-            .handler = &RestServer::set_calibration_post_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &set_calibration_post_uri);
-
-
     httpd_uri_t set_preset_data_post_uri = {
             .uri = "/api/v1/setPresetData*",
             .method = HTTP_POST,
@@ -503,15 +483,6 @@ esp_err_t RestServer::StartRestServer() {
             .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &set_preset_data_post_uri);
-
-    /* set spiffs upload */
-    httpd_uri_t ota_post_uri = {
-            .uri = "/api/v1/otaAPI*",
-            .method = HTTP_POST,
-            .handler = &RestServer::ota_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &ota_post_uri);
 
     /* favorite handler*/
     httpd_uri_t favorite_get_uri = {
@@ -521,15 +492,6 @@ esp_err_t RestServer::StartRestServer() {
             .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &favorite_get_uri);
-
-    /* set sample upload */
-    httpd_uri_t srom_post_uri = {
-            .uri = "/api/v1/srom*",
-            .method = HTTP_POST,
-            .handler = &RestServer::srom_handler,
-            .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &srom_post_uri);
 
     /* URI handler for getting web server files */
     httpd_uri_t common_get_uri = {
@@ -612,112 +574,11 @@ esp_err_t RestServer::get_preset_json_handler(httpd_req_t *req) {
 
 esp_err_t RestServer::reboot_handler(httpd_req_t *req) {
     char query[128];
-    char calibration[16];
     httpd_req_get_url_query_str(req, query, 128);
-    httpd_query_key_value(query, "calibration", calibration, 16);
-    int doCal = atoi(calibration);
-    ESP_LOGW(REST_TAG, "Reboot requested with calibration = %d", doCal);
-    if (doCal) CTAG::CAL::Calibration::RequestCalibrationOnReboot();
+    ESP_LOGW(REST_TAG, "Reboot requested");
     httpd_resp_set_type(req, "text/html");
     httpd_resp_send(req, NULL, 0);
     esp_restart();
-    return ESP_OK;
-}
-
-esp_err_t RestServer::get_calibration_get_handler(httpd_req_t *req) {
-    ESP_LOGD("get_calibration_get_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-    httpd_resp_set_type(req, "application/json");
-
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
-    httpd_resp_sendstr(req, "{}");
-#else
-    const char* res = CTAG::CAL::Calibration::GetCStrJSONCalibration();
-    if(nullptr != res) httpd_resp_sendstr(req, res);
-#endif
-    return ESP_OK;
-}
-
-esp_err_t RestServer::ota_handler(httpd_req_t *req) {
-    static int lastOtaRequest = 0;
-    size_t qlen = httpd_req_get_url_query_len(req);
-    size_t urilen = strlen(req->uri);
-    char otaRequest = req->uri[urilen - qlen - 1];
-    otaRequest -= 0x30;
-    esp_err_t err = ESP_ERR_NOT_FOUND;
-    ESP_LOGI("HTTPD", "OTA request type %d, last request was %d, expecting %d", otaRequest, lastOtaRequest,
-             lastOtaRequest + 1);
-    // stage 1, kill audio task and bring into ota update mode
-    if (lastOtaRequest == 0 && otaRequest == 1) {
-        CTAG::OTA::OTAManager::InitiateOTA(req);
-        lastOtaRequest++;
-        err = ESP_OK;
-    }
-    // stage 2, upload SPIFFS image
-    if (lastOtaRequest == 1 && otaRequest == 2) {
-        err = CTAG::OTA::OTAManager::PostHandlerSPIFFS(req);
-        lastOtaRequest++;
-    }
-    // stage 3, upload Flash image
-    if (lastOtaRequest == 2 && otaRequest == 3) {
-        err = CTAG::OTA::OTAManager::PostHandlerApp(req);
-        lastOtaRequest++;
-    }
-    // stage 4, upload Flash image
-    if (lastOtaRequest == 3 && otaRequest == 4) {
-        err = CTAG::OTA::OTAManager::PostHandlerFlashCommit(req);
-        if (err == ESP_OK) {
-            ESP_LOGI("REST", "OTA successful, rebooting!");
-            httpd_resp_set_type(req, "text/html");
-            httpd_resp_send(req, NULL, 0);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            esp_restart();
-        }
-    }
-
-    if (err != ESP_OK) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error OTA error!");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        esp_restart();
-    }
-    httpd_resp_set_type(req, "text/html");
-    httpd_resp_send(req, NULL, 0);
-
-    return ESP_OK;
-}
-
-esp_err_t RestServer::set_calibration_post_handler(httpd_req_t *req) {
-    ESP_LOGD("set_calibration_post_handler", "1: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-    ESP_LOGI("REST", "Set calibration post handler: content length %d", req->content_len);
-    char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
-    int ret = httpd_req_recv(req, content, req->content_len);
-    if (ret <= 0) {  /* 0 return value indicates connection closed */
-        /* Check if timeout occurred */
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-            /* In case of timeout one can choose to retry calling
-             * httpd_req_recv(), but to keep it simple, here we
-             * respond with an HTTP 408 (Request Timeout) error */
-            httpd_resp_send_408(req);
-        }
-        /* In case of error, returning ESP_FAIL will
-         * ensure that the underlying socket is closed */
-        return ESP_FAIL;
-    }
-    content[req->content_len] = 0;
-#if defined(CONFIG_TBD_PLATFORM_MK2) || defined(CONFIG_TBD_PLATFORM_BBA)
-#else
-    CTAG::CAL::Calibration::SetJSONCalibration(string(content));
-#endif
-    free(content);
-    httpd_resp_set_type(req, "text/html");
-    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
@@ -771,88 +632,6 @@ esp_err_t RestServer::set_preset_json_handler(httpd_req_t *req) {
     } else {
         httpd_resp_send_404(req);
     }
-    return ESP_OK;
-}
-
-esp_err_t RestServer::srom_handler(httpd_req_t *req) {
-    char *s = strrchr(req->uri, '/');
-    string cmd = ++s;
-
-    ESP_LOGE("REST", "Sample ROM command: %s", cmd.c_str());
-
-    if(cmd.compare("getSize") == 0){
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_sendstr(req, to_string(CONFIG_SAMPLE_ROM_SIZE).c_str());
-        return ESP_OK;
-    }
-
-    if(cmd.compare("erase") == 0){
-        CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
-        CTAG::FAV::Favorites::DisableFavoritesUI();
-        // erase flash / lengthy operation
-        ESP_LOGI("REST", "Erasing flash start %d, size %d!", CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE);
-        //ESP_ERROR_CHECK(spi_flash_erase_range(CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
-        ESP_ERROR_CHECK(esp_flash_erase_region(NULL, CONFIG_SAMPLE_ROM_START_ADDRESS, CONFIG_SAMPLE_ROM_SIZE));
-        httpd_resp_set_type(req, "text/html");
-        httpd_resp_send(req, NULL, 0);
-        CTAG::FAV::Favorites::EnableFavoritesUI();
-        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
-        return ESP_OK;
-    }
-
-    if(cmd.compare("upRaw") == 0){
-        ESP_LOGI("REST", "Sample ROM flashing!");
-        int data_read, remaining = req->content_len, offset = 0;
-        char *buffer = (char*)heap_caps_malloc(4096, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        if(buffer == NULL){
-            httpd_resp_send_500(req);
-            return ESP_ERR_NO_MEM;
-        }
-        CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
-        CTAG::FAV::Favorites::DisableFavoritesUI();
-        int blockCnt = 0;
-        while (remaining > 0) {
-            // Read the data for the request
-            uint32_t size = remaining > 4096 ? 4096 : remaining;
-            data_read = httpd_req_recv(req, buffer, size);
-            if (data_read < 0) {
-                httpd_resp_send_500(req);
-                heap_caps_free(buffer);
-                CTAG::FAV::Favorites::EnableFavoritesUI();
-                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
-                heap_caps_free(buffer);
-                return ESP_ERR_INVALID_ARG;
-            } else if (data_read > 0) {
-                //spi_flash_write(CONFIG_SAMPLE_ROM_START_ADDRESS + offset, buffer, data_read);
-                esp_flash_write(NULL, buffer, CONFIG_SAMPLE_ROM_START_ADDRESS + offset, data_read);
-            }
-            offset += data_read;
-            remaining -= data_read;
-            if(blockCnt == 0){
-                if(((uint32_t*)buffer)[0] != 0xdeadface){
-                    ESP_LOGE("REST", "Not a valid sample rom file!");
-                    httpd_resp_send_500(req);
-                    heap_caps_free(buffer);
-                    CTAG::FAV::Favorites::EnableFavoritesUI();
-                    CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
-                    heap_caps_free(buffer);
-                    return ESP_ERR_INVALID_ARG;
-                }
-            }
-            blockCnt++;
-        }
-        heap_caps_free(buffer);
-        httpd_resp_set_type(req, "text/html");
-        httpd_resp_send(req, NULL, 0);
-        CTAG::AUDIO::SoundProcessorManager::RefreshSampleRom();
-        CTAG::FAV::Favorites::EnableFavoritesUI();
-        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
-        ESP_LOGI("REST", "Sample ROM flashing completed!");
-        return ESP_OK;
-    }
-
-    httpd_resp_send_404(req);
-
     return ESP_OK;
 }
 

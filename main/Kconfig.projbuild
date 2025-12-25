@@ -1,64 +1,8 @@
 menu "CTAG TBD Configuration"
-        choice TBD_PLATFORM
-            prompt "TBD Hardware Platform"
-            default TBD_PLATFORM_V2
-            help
-                Determines which TBD platform, V1 WM8731 codec, V2 WM8978 codec, STR Strämpler, BBA Black Box Audio
-
-            config TBD_PLATFORM_V2
-                bool "V2 (WM8978 + ESP ADC)"
-            config TBD_PLATFORM_V1
-                bool "V1 (WM8731 + ESP ADC)"
-            config TBD_PLATFORM_STR
-                bool "Strämpler (WM8731 + MCP3208)"
-            config TBD_PLATFORM_AEM
-                bool "AE Modular (WM8974 + ESP ADC)"
-            config TBD_PLATFORM_MK2
-                bool "MK2 (WM8978 + STM32 CVs + Trigs)"
-            config TBD_PLATFORM_BBA
-                bool "BBA (Midi)"
-
-            config TBD_TOUCH_BUTTON_THRESHOLD
-                int "Touch Button Threshold"
-                default 36000
-                depends on TBD_PLATFORM_BBA
-                range 0 50000
-                help
-                    Threshold for touch buttons.
-
-        endchoice
-
-
-        choice TBD_UI_TYPE
-            prompt "Wifi or serial UI"
-            default WIFI_UI
-            help
-                Whether to build for Wifi or Serial UI
-            config WIFI_UI
-                bool "WIFI UI"
-            config SERIAL_UI
-                bool "SERIAL UI"
-        endchoice
-
-        config SAMPLE_ROM_START_ADDRESS
-            hex "Sample ROM Start Address"
-            default 0xB00000
-            range 0x700000 0xD00000
-            help
-                Define the start of the sample ROM flash section. Has to be at end of flash, beyond last partition entries.
-
-        config SAMPLE_ROM_SIZE
-            hex "Sample ROM Size"
-            default 0x500000
-            range 0x300000 0x1500000
-            help
-                Define sample ROM flash size.
-                TBD-Platform V1: 0x500000 (ESP32)
-                TBD-Platform BBA: 0x1500000 (ESP32-S3)
 
         config SP_FIXED_MEM_ALLOC_SZ
             int "Sound Processor Fixed Memory Alloc Size"
-            default 114688
+            default 300000
             range 113944 380000
             help
                 Define sound processor fixed memory size allocated at startup.
