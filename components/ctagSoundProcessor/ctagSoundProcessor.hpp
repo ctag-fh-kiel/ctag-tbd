@@ -75,6 +75,7 @@ namespace CTAG {
     namespace SP {
         struct ProcessData {
             float *buf;
+            void *controlData; // use this for plugin specific control data, points at beginning of spi transaction buffer
             float *cv;
             uint8_t *trig;
         };

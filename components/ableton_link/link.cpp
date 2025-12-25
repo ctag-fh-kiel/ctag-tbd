@@ -58,7 +58,7 @@ namespace CTAG{
 #endif
         }
 
-        void link::GetLinkRtSessionData(link_session_data_t* data){
+IRAM_ATTR void link::GetLinkRtSessionData(link_session_data_t* data){
 #ifdef CONFIG_ABLETON_LINK
             if(!ableton_link){
                 data->linkActive = false;

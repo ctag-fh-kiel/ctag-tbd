@@ -98,7 +98,9 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     while (runAudioTask) {
 
         // update data from ADCs and GPIOs for real-time control
-        CTAG::CTRL::Control::Update(&pd.trig, &pd.cv, ledStatusUI);
+        CTAG::CTRL::Control::Update(&pd.controlData, ledStatusUI);
+        pd.cv = (float*) pd.controlData;
+        pd.trig = (uint8_t*) pd.controlData + N_CVS * sizeof(float);
 
         // get normalized raw data from CODEC
         DRIVERS::Codec::ReadBuffer(fbuf, BUF_SZ);
