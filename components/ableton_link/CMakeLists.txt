@@ -18,7 +18,6 @@ else()
                 -Wno-multichar
                 -Wno-deprecated-declarations
                 -Wno-redundant-move
-                -fexceptions
         )
         endif()
 endif()

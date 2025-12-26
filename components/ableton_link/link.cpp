@@ -6,6 +6,27 @@
 
 #ifdef CONFIG_ABLETON_LINK
 #include "ableton/Link.hpp"
+
+// Define throw_exception handler for ASIO (no-exceptions mode)
+namespace asio {
+    namespace detail {
+        template<typename E>
+        void throw_exception(const E& e) {
+            ESP_LOGE("ASIO", "Exception thrown!");
+            abort();
+        }
+
+        // Explicit instantiations for all exception types ASIO uses
+        template void throw_exception<asio::execution::bad_executor>(const asio::execution::bad_executor&);
+        template void throw_exception<asio::invalid_service_owner>(const asio::invalid_service_owner&);
+        template void throw_exception<asio::service_already_exists>(const asio::service_already_exists&);
+        template void throw_exception<std::system_error>(const std::system_error&);
+        template void throw_exception<asio::ip::bad_address_cast>(const asio::ip::bad_address_cast&);
+        template void throw_exception<std::out_of_range>(const std::out_of_range&);
+        template void throw_exception<std::length_error>(const std::length_error&);
+        template void throw_exception<std::bad_alloc>(const std::bad_alloc&);
+    }
+}
 #endif
 
 namespace CTAG{

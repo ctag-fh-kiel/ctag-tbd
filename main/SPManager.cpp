@@ -536,7 +536,6 @@ void SoundProcessorManager::KillAudioTask() {
     if(nullptr!=sp[1]) delete sp[1];
     sp[0] = nullptr;
     sp[1] = nullptr;
-    ctagSPAllocator::ReleaseInternalBuffer();
     vTaskDelete(ledTaskH);
     ledTaskH = NULL;
     vTaskDelay(100 / portTICK_PERIOD_MS);

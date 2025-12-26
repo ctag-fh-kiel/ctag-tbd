@@ -11,10 +11,8 @@ menu "CTAG TBD Configuration"
         config ABLETON_LINK
             bool "Enable Ableton Link Support"
             default y
-            select COMPILER_CXX_EXCEPTIONS
             help
                 Enable Ableton Link support for tempo synchronization over network.
-                Requires C++ exceptions to be enabled.
 
         config ABLETON_LINK_DEBUG
             bool "Enable Ableton Link Debug Output"

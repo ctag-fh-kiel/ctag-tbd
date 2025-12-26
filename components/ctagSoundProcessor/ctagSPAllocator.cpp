@@ -28,34 +28,17 @@ respective component folders / files if different from this license.
 using namespace CTAG::SP;
 
 // create all definitions
-void *ctagSPAllocator::internalBuffer = nullptr;
 void *ctagSPAllocator::buffer1 = nullptr;
 void *ctagSPAllocator::buffer2 = nullptr;
-std::size_t ctagSPAllocator::totalSize = 0;
+std::size_t ctagSPAllocator::totalSize = CONFIG_SP_FIXED_MEM_ALLOC_SZ;
 std::size_t ctagSPAllocator::size1 = 0;
 std::size_t ctagSPAllocator::size2 = 0;
 ctagSPAllocator::AllocationType ctagSPAllocator::allocationType = ctagSPAllocator::AllocationType::CH0;
 
-void ctagSPAllocator::AllocateInternalBuffer(std::size_t const &size) {
-    ESP_LOGI("ctagSPAllocator", "AllocateInternalBuffer: allocating %d bytes", size);
-    internalBuffer = heap_caps_malloc(size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-    if(nullptr == internalBuffer){
-        ESP_LOGE("ctagSPAllocator", "AllocateInternalBuffer: could not allocate memory of size %d", size);
-        assert(nullptr != internalBuffer);
-    }
-    totalSize = size;
-}
+__attribute__((aligned(32)))
+static uint8_t custom_pool[CONFIG_SP_FIXED_MEM_ALLOC_SZ];
 
-void ctagSPAllocator::ReleaseInternalBuffer() {
-    ESP_LOGI("ctagSPAllocator", "ReleaseInternalBuffer: releasing memory");
-    heap_caps_free(internalBuffer);
-    internalBuffer = nullptr;
-    buffer1 = nullptr;
-    buffer2 = nullptr;
-    totalSize = 0;
-    size1 = 0;
-    size2 = 0;
-}
+void *ctagSPAllocator::internalBuffer = custom_pool;
 
 void *ctagSPAllocator::Allocate(std::size_t const &size) {
     void *ptr = nullptr;

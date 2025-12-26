@@ -44,9 +44,6 @@ https://www.embedded.com/modern-c-in-embedded-systems-part-1-myth-and-reality/
 */
 
 void app_main() {
-    // reserve large block of memory before anything else happens
-    ctagSPAllocator::AllocateInternalBuffer(CONFIG_SP_FIXED_MEM_ALLOC_SZ); // TBDings has highest needs of 113944 bytes, take 112k=114688 bytes as default
-
     // init fs
     DRIVERS::FileSystem::InitFS();
 
