@@ -12,8 +12,8 @@ namespace asio {
     namespace detail {
         template<typename E>
         void throw_exception(const E& e) {
-            ESP_LOGE("ASIO", "Exception thrown!");
-            abort();
+            ESP_LOGE("ASIO", "Exception thrown %s!", e.what());
+            //abort();
         }
 
         // Explicit instantiations for all exception types ASIO uses
