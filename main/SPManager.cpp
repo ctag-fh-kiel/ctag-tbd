@@ -37,7 +37,6 @@ respective component folders / files if different from this license.
 #include <math.h>
 #include "helpers/ctagFastMath.hpp"
 #include "helpers/ctagSampleRom.hpp"
-#include "freeverb3/efilter.hpp"
 #include "stmlib/dsp/dsp.h"
 
 // ableton link
@@ -67,16 +66,6 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     bool isStereoCH0 = false;
     esp_cpu_cycle_count_t start, diff;
 
-
-    fv3::dccut_f in_dccutl, in_dccutr;
-    //fv3::dccut_f out_dccutl, out_dccutr;
-    in_dccutl.setCutOnFreq(3.7f, 44100.f);
-    in_dccutr.setCutOnFreq(3.7f, 44100.f);
-    /*
-    out_dccutl.setCutOnFreq(3.7f, 44100.f);
-    out_dccutr.setCutOnFreq(3.7f, 44100.f);
-    */
-
     SP::ProcessData pd;
     pd.buf = fbuf;
 
@@ -99,19 +88,10 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         // track the cpu cycles for audio task
         start = esp_cpu_get_cycle_count();
 
-        // In peak detection
-        // dc cut input
-        float maxl = 0.f, maxr = 0.f;
+        // In peak detection, dc cut is done in codec
         float max = 0.f;
-        for (uint32_t i = 0; i < BUF_SZ; i++) {
-            //fbuf[i * 2] = in_dccutl(fbuf[i * 2]);
-            float val = fabsf(fbuf[i * 2]);
-            if (val > maxl) maxl = val;
-            //fbuf[i * 2 + 1] = in_dccutr(fbuf[i * 2 + 1]);
-            val = fabsf(fbuf[i * 2 + 1]);
-            if (val > maxr) maxr = val;
-        }
-        max = maxl >= maxr ? maxl : maxr;
+        // just take first sample of block for level meter
+        max = fabsf(fbuf[0] + fbuf[1]) / 2.f;
         peakIn = 0.95f * peakIn + 0.05f * max;
 
         // led indicator, green for input
