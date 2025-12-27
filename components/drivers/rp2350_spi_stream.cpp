@@ -92,7 +92,7 @@ uint8_t* CTAG::DRIVERS::rp2350_spi_stream::Init(){
         .max_transfer_sz = STREAM_BUFFER_SIZE_,
         .flags = 0,
         .isr_cpu_id = ESP_INTR_CPU_AFFINITY_1,
-        .intr_flags = 0
+        .intr_flags = ESP_INTR_FLAG_LEVEL3|ESP_INTR_FLAG_IRAM
     };
 
     //Configuration for the SPI slave interface
