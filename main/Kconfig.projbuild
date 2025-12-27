@@ -1,24 +1,59 @@
 menu "CTAG TBD Configuration"
 
-        config SP_FIXED_MEM_ALLOC_SZ
-            int "Sound Processor Fixed Memory Alloc Size"
-            default 300000
-            range 113944 380000
-            help
-                Define sound processor fixed memory size allocated at startup.
-                Sound processors are allocated from this memory pool.
+    config ABLETON_LINK
+        bool "Enable Ableton Link Support"
+        default y
+        help
+            Enable Ableton Link support for tempo synchronization over network.
 
-        config ABLETON_LINK
-            bool "Enable Ableton Link Support"
+    config ABLETON_LINK_DEBUG
+        bool "Enable Ableton Link Debug Output"
+        default n
+        depends on ABLETON_LINK
+        help
+            Enable debug output for Ableton Link.
+
+    menu "Sample ROM Settings"
+        config MAX_ALLOC_BYTES_PSRAM_SAMPLE_DATA
+            int "Maximum PSRAM Allocation Size Sample Data"
+            default 29360128 # 28MB
+            range 8388608 31457280 # 8MB to 30MB
+            help
+                Define maximum PSRAM allocation size for sample data in ctagSampleRom.
+                Files from sd-card will be stored here.
+                All mem allocated here is not available for other uses, when ctagSampleRom is instantiated.
+
+        config MAX_SAMPLES_IN_SAMPLE_ROM
+            int "Maximum Number of Samples in Sample ROM"
+            default 128
+            range 32 1024 # max 32*32 addressable in web ui
+            help
+                Define maximum number of samples in sample rom.
+                This limits the number of sample slots available in ctagSampleRom.
+                It is samples, i.e. files from sd-card, that are loaded into sample rom, not bytes.
+    endmenu
+
+    config SP_FIXED_MEM_ALLOC_SZ
+        int "Sound Processor Fixed Memory Alloc Size"
+        default 300000
+        range 113944 380000
+        help
+            Define sound processor fixed memory size allocated at startup.
+            Sound processors are allocated from this memory pool.
+
+    menu "Optional Tasks"
+        config TASK_REST_SERVER
+            bool "Start REST Server Task"
             default y
             help
-                Enable Ableton Link support for tempo synchronization over network.
+                Enable REST server task for handling HTTP requests offering TBD web-ui.
 
-        config ABLETON_LINK_DEBUG
-            bool "Enable Ableton Link Debug Output"
+        config TASK_RGB_INDICATOR_LED
+            bool "Enable RGB Indicator LED Task"
             default n
-            depends on ABLETON_LINK
             help
-                Enable debug output for Ableton Link.
+                Drives indicator RGB LED to show system status.
+
+    endmenu
 
 endmenu

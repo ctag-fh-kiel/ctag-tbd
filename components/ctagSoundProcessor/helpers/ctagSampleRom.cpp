@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020, 2025 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -34,14 +34,9 @@ respective component folders / files if different from this license.
 #include "sdkconfig.h"
 #endif
 
-// let's assume that we have 28MiB of PSRAM for samples
-#define TOTAL_SIZE_PSRAM_BYTES 32*1024*1024
-#define MAX_ALLOC_BYTES_SAFETY_MARGIN 4*1024*1024
-#define MAX_ALLOC_BYTES_PSRAM (TOTAL_SIZE_PSRAM_BYTES - MAX_ALLOC_BYTES_SAFETY_MARGIN)
-#define MAX_SLICES_SAMPLES 128 // maximum number of samples to be available
-
 namespace CTAG::SP::HELPERS {
     atomic<uint32_t> ctagSampleRom::nConsumers = 0;
+    uint32_t ctagSampleRom::maxPSRAMSize = CONFIG_MAX_ALLOC_BYTES_PSRAM_SAMPLE_DATA;
     uint32_t ctagSampleRom::totalSize = 0;
     uint32_t ctagSampleRom::numberSlices = 0;
     uint32_t ctagSampleRom::headerSize = 0;
@@ -52,10 +47,13 @@ namespace CTAG::SP::HELPERS {
     uint32_t ctagSampleRom::nSlicesBuffered = 0;
     bool ctagSampleRom::readFromSD = false;
 
-    ctagSampleRom::ctagSampleRom() {
-        //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
+    ctagSampleRom::ctagSampleRom() : ctagSampleRom{CONFIG_MAX_ALLOC_BYTES_PSRAM_SAMPLE_DATA} {}
+
+    ctagSampleRom::ctagSampleRom(const uint32_t sample_rom_size_psram){
+        assert(sample_rom_size_psram <= CONFIG_MAX_ALLOC_BYTES_PSRAM_SAMPLE_DATA);
         nConsumers++;
         if(nConsumers == 1){
+            maxPSRAMSize = sample_rom_size_psram;
             RefreshDataStructure();
         }
     }
@@ -205,7 +203,7 @@ namespace CTAG::SP::HELPERS {
         numberSlices = slices_wt * 64 + slices_samples;
         headerSize = 0;
 
-        const uint32_t maxSlices = 32 * 64 + MAX_SLICES_SAMPLES; // wavetable max 32 slices
+        const uint32_t maxSlices = 32 * 64 + CONFIG_MAX_SAMPLES_IN_SAMPLE_ROM; // wavetable max 32 slices
 
         // alloc memory for data structure in memory
         if (sliceOffsets == nullptr) sliceOffsets = (uint32_t *) heap_caps_malloc(maxSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
@@ -213,18 +211,18 @@ namespace CTAG::SP::HELPERS {
         if (sliceSizes == nullptr) sliceSizes = (uint32_t *) heap_caps_malloc(maxSlices * sizeof(uint32_t), MALLOC_CAP_SPIRAM);
         assert(sliceSizes != nullptr);
 
-        // allocatate large block of PSRAM
-        assert(MAX_ALLOC_BYTES_PSRAM >= totalSize);
+        // allocate large block of PSRAM
+        assert(maxPSRAMSize >= totalSize);
         if(ptrSPIRAM == nullptr){
             size_t maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
             ESP_LOGI("SR", "Max Bytes free in PSRAM: %li", maxSizeBytes);
-            assert(maxSizeBytes >= MAX_ALLOC_BYTES_PSRAM); // check if sample data fits in PSRAM
-            ptrSPIRAM = (int16_t *)heap_caps_malloc(MAX_ALLOC_BYTES_PSRAM, MALLOC_CAP_SPIRAM);
+            assert(maxSizeBytes >= CONFIG_MAX_ALLOC_BYTES_PSRAM_SAMPLE_DATA); // check if sample data fits in PSRAM
+            ptrSPIRAM = (int16_t *)heap_caps_malloc(maxPSRAMSize, MALLOC_CAP_SPIRAM);
             assert(ptrSPIRAM != nullptr);
             // init with zeros
-            memset(ptrSPIRAM, 0, MAX_ALLOC_BYTES_PSRAM);
+            memset(ptrSPIRAM, 0, maxPSRAMSize);
             maxSizeBytes = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-            ESP_LOGI("SR", "Overall bytes for wt+sample %li, allocated in PSRAM %li, largest block free in PSRAM %li", totalSize, MAX_ALLOC_BYTES_PSRAM, maxSizeBytes);
+            ESP_LOGI("SR", "Overall bytes for wt+sample %li, allocated in PSRAM %li, largest block free in PSRAM %li", totalSize, maxPSRAMSize, maxSizeBytes);
         }
 
         // generate offsets and sizes, start with wavetables, sizes and offsets are words (due to 16 bit samples)

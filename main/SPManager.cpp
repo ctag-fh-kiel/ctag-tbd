@@ -379,7 +379,9 @@ void SoundProcessorManager::StartSoundProcessor() {
     NET::Network::SetIP(model->GetNetworkConfigurationData("ip"));
     NET::Network::SetMDNSName(model->GetNetworkConfigurationData("mdns_name"));
     NET::Network::Up();
+#ifdef CONFIG_TASK_REST_SERVER
     REST::RestServer::StartRestServer();
+#endif
     SPIAPI::SpiAPI::StartSpiAPI();
 
     // Ableton Link
@@ -392,8 +394,10 @@ void SoundProcessorManager::StartSoundProcessor() {
     }
 
     // create led indicator thread
+#ifdef CONFIG_TASK_RGB_INDICATOR_LED
     xTaskCreatePinnedToCore(&SoundProcessorManager::led_task, "led_task", 4096, nullptr, tskIDLE_PRIORITY + 2,
                             &ledTaskH, 0);
+#endif
     // create audio thread
     runAudioTask = 1;
     xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
