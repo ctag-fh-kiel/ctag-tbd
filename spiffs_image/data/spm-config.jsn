@@ -12,7 +12,6 @@
       "mdns_name": "ctag-tbd",
       "ip": "192.168.4.1"
     },
-    "ng_config": "off",
     "ch01_daisy": "off",
     "ch0_toStereo": "off",
     "ch1_toStereo": "off",
