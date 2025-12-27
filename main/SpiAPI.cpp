@@ -100,7 +100,7 @@ namespace CTAG::SPIAPI{
             .max_transfer_sz = 2048,
             .flags = 0,
             .isr_cpu_id = ESP_INTR_CPU_AFFINITY_0,
-            .intr_flags = 0
+            .intr_flags = ESP_INTR_FLAG_LEVEL3|ESP_INTR_FLAG_IRAM
         };
 
         //Configuration for the SPI slave interface
