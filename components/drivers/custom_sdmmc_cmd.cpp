@@ -45,3 +45,36 @@ extern "C" esp_err_t __wrap_sdmmc_read_sectors(sdmmc_card_t* card, void* dst, si
 
     return err;
 }
+
+
+extern "C" esp_err_t sdmmc_write_sectors_dma(sdmmc_card_t* card, const void* src,
+        size_t start_block, size_t block_count, size_t buffer_len);
+
+extern "C" esp_err_t __real_sdmmc_write_sectors(sdmmc_card_t* card, const void* src,
+        size_t start_block, size_t block_count);
+
+extern "C" esp_err_t __wrap_sdmmc_write_sectors(sdmmc_card_t* card, const void* src,
+        size_t start_block, size_t block_count)
+{
+    if (block_count == 0) {
+        return ESP_OK;
+    }
+
+    esp_err_t err = ESP_OK;
+    size_t block_size = card->csd.sector_size;
+    // only works for block size 512
+    assert(block_size == 512);
+
+    const uint8_t* cur_src = (const uint8_t*) src;
+    for (size_t i = 0; i < block_count; ++i){
+        memcpy(sector_buffer, cur_src, block_size);
+        cur_src += block_size;
+        err = sdmmc_write_sectors_dma(card, sector_buffer, start_block + i, 1, 512);
+        if (err != ESP_OK) {
+            ESP_LOGD(TAG, "%s: error 0x%x writing block %d+%d",
+                    __func__, err, start_block, i);
+            break;
+        }
+    }
+    return err;
+}
