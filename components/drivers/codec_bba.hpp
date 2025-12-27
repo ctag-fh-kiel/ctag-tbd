@@ -28,15 +28,14 @@ namespace CTAG {
     namespace DRIVERS {
 
         class Codec {
+            static void cfg_codec();
         public:
             Codec() = delete;
             static void InitCodec();
 
-            static void HighPassEnable();
+            static void ADCHighPassEnable();
 
-            static void HighPassDisable();
-
-            static void RecalibDCOffset();
+            static void ADCHighPassDisable();
 
             static void SetOutputLevels(const uint32_t left, const uint32_t right);
 

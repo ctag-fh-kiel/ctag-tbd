@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2025 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -33,7 +33,7 @@ using namespace CTAG::DRIVERS;
 static i2s_chan_handle_t tx_handle = NULL;
 static i2s_chan_handle_t rx_handle = NULL;
 
-static const char *TAG = "test_codec";
+static const char *TAG = "CODEC";
 
 #define I2C_PORT_NUM I2C_NUM_1 // 0 is used for OLED
 #define I2C_SDA GPIO_NUM_7
@@ -131,6 +131,14 @@ uint8_t page = 255;
 #define AIC32X4_LMICPGAVOL    AIC32X4_REG(1, 59)
 #define AIC32X4_RMICPGAVOL    AIC32X4_REG(1, 60)
 #define AIC32X4_REFPOWERUP    AIC32X4_REG(1, 123)
+#define AIC32X4_DACPRB        AIC32X4_REG(0, 60)
+#define AIC32X4_ADCPRB        AIC32X4_REG(0, 61)
+#define AIC32X4_HPF_COEFF_N0_MSB  AIC32X4_REG(8, 1)
+#define AIC32X4_HPF_COEFF_N0_LSB  AIC32X4_REG(8, 2)
+#define AIC32X4_HPF_COEFF_N1_MSB  AIC32X4_REG(8, 3)
+#define AIC32X4_HPF_COEFF_N1_LSB  AIC32X4_REG(8, 4)
+#define AIC32X4_HPF_COEFF_D1_MSB  AIC32X4_REG(8, 5)
+#define AIC32X4_HPF_COEFF_D1_LSB  AIC32X4_REG(8, 6)
 
 static void cfg_i2c(){
     ESP_LOGI(TAG, "cfg codec i2c");
@@ -225,7 +233,7 @@ static void identify() {
     }
 }
 
-static void cfg_codec() {
+void Codec::cfg_codec() {
     ESP_LOGI(TAG, "AIC3254 configuration");
     // issue a soft reset
     write_AIC32X4_reg(AIC32X4_RESET, 0x01);            // (P0_R1) issue a software reset to the codec
@@ -270,6 +278,7 @@ static void cfg_codec() {
     write_AIC32X4_reg(AIC32X4_RMICPGANIN, 0b01000000); // (P1_R57) CM is routed to Right MICPGA via CM1R with 10kohm resistance
     write_AIC32X4_reg(AIC32X4_LMICPGAVOL, 0x80); // 0dB gain for left MICPGA
     write_AIC32X4_reg(AIC32X4_RMICPGAVOL, 0x80); // 0dB gain for left MICPGA
+    ADCHighPassEnable();
     write_AIC32X4_reg(AIC32X4_ADCSETUP, 0b11000000); // (P0_R81) power up left and right ADCs
     write_AIC32X4_reg(AIC32X4_ADCFGA, 0x00); // (P0_R82) unmute left and right ADCs
 
@@ -321,6 +330,7 @@ static void cfg_i2s() {
                     .clk_src = I2S_CLK_SRC_DEFAULT,
                     .ext_clk_freq_hz = 0,
                     .mclk_multiple = I2S_MCLK_MULTIPLE_256,
+                    .bclk_div = 0,
             },
             .slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_32BIT, I2S_SLOT_MODE_STEREO),
             .gpio_cfg = {
@@ -388,12 +398,124 @@ void Codec::InitCodec() {
     SetOutputLevels(58, 58);
 }
 
-void Codec::HighPassEnable() {
+// from pg. 26 of https://www.ti.com/lit/an/slaa408a/slaa408a.pdf?ts=1766827966822&ref_url=https%253A%252F%252Fwww.ti.com%252Fproduct%252FTLV320AIC3254
+// check this https://e2e.ti.com/cfs-file/__key/communityserver-discussions-components-files/6/Coefficients.png
+// and this https://e2e.ti.com/support/audio-group/audio/f/audio-forum/669437/tlv320aic3204-first-order-iir-filter-coefficients-for-adc as a reference
+void Codec::ADCHighPassEnable() {
+    // Power down ADCs before changing coefficients
+    write_AIC32X4_reg(AIC32X4_ADCSETUP, 0b00000000);
+
+    // Configure ADC to use PRB_R1 which includes IIR filter
+    write_AIC32X4_reg(AIC32X4_ADCPRB, 0x01);
+
+    // DC blocking filter (first-order HPF) at fc ≈ 3.7Hz, fs = 44100Hz
+    // Transfer function: H(z) = (1 - z^-1) / (1 - α·z^-1)
+    // α = exp(-2π·fc/fs) ≈ 0.999472
+    // N0 = +1.0 * 2^23 = 0x7FFFFF (8388607)
+    // N1 = -1.0 * 2^23 = 0x800001 (-8388607 in two's complement, 24-bit)
+    // D1 = α * 2^23 ≈ 0.999472 * 8388608 ≈ 0x7FB0FE (8384190)
+
+    // Switch to page 8 for left ADC channel coefficients
+    write_reg(AIC32X4_PSEL, 8);
+    page = 8;
+
+    // Left channel: C4 (N0) at Page 8, Reg 24,25,26
+    write_reg(24, 0x7F);  // N0 MSB
+    write_reg(25, 0xFF);  // N0 MID
+    write_reg(26, 0xFF);  // N0 LSB (0x7FFFFF = +8388607)
+
+    // Left channel: C5 (N1) at Page 8, Reg 28,29,30
+    write_reg(28, 0x80);  // N1 MSB
+    write_reg(29, 0x00);  // N1 MID
+    write_reg(30, 0x01);  // N1 LSB (0x800001 = -8388607)
+
+    // Left channel: C6 (D1) at Page 8, Reg 32,33,34
+    write_reg(32, 0x7F);  // D1 MSB
+    write_reg(33, 0xB0);  // D1 MID
+    write_reg(34, 0xFE);  // D1 LSB (0x7FB0FE ≈ 8384190)
+
+    // Switch to page 9 for right ADC channel coefficients
+    write_reg(AIC32X4_PSEL, 9);
+    page = 9;
+
+    // Right channel: C36 (N0) at Page 9, Reg 32,33,34
+    write_reg(32, 0x7F);  // N0 MSB
+    write_reg(33, 0xFF);  // N0 MID
+    write_reg(34, 0xFF);  // N0 LSB
+
+    // Right channel: C37 (N1) at Page 9, Reg 36,37,38
+    write_reg(36, 0x80);  // N1 MSB
+    write_reg(37, 0x00);  // N1 MID
+    write_reg(38, 0x01);  // N1 LSB
+
+    // Right channel: C38 (D1) at Page 9, Reg 40,41,42
+    write_reg(40, 0x7F);  // D1 MSB
+    write_reg(41, 0xB0);  // D1 MID
+    write_reg(42, 0xFE);  // D1 LSB
+
+    // Switch back to page 0
+    write_reg(AIC32X4_PSEL, 0);
+    page = 0;
+
+    // Power up ADCs
+    write_AIC32X4_reg(AIC32X4_ADCSETUP, 0b11000000);
+
+    ESP_LOGI(TAG, "High-pass IIR filter enabled on ADC path (3.7Hz @ 44.1kHz)");
 }
 
-void Codec::HighPassDisable() {
-}
 
-void Codec::RecalibDCOffset() {
+
+void Codec::ADCHighPassDisable() {
+    // power down l+r adcs
+    write_AIC32X4_reg(AIC32X4_ADCSETUP, 0b00000000); // (P0_R81) power down left and right ADCs
+
+    // Configure ADC to use PRB_R1 (same as HPF enabled)
+    write_AIC32X4_reg(AIC32X4_ADCPRB, 0x01);
+
+    // Switch to page 8 for left ADC channel coefficients
+    write_reg(AIC32X4_PSEL, 8);
+    page = 8;
+
+    // Left channel: C4 (N0) at Page 8, Reg 24,25,26 - Default from Table 5-4: 0x7FFFFF00
+    write_reg(24, 0x7F);  // N0 MSB
+    write_reg(25, 0xFF);  // N0 MID
+    write_reg(26, 0xFF);  // N0 LSB - Changed to 0xFF (closer to unity gain in Q23)
+
+    // Left channel: C5 (N1) at Page 8, Reg 28,29,30 - Zero
+    write_reg(28, 0x00);  // N1 MSB
+    write_reg(29, 0x00);  // N1 MID
+    write_reg(30, 0x00);  // N1 LSB
+
+    // Left channel: C6 (D1) at Page 8, Reg 32,33,34 - Zero
+    write_reg(32, 0x00);  // D1 MSB
+    write_reg(33, 0x00);  // D1 MID
+    write_reg(34, 0x00);  // D1 LSB
+
+    // Switch to page 9 for right ADC channel coefficients
+    write_reg(AIC32X4_PSEL, 9);
+    page = 9;
+
+    // Right channel: C36 (N0) at Page 9, Reg 32,33,34 - Default: 0x7FFFFF00
+    write_reg(32, 0x7F);  // N0 MSB
+    write_reg(33, 0xFF);  // N0 MID
+    write_reg(34, 0xFF);  // N0 LSB
+
+    // Right channel: C37 (N1) at Page 9, Reg 36,37,38 - Zero
+    write_reg(36, 0x00);  // N1 MSB
+    write_reg(37, 0x00);  // N1 MID
+    write_reg(38, 0x00);  // N1 LSB
+
+    // Right channel: C38 (D1) at Page 9, Reg 40,41,42 - Zero
+    write_reg(40, 0x00);  // D1 MSB
+    write_reg(41, 0x00);  // D1 MID
+    write_reg(42, 0x00);  // D1 LSB
+
+    // Switch back to page 0
+    write_reg(AIC32X4_PSEL, 0);
+    page = 0;
+
+    write_AIC32X4_reg(AIC32X4_ADCSETUP, 0b11000000); // (P0_R81) power up left and right ADCs
+
+    ESP_LOGI(TAG, "High-pass filter disabled on ADC path (all-pass/bypass mode)");
 }
 
