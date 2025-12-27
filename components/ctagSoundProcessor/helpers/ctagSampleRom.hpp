@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020, 2025 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -35,6 +35,7 @@ namespace CTAG::SP::HELPERS{
         static void SetActiveWaveTableBank(uint8_t index);
         static void SetActiveSampleBank(uint8_t index);
         ctagSampleRom();
+        explicit ctagSampleRom(const uint32_t sample_rom_size_psram);
         ~ctagSampleRom();
         uint32_t GetNumberSlices();
         uint32_t GetFirstNonWaveTableSlice();
@@ -50,6 +51,7 @@ namespace CTAG::SP::HELPERS{
 
     private:
         static void RefreshDataStructureFromSDCard();
+        static uint32_t maxPSRAMSize;
         static uint32_t totalSize;
         static uint32_t numberSlices;
         static uint32_t headerSize;

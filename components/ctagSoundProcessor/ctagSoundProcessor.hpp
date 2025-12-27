@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020, 2025 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -21,6 +21,24 @@ respective component folders / files if different from this license.
 
 
 // Base class for sound processors + interface
+
+/*
+
+To clarify how the mem alloc for a ctagSoundProcessor works:
+
+- ctagSPAllocator is the responsible class for it, it holds the static array as mentioned above
+- ctagSoundProcessor base class has an overloaded new operator, which uses ctagSPAllocator to allocate
+    the memory for the pluginmemory for a plugin consists of 1) all member variables (static object size) and
+    2) block mem data, which is used within the plugin for anything the plugin would itself allocate from heap
+- if the block mem is too small for the plugin (e.g. large reverbs, delays, ...) the plugin can allocate from
+    PSRAM heap via heap_caps_malloc(..., MALLOC_CAP_SPIRAM)
+- Note that when ctagSampleRom is used (e.g. with romplers or WtPlayback), much of the PSRAM is grabbed by ctagSampleRom
+    to buffer samples from sd-card (see ctagSampleRom::RefreshDataStructureFromSDCard)
+Ah, why all of that special mem alloc? Because of mem fragmentation, i.e. when plugins are switched frequently,
+heap gets very fragmented and eventually standard heap allocs would fail.
+When fragmentation occurs, there are no more large contiguous chunks available.
+
+*/
 
 #pragma once
 
