@@ -1,0 +1,47 @@
+#include "driver/sdmmc_host.h"
+#include "esp_log.h"
+#include "esp_heap_caps.h"
+#include <string.h>
+
+static const char* TAG = "custom_sdmmc_cmd";
+
+// Declare the original function that will be wrapped
+extern "C" esp_err_t __real_sdmmc_read_sectors(sdmmc_card_t* card, void* dst, size_t start_block, size_t block_count);
+
+// Declare sdmmc_read_sectors_dma which is in the SDK
+extern "C" esp_err_t sdmmc_read_sectors_dma(
+    sdmmc_card_t* card,
+    void* dst,
+    size_t start_block,
+    size_t block_count,
+    size_t buffer_len
+);
+
+static DMA_ATTR uint8_t sector_buffer[512];
+
+// Your wrapped implementation
+extern "C" esp_err_t __wrap_sdmmc_read_sectors(sdmmc_card_t* card, void* dst, size_t start_block, size_t block_count)
+{
+    if (block_count == 0) {
+        return ESP_OK;
+    }
+
+    size_t block_size = card->csd.sector_size;
+    // only works for block size 512
+    assert(block_size == 512);
+
+    uint8_t* cur_dst = (uint8_t*)dst;
+    esp_err_t err = ESP_OK;
+
+    for (size_t i = 0; i < block_count; ++i) {
+        err = sdmmc_read_sectors_dma(card, sector_buffer, start_block + i, 1, 512);
+        if (err != ESP_OK) {
+            ESP_LOGD(TAG, "Error 0x%x reading block %zu+%zu", err, start_block, i);
+            break;
+        }
+        memcpy(cur_dst, sector_buffer, block_size);
+        cur_dst += block_size;
+    }
+
+    return err;
+}
