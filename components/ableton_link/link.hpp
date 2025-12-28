@@ -27,6 +27,7 @@ namespace CTAG{
         struct link_session_data_t{
             // --- Link Active ---
             bool linkActive;
+            bool isPlaying;
             uint32_t numPeers;
 
             // --- Tempo / structure ---
@@ -49,6 +50,8 @@ namespace CTAG{
             static void GetLinkSessionData(link_session_data_t *data);
             // possibly blocking, thread safe
             static void SetLinkTempo(float bpm);
+            // possibly blocking, thread safe
+            static void SetLinkStartStop(bool isPlaying);
         };
     } // LINK
 } // CTAG
