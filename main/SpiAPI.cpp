@@ -420,6 +420,12 @@ namespace CTAG::SPIAPI{
                     CTAG::LINK::link::SetLinkTempo(float_param_0);
                 }
                 break;
+            case RequestType::SetAbletonLinkStartStop:
+                {
+                    ESP_LOGI("SpiAPI", "Set Ableton Link Start/Stop: %d", uint8_param_0);
+                    CTAG::LINK::link::SetLinkStartStop(uint8_param_0 != 0);
+                }
+                break;
             }
         }
     }
