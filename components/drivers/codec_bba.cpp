@@ -327,7 +327,7 @@ static void cfg_i2s() {
     i2s_std_config_t std_cfg = {
             .clk_cfg = {
                     .sample_rate_hz = 44100,
-                    .clk_src = I2S_CLK_SRC_DEFAULT,
+                    .clk_src = I2S_CLK_SRC_APLL,
                     .ext_clk_freq_hz = 0,
                     .mclk_multiple = I2S_MCLK_MULTIPLE_256,
                     .bclk_div = 0,
@@ -356,13 +356,280 @@ static void cfg_i2s() {
 
 }
 
+#ifdef CONFIG_ASSEMBLY_OPT_AUDIO_BUFFER_CODEC
+// Static buffer allocation for codec operations (optimized for cache performance)
+// Typical buffer size is 32 stereo samples = 64 int32/float values
+// Pre-allocated to avoid stack allocation overhead in real-time audio path
+#define MAX_CODEC_BUFFER_SIZE (32*2)  // Support up to 32 stereo samples
+static int32_t DRAM_ATTR tmp_buffer[MAX_CODEC_BUFFER_SIZE] __attribute__((aligned(4)));
+
 void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
-    int32_t tmp[sz * 2];
+    // Use pre-allocated static buffer (zero allocation overhead)
+    int32_t *tmp = tmp_buffer;
+    size_t nb;
+
+    // 32 bit word config stereo
+    i2s_channel_read(rx_handle, tmp, sz*2*4, &nb, portMAX_DELAY);
+
+    const float scale = 1.0f / 2147483648.0f;
+    const uint32_t count = 4; // 4 hardware loop iterations for 64 samples
+
+    int32_t *ptrTmp = tmp;
+    float *ptrBuf = buf;
+
+    // Use ESP32-P4 hardware loop for ZERO-OVERHEAD iteration
+    // No branch penalty, no loop counter overhead!
+    __asm__ volatile (
+        // Setup hardware loop 0: iterates 'count' times, ending at .hwloop_read_end
+        "esp.lp.setup   0, %[cnt], .hwloop_read_end \n"
+
+        // === Hardware loop body (executes 4 times for 64 samples) ===
+
+        // Load 16 int32 values (uses all available temporary registers)
+        "lw      t0, 0(%[src])      \n"
+        "lw      t1, 4(%[src])      \n"
+        "lw      t2, 8(%[src])      \n"
+        "lw      t3, 12(%[src])     \n"
+        "lw      t4, 16(%[src])     \n"
+        "lw      t5, 20(%[src])     \n"
+        "lw      t6, 24(%[src])     \n"
+        "lw      a0, 28(%[src])     \n"
+        "lw      a1, 32(%[src])     \n"
+        "lw      a2, 36(%[src])     \n"
+        "lw      a3, 40(%[src])     \n"
+        "lw      a4, 44(%[src])     \n"
+        "lw      a5, 48(%[src])     \n"
+        "lw      a6, 52(%[src])     \n"
+        "lw      a7, 56(%[src])     \n"
+        "lw      s2, 60(%[src])     \n"
+
+        // Convert all 16 to float (hardware FPU, fully pipelined)
+        "fcvt.s.w ft0, t0           \n"
+        "fcvt.s.w ft1, t1           \n"
+        "fcvt.s.w ft2, t2           \n"
+        "fcvt.s.w ft3, t3           \n"
+        "fcvt.s.w ft4, t4           \n"
+        "fcvt.s.w ft5, t5           \n"
+        "fcvt.s.w ft6, t6           \n"
+        "fcvt.s.w ft7, a0           \n"
+        "fcvt.s.w ft8, a1           \n"
+        "fcvt.s.w ft9, a2           \n"
+        "fcvt.s.w ft10, a3          \n"
+        "fcvt.s.w ft11, a4          \n"
+        "fcvt.s.w fa0, a5           \n"
+        "fcvt.s.w fa1, a6           \n"
+        "fcvt.s.w fa2, a7           \n"
+        "fcvt.s.w fa3, s2           \n"
+
+        // Multiply all 16 by scale
+        "fmul.s  ft0, ft0, %[scale] \n"
+        "fmul.s  ft1, ft1, %[scale] \n"
+        "fmul.s  ft2, ft2, %[scale] \n"
+        "fmul.s  ft3, ft3, %[scale] \n"
+        "fmul.s  ft4, ft4, %[scale] \n"
+        "fmul.s  ft5, ft5, %[scale] \n"
+        "fmul.s  ft6, ft6, %[scale] \n"
+        "fmul.s  ft7, ft7, %[scale] \n"
+        "fmul.s  ft8, ft8, %[scale] \n"
+        "fmul.s  ft9, ft9, %[scale] \n"
+        "fmul.s  ft10, ft10, %[scale] \n"
+        "fmul.s  ft11, ft11, %[scale] \n"
+        "fmul.s  fa0, fa0, %[scale] \n"
+        "fmul.s  fa1, fa1, %[scale] \n"
+        "fmul.s  fa2, fa2, %[scale] \n"
+        "fmul.s  fa3, fa3, %[scale] \n"
+
+        // Store all 16 results
+        "fsw     ft0, 0(%[dst])     \n"
+        "fsw     ft1, 4(%[dst])     \n"
+        "fsw     ft2, 8(%[dst])     \n"
+        "fsw     ft3, 12(%[dst])    \n"
+        "fsw     ft4, 16(%[dst])    \n"
+        "fsw     ft5, 20(%[dst])    \n"
+        "fsw     ft6, 24(%[dst])    \n"
+        "fsw     ft7, 28(%[dst])    \n"
+        "fsw     ft8, 32(%[dst])    \n"
+        "fsw     ft9, 36(%[dst])    \n"
+        "fsw     ft10, 40(%[dst])   \n"
+        "fsw     ft11, 44(%[dst])   \n"
+        "fsw     fa0, 48(%[dst])    \n"
+        "fsw     fa1, 52(%[dst])    \n"
+        "fsw     fa2, 56(%[dst])    \n"
+        "fsw     fa3, 60(%[dst])    \n"
+
+        // Update pointers for next iteration
+        "addi    %[src], %[src], 64 \n"  // +16 samples × 4 bytes
+        "addi    %[dst], %[dst], 64 \n"
+
+        // === Loop end marker (hardware loops here with ZERO cycles!) ===
+        ".hwloop_read_end: nop      \n"
+
+        : [src] "+r" (ptrTmp), [dst] "+r" (ptrBuf)
+        : [cnt] "r" (count), [scale] "f" (scale)
+        : "t0", "t1", "t2", "t3", "t4", "t5", "t6", "s2",
+          "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7",
+          "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7",
+          "ft8", "ft9", "ft10", "ft11", "fa0", "fa1", "fa2", "fa3",
+          "memory"
+    );
+}
+
+void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz){
+    // Use pre-allocated static buffer (zero allocation overhead)
+    int32_t *tmp = tmp_buffer;
+    size_t nb;
+    const float mult = 2147483647.f;
+
+    const uint32_t count = 4;  // Number of 16-sample blocks (typically 4 for 64 samples)
+    float *ptrBuf = buf;
+    int32_t *ptrTmp = tmp;
+
+    // Pre-clamp in float domain for efficiency
+    const float fmax = 1.0f;
+    const float fmin = -1.0f;
+
+    // Use ESP32-P4 hardware loop for ZERO-OVERHEAD iteration
+    __asm__ volatile (
+        "esp.lp.setup   0, %[cnt], .hwloop_write_end \n"
+
+        // === Hardware loop body (executes 4 times for 64 samples) ===
+
+        // Load all 16 floats
+        "flw     ft0, 0(%[src])     \n"
+        "flw     ft1, 4(%[src])     \n"
+        "flw     ft2, 8(%[src])     \n"
+        "flw     ft3, 12(%[src])    \n"
+        "flw     ft4, 16(%[src])    \n"
+        "flw     ft5, 20(%[src])    \n"
+            "flw     ft6, 24(%[src])    \n"
+            "flw     ft7, 28(%[src])    \n"
+            "flw     ft8, 32(%[src])    \n"
+            "flw     ft9, 36(%[src])    \n"
+            "flw     ft10, 40(%[src])   \n"
+            "flw     ft11, 44(%[src])   \n"
+            "flw     fa0, 48(%[src])    \n"
+            "flw     fa1, 52(%[src])    \n"
+            "flw     fa2, 56(%[src])    \n"
+            "flw     fa3, 60(%[src])    \n"
+
+            // Clamp all 16 to [-1.0, 1.0]
+            "fmax.s  ft0, ft0, %[fmin]  \n"
+            "fmin.s  ft0, ft0, %[fmax]  \n"
+            "fmax.s  ft1, ft1, %[fmin]  \n"
+            "fmin.s  ft1, ft1, %[fmax]  \n"
+            "fmax.s  ft2, ft2, %[fmin]  \n"
+            "fmin.s  ft2, ft2, %[fmax]  \n"
+            "fmax.s  ft3, ft3, %[fmin]  \n"
+            "fmin.s  ft3, ft3, %[fmax]  \n"
+            "fmax.s  ft4, ft4, %[fmin]  \n"
+            "fmin.s  ft4, ft4, %[fmax]  \n"
+            "fmax.s  ft5, ft5, %[fmin]  \n"
+            "fmin.s  ft5, ft5, %[fmax]  \n"
+            "fmax.s  ft6, ft6, %[fmin]  \n"
+            "fmin.s  ft6, ft6, %[fmax]  \n"
+            "fmax.s  ft7, ft7, %[fmin]  \n"
+            "fmin.s  ft7, ft7, %[fmax]  \n"
+            "fmax.s  ft8, ft8, %[fmin]  \n"
+            "fmin.s  ft8, ft8, %[fmax]  \n"
+            "fmax.s  ft9, ft9, %[fmin]  \n"
+            "fmin.s  ft9, ft9, %[fmax]  \n"
+            "fmax.s  ft10, ft10, %[fmin] \n"
+            "fmin.s  ft10, ft10, %[fmax] \n"
+            "fmax.s  ft11, ft11, %[fmin] \n"
+            "fmin.s  ft11, ft11, %[fmax] \n"
+            "fmax.s  fa0, fa0, %[fmin]  \n"
+            "fmin.s  fa0, fa0, %[fmax]  \n"
+            "fmax.s  fa1, fa1, %[fmin]  \n"
+            "fmin.s  fa1, fa1, %[fmax]  \n"
+            "fmax.s  fa2, fa2, %[fmin]  \n"
+            "fmin.s  fa2, fa2, %[fmax]  \n"
+            "fmax.s  fa3, fa3, %[fmin]  \n"
+            "fmin.s  fa3, fa3, %[fmax]  \n"
+
+            // Scale all 16 by 2^31-1
+            "fmul.s  ft0, ft0, %[mult]  \n"
+            "fmul.s  ft1, ft1, %[mult]  \n"
+            "fmul.s  ft2, ft2, %[mult]  \n"
+            "fmul.s  ft3, ft3, %[mult]  \n"
+            "fmul.s  ft4, ft4, %[mult]  \n"
+            "fmul.s  ft5, ft5, %[mult]  \n"
+            "fmul.s  ft6, ft6, %[mult]  \n"
+            "fmul.s  ft7, ft7, %[mult]  \n"
+            "fmul.s  ft8, ft8, %[mult]  \n"
+            "fmul.s  ft9, ft9, %[mult]  \n"
+            "fmul.s  ft10, ft10, %[mult] \n"
+            "fmul.s  ft11, ft11, %[mult] \n"
+            "fmul.s  fa0, fa0, %[mult]  \n"
+            "fmul.s  fa1, fa1, %[mult]  \n"
+            "fmul.s  fa2, fa2, %[mult]  \n"
+            "fmul.s  fa3, fa3, %[mult]  \n"
+
+            // Convert all 16 to int32 (round to zero)
+            "fcvt.w.s t0, ft0, rtz      \n"
+            "fcvt.w.s t1, ft1, rtz      \n"
+            "fcvt.w.s t2, ft2, rtz      \n"
+            "fcvt.w.s t3, ft3, rtz      \n"
+            "fcvt.w.s t4, ft4, rtz      \n"
+            "fcvt.w.s t5, ft5, rtz      \n"
+            "fcvt.w.s t6, ft6, rtz      \n"
+            "fcvt.w.s a0, ft7, rtz      \n"
+            "fcvt.w.s a1, ft8, rtz      \n"
+            "fcvt.w.s a2, ft9, rtz      \n"
+            "fcvt.w.s a3, ft10, rtz     \n"
+            "fcvt.w.s a4, ft11, rtz     \n"
+            "fcvt.w.s a5, fa0, rtz      \n"
+            "fcvt.w.s a6, fa1, rtz      \n"
+            "fcvt.w.s a7, fa2, rtz      \n"
+            "fcvt.w.s s2, fa3, rtz      \n"
+
+            // Store all 16 int32 values
+            "sw      t0, 0(%[dst])      \n"
+            "sw      t1, 4(%[dst])      \n"
+            "sw      t2, 8(%[dst])      \n"
+            "sw      t3, 12(%[dst])     \n"
+            "sw      t4, 16(%[dst])     \n"
+            "sw      t5, 20(%[dst])     \n"
+            "sw      t6, 24(%[dst])     \n"
+            "sw      a0, 28(%[dst])     \n"
+            "sw      a1, 32(%[dst])     \n"
+            "sw      a2, 36(%[dst])     \n"
+            "sw      a3, 40(%[dst])     \n"
+            "sw      a4, 44(%[dst])     \n"
+            "sw      a5, 48(%[dst])     \n"
+            "sw      a6, 52(%[dst])     \n"
+            "sw      a7, 56(%[dst])     \n"
+            "sw      s2, 60(%[dst])     \n"
+
+            // Update pointers for next iteration
+            "addi    %[src], %[src], 64 \n"  // +16 samples × 4 bytes
+            "addi    %[dst], %[dst], 64 \n"
+
+            // === Loop end marker (hardware loops here with ZERO cycles!) ===
+            ".hwloop_write_end: nop     \n"
+
+            : [src] "+r" (ptrBuf), [dst] "+r" (ptrTmp)
+            : [cnt] "r" (count), [mult] "f" (mult), [fmax] "f" (fmax), [fmin] "f" (fmin)
+            : "t0", "t1", "t2", "t3", "t4", "t5", "t6", "s2",
+              "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7",
+              "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7",
+              "ft8", "ft9", "ft10", "ft11", "fa0", "fa1", "fa2", "fa3",
+              "memory"
+    );
+
+    i2s_channel_write(tx_handle, tmp, sz*2*4, &nb, portMAX_DELAY);
+}
+
+#else
+
+void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
+    int32_t tmp[2*sz];
     int32_t *ptrTmp = tmp;
     size_t nb;
     const float div = 1.0f / 2147483648.0f;
     // 32 bit word config stereo
+
     i2s_channel_read(rx_handle, tmp, sz*2*4, &nb, portMAX_DELAY);
+
     while (sz > 0) {
         *buf++ = div * (float) *ptrTmp++;
         *buf++ = div * (float) *ptrTmp++;
@@ -371,11 +638,11 @@ void IRAM_ATTR Codec::ReadBuffer(float *buf, uint32_t sz) {
 }
 
 void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
-    int32_t tmp[sz * 2];
+    int32_t tmp[2*sz];
     int32_t tmp2;
     size_t nb;
     const float mult = 2147483647.f;
-    // 32 bit word config
+
     for (int i = 0; i < sz; i++) {
         tmp2 = (int32_t) (mult * buf[i * 2]);
         tmp2 = MAX(tmp2, -2147483647);
@@ -386,8 +653,10 @@ void IRAM_ATTR Codec::WriteBuffer(float *buf, uint32_t sz) {
         tmp2 = MIN(tmp2, 2147483647);
         tmp[i * 2 + 1] = tmp2;
     }
+
     i2s_channel_write(tx_handle, tmp, sz*2*4, &nb, portMAX_DELAY);
 }
+#endif
 
 void Codec::InitCodec() {
     cfg_i2c();

@@ -56,4 +56,14 @@ menu "CTAG TBD Configuration"
 
     endmenu
 
+    menu "Optimizations"
+        config ASSEMBLY_OPT_AUDIO_BUFFER_CODEC
+            bool "Enable Assembly Optimizations for Audio Buffer Codec"
+            default y
+            help
+                Enable assembly optimizations for audio buffer codec processing to improve performance.
+                P4 F-extension, loop unrolling, hardware loop and other optimizations are used.
+                Works only for 32 samples per buffer configuration. Small improvement.
+    endmenu
+
 endmenu
