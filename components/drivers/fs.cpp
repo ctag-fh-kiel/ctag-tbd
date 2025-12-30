@@ -89,11 +89,8 @@ static bool MountSDCard(const char *mnt_pt = "/spiffs"){
     slot_config.width = 4;
     slot_config.flags |= SDMMC_SLOT_FLAG_UHS1;
 
-    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-        .format_if_mount_failed = true,
-        .max_files = 5,
-        .allocation_unit_size = (64 * 1024)
-    };
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = VFS_FAT_MOUNT_DEFAULT_CONFIG();
+    mount_config.format_if_mount_failed = true;
 
     ESP_LOGI("FS", "Mounting filesystem");
     ret = esp_vfs_fat_sdmmc_mount(mnt_pt, &host, &slot_config, &mount_config, &card);

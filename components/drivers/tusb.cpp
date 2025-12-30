@@ -106,6 +106,7 @@ void CTAG::DRIVERS::tusb::Init() {
             .external_phy = false,
             .fs_configuration_descriptor = s_midi_cfg_desc,
             .hs_configuration_descriptor = s_midi_hs_cfg_desc,
+            .qualifier_descriptor = NULL,
             .self_powered = false,
             .vbus_monitor_io = 0
     };

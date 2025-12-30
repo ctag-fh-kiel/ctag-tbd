@@ -296,7 +296,8 @@ void Network::if_init_usbncm(void){
             .handle = (void *)1,                // not using an instance, USB-NCM is a static singleton (must be != nullptr)
             .transmit = netif_transmit,
             .transmit_wrap = nullptr,
-            .driver_free_rx_buffer = l2_free    // point to Free Rx buffer function
+            .driver_free_rx_buffer = l2_free,    // point to Free Rx buffer function
+            .driver_set_mac_filter = nullptr
     };
 
     // 3) USB-NCM is an Ethernet netif from lwip perspective, we already have IO definitions for that:
