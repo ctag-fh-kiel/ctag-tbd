@@ -39,6 +39,8 @@ respective component folders / files if different from this license.
 #include "helpers/ctagSampleRom.hpp"
 #include "stmlib/dsp/dsp.h"
 
+#include "perf_monitor.hpp"
+
 // ableton link
 #include "link.hpp"
 
@@ -77,13 +79,21 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
     while (runAudioTask) {
 
-        // update data from ADCs and GPIOs for real-time control
-        CTAG::CTRL::Control::Update(&pd.controlData, ledStatus);
-        pd.cv = (float*) pd.controlData;
-        pd.trig = (uint8_t*) pd.controlData + N_CVS * sizeof(float);
+        {
+            PERF_MEASURE("update_control");
+            // update data from ADCs and GPIOs for real-time control
+            CTAG::CTRL::Control::Update(&pd.controlData, ledStatus);
+            pd.cv = (float*) pd.controlData;
+            pd.trig = (uint8_t*) pd.controlData + N_CVS * sizeof(float);
+        }
 
-        // get normalized raw data from CODEC
-        DRIVERS::Codec::ReadBuffer(fbuf, BUF_SZ);
+
+        {
+            PERF_MEASURE("read_codec");
+            // get normalized raw data from CODEC
+            DRIVERS::Codec::ReadBuffer(fbuf, BUF_SZ);
+
+        }
 
         // track the cpu cycles for audio task
         start = esp_cpu_get_cycle_count();
@@ -103,27 +113,31 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
             ledData <<= 8; // green
         }
 
-        // sound processors
-        if (xSemaphoreTake(processMutex, 0) == pdTRUE) {
-            // apply sound processors
-            if (sp[0] != nullptr) {
-                isStereoCH0 = sp[0]->GetIsStereo();
-                sp[0]->Process(pd);
-            }
-            if (!isStereoCH0){
-                // check if ch0 -> ch1 daisy chain, i.e. use output of ch0 as input for ch1
-                if(ch01Daisy){
-                    for (uint32_t i = 0; i < BUF_SZ; i++) {
-                        fbuf[i * 2 + 1] = fbuf[i * 2];
-                    }
+        {
+            PERF_MEASURE("process_audio");
+            // sound processors
+            if (xSemaphoreTake(processMutex, 0) == pdTRUE) {
+                // apply sound processors
+                if (sp[0] != nullptr) {
+                    isStereoCH0 = sp[0]->GetIsStereo();
+                    sp[0]->Process(pd);
                 }
-                if (sp[1] != nullptr) sp[1]->Process(pd); // 0 is not a stereo processor
+                if (!isStereoCH0){
+                    // check if ch0 -> ch1 daisy chain, i.e. use output of ch0 as input for ch1
+                    if(ch01Daisy){
+                        for (uint32_t i = 0; i < BUF_SZ; i++) {
+                            fbuf[i * 2 + 1] = fbuf[i * 2];
+                        }
+                    }
+                    if (sp[1] != nullptr) sp[1]->Process(pd); // 0 is not a stereo processor
+                }
+                xSemaphoreGive(processMutex);
+            } else {
+                // mute audio
+                memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
             }
-            xSemaphoreGive(processMutex);
-        } else {
-            // mute audio
-            memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
         }
+
 
         // to stereo conversion
         if (!isStereoCH0) {
@@ -201,7 +215,11 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         ledStatus = ledData;
 
         // write raw float data back to CODEC
-        DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
+        {
+            PERF_MEASURE("write_codec");
+            DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
+        }
+
     }
     memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
     DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
@@ -267,6 +285,7 @@ atomic<uint32_t> SoundProcessorManager::ch0_outputSoftClip;
 atomic<uint32_t> SoundProcessorManager::ch1_outputSoftClip;
 
 void SoundProcessorManager::StartSoundProcessor() {
+
     ledBlink = 5;
     model = std::make_unique<SPManagerDataModel>();
 
@@ -308,6 +327,8 @@ void SoundProcessorManager::StartSoundProcessor() {
     if (processMutex == NULL) {
         ESP_LOGE("SPM", "Fatal couldn't create mutex!");
     }
+
+    CTAG::INSTRUMENTATION::PerfMonitor::EnableLogging(true);
 
     // create led indicator thread
 #ifdef CONFIG_TASK_RGB_INDICATOR_LED
