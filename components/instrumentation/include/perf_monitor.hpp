@@ -221,6 +221,53 @@ public:
                             UBaseType_t priority = 1);
 
     /**
+     * @brief Enable audio budget tracking and reporting
+     *
+     * @param enable true to enable budget tracking
+     * @param buffer_size Number of samples per buffer (e.g., 32)
+     * @param sample_rate Sample rate in Hz (e.g., 44100)
+     *
+     * When enabled, the logging output will show:
+     * - Total cycles used by all monitored sections
+     * - Total time in microseconds
+     * - Available time budget for audio processing
+     * - CPU utilization percentage
+     * - Budget overrun statistics (count and percentage)
+     *
+     * Example:
+     * @code
+     * PerfMonitor::EnableAudioBudgetTracking(true, 32, 44100);
+     * // Shows: "Audio Budget: 42.3% (307.2µs / 725.6µs available)"
+     * //        "Budget Overruns: 5 / 120 windows (4.2%)"
+     * @endcode
+     */
+    static void EnableAudioBudgetTracking(bool enable, uint32_t buffer_size = 32, uint32_t sample_rate = 44100);
+
+    /**
+     * @brief Get audio budget overrun statistics
+     *
+     * @param[out] overrun_count Number of measurement windows that exceeded budget
+     * @param[out] total_windows Total number of measurement windows
+     * @return Overrun percentage (0.0 to 100.0)
+     *
+     * Example:
+     * @code
+     * uint32_t overruns, total;
+     * float pct = PerfMonitor::GetBudgetOverrunStats(overruns, total);
+     * ESP_LOGI("APP", "Overruns: %lu/%lu (%.1f%%)", overruns, total, pct);
+     * @endcode
+     */
+    static float GetBudgetOverrunStats(uint32_t& overrun_count, uint32_t& total_windows);
+
+    /**
+     * @brief Reset budget overrun statistics
+     *
+     * Resets the overrun counters to zero. Useful when you want to measure
+     * a fresh period after making optimizations.
+     */
+    static void ResetBudgetOverrunStats();
+
+    /**
      * @brief Get current statistics for a section (non-blocking)
      *
      * @param section Section to query
@@ -262,6 +309,15 @@ private:
         std::atomic<bool> logging_enabled{false};
         TaskHandle_t logging_task{nullptr};
         uint32_t log_interval_ms{5000};
+
+        // Audio budget tracking (optional)
+        std::atomic<bool> track_audio_budget{false};
+        uint32_t audio_buffer_size{32};        // Default: 32 samples
+        uint32_t audio_sample_rate{44100};     // Default: 44.1kHz
+
+        // Budget overrun statistics
+        std::atomic<uint32_t> budget_overrun_count{0};      // Number of windows with overruns
+        std::atomic<uint32_t> total_measurement_windows{0}; // Total measurement windows
     };
 
     static SectionRegistry registry_;

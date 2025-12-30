@@ -78,9 +78,9 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     }
 
     while (runAudioTask) {
-
+        PERF_MEASURE("audio_task");
         {
-            PERF_MEASURE("update_control");
+            //PERF_MEASURE("update_control");
             // update data from ADCs and GPIOs for real-time control
             CTAG::CTRL::Control::Update(&pd.controlData, ledStatus);
             pd.cv = (float*) pd.controlData;
@@ -89,7 +89,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
 
         {
-            PERF_MEASURE("read_codec");
+            //PERF_MEASURE("read_codec");
             // get normalized raw data from CODEC
             DRIVERS::Codec::ReadBuffer(fbuf, BUF_SZ);
 
@@ -114,7 +114,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         }
 
         {
-            PERF_MEASURE("process_audio");
+            //PERF_MEASURE("process_audio");
             // sound processors
             if (xSemaphoreTake(processMutex, 0) == pdTRUE) {
                 // apply sound processors
@@ -216,7 +216,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
         // write raw float data back to CODEC
         {
-            PERF_MEASURE("write_codec");
+            //PERF_MEASURE("write_codec");
             DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
         }
 
@@ -329,6 +329,7 @@ void SoundProcessorManager::StartSoundProcessor() {
     }
 
     CTAG::INSTRUMENTATION::PerfMonitor::EnableLogging(true);
+    CTAG::INSTRUMENTATION::PerfMonitor::EnableAudioBudgetTracking(true, 32, 44100);
 
     // create led indicator thread
 #ifdef CONFIG_TASK_RGB_INDICATOR_LED

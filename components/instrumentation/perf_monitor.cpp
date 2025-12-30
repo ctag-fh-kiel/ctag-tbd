@@ -132,6 +132,8 @@ void PerfMonitor::LoggingTask(void* arg) {
                  GetCpuFrequency() / 1000000);
 
         // Print each section
+        uint32_t total_cycles_sum = 0;  // Track total across all sections
+
         for (uint32_t i = 0; i < section_count; i++) {
             Section& section = registry_.sections[i];
 
@@ -151,8 +153,58 @@ void PerfMonitor::LoggingTask(void* arg) {
                 ESP_LOGI(TAG, "  %-24s: avg=%7.2f µs (%6lu cyc)  "
                          "min=%7.2f µs  max=%7.2f µs  n=%lu",
                          section.name, avg_us, avg, min_us, max_us, count);
+
+                // Accumulate total cycles (avg per call)
+                total_cycles_sum += avg;
             } else {
                 ESP_LOGI(TAG, "  %-24s: (no data)", section.name);
+            }
+        }
+
+        // Print audio budget analysis if enabled
+        if (registry_.track_audio_budget.load(std::memory_order_relaxed)) {
+            // Increment total measurement windows
+            registry_.total_measurement_windows.fetch_add(1, std::memory_order_relaxed);
+
+            // Calculate available time budget
+            float buffer_time_us = (1000000.0f * registry_.audio_buffer_size) / registry_.audio_sample_rate;
+            float total_time_us = CyclesToMicroseconds(total_cycles_sum);
+            float utilization = (total_time_us / buffer_time_us) * 100.0f;
+
+            // Track overruns
+            if (utilization > 100.0f) {
+                registry_.budget_overrun_count.fetch_add(1, std::memory_order_relaxed);
+            }
+
+            // Get statistics
+            uint32_t overrun_count = registry_.budget_overrun_count.load(std::memory_order_relaxed);
+            uint32_t total_windows = registry_.total_measurement_windows.load(std::memory_order_relaxed);
+            float overrun_percentage = (total_windows > 0) ? (100.0f * overrun_count / total_windows) : 0.0f;
+
+            ESP_LOGI(TAG, "--------------------------------------------");
+            ESP_LOGI(TAG, "Audio Budget: %.1f%% (%.1f µs / %.1f µs available)",
+                     utilization, total_time_us, buffer_time_us);
+
+            // Show overrun statistics
+            ESP_LOGI(TAG, "Budget Overruns: %lu / %lu windows (%.1f%%)",
+                     overrun_count, total_windows, overrun_percentage);
+
+            if (utilization > 100.0f) {
+                ESP_LOGW(TAG, "⚠️  OVERRUN! Audio processing exceeds available time!");
+                ESP_LOGW(TAG, "⚠️  This may indicate cache misses or excessive processing");
+            } else if (utilization > 80.0f) {
+                ESP_LOGW(TAG, "⚠️  High CPU usage - close to limit");
+            } else if (utilization > 50.0f) {
+                ESP_LOGI(TAG, "CPU usage moderate");
+            } else {
+                ESP_LOGI(TAG, "CPU usage healthy");
+            }
+
+            // Additional warning for frequent overruns
+            if (overrun_percentage > 10.0f) {
+                ESP_LOGW(TAG, "⚠️  Frequent overruns detected - check for cache misses!");
+            } else if (overrun_percentage > 5.0f) {
+                ESP_LOGW(TAG, "⚠️  Occasional overruns - performance may be unstable");
             }
         }
 
@@ -204,6 +256,43 @@ void PerfMonitor::EnableLogging(bool enable,
         ESP_LOGI(TAG, "Performance logging DISABLED");
         // Task will exit on next iteration
     }
+}
+
+// Enable/disable audio budget tracking
+void PerfMonitor::EnableAudioBudgetTracking(bool enable, uint32_t buffer_size, uint32_t sample_rate) {
+    if (enable) {
+        registry_.audio_buffer_size = buffer_size;
+        registry_.audio_sample_rate = sample_rate;
+        registry_.track_audio_budget.store(true, std::memory_order_relaxed);
+
+        float budget_us = (1000000.0f * buffer_size) / sample_rate;
+        ESP_LOGI(TAG, "Audio budget tracking ENABLED");
+        ESP_LOGI(TAG, "  Buffer size: %lu samples", buffer_size);
+        ESP_LOGI(TAG, "  Sample rate: %lu Hz", sample_rate);
+        ESP_LOGI(TAG, "  Time budget: %.2f µs per buffer", budget_us);
+    } else {
+        registry_.track_audio_budget.store(false, std::memory_order_relaxed);
+        ESP_LOGI(TAG, "Audio budget tracking DISABLED");
+    }
+}
+
+// Get budget overrun statistics
+float PerfMonitor::GetBudgetOverrunStats(uint32_t& overrun_count, uint32_t& total_windows) {
+    overrun_count = registry_.budget_overrun_count.load(std::memory_order_relaxed);
+    total_windows = registry_.total_measurement_windows.load(std::memory_order_relaxed);
+
+    if (total_windows == 0) {
+        return 0.0f;
+    }
+
+    return (100.0f * overrun_count) / total_windows;
+}
+
+// Reset budget overrun statistics
+void PerfMonitor::ResetBudgetOverrunStats() {
+    registry_.budget_overrun_count.store(0, std::memory_order_relaxed);
+    registry_.total_measurement_windows.store(0, std::memory_order_relaxed);
+    ESP_LOGI(TAG, "Budget overrun statistics RESET");
 }
 
 } // namespace INSTRUMENTATION
