@@ -771,6 +771,12 @@ CONFIG_SP_FIXED_MEM_ALLOC_SZ=300000
 CONFIG_TASK_REST_SERVER=y
 # CONFIG_TASK_RGB_INDICATOR_LED is not set
 # end of Optional Tasks
+
+#
+# Optimizations
+#
+CONFIG_ASSEMBLY_OPT_AUDIO_BUFFER_CODEC=y
+# end of Optimizations
 # end of CTAG TBD Configuration
 
 #
