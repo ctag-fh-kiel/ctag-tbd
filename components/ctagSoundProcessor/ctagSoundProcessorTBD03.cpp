@@ -62,6 +62,9 @@ void ctagSoundProcessorTBD03::Init(std::size_t blockSize, void *blockPtr) {
 }
 
 void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
+    // Pre-calculate reciprocal constant to replace divisions with multiplications
+    constexpr float INV_4095 = 1.0f / 4095.f;  // 0.000244200244200244f
+
     float dvcf, dvca;
     bool trg;
 
@@ -76,7 +79,7 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
         if (trig_accent != -1) {
             isAccent = data.trig[trig_accent] == 0 ? 1 : 0;
         }
-        dvcf = decay_vcf / 4095.f * 5.f;
+        dvcf = decay_vcf * INV_4095 * 5.f;  // Multiply instead of divide
         if (cv_decay_vcf != -1) {
             dvcf = fabsf(data.cv[cv_decay_vcf]) * 5.f;
         }
@@ -85,7 +88,7 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
             dvcf = kAccentDecay;
         }
         adVCF.SetDecay(dvcf);
-        dvca = decay_vca / 4095.f * 5.f;
+        dvca = decay_vca * INV_4095 * 5.f;  // Multiply instead of divide
         if (cv_decay_vca != -1) {
             dvca = fabsf(data.cv[cv_decay_vca]) * 5.f;
         }
@@ -175,19 +178,19 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
         ftype = static_cast<int>(fabsf(data.cv[cv_filter_type]) * 5.f);
     }
     CONSTRAIN(ftype, 0, 4)
-    float c = cutoff / 4095.f;
+    float c = cutoff * INV_4095;  // Multiply instead of divide
     if (cv_cutoff != -1) {
         c = fabsf(data.cv[cv_cutoff]);
     }
     c *= 27000.f;
     c -= 5000.f;
-    float fenv = envelope / 4095.f;
+    float fenv = envelope * INV_4095;  // Multiply instead of divide
     if (cv_envelope != -1) {
         fenv = fabsf(data.cv[cv_envelope]);
     }
     c += fenv * egvalVCF * 22000.f;
     // if accent add to VCF envelope
-    float facclev = accent_level / 4095.f;
+    float facclev = accent_level * INV_4095;  // Multiply instead of divide
     if (cv_accent_level != -1) {
         facclev = fabsf(data.cv[cv_accent_level]);
     }
@@ -195,7 +198,7 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
         c += facclev * egvalVCF * 22000.f;
     }
 
-    float r = resonance / 4095.f;
+    float r = resonance * INV_4095;  // Multiply instead of divide
     if (cv_resonance != -1) {
         r = fabsf(data.cv[cv_resonance]);
     }
@@ -206,7 +209,7 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
     }
     CONSTRAIN(signature, 0, 65535)
 
-    float dri = drive / 4095.f * 30.f;
+    float dri = drive * INV_4095 * 30.f;  // Multiply instead of divide
     if (cv_drive != -1) {
         dri = fabsf(data.cv[cv_drive]) * 30.f;
     }
@@ -214,42 +217,33 @@ void ctagSoundProcessorTBD03::Process(const ProcessData &data) {
     CONSTRAIN(c, 20.f, 22000.f)
     CONSTRAIN(r, 0.f, 1.f)
     CONSTRAIN(dri, 1.f, 30.f)
-    ctagFilterBase *filter = &pirkle_zdf_boost;
-    switch(ftype){
-        case 0:
-            filter = &pirkle_zdf_boost;
-            break;
-        case 1:
-            filter = &karlson;
-            break;
-        case 2:
-            filter = &blaukraut;
-            break;
-        case 3:
-            filter = &pirkle_zdf;
-            break;
-        case 4:
-            filter = &zavalishin;
-            break;
-    }
+
+    // Optimize filter selection - use array lookup for better performance
+    ctagFilterBase* filters[5] = {&pirkle_zdf_boost, &karlson, &blaukraut, &pirkle_zdf, &zavalishin};
+    ctagFilterBase *filter = filters[ftype];  // Direct indexing (ftype already constrained)
+
     filter->SetCutoff(c);
     filter->SetResonance(r);
     filter->SetGain(dri);
 
-    float fgain = gain / 4095.f * 2.f;
+    float fgain = gain * INV_4095 * 2.f;  // Multiply instead of divide
     if (cv_gain != -1) {
         fgain = fabsf(data.cv[cv_gain]) * 2.f;
     }
 
+    // Hoist loop invariants outside the audio processing loop
+    const float div = 3.0518509476E-5f;
+    const float eg_step = (egvalVCA - pre_eg_val) / (float) bufSz;  // ONE division instead of 32!
+    float eg = pre_eg_val;
+    const int out_offset = processCh;
+
     for (int i = 0; i < bufSz; i++) {
-        float eg = pre_eg_val +
-                   (egvalVCA - pre_eg_val) / (float) bufSz * i; // linear fade from previous eg value to avoid glitches
+        eg += eg_step;  // Simple addition instead of division+multiply per sample!
         // apply non linearity to filter input
         int16_t warped = ws.Transform(buffer[i]);
         buffer[i] = stmlib::Mix(buffer[i], warped, signature);
         // filter, EG and clip
-        const float div = 3.0518509476E-5f;
-        data.buf[i * 2 + processCh] = fgain * stmlib::SoftClip(eg * filter->Process(buffer[i] * div));
+        data.buf[i * 2 + out_offset] = fgain * stmlib::SoftClip(eg * filter->Process(buffer[i] * div));
     }
     pre_eg_val = egvalVCA;
     // sync on trigger
