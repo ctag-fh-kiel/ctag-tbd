@@ -54,6 +54,8 @@ namespace CTAG::SP::HELPERS {
         virtual void Init() override;
 
     private:
+        void updateCoefficients(); // Pre-calculate filter coefficients
+
         float kval_ = 1.f;
         float a[4] = {0.f};
         float z[4] = {0.f};
@@ -66,6 +68,10 @@ namespace CTAG::SP::HELPERS {
         float SIGMA = 0.f, GAMMA = 0.f;
         float alpha = 0.f;
         float g, gp1;
+        float halfg = 0.f; // Pre-calculated 0.5f * g
+        float kval_GAMMA = 0.f; // Pre-calculated kval_ * GAMMA
+        float reciprocal_kval_GAMMA = 1.0f; // Pre-calculated 1.0f / (1.0f + kval_GAMMA)
+        float alpha_half = 0.f; // Pre-calculated alpha * 0.5f for stages 2-4
     };
 }
 
