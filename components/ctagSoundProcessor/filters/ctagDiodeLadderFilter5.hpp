@@ -59,6 +59,7 @@ namespace CTAG::SP::HELPERS {
 
     private:
         void calcLowShelveBoost();
+        void updateCoefficients(); // Pre-calculate filter coefficients
 
         float kval_ = 1.f;
         float a[4] = {0.f};
@@ -73,6 +74,10 @@ namespace CTAG::SP::HELPERS {
         float alpha = 0.f;
         float g, gp1;
         float cb, xh, H0;
+        float kval_GAMMA = 0.f; // Pre-calculated kval_ * GAMMA
+        float reciprocal_kval_GAMMA = 1.0f; // Pre-calculated 1.0f / (1.0f + kval_GAMMA)
+        float halfg = 0.f; // Pre-calculated 0.5f * g
+        float alpha_half = 0.f; // Pre-calculated alpha * 0.5f for stages 2-4
     };
 }
 
