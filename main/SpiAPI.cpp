@@ -27,6 +27,8 @@ respective component folders / files if different from this license.
 #include "soc/gpio_num.h"
 #include "esp_log.h"
 #include "esp_ota_ops.h"
+#include "esp_partition.h"
+#include "esp_image_format.h"
 #include "driver/gpio.h"
 
 #include "link.hpp"
@@ -67,6 +69,24 @@ static const char *esp_get_current_ota_label(void) {
             return "factory";   // or return NULL if you prefer
         }
 }
+
+static int count_bootable_ota_partitions(void) {
+    int count = 0;
+    esp_partition_iterator_t it = esp_partition_find(ESP_PARTITION_TYPE_APP, ESP_PARTITION_SUBTYPE_ANY, NULL);
+
+    while (it != NULL) {
+        const esp_partition_t *p = esp_partition_get(it);
+        if (p->subtype >= ESP_PARTITION_SUBTYPE_APP_OTA_MIN &&
+            p->subtype <= ESP_PARTITION_SUBTYPE_APP_OTA_MAX) {
+            count++;
+            }
+        it = esp_partition_next(it);
+    }
+
+    esp_partition_iterator_release(it);
+    return count;
+}
+
 
 // Called after a transaction is queued and ready for pickup by master. We use this to set the handshake line high.
 IRAM_ATTR static void spi_post_setup_cb(spi_slave_transaction_t *trans){
@@ -426,6 +446,18 @@ namespace CTAG::SPIAPI{
                     CTAG::LINK::link::SetLinkStartStop(uint8_param_0 != 0);
                 }
                 break;
+            case RequestType::RebootToOTAX:
+                {
+                int num_ota = count_bootable_ota_partitions();
+                if (uint8_param_0 >= num_ota){
+                    ESP_LOGE("SpiAPI", "Requested OTA %d but only %d OTAs available!", uint8_param_0, num_ota);
+                    break;
+                }
+                boot_into_slot(uint8_param_0);
+                ESP_LOGI("SpiAPI", "Rebooting device to OTA %d!", uint8_param_0);
+                CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                break;
+                }
             }
         }
     }
