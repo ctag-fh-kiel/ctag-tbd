@@ -27,23 +27,32 @@
   #lowResRow { margin-top: 8px; }
   #lowResLabel { font-weight: 600; margin-right: 8px; }
   #lowResPreview {
-    border: 2px solid #333;
-    border-radius: 4px;
     display: block;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    image-rendering: -moz-crisp-edges;
     background: #000;
+    /* Size controlled by JavaScript slider for accurate physical dimension calibration */
   }
   #oledContainer {
+    display: inline-block;
+    position: relative;
+  }
+  #oledFrame {
     background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
-    padding: 16px;
     border-radius: 8px;
     box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
-    display: inline-block;
+    position: relative;
+  }
+  #oledActiveArea {
+    position: absolute;
+    background: #000;
+    pointer-events: none;
   }
   #oledScaler {
     transform-origin: top left;
     transition: transform 0.2s ease;
+    position: relative;
   }
   .zoom-controls {
     display: inline-flex;
@@ -54,6 +63,24 @@
     padding: 4px 8px;
     font-size: 11px;
     min-width: 40px;
+  }
+  .display-info {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 12px;
+  }
+  .size-calibration {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px;
+    background: #f9fafb;
+    border-radius: 4px;
+    border: 1px solid var(--b);
+  }
+  .size-slider {
+    width: 200px;
   }
     #warnings { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 6px; padding: 8px; display: none; }
     .folder { margin: 4px 0; }
@@ -118,8 +145,8 @@
     </div>
     <div id="waveform"></div>
     <div id="lowResRow">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-        <span id="lowResLabel">2.9" OLED Preview (128×32 monochrome):</span>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+        <span id="lowResLabel">2.42" OLED Preview (128×64 monochrome):</span>
         <span id="analysisInfo" class="pill" style="font-size: 11px;"></span>
         <div class="zoom-controls">
           <button id="zoom1x" class="zoom-btn">1×</button>
@@ -127,10 +154,19 @@
           <button id="zoom3x" class="zoom-btn">3×</button>
           <button id="zoom4x" class="zoom-btn">4×</button>
         </div>
+        <span class="display-info">Preview in bottom 24px</span>
+      </div>
+      <div class="size-calibration">
+        <label for="sizeSlider" style="font-weight: 600; white-space: nowrap;">Physical Size:</label>
+        <input type="range" id="sizeSlider" class="size-slider" min="100" max="800" value="282" step="1">
+        <span id="sizeDisplay" style="min-width: 160px; font-size: 12px;">282px (≈55mm)</span>
+        <span style="font-size: 11px; color: var(--muted);">← Adjust until display measures 55mm wide with ruler</span>
       </div>
       <div id="oledContainer">
         <div id="oledScaler">
-          <canvas id="lowResPreview" width="128" height="32"></canvas>
+          <div id="oledFrame">
+            <canvas id="lowResPreview"></canvas>
+          </div>
         </div>
       </div>
     </div>
@@ -171,16 +207,55 @@
     const lowResCanvas = document.getElementById('lowResPreview');
     const analysisInfo = document.getElementById('analysisInfo');
     const oledScaler = document.getElementById('oledScaler');
+    const oledFrame = document.getElementById('oledFrame');
     const zoom1xBtn = document.getElementById('zoom1x');
     const zoom2xBtn = document.getElementById('zoom2x');
     const zoom3xBtn = document.getElementById('zoom3x');
     const zoom4xBtn = document.getElementById('zoom4x');
+    const sizeSlider = document.getElementById('sizeSlider');
+    const sizeDisplay = document.getElementById('sizeDisplay');
+
+    // Initialize canvas with correct resolution
+    lowResCanvas.width = 128;
+    lowResCanvas.height = 64;
+
+    // Physical dimensions: 55.01mm × 27.49mm
+    const ASPECT_RATIO = 27.49 / 55.01; // height / width
+
+    // Load saved size or use default (282px = calibrated for typical displays)
+    let baseWidth = parseInt(localStorage.getItem('oledDisplayWidth') || '282');
+    sizeSlider.value = baseWidth;
+    sizeSlider.max = 800; // Allow up to 800px for very high DPI displays
+
+    function updateCanvasSize() {
+      const width = parseInt(sizeSlider.value);
+      const height = Math.round(width * ASPECT_RATIO);
+
+      lowResCanvas.style.width = width + 'px';
+      lowResCanvas.style.height = height + 'px';
+
+      // Update display text with approximate mm calculation
+      const widthMM = (width / 7.64).toFixed(1); // Rough conversion, will vary by screen
+      sizeDisplay.textContent = `${width}px (≈${widthMM}mm target: 55mm)`;
+
+      // Save to localStorage
+      localStorage.setItem('oledDisplayWidth', width);
+      baseWidth = width;
+    }
+
+    sizeSlider.addEventListener('input', updateCanvasSize);
+    updateCanvasSize(); // Initial setup
 
     // Setup zoom controls
-    let currentZoom = 3;
+    let currentZoom = 1;
     function setZoom(scale) {
       currentZoom = scale;
       oledScaler.style.transform = `scale(${scale})`;
+
+      // Add padding to frame that scales with zoom
+      const padding = 12 * scale;
+      oledFrame.style.padding = `${padding}px`;
+
       [zoom1xBtn, zoom2xBtn, zoom3xBtn, zoom4xBtn].forEach((btn, i) => {
         btn.style.fontWeight = (i + 1) === scale ? 'bold' : 'normal';
         btn.style.background = (i + 1) === scale ? '#e0f2fe' : '#fff';
@@ -190,7 +265,7 @@
     zoom2xBtn.addEventListener('click', () => setZoom(2));
     zoom3xBtn.addEventListener('click', () => setZoom(3));
     zoom4xBtn.addEventListener('click', () => setZoom(4));
-    setZoom(3); // Default 3x zoom
+    setZoom(1); // Default 1× = physical size
 
     if (!FS_AVAILABLE) {
       // Hide save button if filesystem access API is not available (e.g., file:// or non-Chromium)
@@ -588,7 +663,7 @@
         const pv = selection[i].preview128 || [];
         for (let j = 0; j < 128; j++) {
           const v = (pv[j] != null ? pv[j] : 0);
-          bin[i * 128 + j] = (v < 0 ? 0 : (v > 31 ? 31 : v)) | 0;
+          bin[i * 128 + j] = (v < 0 ? 0 : (v > 23 ? 23 : v)) | 0;
         }
       }
       return bin;
@@ -678,9 +753,11 @@
           pv = new Array(128);
           for (let j = 0; j < 128; j++) {
             // Take max of two adjacent samples for downsampling
-            const v1 = it.preview256[j * 2] || 0;
-            const v2 = it.preview256[j * 2 + 1] || 0;
-            pv[j] = Math.max(Math.abs(v1), Math.abs(v2));
+            const v1 = Math.abs(it.preview256[j * 2] || 0);
+            const v2 = Math.abs(it.preview256[j * 2 + 1] || 0);
+            const maxVal = Math.max(v1, v2);
+            // Scale from 0-127 range to 0-23 range
+            pv[j] = Math.min(23, Math.floor((maxVal / 127.0) * 23));
           }
         }
 
@@ -796,7 +873,7 @@
       const maxSamplesFromFile = Math.floor(dataBytes / bytesPerSample);
       const total = Math.min(nsamples || maxSamplesFromFile, maxSamplesFromFile);
 
-      // Output: 128 values (one per OLED horizontal pixel), absolute amplitude only (positive)
+      // Output: 128 values (one per OLED horizontal pixel), 0-23 range (24 pixels height)
       const out = new Int8Array(128);
       if (total <= 0) return { data: out, analysis: null };
 
@@ -838,11 +915,11 @@
           value = rms * 0.7 + peak * 0.3;
         }
 
-        // Convert to 0-31 range (32 vertical pixels) with slight logarithmic compression
+        // Convert to 0-23 range (24 vertical pixels) with slight logarithmic compression
         const normalized = value / 32768.0; // 0..1
         // Apply gentle compression curve to make quiet parts more visible
         const compressed = Math.pow(normalized, 0.8);
-        const u8 = Math.min(31, Math.floor(compressed * 31));
+        const u8 = Math.min(23, Math.floor(compressed * 23));
 
         out[i] = u8;
       }
@@ -927,32 +1004,33 @@
     function drawInt8Preview(canvas, data) {
       const ctx = canvas.getContext('2d');
       const w = 128; // OLED width
-      const h = 32;  // OLED height
+      const h = 64;  // OLED height
 
-      // Clear to black (OLED off state)
+      // Clear entire display to black (OLED off state)
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, w, h);
 
-      // Draw 128 samples as vertical bars from bottom up
-      // Monochrome OLED style - white pixels on black
+      // Waveform preview occupies bottom third (24 pixels): rows 40-63
+      const PREVIEW_START_Y = 40; // Start at pixel row 40
+      const PREVIEW_HEIGHT = 24;  // 24 pixels tall
       const SAMPLES = 128;
 
       // For OLED emulation, we'll draw with a slight glow effect
-      // First pass: draw main pixels (bright white)
       const imageData = ctx.createImageData(w, h);
       const pixels = imageData.data;
 
+      // Draw waveform in bottom section
       for (let x = 0; x < SAMPLES; x++) {
-        const val = (data && data[x] != null) ? data[x] : 0; // 0-31
+        const val = (data && data[x] != null) ? data[x] : 0; // 0-23
 
         if (val > 0) {
-          // Draw vertical bar from bottom (y=31) up to the value height
-          for (let y = 0; y < val && y < h; y++) {
-            const pixelY = h - 1 - y; // Flip so it grows from bottom
+          // Draw vertical bar from bottom up
+          for (let y = 0; y < val && y < PREVIEW_HEIGHT; y++) {
+            const pixelY = h - 1 - y; // Start from bottom (row 63)
             const index = (pixelY * w + x) * 4;
 
             // Determine brightness based on position for slight gradient effect
-            const brightness = 255 - (y * 3); // Slight dimming at top for depth
+            const brightness = 255 - (y * 2); // Slight dimming at top for depth
 
             pixels[index] = brightness;     // R
             pixels[index + 1] = brightness; // G
@@ -962,18 +1040,27 @@
         }
       }
 
+      // Draw a subtle separator line at the top of preview area (row 39)
+      for (let x = 0; x < w; x++) {
+        const index = (39 * w + x) * 4;
+        pixels[index] = 60;     // R - dim gray
+        pixels[index + 1] = 60; // G
+        pixels[index + 2] = 60; // B
+        pixels[index + 3] = 255; // A
+      }
+
       ctx.putImageData(imageData, 0, 0);
 
-      // Second pass: add OLED glow effect (subtle)
+      // Add OLED glow effect (subtle)
       ctx.shadowColor = '#ffffff';
-      ctx.shadowBlur = 1;
-      ctx.globalAlpha = 0.3;
+      ctx.shadowBlur = 0.8;
+      ctx.globalAlpha = 0.25;
       ctx.drawImage(canvas, 0, 0);
       ctx.shadowBlur = 0;
       ctx.globalAlpha = 1.0;
 
       // Optional: Add scan lines for more authentic OLED look (very subtle)
-      ctx.globalAlpha = 0.05;
+      ctx.globalAlpha = 0.03;
       ctx.fillStyle = '#000000';
       for (let y = 0; y < h; y += 2) {
         ctx.fillRect(0, y, w, 1);
