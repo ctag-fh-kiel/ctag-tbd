@@ -45,10 +45,6 @@ namespace CTAG::SP {
         };
         ctagSPAllocator() = delete;
 
-        // allocate large block of memory which is used by the sound processors
-        static void AllocateInternalBuffer(std::size_t const &size);
-        // release large block of memory
-        static void ReleaseInternalBuffer();
         // called by new operator of sound processors
         static void *Allocate(std::size_t const &size);
         // called to determine remaining size after new allocation for other heap allocations of sound processor
