@@ -688,18 +688,38 @@
       const dataBytes = Math.max(0, dv.byteLength - offset);
       const maxSamplesFromFile = Math.floor(dataBytes / bytesPerSample);
       const total = Math.min(nsamples || maxSamplesFromFile, maxSamplesFromFile);
+
+      // Output: 256 values, one per block, absolute amplitude only (positive)
       const out = new Int8Array(256);
       if (total <= 0) return out;
-      for (let i = 0; i < 256; i++) {
-        const idx = Math.min(total - 1, Math.max(0, Math.floor((i + 0.5) * total / 256)));
-        const byteOff = offset + idx * bytesPerSample;
-        if (byteOff + 1 >= dv.byteLength) { out[i] = 0; continue; }
-        const v16 = dv.getInt16(byteOff, true);
-        let v = Math.max(-32768, Math.min(32767, v16)) / 32768;
-        let i8 = Math.round(v * 127);
-        if (i8 < -128) i8 = -128; else if (i8 > 127) i8 = 127;
-        out[i] = i8;
+
+      const BLOCKS = 256;
+      const blockSize = total / BLOCKS;
+
+      for (let i = 0; i < BLOCKS; i++) {
+        const startIdx = Math.floor(i * blockSize);
+        const endIdx = Math.floor((i + 1) * blockSize);
+
+        let peakAbs = 0;
+
+        // Find the peak absolute value in this block
+        for (let j = startIdx; j < endIdx && j < total; j++) {
+          const byteOff = offset + j * bytesPerSample;
+          if (byteOff + 1 >= dv.byteLength) break;
+
+          const v16 = dv.getInt16(byteOff, true);
+          const abs = Math.abs(v16);
+
+          if (abs > peakAbs) peakAbs = abs;
+        }
+
+        // Convert int16 absolute value to uint8 (0-127 range for positive direction)
+        // Divide by 256 to get from 0-32767 to 0-127
+        const u8 = Math.min(127, Math.floor(peakAbs / 256));
+
+        out[i] = u8;
       }
+
       return out;
     }
 
@@ -708,25 +728,38 @@
       const w = canvas.width;
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
-      // Background grid (optional light center line)
-      ctx.strokeStyle = '#e5e7eb';
+
+      // Background
+      ctx.fillStyle = '#fafafa';
+      ctx.fillRect(0, 0, w, h);
+
+      // Bottom baseline
+      ctx.strokeStyle = '#d1d5db';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(0, Math.floor(h / 2) + 0.5);
-      ctx.lineTo(w, Math.floor(h / 2) + 0.5);
+      ctx.moveTo(0, h - 0.5);
+      ctx.lineTo(w, h - 0.5);
       ctx.stroke();
 
-      // Waveform
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let i = 0; i < 256; i++) {
-        const x = Math.round(i * (w - 1) / 255);
-        const v = (data && data[i] != null) ? data[i] : 0; // -128..127
-        const y = Math.round((1 - (v + 128) / 255) * (h - 1));
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      // Draw 256 samples as vertical bars from bottom up
+      const SAMPLES = 256;
+      const barWidth = w / SAMPLES;
+
+      // Draw each sample as a vertical bar from bottom
+      ctx.fillStyle = '#3b82f6';
+
+      for (let i = 0; i < SAMPLES; i++) {
+        const val = (data && data[i] != null) ? data[i] : 0; // 0-127
+
+        if (val > 0) {
+          const x = i * barWidth;
+          // Map 0-127 to 0-height (bottom to top)
+          const barHeight = (val / 127.0) * (h - 2); // -2 for small margin
+          const barTop = h - barHeight;
+
+          ctx.fillRect(x, barTop, Math.max(1, barWidth - 0.5), barHeight);
+        }
       }
-      ctx.stroke();
     }
   </script>
 </body>
