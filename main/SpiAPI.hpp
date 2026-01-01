@@ -57,6 +57,7 @@ namespace CTAG::SPIAPI{
             GetFirmwareInfo = 0x19, // returns json {"HWV": hardware version, "FWV": firmware version, "OTA": active ota partition}
             SetAbletonLinkTempo = 0x20, // sets Ableton Link tempo, args [tempo (float bpm)]
             SetAbletonLinkStartStop = 0x21, // sets Ableton Link start/stop, args [isPlaying (uint8_t, 0 = stop, 1 = start)]
+            RebootToOTAX = 0x22, // reboots the device to OTAX, args [X (uint8_t)]
         };
 
         static TaskHandle_t hTask;
