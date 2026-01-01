@@ -746,7 +746,20 @@
             const peakDB = 20 * Math.log10(result.peak / 32768);
             const peakPct = (result.peak / 32768 * 100).toFixed(1);
             const sizeKB = ((entry.nsamples * 2) / 1024).toFixed(1);
-            peakLevel.textContent = `Peak: ${peakPct}% (${peakDB.toFixed(1)}dB) • Size: ${sizeKB}KB`;
+
+            let info = `Peak: ${peakPct}% (${peakDB.toFixed(1)}dB) • Size: ${sizeKB}KB`;
+
+            // Add normalization indicator
+            if (result.normalized) {
+              info += ' • [Auto-normalized]';
+            }
+
+            // Add DC offset warning if significant
+            if (result.dcOffset && Math.abs(result.dcOffset) > 500) {
+              info += ` • DC: ${result.dcOffset > 0 ? '+' : ''}${Math.round(result.dcOffset)}`;
+            }
+
+            peakLevel.textContent = info;
           }
         }
       } catch {
@@ -1024,13 +1037,33 @@
       const out = new Int8Array(128);
       if (total <= 0) return { data: out, analysis: null, peak: 0 };
 
-      // First pass: analyze waveform characteristics
+      // STEP 1: Calculate DC offset (average) to remove
+      let dcSum = 0;
+      const dcSampleCount = Math.min(4096, total); // Sample first 4096 for DC estimate
+      for (let i = 0; i < dcSampleCount; i++) {
+        const byteOff = offset + i * bytesPerSample;
+        if (byteOff + 1 >= dv.byteLength) break;
+        dcSum += dv.getInt16(byteOff, true);
+      }
+      const dcOffset = dcSum / dcSampleCount;
+
+      // STEP 2: Analyze waveform characteristics
       const analysis = analyzeWaveform(dv, offset, total, bytesPerSample);
 
-      // Track peak level across entire sample
+      // STEP 3: Find true peak for optional normalization
       let globalPeak = 0;
+      for (let i = 0; i < total; i += 128) { // Sample every 128 samples for speed
+        const byteOff = offset + i * bytesPerSample;
+        if (byteOff + 1 >= dv.byteLength) break;
+        const v16 = Math.abs(dv.getInt16(byteOff, true) - dcOffset);
+        if (v16 > globalPeak) globalPeak = v16;
+      }
 
-      // Choose method based on characteristics
+      // Decide if normalization would help (if peak < 50% of full scale)
+      const shouldNormalize = globalPeak < 16384 && !analysis.isVeryQuiet;
+      const normalizationFactor = shouldNormalize ? (28000 / globalPeak) : 1.0;
+
+      // STEP 4: Generate preview with improved downsampling
       const BLOCKS = 128;
       const blockSize = total / BLOCKS;
 
@@ -1041,43 +1074,73 @@
         let value = 0;
 
         if (analysis.isTransientHeavy) {
-          // For drums, percussion, clicks: use pure peak detection
-          value = computeBlockPeak(dv, offset, startIdx, endIdx, bytesPerSample);
+          // For drums, percussion: use peak with DC correction
+          value = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
         } else if (analysis.isVeryQuiet) {
-          // For quiet material: use RMS with boost to make it visible
-          const rms = computeBlockRMS(dv, offset, startIdx, endIdx, bytesPerSample);
-          // Apply gentle compression/boost for quiet sounds
+          // For quiet material: use RMS with boost
+          const rms = computeBlockRMSDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
           value = Math.min(32767, rms * 2.5);
         } else if (analysis.isDense) {
-          // For dense material (pads, drones, noise): use weighted RMS+peak
-          const peak = computeBlockPeak(dv, offset, startIdx, endIdx, bytesPerSample);
-          const rms = computeBlockRMS(dv, offset, startIdx, endIdx, bytesPerSample);
-          // 60% RMS (shows body) + 40% peak (shows transients)
-          value = rms * 0.6 + peak * 0.4;
+          // For dense material: balanced RMS+peak
+          const peak = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
+          const rms = computeBlockRMSDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
+          value = rms * 0.65 + peak * 0.35;
         } else if (analysis.hasSilentSections) {
-          // For material with silence/gaps: use peak to preserve attacks
-          value = computeBlockPeak(dv, offset, startIdx, endIdx, bytesPerSample);
+          // For gapped material: preserve transients
+          value = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
         } else {
-          // Default: hybrid approach with RMS bias
-          const peak = computeBlockPeak(dv, offset, startIdx, endIdx, bytesPerSample);
-          const rms = computeBlockRMS(dv, offset, startIdx, endIdx, bytesPerSample);
-          // 70% RMS + 30% peak for balanced representation
-          value = rms * 0.7 + peak * 0.3;
+          // Default: smooth RMS-weighted
+          const peak = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
+          const rms = computeBlockRMSDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
+          value = rms * 0.75 + peak * 0.25;
         }
 
-        // Track global peak
-        if (value > globalPeak) globalPeak = value;
+        // Apply normalization if needed
+        value = Math.min(32767, value * normalizationFactor);
 
-        // Convert to 0-23 range (24 vertical pixels) with slight logarithmic compression
-        const normalized = value / 32768.0; // 0..1
-        // Apply gentle compression curve to make quiet parts more visible
-        const compressed = Math.pow(normalized, 0.8);
-        const u8 = Math.min(23, Math.floor(compressed * 23));
+        // Convert to 0-23 range with perceptual curve
+        const normalized = value / 32768.0;
+        // Use cube root for better visibility of quiet parts (more aggressive than power 0.8)
+        const compressed = Math.pow(normalized, 0.75);
+        const u8 = Math.min(23, Math.floor(compressed * 23.5)); // Use 23.5 to reach full height easier
 
         out[i] = u8;
       }
 
-      return { data: out, analysis: analysis, peak: globalPeak };
+      return {
+        data: out,
+        analysis: analysis,
+        peak: globalPeak,
+        normalized: shouldNormalize,
+        dcOffset: Math.abs(dcOffset) > 100 ? dcOffset : 0
+      };
+    }
+
+    // DC-corrected peak calculation
+    function computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset) {
+      let peakAbs = 0;
+      for (let j = startIdx; j < endIdx; j++) {
+        const byteOff = offset + j * bytesPerSample;
+        if (byteOff + 1 >= dv.byteLength) break;
+        const v16 = Math.abs(dv.getInt16(byteOff, true) - dcOffset);
+        if (v16 > peakAbs) peakAbs = v16;
+      }
+      return peakAbs;
+    }
+
+    // DC-corrected RMS calculation
+    function computeBlockRMSDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset) {
+      let sumSquares = 0;
+      let count = 0;
+      for (let j = startIdx; j < endIdx; j++) {
+        const byteOff = offset + j * bytesPerSample;
+        if (byteOff + 1 >= dv.byteLength) break;
+        const v16 = dv.getInt16(byteOff, true) - dcOffset;
+        const abs = Math.abs(v16);
+        sumSquares += abs * abs;
+        count++;
+      }
+      return count > 0 ? Math.sqrt(sumSquares / count) : 0;
     }
 
 
@@ -1195,7 +1258,7 @@
       const imageData = ctx.createImageData(w, h);
       const pixels = imageData.data;
 
-      // Draw waveform in bottom section
+      // Draw waveform in bottom section with optional smoothing
       for (let x = 0; x < SAMPLES; x++) {
         const val = (data && data[x] != null) ? data[x] : 0; // 0-23
 
@@ -1205,13 +1268,29 @@
             const pixelY = h - 1 - y; // Start from bottom (row 63)
             const index = (pixelY * w + x) * 4;
 
-            // Determine brightness based on position for slight gradient effect
-            const brightness = 255 - (y * 2); // Slight dimming at top for depth
+            // Determine brightness with better gradient
+            // Brighter at bottom, dimmer at top for depth perception
+            const heightRatio = y / PREVIEW_HEIGHT;
+            const brightness = 255 - (heightRatio * 80); // 255 at bottom to 175 at top
 
             pixels[index] = brightness;     // R
             pixels[index + 1] = brightness; // G
             pixels[index + 2] = brightness; // B
             pixels[index + 3] = 255;        // A
+          }
+
+          // Add subtle anti-aliasing at the tip for smoother appearance
+          if (val < PREVIEW_HEIGHT - 1) {
+            const tipY = h - 1 - val;
+            if (tipY > PREVIEW_START_Y) {
+              const index = (tipY * w + x) * 4;
+              // Dim pixel at tip for anti-aliasing effect
+              const tipBrightness = 100;
+              pixels[index] = tipBrightness;
+              pixels[index + 1] = tipBrightness;
+              pixels[index + 2] = tipBrightness;
+              pixels[index + 3] = 255;
+            }
           }
         }
       }
@@ -1224,6 +1303,20 @@
         pixels[index + 2] = 60; // B
         pixels[index + 3] = 255; // A
       }
+
+      // Draw subtle division markers at 25%, 50%, 75% for reference
+      // These help identify potential loop points visually
+      const divisionPositions = [0.25, 0.5, 0.75];
+      divisionPositions.forEach(pos => {
+        const xPos = Math.floor(pos * (w - 1));
+        // Draw a very subtle vertical line (1 pixel, bottom of waveform area)
+        const yPos = h - 1;
+        const index = (yPos * w + xPos) * 4;
+        pixels[index] = 120;     // R - subtle marker
+        pixels[index + 1] = 120; // G
+        pixels[index + 2] = 120; // B
+        pixels[index + 3] = 255; // A
+      });
 
       // Draw playback position indicator if provided (no other markers)
       if (playbackPosition !== null && playbackPosition >= 0 && playbackPosition <= 1) {
