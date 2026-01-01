@@ -285,6 +285,46 @@
       durationEl.textContent = formatTime(wavesurfer.getDuration());
     });
 
+    // Track playback position for OLED preview indicator
+    let currentPreviewData = null;
+    let playbackAnimationFrame = null;
+
+    wavesurfer.on('play', () => {
+      startPlaybackIndicator();
+    });
+
+    wavesurfer.on('pause', () => {
+      stopPlaybackIndicator();
+    });
+
+    wavesurfer.on('finish', () => {
+      stopPlaybackIndicator();
+      // Redraw without indicator
+      if (currentPreviewData) {
+        drawInt8Preview(lowResCanvas, currentPreviewData, null);
+      }
+    });
+
+    function startPlaybackIndicator() {
+      function updateIndicator() {
+        if (wavesurfer.isPlaying() && currentPreviewData) {
+          const currentTime = wavesurfer.getCurrentTime();
+          const duration = wavesurfer.getDuration();
+          const position = duration > 0 ? currentTime / duration : 0;
+          drawInt8Preview(lowResCanvas, currentPreviewData, position);
+        }
+        playbackAnimationFrame = requestAnimationFrame(updateIndicator);
+      }
+      updateIndicator();
+    }
+
+    function stopPlaybackIndicator() {
+      if (playbackAnimationFrame) {
+        cancelAnimationFrame(playbackAnimationFrame);
+        playbackAnimationFrame = null;
+      }
+    }
+
     let entries = []; // {filename, path, nsamples, offset? , _idx}
     let selection = []; // { entry, file, sname?: string, preview128?: number[] }
     let wavMap = new Map(); // key: path/stem (lower) -> File
@@ -562,7 +602,8 @@
           // If this item is currently shown in preview, redraw
           if (currentNameEl.textContent.endsWith(entry.filename)) {
             try {
-              drawInt8Preview(lowResCanvas, result.data);
+              currentPreviewData = result.data;
+              drawInt8Preview(lowResCanvas, result.data, null);
               updateAnalysisDisplay(result.analysis);
             } catch {}
           }
@@ -619,20 +660,32 @@
         // If in selection and already computed, draw immediately
         const inSel = selection.find((s) => s.entry._idx === entry._idx && s.preview128);
         if (inSel && inSel.preview128) {
-          drawInt8Preview(lowResCanvas, new Int8Array(inSel.preview128));
+          currentPreviewData = new Int8Array(inSel.preview128);
+          drawInt8Preview(lowResCanvas, currentPreviewData, null);
           if (analysisInfo) analysisInfo.textContent = '';
         } else {
           const result = await generatePreviewForFile(entry, file);
-          drawInt8Preview(lowResCanvas, result.data);
+          currentPreviewData = result.data;
+          drawInt8Preview(lowResCanvas, result.data, null);
           updateAnalysisDisplay(result.analysis);
         }
       } catch {
+        currentPreviewData = null;
         clearLowResCanvas();
         if (analysisInfo) analysisInfo.textContent = '';
       }
     }
 
-    function stopPreview() { try { wavesurfer.pause(); } catch {} }
+    function stopPreview() {
+      try {
+        wavesurfer.pause();
+        stopPlaybackIndicator();
+        // Redraw without indicator
+        if (currentPreviewData) {
+          drawInt8Preview(lowResCanvas, currentPreviewData, null);
+        }
+      } catch {}
+    }
 
     // Export: JSON (no previews) + BIN (concatenated 128-byte int8 previews)
     async function ensureAllPreviews() {
@@ -1001,7 +1054,7 @@
       return count > 0 ? Math.sqrt(sumSquares / count) : 0;
     }
 
-    function drawInt8Preview(canvas, data) {
+    function drawInt8Preview(canvas, data, playbackPosition = null) {
       const ctx = canvas.getContext('2d');
       const w = 128; // OLED width
       const h = 64;  // OLED height
@@ -1047,6 +1100,24 @@
         pixels[index + 1] = 60; // G
         pixels[index + 2] = 60; // B
         pixels[index + 3] = 255; // A
+      }
+
+      // Draw playback position indicator if provided
+      if (playbackPosition !== null && playbackPosition >= 0 && playbackPosition <= 1) {
+        const indicatorX = Math.floor(playbackPosition * (w - 1));
+
+        // Draw vertical line from top to bottom of preview area (rows 40-63)
+        for (let y = PREVIEW_START_Y; y < h; y++) {
+          const index = (y * w + indicatorX) * 4;
+          // Invert colors - make it bright where waveform is dark, dark where bright
+          const currentBrightness = pixels[index];
+          const inverted = currentBrightness > 128 ? 0 : 255;
+
+          pixels[index] = inverted;     // R
+          pixels[index + 1] = inverted; // G
+          pixels[index + 2] = inverted; // B
+          pixels[index + 3] = 255;      // A
+        }
       }
 
       ctx.putImageData(imageData, 0, 0);
