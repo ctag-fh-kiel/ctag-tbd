@@ -144,7 +144,7 @@
       </div>
     </div>
     <div id="waveform"></div>
-    <div id="lowResRow">
+      <div id="lowResRow">
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
         <span id="lowResLabel">2.42" OLED Preview (128×64 monochrome):</span>
         <span id="analysisInfo" class="pill" style="font-size: 11px;"></span>
@@ -154,7 +154,7 @@
           <button id="zoom3x" class="zoom-btn">3×</button>
           <button id="zoom4x" class="zoom-btn">4×</button>
         </div>
-        <span class="display-info">Moving line = Playback position</span>
+        <span class="display-info">Click waveform to seek • Space=Play/Pause</span>
       </div>
       <div class="size-calibration">
         <label for="sizeSlider" style="font-weight: 600; white-space: nowrap;">Physical Size:</label>
@@ -168,6 +168,9 @@
             <canvas id="lowResPreview"></canvas>
           </div>
         </div>
+      </div>
+      <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
+        <span id="peakLevel"></span>
       </div>
     </div>
   </section>
@@ -208,6 +211,7 @@
     const analysisInfo = document.getElementById('analysisInfo');
     const oledScaler = document.getElementById('oledScaler');
     const oledFrame = document.getElementById('oledFrame');
+    const peakLevel = document.getElementById('peakLevel');
     const zoom1xBtn = document.getElementById('zoom1x');
     const zoom2xBtn = document.getElementById('zoom2x');
     const zoom3xBtn = document.getElementById('zoom3x');
@@ -245,6 +249,69 @@
 
     sizeSlider.addEventListener('input', updateCanvasSize);
     updateCanvasSize(); // Initial setup
+
+    // Click on canvas to seek
+    lowResCanvas.addEventListener('click', (e) => {
+      if (!wavesurfer || !wavesurfer.getDuration()) return;
+
+      const rect = lowResCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const position = x / rect.width;
+
+      try {
+        const time = position * wavesurfer.getDuration();
+        wavesurfer.seekTo(position);
+        if (wavesurfer.isPlaying()) {
+          wavesurfer.play();
+        }
+      } catch (err) {
+        console.error('Seek error:', err);
+      }
+    });
+
+    lowResCanvas.style.cursor = 'pointer';
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Only if not typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch(e.key) {
+        case ' ': // Space - play/pause
+          e.preventDefault();
+          if (wavesurfer && wavesurfer.getDuration() > 0) {
+            wavesurfer.playPause();
+          }
+          break;
+        case 'ArrowLeft': // Seek backward 1 second
+          e.preventDefault();
+          if (wavesurfer && wavesurfer.getDuration() > 0) {
+            const current = wavesurfer.getCurrentTime();
+            wavesurfer.seekTo(Math.max(0, current - 1) / wavesurfer.getDuration());
+          }
+          break;
+        case 'ArrowRight': // Seek forward 1 second
+          e.preventDefault();
+          if (wavesurfer && wavesurfer.getDuration() > 0) {
+            const current = wavesurfer.getCurrentTime();
+            const duration = wavesurfer.getDuration();
+            wavesurfer.seekTo(Math.min(duration, current + 1) / duration);
+          }
+          break;
+        case 'Home': // Go to start
+          e.preventDefault();
+          if (wavesurfer && wavesurfer.getDuration() > 0) {
+            wavesurfer.seekTo(0);
+          }
+          break;
+        case 'End': // Go to end
+          e.preventDefault();
+          if (wavesurfer && wavesurfer.getDuration() > 0) {
+            wavesurfer.seekTo(0.99);
+          }
+          break;
+      }
+    });
 
     // Setup zoom controls
     let currentZoom = 1;
@@ -666,18 +733,28 @@
           currentKeyPoints = null; // Cached preview doesn't have key points
           drawInt8Preview(lowResCanvas, currentPreviewData, null, null);
           if (analysisInfo) analysisInfo.textContent = '';
+          if (peakLevel) peakLevel.textContent = '';
         } else {
           const result = await generatePreviewForFile(entry, file);
           currentPreviewData = result.data;
           currentKeyPoints = result.keyPoints;
           drawInt8Preview(lowResCanvas, result.data, null, result.keyPoints);
           updateAnalysisDisplay(result.analysis, result.keyPoints);
+
+          // Show peak level and size info
+          if (peakLevel && result.peak) {
+            const peakDB = 20 * Math.log10(result.peak / 32768);
+            const peakPct = (result.peak / 32768 * 100).toFixed(1);
+            const sizeKB = ((entry.nsamples * 2) / 1024).toFixed(1);
+            peakLevel.textContent = `Peak: ${peakPct}% (${peakDB.toFixed(1)}dB) • Size: ${sizeKB}KB`;
+          }
         }
       } catch {
         currentPreviewData = null;
         currentKeyPoints = null;
         clearLowResCanvas();
         if (analysisInfo) analysisInfo.textContent = '';
+        if (peakLevel) peakLevel.textContent = '';
       }
     }
 
@@ -945,10 +1022,13 @@
 
       // Output: 128 values (one per OLED horizontal pixel), 0-23 range (24 pixels height)
       const out = new Int8Array(128);
-      if (total <= 0) return { data: out, analysis: null };
+      if (total <= 0) return { data: out, analysis: null, peak: 0 };
 
       // First pass: analyze waveform characteristics
       const analysis = analyzeWaveform(dv, offset, total, bytesPerSample);
+
+      // Track peak level across entire sample
+      let globalPeak = 0;
 
       // Choose method based on characteristics
       const BLOCKS = 128;
@@ -985,6 +1065,9 @@
           value = rms * 0.7 + peak * 0.3;
         }
 
+        // Track global peak
+        if (value > globalPeak) globalPeak = value;
+
         // Convert to 0-23 range (24 vertical pixels) with slight logarithmic compression
         const normalized = value / 32768.0; // 0..1
         // Apply gentle compression curve to make quiet parts more visible
@@ -994,7 +1077,7 @@
         out[i] = u8;
       }
 
-      return { data: out, analysis: analysis };
+      return { data: out, analysis: analysis, peak: globalPeak };
     }
 
 
@@ -1080,6 +1163,28 @@
       // Clear entire display to black (OLED off state)
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, w, h);
+
+      // Draw sample info text at top (rows 0-38)
+      if (currentNameEl && currentNameEl.textContent !== 'Nothing selected') {
+        const filename = currentNameEl.textContent.split('/').pop();
+        const duration = durationEl ? durationEl.textContent : '--:--';
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '8px monospace';
+
+        // Truncate filename if too long
+        let displayName = filename;
+        if (displayName.length > 18) {
+          displayName = displayName.substring(0, 15) + '...';
+        }
+
+        // Draw filename at top
+        ctx.fillText(displayName, 2, 8);
+
+        // Draw duration and sample rate info
+        ctx.font = '7px monospace';
+        ctx.fillText(`${duration} | 44.1k`, 2, 18);
+      }
 
       // Waveform preview occupies bottom third (24 pixels): rows 40-63
       const PREVIEW_START_Y = 40; // Start at pixel row 40
