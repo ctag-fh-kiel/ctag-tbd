@@ -63,6 +63,9 @@ file(GLOB SRCS_FILES
 if (TBD_SIM)
     add_library(ctagsp STATIC ${SRCS_FILES})
     target_include_directories(ctagsp PRIVATE . ${CMAKE_BINARY_DIR}/gen_include)
+    target_compile_definitions(ctagsp PRIVATE CONFIG_MAX_ALLOC_BYTES_PSRAM_SAMPLE_DATA=29360128)
+    target_compile_definitions(ctagsp PRIVATE CONFIG_SP_FIXED_MEM_ALLOC_SZ=307200)
+    target_compile_definitions(ctagsp PRIVATE CONFIG_MAX_SAMPLES_IN_SAMPLE_ROM=1024)
 else ()
     idf_component_register(SRCS ${SRCS_FILES}
             INCLUDE_DIRS . ${CMAKE_BINARY_DIR}/gen_include
