@@ -124,10 +124,10 @@
         <strong>Selected bank</strong>
         <div class="row">
           <span id="capacityInfo" class="capacity"></span>
-          <input id="loadInput" type="file" accept="application/json" hidden />
-          <button id="loadBtn" disabled>Load JSON</button>
+          <input id="loadInput" type="file" accept=".jsn" hidden />
+          <button id="loadBtn" disabled>Load JSN</button>
           <button id="clearBtn" disabled>Clear</button>
-          <button id="exportBtn" disabled>Export JSON</button>
+          <button id="exportBtn" disabled>Export JSN</button>
           <button id="saveToFolderBtn" disabled>Save to folder</button>
         </div>
       </div>
@@ -782,7 +782,7 @@
       } catch {}
     }
 
-    // Export: JSON (no previews) + BIN (concatenated 128-byte int8 previews)
+    // Export: JSN (no previews) + BIN (concatenated 128-byte int8 previews)
     async function ensureAllPreviews() {
       await Promise.all(selection.map(async (s) => {
         if (!s.preview128) {
@@ -823,7 +823,7 @@
       const bin = buildPreviewBin();
       const jsonBlob = new Blob([json], { type: 'application/json' });
       const binBlob = new Blob([bin.buffer], { type: 'application/octet-stream' });
-      downloadBlob(jsonBlob, 'sample_bank.json');
+      downloadBlob(jsonBlob, 'sample_bank.jsn');
       downloadBlob(binBlob, 'sample_bank_preview.bin');
     });
 
@@ -845,24 +845,24 @@
         await ensureAllPreviews();
         const handle = await ensureDirHandle();
         const isTbds = await verifyTbdsamples(handle);
-        if (!isTbds) showWarning('Selected folder does not contain wav_info_short.json. Saving sample_bank.json anyway.');
-        // Write JSON without previews
-        const jsonHandle = await handle.getFileHandle('sample_bank.json', { create: true });
-        const jsonWritable = await jsonHandle.createWritable();
+        if (!isTbds) showWarning('Selected folder does not contain wav_info_short.json. Saving sample_bank.jsn anyway.');
+        // Write JSN without previews
+        const jsnHandle = await handle.getFileHandle('sample_bank.jsn', { create: true });
+        const jsnWritable = await jsnHandle.createWritable();
         const json = buildSelectionJsonNoPreview();
-        await jsonWritable.write(json);
-        await jsonWritable.close();
-        // Write BIN with concatenated 256-byte previews
+        await jsnWritable.write(json);
+        await jsnWritable.close();
+        // Write BIN with concatenated 128-byte previews
         const binHandle = await handle.getFileHandle('sample_bank_preview.bin', { create: true });
         const binWritable = await binHandle.createWritable();
         const bin = buildPreviewBin();
         await binWritable.write(new Blob([bin.buffer], { type: 'application/octet-stream' }));
         await binWritable.close();
-        summary.textContent = 'Saved sample_bank.json to selected folder';
+        summary.textContent = 'Saved sample_bank.jsn to selected folder';
       } catch (e) { showWarning('Failed to save to folder: ' + (e?.message || e)); }
     });
 
-    // Load JSON handlers
+    // Load JSN handlers
     loadBtn.addEventListener('click', () => loadInput.click());
     loadInput.addEventListener('change', async () => {
       const file = loadInput.files && loadInput.files[0];
@@ -872,14 +872,14 @@
         const data = JSON.parse(text);
         await loadBankFromJson(data);
       } catch (e) {
-        showWarning('Failed to load bank JSON: ' + (e?.message || e));
+        showWarning('Failed to load bank JSN: ' + (e?.message || e));
       } finally {
         loadInput.value = '';
       }
     });
 
     async function loadBankFromJson(arr) {
-      if (!Array.isArray(arr)) throw new Error('Bank JSON must be an array');
+      if (!Array.isArray(arr)) throw new Error('Bank JSN must be an array');
       if (!entries.length) throw new Error('Load a tbdsamples folder first');
       // Replace current bank
       selection = [];
