@@ -26,7 +26,35 @@
     #waveform { height: 120px; border: 1px solid var(--b); border-radius: 6px; }
   #lowResRow { margin-top: 8px; }
   #lowResLabel { font-weight: 600; margin-right: 8px; }
-  #lowResPreview { height: 120px; width: 100%; border: 1px solid var(--b); border-radius: 6px; display: block; }
+  #lowResPreview {
+    border: 2px solid #333;
+    border-radius: 4px;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background: #000;
+  }
+  #oledContainer {
+    background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+    display: inline-block;
+  }
+  #oledScaler {
+    transform-origin: top left;
+    transition: transform 0.2s ease;
+  }
+  .zoom-controls {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 12px;
+  }
+  .zoom-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 40px;
+  }
     #warnings { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 6px; padding: 8px; display: none; }
     .folder { margin: 4px 0; }
     .folder > summary { cursor: pointer; font-weight: 600; }
@@ -89,10 +117,22 @@
       </div>
     </div>
     <div id="waveform"></div>
-    <div id="lowResRow" class="row">
-      <span id="lowResLabel">Low-res (256 × int8):</span>
-      <span id="analysisInfo" class="pill" style="font-size: 11px; margin-left: 8px;"></span>
-      <canvas id="lowResPreview" width="512" height="120" style="display: block; width: 100%; margin-top: 4px;"></canvas>
+    <div id="lowResRow">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <span id="lowResLabel">2.9" OLED Preview (128×32 monochrome):</span>
+        <span id="analysisInfo" class="pill" style="font-size: 11px;"></span>
+        <div class="zoom-controls">
+          <button id="zoom1x" class="zoom-btn">1×</button>
+          <button id="zoom2x" class="zoom-btn">2×</button>
+          <button id="zoom3x" class="zoom-btn">3×</button>
+          <button id="zoom4x" class="zoom-btn">4×</button>
+        </div>
+      </div>
+      <div id="oledContainer">
+        <div id="oledScaler">
+          <canvas id="lowResPreview" width="128" height="32"></canvas>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -130,6 +170,27 @@
     const enableAudioBtn = document.getElementById('enableAudioBtn');
     const lowResCanvas = document.getElementById('lowResPreview');
     const analysisInfo = document.getElementById('analysisInfo');
+    const oledScaler = document.getElementById('oledScaler');
+    const zoom1xBtn = document.getElementById('zoom1x');
+    const zoom2xBtn = document.getElementById('zoom2x');
+    const zoom3xBtn = document.getElementById('zoom3x');
+    const zoom4xBtn = document.getElementById('zoom4x');
+
+    // Setup zoom controls
+    let currentZoom = 3;
+    function setZoom(scale) {
+      currentZoom = scale;
+      oledScaler.style.transform = `scale(${scale})`;
+      [zoom1xBtn, zoom2xBtn, zoom3xBtn, zoom4xBtn].forEach((btn, i) => {
+        btn.style.fontWeight = (i + 1) === scale ? 'bold' : 'normal';
+        btn.style.background = (i + 1) === scale ? '#e0f2fe' : '#fff';
+      });
+    }
+    zoom1xBtn.addEventListener('click', () => setZoom(1));
+    zoom2xBtn.addEventListener('click', () => setZoom(2));
+    zoom3xBtn.addEventListener('click', () => setZoom(3));
+    zoom4xBtn.addEventListener('click', () => setZoom(4));
+    setZoom(3); // Default 3x zoom
 
     if (!FS_AVAILABLE) {
       // Hide save button if filesystem access API is not available (e.g., file:// or non-Chromium)
@@ -150,7 +211,7 @@
     });
 
     let entries = []; // {filename, path, nsamples, offset? , _idx}
-  let selection = []; // { entry, file, sname?: string, preview256?: number[] }
+    let selection = []; // { entry, file, sname?: string, preview128?: number[] }
     let wavMap = new Map(); // key: path/stem (lower) -> File
     let dirHandle = null; // for FS save
     let autoPreviewEnabled = false; // controlled by Enable audio toggle
@@ -419,10 +480,10 @@
       if (selection.find((s) => s.entry._idx === entry._idx)) return;
       const selItem = { entry, file, sname: '' };
       selection.push(selItem);
-      // Generate and store 256-byte int8 preview asynchronously
+      // Generate and store 128-byte int8 preview asynchronously
       generatePreviewForFile(entry, file)
         .then((result) => {
-          selItem.preview256 = Array.from(result.data);
+          selItem.preview128 = Array.from(result.data);
           // If this item is currently shown in preview, redraw
           if (currentNameEl.textContent.endsWith(entry.filename)) {
             try {
@@ -481,9 +542,9 @@
       // Generate/draw low-res preview for the current file
       try {
         // If in selection and already computed, draw immediately
-        const inSel = selection.find((s) => s.entry._idx === entry._idx && s.preview256);
-        if (inSel && inSel.preview256) {
-          drawInt8Preview(lowResCanvas, new Int8Array(inSel.preview256));
+        const inSel = selection.find((s) => s.entry._idx === entry._idx && s.preview128);
+        if (inSel && inSel.preview128) {
+          drawInt8Preview(lowResCanvas, new Int8Array(inSel.preview128));
           if (analysisInfo) analysisInfo.textContent = '';
         } else {
           const result = await generatePreviewForFile(entry, file);
@@ -498,13 +559,13 @@
 
     function stopPreview() { try { wavesurfer.pause(); } catch {} }
 
-    // Export: JSON (no previews) + BIN (concatenated 256-byte int8 previews)
+    // Export: JSON (no previews) + BIN (concatenated 128-byte int8 previews)
     async function ensureAllPreviews() {
       await Promise.all(selection.map(async (s) => {
-        if (!s.preview256) {
+        if (!s.preview128) {
           try {
             const result = await generatePreviewForFile(s.entry, s.file);
-            s.preview256 = Array.from(result.data);
+            s.preview128 = Array.from(result.data);
           } catch {/* ignore */}
         }
       }));
@@ -522,12 +583,12 @@
 
     function buildPreviewBin() {
       const count = selection.length;
-      const bin = new Int8Array(count * 256);
+      const bin = new Int8Array(count * 128);
       for (let i = 0; i < count; i++) {
-        const pv = selection[i].preview256 || [];
-        for (let j = 0; j < 256; j++) {
+        const pv = selection[i].preview128 || [];
+        for (let j = 0; j < 128; j++) {
           const v = (pv[j] != null ? pv[j] : 0);
-          bin[i * 256 + j] = (v < -128 ? -128 : (v > 127 ? 127 : v)) | 0;
+          bin[i * 128 + j] = (v < 0 ? 0 : (v > 31 ? 31 : v)) | 0;
         }
       }
       return bin;
@@ -604,11 +665,26 @@
       let usedBytes = 0;
       for (let i = 0; i < arr.length && selection.length < MAX_BANK; i++) {
         const it = arr[i] || {};
-  const name = it.filename;
+        const name = it.filename;
         const ns = it.nsamples;
         const off = Object.prototype.hasOwnProperty.call(it, 'offset') ? it.offset : undefined;
-        const pv = Array.isArray(it.preview256) && it.preview256.length === 256 ? it.preview256.slice(0, 256) : null;
-  const sname = (typeof it.sname === 'string') ? it.sname.slice(0, 8) : '';
+
+        // Support both legacy preview256 and new preview128 format
+        let pv = null;
+        if (Array.isArray(it.preview128) && it.preview128.length === 128) {
+          pv = it.preview128.slice(0, 128);
+        } else if (Array.isArray(it.preview256) && it.preview256.length === 256) {
+          // Convert legacy 256 format to 128 by downsampling
+          pv = new Array(128);
+          for (let j = 0; j < 128; j++) {
+            // Take max of two adjacent samples for downsampling
+            const v1 = it.preview256[j * 2] || 0;
+            const v2 = it.preview256[j * 2 + 1] || 0;
+            pv[j] = Math.max(Math.abs(v1), Math.abs(v2));
+          }
+        }
+
+        const sname = (typeof it.sname === 'string') ? it.sname.slice(0, 8) : '';
         if (!name || typeof ns !== 'number') { warnings.push(`Item ${i}: missing filename/nsamples`); continue; }
         // Candidates by filename + nsamples (+offset if provided)
         let cands = entries.filter(e => e.filename === name && e.nsamples === ns);
@@ -628,8 +704,8 @@
         // Capacity check
         const need = chosen.nsamples * BYTES_PER_SAMPLE;
         if (usedBytes + need > LIMIT_BYTES) { warnings.push(`Item ${i}: capacity exceeded, skipping`); continue; }
-  const selItem = { entry: chosen, file: fileObj, sname };
-        if (pv) selItem.preview256 = pv;
+        const selItem = { entry: chosen, file: fileObj, sname };
+        if (pv) selItem.preview128 = pv;
         selection.push(selItem);
         usedIdx.add(chosen._idx);
         usedBytes += need;
@@ -720,15 +796,15 @@
       const maxSamplesFromFile = Math.floor(dataBytes / bytesPerSample);
       const total = Math.min(nsamples || maxSamplesFromFile, maxSamplesFromFile);
 
-      // Output: 256 values, one per block, absolute amplitude only (positive)
-      const out = new Int8Array(256);
+      // Output: 128 values (one per OLED horizontal pixel), absolute amplitude only (positive)
+      const out = new Int8Array(128);
       if (total <= 0) return { data: out, analysis: null };
 
       // First pass: analyze waveform characteristics
       const analysis = analyzeWaveform(dv, offset, total, bytesPerSample);
 
       // Choose method based on characteristics
-      const BLOCKS = 256;
+      const BLOCKS = 128;
       const blockSize = total / BLOCKS;
 
       for (let i = 0; i < BLOCKS; i++) {
@@ -762,11 +838,11 @@
           value = rms * 0.7 + peak * 0.3;
         }
 
-        // Convert to 0-127 range with slight logarithmic compression for better visibility
+        // Convert to 0-31 range (32 vertical pixels) with slight logarithmic compression
         const normalized = value / 32768.0; // 0..1
         // Apply gentle compression curve to make quiet parts more visible
         const compressed = Math.pow(normalized, 0.8);
-        const u8 = Math.min(127, Math.floor(compressed * 127));
+        const u8 = Math.min(31, Math.floor(compressed * 31));
 
         out[i] = u8;
       }
@@ -850,77 +926,59 @@
 
     function drawInt8Preview(canvas, data) {
       const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+      const w = 128; // OLED width
+      const h = 32;  // OLED height
 
-      // Background
-      ctx.fillStyle = '#fafafa';
+      // Clear to black (OLED off state)
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, w, h);
 
-      // Draw grid lines for reference
-      ctx.strokeStyle = '#e5e7eb';
-      ctx.lineWidth = 1;
+      // Draw 128 samples as vertical bars from bottom up
+      // Monochrome OLED style - white pixels on black
+      const SAMPLES = 128;
 
-      // Bottom baseline (0%)
-      ctx.beginPath();
-      ctx.moveTo(0, h - 0.5);
-      ctx.lineTo(w, h - 0.5);
-      ctx.stroke();
+      // For OLED emulation, we'll draw with a slight glow effect
+      // First pass: draw main pixels (bright white)
+      const imageData = ctx.createImageData(w, h);
+      const pixels = imageData.data;
 
-      // 50% line
-      ctx.strokeStyle = '#f3f4f6';
-      ctx.beginPath();
-      ctx.moveTo(0, h / 2 + 0.5);
-      ctx.lineTo(w, h / 2 + 0.5);
-      ctx.stroke();
-
-      // Draw 256 samples as vertical bars from bottom up
-      const SAMPLES = 256;
-      const barWidth = w / SAMPLES;
-
-      // Create gradient for depth
-      const gradient = ctx.createLinearGradient(0, 0, 0, h);
-      gradient.addColorStop(0, '#3b82f6');    // Bright blue at top
-      gradient.addColorStop(0.7, '#60a5fa');  // Lighter blue
-      gradient.addColorStop(1, '#93c5fd');    // Very light at bottom
-
-      ctx.fillStyle = gradient;
-
-      // First pass: draw bars
-      for (let i = 0; i < SAMPLES; i++) {
-        const val = (data && data[i] != null) ? data[i] : 0; // 0-127
+      for (let x = 0; x < SAMPLES; x++) {
+        const val = (data && data[x] != null) ? data[x] : 0; // 0-31
 
         if (val > 0) {
-          const x = i * barWidth;
-          // Map 0-127 to 0-height (bottom to top)
-          const barHeight = (val / 127.0) * (h - 2); // -2 for small margin
-          const barTop = h - barHeight;
+          // Draw vertical bar from bottom (y=31) up to the value height
+          for (let y = 0; y < val && y < h; y++) {
+            const pixelY = h - 1 - y; // Flip so it grows from bottom
+            const index = (pixelY * w + x) * 4;
 
-          ctx.fillRect(x, barTop, Math.max(1.5, barWidth), barHeight);
+            // Determine brightness based on position for slight gradient effect
+            const brightness = 255 - (y * 3); // Slight dimming at top for depth
+
+            pixels[index] = brightness;     // R
+            pixels[index + 1] = brightness; // G
+            pixels[index + 2] = brightness; // B
+            pixels[index + 3] = 255;        // A
+          }
         }
       }
 
-      // Second pass: draw envelope outline for better definition
-      ctx.strokeStyle = '#2563eb';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
+      ctx.putImageData(imageData, 0, 0);
 
-      let started = false;
-      for (let i = 0; i < SAMPLES; i++) {
-        const val = (data && data[i] != null) ? data[i] : 0;
-        const x = i * barWidth + barWidth / 2;
-        const barHeight = (val / 127.0) * (h - 2);
-        const y = h - barHeight;
+      // Second pass: add OLED glow effect (subtle)
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 1;
+      ctx.globalAlpha = 0.3;
+      ctx.drawImage(canvas, 0, 0);
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1.0;
 
-        if (!started) {
-          ctx.moveTo(x, y);
-          started = true;
-        } else {
-          ctx.lineTo(x, y);
-        }
+      // Optional: Add scan lines for more authentic OLED look (very subtle)
+      ctx.globalAlpha = 0.05;
+      ctx.fillStyle = '#000000';
+      for (let y = 0; y < h; y += 2) {
+        ctx.fillRect(0, y, w, 1);
       }
-      ctx.stroke();
+      ctx.globalAlpha = 1.0;
     }
   </script>
 </body>
