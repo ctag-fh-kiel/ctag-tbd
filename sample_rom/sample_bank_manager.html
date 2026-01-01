@@ -154,7 +154,7 @@
           <button id="zoom3x" class="zoom-btn">3×</button>
           <button id="zoom4x" class="zoom-btn">4×</button>
         </div>
-        <span class="display-info">Preview in bottom 24px</span>
+        <span class="display-info">Moving line = Playback position</span>
       </div>
       <div class="size-calibration">
         <label for="sizeSlider" style="font-weight: 600; white-space: nowrap;">Physical Size:</label>
@@ -287,6 +287,7 @@
 
     // Track playback position for OLED preview indicator
     let currentPreviewData = null;
+    let currentKeyPoints = null;
     let playbackAnimationFrame = null;
 
     wavesurfer.on('play', () => {
@@ -299,9 +300,9 @@
 
     wavesurfer.on('finish', () => {
       stopPlaybackIndicator();
-      // Redraw without indicator
+      // Redraw without indicator but keep key points visible
       if (currentPreviewData) {
-        drawInt8Preview(lowResCanvas, currentPreviewData, null);
+        drawInt8Preview(lowResCanvas, currentPreviewData, null, currentKeyPoints);
       }
     });
 
@@ -311,7 +312,7 @@
           const currentTime = wavesurfer.getCurrentTime();
           const duration = wavesurfer.getDuration();
           const position = duration > 0 ? currentTime / duration : 0;
-          drawInt8Preview(lowResCanvas, currentPreviewData, position);
+          drawInt8Preview(lowResCanvas, currentPreviewData, position, currentKeyPoints);
         }
         playbackAnimationFrame = requestAnimationFrame(updateIndicator);
       }
@@ -603,8 +604,9 @@
           if (currentNameEl.textContent.endsWith(entry.filename)) {
             try {
               currentPreviewData = result.data;
-              drawInt8Preview(lowResCanvas, result.data, null);
-              updateAnalysisDisplay(result.analysis);
+              currentKeyPoints = result.keyPoints;
+              drawInt8Preview(lowResCanvas, result.data, null, result.keyPoints);
+              updateAnalysisDisplay(result.analysis, result.keyPoints);
             } catch {}
           }
         })
@@ -661,16 +663,19 @@
         const inSel = selection.find((s) => s.entry._idx === entry._idx && s.preview128);
         if (inSel && inSel.preview128) {
           currentPreviewData = new Int8Array(inSel.preview128);
-          drawInt8Preview(lowResCanvas, currentPreviewData, null);
+          currentKeyPoints = null; // Cached preview doesn't have key points
+          drawInt8Preview(lowResCanvas, currentPreviewData, null, null);
           if (analysisInfo) analysisInfo.textContent = '';
         } else {
           const result = await generatePreviewForFile(entry, file);
           currentPreviewData = result.data;
-          drawInt8Preview(lowResCanvas, result.data, null);
-          updateAnalysisDisplay(result.analysis);
+          currentKeyPoints = result.keyPoints;
+          drawInt8Preview(lowResCanvas, result.data, null, result.keyPoints);
+          updateAnalysisDisplay(result.analysis, result.keyPoints);
         }
       } catch {
         currentPreviewData = null;
+        currentKeyPoints = null;
         clearLowResCanvas();
         if (analysisInfo) analysisInfo.textContent = '';
       }
@@ -680,9 +685,9 @@
       try {
         wavesurfer.pause();
         stopPlaybackIndicator();
-        // Redraw without indicator
+        // Redraw without indicator but keep key points visible
         if (currentPreviewData) {
-          drawInt8Preview(lowResCanvas, currentPreviewData, null);
+          drawInt8Preview(lowResCanvas, currentPreviewData, null, currentKeyPoints);
         }
       } catch {}
     }
@@ -884,27 +889,31 @@
     function formatTime(sec) { if (!isFinite(sec)) return '--:--'; const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
 
     // Low-res preview generation and rendering
-    function updateAnalysisDisplay(analysis) {
-      if (!analysisInfo || !analysis) {
-        if (analysisInfo) analysisInfo.textContent = '';
+    function updateAnalysisDisplay(analysis, keyPoints = null) {
+      if (!analysisInfo) return;
+
+      if (!analysis) {
+        analysisInfo.textContent = '';
+        analysisInfo.title = '';
         return;
       }
 
+      // Just show simple waveform type
       let method = '';
       if (analysis.isTransientHeavy) {
-        method = '⚡ Transient-heavy (peak)';
+        method = '⚡ Transient-heavy';
       } else if (analysis.isVeryQuiet) {
-        method = '🔇 Quiet (RMS+boost)';
+        method = '🔇 Quiet';
       } else if (analysis.isDense) {
-        method = '🌊 Dense (RMS+peak)';
+        method = '🌊 Dense';
       } else if (analysis.hasSilentSections) {
-        method = '🎵 Gapped (peak)';
+        method = '🎵 Gapped';
       } else {
-        method = '🎚️ Hybrid (RMS+peak)';
+        method = '🎚️ Hybrid';
       }
 
-      analysisInfo.textContent = `${method} • CF:${analysis.crestFactor.toFixed(1)}`;
-      analysisInfo.title = `Crest Factor: ${analysis.crestFactor.toFixed(2)}\nAvg Level: ${analysis.avgLevel.toFixed(0)}`;
+      analysisInfo.textContent = method;
+      analysisInfo.title = `Waveform Type: ${method}\nCrest Factor: ${analysis.crestFactor.toFixed(2)}`;
     }
 
     function clearLowResCanvas() {
@@ -916,7 +925,15 @@
       const buf = await file.arrayBuffer();
       const offset = (entry && typeof entry.offset === 'number') ? entry.offset : 44;
       const nsamples = Math.max(0, entry?.nsamples | 0);
-      return previewFromPcm16MonoBuffer(buf, offset, nsamples);
+
+      // Generate downsampled preview data
+      const previewResult = previewFromPcm16MonoBuffer(buf, offset, nsamples);
+
+      return {
+        data: previewResult.data,
+        analysis: previewResult.analysis,
+        keyPoints: null // Removed unreliable detection
+      };
     }
 
     function previewFromPcm16MonoBuffer(buffer, offset, nsamples) {
@@ -979,6 +996,7 @@
 
       return { data: out, analysis: analysis };
     }
+
 
     function analyzeWaveform(dv, offset, total, bytesPerSample) {
       // Sample analysis: check first 10% and last 10% for characteristics
@@ -1054,7 +1072,7 @@
       return count > 0 ? Math.sqrt(sumSquares / count) : 0;
     }
 
-    function drawInt8Preview(canvas, data, playbackPosition = null) {
+    function drawInt8Preview(canvas, data, playbackPosition = null, keyPoints = null) {
       const ctx = canvas.getContext('2d');
       const w = 128; // OLED width
       const h = 64;  // OLED height
@@ -1102,7 +1120,7 @@
         pixels[index + 3] = 255; // A
       }
 
-      // Draw playback position indicator if provided
+      // Draw playback position indicator if provided (no other markers)
       if (playbackPosition !== null && playbackPosition >= 0 && playbackPosition <= 1) {
         const indicatorX = Math.floor(playbackPosition * (w - 1));
 
