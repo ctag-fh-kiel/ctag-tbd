@@ -3,7 +3,10 @@
     "filename": "BD0",
     "path": "drums/factory",
     "nsamples": 11466,
-    "sname": ""
+    "sname": "RawKick",
+    "tags": [
+      "kick"
+    ]
   },
   {
     "filename": "BD1",
@@ -387,40 +390,40 @@
     "filename": "cw_amen01_175",
     "path": "drums/loops",
     "nsamples": 120960,
-    "sname": "",
     "bpm": 175,
-    "bars": 2
+    "bars": 2,
+    "sname": ""
   },
   {
     "filename": "cw_amen02_165",
     "path": "drums/loops",
     "nsamples": 128290,
-    "sname": "",
     "bpm": 165,
-    "bars": 2
+    "bars": 2,
+    "sname": ""
   },
   {
     "filename": "cw_amen04_170",
     "path": "drums/loops",
     "nsamples": 124517,
-    "sname": "",
     "bpm": 170,
-    "bars": 2
+    "bars": 2,
+    "sname": ""
   },
   {
     "filename": "cw_amen09_175",
     "path": "drums/loops",
     "nsamples": 120960,
-    "sname": "",
     "bpm": 175,
-    "bars": 2
+    "bars": 2,
+    "sname": ""
   },
   {
     "filename": "cw_amen13_173",
     "path": "drums/loops",
     "nsamples": 244716,
-    "sname": "",
     "bpm": 173,
-    "bars": 4
+    "bars": 4,
+    "sname": ""
   }
 ]

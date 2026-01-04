@@ -97,6 +97,75 @@
     .toggle-off { background: #f3f4f6; border-color: #d1d5db; }
     .slot-badge { display: inline-block; min-width: 1.8em; text-align: right; margin-right: 8px; color: #374151; font-weight: 600; }
     .drop-target { outline: 2px dashed #60a5fa; outline-offset: 2px; }
+
+    /* Tag System Styles */
+    .tag-btn {
+      padding: 3px 8px;
+      font-size: 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: white;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tag-btn:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+    .tag-btn.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #2563eb;
+    }
+    .tag-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 7px;
+      font-size: 10px;
+      border-radius: 10px;
+      background: #3b82f6;
+      color: white;
+      font-weight: 500;
+    }
+    .tag-badge .remove {
+      cursor: pointer;
+      font-weight: bold;
+      opacity: 0.8;
+      margin-left: 2px;
+      font-size: 12px;
+    }
+    .tag-badge .remove:hover {
+      opacity: 1;
+    }
+    .tag-mini {
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 10px;
+      background: #3b82f6;
+      color: white;
+      font-weight: 500;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    #floatingTagPanel {
+      animation: fadeIn 0.15s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .leaf:hover {
+      background: #f9fafb;
+    }
+    #bankList .leaf {
+      border-bottom: 1px solid #e5e7eb;
+      transition: background 0.1s;
+    }
+    #bankList .leaf:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 <body>
@@ -171,6 +240,39 @@
       </div>
       <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
         <span id="peakLevel"></span>
+      </div>
+    </div>
+
+    <!-- Floating Tag Panel (shown on hover) -->
+    <div id="floatingTagPanel" style="display: none; position: fixed; z-index: 1000; background: white; border: 2px solid #3b82f6; border-radius: 6px; padding: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 400px; min-width: 320px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb;">
+        <strong style="font-size: 13px;">Edit Sample</strong>
+        <button id="closeTagPanelBtn" style="font-size: 10px; padding: 2px 6px; background: #ef4444; color: white; border: none;">✕</button>
+      </div>
+
+      <!-- Sample Name Input -->
+      <div style="margin-bottom: 10px;">
+        <label style="display: block; font-size: 11px; color: #6b7280; margin-bottom: 4px; font-weight: 500;">Sample Name (max 8 chars):</label>
+        <input id="sampleNameInput" type="text" maxlength="8" placeholder="Enter name..." style="width: 100%; padding: 6px 8px; font-size: 12px; border: 1px solid #d1d5db; border-radius: 3px;">
+      </div>
+
+      <!-- Tags Section -->
+      <div style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+        <strong style="font-size: 11px; color: #6b7280;">Tags:</strong>
+        <button id="clearTagsBtn" style="font-size: 10px; padding: 2px 6px;">Clear All</button>
+      </div>
+      <div id="currentTags" style="display: flex; flex-wrap: wrap; gap: 4px; min-height: 24px; margin-bottom: 8px; padding: 6px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 3px; max-height: 60px; overflow-y: auto;">
+        <span style="color: #9ca3af; font-size: 11px;">No tags</span>
+      </div>
+      <div style="margin-bottom: 6px;">
+        <strong style="font-size: 11px; color: #6b7280;">Quick Tags:</strong>
+      </div>
+      <div id="tagCloud" style="display: flex; flex-wrap: wrap; gap: 4px; max-height: 180px; overflow-y: auto; padding: 4px;">
+        <!-- Tag buttons will be inserted here -->
+      </div>
+      <div style="margin-top: 8px; display: flex; gap: 4px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+        <input id="customTagInput" type="text" placeholder="Custom tag..." style="flex: 1; padding: 4px 8px; font-size: 11px; border: 1px solid #d1d5db; border-radius: 3px;">
+        <button id="addCustomTagBtn" style="padding: 4px 10px; font-size: 11px;">+</button>
       </div>
     </div>
   </section>
@@ -355,7 +457,231 @@
     // Track playback position for OLED preview indicator
     let currentPreviewData = null;
     let currentKeyPoints = null;
+    let currentSpectral = null;
     let playbackAnimationFrame = null;
+
+    // Tag System State
+    let currentSelectedFile = null; // Track currently selected file for tagging
+    const predefinedTags = [
+      // Instrument Types
+      'kick', 'snare', 'clap', 'hihat', 'cymbal', 'tom', 'percussion',
+      'bass', 'lead', 'pad', 'pluck', 'chord', 'stab',
+      // Characteristics
+      'short', 'long', 'percussive', 'melodic', 'atonal', 'tonal',
+      'bright', 'dark', 'warm', 'cold', 'clean', 'distorted',
+      'wet', 'dry', 'ambient', 'aggressive', 'soft', 'hard',
+      // Effects/Processing
+      'reverb', 'delay', 'filtered', 'modulated', 'compressed',
+      // Genres/Styles
+      'techno', 'house', 'dub', 'industrial', 'ambient', 'experimental'
+    ];
+
+    // Initialize tag cloud UI
+    const tagCloudEl = document.getElementById('tagCloud');
+    const currentTagsEl = document.getElementById('currentTags');
+    const customTagInput = document.getElementById('customTagInput');
+    const addCustomTagBtn = document.getElementById('addCustomTagBtn');
+    const clearTagsBtn = document.getElementById('clearTagsBtn');
+    const floatingTagPanel = document.getElementById('floatingTagPanel');
+    const closeTagPanelBtn = document.getElementById('closeTagPanelBtn');
+    const sampleNameInput = document.getElementById('sampleNameInput');
+
+    let tagPanelTimeout = null;
+    let isTagPanelPinned = false;
+
+    // Show floating tag panel near mouse position
+    function showTagPanel(x, y, rowElement) {
+      clearTimeout(tagPanelTimeout);
+
+      floatingTagPanel.style.display = 'block';
+
+      // Position panel to the right of cursor, or left if too close to edge
+      const panelWidth = 400;
+      const panelHeight = floatingTagPanel.offsetHeight || 400;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let left = x + 20; // 20px to the right of cursor
+      let top = y - 20; // 20px above cursor
+
+      // If too close to right edge, show on left
+      if (left + panelWidth > viewportWidth - 20) {
+        left = x - panelWidth - 20;
+      }
+
+      // If too close to left edge, clamp
+      if (left < 20) {
+        left = 20;
+      }
+
+      // If too close to bottom, move up
+      if (top + panelHeight > viewportHeight - 20) {
+        top = viewportHeight - panelHeight - 20;
+      }
+
+      // If too close to top, clamp
+      if (top < 20) {
+        top = 20;
+      }
+
+      floatingTagPanel.style.left = left + 'px';
+      floatingTagPanel.style.top = top + 'px';
+    }
+
+    // Hide floating tag panel with delay
+    function hideTagPanel(immediate = false) {
+      if (isTagPanelPinned) return;
+
+      if (immediate) {
+        clearTimeout(tagPanelTimeout);
+        floatingTagPanel.style.display = 'none';
+      } else {
+        clearTimeout(tagPanelTimeout);
+        tagPanelTimeout = setTimeout(() => {
+          if (!isTagPanelPinned) {
+            floatingTagPanel.style.display = 'none';
+          }
+        }, 300); // 300ms delay before hiding
+      }
+    }
+
+    // Keep panel open when hovering over it
+    floatingTagPanel.addEventListener('mouseenter', () => {
+      clearTimeout(tagPanelTimeout);
+      isTagPanelPinned = true;
+    });
+
+    floatingTagPanel.addEventListener('mouseleave', () => {
+      isTagPanelPinned = false;
+      hideTagPanel();
+    });
+
+    // Close button
+    closeTagPanelBtn.addEventListener('click', () => {
+      isTagPanelPinned = false;
+      hideTagPanel(true);
+    });
+
+    // Create tag cloud buttons
+    predefinedTags.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'tag-btn';
+      btn.textContent = tag;
+      btn.dataset.tag = tag;
+      btn.addEventListener('click', () => toggleTag(tag));
+      tagCloudEl.appendChild(btn);
+    });
+
+    // Get tags for currently selected file/entry
+    function getCurrentTags() {
+      if (!currentSelectedFile) return [];
+      return currentSelectedFile.tags || [];
+    }
+
+    // Set tags for currently selected file/entry
+    function setCurrentTags(tags) {
+      if (!currentSelectedFile) return;
+      currentSelectedFile.tags = [...new Set(tags)]; // Deduplicate
+      updateTagDisplay();
+      updateBankListTags(); // Update tags in bank list if this file is in selection
+    }
+
+    // Toggle a tag on/off
+    function toggleTag(tag) {
+      const tags = getCurrentTags();
+      const index = tags.indexOf(tag);
+      if (index === -1) {
+        tags.push(tag);
+      } else {
+        tags.splice(index, 1);
+      }
+      setCurrentTags(tags);
+    }
+
+    // Update the tag display (current tags + tag cloud button states)
+    function updateTagDisplay() {
+      const tags = getCurrentTags();
+
+      // Update sample name input
+      if (currentSelectedFile) {
+        sampleNameInput.value = currentSelectedFile.sname || '';
+      } else {
+        sampleNameInput.value = '';
+      }
+
+      // Update current tags display
+      currentTagsEl.innerHTML = '';
+      if (tags.length === 0) {
+        const placeholder = document.createElement('span');
+        placeholder.style.color = '#9ca3af';
+        placeholder.style.fontSize = '12px';
+        placeholder.textContent = 'No tags selected';
+        currentTagsEl.appendChild(placeholder);
+      } else {
+        tags.forEach(tag => {
+          const badge = document.createElement('span');
+          badge.className = 'tag-badge';
+          badge.innerHTML = `${tag}<span class="remove" data-tag="${tag}">×</span>`;
+          badge.querySelector('.remove').addEventListener('click', () => toggleTag(tag));
+          currentTagsEl.appendChild(badge);
+        });
+      }
+
+      // Update tag cloud button states
+      tagCloudEl.querySelectorAll('.tag-btn').forEach(btn => {
+        if (tags.includes(btn.dataset.tag)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Add custom tag
+    addCustomTagBtn.addEventListener('click', () => {
+      const customTag = customTagInput.value.trim().toLowerCase();
+      if (customTag && customTag.length > 0) {
+        const tags = getCurrentTags();
+        if (!tags.includes(customTag)) {
+          tags.push(customTag);
+          setCurrentTags(tags);
+        }
+        customTagInput.value = '';
+      }
+    });
+
+    // Enter key in custom tag input
+    customTagInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addCustomTagBtn.click();
+      }
+    });
+
+    // Clear all tags
+    clearTagsBtn.addEventListener('click', () => {
+      if (currentSelectedFile) {
+        setCurrentTags([]);
+      }
+    });
+
+    // Sample name input handler
+    sampleNameInput.addEventListener('input', () => {
+      if (!currentSelectedFile) return;
+      let v = sampleNameInput.value || '';
+      if (v.length > 8) v = v.slice(0, 8);
+      sampleNameInput.value = v;
+      currentSelectedFile.sname = v;
+      updateBankListTags(); // Refresh display
+    });
+
+    // Update tags in bank list display
+    function updateBankListTags() {
+      // Find this file in selection and update its display
+      const selItem = selection.find(s => s.entry._idx === currentSelectedFile?.entry?._idx);
+      if (selItem) {
+        renderRightTree();
+      }
+    }
 
     wavesurfer.on('play', () => {
       startPlaybackIndicator();
@@ -367,9 +693,9 @@
 
     wavesurfer.on('finish', () => {
       stopPlaybackIndicator();
-      // Redraw without indicator but keep key points visible
+      // Redraw without indicator but keep key points and spectral visible
       if (currentPreviewData) {
-        drawInt8Preview(lowResCanvas, currentPreviewData, null, currentKeyPoints);
+        drawInt8Preview(lowResCanvas, currentPreviewData, null, currentKeyPoints, currentSpectral);
       }
     });
 
@@ -379,7 +705,7 @@
           const currentTime = wavesurfer.getCurrentTime();
           const duration = wavesurfer.getDuration();
           const position = duration > 0 ? currentTime / duration : 0;
-          drawInt8Preview(lowResCanvas, currentPreviewData, position, currentKeyPoints);
+          drawInt8Preview(lowResCanvas, currentPreviewData, position, currentKeyPoints, currentSpectral);
         }
         playbackAnimationFrame = requestAnimationFrame(updateIndicator);
       }
@@ -589,54 +915,142 @@
         });
 
         const left = document.createElement('div');
+        left.style.flex = '1';
+        left.style.minWidth = '0'; // Allow text truncation
+
         const name = document.createElement('div');
         name.className = 'name';
+        name.style.display = 'flex';
+        name.style.alignItems = 'center';
+        name.style.gap = '8px';
+        name.style.marginBottom = '4px';
+        name.style.flexWrap = 'wrap';
+
         // Slot badge
         const badge = document.createElement('span');
         badge.className = 'slot-badge';
         badge.textContent = String(slot + 1).padStart(2, ' ');
-        const label = document.createElement('span');
-        label.textContent = (s.entry.path ? s.entry.path + '/' : '') + s.entry.filename;
         name.appendChild(badge);
+
+        // Filename
+        const label = document.createElement('span');
+        label.style.overflow = 'hidden';
+        label.style.textOverflow = 'ellipsis';
+        label.style.whiteSpace = 'nowrap';
+        label.style.flex = '0 1 auto';
+        label.style.minWidth = '0';
+        label.textContent = (s.entry.path ? s.entry.path + '/' : '') + s.entry.filename;
         name.appendChild(label);
+
+        // Sample Name display (inline, always visible)
+        if (s.sname && s.sname.trim()) {
+          const snameDisplay = document.createElement('span');
+          snameDisplay.style.fontSize = '11px';
+          snameDisplay.style.padding = '2px 8px';
+          snameDisplay.style.borderRadius = '10px';
+          snameDisplay.style.background = '#f3f4f6';
+          snameDisplay.style.color = '#374151';
+          snameDisplay.style.fontWeight = '500';
+          snameDisplay.style.whiteSpace = 'nowrap';
+          snameDisplay.style.border = '1px solid #d1d5db';
+          snameDisplay.textContent = s.sname;
+          snameDisplay.title = 'Sample name (device)';
+          name.appendChild(snameDisplay);
+        }
+
+        // Tags inline display (always visible)
+        if (s.tags && s.tags.length > 0) {
+          const tagsContainer = document.createElement('span');
+          tagsContainer.style.display = 'inline-flex';
+          tagsContainer.style.flexWrap = 'wrap';
+          tagsContainer.style.gap = '4px';
+          s.tags.forEach(tag => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'tag-mini';
+            tagSpan.textContent = tag;
+            tagsContainer.appendChild(tagSpan);
+          });
+          name.appendChild(tagsContainer);
+        }
+
         const meta = document.createElement('div');
         meta.className = 'meta';
+        meta.style.display = 'flex';
+        meta.style.alignItems = 'center';
+        meta.style.gap = '8px';
+        meta.style.flexWrap = 'wrap';
+
         const bytesTxt = formatBytes(bytesForEntry(s.entry));
-        meta.textContent = `nsamples: ${s.entry.nsamples} · ${bytesTxt}` + (s.entry.offset != null ? ` · offset: ${s.entry.offset}` : '');
+        const infoSpan = document.createElement('span');
+        infoSpan.textContent = `nsamples: ${s.entry.nsamples} · ${bytesTxt}` + (s.entry.offset != null ? ` · offset: ${s.entry.offset}` : '');
+        meta.appendChild(infoSpan);
+
         left.appendChild(name);
         left.appendChild(meta);
 
         const right = document.createElement('div');
         right.className = 'right-actions';
-        // Short name (max 8 chars) editor
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.maxLength = 8;
-        nameInput.placeholder = 'sname';
-        nameInput.value = (typeof s.sname === 'string') ? s.sname : '';
-        nameInput.style.width = '8.5ch';
-        nameInput.title = 'Short name (max 8 chars)';
-        nameInput.addEventListener('input', () => {
-          let v = nameInput.value || '';
-          if (v.length > 8) v = v.slice(0, 8);
-          nameInput.value = v;
-          const idx = parseInt(row.dataset.slot || String(slot), 10);
-          if (!isNaN(idx) && selection[idx]) selection[idx].sname = v;
+        right.style.display = 'flex';
+        right.style.alignItems = 'center';
+        right.style.gap = '6px';
+
+        // Edit button (opens tag panel with both name and tags editable)
+        const editBtn = document.createElement('button');
+        editBtn.innerHTML = '✏️';
+        editBtn.title = 'Edit sample name and tags (or right-click row)';
+        editBtn.className = 'btn';
+        editBtn.style.padding = '4px 10px';
+        editBtn.style.fontSize = '16px';
+        editBtn.style.lineHeight = '1';
+        editBtn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          previewBlob(s.entry, s.file);
+          const rect = editBtn.getBoundingClientRect();
+          showTagPanel(rect.left - 320, rect.top, row);
         });
-        right.appendChild(nameInput);
+        right.appendChild(editBtn);
         // Remove button
         const rmBtn = document.createElement('button');
         rmBtn.textContent = 'Remove';
         rmBtn.className = 'btn';
-        rmBtn.addEventListener('click', () => { removeFromBank(s.entry._idx); });
+        rmBtn.style.background = '#fee2e2';
+        rmBtn.style.color = '#991b1b';
+        rmBtn.style.border = '1px solid #fca5a5';
+        rmBtn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          removeFromBank(s.entry._idx);
+        });
         right.appendChild(rmBtn);
 
         row.appendChild(left);
         row.appendChild(right);
-        // Hover preview on right and row click still supported
-        row.addEventListener('mouseenter', () => { if (autoPreviewEnabled) previewBlob(s.entry, s.file); });
-        row.addEventListener('mouseleave', () => stopPreview());
-        row.addEventListener('click', () => previewBlob(s.entry, s.file));
+        row.style.display = 'flex';
+        row.style.gap = '12px';
+        row.style.alignItems = 'flex-start';
+        row.style.padding = '8px 6px';
+
+        // Hover preview
+        row.addEventListener('mouseenter', () => {
+          if (autoPreviewEnabled) previewBlob(s.entry, s.file);
+          row.style.background = '#f9fafb';
+        });
+        row.addEventListener('mouseleave', () => {
+          stopPreview();
+          hideTagPanel();
+          row.style.background = '';
+        });
+        row.addEventListener('click', (e) => {
+          // Don't trigger if clicking input or button
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+          previewBlob(s.entry, s.file);
+        });
+
+        // Right-click to show tag panel
+        row.addEventListener('contextmenu', (ev) => {
+          ev.preventDefault();
+          previewBlob(s.entry, s.file);
+          showTagPanel(ev.clientX, ev.clientY, row);
+        });
 
         bankListEl.appendChild(row);
       });
@@ -661,7 +1075,13 @@
         return;
       }
       if (selection.find((s) => s.entry._idx === entry._idx)) return;
-      const selItem = { entry, file, sname: '' };
+
+      // Preserve tags if this file is currently selected
+      const existingTags = (currentSelectedFile && currentSelectedFile.entry._idx === entry._idx)
+        ? (currentSelectedFile.tags || [])
+        : [];
+
+      const selItem = { entry, file, sname: '', tags: existingTags };
       selection.push(selItem);
       // Generate and store 128-byte int8 preview asynchronously
       generatePreviewForFile(entry, file)
@@ -672,7 +1092,8 @@
             try {
               currentPreviewData = result.data;
               currentKeyPoints = result.keyPoints;
-              drawInt8Preview(lowResCanvas, result.data, null, result.keyPoints);
+              currentSpectral = result.spectral;
+              drawInt8Preview(lowResCanvas, result.data, null, result.keyPoints, result.spectral);
               updateAnalysisDisplay(result.analysis, result.keyPoints);
             } catch {}
           }
@@ -715,6 +1136,18 @@
     async function previewBlob(entry, file) {
       currentNameEl.textContent = (entry.path ? entry.path + '/' : '') + entry.filename;
       durationEl.textContent = '--:--';
+
+      // Set current file for tagging system
+      // Check if this file is in selection
+      const inSel = selection.find((s) => s.entry._idx === entry._idx);
+      if (inSel) {
+        currentSelectedFile = inSel;
+      } else {
+        // Create temporary object for files not yet in selection
+        currentSelectedFile = { entry, file, tags: [], sname: '' };
+      }
+      updateTagDisplay();
+
       try {
         wavesurfer.empty();
         await wavesurfer.loadBlob(file);
@@ -727,18 +1160,19 @@
       // Generate/draw low-res preview for the current file
       try {
         // If in selection and already computed, draw immediately
-        const inSel = selection.find((s) => s.entry._idx === entry._idx && s.preview128);
         if (inSel && inSel.preview128) {
           currentPreviewData = new Int8Array(inSel.preview128);
           currentKeyPoints = null; // Cached preview doesn't have key points
-          drawInt8Preview(lowResCanvas, currentPreviewData, null, null);
+          currentSpectral = null;
+          drawInt8Preview(lowResCanvas, currentPreviewData, null, null, null);
           if (analysisInfo) analysisInfo.textContent = '';
           if (peakLevel) peakLevel.textContent = '';
         } else {
           const result = await generatePreviewForFile(entry, file);
           currentPreviewData = result.data;
           currentKeyPoints = result.keyPoints;
-          drawInt8Preview(lowResCanvas, result.data, null, result.keyPoints);
+          currentSpectral = result.spectral;
+          drawInt8Preview(lowResCanvas, result.data, null, result.keyPoints, result.spectral);
           updateAnalysisDisplay(result.analysis, result.keyPoints);
 
           // Show peak level and size info
@@ -748,6 +1182,11 @@
             const sizeKB = ((entry.nsamples * 2) / 1024).toFixed(1);
 
             let info = `Peak: ${peakPct}% (${peakDB.toFixed(1)}dB) • Size: ${sizeKB}KB`;
+
+            // Add short percussive indicator
+            if (result.isShortPercussive) {
+              info += ' • [Short/Perc]';
+            }
 
             // Add normalization indicator
             if (result.normalized) {
@@ -765,6 +1204,7 @@
       } catch {
         currentPreviewData = null;
         currentKeyPoints = null;
+        currentSpectral = null;
         clearLowResCanvas();
         if (analysisInfo) analysisInfo.textContent = '';
         if (peakLevel) peakLevel.textContent = '';
@@ -775,9 +1215,9 @@
       try {
         wavesurfer.pause();
         stopPlaybackIndicator();
-        // Redraw without indicator but keep key points visible
+        // Redraw without indicator but keep key points and spectral visible
         if (currentPreviewData) {
-          drawInt8Preview(lowResCanvas, currentPreviewData, null, currentKeyPoints);
+          drawInt8Preview(lowResCanvas, currentPreviewData, null, currentKeyPoints, currentSpectral);
         }
       } catch {}
     }
@@ -796,9 +1236,32 @@
 
     function buildSelectionJsonNoPreview() {
       const out = selection.map((s) => {
-        const o = { filename: s.entry.filename, path: s.entry.path, nsamples: s.entry.nsamples };
-        if (s.entry.offset != null) o.offset = s.entry.offset;
+        // Start with core required fields
+        const o = {
+          filename: s.entry.filename,
+          path: s.entry.path,
+          nsamples: s.entry.nsamples
+        };
+
+        // Include all metadata from original wav_info_short.json entry
+        // This preserves bpm, bars, and any other custom fields
+        for (const key in s.entry) {
+          // Skip internal fields and already-added fields
+          if (key === '_idx' || key === 'filename' || key === 'path' || key === 'nsamples') {
+            continue;
+          }
+          // Copy all other fields (offset, bpm, bars, etc.)
+          o[key] = s.entry[key];
+        }
+
+        // Add user-defined metadata
         o.sname = (typeof s.sname === 'string') ? s.sname.slice(0, 8) : '';
+
+        // Include tags if present
+        if (s.tags && s.tags.length > 0) {
+          o.tags = s.tags;
+        }
+
         return o;
       });
       return JSON.stringify(out, null, 2);
@@ -806,12 +1269,25 @@
 
     function buildPreviewBin() {
       const count = selection.length;
-      const bin = new Int8Array(count * 128);
+      // 128 samples per preview, 2 samples per byte (4-bit each) = 64 bytes per preview
+      const bytesPerPreview = 64;
+      const bin = new Uint8Array(count * bytesPerPreview);
+
       for (let i = 0; i < count; i++) {
         const pv = selection[i].preview128 || [];
-        for (let j = 0; j < 128; j++) {
-          const v = (pv[j] != null ? pv[j] : 0);
-          bin[i * 128 + j] = (v < 0 ? 0 : (v > 23 ? 23 : v)) | 0;
+        const offset = i * bytesPerPreview;
+
+        for (let j = 0; j < 128; j += 2) {
+          // Preview data is already 0-15 range (4-bit)
+          const v1 = (pv[j] != null ? pv[j] : 0);
+          const v2 = (pv[j + 1] != null ? pv[j + 1] : 0);
+
+          // Clamp values to 0-15 (should already be in range)
+          const nibble1 = (v1 < 0 ? 0 : (v1 > 15 ? 15 : v1)) & 0x0F;
+          const nibble2 = (v2 < 0 ? 0 : (v2 > 15 ? 15 : v2)) & 0x0F;
+
+          // Pack: high nibble = first sample, low nibble = second sample
+          bin[offset + (j >> 1)] = (nibble1 << 4) | nibble2;
         }
       }
       return bin;
@@ -904,8 +1380,8 @@
             const v1 = Math.abs(it.preview256[j * 2] || 0);
             const v2 = Math.abs(it.preview256[j * 2 + 1] || 0);
             const maxVal = Math.max(v1, v2);
-            // Scale from 0-127 range to 0-23 range
-            pv[j] = Math.min(23, Math.floor((maxVal / 127.0) * 23));
+            // Scale from 0-127 range to 0-15 range (4-bit)
+            pv[j] = Math.min(15, Math.floor((maxVal / 127.0) * 15));
           }
         }
 
@@ -929,7 +1405,11 @@
         // Capacity check
         const need = chosen.nsamples * BYTES_PER_SAMPLE;
         if (usedBytes + need > LIMIT_BYTES) { warnings.push(`Item ${i}: capacity exceeded, skipping`); continue; }
-        const selItem = { entry: chosen, file: fileObj, sname };
+
+        // Restore tags if present in JSN
+        const tags = Array.isArray(it.tags) ? it.tags : [];
+
+        const selItem = { entry: chosen, file: fileObj, sname, tags };
         if (pv) selItem.preview128 = pv;
         selection.push(selItem);
         usedIdx.add(chosen._idx);
@@ -988,22 +1468,46 @@
         return;
       }
 
-      // Just show simple waveform type
-      let method = '';
-      if (analysis.isTransientHeavy) {
-        method = '⚡ Transient-heavy';
-      } else if (analysis.isVeryQuiet) {
-        method = '🔇 Quiet';
-      } else if (analysis.isDense) {
-        method = '🌊 Dense';
-      } else if (analysis.hasSilentSections) {
-        method = '🎵 Gapped';
-      } else {
-        method = '🎚️ Hybrid';
+      // Show the selected algorithm and reason
+      const displayText = analysis.algorithmReason || 'Hybrid';
+
+      // Build emoji prefix based on characteristics
+      let emoji = '🎚️'; // default
+      if (analysis.hasTransients) emoji = '⚡';
+      else if (analysis.hasAM) emoji = '〰️';
+      else if (analysis.hasSpectralChange) emoji = '🌈';
+      else if (analysis.isVeryQuiet) emoji = '🔇';
+      else if (analysis.isDense) emoji = '🌊';
+      else if (analysis.hasSilentSections) emoji = '🎵';
+
+      analysisInfo.textContent = `${emoji} ${displayText}`;
+
+      // Build detailed tooltip
+      let tooltip = `Algorithm: ${analysis.selectedAlgorithm}\n`;
+      tooltip += `Type: ${displayText}\n`;
+      tooltip += `Crest Factor: ${analysis.crestFactor.toFixed(2)}\n`;
+
+      // Add detected characteristics
+      const characteristics = [];
+      if (analysis.hasAM) {
+        characteristics.push(`AM Modulation: ${(analysis.amStrength * 100).toFixed(0)}%`);
+      }
+      if (analysis.hasSpectralChange) {
+        characteristics.push(`Spectral Change: ${(analysis.spectralChangeStrength * 100).toFixed(0)}%`);
+      }
+      if (analysis.hasTransients) {
+        characteristics.push(`Transients: ${(analysis.transientStrength * 100).toFixed(0)}%`);
+      }
+      if (characteristics.length > 0) {
+        tooltip += '\nCharacteristics:\n' + characteristics.join('\n');
       }
 
-      analysisInfo.textContent = method;
-      analysisInfo.title = `Waveform Type: ${method}\nCrest Factor: ${analysis.crestFactor.toFixed(2)}`;
+      // Add spectral character
+      if (analysis.spectralHint) {
+        tooltip += `\nSpectral: ${analysis.spectralHint}`;
+      }
+
+      analysisInfo.title = tooltip;
     }
 
     function clearLowResCanvas() {
@@ -1033,9 +1537,17 @@
       const maxSamplesFromFile = Math.floor(dataBytes / bytesPerSample);
       const total = Math.min(nsamples || maxSamplesFromFile, maxSamplesFromFile);
 
-      // Output: 128 values (one per OLED horizontal pixel), 0-23 range (24 pixels height)
+      // Output: 128 values (one per OLED horizontal pixel), 0-15 range (4-bit, 16 levels)
       const out = new Int8Array(128);
-      if (total <= 0) return { data: out, analysis: null, peak: 0 };
+      if (total <= 0) {
+        console.warn('Preview generation: total samples is 0 or negative:', total);
+        return { data: out, analysis: null, peak: 0 };
+      }
+
+      // For very short samples, warn but continue
+      if (total < 128) {
+        console.warn('Preview generation: very short sample, total samples:', total);
+      }
 
       // STEP 1: Calculate DC offset (average) to remove
       let dcSum = 0;
@@ -1050,6 +1562,68 @@
       // STEP 2: Analyze waveform characteristics
       const analysis = analyzeWaveform(dv, offset, total, bytesPerSample);
 
+      // STEP 2.5: Detect short/sparse samples that need special handling
+      // Includes: hi-hats, claps, short kicks, and any sample with concentrated energy
+      const sampleDuration = total / 44100; // Assuming 44.1kHz
+      const isShort = sampleDuration < 0.5; // Less than 500ms (increased from 300ms)
+      const isPercussive = analysis.hasTransients && analysis.crestFactor > 6;
+
+      // Also detect samples where energy is very concentrated (not necessarily percussive)
+      const isSparse = analysis.silenceRatio > 0.6; // More than 60% silence
+
+      // For short or sparse samples, find where the energy actually is
+      let energyStartBlock = -1;
+      let energyEndBlock = -1;
+      let maxBlockRMS = 0;
+
+      if ((isShort && isPercussive) || isSparse) {
+        const BLOCKS = 128;
+        const blockSize = total / BLOCKS;
+
+        // First pass: find maximum RMS to set adaptive threshold
+        for (let i = 0; i < BLOCKS; i++) {
+          const startIdx = Math.floor(i * blockSize);
+          const endIdx = Math.floor((i + 1) * blockSize);
+
+          let sumSquares = 0;
+          let count = 0;
+          for (let j = startIdx; j < endIdx; j++) {
+            const byteOff = offset + j * bytesPerSample;
+            if (byteOff + 1 >= dv.byteLength) break;
+            const v16 = Math.abs(dv.getInt16(byteOff, true) - dcOffset);
+            sumSquares += v16 * v16;
+            count++;
+          }
+          const rms = count > 0 ? Math.sqrt(sumSquares / count) : 0;
+          if (rms > maxBlockRMS) maxBlockRMS = rms;
+        }
+
+        // Adaptive energy threshold: 15% of max RMS (catches quiet samples too)
+        const energyThreshold = Math.max(200, maxBlockRMS * 0.15);
+
+        // Second pass: find energy boundaries
+        for (let i = 0; i < BLOCKS; i++) {
+          const startIdx = Math.floor(i * blockSize);
+          const endIdx = Math.floor((i + 1) * blockSize);
+
+          let sumSquares = 0;
+          let count = 0;
+          for (let j = startIdx; j < endIdx; j++) {
+            const byteOff = offset + j * bytesPerSample;
+            if (byteOff + 1 >= dv.byteLength) break;
+            const v16 = Math.abs(dv.getInt16(byteOff, true) - dcOffset);
+            sumSquares += v16 * v16;
+            count++;
+          }
+          const rms = count > 0 ? Math.sqrt(sumSquares / count) : 0;
+
+          if (rms > energyThreshold) {
+            if (energyStartBlock === -1) energyStartBlock = i;
+            energyEndBlock = i;
+          }
+        }
+      }
+
       // STEP 3: Find true peak for optional normalization
       let globalPeak = 0;
       for (let i = 0; i < total; i += 128) { // Sample every 128 samples for speed
@@ -1063,56 +1637,316 @@
       const shouldNormalize = globalPeak < 16384 && !analysis.isVeryQuiet;
       const normalizationFactor = shouldNormalize ? (28000 / globalPeak) : 1.0;
 
-      // STEP 4: Generate preview with improved downsampling
+      // STEP 4: Generate preview using intelligent algorithm selection
       const BLOCKS = 128;
-      const blockSize = total / BLOCKS;
+      const blockSize = Math.max(1, total / BLOCKS); // Ensure minimum 1 sample per block
 
+      // Accumulate spectral data for overall visualization
+      let totalBass = 0, totalMid = 0, totalTreble = 0;
+      let spectralBlocks = 0;
+
+      // Track spectral changes across blocks for spectral-weighted algorithm
+      const spectralData = [];
+      let prevZCRate = 0;
+
+      // FIRST PASS: Collect spectral data for all blocks
+      let totalPerceptBrightness = 0;
       for (let i = 0; i < BLOCKS; i++) {
         const startIdx = Math.floor(i * blockSize);
-        const endIdx = Math.floor((i + 1) * blockSize);
+        const endIdx = Math.min(total, Math.floor((i + 1) * blockSize)); // Clamp to total
+
+        // Skip if no samples in this block (for very short samples)
+        if (startIdx >= endIdx) {
+          spectralData.push({ bass: 0, mid: 0, treble: 0, brightness: 0, perceptualBrightness: 0, zcRate: 0 });
+          continue;
+        }
+
+        const spectral = analyzeSpectralContent(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
+        spectralData.push(spectral);
+
+        totalBass += spectral.bass;
+        totalMid += spectral.mid;
+        totalTreble += spectral.treble;
+        totalPerceptBrightness += spectral.perceptualBrightness;
+        spectralBlocks++;
+      }
+
+      // Calculate average spectral characteristics for normalization
+      const avgPerceptBrightness = spectralBlocks > 0 ? totalPerceptBrightness / spectralBlocks : 0.5;
+
+      // Calculate spectral normalization factor based on average brightness
+      // Bright samples (avgPerceptBrightness > 0.6): reduce modulation (factor < 1.0)
+      // Dark samples (avgPerceptBrightness < 0.4): increase modulation (factor > 1.0)
+      // This compresses bright samples and expands dark samples for balanced visualization
+      const spectralNormalizationFactor = 0.5 + (1.0 - avgPerceptBrightness) * 0.8; // Range: 0.18 to 0.98
+
+      // SECOND PASS: Generate preview values with context awareness
+      for (let i = 0; i < BLOCKS; i++) {
+        const startIdx = Math.floor(i * blockSize);
+        const endIdx = Math.min(total, Math.floor((i + 1) * blockSize)); // Clamp to total
 
         let value = 0;
 
-        if (analysis.isTransientHeavy) {
-          // For drums, percussion: use peak with DC correction
-          value = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
-        } else if (analysis.isVeryQuiet) {
-          // For quiet material: use RMS with boost
-          const rms = computeBlockRMSDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
-          value = Math.min(32767, rms * 2.5);
-        } else if (analysis.isDense) {
-          // For dense material: balanced RMS+peak
-          const peak = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
-          const rms = computeBlockRMSDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
-          value = rms * 0.65 + peak * 0.35;
-        } else if (analysis.hasSilentSections) {
-          // For gapped material: preserve transients
-          value = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
-        } else {
-          // Default: smooth RMS-weighted
-          const peak = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
-          const rms = computeBlockRMSDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
-          value = rms * 0.75 + peak * 0.25;
+        // Skip empty blocks (for very short samples)
+        if (startIdx >= endIdx) {
+          out[i] = 0;
+          continue;
+        }
+
+        const spectral = spectralData[i];
+        const peak = computeBlockPeakDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
+        const rms = computeBlockRMSDC(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset);
+
+        // SPECIAL CASE: Short/sparse samples with concentrated energy
+        // Stretch the active portion to make it visible across more blocks
+        if (((isShort && isPercussive) || isSparse) && energyStartBlock !== -1 && energyEndBlock !== -1) {
+          const activeBlocks = energyEndBlock - energyStartBlock + 1;
+
+          if (activeBlocks < 60 && activeBlocks > 0) { // Energy concentrated in less than half the blocks
+            // Map current block to stretched range
+            const stretchFactor = 60 / activeBlocks; // Stretch to at least 60 blocks
+            const stretchedBlock = energyStartBlock + Math.floor((i - energyStartBlock) / stretchFactor);
+
+            if (i >= energyStartBlock && i < energyStartBlock + 60 && stretchedBlock <= energyEndBlock) {
+              // Use the stretched block's data
+              const stretchedStartIdx = Math.floor(stretchedBlock * blockSize);
+              const stretchedEndIdx = Math.min(total, Math.floor((stretchedBlock + 1) * blockSize));
+
+              if (stretchedStartIdx < stretchedEndIdx) {
+                const stretchedPeak = computeBlockPeakDC(dv, offset, stretchedStartIdx, stretchedEndIdx, bytesPerSample, dcOffset);
+                const stretchedRMS = computeBlockRMSDC(dv, offset, stretchedStartIdx, stretchedEndIdx, bytesPerSample, dcOffset);
+
+                // Use peak-dominant rendering for percussive sounds
+                value = stretchedPeak * 0.9 + stretchedRMS * 0.1;
+
+                // Apply brightness tint
+                const stretchedSpectral = spectralData[stretchedBlock];
+                value = value * (0.85 + stretchedSpectral.brightness * 0.15);
+              } else {
+                value = peak * (0.85 + spectral.brightness * 0.15);
+              }
+            } else {
+              // Outside the stretched range - show minimal tail/silence
+              value = peak * 0.2; // Very quiet tail
+            }
+          } else {
+            // Active portion is already spread enough, use normal peak rendering
+            value = peak * (0.85 + spectral.brightness * 0.15);
+          }
+        }
+        // FALLBACK: If short/sparse but energy detection failed, use simple peak rendering
+        else if ((isShort && isPercussive) || isSparse) {
+          // Energy detection failed - just render what we have
+          value = peak * (0.9 + spectral.brightness * 0.1);
+        }
+        // OVERRIDE: Short/sparse samples should use peak rendering, not complex algorithms
+        // Complex algorithms like hybrid-dynamic don't work well with sparse data
+        else if ((isShort || isSparse) && (analysis.selectedAlgorithm === 'hybrid-dynamic' ||
+                                            analysis.selectedAlgorithm === 'spectral-weighted' ||
+                                            analysis.selectedAlgorithm === 'rms-am')) {
+          // For short/sparse samples, use simple peak-dominant rendering
+          value = peak * (0.85 + spectral.brightness * 0.15);
+        }
+        // INTELLIGENT ALGORITHM SELECTION based on detected characteristics
+        else switch (analysis.selectedAlgorithm) {
+          case 'peak':
+            // Pure peak for transient-heavy (drums, percussion)
+            value = peak * (0.85 + spectral.brightness * 0.15);
+            break;
+
+          case 'rms-am':
+            // RMS optimized for AM-modulated sounds (tremolo, auto-pan, LFO amplitude)
+            // Show the envelope shape clearly
+            value = rms * (1.0 + spectral.mid * 0.1);
+            break;
+
+          case 'spectral-weighted':
+            // For sounds with spectral variation but stable amplitude (filter sweeps, FM)
+            // Calculate PERCEPTUAL spectral change with noise filtering
+            let spectralChange = 0;
+            let hasSignificantChange = false;
+
+            if (i > 0) {
+              // Use weighted combination with THRESHOLDING to filter noise
+              let totalChange = 0;
+              let totalWeight = 0;
+
+              // Define minimum thresholds for each metric (filters out noise/jitter)
+              const BRIGHTNESS_THRESHOLD = 0.08;  // 8% change minimum
+              const BAND_THRESHOLD = 0.05;        // 5% change minimum
+              const ZC_THRESHOLD = 0.02;          // 2% change minimum
+
+              // Look at changes over last 3 blocks for smoother curve
+              for (let lookback = 1; lookback <= Math.min(3, i); lookback++) {
+                const prevSpectral = spectralData[i - lookback];
+
+                // Calculate individual changes with thresholding
+                const zcChange = Math.abs(spectral.zcRate - prevSpectral.zcRate);
+                const perceptBrightChange = Math.abs(
+                  spectral.perceptualBrightness - prevSpectral.perceptualBrightness
+                );
+                const midChange = Math.abs(spectral.mid - prevSpectral.mid);
+                const bassChange = Math.abs(spectral.bass - prevSpectral.bass);
+                const trebleChange = Math.abs(spectral.treble - prevSpectral.treble);
+
+                // Apply thresholds - only count if above noise floor
+                const filteredBrightChange = perceptBrightChange > BRIGHTNESS_THRESHOLD ?
+                  (perceptBrightChange - BRIGHTNESS_THRESHOLD) : 0;
+                const filteredMidChange = midChange > BAND_THRESHOLD ?
+                  (midChange - BAND_THRESHOLD) : 0;
+                const filteredZCChange = zcChange > ZC_THRESHOLD ?
+                  (zcChange - ZC_THRESHOLD) : 0;
+                const filteredBassChange = bassChange > BAND_THRESHOLD ?
+                  (bassChange - BAND_THRESHOLD) : 0;
+                const filteredTrebleChange = trebleChange > BAND_THRESHOLD ?
+                  (trebleChange - BAND_THRESHOLD) : 0;
+
+                // Weight by perceptual importance (more moderate multipliers)
+                const weightedChange =
+                  filteredBrightChange * 1.4 +  // Most important
+                  filteredMidChange * 1.0 +     // Important
+                  filteredZCChange * 0.8 +      // Moderately important
+                  filteredTrebleChange * 0.7 +  // Less important
+                  filteredBassChange * 0.4;     // Least important
+
+                // Check if this lookback has significant change
+                if (weightedChange > 0.05) hasSignificantChange = true;
+
+                // Recent changes weighted more
+                const timeWeight = 1.0 / lookback;
+                totalChange += weightedChange * timeWeight;
+                totalWeight += timeWeight;
+              }
+
+              spectralChange = totalWeight > 0 ? totalChange / totalWeight : 0;
+            }
+
+            // Base value
+            const baseValue = rms * 0.5 + peak * 0.5;
+
+            // Only apply spectral modulation if there are SIGNIFICANT changes
+            let spectralModulation;
+            if (hasSignificantChange && spectralChange > 0.03) {
+              // Moderate normalization (reduced from 8 to 6 for stability)
+              const normalizedChange = Math.min(1, spectralChange * 6);
+
+              // Moderate power curve
+              const changeBoost = Math.pow(normalizedChange, 0.8);
+
+              // MINIMAL baseline - only slight tint based on brightness (max 0.15)
+              const spectralBaseline = Math.min(0.15, spectral.perceptualBrightness * 0.15);
+
+              // Dynamic modulation based on changes: 0.8x to 1.6x range (further reduced)
+              const dynamicMod = changeBoost * 0.8;
+
+              // Apply normalization factor to compress bright samples
+              const normalizedDynamicMod = dynamicMod * spectralNormalizationFactor;
+
+              // Combine: baseline (0.8) + dynamic component + minimal spectral baseline
+              spectralModulation = 0.8 + normalizedDynamicMod + spectralBaseline;
+            } else {
+              // No significant changes - use pure RMS-based rendering
+              // Absolutely minimal spectral influence (max 0.08)
+              const spectralTint = spectral.perceptualBrightness * 0.08;
+              spectralModulation = 0.95 + spectralTint; // Very stable: 0.95-1.03 range
+            }
+
+            // Clamp final modulation to tighter safe range
+            const clampedModulation = Math.max(0.6, Math.min(1.6, spectralModulation));
+            value = baseValue * clampedModulation;
+            break;
+
+          case 'hybrid-dynamic':
+            // Both AM and spectral changes (complex evolving sounds)
+            // Track spectral change just like spectral-weighted
+            let dynSpectralChange = 0;
+            if (i > 0) {
+              const prevSpectral = spectralData[i - 1];
+              dynSpectralChange = Math.abs(spectral.zcRate - prevSpectral.zcRate);
+              const brightnessChange = Math.abs(spectral.brightness - prevSpectral.brightness);
+              dynSpectralChange = Math.max(dynSpectralChange, brightnessChange);
+            }
+            const dynNormalizedChange = Math.min(1, dynSpectralChange * 5);
+
+            // Balance between showing envelope (AM) and spectral content
+            const dynamicRMS = rms * (0.7 + analysis.amStrength * 0.5);
+            const dynamicPeak = peak * (0.7 + dynNormalizedChange * 0.6 + spectral.brightness * 0.3);
+            value = dynamicRMS * 0.4 + dynamicPeak * 0.6;
+            break;
+
+          case 'rms-dense':
+            // Dense sustained material (pads, drones, noise)
+            const rmsWeight = 0.7 + (spectral.bass * 0.15);
+            const peakWeight = 0.3 + (spectral.treble * 0.15);
+            value = rms * rmsWeight + peak * peakWeight;
+            break;
+
+          case 'rms-boost':
+            // Quiet material - boost RMS, emphasize mids
+            value = Math.min(32767, rms * 2.5 * (0.9 + spectral.mid * 0.2));
+            break;
+
+          case 'peak-gaps':
+            // Gapped material - preserve attacks
+            value = peak * (0.9 + spectral.brightness * 0.1);
+            break;
+
+          case 'hybrid':
+          default:
+            // Default hybrid - balanced approach
+            const hybridRMS = 0.75 + (spectral.bass - spectral.treble) * 0.1;
+            const hybridPeak = 0.25 + (spectral.treble - spectral.bass) * 0.1;
+            value = rms * Math.max(0.6, Math.min(0.85, hybridRMS)) +
+                    peak * Math.max(0.15, Math.min(0.4, hybridPeak));
+            break;
         }
 
         // Apply normalization if needed
         value = Math.min(32767, value * normalizationFactor);
 
-        // Convert to 0-23 range with perceptual curve
+        // Convert to 0-15 range with PERCEPTUAL curve (4-bit quantization)
         const normalized = value / 32768.0;
-        // Use cube root for better visibility of quiet parts (more aggressive than power 0.8)
-        const compressed = Math.pow(normalized, 0.75);
-        const u8 = Math.min(23, Math.floor(compressed * 23.5)); // Use 23.5 to reach full height easier
+        // Adaptive curve power based on spectral brightness and algorithm
+        let curvePower = 0.75;
+
+        // Special handling for short/sparse samples
+        if ((isShort && isPercussive) || isSparse) {
+          // Use sharper curve to show peak detail
+          curvePower = 0.65;
+        } else if (analysis.selectedAlgorithm === 'spectral-weighted') {
+          // Moderate curve for spectral changes - balanced between visibility and stability
+          // Use perceptual brightness for more human-like response
+          const perceptBright = spectralData[i].perceptualBrightness || 0.5;
+          curvePower = 0.62 + (perceptBright * 0.15); // 0.62-0.77 range (more moderate)
+        } else if (analysis.selectedAlgorithm === 'rms-am') {
+          // Gentler curve for AM to show smooth envelope
+          curvePower = 0.8;
+        } else {
+          // Default adaptive - use perceptual brightness if available
+          const brightVal = spectralData[i].perceptualBrightness || spectral.brightness || 0.5;
+          curvePower = 0.75 + (brightVal - 0.5) * 0.05;
+        }
+        const compressed = Math.pow(normalized, curvePower);
+        const u8 = Math.min(15, Math.floor(compressed * 15.5)); // 4-bit: 0-15
 
         out[i] = u8;
       }
+
+      // Calculate average spectral content for visualization
+      const avgSpectral = spectralBlocks > 0 ? {
+        bass: totalBass / spectralBlocks,
+        mid: totalMid / spectralBlocks,
+        treble: totalTreble / spectralBlocks
+      } : null;
 
       return {
         data: out,
         analysis: analysis,
         peak: globalPeak,
         normalized: shouldNormalize,
-        dcOffset: Math.abs(dcOffset) > 100 ? dcOffset : 0
+        dcOffset: Math.abs(dcOffset) > 100 ? dcOffset : 0,
+        spectral: avgSpectral,
+        isShortPercussive: (isShort && isPercussive) || isSparse
       };
     }
 
@@ -1143,52 +1977,307 @@
       return count > 0 ? Math.sqrt(sumSquares / count) : 0;
     }
 
+    // Perceptually-weighted spectral analysis based on human hearing
+    // Uses A-weighting principles and logarithmic frequency perception
+    function analyzeSpectralContent(dv, offset, startIdx, endIdx, bytesPerSample, dcOffset) {
+      const blockSize = endIdx - startIdx;
+      if (blockSize < 64) return { bass: 0, mid: 0, treble: 0, brightness: 0, perceptualBrightness: 0 };
+
+      // Human hearing perception (A-weighting inspired):
+      // - Sub-bass (< 60Hz): -20dB relative sensitivity
+      // - Bass (60-250Hz): -10dB
+      // - Low-mid (250-500Hz): -3dB
+      // - Mid (500-2kHz): 0dB (most sensitive)
+      // - Upper-mid (2k-5kHz): +3dB (MOST sensitive, speech/presence)
+      // - Treble (5k-10kHz): 0dB
+      // - High treble (10k+): -10dB
+
+      let zeroCrossings = 0;
+      let totalEnergy = 0;
+
+      // Perceptually-weighted energy bins
+      let subBassEnergy = 0;     // Very low freq (ZC: 0-0.03)
+      let bassEnergy = 0;        // Low freq (ZC: 0.03-0.08)
+      let lowMidEnergy = 0;      // Low-mid (ZC: 0.08-0.12)
+      let midEnergy = 0;         // Mid (ZC: 0.12-0.20) - ear most sensitive
+      let upperMidEnergy = 0;    // Upper-mid (ZC: 0.20-0.30) - VERY sensitive
+      let trebleEnergy = 0;      // Treble (ZC: 0.30-0.45)
+      let highTrebleEnergy = 0;  // High treble (ZC: 0.45+)
+
+      // Use smaller windows for better frequency resolution
+      const windowSize = Math.min(64, Math.floor(blockSize / 4));
+
+      for (let i = 0; i < 4 && (startIdx + i * windowSize) < endIdx; i++) {
+        const winStart = startIdx + i * windowSize;
+        const winEnd = Math.min(winStart + windowSize, endIdx);
+
+        let winZeroCross = 0;
+        let winEnergy = 0;
+        let prevSample = 0;
+
+        for (let j = winStart; j < winEnd; j++) {
+          const byteOff = offset + j * bytesPerSample;
+          if (byteOff + 1 >= dv.byteLength) break;
+
+          const sample = dv.getInt16(byteOff, true) - dcOffset;
+          const absSample = Math.abs(sample);
+
+          // Count zero crossings
+          if (j > winStart) {
+            if ((prevSample >= 0 && sample < 0) || (prevSample < 0 && sample >= 0)) {
+              winZeroCross++;
+            }
+          }
+
+          winEnergy += absSample * absSample;
+          prevSample = sample;
+        }
+
+        const zcRate = winZeroCross / windowSize;
+
+        // Bin energy into perceptual frequency bands
+        if (zcRate < 0.03) {
+          subBassEnergy += winEnergy * 0.1; // De-emphasize (humans barely hear this)
+        } else if (zcRate < 0.08) {
+          bassEnergy += winEnergy * 0.32; // Reduced sensitivity
+        } else if (zcRate < 0.12) {
+          lowMidEnergy += winEnergy * 0.5; // Moderate
+        } else if (zcRate < 0.20) {
+          midEnergy += winEnergy * 1.0; // Full sensitivity
+        } else if (zcRate < 0.30) {
+          upperMidEnergy += winEnergy * 1.41; // BOOST (speech/presence, humans very sensitive)
+        } else if (zcRate < 0.45) {
+          trebleEnergy += winEnergy * 1.0; // Full sensitivity
+        } else {
+          highTrebleEnergy += winEnergy * 0.32; // De-emphasize extreme highs
+        }
+
+        totalEnergy += winEnergy;
+        zeroCrossings += winZeroCross;
+      }
+
+      // Calculate average zero-crossing rate
+      const avgZCRate = zeroCrossings / blockSize;
+
+      // Calculate perceptually-weighted total
+      const perceptualTotal = subBassEnergy + bassEnergy + lowMidEnergy +
+                              midEnergy + upperMidEnergy + trebleEnergy + highTrebleEnergy;
+
+      // Normalize to 0-1 range for each band with safety check
+      const normFactor = perceptualTotal > 0 ? 1.0 / perceptualTotal : 0;
+
+      // Combine into traditional bass/mid/treble for compatibility
+      // But now perceptually weighted! Add clamping for safety
+      const bass = Math.min(1.0, (subBassEnergy + bassEnergy) * normFactor);
+      const mid = Math.min(1.0, (lowMidEnergy + midEnergy + upperMidEnergy) * normFactor);
+      const treble = Math.min(1.0, (trebleEnergy + highTrebleEnergy) * normFactor);
+
+      // Perceptual brightness: weight by human hearing sensitivity
+      // Upper-mid has strongest influence (speech/presence range)
+      // Clamp to 0-1 range for stability
+      const perceptualBrightness = perceptualTotal > 0 ?
+        Math.max(0, Math.min(1.0,
+          (upperMidEnergy * 1.8 + trebleEnergy * 1.3 + midEnergy * 0.7) / (perceptualTotal * 1.8)
+        )) : 0.5;
+
+      // Standard brightness (for compatibility), also clamped
+      const brightness = totalEnergy > 0 ?
+        Math.max(0, Math.min(1.0,
+          (upperMidEnergy + trebleEnergy + highTrebleEnergy) / totalEnergy
+        )) : 0.5;
+
+      return {
+        bass,
+        mid,
+        treble,
+        brightness,
+        perceptualBrightness,
+        zcRate: avgZCRate
+      };
+    }
+
 
     function analyzeWaveform(dv, offset, total, bytesPerSample) {
-      // Sample analysis: check first 10% and last 10% for characteristics
-      const sampleCount = Math.min(8192, Math.floor(total * 0.1));
+      // Advanced analysis: detect AM, FM/spectral changes, and transients
+      // Sample at multiple points throughout the file for better coverage
+      const numWindows = 16; // Analyze 16 windows across the sample
+      const windowSize = Math.min(2048, Math.floor(total / numWindows));
 
       let sumAbs = 0;
       let sumSquares = 0;
       let maxPeak = 0;
       let silentSamples = 0;
       let transientCount = 0;
+      let zeroCrossings = 0;
+
+      // Arrays to track changes over time
+      const windowEnergies = [];
+      const windowZCRates = [];
+      const windowPeaks = [];
+
       let prevAbs = 0;
+      let prevSample = 0;
 
-      const silenceThreshold = 100; // ~0.3% of full scale
-      const transientThreshold = 8000; // Sudden jump indicates transient
+      const silenceThreshold = 100;
+      const transientThreshold = 8000;
 
-      for (let i = 0; i < sampleCount; i++) {
-        const idx = i + Math.floor(Math.random() * (total - sampleCount)); // Random sampling
-        const byteOff = offset + idx * bytesPerSample;
-        if (byteOff + 1 >= dv.byteLength) continue;
+      // Analyze multiple windows across the sample
+      for (let w = 0; w < numWindows; w++) {
+        const windowStart = Math.floor((w / numWindows) * total);
+        const windowEnd = Math.min(windowStart + windowSize, total);
 
-        const v16 = dv.getInt16(byteOff, true);
-        const abs = Math.abs(v16);
+        let winEnergy = 0;
+        let winZC = 0;
+        let winPeak = 0;
+        let winSamples = 0;
+        let winPrevSample = 0;
 
-        sumAbs += abs;
-        sumSquares += abs * abs;
-        if (abs > maxPeak) maxPeak = abs;
-        if (abs < silenceThreshold) silentSamples++;
+        for (let i = windowStart; i < windowEnd; i++) {
+          const byteOff = offset + i * bytesPerSample;
+          if (byteOff + 1 >= dv.byteLength) break;
 
-        // Detect transients (sudden changes)
-        if (Math.abs(abs - prevAbs) > transientThreshold) transientCount++;
-        prevAbs = abs;
+          const v16 = dv.getInt16(byteOff, true);
+          const abs = Math.abs(v16);
+
+          sumAbs += abs;
+          sumSquares += abs * abs;
+          if (abs > maxPeak) maxPeak = abs;
+          if (abs < silenceThreshold) silentSamples++;
+
+          // Window-specific stats
+          winEnergy += abs * abs;
+          if (abs > winPeak) winPeak = abs;
+          winSamples++;
+
+          // Detect transients
+          if (Math.abs(abs - prevAbs) > transientThreshold) transientCount++;
+
+          // Count zero crossings
+          if (i > windowStart) {
+            if ((winPrevSample >= 0 && v16 < 0) || (winPrevSample < 0 && v16 >= 0)) {
+              winZC++;
+              zeroCrossings++;
+            }
+          }
+
+          prevAbs = abs;
+          prevSample = v16;
+          winPrevSample = v16;
+        }
+
+        if (winSamples > 0) {
+          windowEnergies.push(Math.sqrt(winEnergy / winSamples));
+          windowZCRates.push(winZC / winSamples);
+          windowPeaks.push(winPeak);
+        }
       }
 
-      const avgAbs = sumAbs / sampleCount;
-      const rms = Math.sqrt(sumSquares / sampleCount);
-      const crestFactor = maxPeak / (rms + 1); // Peak to RMS ratio
-      const silenceRatio = silentSamples / sampleCount;
-      const transientDensity = transientCount / sampleCount;
+      const totalSamples = numWindows * windowSize;
+      const avgAbs = sumAbs / totalSamples;
+      const rms = Math.sqrt(sumSquares / totalSamples);
+      const crestFactor = maxPeak / (rms + 1);
+      const silenceRatio = silentSamples / totalSamples;
+      const transientDensity = transientCount / totalSamples;
+      const avgZCRate = zeroCrossings / totalSamples;
+
+      // AMPLITUDE MODULATION (AM) DETECTION
+      // Calculate variance in energy across windows
+      const avgEnergy = windowEnergies.reduce((a, b) => a + b, 0) / windowEnergies.length;
+      const energyVariance = windowEnergies.reduce((sum, e) => sum + Math.pow(e - avgEnergy, 2), 0) / windowEnergies.length;
+      const energyStdDev = Math.sqrt(energyVariance);
+      const energyCV = avgEnergy > 0 ? energyStdDev / avgEnergy : 0; // Coefficient of variation
+
+      // High CV = significant amplitude modulation
+      const hasAM = energyCV > 0.3; // >30% variation
+      const amStrength = Math.min(1, energyCV / 0.6); // 0-1 scale
+
+      // FREQUENCY MODULATION (FM) / SPECTRAL VARIATION DETECTION
+      // Calculate variance in zero-crossing rate across windows
+      const avgZC = windowZCRates.reduce((a, b) => a + b, 0) / windowZCRates.length;
+      const zcVariance = windowZCRates.reduce((sum, zc) => sum + Math.pow(zc - avgZC, 2), 0) / windowZCRates.length;
+      const zcStdDev = Math.sqrt(zcVariance);
+      const zcCV = avgZC > 0 ? zcStdDev / avgZC : 0;
+
+      // High ZC variation = spectral changes (FM, filters, etc.)
+      const hasSpectralChange = zcCV > 0.15; // >15% variation (was 25%, now more sensitive)
+      const spectralChangeStrength = Math.min(1, zcCV / 0.4); // Scale to 1.0 at 40% CV
+
+      // TRANSIENT CHARACTERISTICS
+      // Calculate variance in peaks across windows
+      const avgPeak = windowPeaks.reduce((a, b) => a + b, 0) / windowPeaks.length;
+      const peakVariance = windowPeaks.reduce((sum, p) => sum + Math.pow(p - avgPeak, 2), 0) / windowPeaks.length;
+      const peakStdDev = Math.sqrt(peakVariance);
+      const peakCV = avgPeak > 0 ? peakStdDev / avgPeak : 0;
+
+      const hasTransients = crestFactor > 6 && transientDensity > 0.03;
+      const transientStrength = Math.min(1, crestFactor / 12);
+
+      // INTELLIGENT ALGORITHM SELECTION
+      let selectedAlgorithm = 'hybrid'; // default
+      let algorithmReason = '';
+
+      if (hasTransients && transientStrength > 0.6) {
+        selectedAlgorithm = 'peak'; // Pure peak for drums, clicks
+        algorithmReason = 'Transient-heavy';
+      } else if (hasSpectralChange && spectralChangeStrength > 0.3) {
+        // PRIORITIZE spectral changes - even with some AM
+        if (hasAM && amStrength > 0.4) {
+          selectedAlgorithm = 'hybrid-dynamic'; // Both AM and FM
+          algorithmReason = 'AM+Spectral';
+        } else {
+          selectedAlgorithm = 'spectral-weighted'; // Spectral changes emphasized
+          algorithmReason = 'Spectral-varying';
+        }
+      } else if (hasAM && amStrength > 0.5) {
+        selectedAlgorithm = 'rms-am'; // RMS optimized for AM
+        algorithmReason = 'AM-modulated';
+      } else if (crestFactor < 3 && silenceRatio < 0.1) {
+        selectedAlgorithm = 'rms-dense'; // Dense material
+        algorithmReason = 'Dense/Sustained';
+      } else if (avgAbs < 2000) {
+        selectedAlgorithm = 'rms-boost'; // Quiet material
+        algorithmReason = 'Quiet';
+      } else if (silenceRatio > 0.3) {
+        selectedAlgorithm = 'peak-gaps'; // Gapped material
+        algorithmReason = 'Gapped';
+      }
+
+      // Spectral hint
+      let spectralHint = '';
+      if (avgZCRate < 0.05) {
+        spectralHint = 'Bass-heavy / Dark';
+      } else if (avgZCRate < 0.15) {
+        spectralHint = 'Mid-range balanced';
+      } else {
+        spectralHint = 'Bright / High-freq';
+      }
 
       return {
-        isTransientHeavy: crestFactor > 8 && transientDensity > 0.05, // Drums, percussion
-        isVeryQuiet: avgAbs < 2000, // Very quiet material needs boost
-        isDense: crestFactor < 3 && silenceRatio < 0.1, // Pads, noise, drones
-        hasSilentSections: silenceRatio > 0.2, // Material with gaps
+        // Legacy compatibility
+        isTransientHeavy: hasTransients,
+        isVeryQuiet: avgAbs < 2000,
+        isDense: crestFactor < 3 && silenceRatio < 0.1,
+        hasSilentSections: silenceRatio > 0.3,
         crestFactor: crestFactor,
-        avgLevel: avgAbs
+        avgLevel: avgAbs,
+        spectralHint: spectralHint,
+
+        // New detailed analysis
+        hasAM: hasAM,
+        amStrength: amStrength,
+        hasSpectralChange: hasSpectralChange,
+        spectralChangeStrength: spectralChangeStrength,
+        hasTransients: hasTransients,
+        transientStrength: transientStrength,
+        selectedAlgorithm: selectedAlgorithm,
+        algorithmReason: algorithmReason,
+
+        // Detailed metrics for adaptive processing
+        energyCV: energyCV,
+        zcCV: zcCV,
+        peakCV: peakCV,
+        windowEnergies: windowEnergies, // For adaptive RMS weighting
+        windowZCRates: windowZCRates    // For adaptive spectral weighting
       };
     }
 
@@ -1218,7 +2307,7 @@
       return count > 0 ? Math.sqrt(sumSquares / count) : 0;
     }
 
-    function drawInt8Preview(canvas, data, playbackPosition = null, keyPoints = null) {
+    function drawInt8Preview(canvas, data, playbackPosition = null, keyPoints = null, spectralData = null) {
       const ctx = canvas.getContext('2d');
       const w = 128; // OLED width
       const h = 64;  // OLED height
@@ -1227,7 +2316,7 @@
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, w, h);
 
-      // Draw sample info text at top (rows 0-38)
+      // Draw sample info text at top (rows 0-18)
       if (currentNameEl && currentNameEl.textContent !== 'Nothing selected') {
         const filename = currentNameEl.textContent.split('/').pop();
         const duration = durationEl ? durationEl.textContent : '--:--';
@@ -1249,6 +2338,35 @@
         ctx.fillText(`${duration} | 44.1k`, 2, 18);
       }
 
+      // Draw spectral content visualization (rows 22-36) if available
+      if (spectralData) {
+        const spectralY = 22;
+        const spectralHeight = 14;
+        const barHeight = 3;
+        const maxBarWidth = 100;
+
+        // Draw mini spectrum bars
+        const bars = [
+          { label: 'B', value: spectralData.bass, y: spectralY },
+          { label: 'M', value: spectralData.mid, y: spectralY + 5 },
+          { label: 'T', value: spectralData.treble, y: spectralY + 10 }
+        ];
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '7px monospace';
+
+        bars.forEach(bar => {
+          // Draw label
+          ctx.fillText(bar.label, 2, bar.y + 2);
+
+          // Draw bar
+          const barWidth = Math.floor(bar.value * maxBarWidth);
+          if (barWidth > 0) {
+            ctx.fillRect(12, bar.y - 1, barWidth, barHeight);
+          }
+        });
+      }
+
       // Waveform preview occupies bottom third (24 pixels): rows 40-63
       const PREVIEW_START_Y = 40; // Start at pixel row 40
       const PREVIEW_HEIGHT = 24;  // 24 pixels tall
@@ -1260,11 +2378,15 @@
 
       // Draw waveform in bottom section with optional smoothing
       for (let x = 0; x < SAMPLES; x++) {
-        const val = (data && data[x] != null) ? data[x] : 0; // 0-23
+        const val = (data && data[x] != null) ? data[x] : 0; // 0-15 (4-bit)
 
-        if (val > 0) {
+        // Use native 4-bit values (0-15) without scaling
+        // This shows true quantization levels matching the export format
+        const displayVal = Math.min(val, 15); // Clamp to 0-15
+
+        if (displayVal > 0) {
           // Draw vertical bar from bottom up
-          for (let y = 0; y < val && y < PREVIEW_HEIGHT; y++) {
+          for (let y = 0; y < displayVal && y < PREVIEW_HEIGHT; y++) {
             const pixelY = h - 1 - y; // Start from bottom (row 63)
             const index = (pixelY * w + x) * 4;
 
@@ -1280,8 +2402,8 @@
           }
 
           // Add subtle anti-aliasing at the tip for smoother appearance
-          if (val < PREVIEW_HEIGHT - 1) {
-            const tipY = h - 1 - val;
+          if (displayVal < PREVIEW_HEIGHT - 1) {
+            const tipY = h - 1 - displayVal;
             if (tipY > PREVIEW_START_Y) {
               const index = (tipY * w + x) * 4;
               // Dim pixel at tip for anti-aliasing effect
