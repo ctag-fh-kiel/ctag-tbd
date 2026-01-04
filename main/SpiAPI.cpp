@@ -236,6 +236,47 @@ namespace CTAG::SPIAPI{
         return true;
     }
 
+    bool SpiAPI::transmitBinaryFile(const RequestType reqType, const std::string& filename){
+        FILE* f = fopen(filename.c_str(), "rb");
+        if (f == nullptr){
+            return false;
+        }
+        fseek(f, 0, SEEK_END);
+        uint32_t file_size = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        uint32_t bytes_to_send = 0;
+        uint32_t bytes_sent = 0;
+        // fields are: // 0xCA, 0xFE, request type, length (uint32_t), binary data
+        uint8_t* requestTypeField = send_buffer + 2;
+        *requestTypeField = static_cast<uint8_t>(reqType);
+        uint32_t* lengthField = (uint32_t*)(send_buffer + 3);
+        while (file_size > 0){
+            *lengthField = file_size;
+            bytes_to_send = file_size > 2048 - 7 ? 2048 - 7 : file_size; // 7 bytes for header
+            size_t nRead = fread(send_buffer + 7, 1, bytes_to_send, f);
+            if (nRead != bytes_to_send){
+                fclose(f);
+                return false;
+            }
+            file_size -= bytes_to_send;
+            bytes_sent += bytes_to_send;
+            spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+            // fingerprint check
+            if (receive_buffer[0] != 0xCA || receive_buffer[1] != 0xFE){
+                fclose(f);
+                return false;
+            }
+            // check request type acknowledgment
+            const uint8_t requestType = receive_buffer[2];
+            if (requestType != (uint8_t)reqType){
+                fclose(f);
+                return false;
+            }
+        }
+        fclose(f);
+        return true;
+    }
+
     bool SpiAPI::transmitCString(const RequestType reqType, const char* str){
         uint32_t len = strlen(str);
         // fields are: // 0xCA, 0xFE, request type, length (uint32_t), cstring
@@ -458,6 +499,33 @@ namespace CTAG::SPIAPI{
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 break;
                 }
+            case RequestType::GetSampleRomBankDescriptor:
+            {
+                ESP_LOGI("SpiAPI", "GetSampleRomBankDescriptor Bank %d", bank_number);
+                {
+                    std::string desc_fn = HELPERS::ctagSampleRom::GetSampleRomBankDescriptorFilenameByIndex(bank_number);
+                    if (!desc_fn.empty()){
+                        result = transmitBinaryFile(requestType, desc_fn);
+                    }
+                }
+                break;
+            }
+            case RequestType::GetSampleRomBankPreviews:
+            {
+                ESP_LOGI("SpiAPI", "GetSampleRomBankPreviews Bank %d", bank_number);
+                {
+                    std::string desc_fn = HELPERS::ctagSampleRom::GetSampleRomBankDescriptorFilenameByIndex(bank_number);
+                    if (!desc_fn.empty()){
+                        // change filename to previews filename
+                        size_t lastindex = desc_fn.find_last_of(".");
+                        if (lastindex != std::string::npos){
+                            std::string preview_fn = desc_fn.substr(0, lastindex) + "_previews.bin";
+                            result = transmitBinaryFile(requestType, preview_fn);
+                        }
+                    }
+                }
+                break;
+            }
             }
         }
     }

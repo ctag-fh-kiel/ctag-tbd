@@ -58,6 +58,8 @@ namespace CTAG::SPIAPI{
             SetAbletonLinkTempo = 0x20, // sets Ableton Link tempo, args [tempo (float bpm)]
             SetAbletonLinkStartStop = 0x21, // sets Ableton Link start/stop, args [isPlaying (uint8_t, 0 = stop, 1 = start)]
             RebootToOTAX = 0x22, // reboots the device to OTAX, args [X (uint8_t)]
+            GetSampleRomBankDescriptor = 0x23, // returns json cstring with sample rom bank descriptor, args [bank index (uint8_t)]
+            GetSampleRomBankPreviews = 0x24, // returns binary data with sample rom bank previews, args [bank index (uint8_t)]
         };
 
         static TaskHandle_t hTask;
@@ -66,6 +68,7 @@ namespace CTAG::SPIAPI{
         static void api_task(void *pvParameters);
         static bool transmitCString(const RequestType reqType, const char *str);
         static bool receiveString(const RequestType reqType, std::string &str);
+        static bool transmitBinaryFile(const RequestType reqType, const std::string &filename);
     public:
         SpiAPI() = delete;
         static void StartSpiAPI();

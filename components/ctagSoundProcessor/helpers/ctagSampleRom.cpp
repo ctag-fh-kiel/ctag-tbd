@@ -141,6 +141,15 @@ namespace CTAG::SP::HELPERS {
         return sample_rom_model.GetSampleRomDescriptorJSON();
     }
 
+    std::string ctagSampleRom::GetSampleRomBankDescriptorFilenameByIndex(const uint32_t index){
+        if (!CTAG::SP::ctagSampleRomModel::IsSampleRomSDValid()) return "";
+        ctagSampleRomModel sample_rom_model;
+        if (index < sample_rom_model.GetTotalNumberSampleBanks()){
+            return sample_rom_model.GetFilenameSampleBankByIndex(index);
+        }
+        return "";
+    }
+
     ctagSampleRom::~ctagSampleRom() {
         //ESP_LOGE("SR", "nConsumers %li", nConsumers.load());
         nConsumers--;

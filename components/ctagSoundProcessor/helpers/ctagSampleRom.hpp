@@ -32,6 +32,7 @@ namespace CTAG::SP::HELPERS{
     public:
         static void RefreshDataStructure(); // forces refresh of data structure, not thread safe!
         static std::string GetSampleRomDescriptorJSON();
+        static std::string GetSampleRomBankDescriptorFilenameByIndex(const uint32_t index);
         static void SetActiveWaveTableBank(uint8_t index);
         static void SetActiveSampleBank(uint8_t index);
         ctagSampleRom();
