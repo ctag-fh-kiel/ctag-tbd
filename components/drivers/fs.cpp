@@ -38,7 +38,8 @@ respective component folders / files if different from this license.
 #include <fcntl.h>
 
 #include "sd_pwr_ctrl_by_on_chip_ldo.h"
-#include "miniz.h"
+#include "esp_heap_caps.h"
+#include "zlib.h"
 
 using namespace CTAG::DRIVERS;
 
@@ -214,9 +215,217 @@ static bool delete_dir_recursive(const std::string& path) {
 static bool extract_zip_to_sd(const std::string& zip_path, const std::string& dest_dir) {
     ESP_LOGI("FS", "Extracting %s to %s", zip_path.c_str(), dest_dir.c_str());
 
-    // TODO extract .zip archive, maintain low stack usage, use heap memory, we can use max. 1MB if SPIRAM
+    FILE* zip_file = fopen(zip_path.c_str(), "rb");
+    if (!zip_file) {
+        ESP_LOGE("FS", "Failed to open zip file");
+        return false;
+    }
 
-    ESP_LOGI("FS", "Zip extraction completed");
+    // Find End of Central Directory (EOCD) signature
+    // Search from end of file backwards (typically last 22 bytes + comment)
+    fseek(zip_file, 0, SEEK_END);
+    long file_size = ftell(zip_file);
+
+    // Search last 64KB for EOCD
+    long search_start = (file_size > 65536) ? (file_size - 65536) : 0;
+    fseek(zip_file, search_start, SEEK_SET);
+
+    uint8_t* search_buf = (uint8_t*)heap_caps_malloc(file_size - search_start, MALLOC_CAP_SPIRAM);
+    if (!search_buf) {
+        ESP_LOGE("FS", "Failed to allocate search buffer");
+        fclose(zip_file);
+        return false;
+    }
+
+    fread(search_buf, 1, file_size - search_start, zip_file);
+
+    // Find EOCD signature (0x06054b50)
+    long eocd_offset = -1;
+    for (long i = file_size - search_start - 22; i >= 0; i--) {
+        if (search_buf[i] == 0x50 && search_buf[i+1] == 0x4b &&
+            search_buf[i+2] == 0x05 && search_buf[i+3] == 0x06) {
+            eocd_offset = search_start + i;
+            break;
+        }
+    }
+
+    if (eocd_offset < 0) {
+        ESP_LOGE("FS", "No EOCD found - not a valid ZIP file");
+        heap_caps_free(search_buf);
+        fclose(zip_file);
+        return false;
+    }
+
+    // Parse EOCD to get central directory location
+    fseek(zip_file, eocd_offset + 16, SEEK_SET);
+    uint32_t cd_offset, cd_size;
+    uint16_t num_entries;
+    fread(&num_entries, 2, 1, zip_file);
+    fseek(zip_file, eocd_offset + 10, SEEK_SET);
+    fread(&num_entries, 2, 1, zip_file); // Total entries
+    fseek(zip_file, eocd_offset + 12, SEEK_SET);
+    fread(&cd_size, 4, 1, zip_file);
+    fread(&cd_offset, 4, 1, zip_file);
+
+    heap_caps_free(search_buf);
+
+    ESP_LOGI("FS", "ZIP: %d files, central dir at offset %u", num_entries, cd_offset);
+
+    // Read central directory
+    fseek(zip_file, cd_offset, SEEK_SET);
+    uint8_t* cd_buf = (uint8_t*)heap_caps_malloc(cd_size, MALLOC_CAP_SPIRAM);
+    if (!cd_buf) {
+        ESP_LOGE("FS", "Failed to allocate central directory buffer");
+        fclose(zip_file);
+        return false;
+    }
+    fread(cd_buf, 1, cd_size, zip_file);
+
+    // Allocate decompression buffers
+    const size_t chunk_size = 16384; // 16KB chunks
+    uint8_t* in_buf = (uint8_t*)heap_caps_malloc(chunk_size, MALLOC_CAP_SPIRAM);
+    uint8_t* out_buf = (uint8_t*)heap_caps_malloc(chunk_size, MALLOC_CAP_SPIRAM);
+
+    if (!in_buf || !out_buf) {
+        ESP_LOGE("FS", "Failed to allocate decompression buffers");
+        heap_caps_free(cd_buf);
+        heap_caps_free(in_buf);
+        heap_caps_free(out_buf);
+        fclose(zip_file);
+        return false;
+    }
+
+    // Process each file from central directory
+    uint32_t cd_pos = 0;
+    int files_extracted = 0;
+
+    while (cd_pos < cd_size) {
+        // Check central directory signature
+        if (cd_buf[cd_pos] != 0x50 || cd_buf[cd_pos+1] != 0x4b ||
+            cd_buf[cd_pos+2] != 0x01 || cd_buf[cd_pos+3] != 0x02) {
+            break; // End of central directory entries
+        }
+
+        uint16_t comp_method = *(uint16_t*)(cd_buf + cd_pos + 10);
+        uint32_t comp_size = *(uint32_t*)(cd_buf + cd_pos + 20);
+        uint32_t uncomp_size = *(uint32_t*)(cd_buf + cd_pos + 24);
+        uint16_t name_len = *(uint16_t*)(cd_buf + cd_pos + 28);
+        uint16_t extra_len = *(uint16_t*)(cd_buf + cd_pos + 30);
+        uint16_t comment_len = *(uint16_t*)(cd_buf + cd_pos + 32);
+        uint32_t local_header_offset = *(uint32_t*)(cd_buf + cd_pos + 42);
+
+        std::string filename((char*)(cd_buf + cd_pos + 46), name_len);
+        std::string full_path = dest_dir + "/" + filename;
+
+        ESP_LOGD("FS", "File: %s (%u bytes, method=%d)", filename.c_str(), uncomp_size, comp_method);
+
+        // Handle directories
+        if (filename.back() == '/') {
+            ESP_LOGD("FS", "Creating directory: %s", full_path.c_str());
+            mkdir(full_path.c_str(), 0755);
+        } else {
+            // Create parent directories
+            size_t pos = full_path.find_last_of('/');
+            if (pos != std::string::npos) {
+                std::string dir_path = full_path.substr(0, pos);
+                size_t start = dest_dir.length() + 1;
+                while ((pos = dir_path.find('/', start)) != std::string::npos) {
+                    mkdir(dir_path.substr(0, pos).c_str(), 0755);
+                    start = pos + 1;
+                }
+                mkdir(dir_path.c_str(), 0755);
+            }
+
+            // Read local file header to get actual data offset
+            fseek(zip_file, local_header_offset, SEEK_SET);
+            uint8_t local_header[30];
+            fread(local_header, 1, 30, zip_file);
+
+            uint16_t local_name_len = *(uint16_t*)(local_header + 26);
+            uint16_t local_extra_len = *(uint16_t*)(local_header + 28);
+            uint32_t data_offset = local_header_offset + 30 + local_name_len + local_extra_len;
+
+            fseek(zip_file, data_offset, SEEK_SET);
+
+            // Open output file
+            FILE* out_file = fopen(full_path.c_str(), "wb");
+            if (!out_file) {
+                ESP_LOGE("FS", "Failed to create: %s", full_path.c_str());
+                cd_pos += 46 + name_len + extra_len + comment_len;
+                continue;
+            }
+
+            if (comp_method == 0) {
+                // Stored (no compression)
+                uint32_t remaining = uncomp_size;
+                while (remaining > 0) {
+                    uint32_t to_read = (remaining < chunk_size) ? remaining : chunk_size;
+                    fread(in_buf, 1, to_read, zip_file);
+                    fwrite(in_buf, 1, to_read, out_file);
+                    remaining -= to_read;
+                }
+            } else if (comp_method == 8) {
+                // Deflate compression - use zlib
+                z_stream stream;
+                memset(&stream, 0, sizeof(stream));
+
+                // Use raw deflate (negative windowBits)
+                if (inflateInit2(&stream, -MAX_WBITS) != Z_OK) {
+                    ESP_LOGE("FS", "inflateInit failed");
+                    fclose(out_file);
+                    cd_pos += 46 + name_len + extra_len + comment_len;
+                    continue;
+                }
+
+                uint32_t total_in = 0;
+                int ret;
+
+                do {
+                    // Read compressed data
+                    uint32_t to_read = ((comp_size - total_in) < chunk_size) ?
+                                      (comp_size - total_in) : chunk_size;
+                    stream.avail_in = fread(in_buf, 1, to_read, zip_file);
+                    total_in += stream.avail_in;
+
+                    if (stream.avail_in == 0) break;
+
+                    stream.next_in = in_buf;
+
+                    // Decompress
+                    do {
+                        stream.avail_out = chunk_size;
+                        stream.next_out = out_buf;
+
+                        ret = inflate(&stream, Z_NO_FLUSH);
+
+                        if (ret == Z_STREAM_ERROR || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR) {
+                            ESP_LOGE("FS", "inflate error: %d", ret);
+                            break;
+                        }
+
+                        uint32_t have = chunk_size - stream.avail_out;
+                        fwrite(out_buf, 1, have, out_file);
+
+                    } while (stream.avail_out == 0);
+
+                } while (ret != Z_STREAM_END && total_in < comp_size);
+
+                inflateEnd(&stream);
+            }
+
+            fclose(out_file);
+            files_extracted++;
+        }
+
+        cd_pos += 46 + name_len + extra_len + comment_len;
+    }
+
+    heap_caps_free(cd_buf);
+    heap_caps_free(in_buf);
+    heap_caps_free(out_buf);
+    fclose(zip_file);
+
+    ESP_LOGI("FS", "Extracted %d files successfully", files_extracted);
     return true;
 }
 
