@@ -34,12 +34,15 @@ respective component folders / files if different from this license.
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <queue>
 #include <dirent.h>
 #include <fcntl.h>
 
 #include "sd_pwr_ctrl_by_on_chip_ldo.h"
 #include "esp_heap_caps.h"
 #include "zlib.h"
+#include <queue>
 
 using namespace CTAG::DRIVERS;
 
@@ -129,44 +132,59 @@ static bool copy_file(const std::string& src, const std::string& dst) {
 
 static bool copy_dir(const std::string& src, const std::string& dst) {
     ESP_LOGI("FS", "Copying dir %s to %s", src.c_str(), dst.c_str());
-    struct stat st{};
-    if (stat(dst.c_str(), &st) != 0) {
-        if (mkdir(dst.c_str(), 0755) != 0) {
-            ESP_LOGE("FS", "Failed to create directory %s", dst.c_str());
+
+    // Use iterative approach with queue to avoid stack overflow
+    struct DirPair {
+        std::string src_path;
+        std::string dst_path;
+    };
+
+    std::queue<DirPair> dir_queue;
+    dir_queue.push({src, dst});
+
+    while (!dir_queue.empty()) {
+        DirPair current = dir_queue.front();
+        dir_queue.pop();
+
+        // Create destination directory
+        struct stat st{};
+        if (stat(current.dst_path.c_str(), &st) != 0) {
+            if (mkdir(current.dst_path.c_str(), 0755) != 0) {
+                ESP_LOGE("FS", "Failed to create directory %s", current.dst_path.c_str());
+                return false;
+            }
+        }
+
+        DIR* dir = opendir(current.src_path.c_str());
+        if (!dir) {
+            ESP_LOGE("FS", "Failed to open directory %s", current.src_path.c_str());
             return false;
         }
-    }
 
-    DIR* dir = opendir(src.c_str());
-    if (!dir) {
-        ESP_LOGE("FS", "Failed to open directory %s", src.c_str());
-        return false;
-    }
+        dirent* entry;
+        while ((entry = readdir(dir)) != nullptr) {
+            std::string name = entry->d_name;
+            if (name == "." || name == "..") continue;
 
-    dirent* entry;
-    while ((entry = readdir(dir)) != nullptr) {
-        std::string name = entry->d_name;
-        if (name == "." || name == "..") continue;
+            std::string src_path = current.src_path + "/" + name;
+            std::string dst_path = current.dst_path + "/" + name;
 
-        std::string src_path = src + "/" + name;
-        std::string dst_path = dst + "/" + name;
-
-        if (stat(src_path.c_str(), &st) == 0) {
-            if (S_ISDIR(st.st_mode)) {
-                if (!copy_dir(src_path, dst_path)) {
-                    closedir(dir);
-                    return false;
-                }
-            } else if (S_ISREG(st.st_mode)) {
-                if (!copy_file(src_path, dst_path)) {
-                    closedir(dir);
-                    return false;
+            if (stat(src_path.c_str(), &st) == 0) {
+                if (S_ISDIR(st.st_mode)) {
+                    // Add subdirectory to queue for processing
+                    dir_queue.push({src_path, dst_path});
+                } else if (S_ISREG(st.st_mode)) {
+                    if (!copy_file(src_path, dst_path)) {
+                        closedir(dir);
+                        return false;
+                    }
                 }
             }
         }
+
+        closedir(dir);
     }
 
-    closedir(dir);
     return true;
 }
 
@@ -185,30 +203,59 @@ static bool read_hash_file(const std::string& path, std::string& hash) {
 static bool delete_dir_recursive(const std::string& path) {
     ESP_LOGI("FS", "Deleting directory: %s", path.c_str());
 
-    DIR* dir = opendir(path.c_str());
-    if (!dir) {
-        return false;
-    }
+    // Use iterative approach with queue to avoid stack overflow
+    std::queue<std::string> dir_queue;
+    std::queue<std::string> dirs_to_remove;
 
-    dirent* entry;
-    while ((entry = readdir(dir)) != nullptr) {
-        std::string name = entry->d_name;
-        if (name == "." || name == "..") continue;
+    dir_queue.push(path);
 
-        std::string full_path = path + "/" + name;
-        struct stat st{};
+    // First pass: delete all files and collect directories
+    while (!dir_queue.empty()) {
+        std::string current_path = dir_queue.front();
+        dir_queue.pop();
 
-        if (stat(full_path.c_str(), &st) == 0) {
-            if (S_ISDIR(st.st_mode)) {
-                delete_dir_recursive(full_path);
-            } else {
-                unlink(full_path.c_str());
+        DIR* dir = opendir(current_path.c_str());
+        if (!dir) {
+            continue;
+        }
+
+        // Remember to remove this directory later
+        dirs_to_remove.push(current_path);
+
+        dirent* entry;
+        while ((entry = readdir(dir)) != nullptr) {
+            std::string name = entry->d_name;
+            if (name == "." || name == "..") continue;
+
+            std::string full_path = current_path + "/" + name;
+            struct stat st{};
+
+            if (stat(full_path.c_str(), &st) == 0) {
+                if (S_ISDIR(st.st_mode)) {
+                    // Add subdirectory to queue
+                    dir_queue.push(full_path);
+                } else {
+                    // Delete file immediately
+                    unlink(full_path.c_str());
+                }
             }
         }
+
+        closedir(dir);
     }
 
-    closedir(dir);
-    rmdir(path.c_str());
+    // Second pass: remove directories in reverse order (deepest first)
+    std::vector<std::string> dirs_vector;
+    while (!dirs_to_remove.empty()) {
+        dirs_vector.push_back(dirs_to_remove.front());
+        dirs_to_remove.pop();
+    }
+
+    // Remove in reverse order (deepest directories first)
+    for (auto it = dirs_vector.rbegin(); it != dirs_vector.rend(); ++it) {
+        rmdir(it->c_str());
+    }
+
     return true;
 }
 
