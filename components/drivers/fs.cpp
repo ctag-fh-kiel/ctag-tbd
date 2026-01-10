@@ -298,6 +298,8 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
     // Process each file from central directory
     uint32_t cd_pos = 0;
     int files_extracted = 0;
+    int files_processed = 0;
+    uint32_t last_log_time = esp_log_timestamp();
 
     while (cd_pos < cd_size) {
         // Check central directory signature
@@ -316,6 +318,18 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
 
         std::string filename((char*)(cd_buf + cd_pos + 46), name_len);
         std::string full_path = dest_dir + "/" + filename;
+
+        files_processed++;
+
+        // Log progress every 10 files or every 2 seconds
+        uint32_t now = esp_log_timestamp();
+        if ((files_processed % 10 == 0) || (now - last_log_time > 2000)) {
+            ESP_LOGI("FS", "Progress: %d/%d files (%.1f%%) - Current: %s",
+                     files_processed, num_entries,
+                     (files_processed * 100.0f) / num_entries,
+                     filename.c_str());
+            last_log_time = now;
+        }
 
         ESP_LOGD("FS", "File: %s (%u bytes, method=%d)", filename.c_str(), uncomp_size, comp_method);
 
@@ -425,7 +439,9 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
     heap_caps_free(out_buf);
     fclose(zip_file);
 
-    ESP_LOGI("FS", "Extracted %d files successfully", files_extracted);
+    ESP_LOGI("FS", "Extraction complete: %d/%d files extracted successfully (%.1f%%)",
+             files_extracted, files_processed,
+             (files_extracted * 100.0f) / files_processed);
     return true;
 }
 
