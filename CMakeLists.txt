@@ -32,3 +32,18 @@ execute_process(
 string(STRIP ${TBD_FW} TBD_FW)
 configure_file(${CMAKE_SOURCE_DIR}/version.hpp.in ${CMAKE_BINARY_DIR}/gen_include/version.hpp @ONLY)
 idf_build_set_property(INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/gen_include APPEND)
+
+# Create SD card zip archive and hash for embedded system
+set(SD_CARD_ZIP "${CMAKE_BINARY_DIR}/tbd-sd-card.zip")
+set(SD_CARD_HASH "${CMAKE_BINARY_DIR}/tbd-sd-card-hash.txt")
+
+# Find xxhash tool
+find_program(XXH128SUM xxh128sum REQUIRED)
+
+add_custom_target(sd_card_archive ALL
+    COMMAND ${CMAKE_SOURCE_DIR}/create_sd_archive.sh ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${XXH128SUM}
+    BYPRODUCTS ${SD_CARD_ZIP} ${SD_CARD_HASH}
+    COMMENT "Building SD card archive and hash"
+    VERBATIM
+)
+
