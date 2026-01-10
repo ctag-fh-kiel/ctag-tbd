@@ -27,7 +27,6 @@ respective component folders / files if different from this license.
 #include "fs.hpp"
 
 #include <sd_pwr_ctrl_interface.h>
-#include <cstring>
 #include <ctime>
 #include "esp_vfs_fat.h"
 #include "sdmmc_cmd.h"
@@ -37,10 +36,6 @@ respective component folders / files if different from this license.
 #include <string>
 #include <dirent.h>
 #include <fcntl.h>
-#include <cstring>
-#include <cerrno>
-
-#include "esp_littlefs.h"
 
 #include "sd_pwr_ctrl_by_on_chip_ldo.h"
 
@@ -103,27 +98,6 @@ static bool MountSDCard(const char *mnt_pt = "/spiffs"){
     return true;
 }
 
-static bool MountLittleFS(const char *mnt_pt = "/backup") {
-    esp_vfs_littlefs_conf_t conf = {
-        .base_path = mnt_pt,
-        .partition_label = "storage",
-        .partition = NULL,
-        .format_if_mount_failed = true,
-        .read_only = false,
-        .dont_mount = false,
-        .grow_on_mount = 1
-    };
-
-    // Use settings defined above to initialize and mount LITTLEFS filesystem.
-    esp_err_t ret = esp_vfs_littlefs_register(&conf);
-    if (ret != ESP_OK) {
-        ESP_LOGE("FS", "Failed to initialize LITTLEFS (%s)", esp_err_to_name(ret));
-        return false;
-    }
-
-    ESP_LOGI("FS", "LITTLEFS mounted at %s", mnt_pt);
-    return true;
-}
 
 static bool copy_file(const std::string& src, const std::string& dst) {
     ESP_LOGI("FS", "Copying file %s to %s", src.c_str(), dst.c_str());
@@ -198,54 +172,5 @@ bool FileSystem::SDMounted() {
 void FileSystem::InitFS(){
     // try to mount the SD card first
     auto sd_mounted = MountSDCard();
-
-    // if SD card mount failed, try to mount LITTLEFS
-    if (!sd_mounted){
-        card = nullptr;
-        auto littlfs_mounted = MountLittleFS("/spiffs");
-        // assert that LITTLEFS is mounted
-        assert(littlfs_mounted);
-        return;
-    }
-
-    // mount LITTLEFS as backup storage
-    auto littlefs_mounted = MountLittleFS("/backup");
-    // assert that LITTLEFS is mounted
-    assert(littlefs_mounted);
-
-    // check if spiffs is new -> then we have to copy the file structure from LITTLEFS to SD card
-    FILE *tf = fopen("/backup/once", "r");
-    if (tf == nullptr){
-        ESP_LOGE("FS", "Fresh SPIFFS -> copy to SD!");
-        // create a file to indicate that the file structure has been copied
-        tf = fopen("/backup/once", "w");
-        fprintf(tf, "once");
-        fclose(tf);
-        goto copy_initial_files;
-    }
-
-    // check if file structure on SD card is existent
-    // TODO : Check more files and their consistence, implement backup plan if json parse errors occur, possibly use hash to check file integrity and compare versions
-    tf = fopen("/spiffs/data/spm-config.jsn", "r");
-    if (tf != nullptr) {
-        fclose(tf);
-        return;
-    }
-    ESP_LOGE("FS", "Could not find spm-config.jsn -> copy to SD!");
-
-copy_initial_files:
-    // probably a fresh SD-card
-    // copy entire file structure from LITTLEFS to SD card
-    ESP_LOGI("FS", "Copying file structure from LITTLEFS to SD card");
-    // Assume SPIFFS is mounted at "/spiffs"
-    const char *src = "/backup";
-    const char *dst = "/spiffs";
-
-    buffer = (char*)heap_caps_malloc(BUF_SZ, MALLOC_CAP_32BIT | MALLOC_CAP_SPIRAM);
-    if (copy_dir(src, dst)) {
-        ESP_LOGI("FS", "Directory copied successfully.\n");
-    } else {
-        ESP_LOGE("FS", "Directory copy failed.\n");
-    }
-    free(buffer);
+    assert(sd_mounted);
 }
