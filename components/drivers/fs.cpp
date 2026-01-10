@@ -316,6 +316,21 @@ static void check_and_update_sd_content(const std::string& base_path) {
     }
 
     ESP_LOGI("FS", "Content updated successfully");
+
+    // Create backup of data directory to dbup for safety
+    std::string data_dir = base_path + "/data";
+    std::string backup_dir = base_path + "/dbup";
+
+    // Delete old backup if it exists
+    delete_dir_recursive(backup_dir);
+
+    // Create backup
+    ESP_LOGI("FS", "Creating backup of /data to /dbup for safety...");
+    if (!copy_dir(data_dir, backup_dir)) {
+        ESP_LOGW("FS", "Failed to create backup of /data to /dbup");
+    } else {
+        ESP_LOGI("FS", "Backup created successfully");
+    }
 }
 
 
