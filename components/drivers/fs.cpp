@@ -38,6 +38,7 @@ respective component folders / files if different from this license.
 #include <fcntl.h>
 
 #include "sd_pwr_ctrl_by_on_chip_ldo.h"
+#include "miniz.h"
 
 using namespace CTAG::DRIVERS;
 
@@ -164,6 +165,159 @@ static bool copy_dir(const std::string& src, const std::string& dst) {
     return true;
 }
 
+static bool read_hash_file(const std::string& path, std::string& hash) {
+    std::ifstream file(path);
+    if (!file) {
+        return false;
+    }
+    std::getline(file, hash);
+    // Trim whitespace
+    hash.erase(0, hash.find_first_not_of(" \t\r\n"));
+    hash.erase(hash.find_last_not_of(" \t\r\n") + 1);
+    return !hash.empty();
+}
+
+static bool delete_dir_recursive(const std::string& path) {
+    ESP_LOGI("FS", "Deleting directory: %s", path.c_str());
+
+    DIR* dir = opendir(path.c_str());
+    if (!dir) {
+        return false;
+    }
+
+    dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        std::string name = entry->d_name;
+        if (name == "." || name == "..") continue;
+
+        std::string full_path = path + "/" + name;
+        struct stat st{};
+
+        if (stat(full_path.c_str(), &st) == 0) {
+            if (S_ISDIR(st.st_mode)) {
+                delete_dir_recursive(full_path);
+            } else {
+                unlink(full_path.c_str());
+            }
+        }
+    }
+
+    closedir(dir);
+    rmdir(path.c_str());
+    return true;
+}
+
+static bool extract_zip_to_sd(const std::string& zip_path, const std::string& dest_dir) {
+    ESP_LOGI("FS", "Extracting %s to %s", zip_path.c_str(), dest_dir.c_str());
+
+    mz_zip_archive zip;
+    mz_zip_zero_struct(&zip);
+
+    if (!mz_zip_reader_init_file(&zip, zip_path.c_str(), 0)) {
+        ESP_LOGE("FS", "Failed to open zip file: %s", zip_path.c_str());
+        return false;
+    }
+
+    int num_files = (int)mz_zip_reader_get_num_files(&zip);
+    ESP_LOGI("FS", "Zip contains %d files", num_files);
+
+    for (int i = 0; i < num_files; i++) {
+        mz_zip_archive_file_stat file_stat;
+        if (!mz_zip_reader_file_stat(&zip, i, &file_stat)) {
+            ESP_LOGE("FS", "Failed to get file stat for index %d", i);
+            continue;
+        }
+
+        std::string filename = file_stat.m_filename;
+        std::string full_path = dest_dir + "/" + filename;
+
+        // Skip if it's a directory entry
+        if (mz_zip_reader_is_file_a_directory(&zip, i)) {
+            ESP_LOGD("FS", "Creating directory: %s", full_path.c_str());
+            mkdir(full_path.c_str(), 0755);
+            continue;
+        }
+
+        // Create parent directories if needed
+        size_t pos = full_path.find_last_of('/');
+        if (pos != std::string::npos) {
+            std::string dir_path = full_path.substr(0, pos);
+
+            // Create directories recursively
+            size_t start = dest_dir.length() + 1;
+            while ((pos = dir_path.find('/', start)) != std::string::npos) {
+                std::string partial_dir = dir_path.substr(0, pos);
+                mkdir(partial_dir.c_str(), 0755);
+                start = pos + 1;
+            }
+            mkdir(dir_path.c_str(), 0755);
+        }
+
+        // Extract file
+        ESP_LOGD("FS", "Extracting: %s", filename.c_str());
+        if (!mz_zip_reader_extract_to_file(&zip, i, full_path.c_str(), 0)) {
+            ESP_LOGE("FS", "Failed to extract file: %s", filename.c_str());
+        }
+    }
+
+    mz_zip_reader_end(&zip);
+    ESP_LOGI("FS", "Zip extraction completed");
+    return true;
+}
+
+static void check_and_update_sd_content(const std::string& base_path) {
+    const std::string version_file = base_path + "/.version";
+    const std::string hash_file = base_path + "/tbd-sd-card-hash.txt";
+    const std::string zip_file = base_path + "/tbd-sd-card.zip";
+
+    std::string current_hash;
+    std::string stored_hash;
+
+    bool version_exists = read_hash_file(version_file, stored_hash);
+    bool hash_exists = read_hash_file(hash_file, current_hash);
+
+    if (!hash_exists) {
+        ESP_LOGW("FS", "No tbd-sd-card-hash.txt found, skipping update check");
+        return;
+    }
+
+    ESP_LOGI("FS", "Current hash from tbd-sd-card-hash.txt: %s", current_hash.c_str());
+
+    if (version_exists) {
+        ESP_LOGI("FS", "Stored hash from .version: %s", stored_hash.c_str());
+
+        if (current_hash == stored_hash) {
+            ESP_LOGI("FS", "Content is up to date");
+            return;
+        }
+
+        ESP_LOGI("FS", "New version detected, updating content...");
+    } else {
+        ESP_LOGI("FS", "No .version file found, performing initial extraction");
+    }
+
+    // Check if zip file exists
+    struct stat st{};
+    if (stat(zip_file.c_str(), &st) != 0) {
+        ESP_LOGE("FS", "Zip file not found: %s", zip_file.c_str());
+        return;
+    }
+
+    // Delete old content directories if they exist
+    delete_dir_recursive(base_path + "/data");
+    delete_dir_recursive(base_path + "/www");
+    delete_dir_recursive(base_path + "/tbdsamples");
+    unlink(version_file.c_str()); // Delete old .version file
+
+    // Extract new content
+    if (!extract_zip_to_sd(zip_file, base_path)) {
+        ESP_LOGE("FS", "Failed to extract zip file");
+        return;
+    }
+
+    ESP_LOGI("FS", "Content updated successfully");
+}
+
 
 bool FileSystem::SDMounted() {
     return card != nullptr;
@@ -173,4 +327,7 @@ void FileSystem::InitFS(){
     // try to mount the SD card first
     auto sd_mounted = MountSDCard();
     assert(sd_mounted);
+
+    // Check and update SD card content from zip if needed
+    check_and_update_sd_content("/spiffs");
 }
