@@ -42,9 +42,9 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::DRIVERS;
 
-static sdmmc_card_t* card = nullptr;
 #define BUF_SZ (64*1024)
-static char* buffer = nullptr;
+
+static sdmmc_card_t* card = nullptr;
 
 static bool MountSDCard(const char *mnt_pt = "/spiffs"){
     // configure gpio 45 as output and toggle to reset the sd card
@@ -114,10 +114,14 @@ static bool copy_file(const std::string& src, const std::string& dst) {
         return false;
     }
 
+    char* buffer = heap_caps_malloc(BUFSIZ, MALLOC_CAP_SPIRAM);
+    assert(buffer);
 
     while (in.read(buffer, BUF_SZ))
         out.write(buffer, in.gcount());
     out.write(buffer, in.gcount());  // write remaining bytes
+
+    heap_caps_free(buffer);
 
     return true;
 }
