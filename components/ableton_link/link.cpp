@@ -12,7 +12,9 @@ namespace asio {
     namespace detail {
         template<typename E>
         void throw_exception(const E& e) {
+#ifdef CONFIG_ABLETON_LINK_DEBUG
             ESP_LOGE("ASIO", "Exception thrown %s!", e.what());
+#endif
             //abort();
         }
 
