@@ -12,12 +12,27 @@ VERSION_FILE="${BUILD_DIR}/.version"
 echo "Creating SD card archive..."
 rm -f "${SD_CARD_ZIP}"
 
-cd "${SOURCE_DIR}"
+# Create temporary directory structure
+TEMP_DIR="${BUILD_DIR}/temp_zip_content"
+rm -rf "${TEMP_DIR}"
+mkdir -p "${TEMP_DIR}"
+
+# Copy folders to temp directory with target names
+cp -r "${SOURCE_DIR}/spiffs_image/data" "${TEMP_DIR}/data"
+cp -r "${SOURCE_DIR}/spiffs_image/www" "${TEMP_DIR}/www"
+cp -r "${SOURCE_DIR}/sample_rom/tbdsamples" "${TEMP_DIR}/tbdsamples"
+
+# Create zip from temp directory
+cd "${TEMP_DIR}"
 zip -r "${SD_CARD_ZIP}" \
-    spiffs_image/data \
-    spiffs_image/www \
-    sample_rom/tbdsamples \
+    data \
+    www \
+    tbdsamples \
     -x '*.DS_Store' '*/__pycache__/*'
+
+# Clean up temp directory
+cd "${BUILD_DIR}"
+rm -rf "${TEMP_DIR}"
 
 echo "Generating hash file..."
 "${XXH128SUM}" "${SD_CARD_ZIP}" | awk '{print $1}' > "${SD_CARD_HASH}"
