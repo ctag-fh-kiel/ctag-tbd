@@ -35,7 +35,7 @@ bool isWaveInput = false;
 // global variable, spiffs base directory
 namespace CTAG {
     namespace RESOURCES {
-        std::string spiffsRoot {"../../spiffs_image"};
+        std::string sdcardRoot {"../../sdcard_image"};
     }
 }
 

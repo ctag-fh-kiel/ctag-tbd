@@ -29,6 +29,7 @@ respective component folders / files if different from this license.
 
 namespace CTAG::SPIAPI{
     class SpiAPI {
+        // the api reflects requests coming from the host via SPI, rp2350 is host, p4 is slave
         enum class RequestType : uint8_t{
             GetPlugins = 0x01, // returns json cstring with all plugins
             GetActivePlugin = 0x02, // returns cstring with active plugin, args uint8_t for channel
@@ -58,6 +59,7 @@ namespace CTAG::SPIAPI{
             SetAbletonLinkTempo = 0x20, // sets Ableton Link tempo, args [tempo (float bpm)]
             SetAbletonLinkStartStop = 0x21, // sets Ableton Link start/stop, args [isPlaying (uint8_t, 0 = stop, 1 = start)]
             RebootToOTAX = 0x22, // reboots the device to OTAX, args [X (uint8_t)]
+            SendFile = 0x23, // sends a file to the device, args [filepath (cstring), filedata (byte array)]
         };
 
         static TaskHandle_t hTask;
@@ -66,6 +68,12 @@ namespace CTAG::SPIAPI{
         static void api_task(void *pvParameters);
         static bool transmitCString(const RequestType reqType, const char *str);
         static bool receiveString(const RequestType reqType, std::string &str);
+        static bool handle_send_file(const std::string& filepath,
+                                      uint8_t* send_buffer,
+                                      uint8_t* receive_buffer,
+                                      spi_slave_transaction_t& transaction);
+        static bool handle_send_file();
+
     public:
         SpiAPI() = delete;
         static void StartSpiAPI();

@@ -27,7 +27,7 @@ respective component folders / files if different from this license.
 #ifdef TBD_SIM
 #define SD_CARD_SAMPLE_FOLDER "../../sample_rom/tbdsamples"
 #else
-#define SD_CARD_SAMPLE_FOLDER "/spiffs/tbdsamples"
+#define SD_CARD_SAMPLE_FOLDER "/sdcard/tbdsamples"
 #endif
 
 #define SAMPLE_ROM_DEFINITION_FILE "sample_rom.jsn"
