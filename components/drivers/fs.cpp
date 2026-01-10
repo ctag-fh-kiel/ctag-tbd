@@ -462,6 +462,17 @@ static void check_and_update_sd_content(const std::string& base_path) {
     }
 
     ESP_LOGI("FS", "Content updated successfully");
+
+    // Backup is pre-created in the zip archive at /dbup
+    ESP_LOGI("FS", "Note: Backup of /data is included in archive as /dbup");
+
+    // Create .version file to mark successful extraction
+    std::ofstream version_out(version_file);
+    if (version_out) {
+        version_out << current_hash;
+        version_out.close();
+        ESP_LOGI("FS", "Created .version file with hash: %s", current_hash.c_str());
+    }
 }
 
 

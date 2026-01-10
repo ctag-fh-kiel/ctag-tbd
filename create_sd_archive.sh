@@ -17,17 +17,40 @@ TEMP_DIR="${BUILD_DIR}/temp_zip_content"
 rm -rf "${TEMP_DIR}"
 mkdir -p "${TEMP_DIR}"
 
-# Copy folders to temp directory with target names
+# Copy data folder
+echo "Copying data..."
 cp -r "${SOURCE_DIR}/spiffs_image/data" "${TEMP_DIR}/data"
-cp -r "${SOURCE_DIR}/spiffs_image/www" "${TEMP_DIR}/www"
+
+# Copy and gzip www files
+echo "Copying and gzipping www files..."
+mkdir -p "${TEMP_DIR}/www"
+cd "${SOURCE_DIR}/spiffs_image/www"
+find . -type f | while read file; do
+    # Create directory structure in temp
+    mkdir -p "${TEMP_DIR}/www/$(dirname "$file")"
+
+    # Gzip the file with .gz extension
+    gzip -c "$file" > "${TEMP_DIR}/www/${file}.gz"
+    echo "  Gzipped: $file -> ${file}.gz"
+done
+cd - > /dev/null
+
+# Copy tbdsamples
+echo "Copying tbdsamples..."
 cp -r "${SOURCE_DIR}/sample_rom/tbdsamples" "${TEMP_DIR}/tbdsamples"
 
+# Create backup of data folder (pre-created backup)
+echo "Creating pre-created backup (dbup)..."
+cp -r "${TEMP_DIR}/data" "${TEMP_DIR}/dbup"
+
 # Create zip from temp directory
+echo "Creating zip archive..."
 cd "${TEMP_DIR}"
 zip -r "${SD_CARD_ZIP}" \
     data \
     www \
     tbdsamples \
+    dbup \
     -x '*.DS_Store' '*/__pycache__/*'
 
 # Clean up temp directory
@@ -45,4 +68,9 @@ rm -f "${VERSION_FILE}"
 
 echo "SD card archive created: ${SD_CARD_ZIP}"
 echo "Hash file created: ${SD_CARD_HASH}"
+echo "Contents:"
+echo "  - /data (user data)"
+echo "  - /www (gzipped web files with .gz extension)"
+echo "  - /tbdsamples (audio samples)"
+echo "  - /dbup (pre-created backup of /data)"
 
