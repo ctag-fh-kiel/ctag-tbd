@@ -4,6 +4,6 @@
 
 namespace CTAG {
     namespace RESOURCES {
-        extern std::string spiffsRoot;
+        extern std::string sdcardRoot;
     }
 }

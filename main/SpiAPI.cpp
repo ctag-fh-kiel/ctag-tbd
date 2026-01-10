@@ -29,6 +29,7 @@ respective component folders / files if different from this license.
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_image_format.h"
+#include "esp_rom_crc.h"
 #include "driver/gpio.h"
 
 #include "link.hpp"
@@ -265,7 +266,173 @@ namespace CTAG::SPIAPI{
         return true;
     }
 
-    void SpiAPI::api_task(void* pvParameters){
+
+    bool SpiAPI::handle_send_file(){
+        // Step 1: Notify slave of incoming file transfer
+        // one init package looks as follows:
+        // 0xCA, 0xFE: Watermark Byte 0, 1
+        // request type: Byte 2
+        // file length (uint32_t): Byte 3-6
+        // total number of chunks (uint32_t): Byte 7-10
+        // file name (cstring): Byte 11-n
+        // n is 2048 - 11 = 2037 bytes max for file name
+
+        const uint32_t file_size = *(uint32_t*)&receive_buffer[3];
+        const uint32_t total_chunks = *(uint32_t*)&receive_buffer[7];
+        const char* fn = (char*)&receive_buffer[11];
+        std::string filename_incl_path{fn};
+
+        // Construct full path with /sdcard prefix
+        std::string full_path = "/sdcard/" + filename_incl_path;
+        ESP_LOGI("SpiAPI", "SendFile: Total file size = %lu bytes", file_size);
+        ESP_LOGI("SpiAPI", "SendFile: Total chunks = %lu", total_chunks);
+        ESP_LOGI("SpiAPI", "SendFile: Receiving file %s", full_path.c_str());
+
+        // step 1: acknowledge command receipt
+        // Send command ACK with file size
+        send_buffer[2] = (uint8_t)RequestType::SendFile;
+        uint32_t* fileSizeField = (uint32_t*)&send_buffer[3];
+        *fileSizeField = file_size;
+        spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+
+        // Step 2: receive file data in chunks
+        // one sender data package looks as follows:
+        // 0xCA, 0xFE: Watermark Byte 0, 1
+        // request type: Byte 2
+        // chunk number (uint32_t): Byte 3-6
+        // chunk data size (uint32_t): Byte 7-10
+        // chunk data crc32le (uint32_t): Byte 11-14
+        // chunk data: Byte 15-n
+        // n is 2048 - 15 = 2033 bytes max for chunk data
+        // slave responds in subsequent frame with following acknowledgement
+        // 0xCA, 0xFE: Watermark Byte 0, 1
+        // request type: Byte 2
+        // chunk number (uint32_t): Byte 3-6
+        // chunk status (uint8_t): Byte 7 (0 = OK, 1 = CRC error, 2 = other error)
+        // on error the sender must restart sending from previous chunk
+        // this should only occur on CRC errors, other errors are fatal
+        // the slave response is delayed by one transmission
+        // except for the first chunk, where general errors are reported immediately
+        // retrying should occur only on CRC errors maximum 3 times per chunk
+        // we are slave
+        ESP_LOGI("SpiAPI", "SendFile: Starting chunk reception...");
+        const uint16_t* watermark_field_sender = (uint16_t*)&receive_buffer[0];
+        const uint8_t* request_type_field_sender = &receive_buffer[2];
+        const uint32_t* chunk_number_field_sender = (uint32_t*)&receive_buffer[3];
+        const uint32_t* chunk_data_size_field_sender = (uint32_t*)&receive_buffer[7];
+        const uint32_t* chunk_data_crc32le_field_sender = (uint32_t*)&receive_buffer[11];
+        const uint8_t* chunk_data_field_sender = &receive_buffer[15];
+        uint32_t chunkNumber = 0;
+        uint8_t* request_type_field_receiver = &send_buffer[2];
+        uint32_t* chunk_number_field_receiver = (uint32_t*)&send_buffer[3];
+        uint8_t* chunk_status_field_receiver = &send_buffer[7];
+
+        FILE* f = fopen(full_path.c_str(), "wb");
+        if (f == nullptr){
+            ESP_LOGE("SpiAPI", "SendFile: Could not open file for writing");
+            // report fatal error to master
+            *request_type_field_receiver = (uint8_t)RequestType::SendFile;
+            *chunk_number_field_receiver = 0;
+            *chunk_status_field_receiver = 2; // fatal error
+            spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+            return false;
+        }
+
+        // receive chunks
+        *request_type_field_receiver = (uint8_t)RequestType::SendFile;
+        *chunk_number_field_receiver = 0;
+        *chunk_status_field_receiver = 0; // go for chunk transfer no issues
+        while (chunkNumber < total_chunks){
+            // wait for next chunk
+            spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+
+            // check watermark
+            if (*watermark_field_sender != 0xFECA){
+                ESP_LOGE("SpiAPI", "SendFile: Chunk %lu: Wrong watermark", chunkNumber);
+                // report fatal error to master
+                *request_type_field_receiver = (uint8_t)RequestType::SendFile;
+                *chunk_number_field_receiver = chunkNumber;
+                *chunk_status_field_receiver = 2; // fatal error
+                spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+                fclose(f);
+                goto error;
+            }
+
+            // check request type
+            if (*request_type_field_sender != (uint8_t)RequestType::SendFile){
+                ESP_LOGE("SpiAPI", "SendFile: Chunk %lu: Wrong request type", chunkNumber);
+                // report fatal error to master
+                *request_type_field_receiver = (uint8_t)RequestType::SendFile;
+                *chunk_number_field_receiver = chunkNumber;
+                *chunk_status_field_receiver = 2; // fatal error
+                spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+                fclose(f);
+                goto error;
+            }
+
+            // check chunk number
+            if (*chunk_number_field_sender != chunkNumber){
+                ESP_LOGE("SpiAPI", "SendFile: Chunk %lu: Wrong chunk number", chunkNumber);
+                // report fatal error to master
+                *request_type_field_receiver = (uint8_t)RequestType::SendFile;
+                *chunk_number_field_receiver = chunkNumber;
+                *chunk_status_field_receiver = 2; // fatal error
+                spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+                fclose(f);
+                goto error;
+            }
+
+            // calculate CRC32 of received chunk data and compare
+            uint32_t calculated_crc = esp_rom_crc32_le(0, chunk_data_field_sender, *chunk_data_size_field_sender);
+            if (calculated_crc != *chunk_data_crc32le_field_sender){
+                ESP_LOGE("SpiAPI", "SendFile: Chunk %lu: CRC mismatch, calculated %08X, received %08X",
+                         chunkNumber, calculated_crc, *chunk_data_crc32le_field_sender);
+                // report CRC error to master
+                *request_type_field_receiver = (uint8_t)RequestType::SendFile;
+                *chunk_number_field_receiver = chunkNumber;
+                *chunk_status_field_receiver = 1; // CRC error
+                spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+                // retry sending this chunk
+                continue;
+            }
+            // write chunk data to file BEFORE sending ACK
+            size_t written = fwrite(chunk_data_field_sender, 1, *chunk_data_size_field_sender, f);
+            // report result to master AFTER write completes
+            *request_type_field_receiver = (uint8_t)RequestType::SendFile;
+            *chunk_number_field_receiver = chunkNumber;
+            if (written != *chunk_data_size_field_sender){
+                ESP_LOGE("SpiAPI", "SendFile: Chunk %lu: File write error", chunkNumber);
+                // report fatal error to master
+                *chunk_status_field_receiver = 2; // fatal error
+                spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+                fclose(f);
+                goto error;
+            }
+            // report successful receipt to master only after successful write
+            *chunk_status_field_receiver = 0; // OK
+            chunkNumber++;
+            // log every 50 chunks
+            if (chunkNumber % 50 == 0){
+                ESP_LOGI("SpiAPI", "Received chunk %lu / %lu success!", chunkNumber, total_chunks);
+            }
+        }
+
+        // Send one more transaction to deliver the ACK for the last chunk
+        spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+
+        fclose(f);
+        ESP_LOGI("SpiAPI", "SendFile: File transfer completed successfully");
+
+        return true;
+    error:
+        // delete incomplete file
+        ESP_LOGE("SpiAPI", "Deleting incomplete file %s", full_path.c_str());
+        remove(full_path.c_str());
+        return false;
+    }
+
+
+    void SpiAPI::api_task(void *pvParameters){
 #include "IOCapabilities.hpp"
         //dbg_queue = xQueueCreate(20, sizeof(uint8_t));
         //xTaskCreatePinnedToCore(dbg_task, "SpiAPIDbg", 4096, nullptr, 5, &hTask, 0);
@@ -458,6 +625,9 @@ namespace CTAG::SPIAPI{
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 break;
                 }
+            case RequestType::SendFile:
+                result = handle_send_file();
+                break;
             }
         }
     }

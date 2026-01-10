@@ -1,7 +1,7 @@
 # This folder contains code generators for convenience as well as json & c++ templates to create a ctagSoundProcessor class
 - mui-template.jsn: JSON template for the web ui definition file of your plugin
-    - Copy this template to the spiffs_image/data/sp folder and rename it there to a name matching the id naming of your own processor, note that the id and hence the file name must be as short as possible i.e. mui-'xxx' with xxx <=8 letters due to restrictions of the spiffs file system
-        - ```cp mui-template.jsn ../spiffs_image/data/sp/mui-myplug.jsn```
+    - Copy this template to the sdcard_image/data/sp folder and rename it there to a name matching the id naming of your own processor, note that the id and hence the file name must be as short as possible i.e. mui-'xxx' with xxx <=8 letters due to restrictions of the spiffs file system
+        - ```cp mui-template.jsn ../sdcard_image/data/sp/mui-myplug.jsn```
 - ctagSoundProcessorTemplate.[c|h]pp
     - These are the template c++ source files which generator.js can take as a basis for creating a new sound processor
 - generator.js
@@ -19,17 +19,17 @@
 - Then run the generator to create the c++ files and the mp-myplug.jsn preset file
 - Move all created files to the system directories i.e.:
     
-    ```mv m*myplug.jsn ../spiffs_image/data/sp/```
+    ```mv m*myplug.jsn ../sdcard_image/data/sp/```
     
     ```mv *myplug*pp ../components/ctagSoundProcessor/```
 ## Example steps for modifying an existing processor, e.g. after the step above
-- Change the corresponding mui file in ../spiffs_image/data/sp/
+- Change the corresponding mui file in ../sdcard_image/data/sp/
 - Update the preset JSON file and the c++ files using the code generator, note that the preset file will be overwritten!
     - ```node generator.js myplug -i```
     - Files are then changed in place
 
 ## IMPORTANT
-The TBD sound processor system is reconfigured only if the file spiffs_image/data/spm_config.jsn is in initial state. The system the checks all available sound processors. If this file is not in initial state, your new plugin will not appear in the web UI.
+The TBD sound processor system is reconfigured only if the file sdcard_image/data/spm_config.jsn is in initial state. The system the checks all available sound processors. If this file is not in initial state, your new plugin will not appear in the web UI.
 This is particularly important, when you use the TBD simulator, as it modifies that file.
 Probably this behaviour should be changed in future...
     

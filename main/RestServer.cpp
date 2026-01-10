@@ -309,7 +309,7 @@ esp_err_t RestServer::load_preset_get_handler(httpd_req_t *req) {
 }
 
 esp_err_t RestServer::StartRestServer() {
-    const char *base_path = "/spiffs/www\0";
+    const char *base_path = "/sdcard/www\0";
     rest_server_context_t *rest_context = (rest_server_context_t *) calloc(1, sizeof(rest_server_context_t));
     assert(rest_context);
     strlcpy(rest_context->base_path, base_path, sizeof(rest_context->base_path));
