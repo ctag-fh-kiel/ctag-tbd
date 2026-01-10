@@ -19,12 +19,12 @@ mkdir -p "${TEMP_DIR}"
 
 # Copy data folder
 echo "Copying data..."
-cp -r "${SOURCE_DIR}/spiffs_image/data" "${TEMP_DIR}/data"
+cp -r "${SOURCE_DIR}/sdcard_image/data" "${TEMP_DIR}/data"
 
 # Copy and gzip www files
 echo "Copying and gzipping www files..."
 mkdir -p "${TEMP_DIR}/www"
-cd "${SOURCE_DIR}/spiffs_image/www"
+cd "${SOURCE_DIR}/sdcard_image/www"
 find . -type f | while read file; do
     # Create directory structure in temp
     mkdir -p "${TEMP_DIR}/www/$(dirname "$file")"

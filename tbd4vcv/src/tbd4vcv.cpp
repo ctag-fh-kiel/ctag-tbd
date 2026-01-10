@@ -57,19 +57,19 @@ struct tbd4vcv : rack::Module {
 	};
 
 	tbd4vcv() {
-        spManager.Start(rack::asset::plugin(pluginInstance, "spiffs_image/"));
+        spManager.Start(rack::asset::plugin(pluginInstance, "sdcard_image/"));
         if(instanceCount == 0){
             string fn = rack::asset::plugin(pluginInstance, "sample_rom/sample-rom.tbd");
             spi_flash_emu_init(fn.c_str());
-            server.Start(3000, rack::asset::plugin(pluginInstance, "spiffs_image/www"));
+            server.Start(3000, rack::asset::plugin(pluginInstance, "sdcard_image/www"));
             activeServerInstance = this;
             server.SetCurrentSPManager(&this->spManager);
         }
         instanceCount++;
         //rack::logger::log(rack::Level::DEBUG_LEVEL, "tbd4vcv.cpp", 48, "Constructor called");
         //std::cerr << "Instance number " << instanceCount << std::endl;
-        //std::cerr << rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn") << std::endl;
-        //std::cerr << rack::asset::system(rack::asset::plugin(pluginInstance, "spiffs_image/data/spm-config.jsn")) << std::endl;
+        //std::cerr << rack::asset::plugin(pluginInstance, "sdcard_image/data/spm-config.jsn") << std::endl;
+        //std::cerr << rack::asset::system(rack::asset::plugin(pluginInstance, "sdcard_image/data/spm-config.jsn")) << std::endl;
 		config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
 		configParam(BTN_TRIG_0_PARAM, 0.f, 1.f, 0.f, "");
 		configParam(BTN_TRIG_1_PARAM, 0.f, 1.f, 0.f, "");

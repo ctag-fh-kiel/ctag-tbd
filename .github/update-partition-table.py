@@ -44,12 +44,12 @@ with open("sdkconfig.defaults", "w") as sdkconfig:
 
 new_html = ""
 
-with open("spiffs_image/www/config.html", "r") as html:
+with open("sdcard_image/www/config.html", "r") as html:
     new_html = html.read().replace("""    <ons-list-item>
         <div style="text-align: left;">
             <ons-progress-bar id="fw-progress" value="0" secondary-value="0"></ons-progress-bar>
             <label for="app-binary">ctag-tbd.bin</label><input id="app-binary" type="file"/>
-            <label for="spiffs-binary">storage.bin</label><input id="spiffs-binary" type="file"/>
+            <label for="sdcard-binary">storage.bin</label><input id="sdcard-binary" type="file"/>
             <ons-button id="upgrade-firmware" style="margin-top: 10px;">Upgrade Firmware</ons-button>
         </div>
     </ons-list-item>""", """    <ons-list-item>
@@ -58,5 +58,5 @@ with open("spiffs_image/www/config.html", "r") as html:
         </div>
     </ons-list-item>""")
 
-with open("spiffs_image/www/config.html", "w") as html:
+with open("sdcard_image/www/config.html", "w") as html:
     html.writelines(new_html)

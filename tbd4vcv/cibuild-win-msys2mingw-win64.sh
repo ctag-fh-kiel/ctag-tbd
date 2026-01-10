@@ -13,7 +13,7 @@ cp plugin.dll tbd4vcv/
 cp ../plugin.json tbd4vcv/
 cp ../readme.md tbd4vcv/
 cp ../../LICENSE tbd4vcv/
-cp -r ../../spiffs_image tbd4vcv/
+cp -r ../../sdcard_image tbd4vcv/
 cp -r ../res tbd4vcv/
 mkdir tbd4vcv/sample_rom
 cp ../../sample_rom/sample-rom.tbd tbd4vcv/sample_rom/

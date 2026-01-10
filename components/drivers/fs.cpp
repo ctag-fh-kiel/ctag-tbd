@@ -47,7 +47,7 @@ using namespace CTAG::DRIVERS;
 
 static sdmmc_card_t* card = nullptr;
 
-static bool MountSDCard(const char *mnt_pt = "/spiffs"){
+static bool MountSDCard(const char *mnt_pt = "/sdcard"){
     // configure gpio 45 as output and toggle to reset the sd card
     gpio_config_t io_conf{};
     io_conf.intr_type = GPIO_INTR_DISABLE;
@@ -486,5 +486,5 @@ void FileSystem::InitFS(){
     assert(sd_mounted);
 
     // Check and update SD card content from zip if needed
-    check_and_update_sd_content("/spiffs");
+    check_and_update_sd_content("/sdcard");
 }

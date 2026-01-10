@@ -32,7 +32,7 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::AUDIO;
 
-//#define SPIFFS_PATH "./plugins/tbd4vcv/spiffs_image/"
+//#define sdcard_PATH "./plugins/tbd4vcv/sdcard_image/"
 
 // TODO maybe mutexes are needed as web server and vcv module instance access methods possibly at same time?
 // TODO thread safety not tested!
@@ -59,13 +59,13 @@ void SPManagerDataModel::getSoundProcessors() {
     struct dirent *ent;
     Value sparray(kArrayType);
     m.AddMember("availableProcessors", sparray, m.GetAllocator());
-    if ((dir = opendir(string(CTAG::RESOURCES::spiffsRoot + string("/data/sp")).c_str())) != NULL) {
+    if ((dir = opendir(string(CTAG::RESOURCES::sdcardRoot + string("/data/sp")).c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             string fn(ent->d_name);
             if (fn.find("mui-") != string::npos) {
                 ESP_LOGD("SPModel", "Filename: %s", fn.c_str());
                 Document d;
-                loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/" + fn);
+                loadJSON(d, CTAG::RESOURCES::sdcardRoot + "/data/sp/" + fn);
                 Value obj(kObjectType);
                 Value id(d["id"].GetString(), d.GetAllocator());
                 Value name(d["name"].GetString(), d.GetAllocator());
@@ -251,7 +251,7 @@ const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &i
     // prepare JSON output string
     json.Clear();
     Document d;
-    loadJSON(d, CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn");
+    loadJSON(d, CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".jsn");
     Writer<StringBuffer> writer(json);
     d.Accept(writer);
     return json.GetString();
@@ -261,7 +261,7 @@ void SPManagerDataModel::SetJSONSoundProcessorPreset(const string &id, const str
     ESP_LOGD("Model", "String %s", data.c_str());
     Document presets;
     presets.Parse(data);
-    storeJSON(presets, string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-" + id + ".jsn"));
+    storeJSON(presets, string(CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".jsn"));
 }
 
 bool SPManagerDataModel::HasPluginID(const string &id) {

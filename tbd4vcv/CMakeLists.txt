@@ -144,7 +144,7 @@ add_compile_definitions(
         CONFIG_DSP_ANSI=1
         N_CVS=4
         N_TRIGS=2
-        #SPIFFS_PATH="./plugins/tbd4vcv/spiffs_image/" # TODO this has to go in the firmware cmakelists.txt as well + simulator
+        #SPIFFS_PATH="./plugins/tbd4vcv/sdcard_image/" # TODO this has to go in the firmware cmakelists.txt as well + simulator
 )
 target_compile_options(${LIB_NAME} PRIVATE -Wno-unused-local-typedefs)
 set(TBD_SIM 1)
@@ -176,7 +176,7 @@ file(GLOB RAPIDJSON_FILES
 #install(FILES plugin.json DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
 #install(FILES ../sample_rom/sample-rom.tbd DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME}/sample-rom)
 #install(DIRECTORY res DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
+#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../sdcard_image DESTINATION ${RACK_DIR}/plugins/${PLUGIN_NAME})
 #install(DIRECTORY ${CMAKE_BINARY_DIR}/www DESTINATION .)
 
 
@@ -184,7 +184,7 @@ install(TARGETS ${LIB_NAME} LIBRARY DESTINATION tbd4vcv)
 install(FILES plugin.json DESTINATION tbd4vcv)
 install(FILES ../sample_rom/sample-rom.tbd DESTINATION tbd4vcv/sample_rom)
 install(DIRECTORY res DESTINATION tbd4vcv)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../spiffs_image DESTINATION tbd4vcv)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../sdcard_image DESTINATION tbd4vcv)
 install(FILES ../LICENSE readme.md DESTINATION tbd4vcv)
 #install(FILES ${Boost_LIBRARY_DIRS}/libboost_system-mt.dylib DESTINATION tbd4vcv)
 

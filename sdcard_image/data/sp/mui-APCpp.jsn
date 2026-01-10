@@ -1,0 +1,42 @@
+{
+   "id": "APCpp", "isStereo": false, "name": "APCpp", "hint": "Inspired by the so called AtariPunkConsole circuit using 555 timerchips / pp stands for plus-plus (enhancements)", "params":
+   [
+       {  
+          "id": "OSC", "name": "Atari-Punk-Console Oscillators / AM or PWM", "type": "group", "params":  
+           [
+              {"id":"MOD_freq_1","name":"MOD 1 Frequency","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Freq_1","name":"Frequency Osc 1","type":"int","min":0,"max":4095,"step":1},
+              {"id":"MOD_active_1","name":"MOD 1 off/on","type":"bool"},
+              {"id":"MOD_is_PWM_1","name":"MOD 1 is PWM n/y","type":"bool"},
+              {"id":"SmoothOSC_1","name":"Smooth Oscillator 1 n/y","type":"bool"}, 
+              {"id":"SmoothOSC_2","name":"Smooth Oscillator 2 n/y","type":"bool"}, 
+              {"id":"MOD_is_PWM_2","name":"MOD 2 is PWM n/y","type":"bool"},
+              {"id":"MOD_active_2","name":"MOD 2 off/on","type":"bool"},
+              {"id":"Freq_2","name":"Frequency Osc 2","type":"int","min":0,"max":4095,"step":1},
+              {"id":"MOD_freq_2","name":"MOD 2 Frequency","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "FreqMod", "name": "Frequency Modulation", "type": "group", "params":  
+           [
+              {"id":"Freqmod_amount_1","name":"FreqMod 1 Amount / 0 to disable","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Freqmod_freq_1","name":"Frequency-Modulation 1 Speed","type":"int","min":0,"max":4095,"step":1},
+              {"id":"FreqmodSquare_active_1","name":"FreqMod 1 Square-Wave n/y","type":"bool"},
+              {"id":"FreqmodSquare_active_2","name":"FreqMod 2 Square-Wave n/y","type":"bool"},
+              {"id":"Freqmod_freq_2","name":"Frequency-Modulation 2 Speed","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Freqmod_amount_2","name":"FreqMod 2 Amount / 0 to disable","type":"int","min":0,"max":4095,"step":1}
+           ]
+       },
+       {  
+          "id": "VolEnv", "name": "VCA / Envelope", "type": "group", "params":  
+           [
+              {"id":"Vol_amount","name":"Volume Amount","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Env_active","name":"Use Envelope n/y","type":"bool"},
+              {"id":"Trigger_env","name":"Trigger Envelope","type":"bool"},
+              {"id":"Env_Attack","name":"Volume Attack","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Env_Decay","name":"Volume Decay","type":"int","min":0,"max":4095,"step":1},
+              {"id":"Env_loop_active","name":"Envelope Loop n/y","type":"bool"}
+           ]
+       }
+   ] 
+}

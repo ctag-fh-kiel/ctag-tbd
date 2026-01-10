@@ -31,7 +31,7 @@ respective component folders / files if different from this license.
 #ifndef TBD_SIM
 #define SPIFFS_PATH "/spiffs"
 #else
-#define SPIFFS_PATH "../../spiffs_image"
+#define SPIFFS_PATH "../../sdcard_image"
 #endif
  */
 
@@ -39,10 +39,10 @@ using namespace CTAG::SP;
 
 ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo) {
     // acquire data from json files ui model and patch model
-    muiFileName = string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mui-") + id + string(".jsn");
+    muiFileName = string(CTAG::RESOURCES::sdcardRoot + "/data/sp/mui-") + id + string(".jsn");
     //std::cout << "Reading " << muiFileName << std::endl;
     loadJSON(mui, muiFileName);
-    mpFileName = string(CTAG::RESOURCES::spiffsRoot + "/data/sp/mp-") + id + string(".jsn");
+    mpFileName = string(CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-") + id + string(".jsn");
     //std::cout << "Reading " << mpFileName << std::endl;
     loadJSON(mp, mpFileName);
     // load last activated preset

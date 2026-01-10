@@ -39,7 +39,7 @@ namespace CTAG {
         class SPManager {
         public:
 
-            void Start(const string& spiffsPath);
+            void Start(const string& sdcardPath);
 
             void Process(const CTAG::SP::ProcessData &);
 

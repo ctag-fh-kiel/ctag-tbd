@@ -33,7 +33,7 @@ private:
     bool isRunning {false};
     CTAG::AUDIO::SPManager* currentSPManager {nullptr};
 public:
-    string spiffsPath;
+    string sdcardPath;
     void Start(const int, const string&);
     void SetCurrentSPManager(CTAG::AUDIO::SPManager*);
     void Stop();

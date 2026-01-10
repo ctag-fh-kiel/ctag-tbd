@@ -28,18 +28,18 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::AUDIO;
 
-// global variable, spiffs base directory
+// global variable, sdcard base directory
 namespace CTAG {
     namespace RESOURCES {
-        std::string spiffsRoot {""};
+        std::string sdcardRoot {""};
     }
 }
 
 std::mutex audioMutex;
 
 
-void SPManager::Start(const string &spiffsPath) {
-    CTAG::RESOURCES::spiffsRoot = spiffsPath;
+void SPManager::Start(const string &sdcardPath) {
+    CTAG::RESOURCES::sdcardRoot = sdcardPath;
     // configure channels
     model = std::make_unique<SPManagerDataModel>("{\"activeProcessors\":[],\"lastPatches\":[[],[]]}");
     favModel = std::make_unique<CTAG::FAV::FavoritesModel>();

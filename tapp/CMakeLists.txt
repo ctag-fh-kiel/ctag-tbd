@@ -62,10 +62,10 @@ target_include_directories(tapp PRIVATE ${CMAKE_SOURCE_DIR}/../components/rapidj
 target_include_directories(tapp PRIVATE ${CMAKE_SOURCE_DIR}/../simulator/fake-idf)
 add_dependencies(tapp copy-www)
 
-# copy spiffs files to build folder
+# copy sdcard files to build folder
 add_custom_target(copy-www
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/../spiffs_image/www
+        ${CMAKE_SOURCE_DIR}/../sdcard_image/www
         ${CMAKE_BINARY_DIR}/www
         )
 
