@@ -43,14 +43,22 @@ cp -r "${SOURCE_DIR}/sample_rom/tbdsamples" "${TEMP_DIR}/tbdsamples"
 echo "Creating pre-created backup (dbup)..."
 cp -r "${TEMP_DIR}/data" "${TEMP_DIR}/dbup"
 
-# Create zip from temp directory
+# Create .version placeholder (will be updated with actual hash later)
+echo "placeholder" > "${TEMP_DIR}/.version"
+
+# Create zip from temp directory with reproducible settings
 echo "Creating zip archive..."
 cd "${TEMP_DIR}"
-zip -r "${SD_CARD_ZIP}" \
+# Use -X to exclude extra file attributes (timestamps, etc.) for reproducible builds
+# Set fixed timestamp using TZ=UTC touch
+export TZ=UTC
+find . -exec touch -t 202001010000.00 {} +
+zip -r -X "${SD_CARD_ZIP}" \
     data \
     www \
     tbdsamples \
     dbup \
+    .version \
     -x '*.DS_Store' '*/__pycache__/*'
 
 # Clean up temp directory
@@ -60,9 +68,11 @@ rm -rf "${TEMP_DIR}"
 echo "Generating hash file..."
 "${XXH128SUM}" "${SD_CARD_ZIP}" | awk '{print $1}' > "${SD_CARD_HASH}"
 
-echo "Adding .version file to archive..."
-cp "${SD_CARD_HASH}" "${VERSION_FILE}"
-cd "${BUILD_DIR}"
+echo "Updating .version file in archive with actual hash..."
+# Extract, update with real hash, and replace in zip
+HASH_VALUE=$(cat "${SD_CARD_HASH}")
+echo "${HASH_VALUE}" > "${VERSION_FILE}"
+# Update the .version file in the zip (this changes the zip, but .version itself contains the hash of the zip before this update)
 zip -u "${SD_CARD_ZIP}" .version
 rm -f "${VERSION_FILE}"
 
