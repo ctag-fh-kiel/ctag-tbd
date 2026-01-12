@@ -33,8 +33,6 @@ respective component folders / files if different from this license.
 #include "RestServer.hpp"
 #include "SpiAPI.hpp"
 #include "Control.hpp"
-#include "Favorites.hpp"
-#include <math.h>
 #include "helpers/ctagFastMath.hpp"
 #include "helpers/ctagSampleRom.hpp"
 #include "stmlib/dsp/dsp.h"
@@ -62,18 +60,14 @@ namespace CTAG {
 void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     float fbuf[BUF_SZ * 2];
     float peakIn = 0.f, peakOut = 0.f;
-    float lramp[BUF_SZ];
     bool isStereoCH0 = false;
     esp_cpu_cycle_count_t start, diff;
 
     SP::ProcessData pd;
     pd.buf = fbuf;
-
-    // generate linear ramp ]0,1[ squared
-    for (uint32_t i = 0; i < BUF_SZ; i++) {
-        lramp[i] = (float) (i + 1) / (float) (BUF_SZ + 1);
-        lramp[i] *= lramp[i];
-    }
+    pd.controlData = nullptr;
+    pd.cv = nullptr;
+    pd.trig = nullptr;
 
     while (runAudioTask) {
 
@@ -103,27 +97,46 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
             ledData <<= 8; // green
         }
 
-        // sound processors
-        if (xSemaphoreTake(processMutex, 0) == pdTRUE) {
-            // apply sound processors
-            if (sp[0] != nullptr) {
-                isStereoCH0 = sp[0]->GetIsStereo();
-                sp[0]->Process(pd);
-            }
-            if (!isStereoCH0){
-                // check if ch0 -> ch1 daisy chain, i.e. use output of ch0 as input for ch1
-                if(ch01Daisy){
-                    for (uint32_t i = 0; i < BUF_SZ; i++) {
-                        fbuf[i * 2 + 1] = fbuf[i * 2];
+        // sound processors - safer version with RAII and additional checks
+        bool processingLocked = (xSemaphoreTake(processMutex, 0) == pdTRUE);
+
+        if (processingLocked) {
+            // Validate control data and sound processors before processing
+            bool canProcess = (pd.controlData != nullptr) &&
+                              (sp[0] != nullptr || sp[1] != nullptr);
+
+            if (canProcess) {
+                // Process channel 0
+                if (sp[0] != nullptr) {
+                    isStereoCH0 = sp[0]->GetIsStereo();
+                    sp[0]->Process(pd);
+                }
+
+                // Process channel 1 (only if ch0 is not stereo)
+                if (!isStereoCH0) {
+                    // Daisy chain: copy ch0 output to ch1 input
+                    if (ch01Daisy) {
+                        for (uint32_t i = 0; i < BUF_SZ; i++) {
+                            fbuf[i * 2 + 1] = fbuf[i * 2];
+                        }
+                    }
+
+                    if (sp[1] != nullptr) {
+                        sp[1]->Process(pd);
                     }
                 }
-                if (sp[1] != nullptr) sp[1]->Process(pd); // 0 is not a stereo processor
+            } else {
+                // Mute audio if processors unavailable
+                memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
             }
+
+            // Always release mutex
             xSemaphoreGive(processMutex);
         } else {
-            // mute audio
+            // Couldn't acquire mutex - mute audio for this buffer
             memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
         }
+
 
         // to stereo conversion
         if (!isStereoCH0) {
@@ -305,6 +318,7 @@ void SoundProcessorManager::StartSoundProcessor() {
 
     // prepare threads and mutex
     processMutex = xSemaphoreCreateMutex();
+
     if (processMutex == NULL) {
         ESP_LOGE("SPM", "Fatal couldn't create mutex!");
     }
