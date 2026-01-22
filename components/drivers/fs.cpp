@@ -64,8 +64,9 @@ static bool MountSDCard(const char *mnt_pt = "/sdcard"){
 
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
     host.slot = SDMMC_HOST_SLOT_0;
+#ifdef CONFIG_SD_DDR_50MHZ_MODE
     host.max_freq_khz = SDMMC_FREQ_DDR50;
-    host.flags |= SDMMC_HOST_FLAG_DDR;
+#endif
     sd_pwr_ctrl_ldo_config_t ldo_config = {
         .ldo_chan_id = 4,
     };
