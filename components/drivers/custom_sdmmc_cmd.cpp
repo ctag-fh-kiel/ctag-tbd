@@ -17,7 +17,9 @@ extern "C" esp_err_t sdmmc_read_sectors_dma(
     size_t buffer_len
 );
 
-static DMA_ATTR uint8_t sector_buffer[512];
+//DMA_ATTR static uint8_t sector_buffer[512];
+__attribute__((section(".dram0"), aligned(4)))
+uint8_t sector_buffer[512];
 
 // Your wrapped implementation
 extern "C" esp_err_t __wrap_sdmmc_read_sectors(sdmmc_card_t* card, void* dst, size_t start_block, size_t block_count)
