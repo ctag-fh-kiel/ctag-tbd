@@ -64,6 +64,13 @@ menu "CTAG TBD Configuration"
                 Enable assembly optimizations for audio buffer codec processing to improve performance.
                 P4 F-extension, loop unrolling, hardware loop and other optimizations are used.
                 Works only for 32 samples per buffer configuration. Small improvement.
+
+        config SD_DDR_50MHZ_MODE
+            bool "Enable SD Card DDR 50MHz Mode"
+            default n
+            help
+                Enable DDR mode at 50MHz for SD card interface to improve data transfer rates.
+                Requires compatible SD card and hardware support.
     endmenu
 
 endmenu
