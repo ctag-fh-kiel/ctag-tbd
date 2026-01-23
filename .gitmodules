@@ -13,3 +13,6 @@
 [submodule "components/ableton_link/link"]
 	path = components/ableton_link/link
 	url = https://github.com/Ableton/link.git
+[submodule "simulator/esp-dsp"]
+	path = simulator/esp-dsp
+	url = git@github.com:ctag-fh-kiel/esp-dsp.git

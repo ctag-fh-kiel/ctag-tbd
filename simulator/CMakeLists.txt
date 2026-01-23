@@ -40,7 +40,7 @@ set(RTAUDIO_BUILD_STATIC_LIBS TRUE)
 add_subdirectory(rtaudio)
 
 #esp-dsp
-set(ESP_DSP_DIR "../managed_components/espressif__esp-dsp")
+set(ESP_DSP_DIR "esp-dsp")
 set(ESP_DSP_SRC_FILES  "${ESP_DSP_DIR}/modules/common/misc/dsps_pwroftwo.cpp"
         "${ESP_DSP_DIR}/modules/dotprod/float/dsps_dotprod_f32_ansi.c"
         "${ESP_DSP_DIR}/modules/dotprod/float/dsps_dotprode_f32_ansi.c"
