@@ -1,5 +1,28 @@
 #!/usr/bin/env bash
 
+# Configuration
+HOST="ctag-tbd2.local"
+
+# Function to send GET request with retry logic
+send_request_with_retry() {
+    local url="$1"
+    local max_retries=999  # effectively infinite retries
+    local retry_count=0
+    local success=false
+
+    while [ "$success" = false ]; do
+        # Send the request with a timeout of 30 seconds max, 10 seconds to connect
+        if curl -X GET "$url" -H "accept: application/json" -H "Content-Type: application/json" -d "" --connect-timeout 10 --max-time 30 --fail --silent --show-error; then
+            success=true
+            echo " ✓"
+        else
+            retry_count=$((retry_count + 1))
+            echo " ✗ Request failed (attempt $retry_count), retrying in 5s..."
+            sleep 5
+        fi
+    done
+}
+
 # create an empty list
 pluginList=()
 
@@ -33,11 +56,11 @@ doStereo=true
 # if doStereo execute the next loop
 if [ $doStereo = true ]; then
     # iterating all stereo plugins
-    # send a GET http://ctag-tbd.local/api/v1/setActivePlugin/0?id= request for each plugin in pluginListStereo
+    # send a GET http://ctag-tbd2.local/api/v1/setActivePlugin/0?id= request for each plugin in pluginListStereo
     for i in "${!pluginListStereo[@]}"; do
         # echo the plugin name and how many plugins are left of all in the list
-        echo Plugin ${pluginListStereo[$i]}
-        curl -X GET "http://ctag-tbd.local/api/v1/setActivePlugin/0?id=${pluginListStereo[$i]}" -H "accept: application/json" -H "Content-Type: application/json" -d ""
+        echo -n "Plugin ${pluginListStereo[$i]}: "
+        send_request_with_retry "http://${HOST}/api/v1/setActivePlugin/0?id=${pluginListStereo[$i]}"
         sleep 2
     done
 fi
@@ -46,11 +69,12 @@ echo Beginning with Mono plugins
 # iterating all mono plugins and combinations between them
 # do the same with all mono plugins
 for i in "${!pluginListMono[@]}"; do
-    curl -X GET "http://ctag-tbd.local/api/v1/setActivePlugin/0?id=${pluginListMono[$i]}" -H "accept: application/json" -H "Content-Type: application/json" -d ""
-    # iterate all mono plugins except the currently selected one and send a GET http://ctag-tbd.local/api/v1/setActivePlugin/1?id= request for each plugin in pluginListMono
+    echo -n "CH0 ${pluginListMono[$i]}: "
+    send_request_with_retry "http://${HOST}/api/v1/setActivePlugin/0?id=${pluginListMono[$i]}"
+    # iterate all mono plugins except the currently selected one and send a GET http://ctag-tbd2.local/api/v1/setActivePlugin/1?id= request for each plugin in pluginListMono
     for j in "${!pluginListMono[@]}"; do
-          echo CH0 ${pluginListMono[$i]} with CH1 ${pluginListMono[$j]}
-          curl -X GET "http://ctag-tbd.local/api/v1/setActivePlugin/1?id=${pluginListMono[$j]}" -H "accept: application/json" -H "Content-Type: application/json" -d ""
+          echo -n "  CH0 ${pluginListMono[$i]} with CH1 ${pluginListMono[$j]}: "
+          send_request_with_retry "http://${HOST}/api/v1/setActivePlugin/1?id=${pluginListMono[$j]}"
     done
     sleep 2
 done
