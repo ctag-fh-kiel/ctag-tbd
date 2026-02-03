@@ -56,22 +56,42 @@ typedef struct rest_server_context {
 
 #define CHECK_FILE_EXTENSION(filename, ext) (strcasecmp(&filename[strlen(filename) - strlen(ext)], ext) == 0)
 
-/* Set HTTP response content type according to file extension */
+/* Set HTTP response content type and cache headers according to file extension */
 static esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filepath) {
     const char *type = "text/plain";
+    bool is_static_asset = false;
+
+    // Force connection close to prevent socket exhaustion on ESP32
+    httpd_resp_set_hdr(req, "Connection", "close");
+
     if (CHECK_FILE_EXTENSION(filepath, ".html")) {
         type = "text/html";
+        // HTML files should not be cached - always fresh content
+        httpd_resp_set_hdr(req, "Cache-Control", "no-cache, no-store, must-revalidate");
+        httpd_resp_set_hdr(req, "Pragma", "no-cache");
+        httpd_resp_set_hdr(req, "Expires", "0");
     } else if (CHECK_FILE_EXTENSION(filepath, ".js")) {
         type = "application/javascript";
+        is_static_asset = true;
     } else if (CHECK_FILE_EXTENSION(filepath, ".css")) {
         type = "text/css";
+        is_static_asset = true;
     } else if (CHECK_FILE_EXTENSION(filepath, ".png")) {
         type = "image/png";
+        is_static_asset = true;
     } else if (CHECK_FILE_EXTENSION(filepath, ".ico")) {
         type = "image/x-icon";
+        is_static_asset = true;
     } else if (CHECK_FILE_EXTENSION(filepath, ".svg")) {
         type = "image/svg+xml";
+        is_static_asset = true;
     }
+
+    // Static assets get long-term caching (30 days)
+    if (is_static_asset) {
+        httpd_resp_set_hdr(req, "Cache-Control", "public, max-age=2592000, immutable");
+    }
+
     return httpd_resp_set_type(req, type);
 }
 
@@ -321,8 +341,9 @@ esp_err_t RestServer::StartRestServer() {
     config.task_priority = tskIDLE_PRIORITY + 4;
     config.max_uri_handlers = 20;
     config.stack_size = 8192;
-    config.recv_wait_timeout   = 20;
-    config.send_wait_timeout = 20;
+    config.recv_wait_timeout = 10;
+    config.send_wait_timeout = 10;
+    config.lru_purge_enable = true;  // Auto-close least-recently-used connections when out of sockets
     /*
     config.max_open_sockets   = 10;
     config.max_resp_headers   = 10;
