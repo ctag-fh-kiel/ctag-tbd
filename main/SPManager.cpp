@@ -300,6 +300,8 @@ void SoundProcessorManager::StartSoundProcessor() {
     }else if(model->GetNetworkConfigurationData("mode").compare("sta") == 0){
         NET::Network::SetIfType(NET::Network::IF_TYPE::IF_TYPE_STA);
     }else if(model->GetNetworkConfigurationData("mode").compare("usbncm") == 0){
+        // Wait for NCM interface to be ready before starting network
+        CTAG::DRIVERS::tusb::WaitForNCMReady(5000);
         NET::Network::SetIfType(NET::Network::IF_TYPE::IF_TYPE_USBNCM);
     }else{
         ESP_LOGE("SPM", "Fatal: unknown network mode!");

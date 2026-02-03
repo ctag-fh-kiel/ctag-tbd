@@ -30,6 +30,7 @@ namespace CTAG {
             static void Init();
             static uint32_t Read(uint8_t *data, uint32_t len);
             static uint32_t Write(uint8_t const *data, uint32_t len);
+            static bool WaitForNCMReady(uint32_t timeout_ms = 5000);
         };
     }
 }

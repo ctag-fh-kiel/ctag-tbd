@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "tinyusb.h"
 #include "esp_log.h"
 #include "esp_attr.h"
+#include "class/net/net_device.h"
 
 // Interface counter
 enum interface_count {
@@ -111,7 +112,19 @@ void CTAG::DRIVERS::tusb::Init() {
             .vbus_monitor_io = 0
     };
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    // Wait for USB device to be mounted by host (up to 3 seconds)
+    int retries = 30;
+    while (!tud_ready() && retries > 0) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+        retries--;
+    }
+
+    if (tud_ready()) {
+        ESP_LOGI("TUSB", "USB enumerated successfully");
+    } else {
+        ESP_LOGW("TUSB", "USB not enumerated after timeout, continuing anyway");
+    }
 }
 
 IRAM_ATTR uint32_t CTAG::DRIVERS::tusb::Read(uint8_t *data, uint32_t len) {
@@ -121,3 +134,24 @@ IRAM_ATTR uint32_t CTAG::DRIVERS::tusb::Read(uint8_t *data, uint32_t len) {
 uint32_t CTAG::DRIVERS::tusb::Write(const uint8_t *data, uint32_t len) {
     return tud_midi_stream_write(0, data, len);
 }
+
+bool CTAG::DRIVERS::tusb::WaitForNCMReady(uint32_t timeout_ms) {
+    ESP_LOGI("TUSB", "Waiting for NCM interface to be ready...");
+
+    uint32_t elapsed = 0;
+    const uint32_t interval = 100;
+
+    while (elapsed < timeout_ms) {
+        // Check if NCM can transmit - this indicates the interface is fully ready
+        if (tud_ready() && tud_network_can_xmit(64)) {
+            ESP_LOGI("TUSB", "NCM interface ready after %lu ms", elapsed);
+            return true;
+        }
+        vTaskDelay(pdMS_TO_TICKS(interval));
+        elapsed += interval;
+    }
+
+    ESP_LOGW("TUSB", "NCM interface not ready after %lu ms timeout", timeout_ms);
+    return false;
+}
+
