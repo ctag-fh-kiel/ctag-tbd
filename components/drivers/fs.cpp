@@ -63,6 +63,8 @@ static bool MountSDCard(const char *mnt_pt = "/sdcard"){
     vTaskDelay(100 / portTICK_PERIOD_MS);
 
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
+    host.flags |= SDMMC_HOST_FLAG_ALLOC_ALIGNED_BUF;
+    host.max_freq_khz = SDMMC_FREQ_HIGHSPEED;
     host.slot = SDMMC_HOST_SLOT_0;
 #ifdef CONFIG_SD_DDR_50MHZ_MODE
     host.max_freq_khz = SDMMC_FREQ_DDR50;
@@ -181,6 +183,12 @@ static bool delete_dir_recursive(const std::string& path) {
 }
 
 static bool extract_zip_to_sd(const std::string& zip_path, const std::string& dest_dir) {
+    // Optimizations for SD card performance and reduced fragmentation:
+    // 1. Use 64KB buffers with DMA capability (MALLOC_CAP_DMA | MALLOC_CAP_32BIT)
+    // 2. Pre-allocate full file size before writing to reduce FAT fragmentation
+    // 3. Use POSIX write() instead of fwrite() for direct multi-block DMA transfers
+    // 4. Explicit fsync() after each file to cluster writes efficiently
+
     ESP_LOGI("FS", "Extracting %s to %s", zip_path.c_str(), dest_dir.c_str());
 
     FILE* zip_file = fopen(zip_path.c_str(), "rb");
@@ -249,10 +257,10 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
     }
     fread(cd_buf, 1, cd_size, zip_file);
 
-    // Allocate decompression buffers
-    const size_t chunk_size = 16384; // 16KB chunks
-    uint8_t* in_buf = (uint8_t*)heap_caps_malloc(chunk_size, MALLOC_CAP_SPIRAM);
-    uint8_t* out_buf = (uint8_t*)heap_caps_malloc(chunk_size, MALLOC_CAP_SPIRAM);
+    // Allocate decompression buffers with DMA capability for better SD write performance
+    const size_t chunk_size = 64 * 1024; // 64KB chunks for optimal SD card performance
+    uint8_t* in_buf = (uint8_t*)heap_caps_malloc(chunk_size, MALLOC_CAP_SPIRAM | MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
+    uint8_t* out_buf = (uint8_t*)heap_caps_malloc(chunk_size, MALLOC_CAP_SPIRAM | MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
 
     if (!in_buf || !out_buf) {
         ESP_LOGE("FS", "Failed to allocate decompression buffers");
@@ -329,22 +337,35 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
 
             fseek(zip_file, data_offset, SEEK_SET);
 
-            // Open output file
-            FILE* out_file = fopen(full_path.c_str(), "wb");
-            if (!out_file) {
+            // Open output file with POSIX for better performance
+            int out_fd = open(full_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if (out_fd < 0) {
                 ESP_LOGE("FS", "Failed to create: %s", full_path.c_str());
                 cd_pos += 46 + name_len + extra_len + comment_len;
                 continue;
             }
 
+            // Pre-allocate file space to reduce fragmentation on FAT filesystem
+            if (uncomp_size > 0) {
+                // Seek to end and write a byte to reserve space
+                lseek(out_fd, uncomp_size - 1, SEEK_SET);
+                uint8_t zero = 0;
+                write(out_fd, &zero, 1);
+                lseek(out_fd, 0, SEEK_SET); // Reset to beginning
+            }
+
             if (comp_method == 0) {
-                // Stored (no compression)
+                // Stored (no compression) - use POSIX read/write for better performance
                 uint32_t remaining = uncomp_size;
                 while (remaining > 0) {
                     uint32_t to_read = (remaining < chunk_size) ? remaining : chunk_size;
-                    fread(in_buf, 1, to_read, zip_file);
-                    fwrite(in_buf, 1, to_read, out_file);
-                    remaining -= to_read;
+                    size_t bytes_read = fread(in_buf, 1, to_read, zip_file);
+                    ssize_t bytes_written = write(out_fd, in_buf, bytes_read);
+                    if (bytes_written < 0) {
+                        ESP_LOGE("FS", "Write error for: %s", full_path.c_str());
+                        break;
+                    }
+                    remaining -= bytes_read;
                 }
             } else if (comp_method == 8) {
                 // Deflate compression - use zlib
@@ -354,7 +375,7 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
                 // Use raw deflate (negative windowBits)
                 if (inflateInit2(&stream, -MAX_WBITS) != Z_OK) {
                     ESP_LOGE("FS", "inflateInit failed");
-                    fclose(out_file);
+                    close(out_fd);
                     cd_pos += 46 + name_len + extra_len + comment_len;
                     continue;
                 }
@@ -386,7 +407,12 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
                         }
 
                         uint32_t have = chunk_size - stream.avail_out;
-                        fwrite(out_buf, 1, have, out_file);
+                        ssize_t bytes_written = write(out_fd, out_buf, have);
+                        if (bytes_written < 0) {
+                            ESP_LOGE("FS", "Write error for: %s", full_path.c_str());
+                            ret = Z_ERRNO;
+                            break;
+                        }
 
                     } while (stream.avail_out == 0);
 
@@ -395,7 +421,9 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
                 inflateEnd(&stream);
             }
 
-            fclose(out_file);
+            // Ensure all data is written to SD card before closing
+            fsync(out_fd);
+            close(out_fd);
             files_extracted++;
         }
 
