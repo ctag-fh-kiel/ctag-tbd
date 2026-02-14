@@ -1,0 +1,13 @@
+{
+    "name": "tbd-aem",
+    "version": "v2 alpha 1",
+    "new_install_prompt_erase": false,
+    "builds": [
+      {
+        "chipFamily": "ESP32",
+        "parts": [
+          { "path": "https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-aem-flash.bin", "offset": 0 }
+        ]
+      }
+    ]
+  }

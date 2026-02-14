@@ -1,0 +1,13 @@
+{
+    "name": "tbd-bba2",
+    "version": "v2 alpha 1",
+    "new_install_prompt_erase": false,
+    "builds": [
+      {
+        "chipFamily": "ESP32-S3",
+        "parts": [
+          { "path": "https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-bba2-flash.bin", "offset": 0 }
+        ]
+      }
+    ]
+  }
