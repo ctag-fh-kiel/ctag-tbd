@@ -2,165 +2,182 @@
 Initial Device Setup Guide
 ****************************
 
-Setting up your TBD device for the first time requires updating the firmware on both chips and initializing the SD cards with the software packages they need. This guide walks you through the entire process step-by-step.
+Your TBD device needs two firmware updates and SD card initialization before first use. This guide walks you through the complete process.
 
-What You'll Need
-================
+**Time required:** ~15–20 minutes  
+**What you need:** TBD device, 2× USB-C cables, Chrome/Edge/Opera browser, 2× SD cards, SD card reader
 
-* Your TBD device
-* 2× USB-C cables (one for ESP32-P4, one for power)
-* A computer with Chrome, Edge, or Opera browser
-* An SD card reader/writer
-* 2× SD cards (one for ESP32-P4, one for RP2350) or pre-installed cards if included
-
-The device has two chips:
-
-* **ESP32-P4** — main processor, uses an SD card for software
-* **RP2350** — secondary processor (co-processor)
-
-Each requires a separate firmware update.
+---
 
 Step 1: Remove the SD Cards
 ============================
 
-The device comes with two SD card slots. Before flashing the firmware, you must remove both SD cards:
+The SD card slots are on the **back of the device** (inside, on the PCB). You need to remove both before flashing firmware.
 
-1. **Locate the SD card slots** on the front panel of your device:
-   
-   * **Middle slot** (closer to the center of the PCB) — ESP32-P4 SD card
-   * **Edge slot** (closer to the board edge) — RP2350 SD card
+**Locate your SD cards:**
 
-2. **Gently push** each card inward until it clicks and pops out
-3. **Set them aside** in a safe place — label them so you don't mix them up
+.. raw:: html
 
-You'll reinsert them after updating the firmware.
+    <figure style="text-align: center; margin: 1.5em 0;">
+      <img src="../_static/assets/dada-tbd-pcb-backside_001.jpg" 
+           alt="TBD PCB back showing SD card locations" 
+           style="max-width: 500px; border: 1px solid #ccc; border-radius: 6px;">
+      <figcaption style="font-size: 0.9em; color: #666; margin-top: 0.5em;">
+        <strong>Red circle:</strong> ESP32-P4 SD card (middle of PCB) | 
+        <strong>Other slot:</strong> RP2350 SD card (near edge)
+      </figcaption>
+    </figure>
+
+**Remove the cards:**
+
+1. Gently push each card inward until it clicks and pops out
+2. Set them aside in a safe place and label them to avoid mixing them up
+
+
 
 Step 2: Flash the ESP32-P4 Firmware (First)
 ============================================
 
-The ESP32-P4 is the main processor and should be flashed **before** the RP2350.
+The ESP32-P4 (main processor) must be flashed **before** the RP2350.
 
-**Physical setup:**
+**Connect your device:**
 
-1. Connect the **JTAG USB-C port on the front** of the device to your computer (data connection)
-2. Connect one of the **USB-C ports on the back** to your computer or power supply (power)
+- Plug the **JTAG USB-C port** (front) into your computer
+- Plug a **back USB-C port** into power or another computer port
 
-**Flashing procedure:**
+**Flash the firmware:**
 
-1. Open the `ESP32-P4 Device Flasher <./20_flash.html>`_ page in your browser
-2. The page will show a firmware selector — keep the default selection or choose based on your preference
-3. Click the **Connect** button
-4. Your computer will show a device selection dialog — select your TBD device
-5. Click **Flash**
-6. Wait for the progress bar to reach 100% (typically 30–40 seconds)
-7. Once complete, you'll see a success message — click **Disconnect**
+1. Open the `ESP32-P4 Device Flasher <./20_flash.html>`_
+2. Select firmware: **CTAG TBD (Development) — 2026-02-11** or another variant
+3. Click **Connect** and select your device when prompted
+4. Click **Flash** and wait for 100% (about 30–40 seconds)
+5. Click **Disconnect** when done
 
-**Note:** Do not remove any cables during flashing.
+*Firmware file:* `ctag-tbd-2026-02-11.bin <../_static/firmware/p4/ctag-tbd-2026-02-11.bin>`_
+
+
 
 Step 3: Flash the RP2350 Firmware (Second)
 ===========================================
 
-Now update the secondary processor.
+Now update the secondary processor. Keep your device connected via the same USB cables.
 
-**Physical setup:**
+**Enter BOOTSEL mode:**
 
-The RP2350 uses WebUSB (different protocol). Keep your device connected via the same USB cables.
+1. Hold the **BOOTSEL button** (front, next to JTAG port)
+2. While holding, press the **RESET button** (to the right of BOOTSEL)
+3. Release both buttons
 
-**Entering BOOTSEL mode:**
+**Flash the firmware:**
 
-1. **Locate the BOOTSEL button** on the front panel (next to the JTAG port)
-2. **Hold the BOOTSEL button** while pressing the **RESET button** (to the right of BOOTSEL)
-3. Release both buttons — the device is now in BOOTSEL mode
+1. Open the `RP2350 Device Flasher <./25_flash_pico.html>`_
+2. Select firmware: **CTAG TBD (Development) — 2026-02-11** (to match P4)
+3. Click **Connect** and allow your browser to access the device
+4. Click **Flash** and wait for 100% (about 10–15 seconds)
+5. Click **Reboot**
 
-**Flashing procedure:**
+*Firmware file:* `ctag-tbd-2026-02-11.uf2 <../_static/firmware/pico/ctag-tbd-2026-02-11.uf2>`_
 
-1. Open the `RP2350 Device Flasher <./25_flash_pico.html>`_ page in your browser
-2. Select your firmware (e.g., ``Possan TBD``)
-3. Click **Connect**
-4. Your browser will request permission to connect — allow it
-5. Click **Flash**
-6. Wait for the progress bar to complete (typically 10–15 seconds)
-7. Once complete, click **Reboot**
 
-The device will restart out of BOOTSEL mode.
 
 Step 4: Prepare the SD Cards
 =============================
 
-While the device boots with the new firmware, format your SD cards for use.
+While the device boots, format both SD cards for use.
 
-**Format for ESP32-P4 (Main SD Card):**
+**Format the ESP32-P4 SD card (middle slot):**
 
-1. Insert the first SD card into an SD card reader on your computer
-2. **Erase the card completely** (backup any existing data first)
-3. **Format as FAT32** with the volume name ``NO NAME`` (exactly)
-   
-   * **macOS:** Disk Utility → select the card → Erase → Format: MS-DOS (FAT) → Volume Name: NO NAME
-   * **Windows:** File Explorer → right-click card → Format → File System: FAT32 → Volume Label: NO NAME
-   * **Linux:** Any partition manager, or terminal: ``mkfs.vfat -n "NO NAME" /dev/sdX``
+*Insert into your SD card reader:*
 
-**Download SD card software package:**
+- **Erase completely** (backup any existing data first)
+- **Format as FAT32** with volume label **NO NAME** (exactly)
 
-1. Download the SD card init package: `tbd-sd-card.zip <../_static/sdcard_image/tbd-sd-card.zip>`_
-2. Extract the ZIP file on your computer
-3. Copy the extracted files directly into the root of the **formatted ESP32-P4 SD card**
-   
-   * You should see files like ``config.json``, ``data/``, etc. in the card root
-   * Do not create a subfolder — files go directly in the root
+  - macOS: Disk Utility → Erase → Format: MS-DOS (FAT) → Name: NO NAME
+  - Windows: File Explorer → right-click → Format → FAT32 → Label: NO NAME
+  - Linux: ``mkfs.vfat -n "NO NAME" /dev/sdX``
 
-**Format for RP2350 (Secondary SD Card):**
+*Copy the SD card software package:*
 
-1. Insert the second SD card into the reader
-2. Erase and format as FAT32 with volume name ``NO NAME``
-3. **Leave it empty** — the RP2350 does not require software files
+1. Download: `tbd-sd-card.zip <../_static/sdcard_image/tbd-sd-card.zip>`_
+2. Extract the ZIP file
+3. Copy **all extracted files** directly to the **root of the card** (not in a subfolder)
+4. Eject the card
 
-Step 5: Insert SD Cards and First Boot
+**Format the RP2350 SD card (edge slot):**
+
+- Erase and format as FAT32 with label **NO NAME**
+- **Leave it empty** (no files needed)
+- Eject the card
+
+
+
+Step 5: Insert SD Cards and Initialize
 =======================================
 
-Now that both SD cards are ready, insert them back into your device.
+Insert both SD cards back into the device on the PCB back:
 
-**Inserting the cards:**
+1. **Middle slot:** Insert the **ESP32-P4 SD card**
+2. **Edge slot:** Insert the **RP2350 SD card**
+3. Gently push each until it clicks
 
-1. **Insert the ESP32-P4 SD card** into the **middle slot** (closer to the center of the PCB)
-2. **Insert the RP2350 SD card** into the **edge slot** (closer to the board/PCB edge)
-3. Gently push each card until it clicks into place
+**First boot (SD card initialization):**
 
-**First boot process:**
+Power on the device. The initialization will take **5–10 minutes**.
 
-The first boot after inserting the SD cards will take **several minutes**. This is normal — the ESP32-P4 is extracting and initializing the software package.
+*What to expect:*
 
-**What to expect:**
+- Device powers on
+- **OLED shows initialization messages and debug text**
+- **Do not turn off the device** — this process must complete
 
-* The device will power on
-* The **OLED screen will display the DADA logo** (colorful animation)
-* You'll see various initialization messages scroll on the screen
-* **Do not turn off the device** — this process must complete
+*When initialization is done:*
 
-Once initialization is complete:
+- OLED shows debug information
+- **One line displays ``SD OK``** — confirms SD card is initialized ✓
+- Device is ready for firmware update
 
-* The OLED screen will clear and show debug information
-* **You should see ``SD OK`` on one of the lines** — this confirms the SD card is properly initialized
-* The device is now ready to use
 
-Step 6: Verify the Setup
-========================
 
-To verify everything is working:
+Step 6: Update to Latest Firmware (Possan)
+===========================================
 
-1. Power on the device if it's off
-2. Check that the OLED shows debug info with **``SD OK``** visible
-3. Try navigating the menu on the device — controls should respond normally
-4. If the RP2350 firmware is working, you should see activity from the secondary processor
+Now that the device is initialized, update both chips to the latest production firmware.
+
+**Update RP2350 first:**
+
+1. Enter **BOOTSEL mode** (hold BOOTSEL + press RESET)
+2. Open the `RP2350 Device Flasher <./25_flash_pico.html>`_
+3. Select firmware: **Possan TBD (Experimental) — 2026-02-14**
+4. Click **Connect** → **Flash** → **Reboot**
+
+*Firmware file:* `possan-tbd-2026-02-14.uf2 <../_static/firmware/pico/possan-tbd-2026-02-14.uf2>`_
+
+**Update ESP32-P4 second:**
+
+1. Open the `ESP32-P4 Device Flasher <./20_flash.html>`_
+2. Select firmware: **Possan TBD (Experimental) — 2026-02-14**
+3. Click **Connect** → **Flash** → **Disconnect**
+
+*Firmware file:* `possan-tbd-2026-02-14.bin <../_static/firmware/p4/possan-tbd-2026-02-14.bin>`_
+
+Step 7: Verify the Setup
+=========================
+
+Power on the device and check:
+
+✓ OLED shows debug information with ``SD OK`` visible  
+✓ Device responds to controls  
+✓ Both firmware versions are running correctly
 
 **Troubleshooting:**
 
-* **OLED shows error or no "SD OK":** The SD card may not have the files, be corrupted, or not formatted correctly. Reformat and re-extract the files.
-* **Device won't boot:** Try removing and reinserting both SD cards, then power cycle.
-* **Flashing failed:** Ensure you disconnected properly between steps and re-enter the correct mode (normal mode for ESP32-P4, BOOTSEL for RP2350).
+- **OLED shows no "SD OK":** Reformat the ESP32-P4 card and re-extract the files
+- **Device won't boot:** Remove and reinsert both SD cards, then power cycle
+- **Flashing failed:** Disconnect between steps and re-enter the correct mode
 
-Next Steps
-==========
+---
 
-Congratulations! Your device is now set up and ready to use. Visit the `System <./System.html>`_ documentation for operating instructions and the `Sound Library <../sound_library/index.html>`_ to explore the available processors and sounds.
+Setup Complete!
+===============
 
-For advanced users, see `The TBD Command Tool <./The%20TBD%20Command%20Tool.html>`_ for command-line access.
+Your device is ready to use. See the `System <./10_system.html>`_ documentation for operating instructions and the `Sound Library <../sound_library/index.html>`_ to explore available processors and sounds.
