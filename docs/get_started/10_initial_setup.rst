@@ -202,7 +202,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         </div>
         <div class="step-content">
           <div class="pcb-image">
-            <img src="/ctag-tbd/docs/get_started/_static/assets/dada-tbd-pcb-backside_001.jpg" alt="TBD PCB showing SD card slots" style="max-width: 100%; width: 100%; max-width: 500px; border: 1px solid #ccc; border-radius: 6px;">
+            <img src="../_static/assets/dada-tbd-pcb-backside_001.jpg" alt="TBD PCB showing SD card slots" style="max-width: 100%; width: 100%; max-width: 500px; border: 1px solid #ccc; border-radius: 6px;">
             <div class="pcb-caption" style="font-size: 0.85em; color: #666; margin-top: 0.5em; line-height: 1.4;">
               <strong>Red circle:</strong> ESP32-P4 SD card slot (middle)<br>
               <strong>Other slot:</strong> RP2350 SD card slot (near edge)
@@ -282,8 +282,8 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             </li>
             <li>Download these two files:
               <ul style="margin-top: 0.4em;">
-                <li><a href="/ctag-tbd/docs/get_started/_static/sdcard_image/tbd-sd-card.zip" target="_blank"><b>tbd-sd-card.zip</b></a> (firmware package)</li>
-                <li><a href="/ctag-tbd/docs/get_started/_static/sdcard_image/tbd-sd-card-hash.txt" target="_blank"><b>tbd-sd-card-hash.txt</b></a> (integrity check)</li>
+                <li><a href="../_static/sdcard_image/tbd-sd-card.zip" target="_blank"><b>tbd-sd-card.zip</b></a> (firmware package)</li>
+                <li><a href="../_static/sdcard_image/tbd-sd-card-hash.txt" target="_blank"><b>tbd-sd-card-hash.txt</b></a> (integrity check)</li>
               </ul>
             </li>
             <li><b>Copy BOTH files directly to the root</b> of the formatted SD card (do NOT unzip)</li>
@@ -366,11 +366,14 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
       <!-- STEP 7: Verify -->
       <div class="setup-step" data-step="7">
         <div class="step-header">
-          <div class="step-number">7</div>
-          <h3 class="step-title">Verify the Setup</h3>
+          <div class="step-number" style="background: #16A34A;">✓</div>
+          <h3 class="step-title" style="color: #16A34A;">Congratulations — You're Done!</h3>
         </div>
         <div class="step-content">
-          <h4>Check these:</h4>
+          <p style="font-size: 1.05em; color: #065F46; background: #D1FAE5; padding: 0.8em 1em; border-radius: 6px; margin-bottom: 1em;">
+            🎉 <b>Your TBD device is fully set up and ready to go!</b> All firmware has been flashed, SD cards are prepared, and the latest Possan firmware is installed. Time to make some noise!
+          </p>
+          <h4>Final checks:</h4>
           <ul>
             <li>✓ Power on the device</li>
             <li>✓ OLED shows debug info with <code>SD OK</code> visible</li>
@@ -429,6 +432,11 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             const rp2350Flasher = document.getElementById('flasher-rp2350');
             if (p4Flasher) p4Flasher.style.display = 'block';
             if (rp2350Flasher) rp2350Flasher.style.display = 'block';
+            // Preselect Possan firmware for the update step
+            var espSel = document.getElementById('espFirmwareSelect');
+            if (espSel) espSel.value = 'possan';
+            var picoSel = document.getElementById('picoFirmwareSelect');
+            if (picoSel) picoSel.value = 'possan-tbd-2026-02-14.uf2';
           }
           step.scrollIntoView({ behavior: 'smooth', block: 'start' });
           window.scrollTo(0, step.offsetTop - 100);
@@ -438,20 +446,8 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
       // Initialize on load - hide all flasher sections initially
       document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.flasher-section').forEach(el => el.style.display = 'none');
-        // Hide the section headers for flashers until step 6
-        const headers = document.querySelectorAll('h2');
-        headers.forEach(h => {
-          if (h.textContent.includes('Flash ESP32-P4') || h.textContent.includes('Flash RP2350')) {
-            h.style.display = 'none';
-          }
-        });
       });
     </script>
-
----
-
-Flash ESP32-P4 (Main Processor)
-===============================
 
 .. raw:: html
 
@@ -557,29 +553,29 @@ Flash ESP32-P4 (Main Processor)
       </select>
 
       <div class="btn-row">
-        <button id="btnConnect" class="btn-connect" disabled>Loading…</button>
-        <button id="btnFlash" class="btn-flash" disabled>Flash</button>
-        <button id="btnDisconnect" class="btn-disconnect" disabled>Disconnect</button>
+        <button id="espBtnConnect" class="btn-connect" disabled>Loading…</button>
+        <button id="espBtnFlash" class="btn-flash" disabled>Flash</button>
+        <button id="espBtnDisconnect" class="btn-disconnect" disabled>Disconnect</button>
       </div>
 
-      <div class="progress-wrap" id="progressWrap" style="display:none;">
-        <div class="progress-bar" id="progressBar"></div>
-        <span class="progress-text" id="progressText">0 %</span>
+      <div class="progress-wrap" id="espProgressWrap" style="display:none;">
+        <div class="progress-bar" id="espProgressBar"></div>
+        <span class="progress-text" id="espProgressText">0 %</span>
       </div>
 
-      <div class="status-box" id="statusBox">Loading flash tool…</div>
+      <div class="status-box" id="espStatusBox">Loading flash tool…</div>
     </div>
 
     <script>
       (async function () {
-        var btnConnect    = document.getElementById('btnConnect');
-        var btnFlash      = document.getElementById('btnFlash');
-        var btnDisconnect = document.getElementById('btnDisconnect');
+        var btnConnect    = document.getElementById('espBtnConnect');
+        var btnFlash      = document.getElementById('espBtnFlash');
+        var btnDisconnect = document.getElementById('espBtnDisconnect');
         var sel           = document.getElementById('espFirmwareSelect');
-        var progressWrap  = document.getElementById('progressWrap');
-        var progressBar   = document.getElementById('progressBar');
-        var progressText  = document.getElementById('progressText');
-        var statusBox     = document.getElementById('statusBox');
+        var progressWrap  = document.getElementById('espProgressWrap');
+        var progressBar   = document.getElementById('espProgressBar');
+        var progressText  = document.getElementById('espProgressText');
+        var statusBox     = document.getElementById('espStatusBox');
 
         function setStatus(msg, type) {
           statusBox.innerHTML = msg;
@@ -616,8 +612,8 @@ Flash ESP32-P4 (Main Processor)
         setStatus('Select a firmware, then click <b>Connect</b>.');
 
         var FIRMWARE = {
-          ctag:   { url: '_static/firmware/p4/ctag-tbd-2026-02-11.bin',   name: 'CTAG TBD' },
-          possan: { url: '_static/firmware/p4/possan-tbd-2026-02-14.bin', name: 'Possan TBD' }
+          ctag:   { url: '../_static/firmware/p4/ctag-tbd-2026-02-11.bin',   name: 'CTAG TBD' },
+          possan: { url: '../_static/firmware/p4/possan-tbd-2026-02-14.bin', name: 'Possan TBD' }
         };
 
         var device    = null;
@@ -734,11 +730,6 @@ Flash ESP32-P4 (Main Processor)
     </script>
     </div>
 
-
-
-Flash RP2350 (Secondary Processor)
-==================================
-
 .. raw:: html
 
     <div id="flasher-rp2350" class="flasher-section">
@@ -829,49 +820,49 @@ Flash RP2350 (Secondary Processor)
     </style>
 
     <div class="pico-flasher" id="picoFlasher">
-      <label for="firmwareSelect">Firmware</label>
-      <select id="firmwareSelect">        
+      <label for="picoFirmwareSelect">Firmware</label>
+      <select id="picoFirmwareSelect">        
         <option value="ctag-tbd-2026-02-11.uf2">CTAG TBD (Development) — 2026-02-11</option>        
         <option value="possan-tbd-2026-02-14.uf2">Possan TBD (Experimental) — 2026-02-14</option>
       </select>
 
       <div class="btn-row">
-        <button class="btn-connect" id="btnConnect">Connect</button>
-        <button class="btn-flash"   id="btnFlash"   disabled>Flash</button>
-        <button class="btn-reboot"  id="btnReboot"  disabled>Reboot</button>
-        <button class="btn-disconnect" id="btnDisconnect" disabled>Disconnect</button>
+        <button class="btn-connect" id="picoBtnConnect">Connect</button>
+        <button class="btn-flash"   id="picoBtnFlash"   disabled>Flash</button>
+        <button class="btn-reboot"  id="picoBtnReboot"  disabled>Reboot</button>
+        <button class="btn-disconnect" id="picoBtnDisconnect" disabled>Disconnect</button>
       </div>
 
-      <div class="device-info" id="deviceInfo"></div>
+      <div class="device-info" id="picoDeviceInfo"></div>
 
-      <div class="status-box status-idle" id="statusBox">
+      <div class="status-box status-idle" id="picoStatusBox">
         Ready &mdash; put your device in BOOTSEL mode and click <b>Connect</b>.
       </div>
 
-      <div class="progress-wrap" id="progressWrap">
-        <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-wrap" id="picoProgressWrap">
+        <div class="progress-bar" id="picoProgressBar"></div>
       </div>
     </div>
 
     <script type="module">
-      import { Picoboot } from '_static/picoflash/pkg/index.js';
-      import { uf2ToFlashBuffer } from '_static/picoflash/js/uf2.js';
+      import { Picoboot } from '../_static/picoflash/pkg/index.js';
+      import { uf2ToFlashBuffer } from '../_static/picoflash/js/uf2.js';
 
-      const FIRMWARE_BASE = '_static/firmware/pico/';
+      const FIRMWARE_BASE = '../_static/firmware/pico/';
       const OP_TIMEOUT    = 30000;
       const SHORT_TIMEOUT = 5000;
 
       const $ = id => document.getElementById(id);
 
-      const btnConnect    = $('btnConnect');
-      const btnFlash      = $('btnFlash');
-      const btnReboot     = $('btnReboot');
-      const btnDisconnect = $('btnDisconnect');
-      const fwSelect      = $('firmwareSelect');
-      const deviceInfo    = $('deviceInfo');
-      const statusBox     = $('statusBox');
-      const progressWrap  = $('progressWrap');
-      const progressBar   = $('progressBar');
+      const btnConnect    = $('picoBtnConnect');
+      const btnFlash      = $('picoBtnFlash');
+      const btnReboot     = $('picoBtnReboot');
+      const btnDisconnect = $('picoBtnDisconnect');
+      const fwSelect      = $('picoFirmwareSelect');
+      const deviceInfo    = $('picoDeviceInfo');
+      const statusBox     = $('picoStatusBox');
+      const progressWrap  = $('picoProgressWrap');
+      const progressBar   = $('picoProgressBar');
 
       let picoboot = null;
 
