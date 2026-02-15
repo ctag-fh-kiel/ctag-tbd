@@ -15,22 +15,23 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
       }
       .steps-overview {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 0.8em;
-        margin: 2em 0;
-        padding: 1.5em;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5em;
+        margin: 1.5em 0;
+        padding: 1em;
         background: #f8f9fa;
         border-radius: 8px;
         border: 1px solid #e5e7eb;
       }
       .step-overview-item {
         text-align: center;
-        padding: 1em;
-        border-radius: 6px;
+        padding: 0.6em 0.4em;
+        border-radius: 4px;
         background: white;
         border: 2px solid #ddd;
         cursor: pointer;
         transition: all 0.2s;
+        min-width: 60px;
       }
       .step-overview-item:hover {
         border-color: #2563EB;
@@ -43,12 +44,12 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
       }
       .step-overview-num {
         font-weight: 700;
-        font-size: 1.2em;
-        margin-bottom: 0.3em;
+        font-size: 1em;
+        margin-bottom: 0.2em;
       }
       .step-overview-label {
-        font-size: 0.75em;
-        line-height: 1.3;
+        font-size: 0.65em;
+        line-height: 1.2;
         opacity: 0.85;
       }
       .setup-step {
@@ -201,7 +202,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         </div>
         <div class="step-content">
           <div class="pcb-image">
-            <img src="_static/assets/dada-tbd-pcb-backside_001.jpg" alt="TBD PCB showing SD card slots" style="max-width: 100%; width: 100%; max-width: 500px; border: 1px solid #ccc; border-radius: 6px;">
+            <img src="/ctag-tbd/docs/get_started/_static/assets/dada-tbd-pcb-backside_001.jpg" alt="TBD PCB showing SD card slots" style="max-width: 100%; width: 100%; max-width: 500px; border: 1px solid #ccc; border-radius: 6px;">
             <div class="pcb-caption" style="font-size: 0.85em; color: #666; margin-top: 0.5em; line-height: 1.4;">
               <strong>Red circle:</strong> ESP32-P4 SD card slot (middle)<br>
               <strong>Other slot:</strong> RP2350 SD card slot (near edge)
@@ -250,7 +251,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           <h4>Enter BOOTSEL mode:</h4>
           <ul>
             <li>Hold the <b>BOOTSEL button</b> (front, next to JTAG port)</li>
-            <li>While holding, press <b>RESET button</b> (to the right)</li>
+            <li>While holding, press <b>RESET button</b> (to the left of BOOTSEL)</li>
             <li>Release both buttons</li>
           </ul>
           <h4>Use the flasher below:</h4>
@@ -268,7 +269,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           <h3 class="step-title">Prepare the SD Cards</h3>
         </div>
         <div class="step-content">
-          <h4>Format ESP32-P4 SD card (middle slot):</h4>
+          <h4>Format & Prepare ESP32-P4 SD card (middle slot):</h4>
           <ul>
             <li>Insert into your SD card reader</li>
             <li>Erase completely (backup any existing data first)</li>
@@ -279,8 +280,13 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
                 <li><i>Linux:</i> <code>mkfs.vfat -n "NO NAME" /dev/sdX</code></li>
               </ul>
             </li>
-            <li>Download <a href="../_static/sdcard_image/tbd-sd-card.zip" target="_blank">tbd-sd-card.zip</a></li>
-            <li>Extract and copy <b>all files directly to the root</b> of the card (not in a subfolder)</li>
+            <li>Download these two files:
+              <ul style="margin-top: 0.4em;">
+                <li><a href="/ctag-tbd/docs/get_started/_static/sdcard_image/tbd-sd-card.zip" target="_blank"><b>tbd-sd-card.zip</b></a> (firmware package)</li>
+                <li><a href="/ctag-tbd/docs/get_started/_static/sdcard_image/tbd-sd-card-hash.txt" target="_blank"><b>tbd-sd-card-hash.txt</b></a> (integrity check)</li>
+              </ul>
+            </li>
+            <li><b>Copy BOTH files directly to the root</b> of the formatted SD card (do NOT unzip)</li>
             <li>Eject the card</li>
           </ul>
           <h4>Format RP2350 SD card (edge slot):</h4>
@@ -339,16 +345,16 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           <h4>RP2350 first:</h4>
           <ul>
             <li>Enter <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET)</li>
-            <li>Select <b>Possan TBD (Experimental) — 2026-02-14</b> below</li>
+            <li>Select <b>Possan TBD (Experimental) — 2026-02-14</b> in the RP2350 flasher below</li>
             <li>Click Connect → Flash → Reboot</li>
           </ul>
           <h4>Then ESP32-P4:</h4>
           <ul>
-            <li>Select <b>Possan TBD (Experimental) — 2026-02-14</b> in the P4 flasher above</li>
+            <li>Select <b>Possan TBD (Experimental) — 2026-02-14</b> in the P4 flasher below</li>
             <li>Click Connect → Flash → Disconnect</li>
           </ul>
           <div class="step-progress">
-            Tip: Both flashers stay visible on your screen for easy access to both tools
+            Both flashers are visible below so you can easily access both tools
           </div>
         </div>
         <div class="step-nav">
@@ -418,20 +424,27 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             const rp2350Flasher = document.getElementById('flasher-rp2350');
             if (rp2350Flasher) rp2350Flasher.style.display = 'block';
           } else if (stepNum === 6) {
-            const p4FlasherStep6 = document.getElementById('flasher-p4-step6');
-            const rp2350FlasherStep6 = document.getElementById('flasher-rp2350-step6');
-            if (p4FlasherStep6) p4FlasherStep6.style.display = 'block';
-            if (rp2350FlasherStep6) rp2350FlasherStep6.style.display = 'block';
+            // Show both flashers for step 6
+            const p4Flasher = document.getElementById('flasher-p4');
+            const rp2350Flasher = document.getElementById('flasher-rp2350');
+            if (p4Flasher) p4Flasher.style.display = 'block';
+            if (rp2350Flasher) rp2350Flasher.style.display = 'block';
           }
           step.scrollIntoView({ behavior: 'smooth', block: 'start' });
           window.scrollTo(0, step.offsetTop - 100);
         }
       }
       
-      // Initialize on load
+      // Initialize on load - hide all flasher sections initially
       document.addEventListener('DOMContentLoaded', function() {
-        // Mark all flasher sections as hidden initially
         document.querySelectorAll('.flasher-section').forEach(el => el.style.display = 'none');
+        // Hide the section headers for flashers until step 6
+        const headers = document.querySelectorAll('h2');
+        headers.forEach(h => {
+          if (h.textContent.includes('Flash ESP32-P4') || h.textContent.includes('Flash RP2350')) {
+            h.style.display = 'none';
+          }
+        });
       });
     </script>
 
