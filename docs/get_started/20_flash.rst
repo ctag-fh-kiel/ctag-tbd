@@ -2,7 +2,7 @@
 ESP32-P4 Device Flasher
 *********************
 
-Flash Device From browser
+Flash Device From Browser
 =========================
 
 Connect your device to computer, select your device from the list below and select the
@@ -33,53 +33,29 @@ device when asked for permission by browser.
 Download Latest Firmware Builds
 ===============================
 
-You can download the artifacts directly if you prefer to flash using command line tools.
+You can download the firmware images directly if you prefer to flash using command line tools.
 
-**CTAG TBD (Development)**
+**CTAG TBD (Development)** — Build 2026-02-11
 
-* `Factory Image (Recommended) <../_static/firmware/p4/ctag-tbd.bin>`_
+* `ctag-tbd-2026-02-11.bin <../_static/firmware/p4/ctag-tbd-2026-02-11.bin>`_
 
-* `Bootloader <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/bootloader.bin>`_
-* `Partition Table <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/partition-table.bin>`_
-* `OTA Data <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/ota_data_initial.bin>`_
-* `Application <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/ctag-tbd.bin>`_
+**Possan TBD (Experimental)** — Build 2026-02-14
 
-**Possan TBD (Experimental)**
-
-* `Factory Image (Recommended) <../_static/firmware/p4/possan-tbd.bin>`_
-
-* `Bootloader <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/bootloader.bin>`_
-* `Partition Table <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/partition-table.bin>`_
-* `OTA Data <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/ota_data_initial.bin>`_
-* `Application <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/ctag-tbd.bin>`_
+* `possan-tbd-2026-02-14.bin <../_static/firmware/p4/possan-tbd-2026-02-14.bin>`_
 
 
 Manual Flashing (esptool)
 =========================
 
-If the web flasher does not work, you can use `esptool` manually.
+If the web flasher does not work, you can use ``esptool`` manually.
 
 Requirements:
 
 * Python installed
-* esptool installed (`pip install esptool`)
-* The 4 binary files downloaded from above OR the single factory image
-
-**Command (using factory image):**
+* esptool installed (``pip install esptool``)
 
 .. code-block:: bash
 
     esptool.py --chip esp32p4 -b 460800 --before=default_reset --after=hard_reset \
       write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
-      0x0 factory.bin
-
-**Command (using split parts):**
-
-.. code-block:: bash
-
-    esptool.py --chip esp32p4 -b 460800 --before=default_reset --after=hard_reset \
-      write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
-      0x2000  bootloader.bin \
-      0x8000  partition-table.bin \
-      0xD000  ota_data_initial.bin \
-      0x10000 ctag-tbd.bin
+      0x0 ctag-tbd-2026-02-11.bin

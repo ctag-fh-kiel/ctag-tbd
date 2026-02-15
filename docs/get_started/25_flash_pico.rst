@@ -5,118 +5,85 @@ RP2350 Device Flasher
 Flash Device From Browser
 =========================
 
-Put your device into **BOOTSEL mode** and connect it to your computer via USB.
-Select your firmware below and click **Connect** to begin.
-
-.. note::
-
-   To enter BOOTSEL mode, hold the BOOTSEL button while plugging in the USB cable,
-   or while pressing the RESET button.
-
-.. note::
-
-   This flasher requires a browser that supports `WebUSB <https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API#browser_compatibility>`_.
-   Chrome, Edge and Opera are supported. Firefox and Safari are **not** supported.
-
+Select your firmware, click **Connect** and choose your device to begin flashing.
 
 .. raw:: html
 
     <style>
       .pico-flasher {
-        border: 1px solid var(--color-background-border, #ccc);
+        border: 1px solid var(--color-background-border, #d1d5db);
         border-radius: 8px;
-        padding: 1.5em;
-        margin: 1.5em 0;
-        background: var(--color-background-secondary, #f8f8f8);
-        max-width: 520px;
+        padding: 1.5em 1.8em;
+        margin: 1em 0 1.5em;
+        background: var(--color-background-secondary, #fafafa);
+        max-width: 480px;
       }
       .pico-flasher label {
         display: block;
         font-weight: 600;
-        margin-bottom: 0.4em;
+        margin-bottom: 0.35em;
+        font-size: 0.95em;
+        color: var(--color-foreground-secondary, #555);
       }
       .pico-flasher select {
         width: 100%;
-        padding: 0.5em;
+        padding: 0.5em 0.7em;
         border-radius: 4px;
-        border: 1px solid var(--color-background-border, #aaa);
+        border: 1px solid var(--color-background-border, #ccc);
         margin-bottom: 1em;
-        font-size: 1em;
+        font-size: 0.95em;
         background: var(--color-background-primary, #fff);
-        color: var(--color-foreground-primary, #333);
+        color: var(--color-foreground-primary, #222);
       }
       .pico-flasher .btn-row {
         display: flex;
-        gap: 0.6em;
+        gap: 0.5em;
         flex-wrap: wrap;
-        margin-bottom: 1em;
+        margin-bottom: 0.8em;
       }
       .pico-flasher button {
-        padding: 0.55em 1.3em;
+        padding: 0.5em 1.2em;
         border: none;
         border-radius: 4px;
-        font-size: 0.95em;
+        font-size: 0.9em;
         font-weight: 600;
         cursor: pointer;
-        transition: background 0.15s;
+        transition: opacity 0.15s;
       }
       .pico-flasher button:disabled {
-        opacity: 0.45;
+        opacity: 0.35;
         cursor: not-allowed;
       }
-      .pico-flasher .btn-connect {
-        background: #2563EB;
-        color: #fff;
-      }
-      .pico-flasher .btn-connect:hover:not(:disabled) {
-        background: #1D4ED8;
-      }
-      .pico-flasher .btn-flash {
-        background: #16A34A;
-        color: #fff;
-      }
-      .pico-flasher .btn-flash:hover:not(:disabled) {
-        background: #15803D;
-      }
-      .pico-flasher .btn-reboot {
-        background: #9333EA;
-        color: #fff;
-      }
-      .pico-flasher .btn-reboot:hover:not(:disabled) {
-        background: #7E22CE;
-      }
-      .pico-flasher .btn-disconnect {
-        background: #DC2626;
-        color: #fff;
-      }
-      .pico-flasher .btn-disconnect:hover:not(:disabled) {
-        background: #B91C1C;
-      }
+      .pico-flasher .btn-connect    { background: #2563EB; color: #fff; }
+      .pico-flasher .btn-flash      { background: #16A34A; color: #fff; }
+      .pico-flasher .btn-reboot     { background: #6B7280; color: #fff; }
+      .pico-flasher .btn-disconnect { background: #6B7280; color: #fff; }
+      .pico-flasher button:hover:not(:disabled) { opacity: 0.85; }
       .pico-flasher .status-box {
-        padding: 0.7em 1em;
+        padding: 0.6em 0.9em;
         border-radius: 4px;
-        font-size: 0.9em;
-        min-height: 1.4em;
+        font-size: 0.88em;
+        min-height: 1.3em;
         word-break: break-word;
       }
-      .pico-flasher .status-idle     { background: #E5E7EB; color: #374151; }
-      .pico-flasher .status-busy     { background: #DBEAFE; color: #1E40AF; }
-      .pico-flasher .status-success  { background: #D1FAE5; color: #065F46; }
-      .pico-flasher .status-error    { background: #FEE2E2; color: #991B1B; }
+      .pico-flasher .status-idle    { background: #F3F4F6; color: #374151; }
+      .pico-flasher .status-busy    { background: #DBEAFE; color: #1E40AF; }
+      .pico-flasher .status-success { background: #D1FAE5; color: #065F46; }
+      .pico-flasher .status-error   { background: #FEE2E2; color: #991B1B; }
       .pico-flasher .device-info {
-        font-size: 0.85em;
-        margin-bottom: 1em;
-        padding: 0.5em 0.8em;
+        font-size: 0.82em;
+        margin-bottom: 0.8em;
+        padding: 0.4em 0.7em;
         border-radius: 4px;
         background: var(--color-background-primary, #fff);
-        border: 1px solid var(--color-background-border, #ddd);
+        border: 1px solid var(--color-background-border, #e5e7eb);
         display: none;
       }
       .pico-flasher .progress-wrap {
-        height: 6px;
+        height: 5px;
         background: #E5E7EB;
         border-radius: 3px;
-        margin-top: 0.6em;
+        margin-top: 0.5em;
         overflow: hidden;
         display: none;
       }
@@ -132,7 +99,7 @@ Select your firmware below and click **Connect** to begin.
     <div class="pico-flasher" id="picoFlasher">
       <label for="firmwareSelect">Firmware</label>
       <select id="firmwareSelect">
-        <option value="possan-tbd.uf2">Possan TBD (Experimental)</option>
+        <option value="possan-tbd-2026-02-14.uf2">Possan TBD (Experimental) — 2026-02-14</option>
       </select>
 
       <div class="btn-row">
@@ -153,14 +120,25 @@ Select your firmware below and click **Connect** to begin.
       </div>
     </div>
 
+.. note::
+
+   **Requirements:** This flasher uses `WebUSB <https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API#browser_compatibility>`_ —
+   Chrome, Edge or Opera required. Firefox and Safari are **not** supported.
+
+   **BOOTSEL mode:** Hold the **BOOTSEL** button while plugging in the USB cable or while pressing the **RESET** button.
+   On the **dada tbd** device, the BOOTSEL button is on the front panel next to the JTAG USB-C port.
+   The RESET button is to the left of BOOTSEL (or to the right of the 3.5 mm / TRS headphone jack).
+
+.. raw:: html
+
     <script type="module">
       // picoflash – MIT License – Copyright (C) 2025 Piers Finlayson
       import { Picoboot } from '../_static/picoflash/pkg/index.js';
       import { uf2ToFlashBuffer } from '../_static/picoflash/js/uf2.js';
 
       const FIRMWARE_BASE = '../_static/firmware/pico/';
-      const OP_TIMEOUT    = 30000;  // 30s for long operations (flash)
-      const SHORT_TIMEOUT = 5000;   // 5s for quick operations
+      const OP_TIMEOUT    = 30000;
+      const SHORT_TIMEOUT = 5000;
 
       const $ = id => document.getElementById(id);
 
@@ -177,12 +155,10 @@ Select your firmware below and click **Connect** to begin.
       let picoboot = null;
       let connection = null;
 
-      /* ── helpers ─────────────────────────────────────── */
       function setStatus(msg, cls) {
         statusBox.className = 'status-box status-' + cls;
         statusBox.innerHTML = msg;
       }
-
       function showProgress(pct) {
         progressWrap.style.display = 'block';
         progressBar.style.width = pct + '%';
@@ -191,7 +167,6 @@ Select your firmware below and click **Connect** to begin.
         progressWrap.style.display = 'none';
         progressBar.style.width = '0%';
       }
-
       function withTimeout(promise, ms, label) {
         return Promise.race([
           promise,
@@ -200,68 +175,43 @@ Select your firmware below and click **Connect** to begin.
           )
         ]);
       }
-
       function updateButtons(busy) {
         if (busy) {
-          btnConnect.disabled = true;
-          btnFlash.disabled = true;
-          btnReboot.disabled = true;
-          btnDisconnect.disabled = true;
+          btnConnect.disabled = btnFlash.disabled = btnReboot.disabled = btnDisconnect.disabled = true;
           return;
         }
-        const connected = picoboot && picoboot.isConnected();
-        btnConnect.disabled    = connected;
-        btnFlash.disabled      = !connected;
-        btnReboot.disabled     = !connected;
-        btnDisconnect.disabled = !connected;
+        const c = picoboot && picoboot.isConnected();
+        btnConnect.disabled = c;
+        btnFlash.disabled = !c;
+        btnReboot.disabled = !c;
+        btnDisconnect.disabled = !c;
       }
-
       async function tryRecover() {
-        try {
-          if (connection) await connection.resetInterface();
-          return true;
-        } catch (_) {
-          try { if (picoboot) await picoboot.disconnect(); } catch (_) {}
-          picoboot = null;
-          connection = null;
-          deviceInfo.style.display = 'none';
-          return false;
-        }
+        try { if (connection) await connection.resetInterface(); return true; }
+        catch (_) { await doDisconnect(); return false; }
       }
-
       async function doDisconnect() {
         try { if (picoboot) await picoboot.disconnect(); } catch (_) {}
-        picoboot = null;
-        connection = null;
+        picoboot = null; connection = null;
         deviceInfo.style.display = 'none';
       }
 
-      /* ── connect ─────────────────────────────────────── */
+      /* ── connect ── */
       btnConnect.addEventListener('click', async () => {
         try {
           updateButtons(true);
           setStatus('Waiting for device selection…', 'busy');
-
           picoboot = await Picoboot.requestDevice();
-
           setStatus('Connecting…', 'busy');
-          connection = await withTimeout(
-            picoboot.connect(), SHORT_TIMEOUT, 'Connect'
-          );
-
-          // Required: clear endpoint halts so bulk transfers work
+          connection = await withTimeout(picoboot.connect(), SHORT_TIMEOUT, 'Connect');
           setStatus('Resetting interface…', 'busy');
-          await withTimeout(
-            connection.resetInterface(), SHORT_TIMEOUT, 'Reset interface'
-          );
-
+          await withTimeout(connection.resetInterface(), SHORT_TIMEOUT, 'Reset interface');
           const info = picoboot.getUsbDeviceInfo();
           const target = picoboot.getTarget();
           deviceInfo.style.display = 'block';
           deviceInfo.innerHTML =
             '<b>Connected:</b> ' + (info.productName || target.toString()) +
             ' &nbsp;|&nbsp; ' + picoboot.getInfo();
-
           setStatus('Device connected — select firmware and click <b>Flash</b>.', 'success');
         } catch (e) {
           setStatus('Connection failed: ' + e.message, 'error');
@@ -270,61 +220,44 @@ Select your firmware below and click **Connect** to begin.
         updateButtons(false);
       });
 
-      /* ── flash ───────────────────────────────────────── */
+      /* ── flash ── */
       btnFlash.addEventListener('click', async () => {
         const fwFile = fwSelect.value;
         if (!fwFile) { setStatus('Please select a firmware.', 'error'); return; }
-
         try {
           updateButtons(true);
-
-          // Phase 1 – download
-          setStatus('Downloading firmware…', 'busy');
-          showProgress(10);
+          setStatus('Downloading firmware…', 'busy'); showProgress(10);
           const resp = await fetch(FIRMWARE_BASE + fwFile);
           if (!resp.ok) throw new Error('Download failed: HTTP ' + resp.status);
           const uf2Data = new Uint8Array(await resp.arrayBuffer());
           showProgress(25);
-
-          // Phase 2 – parse UF2
           setStatus('Parsing UF2 file…', 'busy');
           const { address, data } = uf2ToFlashBuffer(uf2Data);
           const sizeKB = (data.length / 1024).toFixed(0);
           setStatus('Erasing & writing ' + sizeKB + ' KB at 0x' + address.toString(16) + '…', 'busy');
           showProgress(35);
-
-          // Phase 3 – erase & write (library internally calls resetInterface + exitXip)
           await picoboot.flashEraseAndWrite(address, data);
           showProgress(100);
-
           setStatus('Flash complete &#10003; — click <b>Reboot</b> to restart the device.', 'success');
         } catch (e) {
           hideProgress();
-          setStatus('Flash failed: ' + e.message + '. Attempting recovery…', 'error');
           const recovered = await tryRecover();
-          if (!recovered) {
-            setStatus('Flash failed: ' + e.message + '. Device disconnected — please reconnect.', 'error');
-          } else {
-            setStatus('Flash failed: ' + e.message + '. Device recovered — you can try again.', 'error');
-          }
+          setStatus('Flash failed: ' + e.message +
+            (recovered ? '. Device recovered — you can try again.' : '. Please reconnect the device.'),
+            'error');
         }
         updateButtons(false);
       });
 
-      /* ── reboot ──────────────────────────────────────── */
+      /* ── reboot ── */
       btnReboot.addEventListener('click', async () => {
         try {
           updateButtons(true);
           setStatus('Rebooting device…', 'busy');
-          try {
-            await withTimeout(connection.reboot(100), SHORT_TIMEOUT, 'Reboot');
-          } catch (e) {
-            console.warn('Reboot command error (may be expected):', e.message);
-          }
-          // Always disconnect after reboot
-          await doDisconnect();
-          hideProgress();
-          setStatus('Device rebooted and disconnected successfully.', 'success');
+          try { await withTimeout(connection.reboot(100), SHORT_TIMEOUT, 'Reboot'); }
+          catch (e) { console.warn('Reboot command error (may be expected):', e.message); }
+          await doDisconnect(); hideProgress();
+          setStatus('Device rebooted and disconnected.', 'success');
         } catch (e) {
           setStatus('Reboot failed: ' + e.message, 'error');
           await doDisconnect();
@@ -332,20 +265,15 @@ Select your firmware below and click **Connect** to begin.
         updateButtons(false);
       });
 
-      /* ── disconnect ──────────────────────────────────── */
+      /* ── disconnect ── */
       btnDisconnect.addEventListener('click', async () => {
-        await doDisconnect();
-        hideProgress();
+        await doDisconnect(); hideProgress();
         setStatus('Disconnected.', 'idle');
         updateButtons(false);
       });
 
-      /* ── WebUSB support check ────────────────────────── */
       if (!('usb' in navigator)) {
-        setStatus(
-          'Your browser does not support WebUSB. Please use Chrome, Edge or Opera.',
-          'error'
-        );
+        setStatus('Your browser does not support WebUSB. Please use Chrome, Edge or Opera.', 'error');
         btnConnect.disabled = true;
       }
     </script>
@@ -354,17 +282,13 @@ Select your firmware below and click **Connect** to begin.
 Download Latest Firmware
 ========================
 
-You can also download firmware files directly:
-
-* `Possan TBD UF2 <../_static/firmware/pico/possan-tbd.uf2>`_
+* `possan-tbd-2026-02-14.uf2 <../_static/firmware/pico/possan-tbd-2026-02-14.uf2>`_
 
 
 Manual Flashing (UF2 Drag-and-Drop)
 ====================================
 
-If the web flasher does not work, you can flash using the standard UF2 method:
-
 1. Put the device into **BOOTSEL mode** (hold BOOTSEL while pressing RESET or plugging in USB).
-2. A USB drive named ``RPI-RP2`` will appear on your computer.
+2. A USB drive named ``RP2350 Boot`` will appear on your computer.
 3. Drag and drop the ``.uf2`` file onto the drive.
 4. The device will reboot automatically after the file is copied.

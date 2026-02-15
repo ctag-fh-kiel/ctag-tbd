@@ -6,7 +6,7 @@
       {
         "chipFamily": "ESP32-P4",
         "parts": [
-          { "path": "../firmware/p4/ctag-tbd.bin", "offset": 0 }
+          { "path": "../firmware/p4/ctag-tbd-2026-02-11.bin", "offset": 0 }
         ]
       }
     ]

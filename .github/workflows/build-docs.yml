@@ -10,29 +10,11 @@ jobs:
       - name: check out repo
         uses: actions/checkout@v3
 
-      - name: create downloads dir
-        run: mkdir -p build/docs/html/downloads
-
       - name: build tbd docs image
         run: ls -1 docs/config/tbd_docs.Dockerfile && docker build -t tbd_docs -f docs/config/tbd_docs.Dockerfile docs/config
 
       - name: build docs
         run: docker run -v $PWD:/code tbd_docs
-
-      # - name: fetch builds
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     path: build/docs/html/downloads
-      #     pattern: "*_firmware"
-      #     merge-multiple: true
-
-      - name: Copy manual downloads
-        run: |
-          echo "Copying downloads..."
-          mkdir -p build/docs/html/downloads
-          ls -R docs/downloads
-          cp -r docs/downloads/* build/docs/html/downloads/
-          ls -R build/docs/html/downloads
 
       - name: upload static web content
         id: deployment
