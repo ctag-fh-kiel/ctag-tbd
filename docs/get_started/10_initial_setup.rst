@@ -25,9 +25,13 @@ Step 1: Remove the SD Cards
 
 The device comes with two SD card slots. Before flashing the firmware, you must remove both SD cards:
 
-1. **Locate the SD card slots** on the front panel of your device
+1. **Locate the SD card slots** on the front panel of your device:
+   
+   * **Middle slot** (closer to the center of the PCB) — ESP32-P4 SD card
+   * **Edge slot** (closer to the board edge) — RP2350 SD card
+
 2. **Gently push** each card inward until it clicks and pops out
-3. **Set them aside** in a safe place
+3. **Set them aside** in a safe place — label them so you don't mix them up
 
 You'll reinsert them after updating the firmware.
 
@@ -117,8 +121,8 @@ Now that both SD cards are ready, insert them back into your device.
 
 **Inserting the cards:**
 
-1. **Insert the ESP32-P4 SD card** into the lower slot (main processor)
-2. **Insert the RP2350 SD card** into the upper slot (co-processor)
+1. **Insert the ESP32-P4 SD card** into the **middle slot** (closer to the center of the PCB)
+2. **Insert the RP2350 SD card** into the **edge slot** (closer to the board/PCB edge)
 3. Gently push each card until it clicks into place
 
 **First boot process:**
