@@ -1,3 +1,4 @@
 build/
 /hw/pcb/*.bak
 /hw/pcb/*.bak
+.DS_Store
