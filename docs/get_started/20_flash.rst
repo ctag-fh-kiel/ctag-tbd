@@ -16,13 +16,13 @@ device when asked for permission by browser.
         src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"
         ></script>
 
-        <esp-web-install-button manifest="_static/device_manifests/manifest-tbd-ctag.json">
+        <esp-web-install-button manifest="../_static/device_manifests/manifest-tbd-ctag.json">
             <button slot="activate">Flash CTAG TBD (Development)</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="_static/device_manifests/manifest-tbd-possan.json">
+        <esp-web-install-button manifest="../_static/device_manifests/manifest-tbd-possan.json">
             <button slot="activate">Flash Possan TBD (Experimental)</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
