@@ -314,7 +314,6 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           </ul>
           <h4>When done:</h4>
           <ul>
-            <li>OLED shows the groovebox interface</li>
             <li>Device is ready for the Possan firmware update</li>
           </ul>
         </div>
@@ -410,9 +409,17 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           if (stepNum === 2) {
             const p4Flasher = document.getElementById('flasher-p4');
             if (p4Flasher) p4Flasher.style.display = 'block';
+            // Reset and select CTAG firmware
+            if (typeof window.resetEspFlasher === 'function') window.resetEspFlasher();
+            var espSel2 = document.getElementById('espFirmwareSelect');
+            if (espSel2) espSel2.value = 'ctag';
           } else if (stepNum === 3) {
             const rp2350Flasher = document.getElementById('flasher-rp2350');
             if (rp2350Flasher) rp2350Flasher.style.display = 'block';
+            // Reset and select CTAG firmware
+            if (typeof window.resetPicoFlasher === 'function') window.resetPicoFlasher();
+            var picoSel3 = document.getElementById('picoFirmwareSelect');
+            if (picoSel3) picoSel3.value = 'ctag-tbd-2026-02-11.uf2';
           } else if (stepNum === 6) {
             // Show both flashers for step 6
             const p4Flasher = document.getElementById('flasher-p4');
