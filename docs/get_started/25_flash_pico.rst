@@ -5,7 +5,11 @@ RP2350 Device Flasher
 Flash Device From Browser
 =========================
 
-Select your firmware, click **Connect** and choose your device to begin flashing.
+Put your device in **BOOTSEL mode** (hold the BOOTSEL button while plugging in USB or pressing RESET),
+select your firmware and click **Connect**.
+On the **dada tbd** device, BOOTSEL is on the front panel next to the JTAG USB-C port;
+RESET is to its left (or to the right of the 3.5 mm headphone jack).
+Chrome, Edge or Opera required — Firefox and Safari do not support WebUSB.
 
 .. raw:: html
 
@@ -119,15 +123,6 @@ Select your firmware, click **Connect** and choose your device to begin flashing
         <div class="progress-bar" id="progressBar"></div>
       </div>
     </div>
-
-.. note::
-
-   **Requirements:** This flasher uses `WebUSB <https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API#browser_compatibility>`_ —
-   Chrome, Edge or Opera required. Firefox and Safari are **not** supported.
-
-   **BOOTSEL mode:** Hold the **BOOTSEL** button while plugging in the USB cable or while pressing the **RESET** button.
-   On the **dada tbd** device, the BOOTSEL button is on the front panel next to the JTAG USB-C port.
-   The RESET button is to the left of BOOTSEL (or to the right of the 3.5 mm / TRS headphone jack).
 
 .. raw:: html
 
