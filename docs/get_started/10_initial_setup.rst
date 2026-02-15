@@ -209,6 +209,11 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
       body[data-theme="dark"] .fw-label {
         color: #e2e8f0 !important;
       }
+      body[data-theme="dark"] .step-callout-warn {
+        background: #422006 !important;
+        border-left-color: #D97706 !important;
+        color: #FDE68A !important;
+      }
       /* Also support auto (system) dark mode */
       @media (prefers-color-scheme: dark) {
         body:not([data-theme="light"]) .steps-overview {
@@ -258,6 +263,11 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         }
         body:not([data-theme="light"]) .fw-label {
           color: #e2e8f0 !important;
+        }
+        body:not([data-theme="light"]) .step-callout-warn {
+          background: #422006 !important;
+          border-left-color: #D97706 !important;
+          color: #FDE68A !important;
         }
       }
     </style>
@@ -351,7 +361,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         <div class="step-content">
           <h4>Physical setup:</h4>
           <ul>
-            <li>Plug the <b>outer back USB-C port</b> (back, port #2 — furthest from the edge) into your computer</li>
+            <li>Plug the <b>back USB-C port</b> (closest to the base edge) into your computer</li>
           </ul>
           <h4>Enter BOOTSEL mode:</h4>
           <ul>
@@ -384,7 +394,9 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             <li>Format as <b>FAT32</b>, label <b>NO NAME</b>
               <span style="font-size: 0.78em; color: #888;"> — macOS: Disk Utility → MS-DOS (FAT) | Win: right-click → FAT32 | Linux: <code style="font-size: 0.95em;">mkfs.vfat -n "NO NAME"</code></span>
             </li>
-            <li>Download <a href="../_static/sdcard_image/tbd-sd-card.zip" target="_blank"><b>tbd-sd-card.zip</b></a> + <a href="../_static/sdcard_image/tbd-sd-card-hash.txt" target="_blank"><b>tbd-sd-card-hash.txt</b></a> (samples &amp; settings)</li>
+            <li>Download <a href="../_static/sdcard_image/tbd-sd-card.zip" target="_blank"><b>tbd-sd-card.zip</b></a> + <a href="../_static/sdcard_image/tbd-sd-card-hash.txt" target="_blank"><b>tbd-sd-card-hash.txt</b></a><br>
+              <span style="font-size: 0.78em; color: #888;">Right-click each link → <b>Save Link As…</b></span>
+            </li>
             <li>Copy <b>both files</b> to the SD card root (do NOT unzip) → eject</li>
           </ul>
           <h4>RP2350 SD card (edge slot):</h4>
@@ -441,17 +453,14 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             <li>The RP2350 flasher below is pre-set to <b>Possan</b> firmware</li>
             <li>Click Connect → Flash → Reboot</li>
           </ul>
-          <div class="step-progress" style="background: #FEF3C7; color: #92400E; margin: 0.5em 0 1em;">
-            ⚠️ After flashing the RP2350, the OLED may show <b>"P4 dead"</b> — this is <b>normal</b>. The ESP32-P4 still has the old firmware. It will be fixed in the next step below.
+          <div class="step-callout-warn" style="margin: 0.8em 0 1.2em; padding: 0.8em 1em; border-left: 4px solid #F59E0B; background: #FFFBEB; border-radius: 0 6px 6px 0; font-size: 0.92em; color: #78350F; line-height: 1.5;">
+            <b>⚠️ Note:</b> After flashing the RP2350, the OLED may show <b>"P4 dead"</b> — this is <b>normal</b>. The ESP32-P4 still has the old firmware. It will be fixed by flashing the P4 below.
           </div>
           <h4>Then ESP32-P4:</h4>
           <ul>
             <li>The ESP32-P4 flasher below is pre-set to <b>Possan</b> firmware</li>
             <li>Click Connect → Flash → Disconnect</li>
           </ul>
-          <div class="step-progress">
-            Both flashers are visible below — firmware is pre-selected for you
-          </div>
         </div>
         <div class="step-nav">
           <button class="btn-step btn-prev" onclick="goToStep(5)">← Previous</button>
