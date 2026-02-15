@@ -110,8 +110,6 @@ Select your firmware, connect your device, and flash directly from the browser.
       }
     </style>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" async></script>
-
     <div class="esp-flasher" id="espFlasher">
       <label for="espFirmwareSelect">Firmware</label>
       <select id="espFirmwareSelect">
@@ -285,14 +283,6 @@ Select your firmware, connect your device, and flash directly from the browser.
                 setProgress(pct);
               }
             };
-
-            /* MD5 verification (optional — uses CryptoJS if loaded) */
-            if (typeof CryptoJS !== 'undefined') {
-              flashOptions.calculateMD5Hash = function (image) {
-                var raw = Array.from(image, function (b) { return String.fromCharCode(b); }).join('');
-                return CryptoJS.MD5(CryptoJS.enc.Latin1.parse(raw)).toString();
-              };
-            }
 
             await esploader.writeFlash(flashOptions);
             setProgress(100);
