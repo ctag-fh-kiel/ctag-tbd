@@ -427,7 +427,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             <li><b>Edge slot:</b> Insert the RP2350 SD card</li>
             <li>Push each until it clicks</li>
           </ul>
-          <h4>Power on and wait (~1–2 minutes):</h4>
+          <h4>Power on and wait (~2–3 minutes):</h4>
           <ul>
             <li>Device powers on</li>
             <li>OLED shows initialization messages</li>
@@ -580,18 +580,22 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
     <div id="flasher-rp2350" class="flasher-section">
     <style>
       .pico-flasher {
-        border: 1px solid var(--color-background-border, #d1d5db);
+        border: 2px solid #06b6d4;
         border-radius: 8px;
         padding: 1.5em 1.8em;
         margin: 1em 0 1.5em;
-        background: var(--color-background-secondary, #fafafa);
+        background: linear-gradient(135deg, #f0f9fa 0%, #e0f7ff 100%);
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.15);
       }
       .pico-flasher label {
         display: block;
-        font-weight: 600;
+        font-weight: 700;
         margin-bottom: 0.35em;
-        font-size: 0.95em;
-        color: var(--color-foreground-secondary, #555);
+        font-size: 1em;
+        color: #0d9488;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85em;
       }
       .pico-flasher select {
         width: 100%;
@@ -634,10 +638,10 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         min-height: 1.3em;
         word-break: break-word;
       }
-      .pico-flasher .status-idle    { background: #F3F4F6; color: #374151; }
-      .pico-flasher .status-busy    { background: #DBEAFE; color: #1E40AF; }
-      .pico-flasher .status-success { background: #D1FAE5; color: #065F46; }
-      .pico-flasher .status-error   { background: #FEE2E2; color: #991B1B; }
+      .pico-flasher .status-idle    { background: #d0f0f7; color: #0d5a6f; }
+      .pico-flasher .status-busy    { background: #a5e8f2; color: #006b85; }
+      .pico-flasher .status-success { background: #86efac; color: #15803d; }
+      .pico-flasher .status-error   { background: #fca5a5; color: #7f1d1d; }
       .pico-flasher .device-info {
         font-size: 0.82em;
         margin-bottom: 0.8em;
@@ -657,10 +661,40 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
       }
       .pico-flasher .progress-bar {
         height: 100%;
-        background: #2563EB;
+        background: #06b6d4;
         border-radius: 3px;
         width: 0%;
         transition: width 0.3s;
+      }
+
+      /* Dark mode support (Furo theme) */
+      body[data-theme="dark"] .pico-flasher {
+        border-color: #22d3ee;
+        background: linear-gradient(135deg, #164e63 0%, #0c4a6e 100%);
+        box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
+      }
+      body[data-theme="dark"] .pico-flasher label {
+        color: #22d3ee;
+      }
+      body[data-theme="dark"] .pico-flasher .status-idle    { background: #1e3a4a; color: #7ee8f5; }
+      body[data-theme="dark"] .pico-flasher .status-busy    { background: #0d6b7c; color: #a5e8f2; }
+      body[data-theme="dark"] .pico-flasher .status-success { background: #134e4a; color: #86efac; }
+      body[data-theme="dark"] .pico-flasher .status-error   { background: #5c1f1f; color: #fca5a5; }
+
+      /* System dark mode fallback */
+      @media (prefers-color-scheme: dark) {
+        body:not([data-theme="light"]) .pico-flasher {
+          border-color: #22d3ee;
+          background: linear-gradient(135deg, #164e63 0%, #0c4a6e 100%);
+          box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
+        }
+        body:not([data-theme="light"]) .pico-flasher label {
+          color: #22d3ee;
+        }
+        body:not([data-theme="light"]) .pico-flasher .status-idle    { background: #1e3a4a; color: #7ee8f5; }
+        body:not([data-theme="light"]) .pico-flasher .status-busy    { background: #0d6b7c; color: #a5e8f2; }
+        body:not([data-theme="light"]) .pico-flasher .status-success { background: #134e4a; color: #86efac; }
+        body:not([data-theme="light"]) .pico-flasher .status-error   { background: #5c1f1f; color: #fca5a5; }
       }
     </style>
 
@@ -847,18 +881,22 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
     <div id="flasher-p4" class="flasher-section">
     <style>
       .esp-flasher {
-        border: 1px solid var(--color-background-border, #d1d5db);
+        border: 2px solid #f97316;
         border-radius: 8px;
         padding: 1.5em 1.8em;
         margin: 1em 0 1.5em;
-        background: var(--color-background-secondary, #fafafa);
+        background: linear-gradient(135deg, #fef5e7 0%, #fff5eb 100%);
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
       }
       .esp-flasher label {
         display: block;
-        font-weight: 600;
+        font-weight: 700;
         margin-bottom: 0.35em;
-        font-size: 0.95em;
-        color: var(--color-foreground-secondary, #555);
+        font-size: 1em;
+        color: #c2410c;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85em;
       }
       .esp-flasher select {
         width: 100%;
@@ -925,16 +963,62 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         min-height: 1.3em;
         margin-top: 0.8em;
         word-break: break-word;
-        background: #F3F4F6;
-        color: #374151;
+        background: #fed0a0;
+        color: #7c2d12;
       }
       .esp-flasher .status-success {
-        background: #DEF7EC;
-        color: #065F46;
+        background: #86efac;
+        color: #15803d;
       }
       .esp-flasher .status-error {
-        background: #FEE2E2;
-        color: #991B1B;
+        background: #fca5a5;
+        color: #7f1d1d;
+      }
+
+      /* Dark mode support (Furo theme) */
+      body[data-theme="dark"] .esp-flasher {
+        border-color: #fb923c;
+        background: linear-gradient(135deg, #5a2d05 0%, #6b3d0d 100%);
+        box-shadow: 0 4px 12px rgba(251, 146, 60, 0.2);
+      }
+      body[data-theme="dark"] .esp-flasher label {
+        color: #fb923c;
+      }
+      body[data-theme="dark"] .esp-flasher .status-box {
+        background: #7c3d0f;
+        color: #fbd1a8;
+      }
+      body[data-theme="dark"] .esp-flasher .status-success {
+        background: #134e4a;
+        color: #86efac;
+      }
+      body[data-theme="dark"] .esp-flasher .status-error {
+        background: #5c1f1f;
+        color: #fca5a5;
+      }
+
+      /* System dark mode fallback */
+      @media (prefers-color-scheme: dark) {
+        body:not([data-theme="light"]) .esp-flasher {
+          border-color: #fb923c;
+          background: linear-gradient(135deg, #5a2d05 0%, #6b3d0d 100%);
+          box-shadow: 0 4px 12px rgba(251, 146, 60, 0.2);
+        }
+        body:not([data-theme="light"]) .esp-flasher label {
+          color: #fb923c;
+        }
+        body:not([data-theme="light"]) .esp-flasher .status-box {
+          background: #7c3d0f;
+          color: #fbd1a8;
+        }
+        body:not([data-theme="light"]) .esp-flasher .status-success {
+          background: #134e4a;
+          color: #86efac;
+        }
+        body:not([data-theme="light"]) .esp-flasher .status-error {
+          background: #5c1f1f;
+          color: #fca5a5;
+        }
       }
     </style>
 
