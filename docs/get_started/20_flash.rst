@@ -261,12 +261,14 @@ Select your firmware, connect your device, and flash directly from the browser.
             var data = new Uint8Array(await resp.arrayBuffer());
 
             /* esptool-js v0.5.7 expects fileArray[].data as a binary string,
-             * not a Uint8Array.  Convert in chunks to avoid call-stack overflow. */
-            var binaryString = '';
+             * not a Uint8Array.  Convert in 8 KB chunks to avoid call-stack
+             * overflow on String.fromCharCode.apply(). */
+            var chunks = [];
             var chunkSize = 8192;
             for (var i = 0; i < data.length; i += chunkSize) {
-              binaryString += String.fromCharCode.apply(null, data.subarray(i, i + chunkSize));
+              chunks.push(String.fromCharCode.apply(null, data.subarray(i, i + chunkSize)));
             }
+            var binaryString = chunks.join('');
 
             var sizeMB = (data.length / 1024 / 1024).toFixed(1);
             setStatus('Flashing <b>' + fw.name + '</b> (' + sizeMB + ' MB) — do not unplug the device…');
@@ -298,12 +300,16 @@ Select your firmware, connect your device, and flash directly from the browser.
 
             try { await esploader.after(); } catch (_) {}    /* hard-reset */
 
+            /* Device has been reset — auto-disconnect and return to initial state */
+            await cleanup();
+            btnConnect.disabled = false;
+            sel.disabled        = false;
             setStatus('&#10003; Flash complete. The device has been reset and is ready to use.', 'success');
           } catch (e) {
             console.error(e);
             setStatus('Flash failed: ' + e.message, 'error');
-          } finally {
             btnDisconnect.disabled = false;
+            if (connected) btnFlash.disabled = false;   /* allow retry */
           }
         });
 
