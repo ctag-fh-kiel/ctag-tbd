@@ -1,0 +1,50 @@
+name: documentation
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out repo
+        uses: actions/checkout@v3
+
+      - name: create downloads dir
+        run: mkdir -p build/docs/html/downloads
+
+      - name: build tbd docs image
+        run: ls -1 docs/config/tbd_docs.Dockerfile && docker build -t tbd_docs -f docs/config/tbd_docs.Dockerfile docs/config
+
+      - name: build docs
+        run: docker run -v $PWD:/code tbd_docs
+
+      # - name: fetch builds
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     path: build/docs/html/downloads
+      #     pattern: "*_firmware"
+      #     merge-multiple: true
+
+      - name: upload static web content
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/docs/html/
+
+  deploy:
+    needs: build
+
+    permissions:
+      pages: write      
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy docs
+        id: deployment
+        uses: actions/deploy-pages@v4
