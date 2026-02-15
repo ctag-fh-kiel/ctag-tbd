@@ -5,11 +5,16 @@ RP2350 Device Flasher
 Flash Device From Browser
 =========================
 
-Put your device in **BOOTSEL mode** (hold the BOOTSEL button while plugging in USB or pressing RESET),
-select your firmware and click **Connect**.
-On the **dada tbd** device, BOOTSEL is on the front panel next to the JTAG USB-C port;
-RESET is to its left (or to the right of the 3.5 mm headphone jack).
-Chrome, Edge or Opera required — Firefox and Safari do not support WebUSB.
+**How to enter BOOTSEL mode:** Hold the **BOOTSEL** button while plugging in USB or pressing **RESET**.
+
+**Button locations on the dada tbd:**
+
+* **BOOTSEL** — front panel, next to the JTAG USB-C port.
+* **RESET** — to its left (or to the right of the 3.5 mm headphone jack).
+
+Once in BOOTSEL mode, select your firmware and click **Connect**.
+
+**Browser:** Chrome, Edge or Opera required — Firefox and Safari do not support WebUSB.
 
 .. raw:: html
 

@@ -1,7 +1,6 @@
 {
     "name": "ctag-dada-tbd",
     "version": "latest",
-    "new_install_prompt_erase": true,
     "builds": [
       {
         "chipFamily": "ESP32-P4",

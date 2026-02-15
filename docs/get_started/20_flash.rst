@@ -6,9 +6,13 @@ Flash Device From Browser
 =========================
 
 Select your firmware and click **Install** to flash your ESP32-P4.
-Connect a USB cable to the **JTAG USB-C port on the front** of the device for the data connection,
-and a second USB cable to one of the **two USB-C ports on the back** for power.
-Chrome, Edge or Opera required.
+
+**Hardware setup:**
+
+1. Connect a USB cable to the **JTAG USB-C port on the front** of the device (data connection).
+2. Connect a second USB cable to one of the **two USB-C ports on the back** (power).
+
+**Browser:** Chrome, Edge or Opera required.
 
 .. raw:: html
 
