@@ -2,9 +2,9 @@
 Initial Device Setup Guide
 ****************************
 
-Interactive step-by-step setup for your TBD device. Both flashing tools are built in below.
+Complete interactive setup for your TBD device. Navigate through 7 simple steps.
 
-**Time:** ~15–20 min | **Requirements:** TBD device, 2× USB-C cables, Chrome/Edge/Opera, 2× SD cards + reader
+**Time:** 15–20 minutes | **Requirements:** TBD device, 2× USB-C cables, Chrome/Edge/Opera, 2× SD cards, reader
 
 .. raw:: html
 
@@ -12,6 +12,44 @@ Interactive step-by-step setup for your TBD device. Both flashing tools are buil
       #setupGuide {
         font-family: system-ui, -apple-system, sans-serif;
         max-width: 900px;
+      }
+      .steps-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.8em;
+        margin: 2em 0;
+        padding: 1.5em;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+      .step-overview-item {
+        text-align: center;
+        padding: 1em;
+        border-radius: 6px;
+        background: white;
+        border: 2px solid #ddd;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .step-overview-item:hover {
+        border-color: #2563EB;
+        background: #f0f9ff;
+      }
+      .step-overview-item.active {
+        background: #2563EB;
+        color: white;
+        border-color: #2563EB;
+      }
+      .step-overview-num {
+        font-weight: 700;
+        font-size: 1.2em;
+        margin-bottom: 0.3em;
+      }
+      .step-overview-label {
+        font-size: 0.75em;
+        line-height: 1.3;
+        opacity: 0.85;
       }
       .setup-step {
         display: none;
@@ -34,16 +72,16 @@ Interactive step-by-step setup for your TBD device. Both flashing tools are buil
         display: flex;
         align-items: center;
         justify-content: center;
-        min-width: 32px;
-        height: 32px;
+        min-width: 36px;
+        height: 36px;
         background: #2563EB;
         color: white;
         border-radius: 50%;
         font-weight: 600;
-        font-size: 0.95em;
+        font-size: 1em;
       }
       .step-title {
-        font-size: 1.3em;
+        font-size: 1.4em;
         font-weight: 700;
         color: #1a1a1a;
         margin: 0;
@@ -84,12 +122,8 @@ Interactive step-by-step setup for your TBD device. Both flashing tools are buil
         font-size: 0.95em;
         transition: opacity 0.15s;
       }
-      .btn-step:hover:not(:disabled) {
+      .btn-step:hover {
         opacity: 0.85;
-      }
-      .btn-step:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
       }
       .btn-next {
         background: #2563EB;
@@ -127,6 +161,38 @@ Interactive step-by-step setup for your TBD device. Both flashing tools are buil
     </style>
 
     <div id="setupGuide">
+      <!-- STEP OVERVIEW -->
+      <div class="steps-overview">
+        <div class="step-overview-item active" onclick="goToStep(1)">
+          <div class="step-overview-num">1</div>
+          <div class="step-overview-label">Remove<br>SD Cards</div>
+        </div>
+        <div class="step-overview-item" onclick="goToStep(2)">
+          <div class="step-overview-num">2</div>
+          <div class="step-overview-label">Flash<br>P4</div>
+        </div>
+        <div class="step-overview-item" onclick="goToStep(3)">
+          <div class="step-overview-num">3</div>
+          <div class="step-overview-label">Flash<br>RP2350</div>
+        </div>
+        <div class="step-overview-item" onclick="goToStep(4)">
+          <div class="step-overview-num">4</div>
+          <div class="step-overview-label">Prepare<br>SD Cards</div>
+        </div>
+        <div class="step-overview-item" onclick="goToStep(5)">
+          <div class="step-overview-num">5</div>
+          <div class="step-overview-label">Insert &<br>Boot</div>
+        </div>
+        <div class="step-overview-item" onclick="goToStep(6)">
+          <div class="step-overview-num">6</div>
+          <div class="step-overview-label">Update<br>Possan</div>
+        </div>
+        <div class="step-overview-item" onclick="goToStep(7)">
+          <div class="step-overview-num">7</div>
+          <div class="step-overview-label">Verify<br>Setup</div>
+        </div>
+      </div>
+
       <!-- STEP 1: Remove SD Cards -->
       <div class="setup-step active" data-step="1">
         <div class="step-header">
@@ -135,8 +201,8 @@ Interactive step-by-step setup for your TBD device. Both flashing tools are buil
         </div>
         <div class="step-content">
           <div class="pcb-image">
-            <img src="/docs/get_started/_static/assets/dada-tbd-pcb-backside_001.jpg" alt="TBD PCB showing SD card slots">
-            <div class="pcb-caption">
+            <img src="_static/assets/dada-tbd-pcb-backside_001.jpg" alt="TBD PCB showing SD card slots" style="max-width: 100%; width: 100%; max-width: 500px; border: 1px solid #ccc; border-radius: 6px;">
+            <div class="pcb-caption" style="font-size: 0.85em; color: #666; margin-top: 0.5em; line-height: 1.4;">
               <strong>Red circle:</strong> ESP32-P4 SD card slot (middle)<br>
               <strong>Other slot:</strong> RP2350 SD card slot (near edge)
             </div>
@@ -168,6 +234,10 @@ Interactive step-by-step setup for your TBD device. Both flashing tools are buil
           </ul>
           <h4>Use the flasher below:</h4>
         </div>
+        <div class="step-nav">
+          <button class="btn-step btn-prev" onclick="goToStep(1)">← Previous</button>
+          <button class="btn-step btn-next" onclick="goToStep(3)">Next Step →</button>
+        </div>
       </div>
 
       <!-- STEP 3: Flash RP2350 -->
@@ -184,6 +254,10 @@ Interactive step-by-step setup for your TBD device. Both flashing tools are buil
             <li>Release both buttons</li>
           </ul>
           <h4>Use the flasher below:</h4>
+        </div>
+        <div class="step-nav">
+          <button class="btn-step btn-prev" onclick="goToStep(2)">← Previous</button>
+          <button class="btn-step btn-next" onclick="goToStep(4)">Next Step →</button>
         </div>
       </div>
 
@@ -323,18 +397,41 @@ Interactive step-by-step setup for your TBD device. Both flashing tools are buil
 
     <script>
       function goToStep(stepNum) {
+        // Hide all steps
         document.querySelectorAll('.setup-step').forEach(el => el.classList.remove('active'));
+        // Hide all flasher sections
+        document.querySelectorAll('.flasher-section').forEach(el => el.style.display = 'none');
+        // Update overview dots
+        document.querySelectorAll('.step-overview-item').forEach(el => el.classList.remove('active'));
+        const activeOverview = document.querySelector(`.step-overview-item:nth-child(${stepNum})`);
+        if (activeOverview) activeOverview.classList.add('active');
+        
+        // Show current step
         const step = document.querySelector(`[data-step="${stepNum}"]`);
         if (step) {
           step.classList.add('active');
+          // Show relevant flasher sections
+          if (stepNum === 2) {
+            const p4Flasher = document.getElementById('flasher-p4');
+            if (p4Flasher) p4Flasher.style.display = 'block';
+          } else if (stepNum === 3) {
+            const rp2350Flasher = document.getElementById('flasher-rp2350');
+            if (rp2350Flasher) rp2350Flasher.style.display = 'block';
+          } else if (stepNum === 6) {
+            const p4FlasherStep6 = document.getElementById('flasher-p4-step6');
+            const rp2350FlasherStep6 = document.getElementById('flasher-rp2350-step6');
+            if (p4FlasherStep6) p4FlasherStep6.style.display = 'block';
+            if (rp2350FlasherStep6) rp2350FlasherStep6.style.display = 'block';
+          }
           step.scrollIntoView({ behavior: 'smooth', block: 'start' });
           window.scrollTo(0, step.offsetTop - 100);
         }
       }
       
-      // Scroll flashers into view when user reaches that step
+      // Initialize on load
       document.addEventListener('DOMContentLoaded', function() {
-        // Note: flashers will be added below in separate raw:: html blocks
+        // Mark all flasher sections as hidden initially
+        document.querySelectorAll('.flasher-section').forEach(el => el.style.display = 'none');
       });
     </script>
 
@@ -345,6 +442,7 @@ Flash ESP32-P4 (Main Processor)
 
 .. raw:: html
 
+    <div id="flasher-p4" class="flasher-section">
     <style>
       .esp-flasher {
         border: 1px solid var(--color-background-border, #d1d5db);
@@ -621,6 +719,7 @@ Flash ESP32-P4 (Main Processor)
         });
       })();
     </script>
+    </div>
 
 
 
@@ -629,6 +728,7 @@ Flash RP2350 (Secondary Processor)
 
 .. raw:: html
 
+    <div id="flasher-rp2350" class="flasher-section">
     <style>
       .pico-flasher {
         border: 1px solid var(--color-background-border, #d1d5db);
@@ -867,3 +967,4 @@ Flash RP2350 (Secondary Processor)
         });
       }
     </script>
+    </div>
