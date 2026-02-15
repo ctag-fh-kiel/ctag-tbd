@@ -159,6 +159,107 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         margin-top: 0.5em;
         line-height: 1.4;
       }
+
+      /* ── Dark-mode overrides (Furo theme) ── */
+      body[data-theme="dark"] .steps-overview {
+        background: #1e293b;
+        border-color: #334155;
+      }
+      body[data-theme="dark"] .step-overview-item {
+        background: #0f172a;
+        border-color: #475569;
+        color: #e2e8f0;
+      }
+      body[data-theme="dark"] .step-overview-item:hover {
+        background: #1e3a5f;
+        border-color: #60a5fa;
+      }
+      body[data-theme="dark"] .step-overview-item.active {
+        background: #2563EB;
+        color: #fff;
+        border-color: #2563EB;
+      }
+      body[data-theme="dark"] .setup-step {
+        background: rgba(37, 99, 235, 0.08);
+      }
+      body[data-theme="dark"] .step-title {
+        color: #f1f5f9 !important;
+      }
+      body[data-theme="dark"] .step-content h4 {
+        color: #cbd5e1;
+      }
+      body[data-theme="dark"] .step-content p,
+      body[data-theme="dark"] .step-content li {
+        color: #e2e8f0;
+      }
+      body[data-theme="dark"] .step-nav {
+        border-top-color: #334155;
+      }
+      body[data-theme="dark"] .btn-prev {
+        background: #334155;
+        color: #e2e8f0;
+      }
+      body[data-theme="dark"] .step-progress {
+        background: #1e3a5f;
+        color: #93c5fd;
+      }
+      body[data-theme="dark"] .pcb-caption {
+        color: #94a3b8;
+      }
+      body[data-theme="dark"] .fw-label {
+        color: #e2e8f0 !important;
+      }
+      /* Also support auto (system) dark mode */
+      @media (prefers-color-scheme: dark) {
+        body:not([data-theme="light"]) .steps-overview {
+          background: #1e293b;
+          border-color: #334155;
+        }
+        body:not([data-theme="light"]) .step-overview-item {
+          background: #0f172a;
+          border-color: #475569;
+          color: #e2e8f0;
+        }
+        body:not([data-theme="light"]) .step-overview-item:hover {
+          background: #1e3a5f;
+          border-color: #60a5fa;
+        }
+        body:not([data-theme="light"]) .step-overview-item.active {
+          background: #2563EB;
+          color: #fff;
+          border-color: #2563EB;
+        }
+        body:not([data-theme="light"]) .setup-step {
+          background: rgba(37, 99, 235, 0.08);
+        }
+        body:not([data-theme="light"]) .step-title {
+          color: #f1f5f9 !important;
+        }
+        body:not([data-theme="light"]) .step-content h4 {
+          color: #cbd5e1;
+        }
+        body:not([data-theme="light"]) .step-content p,
+        body:not([data-theme="light"]) .step-content li {
+          color: #e2e8f0;
+        }
+        body:not([data-theme="light"]) .step-nav {
+          border-top-color: #334155;
+        }
+        body:not([data-theme="light"]) .btn-prev {
+          background: #334155;
+          color: #e2e8f0;
+        }
+        body:not([data-theme="light"]) .step-progress {
+          background: #1e3a5f;
+          color: #93c5fd;
+        }
+        body:not([data-theme="light"]) .pcb-caption {
+          color: #94a3b8;
+        }
+        body:not([data-theme="light"]) .fw-label {
+          color: #e2e8f0 !important;
+        }
+      }
     </style>
 
     <div id="setupGuide">
@@ -248,6 +349,10 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           <h3 class="step-title">Flash RP2350 Firmware</h3>
         </div>
         <div class="step-content">
+          <h4>Physical setup:</h4>
+          <ul>
+            <li>Plug the <b>outer back USB-C port</b> (back, port #2 — furthest from the edge) into your computer</li>
+          </ul>
           <h4>Enter BOOTSEL mode:</h4>
           <ul>
             <li>Hold the <b>BOOTSEL button</b> (front, next to JTAG port)</li>
@@ -333,16 +438,19 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           <h4>RP2350 first:</h4>
           <ul>
             <li>Enter <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET)</li>
-            <li>Select <b>Possan TBD (Experimental) — 2026-02-14</b> in the RP2350 flasher below</li>
+            <li>The RP2350 flasher below is pre-set to <b>Possan</b> firmware</li>
             <li>Click Connect → Flash → Reboot</li>
           </ul>
+          <div class="step-progress" style="background: #FEF3C7; color: #92400E; margin: 0.5em 0 1em;">
+            ⚠️ After flashing the RP2350, the OLED may show <b>"P4 dead"</b> — this is <b>normal</b>. The ESP32-P4 still has the old firmware. It will be fixed in the next step below.
+          </div>
           <h4>Then ESP32-P4:</h4>
           <ul>
-            <li>Select <b>Possan TBD (Experimental) — 2026-02-14</b> in the P4 flasher below</li>
+            <li>The ESP32-P4 flasher below is pre-set to <b>Possan</b> firmware</li>
             <li>Click Connect → Flash → Disconnect</li>
           </ul>
           <div class="step-progress">
-            Both flashers are visible below so you can easily access both tools
+            Both flashers are visible below — firmware is pre-selected for you
           </div>
         </div>
         <div class="step-nav">
@@ -409,34 +517,39 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           if (stepNum === 2) {
             const p4Flasher = document.getElementById('flasher-p4');
             if (p4Flasher) p4Flasher.style.display = 'block';
-            // Reset and select CTAG firmware
             if (typeof window.resetEspFlasher === 'function') window.resetEspFlasher();
+            // Set CTAG firmware
             var espSel2 = document.getElementById('espFirmwareSelect');
             if (espSel2) espSel2.value = 'ctag';
+            var espLbl2 = document.getElementById('espFwLabel');
+            if (espLbl2) espLbl2.textContent = 'ctag-tbd-2026-02-11.bin \u2014 CTAG TBD';
           } else if (stepNum === 3) {
             const rp2350Flasher = document.getElementById('flasher-rp2350');
             if (rp2350Flasher) rp2350Flasher.style.display = 'block';
-            // Reset and select CTAG firmware
             if (typeof window.resetPicoFlasher === 'function') window.resetPicoFlasher();
+            // Set CTAG firmware
             var picoSel3 = document.getElementById('picoFirmwareSelect');
             if (picoSel3) picoSel3.value = 'ctag-tbd-2026-02-11.uf2';
+            var picoLbl3 = document.getElementById('picoFwLabel');
+            if (picoLbl3) picoLbl3.textContent = 'ctag-tbd-2026-02-11.uf2 \u2014 CTAG TBD';
           } else if (stepNum === 6) {
             // Show both flashers for step 6
             const p4Flasher = document.getElementById('flasher-p4');
             const rp2350Flasher = document.getElementById('flasher-rp2350');
             if (p4Flasher) p4Flasher.style.display = 'block';
             if (rp2350Flasher) rp2350Flasher.style.display = 'block';
-            // Preselect Possan firmware for the update step
-            var espSel = document.getElementById('espFirmwareSelect');
-            if (espSel) espSel.value = 'possan';
-            var picoSel = document.getElementById('picoFirmwareSelect');
-            if (picoSel) picoSel.value = 'possan-tbd-2026-02-14.uf2';
-            // Reset flasher UI state so it's clean for re-use
+            // Reset flasher UI state
             if (typeof window.resetEspFlasher === 'function') window.resetEspFlasher();
             if (typeof window.resetPicoFlasher === 'function') window.resetPicoFlasher();
-            // Re-set Possan after reset (reset restores defaults)
+            // Set Possan firmware for both
+            var espSel = document.getElementById('espFirmwareSelect');
             if (espSel) espSel.value = 'possan';
+            var espLbl = document.getElementById('espFwLabel');
+            if (espLbl) espLbl.textContent = 'possan-tbd-2026-02-14.bin \u2014 Possan TBD';
+            var picoSel = document.getElementById('picoFirmwareSelect');
             if (picoSel) picoSel.value = 'possan-tbd-2026-02-14.uf2';
+            var picoLbl = document.getElementById('picoFwLabel');
+            if (picoLbl) picoLbl.textContent = 'possan-tbd-2026-02-14.uf2 \u2014 Possan TBD';
           }
           step.scrollIntoView({ behavior: 'smooth', block: 'start' });
           window.scrollTo(0, step.offsetTop - 100);
@@ -539,11 +652,9 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
     </style>
 
     <div class="pico-flasher" id="picoFlasher">
-      <label for="picoFirmwareSelect"><b>RP2350 Flasher</b></label>
-      <select id="picoFirmwareSelect">        
-        <option value="ctag-tbd-2026-02-11.uf2">ctag-tbd-2026-02-11.uf2 — CTAG TBD (Development)</option>        
-        <option value="possan-tbd-2026-02-14.uf2">possan-tbd-2026-02-14.uf2 — Possan TBD (Experimental)</option>
-      </select>
+      <label><b>RP2350 Flasher</b></label>
+      <input type="hidden" id="picoFirmwareSelect" value="ctag-tbd-2026-02-11.uf2">
+      <div class="fw-label" id="picoFwLabel" style="padding: 0.5em 0.7em; border: 1px solid var(--color-background-border, #ccc); border-radius: 4px; margin-bottom: 1em; font-size: 0.95em; background: var(--color-background-primary, #fff); color: var(--color-foreground-primary, #222);">ctag-tbd-2026-02-11.uf2 — CTAG TBD</div>
 
       <div class="btn-row">
         <button class="btn-connect" id="picoBtnConnect">Connect</button>
@@ -631,7 +742,6 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
       window.resetPicoFlasher = function() {
         doDisconnect();
         hideProgress();
-        fwSelect.disabled = false;
         setStatus('Ready &mdash; put your device in BOOTSEL mode and click <b>Connect</b>.', 'idle');
         updateButtons(false);
       };
@@ -816,11 +926,9 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
     </style>
 
     <div class="esp-flasher" id="espFlasher">
-      <label for="espFirmwareSelect"><b>ESP32-P4 Flasher</b></label>
-      <select id="espFirmwareSelect">
-        <option value="ctag" selected>ctag-tbd-2026-02-11.bin — CTAG TBD (Development)</option>
-        <option value="possan">possan-tbd-2026-02-14.bin — Possan TBD (Experimental)</option>
-      </select>
+      <label><b>ESP32-P4 Flasher</b></label>
+      <input type="hidden" id="espFirmwareSelect" value="ctag">
+      <div class="fw-label" id="espFwLabel" style="padding: 0.5em 0.7em; border: 1px solid var(--color-background-border, #ccc); border-radius: 4px; margin-bottom: 1em; font-size: 0.95em; background: var(--color-background-primary, #fff); color: var(--color-foreground-primary, #222);">ctag-tbd-2026-02-11.bin — CTAG TBD</div>
 
       <div class="btn-row">
         <button id="espBtnConnect" class="btn-connect" disabled>Loading…</button>
@@ -879,7 +987,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
 
         btnConnect.textContent = 'Connect';
         btnConnect.disabled = false;
-        setStatus('Select a firmware, then click <b>Connect</b>.');
+        setStatus('Click <b>Connect</b> to start.');
 
         var FIRMWARE = {
           ctag:   { url: '../_static/firmware/p4/ctag-tbd-2026-02-11.bin',   name: 'CTAG TBD' },
@@ -922,7 +1030,6 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
 
             btnFlash.disabled      = false;
             btnDisconnect.disabled = false;
-            sel.disabled           = true;
             setStatus('Connected to <b>' + chip + '</b>. Click <b>Flash</b> to program.', 'success');
           } catch (e) {
             console.error(e);
@@ -977,7 +1084,6 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
 
             await cleanup();
             btnConnect.disabled = false;
-            sel.disabled        = false;
             setStatus('&#10003; Flash complete. Proceed to the next step.', 'success');
           } catch (e) {
             console.error(e);
@@ -992,7 +1098,6 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           btnConnect.disabled    = false;
           btnFlash.disabled      = true;
           btnDisconnect.disabled = true;
-          sel.disabled           = false;
           resetProgress();
           setStatus('Disconnected. Click <b>Connect</b> to start again.');
         });
@@ -1001,8 +1106,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         window.resetEspFlasher = function() {
           cleanup();
           resetProgress();
-          sel.disabled = false;
-          setStatus('Select a firmware, then click <b>Connect</b>.');
+          setStatus('Click <b>Connect</b> to start.');
         };
       })();
     </script>
