@@ -26,6 +26,14 @@ jobs:
       #     pattern: "*_firmware"
       #     merge-multiple: true
 
+      - name: Copy manual downloads
+        run: |
+          echo "Copying downloads..."
+          mkdir -p build/docs/html/downloads
+          ls -R docs/downloads
+          cp -r docs/downloads/* build/docs/html/downloads/
+          ls -R build/docs/html/downloads
+
       - name: upload static web content
         id: deployment
         uses: actions/upload-pages-artifact@v3

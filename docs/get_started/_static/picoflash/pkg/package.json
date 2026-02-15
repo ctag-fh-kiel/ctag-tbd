@@ -1,0 +1,40 @@
+{
+  "name": "picoflash",
+  "version": "0.1.0",
+  "description": "Pure JavaScript WebUSB implementation of the PICOBOOT protocol for RP2040/RP2350 microcontrollers",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "picoboot.js",
+    "connection.js",
+    "target.js",
+    "commands.js",
+    "constants.js",
+    "errors.js",
+    "README.md"
+  ],
+  "scripts": {
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "rp2040",
+    "rp2350",
+    "raspberry-pi",
+    "pico",
+    "webusb",
+    "picoboot",
+    "bootloader",
+    "firmware",
+    "flash"
+  ],
+  "author": "Piers Finlayson <piers@piers.rocks>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/piersfinlayson/picoboot"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

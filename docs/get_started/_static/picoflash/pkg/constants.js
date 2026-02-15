@@ -1,0 +1,48 @@
+// Copyright (C) 2025 Piers Finlayson <piers@piers.rocks>
+//
+// MIT License
+
+export const ROM_START = 0x00000000;
+export const ROM_END_RP2040 = 0x00004000;
+export const ROM_END_RP2350 = 0x00008000;
+
+export const FLASH_START = 0x10000000;
+
+export const XIP_SRAM_START_RP2040 = 0x15000000;
+export const XIP_SRAM_END_RP2040 = 0x15004000;
+export const XIP_SRAM_START_RP2350 = 0x13ffc000;
+export const XIP_SRAM_END_RP2350 = 0x14000000;
+
+export const SRAM_START_RP2040 = 0x20000000;
+export const SRAM_END_RP2040 = 0x20042000;
+export const SRAM_END_RP2350 = 0x20082000;
+
+export const PAGE_SIZE = 0x100;
+export const SECTOR_SIZE = 0x1000;
+export const STACK_POINTER_RP2040 = SRAM_END_RP2040;
+export const STACK_POINTER_RP2350 = SRAM_END_RP2350;
+
+export const PICOBOOT_VID = 0x2E8A;
+export const PICOBOOT_PID_RP2040 = 0x0003;
+export const PICOBOOT_PID_RP2350 = 0x000f;
+
+export const PICOBOOT_MAGIC = 0x431FD10B;
+
+export const UF2_RP2040_FAMILY_ID = 0xE48BFF56;
+export const UF2_ABSOLUTE_FAMILY_ID = 0xE48BFF57;
+export const UF2_DATA_FAMILY_ID = 0xE48BFF58;
+export const UF2_RP2350_ARM_S_FAMILY_ID = 0xE48BFF59;
+export const UF2_RP2350_RISCV_FAMILY_ID = 0xE48BFF5A;
+export const UF2_RP2350_ARM_NS_FAMILY_ID = 0xE48BFF5B;
+export const UF2_FAMILY_ID_MAX = 0xE48BFF5B;
+
+export const PICOBOOT_USB_CLASS = 0xFF;
+export const PICOBOOT_USB_SUBCLASS = 0x00;
+
+export const REQUEST_RESET = 0x41;
+export const REQUEST_GET_COMMAND_STATUS = 0x42;
+export const RESPONSE_GET_COMMAND_STATUS_SIZE = 16;
+
+export const DEFAULT_ENDPOINT_TIMEOUT = 5000;
+export const DEFAULT_COMMAND_STATUS_TIMEOUT = 1000;
+export const DEFAULT_RESET_TIMEOUT = 1000;

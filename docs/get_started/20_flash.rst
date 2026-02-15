@@ -1,6 +1,6 @@
-**************
-Device Flasher
-**************
+*********************
+ESP32-P4 Device Flasher
+*********************
 
 Flash Device From browser
 =========================
@@ -37,7 +37,7 @@ You can download the artifacts directly if you prefer to flash using command lin
 
 **CTAG TBD (Development)**
 
-* `Factory Image (Recommended) <../_static/device_manifests/ctag-tbd.bin>`_
+* `Factory Image (Recommended) <../_static/firmware/p4/ctag-tbd.bin>`_
 
 * `Bootloader <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/bootloader.bin>`_
 * `Partition Table <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/partition-table.bin>`_
@@ -46,7 +46,7 @@ You can download the artifacts directly if you prefer to flash using command lin
 
 **Possan TBD (Experimental)**
 
-* `Factory Image (Recommended) <../_static/device_manifests/possan-tbd.bin>`_
+* `Factory Image (Recommended) <../_static/firmware/p4/possan-tbd.bin>`_
 
 * `Bootloader <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/bootloader.bin>`_
 * `Partition Table <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/partition-table.bin>`_
