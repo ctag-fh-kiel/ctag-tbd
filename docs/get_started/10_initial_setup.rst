@@ -342,7 +342,9 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           <h4>Physical setup:</h4>
           <ul>
             <li>Plug the <b>JTAG USB-C port</b> (front) into your computer</li>
-            <li>Plug a <b>back USB-C port</b> into power or your computer</li>
+            <li>Plug a <b>back USB-C port</b> into power or your computer<br>
+              <span style="font-size: 0.78em; color: #888;">(for power, either port #1 or #2 works)</span>
+            </li>
           </ul>
           <h4>Use the flasher below:</h4>
         </div>
@@ -361,7 +363,9 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
         <div class="step-content">
           <h4>Physical setup:</h4>
           <ul>
-            <li>Plug the <b>back USB-C port</b> (closest to the base edge) into your computer</li>
+            <li>Plug the <b>back USB-C port #2</b> (closest to the case edge) into your computer<br>
+              <span style="font-size: 0.78em; color: #888;">(Port #2 for RP2350 — not to be confused with port #1 for ESP32-P4)</span>
+            </li>
           </ul>
           <h4>Enter BOOTSEL mode:</h4>
           <ul>
@@ -395,7 +399,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
               <span style="font-size: 0.78em; color: #888;"> — macOS: Disk Utility → MS-DOS (FAT) | Win: right-click → FAT32 | Linux: <code style="font-size: 0.95em;">mkfs.vfat -n "NO NAME"</code></span>
             </li>
             <li>Download <a href="../_static/sdcard_image/tbd-sd-card.zip" target="_blank"><b>tbd-sd-card.zip</b></a> + <a href="../_static/sdcard_image/tbd-sd-card-hash.txt" target="_blank"><b>tbd-sd-card-hash.txt</b></a><br>
-              <span style="font-size: 0.78em; color: #888;">Right-click each link → <b>Save Link As…</b></span>
+              <span style="font-size: 0.9em; color: #555;"><b>Right-click each link → Save Link As…</b></span>
             </li>
             <li>Copy <b>both files</b> to the SD card root (do NOT unzip) → eject</li>
           </ul>
