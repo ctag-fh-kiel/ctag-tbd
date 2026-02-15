@@ -16,56 +16,14 @@ device when asked for permission by browser.
         src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"
         ></script>
 
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-dada.json">
-            <button slot="activate">flash TBD dada</button>
+        <esp-web-install-button manifest="_static/device_manifests/manifest-tbd-ctag.json">
+            <button slot="activate">Flash CTAG TBD (Development)</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-dadax.json">
-            <button slot="activate">flash TBD dadax</button>
-            <span slot="unsupported">error: unsupported browser</span>
-            <span slot="not-allowed">error: permission denied</span>
-        </esp-web-install-button>
-        </br>
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-bba2.json">
-            <button slot="activate">flash TBD BBA 2</button>
-            <span slot="unsupported">error: unsupported browser</span>
-            <span slot="not-allowed">error: permission denied</span>
-        </esp-web-install-button>
-        </br>
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-bba1.json">
-            <button slot="activate">flash TBD BBA 1</button>
-            <span slot="unsupported">error: unsupported browser</span>
-            <span slot="not-allowed">error: permission denied</span>
-        </esp-web-install-button>
-        </br>
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-mk2.json">
-            <button slot="activate">flash TBD MK 2</button>
-            <span slot="unsupported">error: unsupported browser</span>
-            <span slot="not-allowed">error: permission denied</span>
-        </esp-web-install-button>
-        </br>
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-aem.json">
-            <button slot="activate">flash TBD AEM</button>
-            <span slot="unsupported">error: unsupported browser</span>
-            <span slot="not-allowed">error: permission denied</span>
-        </esp-web-install-button>
-        </br>
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-str.json">
-            <button slot="activate">flash TBD Strämpler</button>
-            <span slot="unsupported">error: unsupported browser</span>
-            <span slot="not-allowed">error: permission denied</span>
-        </esp-web-install-button>
-        </br>
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-v2.json">
-            <button slot="activate">flash TBD v2</button>
-            <span slot="unsupported">error: unsupported browser</span>
-            <span slot="not-allowed">error: permission denied</span>
-        </esp-web-install-button>
-        </br>
-        <esp-web-install-button manifest="https://ctag-fh-kiel.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-v1.json">
-            <button slot="activate">flash TBD v1</button>
+        <esp-web-install-button manifest="_static/device_manifests/manifest-tbd-possan.json">
+            <button slot="activate">Flash Possan TBD (Experimental)</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
@@ -75,20 +33,53 @@ device when asked for permission by browser.
 Download Latest Firmware Builds
 ===============================
 
-`dada <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-dada-flash.bin>`_
+You can download the artifacts directly if you prefer to flash using command line tools.
 
-`dadax <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-dadax-flash.bin>`_
+**CTAG TBD (Development)**
 
-`BBA 2 <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-bba2-flash.bin>`_
+* `Factory Image (Recommended) <../../downloads/ctag-dada-tbd/factory.bin>`_
 
-`BBA 1 <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-bba1-flash.bin>`_
+* `Bootloader <../../downloads/ctag-dada-tbd/bootloader.bin>`_
+* `Partition Table <../../downloads/ctag-dada-tbd/partition-table.bin>`_
+* `OTA Data <../../downloads/ctag-dada-tbd/ota_data_initial.bin>`_
+* `Application <../../downloads/ctag-dada-tbd/ctag-tbd.bin>`_
 
-`MK 2 <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-mk2-flash.bin>`_
+**Possan TBD (Experimental)**
 
-`AEM <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-aem-flash.bin>`_
+* `Factory Image (Recommended) <../../downloads/possan-dada-tbd/factory.bin>`_
 
-`Strämpler <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-str-flash.bin>`_
+* `Bootloader <../../downloads/possan-dada-tbd/bootloader.bin>`_
+* `Partition Table <../../downloads/possan-dada-tbd/partition-table.bin>`_
+* `OTA Data <../../downloads/possan-dada-tbd/ota_data_initial.bin>`_
+* `Application <../../downloads/possan-dada-tbd/ctag-tbd.bin>`_
 
-`v2 <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-v2-flash.bin>`_
 
-`v1 <https://ctag-fh-kiel.github.io/ctag-tbd/downloads/tbd-v1-flash.bin>`_
+Manual Flashing (esptool)
+=========================
+
+If the web flasher does not work, you can use `esptool` manually.
+
+Requirements:
+
+* Python installed
+* esptool installed (`pip install esptool`)
+* The 4 binary files downloaded from above OR the single factory image
+
+**Command (using factory image):**
+
+.. code-block:: bash
+
+    esptool.py --chip esp32p4 -b 460800 --before=default_reset --after=hard_reset \
+      write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
+      0x0 factory.bin
+
+**Command (using split parts):**
+
+.. code-block:: bash
+
+    esptool.py --chip esp32p4 -b 460800 --before=default_reset --after=hard_reset \
+      write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
+      0x2000  bootloader.bin \
+      0x8000  partition-table.bin \
+      0xD000  ota_data_initial.bin \
+      0x10000 ctag-tbd.bin
