@@ -107,7 +107,8 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
 
     <div class="pico-flasher" id="picoFlasher">
       <label for="firmwareSelect">Firmware</label>
-      <select id="firmwareSelect">
+      <select id="firmwareSelect">        
+        <option value="ctag-tbd-2026-02-11.uf2">CTAG TBD (Development) — 2026-02-11</option>        
         <option value="possan-tbd-2026-02-14.uf2">Possan TBD (Experimental) — 2026-02-14</option>
       </select>
 
