@@ -174,9 +174,13 @@ Select your firmware, connect your device, and flash directly from the browser.
         }
 
         /* ---- load esptool-js from CDN ---- */
+        /* Use the official bundle from unpkg (built by rollup, format: es).
+         * Do NOT use esm.sh — it injects an atob-browser polyfill that breaks
+         * the base64-encoded chip stub loaders inside esptool-js.  The unpkg
+         * bundle resolves atob-lite to native browser atob() which works. */
         var ESPLoader, Transport;
         try {
-          var mod = await import('https://esm.sh/esptool-js@0.5.7');
+          var mod = await import('https://unpkg.com/esptool-js@0.5.7/bundle.js');
           ESPLoader = mod.ESPLoader;
           Transport = mod.Transport;
         } catch (e) {
