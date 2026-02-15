@@ -159,6 +159,8 @@ Select your firmware below and click **Connect** to begin.
       import { uf2ToFlashBuffer } from '../_static/picoflash/js/uf2.js';
 
       const FIRMWARE_BASE = '../_static/firmware/pico/';
+      const OP_TIMEOUT    = 30000;  // 30s for long operations (flash)
+      const SHORT_TIMEOUT = 5000;   // 5s for quick operations
 
       const $ = id => document.getElementById(id);
 
@@ -190,7 +192,23 @@ Select your firmware below and click **Connect** to begin.
         progressBar.style.width = '0%';
       }
 
-      function updateButtons() {
+      function withTimeout(promise, ms, label) {
+        return Promise.race([
+          promise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(label + ' timed out after ' + (ms/1000) + 's')), ms)
+          )
+        ]);
+      }
+
+      function updateButtons(busy) {
+        if (busy) {
+          btnConnect.disabled = true;
+          btnFlash.disabled = true;
+          btnReboot.disabled = true;
+          btnDisconnect.disabled = true;
+          return;
+        }
         const connected = picoboot && picoboot.isConnected();
         btnConnect.disabled    = connected;
         btnFlash.disabled      = !connected;
@@ -198,12 +216,44 @@ Select your firmware below and click **Connect** to begin.
         btnDisconnect.disabled = !connected;
       }
 
+      async function tryRecover() {
+        try {
+          if (connection) await connection.resetInterface();
+          return true;
+        } catch (_) {
+          try { if (picoboot) await picoboot.disconnect(); } catch (_) {}
+          picoboot = null;
+          connection = null;
+          deviceInfo.style.display = 'none';
+          return false;
+        }
+      }
+
+      async function doDisconnect() {
+        try { if (picoboot) await picoboot.disconnect(); } catch (_) {}
+        picoboot = null;
+        connection = null;
+        deviceInfo.style.display = 'none';
+      }
+
       /* ── connect ─────────────────────────────────────── */
       btnConnect.addEventListener('click', async () => {
         try {
+          updateButtons(true);
           setStatus('Waiting for device selection…', 'busy');
+
           picoboot = await Picoboot.requestDevice();
-          connection = await picoboot.connect();
+
+          setStatus('Connecting…', 'busy');
+          connection = await withTimeout(
+            picoboot.connect(), SHORT_TIMEOUT, 'Connect'
+          );
+
+          // Required: clear endpoint halts so bulk transfers work
+          setStatus('Resetting interface…', 'busy');
+          await withTimeout(
+            connection.resetInterface(), SHORT_TIMEOUT, 'Reset interface'
+          );
 
           const info = picoboot.getUsbDeviceInfo();
           const target = picoboot.getTarget();
@@ -213,11 +263,11 @@ Select your firmware below and click **Connect** to begin.
             ' &nbsp;|&nbsp; ' + picoboot.getInfo();
 
           setStatus('Device connected — select firmware and click <b>Flash</b>.', 'success');
-          updateButtons();
         } catch (e) {
           setStatus('Connection failed: ' + e.message, 'error');
-          updateButtons();
+          await doDisconnect();
         }
+        updateButtons(false);
       });
 
       /* ── flash ───────────────────────────────────────── */
@@ -226,6 +276,8 @@ Select your firmware below and click **Connect** to begin.
         if (!fwFile) { setStatus('Please select a firmware.', 'error'); return; }
 
         try {
+          updateButtons(true);
+
           // Phase 1 – download
           setStatus('Downloading firmware…', 'busy');
           showProgress(10);
@@ -241,50 +293,51 @@ Select your firmware below and click **Connect** to begin.
           setStatus('Erasing & writing ' + sizeKB + ' KB at 0x' + address.toString(16) + '…', 'busy');
           showProgress(35);
 
-          // Phase 3 – erase & write
-          btnFlash.disabled = true;
-          btnReboot.disabled = true;
-          btnDisconnect.disabled = true;
-
+          // Phase 3 – erase & write (library internally calls resetInterface + exitXip)
           await picoboot.flashEraseAndWrite(address, data);
           showProgress(100);
 
-          setStatus('Flash complete ✓ — click <b>Reboot</b> to restart the device.', 'success');
-          updateButtons();
+          setStatus('Flash complete &#10003; — click <b>Reboot</b> to restart the device.', 'success');
         } catch (e) {
           hideProgress();
-          setStatus('Flash failed: ' + e.message, 'error');
-          updateButtons();
+          setStatus('Flash failed: ' + e.message + '. Attempting recovery…', 'error');
+          const recovered = await tryRecover();
+          if (!recovered) {
+            setStatus('Flash failed: ' + e.message + '. Device disconnected — please reconnect.', 'error');
+          } else {
+            setStatus('Flash failed: ' + e.message + '. Device recovered — you can try again.', 'error');
+          }
         }
+        updateButtons(false);
       });
 
       /* ── reboot ──────────────────────────────────────── */
       btnReboot.addEventListener('click', async () => {
         try {
+          updateButtons(true);
           setStatus('Rebooting device…', 'busy');
-          await connection.reboot(500);
-          setStatus('Device is rebooting. You can disconnect now.', 'success');
+          try {
+            await withTimeout(connection.reboot(100), SHORT_TIMEOUT, 'Reboot');
+          } catch (e) {
+            console.warn('Reboot command error (may be expected):', e.message);
+          }
+          // Always disconnect after reboot
+          await doDisconnect();
           hideProgress();
-          picoboot = null;
-          connection = null;
-          deviceInfo.style.display = 'none';
-          updateButtons();
+          setStatus('Device rebooted and disconnected successfully.', 'success');
         } catch (e) {
           setStatus('Reboot failed: ' + e.message, 'error');
+          await doDisconnect();
         }
+        updateButtons(false);
       });
 
       /* ── disconnect ──────────────────────────────────── */
       btnDisconnect.addEventListener('click', async () => {
-        try {
-          if (picoboot) await picoboot.disconnect();
-        } catch (_) {}
-        picoboot = null;
-        connection = null;
-        deviceInfo.style.display = 'none';
+        await doDisconnect();
         hideProgress();
         setStatus('Disconnected.', 'idle');
-        updateButtons();
+        updateButtons(false);
       });
 
       /* ── WebUSB support check ────────────────────────── */
