@@ -16,13 +16,13 @@ device when asked for permission by browser.
         src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"
         ></script>
 
-        <esp-web-install-button manifest="../_static/device_manifests/manifest-tbd-ctag.json">
+        <esp-web-install-button manifest="https://dadamachines.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-ctag.json">
             <button slot="activate">Flash CTAG TBD (Development)</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
         </esp-web-install-button>
         </br>
-        <esp-web-install-button manifest="../_static/device_manifests/manifest-tbd-possan.json">
+        <esp-web-install-button manifest="https://dadamachines.github.io/ctag-tbd/_static/device_manifests/manifest-tbd-possan.json">
             <button slot="activate">Flash Possan TBD (Experimental)</button>
             <span slot="unsupported">error: unsupported browser</span>
             <span slot="not-allowed">error: permission denied</span>
@@ -37,21 +37,21 @@ You can download the artifacts directly if you prefer to flash using command lin
 
 **CTAG TBD (Development)**
 
-* `Factory Image (Recommended) <../../downloads/ctag-dada-tbd/factory.bin>`_
+* `Factory Image (Recommended) <../_static/device_manifests/ctag-tbd.bin>`_
 
-* `Bootloader <../../downloads/ctag-dada-tbd/bootloader.bin>`_
-* `Partition Table <../../downloads/ctag-dada-tbd/partition-table.bin>`_
-* `OTA Data <../../downloads/ctag-dada-tbd/ota_data_initial.bin>`_
-* `Application <../../downloads/ctag-dada-tbd/ctag-tbd.bin>`_
+* `Bootloader <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/bootloader.bin>`_
+* `Partition Table <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/partition-table.bin>`_
+* `OTA Data <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/ota_data_initial.bin>`_
+* `Application <https://dadamachines.github.io/ctag-tbd/downloads/ctag-dada-tbd/ctag-tbd.bin>`_
 
 **Possan TBD (Experimental)**
 
-* `Factory Image (Recommended) <../../downloads/possan-dada-tbd/factory.bin>`_
+* `Factory Image (Recommended) <../_static/device_manifests/possan-tbd.bin>`_
 
-* `Bootloader <../../downloads/possan-dada-tbd/bootloader.bin>`_
-* `Partition Table <../../downloads/possan-dada-tbd/partition-table.bin>`_
-* `OTA Data <../../downloads/possan-dada-tbd/ota_data_initial.bin>`_
-* `Application <../../downloads/possan-dada-tbd/ctag-tbd.bin>`_
+* `Bootloader <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/bootloader.bin>`_
+* `Partition Table <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/partition-table.bin>`_
+* `OTA Data <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/ota_data_initial.bin>`_
+* `Application <https://dadamachines.github.io/ctag-tbd/downloads/possan-dada-tbd/ctag-tbd.bin>`_
 
 
 Manual Flashing (esptool)
