@@ -260,11 +260,19 @@ Select your firmware, connect your device, and flash directly from the browser.
             if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
             var data = new Uint8Array(await resp.arrayBuffer());
 
+            /* esptool-js v0.5.7 expects fileArray[].data as a binary string,
+             * not a Uint8Array.  Convert in chunks to avoid call-stack overflow. */
+            var binaryString = '';
+            var chunkSize = 8192;
+            for (var i = 0; i < data.length; i += chunkSize) {
+              binaryString += String.fromCharCode.apply(null, data.subarray(i, i + chunkSize));
+            }
+
             var sizeMB = (data.length / 1024 / 1024).toFixed(1);
             setStatus('Flashing <b>' + fw.name + '</b> (' + sizeMB + ' MB) — do not unplug the device…');
 
             var flashOptions = {
-              fileArray:      [{ data: data, address: 0x0 }],
+              fileArray:      [{ data: binaryString, address: 0x0 }],
               flashSize:      '16MB',
               flashMode:      'dio',
               flashFreq:      '80m',
