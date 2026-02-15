@@ -254,7 +254,12 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             <li>While holding, press <b>RESET button</b> (to the left of BOOTSEL)</li>
             <li>Release both buttons</li>
           </ul>
-          <h4>Use the flasher below:</h4>
+          <h4>Flash the firmware:</h4>
+          <ul>
+            <li>Click <b>Connect</b> in the flasher below</li>
+            <li>In the device picker, select <b>"RP2350 Boot"</b></li>
+            <li>Click <b>Flash</b>, then <b>Reboot</b> when done</li>
+          </ul>
         </div>
         <div class="step-nav">
           <button class="btn-step btn-prev" onclick="goToStep(2)">← Previous</button>
@@ -274,15 +279,15 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             <li>Insert into your SD card reader</li>
             <li>Erase completely (backup any existing data first)</li>
             <li>Format as <b>FAT32</b> with label <b>NO NAME</b> (exactly)
-              <ul style="margin-top: 0.4em;">
+              <ul style="margin-top: 0.4em; font-size: 0.82em; color: #555;">
                 <li><i>macOS:</i> Disk Utility → Erase → Format: MS-DOS (FAT) → Name: NO NAME</li>
                 <li><i>Windows:</i> File Explorer → right-click → Format → FAT32 → Label: NO NAME</li>
-                <li><i>Linux:</i> <code>mkfs.vfat -n "NO NAME" /dev/sdX</code></li>
+                <li><i>Linux:</i> <code style="font-size: 0.95em;">mkfs.vfat -n "NO NAME" /dev/sdX</code></li>
               </ul>
             </li>
             <li>Download these two files:
               <ul style="margin-top: 0.4em;">
-                <li><a href="../_static/sdcard_image/tbd-sd-card.zip" target="_blank"><b>tbd-sd-card.zip</b></a> (firmware package)</li>
+                <li><a href="../_static/sdcard_image/tbd-sd-card.zip" target="_blank"><b>tbd-sd-card.zip</b></a> (initial data package — samples &amp; settings)</li>
                 <li><a href="../_static/sdcard_image/tbd-sd-card-hash.txt" target="_blank"><b>tbd-sd-card-hash.txt</b></a> (integrity check)</li>
               </ul>
             </li>
@@ -316,17 +321,16 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             <li><b>Edge slot:</b> Insert the RP2350 SD card</li>
             <li>Push each until it clicks</li>
           </ul>
-          <h4>Power on and wait (5–10 minutes):</h4>
+          <h4>Power on and wait (~1–2 minutes):</h4>
           <ul>
             <li>Device powers on</li>
             <li>OLED shows initialization messages</li>
-            <li><b>Do not turn off the device</b></li>
+            <li><b>Do not turn off the device</b> while it initializes</li>
           </ul>
           <h4>When done:</h4>
           <ul>
-            <li>OLED shows debug information</li>
-            <li><b>One line displays</b> <code>SD OK</code> ✓</li>
-            <li>Device is ready for firmware update</li>
+            <li>OLED shows the groovebox interface</li>
+            <li>Device is ready for the Possan firmware update</li>
           </ul>
         </div>
         <div class="step-nav">
@@ -376,13 +380,13 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           <h4>Final checks:</h4>
           <ul>
             <li>✓ Power on the device</li>
-            <li>✓ OLED shows debug info with <code>SD OK</code> visible</li>
+            <li>✓ OLED shows the groovebox interface</li>
+            <li>✓ There is <b>no</b> <code>P4 dead</code> message on the OLED — this confirms both processors are running</li>
             <li>✓ Device responds to controls</li>
-            <li>✓ Both firmware versions running correctly</li>
           </ul>
           <h4>Troubleshooting:</h4>
           <ul>
-            <li><b>No "SD OK":</b> Reformat P4 card and re-extract files</li>
+            <li><b>"P4 dead" on OLED:</b> Re-flash the ESP32-P4 firmware (go back to Step 2 or Step 6)</li>
             <li><b>Won't boot:</b> Remove and reinsert both SD cards, power cycle</li>
             <li><b>Flashing failed:</b> Disconnect between steps and re-enter correct mode</li>
           </ul>
@@ -436,6 +440,12 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
             var espSel = document.getElementById('espFirmwareSelect');
             if (espSel) espSel.value = 'possan';
             var picoSel = document.getElementById('picoFirmwareSelect');
+            if (picoSel) picoSel.value = 'possan-tbd-2026-02-14.uf2';
+            // Reset flasher UI state so it's clean for re-use
+            if (typeof window.resetEspFlasher === 'function') window.resetEspFlasher();
+            if (typeof window.resetPicoFlasher === 'function') window.resetPicoFlasher();
+            // Re-set Possan after reset (reset restores defaults)
+            if (espSel) espSel.value = 'possan';
             if (picoSel) picoSel.value = 'possan-tbd-2026-02-14.uf2';
           }
           step.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -726,6 +736,14 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           resetProgress();
           setStatus('Disconnected. Click <b>Connect</b> to start again.');
         });
+
+        /* Expose a reset function so goToStep() can reset the UI */
+        window.resetEspFlasher = function() {
+          cleanup();
+          resetProgress();
+          sel.disabled = false;
+          setStatus('Select a firmware, then click <b>Connect</b>.');
+        };
       })();
     </script>
     </div>
@@ -865,110 +883,137 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
       const progressBar   = $('picoProgressBar');
 
       let picoboot = null;
+      let connection = null;
 
-      function setStatus(msg, status = 'idle') {
+      function setStatus(msg, cls = 'idle') {
+        statusBox.className = 'status-box status-' + cls;
         statusBox.innerHTML = msg;
-        statusBox.className = 'status-box status-' + status;
+      }
+      function showProgress(pct) {
+        progressWrap.style.display = 'block';
+        progressBar.style.width = pct + '%';
+      }
+      function hideProgress() {
+        progressWrap.style.display = 'none';
+        progressBar.style.width = '0%';
+      }
+      function withTimeout(promise, ms, label) {
+        return Promise.race([
+          promise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(label + ' timed out after ' + (ms/1000) + 's')), ms)
+          )
+        ]);
+      }
+      function updateButtons(busy) {
+        if (busy) {
+          btnConnect.disabled = btnFlash.disabled = btnReboot.disabled = btnDisconnect.disabled = true;
+          return;
+        }
+        const c = picoboot && picoboot.isConnected();
+        btnConnect.disabled = c;
+        btnFlash.disabled = !c;
+        btnReboot.disabled = !c;
+        btnDisconnect.disabled = !c;
+      }
+      async function tryRecover() {
+        try { if (connection) await connection.resetInterface(); return true; }
+        catch (_) { await doDisconnect(); return false; }
+      }
+      async function doDisconnect() {
+        try { if (picoboot) await picoboot.disconnect(); } catch (_) {}
+        picoboot = null; connection = null;
+        deviceInfo.style.display = 'none';
       }
 
-      if (!navigator.usb) {
-        setStatus('Your browser does not support WebUSB. Please use <b>Chrome</b>, <b>Edge</b>, or <b>Opera</b>.', 'error');
-      } else {
-        btnConnect.addEventListener('click', async () => {
-          try {
-            btnConnect.disabled = true;
-            setStatus('Requesting device…', 'busy');
+      /* Expose a reset function so goToStep() can reset the UI */
+      window.resetPicoFlasher = function() {
+        doDisconnect();
+        hideProgress();
+        fwSelect.disabled = false;
+        setStatus('Ready &mdash; put your device in BOOTSEL mode and click <b>Connect</b>.', 'idle');
+        updateButtons(false);
+      };
 
-            const device = await navigator.usb.requestDevice({ filters: [] });
-            picoboot = new Picoboot(device);
+      /* ── connect ── */
+      btnConnect.addEventListener('click', async () => {
+        try {
+          updateButtons(true);
+          setStatus('Waiting for device selection… choose <b>RP2350 Boot</b>', 'busy');
+          picoboot = await Picoboot.requestDevice();
+          setStatus('Connecting…', 'busy');
+          connection = await withTimeout(picoboot.connect(), SHORT_TIMEOUT, 'Connect');
+          setStatus('Resetting interface…', 'busy');
+          await withTimeout(connection.resetInterface(), SHORT_TIMEOUT, 'Reset interface');
+          const info = picoboot.getUsbDeviceInfo();
+          const target = picoboot.getTarget();
+          deviceInfo.style.display = 'block';
+          deviceInfo.innerHTML =
+            '<b>Connected:</b> ' + (info.productName || target.toString()) +
+            ' &nbsp;|&nbsp; ' + picoboot.getInfo();
+          setStatus('Device connected — select firmware and click <b>Flash</b>.', 'success');
+        } catch (e) {
+          setStatus('Connection failed: ' + e.message, 'error');
+          await doDisconnect();
+        }
+        updateButtons(false);
+      });
 
-            setStatus('Connecting…', 'busy');
-            await picoboot.connect();
+      /* ── flash ── */
+      btnFlash.addEventListener('click', async () => {
+        const fwFile = fwSelect.value;
+        if (!fwFile) { setStatus('Please select a firmware.', 'error'); return; }
+        try {
+          updateButtons(true);
+          setStatus('Downloading firmware…', 'busy'); showProgress(10);
+          const resp = await fetch(FIRMWARE_BASE + fwFile);
+          if (!resp.ok) throw new Error('Download failed: HTTP ' + resp.status);
+          const uf2Data = new Uint8Array(await resp.arrayBuffer());
+          showProgress(25);
+          setStatus('Parsing UF2 file…', 'busy');
+          const { address, data } = uf2ToFlashBuffer(uf2Data);
+          const sizeKB = (data.length / 1024).toFixed(0);
+          setStatus('Erasing & writing ' + sizeKB + ' KB at 0x' + address.toString(16) + '…', 'busy');
+          showProgress(35);
+          await picoboot.flashEraseAndWrite(address, data);
+          showProgress(100);
+          setStatus('Flash complete &#10003; — click <b>Reboot</b> to restart the device.', 'success');
+        } catch (e) {
+          hideProgress();
+          const recovered = await tryRecover();
+          setStatus('Flash failed: ' + e.message +
+            (recovered ? '. Device recovered — you can try again.' : '. Please reconnect the device.'),
+            'error');
+        }
+        updateButtons(false);
+      });
 
-            deviceInfo.style.display = 'block';
-            deviceInfo.textContent = 'Device: RP2350 | Ready to flash';
+      /* ── reboot ── */
+      btnReboot.addEventListener('click', async () => {
+        try {
+          updateButtons(true);
+          setStatus('Rebooting device…', 'busy');
+          try { await withTimeout(connection.reboot(100), SHORT_TIMEOUT, 'Reboot'); }
+          catch (e) { console.warn('Reboot command error (may be expected):', e.message); }
+          await doDisconnect(); hideProgress();
+          setStatus('Device rebooted and disconnected. Proceed to the next step.', 'success');
+        } catch (e) {
+          setStatus('Reboot failed: ' + e.message, 'error');
+          await doDisconnect();
+        }
+        updateButtons(false);
+      });
 
-            btnFlash.disabled = false;
-            btnReboot.disabled = false;
-            btnDisconnect.disabled = false;
-            fwSelect.disabled = true;
+      /* ── disconnect ── */
+      btnDisconnect.addEventListener('click', async () => {
+        await doDisconnect(); hideProgress();
+        setStatus('Disconnected.', 'idle');
+        updateButtons(false);
+      });
 
-            setStatus('Connected to <b>RP2350</b>. Click <b>Flash</b> to program.', 'success');
-          } catch (e) {
-            console.error(e);
-            setStatus('Connection failed: ' + e.message, 'error');
-            btnConnect.disabled = false;
-          }
-        });
-
-        btnFlash.addEventListener('click', async () => {
-          if (!picoboot) return;
-          try {
-            btnFlash.disabled = true;
-            btnReboot.disabled = true;
-            btnConnect.disabled = true;
-
-            const fwFile = fwSelect.value;
-            setStatus('Downloading firmware…', 'busy');
-
-            const resp = await fetch(FIRMWARE_BASE + fwFile);
-            if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
-            const buffer = await resp.arrayBuffer();
-
-            setStatus('Processing UF2…', 'busy');
-            const flashBuffer = uf2ToFlashBuffer(new Uint8Array(buffer));
-
-            progressWrap.style.display = 'block';
-            setStatus('Flashing…', 'busy');
-
-            await picoboot.flash(flashBuffer, (offset, length) => {
-              const pct = Math.round((offset / length) * 100);
-              progressBar.style.width = pct + '%';
-            }, OP_TIMEOUT);
-
-            progressBar.style.width = '100%';
-            setStatus('Flash complete. Click <b>Reboot</b> to restart.', 'success');
-          } catch (e) {
-            console.error(e);
-            setStatus('Flash failed: ' + e.message, 'error');
-            btnFlash.disabled = false;
-            btnReboot.disabled = false;
-          }
-        });
-
-        btnReboot.addEventListener('click', async () => {
-          if (!picoboot) return;
-          try {
-            btnReboot.disabled = true;
-            setStatus('Rebooting…', 'busy');
-            await picoboot.reboot(SHORT_TIMEOUT);
-            setStatus('Device rebooted. Proceed to the next step.', 'success');
-            await picoboot.disconnect();
-            btnConnect.disabled = false;
-            fwSelect.disabled = false;
-            deviceInfo.style.display = 'none';
-            picoboot = null;
-          } catch (e) {
-            console.error(e);
-            setStatus('Reboot failed: ' + e.message, 'error');
-            btnReboot.disabled = false;
-          }
-        });
-
-        btnDisconnect.addEventListener('click', async () => {
-          if (picoboot) {
-            try { await picoboot.disconnect(); } catch (_) {}
-          }
-          picoboot = null;
-          btnConnect.disabled = false;
-          btnFlash.disabled = true;
-          btnReboot.disabled = true;
-          btnDisconnect.disabled = true;
-          fwSelect.disabled = false;
-          deviceInfo.style.display = 'none';
-          progressWrap.style.display = 'none';
-          setStatus('Disconnected. Click <b>Connect</b> to start again.', 'idle');
-        });
+      if (!('usb' in navigator)) {
+        setStatus('Your browser does not support WebUSB. Please use Chrome, Edge or Opera.', 'error');
+        btnConnect.disabled = true;
       }
     </script>
     </div>
