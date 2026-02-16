@@ -3,6 +3,10 @@
 TBD Command Line Tool
 *********************
 
+.. warning::
+
+   This page needs to be reworked and is not current information.
+
 docs
 ====
 
