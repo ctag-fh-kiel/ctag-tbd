@@ -39,14 +39,20 @@ Not all work on TBD / TBD-16 is covered by NLnet funding.
 License
 =======
 
-The CTAG TBD software is licensed under the
+The TBD software is licensed under the
 `GNU General Public License (GPL 3.0) <https://www.gnu.org/licenses/gpl-3.0.txt>`_.
 
-The CTAG TBD hardware design is released under the
+The original CTAG TBD Eurorack hardware designs (V1/V2) by Robert Manzke are
+released under the
 `Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) <https://creativecommons.org/licenses/by-nc-sa/4.0/>`_.
 
-| Copyright (c) 2020 Robert Manzke. All rights reserved. (CTAG TBD core)
-| Copyright (c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (Documentation, UI/UX)
+The dadamachines TBD-16 is a commercial product. Its specific hardware design is
+proprietary and not released under an open-source license. However, updated open
+hardware reference designs for the TBD platform are planned and will be
+published in the future.
+
+| Copyright (c) 2020-2026 Robert Manzke. All rights reserved. (Core platform)
+| Copyright (c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (TBD-16 adaptation, UI/UX, Documentation)
 
 CTAG TBD is provided "as is" without any express or implied warranties.
 

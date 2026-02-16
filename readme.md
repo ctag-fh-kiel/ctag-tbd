@@ -40,7 +40,9 @@ Contributions are welcome. Please open an issue or pull request. For plugin deve
 
 ## Acknowledgements
 
-**CTAG TBD** was created by [Robert Manzke](https://github.com/ctag-fh-kiel/ctag-tbd) at the [Creative Technologies Arbeitsgruppe](https://www.creative-technologies.de/), Kiel University of Applied Sciences. The TBD-16 adaptation is led by [dadamachines](https://dadamachines.com).
+**CTAG TBD** was created by [Robert Manzke](https://github.com/ctag-fh-kiel/ctag-tbd) at the [Creative Technologies Arbeitsgruppe](https://www.creative-technologies.de/), Kiel University of Applied Sciences. 
+
+The TBD-16 adaptation is led by [dadamachines](https://dadamachines.com).
 
 UX and instrument design contributions by [Benjamin Weiss / instrument-design](https://instrument-design.com/work/).
 
@@ -54,12 +56,14 @@ Not all work on TBD / TBD-16 is covered by NLnet funding.
 
 ## License
 
-The CTAG TBD software is licensed under the [GNU General Public License (GPL 3.0)](https://www.gnu.org/licenses/gpl-3.0.txt).
+The TBD software suite is licensed under the [GNU General Public License (GPL 3.0)](https://www.gnu.org/licenses/gpl-3.0.txt).
 
-The CTAG TBD hardware design is released under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+The original CTAG TBD Eurorack hardware designs (V1/V2) are released under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-Copyright (c) 2020 Robert Manzke. All rights reserved. (CTAG TBD core)
+The **dadamachines TBD-16** is a commercial product. Its specific hardware design is proprietary. Updated open-source hardware reference designs for the TBD platform are planned for future publication in KiCad.
 
-Copyright (c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (Documentation, UI/UX)
+Copyright (c) 2020-2026 Robert Manzke. All rights reserved. (CTAG TBD core)
+
+Copyright (c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (TBD-16 adaptation, UI/UX, and Documentation)
 
 License and copyright details for specific submodules are included in their respective component folders / files if different from this license.

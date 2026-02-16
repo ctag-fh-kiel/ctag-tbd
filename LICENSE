@@ -1,18 +1,41 @@
-CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
+dadamachines TBD-16 / CTAG TBD
 
-A project conceived within the Creative Technologies Arbeitsgruppe of
-Kiel University of Applied Sciences: https://www.creative-technologies.de
+TBD "to be determined" is an open-source platform for audio DSP experimentation,
+learning, and research, bringing together high-quality generators and effects 
+within a modular, easily extensible architecture.
 
-(c) 2020 by Robert Manzke. All rights reserved.
+This repository is a fork of the CTAG TBD project, conceived within the
+Creative Technologies Arbeitsgruppe of Kiel University of Applied Sciences:
+https://www.creative-technologies.de
 
-The CTAG TBD software is licensed under the GNU General Public License
+The core platform and original hardware designs were developed by Robert Manzke.
+The TBD-16 standalone hardware and updated software/UI/UX were developed as
+a joint effort between Robert Manzke and Johannes Elias Lohbihler (dadamachines).
+
+(c) 2020-2026 Robert Manzke. All rights reserved. (Core platform and core hardware research)
+(c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (TBD-16 adaptation, UI/UX, Documentation)
+
+SOFTWARE LICENSE
+----------------
+The TBD software suite is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
 
-The CTAG TBD hardware design is released under the Creative Commons
-Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+HARDWARE DESIGNS
+----------------
+The original CTAG TBD Eurorack hardware designs by Robert Manzke (V1/V2) are
+released under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+International (CC BY-NC-SA 4.0).
 Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
-CTAG TBD is provided "as is" without any express or implied warranties.
+The dadamachines TBD-16 is a commercial product. Its specific hardware
+design is proprietary and not released under an open-source license.
+However, updated open hardware reference designs for the TBD platform
+are planned for future publication in KiCad to foster education,
+prototyping, and instrument design.
+
+DISCLAIMER
+----------
+TBD is provided "as is" without any express or implied warranties.
 
 License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
