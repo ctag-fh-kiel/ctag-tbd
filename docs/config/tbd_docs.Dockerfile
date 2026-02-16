@@ -4,11 +4,11 @@ ENV TBD_PROJECT_DIR=/code
 ENV TBD_BUILD_DIR=/code/build
 
 WORKDIR /code
-RUN python3 -m pip install \
-    furo \
-    pydata-sphinx-theme \
-    sphinxcontrib-youtube \
-    breathe
+
+# Copy requirements file and install dependencies
+COPY requirements.txt /tmp/requirements.txt
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install -r /tmp/requirements.txt
 
 COPY --chmod=755 <<EOF /entrypoint.sh
 #!/usr/bin/env bash
