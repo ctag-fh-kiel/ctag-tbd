@@ -2,27 +2,19 @@
 Hardware Versions
 *****************
 
-+-----------+-----------+-----------+-----------+--------+-------------+
-| Name      | Audio     | HW        | CVs ins   | Trig   | UI          |
-|           | Codec     | Version   |           | ins    |             |
-|           |           | String    |           |        |             |
-+===========+===========+===========+===========+========+=============+
-| MK1 V1    | Cirrus    | V1        | 2 + 2     | 2      | Web WIFI    |
-|           | WM8731    |           | Pots, ESP |        |             |
-|           |           |           | ADC       |        |             |
-+-----------+-----------+-----------+-----------+--------+-------------+
-| MK1 V2    | Cirrus    | V2        | 2 + 2     | 2      | Web WIFI    |
-|           | WM8978    |           | Pots ESP  |        |             |
-|           |           |           | ADC       |        |             |
-+-----------+-----------+-----------+-----------+--------+-------------+
-| Tangible  | Cirrus    | AEM       | 2 + 2     | 2      | Web Serial, |
-| Waves AEM | WM8974    |           | Pots, ESP |        | OLED        |
-|           |           |           | ADC       |        | Display +   |
-|           |           |           |           |        | Button for  |
-|           |           |           |           |        | favorites   |
-+-----------+-----------+-----------+-----------+--------+-------------+
-| Strämpler | Cirrus    | Strampler | 8 (4 with | 2      | Web WIFI    |
-|           | WM8731    |           | pots),    |        |             |
-|           |           |           | MCP8208   |        |             |
-|           |           |           | ADC       |        |             |
-+-----------+-----------+-----------+-----------+--------+-------------+
+.. note::
+
+   This documentation focuses on the **dadamachines TBD-16** standalone desktop hardware.
+   For information on other CTAG TBD hardware variants (Eurorack MK1/MK2, Tangible Waves AEM,
+   Strämpler), see the upstream `CTAG TBD repository <https://github.com/ctag-fh-kiel/ctag-tbd>`_.
+
+
+dadamachines TBD-16
+===================
+
+The TBD-16 is the first standalone desktop version of the TBD platform, featuring:
+
+- Standard MIDI connectivity (no Eurorack required)
+- ESP32-P4 based audio DSP
+- Web-based UI accessible via WiFi
+- Desktop form factor for studio, education, and prototyping

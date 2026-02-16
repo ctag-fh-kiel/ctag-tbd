@@ -2,20 +2,11 @@
 Foreword
 ********
 
-This is the culmination of voluntary user work, if you contribute please
-add your name and, if you like, your contact details in the
-acknowledgement section below. Send me an email (paradenker@gmail.com)
-if you wish to contribute, I’ll add you as an editor to the document,
-thanks for that!
+This documentation covers the **dadamachines TBD-16**, a standalone desktop version of the
+`CTAG TBD <https://github.com/ctag-fh-kiel/ctag-tbd>`_ open-source audio DSP platform.
 
-Use the following scheme: **Plugin name** (Heading 2), **Description**,
-**Parameters**, **Usage/Patch Ideas**, **Wishlist**, **Issues** (all
-Heading 3). To update the table of contents at the beginning, click the
-reload (cycle) button left from the table of contents (appears when
-clicking in the TOC region).
+It is intended as a user-facing manual — covering setup, plugin usage, and workflows.
+For developer-facing information, see the :doc:`Development </development/00_overview>` section.
 
-Purpose of this document is to supply an instruction manual from a user
-perspective. This document shall not be intended as an instruction guide
-for developers.
-
-**Thanks for your effort in contributing!**
+Contributions to the documentation are welcome.
+Please open a pull request on `GitHub <https://github.com/dadamachines/ctag-tbd>`_.

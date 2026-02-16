@@ -1,89 +1,41 @@
-#################################
-CTAG TBD hackable audio processor
-#################################
+######################
+dadamachines TBD-16
+######################
 
-Hardware reference designs and software suite for a series of highly hackable electronic musical devices, built around the 
-**ESP32** family of systems on a chip (SoC).
+The first standalone desktop audio DSP platform based on `CTAG TBD <https://github.com/ctag-fh-kiel/ctag-tbd>`_,
+with standard MIDI connectivity — designed to bring open-source audio processing beyond Eurorack.
 
-Everything to build your own audio processor device for MIDI or Eruorack. Add sounds and plugins, extend, hack, redesign 
-- all the freedom you need!
-
-    eierlegende Wollmilchsau
-
-    *an all-in-one device or person which has (or claims to have) only positive attributes and which can (or attempts to) 
-    do the work of several specialized tools*
-    
-    --wiktionary.org
-
-.. image:: about/images/teaser.png
+**TBD-16** combines 50+ high-quality generators and effects in a modular, extensible architecture.
+It is built for musicians, educators, and audio researchers who want hands-on DSP without proprietary lock-in.
 
 
+What This Fork Does
+===================
 
-What is CTAG TBD
-================
+This repository is a fork of `ctag-fh-kiel/ctag-tbd <https://github.com/ctag-fh-kiel/ctag-tbd>`_ (branch ``p4_main``),
+adapted for the **dadamachines TBD-16** hardware. Our focus:
 
-**TBD** is the latest iteration in family of musical tools and instruments based on versatile cheap system on a chip (SoC) 
-commonly used in *Internet of Things* devices.
+- **UI/UX** — Redesigned web interface with musician-friendly interaction patterns
+- **Documentation** — Clear guides, example workflows, and UX guidelines for plugin developers
+- **Desktop Hardware** — Standalone form factor with standard MIDI, no Eurorack required
 
-
-The `CTAG <https://www.creative-technologies.de/>`_ project was started as a space to explore technology for creative use
-with a strong emphasis on music and sound. It aims at creating usable creative tools and devices, exploring upcoming 
-technolgies for creative playful use and foster students creative potential. CTAG is both an idea and also a real lab at the 
-*University of Applied Science Kiel (FH Kiel)*. CTAG has seen many different contributors and projects over the years, from
-educators to volunteers to students, from class attendees to large contributors to projects like TBD.
-
-
-How to Use
-==========
-
-The bare minimum required to get started is:
-
-- one of the required ESP32 development boards
-- the desired TBD device reference circuit board (PCB)
-- a web browser that supports `Web Serial <https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility>`_  
-
-After installing the default software onto the device you are ready to explore the default plugins, play with the settings
-and make some music.
+The DSP engine, plugin system, and core firmware are developed upstream by
+`Robert Manzke / CTAG <https://www.creative-technologies.de/>`_.
 
 
-Ready to Build Devices
-----------------------
+Getting Started
+===============
 
-CTAG TBD MIDI
-    play notes from digital MIDI input
-
-CTAG TBD Eurorack
-    play notes from input voltages
-
-    .. youtube:: QjYHxz9g3Kc
-
-CTAG Strämpler https://github.com/ctag-fh-kiel/ctag-straempler
-    eurorack sample streaming and sound synthesis module  
-
-    .. youtube:: zmj8tKPHV8g
+See the :doc:`Get Started <get_started/10_initial_setup>` section for setup guides, plugin reference,
+and flashing instructions.
 
 
-Creating Custom Sounds
-----------------------
+Contributing
+============
 
-To create your own plugins you should have some basic understanding of the C++ programming language. The TBD software suite
-provides you with a plugin system, so you do not have alter any of the core software to create new sounds. To create new
-sound plugins you will need:
-
-- the TBD source code (preferably using GIT version management)
-- the ESP32 development tools *or* the docker container engine installed
-
-
-Extending the Hardware
-----------------------
-
-If you are familiar with basic electronics, the TBD reference PCB has a spare free spare connector for every 
-input/output (used and unused) of the ESP32 development board. Even without a complete redesign of the reference board, 
-this allows you to:
-
-- connect analyzers (oscilloscope or logic analyzer)
-- use an additional bread board, to wire up some additional chips and components
-- design a hat PCB, to plug be plugged on top of the ESP32 board
+Contributions are welcome. Please open an issue or pull request on
+`GitHub <https://github.com/dadamachines/ctag-tbd>`_.
+For plugin development, see the :doc:`Create Plugins <create_plugins/10_prerequisites>` section.
 
 
 .. toctree::

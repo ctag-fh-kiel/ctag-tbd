@@ -72,13 +72,11 @@ doxygen_xml_dir = get_doxygen_xml_dir()
 
 project = 'dada tbd/docs'
 html_title = 'dada tbd/docs'
-copyright = '2024 CTAG'
-author = 'CTAG'
+copyright = '2014-2026 dadamachines / CTAG'
+author = 'dadamachines'
 
 rst_prolog = """.. attention::
-    This is the documentation stub to the upcoming TBD **V2 release**.
-
-    It is incomplete and subject to future changes.
+    This documentation is a work in progress and may be incomplete or subject to change.
 """
 
 # -- General configuration ---------------------------------------------------
