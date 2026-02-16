@@ -1,25 +1,6 @@
-*******
-General
-*******
-
-Acknowledgements
-================
-
-**CTAG TBD** was created by `Robert Manzke <https://github.com/ctag-fh-kiel/ctag-tbd>`_ at the
-`Creative Technologies Arbeitsgruppe <https://www.creative-technologies.de/>`_,
-Kiel University of Applied Sciences.
-
-The **TBD-16** adaptation is led by `dadamachines <https://dadamachines.com>`_.
-
-UX and instrument design contributions by
-`Benjamin Weiss / instrument-design <https://instrument-design.com/work/>`_.
-
-CTAG TBD contributors:
-
-- Robert Manzke (rma)
-- Mathias Brüssel (mb)
-- Lukas Hermann (lh)
-- Lars Schubert (ls)
+*****************
+Credits & License
+*****************
 
 
 Funding

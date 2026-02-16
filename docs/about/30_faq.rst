@@ -39,7 +39,7 @@ Can I use TBD-16 in a commercial product?
 
 The software is licensed under GPL 3.0. You may use, modify, and distribute it
 under the terms of that license. The dadamachines TBD-16 hardware design itself
-is proprietary. See :doc:`General <00_general>` for full license details.
+is proprietary. See :doc:`Credits & License <10_credits>` for full license details.
 
 
 Audio & DSP
