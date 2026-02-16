@@ -71,6 +71,7 @@ doxygen_xml_dir = get_doxygen_xml_dir()
 # -- Project information -----------------------------------------------------
 
 project = 'dada tbd/docs'
+html_title = 'dada tbd/docs'
 copyright = '2024 CTAG'
 author = 'CTAG'
 

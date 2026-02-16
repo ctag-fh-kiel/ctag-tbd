@@ -88,15 +88,6 @@ this allows you to:
 
 .. toctree::
     :hidden:
-    :caption: About
-    :maxdepth: 2
-    :glob:
-
-    about/*
-
-
-.. toctree::
-    :hidden:
     :caption: Get Started
     :maxdepth: 4
     :glob:
@@ -106,7 +97,7 @@ this allows you to:
 
 .. toctree::
     :hidden:
-    :caption: Sound Library
+    :caption: Plugins
     :maxdepth: 2
     :glob:
 
@@ -129,6 +120,15 @@ this allows you to:
     :glob:
 
     development/*
+
+
+.. toctree::
+    :hidden:
+    :caption: About
+    :maxdepth: 2
+    :glob:
+
+    about/*
 
 
 Indices and tables
