@@ -29,16 +29,25 @@ For Users
 Start with the :doc:`Initial Setup Guide <get_started/10_initial_setup>` to flash your device and
 get running. The :doc:`System <get_started/10_system>` page covers WiFi configuration and firmware updates.
 
+**Key Features:**
+
+-  :doc:`Ableton Link <get_started/30_ableton_link>` --- Sync tempo wirelessly with Ableton Live,
+   iOS apps, and other Link-enabled devices on the same network.
+-  :doc:`USB Audio Interface <get_started/35_audio_interface>` --- Hardware support for
+   class-compliant USB audio (custom firmware required).
+
 For Developers
 ==============
 
--  **Create Plugins** — :doc:`Plugin Architecture <create_plugins/10_prerequisites>` explains the
+-  **Create Plugins** --- :doc:`Plugin Architecture <create_plugins/10_prerequisites>` explains the
    DSP plugin system, and the :doc:`Step-by-Step Guide <create_plugins/20_step_by_step>` walks you
    through creating your first plugin.
--  **RP2350 Firmware** — :doc:`RP2350 Development <development/20_rp2350>` covers building custom
+-  **Simulator** --- :doc:`Run the full DSP engine on your computer <development/05_simulator>`
+   without any hardware. Develop, test, and iterate on plugins entirely in software.
+-  **RP2350 Firmware** --- :doc:`RP2350 Development <development/20_rp2350>` covers building custom
    UI, MIDI, and sequencer firmware for the front-end processor.
--  **Build from Source** — :doc:`Building & Setup <development/01_building>` for compiling the
-   ESP32-P4 firmware and running the simulator.
+-  **Build from Source** --- :doc:`Building & Setup <development/01_building>` for compiling the
+   ESP32-P4 firmware.
 
 Contributing
 ============

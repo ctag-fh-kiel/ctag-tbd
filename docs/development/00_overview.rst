@@ -23,5 +23,6 @@ Topics
 ------
 
 *  :doc:`Building & Setup <01_building>` --- Compile and flash the ESP32-P4 firmware.
+*  :doc:`Simulator <05_simulator>` --- Run the full DSP engine on your computer without hardware.
 *  :doc:`API Reference <10_api_reference>` --- REST API for remote control via WiFi.
 *  :doc:`RP2350 Firmware <20_rp2350>` --- Developing UI/MIDI firmware for the RP2350.
