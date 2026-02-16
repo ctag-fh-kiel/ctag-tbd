@@ -1,68 +1,65 @@
-# CTAG TBD "to be determined"
+# dadamachines TBD-16
 
-## Notes
+The first standalone desktop audio DSP platform based on [CTAG TBD](https://github.com/ctag-fh-kiel/ctag-tbd), with standard MIDI connectivity — designed to bring open-source audio processing beyond Eurorack.
 
-### SD Card Initialization
+**TBD-16** combines 50+ high-quality generators and effects in a modular, extensible architecture. It is built for musicians, educators, and audio researchers who want hands-on DSP without proprietary lock-in.
 
-Initial SD card data is created during `idf.py build` (`tbd-sd-card.zip` and `tbd-sd-card-hash.txt`).
+## Documentation
 
-#### Build Process
-When the firmware is built with `idf.py build`, two important files are created in the `build/` folder:
-- `tbd-sd-card.zip`
-- `tbd-sd-card-hash.txt`
+**[dadamachines.github.io/ctag-tbd](https://dadamachines.github.io/ctag-tbd/)**
 
-The data contained in `tbd-sd-card.zip` is packaged during the build process with the script `create_sd_archive.sh` (located in the repository root). This script bundles:
-- All files in `sdcard_image/` (former SPIFFS data), including all JSON configs and www
-- Data from the `sample_rom/tbdsamples/` folder
-- Calculates a hash and includes it into the `.zip` and the `tbd-sd-card-hash.txt` file to detect changes in base data
+## What This Fork Does
 
-#### Initial Setup
-1. Delete all content on the SD card
-2. Copy `tbd-sd-card.zip` and `tbd-sd-card-hash.txt` onto the SD card
-3. Upon first boot, the firmware recognizes the `.zip` archive and unpacks it (contains all config files, www, and stock samples)
-4. Unpacking takes some time - monitor it with `idf.py monitor`
+This repository is a fork of [ctag-fh-kiel/ctag-tbd](https://github.com/ctag-fh-kiel/ctag-tbd) (branch `p4_main`), adapted for the **dadamachines TBD-16** hardware. Our focus:
 
-#### Troubleshooting
-If you want to force re-unpacking of the `.zip`, delete the file `.version` in the root of the SD card when USB-MSC is active. This file contains the hash of the archive and is checked by the firmware upon boot for version comparison with `tbd-sd-card-hash.txt`.
+- **UI/UX** — Redesigned web interface with musician-friendly interaction patterns
+- **Documentation** — Clear guides, example workflows, and UX guidelines for plugin developers
+- **Desktop Hardware** — Standalone form factor with standard MIDI, no Eurorack required
 
-### SD Card Access via USB-MSC
+The DSP engine, plugin system, and core firmware are developed upstream by [Robert Manzke / CTAG](https://www.creative-technologies.de/).
 
-In order to access the SD card, partition `ota1` has to be flashed with the USB-MSC firmware.
+## Getting Started
 
-#### Flashing OTA1 Partition
+See the [documentation](https://dadamachines.github.io/ctag-tbd/) for setup guides, plugin reference, and flashing instructions.
 
-The firmware and commands are in the `bin/` folder of the ctag-tbd repository. The USB-MSC firmware binary is `tusb_msc.bin`. Sources for the ota_1 partition are at: https://github.com/ctag-fh-kiel/tbd-usb-msc
+## Project Structure
 
-**Prerequisites:**
-- Requires [esptool](https://github.com/espressif/esptool)
-- Set `IDF_PATH` environment variable
-
-**To flash the ota1 partition:**
-```bash
-python $IDF_PATH/components/app_update/otatool.py --port /dev/cu.usbmodem101 write_ota_partition --name ota_1 --input tusb_msc.bin
+```
+components/         DSP plugins and sound processors
+docs/               Sphinx documentation source
+main/               Firmware entry point and system management
+sdcard_image/       Web UI and configuration data
+simulator/          Desktop simulator for plugin development
+sample_rom/         Stock audio samples
+generators/         Plugin scaffolding templates
 ```
 
-**To boot into ota1 partition:**
-```bash
-python $IDF_PATH/components/app_update/otatool.py --port /dev/cu.usbmodem101 switch_ota_partition --name ota_1
-```
+## Contributing
 
-*Note: Adjust the `--port` parameter to match your device's serial port.*
+Contributions are welcome. Please open an issue or pull request. For plugin development, see the [Create Plugins](https://dadamachines.github.io/ctag-tbd/) section in the documentation.
 
-Check `flash_ota_1.sh` in the `bin/` folder for the complete script with both commands.
+## Acknowledgements
 
-#### Usage
+**CTAG TBD** was created by [Robert Manzke](https://github.com/ctag-fh-kiel/ctag-tbd) at the [Creative Technologies Arbeitsgruppe](https://www.creative-technologies.de/), Kiel University of Applied Sciences. The TBD-16 adaptation is led by [dadamachines](https://dadamachines.com).
 
-When booted into `ota1`:
-- The SD card is automatically exposed through USB (rear left USB port of TBD)
-- Upon dismount on host, the USB-MSC firmware boots back into the TBD firmware (ota0)
+UX and instrument design contributions by [Benjamin Weiss / instrument-design](https://instrument-design.com/work/).
 
-The RP2350 front-end can check with the SpiAPI call `GetFirmwareInfo` from the P4 which firmware is active, detecting USB-MSC mode from `ota1` or normal firmware from `ota0`. Example: https://github.com/ctag-fh-kiel/rp2350-arduino-tbd-fw/blob/main/src/Ui.cpp#L506
+## Funding
 
-### C6 Firmware Update (WiFi Co-Processor)
+This project is partially funded through the [NGI0 Commons Fund](https://nlnet.nl/commonsfund), established by [NLnet](https://nlnet.nl/) with financial support from the European Commission's [Next Generation Internet](https://ngi.eu/) programme, under grant agreement No [101135429](https://cordis.europa.eu/project/id/101135429).
 
-Steps to update the C6 firmware:
-1. Create a folder `c6_fw/` on the P4 SD card when in USB-MSC mode
-2. Copy `network_adapter.bin` into it: https://github.com/ctag-fh-kiel/tbd-usb-msc/tree/main/esp_hosted_slave_fw
-3. The update will take place on USB-MSC dismount and takes approximately 30 seconds
-4. Afterwards, the stock firmware from `ota0` is booted
+Not all work on TBD / TBD-16 is covered by NLnet funding.
+
+[<img src="https://nlnet.nl/logo/banner-320x120.png" alt="NLnet" width="160">](https://nlnet.nl/project/TBD-DSP-Toolkit/)
+
+## License
+
+The CTAG TBD software is licensed under the [GNU General Public License (GPL 3.0)](https://www.gnu.org/licenses/gpl-3.0.txt).
+
+The CTAG TBD hardware design is released under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+Copyright (c) 2020 Robert Manzke. All rights reserved. (CTAG TBD core)
+
+Copyright (c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (Documentation, UI/UX)
+
+License and copyright details for specific submodules are included in their respective component folders / files if different from this license.
