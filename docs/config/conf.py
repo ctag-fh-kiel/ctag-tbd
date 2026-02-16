@@ -84,7 +84,8 @@ rst_prolog = """.. attention::
 extensions = [
     'sphinxcontrib.youtube',
     'breathe',
-    'sphinx.ext.githubpages'
+    'sphinx.ext.githubpages',
+    'sphinx_copybutton',
     # 'tbdtools.tbd_sphinx',
 ]
 
@@ -95,6 +96,13 @@ exclude_patterns = []
 
 
 html_theme = 'furo'
+
+# Furo theme options for collapsible navigation
+html_theme_options = {
+    "navigation_with_keys": True,
+    "sidebar_hide_name": False,
+}
+
 # html_sidebars = {
 #     '**': ['globaltoc.html', 'localtoc.html', 'relations.html', 'searchbox.html']
 # }

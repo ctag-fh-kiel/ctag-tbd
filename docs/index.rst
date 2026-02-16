@@ -5,6 +5,10 @@ dada tbd/docs
 .. raw:: html
 
    <style>
+     /* Hide the page title to keep hero image at top */
+     article > h1:first-of-type {
+       display: none;
+     }
      .hero-image {
        width: 100%;
        max-width: 100%;
