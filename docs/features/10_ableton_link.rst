@@ -15,7 +15,7 @@ MIDI clock cables or manual configuration.
 How It Works
 ============
 
-1. The TBD-16 connects to your WiFi network (see :doc:`System </get_started/10_system>`).
+1. The TBD-16 connects to your WiFi network (see :doc:`WiFi & Firmware Updates </get_started/15_wifi_and_updates>`).
 2. Ableton Link automatically discovers other Link sessions on the same network.
 3. Tempo, beat position, and start/stop state are shared in real time.
 
@@ -79,7 +79,7 @@ Requirements
 ============
 
 - **WiFi connection** --- Link uses the network to communicate. The TBD-16 must be
-  connected to your WiFi (see :doc:`System </get_started/10_system>`).
+  connected to your WiFi (see :doc:`WiFi & Firmware Updates </get_started/15_wifi_and_updates>`).
 - All devices must be on the **same local network** (same WiFi / same subnet).
 - Link is **enabled by default** in the firmware. It can be disabled at build time
   via ``idf.py menuconfig`` under *CTAG TBD Configuration > Enable Ableton Link Support*.

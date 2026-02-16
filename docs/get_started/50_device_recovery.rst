@@ -1,10 +1,16 @@
-****************************
-Initial Device Setup Guide
-****************************
+***************
+Device Recovery
+***************
 
-Complete interactive setup for your TBD device. Navigate through 7 simple steps.
+Complete interactive setup for re-initializing your TBD-16 from scratch.
+Use this guide if you need to reflash both processors and rebuild the SD cards.
 
-**Time:** 15–20 minutes | **Requirements:** TBD device, 2× USB-C cables, Chrome/Edge/Opera, 2× SD cards, reader
+**Time:** 15–20 minutes | **Requirements:** TBD-16, 2× USB-C cables, Chrome/Edge/Opera, 2× SD cards, reader
+
+.. note::
+
+   Your TBD-16 ships ready to use --- you do **not** need this guide for normal operation.
+   Start with :doc:`Using Your TBD-16 <10_using_your_tbd>` instead.
 
 .. raw:: html
 
@@ -506,7 +512,7 @@ Complete interactive setup for your TBD device. Navigate through 7 simple steps.
           <h3 class="step-title" style="color: #16A34A;">Setup Complete!</h3>
         </div>
         <div class="step-content">
-          <p>Your device is ready to use. See the <a href="./10_system.html">System</a> documentation for operating instructions and the <a href="../sound_library/index.html">Sound Library</a> to explore available processors.</p>
+          <p>Your device is ready to use. See the <a href="./10_using_your_tbd.html">Using Your TBD-16</a> documentation for getting started and the <a href="../sound_library/index.html">Sound Library</a> to explore available processors.</p>
         </div>
       </div>
     </div>

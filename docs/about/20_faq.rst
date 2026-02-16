@@ -32,7 +32,7 @@ What processors / chips are inside?
 - **RP2350** --- User interface, MIDI, and hardware I/O
 - **ESP32-C6** --- WiFi co-processor
 
-See :doc:`Hardware Versions <10_hardware_versions>` for more details.
+See :doc:`TBD-16 Hardware </hardware/10_tbd16>` for more details.
 
 Can I use TBD-16 in a commercial product?
 -----------------------------------------
@@ -68,7 +68,7 @@ What is Ableton Link?
 Ableton Link is a technology for synchronizing tempo across devices on the same
 WiFi network. TBD-16 has built-in Link support, allowing it to sync with
 Ableton Live, iOS apps, and other Link-enabled tools. See
-:doc:`Ableton Link </get_started/30_ableton_link>` for details.
+:doc:`Ableton Link </features/10_ableton_link>` for details.
 
 
 Connectivity
@@ -78,7 +78,7 @@ How do I connect to the web interface?
 --------------------------------------
 
 Connect the TBD-16 to your WiFi network, then open its IP address in a browser.
-See :doc:`System </get_started/10_system>` for setup instructions.
+See :doc:`WiFi & Firmware Updates </get_started/15_wifi_and_updates>` for setup instructions.
 
 What MIDI connections are supported?
 ------------------------------------
@@ -132,7 +132,7 @@ I can't connect to the web interface
 1. Ensure the TBD-16 is powered on and connected to your WiFi network.
 2. Check that your computer is on the **same network**.
 3. Try accessing the device at its IP address directly.
-4. If the device isn't connecting to WiFi, see :doc:`System </get_started/10_system>`
+4. If the device isn't connecting to WiFi, see :doc:`WiFi & Firmware Updates </get_started/15_wifi_and_updates>`
    for configuration instructions.
 
 Firmware flash failed
@@ -140,8 +140,8 @@ Firmware flash failed
 
 - Make sure the USB cable supports data (not charge-only).
 - Try a different USB port.
-- Use the browser-based flasher at :doc:`Flash ESP32-P4 </get_started/20_flash>` or
-  :doc:`Flash RP2350 </get_started/25_flash_pico>`.
+- Use the browser-based flasher at :doc:`Flash DSP Firmware </get_started/25_flash_dsp>` or
+  :doc:`Flash UI Firmware </get_started/30_flash_ui>`.
 - If flashing via ``idf.py flash``, ensure ESP-IDF is properly installed
   (see :doc:`Building & Setup </development/01_building>`).
 

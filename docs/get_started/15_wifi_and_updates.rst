@@ -1,6 +1,6 @@
-******
-System
-******
+**********************
+WiFi & Firmware Updates
+**********************
 
 
 WiFi
@@ -49,10 +49,10 @@ The TBD-16 has two processors that need separate firmware:
 
 To update the firmware, use the browser-based flashers:
 
--  :doc:`ESP32-P4 Flasher <20_flash>` --- Flash the audio DSP firmware.
--  :doc:`RP2350 Flasher <25_flash_pico>` --- Flash the UI/MIDI firmware.
+-  :doc:`DSP Firmware Flasher <25_flash_dsp>` --- Flash the audio DSP firmware.
+-  :doc:`UI Firmware Flasher <30_flash_ui>` --- Flash the UI/MIDI firmware.
 
-For a guided first-time setup, see the :doc:`Initial Device Setup Guide <10_initial_setup>`.
+For a guided full re-flash, see :doc:`Device Recovery <50_device_recovery>`.
 
 .. note::
 

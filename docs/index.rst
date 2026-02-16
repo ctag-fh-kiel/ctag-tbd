@@ -26,14 +26,15 @@ The DSP engine, plugin system, and core firmware are developed upstream by
 For Users
 =========
 
-Start with the :doc:`Initial Setup Guide <get_started/10_initial_setup>` to flash your device and
-get running. The :doc:`System <get_started/10_system>` page covers WiFi configuration and firmware updates.
+Your TBD-16 ships ready to use. Start with :doc:`Using Your TBD-16 <get_started/10_using_your_tbd>` ---
+connect, open the web interface, and start making sound.
 
 **Key Features:**
 
--  :doc:`Ableton Link <get_started/30_ableton_link>` --- Sync tempo wirelessly with Ableton Live,
+-  :doc:`Ableton Link <features/10_ableton_link>` --- Sync tempo wirelessly with Ableton Live,
    iOS apps, and other Link-enabled devices on the same network.
--  :doc:`USB Audio Interface <get_started/35_audio_interface>` --- Hardware support for
+-  :doc:`MIDI <features/30_midi>` --- Full MIDI support via DIN and USB for playing and controlling plugins.
+-  :doc:`USB Audio Interface <features/20_audio_interface>` --- Hardware support for
    class-compliant USB audio (custom firmware required).
 
 For Developers
@@ -49,6 +50,16 @@ For Developers
 -  **Build from Source** --- :doc:`Building & Setup <development/01_building>` for compiling the
    ESP32-P4 firmware.
 
+For Manufacturers & Designers
+==============================
+
+Beyond the TBD-16 instrument, dadamachines offers hardware for custom products:
+
+-  :doc:`TBD Main PCB <hardware/20_main_pcb>` --- Core board with 30-pin FFC connector for
+   custom UI boards and enclosures.
+-  :doc:`Custom Integration <hardware/30_custom_integration>` --- Full ESP32-P4 + RP2350 + Codec
+   integration on your PCB, with expert hardware and industrial design support.
+
 Contributing
 ============
 
@@ -63,6 +74,24 @@ Contributions are welcome. Please open an issue or pull request on
     :glob:
 
     get_started/*
+
+
+.. toctree::
+    :hidden:
+    :caption: Features
+    :maxdepth: 2
+    :glob:
+
+    features/*
+
+
+.. toctree::
+    :hidden:
+    :caption: Hardware
+    :maxdepth: 2
+    :glob:
+
+    hardware/*
 
 
 .. toctree::

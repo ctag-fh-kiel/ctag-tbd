@@ -51,6 +51,6 @@ To build custom UI/MIDI firmware:
 1. Clone the RP2350 firmware repository.
 2. Install the Arduino IDE or PlatformIO.
 3. Make your changes (custom UI screens, MIDI mappings, sequencer logic).
-4. Compile and flash via BOOTSEL mode (see :doc:`RP2350 Flasher </get_started/25_flash_pico>`).
+4. Compile and flash via BOOTSEL mode (see :doc:`Flash UI Firmware </get_started/30_flash_ui>`).
 
 The firmware supports hot-reloading via UF2 drag-and-drop, making iteration fast.

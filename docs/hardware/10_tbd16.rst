@@ -1,0 +1,90 @@
+******
+TBD-16
+******
+
+The TBD-16 is a standalone desktop audio DSP instrument by
+`dadamachines <https://dadamachines.com>`_. It runs the open-source CTAG TBD
+audio engine in a compact desktop form factor with standard MIDI connectivity ---
+no Eurorack case required.
+
+
+Overview
+========
+
+The TBD-16 is a complete instrument out of the box. It ships pre-flashed and
+configured, ready to make sound the moment you plug it in.
+
+- **50+ plugins** --- Synthesizers, effects, drum machines, granular engines, and more
+- **Two independent channels** --- Run any two plugins simultaneously
+- **Browser-based control** --- Full web UI served over WiFi, accessible from any device
+- **Standard MIDI** --- DIN and USB MIDI, no adapters needed
+- **Ableton Link** --- Wireless tempo sync with any Link-enabled device on your network
+- **CV/Trigger inputs** --- Modulate any parameter from external hardware
+- **Open source** --- Create your own plugins in C++, test with the simulator, flash to hardware
+
+
+Processors
+==========
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 20 60
+
+   * - Chip
+     - Role
+     - Responsibilities
+   * - **ESP32-P4**
+     - DSP Engine
+     - Audio processing, plugin management, WiFi web server, Ableton Link
+   * - **RP2350**
+     - Front-End
+     - User interface, MIDI processing, hardware I/O, optional sequencer
+   * - **ESP32-C6**
+     - WiFi
+     - WiFi co-processor (managed by the P4)
+
+The P4 and RP2350 communicate via SPI. The RP2350 sends control data (knobs, buttons,
+MIDI) to the P4, and the P4 sends status and Ableton Link data back.
+
+
+Connectivity
+============
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Interface
+     - Details
+   * - **Audio**
+     - Stereo line output, headphone output
+   * - **MIDI**
+     - 5-pin DIN MIDI In/Out + USB MIDI
+   * - **USB**
+     - JTAG USB-C (front, for P4 flashing), 2x USB-C (back, for power/RP2350/USB-MSC)
+   * - **WiFi**
+     - Web-based control interface via ESP32-C6
+   * - **CV/Trigger**
+     - Multiple inputs for external modulation
+   * - **SD Cards**
+     - Two slots: P4 (config, samples, web UI) + RP2350
+
+Audio Specifications
+--------------------
+
+- **Sample Rate:** 44.1 kHz
+- **Bit Depth:** 32-bit float (internal processing)
+- **Codec:** High-quality audio codec with line and headphone outputs
+- **Latency:** Sub-millisecond DSP processing latency
+
+
+Getting Started
+===============
+
+Your TBD-16 ships ready to use:
+
+1. :doc:`Using Your TBD-16 </get_started/10_using_your_tbd>` --- Connect and make sound
+2. :doc:`WiFi & Firmware Updates </get_started/15_wifi_and_updates>` --- Configure WiFi
+3. :doc:`Storage & Samples </get_started/20_storage>` --- Manage SD card content
+
+| `dadamachines TBD Toolkit <https://dadamachines.com/products/tbd-toolkit>`_
