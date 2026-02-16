@@ -6,9 +6,12 @@ dada tbd/docs
 
    <style>
      /* Hide the page title to keep hero image at top */
-     article > h1:first-of-type {
-       display: none;
+     /* We target all H1s within the main article content on this page */
+     article section h1,
+     article > h1 {
+       display: none !important;
      }
+
      .hero-image {
        width: 100%;
        max-width: 100%;
@@ -106,65 +109,14 @@ dada tbd/docs
 
 .. toctree::
     :hidden:
-    :caption: Get Started
-    :maxdepth: 4
-    :glob:
 
-    get_started/*
-
-
-.. toctree::
-    :hidden:
-    :caption: Features
-    :maxdepth: 2
-    :glob:
-
-    features/*
-
-
-.. toctree::
-    :hidden:
-    :caption: Hardware
-    :maxdepth: 2
-    :glob:
-
-    hardware/*
-
-
-.. toctree::
-    :hidden:
-    :caption: Plugins
-    :maxdepth: 2
-    :glob:
-
-    sound_library/*
-
-
-.. toctree::
-    :hidden:
-    :caption: Create Plugins
-    :maxdepth: 2
-    :glob:
-
-    create_plugins/*
-
-
-.. toctree::
-    :hidden:
-    :caption: Development
-    :maxdepth: 2
-    :glob:
-
-    development/*
-
-
-.. toctree::
-    :hidden:
-    :caption: About
-    :maxdepth: 2
-    :glob:
-
-    about/*
+    get_started/index
+    features/index
+    hardware/index
+    sound_library/index
+    create_plugins/index
+    development/index
+    about/index
 
 
 Indices and tables
