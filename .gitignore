@@ -1,4 +1,27 @@
+# ESP-IDF specific
 build/
-/hw/pcb/*.bak
-/hw/pcb/*.bak
+sdkconfig
+sdkconfig.old
+dependencies.lock
+managed_components/
+*.map
+*.elf
+*.bin
+*.hex
+*.uf2
+
+# IDEs
+.vscode/
+.idea/
+*.swp
 .DS_Store
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+midi_test_env/
+
+# Hardware
+/hw/pcb/*.bak
