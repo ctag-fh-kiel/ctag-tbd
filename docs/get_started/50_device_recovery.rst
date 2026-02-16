@@ -512,7 +512,7 @@ Use this guide if you need to reflash both processors and rebuild the SD cards.
           <h3 class="step-title" style="color: #16A34A;">Setup Complete!</h3>
         </div>
         <div class="step-content">
-          <p>Your device is ready to use. See the <a href="./10_using_your_tbd.html">Using Your TBD-16</a> documentation for getting started and the <a href="../sound_library/index.html">Sound Library</a> to explore available processors.</p>
+          <p>Your device is ready to use. See the <a href="./10_using_your_tbd.html">Using Your TBD-16</a> documentation for getting started and the <a href="../plugins/index.html">Plugins</a> to explore available processors.</p>
         </div>
       </div>
     </div>

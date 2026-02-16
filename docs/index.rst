@@ -83,11 +83,11 @@ dada tbd/docs
        <h3>🔧 Build Plugins &amp; Firmware</h3>
        <p>Create your own audio DSP plugins in C++, or build custom UI, MIDI tools, and sequencers for the RP2350.</p>
        <ul>
-         <li><a href="create_plugins/10_prerequisites.html">Plugin Architecture</a></li>
-         <li><a href="create_plugins/20_step_by_step.html">Step-by-Step Plugin Guide</a></li>
-         <li><a href="development/05_simulator.html">Simulator — No Hardware Needed</a></li>
-         <li><a href="development/20_rp2350.html">RP2350 UI / MIDI Firmware</a></li>
-         <li><a href="development/01_building.html">Building &amp; Setup</a></li>
+         <li><a href="dsp/10_plugin_architecture.html">Plugin Architecture</a></li>
+         <li><a href="dsp/20_step_by_step.html">Step-by-Step Plugin Guide</a></li>
+         <li><a href="dsp/40_simulator.html">Simulator — No Hardware Needed</a></li>
+         <li><a href="dsp/30_building.html">Building &amp; Setup</a></li>
+         <li><a href="frontend/10_rp2350.html">RP2350 UI / MIDI Firmware</a></li>
        </ul>
      </div>
 
@@ -98,7 +98,7 @@ dada tbd/docs
          <li><a href="hardware/10_tbd16.html">TBD-16 Specs</a></li>
          <li><a href="hardware/20_main_pcb.html">Main PCB with FFC Connector</a></li>
          <li><a href="hardware/30_custom_integration.html">Custom PCB Integration</a></li>
-         <li><a href="development/10_api_reference.html">REST API Reference</a></li>
+         <li><a href="dsp/50_web_api.html">Web UI API</a></li>
        </ul>
      </div>
 
@@ -113,9 +113,9 @@ dada tbd/docs
     get_started/index
     features/index
     hardware/index
-    sound_library/index
-    create_plugins/index
-    development/index
+    plugins/index
+    dsp/index
+    frontend/index
     about/index
 
 

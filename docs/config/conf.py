@@ -97,11 +97,19 @@ exclude_patterns = []
 
 html_theme = 'furo'
 
-# Furo theme options for collapsible navigation
+# Furo theme options
 html_theme_options = {
     "navigation_with_keys": True,
     "sidebar_hide_name": False,
+    "light_css_variables": {
+        "color-code-background": "#1e1e2e",
+        "color-code-foreground": "#cdd6f4",
+    },
 }
+
+# Dark code blocks in both light and dark mode
+pygments_style = "monokai"
+pygments_dark_style = "monokai"
 
 # html_sidebars = {
 #     '**': ['globaltoc.html', 'localtoc.html', 'relations.html', 'searchbox.html']

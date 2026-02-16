@@ -26,7 +26,7 @@ improvements, or UI enhancements.
 2. Create a feature branch.
 3. Submit a pull request with a clear description of your changes.
 
-See :doc:`Building & Setup </development/01_building>` to set up your development environment.
+See :doc:`Building & Setup </dsp/30_building>` to set up your development environment.
 
 
 Stay Updated

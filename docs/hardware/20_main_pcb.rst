@@ -90,6 +90,6 @@ If you're interested in building with the TBD Main PCB, contact
 
 For development, the software workflow is identical to TBD-16:
 
-- :doc:`Building & Setup </development/01_building>` --- Compile firmware
-- :doc:`Simulator </development/05_simulator>` --- Develop plugins without hardware
-- :doc:`RP2350 Firmware </development/20_rp2350>` --- Customize the front-end processor
+- :doc:`Building & Setup </dsp/30_building>` --- Compile firmware
+- :doc:`Simulator </dsp/40_simulator>` --- Develop plugins without hardware
+- :doc:`RP2350 Firmware </frontend/10_rp2350>` --- Customize the front-end processor

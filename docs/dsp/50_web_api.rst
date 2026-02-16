@@ -1,8 +1,10 @@
 *************
-API Reference
+Web UI API
 *************
 
-The TBD-16 exposes a REST-like API that allows you to control the device over the network. This API is used by the built-in Web UI but can also be accessed by custom applications or scripts.
+The TBD-16 exposes a REST-like API that allows you to control plugins and device settings
+over the network. This API is used by the built-in Web UI but can also be accessed by
+custom applications or scripts.
 
 Base URL
 ========
