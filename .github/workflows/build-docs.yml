@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: build tbd docs image
-        run: ls -1 docs/config/tbd_docs.Dockerfile && docker build -t tbd_docs -f docs/config/tbd_docs.Dockerfile docs/config
+        run: ls -1 docs/config/tbd_docs.Dockerfile && docker build -t tbd_docs -f docs/config/tbd_docs.Dockerfile docs
 
       - name: build docs
         run: docker run -v $PWD:/code tbd_docs
