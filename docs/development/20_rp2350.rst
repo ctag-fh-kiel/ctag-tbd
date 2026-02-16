@@ -1,0 +1,56 @@
+*****************
+RP2350 Firmware
+*****************
+
+The RP2350 microcontroller handles the TBD-16's user-facing hardware: the display,
+buttons, encoders, LEDs, and MIDI connectivity.
+
+Overview
+========
+
+The RP2350 firmware is developed separately from the ESP32-P4 DSP firmware.
+It is an Arduino-based project maintained at:
+
+`https://github.com/ctag-fh-kiel/rp2350-arduino-tbd-fw <https://github.com/ctag-fh-kiel/rp2350-arduino-tbd-fw>`_
+
+Communication with the P4
+=========================
+
+The RP2350 communicates with the ESP32-P4 via a **SPI bus**. The protocol is
+defined in the ``SpiAPI`` class (see ``main/SpiAPI.hpp`` in this repository).
+
+Key interactions:
+
+-  **Control data** --- The RP2350 sends knob positions, button states, and
+   MIDI CC/note data to the P4 on every audio processing cycle.
+-  **Plugin selection** --- The RP2350 can request plugin changes via SPI commands.
+-  **Firmware detection** --- The RP2350 queries ``GetFirmwareInfo`` to determine
+   whether the P4 is running normal firmware (ota0) or USB-MSC mode (ota1).
+
+MIDI Integration
+================
+
+MIDI messages received by the RP2350 are forwarded to the ESP32-P4 as control
+data within the SPI transaction buffer. Plugins access this data through the
+``controlData`` pointer in the ``ProcessData`` struct.
+
+Plugins can be designed to respond to MIDI in two ways:
+
+1. **RP2350-mediated** --- The RP2350 firmware maps MIDI CC values to plugin
+   parameters and sends them as control data. The plugin does not need to
+   know about MIDI.
+2. **Direct parsing** --- The plugin reads raw MIDI data from ``controlData``
+   and handles it internally. This allows for more complex MIDI implementations
+   like sequencers or note-priority logic.
+
+Developing Custom RP2350 Firmware
+=================================
+
+To build custom UI/MIDI firmware:
+
+1. Clone the RP2350 firmware repository.
+2. Install the Arduino IDE or PlatformIO.
+3. Make your changes (custom UI screens, MIDI mappings, sequencer logic).
+4. Compile and flash via BOOTSEL mode (see :doc:`RP2350 Flasher </get_started/25_flash_pico>`).
+
+The firmware supports hot-reloading via UF2 drag-and-drop, making iteration fast.

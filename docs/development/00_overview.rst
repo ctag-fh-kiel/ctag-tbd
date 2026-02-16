@@ -2,20 +2,26 @@
 Development
 ***********
 
-This section covers the technical aspects of the TBD-16 platform, including build processes, 
-hardware integration, and system architecture.
+This section covers the technical aspects of the TBD-16 platform for developers
+who want to build firmware, create plugins, or contribute to the project.
 
-Overview
-========
+Architecture
+============
 
-The TBD-16 is based on the **ESP32-P4** and **RP2350** microcontrollers. 
-The core audio engine (DSP) runs on the ESP32-P4, while the UI and hardware 
-interfacing are handled by the RP2350.
+The TBD-16 is a dual-processor system:
+
+-  **ESP32-P4** --- Runs the audio DSP engine (CTAG TBD core), WiFi web server,
+   and plugin management. This is the main firmware in this repository.
+-  **RP2350** --- Runs the user interface, MIDI processing, hardware I/O, and
+   optional sequencer. Communicates with the P4 via SPI.
+
+The two processors communicate through a SPI bus. The RP2350 sends control data
+(knob positions, button states, MIDI messages) to the P4, and the P4 sends
+status information back.
 
 Topics
 ------
 
-* :doc:`Building & Setup <01_building>` — How to compile and flash the firmware.
-* :doc:`API Reference <10_api_reference>` — REST API endpoints for remote control.
-* **Architecture** — Understanding the communication between the ESP32 and RP2350.
-* **Plugin System** — How to extend the platform with new audio processors.
+*  :doc:`Building & Setup <01_building>` --- Compile and flash the ESP32-P4 firmware.
+*  :doc:`API Reference <10_api_reference>` --- REST API for remote control via WiFi.
+*  :doc:`RP2350 Firmware <20_rp2350>` --- Developing UI/MIDI firmware for the RP2350.

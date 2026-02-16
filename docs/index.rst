@@ -23,19 +23,28 @@ The DSP engine, plugin system, and core firmware are developed upstream by
 `Robert Manzke / CTAG <https://www.creative-technologies.de/>`_.
 
 
-Getting Started
-===============
+For Users
+=========
 
-See the :doc:`Get Started <get_started/10_initial_setup>` section for setup guides, plugin reference,
-and flashing instructions.
+Start with the :doc:`Initial Setup Guide <get_started/10_initial_setup>` to flash your device and
+get running. The :doc:`System <get_started/10_system>` page covers WiFi configuration and firmware updates.
 
+For Developers
+==============
+
+-  **Create Plugins** — :doc:`Plugin Architecture <create_plugins/10_prerequisites>` explains the
+   DSP plugin system, and the :doc:`Step-by-Step Guide <create_plugins/20_step_by_step>` walks you
+   through creating your first plugin.
+-  **RP2350 Firmware** — :doc:`RP2350 Development <development/20_rp2350>` covers building custom
+   UI, MIDI, and sequencer firmware for the front-end processor.
+-  **Build from Source** — :doc:`Building & Setup <development/01_building>` for compiling the
+   ESP32-P4 firmware and running the simulator.
 
 Contributing
 ============
 
 Contributions are welcome. Please open an issue or pull request on
 `GitHub <https://github.com/dadamachines/ctag-tbd>`_.
-For plugin development, see the :doc:`Create Plugins <create_plugins/10_prerequisites>` section.
 
 
 .. toctree::
