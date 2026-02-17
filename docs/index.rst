@@ -74,7 +74,7 @@ dada tbd/docs
          <li><a href="get_started/10_using_your_tbd.html">Using Your TBD-16</a></li>
          <li><a href="get_started/15_wifi_and_link.html">WiFi &amp; Ableton Link</a></li>
          <li><a href="flash/index.html">Flash &amp; Updates</a></li>
-         <li><a href="hardware/15_midi.html">MIDI</a></li>
+         <li><a href="hardware/10_tbd16.html#midi">MIDI</a></li>
          <li><a href="faq.html">FAQ &amp; Troubleshooting</a></li>
        </ul>
      </div>

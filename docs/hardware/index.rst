@@ -1,15 +1,28 @@
 Hardware
 ========
 
-The TBD-16 is the flagship product of the dadamachines TBD platform --- a
-premium devkit and standalone instrument in one box. This section covers its
-hardware specs, connectivity, and physical design.
+The **TBD-16** is a standalone desktop audio DSP instrument --- a premium devkit
+and a complete instrument in one box.
 
-:doc:`TBD-16 <10_tbd16>`
-   The complete instrument --- enclosure, controls, connectors, and specs.
+.. list-table::
+   :widths: 30 70
 
-:doc:`MIDI <15_midi>`
-   TRS and USB MIDI connectivity --- hardware I/O and how MIDI is processed.
+   * - **Processors**
+     - ESP32-P4 (DSP) · RP2350 (UI/MIDI) · ESP32-C6 (WiFi)
+   * - **Interface**
+     - 30 buttons · 4 endless pots · 2.4" OLED · 19 RGB LEDs
+   * - **Audio**
+     - Stereo in · stereo out · headphone out (all TRS 3.5 mm) · 44.1 kHz / 32-bit float
+   * - **MIDI**
+     - 2× TRS In (Type-A) · 2× TRS Out · USB MIDI
+   * - **USB**
+     - 3× USB-C (P4 Device · Power/RP2350 · JTAG)
+   * - **Plugins**
+     - 50+ synths, effects, drum machines in one firmware
+
+:doc:`Full TBD-16 specs → <10_tbd16>`
+
+| `Shop <https://dadamachines.com/shop/>`_ · `dadamachines.com <https://dadamachines.com>`_
 
 ----
 

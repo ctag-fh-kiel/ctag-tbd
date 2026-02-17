@@ -68,34 +68,84 @@ MIDI) to the P4, and the P4 sends status and Ableton Link data back.
 Connectivity
 ============
 
+Audio
+-----
+
+- Stereo **line input** (TRS 3.5 mm)
+- Stereo **line output** (TRS 3.5 mm)
+- Stereo **headphone output** (TRS 3.5 mm) with volume wheel
+
+.. list-table:: Audio Specifications
+   :widths: 30 70
+
+   * - Sample Rate
+     - 44.1 kHz
+   * - Bit Depth
+     - 32-bit float (internal processing)
+   * - Codec
+     - High-quality audio codec with line and headphone outputs
+   * - Latency
+     - Sub-millisecond DSP processing latency
+
+
+MIDI
+----
+
+All connections follow the `TRS Type-A standard <https://minimidi.world/>`_ ---
+no adapters or special cables needed.
+
 .. list-table::
    :header-rows: 1
    :widths: 25 75
 
-   * - Interface
+   * - Connection
      - Details
-   * - **Audio**
-     - Stereo line input (TRS 3.5 mm), stereo line output (TRS 3.5 mm),
-       stereo headphone output (TRS 3.5 mm) with volume wheel
-   * - **MIDI**
-     - 2x TRS 3.5 mm MIDI In Type-A (2nd input doubles as Clock/Reset),
-       2x TRS 3.5 mm MIDI Out Type-A, USB MIDI
-   * - **USB**
-     - USB-C #1: ESP32-P4 Device (High Speed).
-       USB-C #2: Additional power and/or RP2350 Device.
-       USB-C #3: ESP32-P4 JTAG
-   * - **WiFi**
-     - Configuration and preset management interface via ESP32-C6
-   * - **SD Cards**
-     - Two slots: P4 (config, samples, web UI) + RP2350
+   * - **TRS MIDI In 1**
+     - TRS 3.5 mm Type-A input for keyboards, sequencers, and controllers
+   * - **TRS MIDI In 2 / Clock**
+     - Second TRS 3.5 mm Type-A input; doubles as Clock/Reset input for
+       Eurorack and modular sync (use a 3.5 mm splitter cable for separate
+       Clock and Reset)
+   * - **TRS MIDI Out 1**
+     - TRS 3.5 mm Type-A output for sending MIDI to external gear
+   * - **TRS MIDI Out 2**
+     - Second TRS 3.5 mm Type-A output
+   * - **USB MIDI**
+     - Class-compliant USB MIDI via USB-C #1 (no drivers required on any OS)
 
-Audio Specifications
---------------------
+MIDI is processed by the **RP2350** front-end processor. External MIDI
+messages (TRS or USB) are received by the RP2350 and forwarded to the ESP32-P4,
+where plugins can respond to Note On/Off, Control Change, Pitch Bend, Program
+Change, and Clock messages. The RP2350 also runs its own generators, sequencers,
+and arpeggiators that control plugins via the SPI bus.
 
-- **Sample Rate:** 44.1 kHz
-- **Bit Depth:** 32-bit float (internal processing)
-- **Codec:** High-quality audio codec with line and headphone outputs
-- **Latency:** Sub-millisecond DSP processing latency
+.. tip::
+
+   For wireless tempo sync without MIDI cables, use
+   :doc:`Ableton Link </get_started/15_wifi_and_link>` instead of MIDI clock.
+
+
+USB
+---
+
+- **USB-C #1** --- ESP32-P4 Device (High Speed): USB MIDI, USB Network
+  (web interface without WiFi), firmware flashing via JTAG
+- **USB-C #2** --- Additional power and/or RP2350 Device
+- **USB-C #3** --- ESP32-P4 JTAG (front panel)
+
+
+WiFi
+----
+
+Configuration and preset management interface via ESP32-C6.
+See :doc:`WiFi & Ableton Link </get_started/15_wifi_and_link>`.
+
+
+SD Cards
+--------
+
+Two slots: P4 (config, samples, web UI) + RP2350 (firmware images, user data).
+See :doc:`Storage & Samples </get_started/20_storage>`.
 
 
 Getting Started

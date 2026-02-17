@@ -72,7 +72,7 @@ Use the TRS MIDI ports (Type-A) or USB MIDI to connect keyboards, sequencers,
 or other MIDI gear. The RP2350 processes incoming MIDI and forwards it to the
 DSP engine for chromatic playing, parameter control, or clock sync.
 
-See :doc:`MIDI </hardware/15_midi>` for full details.
+See the `MIDI section </hardware/10_tbd16.html#midi>`_ of the TBD-16 page for full details.
 
 
 5. Web Interface (Optional)

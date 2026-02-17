@@ -98,7 +98,7 @@ Connectivity
 
    All connections follow the `TRS Type-A standard <https://minimidi.world/>`_.
    The RP2350 processor handles MIDI and makes it available to the DSP engine.
-   See :doc:`MIDI <hardware/15_midi>` for details.
+   See the `MIDI section <hardware/10_tbd16.html#midi>`_ of the TBD-16 page for details.
 
 .. dropdown:: Can the TBD-16 run multiple RP2350 firmware images?
 
