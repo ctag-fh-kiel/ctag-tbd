@@ -73,4 +73,4 @@ What's Next
 - :doc:`WiFi & Firmware Updates <15_wifi_and_updates>` --- Connect to your home network, update firmware
 - :doc:`Storage & Samples <20_storage>` --- Manage SD card content and audio samples
 - :doc:`Ableton Link </features/10_ableton_link>` --- Sync tempo with other devices on your network
-- :doc:`Plugin Architecture </dsp/10_plugin_architecture>` --- Learn how plugins work or create your own
+- :doc:`Plugin Architecture </dsp/20_plugin_architecture>` --- Learn how plugins work or create your own

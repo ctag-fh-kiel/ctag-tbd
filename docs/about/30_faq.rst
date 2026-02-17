@@ -97,13 +97,13 @@ Can I create my own plugins?
 
 Yes. The plugin system is fully documented:
 
-- :doc:`Plugin Architecture </dsp/10_plugin_architecture>` --- How the system works
-- :doc:`Step-by-Step Guide </dsp/20_step_by_step>` --- Creating your first plugin
+- :doc:`Plugin Architecture </dsp/20_plugin_architecture>` --- How the system works
+- :doc:`Step-by-Step Guide </dsp/30_step_by_step>` --- Creating your first plugin
 
 Do I need the hardware to develop plugins?
 ------------------------------------------
 
-No. The :doc:`Simulator </dsp/40_simulator>` runs the full DSP engine on your
+No. The :doc:`Simulator </dsp/50_simulator>` runs the full DSP engine on your
 computer (macOS, Windows, Linux). You can develop and test plugins entirely in
 software, then flash to hardware when ready.
 
@@ -124,7 +124,7 @@ My new plugin doesn't appear in the web UI
 The system caches the list of available processors in ``spm-config.jsn``.
 Delete the ``"availableProcessors": [ ... ],`` block from that file and
 restart the device or simulator. See the
-:doc:`Simulator Guide </dsp/40_simulator>` for details.
+:doc:`Simulator Guide </dsp/50_simulator>` for details.
 
 I can't connect to the web interface
 -------------------------------------
@@ -143,7 +143,7 @@ Firmware flash failed
 - Use the browser-based flasher at :doc:`Flash DSP Firmware </get_started/25_flash_dsp>` or
   :doc:`Flash UI Firmware </get_started/30_flash_ui>`.
 - If flashing via ``idf.py flash``, ensure ESP-IDF is properly installed
-  (see :doc:`Building & Setup </dsp/30_building>`).
+  (see :doc:`Building & Setup </dsp/40_building>`).
 
 Build errors about missing submodules
 --------------------------------------

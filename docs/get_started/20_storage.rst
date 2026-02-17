@@ -39,7 +39,7 @@ Adding Your Own Samples
 
 To add samples:
 
-1.  Boot into USB-MSC mode (see :doc:`Building & Setup </dsp/30_building>`).
+1.  Boot into USB-MSC mode (see :doc:`Building & Setup </dsp/40_building>`).
 2.  Copy your ``.wav`` files into the appropriate subfolders in ``/rom/``.
 3.  For best performance, use **48kHz / 32-bit float** or **24-bit** WAV files.
 

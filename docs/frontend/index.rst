@@ -1,7 +1,8 @@
 Frontend Development
 ====================
 
-Build UI, MIDI, and sequencer firmware for the RP2350.
+Build custom MIDI controllers, sequencers, and control surfaces for the RP2350 ---
+the TBD-16's user-facing processor. Uses Arduino and PlatformIO.
 
 .. toctree::
    :maxdepth: 2

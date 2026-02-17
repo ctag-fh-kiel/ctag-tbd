@@ -44,6 +44,6 @@ USB Audio Class 1.0 or 2.0. The main TBD firmware currently uses USB for
 serial communication and firmware flashing, not audio streaming.
 
 If you are interested in developing or testing USB Audio Interface firmware,
-see the :doc:`Building & Setup </dsp/30_building>` guide for compiling
+see the :doc:`Building & Setup </dsp/40_building>` guide for compiling
 custom firmware, and check the
 `project GitHub <https://github.com/dadamachines/ctag-tbd>`_ for updates on this feature.

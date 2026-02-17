@@ -80,14 +80,14 @@ dada tbd/docs
      </div>
 
      <div class="persona-card">
-       <h3>🔧 Build Plugins &amp; Firmware</h3>
-       <p>Create your own audio DSP plugins in C++, or build custom UI, MIDI tools, and sequencers for the RP2350.</p>
+       <h3>🔧 Build Your Own Firmware</h3>
+       <p>Start with the RP2350 frontend — build custom MIDI controllers, sequencers, or control surfaces using Arduino and PlatformIO.</p>
        <ul>
-         <li><a href="dsp/10_plugin_architecture.html">Plugin Architecture</a></li>
-         <li><a href="dsp/20_step_by_step.html">Step-by-Step Plugin Guide</a></li>
-         <li><a href="dsp/40_simulator.html">Simulator — No Hardware Needed</a></li>
-         <li><a href="dsp/30_building.html">Building &amp; Setup</a></li>
-         <li><a href="frontend/10_rp2350.html">RP2350 UI / MIDI Firmware</a></li>
+         <li><a href="frontend/10_getting_started.html">Frontend — Getting Started</a></li>
+         <li><a href="frontend/20_rp2350.html">Architecture &amp; SPI API</a></li>
+         <li><a href="dsp/10_getting_started.html">DSP — Getting Started</a></li>
+         <li><a href="dsp/20_plugin_architecture.html">Plugin Architecture</a></li>
+         <li><a href="dsp/50_simulator.html">DSP Simulator</a></li>
        </ul>
      </div>
 
@@ -98,7 +98,7 @@ dada tbd/docs
          <li><a href="hardware/10_tbd16.html">TBD-16 Specs</a></li>
          <li><a href="hardware/20_main_pcb.html">Main PCB with FFC Connector</a></li>
          <li><a href="hardware/30_custom_integration.html">Custom PCB Integration</a></li>
-         <li><a href="dsp/50_web_api.html">Web UI API</a></li>
+         <li><a href="dsp/60_web_api.html">Web UI API</a></li>
        </ul>
      </div>
 
@@ -114,6 +114,6 @@ dada tbd/docs
     features/index
     hardware/index
     plugins/index
-    dsp/index
     frontend/index
+    dsp/index
     about/index

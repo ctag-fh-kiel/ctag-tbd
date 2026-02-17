@@ -53,7 +53,7 @@ Plugin developers can access the Link session data through the ``ProcessData`` s
 When Link is active, plugins receive synchronized tempo and beat information that
 can drive rhythmic effects, sequencers, arpeggiators, or any tempo-aware processing.
 
-See the :doc:`Plugin Architecture </dsp/10_plugin_architecture>` documentation for details
+See the :doc:`Plugin Architecture </dsp/20_plugin_architecture>` documentation for details
 on the ``ProcessData`` struct.
 
 
