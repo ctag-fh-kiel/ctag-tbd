@@ -23,11 +23,11 @@ This repository is a fork of
 `ctag-fh-kiel/ctag-tbd <https://github.com/ctag-fh-kiel/ctag-tbd>`_
 (branch ``p4_main``), adapted for the TBD-16 hardware. Our focus:
 
+- **Desktop Hardware** --- Standalone form factor with standard MIDI, no Eurorack required
+- **Hardware Products** --- TBD-16 instrument, Main PCB with FFC connector, custom integrations
 - **UI/UX** --- Redesigned web interface with musician-friendly interaction patterns
 - **Documentation** --- Clear guides, example workflows, and UX guidelines for
   plugin developers
-- **Desktop Hardware** --- Standalone form factor with standard MIDI, no Eurorack required
-- **Hardware Products** --- TBD-16 instrument, Main PCB with FFC connector, custom integrations
 
 The DSP engine, plugin system, and core firmware are developed upstream by
 Robert Manzke / CTAG.
@@ -43,6 +43,12 @@ design, and UX/UI design, based in Berlin.
   adaptation, UI/UX, documentation
 - `Benjamin Weiss / instrument-design <https://instrument-design.com/work/>`_ ---
   UX and instrument design
+
+**dadamachines** friends & contributors:
+
+- Servando Barreiro 
+- Per-Olov Jernberg aka Possan  
+- Justin Mammarella aka jmamma
 
 **CTAG TBD** core contributors:
 
