@@ -9,7 +9,7 @@ chromatically, triggering drum machines, and controlling parameters.
 Connections
 ===========
 
-The TBD-16 supports three MIDI paths:
+The TBD-16 supports multiple MIDI paths:
 
 .. list-table::
    :header-rows: 1
@@ -17,14 +17,22 @@ The TBD-16 supports three MIDI paths:
 
    * - Connection
      - Details
-   * - **DIN MIDI In**
-     - Standard 5-pin DIN input for connecting keyboards, sequencers, and controllers
-   * - **DIN MIDI Out**
-     - Standard 5-pin DIN output for sending MIDI to external gear
+   * - **TRS MIDI In 1**
+     - TRS 3.5 mm Type-A input for keyboards, sequencers, and controllers
+       (see `minimidi.world <https://minimidi.world/>`_ for the Type-A standard)
+   * - **TRS MIDI In 2 / Clock**
+     - Second TRS 3.5 mm Type-A input; doubles as Clock/Reset input for
+       Eurorack and modular sync (use a 3.5 mm splitter cable for separate
+       Clock and Reset)
+   * - **TRS MIDI Out 1**
+     - TRS 3.5 mm Type-A output for sending MIDI to external gear
+   * - **TRS MIDI Out 2**
+     - Second TRS 3.5 mm Type-A output
    * - **USB MIDI**
-     - Class-compliant USB MIDI via one of the back USB-C ports (no drivers required)
+     - Class-compliant USB MIDI via USB-C #1 (no drivers required)
 
-All three paths are class-compliant --- no special drivers are needed on any operating system.
+All connections are class-compliant --- no special drivers are needed on any
+operating system.
 
 
 How MIDI Works on TBD-16

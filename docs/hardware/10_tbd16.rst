@@ -17,7 +17,7 @@ configured, ready to make sound the moment you plug it in.
 - **50+ plugins** --- Synthesizers, effects, drum machines, granular engines, and more
 - **Two independent channels** --- Run any two plugins simultaneously
 - **Browser-based control** --- Full web UI served over WiFi, accessible from any device
-- **Standard MIDI** --- DIN and USB MIDI, no adapters needed
+- **Standard MIDI** --- 4x TRS 3.5 mm (Type-A) and USB MIDI, no adapters needed
 - **Ableton Link** --- Wireless tempo sync with any Link-enabled device on your network
 - **CV/Trigger inputs** --- Modulate any parameter from external hardware
 - **Open source** --- Create your own plugins in C++, test with the simulator, flash to hardware
@@ -57,11 +57,15 @@ Connectivity
    * - Interface
      - Details
    * - **Audio**
-     - Stereo line output, headphone output
+     - Stereo line input (TRS 3.5 mm), stereo line output (TRS 3.5 mm),
+       stereo headphone output (TRS 3.5 mm) with volume wheel
    * - **MIDI**
-     - 5-pin DIN MIDI In/Out + USB MIDI
+     - 2x TRS 3.5 mm MIDI In Type-A (2nd input doubles as Clock/Reset),
+       2x TRS 3.5 mm MIDI Out Type-A, USB MIDI
    * - **USB**
-     - JTAG USB-C (front, for P4 flashing), 2x USB-C (back, for power/RP2350/USB-MSC)
+     - USB-C #1: ESP32-P4 Device (High Speed).
+       USB-C #2: Additional power and/or RP2350 Device.
+       USB-C #3: ESP32-P4 JTAG
    * - **WiFi**
      - Web-based control interface via ESP32-C6
    * - **CV/Trigger**

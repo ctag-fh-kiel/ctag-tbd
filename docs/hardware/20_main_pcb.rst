@@ -19,13 +19,15 @@ The Main PCB includes:
 - **ESP32-P4** --- DSP engine, WiFi web server, plugin management
 - **RP2350** --- MIDI processing, hardware I/O, sequencer capabilities
 - **ESP32-C6** --- WiFi co-processor
-- **STM32F030R8T6** --- UI board I/O controller (reads buttons, 360-degree
-  endless potentiometers, and other analog/digital inputs via I2C;
-  `firmware source <https://github.com/ctag-fh-kiel/stm32-tbd-fw>`_)
 - **Audio codec** --- High-quality stereo ADC/DAC
 - **Power management** --- Regulated power for all components
 - **SD card slots** --- Two slots (P4 + RP2350)
 - **30-pin FFC connector** --- Flat flex cable interface for custom UI boards
+
+The TBD-16 also includes a separate **UI board** (connected via FFC) with an
+**STM32F030R8T6** I/O controller that reads the buttons, 360-degree endless
+potentiometers, and other inputs via I2C
+(`firmware source <https://github.com/ctag-fh-kiel/stm32-tbd-fw>`_).
 
 
 The FFC Connector
@@ -74,8 +76,8 @@ How It Differs from TBD-16
    * - Audio I/O jacks
      - Included
      - On your carrier board
-   * - MIDI DIN connectors
-     - Included
+   * - MIDI connectors
+     - Included (4x TRS 3.5 mm)
      - On your carrier board
    * - DSP engine & firmware
      - Same

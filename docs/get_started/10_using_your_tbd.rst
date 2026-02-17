@@ -11,7 +11,7 @@ accessing the web interface, and making sound.
 
 - Plug a **USB-C cable into one of the two ports on the back** of the TBD-16 for power.
 - Connect your audio output (speakers, headphones, mixer) to the audio jacks.
-- Optionally connect MIDI gear via the DIN MIDI ports or USB MIDI.
+- Optionally connect MIDI gear via the TRS MIDI ports or USB MIDI.
 
 The TBD-16 boots in a few seconds. The front panel controls and display become active.
 

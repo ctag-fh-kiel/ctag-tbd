@@ -86,6 +86,7 @@ extensions = [
     'breathe',
     'sphinx.ext.githubpages',
     'sphinx_copybutton',
+    'sphinx_design',
     # 'tbdtools.tbd_sphinx',
 ]
 

@@ -118,4 +118,3 @@ dada tbd/docs
     dsp/index
     faq
     about/index
-    about/index
