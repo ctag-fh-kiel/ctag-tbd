@@ -241,18 +241,11 @@ Use PlatformIO's serial monitor (plug icon in toolbar) or:
 
     pio device monitor --baud 115200
 
-**SWD Debugging (optional):**
+**SWD Debugging with a Debug Probe:**
 
-If you have a CMSIS-DAP debug probe (e.g., Raspberry Pi Debug Probe), uncomment
-these lines in ``platformio.ini``:
-
-.. code-block:: ini
-
-    debug_tool = cmsis-dap
-    upload_protocol = cmsis-dap
-
-Then press ``F5`` in VS Code to start a debug session with breakpoints and
-variable inspection.
+The TBD-16 exposes SWD and UART pins, so you can flash over SWD, set
+breakpoints, and read serial output without touching the BOOTSEL button.
+See :doc:`Debugging with SWD <30_debugging>` for the full setup guide.
 
 
 Next Steps

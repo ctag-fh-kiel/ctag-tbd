@@ -12,6 +12,10 @@ Arduino on PlatformIO, you can prototype new interfaces in minutes.
    Deep dive into the SPI protocol, MIDI integration, and control data flow
    between the RP2350 and the DSP engine.
 
+:doc:`Debugging with SWD <30_debugging>`
+   Use a Raspberry Pi Debug Probe for one-click flashing, breakpoints, and
+   serial output --- no BOOTSEL button needed.
+
 .. toctree::
    :hidden:
    :glob:
