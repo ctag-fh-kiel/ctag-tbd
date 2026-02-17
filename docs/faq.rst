@@ -78,7 +78,7 @@ Audio & Sound
    Ableton Link is a technology for synchronizing tempo across devices on the
    same WiFi network. TBD-16 has built-in Link support, allowing it to sync
    with Ableton Live, iOS apps, and other Link-enabled tools. See
-   :doc:`Ableton Link <features/10_ableton_link>` for details.
+   :doc:`Ableton Link <get_started/15_wifi_and_link>` for details.
 
 
 Connectivity
@@ -87,7 +87,7 @@ Connectivity
 .. dropdown:: How do I connect to the web interface?
 
    Connect the TBD-16 to your WiFi network, then open its IP address in a
-   browser. See :doc:`WiFi & Firmware Updates <get_started/15_wifi_and_updates>`
+   browser. See :doc:`WiFi & Ableton Link <get_started/15_wifi_and_link>`
    for setup instructions.
 
 .. dropdown:: What MIDI connections are supported?
@@ -98,7 +98,7 @@ Connectivity
 
    All connections follow the `TRS Type-A standard <https://minimidi.world/>`_.
    The RP2350 processor handles MIDI and makes it available to the DSP engine.
-   See :doc:`MIDI <features/30_midi>` for details.
+   See :doc:`MIDI <hardware/15_midi>` for details.
 
 .. dropdown:: Can the TBD-16 run multiple RP2350 firmware images?
 
@@ -117,7 +117,7 @@ Troubleshooting
    2. Check that your computer is on the **same network**.
    3. Try accessing the device at its IP address directly.
    4. If the device isn't connecting to WiFi, see
-      :doc:`WiFi & Firmware Updates <get_started/15_wifi_and_updates>`.
+      :doc:`WiFi & Ableton Link <get_started/15_wifi_and_link>`.
 
 .. dropdown:: Firmware flash failed
 

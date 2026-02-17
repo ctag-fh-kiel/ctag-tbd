@@ -72,7 +72,7 @@ Use the TRS MIDI ports (Type-A) or USB MIDI to connect keyboards, sequencers,
 or other MIDI gear. The RP2350 processes incoming MIDI and forwards it to the
 DSP engine for chromatic playing, parameter control, or clock sync.
 
-See :doc:`MIDI </features/30_midi>` for full details.
+See :doc:`MIDI </hardware/15_midi>` for full details.
 
 
 5. Web Interface (Optional)
@@ -89,14 +89,13 @@ Use the web interface when you want to:
 - Configure WiFi, MIDI mapping, and system settings
 - Update firmware over the air
 
-See :doc:`WiFi & Firmware Updates <15_wifi_and_updates>` to set up the
+See :doc:`WiFi & Ableton Link <15_wifi_and_link>` to set up the
 connection.
 
 
 What's Next
 ===========
 
-- :doc:`WiFi & Firmware Updates <15_wifi_and_updates>` --- Connect to your home network, update firmware
+- :doc:`WiFi & Ableton Link <15_wifi_and_link>` --- Connect to your network, access web interface, sync tempo
 - :doc:`Storage & Samples <20_storage>` --- Manage SD card content and audio samples
-- :doc:`Ableton Link </features/10_ableton_link>` --- Sync tempo with other devices on your network
 - :doc:`Plugin Architecture </dsp/20_plugin_architecture>` --- Learn how plugins work or create your own

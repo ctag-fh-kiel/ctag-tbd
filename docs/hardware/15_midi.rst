@@ -59,7 +59,7 @@ forwarded to the P4, where plugins can respond to:
 .. tip::
 
    For wireless tempo sync without MIDI cables, use
-   :doc:`Ableton Link <10_ableton_link>` instead of MIDI clock.
+   :doc:`Ableton Link </get_started/15_wifi_and_link>` instead of MIDI clock.
 
 
 Using MIDI with Plugins

@@ -72,10 +72,9 @@ dada tbd/docs
        <p>Your TBD-16 ships ready to use. Plug in USB-C power and start making music — no computer needed.</p>
        <ul>
          <li><a href="get_started/10_using_your_tbd.html">Using Your TBD-16</a></li>
-         <li><a href="get_started/15_wifi_and_updates.html">WiFi &amp; Firmware Updates</a></li>
-         <li><a href="flash/index.html">Flash &amp; Recovery</a></li>
-         <li><a href="features/10_ableton_link.html">Ableton Link</a></li>
-         <li><a href="features/30_midi.html">MIDI</a></li>
+         <li><a href="get_started/15_wifi_and_link.html">WiFi &amp; Ableton Link</a></li>
+         <li><a href="flash/index.html">Flash &amp; Updates</a></li>
+         <li><a href="hardware/15_midi.html">MIDI</a></li>
          <li><a href="faq.html">FAQ &amp; Troubleshooting</a></li>
        </ul>
      </div>
@@ -113,7 +112,6 @@ dada tbd/docs
 
     get_started/index
     flash/index
-    features/index
     hardware/index
     plugins/index
     frontend/index

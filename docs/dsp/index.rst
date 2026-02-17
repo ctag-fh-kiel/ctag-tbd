@@ -23,6 +23,9 @@ it, and your plugin appears in the web interface ready to play.
 :doc:`Web UI API <60_web_api>`
    REST endpoints for controlling plugins over WiFi.
 
+:doc:`USB Audio Interface <55_audio_interface>`
+   Alternative firmware that turns the TBD-16 into a class-compliant USB sound card.
+
 .. toctree::
    :hidden:
    :glob:

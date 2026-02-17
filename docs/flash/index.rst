@@ -1,5 +1,5 @@
-Flash
-=====
+Flash & Updates
+===============
 
 The TBD-16 ships with all 50+ DSP plugins in a single firmware --- you do
 **not** need to flash every time you want a different sound. Just pick a plugin
@@ -11,9 +11,14 @@ switchable from the boot menu without reflashing (see
 
 **When you do need to flash:**
 
-- A new firmware release is available
+- A new firmware release is available and you want to update
 - You want to run a custom build
 - Something went wrong and you need to recover
+
+.. note::
+
+   Firmware updates do not erase the SD card. Your patches, samples, and
+   WiFi settings are preserved and survive firmware updates.
 
 :doc:`Flash DSP Firmware <25_flash_dsp>`
    Re-flash the ESP32-P4 audio engine from your browser --- no tools needed.

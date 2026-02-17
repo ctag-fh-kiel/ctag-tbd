@@ -8,6 +8,9 @@ hardware specs, connectivity, and physical design.
 :doc:`TBD-16 <10_tbd16>`
    The complete instrument --- enclosure, controls, connectors, and specs.
 
+:doc:`MIDI <15_midi>`
+   TRS and USB MIDI connectivity --- hardware I/O and how MIDI is processed.
+
 ----
 
 Platform Options

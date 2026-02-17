@@ -104,7 +104,7 @@ Getting Started
 Your TBD-16 ships ready to use:
 
 1. :doc:`Using Your TBD-16 </get_started/10_using_your_tbd>` --- Plug in power and start making music
-2. :doc:`WiFi & Firmware Updates </get_started/15_wifi_and_updates>` --- Set up the web interface for configuration
+2. :doc:`WiFi & Ableton Link </get_started/15_wifi_and_link>` --- Set up WiFi, web interface, and Link
 3. :doc:`Storage & Samples </get_started/20_storage>` --- Manage SD card content
 
 | `dadamachines TBD Toolkit <https://dadamachines.com/products/tbd-toolkit>`_ · `Shop <https://dadamachines.com/shop/>`_
