@@ -181,6 +181,11 @@ This is ideal for:
     Make sure you ran ``. ~/esp/esp-idf/export.sh`` in the current terminal
     session. ESP-IDF tools are not in your PATH by default.
 
+**New plugin doesn't appear in the web UI**
+    The system caches the list of available processors in ``spm-config.jsn``.
+    Delete the ``"availableProcessors": [ ... ],`` block from that file and
+    restart the device or simulator.
+
 
 Next Steps
 ==========

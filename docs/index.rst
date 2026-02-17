@@ -75,7 +75,7 @@ dada tbd/docs
          <li><a href="get_started/15_wifi_and_updates.html">WiFi &amp; Firmware Updates</a></li>
          <li><a href="features/10_ableton_link.html">Ableton Link</a></li>
          <li><a href="features/30_midi.html">MIDI</a></li>
-         <li><a href="about/30_faq.html">FAQ &amp; Troubleshooting</a></li>
+         <li><a href="faq.html">FAQ &amp; Troubleshooting</a></li>
        </ul>
      </div>
 
@@ -116,4 +116,6 @@ dada tbd/docs
     plugins/index
     frontend/index
     dsp/index
+    faq
+    about/index
     about/index

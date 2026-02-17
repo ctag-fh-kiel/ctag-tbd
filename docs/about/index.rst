@@ -13,9 +13,6 @@ programmable audio hardware.
 :doc:`Community <20_community>`
    Where to ask questions, share patches, and contribute.
 
-:doc:`FAQ <30_faq>`
-   Common questions about hardware, firmware, and development.
-
 .. toctree::
    :hidden:
    :glob:
