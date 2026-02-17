@@ -171,5 +171,46 @@ MIDI or the ``controlData`` pointer in ``ProcessData``.
 Using Samples
 -------------
 
-Plugins can access samples from the SD card ROM via ``ctagSampleRom``.
-Be aware that sample buffering uses a significant portion of PSRAM.
+Plugins can access audio samples from the SD card via the ``ctagSampleRom``
+helper class. At boot, the system reads WAV files listed in the active sample
+and wavetable banks, loads them into PSRAM, and exposes them as indexed slices.
+
+.. code-block:: cpp
+
+   #include "helpers/ctagSampleRom.hpp"
+
+   // In your Init() method:
+   sampleRom = std::make_unique<ctagSampleRom>();
+
+   // In your Process() method:
+   uint32_t nSlices = sampleRom->GetNumberSlices();
+   uint32_t sliceSize = sampleRom->GetSliceSize(sliceIndex);
+   sampleRom->ReadSliceAsFloat(buffer, sliceIndex, offset, nSamples);
+
+Key concepts:
+
+- **Wavetable slices** occupy indices 0 to ``GetFirstNonWaveTableSlice() - 1``.
+  Each wavetable bank file contains 64 wavetables × 256 samples.
+- **Sample slices** start at ``GetFirstNonWaveTableSlice()``. Each slice is one
+  WAV file from the active sample bank.
+- **Bank switching** is done via ``SetActiveWaveTableBank()`` /
+  ``SetActiveSampleBank()`` followed by ``RefreshDataStructure()``.
+- Sample data is stored as **16-bit integer** in PSRAM. Use ``ReadSliceAsFloat()``
+  to get normalized float output.
+- Total PSRAM allocation for samples is configured at build time
+  (``CONFIG_MAX_ALLOC_BYTES_PSRAM_SAMPLE_DATA``).
+
+See ``ctagSoundProcessorRompler`` and ``ctagSoundProcessorWTOsc`` for
+real-world usage examples.
+
+SD Card Sample Layout
+~~~~~~~~~~~~~~~~~~~~~
+
+Samples live in ``/sdcard/tbdsamples/`` on the P4 SD card. The structure is
+defined by JSON descriptor files:
+
+- ``sample_rom.jsn`` --- Master index with bank lists and active bank indices
+- Bank files (e.g. ``def_smp.jsn``, ``def_wt.jsn``) --- Arrays of sample entries
+  with ``filename``, ``path``, ``nsamples``, and optional ``offset``
+
+See ``helpers/ctagSampleRomModel`` for the full data model implementation.

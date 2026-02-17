@@ -23,7 +23,7 @@ What the Simulator Does
 - Processes real-time audio through your computer's sound card
 - Supports CV, Pot, and Trigger simulation via ``http://localhost:8080/ctrl``
 - Accepts ``.wav`` file input for offline audio processing
-- Uses custom sample ROM files exported from hardware
+- Uses the ``sample_rom/tbdsamples/`` folder for sample and wavetable data
 
 
 Prerequisites
