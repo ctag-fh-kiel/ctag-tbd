@@ -1,11 +1,19 @@
 Frontend Development
 ====================
 
-Build custom MIDI controllers, sequencers, and control surfaces for the RP2350 ---
-the TBD-16's user-facing processor. Uses Arduino and PlatformIO.
+The RP2350 is the TBD-16's user-facing processor. It handles the display, LEDs,
+buttons, encoders, and MIDI --- everything the player touches. Because it runs
+Arduino on PlatformIO, you can prototype new interfaces in minutes.
+
+:doc:`Getting Started <10_getting_started>`
+   Install PlatformIO, flash the template firmware, and run your first build.
+
+:doc:`RP2350 Firmware <20_rp2350>`
+   Deep dive into the SPI protocol, MIDI integration, and control data flow
+   between the RP2350 and the DSP engine.
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
    :glob:
-   
+
    [0-9]*

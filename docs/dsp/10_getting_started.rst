@@ -5,10 +5,6 @@ DSP --- Getting Started
 This guide walks you through setting up your development environment for DSP
 plugin development on the ESP32-P4 --- the TBD-16's audio engine.
 
-.. contents:: Steps
-   :local:
-   :depth: 2
-
 
 Before You Begin
 ================
@@ -36,28 +32,26 @@ Espressif's official development framework for ESP32 chips.
 
 The project requires **ESP-IDF v5.5.1** or newer.
 
-.. tabs::
+**macOS / Linux:**
 
-   .. tab:: macOS / Linux
+.. code-block:: bash
 
-      .. code-block:: bash
+    # Clone ESP-IDF
+    mkdir -p ~/esp
+    cd ~/esp
+    git clone --recursive https://github.com/espressif/esp-idf.git
+    cd esp-idf
+    git checkout v5.5.1
+    git submodule update --init --recursive
 
-          # Clone ESP-IDF
-          mkdir -p ~/esp
-          cd ~/esp
-          git clone --recursive https://github.com/espressif/esp-idf.git
-          cd esp-idf
-          git checkout v5.5.1
-          git submodule update --init --recursive
+    # Install toolchain and tools
+    ./install.sh
 
-          # Install toolchain and tools
-          ./install.sh
+**Windows:**
 
-   .. tab:: Windows
-
-      Download and run the
-      `ESP-IDF Tools Installer <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/windows-setup.html>`_.
-      Select ESP-IDF v5.5.1 during installation.
+Download and run the
+`ESP-IDF Tools Installer <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/windows-setup.html>`_.
+Select ESP-IDF v5.5.1 during installation.
 
 .. note::
    The ESP-IDF installer downloads the Xtensa and RISC-V cross-compilers,

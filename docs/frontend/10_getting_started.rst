@@ -6,10 +6,6 @@ This guide walks you through setting up your development environment for RP2350
 frontend firmware --- custom MIDI controllers, sequencers, control surfaces,
 and UI screens for the TBD-16.
 
-.. contents:: Steps
-   :local:
-   :depth: 2
-
 
 Why Start Here?
 ===============
