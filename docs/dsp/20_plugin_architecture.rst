@@ -35,10 +35,16 @@ Parameter System
 Each plugin declares its parameters in a **MUI (Menu UI) JSON file** (``mui-PluginName.jsn``).
 Parameters can be:
 
--  ``int`` --- Integer values with min/max range. Can be mapped to a **CV** input.
--  ``bool`` --- On/off toggles. Can be mapped to a **trigger** input.
+-  ``int`` --- Integer values with min/max range. Can be modulated via a **CV** input.
+-  ``bool`` --- On/off toggles. Can be modulated via a **trigger** input.
 
 The Web UI is auto-generated from the MUI file. You never need to write HTML.
+
+.. note::
+
+   The "CV" and "trigger" terms come from the original CTAG TBD Eurorack module.
+   On the TBD-16, these modulation inputs are driven by the **RP2350** front-end
+   (sequencers, arpeggiators, MIDI mapping) rather than physical CV jacks.
 
 At runtime, parameters are stored as ``atomic<int32_t>`` member variables. The code
 generator creates these automatically from your MUI file.
@@ -47,7 +53,7 @@ Parameter Macros
 ~~~~~~~~~~~~~~~~
 
 In your ``Process()`` method, use these macros to read parameters with optional
-CV/trigger modulation:
+modulation:
 
 .. code-block:: cpp
 

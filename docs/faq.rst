@@ -7,11 +7,12 @@ General
 
 .. dropdown:: What is TBD-16?
 
-   TBD-16 is a standalone desktop audio DSP platform by
+   TBD-16 is a standalone desktop audio DSP instrument by
    `dadamachines <https://dadamachines.com>`_.
    It runs the open-source `CTAG TBD <https://github.com/ctag-fh-kiel/ctag-tbd>`_
-   audio engine and includes 50+ synthesizers and effects that you control
-   through a browser-based interface.
+   audio engine and includes 50+ synthesizers and effects. Just plug in USB-C
+   power and start making music using the built-in hardware interface (buttons,
+   encoders, OLED display, RGB LEDs) --- no computer required.
 
 .. dropdown:: What does TBD stand for?
 
@@ -29,8 +30,10 @@ General
 
 .. dropdown:: Do I need a Eurorack system?
 
-   No. The TBD-16 is a standalone desktop device with TRS MIDI (3.5 mm Type-A),
-   USB MIDI, and audio I/O. No Eurorack case or power supply needed.
+   No. The TBD-16 is a fully standalone desktop device with TRS MIDI
+   (3.5 mm Type-A), USB MIDI, audio I/O, and a full hardware interface.
+   No Eurorack case, no computer, no power supply needed --- just USB-C
+   power. It even works with a USB power bank for portable use.
 
 .. dropdown:: What processors / chips are inside?
 
@@ -60,8 +63,10 @@ Audio & Sound
 
 .. dropdown:: How many plugins can run simultaneously?
 
-   Two --- one per audio channel. Each channel independently runs a plugin from
-   the library. Plugins are selected through the web UI.
+   Two --- one per audio channel (Slot 0 and Slot 1). Each channel independently
+   runs a plugin from the library. In **Groovebox** mode, plugins are assigned
+   per track. In **MultiEffect** mode, you select plugins for each slot using
+   the hardware interface or the web interface.
 
 .. dropdown:: Can I process external audio?
 
@@ -126,9 +131,11 @@ Troubleshooting
 
 .. dropdown:: No sound after changing plugins
 
-   - Check that the plugin is loaded on the correct channel in the web UI.
+   - Check that the plugin is loaded on the correct channel.
    - Some plugins require an external audio input or a MIDI trigger to produce
      sound.
+   - In Groovebox mode, make sure the track is unmuted and the sequencer is
+     running.
    - Verify that your audio cable is connected to the correct output jack.
 
 

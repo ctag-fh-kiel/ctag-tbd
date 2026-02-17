@@ -3,8 +3,10 @@ The Project
 ***********
 
 **dada tbd** is an open-source audio DSP platform for musicians, educators, and
-audio developers. It runs 50+ synthesizers and effects on dedicated hardware,
-controlled through a browser-based interface over WiFi.
+audio developers. It runs 50+ synthesizers and effects on dedicated hardware with
+a full hardware interface (buttons, encoders, OLED display, RGB LEDs) --- just
+plug in power and start making music, no computer required. A WiFi-based web
+interface is available for configuration and preset management.
 
 The platform is built on `CTAG TBD <https://github.com/ctag-fh-kiel/ctag-tbd>`_,
 an open-source embedded synthesizer created by
@@ -23,7 +25,7 @@ This repository is a fork of
 `ctag-fh-kiel/ctag-tbd <https://github.com/ctag-fh-kiel/ctag-tbd>`_
 (branch ``p4_main``), adapted for the TBD-16 hardware. Our focus:
 
-- **Desktop Hardware** --- Standalone form factor with standard MIDI, no Eurorack required
+- **Desktop Hardware** --- Standalone form factor with hardware UI and standard MIDI, no Eurorack or computer required
 - **Hardware Products** --- TBD-16 instrument, Main PCB with FFC connector, custom integrations
 - **UI/UX** --- Redesigned web interface with musician-friendly interaction patterns
 - **Documentation** --- Clear guides, example workflows, and UX guidelines for

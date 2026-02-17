@@ -38,15 +38,23 @@ operating system.
 How MIDI Works on TBD-16
 =========================
 
-MIDI is processed by the **RP2350** front-end processor, which handles all
-hardware I/O. The RP2350 receives MIDI messages and forwards them to the
-**ESP32-P4** DSP engine via the SPI bus, where plugins can respond to:
+MIDI is processed by the **RP2350** front-end processor. The RP2350 handles
+all hardware I/O and typically runs its own **generators, sequencers, and
+arpeggiators** that control the DSP plugins on the ESP32-P4 via the SPI bus.
+
+External MIDI messages (from TRS or USB) are also received by the RP2350 and
+forwarded to the P4, where plugins can respond to:
 
 - **Note On / Note Off** --- Play melodic synthesizers, trigger drum hits
 - **Control Change (CC)** --- Map MIDI CCs to plugin parameters
 - **Pitch Bend** --- Continuous pitch modulation
 - **Program Change** --- Switch between presets or plugins
 - **Clock** --- Tempo synchronization via MIDI clock
+
+.. note::
+
+   Some DSP plugins (such as **Bjorklund**) have their own built-in sequencers
+   and generate rhythms autonomously, independent of the RP2350 firmware.
 
 .. tip::
 
@@ -57,9 +65,9 @@ hardware I/O. The RP2350 receives MIDI messages and forwards them to the
 Using MIDI with Plugins
 ========================
 
-Plugins that support MIDI input will respond to incoming messages automatically.
-The web UI shows which parameters can be MIDI-mapped and allows you to assign
-MIDI CCs to any parameter.
+Plugins that support MIDI input respond to incoming messages automatically.
+You can assign MIDI CCs to plugin parameters through the hardware interface
+or the web interface.
 
 Synthesizer plugins typically respond to:
 

@@ -62,14 +62,14 @@ dada tbd/docs
 
    <p class="tagline">
      An open platform for audio DSP — synthesizers, effects, and drum machines
-     on dedicated hardware you control from your browser.
+     on dedicated hardware. Just plug in power and start making music.
    </p>
 
    <div class="persona-grid">
 
      <div class="persona-card">
        <h3>🎹 Make Music</h3>
-       <p>Your TBD-16 ships ready to use. Plug in, open the web interface, and start making sound.</p>
+       <p>Your TBD-16 ships ready to use. Plug in USB-C power and start making music — no computer needed.</p>
        <ul>
          <li><a href="get_started/10_using_your_tbd.html">Using Your TBD-16</a></li>
          <li><a href="get_started/15_wifi_and_updates.html">WiFi &amp; Firmware Updates</a></li>

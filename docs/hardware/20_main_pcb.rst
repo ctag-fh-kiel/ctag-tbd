@@ -17,7 +17,7 @@ What You Get
 The Main PCB includes:
 
 - **ESP32-P4** --- DSP engine, WiFi web server, plugin management
-- **RP2350** --- MIDI processing, hardware I/O, sequencer capabilities
+- **RP2350** --- MIDI processing, user interface, sequencers, arpeggiators, generators
 - **ESP32-C6** --- WiFi co-processor
 - **Audio codec** --- High-quality stereo ADC/DAC
 - **Power management** --- Regulated power for all components

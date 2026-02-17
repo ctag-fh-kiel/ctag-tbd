@@ -147,12 +147,12 @@ Instead of live audio, you can feed a stereo WAV file (32-bit float) into the si
 The file loops indefinitely, making it useful for testing effects with consistent input material.
 
 
-CV and Trigger Simulation
-=========================
+Modulation Simulation
+=====================
 
 While the simulator is running, open ``http://localhost:8080/ctrl`` in your browser.
-This page provides virtual knobs and trigger buttons that mirror the hardware's
-CV inputs and trigger inputs, allowing you to test parameter modulation without physical controls.
+This page provides virtual knobs and trigger buttons that mirror the modulation
+inputs, allowing you to test parameter modulation without hardware.
 
 
 Developing Plugins with the Simulator

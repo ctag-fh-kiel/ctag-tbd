@@ -7,12 +7,18 @@ WiFi
 ====
 
 The TBD-16 includes a WiFi co-processor (ESP32-C6) that provides network
-connectivity for the web-based control interface.
+connectivity for the web interface used for **configuration and preset
+management**.
+
+.. note::
+
+   WiFi is not required for making sound. The TBD-16 works fully standalone
+   with its hardware interface (buttons, encoders, OLED display).
 
 Initially, the TBD creates its own WiFi network with the SSID **ctag-tbd**
 (no password). Join that network, open a browser and navigate to
-``http://ctag-tbd.local``. This opens the main control page where you can
-set your plugins and their parameters.
+``http://ctag-tbd.local``. This opens the configuration page where you can
+manage presets, browse the plugin library, and adjust system settings.
 
 From the **Edit configuration** page, you can adjust WiFi settings:
 

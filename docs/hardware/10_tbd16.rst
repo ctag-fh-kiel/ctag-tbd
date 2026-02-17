@@ -4,22 +4,40 @@ TBD-16
 
 The TBD-16 is a standalone desktop audio DSP instrument by
 `dadamachines <https://dadamachines.com>`_. It runs the open-source CTAG TBD
-audio engine in a compact desktop form factor with standard MIDI connectivity ---
-no Eurorack case required.
+audio engine in a compact desktop form factor with a full hardware interface ---
+no computer, no Eurorack case required.
 
 
 Overview
 ========
 
-The TBD-16 is a complete instrument out of the box. It ships pre-flashed and
-configured, ready to make sound the moment you plug it in.
+The TBD-16 is a complete instrument out of the box. Just plug a USB-C cable
+into one of the two power ports on the back and it boots into the default
+Groovebox / Drum Machine firmware with 16 tracks --- start making music
+immediately, no computer required.
 
-- **50+ plugins** --- Synthesizers, effects, drum machines, granular engines, and more
+Hardware Interface
+------------------
+
+- **30 buttons** --- Transport, track select, mute, pattern controls
+- **4 endless potentiometers** (with push-switch) --- 360-degree rotation for
+  parameter control
+- **2.4" OLED display** --- 128 × 64 pixels, shows track state, menus, and
+  parameter values
+- **19 RGB LEDs** --- Visual feedback for track state, sequencing, and modes
+
+Capabilities
+------------
+
+- **50+ DSP plugins** --- Synthesizers, effects, drum machines, granular engines, and more
 - **Two independent channels** --- Run any two plugins simultaneously
-- **Browser-based control** --- Full web UI served over WiFi, accessible from any device
 - **Standard MIDI** --- 4x TRS 3.5 mm (Type-A) and USB MIDI, no adapters needed
 - **Ableton Link** --- Wireless tempo sync with any Link-enabled device on your network
-- **CV/Trigger inputs** --- Modulate any parameter from external hardware
+- **Portable** --- Works with a USB power bank; an optional
+  `power bank mount <https://www.amazon.de/dp/B0BCK5Y852>`_ lets you play
+  anywhere
+- **Web interface** --- WiFi-based configuration and preset management
+  (not required for making sound)
 - **Open source** --- Create your own plugins in C++, test with the simulator, flash to hardware
 
 
@@ -38,7 +56,7 @@ Processors
      - Audio processing, plugin management, WiFi web server, Ableton Link
    * - **RP2350**
      - Front-End
-     - User interface, MIDI processing, hardware I/O, optional sequencer
+     - User interface, MIDI processing, sequencers, arpeggiators, generators
    * - **ESP32-C6**
      - WiFi
      - WiFi co-processor (managed by the P4)
@@ -67,9 +85,7 @@ Connectivity
        USB-C #2: Additional power and/or RP2350 Device.
        USB-C #3: ESP32-P4 JTAG
    * - **WiFi**
-     - Web-based control interface via ESP32-C6
-   * - **CV/Trigger**
-     - Multiple inputs for external modulation
+     - Configuration and preset management interface via ESP32-C6
    * - **SD Cards**
      - Two slots: P4 (config, samples, web UI) + RP2350
 
@@ -87,8 +103,8 @@ Getting Started
 
 Your TBD-16 ships ready to use:
 
-1. :doc:`Using Your TBD-16 </get_started/10_using_your_tbd>` --- Connect and make sound
-2. :doc:`WiFi & Firmware Updates </get_started/15_wifi_and_updates>` --- Configure WiFi
+1. :doc:`Using Your TBD-16 </get_started/10_using_your_tbd>` --- Plug in power and start making music
+2. :doc:`WiFi & Firmware Updates </get_started/15_wifi_and_updates>` --- Set up the web interface for configuration
 3. :doc:`Storage & Samples </get_started/20_storage>` --- Manage SD card content
 
 | `dadamachines TBD Toolkit <https://dadamachines.com/products/tbd-toolkit>`_
