@@ -75,6 +75,20 @@ Audio
 - Stereo **line output** (TRS 3.5 mm)
 - Stereo **headphone output** (TRS 3.5 mm) with volume wheel
 
+.. warning::
+   **Do not plug modular signals directly into the line input!**
+
+   Modular signals run very hot and can damage the line-level inputs. Please attenuate your
+   modular signals before sending them into the TBD-16 with an interface module like the
+   `Intellijel Audio Interface II <https://modulargrid.net/e/intellijel-audio-interface-ii>`_.
+
+.. note::
+   **Ground Loop Noise**
+
+   If you experience line noise while powering the TBD-16 from a computer via USB and
+   sending audio to/from the same computer, you may be creating a ground loop. This can
+   be defeated with a USB isolator.
+
 .. list-table:: Audio Specifications
    :widths: 30 70
 
@@ -105,7 +119,9 @@ no adapters or special cables needed.
    * - **TRS MIDI In 2 / Clock**
      - Second TRS 3.5 mm Type-A input; doubles as Clock/Reset input for
        Eurorack and modular sync (use a 3.5 mm splitter cable for separate
-       Clock and Reset)
+       Clock and Reset).
+
+       **Note:** Analog Clock/Reset requires toggling the switch on the bottom of the case.
    * - **TRS MIDI Out 1**
      - TRS 3.5 mm Type-A output for sending MIDI to external gear
    * - **TRS MIDI Out 2**
