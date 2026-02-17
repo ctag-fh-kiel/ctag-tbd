@@ -19,3 +19,6 @@ custom OEM designs.
 
 .. toctree::
    :hidden:
+   :glob:
+
+   [0-9]*

@@ -18,3 +18,6 @@ programmable audio hardware.
 
 .. toctree::
    :hidden:
+   :glob:
+
+   [0-9]*

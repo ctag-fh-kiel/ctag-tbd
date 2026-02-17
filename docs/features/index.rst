@@ -14,3 +14,6 @@ Beyond its plugin engine, the TBD-16 integrates with the tools musicians already
 
 .. toctree::
    :hidden:
+   :glob:
+
+   [0-9]*
