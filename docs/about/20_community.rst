@@ -33,8 +33,9 @@ Stay Updated
 ============
 
 - `dadamachines <https://dadamachines.com>`_ --- Official product page and announcements
-- `NLnet Project Page <https://nlnet.nl/project/TBD-DSP-Toolkit/>`_ --- Funding and project milestones
 - `Creative Technologies AG <https://www.creative-technologies.de/>`_ --- Academic research behind CTAG TBD
+
+- `NLnet Project Page <https://nlnet.nl/project/TBD-DSP-Toolkit/>`_ --- Funding and project milestones
 
 
 Related Projects

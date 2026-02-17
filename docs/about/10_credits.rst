@@ -32,6 +32,7 @@ The original CTAG TBD Eurorack hardware designs (V1/V2) by Robert Manzke are
 released under the `Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) <https://creativecommons.org/licenses/by-nc-sa/4.0/>`_.
 
 | Copyright (c) 2020-2026 Robert Manzke. All rights reserved. (Core platform)
+
 | Copyright (c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (TBD-16 adaptation, UI/UX, Documentation)
 
 CTAG TBD is provided "as is" without any express or implied warranties.

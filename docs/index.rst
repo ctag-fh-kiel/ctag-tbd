@@ -117,11 +117,3 @@ dada tbd/docs
     dsp/index
     frontend/index
     about/index
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
