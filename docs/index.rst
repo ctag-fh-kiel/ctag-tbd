@@ -94,12 +94,12 @@ dada tbd/docs
 
      <div class="persona-card">
        <h3>🏭 Design Products</h3>
-       <p>Use the TBD-16 as a devkit, or integrate the platform directly into your own hardware product.</p>
+       <p>Build custom instruments on the TBD platform, or integrate the DSP engine into your own hardware.</p>
        <ul>
-         <li><a href="hardware/10_tbd16.html">TBD-16 Specs</a></li>
-         <li><a href="hardware/20_main_pcb.html">Main PCB with FFC Connector</a></li>
-         <li><a href="hardware/30_custom_integration.html">Custom PCB Integration</a></li>
+         <li><a href="hardware/10_tbd16.html">TBD-16 Hardware Specs</a></li>
+         <li><a href="hardware/index.html#platform-options">Main PCB &amp; Custom Integration</a></li>
          <li><a href="dsp/60_web_api.html">Web UI API</a></li>
+         <li><a href="https://dadamachines.com/contact/">Contact dadamachines</a></li>
        </ul>
      </div>
 

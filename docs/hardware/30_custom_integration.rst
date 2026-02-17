@@ -78,7 +78,7 @@ Why Custom Over a Module?
 Get in Touch
 ============
 
-Contact `dadamachines <https://dadamachines.com>`_ to discuss your project.
+`Contact dadamachines <https://dadamachines.com/contact/>`_ to discuss your project.
 
 We work with teams at any stage --- from napkin sketches to nearly-finished products
 that need audio DSP integration.

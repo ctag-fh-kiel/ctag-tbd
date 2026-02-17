@@ -90,10 +90,11 @@ How It Differs from TBD-16
 Getting Started
 ===============
 
-If you're interested in building with the TBD Main PCB, contact
-`dadamachines <https://dadamachines.com>`_ to discuss your project.
+Interested in building with the TBD Main PCB?
+`Contact dadamachines <https://dadamachines.com/contact/>`_ to discuss your project
+and availability.
 
-For development, the software workflow is identical to TBD-16:
+The software workflow is identical to the TBD-16:
 
 - :doc:`DSP --- Getting Started </dsp/10_getting_started>` --- Compile DSP firmware
 - :doc:`Simulator </dsp/50_simulator>` --- Develop plugins without hardware

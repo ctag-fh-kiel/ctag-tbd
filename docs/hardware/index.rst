@@ -1,21 +1,39 @@
 Hardware
 ========
 
-The TBD platform is built around a modular architecture: a DSP Main-PCB that can
-be integrated into different products, from the ready-to-play TBD-16 instrument to
-custom OEM designs.
-
-:doc:`Overview <00_overview>`
-   Architecture diagram and how the pieces fit together.
+The TBD-16 is the flagship product of the dadamachines TBD platform --- a
+premium devkit and standalone instrument in one box. This section covers its
+hardware specs, connectivity, and physical design.
 
 :doc:`TBD-16 <10_tbd16>`
-   The complete instrument --- enclosure, controls, and connectors.
+   The complete instrument --- enclosure, controls, connectors, and specs.
 
-:doc:`Main PCB <20_main_pcb>`
-   Standalone DSP board with ESP32-P4, RP2350, codec, and I/O headers.
+----
 
-:doc:`Custom Integration <30_custom_integration>`
-   Guidelines for embedding the Main PCB in your own product or enclosure.
+Platform Options
+----------------
+
+The TBD platform is modular. Beyond the TBD-16, dadamachines offers two
+additional paths for instrument designers and manufacturers:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 40 35
+
+   * - Product
+     - What It Is
+     - For Whom
+   * - :doc:`TBD Main PCB <20_main_pcb>`
+     - Core DSP board with 30-pin FFC for custom UI
+     - Instrument designers, product developers
+   * - :doc:`Custom Integration <30_custom_integration>`
+     - ESP32-P4 + RP2350 + Codec on your own PCB
+     - Manufacturers, OEMs, collaborators
+
+All tiers run the same CTAG TBD audio engine with 50+ plugins, WiFi, MIDI,
+and Ableton Link.
+
+| `Contact dadamachines <https://dadamachines.com/contact/>`_ · `Shop <https://dadamachines.com/shop/>`_
 
 .. toctree::
    :hidden:
