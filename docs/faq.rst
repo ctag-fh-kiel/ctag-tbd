@@ -124,10 +124,10 @@ Troubleshooting
    - Make sure the USB cable supports data (not charge-only).
    - Try a different USB port.
    - Use the browser-based flasher at
-     :doc:`Flash DSP Firmware <get_started/25_flash_dsp>` or
-     :doc:`Flash UI Firmware <get_started/30_flash_ui>`.
+     :doc:`Flash DSP Firmware </flash/25_flash_dsp>` or
+     :doc:`Flash UI Firmware </flash/30_flash_ui>`.
    - For full device recovery, see
-     :doc:`Device Recovery <get_started/50_device_recovery>`.
+     :doc:`Device Recovery </flash/50_device_recovery>`.
 
 .. dropdown:: No sound after changing plugins
 

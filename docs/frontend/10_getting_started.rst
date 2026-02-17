@@ -253,6 +253,6 @@ Next Steps
 
 -  :doc:`Architecture & SPI API <20_rp2350>` --- Deep dive into the RP2350/P4
    communication protocol, MIDI integration, and pin mapping.
--  :doc:`Flash UI Firmware </get_started/30_flash_ui>` --- Flash pre-built firmware
+-  :doc:`Flash UI Firmware </flash/30_flash_ui>` --- Flash pre-built firmware
    without a development environment.
 -  Ready for audio DSP? See :doc:`DSP --- Getting Started </dsp/10_getting_started>`.

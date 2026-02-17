@@ -10,7 +10,7 @@ Use this guide if you need to reflash both processors and rebuild the SD cards.
 .. note::
 
    Your TBD-16 ships ready to use --- you do **not** need this guide for normal operation.
-   Start with :doc:`Using Your TBD-16 <10_using_your_tbd>` instead.
+   Start with :doc:`Using Your TBD-16 </get_started/10_using_your_tbd>` instead.
 
 .. raw:: html
 
