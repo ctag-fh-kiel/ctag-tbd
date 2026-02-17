@@ -92,8 +92,9 @@ The Link integration runs on the ESP32-P4 processor and communicates session dat
 to the RP2350 front-end processor via the SPI bus. This means both the DSP engine
 and the UI processor have access to synchronized tempo and transport state.
 
-The implementation uses the official
-`Ableton Link SDK <https://github.com/Ableton/link>`_ (included as a git submodule).
+The implementation uses a
+`fork of the Ableton Link SDK <https://github.com/ctag-fh-kiel/link>`_
+(included as a git submodule under ``components/ableton_link``).
 Link data is captured in the audio processing loop at interrupt priority for
 sample-accurate timing, and a separate thread-safe API is available for
 non-real-time queries.

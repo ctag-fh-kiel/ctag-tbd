@@ -19,6 +19,9 @@ The Main PCB includes:
 - **ESP32-P4** --- DSP engine, WiFi web server, plugin management
 - **RP2350** --- MIDI processing, hardware I/O, sequencer capabilities
 - **ESP32-C6** --- WiFi co-processor
+- **STM32F030R8T6** --- UI board I/O controller (reads buttons, 360-degree
+  endless potentiometers, and other analog/digital inputs via I2C;
+  `firmware source <https://github.com/ctag-fh-kiel/stm32-tbd-fw>`_)
 - **Audio codec** --- High-quality stereo ADC/DAC
 - **Power management** --- Regulated power for all components
 - **SD card slots** --- Two slots (P4 + RP2350)

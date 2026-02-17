@@ -98,3 +98,14 @@ Simulator
 The TBD Simulator runs the full DSP engine on your host machine --- no hardware required.
 See the dedicated :doc:`Simulator Guide <50_simulator>` for build instructions, usage, and
 multi-platform setup.
+
+
+Performance Resources
+=====================
+
+The ESP32-P4 features a RISC-V core with vector (SIMD) extensions. If you need
+high-throughput memory operations in your plugin, the
+`esp32p4_memcpy_pie_benchmark <https://github.com/ctag-fh-kiel/-esp32p4_memcpy_pie_benchmark>`_
+repository benchmarks optimized ``memcpy`` implementations on the P4 (silicon
+rev 1.3), achieving up to **2x** the throughput of the standard ``memcpy`` for
+SRAM-to-SRAM transfers.

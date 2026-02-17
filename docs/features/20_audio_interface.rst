@@ -44,6 +44,11 @@ USB Audio Class 1.0 or 2.0. The main TBD firmware currently uses USB for
 serial communication and firmware flashing, not audio streaming.
 
 If you are interested in developing or testing USB Audio Interface firmware,
-see the :doc:`Building & Setup </dsp/40_building>` guide for compiling
-custom firmware, and check the
-`project GitHub <https://github.com/dadamachines/ctag-tbd>`_ for updates on this feature.
+the reference implementation is available at
+`tbd-uac-device <https://github.com/ctag-fh-kiel/tbd-uac-device>`_ --- an
+ESP-IDF project that turns the TBD-16 into a stereo USB Audio Class 2.0 sound
+card. It builds on Espressif's
+`USB Device UAC component <https://components.espressif.com/components/espressif/usb_device_uac>`_.
+
+See :doc:`Building & Setup </dsp/40_building>` for help compiling custom
+firmware.

@@ -74,7 +74,10 @@ The TBD-16 ships with the following apps on the SD card:
        `CMSIS-DAP debug probe <https://github.com/ctag-fh-kiel/debugprobe-tbd>`_,
        allowing you to flash and debug the **STM32F030R8T6** microcontroller
        on the UI board (which handles buttons, 360-degree endless
-       potentiometers, and other input hardware). Based on the
+       potentiometers, and other input hardware via I2C). The STM32 firmware
+       source is at
+       `stm32-tbd-fw <https://github.com/ctag-fh-kiel/stm32-tbd-fw>`_.
+       Based on the
        `Raspberry Pi debugprobe <https://github.com/raspberrypi/debugprobe>`_
        firmware.
    * - **USB Mass Storage** (``tusb_msc.uf2``)
