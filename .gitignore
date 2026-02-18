@@ -10,6 +10,10 @@ managed_components/
 *.hex
 *.uf2
 
+# Allow documentation firmware files
+!docs/_static/firmware/**/*.bin
+!docs/_static/firmware/**/*.uf2
+
 # IDEs
 .vscode/
 .idea/
