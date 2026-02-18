@@ -65,14 +65,38 @@ You switch between firmware images using the UF2 bootloader --- see
    independently of the RP2350 firmware mode.
 
 
-4. Connect MIDI (Optional)
+4. Connect Audio (Notes)
+========================
+
+.. warning::
+
+   **Do not plug modular signals directly into the line input.**
+   Modular signals run hot and can damage the line-level inputs. Attenuate
+   your signal first with an interface module such as the
+   `Intellijel Audio Interface II <https://modulargrid.net/e/intellijel-audio-interface-ii>`_.
+
+.. note::
+
+   **Ground loop noise:** If you hear hum or buzz while powering the TBD-16
+   from a computer via USB and sending audio to/from the same computer, you
+   have a ground loop. A USB isolator on the power cable will fix it.
+
+
+5. Connect MIDI (Optional)
 ===========================
 
 Use the TRS MIDI ports (Type-A) or USB MIDI to connect keyboards, sequencers,
 or other MIDI gear. The RP2350 processes incoming MIDI and forwards it to the
 DSP engine for chromatic playing, parameter control, or clock sync.
 
-See the `MIDI section </hardware/10_tbd16.html#midi>`_ of the TBD-16 page for full details.
+.. note::
+
+   **MIDI In 2 doubles as Clock/Reset input** for Eurorack and modular sync.
+   There is a switch on the **bottom of the case** to toggle between MIDI and
+   Clock/Reset mode. Use a 3.5 mm splitter cable if you need separate Clock
+   and Reset signals.
+
+See the :ref:`MIDI section <hardware/10_tbd16:midi>` of the TBD-16 hardware page for full details.
 
 
 5. Web Interface (Optional)

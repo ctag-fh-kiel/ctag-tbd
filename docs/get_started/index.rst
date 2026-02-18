@@ -1,6 +1,10 @@
 Get Started
 ===========
 
+.. raw:: html
+
+   <img src="../_static/assets/dadamachines-tbd-16_mockup_002.jpg" alt="dadamachines TBD-16" style="max-width: 100%; width: 100%; border-radius: 6px; margin-bottom: 1.5em;">
+
 Your TBD-16 ships ready to use --- just plug in power and make music.
 
 
@@ -14,6 +18,12 @@ Your TBD-16 ships ready to use --- just plug in power and make music.
    16 tracks --- start pressing buttons and turning knobs.
 
 No computer, no WiFi, no software installation needed.
+
+.. warning::
+
+   **Do not plug modular signals directly into the line input.**
+   Modular signals run hot and can damage the inputs. Attenuate first with an
+   interface module (e.g. `Intellijel Audio Interface II <https://modulargrid.net/e/intellijel-audio-interface-ii>`_).
 
 :doc:`Using Your TBD-16 <10_using_your_tbd>` --- full walkthrough of the
 hardware interface, firmware modes, and MIDI.
