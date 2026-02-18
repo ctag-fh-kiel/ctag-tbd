@@ -1,14 +1,10 @@
 Hardware
 ========
 
-.. raw:: html
-
-   <!-- Hero image placeholder — replace src with actual platform photo -->
-   <div style="text-align:center; margin: 0 0 2em 0;">
-     <img src="https://docs.dadamachines.com/images/tbd-platform-hero-placeholder.jpg"
-          alt="dadamachines TBD Platform"
-          style="width:100%; max-width:720px; border-radius:8px;" />
-   </div>
+.. image:: /_static/assets/dadamachines-tbd-16_mockup.jpg
+   :alt: dadamachines TBD Platform
+   :width: 100%
+   :class: hero-image
 
 The **TBD-16** is a standalone desktop audio DSP instrument --- a premium devkit
 and a complete instrument in one box.
