@@ -120,7 +120,7 @@ html_context = {
     'default_mode': 'auto'
 }
 
-html_static_path = ['../flash/_static']
+html_static_path = ['../_static']
 html_favicon = 'assets/favicon.png'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

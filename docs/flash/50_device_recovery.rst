@@ -564,11 +564,11 @@ Use this guide if you need to reflash both processors and rebuild the SD cards.
             var espSel = document.getElementById('espFirmwareSelect');
             if (espSel) espSel.value = 'possan';
             var espLbl = document.getElementById('espFwLabel');
-            if (espLbl) espLbl.textContent = 'possan-tbd-2026-02-14.bin \u2014 Possan TBD';
+            if (espLbl) espLbl.textContent = 'possan-tbd-2026-02-17.bin — Possan TBD';
             var picoSel = document.getElementById('picoFirmwareSelect');
-            if (picoSel) picoSel.value = 'possan-tbd-2026-02-14.uf2';
+            if (picoSel) picoSel.value = 'possan-tbd-2026-02-17.uf2';
             var picoLbl = document.getElementById('picoFwLabel');
-            if (picoLbl) picoLbl.textContent = 'possan-tbd-2026-02-14.uf2 \u2014 Possan TBD';
+            if (picoLbl) picoLbl.textContent = 'possan-tbd-2026-02-17.uf2 — Possan TBD';
           }
           step.scrollIntoView({ behavior: 'smooth', block: 'start' });
           window.scrollTo(0, step.offsetTop - 100);
@@ -1094,7 +1094,7 @@ Use this guide if you need to reflash both processors and rebuild the SD cards.
 
         var FIRMWARE = {
           ctag:   { url: '../_static/firmware/p4/ctag-tbd-2026-02-11.bin',   name: 'CTAG TBD' },
-          possan: { url: '../_static/firmware/p4/possan-tbd-2026-02-14.bin', name: 'Possan TBD' }
+          possan: { url: '../_static/firmware/p4/possan-tbd-2026-02-17.bin', name: 'Possan TBD' }
         };
 
         var device    = null;
