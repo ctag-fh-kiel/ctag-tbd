@@ -42,8 +42,12 @@ or MIDI.
    :widths: 30 70
    :header-rows: 0
 
-   * - **Processors**
-     - ESP32-P4 (DSP) · RP2350 (UI/MIDI) · ESP32-C6 (WiFi)
+   * - **DSP Processor**
+     - `ESP32-P4 <https://www.espressif.com/en/products/socs/esp32-p4>`_ --- Dual-core RISC-V @ 400 MHz · 32 MB stacked PSRAM · 16 MB Flash
+   * - **UI / MIDI Processor**
+     - `RP2350B <https://www.raspberrypi.com/products/rp2350/>`_ --- Dual Arm Cortex-M33 @ 150 MHz · 520 KB SRAM · 48 GPIO · FPU + DSP
+   * - **WiFi Co-Processor**
+     - ESP32-C6 (managed by the P4)
    * - **Audio Codec**
      - `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_ --- Stereo ADC/DAC
    * - **Sample Rate**
@@ -76,9 +80,23 @@ or MIDI.
 What's on the Board
 ====================
 
-- **ESP32-P4** --- DSP engine, WiFi web server, plugin management
-- **RP2350** --- MIDI processing, user interface, sequencers, arpeggiators, generators
-- **ESP32-C6** --- WiFi co-processor
+.. list-table::
+   :header-rows: 1
+   :widths: 20 20 60
+
+   * - Chip
+     - Role
+     - Key Specs
+   * - **ESP32-P4**
+     - DSP Engine
+     - Dual RISC-V @ 400 MHz · 32 MB stacked PSRAM · 16 MB Flash · AI/vector instructions
+   * - **RP2350B**
+     - UI / MIDI
+     - Dual Arm Cortex-M33 @ 150 MHz · 520 KB SRAM · 48 GPIO · 8× 12-bit ADC · 12× PIO state machines · FPU + DSP instructions
+   * - **ESP32-C6**
+     - WiFi
+     - WiFi 6 (802.11ax) · Bluetooth 5 · managed by the P4
+
 - **Audio codec** (`TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_) --- Stereo ADC/DAC
 - **Power management** --- Regulated power for all components
 - **SD card slots** --- Two slots (P4 + RP2350)

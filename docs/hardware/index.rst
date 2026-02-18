@@ -11,8 +11,12 @@ and a complete instrument in one box.
 .. list-table::
    :widths: 30 70
 
-   * - **Processors**
-     - ESP32-P4 (DSP) · RP2350 (UI/MIDI) · ESP32-C6 (WiFi)
+   * - **DSP**
+     - `ESP32-P4 <https://www.espressif.com/en/products/socs/esp32-p4>`_ --- Dual RISC-V @ 400 MHz · 32 MB PSRAM · 16 MB Flash
+   * - **UI / MIDI**
+     - `RP2350B <https://www.raspberrypi.com/products/rp2350/>`_ --- Dual Arm Cortex-M33 @ 150 MHz · 520 KB SRAM · FPU + DSP
+   * - **WiFi**
+     - ESP32-C6
    * - **Audio Codec**
      - `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_ --- Stereo ADC/DAC
    * - **Interface**
