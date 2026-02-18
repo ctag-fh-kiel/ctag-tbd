@@ -6,11 +6,6 @@ TBD-16
 
    <img src="../_static/assets/dadamachines-tbd-16_mockup_002.jpg" alt="dadamachines TBD-16" style="max-width: 100%; width: 100%; border-radius: 6px;">
 
-The TBD-16 is a standalone desktop audio DSP instrument by
-`dadamachines <https://dadamachines.com>`_. It runs the open-source CTAG TBD
-audio engine in a compact desktop form factor with a full hardware interface ---
-no computer, no Eurorack case required.
-
 .. raw:: html
 
    <!-- Quick-nav jump links -->
@@ -26,36 +21,19 @@ no computer, no Eurorack case required.
 Overview
 ========
 
-The TBD-16 is a complete instrument out of the box. Just plug a USB-C cable
-into one of the two power ports on the back and it boots into the default
-Groovebox / Drum Machine firmware with 16 tracks --- start making music
-immediately, no computer required.
-
-Hardware Interface
-------------------
+The TBD-16 is a complete desktop instrument built around the open-source CTAG TBD audio
+engine. Plug in power and it boots into the default Groovebox / Drum Machine firmware
+with 16 tracks. No computer, no Eurorack case, no setup required.
 
 - **30 buttons** --- Transport, track select, mute, pattern controls
-- **4 endless potentiometers** (with push-switch) --- 360-degree rotation for
-  parameter control
-- **2.4" OLED display** --- 128 × 64 pixels, shows track state, menus, and
-  parameter values
+- **4 endless potentiometers** (with push-switch) --- 360° rotation for parameter control
+- **2.4" OLED display** --- 128 × 64 px, shows track state, menus, and parameter values
 - **19 RGB LEDs** --- Visual feedback for track state, sequencing, and modes
-
-Capabilities
-------------
-
 - **50+ DSP plugins** --- Synthesizers, effects, drum machines, granular engines, and more
 - **Two independent channels** --- Run any two plugins simultaneously
-- **Standard MIDI** --- 4× TRS 3.5 mm (Type-A), USB MIDI, and USB Host MIDI
-- **Ableton Link** --- Wireless tempo sync with any Link-enabled device on your network
-- **Portable** --- Works with a USB power bank; an optional
-  `power bank mount <https://www.amazon.de/dp/B0BCK5Y852>`_ lets you play
-  anywhere
-- **Web interface** --- WiFi-based configuration and preset management
-  (not required for making sound)
-- **Browser-based flashing** --- Update firmware directly from your browser, no tools needed
-  (see :doc:`Flash & Updates </flash/index>`)
-- **Open source** --- Create your own plugins in C++, test with the simulator, flash to hardware
+- **Portable** --- Works with any USB power bank; an optional
+  `power bank mount <https://www.amazon.de/dp/B0BCK5Y852>`_ clips on the back
+- **Open source** --- Write plugins in C++, test in the simulator, flash to hardware
 
 
 Technical Specifications
@@ -65,12 +43,8 @@ Technical Specifications
    :widths: 30 70
    :header-rows: 0
 
-   * - **DSP Processor**
-     - `ESP32-P4 <https://www.espressif.com/en/products/socs/esp32-p4>`_ --- Dual-core RISC-V @ 400 MHz · 32 MB stacked PSRAM · 16 MB Flash
-   * - **UI / MIDI Processor**
-     - `RP2350B <https://www.raspberrypi.com/products/rp2350/>`_ --- Dual Arm Cortex-M33 @ 150 MHz · 520 KB SRAM · 48 GPIO · FPU + DSP
-   * - **WiFi Co-Processor**
-     - ESP32-C6 (managed by the P4)
+   * - **Processors**
+     - ESP32-P4 (DSP) · RP2350B (UI/MIDI) · ESP32-C6 (WiFi) --- `see Processors section <#processors>`_
    * - **Audio Codec**
      - `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_ --- Stereo ADC/DAC
    * - **Sample Rate**
@@ -114,21 +88,22 @@ Processors
      - Role
      - Core
      - Key Specs
-   * - **ESP32-P4**
+   * - `ESP32-P4 <https://www.espressif.com/en/products/socs/esp32-p4>`_
      - DSP Engine
      - Dual RISC-V @ 400 MHz
-     - 32 MB stacked PSRAM · 16 MB Flash · AI/vector instructions · USB 2.0 OTG · H.264 encode/decode
-   * - **RP2350B**
+     - 32 MB stacked PSRAM · 16 MB Flash · AI/vector instructions · USB 2.0 OTG
+   * - `RP2350B <https://www.raspberrypi.com/products/rp2350/>`_
      - UI / MIDI
      - Dual Arm Cortex-M33 @ 150 MHz
-     - 520 KB SRAM · 48 GPIO · 8× 12-bit ADC · 12× PIO state machines · FPU + DSP instructions · hardware security (TrustZone, TRNG, OTP)
+     - 520 KB SRAM · 48 GPIO · 8× 12-bit ADC · 12× PIO state machines · FPU + DSP · TrustZone + TRNG
    * - **ESP32-C6**
      - WiFi
      - Single RISC-V
      - WiFi 6 (802.11ax) · Bluetooth 5 · managed by the P4
 
-The P4 and RP2350B communicate via SPI. The RP2350B sends control data (knobs, buttons,
-MIDI) to the P4, and the P4 sends status and Ableton Link data back.
+The P4 and RP2350B communicate via SPI. The RP2350B handles all UI input and MIDI
+and forwards control data to the P4; the P4 runs audio processing and sends status
+and Ableton Link data back.
 
 
 Connectivity
