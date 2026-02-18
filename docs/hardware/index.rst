@@ -1,7 +1,7 @@
 Hardware
 ========
 
-.. image:: /_static/assets/dadamachines-tbd-16_mockup.jpg
+.. image:: ../_static/assets/dadamachines-tbd-16_mockup.jpg
    :alt: dadamachines TBD Platform
    :width: 100%
    :class: hero-image

@@ -2,7 +2,7 @@
 TBD-16
 ******
 
-.. image:: /_static/assets/dadamachines-tbd-16_mockup.jpg
+.. image:: ../_static/assets/dadamachines-tbd-16_mockup.jpg
    :alt: dadamachines TBD-16
    :width: 100%
    :class: hero-image
