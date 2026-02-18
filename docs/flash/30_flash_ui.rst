@@ -108,8 +108,9 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
     <div class="pico-flasher" id="picoFlasher">
       <label for="firmwareSelect">Firmware</label>
       <select id="firmwareSelect">        
-        <option value="ctag-tbd-2026-02-11.uf2">CTAG TBD (Development) — 2026-02-11</option>        
-        <option value="possan-tbd-2026-02-14.uf2">Possan TBD (Experimental) — 2026-02-14</option>
+        <option value="ctag-tbd-2026-02-11.uf2">ctag-tbd-2026-02-11.uf2 — CTAG TBD (Development)</option>
+        <option value="possan-tbd-2026-02-14.uf2">possan-tbd-2026-02-14.uf2 — Possan TBD (Experimental)</option>
+        <option value="possan-tbd-2026-02-17.uf2" selected>possan-tbd-2026-02-17.uf2 — Possan TBD (Experimental)</option>
       </select>
 
       <div class="btn-row">
@@ -283,7 +284,7 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
 Download Latest Firmware
 ========================
 
-* `possan-tbd-2026-02-14.uf2 <../_static/firmware/pico/possan-tbd-2026-02-14.uf2>`_
+* `possan-tbd-2026-02-17.uf2 <../_static/firmware/pico/possan-tbd-2026-02-17.uf2>`_
 
 
 Manual Flashing (UF2 Drag-and-Drop)

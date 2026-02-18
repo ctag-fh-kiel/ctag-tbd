@@ -113,8 +113,9 @@ Select your firmware, connect your device, and flash directly from the browser.
     <div class="esp-flasher" id="espFlasher">
       <label for="espFirmwareSelect">Firmware</label>
       <select id="espFirmwareSelect">
-        <option value="ctag" selected>CTAG TBD (Development) — 2026-02-11</option>
-        <option value="possan">Possan TBD (Experimental) — 2026-02-14</option>
+        <option value="ctag" selected>ctag-tbd-2026-02-11.bin — CTAG TBD (Development)</option>
+        <option value="possan">possan-tbd-2026-02-14.bin — Possan TBD (Experimental)</option>
+        <option value="possan_new">possan-tbd-2026-02-17.bin — Possan TBD (Experimental)</option>
       </select>
 
       <div class="btn-row">
@@ -193,7 +194,8 @@ Select your firmware, connect your device, and flash directly from the browser.
 
         var FIRMWARE = {
           ctag:   { url: '../_static/firmware/p4/ctag-tbd-2026-02-11.bin',   name: 'CTAG TBD' },
-          possan: { url: '../_static/firmware/p4/possan-tbd-2026-02-14.bin', name: 'Possan TBD' }
+          possan: { url: '../_static/firmware/p4/possan-tbd-2026-02-14.bin', name: 'Possan TBD' },
+          possan_new: { url: '../_static/firmware/p4/possan-tbd-2026-02-17.bin', name: 'Possan TBD (New)' }
         };
 
         var device    = null;
@@ -325,6 +327,10 @@ You can download the firmware images directly if you prefer to flash using comma
 **CTAG TBD (Development)** — Build 2026-02-11
 
 * `ctag-tbd-2026-02-11.bin <../_static/firmware/p4/ctag-tbd-2026-02-11.bin>`_
+
+**Possan TBD (Experimental)** — Build 2026-02-17
+
+* `possan-tbd-2026-02-17.bin <../_static/firmware/p4/possan-tbd-2026-02-17.bin>`_
 
 **Possan TBD (Experimental)** — Build 2026-02-14
 
