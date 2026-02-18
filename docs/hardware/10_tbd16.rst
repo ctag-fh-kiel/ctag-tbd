@@ -2,10 +2,30 @@
 TBD-16
 ******
 
+.. raw:: html
+
+   <!-- Hero image placeholder — replace src with actual product photo -->
+   <div style="text-align:center; margin: 0 0 2em 0;">
+     <img src="https://docs.dadamachines.com/images/tbd16-hero-placeholder.jpg"
+          alt="dadamachines TBD-16"
+          style="width:100%; max-width:720px; border-radius:8px;" />
+   </div>
+
 The TBD-16 is a standalone desktop audio DSP instrument by
 `dadamachines <https://dadamachines.com>`_. It runs the open-source CTAG TBD
 audio engine in a compact desktop form factor with a full hardware interface ---
 no computer, no Eurorack case required.
+
+.. raw:: html
+
+   <!-- Quick-nav jump links -->
+   <div style="display:flex; gap:0.75em; flex-wrap:wrap; margin:1.5em 0 2em;">
+     <a href="#technical-specifications" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Tech Specs</a>
+     <a href="#connectivity" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Connectivity</a>
+     <a href="#assets" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Assets</a>
+     <a href="#getting-started" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Getting Started</a>
+     <a href="https://dadamachines.com/shop/" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Buy</a>
+   </div>
 
 
 Overview
@@ -31,14 +51,57 @@ Capabilities
 
 - **50+ DSP plugins** --- Synthesizers, effects, drum machines, granular engines, and more
 - **Two independent channels** --- Run any two plugins simultaneously
-- **Standard MIDI** --- 4x TRS 3.5 mm (Type-A) and USB MIDI, no adapters needed
+- **Standard MIDI** --- 4× TRS 3.5 mm (Type-A), USB MIDI, and USB Host MIDI
 - **Ableton Link** --- Wireless tempo sync with any Link-enabled device on your network
 - **Portable** --- Works with a USB power bank; an optional
   `power bank mount <https://www.amazon.de/dp/B0BCK5Y852>`_ lets you play
   anywhere
 - **Web interface** --- WiFi-based configuration and preset management
   (not required for making sound)
+- **Browser-based flashing** --- Update firmware directly from your browser, no tools needed
+  (see :doc:`Flash & Updates </flash/index>`)
 - **Open source** --- Create your own plugins in C++, test with the simulator, flash to hardware
+
+
+Technical Specifications
+========================
+
+.. list-table::
+   :widths: 30 70
+   :header-rows: 0
+
+   * - **Processors**
+     - ESP32-P4 (DSP) · RP2350 (UI/MIDI) · ESP32-C6 (WiFi)
+   * - **Audio Codec**
+     - `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_ --- Stereo ADC/DAC
+   * - **Sample Rate**
+     - 44.1 kHz
+   * - **Bit Depth**
+     - 32-bit float (internal processing)
+   * - **Latency**
+     - Sub-millisecond DSP processing latency
+   * - **Audio I/O**
+     - Stereo line in · stereo line out · headphone out (all TRS 3.5 mm)
+   * - **MIDI**
+     - 2× TRS In (Type-A) · 2× TRS Out · USB MIDI · USB Host MIDI
+   * - **USB Ports**
+     - 3× USB-C · 1× USB-A Host
+   * - **Wireless**
+     - WiFi (ESP32-C6) · Ableton Link
+   * - **Storage**
+     - 2× micro SD (P4 + RP2350)
+   * - **Display**
+     - 2.4" OLED, 128 × 64 px
+   * - **Controls**
+     - 30 buttons · 4 endless pots (with push-switch) · volume wheel
+   * - **LEDs**
+     - 19 RGB LEDs
+   * - **Power**
+     - USB-C (5 V) --- works with any USB power bank or adapter
+   * - **Dimensions**
+     - *Coming soon*
+   * - **Weight**
+     - *Coming soon*
 
 
 Processors
@@ -89,19 +152,6 @@ Audio
    sending audio to/from the same computer, you may be creating a ground loop. This can
    be defeated with a USB isolator.
 
-.. list-table::
-   :widths: 30 70
-   :header-rows: 0
-
-   * - **Sample Rate**
-     - 44.1 kHz
-   * - **Bit Depth**
-     - 32-bit float (internal processing)
-   * - **Codec**
-     - `TLV320AIC3254IRHBR <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_
-   * - **Latency**
-     - Sub-millisecond DSP processing latency
-
 
 MIDI
 ----
@@ -129,6 +179,8 @@ no adapters or special cables needed.
      - Second TRS 3.5 mm Type-A output
    * - **USB MIDI**
      - Class-compliant USB MIDI via USB-C #1 (no drivers required on any OS)
+   * - **USB Host MIDI**
+     - Connect MIDI controllers directly via USB-A Host Port
 
 MIDI is processed by the **RP2350** front-end processor. External MIDI
 messages (TRS or USB) are received by the RP2350 and forwarded to the ESP32-P4,
@@ -145,11 +197,21 @@ and arpeggiators that control plugins via the SPI bus.
 USB
 ---
 
-- **USB-C #1** --- ESP32-P4 Device (High Speed): USB MIDI, USB Network
-  (web interface without WiFi), firmware flashing via JTAG
-- **USB-C #2** --- Additional power and/or RP2350 Device
-- **USB-C #3** --- ESP32-P4 JTAG (front panel)
-- **USB-A** --- USB Host Port for MIDI controllers and other peripherals
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Port
+     - Function
+   * - **USB-C #1**
+     - ESP32-P4 Device (High Speed): USB MIDI, USB Network
+       (web interface without WiFi), firmware flashing via JTAG
+   * - **USB-C #2**
+     - Additional power and/or RP2350 Device
+   * - **USB-C #3**
+     - ESP32-P4 JTAG (front panel)
+   * - **USB-A**
+     - USB Host Port for MIDI controllers and other USB peripherals
 
 
 WiFi
@@ -166,6 +228,20 @@ Two slots: P4 (config, samples, web UI) + RP2350 (firmware images, user data).
 See :doc:`Storage & Samples </get_started/20_storage>`.
 
 
+Assets
+======
+
+.. note::
+   Downloadable assets (datasheet, mechanical drawings) will be published here
+   as they become available.
+
+..
+   Future assets:
+   - Datasheet PDF
+   - Mechanical drawing / dimensions
+   - Quick start guide PDF
+
+
 Getting Started
 ===============
 
@@ -174,5 +250,13 @@ Your TBD-16 ships ready to use:
 1. :doc:`Using Your TBD-16 </get_started/10_using_your_tbd>` --- Plug in power and start making music
 2. :doc:`WiFi & Ableton Link </get_started/15_wifi_and_link>` --- Set up WiFi, web interface, and Link
 3. :doc:`Storage & Samples </get_started/20_storage>` --- Manage SD card content
+4. :doc:`Flash & Updates </flash/index>` --- Update firmware from your browser
 
-| `dadamachines TBD Toolkit <https://dadamachines.com/products/tbd-toolkit>`_ · `Shop <https://dadamachines.com/shop/>`_
+----
+
+.. raw:: html
+
+   <div style="display:flex; gap:0.75em; flex-wrap:wrap; margin:1.5em 0;">
+     <a href="https://dadamachines.com/shop/" style="padding:0.6em 1.5em; background:var(--color-brand-primary, #6a5acd); color:#fff; border-radius:6px; text-decoration:none; font-weight:600;">Buy TBD-16</a>
+     <a href="https://dadamachines.com" style="padding:0.6em 1.5em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">dadamachines.com</a>
+   </div>

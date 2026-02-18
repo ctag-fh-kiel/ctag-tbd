@@ -29,3 +29,6 @@ midi_test_env/
 
 # Hardware
 /hw/pcb/*.bak
+
+# Local planning docs (not for publication)
+docs/HARDWARE_DOCS_PLAN.md
