@@ -1,8 +1,8 @@
 **************
-TBD Main PCB
+TBD-Core
 **************
 
-The TBD Main PCB is the core board from the TBD-16, available separately for
+The TBD-Core is the core board from the TBD-16, available separately for
 instrument designers and product developers who want to build custom hardware
 around the TBD platform.
 
@@ -14,7 +14,7 @@ freedom to design your own user interface and enclosure.
 What You Get
 ============
 
-The Main PCB includes:
+The TBD-Core includes:
 
 - **ESP32-P4** --- DSP engine, WiFi web server, plugin management
 - **RP2350** --- MIDI processing, user interface, sequencers, arpeggiators, generators
@@ -66,7 +66,7 @@ How It Differs from TBD-16
 
    * - Feature
      - TBD-16
-     - Main PCB
+     - TBD-Core
    * - Enclosure & front panel
      - Included
      - You design your own
@@ -75,10 +75,10 @@ How It Differs from TBD-16
      - Via FFC to your UI board
    * - Audio I/O jacks
      - Included
-     - On your carrier board
+     - Assembled on PCB
    * - MIDI connectors
      - Included (4x TRS 3.5 mm)
-     - On your carrier board
+     - Assembled on PCB
    * - DSP engine & firmware
      - Same
      - Same
@@ -90,7 +90,7 @@ How It Differs from TBD-16
 Getting Started
 ===============
 
-Interested in building with the TBD Main PCB?
+Interested in building with the TBD-Core?
 `Contact dadamachines <https://dadamachines.com/contact/>`_ to discuss your project
 and availability.
 

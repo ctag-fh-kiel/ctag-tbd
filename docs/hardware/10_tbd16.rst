@@ -89,16 +89,17 @@ Audio
    sending audio to/from the same computer, you may be creating a ground loop. This can
    be defeated with a USB isolator.
 
-.. list-table:: Audio Specifications
+.. list-table::
    :widths: 30 70
+   :header-rows: 0
 
-   * - Sample Rate
+   * - **Sample Rate**
      - 44.1 kHz
-   * - Bit Depth
+   * - **Bit Depth**
      - 32-bit float (internal processing)
-   * - Codec
+   * - **Codec**
      - High-quality audio codec with line and headphone outputs
-   * - Latency
+   * - **Latency**
      - Sub-millisecond DSP processing latency
 
 
@@ -148,6 +149,7 @@ USB
   (web interface without WiFi), firmware flashing via JTAG
 - **USB-C #2** --- Additional power and/or RP2350 Device
 - **USB-C #3** --- ESP32-P4 JTAG (front panel)
+- **USB-A** --- USB Host Port for MIDI controllers and other peripherals
 
 
 WiFi

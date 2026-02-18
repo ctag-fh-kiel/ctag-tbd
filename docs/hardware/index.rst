@@ -14,9 +14,9 @@ and a complete instrument in one box.
    * - **Audio**
      - Stereo in · stereo out · headphone out (all TRS 3.5 mm) · 44.1 kHz / 32-bit float
    * - **MIDI**
-     - 2× TRS In (Type-A) · 2× TRS Out · USB MIDI
+     - 2× TRS In (Type-A, In 2 doubles as Clock/Reset) · 2× TRS Out · USB MIDI
    * - **USB**
-     - 3× USB-C (P4 Device · Power/RP2350 · JTAG)
+     - 3× USB-C (P4 Device · Power/RP2350 · JTAG) · 1× USB-A Host
    * - **Plugins**
      - 50+ synths, effects, drum machines in one firmware
 
@@ -39,7 +39,7 @@ additional paths for instrument designers and manufacturers:
    * - Product
      - What It Is
      - For Whom
-   * - :doc:`TBD Main PCB <20_main_pcb>`
+   * - :doc:`TBD-Core <20_tbd_core>`
      - Core DSP board with 30-pin FFC for custom UI
      - Instrument designers, product developers
    * - :doc:`Custom Integration <30_custom_integration>`

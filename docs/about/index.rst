@@ -25,7 +25,7 @@ This repository is a fork of
 (branch ``p4_main``), adapted for the TBD-16 hardware. Our focus:
 
 - **Desktop Hardware** --- Standalone form factor with hardware UI and standard MIDI, no Eurorack or computer required
-- **Hardware Products** --- TBD-16 instrument, Main PCB with FFC connector, custom integrations
+- **Hardware Products** --- TBD-16 instrument, TBD-Core with FFC connector, custom integrations
 - **UI/UX** --- Redesigned web interface with musician-friendly interaction patterns
 - **Documentation** --- Clear guides, example workflows, and UX guidelines for
   plugin developers

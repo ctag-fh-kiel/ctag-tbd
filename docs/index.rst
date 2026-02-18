@@ -96,7 +96,7 @@ dada tbd/docs
        <p>Build custom instruments on the TBD platform, or integrate the DSP engine into your own hardware.</p>
        <ul>
          <li><a href="hardware/10_tbd16.html">TBD-16 Hardware Specs</a></li>
-         <li><a href="hardware/index.html#platform-options">Main PCB &amp; Custom Integration</a></li>
+         <li><a href="hardware/index.html#platform-options">TBD-Core &amp; Custom Integration</a></li>
          <li><a href="dsp/60_web_api.html">Web UI API</a></li>
          <li><a href="https://dadamachines.com/contact/">Contact dadamachines</a></li>
        </ul>
