@@ -75,10 +75,10 @@ How It Differs from TBD-16
      - Via FFC to your UI board
    * - Audio I/O jacks
      - Included
-     - Assembled on PCB
+     - Included (Same as TBD-16)
    * - MIDI connectors
      - Included (4x TRS 3.5 mm)
-     - Assembled on PCB
+     - Included (Same as TBD-16)
    * - DSP engine & firmware
      - Same
      - Same

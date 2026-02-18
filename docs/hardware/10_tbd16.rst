@@ -98,7 +98,7 @@ Audio
    * - **Bit Depth**
      - 32-bit float (internal processing)
    * - **Codec**
-     - High-quality audio codec with line and headphone outputs
+     - `TLV320AIC3254IRHBR <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_
    * - **Latency**
      - Sub-millisecond DSP processing latency
 

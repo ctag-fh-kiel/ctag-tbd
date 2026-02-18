@@ -44,6 +44,11 @@ Core Components
 
 A custom integration typically includes:
 
+- **DSP** --- ESP32-P4
+- **Interface/Control** --- RP2350
+- **Audio Codec** --- TLV320AIC3254IRHBR (or other options like AK4619VN for more channels)
+- **Power & WiFi** --- Optimized power management and antenna design
+
 .. list-table::
    :header-rows: 1
    :widths: 25 75
