@@ -4,11 +4,7 @@ Custom Integration
 
 .. raw:: html
 
-   <div style="text-align:center; margin: 0 0 2em 0;">
-     <img src="../_static/assets/dadamachines-tbd-16_mockup_003.jpg"
-          alt="dadamachines Custom Integration"
-          style="width:100%; max-width:720px; border-radius:8px;" />
-   </div>
+   <img src="../_static/assets/dadamachines-tbd-16_mockup_003.jpg" alt="dadamachines Custom Integration" style="max-width: 100%; width: 100%; border-radius: 6px;">
 
 For manufacturers and instrument designers who need full control over every aspect
 of their product, dadamachines offers custom integration of the TBD platform
