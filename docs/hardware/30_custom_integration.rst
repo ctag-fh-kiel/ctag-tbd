@@ -4,9 +4,8 @@ Custom Integration
 
 .. raw:: html
 
-   <!-- Hero image placeholder — replace with product/process illustration -->
    <div style="text-align:center; margin: 0 0 2em 0;">
-     <img src="https://docs.dadamachines.com/images/custom-integration-hero-placeholder.jpg"
+     <img src="../_static/assets/dadamachines-tbd-16_mockup_003.jpg"
           alt="dadamachines Custom Integration"
           style="width:100%; max-width:720px; border-radius:8px;" />
    </div>

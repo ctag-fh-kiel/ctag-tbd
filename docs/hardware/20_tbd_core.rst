@@ -4,9 +4,8 @@ TBD-Core
 
 .. raw:: html
 
-   <!-- Hero image placeholder — replace src with actual product photo -->
    <div style="text-align:center; margin: 0 0 2em 0;">
-     <img src="https://docs.dadamachines.com/images/tbd-core-hero-placeholder.jpg"
+     <img src="../_static/assets/dadamachines-tbd-16_mockup_003.jpg"
           alt="dadamachines TBD-Core"
           style="width:100%; max-width:720px; border-radius:8px;" />
    </div>
