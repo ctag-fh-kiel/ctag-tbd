@@ -113,6 +113,7 @@ myst_enable_extensions = [
 
 exclude_patterns = []
 
+templates_path = ['../_templates']
 
 # -- Options for HTML output -------------------------------------------------
 
