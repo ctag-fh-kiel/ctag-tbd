@@ -1,0 +1,25 @@
+{#
+  Override ABlog's page.html so that ALL pages use Furo's real layout
+  (with sidebars, navigation, ToC, etc.) while preserving ABlog features
+  like the Atom feed link and post navigation.
+#}
+{% extends "furo/page.html" %}
+
+{% block extrahead %}
+{{ super() }}
+{%- if ablog is defined and feed_path is defined and feed_path %}
+<link
+  rel="alternate"
+  type="application/atom+xml"
+  href="{{ pathto(feed_path, 1) }}/atom.xml"
+  title="{{ feed_title }}"
+/>
+{%- endif %}
+{% endblock extrahead %}
+
+{% block body %}
+{{ super() }}
+{%- if ablog is defined and pagename in ablog %}
+{% include "ablog/postnavy.html" %}
+{%- endif %}
+{% endblock body %}
