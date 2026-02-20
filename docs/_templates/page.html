@@ -1,7 +1,7 @@
 {#
   Override ABlog's page.html so that ALL pages use Furo's real layout
   (with sidebars, navigation, ToC, etc.) while preserving ABlog features
-  like the Atom feed link and post navigation.
+  like the Atom feed link and post navigation on blog post pages.
 #}
 {% extends "furo/page.html" %}
 
@@ -17,9 +17,48 @@
 {%- endif %}
 {% endblock extrahead %}
 
-{% block body %}
-{{ super() }}
+{% block content %}
 {%- if ablog is defined and pagename in ablog %}
-{% include "ablog/postnavy.html" %}
+{# Blog post detail page — show metadata and post nav #}
+{% set post = ablog[pagename] %}
+<div class="ablog-post">
+  <article role="main">
+    {{ body }}
+  </article>
+
+  {# Post metadata #}
+  {% if post.published %}
+  <div class="ablog-post-meta">
+    <span>📅 {{ post.date.strftime(ablog.post_date_format) }}</span>
+    {% if post.author %}
+    <span>✍️ {% for a in post.author %}{{ a }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+    {% endif %}
+    {% if post.category %}
+    <span>📁 {% for c in post.category %}{{ c }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+    {% endif %}
+    {% if post.tags %}
+    <span>🏷️ {% for t in post.tags %}{{ t }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# Prev / Next post navigation #}
+  {% if post.published and ablog.post_show_prev_next %}
+  <div class="ablog__prev-next">
+    <span class="ablog__prev">
+      {% if post.prev %}
+      <a href="{{ pathto(post.prev.docname) }}">{{ post.prev.title }}</a>
+      {% endif %}
+    </span>
+    <span class="ablog__next">
+      {% if post.next %}
+      <a href="{{ pathto(post.next.docname) }}">{{ post.next.title }}</a>
+      {% endif %}
+    </span>
+  </div>
+  {% endif %}
+</div>
+{%- else %}
+{{ super() }}
 {%- endif %}
-{% endblock body %}
+{% endblock content %}

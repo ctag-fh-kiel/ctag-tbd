@@ -93,16 +93,22 @@ extensions = [
 ]
 
 # -- ABlog Configuration -----------------------------------------------------
-blog_baseurl = "https://dadamachines.github.io/ctag-tbd/"  # Update with actual URL
+blog_baseurl = "https://dadamachines.github.io/ctag-tbd/"
 blog_title = "dada tbd blog"
 blog_path = "blog"
 blog_post_pattern = "blog/posts/*"
 blog_feed_fulltext = True
+blog_feed_subtitle = "Latest posts from the dadamachines TBD project"
 blog_authors = {
-    "dadamachines": ("dadamachines", "http://dadamachines.com"),
+    "dadamachines": ("dadamachines", "https://dadamachines.com"),
 }
 blog_default_author = "dadamachines"
-post_date_format = "%Y-%m-%d"
+post_date_format = "%B %d, %Y"
+post_show_prev_next = True
+post_auto_orphan = True
+
+# Disable ABlog sidebar widgets (we handle navigation via Furo)
+blog_sidebars = []
 
 # -- MyST Configuration ------------------------------------------------------
 myst_enable_extensions = [
@@ -143,6 +149,7 @@ html_context = {
 }
 
 html_static_path = ['../_static']
+html_css_files = ['blog.css']
 html_favicon = 'assets/favicon.png'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

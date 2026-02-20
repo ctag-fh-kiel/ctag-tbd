@@ -1,0 +1,128 @@
+/* Blog styling for ABlog + Furo integration */
+
+/* --- Blog post list on index page --- */
+.ablog-post-list {
+  list-style: none;
+  padding: 0;
+}
+
+/* --- Post metadata bar (date, author, tags) on detail pages --- */
+.ablog-post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em 1.5em;
+  font-size: 0.9em;
+  color: var(--color-foreground-secondary);
+  border-bottom: 1px solid var(--color-background-border);
+  padding-bottom: 1em;
+  margin-bottom: 2em;
+}
+
+.ablog-post-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+/* --- Post navigation (prev / next) on detail pages --- */
+.ablog__prev-next {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--color-background-border);
+  font-size: 0.95em;
+}
+
+.ablog__prev-next a {
+  text-decoration: none;
+  color: var(--color-brand-primary);
+  font-weight: 500;
+}
+
+.ablog__prev-next a:hover {
+  text-decoration: underline;
+}
+
+.ablog__prev {
+  text-align: left;
+}
+
+.ablog__prev::before {
+  content: "← ";
+}
+
+.ablog__next {
+  text-align: right;
+  margin-left: auto;
+}
+
+.ablog__next::after {
+  content: " →";
+}
+
+.ablog__spacer {
+  display: none;
+}
+
+/* --- Blog post card on index page --- */
+.postlist-entry {
+  margin-bottom: 2em;
+  padding-bottom: 2em;
+  border-bottom: 1px solid var(--color-background-border);
+}
+
+.postlist-entry:last-child {
+  border-bottom: none;
+}
+
+.postlist-entry .post-title {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin-bottom: 0.3em;
+}
+
+.postlist-entry .post-title a {
+  text-decoration: none;
+  color: var(--color-foreground-primary);
+}
+
+.postlist-entry .post-title a:hover {
+  color: var(--color-brand-primary);
+}
+
+.postlist-entry .post-meta {
+  font-size: 0.85em;
+  color: var(--color-foreground-secondary);
+  margin-bottom: 0.5em;
+}
+
+.postlist-entry .post-excerpt {
+  color: var(--color-foreground-secondary);
+}
+
+/* --- Tag and category badges --- */
+.ablog__category a,
+.ablog__tags a {
+  display: inline-block;
+  background: var(--color-background-secondary);
+  border: 1px solid var(--color-background-border);
+  border-radius: 4px;
+  padding: 0.1em 0.5em;
+  font-size: 0.85em;
+  text-decoration: none;
+  color: var(--color-foreground-secondary);
+}
+
+.ablog__category a:hover,
+.ablog__tags a:hover {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+
+/* Hide the Furo prev/next navigation on blog post pages
+   (we use ABlog's post navigation instead) */
+.ablog-post .prev-next-area {
+  display: none;
+}

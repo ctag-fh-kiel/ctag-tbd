@@ -1,17 +1,10 @@
+:orphan:
 
 Blog
 ====
 
-Recent Posts
-------------
-
-.. postlist:: 10
+.. postlist::
    :date: %Y-%m-%d
-   :format: {date} - {title}
+   :format: {date} — {title}
    :excerpts:
-
-.. toctree::
-   :hidden:
-   :glob:
-
-   posts/*
+   :list-style: none

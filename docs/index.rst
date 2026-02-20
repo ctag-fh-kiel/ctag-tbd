@@ -116,6 +116,6 @@ dada tbd/docs
     plugins/index
     frontend/index
     dsp/index
-    blog/index
+    Blog <blog/index>
     faq
     about/index
