@@ -34,6 +34,23 @@ sample_rom/         Stock audio samples
 generators/         Plugin scaffolding templates
 ```
 
+### Building Documentation Locally
+
+To build and preview the documentation (including the blog) on your local machine:
+
+1.  **Install requirements**:
+    ```bash
+    pip install -r docs/requirements.txt
+    ```
+
+2.  **Build HTML**:
+    ```bash
+    sphinx-build -b html -c docs/config docs build/docs
+    ```
+    
+3.  **View**:
+    Open `build/docs/index.html` in your browser.
+
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request. For plugin development, see the [Create Plugins](https://dadamachines.github.io/ctag-tbd/) section in the documentation.

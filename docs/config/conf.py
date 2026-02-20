@@ -87,7 +87,29 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx_copybutton',
     'sphinx_design',
+    'ablog',  # Blog plugin
+    'myst_parser',  # Markdown support
     # 'tbdtools.tbd_sphinx',
+]
+
+# -- ABlog Configuration -----------------------------------------------------
+blog_baseurl = "https://dadamachines.github.io/ctag-tbd/"  # Update with actual URL
+blog_title = "dada tbd blog"
+blog_path = "blog"
+blog_post_pattern = "blog/posts/*"
+blog_feed_fulltext = True
+blog_authors = {
+    "dadamachines": ("dadamachines", "http://dadamachines.com"),
+}
+blog_default_author = "dadamachines"
+blog_default_language = "en"
+post_date_format = "%Y-%m-%d"
+
+# -- MyST Configuration ------------------------------------------------------
+myst_enable_extensions = [
+    "colon_fence",
+    "deflist",
+    "html_image",
 ]
 
 exclude_patterns = []
