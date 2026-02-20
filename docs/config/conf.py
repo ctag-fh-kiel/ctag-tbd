@@ -102,7 +102,6 @@ blog_authors = {
     "dadamachines": ("dadamachines", "http://dadamachines.com"),
 }
 blog_default_author = "dadamachines"
-blog_default_language = "en"
 post_date_format = "%Y-%m-%d"
 
 # -- MyST Configuration ------------------------------------------------------
