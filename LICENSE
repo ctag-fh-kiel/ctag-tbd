@@ -1,7 +1,7 @@
 dadamachines TBD-16 / CTAG TBD
 
 TBD "to be determined" is an open-source platform for audio DSP experimentation,
-learning, and research, bringing together high-quality generators and effects 
+learning, and research, bringing together high-quality generators and effects
 within a modular, easily extensible architecture.
 
 This repository is a fork of the CTAG TBD project, conceived within the
@@ -15,10 +15,38 @@ a joint effort between Robert Manzke and Johannes Elias Lohbihler (dadamachines)
 (c) 2020-2026 Robert Manzke. All rights reserved. (Core platform and core hardware research)
 (c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (TBD-16 adaptation, UI/UX, Documentation)
 
-SOFTWARE LICENSE
-----------------
-The TBD software suite is licensed under the GNU General Public License
-(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
+
+SOFTWARE LICENSES
+-----------------
+
+This repository contains code under two open-source licenses:
+
+1. Core DSP Engine (upstream: ctag-fh-kiel/ctag-tbd)
+   License: GNU General Public License (GPL 3.0)
+   https://www.gnu.org/licenses/gpl-3.0.txt
+
+   The audio engine, sound processors, and platform core originally developed
+   at CTAG Kiel. Modifications to this code must be released under the same
+   GPL 3.0 terms.
+
+2. dadamachines Additions
+   License: GNU Lesser General Public License (LGPL 3.0)
+   https://www.gnu.org/licenses/lgpl-3.0.txt
+
+   All code, tools, and assets added by dadamachines in this repository ---
+   including the web UI, browser-based flasher, documentation, build tools,
+   and utilities --- are licensed under LGPL 3.0.
+
+   LGPL 3.0 means:
+   - Individual developers can freely use, modify, and contribute to this
+     code without being required to release their own unrelated code.
+   - Modifications to the LGPL'd code itself must be shared under the same
+     terms if distributed.
+   - Other companies may not use these components commercially without
+     contributing their modifications back as open source.
+   - If you need a commercial license that allows proprietary modifications,
+     contact dadamachines: https://dadamachines.com/contact/
+
 
 HARDWARE DESIGNS
 ----------------
@@ -32,6 +60,33 @@ design is proprietary and not released under an open-source license.
 However, updated open hardware reference designs for the TBD platform
 are planned for future publication in KiCad to foster education,
 prototyping, and instrument design.
+
+
+THE DADAMACHINES NAME AND BRAND
+-------------------------------
+The dadamachines name, logo, and TBD-16 product name are trademarks of
+dadamachines and are reserved for products produced by or licensed by
+dadamachines.
+
+If you build a product using the TBD platform, you may reference it as:
+  - [YourProduct] for TBD
+  - [YourProduct] (TBD-compatible)
+
+Using "dadamachines [YourProduct]" or "TBD-16 [YourProduct]" is not
+permitted without prior agreement.
+
+
+COMMERCIAL USE
+--------------
+You are free to buy TBD-16 units and resell them inside a commercial product,
+just like any other off-the-shelf electronic component. We offer custom
+integrations and volume pricing --- see https://dadamachines.com/contact/
+
+If you modify the dadamachines-added code (WebUI, tools, documentation) and
+distribute it, those modifications must be released under LGPL 3.0. If you
+would like to keep your modifications proprietary, dadamachines can provide
+a commercial license. Contact us: https://dadamachines.com/contact/
+
 
 DISCLAIMER
 ----------

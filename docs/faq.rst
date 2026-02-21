@@ -47,10 +47,21 @@ General
 
 .. dropdown:: Can I use TBD-16 in a commercial product?
 
-   The software is licensed under GPL 3.0. You may use, modify, and distribute
-   it under the terms of that license. The dadamachines TBD-16 hardware design
-   itself is proprietary. See :doc:`Credits & License <about/10_credits>` for
-   full license details.
+   Yes. You can buy TBD-16 units and integrate them into your commercial
+   product just like any off-the-shelf component.
+
+   The core DSP engine is licensed under **GPL 3.0** (upstream). The
+   dadamachines additions (web UI, tools, documentation) are licensed under
+   **LGPL 3.0**, which is more permissive --- individual developers can
+   contribute freely, while companies must share back any modifications
+   they distribute.
+
+   If you want to keep modifications proprietary, dadamachines offers
+   commercial licensing. The TBD-16 hardware design itself is proprietary.
+
+   See :doc:`Credits & License <about/10_credits>` for full details, or
+   :doc:`Custom Integration </hardware/30_custom_integration>` if you want
+   to build on the TBD platform directly.
 
 
 Audio & Sound
