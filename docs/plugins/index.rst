@@ -451,12 +451,9 @@ and tweaked in real time from the web interface.
    Legend: ✅ Supported · 🔧 In Progress · — Planned
 
 
-Build Your Own Plugin
-=====================
-
-Write DSP code in C++ that runs on the ESP32-P4 -- no hardware required to
-get started. Try the :doc:`Desktop Simulator <simulator>` first, then
-:doc:`build for hardware <building>` when you are ready.
+Build your own -- write DSP code in C++ that runs on the ESP32-P4. No
+hardware required to get started: try the :doc:`Desktop Simulator <simulator>`
+first, then :doc:`build for hardware <building>` when you are ready.
 
 
 .. toctree::
@@ -467,5 +464,4 @@ get started. Try the :doc:`Desktop Simulator <simulator>` first, then
    Creating a Plugin <step-by-step>
    Development Setup <getting-started>
    Building & Flashing <building>
-   USB Audio Interface <audio-interface>
    Web API Reference <web-api>

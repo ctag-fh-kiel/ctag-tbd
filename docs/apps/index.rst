@@ -244,11 +244,8 @@ pick one from the menu and start playing.
    replace the placeholder screens above.
 
 
-Build Your Own App
-==================
-
-The App system is open -- build your own MIDI controllers, sequencers, or
-control surfaces using Arduino and PlatformIO.
+Build your own -- create custom MIDI controllers, sequencers, or control
+surfaces using Arduino and PlatformIO.
 See :doc:`Development Setup <getting-started>` to get started.
 
 

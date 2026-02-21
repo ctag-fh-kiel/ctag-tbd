@@ -1,0 +1,15 @@
+docs: flatten Plugins sidebar, move USB Audio to Hardware
+
+Remove "Build Your Own Plugin" as a nesting parent in the sidebar so
+Plugins matches the flat structure of Apps. Both sections now show
+their sub-pages as direct children.
+
+Move USB Audio Interface from Plugins to Hardware section -- it replaces
+the plugin host entirely, making it an ESP32-P4 hardware capability
+rather than a plugin development topic.
+
+Sidebar now reads:
+  Apps -> Bootloader & Multi-App, Development Setup, App Architecture, Debugging
+  Plugins -> Desktop Simulator, Plugin Architecture, Creating a Plugin,
+             Development Setup, Building & Flashing, Web API Reference
+  Hardware -> ... USB Audio Interface (new)
