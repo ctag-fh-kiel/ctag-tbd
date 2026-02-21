@@ -114,6 +114,7 @@ dada tbd/docs
     flash/index
     hardware/index
     Plugins <plugins/index>
+    Apps <apps/index>
     frontend/index
     dsp/index
     Blog <blog/index>

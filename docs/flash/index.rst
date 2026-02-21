@@ -7,7 +7,7 @@ from the hardware interface or the web UI.
 
 The RP2350 front-end also supports **multiple firmware images** on its SD card,
 switchable from the boot menu without reflashing (see
-:doc:`UF2 Bootloader & Apps </frontend/25_bootloader>`).
+:doc:`Apps </apps/index>`).
 
 **When you do need to flash:**
 

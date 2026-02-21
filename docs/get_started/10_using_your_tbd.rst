@@ -55,8 +55,8 @@ The TBD-16 ships with two main firmware modes on the RP2350:
    Sound Processor. Control everything from the hardware interface or via
    external MIDI (USB or TRS).
 
-You switch between firmware images using the UF2 bootloader --- see
-:doc:`UF2 Bootloader & Apps </frontend/25_bootloader>` for details.
+You switch between firmware images using the UF2 bootloader -- see
+:doc:`Apps </apps/index>` for details.
 
 .. note::
 

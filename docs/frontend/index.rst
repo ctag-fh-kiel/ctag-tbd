@@ -12,9 +12,10 @@ Arduino on PlatformIO, you can prototype new interfaces in minutes.
    Deep dive into the SPI protocol, MIDI integration, and control data flow
    between the RP2350 and the DSP engine.
 
-:doc:`UF2 Bootloader & Apps <25_bootloader>`
-   The TBD-16 can run multiple RP2350 firmware images from the SD card ---
-   switch between your app, the drum machine, MCL, a debug probe, and more.
+:doc:`Apps </apps/index>`
+   The TBD-16 runs Apps -- complete firmware images that change what the
+   device does. Switch between the groovebox, MCL, a debug probe, and more.
+   See the top-level Apps section for the full catalog.
 
 :doc:`Debugging with SWD <30_debugging>`
    Use a Raspberry Pi Debug Probe for one-click flashing, breakpoints, and

@@ -119,9 +119,9 @@ Connectivity
 
 .. dropdown:: Can the TBD-16 run multiple RP2350 firmware images?
 
-   Yes. The UF2 bootloader stores multiple ``.uf2`` apps on the RP2350's SD
+   Yes. The UF2 bootloader stores multiple ``.uf2`` Apps on the RP2350's SD
    card and lets you switch between them from a boot menu. See
-   :doc:`UF2 Bootloader & Apps <frontend/25_bootloader>` for details.
+   :doc:`Apps </apps/index>` for details.
 
 
 Troubleshooting
