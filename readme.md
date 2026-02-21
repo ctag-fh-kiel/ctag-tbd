@@ -53,8 +53,8 @@ To build and preview the documentation (including the blog) on your local machin
 
 ## Community & Support
 
-- [dadamachines Forum](https://forum.dadamachines.com) --- Ask questions, share patches, and connect with other TBD users and developers.
-- [GitHub Issues](https://github.com/dadamachines/ctag-tbd/issues) --- Bug reports and feature requests.
+- [dadamachines Forum](https://forum.dadamachines.com) -- Ask questions, share patches, and connect with other TBD users and developers.
+- [GitHub Issues](https://github.com/dadamachines/ctag-tbd/issues) -- Bug reports and feature requests.
 
 ## Contributing
 
@@ -80,13 +80,15 @@ Not all work on TBD / TBD-16 is covered by NLnet funding.
 
 This repository contains code under two open-source software licenses:
 
-**Core DSP Engine** (upstream [ctag-fh-kiel/ctag-tbd](https://github.com/ctag-fh-kiel/ctag-tbd)) --- [GNU General Public License (GPL 3.0)](https://www.gnu.org/licenses/gpl-3.0.txt). The audio engine, sound processors, and platform core. Modifications must be released under the same terms.
+**Core DSP Engine** (upstream [ctag-fh-kiel/ctag-tbd](https://github.com/ctag-fh-kiel/ctag-tbd)) -- [GNU General Public License (GPL 3.0)](https://www.gnu.org/licenses/gpl-3.0.txt). The audio engine, sound processors, and platform core. Modifications must be released under the same terms.
 
-**dadamachines Additions** (web UI, browser-based flasher, documentation, tools) --- [GNU Lesser General Public License (LGPL 3.0)](https://www.gnu.org/licenses/lgpl-3.0.txt). Individual developers can freely use and contribute without copyleft affecting their own unrelated code. Companies must share modifications back or obtain a [commercial license](https://dadamachines.com/contact/).
+**dadamachines Additions** (web UI, browser-based flasher, plugins, documentation, tools) -- [GNU Lesser General Public License (LGPL 3.0)](https://www.gnu.org/licenses/lgpl-3.0.txt). Individual developers can freely use and contribute without copyleft affecting their own unrelated code. Companies must share modifications back or obtain a [commercial license](https://dadamachines.com/contact/).
 
-**TBD-Core & TBD-16 Hardware** --- The dadamachines TBD-16 (desktop instrument) and TBD-Core (core DSP board for custom products) hardware designs are proprietary. An open-hardware core design based on the same ESP32-P4 + RP2350 platform is planned for future publication in KiCad as an open-source reference.
+**TBD-Core & TBD-16 Hardware** -- The dadamachines TBD-16 (desktop instrument) and TBD-Core (core DSP board for custom products) hardware designs are proprietary.
 
-**Original CTAG Hardware** (V1/V2) --- [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+**Planned Open-Hardware Core Design** -- An open-hardware core design based on the same ESP32-P4 + RP2350 platform is planned for future publication in KiCad as an open-source reference.
+
+**Original CTAG Hardware** (V1/V2) -- [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
 Copyright (c) 2020-2026 Robert Manzke. All rights reserved. (CTAG TBD core)
 

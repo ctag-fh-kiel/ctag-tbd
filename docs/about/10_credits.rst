@@ -7,7 +7,7 @@ build on it, and contribute back. At the same time, the licenses are chosen
 so that no one can simply repackage our work into a competing commercial
 product without giving back to the community.
 
-dadamachines is a small, independent team --- we don't run on venture capital.
+dadamachines is a small, independent team. We don't run on venture capital.
 Selling TBD-16 hardware is how we fund continued development of the platform,
 the documentation, the web UI, and the tools that make TBD useful for
 musicians and developers. The open-source licenses below protect that work
@@ -27,18 +27,18 @@ How It Works at a Glance
    * - Core DSP engine (upstream CTAG TBD)
      - `GPL 3.0 <https://www.gnu.org/licenses/gpl-3.0.txt>`_
      - Modifications must be shared under the same terms
-   * - dadamachines additions (web UI, flasher, docs, tools)
+   * - dadamachines additions (web UI, flasher, plugins, docs, tools)
      - `LGPL 3.0 <https://www.gnu.org/licenses/lgpl-3.0.txt>`_
      - More permissive for developers; companies must share modifications back
-   * - dadamachines TBD-16 plugins (PicoSeqRack, future plugins)
-     - `LGPL 3.0 <https://www.gnu.org/licenses/lgpl-3.0.txt>`_
-     - Same as above --- open for learning, protected from commercial copying
    * - Original CTAG hardware (V1/V2, Eurorack)
      - `CC BY-NC-SA 4.0 <https://creativecommons.org/licenses/by-nc-sa/4.0/>`_
      - Non-commercial use, share-alike, attribution required
-   * - TBD-16 hardware design
+   * - TBD-Core & TBD-16 hardware
      - Proprietary
-     - Not open source (open reference designs planned)
+     - Commercial products (not open source)
+   * - Planned open-hardware core design
+     - Open source (TBD)
+     - KiCad reference design for education, prototyping, instrument building
 
 
 Software Licenses in Detail
@@ -68,6 +68,7 @@ This includes:
 
 - The **web UI** (redesigned interface for TBD-16)
 - The **browser-based flasher** for DSP and UI firmware
+- **Plugins** developed by dadamachines and friends (see below)
 - The **documentation source** you are reading right now
 - **Build tools** and utilities
 
@@ -83,19 +84,20 @@ We chose LGPL because it strikes the right balance:
   as open source.
 
 This approach is similar to how `Bela <https://bela.io>`_ licenses their core
-code under LGPL --- keeping things open for makers and researchers while
+code under LGPL, keeping things open for makers and researchers while
 protecting the work that sustains the project.
 
 
-dadamachines TBD-16 Plugins (LGPL 3.0)
---------------------------------------
+Plugins (LGPL 3.0)
+------------------
 
 Plugins developed specifically for the TBD-16 by dadamachines and friends are
 also released under LGPL 3.0. This currently includes:
 
-- **PicoSeqRack** --- A MIDI-driven sequencer/rack plugin developed by
+- **PicoSeqRack** -- a MIDI-driven sequencer/rack plugin developed by
   `Per-Olov Jernberg (Possan) <https://possan.codes/>`_
   (`GitHub <https://github.com/possan>`_), custom-built for the TBD-16.
+  PicoSeqRack is the default app/firmware shipping on the TBD-16.
 
 Future plugins developed by Johannes Lohbihler and Benjamin Weiss for
 dadamachines will follow the same LGPL 3.0 license.
@@ -122,13 +124,17 @@ dadamachines TBD-Core & TBD-16
 
 The **TBD-16** (complete desktop instrument) and **TBD-Core** (core DSP board
 with FFC connector for custom UIs) are commercial products. Their hardware
-designs --- including industrial design, PCB layout, and custom electronics ---
-are proprietary.
+designs, including industrial design, PCB layout, and custom electronics, are
+proprietary.
+
+
+Planned Open-Hardware Core Design
+---------------------------------
 
 An **open-hardware core design** based on the same ESP32-P4 + RP2350 platform
 is planned for future publication in KiCad as an open-source reference. This
 will give educators, researchers, and instrument builders a starting point to
-learn from and build on --- similar in spirit to how the original CTAG TBD
+learn from and build on, similar in spirit to how the original CTAG TBD
 Eurorack designs were published.
 
 There is currently no Eurorack module based on the new ESP32-P4 + RP2350
@@ -151,10 +157,10 @@ TBD code that you distribute.
 **As a company:** If you want to build a product around the TBD platform, two
 options are designed for you:
 
-- The :doc:`TBD-Core </hardware/20_tbd_core>` --- our core DSP board with all
+- The :doc:`TBD-Core </hardware/20_tbd_core>` -- our core DSP board with all
   audio, MIDI, and USB I/O assembled. Connect your own UI board via the 30-pin
   FFC and design your own enclosure.
-- :doc:`Custom Integration </hardware/30_custom_integration>` --- we integrate
+- :doc:`Custom Integration </hardware/30_custom_integration>` -- we integrate
   the ESP32-P4, RP2350, and codec directly onto your PCB for full control over
   form factor, connectors, and BOM.
 

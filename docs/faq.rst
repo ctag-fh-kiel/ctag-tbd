@@ -12,11 +12,11 @@ General
    It runs the open-source `CTAG TBD <https://github.com/ctag-fh-kiel/ctag-tbd>`_
    audio engine and includes 50+ synthesizers and effects. Just plug in USB-C
    power and start making music using the built-in hardware interface (buttons,
-   encoders, OLED display, RGB LEDs) --- no computer required.
+   encoders, OLED display, RGB LEDs), no computer required.
 
 .. dropdown:: What does TBD stand for?
 
-   **To Be Determined** --- reflecting the platform's open, extensible nature.
+   **To Be Determined**, reflecting the platform's open, extensible nature.
    The sound engine is not fixed; you choose and combine processors from a
    growing library, or create your own.
 
@@ -32,15 +32,15 @@ General
 
    No. The TBD-16 is a fully standalone desktop device with TRS MIDI
    (3.5 mm Type-A), USB MIDI, audio I/O, and a full hardware interface.
-   No Eurorack case, no computer, no power supply needed --- just USB-C
+   No Eurorack case, no computer, no power supply needed, just USB-C
    power. It even works with a USB power bank for portable use.
 
 .. dropdown:: What processors / chips are inside?
 
-   - **ESP32-P4** --- Main DSP engine and WiFi web server
-   - **RP2350** --- User interface, MIDI, and hardware I/O
-   - **ESP32-C6** --- WiFi co-processor
-   - **STM32F030R8T6** --- UI board I/O controller (buttons, encoders, on the
+   - **ESP32-P4** -- Main DSP engine and WiFi web server
+   - **RP2350** -- User interface, MIDI, and hardware I/O
+   - **ESP32-C6** -- WiFi co-processor
+   - **STM32F030R8T6** -- UI board I/O controller (buttons, encoders, on the
      separate UI board connected via FFC)
 
    See :doc:`TBD-16 Hardware <hardware/10_tbd16>` for more details.
@@ -50,17 +50,17 @@ General
    Yes. If you want to build a product around the TBD platform, two options
    are designed for you:
 
-   - The :doc:`TBD-Core </hardware/20_tbd_core>` --- our core DSP board with
+   - The :doc:`TBD-Core </hardware/20_tbd_core>` -- our core DSP board with
      all audio, MIDI, and USB I/O assembled. Connect your own UI board via the
      30-pin FFC and design your own enclosure.
-   - :doc:`Custom Integration </hardware/30_custom_integration>` --- we
+   - :doc:`Custom Integration </hardware/30_custom_integration>` -- we
      integrate the ESP32-P4, RP2350, and codec directly onto your PCB.
 
    We also offer volume pricing for TBD-16 units used as finished components.
 
    The core DSP engine is licensed under **GPL 3.0** (upstream). The
    dadamachines additions (web UI, tools, documentation) are licensed under
-   **LGPL 3.0**, which is more permissive --- individual developers can
+   **LGPL 3.0**, which is more permissive: individual developers can
    contribute freely, while companies must share back any modifications
    they distribute.
 
@@ -80,7 +80,7 @@ Audio & Sound
 
 .. dropdown:: How many plugins can run simultaneously?
 
-   Two --- one per audio channel (Slot 0 and Slot 1). Each channel independently
+   Two, one per audio channel (Slot 0 and Slot 1). Each channel independently
    runs a plugin from the library. In **Groovebox** mode, plugins are assigned
    per track. In **MultiEffect** mode, you select plugins for each slot using
    the hardware interface or the web interface.
@@ -162,15 +162,15 @@ Development Questions
 If you're developing custom firmware or plugins, the relevant troubleshooting
 is in each development section:
 
-- **DSP / plugin development** --- :doc:`DSP Getting Started <dsp/10_getting_started>`
+- **DSP / plugin development** -- :doc:`DSP Getting Started <dsp/10_getting_started>`
   (Troubleshooting section) and :doc:`Building & Setup <dsp/40_building>`
-- **Frontend / RP2350 development** --- :doc:`Frontend Getting Started <frontend/10_getting_started>`
+- **Frontend / RP2350 development** -- :doc:`Frontend Getting Started <frontend/10_getting_started>`
   and :doc:`Debugging with SWD <frontend/30_debugging>` (Troubleshooting section)
 
 
 Still Stuck?
 ============
 
-- `dadamachines Forum <https://forum.dadamachines.com>`_ --- Ask the community
-- `GitHub Issues <https://github.com/dadamachines/ctag-tbd/issues>`_ --- Report
+- `dadamachines Forum <https://forum.dadamachines.com>`_ -- Ask the community
+- `GitHub Issues <https://github.com/dadamachines/ctag-tbd/issues>`_ -- Report
   bugs or request features

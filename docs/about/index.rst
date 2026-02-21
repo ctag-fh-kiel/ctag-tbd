@@ -3,7 +3,7 @@ About
 
 **dada tbd** is an open-source audio DSP platform for musicians, educators, and
 audio developers. It runs 50+ synthesizers and effects on dedicated hardware with
-a full hardware interface (buttons, encoders, OLED display, RGB LEDs) --- just
+a full hardware interface (buttons, encoders, OLED display, RGB LEDs). Just
 plug in power and start making music, no computer required. A WiFi-based web
 interface is available for configuration and preset management.
 
@@ -12,7 +12,7 @@ an open-source embedded synthesizer created by
 `Robert Manzke <https://www.creative-technologies.de/>`_ at Kiel University of
 Applied Sciences.
 
-The **dadamachines TBD-16** is the first standalone desktop version --- a complete
+The **dadamachines TBD-16** is the first standalone desktop version, a complete
 instrument with standard MIDI, high-quality audio I/O, and Ableton Link, designed
 to bring open-source audio processing beyond Eurorack.
 
@@ -24,10 +24,10 @@ This repository is a fork of
 `dadamachines/ctag-tbd <https://github.com/dadamachines/ctag-tbd>`_
 (branch ``p4_main``), adapted for the TBD-16 hardware. Our focus:
 
-- **Desktop Hardware** --- Standalone form factor with hardware UI and standard MIDI, no Eurorack or computer required
-- **Hardware Products** --- TBD-16 instrument, TBD-Core with FFC connector, custom integrations
-- **UI/UX** --- Redesigned web interface with musician-friendly interaction patterns
-- **Documentation** --- Clear guides, example workflows, and UX guidelines for
+- **Desktop Hardware** -- Standalone form factor with hardware UI and standard MIDI, no Eurorack or computer required
+- **Hardware Products** -- TBD-16 instrument, TBD-Core with FFC connector, custom integrations
+- **UI/UX** -- Redesigned web interface with musician-friendly interaction patterns
+- **Documentation** -- Clear guides, example workflows, and UX guidelines for
   plugin developers
 
 The DSP engine, plugin system, and core firmware are developed upstream by
@@ -40,20 +40,21 @@ The Team
 **dadamachines** is a team of experts in hardware design, electronics, industrial
 design, and UX/UI design, based in Berlin.
 
-- `Johannes Lohbihler / dadamachines <https://dadamachines.com>`_ --- TBD-16 hardware,
+- `Johannes Lohbihler / dadamachines <https://dadamachines.com>`_ -- TBD-16 hardware,
   adaptation, UI/UX, documentation
-- `Benjamin Weiss / instrument-design <https://instrument-design.com/work/>`_ ---
+- `Benjamin Weiss / instrument-design <https://instrument-design.com/work/>`_ --
   UX and instrument design
 
 **dadamachines** friends & contributors:
 
-- Servando Barreiro 
-- Per-Olov Jernberg aka Possan  
-- Justin Mammarella aka jmamma 
+- `Per-Olov Jernberg aka Possan <https://possan.codes/>`_ -- creator of
+  PicoSeqRack, the default app/firmware shipping on the TBD-16
+- Servando Barreiro
+- Justin Mammarella aka jmamma
 
 **CTAG TBD** core contributors:
 
-- Robert Manzke (rma) --- Creator, DSP engine, plugin system
+- Robert Manzke (rma) -- Creator, DSP engine, plugin system
 - Mathias Brüssel (mb)
 - Lukas Hermann (lh)
 - Lars Schubert (ls)
@@ -62,11 +63,11 @@ design, and UX/UI design, based in Berlin.
 Community & Support
 -------------------
 
-- `dadamachines Forum <https://forum.dadamachines.com>`_ --- Ask questions, share
+- `dadamachines Forum <https://forum.dadamachines.com>`_ -- Ask questions, share
   patches, report bugs, and connect with other TBD users and developers.
-- **Discord** --- We have a Discord server that is currently invite-only and will
+- **Discord** -- We have a Discord server that is currently invite-only and will
   be opened to the public soon.
-- `GitHub Issues <https://github.com/dadamachines/ctag-tbd/issues>`_ --- Bug
+- `GitHub Issues <https://github.com/dadamachines/ctag-tbd/issues>`_ -- Bug
   reports and feature requests for the firmware and documentation.
 
 

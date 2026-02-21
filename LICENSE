@@ -34,8 +34,8 @@ This repository contains code under two open-source licenses:
    https://www.gnu.org/licenses/lgpl-3.0.txt
 
    All code, tools, and assets added by dadamachines in this repository ---
-   including the web UI, browser-based flasher, documentation, build tools,
-   and utilities --- are licensed under LGPL 3.0.
+   including the web UI, browser-based flasher, plugins, documentation,
+   build tools, and utilities, are licensed under LGPL 3.0.
 
    LGPL 3.0 means:
    - Individual developers can freely use, modify, and contribute to this
