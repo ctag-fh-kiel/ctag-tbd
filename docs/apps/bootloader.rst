@@ -1,6 +1,6 @@
-**************
-UF2 Bootloader
-**************
+**********
+Bootloader
+**********
 
 The TBD-16's RP2350 runs a custom **UF2 bootloader** that loads Apps from the
 SD card. This is the mechanism that makes the entire :doc:`Apps <index>` system

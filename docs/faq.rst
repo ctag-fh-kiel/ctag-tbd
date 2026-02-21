@@ -122,7 +122,7 @@ Connectivity
    Yes. All Apps ship pre-installed on the SD card and you switch between
    them from a boot menu -- no flashing required. See the
    :doc:`Apps </apps/index>` catalog and
-   :doc:`UF2 Bootloader </apps/bootloader>` for technical details.
+   :doc:`Bootloader </apps/bootloader>` for technical details.
 
 
 Troubleshooting

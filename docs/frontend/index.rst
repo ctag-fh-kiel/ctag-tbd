@@ -17,7 +17,7 @@ Arduino on PlatformIO, you can prototype new interfaces in minutes.
    device does. Groovebox, Multi Effect/Synth, MCL, utilities, and more.
    See the Apps catalog for screenshots and details.
 
-:doc:`UF2 Bootloader </apps/bootloader>`
+:doc:`Bootloader </apps/bootloader>`
    How the boot menu loads and switches Apps from the SD card. Technical
    details on the UF2 partition, SD card layout, and BOOTSEL mode.
 

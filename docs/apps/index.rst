@@ -4,15 +4,8 @@ Apps
 
 The TBD-16 ships with every App ready to go. No flashing, no downloading,
 no waiting. All Apps live on the SD card and you switch between them from a
-boot menu -- just like choosing a script on a
-`monome norns <https://norns.community/>`_ or loading a patch on a
-`Critter & Guitari Organelle <https://www.critterandguitari.com/organelle-patches>`_.
-
-Unlike devices that only run one algorithm at a time (like
-`Dubby <https://dubby.studio/>`_ or
-`Daisy <https://electro-smith.com/daisy>`_), the TBD-16 keeps
-**all Apps on the device simultaneously**. Pick one from the menu and start
-playing.
+boot menu. The TBD-16 keeps **all Apps on the device simultaneously** --
+pick one from the menu and start playing.
 
 .. raw:: html
 
@@ -23,7 +16,7 @@ playing.
      on the <strong>ESP32-P4</strong> (DSP plugins, Ableton Link, USB audio).
      Together, they define the full experience.
      <br><br>
-     👉 See <a href="bootloader.html">UF2 Bootloader</a> for the technical
+     👉 See <a href="bootloader.html">Bootloader</a> for the technical
      details of how Apps are loaded and switched.
    </div>
 
@@ -37,7 +30,7 @@ playing.
      <!-- Groovebox -->
      <div class="app-card" data-tags="sequencer synth midi link default">
        <a href="groovebox.html">
-         <div class="app-card-screen">
+         <div class="app-card-screen app-screen-groovebox">
            <span class="app-status shipping" title="Shipping"></span>
            <span class="app-placeholder">▶ GROOVEBOX</span>
          </div>
@@ -61,7 +54,7 @@ playing.
      <!-- Multi Effect / Synth -->
      <div class="app-card" data-tags="synth fx midi link">
        <a href="multi-effect.html">
-         <div class="app-card-screen">
+         <div class="app-card-screen app-screen-multifx">
            <span class="app-status shipping" title="Shipping"></span>
            <span class="app-placeholder">◆ MULTI FX</span>
          </div>
@@ -85,7 +78,7 @@ playing.
      <!-- MCL -->
      <div class="app-card" data-tags="sequencer midi link">
        <a href="mcl.html">
-         <div class="app-card-screen">
+         <div class="app-card-screen app-screen-mcl">
            <span class="app-status shipping" title="Shipping"></span>
            <span class="app-placeholder">≡ MCL</span>
          </div>
@@ -117,7 +110,7 @@ playing.
      <!-- MIDI Controller + Audio Interface -->
      <div class="app-card" data-tags="controller midi audio planned">
        <a href="midi-controller.html">
-         <div class="app-card-screen">
+         <div class="app-card-screen app-screen-midi">
            <span class="app-status planned" title="Planned"></span>
            <span class="app-placeholder">⎈ MIDI + AUDIO</span>
          </div>
@@ -170,7 +163,7 @@ playing.
      <!-- Debug Probe -->
      <div class="app-card" data-tags="utility">
        <a href="utilities.html#debug-probe">
-         <div class="app-card-screen">
+         <div class="app-card-screen app-screen-debug">
            <span class="app-status shipping" title="Shipping"></span>
            <span class="app-placeholder">⚙ DEBUG</span>
          </div>
@@ -189,7 +182,7 @@ playing.
      <!-- USB Mass Storage -->
      <div class="app-card" data-tags="utility">
        <a href="utilities.html#usb-mass-storage">
-         <div class="app-card-screen">
+         <div class="app-card-screen app-screen-usb">
            <span class="app-status shipping" title="Shipping"></span>
            <span class="app-placeholder">💾 USB</span>
          </div>
@@ -208,7 +201,7 @@ playing.
      <!-- UI Test -->
      <div class="app-card" data-tags="utility">
        <a href="utilities.html#ui-test">
-         <div class="app-card-screen">
+         <div class="app-card-screen app-screen-uitest">
            <span class="app-status shipping" title="Shipping"></span>
            <span class="app-placeholder">◻ UI TEST</span>
          </div>
@@ -227,7 +220,7 @@ playing.
      <!-- Game -->
      <div class="app-card" data-tags="utility">
        <a href="utilities.html#game">
-         <div class="app-card-screen">
+         <div class="app-card-screen app-screen-game">
            <span class="app-status shipping" title="Shipping"></span>
            <span class="app-placeholder">🎮 GAME</span>
          </div>
@@ -248,16 +241,10 @@ playing.
 
 .. tip::
    When real screenshots of each App's display become available, they will
-   replace the placeholder screens above -- just like the monochrome screen
-   captures on `norns.community/explore <https://norns.community/explore>`_.
+   replace the placeholder screens above.
 
 
 .. toctree::
    :hidden:
 
-   groovebox
-   multi-effect
-   mcl
-   midi-controller
-   utilities
-   bootloader
+   Bootloader <bootloader>

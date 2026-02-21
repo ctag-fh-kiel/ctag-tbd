@@ -1,3 +1,5 @@
+:orphan:
+
 *************
 Utility Apps
 *************
@@ -97,5 +99,5 @@ limited to music -- any RP2350 firmware can run on the device.
 Links
 =====
 
-- :doc:`UF2 Bootloader <bootloader>` -- how to switch between Apps
+- :doc:`Bootloader <bootloader>` -- how to switch between Apps
 - :doc:`Back to Apps </apps/index>`
