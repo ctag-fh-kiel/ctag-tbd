@@ -117,15 +117,25 @@ under
 (CC BY-NC-SA 4.0) <https://creativecommons.org/licenses/by-nc-sa/4.0/>`_.
 
 
-dadamachines TBD-16
--------------------
+dadamachines TBD-Core & TBD-16
+------------------------------
 
-The TBD-16 is a commercial product. Its hardware design --- including the
-industrial design, PCB layout, and custom electronics --- is proprietary.
+The **TBD-16** (complete desktop instrument) and **TBD-Core** (core DSP board
+with FFC connector for custom UIs) are commercial products. Their hardware
+designs --- including industrial design, PCB layout, and custom electronics ---
+are proprietary.
 
-Open hardware **reference designs** for the TBD platform are planned for future
-publication in KiCad, to help educators, researchers, and instrument builders
-learn from and build on the platform.
+An **open-hardware core design** based on the same ESP32-P4 + RP2350 platform
+is planned for future publication in KiCad as an open-source reference. This
+will give educators, researchers, and instrument builders a starting point to
+learn from and build on --- similar in spirit to how the original CTAG TBD
+Eurorack designs were published.
+
+There is currently no Eurorack module based on the new ESP32-P4 + RP2350
+platform planned by dadamachines, but we would love to partner with anyone
+interested in building one. See
+:doc:`Custom Integration </hardware/30_custom_integration>` or
+`contact us <https://dadamachines.com/contact/>`_.
 
 
 Using TBD in Your Own Products

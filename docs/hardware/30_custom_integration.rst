@@ -131,6 +131,20 @@ The TBD platform has a proven track record:
   `ctag-fh-kiel/ctag-tbd <https://github.com/ctag-fh-kiel/ctag-tbd>`_
 
 
+Eurorack & Modular
+==================
+
+There is currently no Eurorack module based on the new ESP32-P4 + RP2350
+platform planned by dadamachines --- but we would love to see one exist.
+
+If you are a manufacturer or developer interested in building a next-generation
+Eurorack or modular synth module around the TBD platform, we are happy to
+collaborate. Custom integration for modular form factors is a great fit for
+this service.
+
+`Get in touch <https://dadamachines.com/contact/>`_ and let's talk.
+
+
 Get in Touch
 ============
 

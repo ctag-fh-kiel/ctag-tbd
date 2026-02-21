@@ -84,7 +84,7 @@ This repository contains code under two open-source software licenses:
 
 **dadamachines Additions** (web UI, browser-based flasher, documentation, tools) --- [GNU Lesser General Public License (LGPL 3.0)](https://www.gnu.org/licenses/lgpl-3.0.txt). Individual developers can freely use and contribute without copyleft affecting their own unrelated code. Companies must share modifications back or obtain a [commercial license](https://dadamachines.com/contact/).
 
-**TBD-16 Hardware** --- The dadamachines TBD-16 hardware design is proprietary. Open hardware reference designs for the TBD platform are planned for future publication.
+**TBD-Core & TBD-16 Hardware** --- The dadamachines TBD-16 (desktop instrument) and TBD-Core (core DSP board for custom products) hardware designs are proprietary. An open-hardware core design based on the same ESP32-P4 + RP2350 platform is planned for future publication in KiCad as an open-source reference.
 
 **Original CTAG Hardware** (V1/V2) --- [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 

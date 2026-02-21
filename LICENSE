@@ -55,11 +55,13 @@ released under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0
 International (CC BY-NC-SA 4.0).
 Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
 
-The dadamachines TBD-16 is a commercial product. Its specific hardware
-design is proprietary and not released under an open-source license.
-However, updated open hardware reference designs for the TBD platform
-are planned for future publication in KiCad to foster education,
-prototyping, and instrument design.
+The dadamachines TBD-16 (desktop instrument) and TBD-Core (core DSP board
+for custom products) are commercial products. Their hardware designs are
+proprietary and not released under an open-source license.
+
+An open-hardware core design based on the same ESP32-P4 + RP2350 platform
+is planned for future publication in KiCad as an open-source reference,
+to foster education, prototyping, and instrument design.
 
 
 THE DADAMACHINES NAME AND BRAND

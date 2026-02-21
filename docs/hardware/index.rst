@@ -114,6 +114,10 @@ The TBD audio engine has been shipping in hardware for years across multiple for
   `tangible waves <https://www.tangiblewaves.com/store/p149/TBD.html>`_
   (`wiki <https://wiki.aemodular.com/#/modules/tbd>`_)
 
+There is no Eurorack module based on the new ESP32-P4 + RP2350 platform planned yet,
+but dadamachines is open to partnering with manufacturers or developers who want to
+build one. See :doc:`Custom Integration <30_custom_integration>`.
+
 | `Contact dadamachines <https://dadamachines.com/contact/>`_ · `Shop <https://dadamachines.com/shop/>`_
 
 .. toctree::
