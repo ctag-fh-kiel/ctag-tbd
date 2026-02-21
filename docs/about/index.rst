@@ -59,6 +59,20 @@ design, and UX/UI design, based in Berlin.
 - Lars Schubert (ls)
 
 
+Funding
+-------
+
+This project is partially funded through the `NGI0 Commons Fund <https://nlnet.nl/commonsfund>`_,
+established by `NLnet <https://nlnet.nl/>`_ with financial support from the European Commission's
+`Next Generation Internet <https://ngi.eu/>`_ programme, under grant agreement
+No `101135429 <https://cordis.europa.eu/project/id/101135429>`_.
+
+Not all work on TBD / TBD-16 is covered by NLnet funding.
+
+| `NLnet project page <https://nlnet.nl/project/TBD-DSP-Toolkit/>`_
+| `dadamachines TBD Toolkit <https://dadamachines.com/products/tbd-toolkit>`_
+
+
 .. toctree::
    :hidden:
    :glob:

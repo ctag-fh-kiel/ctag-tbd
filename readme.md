@@ -73,14 +73,18 @@ Not all work on TBD / TBD-16 is covered by NLnet funding.
 
 ## License
 
-The TBD software suite is licensed under the [GNU General Public License (GPL 3.0)](https://www.gnu.org/licenses/gpl-3.0.txt).
+This repository contains code under two open-source software licenses:
 
-The **dadamachines TBD-16** is a commercial product. Its specific hardware design is proprietary. Updated open-source hardware reference designs for the TBD platform are planned for future publication in KiCad.
+**Core DSP Engine** (upstream [ctag-fh-kiel/ctag-tbd](https://github.com/ctag-fh-kiel/ctag-tbd)) --- [GNU General Public License (GPL 3.0)](https://www.gnu.org/licenses/gpl-3.0.txt). The audio engine, sound processors, and platform core. Modifications must be released under the same terms.
 
-The original CTAG TBD Eurorack hardware designs (V1/V2) are released under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+**dadamachines Additions** (web UI, browser-based flasher, documentation, tools) --- [GNU Lesser General Public License (LGPL 3.0)](https://www.gnu.org/licenses/lgpl-3.0.txt). Individual developers can freely use and contribute without copyleft affecting their own unrelated code. Companies must share modifications back or obtain a [commercial license](https://dadamachines.com/contact/).
+
+**TBD-16 Hardware** --- The dadamachines TBD-16 hardware design is proprietary. Open hardware reference designs for the TBD platform are planned for future publication.
+
+**Original CTAG Hardware** (V1/V2) --- [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
 Copyright (c) 2020-2026 Robert Manzke. All rights reserved. (CTAG TBD core)
 
 Copyright (c) 2014-2026 Johannes Elias Lohbihler for dadamachines. (TBD-16 adaptation, UI/UX, and Documentation)
 
-License and copyright details for specific submodules are included in their respective component folders / files if different from this license.
+See [LICENSE](LICENSE) for full details including trademark and commercial use terms.

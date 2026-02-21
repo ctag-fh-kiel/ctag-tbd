@@ -59,7 +59,7 @@ General
    If you want to keep modifications proprietary, dadamachines offers
    commercial licensing. The TBD-16 hardware design itself is proprietary.
 
-   See :doc:`Credits & License <about/10_credits>` for full details, or
+   See :doc:`Open-Source Licenses <about/10_credits>` for full details, or
    :doc:`Custom Integration </hardware/30_custom_integration>` if you want
    to build on the TBD platform directly.
 
