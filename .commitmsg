@@ -1,15 +1,11 @@
-docs: flatten Plugins sidebar, move USB Audio to Hardware
+docs: reorder sidebar and redesign index page cards
 
-Remove "Build Your Own Plugin" as a nesting parent in the sidebar so
-Plugins matches the flat structure of Apps. Both sections now show
-their sub-pages as direct children.
+Sidebar order now follows the customer journey:
+  Get Started -> Apps -> Plugins -> Flash & Updates -> Hardware ->
+  Blog -> FAQ -> About
 
-Move USB Audio Interface from Plugins to Hardware section -- it replaces
-the plugin host entirely, making it an ESP32-P4 hardware capability
-rather than a plugin development topic.
-
-Sidebar now reads:
-  Apps -> Bootloader & Multi-App, Development Setup, App Architecture, Debugging
-  Plugins -> Desktop Simulator, Plugin Architecture, Creating a Plugin,
-             Development Setup, Building & Flashing, Web API Reference
-  Hardware -> ... USB Audio Interface (new)
+Index page cards redesigned from 3 to 4 cards in a 2x2 grid:
+  Make Music - using the device, browsing apps and plugins
+  Build Apps - RP2350 development (Arduino/PlatformIO)
+  Build Plugins - ESP32-P4 DSP development (simulator first)
+  Hardware & Platform - specs, TBD-Core, flashing, contact

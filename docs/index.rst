@@ -20,9 +20,14 @@ dada tbd/docs
      }
      .persona-grid {
        display: grid;
-       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+       grid-template-columns: repeat(2, 1fr);
        gap: 1.5em;
        margin: 1.5em 0 2.5em;
+     }
+     @media (max-width: 640px) {
+       .persona-grid {
+         grid-template-columns: 1fr;
+       }
      }
      .persona-card {
        border: 1px solid var(--color-background-border, #e5e7eb);
@@ -69,35 +74,44 @@ dada tbd/docs
 
      <div class="persona-card">
        <h3>🎹 Make Music</h3>
-       <p>Your TBD-16 ships ready to use. Switch between Apps — Groovebox, Multi Effect, MCL, and more — all pre-installed on the SD card.</p>
+       <p>Your TBD-16 ships ready to use. Switch between Apps on the SD card, tweak 50+ DSP plugins from your browser, and sync with Ableton Link.</p>
        <ul>
-         <li><a href="apps/index.html">Apps</a></li>
          <li><a href="get_started/10_using_your_tbd.html">Using Your TBD-16</a></li>
+         <li><a href="apps/index.html">Browse Apps</a></li>
+         <li><a href="plugins/index.html">Browse Plugins</a></li>
          <li><a href="get_started/15_wifi_and_link.html">WiFi &amp; Ableton Link</a></li>
-         <li><a href="plugins/index.html">50+ DSP Plugins</a></li>
-         <li><a href="faq.html">FAQ &amp; Troubleshooting</a></li>
        </ul>
      </div>
 
      <div class="persona-card">
-       <h3>🔧 Build Your Own Firmware</h3>
-       <p>Start with the RP2350 frontend — build custom MIDI controllers, sequencers, or control surfaces using Arduino and PlatformIO.</p>
+       <h3>🔧 Build Apps</h3>
+       <p>Create custom MIDI controllers, sequencers, or control surfaces on the RP2350 — using Arduino and PlatformIO. No audio programming required.</p>
        <ul>
-         <li><a href="apps/getting-started.html">App Development Setup</a></li>
+         <li><a href="apps/getting-started.html">Development Setup</a></li>
          <li><a href="apps/rp2350.html">App Architecture</a></li>
-         <li><a href="plugins/getting-started.html">Plugin Development Setup</a></li>
-         <li><a href="plugins/architecture.html">Plugin Architecture</a></li>
-         <li><a href="plugins/simulator.html">Desktop Simulator</a></li>
+         <li><a href="apps/bootloader.html">Bootloader &amp; Multi-App</a></li>
+         <li><a href="apps/debugging.html">Debugging</a></li>
        </ul>
      </div>
 
      <div class="persona-card">
-       <h3>🏭 Design Products</h3>
-       <p>Build custom instruments on the TBD platform, or integrate the DSP engine into your own hardware.</p>
+       <h3>🎛️ Build Plugins</h3>
+       <p>Write DSP code in C++ that runs on the ESP32-P4. Start with the desktop simulator — no hardware needed — then flash to the device.</p>
        <ul>
-         <li><a href="hardware/10_tbd16.html">TBD-16 Hardware Specs</a></li>
+         <li><a href="plugins/simulator.html">Desktop Simulator</a></li>
+         <li><a href="plugins/architecture.html">Plugin Architecture</a></li>
+         <li><a href="plugins/step-by-step.html">Creating a Plugin</a></li>
+         <li><a href="plugins/getting-started.html">Development Setup</a></li>
+       </ul>
+     </div>
+
+     <div class="persona-card">
+       <h3>🏭 Hardware &amp; Platform</h3>
+       <p>Specs, schematics, and platform options — from the TBD-16 desktop instrument to TBD-Core modules and custom integration.</p>
+       <ul>
+         <li><a href="hardware/10_tbd16.html">TBD-16 Specs</a></li>
          <li><a href="hardware/index.html#platform-options">TBD-Core &amp; Custom Integration</a></li>
-         <li><a href="plugins/web-api.html">Web API Reference</a></li>
+         <li><a href="flash/index.html">Flash &amp; Updates</a></li>
          <li><a href="https://dadamachines.com/contact/">Contact dadamachines</a></li>
        </ul>
      </div>
@@ -111,10 +125,10 @@ dada tbd/docs
     :hidden:
 
     get_started/index
-    flash/index
-    hardware/index
     Apps <apps/index>
     Plugins <plugins/index>
+    flash/index
+    hardware/index
     Blog <blog/index>
     faq
     about/index
