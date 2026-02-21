@@ -6,10 +6,8 @@ The TBD-16 uses WiFi for two things: the **web interface** (configuration and
 preset management) and **Ableton Link** (wireless tempo sync). Both are powered
 by the ESP32-C6 WiFi co-processor.
 
-.. note::
-
-   WiFi is not required for making sound. The TBD-16 works fully standalone
-   with its hardware interface (buttons, encoders, OLED display).
+WiFi is not required for making sound --- the TBD-16 works fully standalone
+with its hardware interface (buttons, encoders, OLED display).
 
 
 WiFi Setup
@@ -38,12 +36,10 @@ From the **Edit configuration** page you can adjust WiFi settings:
 
 -  **mDNS Name** --- The domain name used to access the TBD (default: ``ctag-tbd``).
 
-.. tip::
-
-   The TBD-16 also supports a **USB network connection** via USB-C #1
-   (ESP32-P4 High Speed USB). When connected to a computer, the web
-   interface is accessible over USB without WiFi. WiFi is still needed
-   for Ableton Link and multi-device setups.
+The TBD-16 also supports a **USB network connection** via USB-C #1 (ESP32-P4
+High Speed USB). When connected to a computer, the web interface is accessible
+over USB without WiFi. WiFi is still needed for Ableton Link and multi-device
+setups.
 
 **Example: Live setup with multiple TBDs**
 

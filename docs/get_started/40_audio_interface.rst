@@ -5,12 +5,11 @@ USB Audio Interface
 The TBD-16 hardware supports operating as a **USB Audio Interface**, allowing your
 computer to send and receive audio directly to and from the device over USB.
 
-.. note::
-
-   USB Audio Interface mode is **not included in the main firmware** shipped with TBD-16.
-   The ESP32-P4 hardware is capable of acting as a USB Audio Class device, but this
-   feature requires a separate or custom firmware build. It is listed here because
-   the hardware supports it and it may be offered as an option in the future.
+USB Audio Interface mode is **not included in the main firmware** shipped with
+TBD-16. The ESP32-P4 hardware is capable of acting as a USB Audio Class device,
+but this feature requires a separate or custom firmware build. It is listed here
+because the hardware supports it and it may be offered as an option in the
+future.
 
 
 What This Means

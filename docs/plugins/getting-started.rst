@@ -53,10 +53,6 @@ Download and run the
 `ESP-IDF Tools Installer <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/windows-setup.html>`_.
 Select ESP-IDF v5.5.1 during installation.
 
-.. note::
-   The ESP-IDF installer downloads the Xtensa and RISC-V cross-compilers,
-   CMake, Ninja, Python, and all required tools. This can take several minutes.
-
 
 1b. Install System Dependencies
 --------------------------------
@@ -114,9 +110,8 @@ Before building, export the ESP-IDF environment in your terminal:
 
     . ~/esp/esp-idf/export.sh
 
-.. tip::
-   Add this line to your shell profile (``~/.zshrc`` or ``~/.bashrc``) so it
-   runs automatically in every terminal session.
+Add this line to your shell profile (``~/.zshrc`` or ``~/.bashrc``) so it runs
+automatically in every terminal session.
 
 
 4. Build the Firmware

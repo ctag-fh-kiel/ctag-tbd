@@ -7,11 +7,10 @@ multiple Apps on the SD card and switch between them from a boot menu. This is
 the default setup -- the Groovebox, Multi Effect, MCL, and all other Apps
 coexist on a single device.
 
-.. note::
-   The bootloader is the **default but not mandatory**. If you only need one
-   App -- for example a dedicated MCL or Groovebox unit -- you can remove the
-   bootloader entirely and flash a single firmware directly. See
-   :ref:`single-app-mode` below.
+The bootloader is the default but not mandatory. If you only need one App ---
+for example a dedicated MCL or Groovebox unit --- you can remove the bootloader
+entirely and flash a single firmware directly. See :ref:`single-app-mode`
+below.
 
 
 How It Works
@@ -71,11 +70,9 @@ Switching Apps
 The bootloader remembers the last-launched App and will auto-start it on the
 next power cycle unless you hold Page Up.
 
-.. note::
-   The bootloader and boot menu read the SD card using the SPI interface.
-   If your App switches the SD card to SDIO mode, you need to
-   **power-cycle** (not just reset) to re-initialize the SD card for the
-   boot menu.
+The bootloader and boot menu read the SD card using the SPI interface. If your
+App switches the SD card to SDIO mode, you need to **power-cycle** (not just
+reset) to re-initialize the SD card for the boot menu.
 
 
 .. _adding-your-own-app:
@@ -106,11 +103,10 @@ file. To make it available in the boot menu:
 
 3. On next power-up, hold **Page Up** to open the boot menu and select your App.
 
-.. tip::
-   If your App uses
-   `Pico Binary Information <https://www.raspberrypi.com/documentation/pico-sdk/runtime.html#group_pico_binary_info>`_
-   blocks, the boot menu will display its name automatically. Otherwise it
-   shows the filename.
+If your App uses
+`Pico Binary Information <https://www.raspberrypi.com/documentation/pico-sdk/runtime.html#group_pico_binary_info>`_
+blocks, the boot menu will display its name automatically. Otherwise it shows
+the filename.
 
 
 .. _single-app-mode:

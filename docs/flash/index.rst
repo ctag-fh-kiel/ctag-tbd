@@ -14,10 +14,8 @@ from a boot menu without reflashing (see :doc:`Apps </apps/index>`).
 - You want to run a custom build
 - Something went wrong and you need to recover
 
-.. note::
-
-   Firmware updates do not erase the SD card. Your patches, samples, and
-   WiFi settings are preserved and survive firmware updates.
+Firmware updates do not erase the SD card --- your patches, samples, and WiFi
+settings are preserved.
 
 :doc:`Flash DSP Firmware <25_flash_dsp>`
    Re-flash the ESP32-P4 audio engine from your browser --- no tools needed.

@@ -5,9 +5,8 @@ The TBD-16 ships with **50+ audio plugins** — synthesizers, effects, drum
 machines, granular processors, and more. Every plugin can be loaded, swapped,
 and tweaked in real time from the web interface.
 
-.. tip::
-   Use the search box below to filter by name, type, or description.
-   Click any plugin name to read the full documentation.
+Use the search box below to filter by name, type, or description.
+Click any plugin name to read the full documentation.
 
 .. raw:: html
 
@@ -440,15 +439,11 @@ and tweaked in real time from the web interface.
    });
    </script>
 
-
-.. note::
-   **MIDI API Status** — The MIDI API column shows whether a plugin supports
-   remote control from the RP2350 microcontroller (used in the PicoSeqRack
-   and future controller firmwares). The PicoSeqRack is currently in
-   development as the reference implementation. Once the MIDI API is finalized,
-   support will be added to all legacy plugins.
-
-   Legend: ✅ Supported · 🔧 In Progress · — Planned
+**MIDI API Status** --- The MIDI API column shows whether a plugin supports
+remote control from the RP2350 microcontroller (used in the Groovebox and
+future controller firmwares). The Groovebox is currently in development as the
+reference implementation. Once the MIDI API is finalized, support will be added
+to all legacy plugins. Legend: ✅ Supported · 🔧 In Progress · — Planned
 
 
 Build your own -- write DSP code in C++ that runs on the ESP32-P4. No

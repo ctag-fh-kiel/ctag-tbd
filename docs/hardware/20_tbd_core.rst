@@ -66,10 +66,9 @@ or MIDI.
    * - **Dimensions**
      - *Coming soon*
 
-.. note::
-   All audio, MIDI, and USB connectors come **assembled on the TBD-Core PCB** ---
-   identical to the TBD-16. If you need a different I/O layout or custom
-   connectors, see :doc:`Custom Integration <30_custom_integration>`.
+All audio, MIDI, and USB connectors come **assembled on the TBD-Core PCB** ---
+identical to the TBD-16. If you need a different I/O layout or custom
+connectors, see :doc:`Custom Integration <30_custom_integration>`.
 
 
 What's on the Board
@@ -145,9 +144,8 @@ The 30-pin FFC connector breaks out the signals you need for a custom user inter
 This lets you design a custom front panel, control surface, or enclosure while
 reusing the entire TBD audio/processing platform without modification.
 
-.. note::
-   **Full FFC pinout table coming soon.** A detailed pin-by-pin table with signal
-   names, directions, voltage levels, and recommended use will be published here.
+A detailed pin-by-pin table with signal names, directions, voltage levels, and
+recommended use will be published here.
 
 ..
    TODO: Insert FFC pinout table. Format:
@@ -172,8 +170,7 @@ Use Cases
 Assets
 ======
 
-.. note::
-   Downloadable assets will be published here as they become available.
+Downloadable assets will be published here as they become available.
 
 .. list-table::
    :widths: 30 70

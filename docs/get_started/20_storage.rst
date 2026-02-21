@@ -63,13 +63,7 @@ You can switch the active bank through the web interface or the hardware UI.
 Adding Your Own Samples
 =======================
 
-.. note::
-
-   We're building an integrated web-based sample manager that will handle
-   all conversion and bank building directly on the device --- no scripts,
-   no file conversion on your computer. This is still a work in progress.
-
-In the meantime, here's how to get your own samples onto the TBD-16:
+Here's how to get your own samples onto the TBD-16:
 
 1. **Prepare your WAV files** --- Convert them to **44.1 kHz, mono, 16-bit PCM**.
    You can use any audio editor (Audacity, Ableton, etc.) or the Python converter
@@ -93,11 +87,9 @@ In the meantime, here's how to get your own samples onto the TBD-16:
 
 6. **Reboot** --- The TBD-16 will load the new bank data on the next start.
 
-.. tip::
-
-   Keep file names short (32 characters max) and avoid special characters.
-   Sample data is loaded into PSRAM at boot, so total bank size is limited
-   by available memory.
+Keep file names short (32 characters max) and avoid special characters. Sample
+data is loaded into PSRAM at boot, so total bank size is limited by available
+memory.
 
 
 System Configuration
@@ -112,10 +104,8 @@ files. These are managed automatically by the firmware:
 A backup of the ``/data/`` folder is stored in ``/dbup/`` and can be used
 for recovery.
 
-.. warning::
-
-   Editing configuration files manually is not recommended unless you know
-   what you're doing. For normal use, the system manages these automatically.
+Editing configuration files manually is not recommended unless you know what
+you're doing --- for normal use, the system manages these automatically.
 
 
 Recovery

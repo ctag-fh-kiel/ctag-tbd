@@ -42,13 +42,11 @@ What You Need
      - A USB Micro-B cable to connect the debug probe to your computer (ships
        with the probe).
 
-.. note::
-   You can also use a regular **Raspberry Pi Pico** or **Pico 2** board
-   flashed with the
-   `debugprobe firmware <https://github.com/raspberrypi/debugprobe/releases>`_
-   as a cheaper alternative. The dedicated Debug Probe is recommended because
-   it provides both SWD and UART in a single USB connection with proper
-   connectors.
+You can also use a regular **Raspberry Pi Pico** or **Pico 2** board flashed
+with the
+`debugprobe firmware <https://github.com/raspberrypi/debugprobe/releases>`_
+as a cheaper alternative. The dedicated Debug Probe is recommended because it
+provides both SWD and UART in a single USB connection with proper connectors.
 
 
 Wiring
@@ -149,10 +147,9 @@ Debugging in VS Code
 5. Inspect variables in the **Variables** panel, or hover over them in the
    editor.
 
-.. tip::
-   If the debugger does not connect, try deleting the ``.pio`` folder and
-   rebuilding the project (``pio run --target clean && pio run``).
-   PlatformIO occasionally caches stale debug configurations.
+If the debugger does not connect, try deleting the ``.pio`` folder and
+rebuilding the project (``pio run --target clean && pio run``).
+PlatformIO occasionally caches stale debug configurations.
 
 
 Serial Output via PIO UART

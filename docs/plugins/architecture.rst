@@ -40,11 +40,9 @@ Parameters can be:
 
 The Web UI is auto-generated from the MUI file. You never need to write HTML.
 
-.. note::
-
-   The "CV" and "trigger" terms come from the original CTAG TBD Eurorack module.
-   On the TBD-16, these modulation inputs are driven by the **RP2350** front-end
-   (sequencers, arpeggiators, MIDI mapping) rather than physical CV jacks.
+The "CV" and "trigger" terms come from the original CTAG TBD Eurorack module.
+On the TBD-16, these modulation inputs are driven by the **RP2350** front-end
+(sequencers, arpeggiators, MIDI mapping) rather than physical CV jacks.
 
 At runtime, parameters are stored as ``atomic<int32_t>`` member variables. The code
 generator creates these automatically from your MUI file.

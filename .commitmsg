@@ -1,11 +1,9 @@
-docs: move 'How it works' to end of Apps page, move USB Audio to Get Started
+docs: audit admonitions — reduce 40 tip/note/warning boxes to 6
 
-- Apps page: moved the architecture explainer box ('How it works: Each
-  App is a firmware for the RP2350...') from the top to just before the
-  toctree, so the app catalog is front and center.
+Convert 17 admonitions to inline text for cleaner reading flow.
+Remove 9 placeholder/internal/obvious notes entirely.
+Deduplicate 3 modular-signal warnings (keep 1) and 2 ground-loop
+notes (keep 1 inline). Restyle 3 boxes as plain text.
 
-- USB Audio Interface: moved from Hardware to Get Started section.
-  It's a user-facing feature/mode, not a hardware spec page.
-
-- Blog/FAQ/About order: kept as-is (Blog -> FAQ -> About), which follows
-  the standard convention of news -> support -> background info.
+Remaining 6 admonitions are genuine safety warnings (modular signals,
+high resonance) or critical dev requirements (--recursive, -i flag).

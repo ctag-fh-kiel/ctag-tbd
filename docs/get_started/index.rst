@@ -19,12 +19,6 @@ Your TBD-16 ships ready to use --- just plug in power and make music.
 
 No computer, no WiFi, no software installation needed.
 
-.. warning::
-
-   **Do not plug modular signals directly into the line input.**
-   Modular signals run hot and can damage the inputs. Attenuate first with an
-   interface module (e.g. `Intellijel Audio Interface II <https://modulargrid.net/e/intellijel-audio-interface-ii>`_).
-
 :doc:`Using Your TBD-16 <10_using_your_tbd>` --- full walkthrough of the
 hardware interface, firmware modes, and MIDI.
 

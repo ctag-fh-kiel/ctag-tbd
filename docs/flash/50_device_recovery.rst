@@ -7,10 +7,9 @@ Use this guide if you need to reflash both processors and rebuild the SD cards.
 
 **Time:** 15–20 minutes | **Requirements:** TBD-16, 2× USB-C cables, Chrome/Edge/Opera, 2× SD cards, reader
 
-.. note::
-
-   Your TBD-16 ships ready to use --- you do **not** need this guide for normal operation.
-   Start with :doc:`Using Your TBD-16 </get_started/10_using_your_tbd>` instead.
+Your TBD-16 ships ready to use --- you do **not** need this guide for normal
+operation. Start with :doc:`Using Your TBD-16 </get_started/10_using_your_tbd>`
+instead.
 
 .. raw:: html
 

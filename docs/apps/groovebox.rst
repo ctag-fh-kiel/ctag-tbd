@@ -4,10 +4,6 @@
 Groovebox
 *********
 
-.. note::
-   The names *tbd-pico-seq3* and *PicoSeqRack* are working titles. A final
-   name will be announced before the TBD-16 ships.
-
 The **Groovebox** is the default App and what powers the TBD-16 out of the box.
 It turns the device into a 16-track drum machine / groovebox with deep
 sequencing, pattern management, and hands-on control.

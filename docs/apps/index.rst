@@ -226,11 +226,6 @@ pick one from the menu and start playing.
    </div>
 
 
-.. tip::
-   When real screenshots of each App's display become available, they will
-   replace the placeholder screens above.
-
-
 Build your own -- create custom MIDI controllers, sequencers, or control
 surfaces using Arduino and PlatformIO.
 See :doc:`Development Setup <getting-started>` to get started.

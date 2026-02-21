@@ -53,11 +53,8 @@ Download and install `Visual Studio Code <https://code.visualstudio.com/>`_.
 4. Click **Install**.
 
 PlatformIO will download its core tools automatically on first launch. This may
-take a minute.
-
-.. note::
-   PlatformIO includes everything you need --- the ARM toolchain, board support
-   packages, and upload tools. No separate SDK installation required.
+take a minute. It includes everything you need --- the ARM toolchain, board
+support packages, and upload tools.
 
 
 2. Get the Source
@@ -70,10 +67,9 @@ Clone the RP2350 firmware template repository:
     git clone https://github.com/dadamachines/rp2350-arduino-tbd-fw.git
     cd rp2350-arduino-tbd-fw
 
-.. note::
-   This is a separate repository from the main DSP project. The frontend and
-   backend are developed independently --- you do not need the ESP-IDF or the
-   DSP repository to build frontend firmware.
+This is a separate repository from the main DSP project. The frontend and
+backend are developed independently --- you do not need the ESP-IDF or the DSP
+repository to build frontend firmware.
 
 
 3. Open in VS Code

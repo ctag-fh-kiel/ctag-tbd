@@ -116,21 +116,6 @@ Audio
 - Stereo **line output** (TRS 3.5 mm)
 - Stereo **headphone output** (TRS 3.5 mm) with volume wheel
 
-.. warning::
-   **Do not plug modular signals directly into the line input!**
-
-   Modular signals run very hot and can damage the line-level inputs. Please attenuate your
-   modular signals before sending them into the TBD-16 with an interface module like the
-   `Intellijel Audio Interface II <https://modulargrid.net/e/intellijel-audio-interface-ii>`_.
-
-.. note::
-   **Ground Loop Noise**
-
-   If you experience line noise while powering the TBD-16 from a computer via USB and
-   sending audio to/from the same computer, you may be creating a ground loop. This can
-   be defeated with a USB isolator.
-
-
 MIDI
 ----
 
@@ -209,9 +194,8 @@ See :doc:`Storage & Samples </get_started/20_storage>`.
 Assets
 ======
 
-.. note::
-   Downloadable assets (datasheet, mechanical drawings) will be published here
-   as they become available.
+Downloadable assets (datasheet, mechanical drawings) will be published here as
+they become available.
 
 ..
    Future assets:

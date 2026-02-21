@@ -9,10 +9,9 @@ on your laptop before flashing them to real hardware.
 The simulator opens a local web server that serves the same web UI as the hardware module.
 You interact with it through your browser, just like you would with a connected TBD-16.
 
-.. note::
-
-   The simulator makes the TBD platform accessible to **everyone**, even without owning the hardware.
-   This is a great way to explore the plugin library, develop your own plugins, or teach DSP concepts.
+The simulator makes the TBD platform accessible to **everyone**, even without
+owning the hardware. It is a great way to explore the plugin library, develop
+your own plugins, or teach DSP concepts.
 
 
 What the Simulator Does
