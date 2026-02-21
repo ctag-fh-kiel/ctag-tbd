@@ -113,7 +113,7 @@ dada tbd/docs
     get_started/index
     flash/index
     hardware/index
-    plugins/index
+    Plugins <plugins/index>
     frontend/index
     dsp/index
     Blog <blog/index>

@@ -1,0 +1,179 @@
+/* Plugin table and toolbar styles */
+
+/* --- Hide plugin children from sidebar (navigation via data table) --- */
+.sidebar-tree li.toctree-l1.has-children > input + label,
+.sidebar-tree li.toctree-l1.has-children > ul {
+  /* Only target the Plugins node: hide toggle arrow + nested list */
+}
+/* Target by matching the plugins/index link */
+.sidebar-tree a.reference.internal[href*="plugins/index"] ~ input,
+.sidebar-tree a.reference.internal[href*="plugins/index"] ~ label,
+.sidebar-tree a.reference.internal[href*="plugins/index"] ~ ul {
+  display: none !important;
+}
+
+/* --- Search & Filters toolbar --- */
+.plugin-toolbar {
+  margin-bottom: 1.5em;
+}
+
+#pluginSearch {
+  width: 100%;
+  padding: 0.6em 1em;
+  font-size: 1em;
+  border: 1px solid var(--color-background-border);
+  border-radius: 6px;
+  background: var(--color-background-primary);
+  color: var(--color-foreground-primary);
+  margin-bottom: 0.8em;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+#pluginSearch:focus {
+  border-color: var(--color-brand-primary);
+}
+
+.plugin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+.filter-btn {
+  padding: 0.3em 0.8em;
+  font-size: 0.85em;
+  border: 1px solid var(--color-background-border);
+  border-radius: 20px;
+  background: var(--color-background-secondary);
+  color: var(--color-foreground-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-btn:hover {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+
+.filter-btn.active {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  color: #fff;
+}
+
+/* --- Plugin data table --- */
+.plugin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  line-height: 1.5;
+}
+
+.plugin-table thead th {
+  text-align: left;
+  padding: 0.6em 0.8em;
+  border-bottom: 2px solid var(--color-background-border);
+  font-weight: 600;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-foreground-secondary);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.plugin-table thead th.sortable:hover {
+  color: var(--color-brand-primary);
+  cursor: pointer;
+}
+
+.plugin-table tbody tr {
+  border-bottom: 1px solid var(--color-background-border);
+  transition: background 0.1s;
+}
+
+.plugin-table tbody tr:hover {
+  background: var(--color-background-secondary);
+}
+
+.plugin-table td {
+  padding: 0.55em 0.8em;
+  vertical-align: top;
+}
+
+.plugin-table td:first-child {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.plugin-table td:first-child a {
+  text-decoration: none;
+  color: var(--color-brand-primary);
+}
+
+.plugin-table td:first-child a:hover {
+  text-decoration: underline;
+}
+
+/* Channel column */
+.plugin-table td:nth-child(2) {
+  white-space: nowrap;
+  font-size: 0.9em;
+  color: var(--color-foreground-secondary);
+}
+
+/* --- Type badges --- */
+.type-badge {
+  display: inline-block;
+  padding: 0.15em 0.55em;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.type-synth       { background: #dbeafe; color: #1e40af; }
+.type-fx          { background: #fce7f3; color: #9d174d; }
+.type-oscillator  { background: #d1fae5; color: #065f46; }
+.type-filter      { background: #fef3c7; color: #92400e; }
+.type-drums       { background: #fee2e2; color: #991b1b; }
+.type-noise       { background: #e5e7eb; color: #374151; }
+.type-sampler     { background: #ede9fe; color: #5b21b6; }
+.type-modulation  { background: #ffedd5; color: #9a3412; }
+.type-utility     { background: #f3f4f6; color: #6b7280; }
+
+/* Dark mode badge overrides */
+@media not print {
+  body[data-theme="dark"] .type-synth      { background: #1e3a5f; color: #93c5fd; }
+  body[data-theme="dark"] .type-fx         { background: #4a1942; color: #f9a8d4; }
+  body[data-theme="dark"] .type-oscillator { background: #064e3b; color: #6ee7b7; }
+  body[data-theme="dark"] .type-filter     { background: #78350f; color: #fcd34d; }
+  body[data-theme="dark"] .type-drums      { background: #7f1d1d; color: #fca5a5; }
+  body[data-theme="dark"] .type-noise      { background: #374151; color: #d1d5db; }
+  body[data-theme="dark"] .type-sampler    { background: #3b0764; color: #c4b5fd; }
+  body[data-theme="dark"] .type-modulation { background: #7c2d12; color: #fdba74; }
+  body[data-theme="dark"] .type-utility    { background: #1f2937; color: #9ca3af; }
+}
+
+/* --- MIDI API status --- */
+.midi-status {
+  font-size: 0.95em;
+}
+
+/* --- Plugin count --- */
+.plugin-count {
+  font-size: 0.85em;
+  color: var(--color-foreground-secondary);
+  margin-top: 0.5em;
+}
+
+/* --- Responsive --- */
+@media (max-width: 720px) {
+  .plugin-table td:nth-child(4) {
+    display: none;
+  }
+  .plugin-table th:nth-child(4) {
+    display: none;
+  }
+}
