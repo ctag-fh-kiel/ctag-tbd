@@ -47,8 +47,16 @@ General
 
 .. dropdown:: Can I use TBD-16 in a commercial product?
 
-   Yes. You can buy TBD-16 units and integrate them into your commercial
-   product just like any off-the-shelf component.
+   Yes. If you want to build a product around the TBD platform, two options
+   are designed for you:
+
+   - The :doc:`TBD-Core </hardware/20_tbd_core>` --- our core DSP board with
+     all audio, MIDI, and USB I/O assembled. Connect your own UI board via the
+     30-pin FFC and design your own enclosure.
+   - :doc:`Custom Integration </hardware/30_custom_integration>` --- we
+     integrate the ESP32-P4, RP2350, and codec directly onto your PCB.
+
+   We also offer volume pricing for TBD-16 units used as finished components.
 
    The core DSP engine is licensed under **GPL 3.0** (upstream). The
    dadamachines additions (web UI, tools, documentation) are licensed under
@@ -59,9 +67,7 @@ General
    If you want to keep modifications proprietary, dadamachines offers
    commercial licensing. The TBD-16 hardware design itself is proprietary.
 
-   See :doc:`Open-Source Licenses <about/10_credits>` for full details, or
-   :doc:`Custom Integration </hardware/30_custom_integration>` if you want
-   to build on the TBD platform directly.
+   See :doc:`Open-Source Licenses <about/10_credits>` for full details.
 
 
 Audio & Sound
@@ -160,3 +166,11 @@ is in each development section:
   (Troubleshooting section) and :doc:`Building & Setup <dsp/40_building>`
 - **Frontend / RP2350 development** --- :doc:`Frontend Getting Started <frontend/10_getting_started>`
   and :doc:`Debugging with SWD <frontend/30_debugging>` (Troubleshooting section)
+
+
+Still Stuck?
+============
+
+- `dadamachines Forum <https://forum.dadamachines.com>`_ --- Ask the community
+- `GitHub Issues <https://github.com/dadamachines/ctag-tbd/issues>`_ --- Report
+  bugs or request features

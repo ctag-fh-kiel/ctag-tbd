@@ -51,6 +51,11 @@ To build and preview the documentation (including the blog) on your local machin
 3.  **View**:
     Open `build/docs/index.html` in your browser.
 
+## Community & Support
+
+- [dadamachines Forum](https://forum.dadamachines.com) --- Ask questions, share patches, and connect with other TBD users and developers.
+- [GitHub Issues](https://github.com/dadamachines/ctag-tbd/issues) --- Bug reports and feature requests.
+
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request. For plugin development, see the [Create Plugins](https://dadamachines.github.io/ctag-tbd/) section in the documentation.

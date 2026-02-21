@@ -78,9 +78,20 @@ permitted without prior agreement.
 
 COMMERCIAL USE
 --------------
-You are free to buy TBD-16 units and resell them inside a commercial product,
-just like any other off-the-shelf electronic component. We offer custom
-integrations and volume pricing --- see https://dadamachines.com/contact/
+If you want to build a product around the TBD platform, two options are
+designed for you:
+
+  - TBD-Core: Our core DSP board with all audio, MIDI, and USB I/O
+    assembled. Connect your own UI board via the 30-pin FFC connector
+    and design your own enclosure.
+  - Custom Integration: We integrate the ESP32-P4, RP2350, and codec
+    directly onto your PCB for full control over form factor, connectors,
+    and BOM.
+
+We also offer volume pricing for TBD-16 units used as finished components
+inside your products.
+
+See https://dadamachines.com/contact/ for details.
 
 If you modify the dadamachines-added code (WebUI, tools, documentation) and
 distribute it, those modifications must be released under LGPL 3.0. If you

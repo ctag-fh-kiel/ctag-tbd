@@ -138,10 +138,18 @@ live, teach with it, hack on it. That is what it is made for.
 Your own projects do not need to be open source unless they include modified
 TBD code that you distribute.
 
-**As a company:** You can buy TBD-16 units and integrate them into your products
-like any other component. We offer volume pricing and
-:doc:`custom integrations </hardware/30_custom_integration>` for companies
-building products around the TBD platform.
+**As a company:** If you want to build a product around the TBD platform, two
+options are designed for you:
+
+- The :doc:`TBD-Core </hardware/20_tbd_core>` --- our core DSP board with all
+  audio, MIDI, and USB I/O assembled. Connect your own UI board via the 30-pin
+  FFC and design your own enclosure.
+- :doc:`Custom Integration </hardware/30_custom_integration>` --- we integrate
+  the ESP32-P4, RP2350, and codec directly onto your PCB for full control over
+  form factor, connectors, and BOM.
+
+We also offer volume pricing for TBD-16 units used as finished components inside
+your products.
 
 If you **modify and distribute** dadamachines-added code (web UI, tools, docs),
 those changes must be released under LGPL 3.0.

@@ -59,6 +59,17 @@ design, and UX/UI design, based in Berlin.
 - Lars Schubert (ls)
 
 
+Community & Support
+-------------------
+
+- `dadamachines Forum <https://forum.dadamachines.com>`_ --- Ask questions, share
+  patches, report bugs, and connect with other TBD users and developers.
+- **Discord** --- We have a Discord server that is currently invite-only and will
+  be opened to the public soon.
+- `GitHub Issues <https://github.com/dadamachines/ctag-tbd/issues>`_ --- Bug
+  reports and feature requests for the firmware and documentation.
+
+
 Funding
 -------
 
