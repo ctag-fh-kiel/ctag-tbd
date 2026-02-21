@@ -1,9 +1,9 @@
-****************************
-Frontend --- Getting Started
-****************************
+***********************
+App Development Setup
+***********************
 
 This guide walks you through setting up your development environment for RP2350
-frontend firmware --- custom MIDI controllers, sequencers, control surfaces,
+App development --- custom MIDI controllers, sequencers, control surfaces,
 and UI screens for the TBD-16.
 
 
@@ -226,7 +226,7 @@ code.
    * - ``Reboot()``
      - Reboot the DSP processor
 
-See the :doc:`Architecture & SPI API <rp2350>` page for full details on
+See the :doc:`App Architecture <rp2350>` page for full details on
 the communication protocol.
 
 
@@ -251,8 +251,8 @@ See :doc:`Debugging with SWD <debugging>` for the full setup guide.
 Next Steps
 ==========
 
--  :doc:`Architecture & SPI API <rp2350>` --- Deep dive into the RP2350/P4
+-  :doc:`App Architecture <rp2350>` --- Deep dive into the RP2350/P4
    communication protocol, MIDI integration, and pin mapping.
 -  :doc:`Flash UI Firmware </flash/30_flash_ui>` --- Flash pre-built firmware
    without a development environment.
--  Ready for audio DSP? See :doc:`Plugin Dev --- Getting Started </plugins/getting-started>`.
+-  Ready for audio DSP? See :doc:`Plugin Development Setup </plugins/getting-started>`.

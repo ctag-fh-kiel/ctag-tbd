@@ -83,9 +83,9 @@ dada tbd/docs
        <h3>🔧 Build Your Own Firmware</h3>
        <p>Start with the RP2350 frontend — build custom MIDI controllers, sequencers, or control surfaces using Arduino and PlatformIO.</p>
        <ul>
-         <li><a href="apps/getting-started.html">App Dev — Getting Started</a></li>
-         <li><a href="apps/rp2350.html">RP2350 Architecture &amp; SPI API</a></li>
-         <li><a href="plugins/getting-started.html">Plugin Dev — Getting Started</a></li>
+         <li><a href="apps/getting-started.html">App Development Setup</a></li>
+         <li><a href="apps/rp2350.html">App Architecture</a></li>
+         <li><a href="plugins/getting-started.html">Plugin Development Setup</a></li>
          <li><a href="plugins/architecture.html">Plugin Architecture</a></li>
          <li><a href="plugins/simulator.html">Desktop Simulator</a></li>
        </ul>

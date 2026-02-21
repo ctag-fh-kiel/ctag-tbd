@@ -454,47 +454,18 @@ and tweaked in real time from the web interface.
 Build Your Own Plugin
 =====================
 
-The TBD-16 plugin system lets you write DSP code in C++ that runs on the
-ESP32-P4. Plugins are compiled into the firmware -- add one, rebuild, flash.
-Every plugin automatically gets a web-based GUI with sliders, toggles, and
-CV/gate mapping.
-
-Start here:
-
-:doc:`Getting Started <getting-started>`
-   Install ESP-IDF, clone the repo, and build the DSP firmware for the first
-   time.
-
-:doc:`Plugin Architecture <architecture>`
-   How the engine discovers, loads, and calls plugins.  Understand the data
-   model, process callback, and parameter mapping.
-
-:doc:`Creating a Plugin Step by Step <step-by-step>`
-   Walk through building a new plugin from scratch -- from template generation
-   to hearing audio output.
-
-:doc:`Building & Flashing <building>`
-   Configure, compile, and flash the DSP firmware via USB or OTA.
-
-:doc:`Desktop Simulator <simulator>`
-   Test and debug plugins on your computer with real-time audio before
-   flashing to hardware.
-
-:doc:`USB Audio Interface <audio-interface>`
-   Turn the TBD-16 into a USB sound card -- stream audio to/from your DAW.
-
-:doc:`Web API Reference <web-api>`
-   REST endpoints for WiFi control -- presets, parameters, favorites, and
-   more.
+Write DSP code in C++ that runs on the ESP32-P4 -- no hardware required to
+get started. Try the :doc:`Desktop Simulator <simulator>` first, then
+:doc:`build for hardware <building>` when you are ready.
 
 
 .. toctree::
    :hidden:
 
-   Getting Started <getting-started>
+   Desktop Simulator <simulator>
    Plugin Architecture <architecture>
    Creating a Plugin <step-by-step>
+   Development Setup <getting-started>
    Building & Flashing <building>
-   Desktop Simulator <simulator>
    USB Audio Interface <audio-interface>
    Web API Reference <web-api>

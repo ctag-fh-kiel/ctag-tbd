@@ -1,6 +1,6 @@
-*************************
-DSP --- Getting Started
-*************************
+**************************
+Plugin Development Setup
+**************************
 
 This guide walks you through setting up your development environment for DSP
 plugin development on the ESP32-P4 --- the TBD-16's audio engine.

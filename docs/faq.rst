@@ -163,9 +163,9 @@ Development Questions
 If you're developing custom firmware or plugins, the relevant troubleshooting
 is in each development section:
 
-- **DSP / plugin development** -- :doc:`Plugin Dev Getting Started <plugins/getting-started>`
+- **DSP / plugin development** -- :doc:`Plugin Development Setup <plugins/getting-started>`
   (Troubleshooting section) and :doc:`Building & Flashing <plugins/building>`
-- **Frontend / RP2350 development** -- :doc:`App Dev Getting Started <apps/getting-started>`
+- **App / RP2350 development** -- :doc:`App Development Setup <apps/getting-started>`
   and :doc:`Debugging with SWD <apps/debugging>` (Troubleshooting section)
 
 

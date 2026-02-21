@@ -1,6 +1,6 @@
-*****************
-RP2350 Firmware
-*****************
+****************
+App Architecture
+****************
 
 The RP2350 microcontroller handles the TBD-16's user-facing hardware: the display,
 buttons, encoders, LEDs, and MIDI connectivity.

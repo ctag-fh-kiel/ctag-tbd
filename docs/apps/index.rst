@@ -247,37 +247,15 @@ pick one from the menu and start playing.
 Build Your Own App
 ==================
 
-The TBD-16's App system is open. An App is an RP2350 firmware image
-(``.uf2``) that can optionally pair with the ESP32-P4 for DSP, Ableton Link,
-or USB audio. You can build Apps that:
-
-- Use only the RP2350 -- a standalone MIDI controller, sequencer, or tool
-- Pair with the ESP32-P4's DSP engine -- load and control any of the 50+
-  :doc:`plugins </plugins/index>`
-- Pair with Ableton Link only -- sync with other devices without running DSP
-- Use USB audio interface mode -- turn the TBD-16 into a sound card
-
-Start here:
-
-:doc:`Getting Started <getting-started>`
-   Install PlatformIO, flash the template firmware, and run your first build.
-
-:doc:`RP2350 Firmware <rp2350>`
-   Deep dive into the SPI protocol, MIDI integration, and control data flow
-   between the RP2350 and the ESP32-P4.
-
-:doc:`Bootloader <bootloader>`
-   How the boot menu loads and switches Apps from the SD card. SD card layout,
-   UF2 partition, and BOOTSEL mode.
-
-:doc:`Debugging with SWD <debugging>`
-   Use a debug probe for one-click flashing, breakpoints, and serial output.
+The App system is open -- build your own MIDI controllers, sequencers, or
+control surfaces using Arduino and PlatformIO.
+See :doc:`Development Setup <getting-started>` to get started.
 
 
 .. toctree::
    :hidden:
 
-   Bootloader <bootloader>
-   Getting Started <getting-started>
-   RP2350 Firmware <rp2350>
+   Bootloader & Multi-App <bootloader>
+   Development Setup <getting-started>
+   App Architecture <rp2350>
    Debugging <debugging>

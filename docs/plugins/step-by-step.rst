@@ -8,7 +8,7 @@ Prerequisites
 =============
 
 -  Node.js installed (for the code generator).
--  The TBD repository cloned with submodules (see :doc:`Getting Started </plugins/getting-started>`).
+-  The TBD repository cloned with submodules (see :doc:`Plugin Development Setup </plugins/getting-started>`).
 -  ESP-IDF environment configured.
 
 Step 1: Define the UI

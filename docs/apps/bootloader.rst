@@ -1,10 +1,17 @@
-**********
-Bootloader
-**********
+**********************
+Bootloader & Multi-App
+**********************
 
-The TBD-16's RP2350 runs a custom **UF2 bootloader** that loads Apps from the
-SD card. This is the mechanism that makes the entire :doc:`Apps <index>` system
-work.
+The TBD-16 ships with a **UF2 bootloader** on the RP2350 that lets you store
+multiple Apps on the SD card and switch between them from a boot menu. This is
+the default setup -- the Groovebox, Multi Effect, MCL, and all other Apps
+coexist on a single device.
+
+.. note::
+   The bootloader is the **default but not mandatory**. If you only need one
+   App -- for example a dedicated MCL or Groovebox unit -- you can remove the
+   bootloader entirely and flash a single firmware directly. See
+   :ref:`single-app-mode` below.
 
 
 How It Works
@@ -106,6 +113,42 @@ file. To make it available in the boot menu:
    shows the filename.
 
 
+.. _single-app-mode:
+
+Single-App Mode (No Bootloader)
+===============================
+
+If you want to run a single App permanently -- for example turning the TBD-16
+into a dedicated Groovebox or MCL unit -- you can remove the bootloader and
+flash your firmware directly to the RP2350.
+
+**Step 1: Erase the flash**
+
+Use `pico-universal-flash-nuke <https://github.com/Gadgetoid/pico-universal-flash-nuke>`_
+to completely erase the RP2350's flash memory, including the bootloader
+partition:
+
+1. Hold **Page Down** during power-on to enter BOOTSEL mode.
+2. Drag-and-drop the ``flash_nuke.uf2`` file onto the USB drive that appears.
+3. The RP2350 will erase its entire flash and reboot into BOOTSEL mode again.
+
+**Step 2: Flash your single App**
+
+With the bootloader erased, flash your App's ``.uf2`` directly:
+
+- Drag-and-drop the ``.uf2`` file onto the BOOTSEL USB drive, **or**
+- Use ``picotool load your_app.uf2`` from the command line.
+
+The RP2350 will now boot directly into your App on every power-up -- no boot
+menu, no SD card required for launching.
+
+**Restoring the bootloader:**
+
+To get the multi-App boot menu back, repeat the BOOTSEL process and flash the
+bootloader ``.uf2`` from the
+`UF2 Loader releases <https://github.com/ctag-fh-kiel/uf2loader>`_.
+
+
 Technical Details
 =================
 
@@ -127,4 +170,5 @@ Links
 
 - `UF2 Loader source <https://github.com/ctag-fh-kiel/uf2loader>`_ on GitHub
 - `UF2 specification <https://github.com/microsoft/uf2>`_
+- `pico-universal-flash-nuke <https://github.com/Gadgetoid/pico-universal-flash-nuke>`_ -- erase RP2350 flash completely
 - :doc:`Back to Apps </apps/index>`
