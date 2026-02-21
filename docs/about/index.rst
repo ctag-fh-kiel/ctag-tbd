@@ -84,6 +84,16 @@ Not all work on TBD / TBD-16 is covered by NLnet funding.
 | `NLnet project page <https://nlnet.nl/project/TBD-DSP-Toolkit/>`_
 | `dadamachines TBD Toolkit <https://dadamachines.com/products/tbd-toolkit>`_
 
+.. image:: images/nlnet-banner.png
+   :alt: NLnet
+   :width: 160px
+   :target: https://nlnet.nl/project/TBD-DSP-Toolkit/
+
+.. image:: images/ngi0-commons.svg
+   :alt: NGI0 Commons Fund
+   :width: 160px
+   :target: https://nlnet.nl/commonsfund
+
 
 .. toctree::
    :hidden:

@@ -35,3 +35,6 @@ docs/_build/
 
 # Local planning docs (not for publication)
 docs/HARDWARE_DOCS_PLAN.md
+
+# Temporary commit message file
+.commitmsg

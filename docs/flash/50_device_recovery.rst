@@ -470,6 +470,9 @@ instead.
             <li>The ESP32-P4 flasher below is pre-set to <b>Possan</b> firmware</li>
             <li>Click Connect → Flash → Disconnect</li>
           </ul>
+          <div class="step-callout-warn" style="margin: 0.8em 0 1.2em; padding: 0.8em 1em; border-left: 4px solid #2563EB; background: #EFF6FF; border-radius: 0 6px 6px 0; font-size: 0.92em; color: #1E3A5F; line-height: 1.5;">
+            <b>⚡ Important:</b> After flashing both processors, <b>unplug the USB cable</b> and plug it back in to fully power-cycle the device. The new firmware will only take effect after a complete power cycle — a soft reset is not enough.
+          </div>
         </div>
         <div class="step-nav">
           <button class="btn-step btn-prev" onclick="goToStep(5)">← Previous</button>
@@ -657,19 +660,28 @@ instead.
         display: none;
       }
       .pico-flasher .progress-wrap {
-        height: 5px;
+        margin-top: 0.8em;
         background: #E5E7EB;
-        border-radius: 3px;
-        margin-top: 0.5em;
+        border-radius: 4px;
         overflow: hidden;
+        height: 22px;
+        position: relative;
         display: none;
       }
       .pico-flasher .progress-bar {
         height: 100%;
         background: #06b6d4;
-        border-radius: 3px;
         width: 0%;
-        transition: width 0.3s;
+        transition: width 0.15s;
+      }
+      .pico-flasher .progress-text {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        text-align: center;
+        line-height: 22px;
+        font-size: 0.8em;
+        font-weight: 600;
+        color: #374151;
       }
 
       /* Dark mode support (Furo theme) */
@@ -723,6 +735,7 @@ instead.
 
       <div class="progress-wrap" id="picoProgressWrap">
         <div class="progress-bar" id="picoProgressBar"></div>
+        <span class="progress-text" id="picoProgressText">0 %</span>
       </div>
     </div>
 
@@ -745,6 +758,7 @@ instead.
       const statusBox     = $('picoStatusBox');
       const progressWrap  = $('picoProgressWrap');
       const progressBar   = $('picoProgressBar');
+      const progressText  = $('picoProgressText');
 
       let picoboot = null;
       let connection = null;
@@ -756,10 +770,12 @@ instead.
       function showProgress(pct) {
         progressWrap.style.display = 'block';
         progressBar.style.width = pct + '%';
+        progressText.textContent = pct + ' %';
       }
       function hideProgress() {
         progressWrap.style.display = 'none';
         progressBar.style.width = '0%';
+        progressText.textContent = '0 %';
       }
       function withTimeout(promise, ms, label) {
         return Promise.race([

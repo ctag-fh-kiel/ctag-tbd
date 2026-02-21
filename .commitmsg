@@ -1,9 +1,0 @@
-docs: audit admonitions — reduce 40 tip/note/warning boxes to 6
-
-Convert 17 admonitions to inline text for cleaner reading flow.
-Remove 9 placeholder/internal/obvious notes entirely.
-Deduplicate 3 modular-signal warnings (keep 1) and 2 ground-loop
-notes (keep 1 inline). Restyle 3 boxes as plain text.
-
-Remaining 6 admonitions are genuine safety warnings (modular signals,
-high resonance) or critical dev requirements (--recursive, -i flag).

@@ -89,19 +89,28 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
         display: none;
       }
       .pico-flasher .progress-wrap {
-        height: 5px;
+        margin-top: 0.8em;
         background: #E5E7EB;
-        border-radius: 3px;
-        margin-top: 0.5em;
+        border-radius: 4px;
         overflow: hidden;
+        height: 22px;
+        position: relative;
         display: none;
       }
       .pico-flasher .progress-bar {
         height: 100%;
         background: #2563EB;
-        border-radius: 3px;
         width: 0%;
-        transition: width 0.3s;
+        transition: width 0.15s;
+      }
+      .pico-flasher .progress-text {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        text-align: center;
+        line-height: 22px;
+        font-size: 0.8em;
+        font-weight: 600;
+        color: #374151;
       }
     </style>
 
@@ -128,6 +137,7 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
 
       <div class="progress-wrap" id="progressWrap">
         <div class="progress-bar" id="progressBar"></div>
+        <span class="progress-text" id="progressText">0 %</span>
       </div>
     </div>
 
@@ -153,6 +163,7 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
       const deviceInfo    = $('deviceInfo');
       const progressWrap  = $('progressWrap');
       const progressBar   = $('progressBar');
+      const progressText  = $('progressText');
 
       let picoboot = null;
       let connection = null;
@@ -164,10 +175,12 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
       function showProgress(pct) {
         progressWrap.style.display = 'block';
         progressBar.style.width = pct + '%';
+        progressText.textContent = pct + ' %';
       }
       function hideProgress() {
         progressWrap.style.display = 'none';
         progressBar.style.width = '0%';
+        progressText.textContent = '0 %';
       }
       function withTimeout(promise, ms, label) {
         return Promise.race([
