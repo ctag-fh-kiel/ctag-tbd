@@ -449,9 +449,3 @@ and tweaked in real time from the web interface.
    support will be added to all legacy plugins.
 
    Legend: ✅ Supported · 🔧 In Progress · — Planned
-
-.. toctree::
-   :hidden:
-   :glob:
-
-   *

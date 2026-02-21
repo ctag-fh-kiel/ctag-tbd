@@ -150,7 +150,10 @@ html_context = {
 
 html_static_path = ['../_static']
 html_css_files = ['blog.css', 'plugins.css']
-html_favicon = 'assets/favicon.png'
+html_favicon = '../_static/assets/favicon.png'
+
+# Suppress toc warnings for plugin detail pages (navigated via data table, not toctree)
+suppress_warnings = ['toc.not_included']
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named 'default.css' will overwrite the builtin 'default.css'.

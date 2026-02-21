@@ -1,17 +1,5 @@
 /* Plugin table and toolbar styles */
 
-/* --- Hide plugin children from sidebar (navigation via data table) --- */
-.sidebar-tree li.toctree-l1.has-children > input + label,
-.sidebar-tree li.toctree-l1.has-children > ul {
-  /* Only target the Plugins node: hide toggle arrow + nested list */
-}
-/* Target by matching the plugins/index link */
-.sidebar-tree a.reference.internal[href*="plugins/index"] ~ input,
-.sidebar-tree a.reference.internal[href*="plugins/index"] ~ label,
-.sidebar-tree a.reference.internal[href*="plugins/index"] ~ ul {
-  display: none !important;
-}
-
 /* --- Search & Filters toolbar --- */
 .plugin-toolbar {
   margin-bottom: 1.5em;
