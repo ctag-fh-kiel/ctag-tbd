@@ -164,8 +164,8 @@ options are designed for you:
   the ESP32-P4, RP2350, and codec directly onto your PCB for full control over
   form factor, connectors, and BOM.
 
-We also offer volume pricing for TBD-16 units used as finished components inside
-your products.
+We also work with companies on licensed special editions of the TBD-16.
+`Contact dadamachines <https://dadamachines.com/contact/>`_ to discuss.
 
 If you **modify and distribute** dadamachines-added code (web UI, tools, docs),
 those changes must be released under LGPL 3.0.

@@ -56,7 +56,7 @@ General
    - :doc:`Custom Integration </hardware/30_custom_integration>` -- we
      integrate the ESP32-P4, RP2350, and codec directly onto your PCB.
 
-   We also offer volume pricing for TBD-16 units used as finished components.
+   We also work with companies on licensed special editions of the TBD-16.
 
    The core DSP engine is licensed under **GPL 3.0** (upstream). The
    dadamachines additions (web UI, tools, documentation) are licensed under
