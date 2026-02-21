@@ -69,12 +69,12 @@ dada tbd/docs
 
      <div class="persona-card">
        <h3>🎹 Make Music</h3>
-       <p>Your TBD-16 ships ready to use. Plug in USB-C power and start making music — no computer needed.</p>
+       <p>Your TBD-16 ships ready to use. Switch between Apps — Groovebox, Multi Effect, MCL, and more — all pre-installed on the SD card.</p>
        <ul>
+         <li><a href="apps/index.html">Apps</a></li>
          <li><a href="get_started/10_using_your_tbd.html">Using Your TBD-16</a></li>
          <li><a href="get_started/15_wifi_and_link.html">WiFi &amp; Ableton Link</a></li>
-         <li><a href="flash/index.html">Flash &amp; Updates</a></li>
-         <li><a href="hardware/10_tbd16.html#midi">MIDI</a></li>
+         <li><a href="plugins/index.html">50+ DSP Plugins</a></li>
          <li><a href="faq.html">FAQ &amp; Troubleshooting</a></li>
        </ul>
      </div>

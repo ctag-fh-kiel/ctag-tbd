@@ -30,5 +30,8 @@ midi_test_env/
 # Hardware
 /hw/pcb/*.bak
 
+# Sphinx build output
+docs/_build/
+
 # Local planning docs (not for publication)
 docs/HARDWARE_DOCS_PLAN.md

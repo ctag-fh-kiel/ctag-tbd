@@ -13,9 +13,13 @@ Arduino on PlatformIO, you can prototype new interfaces in minutes.
    between the RP2350 and the DSP engine.
 
 :doc:`Apps </apps/index>`
-   The TBD-16 runs Apps -- complete firmware images that change what the
-   device does. Switch between the groovebox, MCL, a debug probe, and more.
-   See the top-level Apps section for the full catalog.
+   The TBD-16 runs Apps -- each one a complete firmware that changes what the
+   device does. Groovebox, Multi Effect/Synth, MCL, utilities, and more.
+   See the Apps catalog for screenshots and details.
+
+:doc:`UF2 Bootloader </apps/bootloader>`
+   How the boot menu loads and switches Apps from the SD card. Technical
+   details on the UF2 partition, SD card layout, and BOOTSEL mode.
 
 :doc:`Debugging with SWD <30_debugging>`
    Use a Raspberry Pi Debug Probe for one-click flashing, breakpoints, and

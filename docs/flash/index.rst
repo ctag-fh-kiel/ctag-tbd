@@ -5,9 +5,8 @@ The TBD-16 ships with all 50+ DSP plugins in a single firmware --- you do
 **not** need to flash every time you want a different sound. Just pick a plugin
 from the hardware interface or the web UI.
 
-The RP2350 front-end also supports **multiple firmware images** on its SD card,
-switchable from the boot menu without reflashing (see
-:doc:`Apps </apps/index>`).
+The RP2350 front-end supports **multiple Apps** on its SD card, switchable
+from a boot menu without reflashing (see :doc:`Apps </apps/index>`).
 
 **When you do need to flash:**
 

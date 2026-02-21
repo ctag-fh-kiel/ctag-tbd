@@ -149,7 +149,7 @@ html_context = {
 }
 
 html_static_path = ['../_static']
-html_css_files = ['blog.css', 'plugins.css']
+html_css_files = ['blog.css', 'plugins.css', 'apps.css']
 html_favicon = '../_static/assets/favicon.png'
 
 # Suppress toc warnings for plugin detail pages (navigated via data table, not toctree)
