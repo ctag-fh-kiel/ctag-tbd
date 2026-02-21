@@ -83,11 +83,11 @@ dada tbd/docs
        <h3>🔧 Build Your Own Firmware</h3>
        <p>Start with the RP2350 frontend — build custom MIDI controllers, sequencers, or control surfaces using Arduino and PlatformIO.</p>
        <ul>
-         <li><a href="frontend/10_getting_started.html">Frontend — Getting Started</a></li>
-         <li><a href="frontend/20_rp2350.html">Architecture &amp; SPI API</a></li>
-         <li><a href="dsp/10_getting_started.html">DSP — Getting Started</a></li>
-         <li><a href="dsp/20_plugin_architecture.html">Plugin Architecture</a></li>
-         <li><a href="dsp/50_simulator.html">DSP Simulator</a></li>
+         <li><a href="apps/getting-started.html">App Dev — Getting Started</a></li>
+         <li><a href="apps/rp2350.html">RP2350 Architecture &amp; SPI API</a></li>
+         <li><a href="plugins/getting-started.html">Plugin Dev — Getting Started</a></li>
+         <li><a href="plugins/architecture.html">Plugin Architecture</a></li>
+         <li><a href="plugins/simulator.html">Desktop Simulator</a></li>
        </ul>
      </div>
 
@@ -97,7 +97,7 @@ dada tbd/docs
        <ul>
          <li><a href="hardware/10_tbd16.html">TBD-16 Hardware Specs</a></li>
          <li><a href="hardware/index.html#platform-options">TBD-Core &amp; Custom Integration</a></li>
-         <li><a href="dsp/60_web_api.html">Web UI API</a></li>
+         <li><a href="plugins/web-api.html">Web API Reference</a></li>
          <li><a href="https://dadamachines.com/contact/">Contact dadamachines</a></li>
        </ul>
      </div>
@@ -113,10 +113,8 @@ dada tbd/docs
     get_started/index
     flash/index
     hardware/index
-    Plugins <plugins/index>
     Apps <apps/index>
-    frontend/index
-    dsp/index
+    Plugins <plugins/index>
     Blog <blog/index>
     faq
     about/index

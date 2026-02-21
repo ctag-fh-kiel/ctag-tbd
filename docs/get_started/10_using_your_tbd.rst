@@ -122,4 +122,4 @@ What's Next
 
 - :doc:`WiFi & Ableton Link <15_wifi_and_link>` --- Connect to your network, access web interface, sync tempo
 - :doc:`Storage & Samples <20_storage>` --- Manage SD card content and audio samples
-- :doc:`Plugin Architecture </dsp/20_plugin_architecture>` --- Learn how plugins work or create your own
+- :doc:`Plugin Architecture </plugins/architecture>` --- Learn how plugins work or create your own

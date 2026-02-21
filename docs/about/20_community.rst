@@ -26,7 +26,7 @@ improvements, or UI enhancements.
 2. Create a feature branch.
 3. Submit a pull request with a clear description of your changes.
 
-See :doc:`DSP --- Getting Started </dsp/10_getting_started>` to set up your development environment.
+See :doc:`Plugin Dev --- Getting Started </plugins/getting-started>` to set up your development environment.
 
 
 Stay Updated

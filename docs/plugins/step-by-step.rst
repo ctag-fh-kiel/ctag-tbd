@@ -8,7 +8,7 @@ Prerequisites
 =============
 
 -  Node.js installed (for the code generator).
--  The TBD repository cloned with submodules (see :doc:`DSP --- Getting Started </dsp/10_getting_started>`).
+-  The TBD repository cloned with submodules (see :doc:`Getting Started </plugins/getting-started>`).
 -  ESP-IDF environment configured.
 
 Step 1: Define the UI

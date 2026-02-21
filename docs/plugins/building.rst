@@ -96,7 +96,7 @@ Simulator
 =========
 
 The TBD Simulator runs the full DSP engine on your host machine --- no hardware required.
-See the dedicated :doc:`Simulator Guide <50_simulator>` for build instructions, usage, and
+See the dedicated :doc:`Simulator Guide <simulator>` for build instructions, usage, and
 multi-platform setup.
 
 

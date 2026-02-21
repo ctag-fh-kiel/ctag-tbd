@@ -50,5 +50,5 @@ ESP-IDF project that turns the TBD-16 into a stereo USB Audio Class 2.0 sound
 card. It builds on Espressif's
 `USB Device UAC component <https://components.espressif.com/components/espressif/usb_device_uac>`_.
 
-See :doc:`Building & Setup </dsp/40_building>` for help compiling custom
+See :doc:`Building & Flashing </plugins/building>` for help compiling custom
 firmware.

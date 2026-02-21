@@ -162,7 +162,7 @@ The simulator uses the same plugin code and directory structure as the hardware 
 This means you can:
 
 1. Create your plugin in ``components/ctagSoundProcessor/`` as described in the
-   :doc:`Plugin Tutorial </dsp/30_step_by_step>`.
+   :doc:`Plugin Tutorial </plugins/step-by-step>`.
 2. Build and run the simulator to test immediately --- no flashing required.
 3. Once stable, build the ESP-IDF firmware and flash to hardware.
 

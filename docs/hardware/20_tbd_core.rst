@@ -207,9 +207,9 @@ and availability.
 
 The software workflow is identical to the TBD-16:
 
-- :doc:`DSP --- Getting Started </dsp/10_getting_started>` --- Compile DSP firmware
-- :doc:`Simulator </dsp/50_simulator>` --- Develop plugins without hardware
-- :doc:`Frontend --- Getting Started </frontend/10_getting_started>` --- Build custom UI / MIDI firmware
+- :doc:`Plugin Dev --- Getting Started </plugins/getting-started>` --- Compile DSP firmware
+- :doc:`Desktop Simulator </plugins/simulator>` --- Develop plugins without hardware
+- :doc:`App Dev --- Getting Started </apps/getting-started>` --- Build custom UI / MIDI firmware
 - :doc:`Flash & Updates </flash/index>` --- Flash firmware from your browser
 
 ----

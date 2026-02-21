@@ -226,7 +226,7 @@ code.
    * - ``Reboot()``
      - Reboot the DSP processor
 
-See the :doc:`Architecture & SPI API <20_rp2350>` page for full details on
+See the :doc:`Architecture & SPI API <rp2350>` page for full details on
 the communication protocol.
 
 
@@ -245,14 +245,14 @@ Use PlatformIO's serial monitor (plug icon in toolbar) or:
 
 The TBD-16 exposes SWD and UART pins, so you can flash over SWD, set
 breakpoints, and read serial output without touching the BOOTSEL button.
-See :doc:`Debugging with SWD <30_debugging>` for the full setup guide.
+See :doc:`Debugging with SWD <debugging>` for the full setup guide.
 
 
 Next Steps
 ==========
 
--  :doc:`Architecture & SPI API <20_rp2350>` --- Deep dive into the RP2350/P4
+-  :doc:`Architecture & SPI API <rp2350>` --- Deep dive into the RP2350/P4
    communication protocol, MIDI integration, and pin mapping.
 -  :doc:`Flash UI Firmware </flash/30_flash_ui>` --- Flash pre-built firmware
    without a development environment.
--  Ready for audio DSP? See :doc:`DSP --- Getting Started </dsp/10_getting_started>`.
+-  Ready for audio DSP? See :doc:`Plugin Dev --- Getting Started </plugins/getting-started>`.

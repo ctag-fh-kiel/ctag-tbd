@@ -1,6 +1,6 @@
-**********************
+*************************
 DSP --- Getting Started
-**********************
+*************************
 
 This guide walks you through setting up your development environment for DSP
 plugin development on the ESP32-P4 --- the TBD-16's audio engine.
@@ -11,10 +11,10 @@ Before You Begin
 
 DSP development means writing audio processing code --- synthesizers, effects,
 and drum machines that run on the ESP32-P4. This is more advanced than
-:doc:`frontend development </frontend/10_getting_started>`, which uses Arduino
+:doc:`App development </apps/getting-started>`, which uses Arduino
 and doesn't require audio programming knowledge.
 
-**If you're new to the TBD platform**, consider starting with frontend
+**If you're new to the TBD platform**, consider starting with App
 development first. You can build custom MIDI controllers, sequencers, and
 control surfaces for existing DSP plugins without touching audio code.
 
@@ -158,7 +158,7 @@ You can develop and test DSP plugins **without any hardware** using the TBD
 Simulator. It runs the full DSP engine on your computer with a local web
 interface.
 
-See the :doc:`Simulator Guide <50_simulator>` for setup instructions.
+See the :doc:`Simulator Guide <simulator>` for setup instructions.
 
 This is ideal for:
 
@@ -190,10 +190,10 @@ This is ideal for:
 Next Steps
 ==========
 
--  :doc:`Plugin Architecture <20_plugin_architecture>` --- How the DSP plugin
+-  :doc:`Plugin Architecture <architecture>` --- How the DSP plugin
    system works.
--  :doc:`Step-by-Step Plugin Guide <30_step_by_step>` --- Create your first
+-  :doc:`Step-by-Step Plugin Guide <step-by-step>` --- Create your first
    audio plugin from scratch.
--  :doc:`Simulator <50_simulator>` --- Develop plugins on your computer without
+-  :doc:`Simulator <simulator>` --- Develop plugins on your computer without
    hardware.
--  :doc:`Web UI API <60_web_api>` --- Control plugins remotely over WiFi.
+-  :doc:`Web API Reference <web-api>` --- Control plugins remotely over WiFi.

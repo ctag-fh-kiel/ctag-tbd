@@ -105,7 +105,7 @@ struct. When Link is active, plugins receive synchronized tempo and beat
 information that can drive rhythmic effects, sequencers, arpeggiators, or any
 tempo-aware processing.
 
-See :doc:`Plugin Architecture </dsp/20_plugin_architecture>` for details on the
+See :doc:`Plugin Architecture </plugins/architecture>` for details on the
 ``ProcessData`` struct.
 
 

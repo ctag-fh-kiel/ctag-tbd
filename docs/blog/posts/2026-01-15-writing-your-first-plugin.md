@@ -57,7 +57,7 @@ void ctagSoundProcessorMySineOsc::Process(
 
 ## Next steps
 
-Check out the [DSP Development](../../dsp/index) section for the full API
+Check out the [Plugins](../../plugins/index) section for the full API
 reference and more advanced examples.
 
 Happy coding!
