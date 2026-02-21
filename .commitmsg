@@ -1,11 +1,11 @@
-docs: reorder sidebar and redesign index page cards
+docs: move 'How it works' to end of Apps page, move USB Audio to Get Started
 
-Sidebar order now follows the customer journey:
-  Get Started -> Apps -> Plugins -> Flash & Updates -> Hardware ->
-  Blog -> FAQ -> About
+- Apps page: moved the architecture explainer box ('How it works: Each
+  App is a firmware for the RP2350...') from the top to just before the
+  toctree, so the app catalog is front and center.
 
-Index page cards redesigned from 3 to 4 cards in a 2x2 grid:
-  Make Music - using the device, browsing apps and plugins
-  Build Apps - RP2350 development (Arduino/PlatformIO)
-  Build Plugins - ESP32-P4 DSP development (simulator first)
-  Hardware & Platform - specs, TBD-Core, flashing, contact
+- USB Audio Interface: moved from Hardware to Get Started section.
+  It's a user-facing feature/mode, not a hardware spec page.
+
+- Blog/FAQ/About order: kept as-is (Blog -> FAQ -> About), which follows
+  the standard convention of news -> support -> background info.

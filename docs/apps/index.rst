@@ -7,19 +7,6 @@ no waiting. All Apps live on the SD card and you switch between them from a
 boot menu. The TBD-16 keeps **all Apps on the device simultaneously** --
 pick one from the menu and start playing.
 
-.. raw:: html
-
-   <div class="apps-architecture">
-     <strong>How it works:</strong> Each App is a firmware for the
-     <strong>RP2350</strong> processor (handling the display, buttons,
-     encoders, LEDs, and MIDI). Some Apps also pair with specific behaviour
-     on the <strong>ESP32-P4</strong> (DSP plugins, Ableton Link, USB audio).
-     Together, they define the full experience.
-     <br><br>
-     👉 See <a href="bootloader.html">Bootloader</a> for the technical
-     details of how Apps are loaded and switched.
-   </div>
-
 
 .. raw:: html
 
@@ -247,6 +234,20 @@ pick one from the menu and start playing.
 Build your own -- create custom MIDI controllers, sequencers, or control
 surfaces using Arduino and PlatformIO.
 See :doc:`Development Setup <getting-started>` to get started.
+
+
+.. raw:: html
+
+   <div class="apps-architecture">
+     <strong>How it works:</strong> Each App is a firmware for the
+     <strong>RP2350</strong> processor (handling the display, buttons,
+     encoders, LEDs, and MIDI). Some Apps also pair with specific behaviour
+     on the <strong>ESP32-P4</strong> (DSP plugins, Ableton Link, USB audio).
+     Together, they define the full experience.
+     <br><br>
+     👉 See <a href="bootloader.html">Bootloader &amp; Multi-App</a> for the
+     technical details of how Apps are loaded and switched.
+   </div>
 
 
 .. toctree::
