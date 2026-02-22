@@ -75,8 +75,13 @@ Audio & Sound
 
 .. dropdown:: What sample rate and bit depth does TBD-16 use?
 
-   The default configuration runs at **44.1 kHz, 32-bit float** internal
-   processing.
+   The firmware ships at **44.1 kHz** sample rate with **32-bit float**
+   internal processing over a **32-bit I2S bus**. The
+   `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254>`_ audio
+   codec supports sample rates from 8 kHz up to 192 kHz and word lengths up
+   to 32 bit --- the firmware can be reconfigured if a different rate is
+   needed. See :doc:`TBD-16 Audio Performance <hardware/10_tbd16>` for full
+   measured specs.
 
 .. dropdown:: How many plugins can run simultaneously?
 

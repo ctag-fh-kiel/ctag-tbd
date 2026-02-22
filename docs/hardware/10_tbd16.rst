@@ -46,13 +46,21 @@ Technical Specifications
    * - **Processors**
      - ESP32-P4 (DSP) · RP2350B (UI/MIDI) · ESP32-C6 (WiFi) --- `see Processors section <#processors>`_
    * - **Audio Codec**
-     - `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_ --- Stereo ADC/DAC
+     - `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_ --- Stereo 24-bit ADC/DAC with embedded miniDSP
    * - **Sample Rate**
-     - 44.1 kHz
+     - 44.1 kHz (firmware default; codec supports 8--192 kHz)
    * - **Bit Depth**
-     - 32-bit float (internal processing)
-   * - **Latency**
-     - Sub-millisecond DSP processing latency
+     - 32-bit I2S bus · 32-bit float internal processing
+   * - **Processing Buffer**
+     - 32 stereo frames (0.73 ms per buffer at 44.1 kHz)
+   * - **DAC SNR**
+     - > 110 dB (A-weighted, measured)
+   * - **DAC THD+N**
+     - 0.018 % / −75 dB (1 kHz, 0 dBV, measured)
+   * - **ADC SNR**
+     - 93 dB typical (codec datasheet)
+   * - **Channel Separation**
+     - −83 dB (measured)
    * - **Audio I/O**
      - Stereo line in · stereo line out · headphone out (all TRS 3.5 mm)
    * - **MIDI**
@@ -115,6 +123,130 @@ Audio
 - Stereo **line input** (TRS 3.5 mm)
 - Stereo **line output** (TRS 3.5 mm)
 - Stereo **headphone output** (TRS 3.5 mm) with volume wheel
+
+
+Audio Performance
+-----------------
+
+The TBD-16 uses the `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254>`_
+stereo audio codec from Texas Instruments. Below is a summary of the hardware
+capabilities and the firmware defaults, followed by measured performance data.
+
+**Hardware vs. firmware defaults**
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 35 35
+
+   * - Parameter
+     - Hardware Capability
+     - Firmware Default
+   * - Sample rate
+     - 8 kHz -- 192 kHz
+     - 44.1 kHz
+   * - I2S word length
+     - 16 / 20 / 24 / 32 bit
+     - 32 bit
+   * - Internal processing
+     - ---
+     - 32-bit float
+   * - MCLK
+     - ---
+     - 256 × fs = 11.29 MHz (Audio PLL)
+   * - DAC oversampling (DOSR)
+     - ---
+     - 128
+   * - ADC oversampling (AOSR)
+     - ---
+     - 128
+   * - Processing buffer
+     - ---
+     - 32 stereo frames (0.73 ms)
+   * - DMA buffering
+     - ---
+     - 4 × 32 frames (2.9 ms)
+   * - PLL
+     - Available
+     - Disabled (direct MCLK clocking)
+   * - ADC high-pass filter
+     - Programmable IIR
+     - First-order IIR at ~3.7 Hz (DC blocking)
+
+**Measured performance** (line output, DAC only)
+
+Measured with a MOTU UltraLite AVB reference interface and
+`ARTA <https://artalabs.hr/>`_ spectrum analyzer software.
+Test signal: 1 kHz sine (SineSrc plugin), output level calibrated to 0 dBV
+(1 V\ :sub:`rms` , full scale).
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 30 30
+
+   * - Parameter
+     - Left Channel
+     - Right Channel
+   * - THD+N (1 kHz, 0 dBV)
+     - 0.018 %
+     - 0.023 %
+   * - SNR to first harmonic
+     - ~80 dB
+     - ~78 dB
+   * - SNR to noise floor
+     - > 110 dB
+     - > 110 dB
+   * - Noise floor (DAC muted)
+     - > 120 dB
+     - > 120 dB
+   * - Channel separation
+     - −83 dB
+     - −83 dB
+
+**Codec datasheet ratings** (for reference, TI test conditions)
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 25 20 20
+
+   * - Parameter
+     - Path
+     - Typical
+     - Min
+   * - DAC SNR (A-weighted)
+     - Line out
+     - 100 dB
+     - 87 dB
+   * - DAC Dynamic Range
+     - Line out
+     - 100 dB
+     - ---
+   * - DAC THD+N
+     - Line out
+     - −83 dB
+     - −70 dB
+   * - DAC SNR (A-weighted)
+     - Headphone out
+     - 100 dB
+     - 87 dB
+   * - DAC Mute Attenuation
+     - Line out
+     - 119 dB
+     - ---
+   * - ADC SNR (A-weighted)
+     - Single-ended
+     - 93 dB
+     - 80 dB
+   * - ADC Dynamic Range
+     - Single-ended
+     - 92 dB
+     - ---
+   * - ADC THD+N
+     - Single-ended
+     - −85 dB
+     - −70 dB
+
+Full electrical characteristics are in the
+`TLV320AIC3254 datasheet <https://www.ti.com/lit/ds/symlink/tlv320aic3254.pdf>`_.
 
 MIDI
 ----

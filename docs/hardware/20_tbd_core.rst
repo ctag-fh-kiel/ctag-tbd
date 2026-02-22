@@ -44,11 +44,13 @@ or MIDI.
    * - **WiFi Co-Processor**
      - ESP32-C6 (managed by the P4)
    * - **Audio Codec**
-     - `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_ --- Stereo ADC/DAC
+     - `TLV320AIC3254 <https://www.ti.com/product/en-us/TLV320AIC3254/part-details/TLV320AIC3254IRHBR>`_ --- Stereo 24-bit ADC/DAC with embedded miniDSP
    * - **Sample Rate**
-     - 44.1 kHz
+     - 44.1 kHz (firmware default; codec supports 8--192 kHz)
    * - **Bit Depth**
-     - 32-bit float (internal processing)
+     - 32-bit I2S bus · 32-bit float internal processing
+   * - **DAC SNR**
+     - > 110 dB (A-weighted, measured)
    * - **Audio I/O**
      - Stereo line in · stereo line out · headphone out (all TRS 3.5 mm, assembled on PCB)
    * - **MIDI**
