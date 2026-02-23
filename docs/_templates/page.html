@@ -23,6 +23,9 @@
   title="{{ feed_title }}"
 />
 {%- endif %}
+{%- if pagename == 'index' or pagename.endswith('/index') %}
+<style>.related-pages { display: none !important; }</style>
+{%- endif %}
 {% endblock extrahead %}
 
 {% block content %}

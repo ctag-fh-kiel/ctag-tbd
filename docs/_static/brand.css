@@ -753,10 +753,23 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* --- Sidebar copyright footer ---------------------------- */
+/* Transfer scroll ownership from the drawer to .sidebar-sticky so the
+   copyright div is always anchored at the bottom of the visible sidebar */
+.sidebar-drawer {
+  overflow-y: hidden !important;
+}
+
 .sidebar-container {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
+}
+
+.sidebar-sticky {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .sidebar-copyright {
@@ -774,9 +787,16 @@ h1, h2, h3, h4, h5, h6,
   text-underline-offset: 2px;
 }
 
-/* Hide duplicate copyright from main content footer */
-.bottom-of-page .copyright {
-  display: none;
+/* Hide "Made with Sphinx and Furo" + its surrounding line from main footer
+   (copyright already shown in sidebar) */
+.bottom-of-page {
+  display: none !important;
+}
+
+/* Also remove the top border Furo puts on <footer> since bottom-of-page
+   is gone and there's nothing left below .related-pages */
+footer {
+  border-top: none !important;
 }
 
 /* --- Blog card grid (Busy Circuits style) ---------------- */
