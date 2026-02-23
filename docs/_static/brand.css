@@ -119,9 +119,10 @@ h1, h2, h3, h4, h5, h6,
 .dada-hero-headline {
   font-weight: 700;
   font-size: 2em;
-  line-height: 1.0;
+  line-height: 1.4;
   letter-spacing: -0.03em;
   margin: 0 0 0.6em;
+  text-align: center;
   color: var(--color-foreground-primary);
 }
 
