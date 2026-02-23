@@ -1,11 +1,11 @@
-##########
-Interviews
-##########
+##################
+Artist Interviews
+##################
 
 .. raw:: html
 
-   <p class="dada-section-body" style="margin-top: 0;">
-     <strong>Artist interviews — playing live with hardware.</strong><br>
+   <p class="dada-section-body dada-interviews-subtitle" style="margin-top: 0;">
+     <strong>Playing live with hardware.</strong><br>
      We have been talking to a couple of seasoned electronic musicians to
      find out how they play live on stage, what's important to them when it
      comes to instrument interfaces, and which kind of instruments they are

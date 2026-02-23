@@ -5,6 +5,14 @@
 #}
 {% extends "furo/page.html" %}
 
+{% block left_sidebar %}
+{{ super() }}
+<div class="sidebar-copyright">
+  Copyright &copy; 2014&#8211;2026,
+  <a href="https://dadamachines.com">dadamachines</a>
+</div>
+{% endblock left_sidebar %}
+
 {% block extrahead %}
 {{ super() }}
 {%- if ablog is defined and feed_path is defined and feed_path %}

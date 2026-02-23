@@ -752,6 +752,33 @@ h1, h2, h3, h4, h5, h6,
   padding: 0.2em 0.7em;
 }
 
+/* --- Sidebar copyright footer ---------------------------- */
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-copyright {
+  padding: 0.8em 1.2em 1em;
+  font-size: 0.75em;
+  color: var(--color-foreground-muted, #6b7280);
+  border-top: 1px solid var(--color-background-border, #e5e7eb);
+  margin-top: auto;
+  line-height: 1.5;
+}
+
+.sidebar-copyright a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Hide duplicate copyright from main content footer */
+.bottom-of-page .copyright {
+  display: none;
+}
+
 /* --- Blog card grid (Busy Circuits style) ---------------- */
 .blog-grid {
   display: grid;

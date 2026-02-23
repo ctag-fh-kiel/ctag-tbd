@@ -314,7 +314,7 @@ dada tbd/docs
     :hidden:
 
     Blog <blog/index>
-    Interviews <interviews/index>
+    Artist Interviews <interviews/index>
     get_started/index
     Apps <apps/index>
     Plugins <plugins/index>
