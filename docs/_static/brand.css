@@ -104,13 +104,14 @@ h1, h2, h3, h4, h5, h6,
 
 /* --- Hero ------------------------------------------------ */
 .dada-hero {
-  text-align: center;
+  text-align: left;
   padding: 1em 0 0.5em;
 }
 
 .dada-hero img {
+  display: block;
   width: 100%;
-  max-width: 720px;
+  max-width: 100%;
   border-radius: 10px;
   margin-bottom: 1.5em;
 }
@@ -118,19 +119,18 @@ h1, h2, h3, h4, h5, h6,
 .dada-hero-headline {
   font-weight: 700;
   font-size: 2em;
-  line-height: 1.1;
+  line-height: 1.0;
   letter-spacing: -0.03em;
   margin: 0 0 0.6em;
   color: var(--color-foreground-primary);
 }
 
 .dada-hero-sub {
-  font-size: 1.05em;
+  font-size: 1.15em;
   line-height: 1.65;
   color: var(--dada-text-secondary);
-  max-width: 38em;
-  margin: 0 auto 2em;
-  text-align: left;
+  max-width: 44em;
+  margin: 0 0 2em;
 }
 
 /* --- Section dividers ------------------------------------ */

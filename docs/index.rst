@@ -22,10 +22,9 @@ dada tbd/docs
        The <strong>dadamachines TBD-16</strong> is a standalone desktop
        instrument built on
        <a href="https://github.com/ctag-fh-kiel/ctag-tbd">CTAG&nbsp;TBD</a>,
-       an open-source audio DSP engine by Robert Manzke. It combines 50+
-       synthesizers and effects with standard MIDI, a browser-based UI,
-       and Ableton Link. Plug in power and start making music — no
-       computer required.
+       an open-source audio DSP engine. It combines 50+ synthesizers and
+       effects with standard MIDI, a browser-based UI, and Ableton Link.
+       Plug in power and start making music &mdash; no computer required.
      </p>
    </div>
 
