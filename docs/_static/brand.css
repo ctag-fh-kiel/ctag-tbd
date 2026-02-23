@@ -796,9 +796,11 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* Also remove the top border Furo puts on <footer> since bottom-of-page
-   is gone and there's nothing left below .related-pages */
+   is gone and there's nothing left below .related-pages.
+   Add bottom padding to provide spacing at the end of the page. */
 footer {
   border-top: none !important;
+  padding-bottom: 3em !important;
 }
 
 /* --- Blog card grid (Busy Circuits style) ---------------- */

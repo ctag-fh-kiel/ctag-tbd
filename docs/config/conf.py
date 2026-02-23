@@ -70,8 +70,8 @@ doxygen_xml_dir = get_doxygen_xml_dir()
 
 # -- Project information -----------------------------------------------------
 
-project = 'dada tbd/docs'
-html_title = 'dada tbd/docs'
+project = 'dadamachines tbd'
+html_title = 'dadamachines tbd'
 copyright = '2014-2026, Johannes Elias Lohbihler for dadamachines'
 author = 'dadamachines'
 
