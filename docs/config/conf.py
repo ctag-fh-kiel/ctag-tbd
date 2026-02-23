@@ -72,7 +72,7 @@ doxygen_xml_dir = get_doxygen_xml_dir()
 
 project = 'dada tbd/docs'
 html_title = 'dada tbd/docs'
-copyright = '2014-2026 dadamachines / CTAG'
+copyright = '2014-2026, Johannes Elias Lohbihler for dadamachines'
 author = 'dadamachines'
 
 rst_prolog = """.. attention::

@@ -753,31 +753,33 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* --- Sidebar copyright footer ---------------------------- */
-/* Transfer scroll ownership from the drawer to .sidebar-sticky so the
-   copyright div is always anchored at the bottom of the visible sidebar */
-.sidebar-drawer {
-  overflow-y: hidden !important;
-}
-
+/* .sidebar-container becomes the viewport-height sticky wrapper so
+   .sidebar-copyright is always pinned at the bottom without scrolling.
+   Furo puts height:100vh + position:sticky on .sidebar-sticky; we move
+   those properties to .sidebar-container instead. */
 .sidebar-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  position: sticky !important;
+  top: 0 !important;
 }
 
 .sidebar-sticky {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  height: auto !important;      /* override Furo's height: 100vh */
+  position: static !important;  /* override Furo's position: sticky */
 }
 
 .sidebar-copyright {
+  flex-shrink: 0;
   padding: 0.8em 1.2em 1em;
   font-size: 0.75em;
   color: var(--color-foreground-muted, #6b7280);
   border-top: 1px solid var(--color-background-border, #e5e7eb);
-  margin-top: auto;
   line-height: 1.5;
 }
 
