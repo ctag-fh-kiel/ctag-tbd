@@ -89,13 +89,16 @@ dada tbd/docs
    <div class="dada-section">
      <div class="dada-section-label">How</div>
      <h2 class="dada-section-title">
-       Three processors. One platform.
+       Multicore architecture. Three processors, one open platform.
      </h2>
      <p class="dada-section-body">
-       The TBD-16 combines an <strong>ESP32-P4</strong> for real-time
-       audio DSP, an <strong>RP2350</strong> for the hardware UI, MIDI,
-       and sequencing, and an <strong>ESP32-C6</strong> for WiFi &amp;
-       Ableton Link. Each layer is independently programmable.
+       The TBD-16 runs three purpose-built processors in parallel: the
+       <strong>ESP32-P4</strong> (dual-core RISC-V) handles real-time
+       audio DSP, the <strong>RP2350</strong> (dual-core ARM/RISC-V)
+       drives the hardware UI, MIDI, and sequencing, and the
+       <strong>ESP32-C6</strong> manages WiFi &amp; Ableton Link.
+       Each layer is independently programmable &mdash; change one
+       without touching the others.
      </p>
 
      <div class="dada-steps">
@@ -192,9 +195,10 @@ dada tbd/docs
            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
          </div>
          <h3>Write DSP Plugins</h3>
-         <p>Write audio code in C++ for the ESP32-P4. Start with the
-         desktop simulator — no hardware needed — then flash to the
-         device.</p>
+         <p>Write audio code in C++ for the ESP32-P4. If you already
+         ship VST, AU, or LV2 plugins, the workflow is familiar &mdash;
+         start in the desktop simulator, no hardware needed, then flash
+         to the device.</p>
          <ul>
            <li><a href="plugins/simulator.html">Desktop Simulator</a></li>
            <li><a href="plugins/architecture.html">Plugin Architecture</a></li>
@@ -208,9 +212,10 @@ dada tbd/docs
            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
          </div>
          <h3>Hardware &amp; Platform</h3>
-         <p>Specs, connectivity, and platform options — from the TBD-16
-         desktop instrument to TBD-Core modules and custom
-         integration.</p>
+         <p>The TBD-16 Devkit ships with 50+ plugins and full multi-app
+         support. Products built on the platform can run the same broad
+         palette <em>or</em> focus on a single dedicated plugin &mdash;
+         the architecture supports both.</p>
          <ul>
            <li><a href="hardware/10_tbd16.html">TBD-16 Specs</a></li>
            <li><a href="hardware/20_tbd_core.html">TBD-Core Module</a></li>
@@ -251,13 +256,17 @@ dada tbd/docs
      </div>
 
      <div class="dada-cta-wide">
-       <h3>Build Custom Hardware</h3>
-       <p>Use the <a href="hardware/20_tbd_core.html">TBD-Core</a>
-       module in your own enclosure, or work with dadamachines on a
-       <a href="hardware/30_custom_integration.html">fully custom
-       PCB integration</a>. Same DSP engine, same 50+ plugins —
-       your hardware, your brand.</p>
-       <a href="https://dadamachines.com/contact/" class="dada-cta-link">Contact dadamachines &rarr;</a>
+       <h3>Build Your Own Hardware Product</h3>
+       <p>Already shipping VST, AU, or LV2 plugins? Your C++ DSP code
+       can run on TBD hardware. Use the
+       <a href="hardware/20_tbd_core.html">TBD-Core</a> module or work
+       with dadamachines on a
+       <a href="hardware/30_custom_integration.html">fully custom PCB
+       integration</a>. Your product can focus on a single signature
+       sound, offer a curated collection, or ship the full multi-plugin
+       TBD experience &mdash; same open engine, your hardware, your
+       brand.</p>
+       <a href="https://dadamachines.com/contact/" class="dada-cta-link">Talk to dadamachines &rarr;</a>
      </div>
    </div>
 
