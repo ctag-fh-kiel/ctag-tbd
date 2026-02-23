@@ -340,11 +340,13 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .dada-card li {
-  margin-bottom: 0.35em;
+  margin-bottom: 0.2em;
+  line-height: 1.25;
 }
 
 .dada-card li a {
   font-size: 0.92em;
+  line-height: 1.25;
   text-decoration: none;
   color: var(--color-brand-content);
   font-weight: 500;
@@ -503,7 +505,7 @@ h1, h2, h3, h4, h5, h6,
   text-decoration: underline;
 }
 
-/* --- Newsletter signup (Keila form) ---------------------- */
+/* --- Newsletter signup (Keila form — website-exact layout) --- */
 .dada-newsletter {
   text-align: center;
   margin: 3em 0 1em;
@@ -524,67 +526,125 @@ h1, h2, h3, h4, h5, h6,
   margin: 0 0 1.5em;
 }
 
-.dada-newsletter form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1em;
-  max-width: 28em;
-  margin: 0 auto;
+/* Website-matching form structure */
+.newsletter-form-wrapper {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1rem;
 }
 
-.dada-newsletter .dada-nl-field {
+.newsletter-form-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.newsletter-input-control {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.newsletter-button-control {
+  flex: 1 1 100%;
+}
+
+.newsletter-input {
+  border: 3px solid #111;
+  border-radius: 0;
   width: 100%;
-  display: flex;
-  flex-direction: row;
-  gap: 0.6em;
-}
-
-@media (max-width: 480px) {
-  .dada-newsletter .dada-nl-field {
-    flex-direction: column;
-  }
-}
-
-.dada-newsletter .dada-nl-field input[type="email"] {
-  flex: 1;
-  padding: 0.65em 0.9em;
-  border: 1px solid var(--dada-border);
-  border-radius: 6px;
-  font-size: 0.95em;
+  height: 3.25rem;
+  padding: 0 1rem;
+  font-size: 1rem;
   font-family: inherit;
   background: var(--color-background-primary, #fff);
   color: var(--color-foreground-primary, #111);
   outline: none;
-  transition: border-color 0.15s;
+  box-sizing: border-box;
 }
 
-.dada-newsletter .dada-nl-field input[type="email"]:focus {
+.newsletter-input:focus {
   border-color: var(--dada-accent);
 }
 
-.dada-newsletter .dada-nl-field input[type="email"]::placeholder {
+.newsletter-input::placeholder {
   color: var(--dada-text-secondary);
 }
 
-.dada-newsletter button[type="submit"] {
-  padding: 0.65em 1.8em;
-  background: var(--color-foreground-primary, #1a1a1a);
-  color: var(--color-background-primary, #fff);
-  border: none;
-  border-radius: 6px;
-  font-size: 0.95em;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: opacity 0.15s;
+.newsletter-button {
   white-space: nowrap;
+  height: 3.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.dada-newsletter button[type="submit"]:hover {
-  opacity: 0.85;
+.newsletter-captcha {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
 }
 
-.dada-newsletter .h-captcha {
-  margin-top: 0.3em;
+@media (min-width: 769px) {
+  .newsletter-form-group {
+    gap: 0;
+  }
+
+  .newsletter-input-control {
+    flex: 1 1 auto;
+  }
+
+  .newsletter-button-control {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
+
+/* --- Explore-link button (matches dadamachines.com exactly) -- */
+.explore-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .45rem 1.25rem;
+  border: 3px solid #111;
+  background: transparent;
+  border-radius: 0;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: .02em;
+  text-decoration: none;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background-color .2s, color .2s, border-color .2s, transform .1s;
+  color: #111;
+}
+
+.explore-link:hover {
+  transform: translateY(-1px);
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* .is-dark.is-reversed: filled black → outline on hover */
+.explore-link.is-dark.is-reversed {
+  background: #111 !important;
+  color: #fff !important;
+  border: 3px solid #111 !important;
+}
+
+.explore-link.is-dark.is-reversed:hover {
+  background: transparent !important;
+  color: #111 !important;
+  border: 3px solid #111 !important;
+  transform: translateY(-1px);
+}
+
+/* size variant */
+.explore-link.is-large {
+  font-size: 1.25rem;
+  padding: .55rem 1.5rem;
 }
