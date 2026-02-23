@@ -9,8 +9,7 @@ interface is available for configuration and preset management.
 
 The platform is built on `CTAG TBD <https://github.com/ctag-fh-kiel/ctag-tbd>`_,
 an open-source embedded synthesizer created by
-`Robert Manzke <https://www.creative-technologies.de/>`_ at Kiel University of
-Applied Sciences.
+`Robert Manzke <https://www.creative-technologies.de/>`_.
 
 The **dadamachines TBD-16** is the first standalone desktop version, a complete
 instrument with standard MIDI, high-quality audio I/O, and Ableton Link, designed

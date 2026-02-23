@@ -1,0 +1,589 @@
+/* ============================================================
+   dadamachines brand stylesheet
+   Lelo typeface · brand colors · landing-page components
+   ============================================================ */
+
+/* --- @font-face: Lelo ------------------------------------ */
+@font-face {
+  font-family: 'Lelo';
+  src: url('assets/fonts/Lelo-Bold.eot');
+  src: url('assets/fonts/Lelo-Bold.eot?#iefix') format('embedded-opentype'),
+       url('assets/fonts/Lelo-Bold.woff')        format('woff'),
+       url('assets/fonts/Lelo-Bold.ttf')         format('truetype');
+  font-style:  normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lelo';
+  src: url('assets/fonts/Lelo-Regular.eot');
+  src: url('assets/fonts/Lelo-Regular.eot?#iefix') format('embedded-opentype'),
+       url('assets/fonts/Lelo-Regular.woff')        format('woff'),
+       url('assets/fonts/Lelo-Regular.ttf')         format('truetype');
+  font-style:  normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+/* --- Furo CSS variable overrides -------------------------
+   Furo sets --font-stack on `body`, so we must override on
+   `body` (not :root) to win specificity.
+   --------------------------------------------------------- */
+body {
+  /* Typography — Lelo as primary, system fonts as fallback */
+  --font-stack:           'Lelo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-stack--headings: 'Lelo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-stack--monospace: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+
+  /* Brand palette — dadamachines blue */
+  --dada-accent:          #2541b2;
+  --dada-bg-warm:         #faf9f7;
+  --dada-border:          #e5e5e5;
+  --dada-text-secondary:  #6b6b6b;
+
+  letter-spacing: -0.01em;
+}
+
+/* Dark-mode overrides */
+@media not print {
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --dada-accent:         #5c7cfa;
+      --dada-bg-warm:        #1a1c1e;
+      --dada-border:         #303335;
+      --dada-text-secondary: #9ca0a5;
+    }
+  }
+  body[data-theme="dark"] {
+    --dada-accent:         #5c7cfa;
+    --dada-bg-warm:        #1a1c1e;
+    --dada-border:         #303335;
+    --dada-text-secondary: #9ca0a5;
+  }
+}
+
+/* --- Global typography ----------------------------------- */
+h1, h2, h3, h4, h5, h6,
+.sidebar-brand-text,
+.toctree-l1 > a {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Reset left margin/padding on headings inside landing page raw HTML */
+.dada-section h2,
+.dada-section h3,
+.dada-section h4,
+.dada-feature h4,
+.dada-step h4,
+.dada-card h3,
+.dada-cta h3,
+.dada-cta-wide h3,
+.dada-newsletter h2,
+.dada-hero-headline {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+/* Slightly tighter body text */
+.content p,
+.content li {
+  line-height: 1.7;
+}
+
+/* Sidebar brand name */
+.sidebar-brand-text {
+  font-size: 1.15em !important;
+  letter-spacing: -0.03em;
+}
+
+/* ============================================================
+   Landing page components  (used on index.rst)
+   ============================================================ */
+
+/* --- Hero ------------------------------------------------ */
+.dada-hero {
+  text-align: center;
+  padding: 1em 0 0.5em;
+}
+
+.dada-hero img {
+  width: 100%;
+  max-width: 720px;
+  border-radius: 10px;
+  margin-bottom: 1.5em;
+}
+
+.dada-hero-headline {
+  font-weight: 700;
+  font-size: 2em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.6em;
+  color: var(--color-foreground-primary);
+}
+
+.dada-hero-sub {
+  font-size: 1.05em;
+  line-height: 1.65;
+  color: var(--dada-text-secondary);
+  max-width: 38em;
+  margin: 0 auto 2em;
+  text-align: left;
+}
+
+/* --- Section dividers ------------------------------------ */
+.dada-section {
+  margin: 3em 0 2em;
+}
+
+.dada-section-label {
+  font-weight: 700;
+  font-size: 0.75em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dada-accent);
+  margin-bottom: 0.6em;
+  padding-left: 0;
+}
+
+.dada-section-title {
+  font-weight: 700;
+  font-size: 1.6em;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5em;
+  padding-left: 0;
+  color: var(--color-foreground-primary);
+}
+
+.dada-section-body {
+  font-size: 1.05em;
+  line-height: 1.7;
+  color: var(--dada-text-secondary);
+  max-width: 44em;
+}
+
+.dada-section-body strong {
+  color: var(--color-foreground-primary);
+}
+
+/* --- Feature grid (Why section) — 2 columns -------------- */
+.dada-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.4em;
+  margin: 2em 0 0;
+}
+
+@media (max-width: 640px) {
+  .dada-features {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dada-feature {
+  padding: 1.4em 1.5em;
+  border: 1px solid var(--dada-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary, var(--dada-bg-warm));
+}
+
+/* --- Feature icon (SVG) ---------------------------------- */
+.dada-feature-icon {
+  color: var(--dada-accent);
+  margin-bottom: 0.6em;
+  line-height: 1;
+}
+
+.dada-feature-icon svg {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+.dada-feature h4 {
+  font-size: 1em;
+  margin: 0 0 0.35em;
+  font-weight: 700;
+}
+
+.dada-feature p {
+  font-size: 0.92em;
+  line-height: 1.55;
+  color: var(--dada-text-secondary);
+  margin: 0;
+}
+
+.dada-feature p a {
+  color: var(--dada-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.dada-feature p a:hover {
+  text-decoration: underline;
+}
+
+/* --- How-it-works steps — 2 columns ---------------------- */
+.dada-steps {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.4em;
+  margin: 2em 0 0;
+  counter-reset: step;
+}
+
+@media (max-width: 640px) {
+  .dada-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dada-step {
+  position: relative;
+  padding: 1.6em 1.5em 1.4em;
+  border: 1px solid var(--dada-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary, var(--dada-bg-warm));
+  counter-increment: step;
+}
+
+.dada-step::before {
+  content: counter(step);
+  position: absolute;
+  top: -0.6em;
+  left: 1.2em;
+  background: var(--dada-accent);
+  color: #fff;
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85em;
+  font-weight: 700;
+}
+
+.dada-step h4 {
+  font-size: 1em;
+  margin: 0.4em 0 0.35em;
+  font-weight: 700;
+}
+
+.dada-step p {
+  font-size: 0.92em;
+  line-height: 1.55;
+  color: var(--dada-text-secondary);
+  margin: 0;
+}
+
+/* --- Persona cards (What section) — 2 columns ------------ */
+.dada-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5em;
+  margin: 2em 0 0;
+}
+
+@media (max-width: 640px) {
+  .dada-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dada-card {
+  border: 1px solid var(--dada-border);
+  border-radius: 10px;
+  padding: 1.8em 1.6em;
+  background: var(--color-background-secondary, var(--dada-bg-warm));
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.dada-card:hover {
+  border-color: var(--dada-accent);
+  transform: translateY(-2px);
+}
+
+.dada-card-icon {
+  color: var(--dada-accent);
+  margin-bottom: 0.6em;
+  line-height: 1;
+}
+
+.dada-card-icon svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.dada-card h3 {
+  font-weight: 700;
+  font-size: 1.15em;
+  margin: 0 0 0.4em;
+  letter-spacing: -0.02em;
+}
+
+.dada-card p {
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: var(--dada-text-secondary);
+  margin: 0 0 0.8em;
+}
+
+.dada-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dada-card li {
+  margin-bottom: 0.35em;
+}
+
+.dada-card li a {
+  font-size: 0.92em;
+  text-decoration: none;
+  color: var(--color-brand-content);
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.dada-card li a:hover {
+  border-bottom-color: var(--dada-accent);
+  color: var(--dada-accent);
+}
+
+.dada-card li a::before {
+  content: '→ ';
+  color: var(--dada-accent);
+  font-weight: 700;
+}
+
+/* --- Specs highlight strip — even 4-column grid ---------- */
+.dada-specs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1em;
+  margin: 2em 0 0;
+}
+
+@media (max-width: 640px) {
+  .dada-specs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.dada-spec {
+  text-align: center;
+  padding: 1em 0.8em;
+  border: 1px solid var(--dada-border);
+  border-radius: 8px;
+  background: var(--color-background-secondary, var(--dada-bg-warm));
+}
+
+.dada-spec-value {
+  font-weight: 700;
+  font-size: 1.35em;
+  letter-spacing: -0.02em;
+  color: var(--color-foreground-primary);
+}
+
+.dada-spec-label {
+  font-size: 0.78em;
+  color: var(--dada-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 0.2em;
+}
+
+/* --- Footer links bar ------------------------------------ */
+.dada-footer-links {
+  text-align: center;
+  margin: 2em 0 1em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--dada-border);
+  font-size: 0.92em;
+  color: var(--dada-text-secondary);
+}
+
+.dada-footer-links a {
+  color: var(--color-foreground-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.dada-footer-links a:hover {
+  color: var(--dada-accent);
+}
+
+/* --- CTA grid (Get Involved section) --------------------- */
+.dada-ctas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5em;
+  margin: 2em 0 1.5em;
+}
+
+@media (max-width: 640px) {
+  .dada-ctas {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dada-cta {
+  padding: 1.8em 1.6em;
+  border: 1px solid var(--dada-border);
+  border-radius: 10px;
+  background: var(--color-background-secondary, var(--dada-bg-warm));
+}
+
+.dada-cta h3 {
+  font-weight: 700;
+  font-size: 1.1em;
+  margin: 0 0 0.4em;
+  letter-spacing: -0.02em;
+}
+
+.dada-cta p {
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: var(--dada-text-secondary);
+  margin: 0 0 1em;
+}
+
+.dada-cta-link {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 0.95em;
+  color: var(--dada-accent) !important;
+  text-decoration: none;
+  border-bottom: 2px solid var(--dada-accent);
+  padding-bottom: 0.1em;
+  transition: opacity 0.15s;
+}
+
+.dada-cta-link:hover {
+  opacity: 0.8;
+}
+
+/* Full-width CTA banner (custom hardware) */
+.dada-cta-wide {
+  margin: 0;
+  padding: 2em 1.8em;
+  border: 2px solid var(--dada-accent);
+  border-radius: 10px;
+  background: var(--color-background-secondary, var(--dada-bg-warm));
+}
+
+.dada-cta-wide h3 {
+  font-weight: 700;
+  font-size: 1.15em;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.02em;
+}
+
+.dada-cta-wide p {
+  font-size: 0.95em;
+  line-height: 1.6;
+  color: var(--dada-text-secondary);
+  margin: 0 0 1em;
+}
+
+.dada-cta-wide p a {
+  color: var(--dada-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.dada-cta-wide p a:hover {
+  text-decoration: underline;
+}
+
+/* --- Newsletter signup (Keila form) ---------------------- */
+.dada-newsletter {
+  text-align: center;
+  margin: 3em 0 1em;
+  padding: 2.5em 1.5em;
+  border-top: 1px solid var(--dada-border);
+}
+
+.dada-newsletter h2 {
+  font-weight: 700;
+  font-size: 1.4em;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.3em;
+}
+
+.dada-newsletter > p {
+  font-size: 1em;
+  color: var(--dada-text-secondary);
+  margin: 0 0 1.5em;
+}
+
+.dada-newsletter form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  max-width: 28em;
+  margin: 0 auto;
+}
+
+.dada-newsletter .dada-nl-field {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 0.6em;
+}
+
+@media (max-width: 480px) {
+  .dada-newsletter .dada-nl-field {
+    flex-direction: column;
+  }
+}
+
+.dada-newsletter .dada-nl-field input[type="email"] {
+  flex: 1;
+  padding: 0.65em 0.9em;
+  border: 1px solid var(--dada-border);
+  border-radius: 6px;
+  font-size: 0.95em;
+  font-family: inherit;
+  background: var(--color-background-primary, #fff);
+  color: var(--color-foreground-primary, #111);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.dada-newsletter .dada-nl-field input[type="email"]:focus {
+  border-color: var(--dada-accent);
+}
+
+.dada-newsletter .dada-nl-field input[type="email"]::placeholder {
+  color: var(--dada-text-secondary);
+}
+
+.dada-newsletter button[type="submit"] {
+  padding: 0.65em 1.8em;
+  background: var(--color-foreground-primary, #1a1a1a);
+  color: var(--color-background-primary, #fff);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95em;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.dada-newsletter button[type="submit"]:hover {
+  opacity: 0.85;
+}
+
+.dada-newsletter .h-captcha {
+  margin-top: 0.3em;
+}
