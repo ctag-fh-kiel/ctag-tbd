@@ -648,3 +648,106 @@ h1, h2, h3, h4, h5, h6,
   font-size: 1.25rem;
   padding: .55rem 1.5rem;
 }
+
+/* --- Interview cards (Interviews landing page) ----------- */
+.interview-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5em;
+  margin: 2em 0 0;
+}
+
+@media (max-width: 640px) {
+  .interview-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.interview-card {
+  display: block;
+  border: 1px solid var(--dada-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-background-secondary, var(--dada-bg-warm));
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.interview-card:hover {
+  border-color: var(--dada-accent);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: inherit;
+}
+
+.interview-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--dada-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.interview-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.interview-card-placeholder {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--dada-text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.interview-card-body {
+  padding: 1em 1.2em;
+}
+
+.interview-card-body h3 {
+  font-weight: 700;
+  font-size: 1.1em;
+  margin: 0 0 0.2em;
+  letter-spacing: -0.02em;
+}
+
+.interview-card-meta {
+  font-size: 0.85em;
+  color: var(--dada-text-secondary);
+  margin: 0;
+}
+
+/* --- Interview language switcher ------------------------- */
+.interview-lang-switch {
+  display: flex;
+  gap: 0.6em;
+  margin-bottom: 1.5em;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.interview-lang-switch a {
+  text-decoration: none;
+  color: var(--dada-accent);
+  border: 1px solid var(--dada-accent);
+  border-radius: 4px;
+  padding: 0.2em 0.7em;
+  transition: background 0.15s, color 0.15s;
+}
+
+.interview-lang-switch a:hover {
+  background: var(--dada-accent);
+  color: #fff;
+}
+
+.interview-lang-active {
+  background: var(--color-foreground-primary, #111);
+  color: var(--color-background-primary, #fff);
+  border: 1px solid var(--color-foreground-primary, #111);
+  border-radius: 4px;
+  padding: 0.2em 0.7em;
+}

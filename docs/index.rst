@@ -313,11 +313,12 @@ dada tbd/docs
 .. toctree::
     :hidden:
 
+    Blog <blog/index>
+    Interviews <interviews/index>
     get_started/index
     Apps <apps/index>
     Plugins <plugins/index>
     flash/index
     hardware/index
-    Blog <blog/index>
-    faq
     about/index
+    faq
