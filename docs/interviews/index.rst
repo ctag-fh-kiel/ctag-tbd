@@ -60,16 +60,3 @@ Interviews
      </a>
 
    </div>
-
-
-.. toctree::
-   :hidden:
-
-   jessica-kert-en
-   jessica-kert-de
-   robert-henke-en
-   robert-henke-de
-   bill-youngman-en
-   bill-youngman-de
-   eric-d-clark-en
-   eric-d-clark-de
