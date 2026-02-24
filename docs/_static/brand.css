@@ -37,7 +37,7 @@ body {
   --font-stack--monospace: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
 
   /* Brand palette — dadamachines blue */
-  --dada-accent:          #2541b2;
+  --dada-accent:          #0000ee;
   --dada-bg-warm:         #faf9f7;
   --dada-border:          #e5e5e5;
   --dada-text-secondary:  #6b6b6b;
@@ -54,6 +54,10 @@ body {
   --color-link-underline--visited: transparent;
   --color-link-underline--visited--hover: var(--dada-accent);
   --color-brand-visited:     var(--dada-accent);
+
+  /* Sidebar — same background as main content */
+  --color-sidebar-background:        var(--color-background-primary);
+  --color-sidebar-background-border: var(--color-background-border);
 
   letter-spacing: -0.01em;
 }
