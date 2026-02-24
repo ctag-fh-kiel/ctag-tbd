@@ -37,8 +37,7 @@
 
 .ablog__prev-next a {
   text-decoration: none;
-  color: var(--color-brand-primary);
-  font-weight: 500;
+  color: var(--dada-accent);
 }
 
 .ablog__prev-next a:hover {
@@ -79,7 +78,7 @@
 
 .postlist-entry .post-title {
   font-size: 1.25em;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 0.3em;
 }
 
@@ -89,7 +88,7 @@
 }
 
 .postlist-entry .post-title a:hover {
-  color: var(--color-brand-primary);
+  color: var(--dada-accent);
 }
 
 .postlist-entry .post-meta {
@@ -197,7 +196,7 @@
 }
 
 .blog-meta-link:hover {
-  color: var(--color-brand-primary);
+  color: var(--dada-accent);
   text-decoration: underline;
 }
 
@@ -220,7 +219,7 @@
 .blog-feed-link {
   white-space: nowrap;
   font-size: 0.85em;
-  color: var(--color-brand-primary);
+  color: var(--dada-accent);
   text-decoration: none;
   flex-shrink: 0;
 }
@@ -244,8 +243,8 @@
 
 .ablog__category a:hover,
 .ablog__tags a:hover {
-  border-color: var(--color-brand-primary);
-  color: var(--color-brand-primary);
+  border-color: var(--dada-accent);
+  color: var(--dada-accent);
 }
 
 /* Hide the Furo prev/next navigation on blog post pages

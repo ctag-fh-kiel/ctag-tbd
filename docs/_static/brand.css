@@ -42,6 +42,19 @@ body {
   --dada-border:          #e5e5e5;
   --dada-text-secondary:  #6b6b6b;
 
+  /* Furo link colours — all links use brand blue */
+  --color-brand-primary:     var(--dada-accent);
+  --color-brand-content:     var(--dada-accent);
+  --color-link:              var(--dada-accent);
+  --color-link--hover:       var(--dada-accent);
+  --color-link--visited:     var(--dada-accent);
+  --color-link--visited--hover: var(--dada-accent);
+  --color-link-underline:        transparent;
+  --color-link-underline--hover: var(--dada-accent);
+  --color-link-underline--visited: transparent;
+  --color-link-underline--visited--hover: var(--dada-accent);
+  --color-brand-visited:     var(--dada-accent);
+
   letter-spacing: -0.01em;
 }
 
@@ -227,7 +240,6 @@ hr.docutils {
 .dada-feature p a {
   color: var(--dada-accent);
   text-decoration: none;
-  font-weight: 500;
 }
 
 .dada-feature p a:hover {
@@ -353,14 +365,11 @@ hr.docutils {
   font-size: 0.92em;
   line-height: 1.25;
   text-decoration: none;
-  color: var(--color-brand-content);
-  font-weight: 500;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.15s;
+  color: var(--dada-accent);
 }
 
 .dada-card li a:hover {
-  border-bottom-color: var(--dada-accent);
+  text-decoration: underline;
   color: var(--dada-accent);
 }
 
@@ -419,11 +428,11 @@ hr.docutils {
 .dada-footer-links a {
   color: var(--color-foreground-primary);
   text-decoration: none;
-  font-weight: 500;
 }
 
 .dada-footer-links a:hover {
-  color: var(--dada-accent);
+  text-decoration: underline;
+  color: var(--color-foreground-primary);
 }
 
 /* --- CTA grid (Get Involved section) --------------------- */
@@ -462,17 +471,16 @@ hr.docutils {
 
 .dada-cta-link {
   display: inline-block;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95em;
   color: var(--dada-accent) !important;
   text-decoration: none;
-  border-bottom: 1px solid var(--dada-accent);
-  padding-bottom: 0.1em;
   transition: opacity 0.15s;
 }
 
 .dada-cta-link:hover {
-  opacity: 0.8;
+  text-decoration: underline;
+  opacity: 1;
 }
 
 /* Full-width CTA banner (custom hardware) */
@@ -501,7 +509,6 @@ hr.docutils {
 .dada-cta-wide p a {
   color: var(--dada-accent);
   text-decoration: none;
-  font-weight: 500;
 }
 
 .dada-cta-wide p a:hover {
@@ -734,13 +741,13 @@ hr.docutils {
   gap: 0.6em;
   margin-bottom: 1.5em;
   font-size: 0.9em;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .interview-lang-switch a {
   text-decoration: none;
   color: var(--dada-accent);
-  border: 1px solid var(--dada-accent);
+  border: 1px solid var(--color-foreground-primary);
   border-radius: 0;
   padding: 0.2em 0.7em;
   transition: background 0.15s, color 0.15s;
