@@ -130,6 +130,8 @@ html_theme_options = {
     "announcement": "⚠️ This documentation is a work in progress and may be incomplete or subject to change.",
     "navigation_with_keys": True,
     "sidebar_hide_name": False,
+    "light_logo": "assets/dadamachines-logo_square_onwhite.png",
+    "dark_logo": "assets/dadamachines-logo_square_white.png",
     "light_css_variables": {
         "color-code-background": "#1e1e2e",
         "color-code-foreground": "#cdd6f4",

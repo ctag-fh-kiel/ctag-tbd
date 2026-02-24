@@ -109,10 +109,61 @@ h1, h2, h3, h4, h5, h6,
   line-height: 1.7;
 }
 
+/* Sidebar brand — logo left, title right, inline */
+.sidebar-brand {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0.6em;
+  /* balance vertical space: equal padding above and below so the brand
+     sits centred between the viewport top and the search form */
+  padding-top: var(--sidebar-item-spacing-vertical) !important;
+  padding-bottom: var(--sidebar-item-spacing-vertical) !important;
+  margin-top: var(--sidebar-item-spacing-vertical);
+}
+
+.sidebar-logo-container {
+  flex-shrink: 0;
+  /* cancel the per-child margin Furo adds in column layout */
+  margin: 0 !important;
+}
+
+.sidebar-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+}
+
 /* Sidebar brand name */
 .sidebar-brand-text {
+  font-family: var(--font-stack--headings);
+  font-weight: 700;
   font-size: 1.15em !important;
   letter-spacing: -0.03em;
+}
+
+
+/* ============================================================
+   Mobile Responsive — Sidebar Brand
+   ============================================================ */
+
+/* On mobile screens, hide the text and show only the logo */
+@media (max-width: 44em) {
+  .sidebar-brand {
+    justify-content: center;
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  .sidebar-brand-text {
+    display: none;
+  }
+
+  .sidebar-logo {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 
