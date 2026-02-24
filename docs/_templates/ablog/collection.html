@@ -41,6 +41,7 @@
         <span class="blog-card-category">{{ cats[0] }}</span>
         {% endif %}
         <h3>{{ post.title }}</h3>
+        <div class="blog-card-excerpt">{{ post.to_html(collection.docname) }}</div>
         {% if post.published %}
         <span class="blog-card-date">{{ post.date.strftime(ablog.post_date_format) }}</span>
         {% else %}

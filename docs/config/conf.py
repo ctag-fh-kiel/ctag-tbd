@@ -75,9 +75,8 @@ html_title = 'dadamachines tbd'
 copyright = '2014-2026, Johannes Elias Lohbihler for dadamachines'
 author = 'dadamachines'
 
-rst_prolog = """.. attention::
-    This documentation is a work in progress and may be incomplete or subject to change.
-"""
+# Announcement shown on every page via Furo theme option (see html_theme_options below).
+# Remove the "announcement" key when the docs are ready.
 
 # -- General configuration ---------------------------------------------------
 
@@ -128,6 +127,7 @@ html_theme = 'furo'
 
 # Furo theme options
 html_theme_options = {
+    "announcement": "⚠️ This documentation is a work in progress and may be incomplete or subject to change.",
     "navigation_with_keys": True,
     "sidebar_hide_name": False,
     "light_css_variables": {

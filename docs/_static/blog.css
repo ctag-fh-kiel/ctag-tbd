@@ -119,6 +119,7 @@
 
 /* --- Post header: category + title + dateline shown above hero --- */
 .ablog-post-header {
+  padding-top: 1.5em;
   margin-bottom: 1.5em;
 }
 
@@ -136,6 +137,8 @@
 
 .ablog-post-h1 {
   margin: 0 0 0.35em !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
   line-height: 1.2;
 }
 
@@ -153,13 +156,38 @@
 }
 
 /* --- Tag/category archive page title --- */
-.ablog-collection-page > h1 {
+.ablog-collection-title {
   margin-bottom: 1.2em;
 }
 
 .ablog-collection-title a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Excerpt rendered inside collection cards via post.to_html() */
+.blog-card-excerpt {
+  font-size: 0.88em;
+  color: var(--color-foreground-secondary);
+  line-height: 1.5;
+  margin: 0.3em 0 0.5em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Hide heading and images inside the excerpt render */
+.blog-card-excerpt h1,
+.blog-card-excerpt h2,
+.blog-card-excerpt h3,
+.blog-card-excerpt img,
+.blog-card-excerpt .docutils.container {
+  display: none;
+}
+
+.blog-card-excerpt p {
+  margin: 0;
 }
 
 /* --- Linked metadata items (tags/categories) in post meta bar --- */
