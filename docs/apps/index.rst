@@ -245,8 +245,6 @@ See :doc:`Development Setup <getting-started>` to get started.
    </div>
 
 
-.. include:: /_includes/newsletter.rst
-
 .. include:: /_includes/footer-links.rst
 
 

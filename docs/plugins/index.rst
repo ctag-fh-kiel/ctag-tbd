@@ -451,8 +451,6 @@ hardware required to get started: try the :doc:`Desktop Simulator <simulator>`
 first, then :doc:`build for hardware <building>` when you are ready.
 
 
-.. include:: /_includes/newsletter.rst
-
 .. include:: /_includes/footer-links.rst
 
 .. toctree::
