@@ -168,56 +168,6 @@ h1, h2, h3, h4, h5, h6,
 
 
 /* ============================================================
-   Flash & Updates — 3-column feature grid + CTA link
-   Reuses .dada-feature card styles; only adds the grid override
-   and the arrow CTA link at the bottom of each card.
-   ============================================================ */
-
-.flash-features {
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 2em;
-}
-
-/* Flex column so the CTA link can be pushed to the bottom */
-.flash-features .dada-feature {
-  display: flex;
-  flex-direction: column;
-}
-
-@media (max-width: 860px) {
-  .flash-features {
-    grid-template-columns: 1fr;
-  }
-}
-
-.flash-feature-meta {
-  margin: 0.5em 0 1em;
-  padding-left: 1.1em;
-  font-size: 0.85em;
-  line-height: 1.5;
-  color: var(--dada-text-secondary);
-  flex: 1;
-}
-
-.flash-feature-meta li {
-  margin-bottom: 0.2em;
-}
-
-.flash-cta {
-  display: inline-block;
-  font-weight: 700;
-  font-size: 0.88em;
-  color: var(--dada-accent) !important;
-  text-decoration: none;
-  letter-spacing: -0.01em;
-  margin-top: auto;
-}
-
-.flash-cta:hover {
-  text-decoration: underline;
-}
-
-/* ============================================================
    Content tables (Sphinx list-table / docutils)
    ============================================================ */
 
