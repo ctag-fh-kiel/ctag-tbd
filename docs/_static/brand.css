@@ -115,6 +115,73 @@ h1, h2, h3, h4, h5, h6,
   letter-spacing: -0.03em;
 }
 
+
+/* ============================================================
+   Content tables (Sphinx list-table / docutils)
+   ============================================================ */
+
+/* Remove Furo's default box borders and zebra-striping */
+table.docutils {
+  border: none;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table.docutils col {
+  width: auto !important;   /* let content size naturally */
+}
+
+/* Header row — 2px bottom border, matching our section dividers */
+table.docutils thead th {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--color-foreground-primary);
+  padding: 0.6em 0.8em 0.6em 0;
+  font-weight: 700;
+  text-align: left;
+  vertical-align: bottom;
+  color: var(--color-foreground-primary);
+}
+
+/* Body rows — subtle 1px divider, no vertical borders */
+table.docutils tbody td {
+  border: none;
+  border-bottom: 1px solid var(--color-background-border);
+  padding: 0.55em 0.8em 0.55em 0;
+  vertical-align: top;
+}
+
+/* Last row needs no bottom border */
+table.docutils tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Bold first-column labels (specs pattern) */
+table.docutils tbody td:first-child {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Remove Furo's zebra-stripe backgrounds */
+table.docutils tbody tr.row-odd,
+table.docutils tbody tr.row-even {
+  background: transparent;
+}
+
+/* Hover for discoverability */
+table.docutils tbody tr:hover {
+  background: var(--color-background-secondary);
+}
+
+/* Kill Furo's table-wrapper border */
+.table-wrapper {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow-x: auto;
+}
+
+
 /* ============================================================
    Landing page components  (used on index.rst)
    ============================================================ */
