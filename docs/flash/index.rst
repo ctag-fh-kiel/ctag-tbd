@@ -1,30 +1,63 @@
 Flash & Updates
 ===============
 
-The TBD-16 ships with all 50+ DSP plugins in a single firmware --- you do
-**not** need to flash every time you want a different sound. Just pick a plugin
-from the hardware interface or the web UI.
+.. raw:: html
 
-The RP2350 front-end supports **multiple Apps** on its SD card, switchable
-from a boot menu without reflashing (see :doc:`Apps </apps/index>`).
+   <p class="flash-intro">
+     The TBD-16 ships with all 50+ DSP plugins ready to go &mdash; you only need
+     to flash when a new firmware release is available, you want to run a custom
+     build, or something went wrong. Firmware updates <strong>never erase</strong>
+     your SD card.
+   </p>
 
-**When you do need to flash:**
+   <div class="flash-grid">
 
-- A new firmware release is available and you want to update
-- You want to run a custom build
-- Something went wrong and you need to recover
+     <!-- Flash DSP -->
+     <div class="flash-card">
+       <div class="flash-card-icon">&#9889;</div>
+       <div class="flash-card-body">
+         <h3>Flash DSP Firmware</h3>
+         <p>Re-flash the <strong>ESP32-P4</strong> audio engine directly from
+         your browser &mdash; WebSerial, no tools or drivers needed.</p>
+         <ul class="flash-card-meta">
+           <li>Chrome, Edge or Opera</li>
+           <li>JTAG USB-C cable to front port</li>
+         </ul>
+         <a class="flash-card-link" href="25_flash_dsp.html">Flash DSP &rarr;</a>
+       </div>
+     </div>
 
-Firmware updates do not erase the SD card --- your patches, samples, and WiFi
-settings are preserved.
+     <!-- Flash UI -->
+     <div class="flash-card">
+       <div class="flash-card-icon">&#128187;</div>
+       <div class="flash-card-body">
+         <h3>Flash UI Firmware</h3>
+         <p>Re-flash the <strong>RP2350</strong> front-end from your browser
+         via WebUSB &mdash; put the device in BOOTSEL mode first.</p>
+         <ul class="flash-card-meta">
+           <li>Chrome, Edge or Opera</li>
+           <li>Hold BOOTSEL while connecting USB</li>
+         </ul>
+         <a class="flash-card-link" href="30_flash_ui.html">Flash UI &rarr;</a>
+       </div>
+     </div>
 
-:doc:`Flash DSP Firmware <25_flash_dsp>`
-   Re-flash the ESP32-P4 audio engine from your browser --- no tools needed.
+     <!-- Device Recovery -->
+     <div class="flash-card flash-card-recovery">
+       <div class="flash-card-icon">&#128295;</div>
+       <div class="flash-card-body">
+         <h3>Device Recovery</h3>
+         <p>Full step-by-step guide to re-initialize your TBD-16 from scratch
+         &mdash; reflash both processors and rebuild both SD cards.</p>
+         <ul class="flash-card-meta">
+           <li>~15&ndash;20 minutes</li>
+           <li>2&times; USB-C cables &amp; 2&times; SD cards needed</li>
+         </ul>
+         <a class="flash-card-link" href="50_device_recovery.html">Start Recovery &rarr;</a>
+       </div>
+     </div>
 
-:doc:`Flash UI Firmware <30_flash_ui>`
-   Re-flash the RP2350 front-end from your browser via WebUSB.
-
-:doc:`Device Recovery <50_device_recovery>`
-   Step-by-step guide to fully re-initialize your TBD-16 from scratch.
+   </div>
 
 .. toctree::
    :hidden:
