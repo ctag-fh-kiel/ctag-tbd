@@ -49,6 +49,10 @@ removing the card.
 :doc:`Storage & Samples <20_storage>` --- file layout, sample format
 (44.1 kHz 16-bit mono), and bank management.
 
+.. include:: /_includes/newsletter.rst
+
+.. include:: /_includes/footer-links.rst
+
 .. toctree::
    :hidden:
    :glob:

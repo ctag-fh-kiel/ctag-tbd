@@ -180,3 +180,7 @@ Still Stuck?
 - `dadamachines Forum <https://forum.dadamachines.com>`_ -- Ask the community
 - `GitHub Issues <https://github.com/dadamachines/ctag-tbd/issues>`_ -- Report
   bugs or request features
+
+.. include:: /_includes/newsletter.rst
+
+.. include:: /_includes/footer-links.rst

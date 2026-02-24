@@ -228,6 +228,11 @@ dada tbd/docs
    </div>
 
 
+.. include:: _includes/newsletter.rst
+
+
+.. raw:: html
+
    <!-- ========== GET INVOLVED ========== -->
    <div class="dada-section">
      <div class="dada-section-label">Get Involved</div>
@@ -270,8 +275,6 @@ dada tbd/docs
      </div>
    </div>
 
-
-.. include:: _includes/newsletter.rst
 
 .. include:: _includes/footer-links.rst
 

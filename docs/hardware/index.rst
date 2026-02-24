@@ -120,6 +120,10 @@ build one. See :doc:`Custom Integration <30_custom_integration>`.
 
 | `Contact dadamachines <https://dadamachines.com/contact/>`_ · `Shop <https://dadamachines.com/shop/>`_
 
+.. include:: /_includes/newsletter.rst
+
+.. include:: /_includes/footer-links.rst
+
 .. toctree::
    :hidden:
    :glob:
