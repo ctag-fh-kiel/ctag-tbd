@@ -667,12 +667,11 @@ hr.docutils {
 /* Nav jump-link bar (at top of each hardware detail page) */
 .hw-nav-btn {
   display: inline-block;
-  padding: 0.4em 1em;
+  padding: 0.6em 1.5em;
   border: 1px solid var(--color-foreground-primary);
   border-radius: 0;
   text-decoration: none !important;
   font-weight: 700;
-  font-size: 0.875em;
   color: var(--color-foreground-primary) !important;
   transition: background 0.12s, color 0.12s;
 }

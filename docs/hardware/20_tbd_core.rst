@@ -4,7 +4,7 @@ TBD-Core
 
 .. raw:: html
 
-   <img src="../_static/assets/dadamachines-tbd-16_mockup_003.jpg" alt="dadamachines TBD-Core" style="max-width: 100%; width: 100%; border-radius: 6px;">
+   <img src="../_static/assets/dadamachines-tbd-16_mockup_003.jpg" alt="dadamachines TBD-Core" style="max-width: 100%; width: 100%;">
 
 The TBD-Core is the core board from the TBD-16, available separately for
 instrument designers and product developers who want to build custom hardware

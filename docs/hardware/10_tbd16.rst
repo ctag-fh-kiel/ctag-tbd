@@ -4,7 +4,7 @@ TBD-16
 
 .. raw:: html
 
-   <img src="../_static/assets/dadamachines-tbd-16_mockup_002.jpg" alt="dadamachines TBD-16" style="max-width: 100%; width: 100%; border-radius: 6px;">
+   <img src="../_static/assets/dadamachines-tbd-16_mockup_002.jpg" alt="dadamachines TBD-16" style="max-width: 100%; width: 100%;">
 
 .. raw:: html
 
