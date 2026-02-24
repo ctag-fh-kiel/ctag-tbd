@@ -663,6 +663,74 @@ hr.docutils {
   padding: .55rem 1.5rem;
 }
 
+/* --- Hardware page buttons --------------------------------------- */
+/* Nav jump-link bar (at top of each hardware detail page) */
+.hw-nav-btn {
+  display: inline-block;
+  padding: 0.4em 1em;
+  border: 1px solid var(--color-foreground-primary);
+  border-radius: 0;
+  text-decoration: none !important;
+  font-weight: 700;
+  font-size: 0.875em;
+  color: var(--color-foreground-primary) !important;
+  transition: background 0.12s, color 0.12s;
+}
+
+.hw-nav-btn:hover {
+  background: var(--color-foreground-primary);
+  color: var(--color-background-primary) !important;
+}
+
+/* CTA variant — Buy/Contact in the nav bar, stands out with accent fill */
+.hw-nav-btn.hw-cta {
+  background: var(--dada-accent);
+  color: #fff !important;
+  border-color: var(--dada-accent);
+}
+
+.hw-nav-btn.hw-cta:hover {
+  background: transparent;
+  color: var(--dada-accent) !important;
+}
+
+/* Page-footer CTA buttons */
+.hw-btn-primary {
+  display: inline-block;
+  padding: 0.6em 1.5em;
+  background: var(--dada-accent);
+  color: #fff !important;
+  border: 2px solid var(--dada-accent);
+  border-radius: 0;
+  text-decoration: none !important;
+  font-weight: 700;
+  transition: background 0.12s, color 0.12s;
+}
+
+.hw-btn-primary:hover {
+  background: transparent;
+  color: var(--dada-accent) !important;
+}
+
+.hw-btn-secondary {
+  display: inline-block;
+  padding: 0.6em 1.5em;
+  background: transparent;
+  color: var(--color-foreground-primary) !important;
+  border: 2px solid var(--color-foreground-primary);
+  border-radius: 0;
+  text-decoration: none !important;
+  font-weight: 700;
+  transition: background 0.12s, color 0.12s;
+}
+
+.hw-btn-secondary:hover {
+  background: var(--color-foreground-primary);
+  color: var(--color-background-primary) !important;
+}
+
+/* ----------------------------------------------------------------- */
+
 /* --- Interview cards (Interviews landing page) ----------- */
 .interview-cards {
   display: grid;

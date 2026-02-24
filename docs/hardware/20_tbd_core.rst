@@ -18,11 +18,11 @@ freedom to design your own user interface and enclosure.
 
    <!-- Quick-nav jump links -->
    <div style="display:flex; gap:0.75em; flex-wrap:wrap; margin:1.5em 0 2em;">
-     <a href="#technical-specifications" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Tech Specs</a>
-     <a href="#ffc-connector" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">FFC Pinout</a>
-     <a href="#assets" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Assets</a>
-     <a href="#getting-started" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Getting Started</a>
-     <a href="https://dadamachines.com/shop/" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Buy</a>
+     <a href="#technical-specifications" class="hw-nav-btn">Tech Specs</a>
+     <a href="#ffc-connector" class="hw-nav-btn">FFC Pinout</a>
+     <a href="#assets" class="hw-nav-btn">Assets</a>
+     <a href="#getting-started" class="hw-nav-btn">Getting Started</a>
+     <a href="https://dadamachines.com/shop/" class="hw-nav-btn hw-cta">Buy</a>
    </div>
 
 
@@ -216,6 +216,6 @@ The software workflow is identical to the TBD-16:
 .. raw:: html
 
    <div style="display:flex; gap:0.75em; flex-wrap:wrap; margin:1.5em 0;">
-     <a href="https://dadamachines.com/shop/" style="padding:0.6em 1.5em; background:var(--color-brand-primary, #6a5acd); color:#fff; border-radius:6px; text-decoration:none; font-weight:600;">Buy TBD-Core</a>
-     <a href="https://dadamachines.com/contact/" style="padding:0.6em 1.5em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Contact dadamachines</a>
+     <a href="https://dadamachines.com/shop/" class="hw-btn-primary">Buy TBD-Core</a>
+     <a href="https://dadamachines.com/contact/" class="hw-btn-secondary">Contact dadamachines</a>
    </div>

@@ -18,11 +18,11 @@ optimization, and production scaling.
 .. raw:: html
 
    <div style="display:flex; gap:0.75em; flex-wrap:wrap; margin:1.5em 0 2em;">
-     <a href="#what-we-offer" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">What We Offer</a>
-     <a href="#core-components" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Components</a>
-     <a href="#audio-codec-options" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Codec Options</a>
-     <a href="#how-it-works" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Process</a>
-     <a href="https://dadamachines.com/contact/" style="padding:0.5em 1.2em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">Contact</a>
+     <a href="#what-we-offer" class="hw-nav-btn">What We Offer</a>
+     <a href="#core-components" class="hw-nav-btn">Components</a>
+     <a href="#audio-codec-options" class="hw-nav-btn">Codec Options</a>
+     <a href="#how-it-works" class="hw-nav-btn">Process</a>
+     <a href="https://dadamachines.com/contact/" class="hw-nav-btn hw-cta">Contact</a>
    </div>
 
 
@@ -158,6 +158,6 @@ that need audio DSP integration.
 .. raw:: html
 
    <div style="display:flex; gap:0.75em; flex-wrap:wrap; margin:1.5em 0;">
-     <a href="https://dadamachines.com/contact/" style="padding:0.6em 1.5em; background:var(--color-brand-primary, #6a5acd); color:#fff; border-radius:6px; text-decoration:none; font-weight:600;">Contact dadamachines</a>
-     <a href="https://dadamachines.com" style="padding:0.6em 1.5em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">dadamachines.com</a>
+     <a href="https://dadamachines.com/contact/" class="hw-btn-primary">Contact dadamachines</a>
+     <a href="https://dadamachines.com" class="hw-btn-secondary">dadamachines.com</a>
    </div>

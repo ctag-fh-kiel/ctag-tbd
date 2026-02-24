@@ -27,8 +27,8 @@ Plug in power and start making music --- no computer or Eurorack case required.
 .. raw:: html
 
    <div style="display:flex; gap:0.75em; flex-wrap:wrap; margin:1em 0 2.5em;">
-     <a href="https://dadamachines.com/shop/" style="padding:0.6em 1.5em; background:var(--color-brand-primary, #6a5acd); color:#fff; border-radius:6px; text-decoration:none; font-weight:600;">Buy TBD-16</a>
-     <a href="https://dadamachines.com" style="padding:0.6em 1.5em; border:1px solid var(--color-background-border, #ccc); border-radius:6px; text-decoration:none; font-weight:500;">dadamachines.com</a>
+     <a href="https://dadamachines.com/shop/" class="hw-btn-primary">Buy TBD-16</a>
+     <a href="https://dadamachines.com" class="hw-btn-secondary">dadamachines.com</a>
    </div>
 
 ----
