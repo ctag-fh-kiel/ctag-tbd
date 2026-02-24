@@ -119,4 +119,3 @@ I wonder if it needs two MIDI ins and two MIDI outs. I like MIDI, but for modula
 
 *Interview: [Benjamin Weiss (MID)](https://instrument-design.com/)*  
 *Funded by [NLnet](https://nlnet.nl/project/TBD-DSP-Toolkit/)*
-*AI usage: Apple voicememos for transcription, Mistral for translating to English*
