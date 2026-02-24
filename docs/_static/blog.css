@@ -104,7 +104,7 @@
 
 /* --- Hero image on blog post detail pages --- */
 .blog-post-hero {
-  margin: 0 0 2em;
+  margin: 0 0 2.5em;
   overflow: hidden;
   aspect-ratio: 16 / 7;
   border-radius: 2px;
@@ -115,6 +115,51 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* --- Post header: category + title + dateline shown above hero --- */
+.ablog-post-header {
+  margin-bottom: 1.5em;
+}
+
+.ablog-post-cats {
+  margin-bottom: 0.7em;
+}
+
+.blog-card-category--link {
+  text-decoration: none;
+}
+
+.blog-card-category--link:hover {
+  opacity: 0.75;
+}
+
+.ablog-post-h1 {
+  margin: 0 0 0.35em !important;
+  line-height: 1.2;
+}
+
+.ablog-post-dateline {
+  color: var(--color-foreground-secondary);
+  font-size: 0.9em;
+  margin: 0;
+}
+
+/* Hide the duplicate h1 that Sphinx renders inside {{ body }} —
+   we already show the title explicitly in .ablog-post-header */
+.ablog-post-body > section:first-child > h1:first-child,
+.ablog-post-body > h1:first-child {
+  display: none;
+}
+
+/* --- Tag/category archive page title --- */
+.ablog-collection-page > h1 {
+  margin-bottom: 1.2em;
+}
+
+.ablog-collection-title a {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* --- Linked metadata items (tags/categories) in post meta bar --- */

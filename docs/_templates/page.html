@@ -34,6 +34,28 @@
 {# Blog post detail page — show metadata and post nav #}
 {% set post = ablog[pagename] %}
 <div class="ablog-post">
+
+  {# Post header: category badge → title → date (before hero image) #}
+  <div class="ablog-post-header">
+    {%- if post.category %}
+    <div class="ablog-post-cats">
+      {%- for c in post.category -%}
+      <a href="{{ pathto(c.docname) }}" class="blog-card-category blog-card-category--link">{{ c }}</a>
+      {%- if not loop.last %} {% endif -%}
+      {%- endfor %}
+    </div>
+    {%- endif %}
+    <h1 class="ablog-post-h1">{{ title }}</h1>
+    {%- if post.published %}
+    <p class="ablog-post-dateline">
+      {{ post.date.strftime(ablog.post_date_format) }}
+      {%- if post.author %} &middot; {% for a in post.author %}{{ a }}{% if not loop.last %}, {% endif %}{% endfor %}{%- endif %}
+      {%- if post.tags %} &middot; {% for t in post.tags %}<a href="{{ pathto(t.docname) }}" class="blog-meta-link">{{ t }}</a>{% if not loop.last %}, {% endif %}{% endfor %}{%- endif %}
+    </p>
+    {%- endif %}
+  </div>
+
+  {# Hero image — shown after the title header #}
   {%- if meta and meta.cover %}
   {%- set depth = pagename.count('/') %}
   <div class="blog-post-hero">
@@ -44,25 +66,10 @@
     {%- endif %}
   </div>
   {%- endif %}
-  <article role="main">
+
+  <article role="main" class="ablog-post-body">
     {{ body }}
   </article>
-
-  {# Post metadata #}
-  {% if post.published %}
-  <div class="ablog-post-meta">
-    <span>📅 {{ post.date.strftime(ablog.post_date_format) }}</span>
-    {% if post.author %}
-    <span>✍️ {% for a in post.author %}{{ a }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
-    {% endif %}
-    {% if post.category %}
-    <span>📁 {% for c in post.category %}<a href="{{ pathto(c.docname) }}" class="blog-meta-link">{{ c }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</span>
-    {% endif %}
-    {% if post.tags %}
-    <span>🏷️ {% for t in post.tags %}<a href="{{ pathto(t.docname) }}" class="blog-meta-link">{{ t }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</span>
-    {% endif %}
-  </div>
-  {% endif %}
 
   {# Prev / Next post navigation #}
   {% if post.published and ablog.post_show_prev_next %}
