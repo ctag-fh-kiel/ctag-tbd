@@ -105,7 +105,7 @@ Ich würde das Gerät marketingmäßig eher nicht als „Open-Canvas" bewerben. 
 
 **Robert Henke:** Pong natürlich. Pong und Doom sind immer die Mindestvoraussetzungen.
 
-**Benjamin Weiss:** Ich zeige dir jetzt den Prototyp. [Benjamin zeigt ein Gerät]. Es hat 16 Tasten mit RGB-LEDs. Du musst durch Szenen gehen. Jedes Stück hat Szenen.
+**Benjamin Weiss:** Ich zeige dir jetzt den Prototyp. [Benjamin zeigt den TBD Prototypen]. Es hat 16 Tasten mit RGB-LEDs. Du musst durch Szenen gehen. Jedes Stück hat Szenen.
 
 **Robert Henke:** Hier steht im Display die Szene, die gerade läuft. Ich mag die Tasten übrigens. Die Step-Buttons sind anders? Das haptische Feedback ist deutlicher. Ich finde die oberen Tasten tatsächlich besser. Der Unterschied ist gering, aber das haptische Feedback ist deutlicher. Ich würde tendenziell die oberen bevorzugen.
 
