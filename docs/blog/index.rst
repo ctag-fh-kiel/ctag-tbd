@@ -81,3 +81,7 @@ Blog
      </a>
 
    </div>
+
+.. include:: /_includes/newsletter.rst
+
+.. include:: /_includes/footer-links.rst

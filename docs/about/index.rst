@@ -93,6 +93,10 @@ Not all work on TBD / TBD-16 is covered by NLnet funding.
    :width: 160px
    :target: https://nlnet.nl/commonsfund
 
+.. include:: /_includes/newsletter.rst
+
+.. include:: /_includes/footer-links.rst
+
 
 .. toctree::
    :hidden:

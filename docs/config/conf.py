@@ -116,7 +116,7 @@ myst_enable_extensions = [
     "html_image",
 ]
 
-exclude_patterns = []
+exclude_patterns = ['_includes']
 
 templates_path = ['../_templates']
 

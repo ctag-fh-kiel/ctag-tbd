@@ -37,6 +37,10 @@ or something went wrong. Firmware updates **never erase** your SD card.
      <a href="50_device_recovery.html" class="dada-cta-link">Start Recovery &rarr;</a>
    </div>
 
+.. include:: /_includes/newsletter.rst
+
+.. include:: /_includes/footer-links.rst
+
 .. toctree::
    :hidden:
    :glob:
