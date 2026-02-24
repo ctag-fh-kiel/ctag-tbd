@@ -112,7 +112,7 @@ h1, h2, h3, h4, h5, h6,
   display: block;
   width: 100%;
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: 0;
   margin-bottom: 1.5em;
 }
 
@@ -186,7 +186,7 @@ h1, h2, h3, h4, h5, h6,
 .dada-feature {
   padding: 1.4em 1.5em;
   border: 1px solid var(--dada-border);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }
 
@@ -245,7 +245,7 @@ h1, h2, h3, h4, h5, h6,
   position: relative;
   padding: 1.6em 1.5em 1.4em;
   border: 1px solid var(--dada-border);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--color-background-secondary, var(--dada-bg-warm));
   counter-increment: step;
 }
@@ -296,7 +296,7 @@ h1, h2, h3, h4, h5, h6,
 
 .dada-card {
   border: 1px solid var(--dada-border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 1.8em 1.6em;
   background: var(--color-background-secondary, var(--dada-bg-warm));
   transition: border-color 0.15s, transform 0.15s;
@@ -383,7 +383,7 @@ h1, h2, h3, h4, h5, h6,
   text-align: center;
   padding: 1em 0.8em;
   border: 1px solid var(--dada-border);
-  border-radius: 8px;
+  border-radius: 0;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }
 
@@ -439,7 +439,7 @@ h1, h2, h3, h4, h5, h6,
 .dada-cta {
   padding: 1.8em 1.6em;
   border: 1px solid var(--dada-border);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }
 
@@ -477,7 +477,7 @@ h1, h2, h3, h4, h5, h6,
   margin: 0;
   padding: 2em 1.8em;
   border: 2px solid var(--dada-accent);
-  border-radius: 10px;
+  border-radius: 0;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }
 
@@ -666,7 +666,7 @@ h1, h2, h3, h4, h5, h6,
 .interview-card {
   display: block;
   border: 1px solid var(--dada-border);
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
   background: var(--color-background-secondary, var(--dada-bg-warm));
   text-decoration: none;
@@ -705,7 +705,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .interview-card-body {
-  padding: 1em 1.2em;
+  padding: 0.8em 0 0;
 }
 
 .interview-card-body h3 {
@@ -734,7 +734,7 @@ h1, h2, h3, h4, h5, h6,
   text-decoration: none;
   color: var(--dada-accent);
   border: 1px solid var(--dada-accent);
-  border-radius: 4px;
+  border-radius: 0;
   padding: 0.2em 0.7em;
   transition: background 0.15s, color 0.15s;
 }
@@ -748,7 +748,7 @@ h1, h2, h3, h4, h5, h6,
   background: var(--color-foreground-primary, #111);
   color: var(--color-background-primary, #fff);
   border: 1px solid var(--color-foreground-primary, #111);
-  border-radius: 4px;
+  border-radius: 0;
   padding: 0.2em 0.7em;
 }
 

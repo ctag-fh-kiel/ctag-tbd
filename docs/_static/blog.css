@@ -107,7 +107,7 @@
   margin: 0 0 2.5em;
   overflow: hidden;
   aspect-ratio: 16 / 7;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 .blog-post-hero img {
@@ -235,7 +235,7 @@
   display: inline-block;
   background: var(--color-background-secondary);
   border: 1px solid var(--color-background-border);
-  border-radius: 4px;
+  border-radius: 0;
   padding: 0.1em 0.5em;
   font-size: 0.85em;
   text-decoration: none;
