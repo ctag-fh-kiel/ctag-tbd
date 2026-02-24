@@ -4,6 +4,7 @@ date: 2026-01-28
 author: dadamachines
 category: Tutorial
 tags: midi, getting-started
+cover: 2026-01-28-midi-getting-started.jpg
 ---
 
 # Getting Started with MIDI on TBD-16

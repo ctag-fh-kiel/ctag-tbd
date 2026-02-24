@@ -803,18 +803,12 @@ footer {
   padding-bottom: 3em !important;
 }
 
-/* --- Blog card grid (Busy Circuits style) ---------------- */
+/* --- Blog card grid ---------------------------------------- */
 .blog-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.8em;
   margin: 1.5em 0 0;
-}
-
-@media (max-width: 900px) {
-  .blog-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (max-width: 540px) {
@@ -871,9 +865,20 @@ footer {
   font-weight: 700;
   font-size: 1.05em;
   margin: 0 0 0.35em;
+  padding-left: 0 !important;
   letter-spacing: -0.02em;
   line-height: 1.3;
   color: var(--color-foreground-primary, #111);
+}
+
+.blog-card-category {
+  display: inline-block;
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-brand-primary);
+  margin-bottom: 0.35em;
 }
 
 .blog-card-body p {

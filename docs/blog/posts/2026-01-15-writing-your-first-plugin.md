@@ -4,6 +4,7 @@ date: 2026-01-15
 author: dadamachines
 category: Development
 tags: plugin, dsp, tutorial
+cover: 2026-01-15-writing-your-first-plugin.jpg
 ---
 
 # Writing Your First TBD Plugin

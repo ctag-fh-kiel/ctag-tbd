@@ -4,6 +4,7 @@ date: 2025-12-20
 author: dadamachines
 category: News
 tags: announcement, community
+cover: 2025-12-20-tbd16-now-shipping.jpg
 ---
 
 # TBD-16 — Now Shipping

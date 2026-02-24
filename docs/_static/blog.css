@@ -102,6 +102,60 @@
   color: var(--color-foreground-secondary);
 }
 
+/* --- Hero image on blog post detail pages --- */
+.blog-post-hero {
+  margin: 0 0 2em;
+  overflow: hidden;
+  aspect-ratio: 16 / 7;
+  border-radius: 2px;
+}
+
+.blog-post-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- Linked metadata items (tags/categories) in post meta bar --- */
+.blog-meta-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-meta-link:hover {
+  color: var(--color-brand-primary);
+  text-decoration: underline;
+}
+
+/* --- Blog index subtitle and feed link --- */
+.blog-index-intro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin: 0.2em 0 1.5em;
+}
+
+.blog-index-intro p {
+  margin: 0;
+  color: var(--color-foreground-secondary);
+  font-size: 1em;
+}
+
+.blog-feed-link {
+  white-space: nowrap;
+  font-size: 0.85em;
+  color: var(--color-brand-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.blog-feed-link:hover {
+  text-decoration: underline;
+}
+
 /* --- Tag and category badges --- */
 .ablog__category a,
 .ablog__tags a {

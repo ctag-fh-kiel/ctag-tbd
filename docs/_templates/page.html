@@ -34,6 +34,12 @@
 {# Blog post detail page — show metadata and post nav #}
 {% set post = ablog[pagename] %}
 <div class="ablog-post">
+  {%- if meta and meta.cover %}
+  {%- set depth = pagename.count('/') %}
+  <div class="blog-post-hero">
+    <img src="{{ '../' * depth }}_static/blog/{{ meta.cover }}" alt="{{ title }}" loading="lazy">
+  </div>
+  {%- endif %}
   <article role="main">
     {{ body }}
   </article>
@@ -46,10 +52,10 @@
     <span>✍️ {% for a in post.author %}{{ a }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
     {% endif %}
     {% if post.category %}
-    <span>📁 {% for c in post.category %}{{ c }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+    <span>📁 {% for c in post.category %}<a href="{{ pathto(c.docname) }}" class="blog-meta-link">{{ c }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</span>
     {% endif %}
     {% if post.tags %}
-    <span>🏷️ {% for t in post.tags %}{{ t }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+    <span>🏷️ {% for t in post.tags %}<a href="{{ pathto(t.docname) }}" class="blog-meta-link">{{ t }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</span>
     {% endif %}
   </div>
   {% endif %}
