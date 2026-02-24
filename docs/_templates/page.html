@@ -37,7 +37,11 @@
   {%- if meta and meta.cover %}
   {%- set depth = pagename.count('/') %}
   <div class="blog-post-hero">
+    {%- if meta.cover.startswith('http') %}
+    <img src="{{ meta.cover }}" alt="{{ title }}" loading="lazy">
+    {%- else %}
     <img src="{{ '../' * depth }}_static/blog/{{ meta.cover }}" alt="{{ title }}" loading="lazy">
+    {%- endif %}
   </div>
   {%- endif %}
   <article role="main">

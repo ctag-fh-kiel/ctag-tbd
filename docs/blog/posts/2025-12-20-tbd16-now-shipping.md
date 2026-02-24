@@ -4,7 +4,7 @@ date: 2025-12-20
 author: dadamachines
 category: News
 tags: announcement, community
-cover: 2025-12-20-tbd16-now-shipping.jpg
+cover: https://placehold.co/1200x525/1e1e2e/a6adc8?text=TBD16+Now+Shipping
 ---
 
 # TBD-16 — Now Shipping

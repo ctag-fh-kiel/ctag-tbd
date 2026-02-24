@@ -1,0 +1,94 @@
+{#
+  Override ABlog's collection.html so tag/category/archive pages use the full
+  Furo layout (with sidebar, header, etc.) instead of a bare page.
+
+  ABlog's original template overrides {% block body %} which replaces ALL of
+  Furo's page chrome. We override {% block content %} instead.
+#}
+{% extends "page.html" %}
+
+{% set fa = ablog.fontawesome %}
+
+{% block extrahead %}
+{{ super() }}
+{%- if archive_feed and feed_path %}
+<link
+  rel="alternate"
+  type="application/atom+xml"
+  href="{{ pathto(collection.path, 1) }}/atom.xml"
+  title="{{ header }} {{ collection }}"
+/>
+{%- endif %}
+{% endblock extrahead %}
+
+{% block content %}
+{% macro postlink(post) -%}
+{%- if post.external_link -%}
+  {{- post.external_link -}}
+{%- else -%}
+  {{- pathto(post.docname) }}{{ anchor(post) -}}
+{%- endif -%}
+{%- endmacro %}
+
+<div class="section ablog__collection">
+  <h1>
+    {% if archive_feed and fa %}
+    <a href="{{ pathto(collection.path, 1) }}/atom.xml">
+      <i class="fa fa-rss fa-rotate-270"></i>
+    </a>
+    {% endif %}
+    <span>
+      {{ header }}
+      {% if collection.href %}
+      <a href="{{ collection.href }}">{{ collection }}</a>
+      {% else %}
+      {{ collection }}
+      {% endif %}
+    </span>
+  </h1>
+
+  {% if ablog.blog_archive_titles %}
+    {% for post in collection %}
+    <div class="section ablog__collection_meta">
+      <p>
+        {% if post.published %}
+        <span>{{ post.date.strftime(ablog.post_date_format) }}</span>
+        {% else %}
+        <span>Draft</span>
+        {% endif %}
+        — <a href="{{ postlink(post) }}">{{ post.title }}</a>
+      </p>
+    </div>
+    {% endfor %}
+  {% else %}
+    {% for post in collection %}
+    <div class="section ablog-post">
+      <h2 class="ablog-post-title">
+        <a href="{{ postlink(post) }}">{{ post.title }}</a>
+      </h2>
+      <ul class="ablog-archive">
+        <li>
+          {% if post.published %}
+          {% if fa %}<i class="fa fa-calendar"></i>{% endif %}
+          <span>{{ post.date.strftime(ablog.post_date_format) }}</span>
+          {% else %}
+          {% if fa %}<i class="fa fa-pencil"></i>{% endif %}
+          {% if post.date %}
+          <span>{{ post.date.strftime(ablog.post_date_format) }}</span>
+          {% else %}
+          <span>Draft</span>
+          {% endif %}
+          {% endif %}
+        </li>
+        {% include "ablog/postcard2.html" %}
+      </ul>
+      {{ post.to_html(collection.docname) }}
+      <p class="ablog-post-expand">
+        <a href="{{ postlink(post) }}"><em>{{ _("Read more …") }}</em></a>
+      </p>
+      <hr />
+    </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock content %}
