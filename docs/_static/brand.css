@@ -185,8 +185,7 @@ h1, h2, h3, h4, h5, h6,
 
 .dada-feature {
   padding: 1.4em 1.5em;
-  border: 1px solid var(--dada-border);
-  border-radius: 0;
+  border: none;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }
 
@@ -244,8 +243,7 @@ h1, h2, h3, h4, h5, h6,
 .dada-step {
   position: relative;
   padding: 1.6em 1.5em 1.4em;
-  border: 1px solid var(--dada-border);
-  border-radius: 0;
+  border: none;
   background: var(--color-background-secondary, var(--dada-bg-warm));
   counter-increment: step;
 }
@@ -295,15 +293,13 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .dada-card {
-  border: 1px solid var(--dada-border);
-  border-radius: 0;
+  border: none;
   padding: 1.8em 1.6em;
   background: var(--color-background-secondary, var(--dada-bg-warm));
-  transition: border-color 0.15s, transform 0.15s;
+  transition: transform 0.15s;
 }
 
 .dada-card:hover {
-  border-color: var(--dada-accent);
   transform: translateY(-2px);
 }
 
@@ -382,8 +378,7 @@ h1, h2, h3, h4, h5, h6,
 .dada-spec {
   text-align: center;
   padding: 1em 0.8em;
-  border: 1px solid var(--dada-border);
-  border-radius: 0;
+  border: none;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }
 
@@ -438,8 +433,7 @@ h1, h2, h3, h4, h5, h6,
 
 .dada-cta {
   padding: 1.8em 1.6em;
-  border: 1px solid var(--dada-border);
-  border-radius: 0;
+  border: none;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }
 
@@ -665,17 +659,14 @@ h1, h2, h3, h4, h5, h6,
 
 .interview-card {
   display: block;
-  border: 1px solid var(--dada-border);
-  border-radius: 0;
+  border: none;
   overflow: hidden;
-  background: var(--color-background-secondary, var(--dada-bg-warm));
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: transform 0.15s;
 }
 
 .interview-card:hover {
-  border-color: var(--dada-accent);
   transform: translateY(-2px);
   text-decoration: none;
   color: inherit;
@@ -683,8 +674,8 @@ h1, h2, h3, h4, h5, h6,
 
 .interview-card-image {
   width: 100%;
-  aspect-ratio: 16 / 10;
-  background: var(--dada-border);
+  aspect-ratio: 16 / 9;
+  background: var(--color-background-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -710,15 +701,19 @@ h1, h2, h3, h4, h5, h6,
 
 .interview-card-body h3 {
   font-weight: 700;
-  font-size: 1.1em;
+  font-size: 1.05em;
   margin: 0 0 0.2em;
+  padding-left: 0 !important;
   letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: var(--color-foreground-primary, #111);
 }
 
 .interview-card-meta {
-  font-size: 0.85em;
-  color: var(--dada-text-secondary);
-  margin: 0;
+  font-size: 0.82em;
+  font-weight: 700;
+  color: var(--color-foreground-primary, #111);
+  margin: 0.2em 0 0;
 }
 
 /* --- Interview language switcher ------------------------- */
@@ -833,10 +828,9 @@ footer {
 
 .blog-card-image {
   width: 100%;
-  aspect-ratio: 16 / 10;
-  background: var(--dada-border);
+  aspect-ratio: 16 / 9;
+  background: var(--color-background-border);
   overflow: hidden;
-  border-radius: 0;
 }
 
 .blog-card-image img {

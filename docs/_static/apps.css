@@ -53,19 +53,16 @@
 
 /* --- Individual card --- */
 .app-card {
-  border: 1px solid var(--color-background-border);
-  border-radius: 0;
+  border: none;
   overflow: hidden;
   background: var(--color-background-secondary);
-  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  transition: transform 0.15s;
   display: flex;
   flex-direction: column;
 }
 
 .app-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-  border-color: var(--color-brand-primary);
 }
 
 .app-card a {
@@ -78,7 +75,7 @@
 
 /* Screen / image area */
 .app-card-screen {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
   background: #1a1a2e;
   display: flex;
   align-items: center;
@@ -199,7 +196,7 @@
     background: var(--color-background-secondary);
   }
   body[data-theme="dark"] .app-card:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    transform: translateY(-3px);
   }
   body[data-theme="dark"] .app-card-screen {
     background: #0f0f1a;
@@ -230,8 +227,7 @@
 /* --- Architecture blurb --- */
 .apps-architecture {
   background: var(--color-background-secondary);
-  border: 1px solid var(--color-background-border);
-  border-radius: 0;
+  border: none;
   padding: 1.2em 1.5em;
   margin: 1.5em 0 2.5em 0;
   font-size: 0.95em;
