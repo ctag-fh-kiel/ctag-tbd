@@ -402,7 +402,7 @@ h1, h2, h3, h4, h5, h6,
   text-align: center;
   margin: 2em 0 1em;
   padding-top: 1.5em;
-  border-top: 1px solid var(--dada-border);
+  border-top: 1px solid var(--color-foreground-primary);
   font-size: 0.92em;
   color: var(--dada-text-secondary);
 }
@@ -457,7 +457,7 @@ h1, h2, h3, h4, h5, h6,
   font-size: 0.95em;
   color: var(--dada-accent) !important;
   text-decoration: none;
-  border-bottom: 2px solid var(--dada-accent);
+  border-bottom: 1px solid var(--color-foreground-primary);
   padding-bottom: 0.1em;
   transition: opacity 0.15s;
 }
@@ -470,7 +470,7 @@ h1, h2, h3, h4, h5, h6,
 .dada-cta-wide {
   margin: 0;
   padding: 2em 1.8em;
-  border: 2px solid var(--dada-accent);
+  border: 2px solid var(--color-foreground-primary);
   border-radius: 0;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }
@@ -504,7 +504,7 @@ h1, h2, h3, h4, h5, h6,
   text-align: center;
   margin: 3em 0 1em;
   padding: 2.5em 1.5em;
-  border-top: 1px solid var(--dada-border);
+  border-top: 1px solid var(--color-foreground-primary);
 }
 
 .dada-newsletter h2 {
@@ -545,7 +545,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .newsletter-input {
-  border: 3px solid #111;
+  border: 2px solid var(--color-foreground-primary);
   border-radius: 0;
   width: 100%;
   height: 3.25rem;
@@ -777,7 +777,7 @@ h1, h2, h3, h4, h5, h6,
   padding: 0.8em 1.2em 1em;
   font-size: 0.75em;
   color: var(--color-foreground-muted, #6b7280);
-  border-top: 1px solid var(--color-background-border, #e5e7eb);
+  border-top: 1px solid var(--color-foreground-primary);
   line-height: 1.5;
 }
 
