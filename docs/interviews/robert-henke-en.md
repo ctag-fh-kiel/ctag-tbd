@@ -21,13 +21,13 @@ Robert Henke is a Berlin-based composer, visual artist, and software developer. 
 
 **Benjamin Weiss:** What do you usually take with you for your live set?
 
-**Robert Henke:** There are two scenarios. One is the small live setup, where it's really important that I can travel with just hand luggage. That means a laptop, an audio interface, and some MIDI controllers that are easy to replace if they break or get lost—something like a Novation Launchpad.
+**Robert Henke:** There are two scenarios. One is the small live setup, where it's really important that I can travel with just hand luggage. That means a laptop, an audio interface, and some MIDI controllers that are easy to replace if they break or get lost—something like a [Novation Launchpad.](https://novationmusic.com/launchpad)
 
 The other scenario is the big projects, where I have to take flight cases anyway, like when I travel with lasers. For sound, it's usually just a laptop and a MIDI controller. That's basically it at the moment.
 
 **Benjamin Weiss:** Don't you have any special preferences? Is something standard like a Launchpad enough for you?
 
-**Robert Henke:** Since I control everything via Max, I often just need something very simple—something with buttons and LEDs. I handle the rest. The haptics are important to me, though. For example, in my project with old computers, I deliberately built more hardware to get exactly the right feel. But my general approach is: Either it's exactly what I want, or it's generic. Anything in between only satisfies me halfway. If it's generic, I accept that it's generic. I don't expect a Launch Control to be anything other than what it is. I accept the fact that I'm limited by the interface.
+**Robert Henke:** Since I control everything via [Max](https://cycling74.com/products/max), I often just need something very simple—something with buttons and LEDs. I handle the rest. The haptics are important to me, though. For example, in my project with old computers, I deliberately built more hardware to get exactly the right feel. But my general approach is: Either it's exactly what I want, or it's generic. Anything in between only satisfies me halfway. If it's generic, I accept that it's generic. I don't expect a Launch Control to be anything other than what it is. I accept the fact that I'm limited by the interface.
 
 When I think about how I use it, I already have the interface in mind. The interface is there before I start building my live set. Still, it has an impact: I know I have these two buttons down there, the fader, and the three knobs. Certain things the hardware dictates lead to decisions about how I build my software around it. If I had different hardware that I liked, I might use a different way of interacting.
 
@@ -47,7 +47,7 @@ I'm always amazed at how little you can do simultaneously on stage. In a studio 
 
 **Benjamin Weiss:** How did you arrive at eight?
 
-**Robert Henke:** No idea, it's just a rule of thumb. Of course, I can operate a graphic EQ, no matter how many parameters it has—that's a gesture for me. My cerebellum handles it. I have a graphic EQ in every project, and it's always on my old Doepfer fader box. I've had the same physical hardware for 20 years. I can use it at midnight, fresh out of bed; it just works. Meanwhile, I can do 30 other things because my cerebellum takes care of it. But for anything that requires a creative decision, I only need a few knobs. It has to be simple enough.
+**Robert Henke:** No idea, it's just a rule of thumb. Of course, I can operate a graphic EQ, no matter how many parameters it has—that's a gesture for me. My cerebellum handles it. I have a graphic EQ in every project, and it's always on my old [Doepfer-Faderbox](https://doepfer.de/pf.htm). I've had the same physical hardware for 20 years. I can use it at midnight, fresh out of bed; it just works. Meanwhile, I can do 30 other things because my cerebellum takes care of it. But for anything that requires a creative decision, I only need a few knobs. It has to be simple enough.
 
 I always look for efficient meta-parameters or macros that support a gesture. For example, I love playing with the decays of sounds so I can make everything staccato. Those are actually macros. I think: For a certain type of sound in a certain piece, it's interesting if some sounds can be shorter or longer. If I notice that certain things need to be separated because it makes sense to play them separately, then I do that separately.
 
@@ -71,7 +71,7 @@ For Monolake live sets, I pack my controllers and do a quick check to see if eve
 
 Abstract clarity is very important to me. It can be something I potentially have to learn, but once I know it, it must be graspable at a glance. The same goes for buttons. I want to feel: I press it, and something happens. A certain haptics.
 
-I love the encoders in the Cirklon because they're so nicely stepped. If you want to transpose something three semitones up, you can get it into muscle memory. You can do those three clicks without counting or looking at the display because you know how it feels. I actually practiced this for a while: Not looking and just being fast enough. Can I transpose a fifth up and down? I feel those five clicks in my cerebellum and don't count anymore. Just like on the piano, when I know I hit here and I'm a fourth down or play an octave. My idea was to get so good with the Cirklon that I could play the pitch knob and just play a melody in my head because I internalized the clicks. I got surprisingly good at it, but I didn't take the time to excessively practice the C minor prelude on the rotary knob.
+I love the encoders in the [Cirklon](https://www.sequentix.com/?srsltid=AfmBOoqKoMn8CHAWmIPzY1ixG7fqzYAt6uCGPbadfxsbBHTPvKJ8-CpC) because they're so nicely stepped. If you want to transpose something three semitones up, you can get it into muscle memory. You can do those three clicks without counting or looking at the display because you know how it feels. I actually practiced this for a while: Not looking and just being fast enough. Can I transpose a fifth up and down? I feel those five clicks in my cerebellum and don't count anymore. Just like on the piano, when I know I hit here and I'm a fourth down or play an octave. My idea was to get so good with the Cirklon that I could play the pitch knob and just play a melody in my head because I internalized the clicks. I got surprisingly good at it, but I didn't take the time to excessively practice the C minor prelude on the rotary knob.
 
 ## Haptic Encoders and Utility Use Cases
 
@@ -93,7 +93,7 @@ Another use case is a modular helper. For example, as a tuner or scope. A utilit
 
 **Benjamin Weiss:** How should such a device be programmed?
 
-**Robert Henke:** Ultimately, there are two types of users: Those who are happy if there's something at all and never think to press an edit button. And then there are those who build things. Ideally, you'd have a website that you open in Chrome. You plug the device into your notebook and push the firmware from the browser without any other app. That's how it works with the Shuttle Control from Endorphin.es. You type in the IP or go to the website, click return, and you have your configuration page.
+**Robert Henke:** Ultimately, there are two types of users: Those who are happy if there's something at all and never think to press an edit button. And then there are those who build things. Ideally, you'd have a website that you open in Chrome. You plug the device into your notebook and push the firmware from the browser without any other app. That's how it works with the [Shuttle Control from Endorphin.es](https://www.endorphin.es/modules/p/shuttle-control). You type in the IP or go to the website, click return, and you have your configuration page.
 
 I wouldn't market the device as an "open canvas." The feeling of "can do anything if you program it yourself" is off-putting for many professionals. I'd market it more like: "These five things are included, and they're great." Then an update comes with six things, and somewhere on the third page it says, "Oh, by the way, you can do all this yourself too." That way, you've covered it, but you avoid the feeling that it's something that gathers dust because I never want to deal with it. You unpack it and use it. That's the aspect: That you can use it. The fun has to be in there.
 
