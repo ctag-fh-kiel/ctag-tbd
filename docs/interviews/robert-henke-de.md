@@ -21,13 +21,13 @@ Robert Henke ist ein in Berlin ansässiger Komponist, visueller Künstler und So
 
 **Benjamin Weiss:** Was nimmst du normalerweise mit für dein Live-Set?
 
-**Robert Henke:** Es gibt zwei Szenarien. Das eine ist das kleine Live-Set, wo es ziemlich wichtig ist, dass ich nur mit Handgepäck reisen kann. Das ist ein Laptop, ein Audio-Interface und irgendwelche MIDI-Controller, die möglichst problemlos zu ersetzen sind, wenn sie kaputtgehen oder verloren gehen. Also zum Beispiel ein Novation Launchpad.
+**Robert Henke:** Es gibt zwei Szenarien. Das eine ist das kleine Live-Set, wo es ziemlich wichtig ist, dass ich nur mit Handgepäck reisen kann. Das ist ein Laptop, ein Audio-Interface und irgendwelche MIDI-Controller, die möglichst problemlos zu ersetzen sind, wenn sie kaputtgehen oder verloren gehen. Also zum Beispiel ein [Novation Launchpad.](https://novationmusic.com/launchpad)
 
 Das andere Szenario sind die großen Projekte, wo ich sowieso Flightcases mitnehmen muss, weil ich zum Beispiel mit Lasern reise. Da ist es in der Regel für den Sound auch nur ein Laptop und ein MIDI-Controller. Das ist es eigentlich zurzeit.
 
 **Benjamin Weiss:** Hast du keine speziellen Präferenzen? Ist dir etwas Standardmäßiges wie ein Launchpad genug?
 
-**Robert Henke:** Nachdem ich die ganze Interaktion via Max steuere, reicht mir ganz oft irgendwas ziemlich Einfaches. Also irgendwas, was Knöpfe und Leuchtdioden hat. Den Rest mache ich.
+**Robert Henke:** Nachdem ich die ganze Interaktion via [Max](https://cycling74.com/products/max) steuere, reicht mir ganz oft irgendwas ziemlich Einfaches. Also irgendwas, was Knöpfe und Leuchtdioden hat. Den Rest mache ich.
 
 Eigentlich ist mir die Haptik schon wichtig. Ich habe zum Beispiel dieses Projekt mit den alten Computern, wo ich ganz explizit mehr Hardware gebaut habe, damit ich genau die richtige Haptik habe. Aber mein Anspruch ist generell: Entweder es ist genau das, was ich will, oder es ist generisch. Alles, was dazwischen liegt, befriedigt mich nur halb. Wenn es generisch ist, dann akzeptiere ich, dass es generisch ist. Ich erwarte von einem Launch Control nicht, dass es was anderes ist, als es darstellt. Ich akzeptiere die Tatsache, dass ich dann natürlich ein bisschen limitiert bin aufgrund des Interfaces.
 
@@ -49,7 +49,7 @@ Ich bin immer wieder erstaunt, wie wenig man gleichzeitig auf der Bühne machen 
 
 **Benjamin Weiss:** Wie kommst du auf die acht?
 
-**Robert Henke:** Keine Ahnung, das ist so eine Hausnummer. Natürlich kann ich den grafischen EQ, egal wie viele Parameter der hat, bedienen; das ist für mich eine Geste. Das macht das Kleinhirn. Ich habe bei jedem meiner Projekte einen grafischen EQ im Rechner, und der liegt immer auf meiner alten Doepfer-Faderbox. Ich habe seit 20 Jahren die gleiche physikalische Hardware. Das kann ich um Mitternacht, wenn ich frisch aus dem Bett komme; das funktioniert. Währenddessen kann ich 30 andere Sachen machen, weil das mein Kleinhirn macht. Aber alles, was eine kreative Entscheidung ist, da brauche ich nur ganz wenige Regler. Das muss simpel genug sein.
+**Robert Henke:** Keine Ahnung, das ist so eine Hausnummer. Natürlich kann ich den grafischen EQ, egal wie viele Parameter der hat, bedienen; das ist für mich eine Geste. Das macht das Kleinhirn. Ich habe bei jedem meiner Projekte einen grafischen EQ im Rechner, und der liegt immer auf meiner alten [Doepfer-Faderbox](https://doepfer.de/pf.htm). Ich habe seit 20 Jahren die gleiche physikalische Hardware. Das kann ich um Mitternacht, wenn ich frisch aus dem Bett komme; das funktioniert. Währenddessen kann ich 30 andere Sachen machen, weil das mein Kleinhirn macht. Aber alles, was eine kreative Entscheidung ist, da brauche ich nur ganz wenige Regler. Das muss simpel genug sein.
 
 Ich suche immer nach effizienten Metaparametern oder Makros, die eine Geste unterstützen. Zum Beispiel spiele ich sehr gerne mit den Decays von Klängen, damit ich alles staccatohaft machen kann. Das sind tatsächlich Makros. Ich denke mir: Für eine bestimmte Art von Klängen in einem bestimmten Stück ist es interessant, wenn manche Klänge kürzer oder länger sein können. Wenn ich feststelle, dass bestimmte Dinge da rausgenommen werden müssen, weil es sinnvoll ist, die getrennt zu spielen, dann mache ich das auch getrennt.
 
@@ -73,7 +73,7 @@ Bei Monolake-Live-Sets packe ich meine Controller ein und checke kurz, ob alles 
 
 Abstrakte Klarheit ist mir sehr wichtig. Das kann was sein, was ich potenziell lernen muss, aber wenn ich es weiß, muss es auf einen Blick zu erfassen sein. Das Gleiche gilt für Taster. Ich möchte ein Gefühl haben: Ich drücke da drauf und da passiert was. Eine gewisse Haptik.
 
-Ich liebe die Encoder im Cirklon, weil die so schön gerastert sind. Wenn du irgendwas drei Halbtöne nach oben transponieren willst, kriegst du das ins Motor-Memory. Du kriegst es damit hin, dass du diese drei Ticks machen kannst, ohne zu zählen und ohne aufs Display zu gucken, weil du weißt, wie sich das anfühlt. Ich habe das eine Zeit lang tatsächlich geübt: Nicht hinzugucken und einfach schnell genug zu sein. Schaffe ich es, die Quinte rauf und runter zu transponieren? Diese fünf Ticks spüre ich im Kleinhirn und zähle nicht mehr. Genau wie am Klavier, wenn ich weiß, ich haue hier drauf und bin eine Quarte drunter oder spiele eine Oktave. Meine Idee war, mit dem Cirklon so gut zu werden, dass ich den Pitch-Regler spiele und eine Melodie, die mir im Kopf ist, einfach so spielen kann, weil ich die Ticks ins Kleinhirn kriege. Ich habe es erstaunlich gut hingekriegt, aber ich habe mir nicht die Zeit genommen, exzessiv das C-Moll-Präludium am Drehregler zu probieren.
+Ich liebe die Encoder im [Cirklon](https://www.sequentix.com/?srsltid=AfmBOoqKoMn8CHAWmIPzY1ixG7fqzYAt6uCGPbadfxsbBHTPvKJ8-CpC), weil die so schön gerastert sind. Wenn du irgendwas drei Halbtöne nach oben transponieren willst, kriegst du das ins Motor-Memory. Du kriegst es damit hin, dass du diese drei Ticks machen kannst, ohne zu zählen und ohne aufs Display zu gucken, weil du weißt, wie sich das anfühlt. Ich habe das eine Zeit lang tatsächlich geübt: Nicht hinzugucken und einfach schnell genug zu sein. Schaffe ich es, die Quinte rauf und runter zu transponieren? Diese fünf Ticks spüre ich im Kleinhirn und zähle nicht mehr. Genau wie am Klavier, wenn ich weiß, ich haue hier drauf und bin eine Quarte drunter oder spiele eine Oktave. Meine Idee war, mit dem Cirklon so gut zu werden, dass ich den Pitch-Regler spiele und eine Melodie, die mir im Kopf ist, einfach so spielen kann, weil ich die Ticks ins Kleinhirn kriege. Ich habe es erstaunlich gut hingekriegt, aber ich habe mir nicht die Zeit genommen, exzessiv das C-Moll-Präludium am Drehregler zu probieren.
 
 ## Haptische Encoder und Utility-Use-Cases
 
@@ -95,7 +95,7 @@ Ein anderer Case ist ein Modular-Helper. Zum Beispiel als Tuner oder Scope. Ein 
 
 **Benjamin Weiss:** Wie sollte man so ein Ding programmieren?
 
-**Robert Henke:** Letztendlich gibt es zwei Sorten von Usern: Die einen, die froh sind, wenn es irgendwas gibt, und die nie auf die Idee kommen, auf einen Edit-Button zu drücken. Und dann gibt es diejenigen, die Zeug bauen. Im Idealfall hast du eine Webseite, die du unter Chrome aufmachst. Du steckst das Ding an dein Notebook und schiebst vom Browser aus die Firmware rüber, ohne irgendeine andere App. So funktioniert es mit dem Shuttle Control von Endorphin.es. Du tippst die IP ein oder gehst auf die Website, klickst Return und hast deine Konfigurationspage.
+**Robert Henke:** Letztendlich gibt es zwei Sorten von Usern: Die einen, die froh sind, wenn es irgendwas gibt, und die nie auf die Idee kommen, auf einen Edit-Button zu drücken. Und dann gibt es diejenigen, die Zeug bauen. Im Idealfall hast du eine Webseite, die du unter Chrome aufmachst. Du steckst das Ding an dein Notebook und schiebst vom Browser aus die Firmware rüber, ohne irgendeine andere App. So funktioniert es mit dem [Shuttle Control von Endorphin.es](https://www.endorphin.es/modules/p/shuttle-control). Du tippst die IP ein oder gehst auf die Website, klickst Return und hast deine Konfigurationspage.
 
 Ich würde das Gerät marketingmäßig eher nicht als „Open-Canvas" bewerben. Dieses Gefühl von „Kann alles, wenn du es selber programmierst" ist für viele Profis abschreckend. Ich würde es eher vermarkten als: „Diese fünf Dinge sind drin und die sind geil." Dann kommt ein Update mit sechs Dingen, und irgendwo auf der dritten Seite steht: „Ach übrigens, das kannst du alles auch selber machen." Dann hast du das abgedeckt, aber du kommst weg von diesem Gefühl, dass es ein Ding ist, was verstaubt, weil ich mich damit nie beschäftigen will. Man packt es aus und benutzt es. Das ist der Aspekt: Dass man es benutzen kann. Das Spiel muss auch drin sein.
 
@@ -122,3 +122,4 @@ Ich frage mich, ob das zwei MIDI-In und zwei MIDI-Out braucht. Ich finde MIDI ge
 *Interview: [Benjamin Weiss (MID)](https://instrument-design.com/)*  
 *Gefördert von [NLnet](https://nlnet.nl/project/TBD-DSP-Toolkit/)*  
 *KI-Nutzung: Sprachmemos von Apple zur Transkription*
+[]([]())
