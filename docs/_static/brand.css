@@ -846,6 +846,17 @@ hr.docutils {
   color: var(--color-background-primary) !important;
 }
 
+/* Mobile: stack all hardware buttons full-width */
+@media (max-width: 640px) {
+  .hw-nav-btn,
+  .hw-btn-primary,
+  .hw-btn-secondary {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+}
+
 /* ----------------------------------------------------------------- */
 
 /* --- Interview cards (Interviews landing page) ----------- */
