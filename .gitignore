@@ -32,6 +32,7 @@ midi_test_env/
 
 # Sphinx build output
 docs/_build/
+_build_test/
 
 # Local planning docs (not for publication)
 docs/HARDWARE_DOCS_PLAN.md
