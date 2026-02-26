@@ -339,8 +339,10 @@ You need **two USB-C cables** connected:
       var SDCARD_ZIP_URL = '../_static/sdcard_image/tbd-sd-card.zip';
       var HASH_URL       = '../_static/sdcard_image/tbd-sd-card-hash.txt';
       var OTA_DATA_ADDR  = 0xd000;     /* otadata partition */
-      var OTA1_ADDR      = 0x510000;   /* ota_1 partition   */
+      var OTA1_ADDR      = null;       /* detected from device partition table */
       var OTA_DATA_SIZE  = 0x2000;     /* 8 KB              */
+      var PT_ADDR        = 0x8000;     /* partition table address */
+      var PT_READ_SIZE   = 0xC00;      /* 3 KB — enough for partition table */
 
       /* ──────────────────────────────
          Helpers
@@ -384,6 +386,71 @@ You need **two USB-C cables** connected:
               c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
             crcTable[n] = c;
           }
+        }
+      }
+
+      /* Parse ESP-IDF partition table from binary data.
+       * Returns array of {name, type, subtype, offset, size}.
+       * See: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/
+       *        api-guides/partition-tables.html                               */
+      function parsePartitionTable(data) {
+        var entries = [];
+        for (var i = 0; i < data.length; i += 32) {
+          var magic = data[i] | (data[i + 1] << 8);
+          if (magic === 0xEBEB) break;       /* end-of-table marker */
+          if (magic !== 0xAA50) continue;     /* skip non-entry rows */
+          var type    = data[i + 2];
+          var subtype = data[i + 3];
+          var offset  = (data[i+4] | (data[i+5]<<8) | (data[i+6]<<16) | (data[i+7]<<24)) >>> 0;
+          var size    = (data[i+8] | (data[i+9]<<8) | (data[i+10]<<16) | (data[i+11]<<24)) >>> 0;
+          var nameBytes = data.subarray(i + 12, i + 28);
+          var name = '';
+          for (var j = 0; j < nameBytes.length && nameBytes[j] !== 0; j++)
+            name += String.fromCharCode(nameBytes[j]);
+          entries.push({name:name, type:type, subtype:subtype, offset:offset, size:size});
+        }
+        return entries;
+      }
+
+      /* Read partition table from device flash and find ota_1 offset.
+       * Uses esptool-js readFlash() to read 3 KB at 0x8000.            */
+      async function detectOta1Address(loader) {
+        var ptStr = await loader.readFlash(PT_ADDR, PT_READ_SIZE);
+        var ptData = new Uint8Array(ptStr.length);
+        for (var i = 0; i < ptStr.length; i++) ptData[i] = ptStr.charCodeAt(i);
+        var parts = parsePartitionTable(ptData);
+        for (var p = 0; p < parts.length; p++) {
+          if (parts[p].name === 'ota_1') {
+            return parts[p].offset;
+          }
+        }
+        throw new Error('ota_1 partition not found in device partition table');
+      }
+
+      /* Recursively delete macOS resource-fork files (._*) from a
+       * FileSystemDirectoryHandle.  macOS creates these automatically
+       * when Chrome writes to a FAT32 volume via the File System
+       * Access API (for extended-attribute / quarantine storage).       */
+      async function cleanMacOSFiles(dirHandle, logFn) {
+        var childDirs = [];
+        var dotFiles = [];
+        for await (var entry of dirHandle.entries()) {
+          var eName = entry[0], eHandle = entry[1];
+          if (eHandle.kind === 'directory' && !eName.startsWith('.')) {
+            childDirs.push(eHandle);
+          }
+          if (eName.startsWith('._')) {
+            dotFiles.push(eName);
+          }
+        }
+        for (var d = 0; d < childDirs.length; d++) {
+          await cleanMacOSFiles(childDirs[d], logFn);
+        }
+        for (var f = 0; f < dotFiles.length; f++) {
+          try {
+            await dirHandle.removeEntry(dotFiles[f]);
+            if (logFn) logFn('DEL  ' + dotFiles[f]);
+          } catch (e) { /* ignore — file may already be gone */ }
         }
       }
 
@@ -501,6 +568,16 @@ You need **two USB-C cables** connected:
         setStat(stat1, 'Connecting to device…');
         var chip = await esp1.main();
         conn1 = true;
+
+        /* Auto-detect ota_1 address from the device's partition table */
+        setStat(stat1, 'Reading partition table…');
+        try {
+          OTA1_ADDR = await detectOta1Address(esp1);
+          console.log('Detected ota_1 at 0x' + OTA1_ADDR.toString(16));
+        } catch (e) {
+          console.warn('Partition table read failed, using default 0x510000:', e);
+          OTA1_ADDR = 0x510000;   /* fallback for ctag-tbd layout */
+        }
         return chip;
       }
 
@@ -513,8 +590,8 @@ You need **two USB-C cables** connected:
         var fw = new Uint8Array(await resp.arrayBuffer());
         var sizeMB = (fw.length / 1024 / 1024).toFixed(1);
 
-        /* 1b — flash to ota_1 partition (0x510000) */
-        setStat(stat1, 'Flashing tusb_msc.bin (' + sizeMB + ' MB) to ota_1 — do not unplug…');
+        /* 1b — flash to ota_1 partition (auto-detected address) */
+        setStat(stat1, 'Flashing tusb_msc.bin (' + sizeMB + ' MB) to ota_1 @ 0x' + OTA1_ADDR.toString(16) + ' — do not unplug…');
         await esp1.writeFlash({
           fileArray: [{ data: toBinStr(fw), address: OTA1_ADDR }],
           flashSize: '16MB', flashMode: 'dio', flashFreq: '80m',
@@ -701,6 +778,7 @@ You need **two USB-C cables** connected:
             zipBuf.set(chunks[ci], offset);
             offset += chunks[ci].length;
           }
+          chunks = null;  /* free download chunk references */
           log('Downloaded ' + (received / 1024 / 1024).toFixed(1) + ' MB');
 
           /* 2b — download the hash */
@@ -711,6 +789,7 @@ You need **two USB-C cables** connected:
           /* 2c — extract ZIP */
           setStat(stat2, 'Extracting ZIP…');
           var zip = await JSZip.loadAsync(zipBuf);
+          zipBuf = null;  /* free raw ZIP buffer — JSZip has its own copy */
           var entries = Object.keys(zip.files);
           var total = entries.length;
           log('ZIP contains ' + total + ' entries');
@@ -735,8 +814,10 @@ You need **two USB-C cables** connected:
             var pct = 50 + Math.round((ei + 1) / total * 45);
             showProg(prog2, prog2Bar, prog2Txt, pct);
 
-            /* skip macOS resource forks and hidden zip metadata */
+            /* skip macOS resource forks, ._ files, and hidden zip metadata */
             if (name.indexOf('__MACOSX') >= 0 || name.indexOf('.DS_Store') >= 0) continue;
+            var baseName = name.split('/').pop();
+            if (baseName && baseName.indexOf('._') === 0) continue;
 
             var parts = name.split('/').filter(function (s) { return s.length > 0; });
             if (parts.length === 0) continue;
@@ -757,11 +838,17 @@ You need **two USB-C cables** connected:
                 await writable.write(data);
                 await writable.close();
                 log('FILE ' + name + '  (' + data.length + ' bytes)');
+                data = null;  /* free extracted data immediately */
               }
               written++;
             } catch (fe) {
               errors++;
               log('ERR  ' + name + ': ' + fe.message);
+            }
+
+            /* Yield to the browser every 10 files to prevent UI freeze / crash */
+            if (ei % 10 === 0) {
+              await new Promise(function (r) { setTimeout(r, 0); });
             }
           }
 
@@ -789,12 +876,23 @@ You need **two USB-C cables** connected:
             log('ERR  tbd-sd-card-hash.txt: ' + he.message);
           }
 
+          /* 2f — clean up macOS resource-fork files (._*) that macOS
+           *       auto-creates when Chrome writes to a FAT32 volume.  */
+          setStat(stat2, 'Cleaning up macOS metadata files…');
+          showProg(prog2, prog2Bar, prog2Txt, 97);
+          try {
+            await cleanMacOSFiles(dirHandle, log);
+          } catch (ce) {
+            log('WARN cleanup: ' + ce.message);
+          }
+
+          zip = null;  /* free JSZip instance */
           showProg(prog2, prog2Bar, prog2Txt, 100);
 
           if (errors > 0) {
             setStat(stat2, '⚠ Written <b>' + written + '</b> items with <b>' + errors + '</b> error(s). Check the log above.', 'err');
           } else {
-            setStat(stat2, '✓ <b>' + written + '</b> files written. SD card restored! <b>Eject the drive</b> from Finder, then proceed to Step 3.', 'ok');
+            setStat(stat2, '✓ <b>' + written + '</b> files written &amp; cleaned. SD card restored! <b>Eject the drive</b> from Finder, then proceed to Step 3.', 'ok');
           }
           markDone(card2);
           activateCard(card3);
