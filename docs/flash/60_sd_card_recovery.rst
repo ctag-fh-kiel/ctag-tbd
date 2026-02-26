@@ -13,7 +13,14 @@ no terminal commands, no opening the device.
 
 **Hardware setup:**
 
-Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
+You need **two USB-C cables** connected:
+
+1. **Front JTAG port** (USB-C #3) → for serial communication (flashing & switching partitions)
+2. **Back USB-C Port #1** → for the SD card to appear as a USB drive on your computer
+
+.. tip::
+   Port #1 is the back USB-C port **closest to the center** of the device.
+   It also powers the board, so both cables serve double duty.
 
 **Browser:** Chrome, Edge or Opera required (WebSerial + File System Access).
 
@@ -253,8 +260,9 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
       <div class="step-card active-step" id="card1">
         <div class="step-hdr"><span class="step-num">1</span> Flash MSC Firmware &amp; Mount SD Card</div>
         <div class="step-desc">
-          Connect via USB and flash the USB Mass Storage firmware. Your device will
-          reboot and the SD card will appear as a portable drive on your computer.
+          Connect both USB-C cables: <b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).
+          This step flashes the USB Mass Storage firmware via the front port. After reboot the
+          SD card will appear as a removable drive on the <b>back port</b>.
         </div>
         <div class="btn-row">
           <button id="btn1Connect" class="btn-primary" disabled>Loading…</button>
@@ -269,7 +277,8 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
       <div class="step-card" id="card2" style="opacity:0.4; pointer-events:none;">
         <div class="step-hdr"><span class="step-num">2</span> Restore SD Card Content</div>
         <div class="step-desc">
-          Select the mounted SD card drive. The factory image will be downloaded,
+          The SD card should now be mounted via <b>back Port&nbsp;#1</b> (look for a <b>"NO NAME"</b> drive in Finder).
+          Select the mounted drive below. The factory image will be downloaded,
           extracted, and written directly — your SD card will be ready to use.
         </div>
         <div class="btn-row">
@@ -284,8 +293,9 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
       <div class="step-card" id="card3" style="opacity:0.4; pointer-events:none;">
         <div class="step-hdr"><span class="step-num">3</span> Switch Back to Normal Mode</div>
         <div class="step-desc">
-          Eject the SD card from your computer, then click below to switch your
-          device back to normal operation.
+          Eject the SD card drive from your computer (right-click → Eject in Finder),
+          then click <b>Connect</b> below to reconnect via the <b>front JTAG port</b>
+          and switch your device back to normal operation.
         </div>
         <div class="btn-row">
           <button id="btn3Connect" class="btn-primary" disabled>Connect</button>
@@ -297,7 +307,9 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
       <!-- ════════ DONE ════════ -->
       <div class="complete-card" id="cardDone">
         <h3>✓ SD Card Recovery Complete</h3>
-        <p>Your TBD-16 is ready to use. Connect via USB and open
+        <p>Your TBD-16 is ready to use. If the device didn't restart automatically,
+        press the <b>RESET</b> button on the front panel or power-cycle it.<br>
+        Then connect via USB and open
         <b>http://192.168.4.1/</b> to access the web interface.</p>
       </div>
     </div>
@@ -458,7 +470,7 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
       btn1Connect.textContent = 'Connect';
       btn1Connect.disabled = false;
       skip1.style.display = 'inline-block';
-      setStat(stat1, 'Click <b>Connect</b> to start. Plug the USB-C cable into the <b>front JTAG port</b>.');
+      setStat(stat1, 'Click <b>Connect</b> to start. Make sure <b>both</b> USB-C cables are connected: <b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).');
 
       /* ══════════════════════════════
          STEP 1 — Flash tusb_msc.bin + switch to ota_1
@@ -514,9 +526,16 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
           eraseAll: false, compress: true
         });
 
-        /* 1d — hard reset */
-        setStat(stat1, 'Resetting device — SD card will mount in ~10 seconds…', 'ok');
-        try { await esp1.after(); } catch (_) {}
+        /* 1d — attempt hard reset, then release the serial port.
+         *      The USB-JTAG reset via WebSerial is unreliable on
+         *      ESP32-P4, so we always show manual-reset instructions
+         *      as a fallback. Releasing the port is essential: holding
+         *      the serial connection open can block USB re-enumeration
+         *      after the chip reboots.                                  */
+        setStat(stat1, 'Attempting device reset…');
+        try { await esp1.after('hard_reset'); } catch (e) {
+          console.warn('Software reset failed (expected on some setups):', e);
+        }
         await cleanup1();
       }
 
@@ -529,16 +548,56 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
           flashSize: '16MB', flashMode: 'dio', flashFreq: '80m',
           eraseAll: false, compress: true
         });
-        setStat(stat1, 'Resetting device — SD card will mount in ~10 seconds…', 'ok');
-        try { await esp1.after(); } catch (_) {}
+        setStat(stat1, 'Attempting device reset…');
+        try { await esp1.after('hard_reset'); } catch (e) {
+          console.warn('Software reset failed (expected on some setups):', e);
+        }
         await cleanup1();
+      }
+
+      /* ── Countdown after flashing: give the device time to reboot
+       *    and the SD card time to enumerate as USB Mass Storage.
+       *    Show manual-reset instructions in case the software
+       *    reset didn't work.                                      ── */
+      var REBOOT_WAIT = 20;          /* seconds */
+
+      function startRebootCountdown() {
+        var remaining = REBOOT_WAIT;
+        hideProg(prog1);
+        showProg(prog1, prog1Bar, prog1Txt, 0);
+        setStat(stat1,
+          '✓ Firmware written &amp; OTA switched. The device should now reboot into SD card mode.<br>' +
+          '<b>If the SD card drive does not appear within ' + REBOOT_WAIT + ' seconds:</b><br>' +
+          '&nbsp;&nbsp;① Press the <b>RESET button</b> on the front panel, <i>or</i><br>' +
+          '&nbsp;&nbsp;② Unplug <b>both</b> USB cables, wait 3 s, replug them.<br>' +
+          '<small>The drive should appear as <b>"NO NAME"</b> in Finder (via back Port&nbsp;#1).</small>',
+          'ok');
+
+        var iv = setInterval(function () {
+          remaining--;
+          var pct = Math.round((REBOOT_WAIT - remaining) / REBOOT_WAIT * 100);
+          showProg(prog1, prog1Bar, prog1Txt, pct);
+          prog1Txt.textContent = 'Waiting for reboot: ' + remaining + ' s';
+          if (remaining <= 0) {
+            clearInterval(iv);
+            hideProg(prog1);
+            finishStep1();
+          }
+        }, 1000);
       }
 
       function finishStep1() {
         markDone(card1);
         activateCard(card2);
         btn2Pick.disabled = false;
-        setStat(stat2, 'Wait for the SD card to appear as a drive (typically <b>"NO NAME"</b>), then click <b>Select SD Card Drive</b>.');
+        setStat(stat1,
+          '✓ Ready. Look for the <b>"NO NAME"</b> drive in Finder (mounted via back Port&nbsp;#1).<br>' +
+          '<small>If no drive appeared: press <b>RESET</b> on the front panel (or power-cycle) and wait 15 s.</small>',
+          'ok');
+        setStat(stat2,
+          'Select the <b>"NO NAME"</b> SD card drive below.<br>' +
+          '<small>If no drive is visible in Finder: press the <b>RESET</b> button on the front panel, ' +
+          'or unplug both USB cables → wait 3 s → replug. The drive appears via <b>back Port&nbsp;#1</b>.</small>');
       }
 
       btn1Connect.addEventListener('click', async function () {
@@ -559,7 +618,7 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
         btn1Go.disabled = true; btn1Connect.disabled = true;
         try {
           await flashAndSwitch();
-          setTimeout(finishStep1, 2000);
+          startRebootCountdown();
         } catch (e) {
           console.error(e);
           setStat(stat1, 'Failed: ' + e.message, 'err');
@@ -576,7 +635,7 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
           btn1Go.disabled = true;
           setStat(stat1, 'Connected to <b>' + chip + '</b>. Switching to SD card mode…', 'info');
           await switchOnlyToOta1();
-          setTimeout(finishStep1, 2000);
+          startRebootCountdown();
         } catch (e) {
           console.error(e);
           setStat(stat1, 'Failed: ' + e.message, 'err');
@@ -727,12 +786,12 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
           if (errors > 0) {
             setStat(stat2, '⚠ Written <b>' + written + '</b> items with <b>' + errors + '</b> error(s). Check the log above.', 'err');
           } else {
-            setStat(stat2, '✓ <b>' + written + '</b> files written. SD card restored! <b>Eject the drive</b> from your computer, then proceed to Step 3.', 'ok');
+            setStat(stat2, '✓ <b>' + written + '</b> files written. SD card restored! <b>Eject the drive</b> from Finder, then proceed to Step 3.', 'ok');
           }
           markDone(card2);
           activateCard(card3);
           btn3Connect.disabled = false;
-          setStat(stat3, '<b>Eject the SD card drive</b> from your computer first, then click <b>Connect</b>.');
+          setStat(stat3, '<b>Eject the SD card drive</b> from Finder first, then click <b>Connect</b> to reconnect via the front JTAG port.');
 
         } catch (e) {
           console.error(e);
@@ -786,7 +845,9 @@ Connect a USB-C cable to the **JTAG USB-C port on the front** of the device.
           });
 
           setStat(stat3, 'Resetting device…', 'ok');
-          try { await esp3.after(); } catch (_) {}
+          try { await esp3.after('hard_reset'); } catch (e) {
+            console.warn('Software reset failed (expected on some setups):', e);
+          }
           await cleanup3();
 
           markDone(card3);
@@ -817,6 +878,7 @@ Troubleshooting
 
 **Serial port request fails**
 
+  - Make sure the **front JTAG port** cable is connected to your computer
   - Unplug the USB cable and replug it
   - Try a different USB cable
   - Close any terminals or serial monitors that may hold the port open
@@ -824,9 +886,19 @@ Troubleshooting
 
 **SD card doesn't mount after Step 1**
 
-  - Wait at least 15 seconds for USB enumeration
-  - Check your file manager for a new drive (typically named "NO NAME")
-  - Try unplugging and replugging the USB cable to the **back port**
+  The most common cause is that the device didn't actually reboot after flashing.
+  The software reset via WebSerial is unreliable on ESP32-P4 — you may need a
+  manual reset.
+
+  1. **Press the RESET button** on the front panel (next to the BOOTSEL button)
+  2. Wait 15 seconds for the SD card drive to appear
+  3. If still nothing: **unplug both USB cables**, wait 3 seconds, replug them
+
+  Also check:
+
+  - Make sure a USB-C cable is connected from **back Port #1** to your computer
+  - Port #1 is the back USB-C port closest to the center of the device
+  - Check Finder / your file manager for a new drive (typically named ``NO NAME``)
   - If still no drive: go back to Step 1 and try again
 
 **"Permission denied" when writing files**
@@ -837,5 +909,6 @@ Troubleshooting
 **Step 3 connection fails (device in MSC mode)**
 
   When the device is in USB Mass Storage mode, the serial port may not be available.
-  Make sure you **eject the drive first**, then try connecting. If the serial port
+  Make sure you **eject the drive first** (right-click → Eject in Finder),
+  then try connecting via the **front JTAG port**. If the serial port
   still doesn't appear, briefly unplug and replug the front USB cable.
