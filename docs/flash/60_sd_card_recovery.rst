@@ -403,9 +403,11 @@ You need **two USB-C cables** connected:
         var seq = slot + 1;                      /* ota_seq is 1-based */
         /* esp_ota_select_entry_t  (32 bytes):
              uint32  ota_seq
-             uint8   seq_label[20]   (zeros)
-             uint32  ota_state       (0xFFFFFFFF = NEW)
-             uint32  crc             (CRC-32 of first 28 bytes)  */
+             uint8   seq_label[20]   (left 0xFF)
+             uint32  ota_state       (0xFFFFFFFF = undefined, boots OK)
+             uint32  crc             (CRC-32 of ota_seq only — 4 bytes)
+           See ESP-IDF bootloader_common_ota_select_crc():
+             esp_rom_crc32_le(UINT32_MAX, &s->ota_seq, 4)             */
         var entry = new Uint8Array(32);
         entry.fill(0xFF);
         /* ota_seq  (little-endian) */
@@ -413,11 +415,10 @@ You need **two USB-C cables** connected:
         entry[1] = (seq >> 8) & 0xFF;
         entry[2] = (seq >> 16) & 0xFF;
         entry[3] = (seq >> 24) & 0xFF;
-        /* seq_label  (20 bytes of zeros) */
-        for (var i = 4; i < 24; i++) entry[i] = 0x00;
+        /* seq_label[20] stays 0xFF — matches ESP-IDF set_actual_ota_seq() */
         /* ota_state = 0xFFFFFFFF  (already filled) */
-        /* CRC-32 of bytes 0–27 */
-        var c = crc32(entry.subarray(0, 28));
+        /* CRC-32 of ota_seq field ONLY (4 bytes) */
+        var c = crc32(entry.subarray(0, 4));
         entry[28] = c & 0xFF;
         entry[29] = (c >> 8) & 0xFF;
         entry[30] = (c >> 16) & 0xFF;
