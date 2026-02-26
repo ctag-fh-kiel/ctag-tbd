@@ -296,8 +296,9 @@ You need **two USB-C cables** connected:
         <div class="step-hdr"><span class="step-num">3</span> Switch Back to Normal Mode</div>
         <div class="step-desc">
           Eject the SD card drive from your computer (right-click → Eject in Finder),
-          then click <b>Connect</b> below to reconnect via the <b>front JTAG port</b>
-          and switch your device back to normal operation.
+          then click <b>Connect</b> below to reconnect via the <b>front JTAG port</b>.
+          This erases the OTA boot selection so the device boots its normal firmware
+          instead of the USB Mass Storage helper.
         </div>
         <div class="btn-row">
           <button id="btn3Connect" class="btn-primary" disabled>Connect</button>
@@ -310,7 +311,7 @@ You need **two USB-C cables** connected:
       <div class="step-card" id="card4" style="opacity:0.4; pointer-events:none;">
         <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 (Possan Firmware)</div>
         <div class="step-desc">
-          Flash the latest <b>Possan</b> firmware to the ESP32-P4 via the <b>front JTAG port</b>.
+          Flash <code>possan-tbd-2026-02-17.bin</code> to the ESP32-P4 via the <b>front JTAG port</b>.
           This ensures your device runs the latest firmware that matches the SD card content.
         </div>
         <div class="btn-row">
@@ -325,8 +326,9 @@ You need **two USB-C cables** connected:
       <div class="step-card" id="card5" style="opacity:0.4; pointer-events:none;">
         <div class="step-hdr"><span class="step-num">5</span> Flash RP2350 (Possan Firmware)</div>
         <div class="step-desc">
+          <b>Connect the back USB-C Port&nbsp;#2</b> to your computer (the port closest to the edge of the device).
           Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button + press RESET on the front panel),
-          then click <b>Connect</b> below. This flashes the matching Possan firmware to the RP2350 co-processor.
+          then click <b>Connect</b> below. This flashes <code>possan-tbd-2026-02-17.uf2</code> to the RP2350 co-processor.
         </div>
         <div class="btn-row">
           <button id="btn5Connect" class="btn-primary" disabled>Connect</button>
@@ -341,8 +343,8 @@ You need **two USB-C cables** connected:
       <div class="complete-card" id="cardDone">
         <h3>✓ SD Card Recovery &amp; Firmware Update Complete</h3>
         <p>Your TBD-16 has a fresh SD card and the latest Possan firmware on both processors.<br>
-        <b>Unplug both USB cables</b>, wait 3 seconds, then replug to fully power-cycle.
-        After reboot, connect via USB and open
+        <b>Remove all USB cables</b> from the device and wait 3 seconds to fully power-cycle.
+        Then reconnect a single USB-C cable to the <b>front JTAG port</b> and open
         <b>http://192.168.4.1/</b> to access the web interface.</p>
       </div>
     </div>
@@ -1003,7 +1005,7 @@ You need **two USB-C cables** connected:
           markDone(card3);
           activateCard(card4);
           btn4Connect.disabled = false;
-          setStat(stat4, 'Click <b>Connect</b> to flash the latest <b>Possan</b> firmware to the ESP32-P4.');
+          setStat(stat4, 'Click <b>Connect</b> to flash <code>possan-tbd-2026-02-17.bin</code> to the ESP32-P4.');
         } catch (e) {
           console.error(e);
           setStat(stat3, 'Failed: ' + e.message, 'err');
@@ -1054,7 +1056,7 @@ You need **two USB-C cables** connected:
           var fw = new Uint8Array(await resp.arrayBuffer());
           var sizeMB = (fw.length / 1024 / 1024).toFixed(1);
 
-          setStat(stat4, 'Flashing Possan firmware (' + sizeMB + ' MB) — do not unplug…');
+          setStat(stat4, 'Flashing <code>possan-tbd-2026-02-17.bin</code> (' + sizeMB + ' MB) — do not unplug…');
           await esp4.writeFlash({
             fileArray: [{ data: toBinStr(fw), address: 0x0 }],
             flashSize: '16MB', flashMode: 'dio', flashFreq: '80m',
@@ -1075,7 +1077,7 @@ You need **two USB-C cables** connected:
           markDone(card4);
           activateCard(card5);
           btn5Connect.disabled = false;
-          setStat(stat5, 'Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET), then click <b>Connect</b>.');
+          setStat(stat5, 'Connect the <b>back USB-C Port #2</b>, put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET), then click <b>Connect</b>.');
         } catch (e) {
           console.error(e);
           setStat(stat4, 'Flash failed: ' + e.message, 'err');
@@ -1132,7 +1134,7 @@ You need **two USB-C cables** connected:
         if (!pico5 || !uf2ToFlashBuffer) return;
         btn5Flash.disabled = true; btn5Connect.disabled = true;
         try {
-          setStat(stat5, 'Downloading Possan RP2350 firmware…');
+          setStat(stat5, 'Downloading <code>possan-tbd-2026-02-17.uf2</code>…');
           showProg(prog5, prog5Bar, prog5Txt, 10);
           var resp = await fetch(POSSAN_PICO_URL);
           if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
@@ -1149,7 +1151,7 @@ You need **two USB-C cables** connected:
           showProg(prog5, prog5Bar, prog5Txt, 100);
 
           btn5Reboot.disabled = false;
-          setStat(stat5, '✓ RP2350 firmware updated. Click <b>Reboot</b> to restart the device.', 'ok');
+          setStat(stat5, '✓ RP2350 firmware updated (<code>possan-tbd-2026-02-17.uf2</code>). Click <b>Reboot</b> to restart the device.', 'ok');
         } catch (e) {
           console.error(e);
           setStat(stat5, 'Flash failed: ' + e.message, 'err');
@@ -1168,7 +1170,7 @@ You need **two USB-C cables** connected:
           await cleanup5();
           hideProg(prog5);
 
-          setStat(stat5, '✓ RP2350 rebooted. All done!', 'ok');
+          setStat(stat5, '✓ RP2350 rebooted. <b>Remove all USB cables</b> to power-cycle the device.', 'ok');
           markDone(card5);
           cardDone.style.display = 'block';
         } catch (e) {
