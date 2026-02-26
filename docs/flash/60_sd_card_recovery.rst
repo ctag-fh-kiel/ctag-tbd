@@ -9,7 +9,9 @@ no terminal commands, no opening the device.
 
 1. Flashes the USB Mass Storage firmware to your device (so the SD card mounts via USB)
 2. Downloads and extracts the factory SD card image directly onto your device's SD card
-3. Switches your device back to normal operation — ready to use
+3. Switches your device back to normal operation
+4. Flashes the latest Possan firmware to the ESP32-P4
+5. Flashes the latest Possan firmware to the RP2350
 
 **Hardware setup:**
 
@@ -24,7 +26,7 @@ You need **two USB-C cables** connected:
 
 **Browser:** Chrome, Edge or Opera required (WebSerial + File System Access).
 
-**Time:** 3–5 minutes
+**Time:** 5–10 minutes
 
 .. raw:: html
 
@@ -304,12 +306,43 @@ You need **two USB-C cables** connected:
         <div class="status" id="stat3">Waiting for Step 2…</div>
       </div>
 
+      <!-- ════════ STEP 4 ════════ -->
+      <div class="step-card" id="card4" style="opacity:0.4; pointer-events:none;">
+        <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 (Possan Firmware)</div>
+        <div class="step-desc">
+          Flash the latest <b>Possan</b> firmware to the ESP32-P4 via the <b>front JTAG port</b>.
+          This ensures your device runs the latest firmware that matches the SD card content.
+        </div>
+        <div class="btn-row">
+          <button id="btn4Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn4Flash" class="btn-success" disabled>Flash Possan Firmware</button>
+        </div>
+        <div class="progress-wrap" id="prog4"><div class="progress-bar" id="prog4Bar"></div><span class="progress-text" id="prog4Txt">0 %</span></div>
+        <div class="status" id="stat4">Waiting for Step 3…</div>
+      </div>
+
+      <!-- ════════ STEP 5 ════════ -->
+      <div class="step-card" id="card5" style="opacity:0.4; pointer-events:none;">
+        <div class="step-hdr"><span class="step-num">5</span> Flash RP2350 (Possan Firmware)</div>
+        <div class="step-desc">
+          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button + press RESET on the front panel),
+          then click <b>Connect</b> below. This flashes the matching Possan firmware to the RP2350 co-processor.
+        </div>
+        <div class="btn-row">
+          <button id="btn5Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn5Flash" class="btn-success" disabled>Flash Possan Firmware</button>
+          <button id="btn5Reboot" class="btn-secondary" disabled>Reboot</button>
+        </div>
+        <div class="progress-wrap" id="prog5"><div class="progress-bar" id="prog5Bar"></div><span class="progress-text" id="prog5Txt">0 %</span></div>
+        <div class="status" id="stat5">Waiting for Step 4…</div>
+      </div>
+
       <!-- ════════ DONE ════════ -->
       <div class="complete-card" id="cardDone">
-        <h3>✓ SD Card Recovery Complete</h3>
-        <p>Your TBD-16 is ready to use. If the device didn't restart automatically,
-        press the <b>RESET</b> button on the front panel or power-cycle it.<br>
-        Then connect via USB and open
+        <h3>✓ SD Card Recovery &amp; Firmware Update Complete</h3>
+        <p>Your TBD-16 has a fresh SD card and the latest Possan firmware on both processors.<br>
+        <b>Unplug both USB cables</b>, wait 3 seconds, then replug to fully power-cycle.
+        After reboot, connect via USB and open
         <b>http://192.168.4.1/</b> to access the web interface.</p>
       </div>
     </div>
@@ -321,7 +354,8 @@ You need **two USB-C cables** connected:
          ────────────────────────────── */
       var $ = function (id) { return document.getElementById(id); };
 
-      var card1 = $('card1'), card2 = $('card2'), card3 = $('card3'), cardDone = $('cardDone');
+      var card1 = $('card1'), card2 = $('card2'), card3 = $('card3');
+      var card4 = $('card4'), card5 = $('card5'), cardDone = $('cardDone');
       var btn1Connect = $('btn1Connect'), btn1Go = $('btn1Go');
       var prog1 = $('prog1'), prog1Bar = $('prog1Bar'), prog1Txt = $('prog1Txt');
       var stat1 = $('stat1'), skip1 = $('skip1');
@@ -332,17 +366,27 @@ You need **two USB-C cables** connected:
 
       var btn3Connect = $('btn3Connect'), btn3Go = $('btn3Go'), stat3 = $('stat3');
 
+      var btn4Connect = $('btn4Connect'), btn4Flash = $('btn4Flash');
+      var prog4 = $('prog4'), prog4Bar = $('prog4Bar'), prog4Txt = $('prog4Txt');
+      var stat4 = $('stat4');
+
+      var btn5Connect = $('btn5Connect'), btn5Flash = $('btn5Flash'), btn5Reboot = $('btn5Reboot');
+      var prog5 = $('prog5'), prog5Bar = $('prog5Bar'), prog5Txt = $('prog5Txt');
+      var stat5 = $('stat5');
+
       /* ──────────────────────────────
          Constants
          ────────────────────────────── */
-      var TUSB_MSC_URL   = '../_static/firmware/p4/tusb_msc.bin';
-      var SDCARD_ZIP_URL = '../_static/sdcard_image/tbd-sd-card.zip';
-      var HASH_URL       = '../_static/sdcard_image/tbd-sd-card-hash.txt';
-      var OTA_DATA_ADDR  = 0xd000;     /* otadata partition */
-      var OTA1_ADDR      = null;       /* detected from device partition table */
-      var OTA_DATA_SIZE  = 0x2000;     /* 8 KB              */
-      var PT_ADDR        = 0x8000;     /* partition table address */
-      var PT_READ_SIZE   = 0xC00;      /* 3 KB — enough for partition table */
+      var TUSB_MSC_URL      = '../_static/firmware/p4/tusb_msc.bin';
+      var POSSAN_P4_URL     = '../_static/firmware/p4/possan-tbd-2026-02-17.bin';
+      var POSSAN_PICO_URL   = '../_static/firmware/pico/possan-tbd-2026-02-17.uf2';
+      var SDCARD_ZIP_URL    = '../_static/sdcard_image/tbd-sd-card.zip';
+      var HASH_URL          = '../_static/sdcard_image/tbd-sd-card-hash.txt';
+      var OTA_DATA_ADDR     = 0xd000;     /* otadata partition */
+      var OTA1_ADDR         = null;       /* detected from device partition table */
+      var OTA_DATA_SIZE     = 0x2000;     /* 8 KB              */
+      var PT_ADDR           = 0x8000;     /* partition table address */
+      var PT_READ_SIZE      = 0xC00;      /* 3 KB — enough for partition table */
 
       /* ──────────────────────────────
          Helpers
@@ -957,12 +1001,180 @@ You need **two USB-C cables** connected:
           await cleanup3();
 
           markDone(card3);
-          cardDone.style.display = 'block';
+          activateCard(card4);
+          btn4Connect.disabled = false;
+          setStat(stat4, 'Click <b>Connect</b> to flash the latest <b>Possan</b> firmware to the ESP32-P4.');
         } catch (e) {
           console.error(e);
           setStat(stat3, 'Failed: ' + e.message, 'err');
           btn3Connect.disabled = false;
           await cleanup3();
+        }
+      });
+
+      /* ══════════════════════════════
+         STEP 4 — Flash ESP32-P4 with Possan firmware
+         ══════════════════════════════ */
+      var esp4 = null, trans4 = null, conn4 = false;
+
+      async function cleanup4() {
+        conn4 = false;
+        if (trans4) { try { await trans4.disconnect(); } catch (_) {} }
+        esp4 = null; trans4 = null;
+      }
+
+      btn4Connect.addEventListener('click', async function () {
+        try {
+          btn4Connect.disabled = true;
+          setStat(stat4, 'Requesting serial port…');
+          var port = await navigator.serial.requestPort({});
+          trans4 = new Transport(port, true);
+          var term = { clean:function(){}, writeLine:function(d){console.log(d);}, write:function(d){console.log(d);} };
+          esp4 = new ESPLoader({ transport: trans4, baudrate: 460800, terminal: term });
+          setStat(stat4, 'Connecting…');
+          var chip = await esp4.main();
+          conn4 = true;
+          btn4Flash.disabled = false;
+          setStat(stat4, 'Connected to <b>' + chip + '</b>. Click <b>Flash Possan Firmware</b>.', 'ok');
+        } catch (e) {
+          console.error(e);
+          setStat(stat4, 'Connection failed: ' + e.message, 'err');
+          btn4Connect.disabled = false;
+          await cleanup4();
+        }
+      });
+
+      btn4Flash.addEventListener('click', async function () {
+        if (!conn4 || !esp4) return;
+        btn4Flash.disabled = true; btn4Connect.disabled = true;
+        try {
+          setStat(stat4, 'Downloading Possan firmware…');
+          var resp = await fetch(POSSAN_P4_URL);
+          if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
+          var fw = new Uint8Array(await resp.arrayBuffer());
+          var sizeMB = (fw.length / 1024 / 1024).toFixed(1);
+
+          setStat(stat4, 'Flashing Possan firmware (' + sizeMB + ' MB) — do not unplug…');
+          await esp4.writeFlash({
+            fileArray: [{ data: toBinStr(fw), address: 0x0 }],
+            flashSize: '16MB', flashMode: 'dio', flashFreq: '80m',
+            eraseAll: false, compress: true,
+            reportProgress: function (_, written, total) {
+              showProg(prog4, prog4Bar, prog4Txt, Math.round(written / total * 100));
+            }
+          });
+          showProg(prog4, prog4Bar, prog4Txt, 100);
+
+          setStat(stat4, 'Resetting device…', 'ok');
+          try { await esp4.after('hard_reset'); } catch (e) {
+            console.warn('Software reset failed:', e);
+          }
+          await cleanup4();
+
+          setStat(stat4, '✓ ESP32-P4 firmware updated. Proceed to Step 5.', 'ok');
+          markDone(card4);
+          activateCard(card5);
+          btn5Connect.disabled = false;
+          setStat(stat5, 'Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET), then click <b>Connect</b>.');
+        } catch (e) {
+          console.error(e);
+          setStat(stat4, 'Flash failed: ' + e.message, 'err');
+          btn4Connect.disabled = false;
+          await cleanup4();
+        }
+      });
+
+      /* ══════════════════════════════
+         STEP 5 — Flash RP2350 with Possan firmware (WebUSB / Picoboot)
+         ══════════════════════════════ */
+      var Picoboot = null, uf2ToFlashBuffer = null;
+      var pico5 = null, picoConn5 = null;
+
+      /* Load Picoboot modules dynamically (ES module import works in async) */
+      try {
+        var picoMod = await import('../_static/picoflash/pkg/index.js');
+        Picoboot = picoMod.Picoboot;
+        var uf2Mod = await import('../_static/picoflash/js/uf2.js');
+        uf2ToFlashBuffer = uf2Mod.uf2ToFlashBuffer;
+      } catch (e) {
+        console.warn('Picoboot module load failed — Step 5 will be unavailable:', e);
+      }
+
+      async function cleanup5() {
+        try { if (pico5) await pico5.disconnect(); } catch (_) {}
+        pico5 = null; picoConn5 = null;
+      }
+
+      btn5Connect.addEventListener('click', async function () {
+        if (!Picoboot) {
+          setStat(stat5, 'Picoboot module failed to load. Try reloading the page.', 'err');
+          return;
+        }
+        try {
+          btn5Connect.disabled = true;
+          setStat(stat5, 'Waiting for device selection… choose <b>RP2350 Boot</b>');
+          pico5 = await Picoboot.requestDevice();
+          setStat(stat5, 'Connecting…');
+          picoConn5 = await pico5.connect();
+          await picoConn5.resetInterface();
+          btn5Flash.disabled = false;
+          var info = pico5.getUsbDeviceInfo();
+          setStat(stat5, 'Connected to <b>' + (info.productName || 'RP2350') + '</b>. Click <b>Flash Possan Firmware</b>.', 'ok');
+        } catch (e) {
+          console.error(e);
+          setStat(stat5, 'Connection failed: ' + e.message, 'err');
+          btn5Connect.disabled = false;
+          await cleanup5();
+        }
+      });
+
+      btn5Flash.addEventListener('click', async function () {
+        if (!pico5 || !uf2ToFlashBuffer) return;
+        btn5Flash.disabled = true; btn5Connect.disabled = true;
+        try {
+          setStat(stat5, 'Downloading Possan RP2350 firmware…');
+          showProg(prog5, prog5Bar, prog5Txt, 10);
+          var resp = await fetch(POSSAN_PICO_URL);
+          if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
+          var uf2Data = new Uint8Array(await resp.arrayBuffer());
+          showProg(prog5, prog5Bar, prog5Txt, 25);
+
+          setStat(stat5, 'Parsing UF2 file…');
+          var parsed = uf2ToFlashBuffer(uf2Data);
+          var sizeKB = (parsed.data.length / 1024).toFixed(0);
+
+          setStat(stat5, 'Erasing &amp; writing ' + sizeKB + ' KB…');
+          showProg(prog5, prog5Bar, prog5Txt, 35);
+          await pico5.flashEraseAndWrite(parsed.address, parsed.data);
+          showProg(prog5, prog5Bar, prog5Txt, 100);
+
+          btn5Reboot.disabled = false;
+          setStat(stat5, '✓ RP2350 firmware updated. Click <b>Reboot</b> to restart the device.', 'ok');
+        } catch (e) {
+          console.error(e);
+          setStat(stat5, 'Flash failed: ' + e.message, 'err');
+          btn5Connect.disabled = false;
+          await cleanup5();
+        }
+      });
+
+      btn5Reboot.addEventListener('click', async function () {
+        try {
+          btn5Reboot.disabled = true;
+          setStat(stat5, 'Rebooting device…');
+          try { await picoConn5.reboot(100); } catch (e) {
+            console.warn('Reboot command error (may be expected):', e.message);
+          }
+          await cleanup5();
+          hideProg(prog5);
+
+          setStat(stat5, '✓ RP2350 rebooted. All done!', 'ok');
+          markDone(card5);
+          cardDone.style.display = 'block';
+        } catch (e) {
+          console.error(e);
+          setStat(stat5, 'Reboot failed: ' + e.message, 'err');
+          await cleanup5();
         }
       });
 
