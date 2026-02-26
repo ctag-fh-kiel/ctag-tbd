@@ -375,7 +375,7 @@ You need **two USB-C cables** connected:
 
       /* CRC-32 (same polynomial as ESP-IDF / zlib) */
       var crcTable = null;
-      function crc32(buf) {
+      function ensureCrcTable() {
         if (!crcTable) {
           crcTable = new Uint32Array(256);
           for (var n = 0; n < 256; n++) {
@@ -385,7 +385,14 @@ You need **two USB-C cables** connected:
             crcTable[n] = c;
           }
         }
-        var crc = 0xFFFFFFFF;
+      }
+
+      /* esp_rom_crc32_le(UINT32_MAX, buf, len) — matches ESP-IDF bootloader.
+       * zlib-style: {init XOR 0xFFFFFFFF} → accumulate → {result XOR 0xFFFFFFFF}
+       * With init = 0xFFFFFFFF the internal start is 0x00000000.              */
+      function espCrc32(buf) {
+        ensureCrcTable();
+        var crc = 0x00000000;
         for (var i = 0; i < buf.length; i++)
           crc = crcTable[(crc ^ buf[i]) & 0xFF] ^ (crc >>> 8);
         return (crc ^ 0xFFFFFFFF) >>> 0;
@@ -418,7 +425,7 @@ You need **two USB-C cables** connected:
         /* seq_label[20] stays 0xFF — matches ESP-IDF set_actual_ota_seq() */
         /* ota_state = 0xFFFFFFFF  (already filled) */
         /* CRC-32 of ota_seq field ONLY (4 bytes) */
-        var c = crc32(entry.subarray(0, 4));
+        var c = espCrc32(entry.subarray(0, 4));
         entry[28] = c & 0xFF;
         entry[29] = (c >> 8) & 0xFF;
         entry[30] = (c >> 16) & 0xFF;
