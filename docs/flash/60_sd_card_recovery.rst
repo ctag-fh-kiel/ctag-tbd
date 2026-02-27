@@ -296,8 +296,9 @@ You need **USB-C cables** connected at different steps:
       <div class="step-card" id="card3" style="opacity:0.4; pointer-events:none;">
         <div class="step-hdr"><span class="step-num">3</span> Switch Back to Normal Mode</div>
         <div class="step-desc">
-          Eject the SD card drive from your computer (right-click → Eject in Finder),
-          then click <b>Connect</b> below to reconnect via the <b>front JTAG port</b>.
+          Eject the SD card drive from your computer (right-click → Eject in Finder).
+          Keep <b>back USB-C Port&nbsp;#1</b> connected for power, and the <b>front JTAG port</b> cable connected for serial.
+          Click <b>Connect</b> below to reconnect via the front JTAG port.
           This erases the OTA boot selection so the device boots its normal firmware
           instead of the USB Mass Storage helper.
         </div>
