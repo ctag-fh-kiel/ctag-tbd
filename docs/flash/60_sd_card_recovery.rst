@@ -15,14 +15,15 @@ no terminal commands, no opening the device.
 
 **Hardware setup:**
 
-You need **two USB-C cables** connected:
+You need **USB-C cables** connected at different steps:
 
-1. **Front JTAG port** (USB-C #3) → for serial communication (flashing & switching partitions)
-2. **Back USB-C Port #1** → for the SD card to appear as a USB drive on your computer
+1. **Front JTAG port** (USB-C #3) → for serial communication (Steps 1, 3, 4)
+2. **Back USB-C Port #1** → for the SD card to appear as a USB drive (Steps 1, 2) and for powering the device
+3. **Back USB-C Port #2** → for flashing the RP2350 co-processor (Step 5)
 
 .. tip::
    Port #1 is the back USB-C port **closest to the center** of the device.
-   It also powers the board, so both cables serve double duty.
+   Port #2 is the back USB-C port **closest to the edge** of the device.
 
 **Browser:** Chrome, Edge or Opera required (WebSerial + File System Access).
 
@@ -311,8 +312,10 @@ You need **two USB-C cables** connected:
       <div class="step-card" id="card4" style="opacity:0.4; pointer-events:none;">
         <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 (Possan Firmware)</div>
         <div class="step-desc">
-          Flash <code>possan-tbd-2026-02-17.bin</code> to the ESP32-P4 via the <b>front JTAG port</b>.
-          This ensures your device runs the latest firmware that matches the SD card content.
+          First <b>power-cycle the device</b>: unplug the cable from <b>back USB-C Port&nbsp;#1</b>,
+          wait 3 seconds, then plug it back in.
+          Once the device has rebooted, click <b>Connect</b> below (via the <b>front JTAG port</b>)
+          to flash <code>possan-tbd-2026-02-17.bin</code> to the ESP32-P4.
         </div>
         <div class="btn-row">
           <button id="btn4Connect" class="btn-primary" disabled>Connect</button>
@@ -327,7 +330,8 @@ You need **two USB-C cables** connected:
         <div class="step-hdr"><span class="step-num">5</span> Flash RP2350 (Possan Firmware)</div>
         <div class="step-desc">
           <b>Connect the back USB-C Port&nbsp;#2</b> to your computer (the port closest to the edge of the device).
-          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button + press RESET on the front panel),
+          You can disconnect the front JTAG cable — it is no longer needed.
+          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button on the front + press RESET button on the back),
           then click <b>Connect</b> below. This flashes <code>possan-tbd-2026-02-17.uf2</code> to the RP2350 co-processor.
         </div>
         <div class="btn-row">
@@ -344,7 +348,8 @@ You need **two USB-C cables** connected:
         <h3>✓ SD Card Recovery &amp; Firmware Update Complete</h3>
         <p>Your TBD-16 has a fresh SD card and the latest Possan firmware on both processors.<br>
         <b>Remove all USB cables</b> from the device and wait 3 seconds to fully power-cycle.
-        Then reconnect a single USB-C cable to the <b>front JTAG port</b> and open
+        Then reconnect a single USB-C cable to <b>back Port&nbsp;#1</b> (ESP32-P4 — MIDI &amp; USB&nbsp;NCM)
+        or <b>back Port&nbsp;#2</b> (RP2350) and open
         <b>http://192.168.4.1/</b> to access the web interface.</p>
       </div>
     </div>
@@ -699,7 +704,7 @@ You need **two USB-C cables** connected:
         setStat(stat1,
           '✓ Firmware written &amp; OTA switched. The device should now reboot into SD card mode.<br>' +
           '<b>If the SD card drive does not appear within ' + REBOOT_WAIT + ' seconds:</b><br>' +
-          '&nbsp;&nbsp;① Press the <b>RESET button</b> on the front panel, <i>or</i><br>' +
+          '&nbsp;&nbsp;① Press the <b>RESET button</b> on the back (between USB-C Port&nbsp;#1 and MIDI&nbsp;OUT&nbsp;2), <i>or</i><br>' +
           '&nbsp;&nbsp;② Unplug <b>both</b> USB cables, wait 3 s, replug them.<br>' +
           '<small>The drive should appear as <b>"NO NAME"</b> in Finder (via back Port&nbsp;#1).</small>',
           'ok');
@@ -723,11 +728,11 @@ You need **two USB-C cables** connected:
         btn2Pick.disabled = false;
         setStat(stat1,
           '✓ Ready. Look for the <b>"NO NAME"</b> drive in Finder (mounted via back Port&nbsp;#1).<br>' +
-          '<small>If no drive appeared: press <b>RESET</b> on the front panel (or power-cycle) and wait 15 s.</small>',
+          '<small>If no drive appeared: press <b>RESET</b> on the back (between USB-C Port&nbsp;#1 and MIDI&nbsp;OUT&nbsp;2) or power-cycle and wait 15 s.</small>',
           'ok');
         setStat(stat2,
           'Select the <b>"NO NAME"</b> SD card drive below.<br>' +
-          '<small>If no drive is visible in Finder: press the <b>RESET</b> button on the front panel, ' +
+          '<small>If no drive is visible in Finder: press the <b>RESET</b> button on the back (between USB-C Port&nbsp;#1 and MIDI&nbsp;OUT&nbsp;2), ' +
           'or unplug both USB cables → wait 3 s → replug. The drive appears via <b>back Port&nbsp;#1</b>.</small>');
       }
 
@@ -1005,7 +1010,7 @@ You need **two USB-C cables** connected:
           markDone(card3);
           activateCard(card4);
           btn4Connect.disabled = false;
-          setStat(stat4, 'Click <b>Connect</b> to flash <code>possan-tbd-2026-02-17.bin</code> to the ESP32-P4.');
+          setStat(stat4, '<b>Power-cycle the device</b>: unplug the cable from back USB-C Port&nbsp;#1, wait 3 s, replug it. Then click <b>Connect</b> to flash <code>possan-tbd-2026-02-17.bin</code>.');
         } catch (e) {
           console.error(e);
           setStat(stat3, 'Failed: ' + e.message, 'err');
@@ -1077,7 +1082,7 @@ You need **two USB-C cables** connected:
           markDone(card4);
           activateCard(card5);
           btn5Connect.disabled = false;
-          setStat(stat5, 'Connect the <b>back USB-C Port #2</b>, put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET), then click <b>Connect</b>.');
+          setStat(stat5, 'Connect <b>back USB-C Port&nbsp;#2</b> (you can disconnect the front JTAG cable). Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL on front + press RESET on back), then click <b>Connect</b>.');
         } catch (e) {
           console.error(e);
           setStat(stat4, 'Flash failed: ' + e.message, 'err');
@@ -1170,7 +1175,7 @@ You need **two USB-C cables** connected:
           await cleanup5();
           hideProg(prog5);
 
-          setStat(stat5, '✓ RP2350 rebooted. <b>Remove all USB cables</b> to power-cycle the device.', 'ok');
+          setStat(stat5, '✓ RP2350 rebooted. <b>Remove all USB cables</b>, wait 3 s, then reconnect via a back port.', 'ok');
           markDone(card5);
           cardDone.style.display = 'block';
         } catch (e) {
@@ -1210,7 +1215,7 @@ Troubleshooting
   The software reset via WebSerial is unreliable on ESP32-P4 — you may need a
   manual reset.
 
-  1. **Press the RESET button** on the front panel (next to the BOOTSEL button)
+  1. **Press the RESET button** on the back of the device (between USB-C Port #1 and MIDI OUT 2)
   2. Wait 15 seconds for the SD card drive to appear
   3. If still nothing: **unplug both USB cables**, wait 3 seconds, replug them
 
