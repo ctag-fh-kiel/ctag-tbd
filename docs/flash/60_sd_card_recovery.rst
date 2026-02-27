@@ -331,7 +331,7 @@ You need **USB-C cables** connected at different steps:
         <div class="step-desc">
           <b>Connect the back USB-C Port&nbsp;#2</b> to your computer (the port closest to the edge of the device).
           You can disconnect the front JTAG cable — it is no longer needed.
-          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button on the front + press RESET button on the back),
+          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button + press RESET — both on the front panel, next to the JTAG port),
           then click <b>Connect</b> below. This flashes <code>possan-tbd-2026-02-17.uf2</code> to the RP2350 co-processor.
         </div>
         <div class="btn-row">
@@ -1082,7 +1082,7 @@ You need **USB-C cables** connected at different steps:
           markDone(card4);
           activateCard(card5);
           btn5Connect.disabled = false;
-          setStat(stat5, 'Connect <b>back USB-C Port&nbsp;#2</b> (you can disconnect the front JTAG cable). Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL on front + press RESET on back), then click <b>Connect</b>.');
+          setStat(stat5, 'Connect <b>back USB-C Port&nbsp;#2</b> (you can disconnect the front JTAG cable). Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET — both on the front panel), then click <b>Connect</b>.');
         } catch (e) {
           console.error(e);
           setStat(stat4, 'Flash failed: ' + e.message, 'err');
