@@ -10,7 +10,7 @@ orphan: true
   <a href="bill-youngman-de.html">Deutsch</a>
 </div>
 ```
-# Live Performance \- Interview with Bill Youngman 
+# Live Setup
 
 **Benjamin Weiss:** You play electronic music live a lot and you use machines in contrast to using a laptop or something else that's more prepared. What's your general MO? How do you go on stage?
 
