@@ -307,7 +307,7 @@ You need **USB-C cables** connected at different steps:
       <div class="step-card" id="card2" style="opacity:0.4; pointer-events:none;">
         <div class="step-hdr"><span class="step-num">2</span> Write SD Card Image</div>
         <div class="step-desc">
-          The SD card should now be mounted via <b>back Port&nbsp;#1</b> (look for a <b>"NO NAME"</b> drive in Finder).
+          The SD card should now be mounted via <b>back Port&nbsp;#1</b> (look for a <b>"NO NAME"</b> drive in your file manager).
           Select the mounted drive below. The SD card image for the selected package will be downloaded,
           extracted, and written directly — your SD card will be ready to use.
         </div>
@@ -323,7 +323,8 @@ You need **USB-C cables** connected at different steps:
       <div class="step-card" id="card3" style="opacity:0.4; pointer-events:none;">
         <div class="step-hdr"><span class="step-num">3</span> Switch Back to Normal Mode</div>
         <div class="step-desc">
-          Eject the SD card drive from your computer (right-click → Eject in Finder).
+          Safely eject the SD card drive from your computer before proceeding
+          (macOS: right-click → Eject in Finder; Windows: "Safely Remove Hardware" in the system tray; Linux: right-click → Unmount/Eject).
           Keep <b>back USB-C Port&nbsp;#1</b> connected for power, and the <b>front JTAG port</b> cable connected for serial.
           Click <b>Connect</b> below to reconnect via the front JTAG port.
           This erases the OTA boot selection so the device boots its normal firmware
@@ -744,7 +745,7 @@ You need **USB-C cables** connected at different steps:
           '<b>If the SD card drive does not appear within ' + REBOOT_WAIT + ' seconds:</b><br>' +
           '&nbsp;&nbsp;① Press the <b>RESET button</b> on the back (between USB-C Port&nbsp;#1 and MIDI&nbsp;OUT&nbsp;2), <i>or</i><br>' +
           '&nbsp;&nbsp;② Unplug <b>both</b> USB cables, wait 3 s, replug them.<br>' +
-          '<small>The drive should appear as <b>"NO NAME"</b> in Finder (via back Port&nbsp;#1).</small>',
+          '<small>The drive should appear as <b>"NO NAME"</b> in your file manager (via back Port&nbsp;#1).</small>',
           'ok');
 
         var iv = setInterval(function () {
@@ -765,12 +766,12 @@ You need **USB-C cables** connected at different steps:
         activateCard(card2);
         btn2Pick.disabled = false;
         setStat(stat1,
-          '✓ Ready. Look for the <b>"NO NAME"</b> drive in Finder (mounted via back Port&nbsp;#1).<br>' +
+          '✓ Ready. Look for the <b>"NO NAME"</b> drive in your file manager (mounted via back Port&nbsp;#1).<br>' +
           '<small>If no drive appeared: press <b>RESET</b> on the back (between USB-C Port&nbsp;#1 and MIDI&nbsp;OUT&nbsp;2) or power-cycle and wait 15 s.</small>',
           'ok');
         setStat(stat2,
           'Select the <b>"NO NAME"</b> SD card drive below.<br>' +
-          '<small>If no drive is visible in Finder: press the <b>RESET</b> button on the back (between USB-C Port&nbsp;#1 and MIDI&nbsp;OUT&nbsp;2), ' +
+          '<small>If no drive is visible in your file manager: press the <b>RESET</b> button on the back (between USB-C Port&nbsp;#1 and MIDI&nbsp;OUT&nbsp;2), ' +
           'or unplug both USB cables → wait 3 s → replug. The drive appears via <b>back Port&nbsp;#1</b>.</small>');
       }
 
@@ -970,7 +971,7 @@ You need **USB-C cables** connected at different steps:
           }
 
           /* 2f — clean up macOS resource-fork files (._*) */
-          setStat(stat2, 'Cleaning up macOS metadata files…');
+          setStat(stat2, 'Cleaning up metadata files…');
           showProg(prog2, prog2Bar, prog2Txt, 97);
           try {
             await cleanMacOSFiles(dirHandle, log);
@@ -984,12 +985,12 @@ You need **USB-C cables** connected at different steps:
           if (errors > 0) {
             setStat(stat2, '⚠ Written <b>' + written + '</b> items with <b>' + errors + '</b> error(s). Check the log above.', 'err');
           } else {
-            setStat(stat2, '✓ <b>' + written + '</b> files written &amp; cleaned. SD card ready!<br><b>⏏ Please eject the drive manually</b> in Finder (right-click → Eject) before proceeding.<br><small>Auto-eject is not possible — browsers cannot unmount drives.</small>', 'ok');
+            setStat(stat2, '✓ <b>' + written + '</b> files written &amp; cleaned. SD card ready!<br><b>⏏ Please safely eject the drive</b> before proceeding (macOS: Finder → Eject; Windows: "Safely Remove Hardware"; Linux: unmount).<br><small>Auto-eject is not possible — browsers cannot unmount drives.</small>', 'ok');
           }
           markDone(card2);
           activateCard(card3);
           btn3Connect.disabled = false;
-          setStat(stat3, '<b>Eject the SD card drive</b> from Finder first, then click <b>Connect</b> to reconnect via the front JTAG port.');
+          setStat(stat3, '<b>Safely eject the SD card drive</b> from your computer first, then click <b>Connect</b> to reconnect via the front JTAG port.');
 
         } catch (e) {
           console.error(e);
@@ -1275,7 +1276,7 @@ Troubleshooting
 
   - Make sure a USB-C cable is connected from **back Port #1** to your computer
   - Port #1 is the back USB-C port closest to the center of the device
-  - Check Finder / your file manager for a new drive (typically named ``NO NAME``)
+  - Check your file manager for a new drive (typically named ``NO NAME``)
   - If still no drive: go back to Step 1 and try again
 
 **"Permission denied" when writing files**
@@ -1286,6 +1287,30 @@ Troubleshooting
 **Step 3 connection fails (device in MSC mode)**
 
   When the device is in USB Mass Storage mode, the serial port may not be available.
-  Make sure you **eject the drive first** (right-click → Eject in Finder),
+  Make sure you **eject the drive first** (macOS: right-click → Eject; Windows: "Safely Remove Hardware"; Linux: unmount),
   then try connecting via the **front JTAG port**. If the serial port
   still doesn't appear, briefly unplug and replug the front USB cable.
+
+**Linux: serial port not accessible**
+
+  On Linux, serial ports are typically owned by the ``dialout`` (or ``uucp``) group.
+  If the browser cannot open the serial port, add your user to the group and log out/in::
+
+    sudo usermod -aG dialout $USER
+
+**Linux: Step 5 (RP2350) WebUSB device not found**
+
+  Chrome on Linux needs udev rules to access USB devices. Create
+  ``/etc/udev/rules.d/99-pico.rules`` with::
+
+    SUBSYSTEM=="usb", ATTR{idVendor}=="2e8a", MODE="0666"
+
+  Then reload rules::
+
+    sudo udevadm control --reload-rules && sudo udevadm trigger
+
+**Windows: Step 5 (RP2350) device not recognised**
+
+  If Chrome does not show the RP2350 in the WebUSB device picker, you may need to
+  install the **WinUSB** driver using `Zadig <https://zadig.akeo.ie/>`_. Select the
+  RP2350 Boot device and install WinUSB.
