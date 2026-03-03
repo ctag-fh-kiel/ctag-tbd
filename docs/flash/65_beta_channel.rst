@@ -1,21 +1,20 @@
 :orphan:
 
 ****************************
-Sample Manager Test Setup
+Beta Channel
 ****************************
 
-Set up your TBD-16 to test the new **Sample Manager** — accessible at
-``http://192.168.4.1/samples.html`` after completing the steps below.
+Flash **beta firmware** and **SD card images** to your TBD-16 directly from the
+browser — no card reader, no terminal commands, no opening the device.
 
-This tool writes the test SD card image and flashes the matching firmware
-directly from the browser — no card reader, no terminal commands, no opening the device.
+Choose a firmware package below, then follow the four steps.
 
 **What this does:**
 
 1. Flashes the USB Mass Storage firmware to your device (so the SD card mounts via USB)
-2. Downloads and extracts the test SD card image directly onto your device's SD card
+2. Downloads and extracts the matching SD card image directly onto your device's SD card
 3. Switches your device back to normal operation
-4. Flashes the ``ctag-tbd-2026-02-27.bin`` firmware to the ESP32-P4
+4. Flashes the selected firmware to the ESP32-P4
 
 **Hardware setup:**
 
@@ -200,6 +199,11 @@ You need **USB-C cables** connected at different steps:
         background: #1e293b;
         border-color: #334155;
       }
+      body[data-theme="dark"] .sd-recovery select {
+        background: #1e293b;
+        color: #f1f5f9;
+        border-color: #475569;
+      }
       body[data-theme="dark"] .sd-recovery .step-hdr {
         color: #f1f5f9;
       }
@@ -261,6 +265,26 @@ You need **USB-C cables** connected at different steps:
 
     <div class="sd-recovery" id="sdRecovery">
 
+      <!-- ════════ PACKAGE SELECTOR ════════ -->
+      <div class="step-card active-step" id="cardSelect" style="border-color:#7c3aed; box-shadow:0 0 0 1px #7c3aed;">
+        <div class="step-hdr" style="color:#7c3aed;">
+          <span class="step-num" style="background:#7c3aed;">▼</span> Choose Firmware Package
+        </div>
+        <div class="step-desc">
+          Select which firmware &amp; SD card image to flash.
+          All four steps below will use the files from the selected package.
+        </div>
+        <div style="margin-bottom:0.6em;">
+          <select id="pkgSelect" style="padding:0.45em 0.8em; border-radius:5px; border:1px solid #6B7280; font-size:0.92em; min-width:280px; background:var(--color-background-secondary,#fff); color:var(--color-foreground-primary,#1a1a1a);">
+            <option value="ctag-tbd-2026-02-27">ctag-tbd-2026-02-27</option>
+            <option value="possan-tbd-2026-03-02" selected>possan-tbd-2026-03-02</option>
+          </select>
+        </div>
+        <div class="status status-info" id="statPkg">
+          Selected: <b>possan-tbd-2026-03-02</b> — P4 firmware + SD card image from 2026-03-02
+        </div>
+      </div>
+
       <!-- ════════ STEP 1 ════════ -->
       <div class="step-card active-step" id="card1">
         <div class="step-hdr"><span class="step-num">1</span> Flash MSC Firmware &amp; Mount SD Card</div>
@@ -280,10 +304,10 @@ You need **USB-C cables** connected at different steps:
 
       <!-- ════════ STEP 2 ════════ -->
       <div class="step-card" id="card2" style="opacity:0.4; pointer-events:none;">
-        <div class="step-hdr"><span class="step-num">2</span> Write Test SD Card Image</div>
+        <div class="step-hdr"><span class="step-num">2</span> Write SD Card Image</div>
         <div class="step-desc">
           The SD card should now be mounted via <b>back Port&nbsp;#1</b> (look for a <b>"NO NAME"</b> drive in Finder).
-          Select the mounted drive below. The test image (with Sample Manager support) will be downloaded,
+          Select the mounted drive below. The SD card image for the selected package will be downloaded,
           extracted, and written directly — your SD card will be ready to use.
         </div>
         <div class="btn-row">
@@ -313,12 +337,12 @@ You need **USB-C cables** connected at different steps:
 
       <!-- ════════ STEP 4 ════════ -->
       <div class="step-card" id="card4" style="opacity:0.4; pointer-events:none;">
-        <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 (ctag-tbd Firmware)</div>
+        <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
           First <b>power-cycle the device</b>: unplug the cable from <b>back USB-C Port&nbsp;#1</b>,
           wait 3 seconds, then plug it back in.
           Once the device has rebooted, click <b>Connect</b> below (via the <b>front JTAG port</b>)
-          to flash <code>ctag-tbd-2026-02-27.bin</code> to the ESP32-P4.
+          to flash the selected firmware (<code id="fwNameStep4">possan-tbd-2026-03-02.bin</code>) to the ESP32-P4.
         </div>
         <div class="btn-row">
           <button id="btn4Connect" class="btn-primary" disabled>Connect</button>
@@ -330,11 +354,11 @@ You need **USB-C cables** connected at different steps:
 
       <!-- ════════ DONE ════════ -->
       <div class="complete-card" id="cardDone">
-        <h3>✓ Sample Manager Test Setup Complete</h3>
-        <p>Your TBD-16 has the test SD card image and <code>ctag-tbd-2026-02-27.bin</code> firmware.<br>
+        <h3>✓ Beta Firmware Setup Complete</h3>
+        <p>Your TBD-16 has the SD card image and <code id="fwNameDone">possan-tbd-2026-03-02.bin</code> firmware.<br>
         <b>Remove all USB cables</b> from the device and wait 3 seconds to fully power-cycle.
         Then reconnect a single USB-C cable to <b>back Port&nbsp;#1</b> and open
-        <b>http://192.168.4.1/samples.html</b> to access the Sample Manager.</p>
+        <b>http://192.168.4.1</b> to use the device.</p>
       </div>
     </div>
 
@@ -365,9 +389,43 @@ You need **USB-C cables** connected at different steps:
          Constants
          ────────────────────────────── */
       var TUSB_MSC_URL      = '../_static/firmware/p4/tusb_msc.bin';
-      var CTAG_P4_URL       = '../_static/firmware/p4/ctag-tbd-2026-02-27.bin';
-      var SDCARD_ZIP_URL    = '../_static/sdcard_image/2026-02-27/tbd-sd-card.zip';
-      var HASH_URL          = '../_static/sdcard_image/2026-02-27/tbd-sd-card-hash.txt';
+
+      /* Package definitions */
+      var PACKAGES = {
+        'ctag-tbd-2026-02-27': {
+          p4Url:    '../_static/firmware/p4/ctag-tbd-2026-02-27.bin',
+          p4Name:   'ctag-tbd-2026-02-27.bin',
+          zipUrl:   '../_static/sdcard_image/2026-02-27/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-02-27/tbd-sd-card-hash.txt',
+          label:    'ctag-tbd-2026-02-27'
+        },
+        'possan-tbd-2026-03-02': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-02.bin',
+          p4Name:   'possan-tbd-2026-03-02.bin',
+          zipUrl:   '../_static/sdcard_image/2026-03-02/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-02/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-02'
+        }
+      };
+
+      var pkgSelect = $('pkgSelect');
+      var statPkg   = $('statPkg');
+      var fwNameStep4 = $('fwNameStep4');
+      var fwNameDone  = $('fwNameDone');
+
+      function getActivePkg() {
+        return PACKAGES[pkgSelect.value];
+      }
+
+      function updatePkgUI() {
+        var pkg = getActivePkg();
+        statPkg.innerHTML = 'Selected: <b>' + pkg.label + '</b> — P4 firmware + SD card image';
+        fwNameStep4.textContent = pkg.p4Name;
+        fwNameDone.textContent = pkg.p4Name;
+      }
+
+      pkgSelect.addEventListener('change', updatePkgUI);
+
       var OTA_DATA_ADDR     = 0xd000;     /* otadata partition */
       var OTA1_ADDR         = null;       /* detected from device partition table */
       var OTA_DATA_SIZE     = 0x2000;     /* 8 KB              */
@@ -680,8 +738,14 @@ You need **USB-C cables** connected at different steps:
           'or unplug both USB cables → wait 3 s → replug. The drive appears via <b>back Port&nbsp;#1</b>.</small>');
       }
 
+      function lockPkgSelect() {
+        pkgSelect.disabled = true;
+        statPkg.innerHTML = 'Locked: <b>' + getActivePkg().label + '</b> — restart the page to change package.';
+      }
+
       btn1Connect.addEventListener('click', async function () {
         try {
+          lockPkgSelect();
           var chip = await connectStep1();
           btn1Go.disabled = false;
           setStat(stat1, 'Connected to <b>' + chip + '</b>. Click <b>Flash &amp; Switch</b> to proceed.', 'ok');
@@ -748,8 +812,9 @@ You need **USB-C cables** connected at different steps:
 
         try {
           /* 2a — download the SD card ZIP */
-          setStat(stat2, 'Downloading SD card image…');
-          var zipResp = await fetch(SDCARD_ZIP_URL);
+          var activePkg2 = getActivePkg();
+          setStat(stat2, 'Downloading SD card image (' + activePkg2.label + ')…');
+          var zipResp = await fetch(activePkg2.zipUrl);
           if (!zipResp.ok) throw new Error('ZIP download failed: ' + zipResp.statusText);
           var contentLength = parseInt(zipResp.headers.get('Content-Length') || '0', 10);
           var reader = zipResp.body.getReader();
@@ -776,7 +841,7 @@ You need **USB-C cables** connected at different steps:
           log('Downloaded ' + (received / 1024 / 1024).toFixed(1) + ' MB');
 
           /* 2b — download the hash */
-          var hashResp = await fetch(HASH_URL);
+          var hashResp = await fetch(activePkg2.hashUrl);
           var sdHash = (await hashResp.text()).trim();
           log('Hash: ' + sdHash);
 
@@ -950,7 +1015,7 @@ You need **USB-C cables** connected at different steps:
           markDone(card3);
           activateCard(card4);
           btn4Connect.disabled = false;
-          setStat(stat4, '<b>Power-cycle the device</b>: unplug the cable from back USB-C Port&nbsp;#1, wait 3 s, replug it. Then click <b>Connect</b> to flash <code>ctag-tbd-2026-02-27.bin</code>.');
+          setStat(stat4, '<b>Power-cycle the device</b>: unplug the cable from back USB-C Port&nbsp;#1, wait 3 s, replug it. Then click <b>Connect</b> to flash <code>' + getActivePkg().p4Name + '</code>.');
         } catch (e) {
           console.error(e);
           setStat(stat3, 'Failed: ' + e.message, 'err');
@@ -995,13 +1060,14 @@ You need **USB-C cables** connected at different steps:
         if (!conn4 || !esp4) return;
         btn4Flash.disabled = true; btn4Connect.disabled = true;
         try {
-          setStat(stat4, 'Downloading ctag-tbd firmware…');
-          var resp = await fetch(CTAG_P4_URL);
+          var activePkg4 = getActivePkg();
+          setStat(stat4, 'Downloading ' + activePkg4.label + ' firmware…');
+          var resp = await fetch(activePkg4.p4Url);
           if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
           var fw = new Uint8Array(await resp.arrayBuffer());
           var sizeMB = (fw.length / 1024 / 1024).toFixed(1);
 
-          setStat(stat4, 'Flashing <code>ctag-tbd-2026-02-27.bin</code> (' + sizeMB + ' MB) — do not unplug…');
+          setStat(stat4, 'Flashing <code>' + activePkg4.p4Name + '</code> (' + sizeMB + ' MB) — do not unplug…');
           await esp4.writeFlash({
             fileArray: [{ data: toBinStr(fw), address: 0x0 }],
             flashSize: '16MB', flashMode: 'dio', flashFreq: '80m',
@@ -1018,7 +1084,7 @@ You need **USB-C cables** connected at different steps:
           }
           await cleanup4();
 
-          setStat(stat4, '✓ ESP32-P4 firmware updated (<code>ctag-tbd-2026-02-27.bin</code>). <b>Remove all USB cables</b>, wait 3 s, then reconnect via back Port&nbsp;#1.', 'ok');
+          setStat(stat4, '✓ ESP32-P4 firmware updated (<code>' + activePkg4.p4Name + '</code>). <b>Remove all USB cables</b>, wait 3 s, then reconnect via back Port&nbsp;#1.', 'ok');
           markDone(card4);
           cardDone.style.display = 'block';
         } catch (e) {

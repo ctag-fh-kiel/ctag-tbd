@@ -49,12 +49,12 @@ Artist Interviews
        </div>
      </a>
 
-     <a class="interview-card" href="eric-d-clark-en.html">
+     <a class="interview-card" href="daria-goremykina-en.html">
        <div class="interview-card-image">
-         <div class="interview-card-placeholder">EC</div>
+         <div class="interview-card-placeholder">DG</div>
        </div>
        <div class="interview-card-body">
-         <h3>Eric D. Clark</h3>
+         <h3>Daria Goremykina</h3>
          <p class="interview-card-meta">EN · DE</p>
        </div>
      </a>
