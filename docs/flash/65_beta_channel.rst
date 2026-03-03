@@ -15,6 +15,7 @@ Choose a firmware package below, then follow the four steps.
 2. Downloads and extracts the matching SD card image directly onto your device's SD card
 3. Switches your device back to normal operation
 4. Flashes the selected firmware to the ESP32-P4
+5. Flashes the RP2350 co-processor firmware (if the selected package includes one)
 
 **Hardware setup:**
 
@@ -352,6 +353,24 @@ You need **USB-C cables** connected at different steps:
         <div class="status" id="stat4">Waiting for Step 3…</div>
       </div>
 
+      <!-- ════════ STEP 5 ════════ -->
+      <div class="step-card" id="card5" style="opacity:0.4; pointer-events:none;">
+        <div class="step-hdr"><span class="step-num">5</span> Flash RP2350 (Pico Firmware)</div>
+        <div class="step-desc">
+          <b>Connect the back USB-C Port&nbsp;#2</b> to your computer (the port closest to the edge of the device).
+          You can disconnect the front JTAG cable — it is no longer needed.
+          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button + press RESET — both on the front panel, next to the JTAG port),
+          then click <b>Connect</b> below. This flashes <code id="fwNameStep5">possan-tbd-2026-03-02.uf2</code> to the RP2350 co-processor.
+        </div>
+        <div class="btn-row">
+          <button id="btn5Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn5Flash" class="btn-success" disabled>Flash Pico Firmware</button>
+          <button id="btn5Reboot" class="btn-secondary" disabled>Reboot</button>
+        </div>
+        <div class="progress-wrap" id="prog5"><div class="progress-bar" id="prog5Bar"></div><span class="progress-text" id="prog5Txt">0 %</span></div>
+        <div class="status" id="stat5">Waiting for Step 4…</div>
+      </div>
+
       <!-- ════════ DONE ════════ -->
       <div class="complete-card" id="cardDone">
         <h3>✓ Beta Firmware Setup Complete</h3>
@@ -370,7 +389,7 @@ You need **USB-C cables** connected at different steps:
       var $ = function (id) { return document.getElementById(id); };
 
       var card1 = $('card1'), card2 = $('card2'), card3 = $('card3');
-      var card4 = $('card4'), cardDone = $('cardDone');
+      var card4 = $('card4'), card5 = $('card5'), cardDone = $('cardDone');
       var btn1Connect = $('btn1Connect'), btn1Go = $('btn1Go');
       var prog1 = $('prog1'), prog1Bar = $('prog1Bar'), prog1Txt = $('prog1Txt');
       var stat1 = $('stat1'), skip1 = $('skip1');
@@ -385,6 +404,10 @@ You need **USB-C cables** connected at different steps:
       var prog4 = $('prog4'), prog4Bar = $('prog4Bar'), prog4Txt = $('prog4Txt');
       var stat4 = $('stat4');
 
+      var btn5Connect = $('btn5Connect'), btn5Flash = $('btn5Flash'), btn5Reboot = $('btn5Reboot');
+      var prog5 = $('prog5'), prog5Bar = $('prog5Bar'), prog5Txt = $('prog5Txt');
+      var stat5 = $('stat5');
+
       /* ──────────────────────────────
          Constants
          ────────────────────────────── */
@@ -395,6 +418,8 @@ You need **USB-C cables** connected at different steps:
         'ctag-tbd-2026-02-27': {
           p4Url:    '../_static/firmware/p4/ctag-tbd-2026-02-27.bin',
           p4Name:   'ctag-tbd-2026-02-27.bin',
+          picoUrl:  null,
+          picoName: null,
           zipUrl:   '../_static/sdcard_image/2026-02-27/tbd-sd-card.zip',
           hashUrl:  '../_static/sdcard_image/2026-02-27/tbd-sd-card-hash.txt',
           label:    'ctag-tbd-2026-02-27'
@@ -402,6 +427,8 @@ You need **USB-C cables** connected at different steps:
         'possan-tbd-2026-03-02': {
           p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-02.bin',
           p4Name:   'possan-tbd-2026-03-02.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-02.uf2',
+          picoName: 'possan-tbd-2026-03-02.uf2',
           zipUrl:   '../_static/sdcard_image/2026-03-02/tbd-sd-card.zip',
           hashUrl:  '../_static/sdcard_image/2026-03-02/tbd-sd-card-hash.txt',
           label:    'possan-tbd-2026-03-02'
@@ -411,6 +438,7 @@ You need **USB-C cables** connected at different steps:
       var pkgSelect = $('pkgSelect');
       var statPkg   = $('statPkg');
       var fwNameStep4 = $('fwNameStep4');
+      var fwNameStep5 = $('fwNameStep5');
       var fwNameDone  = $('fwNameDone');
 
       function getActivePkg() {
@@ -419,9 +447,17 @@ You need **USB-C cables** connected at different steps:
 
       function updatePkgUI() {
         var pkg = getActivePkg();
-        statPkg.innerHTML = 'Selected: <b>' + pkg.label + '</b> — P4 firmware + SD card image';
+        var extra = pkg.picoName ? ' + Pico firmware' : '';
+        statPkg.innerHTML = 'Selected: <b>' + pkg.label + '</b> — P4 firmware + SD card image' + extra;
         fwNameStep4.textContent = pkg.p4Name;
+        fwNameStep5.textContent = pkg.picoName || '(none)';
         fwNameDone.textContent = pkg.p4Name;
+        /* Show/hide Step 5 card label based on pico availability */
+        if (!pkg.picoUrl) {
+          card5.style.display = 'none';
+        } else {
+          card5.style.display = '';
+        }
       }
 
       pkgSelect.addEventListener('change', updatePkgUI);
@@ -948,7 +984,7 @@ You need **USB-C cables** connected at different steps:
           if (errors > 0) {
             setStat(stat2, '⚠ Written <b>' + written + '</b> items with <b>' + errors + '</b> error(s). Check the log above.', 'err');
           } else {
-            setStat(stat2, '✓ <b>' + written + '</b> files written &amp; cleaned. SD card restored! <b>Eject the drive</b> from Finder, then proceed to Step 3.', 'ok');
+            setStat(stat2, '✓ <b>' + written + '</b> files written &amp; cleaned. SD card ready!<br><b>⏏ Please eject the drive manually</b> in Finder (right-click → Eject) before proceeding.<br><small>Auto-eject is not possible — browsers cannot unmount drives.</small>', 'ok');
           }
           markDone(card2);
           activateCard(card3);
@@ -1086,7 +1122,15 @@ You need **USB-C cables** connected at different steps:
 
           setStat(stat4, '✓ ESP32-P4 firmware updated (<code>' + activePkg4.p4Name + '</code>). <b>Remove all USB cables</b>, wait 3 s, then reconnect via back Port&nbsp;#1.', 'ok');
           markDone(card4);
-          cardDone.style.display = 'block';
+
+          /* If the selected package has a Pico UF2, activate Step 5; otherwise show done */
+          if (activePkg4.picoUrl) {
+            activateCard(card5);
+            btn5Connect.disabled = false;
+            setStat(stat5, '<b>Connect back USB-C Port&nbsp;#2</b> to your computer, put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET on the front panel), then click <b>Connect</b>.');
+          } else {
+            cardDone.style.display = 'block';
+          }
         } catch (e) {
           console.error(e);
           setStat(stat4, 'Flash failed: ' + e.message, 'err');
@@ -1094,6 +1138,104 @@ You need **USB-C cables** connected at different steps:
           await cleanup4();
         }
       });
+
+      /* ══════════════════════════════
+         STEP 5 — Flash RP2350 with Pico firmware (WebUSB / Picoboot)
+         ══════════════════════════════ */
+      var Picoboot = null, uf2ToFlashBuffer = null;
+      var pico5 = null, picoConn5 = null;
+
+      /* Load Picoboot modules dynamically */
+      try {
+        var picoMod = await import('../_static/picoflash/pkg/index.js');
+        Picoboot = picoMod.Picoboot;
+        var uf2Mod = await import('../_static/picoflash/js/uf2.js');
+        uf2ToFlashBuffer = uf2Mod.uf2ToFlashBuffer;
+      } catch (e) {
+        console.warn('Picoboot module load failed — Step 5 will be unavailable:', e);
+      }
+
+      async function cleanup5() {
+        try { if (pico5) await pico5.disconnect(); } catch (_) {}
+        pico5 = null; picoConn5 = null;
+      }
+
+      btn5Connect.addEventListener('click', async function () {
+        if (!Picoboot) {
+          setStat(stat5, 'Picoboot module failed to load. Try reloading the page.', 'err');
+          return;
+        }
+        try {
+          btn5Connect.disabled = true;
+          setStat(stat5, 'Waiting for device selection… choose <b>RP2350 Boot</b>');
+          pico5 = await Picoboot.requestDevice();
+          setStat(stat5, 'Connecting…');
+          picoConn5 = await pico5.connect();
+          await picoConn5.resetInterface();
+          btn5Flash.disabled = false;
+          var info = pico5.getUsbDeviceInfo();
+          setStat(stat5, 'Connected to <b>' + (info.productName || 'RP2350') + '</b>. Click <b>Flash Pico Firmware</b>.', 'ok');
+        } catch (e) {
+          console.error(e);
+          setStat(stat5, 'Connection failed: ' + e.message, 'err');
+          btn5Connect.disabled = false;
+          await cleanup5();
+        }
+      });
+
+      btn5Flash.addEventListener('click', async function () {
+        if (!pico5 || !uf2ToFlashBuffer) return;
+        btn5Flash.disabled = true; btn5Connect.disabled = true;
+        try {
+          var activePkg5 = getActivePkg();
+          setStat(stat5, 'Downloading <code>' + activePkg5.picoName + '</code>…');
+          showProg(prog5, prog5Bar, prog5Txt, 10);
+          var resp = await fetch(activePkg5.picoUrl);
+          if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
+          var uf2Data = new Uint8Array(await resp.arrayBuffer());
+          showProg(prog5, prog5Bar, prog5Txt, 25);
+
+          setStat(stat5, 'Parsing UF2 file…');
+          var parsed = uf2ToFlashBuffer(uf2Data);
+          var sizeKB = (parsed.data.length / 1024).toFixed(0);
+
+          setStat(stat5, 'Erasing &amp; writing ' + sizeKB + ' KB…');
+          showProg(prog5, prog5Bar, prog5Txt, 35);
+          await pico5.flashEraseAndWrite(parsed.address, parsed.data);
+          showProg(prog5, prog5Bar, prog5Txt, 100);
+
+          btn5Reboot.disabled = false;
+          setStat(stat5, '✓ RP2350 firmware updated (<code>' + activePkg5.picoName + '</code>). Click <b>Reboot</b> to restart the device.', 'ok');
+        } catch (e) {
+          console.error(e);
+          setStat(stat5, 'Flash failed: ' + e.message, 'err');
+          btn5Connect.disabled = false;
+          await cleanup5();
+        }
+      });
+
+      btn5Reboot.addEventListener('click', async function () {
+        try {
+          btn5Reboot.disabled = true;
+          setStat(stat5, 'Rebooting device…');
+          try { await picoConn5.reboot(100); } catch (e) {
+            console.warn('Reboot command error (may be expected):', e.message);
+          }
+          await cleanup5();
+          hideProg(prog5);
+
+          setStat(stat5, '✓ RP2350 rebooted. <b>Remove all USB cables</b>, wait 3 s, then reconnect via a back port.', 'ok');
+          markDone(card5);
+          cardDone.style.display = 'block';
+        } catch (e) {
+          console.error(e);
+          setStat(stat5, 'Reboot failed: ' + e.message, 'err');
+          await cleanup5();
+        }
+      });
+
+      /* Run initial UI update to hide Step 5 if package has no Pico firmware */
+      updatePkgUI();
 
     })();
     </script>
