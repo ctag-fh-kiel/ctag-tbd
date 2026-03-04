@@ -11,49 +11,93 @@ orphan: true
 </div>
 ```
 
-**Daria Goremykina** ist eine in Berlin lebende elektronische Musikerin, Klangkünstlerin und DJ, ursprünglich aus Russland. Bekannt für ihre tiefgreifend texturalen und immersiven Live-Sets, kombiniert sie Hardware-Synthesizer, Drum Machines und modulares Equipment, um hypnotische, sich entwickelnde Klanglandschaften zu erschaffen, die die Grenzen zwischen Techno, Ambient und experimenteller Musik verwischen. Ihre Auftritte haben sie in Clubs und auf Festivals in ganz Europa geführt.
+# **Live-Setup und Looping-Herausforderungen**
 
-## Das Live-Setup
+**Benjamin:** Du spielst ja oft live, manchmal mit Maschinen, manchmal mit richtigen Instrumenten oder beidem. Was ist dein aktuelles Setup auf der Bühne?
 
-**Benjamin Weiss:** Was ist dein Live-Setup?
+**Daria Goremykina:** Für mich selbst ist das meistens das Klavier, wenn eines vorhanden ist, ansonsten ein [Nord Piano](https://www.nordkeyboards.com/products/nord-piano-6/). Dazu kommen oft der [Prophet-6](https://sequential.com/modern-analog/prophet-6/) – mein Liebling – und der Prophet-10. Ich loope die Instrumente live und spiele dann eventuell Klavier darüber oder wechsle zwischen den geloopten Instrumenten.
 
-**Daria Goremykina:** Mein Setup ist ziemlich kompakt — ich verwende eine Kombination aus einer Drum Machine, ein paar Synthesizern und Effektpedalen. Ich halte die Dinge gerne minimal, damit ich mich auf den Klang konzentrieren kann und nicht auf das Gear. Ich habe eine Groovebox für rhythmische Elemente und Sequencing, einen Mono-Synth für Basslines und Leads, und dann verarbeite ich alles durch eine Effektkette — hauptsächlich Delay, Reverb und Distortion.
+**Benjamin:** Mit was loopst du?
 
-Außerdem benutze ich einen kleinen Mixer, um alles zusammenzumischen und die Pegel während der Performance zu kontrollieren. Alles läuft über einen einzigen Stereo-Ausgang, was den Aufbau an jedem Veranstaltungsort einfach macht.
+**Daria Goremykina:** Neulich zum Beispiel mit [Loopy Pro](https://loopypro.com/), einer iPad-App. Wobei ich noch nach dem perfekten Setup suche – besonders was Synchronisation angeht. Sonst auch mit einfachen Looping-Pedalen.  
+Ich möchte viele Noten loopen und gleichzeitig flexibel Parameter ändern können. Ich habe auch öfter mit dem [Digitone](https://www.elektron.se/product/digitone-ii) gearbeitet und darin geloopt – das hat mir die Flexibilität gegeben, Stimmen im Takt zu halten und Parameter live zu variieren.  
+ Bei Loopy Pro loope ich nur Audiospuren und lade mir dort die Eventide-Plugins rein, um den Klang variieren zu können.
 
-## Vorbereitung und Improvisation
+# **Erfahrungen mit Sequenzern: Torso und OXI**
 
-**Benjamin Weiss:** Wie viel bereitest du vor einem Live-Set vor?
+**Daria Goremykina:** Was MIDI-Looping und Sequenzer angeht: Ich war zu einem bestimmten Zeitpunkt richtig schnell mit dem [Torso T-1](https://torsoelectronics.com/pages/t-1?srsltid=AfmBOorPoosqng18JDIZ9c9Oa8gU8iNEDtEbj3R4Z3TBPC2RMuibPzJp). Aber nach einer längeren Pause musste ich wegen dieses Farbinterfaces – hellrot, dunkelrot usw. – wieder fast bei null anfangen. So extrem ist mir das bei anderen Geräten noch nie passiert. Normalerweise kommt das Muskelgedächtnis schnell zurück.
 
-**Daria Goremykina:** Ich bereite die Sounds und Patches im Voraus vor — ich verbringe viel Zeit damit, die Klangfarben zu gestalten, die ich verwenden möchte. Aber das eigentliche Arrangement und die Struktur sind komplett improvisiert. Ich habe eine ungefähre Vorstellung davon, wie ich anfangen will und wohin ich möchte, aber der Weg zwischen diesen Punkten ist immer anders.
+**Benjamin:** Der Torso ist ja sehr reduziert, was Informationen angeht.
 
-Ich denke, das macht Live-Performance so aufregend — man reagiert auf den Raum, das Publikum, die Energie. Wenn etwas Unerwartetes passiert, folgt man dem. Das ist viel interessanter als ein vorab arrangiertes Set abzuspielen.
+**Daria Goremykina:** Ja. Ich mag die Features, wie den euklidischen Sequenzer oder die „Voicing Deviations“, die Melodien natürlicher klingen lassen.  
+ Aber ich weiß auch, dass ich am schnellsten bin, wenn ich Töne direkt setzen kann, wie ich sie mir vorstelle – ohne viele Zwischenschritte, zum Beispiel wie bei manchen Elektron-Sequenzern. Ich weiß, welche Töne ich hören will, wann sie kommen und wie lang sie sind. Ich möchte die Noten so schnell wie möglich setzen können, meistens ohne sie dabei hören zu müssen.
 
-## Sounddesign und Texturen
+Für einen Auftritt habe ich den [OXI One](https://oxiinstruments.com/oxi-one) getestet. Ich hatte die Idee, dass ich bei einem kleineren Setup auf eine extra MIDI-Tastatur verzichten könnte. Der OXI hat ein invertiertes Farbschema mit leuchtenden weißen Tasten. Am Klavier sind im Gegenteil die schwarzen Tasten präsenter – sie stechen heraus. Ich habe es nicht geschafft, mich daran zu gewöhnen.
 
-**Benjamin Weiss:** Welche Rolle spielt Sounddesign in deiner Live-Arbeit?
+Ich mache auch am liebsten ungerade Pattern-Längen – 7, 13 oder 15 Steps, alles, was nicht klassisch 8 oder 16 ist. Schneller Zugang zu Pattern-Rotation ist für mich ein wichtiger Workflow-Aspekt. Oder auch schnelles Copy-Paste von ungeraden Patterns auf andere Pages, sodass jede Page dann zum Beispiel nur 13 Steps hat und mein 13/16-Takt nicht über zwei Pages verteilt wird.
 
-**Daria Goremykina:** Es ist alles. Die Texturen und Klangfarben definieren die Stimmung und Atmosphäre eines Sets. Ich verbringe viel Zeit damit, Sounds zu schichten, interessante harmonische Beziehungen zu finden und Bewegung durch Modulation zu erzeugen. Mich ziehen Klänge an, die viel innere Komplexität haben — Klänge, die sich im Laufe der Zeit entwickeln und verändern.
+# **Die Suche nach Logik und der richtige Synth**
 
-Effekte sind auch ein großer Teil davon. Ich benutze lange Reverb-Fahnen und Feedback-Delays, um ein Gefühl von Raum und Tiefe zu erzeugen. Es geht darum, eine Umgebung aufzubauen, in der sich das Publikum verlieren kann.
+**Benjamin:** Was ist dir bei Geräten für die Bühne wichtig?
 
-## Was fehlt
+**Daria Goremykina:** Wenn man genug Platz und Budget für das Setup hat, wäre es schön, wenn nicht alles mehrfach belegt wäre. Beim Digitone muss man zwischen Synth-Tracks und MIDI-Tracks hin- und herspringen, um etwas anderes zu steuern. Da wären zwei gleiche Geräte nebeneinander manchmal besser.
 
-**Benjamin Weiss:** Gibt es etwas, das du schon lange suchst, aber noch nicht gefunden hast?
+Wichtig ist mir die Logik im optischen Feedback – dass die gleiche Funktion über verschiedene Geräte eines Herstellers hinweg gleich aussieht und sich gleich verhält.
 
-**Daria Goremykina:** Ich hätte gerne ein kompaktes Gerät, das Granular-Processing in Echtzeit mit einem haptischen Interface kann. Es gibt Software-Lösungen, aber ich will etwas, das ich während einer Performance anfassen und physisch manipulieren kann. Außerdem wäre ein richtig guter Live-Looper mit mehreren Ebenen und einfachem Undo fantastisch.
+Mein Lieblingssynth ist der Prophet-6. Er ist unglaublich simpel, aber im Vergleich zu mehreren anderen Poly-Synths einfach fett. Ich brauche Polyphonie, weil ich vom Klavier komme. Mein erster Hardware-Synth war der Prophet-08 (Rev2), aber irgendwann war sein Klang für mich zu digital.
 
-Mich interessiert auch Spatial Audio — die Möglichkeit, Klänge während eines Live-Sets in einem dreidimensionalen Raum zu bewegen. Das ist etwas, das meiner Meinung nach immer wichtiger wird, wenn Veranstaltungsorte anfangen, immersive Soundsysteme einzusetzen.
+**Benjamin:** Du magst also schwere, gewichtete Tastaturen?
 
-## Feedback zum TBD-Toolkit Prototyp
+**Daria Goremykina:** Ja. Beim Nord Piano ist das toll. Es ist einfacher zu kontrollieren, wie man spielt. Mit einer gewichteten Tastatur kann ich viel präziser arbeiten. Bei einer ungewichteten Tastatur fehlt mir diese Präzision. Ich hätte gerne mein Nord Piano mit einem Mod-Wheel, dann hätte es für mich jede MIDI-Tastatur ersetzt.
 
-**Benjamin Weiss:** Was würdest du mit dem TBD-Prototyp machen?
+# **Minimalismus gegen Feature-Overkill**
 
-**Daria Goremykina:** Als Erstes — Granular-Effekte und einen Live-Looper. Das wären meine obersten Prioritäten. Aber ich kann mir auch vorstellen, dass es als Sample-Player mit vielen Modulationsmöglichkeiten oder als Multi-Effekt-Prozessor großartig wäre. Die Tatsache, dass es offen und programmierbar ist, ist wirklich ansprechend. Man könnte es an alles anpassen, was das Set gerade braucht.
+**Daria Goremykina:** Viele Sequenzer sind für mich ein Overkill. Die Entwickler versuchen, Geräte für verschiedenste Arbeitsweisen zu bauen, aber für meinen Workflow brauche ich eigentlich nur einen Bruchteil davon.  
+ Ich will schnell an die Funktionen, die ich brauche – gerade und ungerade Sequenzen multiplizieren, schnell editieren, Töne um Oktaven verschieben.
 
-Ich wäre auch neugierig darauf, es für generatives Sequencing zu nutzen — es Patterns und Variationen erzeugen zu lassen, die ich in Echtzeit lenken und formen kann. Diese Art von kontrollierter Zufälligkeit kann einer Performance viel Leben verleihen.
+Manchmal wünscht man sich, man könnte winzige Details am Gerät ändern – zum Beispiel die Piano-Tastatur-Farben beim OXI invertieren.
 
----
+# **Feedback zum TBD-Toolkit-Prototyp**
+
+**Benjamin:** \[zeigt den TBD-Prototypen\] Was könntest du dir vorstellen, damit zu machen?
+
+**Daria Goremykina:** Mein erster Gedanke beim Farbschema der Knöpfe war die [Monomachine](https://en.wikipedia.org/wiki/Elektron_Monomachine) oder die Machinedrum. Es sieht aus wie ein kleiner Sequenzer, ein kleiner Synth oder eine Groovebox.
+
+Wenn ich die Funktionen selbst belegen könnte, würde ich vielleicht drei oder vier einstimmige Instrumente parallel haben wollen, zwischen denen man schnell wechseln kann. Navigation wie bei einem Joystick – hoch, runter, links, rechts.
+
+**Benjamin:** Es gibt vier Encoder und 16 Tasten …
+
+**Daria Goremykina:** Ich würde erwarten, dass man eine Taste pro Instrument hat, um schnell zu wechseln. Zum Beispiel meine obere Stimme, dann eine tiefere und so weiter. Oder man würde eine Firmware entwickeln, mit der ich Klavier-Samples aufnehme und diese dann auf drei bis vier Stimmen verteile.
+
+**Benjamin:** Wo würdest du den Shift-Button platzieren?
+
+**Daria Goremykina:** Links oben ist für mich unbequem – da ist er am Display besser aufgehoben. Die Encoder sollten einheitlich sein und Parameter regeln, die man gleichzeitig auf dem Screen sieht. Ich würde dort zum Beispiel Filterparameter wie Cutoff und Resonanz erwarten.
+
+Ein Master-Volume-Regler wäre als Sicherheitsaspekt gut. Bei einigen Geräten funktioniert das Rausfaden über Master-Volume nicht optimal, das muss man über den Mixer machen. Aber ein dedizierter Regler ist mir trotzdem wichtig.
+
+# **Sequenzlängen und Bedienung**
+
+**Daria Goremykina:** Ich suche nach einem Gerät, das mehr als acht Takte hat, ohne dass man zu tief ins Menü muss. Ich möchte nicht alles im Voraus vorbereiten, sondern spontan zum Beispiel auf den neunten Takt zugreifen und dort ein paar Noten editieren. Beim [Ableton Move](https://www.ableton.com/de/move/) funktioniert dieser Ansatz zum Beispiel ganz gut.
+
+**Benjamin:** Also ein Looper? Audio oder MIDI?
+
+**Daria Goremykina:** Ein kombinierter Looper wäre toll\! Es wäre schön, wenn man gleichzeitig einen längeren Loop hat, der wiederholt wird, und dazu kürzere Samples, die genau auf der Timeline liegen.  
+ Zum Beispiel ein langes Sample, das man direkt vor Ort aufgenommen hat, und man weiß: Nach 32 Takten kommt ein bestimmter Loop dazu. Man entscheidet dann, ob es ein One-Shot oder ein Loop ist. Wenn etwas nicht passt, spiele ich live dazu, bis es wieder zu den Loops passt.
+
+**Benjamin:** Würdest du das eher am Gerät oder am Rechner editieren?
+
+**Daria Goremykina:** Ein Editor für den Rechner wäre gut, um die Organisation zu machen – zum Beispiel Preset-Management wie beim [Minitaur](https://www.moogmusic.com/synthesizers/minitaur/). So etwas fehlt mir bei vielen anderen Synths. Es wäre gut, Preset-Gruppen für jedes Live-Set speichern und schnell zwischen verschiedenen Sets wechseln zu können.
+
+**Benjamin:** Könntest du dich daran gewöhnen, dass zwei verschiedene Funktionen ein identisches Interface haben?
+
+**Daria Goremykina:** Absolut. Viele Geräte folgen einer klaren Philosophie und sehen sich ähnlich. Wenn Geräte sich ähnlich verhalten und Farben oder LEDs immer das Gleiche bedeuten, kann das die Arbeit sogar beschleunigen.
+
+**Benjamin:** Unsere Idee für das TBD-Toolkit ist, vier Standards zu entwickeln, die super einfach zu bedienen sind. Man macht die Kiste an und kann sofort Musik machen.
+
+**Daria Goremykina:** Das finde ich gut. Einfache, intuitive Standards sind wichtig, bevor man sich mit komplexeren Features beschäftigt.
+
+
+
 
 *Interview: [Benjamin Weiss (MID)](https://instrument-design.com/)*  
 *Gefördert von [NLnet](https://nlnet.nl/project/TBD-DSP-Toolkit/)*  
