@@ -10,6 +10,7 @@ orphan: true
   <span class="interview-lang-active">Deutsch</span>
 </div>
 ```
+**Daria Goremykina** ist Pianistin und elektronische Musikerin aus St. Petersburg und lebt heute in Berlin. Mit fünf Jahren begann sie Klavier zu spielen, studierte am Rimski-Korsakow-Konservatorium und erwarb später Diplome an der UdK Berlin. Als klassische und elektronische Künstlerin trat sie in Konzertsälen in ganz Europa auf. Seit 2023 unterrichtet sie elektronische Musikproduktion an der Catalyst Berlin. Ihre Arbeit verbindet ihr klassisches Fundament mit Live-Elektronik, wobei sie sich auf Improvisation, Synthese und Musiktechnologie konzentriert.
 
 # **Live-Setup und Looping-Herausforderungen**
 
