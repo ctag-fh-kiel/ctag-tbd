@@ -11,49 +11,78 @@ orphan: true
 </div>
 ```
 
-**JakoJako** ist eine in London ansässige elektronische Musikerin, Produzentin und DJ, deren Arbeit Club-Musik, experimentelle Elektronik und Klangkunst umfasst. Ihre Produktionen und Live-Sets schöpfen aus einer breiten Palette von Einflüssen — von dekonstruiertem Club über Noise bis Ambient — und verbinden komplizierte rhythmische Programmierung mit rohem, physischem Sounddesign. Sie tritt mit einem Hybrid-Setup aus Hardware und Software auf und hat auf Festivals und in Venues in ganz Großbritannien und Europa gespielt.
+# Das Live-Setup: Formfaktor und Physis
 
-## Das Live-Setup
+**Benjamin Weiss:** Du spielst viel live. Was ist dir wichtig bei deinen Geräten, die du auf der Bühne spielst? Mit was spielst du normalerweise?
 
-**Benjamin Weiss:** Was ist dein Live-Setup?
+**JakoJako:** Es kommt immer auf das Setting an. Wenn ich Ambient spiele, dann eher mit Polysynthesizern und Modularsystemen – immer eine Kombination aus externen Sequenzern und den internen Sequenzern der Geräte. Wenn ich ein Technoset spiele, tausche ich den Polysynth gegen Drum Machines aus.
 
-**JakoJako:** Das ändert sich ziemlich oft je nach Kontext, aber der Kern ist immer ein Laptop mit Ableton Live, ein Hardware-Controller und ein paar Synths. Mir gefällt die Flexibilität von Software für Sequencing und Effektbearbeitung, aber ich brauche Hardware für das taktile Element — ich brauche Knöpfe und Fader, die ich greifen kann.
+Am allerwichtigsten ist mir der Formfaktor. Es muss klein sein. Deswegen auch das Modularsystem, da stecken so viele Stimmen und so eine Diversität drin, dass es auf einem relativ kleinen Footprint nicht langweilig wird. Es muss alles zusammen in einen großen Koffer passen; das darf nicht größer sein als das größte Peli-Case. Ich habe keine Lust mehr auf ein großes Peli-Case, ein Modularsystem und dann noch die Klamotten auf dem Rücken ohne Tourmanager. Das heißt: je kleiner, umso besser und am besten mehr Funktionen in einem Gerät.
 
-Für Drums und Percussion verwende ich oft einen samplebasierten Ansatz mit viel Processing darüber. Ich bringe auch einen kleinen Analog-Synth für Basslines und Texturen mit. Was Effekte angeht, lasse ich viel durch Hardware laufen — ein Tape-Delay und ein Reverb-Pedal sind normalerweise in der Kette.
+Wenn ein Gerät mehrere Funktionen hat, wie diese DSP-basierten Dinger, dann ist es wichtig, dass man fluid wechseln kann. Während die Clock läuft, möchte ich den Mode wechseln können und das System shiftet einfach. Wenn man Sampler oder Polysynths nimmt, will ich das Preset wechseln können, ohne dass es stoppt. Es muss einfach weiterlaufen, ohne dass ich Reset oder Stopp drücken muss.
 
-## Improvisation und Struktur
+Es darf aber nicht so eine Plastiknummer sein wie dieser kleine [1010music Fireball](https://1010music.com/product/fireball). Der fliegt einfach durch die Gegend. Ich habe kein festes Brett mit Klettverschluss, und Touchscreens funktionieren im Club oft nicht mehr, wenn es schwitzig wird. Es darf nicht zu klein und billig sein, es muss solide stehen. So wie Waldorf- oder Elektron-Sachen, die aus Metall und schwerer sind.
 
-**Benjamin Weiss:** Wie balancierst du Vorbereitung und Improvisation?
+Den [Waldorf Iridium Core](https://waldorfmusic.com/de/produkt/iridium-core/) nehme ich jetzt überall mit. Die haben das Format so gemacht, nachdem sie gefragt hatten, was man besser machen kann – die Größe entspricht jetzt exakt den Elektron-Geräten, damit es in den Koffer passt. Er klingt groß, ist aber klein.
 
-**JakoJako:** Ich bereite Stems und Loops vor, aber das Arrangement ist live. Ich entscheide im Moment, welche Elemente ich einbringe und wie ich sie schichte. Die Übergänge und Aufbauten sind alles Echtzeit-Entscheidungen. Ich denke dabei eher ans DJing mit meinem eigenen Material — ich habe all diese Teile und setze sie spontan zusammen.
+## Haptik und Performance-Faktoren
 
-Was mir am meisten Spaß macht, sind die Momente, in denen die Dinge irgendwohin gehen, wo man es nicht erwartet hat. Wenn man zwei Sachen übereinander legt und sie etwas erzeugen, das man nicht geplant hat — das ist die Magie der Live-Performance.
+**JakoJako:** Mir ist das Gefühl der Knöpfe und Fader wichtig. Wenn es dunkel, rauchig und foggy ist, muss man Widerstand spüren. Nicht alles darf ein Endlos-Encoder mit LEDs sein; ich brauche richtige Knöpfe mit Widerstand.
 
-## Sounddesign-Philosophie
+Dann der Performance-Faktor: Dass man sich Sachen merken kann, dass man einen Knopf hat, dem man mehrere Funktionen mappen kann. Das war zum Beispiel ein Wunsch beim Iridium, dass wir unten diese ABCD-Knöpfe haben, die man als Makroregler zuordnen kann. Die sollen mehrere Sachen gleichzeitig können, am besten für Übergänge.
 
-**Benjamin Weiss:** Wie würdest du deinen Ansatz beim Sounddesign beschreiben?
+Wichtig ist auch die Kompatibilität. Wenn beim Spielen zum Beispiel MIDI auf einmal nicht mehr funktioniert, man aber eine Clock braucht, dann ist es gut, wenn hinten ein Clock-Ausgang ist, den man einfach mit einem normalen Patchkabel reinstecken kann. Unkompliziert, aber so viele Möglichkeiten wie möglich: USB MIDI, MIDI auf TRS, ein MIDI-Through für den Fall der Fälle. Es passiert relativ oft, dass auf einmal doch irgendwas nicht mehr funktioniert, und da muss man schnell reagieren können.
 
-**JakoJako:** Mich ziehen Sounds an, die sich physisch anfühlen — Sounds mit Gewicht und Textur. Ich verbringe viel Zeit damit, Field Recordings, gefundene Klänge und Synthesizer-Patches durch Effektketten zu schicken, bis sie zu etwas Unerkennbarem werden. Ich mag es, wenn ein Sound eine Geschichte hat, wenn man spürt, dass er eine Reise hinter sich hat, um dahin zu kommen, wo er ist.
+Und es muss laut genug sein. Diese ganzen OP-Z oder OP-1 Sachen sind leise. Das ist ein Furz, den kann keiner benutzen. Da hat man mehr Noise als alles andere. Ich habe mal Stimming gesehen, der hatte diese ganzen 1010music-Teile, die sind laut und machen keinen Noise. Aber er hatte die Subs unter der Bühne und hat die kleinen Dinger dann nach dem Set einfach in den Rucksack geschmissen. Auch nicht ideal.
 
-Rhythmus ist auch zentral für alles, was ich mache. Selbst meine Ambient-Arbeiten haben einen zugrundeliegenden Puls. Ich denke über Rhythmus auf eine sehr physische Weise nach — wie er den Körper bewegt, wie er Spannung und Auflösung erzeugt.
+## Sicherheitssysteme und Improvisation
 
-## Was fehlt
+**Benjamin Weiss:** Hast du ein Fallback-System, wenn dein Setup mal nicht funktioniert?
 
-**Benjamin Weiss:** Gibt es etwas, das du dir für Live-Performance wünschen würdest?
+**JakoJako:** Wenn es richtig ausfällt, muss ich ein DJ-Set spielen. Ich hatte das in Japan Anfang des Jahres. Ich hatte ein ganzes Set aufgebaut mit diesem pumpenden Wald-Sound, aber die gesamte End-of-Chain hat nicht funktioniert. Wahrscheinlich hatte ich einen Power-Supply, der in Japan nicht funktioniert hat. Wir haben zwei Stunden rumgeeiert, jemand hat noch einen anderen Kompressor organisiert, aber ich konnte mein Set nicht so spielen, wie geplant. Die gesamte Ästhetik war darauf aufgebaut, dass am Ende alles so schön pumpt und atmet. Ohne das hat es scheiße geklungen, alles war zu offen. Das tat mir mega leid, weil die mich extra eingeflogen hatten. Dann habe ich eben ein DJ-Set gespielt und am nächsten Tag noch ein bisschen Ambient mit Reverb und Polysynths gemacht.
 
-**JakoJako:** Einen richtig guten Hardware-Granular-Sampler mit intuitiver Oberfläche. Etwas, wo man Audio laden und sofort auf interessante Weise manipulieren kann, ohne durch Menüs zu tauchen. Außerdem bessere Tools, um generative Elemente in ein Live-Set einzubauen, auf eine Weise, die man noch steuern und kontrollieren kann.
+Mein Fallback-System ist also das DJ-Set. Ich würde mich schämen, einfach nur Playback laufen zu lassen. Dann sage ich lieber: „Sorry, ist kaputt, aber ich biete euch jetzt was anderes an.“
 
-Ich suche auch immer nach besseren Möglichkeiten, Audio in Echtzeit zu verarbeiten. Multi-Effekt-Geräte gibt es, aber sie sind oft entweder zu einfach oder zu komplex. Etwas dazwischen — leistungsstark, aber sofort spielbar — das ist es, was ich will.
+**Benjamin Weiss:** Wie viel improvisierst du mit deinen Sequenzen?
 
-## Feedback zum TBD-Toolkit Prototyp
+**JakoJako:** Wenn es Ambient ist, spiele ich mit dem Filter und wechsle die Oszillatoren. Der Hauptfokus liegt auf den Übergängen, damit es nicht immer nur der gleiche Trick mit dem Reverb ist. Im Techno habe ich die Hauptelemente wie Kicks als Sequenzen vorbereitet und mache live eher die Synthesizer. Da liegt der Fokus auf den Drums, damit alles weiterläuft, und ich habe die Hände frei für diese komischen Sounds dazwischen.
 
-**Benjamin Weiss:** Was würdest du mit dem TBD-Prototyp machen?
+## Wünsche: Der Sequenz-Crossfader und Loop-Stationen
 
-**JakoJako:** Ich würde es zuerst als Multi-Effekt-Prozessor nutzen wollen — etwas, durch das ich Audio routen und mit den physischen Bedienelementen manipulieren kann. Granulare Effekte, spektrale Verarbeitung, kreative Delays. Aber ich wäre auch daran interessiert, es als Klangquelle zu nutzen — ein Synthesizer mit ungewöhnlichen Architekturen, die ich von Standardgeräten nicht bekomme.
+**Benjamin Weiss:** Gibt es ein Gerät, das du schon immer mal haben wolltest, aber noch nicht gefunden hast?
 
-Der Open-Source-Aspekt ist wirklich überzeugend. Die Möglichkeit, genau das Werkzeug zu schaffen, das man für seine spezifische Performance-Praxis braucht — das ist mächtig.
+**JakoJako:** Ich suche etwas Bestimmtes. Es gibt im Octatrack diesen Crossfader für Audio. Ich frage mich, warum das nicht für Sequenzen geht. Dass man quasi eine Sequenz in A hat und eine in B und dazwischen überblendet. Man könnte anteilig Noten runterstrippen, sodass man mit dem Crossfader rüberfährt und nur noch die eine Note, die in beide Patterns passt, weiterläuft. Dass die Melodien musikalisch morphen und nicht nur hart umgeschaltet werden. Das gibt es so noch nicht.
 
----
+Was für mich auch nie richtig funktioniert hat, sind diese ganzen Loop-Stationen. Es gibt diesen Boss-Looper und alles Mögliche, aber die sind entweder zu primitiv, die Audioqualität ist nicht gut oder der Workflow ist nie geil. Es ist nicht intuitiv. Entweder ist es nicht wirklich auf die Eins, wenn man Record drückt, oder es sieht aus wie dieses Boss-Pedal aus Plastik, das eher für Singer-Songwriter mit Gitarre gemacht ist. Ein intuitiver Elektronik-Looper fehlt mir. Im Octatrack ist mir das zu frickelig, da habe ich Schiss, den falschen Knopf zu drücken und alles zu überschreiben.
+
+Der [1010music Blackbox](https://1010music.com/product/blackbox) kann das ganz gut, aber da ist wieder dieses Touch-Display. Ich kann in den Pads die Funktion nicht gut wechseln, ohne durcheinanderzukommen. Ein kleiner, cooler Looper wäre was.
+
+## Algorithmen und Visuelles Feedback
+
+**Benjamin Weiss:** Interessieren dich algorithmische Sequenzer?
+
+**JakoJako:** Ja, zum Beispiel der OXI One. Aber mein größtes Interesse gilt Sequenzern wie dem HAPAX, weil der zwei Projekte gleichzeitig laufen lassen kann. Man kann smooth von A nach B gehen. So könnte ich mein Ambient-Set und mein Technoset gleichzeitig offen haben und eine Sequenz von 2021 einfach rüberholen. Aber das ist eben auch wieder ein kleiner Bildschirm, den man richtig lernen muss.
+
+Was ich auch mag, ist dieses algorithmische Erstellen von Melodien, wie mit einem Shift-Register. Der im [Ornament & Crime](https://ornament-and-cri.me/) ist wahrscheinlich immer noch der coolste, mit dem die schönsten Melodien rauskommen. Es gibt auch Sachen von Cubit, aber die klingen oft nicht so musikalisch.
+
+Ich mag das visuelle Feedback beim [Euclidean Circles](https://vpme.de/euclidean-circles/) von VPME. Man sieht den Kreis und wie man die Noten verschiebt. Bei anderen Geräten guckt man nur auf den Screen und sieht Zahlen, was keinen Sinn macht. Wenn man am Rad dreht und der Kreis wird voll, weiß man: Die Intensität wird höher.
+
+Ich brauche eigentlich gar kein Display. Beim Modularsystem fokussiert man sich nicht auf Parameter, sondern darauf, wie es sich anhört und anfühlt. Man merkt sich die Positionen – Muscle Memory. Oft ist ein Bildschirm sogar ein Abturner. Ich liebe den Waldorf Iridium wegen der Funktionen, aber er sieht halt aus wie ein Controller.
+
+## Feedback zum TBD-Toolkit
+
+**Benjamin Weiss:** \[Zeigt den Prototyp\] Was würdest du mit dieser „Leinwand“ machen?
+
+**JakoJako:** Ich würde einen Sequenzer daraus machen, einen MIDI-Looper. Es fühlt sich schön an. Wenn es DSP-basiert wäre, würde ich versuchen, mein Live-Set da reinzubekommen: einen Drum-Machine-Modus und einen Poly-Synth-Modus. Wenn das gleichzeitig ginge, könnte man das splitten: Hier die Drums, dort die Akkord-Progressionen. So könnte man Songstrukturen bauen.
+
+Es wäre auch ein tolles Übergangstool. Ein Buffer mit Effekten und einem Looper, eine Art Multieffektgerät für Glitch-Texturen. Ich brauche nicht viel, eigentlich nur einen Reverb, aber für Übergänge ist es cool, Signale reinzuladen und Granular-Kram zu machen.
+
+**Benjamin Weiss:** Wie viele Stimmen bräuchtest du bei der Drum Machine?
+
+**JakoJako:** Kick, Bass, Tom, Clap, zwei Hi-Hats, Snare und ein Sample-Slot. Mit acht Stimmen ist man schon echt gut bedient. Wenn ich das alles auf so einem kleinen Ding hätte, könnte ich mit dem Modularsystem im Handgepäck reisen. Das wäre viel weniger Stress beim Einchecken.
+
+Ein algorithmischer Sequenzer, der Melodien abzweigt und generatives Neues schafft, würde mich am meisten interessieren. Dass man die Hauptnoten behält, aber der Rhythmus sich kohärent verändert. So kommt man auf neue Ideen, wenn man acht Stunden live jammt, und packt nicht immer die gleichen Tricks aus.  
+
 
 *Interview: [Benjamin Weiss (MID)](https://instrument-design.com/)*  
 *Gefördert von [NLnet](https://nlnet.nl/project/TBD-DSP-Toolkit/)*  
