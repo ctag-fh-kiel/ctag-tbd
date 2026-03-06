@@ -278,11 +278,12 @@ You need **USB-C cables** connected at different steps:
         <div style="margin-bottom:0.6em;">
           <select id="pkgSelect" style="padding:0.45em 0.8em; border-radius:5px; border:1px solid #6B7280; font-size:0.92em; min-width:280px; background:var(--color-background-secondary,#fff); color:var(--color-foreground-primary,#1a1a1a);">
             <option value="ctag-tbd-2026-02-27">ctag-tbd-2026-02-27</option>
-            <option value="possan-tbd-2026-03-02" selected>possan-tbd-2026-03-02</option>
+            <option value="possan-tbd-2026-03-02">possan-tbd-2026-03-02</option>
+            <option value="possan-tbd-2026-03-06" selected>possan-tbd-2026-03-06</option>
           </select>
         </div>
         <div class="status status-info" id="statPkg">
-          Selected: <b>possan-tbd-2026-03-02</b> — P4 firmware + SD card image from 2026-03-02
+          Selected: <b>possan-tbd-2026-03-06</b> — P4 firmware + SD card image from 2026-03-06
         </div>
       </div>
 
@@ -344,7 +345,7 @@ You need **USB-C cables** connected at different steps:
           First <b>power-cycle the device</b>: unplug the cable from <b>back USB-C Port&nbsp;#1</b>,
           wait 3 seconds, then plug it back in.
           Once the device has rebooted, click <b>Connect</b> below (via the <b>front JTAG port</b>)
-          to flash the selected firmware (<code id="fwNameStep4">possan-tbd-2026-03-02.bin</code>) to the ESP32-P4.
+          to flash the selected firmware (<code id="fwNameStep4">possan-tbd-2026-03-06.bin</code>) to the ESP32-P4.
         </div>
         <div class="btn-row">
           <button id="btn4Connect" class="btn-primary" disabled>Connect</button>
@@ -361,7 +362,7 @@ You need **USB-C cables** connected at different steps:
           <b>Connect the back USB-C Port&nbsp;#2</b> to your computer (the port closest to the edge of the device).
           You can disconnect the front JTAG cable — it is no longer needed.
           Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button + press RESET — both on the front panel, next to the JTAG port),
-          then click <b>Connect</b> below. This flashes <code id="fwNameStep5">possan-tbd-2026-03-02.uf2</code> to the RP2350 co-processor.
+          then click <b>Connect</b> below. This flashes <code id="fwNameStep5">possan-tbd-2026-03-06.uf2</code> to the RP2350 co-processor.
         </div>
         <div class="btn-row">
           <button id="btn5Connect" class="btn-primary" disabled>Connect</button>
@@ -375,7 +376,7 @@ You need **USB-C cables** connected at different steps:
       <!-- ════════ DONE ════════ -->
       <div class="complete-card" id="cardDone">
         <h3>✓ Beta Firmware Setup Complete</h3>
-        <p>Your TBD-16 has the SD card image and <code id="fwNameDone">possan-tbd-2026-03-02.bin</code> firmware.<br>
+        <p>Your TBD-16 has the SD card image and <code id="fwNameDone">possan-tbd-2026-03-06.bin</code> firmware.<br>
         <b>Remove all USB cables</b> from the device and wait 3 seconds to fully power-cycle.
         Then reconnect a single USB-C cable to <b>back Port&nbsp;#1</b> and open
         <b>http://192.168.4.1</b> to use the device.</p>
@@ -433,6 +434,15 @@ You need **USB-C cables** connected at different steps:
           zipUrl:   '../_static/sdcard_image/2026-03-02/tbd-sd-card.zip',
           hashUrl:  '../_static/sdcard_image/2026-03-02/tbd-sd-card-hash.txt',
           label:    'possan-tbd-2026-03-02'
+        },
+        'possan-tbd-2026-03-06': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-06.bin',
+          p4Name:   'possan-tbd-2026-03-06.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-06.uf2',
+          picoName: 'possan-tbd-2026-03-06.uf2',
+          zipUrl:   '../_static/sdcard_image/2026-03-06/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-06/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-06'
         }
       };
 
