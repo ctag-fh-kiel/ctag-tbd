@@ -277,15 +277,16 @@ You need **USB-C cables** connected at different steps:
         </div>
         <div style="margin-bottom:0.6em;">
           <select id="pkgSelect" style="padding:0.45em 0.8em; border-radius:5px; border:1px solid #6B7280; font-size:0.92em; min-width:280px; background:var(--color-background-secondary,#fff); color:var(--color-foreground-primary,#1a1a1a);">
+            <option value="possan-tbd-2026-03-11_2" selected>possan-tbd-2026-03-11_2</option>
             <option value="ctag-tbd-2026-02-27">ctag-tbd-2026-02-27</option>
             <option value="possan-tbd-2026-03-02">possan-tbd-2026-03-02</option>
             <option value="possan-tbd-2026-03-06">possan-tbd-2026-03-06</option>
             <option value="possan-tbd-2026-03-10">possan-tbd-2026-03-10</option>
-            <option value="possan-tbd-2026-03-11" selected>possan-tbd-2026-03-11</option>
+            <option value="possan-tbd-2026-03-11">possan-tbd-2026-03-11</option>
           </select>
         </div>
         <div class="status status-info" id="statPkg">
-          Selected: <b>possan-tbd-2026-03-11</b> — P4 firmware + SD card image from 2026-03-11
+          Selected: <b>possan-tbd-2026-03-11_2</b> — P4 firmware + SD card image from 2026-03-11 (v2)
         </div>
       </div>
 
@@ -419,6 +420,15 @@ You need **USB-C cables** connected at different steps:
 
       /* Package definitions */
       var PACKAGES = {
+        'possan-tbd-2026-03-11_2': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-11_2.bin',
+          p4Name:   'possan-tbd-2026-03-11_2.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-11.uf2',
+          picoName: 'possan-tbd-2026-03-11.uf2',
+          zipUrl:   '../_static/sdcard_image/2026-03-11_2/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-11_2/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-11_2'
+        },
         'ctag-tbd-2026-02-27': {
           p4Url:    '../_static/firmware/p4/ctag-tbd-2026-02-27.bin',
           p4Name:   'ctag-tbd-2026-02-27.bin',
