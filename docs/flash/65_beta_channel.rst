@@ -280,11 +280,12 @@ You need **USB-C cables** connected at different steps:
             <option value="ctag-tbd-2026-02-27">ctag-tbd-2026-02-27</option>
             <option value="possan-tbd-2026-03-02">possan-tbd-2026-03-02</option>
             <option value="possan-tbd-2026-03-06">possan-tbd-2026-03-06</option>
-            <option value="possan-tbd-2026-03-10" selected>possan-tbd-2026-03-10</option>
+            <option value="possan-tbd-2026-03-10">possan-tbd-2026-03-10</option>
+            <option value="possan-tbd-2026-03-11" selected>possan-tbd-2026-03-11</option>
           </select>
         </div>
         <div class="status status-info" id="statPkg">
-          Selected: <b>possan-tbd-2026-03-10</b> — P4 firmware + SD card image from 2026-03-10
+          Selected: <b>possan-tbd-2026-03-11</b> — P4 firmware + SD card image from 2026-03-11
         </div>
       </div>
 
@@ -453,6 +454,15 @@ You need **USB-C cables** connected at different steps:
           zipUrl:   '../_static/sdcard_image/2026-03-10/tbd-sd-card.zip',
           hashUrl:  '../_static/sdcard_image/2026-03-10/tbd-sd-card-hash.txt',
           label:    'possan-tbd-2026-03-10'
+        },
+        'possan-tbd-2026-03-11': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-11.bin',
+          p4Name:   'possan-tbd-2026-03-11.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-11.uf2',
+          picoName: 'possan-tbd-2026-03-11.uf2',
+          zipUrl:   '../_static/sdcard_image/2026-03-11/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-11/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-11'
         }
       };
 
