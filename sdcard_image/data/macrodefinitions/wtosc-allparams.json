@@ -1,0 +1,442 @@
+{
+  "id": "wtosc-allparams",
+  "name": "Wavetable osc All param",
+  "machine": "wtosc",
+  "groups": [
+    {
+      "name": "Page 1",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Bank",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 1,
+          "name": "Wave",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 2,
+          "name": "Tune",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 3,
+          "name": "Type",
+          "def": 0,
+          "min": 0,
+          "max": 3,
+          "res": 64,
+          "ui": "filtertype"
+        }
+      ]
+    },
+    {
+      "name": "Page 2",
+      "parameters": [
+        {
+          "idx": 4,
+          "name": "Cutoff",
+          "def": 127,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filtercutoff",
+          "curve": "log"
+        },
+        {
+          "idx": 5,
+          "name": "Reso",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filterq"
+        },
+        {
+          "idx": 6,
+          "name": "Q Scale",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 7,
+          "name": "Attack",
+          "def": 16,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envattack",
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "name": "Page 3",
+      "parameters": [
+        {
+          "idx": 8,
+          "name": "Decay",
+          "def": 69,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        },
+        {
+          "idx": 9,
+          "name": "Sustain",
+          "def": 90,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 10,
+          "name": "Release",
+          "def": 49,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum",
+          "curve": "exp"
+        },
+        {
+          "idx": 11,
+          "name": "E2 Wave",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    },
+    {
+      "name": "Page 4",
+      "parameters": [
+        {
+          "idx": 12,
+          "name": "E2 FM",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 13,
+          "name": "E2 Filt",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 14,
+          "name": "Speed",
+          "def": 10,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 15,
+          "name": "Sync",
+          "def": 0,
+          "min": 0,
+          "max": 1,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    },
+    {
+      "name": "Page 5",
+      "parameters": [
+        {
+          "idx": 16,
+          "name": "L2 Wave",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 17,
+          "name": "L2 AM",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 18,
+          "name": "L2 FM",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 19,
+          "name": "L2 Filt",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 32,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 0,
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "start": 0,
+      "add": [
+        {
+          "src": 7,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 16,
+      "start": 0,
+      "add": [
+        {
+          "src": 8,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 17,
+      "start": 0,
+      "add": [
+        {
+          "src": 9,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 18,
+      "start": 0,
+      "add": [
+        {
+          "src": 10,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 19,
+      "start": 0,
+      "add": [
+        {
+          "src": 11,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 20,
+      "start": 0,
+      "add": [
+        {
+          "src": 12,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 21,
+      "start": 0,
+      "add": [
+        {
+          "src": 13,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 22,
+      "start": 0,
+      "add": [
+        {
+          "src": 14,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 23,
+      "start": 0,
+      "add": [
+        {
+          "src": 15,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 25,
+      "start": 0,
+      "add": [
+        {
+          "src": 16,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 26,
+      "start": 0,
+      "add": [
+        {
+          "src": 17,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 27,
+      "start": 0,
+      "add": [
+        {
+          "src": 18,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 28,
+      "start": 0,
+      "add": [
+        {
+          "src": 19,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
+  ]
+}

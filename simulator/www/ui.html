@@ -7,167 +7,441 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020,2026 by Robert Manzke. All rights reserved.
+Modulation Simulation UI rewrite (c) 2026 Johannes Elias Lohbihler.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
 
-The CTAG TBD hardware design is released under the Creative Commons
-Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
-Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
 CTAG TBD is provided "as is" without any express or implied warranties.
-
-License and copyright details for specific submodules are included in their
-respective component folders / files if different from this license.
 ***************/
 -->
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-    <meta http-equiv="Pragma" content="no-cache"/>
-    <meta http-equiv="Expires" content="-1"/>
-    <link rel="stylesheet" href="/css/onsenui-core.min.css">
-    <link rel="stylesheet" href="/css/onsen-css-c.min.css">
-    <script src="/js/onsenui.min.js"></script>
-    <script src="/js/jquery-3.4.1.min.js"></script>
-    <script src="/js/ajaxq.js"></script>
-    <title>TBD Test UI</title>
+    <title>TBD Simulator — Modulation Control</title>
+    <style>
+        :root {
+            --bg: #1a1a1e;
+            --surface: #232328;
+            --surface-hi: #2c2c32;
+            --border: #3a3a42;
+            --text: #e0e0e0;
+            --text-dim: #888;
+            --accent: #5b9bd5;
+            --accent-dim: #3a6a9a;
+            --trig-color: #e8a04c;
+            --cv-color: #6cc070;
+            --pot-color: #c070c0;
+            --radius: 6px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 16px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0 16px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+        header h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        header a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 13px;
+        }
+        header a:hover { text-decoration: underline; }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin: 16px 0 8px;
+        }
+        .section-label.trig { color: var(--trig-color); }
+        .section-label.cv   { color: var(--cv-color); }
+        .section-label.pot  { color: var(--pot-color); }
+
+        .ctrl-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            margin-bottom: 8px;
+        }
+        .ctrl-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .ctrl-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .ctrl-value-readout {
+            font-size: 13px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            color: var(--text-dim);
+            min-width: 50px;
+            text-align: right;
+        }
+        .ctrl-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ctrl-row label {
+            font-size: 12px;
+            color: var(--text-dim);
+            min-width: 50px;
+        }
+        .ctrl-row select {
+            background: var(--surface-hi);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+        .ctrl-row select:focus {
+            border-color: var(--accent);
+        }
+
+        /* Range slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--surface-hi);
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--bg);
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #6db0eb;
+        }
+        input[type="range"]:active::-webkit-slider-thumb {
+            transform: scale(1.15);
+        }
+
+        /* Trigger buttons */
+        .trig-btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .trig-btn {
+            padding: 6px 16px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--surface-hi);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.1s, border-color 0.1s;
+        }
+        .trig-btn:hover {
+            border-color: var(--trig-color);
+        }
+        .trig-btn:active, .trig-btn.active {
+            background: var(--trig-color);
+            color: #000;
+            border-color: var(--trig-color);
+        }
+
+        .status-bar {
+            margin-top: 20px;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #666;
+        }
+        .status-dot.connected { background: var(--cv-color); }
+        .status-dot.error { background: #e05050; }
+    </style>
 </head>
 <body>
-<ons-navigator swipeable id="myNavigator" page="main.html"></ons-navigator>
-</ons-navigator>
+    <header>
+        <h1>CTAG TBD Simulator — Modulation Control</h1>
+        <a href="/">Open WebUI</a>
+    </header>
 
-<template id="main.html">
-    <ons-page id="main">
-        <ons-toolbar>
-            <div class="center">CTAG-TBD-SIM</div>
-        </ons-toolbar>
-        <ons-list>
-            <ons-list-header>TRIG0</ons-list-header>
-            <ons-list-item>
-                <ons-select>
-                    <select id="mode0" onchange="sendAllData()">
-                        <option value="0">Manual</option>
-                        <option value="1">Pulse train</option>
-                    </select>
-                </ons-select>
-            </ons-list-item>
-            <ons-list-item>
-                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value0" min="0" max="4095" value="0"></ons-range>
-            </ons-list-item>
-        </ons-list>
-        <ons-list>
-            <ons-list-header>TRIG1</ons-list-header>
-            <ons-list-item>
-                <ons-select>
-                    <select id="mode1" onchange="sendAllData()">
-                        <option value="0">Manual</option>
-                        <option value="1">Pulse train</option>
-                    </select>
-                </ons-select>
-            </ons-list-item>
-            <ons-list-item>
-                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value1" min="0" max="4095" value="0"></ons-range>
-            </ons-list-item>
-        </ons-list>
-        <ons-list>
-            <ons-list-header>CV0</ons-list-header>
-            <ons-list-item>
-                <ons-select>
-                    <select id="mode2" onchange="sendAllData()">
-                        <option value="0">Manual</option>
-                        <option value="1">Pulse train</option>
-                        <option value="2">Sine wave unipolar</option>
-                        <option value="3">Sine wave bipolar</option>
-                        <option value="4">Steps -5:5:1</option>
-                    </select>
-                </ons-select>
-            </ons-list-item>
-            <ons-list-item>
-                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value2" min="0" max="4095" value="0"></ons-range>
-            </ons-list-item>
-        </ons-list>
-        <ons-list>
-            <ons-list-header>CV1</ons-list-header>
-            <ons-list-item>
-                <ons-select>
-                    <select id="mode3" onchange="sendAllData()">
-                        <option value="0">Manual</option>
-                        <option value="1">Pulse train</option>
-                        <option value="2">Sine wave unipolar</option>
-                        <option value="3">Sine wave bipolar</option>
-                        <option value="4">Steps -5:5:1</option>
-                    </select>
-                </ons-select>
-            </ons-list-item>
-            <ons-list-item>
-                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value3" min="0" max="4095" value="0"></ons-range>
-            </ons-list-item>
-        </ons-list>
-        <ons-list>
-            <ons-list-header>POT0</ons-list-header>
-            <ons-list-item>
-                <ons-select>
-                    <select id="mode4" onchange="sendAllData()">
-                        <option value="0">Manual</option>
-                        <option value="1">Pulse train</option>
-                        <option value="2">Sine wave unipolar</option>
-                        <option value="3">Sine wave bipolar</option>
-                        <option value="4">Steps -5:5:1</option>
-                    </select>
-                </ons-select>
-            </ons-list-item>
-            <ons-list-item>
-                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value4" min="0" max="4095" value="0"></ons-range>
-            </ons-list-item>
-        </ons-list>
-        <ons-list>
-            <ons-list-header>POT1</ons-list-header>
-            <ons-list-item>
-                <ons-select>
-                    <select id="mode5" onchange="sendAllData()">
-                        <option value="0">Manual</option>
-                        <option value="1">Pulse train</option>
-                        <option value="2">Sine wave unipolar</option>
-                        <option value="3">Sine wave bipolar</option>
-                        <option value="4">Steps -5:5:1</option>
-                    </select>
-                </ons-select>
-            </ons-list-item>
-            <ons-list-item>
-                Frequency/manual:<ons-range oninput="sendAllData()" style="margin-left: 2em" id="value5" min="0" max="4095" value="0"></ons-range>
-            </ons-list-item>
-        </ons-list>
-        <script>
-            ons.getScriptPage().onInit = function () {
-                $.getq('myq', 'ctrl-get',
-                    data => {
-                        if(typeof data == 'string') data = JSON.parse(data);
-                        for(let i=0;i<6;i++){
-                            $('#mode'+i).val(data.mode[i]);
-                            $('#value'+i).val(data.value[i]);
-                        }
-                    }
-                );
-                this.onShow = function () {
-                    //console.log('Main');
-                };
-            };
-            function sendAllData(){
-                let allData = {mode:[], value:[]};
-                for(let i=0;i<6;i++){
-                    allData.mode.push($('#mode'+i).val());
-                    allData.value.push($('#value'+i).val());
-                }
-                $.ajaxq('myq', {
-                    url: '/ctrl-set',
-                    type: 'post',
-                    data: JSON.stringify(allData)
-                });
+    <div class="section-label trig">Triggers</div>
+    <div class="ctrl-card" data-index="0">
+        <div class="ctrl-header">
+            <span class="ctrl-name">TRIG 0</span>
+            <span class="ctrl-value-readout" id="readout-0">0</span>
+        </div>
+        <div class="ctrl-row">
+            <label>Mode</label>
+            <select id="mode0" onchange="sendAll()">
+                <option value="0">Manual</option>
+                <option value="1">Pulse train</option>
+            </select>
+        </div>
+        <div class="ctrl-row" style="margin-top:8px">
+            <label>Value</label>
+            <input type="range" id="value0" min="0" max="4095" value="0" oninput="updateReadout(0); sendAll()">
+        </div>
+        <div class="trig-btn-row">
+            <button class="trig-btn" onmousedown="trigOn(0)" onmouseup="trigOff(0)" ontouchstart="trigOn(0)" ontouchend="trigOff(0)">Gate</button>
+        </div>
+    </div>
+
+    <div class="ctrl-card" data-index="1">
+        <div class="ctrl-header">
+            <span class="ctrl-name">TRIG 1</span>
+            <span class="ctrl-value-readout" id="readout-1">0</span>
+        </div>
+        <div class="ctrl-row">
+            <label>Mode</label>
+            <select id="mode1" onchange="sendAll()">
+                <option value="0">Manual</option>
+                <option value="1">Pulse train</option>
+            </select>
+        </div>
+        <div class="ctrl-row" style="margin-top:8px">
+            <label>Value</label>
+            <input type="range" id="value1" min="0" max="4095" value="0" oninput="updateReadout(1); sendAll()">
+        </div>
+        <div class="trig-btn-row">
+            <button class="trig-btn" onmousedown="trigOn(1)" onmouseup="trigOff(1)" ontouchstart="trigOn(1)" ontouchend="trigOff(1)">Gate</button>
+        </div>
+    </div>
+
+    <div class="section-label cv">CV Inputs</div>
+    <div class="ctrl-card" data-index="2">
+        <div class="ctrl-header">
+            <span class="ctrl-name">CV 0</span>
+            <span class="ctrl-value-readout" id="readout-2">0</span>
+        </div>
+        <div class="ctrl-row">
+            <label>Mode</label>
+            <select id="mode2" onchange="sendAll()">
+                <option value="0">Manual</option>
+                <option value="1">Pulse train</option>
+                <option value="2">Sine (unipolar)</option>
+                <option value="3">Sine (bipolar)</option>
+                <option value="4">Steps -5..5</option>
+            </select>
+        </div>
+        <div class="ctrl-row" style="margin-top:8px">
+            <label>Value</label>
+            <input type="range" id="value2" min="0" max="4095" value="0" oninput="updateReadout(2); sendAll()">
+        </div>
+    </div>
+
+    <div class="ctrl-card" data-index="3">
+        <div class="ctrl-header">
+            <span class="ctrl-name">CV 1</span>
+            <span class="ctrl-value-readout" id="readout-3">0</span>
+        </div>
+        <div class="ctrl-row">
+            <label>Mode</label>
+            <select id="mode3" onchange="sendAll()">
+                <option value="0">Manual</option>
+                <option value="1">Pulse train</option>
+                <option value="2">Sine (unipolar)</option>
+                <option value="3">Sine (bipolar)</option>
+                <option value="4">Steps -5..5</option>
+            </select>
+        </div>
+        <div class="ctrl-row" style="margin-top:8px">
+            <label>Value</label>
+            <input type="range" id="value3" min="0" max="4095" value="0" oninput="updateReadout(3); sendAll()">
+        </div>
+    </div>
+
+    <div class="section-label pot">Potentiometers</div>
+    <div class="ctrl-card" data-index="4">
+        <div class="ctrl-header">
+            <span class="ctrl-name">POT 0</span>
+            <span class="ctrl-value-readout" id="readout-4">0</span>
+        </div>
+        <div class="ctrl-row">
+            <label>Mode</label>
+            <select id="mode4" onchange="sendAll()">
+                <option value="0">Manual</option>
+                <option value="1">Pulse train</option>
+                <option value="2">Sine (unipolar)</option>
+                <option value="3">Sine (bipolar)</option>
+                <option value="4">Steps -5..5</option>
+            </select>
+        </div>
+        <div class="ctrl-row" style="margin-top:8px">
+            <label>Value</label>
+            <input type="range" id="value4" min="0" max="4095" value="0" oninput="updateReadout(4); sendAll()">
+        </div>
+    </div>
+
+    <div class="ctrl-card" data-index="5">
+        <div class="ctrl-header">
+            <span class="ctrl-name">POT 1</span>
+            <span class="ctrl-value-readout" id="readout-5">0</span>
+        </div>
+        <div class="ctrl-row">
+            <label>Mode</label>
+            <select id="mode5" onchange="sendAll()">
+                <option value="0">Manual</option>
+                <option value="1">Pulse train</option>
+                <option value="2">Sine (unipolar)</option>
+                <option value="3">Sine (bipolar)</option>
+                <option value="4">Steps -5..5</option>
+            </select>
+        </div>
+        <div class="ctrl-row" style="margin-top:8px">
+            <label>Value</label>
+            <input type="range" id="value5" min="0" max="4095" value="0" oninput="updateReadout(5); sendAll()">
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Connecting...</span>
+    </div>
+
+    <script>
+        var sendTimer = null;
+        var sending = false;
+
+        function updateReadout(i) {
+            var el = document.getElementById('value' + i);
+            document.getElementById('readout-' + i).textContent = el.value;
+        }
+
+        function gatherData() {
+            var data = { mode: [], value: [] };
+            for (var i = 0; i < 6; i++) {
+                data.mode.push(parseInt(document.getElementById('mode' + i).value));
+                data.value.push(parseInt(document.getElementById('value' + i).value));
             }
-        </script>
-    </ons-page>
-</template>
+            return data;
+        }
+
+        function sendAll() {
+            // Throttle to ~30 fps to avoid overwhelming the server
+            if (sendTimer) return;
+            sendTimer = setTimeout(function() {
+                sendTimer = null;
+                doSend();
+            }, 33);
+        }
+
+        function doSend() {
+            if (sending) return;
+            sending = true;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/ctrl-set', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    sending = false;
+                    setStatus(xhr.status === 200);
+                }
+            };
+            xhr.onerror = function() { sending = false; setStatus(false); };
+            xhr.send(JSON.stringify(gatherData()));
+        }
+
+        function trigOn(i) {
+            document.getElementById('value' + i).value = 4095;
+            updateReadout(i);
+            doSend();
+            // Visual feedback
+            var btns = document.querySelectorAll('[data-index="' + i + '"] .trig-btn');
+            for (var b = 0; b < btns.length; b++) btns[b].classList.add('active');
+        }
+
+        function trigOff(i) {
+            document.getElementById('value' + i).value = 0;
+            updateReadout(i);
+            doSend();
+            var btns = document.querySelectorAll('[data-index="' + i + '"] .trig-btn');
+            for (var b = 0; b < btns.length; b++) btns[b].classList.remove('active');
+        }
+
+        function setStatus(ok) {
+            var dot = document.getElementById('status-dot');
+            var text = document.getElementById('status-text');
+            if (ok) {
+                dot.className = 'status-dot connected';
+                text.textContent = 'Connected to simulator';
+            } else {
+                dot.className = 'status-dot error';
+                text.textContent = 'Connection error';
+            }
+        }
+
+        // Load current state on startup
+        function loadState() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/ctrl-get', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            for (var i = 0; i < 6; i++) {
+                                document.getElementById('mode' + i).value = data.mode[i];
+                                document.getElementById('value' + i).value = data.value[i];
+                                updateReadout(i);
+                            }
+                            setStatus(true);
+                        } catch(e) {
+                            setStatus(false);
+                        }
+                    } else {
+                        setStatus(false);
+                    }
+                }
+            };
+            xhr.onerror = function() { setStatus(false); };
+            xhr.send();
+        }
+
+        loadState();
+    </script>
 </body>
 </html>

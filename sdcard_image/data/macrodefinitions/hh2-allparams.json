@@ -1,0 +1,123 @@
+{
+  "id": "hh2-allparams",
+  "name": "Hihat 2 All param",
+  "machine": "hh2",
+  "groups": [
+    {
+      "name": "Page 1",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Freq",
+          "def": 11,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "freq",
+          "curve": "log"
+        },
+        {
+          "idx": 1,
+          "name": "Tone",
+          "def": 77,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape"
+        },
+        {
+          "idx": 2,
+          "name": "Decay",
+          "def": 41,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        },
+        {
+          "idx": 3,
+          "name": "Noise",
+          "def": 70,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "distortion"
+        }
+      ]
+    },
+    {
+      "name": "Page 2",
+      "parameters": [
+        {
+          "idx": 4,
+          "name": "Accent",
+          "def": 10,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envamount"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
+  ]
+}

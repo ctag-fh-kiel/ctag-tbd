@@ -1,0 +1,293 @@
+{
+  "id": "mo-allparams",
+  "name": "Macro osc All param",
+  "machine": "mo",
+  "groups": [
+    {
+      "name": "Page 1",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Bank",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape"
+        },
+        {
+          "idx": 1,
+          "name": "P0",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape3"
+        },
+        {
+          "idx": 2,
+          "name": "P1",
+          "def": 40,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape2"
+        },
+        {
+          "idx": 3,
+          "name": "Waveshape",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "distortion"
+        }
+      ]
+    },
+    {
+      "name": "Page 2",
+      "parameters": [
+        {
+          "idx": 4,
+          "name": "P0 A",
+          "def": 24,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 5,
+          "name": "P1 A",
+          "def": 16,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 6,
+          "name": "FM A",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 7,
+          "name": "Q Scale",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    },
+    {
+      "name": "Page 3",
+      "parameters": [
+        {
+          "idx": 8,
+          "name": "Attack",
+          "def": 11,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envattack",
+          "curve": "exp"
+        },
+        {
+          "idx": 9,
+          "name": "Decay",
+          "def": 69,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        },
+        {
+          "idx": 10,
+          "name": "Loop Env",
+          "def": 0,
+          "min": 0,
+          "max": 1,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 11,
+          "name": "Decim",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    },
+    {
+      "name": "Page 4",
+      "parameters": [
+        {
+          "idx": 12,
+          "name": "Bit Red",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 0,
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "start": 0,
+      "add": [
+        {
+          "src": 7,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 16,
+      "start": 0,
+      "add": [
+        {
+          "src": 8,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 17,
+      "start": 0,
+      "add": [
+        {
+          "src": 9,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 18,
+      "start": 0,
+      "add": [
+        {
+          "src": 10,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 19,
+      "start": 0,
+      "add": [
+        {
+          "src": 11,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 20,
+      "start": 0,
+      "add": [
+        {
+          "src": 12,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
+  ]
+}

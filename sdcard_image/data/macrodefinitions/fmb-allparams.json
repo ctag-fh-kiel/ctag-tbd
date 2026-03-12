@@ -1,0 +1,185 @@
+{
+  "id": "fmb-allparams",
+  "name": "FM Kick All param",
+  "machine": "fmb",
+  "groups": [
+    {
+      "name": "Page 1",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "FM",
+          "def": 28,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape2"
+        },
+        {
+          "idx": 1,
+          "name": "DB",
+          "def": 69,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape2",
+          "curve": "exp"
+        },
+        {
+          "idx": 2,
+          "name": "FM",
+          "def": 9,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape3"
+        },
+        {
+          "idx": 3,
+          "name": "DM",
+          "def": 36,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape3",
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "name": "Page 2",
+      "parameters": [
+        {
+          "idx": 4,
+          "name": "BM",
+          "def": 48,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape2"
+        },
+        {
+          "idx": 5,
+          "name": "AF",
+          "def": 19,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape3"
+        },
+        {
+          "idx": 6,
+          "name": "DF",
+          "def": 63,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape",
+          "curve": "exp"
+        },
+        {
+          "idx": 7,
+          "name": "I",
+          "def": 38,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "noise"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 0,
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "start": 0,
+      "add": [
+        {
+          "src": 7,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
+  ]
+}

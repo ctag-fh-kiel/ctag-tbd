@@ -1,0 +1,143 @@
+{
+  "id": "ab-allparams",
+  "name": "Analog Kick All param",
+  "machine": "ab",
+  "groups": [
+    {
+      "name": "Page 1",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Freq",
+          "def": 4,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "freq",
+          "curve": "log"
+        },
+        {
+          "idx": 1,
+          "name": "Tone",
+          "def": 51,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape"
+        },
+        {
+          "idx": 2,
+          "name": "Decay",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        },
+        {
+          "idx": 3,
+          "name": "A FM",
+          "def": 19,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape3"
+        }
+      ]
+    },
+    {
+      "name": "Page 2",
+      "parameters": [
+        {
+          "idx": 4,
+          "name": "S FM",
+          "def": 13,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape2"
+        },
+        {
+          "idx": 5,
+          "name": "Accent",
+          "def": 10,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envamount"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 0,
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
+  ]
+}

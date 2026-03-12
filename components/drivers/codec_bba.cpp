@@ -283,8 +283,10 @@ void Codec::cfg_codec() {
     write_AIC32X4_reg(AIC32X4_ADCFGA, 0x00); // (P0_R82) unmute left and right ADCs
 
     // unmute output drivers
-    write_AIC32X4_reg(AIC32X4_LOLGAIN, 0x06); // (P1_R18) unmute LOL, set 6dB gain
-    write_AIC32X4_reg(AIC32X4_LORGAIN, 0x06); // (P1_R18 ) unmute LOL, set 6dB gain
+    // write_AIC32X4_reg(AIC32X4_LOLGAIN, 0x06); // (P1_R18) unmute LOL, set 6dB gain
+    // write_AIC32X4_reg(AIC32X4_LORGAIN, 0x06); // (P1_R18) unmute LOL, set 6dB gain
+    write_AIC32X4_reg(AIC32X4_LOLGAIN, 0x00); // (P1_R18) unmute LOL, set 0dB gain
+    write_AIC32X4_reg(AIC32X4_LORGAIN, 0x00); // (P1_R18) unmute LOL, set 0dB gain
 }
 
 void Codec::SetOutputLevels(const uint32_t left, const uint32_t right) {

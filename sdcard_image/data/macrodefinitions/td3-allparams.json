@@ -1,0 +1,357 @@
+{
+  "id": "td3-allparams",
+  "name": "TBD03 All param",
+  "machine": "td3",
+  "groups": [
+    {
+      "name": "Page 1",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Bank",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape"
+        },
+        {
+          "idx": 1,
+          "name": "P0",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "shape2"
+        },
+        {
+          "idx": 2,
+          "name": "VCA D",
+          "def": 63,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        },
+        {
+          "idx": 3,
+          "name": "VCF D",
+          "def": 57,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "name": "Page 2",
+      "parameters": [
+        {
+          "idx": 4,
+          "name": "Cutoff",
+          "def": 37,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filtercutoff",
+          "curve": "log"
+        },
+        {
+          "idx": 5,
+          "name": "Reso",
+          "def": 45,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filterq"
+        },
+        {
+          "idx": 6,
+          "name": "EnvDec",
+          "def": 80,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        },
+        {
+          "idx": 7,
+          "name": "Type",
+          "def": 1,
+          "min": 0,
+          "max": 3,
+          "res": 64,
+          "ui": "filtertype"
+        }
+      ]
+    },
+    {
+      "name": "Page 3",
+      "parameters": [
+        {
+          "idx": 8,
+          "name": "Satur",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 9,
+          "name": "Drive",
+          "def": 11,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 10,
+          "name": "Slide",
+          "def": 0,
+          "min": 0,
+          "max": 1,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 11,
+          "name": "Accent",
+          "def": 0,
+          "min": 0,
+          "max": 1,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    },
+    {
+      "name": "Page 4",
+      "parameters": [
+        {
+          "idx": 12,
+          "name": "P1",
+          "def": 32,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 13,
+          "name": "P0 Amt",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 14,
+          "name": "P1 Amt",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 15,
+          "name": "Acc. Lev",
+          "def": 26,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 0,
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "start": 0,
+      "add": [
+        {
+          "src": 7,
+          "mul": 32,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 16,
+      "start": 0,
+      "add": [
+        {
+          "src": 8,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 17,
+      "start": 0,
+      "add": [
+        {
+          "src": 9,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 18,
+      "start": 0,
+      "add": [
+        {
+          "src": 10,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 19,
+      "start": 0,
+      "add": [
+        {
+          "src": 11,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 20,
+      "start": 0,
+      "add": [
+        {
+          "src": 12,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 21,
+      "start": 0,
+      "add": [
+        {
+          "src": 13,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 22,
+      "start": 0,
+      "add": [
+        {
+          "src": 14,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 23,
+      "start": 0,
+      "add": [
+        {
+          "src": 15,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
+  ]
+}

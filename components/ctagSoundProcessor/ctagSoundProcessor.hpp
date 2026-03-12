@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020, 2025 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -96,6 +96,10 @@ namespace CTAG {
             void *controlData; // use this for plugin specific control data, points at beginning of spi transaction buffer
             float *cv;
             uint8_t *trig;
+            uint8_t midi_bytes[400];
+            uint32_t midi_bytes_length;
+            uint32_t sequencer_tempo; // bpm * 100
+            uint8_t sequencer_quantum;
         };
 
         class ctagSoundProcessor {
@@ -191,6 +195,34 @@ namespace CTAG {
                 loadPresetInternal();
             }
 
+            virtual void setTrackMachine(const uint8_t trackIndex, const std::string machineId) {
+                // default implementation does nothing, override in derived class if needed
+            }
+
+            virtual void setTrackBank(const uint8_t trackIndex, const uint16_t bankIndex) {
+                // default implementation does nothing, override in derived class if needed
+            }
+
+            virtual void handleMidiNoteOn(const uint8_t channel, uint8_t note, uint8_t velocity) {
+                // default implementation does nothing, override in derived class if needed
+            }
+
+            virtual void handleMidiNoteOff(const uint8_t channel, uint8_t note, uint8_t velocity) {
+                // default implementation does nothing, override in derived class if needed
+            }
+
+            virtual void handleMidiControlChange(const uint8_t channel, uint8_t control, uint8_t value) {
+                // default implementation does nothing, override in derived class if needed
+            }
+
+            virtual void handleMacroMidiControlChange(const uint8_t channel, uint8_t control, uint8_t value) {
+                // default implementation does nothing, override in derived class if needed
+            }
+
+            virtual void handleMidiControlChangeNRPM(const uint8_t channel, uint8_t control, uint16_t value) {
+                // default implementation does nothing, override in derived class if needed
+            }
+
         protected:
 
             virtual void knowYourself() = 0;
@@ -248,6 +280,11 @@ namespace CTAG {
             map<string, function<void(const int)>> pMapPar;
             map<string, function<void(const int)>> pMapCv;
             map<string, function<void(const int)>> pMapTrig;
+
+
+            // virtual void handleParameterValue(const uint8_t trackIndex, const uint8_t parameterIndex, int32_t value) {
+            //     // default implementation does nothing, override in derived class if needed
+            // }
         };
     }
 }

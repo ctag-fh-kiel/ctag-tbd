@@ -1,0 +1,131 @@
+{
+  "id": "fmb-metallic",
+  "name": "Metallic FM Kick",
+  "machine": "fmb",
+  "groups": [
+    {
+      "name": "Metallic",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Pitch",
+          "def": 30,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 1,
+          "name": "Metallic",
+          "def": 20,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 2,
+          "name": "Shape",
+          "def": 10,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 3,
+          "name": "Decay",
+          "def": 50,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 16,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 2
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 3
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 8,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 3
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "start": 16,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 2
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "start": 1
+    }
+  ]
+}

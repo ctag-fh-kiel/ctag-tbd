@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(tbd-sim)
 
+# Boost 1.90.0+ provides its own cmake config
+cmake_policy(SET CMP0167 NEW)
+
 add_definitions(
         -DRAPIDJSON_ALLOCATOR_DEFAULT_CHUNK_CAPACITY=16384 # rapidjson
         -DRAPIDJSON_HAS_STDSTRING=1 # rapidjson
@@ -25,7 +28,7 @@ add_library(simple-web-server INTERFACE)
 target_include_directories(simple-web-server INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/Simple-Web-Server)
 find_package(Threads REQUIRED)
 target_link_libraries(simple-web-server INTERFACE ${CMAKE_THREAD_LIBS_INIT})
-find_package(Boost 1.67.0 COMPONENTS system thread REQUIRED)
+find_package(Boost 1.67.0 COMPONENTS thread REQUIRED)
 target_link_libraries(simple-web-server INTERFACE ${Boost_LIBRARIES})
 target_include_directories(simple-web-server INTERFACE ${Boost_INCLUDE_DIR})
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
@@ -124,7 +127,7 @@ set(TINYWAV_FILES
 
 ## Application
 set(Boost_USE_STATIC_LIBS OFF) # set to ON if you want to use static boost libraries
-find_package(Boost 1.67.0 COMPONENTS system thread filesystem program_options)
+find_package(Boost 1.67.0 COMPONENTS thread filesystem program_options)
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "could not find Boost!")
 endif()

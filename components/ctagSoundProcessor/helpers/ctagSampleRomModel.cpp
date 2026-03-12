@@ -1,24 +1,3 @@
-/***************
-CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
-
-A project conceived within the Creative Technologies Arbeitsgruppe of
-Kiel University of Applied Sciences: https://www.creative-technologies.de
-
-(c) 2025 by Robert Manzke. All rights reserved.
-
-The CTAG TBD software is licensed under the GNU General Public License
-(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
-
-The CTAG TBD hardware design is released under the Creative Commons
-Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
-Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
-CTAG TBD is provided "as is" without any express or implied warranties.
-
-License and copyright details for specific submodules are included in their
-respective component folders / files if different from this license.
-***************/
-
 #include "ctagSampleRomModel.hpp"
 #include <filesystem>
 
@@ -287,3 +266,108 @@ uint32_t CTAG::SP::ctagSampleRomModel::GetSampleSliceSize(uint32_t slice){
     }
     return size;
 }
+
+int16_t CTAG::SP::ctagSampleRomModel::GetBankIndexFromBankName(const std::string &bankName) {
+
+    if (!sample_rom.IsObject()) return -1;
+
+    if (!sample_rom.HasMember("smp_bank_names")) return -1;
+    if (!sample_rom["smp_bank_names"].IsArray()) return -1;
+
+    rapidjson::GenericArray<false, rapidjson::Value> arr = sample_rom["smp_bank_names"].GetArray();
+
+    for(int i = 0; i < arr.Size(); i++) {
+        if(arr[i].IsString()){
+            std::string name = arr[i].GetString();
+            if(name == bankName) {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+
+int16_t CTAG::SP::ctagSampleRomModel::GetBankIndexFromFileName(const std::string &fileName) {
+    if (!sample_rom.IsObject()) return -1;
+    if (!sample_rom.HasMember("smp_banks")) return -1;
+    if (!sample_rom["smp_banks"].IsArray()) return -1;
+
+    rapidjson::GenericArray<false, rapidjson::Value> arr = sample_rom["smp_banks"].GetArray();
+    for(int i = 0; i < (int)arr.Size(); i++) {
+        if(arr[i].IsString() && fileName == arr[i].GetString()) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+std::string CTAG::SP::ctagSampleRomModel::GetKitIndexJSON() {
+    if (!sample_rom.IsObject()) return "{}";
+    if (!sample_rom.HasMember("smp_banks")) return "{}";
+    if (!sample_rom.HasMember("smp_bank_names")) return "{}";
+    if (!sample_rom["smp_banks"].IsArray()) return "{}";
+    if (!sample_rom["smp_bank_names"].IsArray()) return "{}";
+
+    rapidjson::GenericArray<false, rapidjson::Value> ids = sample_rom["smp_banks"].GetArray();
+    rapidjson::GenericArray<false, rapidjson::Value> names = sample_rom["smp_bank_names"].GetArray();
+
+    rapidjson::Document doc;
+    doc.SetObject();
+
+    rapidjson::Value kits(kArrayType);
+    doc.AddMember("kits", kits, doc.GetAllocator());
+
+    for(int i = 0; i < ids.Size(); i++) {
+        if(ids[i].IsString() && names[i].IsString()) {
+            rapidjson::Value kitobj(kObjectType);
+            kitobj.AddMember("id", rapidjson::Value(ids[i].GetString(), doc.GetAllocator()), doc.GetAllocator());
+            kitobj.AddMember("name", rapidjson::Value(names[i].GetString(), doc.GetAllocator()), doc.GetAllocator());
+            doc["kits"].PushBack(kitobj, doc.GetAllocator());
+        }
+    }
+
+    StringBuffer sb;
+    Writer<StringBuffer> writer(sb);
+    doc.Accept(writer);
+    return sb.GetString();
+}
+
+std::string CTAG::SP::ctagSampleRomModel::GetActiveKitBankIndexJSON() {
+    if (!sample_rom.IsObject()) return "{}";
+    if (!sample_rom.HasMember("smp_bank_meta")) return "{}";
+    if (!sample_rom["smp_bank_meta"].IsArray()) return "{}";
+
+    rapidjson::Document doc;
+    doc.SetObject();
+
+    rapidjson::Value banks(kArrayType);
+    doc.AddMember("banks", banks, doc.GetAllocator());
+
+    int bankindex = GetActiveSampleBankIndex();
+    rapidjson::Value &bankmeta = sample_rom["smp_bank_meta"].GetArray()[bankindex];
+
+    if (!bankmeta.IsObject()) return "{}";
+
+    if(desc_smp.IsArray()) {
+        int index = 0;
+        for(auto& v : bankmeta["banks"].GetArray()){
+            rapidjson::Value bankobj(kObjectType);
+
+            bankobj.AddMember("index", rapidjson::Value(index), doc.GetAllocator());
+            if(v.HasMember("name") && v["name"].IsString()){
+                bankobj.AddMember("name", rapidjson::Value(v["name"].GetString(), doc.GetAllocator()), doc.GetAllocator());
+            }
+
+            doc["banks"].PushBack(bankobj, doc.GetAllocator());
+            // }
+            index ++;
+        }
+    }
+
+    StringBuffer sb;
+    Writer<StringBuffer> writer(sb);
+    doc.Accept(writer);
+    return sb.GetString();
+}
+

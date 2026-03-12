@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -33,10 +33,9 @@ namespace CTAG{
             Control() = delete;
             static void Init();
             // fetches next control data and transmits ledStatus to subsystem
-            IRAM_ATTR static void Update(void **data, uint32_t ledStatus);
+            IRAM_ATTR static int Update(void *sendbuffer, void **receivebuffer);
         private:
             DRAM_ATTR static uint8_t *buf_ptr; // buffer pointer for current cv + trig data
         };
     }
 }
-

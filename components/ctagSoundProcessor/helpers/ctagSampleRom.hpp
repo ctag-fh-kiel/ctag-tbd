@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020, 2025 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -32,10 +32,14 @@ namespace CTAG::SP::HELPERS{
     public:
         static void RefreshDataStructure(); // forces refresh of data structure, not thread safe!
         static std::string GetSampleRomDescriptorJSON();
+        static std::string GetFilenameForWTSlice(uint32_t slice);
+        static std::string GetFilenameForSampleSlice(uint32_t slice);
         static void SetActiveWaveTableBank(uint8_t index);
         static void SetActiveSampleBank(uint8_t index);
+        static uint32_t GetNumberSlices2();
+        static std::string GetKitIndexJSON();
+        static std::string GetActiveKitBankIndexJSON();
         ctagSampleRom();
-        explicit ctagSampleRom(const uint32_t sample_rom_size_psram);
         ~ctagSampleRom();
         uint32_t GetNumberSlices();
         uint32_t GetFirstNonWaveTableSlice();
@@ -43,6 +47,8 @@ namespace CTAG::SP::HELPERS{
         uint32_t GetSliceSize(const uint32_t slice);
         uint32_t GetSliceGroupSize(const uint32_t startSlice, const uint32_t endSlice);
         uint32_t GetSliceOffset(const uint32_t slice);
+        uint16_t GetBankIndexFromBankName(const std::string &bankName);
+        static int16_t GetBankIndexFromFileName(const std::string &fileName);
         bool HasSlice(const uint32_t slice);
         bool HasSliceGroup(const uint32_t startSlice, const uint32_t endSlice);
         void ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples);
@@ -51,7 +57,6 @@ namespace CTAG::SP::HELPERS{
 
     private:
         static void RefreshDataStructureFromSDCard();
-        static uint32_t maxPSRAMSize;
         static uint32_t totalSize;
         static uint32_t numberSlices;
         static uint32_t headerSize;

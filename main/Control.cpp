@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 (c) 2023 MIDI-Message-Parser aka 'bba_update()' by Mathias Brüssel.
 
 The CTAG TBD software is licensed under the GNU General Public License
@@ -24,12 +24,12 @@ respective component folders / files if different from this license.
 #include "rp2350_spi_stream.hpp"
 
 uint8_t *CTAG::CTRL::Control::buf_ptr = nullptr; // buffer pointer for current cv + trig data
+uint16_t updatecounter = 0;
 
-IRAM_ATTR void CTAG::CTRL::Control::Update(void **data, uint32_t ledStatus) {
-    CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(data, ledStatus);
+IRAM_ATTR int CTAG::CTRL::Control::Update(void *sendbuffer, void **receivebuffer) {
+    return CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(sendbuffer, receivebuffer);
 }
 
 void CTAG::CTRL::Control::Init() {
-    ESP_LOGI("Control", "Initializing control! %d CVs, %d Trigs", N_CVS, N_TRIGS);
     buf_ptr = DRIVERS::rp2350_spi_stream::Init();
 }

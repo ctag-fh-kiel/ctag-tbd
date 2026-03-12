@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -58,6 +58,7 @@ namespace CTAG::SYNTHESIS {
         //  set eg and lfo parameters
         ad.SetAttack(params.a);
         ad.SetDecay(params.d);
+        ad.SetLoop(params.loop); // envelope loops with the sample
 
         // calculate playback speed = dt = phase increment
         // check if time-stretch is active
@@ -135,6 +136,9 @@ namespace CTAG::SYNTHESIS {
         // TODO: check if phase increment is within bounds for buffer max size --> partially done with asserts
         //  phaseIncrementMax*size*sizeof(datatype)+4), 32(5octaves up)*32(standard buffer size) --> > 1k words, we use 2k words
         readBufferLength = static_cast<uint32_t>(phaseIncrement * float(size) + readBufferPhase);
+        if (readBufferLength > static_cast<int32_t>(readBufferMaxSize - 2)) {
+            readBufferLength = readBufferMaxSize - 2;
+        }
 
 
         // calc marks and read assemble buffers depending on playback mode

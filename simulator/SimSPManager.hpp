@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -52,14 +52,17 @@ namespace CTAG {
             }
 
             static const char *GetCStrJSONActivePluginParams(const int chan) {
+                if (sp[chan] == nullptr) return "{}";
                 return sp[chan]->GetCStrJSONParamSpecs();
             }
 
             static const char *GetCStrJSONGetPresets(const int chan) { // names of all available presets
+                if (sp[chan] == nullptr) return "[]";
                 return sp[chan]->GetCStrJSONPresets();
             }
 
             static const char *GetCStrJSONAllPresetData(const int chan) { // current preset as JSON
+                if (sp[chan] == nullptr) return "{}";
                 return sp[chan]->GetCStrJSONAllPresetData();
             }
 

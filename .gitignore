@@ -27,15 +27,40 @@ env/
 .env/
 midi_test_env/
 
+# Backup files
+*.bak
+
 # Hardware
 /hw/pcb/*.bak
 
 # Sphinx build output
 docs/_build/
-_build_test/
 
 # Local planning docs (not for publication)
 docs/HARDWARE_DOCS_PLAN.md
 
 # Temporary commit message file
 .commitmsg
+
+# Preset editor build output (TypeScript/Vite tool)
+www/preseteditor/dist
+
+# Shoelace vendor bundle (downloaded from npm, not source)
+# Re-install with: npm install @shoelace-style/shoelace@2.20.1
+# then copy cdn/ contents to sdcard_image/www/shoelace/
+# Ignore everything inside shoelace…
+sdcard_image/www/shoelace/*
+# …but allow the themes directory…
+!sdcard_image/www/shoelace/themes/
+# …ignore everything inside themes…
+sdcard_image/www/shoelace/themes/*
+# …except the dark theme CSS needed for SD card deployment
+!sdcard_image/www/shoelace/themes/dark.css
+!sdcard_image/www/shoelace/themes/dark.css.gz
+!sdcard_image/www/shoelace/themes/light.css
+!sdcard_image/www/shoelace/themes/light.css.gz
+
+# npm dependencies
+node_modules/
+package-lock.json
+tests/__pycache__/

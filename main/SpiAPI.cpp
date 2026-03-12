@@ -34,6 +34,8 @@ respective component folders / files if different from this license.
 
 #include "link.hpp"
 
+#define MAX(x, y) ((x)>(y)) ? (x) : (y)
+
 #define RCV_HOST    SPI3_HOST // SPI2 connects to rp2350 spi1
 #define GPIO_HANDSHAKE GPIO_NUM_50 // GPIO50 is used for handshake line, P4_PICO_02 which is GPIO18 on rp2350
 #define GPIO_MOSI GPIO_NUM_23
@@ -587,13 +589,15 @@ namespace CTAG::SPIAPI{
                 HELPERS::ctagSampleRom::RefreshDataStructure();
                 CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 break;
-            case RequestType::SetActiveSampleRomBank:
-                ESP_LOGI("SpiAPI", "Setting active sample bank to %d", bank_number);
+
+            case RequestType::SetActiveSampleKit:
+                ESP_LOGI("SpiAPI", "Setting active sample bank to #%d", uint8_param_0);
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 HELPERS::ctagSampleRom::SetActiveSampleBank(uint8_param_0);
                 HELPERS::ctagSampleRom::RefreshDataStructure();
                 CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 break;
+
             case RequestType::GetFirmwareInfo:
                 ESP_LOGI("SpiAPI", "GetFirmwareInfo");
                 {
@@ -627,6 +631,260 @@ namespace CTAG::SPIAPI{
                 }
             case RequestType::SendFile:
                 result = handle_send_file();
+                break;
+            case RequestType::GetSampleFileCount:
+                {
+                    // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                    uint8_t number = HELPERS::ctagSampleRom::GetNumberSlices2();
+                    ESP_LOGI("SpiAPI", "Getting sample file count (%d)", number);
+                    HELPERS::ctagSampleRom srom;
+                    int firstnonwt = srom.GetFirstNonWaveTableSlice();
+                    uint32_t total = srom.GetNumberSlices() - firstnonwt;
+                    // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                    char info[100] = { 0, };
+                    sprintf(info, "{\"total\":%ld}", total);
+                    result = transmitCString(requestType, info);
+                }
+                break;
+            case RequestType::GetSampleFileInfo:
+                {
+                    int16_t file_index = uint8_param_1 * 256 + uint8_param_0;
+                    ESP_LOGI("SpiAPI", "Getting sample file %d info", file_index);
+                    HELPERS::ctagSampleRom srom;
+                    int firstnonwt = srom.GetFirstNonWaveTableSlice();
+                    uint32_t total = srom.GetNumberSlices() - firstnonwt;
+                    int16_t slice = firstnonwt + file_index;
+                    uint32_t size = srom.GetSliceSize(slice);
+                    std::string filename = srom.GetFilenameForSampleSlice(file_index);
+                    char info[100] = { 0, };
+                    sprintf(info, "{\"index\":\"%d\",\"total\":%ld,\"slice_index\":%d,\"size\":%ld,\"filename\":\"%s\"}",
+                        file_index, total, slice, size, filename.c_str());
+                    result = transmitCString(requestType, info);
+                }
+                break;
+            case RequestType::GetSampleFileWaveformPreview:
+                {
+                    int16_t file_index = uint8_param_1 * 256 + uint8_param_0;
+                    HELPERS::ctagSampleRom srom;
+                    int16_t slice = srom.GetFirstNonWaveTableSlice() + file_index;
+                    uint32_t offset = srom.GetSliceOffset(slice);
+                    uint32_t size = srom.GetSliceSize(slice);
+                    ESP_LOGI("SpiAPI", "Getting sample file %d waveform preview, slice %d, size %ld, offset %ld",
+                        file_index, slice, size, offset);
+                    char sampledata[520] = { 0, };
+                    int16_t slicedata[100] = { 0, };
+                    memset(sampledata, 0, sizeof(sampledata));
+                    for(int k=0; k<256; k++) {
+                        int sliceoffset = (k * floor(size/2) / 256) * 2;
+                        srom.ReadSlice((int16_t *)&slicedata, slice, sliceoffset, 20);
+                        int16_t amp = 0;
+                        for(int j=0; j<20; j++) {
+                            amp = MAX(amp, abs(slicedata[j] / 128));
+                        }
+                        sprintf(sampledata + k * 2, "%02X", (uint8_t)amp);
+                        vPortYield();
+                    }
+                    char info[600] = { 0, };
+                    sprintf(info, "{\"index\":%d,\"slice_index\":%d,\"size\":%ld,\"data\":\"%s\"}",
+                        file_index, slice, size, sampledata);
+                    result = transmitCString(requestType, info);
+                }
+                break;
+            case RequestType::EnableFileTransferMode:
+                break;
+            case RequestType::DisableFileTransferMode:
+                break;
+            case RequestType::GetSynthDefinitionsJSON:
+                {
+                    std::string info = "{\"status\":\"not implemented\"}";
+                    result = transmitCString(requestType, info.c_str());
+                }
+                break;
+            case RequestType::GetMacroMachineDefinitionsJSON:
+                {
+                    std::string info = "{\"status\":\"not implemented\"}";
+                    result = transmitCString(requestType, info.c_str());
+                }
+                break;
+            case RequestType::UploadMacroMachineDefinitionJSON:
+                {
+                    std::string info = "{\"status\":\"not implemented\"}";
+                    result = transmitCString(requestType, info.c_str());
+                }
+                break;
+            case RequestType::SetTrackMacroMachine:
+                break;
+            case RequestType::GetSoundPresetListJSON:
+                {
+                    std::string info = "{\"status\":\"not implemented\"}";
+                    result = transmitCString(requestType, info.c_str());
+                }
+                break;
+            case RequestType::GetSoundPresetJSON:
+                {
+                    std::string info = "{\"status\":\"not implemented\"}";
+                    result = transmitCString(requestType, info.c_str());
+                }
+                break;
+            case RequestType::UploadSoundPresetJSON:
+                {
+                    std::string info = "{\"status\":\"not implemented\"}";
+                    result = transmitCString(requestType, info.c_str());
+                }
+                break;
+            case RequestType::GetMacroSoundPresetList:
+                {
+                    // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                    std::string outputjson;
+                    int trackIndex = uint8_param_0;
+                    ESP_LOGI("SpiAPI", "Getting macro sound preset list, track %d", trackIndex);
+                    CTAG::AUDIO::SoundProcessorManager::macroSoundDefinitionModel
+                        ->GetPresetIndexJson(trackIndex, &outputjson);
+                    // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                    result = transmitCString(requestType, outputjson.c_str());
+                }
+                break;
+            case RequestType::GetMacroSoundPreset:
+                {
+                    std::string presetId = string_parameter;
+                    ESP_LOGI("SpiAPI", "Getting macro sound preset %s", presetId.c_str());
+                    std::string outputjson;
+                    outputjson = CTAG::AUDIO::SoundProcessorManager::GetMacroSoundPresetJSON(presetId);
+                    result = transmitCString(requestType, outputjson.c_str());
+                    // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                    // CTAG::MACROPRESETS::MacroSoundPreset *preset =
+                    //     CTAG::AUDIO::SoundProcessorManager::macroSoundDefinitionModel
+                    //         ->GetMacroSoundPreset(presetId);
+                    // SerializeJSONInto
+                    // GetPresetJson(presetId, &outputjson);
+                    // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                }
+                break;
+            case RequestType::GetMacroDefinition:
+                {
+                    std::string macroId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
+                    ESP_LOGI("SpiAPI", "Getting macro definition %s", macroId.c_str());
+                    std::string outputjson;
+                    // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                    outputjson = CTAG::AUDIO::SoundProcessorManager::GetMacroDefinitionJSON(macroId);
+                    result = transmitCString(requestType, outputjson.c_str());
+                    // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                    // HELPERS::ctagSampleRom::SetActiveSampleBank(uint8_param_0);
+                    // HELPERS::ctagSampleRom::RefreshDataStructure();
+                    // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                }
+                break;
+            case RequestType::ActivateTrackMachine:
+                {
+                    int trackIndex = uint8_param_0;
+                    std::string machineId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
+                    ESP_LOGI("SpiAPI", "Activating track %d machine %s", trackIndex, machineId.c_str());
+                    CTAG::AUDIO::SoundProcessorManager::ActivateTrackMachine(trackIndex, machineId);
+                    // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                    // HELPERS::ctagSampleRom::SetActiveSampleBank(uint8_param_0);
+                    // HELPERS::ctagSampleRom::RefreshDataStructure();
+                    // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                    // result = transmitCString(requestType, cstring);
+                }
+                break;
+            case RequestType::LoadTrackSoundPreset:
+                {
+                    int trackIndex = uint8_param_0;
+                    std::string presetId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
+                    ESP_LOGI("SpiAPI", "Loading track %d macro \"%s\"", trackIndex, presetId.c_str());
+                    CTAG::AUDIO::SoundProcessorManager::LoadTrackMacroAndPreset(trackIndex, presetId);
+
+                    // Optional rompler Bank/Slice overrides:
+                    //   uint8_param_1 (byte 4) = romBank (0xFF = no override)
+                    //   int32_param_2 (bytes 5-8) = sampleSlice (-1 = no override)
+                    int romBank = uint8_param_1;
+                    int sampleSlice = int32_param_2;
+                    if (romBank != 0xFF) {
+                        ESP_LOGI("SpiAPI", "  Override track %d Bank=%d", trackIndex, romBank);
+                        CTAG::AUDIO::SoundProcessorManager::SetTrackParameter(trackIndex, 0, romBank);
+                    }
+                    if (sampleSlice >= 0) {
+                        ESP_LOGI("SpiAPI", "  Override track %d Slice=%d", trackIndex, sampleSlice);
+                        CTAG::AUDIO::SoundProcessorManager::SetTrackParameter(trackIndex, 1, sampleSlice);
+                    }
+                }
+                break;
+
+            case RequestType::GetTrackDefaultPresets:
+                {
+                    // Read /sdcard/data/trackdefaults.json and return its contents.
+                    // If the file does not exist, return empty object "{}".
+                    // The file maps track indices to preset IDs, e.g.:
+                    // { "tracks": [ {"index":0,"preset":"db-all-def"}, ... ] }
+                    std::string json = "{}";
+                    FILE *f = fopen("/sdcard/data/trackdefaults.json", "r");
+                    if (f) {
+                        fseek(f, 0, SEEK_END);
+                        long sz = ftell(f);
+                        fseek(f, 0, SEEK_SET);
+                        if (sz > 0 && sz < 8192) {
+                            char *buf = (char*)malloc(sz + 1);
+                            if (buf) {
+                                fread(buf, 1, sz, f);
+                                buf[sz] = '\0';
+                                json = buf;
+                                free(buf);
+                            }
+                        }
+                        fclose(f);
+                        ESP_LOGI("SpiAPI", "GetTrackDefaultPresets: loaded %ld bytes from trackdefaults.json", sz);
+                    } else {
+                        ESP_LOGW("SpiAPI", "GetTrackDefaultPresets: trackdefaults.json not found, returning {}");
+                    }
+                    result = transmitCString(requestType, json.c_str());
+                }
+                break;
+
+
+            // case RequestType::SetTrackSampleBank:
+            //     {
+            //         int trackIndex = uint8_param_0;
+            //         std::string bankName = string_parameter;
+            //         ESP_LOGI("SpiAPI", "Setting track %d sample bank to \"%s\"", trackIndex, bankName.c_str());
+            //         CTAG::AUDIO::SoundProcessorManager::SetTrackSampleBank(trackIndex, bankName);
+            //     }
+            //     break;
+
+            case RequestType::GetKitIndexJSON:
+                {
+                    std::string json = CTAG::AUDIO::SoundProcessorManager::GetKitIndexJSON();
+                    ESP_LOGI("SpiAPI", "Getting track sample bank list: %s", json.c_str());
+                    result = transmitCString(requestType, json.c_str());
+                }
+                break;
+
+            case RequestType::GetSampleBankIndexJSON:
+                {
+                    std::string json = CTAG::AUDIO::SoundProcessorManager::GetActiveKitBankIndexJSON();
+                    ESP_LOGI("SpiAPI", "Getting track sample bank list: %s", json.c_str());
+                    result = transmitCString(requestType, json.c_str());
+                }
+                break;
+
+            // case RequestType::GetSynthUpdates:
+            //     {
+            //         std::string info = "{"
+            //             "\"presetupdates\":0," // a preset was updated
+            //             "\"macroupdates\":0," // a macro was updated
+            //             "\"bankupdates\":0", // a samplebank was changed
+            //             "\"trackupdates\":0" // any track changed preset etc.
+            //         "}";
+            //         result = transmitCString(requestType, info.c_str());
+            //     }
+            //     break;
+
+            case RequestType::PutSamplePresetJSON:
+                {
+                    std::string json = string_parameter;
+                    ESP_LOGI("SpiAPI", "Saving preset json: %s", json.c_str());
+                    CTAG::AUDIO::SoundProcessorManager::PutSamplePresetJSON(json);
+                    CTAG::AUDIO::SoundProcessorManager::RefreshSoundPresets();
+                }
                 break;
             }
         }

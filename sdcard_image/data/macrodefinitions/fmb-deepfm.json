@@ -1,0 +1,131 @@
+{
+  "id": "fmb-deepfm",
+  "name": "Deep FM Kick",
+  "machine": "fmb",
+  "groups": [
+    {
+      "name": "Deep FM",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Pitch",
+          "def": 24,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 1,
+          "name": "FM Depth",
+          "def": 10,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 2,
+          "name": "Body",
+          "def": 50,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 3,
+          "name": "Harmonics",
+          "def": 5,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 16,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 2
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 4
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 8,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 4
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "start": 16,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 3
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "start": 1
+    }
+  ]
+}

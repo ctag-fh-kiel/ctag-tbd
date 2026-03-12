@@ -1,0 +1,78 @@
+{
+  "id": "fxreverb-allparams",
+  "name": "Reverb FX All param",
+  "machine": "fxreverb",
+  "groups": [
+    {
+      "name": "Page 1",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Time",
+          "def": 16,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum",
+          "curve": "log"
+        },
+        {
+          "idx": 1,
+          "name": "Lowpass",
+          "def": 59,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum",
+          "curve": "log"
+        },
+        {
+          "idx": 2,
+          "name": "Level",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
+  ]
+}
