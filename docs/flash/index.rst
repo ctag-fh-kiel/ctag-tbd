@@ -24,24 +24,17 @@ or something went wrong. Firmware updates **never erase** your SD card.
      </div>
 
      <div class="dada-cta">
-       <h3>SD Card Recovery</h3>
-       <p>Restore a broken SD card from your browser &mdash;
-       no card reader or terminal needed.</p>
-       <a href="60_sd_card_recovery.html" class="dada-cta-link">Restore SD Card &rarr;</a>
-     </div>
-
-     <div class="dada-cta">
-       <h3>Device Recovery</h3>
-       <p>Full clean-slate re-init: reflash both
-       <strong>ESP32-P4</strong> &amp; <strong>RP2350</strong>.</p>
-       <a href="50_device_recovery.html" class="dada-cta-link">Start Recovery &rarr;</a>
-     </div>
-
-     <div class="dada-cta">
        <h3>Beta Channel</h3>
        <p>Flash pre-release firmware bundles with the latest
        features and fixes before stable release.</p>
        <a href="65_beta_channel.html" class="dada-cta-link">Beta Channel &rarr;</a>
+     </div>
+
+     <div class="dada-cta">
+       <h3>Beta Channel Archive</h3>
+       <p>Browse and flash any previous beta firmware build
+       from the full release history.</p>
+       <a href="66_beta_channel_archive.html" class="dada-cta-link">Browse Archive &rarr;</a>
      </div>
 
      <div class="dada-cta">

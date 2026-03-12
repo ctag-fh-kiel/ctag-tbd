@@ -1,32 +1,57 @@
-:orphan:
-
 ****************************
-Beta Channel
+Beta Channel Archive
 ****************************
 
-Flash the **latest beta firmware** and **SD card image** to your TBD-16 directly from the
-browser — no card reader, no terminal commands, no opening the device.
+This page contains **all previous beta firmware packages**. You can flash any
+of these older versions to your TBD-16 using the tool below.
 
-What's New in possan-tbd-2026-03-12
-====================================
+For the **latest** beta firmware, see the `Beta Channel <65_beta_channel.html>`_ page.
+
+Changelog
+=========
 
 .. list-table::
-   :widths: 100
+   :header-rows: 1
+   :widths: 20 15 65
 
-   * - **WebUI v0.3.1** — Online update workflow for updating the web interface without reflashing.
-       WebUI version tracking in footer. PicoSeqRack plugin. Macro/preset system with
-       designer and performer modes. Full SD card image rebuild.
+   * - Build
+     - Date
+     - Changes
+   * - possan-tbd-2026-03-12
+     - 2026-03-12
+     - WebUI v0.3.1. PicoSeqRack plugin. Macro/preset system with designer and performer.
+       Online WebUI update workflow. WebUI version tracking in footer.
+   * - possan-tbd-2026-03-11
+     - 2026-03-11
+     - Rack-based DSP architecture. Multiple Rack plugins (DrumRack, PicoSeqRack).
+       Sample bank system with A4 Dub bank. Devcontainer support.
+   * - possan-tbd-2026-03-10
+     - 2026-03-10
+     - DrumRack plugin with 8-track step sequencer. Sample ROM manager improvements.
+       Bjorklund euclidean rhythm generator. WebUI preset/macro manager (early version).
+   * - possan-tbd-2026-03-06
+     - 2026-03-06
+     - Favorites system. Improved plugin parameter handling.
+       BBeats drum machine plugin. RP2350 Pico co-processor firmware.
+   * - possan-tbd-2026-03-02
+     - 2026-03-02
+     - First combined P4 + Pico firmware package. WebSerial-based flashing.
+       SD card image via File System Access API. Initial beta channel tool.
+   * - ctag-tbd-2026-02-27
+     - 2026-02-27
+     - Initial ESP32-P4 port. 50+ DSP plugins. WebUI with plugin manager
+       and sample manager. No Pico firmware included.
 
-Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archive.html>`_.
+Flash a Previous Build
+======================
 
-How it Works
-============
+**What this does:**
 
 1. Flashes the USB Mass Storage firmware to your device (so the SD card mounts via USB)
 2. Downloads and extracts the matching SD card image directly onto your device's SD card
 3. Switches your device back to normal operation
 4. Flashes the selected firmware to the ESP32-P4
-5. Flashes the RP2350 co-processor firmware
+5. Flashes the RP2350 co-processor firmware (if the selected package includes one)
 
 **Hardware setup:**
 
@@ -273,17 +298,27 @@ You need **USB-C cables** connected at different steps:
 
     <div class="sd-recovery" id="sdRecovery">
 
-      <!-- ════════ FIRMWARE INFO ════════ -->
+      <!-- ════════ PACKAGE SELECTOR ════════ -->
       <div class="step-card active-step" id="cardSelect" style="border-color:#7c3aed; box-shadow:0 0 0 1px #7c3aed;">
         <div class="step-hdr" style="color:#7c3aed;">
-          <span class="step-num" style="background:#7c3aed;">▼</span> Firmware Package
+          <span class="step-num" style="background:#7c3aed;">▼</span> Choose Firmware Package
         </div>
         <div class="step-desc">
-          Flashing <b>possan-tbd-2026-03-12</b> — the latest beta firmware.
-          Need an older version? <a href="66_beta_channel_archive.html">Beta Channel Archive →</a>
+          Select which firmware &amp; SD card image to flash.
+          All four steps below will use the files from the selected package.
+        </div>
+        <div style="margin-bottom:0.6em;">
+          <select id="pkgSelect" style="padding:0.45em 0.8em; border-radius:5px; border:1px solid #6B7280; font-size:0.92em; min-width:280px; background:var(--color-background-secondary,#fff); color:var(--color-foreground-primary,#1a1a1a);">
+            <option value="possan-tbd-2026-03-12" selected>possan-tbd-2026-03-12</option>
+            <option value="ctag-tbd-2026-02-27">ctag-tbd-2026-02-27</option>
+            <option value="possan-tbd-2026-03-02">possan-tbd-2026-03-02</option>
+            <option value="possan-tbd-2026-03-06">possan-tbd-2026-03-06</option>
+            <option value="possan-tbd-2026-03-10">possan-tbd-2026-03-10</option>
+            <option value="possan-tbd-2026-03-11">possan-tbd-2026-03-11</option>
+          </select>
         </div>
         <div class="status status-info" id="statPkg">
-          <b>possan-tbd-2026-03-12</b> — P4 firmware + Pico firmware + SD card image from 2026-03-12
+          Selected: <b>possan-tbd-2026-03-12</b> — P4 firmware + Pico firmware + SD card image from 2026-03-12
         </div>
       </div>
 
@@ -415,20 +450,90 @@ You need **USB-C cables** connected at different steps:
          ────────────────────────────── */
       var TUSB_MSC_URL      = '../_static/firmware/p4/tusb_msc.bin';
 
-      /* Package — latest beta only */
-      var ACTIVE_PKG = {
-        p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-12.bin',
-        p4Name:   'possan-tbd-2026-03-12.bin',
-        picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-12.uf2',
-        picoName: 'possan-tbd-2026-03-12.uf2',
-        zipUrl:   '../_static/sdcard_image/2026-03-12/tbd-sd-card.zip',
-        hashUrl:  '../_static/sdcard_image/2026-03-12/tbd-sd-card-hash.txt',
-        label:    'possan-tbd-2026-03-12'
+      /* Package definitions */
+      var PACKAGES = {
+        'possan-tbd-2026-03-12': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-12.bin',
+          p4Name:   'possan-tbd-2026-03-12.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-12.uf2',
+          picoName: 'possan-tbd-2026-03-12.uf2',
+          zipUrl:   '../_static/sdcard_image/2026-03-12/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-12/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-12'
+        },
+        'ctag-tbd-2026-02-27': {
+          p4Url:    '../_static/firmware/p4/ctag-tbd-2026-02-27.bin',
+          p4Name:   'ctag-tbd-2026-02-27.bin',
+          picoUrl:  null,
+          picoName: null,
+          zipUrl:   '../_static/sdcard_image/2026-02-27/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-02-27/tbd-sd-card-hash.txt',
+          label:    'ctag-tbd-2026-02-27'
+        },
+        'possan-tbd-2026-03-02': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-02.bin',
+          p4Name:   'possan-tbd-2026-03-02.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-02.uf2',
+          picoName: 'possan-tbd-2026-03-02.uf2',
+          zipUrl:   '../_static/sdcard_image/2026-03-02/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-02/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-02'
+        },
+        'possan-tbd-2026-03-06': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-06.bin',
+          p4Name:   'possan-tbd-2026-03-06.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-06.uf2',
+          picoName: 'possan-tbd-2026-03-06.uf2',
+          zipUrl:   '../_static/sdcard_image/2026-03-06/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-06/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-06'
+        },
+        'possan-tbd-2026-03-10': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-10.bin',
+          p4Name:   'possan-tbd-2026-03-10.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-10.uf2',
+          picoName: 'possan-tbd-2026-03-10.uf2',
+          zipUrl:   '../_static/sdcard_image/2026-03-10/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-10/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-10'
+        },
+        'possan-tbd-2026-03-11': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-11.bin',
+          p4Name:   'possan-tbd-2026-03-11.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-11.uf2',
+          picoName: 'possan-tbd-2026-03-11.uf2',
+          zipUrl:   '../_static/sdcard_image/2026-03-11/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-11/tbd-sd-card-hash.txt',
+          label:    'possan-tbd-2026-03-11'
+        }
       };
 
+      var pkgSelect = $('pkgSelect');
+      var statPkg   = $('statPkg');
+      var fwNameStep4 = $('fwNameStep4');
+      var fwNameStep5 = $('fwNameStep5');
+      var fwNameDone  = $('fwNameDone');
+
       function getActivePkg() {
-        return ACTIVE_PKG;
+        return PACKAGES[pkgSelect.value];
       }
+
+      function updatePkgUI() {
+        var pkg = getActivePkg();
+        var extra = pkg.picoName ? ' + Pico firmware' : '';
+        statPkg.innerHTML = 'Selected: <b>' + pkg.label + '</b> — P4 firmware + SD card image' + extra;
+        fwNameStep4.textContent = pkg.p4Name;
+        fwNameStep5.textContent = pkg.picoName || '(none)';
+        fwNameDone.textContent = pkg.p4Name;
+        /* Show/hide Step 5 card label based on pico availability */
+        if (!pkg.picoUrl) {
+          card5.style.display = 'none';
+        } else {
+          card5.style.display = '';
+        }
+      }
+
+      pkgSelect.addEventListener('change', updatePkgUI);
 
       var OTA_DATA_ADDR     = 0xd000;     /* otadata partition */
       var OTA1_ADDR         = null;       /* detected from device partition table */
@@ -1178,7 +1283,11 @@ You need **USB-C cables** connected at different steps:
         }
       });
 
+      /* Run initial UI update to hide Step 5 if package has no Pico firmware */
+      updatePkgUI();
+
     })();
     </script>
+
 
 Having trouble? See the `Beta Channel Troubleshooting <67_beta_troubleshooting.html>`_ page.
