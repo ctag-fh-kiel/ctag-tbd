@@ -30,6 +30,9 @@ midi_test_env/
 # Backup files
 *.bak
 
+# Prototyping notes (local only)
+prototyping/
+
 # Hardware
 /hw/pcb/*.bak
 
