@@ -560,9 +560,15 @@ hr.docutils {
 /* --- CTA grid (Get Involved section) --------------------- */
 .dada-ctas {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5em;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2em;
   margin: 2em 0 1.5em;
+}
+
+@media (max-width: 900px) {
+  .dada-ctas {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
@@ -572,7 +578,7 @@ hr.docutils {
 }
 
 .dada-cta {
-  padding: 1.8em 1.6em;
+  padding: 1.4em 1.3em;
   border: none;
   background: var(--color-background-secondary, var(--dada-bg-warm));
 }

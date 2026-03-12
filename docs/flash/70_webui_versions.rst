@@ -14,6 +14,9 @@ Each version below includes the update package and a summary of changes.
    * - Version
      - Date
      - Description
+   * - **0.3.1**
+     - 2026-03-12
+     - Online update workflow test. Version bump only — no functional changes.
    * - **0.3.0**
      - 2026-03-12
      - Pre-release with WebUI update workflow. Full UI refresh including
@@ -44,5 +47,7 @@ Downloads
 
    * - Version
      - Download
+   * - v0.3.1
+     - `webui-update-v0.3.1.zip <../_static/updates/webui-update-v0.3.1.zip>`_
    * - v0.3.0
      - `webui-update-v0.3.0.zip <../_static/updates/webui-update-v0.3.0.zip>`_
