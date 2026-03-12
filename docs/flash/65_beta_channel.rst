@@ -7,15 +7,11 @@ Beta Channel
 Flash the **latest beta firmware** and **SD card image** to your TBD-16 directly from the
 browser — no card reader, no terminal commands, no opening the device.
 
-What's New in possan-tbd-2026-03-12
-====================================
+.. admonition:: possan-tbd-2026-03-12
 
-.. list-table::
-   :widths: 100
-
-   * - **WebUI v0.3.1** — Online update workflow for updating the web interface without reflashing.
-       WebUI version tracking in footer. PicoSeqRack plugin. Macro/preset system with
-       designer and performer modes. Full SD card image rebuild.
+   Macro/preset system with designer and performer. PicoSeqRack DSP plugin.
+   New Shoelace-based WebUI (v0.3.1) with online self-update. SPI protocol
+   handler for MIDI, Ableton Link, and waveform data. Rompler voice fixes.
 
 Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archive.html>`_.
 

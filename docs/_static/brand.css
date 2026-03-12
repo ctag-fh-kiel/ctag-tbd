@@ -611,6 +611,25 @@ hr.docutils {
   opacity: 1;
 }
 
+/* Secondary links row (below main CTA grid) */
+.dada-secondary-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em 1.5em;
+  margin: 0.5em 0 2em;
+  font-size: 0.9em;
+}
+
+.dada-secondary-links a {
+  color: var(--dada-text-secondary, #6b7280);
+  text-decoration: none;
+}
+
+.dada-secondary-links a:hover {
+  color: var(--dada-accent);
+  text-decoration: underline;
+}
+
 /* Full-width CTA banner (custom hardware) */
 .dada-cta-wide {
   margin: 0;

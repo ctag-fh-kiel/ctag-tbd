@@ -1,3 +1,5 @@
+:orphan:
+
 Beta Channel Troubleshooting
 ============================
 

@@ -10,22 +10,8 @@ or something went wrong. Firmware updates **never erase** your SD card.
    <div class="dada-ctas">
 
      <div class="dada-cta">
-       <h3>Flash DSP Firmware</h3>
-       <p>Re-flash the <strong>ESP32-P4</strong> audio engine directly from
-       your browser &mdash; WebSerial, no tools or drivers needed.</p>
-       <a href="25_flash_dsp.html" class="dada-cta-link">Flash DSP &rarr;</a>
-     </div>
-
-     <div class="dada-cta">
-       <h3>Flash UI Firmware</h3>
-       <p>Re-flash the <strong>RP2350</strong> via WebUSB.
-       Hold <strong>BOOTSEL</strong> while connecting USB.</p>
-       <a href="30_flash_ui.html" class="dada-cta-link">Flash UI &rarr;</a>
-     </div>
-
-     <div class="dada-cta">
        <h3>Beta Channel</h3>
-       <p>Flash pre-release firmware bundles with the latest
+       <p>Flash the latest pre-release firmware bundle with all
        features and fixes before stable release.</p>
        <a href="65_beta_channel.html" class="dada-cta-link">Beta Channel &rarr;</a>
      </div>
@@ -46,12 +32,19 @@ or something went wrong. Firmware updates **never erase** your SD card.
 
    </div>
 
+   <div class="dada-secondary-links">
+     <a href="25_flash_dsp.html">Flash DSP Firmware</a>
+     <a href="30_flash_ui.html">Flash UI Firmware</a>
+     <a href="50_device_recovery.html">Device Recovery</a>
+     <a href="60_sd_card_recovery.html">SD Card Recovery</a>
+   </div>
+
 .. include:: /_includes/newsletter.rst
 
 .. include:: /_includes/footer-links.rst
 
 .. toctree::
    :hidden:
-   :glob:
 
-   [0-9]*
+   65_beta_channel
+   70_webui_versions

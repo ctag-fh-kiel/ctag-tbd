@@ -1,3 +1,5 @@
+:orphan:
+
 ****************************
 Beta Channel Archive
 ****************************
@@ -6,41 +8,6 @@ This page contains **all previous beta firmware packages**. You can flash any
 of these older versions to your TBD-16 using the tool below.
 
 For the **latest** beta firmware, see the `Beta Channel <65_beta_channel.html>`_ page.
-
-Changelog
-=========
-
-.. list-table::
-   :header-rows: 1
-   :widths: 20 15 65
-
-   * - Build
-     - Date
-     - Changes
-   * - possan-tbd-2026-03-12
-     - 2026-03-12
-     - WebUI v0.3.1. PicoSeqRack plugin. Macro/preset system with designer and performer.
-       Online WebUI update workflow. WebUI version tracking in footer.
-   * - possan-tbd-2026-03-11
-     - 2026-03-11
-     - Rack-based DSP architecture. Multiple Rack plugins (DrumRack, PicoSeqRack).
-       Sample bank system with A4 Dub bank. Devcontainer support.
-   * - possan-tbd-2026-03-10
-     - 2026-03-10
-     - DrumRack plugin with 8-track step sequencer. Sample ROM manager improvements.
-       Bjorklund euclidean rhythm generator. WebUI preset/macro manager (early version).
-   * - possan-tbd-2026-03-06
-     - 2026-03-06
-     - Favorites system. Improved plugin parameter handling.
-       BBeats drum machine plugin. RP2350 Pico co-processor firmware.
-   * - possan-tbd-2026-03-02
-     - 2026-03-02
-     - First combined P4 + Pico firmware package. WebSerial-based flashing.
-       SD card image via File System Access API. Initial beta channel tool.
-   * - ctag-tbd-2026-02-27
-     - 2026-02-27
-     - Initial ESP32-P4 port. 50+ DSP plugins. WebUI with plugin manager
-       and sample manager. No Pico firmware included.
 
 Flash a Previous Build
 ======================
@@ -1289,5 +1256,38 @@ You need **USB-C cables** connected at different steps:
     })();
     </script>
 
-
 Having trouble? See the `Beta Channel Troubleshooting <67_beta_troubleshooting.html>`_ page.
+
+
+Changelog
+=========
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 15 65
+
+   * - Build
+     - Date
+     - Changes
+   * - possan-tbd-2026-03-12
+     - 2026-03-12
+     - Macro/preset system with designer and performer. PicoSeqRack DSP plugin.
+       New Shoelace-based WebUI (v0.3.0) with online self-update. SPI protocol
+       handler for MIDI, Ableton Link, and waveform data. Rompler voice fixes.
+   * - possan-tbd-2026-03-11
+     - 2026-03-11
+     - Updated RP2350 Pico co-processor firmware. Rebuilt SD card image.
+   * - possan-tbd-2026-03-10
+     - 2026-03-10
+     - Firmware rebuild with latest DSP changes.
+   * - possan-tbd-2026-03-06
+     - 2026-03-06
+     - Updated P4 and Pico firmware. New RP2350 UF2 binary.
+   * - possan-tbd-2026-03-02
+     - 2026-03-02
+     - First combined P4 + Pico firmware package. Beta channel flashing tool
+       with WebSerial and File System Access API.
+   * - ctag-tbd-2026-02-27
+     - 2026-02-27
+     - Initial ESP32-P4 firmware build. 50+ DSP plugins. SD card image.
+       No Pico co-processor firmware.
