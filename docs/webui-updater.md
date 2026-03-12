@@ -94,7 +94,7 @@ The WebUI Updater does **not** modify `tbd-sd-card-hash.txt` or `.version`. This
 ### Version Tracking
 
 - `sdcard_image/data/webui-version.json` stores the current version
-- Both `index.html` and `preset-macro-manager.html` show "WebUI v1.0.0" in the footer
+- Both `index.html` and `preset-macro-manager.html` show the WebUI version in the footer
 - The version links to `/webui-update.html` for easy access
 - After a successful update, the version file is updated on the device automatically
 

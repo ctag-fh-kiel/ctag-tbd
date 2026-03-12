@@ -45,6 +45,14 @@ or something went wrong. Firmware updates **never erase** your SD card.
      <a href="50_device_recovery.html" class="dada-cta-link">Start Full Recovery &rarr;</a>
    </div>
 
+   <div class="dada-cta-wide">
+     <h3>WebUI Versions</h3>
+     <p>Update the TBD-16 web interface independently of the firmware.
+     See all WebUI releases and download update packages that can be applied
+     directly from the device&rsquo;s built-in updater page &mdash; no SD card erase needed.</p>
+     <a href="70_webui_versions.html" class="dada-cta-link">WebUI Versions &rarr;</a>
+   </div>
+
 .. include:: /_includes/newsletter.rst
 
 .. include:: /_includes/footer-links.rst

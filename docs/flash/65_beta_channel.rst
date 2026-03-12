@@ -46,10 +46,6 @@ You need **USB-C cables** connected at different steps:
         margin-bottom: 1em;
         background: var(--color-background-secondary, #fafafa);
       }
-      .sd-recovery .step-card.done {
-        opacity: 0.5;
-        pointer-events: none;
-      }
       .sd-recovery .step-card.active-step {
         border-color: #2563EB;
         box-shadow: 0 0 0 1px #2563EB;
@@ -277,7 +273,7 @@ You need **USB-C cables** connected at different steps:
         </div>
         <div style="margin-bottom:0.6em;">
           <select id="pkgSelect" style="padding:0.45em 0.8em; border-radius:5px; border:1px solid #6B7280; font-size:0.92em; min-width:280px; background:var(--color-background-secondary,#fff); color:var(--color-foreground-primary,#1a1a1a);">
-            <option value="possan-tbd-2026-03-11_2" selected>possan-tbd-2026-03-11_2</option>
+            <option value="possan-tbd-2026-03-12" selected>possan-tbd-2026-03-12</option>
             <option value="ctag-tbd-2026-02-27">ctag-tbd-2026-02-27</option>
             <option value="possan-tbd-2026-03-02">possan-tbd-2026-03-02</option>
             <option value="possan-tbd-2026-03-06">possan-tbd-2026-03-06</option>
@@ -286,7 +282,7 @@ You need **USB-C cables** connected at different steps:
           </select>
         </div>
         <div class="status status-info" id="statPkg">
-          Selected: <b>possan-tbd-2026-03-11_2</b> — P4 firmware + SD card image from 2026-03-11 (v2)
+          Selected: <b>possan-tbd-2026-03-12</b> — P4 firmware + Pico firmware + SD card image from 2026-03-12
         </div>
       </div>
 
@@ -308,7 +304,7 @@ You need **USB-C cables** connected at different steps:
       </div>
 
       <!-- ════════ STEP 2 ════════ -->
-      <div class="step-card" id="card2" style="opacity:0.4; pointer-events:none;">
+      <div class="step-card" id="card2">
         <div class="step-hdr"><span class="step-num">2</span> Write SD Card Image</div>
         <div class="step-desc">
           The SD card should now be mounted via <b>back Port&nbsp;#1</b> (look for a <b>"NO NAME"</b> drive in your file manager).
@@ -316,15 +312,15 @@ You need **USB-C cables** connected at different steps:
           extracted, and written directly — your SD card will be ready to use.
         </div>
         <div class="btn-row">
-          <button id="btn2Pick" class="btn-primary" disabled>Select SD Card Drive</button>
+          <button id="btn2Pick" class="btn-primary">Select SD Card Drive</button>
         </div>
         <div class="progress-wrap" id="prog2"><div class="progress-bar" id="prog2Bar"></div><span class="progress-text" id="prog2Txt">0 %</span></div>
-        <div class="status" id="stat2">Waiting for Step 1…</div>
+        <div class="status" id="stat2">Select the <b>"NO NAME"</b> SD card drive. The device must already be in MSC mode (Step 1).</div>
         <div class="file-log" id="fileLog"></div>
       </div>
 
       <!-- ════════ STEP 3 ════════ -->
-      <div class="step-card" id="card3" style="opacity:0.4; pointer-events:none;">
+      <div class="step-card" id="card3">
         <div class="step-hdr"><span class="step-num">3</span> Switch Back to Normal Mode</div>
         <div class="step-desc">
           Safely eject the SD card drive from your computer before proceeding
@@ -335,51 +331,51 @@ You need **USB-C cables** connected at different steps:
           instead of the USB Mass Storage helper.
         </div>
         <div class="btn-row">
-          <button id="btn3Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn3Connect" class="btn-primary">Connect</button>
           <button id="btn3Go" class="btn-success" disabled>Switch to Normal Mode</button>
         </div>
-        <div class="status" id="stat3">Waiting for Step 2…</div>
+        <div class="status" id="stat3">Click <b>Connect</b> via the front JTAG port to switch back to normal mode.</div>
       </div>
 
       <!-- ════════ STEP 4 ════════ -->
-      <div class="step-card" id="card4" style="opacity:0.4; pointer-events:none;">
+      <div class="step-card" id="card4">
         <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
           First <b>power-cycle the device</b>: unplug the cable from <b>back USB-C Port&nbsp;#1</b>,
           wait 3 seconds, then plug it back in.
           Once the device has rebooted, click <b>Connect</b> below (via the <b>front JTAG port</b>)
-          to flash the selected firmware (<code id="fwNameStep4">possan-tbd-2026-03-10.bin</code>) to the ESP32-P4.
+          to flash the selected firmware (<code id="fwNameStep4">possan-tbd-2026-03-12.bin</code>) to the ESP32-P4.
         </div>
         <div class="btn-row">
-          <button id="btn4Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn4Connect" class="btn-primary">Connect</button>
           <button id="btn4Flash" class="btn-success" disabled>Flash ctag-tbd Firmware</button>
         </div>
         <div class="progress-wrap" id="prog4"><div class="progress-bar" id="prog4Bar"></div><span class="progress-text" id="prog4Txt">0 %</span></div>
-        <div class="status" id="stat4">Waiting for Step 3…</div>
+        <div class="status" id="stat4">Click <b>Connect</b> via the front JTAG port, then flash the selected firmware.</div>
       </div>
 
       <!-- ════════ STEP 5 ════════ -->
-      <div class="step-card" id="card5" style="opacity:0.4; pointer-events:none;">
+      <div class="step-card" id="card5">
         <div class="step-hdr"><span class="step-num">5</span> Flash RP2350 (Pico Firmware)</div>
         <div class="step-desc">
           <b>Connect the back USB-C Port&nbsp;#2</b> to your computer (the port closest to the edge of the device).
           You can disconnect the front JTAG cable — it is no longer needed.
           Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button + press RESET — both on the front panel, next to the JTAG port),
-          then click <b>Connect</b> below. This flashes <code id="fwNameStep5">possan-tbd-2026-03-10.uf2</code> to the RP2350 co-processor.
+          then click <b>Connect</b> below. This flashes <code id="fwNameStep5">possan-tbd-2026-03-12.uf2</code> to the RP2350 co-processor.
         </div>
         <div class="btn-row">
-          <button id="btn5Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn5Connect" class="btn-primary">Connect</button>
           <button id="btn5Flash" class="btn-success" disabled>Flash Pico Firmware</button>
           <button id="btn5Reboot" class="btn-secondary" disabled>Reboot</button>
         </div>
         <div class="progress-wrap" id="prog5"><div class="progress-bar" id="prog5Bar"></div><span class="progress-text" id="prog5Txt">0 %</span></div>
-        <div class="status" id="stat5">Waiting for Step 4…</div>
+        <div class="status" id="stat5">Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.</div>
       </div>
 
       <!-- ════════ DONE ════════ -->
       <div class="complete-card" id="cardDone">
         <h3>✓ Beta Firmware Setup Complete</h3>
-        <p>Your TBD-16 has the SD card image and <code id="fwNameDone">possan-tbd-2026-03-10.bin</code> firmware.<br>
+        <p>Your TBD-16 has the SD card image and <code id="fwNameDone">possan-tbd-2026-03-12.bin</code> firmware.<br>
         <b>Remove all USB cables</b> from the device and wait 3 seconds to fully power-cycle.
         Then reconnect a single USB-C cable to <b>back Port&nbsp;#1</b> and open
         <b>http://192.168.4.1</b> to use the device.</p>
@@ -420,14 +416,14 @@ You need **USB-C cables** connected at different steps:
 
       /* Package definitions */
       var PACKAGES = {
-        'possan-tbd-2026-03-11_2': {
-          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-11_2.bin',
-          p4Name:   'possan-tbd-2026-03-11_2.bin',
-          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-11.uf2',
-          picoName: 'possan-tbd-2026-03-11.uf2',
+        'possan-tbd-2026-03-12': {
+          p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-12.bin',
+          p4Name:   'possan-tbd-2026-03-12.bin',
+          picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-12.uf2',
+          picoName: 'possan-tbd-2026-03-12.uf2',
           zipUrl:   '../_static/sdcard_image/2026-03-11_2/tbd-sd-card.zip',
           hashUrl:  '../_static/sdcard_image/2026-03-11_2/tbd-sd-card-hash.txt',
-          label:    'possan-tbd-2026-03-11_2'
+          label:    'possan-tbd-2026-03-12'
         },
         'ctag-tbd-2026-02-27': {
           p4Url:    '../_static/firmware/p4/ctag-tbd-2026-02-27.bin',
@@ -522,15 +518,6 @@ You need **USB-C cables** connected at different steps:
         txt.textContent = pct + ' %';
       }
       function hideProg(wrap) { wrap.style.display = 'none'; }
-      function activateCard(card) {
-        card.style.opacity = '1';
-        card.style.pointerEvents = 'auto';
-        card.classList.add('active-step');
-      }
-      function markDone(card) {
-        card.classList.remove('active-step');
-        card.classList.add('done');
-      }
 
       /* binary string helper (8 KB chunks to avoid call-stack overflow) */
       function toBinStr(u8) {
@@ -802,8 +789,6 @@ You need **USB-C cables** connected at different steps:
       }
 
       function finishStep1() {
-        markDone(card1);
-        activateCard(card2);
         btn2Pick.disabled = false;
         setStat(stat1,
           '✓ Ready. Look for the <b>"NO NAME"</b> drive in your file manager (mounted via back Port&nbsp;#1).<br>' +
@@ -815,14 +800,8 @@ You need **USB-C cables** connected at different steps:
           'or unplug both USB cables → wait 3 s → replug. The drive appears via <b>back Port&nbsp;#1</b>.</small>');
       }
 
-      function lockPkgSelect() {
-        pkgSelect.disabled = true;
-        statPkg.innerHTML = 'Locked: <b>' + getActivePkg().label + '</b> — restart the page to change package.';
-      }
-
       btn1Connect.addEventListener('click', async function () {
         try {
-          lockPkgSelect();
           var chip = await connectStep1();
           btn1Go.disabled = false;
           setStat(stat1, 'Connected to <b>' + chip + '</b>. Click <b>Flash &amp; Switch</b> to proceed.', 'ok');
@@ -1027,8 +1006,6 @@ You need **USB-C cables** connected at different steps:
           } else {
             setStat(stat2, '✓ <b>' + written + '</b> files written &amp; cleaned. SD card ready!<br><b>⏏ Please safely eject the drive</b> before proceeding (macOS: Finder → Eject; Windows: "Safely Remove Hardware"; Linux: unmount).<br><small>Auto-eject is not possible — browsers cannot unmount drives.</small>', 'ok');
           }
-          markDone(card2);
-          activateCard(card3);
           btn3Connect.disabled = false;
           setStat(stat3, '<b>Safely eject the SD card drive</b> from your computer first, then click <b>Connect</b> to reconnect via the front JTAG port.');
 
@@ -1089,8 +1066,6 @@ You need **USB-C cables** connected at different steps:
           }
           await cleanup3();
 
-          markDone(card3);
-          activateCard(card4);
           btn4Connect.disabled = false;
           setStat(stat4, '<b>Power-cycle the device</b>: unplug the cable from back USB-C Port&nbsp;#1, wait 3 s, replug it. Then click <b>Connect</b> to flash <code>' + getActivePkg().p4Name + '</code>.');
         } catch (e) {
@@ -1162,11 +1137,9 @@ You need **USB-C cables** connected at different steps:
           await cleanup4();
 
           setStat(stat4, '✓ ESP32-P4 firmware updated (<code>' + activePkg4.p4Name + '</code>). <b>Remove all USB cables</b>, wait 3 s, then reconnect via back Port&nbsp;#1.', 'ok');
-          markDone(card4);
 
           /* If the selected package has a Pico UF2, activate Step 5; otherwise show done */
           if (activePkg4.picoUrl) {
-            activateCard(card5);
             btn5Connect.disabled = false;
             setStat(stat5, '<b>Connect back USB-C Port&nbsp;#2</b> to your computer, put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET on the front panel), then click <b>Connect</b>.');
           } else {
@@ -1266,7 +1239,6 @@ You need **USB-C cables** connected at different steps:
           hideProg(prog5);
 
           setStat(stat5, '✓ RP2350 rebooted. <b>Remove all USB cables</b>, wait 3 s, then reconnect via a back port.', 'ok');
-          markDone(card5);
           cardDone.style.display = 'block';
         } catch (e) {
           console.error(e);
