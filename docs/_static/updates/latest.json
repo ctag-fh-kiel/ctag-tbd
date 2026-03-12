@@ -1,7 +1,7 @@
 {
-  "version": "0.3.0",
+  "version": "0.3.1",
   "date": "2026-03-12",
-  "description": "WebUI v0.3.0 — pre-release with update workflow",
-  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.0.zip",
-  "size": 195726
+  "description": "WebUI v0.3.1 — online update workflow test",
+  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.1.zip",
+  "size": 195716
 }

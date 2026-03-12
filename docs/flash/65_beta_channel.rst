@@ -421,8 +421,8 @@ You need **USB-C cables** connected at different steps:
           p4Name:   'possan-tbd-2026-03-12.bin',
           picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-12.uf2',
           picoName: 'possan-tbd-2026-03-12.uf2',
-          zipUrl:   '../_static/sdcard_image/2026-03-11_2/tbd-sd-card.zip',
-          hashUrl:  '../_static/sdcard_image/2026-03-11_2/tbd-sd-card-hash.txt',
+          zipUrl:   '../_static/sdcard_image/2026-03-12/tbd-sd-card.zip',
+          hashUrl:  '../_static/sdcard_image/2026-03-12/tbd-sd-card-hash.txt',
           label:    'possan-tbd-2026-03-12'
         },
         'ctag-tbd-2026-02-27': {
