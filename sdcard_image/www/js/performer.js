@@ -492,16 +492,24 @@
       groups[g].push(p);
     });
 
+    var F = window.TBD.factory;
+
     Object.keys(groups).sort().forEach(function(groupName) {
       html += '<div class="preset-category">' + S.esc(groupName) + '</div>';
       groups[groupName].forEach(function(p) {
         var isActive = state.activePreset && state.activePreset.id === p.id;
+        var isFactory = F && F.isFactoryPreset(p.id);
         html += '<div class="preset-item' + (isActive ? ' active' : '') + '" data-preset-id="' + S.esc(p.id) + '">';
+        if (isFactory) {
+          html += '<sl-icon name="lock" style="font-size:0.6rem;opacity:0.4;flex-shrink:0;margin-right:0.2rem;" title="Factory preset — use Save As to create a copy"></sl-icon>';
+        }
         html += '<span class="preset-item-name">' + S.esc(p.name) + '</span>';
         html += '<span class="preset-item-machine">' + S.esc(p.macro) + '</span>';
-        html += '<button class="preset-item-delete" data-delete-preset-id="' + S.esc(p.id) + '" title="Delete preset">';
-        html += '<sl-icon name="trash3"></sl-icon>';
-        html += '</button>';
+        if (!isFactory) {
+          html += '<button class="preset-item-delete" data-delete-preset-id="' + S.esc(p.id) + '" title="Delete preset">';
+          html += '<sl-icon name="trash3"></sl-icon>';
+          html += '</button>';
+        }
         html += '</div>';
       });
     });
@@ -688,8 +696,15 @@
     var old = document.getElementById('save-preset-dialog');
     if (old) old.remove();
 
+    var F = window.TBD.factory;
+    var isFromFactory = state.activePreset && F && F.isFactoryPreset(state.activePreset.id);
+
     var defaultName = state.activePreset ? state.activePreset.name : (state.activeMacroDef ? state.activeMacroDef.name : '');
+    // If cloning a factory preset, append " (copy)" to encourage a new name
+    if (isFromFactory) defaultName = defaultName + ' (copy)';
     var defaultGroup = state.activePreset ? (state.activePreset.group || '') : (state.activeMachine || '');
+    // Factory presets go to "User" group by default when cloning
+    if (isFromFactory && defaultGroup) defaultGroup = 'User';
     var macroName = state.activeMacroDef ? (state.activeMacroDef.name || state.activeMacroDef.id) : '';
     var machineName = '';
     if (state.activeMachine) {
@@ -752,10 +767,28 @@
       }
 
       var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      // Produce a dense values array — fill any sparse gaps with 0
-      var values = state.paramValues.slice();
-      for (var vi = 0; vi < values.length; vi++) {
-        if (values[vi] === undefined || values[vi] === null) values[vi] = 0;
+
+      // Prevent overwriting factory presets
+      var Fcheck = window.TBD.factory;
+      if (Fcheck && Fcheck.isFactoryPreset(id)) {
+        nameInput.setAttribute('help-text', 'This name matches a factory preset — choose a different name');
+        nameInput.focus();
+        return;
+      }
+
+      // Produce a dense values array trimmed to the definition's parameter count
+      var paramCount = 0;
+      if (state.activeMacroDef && state.activeMacroDef.groups) {
+        state.activeMacroDef.groups.forEach(function(g) {
+          (g.parameters || []).forEach(function(p) {
+            if (p.idx >= paramCount) paramCount = p.idx + 1;
+          });
+        });
+      }
+      var values = [];
+      for (var vi = 0; vi < paramCount; vi++) {
+        var raw = state.paramValues[vi];
+        values[vi] = (raw !== undefined && raw !== null) ? Math.round(raw) : 0;
       }
       var preset = {
         id: id,
@@ -804,6 +837,11 @@
   // ─── Delete Preset ────────────────────────────────────────
 
   function deletePreset(presetId) {
+    var F = window.TBD.factory;
+    if (F && F.isFactoryPreset(presetId)) {
+      S.toast('Factory presets cannot be deleted', 'warning', 3000);
+      return;
+    }
     var preset = S.data.soundPresets.find(function(p) { return p.id === presetId; });
     var displayName = preset ? preset.name : presetId;
 

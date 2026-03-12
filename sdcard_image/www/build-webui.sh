@@ -53,6 +53,7 @@ echo ""
 MACRO_BUNDLE_SOURCES=(
   js/Sortable.min.js
   js/shared.js
+  js/factory-manifest.js
   js/display-hints.js
   js/performer.js
   js/designer.js
