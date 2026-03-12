@@ -60,6 +60,7 @@ Which source files map to which package files:
 | `www/js/plugin-manager.js` | `www/js/app-bundle.js.gz` |
 | `www/js/sample-manager.js` | `www/js/app-bundle.js.gz` |
 | `www/js/app.js` | `www/js/app-bundle.js.gz` |
+| `www/js/factory-manifest.js` | `www/js/macro-bundle.js.gz` |
 | `www/js/performer.js` | `www/js/macro-bundle.js.gz` |
 | `www/js/designer.js` | `www/js/macro-bundle.js.gz` |
 | `www/js/track-defaults.js` | `www/js/macro-bundle.js.gz` |
@@ -189,7 +190,7 @@ Use this decision tree when the user just says "create an update" without specif
 
 1. **Did any `.html` file change?** → Include each changed `.html.gz`
 2. **Did any JS source used by `app-bundle` change?** (shared.js, display-hints.js, plugin-manager.js, sample-manager.js, app.js, webaudio-controls.js) → Include `www/js/app-bundle.js.gz`
-3. **Did any JS source used by `macro-bundle` change?** (shared.js, display-hints.js, performer.js, designer.js, track-defaults.js, preset-macro-app.js) → Include `www/js/macro-bundle.js.gz`
+3. **Did any JS source used by `macro-bundle` change?** (shared.js, display-hints.js, factory-manifest.js, performer.js, designer.js, track-defaults.js, preset-macro-app.js) → Include `www/js/macro-bundle.js.gz`
 4. **Did `app.css` change?** → Include `www/css/app.css.gz`
 5. **Did any macro definition change?** → Include each `data/macrodefinitions/<name>.json`
 6. **Did any macro preset change?** → Include each `data/macrosoundpresets/<name>.json`
