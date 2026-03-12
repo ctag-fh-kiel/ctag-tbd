@@ -12,27 +12,27 @@ For the **latest** beta firmware, see the `Beta Channel <65_beta_channel.html>`_
 Flash a Previous Build
 ======================
 
-**What this does:**
+.. dropdown:: How it Works
 
-1. Flashes the USB Mass Storage firmware to your device (so the SD card mounts via USB)
-2. Downloads and extracts the matching SD card image directly onto your device's SD card
-3. Switches your device back to normal operation
-4. Flashes the selected firmware to the ESP32-P4
-5. Flashes the RP2350 co-processor firmware (if the selected package includes one)
+   1. Flashes the USB Mass Storage firmware to your device (so the SD card mounts via USB)
+   2. Downloads and extracts the matching SD card image directly onto your device's SD card
+   3. Switches your device back to normal operation
+   4. Flashes the selected firmware to the ESP32-P4
+   5. Flashes the RP2350 co-processor firmware (if the selected package includes one)
 
-**Hardware setup:**
+   **Hardware setup:**
 
-You need **USB-C cables** connected at different steps:
+   You need **USB-C cables** connected at different steps:
 
-1. **Front JTAG port** (USB-C #3) → for serial communication (Steps 1, 3, 4)
-2. **Back USB-C Port #1** → for the SD card to appear as a USB drive (Steps 1, 2) and for powering the device
+   1. **Front JTAG port** (USB-C #3) → for serial communication (Steps 1, 3, 4)
+   2. **Back USB-C Port #1** → for the SD card to appear as a USB drive (Steps 1, 2) and for powering the device
 
-.. tip::
-   Port #1 is the back USB-C port **closest to the center** of the device.
+   .. tip::
+      Port #1 is the back USB-C port **closest to the center** of the device.
 
-**Browser:** Chrome, Edge or Opera required (WebSerial + File System Access).
+   **Browser:** Chrome, Edge or Opera required (WebSerial + File System Access).
 
-**Time:** 5–10 minutes
+   **Time:** 5–10 minutes
 
 .. raw:: html
 
@@ -1262,32 +1262,31 @@ Having trouble? See the `Beta Channel Troubleshooting <67_beta_troubleshooting.h
 Changelog
 =========
 
-.. list-table::
-   :header-rows: 1
-   :widths: 20 15 65
+.. code-block:: text
 
-   * - Build
-     - Date
-     - Changes
-   * - possan-tbd-2026-03-12
-     - 2026-03-12
-     - Macro/preset system with designer and performer. PicoSeqRack DSP plugin.
-       New Shoelace-based WebUI (v0.3.0) with online self-update. SPI protocol
-       handler for MIDI, Ableton Link, and waveform data. Rompler voice fixes.
-   * - possan-tbd-2026-03-11
-     - 2026-03-11
-     - Updated RP2350 Pico co-processor firmware. Rebuilt SD card image.
-   * - possan-tbd-2026-03-10
-     - 2026-03-10
-     - Firmware rebuild with latest DSP changes.
-   * - possan-tbd-2026-03-06
-     - 2026-03-06
-     - Updated P4 and Pico firmware. New RP2350 UF2 binary.
-   * - possan-tbd-2026-03-02
-     - 2026-03-02
-     - First combined P4 + Pico firmware package. Beta channel flashing tool
-       with WebSerial and File System Access API.
-   * - ctag-tbd-2026-02-27
-     - 2026-02-27
-     - Initial ESP32-P4 firmware build. 50+ DSP plugins. SD card image.
-       No Pico co-processor firmware.
+   possan-tbd-2026-03-12 (2026-03-12)
+   - Macro/preset system with designer and performer
+   - PicoSeqRack DSP plugin with 20 rack processors
+   - New Shoelace-based WebUI (v0.3.1) with online self-update
+   - SPI protocol handler for MIDI, Ableton Link, waveform data
+   - Rompler voice fixes and sample ROM model improvements
+
+   possan-tbd-2026-03-11 (2026-03-11)
+   - Updated RP2350 Pico co-processor firmware
+   - Rebuilt SD card image
+
+   possan-tbd-2026-03-10 (2026-03-10)
+   - Firmware rebuild with latest DSP changes
+
+   possan-tbd-2026-03-06 (2026-03-06)
+   - Updated P4 and Pico firmware
+   - New RP2350 UF2 binary
+
+   possan-tbd-2026-03-02 (2026-03-02)
+   - First combined P4 + Pico firmware package
+   - Beta channel flashing tool with WebSerial and File System Access API
+
+   ctag-tbd-2026-02-27 (2026-02-27)
+   - Initial ESP32-P4 firmware build
+   - 50+ DSP plugins, SD card image
+   - No Pico co-processor firmware

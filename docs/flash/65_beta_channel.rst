@@ -7,36 +7,39 @@ Beta Channel
 Flash the **latest beta firmware** and **SD card image** to your TBD-16 directly from the
 browser — no card reader, no terminal commands, no opening the device.
 
-.. admonition:: possan-tbd-2026-03-12
+.. code-block:: text
 
-   Macro/preset system with designer and performer. PicoSeqRack DSP plugin.
-   New Shoelace-based WebUI (v0.3.1) with online self-update. SPI protocol
-   handler for MIDI, Ableton Link, and waveform data. Rompler voice fixes.
+   possan-tbd-2026-03-12 Changelog
+
+   - Macro/preset system with designer and performer
+   - PicoSeqRack DSP plugin with 20 rack processors
+   - New Shoelace-based WebUI (v0.3.1) with online self-update
+   - SPI protocol handler for MIDI, Ableton Link, waveform data
+   - Rompler voice fixes and sample ROM model improvements
 
 Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archive.html>`_.
 
-How it Works
-============
+.. dropdown:: How it Works
 
-1. Flashes the USB Mass Storage firmware to your device (so the SD card mounts via USB)
-2. Downloads and extracts the matching SD card image directly onto your device's SD card
-3. Switches your device back to normal operation
-4. Flashes the selected firmware to the ESP32-P4
-5. Flashes the RP2350 co-processor firmware
+   1. Flashes the USB Mass Storage firmware to your device (so the SD card mounts via USB)
+   2. Downloads and extracts the matching SD card image directly onto your device's SD card
+   3. Switches your device back to normal operation
+   4. Flashes the selected firmware to the ESP32-P4
+   5. Flashes the RP2350 co-processor firmware
 
-**Hardware setup:**
+   **Hardware setup:**
 
-You need **USB-C cables** connected at different steps:
+   You need **USB-C cables** connected at different steps:
 
-1. **Front JTAG port** (USB-C #3) → for serial communication (Steps 1, 3, 4)
-2. **Back USB-C Port #1** → for the SD card to appear as a USB drive (Steps 1, 2) and for powering the device
+   1. **Front JTAG port** (USB-C #3) → for serial communication (Steps 1, 3, 4)
+   2. **Back USB-C Port #1** → for the SD card to appear as a USB drive (Steps 1, 2) and for powering the device
 
-.. tip::
-   Port #1 is the back USB-C port **closest to the center** of the device.
+   .. tip::
+      Port #1 is the back USB-C port **closest to the center** of the device.
 
-**Browser:** Chrome, Edge or Opera required (WebSerial + File System Access).
+   **Browser:** Chrome, Edge or Opera required (WebSerial + File System Access).
 
-**Time:** 5–10 minutes
+   **Time:** 5–10 minutes
 
 .. raw:: html
 
