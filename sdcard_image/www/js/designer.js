@@ -27,6 +27,64 @@
     initialized: false,
   };
 
+  // ─── UI Type Lookup ────────────────────────────────────────
+  // Machine-specific CC id → {ui, curve} overrides — shared by
+  // createOneToOneMapping() and the per-knob auto-select logic.
+  var machineUiMap = {
+    ro:  { bank: {ui:'samplebank'}, slice: {ui:'sampleslice'}, start: {ui:'sampleoffset'}, end: {ui:'sampleoffset'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, pitch: {ui:'bignum'}, decay: {ui:'bignum',curve:'exp'} },
+    db:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, dirt: {ui:'noise'}, 'fm-env': {ui:'envamount'}, 'fm-decay': {ui:'envdecay',curve:'exp'}, 'fm-accent': {ui:'envamount'} },
+    ds:  { freq: {ui:'freq',curve:'log'}, decay: {ui:'envdecay',curve:'exp'}, fm: {ui:'shape'}, snap: {ui:'noise'}, accent: {ui:'envamount'} },
+    as:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, snap: {ui:'noise'}, accent: {ui:'envamount'} },
+    ab:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, 'a-fm': {ui:'shape3'}, 's-fm': {ui:'shape2'}, accent: {ui:'envamount'} },
+    hh1: { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, noise: {ui:'distortion'}, accent: {ui:'envamount'} },
+    hh2: { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, noise: {ui:'distortion'}, accent: {ui:'envamount'} },
+    rs:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, noise: {ui:'distortion'}, accent: {ui:'envamount'} },
+    cl:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, scale: {ui:'noise'} },
+    fmb: { 'f-b': {ui:'shape2'}, 'd-b': {ui:'shape2',curve:'exp'}, 'f-m': {ui:'shape3'}, 'd-m': {ui:'shape3',curve:'exp'}, 'b-m': {ui:'shape2'}, 'a-f': {ui:'shape3'}, 'd-f': {ui:'shape',curve:'exp'}, i: {ui:'noise'} },
+    mo:  { shape: {ui:'shape'}, p0: {ui:'shape3'}, p1: {ui:'shape2'}, waveshap: {ui:'distortion'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'} },
+    td3: { shape: {ui:'shape'}, p0: {ui:'shape2'}, vca_d: {ui:'envdecay',curve:'exp'}, vcf_d: {ui:'envdecay',curve:'exp'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, envdec: {ui:'envdecay',curve:'exp'}, type: {ui:'filtertype'} },
+    pp:  { detune: {ui:'distortion'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, type: {ui:'filtertype'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'}, release: {ui:'envdecay',curve:'exp'} },
+    wtosc: { type: {ui:'filtertype'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'}, release: {ui:'bignum',curve:'exp'} },
+    fxmaster: { compatk: {ui:'envattack',curve:'exp'}, comprel: {ui:'envdecay',curve:'exp'}, complpf: {ui:'filtercutoff',curve:'log'} },
+    fxreverb: { time: {ui:'bignum',curve:'log'}, lowpass: {ui:'bignum',curve:'log'} },
+    extdrum: { note: {ui:'midinote'} },
+  };
+
+  // Generic keyword fallback for machines/CCs not in the table above
+  var uiKeywordMap = [
+    { re: /bank/i,    ui: 'samplebank' },
+    { re: /slice/i,   ui: 'sampleslice' },
+    { re: /offset|start|end/i, ui: 'sampleoffset' },
+    { re: /cutoff|lpf|hpf/i,   ui: 'filtercutoff', curve: 'log' },
+    { re: /reso|res\b|q\b/i,   ui: 'filterq' },
+    { re: /ftype|filtertype|type/i, ui: 'filtertype' },
+    { re: /attack|atk/i,       ui: 'envattack', curve: 'exp' },
+    { re: /decay|dec\b/i,      ui: 'envdecay', curve: 'exp' },
+    { re: /release|rel\b/i,    ui: 'envdecay', curve: 'exp' },
+    { re: /amount|depth|amt/i,  ui: 'envamount' },
+    { re: /freq|frequency|pitch|tune/i, ui: 'freq', curve: 'log' },
+    { re: /note/i,              ui: 'midinote' },
+    { re: /noise/i,             ui: 'noise' },
+    { re: /shape|wave/i,        ui: 'shape' },
+    { re: /dist|drive|dirt/i,   ui: 'distortion' },
+  ];
+
+  // Lookup ui+curve for a given machine + cc id. Uses machineUiMap first,
+  // then falls back to generic keyword matching on the CC id string.
+  function lookupUiType(machineId, ccId) {
+    var mMap = machineUiMap[machineId];
+    if (mMap && mMap[ccId]) return mMap[ccId];
+    // Generic keyword fallback
+    for (var i = 0; i < uiKeywordMap.length; i++) {
+      if (uiKeywordMap[i].re.test(ccId)) {
+        var r = { ui: uiKeywordMap[i].ui };
+        if (uiKeywordMap[i].curve) r.curve = uiKeywordMap[i].curve;
+        return r;
+      }
+    }
+    return { ui: 'bignum' };
+  }
+
   // ─── API Helpers ──────────────────────────────────────────
 
   function apiGet(url) {
@@ -123,18 +181,26 @@
       html += '<div style="padding:0.5rem 0.85rem;opacity:0.5;font-size:0.75rem;">No definitions yet</div>';
     }
 
+    var F = window.TBD.factory;
+
     filteredDefs.forEach(function(def) {
       var isActive = state.selectedDefId === def.id;
+      var isFactory = F && F.isFactoryDefinition(def.id);
       html += '<div class="preset-item' + (isActive ? ' active' : '') + '" data-def-id="' + S.esc(def.id) + '">';
+      if (isFactory) {
+        html += '<sl-icon name="lock" style="font-size:0.65rem;opacity:0.45;flex-shrink:0;margin-right:0.25rem;" title="Factory template — clone to edit"></sl-icon>';
+      }
       html += '<span class="preset-item-name">' + S.esc(def.name || def.id) + '</span>';
       var paramCount = 0;
       if (def.groups) {
         def.groups.forEach(function(g) { paramCount += (g.parameters || []).length; });
       }
       html += '<span class="preset-item-machine">' + paramCount + 'P / ' + (def.mapping || []).length + 'M</span>';
-      html += '<button class="preset-item-delete" data-delete-def-id="' + S.esc(def.id) + '" title="Delete definition">';
-      html += '<sl-icon name="trash3"></sl-icon>';
-      html += '</button>';
+      if (!isFactory) {
+        html += '<button class="preset-item-delete" data-delete-def-id="' + S.esc(def.id) + '" title="Delete definition">';
+        html += '<sl-icon name="trash3"></sl-icon>';
+        html += '</button>';
+      }
       html += '</div>';
     });
 
@@ -631,7 +697,7 @@
         html += '<label class="mb-prop"><span>max</span><input type="number" class="mapping-input mb-prop-max" value="' + (param.max || 127) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
         html += '<label class="mb-prop"><span>res</span><input type="number" class="mapping-input mb-prop-res" value="' + (param.res || 64) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
         html += '<label class="mb-prop"><span>ui</span><select class="mapping-select mb-prop-ui" data-group="' + gi + '" data-param="' + pi + '">';
-        ['bignum', 'slider', 'toggle', 'selector', 'samplebank', 'sampleslice', 'sampleoffset', 'freq'].forEach(function(ui) {
+        ['bignum', 'slider', 'toggle', 'selector', 'knob', 'freq', 'midinote', 'shape', 'shape2', 'shape3', 'noise', 'distortion', 'envattack', 'envdecay', 'envamount', 'filtercutoff', 'filterq', 'filtertype', 'samplebank', 'sampleslice', 'sampleoffset'].forEach(function(ui) {
           html += '<option value="' + ui + '"' + (param.ui === ui ? ' selected' : '') + '>' + ui + '</option>';
         });
         html += '</select></label>';
@@ -825,20 +891,28 @@
       }
     });
 
+    var FP = window.TBD.factory;
+
     matching.forEach(function(preset) {
+      var isFactory = FP && FP.isFactoryPreset(preset.id);
       html += '<div class="sp-card" data-preset-id="' + S.esc(preset.id) + '">';
 
       // Card header: labeled fields + action buttons
       html += '<div class="sp-card-header">';
       html += '<div class="sp-card-fields">';
+      if (isFactory) {
+        html += '<sl-icon name="lock" style="font-size:0.6rem;opacity:0.45;margin-right:0.25rem;" title="Factory preset — read-only"></sl-icon>';
+      }
       html += '<label class="sp-field-label">Preset Name</label>';
-      html += '<input class="mapping-input sp-name-input preset-name-input" value="' + S.esc(preset.name || preset.id) + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. Fat Punch" />';
+      html += '<input class="mapping-input sp-name-input preset-name-input" value="' + S.esc(preset.name || preset.id) + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. Fat Punch"' + (isFactory ? ' readonly' : '') + ' />';
       html += '<label class="sp-field-label" style="margin-left:0.5rem;">Group</label>';
-      html += '<input class="mapping-input sp-group-input preset-group-input" value="' + S.esc(preset.group || '') + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. User" />';
+      html += '<input class="mapping-input sp-group-input preset-group-input" value="' + S.esc(preset.group || '') + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. User"' + (isFactory ? ' readonly' : '') + ' />';
       html += '</div>';
       html += '<div class="sp-card-actions">';
-      html += '<button class="mapping-btn save-preset-btn" data-preset-id="' + S.esc(preset.id) + '" title="Save changes"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
-      html += '<button class="mapping-btn delete-preset-btn" data-preset-id="' + S.esc(preset.id) + '" title="Delete preset"><sl-icon name="trash3" style="font-size:0.7rem;"></sl-icon> Delete</button>';
+      if (!isFactory) {
+        html += '<button class="mapping-btn save-preset-btn" data-preset-id="' + S.esc(preset.id) + '" title="Save changes"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
+        html += '<button class="mapping-btn delete-preset-btn" data-preset-id="' + S.esc(preset.id) + '" title="Delete preset"><sl-icon name="trash3" style="font-size:0.7rem;"></sl-icon> Delete</button>';
+      }
       html += '</div>';
       html += '</div>';
 
@@ -1218,7 +1292,31 @@
         var ctrl = parseInt(select.value, 10);
         var srcIdx = parseInt(select.getAttribute('data-src-idx'), 10);
         if (isNaN(ctrl) || isNaN(srcIdx)) return;
-        state.editDef.mapping.push({ ctrl: ctrl, start: 0, add: [{ src: srcIdx, mul: 1, div: 1 }] });
+        var addEntry = { src: srcIdx, mul: 1, div: 1 };
+
+        // Auto-select ui type for this knob based on the CC being mapped
+        var machine = state.editDef.machine;
+        if (machine) {
+          var machineInfo = S.getMachineInfo(machine);
+          if (machineInfo && machineInfo.parameters) {
+            var ccParam = machineInfo.parameters.find(function(p) { return p.ctrl === ctrl; });
+            if (ccParam) {
+              var uiInfo = lookupUiType(machine, ccParam.id);
+              // Find the knob parameter and update its ui + curve
+              state.editDef.groups.forEach(function(g) {
+                (g.parameters || []).forEach(function(p) {
+                  if (p.idx === srcIdx) {
+                    p.ui = uiInfo.ui;
+                    if (uiInfo.curve) { p.curve = uiInfo.curve; addEntry.curve = uiInfo.curve; }
+                    else { delete p.curve; }
+                  }
+                });
+              });
+            }
+          }
+        }
+
+        state.editDef.mapping.push({ ctrl: ctrl, start: 0, add: [addEntry] });
         state.dirty = true;
         renderMacroBuilderSection();
       });
@@ -1294,24 +1392,24 @@
     if (!state.editDef.id) { state.editDef.id = state.editDef.machine + '-allparams'; }
     if (!state.editDef.name) { state.editDef.name = (machineInfo.name || state.editDef.machine) + ' All params'; }
 
-    var isRompler = state.editDef.machine === 'ro';
-
-    // Rompler UI type lookup by CC parameter id
-    var romplerUiTypes = { bank: 'samplebank', slice: 'sampleslice', start: 'sampleoffset', end: 'sampleoffset' };
+    var machine = state.editDef.machine;
 
     state.editDef.groups = [];
     var paramIdx = 0;
+    var isRompler = machine === 'ro';
     for (var g = 0; g < 6 && paramIdx < params.length; g++) {
       var groupParams = [];
       for (var p = 0; p < 4 && paramIdx < params.length; p++) {
         var cc = params[paramIdx];
-        var ui = (isRompler && romplerUiTypes[cc.id]) ? romplerUiTypes[cc.id] : 'bignum';
-        groupParams.push({
+        var uiInfo = lookupUiType(machine, cc.id);
+        var paramObj = {
           idx: paramIdx,
           name: cc.name || ('CC' + cc.ctrl),
           def: cc.def || 0,
-          min: 0, max: 127, res: 64, ui: ui,
-        });
+          min: 0, max: 127, res: 64, ui: uiInfo.ui,
+        };
+        if (uiInfo.curve) paramObj.curve = uiInfo.curve;
+        groupParams.push(paramObj);
         paramIdx++;
       }
       var pageName = (isRompler && g === 0) ? 'SAMPLE' : 'Page ' + (g + 1);
@@ -1327,13 +1425,16 @@
       if (i < allParams.length) {
         var mapStart = 0;
         var mapMul = 1;
+        var mapCurve = allParams[i].curve;
         if (isRompler) {
           // Attack/Decay need start:1 to avoid div-by-zero in envelope
           if (cc.id === 'attack' || cc.id === 'decay') mapStart = 1;
           // TSMode needs mul:64 for proper 0/1/2 integer mapping
           if (cc.id === 'tsmode') mapMul = 64;
         }
-        state.editDef.mapping.push({ ctrl: cc.ctrl, start: mapStart, add: [{ src: allParams[i].idx, mul: mapMul, div: 1 }] });
+        var addEntry = { src: allParams[i].idx, mul: mapMul, div: 1 };
+        if (mapCurve) addEntry.curve = mapCurve;
+        state.editDef.mapping.push({ ctrl: cc.ctrl, start: mapStart, add: [addEntry] });
       }
     });
 
@@ -1405,6 +1506,15 @@
       }
 
       var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+      // Prevent overwriting factory presets
+      var Fcheck = window.TBD.factory;
+      if (Fcheck && Fcheck.isFactoryPreset(id)) {
+        nameInput.setAttribute('help-text', 'This name matches a factory preset \u2014 choose a different name');
+        nameInput.focus();
+        return;
+      }
+
       // Build a dense values array — fill any gaps with 0
       var maxIdx = -1;
       state.editDef.groups.forEach(function(g) {
@@ -1446,6 +1556,11 @@
   }
 
   function saveEditedPreset(presetId, container) {
+    var F = window.TBD.factory;
+    if (F && F.isFactoryPreset(presetId)) {
+      S.toast('Factory presets are read-only', 'warning', 3000);
+      return;
+    }
     var preset = S.data.soundPresets.find(function(p) { return p.id === presetId; });
     if (!preset) { S.toast('Preset not found', 'danger', 2000); return; }
 
@@ -1477,6 +1592,11 @@
   }
 
   function deleteSoundPreset(presetId) {
+    var F = window.TBD.factory;
+    if (F && F.isFactoryPreset(presetId)) {
+      S.toast('Factory presets cannot be deleted', 'warning', 3000);
+      return;
+    }
     var preset = S.data.soundPresets.find(function(p) { return p.id === presetId; });
     var displayName = preset ? preset.name : presetId;
 
@@ -1527,6 +1647,11 @@
   // ─── Delete Macro Definition ────────────────────────────────
 
   function deleteDefinition(defId) {
+    var F = window.TBD.factory;
+    if (F && F.isFactoryDefinition(defId)) {
+      S.toast('Factory definitions cannot be deleted — clone it instead', 'warning', 3000);
+      return;
+    }
     var def = S.data.macroDefs.find(function(d) { return d.id === defId; });
     var displayName = def ? (def.name || def.id) : defId;
 
@@ -1606,6 +1731,18 @@
     if (!state.editDef) { S.toast('Nothing to save', 'warning', 2000); return; }
     if (!state.editDef.id) { S.toast('Definition ID is required', 'warning', 2000); return; }
     if (!state.editDef.machine) { S.toast('Select a machine for this definition', 'warning', 2000); return; }
+
+    // Factory definitions cannot be overwritten — prompt for a new name
+    var F = window.TBD.factory;
+    if (F && F.isFactoryDefinition(state.editDef.id)) {
+      var newId = prompt('Factory definitions are read-only.\nEnter a new ID to save as a copy:', state.editDef.id + '-custom');
+      if (!newId) return;
+      newId = newId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-|-$/g, '');
+      if (!newId) { S.toast('Invalid ID', 'warning', 2000); return; }
+      if (F.isFactoryDefinition(newId)) { S.toast('That ID is also a factory definition', 'warning', 2000); return; }
+      state.editDef.id = newId;
+      state.selectedDefId = newId;
+    }
 
     var cleanDef = cleanDefinitionForSave(state.editDef);
     var jsonStr = JSON.stringify(cleanDef, null, 2);
