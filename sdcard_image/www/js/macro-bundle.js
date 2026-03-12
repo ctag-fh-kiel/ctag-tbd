@@ -1090,6 +1090,7 @@ window.TBD.shared = {
     'pp-darkchord',
     'pp-lushpad',
     'ro-allparams',
+    'ro-fullrompler',
     'rs-allparams',
     'td3-acidbass',
     'td3-allparams',
@@ -1136,6 +1137,7 @@ window.TBD.shared = {
     'pp-all-def',
     'punch-testing',
     'ro-all-def',
+    'ro-fullrompler-def',
     'rs-all-def',
     'sub-morphing-preset-',
     'td3-all-def',
@@ -2740,7 +2742,7 @@ window.TBD.shared = {
   // Machine-specific CC id → {ui, curve} overrides — shared by
   // createOneToOneMapping() and the per-knob auto-select logic.
   var machineUiMap = {
-    ro:  { bank: {ui:'samplebank'}, slice: {ui:'sampleslice'}, start: {ui:'sampleoffset'}, end: {ui:'sampleoffset'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, pitch: {ui:'bignum'}, decay: {ui:'bignum',curve:'exp'} },
+    ro:  { bank: {ui:'samplebank'}, slice: {ui:'sampleslice'}, start: {ui:'sampleoffset'}, end: {ui:'sampleoffset'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, type: {ui:'filtertype'}, bitcr: {ui:'bignum'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'}, speed: {ui:'bignum'}, pitch: {ui:'bignum'}, loop: {ui:'bignum'}, pingpong: {ui:'bignum'}, ppstart: {ui:'sampleoffset'}, eg2fm: {ui:'envamount'}, tsmode: {ui:'bignum'}, tsamt: {ui:'envamount'} },
     db:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, dirt: {ui:'noise'}, 'fm-env': {ui:'envamount'}, 'fm-decay': {ui:'envdecay',curve:'exp'}, 'fm-accent': {ui:'envamount'} },
     ds:  { freq: {ui:'freq',curve:'log'}, decay: {ui:'envdecay',curve:'exp'}, fm: {ui:'shape'}, snap: {ui:'noise'}, accent: {ui:'envamount'} },
     as:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, snap: {ui:'noise'}, accent: {ui:'envamount'} },
@@ -4003,7 +4005,7 @@ window.TBD.shared = {
         if (isNaN(ctrl) || isNaN(srcIdx)) return;
         var addEntry = { src: srcIdx, mul: 1, div: 1 };
 
-        // Auto-select ui type for this knob based on the CC being mapped
+        // Auto-fill name + ui type for this knob based on the CC being mapped
         var machine = state.editDef.machine;
         if (machine) {
           var machineInfo = S.getMachineInfo(machine);
@@ -4011,10 +4013,14 @@ window.TBD.shared = {
             var ccParam = machineInfo.parameters.find(function(p) { return p.ctrl === ctrl; });
             if (ccParam) {
               var uiInfo = lookupUiType(machine, ccParam.id);
-              // Find the knob parameter and update its ui + curve
+              // Find the knob parameter and update its name, ui + curve
               state.editDef.groups.forEach(function(g) {
                 (g.parameters || []).forEach(function(p) {
                   if (p.idx === srcIdx) {
+                    // Auto-fill name if still generic (user can still rename later)
+                    if (!p.name || p.name === 'New Knob' || /^CC\d+$/.test(p.name)) {
+                      p.name = ccParam.name || ('CC' + ctrl);
+                    }
                     p.ui = uiInfo.ui;
                     if (uiInfo.curve) { p.curve = uiInfo.curve; addEntry.curve = uiInfo.curve; }
                     else { delete p.curve; }
