@@ -1,0 +1,220 @@
+{
+  "id": "pp-darkchord",
+  "name": "Dark Chord",
+  "machine": "pp",
+  "groups": [
+    {
+      "name": "Dark Chord",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Chord",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 1,
+          "name": "Darkness",
+          "def": 80,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 2,
+          "name": "Drift",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        },
+        {
+          "idx": 3,
+          "name": "Envelope",
+          "def": 40,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "knob"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 3
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 2,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 4
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 10,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 10,
+      "add": [
+        {
+          "src": 1,
+          "mul": -1,
+          "div": 5
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 48,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 5
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "start": 0
+    },
+    {
+      "ctrl": 15,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 2
+        }
+      ]
+    },
+    {
+      "ctrl": 16,
+      "start": 8,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 3
+        }
+      ]
+    },
+    {
+      "ctrl": 17,
+      "start": 8,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 2
+        }
+      ]
+    },
+    {
+      "ctrl": 18,
+      "start": 16,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 19,
+      "start": 0
+    },
+    {
+      "ctrl": 20,
+      "start": 0
+    },
+    {
+      "ctrl": 21,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 2
+        }
+      ]
+    },
+    {
+      "ctrl": 22,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 23,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 3
+        }
+      ]
+    },
+    {
+      "ctrl": 24,
+      "start": 60,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 2
+        }
+      ]
+    },
+    {
+      "ctrl": 25,
+      "start": 48
+    }
+  ]
+}

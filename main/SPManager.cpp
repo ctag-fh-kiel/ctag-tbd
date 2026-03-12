@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "SPManager.hpp"
 #include "esp_log.h"
 #include "esp_cpu.h"
+#include "esp_timer.h"
 #include "stdint.h"
 #include "string.h"
 #include "codec_bba.hpp"
@@ -36,17 +37,27 @@ respective component folders / files if different from this license.
 #include "helpers/ctagFastMath.hpp"
 #include "helpers/ctagSampleRom.hpp"
 #include "stmlib/dsp/dsp.h"
-
+#include "rp2350_spi_stream.hpp"
 // ableton link
 #include "link.hpp"
+#include "SpiProtocol.h"
+#include "SpiProtocolHelper.hpp"
+#include "MacroTranslator.hpp"
+#include "MacroDeviceDefinition.hpp"
+#include "MacroSoundPreset.hpp"
+
+#define MAX(x, y) ((x)>(y)) ? (x) : (y)
+#define MIN(x, y) ((x)<(y)) ? (x) : (y)
 
 #define BUF_SZ 32
 
 using namespace CTAG;
 using namespace CTAG::AUDIO;
 using namespace CTAG::DRIVERS;
+using namespace CTAG::MACROPRESETS;
 
-#define CPU_MAX_ALLOWED_CYCLES 261224 // is 32/44100kHz * 360MHz
+#define CPU_MAX_ALLOWED_CYCLES 300000 // 261224 // is 32/44100kHz * 360MHz
+#define SPI_TRANSACTION_TIMEOUT_US 200000
 
 // global variable, sdcard base directory
 namespace CTAG {
@@ -55,32 +66,213 @@ namespace CTAG {
     }
 }
 
+volatile uint32_t SoundProcessorManager::slowProcessCounter = 0;
+volatile uint32_t SoundProcessorManager::sentSynthMidiBytes = 0;
+volatile uint32_t SoundProcessorManager::receivedUsbDeviceMidiBytes = 0;
+volatile uint32_t SoundProcessorManager::requestCounterErrors = 0;
+volatile uint32_t SoundProcessorManager::audioLockErrors = 0;
 
 // audio real-time task
 void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
+    float finput[BUF_SZ * 2];
     float fbuf[BUF_SZ * 2];
+    float finput2[BUF_SZ * 2];
+    float fbuf2[BUF_SZ * 2];
     float peakIn = 0.f, peakOut = 0.f;
+    int64_t before;
     bool isStereoCH0 = false;
     esp_cpu_cycle_count_t start, diff;
 
+    SpiProtocolHelper protocol;
+
+    // Provide dummy cv/trig buffers so plugins that access pd.cv[x] or
+    // pd.trig[x] don't crash with a null-pointer dereference.
+    // The macropresets SPI protocol carries MIDI only — no CV/trig data.
+    static float  dummy_cv[N_CVS]    = {};   // zero-filled
+    static uint8_t dummy_trig[N_TRIGS] = {};  // zero-filled
+
     SP::ProcessData pd;
-    pd.buf = fbuf;
     pd.controlData = nullptr;
-    pd.cv = nullptr;
-    pd.trig = nullptr;
+    pd.cv = dummy_cv;
+    pd.trig = dummy_trig;
+    pd.buf = fbuf;
+    pd.sequencer_tempo = 12000;
+    pd.midi_bytes_length = 0;
+    memset(&pd.midi_bytes, 0, sizeof(pd.midi_bytes));
+
+    // wait a bit to let everything initialize and stabilize
+    vTaskDelay(pdMS_TO_TICKS(4000));
+
+    int64_t nextspitime = 0;
+    int64_t nextspireceivedeadline = 0;
+
+    int responsecounter = 0;
+    int framecounter = 0;
+
+    ESP_LOGI("SPManager", "Audio task started, entering main loop.");
 
     while (runAudioTask) {
+        //
+        // Prepare a response.
+        //
+        int64_t now = esp_timer_get_time();
 
-        // update data from ADCs and GPIOs for real-time control
-        CTAG::CTRL::Control::Update(&pd.controlData, ledStatus);
-        pd.cv = (float*) pd.controlData;
-        pd.trig = (uint8_t*) pd.controlData + N_CVS * sizeof(float);
+        if (protocol.shouldPrepareNextResponse()) {
+            // printf("protocol: preparing next response (seq %d)\n", protocol.nextResponseSequenceCounter);
+
+            uint8_t *sendbuffer = nullptr;
+            CTAG::DRIVERS::rp2350_spi_stream::GetSendBuffer((void **)&sendbuffer);
+
+            if (sendbuffer != nullptr) {
+                // printf("protocol: got write buffer\n");
+
+                p4_spi_response_header *send_header = (p4_spi_response_header *)sendbuffer;
+                p4_spi_response2 *send_response =
+                    (p4_spi_response2 *)(sendbuffer + P4_SPI_RESPONSE_HEADER_SIZE);
+
+                //
+                // prepare next response
+                //
+
+                // pack ableton link data
+                LINK::link_session_data_t *link_data = (LINK::link_session_data_t*)&send_response->link_data;
+                LINK::link::GetLinkRtSessionData(link_data);
+
+                // pack midi data from USB device midi
+                uint8_t *midi_ptr = (uint8_t*) &send_response->usb_device_midi;
+                uint32_t *midi_len = (uint32_t*) &send_response->usb_device_midi_length;
+                *midi_len = tusb::Read(midi_ptr, P4_SPI_RESPONSE_USB_MIDI_DATA_SIZE);
+                // if (*midi_len > 0) {
+                //     printf("Received %d bytes of USB device midi data: %02X %02X %02X %02X...\n",
+                //         (int)(*midi_len), midi_ptr[0], midi_ptr[1], midi_ptr[2], midi_ptr[3]);
+                // }
+                receivedUsbDeviceMidiBytes += *midi_len;
+
+                // add some waveforms
+                for(int i=0; i<128; i++) {
+                    send_response->input_waveform[i] = 128;
+                    send_response->output_waveform[i] = 128;
+                }
+                for(int i=0; i<BUF_SZ * 2; i++) {
+                    send_response->input_waveform[i] = (int)(finput2[i] * 127.0f + 128.f);
+                    send_response->output_waveform[i] = (int)(fbuf2[i] * 127.0f + 128.f);
+                }
+
+                // and the led color
+                send_response->led_color = ledStatus;
+                responsecounter ++;
+                send_response->magic = 0xDEADBEEF;
+                send_response->magic2 = 0xFEED;
+                protocol.markNextResponsePrepared(
+                    (p4_spi_response_header*) send_header,
+                    (p4_spi_response2*) send_response);
+                // printf("protocol: next response prepared\n");
+            } else {
+                printf("protocol: no write buffer available\n");
+            }
+        } else {
+            // printf("protocol: no need to prepare next response\n");
+        }
+
+        if (protocol.shouldSendPreparedResponse()) {
+            // printf("protocol: queue response\n");
+            uint8_t *sendbuffer = nullptr;
+            CTAG::DRIVERS::rp2350_spi_stream::GetSendBuffer((void **)&sendbuffer);
+            if (sendbuffer != nullptr) {
+                p4_spi_response_header *send_header = (p4_spi_response_header *)sendbuffer;
+                p4_spi_response2 *send_response =
+                    (p4_spi_response2 *)(sendbuffer + P4_SPI_RESPONSE_HEADER_SIZE);
+                protocol.updateResponseBeforeSending(send_header, send_response);
+                CTAG::DRIVERS::rp2350_spi_stream::QueueBuffer((void *)sendbuffer);
+                protocol.queuedPreparedResponse();
+                nextspireceivedeadline = now + SPI_TRANSACTION_TIMEOUT_US;
+            }
+        } else {
+            // printf("protocol: should not send response.\n");
+        }
+
+        //
+        // check if current spi transaction is done
+        //
+
+        uint8_t *spi_request_ptr = nullptr;
+        if (CTAG::DRIVERS::rp2350_spi_stream::GetReceivedBuffer((void **)&spi_request_ptr)) {
+            p4_spi_request_header *spi_req_header = (p4_spi_request_header *)spi_request_ptr;
+            p4_spi_request2 *spi_req =
+                (p4_spi_request2 *)(spi_request_ptr + P4_SPI_REQUEST_HEADER_SIZE);
+
+            if (protocol.validateRequestPacket(spi_req_header, spi_req)) {
+                // printf("protocol: received transaction. (seq %d)\n", spi_req_header->request_sequence_counter);
+
+                // for(int k=0; k<8; k++) {
+                //     printf("  %02X %02X %02X %02X %02X %02X %02X %02X\n",
+                //         spi_request_ptr[8 * k + 0],
+                //         spi_request_ptr[8 * k + 1],
+                //         spi_request_ptr[8 * k + 2],
+                //         spi_request_ptr[8 * k + 3],
+                //         spi_request_ptr[8 * k + 4],
+                //         spi_request_ptr[8 * k + 5],
+                //         spi_request_ptr[8 * k + 6],
+                //         spi_request_ptr[8 * k + 7]);
+                // }
+
+                // request is valid
+                // if (spi_req->synth_midi_length > 1) {
+                //     printf("got %d midi bytes, seq %d\n", (int)spi_req->synth_midi_length, spi_req_header->request_sequence_counter);
+                // }
+
+                pd.controlData = (void *)1; // run processing...
+                memset(&pd.midi_bytes, 0, sizeof(pd.midi_bytes));
+                memcpy(&pd.midi_bytes, (uint8_t*) &spi_req->synth_midi, spi_req->synth_midi_length);
+                pd.midi_bytes_length = spi_req->synth_midi_length;
+                // if (spi_req->synth_midi_length > 1) {
+                //     printf("Received %d bytes of synth midi data: %02X %02X %02X %02X %02X %02X %02X %02X...\n",
+                //         (int)(spi_req->synth_midi_length),
+                //         spi_req->synth_midi[0],
+                //         spi_req->synth_midi[1],
+                //         spi_req->synth_midi[2],
+                //         spi_req->synth_midi[3],
+                //         spi_req->synth_midi[4],
+                //         spi_req->synth_midi[5],
+                //         spi_req->synth_midi[6],
+                //         spi_req->synth_midi[7]);
+                // }
+                // printf("SPI Request tempo %ld\n", spi_req.sequencer_tempo);
+                pd.sequencer_tempo = spi_req->sequencer_tempo;
+                sentSynthMidiBytes += spi_req->synth_midi_length;
+
+                uint8_t expNext = protocol.getNextSequence(protocol.lastSeenRequestCounter);
+                if (spi_req_header->request_sequence_counter != expNext) {
+                    // printf("expected sequence %d but got %d, did we miss a packet?\n",
+                    //     expNext, spi_req_header->request_sequence_counter);
+                };
+
+                protocol.markRequestSeen(spi_req_header->request_sequence_counter);
+            } else {
+                printf("protocol: packet invalid\n");
+            }
+        } else {
+            // printf("protocol: did not receive packet\n");
+
+            // check timeout...
+            if (now > nextspireceivedeadline) {
+                printf("SPI receive timeout.\n");
+                // protocol.markRequestSeen(0);
+                nextspireceivedeadline = now + SPI_TRANSACTION_TIMEOUT_US;
+            }
+        }
+
+        taskYIELD();
 
         // get normalized raw data from CODEC
-        DRIVERS::Codec::ReadBuffer(fbuf, BUF_SZ);
+        DRIVERS::Codec::ReadBuffer(finput, BUF_SZ);
+
+        memcpy(finput2, finput, BUF_SZ * 2 * sizeof(float));
+        memcpy(fbuf, finput, BUF_SZ * 2 * sizeof(float));
 
         // track the cpu cycles for audio task
         start = esp_cpu_get_cycle_count();
+        before = esp_timer_get_time();
 
         // In peak detection, dc cut is done in codec
         float max = 0.f;
@@ -99,13 +291,15 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
         // sound processors - safer version with RAII and additional checks
         bool processingLocked = (xSemaphoreTake(processMutex, 0) == pdTRUE);
-
         if (processingLocked) {
             // Validate control data and sound processors before processing
             bool canProcess = (pd.controlData != nullptr) &&
                               (sp[0] != nullptr || sp[1] != nullptr);
 
             if (canProcess) {
+                macroTranslator->TranslateInput(&pd);
+                memset(&pd.midi_bytes, 0, pd.midi_bytes_length); // clear buffer
+
                 // Process channel 0
                 if (sp[0] != nullptr) {
                     isStereoCH0 = sp[0]->GetIsStereo();
@@ -130,11 +324,15 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
             }
 
+            // memset(&pd.midi_bytes, 0, sizeof(pd.midi_bytes));
+            pd.midi_bytes_length = 0;
+
             // Always release mutex
             xSemaphoreGive(processMutex);
         } else {
             // Couldn't acquire mutex - mute audio for this buffer
             memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
+            audioLockErrors ++;
         }
 
 
@@ -210,11 +408,27 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
         // get cpu cycles for audio task and tone led
         diff = esp_cpu_get_cycle_count() - start;
-        if(diff > CPU_MAX_ALLOWED_CYCLES) ledData = 0xB39134; // orange code for cpu overflow
+        int64_t diff2 = esp_timer_get_time() - before;
+        if(diff > CPU_MAX_ALLOWED_CYCLES) {
+            slowProcessCounter ++;
+            // ledData = 0xB39134; // orange code for cpu overflow
+        }
         ledStatus = ledData;
+
+        memcpy(fbuf2, fbuf, BUF_SZ * 2 * sizeof(float));
 
         // write raw float data back to CODEC
         DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
+
+        if (framecounter % 3200 == 0) {
+            //     printf("Audio task cycles %d, micros %d, slow process() counter %d/%d, fbuf = [%1.3f, %1.3f...], tempo %ld, sentSynthMidi %d b, receivedUsbDeviceMidi %d b, %d new request counter errors, %d lock errors\n", (int)diff, (int)diff2, (int)slowProcessCounter, (int)framecounter, fbuf[0], fbuf[BUF_SZ], pd.sequencer_tempo, (int)sentSynthMidiBytes, (int)receivedUsbDeviceMidiBytes, (int)requestCounterErrors, (int)audioLockErrors);
+            //     requestCounterErrors = 0;
+            printf("Audio task CPU time %d uS\n", (int)diff2);
+        }
+
+        taskYIELD();
+
+        framecounter ++;
     }
     memset(fbuf, 0, BUF_SZ * 2 * sizeof(float));
     DRIVERS::Codec::WriteBuffer(fbuf, BUF_SZ);
@@ -246,16 +460,32 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
             sp[1] = nullptr;
         }
     }
+    if (chan == 0) {
+        macroTranslator->soundProcessor = nullptr;
+    }
+
+    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 
     // create new plugin
     ctagSPAllocator::AllocationType aType = ctagSPAllocator::AllocationType::CH0;
     if(chan == 1) aType = ctagSPAllocator::AllocationType::CH1;
     if(model->IsStereo(id)) aType = ctagSPAllocator::AllocationType::STEREO;
     sp[chan] = ctagSoundProcessorFactory::Create(id, aType);
+    if (sp[chan] == nullptr) {
+        ESP_LOGE("SPManager", "Failed to create plugin %s — factory returned null!", id.c_str());
+        xSemaphoreGive(processMutex);
+        return;
+    }
+    if (chan == 0) {
+        macroTranslator->soundProcessor = sp[chan];
+    }
     model->SetActivePluginID(id, chan);
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
     xSemaphoreGive(processMutex);
-
 
     ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -278,12 +508,50 @@ atomic<uint32_t> SoundProcessorManager::toStereoCH1;
 atomic<uint32_t> SoundProcessorManager::runAudioTask;
 atomic<uint32_t> SoundProcessorManager::ch0_outputSoftClip;
 atomic<uint32_t> SoundProcessorManager::ch1_outputSoftClip;
+std::shared_ptr<CTAG::MACROPRESETS::SynthDefinitionDataModel> SoundProcessorManager::synthDefinitionModel = nullptr;
+std::shared_ptr<CTAG::MACROPRESETS::MacroSoundPresetDataModel> SoundProcessorManager::macroSoundDefinitionModel = nullptr;
+std::shared_ptr<CTAG::MACROPRESETS::MacroDeviceDefinitionDataModel> SoundProcessorManager::macroDeviceDefinitionModel = nullptr;
+std::shared_ptr<CTAG::MACROPRESETS::MacroTranslator> SoundProcessorManager::macroTranslator = nullptr;
+atomic<uint32_t> SoundProcessorManager::parameterChangeCounter = 0;
+atomic<uint32_t> SoundProcessorManager::macroChangeCounter = 0;
+atomic<uint32_t> SoundProcessorManager::trackMachineChangeCounter = 0;
+atomic<uint32_t> SoundProcessorManager::definitionChangeCounter = 0;
+
+
+static char freertosstats[2000] = { 0, };
+
+static void debug_task(void *pvParameters) {
+  while (true) {
+    vTaskDelay(4000 / portTICK_PERIOD_MS);
+    // vTaskGetRunTimeStats((char *)&freertosstats);
+    // vTaskDelay(200 / portTICK_PERIOD_MS);
+    // ESP_LOGI("SPManager", "FreeRTOS Stats:\n%s", freertosstats);
+
+    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!, counters: tx-err=%ld queue-err=%ld parse-err=%ld success=%ld",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM),
+             DRIVERS::rp2350_spi_stream::transferErrorCount,
+             DRIVERS::rp2350_spi_stream::queueErrorCount,
+             DRIVERS::rp2350_spi_stream::parseErrorCount,
+             DRIVERS::rp2350_spi_stream::transferSuccessCount);
+
+    // printf("Audio task cycles %d, micros %d, slow process() counter %d/%d, fbuf = [%1.3f, %1.3f...], tempo %ld, sentSynthMidi %d b, receivedUsbDeviceMidi %d b, %d new request counter errors\n", (int)diff, (int)diff2, (int)slowProcessCounter, (int)framecounter, fbuf[0], fbuf[BUF_SZ], pd.sequencer_tempo, (int)sentSynthMidiBytes, (int)receivedUsbDeviceMidiBytes, (int)requestCounterErrors);
+    // requestCounterErrors = 0;
+  }
+}
 
 void SoundProcessorManager::StartSoundProcessor() {
     ledBlink = 5;
     model = std::make_unique<SPManagerDataModel>();
 
-    // init tinyusb
+    // prepare threads and mutex
+    processMutex = xSemaphoreCreateMutex();
+    if (processMutex == NULL) {
+        ESP_LOGE("SPM", "Fatal couldn't create mutex!");
+    }
+
     CTAG::DRIVERS::tusb::Init();
     // init control
     CTRL::Control::Init();
@@ -291,6 +559,19 @@ void SoundProcessorManager::StartSoundProcessor() {
     DRIVERS::Codec::InitCodec();
     // generate internal data
     updateConfiguration();
+
+    synthDefinitionModel = std::make_shared<CTAG::MACROPRESETS::SynthDefinitionDataModel>();
+    macroSoundDefinitionModel = std::make_shared<CTAG::MACROPRESETS::MacroSoundPresetDataModel>();
+    macroDeviceDefinitionModel = std::make_shared<CTAG::MACROPRESETS::MacroDeviceDefinitionDataModel>();
+    macroTranslator = std::make_shared<CTAG::MACROPRESETS::MacroTranslator>();
+
+    synthDefinitionModel->ReloadSynthDefinitions();
+    macroDeviceDefinitionModel->ReloadMachineDefinitions();
+    macroSoundDefinitionModel->ReloadSoundPresets(macroDeviceDefinitionModel.get(), synthDefinitionModel.get());
+
+    macroTranslator->synthDefinitionModel = synthDefinitionModel;
+    macroTranslator->macroDeviceDefinitionModel = macroDeviceDefinitionModel;
+    macroTranslator->macroSoundDefinitionModel = macroSoundDefinitionModel;
 
     // start network
     NET::Network::SetSSID(model->GetNetworkConfigurationData("ssid"));
@@ -304,38 +585,52 @@ void SoundProcessorManager::StartSoundProcessor() {
         CTAG::DRIVERS::tusb::WaitForNCMReady(5000);
         NET::Network::SetIfType(NET::Network::IF_TYPE::IF_TYPE_USBNCM);
     }else{
-        ESP_LOGE("SPM", "Fatal: unknown network mode!");
-        assert(0);
+        ESP_LOGW("SPM", "Unknown network mode '%s', defaulting to usbncm", model->GetNetworkConfigurationData("mode").c_str());
+        CTAG::DRIVERS::tusb::WaitForNCMReady(5000);
+        NET::Network::SetIfType(NET::Network::IF_TYPE::IF_TYPE_USBNCM);
     }
     NET::Network::SetIP(model->GetNetworkConfigurationData("ip"));
     NET::Network::SetMDNSName(model->GetNetworkConfigurationData("mdns_name"));
     NET::Network::Up();
-#ifdef CONFIG_TASK_REST_SERVER
     REST::RestServer::StartRestServer();
-#endif
     SPIAPI::SpiAPI::StartSpiAPI();
 
     // Ableton Link
     CTAG::LINK::link::Init();
 
-    // prepare threads and mutex
-    processMutex = xSemaphoreCreateMutex();
-
-    if (processMutex == NULL) {
-        ESP_LOGE("SPM", "Fatal couldn't create mutex!");
-    }
-
     // create led indicator thread
-#ifdef CONFIG_TASK_RGB_INDICATOR_LED
     xTaskCreatePinnedToCore(&SoundProcessorManager::led_task, "led_task", 4096, nullptr, tskIDLE_PRIORITY + 2,
                             &ledTaskH, 0);
-#endif
     // create audio thread
     runAudioTask = 1;
-    xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 4096, nullptr, 23, &audioTaskH, 1);
+    ESP_LOGI("SPManager", "Init: Max stack %d", uxTaskGetStackHighWaterMark(NULL));
+    xTaskCreatePinnedToCore(&SoundProcessorManager::audio_task, "audio_task", 20000, nullptr, configMAX_PRIORITIES - 1, &audioTaskH, 1);
+    xTaskCreatePinnedToCore(&debug_task, "debug_task", 2048, nullptr, tskIDLE_PRIORITY + 1, NULL, 0);
+    ESP_LOGI("SPManager", "Init: task id %ld", audioTaskH);
 
-    SetSoundProcessorChannel(0, model->GetActiveProcessorID(0));
-    SetSoundProcessorChannel(1, model->GetActiveProcessorID(1));
+    // Load last active processors from config, with fallback to Void/PicoSeqRack
+    {
+        string id0 = model->GetActiveProcessorID(0);
+        string id1 = model->GetActiveProcessorID(1);
+        ESP_LOGI("SPManager", "Loading ch0=%s, ch1=%s from config", id0.c_str(), id1.c_str());
+
+        SetSoundProcessorChannel(0, id0);
+        if (sp[0] == nullptr) {
+            ESP_LOGW("SPManager", "ch0 plugin '%s' failed, falling back to PicoSeqRack", id0.c_str());
+            SetSoundProcessorChannel(0, "PicoSeqRack");
+        }
+        if (sp[0] == nullptr) {
+            ESP_LOGW("SPManager", "ch0 PicoSeqRack also failed, falling back to Void");
+            SetSoundProcessorChannel(0, "Void");
+        }
+
+        SetSoundProcessorChannel(1, id1);
+        if (sp[1] == nullptr && id1 != "Void") {
+            ESP_LOGW("SPManager", "ch1 plugin '%s' failed, falling back to Void", id1.c_str());
+            SetSoundProcessorChannel(1, "Void");
+        }
+    }
+
     ESP_LOGI("SPManager", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -469,16 +764,316 @@ void SoundProcessorManager::KillAudioTask() {
 }
 
 void SoundProcessorManager::DisablePluginProcessing() {
-    xSemaphoreTake(processMutex, portMAX_DELAY);
+    // xSemaphoreTake(processMutex, portMAX_DELAY);
     ledBlink = 42;
 }
 
 void SoundProcessorManager::EnablePluginProcessing() {
     ledBlink = 5;
-    xSemaphoreGive(processMutex);
+    // xSemaphoreGive(processMutex);
 }
 
 void SoundProcessorManager::RefreshSampleRom() {
     ledBlink = 5;
     ctagSampleRom::RefreshDataStructure();
+}
+
+void SoundProcessorManager::SetTrackMachine(const int trackIndex, const string &synthID) {
+    if (sp[0] != nullptr) {
+        // xSemaphoreTake(processMutex, portMAX_DELAY);
+        sp[0]->setTrackMachine(trackIndex, synthID);
+        // xSemaphoreGive(processMutex);
+    }
+}
+
+void SoundProcessorManager::SetTrackMacro(const int trackIndex, const string &macroDefinitionID) {
+    if (macroTranslator == nullptr) {
+        return;
+    }
+
+    MacroDeviceDefinition *def = macroDeviceDefinitionModel
+        ->LoadMacroDeviceDefinition(macroDefinitionID);
+
+    if (def == nullptr) {
+        ESP_LOGI("SPManager", "Macro definition %s not found, cannot load macro",
+            macroDefinitionID.c_str());
+        return;
+    }
+
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    macroTranslator->SetTrackMacroDefinition(trackIndex, def);
+    xSemaphoreGive(processMutex);
+    delete def;
+}
+
+void SoundProcessorManager::SetTrackParametersFromJSON(const string &parametersJSON) {
+    if (macroTranslator == nullptr) {
+        return;
+    }
+
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    macroTranslator->SetTrackParametersFromJSON(parametersJSON);
+    xSemaphoreGive(processMutex);
+}
+
+void SoundProcessorManager::SetTrackParameter(const int trackIndex, int parameterIndex, int32_t value) {
+    if (macroTranslator == nullptr) {
+        return;
+    }
+
+    macroTranslator->SetTrackParameter(trackIndex, parameterIndex, value);
+}
+
+// void SoundProcessorManager::SetTrackSampleBank(const int trackIndex, const string &sampleBankId) {
+//      if (macroTranslator == nullptr) {
+//         return;
+//     }
+
+//     if (macroTranslator == nullptr) {
+//         return;
+//     }
+
+//     macroTranslator->SetTrackSampleBank(trackIndex, sampleBankId);
+// }
+
+void SoundProcessorManager::RefreshMacros() {
+    // this wil lglit ch
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    synthDefinitionModel->ReloadSynthDefinitions();
+    macroDeviceDefinitionModel->ReloadMachineDefinitions();
+    xSemaphoreGive(processMutex);
+    // macroTranslator
+}
+
+void SoundProcessorManager::RefreshSoundPresets() {
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    macroSoundDefinitionModel->ReloadSoundPresets(macroDeviceDefinitionModel.get(), synthDefinitionModel.get());
+    xSemaphoreGive(processMutex);
+}
+
+std::string SoundProcessorManager::GetMacroSoundPresetListJSON(){
+    std::string output;
+    macroSoundDefinitionModel->SerializeListJSON(&output);
+    return output;
+}
+
+std::string SoundProcessorManager::GetMacroSoundPresetJSON(const std::string &soundPresetId){
+    std::string output;
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    macroSoundDefinitionModel->SerializeItemJSON(soundPresetId, &output);
+    xSemaphoreGive(processMutex);
+    return output;
+}
+
+std::string SoundProcessorManager::GetMacroDefinitionJSON(const std::string &soundPresetId){
+    std::string output;
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    macroDeviceDefinitionModel->SerializeItemJSON(soundPresetId, &output);
+    xSemaphoreGive(processMutex);
+    return output;
+}
+
+void SoundProcessorManager::ActivateTrackMachine(const int trackIndex, const std::string machineId) {
+}
+
+void SoundProcessorManager::LoadTrackMacro(const int trackIndex, const std::string macroId) {
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    MacroDeviceDefinition *def =
+        macroDeviceDefinitionModel->LoadMacroDeviceDefinition(macroId);
+    xSemaphoreGive(processMutex);
+    if (def != nullptr) {
+        xSemaphoreTake(processMutex, portMAX_DELAY);
+        macroTranslator->SetTrackMachine(trackIndex, def->synthId);
+        macroTranslator->SetTrackMacroDefinition(trackIndex, def);
+        xSemaphoreGive(processMutex);
+        delete def;
+    }
+}
+
+void SoundProcessorManager::LoadTrackMacroAndPreset(const int trackIndex, const std::string soundPresetId) {
+    ESP_LOGI("SPManager", "Loading sound preset \"%s\" for track %d", soundPresetId.c_str(), trackIndex);
+
+    ESP_LOGI("SPManager", "Mem 1 freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+        heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+        heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    MacroSoundPreset *preset =
+        macroSoundDefinitionModel->LoadMacroSoundPreset(soundPresetId);
+    xSemaphoreGive(processMutex);
+    if (preset == nullptr) {
+        ESP_LOGI("SPManager", "Preset %s not found, loading macro without preset",
+            soundPresetId.c_str());
+        return;
+    }
+
+    ESP_LOGI("SPManager", "Loaded sound preset \"%s\" name \"%s\" and macro \"%s\"",
+        preset->id.c_str(), preset->displayName.c_str(), preset->macroDeviceId.c_str());
+
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    MacroDeviceDefinition *def =
+        macroDeviceDefinitionModel->LoadMacroDeviceDefinition(preset->macroDeviceId);
+    xSemaphoreGive(processMutex);
+    if (def == nullptr) {
+        ESP_LOGI("SPManager", "Macro definition %s not found, cannot load macro or preset",
+            preset->macroDeviceId.c_str());
+        delete preset;
+        return;
+    }
+
+    ESP_LOGD("SPManager", "Loaded macro def \"%s\" named \"%s\", applying to track %d", def->id.c_str(), def->name.c_str(), trackIndex);
+
+    ESP_LOGI("SPManager", "Mem 2 freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+        heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+        heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
+    // LoadTrackMacro(trackIndex, def->synthId);
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    macroTranslator->SetTrackMachine(trackIndex, def->synthId);
+    macroTranslator->SetTrackMacroDefinition(trackIndex, def);
+    xSemaphoreGive(processMutex);
+
+    int pidx = 0;
+    for(const auto& param : preset->parameterValues) {
+        // ESP_LOGI("SPManager", "  Setting track %d param %d to value %f",
+        //     trackIndex, pidx, param);
+        macroTranslator->SetTrackParameter(trackIndex, pidx, param);
+        pidx ++;
+    }
+
+    delete preset;
+    delete def;
+
+    ESP_LOGD("SPManager", "Mem 4 freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+        heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+        heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
+}
+
+// ─── Audio health monitoring ─────────────────────────────────────
+
+string SoundProcessorManager::GetAudioHealthJSON() {
+    char buf[512];
+    snprintf(buf, sizeof(buf),
+        "{\"audioLockErrors\":%lu,"
+        "\"slowProcessCount\":%lu,"
+        "\"freeInternal\":%lu,"
+        "\"largestInternal\":%lu,"
+        "\"freeSPIRAM\":%lu,"
+        "\"largestSPIRAM\":%lu}",
+        (unsigned long)audioLockErrors,
+        (unsigned long)slowProcessCounter,
+        (unsigned long)heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        (unsigned long)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+        (unsigned long)heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+        (unsigned long)heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+    return string(buf);
+}
+
+void SoundProcessorManager::ResetAudioHealthCounters() {
+    audioLockErrors = 0;
+    slowProcessCounter = 0;
+}
+
+// ─── Thread-safe JSON copy helpers ───────────────────────────────
+// Take processMutex, call the underlying GetCStr* method which writes
+// to a shared StringBuffer, copy the result into a SPIRAM-allocated
+// buffer, release the mutex, and return the copy.
+// Caller MUST free() the returned pointer.
+
+static char *copyToSpiram(const char *src) {
+    if (!src) return nullptr;
+    size_t len = strlen(src);
+    char *copy = (char *)heap_caps_malloc(len + 1, MALLOC_CAP_SPIRAM);
+    if (copy) {
+        memcpy(copy, src, len + 1);
+    } else {
+        ESP_LOGE("SPManager", "SPIRAM alloc failed for %u byte JSON copy", (unsigned)len);
+    }
+    return copy;
+}
+
+char *SoundProcessorManager::GetSafeJSONActivePluginParams(const int chan) {
+    ledBlink = 1;
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    const char *raw = sp[chan] ? sp[chan]->GetCStrJSONParamSpecs() : nullptr;
+    char *copy = copyToSpiram(raw);
+    xSemaphoreGive(processMutex);
+    return copy;
+}
+
+char *SoundProcessorManager::GetSafeJSONGetPresets(const int chan) {
+    ledBlink = 1;
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    const char *raw = sp[chan] ? sp[chan]->GetCStrJSONPresets() : nullptr;
+    char *copy = copyToSpiram(raw);
+    xSemaphoreGive(processMutex);
+    return copy;
+}
+
+char *SoundProcessorManager::GetSafeJSONAllPresetData(const int chan) {
+    ledBlink = 1;
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    const char *raw = sp[chan] ? sp[chan]->GetCStrJSONAllPresetData() : nullptr;
+    char *copy = copyToSpiram(raw);
+    xSemaphoreGive(processMutex);
+    return copy;
+}
+
+char *SoundProcessorManager::GetSafeJSONConfiguration() {
+    ledBlink = 1;
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    const char *raw = model->GetCStrJSONConfiguration();
+    char *copy = copyToSpiram(raw);
+    xSemaphoreGive(processMutex);
+    return copy;
+}
+
+char *SoundProcessorManager::GetSafeJSONSoundProcessors() {
+    ledBlink = 1;
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    const char *raw = model->GetCStrJSONSoundProcessors();
+    char *copy = copyToSpiram(raw);
+    xSemaphoreGive(processMutex);
+    return copy;
+}
+
+char *SoundProcessorManager::GetSafeJSONSoundProcessorPresets(const string &id) {
+    ledBlink = 1;
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    const char *raw = model->GetCStrJSONSoundProcessorPresets(id);
+    char *copy = copyToSpiram(raw);
+    xSemaphoreGive(processMutex);
+    return copy;
+}
+
+void SoundProcessorManager::MarkTracksChangedFromWebui(){
+    trackMachineChangeCounter ++;
+}
+
+void SoundProcessorManager::MarkMacrosChangedFromWebui(){
+    macroChangeCounter ++;
+}
+
+void SoundProcessorManager::MarkDefinitionsChangedFromWebui(){
+    definitionChangeCounter ++;
+}
+
+std::string SoundProcessorManager::GetKitIndexJSON(){
+    return ctagSampleRom::GetKitIndexJSON();
+}
+
+std::string SoundProcessorManager::GetActiveKitBankIndexJSON(){
+    return ctagSampleRom::GetActiveKitBankIndexJSON();
+}
+
+void SoundProcessorManager::PutSamplePresetJSON(const string &presetJSON) {
+    // ctagSampleRom::PutSamplePresetJSON(presetJSON);
+    macroSoundDefinitionModel->PutSamplePresetJSON(presetJSON);
 }

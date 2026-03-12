@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -72,7 +72,7 @@ void CTAG::SP::ctagDataModelBase::loadJSON(Document &d, const string &fn) {
         d.ParseStream(is);
         fclose(fp);
         // if backup parsing was successful, copy backuped data to defective file
-        if(!d.HasParseError()){
+        if(!d.HasParseError()) {
             storeJSON(d, fn);
         }else{
             ESP_LOGE("JSON", "FATAL ERROR: Could not recover from backup file %s", backup_file_name.c_str());

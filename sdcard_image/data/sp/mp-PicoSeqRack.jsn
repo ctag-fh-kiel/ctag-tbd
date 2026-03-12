@@ -1,0 +1,3198 @@
+{
+  "activePatch": 0,
+  "patches": [
+    {
+      "name": "Default",
+      "params": [
+        {
+          "id": "ch1_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch1_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch1_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch2_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch2_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch3_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch3_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch4_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch4_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch5_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch5_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch6_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch7_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch7_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch8_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch8_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch9_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch9_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch10_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch10_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch11_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch11_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch12_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch12_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch13_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch13_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch14_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch14_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch15_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch16_device",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch16_mute",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch16_lev",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch16_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch16_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch16_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_ab_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch1_ab_accent",
+          "current": 2800,
+          "cv": -1
+        },
+        {
+          "id": "ch1_ab_f0",
+          "current": 630,
+          "cv": -1
+        },
+        {
+          "id": "ch1_ab_tone",
+          "current": 3100,
+          "cv": -1
+        },
+        {
+          "id": "ch1_ab_decay",
+          "current": 970,
+          "cv": -1
+        },
+        {
+          "id": "ch1_ab_a_fm",
+          "current": 90,
+          "cv": -1
+        },
+        {
+          "id": "ch1_ab_s_fm",
+          "current": 35,
+          "cv": -1
+        },
+        {
+          "id": "ch1_db_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch1_db_accent",
+          "current": 2900,
+          "cv": -1
+        },
+        {
+          "id": "ch1_db_f0",
+          "current": 370,
+          "cv": -1
+        },
+        {
+          "id": "ch1_db_tone",
+          "current": 3719,
+          "cv": -1
+        },
+        {
+          "id": "ch1_db_decay",
+          "current": 2500,
+          "cv": -1
+        },
+        {
+          "id": "ch1_db_dirty",
+          "current": 644,
+          "cv": -1
+        },
+        {
+          "id": "ch1_db_fm_env",
+          "current": 597,
+          "cv": -1
+        },
+        {
+          "id": "ch1_db_fm_dcy",
+          "current": 82,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch1_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch1_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch1_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch1_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch2_fmb1_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch2_fmb1_use_ratio_mode",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch2_fmb1_mod_env_sync",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch2_fmb1_f_b",
+          "current": 774,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fmb1_d_b",
+          "current": 309,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fmb1_f_m",
+          "current": 1687,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fmb1_I",
+          "current": 273,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fmb1_d_m",
+          "current": 66,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fmb1_b_m",
+          "current": 8,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fmb1_A_f",
+          "current": 1277,
+          "cv": -1
+        },
+        {
+          "id": "ch2_fmb1_d_f",
+          "current": 931,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch2_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch2_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch2_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch2_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch3_as_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch3_as_accent",
+          "current": 1772,
+          "cv": -1
+        },
+        {
+          "id": "ch3_as_f0",
+          "current": 2085,
+          "cv": -1
+        },
+        {
+          "id": "ch3_as_tone",
+          "current": 2458,
+          "cv": -1
+        },
+        {
+          "id": "ch3_as_decay",
+          "current": 458,
+          "cv": -1
+        },
+        {
+          "id": "ch3_as_a_spy",
+          "current": 691,
+          "cv": -1
+        },
+        {
+          "id": "ch3_ds_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch3_ds_accent",
+          "current": 2146,
+          "cv": -1
+        },
+        {
+          "id": "ch3_ds_f0",
+          "current": 1554,
+          "cv": -1
+        },
+        {
+          "id": "ch3_ds_fm_amt",
+          "current": 3191,
+          "cv": -1
+        },
+        {
+          "id": "ch3_ds_decay",
+          "current": 428,
+          "cv": -1
+        },
+        {
+          "id": "ch3_ds_spy",
+          "current": 1393,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch3_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch3_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch3_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch3_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch4_hh1_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch4_hh1_accent",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh1_f0",
+          "current": 2395,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh1_tone",
+          "current": 951,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh1_decay",
+          "current": 1153,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh1_noise",
+          "current": 752,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh2_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch4_hh2_accent",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh2_f0",
+          "current": 207,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh2_tone",
+          "current": 176,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh2_decay",
+          "current": 1056,
+          "cv": -1
+        },
+        {
+          "id": "ch4_hh2_noise",
+          "current": 1263,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch4_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch4_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch4_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch4_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch5_rs_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch5_rs_accent",
+          "current": 2068,
+          "cv": -1
+        },
+        {
+          "id": "ch5_rs_f0",
+          "current": 2887,
+          "cv": -1
+        },
+        {
+          "id": "ch5_rs_tone",
+          "current": 3208,
+          "cv": -1
+        },
+        {
+          "id": "ch5_rs_decay",
+          "current": 420,
+          "cv": -1
+        },
+        {
+          "id": "ch5_rs_noise",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch5_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch5_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch5_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch5_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch6_cl_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_cl_f0",
+          "current": 1194,
+          "cv": -1
+        },
+        {
+          "id": "ch6_cl_tone",
+          "current": 3006,
+          "cv": -1
+        },
+        {
+          "id": "ch6_cl_decay",
+          "current": 475,
+          "cv": -1
+        },
+        {
+          "id": "ch6_cl_scale",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_cl_transient",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch7_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch7_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch7_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch7_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch7_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch8_smp_speed",
+          "current": 2048,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_slice",
+          "current": 26,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch8_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch8_smp_lp_pos",
+          "current": 3086,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_dcy",
+          "current": 257,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_ft",
+          "current": 2,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_fc",
+          "current": 2591,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch8_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch13_smp_speed",
+          "current": 2048,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_bank",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_slice",
+          "current": 7,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch13_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch13_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_dcy",
+          "current": 1081,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch13_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch14_smp_speed",
+          "current": 2048,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_bank",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_slice",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch14_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch14_smp_lp_pos",
+          "current": 3410,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_atk",
+          "current": 553,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_dcy",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_ft",
+          "current": 3,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_fc",
+          "current": 2096,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch14_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+        {
+          "id": "ch9_tbd03_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch9_tbd03_sync_trig",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch9_tbd03_pitch",
+          "current": 3060,
+          "cv": 0
+        },
+        {
+          "id": "ch9_tbd03_shape",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_param_0",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_param_1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_gain",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_filter_type",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_cutoff",
+          "current": 800,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_resonance",
+          "current": 1200,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_envelope",
+          "current": 1000,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_saturation",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_drive",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_accent",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch9_tbd03_accent_level",
+          "current": 2000,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_slide",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch9_tbd03_slide_level",
+          "current": 3000,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_decay_vca",
+          "current": 1600,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_decay_vcf",
+          "current": 1300,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_p0_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_p1_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_lev",
+          "current": 2048,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_tbd03_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch9_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch9_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch9_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch9_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch10_tbd03_trigger",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch10_tbd03_sync_trig",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch10_tbd03_pitch",
+          "current": 3060,
+          "cv": 0
+        },
+        {
+          "id": "ch10_tbd03_shape",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_param_0",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_param_1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_gain",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_filter_type",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_cutoff",
+          "current": 800,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_resonance",
+          "current": 1200,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_envelope",
+          "current": 1000,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_saturation",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_drive",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_accent",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch10_tbd03_accent_level",
+          "current": 2000,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_slide",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch10_tbd03_slide_level",
+          "current": 3000,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_decay_vca",
+          "current": 1600,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_decay_vcf",
+          "current": 1300,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_p0_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_p1_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_lev",
+          "current": 2048,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_tbd03_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch10_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch10_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch10_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch10_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch15_pp_gain",
+          "current": 1500,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_pitch",
+          "current": 6130,
+          "cv": 0
+        },
+        {
+          "id": "ch15_pp_q_scale",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_chord",
+          "current": 12,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_inversion",
+          "current": 0,
+          "cv": 3
+        },
+        {
+          "id": "ch15_pp_detune",
+          "current": 8000,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_nnotes",
+          "current": 4,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_ncvoices",
+          "current": 3
+        },
+        {
+          "id": "ch15_pp_voicehold",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch15_pp_lfo1_freq",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_lfo1_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_filter_type",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_cutoff",
+          "current": 5010,
+          "cv": 2
+        },
+        {
+          "id": "ch15_pp_resonance",
+          "current": 4000,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_lfo2_freq",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_lfo2_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_lfo2_rphase",
+          "current": 0
+        },
+        {
+          "id": "ch15_pp_eg_filt_amt",
+          "current": 1920,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_lev",
+          "current": 2048,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_pan",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_fx1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_fx2",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_enableEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch15_pp_latchEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch15_pp_eg_slow_fast",
+          "current": 0
+        },
+        {
+          "id": "ch15_pp_attack",
+          "current": 58,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_decay",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_sustain",
+          "current": 3185,
+          "cv": -1
+        },
+        {
+          "id": "ch15_pp_release",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch15_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch15_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch15_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch15_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch11_mo_shape",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_pitch",
+          "current": 6130,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_decimation",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_bit_reduction",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_q_scale",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_param_0",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_param_1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_waveshaping",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_fm_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_p0_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_p1_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_enableEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch11_mo_loopEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch11_mo_attack",
+          "current": 47,
+          "cv": -1
+        },
+        {
+          "id": "ch11_mo_decay",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "ch12_wtosc_gain",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_gate",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "ch12_wtosc_pitch",
+          "current": -12,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_q_scale",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_tune",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_wavebank",
+          "current": 0
+        },
+        {
+          "id": "ch12_wtosc_wave",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_fmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_fcut",
+          "current": 3000,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_freso",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_lfo2wave",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_lfo2am",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_lfo2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_lfo2filtfm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_eg2wave",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_eg2am",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_eg2filtfm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_lfospeed",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_lfosync",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch12_wtosc_egfasl",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch12_wtosc_attack",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_decay",
+          "current": 1000,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_sustain",
+          "current": 600,
+          "cv": -1
+        },
+        {
+          "id": "ch12_wtosc_release",
+          "current": 600,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_shape",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_pitch",
+          "current": 6130,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_decimation",
+          "current": 1,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_bit_reduction",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_q_scale",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_param_0",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_param_1",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_waveshaping",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_fm_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_p0_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_p1_amt",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_enableEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch12_mo_loopEG",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch12_mo_attack",
+          "current": 47,
+          "cv": -1
+        },
+        {
+          "id": "ch12_mo_decay",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_gate",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_speed",
+          "current": 2708,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_pitch",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_bank",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_slice",
+          "current": 15,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_start",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_end",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_lp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_lp_pp",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "ch6_smp_lp_pos",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_atk",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_dcy",
+          "current": 298,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_eg2fm",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_brr",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_ft",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_fc",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_fq",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_tsmode",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "ch6_smp_tsamount",
+          "current": 2047,
+          "cv": -1
+        },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        {
+          "id": "fx1_time_ms",
+          "current": 464,
+          "cv": -1
+        },
+        {
+          "id": "fx1_sync",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "fx1_freeze",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "fx1_tape_digital",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "fx1_st_width",
+          "current": 4095,
+          "cv": -1
+        },
+        {
+          "id": "fx1_fx_send",
+          "current": 100,
+          "cv": -1
+        },
+        {
+          "id": "fx1_feedback",
+          "current": 1000,
+          "cv": -1
+        },
+        {
+          "id": "fx1_base",
+          "current": 2190,
+          "cv": -1
+        },
+        {
+          "id": "fx1_width",
+          "current": 3658,
+          "cv": -1
+        },
+        {
+          "id": "fx2_time",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "fx2_lp",
+          "current": 2047,
+          "cv": -1
+        },
+        {
+          "id": "c_thres",
+          "current": 1438,
+          "cv": -1
+        },
+        {
+          "id": "c_ratio",
+          "current": 541,
+          "cv": -1
+        },
+        {
+          "id": "c_atk",
+          "current": 409,
+          "cv": -1
+        },
+        {
+          "id": "c_rel",
+          "current": 434,
+          "cv": -1
+        },
+        {
+          "id": "c_lpf",
+          "current": 1,
+          "trig": -1
+        },
+        {
+          "id": "c_gain",
+          "current": 926,
+          "cv": -1
+        },
+        {
+          "id": "c_mix",
+          "current": 3034,
+          "cv": -1
+        },
+        {
+          "id": "c_dly_level",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "c_rev_level",
+          "current": 0,
+          "cv": -1
+        },
+        {
+          "id": "sum_mute",
+          "current": 0,
+          "trig": -1
+        },
+        {
+          "id": "sum_lev",
+          "current": 2975,
+          "cv": -1
+        },
+        {
+          "id": "fx1_amount",
+          "current": 3434,
+          "cv": -1
+        },
+        {
+          "id": "fx2_amount",
+          "current": 2047,
+          "cv": -1
+        }
+      ]
+    }
+  ]
+}

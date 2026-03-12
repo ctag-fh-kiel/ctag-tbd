@@ -1,0 +1,29 @@
+{
+  "_comment": "Default preset per track, loaded by the Pico via SPI command 0xA5.",
+  "_comment2": "Preset IDs = filenames (without .json) from data/macrosoundpresets/.",
+  "_comment3": "Omit a track entry to let the Pico use the first available preset.",
+  "_comment4": "The 'kit' field sets which kit file to activate in PSRAM (matched by filename).",
+  "_comment5": "NOTE: all romplers share the same PSRAM kit — only one kit is active at a time.",
+  "kit": "def_smp.jsn",
+  "tracks": [
+    { "index": 0,  "preset": "db-all-def",      "_name": "Kick     — Synth Kick (db)" },
+    { "index": 1,  "preset": "fmb-all-def",     "_name": "Kick2    — FM Kick (fmb)" },
+    { "index": 2,  "preset": "ds-all-def",      "_name": "Snare    — Digital Snare (ds)" },
+    { "index": 3,  "preset": "hh1-all-def",     "_name": "Hat      — HiHat 1 (hh1)" },
+    { "index": 4,  "preset": "rs-all-def",      "_name": "Rimshot  — (rs)" },
+    { "index": 5,  "preset": "cl-all-def",      "_name": "Clap     — (cl)" },
+    { "index": 6,  "preset": "ro-all-def",      "_name": "Rompler  — (ro)", "sampleSlice": 3, "sampleBank": 0 },
+    { "index": 7,  "preset": "ro-all-def",      "_name": "Rompler2 — (ro)", "sampleSlice": 1, "sampleBank": 1 },
+    { "index": 8,  "preset": "msp-acidbass1",   "_name": "Bass     — Acid Bass 1 (td3)" },
+    { "index": 9,  "preset": "msp-acidbass2",   "_name": "Bass2    — Acid Bass 2 (td3)" },
+    { "index": 10, "preset": "mo-all-def",      "_name": "Lead     — Mono Osc (mo)" },
+    { "index": 11, "preset": "mo-all-def",      "_name": "Lead2    — Mono Osc (mo/wtosc)" },
+    { "index": 12, "preset": "ro-all-def",      "_name": "Rompler3 — (ro)", "sampleSlice": 2, "sampleBank": 2 },
+    { "index": 13, "preset": "ro-all-def",      "_name": "Rompler4 — (ro)", "sampleSlice": 0, "sampleBank": 3 },
+    { "index": 14, "preset": "pp-all-def",      "_name": "Chordo   — Polypad (pp)" },
+    { "index": 15, "preset": "inp-all-def",     "_name": "Input    — Audio Input" },
+    { "index": 16, "preset": "fxdelay-all-def", "_name": "FX1      — Delay" },
+    { "index": 17, "preset": "fxreverb-all-def","_name": "FX2      — Reverb" },
+    { "index": 18, "preset": "fxmaster-all-def","_name": "Master" }
+  ]
+}

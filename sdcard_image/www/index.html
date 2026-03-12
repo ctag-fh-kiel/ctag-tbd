@@ -1,39 +1,2520 @@
 <!--
-CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
+  dadamachines TBD-16 — Unified WebUI
 
-A project conceived within the Creative Technologies Arbeitsgruppe of
-Kiel University of Applied Sciences: https://www.creative-technologies.de
+  (c) 2014-2026 Johannes Elias Lohbihler for dadamachines.
 
-(c) 2020 by Robert Manzke. All rights reserved.
+  Licensed under the GNU Lesser General Public License (LGPL 3.0).
+  https://www.gnu.org/licenses/lgpl-3.0.txt
 
-The CTAG TBD software is licensed under the GNU General Public License
-(GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
-
-The CTAG TBD hardware design is released under the Creative Commons
-Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
-Details here: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
-CTAG TBD is provided "as is" without any express or implied warranties.
-
-License and copyright details for specific submodules are included in their
-respective component folders / files if different from this license.
+  Part of the dadamachines additions to the CTAG TBD platform.
+  See LICENSE in the repository root for full terms.
 -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="sl-theme-dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="#4a148c">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="css/onsenui-cr.min.css">
-    <link rel="stylesheet" href="css/onsen-css-c.min.css">
-    <script src="js/onsenui.min.js"></script>
-    <script src="js/jquery-3.4.1.min.js"></script>
-    <script src="js/ajaxq.js"></script>
-    <title>CTAG-TBD</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TBD-16</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/shoelace/themes/light.css?v=3">
+  <link rel="stylesheet" href="/shoelace/themes/dark.css?v=2">
+  <script type="module" src="/js/shoelace-bundle.js?v=4"></script>
+  <style>
+    /* ── Reset & Base ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: var(--sl-font-sans);
+      background: var(--sl-color-neutral-50);
+      color: var(--sl-color-neutral-900);
+    }
+
+    /* ── App Shell ──────────────────────────────────────────── */
+    .app { display: flex; flex-direction: column; height: 100vh; }
+
+    /* ── App Header ─────────────────────────────────────────── */
+    .app-header {
+      display: flex; align-items: center;
+      padding: 0 1rem;
+      background: var(--sl-color-neutral-100);
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      flex-shrink: 0; height: 42px; gap: 0.75rem;
+    }
+    .header-brand {
+      display: flex; align-items: center; gap: 0.5rem;
+      width: 240px; flex-shrink: 0;
+      box-sizing: border-box;
+      padding-right: 0.5rem;
+    }
+    .app-header h1 {
+      font-size: 0.95rem; font-weight: 700; white-space: nowrap;
+    }
+    .connection-pill {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.65rem; font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: var(--sl-color-success-100);
+      color: var(--sl-color-success-700);
+      border: 1px solid var(--sl-color-success-300);
+      white-space: nowrap;
+      line-height: 1.3;
+      transition: all 0.2s;
+    }
+    .connection-pill .conn-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--sl-color-success-500);
+      flex-shrink: 0;
+    }
+    .connection-pill.offline {
+      background: var(--sl-color-danger-100);
+      color: var(--sl-color-danger-700);
+      border-color: var(--sl-color-danger-300);
+    }
+    .connection-pill.offline .conn-dot {
+      background: var(--sl-color-danger-500);
+    }
+
+    /* Nav tabs in header */
+    .nav-tabs {
+      display: flex; gap: 0;
+    }
+    .nav-tab {
+      font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em; padding: 0.35rem 0.85rem;
+      border: 1px solid var(--sl-color-neutral-300);
+      background: var(--sl-color-neutral-200);
+      color: var(--sl-color-neutral-600);
+      cursor: pointer; transition: all 0.15s;
+      font-family: var(--sl-font-sans);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 0.35rem;
+      line-height: 1.2;
+    }
+    .nav-tab:first-child { border-radius: var(--sl-border-radius-medium) 0 0 var(--sl-border-radius-medium); }
+    .nav-tab:last-child  { border-radius: 0 var(--sl-border-radius-medium) var(--sl-border-radius-medium) 0; border-left: none; }
+    .nav-tab:hover { background: var(--sl-color-neutral-300); color: var(--sl-color-neutral-800); }
+    .nav-tab.active {
+      background: var(--sl-color-primary-600);
+      color: #fff;
+      border-color: var(--sl-color-primary-700);
+    }
+    .nav-tab sl-icon { font-size: 0.85rem; }
+
+    .header-spacer { flex: 1; }
+    .header-right { display: flex; align-items: center; gap: 0.4rem; }
+    .theme-toggle { font-size: 1rem; }
+
+    /* ── Favorites Bar ───────────────────────────────────── */
+    .favorites-bar {
+      display: flex; align-items: center; gap: 0.15rem;
+      margin-left: 0.75rem;
+    }
+    .favorites-bar .fav-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sl-color-neutral-500);
+      margin-right: 0.25rem; white-space: nowrap;
+    }
+    .fav-slot-btn {
+      width: 26px; height: 24px;
+      font-size: 0.68rem; font-weight: 700;
+      border: 1px solid var(--sl-color-neutral-300);
+      border-radius: 3px;
+      background: var(--sl-color-neutral-200);
+      color: var(--sl-color-neutral-600);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      font-family: var(--sl-font-sans);
+      padding: 0;
+    }
+    .fav-slot-btn:hover {
+      background: var(--sl-color-primary-600);
+      color: #fff;
+      border-color: var(--sl-color-primary-700);
+    }
+    .fav-slot-btn.has-data {
+      border-color: var(--sl-color-primary-400);
+      color: var(--sl-color-primary-700);
+    }
+    .fav-slot-btn.active {
+      background: var(--sl-color-primary-600);
+      color: #fff;
+      border-color: var(--sl-color-primary-700);
+    }
+
+    /* Favorites Popover */
+    .fav-popover {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 4px;
+      background: var(--sl-color-neutral-0);
+      border: 1px solid var(--sl-color-neutral-300);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      padding: 4px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 130px;
+      white-space: nowrap;
+    }
+    .fav-popover::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 8px;
+      height: 8px;
+      background: var(--sl-color-neutral-0);
+      border-left: 1px solid var(--sl-color-neutral-300);
+      border-top: 1px solid var(--sl-color-neutral-300);
+    }
+    .fav-popover-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--sl-font-sans);
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--sl-color-neutral-700);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .fav-popover-btn:hover {
+      background: var(--sl-color-neutral-100);
+    }
+    .fav-popover-btn.store {
+      color: var(--sl-color-primary-700);
+    }
+    .fav-popover-btn.store:hover {
+      background: var(--sl-color-primary-50);
+    }
+    .fav-popover-btn sl-icon {
+      font-size: 0.85rem;
+    }
+    .fav-popover-info {
+      font-size: 0.65rem;
+      color: var(--sl-color-neutral-400);
+      padding: 2px 10px 4px;
+      border-top: 1px solid var(--sl-color-neutral-200);
+    }
+
+    /* Make fav buttons position relative for popover anchoring */
+    .fav-slot-btn {
+      position: relative;
+    }
+
+    /* ── Main Content ───────────────────────────────────────── */
+    .app-main { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+
+    /* ── Plugin View ────────────────────────────────────────── */
+    #view-plugins {
+      flex: 1; display: none; min-height: 0; overflow: hidden;
+    }
+    #view-plugins.active { display: flex; }
+
+    /* Plugin Sidebar (left) */
+    .plugin-sidebar {
+      width: 240px; min-width: 200px; max-width: 320px;
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--sl-color-neutral-200);
+      background: var(--sl-color-neutral-50);
+      flex-shrink: 0; overflow: hidden;
+      transition: width 0.2s ease, min-width 0.2s ease;
+    }
+    .plugin-sidebar.collapsed {
+      width: 36px; min-width: 36px; max-width: 36px;
+    }
+    .plugin-sidebar.collapsed .plugin-search,
+    .plugin-sidebar.collapsed .plugin-list,
+    .plugin-sidebar.collapsed .plugin-count,
+    .plugin-sidebar.collapsed .plugin-sidebar-title span:first-child { display: none; }
+    .plugin-sidebar.collapsed .plugin-sidebar-title {
+      justify-content: center; padding: 0.45rem 0.25rem;
+    }
+    .plugin-sidebar-title {
+      display: flex; align-items: center;
+      padding: 0.45rem 0.85rem;
+      background: var(--sl-color-neutral-100);
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      flex-shrink: 0; gap: 0.5rem;
+      min-height: 38px; height: 38px;
+    }
+    .plugin-sidebar-title span {
+      font-size: 0.82rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--sl-color-neutral-600);
+    }
+    .plugin-sidebar-title .plugin-count {
+      font-size: 0.78rem; font-weight: 400; color: var(--sl-color-neutral-500);
+      margin-left: auto;
+    }
+    .sidebar-toggle {
+      font-size: 0.85rem; cursor: pointer;
+      color: var(--sl-color-neutral-500);
+      transition: color 0.15s;
+      flex-shrink: 0;
+      background: none; border: none; padding: 0.15rem;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .sidebar-toggle:hover { color: var(--sl-color-neutral-800); }
+    .sidebar-toggle sl-icon { font-size: 0.85rem; }
+    .plugin-sidebar .sidebar-toggle { margin-left: auto; }
+    .plugin-sidebar.collapsed .sidebar-toggle { margin-left: 0; }
+    .plugin-search {
+      padding: 0.4rem 0.65rem;
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      flex-shrink: 0;
+    }
+    .plugin-search sl-input::part(prefix) {
+      display: flex; align-items: center;
+      padding-left: 0.35rem;
+    }
+    .plugin-search sl-input sl-icon[slot="prefix"] {
+      font-size: 0.8rem;
+    }
+    .plugin-list {
+      flex: 1; overflow-y: auto; padding: 0.25rem 0;
+      min-height: 0;
+    }
+
+    /* Plugin list items */
+    .plugin-category {
+      padding: 0.4rem 0.65rem 0.3rem;
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--sl-color-neutral-500);
+      user-select: none;
+      border-top: 1px solid var(--sl-color-neutral-200);
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      background: var(--sl-color-neutral-50);
+      margin-top: 0.25rem;
+    }
+    .plugin-category:first-child {
+      border-top: none;
+      margin-top: 0;
+    }
+    .plugin-item {
+      display: flex; align-items: center;
+      padding: 0.3rem 0.65rem 0.3rem 1rem;
+      cursor: pointer; gap: 0.4rem;
+      transition: background 0.1s;
+      min-height: 28px;
+    }
+    .plugin-item:hover { background: var(--sl-color-neutral-200); }
+    .plugin-item.active {
+      background: color-mix(in srgb, var(--sl-color-primary-600) 15%, transparent);
+    }
+    .plugin-item.active-a {
+      border-left: 3px solid var(--sl-color-primary-600);
+      padding-left: calc(1rem - 3px);
+    }
+    .plugin-item.active-b {
+      border-left: 3px solid var(--sl-color-warning-500);
+      padding-left: calc(1rem - 3px);
+    }
+    .plugin-item-name {
+      font-size: 0.82rem; flex: 1; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .plugin-item .stereo-badge {
+      font-size: 0.65rem; padding: 0.05rem 0.35rem;
+      border-radius: 3px;
+      background: #fde8e8;
+      color: #c53030;
+      font-weight: 600; flex-shrink: 0;
+      line-height: 1.4; letter-spacing: 0.02em;
+      border: 1px solid #feb2b2;
+    }
+    .plugin-item .mono-badge {
+      font-size: 0.65rem; padding: 0.05rem 0.35rem;
+      border-radius: 3px;
+      background: #e8f0fe;
+      color: #2b6cb0;
+      font-weight: 600; flex-shrink: 0;
+      line-height: 1.4; letter-spacing: 0.02em;
+      border: 1px solid #90cdf4;
+    }
+
+    /* ── Slot Panels (center) ───────────────────────────────── */
+    .slot-panels {
+      flex: 1; display: flex; flex-direction: row;
+      min-width: 0; overflow: hidden;
+    }
+
+    .slot-panel {
+      flex: 1; display: flex; flex-direction: column;
+      min-height: 0; min-width: 0; overflow: hidden;
+    }
+    .slot-panel + .slot-panel {
+      border-left: 2px solid var(--sl-color-neutral-300);
+    }
+
+    /* Slot Title Bar */
+    .slot-title-bar {
+      display: flex; align-items: center;
+      padding: 0.45rem 0.85rem;
+      background: var(--sl-color-neutral-100);
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      flex-shrink: 0; gap: 0.5rem;
+      min-height: 38px; height: 38px;
+    }
+    .slot-label {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.1rem 0.45rem;
+      border-radius: 3px;
+      flex-shrink: 0;
+      line-height: 1.4;
+    }
+    .slot-label-a {
+      background: var(--sl-color-primary-600); color: #fff;
+    }
+    .slot-label-ab {
+      background: linear-gradient(135deg, var(--sl-color-primary-600) 50%, var(--sl-color-warning-500) 50%);
+      color: #fff;
+    }
+    .slot-label-b {
+      background: var(--sl-color-warning-500); color: #fff;
+    }
+    .slot-plugin-name {
+      font-size: 0.88rem; font-weight: 600;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      flex: 1;
+    }
+    .slot-title-right {
+      margin-left: auto; display: flex; align-items: center; gap: 0.4rem;
+    }
+
+    /* Slot Subheader (preset bar) */
+    .slot-subheader {
+      display: flex; align-items: center;
+      padding: 0.25rem 0.85rem;
+      background: var(--sl-color-neutral-100);
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      flex-shrink: 0; gap: 0.4rem;
+      min-height: 32px;
+    }
+    .slot-subheader label {
+      font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sl-color-neutral-500);
+      white-space: nowrap;
+    }
+
+    /* ── Parameter Scroll Area ──────────────────────────────── */
+    .param-scroll {
+      flex: 1; overflow-y: auto; padding: 0.5rem 0.85rem;
+      min-height: 0;
+      background: var(--sl-color-neutral-0);
+      display: flex; flex-direction: column;
+    }
+    .param-empty {
+      color: var(--sl-color-neutral-400); font-size: 0.85rem;
+      text-align: center; padding: 2rem 1rem;
+    }
+
+    /* ── Plugin Info Container (inside param-scroll, before param groups) */
+    .plugin-info-container {
+      flex-shrink: 0;
+    }
+
+    /* ── Plugin Info Bar (badges + description) ──────────── */
+    .plugin-info-bar {
+      margin: 0 0 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--sl-color-neutral-200);
+      border-radius: var(--sl-border-radius-medium);
+      background: var(--sl-color-neutral-100);
+    }
+    .plugin-info-bar .info-badges {
+      display: flex; gap: 0.4rem;
+      margin-bottom: 0.35rem;
+    }
+    .plugin-info-bar .info-badge {
+      font-size: 0.68rem; font-weight: 700;
+      padding: 0.12rem 0.5rem; border-radius: 4px;
+      line-height: 1.4; letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .plugin-info-bar .badge-stereo {
+      background: #fde8e8; color: #c53030;
+      border: 1px solid #feb2b2;
+    }
+    .plugin-info-bar .badge-mono {
+      background: #e8f0fe; color: #2b6cb0;
+      border: 1px solid #90cdf4;
+    }
+    .plugin-info-bar .badge-category {
+      background: var(--sl-color-neutral-200); color: var(--sl-color-neutral-600);
+      border: 1px solid var(--sl-color-neutral-300);
+    }
+    .plugin-info-bar .info-description {
+      font-size: 0.82rem; color: var(--sl-color-neutral-600);
+      line-height: 1.4;
+    }
+
+    /* ── Empty Slot CTA ──────────────────────────────────── */
+    .slot-empty-cta {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 3rem 1rem; gap: 0.75rem;
+      flex: 1;
+    }
+    .slot-empty-cta .cta-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      border: 2px solid var(--sl-color-neutral-300);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--sl-color-neutral-400);
+    }
+    .slot-empty-cta .cta-icon sl-icon { font-size: 1.8rem; }
+    .slot-empty-cta h3 {
+      font-size: 1rem; font-weight: 700;
+      color: var(--sl-color-neutral-600);
+      margin: 0;
+    }
+    .slot-empty-cta p {
+      font-size: 0.82rem; color: var(--sl-color-neutral-400);
+      margin: 0;
+    }
+    .slot-empty-cta .cta-btn {
+      margin-top: 0.5rem;
+      padding: 0.5rem 1.25rem;
+      font-size: 0.82rem; font-weight: 700;
+      background: var(--sl-color-primary-600);
+      color: #fff;
+      border: none; border-radius: var(--sl-border-radius-medium);
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: var(--sl-font-sans);
+    }
+    .slot-empty-cta .cta-btn:hover { background: var(--sl-color-primary-500); }
+
+    /* ── Swap Slots Button (in title bar) ─────────── */
+    .swap-slots-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+      background: none;
+      border: 1px solid var(--sl-color-neutral-300);
+      border-radius: var(--sl-border-radius-medium);
+      cursor: pointer;
+      color: var(--sl-color-neutral-500);
+      transition: all 0.15s;
+      padding: 0; flex-shrink: 0;
+    }
+    .swap-slots-btn:hover {
+      color: var(--sl-color-primary-600);
+      border-color: var(--sl-color-primary-500);
+      background: color-mix(in srgb, var(--sl-color-primary-600) 8%, transparent);
+    }
+    .swap-slots-btn sl-icon { font-size: 0.75rem; }
+
+
+
+    /* MIDI Mappings — removed (placeholder had no functionality) */
+
+    /* ── Stereo Mode (full-width single slot) ────────────── */
+    .slot-panel.stereo-active {
+      flex: 1 1 100%;
+    }
+    .slot-panel.stereo-active .param-scroll {
+      display: flex; flex-direction: row; flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: flex-start;
+      align-content: flex-start;
+      overflow-x: hidden;
+    }
+    .slot-panel.stereo-active .plugin-info-container {
+      flex: 0 0 100%;
+    }
+    .slot-panel.stereo-active .param-group {
+      flex: 1 1 calc(50% - 0.25rem);
+      min-width: 300px;
+    }
+    .slot-panel.stereo-active .channel-container {
+      flex: 1 1 calc(50% - 0.25rem);
+      min-width: 300px;
+    }
+    .slot-panel.stereo-active .master-bus-container {
+      flex: 0 0 100%;
+    }
+    @media (max-width: 900px) {
+      .slot-panel.stereo-active .param-group {
+        flex: 1 1 100%;
+      }
+      .slot-panel.stereo-active .channel-container {
+        flex: 1 1 100%;
+      }
+    }
+    .slot-panel.stereo-locked {
+      display: none !important;
+    }
+    .swap-slots-btn.stereo-hidden {
+      visibility: hidden;
+    }
+
+    /* ── Parameter Groups ───────────────────────────────────── */
+    .param-group {
+      margin-bottom: 0.65rem;
+      border: 1px solid var(--sl-color-neutral-200);
+      border-radius: var(--sl-border-radius-medium);
+      overflow: hidden;
+      background: var(--sl-color-neutral-50);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      flex-shrink: 0;
+    }
+    .param-group-header {
+      display: flex; align-items: center;
+      padding: 0.4rem 0.65rem;
+      background: var(--sl-color-neutral-200);
+      cursor: pointer; user-select: none; gap: 0.4rem;
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      overflow: hidden;
+    }
+    .param-group-header:hover { background: var(--sl-color-neutral-300); }
+    .param-group-chevron {
+      font-size: 0.65rem; color: var(--sl-color-neutral-500);
+      transition: transform 0.2s;
+    }
+    .param-group.collapsed .param-group-chevron { transform: rotate(-90deg); }
+    .param-group-name {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sl-color-neutral-600);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      min-width: 0;
+    }
+    .param-group-body {
+      padding: 0.35rem 0.5rem;
+      background: var(--sl-color-neutral-50);
+      position: relative;
+    }
+    .param-group-body::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+    .param-group-body > * { position: relative; z-index: 1; }
+    .param-group.collapsed .param-group-body { display: none; }
+
+    /* Nested groups (group inside group) */
+    .param-group-nested {
+      margin: 0.25rem 0;
+      border: 1px solid var(--sl-color-neutral-200);
+      box-shadow: none;
+    }
+    .param-group-nested .param-group-header {
+      background: var(--sl-color-neutral-150, color-mix(in srgb, var(--sl-color-neutral-100) 60%, var(--sl-color-neutral-200)));
+      padding: 0.3rem 0.5rem;
+    }
+    .param-group-nested .param-group-header:hover {
+      background: var(--sl-color-neutral-200);
+    }
+    .param-group-nested .param-group-name {
+      font-size: 0.72rem;
+      color: var(--sl-color-neutral-500);
+    }
+    .param-group-nested .param-group-chevron {
+      font-size: 0.55rem;
+    }
+
+    /* ── Channel Containers (PicoSeqRack etc.) ──────────────── */
+    .channel-container {
+      margin-bottom: 0.65rem;
+      border: 1px solid var(--sl-color-neutral-400);
+      border-radius: var(--sl-border-radius-medium);
+      overflow: hidden;
+      background: var(--sl-color-neutral-50);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      flex-shrink: 0;
+    }
+    .channel-header {
+      display: flex; align-items: center;
+      padding: 0.4rem 0.65rem;
+      background: var(--sl-color-neutral-300);
+      cursor: pointer; user-select: none; gap: 0.4rem;
+      border-bottom: 1px solid var(--sl-color-neutral-300);
+      position: relative;
+    }
+    .channel-header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+    .channel-header > * { position: relative; z-index: 1; }
+    .channel-header:hover { background: var(--sl-color-neutral-400); }
+    .channel-chevron {
+      font-size: 0.65rem; color: var(--sl-color-neutral-500);
+      transition: transform 0.2s;
+    }
+    .channel-container.collapsed .channel-chevron { transform: rotate(-90deg); }
+    .channel-container.collapsed .channel-body { display: none; }
+    .channel-num {
+      font-size: 0.65rem; font-weight: 700;
+      background: var(--sl-color-primary-600);
+      color: #fff;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      letter-spacing: 0.03em;
+      line-height: 1.2;
+    }
+    .channel-name {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sl-color-neutral-600);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      min-width: 0;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .channel-category {
+      font-size: 0.58rem; font-weight: 600;
+      color: var(--sl-color-neutral-500);
+      background: var(--sl-color-neutral-200);
+      padding: 0.08rem 0.4rem;
+      border-radius: 8px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      margin-left: auto;
+      text-transform: capitalize;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .channel-mute-switch {
+      margin-left: 0.5rem;
+      flex-shrink: 0;
+      --sl-toggle-size-small: 1.1rem;
+      --sl-color-neutral-400: var(--sl-color-neutral-600);
+    }
+    /* Engine tab bar — darker background for contrast */
+    .machine-tab-bar {
+      display: flex; align-items: stretch;
+      background: var(--sl-color-neutral-300);
+      border-bottom: 1px solid var(--sl-color-neutral-300);
+      padding: 0;
+      padding-left: 0.35rem;
+    }
+    .machine-tab {
+      position: relative;
+      padding: 0.4rem 0.75rem;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--sl-color-neutral-600);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--sl-font-sans);
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .machine-tab:hover {
+      color: var(--sl-color-neutral-800);
+      background: var(--sl-color-neutral-200);
+    }
+    .machine-tab.active {
+      color: var(--sl-color-primary-600);
+      border-bottom-color: var(--sl-color-primary-600);
+      background: var(--sl-color-neutral-50);
+    }
+    /* Machine params panel (direct params, no nested group chrome) */
+    .machine-params {
+      padding: 0.35rem 0.5rem;
+      position: relative;
+    }
+    .machine-params::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+    .machine-params > * { position: relative; z-index: 1; }
+    /* Mixer strip — bottom of channel, collapsible */
+    .channel-mixer {
+      border-top: 1px solid var(--sl-color-neutral-300);
+    }
+    .channel-mixer-label {
+      display: flex; align-items: center; gap: 0.35rem;
+      padding: 0.3rem 0.65rem;
+      background: var(--sl-color-neutral-600);
+      border-bottom: 1px solid var(--sl-color-neutral-500);
+      cursor: pointer; user-select: none;
+    }
+    .channel-mixer-label:hover { background: var(--sl-color-neutral-700); }
+    .channel-mixer-label span {
+      font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sl-color-neutral-100);
+    }
+    .channel-mixer-label sl-icon {
+      font-size: 0.7rem; color: var(--sl-color-neutral-200);
+    }
+    .channel-mixer-label .mixer-chevron {
+      font-size: 0.55rem; color: var(--sl-color-neutral-200);
+      transition: transform 0.2s;
+      margin-left: auto;
+    }
+    .channel-mixer.mixer-collapsed .mixer-chevron { transform: rotate(-90deg); }
+    .channel-mixer.mixer-collapsed .channel-mixer-body { display: none; }
+    .channel-mixer-body {
+      background: var(--sl-color-neutral-150, color-mix(in srgb, var(--sl-color-neutral-100) 50%, var(--sl-color-neutral-200)));
+      padding: 0.35rem 0.5rem;
+      position: relative;
+    }
+    .channel-mixer-body::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+    .channel-mixer-body > * { position: relative; z-index: 1; }
+    .channel-mixer-body .param-row:hover { background: var(--sl-color-neutral-300); }
+    .knob-dragging .channel-mixer-body .param-row:hover { background: transparent; }
+    .knob-dragging .channel-mixer-body .param-row.knob-active { background: var(--sl-color-neutral-300); }
+
+    /* ── Master Bus Container (FX + Master groups) ──────────── */
+    .master-bus-container {
+      margin-top: 0.75rem;
+      border: 1px solid var(--sl-color-neutral-500);
+      border-radius: var(--sl-border-radius-medium);
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+      flex-shrink: 0;
+    }
+    .master-bus-header {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 0.85rem;
+      background: linear-gradient(135deg, var(--sl-color-neutral-900), var(--sl-color-neutral-800));
+      color: var(--sl-color-neutral-0);
+      user-select: none;
+      border-bottom: 2px solid var(--sl-color-warning-500);
+    }
+    .master-bus-header sl-icon {
+      font-size: 0.9rem;
+      color: var(--sl-color-warning-400);
+    }
+    .master-bus-header span {
+      font-size: 0.82rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .master-bus-body {
+      background: var(--sl-color-neutral-100);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    @media (max-width: 900px) {
+      .master-bus-body {
+        grid-template-columns: 1fr;
+      }
+    }
+    /* Override param-group styling inside master bus */
+    .master-bus-body .param-group {
+      margin-bottom: 0;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      border-bottom: 1px solid var(--sl-color-neutral-400);
+      border-right: 1px solid var(--sl-color-neutral-400);
+    }
+    .master-bus-body .param-group:nth-child(2n) {
+      border-right: none;
+    }
+    .master-bus-body .param-group:nth-last-child(-n+2) {
+      border-bottom: none;
+    }
+    .master-bus-body .param-group:last-child {
+      border-bottom: none;
+    }
+    .master-bus-body .param-group-header {
+      background: linear-gradient(90deg, var(--sl-color-neutral-700), var(--sl-color-neutral-600));
+      border-bottom: 1px solid var(--sl-color-neutral-500);
+    }
+    .master-bus-body .param-group-header:hover {
+      background: linear-gradient(90deg, var(--sl-color-neutral-600), var(--sl-color-neutral-500));
+    }
+    .master-bus-body .param-group-name {
+      color: var(--sl-color-neutral-0);
+      white-space: nowrap;
+    }
+    .master-bus-body .param-group-chevron {
+      color: var(--sl-color-neutral-300);
+    }
+    .master-bus-body .param-group-body {
+      background: var(--sl-color-neutral-50);
+    }
+
+    /* ── Individual Parameter Row ───────────────────────────── */
+    .param-row {
+      display: flex; align-items: center;
+      padding: 0.3rem 0.35rem;
+      gap: 0.5rem;
+      min-height: 32px;
+      border-radius: var(--sl-border-radius-medium);
+    }
+    .param-row:hover { background: var(--sl-color-neutral-200); }
+    /* Suppress hover effects while dragging a knob */
+    .knob-dragging .param-row:hover { background: transparent; }
+    .knob-dragging .param-row.knob-active { background: var(--sl-color-neutral-200); }
+    .param-name {
+      width: 130px; flex-shrink: 0;
+      font-size: 0.82rem; font-weight: 500;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .param-control {
+      flex: 1; display: flex; align-items: center; gap: 0.5rem;
+      min-width: 0;
+    }
+
+    /* Range slider (Shoelace-inspired styling) */
+    .param-slider {
+      flex: 1; min-width: 80px; height: 20px;
+      -webkit-appearance: none; appearance: none;
+      background: transparent;
+      outline: none; cursor: pointer;
+      margin: 0; padding: 0;
+    }
+    /* Webkit track */
+    .param-slider::-webkit-slider-runnable-track {
+      height: 6px; border-radius: 3px;
+      background: var(--sl-color-neutral-300);
+    }
+    .param-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--sl-color-primary-600);
+      border: solid 2px var(--sl-color-primary-600);
+      cursor: pointer;
+      margin-top: calc(-20px / 2 + 6px / 2);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+    .param-slider::-webkit-slider-thumb:hover {
+      background: var(--sl-color-primary-500);
+      border-color: var(--sl-color-primary-500);
+    }
+    .param-slider::-webkit-slider-thumb:active {
+      background: var(--sl-color-primary-500);
+      cursor: grabbing;
+    }
+    .param-slider:focus-visible::-webkit-slider-thumb {
+      outline: var(--sl-focus-ring);
+      outline-offset: var(--sl-focus-ring-offset);
+    }
+    /* Firefox track + thumb */
+    .param-slider::-moz-range-track {
+      height: 6px; border-radius: 3px;
+      background: var(--sl-color-neutral-300); border: none;
+    }
+    .param-slider::-moz-range-thumb {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--sl-color-primary-600);
+      border: solid 2px var(--sl-color-primary-600);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: background-color 0.15s, border-color 0.15s;
+    }
+    .param-slider::-moz-range-thumb:hover {
+      background: var(--sl-color-primary-500);
+      border-color: var(--sl-color-primary-500);
+    }
+    .param-slider::-moz-range-thumb:active {
+      background: var(--sl-color-primary-500);
+      cursor: grabbing;
+    }
+    .param-slider:focus-visible {
+      outline: none;
+    }
+    .param-slider:focus-visible::-moz-range-thumb {
+      outline: var(--sl-focus-ring);
+      outline-offset: var(--sl-focus-ring-offset);
+    }
+    .param-value {
+      width: 48px; text-align: right; flex-shrink: 0;
+      font-size: 0.78rem; font-variant-numeric: tabular-nums;
+      color: var(--sl-color-neutral-600);
+      font-weight: 600;
+    }
+
+    /* Bool parameter (switch) */
+    .param-bool { display: flex; align-items: center; gap: 0.5rem; }
+
+    /* CV/TRIG routing dropdown (Config Mode only) */
+    .param-routing-select {
+      -webkit-appearance: none; appearance: none;
+      background: var(--sl-color-neutral-100);
+      border: 1px solid var(--sl-color-neutral-300);
+      border-radius: var(--sl-border-radius-small);
+      padding: 0.1rem 1.2rem 0.1rem 0.3rem;
+      font-size: 0.68rem;
+      font-family: var(--sl-font-sans);
+      color: var(--sl-color-neutral-700);
+      cursor: pointer;
+      flex-shrink: 0;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23666'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.3rem center;
+      background-size: 8px 5px;
+    }
+    .param-routing-select:hover {
+      border-color: var(--sl-color-primary-400);
+      background-color: var(--sl-color-neutral-0);
+    }
+    .param-routing-select:focus {
+      outline: var(--sl-focus-ring);
+      outline-offset: var(--sl-focus-ring-offset);
+      border-color: var(--sl-color-primary-500);
+    }
+    /* Highlight when a CV/TRIG source is assigned (not "none") */
+    .param-routing-select.assigned {
+      background-color: color-mix(in srgb, var(--sl-color-primary-600) 12%, var(--sl-color-neutral-0));
+      border-color: var(--sl-color-primary-400);
+      color: var(--sl-color-primary-700);
+      font-weight: 600;
+    }
+    /* Hide CV/TRIG selects in knob mode — too cluttered */
+    .param-row.knob-mode .param-routing-select { display: none; }
+    /* Favorites popover divider */
+    .fav-popover-divider {
+      height: 1px;
+      background: var(--sl-color-neutral-200);
+      margin: 0.15rem 0;
+    }
+
+    /* ── Control Mode (Knobs) ────────────────────────────────── */
+    .param-row.knob-mode {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0.6rem 0.35rem 0.5rem;
+      min-height: auto;
+      gap: 0.15rem;
+    }
+    /* Name ABOVE the knob (Ableton Live / Max style) */
+    .param-row.knob-mode .param-name {
+      width: auto;
+      max-width: 100%;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--sl-color-neutral-700);
+      order: 1;
+      margin: 0;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      text-align: center;
+      min-height: 1.4em;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+    }
+    /* Knob + value wrapper */
+    .param-row.knob-mode .param-control {
+      flex: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+      order: 2;
+    }
+    /* Value readout BELOW the knob */
+    .param-row.knob-mode .param-value {
+      width: auto;
+      font-size: 0.68rem;
+      font-weight: 500;
+      text-align: center;
+      color: var(--sl-color-neutral-500);
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    }
+    /* 4-column knob grid for channel strips (matches TBD-16 hardware) */
+    .machine-params.knob-grid,
+    .channel-mixer-body.knob-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0 0.25rem;
+      padding: 0.5rem;
+    }
+    /* Responsive knob grid for param groups (stereo plugins get 2-4 cols) */
+    .param-group-body.knob-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0 0.25rem;
+      padding: 0.5rem;
+    }
+    /* Full-width divider between knob rows */
+    .knob-row-divider {
+      grid-column: 1 / -1;
+      height: 0;
+      border-top: 1px solid var(--sl-color-neutral-200);
+      margin: 0.25rem 0;
+    }
+    .knob-row-divider:last-child {
+      display: none;
+    }
+    /* webaudio-knob integration */
+    .param-row.knob-mode webaudio-knob {
+      display: block;
+    }
+
+    /* Remove plugin button */
+    .remove-plugin-btn {
+      font-size: 0.82rem;
+      padding: 0.15rem 0.35rem;
+      cursor: pointer;
+      color: var(--sl-color-neutral-500);
+      border: 1px solid transparent;
+      border-radius: var(--sl-border-radius-medium);
+      background: none;
+      display: flex; align-items: center; gap: 0.25rem;
+      transition: all 0.15s;
+      font-family: var(--sl-font-sans);
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .remove-plugin-btn:hover {
+      color: var(--sl-color-danger-600);
+      border-color: var(--sl-color-danger-300);
+      background: color-mix(in srgb, var(--sl-color-danger-600) 8%, transparent);
+    }
+    .remove-plugin-btn sl-icon { font-size: 0.9rem; }
+
+    /* ── Presets Sidebar — removed, using in-slot preset controls only ── */
+
+    /* ── Status Footer ──────────────────────────────────────── */
+    .status-footer {
+      background: var(--sl-color-neutral-100);
+      border-top: 1px solid var(--sl-color-neutral-200);
+      flex-shrink: 0; overflow: hidden;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .status-footer-inner {
+      display: flex; align-items: center;
+      padding: 0.35rem 0.75rem;
+      gap: 0.5rem; min-height: 34px;
+    }
+    .status-footer-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sl-color-neutral-500);
+    }
+    .status-footer-spacer { flex: 1; }
+    .status-footer-info {
+      font-size: 0.72rem; color: var(--sl-color-neutral-500);
+      font-variant-numeric: tabular-nums;
+      display: flex; align-items: center; gap: 0.65rem;
+    }
+    .status-footer-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--sl-color-success-500);
+      flex-shrink: 0;
+    }
+    .status-footer-dot.offline { background: var(--sl-color-danger-500); }
+    .debug-toggle-btn {
+      font-size: 0.72rem; padding: 0.15rem 0.5rem;
+      border: 1px solid var(--sl-color-neutral-300);
+      border-radius: var(--sl-border-radius-medium);
+      background: var(--sl-color-neutral-200);
+      color: var(--sl-color-neutral-500);
+      cursor: pointer; font-family: var(--sl-font-sans);
+      font-weight: 600; display: flex; align-items: center; gap: 0.25rem;
+      transition: all 0.15s;
+    }
+    .debug-toggle-btn:hover {
+      background: var(--sl-color-neutral-300);
+      color: var(--sl-color-neutral-700);
+    }
+    .debug-toggle-btn sl-icon { font-size: 0.75rem; }
+
+    /* ── Debug Panel ─────────────────────────────────────────── */
+    .debug-panel {
+      background: var(--sl-color-neutral-0);
+      border-top: 1px solid var(--sl-color-neutral-200);
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .debug-panel.expanded { max-height: 350px; }
+    .debug-panel-header {
+      display: flex; align-items: center;
+      padding: 0.35rem 0.75rem;
+      gap: 0.5rem; min-height: 34px;
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+    }
+    .debug-panel-title {
+      font-size: 0.78rem; font-weight: 700; color: var(--sl-color-neutral-600);
+    }
+    .debug-tabs {
+      display: flex; gap: 0; margin-left: auto;
+    }
+    .debug-tab {
+      font-size: 0.72rem; font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border: 1px solid var(--sl-color-neutral-300);
+      background: var(--sl-color-neutral-100);
+      color: var(--sl-color-neutral-500);
+      cursor: pointer; font-family: var(--sl-font-sans);
+      transition: all 0.15s;
+    }
+    .debug-tab:first-child { border-radius: var(--sl-border-radius-medium) 0 0 var(--sl-border-radius-medium); }
+    .debug-tab:last-child { border-radius: 0 var(--sl-border-radius-medium) var(--sl-border-radius-medium) 0; border-left: none; }
+    .debug-tab:hover { background: var(--sl-color-neutral-200); }
+    .debug-tab.active {
+      background: var(--sl-color-primary-600); color: #fff;
+      border-color: var(--sl-color-primary-700);
+    }
+    .debug-tab-panel { display: none; padding: 0.65rem 0.75rem; overflow-y: auto; max-height: 280px; }
+    .debug-tab-panel.active { display: block; }
+    .debug-card {
+      border: 1px solid var(--sl-color-neutral-200);
+      border-radius: var(--sl-border-radius-medium);
+      padding: 0.65rem; margin-bottom: 0.65rem;
+    }
+    .debug-card-title {
+      font-size: 0.78rem; font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .debug-row {
+      display: flex; justify-content: space-between;
+      font-size: 0.78rem; padding: 0.15rem 0;
+    }
+    .debug-row-label { color: var(--sl-color-neutral-500); }
+    .debug-row-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .debug-msg-list {
+      display: flex; flex-direction: column; gap: 0.2rem;
+    }
+    .debug-msg {
+      font-size: 0.72rem; padding: 0.2rem 0.4rem;
+      background: var(--sl-color-neutral-100);
+      border-radius: 3px; display: flex; align-items: center; gap: 0.35rem;
+    }
+    .debug-msg-type {
+      font-weight: 700; color: var(--sl-color-success-600);
+    }
+    .debug-msg-time {
+      color: var(--sl-color-neutral-500);
+      margin-left: auto;
+    }
+
+    /* ── Toast Stack ────────────────────────────────────────── */
+    .toast-stack {
+      position: fixed; bottom: 1rem; right: 1rem;
+      z-index: 10000; display: flex; flex-direction: column-reverse;
+      gap: 0.4rem; max-width: 380px;
+    }
+
+    /* ── Loading Overlay ────────────────────────────────────── */
+    .loading-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .loading-overlay.hidden { display: none; }
+    .loading-card {
+      background: var(--sl-color-neutral-0);
+      padding: 2rem 2.5rem; border-radius: var(--sl-border-radius-large);
+      text-align: center; display: flex; flex-direction: column;
+      align-items: center; gap: 0.8rem;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .plugin-sidebar { width: 180px; min-width: 160px; }
+      .header-brand { width: 180px; }
+      .param-name { width: 100px; }
+    }
+    @media (max-width: 640px) {
+      .plugin-sidebar { width: 160px; min-width: 140px; }
+      .header-brand { width: 160px; }
+      .param-name { width: 80px; }
+      .connection-pill { display: none; }
+    }
+
+    /* ── Config Dialog ──────────────────────────────────────── */
+    .config-dialog-content {
+      min-height: 320px;
+    }
+    .config-tabs {
+      display: flex; gap: 0;
+      border-bottom: 2px solid var(--sl-color-neutral-200);
+      margin-bottom: 1rem;
+    }
+    .config-tab {
+      font-size: 0.78rem; font-weight: 600;
+      padding: 0.5rem 1rem;
+      border: none; background: none;
+      color: var(--sl-color-neutral-500);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 0.35rem;
+      transition: all 0.15s;
+      font-family: var(--sl-font-sans);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+    }
+    .config-tab:hover { color: var(--sl-color-neutral-800); }
+    .config-tab.active {
+      color: var(--sl-color-primary-600);
+      border-bottom-color: var(--sl-color-primary-600);
+    }
+    .config-tab sl-icon { font-size: 0.9rem; }
+    .config-tab-panel { display: none; }
+    .config-tab-panel.active { display: block; }
+    .config-section {
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--sl-color-neutral-200);
+      border-radius: var(--sl-border-radius-medium);
+      padding: 1rem;
+    }
+    .config-section-title {
+      font-size: 0.88rem; font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .config-section-desc {
+      font-size: 0.78rem; color: var(--sl-color-neutral-500);
+      margin-bottom: 0.75rem;
+    }
+    .config-row {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.45rem 0;
+    }
+    .config-row label {
+      font-size: 0.82rem; flex: 1;
+    }
+    .config-row .config-control {
+      width: 220px; flex-shrink: 0;
+    }
+    .config-row sl-select { width: 100%; }
+    .config-row sl-input { width: 100%; }
+    .config-row sl-switch { margin-left: auto; }
+
+    /* Native range slider styling */
+    .config-range {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--sl-color-neutral-200);
+      outline: none;
+      cursor: pointer;
+    }
+    .config-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--sl-color-primary-600);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .config-range::-webkit-slider-thumb:hover {
+      background: var(--sl-color-primary-700);
+    }
+    .config-range::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--sl-color-primary-600);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+    .config-range::-moz-range-track {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--sl-color-neutral-200);
+    }
+
+    /* Config dialog footer */
+    #config-dialog::part(footer) {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    /* Config form row for WiFi-style label+control */
+    .config-form-row {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0;
+      gap: 0.75rem;
+    }
+    .config-form-row .config-label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      width: 140px;
+      flex-shrink: 0;
+      color: var(--sl-color-neutral-700);
+    }
+    .config-form-row .config-field {
+      flex: 1;
+    }
+
+    /* Config action button (full-width save buttons inside sections) */
+    .config-action-btn {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    /* Palette grid */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
+    }
+    .palette-card {
+      border: 2px solid var(--sl-color-neutral-200);
+      border-radius: var(--sl-border-radius-medium);
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: var(--sl-color-neutral-0);
+    }
+    .palette-card:hover {
+      border-color: var(--sl-color-neutral-400);
+    }
+    .palette-card.active {
+      border-color: var(--sl-color-primary-600);
+      box-shadow: 0 0 0 1px var(--sl-color-primary-600);
+    }
+    .palette-name {
+      font-size: 0.78rem; font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--sl-color-neutral-700);
+    }
+    .palette-swatches {
+      display: flex; gap: 0.3rem;
+    }
+    .palette-swatch {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    /* MIDI device list items */
+    .midi-device-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--sl-color-neutral-200);
+      border-radius: var(--sl-border-radius-medium);
+      margin-bottom: 0.4rem;
+      background: var(--sl-color-neutral-0);
+    }
+    .midi-device-item .midi-device-name {
+      font-size: 0.85rem; font-weight: 600;
+    }
+    .midi-device-item .midi-device-mfg {
+      font-size: 0.72rem; color: var(--sl-color-neutral-500);
+    }
+    .midi-device-badge {
+      font-size: 0.62rem; font-weight: 700;
+      padding: 0.1rem 0.4rem; border-radius: 3px;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .midi-device-badge.badge-input {
+      background: #e8f0fe; color: #2b6cb0;
+      border: 1px solid #90cdf4;
+    }
+    .midi-device-badge.badge-output {
+      background: #fde8e8; color: #c53030;
+      border: 1px solid #feb2b2;
+    }
+
+    /* ── Sample Manager View ────────────────────────────────── */
+    #view-samples { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
+    #view-samples.active { display: flex; }
+    #view-samples sl-split-panel { flex: 1; --divider-width: 5px; min-height: 0; }
+    #view-samples sl-split-panel::part(divider) { background: var(--sl-color-neutral-300); }
+    #view-samples sl-split-panel::part(panel) { overflow: hidden; }
+
+    /* Panels */
+    .panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+    .panel-left  { background: var(--sl-color-neutral-50); position: relative; }
+    .panel-right { background: var(--sl-color-neutral-0); }
+    .panel-title-bar {
+      display: flex; align-items: center;
+      padding: 0.45rem 0.85rem;
+      background: var(--sl-color-neutral-100);
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      flex-shrink: 0; gap: 0.5rem; min-height: 38px; height: 38px;
+    }
+    .panel-title { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sl-color-neutral-600); }
+    .panel-title-right { margin-left: auto; display: flex; align-items: center; gap: 0.4rem; }
+
+    /* Pool Controls */
+    .pool-controls { display: flex; align-items: center; padding: 0.3rem 0.85rem; border-bottom: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; gap: 0.4rem; min-height: 34px; }
+    .pool-breadcrumb { display: flex; align-items: center; gap: 0.2rem; flex: 1; overflow: hidden; font-size: 0.82rem; }
+    .pool-breadcrumb-home { font-size: 0.9rem; color: var(--sl-color-neutral-500); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; }
+    .pool-breadcrumb-home:hover { color: var(--sl-color-primary-600); }
+    .pool-breadcrumb-home-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--sl-color-neutral-500); cursor: pointer; margin-left: 0.2rem; }
+    .pool-breadcrumb-home:hover + .pool-breadcrumb-home-label, .pool-breadcrumb-home-label:hover { color: var(--sl-color-primary-600); }
+    .pool-breadcrumb-seg { color: var(--sl-color-primary-600); cursor: pointer; white-space: nowrap; font-weight: 500; }
+    .pool-breadcrumb-seg:hover { text-decoration: underline; }
+    .pool-breadcrumb-sep { color: var(--sl-color-neutral-400); font-size: 0.72rem; flex-shrink: 0; }
+    .pool-breadcrumb-current { color: var(--sl-color-neutral-700); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Column Headers */
+    .col-header { display: flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.55rem; border-bottom: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; min-height: 34px; }
+    .col-header span { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-500); }
+    .col-header .col-sortable { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.15rem; }
+    .col-header .col-sortable:hover { color: var(--sl-color-neutral-700); }
+    .col-header .col-sortable .sort-arrow { font-size: 0.55rem; }
+    .col-name { flex: 1; min-width: 0; }
+    .col-dur { width: 72px; text-align: right; flex-shrink: 0; }
+    .col-smp { width: 72px; text-align: right; flex-shrink: 0; }
+    .col-actions { width: 80px; flex-shrink: 0; }
+
+    /* Selection Toolbar */
+    .selection-toolbar { display: none; align-items: center; gap: 0.4rem; padding: 0.3rem 0.55rem; border-bottom: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; min-height: 34px; background: var(--sl-color-neutral-50); }
+    .selection-toolbar.active { display: flex; }
+    .selection-toolbar .sel-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-500); }
+    .selection-toolbar .sel-btn { font-size: 0.72rem; padding: 0.25rem 0.65rem; border: 1px solid var(--sl-color-neutral-300); border-radius: var(--sl-border-radius-medium); background: var(--sl-color-neutral-200); color: var(--sl-color-neutral-700); cursor: pointer; font-family: var(--sl-font-sans); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; line-height: 1.4; }
+    .selection-toolbar .sel-btn:hover { background: var(--sl-color-neutral-300); }
+    .selection-toolbar .sel-btn-danger { border-color: var(--sl-color-danger-400); background: var(--sl-color-danger-600); color: #fff; }
+    .selection-toolbar .sel-btn-danger:hover { background: var(--sl-color-danger-700); }
+    .selection-toolbar .sel-btn-danger:disabled { background: var(--sl-color-neutral-200); color: var(--sl-color-neutral-500); border-color: var(--sl-color-neutral-300); cursor: default; }
+
+    /* Pool Content */
+    .pool-content { flex: 1; overflow-y: auto; padding: 0; min-height: 0; }
+
+    /* Sample Rows */
+    .sample-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.32rem 0.55rem; border-bottom: 1px solid color-mix(in srgb, var(--sl-color-neutral-200) 50%, transparent); transition: background 0.1s; min-height: 28px; }
+    .sample-row:hover { background: var(--sl-color-neutral-200); }
+    .sample-row-icon { font-size: 0.78rem; flex-shrink: 0; color: var(--sl-color-neutral-400); }
+    .sample-row-name { flex: 1; font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sample-row-dur { width: 72px; font-size: 0.78rem; color: var(--sl-color-neutral-500); text-align: right; flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .sample-row-smp { width: 72px; font-size: 0.78rem; color: var(--sl-color-neutral-500); text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .sample-row-actions { width: 80px; display: flex; justify-content: flex-end; gap: 0; flex-shrink: 0; }
+    .sample-row-actions sl-icon-button { font-size: 0.82rem; }
+    .sample-row-actions .action-hover { opacity: 0; transition: opacity 0.15s; }
+    .sample-row:hover .sample-row-actions .action-hover { opacity: 1; }
+    @media (hover: none) { .sample-row-actions .action-hover { opacity: 1; } }
+
+    /* Folder rows */
+    .sample-row.folder-row { cursor: pointer; }
+    .sample-row.folder-row .sample-row-icon { color: var(--sl-color-neutral-400); }
+    .sample-row.folder-row .sample-row-name { font-weight: 600; }
+    .sample-row.folder-row .sample-row-actions .action-hover { opacity: 0; transition: opacity 0.15s; }
+    .sample-row.folder-row:hover .sample-row-actions .action-hover { opacity: 1; }
+    @media (hover: none) { .sample-row.folder-row .sample-row-actions .action-hover { opacity: 1; } }
+
+    /* File rows in pool */
+    .pool-content .sample-row.file-row { cursor: grab; }
+    .pool-content .sample-row.file-row:active { cursor: grabbing; }
+    .pool-content .sample-row.file-row.selected { background: color-mix(in srgb, var(--sl-color-primary-600) 12%, transparent); }
+    .pool-select-cb { width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; accent-color: var(--sl-color-primary-600); }
+
+    /* Drop Zone */
+    .drop-zone-bar { display: flex; align-items: center; gap: 0.5rem; border-top: 1px solid var(--sl-color-neutral-200); padding: 0.35rem 0.85rem; flex-shrink: 0; transition: background 0.2s; cursor: pointer; }
+    .drop-zone-bar:hover { background: color-mix(in srgb, var(--sl-color-primary-600) 6%, transparent); }
+    .drop-zone-icon { font-size: 1rem; color: var(--sl-color-neutral-400); flex-shrink: 0; }
+    .drop-zone-text { font-size: 0.8rem; color: var(--sl-color-neutral-500); flex: 1; }
+    .pool-drop-overlay { display: none; position: absolute; inset: 0; z-index: 100; background: color-mix(in srgb, var(--sl-color-primary-600) 10%, var(--sl-color-neutral-50) 90%); border: 2px dashed var(--sl-color-primary-500); border-radius: var(--sl-border-radius-medium); flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; pointer-events: none; }
+    .pool-drop-overlay.visible { display: flex; }
+    .pool-drop-overlay sl-icon { font-size: 2.5rem; color: var(--sl-color-primary-500); }
+    .pool-drop-overlay span { font-size: 0.85rem; color: var(--sl-color-primary-700); font-weight: 600; }
+
+    /* Kit Controls */
+    .kit-controls { display: flex; align-items: center; padding: 0.3rem 0.85rem; border-bottom: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; gap: 0.4rem; }
+    .kit-controls sl-select { flex: 1; min-width: 100px; }
+    .psram-active-label { font-size: 0.68rem; font-weight: 600; color: var(--sl-color-success-600); white-space: nowrap; padding: 0.15rem 0.45rem; background: color-mix(in srgb, var(--sl-color-success-500) 12%, transparent); border-radius: var(--sl-border-radius-medium); border: 1px solid color-mix(in srgb, var(--sl-color-success-500) 25%, transparent); }
+
+    /* Kit Memory Bar */
+    .kit-memory-bar { display: flex; align-items: center; padding: 0.3rem 0.85rem; border-bottom: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; gap: 0.45rem; min-height: 34px; }
+    .kit-memory-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-500); white-space: nowrap; }
+    .kit-memory-bar-track { flex: 1; height: 6px; max-width: 120px; background: var(--sl-color-neutral-300); border-radius: 3px; overflow: hidden; }
+    .kit-memory-bar-fill { height: 100%; border-radius: 3px; background: var(--sl-color-primary-600); transition: width 0.3s; }
+    .kit-memory-bar-fill.warn { background: var(--sl-color-warning-500); }
+    .kit-memory-bar-fill.danger { background: var(--sl-color-danger-500); }
+    .kit-memory-pct { font-size: 0.72rem; color: var(--sl-color-neutral-500); white-space: nowrap; font-variant-numeric: tabular-nums; min-width: 48px; text-align: right; }
+
+    /* Kit Content */
+    .kit-content { flex: 1; overflow-y: auto; padding: 0.4rem 0.65rem; min-height: 0; }
+
+    /* Bank Cards */
+    .bank-card { margin-bottom: 0.4rem; border-radius: var(--sl-border-radius-medium); border: 1px solid var(--sl-color-neutral-200); overflow: hidden; }
+    .bank-header { display: flex; align-items: center; padding: 0.35rem 0.55rem; cursor: pointer; user-select: none; gap: 0.4rem; }
+    .bank-header-left { display: flex; align-items: center; gap: 0.4rem; flex: 1; }
+    .bank-idx { font-size: 0.72rem; font-weight: 700; opacity: 0.5; width: 18px; text-align: center; }
+    .bank-name-input { font-size: 0.82rem; font-weight: 600; background: none; border: none; color: inherit; padding: 0.1rem 0.2rem; border-radius: 3px; width: 80px; }
+    .bank-name-input:hover { background: rgba(255,255,255,0.08); }
+    .bank-name-input:focus { outline: 1px solid var(--sl-color-primary-600); background: rgba(255,255,255,0.08); }
+    .bank-count { font-size: 0.72rem; color: var(--sl-color-neutral-500); }
+    .bank-header-right { display: flex; align-items: center; gap: 0.2rem; }
+    .bank-delete-btn { font-size: 0.7rem; opacity: 0; transition: opacity 0.15s; --sl-spacing-x-small: 0.15rem; }
+    .bank-header:hover .bank-delete-btn { opacity: 0.7; }
+    .bank-delete-btn:hover { opacity: 1 !important; }
+    @media (hover: none) { .bank-delete-btn { opacity: 0.4; } }
+    .bank-chevron { transition: transform 0.2s; font-size: 0.7rem; color: var(--sl-color-neutral-500); }
+    .bank-card.collapsed .bank-chevron { transform: rotate(-90deg); }
+    .bank-body { padding: 0.1rem 0.35rem 0.35rem; }
+    .bank-card.collapsed .bank-body { display: none; }
+    .add-bank-btn { display: flex; align-items: center; justify-content: center; gap: 0.35rem; width: 100%; padding: 0.5rem; margin-top: 0.25rem; border: 1px dashed var(--sl-color-neutral-300); border-radius: var(--sl-border-radius-medium); background: none; color: var(--sl-color-neutral-500); font-size: 0.78rem; cursor: pointer; transition: all 0.15s; }
+    .add-bank-btn:hover { border-color: var(--sl-color-primary-500); color: var(--sl-color-primary-600); background: color-mix(in srgb, var(--sl-color-primary-600) 5%, transparent); }
+
+    /* Bank Slots */
+    .bank-slot { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.45rem; border-radius: var(--sl-border-radius-medium); background: var(--sl-color-neutral-100); margin-bottom: 0.15rem; transition: background 0.1s; min-height: 28px; }
+    .bank-slot:hover { background: var(--sl-color-neutral-200); }
+    .bank-slot:last-of-type { margin-bottom: 0; }
+    .drag-handle { cursor: grab; color: var(--sl-color-neutral-400); font-size: 0.8rem; padding: 0 2px; user-select: none; }
+    .drag-handle:active { cursor: grabbing; }
+    .bank-slot-name { flex: 1; font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bank-slot-missing .bank-slot-name { color: var(--sl-color-danger-500); }
+    .bank-slot-missing-icon { color: var(--sl-color-danger-400); font-size: 0.65rem; flex-shrink: 0; }
+    .bank-slot-dur { font-size: 0.78rem; color: var(--sl-color-neutral-500); flex-shrink: 0; font-variant-numeric: tabular-nums; width: 68px; text-align: right; }
+    .flat-bank-badge {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.03em; padding: 0.05rem 0.4rem;
+      border-radius: 3px; white-space: nowrap; flex-shrink: 0;
+      line-height: 1.4;
+    }
+    .bank-slot-actions { display: flex; gap: 0; flex-shrink: 0; width: 80px; justify-content: flex-end; }
+    .bank-slot-actions sl-icon-button { font-size: 0.82rem; }
+    .bank-slot-actions .action-hover { opacity: 0; transition: opacity 0.15s; }
+    .bank-slot:hover .bank-slot-actions .action-hover { opacity: 1; }
+    @media (hover: none) { .bank-slot-actions .action-hover { opacity: 1; } }
+    .bank-add-btn { width: 100%; margin-top: 0.1rem; font-size: 0.78rem; }
+    .bank-empty { padding: 0.5rem; text-align: center; color: var(--sl-color-neutral-400); font-size: 0.78rem; font-style: italic; }
+    .bank-body.drop-target { outline: 2px dashed var(--sl-color-primary-500); outline-offset: -2px; background: color-mix(in srgb, var(--sl-color-primary-600) 8%, transparent); }
+    .bank-slot.drop-target-slot { outline: 2px solid var(--sl-color-primary-500); outline-offset: -2px; background: color-mix(in srgb, var(--sl-color-primary-600) 12%, transparent) !important; }
+    .sortable-ghost { opacity: 0.35; }
+    .sortable-chosen { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+
+    /* Transfer Bar */
+    .transfer-bar { background: var(--sl-color-neutral-100); border-top: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; overflow: hidden; transition: max-height 0.25s ease; padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .transfer-bar.collapsed { max-height: 36px; }
+    .transfer-bar.expanded { max-height: 280px; }
+    .transfer-bar-header { display: flex; align-items: center; padding: 0.35rem 0.75rem; cursor: pointer; user-select: none; gap: 0.5rem; min-height: 34px; border-bottom: 1px solid var(--sl-color-neutral-200); padding-right: 1.25rem; }
+    .transfer-bar-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-500); }
+    .transfer-bar-badge { font-size: 0.75rem; background: var(--sl-color-primary-600); color: #fff; border-radius: 999px; padding: 0.08rem 0.45rem; font-weight: 600; }
+    .transfer-bar-badge.hidden { display: none; }
+    .transfer-bar-spacer { flex: 1; }
+    .transfer-bar-status { font-size: 0.72rem; color: var(--sl-color-neutral-500); font-variant-numeric: tabular-nums; }
+    .transfer-bar-actions { display: flex; gap: 0.25rem; align-items: center; }
+    .transfer-bar-actions button { font-size: 0.78rem; padding: 0.25rem 0.65rem; border: 1px solid var(--sl-color-neutral-300); border-radius: var(--sl-border-radius-medium); background: var(--sl-color-neutral-200); color: var(--sl-color-neutral-700); cursor: pointer; font-family: var(--sl-font-sans); letter-spacing: 0.02em; text-transform: uppercase; font-weight: 600; line-height: 1.4; }
+    .transfer-bar-actions button:hover { background: var(--sl-color-neutral-300); }
+    .transfer-bar-chevron { font-size: 0.65rem; color: var(--sl-color-neutral-500); transition: transform 0.2s; }
+    .transfer-bar.collapsed .transfer-bar-chevron { transform: rotate(-90deg); }
+    .transfer-bar-body { max-height: 240px; overflow-y: auto; padding: 0 0.75rem 0.3rem; }
+    .transfer-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .transfer-table th { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-500); text-align: left; padding: 0.28rem 0.4rem; border-bottom: 1px solid var(--sl-color-neutral-300); white-space: nowrap; position: sticky; top: 0; background: var(--sl-color-neutral-100); z-index: 1; }
+    .transfer-table th.col-r { text-align: right; }
+    .transfer-table td { padding: 0.22rem 0.4rem; border-bottom: 1px solid color-mix(in srgb, var(--sl-color-neutral-200) 50%, transparent); vertical-align: middle; }
+    .transfer-table td.col-r { text-align: right; }
+    .transfer-table td.col-num { width: 24px; text-align: center; color: var(--sl-color-neutral-500); font-variant-numeric: tabular-nums; }
+    .transfer-table td.col-file { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .transfer-table td.col-size { width: 60px; text-align: right; color: var(--sl-color-neutral-500); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .transfer-table td.col-status { width: 75px; white-space: nowrap; }
+    .transfer-table td.col-location { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.78rem; color: var(--sl-color-neutral-500); }
+    .transfer-table td.col-progress { width: 70px; }
+    .transfer-table sl-progress-bar { --height: 5px; }
+    .transfer-row-done td { opacity: 0.7; }
+    .transfer-row-error td { color: var(--sl-color-danger-600); }
+    .transfer-empty { padding: 0.4rem 0; font-size: 0.82rem; color: var(--sl-color-neutral-400); text-align: center; }
+
+    /* View Toggle */
+    .view-toggle { display: flex; align-items: center; gap: 0.35rem; }
+    .view-toggle label { font-size: 0.78rem; color: var(--sl-color-neutral-600); }
+
+    /* Header Storage */
+    .header-storage { display: flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem; }
+    .header-storage.hidden { display: none; }
+    .favorites-bar.hidden { display: none; }
+    .header-storage-text { font-size: 0.75rem; color: var(--sl-color-neutral-600); white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .header-storage-bar { width: 80px; height: 8px; background: var(--sl-color-neutral-300); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .header-storage-bar-fill { height: 100%; border-radius: 4px; background: var(--sl-color-primary-600); transition: width 0.3s; }
+    .header-storage-bar-fill.warn { background: var(--sl-color-warning-500); }
+    .header-storage-bar-fill.danger { background: var(--sl-color-danger-500); }
+
+    /* Sample Picker Dialog */
+    .sample-picker-list { max-height: 320px; overflow-y: auto; margin-top: 0.5rem; }
+    .sample-picker-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.5rem; cursor: pointer; border-radius: var(--sl-border-radius-medium); }
+    .sample-picker-item:hover { background: var(--sl-color-neutral-200); }
+    .sample-picker-item.selected { background: var(--sl-color-primary-200); }
+
+    /* Responsive: Sample Manager */
+    @media (max-width: 768px) {
+      .col-dur, .sample-row-dur { display: none; }
+      .col-smp, .sample-row-smp { display: none; }
+    }
+  </style>
 </head>
 <body>
-<ons-navigator swipeable id="myNavigator" page="main.html"></ons-navigator>
+  <div class="app">
 
+    <!-- ════ HEADER ════ -->
+    <header class="app-header">
+      <div class="header-brand">
+        <h1>TBD-16</h1>
+        <div class="connection-pill" id="conn-pill">
+          <span class="conn-dot" id="conn-pill-dot"></span>
+          <span id="conn-pill-text">Connected</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-tab active" id="nav-plugins" data-view="view-plugins">
+          <sl-icon name="music-note-beamed"></sl-icon>Plugins
+        </button>
+        <button class="nav-tab" id="nav-samples" data-view="view-samples">
+          <sl-icon name="hdd"></sl-icon>Samples
+        </button>
+        <a class="nav-tab" href="/preset-macro-manager.html">
+          <sl-icon name="sliders"></sl-icon>Macros
+        </a>
+      </nav>
+
+      <!-- Favorites Bar (left-aligned after nav tabs) -->
+      <div class="favorites-bar" id="favorites-bar">
+        <span class="fav-label">Fav</span>
+        <button class="fav-slot-btn" data-fav="0" title="Favorite 1 (click=recall, shift+click=store)">1</button>
+        <button class="fav-slot-btn" data-fav="1" title="Favorite 2">2</button>
+        <button class="fav-slot-btn" data-fav="2" title="Favorite 3">3</button>
+        <button class="fav-slot-btn" data-fav="3" title="Favorite 4">4</button>
+        <button class="fav-slot-btn" data-fav="4" title="Favorite 5">5</button>
+        <button class="fav-slot-btn" data-fav="5" title="Favorite 6">6</button>
+        <button class="fav-slot-btn" data-fav="6" title="Favorite 7">7</button>
+        <button class="fav-slot-btn" data-fav="7" title="Favorite 8">8</button>
+        <button class="fav-slot-btn" data-fav="8" title="Favorite 9">9</button>
+        <button class="fav-slot-btn" data-fav="9" title="Favorite 10">10</button>
+      </div>
+
+      <div class="header-spacer"></div>
+
+      <div class="header-storage hidden" id="header-storage">
+        <span class="header-storage-text" id="storage-text">&mdash;</span>
+        <div class="header-storage-bar">
+          <div class="header-storage-bar-fill" id="storage-bar-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <sl-tooltip content="Configuration">
+          <sl-icon-button id="config-btn" name="gear-fill" label="Configuration"
+            style="font-size:1rem;"></sl-icon-button>
+        </sl-tooltip>
+        <sl-tooltip content="Toggle dark / light mode">
+          <sl-icon-button id="theme-toggle" name="moon-fill" label="Toggle theme"
+            class="theme-toggle"></sl-icon-button>
+        </sl-tooltip>
+      </div>
+    </header>
+
+    <!-- ════ MAIN: PLUGIN MANAGEMENT VIEW ════ -->
+    <div class="app-main">
+      <div id="view-plugins" class="active">
+
+        <!-- ── Plugin Sidebar (left) ── -->
+        <div class="plugin-sidebar">
+          <div class="plugin-sidebar-title">
+            <span>Plugins</span>
+            <span class="plugin-count" id="plugin-count">&mdash;</span>
+            <button class="sidebar-toggle" id="plugin-sidebar-toggle"
+              title="Toggle plugin sidebar"><sl-icon name="chevron-left"></sl-icon></button>
+          </div>
+          <div class="plugin-search">
+            <sl-input id="plugin-search" placeholder="Search plugins…"
+                      size="small" clearable>
+              <sl-icon name="search" slot="prefix"></sl-icon>
+            </sl-input>
+          </div>
+          <div class="plugin-list" id="plugin-list">
+            <sl-spinner style="margin:1rem auto;display:block;"></sl-spinner>
+          </div>
+        </div>
+
+        <!-- ── Slot Panels (center) ── -->
+        <div class="slot-panels">
+
+          <!-- Slot A -->
+          <div class="slot-panel" id="slot-panel-0">
+            <div class="slot-title-bar">
+              <span class="slot-label slot-label-a">A</span>
+              <span class="slot-plugin-name" id="slot-name-0">—</span>
+              <div class="slot-title-right">
+                <button class="swap-slots-btn" id="swap-slots-btn" title="Swap Slot A ↔ B">
+                  <sl-icon name="arrow-left-right"></sl-icon>
+                </button>
+                <button class="remove-plugin-btn" id="remove-plugin-0" title="Remove plugin from slot">
+                  <sl-icon name="x-lg"></sl-icon>
+                </button>
+              </div>
+            </div>
+            <div class="slot-subheader" id="slot-subheader-0">
+              <label>Preset</label>
+              <sl-select id="preset-select-0" size="small" hoist
+                style="min-width:120px;max-width:180px;flex:1;">
+              </sl-select>
+              <sl-button size="small" id="save-preset-0">
+                <sl-icon slot="prefix" name="floppy"></sl-icon>Save
+              </sl-button>
+            </div>
+            <div class="param-scroll" id="params-0">
+            <div class="plugin-info-container" id="plugin-info-0"></div>
+              <div class="param-empty">No plugin loaded</div>
+            </div>
+          </div>
+
+          <!-- Slot B -->
+          <div class="slot-panel" id="slot-panel-1">
+            <div class="slot-title-bar">
+              <span class="slot-label slot-label-b">B</span>
+              <span class="slot-plugin-name" id="slot-name-1">—</span>
+              <div class="slot-title-right">
+                <button class="remove-plugin-btn" id="remove-plugin-1" title="Remove plugin from slot">
+                  <sl-icon name="x-lg"></sl-icon>
+                </button>
+              </div>
+            </div>
+            <div class="slot-subheader" id="slot-subheader-1">
+              <label>Preset</label>
+              <sl-select id="preset-select-1" size="small" hoist
+                style="min-width:120px;max-width:180px;flex:1;">
+              </sl-select>
+              <sl-button size="small" id="save-preset-1">
+                <sl-icon slot="prefix" name="floppy"></sl-icon>Save
+              </sl-button>
+            </div>
+            <div class="param-scroll" id="params-1">
+            <div class="plugin-info-container" id="plugin-info-1"></div>
+              <div class="param-empty">No plugin loaded</div>
+            </div>
+          </div>
+
+        </div>
+
+
+
+      </div>
+
+      <!-- ════ SAMPLE MANAGER VIEW ════ -->
+      <div id="view-samples">
+      <sl-split-panel position="42">
+
+        <!-- ──── LEFT: Sample Pool ──── -->
+        <div slot="start" class="panel panel-left" id="pool-panel">
+          <div class="panel-title-bar">
+            <span class="panel-title">Sample Pool</span>
+            <div class="panel-title-right">
+              <span style="font-size:0.78rem;color:var(--sl-color-neutral-500);" id="pool-file-count">&mdash;</span>
+            </div>
+          </div>
+          <div class="pool-controls">
+            <div class="pool-breadcrumb" id="pool-breadcrumb">
+              <span class="pool-breadcrumb-current">/</span>
+            </div>
+            <sl-button size="small" variant="default" id="select-mode-btn" title="Select multiple files">
+              <sl-icon slot="prefix" name="check2-square"></sl-icon>Select
+            </sl-button>
+            <sl-button size="small" variant="default" id="new-folder-btn">
+              <sl-icon slot="prefix" name="folder2-open"></sl-icon>New Folder
+            </sl-button>
+            <sl-button size="small" variant="primary" id="upload-btn">
+              <sl-icon slot="prefix" name="cloud-arrow-up"></sl-icon>Upload
+            </sl-button>
+            <div id="upload-menu" style="display:none;position:fixed;z-index:200;background:var(--sl-color-neutral-0);border:1px solid var(--sl-color-neutral-300);border-radius:var(--sl-border-radius-medium);box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:160px;padding:0.25rem 0;">
+              <div id="upload-files-opt" style="padding:0.45rem 0.85rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.5rem;" onmouseover="this.style.background='var(--sl-color-neutral-200)'" onmouseout="this.style.background=''">
+                <sl-icon name="file-earmark-music" style="font-size:0.9rem;"></sl-icon> Upload Files
+              </div>
+              <div id="upload-folder-opt" style="padding:0.45rem 0.85rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.5rem;" onmouseover="this.style.background='var(--sl-color-neutral-200)'" onmouseout="this.style.background=''">
+                <sl-icon name="folder2-open" style="font-size:0.9rem;"></sl-icon> Upload Folder
+              </div>
+            </div>
+            <input type="file" id="file-input" multiple webkitdirectory
+                   accept="audio/*,.wav,.mp3,.aiff,.aif,.ogg,.flac" hidden>
+            <input type="file" id="file-input-files" multiple
+                   accept="audio/*,.wav,.mp3,.aiff,.aif,.ogg,.flac" hidden>
+          </div>
+          <div class="col-header" id="pool-col-header">
+            <span style="width:20px;"></span>
+            <span class="col-name col-sortable" data-sort="name">NAME <span class="sort-arrow"></span></span>
+            <span class="col-dur col-sortable" data-sort="dur">DURATION <span class="sort-arrow"></span></span>
+            <span class="col-smp col-sortable" data-sort="smp">SIZE <span class="sort-arrow"></span></span>
+            <span class="col-actions"></span>
+          </div>
+          <div id="selection-toolbar" class="selection-toolbar"></div>
+          <div class="pool-content" id="pool-content">
+            <sl-spinner style="margin:1rem auto;display:block;"></sl-spinner>
+          </div>
+          <div class="drop-zone-bar" id="drop-zone-bar">
+            <sl-icon name="cloud-arrow-up" class="drop-zone-icon"></sl-icon>
+            <span class="drop-zone-text">Drop files here to upload</span>
+          </div>
+          <div class="pool-drop-overlay" id="pool-drop-overlay">
+            <sl-icon name="cloud-arrow-up"></sl-icon>
+            <span>Drop audio files to upload</span>
+          </div>
+        </div>
+
+        <!-- ──── RIGHT: Kit Editor ──── -->
+        <div slot="end" class="panel panel-right" id="kit-panel">
+          <div class="panel-title-bar">
+            <span class="panel-title">Kit Editor</span>
+            <div class="panel-title-right">
+              <sl-icon-button name="download" label="Export Kit" id="export-kit-btn" title="Export Kit backup" style="font-size:0.9rem;"></sl-icon-button>
+              <sl-icon-button name="upload" label="Import Kit" id="import-kit-btn" title="Import Kit backup" style="font-size:0.9rem;"></sl-icon-button>
+              <input type="file" id="import-kit-input" accept=".json" hidden>
+              <div class="view-toggle">
+                <sl-switch id="view-toggle" size="small" checked></sl-switch>
+                <label>Banks</label>
+              </div>
+            </div>
+          </div>
+          <div class="kit-controls">
+            <sl-select id="kit-select" size="small" hoist>
+              <sl-option value="0">Default</sl-option>
+            </sl-select>
+            <sl-button size="small" id="save-kit-btn">
+              <sl-icon slot="prefix" name="floppy"></sl-icon>Save
+            </sl-button>
+            <sl-button size="small" id="new-kit-btn">
+              <sl-icon slot="prefix" name="plus-lg"></sl-icon>New
+            </sl-button>
+            <sl-button size="small" variant="default" id="delete-kit-btn">
+              <sl-icon slot="prefix" name="trash3"></sl-icon>Delete
+            </sl-button>
+          </div>
+          <div class="kit-memory-bar">
+            <span class="psram-active-label" id="psram-active-label" title="Currently loaded in PSRAM">PSRAM: Default</span>
+            <span class="kit-memory-label">MEMORY USED</span>
+            <div class="kit-memory-bar-track">
+              <div class="kit-memory-bar-fill" id="capacity-fill" style="width:0%"></div>
+            </div>
+            <span class="kit-memory-pct" id="capacity-label">0%</span>
+          </div>
+          <div class="kit-content" id="bank-container">
+            <sl-spinner style="margin:1rem auto;display:block;"></sl-spinner>
+          </div>
+        </div>
+
+      </sl-split-panel>
+
+      <!-- Transfer Bar -->
+      <div class="transfer-bar collapsed" id="transfer-bar">
+        <div class="transfer-bar-header" id="transfer-bar-header">
+          <sl-icon name="chevron-down" class="transfer-bar-chevron"></sl-icon>
+          <span class="transfer-bar-title">Transfers</span>
+          <span class="transfer-bar-badge hidden" id="transfer-badge">0</span>
+          <div class="transfer-bar-spacer"></div>
+          <span class="transfer-bar-status" id="transfer-status"></span>
+          <div class="transfer-bar-actions" id="transfer-actions"></div>
+        </div>
+        <div class="transfer-bar-body" id="transfer-body"></div>
+      </div>
+      </div>
+    </div>
+
+    <!-- ════ STATUS FOOTER ════ -->
+    <div class="status-footer" id="status-footer">
+      <div class="status-footer-inner">
+        <a href="/webui-update.html" id="webui-version-link"
+           style="font-size:0.65rem;color:var(--sl-color-neutral-400);text-decoration:none;white-space:nowrap;"
+           title="WebUI Updater"></a>
+        <div class="status-footer-spacer"></div>
+        <button class="debug-toggle-btn" id="debug-toggle" title="Toggle Debug Panel">
+          <sl-icon name="terminal"></sl-icon> Debug
+        </button>
+        <div class="status-footer-info">
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ DEBUG PANEL ════ -->
+    <div class="debug-panel" id="debug-panel">
+      <div class="debug-panel-header">
+        <span style="font-weight:700;">Debug Panel</span>
+        <div style="flex:1;"></div>
+        <button id="debug-refresh" style="background:none;border:1px solid var(--sl-color-neutral-400);color:var(--sl-color-neutral-600);border-radius:4px;padding:2px 8px;font-size:0.72rem;cursor:pointer;">Refresh</button>
+        <button id="debug-close" style="background:none;border:none;color:var(--sl-color-neutral-500);cursor:pointer;font-size:1rem;padding:0 4px;">&times;</button>
+      </div>
+      <div class="debug-tabs">
+        <button class="debug-tab active" data-tab="debug-app-state">App State</button>
+        <button class="debug-tab" data-tab="debug-network">Network</button>
+        <button class="debug-tab" data-tab="debug-params">Parameters</button>
+      </div>
+      <div class="debug-tab-panel active" id="debug-app-state">
+        <div class="debug-card">
+          <div class="debug-row"><span>Active View</span><span id="dbg-active-view">—</span></div>
+          <div class="debug-row"><span>Slot A Plugin</span><span id="dbg-slot-a">—</span></div>
+          <div class="debug-row"><span>Slot A Preset</span><span id="dbg-preset-a">—</span></div>
+          <div class="debug-row"><span>Slot B Plugin</span><span id="dbg-slot-b">—</span></div>
+          <div class="debug-row"><span>Slot B Preset</span><span id="dbg-preset-b">—</span></div>
+          <div class="debug-row"><span>Stereo Mode</span><span id="dbg-stereo">—</span></div>
+          <div class="debug-row"><span>Plugin Count</span><span id="dbg-plugin-count">—</span></div>
+          <div class="debug-row"><span>Favorites Cached</span><span id="dbg-fav-count">—</span></div>
+          <div class="debug-row"><span>Kit / Bank</span><span id="dbg-kit-info">—</span></div>
+          <div class="debug-row"><span>Page Load Time</span><span id="dbg-load-time">—</span></div>
+        </div>
+      </div>
+      <div class="debug-tab-panel" id="debug-network">
+        <div class="debug-card">
+          <div class="debug-row"><span>Connection</span><span id="dbg-ws-status">—</span></div>
+          <div class="debug-row"><span>API Base URL</span><span id="dbg-api-url">—</span></div>
+          <div class="debug-row"><span>API Calls Made</span><span id="dbg-api-calls">0</span></div>
+          <div class="debug-row"><span>API Errors</span><span id="dbg-api-errors">0</span></div>
+          <div class="debug-row"><span>Last API Call</span><span id="dbg-last-api">—</span></div>
+          <div class="debug-row"><span>Last Error</span><span id="dbg-last-error">None</span></div>
+        </div>
+        <div class="debug-msg" id="dbg-api-log" style="max-height:120px;overflow-y:auto;">No API calls logged yet.</div>
+      </div>
+      <div class="debug-tab-panel" id="debug-params">
+        <div class="debug-card">
+          <div class="debug-row"><span>Slot A Params</span><span id="dbg-params-a">0</span></div>
+          <div class="debug-row"><span>Slot A Groups</span><span id="dbg-groups-a">0</span></div>
+          <div class="debug-row"><span>Slot B Params</span><span id="dbg-params-b">0</span></div>
+          <div class="debug-row"><span>Slot B Groups</span><span id="dbg-groups-b">0</span></div>
+          <div class="debug-row"><span>Param Changes</span><span id="dbg-param-changes">0</span></div>
+        </div>
+        <div class="debug-msg" id="dbg-param-log" style="max-height:120px;overflow-y:auto;">No parameter changes logged yet.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ════ DIALOGS ════ -->
+
+  <!-- Configuration Dialog -->
+  <sl-dialog label="System Configuration" id="config-dialog" style="--width:640px;">
+    <div class="config-dialog-content" id="config-content">
+      <div class="config-tabs" id="config-tabs">
+        <button class="config-tab active" data-tab="config-connection"><sl-icon name="globe"></sl-icon> Connection</button>
+        <button class="config-tab" data-tab="config-midi"><sl-icon name="music-note-beamed"></sl-icon> MIDI</button>
+        <button class="config-tab" data-tab="config-wifi"><sl-icon name="wifi"></sl-icon> WiFi</button>
+        <button class="config-tab" data-tab="config-audio"><sl-icon name="sliders"></sl-icon> Audio</button>
+        <button class="config-tab" data-tab="config-appearance"><sl-icon name="palette"></sl-icon> Appearance</button>
+        <button class="config-tab" data-tab="config-system"><sl-icon name="gear"></sl-icon> System</button>
+      </div>
+
+      <!-- ── Connection Tab ── -->
+      <div class="config-tab-panel active" id="config-connection">
+        <div class="config-section">
+          <div class="config-section-title">API Connection</div>
+          <div class="config-section-desc">Configure the connection to your TBD device</div>
+          <div class="config-row">
+            <label>TBD API URL</label>
+            <div style="display:flex;gap:0.5rem;align-items:center;flex:1;">
+              <sl-input id="cfg-api-url" size="small" placeholder="http://ctag-tbd.local" style="flex:1;"></sl-input>
+              <sl-button size="small" variant="primary" id="cfg-test-connection">Test Connection</sl-button>
+            </div>
+          </div>
+          <div class="config-row">
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+              <span class="status-footer-dot" id="cfg-conn-dot"></span>
+              <span id="cfg-conn-status" style="font-size:0.82rem;">Connected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MIDI Tab ── -->
+      <div class="config-tab-panel" id="config-midi">
+        <div class="config-section">
+          <div class="config-section-title">MIDI Configuration</div>
+          <div class="config-section-desc">Configure MIDI devices and mappings</div>
+          <div class="config-row">
+            <label>MIDI Support</label>
+            <sl-switch id="cfg-midi-enable"></sl-switch>
+          </div>
+          <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);padding:0.15rem 0 0.5rem;">Web MIDI API is supported in this browser</div>
+          <div class="config-row">
+            <label>MIDI Channel</label>
+            <sl-select id="cfg-midi-channel" size="small" value="1" hoist style="max-width:120px;"></sl-select>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title">Connected MIDI Devices</div>
+          <div id="cfg-midi-devices" style="min-height:60px;">
+            <div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">No MIDI devices detected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── WiFi Tab ── -->
+      <div class="config-tab-panel" id="config-wifi">
+        <div class="config-section">
+          <div class="config-section-title">WiFi Configuration</div>
+          <div class="config-section-desc">Configure WiFi settings for your TBD device</div>
+          <div class="config-form-row">
+            <div class="config-label">WiFi Mode</div>
+            <div class="config-field" style="display:flex;gap:1.25rem;">
+              <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;cursor:pointer;">
+                <input type="radio" name="wifi-mode" value="ap" id="cfg-wifi-ap" checked>
+                Access Point (AP)
+              </label>
+              <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;cursor:pointer;">
+                <input type="radio" name="wifi-mode" value="sta" id="cfg-wifi-sta">
+                Station (STA)
+              </label>
+              <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;cursor:pointer;">
+                <input type="radio" name="wifi-mode" value="usbncm" id="cfg-wifi-usbncm">
+                USB Network (NCM)
+              </label>
+            </div>
+          </div>
+          <div class="config-form-row">
+            <div class="config-label">SSID</div>
+            <div class="config-field">
+              <sl-input id="cfg-wifi-ssid" size="small" placeholder="ctag-tbd"></sl-input>
+            </div>
+          </div>
+          <div class="config-form-row">
+            <div class="config-label">Password</div>
+            <div class="config-field">
+              <sl-input id="cfg-wifi-password" size="small" type="password" placeholder="Leave empty for open network"></sl-input>
+            </div>
+          </div>
+          <div class="config-form-row">
+            <div class="config-label">mDNS Domain</div>
+            <div class="config-field" style="display:flex;align-items:center;gap:0.35rem;">
+              <sl-input id="cfg-wifi-mdns" size="small" placeholder="ctag-tbd" style="flex:1;"></sl-input>
+              <span style="font-size:0.82rem;color:var(--sl-color-neutral-500);">.local</span>
+            </div>
+          </div>
+          <sl-button variant="primary" class="config-action-btn" id="cfg-wifi-save">Save WiFi Settings</sl-button>
+        </div>
+        <div class="config-section" style="background:var(--sl-color-primary-50);border-color:var(--sl-color-primary-200);">
+          <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.35rem;">
+            <sl-icon name="wifi" style="font-size:1rem;color:var(--sl-color-primary-600);"></sl-icon>
+            <div class="config-section-title" style="margin-bottom:0;">WiFi Information</div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--sl-color-neutral-600);line-height:1.5;">
+            In Access Point (AP) mode, the TBD creates its own WiFi network that you can join.
+            In Station (STA) mode, the TBD joins an existing WiFi network.
+            In USB Network (NCM) mode, the TBD connects via USB as a network device.<br>
+            After changing these settings, the TBD will restart and apply the new configuration.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Audio Tab ── -->
+      <div class="config-tab-panel" id="config-audio">
+        <div class="config-section">
+          <div class="config-section-title">Audio Configuration</div>
+          <div class="config-section-desc">Configure codec output levels and channel routing</div>
+
+          <!-- Codec Output Levels -->
+          <div style="margin-bottom:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;">
+              <label style="font-size:0.85rem;font-weight:600;">Left Codec Level (CH0)</label>
+              <span id="cfg-input-gain-val" style="font-size:0.85rem;font-weight:700;font-family:var(--sl-font-mono);">58 / 63</span>
+            </div>
+            <input type="range" class="config-range" id="cfg-input-gain" min="0" max="63" value="58" step="1">
+            <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--sl-color-neutral-500);margin-top:0.25rem;">
+              <span>0</span><span>58 (ref 0 dBV)</span><span>63</span>
+            </div>
+          </div>
+          <div style="margin-bottom:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;">
+              <label style="font-size:0.85rem;font-weight:600;">Right Codec Level (CH1)</label>
+              <span id="cfg-output-gain-val" style="font-size:0.85rem;font-weight:700;font-family:var(--sl-font-mono);">58 / 63</span>
+            </div>
+            <input type="range" class="config-range" id="cfg-output-gain" min="0" max="63" value="58" step="1">
+            <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--sl-color-neutral-500);margin-top:0.25rem;">
+              <span>0</span><span>58 (ref 0 dBV)</span><span>63</span>
+            </div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:1rem 0;">
+
+          <!-- CH0 Soft Clip Output -->
+          <div class="config-row">
+            <div>
+              <label style="font-weight:600;">CH0 Output Soft Clip</label>
+              <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);">Apply soft clipping to CH0 (left) output</div>
+            </div>
+            <sl-switch id="cfg-soft-clip-ch0"></sl-switch>
+          </div>
+          <!-- CH1 Soft Clip Output -->
+          <div class="config-row">
+            <div>
+              <label style="font-weight:600;">CH1 Output Soft Clip</label>
+              <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);">Apply soft clipping to CH1 (right) output</div>
+            </div>
+            <sl-switch id="cfg-soft-clip-ch1"></sl-switch>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:1rem 0;">
+
+          <!-- CH0→CH1 Daisy Chain -->
+          <div class="config-form-row">
+            <div class="config-label">CH0 → CH1 Daisy Chain</div>
+            <div class="config-field">
+              <sl-select id="cfg-daisy-chain" size="small" value="off">
+                <sl-option value="off">Off</sl-option>
+                <sl-option value="on">On</sl-option>
+              </sl-select>
+            </div>
+          </div>
+          <!-- CH0 To Stereo -->
+          <div class="config-form-row">
+            <div class="config-label">CH0 To Stereo</div>
+            <div class="config-field">
+              <sl-select id="cfg-ch0-stereo" size="small" value="off">
+                <sl-option value="off">Off</sl-option>
+                <sl-option value="on">On</sl-option>
+                <sl-option value="mix">Mix with CH1</sl-option>
+              </sl-select>
+            </div>
+          </div>
+          <!-- CH1 To Stereo -->
+          <div class="config-form-row">
+            <div class="config-label">CH1 To Stereo</div>
+            <div class="config-field">
+              <sl-select id="cfg-ch1-stereo" size="small" value="off">
+                <sl-option value="off">Off</sl-option>
+                <sl-option value="on">On</sl-option>
+                <sl-option value="mix">Mix with CH0</sl-option>
+              </sl-select>
+            </div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:1rem 0;">
+
+          <!-- Noise Gate (WebUI-only setting) -->
+          <div class="config-row">
+            <div>
+              <label style="font-weight:600;">Input Noise Gate</label>
+              <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);">Apply a noise gate to audio inputs</div>
+            </div>
+            <sl-switch id="cfg-noise-gate"></sl-switch>
+          </div>
+
+          <sl-button variant="primary" class="config-action-btn" id="cfg-audio-save">Save Audio Settings</sl-button>
+        </div>
+      </div>
+
+      <!-- ── Appearance Tab ── -->
+      <div class="config-tab-panel" id="config-appearance">
+        <div class="config-section">
+          <div class="config-section-title">Color Palette</div>
+          <div class="config-section-desc">Choose a color palette or customize the accent color</div>
+          <h4 style="font-size:0.82rem;font-weight:700;margin:0.75rem 0 0.5rem;color:var(--sl-color-neutral-700);">Dieter Rams Palettes</h4>
+          <div class="palette-grid" id="palette-grid">
+            <div class="palette-card active" data-palette="rams-warm" tabindex="0">
+              <div class="palette-name">Dieter Rams Warm</div>
+              <div class="palette-swatches">
+                <span class="palette-swatch" style="background:#c87533;"></span>
+                <span class="palette-swatch" style="background:#c9a961;"></span>
+                <span class="palette-swatch" style="background:#5c5c4a;"></span>
+                <span class="palette-swatch" style="background:#8a8a7a;"></span>
+                <span class="palette-swatch" style="background:#c8c8be;"></span>
+              </div>
+            </div>
+            <div class="palette-card" data-palette="rams-contrast" tabindex="0">
+              <div class="palette-name">Dieter Rams Contrast</div>
+              <div class="palette-swatches">
+                <span class="palette-swatch" style="background:#d04a35;"></span>
+                <span class="palette-swatch" style="background:#2a6496;"></span>
+                <span class="palette-swatch" style="background:#2d2d2d;"></span>
+                <span class="palette-swatch" style="background:#5a4a5a;"></span>
+                <span class="palette-swatch" style="background:#c8c8be;"></span>
+              </div>
+            </div>
+            <div class="palette-card" data-palette="rams-muted" tabindex="0">
+              <div class="palette-name">Dieter Rams Muted</div>
+              <div class="palette-swatches">
+                <span class="palette-swatch" style="background:#c05a3c;"></span>
+                <span class="palette-swatch" style="background:#3d3d2e;"></span>
+                <span class="palette-swatch" style="background:#7a7a6a;"></span>
+                <span class="palette-swatch" style="background:#b8a878;"></span>
+                <span class="palette-swatch" style="background:#c0c0b0;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title">Parameter Display</div>
+          <div class="config-section-desc">Choose how plugin parameters are displayed</div>
+          <div class="config-row">
+            <label>Control Mode</label>
+            <sl-switch id="cfg-control-mode"></sl-switch>
+          </div>
+          <div style="font-size:0.75rem;color:var(--sl-color-neutral-500);margin-top:0.25rem;padding-left:0.25rem;">
+            <strong>Control Mode</strong> — Knobs with physical units (Hz, ms, dB).<br>
+            <strong>Config Mode</strong> — Raw sliders with integer values (default).
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title">Layout</div>
+          <div class="config-section-desc">Customize the interface layout</div>
+          <div class="config-row">
+            <label>Compact Layout</label>
+            <sl-switch id="cfg-compact"></sl-switch>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── System Tab ── -->
+      <div class="config-tab-panel" id="config-system">
+        <div class="config-section">
+          <div class="config-section-title">System Information</div>
+          <div class="config-section-desc">View system information and perform maintenance</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.5rem;">
+            <div>
+              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Firmware Version</div>
+              <div id="cfg-firmware" style="font-size:0.92rem;font-weight:700;font-family:var(--sl-font-mono);">—</div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Hardware Version</div>
+              <div id="cfg-hardware" style="font-size:0.92rem;font-weight:700;font-family:var(--sl-font-mono);">—</div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Sample Rate</div>
+              <div id="cfg-samplerate" style="font-size:0.92rem;font-weight:700;font-family:var(--sl-font-mono);">—</div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Connection Status</div>
+              <div id="cfg-connstatus" style="font-size:0.92rem;font-weight:700;display:flex;align-items:center;gap:0.3rem;">
+                <span class="status-footer-dot"></span> Connected
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title">Maintenance</div>
+          <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+            <sl-button variant="default" style="flex:1;" id="cfg-firmware-update">Firmware Update</sl-button>
+            <sl-button variant="danger" style="flex:1;" id="cfg-factory-reset">Factory Reset</sl-button>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-section-title">Backup &amp; Restore</div>
+          <div class="config-section-desc">Use the TBD web interface to backup and restore your device configuration. This includes all presets, favorites, and settings.</div>
+          <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+            <sl-button variant="default" style="flex:1;" id="cfg-backup"><sl-icon slot="prefix" name="download"></sl-icon> Download Backup</sl-button>
+            <sl-button variant="default" style="flex:1;" id="cfg-restore"><sl-icon slot="prefix" name="upload"></sl-icon> Upload Backup</sl-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <sl-button slot="footer" variant="primary" id="config-save">Save Configuration</sl-button>
+    <sl-button slot="footer" variant="default" id="config-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Save Preset Dialog -->
+  <sl-dialog label="Save Preset" id="save-preset-dialog" style="--width:360px;">
+    <sl-input id="save-preset-name" label="Preset name"
+              placeholder="e.g. Deep Bass" clearable></sl-input>
+    <sl-select id="save-preset-slot" label="Save to slot" size="small"
+               style="margin-top:0.65rem;" hoist>
+    </sl-select>
+    <sl-button slot="footer" variant="primary" id="save-preset-ok">Save</sl-button>
+    <sl-button slot="footer" variant="default" id="save-preset-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Slot Selection Dialog -->
+  <sl-dialog label="Choose Slot" id="slot-select-dialog" style="--width:340px;">
+    <p style="font-size:0.88rem;margin-bottom:0.75rem;">Both slots are occupied. Which slot should load the plugin?</p>
+    <p id="slot-select-plugin-name" style="font-weight:600;font-size:0.92rem;margin-bottom:1rem;"></p>
+    <div style="display:flex;gap:0.75rem;">
+      <sl-button variant="primary" style="flex:1;" id="slot-select-a">
+        <span class="slot-label slot-label-a" style="margin-right:0.4rem;">A</span>Slot A
+      </sl-button>
+      <sl-button variant="warning" style="flex:1;" id="slot-select-b">
+        <span class="slot-label slot-label-b" style="margin-right:0.4rem;">B</span>Slot B
+      </sl-button>
+    </div>
+  </sl-dialog>
+
+  <!-- Favorites Dialog -->
+  <sl-dialog label="Favorites" id="fav-dialog" style="--width:520px;">
+    <div id="fav-content">
+      <sl-spinner style="margin:1rem auto;display:block;"></sl-spinner>
+    </div>
+    <sl-button slot="footer" variant="default" id="fav-close">Close</sl-button>
+  </sl-dialog>
+
+  <!-- Reboot Confirm -->
+  <sl-dialog label="Reboot" id="reboot-dialog">
+    <p>Reboot the module? Current state will be preserved.</p>
+    <sl-button slot="footer" variant="warning" id="reboot-ok">Reboot</sl-button>
+    <sl-button slot="footer" variant="default" id="reboot-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- ════ SAMPLE MANAGER DIALOGS ════ -->
+
+  <!-- Create Folder -->
+  <sl-dialog label="New Folder" id="new-folder-dialog">
+    <sl-input id="new-folder-input" placeholder="Folder name" maxlength="32" clearable></sl-input>
+    <small style="color:var(--sl-color-neutral-500);">Max 32 chars · letters, numbers, underscores, hyphens.</small>
+    <sl-button slot="footer" variant="primary" id="new-folder-ok">Create</sl-button>
+    <sl-button slot="footer" variant="default" id="new-folder-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Rename Folder -->
+  <sl-dialog label="Rename Folder" id="rename-folder-dialog">
+    <sl-input id="rename-folder-input" placeholder="New folder name" maxlength="32" clearable></sl-input>
+    <small style="color:var(--sl-color-neutral-500);">Max 32 chars · letters, numbers, underscores, hyphens.</small>
+    <div id="rename-folder-kit-warning" style="display:none;margin-top:0.65rem;padding:0.5rem;background:var(--sl-color-warning-100);border-radius:var(--sl-border-radius-medium);border:1px solid var(--sl-color-warning-300);">
+      <p style="color:var(--sl-color-warning-700);font-size:0.82rem;font-weight:600;margin-bottom:0.3rem;">⚠ Kit References Found</p>
+      <p id="rename-folder-kit-msg" style="color:var(--sl-color-warning-600);font-size:0.78rem;">Renaming this folder will update sample paths in all affected kits to keep them valid.</p>
+    </div>
+    <sl-button slot="footer" variant="primary" id="rename-folder-ok">Rename</sl-button>
+    <sl-button slot="footer" variant="default" id="rename-folder-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Delete Folder -->
+  <sl-dialog label="Delete Folder" id="delete-folder-dialog">
+    <p id="delete-folder-msg">Are you sure you want to delete this folder?</p>
+    <div id="delete-folder-kit-warning" style="display:none;margin-top:0.65rem;padding:0.5rem;background:var(--sl-color-danger-100);border-radius:var(--sl-border-radius-medium);border:1px solid var(--sl-color-danger-300);">
+      <p style="color:var(--sl-color-danger-700);font-size:0.82rem;font-weight:600;margin-bottom:0.3rem;">⚠ Destructive Action</p>
+      <p id="delete-folder-kit-msg" style="color:var(--sl-color-danger-600);font-size:0.78rem;">This folder contains samples referenced by kits. Deleting it will break those kit assignments.</p>
+    </div>
+    <p style="color:var(--sl-color-warning-600);font-size:0.82rem;margin-top:0.5rem;">This will permanently delete all files and subfolders inside.</p>
+    <sl-button slot="footer" variant="danger" id="delete-folder-ok">Delete Folder</sl-button>
+    <sl-button slot="footer" variant="default" id="delete-folder-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Rename Sample -->
+  <sl-dialog label="Rename" id="rename-dialog">
+    <sl-input id="rename-input" placeholder="New name" maxlength="32" clearable></sl-input>
+    <small style="color:var(--sl-color-neutral-500);">Max 32 chars · letters, numbers, underscores.</small>
+    <sl-button slot="footer" variant="primary" id="rename-ok">Rename</sl-button>
+    <sl-button slot="footer" variant="default" id="rename-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Delete Sample -->
+  <sl-dialog label="Delete Sample" id="delete-dialog">
+    <p id="delete-msg">Are you sure you want to delete this sample?</p>
+    <div id="delete-kit-refs" style="display:none;margin:0.5rem 0;padding:0.5rem 0.75rem;background:var(--sl-color-warning-100);border-radius:var(--sl-border-radius-medium);border:1px solid var(--sl-color-warning-300);font-size:0.82rem;color:var(--sl-color-warning-800);">
+      <div style="font-weight:600;margin-bottom:0.3rem;"><sl-icon name="exclamation-triangle" style="vertical-align:-2px;margin-right:4px;color:var(--sl-color-warning-600);"></sl-icon>Used in current Kit:</div>
+      <ul id="delete-kit-refs-list" style="margin:0;padding-left:1.2rem;"></ul>
+    </div>
+    <p style="color:var(--sl-color-warning-600);font-size:0.85rem;">This cannot be undone.</p>
+    <sl-button slot="footer" variant="danger" id="delete-ok">Delete</sl-button>
+    <sl-button slot="footer" variant="default" id="delete-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- New Kit -->
+  <sl-dialog label="Create New Kit" id="new-kit-dialog" style="--width:360px;">
+    <sl-input id="new-kit-input" label="Kit name" placeholder="e.g. Berlin Techno" clearable></sl-input>
+    <div style="margin-top:0.65rem;">
+      <sl-checkbox id="new-kit-clone">Clone from active Kit</sl-checkbox>
+    </div>
+    <div id="new-kit-options" style="margin-top:0.65rem;display:flex;flex-direction:column;gap:0.65rem;">
+      <div>
+        <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--sl-color-neutral-600);margin-bottom:0.35rem;">Number of Banks</label>
+        <div id="new-kit-bank-count-group" style="display:flex;flex-wrap:wrap;gap:0.35rem;">
+          <sl-button size="small" variant="default" data-bank-count="0" style="min-width:36px;">0</sl-button>
+          <sl-button size="small" variant="default" data-bank-count="1" style="min-width:36px;">1</sl-button>
+          <sl-button size="small" variant="default" data-bank-count="2" style="min-width:36px;">2</sl-button>
+          <sl-button size="small" variant="default" data-bank-count="4" style="min-width:36px;">4</sl-button>
+          <sl-button size="small" variant="primary" data-bank-count="8" style="min-width:36px;">8</sl-button>
+          <sl-button size="small" variant="default" data-bank-count="16" style="min-width:36px;">16</sl-button>
+        </div>
+        <input type="hidden" id="new-kit-bank-count" value="8">
+      </div>
+      <sl-select id="new-kit-naming" label="Bank Naming" value="default" size="small" hoist>
+        <sl-option value="default">Default (KICK, SNARE, …)</sl-option>
+        <sl-option value="numbered">Numbered (BANK 1, BANK 2, …)</sl-option>
+        <sl-option value="empty">Empty names</sl-option>
+      </sl-select>
+    </div>
+    <sl-button slot="footer" variant="primary" id="new-kit-ok">Create</sl-button>
+    <sl-button slot="footer" variant="default" id="new-kit-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Add Bank -->
+  <sl-dialog label="Add Bank" id="add-bank-dialog">
+    <sl-input id="add-bank-input" label="Bank name" placeholder="e.g. PERC" clearable></sl-input>
+    <sl-button slot="footer" variant="primary" id="add-bank-ok">Add</sl-button>
+    <sl-button slot="footer" variant="default" id="add-bank-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Delete Bank Confirm -->
+  <sl-dialog label="Delete Bank" id="delete-bank-dialog">
+    <p id="delete-bank-msg">Delete this bank?</p>
+    <p style="color:var(--sl-color-warning-600);font-size:0.85rem;">This cannot be undone.</p>
+    <sl-button slot="footer" variant="danger" id="delete-bank-ok">Delete</sl-button>
+    <sl-button slot="footer" variant="default" id="delete-bank-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Unsaved Kit Confirm -->
+  <sl-dialog label="Unsaved Changes" id="unsaved-kit-dialog">
+    <p>You have unsaved changes to this Kit. Switch anyway?</p>
+    <p style="color:var(--sl-color-warning-600);font-size:0.85rem;">Unsaved changes will be lost.</p>
+    <sl-button slot="footer" variant="warning" id="unsaved-kit-ok">Switch</sl-button>
+    <sl-button slot="footer" variant="default" id="unsaved-kit-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Sample Picker -->
+  <sl-dialog label="Add Sample to Bank" id="picker-dialog" style="--width:480px;">
+    <sl-input id="picker-search" placeholder="Search samples…" clearable size="small">
+      <sl-icon name="search" slot="prefix"></sl-icon>
+    </sl-input>
+    <div class="sample-picker-list" id="picker-list"></div>
+    <sl-button slot="footer" variant="primary" id="picker-ok">Add Selected</sl-button>
+    <sl-button slot="footer" variant="default" id="picker-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Delete Kit -->
+  <sl-dialog label="Delete Kit" id="delete-kit-dialog">
+    <p>Are you sure you want to permanently delete kit <strong id="delete-kit-name"></strong>?</p>
+    <p style="color:var(--sl-color-danger-600);font-size:0.85rem;margin-top:0.5rem;">This cannot be undone. The kit descriptor file will be removed from the SD card.</p>
+    <sl-input id="delete-kit-confirm-input" label="Type the kit name to confirm" placeholder="Kit name" clearable style="margin-top:0.65rem;"></sl-input>
+    <sl-button slot="footer" variant="danger" id="delete-kit-ok" disabled>Delete Kit</sl-button>
+    <sl-button slot="footer" variant="default" id="delete-kit-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Batch Delete Confirm -->
+  <sl-dialog label="Delete Selected Files" id="batch-delete-dialog">
+    <p id="batch-delete-msg">Delete the selected files?</p>
+    <p style="color:var(--sl-color-warning-600);font-size:0.85rem;">This cannot be undone.</p>
+    <sl-button slot="footer" variant="danger" id="batch-delete-ok">Delete</sl-button>
+    <sl-button slot="footer" variant="default" id="batch-delete-cancel">Cancel</sl-button>
+  </sl-dialog>
+
+  <!-- Import Kit Dialog -->
+  <sl-dialog label="Import Kit Backup" id="import-kit-dialog" style="--width:560px;">
+    <div id="import-kit-body"></div>
+    <sl-button slot="footer" variant="default" id="import-kit-cancel">Cancel</sl-button>
+    <sl-button slot="footer" variant="primary" id="import-kit-ok">Apply Kit</sl-button>
+  </sl-dialog>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay hidden" id="loading-overlay">
+    <div class="loading-card">
+      <sl-spinner style="font-size:2rem;--track-width:3px;"></sl-spinner>
+      <div id="loading-text">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Toast Stack -->
+  <div class="toast-stack" id="toast-stack"></div>
+
+  <!-- ════ SCRIPTS ════ -->
+  <!-- Single bundle: reduces 6 concurrent HTTP requests to 1.
+       ESP32 httpd has only 7 sockets (4 usable after internal overhead).
+       Source files: Sortable.min.js, shared.js, display-hints.js,
+       plugin-manager.js, sample-manager.js, app.js
+       Built by: build-webui.sh  |  Served dynamically by: dev-server.js -->
+  <script defer src="js/app-bundle.js?v=4"></script>
+  <script>
+    fetch('/api/v2/samples?getconfig=webui-version.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(v => {
+        const el = document.getElementById('webui-version-link');
+        if (el && v && v.version) el.textContent = 'WebUI v' + v.version;
+      }).catch(() => {});
+  </script>
 </body>
 </html>

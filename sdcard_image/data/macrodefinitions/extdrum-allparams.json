@@ -1,0 +1,34 @@
+{
+  "id": "extdrum-allparams",
+  "name": "MIDI Drum All param",
+  "machine": "extdrum",
+  "groups": [
+    {
+      "name": "Page 1",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "MIDI Channel",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 1,
+          "name": "MIDI Note",
+          "def": 36,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "midinote"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    { "ctrl": 8, "start": 0, "add": [{ "src": 0, "mul": 1, "div": 1 }] },
+    { "ctrl": 9, "start": 0, "add": [{ "src": 1, "mul": 1, "div": 1 }] }
+  ]
+}

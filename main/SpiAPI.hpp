@@ -54,12 +54,39 @@ namespace CTAG::SPIAPI{
             RebootToOTA1 = 0x15, // reboots the device to OTA1
             GetSampleRomDescriptor = 0x16, // returns json cstring with sample rom descriptor
             SetActiveWaveTableBank = 0x17, // sets active wavetable bank, args [bank index (uint8_t)]
-            SetActiveSampleRomBank = 0x18, // sets active sample rom bank, args [bank index (uint8_t)]
+            SetActiveSampleKit = 0x18, // sets active sample rom bank/kit, args [bank index (uint8_t)]
             GetFirmwareInfo = 0x19, // returns json {"HWV": hardware version, "FWV": firmware version, "OTA": active ota partition}
             SetAbletonLinkTempo = 0x20, // sets Ableton Link tempo, args [tempo (float bpm)]
             SetAbletonLinkStartStop = 0x21, // sets Ableton Link start/stop, args [isPlaying (uint8_t, 0 = stop, 1 = start)]
             RebootToOTAX = 0x22, // reboots the device to OTAX, args [X (uint8_t)]
             SendFile = 0x23, // sends a file to the device, args [filepath (cstring), filedata (byte array)]
+            GetSampleFileCount = 0x50,
+            GetSampleFileInfo = 0x51,
+            GetSampleFileWaveformPreview = 0x52,
+
+            EnableFileTransferMode = 0x60,
+            DisableFileTransferMode = 0x61,
+
+            GetSynthDefinitionsJSON = 0x70,
+
+            GetMacroMachineDefinitionsJSON = 0x80,
+            UploadMacroMachineDefinitionJSON = 0x81,
+            SetTrackMacroMachine = 0x82,
+            GetSoundPresetListJSON = 0x90,
+            GetSoundPresetJSON = 0x91,
+            UploadSoundPresetJSON = 0x92,
+
+            GetMacroSoundPresetList = 0xA0,
+            GetMacroSoundPreset = 0xA1,
+            GetMacroDefinition = 0xA2,
+            ActivateTrackMachine = 0xA3,
+            LoadTrackSoundPreset = 0xA4,
+            GetTrackDefaultPresets = 0xA5, // returns JSON with default preset IDs per track from /sdcard/data/trackdefaults.json
+            // SetTrackSampleBank = 0xA6,
+            GetKitIndexJSON = 0xA7,
+            GetSampleBankIndexJSON = 0xA8,
+            // GetSynthUpdates = 0xA7,
+            PutSamplePresetJSON = 0xA9,
         };
 
         static TaskHandle_t hTask;

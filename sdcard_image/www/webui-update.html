@@ -1,0 +1,750 @@
+<!--
+  dadamachines TBD-16 — WebUI Updater
+
+  Self-contained page for updating WebUI files and macro definitions/presets
+  on the SD card without a full re-deploy. Uses the existing REST API v2.
+
+  (c) 2014-2026 Johannes Elias Lohbihler for dadamachines.
+
+  Licensed under the GNU Lesser General Public License (LGPL 3.0).
+  https://www.gnu.org/licenses/lgpl-3.0.txt
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TBD-16 — WebUI Updater</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1a1a2e; --bg2: #16213e; --bg3: #0f3460;
+      --fg: #e0e0e0; --fg2: #a0a0b0; --fg3: #707085;
+      --accent: #4fc3f7; --accent2: #0097a7;
+      --success: #66bb6a; --error: #ef5350; --warn: #ffa726;
+      --border: #2a2a4a; --radius: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body { background: var(--bg); color: var(--fg); min-height: 100vh; }
+    .container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    /* Header */
+    .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+    .header h1 { font-size: 1.4rem; font-weight: 700; }
+    .header .subtitle { font-size: 0.8rem; color: var(--fg2); }
+    .back-link { color: var(--accent); text-decoration: none; font-size: 0.8rem; }
+    .back-link:hover { text-decoration: underline; }
+
+    /* Version cards */
+    .version-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .version-card {
+      flex: 1; min-width: 200px;
+      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .version-card .label { font-size: 0.7rem; color: var(--fg3); text-transform: uppercase;
+      letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+    .version-card .value { font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .version-card .date { font-size: 0.75rem; color: var(--fg2); margin-top: 0.2rem; }
+
+    /* Online update banner */
+    .online-banner {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1rem; margin-bottom: 1.5rem;
+    }
+    .online-banner .checking { color: var(--fg3); font-size: 0.82rem; }
+    .online-banner .up-to-date { color: var(--success); font-size: 0.85rem; font-weight: 600; }
+    .online-banner .update-title { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 0.25rem; }
+    .online-banner .update-desc { font-size: 0.8rem; color: var(--fg2); margin-bottom: 0.5rem; }
+    .online-banner .update-meta { font-size: 0.72rem; color: var(--fg3); margin-bottom: 0.75rem; }
+    .section-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--fg3); margin: 1.5rem 0 0.75rem; padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--bg2); margin-bottom: 1.5rem;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent); background: rgba(79,195,247,0.05);
+    }
+    .drop-zone .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .drop-zone .label { font-size: 0.9rem; color: var(--fg2); }
+    .drop-zone .hint { font-size: 0.72rem; color: var(--fg3); margin-top: 0.5rem; }
+    .drop-zone input[type="file"] { display: none; }
+
+    /* Manifest info */
+    .manifest-info {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1rem; margin-bottom: 1.5rem; display: none;
+    }
+    .manifest-info h3 { font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .manifest-info .desc { font-size: 0.8rem; color: var(--fg2); margin-bottom: 0.75rem; }
+
+    /* File list */
+    .file-list { list-style: none; }
+    .file-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0; border-bottom: 1px solid var(--border);
+      font-size: 0.78rem; font-family: monospace;
+    }
+    .file-item:last-child { border-bottom: none; }
+    .file-item .status-icon { width: 16px; text-align: center; flex-shrink: 0; }
+    .file-item .path { flex: 1; color: var(--fg2); word-break: break-all; }
+    .file-item .size { color: var(--fg3); white-space: nowrap; }
+    .file-item.done .path { color: var(--success); }
+    .file-item.error .path { color: var(--error); }
+    .file-item.uploading .path { color: var(--accent); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.6rem 1.2rem; border: none; border-radius: var(--radius);
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+    .btn-secondary { background: var(--bg3); color: var(--fg); }
+
+    /* Progress */
+    .progress-bar {
+      width: 100%; height: 4px; background: var(--border); border-radius: 2px;
+      margin: 1rem 0; overflow: hidden; display: none;
+    }
+    .progress-bar .fill {
+      height: 100%; background: var(--accent); border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    /* Status message */
+    .status-msg {
+      padding: 0.75rem 1rem; border-radius: var(--radius);
+      font-size: 0.82rem; margin-top: 1rem; display: none;
+    }
+    .status-msg.success { background: rgba(102,187,106,0.15); color: var(--success); border: 1px solid rgba(102,187,106,0.3); }
+    .status-msg.error { background: rgba(239,83,80,0.15); color: var(--error); border: 1px solid rgba(239,83,80,0.3); }
+    .status-msg.info { background: rgba(79,195,247,0.15); color: var(--accent); border: 1px solid rgba(79,195,247,0.3); }
+
+    /* Log area */
+    .log-area {
+      background: #111; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.75rem; margin-top: 1rem; max-height: 200px; overflow-y: auto;
+      font-family: monospace; font-size: 0.72rem; color: var(--fg3);
+      display: none;
+    }
+    .log-area .log-line { padding: 0.1rem 0; }
+    .log-area .log-ok { color: var(--success); }
+    .log-area .log-err { color: var(--error); }
+    .log-area .log-info { color: var(--accent); }
+
+    /* Hash info */
+    .hash-info {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.75rem; color: var(--fg3);
+    }
+    .hash-info strong { color: var(--fg2); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>&#9881; WebUI Updater</h1>
+      <div class="subtitle">Update WebUI files and macro definitions without a full SD card re-deploy</div>
+    </div>
+  </div>
+  <div style="margin-bottom:1.5rem;">
+    <a class="back-link" href="/">&#8592; Back to TBD-16</a>
+    &nbsp;&nbsp;
+    <a class="back-link" href="/preset-macro-manager.html">Preset &amp; Macro Manager</a>
+  </div>
+
+  <!-- Current version -->
+  <div class="version-row">
+    <div class="version-card">
+      <div class="label">Installed WebUI Version</div>
+      <div class="value" id="current-version">—</div>
+      <div class="date" id="current-date"></div>
+    </div>
+    <div class="version-card" id="update-version-card" style="display:none;">
+      <div class="label">Update Package Version</div>
+      <div class="value" id="update-version">—</div>
+      <div class="date" id="update-date"></div>
+    </div>
+  </div>
+
+  <!-- Online update check -->
+  <div class="online-banner" id="online-banner">
+    <div id="online-content"><span class="checking">&#128269; Checking for updates online...</span></div>
+  </div>
+
+  <!-- Hash info -->
+  <div class="hash-info">
+    <strong>&#9432; SD Card Hash:</strong> WebUI updates do not change the SD card hash.
+    Your device will not re-extract the archive on reboot. A full firmware deploy will
+    overwrite any files updated here — this is expected behavior.
+  </div>
+
+  <!-- Manual update -->
+  <div class="section-label">Manual Update</div>
+  <div class="drop-zone" id="drop-zone">
+    <div class="icon">&#128230;</div>
+    <div class="label">Drop a WebUI update package here, or click to browse</div>
+    <div class="hint">Accepts .zip files containing a manifest.json and update files</div>
+    <input type="file" id="file-input" accept=".zip">
+  </div>
+
+  <!-- Manifest info (shown after zip is loaded) -->
+  <div class="manifest-info" id="manifest-info">
+    <h3 id="manifest-title"></h3>
+    <div class="desc" id="manifest-desc"></div>
+    <ul class="file-list" id="file-list"></ul>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar" id="progress-bar">
+    <div class="fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <!-- Action buttons -->
+  <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+    <button class="btn btn-primary" id="apply-btn" disabled>Apply Update</button>
+    <button class="btn btn-secondary" id="reset-btn" style="display:none;">Reset</button>
+  </div>
+
+  <!-- Status -->
+  <div class="status-msg" id="status-msg"></div>
+
+  <!-- Log -->
+  <div class="log-area" id="log-area"></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── DOM refs ──
+  const dropZone      = document.getElementById('drop-zone');
+  const fileInput     = document.getElementById('file-input');
+  const manifestInfo  = document.getElementById('manifest-info');
+  const manifestTitle = document.getElementById('manifest-title');
+  const manifestDesc  = document.getElementById('manifest-desc');
+  const fileList      = document.getElementById('file-list');
+  const progressBar   = document.getElementById('progress-bar');
+  const progressFill  = document.getElementById('progress-fill');
+  const applyBtn      = document.getElementById('apply-btn');
+  const resetBtn      = document.getElementById('reset-btn');
+  const statusMsg     = document.getElementById('status-msg');
+  const logArea       = document.getElementById('log-area');
+  const curVersion    = document.getElementById('current-version');
+  const curDate       = document.getElementById('current-date');
+  const updVersion    = document.getElementById('update-version');
+  const updDate       = document.getElementById('update-date');
+  const updCard       = document.getElementById('update-version-card');
+
+  const onlineBanner  = document.getElementById('online-banner');
+  const onlineContent = document.getElementById('online-content');
+
+  const UPDATE_CHECK_URL = 'https://dadamachines.github.io/ctag-tbd/_static/updates/latest.json';
+
+  let manifest = null;
+  let zipFiles = {};  // name → Uint8Array
+  let installedVersion = null;
+
+  // ── Load current version from device ──
+  async function loadCurrentVersion() {
+    try {
+      const resp = await fetch('/api/v2/samples?getconfig=webui-version.json');
+      if (resp.ok) {
+        const v = await resp.json();
+        installedVersion = v.version || null;
+        curVersion.textContent = v.version || '?';
+        curDate.textContent = v.date ? ('Installed: ' + v.date) : '';
+      } else {
+        curVersion.textContent = 'not set';
+        curDate.textContent = 'No version file found on device';
+      }
+    } catch (e) {
+      curVersion.textContent = 'offline';
+      curDate.textContent = 'Cannot reach device';
+    }
+  }
+
+  // ── Semver comparison: returns 1 if a>b, -1 if a<b, 0 if equal ──
+  function compareVersions(a, b) {
+    const pa = a.split('.').map(Number);
+    const pb = b.split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+      if ((pa[i] || 0) > (pb[i] || 0)) return 1;
+      if ((pa[i] || 0) < (pb[i] || 0)) return -1;
+    }
+    return 0;
+  }
+
+  // ── Check for online updates ──
+  async function checkOnlineUpdate() {
+    try {
+      const resp = await fetch(UPDATE_CHECK_URL, { cache: 'no-cache' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const latest = await resp.json();
+      if (!latest.version || !latest.url) throw new Error('Invalid latest.json');
+
+      if (installedVersion && compareVersions(latest.version, installedVersion) > 0) {
+        onlineContent.innerHTML =
+          '<div class="update-title">&#10024; Update Available: v' + escHtml(latest.version) + '</div>' +
+          '<div class="update-desc">' + escHtml(latest.description || '') + '</div>' +
+          '<div class="update-meta">Released: ' + escHtml(latest.date || 'unknown') + '</div>' +
+          '<button class="btn btn-primary" id="online-install-btn">Install Update</button>';
+        document.getElementById('online-install-btn').addEventListener('click', function() {
+          installOnlineUpdate(latest);
+        });
+      } else {
+        onlineContent.innerHTML = '<span class="up-to-date">&#9989; WebUI is up to date</span>';
+      }
+    } catch (e) {
+      onlineContent.innerHTML = '<span class="checking">Could not check for updates online. Use manual upload below.</span>';
+    }
+  }
+
+  // ── Download and install an online update ──
+  async function installOnlineUpdate(latest) {
+    var btn = document.getElementById('online-install-btn');
+    btn.disabled = true;
+    btn.textContent = 'Downloading...';
+
+    try {
+      var resp = await fetch(latest.url);
+      if (!resp.ok) throw new Error('Download failed: HTTP ' + resp.status);
+      var buffer = await resp.arrayBuffer();
+
+      log('Downloaded update v' + latest.version + ' (' + formatBytes(buffer.byteLength) + ')', 'info');
+
+      zipFiles = parseZip(buffer);
+      var names = Object.keys(zipFiles);
+
+      var manifestKey = names.find(function(n) { return n === 'manifest.json' || n.endsWith('/manifest.json'); });
+      if (!manifestKey) throw new Error('No manifest.json in downloaded package');
+
+      var manifestData = await extractFileData(zipFiles[manifestKey]);
+      manifest = JSON.parse(new TextDecoder().decode(manifestData));
+
+      if (!manifest.version || !manifest.files || !Array.isArray(manifest.files)) {
+        throw new Error('Invalid manifest in downloaded package');
+      }
+
+      var missing = manifest.files.filter(function(f) { return !zipFiles[f]; });
+      if (missing.length) throw new Error('Missing files: ' + missing.join(', '));
+
+      // Show file list and start upload
+      manifestTitle.textContent = 'Installing v' + manifest.version;
+      manifestDesc.textContent = manifest.description || '';
+      updVersion.textContent = 'v' + manifest.version;
+      updDate.textContent = manifest.date || '';
+      updCard.style.display = '';
+
+      fileList.innerHTML = '';
+      for (var fi = 0; fi < manifest.files.length; fi++) {
+        var f = manifest.files[fi];
+        var li = document.createElement('li');
+        li.className = 'file-item';
+        li.id = 'fi-' + sanitizeId(f);
+        li.innerHTML =
+          '<span class="status-icon">&#9744;</span>' +
+          '<span class="path">' + escHtml(f) + '</span>' +
+          '<span class="size">' + formatBytes(zipFiles[f].data.length) + '</span>';
+        fileList.appendChild(li);
+      }
+      manifestInfo.style.display = 'block';
+      dropZone.style.display = 'none';
+
+      btn.textContent = 'Installing...';
+      progressBar.style.display = 'block';
+
+      var total = manifest.files.length;
+      var done = 0, errors = 0;
+
+      log('Installing update v' + manifest.version + '...', 'info');
+
+      for (var ui = 0; ui < manifest.files.length; ui++) {
+        var filePath = manifest.files[ui];
+        var item = document.getElementById('fi-' + sanitizeId(filePath));
+        if (item) item.className = 'file-item uploading';
+
+        try {
+          var fileData = await extractFileData(zipFiles[filePath]);
+          await uploadFile(filePath, fileData);
+          if (item) {
+            item.className = 'file-item done';
+            item.querySelector('.status-icon').innerHTML = '&#9745;';
+          }
+          log('  OK: ' + filePath, 'ok');
+        } catch (e) {
+          errors++;
+          if (item) {
+            item.className = 'file-item error';
+            item.querySelector('.status-icon').innerHTML = '&#9746;';
+          }
+          log('  FAIL: ' + filePath + ' — ' + e.message, 'err');
+        }
+
+        done++;
+        progressFill.style.width = ((done / total) * 100).toFixed(1) + '%';
+      }
+
+      if (errors === 0) {
+        var versionData = JSON.stringify({
+          version: manifest.version,
+          date: manifest.date || new Date().toISOString().slice(0, 10),
+          description: manifest.description || ''
+        });
+        await fetch('/api/v2/samples?action=uploadconfig&path=webui-version.json', {
+          method: 'POST', body: versionData
+        });
+        log('Version file updated to v' + manifest.version, 'ok');
+        showStatus(
+          'Update complete! All ' + total + ' file(s) updated to v' + manifest.version +
+          '. Reload the main page to see changes.',
+          'success'
+        );
+        onlineContent.innerHTML = '<span class="up-to-date">&#9989; Updated to v' + escHtml(manifest.version) + '</span>';
+        loadCurrentVersion();
+      } else {
+        showStatus(
+          'Update finished with ' + errors + ' error(s). Check log for details.',
+          'error'
+        );
+      }
+
+      resetBtn.style.display = '';
+    } catch (e) {
+      showStatus('Online update failed: ' + e.message, 'error');
+      log('Online update error: ' + e.message, 'err');
+      btn.textContent = 'Install Update';
+      btn.disabled = false;
+    }
+  }
+
+  // Load version, then check for online updates
+  loadCurrentVersion().then(function() { checkOnlineUpdate(); });
+
+  // ── Minimal ZIP reader (supports stored + deflated entries) ──
+  function parseZip(buffer) {
+    const bytes = new Uint8Array(buffer);
+    const view = new DataView(buffer);
+    const files = {};
+
+    // Find End of Central Directory record (search backwards)
+    let eocd = -1;
+    for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
+      if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+    }
+    if (eocd === -1) throw new Error('Not a valid ZIP file');
+
+    const entryCount = view.getUint16(eocd + 10, true);
+    const cdOffset   = view.getUint32(eocd + 16, true);
+
+    let offset = cdOffset;
+    for (let i = 0; i < entryCount; i++) {
+      if (view.getUint32(offset, true) !== 0x02014b50) break;
+
+      const compression = view.getUint16(offset + 10, true);
+      const compSize    = view.getUint32(offset + 20, true);
+      const nameLen     = view.getUint16(offset + 28, true);
+      const extraLen    = view.getUint16(offset + 30, true);
+      const commentLen  = view.getUint16(offset + 32, true);
+      const localOff    = view.getUint32(offset + 42, true);
+
+      const name = new TextDecoder().decode(bytes.slice(offset + 46, offset + 46 + nameLen));
+      offset += 46 + nameLen + extraLen + commentLen;
+
+      if (name.endsWith('/')) continue; // skip directories
+
+      // Read data from local file header
+      const lNameLen  = view.getUint16(localOff + 26, true);
+      const lExtraLen = view.getUint16(localOff + 28, true);
+      const dataStart = localOff + 30 + lNameLen + lExtraLen;
+
+      files[name] = {
+        compression,
+        data: bytes.slice(dataStart, dataStart + compSize)
+      };
+    }
+    return files;
+  }
+
+  async function extractFileData(entry) {
+    if (entry.compression === 0) {
+      return entry.data; // stored — raw bytes
+    }
+    if (entry.compression === 8) {
+      // deflate — use browser DecompressionStream
+      const ds = new DecompressionStream('deflate-raw');
+      const writer = ds.writable.getWriter();
+      const reader = ds.readable.getReader();
+      writer.write(entry.data);
+      writer.close();
+      const chunks = [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      const total = chunks.reduce((s, c) => s + c.length, 0);
+      const result = new Uint8Array(total);
+      let off = 0;
+      for (const c of chunks) { result.set(c, off); off += c.length; }
+      return result;
+    }
+    throw new Error('Unsupported compression method: ' + entry.compression);
+  }
+
+  // ── Logging ──
+  function log(msg, cls) {
+    logArea.style.display = 'block';
+    const div = document.createElement('div');
+    div.className = 'log-line' + (cls ? ' log-' + cls : '');
+    div.textContent = msg;
+    logArea.appendChild(div);
+    logArea.scrollTop = logArea.scrollHeight;
+  }
+
+  function showStatus(msg, type) {
+    statusMsg.textContent = msg;
+    statusMsg.className = 'status-msg ' + type;
+    statusMsg.style.display = 'block';
+  }
+
+  // ── Drop zone events ──
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) handleFile(fileInput.files[0]);
+  });
+
+  // ── Handle uploaded ZIP ──
+  async function handleFile(file) {
+    if (!file.name.endsWith('.zip')) {
+      showStatus('Please select a .zip file', 'error');
+      return;
+    }
+
+    log('Loading ' + file.name + ' (' + formatBytes(file.size) + ')...', 'info');
+
+    try {
+      const buffer = await file.arrayBuffer();
+      zipFiles = parseZip(buffer);
+
+      const names = Object.keys(zipFiles);
+      log('ZIP contains ' + names.length + ' file(s)', 'info');
+
+      // Find manifest
+      const manifestKey = names.find(n => n === 'manifest.json' || n.endsWith('/manifest.json'));
+      if (!manifestKey) {
+        showStatus('No manifest.json found in the ZIP. Cannot proceed.', 'error');
+        log('ERROR: manifest.json not found in archive', 'err');
+        return;
+      }
+
+      const manifestData = await extractFileData(zipFiles[manifestKey]);
+      manifest = JSON.parse(new TextDecoder().decode(manifestData));
+      log('Manifest loaded: v' + manifest.version, 'ok');
+
+      // Validate manifest
+      if (!manifest.version || !manifest.files || !Array.isArray(manifest.files)) {
+        showStatus('Invalid manifest.json — missing version or files array', 'error');
+        return;
+      }
+
+      // Check all manifest files exist in the zip
+      const missing = [];
+      for (const f of manifest.files) {
+        if (!zipFiles[f]) missing.push(f);
+      }
+      if (missing.length) {
+        showStatus('Manifest references files not in the ZIP: ' + missing.join(', '), 'error');
+        log('Missing files: ' + missing.join(', '), 'err');
+        return;
+      }
+
+      // Show manifest info
+      manifestTitle.textContent = 'Update to v' + manifest.version;
+      manifestDesc.textContent = manifest.description || '';
+      updVersion.textContent = 'v' + manifest.version;
+      updDate.textContent = manifest.date || '';
+      updCard.style.display = '';
+
+      // Build file list UI
+      fileList.innerHTML = '';
+      for (const f of manifest.files) {
+        const li = document.createElement('li');
+        li.className = 'file-item';
+        li.id = 'fi-' + sanitizeId(f);
+        li.innerHTML =
+          '<span class="status-icon">&#9744;</span>' +
+          '<span class="path">' + escHtml(f) + '</span>' +
+          '<span class="size">' + formatBytes(zipFiles[f].data.length) + '</span>';
+        fileList.appendChild(li);
+      }
+      manifestInfo.style.display = 'block';
+      applyBtn.disabled = false;
+      dropZone.style.display = 'none';
+
+    } catch (e) {
+      showStatus('Failed to read ZIP: ' + e.message, 'error');
+      log('ERROR: ' + e.message, 'err');
+    }
+  }
+
+  // ── Apply update ──
+  applyBtn.addEventListener('click', async () => {
+    if (!manifest) return;
+    applyBtn.disabled = true;
+    progressBar.style.display = 'block';
+
+    const total = manifest.files.length;
+    let done = 0;
+    let errors = 0;
+
+    log('Starting update to v' + manifest.version + '...', 'info');
+
+    for (const filePath of manifest.files) {
+      const item = document.getElementById('fi-' + sanitizeId(filePath));
+      if (item) item.className = 'file-item uploading';
+
+      try {
+        const fileData = await extractFileData(zipFiles[filePath]);
+        await uploadFile(filePath, fileData);
+        if (item) {
+          item.className = 'file-item done';
+          item.querySelector('.status-icon').innerHTML = '&#9745;';
+        }
+        log('  OK: ' + filePath, 'ok');
+      } catch (e) {
+        errors++;
+        if (item) {
+          item.className = 'file-item error';
+          item.querySelector('.status-icon').innerHTML = '&#9746;';
+        }
+        log('  FAIL: ' + filePath + ' — ' + e.message, 'err');
+      }
+
+      done++;
+      progressFill.style.width = ((done / total) * 100).toFixed(1) + '%';
+    }
+
+    // Update version file on device
+    if (errors === 0) {
+      try {
+        const versionData = JSON.stringify({
+          version: manifest.version,
+          date: manifest.date || new Date().toISOString().slice(0, 10),
+          description: manifest.description || ''
+        });
+        await fetch('/api/v2/samples?action=uploadconfig&path=webui-version.json', {
+          method: 'POST',
+          body: versionData
+        });
+        log('Version file updated to v' + manifest.version, 'ok');
+      } catch (e) {
+        log('Warning: could not update version file — ' + e.message, 'err');
+      }
+
+      showStatus(
+        'Update complete! All ' + total + ' file(s) updated to v' + manifest.version +
+        '. Reload the main page to see changes.',
+        'success'
+      );
+      loadCurrentVersion();
+    } else {
+      showStatus(
+        'Update finished with ' + errors + ' error(s) out of ' + total + ' file(s). ' +
+        'Check the log for details.',
+        'error'
+      );
+    }
+
+    resetBtn.style.display = '';
+  });
+
+  // ── Upload a single file to the device ──
+  async function uploadFile(filePath, data) {
+    let action, apiPath;
+
+    if (filePath.startsWith('www/')) {
+      action = 'uploadwww';
+      apiPath = filePath.slice(4); // strip "www/"
+    } else if (filePath.startsWith('data/')) {
+      action = 'uploadconfig';
+      apiPath = filePath.slice(5); // strip "data/"
+    } else {
+      throw new Error('Unknown path prefix (expected www/ or data/): ' + filePath);
+    }
+
+    const url = '/api/v2/samples?action=' + action + '&path=' + encodeURIComponent(apiPath);
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: data
+    });
+
+    if (!resp.ok) {
+      const text = await resp.text().catch(() => resp.statusText);
+      throw new Error('HTTP ' + resp.status + ': ' + text);
+    }
+
+    const result = await resp.json();
+    if (!result.ok) throw new Error(result.error || 'Upload rejected');
+    return result;
+  }
+
+  // ── Reset ──
+  resetBtn.addEventListener('click', () => {
+    manifest = null;
+    zipFiles = {};
+    fileList.innerHTML = '';
+    manifestInfo.style.display = 'none';
+    progressBar.style.display = 'none';
+    progressFill.style.width = '0%';
+    statusMsg.style.display = 'none';
+    logArea.style.display = 'none';
+    logArea.innerHTML = '';
+    applyBtn.disabled = true;
+    resetBtn.style.display = 'none';
+    dropZone.style.display = '';
+    updCard.style.display = 'none';
+    fileInput.value = '';
+    loadCurrentVersion();
+  });
+
+  // ── Helpers ──
+  function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(1) + ' MB';
+  }
+  function sanitizeId(s) { return s.replace(/[^a-zA-Z0-9]/g, '_'); }
+  function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+})();
+</script>
+</body>
+</html>

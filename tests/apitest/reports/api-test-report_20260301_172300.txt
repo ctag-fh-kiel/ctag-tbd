@@ -1,0 +1,212 @@
+============================================================
+ CTAG TBD — Automated API Test Report
+ Date:   Sun Mar  1 17:23:00 CET 2026
+ Host:   192.168.4.1
+ URL:    http://192.168.4.1
+============================================================
+
+--- Phase 0: Connectivity ---
+PASS  [Connectivity] Device reachable
+
+--- Phase 1: Read-only GET endpoints ---
+PASS  [getPlugins]
+       → 57 plugins found
+PASS  [getIOCaps]
+PASS  [getConfiguration]
+PASS  [getActivePlugin/0]
+       → ch0 active: TBD03
+PASS  [getActivePlugin/1]
+       → ch1 active: TBD03
+PASS  [getPluginParams/0]
+PASS  [getPluginParams/1]
+PASS  [getPresets/0]
+PASS  [getPresets/1]
+PASS  [samples list]
+       → 431 files, 5 kits
+
+--- Phase 2: Favorites ---
+PASS  [favorites/getAll]
+PASS  [favorites/store/9]
+PASS  [favorites/recall/9]
+PASS  [favorites/recall verify ch0]
+PASS  [favorites/recall content] ch0=TBD03 ✓
+
+--- Phase 3: Plugin Switching (all plugins, ch0) ---
+SKIP  [setActivePlugin/0 PicoSeqRack] blocked (known crash)
+       Stereo: 28, Mono: 28, Blocked: 1
+PASS  [setActivePlugin/0 VctrSnt]
+PASS  [readback ch0 VctrSnt]
+PASS  [setActivePlugin/0 Retroactor]
+PASS  [readback ch0 Retroactor]
+PASS  [setActivePlugin/0 Claude]
+PASS  [readback ch0 Claude]
+PASS  [setActivePlugin/0 GDVerb]
+PASS  [readback ch0 GDVerb]
+PASS  [setActivePlugin/0 MIPShft]
+PASS  [readback ch0 MIPShft]
+PASS  [setActivePlugin/0 TBDaits]
+PASS  [readback ch0 TBDaits]
+PASS  [setActivePlugin/0 CDelay]
+PASS  [readback ch0 CDelay]
+PASS  [setActivePlugin/0 Subbotnik]
+PASS  [readback ch0 Subbotnik]
+PASS  [setActivePlugin/0 TBDeep]
+PASS  [readback ch0 TBDeep]
+PASS  [setActivePlugin/0 EveryTrim]
+PASS  [readback ch0 EveryTrim]
+PASS  [setActivePlugin/0 FVerb]
+PASS  [readback ch0 FVerb]
+PASS  [setActivePlugin/0 Talkbox]
+PASS  [readback ch0 Talkbox]
+PASS  [setActivePlugin/0 EChorus]
+PASS  [readback ch0 EChorus]
+PASS  [setActivePlugin/0 GDVerb2]
+PASS  [readback ch0 GDVerb2]
+PASS  [setActivePlugin/0 MIVerb2]
+PASS  [readback ch0 MIVerb2]
+PASS  [setActivePlugin/0 GVerb]
+PASS  [readback ch0 GVerb]
+PASS  [setActivePlugin/0 TBDings]
+PASS  [readback ch0 TBDings]
+PASS  [setActivePlugin/0 DLoop]
+PASS  [readback ch0 DLoop]
+PASS  [setActivePlugin/0 Freakwaves]
+PASS  [readback ch0 Freakwaves]
+PASS  [setActivePlugin/0 SpaceFX]
+PASS  [readback ch0 SpaceFX]
+PASS  [setActivePlugin/0 StrampDly]
+PASS  [readback ch0 StrampDly]
+PASS  [setActivePlugin/0 CStrip]
+PASS  [readback ch0 CStrip]
+PASS  [setActivePlugin/0 Formantor]
+PASS  [readback ch0 Formantor]
+PASS  [setActivePlugin/0 MIVerb]
+PASS  [readback ch0 MIVerb]
+PASS  [setActivePlugin/0 Bjorklund]
+PASS  [readback ch0 Bjorklund]
+PASS  [setActivePlugin/0 DrumRack]
+PASS  [readback ch0 DrumRack]
+PASS  [setActivePlugin/0 MIChorus]
+PASS  [readback ch0 MIChorus]
+PASS  [setActivePlugin/0 MIEnsemble]
+PASS  [readback ch0 MIEnsemble]
+PASS  [setActivePlugin/0 Void]
+PASS  [setActivePlugin/0 MonoDelay]
+PASS  [setActivePlugin/0 WTOscDuo]
+PASS  [setActivePlugin/0 BCSR]
+PASS  [setActivePlugin/0 Hihat1]
+PASS  [setActivePlugin/0 Karpuskl]
+PASS  [setActivePlugin/0 CStripM]
+PASS  [setActivePlugin/0 MacOscDuo]
+PASS  [setActivePlugin/0 APCpp]
+PASS  [setActivePlugin/0 SubSynth]
+PASS  [setActivePlugin/0 WTOsc]
+PASS  [setActivePlugin/0 SineSrc]
+PASS  [setActivePlugin/0 MIDifu]
+PASS  [setActivePlugin/0 Rompler]
+PASS  [setActivePlugin/0 FBDlyLine]
+PASS  [setActivePlugin/0 MacOsc]
+PASS  [setActivePlugin/0 PNoise]
+PASS  [setActivePlugin/0 TBD03]
+PASS  [setActivePlugin/0 TDelay]
+PASS  [setActivePlugin/0 Antique]
+PASS  [setActivePlugin/0 PolyPad]
+PASS  [setActivePlugin/0 MSxxNoise]
+PASS  [setActivePlugin/0 Dust]
+PASS  [setActivePlugin/0 MoogFilt]
+PASS  [setActivePlugin/0 SimpleVCA]
+PASS  [setActivePlugin/0 RecNPlay]
+PASS  [setActivePlugin/0 MISVF]
+PASS  [setActivePlugin/0 BBeats]
+       Plugin switch summary: 56 passed, 0 failed
+
+--- Phase 4: Mono dual-channel combos (sample of 10) ---
+PASS  [combo ch0=Void]
+PASS  [combo ch0=Void ch1=MonoDelay]
+PASS  [combo ch0=Void ch1=WTOscDuo]
+PASS  [combo ch0=Void ch1=BCSR]
+PASS  [combo ch0=Void ch1=Hihat1]
+PASS  [combo ch0=MonoDelay]
+PASS  [combo ch0=MonoDelay ch1=Void]
+PASS  [combo ch0=MonoDelay ch1=WTOscDuo]
+PASS  [combo ch0=MonoDelay ch1=BCSR]
+PASS  [combo ch0=MonoDelay ch1=Hihat1]
+PASS  [combo ch0=WTOscDuo]
+PASS  [combo ch0=WTOscDuo ch1=Void]
+PASS  [combo ch0=WTOscDuo ch1=MonoDelay]
+       Tested 10 dual-channel combos
+
+--- Phase 5: Plugin parameters ---
+PASS  [setActivePlugin/0 TBD03 (param test)]
+PASS  [getPluginParams/0 (TBD03)]
+SKIP  [setPluginParam] could not find a writable param
+
+--- Phase 6: Presets ---
+PASS  [savePreset/0 slot9]
+PASS  [loadPreset/0 slot0]
+PASS  [loadPreset/0 slot9 (APITest)]
+PASS  [getPresetData/TBD03]
+PASS  [getPresets/0 (final)]
+
+--- Phase 7: Configuration ---
+PASS  [getConfiguration (phase7)]
+PASS  [setConfiguration (idempotent write)]
+PASS  [getConfiguration (after write)]
+
+--- Phase 8: Samples API ---
+PASS  [samples list (phase8)]
+PASS  [samples kit=0]
+PASS  [samples reload]
+
+--- Phase 9: Rapid switching stress test (10 rounds) ---
+PASS  [stress ch0→TBD03]
+PASS  [stress ch0→Void]
+PASS  [stress ch0→SineSrc]
+PASS  [stress ch0→PNoise]
+PASS  [stress ch0→TBD03]
+PASS  [stress ch0→MacOsc]
+PASS  [stress ch0→Dust]
+PASS  [stress ch0→Void]
+PASS  [stress ch0→TBD03]
+PASS  [stress ch0→FBDlyLine]
+       Stress test: 10 passed, 0 failed
+
+--- Phase 10: Heavy plugin endurance ---
+       Testing WTOsc (heavy)...
+PASS  [endurance switch→WTOsc]
+PASS  [endurance params WTOsc]
+PASS  [endurance presets WTOsc]
+       Testing WTOscDuo (heavy)...
+PASS  [endurance switch→WTOscDuo]
+PASS  [endurance params WTOscDuo]
+PASS  [endurance presets WTOscDuo]
+       Testing Freakwaves (heavy)...
+PASS  [endurance switch→Freakwaves]
+PASS  [endurance params Freakwaves]
+PASS  [endurance presets Freakwaves]
+       Testing VctrSnt (heavy)...
+PASS  [endurance switch→VctrSnt]
+PASS  [endurance params VctrSnt]
+PASS  [endurance presets VctrSnt]
+       Testing DrumRack (heavy)...
+PASS  [endurance switch→DrumRack]
+PASS  [endurance params DrumRack]
+PASS  [endurance presets DrumRack]
+
+--- Phase 11: Restore initial state ---
+PASS  [restore ch0→TBD03]
+PASS  [restore ch1→TBD03]
+
+============================================================
+ TEST RESULTS
+============================================================
+ Total:   153
+ Passed:  153
+ Failed:  0
+ Skipped: 2
+
+ STATUS: ALL TESTS PASSED — device is STABLE
+ Pass rate: 100%
+
+ Report saved to: ./reports/api-test-report_20260301_172300.txt
+============================================================

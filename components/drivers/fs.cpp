@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -511,9 +511,19 @@ bool FileSystem::SDMounted() {
 }
 
 void FileSystem::InitFS(){
-    // try to mount the SD card first
-    auto sd_mounted = MountSDCard();
-    assert(sd_mounted);
+    // try to mount the SD card with retries
+    const int maxRetries = 5;
+    bool sd_mounted = false;
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+        sd_mounted = MountSDCard();
+        if (sd_mounted) break;
+        ESP_LOGW("FS", "SD card mount attempt %d/%d failed, retrying...", attempt, maxRetries);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+    if (!sd_mounted) {
+        ESP_LOGE("FS", "SD card mount failed after %d attempts", maxRetries);
+        assert(sd_mounted);
+    }
 
     // Check and update SD card content from zip if needed
     check_and_update_sd_content("/sdcard");

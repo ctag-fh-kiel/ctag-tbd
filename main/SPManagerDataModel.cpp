@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -109,6 +109,7 @@ void SPManagerDataModel::SetActivePatchNum(const int patchNum, const int chan) {
     string id = GetActiveProcessorID(chan);
     if (!m.HasMember("lastPatches")) return;
     if (!m["lastPatches"].IsArray()) return;
+    if (m["lastPatches"].GetArray().Size() <= chan) return;
     if (!m["lastPatches"][chan].IsArray()) return;
     for (auto &chanPatches : m["lastPatches"][chan].GetArray()) {
         if (!chanPatches.HasMember("id")) return;
@@ -126,6 +127,7 @@ int SPManagerDataModel::GetActivePatchNum(const int chan) {
     string id = GetActiveProcessorID(chan);
     if (!m.HasMember("lastPatches")) return 0;
     if (!m["lastPatches"].IsArray()) return 0;
+    if (m["lastPatches"].GetArray().Size() <= chan) return 0;
     if (!m["lastPatches"][chan].IsArray()) return 0;
     for (auto &chanPatches : m["lastPatches"][chan].GetArray()) {
         if (!chanPatches.HasMember("id")) return 0;

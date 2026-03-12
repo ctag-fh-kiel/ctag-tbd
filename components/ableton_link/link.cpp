@@ -47,7 +47,8 @@ namespace CTAG{
                 const auto beats = sessionState.beatAtTime(time, quantum);
                 std::cout << std::defaultfloat << "| peers: " << numPeers << " | "
                     << "tempo: " << sessionState.tempo() << " | " << std::fixed
-                    << "beats: " << beats << " |" << std::endl;
+                    << "beats: " << beats << " | playing: " << sessionState.isPlaying()
+                    << std::endl;
                 vTaskDelay(1000 / portTICK_PERIOD_MS);
             }
         }
@@ -61,6 +62,7 @@ namespace CTAG{
 #ifdef CONFIG_ABLETON_LINK
             if(ableton_link) return;
             ableton_link = new ableton::Link(120.0);
+            ableton_link->enableStartStopSync(true);
             ableton_link->enable(true);
             ableton_link->enableStartStopSync(true);
 #ifdef CONFIG_ABLETON_LINK_DEBUG
@@ -97,6 +99,7 @@ IRAM_ATTR void link::GetLinkRtSessionData(link_session_data_t* data){
             data->quantum = 4.0f;
             data->beat = state.beatAtTime(time, data->quantum);
             data->phase = state.phaseAtTime(time, 1.);
+            data->isPlaying = state.isPlaying();
 #else
             data->linkActive = false;
 #endif
@@ -117,6 +120,7 @@ IRAM_ATTR void link::GetLinkRtSessionData(link_session_data_t* data){
             data->quantum = 4.0f;
             data->beat = state.beatAtTime(time, data->quantum);
             data->phase = state.phaseAtTime(time, 1.);
+            data->isPlaying = state.isPlaying();
 #else
             data->linkActive = false;
 #endif

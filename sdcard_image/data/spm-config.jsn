@@ -1,5 +1,5 @@
 {
-  "activeProcessors": ["Void", "Void"],
+  "activeProcessors": ["PicoSeqRack", "Void"],
   "lastPatches": [
     [],
     []

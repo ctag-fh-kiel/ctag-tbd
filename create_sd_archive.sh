@@ -22,10 +22,28 @@ echo "Copying data..."
 cp -r "${SOURCE_DIR}/sdcard_image/data" "${TEMP_DIR}/data"
 
 # Copy and gzip www files
+# Only ship what the device actually needs from Shoelace:
+#   shoelace/themes/  — CSS themes (dark + light, toggled at runtime)
+# Everything else (components/, chunks/, assets/icons/, autoloader) is unused
+# because all used components + icons are already inlined in js/shoelace-bundle.js
 echo "Copying and gzipping www files..."
 mkdir -p "${TEMP_DIR}/www"
 cd "${SOURCE_DIR}/sdcard_image/www"
-find . -type f | while read file; do
+find . -type f \
+    -not -path './node_modules/*' \
+    -not -path './tools/*' \
+    -not -path './shoelace/components/*' \
+    -not -path './shoelace/chunks/*' \
+    -not -path './shoelace/assets/*' \
+    -not -name 'shoelace.js' \
+    -not -name 'shoelace-autoloader.js' \
+    -not -name '*.DS_Store' \
+    -not -name '*.gz' \
+    -not -name 'package.json' \
+    -not -name 'package-lock.json' \
+    -not -name 'build-webui.sh' \
+    -not -name 'readme-api.md' \
+    | while read file; do
     # Create directory structure in temp
     mkdir -p "${TEMP_DIR}/www/$(dirname "$file")"
 

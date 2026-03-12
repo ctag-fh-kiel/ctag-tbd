@@ -1,0 +1,4565 @@
+{
+  "id": "PicoSeqRack",
+  "isStereo": true,
+  "name": "PicoSeqRack",
+  "hint": "A mix of drums and samples",
+  "params": [
+    {
+      "id": "ch1_group",
+      "name": "Channel 1 - Drum group - Kicks",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch1_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch1_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch1_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch1_db_group",
+      "name": "Channel 1 - Machine 0 - Digital Bass Drum",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch1_db_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch1_db_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_db_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_db_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_db_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_db_dirty",
+          "name": "Dirtiness",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_db_fm_env",
+          "name": "FM Envelope",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_db_fm_dcy",
+          "name": "FM Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch1_ab_group",
+      "name": "Channel 1 - Machine 1 - Analogue Bass Drum",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch1_ab_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch1_ab_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_ab_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_ab_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_ab_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_ab_a_fm",
+          "name": "Attack FM",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_ab_s_fm",
+          "name": "Self FM",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch1_smp_group",
+      "name": "Channel 1 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch1_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch1_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch1_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch1_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch1_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch1_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch1_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch1_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch1_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch1_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch2_group",
+      "name": "Channel 2 - Drum group - Kicks 2, because why not!",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch2_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch2_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch2_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch2_fmb1_group",
+      "name": "Channel 2 - Machine 0 - FM Bass Drum",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch2_fmb1_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch2_fmb1_use_ratio_mode",
+          "name": "Use Ratio Mode",
+          "type": "bool"
+        },
+        {
+          "id": "ch2_fmb1_mod_env_sync",
+          "name": "Mod Env Sync",
+          "type": "bool"
+        },
+        {
+          "id": "ch2_fmb1_f_b",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_fmb1_d_b",
+          "name": "Carrier Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_fmb1_f_m",
+          "name": "Modulator Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_fmb1_I",
+          "name": "Modulation Index",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_fmb1_d_m",
+          "name": "Modulator Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_fmb1_b_m",
+          "name": "Modulator Feedback",
+          "type": "int",
+          "min": 0,
+          "max": 16
+        },
+        {
+          "id": "ch2_fmb1_A_f",
+          "name": "Freq Env Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_fmb1_d_f",
+          "name": "Freq Env Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch2_smp_group",
+      "name": "Channel 2 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch2_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch2_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch2_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch2_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch2_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch2_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch2_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch2_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch2_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch2_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch3_group",
+      "name": "Channel 3 - Drum group - Snares",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch3_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch3_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch3_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch3_ds_group",
+      "name": "Channel 3 - Machine 0 - Digital Snare",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch3_ds_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch3_ds_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_ds_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_ds_fm_amt",
+          "name": "FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_ds_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_ds_spy",
+          "name": "Snappy",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch3_as_group",
+      "name": "Channel 3 - Machine 1 - Analogue Snare",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch3_as_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch3_as_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_as_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_as_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_as_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_as_a_spy",
+          "name": "Snappy",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch3_smp_group",
+      "name": "Channel 3 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch3_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch3_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch3_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch3_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch3_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch3_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch3_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch3_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch3_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch3_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+    {
+      "id": "ch4_group",
+      "name": "Channel 4 - Drum group - Hihats",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch4_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch4_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch4_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch4_hh1_group",
+      "name": "Channel 4 - Machine 0 - HiHat 1",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch4_hh1_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch4_hh1_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_hh1_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_hh1_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_hh1_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_hh1_noise",
+          "name": "Noise Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch4_hh2_group",
+      "name": "Channel 4 - Machine 0 - HiHat 2",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch4_hh2_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch4_hh2_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_hh2_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_hh2_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_hh2_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_hh2_noise",
+          "name": "Noise Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch4_smp_group",
+      "name": "Channel 6 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch4_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch4_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch4_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch4_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch4_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch4_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch4_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch4_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch4_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch4_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+    {
+      "id": "ch5_group",
+      "name": "Channel 5 - Drum group - Rimshot",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch5_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch5_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch5_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch5_rs_group",
+      "name": "Rim Shot",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch5_rs_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch5_rs_accent",
+          "name": "Accent",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_rs_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_rs_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_rs_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_rs_noise",
+          "name": "Noise Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch5_smp_group",
+      "name": "Channel 5 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch5_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch5_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch5_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch5_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch5_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch5_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch5_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch5_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch5_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch5_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+    {
+      "id": "ch6_group",
+      "name": "Channel 6 - Drum group - Clap",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch6_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch6_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch6_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch6_cl_group",
+      "name": "Clap",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch6_cl_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch6_cl_f0",
+          "name": "Base Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_cl_tone",
+          "name": "Tone",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_cl_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_cl_scale",
+          "name": "Scale",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_cl_transient",
+          "name": "Transient",
+          "type": "int",
+          "min": 0,
+          "max": 15
+        }
+      ]
+    },
+    {
+      "id": "ch6_smp_group",
+      "name": "Channel 6 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch6_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch6_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch6_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch6_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch6_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch6_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch6_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch6_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch6_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch6_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+    
+    {
+      "id": "ch7_group",
+      "name": "Channel 7 - Drum group - Samples",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch7_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch7_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch7_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch7_smp_group",
+      "name": "Channel 7 - Machine 0 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch7_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch7_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch7_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch7_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch7_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch7_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch7_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch7_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch7_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch7_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch8_group",
+      "name": "Channel 8 - Drum group - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch8_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch8_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch8_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch8_smp_group",
+      "name": "Channel 8 - Machine 0 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch8_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch8_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -24,
+          "max": 24
+        },
+        {
+          "id": "ch8_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch8_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch8_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch8_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch8_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch8_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch8_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch8_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch9_group",
+      "name": "Channel 9 - Bass group - TBD03",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch9_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch9_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch9_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch9_tbd03_group",
+      "name": "TBD03",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch9_tbd03_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch9_tbd03_sync_trig",
+          "name": "Sync on Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch9_tbd03_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": 0,
+          "max": 16383,
+          "step": 1
+        },
+        {
+          "id": "ch9_tbd03_shape",
+          "name": "Shape",
+          "type": "int",
+          "min": 0,
+          "max": 46,
+          "step": 1
+        },
+        {
+          "id": "ch9_tbd03_param_0",
+          "name": "Osc Morph 0",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch9_tbd03_param_1",
+          "name": "Osc Morph 1",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch9_tbd03_filter_type",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 4
+        },
+        {
+          "id": "ch9_tbd03_cutoff",
+          "name": "Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_resonance",
+          "name": "Resonance",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_envelope",
+          "name": "Env Mod VCF",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_saturation",
+          "name": "Saturation",
+          "type": "int",
+          "min": 0,
+          "max": 65535
+        },
+        {
+          "id": "ch9_tbd03_drive",
+          "name": "Overdrive",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_accent",
+          "name": "Accent",
+          "type": "bool"
+        },
+        {
+          "id": "ch9_tbd03_accent_level",
+          "name": "Accent Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_slide",
+          "name": "Slide",
+          "type": "bool"
+        },
+        {
+          "id": "ch9_tbd03_slide_level",
+          "name": "Slide Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_decay_vca",
+          "name": "Decay VCA",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_decay_vcf",
+          "name": "Decay VCF",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_p0_amt",
+          "name": "P0 Amount",
+          "hint": "P0 EG VCF MOD",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch9_tbd03_p1_amt",
+          "name": "P1 Amount",
+          "hint": "P1 EG VCF MOD",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        }
+      ]
+    },
+
+    {
+      "id": "ch9_smp_group",
+      "name": "Channel 3 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch9_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch9_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch9_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch9_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch9_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch9_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch9_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch9_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch9_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch9_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch10_group",
+      "name": "Channel 10 - Bass group - TBD03 2",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch10_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch10_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch10_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch10_tbd03_group",
+      "name": "TBD03",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch10_tbd03_trigger",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch10_tbd03_sync_trig",
+          "name": "Sync on Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch10_tbd03_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": 0,
+          "max": 16383,
+          "step": 1
+        },
+        {
+          "id": "ch10_tbd03_shape",
+          "name": "Shape",
+          "type": "int",
+          "min": 0,
+          "max": 46,
+          "step": 1
+        },
+        {
+          "id": "ch10_tbd03_param_0",
+          "name": "Osc Morph 0",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch10_tbd03_param_1",
+          "name": "Osc Morph 1",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch10_tbd03_filter_type",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 4
+        },
+        {
+          "id": "ch10_tbd03_cutoff",
+          "name": "Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_resonance",
+          "name": "Resonance",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_envelope",
+          "name": "Env Mod VCF",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_saturation",
+          "name": "Saturation",
+          "type": "int",
+          "min": 0,
+          "max": 65535
+        },
+        {
+          "id": "ch10_tbd03_drive",
+          "name": "Overdrive",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_accent",
+          "name": "Accent",
+          "type": "bool"
+        },
+        {
+          "id": "ch10_tbd03_accent_level",
+          "name": "Accent Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_slide",
+          "name": "Slide",
+          "type": "bool"
+        },
+        {
+          "id": "ch10_tbd03_slide_level",
+          "name": "Slide Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_decay_vca",
+          "name": "Decay VCA",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_decay_vcf",
+          "name": "Decay VCF",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_p0_amt",
+          "name": "P0 Amount",
+          "hint": "P0 EG VCF MOD",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch10_tbd03_p1_amt",
+          "name": "P1 Amount",
+          "hint": "P1 EG VCF MOD",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch10_smp_group",
+      "name": "Channel 3 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch10_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch10_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch10_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch10_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch10_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch10_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch10_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch10_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch10_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch10_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch11_group",
+      "name": "Channel 11 - Synth group - Macro Oscillator",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch11_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch11_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch11_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch11_mo_group",
+      "name": "Channel 11 - Machine 0 - Macro Oscillator",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch11_mo_enableEG",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch11_mo_shape",
+          "name": "Shape",
+          "type": "int",
+          "min": 0,
+          "max": 46,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": 0,
+          "max": 16383,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_decimation",
+          "name": "Decimation",
+          "type": "int",
+          "min": 1,
+          "max": 30,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_bit_reduction",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 6,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_q_scale",
+          "name": "Quantization Scale",
+          "type": "int",
+          "min": 0,
+          "max": 47,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_param_0",
+          "name": "Parameter 0",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_param_1",
+          "name": "Parameter 1",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_waveshaping",
+          "name": "Wave Shaping",
+          "type": "int",
+          "min": 0,
+          "max": 65535,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_fm_amt",
+          "name": "FM Amount",
+          "hint": "FM Amount",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        },
+        {
+          "id": "ch11_mo_p0_amt",
+          "name": "P0 Amount",
+          "hint": "P0 Amount",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        },
+        {
+          "id": "ch11_mo_p1_amt",
+          "name": "P1 Amount",
+          "hint": "P1 Amount",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        },
+        {
+          "id": "ch11_mo_loopEG",
+          "name": "Loop EG",
+          "type": "bool"
+        },
+        {
+          "id": "ch11_mo_attack",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch11_mo_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "ch11_smp_group",
+      "name": "Channel 11 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch11_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch11_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch11_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch11_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch11_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch11_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch11_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch11_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch11_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch11_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch12_group",
+      "name": "Channel 12 - Synth group - Macro Oscillator (for now)",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch12_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch12_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch12_wtosc_group",
+      "name": "Channel 12 - Machine 0 - WT Osc",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch12_wtosc_gain",
+          "name": "Gain",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_wtosc_pitch",
+          "type": "int",
+          "name": "Pitch",
+          "min": -48,
+          "max": 48,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_q_scale",
+          "name": "Quantization Scale",
+          "type": "int",
+          "min": 0,
+          "max": 47,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_tune",
+          "type": "int",
+          "name": "Tune",
+          "min": -2048,
+          "max": 2048,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_wavebank",
+          "type": "int",
+          "name": "Wave Bank",
+          "hint": "If wave bank is unavailable in ROM, no sound will be audible",
+          "min": 0,
+          "max": 31,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_wave",
+          "type": "int",
+          "name": "Wave",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_fmode",
+          "name": "Filter Mode",
+          "hint": "0: Off, 1: LP, 2: BP, 3:HP",
+          "type": "int",
+          "min": 0,
+          "max": 3,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_fcut",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_freso",
+          "name": "Filter Resonance",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_lfo2wave",
+          "name": "LFO Wave",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_lfo2am",
+          "name": "LFO AM",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_lfo2fm",
+          "name": "LFO FM",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_lfo2filtfm",
+          "name": "LFO Filter FM",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_eg2wave",
+          "name": "EG Wave",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_eg2am",
+          "name": "EG AM",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_eg2fm",
+          "name": "EG FM",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_eg2filtfm",
+          "name": "EG Filter FM",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_lfospeed",
+          "name": "Speed",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_lfosync",
+          "name": "Sync",
+          "hint": "Sync to gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_wtosc_egfasl",
+          "name": "Fast / Slow",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_wtosc_attack",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_sustain",
+          "name": "Sustain",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_wtosc_release",
+          "name": "Release",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "ch12_mo_group",
+      "name": "Channel 12 - Machine 1 - Macro Oscillator (for now)",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch12_mo_enableEG",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_mo_shape",
+          "name": "Shape",
+          "type": "int",
+          "min": 0,
+          "max": 46,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": 0,
+          "max": 16383,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_decimation",
+          "name": "Decimation",
+          "type": "int",
+          "min": 1,
+          "max": 30,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_bit_reduction",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 6,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_q_scale",
+          "name": "Quantization Scale",
+          "type": "int",
+          "min": 0,
+          "max": 47,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_param_0",
+          "name": "Parameter 0",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_param_1",
+          "name": "Parameter 1",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_waveshaping",
+          "name": "Wave Shaping",
+          "type": "int",
+          "min": 0,
+          "max": 65535,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_fm_amt",
+          "name": "FM Amount",
+          "hint": "FM Amount",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        },
+        {
+          "id": "ch12_mo_p0_amt",
+          "name": "P0 Amount",
+          "hint": "P0 Amount",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        },
+        {
+          "id": "ch12_mo_p1_amt",
+          "name": "P1 Amount",
+          "hint": "P1 Amount",
+          "type": "int",
+          "min": -64,
+          "max": 64
+        },
+        {
+          "id": "ch12_mo_loopEG",
+          "name": "Loop EG",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_mo_attack",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch12_mo_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "ch12_smp_group",
+      "name": "Channel 3 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch12_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch12_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch12_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch12_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch12_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch12_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch12_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch12_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch13_group",
+      "name": "Channel 13 - Synth group - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch13_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch13_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch13_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch13_smp_group",
+      "name": "Sample 4",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch13_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch13_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch13_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch13_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch13_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch13_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch13_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch13_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch13_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch13_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch14_group",
+      "name": "Channel 14 - Synth group - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch14_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch14_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch14_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch14_smp_group",
+      "name": "Sample 3",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch14_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch14_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -48,
+          "max": 48
+        },
+        {
+          "id": "ch14_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch14_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch14_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch14_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch14_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch14_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch14_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch14_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch15_group",
+      "name": "Channel 15 - Synth group - Chords",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch15_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch15_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch15_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "ch15_pp_group",
+      "name": "Polypad",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch15_pp_enableEG",
+          "name": "Trigger",
+          "type": "bool"
+        },
+        {
+          "id": "ch15_pp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": 0,
+          "max": 16383,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_q_scale",
+          "name": "Quantization Scale",
+          "type": "int",
+          "min": 0,
+          "max": 47,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_chord",
+          "name": "Chord",
+          "type": "int",
+          "min": 0,
+          "max": 17,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_inversion",
+          "name": "Inversion",
+          "type": "int",
+          "min": -2,
+          "max": 2,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_detune",
+          "name": "Detune",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_nnotes",
+          "name": "Number Notes",
+          "type": "int",
+          "min": 1,
+          "max": 4,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_ncvoices",
+          "name": "Number Chord Voices",
+          "type": "int",
+          "min": 1,
+          "max": 8,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_voicehold",
+          "name": "Hold Pre Voice",
+          "type": "bool",
+          "hint": "hold previous voice"
+        },
+        {
+          "id": "ch15_pp_lfo1_freq",
+          "name": "Vibrato Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_lfo1_amt",
+          "name": "Vibrato Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_filter_type",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 2,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_cutoff",
+          "name": "Cutoff",
+          "type": "int",
+          "min": 1750,
+          "max": 16383,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_resonance",
+          "name": "Resonance",
+          "type": "int",
+          "min": 0,
+          "max": 32767,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_lfo2_freq",
+          "name": "Filter FM Frequency",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_lfo2_amt",
+          "name": "Filter FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_lfo2_rphase",
+          "name": "Filter FM Random Phase",
+          "type": "bool"
+        },
+        {
+          "id": "ch15_pp_eg_filt_amt",
+          "name": "Filter EG Amount",
+          "type": "int",
+          "min": -4095,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_latchEG",
+          "name": "EG Latch Mode",
+          "type": "bool",
+          "hint": "latches trigger"
+        },
+        {
+          "id": "ch15_pp_eg_slow_fast",
+          "name": "EG Fast / Slow",
+          "type": "bool",
+          "hint": "slow or fast"
+        },
+        {
+          "id": "ch15_pp_attack",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_decay",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_sustain",
+          "name": "Sustain",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        },
+        {
+          "id": "ch15_pp_release",
+          "name": "Release",
+          "type": "int",
+          "min": 0,
+          "max": 4095,
+          "step": 1
+        }
+      ]
+    },
+    {
+      "id": "ch15_smp_group",
+      "name": "Channel 3 - Machine 1 - Sampler",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch15_smp_gate",
+          "name": "Gate",
+          "type": "bool"
+        },
+        {
+          "id": "ch15_smp_speed",
+          "name": "Speed / Tune",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_pitch",
+          "name": "Pitch",
+          "type": "int",
+          "min": -12,
+          "max": 12
+        },
+        {
+          "id": "ch15_smp_bank",
+          "name": "Bank",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch15_smp_slice",
+          "name": "Slice",
+          "type": "int",
+          "min": 0,
+          "max": 31
+        },
+        {
+          "id": "ch15_smp_start",
+          "name": "Start",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_end",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_lp",
+          "name": "Loop",
+          "type": "bool"
+        },
+        {
+          "id": "ch15_smp_lp_pp",
+          "name": "Ping-pong",
+          "type": "bool"
+        },
+        {
+          "id": "ch15_smp_lp_pos",
+          "name": "End",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_dcy",
+          "name": "Decay",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_eg2fm",
+          "name": "EG FM Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_brr",
+          "name": "Bit Reduction",
+          "type": "int",
+          "min": 0,
+          "max": 14
+        },
+        {
+          "id": "ch15_smp_ft",
+          "name": "Filter Type",
+          "type": "int",
+          "min": 0,
+          "max": 3
+        },
+        {
+          "id": "ch15_smp_fc",
+          "name": "Filter Cutoff",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_fq",
+          "name": "Filter Q",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_tsmode",
+          "name": "Timestretch mode",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch15_smp_tsamount",
+          "name": "Timestretch Amount",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {
+      "id": "ch16_group",
+      "name": "Channel 16 - Input group",
+      "type": "group",
+      "params": [
+        {
+          "id": "ch16_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "ch16_device",
+          "name": "Device",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch16_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch16_pan",
+          "name": "Pan",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "ch16_fx1",
+          "name": "FX Send 1",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "ch16_fx2",
+          "name": "FX Send 2",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "fx1_group",
+      "name": "FX Bus 1 - Delay",
+      "type": "group",
+      "params": [
+        {
+          "id": "fx1_time_ms",
+          "name": "Delay/ms",
+          "type": "int",
+          "min": 1,
+          "max": 2000,
+          "step": 1
+        },
+        {
+          "id": "fx1_sync",
+          "name": "Sync",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_freeze",
+          "name": "Freeze",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_tape_digital",
+          "name": "Tape/Digital",
+          "type": "bool"
+        },
+        {
+          "id": "fx1_st_width",
+          "name": "Stereo Width",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_fx_send",
+          "name": "Reverb Send",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_feedback",
+          "name": "Feedback",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_base",
+          "name": "Filter Base",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_width",
+          "name": "Filter Width",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx1_amount",
+          "name": "Delay Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "fx2_group",
+      "name": "FX Bus 2 - Reverb",
+      "type": "group",
+      "params": [
+        {
+          "id": "fx2_time",
+          "type": "int",
+          "name": "Time",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_lp",
+          "type": "int",
+          "name": "Low Pass",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "fx2_amount",
+          "name": "Reverb Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "c_group",
+      "name": "Master - Compressor",
+      "type": "group",
+      "params": [
+        {
+          "id": "c_thres",
+          "name": "Threshold",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_ratio",
+          "name": "Ratio",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_atk",
+          "name": "Attack",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_rel",
+          "name": "Release",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_lpf",
+          "name": "Sidechain LPF",
+          "type": "bool"
+        },
+        {
+          "id": "c_gain",
+          "name": "Gain",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_mix",
+          "name": "Mix",
+          "type": "int",
+          "min": -4095,
+          "max": 4095
+        },
+        {
+          "id": "c_dly_level",
+          "name": "Delay Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        },
+        {
+          "id": "c_rev_level",
+          "name": "Reverb Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    },
+    {
+      "id": "sum",
+      "name": "Master - Levels",
+      "type": "group",
+      "params": [
+        {
+          "id": "sum_mute",
+          "name": "Mute",
+          "type": "bool"
+        },
+        {
+          "id": "sum_lev",
+          "name": "Level",
+          "type": "int",
+          "min": 0,
+          "max": 4095
+        }
+      ]
+    }
+  ]
+}

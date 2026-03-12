@@ -4,7 +4,7 @@ CTAG TBD >>to be determined<< is an open source eurorack synthesizer module.
 A project conceived within the Creative Technologies Arbeitsgruppe of
 Kiel University of Applied Sciences: https://www.creative-technologies.de
 
-(c) 2020 by Robert Manzke. All rights reserved.
+(c) 2020-2026 by Robert Manzke. All rights reserved.
 
 The CTAG TBD software is licensed under the GNU General Public License
 (GPL 3.0), available here: https://www.gnu.org/licenses/gpl-3.0.txt
@@ -32,6 +32,10 @@ respective component folders / files if different from this license.
 #include "ctagSoundProcessorFactory.hpp"
 #include "SPManagerDataModel.hpp"
 #include <atomic>
+#include "SynthDefinitionDataModel.hpp"
+#include "MacroSoundPresetDataModel.hpp"
+#include "MacroDeviceDefinitionDataModel.hpp"
+#include "MacroTranslator.hpp"
 
 using namespace CTAG::SP;
 
@@ -72,6 +76,19 @@ namespace CTAG {
                 return model->GetCStrJSONSoundProcessorPresets(id);
             }
 
+            // ── Thread-safe variants ──────────────────────────────
+            // These take the processMutex, copy the JSON string to a
+            // SPIRAM buffer, and return the copy. Caller MUST free()
+            // the returned pointer after use.
+            // This prevents the audio task from invalidating the
+            // internal StringBuffer while the HTTP handler sends.
+            static char *GetSafeJSONActivePluginParams(const int chan);
+            static char *GetSafeJSONGetPresets(const int chan);
+            static char *GetSafeJSONAllPresetData(const int chan);
+            static char *GetSafeJSONConfiguration();
+            static char *GetSafeJSONSoundProcessors();
+            static char *GetSafeJSONSoundProcessorPresets(const string &id);
+
             static void SetCStrJSONSoundProcessorPreset(const char* id, const char *data) {
                 ledBlink = 1;
                 model->SetCStrJSONSoundProcessorPreset(id, data);
@@ -100,6 +117,39 @@ namespace CTAG {
             static void EnablePluginProcessing();
             static void RefreshSampleRom();
 
+            static void SetTrackMachine(const int trackIndex, const string &synthID);
+            static void SetTrackMacro(const int trackIndex, const string &macroDefinitionID);
+            static void SetTrackParametersFromJSON(const string &parametersJSON);
+            static void SetTrackParameter(const int trackIndex, int parameterIndex, int32_t value);
+            // static void SetTrackSampleBank(const int trackIndex, const string &bankName);
+            static void PutSamplePresetJSON(const string &presetJSON);
+
+            static std::shared_ptr<CTAG::MACROPRESETS::SynthDefinitionDataModel> synthDefinitionModel;
+            static std::shared_ptr<CTAG::MACROPRESETS::MacroSoundPresetDataModel> macroSoundDefinitionModel;
+            static std::shared_ptr<CTAG::MACROPRESETS::MacroDeviceDefinitionDataModel> macroDeviceDefinitionModel;
+            static std::shared_ptr<CTAG::MACROPRESETS::MacroTranslator> macroTranslator;
+
+            static std::string GetMacroSoundPresetListJSON();
+            static std::string GetMacroSoundPresetJSON(const std::string &soundPresetId);
+            static std::string GetMacroDefinitionJSON(const std::string &soundPresetId);
+            static void ActivateTrackMachine(const int trackIndex, const std::string machineId);
+            static void LoadTrackMacro(const int trackIndex, const std::string macroId);
+            static void LoadTrackMacroAndPreset(const int trackIndex, const std::string soundPresetId);
+
+            static void MarkTracksChangedFromWebui();
+            static void MarkMacrosChangedFromWebui();
+            static void MarkDefinitionsChangedFromWebui();
+
+            static void RefreshMacros();
+            static void RefreshSoundPresets();
+
+            // Audio health monitoring — returns JSON with lock errors, slow process count, memory stats
+            static string GetAudioHealthJSON();
+            static void ResetAudioHealthCounters();
+
+            static std::string GetKitIndexJSON();
+            static std::string GetActiveKitBankIndexJSON();
+
         private:
             static void audio_task(void *pvParams);
 
@@ -119,6 +169,16 @@ namespace CTAG {
             static atomic<uint32_t> runAudioTask;
             static atomic<uint32_t> ch0_outputSoftClip;
             static atomic<uint32_t> ch1_outputSoftClip;
+            static volatile uint32_t audioLockErrors;
+            static volatile uint32_t slowProcessCounter;
+            static volatile uint32_t sentSynthMidiBytes;
+            static volatile uint32_t receivedUsbDeviceMidiBytes;
+            static volatile uint32_t requestCounterErrors;
+
+            static atomic<uint32_t> parameterChangeCounter;
+            static atomic<uint32_t> macroChangeCounter;
+            static atomic<uint32_t> trackMachineChangeCounter;
+            static atomic<uint32_t> definitionChangeCounter;
         };
     }
 }
