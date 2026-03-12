@@ -30,6 +30,7 @@ Create update packages (.zip) that users can apply via `http://192.168.4.1/webui
 - Build script: `sdcard_image/www/build-webui.sh`
 - Online update manifest: `docs/_static/updates/latest.json`
 - Update hosting URL: `https://dadamachines.github.io/ctag-tbd/_static/updates/`
+- WebUI versions doc: `docs/flash/70_webui_versions.rst` — **must be updated every release**
 - The device's updater page auto-checks `latest.json` on load to offer one-click online updates
 - All `www/` assets on SD card are `.gz` — include the `.gz` extension
 - All `data/` files are plain JSON — no `.gz` extension
@@ -44,6 +45,7 @@ Create update packages (.zip) that users can apply via `http://192.168.4.1/webui
 3. **NEVER** skip `build-webui.sh` before packaging — you'll ship stale bundles
 4. **NEVER** include files from `build/` — only from `sdcard_image/`
 5. **NEVER** set an older version number than what's already installed
+6. **NEVER** skip updating `docs/flash/70_webui_versions.rst` — every release must appear in the version history
 
 ## File Mapping Reference
 
@@ -163,6 +165,20 @@ bash create_webui_update.sh 1.2.0 "Major update with new macros and UI fixes" \
   data/webui-version.json
 ```
 
+**Example — Include ALL macro definitions and presets (common for major releases):**
+
+When you want every definition and preset, dynamically expand the file list with shell subshells. There can be 70+ data files, so never try to type them all by hand:
+
+```bash
+bash create_webui_update.sh 1.3.0 "Full refresh with all macros" \
+  www/js/macro-bundle.js.gz \
+  data/webui-version.json \
+  $(cd sdcard_image && find data/macrodefinitions -name '*.json' -type f | sort) \
+  $(cd sdcard_image && find data/macrosoundpresets -name '*.json' -type f | sort)
+```
+
+You can combine this with any `www/` files too. The `find` subshells produce paths relative to `sdcard_image/`, which is exactly what the script expects.
+
 ### Step 5 — Verify the output
 
 The script prints a summary. Check:
@@ -175,12 +191,27 @@ Optionally inspect the zip:
 unzip -l build/webui-update-v<VERSION>.zip
 ```
 
-### Step 6 — Report to user
+### Step 6 — Update the WebUI versions docs page
+
+Add the new version to `docs/flash/70_webui_versions.rst`. This page has two tables:
+
+1. **Version History table** (top) — add a new row at the top (below the header) with version, date, and a short description of what changed.
+2. **Downloads table** (bottom) — add a new row at the top with a link to the zip:
+
+```rst
+   * - v<VERSION>
+     - `webui-update-v<VERSION>.zip <../_static/updates/webui-update-v<VERSION>.zip>`_
+```
+
+This step is **required** — every release must appear in the versions page so users can see the changelog and download older packages.
+
+### Step 7 — Report to user
 
 Tell the user:
 - The update package path: `build/webui-update-v<VERSION>.zip`
 - How to apply it: upload via `http://192.168.4.1/webui-update.html`
 - What's included (list the files)
+- That `docs/flash/70_webui_versions.rst` was updated
 
 ---
 
@@ -202,7 +233,7 @@ Use this decision tree when the user just says "create an update" without specif
 
 ## Procedure: Publish Update for Online Auto-Update
 
-After creating an update package (Steps 1–5 above), the `create_webui_update.sh` script automatically copies the zip to `docs/_static/updates/` and updates `latest.json`. To make it live:
+After creating an update package and updating the docs page (Steps 1–6 above), the `create_webui_update.sh` script automatically copies the zip to `docs/_static/updates/` and updates `latest.json`. To make it live:
 
 ### Step 1 — Verify docs/_static/updates/
 
@@ -215,9 +246,13 @@ Confirm `latest.json` has the correct version, URL, and size.
 
 ### Step 2 — Commit and push
 
+Include the update package, latest.json, version file, and the docs changelog:
+
 ```bash
-git add docs/_static/updates/
-git commit -m "Publish WebUI update v<VERSION>"
+git add docs/_static/updates/ \
+  sdcard_image/data/webui-version.json \
+  docs/flash/70_webui_versions.rst
+git commit -m "WebUI v<VERSION> — <short description>"
 git push
 ```
 

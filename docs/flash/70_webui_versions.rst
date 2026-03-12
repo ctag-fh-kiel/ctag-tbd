@@ -14,6 +14,12 @@ Each version below includes the update package and a summary of changes.
    * - Version
      - Date
      - Description
+   * - **0.3.2**
+     - 2026-03-12
+     - Factory preset protection (lock icons, readonly inputs, hidden
+       Save/Delete for factory presets). Preset value safety (trim to param
+       count, Math.round for firmware compliance). Auto-UI type selection
+       when adding CC mappings. All macro definitions & sound presets included.
    * - **0.3.1**
      - 2026-03-12
      - Online update workflow test. Version bump only — no functional changes.
@@ -47,6 +53,8 @@ Downloads
 
    * - Version
      - Download
+   * - v0.3.2
+     - `webui-update-v0.3.2.zip <../_static/updates/webui-update-v0.3.2.zip>`_
    * - v0.3.1
      - `webui-update-v0.3.1.zip <../_static/updates/webui-update-v0.3.1.zip>`_
    * - v0.3.0
