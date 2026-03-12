@@ -14,6 +14,10 @@ Each version below includes the update package and a summary of changes.
    * - Version
      - Date
      - Description
+   * - **0.3.3**
+     - 2026-03-12
+     - New full rompler macro definition and preset. Designer fixes.
+       All macro definitions and sound presets included.
    * - **0.3.2**
      - 2026-03-12
      - Factory preset protection (lock icons, readonly inputs, hidden
@@ -53,6 +57,8 @@ Downloads
 
    * - Version
      - Download
+   * - v0.3.3
+     - `webui-update-v0.3.3.zip <../_static/updates/webui-update-v0.3.3.zip>`_
    * - v0.3.2
      - `webui-update-v0.3.2.zip <../_static/updates/webui-update-v0.3.2.zip>`_
    * - v0.3.1

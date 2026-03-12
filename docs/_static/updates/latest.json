@@ -1,7 +1,7 @@
 {
-  "version": "0.3.2",
+  "version": "0.3.3",
   "date": "2026-03-12",
-  "description": "Factory preset protection, preset value safety, auto-UI selection, all macro definitions and presets",
-  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.2.zip",
-  "size": 173853
+  "description": "New full rompler macro, designer fixes, all definitions and presets",
+  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.3.zip",
+  "size": 180181
 }
