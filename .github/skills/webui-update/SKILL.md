@@ -50,6 +50,7 @@ Create update packages (.zip) that users can apply via `http://192.168.4.1/webui
 4. **NEVER** include files from `build/` — only from `sdcard_image/`
 5. **NEVER** set an older version number than what's already installed
 6. **NEVER** skip updating `docs/flash/70_webui_versions.rst` — every release must appear in the version history
+7. **NEVER** pick a version number without checking upstream first — if upstream already has that version, you'll get merge conflicts on the PR
 
 ## File Mapping Reference
 
@@ -81,6 +82,27 @@ Which source files map to which package files:
 ---
 
 ## Procedure: Create Update Package
+
+### Step 0 — Check upstream for version conflicts
+
+**This step is mandatory.** Before choosing a version number, fetch upstream and check the latest version to avoid conflicts:
+
+```bash
+cd <workspace_root>
+git fetch upstream
+git log --oneline upstream/dada-tbd-master -3
+cat <(git show upstream/dada-tbd-master:sdcard_image/data/webui-version.json)
+```
+
+The new version must be **strictly greater** than whatever upstream has. If upstream already has v0.3.3, use v0.3.4 or higher.
+
+Also check if your branch is behind upstream. If it is, rebase first:
+
+```bash
+git rebase upstream/dada-tbd-master
+```
+
+Resolve any conflicts before proceeding. This prevents merge conflicts when opening a PR against `https://github.com/dadamachines/ctag-tbd/`.
 
 ### Step 1 — Identify changed files
 
