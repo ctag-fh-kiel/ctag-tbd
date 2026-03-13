@@ -1,7 +1,33 @@
 {
-  "version": "0.3.3",
-  "date": "2026-03-12",
-  "description": "New full rompler macro, designer fixes, all definitions and presets",
-  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.3.zip",
-  "size": 180181
+  "version": "0.3.4",
+  "date": "2026-03-13",
+  "description": "New WebUI Updater with light theme, reinstall support, and version history",
+  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.4.zip",
+  "size": 383210,
+  "versions": [
+    {
+      "version": "0.3.3",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.3.zip",
+      "description": "New full rompler macro, designer fixes, all definitions and presets"
+    },
+    {
+      "version": "0.3.2",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.2.zip",
+      "description": "Factory preset protection, preset value safety, auto-UI selection"
+    },
+    {
+      "version": "0.3.1",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.1.zip",
+      "description": "Online update workflow test"
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.0.zip",
+      "description": "Initial WebUI release with full UI refresh"
+    }
+  ]
 }
