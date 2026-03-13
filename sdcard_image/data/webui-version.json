@@ -1,5 +1,5 @@
 {
-  "version": "0.3.3",
-  "date": "2026-03-12",
-  "description": "New full rompler macro, designer fixes, all definitions and presets"
+  "version": "0.3.4",
+  "date": "2026-03-13",
+  "description": "New WebUI Updater with light theme, reinstall support, and version history"
 }

@@ -32,6 +32,10 @@ Create update packages (.zip) that users can apply via `http://192.168.4.1/webui
 - Update hosting URL: `https://dadamachines.github.io/ctag-tbd/_static/updates/`
 - WebUI versions doc: `docs/flash/70_webui_versions.rst` — **must be updated every release**
 - The device's updater page auto-checks `latest.json` on load to offer one-click online updates
+- The updater supports **reinstall** (re-apply current version) and **older versions** (roll back)
+- `latest.json` includes a `versions` array for the older-versions list (backwards-compatible)
+- Updater-update docs page: `docs/flash/68_update_updater.rst` — pushes `webui-update.html.gz` to the device
+- Hosted updater copy: `docs/_static/updater/webui-update.html.gz` — must be rebuilt when `webui-update.html` changes
 - All `www/` assets on SD card are `.gz` — include the `.gz` extension
 - All `data/` files are plain JSON — no `.gz` extension
 - File paths in the manifest are relative to `sdcard_image/` (e.g., `www/js/app-bundle.js.gz`)
@@ -242,7 +246,28 @@ cat docs/_static/updates/latest.json
 ls -la docs/_static/updates/*.zip
 ```
 
-Confirm `latest.json` has the correct version, URL, and size.
+Confirm `latest.json` has the correct version, URL, size, and `versions` array.
+
+The `versions` array in `latest.json` lists previously released versions for the "Older versions" feature:
+
+```json
+{
+  "version": "1.2.0",
+  "date": "2026-03-15",
+  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v1.2.0.zip",
+  "size": 180000,
+  "versions": [
+    {
+      "version": "1.1.0",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v1.1.0.zip",
+      "description": "Previous feature release"
+    }
+  ]
+}
+```
+
+When adding a new version, move the current `latest.json` top-level entry into the `versions` array before updating the top-level fields.
 
 ### Step 2 — Commit and push
 
@@ -254,6 +279,15 @@ git add docs/_static/updates/ \
   docs/flash/70_webui_versions.rst
 git commit -m "WebUI v<VERSION> — <short description>"
 git push
+```
+
+**If `webui-update.html` was changed**, also rebuild and commit the hosted updater copy:
+
+```bash
+cd sdcard_image/www && gzip -k -f webui-update.html && cd ../..
+cp sdcard_image/www/webui-update.html.gz docs/_static/updater/webui-update.html.gz
+git add docs/_static/updater/webui-update.html.gz
+git commit -m "Update hosted WebUI Updater copy"
 ```
 
 ### Step 3 — Deploy docs (if needed)
@@ -276,7 +310,9 @@ The update will be available at:
 3. Page fetches `latest.json` from GitHub Pages
 4. If remote version > installed version, shows "Update Available" banner with one-click install
 5. User clicks "Install Update" → browser downloads zip from GitHub Pages → parses it → uploads files to device via REST API
-6. Manual drag-drop upload remains available as a fallback
+6. If versions match, user can click "Reinstall" to re-apply the current version (factory reset)
+7. Expandable "Older versions" list lets users roll back to any version in the `versions` array
+8. Manual drag-drop upload remains available as a fallback
 
 ---
 

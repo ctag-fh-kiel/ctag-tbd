@@ -19,25 +19,51 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #1a1a2e; --bg2: #16213e; --bg3: #0f3460;
-      --fg: #e0e0e0; --fg2: #a0a0b0; --fg3: #707085;
-      --accent: #4fc3f7; --accent2: #0097a7;
-      --success: #66bb6a; --error: #ef5350; --warn: #ffa726;
-      --border: #2a2a4a; --radius: 8px;
+      --bg: hsl(0 0% 97.5%);       /* neutral-50 */
+      --bg2: hsl(0, 0%, 100%);      /* white */
+      --bg3: hsl(240 4.8% 95.9%);   /* neutral-100 */
+      --fg: hsl(240 5.9% 10%);      /* neutral-900 */
+      --fg2: hsl(240 3.8% 46.1%);   /* neutral-500 */
+      --fg3: hsl(240 5% 64.9%);     /* neutral-400 */
+      --accent: hsl(200.4 98% 39.4%);  /* sky-600 / primary */
+      --accent-light: hsl(204 100% 97.1%); /* sky-50 */
+      --accent-border: hsl(200.6 94.4% 86.1%); /* sky-200 */
+      --success: hsl(142.1 76.2% 36.3%); /* green-600 */
+      --success-light: hsl(138.5 76.5% 96.7%); /* green-50 */
+      --success-border: hsl(141 78.9% 85.1%); /* green-200 */
+      --error: hsl(0 72.2% 50.6%);  /* red-600 */
+      --error-light: hsl(0 85.7% 97.3%); /* red-50 */
+      --error-border: hsl(0 96.3% 89.4%); /* red-200 */
+      --warn: hsl(37.7 92.1% 50.2%); /* amber-500 */
+      --border: hsl(240 5.9% 90%);  /* neutral-200 */
+      --border-light: hsl(240 4.9% 83.9%); /* neutral-300 */
+      --radius: 8px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     body { background: var(--bg); color: var(--fg); min-height: 100vh; }
     .container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
 
     /* Header */
-    .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
-    .header h1 { font-size: 1.4rem; font-weight: 700; }
-    .header .subtitle { font-size: 0.8rem; color: var(--fg2); }
-    .back-link { color: var(--accent); text-decoration: none; font-size: 0.8rem; }
-    .back-link:hover { text-decoration: underline; }
+    .app-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0 1.5rem; height: 48px;
+      background: hsl(240 4.8% 95.9%); /* neutral-100 */
+      border-bottom: 1px solid var(--border);
+      max-width: 720px; margin: 0 auto;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+    .app-header h1 { font-size: 0.95rem; font-weight: 700; white-space: nowrap; }
+    .header-nav {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-left: auto; font-size: 0.78rem;
+    }
+    .header-nav a {
+      color: var(--accent); text-decoration: none; font-weight: 500;
+    }
+    .header-nav a:hover { text-decoration: underline; }
 
     /* Version cards */
-    .version-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .version-row { display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
     .version-card {
       flex: 1; min-width: 200px;
       background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
@@ -45,19 +71,44 @@
     }
     .version-card .label { font-size: 0.7rem; color: var(--fg3); text-transform: uppercase;
       letter-spacing: 0.05em; margin-bottom: 0.3rem; }
-    .version-card .value { font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .version-card .value { font-size: 1.1rem; font-weight: 700; color: var(--fg);
+      font-variant-numeric: tabular-nums; }
     .version-card .date { font-size: 0.75rem; color: var(--fg2); margin-top: 0.2rem; }
 
     /* Online update banner */
     .online-banner {
       background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 1rem; margin-bottom: 1.5rem;
+      padding: 1rem; margin-bottom: 1.25rem;
     }
     .online-banner .checking { color: var(--fg3); font-size: 0.82rem; }
     .online-banner .up-to-date { color: var(--success); font-size: 0.85rem; font-weight: 600; }
     .online-banner .update-title { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-bottom: 0.25rem; }
     .online-banner .update-desc { font-size: 0.8rem; color: var(--fg2); margin-bottom: 0.5rem; }
     .online-banner .update-meta { font-size: 0.72rem; color: var(--fg3); margin-bottom: 0.75rem; }
+
+    /* Older versions toggle */
+    .versions-toggle {
+      font-size: 0.8rem; color: var(--accent); cursor: pointer;
+      font-weight: 500; margin-top: 0.75rem; display: inline-block;
+      border: none; background: none; padding: 0;
+      font-family: inherit;
+    }
+    .versions-toggle:hover { text-decoration: underline; }
+    .versions-list {
+      display: none; margin-top: 0.75rem;
+      border-top: 1px solid var(--border); padding-top: 0.75rem;
+    }
+    .versions-list.open { display: block; }
+    .version-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.5rem 0; border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+    }
+    .version-item:last-child { border-bottom: none; }
+    .version-item .vi-version { font-weight: 700; min-width: 50px; color: var(--fg); }
+    .version-item .vi-desc { flex: 1; color: var(--fg2); font-size: 0.78rem; }
+    .version-item .vi-date { color: var(--fg3); font-size: 0.72rem; white-space: nowrap; }
+
     .section-label {
       font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
       color: var(--fg3); margin: 1.5rem 0 0.75rem; padding-bottom: 0.25rem;
@@ -66,13 +117,13 @@
 
     /* Drop zone */
     .drop-zone {
-      border: 2px dashed var(--border); border-radius: var(--radius);
+      border: 2px dashed var(--border-light); border-radius: var(--radius);
       padding: 2.5rem 1.5rem; text-align: center; cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
-      background: var(--bg2); margin-bottom: 1.5rem;
+      background: var(--bg2); margin-bottom: 1.25rem;
     }
     .drop-zone:hover, .drop-zone.drag-over {
-      border-color: var(--accent); background: rgba(79,195,247,0.05);
+      border-color: var(--accent); background: var(--accent-light);
     }
     .drop-zone .icon { font-size: 2rem; margin-bottom: 0.5rem; }
     .drop-zone .label { font-size: 0.9rem; color: var(--fg2); }
@@ -82,9 +133,9 @@
     /* Manifest info */
     .manifest-info {
       background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 1rem; margin-bottom: 1.5rem; display: none;
+      padding: 1rem; margin-bottom: 1.25rem; display: none;
     }
-    .manifest-info h3 { font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .manifest-info h3 { font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--fg); }
     .manifest-info .desc { font-size: 0.8rem; color: var(--fg2); margin-bottom: 0.75rem; }
 
     /* File list */
@@ -105,14 +156,22 @@
     /* Buttons */
     .btn {
       display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.6rem 1.2rem; border: none; border-radius: var(--radius);
-      font-size: 0.85rem; font-weight: 600; cursor: pointer;
-      transition: opacity 0.2s;
+      padding: 0.55rem 1.2rem; border: none; border-radius: var(--radius);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      font-family: inherit;
     }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-primary { background: var(--accent); color: #000; }
-    .btn-primary:hover:not(:disabled) { opacity: 0.85; }
-    .btn-secondary { background: var(--bg3); color: var(--fg); }
+    .btn-primary {
+      background: var(--accent); color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+    .btn-secondary {
+      background: var(--bg3); color: var(--fg2);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover:not(:disabled) { background: var(--border); }
+    .btn-sm { padding: 0.35rem 0.8rem; font-size: 0.75rem; }
 
     /* Progress */
     .progress-bar {
@@ -129,13 +188,22 @@
       padding: 0.75rem 1rem; border-radius: var(--radius);
       font-size: 0.82rem; margin-top: 1rem; display: none;
     }
-    .status-msg.success { background: rgba(102,187,106,0.15); color: var(--success); border: 1px solid rgba(102,187,106,0.3); }
-    .status-msg.error { background: rgba(239,83,80,0.15); color: var(--error); border: 1px solid rgba(239,83,80,0.3); }
-    .status-msg.info { background: rgba(79,195,247,0.15); color: var(--accent); border: 1px solid rgba(79,195,247,0.3); }
+    .status-msg.success {
+      background: var(--success-light); color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+    .status-msg.error {
+      background: var(--error-light); color: var(--error);
+      border: 1px solid var(--error-border);
+    }
+    .status-msg.info {
+      background: var(--accent-light); color: var(--accent);
+      border: 1px solid var(--accent-border);
+    }
 
     /* Log area */
     .log-area {
-      background: #111; border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
       padding: 0.75rem; margin-top: 1rem; max-height: 200px; overflow-y: auto;
       font-family: monospace; font-size: 0.72rem; color: var(--fg3);
       display: none;
@@ -147,37 +215,32 @@
 
     /* Hash info */
     .hash-info {
-      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.75rem; color: var(--fg3);
+      background: var(--accent-light); border: 1px solid var(--accent-border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.75rem; color: var(--fg2);
     }
-    .hash-info strong { color: var(--fg2); }
+    .hash-info strong { color: var(--fg); }
   </style>
 </head>
 <body>
+<div class="app-header">
+  <h1>&#9881; WebUI Updater</h1>
+  <div class="header-nav">
+    <a href="/">&#8592; TBD-16</a>
+    <a href="/preset-macro-manager.html">Presets &amp; Macros</a>
+  </div>
+</div>
 <div class="container">
 
-  <!-- Header -->
-  <div class="header">
-    <div>
-      <h1>&#9881; WebUI Updater</h1>
-      <div class="subtitle">Update WebUI files and macro definitions without a full SD card re-deploy</div>
-    </div>
-  </div>
-  <div style="margin-bottom:1.5rem;">
-    <a class="back-link" href="/">&#8592; Back to TBD-16</a>
-    &nbsp;&nbsp;
-    <a class="back-link" href="/preset-macro-manager.html">Preset &amp; Macro Manager</a>
-  </div>
-
   <!-- Current version -->
-  <div class="version-row">
+  <div class="version-row" style="margin-top:0.25rem;">
     <div class="version-card">
-      <div class="label">Installed WebUI Version</div>
+      <div class="label">Installed Version</div>
       <div class="value" id="current-version">—</div>
       <div class="date" id="current-date"></div>
     </div>
     <div class="version-card" id="update-version-card" style="display:none;">
-      <div class="label">Update Package Version</div>
+      <div class="label">Update Package</div>
       <div class="value" id="update-version">—</div>
       <div class="date" id="update-date"></div>
     </div>
@@ -185,14 +248,13 @@
 
   <!-- Online update check -->
   <div class="online-banner" id="online-banner">
-    <div id="online-content"><span class="checking">&#128269; Checking for updates online...</span></div>
+    <div id="online-content"><span class="checking">&#128269; Checking for updates...</span></div>
   </div>
 
   <!-- Hash info -->
   <div class="hash-info">
-    <strong>&#9432; SD Card Hash:</strong> WebUI updates do not change the SD card hash.
-    Your device will not re-extract the archive on reboot. A full firmware deploy will
-    overwrite any files updated here — this is expected behavior.
+    <strong>&#9432; Note:</strong> WebUI updates do not change the SD card hash.
+    A full firmware deploy will overwrite any files updated here — this is expected.
   </div>
 
   <!-- Manual update -->
@@ -258,7 +320,7 @@
   const UPDATE_CHECK_URL = 'https://dadamachines.github.io/ctag-tbd/_static/updates/latest.json';
 
   let manifest = null;
-  let zipFiles = {};  // name → Uint8Array
+  let zipFiles = {};  // name → { compression, data }
   let installedVersion = null;
 
   // ── Load current version from device ──
@@ -299,28 +361,88 @@
       const latest = await resp.json();
       if (!latest.version || !latest.url) throw new Error('Invalid latest.json');
 
-      if (installedVersion && compareVersions(latest.version, installedVersion) > 0) {
-        onlineContent.innerHTML =
+      const isNewer = installedVersion && compareVersions(latest.version, installedVersion) > 0;
+      const isSame  = installedVersion && compareVersions(latest.version, installedVersion) === 0;
+
+      let html = '';
+
+      if (isNewer) {
+        html +=
           '<div class="update-title">&#10024; Update Available: v' + escHtml(latest.version) + '</div>' +
           '<div class="update-desc">' + escHtml(latest.description || '') + '</div>' +
           '<div class="update-meta">Released: ' + escHtml(latest.date || 'unknown') + '</div>' +
           '<button class="btn btn-primary" id="online-install-btn">Install Update</button>';
-        document.getElementById('online-install-btn').addEventListener('click', function() {
-          installOnlineUpdate(latest);
-        });
       } else {
-        onlineContent.innerHTML = '<span class="up-to-date">&#9989; WebUI is up to date</span>';
+        html +=
+          '<span class="up-to-date">&#9989; WebUI is up to date (v' + escHtml(latest.version) + ')</span><br>' +
+          '<button class="btn btn-secondary btn-sm" id="online-reinstall-btn" style="margin-top:0.5rem;">' +
+          '&#8635; Reinstall v' + escHtml(latest.version) + '</button>';
       }
+
+      // Older versions section (from versions array in latest.json)
+      if (latest.versions && latest.versions.length > 0) {
+        html += '<button class="versions-toggle" id="versions-toggle">' +
+          '&#9662; Show older versions (' + latest.versions.length + ')</button>';
+        html += '<div class="versions-list" id="versions-list">';
+        for (var vi = 0; vi < latest.versions.length; vi++) {
+          var v = latest.versions[vi];
+          html += '<div class="version-item">' +
+            '<span class="vi-version">v' + escHtml(v.version) + '</span>' +
+            '<span class="vi-desc">' + escHtml(v.description || '') + '</span>' +
+            '<span class="vi-date">' + escHtml(v.date || '') + '</span>' +
+            '<button class="btn btn-secondary btn-sm" data-ver-url="' + escAttr(v.url) + '" ' +
+            'data-ver-version="' + escAttr(v.version) + '">Install</button>' +
+            '</div>';
+        }
+        html += '</div>';
+      }
+
+      onlineContent.innerHTML = html;
+
+      // Bind events
+      var installBtn = document.getElementById('online-install-btn');
+      if (installBtn) {
+        installBtn.addEventListener('click', function() { installOnlineUpdate(latest); });
+      }
+      var reinstallBtn = document.getElementById('online-reinstall-btn');
+      if (reinstallBtn) {
+        reinstallBtn.addEventListener('click', function() { installOnlineUpdate(latest); });
+      }
+      var toggleBtn = document.getElementById('versions-toggle');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+          var list = document.getElementById('versions-list');
+          var open = list.classList.toggle('open');
+          toggleBtn.innerHTML = (open ? '&#9652; Hide' : '&#9662; Show') +
+            ' older versions (' + latest.versions.length + ')';
+        });
+      }
+      // Bind older version install buttons
+      var verBtns = onlineContent.querySelectorAll('[data-ver-url]');
+      for (var bi = 0; bi < verBtns.length; bi++) {
+        verBtns[bi].addEventListener('click', function() {
+          installOnlineUpdate({
+            version: this.getAttribute('data-ver-version'),
+            url: this.getAttribute('data-ver-url')
+          });
+        });
+      }
+
     } catch (e) {
-      onlineContent.innerHTML = '<span class="checking">Could not check for updates online. Use manual upload below.</span>';
+      onlineContent.innerHTML = '<span class="checking">Could not check for updates. Use manual upload below.</span>';
     }
   }
 
   // ── Download and install an online update ──
   async function installOnlineUpdate(latest) {
-    var btn = document.getElementById('online-install-btn');
-    btn.disabled = true;
-    btn.textContent = 'Downloading...';
+    // Disable all online buttons
+    var btns = onlineContent.querySelectorAll('button');
+    for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
+
+    var statusEl = document.createElement('div');
+    statusEl.style.cssText = 'margin-top:0.5rem;font-size:0.82rem;color:var(--accent);font-weight:600;';
+    statusEl.textContent = 'Downloading v' + latest.version + '...';
+    onlineContent.appendChild(statusEl);
 
     try {
       var resp = await fetch(latest.url);
@@ -367,7 +489,7 @@
       manifestInfo.style.display = 'block';
       dropZone.style.display = 'none';
 
-      btn.textContent = 'Installing...';
+      statusEl.textContent = 'Installing...';
       progressBar.style.display = 'block';
 
       var total = manifest.files.length;
@@ -412,11 +534,11 @@
         });
         log('Version file updated to v' + manifest.version, 'ok');
         showStatus(
-          'Update complete! All ' + total + ' file(s) updated to v' + manifest.version +
-          '. Reload the main page to see changes.',
+          'Update complete! All ' + total + ' file(s) installed for v' + manifest.version +
+          '. Hard-refresh (Cmd+Shift+R) the main page to see changes.',
           'success'
         );
-        onlineContent.innerHTML = '<span class="up-to-date">&#9989; Updated to v' + escHtml(manifest.version) + '</span>';
+        onlineContent.innerHTML = '<span class="up-to-date">&#9989; Installed v' + escHtml(manifest.version) + '</span>';
         loadCurrentVersion();
       } else {
         showStatus(
@@ -429,8 +551,11 @@
     } catch (e) {
       showStatus('Online update failed: ' + e.message, 'error');
       log('Online update error: ' + e.message, 'err');
-      btn.textContent = 'Install Update';
-      btn.disabled = false;
+      statusEl.textContent = 'Failed — see error below';
+      statusEl.style.color = 'var(--error)';
+      // Re-enable buttons
+      var btns2 = onlineContent.querySelectorAll('button');
+      for (var j = 0; j < btns2.length; j++) btns2[j].disabled = false;
     }
   }
 
@@ -443,7 +568,6 @@
     const view = new DataView(buffer);
     const files = {};
 
-    // Find End of Central Directory record (search backwards)
     let eocd = -1;
     for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65557); i--) {
       if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
@@ -467,9 +591,8 @@
       const name = new TextDecoder().decode(bytes.slice(offset + 46, offset + 46 + nameLen));
       offset += 46 + nameLen + extraLen + commentLen;
 
-      if (name.endsWith('/')) continue; // skip directories
+      if (name.endsWith('/')) continue;
 
-      // Read data from local file header
       const lNameLen  = view.getUint16(localOff + 26, true);
       const lExtraLen = view.getUint16(localOff + 28, true);
       const dataStart = localOff + 30 + lNameLen + lExtraLen;
@@ -484,10 +607,9 @@
 
   async function extractFileData(entry) {
     if (entry.compression === 0) {
-      return entry.data; // stored — raw bytes
+      return entry.data;
     }
     if (entry.compression === 8) {
-      // deflate — use browser DecompressionStream
       const ds = new DecompressionStream('deflate-raw');
       const writer = ds.writable.getWriter();
       const reader = ds.readable.getReader();
@@ -553,7 +675,6 @@
       const names = Object.keys(zipFiles);
       log('ZIP contains ' + names.length + ' file(s)', 'info');
 
-      // Find manifest
       const manifestKey = names.find(n => n === 'manifest.json' || n.endsWith('/manifest.json'));
       if (!manifestKey) {
         showStatus('No manifest.json found in the ZIP. Cannot proceed.', 'error');
@@ -565,13 +686,11 @@
       manifest = JSON.parse(new TextDecoder().decode(manifestData));
       log('Manifest loaded: v' + manifest.version, 'ok');
 
-      // Validate manifest
       if (!manifest.version || !manifest.files || !Array.isArray(manifest.files)) {
         showStatus('Invalid manifest.json — missing version or files array', 'error');
         return;
       }
 
-      // Check all manifest files exist in the zip
       const missing = [];
       for (const f of manifest.files) {
         if (!zipFiles[f]) missing.push(f);
@@ -582,14 +701,12 @@
         return;
       }
 
-      // Show manifest info
       manifestTitle.textContent = 'Update to v' + manifest.version;
       manifestDesc.textContent = manifest.description || '';
       updVersion.textContent = 'v' + manifest.version;
       updDate.textContent = manifest.date || '';
       updCard.style.display = '';
 
-      // Build file list UI
       fileList.innerHTML = '';
       for (const f of manifest.files) {
         const li = document.createElement('li');
@@ -648,7 +765,6 @@
       progressFill.style.width = ((done / total) * 100).toFixed(1) + '%';
     }
 
-    // Update version file on device
     if (errors === 0) {
       try {
         const versionData = JSON.stringify({
@@ -666,8 +782,8 @@
       }
 
       showStatus(
-        'Update complete! All ' + total + ' file(s) updated to v' + manifest.version +
-        '. Reload the main page to see changes.',
+        'Update complete! All ' + total + ' file(s) installed for v' + manifest.version +
+        '. Hard-refresh (Cmd+Shift+R) the main page to see changes.',
         'success'
       );
       loadCurrentVersion();
@@ -688,10 +804,10 @@
 
     if (filePath.startsWith('www/')) {
       action = 'uploadwww';
-      apiPath = filePath.slice(4); // strip "www/"
+      apiPath = filePath.slice(4);
     } else if (filePath.startsWith('data/')) {
       action = 'uploadconfig';
-      apiPath = filePath.slice(5); // strip "data/"
+      apiPath = filePath.slice(5);
     } else {
       throw new Error('Unknown path prefix (expected www/ or data/): ' + filePath);
     }
@@ -729,7 +845,7 @@
     dropZone.style.display = '';
     updCard.style.display = 'none';
     fileInput.value = '';
-    loadCurrentVersion();
+    loadCurrentVersion().then(function() { checkOnlineUpdate(); });
   });
 
   // ── Helpers ──
@@ -743,6 +859,9 @@
     const d = document.createElement('div');
     d.textContent = s;
     return d.innerHTML;
+  }
+  function escAttr(s) {
+    return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 })();
 </script>

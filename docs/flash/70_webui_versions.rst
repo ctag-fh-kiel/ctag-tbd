@@ -14,6 +14,21 @@ Each version below includes the update package and a summary of changes.
    * - Version
      - Date
      - Description
+   * - **0.3.4**
+     - 2026-03-13
+     - New WebUI Updater with light theme matching Shoelace design,
+       reinstall support (re-apply current version for factory reset),
+       and expandable version history to install older releases.
+   * - **0.3.4**
+     - 2026-03-13
+     - New WebUI Updater with light theme matching Shoelace design,
+       reinstall support (re-apply current version for factory reset),
+       and expandable version history to install older releases.
+   * - **0.3.4**
+     - 2026-03-13
+     - New WebUI Updater with light theme matching Shoelace design,
+       reinstall support (re-apply current version for factory reset),
+       and expandable version history to install older releases.
    * - **0.3.3**
      - 2026-03-12
      - New full rompler macro definition and preset. Designer fixes.
@@ -48,6 +63,11 @@ How to Update
    The current WebUI version is shown in the footer of both the main page
    and the macro/preset manager. Click the version link to open the updater.
 
+.. tip::
+   Need to update the updater itself? See
+   `Update WebUI Updater <68_update_updater.html>`_ — push the latest
+   updater page to your device in one click (no MSC mode or firmware flash).
+
 Downloads
 =========
 
@@ -57,6 +77,12 @@ Downloads
 
    * - Version
      - Download
+   * - v0.3.4
+     - `webui-update-v0.3.4.zip <../_static/updates/webui-update-v0.3.4.zip>`_
+   * - v0.3.4
+     - `webui-update-v0.3.4.zip <../_static/updates/webui-update-v0.3.4.zip>`_
+   * - v0.3.4
+     - `webui-update-v0.3.4.zip <../_static/updates/webui-update-v0.3.4.zip>`_
    * - v0.3.3
      - `webui-update-v0.3.3.zip <../_static/updates/webui-update-v0.3.3.zip>`_
    * - v0.3.2
