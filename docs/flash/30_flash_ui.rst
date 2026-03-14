@@ -124,6 +124,7 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
         <option value="possan-tbd-2026-02-17.uf2">possan-tbd-2026-02-17.uf2 — Possan TBD</option>
         <option value="possan-tbd-2026-03-06.uf2" selected>possan-tbd-2026-03-06.uf2 — Possan TBD</option>
         <option value="possan-tbd-2026-03-11.uf2" selected>possan-tbd-2026-03-11.uf2 — Possan TBD</option>
+        <option value="possan-tbd-2026-03-14.uf2" selected>possan-tbd-2026-03-14.uf2 — Possan TBD</option>
       </select>
 
       <div class="btn-row">
@@ -301,7 +302,7 @@ Once in BOOTSEL mode, select your firmware and click **Connect**.
 Download Latest Firmware
 ========================
 
-* `possan-tbd-2026-03-06.uf2 <../_static/firmware/pico/possan-tbd-2026-03-06.uf2>`_
+* `possan-tbd-2026-03-14.uf2 <../_static/firmware/pico/possan-tbd-2026-03-14.uf2>`_
 
 
 Manual Flashing (UF2 Drag-and-Drop)
