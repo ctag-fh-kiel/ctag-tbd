@@ -11,49 +11,84 @@ orphan: true
 </div>
 ```
 
-**Dasha Rush** is a Berlin-based electronic musician, DJ, and multimedia artist originally from Moscow. Her work moves fluidly between techno, industrial, ambient, and avant-garde sound art. Known for her intense and immersive performances, she combines pounding rhythms with ethereal textures and cinematic atmospheres. Beyond club music, she has created sound installations, composed for film, and collaborated with visual artists. Her label Fullpanda Records has been a platform for boundary-pushing electronic music.
 
-## The Live Setup
+## Live Setup
 
-**Benjamin Weiss:** What is your live setup?
+**Benjamin Weiss:** What's your favorite setup when playing live?
 
-**Dasha Rush:** It depends on the context — for club performances I use a more streamlined setup, for installations and concerts it can get quite elaborate. But the core always includes hardware synthesizers, a drum machine, and a sampler. I like working with machines that have character — each device has its own sonic personality, and part of the performance is understanding how to bring those personalities together.
+**Dasha Rush:** I don't have one. I choose accordingly to whatever the concert is. If it's a techno set, it's more classic stuff—more drummy, percussive stuff.
 
-Effects processing is very important to me. I use reverb and delay extensively, not just as effects but as instruments in themselves. Long feedback chains, modulated delays — they become sound sources. I also incorporate field recordings and prepared audio that I manipulate in real time.
+My biggest complaint is that there are no good sequencers. Gear should be made with internal sequencers. Then you don't need to bring the laptop additionally. Some gear is great for the studio, but if it doesn't have a sequencer, I can't bring it. That would be my main complaint for most gear. I like gear where there are internal sequencers where you can do minimal work. If you want to have something complex, you can do that in the studio, but for simple stuff—especially techno—you have to have them inside.
 
-## Atmosphere and Narrative
+Preferably a complex sequencer, not in a simple way, but with extra things. Extra features like probability per note; a little extra touch. Playability is important.
 
-**Benjamin Weiss:** Your sets have a very cinematic quality. How do you approach that?
+**Benjamin Weiss:** But I still see you playing with lots of gear on stage.
 
-**Dasha Rush:** I think of every performance as a journey — it has a beginning, a development, a climax, and a resolution. The narrative arc is very important to me. I don't just want to play tracks or patterns; I want to create an experience that takes the audience somewhere.
+**Dasha Rush:** Every time it's different. I don't really play live so much anymore. I don't want to play techno live yet; next year I'll do maybe two. Every time I bring something different, I just play with it—whatever happens, happens.
 
-Atmosphere is something I build very deliberately. I use quiet moments, tension, and release. Silence is as important as sound. When you have the courage to create space in a set, the moments where the sound comes back become much more powerful.
+I wish the [Vermona DRM ](https://www.vermona.com/produkte/drums-percussion/produkt/drm1-mkiii/)would be a bit smaller. It's really annoying and big. Or something conceptual; I would like to have just two Vermonas and a few effects. But that's more abstract stuff, not for techno. After the concert: laptop. Always laptop. I need the laptop because I can't do so many things without it, it has so many sounds. If a sound is coming from somewhere else, I have to sample it.
 
-I'm also very influenced by film and visual art. The way a film score can completely change how you perceive an image — I try to create that same kind of emotional resonance in my live sets.
+What would be useful is to have a sampler inside, a bit like a [Digitakt](https://www.elektron.se/explore/digitakt-ii). Live sampling would be interesting, or even if you prepare stuff in the studio, you can play and modify in real time with modulations. It’s a balance between a sampler and sequencing. When it’s one big machine you have a lot of possibilities, but then it gets too busy.
 
-## The Physical and the Digital
+## Size, Portability, and Interface
 
-**Benjamin Weiss:** How do you think about the relationship between hardware and software?
+**Benjamin Weiss:** What's the good balance between busyness and size for you?
 
-**Dasha Rush:** I use both, but my heart is with hardware. There's something about the physical interaction — the resistance of a knob, the weight of a fader — that connects you to the sound in a way that a mouse click never can. When I turn a filter cutoff, I feel the sound changing under my fingers. That physical connection is essential for performance.
+**Dasha Rush:** If you focus on one machine or two, the size should be no bigger than a [Machinedrum](https://www.elektron.se/legacy). Maybe a tiny bit bigger. It shouldn't be too big because it won't fit in a suitcase. I never bring checked luggage; it has to be carry-on luggage size. Machinedrum size is the maximum because in my suitcase it fits, but I have to force it a tiny bit.
 
-That said, software gives you possibilities that hardware simply can't match. Complex modulation, granular processing, spectral manipulation — these things are much more accessible in software. The ideal is finding ways to combine both: the expressiveness of hardware with the power of software.
+**Benjamin Weiss:** Foldable stuff?
 
-## What's Missing
+**Dasha Rush:** Foldable stuff is not practical; they are going to break. But if the drum machine did not have a screen built-in, you could connect a screen—even an external screen.
 
-**Benjamin Weiss:** Is there anything you've been searching for?
+**Benjamin Weiss:** Do you like touchscreens when playing?
 
-**Dasha Rush:** Real-time spectral processing in a hardware format. Being able to analyze and manipulate the frequency content of a sound physically, in the moment. Also, better tools for creating spatial audio in a live context — moving sounds through three-dimensional space.
+**Dasha Rush:** No, not touchscreen. Just to see what's going on. To see which parameters are active, because if it gets too busy with "Function \+ this and that," it’s annoying. I prefer flat hierarchies—not too deep. When you play live, especially in the darkness, even if you know the machine well, deep menus are annoying.
 
-I'm also always looking for new ways to create drones and evolving textures. Something that can generate complex, slowly evolving sounds that I can shape and steer — like a living organism of sound.
+A reliable screen is important so you can see the active functions and what you do. Values are very important. What you touch, you want to see. It’s an ongoing process; in the studio you can come back to it, but while you're playing, you need to see it to help you remember the actual value.
 
-## Feedback on the TBD-Toolkit Prototype
+**Benjamin Weiss:** For interaction, what's important for the buttons and knobs?
 
-**Benjamin Weiss:** What would you do with the TBD prototype?
+**Dasha Rush:** It depends which function it is. For encoders, I like them a little heavy and tighter where you feel the weight as you turn. If you're in a fast process, you really need to feel the weight. The buttons really need to feel solid.
 
-**Dasha Rush:** Sound design — that's where I'd start. I'd want to create instruments that don't exist yet. Synthesizers with unusual timbral characteristics, effects that transform sound in unexpected ways. The open architecture means you're not limited by what a manufacturer decided the device should do.
+**Benjamin Weiss:** Do you prefer faders or knobs for levels?
 
-I'd also be interested in using it for installations — where you need custom tools that respond to specific environments or inputs. A programmable audio platform that you can adapt to any context is incredibly valuable for an artist working across different formats.
+**Dasha Rush:** Knobs are better for traveling because faders get broken. Space between them is important. I hate the little Pocket Operators; they are cute and work well, but they get on my nerves. Even the Roland Boutique versions are too tiny. Machinedrum size is good because you have space.
+
+## Customization and Power Supplies
+
+**Dasha Rush:** I like interchangeable knobs—extra knobs by color. You can additionally buy a box of interchangeable knobs. I want blue for certain parameters. I usually do it on my controllers; I change all the knobs by color. In the darkness, it is important because if everything is in the laptop, I don't need to hunt for things. I know blue is delay or effects, and the purple one is a particular synth. Color coding is important—minimal, at least: red, blue, green.
+
+**Benjamin Weiss:** What about the power supply?
+
+**Dasha Rush:** Can we just use the same power supply for everything? I hate "wall warts." USB-C power works. These cables are genius—the ones I have now for the Eventide effects. It's a 9-volt USB thing and it's just connected. They take less space and work without the big adapter.
+
+Can we make things smaller? Sometimes the adapter is bigger than the box. It's heavier than the box itself. I ordered a new one and it was even bigger. I don't know why you need to make an adapter like that.
+
+## Feedback on the TBD Prototype
+
+**Benjamin Weiss:** This is a blank canvas. You can program it and assign functions to the buttons.
+
+**Dasha Rush:** For a sequencer, okay. You can assign some functions per page, per button. Page one is an oscillator, page two is an envelope, page three is something else. But for drums, it's not possible because it's too small. To pre-program a sequence in the studio is fine, but if I really want to play, it's too small.
+
+**Dasha Rush:** Can you connect a sustain pedal? If it’s a granular synth where you make drones and loop them, there should be a sustain pedal. You can't put everything in one machine, and you don't have to. You should have one thing for rhythmical patterns and one for crazy semi-granular stuff—two boxes with an interconnection.
+
+**Benjamin Weiss:** Do you use Link or MIDI?
+
+**Dasha Rush:** Just MIDI. I never linked anything in my life. It stresses me.
+
+**Benjamin Weiss:** You can store up to 16 different firmwares and switch between them while it’s running.
+
+**Dasha Rush:** How much memory does it have? If I use it as a sampler, the processing inside is important.
+
+**Benjamin Weiss:** It’s an ESP32. It’s a DSP that is a little slower than a Raspberry Pi.
+
+**Dasha Rush:** Why don't you make it a tiny bit bigger? As an effect or a small extra thing, it’s nice that you can assign things, but the buttons are too small for playing. If you had parameter locks per step, that would be useful. I would probably use it for a little oscillator or a sequencer where I modulate the envelope and filter on top. For drums, it's just annoying.
+
+**Benjamin Weiss:** If it had a battery, would you like that?
+
+**Dasha Rush:** A power bank is actually fun. You can program it on the plane. A few times I was making patterns on a plane. With a small device, you can have fun and program some sequences for extra stuff.
+
+
 
 *Interview: [Benjamin Weiss (MID)](https://instrument-design.com/)*  
 *Funded by [NLnet](https://nlnet.nl/project/TBD-DSP-Toolkit/)*  
