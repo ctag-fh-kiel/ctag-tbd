@@ -10,9 +10,6 @@ orphan: true
   <a href="jammin-unit-de.html">Deutsch</a>
 </div>
 ```
-Here’s your translation, keeping the `.md` formatting intact:
-
----
 
 # Live Setup and Instruments
 
@@ -23,7 +20,6 @@ I’m actually selling the [Hydrasynth](https://www.ashunsoundmachines.com/hydra
 
 In the studio, I also have a Yamaha organ, the [Reface YC](https://europe.yamaha.com/en/musical-instruments/keyboards/products/synthesizers/reface/#d2133636). I love it because it’s not about oscillators, cutoff, and resonance, but about “registers.” Those are overtones, and it’s incredibly fun and expressive. The rest is packed away; I don’t use it anymore. What I use a lot are analog filters that I connect between devices. Instead of using a cheap mixer EQ, I work with analog filters, which gives me much more.
 
----
 
 ## Requirements for Live Gear
 
@@ -37,7 +33,6 @@ The second thing is accessibility. When playing live, I don’t want to search t
 
 **Jammin Unit:** It’s the same with my mastering work: knobs need to show you where you are. They need to directly display their value. That’s difficult with devices that have pattern recall or table recall, but I think it’s important. That’s why I prefer a lot of analog gear.
 
----
 
 ## Studio Philosophy: No Computer
 
@@ -51,7 +46,6 @@ I just made an album, and everything is one-take, sometimes ten minutes or longe
 
 **Jammin Unit:** Never. Ingmar (Dr. Walker, with whom I make Air Liquide) had one during the second phase of our collaboration, but I didn’t. I focus on beats, synths, and the 303. You have your recipe. With the MPC, you can do updates or change the style. It’s a basic framework that I prepare in advance. I don’t start from scratch. In the past, I did live sets with just the MPC 3000 because it was inspiring to do everything with one device. It was incredibly powerful.
 
----
 
 ## Feedback on the TBD Prototype
 
@@ -70,7 +64,6 @@ Recording with it would also be interesting. So far, I’ve only used a looper f
 
 **Jammin Unit:** With a user-friendly program that comes with it. Maybe something where you can click things together in a browser, with some images.
 
----
 
 ## Haptics and Design Check
 
