@@ -11,49 +11,73 @@ orphan: true
 </div>
 ```
 
-**Jammin Unit** (Martin Schopf) ist ein in Berlin ansässiger elektronischer Musiker und DJ, dessen Karriere über drei Jahrzehnte umspannt. Ursprünglich aus Chile stammend, ist er eine zentrale Figur der Berliner Szene für elektronische Musik. Er war Mitgründer des legendären Labels Shitkatapult und an verschiedenen Projekten beteiligt, die lateinamerikanische und europäische Traditionen elektronischer Musik verbinden. Seine Live-Auftritte sind bekannt für ihren eklektischen Mix aus Dub, Techno, Electro und experimentellen Klängen, die über ein sorgfältig kuratiertes Hardware-Setup dargeboten werden.
 
-## Das Live-Setup
+## Live-Setup und Instrumente
 
-**Benjamin Weiss:** Was ist dein Live-Setup?
+**Benjamin Weiss:** Du spielst schon sehr lange und viel live. Aus was besteht dein aktuelles Set?
 
-**Jammin Unit:** Über die Jahre hat sich mein Setup stark verändert, aber die Philosophie ist gleich geblieben — ich will Maschinen, die ich wie Instrumente spielen kann. Im Moment benutze ich eine Kombination aus Grooveboxen, einem Sampler und einem Mixer mit eingebauten Effekten. Ich sequenziere alles von Hardware — kein Laptop. Das Wichtigste ist, dass jedes Gerät seinen Platz verdienen muss. Wenn ich es nicht intuitiv und spontan benutzen kann, kommt es nicht zum Gig mit.
+**Jammin Unit:** Seitdem sie rausgekommen ist, habe ich eine MPC. Nach der [MPC 60](https://en.wikipedia.org/wiki/Akai_MPC) hatte ich fast alle. Das ist mein zentrales Arbeitswerkzeug. Und dann habe ich eine [303-Simulation von Roland Aira](https://aira.roland.com/products/tb-3/), diverse analoge Filter, ein Delay und einen kleinen Synth.  
+Den [Hydrasynth](https://www.ashunsoundmachines.com/hydrasynth-key) verkaufe ich gerade wieder. Er hat einen super Sound, aber ich merke, dass ich zu viele Presets benutze, weil es mir zu anstrengend ist, ins Detail zu gehen. Ich meide Menüs. Und wenn ich ihn mit anderen Instrumenten zusammen benutze, ist das Ding nicht mehr zu hören. Du kannst ihn so laut machen, wie du willst, er setzt sich nicht durch. Wenn er sich durchsetzt, macht er einen tierischen Matsch. Das funktioniert für mich nicht. Eben habe ich mir den neuen [Sequential Fourm](https://sequential.com/modern-analog/fourm/) geholt, genau danach habe ich gesucht. Der setzt sich durch. Ob das an der analogen Technik liegt? Sehr gut möglich.
 
-Ich habe auch immer einen kleinen Analog-Synth für Basslines und eine Drum Machine dabei. Der Mixer ist sehr wichtig — dort forme ich den Sound und erzeuge die Dynamik des Sets.
+Im Studio habe ich noch eine Orgel von Yamaha, die [Reface YC](https://europe.yamaha.com/en/musical-instruments/keyboards/products/synthesizers/reface/#d2133636). Die finde ich super, weil es mal nicht Oszillator, Cutoff und Resonance sind, sondern “Register”. Das sind Obertöne und es macht unheimlich viel Spaß und da kommt was rüber. Der Rest ist verstaut, den benutze ich nicht mehr. Was ich viel benutze, sind analoge Filter, die ich zwischen die Geräte schalte. Anstatt mit einem günstigen Mischpult-EQ arbeite ich mit analogen Filtern, das bringt mir viel mehr.
 
-## Dub-Techniken und Live-Mixing
+## Anforderungen an Live-Geräte
 
-**Benjamin Weiss:** Dub scheint ein großer Einfluss auf deinen Live-Ansatz zu sein.
+**Benjamin Weiss:** Was ist das Wichtigste bei einem Gerät, das du auf der Bühne benutzt?
 
-**Jammin Unit:** Absolut. Der Mixer ist mein Hauptinstrument. Ich benutze den EQ, die Sends und die Fader die ganze Zeit — Frequenzen beschneiden, Sachen in Delay und Reverb schicken, Drops und Aufbauten erzeugen. Das ist der Dub-Ansatz: Der Mix ist die Performance. Man nimmt die gleichen Elemente und verwandelt sie komplett allein durch Mixing und Effekte.
+**Jammin Unit:** Das Wichtigste ist die Zuverlässigkeit. Die MPC ist zum Beispiel bei hoher Vibration schon mal im Pattern gesprungen. Das ist ein Desaster, wenn plötzlich etwas kommt, das du gar nicht willst. Zuverlässigkeit ist das Allerwichtigste für live.
 
-Ich bin mit Dub und Reggae aufgewachsen, und diese Art, über Musik nachzudenken — als etwas Räumliches, etwas, das man in Echtzeit formt — war schon immer der Kern meiner Arbeit.
+Das Zweite ist die Zugänglichkeit. Ich will beim Live-Spielen nicht in Menüs suchen und vorsichtig sein müssen, was ich berühre. Man muss schon ein bisschen grobmotorisch sein dürfen.
 
-## Kulturelle Verbindungen
+**Benjamin Weiss:** Ist dir das Design oder das visuelle Feedback wichtig?
 
-**Benjamin Weiss:** Wie beeinflusst dein chilenischer Hintergrund deine elektronische Musik?
+**Jammin Unit:** Das ist bei meiner Arbeit beim Mastering auch so: Regler müssen dir zeigen, wo du bist. Sie müssen direkt ihren Wert zeigen. Das ist bei Geräten mit Pattern-Recall oder Table-Recall schwierig, aber ich finde es wichtig, das zu haben. Deswegen bevorzuge ich viele analoge Sachen.
 
-**Jammin Unit:** Lateinamerikanische Musik hat so reiche rhythmische Traditionen. Cumbia zum Beispiel hat diese hypnotischen, zyklischen Rhythmen, die in einem elektronischen Kontext unglaublich gut funktionieren. Das habe ich viel erforscht — traditionelle rhythmische Muster nehmen und sie mit elektronischen Instrumenten neu interpretieren. Es geht nicht darum, „Weltmusik" zu machen — es geht darum zu erkennen, dass Rhythmus universal ist und diese Traditionen uns viel über Groove und Bewegung beibringen können.
+## Studio-Philosophie: Kein Computer
 
-Berlin ist seit Jahrzehnten mein Zuhause, und der Austausch zwischen Kulturen hier war für meine Arbeit essenziell. Diese Kreuzbestäubung von Ideen ist das, was elektronische Musik interessant hält.
+**Benjamin Weiss:** Ist das Live-Spielen für dich deutlich mit der Studio-Arbeit verbunden?
 
-## Was fehlt
+**Jammin Unit:** Das ist eigentlich das Gleiche. Ich habe gar keinen Computer mehr in meinem Musikstudio. Ich habe einen Computer in meinem Masteringstudio, das einen Meter entfernt ist, aber im Musikstudio steht keiner. Da ist ein Kassettenrekorder zum Aufnehmen und die MPC für die Sequenzen.
 
-**Benjamin Weiss:** Gibt es Gear, das du dir wünschen würdest?
+Ich habe gerade ein Album gemacht, das sind alles One-Takes, manchmal zehn Minuten oder länger. Das geht dann von der Kassette in den Computer. In ganz wenigen Fällen habe ich Overdubs gemacht. Dafür benutze ich meine [Fostex x15](https://www.muzines.co.uk/articles/fostex-x-15-multitracker/6000), ein 4-Kanal-Cassettenrecorder. Gekürzt und editiert habe ich natürlich am Computer; ich verfluche Computer nicht, sie nerven mich nur im Musikstudio.
 
-**Jammin Unit:** Ein richtig gutes, kompaktes Dub-Delay mit haptischer Kontrolle — etwas, das speziell für Live-Dub-Mixing gemacht ist. Die meisten Delays sind für Gitarristen oder den Studioeinsatz konzipiert. Ich will etwas, das für die Art von Echtzeit-Manipulation optimiert ist, die man bei einem Dub-artigen Live-Set macht. Große Knöpfe, responsive Feedback-Kontrolle, vielleicht einen eingebauten Spring Reverb.
+**Benjamin Weiss:** Hast du auf der Bühne jemals Computer benutzt?
 
-Ich hätte auch gerne ein Hardware-Gerät, das Echtzeit-Time-Stretching von Loops ohne Artefakte kann. Das würde so viele Möglichkeiten für Live-Performance eröffnen.
+**Jammin Unit:** Noch nie. Ingmar (Dr Walker, mit dem Jammin Unit Air Liquide macht) hatte in der zweiten Phase unserer Zusammenarbeit oft einen dabei, aber ich nicht. Ich konzentriere mich auf Beats, Synths und die 303. Da hat man sein Rezept. Mit der MPC kannst du Updates machen oder den Style verändern. Das ist ein Grundgerüst, das ich vorbereitet habe. Ich fange nicht bei Null an. Früher habe ich Live-Sets nur mit der MPC 3000 gemacht, weil es inspirierend war, mit nur einem Gerät alles zu machen. Das hat geballert wie Sau.
 
-## Feedback zum TBD-Toolkit Prototyp
+## Feedback zum TBD-Prototyp
 
-**Benjamin Weiss:** Was würdest du mit dem TBD-Prototyp machen?
+**Benjamin Weiss:** Hast du jemals Geräte gehabt, die du selbst programmieren konntest?
 
-**Jammin Unit:** Dub-Effekte — das ist das Erste. Ein richtig gutes Tape-Delay mit kontrollierbarem Feedback und Filterung. Aber auch ein Looper, mit dem ich Momente aus dem Set einfangen und manipulieren kann. Wenn es beides gut kann, würde es ein fester Teil meines Setups werden.
+**Jammin Unit:** Nie gemacht, nie gesucht. Wobei ich öfter gedacht habe, dass man manche Plugins eigentlich auf die Bühne mitnehmen können müsste.
 
-Die Idee einer offenen Plattform ist großartig, weil man sie an seine spezifischen Bedürfnisse anpassen kann. Nicht jeder spielt auf die gleiche Weise, und ein Gerät zu haben, das für den eigenen Workflow konfiguriert werden kann, ist sehr wertvoll.
+**Benjamin Weiss:** [Zeigt den Prototyp] Was würdest du damit machen?
 
----
+**Jammin Unit:** Erstmal meine Brille aufsetzen!  
+Ich würde mich fragen, was die Buchsen bedeuten. Eingänge, Ausgänge, MIDI-Interface. Ansonsten sieht das sehr übersichtlich aus.  
+Wenn das Gerät genug Speicher hat und theoretisch alles kann, würde ich Teile der MPC ersetzen, wenn Samples reinpassen. Vielleicht würde ich einen Synth installieren oder Effekte, die ich durchjage. Wenn die Soundqualität stimmt und genug Druck erzeugt, würde ich das im Studio und live benutzen. Als allererstes würde ich es als Effektgerät testen. Da ich immer neue Instrumente suche, würde ich auch das versuchen, per MIDI. CV-Gate brauche ich nicht, da ich keinen CV-Synth habe.  
+Aufnahmen damit zu machen, wäre auch interessant. Einen Looper habe ich bisher nur für akustisch-elektrische Instrumente wie Bass und Gitarre benutzt, nicht für das Studio.
+
+**Benjamin Weiss:** Wie würdest du das Ganze zusammenstellen wollen?
+
+**Jammin Unit:** Mit einem bedienerfreundlichen Programm, das mitgeliefert wird. Vielleicht etwas, wo man Sachen im Browser zusammenklicken kann, ein bisschen bebildert.
+
+## Haptik und Design-Check
+
+**Benjamin Weiss:** Die Idee ist, dass du bis zu 16 Firmwares haben kannst. Eine Firmware ist im Prinzip ein komplett neues Gerät. [Zeigt das Interface].
+
+**Jammin Unit:** Ist das die Lautstärke für den Kopfhörer? Das finde ich gut. Direct Access, damit man nicht erst in ein Menü muss. Und man kann Controller wie ein Keyboard anschließen.  
+Ich bin Grobmotoriker. Für mich wäre das fast schon zu eng, wenn ich mir Eurorack-Sachen ansehe, ist das hier absolut akzeptabel. Dass man 16 verschiedene Instrumente wie Sampler oder 303 als Plugins laden kann, ist cool.
+
+Was mich abschreckt, ist, wenn es zu tief reingeht. Wenn du das Tuning suchst und eine halbe Stunde da stehst, weil du nicht weißt, wie du es findest. Das Konzept eines Microkorg ist das Gegenteil: Wenn du den verdrehst, klingt es immer gut und bleibt im musikalischen Bereich.
+
+**Benjamin Weiss:** Was sagst du zum Gehäuse?
+
+**Jammin Unit:** Das Stahlgehäuse finde ich gut. Es hat Abstand von der "Bierlache" auf dem Tisch. Es ist eher Enduro als Straßenfahrzeug. Aber diese spitzen Ecken gehen nicht, die sind zu krass. Die würde ich versenken.
+
+Ein Problem: Wenn du direkt davor am Schreibtisch sitzt, sind die Knöpfe im Weg, wenn du auf das Display schauen willst. Ich würde es mir hochstellen. Ein kleiner Metallbügel hinten wäre nett, aber ich helfe mir da meistens selbst. Der Abstand der Regler ist dickefingerfreundlich, man kann drehen, ohne die anderen zu verstellen. Der Formfaktor ist gut, klein und transportabel.
+
+
 
 *Interview: [Benjamin Weiss (MID)](https://instrument-design.com/)*  
 *Gefördert von [NLnet](https://nlnet.nl/project/TBD-DSP-Toolkit/)*  
