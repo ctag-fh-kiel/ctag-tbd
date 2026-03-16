@@ -21,8 +21,7 @@ Artist Interviews
 
      <a class="interview-card" href="jessica-kert-en.html">
        <div class="interview-card-image">
-         <div class="interview-card-placeholder">JK</div>
-       </div>
+
        <div class="interview-card-body">
          <h3>Jessica Kert</h3>
          <p class="interview-card-meta">EN · DE</p>
