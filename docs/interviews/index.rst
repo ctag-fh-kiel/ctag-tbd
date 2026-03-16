@@ -12,7 +12,7 @@ Artist Interviews
      missing for the stage use case. We also had some questions around various TBD 16 prototypes, but since they are from different points in time of the development, take all comments about them with a grain of salt.
    </p>
    <p class="dada-section-body">
-     The interviews are meant to inspire and give ideas to TBD developers
+     The interviews are meant to inspire and give ideas to TBD developers about 
      how their ideas can be transformed into meaningful instruments for
      musicians.
    </p>
