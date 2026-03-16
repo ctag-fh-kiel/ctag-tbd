@@ -71,7 +71,7 @@ Artist Interviews
 
  <a class="interview-card" href="dasha-rush-en.html">
        <div class="interview-card-image">
-         <div class="interview-card-placeholder">JU</div>
+         <div class="interview-card-placeholder">DR</div>
        </div>
        <div class="interview-card-body">
          <h3>Dasha Rush</h3>
