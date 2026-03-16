@@ -9,7 +9,7 @@ Artist Interviews
      We have been talking to a couple of seasoned electronic musicians to
      find out how they play live on stage, what's important to them when it
      comes to instrument interfaces, and which kind of instruments they are
-     missing for the stage use case.
+     missing for the stage use case. We also had some questions around various TBD 16 prototypes, but since they are from different points in time of the development, take all comments about them with a grain of salt.
    </p>
    <p class="dada-section-body">
      The interviews are meant to inspire and give ideas to TBD developers
