@@ -10,7 +10,9 @@ orphan: true
   <a href="dasha-rush-de.html">Deutsch</a>
 </div>
 ```
+**Dasha Rush** is a Russian-born, Berlin-based electronic musician and interdisciplinary artist. Starting her career in Moscow, she later moved to France and now lives in Berlin. Rush creates experimental electronic music, often blending ambient, techno, and live performance with visual and theatrical elements. She has released albums on labels like Sonic Groove and Raster Noton, and runs her own label, Fullpanda Records. Her projects, such as "Les Territoires Ephemeres" and "Dark Hearts Of Space," combine music with dance, poetry, and digital visuals. Rush is also known for her live shows, which explore the emotional and technological aspects of sound, often collaborating with dancers, cellists, and visual artists. 
 
+[Dasha Rush](https://www.dasharush.org/)
 
 ## Live Setup
 
