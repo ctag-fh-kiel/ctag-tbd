@@ -10,7 +10,9 @@ orphan: true
   <a href="daria-goremykina-de.html">Deutsch</a>
 </div>
 ```
-**Daria Goremykina** is a pianist and electronic musician from St. Petersburg, now based in Berlin. She started piano at age five, studied at the Rimsky-Korsakov Conservatory, and later earned diplomas from UdK Berlin. As both a classical and electronic performer, she has played in concert halls across Europe. Since 2023, she teaches electronic music production at Catalyst Berlin. Her work combines her classical background with live electronic performance, focusing on improvisation, synthesis, and music technology. 
+**Daria Goremykina** is a pianist and electronic musician from St. Petersburg, now based in Berlin. She started piano at age five, studied at the Rimsky-Korsakov Conservatory, and later earned diplomas from UdK Berlin. As both a classical and electronic performer, she has played in concert halls across Europe. Since 2023, she teaches electronic music production at Catalyst Berlin. Her work combines her classical background with live electronic performance, focusing on improvisation, synthesis, and music technology.
+
+ [Daria Goremykina](https://www.instagram.com/dasha_dsh/)
 
 # Live Setup and Looping Challenges
 
