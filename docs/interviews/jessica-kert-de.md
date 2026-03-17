@@ -13,6 +13,8 @@ orphan: true
 
 **Jessica Kert** ist eine in Berlin ansässige Musikerin und Produzentin, die sich auf modulare Synthese und Techno spezialisiert hat. Ihre Veröffentlichungen erschienen auf Labels wie Detroit Underground, Athmophile Electronics und Associated Parapoloid. Ihre Live-Auftritte in Clubs und auf Festivals zeichnen sich durch präzise Rhythmen, experimentelle Klangtexturen und den Einsatz analoger Modularsysteme aus. Durch ihre Tätigkeit im Berliner Synthesizer-Fachgeschäft SchneidersLaden vertiefte sie ihr technisches Verständnis für modulare Systeme. Neben ihrer künstlerischen Arbeit gibt sie Workshops, in denen sie ihr Wissen über Synthese und Live-Performance weitergibt. 
 
+[Jessica Kert](https://www.instagram.com/jessyandthechords/)
+
 # Das Live-Setup 
 
 **Benjamin Weiss:** Was ist dein Live-Setup?
