@@ -12,6 +12,8 @@ orphan: true
 ```
 **Bill Youngman** is an American electronic musician and producer based in Berlin. Best known under his alias Headless Horseman, he makes dark, industrial-influenced techno with a hypnotic intensity that he brings to the stage playing his live sets. His work spans IDM, acid, electro, experimental electronics, and hard techno as well as the occasional tv series soundtrack. He has released music on labels such as Serotonin Records, Tresor, Scandinavia, Killekill and 47.
 
+[Bill Youngman](https://www.instagram.com/headlesstechno/)
+
 # Live Setup
 
 **Benjamin Weiss:** You play electronic music live a lot and you use machines in contrast to using a laptop or something else that's more prepared. What's your general MO? How do you go on stage?
