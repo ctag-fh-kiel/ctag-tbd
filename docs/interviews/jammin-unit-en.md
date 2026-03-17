@@ -10,6 +10,9 @@ orphan: true
   <a href="jammin-unit-de.html">Deutsch</a>
 </div>
 ```
+**Jammin Unit** aka Cem Oral, a German musician, producer, and mastering engineer. Starting as an audio engineer in Frankfurt in the 1980s, Oral became a key figure in Berlin’s 1990s electronic scene, known for pioneering dub techno and experimental electronic music. As Jammin Unit, he released influential albums like “Jammin’ Unit Discovers Chemical Dub” (1995) and “Deaf, Dub And Blind” (1997), blending dub, techno, and ambient sounds. He also co-founded projects such as Air Liquide and Ultrahigh, and collaborated with artists like Wu-Tang Clan, Nine Inch Nails, and Mad Professor.
+
+[Jammin Unit](https://jamminmasters.de/)
 
 # Live Setup and Instruments
 
