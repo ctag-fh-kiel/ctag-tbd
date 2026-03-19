@@ -61,9 +61,8 @@ How to Update
    and the macro/preset manager. Click the version link to open the updater.
 
 .. tip::
-   Need to update the updater itself? See
-   `Update WebUI Updater <68_update_updater.html>`_ — push the latest
-   updater page to your device in one click (no MSC mode or firmware flash).
+   For more details on how the updater works, see
+   `Update WebUI Updater <68_update_updater.html>`_.
 
 Downloads
 =========

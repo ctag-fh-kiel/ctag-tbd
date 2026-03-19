@@ -358,11 +358,8 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
         <div class="step-desc">
           <b>Remove all USB cables</b>, wait 3 seconds, then reconnect a single cable to <b>back Port&nbsp;#1</b>.
           Connect your computer to the TBD-16's WiFi and open <b>http://192.168.4.1/webui-update.html</b>.
-          The updater page will show <b>WebUI v0.3.5</b> — click <b>Install</b> to update.
+          The updater page will check for the latest WebUI version — click <b>Install</b> to update.
           This takes about 30 seconds over WiFi. No MSC mode or SD card access needed.
-        </div>
-        <div class="btn-row">
-          <a href="68_update_updater.html" style="display:inline-block; padding:0.5em 1.2em; border:none; border-radius:5px; font-size:0.88em; font-weight:600; color:#fff; background:#0891B2; text-decoration:none; cursor:pointer;">Need to update the updater page first? →</a>
         </div>
         <div class="status status-info">After installing, hard-refresh (<b>Ctrl+Shift+R</b> / <b>Cmd+Shift+R</b>) the main page at <b>http://192.168.4.1</b>.</div>
       </div>

@@ -31,10 +31,10 @@ or something went wrong. Firmware updates **never erase** your SD card.
      </div>
 
      <div class="dada-cta">
-       <h3>Update WebUI Updater</h3>
-       <p>Push the latest WebUI Updater to your device &mdash;
-       no reflash or SD card erase needed.</p>
-       <a href="68_update_updater.html" class="dada-cta-link">Update Updater &rarr;</a>
+       <h3>Update WebUI</h3>
+       <p>Update the web interface from your device &mdash;
+       no firmware flash or SD card erase needed.</p>
+       <a href="68_update_updater.html" class="dada-cta-link">Update WebUI &rarr;</a>
      </div>
 
    </div>
