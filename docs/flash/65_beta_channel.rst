@@ -9,13 +9,13 @@ browser — no card reader, no terminal commands, no opening the device.
 
 .. code-block:: text
 
-   possan-tbd-2026-03-12 Changelog
+   possan-tbd-2026-03-19 Changelog
 
+   - WebUI v0.3.5: volume multiplier, targeted reload, export/import fix, updated presets
+   - ESP32-P4 firmware reliability overhaul — USB NCM, SD card, I2C, TinyUSB v2.1.1
    - Macro/preset system with designer and performer
    - PicoSeqRack DSP plugin with 20 rack processors
-   - New Shoelace-based WebUI (v0.3.1) with online self-update
    - SPI protocol handler for MIDI, Ableton Link, waveform data
-   - Rompler voice fixes and sample ROM model improvements
 
 Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archive.html>`_.
 
@@ -278,13 +278,108 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
           <span class="step-num" style="background:#7c3aed;">▼</span> Firmware Package
         </div>
         <div class="step-desc">
-          Flashing <b>possan-tbd-2026-03-12</b> — the latest beta firmware.
+          Flashing <b>possan-tbd-2026-03-19</b> — the latest beta firmware.
           Need an older version? <a href="66_beta_channel_archive.html">Beta Channel Archive →</a>
         </div>
         <div class="status status-info" id="statPkg">
-          <b>possan-tbd-2026-03-12</b> — P4 firmware + Pico firmware + SD card image from 2026-03-12
+          <b>possan-tbd-2026-03-19</b> — P4 firmware + Pico firmware + SD card image from 2026-03-19
         </div>
       </div>
+
+      <!-- ════════ PATH CHOOSER ════════ -->
+      <div class="step-card" id="cardPathChooser" style="border-color:#7c3aed; box-shadow:0 0 0 1px #7c3aed;">
+        <div class="step-hdr" style="color:#7c3aed;">
+          <span class="step-num" style="background:#7c3aed;">?</span> Choose Your Update Method
+        </div>
+        <div style="display:flex; gap:1em; flex-wrap:wrap; margin-top:0.3em;">
+          <!-- Option A -->
+          <div id="optionCardA" style="flex:1; min-width:220px; border:2px solid #0891B2; border-radius:8px; padding:1em 1.2em; cursor:pointer; background:var(--color-background-secondary,#f0fdfa); transition: box-shadow 0.15s, border-color 0.15s;" onclick="choosePath('A')">
+            <div style="font-weight:700; font-size:0.95em; color:#0891B2; margin-bottom:0.4em;">⚡ Quick Update <span style="font-size:0.75em; background:#0891B2; color:#fff; padding:0.15em 0.5em; border-radius:3px; vertical-align:middle; margin-left:0.3em;">Recommended</span></div>
+            <div style="font-size:0.82em; color:var(--color-foreground-secondary,#555); line-height:1.5;">
+              Flash <b>P4 + Pico firmware</b>, then update the WebUI over WiFi.<br>
+              No SD card erase, no MSC mode — fast &amp; easy.
+            </div>
+          </div>
+          <!-- Option B -->
+          <div id="optionCardB" style="flex:1; min-width:220px; border:2px solid #6B7280; border-radius:8px; padding:1em 1.2em; cursor:pointer; background:var(--color-background-secondary,#fafafa); transition: box-shadow 0.15s, border-color 0.15s;" onclick="choosePath('B')">
+            <div style="font-weight:700; font-size:0.95em; color:#6B7280; margin-bottom:0.4em;">🗄️ Full SD Card Deploy</div>
+            <div style="font-size:0.82em; color:var(--color-foreground-secondary,#555); line-height:1.5;">
+              Flash <b>P4 + Pico firmware</b> and re-write the entire SD card image.<br>
+              Use for fresh installs or if your SD card data is corrupted.
+            </div>
+          </div>
+        </div>
+        <div class="status status-info" id="statPath" style="margin-top:0.8em;">
+          Choose an update method above to continue.
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════
+           OPTION A — Quick Update (firmware + WebUI over WiFi)
+           ════════════════════════════════════════ -->
+      <div id="pathA" style="display:none;">
+
+      <!-- ════════ A·1 — Flash ESP32-P4 ════════ -->
+      <div class="step-card active-step" id="cardA1">
+        <div class="step-hdr"><span class="step-num" style="background:#0891B2;">1</span> Flash ESP32-P4 Firmware</div>
+        <div class="step-desc">
+          Connect the <b>front JTAG port</b> (USB-C&nbsp;#3) and keep <b>back Port&nbsp;#1</b> connected for power.
+          Click <b>Connect</b> below, then flash <code id="fwNameA1">possan-tbd-2026-03-19.bin</code> to the ESP32-P4.
+        </div>
+        <div class="btn-row">
+          <button id="btnA1Connect" class="btn-primary" disabled>Loading…</button>
+          <button id="btnA1Flash" class="btn-success" disabled>Flash ctag-tbd Firmware</button>
+        </div>
+        <div class="progress-wrap" id="progA1"><div class="progress-bar" id="progA1Bar"></div><span class="progress-text" id="progA1Txt">0 %</span></div>
+        <div class="status" id="statA1">Loading flash tool…</div>
+      </div>
+
+      <!-- ════════ A·2 — Flash RP2350 (Pico) ════════ -->
+      <div class="step-card" id="cardA2">
+        <div class="step-hdr"><span class="step-num" style="background:#0891B2;">2</span> Flash RP2350 (Pico Firmware)</div>
+        <div class="step-desc">
+          <b>Connect the back USB-C Port&nbsp;#2</b> (closest to the edge).
+          You can disconnect the front JTAG cable.
+          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET on the front panel),
+          then click <b>Connect</b>. This flashes <code id="fwNameA2">possan-tbd-2026-03-19.uf2</code> to the co-processor.
+        </div>
+        <div class="btn-row">
+          <button id="btnA2Connect" class="btn-primary">Connect</button>
+          <button id="btnA2Flash" class="btn-success" disabled>Flash Pico Firmware</button>
+          <button id="btnA2Reboot" class="btn-secondary" disabled>Reboot</button>
+        </div>
+        <div class="progress-wrap" id="progA2"><div class="progress-bar" id="progA2Bar"></div><span class="progress-text" id="progA2Txt">0 %</span></div>
+        <div class="status" id="statA2">Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.</div>
+      </div>
+
+      <!-- ════════ A·3 — WebUI Update over WiFi ════════ -->
+      <div class="step-card" id="cardA3" style="border-color:#0891B2;">
+        <div class="step-hdr" style="color:#0891B2;"><span class="step-num" style="background:#0891B2;">3</span> Update WebUI over WiFi</div>
+        <div class="step-desc">
+          <b>Remove all USB cables</b>, wait 3 seconds, then reconnect a single cable to <b>back Port&nbsp;#1</b>.
+          Connect your computer to the TBD-16's WiFi and open <b>http://192.168.4.1/webui-update.html</b>.
+          The updater page will show <b>WebUI v0.3.5</b> — click <b>Install</b> to update.
+          This takes about 30 seconds over WiFi. No MSC mode or SD card access needed.
+        </div>
+        <div class="btn-row">
+          <a href="68_update_updater.html" style="display:inline-block; padding:0.5em 1.2em; border:none; border-radius:5px; font-size:0.88em; font-weight:600; color:#fff; background:#0891B2; text-decoration:none; cursor:pointer;">Need to update the updater page first? →</a>
+        </div>
+        <div class="status status-info">After installing, hard-refresh (<b>Ctrl+Shift+R</b> / <b>Cmd+Shift+R</b>) the main page at <b>http://192.168.4.1</b>.</div>
+      </div>
+
+      <!-- ════════ A·DONE ════════ -->
+      <div class="complete-card" id="cardDoneA">
+        <h3>✓ Quick Update Complete</h3>
+        <p>Your TBD-16 has the latest firmware and <b>WebUI v0.3.5</b>.<br>
+        Open <b>http://192.168.4.1</b> to use the device.</p>
+      </div>
+
+      </div><!-- end pathA -->
+
+      <!-- ════════════════════════════════════════
+           OPTION B — Full SD Card Deploy
+           ════════════════════════════════════════ -->
+      <div id="pathB" style="display:none;">
 
       <!-- ════════ STEP 1 ════════ -->
       <div class="step-card active-step" id="card1">
@@ -344,7 +439,7 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
           First <b>power-cycle the device</b>: unplug the cable from <b>back USB-C Port&nbsp;#1</b>,
           wait 3 seconds, then plug it back in.
           Once the device has rebooted, click <b>Connect</b> below (via the <b>front JTAG port</b>)
-          to flash the selected firmware (<code id="fwNameStep4">possan-tbd-2026-03-12.bin</code>) to the ESP32-P4.
+          to flash the selected firmware (<code id="fwNameStep4">possan-tbd-2026-03-19.bin</code>) to the ESP32-P4.
         </div>
         <div class="btn-row">
           <button id="btn4Connect" class="btn-primary">Connect</button>
@@ -361,7 +456,7 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
           <b>Connect the back USB-C Port&nbsp;#2</b> to your computer (the port closest to the edge of the device).
           You can disconnect the front JTAG cable — it is no longer needed.
           Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL button + press RESET — both on the front panel, next to the JTAG port),
-          then click <b>Connect</b> below. This flashes <code id="fwNameStep5">possan-tbd-2026-03-12.uf2</code> to the RP2350 co-processor.
+          then click <b>Connect</b> below. This flashes <code id="fwNameStep5">possan-tbd-2026-03-19.uf2</code> to the RP2350 co-processor.
         </div>
         <div class="btn-row">
           <button id="btn5Connect" class="btn-primary">Connect</button>
@@ -375,14 +470,36 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
       <!-- ════════ DONE ════════ -->
       <div class="complete-card" id="cardDone">
         <h3>✓ Beta Firmware Setup Complete</h3>
-        <p>Your TBD-16 has the SD card image and <code id="fwNameDone">possan-tbd-2026-03-12.bin</code> firmware.<br>
+        <p>Your TBD-16 has the SD card image and <code id="fwNameDone">possan-tbd-2026-03-19.bin</code> firmware.<br>
         <b>Remove all USB cables</b> from the device and wait 3 seconds to fully power-cycle.
         Then reconnect a single USB-C cable to <b>back Port&nbsp;#1</b> and open
         <b>http://192.168.4.1</b> to use the device.</p>
       </div>
+
+      </div><!-- end pathB -->
     </div>
 
     <script>
+    /* ── Path chooser (global — called from onclick) ── */
+    function choosePath(path) {
+      var pA = document.getElementById('pathA');
+      var pB = document.getElementById('pathB');
+      var oA = document.getElementById('optionCardA');
+      var oB = document.getElementById('optionCardB');
+      var st = document.getElementById('statPath');
+      if (path === 'A') {
+        pA.style.display = 'block'; pB.style.display = 'none';
+        oA.style.boxShadow = '0 0 0 2px #0891B2'; oA.style.borderColor = '#0891B2';
+        oB.style.boxShadow = 'none'; oB.style.borderColor = '#6B7280';
+        st.innerHTML = '\u26a1 <b>Quick Update</b> selected \u2014 flash firmware, then update WebUI over WiFi.';
+      } else {
+        pA.style.display = 'none'; pB.style.display = 'block';
+        oB.style.boxShadow = '0 0 0 2px #2563EB'; oB.style.borderColor = '#2563EB';
+        oA.style.boxShadow = 'none'; oA.style.borderColor = '#6B7280';
+        st.innerHTML = '\ud83d\uddc4\ufe0f <b>Full SD Card Deploy</b> selected \u2014 flash firmware and re-write the entire SD card.';
+      }
+    }
+
     (async function () {
       /* ──────────────────────────────
          DOM refs
@@ -409,6 +526,15 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
       var prog5 = $('prog5'), prog5Bar = $('prog5Bar'), prog5Txt = $('prog5Txt');
       var stat5 = $('stat5');
 
+      /* Path A refs */
+      var btnA1Connect = $('btnA1Connect'), btnA1Flash = $('btnA1Flash');
+      var progA1 = $('progA1'), progA1Bar = $('progA1Bar'), progA1Txt = $('progA1Txt');
+      var statA1 = $('statA1');
+      var btnA2Connect = $('btnA2Connect'), btnA2Flash = $('btnA2Flash'), btnA2Reboot = $('btnA2Reboot');
+      var progA2 = $('progA2'), progA2Bar = $('progA2Bar'), progA2Txt = $('progA2Txt');
+      var statA2 = $('statA2');
+      var cardDoneA = $('cardDoneA');
+
       /* ──────────────────────────────
          Constants
          ────────────────────────────── */
@@ -416,13 +542,13 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
 
       /* Package — latest beta only */
       var ACTIVE_PKG = {
-        p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-12.bin',
-        p4Name:   'possan-tbd-2026-03-12.bin',
-        picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-12.uf2',
-        picoName: 'possan-tbd-2026-03-12.uf2',
-        zipUrl:   '../_static/sdcard_image/2026-03-12/tbd-sd-card.zip',
-        hashUrl:  '../_static/sdcard_image/2026-03-12/tbd-sd-card-hash.txt',
-        label:    'possan-tbd-2026-03-12'
+        p4Url:    '../_static/firmware/p4/possan-tbd-2026-03-19.bin',
+        p4Name:   'possan-tbd-2026-03-19.bin',
+        picoUrl:  '../_static/firmware/pico/possan-tbd-2026-03-19.uf2',
+        picoName: 'possan-tbd-2026-03-19.uf2',
+        zipUrl:   '../_static/sdcard_image/2026-03-19/tbd-sd-card.zip',
+        hashUrl:  '../_static/sdcard_image/2026-03-19/tbd-sd-card-hash.txt',
+        label:    'possan-tbd-2026-03-19'
       };
 
       function getActivePkg() {
@@ -606,6 +732,13 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
       btn1Connect.disabled = false;
       skip1.style.display = 'inline-block';
       setStat(stat1, 'Click <b>Connect</b> to start. Make sure <b>both</b> USB-C cables are connected: <b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).');
+
+      /* ── Path A ready ── */
+      if (btnA1Connect) {
+        btnA1Connect.textContent = 'Connect';
+        btnA1Connect.disabled = false;
+        setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>. Keep <b>back Port&nbsp;#1</b> connected for power.');
+      }
 
       /* ══════════════════════════════
          STEP 1 — Flash tusb_msc.bin + switch to ota_1
@@ -1174,6 +1307,165 @@ Looking for an older build? See the `Beta Channel Archive <66_beta_channel_archi
           console.error(e);
           setStat(stat5, 'Reboot failed: ' + e.message, 'err');
           await cleanup5();
+        }
+      });
+
+      /* ══════════════════════════════
+         PATH A — Step A1: Flash ESP32-P4 Firmware
+         ══════════════════════════════ */
+      var espA1 = null, transA1 = null, connA1 = false;
+
+      async function cleanupA1() {
+        connA1 = false;
+        if (transA1) { try { await transA1.disconnect(); } catch (_) {} }
+        espA1 = null; transA1 = null;
+      }
+
+      if (btnA1Connect) btnA1Connect.addEventListener('click', async function () {
+        try {
+          btnA1Connect.disabled = true;
+          setStat(statA1, 'Requesting serial port\u2026');
+          var port = await navigator.serial.requestPort({});
+          transA1 = new Transport(port, true);
+          var term = { clean:function(){}, writeLine:function(d){console.log(d);}, write:function(d){console.log(d);} };
+          espA1 = new ESPLoader({ transport: transA1, baudrate: 460800, terminal: term });
+          setStat(statA1, 'Connecting\u2026');
+          var chip = await espA1.main();
+          connA1 = true;
+          btnA1Flash.disabled = false;
+          setStat(statA1, 'Connected to <b>' + chip + '</b>. Click <b>Flash ctag-tbd Firmware</b>.', 'ok');
+        } catch (e) {
+          console.error(e);
+          setStat(statA1, 'Connection failed: ' + e.message, 'err');
+          btnA1Connect.disabled = false;
+          await cleanupA1();
+        }
+      });
+
+      if (btnA1Flash) btnA1Flash.addEventListener('click', async function () {
+        if (!connA1 || !espA1) return;
+        btnA1Flash.disabled = true; btnA1Connect.disabled = true;
+        try {
+          var pkg = getActivePkg();
+          setStat(statA1, 'Downloading ' + pkg.label + ' firmware\u2026');
+          var resp = await fetch(pkg.p4Url);
+          if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
+          var fw = new Uint8Array(await resp.arrayBuffer());
+          var sizeMB = (fw.length / 1024 / 1024).toFixed(1);
+
+          setStat(statA1, 'Flashing <code>' + pkg.p4Name + '</code> (' + sizeMB + ' MB) \u2014 do not unplug\u2026');
+          await espA1.writeFlash({
+            fileArray: [{ data: toBinStr(fw), address: 0x0 }],
+            flashSize: '16MB', flashMode: 'dio', flashFreq: '80m',
+            eraseAll: false, compress: true,
+            reportProgress: function (_, written, total) {
+              showProg(progA1, progA1Bar, progA1Txt, Math.round(written / total * 100));
+            }
+          });
+          showProg(progA1, progA1Bar, progA1Txt, 100);
+
+          setStat(statA1, 'Resetting device\u2026', 'ok');
+          try { await espA1.after('hard_reset'); } catch (e) {
+            console.warn('Software reset failed:', e);
+          }
+          await cleanupA1();
+
+          setStat(statA1, '\u2713 ESP32-P4 firmware updated (<code>' + pkg.p4Name + '</code>).', 'ok');
+
+          if (pkg.picoUrl) {
+            btnA2Connect.disabled = false;
+            setStat(statA2, '<b>Connect back USB-C Port&nbsp;#2</b>, put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET), then click <b>Connect</b>.');
+          } else {
+            cardDoneA.style.display = 'block';
+          }
+        } catch (e) {
+          console.error(e);
+          setStat(statA1, 'Flash failed: ' + e.message, 'err');
+          btnA1Connect.disabled = false;
+          await cleanupA1();
+        }
+      });
+
+      /* ══════════════════════════════
+         PATH A — Step A2: Flash RP2350 (Pico Firmware)
+         ══════════════════════════════ */
+      var picoA2 = null, picoConnA2 = null;
+
+      async function cleanupA2() {
+        try { if (picoA2) await picoA2.disconnect(); } catch (_) {}
+        picoA2 = null; picoConnA2 = null;
+      }
+
+      if (btnA2Connect) btnA2Connect.addEventListener('click', async function () {
+        if (!Picoboot) {
+          setStat(statA2, 'Picoboot module failed to load. Try reloading the page.', 'err');
+          return;
+        }
+        try {
+          btnA2Connect.disabled = true;
+          setStat(statA2, 'Waiting for device selection\u2026 choose <b>RP2350 Boot</b>');
+          picoA2 = await Picoboot.requestDevice();
+          setStat(statA2, 'Connecting\u2026');
+          picoConnA2 = await picoA2.connect();
+          await picoConnA2.resetInterface();
+          btnA2Flash.disabled = false;
+          var info = picoA2.getUsbDeviceInfo();
+          setStat(statA2, 'Connected to <b>' + (info.productName || 'RP2350') + '</b>. Click <b>Flash Pico Firmware</b>.', 'ok');
+        } catch (e) {
+          console.error(e);
+          setStat(statA2, 'Connection failed: ' + e.message, 'err');
+          btnA2Connect.disabled = false;
+          await cleanupA2();
+        }
+      });
+
+      if (btnA2Flash) btnA2Flash.addEventListener('click', async function () {
+        if (!picoA2 || !uf2ToFlashBuffer) return;
+        btnA2Flash.disabled = true; btnA2Connect.disabled = true;
+        try {
+          var pkg = getActivePkg();
+          setStat(statA2, 'Downloading <code>' + pkg.picoName + '</code>\u2026');
+          showProg(progA2, progA2Bar, progA2Txt, 10);
+          var resp = await fetch(pkg.picoUrl);
+          if (!resp.ok) throw new Error('Download failed: ' + resp.statusText);
+          var uf2Data = new Uint8Array(await resp.arrayBuffer());
+          showProg(progA2, progA2Bar, progA2Txt, 25);
+
+          setStat(statA2, 'Parsing UF2 file\u2026');
+          var parsed = uf2ToFlashBuffer(uf2Data);
+          var sizeKB = (parsed.data.length / 1024).toFixed(0);
+
+          setStat(statA2, 'Erasing &amp; writing ' + sizeKB + ' KB\u2026');
+          showProg(progA2, progA2Bar, progA2Txt, 35);
+          await picoA2.flashEraseAndWrite(parsed.address, parsed.data);
+          showProg(progA2, progA2Bar, progA2Txt, 100);
+
+          btnA2Reboot.disabled = false;
+          setStat(statA2, '\u2713 RP2350 firmware updated (<code>' + pkg.picoName + '</code>). Click <b>Reboot</b> to restart.', 'ok');
+        } catch (e) {
+          console.error(e);
+          setStat(statA2, 'Flash failed: ' + e.message, 'err');
+          btnA2Connect.disabled = false;
+          await cleanupA2();
+        }
+      });
+
+      if (btnA2Reboot) btnA2Reboot.addEventListener('click', async function () {
+        try {
+          btnA2Reboot.disabled = true;
+          setStat(statA2, 'Rebooting device\u2026');
+          try { await picoConnA2.reboot(100); } catch (e) {
+            console.warn('Reboot command error (may be expected):', e.message);
+          }
+          await cleanupA2();
+          hideProg(progA2);
+
+          setStat(statA2, '\u2713 RP2350 rebooted. Now continue to Step 3 \u2014 update the WebUI over WiFi.', 'ok');
+          cardDoneA.style.display = 'block';
+        } catch (e) {
+          console.error(e);
+          setStat(statA2, 'Reboot failed: ' + e.message, 'err');
+          await cleanupA2();
         }
       });
 

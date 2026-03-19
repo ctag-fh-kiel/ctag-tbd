@@ -14,16 +14,13 @@ Each version below includes the update package and a summary of changes.
    * - Version
      - Date
      - Description
-   * - **0.3.4**
-     - 2026-03-13
-     - New WebUI Updater with light theme matching Shoelace design,
-       reinstall support (re-apply current version for factory reset),
-       and expandable version history to install older releases.
-   * - **0.3.4**
-     - 2026-03-13
-     - New WebUI Updater with light theme matching Shoelace design,
-       reinstall support (re-apply current version for factory reset),
-       and expandable version history to install older releases.
+   * - **0.3.5**
+     - 2026-03-19
+     - Volume multiplier control with factory PIN unlock. Boot Defaults
+       dialog now shows macro definition hint per track. Targeted single-
+       definition reload (fixes crash on save). Export now includes live
+       knob values; bulk import implemented. Updated vol multiplier defaults
+       and Polypad preset. All definitions and presets included.
    * - **0.3.4**
      - 2026-03-13
      - New WebUI Updater with light theme matching Shoelace design,
@@ -77,10 +74,8 @@ Downloads
 
    * - Version
      - Download
-   * - v0.3.4
-     - `webui-update-v0.3.4.zip <../_static/updates/webui-update-v0.3.4.zip>`_
-   * - v0.3.4
-     - `webui-update-v0.3.4.zip <../_static/updates/webui-update-v0.3.4.zip>`_
+   * - v0.3.5
+     - `webui-update-v0.3.5.zip <../_static/updates/webui-update-v0.3.5.zip>`_
    * - v0.3.4
      - `webui-update-v0.3.4.zip <../_static/updates/webui-update-v0.3.4.zip>`_
    * - v0.3.3
