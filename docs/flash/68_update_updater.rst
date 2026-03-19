@@ -223,6 +223,29 @@ The updated WebUI Updater includes:
         <div class="status" id="utPushStatus">Check the connection first.</div>
       </div>
 
+      <!-- ── Manual Download Fallback ── -->
+      <div class="ut-card">
+        <div class="ut-hdr">Alternative: Manual Download</div>
+        <div class="ut-desc">
+          If the push above fails (e.g. mixed-content or CORS error), you can
+          download the file and upload it manually:
+        </div>
+        <ol style="margin:0.5em 0 0.8em 1.2em; font-size:0.9em; line-height:1.7;">
+          <li><a id="utManualDl" href="../_static/updater/webui-update.html.gz"
+                 download="webui-update.html.gz"
+                 style="font-weight:600;">Download webui-update.html.gz</a></li>
+          <li>Open your device's file manager at
+              <code>http://192.168.4.1/file-manager.html</code></li>
+          <li>Navigate to the <code>www</code> folder</li>
+          <li>Upload <code>webui-update.html.gz</code>, replacing the existing file</li>
+          <li>Hard-refresh <code>http://192.168.4.1/webui-update.html</code></li>
+        </ol>
+        <div class="status status-info" style="font-size:0.82em;">
+          This does the same thing as the push button — it just skips the
+          browser-to-device network call that HTTPS pages can't make to HTTP devices.
+        </div>
+      </div>
+
     </div>
 
     <script>
@@ -339,8 +362,14 @@ The updated WebUI Updater includes:
             'ok');
 
         } catch (e) {
+          var hint = '';
+          if (e.message && (e.message.indexOf('Failed to fetch') >= 0 || e.message.indexOf('NetworkError') >= 0)) {
+            hint = '<br><b>This is likely a mixed-content / CORS issue</b> — ' +
+              'HTTPS pages cannot push to HTTP devices. ' +
+              'Use the <b>Manual Download</b> section below instead.';
+          }
           setStat(pushStatus,
-            'Failed: ' + e.message + '<br>' +
+            'Failed: ' + e.message + hint + '<br>' +
             '<small>Make sure you are connected to the TBD-16 WiFi and the device is in normal mode (not MSC).</small>',
             'err');
         }
