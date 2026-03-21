@@ -23,10 +23,10 @@
 // this file is to parse the JSON mui files to generate the c++ code for parameter parsing
 // a convenience effort towards a generator
 // usage to create new files: node generator.js muifile
-    // example node generator.js mui-SimpleVCA.jsn
+    // example node generator.js mui-SimpleVCA.json
 // usage to overwrite / replace in existing files: node generator.js ProcessorName -i
     // example node generator.js SimpleVCA
-    // attention this replaces code / overwrites the mp-...jsn file
+    // attention this replaces code / overwrites the mp-...json file
 
 const fs = require('fs');
 let nargs = process.argv.length;
@@ -45,15 +45,15 @@ if(nargs == 3){
     hppOut = 'ctagSoundProcessor' + mui.id + '.hpp';
     cppIn = 'ctagSoundProcessorTemplate.cpp';
     cppOut = 'ctagSoundProcessor' + mui.id + '.cpp';
-    mp = 'mp-' + mui.id + '.jsn';
+    mp = 'mp-' + mui.id + '.json';
 }else if(nargs == 4){
     if(process.argv[3] != '-i'){
         console.log('Usage, see source file!');
         process.exit(-1);
     }
-    muiIn = '../sdcard_image/data/sp/mui-' + process.argv[2] + '.jsn';
+    muiIn = '../sdcard_image/data/sp/mui-' + process.argv[2] + '.json';
     mui = JSON.parse(fs.readFileSync(muiIn));
-    mp = '../sdcard_image/data/sp/mp-' + process.argv[2] + '.jsn';
+    mp = '../sdcard_image/data/sp/mp-' + process.argv[2] + '.json';
     hppIn = '../components/ctagSoundProcessor/ctagSoundProcessor' + process.argv[2] + '.hpp';
     hppOut = hppIn;
     cppIn = '../components/ctagSoundProcessor/ctagSoundProcessor' + process.argv[2] + '.cpp';

@@ -246,7 +246,7 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
     json.Clear();
     Document d1, d2;
-    loadJSON(d1, CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".jsn");
+    loadJSON(d1, CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".json");
     d2.SetObject();
     Value s_id(kObjectType);
     s_id.SetString(id, d2.GetAllocator());
@@ -262,7 +262,7 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
     Document presets;
     presets.Parse(data);
     if(presets.HasParseError()) return;
-    storeJSON(presets, string(CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".jsn"));
+    storeJSON(presets, string(CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".json"));
 }
 
 bool SPManagerDataModel::HasPluginID(const string &id) {

@@ -170,7 +170,7 @@ Registering New Plugins
 
 If a new plugin does not appear in the web UI, the cached processor list needs to be refreshed:
 
-1. Open ``sdcard_image/data/spm-config.jsn``.
+1. Open ``sdcard_image/data/spm-config.json``.
 2. Delete the entire ``"availableProcessors": [ ... ],`` block.
 3. Save the file and restart the simulator.
 

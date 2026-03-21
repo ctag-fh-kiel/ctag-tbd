@@ -22,7 +22,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/stringbuffer.h"
 
 string CTAG::FAV::FavoritesModel::GetAllFavorites() {
-    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.jsn");
+    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.json");
     json.Clear();
     Writer<StringBuffer> writer(json);
     if (!m.IsArray()) return "";
@@ -31,7 +31,7 @@ string CTAG::FAV::FavoritesModel::GetAllFavorites() {
 }
 
 string CTAG::FAV::FavoritesModel::GetFavorite(int const &i) {
-    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.jsn");
+    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.json");
     json.Clear();
     Writer<StringBuffer> writer(json);
     if (!m.IsArray()) return "";
@@ -41,21 +41,21 @@ string CTAG::FAV::FavoritesModel::GetFavorite(int const &i) {
 }
 
 string CTAG::FAV::FavoritesModel::GetFavoriteName(int const &i) {
-    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.jsn");
+    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.json");
     if (!m.IsArray()) return "";
     Value o = m[i].GetObject();
     return o["name"].GetString();
 }
 
 string CTAG::FAV::FavoritesModel::GetFavoriteUString(int const &i) {
-    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.jsn");
+    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.json");
     if (!m.IsArray()) return "";
     Value o = m[i].GetObject();
     return o["ustring"].GetString();
 }
 
 string CTAG::FAV::FavoritesModel::GetFavoritePluginID(int const &i, const int &channel) {
-    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.jsn");
+    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.json");
     if (!m.IsArray()) return "";
     if (!m[i].IsObject()) return "";
     string key {"plug_0"};
@@ -65,7 +65,7 @@ string CTAG::FAV::FavoritesModel::GetFavoritePluginID(int const &i, const int &c
 }
 
 int CTAG::FAV::FavoritesModel::GetFavoritePreset(int const &i, const int &channel) {
-    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.jsn");
+    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.json");
     if (!m.IsArray()) return 0;
     string key {"pre_0"};
     if(channel == 1) key = string("pre_1");
@@ -74,10 +74,10 @@ int CTAG::FAV::FavoritesModel::GetFavoritePreset(int const &i, const int &channe
 }
 
 void CTAG::FAV::FavoritesModel::SetFavorite(int const &id, const string &data) {
-    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.jsn");
+    loadJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.json");
     if (!m.IsArray()) return;
     Document d;
     d.Parse(data);
     m[id] = d.Move();
-    storeJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.jsn");
+    storeJSON(m, CTAG::RESOURCES::sdcardRoot + "/data/favs.json");
 }

@@ -9,7 +9,7 @@
 #define SD_CARD_SAMPLE_FOLDER "/sdcard/tbdsamples"
 #endif
 
-#define SAMPLE_ROM_DEFINITION_FILE "sample_rom.jsn"
+#define SAMPLE_ROM_DEFINITION_FILE "sample_rom.json"
 
 CTAG::SP::ctagSampleRomModel::ctagSampleRomModel(){
     sampleRomDescFileName_ = std::string(SD_CARD_SAMPLE_FOLDER) + "/" + std::string(SAMPLE_ROM_DEFINITION_FILE);

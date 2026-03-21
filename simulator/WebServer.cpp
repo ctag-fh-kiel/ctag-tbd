@@ -57,7 +57,6 @@ static string getMimeType(const string& path) {
         {".mp3", "audio/mpeg"},
         {".xml", "application/xml"},
         {".txt", "text/plain"},
-        {".jsn", "application/json"},
     };
     auto dot = path.rfind('.');
     if (dot != string::npos) {

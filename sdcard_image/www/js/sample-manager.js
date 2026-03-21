@@ -49,7 +49,7 @@ const state = {
   files: [],            // [{ name, path, size }] from API
   folders: [],          // unique folder paths
 
-  kits: {               // from sample_rom.jsn via API
+  kits: {               // from sample_rom.json via API
     smp_banks: [],
     smp_bank_names: [],
     smp_bank_tags: [],

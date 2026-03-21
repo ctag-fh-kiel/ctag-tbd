@@ -80,9 +80,9 @@ namespace CTAG {
 
             Document m;
 #ifndef TBD_SIM
-            const string MODELJSONFN = "/sdcard/data/spm-config.jsn";
+            const string MODELJSONFN = "/sdcard/data/spm-config.json";
 #else
-            const string MODELJSONFN = "../../sdcard_image/data/spm-config.jsn";
+            const string MODELJSONFN = "../../sdcard_image/data/spm-config.json";
 #endif
         };
     }

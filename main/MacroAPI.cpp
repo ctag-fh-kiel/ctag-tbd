@@ -280,7 +280,7 @@ static esp_err_t handle_get_trackdefaults(httpd_req_t *req) {
  * POST ?action=save_trackdefaults
  * Writes the request body (JSON) to /sdcard/data/trackdefaults.json.
  * If the sampleKit field changed, also updates the active sample bank
- * in sample_rom.jsn and reloads PSRAM so the device is immediately in sync.
+ * in sample_rom.json and reloads PSRAM so the device is immediately in sync.
  */
 static esp_err_t handle_save_trackdefaults(httpd_req_t *req) {
     if (req->content_len == 0 || req->content_len > 8192) {

@@ -1,8 +1,8 @@
 {
-  "wt_banks": ["def_wt.jsn"],
+  "wt_banks": ["def_wt.json"],
   "wt_bank_names": ["Default"],
   "wt_bank_tags": [["basic", "stock"]],
-  "smp_banks": ["def_smp.jsn", "a4_dub.jsn"],
+  "smp_banks": ["def_smp.json", "a4_dub.json"],
   "smp_bank_names": ["Default", "A4 Dub"],
   "smp_bank_tags": [["basic", "stock"], ["analog 4", "dub", "chords", "c-minor"]],
   "active_wt_bank": 0,

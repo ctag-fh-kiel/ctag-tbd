@@ -177,7 +177,7 @@ This is ideal for:
     session. ESP-IDF tools are not in your PATH by default.
 
 **New plugin doesn't appear in the web UI**
-    The system caches the list of available processors in ``spm-config.jsn``.
+    The system caches the list of available processors in ``spm-config.json``.
     Delete the ``"availableProcessors": [ ... ],`` block from that file and
     restart the device or simulator.
 

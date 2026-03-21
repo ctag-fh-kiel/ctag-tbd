@@ -4,7 +4,7 @@
   "_comment3": "Omit a track entry to let the Pico use the first available preset.",
   "_comment4": "The 'kit' field sets which kit file to activate in PSRAM (matched by filename).",
   "_comment5": "NOTE: all romplers share the same PSRAM kit — only one kit is active at a time.",
-  "kit": "def_smp.jsn",
+  "kit": "def_smp.json",
   "tracks": [
     { "index": 0,  "preset": "db-all-def",      "_name": "Kick     — Synth Kick (db)" },
     { "index": 1,  "preset": "fmb-all-def",     "_name": "Kick2    — FM Kick (fmb)" },

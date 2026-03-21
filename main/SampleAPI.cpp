@@ -37,7 +37,7 @@ static const char *TAG = "SampleAPI";
 
 // SD card paths
 static const char *SAMPLE_ROOT = "/sdcard/tbdsamples";
-static const char *SAMPLE_ROM_FILE = "/sdcard/tbdsamples/sample_rom.jsn";
+static const char *SAMPLE_ROM_FILE = "/sdcard/tbdsamples/sample_rom.json";
 static const char *CONFIG_ROOT = "/sdcard/data";
 
 // PSRAM capacity constant (~28 MB)
@@ -251,10 +251,7 @@ static void scan_json_files(const char *base, const char *rel,
         } else if (S_ISREG(st.st_mode)) {
             // Check if .wav extension
             size_t len = strlen(ent->d_name);
-            if (len > 5 && (
-                (strcasecmp(ent->d_name + len - 4, ".jsn") == 0) ||
-                (strcasecmp(ent->d_name + len - 5, ".json") == 0)
-            )) {
+            if (len > 5 && strcasecmp(ent->d_name + len - 5, ".json") == 0) {
                 // Extract name without extension
                 // std::string stem(ent->d_name, len - 4);
                 // Extract folder path (relative)
@@ -450,11 +447,11 @@ static esp_err_t handle_list(httpd_req_t *req) {
         }
     }
 
-    // Load sample_rom.jsn
+    // Load sample_rom.json
     Document sampleRom;
     if (!load_json_file(SAMPLE_ROM_FILE, sampleRom)) {
         if (query) free(query);
-        return send_error(req, 500, "Cannot read sample_rom.jsn");
+        return send_error(req, 500, "Cannot read sample_rom.json");
     }
 
     // Handle kit switching: ?kit=N
@@ -922,7 +919,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         // Load sample_rom to get the kit filename
         Document sampleRom;
         if (!load_json_file(SAMPLE_ROM_FILE, sampleRom)) {
-            return send_error(req, 500, "Cannot read sample_rom.jsn");
+            return send_error(req, 500, "Cannot read sample_rom.json");
         }
         if (!sampleRom.HasMember("smp_banks") || !sampleRom["smp_banks"].IsArray() ||
             (uint32_t)bankIdx >= sampleRom["smp_banks"].GetArray().Size()) {
@@ -975,7 +972,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
             else if (c == ' ' || c == '-') safeName += '_';
         }
         if (safeName.empty()) safeName = "unnamed";
-        std::string filename = safeName + ".jsn";
+        std::string filename = safeName + ".json";
         std::string fullPath = std::string(SAMPLE_ROOT) + "/" + filename;
 
         // Write kit descriptor
@@ -987,10 +984,10 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         }
         store_json_file(fullPath.c_str(), kitDoc);
 
-        // Update sample_rom.jsn
+        // Update sample_rom.json
         Document sampleRom;
         if (!load_json_file(SAMPLE_ROM_FILE, sampleRom)) {
-            return send_error(req, 500, "Cannot read sample_rom.jsn");
+            return send_error(req, 500, "Cannot read sample_rom.json");
         }
 
         // Add to smp_banks array
@@ -1031,10 +1028,10 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         }
         int kitIdx = doc["kitIndex"].GetInt();
 
-        // Load sample_rom.jsn
+        // Load sample_rom.json
         Document sampleRom;
         if (!load_json_file(SAMPLE_ROM_FILE, sampleRom)) {
-            return send_error(req, 500, "Cannot read sample_rom.jsn");
+            return send_error(req, 500, "Cannot read sample_rom.json");
         }
         if (!sampleRom.HasMember("smp_banks") || !sampleRom["smp_banks"].IsArray() ||
             (uint32_t)kitIdx >= sampleRom["smp_banks"].GetArray().Size()) {
@@ -1045,7 +1042,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
             return send_error(req, 400, "Cannot delete the last kit");
         }
 
-        // Get kit filename and delete the .jsn file
+        // Get kit filename and delete the .json file
         std::string kitFile = std::string(SAMPLE_ROOT) + "/" +
                               sampleRom["smp_banks"][kitIdx].GetString();
         remove(kitFile.c_str());
@@ -1227,7 +1224,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
 
         Document sampleRom;
         if (!load_json_file(SAMPLE_ROM_FILE, sampleRom)) {
-            return send_error(req, 500, "Cannot read sample_rom.jsn");
+            return send_error(req, 500, "Cannot read sample_rom.json");
         }
 
         Document resp(kObjectType);

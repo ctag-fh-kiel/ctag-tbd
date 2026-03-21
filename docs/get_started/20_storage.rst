@@ -51,11 +51,11 @@ wavetable bank.
 
 Banks are defined by JSON files inside ``/tbdsamples/``:
 
-- ``sample_rom.jsn`` --- Master index listing all available banks and the
+- ``sample_rom.json`` --- Master index listing all available banks and the
   currently active bank
-- ``def_smp.jsn`` --- Default sample bank (drums, percussion)
-- ``def_wt.jsn`` --- Default wavetable bank
-- Additional ``.jsn`` files for extra banks (e.g. ``a4_dub.jsn``)
+- ``def_smp.json`` --- Default sample bank (drums, percussion)
+- ``def_wt.json`` --- Default wavetable bank
+- Additional ``.json`` files for extra banks (e.g. ``a4_dub.json``)
 
 You can switch the active bank through the web interface or the hardware UI.
 
@@ -75,15 +75,15 @@ Here's how to get your own samples onto the TBD-16:
 3. **Copy files** --- Place your ``.wav`` files into a subfolder of ``/tbdsamples/``
    (e.g. ``/tbdsamples/my_samples/``).
 
-4. **Create a bank file** --- Create a ``.jsn`` file in ``/tbdsamples/`` listing
-   your samples (see the existing ``def_smp.jsn`` as a template). Each entry needs:
+4. **Create a bank file** --- Create a ``.json`` file in ``/tbdsamples/`` listing
+   your samples (see the existing ``def_smp.json`` as a template). Each entry needs:
 
    - ``filename`` --- Stem name without extension (max 32 chars)
    - ``path`` --- Subfolder path relative to ``/tbdsamples/``
    - ``nsamples`` --- Number of sample frames in the file
 
 5. **Register the bank** --- Add your bank file to the ``smp_banks`` array in
-   ``sample_rom.jsn``.
+   ``sample_rom.json``.
 
 6. **Reboot** --- The TBD-16 will load the new bank data on the next start.
 
@@ -98,7 +98,7 @@ System Configuration
 The P4 SD card also contains a ``/data/`` folder with system configuration
 files. These are managed automatically by the firmware:
 
-- ``spm-config.jsn`` --- Sound Processor Manager state (loaded plugins, patches)
+- ``spm-config.json`` --- Sound Processor Manager state (loaded plugins, patches)
 - ``/data/sp/`` --- Plugin parameter presets and UI definitions
 
 A backup of the ``/data/`` folder is stored in ``/dbup/`` and can be used

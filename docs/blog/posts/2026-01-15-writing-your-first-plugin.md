@@ -34,7 +34,7 @@ node generator.js --name MySineOsc
 This creates:
 - `ctagSoundProcessorMySineOsc.cpp` — your DSP code
 - `ctagSoundProcessorMySineOsc.hpp` — class declaration
-- `mui-MySineOsc.jsn` — web UI layout definition
+- `mui-MySineOsc.json` — web UI layout definition
 
 ## Implement the oscillator
 

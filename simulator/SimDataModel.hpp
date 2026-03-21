@@ -45,7 +45,7 @@ public:
     const int GetArrayElement(const string &key, const int index);
 
 private:
-    const string MODELJSONFN = "../data/cfg_tbd_sim.jsn";
+    const string MODELJSONFN = "../data/cfg_tbd_sim.json";
     Document m;
 };
 

@@ -75,10 +75,10 @@ const MIME = {
 // ═══════════════════════════════════════════════════════════════
 
 let synthDefs = null;     // Loaded from synthdefinitions.json
-let pluginList = [];      // Loaded from synthdefinitions.json machines
+let pluginList = [];      // Scanned from mui-*.json (mirrors firmware SPManagerDataModel)
 const trackState = [];    // 19 tracks: { index, name, type, machine, macro, parameters[] }
 const channelState = {};  // Channel 0/1: { activePlugin, params, presets }
-let systemConfig = {};    // Loaded from spm-config.jsn
+let systemConfig = {};    // Loaded from spm-config.json
 const favorites = {};     // slot# -> data
 
 function loadSynthDefinitions() {
@@ -90,13 +90,26 @@ function loadSynthDefinitions() {
     synthDefs = { tracks: [], machines: [] };
   }
 
-  // Build plugin list from machines
-  pluginList = (synthDefs.machines || []).map(m => ({
-    id: m.id || m.name,
-    name: m.name || m.id,
-    isStereo: m.isStereo || false,
-    hint: m.hint || '',
-  }));
+  // Build plugin list by scanning mui-*.json files in sp/ directory,
+  // matching the real firmware's SPManagerDataModel::getSoundProcessors().
+  pluginList = [];
+  const spDir = path.join(DATA_DIR, 'sp');
+  try {
+    const files = fs.readdirSync(spDir).filter(f => f.startsWith('mui-') && f.endsWith('.json')).sort();
+    for (const file of files) {
+      try {
+        const d = JSON.parse(fs.readFileSync(path.join(spDir, file), 'utf8'));
+        pluginList.push({
+          id: d.id || file.replace(/^mui-|\.json$/g, ''),
+          name: d.name || d.id || file,
+          isStereo: d.isStereo || false,
+          hint: d.hint || '',
+        });
+      } catch (e) { /* skip unreadable files */ }
+    }
+  } catch (e) {
+    console.warn('Could not scan sp/ directory:', e.message);
+  }
 
   // Initialize 19 track slots (0-15 instruments, 16-18 FX)
   for (let i = 0; i < 19; i++) {
@@ -124,7 +137,7 @@ function loadSynthDefinitions() {
 function loadSystemConfig() {
   try {
     systemConfig = JSON.parse(
-      fs.readFileSync(path.join(DATA_DIR, 'spm-config.jsn'), 'utf8')
+      fs.readFileSync(path.join(DATA_DIR, 'spm-config.json'), 'utf8')
     );
   } catch (e) {
     systemConfig = { activeProcessors: ['TBD03', 'TBD03'] };
@@ -138,7 +151,7 @@ loadSystemConfig();
 //  DATA DIRECTORY HELPERS
 // ═══════════════════════════════════════════════════════════════
 
-/** Recursively scan for .json/.jsn files under a directory, returning
+/** Recursively scan for .json files under a directory, returning
  *  entries with { name, path (relative folder), size, mtime } —
  *  matching the real SampleAPI::scan_json_files format. */
 function scanJsonFiles(baseDir, relDir) {
@@ -157,7 +170,7 @@ function scanJsonFiles(baseDir, relDir) {
       results.push(...scanJsonFiles(baseDir, relPath));
     } else if (ent.isFile()) {
       const ext = path.extname(ent.name).toLowerCase();
-      if (ext === '.json' || ext === '.jsn') {
+      if (ext === '.json') {
         const stat = fs.statSync(fullPath);
         results.push({
           name: ent.name,
@@ -223,7 +236,7 @@ function scanDirectories(baseDir, relDir) {
 /** Generate mock plugin params for a given plugin */
 function generateMockParams(pluginId) {
   // Try to load the real sp/ config file if it exists
-  const spPath = path.join(DATA_DIR, 'sp', `mui-${pluginId}.jsn`);
+  const spPath = path.join(DATA_DIR, 'sp', `mui-${pluginId}.json`);
   try {
     const data = JSON.parse(fs.readFileSync(spPath, 'utf8'));
     if (data.params) return data;
@@ -480,11 +493,11 @@ function handleSamplesGet(req, res) {
   const files = scanWavFiles(SAMPLE_ROOT, '');
   const directories = scanDirectories(SAMPLE_ROOT, '');
 
-  // Load kits from sample_rom.jsn if available
+  // Load kits from sample_rom.json if available
   let kits = {};
   try {
     const sampleRom = JSON.parse(
-      fs.readFileSync(path.join(DATA_DIR, 'sample_rom.jsn'), 'utf8')
+      fs.readFileSync(path.join(DATA_DIR, 'sample_rom.json'), 'utf8')
     );
     kits = {
       smp_banks: sampleRom.smp_banks || [],

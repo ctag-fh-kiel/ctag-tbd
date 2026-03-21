@@ -32,7 +32,7 @@ Each channel can run a different plugin. A plugin can be either:
 Parameter System
 ----------------
 
-Each plugin declares its parameters in a **MUI (Menu UI) JSON file** (``mui-PluginName.jsn``).
+Each plugin declares its parameters in a **MUI (Menu UI) JSON file** (``mui-PluginName.json``).
 Parameters can be:
 
 -  ``int`` --- Integer values with min/max range. Can be modulated via a **CV** input.
@@ -91,8 +91,8 @@ Each plugin consists of these files:
 .. code-block:: text
 
    sdcard_image/data/sp/
-       mui-MyPlugin.jsn       # UI definition (parameters, groups, hints)
-       mp-MyPlugin.jsn        # Preset storage (auto-generated)
+       mui-MyPlugin.json       # UI definition (parameters, groups, hints)
+       mp-MyPlugin.json        # Preset storage (auto-generated)
 
    components/ctagSoundProcessor/
        ctagSoundProcessorMyPlugin.hpp    # Header file

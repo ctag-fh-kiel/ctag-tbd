@@ -26,8 +26,8 @@
   var trackDefaults = null;   // parsed trackdefaults.json
   var dirty = false;
   var facetedData = null;     // per-track: [ { machine, name, macros: [{id, name, presets}] } ]
-  var kitNames = [];          // kit names from sample_rom.jsn via samples API
-  var kitFiles = [];          // kit filenames from smp_banks (e.g. "def_smp.jsn")
+  var kitNames = [];          // kit names from sample_rom.json via samples API
+  var kitFiles = [];          // kit filenames from smp_banks (e.g. "def_smp.json")
   var kitMeta = [];           // per-kit bank metadata [{banks: [{name, color}]}]
   var activeKitIndex = 0;     // index of the currently active kit in PSRAM
   var activeKitEntries = [];  // sample entries for the active kit
@@ -635,7 +635,7 @@
     // Read global kit selection
     var kitSel = document.getElementById('td-global-kit');
     var kitIdx = kitSel ? parseInt(kitSel.value, 10) : 0;
-    var kitFile = (kitFiles.length > kitIdx) ? kitFiles[kitIdx] : (kitFiles[0] || 'def_smp.jsn');
+    var kitFile = (kitFiles.length > kitIdx) ? kitFiles[kitIdx] : (kitFiles[0] || 'def_smp.json');
 
     var result = {
       _comment: 'Default preset per track, loaded by the Pico via SPI command 0xA5.',

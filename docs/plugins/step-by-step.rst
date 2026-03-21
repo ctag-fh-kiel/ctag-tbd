@@ -18,9 +18,9 @@ Create your MUI file by copying the template:
 
 .. code-block:: bash
 
-   cp generators/mui-template.jsn sdcard_image/data/sp/mui-MyPlug.jsn
+   cp generators/mui-template.json sdcard_image/data/sp/mui-MyPlug.json
 
-Edit ``mui-MyPlug.jsn`` to define your plugin's parameters:
+Edit ``mui-MyPlug.json`` to define your plugin's parameters:
 
 .. code-block:: json
 
@@ -53,13 +53,13 @@ Run the code generator from the ``generators/`` folder:
 .. code-block:: bash
 
    cd generators
-   node generator.js mui-MyPlug.jsn
+   node generator.js mui-MyPlug.json
 
 This creates three files in the current directory:
 
 -  ``ctagSoundProcessorMyPlug.hpp`` --- Header with atomic parameter variables.
 -  ``ctagSoundProcessorMyPlug.cpp`` --- Source with parameter mapping in ``knowYourself()``.
--  ``mp-MyPlug.jsn`` --- Default preset file.
+-  ``mp-MyPlug.json`` --- Default preset file.
 
 Step 3: Move Files
 ==================
@@ -70,7 +70,7 @@ Move the generated files to the correct directories:
 
    mv ctagSoundProcessorMyPlug.hpp ../components/ctagSoundProcessor/
    mv ctagSoundProcessorMyPlug.cpp ../components/ctagSoundProcessor/
-   mv mp-MyPlug.jsn ../sdcard_image/data/sp/
+   mv mp-MyPlug.json ../sdcard_image/data/sp/
 
 Step 4: Implement Process()
 ===========================
@@ -111,7 +111,7 @@ Step 5: Register the Plugin
 The plugin must be registered in the factory. Reset the plugin cache so
 the system discovers your new plugin on the next boot:
 
-1.  Open ``sdcard_image/data/spm-config.jsn``.
+1.  Open ``sdcard_image/data/spm-config.json``.
 2.  Delete the ``"availableProcessors": [ ... ],`` block.
 3.  Save the file.
 
@@ -148,7 +148,7 @@ use the in-place update mode of the generator:
 
 .. warning::
 
-   The ``-i`` flag overwrites the preset file ``mp-MyPlug.jsn``.
+   The ``-i`` flag overwrites the preset file ``mp-MyPlug.json``.
    Back up any custom presets before running this.
 
 Plugin Design Patterns
@@ -209,8 +209,8 @@ SD Card Sample Layout
 Samples live in ``/sdcard/tbdsamples/`` on the P4 SD card. The structure is
 defined by JSON descriptor files:
 
-- ``sample_rom.jsn`` --- Master index with bank lists and active bank indices
-- Bank files (e.g. ``def_smp.jsn``, ``def_wt.jsn``) --- Arrays of sample entries
+- ``sample_rom.json`` --- Master index with bank lists and active bank indices
+- Bank files (e.g. ``def_smp.json``, ``def_wt.json``) --- Arrays of sample entries
   with ``filename``, ``path``, ``nsamples``, and optional ``offset``
 
 See ``helpers/ctagSampleRomModel`` for the full data model implementation.
