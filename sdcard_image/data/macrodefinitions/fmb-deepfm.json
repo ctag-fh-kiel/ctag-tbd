@@ -2,6 +2,7 @@
   "id": "fmb-deepfm",
   "name": "Deep FM Kick",
   "machine": "fmb",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Deep FM",

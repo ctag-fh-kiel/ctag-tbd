@@ -26,6 +26,7 @@ respective component folders / files if different from this license.
 
 #include "soc/gpio_num.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_image_format.h"
@@ -102,6 +103,9 @@ IRAM_ATTR static void spi_post_trans_cb(spi_slave_transaction_t *trans){
 }
 
 namespace CTAG::SPIAPI{
+    std::string SpiAPI::rp2350AppId;   // empty = unknown/legacy
+    bool SpiAPI::rp2350PluginLock = false;
+    bool SpiAPI::rp2350RedirectSamples = false;
     TaskHandle_t SpiAPI::hTask;
     spi_slave_transaction_t SpiAPI::transaction;
     uint8_t *SpiAPI::send_buffer, *SpiAPI::receive_buffer;
@@ -567,9 +571,28 @@ namespace CTAG::SPIAPI{
                 result = transmitCString(requestType, s.c_str());
                 break;
             case RequestType::Reboot:
+            {
+                // Ignore Reboot commands during the first 15s after boot.
+                // The RP2350 unconditionally sends spi_api.Reboot() in setup(),
+                // which hits us on cold boot when the SPI API initializes before
+                // the RP2350's 1s sleep_ms expires. Intentional user-triggered
+                // reboots arrive well after the system is stable (~28s boot).
+                int64_t uptime_ms = esp_timer_get_time() / 1000;
+                if (uptime_ms < 15000) {
+                    ESP_LOGW("SpiAPI", "Ignoring Reboot command during boot grace period (%lld ms uptime)", uptime_ms);
+                    // Still clear app state — RP2350 is (re)booting and will re-announce
+                    rp2350AppId.clear();
+                    rp2350PluginLock = false;
+                    rp2350RedirectSamples = false;
+                    break;
+                }
+                rp2350AppId.clear();
+                rp2350PluginLock = false;
+                rp2350RedirectSamples = false;
                 ESP_LOGI("SpiAPI", "Rebooting device!");
                 esp_restart();
                 break;
+            }
             case RequestType::RebootToOTA1:
                 ESP_LOGI("SpiAPI", "Rebooting device to OTA1!");
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
@@ -624,9 +647,9 @@ namespace CTAG::SPIAPI{
                     ESP_LOGE("SpiAPI", "Requested OTA %d but only %d OTAs available!", uint8_param_0, num_ota);
                     break;
                 }
-                boot_into_slot(uint8_param_0);
                 ESP_LOGI("SpiAPI", "Rebooting device to OTA %d!", uint8_param_0);
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
+                boot_into_slot(uint8_param_0); // calls esp_restart() — does not return
                 break;
                 }
             case RequestType::SendFile:
@@ -884,6 +907,29 @@ namespace CTAG::SPIAPI{
                     ESP_LOGI("SpiAPI", "Saving preset json: %s", json.c_str());
                     CTAG::AUDIO::SoundProcessorManager::PutSamplePresetJSON(json);
                     CTAG::AUDIO::SoundProcessorManager::RefreshSoundPresets();
+                }
+                break;
+
+            case RequestType::LoadTrackMacroDefinition:
+                {
+                    int trackIndex = uint8_param_0;
+                    std::string macroId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
+                    ESP_LOGI("SpiAPI", "Activating track %d macro %s", trackIndex, macroId.c_str());
+                    CTAG::AUDIO::SoundProcessorManager::LoadTrackMacro(trackIndex, macroId);
+                }
+                break;
+
+            case RequestType::AnnounceApp:
+                {
+                    // Generic app announcement from RP2350.
+                    // uint8_param_0 bit 0 = plugin_lock (block HTTP plugin switching)
+                    // uint8_param_0 bit 1 = redirect_samples (WebUI defaults to Samples view)
+                    // string_parameter  = app display name (e.g. "Groovebox")
+                    rp2350AppId = string_parameter;
+                    rp2350PluginLock = (uint8_param_0 & 0x01) != 0;
+                    rp2350RedirectSamples = (uint8_param_0 & 0x02) != 0;
+                    ESP_LOGI("SpiAPI", "RP2350 announced app: \"%s\" (plugin_lock=%d, redirect_samples=%d)",
+                             rp2350AppId.c_str(), rp2350PluginLock ? 1 : 0, rp2350RedirectSamples ? 1 : 0);
                 }
                 break;
             }

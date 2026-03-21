@@ -665,6 +665,7 @@ var sharedData = {
   machines: [],
   macroDefs: [],
   soundPresets: [],
+  trackDefaults: null,
   activeTrack: -1,
   loaded: false,
 };
@@ -709,6 +710,15 @@ function loadSharedData() {
         }
       });
     }
+    // Fetch track defaults (boot presets) — non-critical, so failures are tolerated
+    return fetch('/api/v2/macros?action=get_trackdefaults').then(function(r) {
+      return r.ok ? r.json() : null;
+    }).then(function(tdData) {
+      sharedData.trackDefaults = tdData && tdData.tracks ? tdData : { tracks: [] };
+    }).catch(function() {
+      sharedData.trackDefaults = { tracks: [] };
+    });
+  }).then(function() {
     sharedData.loaded = true;
     setConnected();
     hideLoading();
@@ -753,8 +763,10 @@ function reloadMacroData() {
  * Tell firmware to reload macros from disk (after saving/deleting definitions).
  * Disables processing, calls RefreshMacros(), re-enables processing.
  */
-function reloadFirmwareMacros() {
-  return fetch('/api/v2/macros?action=reload', { method: 'POST' })
+function reloadFirmwareMacros(defId) {
+  var url = '/api/v2/macros?action=reload';
+  if (defId) url += '&id=' + encodeURIComponent(defId);
+  return fetch(url, { method: 'POST' })
     .then(function(r) { return r.ok ? r.json() : null; })
     .catch(function(err) {
       console.warn('[Shared] Firmware macro reload failed:', err);

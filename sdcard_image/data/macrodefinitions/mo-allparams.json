@@ -2,6 +2,7 @@
   "id": "mo-allparams",
   "name": "Macro osc All param",
   "machine": "mo",
+  "volmult": 2.6,
   "groups": [
     {
       "name": "Page 1",

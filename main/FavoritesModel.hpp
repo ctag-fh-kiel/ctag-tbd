@@ -15,7 +15,6 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
-
 #pragma once
 
 

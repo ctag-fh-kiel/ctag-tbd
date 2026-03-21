@@ -5,6 +5,32 @@ cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Apply ESP-IDF patches (idempotent — safe to re-run)
+# Patches are checked into patches/ and applied to $IDF_PATH at configure time.
+# git apply --check verifies the patch hasn't been applied yet.
+file(GLOB IDF_PATCHES "${CMAKE_SOURCE_DIR}/patches/*.patch")
+foreach(PATCH_FILE ${IDF_PATCHES})
+    execute_process(
+        COMMAND git apply --check "${PATCH_FILE}"
+        WORKING_DIRECTORY $ENV{IDF_PATH}
+        RESULT_VARIABLE PATCH_CHECK_RESULT
+        OUTPUT_QUIET ERROR_QUIET
+    )
+    if(PATCH_CHECK_RESULT EQUAL 0)
+        execute_process(
+            COMMAND git apply "${PATCH_FILE}"
+            WORKING_DIRECTORY $ENV{IDF_PATH}
+            RESULT_VARIABLE PATCH_APPLY_RESULT
+        )
+        if(PATCH_APPLY_RESULT EQUAL 0)
+            message(STATUS "Applied ESP-IDF patch: ${PATCH_FILE}")
+        else()
+            message(WARNING "Failed to apply ESP-IDF patch: ${PATCH_FILE}")
+        endif()
+    else()
+        message(STATUS "ESP-IDF patch already applied (skipping): ${PATCH_FILE}")
+    endif()
+endforeach()
 
 # pull in idf specific items, config vars etc.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
@@ -26,7 +52,7 @@ set(TBD_HW "DADA")
 
 # generate include definitions for hw + fw version
 execute_process(
-        COMMAND bash -c "git describe --tags --abbrev=4"
+        COMMAND bash -c "git describe --tags --always --abbrev=4"
         OUTPUT_VARIABLE TBD_FW)
 string(STRIP ${TBD_FW} TBD_FW)
 configure_file(${CMAKE_SOURCE_DIR}/version.hpp.in ${CMAKE_BINARY_DIR}/gen_include/version.hpp @ONLY)

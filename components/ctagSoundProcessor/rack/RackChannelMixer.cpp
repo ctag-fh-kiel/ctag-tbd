@@ -37,6 +37,7 @@ void RackChannelMixer::Init(const PickSeqRackInitData *initdata) {
 
 	this->enabled = false;
 	this->track_length = 16;
+	this->volumeMultiplier = 1.0f;
 }
 
 void RackChannelMixer::PreProcess(const PicoSeqRackProcessData &data) {
@@ -45,6 +46,8 @@ void RackChannelMixer::PreProcess(const PicoSeqRackProcessData &data) {
     MK_FLT_PAR_ABS_NOCV(fFX1Send, mix_fx1, 4095.f, maxFXSendLevelDly); fFX1Send *= fFX1Send;
     MK_FLT_PAR_ABS_NOCV(fFX2Send, mix_fx2, 4095.f, maxFXSendLevelRev); fFX2Send *= fFX2Send;
     MK_FLT_PAR_ABS_NOCV(fTrackLength, mix_track_length, 4096.f, 128.f);
+
+	fLev *= volumeMultiplier;
 
 	if (fLev != this->level) {
 		// ESP_LOGI("RackChannelMixer", "Level changed from %f to %f", this->level, fLev);

@@ -2,6 +2,7 @@
   "id": "fxreverb-allparams",
   "name": "Reverb FX All param",
   "machine": "fxreverb",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Page 1",

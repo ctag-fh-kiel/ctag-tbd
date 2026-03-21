@@ -63,6 +63,7 @@ namespace CTAG {
                 std::string id;
                 std::string name;
                 std::string synthId;
+                float volumeMultiplier;
                 // std::vector<MacroDeviceParameterGroup> parameterGroups;
                 std::vector<MacroDeviceOutputMapping> outputMappings;
             public:

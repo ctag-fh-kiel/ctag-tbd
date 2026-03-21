@@ -235,6 +235,12 @@
   }
 
   async function setActivePlugin(ch, pluginId) {
+    // Block plugin switching when RP2350 app has locked plugins
+    if (window.TBD.pluginLock) {
+      var appName = window.TBD.rp2350App || 'RP2350 firmware';
+      S.toast('Plugin switching is managed by ' + appName, 'warning');
+      return;
+    }
     if (_switching) {
       console.warn('Plugin switch already in progress — ignoring click');
       return;
@@ -303,6 +309,12 @@
   }
 
   async function clearSlot(ch) {
+    // Block slot clearing when RP2350 app has locked plugins
+    if (window.TBD.pluginLock) {
+      var appName = window.TBD.rp2350App || 'RP2350 firmware';
+      S.toast('Plugin slots are managed by ' + appName, 'warning');
+      return;
+    }
     S.showLoading('Clearing slot…');
     try {
       await S.queuedPost('/plugins?action=setActive&ch=' + ch + '&id=Void', null, S.API_MUTATION_TIMEOUT_MS);
@@ -1487,6 +1499,12 @@
   }
 
   async function recallFavorite(idx) {
+    // Block favorite recall when RP2350 app has locked plugins
+    if (window.TBD.pluginLock) {
+      var appName = window.TBD.rp2350App || 'RP2350 firmware';
+      S.toast('Favorites are managed by ' + appName, 'warning');
+      return;
+    }
     S.showLoading('Recalling favorite…');
     try {
       await S.queuedPost('/device?action=recallFavorite&id=' + idx, null, S.API_MUTATION_TIMEOUT_MS);

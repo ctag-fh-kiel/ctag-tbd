@@ -1655,6 +1655,293 @@
       .col-dur, .sample-row-dur { display: none; }
       .col-smp, .sample-row-smp { display: none; }
     }
+
+    /* ── Plugin Lock Overlay (RP2350 app plugin lock) ──────────── */
+    .plugin-lock-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .plugin-lock-overlay.hidden { display: none; }
+    .plugin-lock-message {
+      text-align: center;
+      color: var(--sl-color-neutral-0);
+      max-width: 380px;
+      padding: 2rem 2.5rem;
+      background: linear-gradient(135deg, rgba(30,30,40,0.92), rgba(20,20,30,0.96));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+    .plugin-lock-message .lock-icon-ring {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      margin: 0 auto 1rem;
+    }
+    .plugin-lock-message .lock-icon-ring sl-icon {
+      font-size: 1.5rem;
+      color: var(--sl-color-neutral-300);
+    }
+    .plugin-lock-message h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+    .plugin-lock-message p {
+      font-size: 0.82rem;
+      color: var(--sl-color-neutral-400);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    /* ── Track Default Presets Dialog ─────────────────────── */
+    #trackdefaults-dialog::part(body) {
+      padding: 0.75rem 1.25rem;
+      max-height: 72vh;
+      overflow-y: auto;
+    }
+    #trackdefaults-dialog::part(title) {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .td-intro {
+      font-size: 0.82rem;
+      color: var(--sl-color-neutral-600);
+      margin: 0 0 0.75rem;
+      line-height: 1.5;
+    }
+    .td-table {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      border: 1px solid var(--sl-color-neutral-200);
+      border-radius: var(--sl-border-radius-medium);
+      overflow: hidden;
+    }
+    .td-row {
+      display: grid;
+      grid-template-columns: 2.5rem 5.5rem 3rem 9rem 1fr 7rem 4rem;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      background: var(--sl-color-neutral-0);
+      transition: background 0.1s;
+    }
+    .td-row:hover:not(.td-header) {
+      background: color-mix(in srgb, var(--sl-color-primary-50) 40%, var(--sl-color-neutral-0));
+    }
+    .td-row:nth-child(even):not(.td-header) {
+      background: var(--sl-color-neutral-50);
+    }
+    .td-row:nth-child(even):not(.td-header):hover {
+      background: color-mix(in srgb, var(--sl-color-primary-50) 40%, var(--sl-color-neutral-50));
+    }
+    .td-header {
+      background: var(--sl-color-neutral-100);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--sl-color-neutral-600);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+    }
+    .td-col-idx {
+      font-family: monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--sl-color-neutral-500);
+    }
+    .td-col-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--sl-color-neutral-800);
+    }
+    .td-col-type { text-align: center; }
+    .td-col-engine { min-width: 0; }
+    .td-col-bank { min-width: 0; }
+    .td-col-slice { text-align: center; min-width: 0; }
+    .td-na {
+      color: var(--sl-color-neutral-400);
+      font-size: 0.75rem;
+    }
+    .td-sample-bank-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 0 0 0.75rem;
+      padding: 0.6rem 0.75rem;
+      background: color-mix(in srgb, var(--sl-color-primary-50) 40%, var(--sl-color-neutral-0));
+      border: 1px solid var(--sl-color-primary-200);
+      border-radius: var(--sl-border-radius-medium);
+      font-size: 0.82rem;
+    }
+    .td-sample-bank-section label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+    .td-sample-bank-section select { max-width: 12rem; }
+    .td-hint {
+      font-size: 0.72rem;
+      color: var(--sl-color-neutral-500);
+    }
+    .td-select:disabled {
+      opacity: 0.45;
+      cursor: default;
+      background: var(--sl-color-neutral-100);
+    }
+    .td-type-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      line-height: 1.4;
+    }
+    .td-type-drum {
+      background: color-mix(in srgb, var(--sl-color-warning-200) 60%, transparent);
+      color: var(--sl-color-warning-800);
+    }
+    .td-type-synth {
+      background: color-mix(in srgb, var(--sl-color-primary-200) 60%, transparent);
+      color: var(--sl-color-primary-800);
+    }
+    .td-type-fx {
+      background: color-mix(in srgb, var(--sl-color-success-200) 60%, transparent);
+      color: var(--sl-color-success-800);
+    }
+    .td-select {
+      width: 100%;
+      padding: 0.3rem 0.5rem;
+      font-size: 0.78rem;
+      border: 1px solid var(--sl-color-neutral-300);
+      border-radius: var(--sl-border-radius-small);
+      background: var(--sl-color-neutral-0);
+      color: var(--sl-color-neutral-800);
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .td-select:hover { border-color: var(--sl-color-primary-400); }
+    .td-select:focus {
+      border-color: var(--sl-color-primary-500);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--sl-color-primary-400) 25%, transparent);
+    }
+    /* Dark theme overrides for track defaults */
+    .sl-theme-dark .td-intro { color: var(--sl-color-neutral-400); }
+    .sl-theme-dark .td-table { border-color: var(--sl-color-neutral-700); }
+    .sl-theme-dark .td-row { background: var(--sl-color-neutral-900); }
+    .sl-theme-dark .td-row:nth-child(even):not(.td-header) { background: var(--sl-color-neutral-800); }
+    .sl-theme-dark .td-row:hover:not(.td-header) {
+      background: color-mix(in srgb, var(--sl-color-primary-900) 30%, var(--sl-color-neutral-900));
+    }
+    .sl-theme-dark .td-row:nth-child(even):not(.td-header):hover {
+      background: color-mix(in srgb, var(--sl-color-primary-900) 30%, var(--sl-color-neutral-800));
+    }
+    .sl-theme-dark .td-header {
+      background: var(--sl-color-neutral-800);
+      border-color: var(--sl-color-neutral-700);
+      color: var(--sl-color-neutral-400);
+    }
+    .sl-theme-dark .td-col-idx { color: var(--sl-color-neutral-500); }
+    .sl-theme-dark .td-col-name { color: var(--sl-color-neutral-200); }
+    .sl-theme-dark .td-select {
+      background: var(--sl-color-neutral-800);
+      border-color: var(--sl-color-neutral-600);
+      color: var(--sl-color-neutral-200);
+    }
+    .sl-theme-dark .td-select:disabled {
+      background: var(--sl-color-neutral-900);
+      opacity: 0.45;
+    }
+    .sl-theme-dark .td-sample-bank-section {
+      background: color-mix(in srgb, var(--sl-color-primary-900) 20%, var(--sl-color-neutral-900));
+      border-color: var(--sl-color-primary-800);
+    }
+    .sl-theme-dark .td-hint { color: var(--sl-color-neutral-500); }
+    .sl-theme-dark .td-na { color: var(--sl-color-neutral-600); }
+
+    /* ── Quick Start / Info Guide Dialog ───────────────────── */
+    .qs-guide { font-size: 0.82rem; line-height: 1.6; color: var(--sl-color-neutral-800); }
+    .qs-intro {
+      margin-bottom: 1rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--sl-border-radius-medium);
+      background: color-mix(in srgb, var(--sl-color-primary-600) 8%, var(--sl-color-neutral-50));
+      border: 1px solid color-mix(in srgb, var(--sl-color-primary-600) 20%, var(--sl-color-neutral-200));
+    }
+    .qs-intro p { margin: 0; }
+    .qs-section {
+      margin-bottom: 0.6rem;
+      border: 1px solid var(--sl-color-neutral-200);
+      border-radius: var(--sl-border-radius-medium);
+      overflow: hidden;
+    }
+    .qs-section summary {
+      padding: 0.55rem 0.85rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--sl-color-neutral-100);
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+      list-style: none;
+      transition: background 0.15s;
+    }
+    .qs-section summary::-webkit-details-marker { display: none; }
+    .qs-section summary::before {
+      content: '\25B6';
+      font-size: 0.55rem;
+      transition: transform 0.2s;
+      color: var(--sl-color-neutral-500);
+    }
+    .qs-section[open] summary::before { transform: rotate(90deg); }
+    .qs-section summary:hover { background: var(--sl-color-neutral-200); }
+    .qs-section summary sl-icon { font-size: 0.85rem; color: var(--sl-color-primary-600); }
+    .qs-body { padding: 0.75rem 1rem; }
+    .qs-body h4 {
+      font-size: 0.82rem; font-weight: 700;
+      margin: 1rem 0 0.4rem;
+      color: var(--sl-color-neutral-700);
+      border-bottom: 1px solid var(--sl-color-neutral-100);
+      padding-bottom: 0.25rem;
+    }
+    .qs-body ol, .qs-body ul { padding-left: 1.3rem; margin: 0.3rem 0 0.5rem; }
+    .qs-body li { margin-bottom: 0.3rem; }
+    .qs-body p { margin: 0.3rem 0; }
+    .qs-body code {
+      background: var(--sl-color-neutral-200);
+      border-radius: 3px;
+      padding: 0.1rem 0.35rem;
+      font-size: 0.78rem;
+      font-family: monospace;
+    }
+    .qs-tab-section {
+      margin: 0.75rem 0;
+      padding: 0.6rem 0.75rem;
+      background: color-mix(in srgb, var(--sl-color-neutral-100) 60%, transparent);
+      border-radius: var(--sl-border-radius-medium);
+      border-left: 3px solid var(--sl-color-primary-400);
+    }
   </style>
 </head>
 <body>
@@ -1708,6 +1995,14 @@
       </div>
 
       <div class="header-right">
+        <sl-tooltip content="Boot Default Presets">
+          <sl-icon-button id="trackdefaults-btn" name="hdd" label="Boot Defaults"
+            style="font-size:1rem; display:none;"></sl-icon-button>
+        </sl-tooltip>
+        <sl-tooltip content="Sample Manager Guide">
+          <sl-icon-button id="samples-info-btn" name="info-circle" label="Sample Manager Guide"
+            style="font-size:1rem; display:none;"></sl-icon-button>
+        </sl-tooltip>
         <sl-tooltip content="Configuration">
           <sl-icon-button id="config-btn" name="gear-fill" label="Configuration"
             style="font-size:1rem;"></sl-icon-button>
@@ -1721,7 +2016,16 @@
 
     <!-- ════ MAIN: PLUGIN MANAGEMENT VIEW ════ -->
     <div class="app-main">
-      <div id="view-plugins" class="active">
+      <div id="view-plugins" class="active" style="position:relative;">
+
+        <!-- Plugin Lock Overlay (shown when RP2350 app locks plugin switching) -->
+        <div id="plugin-lock-overlay" class="plugin-lock-overlay hidden">
+          <div class="plugin-lock-message">
+            <div class="lock-icon-ring"><sl-icon name="lock"></sl-icon></div>
+            <h3>Plugins are managed by Groovebox</h3>
+            <p>Plugin switching is controlled by the active firmware on the RP2350. Use the Samples or Macros views to manage your kits and presets.</p>
+          </div>
+        </div>
 
         <!-- ── Plugin Sidebar (left) ── -->
         <div class="plugin-sidebar">
@@ -1991,6 +2295,68 @@
   </div>
 
   <!-- ════ DIALOGS ════ -->
+
+  <!-- Sample Manager Guide Dialog -->
+  <sl-dialog label="Sample Manager Guide" id="samples-info-dialog" style="--width:56rem;">
+    <div class="qs-guide">
+      <div class="qs-intro">
+        <p><strong>Welcome to the Sample Manager!</strong> Upload, organize, and assign audio samples to your TBD-16 kits. Drag &amp; drop WAV files, build custom kits, and configure which samples load on each track at boot.</p>
+      </div>
+
+      <details class="qs-section" open>
+        <summary><sl-icon name="folder2-open"></sl-icon> Sample Pool (Left Panel)</summary>
+        <div class="qs-body">
+          <p>The <strong>Sample Pool</strong> shows all audio files on the TBD-16 SD card.</p>
+          <ol>
+            <li><strong>Browse Folders</strong> — Click folder names to navigate. Use the breadcrumb path at the top to go back.</li>
+            <li><strong>Upload Samples</strong> — Click <em>Upload</em> or drag &amp; drop WAV files onto the panel. Files upload directly to the current folder.</li>
+            <li><strong>Organize</strong> — Use <em>New Folder</em> to create subfolders. Use <em>Select</em> mode to move or delete multiple files at once.</li>
+            <li><strong>Preview</strong> — Click the <strong>▶</strong> button next to any sample to hear it through your browser.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="qs-section">
+        <summary><sl-icon name="music-note-list"></sl-icon> Kit Editor (Right Panel)</summary>
+        <div class="qs-body">
+          <p>The <strong>Kit Editor</strong> lets you assign samples to the 8 rompler tracks (banks of up to 32 slices each).</p>
+          <ol>
+            <li><strong>Select a Kit</strong> — Use the dropdown at the top. Kits are stored in PSRAM and loaded at boot.</li>
+            <li><strong>Add Samples</strong> — Click <em>+ Add sample</em> inside a bank, or drag files from the Sample Pool directly into a bank slot.</li>
+            <li><strong>Reorder</strong> — Drag sample rows within a bank to change slice order.</li>
+            <li><strong>Toggle View</strong> — Use the <em>Banks</em> toggle to switch between the compact bank list and expanded view.</li>
+            <li><strong>Save</strong> — Click <em>Save</em> to write the kit to SD card. Changes are not saved automatically.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="qs-section">
+        <summary><sl-icon name="hdd"></sl-icon> Boot Default Presets</summary>
+        <div class="qs-body">
+          <p>Use the <strong>Boot Defaults</strong> button (HDD icon in the header) to configure which machine, preset, and sample bank each track loads on power-up.</p>
+          <ol>
+            <li><strong>Pick a Machine</strong> — For each of the 20 tracks, choose which synth engine to load.</li>
+            <li><strong>Pick a Preset</strong> — Select from the available sound presets for that machine.</li>
+            <li><strong>Rompler Tracks</strong> — For rompler-type tracks, also set the default <em>Bank</em> and <em>Slice</em> from your kit.</li>
+            <li><strong>Save to SD Card</strong> — Changes take effect on the next power cycle.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="qs-section">
+        <summary><sl-icon name="arrow-left-right"></sl-icon> Import &amp; Export Kits</summary>
+        <div class="qs-body">
+          <p>Back up and share your kits using the export/import buttons in the Kit Editor header.</p>
+          <ul>
+            <li><strong>Export</strong> — Downloads the current kit as a JSON file. Does not include the audio files themselves — only the bank/slice assignments.</li>
+            <li><strong>Import</strong> — Upload a previously exported kit JSON. The referenced samples must already exist on the SD card.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <sl-button slot="footer" variant="primary" id="samples-info-close-btn">Got it!</sl-button>
+  </sl-dialog>
 
   <!-- Configuration Dialog -->
   <sl-dialog label="System Configuration" id="config-dialog" style="--width:640px;">
@@ -2507,7 +2873,7 @@
        Source files: Sortable.min.js, shared.js, display-hints.js,
        plugin-manager.js, sample-manager.js, app.js
        Built by: build-webui.sh  |  Served dynamically by: dev-server.js -->
-  <script defer src="js/app-bundle.js?v=4"></script>
+  <script defer src="js/app-bundle.js?v=7"></script>
   <script>
     fetch('/api/v2/samples?getconfig=webui-version.json')
       .then(r => r.ok ? r.json() : null)

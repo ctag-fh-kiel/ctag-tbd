@@ -2,6 +2,7 @@
   "id": "td3-allparams",
   "name": "TBD03 All param",
   "machine": "td3",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Page 1",

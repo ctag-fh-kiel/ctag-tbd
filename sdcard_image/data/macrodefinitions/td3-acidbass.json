@@ -2,6 +2,7 @@
   "id": "td3-acidbass",
   "name": "Acid Bass",
   "machine": "td3",
+  "volmult": 0.6,
   "groups": [
     {
       "name": "Acid Bass",

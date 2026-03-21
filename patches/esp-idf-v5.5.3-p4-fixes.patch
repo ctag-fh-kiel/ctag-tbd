@@ -1,0 +1,76 @@
+diff --git a/components/esp_mm/esp_mmu_map.c b/components/esp_mm/esp_mmu_map.c
+index 791b55d59d..77b3f24d35 100644
+--- a/components/esp_mm/esp_mmu_map.c
++++ b/components/esp_mm/esp_mmu_map.c
+@@ -777,13 +777,11 @@ esp_err_t IRAM_ATTR esp_mmu_map_dump_mapped_blocks_private(void)
+ /*---------------------------------------------------------------
+     Helper APIs for conversion between vaddr and paddr
+ ---------------------------------------------------------------*/
+-static bool NOINLINE_ATTR IRAM_ATTR s_vaddr_to_paddr(uint32_t vaddr, esp_paddr_t *out_paddr, mmu_target_t *out_target)
++static bool s_vaddr_to_paddr(uint32_t vaddr, esp_paddr_t *out_paddr, mmu_target_t *out_target)
+ {
+     uint32_t mmu_id = 0;
+-    /**
+-     * Disable Cache, after this function, involved code and data should be placed in internal RAM.
+-     */
+-    s_stop_cache();
++
++    _lock_acquire(&s_mmu_ctx.mutex);
+ 
+ #if SOC_MMU_PER_EXT_MEM_TARGET
+     mmu_id = mmu_hal_get_id_from_vaddr(vaddr);
+@@ -795,8 +793,7 @@ static bool NOINLINE_ATTR IRAM_ATTR s_vaddr_to_paddr(uint32_t vaddr, esp_paddr_t
+     }
+ #endif
+ 
+-    //enable Cache, after this function, internal RAM access is no longer mandatory
+-    s_start_cache();
++    _lock_release(&s_mmu_ctx.mutex);
+ 
+     return is_mapped;
+ }
+@@ -818,12 +815,9 @@ esp_err_t esp_mmu_vaddr_to_paddr(void *vaddr, esp_paddr_t *out_paddr, mmu_target
+     return ESP_OK;
+ }
+ 
+-static bool NOINLINE_ATTR IRAM_ATTR s_paddr_to_vaddr(esp_paddr_t paddr, mmu_target_t target, mmu_vaddr_t type, uint32_t *out_vaddr)
++static bool s_paddr_to_vaddr(esp_paddr_t paddr, mmu_target_t target, mmu_vaddr_t type, uint32_t *out_vaddr)
+ {
+-    /**
+-     * Disable Cache, after this function, involved code and data should be placed in internal RAM.
+-     */
+-    s_stop_cache();
++    _lock_acquire(&s_mmu_ctx.mutex);
+ 
+     uint32_t mmu_id = 0;
+ #if SOC_MMU_PER_EXT_MEM_TARGET
+@@ -831,8 +825,7 @@ static bool NOINLINE_ATTR IRAM_ATTR s_paddr_to_vaddr(esp_paddr_t paddr, mmu_targ
+ #endif
+     bool found = mmu_hal_paddr_to_vaddr(mmu_id, paddr, target, type, out_vaddr);
+ 
+-    //enable Cache, after this function, internal RAM access is no longer mandatory
+-    s_start_cache();
++    _lock_release(&s_mmu_ctx.mutex);
+ 
+     return found;
+ }
+diff --git a/components/hal/usb_dwc_hal.c b/components/hal/usb_dwc_hal.c
+index e8ae0afeae..c24d514245 100644
+--- a/components/hal/usb_dwc_hal.c
++++ b/components/hal/usb_dwc_hal.c
+@@ -109,6 +109,15 @@ static void set_defaults(usb_dwc_hal_context_t *hal)
+         hbstlen = 1;    //Set AHB burst to INCR to workaround hardware errata
+     }
+ #endif //CONFIG_IDF_TARGET_ESP32S2 && CONFIG_ESP32S2_REV_MIN_FULL < 100
++#if CONFIG_IDF_TARGET_ESP32P4
++    /*
++     * ESP32P4: Clear USB PHY suspend state that may have been set during
++     * light sleep (see sleep_usb.c) or other power management transitions.
++     * Cherry-picked from esp-idf release/v5.5 commit fdfcae2.
++     */
++    usb_dwc_ll_enable_bvalid_override(hal->dev, false);
++    usb_dwc_ll_set_stoppclk(hal->dev, false);
++#endif //CONFIG_IDF_TARGET_ESP32P4
+     usb_dwc_ll_gahbcfg_set_hbstlen(hal->dev, hbstlen);  //Set AHB burst mode
+     //GUSBCFG register
+     usb_dwc_ll_gusbcfg_dis_hnp_cap(hal->dev);       //Disable HNP

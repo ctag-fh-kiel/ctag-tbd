@@ -2,6 +2,7 @@
   "id": "ab-allparams",
   "name": "Analog Kick All param",
   "machine": "ab",
+  "volmult": 1.5,
   "groups": [
     {
       "name": "Page 1",

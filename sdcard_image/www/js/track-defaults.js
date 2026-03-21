@@ -353,7 +353,6 @@
 
     if (matchingFacet) {
       var macros = matchingFacet.macros;
-      var useSections = macros.length > 1;
 
       macros.forEach(function(macro) {
         // Clean up macro definition name for the optgroup label
@@ -363,19 +362,16 @@
           label = label.replace(/\s*All\s*param(s)?\s*$/i, '') + ' — All knobs';
         }
 
-        if (useSections) {
-          html += '<optgroup label="' + S.esc(label) + '">';
-        }
+        // Always show optgroup so user can see which macro def each preset belongs to
+        html += '<optgroup label="' + S.esc(label) + '">';
         macro.presets.forEach(function(p) {
           var sel = p.id === currentPresetId ? ' selected' : '';
           var pName = p.name || p.id;
           html += '<option value="' + S.esc(p.id) + '"' + sel + '>';
-          html += S.esc(pName) + ' (' + S.esc(p.id) + ')';
+          html += S.esc(pName) + ' (' + S.esc(p.id) + ') \u2014 Macro: ' + S.esc(macro.id);
           html += '</option>';
         });
-        if (useSections) {
-          html += '</optgroup>';
-        }
+        html += '</optgroup>';
       });
     }
 
@@ -386,6 +382,7 @@
     if (currentPresetId && presetSel.value !== currentPresetId) {
       presetSel.value = '';
     }
+
   }
 
   // ─── Rendering ─────────────────────────────────────────────
@@ -574,7 +571,6 @@
         if (presetSel && presetSel.options.length > 1) {
           presetSel.selectedIndex = 1; // first real preset (index 0 is "(auto)")
         }
-
         // Show/hide Bank & Slice cells based on whether machine is Rompler
         updateRomplerCells(idx, machineId);
 
@@ -690,19 +686,40 @@
   // ─── Init ──────────────────────────────────────────────────
 
   function init() {
+    // Create the dialog DOM dynamically so it can be shared across pages
+    // (index.html Sample Manager + preset-macro-manager.html)
     var dialog = document.getElementById('trackdefaults-dialog');
+    if (!dialog) {
+      dialog = document.createElement('sl-dialog');
+      dialog.label = 'Boot Default Presets';
+      dialog.id = 'trackdefaults-dialog';
+      dialog.style.cssText = '--width:64rem;';
+      dialog.innerHTML =
+        '<div id="trackdefaults-body"></div>' +
+        '<sl-button slot="footer" variant="default" id="td-close-btn">Close</sl-button>' +
+        '<sl-button slot="footer" variant="primary" id="td-save-btn" disabled>Save to SD Card</sl-button>';
+      document.body.appendChild(dialog);
+    }
+
     var openBtn = document.getElementById('trackdefaults-btn');
     var saveBtn = document.getElementById('td-save-btn');
     var closeBtn = document.getElementById('td-close-btn');
 
-    if (!dialog || !openBtn) {
-      console.warn('[TrackDefaults] Dialog or trigger button not found');
+    if (!openBtn) {
+      console.warn('[TrackDefaults] Trigger button not found');
       return;
     }
 
     openBtn.addEventListener('click', function() {
       S.showLoading('Loading boot defaults…');
-      loadTrackDefaults().then(function() {
+      // Ensure shared data (tracks, machines, macros) is loaded — on the Macros
+      // page this is already done, on the Samples page it may not be.
+      var dataReady = S.data.loaded
+        ? Promise.resolve()
+        : S.loadSharedData();
+      dataReady.then(function() {
+        return loadTrackDefaults();
+      }).then(function() {
         renderOverlayContent();
         S.hideLoading();
         dialog.show();

@@ -1087,10 +1087,15 @@ void ctagSoundProcessorPicoSeqRack::parseIncomingMidiMessages(const uint8_t *buf
 }
 
 void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, const std::string machineId) {
-    printf("PicoSeqRack: setTrackMachine(%d, \"%s\")\n", trackIndex, machineId.c_str());
+    setTrackMachine(trackIndex, machineId, 1.0f);
+}
+
+void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, const std::string machineId, float volumeMultiplier) {
+    printf("PicoSeqRack: setTrackMachine(%d, \"%s\", %f)\n", trackIndex, machineId.c_str(), volumeMultiplier);
 
     if (trackIndex == 0) {
         ch1.enabled = !machineId.empty();
+        ch1.volumeMultiplier = volumeMultiplier;
         ch1_db.enabled = machineId == "db";
         ch1_ab.enabled = machineId == "ab";
         ch1_smp.enabled = machineId == "ro";
@@ -1098,12 +1103,14 @@ void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, co
     }
     else if (trackIndex == 1) {
         ch2.enabled = !machineId.empty();
+        ch2.volumeMultiplier = volumeMultiplier;
         ch2_fmb1.enabled = machineId == "fmb";
         ch2_smp.enabled = machineId == "ro";
         // printf("  ch2=%d, ch2_fmb1=%d, ch2_ro=%d\n", ch2.enabled, ch2_fmb1.enabled, ch2_smp.enabled);
     }
     else if (trackIndex == 2) {
         ch3.enabled = !machineId.empty();
+        ch3.volumeMultiplier = volumeMultiplier;
         ch3_ds.enabled = machineId == "ds";
         ch3_as.enabled = machineId == "as";
         ch3_smp.enabled = machineId == "ro";
@@ -1111,6 +1118,7 @@ void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, co
     }
     else if (trackIndex == 3) {
         ch4.enabled = !machineId.empty();
+        ch4.volumeMultiplier = volumeMultiplier;
         ch4_hh1.enabled = machineId == "hh1";
         ch4_hh2.enabled = machineId == "hh2";
         ch4_smp.enabled = machineId == "ro";
@@ -1118,46 +1126,54 @@ void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, co
     }
     else if (trackIndex == 4) {
         ch5.enabled = !machineId.empty();
+        ch5.volumeMultiplier = volumeMultiplier;
         ch5_rs.enabled = machineId == "rs";
         ch5_smp.enabled = machineId == "ro";
         // printf("  ch5=%d, ch5_rs=%d, ch5_ro=%d\n", ch5.enabled, ch5_rs.enabled, ch5_smp.enabled);
     }
     else if (trackIndex == 5) {
         ch6.enabled = !machineId.empty();
+        ch6.volumeMultiplier = volumeMultiplier;
         ch6_cl.enabled = machineId == "cl";
         ch6_smp.enabled = machineId == "ro";
         // printf("  ch6=%d, ch6_cl=%d\n", ch6.enabled, ch6_cl.enabled);
     }
     else if (trackIndex == 6) {
         ch7.enabled = !machineId.empty();
+        ch7.volumeMultiplier = volumeMultiplier;
         ch7_smp.enabled = machineId == "ro";
         // printf("  ch7=%d, ch7_ro=%d\n", ch7.enabled, ch7_smp.enabled);
     }
     else if (trackIndex == 7) {
         ch8.enabled = !machineId.empty();
+        ch8.volumeMultiplier = volumeMultiplier;
         ch8_smp.enabled = machineId == "ro";
         // printf("  ch8=%d, ch8_ro=%d\n", ch8.enabled, ch8_smp.enabled);
     }
     else if (trackIndex == 8) {
         ch9.enabled = !machineId.empty();
+        ch9.volumeMultiplier = volumeMultiplier;
         ch9_td3.enabled = machineId == "td3";
         ch9_smp.enabled = machineId == "ro";
         // printf("  ch9=%d, ch9_td3=%d, ch9_ro=%d\n", ch9.enabled, ch9_td3.enabled, ch9_smp.enabled);
     }
     else if (trackIndex == 9) {
         ch10.enabled = !machineId.empty();
+        ch10.volumeMultiplier = volumeMultiplier;
         ch10_td3.enabled = machineId == "td3";
         ch10_smp.enabled = machineId == "ro";
         // printf("  ch10=%d, ch10_td3=%d, ch10_smp=%d\n", ch10.enabled, ch10_td3.enabled, ch10_smp.enabled);
     }
     else if (trackIndex == 10) {
         ch11.enabled = !machineId.empty();
+        ch11.volumeMultiplier = volumeMultiplier;
         ch11_mo.enabled = machineId == "mo";
         ch11_smp.enabled = machineId == "ro";
         // printf("  ch11=%d, ch11_mo=%d, ch11_ro=%d\n", ch11.enabled, ch11_mo.enabled, ch11_smp.enabled);
     }
     else if (trackIndex == 11) {
         ch12.enabled = !machineId.empty();
+        ch12.volumeMultiplier = volumeMultiplier;
         ch12_wtosc.enabled = machineId == "wtosc";
         ch12_mo.enabled = machineId == "mo";
         ch12_smp.enabled = machineId == "ro";
@@ -1165,22 +1181,26 @@ void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, co
     }
     else if (trackIndex == 12) {
         ch13.enabled = !machineId.empty();
+        ch13.volumeMultiplier = volumeMultiplier;
         ch13_smp.enabled = machineId == "ro";
         // printf("  ch13=%d, ch13_ro=%d\n", ch13.enabled, ch13_smp.enabled);
     }
     else if (trackIndex == 13) {
         ch14.enabled = !machineId.empty();
+        ch14.volumeMultiplier = volumeMultiplier;
         ch14_smp.enabled = machineId == "ro";
         // printf("  ch14=%d, ch14_ro=%d\n", ch14.enabled, ch14_smp.enabled);
     }
     else if (trackIndex == 14) {
         ch15.enabled = !machineId.empty();
+        ch15.volumeMultiplier = volumeMultiplier;
         ch15_pp.enabled = machineId == "pp";
         ch15_smp.enabled = machineId == "ro";
         // printf("  ch15=%d, ch15_pp=%d, ch15_ro=%d\n", ch15.enabled, ch15_pp.enabled, ch15_smp.enabled);
     }
     else if (trackIndex == 15) {
         ch16.enabled = !machineId.empty();
+        ch16.volumeMultiplier = volumeMultiplier;
         ch16_in.enabled = (machineId == "in");
         // printf("  ch16=%d, ch16_in=%d\n", ch16.enabled, ch16_in.enabled);
     }

@@ -21,9 +21,9 @@ respective component folders / files if different from this license.
 
 #include "tusb.hpp"
 #include "tinyusb.h"
+#include "tinyusb_default_config.h"
 #include "esp_log.h"
 #include "esp_attr.h"
-#include "class/net/net_device.h"
 
 // Interface counter
 enum interface_count {
@@ -100,27 +100,30 @@ static const uint8_t s_midi_hs_cfg_desc[] = {
 void CTAG::DRIVERS::tusb::Init() {
     ESP_LOGI("TUSB", "USB initialization");
 
-    tinyusb_config_t const tusb_cfg = {
-            .device_descriptor = NULL, // If device_descriptor is NULL, tinyusb_driver_install() will use Kconfig
-            .string_descriptor = s_str_desc,
-            .string_descriptor_count = 7,
-            .external_phy = false,
-            .fs_configuration_descriptor = s_midi_cfg_desc,
-            .hs_configuration_descriptor = s_midi_hs_cfg_desc,
-            .qualifier_descriptor = NULL,
-            .self_powered = false,
-            .vbus_monitor_io = 0
-    };
+    tinyusb_config_t tusb_cfg = TINYUSB_DEFAULT_CONFIG();
+    tusb_cfg.port = TINYUSB_PORT_HIGH_SPEED_0;
+    tusb_cfg.task = TINYUSB_TASK_CUSTOM(4096, 10, 0); // stack 4096, priority 10, CPU0
+    tusb_cfg.descriptor.string = s_str_desc;
+    tusb_cfg.descriptor.string_count = 7;
+    tusb_cfg.descriptor.full_speed_config = s_midi_cfg_desc;
+    tusb_cfg.descriptor.high_speed_config = s_midi_hs_cfg_desc;
     ESP_ERROR_CHECK(tinyusb_driver_install(&tusb_cfg));
 
+    // Link starts UP by default (netd_init sets link_is_up = true).
+    // macOS sees link UP from the initial SET_INTERFACE notification and
+    // may start DHCP before our server is ready — that is fine; the DHCP
+    // client retries, and we force a link bounce later to guarantee a
+    // clean exchange (see if_init_usbncm in network.cpp).
+
     // Wait for USB device to be mounted by host (up to 3 seconds)
+    // Use tud_mounted() — tud_ready() fails on macOS due to brief suspend
     int retries = 30;
-    while (!tud_ready() && retries > 0) {
+    while (!tud_mounted() && retries > 0) {
         vTaskDelay(pdMS_TO_TICKS(100));
         retries--;
     }
 
-    if (tud_ready()) {
+    if (tud_mounted()) {
         ESP_LOGI("TUSB", "USB enumerated successfully");
     } else {
         ESP_LOGW("TUSB", "USB not enumerated after timeout, continuing anyway");
@@ -143,7 +146,8 @@ bool CTAG::DRIVERS::tusb::WaitForNCMReady(uint32_t timeout_ms) {
 
     while (elapsed < timeout_ms) {
         // Check if NCM can transmit - this indicates the interface is fully ready
-        if (tud_ready() && tud_network_can_xmit(64)) {
+        // Use tud_mounted() — tud_ready() fails on macOS due to brief suspend
+        if (tud_mounted() && tud_network_can_xmit(64)) {
             ESP_LOGI("TUSB", "NCM interface ready after %lu ms", elapsed);
             return true;
         }

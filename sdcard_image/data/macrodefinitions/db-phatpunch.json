@@ -2,6 +2,7 @@
   "id": "db-phatpunch",
   "name": "Phat Punch",
   "machine": "db",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Phat Punch",

@@ -87,7 +87,14 @@ namespace CTAG::SPIAPI{
             GetSampleBankIndexJSON = 0xA8,
             // GetSynthUpdates = 0xA7,
             PutSamplePresetJSON = 0xA9,
+            LoadTrackMacroDefinition = 0xAA,
+
+            AnnounceApp = 0xAB, // RP2350 announces its active app, args [flags (uint8_t, bit0=plugin_lock, bit1=redirect_samples), app_name (cstring)]
         };
+
+        static std::string rp2350AppId;   // app name announced by RP2350 (empty = unknown/legacy)
+        static bool rp2350PluginLock;     // true = RP2350 app requested HTTP plugin switching be blocked
+        static bool rp2350RedirectSamples; // true = WebUI should default to Samples view
 
         static TaskHandle_t hTask;
         static spi_slave_transaction_t transaction;
@@ -104,5 +111,8 @@ namespace CTAG::SPIAPI{
     public:
         SpiAPI() = delete;
         static void StartSpiAPI();
+        static const std::string& GetRP2350AppId() { return rp2350AppId; }
+        static bool IsPluginLocked() { return rp2350PluginLock; }
+        static bool ShouldRedirectSamples() { return rp2350RedirectSamples; }
     };
 }
