@@ -4190,8 +4190,10 @@ Phase 2 — CI pipeline + versioning + minimal flash page
   [x] Add create-release.yml workflow (v* tag trigger + manual dispatch)
   [x] Verify build succeeds in CI (firmware + P4 SD archive)
   [x] Bump webui-version.json to 0.4.0
-  [ ] Tag dada-tbd-master: git tag v0.4.0
-  [ ] Test: tag push → CI builds → GitHub Release created with 4 TBD-16 artifacts
+  [x] Tag dada-tbd-master: git tag v0.4.0
+  [x] Test: tag push → CI builds → GitHub Release created with 7 TBD-16 artifacts
+      (bootloader.bin, ctag-tbd.bin, partition-table.bin, ota_data_initial.bin,
+       dada-tbd-16-v0.4.0-unified.bin, tbd-sd-card.zip, tbd-sd-card-hash.txt)
   [ ] Verify P4 SD card zip contains data/www/tbdsamples (no .uf2 files)
   [ ] Extract shared JS into docs/_static/js/tbd-flasher.js
   [ ] Create 10_stable_channel.rst (P4 firmware + Groovebox .uf2 + P4 SD card)

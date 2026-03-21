@@ -15,8 +15,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   # ── Step 1: Build firmware ──
@@ -46,8 +44,5 @@ jobs:
           name: "TBD-16 ${{ inputs.build_name || github.ref_name }}"
           files: release-assets/**/*
           generate_release_notes: true
-
-  # ── Step 3: Rebuild + deploy docs (picks up latest release) ──
-  docs:
-    needs: release
-    uses: ./.github/workflows/build-docs.yml
+  # Note: docs are deployed automatically by deploy-docs.yml on branch push.
+  # No need to re-deploy here — the branch push always accompanies the tag.
