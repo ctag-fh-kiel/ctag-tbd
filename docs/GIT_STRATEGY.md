@@ -3882,26 +3882,32 @@ staging             ← pre-release builds (testing)
 
 | Branch | Action | Reason |
 |---|---|---|
-| `master` | Delete | Confusing alongside `dada-tbd-master` |
-| `dev` | Delete after merge | Use forks + PRs instead |
-| `p4_main` | Archive tag + delete | Historical, superseded by `dada-tbd-master` |
+| `master` | Delete (local only) | Confusing alongside `dada-tbd-master`; not on origin |
+| `dev` | Archive tag + delete | Use forks + PRs instead |
+| `p4_main` | **Keep** | Upstream fork point — visible reference for future merges with ctag-fh-kiel |
 | `p4_main_sdonly` | Archive tag + delete | Historical |
-| `perf_test` | Archive tag + delete | One-off testing |
-| `feature/*` | Delete after merge | Should live in contributor forks |
+| `perf_test` | Delete (local only) | One-off testing; not on origin |
+| `feature/*` | Delete (local only) | Should live in contributor forks; not on origin |
 | `legacy-master-1.0.0` | Keep as tag | Preserve as `v1.0.0` tag, delete branch |
 
 Preserve history before deleting:
 
 ```bash
 # Tag branches so nothing is lost
-git tag archive/p4_main p4_main
 git tag archive/p4_main_sdonly p4_main_sdonly
-git tag archive/perf_test perf_test
 git tag archive/dev dev
 git tag v1.0.0 legacy-master-1.0.0
 
-# Then delete the branches (remote)
-git push origin --delete p4_main p4_main_sdonly perf_test dev master
+# Delete remote branches (keep p4_main as upstream fork point)
+git push origin --delete p4_main_sdonly dev legacy-master-1.0.0
+
+# Push archive tags
+git push origin archive/p4_main_sdonly archive/dev v1.0.0
+
+# Clean up local-only branches
+git branch -D master perf_test dev p4_main_sdonly legacy-master-1.0.0
+git branch -D feature/esphome-build-system feature/new-web-ui \
+  feature/spi-communication feature/wave_preview
 ```
 
 ### Development workflow for dadamachines engineers
@@ -4145,8 +4151,10 @@ Phase 1 — Clean slate (repo cleanup + file rename)
   [x] Verify create_sd_archive.sh and scripts — no .jsn globs found, no changes needed
   [x] Verify dev server — all 57 plugins load; fixed pre-existing bug (was showing only 23 Groovebox machines)
   [x] Full codebase audit — zero .jsn files or text references remain (only old binaries in docs/_static/)
-  [ ] Tag historical branches for archival (archive/p4_main, etc.)
-  [ ] Delete stale branches from origin (master, dev, p4_main, etc.)
+  [ ] Tag historical branches for archival (archive/p4_main_sdonly, archive/dev, v1.0.0)
+  [ ] Delete stale branches from origin (dev, p4_main_sdonly, legacy-master-1.0.0)
+      Keep origin/p4_main as upstream fork point reference
+  [ ] Delete local-only stale branches (master, perf_test, feature/*)
   [ ] Verify GitHub default branch is dada-tbd-master
   Deliverable: Clean working tree. All JSON files use .json. Old binaries
   deleted. Stale branches archived. No history rewrite yet — that happens
