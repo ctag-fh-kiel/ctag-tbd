@@ -134,7 +134,7 @@ export async function loadEspTool() {
 var nullTerm = {
   clean: function () {},
   writeLine: function (d) { console.log(d); },
-  write: function (d) { console.log(d); }
+  write: function () {} /* suppress raw byte dumps from readFlash/writeFlash */
 };
 
 /* ── Connect / disconnect ── */
@@ -222,15 +222,8 @@ export async function flashMscAndSwitchOta(ctx, mscUrl, callbacks) {
   var status = cb.onStatus || function () {};
   var progress = cb.onProgress || function () {};
 
-  /* Detect ota_1 address from device partition table */
-  status('Reading partition table…');
-  var ota1Addr;
-  try {
-    ota1Addr = await detectOta1Address(ctx);
-  } catch (e) {
-    console.warn('Partition table read failed, using default 0x510000:', e);
-    ota1Addr = 0x510000;
-  }
+  /* TBD-16 partition layout is fixed: ota_1 starts right after ota_0 (5 MB @ 0x10000) */
+  var ota1Addr = 0x510000;
 
   /* Download + flash tusb_msc.bin */
   status('Downloading MSC firmware…');
