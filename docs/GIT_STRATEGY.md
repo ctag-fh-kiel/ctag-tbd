@@ -4138,8 +4138,8 @@ Phase 1 — Clean slate (repo cleanup + history rewrite + file rename)
   team re-clones anyway. The .jsn → .json rename goes here
   (not Phase 7) so every subsequent phase uses the final paths.
   ─────────────────────────────────────────────────────────────
-  [ ] Delete all old firmware builds + SD card images from docs/_static/
-  [ ] Delete all old WebUI update zips from docs/_static/updates/
+  [x] Delete all old firmware builds + SD card images from docs/_static/ (12 .bin + 9 .uf2 + 8 SD .zip)
+  [x] Delete all old WebUI update zips from docs/_static/updates/ (6 .zip + latest.json)
   [x] Rename all 122 .jsn files to .json (git mv — 122 files across sdcard_image/, sample_rom/, generators/, simulator/)
   [x] Update all C++ path strings referencing .jsn → .json (27 source files; 3 edge cases fixed manually)
   [x] Verify create_sd_archive.sh and scripts — no .jsn globs found, no changes needed
