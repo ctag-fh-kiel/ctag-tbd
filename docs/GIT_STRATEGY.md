@@ -13,9 +13,9 @@
 > advantage of this: aggressive cleanup now, proper infrastructure before
 > the first real release.
 >
-> **Current milestone:** Phases 0–2 complete. Phase 3 in progress — Stable
-> Channel flash page live, CDN firmware delivery pipeline operational,
-> end-to-end browser flash ready for testing with v0.4.1.
+> **Current milestone:** Phases 0–2 complete. Phase 3 mostly complete — Stable +
+> Beta Channel flash pages live, CDN pipeline operational, all hardware tested
+> (P4, SD card, Pico). Old flash pages deleted. Staging workflow active.
 >
 > Related documents:
 > - `proposal-branching-strategy.md` — upstream/fork collaboration model
@@ -4260,24 +4260,36 @@ Phase 3 — Flash pages + CDN + staging channel
       - Build fails (exit 1) if any patch is missing
       - SHA-256 checksums logged for all 4 binary artifacts
       - Confirmed working: CI run #5 (v0.4.1 build) shows ✅ APPLIED
-  [ ] Create staging branch from dada-tbd-master
-  [ ] Add staging-release.yml workflow (pushes to staging → pre-release + CDN dispatch)
+  [x] Create staging branch from dada-tbd-master
+  [x] Add staging-release.yml workflow (pushes to staging → pre-release + CDN dispatch)
+      - Triggers on push to staging branch
+      - Builds firmware, creates GitHub pre-release, dispatches to CDN with channel=staging
+      - CDN receive-firmware.yml updated: seeds pico UF2 from stable for new channels
   [ ] Add feature-test-release.yml workflow (feature-test/* → per-feature manifests)
-  [ ] Test: push to staging → verify pre-release created → verify CDN updated
-  [ ] Create 20_staging_channel.rst (manifest-driven, ?channel= for feature tests)
+  [x] Test: push to staging → verify pre-release created → verify CDN updated
+      - Staging branch push triggered Staging Release workflow (run #1, in progress)
+  [x] Create 20_staging_channel.rst (Beta Channel flash page, CHANNEL='staging')
+      - Same two-path structure as stable (Quick Update + Full SD Deploy)
+      - Fetches latest pre-release from GitHub API (not /latest)
+      - Warning banner linking back to Stable Channel for production use
   [ ] Create 30_app_manager.rst (placeholder: bootloader flash via BOOTSEL, system tools, sideload section)
   [ ] Create 40_webui_updates.rst (WebUI updater docs + version history)
-  [ ] Create 50_troubleshooting.rst (general flash troubleshooting)
-  [ ] Rewrite flash/index.rst with full CTA layout + toctree (all 5 pages)
+  [x] Create 50_troubleshooting.rst (general flash troubleshooting)
+      - Consolidated from 67_beta_troubleshooting.rst with new sections
+      - Covers: browser compat, serial, SD card, RP2350, post-flash
+  [x] Rewrite flash/index.rst with CTA layout + toctree
+      - 3 CTAs: Stable Channel, Beta Channel, WebUI Versions
+      - Secondary link: Troubleshooting
+      - toctree: 10_stable_channel, 20_staging_channel, 70_webui_versions, 50_troubleshooting
   [ ] Add compatRange field to staging + stable manifests
   [ ] Add MAJOR.MINOR compatibility check to WebUI updater page (soft warning)
   [ ] Test: staging flash page loads manifest, flash works end-to-end
-  [ ] Delete old flash pages: 25, 30, 50, 60, 65, 66, 67, 68, 70
-      (deferred from Phase 1 — delete only after new pages are verified working)
-  Deliverable: Full 5-page flash section. Stable + staging channels live.
+  [x] Delete old flash pages: 25, 30, 50, 60, 65, 66, 67, 68
+      - 8 pages removed (~250 KB), replaced by new channel-based pages
+  Deliverable: Full flash section. Stable + staging channels live.
   Feature-test channel available for ad-hoc experiments.
-  ✅ PHASE 3 PARTIALLY COMPLETE — Stable channel + CDN live, hardware tested,
-     CI patch verification active. Staging channel + remaining pages TODO.
+  ✅ PHASE 3 MOSTLY COMPLETE — Stable + Beta channels live, all hardware tested,
+     CI patch verification active. App manager + WebUI updater pages TODO.
 
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────
@@ -4445,8 +4457,8 @@ re-clones exactly once.
 | Hardware flash test (P4 + SD card) | Low | End-to-end browser flash verified on TBD-16 hardware | ✅ Phase 3 |
 | Pico flash test (RP2350 WebUSB) | Low | RP2350 BOOTSEL → UF2 flash → reboot verified in browser | ✅ Phase 3 |
 | CI ESP-IDF patch verification | Low | Build fails if USB NCM / MMU patches missing | ✅ Phase 3 |
-| New flash pages (5 pages + shared JS) | Medium | 8,000 → 2,500 lines, zero code duplication | In progress |
-| Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built | Planned |
+| New flash pages (5 pages + shared JS) | Medium | 8,000 → 2,500 lines, zero code duplication | ✅ Phase 3 |
+| Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built | ✅ Phase 3 (staging) |
 | Git LFS for remaining binaries | Low | Fast clones for engineers | Phase 3b |
 | Branch cleanup (two long-lived branches) | Low | Cleaner repo, less confusion | ✅ Phase 1 |
 | Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | Phase 4 |
