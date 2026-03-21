@@ -4248,10 +4248,13 @@ Phase 3 — Flash pages + CDN + staging channel
   [x] Test: end-to-end browser flash from Stable Channel page (hardware test)
       - Path B (Full SD Deploy): MSC flash → SD card write → switch back → P4 flash ✅
       - Path A (Quick Update): P4 unified binary flash ✅
-      - Pico flash: not yet tested (deferred — device working without it)
+      - Pico flash (Path A Step 2 / Path B Step 5): RP2350 WebUSB connect + UF2 flash + reboot ✅
       - USB NCM networking confirmed working after full SD card redeploy
       - Fixed: readFlash hang in flashMscAndSwitchOta (removed — use hardcoded ota_1 address)
       - Fixed: esptool-js console spam (suppressed write() terminal output)
+      - Fixed: picoboot import() 404 — dynamic import resolved relative to module URL
+        not HTML page, causing double _static path. Fix: new URL(basePath, document.baseURI)
+      - UX: all steps unlocked — users can jump directly to any step (no sequential gating)
   [x] Add ESP-IDF patch verification step to build-firmware.yml
       - git apply --reverse --check confirms patches are present after build
       - Build fails (exit 1) if any patch is missing
@@ -4440,6 +4443,7 @@ re-clones exactly once.
 | Firmware CDN repo (CORS fix) | Low | Browser flash works, same-origin delivery | ✅ Phase 3 |
 | Stable Channel flash page | Medium | Two-path browser flash (Quick Update + Full SD Deploy) | ✅ Phase 3 |
 | Hardware flash test (P4 + SD card) | Low | End-to-end browser flash verified on TBD-16 hardware | ✅ Phase 3 |
+| Pico flash test (RP2350 WebUSB) | Low | RP2350 BOOTSEL → UF2 flash → reboot verified in browser | ✅ Phase 3 |
 | CI ESP-IDF patch verification | Low | Build fails if USB NCM / MMU patches missing | ✅ Phase 3 |
 | New flash pages (5 pages + shared JS) | Medium | 8,000 → 2,500 lines, zero code duplication | In progress |
 | Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built | Planned |

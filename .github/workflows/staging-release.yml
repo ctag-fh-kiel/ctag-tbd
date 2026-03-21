@@ -1,0 +1,67 @@
+# Build firmware from staging branch, create a GitHub pre-release,
+# and push to the staging channel on the CDN.
+# Triggers on push to the staging branch.
+name: Staging Release
+
+on:
+  push:
+    branches:
+      - staging
+
+permissions:
+  contents: write
+
+jobs:
+  # ── Step 1: Build firmware ──
+  firmware:
+    uses: ./.github/workflows/build-firmware.yml
+    with:
+      build_name: staging-${{ github.sha }}
+
+  # ── Step 2: Create GitHub pre-release ──
+  release:
+    needs: firmware
+    runs-on: ubuntu-latest
+    outputs:
+      tag: staging-${{ github.sha }}
+    steps:
+      - name: Download firmware artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware-staging-${{ github.sha }}
+          path: release-assets/
+
+      - name: List release assets
+        run: find release-assets/ -type f | sort
+
+      - name: Create pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: staging-${{ github.sha }}
+          name: "TBD-16 staging @ ${{ github.sha }}"
+          prerelease: true
+          files: release-assets/**/*
+          body: |
+            Staging build from commit ${{ github.sha }}.
+            Branch: `staging`
+            Commit: ${{ github.event.head_commit.message }}
+
+  # ── Step 3: Push to CDN staging channel ──
+  publish-cdn:
+    needs: [firmware, release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to firmware CDN
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.FIRMWARE_CDN_TOKEN }}
+          repository: dadamachines/dada-tbd-firmware
+          event-type: firmware-update
+          client-payload: >-
+            {
+              "channel": "staging",
+              "tag": "staging-${{ github.sha }}",
+              "artifact_name": "firmware-staging-${{ github.sha }}",
+              "run_id": "${{ github.run_id }}",
+              "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}"
+            }

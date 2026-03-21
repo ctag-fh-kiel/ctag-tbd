@@ -17,17 +17,10 @@ or something went wrong. Firmware updates **never erase** your SD card.
      </div>
 
      <div class="dada-cta">
-       <h3>Beta Channel</h3>
-       <p>Flash the latest pre-release firmware bundle with all
-       features and fixes before stable release.</p>
-       <a href="65_beta_channel.html" class="dada-cta-link">Beta Channel &rarr;</a>
-     </div>
-
-     <div class="dada-cta">
-       <h3>Beta Channel Archive</h3>
-       <p>Browse and flash any previous beta firmware build
-       from the full release history.</p>
-       <a href="66_beta_channel_archive.html" class="dada-cta-link">Browse Archive &rarr;</a>
+       <h3>🧪 Beta Channel</h3>
+       <p>Flash the latest pre-release firmware from the staging
+       branch &mdash; test new features before they ship.</p>
+       <a href="20_staging_channel.html" class="dada-cta-link">Beta Channel &rarr;</a>
      </div>
 
      <div class="dada-cta">
@@ -37,20 +30,10 @@ or something went wrong. Firmware updates **never erase** your SD card.
        <a href="70_webui_versions.html" class="dada-cta-link">WebUI Versions &rarr;</a>
      </div>
 
-     <div class="dada-cta">
-       <h3>Update WebUI</h3>
-       <p>Update the web interface from your device &mdash;
-       no firmware flash or SD card erase needed.</p>
-       <a href="68_update_updater.html" class="dada-cta-link">Update WebUI &rarr;</a>
-     </div>
-
    </div>
 
    <div class="dada-secondary-links">
-     <a href="25_flash_dsp.html">Flash DSP Firmware</a>
-     <a href="30_flash_ui.html">Flash UI Firmware</a>
-     <a href="50_device_recovery.html">Device Recovery</a>
-     <a href="60_sd_card_recovery.html">SD Card Recovery</a>
+     <a href="50_troubleshooting.html">Troubleshooting</a>
    </div>
 
 .. include:: /_includes/newsletter.rst
@@ -61,5 +44,6 @@ or something went wrong. Firmware updates **never erase** your SD card.
    :hidden:
 
    10_stable_channel
-   65_beta_channel
+   20_staging_channel
    70_webui_versions
+   50_troubleshooting

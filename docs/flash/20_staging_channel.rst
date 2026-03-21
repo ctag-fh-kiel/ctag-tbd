@@ -1,14 +1,20 @@
 :orphan:
 
 ****************************
-Stable Channel
+Beta Channel
 ****************************
 
-Flash the **latest stable firmware** and **SD card image** to your TBD-16 directly from
+.. warning::
+
+   This is the **beta channel** — firmware here is built from the ``staging`` branch
+   and may contain unfinished features or regressions. Use the
+   `Stable Channel <10_stable_channel.html>`_ for production use.
+
+Flash the **latest beta firmware** and **SD card image** to your TBD-16 directly from
 the browser — no card reader, no terminal commands, no opening the device.
 
 Firmware artifacts come from the latest
-`GitHub Release <https://github.com/dadamachines/ctag-tbd/releases/latest>`_.
+`staging pre-release <https://github.com/dadamachines/ctag-tbd/releases>`_.
 
 .. dropdown:: How it Works
 
@@ -39,7 +45,7 @@ Firmware artifacts come from the latest
 .. raw:: html
 
     <style>
-      /* ── Stable Channel Styles ── */
+      /* ── Beta Channel Styles ── */
       .sd-recovery {
         max-width: 640px;
         margin: 1em 0 1.5em;
@@ -356,7 +362,7 @@ Firmware artifacts come from the latest
       <!-- A·DONE -->
       <div class="complete-card" id="cardDoneA">
         <h3>✓ Quick Update Complete</h3>
-        <p>Your TBD-16 has the latest stable firmware.<br>
+        <p>Your TBD-16 has the latest beta firmware.<br>
         Open <b>http://192.168.4.1</b> to use the device.</p>
       </div>
 
@@ -449,8 +455,8 @@ Firmware artifacts come from the latest
 
       <!-- B·DONE -->
       <div class="complete-card" id="cardDone">
-        <h3>✓ Stable Firmware Setup Complete</h3>
-        <p>Your TBD-16 has the SD card image and latest stable firmware.<br>
+        <h3>✓ Beta Firmware Setup Complete</h3>
+        <p>Your TBD-16 has the SD card image and latest beta firmware.<br>
         <b>Remove all USB cables</b>, wait 3 seconds, reconnect via <b>back Port&nbsp;#1</b>,
         then open <b>http://192.168.4.1</b>.</p>
       </div>
@@ -460,7 +466,7 @@ Firmware artifacts come from the latest
 
     <script type="module">
     /* ══════════════════════════════════════════════════════════
-       Stable Channel — browser flash tool
+       Beta Channel (staging) — browser flash tool
        Uses tbd-flasher-p4.js and tbd-flasher-rp2350.js
        ══════════════════════════════════════════════════════════ */
 
@@ -518,17 +524,19 @@ Firmware artifacts come from the latest
     var RELEASE = null;
     /* ── Firmware CDN (same-origin GitHub Pages) ── */
     var FIRMWARE_CDN = 'https://dadamachines.github.io/dada-tbd-firmware';
-    var CHANNEL = 'stable';
+    var CHANNEL = 'staging';
     var TUSB_MSC_URL = FIRMWARE_CDN + '/' + CHANNEL + '/p4/tusb_msc.bin';
 
     /* ══════════════════════════════
        Fetch release info from GitHub API + build CDN URLs
        ══════════════════════════════ */
     async function fetchRelease() {
-      /* Get release metadata (tag, name, notes URL) from GitHub API */
-      var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases/latest');
+      /* Get the latest pre-release (staging) from GitHub API */
+      var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases');
       if (!resp.ok) throw new Error('GitHub API error: ' + resp.statusText);
-      var data = await resp.json();
+      var releases = await resp.json();
+      var data = releases.find(function (r) { return r.prerelease; });
+      if (!data) throw new Error('No staging pre-release found');
 
       /* Build download URLs from the firmware CDN (same-origin — no CORS issues) */
       var base = FIRMWARE_CDN + '/' + CHANNEL + '/p4/';
@@ -607,9 +615,9 @@ Firmware artifacts come from the latest
 
       /* Update UI with release info */
       var desc = $('cardSelect').querySelector('.step-desc');
-      desc.innerHTML = 'Flashing <b>' + RELEASE.tag + '</b> — the latest stable firmware. ' +
+      desc.innerHTML = 'Flashing <b>' + RELEASE.tag + '</b> — beta firmware from the staging branch. ' +
         '<a href="' + RELEASE.htmlUrl + '" target="_blank">View release notes →</a>';
-      setStat($('statPkg'), '<b>' + RELEASE.name + '</b> — P4 firmware' +
+      setStat($('statPkg'), '<b>' + RELEASE.name + '</b> — beta P4 firmware' +
         (picoFwName ? ' + Pico firmware' : '') + ' + SD card image');
 
       if (!RELEASE.p4Url) {
