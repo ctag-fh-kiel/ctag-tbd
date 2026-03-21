@@ -363,6 +363,11 @@ esptool.py merge_bin → docs/_static/firmware/p4/<name>-unified.bin
 
 ### Workflow: Build Firmware (`build-firmware.yml`)
 
+> **Implemented:** See `.github/workflows/build-firmware.yml` for the actual
+> workflow. Key differences from the pseudocode below: `lfs: true` removed
+> (LFS deferred to Phase 3b), `create_sd_archive.sh` first arg is `.`
+> (project root), unified bin uses full naming convention.
+
 ```yaml
 # .github/workflows/build-firmware.yml
 name: Build Firmware
@@ -451,6 +456,9 @@ jobs:
 
 ### Workflow: Create Release (`create-release.yml`)
 
+> **Implemented:** See `.github/workflows/create-release.yml` for the actual
+> workflow.
+
 This ties the firmware build + docs build + GitHub Release together. Can be
 triggered manually or on tag push:
 
@@ -503,7 +511,13 @@ jobs:
     uses: ./.github/workflows/build-docs.yml
 ```
 
-### Workflow: CI on Pull Requests (build-check only)
+### Workflow: CI on Pull Requests and Push (build-check)
+
+> **Implemented:** See `.github/workflows/ci.yml` for the actual workflow.
+> Key differences: also triggers on push to `dada-tbd-master` (not just PRs),
+> broader path filter (includes sdcard_image/**, sample_rom/**, patches/**,
+> workflow files), uses reusable `build-firmware.yml` instead of inline steps,
+> and adds concurrency group to cancel superseded builds.
 
 To catch build regressions before merge:
 
@@ -4167,9 +4181,13 @@ Phase 2 — CI pipeline + versioning + minimal flash page
   working browser flash page so testers aren't blocked.
   TBD-Core multi-target matrix is deferred — ship TBD-16 first.
   ─────────────────────────────────────────────────────────────
-  [ ] Add build-firmware.yml workflow (reusable, container: espressif/idf:v5.5.3)
-  [ ] Add ci.yml workflow for PR build checks (paths: main/**, components/**, CMakeLists.txt)
-  [ ] Add create-release.yml workflow (tag trigger + manual dispatch)
+  [x] Add build-firmware.yml workflow (reusable, container: espressif/idf:v5.5.3)
+  [x] Add ci.yml workflow for PR + push build checks
+      Path-filtered: only triggers when firmware-relevant files change
+      (main/**, components/**, CMakeLists.txt, sdkconfig*, patches/**,
+      sdcard_image/**, sample_rom/**, *.sh, workflow files)
+      Docs-only commits do NOT trigger firmware builds.
+  [x] Add create-release.yml workflow (v* tag trigger + manual dispatch)
   [ ] Verify build succeeds in CI (firmware + P4 SD archive)
   [ ] Tag dada-tbd-master: git tag v0.4.0
   [ ] Bump webui-version.json to 0.4.0

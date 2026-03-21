@@ -1,0 +1,51 @@
+# Create a GitHub Release with firmware artifacts.
+# Triggers on version tags (v*) or manual dispatch.
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+  workflow_dispatch:
+    inputs:
+      build_name:
+        description: "Build name (e.g. v0.4.0). Used as artifact + release name."
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  # ── Step 1: Build firmware ──
+  firmware:
+    uses: ./.github/workflows/build-firmware.yml
+    with:
+      build_name: ${{ inputs.build_name || github.ref_name }}
+
+  # ── Step 2: Create GitHub Release with all artifacts ──
+  release:
+    needs: firmware
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download firmware artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware-${{ inputs.build_name || github.ref_name }}
+          path: release-assets/
+
+      - name: List release assets
+        run: find release-assets/ -type f | sort
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.build_name && format('v{0}', inputs.build_name) || github.ref_name }}
+          name: "TBD-16 ${{ inputs.build_name || github.ref_name }}"
+          files: release-assets/**/*
+          generate_release_notes: true
+
+  # ── Step 3: Rebuild + deploy docs (picks up latest release) ──
+  docs:
+    needs: release
+    uses: ./.github/workflows/build-docs.yml

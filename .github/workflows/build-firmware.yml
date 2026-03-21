@@ -1,0 +1,62 @@
+# Reusable workflow: Build ESP32-P4 firmware + SD card archive.
+# Called by ci.yml, create-release.yml, and staging-release.yml.
+name: Build Firmware
+
+on:
+  workflow_call:
+    inputs:
+      build_name:
+        description: "Build identifier (e.g. v0.4.0 or v0.4.0-3-gabc1)"
+        required: true
+        type: string
+    outputs:
+      artifact_name:
+        description: "Name of the uploaded artifact"
+        value: ${{ jobs.build.outputs.artifact_name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v5.5.3
+    outputs:
+      artifact_name: firmware-${{ inputs.build_name }}
+
+    steps:
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y xxhash
+
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Build firmware
+        run: |
+          . $IDF_PATH/export.sh
+          idf.py build
+
+      - name: Create unified firmware image
+        run: |
+          . $IDF_PATH/export.sh
+          ./create_unified_p4_firmware.sh "dada-tbd-16-${{ inputs.build_name }}-unified.bin"
+
+      - name: Create P4 SD card archive
+        run: |
+          . $IDF_PATH/export.sh
+          ./create_sd_archive.sh . build "$(which xxh128sum)"
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ inputs.build_name }}
+          retention-days: 90
+          path: |
+            build/ctag-tbd.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin
+            build/ota_data_initial.bin
+            build/tbd-sd-card.zip
+            build/tbd-sd-card-hash.txt
+            docs/_static/firmware/p4/dada-tbd-16-${{ inputs.build_name }}-unified.bin
