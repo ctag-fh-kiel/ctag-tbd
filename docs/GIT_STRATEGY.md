@@ -4151,14 +4151,15 @@ Phase 1 — Clean slate (repo cleanup + file rename)
   [x] Verify create_sd_archive.sh and scripts — no .jsn globs found, no changes needed
   [x] Verify dev server — all 57 plugins load; fixed pre-existing bug (was showing only 23 Groovebox machines)
   [x] Full codebase audit — zero .jsn files or text references remain (only old binaries in docs/_static/)
-  [ ] Tag historical branches for archival (archive/p4_main_sdonly, archive/dev, v1.0.0)
-  [ ] Delete stale branches from origin (dev, p4_main_sdonly, legacy-master-1.0.0)
+  [x] Tag historical branches for archival (archive/p4_main_sdonly, archive/dev, v1.0.0)
+  [x] Delete stale branches from origin (dev, p4_main_sdonly, legacy-master-1.0.0)
       Keep origin/p4_main as upstream fork point reference
-  [ ] Delete local-only stale branches (master, perf_test, feature/*)
-  [ ] Verify GitHub default branch is dada-tbd-master
+  [x] Delete local-only stale branches (master, perf_test, feature/*)
+  [x] Verify GitHub default branch is dada-tbd-master
   Deliverable: Clean working tree. All JSON files use .json. Old binaries
   deleted. Stale branches archived. No history rewrite yet — that happens
   after CI + flash pages are confirmed working (Phase 3b).
+  ✅ PHASE 1 COMPLETE
 
 Phase 2 — CI pipeline + versioning + minimal flash page
   ─────────────────────────────────────────────────────────────
