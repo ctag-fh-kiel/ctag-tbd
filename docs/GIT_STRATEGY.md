@@ -4,7 +4,7 @@
 > repository structure, CI firmware builds, and the upstream relationship
 > with ctag-fh-kiel/ctag-tbd.
 >
-> Date: 2026-03-20
+> Date: 2026-03-21 (last updated)
 >
 > **Product status:** Pre-release. ~10 test users, no shipped product.
 > This means we have a clean slate — no backwards compatibility burden,
@@ -13,21 +13,27 @@
 > advantage of this: aggressive cleanup now, proper infrastructure before
 > the first real release.
 >
+> **Current milestone:** Phases 0–2 complete. Phase 3 in progress — Stable
+> Channel flash page live, CDN firmware delivery pipeline operational,
+> end-to-end browser flash ready for testing with v0.4.1.
+>
 > Related documents:
 > - `proposal-branching-strategy.md` — upstream/fork collaboration model
 > - `proposal-simple-tbd-config.md` — Kconfig flags for hardware configs
 
 ---
 
-## 1. The Two Repositories
+## 1. The Three Repositories
 
-This strategy covers the **dadamachines product repo** and its relationship
-with the **ctag-fh-kiel upstream** (currently dormant):
+This strategy covers the **dadamachines product repo**, the **firmware CDN
+repo**, and the relationship with the **ctag-fh-kiel upstream** (currently
+dormant):
 
-| | **ctag-tbd** (upstream, dormant) | **dadamachines TBD-16** (active) |
-|---|---|---|
-| Repository | `ctag-fh-kiel/ctag-tbd` | `dadamachines/ctag-tbd` |
-| Primary branch | `p4_main` | `dada-tbd-master` |
+| | **ctag-tbd** (upstream, dormant) | **dadamachines TBD-16** (active) | **Firmware CDN** |
+|---|---|---|---|
+| Repository | `ctag-fh-kiel/ctag-tbd` | `dadamachines/ctag-tbd` | `dadamachines/dada-tbd-firmware` |
+| Primary branch | `p4_main` | `dada-tbd-master` | `main` |
+| GitHub Pages | — | `dadamachines.github.io/ctag-tbd/` | `dadamachines.github.io/dada-tbd-firmware/` |
 | License | GPLv3 | Parts LGPL (product-specific) |
 | Hardware | ESP32-P4 only | ESP32-P4 + RP2350 (TBD-16) |
 | Focus | Core DSP platform, plugins, research | Commercial product, sequencer, UI, presets |
@@ -56,6 +62,61 @@ from upstream. dadamachines added the RP2350 SPI bridge, sequencer,
 macro/preset system, PicoSeqRack, WebUI, and product-specific configuration.
 Upstream has had zero activity since the fork — dadamachines is the active
 project.
+
+### Firmware CDN repository (`dadamachines/dada-tbd-firmware`)
+
+A dedicated repo serving firmware binaries via GitHub Pages. Exists because
+GitHub Release download URLs lack CORS headers — browsers block cross-origin
+`fetch()` to `github.com/releases/download/…`. Both the docs site and the CDN
+repo are on `dadamachines.github.io`, so they share the same origin and no
+CORS issues arise.
+
+```
+dadamachines/dada-tbd-firmware (main)               ← firmware CDN
+├── .github/workflows/
+│   ├── receive-firmware.yml    ← receives builds via repository_dispatch
+│   └── deploy-pages.yml        ← deploys to GitHub Pages on push
+├── stable/
+│   ├── latest.json             ← channel manifest (tag, file paths)
+│   ├── p4/
+│   │   ├── dada-tbd-16-v0.4.1-unified.bin  ← P4 unified image (flash to 0x0)
+│   │   ├── ctag-tbd.bin        ← P4 app partition only
+│   │   ├── bootloader.bin
+│   │   ├── partition-table.bin
+│   │   ├── ota_data_initial.bin
+│   │   ├── tusb_msc.bin        ← USB MSC helper
+│   │   ├── tbd-sd-card.zip     ← P4 SD card image
+│   │   └── tbd-sd-card-hash.txt
+│   └── pico/
+│       └── dada-tbd-16-v0.4.1-pico.uf2    ← RP2350 Groovebox firmware
+├── staging/                    ← (future — staging channel)
+│   ├── latest.json
+│   ├── p4/
+│   └── pico/
+└── index.html                  ← root landing page
+```
+
+**Naming convention:** All versioned artifacts use `dada-tbd-16-{tag}-{type}.{ext}`:
+- `dada-tbd-16-v0.4.1-unified.bin` (ESP32-P4, all images at correct flash offsets)
+- `dada-tbd-16-v0.4.1-pico.uf2` (RP2350 Groovebox)
+
+**CI pipeline flow:**
+```
+tag push (v*)  →  create-release.yml (main repo)
+                    ├── build firmware (Docker: espressif/idf:v5.5.3)
+                    ├── create GitHub Release with artifacts
+                    └── repository_dispatch → dada-tbd-firmware
+                          └── receive-firmware.yml
+                                ├── download artifacts from main repo run
+                                ├── copy to stable/p4/ + create versioned pico
+                                ├── write stable/latest.json manifest
+                                ├── commit + push
+                                └── deploy to GitHub Pages
+```
+
+**Secret:** `FIRMWARE_CDN_TOKEN` — fine-grained PAT scoped to the CDN repo,
+stored in the main repo's secrets. Used by `create-release.yml` to trigger
+`repository_dispatch` on the CDN repo.
 
 ---
 
@@ -187,21 +248,31 @@ There's no migration script, no GitHub Releases for old builds, no URL
 redirects. The old builds were pre-release test artifacts for ~10 people.
 They're gone.
 
-### Going forward: GitHub Releases for every build
+### Going forward: GitHub Releases + firmware CDN
 
 From now on, CI creates a **GitHub Release** for each tagged build. Release
-assets get permanent, versioned download URLs:
+assets get permanent, versioned download URLs on GitHub. However, because
+GitHub Release URLs lack CORS headers, the browser-based flash pages cannot
+fetch directly from them. Instead, CI also pushes firmware to the dedicated
+**firmware CDN repo** (`dadamachines/dada-tbd-firmware`) via `repository_dispatch`.
 
+**GitHub Release URLs** (for manual download, CLI tools, archival):
 ```
-https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.0/dada-tbd-16-v0.4.0.bin
-https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.0/dada-tbd-16-groovebox-v0.4.0.uf2
-https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.0/dada-tbd-16-p4sd-v0.4.0.zip
-https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.0/dada-tbd-16-p4sd-v0.4.0-hash.txt
+https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.1/dada-tbd-16-v0.4.1-unified.bin
+https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.1/tbd-sd-card.zip
 ```
 
-No firmware binaries committed to the repo. The flash pages fetch directly
-from Release URLs. The `docs/_static/firmware/` directory only holds
-manifests (JSON) and the small MSC helper binary.
+**CDN URLs** (for browser flash pages — same origin, no CORS issues):
+```
+https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-v0.4.1-unified.bin
+https://dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-16-v0.4.1-pico.uf2
+https://dadamachines.github.io/dada-tbd-firmware/stable/p4/tusb_msc.bin
+https://dadamachines.github.io/dada-tbd-firmware/stable/p4/tbd-sd-card.zip
+```
+
+No firmware binaries committed to the main repo. The flash pages fetch from
+the CDN. The `docs/_static/firmware/` directory in the main repo is empty
+(kept for future local testing assets only).
 
 ### Size impact
 
@@ -457,10 +528,10 @@ jobs:
 ### Workflow: Create Release (`create-release.yml`)
 
 > **Implemented:** See `.github/workflows/create-release.yml` for the actual
-> workflow.
+> workflow. v0.4.0 and v0.4.1 released successfully via this pipeline.
 
-This ties the firmware build + docs build + GitHub Release together. Can be
-triggered manually or on tag push:
+This ties the firmware build + GitHub Release + CDN distribution together.
+Triggered on tag push (`v*`) or manual dispatch:
 
 ```yaml
 # .github/workflows/create-release.yml
@@ -469,15 +540,15 @@ name: Create Release
 on:
   push:
     tags:
-      - 'v*'              # trigger on version tags (v2026-03-19, v1.0.0, etc.)
+      - 'v*'
   workflow_dispatch:
     inputs:
       build_name:
-        description: 'Build name (e.g. possan-tbd-2026-03-19)'
+        description: 'Build name (e.g. v0.4.1)'
         required: true
 
 permissions:
-  contents: write         # needed to create releases
+  contents: write
 
 jobs:
   # ── Step 1: Build firmware ──
@@ -493,23 +564,30 @@ jobs:
     steps:
       - name: Download firmware artifacts
         uses: actions/download-artifact@v4
-        with:
-          name: firmware-${{ inputs.build_name || github.ref_name }}
-          path: release-assets/
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.build_name && format('v{0}', inputs.build_name) || github.ref_name }}
-          name: "Build ${{ inputs.build_name || github.ref_name }}"
           files: release-assets/**/*
           generate_release_notes: true
 
-  # ── Step 3: Rebuild + deploy docs (picks up latest firmware) ──
-  docs:
-    needs: release
-    uses: ./.github/workflows/build-docs.yml
+  # ── Step 3: Push firmware to CDN (dada-tbd-firmware repo) ──
+  publish-cdn:
+    needs: [firmware, release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to firmware CDN
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.FIRMWARE_CDN_TOKEN }}
+          repository: dadamachines/dada-tbd-firmware
+          event-type: firmware-update
+          client-payload: '{ "channel": "stable", "tag": "...", "run_id": "..." }'
 ```
+
+The CDN repo's `receive-firmware.yml` handles the dispatch: downloads the
+build artifact from the main repo's CI run, copies files to `stable/p4/` and
+`stable/pico/`, creates a versioned pico copy (`dada-tbd-16-{tag}-pico.uf2`),
+writes `stable/latest.json`, commits, and deploys to GitHub Pages.
 
 ### Workflow: CI on Pull Requests and Push (build-check)
 
@@ -649,69 +727,71 @@ production. It is **not** a merge queue — it's a release candidate channel.
 
 ### How artifacts reach the flash page
 
-The key architectural decision: **staging firmware lives in GitHub Releases,
-not in the repo.** This avoids binary bloat in git and works with the
-existing docs deployment model.
+The key architectural decision: **firmware lives on the CDN repo
+(`dadamachines/dada-tbd-firmware`), served via GitHub Pages.** This avoids
+binary bloat in the main repo and solves CORS blocking (same origin).
 
 ```
 staging push
     │
     ├──▸ CI builds firmware (espressif/idf:v5.5.3 Docker)
-    ├──▸ CI creates GitHub pre-release: staging-2026-03-20
-    │       ├── dada-tbd-16-staging-2026-03-20.bin   (unified P4 firmware)
-    │       ├── dada-tbd-16-groovebox-staging-2026-03-20.uf2 (RP2350 Pico)
-    │       ├── dada-tbd-16-p4sd-staging-2026-03-20.zip (P4 SD card image)
-    │       └── dada-tbd-16-p4sd-staging-2026-03-20-hash.txt
-    │
-    └──▸ CI updates staging-manifest.json in docs/_static/firmware/
-            (committed back to dada-tbd-master, triggers docs redeploy)
+    ├──▸ CI creates GitHub pre-release
+    └──▸ CI dispatches to dada-tbd-firmware (repository_dispatch)
+            └──▸ receive-firmware.yml
+                  ├── copies artifacts to staging/p4/ + staging/pico/
+                  ├── creates versioned pico copy
+                  ├── writes staging/latest.json manifest
+                  └── deploys to GitHub Pages
+```
+```
+CDN URL: https://dadamachines.github.io/dada-tbd-firmware/staging/latest.json
+         https://dadamachines.github.io/dada-tbd-firmware/staging/p4/dada-tbd-16-{tag}-unified.bin
+         https://dadamachines.github.io/dada-tbd-firmware/staging/pico/dada-tbd-16-{tag}-pico.uf2
 ```
 
-The flash page reads `staging-manifest.json` at page load and populates the
-package selector dynamically. No RST edits needed per build.
+The flash page reads `latest.json` at page load (via `fetch()` — same origin,
+no CORS) and populates the UI dynamically. No RST edits needed per build.
 
-### Manifest format: `docs/_static/firmware/staging-manifest.json`
+### Manifest format: `{channel}/latest.json` (on CDN repo)
+
+> **Implemented for stable channel.** See
+> `dadamachines.github.io/dada-tbd-firmware/stable/latest.json` for the live
+> manifest. Staging channel will follow the same format.
 
 ```json
 {
-  "channel": "staging",
-  "updated": "2026-03-20T14:30:00Z",
-  "builds": [
-    {
-      "name": "dada-tbd-16-staging-2026-03-20",
-      "date": "2026-03-20",
-      "branch": "staging",
-      "commit": "abc1234",
-      "changelog": "USB NCM fix, new PicoSeqRack processors",
-      "p4Url": "https://github.com/dadamachines/ctag-tbd/releases/download/staging-2026-03-20/dada-tbd-16-staging-2026-03-20.bin",
-      "picoUrl": "https://github.com/dadamachines/ctag-tbd/releases/download/staging-2026-03-20/dada-tbd-16-groovebox-staging-2026-03-20.uf2",
-      "p4sdUrl": "https://github.com/dadamachines/ctag-tbd/releases/download/staging-2026-03-20/dada-tbd-16-p4sd-staging-2026-03-20.zip",
-      "p4sdHashUrl": "https://github.com/dadamachines/ctag-tbd/releases/download/staging-2026-03-20/dada-tbd-16-p4sd-staging-2026-03-20-hash.txt"
-    },
-    {
-      "name": "dada-tbd-16-staging-2026-03-18",
-      "date": "2026-03-18",
-      "branch": "staging",
-      "commit": "def5678",
-      "changelog": "I2C stability, macro export fix",
-      "p4Url": "https://github.com/dadamachines/ctag-tbd/releases/download/staging-2026-03-18/dada-tbd-16-staging-2026-03-18.bin",
-      "picoUrl": "https://github.com/dadamachines/ctag-tbd/releases/download/staging-2026-03-18/dada-tbd-16-groovebox-staging-2026-03-18.uf2",
-      "p4sdUrl": "https://github.com/dadamachines/ctag-tbd/releases/download/staging-2026-03-18/dada-tbd-16-p4sd-staging-2026-03-18.zip",
-      "p4sdHashUrl": "https://github.com/dadamachines/ctag-tbd/releases/download/staging-2026-03-18/dada-tbd-16-p4sd-staging-2026-03-18-hash.txt"
-    }
-  ]
+  "tag": "v0.4.1",
+  "channel": "stable",
+  "timestamp": "2026-03-21T20:23:17Z",
+  "files": {
+    "unified": "stable/p4/dada-tbd-16-v0.4.1-unified.bin",
+    "p4": "stable/p4/ctag-tbd.bin",
+    "bootloader": "stable/p4/bootloader.bin",
+    "partition_table": "stable/p4/partition-table.bin",
+    "ota_data": "stable/p4/ota_data_initial.bin",
+    "sdcard": "stable/p4/tbd-sd-card.zip",
+    "hash": "stable/p4/tbd-sd-card-hash.txt",
+    "tusb_msc": "stable/p4/tusb_msc.bin",
+    "pico": "stable/pico/dada-tbd-16-v0.4.1-pico.uf2"
+  }
 }
 ```
 
-The manifest is a simple JSON file committed to the repo. CI appends new
-entries on each staging build. The flash page reads it client-side — the
-browser fetches the manifest, then fetches the actual binaries from the
-firmware CDN repo (`dadamachines.github.io/dada-tbd-firmware/`) — same
-origin, no CORS issues.
+**File paths are relative to the CDN root.** The flash page prepends the CDN
+base URL: `https://dadamachines.github.io/dada-tbd-firmware/`.
 
-> **Why not commit binaries to docs/_static?** Because every staging build
-> would add ~16 MB to the repo. With GitHub Releases, the binaries live
-> outside the repo and are available forever without bloating git history.
+**Key files:**
+| Key | Description | Used by |
+|---|---|---|
+| `unified` | Unified P4 image (bootloader + partition table + OTA data + app at correct offsets). **Flash to address `0x0`.** | Path A (Quick Update) + Path B (Full SD Deploy) |
+| `pico` | Versioned RP2350 Groovebox .uf2 | Path A Step 2 + Path B Step 5 |
+| `tusb_msc` | USB MSC helper — switches device to SD card drive mode | Path B Step 1 |
+| `sdcard` | SD card zip (tbdsamples + WebUI) | Path B Step 2 |
+| `p4` | App partition only (for advanced use — not used by flash page) | Manual / CLI |
+
+> **Why not commit binaries to docs/_static?** Because every build would add
+> ~16 MB to the main repo. With the CDN repo, binaries live outside the main
+> repo and are available forever without bloating git history.
 
 ### Workflow: Build & Publish Staging (`staging-release.yml`)
 
@@ -882,18 +962,20 @@ git push --force-with-lease origin staging
 
 ### Flash page restructure
 
-The current `docs/flash/` has 10 pages with **extreme code duplication** —
-the same ~1,500 lines of ESP32-P4 flash logic, RP2350 Picoboot logic, OTA
-partition parsing, MSC firmware switching, and SD card extraction are copy-
-pasted across 5 different RST files (50, 60, 65, 66 and partially 25/30).
-Every new feature, bug fix, or firmware version change requires editing
-multiple files.
+> **Status:** Stable Channel page (`10_stable_channel.rst`) is implemented
+> and live. Shared JS modules created. CDN integration working. Old pages
+> not yet deleted (will be removed after staging channel is also live).
 
-#### Current state (10 pages)
+The original `docs/flash/` had 10 pages with **extreme code duplication** —
+the same ~1,500 lines of ESP32-P4 flash logic, RP2350 Picoboot logic, OTA
+partition parsing, MSC firmware switching, and SD card extraction were copy-
+pasted across 5 different RST files. Every new feature, bug fix, or firmware
+version change required editing multiple files.
+
+#### Legacy pages (still present, to be deleted)
 
 | File | Lines | Role | Problem |
 |---|---|---|---|
-| `index.rst` | 76 | Hub page | Links to dead-end pages |
 | `25_flash_dsp.rst` | 273 | ESP32-P4 only flasher | Outdated firmware list, standalone tool |
 | `30_flash_ui.rst` | 381 | RP2350 only flasher | Outdated firmware list, standalone tool |
 | `50_device_recovery.rst` | 1,247 | 7-step guided recovery | 60% duplicated from 25 + 30 |
@@ -904,129 +986,54 @@ multiple files.
 | `68_update_updater.rst` | 100 | WebUI updater docs | Should merge with 70 |
 | `70_webui_versions.rst` | 78 | WebUI version history | Should merge with 68 |
 
-**Total:** ~8,000 lines, of which ~5,000 are duplicated JavaScript/HTML.
+#### Implemented pages
 
-#### Target state (4 pages + shared JS module)
-
-With no shipped product, there's no history worth archiving. The archive
-page can be added later when there are real stable releases to list. For
-now, the flash section needs exactly 5 pages:
-
-| New file | Title | Content | Source |
+| File | Status | Title | Content |
 |---|---|---|---|
-| `index.rst` | **Flash & Updates** | Hub with CTAs (Stable, Staging, App Manager, WebUI) + secondary links (Troubleshooting) | Rewrite |
-| `10_stable_channel.rst` | **Stable Channel** | Latest stable release from `dada-tbd-master`. Default flow: P4 firmware + Groovebox .uf2 + P4 SD card (same workflow as current `65_beta_channel.rst`). Link to App Manager for multi-app opt-in. Single hardcoded `ACTIVE_PKG`. | New (extract shared JS from `65_beta_channel.rst` logic) |
-| `20_staging_channel.rst` | **Staging & Test Builds** | Pre-release builds from `staging` + feature test channels. Dynamic manifest loading (`staging-manifest.json`). Supports `?channel=<name>` for feature branches. Package selector dropdown. Warning banner. | New (manifest-driven) |
-| `30_app_manager.rst` | **App Manager** | Interactive app management: browse catalog, install/remove apps via Picoboot WebUSB, sideload local .uf2 files, switch between multi-app and single-app mode. System tools (bootloader, flash nuke). | New |
-| `40_webui_updates.rst` | **WebUI Updates** | How the on-device updater works + version history table + download links. One page for everything WebUI update related. | New (content from `68_update_updater.rst` + `70_webui_versions.rst`) |
-| `50_troubleshooting.rst` | **Troubleshooting** | General flash troubleshooting: WebSerial issues, browser compat, Linux udev rules, SD card problems, recovery tips. | New (expanded from `67_beta_troubleshooting.rst`) |
+| `index.rst` | **✅ Live** | Flash & Updates | Hub with CTA to Stable Channel |
+| `10_stable_channel.rst` | **✅ Live** | Stable Channel | Two-path flash page: Path A (Quick Update: P4 firmware + Pico), Path B (Full SD Deploy: MSC + SD extract + P4 firmware + Pico). Fetches from CDN. |
+| `20_staging_channel.rst` | Planned | Staging & Test Builds | Manifest-driven, multi-build selector |
+| `30_app_manager.rst` | Planned | App Manager | Picoboot WebUSB install/remove, sideload, system tools |
+| `40_webui_updates.rst` | Planned | WebUI Updates | Updater docs + version history |
+| `50_troubleshooting.rst` | Planned | Troubleshooting | General flash troubleshooting |
 
-> **No archive page yet.** Once there are 2+ stable releases worth
-> preserving, add `60_archive.rst` with manifest-driven P4 SD Deploy only.
+#### Shared JavaScript modules (implemented)
 
-#### All old pages are deleted
+Instead of a single monolithic `tbd-flasher.js`, the flash logic was split
+into two focused modules:
 
-Since there are no external users depending on current URLs:
+| Module | Lines | Purpose |
+|---|---|---|
+| `docs/_static/js/tbd-flasher-p4.js` | ~230 | ESP32-P4 WebSerial flash: `flashP4(ctx, url, address, callbacks)` |
+| `docs/_static/js/tbd-flasher-rp2350.js` | ~130 | RP2350 WebUSB flash via Picoboot: `flashRP2350(ctx, url, callbacks)` |
 
-```bash
-git rm docs/flash/25_flash_dsp.rst
-git rm docs/flash/30_flash_ui.rst
-git rm docs/flash/50_device_recovery.rst
-git rm docs/flash/60_sd_card_recovery.rst
-git rm docs/flash/65_beta_channel.rst
-git rm docs/flash/66_beta_channel_archive.rst
-git rm docs/flash/67_beta_troubleshooting.rst
-git rm docs/flash/68_update_updater.rst
-git rm docs/flash/70_webui_versions.rst
-```
+Each module handles: connection, binary download, progress reporting, and
+error handling. The flash page wires up buttons to these functions.
 
-The new pages are built **from scratch** using the shared `tbd-flasher.js`
-module. No incremental evolution of old pages needed — the code duplication
-problem is solved by simply not carrying it forward.
-
-#### Shared JavaScript module: `docs/_static/js/tbd-flasher.js`
-
-The core architectural change: extract the duplicated ~1,500 lines of flash
-logic into a single shared ES module. Every flash page imports it instead of
-inlining copies.
+**Key implementation details:**
+- **esptool-js v0.5.7** loaded from CDN (`unpkg.com`) for WebSerial P4 flash
+- **Picoboot** loaded from local modules (`docs/_static/picoflash/pkg/`) for WebUSB RP2350 flash
+- **Unified binary** (`dada-tbd-16-{tag}-unified.bin`) flashed to address `0x0` — contains bootloader, partition table, OTA data, and app at correct flash offsets
+- **Versioned naming** for both P4 and Pico: `dada-tbd-16-{tag}-unified.bin`, `dada-tbd-16-{tag}-pico.uf2`
+- **CDN URLs** built dynamically: release tag from GitHub API + CDN base URL
 
 ```javascript
-// docs/_static/js/tbd-flasher.js
-// Shared flash infrastructure for all TBD-16 documentation pages
+// Stable Channel page — firmware URL construction
+var FIRMWARE_CDN = 'https://dadamachines.github.io/dada-tbd-firmware';
+var CHANNEL = 'stable';
 
-export const FLASH_CONFIG = {
-  TUSB_MSC_URL: '../_static/firmware/p4/tusb_msc.bin',
-  OTA_DATA_ADDR: 0xd000,
-  OTA_DATA_SIZE: 0x2000,
-  PT_ADDR: 0x8000,
-  PT_READ_SIZE: 0xC00,
-  ESPTOOL_CDN: 'https://unpkg.com/esptool-js@0.5.7/bundle.js',
-  PICOFLASH_URL: '../_static/picoflash/pkg/index.js',
-  UF2_URL: '../_static/picoflash/js/uf2.js',
-};
+// P4: unified binary from CDN (tag from GitHub API)
+var p4Url = FIRMWARE_CDN + '/' + CHANNEL + '/p4/dada-tbd-16-' + tag + '-unified.bin';
 
-// ── Status & progress helpers ──
-export function setStat(el, msg, cls) { /* ... */ }
-export function showProg(wrap) { /* ... */ }
-export function hideProg(wrap) { /* ... */ }
+// Pico: versioned .uf2 from CDN (tag from GitHub API)
+var picoUrl = FIRMWARE_CDN + '/' + CHANNEL + '/pico/dada-tbd-16-' + tag + '-pico.uf2';
 
-// ── Binary utilities ──
-export function toBinStr(u8, chunkSize) { /* ... */ }
+// Flash P4 (unified = all images at correct offsets → address 0x0)
+await flashP4(ctx, p4Url, 0x0, { onStatus: ..., onProgress: ... });
 
-// ── CRC-32 (for OTA data) ──
-export function espCrc32(buf) { /* ... */ }
-
-// ── ESP-IDF partition table parsing ──
-export function parsePartitionTable(data) { /* ... */ }
-export function detectOta1Address(loader) { /* ... */ }
-
-// ── OTA data builder ──
-export function buildOtaData(slot) { /* ... */ }
-
-// ── macOS cleanup (FAT32 ._ files) ──
-export async function cleanMacOSFiles(dirHandle) { /* ... */ }
-
-// ── ESP32-P4 flash workflow ──
-export async function connectP4(statusCb) { /* ... */ }
-export async function flashP4(loader, binUrl, progressCb) { /* ... */ }
-export async function flashMscAndSwitch(loader, progressCb) { /* ... */ }
-
-// ── RP2350 Picoboot flash workflow ──
-export async function connectPico() { /* ... */ }
-export async function flashPico(device, uf2Url, progressCb) { /* ... */ }
-
-// ── SD card extraction workflow ──
-export async function extractSdCard(dirHandle, zipUrl, hashUrl, progressCb, logCb) { /* ... */ }
-
-// ── Manifest loading ──
-export async function loadManifest(url) { /* ... */ }
+// Flash Pico
+await flashRP2350(ctx, picoUrl, { onStatus: ..., onProgress: ... });
 ```
-
-Each flash page then becomes thin — just HTML layout + event wiring:
-
-```javascript
-// In 10_stable_channel.rst
-import { connectP4, flashP4, connectPico, flashPico,
-         extractSdCard, flashMscAndSwitch, loadManifest,
-         setStat, showProg, hideProg } from '../_static/js/tbd-flasher.js';
-
-var ACTIVE_PKG = {
-  p4Url: '../_static/firmware/p4/possan-tbd-2026-03-19.bin',
-  // ... (CI updates this single object on stable release)
-};
-
-// Wire up buttons to the shared functions
-btnFlashP4.onclick = async () => {
-  var loader = await connectP4(msg => setStat(statP4, msg, 'info'));
-  await flashP4(loader, ACTIVE_PKG.p4Url, pct => { /* update progress */ });
-};
-```
-
-**Benefits:**
-- Bug fixes in flash logic apply to all pages at once
-- New pages (like staging) are ~200 lines instead of ~2,000
-- The shared module can be unit-tested independently
-- Firmware URL changes only happen in one place per page (the PKG object)
 
 #### Manifest-driven pages (staging + archive)
 
@@ -1390,17 +1397,24 @@ feature branches (on personal forks)
 
 ### CORS note for GitHub Release downloads
 
+> **Resolved.** See Section 1 for the full CDN architecture.
+
 ~~GitHub Release assets served from `github.com/…/releases/download/…` support
 CORS for browser `fetch()`.~~ **This turned out to be wrong.** GitHub Release
-download URLs (`github.com/releases/download/…`) do **not** include
-`Access-Control-Allow-Origin` headers, so browsers block cross-origin fetches.
+download URLs do **not** include `Access-Control-Allow-Origin` headers.
 
-**Solution:** A dedicated firmware CDN repository
+**Solution (implemented):** The firmware CDN repository
 ([`dadamachines/dada-tbd-firmware`](https://github.com/dadamachines/dada-tbd-firmware))
-served via GitHub Pages at `dadamachines.github.io/dada-tbd-firmware/`.
-Because the docs site and CDN are on the same `dadamachines.github.io` origin,
-browser fetches work without CORS issues. CI pushes firmware to the CDN repo
-via `repository_dispatch` after each release.
+is served via GitHub Pages at `dadamachines.github.io/dada-tbd-firmware/`.
+Both the docs site (`dadamachines.github.io/ctag-tbd/`) and the CDN share the
+`dadamachines.github.io` origin — same-origin policy satisfied, no CORS issues.
+
+The `receive-firmware.yml` workflow on the CDN repo:
+1. Receives `repository_dispatch` from `create-release.yml`
+2. Downloads artifacts from the main repo's CI run
+3. Copies to `{channel}/p4/` and creates versioned `{channel}/pico/dada-tbd-16-{tag}-pico.uf2`
+4. Writes `{channel}/latest.json` manifest with all file paths
+5. Commits and deploys to GitHub Pages
 
 > **Channel structure:** `stable/`, `staging/`, `feature/<name>/` — each with
 > `p4/` and `pico/` subdirectories and a `latest.json` manifest.
@@ -4205,22 +4219,38 @@ Phase 2 — CI pipeline + versioning + minimal flash page
   Deliverable: CI builds on every push/tag. v0.4.0 release on GitHub.
   ✅ PHASE 2 COMPLETE
 
-Phase 3 — Flash pages + staging channel
+Phase 3 — Flash pages + CDN + staging channel
   ─────────────────────────────────────────────────────────────
   Depends on: Phase 2 (build-firmware.yml + v0.4.0 release must exist).
-  Flash page items moved here from Phase 2 — old flash pages still
-  work, no new code written yet, so this is the right time.
+  CDN repo created to solve CORS blocking on GitHub Release URLs.
+  Stable Channel flash page live. Hardware flash test in progress.
   ─────────────────────────────────────────────────────────────
-  [ ] Extract shared JS into docs/_static/js/tbd-flasher.js
-  [ ] Create 10_stable_channel.rst (P4 firmware + Groovebox .uf2 + P4 SD card)
-  [ ] Create minimal flash/index.rst with CTA to Stable Channel
-  [ ] Test: end-to-end browser flash from Stable Channel page using CI-built release
+  [x] Create firmware CDN repo (dadamachines/dada-tbd-firmware)
+      - GitHub Pages enabled (GitHub Actions source)
+      - receive-firmware.yml: receives builds via repository_dispatch
+      - deploy-pages.yml: deploys on push to main
+      - Channel structure: stable/p4/, stable/pico/, staging/ (future)
+  [x] Add publish-cdn job to create-release.yml (repository_dispatch to CDN)
+      - Uses FIRMWARE_CDN_TOKEN (fine-grained PAT scoped to CDN repo)
+  [x] Extract shared JS into docs/_static/js/tbd-flasher-p4.js (~230 lines)
+  [x] Extract shared JS into docs/_static/js/tbd-flasher-rp2350.js (~130 lines)
+  [x] Create 10_stable_channel.rst (two-path flash page)
+      - Path A: Quick Update (P4 firmware + Pico firmware)
+      - Path B: Full SD Deploy (MSC → SD extract → P4 firmware → Pico)
+      - Fetches from CDN: dadamachines.github.io/dada-tbd-firmware/
+      - Uses unified binary (dada-tbd-16-{tag}-unified.bin) at address 0x0
+      - Versioned Pico naming (dada-tbd-16-{tag}-pico.uf2)
+  [x] Update flash/index.rst with Stable Channel as primary CTA
+  [x] Tag v0.4.1, test full pipeline: build → release → CDN dispatch → Pages deploy
+      - All 3 CI jobs green
+      - CDN serving all firmware files (verified via curl)
+      - Manifest (stable/latest.json) has all 9 file entries
+  [ ] Test: end-to-end browser flash from Stable Channel page (hardware test)
   [ ] Create staging branch from dada-tbd-master
-  [ ] Add staging-release.yml workflow (pushes to staging → pre-release + manifest update)
-  [ ] Add feature-test-release.yml workflow (feature-test/* branches → per-feature manifests)
-  [ ] Create docs/_static/firmware/staging-manifest.json (empty initial)
-  [ ] Test: push to staging → verify pre-release created → verify manifest updated
-  [ ] Create 20_staging_channel.rst (manifest-driven, ?channel= support for feature tests)
+  [ ] Add staging-release.yml workflow (pushes to staging → pre-release + CDN dispatch)
+  [ ] Add feature-test-release.yml workflow (feature-test/* → per-feature manifests)
+  [ ] Test: push to staging → verify pre-release created → verify CDN updated
+  [ ] Create 20_staging_channel.rst (manifest-driven, ?channel= for feature tests)
   [ ] Create 30_app_manager.rst (placeholder: bootloader flash via BOOTSEL, system tools, sideload section)
   [ ] Create 40_webui_updates.rst (WebUI updater docs + version history)
   [ ] Create 50_troubleshooting.rst (general flash troubleshooting)
@@ -4232,6 +4262,7 @@ Phase 3 — Flash pages + staging channel
       (deferred from Phase 1 — delete only after new pages are verified working)
   Deliverable: Full 5-page flash section. Stable + staging channels live.
   Feature-test channel available for ad-hoc experiments.
+  ✅ PHASE 3 PARTIALLY COMPLETE — Stable channel + CDN live, staging TODO
 
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────
@@ -4344,20 +4375,25 @@ Phase 7 — Plugin adaptation + MultiFX
 ### Dependency graph
 
 ```
-Phase 0 ─── Merge experimental (patches, sdkconfig)
+Phase 0 ─── Merge experimental (patches, sdkconfig)                      ✅ DONE
   │
   ▼
-Phase 1 ─── Clean slate (delete binaries + rename files + archive branches)
+Phase 1 ─── Clean slate (delete binaries + rename files + archive)       ✅ DONE
   │
   ▼
-Phase 2 ─── CI pipeline + v0.4.0 + Stable Channel page
+Phase 2 ─── CI pipeline + v0.4.0 + GitHub Releases                      ✅ DONE
   │
-  ├──────────────────┐
-  ▼                  ▼
-Phase 3              Phase 4
-Staging channel      Kconfig guards
-+ flash pages        + multi-target CI
-  │                  (independent)
+  ├──────────────────────────────────────┐
+  ▼                                      ▼
+Phase 3                                  Phase 4
+CDN repo + flash pages                   Kconfig guards
++ staging channel                        + multi-target CI
+  │  ✅ CDN repo live                    (independent)
+  │  ✅ Stable Channel page live
+  │  ✅ v0.4.1 pipeline tested
+  │  ⬜ Hardware flash test
+  │  ⬜ Staging channel
+  │
   ▼
 Phase 3b ── Git LFS + history rewrite + force-push (team re-clones once)
   │
@@ -4381,29 +4417,24 @@ re-clones exactly once.
 
 ## 17. Summary
 
-| Change | Effort | Impact |
-|---|---|---|
-| Delete old binaries + rewrite git history | Low (10 users re-clone) | ~450 MB less total (~220 working tree + ~230 git history) |
-| CI firmware builds | Medium | Reproducible builds, automated releases |
-| CI build checks on PRs | Low | Catch regressions before merge |
-| Unified versioning (v0.4.0 start) | Low | Clear firmware ↔ WebUI compatibility |
-| New flash pages (5 pages + shared JS) | Medium | 8,000 → 2,500 lines, zero code duplication |
-| Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built |
-| Git LFS for remaining binaries | Low | Fast clones for engineers |
-| Branch cleanup (two long-lived branches) | Low | Cleaner repo, less confusion |
-| Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready |
-| Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact |
-| RP2350 app versioning + AnnounceApp design | Medium | App compatibility tracking, future app store |
-| App registry repo (`tbd-app-registry`) | Medium | External contributors submit apps via PR, CI-verified bundles |
-| Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB |
-| Sideloading support for custom apps | Low | Developers can build and run their own .uf2 without the registry — zero friction |
-| Firmware ↔ app compatibility awareness | Medium | Version check warns when Pico SD apps may be outdated — never blocks the user |
-| Single-app ↔ multi-app mode switching | Low | Flash nuke + bootloader as system tools on App Manager |
-| Plugin adaptation for hardware UI (MultiFX) | High | ~15 plugins controllable from TBD-16 knobs/OLED; `hwui` block in `mui-*.json`; sub-range mapping with curve selection |
-| Generalized MIDI API for RP2350 apps | Medium | Replaces legacy MidiParser; one API for MultiFX and future apps |
-| MultiFX / Groovebox shared codebase | Medium | Same Ui, Knob, Display, Midi, SPI code — users learn one workflow |
-| `.jsn` → `.json` file extension rename | Low | 122 files renamed to standard `.json`; mechanical rename, no logic changes — ✅ DONE |
-| Plugin docs adaptation status | Low | `docs/plugins/index.rst` MIDI API column reflects which plugins work on hardware |
+| Change | Effort | Impact | Status |
+|---|---|---|---|
+| Delete old binaries + rewrite git history | Low (10 users re-clone) | ~450 MB less total (~220 working tree + ~230 git history) | Phase 1 ✅ (delete) / Phase 3b (rewrite) |
+| CI firmware builds | Medium | Reproducible builds, automated releases | ✅ Phase 2 |
+| CI build checks on PRs | Low | Catch regressions before merge | ✅ Phase 2 |
+| Unified versioning (v0.4.0 start) | Low | Clear firmware ↔ WebUI compatibility | ✅ Phase 2 |
+| Firmware CDN repo (CORS fix) | Low | Browser flash works, same-origin delivery | ✅ Phase 3 |
+| Stable Channel flash page | Medium | Two-path browser flash (Quick Update + Full SD Deploy) | ✅ Phase 3 |
+| New flash pages (5 pages + shared JS) | Medium | 8,000 → 2,500 lines, zero code duplication | In progress |
+| Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built | Planned |
+| Git LFS for remaining binaries | Low | Fast clones for engineers | Phase 3b |
+| Branch cleanup (two long-lived branches) | Low | Cleaner repo, less confusion | ✅ Phase 1 |
+| Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | Phase 4 |
+| Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact | ✅ Phase 3 |
+| RP2350 app versioning + AnnounceApp design | Medium | App compatibility tracking, future app store | Phase 5 |
+| App registry repo (`tbd-app-registry`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 6 |
+| Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 6 |
+| `.jsn` → `.json` file extension rename | Low | 122 files renamed — ✅ DONE | ✅ Phase 1 |
 
 ### What stays the same
 
@@ -4415,29 +4446,28 @@ re-clones exactly once.
 
 ### What changes
 
-- Old firmware/SD builds → **deleted** (no migration, no archive — they're pre-release test artifacts)
-- Git history → **rewritten** (only 10 people need to re-clone)
-- Remaining binaries → **Git LFS** (fast clones)
-- Manual firmware builds → **CI pipeline** (reproducible, automated)
-- Date-based firmware names → **semantic versioning** starting at `v0.4.0`
+**✅ Done:**
+- Old firmware/SD builds → **deleted** (no migration, no archive)
+- Stale branches → **archived + deleted** (only `dada-tbd-master` + `p4_main` on origin)
+- `.jsn` files → **renamed to `.json`** (122 files, Phase 1)
+- Manual firmware builds → **CI pipeline** (reproducible, automated — Phase 2)
+- Date-based firmware names → **semantic versioning** starting at `v0.4.0` (Phase 2)
+- GitHub Releases → **working** (v0.4.0, v0.4.1 published with 7+ artifacts)
+- Generic filenames → **`dada-tbd-16-{tag}` naming** (every artifact identifies hardware + version — Phase 3)
+- Firmware CDN repo → **live** (`dadamachines/dada-tbd-firmware`, GitHub Pages, CORS solved)
+- Stable Channel flash page → **live** (`10_stable_channel.rst`, two-path browser flash)
+- Shared flash JS modules → **live** (`tbd-flasher-p4.js`, `tbd-flasher-rp2350.js`)
+
+**In progress (Phase 3):**
+- 10 flash pages with 5,000 duplicated lines → **5 pages + shared JS module**
 - No pre-release testing path → **staging channel** (CI-built, browser flash)
-- 10 flash pages with 5,000 duplicated lines → **5 pages + shared JS module** (stable, staging, app manager, WebUI updates, troubleshooting)
-- 10+ branches → **two long-lived branches** (`dada-tbd-master` + `staging`) + forks + PRs
-- Informal upstream relationship → **Kconfig guards for portability** (upstream is dormant; they adopt our work when ready, not the other way around)
-- No firmware/WebUI version coupling → **shared MAJOR.MINOR** (firmware `v0.4.x` ↔ WebUI `0.4.x`)
-- Generic filenames → **`dada-{target}` naming** (every artifact identifies its hardware target)
-- RP2350 apps unversioned → **tagged per release train** (app `0.4.x` ↔ firmware `0.4.x`)
-- P4 has no knowledge of Pico app → **AnnounceApp SPI command** (existing on experimental, to be formalized)
-- Multi-app requires manual setup → **interactive App Manager page** with Picoboot WebUSB install + catalog
-- No curated Pico SD bundle → **optional Pico SD bundle per MAJOR.MINOR train** (BOOT2350 + all default apps; device ships factory pre-loaded, bundle available for restore/update)
-- RP2350 runs standalone Groovebox by default → **multi-app one step away** (flash bootloader to unlock; Pico SD already has all apps)
-- No version check between P4 and Pico apps → **firmware ↔ app compatibility awareness** (App Manager warns when Pico SD train ≠ firmware train with guided update; AnnounceApp runtime notice as safety net — never blocks)
-- No single-app ↔ multi-app switching → **mode switching via flash nuke + bootloader** on App Manager page
-- No external contributor path → **app registry repo** (`tbd-app-registry`) with PR-based submissions
-- No sideloading workflow → **first-class sideloading** (build .uf2 with PlatformIO, drag-and-drop or copy to Pico SD — no registry required)
-- No app catalog for users → **App Catalog on App Manager page** + downloadable `app-catalog.json`
-- All 57 plugins WebUI-only → **~15 plugins adapted for hardware UI** via `hwui` block in `mui-*.json` (MultiFX controls them from knobs/OLED; per-parameter sub-range + curve mapping)
-- All `.jsn` files → **renamed to `.json`** (standard extension; done early in Phase 1 to avoid path conflicts in later phases)
-- Legacy MIDI Parser in RP2350 template → **generalized MIDI API** derived from Groovebox, simplified for MultiFX and future apps
-- MultiFX as separate codebase → **shares UI/Knob/Display/Midi/SPI code with Groovebox** (users learn one workflow; page size adapts to hardware)
-- No visibility into plugin hardware readiness → **MIDI API column in plugin docs** shows adapted / planned / n/a per plugin
+
+**Planned:**
+- Git history → **rewrite** (Phase 3b — only 10 people re-clone)
+- Remaining binaries → **Git LFS** (fast clones)
+- No firmware/WebUI version coupling → **shared MAJOR.MINOR** (Phase 4)
+- Kconfig guards → **portable codebase** (Phase 4 — TBD-Core builds, upstream compatible)
+- P4 has no knowledge of Pico app → **AnnounceApp SPI command** (Phase 5)
+- Multi-app requires manual setup → **interactive App Manager page** (Phase 6)
+- No version check between P4 and Pico → **firmware ↔ app compatibility** (Phase 5-6)
+- All 57 plugins WebUI-only → **~15 plugins adapted for hardware UI** (Phase 7)
