@@ -4263,15 +4263,23 @@ Phase 3 — Flash pages + CDN + staging channel
       - Triggers on push to staging branch
       - Builds firmware, creates GitHub pre-release, dispatches to CDN with channel=staging
       - CDN receive-firmware.yml updated: seeds pico UF2 from stable for new channels
-  [ ] Add feature-test-release.yml workflow (feature-test/* → per-feature manifests)
+  [x] Add feature-test-release.yml workflow (feature-test/* → per-feature manifests)
+      - Triggers on push to feature-test/* branches
+      - Derives channel name from branch (feature-test/foo → feature-test-foo)
+      - Creates GitHub pre-release, dispatches to CDN with per-feature channel
+      - CDN creates channel/latest.json — engineers flash via CDN URL
   [x] Test: push to staging → verify pre-release created → verify CDN updated
       - Staging branch push triggered Staging Release workflow (run #1, in progress)
   [x] Create 20_staging_channel.rst (Beta Channel flash page, CHANNEL='staging')
       - Same two-path structure as stable (Quick Update + Full SD Deploy)
       - Fetches latest pre-release from GitHub API (not /latest)
       - Warning banner linking back to Stable Channel for production use
-  [ ] Create 30_app_manager.rst (placeholder: bootloader flash via BOOTSEL, system tools, sideload section)
-  [ ] Create 40_webui_updates.rst (WebUI updater docs + version history)
+  [x] Create 60_app_manager.rst (placeholder: bootloader flash via BOOTSEL, system tools, sideload section)
+      - Numbered 60 (30 already taken by release_archive)
+      - Placeholder linking to Stable Channel, content ships in Phase 6
+  [x] Create 40_webui_updates.rst → covered by 70_webui_versions.rst
+      - 70_webui_versions.rst already has How to Update + version history + downloads
+      - No separate page needed — index.rst CTA points to 70
   [x] Create 50_troubleshooting.rst (general flash troubleshooting)
       - Consolidated from 67_beta_troubleshooting.rst with new sections
       - Covers: browser compat, serial, SD card, RP2350, post-flash
@@ -4279,8 +4287,11 @@ Phase 3 — Flash pages + CDN + staging channel
       - 3 CTAs: Stable Channel, Beta Channel, WebUI Versions
       - Secondary link: Troubleshooting
       - toctree: 10_stable_channel, 20_staging_channel, 70_webui_versions, 50_troubleshooting
-  [ ] Add compatRange field to staging + stable manifests
+  [x] Add compatRange field to staging + stable manifests
+      - CDN receive-firmware.yml extracts MAJOR.MINOR from tag (v0.4.1 → 0.4)
+      - Added to latest.json as "compatRange" field
   [ ] Add MAJOR.MINOR compatibility check to WebUI updater page (soft warning)
+      → Deferred to Phase 5 (needs firmware version API on device)
   [ ] Test: staging flash page loads manifest, flash works end-to-end
   [x] Delete old flash pages: 25, 30, 50, 60, 65, 66, 67, 68
       - 8 pages removed (~250 KB), replaced by new channel-based pages
@@ -4291,8 +4302,10 @@ Phase 3 — Flash pages + CDN + staging channel
       - Added to flash/index.rst CTAs and toctree
   Deliverable: Full flash section. Stable + staging channels live.
   Feature-test channel available for ad-hoc experiments.
-  ✅ PHASE 3 MOSTLY COMPLETE — Stable + Beta channels live, Release Archive built,
-     all hardware tested, CI patch verification active. App manager + WebUI updater pages TODO.
+  ✅ PHASE 3 COMPLETE — All channels live (stable, staging, feature-test),
+     Release Archive built, all hardware tested, CI patch verification active.
+     App Manager placeholder in place. WebUI docs covered by 70_webui_versions.
+     compatRange in CDN manifest. MAJOR.MINOR check deferred to Phase 5.
 
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────

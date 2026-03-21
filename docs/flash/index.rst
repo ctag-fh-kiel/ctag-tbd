@@ -49,3 +49,4 @@ or something went wrong. Firmware updates **never erase** your SD card.
    70_webui_versions
    30_release_archive
    50_troubleshooting
+   60_app_manager
