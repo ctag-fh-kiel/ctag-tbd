@@ -25,7 +25,7 @@ respective component folders / files if different from this license.
 #include "esp_log.h"
 #include "esp_attr.h"
 #include "freertos/FreeRTOS.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 
 
 using namespace CTAG::DRIVERS;
@@ -34,6 +34,9 @@ static i2s_chan_handle_t tx_handle = NULL;
 static i2s_chan_handle_t rx_handle = NULL;
 
 static const char *TAG = "CODEC";
+
+static i2c_master_bus_handle_t i2c_bus_handle = NULL;
+static i2c_master_dev_handle_t i2c_dev_handle = NULL;
 
 #define I2C_PORT_NUM I2C_NUM_1 // 0 is used for OLED
 #define I2C_SDA GPIO_NUM_7
@@ -50,7 +53,6 @@ static const char *TAG = "CODEC";
 uint8_t page = 255;
 
 #define AIC3254_ADDR 0x18 // 0b0011000 (7-bit address)
-#define ACK_CHECK_EN 1
 /* tlv320aic32x4 register space (in decimal to match datasheet) */
 #define AIC32X4_REG(page, reg)    ((page * 128) + reg)
 #define    AIC32X4_PSEL        AIC32X4_REG(0, 0)
@@ -142,57 +144,31 @@ uint8_t page = 255;
 
 static void cfg_i2c(){
     ESP_LOGI(TAG, "cfg codec i2c");
-    esp_err_t err = ESP_OK;
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
+    i2c_master_bus_config_t bus_config = {
+        .i2c_port = I2C_PORT_NUM,
         .sda_io_num = I2C_SDA,
         .scl_io_num = I2C_SCL,
-        .sda_pullup_en = false,
-        .scl_pullup_en = false,
-        .master = {
-            .clk_speed = I2C_CLK_SPEED,
-    },
-    .clk_flags = 0,
-};
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .glitch_ignore_cnt = 7,
+    };
+    ESP_ERROR_CHECK(i2c_new_master_bus(&bus_config, &i2c_bus_handle));
 
-    err |= i2c_param_config(I2C_PORT_NUM, &conf);
-    err |= i2c_driver_install(I2C_PORT_NUM, conf.mode, 0, 0, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED);
+    i2c_device_config_t dev_config = {
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+        .device_address = AIC3254_ADDR,
+        .scl_speed_hz = I2C_CLK_SPEED,
+    };
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(i2c_bus_handle, &dev_config, &i2c_dev_handle));
 }
 
 static void write_reg(uint8_t reg_add, uint8_t data) {
-    esp_err_t err = ESP_OK;
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    err |= i2c_master_start(cmd);
-    ESP_ERROR_CHECK(err);// send start bit
-    err |= i2c_master_write_byte(cmd, (AIC3254_ADDR << 1) | I2C_MASTER_WRITE,
-                          ACK_CHECK_EN); // aic3254 7-bit address + write bit
-    ESP_ERROR_CHECK(err);
-    err |= i2c_master_write_byte(cmd, reg_add, ACK_CHECK_EN);                // target register
-    ESP_ERROR_CHECK(err);
-    err |= i2c_master_write_byte(cmd, data, ACK_CHECK_EN);                       // target value
-    ESP_ERROR_CHECK(err);
-    err |= i2c_master_stop(cmd);                                                      // send stop bit
-    ESP_ERROR_CHECK(err);
-    err |= i2c_master_cmd_begin((i2c_port_t) I2C_PORT_NUM, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
-    ESP_ERROR_CHECK(err);
+    uint8_t write_buf[2] = {reg_add, data};
+    ESP_ERROR_CHECK(i2c_master_transmit(i2c_dev_handle, write_buf, sizeof(write_buf), 1000));
 }
 
 static uint8_t read_reg(uint8_t reg_add) {
-    uint8_t data = 0xFF; // dummy
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);                                                     // send start bit
-    i2c_master_write_byte(cmd, (AIC3254_ADDR << 1) | I2C_MASTER_WRITE,
-                          ACK_CHECK_EN); // aic3254 7-bit address + write bit
-    i2c_master_write_byte(cmd, reg_add, ACK_CHECK_EN);                // register to be read
-    i2c_master_start(
-            cmd);                                                     // resend start bit (see application reference guide p.80 for more info on the i2c transaction)
-    i2c_master_write_byte(cmd, (AIC3254_ADDR << 1) | I2C_MASTER_READ,
-                          ACK_CHECK_EN);  // aic3254 7-bit address + read bit
-    i2c_master_read_byte(cmd, &data, I2C_MASTER_NACK);                         // read into data buffer
-    i2c_master_stop(cmd);                                                      // send stop bit
-    i2c_master_cmd_begin((i2c_port_t) I2C_PORT_NUM, cmd, 1000 / portTICK_PERIOD_MS);
-    i2c_cmd_link_delete(cmd);
+    uint8_t data = 0xFF;
+    ESP_ERROR_CHECK(i2c_master_transmit_receive(i2c_dev_handle, &reg_add, 1, &data, 1, 1000));
     return data;
 }
 

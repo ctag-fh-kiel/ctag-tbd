@@ -2,6 +2,7 @@
   "id": "pp-allparams",
   "name": "Polypad All param",
   "machine": "pp",
+  "volmult": 3.4,
   "groups": [
     {
       "name": "Page 1",

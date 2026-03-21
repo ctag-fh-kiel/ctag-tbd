@@ -47,8 +47,11 @@ using namespace CTAG::DRIVERS;
 
 static sdmmc_card_t* card = nullptr;
 
-static bool MountSDCard(const char *mnt_pt = "/sdcard"){
-    // configure gpio 45 as output and toggle to reset the sd card
+static sd_pwr_ctrl_handle_t sd_pwr_ctrl_handle = NULL;
+
+static void sd_power_cycle(int settle_ms = 200) {
+    // GPIO 45 controls SD card power (active-low enable)
+    // Pull high to cut power, wait, pull low to restore, wait for card to stabilize
     gpio_config_t io_conf{};
     io_conf.intr_type = GPIO_INTR_DISABLE;
     io_conf.mode = GPIO_MODE_OUTPUT;
@@ -56,30 +59,52 @@ static bool MountSDCard(const char *mnt_pt = "/sdcard"){
     io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
     gpio_config(&io_conf);
-    // toggle power of SD card to reset
-    gpio_set_level(GPIO_NUM_45, 1);
+    gpio_set_level(GPIO_NUM_45, 1);   // power off
     vTaskDelay(100 / portTICK_PERIOD_MS);
-    gpio_set_level(GPIO_NUM_45, 0);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
+    gpio_set_level(GPIO_NUM_45, 0);   // power on
+    vTaskDelay(settle_ms / portTICK_PERIOD_MS);
+}
+
+// esp_hosted (SDIO WiFi on slot 1) already calls sdmmc_host_init() before us.
+// We must NOT re-init the shared SDMMC host.
+// See: managed_components/espressif__esp_hosted/examples/host_sdcard_with_hosted/
+static esp_err_t sdmmc_host_init_noop(void) { return ESP_OK; }
+// Default deinit_p (sdmmc_host_deinit_slot) IS safe to use: it only cleans up
+// slot 0 resources and only tears down the host when ALL slots are deinitialized.
+// Since esp_hosted keeps slot 1 active, the host stays alive.
+
+static bool MountSDCard(const char *mnt_pt = "/sdcard", int settle_ms = 200){
+    sd_power_cycle(settle_ms);
 
     sdmmc_host_t host = SDMMC_HOST_DEFAULT();
     host.flags |= SDMMC_HOST_FLAG_ALLOC_ALIGNED_BUF;
     host.max_freq_khz = SDMMC_FREQ_HIGHSPEED;
     host.slot = SDMMC_HOST_SLOT_0;
+
+    // esp_hosted already initialized the SDMMC host — skip init only.
+    // Keep real deinit_p (sdmmc_host_deinit_slot) so failed mounts properly
+    // clean up slot 0 state (especially sampling delay set during tuning).
+    host.init = &sdmmc_host_init_noop;
+
 #ifdef CONFIG_SD_DDR_50MHZ_MODE
     host.max_freq_khz = SDMMC_FREQ_DDR50;
 #endif
-    sd_pwr_ctrl_ldo_config_t ldo_config = {
-        .ldo_chan_id = 4,
-    };
 
-    sd_pwr_ctrl_handle_t pwr_ctrl_handle = NULL;
-    esp_err_t ret = sd_pwr_ctrl_new_on_chip_ldo(&ldo_config, &pwr_ctrl_handle);
-    if (ret != ESP_OK){
-        ESP_LOGE("FS", "Failed to create a new on-chip LDO power control driver");
-        return false;
+    // Acquire LDO channel once — reuse across retries to avoid leak.
+    // The struct has only ldo_chan_id; voltage is set later by sdmmc_card_init()
+    // via host.io_voltage (3.3f from SDMMC_HOST_DEFAULT), so the initial
+    // "voltage value 0" warning from esp_ldo_acquire_channel is expected.
+    if (sd_pwr_ctrl_handle == NULL) {
+        sd_pwr_ctrl_ldo_config_t ldo_config = {
+            .ldo_chan_id = 4,
+        };
+        esp_err_t ret = sd_pwr_ctrl_new_on_chip_ldo(&ldo_config, &sd_pwr_ctrl_handle);
+        if (ret != ESP_OK){
+            ESP_LOGE("FS", "Failed to create a new on-chip LDO power control driver");
+            return false;
+        }
     }
-    host.pwr_ctrl_handle = pwr_ctrl_handle;
+    host.pwr_ctrl_handle = sd_pwr_ctrl_handle;
 
     sdmmc_slot_config_t slot_config = SDMMC_SLOT_CONFIG_DEFAULT();
     slot_config.d4 = GPIO_NUM_NC;
@@ -87,15 +112,17 @@ static bool MountSDCard(const char *mnt_pt = "/sdcard"){
     slot_config.d6 = GPIO_NUM_NC;
     slot_config.d7 = GPIO_NUM_NC;
     slot_config.width = 4;
-    slot_config.flags |= SDMMC_SLOT_FLAG_UHS1;
+    // No SDMMC_SLOT_FLAG_UHS1 — UHS-I tuning is unreliable on cold boot and
+    // failed tuning corrupts the SDMMC sampling delay for all retries.
+    // High-speed 50 MHz 4-bit mode is more than adequate.
 
     esp_vfs_fat_sdmmc_mount_config_t mount_config = VFS_FAT_MOUNT_DEFAULT_CONFIG();
     mount_config.format_if_mount_failed = true;
 
     ESP_LOGI("FS", "Mounting filesystem");
-    ret = esp_vfs_fat_sdmmc_mount(mnt_pt, &host, &slot_config, &mount_config, &card);
+    esp_err_t ret = esp_vfs_fat_sdmmc_mount(mnt_pt, &host, &slot_config, &mount_config, &card);
     if (ret != ESP_OK){
-        ESP_LOGE("FS", "Failed to mount sd-card");
+        ESP_LOGE("FS", "Failed to mount sd-card (0x%x)", ret);
         return false;
     }
     ESP_LOGI("FS", "sd-card mounted");
@@ -511,18 +538,22 @@ bool FileSystem::SDMounted() {
 }
 
 void FileSystem::InitFS(){
-    // try to mount the SD card with retries
+    // try to mount the SD card with retries and escalating settle times
     const int maxRetries = 5;
     bool sd_mounted = false;
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
-        sd_mounted = MountSDCard();
+        // Escalate power-cycle settle time: 200, 300, 500, 800, 1000 ms
+        int settle_ms = (attempt <= 2) ? 200 + (attempt - 1) * 100
+                                       : 200 + attempt * 100;
+        sd_mounted = MountSDCard("/sdcard", settle_ms);
         if (sd_mounted) break;
-        ESP_LOGW("FS", "SD card mount attempt %d/%d failed, retrying...", attempt, maxRetries);
+        ESP_LOGW("FS", "SD card mount attempt %d/%d failed (settle=%dms), retrying...",
+                 attempt, maxRetries, settle_ms);
         vTaskDelay(500 / portTICK_PERIOD_MS);
     }
     if (!sd_mounted) {
         ESP_LOGE("FS", "SD card mount failed after %d attempts", maxRetries);
-        assert(sd_mounted);
+        return;
     }
 
     // Check and update SD card content from zip if needed

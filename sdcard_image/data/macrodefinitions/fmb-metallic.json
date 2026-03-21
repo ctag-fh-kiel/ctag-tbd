@@ -2,6 +2,7 @@
   "id": "fmb-metallic",
   "name": "Metallic FM Kick",
   "machine": "fmb",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Metallic",

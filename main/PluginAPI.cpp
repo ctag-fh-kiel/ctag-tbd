@@ -18,6 +18,7 @@ respective component folders / files if different from this license.
 #include "PluginAPI.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
+#include "SpiAPI.hpp"
 #include <cstring>
 #include <string>
 #include "esp_log.h"
@@ -198,6 +199,19 @@ static esp_err_t handle_set_active(httpd_req_t *req, const char *query) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "need ch=0|1 and id=");
         return ESP_FAIL;
     }
+
+    // Block ALL HTTP plugin switching when RP2350 app has locked plugins.
+    // SPI-originated switches (from RP2350 itself) are unaffected.
+    if (CTAG::SPIAPI::SpiAPI::IsPluginLocked()) {
+        ESP_LOGW(TAG, "Plugin switch blocked — RP2350 app '%s' has locked plugins (ch=%d id=%s)",
+                 CTAG::SPIAPI::SpiAPI::GetRP2350AppId().c_str(), ch, id);
+        set_api_headers(req);
+        httpd_resp_set_status(req, "423 Locked");
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"error\":\"plugin_locked\",\"reason\":\"RP2350 app has locked plugin switching\"}");
+        return ESP_OK;
+    }
+
     ESP_LOGI(TAG, "setActive ch=%d id=%s", ch, id);
     CTAG::AUDIO::SoundProcessorManager::SetSoundProcessorChannel(ch, string(id));
     CTAG::FAV::Favorites::DeactivateFavorite();

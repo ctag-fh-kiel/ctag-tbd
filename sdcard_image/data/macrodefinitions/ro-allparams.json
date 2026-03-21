@@ -2,6 +2,7 @@
   "id": "ro-allparams",
   "name": "Rompler",
   "machine": "ro",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "SAMPLE",
@@ -50,7 +51,7 @@
         {
           "idx": 4,
           "name": "Pitch",
-          "def": 64,
+          "def": 16,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -92,32 +93,69 @@
     {
       "ctrl": 8,
       "start": 0,
-      "add": [{ "src": 0, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 9,
       "start": 0,
-      "add": [{ "src": 1, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 10,
       "start": 0,
-      "add": [{ "src": 2, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 11,
       "start": 0,
-      "add": [{ "src": 3, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 12,
       "start": 0,
-      "add": [{ "src": 6, "mul": 1, "div": 1, "curve": "log" }]
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
     },
     {
       "ctrl": 13,
       "start": 0,
-      "add": [{ "src": 7, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 7,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 14,
@@ -137,7 +175,14 @@
     {
       "ctrl": 17,
       "start": 1,
-      "add": [{ "src": 5, "mul": 1, "div": 1, "curve": "exp" }]
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
     },
     {
       "ctrl": 18,
@@ -147,7 +192,13 @@
     {
       "ctrl": 19,
       "start": 0,
-      "add": [{ "src": 4, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 20,

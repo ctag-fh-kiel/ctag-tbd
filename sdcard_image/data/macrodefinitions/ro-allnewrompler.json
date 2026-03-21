@@ -2,6 +2,7 @@
   "id": "ro-allnewrompler",
   "name": "allnewrompler",
   "machine": "ro",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "SAMPLE",
@@ -197,92 +198,202 @@
     {
       "ctrl": 8,
       "start": 0,
-      "add": [{ "src": 0, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 9,
       "start": 0,
-      "add": [{ "src": 1, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 10,
       "start": 0,
-      "add": [{ "src": 2, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 11,
       "start": 0,
-      "add": [{ "src": 3, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 12,
       "start": 0,
-      "add": [{ "src": 9, "mul": 1, "div": 1, "curve": "log" }]
+      "add": [
+        {
+          "src": 9,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
     },
     {
       "ctrl": 13,
       "start": 0,
-      "add": [{ "src": 10, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 10,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 14,
       "start": 0,
-      "add": [{ "src": 8, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 8,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 15,
       "start": 0,
-      "add": [{ "src": 15, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 15,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 16,
       "start": 1,
-      "add": [{ "src": 6, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 17,
       "start": 1,
-      "add": [{ "src": 7, "mul": 1, "div": 1, "curve": "exp" }]
+      "add": [
+        {
+          "src": 7,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
     },
     {
       "ctrl": 18,
       "start": 0,
-      "add": [{ "src": 4, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 19,
       "start": 0,
-      "add": [{ "src": 5, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 20,
       "start": 0,
-      "add": [{ "src": 12, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 12,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 21,
       "start": 0,
-      "add": [{ "src": 13, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 13,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 22,
       "start": 0,
-      "add": [{ "src": 14, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 14,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 23,
       "start": 0,
-      "add": [{ "src": 11, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 11,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 24,
       "start": 0,
-      "add": [{ "src": 16, "mul": 64, "div": 1 }]
+      "add": [
+        {
+          "src": 16,
+          "mul": 64,
+          "div": 1
+        }
+      ]
     },
     {
       "ctrl": 25,
       "start": 0,
-      "add": [{ "src": 17, "mul": 1, "div": 1 }]
+      "add": [
+        {
+          "src": 17,
+          "mul": 1,
+          "div": 1
+        }
+      ]
     }
   ]
 }

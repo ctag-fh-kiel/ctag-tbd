@@ -2,6 +2,7 @@
   "id": "cl-allparams",
   "name": "Clap All param",
   "machine": "cl",
+  "volmult": 0.6,
   "groups": [
     {
       "name": "Page 1",

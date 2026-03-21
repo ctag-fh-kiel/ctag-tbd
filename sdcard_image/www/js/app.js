@@ -191,6 +191,15 @@
       });
     }
 
+    // Sample Manager Info button
+    var samplesInfoBtn = document.getElementById('samples-info-btn');
+    var samplesInfoDialog = document.getElementById('samples-info-dialog');
+    if (samplesInfoBtn && samplesInfoDialog) {
+      samplesInfoBtn.addEventListener('click', function() { samplesInfoDialog.show(); });
+      var samplesInfoClose = document.getElementById('samples-info-close-btn');
+      if (samplesInfoClose) samplesInfoClose.addEventListener('click', function() { samplesInfoDialog.hide(); });
+    }
+
     // Save
     var configSave = document.getElementById('config-save');
     if (configSave) configSave.addEventListener('click', saveConfiguration);
@@ -725,6 +734,43 @@
   var activeView = 'view-plugins';
   var sampleManagerInited = false;
 
+  // ─── RP2350 App Awareness ─────────────────────────────────
+  // Stores the active RP2350 app ID and capability flags
+  window.TBD.rp2350App = '';
+  window.TBD.pluginLock = false;
+  window.TBD.redirectSamples = false;
+
+  /** Fetch active RP2350 app from ESP32. Non-critical — silently tolerates failure. */
+  async function fetchAppInfo() {
+    try {
+      var info = await S.queuedFetch('/device?action=getAppInfo');
+      window.TBD.rp2350App = (info && info.rp2350_app) ? info.rp2350_app : '';
+      window.TBD.pluginLock = !!(info && info.plugin_lock);
+      window.TBD.redirectSamples = !!(info && info.redirect_samples);
+    } catch (e) {
+      window.TBD.rp2350App = '';
+      window.TBD.pluginLock = false;
+      window.TBD.redirectSamples = false;
+    }
+  }
+
+  /** Show or hide the plugin lock overlay based on RP2350 plugin_lock flag. */
+  function updatePluginLock() {
+    var overlay = document.getElementById('plugin-lock-overlay');
+    if (!overlay) return;
+    if (window.TBD.pluginLock) {
+      // Update overlay text with the app name
+      var h3 = overlay.querySelector('h3');
+      if (h3) {
+        var appName = window.TBD.rp2350App || 'RP2350 firmware';
+        h3.textContent = 'Plugins are managed by ' + appName;
+      }
+      overlay.classList.remove('hidden');
+    } else {
+      overlay.classList.add('hidden');
+    }
+  }
+
   function switchView(viewId) {
     if (viewId === activeView) return;
 
@@ -760,6 +806,12 @@
       }
     }
 
+    // Show/hide Sample Manager header buttons (only in sample view)
+    var tdBtn = document.getElementById('trackdefaults-btn');
+    var siBtn = document.getElementById('samples-info-btn');
+    if (tdBtn) tdBtn.style.display = (viewId === 'view-samples') ? '' : 'none';
+    if (siBtn) siBtn.style.display = (viewId === 'view-samples') ? '' : 'none';
+
     activeView = viewId;
 
     // Lazy-init Sample Manager on first switch
@@ -767,6 +819,9 @@
       sampleManagerInited = true;
       if (window.TBD.sampleManager) {
         window.TBD.sampleManager.init();
+      }
+      if (window.TBD.trackDefaults && window.TBD.trackDefaults.init) {
+        window.TBD.trackDefaults.init();
       }
     }
 
@@ -831,6 +886,9 @@
         if (sampleManagerInited && window.TBD.sampleManager) {
           await window.TBD.sampleManager.init();
         }
+        // Re-check RP2350 app (user may have rebooted with different firmware)
+        await fetchAppInfo();
+        updatePluginLock();
       },
       function onDisconnect() {
         // Nothing extra needed — UI updates via shared.js
@@ -848,7 +906,7 @@
 
     // Initialize plugin manager (first load)
     if (window.TBD.pluginManager) {
-      window.TBD.pluginManager.init().then(function() {
+      window.TBD.pluginManager.init().then(async function() {
         // Only set connected if circuit breaker didn't trigger disconnect during init
         if (S.connectionState.status !== 'disconnected') {
           S.setConnected();
@@ -857,6 +915,13 @@
         setTimeout(function() {
           S.connectionState._firstConnectDone = true;
         }, 100);
+
+        // Fetch RP2350 app info and apply plugin lock / redirect
+        await fetchAppInfo();
+        updatePluginLock();
+        if (window.TBD.redirectSamples && !requestedView) {
+          switchView('view-samples');
+        }
       }).catch(function() {
         S.setDisconnected();
       });

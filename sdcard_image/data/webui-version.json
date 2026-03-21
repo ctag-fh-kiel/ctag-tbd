@@ -1,5 +1,5 @@
 {
-  "version": "0.3.4",
-  "date": "2026-03-13",
-  "description": "New WebUI Updater with light theme, reinstall support, and version history"
+  "version": "0.3.5",
+  "date": "2026-03-19",
+  "description": "Volume multiplier, factory PIN unlock, boot default auto-select, export/import fix, updated default presets"
 }

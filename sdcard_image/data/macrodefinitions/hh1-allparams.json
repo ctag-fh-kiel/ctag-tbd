@@ -2,6 +2,7 @@
   "id": "hh1-allparams",
   "name": "Hihat 1 All param",
   "machine": "hh1",
+  "volmult": 1.9,
   "groups": [
     {
       "name": "Page 1",

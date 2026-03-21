@@ -38,34 +38,72 @@
 
     var availMachines = S.getTrackMachines(track);
 
-    // Default to first available machine
-    var machineId = availMachines.length > 0 ? availMachines[0] : '';
-    state.activeMachine = machineId;
+    // Check for boot default preset
+    var bootPreset = null;
+    var bootDef = null;
+    if (S.data.trackDefaults && S.data.trackDefaults.tracks) {
+      var tdEntry = S.data.trackDefaults.tracks.find(function(t) { return t.index === idx; });
+      if (tdEntry && tdEntry.preset) {
+        bootPreset = S.data.soundPresets.find(function(p) { return p.id === tdEntry.preset; });
+        if (bootPreset) {
+          bootDef = S.data.macroDefs.find(function(d) { return d.id === bootPreset.macro; });
+        }
+      }
+    }
 
-    // Find matching macro definitions
-    var matchingDefs = S.data.macroDefs.filter(function(d) {
-      return d.machine === machineId;
-    });
+    if (bootPreset && bootDef) {
+      // Auto-select the boot default preset
+      state.activePreset = bootPreset;
+      state.activeMacroDef = bootDef;
+      state.activeMachine = bootDef.machine;
+      state.macroFilter = bootPreset.macro;
 
-    // Prefer "allparams" definition, fallback to first
-    var allParamsDef = matchingDefs.find(function(d) {
-      return d.id.indexOf('allparams') !== -1;
-    });
-    var def = allParamsDef || matchingDefs[0] || null;
-    state.activeMacroDef = def;
-
-    // Initialize param values from defaults
-    state.paramValues = [];
-    if (def && def.groups) {
-      def.groups.forEach(function(group) {
-        group.parameters.forEach(function(param) {
-          state.paramValues[param.idx] = param.def || 0;
+      // Load param values from preset
+      state.paramValues = [];
+      if (bootPreset.values && bootPreset.values.length > 0) {
+        state.paramValues = bootPreset.values.slice();
+        for (var vi = 0; vi < state.paramValues.length; vi++) {
+          if (state.paramValues[vi] === undefined || state.paramValues[vi] === null) {
+            state.paramValues[vi] = 0;
+          }
+        }
+      }
+      // Fill missing params from def defaults
+      if (bootDef.groups) {
+        bootDef.groups.forEach(function(g) {
+          (g.parameters || []).forEach(function(p) {
+            if (state.paramValues[p.idx] === undefined) {
+              state.paramValues[p.idx] = p.def || 0;
+            }
+          });
         });
+      }
+    } else {
+      // Fallback: default to first available machine + allparams def
+      var machineId = availMachines.length > 0 ? availMachines[0] : '';
+      state.activeMachine = machineId;
+
+      var matchingDefs = S.data.macroDefs.filter(function(d) {
+        return d.machine === machineId;
       });
+      var allParamsDef = matchingDefs.find(function(d) {
+        return d.id.indexOf('allparams') !== -1;
+      });
+      var def = allParamsDef || matchingDefs[0] || null;
+      state.activeMacroDef = def;
+
+      state.paramValues = [];
+      if (def && def.groups) {
+        def.groups.forEach(function(group) {
+          group.parameters.forEach(function(param) {
+            state.paramValues[param.idx] = param.def || 0;
+          });
+        });
+      }
     }
 
     renderMachineSelect(availMachines);
-    renderKnobControls(track, def);
+    renderKnobControls(track, state.activeMacroDef);
     renderPresetBrowser();
 
     // Notify designer of machine change
@@ -143,6 +181,17 @@
         html += '<input class="track-inline-input def-name-input" value="' + S.esc(def.name) + '" placeholder="Definition name" />';
         html += '<span class="track-info-label">ID:</span>';
         html += '<input class="track-inline-input def-id-input" value="' + S.esc(def.id) + '" placeholder="auto-id" ' + (isNew ? '' : 'readonly') + ' />';
+        var F = window.TBD.factory;
+        var isFactoryDef = F && F.isFactoryDefinition(def.id);
+        var isFactoryUnlocked = F && F.isUnlocked && F.isUnlocked();
+        var volReadonly = isFactoryDef && !isFactoryUnlocked;
+        html += '<span class="track-info-label" title="Volume multiplier — compensates for quiet/loud engines. 1.0 = no change.">VOL:</span>';
+        html += '<input type="number" class="track-inline-input def-volmult-input" value="' + (def.volmult != null ? def.volmult : 1.0) + '" min="0.1" max="4.0" step="0.1" style="width:4rem;' + (volReadonly ? 'opacity:0.5;' : '') + '" title="Volume multiplier (0.1–4.0)"' + (volReadonly ? ' readonly' : '') + ' />';
+        if (isFactoryDef) {
+          html += '<button class="mapping-btn btn-factory-unlock" title="' + (isFactoryUnlocked ? 'Factory edit mode active — click to lock' : 'Unlock factory edit mode') + '" style="padding:0 0.35rem;min-width:0;margin-left:0.15rem;' + (isFactoryUnlocked ? 'border-color:var(--sl-color-warning-400);color:var(--sl-color-warning-700);' : '') + '">';
+          html += '<sl-icon name="' + (isFactoryUnlocked ? 'unlock' : 'lock') + '" style="font-size:0.7rem;"></sl-icon>';
+          html += '</button>';
+        }
         html += '<div class="track-def-actions">';
         html += '<button class="mapping-btn btn-save-def" title="Save this definition"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
         html += '<button class="mapping-btn btn-export-def" title="Export as JSON"><sl-icon name="download" style="font-size:0.7rem;"></sl-icon> Export</button>';
@@ -261,6 +310,42 @@
         if (D.state.editDef) {
           D.state.editDef.id = idInput.value;
           D.state.dirty = true;
+        }
+      });
+    }
+
+    var volmultInput = document.querySelector('#track-info-bar .def-volmult-input');
+    if (volmultInput) {
+      volmultInput.addEventListener('change', function() {
+        if (D.state.editDef) {
+          var v = parseFloat(volmultInput.value);
+          if (isNaN(v) || v < 0.1) v = 0.1;
+          if (v > 4.0) v = 4.0;
+          v = Math.round(v * 10) / 10; // round to 1 decimal
+          volmultInput.value = v;
+          D.state.editDef.volmult = v;
+          D.state.dirty = true;
+        }
+      });
+    }
+
+    var unlockBtn = document.querySelector('#track-info-bar .btn-factory-unlock');
+    if (unlockBtn) {
+      unlockBtn.addEventListener('click', function() {
+        var F = window.TBD.factory;
+        if (!F) return;
+        var track = S.data.tracks ? S.data.tracks.find(function(t) { return t.index === state.activeTrack; }) : null;
+        if (F.isUnlocked && F.isUnlocked()) {
+          // Already unlocked — lock again
+          F.lock();
+          renderTrackInfoBar(track, state.activeMacroDef);
+          S.toast('Factory edit mode locked', 'neutral', 2000);
+        } else {
+          // Show PIN dialog
+          F.showPinDialog(function() {
+            renderTrackInfoBar(track, state.activeMacroDef);
+            S.toast('Factory edit mode unlocked', 'warning', 3000);
+          });
         }
       });
     }
@@ -503,7 +588,7 @@
         if (isFactory) {
           html += '<sl-icon name="lock" style="font-size:0.6rem;opacity:0.4;flex-shrink:0;margin-right:0.2rem;" title="Factory preset — use Save As to create a copy"></sl-icon>';
         }
-        html += '<span class="preset-item-name">' + S.esc(p.name) + '</span>';
+        html += '<span class="preset-item-name" title="' + S.esc(p.name) + '">' + S.esc(p.name) + '</span>';
         html += '<span class="preset-item-machine">' + S.esc(p.macro) + '</span>';
         if (!isFactory) {
           html += '<button class="preset-item-delete" data-delete-preset-id="' + S.esc(p.id) + '" title="Delete preset">';
@@ -900,9 +985,33 @@
   // ─── Export / Import (for presets mode) ───────────────────
 
   function exportAllPresets() {
+    // Patch the active preset's values with the current live knob state
+    // so the export reflects what the user actually hears right now.
+    var presets = S.data.soundPresets.map(function(p) {
+      if (state.activePreset && p.id === state.activePreset.id && state.paramValues.length > 0) {
+        var patched = {};
+        for (var k in p) { if (p.hasOwnProperty(k)) patched[k] = p[k]; }
+        var paramCount = 0;
+        if (state.activeMacroDef && state.activeMacroDef.groups) {
+          state.activeMacroDef.groups.forEach(function(g) {
+            (g.parameters || []).forEach(function(pm) {
+              if (pm.idx >= paramCount) paramCount = pm.idx + 1;
+            });
+          });
+        }
+        var vals = [];
+        for (var i = 0; i < paramCount; i++) {
+          var raw = state.paramValues[i];
+          vals[i] = (raw !== undefined && raw !== null) ? Math.round(raw) : 0;
+        }
+        patched.values = vals;
+        return patched;
+      }
+      return p;
+    });
     var data = {
       macroDefs: S.data.macroDefs,
-      soundPresets: S.data.soundPresets,
+      soundPresets: presets,
     };
     var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     var a = document.createElement('a');
@@ -925,8 +1034,8 @@
           var data = JSON.parse(reader.result);
           if (data.id && data.macro) {
             importSinglePreset(data);
-          } else if (data.soundPresets) {
-            S.toast('Bulk import — coming soon', 'primary', 2000);
+          } else if (data.macroDefs || data.soundPresets) {
+            importBulk(data);
           } else {
             S.toast('Unrecognized JSON format', 'warning', 3000);
           }
@@ -937,6 +1046,70 @@
       reader.readAsText(input.files[0]);
     });
     input.click();
+  }
+
+  /**
+   * Import a bulk export file containing macroDefs and/or soundPresets.
+   * Each item is uploaded to the device sequentially.
+   */
+  function importBulk(data) {
+    var defs = Array.isArray(data.macroDefs) ? data.macroDefs : [];
+    var presets = Array.isArray(data.soundPresets) ? data.soundPresets : [];
+    var total = defs.length + presets.length;
+    if (total === 0) {
+      S.toast('Nothing to import', 'warning', 2000);
+      return;
+    }
+    if (!confirm('Import ' + defs.length + ' macro definitions and ' + presets.length + ' sound presets? Existing files with the same IDs will be overwritten.')) {
+      return;
+    }
+    S.showLoading('Importing 0/' + total + '\u2026');
+    var done = 0;
+    var errors = 0;
+
+    function uploadFile(path, obj) {
+      return fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(path), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(obj, null, 2),
+      }).then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        done++;
+        S.showLoading('Importing ' + done + '/' + total + '\u2026');
+      }).catch(function() {
+        errors++;
+        done++;
+        S.showLoading('Importing ' + done + '/' + total + '\u2026');
+      });
+    }
+
+    // Chain uploads sequentially to avoid overwhelming the device
+    var chain = Promise.resolve();
+    defs.forEach(function(d) {
+      if (!d.id) return;
+      chain = chain.then(function() {
+        return uploadFile('macrodefinitions/' + d.id + '.json', d);
+      });
+    });
+    presets.forEach(function(p) {
+      if (!p.id) return;
+      chain = chain.then(function() {
+        return uploadFile('macrosoundpresets/' + p.id + '.json', p);
+      });
+    });
+    chain.then(function() {
+      S.hideLoading();
+      if (errors > 0) {
+        S.toast('Imported with ' + errors + ' error(s)', 'warning', 3000);
+      } else {
+        S.toast('Imported ' + total + ' items', 'success', 2000);
+      }
+      return S.reloadFirmwareMacros().then(function() {
+        return S.reloadMacroData();
+      });
+    }).then(function() {
+      renderPresetBrowser();
+    });
   }
 
   function importSinglePreset(preset) {

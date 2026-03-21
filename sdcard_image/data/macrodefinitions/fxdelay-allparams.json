@@ -2,6 +2,7 @@
   "id": "fxdelay-allparams",
   "name": "Delay FX All param",
   "machine": "fxdelay",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Page 1",

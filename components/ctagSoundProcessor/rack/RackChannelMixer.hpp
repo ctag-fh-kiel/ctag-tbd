@@ -32,6 +32,7 @@ public:
 	float send2;
 	int cc_base;
 	int track_length;
+	float volumeMultiplier;
 
 private:
 	atomic<int16_t> mix_lev;

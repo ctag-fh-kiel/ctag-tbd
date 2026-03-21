@@ -2,6 +2,7 @@
   "id": "pp-darkchord",
   "name": "Dark Chord",
   "machine": "pp",
+  "volmult": 1.6,
   "groups": [
     {
       "name": "Dark Chord",

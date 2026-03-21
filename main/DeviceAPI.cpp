@@ -18,6 +18,7 @@ respective component folders / files if different from this license.
 #include "DeviceAPI.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
+#include "SpiAPI.hpp"
 #include <cstring>
 #include <string>
 #include "esp_log.h"
@@ -91,6 +92,18 @@ static esp_err_t handle_get_favorites(httpd_req_t *req) {
 static esp_err_t handle_get_audio_health(httpd_req_t *req) {
     string health = CTAG::AUDIO::SoundProcessorManager::GetAudioHealthJSON();
     return send_json(req, health.c_str());
+}
+
+/** action=getAppInfo — active RP2350 app identity + capability flags */
+static esp_err_t handle_get_app_info(httpd_req_t *req) {
+    const string &appId = CTAG::SPIAPI::SpiAPI::GetRP2350AppId();
+    bool locked = CTAG::SPIAPI::SpiAPI::IsPluginLocked();
+    bool redirectSamples = CTAG::SPIAPI::SpiAPI::ShouldRedirectSamples();
+    string json = "{\"rp2350_app\":\"" + appId
+        + "\",\"plugin_lock\":" + (locked ? "true" : "false")
+        + ",\"redirect_samples\":" + (redirectSamples ? "true" : "false")
+        + "}";
+    return send_json(req, json.c_str());
 }
 
 /** action=resetAudioHealth — zero the lock error & slow process counters */
@@ -193,6 +206,17 @@ static esp_err_t handle_store_favorite(httpd_req_t *req, const char *query) {
 
 /** action=recallFavorite&id=N */
 static esp_err_t handle_recall_favorite(httpd_req_t *req, const char *query) {
+    // Block favorite recall when RP2350 app has locked plugin switching.
+    if (CTAG::SPIAPI::SpiAPI::IsPluginLocked()) {
+        ESP_LOGW(TAG, "Favorite recall blocked — RP2350 app '%s' has locked plugins",
+                 CTAG::SPIAPI::SpiAPI::GetRP2350AppId().c_str());
+        set_api_headers(req);
+        httpd_resp_set_status(req, "423 Locked");
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"error\":\"plugin_locked\",\"reason\":\"RP2350 app has locked plugin switching\"}");
+        return ESP_OK;
+    }
+
     char idStr[4] = {0};
     httpd_query_key_value(query, "id", idStr, sizeof(idStr));
     int id = atoi(idStr);
@@ -218,6 +242,7 @@ esp_err_t DeviceAPI::device_get_handler(httpd_req_t *req) {
     if (strcmp(action, "getFavorites") == 0)   return handle_get_favorites(req);
     if (strcmp(action, "getAll") == 0)         return handle_get_all(req);
     if (strcmp(action, "getAudioHealth") == 0) return handle_get_audio_health(req);
+    if (strcmp(action, "getAppInfo") == 0)     return handle_get_app_info(req);
 
     httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "unknown action");
     return ESP_FAIL;

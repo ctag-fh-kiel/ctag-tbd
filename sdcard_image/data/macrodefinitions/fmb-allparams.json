@@ -2,6 +2,7 @@
   "id": "fmb-allparams",
   "name": "FM Kick All param",
   "machine": "fmb",
+  "volmult": 0.2,
   "groups": [
     {
       "name": "Page 1",

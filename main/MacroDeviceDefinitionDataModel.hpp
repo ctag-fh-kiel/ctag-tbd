@@ -32,6 +32,7 @@ namespace CTAG {
                 MacroDeviceDefinitionDataModel();
                 ~MacroDeviceDefinitionDataModel();
                 void ReloadMachineDefinitions();
+                bool ReloadSingleDefinition(const std::string &id);
                 int GetNumberOfDefinitions();
                 // void GetMacroDeviceDefinitionId(int index, char *buffer, int bufferSize);
                 MacroDeviceDefinition *LoadMacroDeviceDefinition(const std::string id);

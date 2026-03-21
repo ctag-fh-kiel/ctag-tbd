@@ -199,6 +199,11 @@ namespace CTAG {
                 // default implementation does nothing, override in derived class if needed
             }
 
+            virtual void setTrackMachine(const uint8_t trackIndex, const std::string machineId, float volumeMultiplier) {
+                // default implementation calls 2-arg version, override in derived class for volume support
+                setTrackMachine(trackIndex, machineId);
+            }
+
             virtual void setTrackBank(const uint8_t trackIndex, const uint16_t bankIndex) {
                 // default implementation does nothing, override in derived class if needed
             }

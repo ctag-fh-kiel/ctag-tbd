@@ -2,6 +2,7 @@
   "id": "wtosc-morphpad",
   "name": "Morph Pad",
   "machine": "wtosc",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Morph Pad",

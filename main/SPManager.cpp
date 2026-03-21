@@ -134,10 +134,6 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 // prepare next response
                 //
 
-                // pack ableton link data
-                LINK::link_session_data_t *link_data = (LINK::link_session_data_t*)&send_response->link_data;
-                LINK::link::GetLinkRtSessionData(link_data);
-
                 // pack midi data from USB device midi
                 uint8_t *midi_ptr = (uint8_t*) &send_response->usb_device_midi;
                 uint32_t *midi_len = (uint32_t*) &send_response->usb_device_midi_length;
@@ -149,7 +145,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 receivedUsbDeviceMidiBytes += *midi_len;
 
                 // add some waveforms
-                for(int i=0; i<128; i++) {
+                for(int i=0; i<BUF_SZ * 2; i++) {
                     send_response->input_waveform[i] = 128;
                     send_response->output_waveform[i] = 128;
                 }
@@ -157,6 +153,10 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                     send_response->input_waveform[i] = (int)(finput2[i] * 127.0f + 128.f);
                     send_response->output_waveform[i] = (int)(fbuf2[i] * 127.0f + 128.f);
                 }
+
+                // pack ableton link data (after waveforms to avoid any overflow risk)
+                LINK::link_session_data_t *link_data = (LINK::link_session_data_t*)&send_response->link_data;
+                LINK::link::GetLinkRtSessionData(link_data);
 
                 // and the led color
                 send_response->led_color = ledStatus;
@@ -837,12 +837,20 @@ void SoundProcessorManager::SetTrackParameter(const int trackIndex, int paramete
 // }
 
 void SoundProcessorManager::RefreshMacros() {
-    // this wil lglit ch
+    ESP_LOGW("SPManager", ">>> RefreshMacros called");
     xSemaphoreTake(processMutex, portMAX_DELAY);
     synthDefinitionModel->ReloadSynthDefinitions();
     macroDeviceDefinitionModel->ReloadMachineDefinitions();
+    macroTranslator->RefreshActiveDefinitions();
     xSemaphoreGive(processMutex);
-    // macroTranslator
+}
+
+void SoundProcessorManager::RefreshSingleMacro(const string &defId) {
+    ESP_LOGI("SPManager", ">>> RefreshSingleMacro id=%s", defId.c_str());
+    xSemaphoreTake(processMutex, portMAX_DELAY);
+    macroDeviceDefinitionModel->ReloadSingleDefinition(defId);
+    macroTranslator->RefreshDefinitionById(defId);
+    xSemaphoreGive(processMutex);
 }
 
 void SoundProcessorManager::RefreshSoundPresets() {

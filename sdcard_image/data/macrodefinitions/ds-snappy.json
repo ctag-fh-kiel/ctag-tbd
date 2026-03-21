@@ -2,6 +2,7 @@
   "id": "ds-snappy",
   "name": "DS Snappy",
   "machine": "ds",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Page 1",

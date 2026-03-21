@@ -141,6 +141,7 @@ namespace CTAG {
             static void MarkDefinitionsChangedFromWebui();
 
             static void RefreshMacros();
+            static void RefreshSingleMacro(const string &defId);
             static void RefreshSoundPresets();
 
             // Audio health monitoring — returns JSON with lock errors, slow process count, memory stats

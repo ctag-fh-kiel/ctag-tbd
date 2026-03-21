@@ -72,49 +72,24 @@ static void l2_free(void *h, void *buffer)
 
 static esp_err_t netif_transmit (void *h, void *buffer, size_t len)
 {
-    // Retry logic for USB NCM - host may take time to initialize
-    static bool ncm_ready = false;
-    static TickType_t init_start_time = 0;
-    const TickType_t init_timeout = pdMS_TO_TICKS(10000);  // 10 second init window
-
-    // Initialize start time on first call
-    if (init_start_time == 0) {
-        init_start_time = xTaskGetTickCount();
-    }
+    static uint32_t fail_count = 0;
+    static uint32_t success_count = 0;
 
     esp_err_t err = wired_send(buffer, len, nullptr);
 
     if (err == ESP_OK) {
-        if (!ncm_ready) {
-            ESP_LOGI(TAG, "USB NCM ready after %lu ms",
-                     (unsigned long)((xTaskGetTickCount() - init_start_time) * portTICK_PERIOD_MS));
-            ncm_ready = true;
+        if (fail_count > 0 && success_count == 0) {
+            ESP_LOGI(TAG, "USB NCM link up (after %lu dropped packets during init)", fail_count);
         }
+        success_count++;
+        fail_count = 0;
         return ESP_OK;
     }
 
-    // During initialization window, silently retry with delay
-    if (!ncm_ready && (xTaskGetTickCount() - init_start_time) < init_timeout) {
-        vTaskDelay(pdMS_TO_TICKS(100));
-        err = wired_send(buffer, len, nullptr);
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "USB NCM ready after %lu ms",
-                     (unsigned long)((xTaskGetTickCount() - init_start_time) * portTICK_PERIOD_MS));
-            ncm_ready = true;
-            return ESP_OK;
-        }
-        // Silent fail during init window
-        return err;
-    }
-
-    // After initialization window, mark as ready and log errors
-    if (!ncm_ready) {
-        ESP_LOGW(TAG, "USB NCM init timeout, continuing anyway");
-        ncm_ready = true;
-    }
-
-    if (err != ESP_ERR_INVALID_STATE) {
-        ESP_LOGE(TAG, "Failed to send buffer to USB %d!", err);
+    fail_count++;
+    // Log at power-of-two intervals to avoid spam: 1, 2, 4, 8, 16, 32, 64, 128, 256...
+    if ((fail_count & (fail_count - 1)) == 0) {
+        ESP_LOGW(TAG, "USB NCM send failed (%ld) err=%d — host driver may not be ready", fail_count, err);
     }
     return err;
 }
@@ -300,11 +275,15 @@ void Network::if_init_usbncm(void){
             .user_context = nullptr
     };
 
-    esp_err_t ret = tinyusb_net_init(TINYUSB_USBDEV_0, &net_config);
+    esp_err_t ret = tinyusb_net_init(&net_config);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Cannot initialize USB Net device");
-        assert(0);
+        ESP_LOGE(TAG, "Cannot initialize USB Net device (err=%d), skipping NCM", ret);
+        return;
     }
+
+    // Link starts UP by default from TinyUSB's netd_init().
+    // A deferred link bounce (DOWN→UP) is sent later (below) to force
+    // macOS to restart DHCP once the server is ready.
 
     // with OUI range MAC to create a virtual netif running http server
     // this needs to be different to usb_interface_mac (==client)
@@ -360,7 +339,8 @@ void Network::if_init_usbncm(void){
 
     netif = esp_netif_new(&cfg);
     if (netif == nullptr) {
-        assert(0);
+        ESP_LOGE(TAG, "Failed to create netif, skipping NCM");
+        return;
     }
     esp_netif_set_mac(netif, lwip_addr);
 
@@ -374,12 +354,12 @@ void Network::if_init_usbncm(void){
     uint32_t  lease_opt = 60;
     esp_netif_dhcps_option(netif, esp_netif_dhcp_option_mode_t(esp_netif_dhcp_option_mode_t::ESP_NETIF_OP_SET), esp_netif_dhcp_option_id_t(dhcp_msg_option::IP_ADDRESS_LEASE_TIME), (void*)&lease_opt, sizeof(lease_opt));
 
-    // Wait for host to initialize USB NCM driver before starting interface
-    ESP_LOGI("Network", "Waiting for host USB NCM driver to initialize...");
-    vTaskDelay(pdMS_TO_TICKS(3000));
-
     // start the interface manually (as the driver has been started already)
     esp_netif_action_start(netif, 0, 0, 0);
+    ESP_LOGI(TAG, "DHCP server started on interface wired with IP: " IPSTR, IP2STR(&ip_cfg.ip));
+    // TinyUSB's netd_init() sets link_is_up=true by default.
+    // macOS sees CONNECTED(1) from the SET_INTERFACE notification
+    // and will retry DHCP automatically until the server responds.
 }
 
 void Network::Up() {
@@ -433,21 +413,32 @@ void Network::SetPWD(const string pwd) {
 }
 
 void Network::SetIP(string ip) {
+    // Default to 192.168.4.1 if IP string is empty or malformed
+    if (ip.empty() || ip.find('.') == std::string::npos) {
+        ESP_LOGW(TAG, "Invalid or empty IP '%s', defaulting to 192.168.4.1", ip.c_str());
+        ip = "192.168.4.1";
+    }
     _ip = ip;
     // parse ip to 4 bytes and store in _ip_addr
     size_t start = 0;
     size_t end = 0;
     int index = 0;
-    uint8_t octets[4];
-    while ((end = ip.find('.', start)) != std::string::npos) {
+    uint8_t octets[4] = {192, 168, 4, 1};
+    while ((end = ip.find('.', start)) != std::string::npos && index < 4) {
         std::string token = ip.substr(start, end - start);
-        int octet = std::stoi(token);
-        octets[index] = static_cast<uint8_t>(octet);
+        if (!token.empty()) {
+            int octet = std::stoi(token);
+            octets[index] = static_cast<uint8_t>(octet);
+        }
         start = end + 1;
         index++;
     }
-    std::string token = ip.substr(start);
-    octets[index] = static_cast<uint8_t>(std::stoi(token));
+    if (index < 4) {
+        std::string token = ip.substr(start);
+        if (!token.empty()) {
+            octets[index] = static_cast<uint8_t>(std::stoi(token));
+        }
+    }
     _ip_addr = ESP_IP4TOADDR(octets[0], octets[1], octets[2], octets[3]);
 }
 

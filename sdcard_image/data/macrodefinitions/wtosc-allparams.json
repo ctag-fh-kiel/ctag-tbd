@@ -2,6 +2,7 @@
   "id": "wtosc-allparams",
   "name": "Wavetable osc All param",
   "machine": "wtosc",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Page 1",

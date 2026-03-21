@@ -41,7 +41,6 @@ MacroDeviceDefinitionDataModel::~MacroDeviceDefinitionDataModel() {
 void MacroDeviceDefinitionDataModel::ReloadMachineDefinitions() {
     ESP_LOGI("MacroDeviceDefinitionDataModel", "Trying to read macro device definition file");
 
-    Document d;
     for(MacroDeviceDefinition *def : definitions) {
         delete def;
     }
@@ -83,6 +82,35 @@ void MacroDeviceDefinitionDataModel::ReloadMachineDefinitions() {
         ESP_LOGE("MacroDeviceDefinitionDataModel", "Could not open directory %s", path.c_str());
     }
 
+}
+
+bool MacroDeviceDefinitionDataModel::ReloadSingleDefinition(const std::string &id) {
+    std::string path = std::string(CTAG::RESOURCES::sdcardRoot + "/data/macrodefinitions/" + id + ".json");
+    Document d;
+    loadJSON(d, path);
+    if (d.HasParseError()) {
+        ESP_LOGE("MacroDeviceDefinitionDataModel", "Failed to parse %s", path.c_str());
+        return false;
+    }
+    MacroDeviceDefinition *newDef = new MacroDeviceDefinition();
+    if (!newDef->DeserializeJSON(d)) {
+        ESP_LOGE("MacroDeviceDefinitionDataModel", "Failed to deserialize %s", id.c_str());
+        delete newDef;
+        return false;
+    }
+    // Replace existing entry or append
+    for (size_t i = 0; i < definitions.size(); i++) {
+        if (definitions[i]->id == id) {
+            delete definitions[i];
+            definitions[i] = newDef;
+            ESP_LOGI("MacroDeviceDefinitionDataModel", "Reloaded definition: #%s", id.c_str());
+            return true;
+        }
+    }
+    // New definition — append
+    definitions.push_back(newDef);
+    ESP_LOGI("MacroDeviceDefinitionDataModel", "Added new definition: #%s", id.c_str());
+    return true;
 }
 
 MacroDeviceDefinition *MacroDeviceDefinitionDataModel::LoadMacroDeviceDefinition(std::string id) {

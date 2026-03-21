@@ -27,6 +27,8 @@ respective component folders / files if different from this license.
 #include "esp_vfs_fat.h"
 #include "esp_log.h"
 #include "esp_heap_caps.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -183,18 +185,51 @@ esp_err_t MacroAPI::macroapi_get_handler(httpd_req_t *req) {
 }
 
 
-static esp_err_t handle_reload(httpd_req_t *req) {
+/* RefreshMacros() parses dozens of JSON files and needs ~12 KB+ of stack.
+ * The HTTP task only has 8 KB (internal RAM — cannot increase without
+ * fragmenting memory and breaking audio DMA).  We offload the work to a
+ * short-lived task whose stack is allocated from SPIRAM (abundant). */
+static EventGroupHandle_t reloadEventGroup = nullptr;
+static const int RELOAD_DONE_BIT = BIT0;
+
+static void reload_task(void *) {
     CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
     CTAG::AUDIO::SoundProcessorManager::RefreshMacros();
     CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+    xEventGroupSetBits(reloadEventGroup, RELOAD_DONE_BIT);
+    vTaskDelete(nullptr);
+}
 
+static esp_err_t handle_reload(httpd_req_t *req) {
+    if (!reloadEventGroup) {
+        reloadEventGroup = xEventGroupCreate();
+    }
+    xEventGroupClearBits(reloadEventGroup, RELOAD_DONE_BIT);
+
+    TaskHandle_t h = nullptr;
+    BaseType_t ok = xTaskCreatePinnedToCoreWithCaps(
+        reload_task, "reload_macros", 16384, nullptr,
+        tskIDLE_PRIORITY + 3, &h, 0, MALLOC_CAP_SPIRAM);
+    if (ok != pdPASS) {
+        ESP_LOGE(MACRO_TAG, "Failed to create reload task");
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "reload task failed");
+        return ESP_FAIL;
+    }
+
+    /* Wait synchronously so the WebUI gets 200 only after reload is done. */
+    xEventGroupWaitBits(reloadEventGroup, RELOAD_DONE_BIT, pdTRUE, pdTRUE, portMAX_DELAY);
     return send_ok(req);
 }
 
 static esp_err_t handle_set_track_macro(httpd_req_t *req) {
     char *content = (char *) heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+    if (!content) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Out of memory");
+        return ESP_FAIL;
+    }
     int ret = httpd_req_recv(req, content, req->content_len);
     if (ret <= 0) {
+        heap_caps_free(content);
         if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
             httpd_resp_send_408(req);
         }
@@ -204,8 +239,7 @@ static esp_err_t handle_set_track_macro(httpd_req_t *req) {
 
     ESP_LOGI(MACRO_TAG, "set_track_macro data: %s", content);
     CTAG::AUDIO::SoundProcessorManager::SetTrackParametersFromJSON(content);
-    free(content);
-    
+    heap_caps_free(content);
 
     return send_ok(req);
 }
@@ -245,8 +279,8 @@ static esp_err_t handle_get_trackdefaults(httpd_req_t *req) {
 /**
  * POST ?action=save_trackdefaults
  * Writes the request body (JSON) to /sdcard/data/trackdefaults.json.
- * If the 'kit' filename changed, resolves it to a bank index via
- * sample_rom.jsn and reloads PSRAM so the device is immediately in sync.
+ * If the sampleKit field changed, also updates the active sample bank
+ * in sample_rom.jsn and reloads PSRAM so the device is immediately in sync.
  */
 static esp_err_t handle_save_trackdefaults(httpd_req_t *req) {
     if (req->content_len == 0 || req->content_len > 8192) {
@@ -309,14 +343,23 @@ esp_err_t MacroAPI::macroapi_post_handler(httpd_req_t *req) {
     size_t qlen = httpd_req_get_url_query_len(req);
     char action[32] = {0};
 
+    char defId[64] = {0};
+
     if (qlen > 0) {
         char *query = (char *)malloc(qlen + 1);
         httpd_req_get_url_query_str(req, query, qlen + 1);
         httpd_query_key_value(query, "action", action, sizeof(action));
+        httpd_query_key_value(query, "id", defId, sizeof(defId));
         free(query);
     }
 
     if (strcmp(action, "reload") == 0) {
+        if (defId[0] != '\0') {
+            /* Targeted single-definition reload — lightweight, runs inline */
+            ESP_LOGI(MACRO_TAG, "Targeted reload for id=%s", defId);
+            CTAG::AUDIO::SoundProcessorManager::RefreshSingleMacro(std::string(defId));
+            return send_ok(req);
+        }
         return handle_reload(req);
     }
     else if (strcmp(action, "set_track_parameters") == 0) {

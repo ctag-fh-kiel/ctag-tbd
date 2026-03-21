@@ -76,8 +76,8 @@ MacroTranslator::MacroTranslator() {
     for (int i = 0; i < 16; i++) {
         trackToMidiChannel[i] = -1;
         trackBaseCC[i] = 0;
-        trackMachineId[i] = "";
-        trackSampleBankName[i] = "";
+        strcpy(trackMachineId[i], "");
+        strcpy(trackSampleBankName[i], "");
         trackSampleBankIndex[i] = 0;
         definition[i] = nullptr;
         trackDirty[i] = false;
@@ -98,7 +98,8 @@ void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string sy
 
     ESP_LOGD("MacroTranslator", "Track %d machine set to %s",
         trackIndex, synthID.c_str());
-    trackMachineId[trackIndex] = synthID;
+    strncpy(trackMachineId[trackIndex], synthID.c_str(), sizeof(trackMachineId[trackIndex]) - 1);
+    trackMachineId[trackIndex][sizeof(trackMachineId[trackIndex]) - 1] = '\0';
 
     SynthDefinition *synthDef = synthDefinitionModel->GetSynthDefinition(synthID);
     if (synthDef == nullptr) {
@@ -212,6 +213,47 @@ void MacroTranslator::SetTrackMacroDefinition(const int trackIndex, MacroDeviceD
 
     // ESP_LOGI("MacroTranslator", "dummy 9");
 
+}
+
+void MacroTranslator::RefreshActiveDefinitions() {
+    ESP_LOGW("MacroTranslator", ">>> RefreshActiveDefinitions called");
+    for (int t = 0; t < 16; t++) {
+        if (definition[t] == nullptr) {
+            ESP_LOGI("MacroTranslator", "  track %d: def=null, skip", t);
+            continue;
+        }
+        std::string macroId = definition[t]->id;
+        if (macroId.empty()) continue;
+
+        MacroDeviceDefinition *freshDef =
+            macroDeviceDefinitionModel->LoadMacroDeviceDefinition(macroId);
+        if (freshDef == nullptr) continue;
+
+        delete definition[t];
+        definition[t] = freshDef;
+        trackDirty[t] = true;
+
+        ESP_LOGI("MacroTranslator", "Refreshed track %d def '%s' (volMult=%.2f)",
+            t, macroId.c_str(), freshDef->volumeMultiplier);
+    }
+}
+
+void MacroTranslator::RefreshDefinitionById(const std::string &id) {
+    for (int t = 0; t < 16; t++) {
+        if (definition[t] == nullptr) continue;
+        if (definition[t]->id != id) continue;
+
+        MacroDeviceDefinition *freshDef =
+            macroDeviceDefinitionModel->LoadMacroDeviceDefinition(id);
+        if (freshDef == nullptr) continue;
+
+        delete definition[t];
+        definition[t] = freshDef;
+        trackDirty[t] = true;
+
+        ESP_LOGI("MacroTranslator", "Refreshed track %d def '%s' (volMult=%.2f)",
+            t, id.c_str(), freshDef->volumeMultiplier);
+    }
 }
 
 void MacroTranslator::SetTrackParameter(const int trackIndex, int parameterIndex, int32_t value) {
@@ -448,7 +490,8 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
     for(int t=0; t<16; t++) {
         if (trackDirty[t]) {
             // First change machines if needed.
-            soundProcessor->setTrackMachine(t, trackMachineId[t]);
+            float volMult = (definition[t] != nullptr) ? definition[t]->volumeMultiplier : 1.0f;
+            soundProcessor->setTrackMachine(t, trackMachineId[t], volMult);
         }
     }
 
@@ -497,7 +540,7 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
         bankDirty = false;
         for(int t=0; t<16; t++) {
             // resolve bank id from bank names
-            if (!trackSampleBankName[t].empty()) {
+            if (trackSampleBankName[t][0] != '\0') {
                 soundProcessor->setTrackBank(t, trackSampleBankIndex[t]);
             }
         }
@@ -526,7 +569,7 @@ bool MacroTranslator::SerializeStateInto(rapidjson::Document &doc) {
     for(int ti =0;ti<16;ti++) {
         Value trackjson(kObjectType);
         trackjson.AddMember("index", ti, doc.GetAllocator());
-        trackjson.AddMember("machine", Value(trackMachineId[ti].c_str(), doc.GetAllocator()), doc.GetAllocator());
+        trackjson.AddMember("machine", Value(trackMachineId[ti], doc.GetAllocator()), doc.GetAllocator());
         if (definition[ti] != nullptr) {
             trackjson.AddMember("macro", Value(definition[ti]->id.c_str(), doc.GetAllocator()), doc.GetAllocator());
         } else {

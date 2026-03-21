@@ -1,1 +1,8 @@
-{"id":"nofx-allparams","name":"Empty fx (bypass) All param","machine":"nofx","groups":[],"mapping":[]}
+{
+  "id": "nofx-allparams",
+  "name": "Empty fx (bypass) All param",
+  "machine": "nofx",
+  "volmult": 1.0,
+  "groups": [],
+  "mapping": []
+}

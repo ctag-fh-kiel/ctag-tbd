@@ -2,6 +2,7 @@
   "id": "fxmaster-allparams",
   "name": "Master FX All param",
   "machine": "fxmaster",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Page 1",

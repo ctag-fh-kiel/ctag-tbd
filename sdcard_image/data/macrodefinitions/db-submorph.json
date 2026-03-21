@@ -2,6 +2,7 @@
   "id": "db-submorph",
   "name": "Sub Morph Kick",
   "machine": "db",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Sub Morph",

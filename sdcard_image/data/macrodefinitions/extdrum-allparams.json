@@ -2,6 +2,7 @@
   "id": "extdrum-allparams",
   "name": "MIDI Drum All param",
   "machine": "extdrum",
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Page 1",
@@ -28,7 +29,27 @@
     }
   ],
   "mapping": [
-    { "ctrl": 8, "start": 0, "add": [{ "src": 0, "mul": 1, "div": 1 }] },
-    { "ctrl": 9, "start": 0, "add": [{ "src": 1, "mul": 1, "div": 1 }] }
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
   ]
 }

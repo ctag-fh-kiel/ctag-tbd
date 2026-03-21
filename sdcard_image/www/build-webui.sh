@@ -26,6 +26,7 @@ BUNDLE_SOURCES=(
   js/display-hints.js
   js/plugin-manager.js
   js/sample-manager.js
+  js/track-defaults.js
   js/app.js
 )
 BUNDLE_OUT="js/app-bundle.js"

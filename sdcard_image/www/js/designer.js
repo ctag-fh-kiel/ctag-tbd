@@ -113,15 +113,40 @@
     state.selectedDefId = null;
     state.editDef = null;
     state.dirty = false;
-    state.activeMachine = state.trackMachines.length > 0 ? state.trackMachines[0] : '';
+
+    // Check boot default to auto-select the right machine and macro
+    var bootMacroId = null;
+    if (S.data.trackDefaults && S.data.trackDefaults.tracks) {
+      var tdEntry = S.data.trackDefaults.tracks.find(function(t) { return t.index === idx; });
+      if (tdEntry && tdEntry.preset) {
+        var bootPreset = S.data.soundPresets.find(function(p) { return p.id === tdEntry.preset; });
+        if (bootPreset) {
+          bootMacroId = bootPreset.macro;
+          var bootDef = S.data.macroDefs.find(function(d) { return d.id === bootMacroId; });
+          if (bootDef && state.trackMachines.indexOf(bootDef.machine) !== -1) {
+            state.activeMachine = bootDef.machine;
+          }
+        }
+      }
+    }
+    if (!state.activeMachine) {
+      state.activeMachine = state.trackMachines.length > 0 ? state.trackMachines[0] : '';
+    }
 
     renderDefinitionList();
     renderMacroBuilderSection();
 
-    // Auto-select first matching definition
+    // Auto-select boot default's macro if available, otherwise first
     var filteredDefs = getFilteredDefs();
-    if (filteredDefs.length > 0) {
-      selectMacroDefinition(filteredDefs[0].id);
+    var targetDef = null;
+    if (bootMacroId) {
+      targetDef = filteredDefs.find(function(d) { return d.id === bootMacroId; });
+    }
+    if (!targetDef && filteredDefs.length > 0) {
+      targetDef = filteredDefs[0];
+    }
+    if (targetDef) {
+      selectMacroDefinition(targetDef.id);
     }
   }
 
@@ -190,12 +215,8 @@
       if (isFactory) {
         html += '<sl-icon name="lock" style="font-size:0.65rem;opacity:0.45;flex-shrink:0;margin-right:0.25rem;" title="Factory template — clone to edit"></sl-icon>';
       }
-      html += '<span class="preset-item-name">' + S.esc(def.name || def.id) + '</span>';
-      var paramCount = 0;
-      if (def.groups) {
-        def.groups.forEach(function(g) { paramCount += (g.parameters || []).length; });
-      }
-      html += '<span class="preset-item-machine">' + paramCount + 'P / ' + (def.mapping || []).length + 'M</span>';
+      html += '<span class="preset-item-name" title="' + S.esc(def.name || def.id) + '">' + S.esc(def.name || def.id) + '</span>';
+      html += '<span class="preset-item-machine">' + S.esc(def.id) + '</span>';
       if (!isFactory) {
         html += '<button class="preset-item-delete" data-delete-def-id="' + S.esc(def.id) + '" title="Delete definition">';
         html += '<sl-icon name="trash3"></sl-icon>';
@@ -260,6 +281,7 @@
       id: '',
       name: '',
       machine: defaultMachine,
+      volmult: 1.0,
       groups: [],
       mapping: [],
     };
@@ -326,6 +348,11 @@
    */
   function cleanDefinitionForSave(def) {
     var clean = JSON.parse(JSON.stringify(def));
+    // Validate and clamp volmult
+    var v = parseFloat(clean.volmult);
+    if (isNaN(v) || v < 0.1) v = 1.0;
+    if (v > 4.0) v = 4.0;
+    clean.volmult = Math.round(v * 10) / 10;
     // Strip empty trailing groups
     while (clean.groups.length > 0 &&
            (!clean.groups[clean.groups.length - 1].parameters ||
@@ -340,7 +367,15 @@
         if (p.curve === 'linear') delete p.curve;
       });
     });
-    return clean;
+    // Enforce key order: id, name, machine, volmult, groups, mapping, then rest
+    var ordered = {};
+    ['id', 'name', 'machine', 'volmult', 'groups', 'mapping'].forEach(function(k) {
+      if (clean[k] !== undefined) ordered[k] = clean[k];
+    });
+    Object.keys(clean).forEach(function(k) {
+      if (!(k in ordered)) ordered[k] = clean[k];
+    });
+    return ordered;
   }
 
   // ─── Definition Header (above sub-tabs) ───────────────
@@ -1706,7 +1741,7 @@
         }
         S.toast('Deleted macro: ' + displayName, 'success', 2000);
         // Reload firmware macro state, then refresh UI data
-        return S.reloadFirmwareMacros().then(function() {
+        return S.reloadFirmwareMacros(defId).then(function() {
           return S.reloadMacroData();
         });
       }).then(function() {
@@ -1736,16 +1771,20 @@
     if (!state.editDef.id) { S.toast('Definition ID is required', 'warning', 2000); return; }
     if (!state.editDef.machine) { S.toast('Select a machine for this definition', 'warning', 2000); return; }
 
-    // Factory definitions cannot be overwritten — prompt for a new name
+    // Factory definitions: if unlocked, allow in-place save; otherwise prompt for clone
     var F = window.TBD.factory;
     if (F && F.isFactoryDefinition(state.editDef.id)) {
-      var newId = prompt('Factory definitions are read-only.\nEnter a new ID to save as a copy:', state.editDef.id + '-custom');
-      if (!newId) return;
-      newId = newId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-|-$/g, '');
-      if (!newId) { S.toast('Invalid ID', 'warning', 2000); return; }
-      if (F.isFactoryDefinition(newId)) { S.toast('That ID is also a factory definition', 'warning', 2000); return; }
-      state.editDef.id = newId;
-      state.selectedDefId = newId;
+      if (F.isUnlocked && F.isUnlocked()) {
+        // Unlocked — allow in-place save of factory definition
+      } else {
+        var newId = prompt('Factory definitions are read-only.\nEnter a new ID to save as a copy:', state.editDef.id + '-custom');
+        if (!newId) return;
+        newId = newId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-|-$/g, '');
+        if (!newId) { S.toast('Invalid ID', 'warning', 2000); return; }
+        if (F.isFactoryDefinition(newId)) { S.toast('That ID is also a factory definition', 'warning', 2000); return; }
+        state.editDef.id = newId;
+        state.selectedDefId = newId;
+      }
     }
 
     var cleanDef = cleanDefinitionForSave(state.editDef);
@@ -1762,7 +1801,7 @@
       S.toast('Saved: ' + state.editDef.name, 'success', 2000);
       state.dirty = false;
       // Reload firmware macro state, then refresh UI data
-      return S.reloadFirmwareMacros().then(function() {
+      return S.reloadFirmwareMacros(state.editDef.id).then(function() {
         return S.reloadMacroData();
       });
     }).then(function() {

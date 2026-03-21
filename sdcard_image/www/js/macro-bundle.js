@@ -669,6 +669,7 @@ var sharedData = {
   machines: [],
   macroDefs: [],
   soundPresets: [],
+  trackDefaults: null,
   activeTrack: -1,
   loaded: false,
 };
@@ -713,6 +714,15 @@ function loadSharedData() {
         }
       });
     }
+    // Fetch track defaults (boot presets) — non-critical, so failures are tolerated
+    return fetch('/api/v2/macros?action=get_trackdefaults').then(function(r) {
+      return r.ok ? r.json() : null;
+    }).then(function(tdData) {
+      sharedData.trackDefaults = tdData && tdData.tracks ? tdData : { tracks: [] };
+    }).catch(function() {
+      sharedData.trackDefaults = { tracks: [] };
+    });
+  }).then(function() {
     sharedData.loaded = true;
     setConnected();
     hideLoading();
@@ -757,8 +767,10 @@ function reloadMacroData() {
  * Tell firmware to reload macros from disk (after saving/deleting definitions).
  * Disables processing, calls RefreshMacros(), re-enables processing.
  */
-function reloadFirmwareMacros() {
-  return fetch('/api/v2/macros?action=reload', { method: 'POST' })
+function reloadFirmwareMacros(defId) {
+  var url = '/api/v2/macros?action=reload';
+  if (defId) url += '&id=' + encodeURIComponent(defId);
+  return fetch(url, { method: 'POST' })
     .then(function(r) { return r.ok ? r.json() : null; })
     .catch(function(err) {
       console.warn('[Shared] Firmware macro reload failed:', err);
@@ -1150,10 +1162,81 @@ window.TBD.shared = {
   var presetSet = {};
   FACTORY_PRESETS.forEach(function(id) { presetSet[id] = true; });
 
+  // Factory edit unlock state (session only — resets on page reload)
+  var _unlocked = false;
+  var FACTORY_PIN = '0000';
+
+  /**
+   * Show a Shoelace dialog asking for the factory PIN.
+   * On success, sets unlocked=true and calls onSuccess().
+   */
+  function showPinDialog(onSuccess) {
+    var old = document.getElementById('factory-pin-dialog');
+    if (old) old.remove();
+
+    var dialog = document.createElement('sl-dialog');
+    dialog.id = 'factory-pin-dialog';
+    dialog.label = 'Factory Edit Mode';
+    dialog.setAttribute('style', '--width:22rem;');
+
+    dialog.innerHTML = '<p style="font-size:0.85rem;margin:0 0 0.75rem;">Enter the factory PIN to edit protected definitions.</p>'
+      + '<sl-input id="factory-pin-input" type="password" placeholder="PIN" size="medium" '
+      + 'style="width:100%;" autocomplete="off" autofocus></sl-input>'
+      + '<p id="factory-pin-error" style="font-size:0.75rem;color:var(--sl-color-danger-600);margin:0.5rem 0 0;display:none;">Incorrect PIN</p>';
+
+    var cancelBtn = document.createElement('sl-button');
+    cancelBtn.setAttribute('slot', 'footer');
+    cancelBtn.setAttribute('variant', 'default');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', function() { dialog.hide(); });
+
+    var unlockBtn = document.createElement('sl-button');
+    unlockBtn.setAttribute('slot', 'footer');
+    unlockBtn.setAttribute('variant', 'warning');
+    unlockBtn.innerHTML = '<sl-icon name="unlock" slot="prefix"></sl-icon> Unlock';
+
+    function tryUnlock() {
+      var input = document.getElementById('factory-pin-input');
+      var errEl = document.getElementById('factory-pin-error');
+      var val = input ? input.value.trim() : '';
+      if (val === FACTORY_PIN) {
+        _unlocked = true;
+        dialog.hide();
+        if (typeof onSuccess === 'function') onSuccess();
+      } else {
+        if (errEl) errEl.style.display = 'block';
+        if (input) { input.value = ''; input.focus(); }
+      }
+    }
+
+    unlockBtn.addEventListener('click', tryUnlock);
+
+    // Allow Enter key to submit
+    dialog.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); }
+    });
+
+    dialog.appendChild(cancelBtn);
+    dialog.appendChild(unlockBtn);
+    document.body.appendChild(dialog);
+    dialog.addEventListener('sl-after-hide', function() { dialog.remove(); });
+    requestAnimationFrame(function() {
+      dialog.show();
+      // Focus the input after dialog opens
+      setTimeout(function() {
+        var inp = document.getElementById('factory-pin-input');
+        if (inp) inp.focus();
+      }, 100);
+    });
+  }
+
   window.TBD = window.TBD || {};
   window.TBD.factory = {
     isFactoryDefinition: function(id) { return defSet[id] === true; },
     isFactoryPreset: function(id) { return presetSet[id] === true; },
+    isUnlocked: function() { return _unlocked; },
+    showPinDialog: showPinDialog,
+    lock: function() { _unlocked = false; },
     FACTORY_DEFINITIONS: FACTORY_DEFINITIONS,
     FACTORY_PRESETS: FACTORY_PRESETS,
   };
@@ -1672,34 +1755,72 @@ window.TBD.shared = {
 
     var availMachines = S.getTrackMachines(track);
 
-    // Default to first available machine
-    var machineId = availMachines.length > 0 ? availMachines[0] : '';
-    state.activeMachine = machineId;
+    // Check for boot default preset
+    var bootPreset = null;
+    var bootDef = null;
+    if (S.data.trackDefaults && S.data.trackDefaults.tracks) {
+      var tdEntry = S.data.trackDefaults.tracks.find(function(t) { return t.index === idx; });
+      if (tdEntry && tdEntry.preset) {
+        bootPreset = S.data.soundPresets.find(function(p) { return p.id === tdEntry.preset; });
+        if (bootPreset) {
+          bootDef = S.data.macroDefs.find(function(d) { return d.id === bootPreset.macro; });
+        }
+      }
+    }
 
-    // Find matching macro definitions
-    var matchingDefs = S.data.macroDefs.filter(function(d) {
-      return d.machine === machineId;
-    });
+    if (bootPreset && bootDef) {
+      // Auto-select the boot default preset
+      state.activePreset = bootPreset;
+      state.activeMacroDef = bootDef;
+      state.activeMachine = bootDef.machine;
+      state.macroFilter = bootPreset.macro;
 
-    // Prefer "allparams" definition, fallback to first
-    var allParamsDef = matchingDefs.find(function(d) {
-      return d.id.indexOf('allparams') !== -1;
-    });
-    var def = allParamsDef || matchingDefs[0] || null;
-    state.activeMacroDef = def;
-
-    // Initialize param values from defaults
-    state.paramValues = [];
-    if (def && def.groups) {
-      def.groups.forEach(function(group) {
-        group.parameters.forEach(function(param) {
-          state.paramValues[param.idx] = param.def || 0;
+      // Load param values from preset
+      state.paramValues = [];
+      if (bootPreset.values && bootPreset.values.length > 0) {
+        state.paramValues = bootPreset.values.slice();
+        for (var vi = 0; vi < state.paramValues.length; vi++) {
+          if (state.paramValues[vi] === undefined || state.paramValues[vi] === null) {
+            state.paramValues[vi] = 0;
+          }
+        }
+      }
+      // Fill missing params from def defaults
+      if (bootDef.groups) {
+        bootDef.groups.forEach(function(g) {
+          (g.parameters || []).forEach(function(p) {
+            if (state.paramValues[p.idx] === undefined) {
+              state.paramValues[p.idx] = p.def || 0;
+            }
+          });
         });
+      }
+    } else {
+      // Fallback: default to first available machine + allparams def
+      var machineId = availMachines.length > 0 ? availMachines[0] : '';
+      state.activeMachine = machineId;
+
+      var matchingDefs = S.data.macroDefs.filter(function(d) {
+        return d.machine === machineId;
       });
+      var allParamsDef = matchingDefs.find(function(d) {
+        return d.id.indexOf('allparams') !== -1;
+      });
+      var def = allParamsDef || matchingDefs[0] || null;
+      state.activeMacroDef = def;
+
+      state.paramValues = [];
+      if (def && def.groups) {
+        def.groups.forEach(function(group) {
+          group.parameters.forEach(function(param) {
+            state.paramValues[param.idx] = param.def || 0;
+          });
+        });
+      }
     }
 
     renderMachineSelect(availMachines);
-    renderKnobControls(track, def);
+    renderKnobControls(track, state.activeMacroDef);
     renderPresetBrowser();
 
     // Notify designer of machine change
@@ -1777,6 +1898,17 @@ window.TBD.shared = {
         html += '<input class="track-inline-input def-name-input" value="' + S.esc(def.name) + '" placeholder="Definition name" />';
         html += '<span class="track-info-label">ID:</span>';
         html += '<input class="track-inline-input def-id-input" value="' + S.esc(def.id) + '" placeholder="auto-id" ' + (isNew ? '' : 'readonly') + ' />';
+        var F = window.TBD.factory;
+        var isFactoryDef = F && F.isFactoryDefinition(def.id);
+        var isFactoryUnlocked = F && F.isUnlocked && F.isUnlocked();
+        var volReadonly = isFactoryDef && !isFactoryUnlocked;
+        html += '<span class="track-info-label" title="Volume multiplier — compensates for quiet/loud engines. 1.0 = no change.">VOL:</span>';
+        html += '<input type="number" class="track-inline-input def-volmult-input" value="' + (def.volmult != null ? def.volmult : 1.0) + '" min="0.1" max="4.0" step="0.1" style="width:4rem;' + (volReadonly ? 'opacity:0.5;' : '') + '" title="Volume multiplier (0.1–4.0)"' + (volReadonly ? ' readonly' : '') + ' />';
+        if (isFactoryDef) {
+          html += '<button class="mapping-btn btn-factory-unlock" title="' + (isFactoryUnlocked ? 'Factory edit mode active — click to lock' : 'Unlock factory edit mode') + '" style="padding:0 0.35rem;min-width:0;margin-left:0.15rem;' + (isFactoryUnlocked ? 'border-color:var(--sl-color-warning-400);color:var(--sl-color-warning-700);' : '') + '">';
+          html += '<sl-icon name="' + (isFactoryUnlocked ? 'unlock' : 'lock') + '" style="font-size:0.7rem;"></sl-icon>';
+          html += '</button>';
+        }
         html += '<div class="track-def-actions">';
         html += '<button class="mapping-btn btn-save-def" title="Save this definition"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
         html += '<button class="mapping-btn btn-export-def" title="Export as JSON"><sl-icon name="download" style="font-size:0.7rem;"></sl-icon> Export</button>';
@@ -1895,6 +2027,42 @@ window.TBD.shared = {
         if (D.state.editDef) {
           D.state.editDef.id = idInput.value;
           D.state.dirty = true;
+        }
+      });
+    }
+
+    var volmultInput = document.querySelector('#track-info-bar .def-volmult-input');
+    if (volmultInput) {
+      volmultInput.addEventListener('change', function() {
+        if (D.state.editDef) {
+          var v = parseFloat(volmultInput.value);
+          if (isNaN(v) || v < 0.1) v = 0.1;
+          if (v > 4.0) v = 4.0;
+          v = Math.round(v * 10) / 10; // round to 1 decimal
+          volmultInput.value = v;
+          D.state.editDef.volmult = v;
+          D.state.dirty = true;
+        }
+      });
+    }
+
+    var unlockBtn = document.querySelector('#track-info-bar .btn-factory-unlock');
+    if (unlockBtn) {
+      unlockBtn.addEventListener('click', function() {
+        var F = window.TBD.factory;
+        if (!F) return;
+        var track = S.data.tracks ? S.data.tracks.find(function(t) { return t.index === state.activeTrack; }) : null;
+        if (F.isUnlocked && F.isUnlocked()) {
+          // Already unlocked — lock again
+          F.lock();
+          renderTrackInfoBar(track, state.activeMacroDef);
+          S.toast('Factory edit mode locked', 'neutral', 2000);
+        } else {
+          // Show PIN dialog
+          F.showPinDialog(function() {
+            renderTrackInfoBar(track, state.activeMacroDef);
+            S.toast('Factory edit mode unlocked', 'warning', 3000);
+          });
         }
       });
     }
@@ -2137,7 +2305,7 @@ window.TBD.shared = {
         if (isFactory) {
           html += '<sl-icon name="lock" style="font-size:0.6rem;opacity:0.4;flex-shrink:0;margin-right:0.2rem;" title="Factory preset — use Save As to create a copy"></sl-icon>';
         }
-        html += '<span class="preset-item-name">' + S.esc(p.name) + '</span>';
+        html += '<span class="preset-item-name" title="' + S.esc(p.name) + '">' + S.esc(p.name) + '</span>';
         html += '<span class="preset-item-machine">' + S.esc(p.macro) + '</span>';
         if (!isFactory) {
           html += '<button class="preset-item-delete" data-delete-preset-id="' + S.esc(p.id) + '" title="Delete preset">';
@@ -2534,9 +2702,33 @@ window.TBD.shared = {
   // ─── Export / Import (for presets mode) ───────────────────
 
   function exportAllPresets() {
+    // Patch the active preset's values with the current live knob state
+    // so the export reflects what the user actually hears right now.
+    var presets = S.data.soundPresets.map(function(p) {
+      if (state.activePreset && p.id === state.activePreset.id && state.paramValues.length > 0) {
+        var patched = {};
+        for (var k in p) { if (p.hasOwnProperty(k)) patched[k] = p[k]; }
+        var paramCount = 0;
+        if (state.activeMacroDef && state.activeMacroDef.groups) {
+          state.activeMacroDef.groups.forEach(function(g) {
+            (g.parameters || []).forEach(function(pm) {
+              if (pm.idx >= paramCount) paramCount = pm.idx + 1;
+            });
+          });
+        }
+        var vals = [];
+        for (var i = 0; i < paramCount; i++) {
+          var raw = state.paramValues[i];
+          vals[i] = (raw !== undefined && raw !== null) ? Math.round(raw) : 0;
+        }
+        patched.values = vals;
+        return patched;
+      }
+      return p;
+    });
     var data = {
       macroDefs: S.data.macroDefs,
-      soundPresets: S.data.soundPresets,
+      soundPresets: presets,
     };
     var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     var a = document.createElement('a');
@@ -2559,8 +2751,8 @@ window.TBD.shared = {
           var data = JSON.parse(reader.result);
           if (data.id && data.macro) {
             importSinglePreset(data);
-          } else if (data.soundPresets) {
-            S.toast('Bulk import — coming soon', 'primary', 2000);
+          } else if (data.macroDefs || data.soundPresets) {
+            importBulk(data);
           } else {
             S.toast('Unrecognized JSON format', 'warning', 3000);
           }
@@ -2571,6 +2763,70 @@ window.TBD.shared = {
       reader.readAsText(input.files[0]);
     });
     input.click();
+  }
+
+  /**
+   * Import a bulk export file containing macroDefs and/or soundPresets.
+   * Each item is uploaded to the device sequentially.
+   */
+  function importBulk(data) {
+    var defs = Array.isArray(data.macroDefs) ? data.macroDefs : [];
+    var presets = Array.isArray(data.soundPresets) ? data.soundPresets : [];
+    var total = defs.length + presets.length;
+    if (total === 0) {
+      S.toast('Nothing to import', 'warning', 2000);
+      return;
+    }
+    if (!confirm('Import ' + defs.length + ' macro definitions and ' + presets.length + ' sound presets? Existing files with the same IDs will be overwritten.')) {
+      return;
+    }
+    S.showLoading('Importing 0/' + total + '\u2026');
+    var done = 0;
+    var errors = 0;
+
+    function uploadFile(path, obj) {
+      return fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(path), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(obj, null, 2),
+      }).then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        done++;
+        S.showLoading('Importing ' + done + '/' + total + '\u2026');
+      }).catch(function() {
+        errors++;
+        done++;
+        S.showLoading('Importing ' + done + '/' + total + '\u2026');
+      });
+    }
+
+    // Chain uploads sequentially to avoid overwhelming the device
+    var chain = Promise.resolve();
+    defs.forEach(function(d) {
+      if (!d.id) return;
+      chain = chain.then(function() {
+        return uploadFile('macrodefinitions/' + d.id + '.json', d);
+      });
+    });
+    presets.forEach(function(p) {
+      if (!p.id) return;
+      chain = chain.then(function() {
+        return uploadFile('macrosoundpresets/' + p.id + '.json', p);
+      });
+    });
+    chain.then(function() {
+      S.hideLoading();
+      if (errors > 0) {
+        S.toast('Imported with ' + errors + ' error(s)', 'warning', 3000);
+      } else {
+        S.toast('Imported ' + total + ' items', 'success', 2000);
+      }
+      return S.reloadFirmwareMacros().then(function() {
+        return S.reloadMacroData();
+      });
+    }).then(function() {
+      renderPresetBrowser();
+    });
   }
 
   function importSinglePreset(preset) {
@@ -2824,15 +3080,40 @@ window.TBD.shared = {
     state.selectedDefId = null;
     state.editDef = null;
     state.dirty = false;
-    state.activeMachine = state.trackMachines.length > 0 ? state.trackMachines[0] : '';
+
+    // Check boot default to auto-select the right machine and macro
+    var bootMacroId = null;
+    if (S.data.trackDefaults && S.data.trackDefaults.tracks) {
+      var tdEntry = S.data.trackDefaults.tracks.find(function(t) { return t.index === idx; });
+      if (tdEntry && tdEntry.preset) {
+        var bootPreset = S.data.soundPresets.find(function(p) { return p.id === tdEntry.preset; });
+        if (bootPreset) {
+          bootMacroId = bootPreset.macro;
+          var bootDef = S.data.macroDefs.find(function(d) { return d.id === bootMacroId; });
+          if (bootDef && state.trackMachines.indexOf(bootDef.machine) !== -1) {
+            state.activeMachine = bootDef.machine;
+          }
+        }
+      }
+    }
+    if (!state.activeMachine) {
+      state.activeMachine = state.trackMachines.length > 0 ? state.trackMachines[0] : '';
+    }
 
     renderDefinitionList();
     renderMacroBuilderSection();
 
-    // Auto-select first matching definition
+    // Auto-select boot default's macro if available, otherwise first
     var filteredDefs = getFilteredDefs();
-    if (filteredDefs.length > 0) {
-      selectMacroDefinition(filteredDefs[0].id);
+    var targetDef = null;
+    if (bootMacroId) {
+      targetDef = filteredDefs.find(function(d) { return d.id === bootMacroId; });
+    }
+    if (!targetDef && filteredDefs.length > 0) {
+      targetDef = filteredDefs[0];
+    }
+    if (targetDef) {
+      selectMacroDefinition(targetDef.id);
     }
   }
 
@@ -2901,12 +3182,8 @@ window.TBD.shared = {
       if (isFactory) {
         html += '<sl-icon name="lock" style="font-size:0.65rem;opacity:0.45;flex-shrink:0;margin-right:0.25rem;" title="Factory template — clone to edit"></sl-icon>';
       }
-      html += '<span class="preset-item-name">' + S.esc(def.name || def.id) + '</span>';
-      var paramCount = 0;
-      if (def.groups) {
-        def.groups.forEach(function(g) { paramCount += (g.parameters || []).length; });
-      }
-      html += '<span class="preset-item-machine">' + paramCount + 'P / ' + (def.mapping || []).length + 'M</span>';
+      html += '<span class="preset-item-name" title="' + S.esc(def.name || def.id) + '">' + S.esc(def.name || def.id) + '</span>';
+      html += '<span class="preset-item-machine">' + S.esc(def.id) + '</span>';
       if (!isFactory) {
         html += '<button class="preset-item-delete" data-delete-def-id="' + S.esc(def.id) + '" title="Delete definition">';
         html += '<sl-icon name="trash3"></sl-icon>';
@@ -2971,6 +3248,7 @@ window.TBD.shared = {
       id: '',
       name: '',
       machine: defaultMachine,
+      volmult: 1.0,
       groups: [],
       mapping: [],
     };
@@ -3037,6 +3315,11 @@ window.TBD.shared = {
    */
   function cleanDefinitionForSave(def) {
     var clean = JSON.parse(JSON.stringify(def));
+    // Validate and clamp volmult
+    var v = parseFloat(clean.volmult);
+    if (isNaN(v) || v < 0.1) v = 1.0;
+    if (v > 4.0) v = 4.0;
+    clean.volmult = Math.round(v * 10) / 10;
     // Strip empty trailing groups
     while (clean.groups.length > 0 &&
            (!clean.groups[clean.groups.length - 1].parameters ||
@@ -3051,7 +3334,15 @@ window.TBD.shared = {
         if (p.curve === 'linear') delete p.curve;
       });
     });
-    return clean;
+    // Enforce key order: id, name, machine, volmult, groups, mapping, then rest
+    var ordered = {};
+    ['id', 'name', 'machine', 'volmult', 'groups', 'mapping'].forEach(function(k) {
+      if (clean[k] !== undefined) ordered[k] = clean[k];
+    });
+    Object.keys(clean).forEach(function(k) {
+      if (!(k in ordered)) ordered[k] = clean[k];
+    });
+    return ordered;
   }
 
   // ─── Definition Header (above sub-tabs) ───────────────
@@ -4417,7 +4708,7 @@ window.TBD.shared = {
         }
         S.toast('Deleted macro: ' + displayName, 'success', 2000);
         // Reload firmware macro state, then refresh UI data
-        return S.reloadFirmwareMacros().then(function() {
+        return S.reloadFirmwareMacros(defId).then(function() {
           return S.reloadMacroData();
         });
       }).then(function() {
@@ -4447,16 +4738,20 @@ window.TBD.shared = {
     if (!state.editDef.id) { S.toast('Definition ID is required', 'warning', 2000); return; }
     if (!state.editDef.machine) { S.toast('Select a machine for this definition', 'warning', 2000); return; }
 
-    // Factory definitions cannot be overwritten — prompt for a new name
+    // Factory definitions: if unlocked, allow in-place save; otherwise prompt for clone
     var F = window.TBD.factory;
     if (F && F.isFactoryDefinition(state.editDef.id)) {
-      var newId = prompt('Factory definitions are read-only.\nEnter a new ID to save as a copy:', state.editDef.id + '-custom');
-      if (!newId) return;
-      newId = newId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-|-$/g, '');
-      if (!newId) { S.toast('Invalid ID', 'warning', 2000); return; }
-      if (F.isFactoryDefinition(newId)) { S.toast('That ID is also a factory definition', 'warning', 2000); return; }
-      state.editDef.id = newId;
-      state.selectedDefId = newId;
+      if (F.isUnlocked && F.isUnlocked()) {
+        // Unlocked — allow in-place save of factory definition
+      } else {
+        var newId = prompt('Factory definitions are read-only.\nEnter a new ID to save as a copy:', state.editDef.id + '-custom');
+        if (!newId) return;
+        newId = newId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-|-$/g, '');
+        if (!newId) { S.toast('Invalid ID', 'warning', 2000); return; }
+        if (F.isFactoryDefinition(newId)) { S.toast('That ID is also a factory definition', 'warning', 2000); return; }
+        state.editDef.id = newId;
+        state.selectedDefId = newId;
+      }
     }
 
     var cleanDef = cleanDefinitionForSave(state.editDef);
@@ -4473,7 +4768,7 @@ window.TBD.shared = {
       S.toast('Saved: ' + state.editDef.name, 'success', 2000);
       state.dirty = false;
       // Reload firmware macro state, then refresh UI data
-      return S.reloadFirmwareMacros().then(function() {
+      return S.reloadFirmwareMacros(state.editDef.id).then(function() {
         return S.reloadMacroData();
       });
     }).then(function() {
@@ -4950,7 +5245,6 @@ window.TBD.shared = {
 
     if (matchingFacet) {
       var macros = matchingFacet.macros;
-      var useSections = macros.length > 1;
 
       macros.forEach(function(macro) {
         // Clean up macro definition name for the optgroup label
@@ -4960,19 +5254,16 @@ window.TBD.shared = {
           label = label.replace(/\s*All\s*param(s)?\s*$/i, '') + ' — All knobs';
         }
 
-        if (useSections) {
-          html += '<optgroup label="' + S.esc(label) + '">';
-        }
+        // Always show optgroup so user can see which macro def each preset belongs to
+        html += '<optgroup label="' + S.esc(label) + '">';
         macro.presets.forEach(function(p) {
           var sel = p.id === currentPresetId ? ' selected' : '';
           var pName = p.name || p.id;
           html += '<option value="' + S.esc(p.id) + '"' + sel + '>';
-          html += S.esc(pName) + ' (' + S.esc(p.id) + ')';
+          html += S.esc(pName) + ' (' + S.esc(p.id) + ') \u2014 Macro: ' + S.esc(macro.id);
           html += '</option>';
         });
-        if (useSections) {
-          html += '</optgroup>';
-        }
+        html += '</optgroup>';
       });
     }
 
@@ -4983,6 +5274,7 @@ window.TBD.shared = {
     if (currentPresetId && presetSel.value !== currentPresetId) {
       presetSel.value = '';
     }
+
   }
 
   // ─── Rendering ─────────────────────────────────────────────
@@ -5171,7 +5463,6 @@ window.TBD.shared = {
         if (presetSel && presetSel.options.length > 1) {
           presetSel.selectedIndex = 1; // first real preset (index 0 is "(auto)")
         }
-
         // Show/hide Bank & Slice cells based on whether machine is Rompler
         updateRomplerCells(idx, machineId);
 
@@ -5287,19 +5578,40 @@ window.TBD.shared = {
   // ─── Init ──────────────────────────────────────────────────
 
   function init() {
+    // Create the dialog DOM dynamically so it can be shared across pages
+    // (index.html Sample Manager + preset-macro-manager.html)
     var dialog = document.getElementById('trackdefaults-dialog');
+    if (!dialog) {
+      dialog = document.createElement('sl-dialog');
+      dialog.label = 'Boot Default Presets';
+      dialog.id = 'trackdefaults-dialog';
+      dialog.style.cssText = '--width:64rem;';
+      dialog.innerHTML =
+        '<div id="trackdefaults-body"></div>' +
+        '<sl-button slot="footer" variant="default" id="td-close-btn">Close</sl-button>' +
+        '<sl-button slot="footer" variant="primary" id="td-save-btn" disabled>Save to SD Card</sl-button>';
+      document.body.appendChild(dialog);
+    }
+
     var openBtn = document.getElementById('trackdefaults-btn');
     var saveBtn = document.getElementById('td-save-btn');
     var closeBtn = document.getElementById('td-close-btn');
 
-    if (!dialog || !openBtn) {
-      console.warn('[TrackDefaults] Dialog or trigger button not found');
+    if (!openBtn) {
+      console.warn('[TrackDefaults] Trigger button not found');
       return;
     }
 
     openBtn.addEventListener('click', function() {
       S.showLoading('Loading boot defaults…');
-      loadTrackDefaults().then(function() {
+      // Ensure shared data (tracks, machines, macros) is loaded — on the Macros
+      // page this is already done, on the Samples page it may not be.
+      var dataReady = S.data.loaded
+        ? Promise.resolve()
+        : S.loadSharedData();
+      dataReady.then(function() {
+        return loadTrackDefaults();
+      }).then(function() {
         renderOverlayContent();
         S.hideLoading();
         dialog.show();
