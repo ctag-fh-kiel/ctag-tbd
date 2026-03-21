@@ -4188,9 +4188,9 @@ Phase 2 — CI pipeline + versioning + minimal flash page
       sdcard_image/**, sample_rom/**, *.sh, workflow files)
       Docs-only commits do NOT trigger firmware builds.
   [x] Add create-release.yml workflow (v* tag trigger + manual dispatch)
-  [ ] Verify build succeeds in CI (firmware + P4 SD archive)
+  [x] Verify build succeeds in CI (firmware + P4 SD archive)
+  [x] Bump webui-version.json to 0.4.0
   [ ] Tag dada-tbd-master: git tag v0.4.0
-  [ ] Bump webui-version.json to 0.4.0
   [ ] Test: tag push → CI builds → GitHub Release created with 4 TBD-16 artifacts
   [ ] Verify P4 SD card zip contains data/www/tbdsamples (no .uf2 files)
   [ ] Extract shared JS into docs/_static/js/tbd-flasher.js

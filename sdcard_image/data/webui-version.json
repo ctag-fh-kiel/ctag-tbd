@@ -1,5 +1,5 @@
 {
-  "version": "0.3.5",
-  "date": "2026-03-19",
-  "description": "Volume multiplier, factory PIN unlock, boot default auto-select, export/import fix, updated default presets"
+  "version": "0.4.0",
+  "date": "2026-03-21",
+  "description": "CI pipeline, .jsn→.json rename, repo cleanup"
 }
