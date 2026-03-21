@@ -4073,7 +4073,7 @@ Upstream catches up on their schedule.**
 
 ---
 
-## 15. Clean Up Git History (do this in Phase 1)
+## 15. Clean Up Git History (do this in Phase 3b)
 
 After deleting old binaries from the working tree, the `.git/` pack still
 contains 246 MB of old binary blobs. With only ~10 test users, a history
@@ -4132,11 +4132,11 @@ Phase 0 — Merge experimental branch (hard prerequisite for CI) ✅ DONE
   [x] Verify patches apply cleanly inside the Docker container
   Deliverable: dada-tbd-master builds correctly in the CI container image.
 
-Phase 1 — Clean slate (repo cleanup + history rewrite + file rename)
+Phase 1 — Clean slate (repo cleanup + file rename)
   ─────────────────────────────────────────────────────────────
-  Do all destructive/mechanical changes in one shot while the
-  team re-clones anyway. The .jsn → .json rename goes here
-  (not Phase 7) so every subsequent phase uses the final paths.
+  Mechanical changes that don't rewrite history. The .jsn → .json
+  rename goes here so every subsequent phase uses the final paths.
+  Branch archiving is non-destructive (just tags + remote deletes).
   ─────────────────────────────────────────────────────────────
   [x] Delete all old firmware builds + SD card images from docs/_static/ (12 .bin + 9 .uf2 + 8 SD .zip)
   [x] Delete all old WebUI update zips from docs/_static/updates/ (6 .zip + latest.json)
@@ -4147,13 +4147,10 @@ Phase 1 — Clean slate (repo cleanup + history rewrite + file rename)
   [x] Full codebase audit — zero .jsn files or text references remain (only old binaries in docs/_static/)
   [ ] Tag historical branches for archival (archive/p4_main, etc.)
   [ ] Delete stale branches from origin (master, dev, p4_main, etc.)
-  [ ] Enable Git LFS (.gitattributes for *.wav, *.bin, *.uf2, *.zip, *.png, *.jpg)
-  [ ] Run git filter-repo to remove old binary blobs from git history
-  [ ] Force-push cleaned history
-  [ ] Notify team (~10 people) to re-clone
   [ ] Verify GitHub default branch is dada-tbd-master
-  Deliverable: Clean repo. All JSON files use .json. ~450 MB removed.
-  Testers: no flash pages during this phase (acceptable — coordinated downtime).
+  Deliverable: Clean working tree. All JSON files use .json. Old binaries
+  deleted. Stale branches archived. No history rewrite yet — that happens
+  after CI + flash pages are confirmed working (Phase 3b).
 
 Phase 2 — CI pipeline + versioning + minimal flash page
   ─────────────────────────────────────────────────────────────
@@ -4198,6 +4195,20 @@ Phase 3 — Staging channel + remaining flash pages
       (deferred from Phase 1 — delete only after new pages are verified working)
   Deliverable: Full 5-page flash section. Staging channel live.
   Feature-test channel available for ad-hoc experiments.
+
+Phase 3b — Git LFS + history rewrite + force-push
+  ─────────────────────────────────────────────────────────────
+  Deferred from Phase 1. Now that CI builds work, flash pages
+  are verified, and old pages are deleted, this is the right
+  time to do the irreversible history rewrite. The team
+  re-clones exactly once, after the full foundation is solid.
+  ─────────────────────────────────────────────────────────────
+  [ ] Enable Git LFS (.gitattributes for *.wav, *.bin, *.uf2, *.zip, *.png, *.jpg)
+  [ ] Run git filter-repo to remove old binary blobs from git history
+  [ ] Force-push cleaned history
+  [ ] Notify team (~10 people) to re-clone
+  Deliverable: .git/ drops from ~350 MB to under ~50 MB. All contributors
+  re-clone once. Future binary assets tracked by LFS.
 
 Phase 4 — Kconfig guards + multi-target CI
   ─────────────────────────────────────────────────────────────
@@ -4299,7 +4310,7 @@ Phase 7 — Plugin adaptation + MultiFX
 Phase 0 ─── Merge experimental (patches, sdkconfig)
   │
   ▼
-Phase 1 ─── Clean slate (delete + rename + history rewrite)
+Phase 1 ─── Clean slate (delete binaries + rename files + archive branches)
   │
   ▼
 Phase 2 ─── CI pipeline + v0.4.0 + Stable Channel page
@@ -4310,6 +4321,9 @@ Phase 3              Phase 4
 Staging channel      Kconfig guards
 + flash pages        + multi-target CI
   │                  (independent)
+  ▼
+Phase 3b ── Git LFS + history rewrite + force-push (team re-clones once)
+  │
   ▼
 Phase 5 ─── AnnounceApp + compatibility warnings
   │
@@ -4322,6 +4336,9 @@ Phase 7 ─── Plugin adaptation + MultiFX
 
 **Phases 3 and 4 can run in parallel** — they have no mutual dependency.
 Both depend only on Phase 2. This is the main parallelism opportunity.
+**Phase 3b** runs after Phase 3 — the history rewrite happens only after
+CI, flash pages, and old page deletion are all confirmed working. The team
+re-clones exactly once.
 
 ---
 
