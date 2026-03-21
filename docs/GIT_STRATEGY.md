@@ -4194,19 +4194,21 @@ Phase 2 — CI pipeline + versioning + minimal flash page
   [x] Test: tag push → CI builds → GitHub Release created with 7 TBD-16 artifacts
       (bootloader.bin, ctag-tbd.bin, partition-table.bin, ota_data_initial.bin,
        dada-tbd-16-v0.4.0-unified.bin, tbd-sd-card.zip, tbd-sd-card-hash.txt)
-  [ ] Verify P4 SD card zip contains data/www/tbdsamples (no .uf2 files)
+  [x] Verify P4 SD card zip contains tbdsamples + www (no .uf2 files)
+      864 files: data/, dbup/, tbdsamples/ (wavetables, drums, samples), www/ (full WebUI)
+  Deliverable: CI builds on every push/tag. v0.4.0 release on GitHub.
+  ✅ PHASE 2 COMPLETE
+
+Phase 3 — Flash pages + staging channel
+  ─────────────────────────────────────────────────────────────
+  Depends on: Phase 2 (build-firmware.yml + v0.4.0 release must exist).
+  Flash page items moved here from Phase 2 — old flash pages still
+  work, no new code written yet, so this is the right time.
+  ─────────────────────────────────────────────────────────────
   [ ] Extract shared JS into docs/_static/js/tbd-flasher.js
   [ ] Create 10_stable_channel.rst (P4 firmware + Groovebox .uf2 + P4 SD card)
   [ ] Create minimal flash/index.rst with CTA to Stable Channel
   [ ] Test: end-to-end browser flash from Stable Channel page using CI-built release
-  Deliverable: CI builds on every push/tag. v0.4.0 release on GitHub.
-  Testers can flash via the new Stable Channel page.
-
-Phase 3 — Staging channel + remaining flash pages
-  ─────────────────────────────────────────────────────────────
-  Depends on: Phase 2 (build-firmware.yml must exist for staging
-  to call it as a reusable workflow).
-  ─────────────────────────────────────────────────────────────
   [ ] Create staging branch from dada-tbd-master
   [ ] Add staging-release.yml workflow (pushes to staging → pre-release + manifest update)
   [ ] Add feature-test-release.yml workflow (feature-test/* branches → per-feature manifests)
@@ -4222,7 +4224,7 @@ Phase 3 — Staging channel + remaining flash pages
   [ ] Test: staging flash page loads manifest, flash works end-to-end
   [ ] Delete old flash pages: 25, 30, 50, 60, 65, 66, 67, 68, 70
       (deferred from Phase 1 — delete only after new pages are verified working)
-  Deliverable: Full 5-page flash section. Staging channel live.
+  Deliverable: Full 5-page flash section. Stable + staging channels live.
   Feature-test channel available for ad-hoc experiments.
 
 Phase 3b — Git LFS + history rewrite + force-push
