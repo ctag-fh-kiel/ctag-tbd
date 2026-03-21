@@ -393,10 +393,10 @@ Firmware artifacts come from the latest
           extracted, and written directly.
         </div>
         <div class="btn-row">
-          <button id="btn2Pick" class="btn-primary" disabled>Select SD Card Drive</button>
+          <button id="btn2Pick" class="btn-primary">Select SD Card Drive</button>
         </div>
         <div class="progress-wrap" id="prog2"><div class="progress-bar" id="prog2Bar"></div><span class="progress-text" id="prog2Txt">0 %</span></div>
-        <div class="status" id="stat2">Complete Step 1 first.</div>
+        <div class="status" id="stat2">Select the <b>"NO NAME"</b> SD card drive.</div>
         <div class="file-log" id="fileLog"></div>
       </div>
 
@@ -409,10 +409,10 @@ Firmware artifacts come from the latest
           Click <b>Connect</b> to reconnect via the front JTAG port.
         </div>
         <div class="btn-row">
-          <button id="btn3Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn3Connect" class="btn-primary">Connect</button>
           <button id="btn3Go" class="btn-success" disabled>Switch to Normal Mode</button>
         </div>
-        <div class="status" id="stat3">Complete Step 2 first.</div>
+        <div class="status" id="stat3">Click <b>Connect</b> via the <b>front JTAG port</b> to switch back to normal mode.</div>
       </div>
 
       <!-- B·4 — Flash P4 -->
@@ -423,11 +423,11 @@ Firmware artifacts come from the latest
           Then click <b>Connect</b> via the <b>front JTAG port</b>.
         </div>
         <div class="btn-row">
-          <button id="btn4Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn4Connect" class="btn-primary">Connect</button>
           <button id="btn4Flash" class="btn-success" disabled>Flash ctag-tbd Firmware</button>
         </div>
         <div class="progress-wrap" id="prog4"><div class="progress-bar" id="prog4Bar"></div><span class="progress-text" id="prog4Txt">0 %</span></div>
-        <div class="status" id="stat4">Complete Step 3 first.</div>
+        <div class="status" id="stat4">Click <b>Connect</b> via the <b>front JTAG port</b>, then flash.</div>
       </div>
 
       <!-- B·5 — Flash Pico -->
@@ -439,12 +439,12 @@ Firmware artifacts come from the latest
           then click <b>Connect</b>.
         </div>
         <div class="btn-row">
-          <button id="btn5Connect" class="btn-primary" disabled>Connect</button>
+          <button id="btn5Connect" class="btn-primary">Connect</button>
           <button id="btn5Flash" class="btn-success" disabled>Flash Pico Firmware</button>
           <button id="btn5Reboot" class="btn-secondary" disabled>Reboot</button>
         </div>
         <div class="progress-wrap" id="prog5"><div class="progress-bar" id="prog5Bar"></div><span class="progress-text" id="prog5Txt">0 %</span></div>
-        <div class="status" id="stat5">Complete Step 4 first.</div>
+        <div class="status" id="stat5">Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.</div>
       </div>
 
       <!-- B·DONE -->
