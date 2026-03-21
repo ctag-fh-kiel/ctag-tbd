@@ -28,9 +28,12 @@ var _uf2ToFlashBuffer = null;
  */
 export async function loadPicoboot(basePath) {
   if (_Picoboot && _uf2ToFlashBuffer) return;
-  var picoMod = await import(basePath + '/pkg/index.js');
+  /* Resolve basePath relative to the HTML page (document.baseURI),
+     not relative to this module — avoids double-_static path bug. */
+  var base = new URL(basePath, document.baseURI).href;
+  var picoMod = await import(base + '/pkg/index.js');
   _Picoboot = picoMod.Picoboot;
-  var uf2Mod = await import(basePath + '/js/uf2.js');
+  var uf2Mod = await import(base + '/js/uf2.js');
   _uf2ToFlashBuffer = uf2Mod.uf2ToFlashBuffer;
 }
 
