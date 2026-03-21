@@ -4245,7 +4245,18 @@ Phase 3 — Flash pages + CDN + staging channel
       - All 3 CI jobs green
       - CDN serving all firmware files (verified via curl)
       - Manifest (stable/latest.json) has all 9 file entries
-  [ ] Test: end-to-end browser flash from Stable Channel page (hardware test)
+  [x] Test: end-to-end browser flash from Stable Channel page (hardware test)
+      - Path B (Full SD Deploy): MSC flash → SD card write → switch back → P4 flash ✅
+      - Path A (Quick Update): P4 unified binary flash ✅
+      - Pico flash: not yet tested (deferred — device working without it)
+      - USB NCM networking confirmed working after full SD card redeploy
+      - Fixed: readFlash hang in flashMscAndSwitchOta (removed — use hardcoded ota_1 address)
+      - Fixed: esptool-js console spam (suppressed write() terminal output)
+  [x] Add ESP-IDF patch verification step to build-firmware.yml
+      - git apply --reverse --check confirms patches are present after build
+      - Build fails (exit 1) if any patch is missing
+      - SHA-256 checksums logged for all 4 binary artifacts
+      - Confirmed working: CI run #5 (v0.4.1 build) shows ✅ APPLIED
   [ ] Create staging branch from dada-tbd-master
   [ ] Add staging-release.yml workflow (pushes to staging → pre-release + CDN dispatch)
   [ ] Add feature-test-release.yml workflow (feature-test/* → per-feature manifests)
@@ -4262,7 +4273,8 @@ Phase 3 — Flash pages + CDN + staging channel
       (deferred from Phase 1 — delete only after new pages are verified working)
   Deliverable: Full 5-page flash section. Stable + staging channels live.
   Feature-test channel available for ad-hoc experiments.
-  ✅ PHASE 3 PARTIALLY COMPLETE — Stable channel + CDN live, staging TODO
+  ✅ PHASE 3 PARTIALLY COMPLETE — Stable channel + CDN live, hardware tested,
+     CI patch verification active. Staging channel + remaining pages TODO.
 
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────
@@ -4391,7 +4403,9 @@ CDN repo + flash pages                   Kconfig guards
   │  ✅ CDN repo live                    (independent)
   │  ✅ Stable Channel page live
   │  ✅ v0.4.1 pipeline tested
-  │  ⬜ Hardware flash test
+  │  ✅ Hardware flash tested (P4 + SD card)
+  │  ✅ CI patch verification added
+  │  ⬜ Pico flash test (deferred)
   │  ⬜ Staging channel
   │
   ▼
@@ -4425,6 +4439,8 @@ re-clones exactly once.
 | Unified versioning (v0.4.0 start) | Low | Clear firmware ↔ WebUI compatibility | ✅ Phase 2 |
 | Firmware CDN repo (CORS fix) | Low | Browser flash works, same-origin delivery | ✅ Phase 3 |
 | Stable Channel flash page | Medium | Two-path browser flash (Quick Update + Full SD Deploy) | ✅ Phase 3 |
+| Hardware flash test (P4 + SD card) | Low | End-to-end browser flash verified on TBD-16 hardware | ✅ Phase 3 |
+| CI ESP-IDF patch verification | Low | Build fails if USB NCM / MMU patches missing | ✅ Phase 3 |
 | New flash pages (5 pages + shared JS) | Medium | 8,000 → 2,500 lines, zero code duplication | In progress |
 | Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built | Planned |
 | Git LFS for remaining binaries | Low | Fast clones for engineers | Phase 3b |
@@ -4457,10 +4473,13 @@ re-clones exactly once.
 - Firmware CDN repo → **live** (`dadamachines/dada-tbd-firmware`, GitHub Pages, CORS solved)
 - Stable Channel flash page → **live** (`10_stable_channel.rst`, two-path browser flash)
 - Shared flash JS modules → **live** (`tbd-flasher-p4.js`, `tbd-flasher-rp2350.js`)
+- Hardware flash → **verified** (Path A + Path B tested on TBD-16, USB NCM working)
+- CI patch verification → **active** (build fails if ESP-IDF patches missing)
 
 **In progress (Phase 3):**
 - 10 flash pages with 5,000 duplicated lines → **5 pages + shared JS module**
 - No pre-release testing path → **staging channel** (CI-built, browser flash)
+- Pico flash from browser → **not yet tested** (deferred — device works without it)
 
 **Planned:**
 - Git history → **rewrite** (Phase 3b — only 10 people re-clone)
