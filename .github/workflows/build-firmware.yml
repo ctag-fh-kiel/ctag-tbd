@@ -46,7 +46,7 @@ jobs:
       - name: Create P4 SD card archive
         run: |
           . $IDF_PATH/export.sh
-          ./create_sd_archive.sh . build "$(which xxh128sum)"
+          ./create_sd_archive.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/build" "$(which xxh128sum)"
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
