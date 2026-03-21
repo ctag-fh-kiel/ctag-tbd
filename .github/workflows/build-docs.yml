@@ -8,7 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check out repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: build tbd docs image
         run: ls -1 docs/config/tbd_docs.Dockerfile && docker build -t tbd_docs -f docs/config/tbd_docs.Dockerfile docs
