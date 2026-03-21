@@ -4140,7 +4140,6 @@ Phase 1 — Clean slate (repo cleanup + history rewrite + file rename)
   ─────────────────────────────────────────────────────────────
   [ ] Delete all old firmware builds + SD card images from docs/_static/
   [ ] Delete all old WebUI update zips from docs/_static/updates/
-  [ ] Delete all old flash pages: 25, 30, 50, 60, 65, 66, 67, 68, 70
   [x] Rename all 122 .jsn files to .json (git mv — 122 files across sdcard_image/, sample_rom/, generators/, simulator/)
   [x] Update all C++ path strings referencing .jsn → .json (27 source files; 3 edge cases fixed manually)
   [x] Verify create_sd_archive.sh and scripts — no .jsn globs found, no changes needed
@@ -4195,6 +4194,8 @@ Phase 3 — Staging channel + remaining flash pages
   [ ] Add compatRange field to staging + stable manifests
   [ ] Add MAJOR.MINOR compatibility check to WebUI updater page (soft warning)
   [ ] Test: staging flash page loads manifest, flash works end-to-end
+  [ ] Delete old flash pages: 25, 30, 50, 60, 65, 66, 67, 68, 70
+      (deferred from Phase 1 — delete only after new pages are verified working)
   Deliverable: Full 5-page flash section. Staging channel live.
   Feature-test channel available for ad-hoc experiments.
 
