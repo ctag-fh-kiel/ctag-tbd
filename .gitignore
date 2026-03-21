@@ -72,6 +72,7 @@ docs/SD_CARD_SDMMC_COEXISTENCE_FIX.md
 docs/TLV320AIC3254_CODEC_REFERENCE.md
 docs/TLV320AIC3254_POP_FIX_PLAN.md
 docs/TLVresearch.md
+docs/fix-volmult-crash-analysis.md
 
 # npm dependencies
 node_modules/
