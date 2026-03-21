@@ -53,8 +53,13 @@ set(TBD_HW "DADA")
 # generate include definitions for hw + fw version
 execute_process(
         COMMAND bash -c "git describe --tags --always --abbrev=4"
-        OUTPUT_VARIABLE TBD_FW)
-string(STRIP ${TBD_FW} TBD_FW)
+        OUTPUT_VARIABLE TBD_FW
+        RESULT_VARIABLE GIT_DESCRIBE_RESULT)
+if(GIT_DESCRIBE_RESULT EQUAL 0 AND TBD_FW)
+    string(STRIP "${TBD_FW}" TBD_FW)
+else()
+    set(TBD_FW "unknown")
+endif()
 configure_file(${CMAKE_SOURCE_DIR}/version.hpp.in ${CMAKE_BINARY_DIR}/gen_include/version.hpp @ONLY)
 idf_build_set_property(INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/gen_include APPEND)
 
