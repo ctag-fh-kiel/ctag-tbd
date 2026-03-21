@@ -63,6 +63,16 @@ sdcard_image/www/shoelace/themes/*
 !sdcard_image/www/shoelace/themes/light.css
 !sdcard_image/www/shoelace/themes/light.css.gz
 
+# Local working documents (not for repo)
+docs/ESP32-P4_MULTI_BOOT_INVESTIGATION.md
+docs/ESP_IDF_PATCHES.md
+docs/RP2350_LINK_AND_REBOOT_FIXES.md
+docs/SD_CARD_LDO_FIX.md
+docs/SD_CARD_SDMMC_COEXISTENCE_FIX.md
+docs/TLV320AIC3254_CODEC_REFERENCE.md
+docs/TLV320AIC3254_POP_FIX_PLAN.md
+docs/TLVresearch.md
+
 # npm dependencies
 node_modules/
 package-lock.json
