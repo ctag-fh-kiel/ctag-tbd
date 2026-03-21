@@ -14,8 +14,9 @@
 > the first real release.
 >
 > **Current milestone:** Phases 0–2 complete. Phase 3 mostly complete — Stable +
-> Beta Channel flash pages live, CDN pipeline operational, all hardware tested
-> (P4, SD card, Pico). Old flash pages deleted. Staging workflow active.
+> Beta Channel flash pages live, Release Archive page built, CDN pipeline
+> operational, all hardware tested (P4, SD card, Pico). Old flash pages
+> deleted. Staging workflow active.
 >
 > Related documents:
 > - `proposal-branching-strategy.md` — upstream/fork collaboration model
@@ -1122,18 +1123,15 @@ harmful.
 > development, they can use `esptool.py` or Picoboot CLI directly. These are
 > developer tools, not end-user pages.
 
-#### Future: Version Archive page
+#### Version Archive page ✅
 
-Once there are 2+ stable releases (e.g. v0.1.0 and v0.2.0), add
-`30_archive.rst` to the flash section. The archive page should:
-
-- Load a manifest of all stable releases (from GitHub Release API or a
-  committed JSON file)
-- **Only offer Full SD Deploy** (no Quick Update) — old firmware versions are
-  only guaranteed to work with their matching SD card image
-- Use the same shared `tbd-flasher.js` module
-
-This is not needed yet — build it when there's history worth archiving.
+`30_release_archive.rst` — lets users pick **any previous stable release**
+from a dropdown (populated via GitHub Releases API) and perform a **Full SD
+Card Deploy** (5-step Path B). SD card ZIP + hash are fetched from the
+GitHub Release assets (`browser_download_url`), so every version carries
+its own matching SD card image. P4/Pico firmware come from the CDN
+(`stable/p4/`, `stable/pico/`). Versions without an SD card asset are
+flagged and disabled.
 
 #### Build from scratch
 
@@ -4286,10 +4284,15 @@ Phase 3 — Flash pages + CDN + staging channel
   [ ] Test: staging flash page loads manifest, flash works end-to-end
   [x] Delete old flash pages: 25, 30, 50, 60, 65, 66, 67, 68
       - 8 pages removed (~250 KB), replaced by new channel-based pages
+  [x] Release Archive page (30_release_archive.rst)
+      - Version selector dropdown (GitHub Releases API, stable only)
+      - Full SD Card Deploy (Path B, 5 steps)
+      - SD card ZIP fetched from GitHub Release assets (versioned per-release)
+      - Added to flash/index.rst CTAs and toctree
   Deliverable: Full flash section. Stable + staging channels live.
   Feature-test channel available for ad-hoc experiments.
-  ✅ PHASE 3 MOSTLY COMPLETE — Stable + Beta channels live, all hardware tested,
-     CI patch verification active. App manager + WebUI updater pages TODO.
+  ✅ PHASE 3 MOSTLY COMPLETE — Stable + Beta channels live, Release Archive built,
+     all hardware tested, CI patch verification active. App manager + WebUI updater pages TODO.
 
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────

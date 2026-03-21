@@ -33,6 +33,7 @@ or something went wrong. Firmware updates **never erase** your SD card.
    </div>
 
    <div class="dada-secondary-links">
+     <a href="30_release_archive.html">Release Archive</a> &middot;
      <a href="50_troubleshooting.html">Troubleshooting</a>
    </div>
 
@@ -46,4 +47,5 @@ or something went wrong. Firmware updates **never erase** your SD card.
    10_stable_channel
    20_staging_channel
    70_webui_versions
+   30_release_archive
    50_troubleshooting
