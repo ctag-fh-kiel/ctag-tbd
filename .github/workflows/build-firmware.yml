@@ -38,6 +38,27 @@ jobs:
           . $IDF_PATH/export.sh
           idf.py build
 
+      - name: Verify ESP-IDF patches were applied
+        run: |
+          echo "=== Patch verification ==="
+          for pf in patches/*.patch; do
+            echo "Checking: $pf"
+            if git -C "$IDF_PATH" apply --reverse --check "$GITHUB_WORKSPACE/$pf" 2>/dev/null; then
+              echo "  ✅ APPLIED — patch is present in ESP-IDF source"
+            else
+              echo "  ❌ NOT APPLIED — patch is missing!"
+              exit 1
+            fi
+          done
+
+      - name: Log firmware checksums
+        run: |
+          echo "=== Firmware SHA-256 checksums ==="
+          sha256sum build/ctag-tbd.bin
+          sha256sum build/bootloader/bootloader.bin
+          sha256sum build/partition_table/partition-table.bin
+          sha256sum build/ota_data_initial.bin
+
       - name: Create unified firmware image
         run: |
           . $IDF_PATH/export.sh
