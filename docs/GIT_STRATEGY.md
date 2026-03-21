@@ -4274,6 +4274,11 @@ Phase 3 — Flash pages + CDN + staging channel
       - Same two-path structure as stable (Quick Update + Full SD Deploy)
       - Fetches latest pre-release from GitHub API (not /latest)
       - Warning banner linking back to Stable Channel for production use
+      - Channel selector dropdown: staging (default) + feature-test/* channels
+      - Feature-test channels discovered from GitHub pre-release tags
+      - loadChannel() handles both staging (GitHub API) and feature-test (CDN manifest)
+      - Deep-link support: ?channel=feature-test-foo selects that channel on load
+      - resetAllSteps() resets both Path A and Path B UI when channel changes
   [x] Create 60_app_manager.rst (placeholder: bootloader flash via BOOTSEL, system tools, sideload section)
       - Numbered 60 (30 already taken by release_archive)
       - Placeholder linking to Stable Channel, content ships in Phase 6

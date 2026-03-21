@@ -7,14 +7,14 @@ Beta Channel
 .. warning::
 
    This is the **beta channel** — firmware here is built from the ``staging`` branch
-   and may contain unfinished features or regressions. Use the
-   `Stable Channel <10_stable_channel.html>`_ for production use.
+   or from ``feature-test/*`` branches and may contain unfinished features or
+   regressions. Use the `Stable Channel <10_stable_channel.html>`_ for production use.
 
-Flash the **latest beta firmware** and **SD card image** to your TBD-16 directly from
+Flash **pre-release firmware** and **SD card image** to your TBD-16 directly from
 the browser — no card reader, no terminal commands, no opening the device.
 
-Firmware artifacts come from the latest
-`staging pre-release <https://github.com/dadamachines/ctag-tbd/releases>`_.
+Use the **channel selector** below to choose between the latest staging build
+or any active feature-test branch build.
 
 .. dropdown:: How it Works
 
@@ -273,15 +273,19 @@ Firmware artifacts come from the latest
 
     <div class="sd-recovery" id="sdRecovery">
 
-      <!-- ════════ RELEASE INFO ════════ -->
+      <!-- ════════ CHANNEL SELECTOR ════════ -->
       <div class="step-card active-step" id="cardSelect" style="border-color:#7c3aed; box-shadow:0 0 0 1px #7c3aed;">
         <div class="step-hdr" style="color:#7c3aed;">
-          <span class="step-num" style="background:#7c3aed;">▼</span> Firmware Package
+          <span class="step-num" style="background:#7c3aed;">▼</span> Select Channel
         </div>
         <div class="step-desc">
-          Loading release info from GitHub…
+          Choose a pre-release channel. <b>Staging</b> is the default.
+          Feature-test channels appear when engineers push to <code>feature-test/*</code> branches.
         </div>
-        <div class="status status-info" id="statPkg">Fetching latest release…</div>
+        <select id="channelSelect" disabled style="width:100%; padding:0.5em; border-radius:5px; border:1px solid #d1d5db; font-size:0.92em; margin-bottom:0.6em; background:var(--color-background-primary,#fff); color:var(--color-foreground-primary,#1a1a1a);">
+          <option value="">Loading channels…</option>
+        </select>
+        <div class="status status-info" id="statPkg">Discovering available channels…</div>
       </div>
 
       <!-- ════════ PATH CHOOSER ════════ -->
@@ -455,8 +459,8 @@ Firmware artifacts come from the latest
 
       <!-- B·DONE -->
       <div class="complete-card" id="cardDone">
-        <h3>✓ Beta Firmware Setup Complete</h3>
-        <p>Your TBD-16 has the SD card image and latest beta firmware.<br>
+        <h3>✓ Pre-release Firmware Setup Complete</h3>
+        <p>Your TBD-16 has the SD card image and selected pre-release firmware.<br>
         <b>Remove all USB cables</b>, wait 3 seconds, reconnect via <b>back Port&nbsp;#1</b>,
         then open <b>http://192.168.4.1</b>.</p>
       </div>
@@ -520,34 +524,155 @@ Firmware artifacts come from the latest
     }
     function hideProg(wrap) { wrap.style.display = 'none'; }
 
-    /* ── Release package info (populated from GitHub API) ── */
+    /* ── State ── */
     var RELEASE = null;
-    /* ── Firmware CDN (same-origin GitHub Pages) ── */
     var FIRMWARE_CDN = 'https://dadamachines.github.io/dada-tbd-firmware';
     var CHANNEL = 'staging';
-    var TUSB_MSC_URL = FIRMWARE_CDN + '/' + CHANNEL + '/p4/tusb_msc.bin';
+    var TUSB_MSC_URL = FIRMWARE_CDN + '/stable/p4/tusb_msc.bin';
+    var channelSelect = $('channelSelect');
 
     /* ══════════════════════════════
-       Fetch release info from GitHub API + build CDN URLs
+       Channel discovery + loading
        ══════════════════════════════ */
-    async function fetchRelease() {
-      /* Get the latest pre-release (staging) from GitHub API */
-      var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases');
-      if (!resp.ok) throw new Error('GitHub API error: ' + resp.statusText);
-      var releases = await resp.json();
-      var data = releases.find(function (r) { return r.prerelease; });
-      if (!data) throw new Error('No staging pre-release found');
 
-      /* Build download URLs from the firmware CDN (same-origin — no CORS issues) */
-      var base = FIRMWARE_CDN + '/' + CHANNEL + '/p4/';
-      return {
-        tag: data.tag_name,
-        name: data.name,
-        p4Url: base + 'dada-tbd-16-' + data.tag_name + '-unified.bin',
-        zipUrl: base + 'tbd-sd-card.zip',
-        hashUrl: base + 'tbd-sd-card-hash.txt',
-        htmlUrl: data.html_url
-      };
+    /* Discover available channels by checking CDN manifests */
+    async function discoverChannels() {
+      var channels = [{ name: 'staging', label: 'Staging (latest pre-release)' }];
+
+      /* Find feature-test channels from GitHub pre-releases */
+      try {
+        var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases?per_page=30');
+        if (resp.ok) {
+          var releases = await resp.json();
+          var seen = {};
+          releases.forEach(function (r) {
+            if (!r.prerelease) return;
+            /* feature-test tags look like: feature-test-cool-thing-abc12345 */
+            var m = r.tag_name.match(/^(feature-test-[a-z0-9-]+?)-[0-9a-f]{6,}$/);
+            if (m && !seen[m[1]]) {
+              seen[m[1]] = true;
+              channels.push({
+                name: m[1],
+                label: m[1].replace('feature-test-', 'Feature: ') + ' (' + r.tag_name.slice(-8) + ')'
+              });
+            }
+          });
+        }
+      } catch (_) { /* GitHub API unavailable — staging only */ }
+
+      return channels;
+    }
+
+    /* Load firmware info for a given channel */
+    async function loadChannel(channelName) {
+      CHANNEL = channelName;
+
+      if (channelName === 'staging') {
+        /* Staging: get the latest pre-release from GitHub API */
+        var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases');
+        if (!resp.ok) throw new Error('GitHub API error: ' + resp.statusText);
+        var releases = await resp.json();
+        var data = releases.find(function (r) { return r.prerelease; });
+        if (!data) throw new Error('No staging pre-release found');
+
+        var base = FIRMWARE_CDN + '/staging/p4/';
+        return {
+          tag: data.tag_name,
+          name: data.name,
+          p4Url: base + 'dada-tbd-16-' + data.tag_name + '-unified.bin',
+          zipUrl: base + 'tbd-sd-card.zip',
+          hashUrl: base + 'tbd-sd-card-hash.txt',
+          htmlUrl: data.html_url
+        };
+      } else {
+        /* Feature-test: fetch CDN manifest directly */
+        var manifestUrl = FIRMWARE_CDN + '/' + channelName + '/latest.json';
+        var resp = await fetch(manifestUrl);
+        if (!resp.ok) throw new Error('Channel manifest not found: ' + channelName);
+        var manifest = await resp.json();
+
+        return {
+          tag: manifest.tag,
+          name: channelName + ' @ ' + manifest.tag.slice(-8),
+          p4Url: FIRMWARE_CDN + '/' + manifest.files.unified,
+          zipUrl: FIRMWARE_CDN + '/' + manifest.files.sdcard,
+          hashUrl: FIRMWARE_CDN + '/' + manifest.files.hash,
+          htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + manifest.tag
+        };
+      }
+    }
+
+    /* Reset all steps when channel changes */
+    function resetAllSteps() {
+      /* Path A */
+      btnA1Connect.disabled = true; btnA1Flash.disabled = true;
+      hideProg(progA1); setStat(statA1, 'Select a channel above.');
+      btnA2Connect.disabled = true; btnA2Flash.disabled = true; btnA2Reboot.disabled = true;
+      hideProg(progA2); setStat(statA2, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
+      cardDoneA.style.display = 'none';
+
+      /* Path B */
+      btn1Connect.disabled = true; btn1Go.disabled = true;
+      btn2Pick.disabled = true;
+      btn3Connect.disabled = true; btn3Go.disabled = true;
+      btn4Connect.disabled = true; btn4Flash.disabled = true;
+      btn5Connect.disabled = true; btn5Flash.disabled = true; btn5Reboot.disabled = true;
+      skip1.style.display = 'none';
+      hideProg(prog1); hideProg(prog2); hideProg(prog4); hideProg(prog5);
+      setStat(stat1, 'Select a channel above.');
+      setStat(stat2, 'Complete Step 1 first.');
+      setStat(stat3, 'Complete Step 2 first.');
+      setStat(stat4, 'Complete Step 3 first.');
+      setStat(stat5, 'Complete Step 4 first.');
+      fileLog.style.display = 'none'; fileLog.textContent = '';
+      cardDone.style.display = 'none';
+
+      /* Hide path chooser until channel loads */
+      $('cardPathChooser').style.display = 'none';
+      $('pathA').style.display = 'none';
+      $('pathB').style.display = 'none';
+    }
+
+    /* Activate channel: load firmware info + enable UI */
+    async function activateChannel(channelName) {
+      resetAllSteps();
+      setStat($('statPkg'), 'Loading <b>' + channelName + '</b> channel…');
+
+      try {
+        var releaseData = await loadChannel(channelName);
+        var picoFwName = await discoverPicoFirmware(releaseData.tag, channelName);
+
+        RELEASE = releaseData;
+
+        var desc = $('cardSelect').querySelector('.step-desc');
+        var channelLabel = channelName === 'staging' ? 'staging branch' : channelName + ' branch';
+        desc.innerHTML = 'Channel: <b>' + channelName + '</b> — flashing <b>' + RELEASE.tag + '</b>. ' +
+          '<a href="' + RELEASE.htmlUrl + '" target="_blank">View release notes \u2192</a>';
+        setStat($('statPkg'), '<b>' + RELEASE.name + '</b> — P4 firmware' +
+          (picoFwName ? ' + Pico firmware' : '') + ' + SD card image');
+
+        if (!RELEASE.p4Url) {
+          setStat($('statPkg'), 'Channel <b>' + channelName + '</b> does not have P4 firmware. Cannot flash.', 'err');
+          return;
+        }
+
+        /* Show path chooser */
+        $('cardPathChooser').style.display = 'block';
+
+        /* Enable Path A */
+        btnA1Connect.textContent = 'Connect';
+        btnA1Connect.disabled = false;
+        setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>. Keep <b>back Port\u00a0#1</b> connected for power.');
+
+        /* Enable Path B */
+        btn1Connect.textContent = 'Connect';
+        btn1Connect.disabled = false;
+        skip1.style.display = 'inline-block';
+        setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB-C cables are connected: <b>front JTAG port</b> (serial) and <b>back Port\u00a0#1</b> (SD card drive).');
+      } catch (e) {
+        console.error(e);
+        setStat($('statPkg'), 'Failed to load channel <b>' + channelName + '</b>: ' + e.message, 'err');
+      }
     }
 
     /* ── Path chooser (global — called from onclick) ── */
@@ -573,14 +698,22 @@ Firmware artifacts come from the latest
        ══════════════════════════════ */
     var PICO_UF2_URL = null;
 
-    async function discoverPicoFirmware(tag) {
+    async function discoverPicoFirmware(tag, ch) {
       /* Check the CDN for pico firmware availability */
       var name = 'dada-tbd-16-' + tag + '-pico.uf2';
-      PICO_UF2_URL = FIRMWARE_CDN + '/' + CHANNEL + '/pico/' + name;
+      PICO_UF2_URL = FIRMWARE_CDN + '/' + (ch || CHANNEL) + '/pico/' + name;
       try {
         var resp = await fetch(PICO_UF2_URL, { method: 'HEAD' });
         if (resp.ok) return name;
       } catch (_) {}
+      /* Fallback: try stable channel pico (feature-test channels may not have pico) */
+      if (ch && ch !== 'staging') {
+        PICO_UF2_URL = FIRMWARE_CDN + '/stable/pico/' + name;
+        try {
+          var resp2 = await fetch(PICO_UF2_URL, { method: 'HEAD' });
+          if (resp2.ok) return name;
+        } catch (_) {}
+      }
       PICO_UF2_URL = null;
       return null;
     }
@@ -595,51 +728,42 @@ Firmware artifacts come from the latest
         throw new Error('WebSerial not supported');
       }
 
-      /* Load release + esptool in parallel */
-      var [releaseData, _] = await Promise.all([
-        fetchRelease(),
-        loadEspTool()
+      /* Load tools + discover channels in parallel */
+      var [channels, _esp, _pico] = await Promise.all([
+        discoverChannels(),
+        loadEspTool(),
+        loadPicoboot('../_static/picoflash').catch(function (e) {
+          console.warn('Picoboot load failed — Pico flash steps will be unavailable:', e);
+        })
       ]);
 
-      /* Discover pico firmware (needs tag from release) */
-      var picoFwName = await discoverPicoFirmware(releaseData.tag);
+      /* Populate channel dropdown */
+      channelSelect.innerHTML = '';
+      channels.forEach(function (ch) {
+        var opt = document.createElement('option');
+        opt.value = ch.name;
+        opt.textContent = ch.label;
+        channelSelect.appendChild(opt);
+      });
+      channelSelect.disabled = false;
 
-      /* Also try loading Picoboot (non-blocking — Path A Step 2 / Path B Step 5) */
-      try {
-        await loadPicoboot('../_static/picoflash');
-      } catch (e) {
-        console.warn('Picoboot load failed — Pico flash steps will be unavailable:', e);
+      /* Handle URL hash — allow linking to ?channel=feature-test-foo */
+      var urlParams = new URLSearchParams(window.location.search);
+      var requestedChannel = urlParams.get('channel');
+      if (requestedChannel && channels.some(function (c) { return c.name === requestedChannel; })) {
+        channelSelect.value = requestedChannel;
       }
 
-      RELEASE = releaseData;
+      /* Channel change handler */
+      channelSelect.addEventListener('change', function () {
+        if (channelSelect.value) activateChannel(channelSelect.value);
+      });
 
-      /* Update UI with release info */
-      var desc = $('cardSelect').querySelector('.step-desc');
-      desc.innerHTML = 'Flashing <b>' + RELEASE.tag + '</b> — beta firmware from the staging branch. ' +
-        '<a href="' + RELEASE.htmlUrl + '" target="_blank">View release notes →</a>';
-      setStat($('statPkg'), '<b>' + RELEASE.name + '</b> — beta P4 firmware' +
-        (picoFwName ? ' + Pico firmware' : '') + ' + SD card image');
-
-      if (!RELEASE.p4Url) {
-        setStat($('statPkg'), 'Release <b>' + RELEASE.tag + '</b> does not contain ctag-tbd.bin. Cannot flash.', 'err');
-        throw new Error('No P4 firmware in release');
-      }
-
-      /* Show path chooser */
-      $('cardPathChooser').style.display = 'block';
-
-      /* Enable buttons */
-      btnA1Connect.textContent = 'Connect';
-      btnA1Connect.disabled = false;
-      setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>. Keep <b>back Port&nbsp;#1</b> connected for power.');
-
-      btn1Connect.textContent = 'Connect';
-      btn1Connect.disabled = false;
-      skip1.style.display = 'inline-block';
-      setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB-C cables are connected: <b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).');
+      /* Auto-load the selected channel */
+      await activateChannel(channelSelect.value || 'staging');
 
     } catch (e) {
-      if (e.message !== 'WebSerial not supported' && e.message !== 'No P4 firmware in release') {
+      if (e.message !== 'WebSerial not supported') {
         setStat($('statPkg'), 'Failed to load: ' + e.message, 'err');
       }
       /* Stop — don't wire up any buttons */

@@ -18,8 +18,8 @@ or something went wrong. Firmware updates **never erase** your SD card.
 
      <div class="dada-cta">
        <h3>🧪 Beta Channel</h3>
-       <p>Flash the latest pre-release firmware from the staging
-       branch &mdash; test new features before they ship.</p>
+       <p>Flash pre-release firmware from the staging branch
+       or feature-test builds &mdash; test new features before they ship.</p>
        <a href="20_staging_channel.html" class="dada-cta-link">Beta Channel &rarr;</a>
      </div>
 
