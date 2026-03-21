@@ -9,6 +9,13 @@ or something went wrong. Firmware updates **never erase** your SD card.
 
    <div class="dada-ctas">
 
+     <div class="dada-cta" style="border:2px solid #2563EB;">
+       <h3>⭐ Stable Channel</h3>
+       <p>Flash the latest stable firmware release directly from
+       your browser &mdash; no tools required.</p>
+       <a href="10_stable_channel.html" class="dada-cta-link">Stable Channel &rarr;</a>
+     </div>
+
      <div class="dada-cta">
        <h3>Beta Channel</h3>
        <p>Flash the latest pre-release firmware bundle with all
@@ -53,5 +60,6 @@ or something went wrong. Firmware updates **never erase** your SD card.
 .. toctree::
    :hidden:
 
+   10_stable_channel
    65_beta_channel
    70_webui_versions
