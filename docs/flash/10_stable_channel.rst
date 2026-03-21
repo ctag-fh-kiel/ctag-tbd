@@ -535,7 +535,7 @@ Firmware artifacts come from the latest
       return {
         tag: data.tag_name,
         name: data.name,
-        p4Url: base + 'ctag-tbd.bin',
+        p4Url: base + 'dada-tbd-16-' + data.tag_name + '-unified.bin',
         zipUrl: base + 'tbd-sd-card.zip',
         hashUrl: base + 'tbd-sd-card-hash.txt',
         htmlUrl: data.html_url
@@ -563,13 +563,15 @@ Firmware artifacts come from the latest
     /* ══════════════════════════════
        Pico firmware — from CDN repo
        ══════════════════════════════ */
-    var PICO_UF2_URL = FIRMWARE_CDN + '/' + CHANNEL + '/pico/ctag-tbd-pico.uf2';
+    var PICO_UF2_URL = null;
 
-    async function discoverPicoFirmware() {
+    async function discoverPicoFirmware(tag) {
       /* Check the CDN for pico firmware availability */
+      var name = 'dada-tbd-16-' + tag + '-pico.uf2';
+      PICO_UF2_URL = FIRMWARE_CDN + '/' + CHANNEL + '/pico/' + name;
       try {
         var resp = await fetch(PICO_UF2_URL, { method: 'HEAD' });
-        if (resp.ok) return 'ctag-tbd-pico.uf2';
+        if (resp.ok) return name;
       } catch (_) {}
       PICO_UF2_URL = null;
       return null;
@@ -585,12 +587,14 @@ Firmware artifacts come from the latest
         throw new Error('WebSerial not supported');
       }
 
-      /* Load all tools in parallel */
-      var [releaseData, _, picoFwName] = await Promise.all([
+      /* Load release + esptool in parallel */
+      var [releaseData, _] = await Promise.all([
         fetchRelease(),
-        loadEspTool(),
-        discoverPicoFirmware()
+        loadEspTool()
       ]);
+
+      /* Discover pico firmware (needs tag from release) */
+      var picoFwName = await discoverPicoFirmware(releaseData.tag);
 
       /* Also try loading Picoboot (non-blocking — Path A Step 2 / Path B Step 5) */
       try {
@@ -659,6 +663,7 @@ Firmware artifacts come from the latest
       if (!ctxA1) return;
       btnA1Flash.disabled = true; btnA1Connect.disabled = true;
       try {
+        /* unified.bin = bootloader + partition table + OTA data + app at correct offsets */
         await flashP4(ctxA1, RELEASE.p4Url, 0x0, {
           onStatus: function (msg) { setStat(statA1, msg); },
           onProgress: function (pct) { showProg(progA1, progA1Bar, progA1Txt, pct); }
@@ -1060,6 +1065,7 @@ Firmware artifacts come from the latest
       if (!ctxB4) return;
       btn4Flash.disabled = true; btn4Connect.disabled = true;
       try {
+        /* unified.bin = bootloader + partition table + OTA data + app at correct offsets */
         await flashP4(ctxB4, RELEASE.p4Url, 0x0, {
           onStatus: function (msg) { setStat(stat4, msg); },
           onProgress: function (pct) { showProg(prog4, prog4Bar, prog4Txt, pct); }
