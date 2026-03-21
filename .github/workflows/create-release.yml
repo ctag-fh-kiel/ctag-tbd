@@ -1,4 +1,4 @@
-# Create a GitHub Release with firmware artifacts.
+# Create a GitHub Release with firmware artifacts, then push to CDN.
 # Triggers on version tags (v*) or manual dispatch.
 name: Create Release
 
@@ -44,5 +44,25 @@ jobs:
           name: "TBD-16 ${{ inputs.build_name || github.ref_name }}"
           files: release-assets/**/*
           generate_release_notes: true
+
+  # ── Step 3: Push firmware to CDN (dada-tbd-firmware repo) ──
+  publish-cdn:
+    needs: [firmware, release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to firmware CDN
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.FIRMWARE_CDN_TOKEN }}
+          repository: dadamachines/dada-tbd-firmware
+          event-type: firmware-update
+          client-payload: >-
+            {
+              "channel": "stable",
+              "tag": "${{ inputs.build_name || github.ref_name }}",
+              "artifact_name": "firmware-${{ inputs.build_name || github.ref_name }}",
+              "run_id": "${{ github.run_id }}",
+              "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}"
+            }
   # Note: docs are deployed automatically by deploy-docs.yml on branch push.
   # No need to re-deploy here — the branch push always accompanies the tag.

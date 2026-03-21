@@ -516,31 +516,28 @@ Firmware artifacts come from the latest
 
     /* ── Release package info (populated from GitHub API) ── */
     var RELEASE = null;
-    /* tusb_msc.bin stays in docs/_static (not part of the release build) */
-    var TUSB_MSC_URL = '../_static/firmware/p4/tusb_msc.bin';
+    /* ── Firmware CDN (same-origin GitHub Pages) ── */
+    var FIRMWARE_CDN = 'https://dadamachines.github.io/dada-tbd-firmware';
+    var CHANNEL = 'stable';
+    var TUSB_MSC_URL = FIRMWARE_CDN + '/' + CHANNEL + '/p4/tusb_msc.bin';
 
     /* ══════════════════════════════
-       Fetch latest GitHub Release
+       Fetch release info from GitHub API + build CDN URLs
        ══════════════════════════════ */
     async function fetchRelease() {
+      /* Get release metadata (tag, name, notes URL) from GitHub API */
       var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases/latest');
       if (!resp.ok) throw new Error('GitHub API error: ' + resp.statusText);
       var data = await resp.json();
 
-      /* Find assets by name */
-      function findAsset(name) {
-        for (var i = 0; i < data.assets.length; i++) {
-          if (data.assets[i].name === name) return data.assets[i].browser_download_url;
-        }
-        return null;
-      }
-
+      /* Build download URLs from the firmware CDN (same-origin — no CORS issues) */
+      var base = FIRMWARE_CDN + '/' + CHANNEL + '/p4/';
       return {
         tag: data.tag_name,
         name: data.name,
-        p4Url: findAsset('ctag-tbd.bin'),
-        zipUrl: findAsset('tbd-sd-card.zip'),
-        hashUrl: findAsset('tbd-sd-card-hash.txt'),
+        p4Url: base + 'ctag-tbd.bin',
+        zipUrl: base + 'tbd-sd-card.zip',
+        hashUrl: base + 'tbd-sd-card-hash.txt',
         htmlUrl: data.html_url
       };
     }
@@ -564,25 +561,17 @@ Firmware artifacts come from the latest
     };
 
     /* ══════════════════════════════
-       Pico firmware — static file
+       Pico firmware — from CDN repo
        ══════════════════════════════ */
-    /* The Pico .uf2 is built separately and hosted in docs/_static.
-       Discover the filename dynamically by checking known locations. */
-    var PICO_UF2_URL = null;
+    var PICO_UF2_URL = FIRMWARE_CDN + '/' + CHANNEL + '/pico/ctag-tbd-pico.uf2';
 
     async function discoverPicoFirmware() {
-      /* Try to find the latest pico firmware from the docs/_static directory listing.
-         Since we can't list directories from the browser, we use a known manifest file. */
+      /* Check the CDN for pico firmware availability */
       try {
-        var resp = await fetch('../_static/firmware/pico/latest.txt');
-        if (resp.ok) {
-          var name = (await resp.text()).trim();
-          if (name) {
-            PICO_UF2_URL = '../_static/firmware/pico/' + name;
-            return name;
-          }
-        }
+        var resp = await fetch(PICO_UF2_URL, { method: 'HEAD' });
+        if (resp.ok) return 'ctag-tbd-pico.uf2';
       } catch (_) {}
+      PICO_UF2_URL = null;
       return null;
     }
 

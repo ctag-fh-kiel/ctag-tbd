@@ -705,8 +705,9 @@ package selector dynamically. No RST edits needed per build.
 
 The manifest is a simple JSON file committed to the repo. CI appends new
 entries on each staging build. The flash page reads it client-side — the
-browser fetches the manifest, then fetches the actual binaries directly from
-GitHub Releases (CORS is supported on `github.com` release assets).
+browser fetches the manifest, then fetches the actual binaries from the
+firmware CDN repo (`dadamachines.github.io/dada-tbd-firmware/`) — same
+origin, no CORS issues.
 
 > **Why not commit binaries to docs/_static?** Because every staging build
 > would add ~16 MB to the repo. With GitHub Releases, the binaries live
@@ -1389,15 +1390,20 @@ feature branches (on personal forks)
 
 ### CORS note for GitHub Release downloads
 
-GitHub Release assets served from `github.com/…/releases/download/…` support
-CORS for browser `fetch()`. The flash page's JavaScript can download
-`.bin`/`.uf2`/`.zip` files directly from release URLs without a proxy. This
-has been verified and is used by many ESP web flasher projects.
+~~GitHub Release assets served from `github.com/…/releases/download/…` support
+CORS for browser `fetch()`.~~ **This turned out to be wrong.** GitHub Release
+download URLs (`github.com/releases/download/…`) do **not** include
+`Access-Control-Allow-Origin` headers, so browsers block cross-origin fetches.
 
-> **If CORS becomes an issue:** An alternative is to use a GitHub Pages
-> redirect or store the manifest URLs pointing to a CDN/proxy. But this
-> should not be needed — GitHub has supported CORS on release assets since
-> 2020.
+**Solution:** A dedicated firmware CDN repository
+([`dadamachines/dada-tbd-firmware`](https://github.com/dadamachines/dada-tbd-firmware))
+served via GitHub Pages at `dadamachines.github.io/dada-tbd-firmware/`.
+Because the docs site and CDN are on the same `dadamachines.github.io` origin,
+browser fetches work without CORS issues. CI pushes firmware to the CDN repo
+via `repository_dispatch` after each release.
+
+> **Channel structure:** `stable/`, `staging/`, `feature/<name>/` — each with
+> `p4/` and `pico/` subdirectories and a `latest.json` manifest.
 
 ---
 
