@@ -3902,9 +3902,10 @@ migration every JSON file in the project has the standard extension.
 ### Target branch structure
 
 ```
-dada-tbd-master          ← stable releases (production)
-                            CI builds + deploys docs on every push
-                            no gh-pages branch needed (artifact-based deploy)
+dada-tbd-master          ← production branch
+                            docs deploy on every push (artifact-based, no gh-pages branch)
+                            CI build check on every push (validates firmware compiles)
+                            firmware release only on v* tag push (opt-in)
 
 staging                  ← pre-release builds (testing)
                             CI builds + publishes to GitHub Releases
