@@ -314,18 +314,18 @@ git tag v0.5.0 && git push origin v0.5.0
 ```
 
 Pipeline: build firmware → create GitHub Release with all artifacts →
-dispatch to CDN repo → CDN writes `stable/latest.json` and deploys to
+push to CDN repo → CDN updates `stable/latest.json` and deploys to
 GitHub Pages.
 
 ### Staging Release (`staging-release.yml`)
 
 Triggered on every push to the `staging` branch. Pipeline: build firmware →
-create GitHub pre-release → dispatch to CDN staging channel.
+create GitHub pre-release → push to CDN staging channel.
 
 ### Feature Test Release (`feature-test-release.yml`)
 
 Triggered on every push to any `feature-test/*` branch. Pipeline: build
-firmware → create GitHub pre-release → dispatch to CDN with a per-feature
+firmware → create GitHub pre-release → push to CDN with a per-feature
 channel.
 
 ---
@@ -459,21 +459,26 @@ produces a valid `.uf2` binary works.
 
 There are two paths depending on your relationship with dadamachines:
 
-#### Path A — Trusted collaborator (dispatch)
+#### Path A — Trusted collaborator (direct push)
 
 For internal contributors with `PICO_CDN_TOKEN` access (e.g. possan).
-Your CI runs a `publish-cdn` job that dispatches the `.uf2` directly to
-the CDN repo on tagged releases:
+Your CI runs a `publish-cdn` job that clones the CDN repo, commits the
+`.uf2`, and pushes directly — on tagged releases:
 
 ```bash
 # In your app repo, tag a release:
 git tag v1.0.0
 git push origin v1.0.0
-# → CI builds .uf2 → dispatches to CDN → binary lands on Pages
+# → CI builds .uf2 → pushes to CDN repo → binary lands on Pages
 ```
 
 The template repo includes the `publish-cdn` job in its CI workflow.
 You need a `PICO_CDN_TOKEN` secret — ask dadamachines for one.
+
+> **Why direct push instead of `repository_dispatch`?** GitHub Actions
+> `GITHUB_TOKEN` can't download artifacts across repos from private
+> repositories. Direct push with a fine-grained PAT (`PICO_CDN_TOKEN`)
+> works for both public and private source repos.
 
 #### Path B — External contributor (manifest PR)
 
