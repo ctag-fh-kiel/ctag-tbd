@@ -4,7 +4,7 @@
 > repository structure, CI firmware builds, and the upstream relationship
 > with ctag-fh-kiel/ctag-tbd.
 >
-> Date: 2026-03-21 (last updated)
+> Date: 2026-03-22 (last updated)
 >
 > **Product status:** Pre-release. ~10 test users, no shipped product.
 > This means we have a clean slate — no backwards compatibility burden,
@@ -13,10 +13,10 @@
 > advantage of this: aggressive cleanup now, proper infrastructure before
 > the first real release.
 >
-> **Current milestone:** Phases 0–2 complete. Phase 3 mostly complete — Stable +
-> Beta Channel flash pages live, Release Archive page built, CDN pipeline
-> operational, all hardware tested (P4, SD card, Pico). Old flash pages
-> deleted. Staging workflow active.
+> **Current milestone:** Phases 0–3 and 3c complete. Phase 4 is next
+> (Kconfig guards + multi-target CI), then Phase 3b (history rewrite).
+> Both P4 and Pico repos use identical branch-based CI architecture
+> (5 workflows each). CDN pipeline operational, all hardware tested.
 >
 > Related documents:
 > - `proposal-branching-strategy.md` — upstream/fork collaboration model
@@ -90,7 +90,7 @@ dadamachines/dada-tbd-firmware (main)               ← firmware CDN
 │   │   └── dada-tbd-sd-hash.txt
 │   └── pico/
 │       └── dada-tbd-16-v0.4.1-pico.uf2    ← RP2350 Groovebox firmware
-├── staging/                    ← (future — staging channel)
+├── staging/                    ← staging channel (live)
 │   ├── latest.json
 │   ├── p4/
 │   └── pico/
@@ -963,9 +963,11 @@ git push --force-with-lease origin staging
 
 ### Flash page restructure
 
-> **Status:** Stable Channel page (`10_stable_channel.rst`) is implemented
-> and live. Shared JS modules created. CDN integration working. Old pages
-> not yet deleted (will be removed after staging channel is also live).
+> **Status:** All channel pages implemented and live — Stable Channel
+> (`10_stable_channel.rst`), Beta Channel (`20_staging_channel.rst`),
+> Release Archive (`30_release_archive.rst`), Troubleshooting
+> (`50_troubleshooting.rst`), WebUI Versions (`70_webui_versions.rst`).
+> Old pages deleted. Shared JS modules created. CDN integration working.
 
 The original `docs/flash/` had 10 pages with **extreme code duplication** —
 the same ~1,500 lines of ESP32-P4 flash logic, RP2350 Picoboot logic, OTA
@@ -993,10 +995,10 @@ version change required editing multiple files.
 |---|---|---|---|
 | `index.rst` | **✅ Live** | Flash & Updates | Hub with CTA to Stable Channel |
 | `10_stable_channel.rst` | **✅ Live** | Stable Channel | Two-path flash page: Path A (Quick Update: P4 firmware + Pico), Path B (Full SD Deploy: MSC + SD extract + P4 firmware + Pico). Fetches from CDN. |
-| `20_staging_channel.rst` | Planned | Staging & Test Builds | Manifest-driven, multi-build selector |
-| `30_app_manager.rst` | Planned | App Manager | Picoboot WebUSB install/remove, sideload, system tools |
-| `40_webui_updates.rst` | Planned | WebUI Updates | Updater docs + version history |
-| `50_troubleshooting.rst` | Planned | Troubleshooting | General flash troubleshooting |
+| `20_staging_channel.rst` | **✅ Live** | Beta Channel | Channel selector (staging + feature-test), manifest-driven, same two-path layout |
+| `30_app_manager.rst` | Placeholder | App Manager | Picoboot WebUSB install/remove, sideload, system tools (Phase 5) |
+| `50_troubleshooting.rst` | **✅ Live** | Troubleshooting | General flash troubleshooting (consolidated from old 67) |
+| `70_webui_versions.rst` | **✅ Live** | WebUI Versions | How to Update + version history + downloads (covers old 40/68) |
 
 #### Shared JavaScript modules (implemented)
 
@@ -2218,10 +2220,15 @@ by **convention**: same branch name in both repos → same CDN channel.
 │  possan/tbd-pico-seq3                                            │
 │  (fork of dadamachines/dada-tbd-app-template)                    │
 │                                                                  │
-│  1. Develop on a feature/fix branch                              │
-│  2. Push → CI builds firmware.uf2 (PlatformIO)                   │
-│  3. Tag vX.Y.Z → CI runs publish-cdn job                         │
-│     (direct push to dada-tbd-firmware via PICO_CDN_TOKEN)        │
+│  5 workflow files on dada-tbd-master (mirrors P4 repo):          │
+│  • ci.yml — build check on PR / push to dada-tbd-master         │
+│  • create-release.yml — v* tag → stable release → CDN stable    │
+│  • staging-release.yml — push to staging → CDN staging           │
+│  • feature-test-release.yml — push to feature-test/* → CDN      │
+│  • build-firmware.yml — reusable PlatformIO build (possan_rev_c) │
+│                                                                  │
+│  Each release workflow has its own publish-cdn job                │
+│  (direct push to dada-tbd-firmware via PICO_CDN_TOKEN)           │
 └──────────────────────┬───────────────────────────────────────────┘
                        │  git clone + commit + push
                        │  using PICO_CDN_TOKEN (Contents: write)
@@ -2256,86 +2263,34 @@ serves both from the same channel — `staging/p4/` + `staging/pico/`.
 There is **no CI chaining** between the two repos; coupling is by
 convention (same branch name = same channel).
 
-**Possan's CI has a `publish-cdn` job** in his existing
-`build_firmware.yml` that pushes directly to the CDN repo on tagged
-releases. This avoids the cross-repo artifact download problem
-(GitHub's `GITHUB_TOKEN` can't download artifacts from private repos):
+**Possan's CI uses 5 separate workflow files** on the `dada-tbd-master`
+branch, mirroring the P4 repo architecture exactly. Each release
+workflow (stable, staging, feature-test) includes its own `publish-cdn`
+job that pushes directly to the CDN repo. This avoids the cross-repo
+artifact download problem (GitHub's `GITHUB_TOKEN` can't download
+artifacts from private repos):
 
-```yaml
-  publish-cdn:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check for CDN token
-        id: check
-        run: |
-          if [ -z "${{ secrets.PICO_CDN_TOKEN }}" ]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
+| Workflow | Trigger | CDN channel |
+|----------|---------|-------------|
+| `build-firmware.yml` | Called by other workflows | (reusable build) |
+| `ci.yml` | PR / push to `dada-tbd-master` | (none — build check only) |
+| `create-release.yml` | Push `v*` tag | `stable` |
+| `staging-release.yml` | Push to `staging` branch | `staging` |
+| `feature-test-release.yml` | Push to `feature-test/*` branch | `feature-test-{name}` |
 
-      - name: Download build artifact
-        if: steps.check.outputs.skip != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: groovebox-firmware
-          path: pico-artifact
+Each `publish-cdn` job follows the same pattern:
+1. Downloads the build artifact (`.uf2`)
+2. Computes SHA-256
+3. Clones CDN repo using `PICO_CDN_TOKEN`
+4. Places `.uf2` in `{channel}/pico/` (versioned + latest copy)
+5. Patches `{channel}/latest.json` with Pico version
+6. Commits and pushes (triggers GitHub Pages deploy)
 
-      - name: Compute SHA-256
-        if: steps.check.outputs.skip != 'true'
-        id: sha
-        run: |
-          SHA=$(sha256sum pico-artifact/firmware.uf2 | cut -d' ' -f1)
-          echo "sha256=${SHA}" >> "$GITHUB_OUTPUT"
-
-      - name: Push to CDN
-        if: steps.check.outputs.skip != 'true'
-        env:
-          CDN_TOKEN: ${{ secrets.PICO_CDN_TOKEN }}
-          VERSION: ${{ github.ref_name }}
-          SHA256: ${{ steps.sha.outputs.sha256 }}
-        run: |
-          set -euo pipefail
-          # ── Derive channel from tag name ──
-          if echo "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
-            CHANNEL="stable"
-          elif echo "$VERSION" | grep -qE -- '-staging'; then
-            CHANNEL="staging"
-          elif echo "$VERSION" | grep -qoE -- '-ft-(.+)' >/dev/null 2>&1; then
-            CHANNEL="feature-test-$(echo "$VERSION" | sed -E 's/.*-ft-//')"
-          else
-            CHANNEL="stable"
-          fi
-          APP_ID="groovebox"
-          CDN_REPO="dadamachines/dada-tbd-firmware"
-          git clone --depth 1 \
-            "https://x-access-token:${CDN_TOKEN}@github.com/${CDN_REPO}.git" cdn
-          cd cdn
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          mkdir -p "${CHANNEL}/pico"
-          cp -f ../pico-artifact/firmware.uf2 "${CHANNEL}/pico/dada-tbd-pico.uf2"
-          cp -f ../pico-artifact/firmware.uf2 "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2"
-          # App catalog — stable releases only
-          if [ "$CHANNEL" = "stable" ]; then
-            mkdir -p "apps/${APP_ID}"
-            cp -f ../pico-artifact/firmware.uf2 "apps/${APP_ID}/${APP_ID}-${VERSION#v}.uf2"
-          fi
-          if [ -f "${CHANNEL}/latest.json" ]; then
-            TMP=$(mktemp)
-            jq --arg pico "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2" \
-               --arg ver "${VERSION}" \
-               '.files.pico = $pico | .picoVersion = $ver' \
-               "${CHANNEL}/latest.json" > "$TMP" && mv "$TMP" "${CHANNEL}/latest.json"
-          fi
-          echo "${VERSION}" > "${CHANNEL}/pico/pico-version.txt"
-          git add -A
-          git diff --cached --quiet && echo "No changes" && exit 0
-          git commit -m "Pico app: ${APP_ID} ${VERSION} → ${CHANNEL} [sha256:${SHA256:0:12}]"
-          git push
-```
+The channel is **hardcoded per workflow** — no tag-name parsing needed.
+`staging-release.yml` always publishes to `staging/pico/`,
+`feature-test-release.yml` derives the channel from the branch name
+(`feature-test/launchpad` → `feature-test-launchpad`), and
+`create-release.yml` always publishes to `stable/pico/`.
 
 The `PICO_CDN_TOKEN` is a fine-grained GitHub PAT scoped to:
 - **Repository**: `dadamachines/dada-tbd-firmware`
@@ -3286,7 +3241,7 @@ Factory devices should ship with this file pre-installed on the Pico SD.
 |-------|-----------|----------------------|
 | **Phase 3 (flash pages)** | App Manager with version awareness | Layer 1: browser-side firmware version check, warning banner if mismatch, guided Pico SD update offered (never blocks — user can always proceed) |
 | **Phase 4 (AnnounceApp)** | AnnounceApp merged + formalized | Layer 2: P4 runtime check, WebUI warning banner, REST API `picoAppCompat` flag (informational only — app always runs) |
-| **Phase 5+ (future)** | Bootloader version hints | Layer 3: bootloader reads `firmware-version.txt`, flags mismatched apps in boot menu (never hides or skips apps) |
+| **Phase 6+ (future)** | Bootloader version hints | Layer 3: bootloader reads `firmware-version.txt`, flags mismatched apps in boot menu (never hides or skips apps) |
 
 ### App distribution via flash pages and docs
 
@@ -3460,8 +3415,9 @@ workflow remains in the CDN repo for potential use with public app repos
 in the future, but the Groovebox pipeline does not use it.
 
 The actual Pico delivery mechanism for possan is the `publish-cdn` job
-in `possan/tbd-pico-seq3/.github/workflows/build_firmware.yml` — see
-the Profile A workflow section above for the full job spec.
+in each release workflow under `possan/tbd-pico-seq3/.github/workflows/`
+(create-release.yml, staging-release.yml, feature-test-release.yml) —
+see the Profile A workflow section above for details.
 
 #### `validate-pr.yml` — validates app manifest PRs
 
@@ -3634,9 +3590,9 @@ App Manager page and registry add progressive layers of interactivity:
 | Phase | What happens | Default flow | Multi-app / App Manager |
 |-------|-------------|-------------|-------------------------|
 | **Phase 2 (CI pipeline)** | CI builds P4 firmware + Groovebox .uf2 + P4 SD archive. Standard 4-artifact release for TBD-16. | Fully working (Groovebox standalone) | Pico SD ships factory pre-loaded; no CI needed for standard releases |
-| **Phase 3 (flash pages)** | Stable/Staging flash pages live. Default flow (P4 + Groovebox + P4 SD) works end-to-end. Pico .uf2 delivered via dispatch. | Complete | Link to App Manager for multi-app opt-in |
-| **Phase 4 (App Manager)** | Interactive App Manager page: flash bootloader to enable multi-app, browse catalog, install/remove apps, system tools. | Unchanged | Interactive: one-click bootloader flash + app management via browser |
-| **Phase 5 (app registry)** | Add `apps/` to CDN repo. Automated catalog CI. `app-catalog.json` auto-generated. External contributors submit apps via PR. Pico SD bundle workflow for MAJOR.MINOR updates. | Unchanged | Full: catalog + community apps + optional Pico SD bundle downloads |
+| **Phase 3 (flash pages)** | Stable/Staging flash pages live. Default flow (P4 + Groovebox + P4 SD) works end-to-end. Pico .uf2 delivered via direct push. | Complete | Link to App Manager for multi-app opt-in |
+| **Phase 5 (App Manager + registry)** | Interactive App Manager page: flash bootloader to enable multi-app, browse catalog, install/remove apps, system tools. Add `apps/` to CDN repo. Automated catalog CI. External contributors submit apps via PR. | Unchanged | Interactive: one-click bootloader flash + app management via browser. Full catalog + community apps + optional Pico SD bundle downloads |
+| **Phase 6 (AnnounceApp)** | P4 firmware detects running Pico app via SPI. WebUI and App Manager show version info and compatibility warnings. | Unchanged | Compatibility warnings layered on top of working App Manager |
 | **Future** | On-device app catalog (in WebUI) that can download and install apps over WiFi directly to the Pico SD card. | Unchanged | Dynamic, user-managed from device |
 
 ### What to build for launch vs what to defer
@@ -3649,18 +3605,21 @@ ship now but scalable enough to support an app ecosystem post-launch.
 These three items are the minimum to unblock possan's Groovebox delivery
 through the CDN pipeline, replacing the current manual seeding of pico.uf2:
 
-1. **`publish-cdn` job** in possan's `build_firmware.yml` — pushes the
-   `.uf2` directly to the CDN repo on tagged releases. Uses
-   `PICO_CDN_TOKEN` to clone, commit, and push in one step.
-   (Job spec in Profile A workflow section above.)
+1. **`publish-cdn` jobs** in possan's release workflows — each release
+   workflow (create-release.yml, staging-release.yml,
+   feature-test-release.yml) has its own publish-cdn job that pushes
+   the `.uf2` directly to the CDN repo. Uses `PICO_CDN_TOKEN` to
+   clone, commit, and push in one step.
+   (Details in Profile A workflow section above.)
 
 2. **`PICO_CDN_TOKEN`** — fine-grained PAT created by dadamachines,
    stored as a secret in possan's repo. Scoped to Contents (write) on
    `dadamachines/dada-tbd-firmware` only.
 
-Once these are in place, possan tags a release → Groovebox .uf2
-arrives in the CDN automatically → flash pages serve it. No manual
-copying, no stale .uf2 seeded from a previous stable release.
+Once these are in place, possan tags a release (or pushes to staging /
+feature-test) → Groovebox .uf2 arrives in the CDN automatically →
+flash pages serve it. No manual copying, no stale .uf2 seeded from
+a previous stable release.
 
 > **Note:** The CDN repo still has `receive-pico-app.yml` for
 > potential use with public app repos, but possan's pipeline bypasses
@@ -3686,10 +3645,10 @@ dadamachines/ctag-tbd          possan/tbd-pico-seq3
 (P4 firmware + SD + WebUI)     (Groovebox RP2350 app)
         │                              │
         │  tag v0.5.0                  │  tag v0.5.0
-        │  (or push to staging)        │  (or v0.5.0-staging)
+        │  (or push to staging)        │  (or push to staging)
         ▼                              ▼
-  build-firmware.yml             build_firmware.yml
-  create-release.yml             publish-cdn job
+  create-release.yml             create-release.yml
+  (or staging-release.yml)       (or staging-release.yml)
         │                              │
         │  dispatch to CDN:            │  direct push to CDN:
         │  receive-firmware.yml        │  clone + commit + push
@@ -3780,16 +3739,16 @@ versions match. For launch this is unnecessary overhead.
 | Channel | P4 source | Pico source | Coordination |
 |---------|----------|-------------|-------------|
 | **stable** | `v*` tag on ctag-tbd | `v*` tag on tbd-pico-seq3 | Manual: agree on tag, test on hardware, tag within minutes |
-| **staging** | Push to `staging` branch | `v*-staging` tag on tbd-pico-seq3 | Both publish independently to `staging/p4/` and `staging/pico/` |
-| **feature-test-*** | Push to `feature-test/*` branch | `v*-ft-{name}` tag on tbd-pico-seq3 | Both publish independently to `feature-test-{name}/p4/` and `feature-test-{name}/pico/` |
+| **staging** | Push to `staging` branch | Push to `staging` branch on tbd-pico-seq3 | Both publish independently to `staging/p4/` and `staging/pico/` |
+| **feature-test-*** | Push to `feature-test/*` branch | Push to `feature-test/*` branch on tbd-pico-seq3 | Both publish independently to `feature-test-{name}/p4/` and `feature-test-{name}/pico/` |
 
-**Tag convention (identical for both repos):**
+**Branch-based channel mapping (identical for both repos):**
 
-| Tag pattern | CDN channel | Example |
-|-------------|-------------|---------|
-| `v0.5.0` (clean semver) | `stable` | Stable Channel flash page |
-| `v0.5.0-staging` or `v0.5.0-staging.2` | `staging` | Beta Channel flash page |
-| `v0.5.0-ft-launchpad` | `feature-test-launchpad` | Beta Channel dropdown |
+| Trigger | CDN channel | Example |
+|---------|-------------|---------|
+| `v0.5.0` tag (clean semver) | `stable` | Stable Channel flash page |
+| Push to `staging` branch | `staging` | Beta Channel flash page |
+| Push to `feature-test/launchpad` branch | `feature-test-launchpad` | Beta Channel dropdown |
 
 **Separation of concerns:**
 - `receive-firmware.yml` in the CDN repo handles P4 firmware + SD card +
@@ -3839,9 +3798,9 @@ control. **Always build `possan_rev_c` for CDN releases.**
   submitting manifests
 - `build-catalog.yml` — only needed when the App Manager page reads
   `app-catalog.json`
-- Interactive App Manager page (Phase 4) — multi-app is opt-in
+- Interactive App Manager page (Phase 5) — multi-app is opt-in
 - Pico SD curated bundle workflow — only needed for MAJOR.MINOR updates
-- AnnounceApp SPI command — runtime app identification
+- AnnounceApp SPI command — runtime app identification (Phase 6)
 
 ### Multi-target flash pages
 
@@ -4841,7 +4800,7 @@ Phase 3 — Flash pages + CDN + staging channel
       - GitHub Pages enabled (GitHub Actions source)
       - receive-firmware.yml: receives builds via repository_dispatch
       - deploy-pages.yml: deploys on push to main
-      - Channel structure: stable/p4/, stable/pico/, staging/ (future)
+      - Channel structure: stable/p4/, stable/pico/, staging/, feature-test/
   [x] Add publish-cdn job to create-release.yml (repository_dispatch to CDN)
       - Uses FIRMWARE_CDN_TOKEN (fine-grained PAT scoped to CDN repo)
   [x] Extract shared JS into docs/_static/js/tbd-flasher-p4.js (~230 lines)
@@ -4895,7 +4854,7 @@ Phase 3 — Flash pages + CDN + staging channel
       - resetAllSteps() resets both Path A and Path B UI when channel changes
   [x] Create 60_app_manager.rst (placeholder: bootloader flash via BOOTSEL, system tools, sideload section)
       - Numbered 60 (30 already taken by release_archive)
-      - Placeholder linking to Stable Channel, content ships in Phase 6
+      - Placeholder linking to Stable Channel, content ships in Phase 5
   [x] Create 40_webui_updates.rst → covered by 70_webui_versions.rst
       - 70_webui_versions.rst already has How to Update + version history + downloads
       - No separate page needed — index.rst CTA points to 70
@@ -4910,7 +4869,7 @@ Phase 3 — Flash pages + CDN + staging channel
       - CDN receive-firmware.yml extracts MAJOR.MINOR from tag (v0.4.1 → 0.4)
       - Added to latest.json as "compatRange" field
   [ ] Add MAJOR.MINOR compatibility check to WebUI updater page (soft warning)
-      → Deferred to Phase 5 (needs firmware version API on device)
+      → Deferred to Phase 6 (needs firmware version API on device)
   [ ] Test: staging flash page loads manifest, flash works end-to-end
   [x] Delete old flash pages: 25, 30, 50, 60, 65, 66, 67, 68
       - 8 pages removed (~250 KB), replaced by new channel-based pages
@@ -4924,7 +4883,7 @@ Phase 3 — Flash pages + CDN + staging channel
   ✅ PHASE 3 COMPLETE — All channels live (stable, staging, feature-test),
      Release Archive built, all hardware tested, CI patch verification active.
      App Manager placeholder in place. WebUI docs covered by 70_webui_versions.
-     compatRange in CDN manifest. MAJOR.MINOR check deferred to Phase 5.
+     compatRange in CDN manifest. MAJOR.MINOR check deferred to Phase 6.
 
 Phase 3c — Artifact naming + contributor documentation
   ─────────────────────────────────────────────────────────────
@@ -4987,6 +4946,7 @@ Phase 3c — Artifact naming + contributor documentation
   have clear documentation for building, testing, and deploying. Ready
   for Phase 3b history rewrite — the re-clone delivers a clean,
   well-documented codebase.
+  ✅ PHASE 3c COMPLETE (pending: end-to-end tag verification with new names)
 
 Phase 4 — Kconfig guards + multi-target CI
   ─────────────────────────────────────────────────────────────
@@ -5022,30 +4982,13 @@ Phase 3b — Git LFS + history rewrite + force-push
   Deliverable: .git/ drops from ~350 MB to under ~50 MB. All contributors
   re-clone once. Future binary assets tracked by LFS.
 
-Phase 5 — AnnounceApp + firmware ↔ app compatibility
-  ─────────────────────────────────────────────────────────────
-  Depends on: Phase 2 (versioning scheme must exist so version
-  strings have meaning). Separated from the app registry because
-  this is P4 firmware + WebUI work, not repo infrastructure.
-  ─────────────────────────────────────────────────────────────
-  [ ] Merge announceApp from experimental branch into dada-tbd-master
-  [ ] Assign stable SPI command ID, document payload in SpiAPI.hpp
-  [ ] Add P4-side handler: store app identity (name, version, caps) in DeviceAPI
-  [ ] Add picoApp, picoVersion, picoCaps fields to /api/v2/device REST response
-  [ ] Add WebUI device info panel: show active Pico app name + version
-  [ ] Add picoAppCompat flag when app MAJOR.MINOR ≠ firmware MAJOR.MINOR
-  [ ] Add dismissible WebUI warning banner for compatibility mismatch
-  [ ] Add firmware version detection via WebSerial on App Manager page
-  [ ] Add fallback firmware version dropdown for manual selection on App Manager
-  [ ] Implement firmware ↔ app version check on App Manager (warning banner, never blocks)
-  [ ] Test: flash old Groovebox on new firmware → WebUI shows warning → app still runs
-  Deliverable: P4 knows which Pico app is running. WebUI and App Manager
-  show version info and soft warnings. No layer ever blocks the user.
-
-Phase 6 — App registry + App Manager catalog + Pico SD bundles
+Phase 5 — App registry + App Manager catalog + Pico SD bundles
   ─────────────────────────────────────────────────────────────
   Depends on: Phase 3 (30_app_manager.rst must exist as the
-  shell page) and Phase 5 (compatibility check must work).
+  shell page). Registry infrastructure and interactive App
+  Manager do NOT require AnnounceApp — install/remove apps,
+  sideload, system tools all work without firmware version
+  detection. AnnounceApp adds compatibility warnings later.
   ─────────────────────────────────────────────────────────────
   [ ] Add apps/ directory to dadamachines/dada-tbd-firmware
   [ ] Define manifest.schema.json and bundle.schema.json
@@ -5071,9 +5014,30 @@ Phase 6 — App registry + App Manager catalog + Pico SD bundles
   catalog, install/remove, sideload, and system tools. Pico SD bundle
   downloadable for restore/update scenarios.
 
+Phase 6 — AnnounceApp + firmware ↔ app compatibility
+  ─────────────────────────────────────────────────────────────
+  Depends on: Phase 2 (versioning scheme must exist so version
+  strings have meaning) and Phase 5 (App Manager page must exist
+  so compatibility warnings have somewhere to display).
+  This is P4 firmware + WebUI work, not repo infrastructure.
+  ─────────────────────────────────────────────────────────────
+  [ ] Merge announceApp from experimental branch into dada-tbd-master
+  [ ] Assign stable SPI command ID, document payload in SpiAPI.hpp
+  [ ] Add P4-side handler: store app identity (name, version, caps) in DeviceAPI
+  [ ] Add picoApp, picoVersion, picoCaps fields to /api/v2/device REST response
+  [ ] Add WebUI device info panel: show active Pico app name + version
+  [ ] Add picoAppCompat flag when app MAJOR.MINOR ≠ firmware MAJOR.MINOR
+  [ ] Add dismissible WebUI warning banner for compatibility mismatch
+  [ ] Add firmware version detection via WebSerial on App Manager page
+  [ ] Add fallback firmware version dropdown for manual selection on App Manager
+  [ ] Implement firmware ↔ app version check on App Manager (warning banner, never blocks)
+  [ ] Test: flash old Groovebox on new firmware → WebUI shows warning → app still runs
+  Deliverable: P4 knows which Pico app is running. WebUI and App Manager
+  show version info and soft warnings. No layer ever blocks the user.
+
 Phase 7 — Plugin adaptation + MultiFX
   ─────────────────────────────────────────────────────────────
-  Depends on: Phase 6 (MultiFX publishes to the app registry).
+  Depends on: Phase 5 (MultiFX publishes to the app registry).
   The .jsn → .json rename was done in Phase 1 — all files are
   already .json. This phase is purely plugin + RP2350 app work.
   ─────────────────────────────────────────────────────────────
@@ -5108,15 +5072,11 @@ Phase 1 ─── Clean slate (delete binaries + rename files + archive)       �
   ▼
 Phase 2 ─── CI pipeline + v0.4.0 + GitHub Releases                      ✅ DONE
   │
+  ▼
+Phase 3 ─── CDN repo + flash pages + staging channel                    ✅ DONE
   │
   ▼
-Phase 3 ─── CDN repo + flash pages + staging channel             ✅ DONE
-  │  ✅ CDN repo live
-  │  ✅ Stable Channel page live
-  │  ✅ v0.4.1 pipeline tested
-  │  ✅ Hardware flash tested (P4 + SD card)
-  │  ✅ CI patch verification added
-  │  ✅ Pico dispatch pipeline tested (app template → CDN → Pages)
+Phase 3c ── Artifact naming + contributor docs                           ✅ DONE
   │
   ▼
 Phase 4 ─── Kconfig guards + multi-target CI
@@ -5125,19 +5085,22 @@ Phase 4 ─── Kconfig guards + multi-target CI
 Phase 3b ── Git LFS + history rewrite + force-push (team re-clones once)
   │
   ▼
-Phase 5 ─── AnnounceApp + compatibility warnings
+Phase 5 ─── App registry + App Manager catalog         (was Phase 6)
   │
   ▼
-Phase 6 ─── App registry + App Manager catalog
+Phase 6 ─── AnnounceApp + compatibility warnings       (was Phase 5)
   │
   ▼
 Phase 7 ─── Plugin adaptation + MultiFX
 ```
 
-**Execution order: Phase 3 → Phase 4 → Phase 3b.** Phase 4 runs before
-Phase 3b so the Kconfig restructuring lands first. Phase 3b's re-clone
-then delivers the final codebase shape — contributors clone once, with
-Kconfig guards already in place. The team re-clones exactly once.
+**Execution order: Phase 4 → Phase 3b → Phase 5 → Phase 6.** Phase 4
+runs before Phase 3b so the Kconfig restructuring lands first. Phase 3b's
+re-clone then delivers the final codebase shape. Phase 5 (app registry)
+runs before Phase 6 (AnnounceApp) because the registry infrastructure
+and interactive App Manager page do not require firmware version detection
+— install/remove/sideload all work without it. AnnounceApp adds
+compatibility warnings on top of the working App Manager.
 
 ---
 
@@ -5155,14 +5118,16 @@ Kconfig guards already in place. The team re-clones exactly once.
 | Pico flash test (RP2350 WebUSB) | Low | RP2350 BOOTSEL → UF2 flash → reboot verified in browser | ✅ Phase 3 |
 | CI ESP-IDF patch verification | Low | Build fails if USB NCM / MMU patches missing | ✅ Phase 3 |
 | New flash pages (5 pages + shared JS) | Medium | 8,000 → 2,500 lines, zero code duplication | ✅ Phase 3 |
-| Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built | ✅ Phase 3 (staging) |
+| Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built | ✅ Phase 3 |
+| Artifact naming (dada-tbd branding) | Low | All artifacts carry dadamachines identity | ✅ Phase 3c |
+| Pico branch-based CI (5 workflows) | Low | Pico CI mirrors P4 architecture exactly | ✅ Phase 3c |
 | Git LFS for remaining binaries | Low | Fast clones for engineers | Phase 3b |
 | Branch cleanup (two long-lived branches) | Low | Cleaner repo, less confusion | ✅ Phase 1 |
 | Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | Phase 4 |
 | Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact | ✅ Phase 3 |
-| RP2350 app versioning + AnnounceApp design | Medium | App compatibility tracking, future app store | Phase 5 |
 | App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 5 |
-| Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 6 |
+| Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 5 |
+| RP2350 app versioning + AnnounceApp design | Medium | App compatibility tracking, future app store | Phase 6 |
 | `.jsn` → `.json` file extension rename | Low | 122 files renamed — ✅ DONE | ✅ Phase 1 |
 
 ### What stays the same
@@ -5188,18 +5153,18 @@ Kconfig guards already in place. The team re-clones exactly once.
 - Shared flash JS modules → **live** (`tbd-flasher-p4.js`, `tbd-flasher-rp2350.js`)
 - Hardware flash → **verified** (Path A + Path B tested on TBD-16, USB NCM working)
 - CI patch verification → **active** (build fails if ESP-IDF patches missing)
-
-**In progress (Phase 3):**
+- Staging + feature-test channels → **live** (both repos, branch-based CI)
+- Beta Channel flash page → **live** (`20_staging_channel.rst`, channel selector)
 - 10 flash pages with 5,000 duplicated lines → **5 pages + shared JS module**
-- No pre-release testing path → **staging channel** (CI-built, browser flash)
-- Pico flash from browser → **not yet tested** (deferred — device works without it)
+- Artifact naming → **dada-tbd branding** (Phase 3c)
+- Pico CI → **5 branch-based workflows** mirroring P4 (Phase 3c)
+- CONTRIBUTING.md → **published** (Phase 3c)
 
 **Planned:**
 - Git history → **rewrite** (Phase 3b — only 10 people re-clone)
 - Remaining binaries → **Git LFS** (fast clones)
-- No firmware/WebUI version coupling → **shared MAJOR.MINOR** (Phase 4)
 - Kconfig guards → **portable codebase** (Phase 4 — TBD-Core builds, upstream compatible)
-- P4 has no knowledge of Pico app → **AnnounceApp SPI command** (Phase 5)
-- Multi-app requires manual setup → **interactive App Manager page** (Phase 6)
-- No version check between P4 and Pico → **firmware ↔ app compatibility** (Phase 5-6)
+- App registry + App Manager → **interactive catalog** (Phase 5 — no firmware dependency)
+- P4 has no knowledge of Pico app → **AnnounceApp SPI command** (Phase 6)
+- No version check between P4 and Pico → **firmware ↔ app compatibility** (Phase 6)
 - All 57 plugins WebUI-only → **~15 plugins adapted for hardware UI** (Phase 7)
