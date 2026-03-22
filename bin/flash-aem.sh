@@ -21,7 +21,7 @@ else
 fi
 
 # Verify build artifacts exist
-for f in bootloader/bootloader.bin ctag-tbd.bin partition_table/partition-table.bin ota_data_initial.bin; do
+for f in bootloader/bootloader.bin dada-tbd.bin partition_table/partition-table.bin ota_data_initial.bin; do
     if [ ! -f "$BUILD_DIR/$f" ]; then
         echo "ERROR: Missing $BUILD_DIR/$f — run 'idf.py build' first."
         exit 1
@@ -36,7 +36,7 @@ esptool.py --chip esp32p4 -p "$PORT" -b 460800 \
     --before=default_reset --after=hard_reset \
     write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
     0x2000  "$BUILD_DIR/bootloader/bootloader.bin" \
-    0x10000 "$BUILD_DIR/ctag-tbd.bin" \
+    0x10000 "$BUILD_DIR/dada-tbd.bin" \
     0x8000  "$BUILD_DIR/partition_table/partition-table.bin" \
     0xd000  "$BUILD_DIR/ota_data_initial.bin"
 

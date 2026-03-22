@@ -5,8 +5,8 @@ SOURCE_DIR="$1"
 BUILD_DIR="$2"
 XXH128SUM="$3"
 
-SD_CARD_ZIP="${BUILD_DIR}/tbd-sd-card.zip"
-SD_CARD_HASH="${BUILD_DIR}/tbd-sd-card-hash.txt"
+SD_CARD_ZIP="${BUILD_DIR}/dada-tbd-sd.zip"
+SD_CARD_HASH="${BUILD_DIR}/dada-tbd-sd-hash.txt"
 VERSION_FILE="${BUILD_DIR}/.version"
 
 echo "Creating SD card archive..."

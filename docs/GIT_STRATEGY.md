@@ -81,13 +81,13 @@ dadamachines/dada-tbd-firmware (main)               ← firmware CDN
 │   ├── latest.json             ← channel manifest (tag, file paths)
 │   ├── p4/
 │   │   ├── dada-tbd-16-v0.4.1-unified.bin  ← P4 unified image (flash to 0x0)
-│   │   ├── ctag-tbd.bin        ← P4 app partition only
+│   │   ├── dada-tbd.bin         ← P4 app partition only
 │   │   ├── bootloader.bin
 │   │   ├── partition-table.bin
 │   │   ├── ota_data_initial.bin
 │   │   ├── tusb_msc.bin        ← USB MSC helper
-│   │   ├── tbd-sd-card.zip     ← P4 SD card image
-│   │   └── tbd-sd-card-hash.txt
+│   │   ├── dada-tbd-sd.zip     ← P4 SD card image
+│   │   └── dada-tbd-sd-hash.txt
 │   └── pico/
 │       └── dada-tbd-16-v0.4.1-pico.uf2    ← RP2350 Groovebox firmware
 ├── staging/                    ← (future — staging channel)
@@ -260,7 +260,7 @@ fetch directly from them. Instead, CI also pushes firmware to the dedicated
 **GitHub Release URLs** (for manual download, CLI tools, archival):
 ```
 https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.1/dada-tbd-16-v0.4.1-unified.bin
-https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.1/tbd-sd-card.zip
+https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.1/dada-tbd-sd.zip
 ```
 
 **CDN URLs** (for browser flash pages — same origin, no CORS issues):
@@ -268,7 +268,7 @@ https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.1/tbd-sd-card.zi
 https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-v0.4.1-unified.bin
 https://dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-16-v0.4.1-pico.uf2
 https://dadamachines.github.io/dada-tbd-firmware/stable/p4/tusb_msc.bin
-https://dadamachines.github.io/dada-tbd-firmware/stable/p4/tbd-sd-card.zip
+https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-sd.zip
 ```
 
 No firmware binaries committed to the main repo. The flash pages fetch from
@@ -414,7 +414,7 @@ image — the patches are applied automatically during the first build.
 
 ```
 build/
-├── ctag-tbd.bin                        ← main application firmware
+├── dada-tbd.bin                        ← main application firmware
 ├── bootloader/bootloader.bin           ← bootloader
 ├── partition_table/partition-table.bin  ← partition table
 ├── ota_data_initial.bin                ← OTA metadata
@@ -430,7 +430,7 @@ esptool.py merge_bin → docs/_static/firmware/p4/<name>-unified.bin
   0x2000  bootloader.bin
   0x8000  partition-table.bin
   0xd000  ota_data_initial.bin
-  0x10000 ctag-tbd.bin
+  0x10000 dada-tbd.bin
 ```
 
 ### Workflow: Build Firmware (`build-firmware.yml`)
@@ -501,7 +501,7 @@ jobs:
           name: firmware-${{ inputs.build_name }}
           retention-days: 90
           path: |
-            build/ctag-tbd.bin
+            build/dada-tbd.bin
             build/bootloader/bootloader.bin
             build/partition_table/partition-table.bin
             build/ota_data_initial.bin
@@ -766,12 +766,12 @@ no CORS) and populates the UI dynamically. No RST edits needed per build.
   "timestamp": "2026-03-21T20:23:17Z",
   "files": {
     "unified": "stable/p4/dada-tbd-16-v0.4.1-unified.bin",
-    "p4": "stable/p4/ctag-tbd.bin",
+    "p4": "stable/p4/dada-tbd.bin",
     "bootloader": "stable/p4/bootloader.bin",
     "partition_table": "stable/p4/partition-table.bin",
     "ota_data": "stable/p4/ota_data_initial.bin",
-    "sdcard": "stable/p4/tbd-sd-card.zip",
-    "hash": "stable/p4/tbd-sd-card-hash.txt",
+    "sdcard": "stable/p4/dada-tbd-sd.zip",
+    "hash": "stable/p4/dada-tbd-sd-hash.txt",
     "tusb_msc": "stable/p4/tusb_msc.bin",
     "pico": "stable/pico/dada-tbd-16-v0.4.1-pico.uf2"
   }
@@ -841,7 +841,7 @@ jobs:
           TAG="${{ steps.tag.outputs.name }}"
           # Unified P4 firmware
           mv release-assets/*-unified.bin "release-assets/${TAG}.bin" 2>/dev/null || \
-          mv release-assets/ctag-tbd.bin "release-assets/${TAG}.bin"
+          mv release-assets/dada-tbd.bin "release-assets/${TAG}.bin"
           # Pico firmware (if exists)
           if ls release-assets/*.uf2 2>/dev/null; then
             mv release-assets/*.uf2 "release-assets/${TAG}.uf2"
@@ -1238,7 +1238,7 @@ jobs:
         run: |
           NAME="${{ steps.meta.outputs.name }}"
           mv release-assets/*-unified.bin "release-assets/${NAME}.bin" 2>/dev/null || \
-          mv release-assets/ctag-tbd.bin "release-assets/${NAME}.bin"
+          mv release-assets/dada-tbd.bin "release-assets/${NAME}.bin"
           if ls release-assets/*.uf2 2>/dev/null; then
             mv release-assets/*.uf2 "release-assets/${NAME}.uf2"
           fi
@@ -1812,7 +1812,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: firmware-dada-${{ matrix.target.slug }}-p4
-          path: build/ctag-tbd.bin
+          path: build/dada-tbd.bin
 
       - name: Upload default Pico app
         uses: actions/upload-artifact@v4
@@ -4312,6 +4312,61 @@ Phase 3 — Flash pages + CDN + staging channel
      Release Archive built, all hardware tested, CI patch verification active.
      App Manager placeholder in place. WebUI docs covered by 70_webui_versions.
      compatRange in CDN manifest. MAJOR.MINOR check deferred to Phase 5.
+
+Phase 3c — Artifact naming + contributor documentation
+  ─────────────────────────────────────────────────────────────
+  Ships BEFORE Phase 3b (history rewrite) so that the re-clone
+  gives contributors clean naming and solid docs from day one.
+  ─────────────────────────────────────────────────────────────
+  Problem: Build artifacts were named after the upstream project
+  (ctag-tbd.bin, tbd-sd-card.zip). dadamachines ships its own
+  products (TBD-16, TBD-Core) — all artifacts must carry the
+  dadamachines identity, not the upstream project name.
+
+  [x] Rename CMake project: project(ctag-tbd) → project(dada-tbd)
+      - ESP-IDF now produces build/dada-tbd.bin instead of build/ctag-tbd.bin
+  [x] Rename SD card archive: tbd-sd-card.zip → dada-tbd-sd.zip
+      - CMakeLists.txt variables updated
+      - create_sd_archive.sh updated
+      - Firmware fs.cpp updated (hash file check at boot)
+  [x] Rename SD card hash: tbd-sd-card-hash.txt → dada-tbd-sd-hash.txt
+      - Firmware, build scripts, and flash pages all updated
+  [x] Update create_unified_p4_firmware.sh
+      - Default output: dada-tbd-unified.bin
+      - References build/dada-tbd.bin for merge
+  [x] Update build-firmware.yml artifact upload paths
+      - build/dada-tbd.bin, build/dada-tbd-sd.zip, build/dada-tbd-sd-hash.txt
+  [x] Update bin/flash.sh and bin/flash-aem.sh
+      - Flash command references dada-tbd.bin at 0x10000
+  [x] Update bin/readme.md flash address table
+  [x] Update sdcard_image/data/spm-config.json
+      - WiFi SSID: ctag-tbd → dada-tbd
+      - mDNS name: ctag-tbd → dada-tbd
+  [x] Update flash page UI — both 10_stable_channel.rst and 20_staging_channel.rst
+      - Button labels: "Flash ctag-tbd Firmware" → "Flash TBD-16 Firmware"
+      - Code labels: ctag-tbd.bin → dada-tbd.bin
+      - SD card asset matching: tbd-sd-card.zip → dada-tbd-sd.zip
+      - Hash file written to SD: tbd-sd-card-hash.txt → dada-tbd-sd-hash.txt
+      - Staging CDN URLs: tbd-sd-card.zip → dada-tbd-sd.zip
+  [x] Update tbd-deploy SKILL.md
+      - All esptool commands, copy commands, troubleshooting table
+  [x] Create CONTRIBUTING.md — comprehensive contributor guide
+      - Branch model (dada-tbd-master, staging, feature-test/*)
+      - Build instructions (ESP-IDF v5.5.3, flash with esptool)
+      - CI pipeline descriptions (ci, stable, staging, feature-test)
+      - CDN channel structure and manifest format
+      - Artifact naming convention (dada-tbd, not ctag-tbd)
+      - Submission workflow (fork → branch → PR)
+      - Post-history-rewrite re-clone instructions
+  [x] Update README.md — link to CONTRIBUTING.md
+  [ ] Update CDN receive-firmware.yml to use new filenames
+      → Requires updating the dadamachines/dada-tbd-firmware repo
+      → CDN must accept both old names (for existing releases) and new names
+  [ ] Tag release and verify end-to-end with new artifact names
+  Deliverable: All artifacts carry dadamachines branding. Contributors
+  have clear documentation for building, testing, and deploying. Ready
+  for Phase 3b history rewrite — the re-clone delivers a clean,
+  well-documented codebase.
 
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────

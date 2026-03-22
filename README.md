@@ -58,7 +58,9 @@ To build and preview the documentation (including the blog) on your local machin
 
 ## Contributing
 
-Contributions are welcome. Please open an issue or pull request. For plugin development, see the [Create Plugins](https://dadamachines.github.io/ctag-tbd/) section in the documentation.
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the
+full guide covering the branch model, CI pipelines, build instructions,
+and artifact naming conventions.
 
 ## Acknowledgements
 

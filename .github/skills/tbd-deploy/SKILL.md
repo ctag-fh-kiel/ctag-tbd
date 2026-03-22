@@ -17,7 +17,7 @@ Deploy firmware and/or WebUI to an ESP32-P4 TBD-16 device over USB.
 3. **NEVER use `idf.py -p PORT flash`** — same problem in any form.
 4. **NEVER flash `tusb_msc.bin` with esptool to `0x10000`** — overwrites main firmware.
 5. **NEVER leave device in ota_1 (MSC mode)** — it won't run main firmware.
-6. **NEVER make `.version` and `tbd-sd-card-hash.txt` different** — triggers destructive re-extraction at boot.
+6. **NEVER make `.version` and `dada-tbd-sd-hash.txt` different** — triggers destructive re-extraction at boot.
 7. **NEVER forget to eject SD before switching partitions** — corrupts FAT filesystem.
 8. **NEVER skip the switch back to ota_0** after MSC file operations.
 9. **NEVER `rm -rf` on SD card without `setopt rmstarsilent`** — zsh will prompt and block.
@@ -53,7 +53,7 @@ Deploy firmware and/or WebUI to an ESP32-P4 TBD-16 device over USB.
 | `0x2000` | `bootloader/bootloader.bin` | P4 bootloader (NOT `0x1000` like ESP32) |
 | `0x8000` | `partition_table/partition-table.bin` | Partition table |
 | `0xd000` | `ota_data_initial.bin` | Resets OTA state to boot from ota_0 |
-| `0x10000` | `ctag-tbd.bin` | Main firmware (ota_0 partition) |
+| `0x10000` | `dada-tbd.bin` | Main firmware (ota_0 partition) |
 
 ## The Correct Flash Command
 
@@ -66,7 +66,7 @@ esptool.py --chip esp32p4 -p "$PORT" -b 460800 \
   --before=default_reset --after=hard_reset \
   write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
   0x2000  build/bootloader/bootloader.bin \
-  0x10000 build/ctag-tbd.bin \
+  0x10000 build/dada-tbd.bin \
   0x8000  build/partition_table/partition-table.bin \
   0xd000  build/ota_data_initial.bin
 ```
@@ -106,7 +106,7 @@ esptool.py --chip esp32p4 -p "$PORT" -b 460800 \
   --before=default_reset --after=hard_reset \
   write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
   0x2000  build/bootloader/bootloader.bin \
-  0x10000 build/ctag-tbd.bin \
+  0x10000 build/dada-tbd.bin \
   0x8000  build/partition_table/partition-table.bin \
   0xd000  build/ota_data_initial.bin
 ```
@@ -149,7 +149,7 @@ esptool.py --chip esp32p4 -p "$PORT" -b 460800 \
   --before=default_reset --after=hard_reset \
   write_flash --flash_mode dio --flash_freq 80m --flash_size 16MB \
   0x2000  build/bootloader/bootloader.bin \
-  0x10000 build/ctag-tbd.bin \
+  0x10000 build/dada-tbd.bin \
   0x8000  build/partition_table/partition-table.bin \
   0xd000  build/ota_data_initial.bin
 ```
@@ -228,7 +228,7 @@ cp sdcard_image/www/js/app-bundle.js.gz "/Volumes/NO NAME/www/js/app-bundle.js.g
 cp sdcard_image/www/index.html.gz "/Volumes/NO NAME/www/index.html.gz"
 ```
 
-Copy only the files that changed. Do NOT touch `.version` or `tbd-sd-card-hash.txt`.
+Copy only the files that changed. Do NOT touch `.version` or `dada-tbd-sd-hash.txt`.
 
 ### Step 4 — Eject and switch back
 
@@ -269,7 +269,7 @@ bash create_sd_archive.sh \
   "$(which xxh128sum)"
 ```
 
-Produces `build/tbd-sd-card.zip` and `build/tbd-sd-card-hash.txt`.
+Produces `build/dada-tbd-sd.zip` and `build/dada-tbd-sd-hash.txt`.
 
 ### Step 3 — Switch to MSC mode
 
@@ -294,14 +294,14 @@ Verify empty: `ls -la "/Volumes/NO NAME/"`.
 ### Step 5 — Extract archive
 
 ```bash
-unzip -o build/tbd-sd-card.zip -d "/Volumes/NO NAME/"
+unzip -o build/dada-tbd-sd.zip -d "/Volumes/NO NAME/"
 ```
 
 ### Step 6 — Set hash files (BOTH must match)
 
 ```bash
-cp build/tbd-sd-card-hash.txt "/Volumes/NO NAME/tbd-sd-card-hash.txt"
-cp build/tbd-sd-card-hash.txt "/Volumes/NO NAME/.version"
+cp build/dada-tbd-sd-hash.txt "/Volumes/NO NAME/dada-tbd-sd-hash.txt"
+cp build/dada-tbd-sd-hash.txt "/Volumes/NO NAME/.version"
 ```
 
 ### Step 7 — Eject and switch back
@@ -352,7 +352,7 @@ bin/flash_ota_1.sh
 | Port not found | Different USB port or not connected | `ls /dev/cu.usb*` |
 | `/Volumes/NO NAME` doesn't mount | MSC boot takes longer | Wait 15-20s, `ls /Volumes/` |
 | `zsh: sure you want to delete` | zsh safety on `rm *` | `setopt rmstarsilent` first |
-| Hash mismatch → re-extraction at boot | `.version` ≠ `tbd-sd-card-hash.txt` | Copy same hash to both |
+| Hash mismatch → re-extraction at boot | `.version` ≠ `dada-tbd-sd-hash.txt` | Copy same hash to both |
 | 404 on WebUI | Missing `.gz` files | Verify all `.gz` assets on SD |
 | No network after switch | Boot still in progress | Wait 20-30s, re-check `ifconfig` |
 | Device stuck in MSC mode | Forgot switch back | `otatool.py --port $PORT switch_ota_partition --name ota_0` |

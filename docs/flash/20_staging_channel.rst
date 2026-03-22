@@ -324,11 +324,11 @@ or any active feature-test branch build.
         <div class="step-hdr"><span class="step-num" style="background:#0891B2;">1</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
           Connect the <b>front JTAG port</b> (USB-C&nbsp;#3) and keep <b>back Port&nbsp;#1</b> connected for power.
-          Click <b>Connect</b>, then flash <code id="fwNameA1">ctag-tbd.bin</code> to the ESP32-P4.
+          Click <b>Connect</b>, then flash <code id="fwNameA1">dada-tbd.bin</code> to the ESP32-P4.
         </div>
         <div class="btn-row">
           <button id="btnA1Connect" class="btn-primary" disabled>Loading…</button>
-          <button id="btnA1Flash" class="btn-success" disabled>Flash ctag-tbd Firmware</button>
+          <button id="btnA1Flash" class="btn-success" disabled>Flash TBD-16 Firmware</button>
         </div>
         <div class="progress-wrap" id="progA1"><div class="progress-bar" id="progA1Bar"></div><span class="progress-text" id="progA1Txt">0 %</span></div>
         <div class="status" id="statA1">Loading flash tool…</div>
@@ -434,7 +434,7 @@ or any active feature-test branch build.
         </div>
         <div class="btn-row">
           <button id="btn4Connect" class="btn-primary">Connect</button>
-          <button id="btn4Flash" class="btn-success" disabled>Flash ctag-tbd Firmware</button>
+          <button id="btn4Flash" class="btn-success" disabled>Flash TBD-16 Firmware</button>
         </div>
         <div class="progress-wrap" id="prog4"><div class="progress-bar" id="prog4Bar"></div><span class="progress-text" id="prog4Txt">0 %</span></div>
         <div class="status" id="stat4">Click <b>Connect</b> via the <b>front JTAG port</b>, then flash.</div>
@@ -580,8 +580,8 @@ or any active feature-test branch build.
           tag: data.tag_name,
           name: data.name,
           p4Url: base + 'dada-tbd-16-' + data.tag_name + '-unified.bin',
-          zipUrl: base + 'tbd-sd-card.zip',
-          hashUrl: base + 'tbd-sd-card-hash.txt',
+          zipUrl: base + 'dada-tbd-sd.zip',
+          hashUrl: base + 'dada-tbd-sd-hash.txt',
           htmlUrl: data.html_url
         };
       } else {
@@ -771,7 +771,7 @@ or any active feature-test branch build.
           onStatus: function (msg) { setStat(statA1, msg); }
         });
         btnA1Flash.disabled = false;
-        setStat(statA1, 'Connected to <b>' + ctxA1.chip + '</b>. Click <b>Flash ctag-tbd Firmware</b>.', 'ok');
+        setStat(statA1, 'Connected to <b>' + ctxA1.chip + '</b>. Click <b>Flash TBD-16 Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
         setStat(statA1, 'Connection failed: ' + e.message, 'err');
@@ -1090,10 +1090,10 @@ or any active feature-test branch build.
         } catch (ve) { errors++; log('ERR  .version: ' + ve.message); }
 
         try {
-          var hh = await dirHandle.getFileHandle('tbd-sd-card-hash.txt', { create: true });
+          var hh = await dirHandle.getFileHandle('dada-tbd-sd-hash.txt', { create: true });
           var hw = await hh.createWritable(); await hw.write(sdHash); await hw.close();
-          log('FILE tbd-sd-card-hash.txt  (' + sdHash + ')');
-        } catch (he) { log('ERR  tbd-sd-card-hash.txt: ' + he.message); }
+          log('FILE dada-tbd-sd-hash.txt  (' + sdHash + ')');
+        } catch (he) { log('ERR  dada-tbd-sd-hash.txt: ' + he.message); }
 
         /* Cleanup macOS files */
         setStat(stat2, 'Cleaning up metadata files…');
@@ -1169,7 +1169,7 @@ or any active feature-test branch build.
           onStatus: function (msg) { setStat(stat4, msg); }
         });
         btn4Flash.disabled = false;
-        setStat(stat4, 'Connected to <b>' + ctxB4.chip + '</b>. Click <b>Flash ctag-tbd Firmware</b>.', 'ok');
+        setStat(stat4, 'Connected to <b>' + ctxB4.chip + '</b>. Click <b>Flash TBD-16 Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
         setStat(stat4, 'Connection failed: ' + e.message, 'err');

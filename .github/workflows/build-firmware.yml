@@ -54,7 +54,7 @@ jobs:
       - name: Log firmware checksums
         run: |
           echo "=== Firmware SHA-256 checksums ==="
-          sha256sum build/ctag-tbd.bin
+          sha256sum build/dada-tbd.bin
           sha256sum build/bootloader/bootloader.bin
           sha256sum build/partition_table/partition-table.bin
           sha256sum build/ota_data_initial.bin
@@ -75,10 +75,10 @@ jobs:
           name: firmware-${{ inputs.build_name }}
           retention-days: 90
           path: |
-            build/ctag-tbd.bin
+            build/dada-tbd.bin
             build/bootloader/bootloader.bin
             build/partition_table/partition-table.bin
             build/ota_data_initial.bin
-            build/tbd-sd-card.zip
-            build/tbd-sd-card-hash.txt
+            build/dada-tbd-sd.zip
+            build/dada-tbd-sd-hash.txt
             docs/_static/firmware/p4/dada-tbd-16-${{ inputs.build_name }}-unified.bin

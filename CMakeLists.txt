@@ -40,7 +40,7 @@ idf_build_set_property(LINK_OPTIONS "-Wl,--undefined=__wrap_sdmmc_read_sectors" 
 idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=sdmmc_write_sectors" APPEND)
 idf_build_set_property(LINK_OPTIONS "-Wl,--undefined=__wrap_sdmmc_write_sectors" APPEND)
 
-project(ctag-tbd)
+project(dada-tbd)
 
 # this is global to all!
 #idf_build_set_property(COMPILE_OPTIONS -Wno-unused-local-typedefs -ffast-math APPEND) # -ffast-math -fno-finite-math-only https://stackoverflow.com/questions/22931147/stdisinf-does-not-work-with-ffast-math-how-to-check-for-infinity
@@ -64,8 +64,8 @@ configure_file(${CMAKE_SOURCE_DIR}/version.hpp.in ${CMAKE_BINARY_DIR}/gen_includ
 idf_build_set_property(INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/gen_include APPEND)
 
 # Create SD card zip archive and hash for embedded system
-set(SD_CARD_ZIP "${CMAKE_BINARY_DIR}/tbd-sd-card.zip")
-set(SD_CARD_HASH "${CMAKE_BINARY_DIR}/tbd-sd-card-hash.txt")
+set(SD_CARD_ZIP "${CMAKE_BINARY_DIR}/dada-tbd-sd.zip")
+set(SD_CARD_HASH "${CMAKE_BINARY_DIR}/dada-tbd-sd-hash.txt")
 
 # Find xxhash tool
 find_program(XXH128SUM xxh128sum REQUIRED)

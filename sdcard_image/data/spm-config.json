@@ -6,10 +6,10 @@
   ],
   "configuration": {
     "wifi": {
-      "ssid": "ctag-tbd",
+      "ssid": "dada-tbd",
       "pwd": "",
       "mode": "usbncm",
-      "mdns_name": "ctag-tbd",
+      "mdns_name": "dada-tbd",
       "ip": "192.168.4.1"
     },
     "ch01_daisy": "off",

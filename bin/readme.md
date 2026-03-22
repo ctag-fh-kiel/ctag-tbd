@@ -19,7 +19,7 @@ Requires ESP-IDF environment: `. ~/esp/esp-idf/export.sh`
 | `0x2000` | bootloader.bin |
 | `0x8000` | partition-table.bin |
 | `0xd000` | ota_data_initial.bin |
-| `0x10000` | ctag-tbd.bin (ota_0) |
+| `0x10000` | dada-tbd.bin (ota_0) |
 
 ## Pre-built binaries
 

@@ -470,8 +470,8 @@ static bool extract_zip_to_sd(const std::string& zip_path, const std::string& de
 
 static void check_and_update_sd_content(const std::string& base_path) {
     const std::string version_file = base_path + "/.version";
-    const std::string hash_file = base_path + "/tbd-sd-card-hash.txt";
-    const std::string zip_file = base_path + "/tbd-sd-card.zip";
+    const std::string hash_file = base_path + "/dada-tbd-sd-hash.txt";
+    const std::string zip_file = base_path + "/dada-tbd-sd.zip";
 
     std::string current_hash;
     std::string stored_hash;
@@ -480,11 +480,11 @@ static void check_and_update_sd_content(const std::string& base_path) {
     bool hash_exists = read_hash_file(hash_file, current_hash);
 
     if (!hash_exists) {
-        ESP_LOGW("FS", "No tbd-sd-card-hash.txt found, skipping update check");
+        ESP_LOGW("FS", "No dada-tbd-sd-hash.txt found, skipping update check");
         return;
     }
 
-    ESP_LOGI("FS", "Current hash from tbd-sd-card-hash.txt: %s", current_hash.c_str());
+    ESP_LOGI("FS", "Current hash from dada-tbd-sd-hash.txt: %s", current_hash.c_str());
 
     if (version_exists) {
         ESP_LOGI("FS", "Stored hash from .version: %s", stored_hash.c_str());
