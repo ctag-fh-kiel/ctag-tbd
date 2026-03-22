@@ -604,26 +604,26 @@ or any active feature-test branch build.
 
     /* Reset all steps when channel changes */
     function resetAllSteps() {
-      /* Path A */
-      btnA1Connect.disabled = true; btnA1Flash.disabled = true;
-      hideProg(progA1); setStat(statA1, 'Select a channel above.');
-      btnA2Connect.disabled = true; btnA2Flash.disabled = true; btnA2Reboot.disabled = true;
+      /* Path A — Connect buttons stay enabled; only action buttons reset */
+      btnA1Connect.disabled = false; btnA1Flash.disabled = true;
+      hideProg(progA1); setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>.');
+      btnA2Connect.disabled = false; btnA2Flash.disabled = true; btnA2Reboot.disabled = true;
       hideProg(progA2); setStat(statA2, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
       cardDoneA.style.display = 'none';
 
-      /* Path B */
-      btn1Connect.disabled = true; btn1Go.disabled = true;
-      btn2Pick.disabled = true;
-      btn3Connect.disabled = true; btn3Go.disabled = true;
-      btn4Connect.disabled = true; btn4Flash.disabled = true;
-      btn5Connect.disabled = true; btn5Flash.disabled = true; btn5Reboot.disabled = true;
-      skip1.style.display = 'none';
+      /* Path B — Connect buttons + SD picker stay enabled */
+      btn1Connect.disabled = false; btn1Go.disabled = true;
+      btn2Pick.disabled = false;
+      btn3Connect.disabled = false; btn3Go.disabled = true;
+      btn4Connect.disabled = false; btn4Flash.disabled = true;
+      btn5Connect.disabled = false; btn5Flash.disabled = true; btn5Reboot.disabled = true;
+      skip1.style.display = 'inline-block';
       hideProg(prog1); hideProg(prog2); hideProg(prog4); hideProg(prog5);
-      setStat(stat1, 'Select a channel above.');
-      setStat(stat2, 'Complete Step 1 first.');
-      setStat(stat3, 'Complete Step 2 first.');
-      setStat(stat4, 'Complete Step 3 first.');
-      setStat(stat5, 'Complete Step 4 first.');
+      setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB-C cables are connected.');
+      setStat(stat2, 'Select the <b>"NO NAME"</b> SD card drive.');
+      setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b> via the front JTAG port.');
+      setStat(stat4, '<b>Power-cycle the device</b>, then click <b>Connect</b>.');
+      setStat(stat5, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
       fileLog.style.display = 'none'; fileLog.textContent = '';
       cardDone.style.display = 'none';
 
@@ -658,17 +658,6 @@ or any active feature-test branch build.
 
         /* Show path chooser */
         $('cardPathChooser').style.display = 'block';
-
-        /* Enable Path A */
-        btnA1Connect.textContent = 'Connect';
-        btnA1Connect.disabled = false;
-        setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>. Keep <b>back Port\u00a0#1</b> connected for power.');
-
-        /* Enable Path B */
-        btn1Connect.textContent = 'Connect';
-        btn1Connect.disabled = false;
-        skip1.style.display = 'inline-block';
-        setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB-C cables are connected: <b>front JTAG port</b> (serial) and <b>back Port\u00a0#1</b> (SD card drive).');
       } catch (e) {
         console.error(e);
         setStat($('statPkg'), 'Failed to load channel <b>' + channelName + '</b>: ' + e.message, 'err');
@@ -806,7 +795,6 @@ or any active feature-test branch build.
         setStat(statA1, '✓ ESP32-P4 firmware updated.', 'ok');
 
         if (PICO_UF2_URL) {
-          btnA2Connect.disabled = false;
           setStat(statA2, '<b>Connect back USB-C Port&nbsp;#2</b>, put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
         } else {
           setStat(statA2, 'No Pico firmware available — skip this step.', 'info');
@@ -955,7 +943,6 @@ or any active feature-test branch build.
         if (remaining <= 0) {
           clearInterval(iv);
           hideProg(prog1);
-          btn2Pick.disabled = false;
           setStat(stat1, '✓ Ready. Look for the <b>"NO NAME"</b> drive.', 'ok');
           setStat(stat2, 'Select the <b>"NO NAME"</b> SD card drive below.');
         }
@@ -1121,7 +1108,6 @@ or any active feature-test branch build.
         } else {
           setStat(stat2, '✓ <b>' + written + '</b> files written. <b>⏏ Please safely eject the drive</b> before proceeding.', 'ok');
         }
-        btn3Connect.disabled = false;
         setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b> via the front JTAG port.');
       } catch (e) {
         console.error(e);
@@ -1161,7 +1147,6 @@ or any active feature-test branch build.
         await resetDevice(ctxB3);
         await disconnectP4(ctxB3); ctxB3 = null;
 
-        btn4Connect.disabled = false;
         setStat(stat3, '✓ Switched to normal mode.', 'ok');
         setStat(stat4, '<b>Power-cycle the device</b>: unplug back Port&nbsp;#1, wait 3 s, replug. Then click <b>Connect</b>.');
       } catch (e) {
@@ -1208,7 +1193,6 @@ or any active feature-test branch build.
         setStat(stat4, '✓ ESP32-P4 firmware updated. <b>Remove all USB cables</b>, wait 3 s, reconnect via back Port&nbsp;#1.', 'ok');
 
         if (PICO_UF2_URL) {
-          btn5Connect.disabled = false;
           setStat(stat5, '<b>Connect back USB-C Port&nbsp;#2</b>, put RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
         } else {
           setStat(stat5, 'No Pico firmware available — skip this step.', 'info');
