@@ -1960,9 +1960,14 @@ serve — P4 firmware, Pico apps, and the app catalog.
 
 Why combine instead of separate:
 
-- **Same-origin delivery** — flash pages already load from
-  `dadamachines.github.io/dada-tbd-firmware/`; adding app metadata there
-  avoids CORS complexity and extra repos.
+- **Same-origin delivery** — flash pages and the App Manager load from
+  `dadamachines.github.io/dada-tbd-firmware/`. All binaries (P4 firmware,
+  Pico `.uf2` files, app `.uf2` files) **must be served from this origin**
+  because GitHub Release download URLs do not set `Access-Control-Allow-Origin`
+  headers — browsers cannot `fetch()` across origins. CI workflows download
+  binaries server-side (Actions runner, no CORS) and commit them into the
+  CDN repo. The App Manager then fetches everything from Pages — same origin,
+  no CORS issues.
 - **Security by workflow** — P4 firmware arrives exclusively via
   `repository_dispatch` (requires a fine-grained PAT). App manifests arrive
   via reviewed PRs. Different trust models, same repo, enforced by workflow
@@ -2060,7 +2065,8 @@ what it's compatible with:
       "version": "0.4.0",
       "firmwareCompat": "0.4",
       "date": "2026-03-20",
-      "downloadUrl": "https://github.com/possan/tbd-pico-seq3/releases/download/v0.4.0/groovebox.uf2",
+      "sourceUrl": "https://github.com/possan/tbd-pico-seq3/releases/download/v0.4.0/groovebox.uf2",
+      "cdnPath": "apps/groovebox/groovebox-0.4.0.uf2",
       "sha256": "a1b2c3d4...",
       "size": 524288,
       "changelog": "Initial release for TBD-16 v0.4.0"
@@ -2076,14 +2082,36 @@ Key fields:
 | `id` | Machine-readable slug, matches folder name |
 | `sdFilename` | What the file is called on the SD card (`/tbd-apps/groovebox.uf2`) |
 | `releases[].firmwareCompat` | MAJOR.MINOR — which firmware train this works with |
-| `releases[].downloadUrl` | Direct link to `.uf2` on the app's own GitHub Releases |
+| `releases[].sourceUrl` | Where the binary came from (contributor's GitHub Release) — for audit ||
+| `releases[].cdnPath` | Local CDN path served by GitHub Pages (set by CI, not contributor) |
 | `releases[].sha256` | Integrity check — CI verifies this on bundle assembly |
 | `category` | `instrument`, `utility`, `effect`, `sequencer` |
 
-**The actual .uf2 binaries are NOT stored in the registry repo.** They live
-as GitHub Release assets on each app's own repository. The registry only
-stores metadata + download pointers. This keeps the registry lightweight
-and lets app developers own their build/release process.
+**All .uf2 binaries are stored in the CDN repo** — committed by CI
+workflows after download and SHA-256 verification. This is required
+because GitHub Release download URLs do not send CORS headers, so the
+browser-based App Manager page (on `dadamachines.github.io`) cannot
+fetch binaries from a different origin like `github.com/.../releases/`.
+
+The manifest's `sourceUrl` field records where the binary came from
+(the app's GitHub Release) for audit/provenance. The `cdnPath` field
+points to the local CDN copy that the App Manager actually fetches:
+
+```json
+"releases": [{
+  "version": "0.4.0",
+  "sourceUrl": "https://github.com/possan/tbd-pico-seq3/releases/download/v0.4.0/groovebox.uf2",
+  "cdnPath": "apps/groovebox/groovebox-0.4.0.uf2",
+  "sha256": "a1b2c3d4...",
+  "size": 524288
+}]
+```
+
+CI workflows populate `cdnPath` automatically — the contributor never
+needs to set it. For Profile A (dispatch), the `receive-pico-app.yml`
+workflow commits the binary. For Profile B (PR), the `build-catalog.yml`
+workflow downloads from `sourceUrl`, verifies SHA-256, and commits the
+binary alongside the catalog update.
 
 #### Bundle definition format
 
@@ -2310,7 +2338,8 @@ and (optionally) communicates with the P4 via SPI.
 │                                                          │
 │  validate-pr.yml runs automatically:                     │
 │  ✓ Validate manifest.json against schema                 │
-│  ✓ Download .uf2 from the release URL                    │
+│  ✓ Download .uf2 from the sourceUrl (server-side, no     │
+│    CORS issue — runs on GitHub Actions runner)            │
 │  ✓ Verify SHA-256 matches                                │
 │  ✓ Check file size is reasonable (< 2 MB)                │
 │  ✓ Verify firmwareCompat range is valid                  │
@@ -2319,13 +2348,19 @@ and (optionally) communicates with the P4 via SPI.
                       │
                       ▼  dadamachines reviews & merges
 ┌─────────────────────────────────────────────────────────┐
-│  build-catalog.yml runs:                                 │
-│  - Regenerates app-catalog.json from all manifests       │
-│  - deploy-pages.yml publishes to GitHub Pages            │
+│  build-catalog.yml runs on push to main:                 │
+│  1. For each app with a sourceUrl:                       │
+│     - Download .uf2 from sourceUrl (server-side)         │
+│     - Verify SHA-256                                     │
+│     - Commit binary to apps/{id}/{id}-{ver}.uf2          │
+│     - Set cdnPath in manifest                            │
+│  2. Regenerate app-catalog.json from all manifests       │
+│  3. Commit catalog + binaries                            │
+│  4. Deploy to GitHub Pages                               │
 │                                                          │
-│  App is now in the catalog:                              │
+│  App is now in the catalog + binary on same origin:      │
 │  - Listed on the App Manager page                        │
-│  - Available for individual download                     │
+│  - Binary served from dadamachines.github.io (no CORS)   │
 │  - Eligible for inclusion in official bundles            │
 └─────────────────────────────────────────────────────────┘
 ```

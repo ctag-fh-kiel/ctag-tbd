@@ -439,7 +439,109 @@ code is changed.
 
 ---
 
+## Building RP2350 Apps (Pico Side)
+
+The TBD-16 has a second processor — an RP2350 — that runs the user
+interface, MIDI I/O, and display. You can build custom apps for it.
+
+### Quick Start
+
+1. **Fork** [`dadamachines/dada-tbd-app-template`](https://github.com/dadamachines/dada-tbd-app-template)
+2. Clone your fork and install [PlatformIO](https://platformio.org/)
+3. Build: `pio run -e pi2350`
+4. Flash: enter BOOTSEL mode (hold right front button on USB-C #2), drag `firmware.uf2` onto the USB drive
+
+The template is the recommended starting point, but you can use **any
+RP2350 toolchain** — Pico SDK, Arduino IDE, Rust, etc. Any toolchain that
+produces a valid `.uf2` binary works.
+
+### Publishing Your App to the App Catalog
+
+There are two paths depending on your relationship with dadamachines:
+
+#### Path A — Trusted collaborator (dispatch)
+
+For internal contributors with `PICO_CDN_TOKEN` access (e.g. possan).
+Your CI runs a `publish-cdn` job that dispatches the `.uf2` directly to
+the CDN repo on tagged releases:
+
+```bash
+# In your app repo, tag a release:
+git tag v1.0.0
+git push origin v1.0.0
+# → CI builds .uf2 → dispatches to CDN → binary lands on Pages
+```
+
+The template repo includes the `publish-cdn` job in its CI workflow.
+You need a `PICO_CDN_TOKEN` secret — ask dadamachines for one.
+
+#### Path B — External contributor (manifest PR)
+
+For anyone building RP2350 apps:
+
+1. **Build** your app and **create a GitHub Release** with the `.uf2` attached
+2. **Note the SHA-256**: `sha256sum my-app.uf2`
+3. **Open a PR** to [`dadamachines/dada-tbd-firmware`](https://github.com/dadamachines/dada-tbd-firmware)
+   adding `apps/your-app/manifest.json`:
+
+```json
+{
+  "id": "your-app",
+  "name": "Your App Name",
+  "description": "What it does",
+  "author": { "name": "Your Name", "github": "your-username" },
+  "repo": "https://github.com/your-username/your-app-repo",
+  "license": "MIT",
+  "tier": "community",
+  "category": "instrument",
+  "sdFilename": "your-app.uf2",
+  "releases": [{
+    "version": "1.0.0",
+    "firmwareCompat": "0.4",
+    "date": "2026-03-22",
+    "sourceUrl": "https://github.com/your-username/your-repo/releases/download/v1.0.0/your-app.uf2",
+    "sha256": "abc123...",
+    "size": 524288,
+    "changelog": "Initial release"
+  }]
+}
+```
+
+4. **CI validates** your PR automatically (schema check, downloads binary, verifies SHA-256)
+5. **dadamachines reviews and merges** — the binary is committed to the CDN
+   repo and served from GitHub Pages (same origin as the App Manager, no
+   CORS issues)
+
+> **Why does the binary need to be in the CDN repo?**
+> GitHub Release download URLs don't set `Access-Control-Allow-Origin`
+> headers. The browser-based App Manager on `dadamachines.github.io` can
+> only fetch files from the same origin. CI downloads the binary server-side
+> (no CORS) and commits it to the CDN repo so it's served from Pages.
+
+### Sideloading (no catalog needed)
+
+You don't need the catalog to run your app. Just build and flash:
+
+```bash
+# Build
+pio run -e pi2350
+
+# Flash (standalone mode — replaces current app)
+# Enter BOOTSEL mode → drag firmware.uf2 onto USB drive
+
+# Or with PlatformIO upload:
+pio run -t upload
+```
+
+Sideloaded apps have the same SPI API access as catalog apps — no
+capability difference. The catalog is for sharing, not for running.
+
+---
+
 ## License
 
 This project is licensed under the terms in [LICENSE](LICENSE). Core platform
 code is GPLv3 (inherited from upstream CTAG TBD).
+
+The [RP2350 App Template](https://github.com/dadamachines/dada-tbd-app-template)
+is licensed under LGPL 3.0 — your app code is yours under your license.
