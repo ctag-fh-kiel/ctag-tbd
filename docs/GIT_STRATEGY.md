@@ -3902,13 +3902,19 @@ migration every JSON file in the project has the standard extension.
 ### Target branch structure
 
 ```
-dada-tbd-master     ← stable releases (production)
-                       CI builds + deploys docs on every push
-                       no gh-pages branch needed (artifact-based deploy)
+dada-tbd-master          ← stable releases (production)
+                            CI builds + deploys docs on every push
+                            no gh-pages branch needed (artifact-based deploy)
 
-staging             ← pre-release builds (testing)
-                       CI builds + publishes to GitHub Releases
-                       manifest auto-updates → staging flash page
+staging                  ← pre-release builds (testing)
+                            CI builds + publishes to GitHub Releases
+                            manifest auto-updates → staging flash page
+
+feature-test/*           ← ad-hoc feature builds (ephemeral)
+                            CI builds + publishes per-feature CDN channel
+                            engineers flash directly from Beta Channel page
+
+feature-test/test-pipeline  ← kept as reference example of the workflow
 ```
 
 ### Branches to archive or delete
@@ -3921,6 +3927,7 @@ staging             ← pre-release builds (testing)
 | `p4_main_sdonly` | Archive tag + delete | Historical |
 | `perf_test` | Delete (local only) | One-off testing; not on origin |
 | `feature/*` | Delete (local only) | Should live in contributor forks; not on origin |
+| `feature-test/test-pipeline` | **Keep** | Reference example of the feature-test channel workflow; proves the pipeline end-to-end |
 | `legacy-master-1.0.0` | Keep as tag | Preserve as `v1.0.0` tag, delete branch |
 
 Preserve history before deleting:
@@ -4365,6 +4372,10 @@ Phase 3c — Artifact naming + contributor documentation
       - tusb_msc.bin seed-from-stable logic added for new channels
       - All 3 channels renamed: stable, staging, feature-test-test-pipeline
       - Manifests updated, 27/27 files verified (0 missing)
+  [x] Fast-forward staging and feature-test/test-pipeline to dada-tbd-master
+      - Both branches were strict ancestors (no unique commits)
+      - Fast-forward merge ensures CI builds produce new-named artifacts
+      - Pushed both branches to origin
   [ ] Tag release and verify end-to-end with new artifact names
   Deliverable: All artifacts carry dadamachines branding. Contributors
   have clear documentation for building, testing, and deploying. Ready
