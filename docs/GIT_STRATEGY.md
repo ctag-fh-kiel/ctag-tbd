@@ -4359,9 +4359,12 @@ Phase 3c — Artifact naming + contributor documentation
       - Submission workflow (fork → branch → PR)
       - Post-history-rewrite re-clone instructions
   [x] Update README.md — link to CONTRIBUTING.md
-  [ ] Update CDN receive-firmware.yml to use new filenames
-      → Requires updating the dadamachines/dada-tbd-firmware repo
-      → CDN must accept both old names (for existing releases) and new names
+  [x] Update CDN receive-firmware.yml to use new filenames
+      - dadamachines/dada-tbd-firmware: receive-firmware.yml updated
+      - All cp commands, pico seed logic, and manifest template updated
+      - tusb_msc.bin seed-from-stable logic added for new channels
+      - All 3 channels renamed: stable, staging, feature-test-test-pipeline
+      - Manifests updated, 27/27 files verified (0 missing)
   [ ] Tag release and verify end-to-end with new artifact names
   Deliverable: All artifacts carry dadamachines branding. Contributors
   have clear documentation for building, testing, and deploying. Ready
