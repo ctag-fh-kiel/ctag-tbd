@@ -13,8 +13,9 @@ file copying.
   fine-grained GitHub PAT scoped to `dadamachines/dada-tbd-firmware`
   with Contents: write permission. You don't need to create or manage it.
 
-- **CDN `receive-pico-app.yml`** is live in the CDN repo. It receives
-  dispatch events, verifies SHA-256, and commits the `.uf2` to the CDN.
+- **CI pipeline** is already configured on the `ci/cdn-pipeline` branch.
+  The `publish-cdn` job pushes directly to the CDN repo using the token —
+  no intermediate dispatch workflow needed.
 
 ---
 
@@ -49,94 +50,10 @@ pins, missing SD card reset, wrong LED count, and no SPI flow control.
 
 ---
 
-## What you need to do
+## The complete workflow
 
-### 1. Update your CI to build `possan_rev_c`
-
-Your current `.github/workflows/build_firmware.yml` builds the `pi2350`
-environment. Change it to build `possan_rev_c`:
-
-```diff
-      - name: Build Firmware
--       run: pio run -e pi2350
-+       run: pio run -e possan_rev_c
-
-      - name: Upload Firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: tbd_frontend
-          path: |
--           .pio/build/pi2350/firmware.bin
--           .pio/build/pi2350/firmware.uf2
-+           .pio/build/possan_rev_c/firmware.bin
-+           .pio/build/possan_rev_c/firmware.uf2
-          overwrite: true
-```
-
-### 2. Add the `publish-cdn` job
-
-Add this job **after** your existing `build` job (same indentation level
-as `build:`):
-
-```yaml
-  # ────────────────────────────────────────────────────────────
-  # Publish to dadamachines firmware CDN on tagged releases.
-  # Requires PICO_CDN_TOKEN secret (already installed).
-  # Normal pushes (no tag) skip this job entirely.
-  # ────────────────────────────────────────────────────────────
-  publish-cdn:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check for CDN token
-        id: check
-        run: |
-          if [ -z "${{ secrets.PICO_CDN_TOKEN }}" ]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::PICO_CDN_TOKEN not set — skipping CDN publish"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Download build artifact
-        if: steps.check.outputs.skip != 'true'
-        uses: actions/download-artifact@v4
-        with:
-          name: tbd_frontend
-          path: pico-artifact
-
-      - name: Compute SHA-256
-        if: steps.check.outputs.skip != 'true'
-        id: sha
-        run: |
-          SHA=$(sha256sum pico-artifact/firmware.uf2 | cut -d' ' -f1)
-          echo "sha256=${SHA}" >> "$GITHUB_OUTPUT"
-          echo "SHA-256: $SHA"
-
-      - name: Dispatch to CDN
-        if: steps.check.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PICO_CDN_TOKEN }}
-          repository: dadamachines/dada-tbd-firmware
-          event-type: pico-app-update
-          client-payload: >-
-            {
-              "channel": "stable",
-              "app_id": "groovebox",
-              "version": "${{ github.ref_name }}",
-              "run_id": "${{ github.run_id }}",
-              "sha256": "${{ steps.sha.outputs.sha256 }}",
-              "repository": "${{ github.repository }}",
-              "artifact_name": "tbd_frontend"
-            }
-```
-
-> **Important:** `app_id` is hardcoded to `"groovebox"` — this is the
-> app slug used in the CDN. Don't change it.
-
-### 3. Your complete workflow should look like this
+Your `.github/workflows/build_firmware.yml` should look like this
+(already configured on the `ci/cdn-pipeline` branch):
 
 ```yaml
 name: build tbd firmware
@@ -167,12 +84,17 @@ jobs:
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
-          name: tbd_frontend
+          name: groovebox-firmware
           path: |
             .pio/build/possan_rev_c/firmware.bin
             .pio/build/possan_rev_c/firmware.uf2
           overwrite: true
 
+  # ────────────────────────────────────────────────────────────
+  # Publish to dadamachines firmware CDN on tagged releases.
+  # Pushes the .uf2 directly to the CDN repo using PICO_CDN_TOKEN.
+  # Normal pushes (no tag) skip this job entirely.
+  # ────────────────────────────────────────────────────────────
   publish-cdn:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
@@ -192,7 +114,7 @@ jobs:
         if: steps.check.outputs.skip != 'true'
         uses: actions/download-artifact@v4
         with:
-          name: tbd_frontend
+          name: groovebox-firmware
           path: pico-artifact
 
       - name: Compute SHA-256
@@ -203,26 +125,75 @@ jobs:
           echo "sha256=${SHA}" >> "$GITHUB_OUTPUT"
           echo "SHA-256: $SHA"
 
-      - name: Dispatch to CDN
+      - name: Push to CDN
         if: steps.check.outputs.skip != 'true'
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PICO_CDN_TOKEN }}
-          repository: dadamachines/dada-tbd-firmware
-          event-type: pico-app-update
-          client-payload: >-
-            {
-              "channel": "stable",
-              "app_id": "groovebox",
-              "version": "${{ github.ref_name }}",
-              "run_id": "${{ github.run_id }}",
-              "sha256": "${{ steps.sha.outputs.sha256 }}",
-              "repository": "${{ github.repository }}",
-              "artifact_name": "tbd_frontend"
-            }
+        env:
+          CDN_TOKEN: ${{ secrets.PICO_CDN_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+          SHA256: ${{ steps.sha.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+
+          CHANNEL="stable"
+          APP_ID="groovebox"
+          CDN_REPO="dadamachines/dada-tbd-firmware"
+
+          # Clone CDN repo (shallow, single branch)
+          git clone --depth 1 \
+            "https://x-access-token:${CDN_TOKEN}@github.com/${CDN_REPO}.git" cdn
+          cd cdn
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Place .uf2 in channel pico directory
+          mkdir -p "${CHANNEL}/pico"
+          cp -f ../pico-artifact/firmware.uf2 \
+            "${CHANNEL}/pico/dada-tbd-pico.uf2"
+          cp -f ../pico-artifact/firmware.uf2 \
+            "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2"
+
+          # Also place in apps/ directory for catalog
+          mkdir -p "apps/${APP_ID}"
+          cp -f ../pico-artifact/firmware.uf2 \
+            "apps/${APP_ID}/${APP_ID}-${VERSION#v}.uf2"
+
+          # Update latest.json pico fields
+          if [ -f "${CHANNEL}/latest.json" ]; then
+            TMP=$(mktemp)
+            jq --arg pico "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2" \
+               --arg ver "${VERSION}" \
+               '.files.pico = $pico | .picoVersion = $ver' \
+               "${CHANNEL}/latest.json" > "$TMP" \
+               && mv "$TMP" "${CHANNEL}/latest.json"
+          fi
+
+          # Write pico version file
+          echo "${VERSION}" > "${CHANNEL}/pico/pico-version.txt"
+
+          # Commit and push
+          git add -A
+          git diff --cached --quiet \
+            && echo "No changes to commit" && exit 0
+          git commit -m \
+            "Pico app: ${APP_ID} ${VERSION} → ${CHANNEL} [sha256:${SHA256:0:12}]"
+          git push
+
+          echo "Published ${APP_ID} ${VERSION} to ${CHANNEL} channel"
+          echo "  SHA-256: ${SHA256}"
 ```
 
-### 4. Building locally
+### How it works
+
+The `publish-cdn` job pushes directly to the CDN repo —
+no intermediate `receive-pico-app.yml` dispatch needed. This is simpler
+and avoids the cross-repo artifact download problem (GitHub's
+`GITHUB_TOKEN` can't download artifacts from private repos).
+
+The `PICO_CDN_TOKEN` has Contents: write permission on the CDN repo,
+so possan's CI can clone, commit, and push in one step.
+
+### Building locally
 
 ```bash
 # Build the shipping firmware:
@@ -264,12 +235,12 @@ git tag v0.4.2
 git push origin v0.4.2
 ```
 
-Johannes tags the P4 repo within minutes. Both dispatches arrive at the
+Johannes tags the P4 repo within minutes. Both pushes arrive at the
 CDN independently — the Stable Channel flash page shows both versions.
 
 ### After tagging
 
-Verify both dispatches landed:
+Verify both pushes landed:
 ```bash
 curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/latest.json \
   | python3 -c "import sys,json; d=json.load(sys.stdin); \
@@ -292,9 +263,9 @@ git push origin v0.4.2
 What happens:
 1. **Your CI** builds `possan_rev_c` (the Rev C shipping firmware)
 2. **`publish-cdn` job** fires (because the tag starts with `v`)
-3. It computes the SHA-256 of `firmware.uf2` and dispatches to the CDN
-4. **CDN `receive-pico-app.yml`** downloads your artifact, verifies the
-   SHA-256 matches, and commits the `.uf2` to the CDN
+3. It computes the SHA-256 of `firmware.uf2`
+4. It clones the CDN repo, places the `.uf2`, updates `latest.json`,
+   and pushes — all in one step
 5. GitHub Pages deploys — the binary is now live at:
    - `dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-pico.uf2`
    - `dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-16-v0.4.2-pico.uf2`
@@ -314,12 +285,12 @@ of the `if: startsWith(github.ref, 'refs/tags/v')` condition.
 
 ## How to verify it worked
 
-After tagging, check these two Actions pages:
+After tagging, check:
 
 1. **Your repo:** `github.com/possan/tbd-pico-seq3/actions` — both
    `build` and `publish-cdn` jobs should be green
-2. **CDN repo:** `github.com/dadamachines/dada-tbd-firmware/actions` —
-   look for a "Receive Pico App" run triggered by your dispatch
+2. **CDN repo:** `github.com/dadamachines/dada-tbd-firmware` — look for
+   a commit from `github-actions[bot]` with the version in the message
 
 Then verify the file is served:
 ```bash
@@ -335,9 +306,8 @@ You should see `HTTP/2 200` with a non-zero `content-length`.
 |---------|-------|-----|
 | `publish-cdn` job skipped | Tag doesn't start with `v` | Use `v0.4.2`, not `0.4.2` |
 | "PICO_CDN_TOKEN not set" notice | Secret missing or misspelled | Check repo Settings → Secrets → `PICO_CDN_TOKEN` |
-| CDN run shows "SHA-256 mismatch" | Artifact was re-built between jobs | Re-tag and push (delete old tag first) |
-| CDN run shows 404 downloading artifact | Cross-repo artifact access issue | Ask dadamachines to check — may need token adjustment |
-| CDN run doesn't appear at all | Dispatch failed silently | Check the `publish-cdn` job logs for errors in the Dispatch step |
+| Push to CDN fails with 403 | Token expired or permissions changed | Ask dadamachines to regenerate `PICO_CDN_TOKEN` |
+| CDN commit appears but Pages not updated | Pages deploy was cancelled by concurrency | Re-run the Deploy Pages workflow in CDN repo Actions tab |
 | Build fails with missing SPI pin | Wrong environment | Make sure CI builds `possan_rev_c`, not `pi2350` |
 
 ---

@@ -2200,7 +2200,7 @@ The key difference is **trust level and delivery mechanism**:
 |--------|------------------------|----------------------|
 | **Chips** | ESP32-P4 + RP2350 | RP2350 only |
 | **P4 repo access** | Push to branches | None needed |
-| **Pico delivery** | `repository_dispatch` to CDN | Manifest PR to CDN |
+| **Pico delivery** | Direct push to CDN via `PICO_CDN_TOKEN` | Manifest PR to CDN |
 | **CDN secret** | Has `PICO_CDN_TOKEN` | No CDN secret |
 | **Channel coupling** | Same branch → same channel | Stable only (or staging by request) |
 | **Review model** | Trusted; dispatch lands automatically | PR reviewed by dadamachines |
@@ -2221,21 +2221,19 @@ by **convention**: same branch name in both repos → same CDN channel.
 │  1. Develop on a feature/fix branch                              │
 │  2. Push → CI builds firmware.uf2 (PlatformIO)                   │
 │  3. Tag vX.Y.Z → CI runs publish-cdn job                         │
-│     (repository_dispatch to dada-tbd-firmware)                   │
+│     (direct push to dada-tbd-firmware via PICO_CDN_TOKEN)        │
 └──────────────────────┬───────────────────────────────────────────┘
-                       │  dispatch event: pico-app-update
-                       │  payload: { channel, app_id, version, ... }
+                       │  git clone + commit + push
+                       │  using PICO_CDN_TOKEN (Contents: write)
                        ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │  dadamachines/dada-tbd-firmware                                   │
-│  receive-pico-app.yml                                            │
+│  (direct commit from possan's CI)                                │
 │                                                                  │
-│  1. Download .uf2 artifact from the triggering workflow          │
-│  2. Verify SHA-256 matches payload                               │
-│  3. Place in {channel}/pico/pico.uf2                             │
-│  4. Update {channel}/pico/pico-version.txt                       │
-│  5. Update {channel}/latest.json with Pico version               │
-│  6. Commit + deploy to GitHub Pages                              │
+│  1. Clone CDN repo using PICO_CDN_TOKEN                          │
+│  2. Place .uf2 in {channel}/pico/                                │
+│  3. Update {channel}/latest.json with Pico version               │
+│  4. Commit + push (triggers GitHub Pages deploy)                 │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -2258,8 +2256,10 @@ serves both from the same channel — `staging/p4/` + `staging/pico/`.
 There is **no CI chaining** between the two repos; coupling is by
 convention (same branch name = same channel).
 
-**Possan's CI needs one addition:** a `publish-cdn` job in his existing
-`build_firmware.yml` that fires `repository_dispatch` on tagged releases:
+**Possan's CI has a `publish-cdn` job** in his existing
+`build_firmware.yml` that pushes directly to the CDN repo on tagged
+releases. This avoids the cross-repo artifact download problem
+(GitHub's `GITHUB_TOKEN` can't download artifacts from private repos):
 
 ```yaml
   publish-cdn:
@@ -2267,46 +2267,78 @@ convention (same branch name = same channel).
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
-      - name: Determine channel
-        id: channel
+      - name: Check for CDN token
+        id: check
         run: |
-          # Default to stable for version tags
-          echo "channel=stable" >> "$GITHUB_OUTPUT"
+          if [ -z "${{ secrets.PICO_CDN_TOKEN }}" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Download build artifact
+        if: steps.check.outputs.skip != 'true'
         uses: actions/download-artifact@v4
         with:
-          name: tbd_frontend
+          name: groovebox-firmware
           path: pico-artifact
 
       - name: Compute SHA-256
+        if: steps.check.outputs.skip != 'true'
         id: sha
         run: |
           SHA=$(sha256sum pico-artifact/firmware.uf2 | cut -d' ' -f1)
           echo "sha256=${SHA}" >> "$GITHUB_OUTPUT"
 
-      - name: Dispatch to CDN
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PICO_CDN_TOKEN }}
-          repository: dadamachines/dada-tbd-firmware
-          event-type: pico-app-update
-          client-payload: |
-            {
-              "channel": "${{ steps.channel.outputs.channel }}",
-              "app_id": "groovebox",
-              "version": "${{ github.ref_name }}",
-              "artifact_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-              "sha256": "${{ steps.sha.outputs.sha256 }}"
-            }
+      - name: Push to CDN
+        if: steps.check.outputs.skip != 'true'
+        env:
+          CDN_TOKEN: ${{ secrets.PICO_CDN_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+          SHA256: ${{ steps.sha.outputs.sha256 }}
+        run: |
+          set -euo pipefail
+          CHANNEL="stable"
+          APP_ID="groovebox"
+          CDN_REPO="dadamachines/dada-tbd-firmware"
+          git clone --depth 1 \
+            "https://x-access-token:${CDN_TOKEN}@github.com/${CDN_REPO}.git" cdn
+          cd cdn
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p "${CHANNEL}/pico"
+          cp -f ../pico-artifact/firmware.uf2 "${CHANNEL}/pico/dada-tbd-pico.uf2"
+          cp -f ../pico-artifact/firmware.uf2 "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2"
+          mkdir -p "apps/${APP_ID}"
+          cp -f ../pico-artifact/firmware.uf2 "apps/${APP_ID}/${APP_ID}-${VERSION#v}.uf2"
+          if [ -f "${CHANNEL}/latest.json" ]; then
+            TMP=$(mktemp)
+            jq --arg pico "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2" \
+               --arg ver "${VERSION}" \
+               '.files.pico = $pico | .picoVersion = $ver' \
+               "${CHANNEL}/latest.json" > "$TMP" && mv "$TMP" "${CHANNEL}/latest.json"
+          fi
+          echo "${VERSION}" > "${CHANNEL}/pico/pico-version.txt"
+          git add -A
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "Pico app: ${APP_ID} ${VERSION} → ${CHANNEL} [sha256:${SHA256:0:12}]"
+          git push
 ```
 
 The `PICO_CDN_TOKEN` is a fine-grained GitHub PAT scoped to:
 - **Repository**: `dadamachines/dada-tbd-firmware`
-- **Permissions**: Contents (write) — just enough to trigger dispatch
+- **Permissions**: Contents (write) — enough to clone, commit, and push
 
 This token is stored as a secret in possan's repo. dadamachines generates
 it and shares it with possan directly.
+
+> **Why direct push instead of `repository_dispatch`?** The dispatch
+> approach requires the CDN's `receive-pico-app.yml` to download
+> artifacts from the source repo using `GITHUB_TOKEN`. But GitHub's
+> `GITHUB_TOKEN` is scoped to the CDN repo and can't access artifacts
+> from private repos like `possan/tbd-pico-seq3`. Direct push avoids
+> this by having possan's CI push the binary directly — the
+> `PICO_CDN_TOKEN` already has the needed write permission.
 
 #### Profile B workflow — external app contributor (e.g. jmamma/MCL)
 
@@ -3401,104 +3433,23 @@ Already implemented and running. Receives `repository_dispatch` type
 `firmware-update` from the P4 repo's release workflows. Downloads P4
 artifacts and places them in `{channel}/p4/`. See Section 9 for details.
 
-#### `receive-pico-app.yml` — Pico .uf2 dispatch (new)
+#### `receive-pico-app.yml` — Pico .uf2 dispatch (exists but superseded)
 
-Receives `repository_dispatch` type `pico-app-update` from Pico app CI
-(e.g. possan's Groovebox). Downloads the `.uf2` artifact and places it
-in the appropriate channel.
+This workflow exists in the CDN repo and receives `repository_dispatch`
+type `pico-app-update`. It was designed to download the `.uf2` artifact
+from the source repo's workflow run, verify SHA-256, and place the
+binary in the appropriate channel.
 
-```yaml
-name: Receive Pico App
-on:
-  repository_dispatch:
-    types: [pico-app-update]
+**Status: superseded by direct push.** The dispatch approach fails for
+private source repos because the CDN's `GITHUB_TOKEN` can't download
+artifacts cross-repo. Possan's `tbd-pico-seq3` is private, so his CI
+pushes directly to the CDN repo using `PICO_CDN_TOKEN` instead. The
+workflow remains in the CDN repo for potential use with public app repos
+in the future, but the Groovebox pipeline does not use it.
 
-# payload:
-#   channel:      "stable" | "staging" | "feature-test-*"
-#   app_id:       "groovebox"
-#   version:      "v0.4.1"
-#   artifact_url: URL of the workflow run containing the artifact
-#   sha256:       expected SHA-256 of the .uf2
-
-jobs:
-  receive:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Validate payload
-        run: |
-          CHANNEL="${{ github.event.client_payload.channel }}"
-          APP_ID="${{ github.event.client_payload.app_id }}"
-          VERSION="${{ github.event.client_payload.version }}"
-
-          if [[ -z "$CHANNEL" || -z "$APP_ID" || -z "$VERSION" ]]; then
-            echo "::error::Missing required payload fields"
-            exit 1
-          fi
-
-          # Only allow known channels
-          if [[ "$CHANNEL" != "stable" && "$CHANNEL" != "staging" && \
-                "$CHANNEL" != feature-test-* ]]; then
-            echo "::error::Invalid channel: ${CHANNEL}"
-            exit 1
-          fi
-
-      - name: Download .uf2 from triggering workflow
-        uses: dawidd6/action-download-artifact@v6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          run_id: ${{ github.event.client_payload.run_id }}
-          repo: ${{ github.event.client_payload.repo }}
-          name: tbd_frontend
-          path: pico-artifact
-
-      - name: Verify SHA-256
-        run: |
-          EXPECTED="${{ github.event.client_payload.sha256 }}"
-          ACTUAL=$(sha256sum pico-artifact/firmware.uf2 | cut -d' ' -f1)
-          if [ "$EXPECTED" != "$ACTUAL" ]; then
-            echo "::error::SHA-256 mismatch: expected ${EXPECTED}, got ${ACTUAL}"
-            exit 1
-          fi
-          echo "SHA-256 verified ✓"
-
-      - name: Place in channel
-        run: |
-          CHANNEL="${{ github.event.client_payload.channel }}"
-          VERSION="${{ github.event.client_payload.version }}"
-          mkdir -p "${CHANNEL}/pico"
-          cp pico-artifact/firmware.uf2 "${CHANNEL}/pico/pico.uf2"
-          echo "${VERSION}" > "${CHANNEL}/pico/pico-version.txt"
-
-      - name: Update latest.json
-        run: |
-          CHANNEL="${{ github.event.client_payload.channel }}"
-          VERSION="${{ github.event.client_payload.version }}"
-          APP_ID="${{ github.event.client_payload.app_id }}"
-
-          # Update or create latest.json with pico version
-          LATEST="${CHANNEL}/latest.json"
-          if [ -f "$LATEST" ]; then
-            jq --arg pv "$VERSION" --arg app "$APP_ID" \
-              '.picoVersion = $pv | .picoApp = $app' "$LATEST" > tmp.json
-            mv tmp.json "$LATEST"
-          else
-            echo "{\"picoVersion\":\"${VERSION}\",\"picoApp\":\"${APP_ID}\"}" \
-              | jq . > "$LATEST"
-          fi
-
-      - name: Commit and push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          CHANNEL="${{ github.event.client_payload.channel }}"
-          VERSION="${{ github.event.client_payload.version }}"
-          APP_ID="${{ github.event.client_payload.app_id }}"
-          git commit -m "pico: ${APP_ID} ${VERSION} → ${CHANNEL}" || exit 0
-          git push
-```
+The actual Pico delivery mechanism for possan is the `publish-cdn` job
+in `possan/tbd-pico-seq3/.github/workflows/build_firmware.yml` — see
+the Profile A workflow section above for the full job spec.
 
 #### `validate-pr.yml` — validates app manifest PRs
 
@@ -3645,7 +3596,7 @@ The CDN repo serves two trust levels through different delivery mechanisms:
 | Content | Delivery path | Trust model | Who can modify |
 |---------|--------------|-------------|---------------|
 | P4 firmware (`stable/p4/`, `staging/p4/`) | `repository_dispatch` via `FIRMWARE_CDN_TOKEN` | **High trust** — only P4 repo CI can trigger | dadamachines + possan (P4 repo push access) |
-| Pico apps (`stable/pico/`, `staging/pico/`) | `repository_dispatch` via `PICO_CDN_TOKEN` | **High trust** — only authorized Pico app CI can trigger | Repo owner holding the dispatch token |
+| Pico apps (`stable/pico/`, `staging/pico/`) | Direct push via `PICO_CDN_TOKEN` | **High trust** — only authorized Pico app CI can push | Repo owner holding the push token |
 | App manifests (`apps/*/manifest.json`) | PR + review | **Reviewed** — CI validates, maintainer approves | Anyone via PR; dadamachines reviews |
 | Flash pages, JS, index.html | Direct commit to CDN repo | **Admin** — only CDN repo maintainers | dadamachines |
 
@@ -3653,14 +3604,14 @@ The CDN repo serves two trust levels through different delivery mechanisms:
 files. The `validate-pr.yml` workflow enforces this — any PR touching
 files outside `apps/`, `system-tools/`, `bundles/`, or `schema/` fails CI.
 
-Dispatch tokens are **fine-grained GitHub PATs**, each scoped to:
+CDN tokens are **fine-grained GitHub PATs**, each scoped to:
 - **Repository**: `dadamachines/dada-tbd-firmware` only
-- **Permissions**: Contents (write) — triggers dispatch, nothing else
+- **Permissions**: Contents (write) — enough to dispatch or push
 
 | Token | Stored in | Created by | Purpose |
 |-------|----------|------------|---------|
 | `FIRMWARE_CDN_TOKEN` | `dadamachines/ctag-tbd` secrets | dadamachines | P4 firmware dispatch |
-| `PICO_CDN_TOKEN` | `possan/tbd-pico-seq3` secrets | dadamachines | Pico app dispatch |
+| `PICO_CDN_TOKEN` | `possan/tbd-pico-seq3` secrets | dadamachines | Pico app direct push to CDN |
 
 ### Timeline and phases
 
@@ -3686,20 +3637,23 @@ ship now but scalable enough to support an app ecosystem post-launch.
 These three items are the minimum to unblock possan's Groovebox delivery
 through the CDN pipeline, replacing the current manual seeding of pico.uf2:
 
-1. **`receive-pico-app.yml`** in the CDN repo — receives dispatch from
-   Pico app CI, places `.uf2` in the channel, updates `latest.json`.
-   (Workflow spec above.)
+1. **`publish-cdn` job** in possan's `build_firmware.yml` — pushes the
+   `.uf2` directly to the CDN repo on tagged releases. Uses
+   `PICO_CDN_TOKEN` to clone, commit, and push in one step.
+   (Job spec in Profile A workflow section above.)
 
-2. **`publish-cdn` job** in possan's `build_firmware.yml` — fires
-   `repository_dispatch` to CDN on tagged releases. (Job spec above.)
-
-3. **`PICO_CDN_TOKEN`** — fine-grained PAT created by dadamachines,
+2. **`PICO_CDN_TOKEN`** — fine-grained PAT created by dadamachines,
    stored as a secret in possan's repo. Scoped to Contents (write) on
    `dadamachines/dada-tbd-firmware` only.
 
-Once these three are in place, possan tags a release → Groovebox .uf2
+Once these are in place, possan tags a release → Groovebox .uf2
 arrives in the CDN automatically → flash pages serve it. No manual
 copying, no stale .uf2 seeded from a previous stable release.
+
+> **Note:** The CDN repo still has `receive-pico-app.yml` for
+> potential use with public app repos, but possan's pipeline bypasses
+> it entirely — direct push is required because `GITHUB_TOKEN` can't
+> download artifacts cross-repo from private repos.
 
 #### Release coherence requirement
 
