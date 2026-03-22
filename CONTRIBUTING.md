@@ -1,7 +1,10 @@
 # Contributing to dadamachines TBD
 
 Thank you for helping improve the TBD platform! This guide covers how to
-build, test, and submit changes.
+set up your fork, build firmware, test your changes with CI, and submit
+pull requests.
+
+---
 
 ## Repository Layout
 
@@ -14,22 +17,81 @@ build, test, and submit changes.
 | `sample_rom/` | Stock audio samples (Git LFS) |
 | `.github/workflows/` | CI / release pipelines |
 
+---
+
 ## Branch Model
 
 ```
-dada-tbd-master          ← production branch (all merges go here)
-  └── staging            ← pre-release testing (auto-builds)
-  └── feature-test/*     ← ad-hoc feature builds (auto-builds)
+dada-tbd-master          ← production branch
+│                           docs deploy on every push
+│                           CI build check on push (firmware-relevant files only)
+│                           firmware release only on v* tag push (opt-in)
+│
+├── staging              ← pre-release testing
+│                           full build + pre-release on every push
+│                           firmware auto-deploys to CDN staging channel
+│
+└── feature-test/*       ← ad-hoc feature builds (ephemeral)
+                            full build + pre-release on every push
+                            firmware auto-deploys to per-feature CDN channel
 ```
 
-| Branch | Trigger | Builds | Creates |
-|--------|---------|--------|---------|
-| `dada-tbd-master` | push / PR | CI check | — |
-| `dada-tbd-master` + `v*` tag | tag push | full build | GitHub Release + CDN deploy |
-| `staging` | push | full build | GitHub pre-release + CDN staging channel |
-| `feature-test/*` | push | full build | GitHub pre-release + CDN feature channel |
+### What triggers what
 
-## Quick Start — Building Firmware
+| Event | Workflow | What happens |
+|-------|----------|-------------|
+| Push to `dada-tbd-master` | `deploy-docs.yml` | Docs rebuild + deploy to GitHub Pages (every push) |
+| Push to `dada-tbd-master` (firmware files changed) | `ci.yml` | Build check only — validates firmware compiles. **No release.** |
+| PR against `dada-tbd-master` (firmware files changed) | `ci.yml` | Build check on the PR — same as above |
+| Push `v*` tag on `dada-tbd-master` | `create-release.yml` | Full build → GitHub Release → CDN stable channel |
+| Push to `staging` | `staging-release.yml` | Full build → GitHub pre-release → CDN staging channel |
+| Push to `feature-test/*` | `feature-test-release.yml` | Full build → GitHub pre-release → CDN per-feature channel |
+
+**Key distinction:** Pushing code to `dada-tbd-master` deploys docs and
+validates the build, but it does **not** create a firmware release. Releases
+happen only when a maintainer pushes a `v*` tag. This lets the team land
+docs changes, code improvements, and bug fixes incrementally without
+triggering firmware releases on every commit.
+
+---
+
+## Getting Started — Fork Setup
+
+### If you already have a fork (e.g. `possan/ctag-tbd`)
+
+```bash
+cd ctag-tbd
+
+# Make sure your remote tracks the dadamachines repo
+git remote add upstream https://github.com/dadamachines/ctag-tbd.git
+# (skip if you already have an 'upstream' remote)
+
+# Fetch and sync with the production branch
+git fetch upstream
+git checkout -b dada-tbd-master upstream/dada-tbd-master
+# or if you already have the branch:
+git checkout dada-tbd-master
+git pull upstream dada-tbd-master
+```
+
+### Fresh clone
+
+```bash
+git clone --recursive https://github.com/dadamachines/ctag-tbd.git
+cd ctag-tbd
+```
+
+If you plan to submit PRs, fork the repo on GitHub first, then:
+
+```bash
+git clone --recursive https://github.com/YOUR_USERNAME/ctag-tbd.git
+cd ctag-tbd
+git remote add upstream https://github.com/dadamachines/ctag-tbd.git
+```
+
+---
+
+## Building Firmware
 
 ### Prerequisites
 
@@ -40,8 +102,6 @@ dada-tbd-master          ← production branch (all merges go here)
 ### Build
 
 ```bash
-git clone --recursive https://github.com/dadamachines/ctag-tbd.git
-cd ctag-tbd
 . ~/esp/esp-idf/export.sh   # or wherever your ESP-IDF is
 idf.py build
 ```
@@ -86,66 +146,189 @@ esptool.py --chip esp32p4 -p "$PORT" -b 460800 \
 cd sdcard_image/www && bash build-webui.sh && cd ../..
 ```
 
-## CI Pipelines
+---
 
-All pipelines are fully automated. Engineers push code; CI builds, tests,
-releases, and deploys firmware to the CDN.
+## Submitting Changes (Pull Request Workflow)
 
-### CI Check (`ci.yml`)
+This is the standard workflow for all contributors:
 
-Runs on every push to `dada-tbd-master` and on pull requests. Builds the
-full firmware in Docker (`espressif/idf:v5.5.3`) to catch regressions.
-Verifies ESP-IDF patches are applied and logs checksums.
-
-### Stable Release (`create-release.yml`)
-
-Triggered by pushing a version tag (`v*`):
-
-```bash
-git tag v0.5.0
-git push origin v0.5.0
+```
+1. Fork dadamachines/ctag-tbd on GitHub (if not already done)
+2. Create a feature branch from dada-tbd-master
+3. Make changes, commit, push to your fork
+4. Open a PR against dadamachines/ctag-tbd → dada-tbd-master
+5. CI builds your PR automatically — fix any failures
+6. Maintainer reviews and merges
 ```
 
-**Pipeline:** build firmware → create GitHub Release with all artifacts →
-dispatch to CDN repo → CDN writes `stable/latest.json` manifest and deploys
-to GitHub Pages.
-
-**Result:** Firmware available at
-`https://dadamachines.github.io/dada-tbd-firmware/stable/` and on the
-[Stable Channel flash page](https://dadamachines.github.io/ctag-tbd/flash/10_stable_channel.html).
-
-### Staging Release (`staging-release.yml`)
-
-Triggered on every push to the `staging` branch:
+### Step by step
 
 ```bash
+# Sync your fork with upstream
+git fetch upstream
+git checkout dada-tbd-master
+git pull upstream dada-tbd-master
+
+# Create your feature branch
+git checkout -b feature/my-improvement
+
+# ... make changes ...
+git add -A && git commit -m "feat: describe what you changed"
+
+# Push to YOUR fork (not upstream)
+git push origin feature/my-improvement
+```
+
+Then open a PR on GitHub: `your-fork:feature/my-improvement` → `dadamachines/ctag-tbd:dada-tbd-master`.
+
+CI will automatically build and validate your PR. You'll see the result
+as a check on the PR page.
+
+---
+
+## Testing Firmware Before Merging — Staging & Feature-Test Branches
+
+The staging and feature-test branches give you CI-built firmware that you
+can flash directly from the browser — no local build environment needed.
+These branches live on the **upstream repo** (`dadamachines/ctag-tbd`),
+not on your fork.
+
+### Option A: Staging Branch (pre-release testing)
+
+Use this when changes are merged to `dada-tbd-master` and you want to
+build a testable firmware before tagging a release.
+
+```bash
+# As a maintainer with push access:
 git checkout staging
 git merge dada-tbd-master
 git push origin staging
 ```
 
-**Pipeline:** build firmware → create GitHub pre-release → dispatch to CDN
-staging channel.
+This triggers a full CI build. The resulting firmware is:
+- Published as a GitHub **pre-release**
+- Deployed to the CDN staging channel
+- Flashable from the [Beta Channel page](https://dadamachines.github.io/ctag-tbd/flash/20_staging_channel.html) (select "Staging" in the dropdown)
 
-**Result:** Firmware appears in the
-[Beta Channel flash page](https://dadamachines.github.io/ctag-tbd/flash/20_staging_channel.html)
-under "Staging".
+### Option B: Feature-Test Branch (per-feature testing)
 
-### Feature Test Release (`feature-test-release.yml`)
-
-For ad-hoc testing of feature branches. Push to any `feature-test/*` branch:
+Use this to get a CI-built firmware for a specific feature branch **before
+merging it to dada-tbd-master**. This is useful for hardware testing or
+sharing a build with other team members.
 
 ```bash
+# Push your feature branch with the feature-test/ prefix:
 git checkout -b feature-test/my-cool-feature
-# ... make changes ...
+# ... make changes, or cherry-pick from your fork's branch ...
 git push origin feature-test/my-cool-feature
 ```
 
-**Pipeline:** build firmware → create GitHub pre-release → dispatch to CDN
-with a per-feature channel (`feature-test-my-cool-feature`).
+This triggers a full CI build. The resulting firmware is:
+- Published as a GitHub **pre-release** named after the branch
+- Deployed to a per-feature CDN channel (`feature-test-my-cool-feature`)
+- Flashable from the [Beta Channel page](https://dadamachines.github.io/ctag-tbd/flash/20_staging_channel.html) (select "Feature: my-cool-feature" in the dropdown)
 
-**Result:** Channel appears in the Beta Channel flash page dropdown as
-"Feature: my-cool-feature". Engineers can flash directly from the browser.
+> **Note:** You need push access to `dadamachines/ctag-tbd` to create
+> feature-test branches. If you don't have push access, open a PR and ask
+> a maintainer to create the feature-test branch for you, or request
+> collaborator access.
+
+### Reference example
+
+The branch `feature-test/test-pipeline` is kept as a working reference
+of this workflow. It was used to validate the entire CI → CDN → flash page
+pipeline end-to-end.
+
+---
+
+## Typical Contributor Workflows
+
+### "I want to fix a bug and submit a PR"
+
+```bash
+git fetch upstream && git checkout -b fix/my-bugfix upstream/dada-tbd-master
+# fix the bug...
+git push origin fix/my-bugfix
+# open PR → dada-tbd-master
+```
+
+CI checks the build. Maintainer merges. Done.
+
+### "I want to test my changes on real hardware via browser flash"
+
+```bash
+# After your PR is merged to dada-tbd-master:
+git fetch upstream
+git checkout staging
+git merge upstream/dada-tbd-master
+git push upstream staging
+# → CI builds → flash from Beta Channel page → test on device
+```
+
+Or, for pre-merge testing with push access:
+
+```bash
+git checkout -b feature-test/my-feature upstream/dada-tbd-master
+git cherry-pick <your commits>
+git push upstream feature-test/my-feature
+# → CI builds → flash from Beta Channel page (feature dropdown)
+```
+
+### "I want to trigger a stable release"
+
+Only maintainers do this:
+
+```bash
+git checkout dada-tbd-master
+git tag v0.5.0
+git push origin v0.5.0
+# → CI builds → GitHub Release → CDN stable channel → Stable Channel flash page
+```
+
+---
+
+## CI Pipelines — Detail
+
+### CI Check (`ci.yml`)
+
+Runs on every push to `dada-tbd-master` and on pull requests — but **only
+when firmware-relevant files change** (source code, CMake, sdkconfig,
+patches, sdcard_image, sample_rom, workflows). Docs-only commits do **not**
+trigger a firmware build.
+
+Builds the full firmware in Docker (`espressif/idf:v5.5.3`). Verifies
+ESP-IDF patches are applied and logs checksums. **Does not create a release.**
+
+### Docs Deploy (`deploy-docs.yml`)
+
+Runs on **every push** to `dada-tbd-master` (no path filter). Builds and
+deploys documentation to GitHub Pages. This is why docs updates are
+immediately visible without a firmware release.
+
+### Stable Release (`create-release.yml`)
+
+Triggered **only** by pushing a `v*` tag (or manual dispatch):
+
+```bash
+git tag v0.5.0 && git push origin v0.5.0
+```
+
+Pipeline: build firmware → create GitHub Release with all artifacts →
+dispatch to CDN repo → CDN writes `stable/latest.json` and deploys to
+GitHub Pages.
+
+### Staging Release (`staging-release.yml`)
+
+Triggered on every push to the `staging` branch. Pipeline: build firmware →
+create GitHub pre-release → dispatch to CDN staging channel.
+
+### Feature Test Release (`feature-test-release.yml`)
+
+Triggered on every push to any `feature-test/*` branch. Pipeline: build
+firmware → create GitHub pre-release → dispatch to CDN with a per-feature
+channel.
+
+---
 
 ## Firmware CDN (`dada-tbd-firmware`)
 
@@ -190,12 +373,12 @@ feature-test-<name>/
 }
 ```
 
+---
+
 ## Artifact Naming Convention
 
 All public-facing artifacts use the **dadamachines** product name, not the
 upstream `ctag-tbd` project name.
-
-### Build Outputs
 
 | Artifact | Name | Notes |
 |----------|------|-------|
@@ -213,27 +396,20 @@ dadamachines hardware products (TBD-16, TBD-Core) and should be clearly
 identifiable as dadamachines firmware — not generic `ctag-tbd` builds for
 unknown hardware.
 
-## Submitting Changes
+---
 
-1. **Open an issue** describing the bug or feature.
-2. **Fork** the repo and create a branch from `dada-tbd-master`.
-3. **Make your changes** — keep commits focused and descriptive.
-4. **Test locally** — `idf.py build` must succeed; flash and verify on device
-   if hardware-related.
-5. **Open a pull request** against `dada-tbd-master`.
-6. CI will build your PR automatically. Fix any failures before requesting
-   review.
-
-### For Plugin Developers
+## For Plugin Developers
 
 See the [plugin documentation](https://dadamachines.github.io/ctag-tbd/plugins/)
 and the generator templates in `generators/`.
 
-### Code Style
+## Code Style
 
 - C++20
 - Follow existing patterns in the file you're editing
 - No `idf.py flash` in any script or documentation
+
+---
 
 ## After a History Rewrite (Phase 3b)
 
@@ -246,8 +422,22 @@ git clone --recursive https://github.com/dadamachines/ctag-tbd.git
 cd ctag-tbd
 ```
 
-Your local branches can be cherry-picked onto the new history. The rewrite
-only removes old binary blobs from git history — no source code is changed.
+If you had a fork, update it:
+
+```bash
+# In your existing fork clone:
+git remote add upstream https://github.com/dadamachines/ctag-tbd.git
+git fetch upstream
+git checkout dada-tbd-master
+git reset --hard upstream/dada-tbd-master
+git push origin dada-tbd-master --force
+```
+
+Your local feature branches can be cherry-picked onto the new history.
+The rewrite only removes old binary blobs from git history — no source
+code is changed.
+
+---
 
 ## License
 
