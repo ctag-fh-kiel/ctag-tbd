@@ -1833,12 +1833,12 @@ RP2350 apps live in **separate repositories owned by different people**:
 | App | Repo | Maintainer | License |
 |-----|------|------------|---------|
 | Groovebox | `possan/tbd-pico-seq3` (or dadamachines fork) | Per-Olov Jernberg (@possan) | — |
-| Multi FX | `dadamachines/rp2350-arduino-tbd-fw` | dadamachines (internal) | — |
+| Multi FX | `dadamachines/dada-tbd-app-template` | dadamachines (internal) | — |
 | MCL | `jmamma/MCL` | Justin Mammarella (@jmamma) | GPL |
-| Debug Probe | `dadamachines/rp2350-arduino-tbd-fw` | dadamachines (internal) | — |
-| USB MSC | `dadamachines/rp2350-arduino-tbd-fw` | dadamachines (internal) | — |
-| UI Test | `dadamachines/rp2350-arduino-tbd-fw` | dadamachines (internal) | — |
-| Game | `dadamachines/rp2350-arduino-tbd-fw` | dadamachines (internal) | — |
+| Debug Probe | `dadamachines/dada-tbd-app-template` | dadamachines (internal) | — |
+| USB MSC | `dadamachines/dada-tbd-app-template` | dadamachines (internal) | — |
+| UI Test | `dadamachines/dada-tbd-app-template` | dadamachines (internal) | — |
+| Game | `dadamachines/dada-tbd-app-template` | dadamachines (internal) | — |
 | MIDI Controller | TBD | dadamachines (planned) | — |
 
 All apps are built with PlatformIO + Arduino using the TBD RP2350 template
@@ -1947,21 +1947,55 @@ The flash bootloader (`bootloader_pico2.uf2`) loads and executes
 `BOOT2350.uf2` from the SD card, which in turn manages the boot menu
 and app selection. Both are required for multi-app mode.
 
-### App Registry: `dadamachines/tbd-app-registry`
+### App Registry — combined with firmware CDN
 
 The central question is: how do we collect binaries from multiple repos
 owned by different people into a single curated release bundle?
 
-**Solution: a dedicated app registry repository** that acts as the
-coordination layer between app developers and the TBD-16 release process.
+**Solution: the firmware CDN repo (`dadamachines/dada-tbd-firmware`) doubles
+as the app registry.** Rather than creating a separate `tbd-app-registry`
+repository, we add an `apps/` directory to the existing CDN repo. This keeps
+one repository as the single source of truth for everything the flash pages
+serve — P4 firmware, Pico apps, and the app catalog.
+
+Why combine instead of separate:
+
+- **Same-origin delivery** — flash pages already load from
+  `dadamachines.github.io/dada-tbd-firmware/`; adding app metadata there
+  avoids CORS complexity and extra repos.
+- **Security by workflow** — P4 firmware arrives exclusively via
+  `repository_dispatch` (requires a fine-grained PAT). App manifests arrive
+  via reviewed PRs. Different trust models, same repo, enforced by workflow
+  isolation (see Security Model below).
+- **One deploy pipeline** — `deploy-pages.yml` already publishes the CDN
+  to GitHub Pages; app catalog JSON rides the same pipeline.
+- **Simpler contributor onboarding** — one repo to fork, one PR target.
 
 ```
-dadamachines/tbd-app-registry
-├── apps/
+dadamachines/dada-tbd-firmware          ← firmware CDN + app registry
+├── stable/                             ← P4 firmware channels (dispatch-only)
+│   ├── p4/
+│   │   ├── dada-tbd.bin
+│   │   ├── bootloader.bin
+│   │   ├── partition-table.bin
+│   │   ├── ota_data_initial.bin
+│   │   ├── dada-tbd-unified.bin
+│   │   ├── dada-tbd-16-p4sd.zip
+│   │   ├── flash_args.txt
+│   │   └── version.txt
+│   ├── pico/                           ← Pico .uf2 (dispatch-only)
+│   │   ├── pico.uf2
+│   │   └── pico-version.txt
+│   └── latest.json
+├── staging/                            ← same structure as stable
+│   └── ...
+├── feature-test-*/                     ← ephemeral feature channels
+│   └── ...
+├── apps/                               ← app registry (PR-reviewed)
 │   ├── groovebox/
-│   │   ├── manifest.json         ← app metadata + download URLs
-│   │   ├── README.md             ← user-facing docs (rendered on website)
-│   │   └── icon.png              ← 128×128 app icon (boot menu / web catalog)
+│   │   ├── manifest.json              ← app metadata + download URLs
+│   │   ├── README.md                  ← user-facing docs
+│   │   └── icon.png                   ← 128×128 app icon
 │   ├── multi-fx/
 │   │   ├── manifest.json
 │   │   ├── README.md
@@ -1971,33 +2005,34 @@ dadamachines/tbd-app-registry
 │   │   ├── README.md
 │   │   └── icon.png
 │   ├── tusb-msc/
-│   │   ├── manifest.json
-│   │   └── icon.png
+│   │   └── manifest.json
 │   ├── dbg-prb/
-│   │   ├── manifest.json
-│   │   └── icon.png
+│   │   └── manifest.json
 │   ├── ui-test/
-│   │   ├── manifest.json
-│   │   └── icon.png
+│   │   └── manifest.json
 │   └── game/
-│       ├── manifest.json
-│       └── icon.png
+│       └── manifest.json
 ├── system-tools/
 │   ├── bootloader/
-│   │   └── manifest.json         ← bootloader_pico2.uf2 + BOOT2350.uf2
+│   │   └── manifest.json              ← bootloader_pico2.uf2 + BOOT2350.uf2
 │   └── flash-nuke/
-│       └── manifest.json         ← flash_nuke.uf2 from Gadgetoid
+│       └── manifest.json              ← flash_nuke.uf2 from Gadgetoid
 ├── bundles/
-│   ├── tbd-16-v0.4.0.json       ← "what ships with TBD-16 v0.4.0"
+│   ├── tbd-16-v0.4.0.json            ← "what ships with TBD-16 v0.4.0"
 │   └── tbd-16-v0.5.0.json
 ├── schema/
-│   ├── manifest.schema.json      ← JSON schema for app manifests
-│   └── bundle.schema.json        ← JSON schema for bundle definitions
+│   ├── manifest.schema.json           ← JSON schema for app manifests
+│   └── bundle.schema.json             ← JSON schema for bundle definitions
 ├── .github/
 │   └── workflows/
-│       ├── validate-pr.yml       ← CI: validate manifest + test download
-│       └── build-bundle.yml      ← CI: assemble SD card app bundle
-└── README.md                     ← contributor guide
+│       ├── receive-firmware.yml       ← dispatch: P4 firmware from main repo
+│       ├── receive-pico-app.yml       ← dispatch: Pico .uf2 from app repos
+│       ├── validate-pr.yml            ← CI: validate app manifest PRs
+│       ├── build-catalog.yml          ← CI: regenerate app-catalog.json
+│       └── deploy-pages.yml           ← deploy to GitHub Pages
+├── app-catalog.json                   ← auto-generated from apps/*/manifest.json
+├── index.html                         ← GitHub Pages entry point
+└── README.md                          ← contributor guide
 ```
 
 #### App manifest format
@@ -2089,40 +2124,208 @@ power-up (the bootloader remembers the last app — on a fresh SD card, this
 is the first entry). Apps with `"alwaysInstalled": true` are utilities that
 ship with every bundle and are pre-selected on the App Manager page.
 
-#### External contributor workflow
+#### RP2350 app template — `dadamachines/dada-tbd-app-template`
 
-How does an external developer like @jmamma get their MCL app into the
-TBD-16 ecosystem?
+The reference starting point for RP2350 apps is the Arduino/PlatformIO
+template repo, now at `dadamachines/dada-tbd-app-template`. This is a
+bare-clone mirror of the original `ctag-fh-kiel/rp2350-arduino-tbd-fw`
+(main branch only) — created as a standalone repo (not a fork) so it can
+be made public. **Action item: set to Public** in repo Settings.
+
+The template provides:
+
+- **PlatformIO project** targeting `generic_rp2350` with Earlephilhower core
+- **Core libraries**: `SpiAPI` (512-byte SPI frames, 30 MHz), `Midi`
+  (USB + UART + SPI bridge), `Ui` (OLED + NeoPixel + I2C GPIO expander)
+- **CI workflow**: `.github/workflows/build_firmware.yml` — builds on push,
+  produces `firmware.bin` + `firmware.uf2` as GitHub Actions artifacts
+- **Dockerfile** for reproducible CI builds
+
+Contributors can **fork the template** to create a new app (the recommended
+path), or they can **use any RP2350 toolchain** — PlatformIO, Arduino IDE,
+Pico SDK, Rust, etc. The template is a convenience, not a requirement. MCL
+for example uses its own build system. Any toolchain that produces a valid
+RP2350 `.uf2` binary works.
+
+#### Two contributor profiles
+
+The TBD-16 has two development contexts — P4 firmware (ESP32-P4, ESP-IDF)
+and Pico apps (RP2350, Arduino/PlatformIO). Contributors fall into two
+profiles depending on which chips they touch:
+
+**Profile A — Internal / cross-chip contributor** (e.g. possan)
+
+Works on both P4 firmware and Pico apps. Features span both chips —
+for example, a new SPI command added on the P4 side needs a corresponding
+handler on the Pico side. Coupled workflows, same CDN channel, trusted
+collaborator with push access.
+
+**Profile B — External / app-only contributor** (e.g. jmamma, future community)
+
+Works only on RP2350 apps. Builds against the published SPI API. Does not
+need P4 firmware access. Publishes apps via manifest PR to the CDN repo.
+Can use the Arduino template, their own toolchain, or any RP2350 framework.
+
+The key difference is **trust level and delivery mechanism**:
+
+| Aspect | Profile A (cross-chip) | Profile B (app-only) |
+|--------|------------------------|----------------------|
+| **Chips** | ESP32-P4 + RP2350 | RP2350 only |
+| **P4 repo access** | Push to branches | None needed |
+| **Pico delivery** | `repository_dispatch` to CDN | Manifest PR to CDN |
+| **CDN secret** | Has `PICO_CDN_TOKEN` | No CDN secret |
+| **Channel coupling** | Same branch → same channel | Stable only (or staging by request) |
+| **Review model** | Trusted; dispatch lands automatically | PR reviewed by dadamachines |
+| **Example** | possan (Groovebox) | jmamma (MCL), community devs |
+
+#### Profile A workflow — possan's Groovebox (cross-chip)
+
+Possan delivers full releases — P4 firmware + Groovebox .uf2 + SD card
+content. His features often span both chips (SPI protocol changes,
+Launchpad support, Ableton Link improvements, etc.). The coupling is
+by **convention**: same branch name in both repos → same CDN channel.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  possan/tbd-pico-seq3                                            │
+│  (fork of dadamachines/dada-tbd-app-template)                    │
+│                                                                  │
+│  1. Develop on a feature/fix branch                              │
+│  2. Push → CI builds firmware.uf2 (PlatformIO)                   │
+│  3. Tag vX.Y.Z → CI runs publish-cdn job                         │
+│     (repository_dispatch to dada-tbd-firmware)                   │
+└──────────────────────┬───────────────────────────────────────────┘
+                       │  dispatch event: pico-app-update
+                       │  payload: { channel, app_id, version, ... }
+                       ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  dadamachines/dada-tbd-firmware                                   │
+│  receive-pico-app.yml                                            │
+│                                                                  │
+│  1. Download .uf2 artifact from the triggering workflow          │
+│  2. Verify SHA-256 matches payload                               │
+│  3. Place in {channel}/pico/pico.uf2                             │
+│  4. Update {channel}/pico/pico-version.txt                       │
+│  5. Update {channel}/latest.json with Pico version               │
+│  6. Commit + deploy to GitHub Pages                              │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+Meanwhile, possan also pushes P4 firmware changes to the main repo:
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  dadamachines/ctag-tbd (P4 firmware)                             │
+│                                                                  │
+│  possan pushes to staging → staging-release.yml triggers         │
+│  → build P4 firmware → dispatch to CDN staging channel           │
+│                                                                  │
+│  possan pushes to feature-test/launchpad → feature-test CI       │
+│  → build P4 firmware → dispatch to CDN feature-test-launchpad    │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+The P4 and Pico builds arrive independently at the CDN. The flash page
+serves both from the same channel — `staging/p4/` + `staging/pico/`.
+There is **no CI chaining** between the two repos; coupling is by
+convention (same branch name = same channel).
+
+**Possan's CI needs one addition:** a `publish-cdn` job in his existing
+`build_firmware.yml` that fires `repository_dispatch` on tagged releases:
+
+```yaml
+  publish-cdn:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine channel
+        id: channel
+        run: |
+          # Default to stable for version tags
+          echo "channel=stable" >> "$GITHUB_OUTPUT"
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tbd_frontend
+          path: pico-artifact
+
+      - name: Compute SHA-256
+        id: sha
+        run: |
+          SHA=$(sha256sum pico-artifact/firmware.uf2 | cut -d' ' -f1)
+          echo "sha256=${SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch to CDN
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PICO_CDN_TOKEN }}
+          repository: dadamachines/dada-tbd-firmware
+          event-type: pico-app-update
+          client-payload: |
+            {
+              "channel": "${{ steps.channel.outputs.channel }}",
+              "app_id": "groovebox",
+              "version": "${{ github.ref_name }}",
+              "artifact_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+              "sha256": "${{ steps.sha.outputs.sha256 }}"
+            }
+```
+
+The `PICO_CDN_TOKEN` is a fine-grained GitHub PAT scoped to:
+- **Repository**: `dadamachines/dada-tbd-firmware`
+- **Permissions**: Contents (write) — just enough to trigger dispatch
+
+This token is stored as a secret in possan's repo. dadamachines generates
+it and shares it with possan directly.
+
+#### Profile B workflow — external app contributor (e.g. jmamma/MCL)
+
+External contributors build RP2350 apps and publish them to the ecosystem
+via a PR to the CDN repo. They do **not** need a CDN token — their binary
+lands in the catalog via a reviewed manifest PR, not via dispatch.
+
+**The app can use any toolchain.** The Arduino template is the recommended
+starting point, but MCL uses its own build system, and future contributors
+might use Pico SDK, Rust, MicroPython, or anything else that produces a
+valid RP2350 `.uf2` binary. The only requirement is: it runs on the RP2350
+and (optionally) communicates with the P4 via SPI.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  App Developer (e.g. jmamma/MCL)                        │
-│  1. Build app using rp2350-arduino-tbd-fw template      │
+│  1. Build app using any RP2350 toolchain                │
 │  2. Test on TBD-16 hardware                             │
 │  3. Create GitHub Release with mcl.uf2 attached         │
 │  4. Note the SHA-256 of the .uf2 file                   │
 └─────────────────────┬───────────────────────────────────┘
                       │
-                      ▼  PR to tbd-app-registry
+                      ▼  PR to dada-tbd-firmware
 ┌─────────────────────────────────────────────────────────┐
-│  tbd-app-registry PR                                     │
+│  dada-tbd-firmware PR                                    │
 │  Add/update: apps/mcl/manifest.json                      │
 │              apps/mcl/README.md                           │
 │              apps/mcl/icon.png                            │
 │                                                          │
-│  CI runs automatically:                                  │
+│  validate-pr.yml runs automatically:                     │
 │  ✓ Validate manifest.json against schema                 │
 │  ✓ Download .uf2 from the release URL                    │
 │  ✓ Verify SHA-256 matches                                │
 │  ✓ Check file size is reasonable (< 2 MB)                │
 │  ✓ Verify firmwareCompat range is valid                  │
+│  ✓ Confirm PR only touches apps/ or system-tools/        │
 └─────────────────────┬───────────────────────────────────┘
                       │
                       ▼  dadamachines reviews & merges
 ┌─────────────────────────────────────────────────────────┐
-│  App is now in the catalog                               │
-│  - Listed on the website app directory                   │
-│  - Available for individual download on flash page       │
+│  build-catalog.yml runs:                                 │
+│  - Regenerates app-catalog.json from all manifests       │
+│  - deploy-pages.yml publishes to GitHub Pages            │
+│                                                          │
+│  App is now in the catalog:                              │
+│  - Listed on the App Manager page                        │
+│  - Available for individual download                     │
 │  - Eligible for inclusion in official bundles            │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -2168,7 +2371,7 @@ for mode switching (see bootloader / flash nuke above).
 
 The app registry and App Manager catalog are *one* way to distribute apps,
 but they are **not required**. Any developer can build a `.uf2` from the
-`rp2350-arduino-tbd-fw` template and run it on their TBD-16 without ever
+`dada-tbd-app-template` and run it on their TBD-16 without ever
 publishing to the registry, submitting a PR, or interacting with
 dadamachines. This is "sideloading" — the open, zero-friction path for
 developers who want to experiment, prototype, or keep their work private.
@@ -2241,7 +2444,7 @@ cp .pio/build/pico2/firmware.uf2 /Volumes/PICOSD/tbd-apps/my-app.uf2
 
 The `docs/apps/getting-started.rst` guide covers the full PlatformIO
 setup, build process, and project structure for building custom apps
-against the `rp2350-arduino-tbd-fw` template.
+against the `dada-tbd-app-template`.
 
 **What sideloaded apps can do:**
 
@@ -2274,7 +2477,7 @@ If a developer decides to share their app, they can publish it to the
 registry at any time:
 
 1. Create a GitHub Release with the `.uf2` attached
-2. Open a PR to `tbd-app-registry` with a `manifest.json`
+2. Open a PR to `dada-tbd-firmware` with a `manifest.json` under `apps/`
 3. CI validates → dadamachines reviews → app appears in the catalog
 
 This is optional. Sideloading is a fully supported, first-class workflow
@@ -2368,18 +2571,18 @@ jobs:
       - name: Check out firmware repo
         uses: actions/checkout@v4
 
-      - name: Check out app registry
+      - name: Check out CDN repo (contains app registry)
         uses: actions/checkout@v4
         with:
-          repository: dadamachines/tbd-app-registry
-          path: app-registry
+          repository: dadamachines/dada-tbd-firmware
+          path: cdn-repo
 
       - name: Read bundle definition
         id: bundle
         run: |
           TRAIN="${{ inputs.train }}"
           TARGET="${{ inputs.target }}"
-          BUNDLE="app-registry/bundles/${TARGET}-v${TRAIN}.json"
+          BUNDLE="cdn-repo/bundles/${TARGET}-v${TRAIN}.json"
 
           if [ ! -f "$BUNDLE" ]; then
             echo "::error::No bundle definition at ${BUNDLE}"
@@ -2401,7 +2604,7 @@ jobs:
           # Download each app
           for APP_ID in $(jq -r '.apps[].id' "$BUNDLE"); do
             APP_VER=$(jq -r ".apps[] | select(.id==\"${APP_ID}\") | .version" "$BUNDLE")
-            MANIFEST="app-registry/apps/${APP_ID}/manifest.json"
+            MANIFEST="cdn-repo/apps/${APP_ID}/manifest.json"
 
             DL_URL=$(jq -r ".releases[] | select(.version==\"${APP_VER}\") | .downloadUrl" "$MANIFEST")
             DL_SHA=$(jq -r ".releases[] | select(.version==\"${APP_VER}\") | .sha256" "$MANIFEST")
@@ -2476,7 +2679,7 @@ gh release create v0.4.0 --title "Groovebox v0.4.0" \
   .pio/build/rp2350/firmware.uf2#groovebox.uf2
 ```
 
-They then update their manifest in `tbd-app-registry` with the new
+They then update their manifest in `dada-tbd-firmware/apps/` with the new
 release entry (version, download URL, SHA-256, firmware compat range).
 
 #### Compatibility rule
@@ -2606,7 +2809,7 @@ and renders a browsable, interactive grid:
       "latestVersion": "0.4.0",
       "firmwareCompat": "0.4",
       "downloadUrl": "https://github.com/possan/tbd-pico-seq3/releases/download/v0.4.0/groovebox.uf2",
-      "iconUrl": "https://dadamachines.github.io/tbd-app-registry/apps/groovebox/icon.png",
+      "iconUrl": "https://dadamachines.github.io/dada-tbd-firmware/apps/groovebox/icon.png",
       "docsUrl": "https://dadamachines.github.io/ctag-tbd/apps/groovebox.html"
     },
     {
@@ -2619,7 +2822,7 @@ and renders a browsable, interactive grid:
       "latestVersion": "0.4.0",
       "firmwareCompat": "0.4",
       "downloadUrl": "https://github.com/jmamma/MCL/releases/download/v0.4.0-tbd/mcl.uf2",
-      "iconUrl": "https://dadamachines.github.io/tbd-app-registry/apps/mcl/icon.png",
+      "iconUrl": "https://dadamachines.github.io/dada-tbd-firmware/apps/mcl/icon.png",
       "docsUrl": "https://dadamachines.github.io/ctag-tbd/apps/mcl.html"
     },
     {
@@ -2632,7 +2835,7 @@ and renders a browsable, interactive grid:
       "alwaysInstalled": true,
       "latestVersion": "0.4.0",
       "firmwareCompat": "0.4",
-      "downloadUrl": "https://github.com/dadamachines/rp2350-arduino-tbd-fw/releases/download/v0.4.0/tusb_msc.uf2"
+      "downloadUrl": "https://github.com/dadamachines/dada-tbd-app-template/releases/download/v0.4.0/tusb_msc.uf2"
     },
     {
       "id": "dbg-prb",
@@ -2644,7 +2847,7 @@ and renders a browsable, interactive grid:
       "alwaysInstalled": true,
       "latestVersion": "0.4.0",
       "firmwareCompat": "0.4",
-      "downloadUrl": "https://github.com/dadamachines/rp2350-arduino-tbd-fw/releases/download/v0.4.0/dbg_prb.uf2"
+      "downloadUrl": "https://github.com/dadamachines/dada-tbd-app-template/releases/download/v0.4.0/dbg_prb.uf2"
     },
     {
       "id": "ui-test",
@@ -2656,7 +2859,7 @@ and renders a browsable, interactive grid:
       "alwaysInstalled": true,
       "latestVersion": "0.4.0",
       "firmwareCompat": "0.4",
-      "downloadUrl": "https://github.com/dadamachines/rp2350-arduino-tbd-fw/releases/download/v0.4.0/ui_test.uf2"
+      "downloadUrl": "https://github.com/dadamachines/dada-tbd-app-template/releases/download/v0.4.0/ui_test.uf2"
     }
   ],
   "systemTools": [
@@ -2688,7 +2891,7 @@ and renders a browsable, interactive grid:
 #### Path 4: Sideloading — build and run your own apps
 
 For developers who build their own RP2350 apps using the
-`rp2350-arduino-tbd-fw` template. No registry, no catalog, no PR needed.
+`dada-tbd-app-template`. No registry, no catalog, no PR needed.
 
 **Standalone mode** (simplest — no bootloader):
 1. Build with PlatformIO: `pio run`
@@ -2713,7 +2916,7 @@ capability difference. See `docs/apps/getting-started.rst` for the
 complete PlatformIO setup and project structure.
 
 If a developer later wants to share their app, they can optionally
-publish it to the `tbd-app-registry` — but this is never required.
+publish it to the `dada-tbd-firmware` app registry — but this is never required.
 
 ### AnnounceApp: P4 ↔ RP2350 app identification
 
@@ -3153,21 +3356,144 @@ This makes the flash page count **5 pages + shared JS**:
 4. WebUI Updates (OTA via WiFi)
 5. Troubleshooting
 
-### Registry CI workflows
+### CDN + Registry CI workflows
 
-#### `validate-pr.yml` — runs on every PR to the registry
+All of these workflows live in `dadamachines/dada-tbd-firmware/.github/workflows/`.
+
+#### `receive-firmware.yml` — P4 firmware dispatch (existing)
+
+Already implemented and running. Receives `repository_dispatch` type
+`firmware-update` from the P4 repo's release workflows. Downloads P4
+artifacts and places them in `{channel}/p4/`. See Section 9 for details.
+
+#### `receive-pico-app.yml` — Pico .uf2 dispatch (new)
+
+Receives `repository_dispatch` type `pico-app-update` from Pico app CI
+(e.g. possan's Groovebox). Downloads the `.uf2` artifact and places it
+in the appropriate channel.
+
+```yaml
+name: Receive Pico App
+on:
+  repository_dispatch:
+    types: [pico-app-update]
+
+# payload:
+#   channel:      "stable" | "staging" | "feature-test-*"
+#   app_id:       "groovebox"
+#   version:      "v0.4.1"
+#   artifact_url: URL of the workflow run containing the artifact
+#   sha256:       expected SHA-256 of the .uf2
+
+jobs:
+  receive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate payload
+        run: |
+          CHANNEL="${{ github.event.client_payload.channel }}"
+          APP_ID="${{ github.event.client_payload.app_id }}"
+          VERSION="${{ github.event.client_payload.version }}"
+
+          if [[ -z "$CHANNEL" || -z "$APP_ID" || -z "$VERSION" ]]; then
+            echo "::error::Missing required payload fields"
+            exit 1
+          fi
+
+          # Only allow known channels
+          if [[ "$CHANNEL" != "stable" && "$CHANNEL" != "staging" && \
+                "$CHANNEL" != feature-test-* ]]; then
+            echo "::error::Invalid channel: ${CHANNEL}"
+            exit 1
+          fi
+
+      - name: Download .uf2 from triggering workflow
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ github.event.client_payload.run_id }}
+          repo: ${{ github.event.client_payload.repo }}
+          name: tbd_frontend
+          path: pico-artifact
+
+      - name: Verify SHA-256
+        run: |
+          EXPECTED="${{ github.event.client_payload.sha256 }}"
+          ACTUAL=$(sha256sum pico-artifact/firmware.uf2 | cut -d' ' -f1)
+          if [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "::error::SHA-256 mismatch: expected ${EXPECTED}, got ${ACTUAL}"
+            exit 1
+          fi
+          echo "SHA-256 verified ✓"
+
+      - name: Place in channel
+        run: |
+          CHANNEL="${{ github.event.client_payload.channel }}"
+          VERSION="${{ github.event.client_payload.version }}"
+          mkdir -p "${CHANNEL}/pico"
+          cp pico-artifact/firmware.uf2 "${CHANNEL}/pico/pico.uf2"
+          echo "${VERSION}" > "${CHANNEL}/pico/pico-version.txt"
+
+      - name: Update latest.json
+        run: |
+          CHANNEL="${{ github.event.client_payload.channel }}"
+          VERSION="${{ github.event.client_payload.version }}"
+          APP_ID="${{ github.event.client_payload.app_id }}"
+
+          # Update or create latest.json with pico version
+          LATEST="${CHANNEL}/latest.json"
+          if [ -f "$LATEST" ]; then
+            jq --arg pv "$VERSION" --arg app "$APP_ID" \
+              '.picoVersion = $pv | .picoApp = $app' "$LATEST" > tmp.json
+            mv tmp.json "$LATEST"
+          else
+            echo "{\"picoVersion\":\"${VERSION}\",\"picoApp\":\"${APP_ID}\"}" \
+              | jq . > "$LATEST"
+          fi
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          CHANNEL="${{ github.event.client_payload.channel }}"
+          VERSION="${{ github.event.client_payload.version }}"
+          APP_ID="${{ github.event.client_payload.app_id }}"
+          git commit -m "pico: ${APP_ID} ${VERSION} → ${CHANNEL}" || exit 0
+          git push
+```
+
+#### `validate-pr.yml` — validates app manifest PRs
+
+Runs on every PR that touches `apps/` or `system-tools/`. Ensures
+manifest schema compliance, download integrity, and that the PR does
+not touch P4 firmware directories (security boundary).
 
 ```yaml
 name: Validate App Submission
 on:
   pull_request:
-    paths: ['apps/**']
+    paths: ['apps/**', 'system-tools/**']
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check PR scope
+        run: |
+          # PRs must only touch apps/, system-tools/, bundles/, schema/
+          FORBIDDEN=$(git diff --name-only origin/main -- . \
+            | grep -vE '^(apps/|system-tools/|bundles/|schema/|README\.md)' || true)
+          if [ -n "$FORBIDDEN" ]; then
+            echo "::error::PR modifies files outside allowed paths:"
+            echo "$FORBIDDEN"
+            echo "App PRs may only touch apps/, system-tools/, bundles/, schema/"
+            exit 1
+          fi
 
       - name: Find changed apps
         id: changed
@@ -3185,9 +3511,7 @@ jobs:
             # Schema validation
             python3 -c "
             import json, sys
-            schema = json.load(open('schema/manifest.schema.json'))
             manifest = json.load(open('${MANIFEST}'))
-            # Basic field checks (full jsonschema validation optional)
             required = ['id', 'name', 'description', 'author', 'repo',
                         'category', 'sdFilename', 'releases']
             missing = [f for f in required if f not in manifest]
@@ -3220,9 +3544,88 @@ jobs:
 
 #### `build-catalog.yml` — regenerates the app catalog
 
-Runs on every merge to `main`. Reads all manifests and produces
-`app-catalog.json`, deployed to GitHub Pages on the registry repo
-(or committed to the main firmware repo's docs).
+Runs on every merge to `main` that touches `apps/`. Reads all manifests
+and produces `app-catalog.json`, deployed to GitHub Pages alongside
+firmware files.
+
+```yaml
+name: Build App Catalog
+on:
+  push:
+    branches: [main]
+    paths: ['apps/**']
+
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate app-catalog.json
+        run: |
+          python3 -c "
+          import json, glob, os
+          catalog = {'apps': [], 'systemTools': []}
+          for manifest_path in sorted(glob.glob('apps/*/manifest.json')):
+              m = json.load(open(manifest_path))
+              latest = m['releases'][0] if m.get('releases') else {}
+              catalog['apps'].append({
+                  'id': m['id'],
+                  'name': m['name'],
+                  'description': m.get('description', ''),
+                  'author': m.get('author', {}).get('name', ''),
+                  'category': m.get('category', ''),
+                  'tier': m.get('tier', 'community'),
+                  'latestVersion': latest.get('version', ''),
+                  'firmwareCompat': latest.get('firmwareCompat', ''),
+                  'downloadUrl': latest.get('downloadUrl', ''),
+                  'iconUrl': f'apps/{m[\"id\"]}/icon.png'
+                      if os.path.exists(f'apps/{m[\"id\"]}/icon.png') else '',
+              })
+          for manifest_path in sorted(glob.glob('system-tools/*/manifest.json')):
+              m = json.load(open(manifest_path))
+              catalog['systemTools'].append(m)
+          json.dump(catalog, open('app-catalog.json', 'w'), indent=2)
+          print(f'Catalog: {len(catalog[\"apps\"])} apps, {len(catalog[\"systemTools\"])} system tools')
+          "
+
+      - name: Commit catalog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app-catalog.json
+          git commit -m "catalog: regenerate app-catalog.json" || exit 0
+          git push
+```
+
+#### `deploy-pages.yml` — GitHub Pages deployment (existing)
+
+Already implemented. Triggers on push to `main`, deploys the entire repo
+to GitHub Pages at `dadamachines.github.io/dada-tbd-firmware/`.
+
+#### Security model
+
+The CDN repo serves two trust levels through different delivery mechanisms:
+
+| Content | Delivery path | Trust model | Who can modify |
+|---------|--------------|-------------|---------------|
+| P4 firmware (`stable/p4/`, `staging/p4/`) | `repository_dispatch` via `FIRMWARE_CDN_TOKEN` | **High trust** — only P4 repo CI can trigger | dadamachines + possan (P4 repo push access) |
+| Pico apps (`stable/pico/`, `staging/pico/`) | `repository_dispatch` via `PICO_CDN_TOKEN` | **High trust** — only authorized Pico app CI can trigger | Repo owner holding the dispatch token |
+| App manifests (`apps/*/manifest.json`) | PR + review | **Reviewed** — CI validates, maintainer approves | Anyone via PR; dadamachines reviews |
+| Flash pages, JS, index.html | Direct commit to CDN repo | **Admin** — only CDN repo maintainers | dadamachines |
+
+**Key security invariant:** A manifest PR **cannot** modify P4 firmware
+files. The `validate-pr.yml` workflow enforces this — any PR touching
+files outside `apps/`, `system-tools/`, `bundles/`, or `schema/` fails CI.
+
+Dispatch tokens are **fine-grained GitHub PATs**, each scoped to:
+- **Repository**: `dadamachines/dada-tbd-firmware` only
+- **Permissions**: Contents (write) — triggers dispatch, nothing else
+
+| Token | Stored in | Created by | Purpose |
+|-------|----------|------------|---------|
+| `FIRMWARE_CDN_TOKEN` | `dadamachines/ctag-tbd` secrets | dadamachines | P4 firmware dispatch |
+| `PICO_CDN_TOKEN` | `possan/tbd-pico-seq3` secrets | dadamachines | Pico app dispatch |
 
 ### Timeline and phases
 
@@ -3233,10 +3636,55 @@ App Manager page and registry add progressive layers of interactivity:
 | Phase | What happens | Default flow | Multi-app / App Manager |
 |-------|-------------|-------------|-------------------------|
 | **Phase 2 (CI pipeline)** | CI builds P4 firmware + Groovebox .uf2 + P4 SD archive. Standard 4-artifact release for TBD-16. | Fully working (Groovebox standalone) | Pico SD ships factory pre-loaded; no CI needed for standard releases |
-| **Phase 3 (flash pages)** | Stable/Staging flash pages live. Default flow (P4 + Groovebox + P4 SD) works end-to-end. | Complete | Link to App Manager for multi-app opt-in |
+| **Phase 3 (flash pages)** | Stable/Staging flash pages live. Default flow (P4 + Groovebox + P4 SD) works end-to-end. Pico .uf2 delivered via dispatch. | Complete | Link to App Manager for multi-app opt-in |
 | **Phase 4 (App Manager)** | Interactive App Manager page: flash bootloader to enable multi-app, browse catalog, install/remove apps, system tools. | Unchanged | Interactive: one-click bootloader flash + app management via browser |
-| **Phase 5 (app registry)** | Create `tbd-app-registry` repo. Automated catalog CI. `app-catalog.json` auto-generated. External contributors submit apps via PR. Pico SD bundle workflow for MAJOR.MINOR updates. | Unchanged | Full: catalog + community apps + optional Pico SD bundle downloads |
+| **Phase 5 (app registry)** | Add `apps/` to CDN repo. Automated catalog CI. `app-catalog.json` auto-generated. External contributors submit apps via PR. Pico SD bundle workflow for MAJOR.MINOR updates. | Unchanged | Full: catalog + community apps + optional Pico SD bundle downloads |
 | **Future** | On-device app catalog (in WebUI) that can download and install apps over WiFi directly to the Pico SD card. | Unchanged | Dynamic, user-managed from device |
+
+### What to build for launch vs what to defer
+
+The product launches in 4 weeks. The workflows must be simple enough to
+ship now but scalable enough to support an app ecosystem post-launch.
+
+#### Build for launch (required)
+
+These three items are the minimum to unblock possan's Groovebox delivery
+through the CDN pipeline, replacing the current manual seeding of pico.uf2:
+
+1. **`receive-pico-app.yml`** in the CDN repo — receives dispatch from
+   Pico app CI, places `.uf2` in the channel, updates `latest.json`.
+   (Workflow spec above.)
+
+2. **`publish-cdn` job** in possan's `build_firmware.yml` — fires
+   `repository_dispatch` to CDN on tagged releases. (Job spec above.)
+
+3. **`PICO_CDN_TOKEN`** — fine-grained PAT created by dadamachines,
+   stored as a secret in possan's repo. Scoped to Contents (write) on
+   `dadamachines/dada-tbd-firmware` only.
+
+Once these three are in place, possan tags a release → Groovebox .uf2
+arrives in the CDN automatically → flash pages serve it. No manual
+copying, no stale .uf2 seeded from a previous stable release.
+
+#### Build for launch (nice-to-have)
+
+4. **Make `dada-tbd-app-template` public** — the repo is created
+   (bare-clone mirror of ctag-fh-kiel, main branch only). Set it to
+   Public in Settings to unblock external contributors.
+
+5. **Groovebox manifest** in `apps/groovebox/manifest.json` — even
+   before the full App Manager page exists, having the manifest in
+   place establishes the pattern for future apps.
+
+#### Defer to post-launch
+
+- `validate-pr.yml` — only needed when external contributors start
+  submitting manifests
+- `build-catalog.yml` — only needed when the App Manager page reads
+  `app-catalog.json`
+- Interactive App Manager page (Phase 4) — multi-app is opt-in
+- Pico SD curated bundle workflow — only needed for MAJOR.MINOR updates
+- AnnounceApp SPI command — runtime app identification
 
 ### Multi-target flash pages
 
@@ -3382,7 +3830,7 @@ There are currently **three MIDI implementations** across the platform:
 
 | Implementation | Location | Used by | Status |
 |---|---|---|---|
-| **Legacy MIDI Parser** | `rp2350-arduino-tbd-fw` (`MidiParser.cpp`) | Template project / Multi FX prototype | Working but limited — 5 channel groups, 90 CVs, 40 triggers, hardcoded voice modes |
+| **Legacy MIDI Parser** | `dada-tbd-app-template` (`MidiParser.cpp`) | Template project / Multi FX prototype | Working but limited — 5 channel groups, 90 CVs, 40 triggers, hardcoded voice modes |
 | **Groovebox MIDI** | `tbd-pico-seq3` (`MidiP4.cpp`) | Groovebox firmware | Production — 5-deep FIFO, 960-byte MIDI payload per slot, channel routing |
 | **MacroTranslator** | `main/MacroTranslator.cpp` (P4 side) | PicoSeqRack | Production — maps incoming MIDI CCs to 16 tracks × 32 parameters with curve types |
 
@@ -3399,7 +3847,7 @@ There are currently **three MIDI implementations** across the platform:
 6. **Stay simple** — no 16-track sequencer logic, no drumpad mode, no
    Launchpad detection — just "MIDI in → plugin control"
 
-This new MIDI API will live in the `rp2350-arduino-tbd-fw` template so all
+This new MIDI API will live in the `dada-tbd-app-template` so all
 RP2350 apps (including MultiFX) can use it. The Groovebox keeps its own
 specialized MIDI system; the MultiFX and any future apps use the generalized one.
 
@@ -3826,7 +4274,7 @@ Plugin adaptation is incremental. It does not block any other milestone:
 | Phase | What happens |
 |-------|-------------|
 | **v0.4.x** | Groovebox ships as default (PicoSeqRack only). All 57 plugins available via WebUI. MultiFX app is a prototype using the legacy MIDI Parser. |
-| **v0.5.0** | New generalized MIDI API in `rp2350-arduino-tbd-fw`. First batch of ~15 plugins adapted with `hwui` blocks. MultiFX app released as official app. Plugin docs updated with adaptation status. |
+| **v0.5.0** | New generalized MIDI API in `dada-tbd-app-template`. First batch of ~15 plugins adapted with `hwui` blocks. MultiFX app released as official app. Plugin docs updated with adaptation status. |
 | **v0.5.x+** | Community contributes `hwui` blocks and MIDI handling for more plugins. Plugin docs page reflects growing adaptation coverage. |
 | **Future** | On-device plugin browser on the OLED. Parameter mapping editor in the WebUI. User-defined `hwui` overrides (drag-and-drop parameter pages). |
 
@@ -4441,11 +4889,11 @@ Phase 6 — App registry + App Manager catalog + Pico SD bundles
   Depends on: Phase 3 (30_app_manager.rst must exist as the
   shell page) and Phase 5 (compatibility check must work).
   ─────────────────────────────────────────────────────────────
-  [ ] Create dadamachines/tbd-app-registry repo with folder structure
+  [ ] Add apps/ directory to dadamachines/dada-tbd-firmware
   [ ] Define manifest.schema.json and bundle.schema.json
   [ ] Add validate-pr.yml workflow (schema + download + SHA-256 check)
   [ ] Add build-catalog.yml workflow (generates app-catalog.json on merge)
-  [ ] Migrate Groovebox, Multi FX, MCL manifests into registry (apps/)
+  [ ] Migrate Groovebox, Multi FX, MCL manifests into apps/
   [ ] Migrate USB MSC, Debug Probe, UI Test, Game manifests (apps/, alwaysInstalled)
   [ ] Add system-tools/bootloader/ and system-tools/flash-nuke/ manifests
   [ ] Create tbd-16-v0.4.json bundle definition (all default apps + utilities)
@@ -4459,7 +4907,7 @@ Phase 6 — App registry + App Manager catalog + Pico SD bundles
   [ ] Test App Manager: install/remove apps via Picoboot WebUSB
   [ ] Test App Manager: sideload local .uf2 via File System Access API
   [ ] Test system tools: flash bootloader + flash nuke via BOOTSEL
-  [ ] Write contributor guide (README.md in app-registry repo)
+  [ ] Write contributor guide (README.md in dada-tbd-firmware repo)
   [ ] Onboard first external contributor (jmamma/MCL → partner manifest)
   Deliverable: App registry live. App Manager fully interactive with
   catalog, install/remove, sideload, and system tools. Pico SD bundle
@@ -4472,7 +4920,7 @@ Phase 7 — Plugin adaptation + MultiFX
   already .json. This phase is purely plugin + RP2350 app work.
   ─────────────────────────────────────────────────────────────
   [ ] Extract shared MultiFX/Groovebox components into common library (Ui, UiDisplay, Knob, MenuHelper, Midi, SpiAPI)
-  [ ] Design generalized MIDI API for rp2350-arduino-tbd-fw (replace legacy MidiParser)
+  [ ] Design generalized MIDI API for dada-tbd-app-template (replace legacy MidiParser)
   [ ] Implement CC-to-parameter routing in P4 ProcessData path (per-slot MIDI channel)
   [ ] Define hwui JSON schema (page grouping, per-param sub-range + curve, display names)
   [ ] Add hwui block to first batch of ~15 mui-*.json files (see curated list in section 11)
@@ -4485,8 +4933,8 @@ Phase 7 — Plugin adaptation + MultiFX
   [ ] Test OLED page navigation (knobs per page adapts to hardware — 4 on TBD-16)
   [ ] Test sub-range mapping + curve accuracy (verify knob sweep matches hwui min/max/curve)
   [ ] Test preset recall via mp-*.json in MultiFX context
-  [ ] Publish MultiFX as official app in tbd-app-registry
-  [ ] Update rp2350-arduino-tbd-fw template README with new MIDI API docs
+  [ ] Publish MultiFX as official app in dada-tbd-firmware/apps/
+  [ ] Update dada-tbd-app-template README with new MIDI API docs
   Deliverable: MultiFX app live in the registry. ~15 plugins controllable
   from TBD-16 knobs/OLED. Plugin docs reflect adaptation status.
 ```
@@ -4556,7 +5004,7 @@ re-clones exactly once.
 | Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | Phase 4 |
 | Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact | ✅ Phase 3 |
 | RP2350 app versioning + AnnounceApp design | Medium | App compatibility tracking, future app store | Phase 5 |
-| App registry repo (`tbd-app-registry`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 6 |
+| App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 5 |
 | Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 6 |
 | `.jsn` → `.json` file extension rename | Low | 122 files renamed — ✅ DONE | ✅ Phase 1 |
 
