@@ -2298,7 +2298,16 @@ releases. This avoids the cross-repo artifact download problem
           SHA256: ${{ steps.sha.outputs.sha256 }}
         run: |
           set -euo pipefail
-          CHANNEL="stable"
+          # ── Derive channel from tag name ──
+          if echo "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            CHANNEL="stable"
+          elif echo "$VERSION" | grep -qE -- '-staging'; then
+            CHANNEL="staging"
+          elif echo "$VERSION" | grep -qoE -- '-ft-(.+)' >/dev/null 2>&1; then
+            CHANNEL="feature-test-$(echo "$VERSION" | sed -E 's/.*-ft-//')"
+          else
+            CHANNEL="stable"
+          fi
           APP_ID="groovebox"
           CDN_REPO="dadamachines/dada-tbd-firmware"
           git clone --depth 1 \
@@ -2309,8 +2318,11 @@ releases. This avoids the cross-repo artifact download problem
           mkdir -p "${CHANNEL}/pico"
           cp -f ../pico-artifact/firmware.uf2 "${CHANNEL}/pico/dada-tbd-pico.uf2"
           cp -f ../pico-artifact/firmware.uf2 "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2"
-          mkdir -p "apps/${APP_ID}"
-          cp -f ../pico-artifact/firmware.uf2 "apps/${APP_ID}/${APP_ID}-${VERSION#v}.uf2"
+          # App catalog — stable releases only
+          if [ "$CHANNEL" = "stable" ]; then
+            mkdir -p "apps/${APP_ID}"
+            cp -f ../pico-artifact/firmware.uf2 "apps/${APP_ID}/${APP_ID}-${VERSION#v}.uf2"
+          fi
           if [ -f "${CHANNEL}/latest.json" ]; then
             TMP=$(mktemp)
             jq --arg pico "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2" \
@@ -3673,37 +3685,41 @@ at one CDN repo:
 dadamachines/ctag-tbd          possan/tbd-pico-seq3
 (P4 firmware + SD + WebUI)     (Groovebox RP2350 app)
         │                              │
-        │  tag v0.4.2                  │  tag v0.4.2
+        │  tag v0.5.0                  │  tag v0.5.0
+        │  (or push to staging)        │  (or v0.5.0-staging)
         ▼                              ▼
   build-firmware.yml             build_firmware.yml
   create-release.yml             publish-cdn job
         │                              │
-        │  dispatch:                   │  dispatch:
-        │  firmware-update             │  pico-app-update
+        │  dispatch to CDN:            │  direct push to CDN:
+        │  receive-firmware.yml        │  clone + commit + push
         ▼                              ▼
        ┌────────────────────────────────┐
        │  dadamachines/dada-tbd-firmware │
        │  (CDN repo — GitHub Pages)     │
        │                                │
-       │  receive-firmware.yml          │
-       │    → stable/p4/  (P4 bins)     │
-       │    → stable/latest.json (tag)  │
+       │  {channel}/p4/                 │ ← P4 repo only
+       │    dada-tbd.bin, bootloader,   │
+       │    partition-table, unified,   │
+       │    SD zip + hash               │
        │                                │
-       │  receive-pico-app.yml          │
-       │    → stable/pico/ (.uf2)       │
-       │    → stable/latest.json        │
-       │      (picoVersion patched in)  │
+       │  {channel}/pico/               │ ← Pico repo only
+       │    dada-tbd-pico.uf2           │
+       │    dada-tbd-16-{tag}-pico.uf2  │
+       │                                │
+       │  {channel}/latest.json         │ ← both patch their fields
        └────────────────────────────────┘
                     │
                     ▼
          dadamachines.github.io
          /dada-tbd-firmware/
-         stable/latest.json
+         {channel}/latest.json
 ```
 
-The two dispatches are **independent and asynchronous**. Between the
-first and second dispatch arriving, `stable/latest.json` shows
-mismatched versions. This window is typically seconds to minutes.
+The two pipelines are **independent and asynchronous**. Each writes
+only its own files and patches only its own fields in `latest.json`.
+Between the two pushes, the manifest shows mismatched versions. This
+window is typically seconds to minutes.
 
 ##### How coherence works today (manual coordination)
 
@@ -3764,18 +3780,27 @@ versions match. For launch this is unnecessary overhead.
 | Channel | P4 source | Pico source | Coordination |
 |---------|----------|-------------|-------------|
 | **stable** | `v*` tag on ctag-tbd | `v*` tag on tbd-pico-seq3 | Manual: agree on tag, test on hardware, tag within minutes |
-| **staging** | Push to `staging` branch | No staging dispatch yet | P4-only for now; Pico inherits from stable (seeded by `receive-firmware.yml`) |
-| **feature-test-*** | Push to `feature-test/*` branch | No feature dispatch yet | P4-only; Pico inherits from stable |
+| **staging** | Push to `staging` branch | `v*-staging` tag on tbd-pico-seq3 | Both publish independently to `staging/p4/` and `staging/pico/` |
+| **feature-test-*** | Push to `feature-test/*` branch | `v*-ft-{name}` tag on tbd-pico-seq3 | Both publish independently to `feature-test-{name}/p4/` and `feature-test-{name}/pico/` |
 
-For staging and feature-test channels, the Pico .uf2 is currently
-seeded from the stable channel by `receive-firmware.yml`. This means
-staging P4 firmware always pairs with the last stable Pico build.
-This is correct for pre-release P4 testing — the Pico app rarely
-changes between staging iterations.
+**Tag convention (identical for both repos):**
 
-When possan needs to push a Pico build to staging (e.g. testing a
-Groovebox change against staging P4 firmware), the `publish-cdn` job
-can dispatch with `"channel": "staging"` instead of `"stable"`.
+| Tag pattern | CDN channel | Example |
+|-------------|-------------|---------|
+| `v0.5.0` (clean semver) | `stable` | Stable Channel flash page |
+| `v0.5.0-staging` or `v0.5.0-staging.2` | `staging` | Beta Channel flash page |
+| `v0.5.0-ft-launchpad` | `feature-test-launchpad` | Beta Channel dropdown |
+
+**Separation of concerns:**
+- `receive-firmware.yml` in the CDN repo handles P4 firmware + SD card +
+  hash only. It writes `{channel}/p4/` files and the non-pico fields in
+  `{channel}/latest.json`. It preserves existing pico fields if already
+  set.
+- Possan's `publish-cdn` job handles Pico firmware only. It writes
+  `{channel}/pico/` files and patches the `pico` and `picoVersion`
+  fields into `{channel}/latest.json`.
+- Neither pipeline touches the other's files. This eliminates the
+  cross-repo seeding problem.
 
 ##### PlatformIO environment: `possan_rev_c`
 

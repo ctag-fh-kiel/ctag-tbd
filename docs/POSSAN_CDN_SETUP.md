@@ -52,8 +52,39 @@ pins, missing SD card reset, wrong LED count, and no SPI flow control.
 
 ## The complete workflow
 
-Your `.github/workflows/build_firmware.yml` should look like this
-(already configured on the `ci/cdn-pipeline` branch):
+Your `.github/workflows/build_firmware.yml` on the `ci/cdn-pipeline`
+branch builds `possan_rev_c` on every push and publishes to the CDN on
+tagged releases. **The tag name determines the CDN channel:**
+
+| Tag pattern | CDN channel | Flash page | Example |
+|-------------|-------------|------------|---------|
+| `v0.5.0` (clean semver) | `stable` | Stable Channel | `git tag v0.5.0` |
+| `v0.5.0-staging` | `staging` | Beta Channel | `git tag v0.5.0-staging` |
+| `v0.5.0-staging.2` | `staging` | Beta Channel | `git tag v0.5.0-staging.2` |
+| `v0.5.0-ft-launchpad` | `feature-test-launchpad` | Beta Channel (dropdown) | `git tag v0.5.0-ft-launchpad` |
+
+This convention is **identical for both repos** (P4 and Pico). Same tag
+format, same channel derivation, same version number when coordinated.
+
+### Channel derivation logic (in CI)
+
+```bash
+# v0.5.0           → stable
+# v0.5.0-staging   → staging
+# v0.5.0-staging.2 → staging
+# v0.5.0-ft-foo    → feature-test-foo
+if echo "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+  CHANNEL="stable"
+elif echo "$VERSION" | grep -qE -- '-staging'; then
+  CHANNEL="staging"
+elif echo "$VERSION" | grep -qoE -- '-ft-(.+)'; then
+  CHANNEL="feature-test-$(echo "$VERSION" | sed -E 's/.*-ft-//')"
+else
+  CHANNEL="stable"
+fi
+```
+
+### The CI workflow file
 
 ```yaml
 name: build tbd firmware
@@ -134,11 +165,22 @@ jobs:
         run: |
           set -euo pipefail
 
-          CHANNEL="stable"
+          # ── Derive channel from tag name ──
+          if echo "$VERSION" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            CHANNEL="stable"
+          elif echo "$VERSION" | grep -qE -- '-staging'; then
+            CHANNEL="staging"
+          elif echo "$VERSION" | grep -qoE -- '-ft-(.+)' >/dev/null 2>&1; then
+            CHANNEL="feature-test-$(echo "$VERSION" | sed -E 's/.*-ft-//')"
+          else
+            CHANNEL="stable"
+          fi
+
           APP_ID="groovebox"
           CDN_REPO="dadamachines/dada-tbd-firmware"
 
-          # Clone CDN repo (shallow, single branch)
+          echo "Channel: $CHANNEL  Version: $VERSION"
+
           git clone --depth 1 \
             "https://x-access-token:${CDN_TOKEN}@github.com/${CDN_REPO}.git" cdn
           cd cdn
@@ -153,10 +195,12 @@ jobs:
           cp -f ../pico-artifact/firmware.uf2 \
             "${CHANNEL}/pico/dada-tbd-16-${VERSION}-pico.uf2"
 
-          # Also place in apps/ directory for catalog
-          mkdir -p "apps/${APP_ID}"
-          cp -f ../pico-artifact/firmware.uf2 \
-            "apps/${APP_ID}/${APP_ID}-${VERSION#v}.uf2"
+          # App catalog — stable releases only
+          if [ "$CHANNEL" = "stable" ]; then
+            mkdir -p "apps/${APP_ID}"
+            cp -f ../pico-artifact/firmware.uf2 \
+              "apps/${APP_ID}/${APP_ID}-${VERSION#v}.uf2"
+          fi
 
           # Update latest.json pico fields
           if [ -f "${CHANNEL}/latest.json" ]; then
@@ -168,30 +212,32 @@ jobs:
                && mv "$TMP" "${CHANNEL}/latest.json"
           fi
 
-          # Write pico version file
           echo "${VERSION}" > "${CHANNEL}/pico/pico-version.txt"
 
-          # Commit and push
           git add -A
           git diff --cached --quiet \
             && echo "No changes to commit" && exit 0
           git commit -m \
             "Pico app: ${APP_ID} ${VERSION} → ${CHANNEL} [sha256:${SHA256:0:12}]"
           git push
-
-          echo "Published ${APP_ID} ${VERSION} to ${CHANNEL} channel"
-          echo "  SHA-256: ${SHA256}"
 ```
 
 ### How it works
 
 The `publish-cdn` job pushes directly to the CDN repo —
-no intermediate `receive-pico-app.yml` dispatch needed. This is simpler
-and avoids the cross-repo artifact download problem (GitHub's
-`GITHUB_TOKEN` can't download artifacts from private repos).
+no intermediate `receive-pico-app.yml` dispatch needed. This avoids the
+cross-repo artifact download problem (GitHub's `GITHUB_TOKEN` can't
+download artifacts from private repos).
 
-The `PICO_CDN_TOKEN` has Contents: write permission on the CDN repo,
-so possan's CI can clone, commit, and push in one step.
+**Separation of concerns:**
+- **P4 repo** (`dadamachines/ctag-tbd`) delivers P4 firmware + SD card
+  image + hash to `{channel}/p4/` on the CDN
+- **Pico repo** (`possan/tbd-pico-seq3`) delivers the Pico .uf2 to
+  `{channel}/pico/` on the CDN
+
+Neither repo touches the other's files. Both patch their own fields
+into `{channel}/latest.json`. The flash page reads the combined
+manifest and flashes both.
 
 ### Building locally
 
@@ -213,65 +259,103 @@ pio run -e possan_rev_c -t upload
 
 ---
 
-## Release coordination with dadamachines
+## Release workflows
 
-A release (e.g. v0.4.2) requires **both** repos to tag the same version.
+### Stable release (production)
+
+A stable release requires **both** repos to tag the same version.
 The P4 firmware, Pico firmware, SD card image, and WebUI must all match.
 
-### Before tagging
+**Before tagging:**
 
 1. **Build locally** — `pio run -e possan_rev_c`
 2. **Flash to hardware** — test with the P4 firmware build from
    `dadamachines/ctag-tbd` that will be tagged with the same version
 3. **Smoke test** — boot, sequencer, SPI communication, MIDI, WebUI
-   parameter control, all working together
+   parameter control — all working together
 4. **Agree on the version tag with Johannes** — both repos use the same
-   semver tag (e.g. `v0.4.2`)
+   semver tag (e.g. `v0.5.0`)
 
-### Tagging the release
+**Tag both repos:**
 
 ```bash
-git tag v0.4.2
-git push origin v0.4.2
+# possan (Groovebox repo):
+git tag v0.5.0
+git push origin v0.5.0
+# → CI builds → publishes to stable/pico/ on CDN
+
+# dadamachines (P4 repo) — Johannes does this within minutes:
+git tag v0.5.0 && git push origin v0.5.0
+# → CI builds → publishes to stable/p4/ on CDN
 ```
 
-Johannes tags the P4 repo within minutes. Both pushes arrive at the
-CDN independently — the Stable Channel flash page shows both versions.
-
-### After tagging
-
-Verify both pushes landed:
+**Verify CDN convergence:**
 ```bash
 curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/latest.json \
   | python3 -c "import sys,json; d=json.load(sys.stdin); \
     print(f'P4: {d[\"tag\"]}  Pico: {d.get(\"picoVersion\",\"—\")}')"
+# Both should show v0.5.0
 ```
 
-Both should show `v0.4.2`.
+### Staging release (Beta Channel)
+
+Use staging when you and Johannes are developing a new feature that
+needs testing on the Beta Channel flash page. Both repos tag with
+`-staging` suffix:
+
+```bash
+# possan (Groovebox repo):
+git tag v0.5.0-staging
+git push origin v0.5.0-staging
+# → CI builds → publishes to staging/pico/ on CDN
+
+# dadamachines (P4 repo) — Johannes pushes to staging branch:
+git checkout staging && git merge feature/new-thing && git push origin staging
+# → staging-release.yml → publishes to staging/p4/ on CDN
+```
+
+The Beta Channel flash page (`20_staging_channel.rst`) discovers Pico
+firmware at: `staging/pico/dada-tbd-16-{tag}-pico.uf2`
+
+**Staging iteration:** If you need multiple staging builds, use a
+revision suffix:
+
+```bash
+git tag v0.5.0-staging.2
+git push origin v0.5.0-staging.2
+```
+
+### Feature test release
+
+For isolated feature testing on a per-feature Beta Channel:
+
+```bash
+# possan:
+git tag v0.5.0-ft-launchpad
+git push origin v0.5.0-ft-launchpad
+# → publishes to feature-test-launchpad/pico/ on CDN
+
+# dadamachines:
+git push origin feature-test/launchpad
+# → feature-test-release.yml → publishes to feature-test-launchpad/p4/
+```
+
+The Beta Channel flash page shows feature-test channels in its dropdown.
 
 ---
 
-## How to publish a release
+## Quick reference
 
-When you're ready to push a Groovebox update to the CDN:
+| What you want | Command | CDN target |
+|---------------|---------|------------|
+| Stable release | `git tag v0.5.0 && git push origin v0.5.0` | `stable/pico/` + `apps/groovebox/` |
+| Staging build | `git tag v0.5.0-staging && git push origin v0.5.0-staging` | `staging/pico/` |
+| Feature test | `git tag v0.5.0-ft-foo && git push origin v0.5.0-ft-foo` | `feature-test-foo/pico/` |
 
-```bash
-git tag v0.4.2
-git push origin v0.4.2
-```
-
-What happens:
-1. **Your CI** builds `possan_rev_c` (the Rev C shipping firmware)
-2. **`publish-cdn` job** fires (because the tag starts with `v`)
-3. It computes the SHA-256 of `firmware.uf2`
-4. It clones the CDN repo, places the `.uf2`, updates `latest.json`,
-   and pushes — all in one step
-5. GitHub Pages deploys — the binary is now live at:
-   - `dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-pico.uf2`
-   - `dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-16-v0.4.2-pico.uf2`
-   - `dadamachines.github.io/dada-tbd-firmware/apps/groovebox/groovebox-0.4.2.uf2`
-
-The Stable Channel flash page automatically picks up the new `.uf2`.
+After tagging, the CDN pico directory gets:
+- `dada-tbd-pico.uf2` — unversioned alias (latest for that channel)
+- `dada-tbd-16-{tag}-pico.uf2` — versioned name (what flash pages request)
+- `pico-version.txt` — version string
 
 ---
 
@@ -290,11 +374,13 @@ After tagging, check:
 1. **Your repo:** `github.com/possan/tbd-pico-seq3/actions` — both
    `build` and `publish-cdn` jobs should be green
 2. **CDN repo:** `github.com/dadamachines/dada-tbd-firmware` — look for
-   a commit from `github-actions[bot]` with the version in the message
+   a commit from `github-actions[bot]` with the version and channel
 
-Then verify the file is served:
+Then verify the file is served (replace `{channel}` with `stable`,
+`staging`, or `feature-test-{name}`):
+
 ```bash
-curl -sI https://dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-pico.uf2 | head -5
+curl -sI "https://dadamachines.github.io/dada-tbd-firmware/{channel}/pico/dada-tbd-pico.uf2" | head -5
 ```
 You should see `HTTP/2 200` with a non-zero `content-length`.
 
