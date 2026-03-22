@@ -3710,6 +3710,140 @@ or missing, the release is useless — users end up with a half-updated
 device. Never tag a firmware release unless all four deliverables are
 aligned and tested together.
 
+##### The coordination problem
+
+Four deliverables live across two source repos and arrive independently
+at one CDN repo:
+
+```
+dadamachines/ctag-tbd          possan/tbd-pico-seq3
+(P4 firmware + SD + WebUI)     (Groovebox RP2350 app)
+        │                              │
+        │  tag v0.4.2                  │  tag v0.4.2
+        ▼                              ▼
+  build-firmware.yml             build_firmware.yml
+  create-release.yml             publish-cdn job
+        │                              │
+        │  dispatch:                   │  dispatch:
+        │  firmware-update             │  pico-app-update
+        ▼                              ▼
+       ┌────────────────────────────────┐
+       │  dadamachines/dada-tbd-firmware │
+       │  (CDN repo — GitHub Pages)     │
+       │                                │
+       │  receive-firmware.yml          │
+       │    → stable/p4/  (P4 bins)     │
+       │    → stable/latest.json (tag)  │
+       │                                │
+       │  receive-pico-app.yml          │
+       │    → stable/pico/ (.uf2)       │
+       │    → stable/latest.json        │
+       │      (picoVersion patched in)  │
+       └────────────────────────────────┘
+                    │
+                    ▼
+         dadamachines.github.io
+         /dada-tbd-firmware/
+         stable/latest.json
+```
+
+The two dispatches are **independent and asynchronous**. Between the
+first and second dispatch arriving, `stable/latest.json` shows
+mismatched versions. This window is typically seconds to minutes.
+
+##### How coherence works today (manual coordination)
+
+There is no automated atomic release mechanism. Coherence is achieved
+by **human coordination between dadamachines and possan**:
+
+**Step 1 — Agree on the version tag.** Both repos use the same semver
+tag (e.g. `v0.4.2`). The version number is the coordination key.
+
+**Step 2 — Test together before tagging.** Before either repo tags:
+- P4 firmware is built locally and flashed to the device
+- Groovebox .uf2 is built from possan's branch and flashed to RP2350
+- SD card image and WebUI are deployed to the P4 SD
+- Full hardware smoke test: boot, sequencer, SPI communication, MIDI,
+  WebUI parameter control — all working together
+
+**Step 3 — Tag within minutes of each other.** Once the combined build
+is verified on hardware:
+```bash
+# dadamachines (P4 repo):
+git tag v0.4.2 && git push origin v0.4.2
+
+# possan (Groovebox repo):
+git tag v0.4.2 && git push origin v0.4.2
+```
+
+Both CI pipelines run (~2–5 min each) and dispatch to the CDN.
+
+**Step 4 — Verify CDN convergence.** After both dispatches land:
+```bash
+curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/latest.json \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); \
+    print(f'P4: {d[\"tag\"]}  Pico: {d.get(\"picoVersion\",\"—\")}')"
+```
+Both should show `v0.4.2`. If either dispatch failed, check the CDN
+Actions tab and re-dispatch.
+
+##### The inconsistency window
+
+Between the two dispatches, `stable/latest.json` briefly shows
+mismatched versions. This is acceptable because:
+
+1. **The window is short** — seconds to minutes, not hours
+2. **Flash pages read the manifest once** — if a user loads the page
+   during the window, they get whichever versions are current. They
+   can refresh after both dispatches land.
+3. **The Stable Channel page shows both versions** — users see
+   "P4: v0.4.2, Pico: v0.4.1" and know something is updating
+4. **No user harm** — a v0.4.1 Pico with v0.4.2 P4 works fine
+   (PATCH can always diverge within a MAJOR.MINOR train)
+
+If atomic releases become necessary in the future, a coordinator
+workflow in the CDN repo could gate the Pages deploy until both
+versions match. For launch this is unnecessary overhead.
+
+##### Channel-specific coordination
+
+| Channel | P4 source | Pico source | Coordination |
+|---------|----------|-------------|-------------|
+| **stable** | `v*` tag on ctag-tbd | `v*` tag on tbd-pico-seq3 | Manual: agree on tag, test on hardware, tag within minutes |
+| **staging** | Push to `staging` branch | No staging dispatch yet | P4-only for now; Pico inherits from stable (seeded by `receive-firmware.yml`) |
+| **feature-test-*** | Push to `feature-test/*` branch | No feature dispatch yet | P4-only; Pico inherits from stable |
+
+For staging and feature-test channels, the Pico .uf2 is currently
+seeded from the stable channel by `receive-firmware.yml`. This means
+staging P4 firmware always pairs with the last stable Pico build.
+This is correct for pre-release P4 testing — the Pico app rarely
+changes between staging iterations.
+
+When possan needs to push a Pico build to staging (e.g. testing a
+Groovebox change against staging P4 firmware), the `publish-cdn` job
+can dispatch with `"channel": "staging"` instead of `"stable"`.
+
+##### PlatformIO environment: `possan_rev_c`
+
+The shipping TBD-16 hardware is **Rev C**. The CI must build the
+`possan_rev_c` PlatformIO environment — not `pi2350`.
+
+Key differences in `possan_rev_c` vs `pi2350`:
+
+| Aspect | `pi2350` (generic) | `possan_rev_c` (shipping) |
+|--------|-------------------|--------------------------|
+| SPI pin config | 6-arg constructor | 7-arg (extra ready pin) |
+| SPI flow control | Blind `delay()` | `WaitUntilP4IsReady()` handshake |
+| SD card | No reset pin | SDRESET_PIN GPIO 17 |
+| MIDI transport | `Midi.cpp` + `MidiP4.cpp` (full, 1024-byte SPI) | `MidiP4-2.cpp` (streamlined, 512-byte, protocol-based) |
+| USB serial | Enabled (CDC) | Disabled (port 0 = device mode) |
+| LED layout | 21 LEDs including MIDDLE | 20 LEDs, no MIDDLE |
+| Build flag | (none) | `-DREV_C` |
+
+Building `pi2350` for shipping hardware produces a binary with wrong
+SPI pins, missing SD card reset, wrong LED count, and no SPI flow
+control. **Always build `possan_rev_c` for CDN releases.**
+
 #### Build for launch (nice-to-have)
 
 4. **Make `dada-tbd-app-template` public** — the repo is created

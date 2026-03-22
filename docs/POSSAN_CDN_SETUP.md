@@ -18,12 +18,65 @@ file copying.
 
 ---
 
+## Build environment: `possan_rev_c`
+
+The shipping TBD-16 hardware is **Rev C**. Your repo has four PlatformIO
+environments in `platformio.ini`:
+
+| Environment | Purpose | Use for CI / shipping? |
+|-------------|---------|----------------------|
+| `pi2350` | Generic RP2350 (no hardware revision flag) | **No** — wrong SPI pins, no SD reset, wrong LED layout |
+| `nevvkid` | Johannes's dev environment (CMSIS-DAP debug) | No — dev only |
+| `possan_rev_b` | Rev B hardware (your old board) | No — superseded by Rev C |
+| **`possan_rev_c`** | **Rev C shipping hardware** | **Yes — use this for CI and releases** |
+
+Key differences in `possan_rev_c` vs `pi2350`:
+
+- **`-DREV_C`** — enables correct SPI pin config (7-arg `DaDa_SPI`
+  constructor with extra ready pin), SD card reset (GPIO 17), SPI flow
+  control (`WaitUntilP4IsReady()` instead of blind delay), and Rev C
+  LED layout (20 LEDs, no MIDDLE LED)
+- **Source filter** — excludes `Ui.cpp`, `Midi.cpp`, `MidiP4.cpp` (the
+  generic implementations) because your Groovebox has its own
+  replacements (`MidiP4-2.cpp`, sequencer UI)
+- **USB serial disabled** — `DISABLE_USB_SERIAL`,
+  `PIO_FRAMEWORK_ARDUINO_ENABLE_CDC=0`, `CFG_TUSB_RHPORT0_MODE=2`
+- **PSRAM** — 8 MB, CS pin 19 (same as `pi2350`)
+- **DaDa_SPI v1.0.5** (same as `pi2350`)
+
+Building `pi2350` for shipping hardware produces a binary with wrong SPI
+pins, missing SD card reset, wrong LED count, and no SPI flow control.
+
+---
+
 ## What you need to do
 
-### 1. Add the `publish-cdn` job to your workflow
+### 1. Update your CI to build `possan_rev_c`
 
-Open `.github/workflows/build_firmware.yml` and add this job **after**
-your existing `build` job (same indentation level as `build:`):
+Your current `.github/workflows/build_firmware.yml` builds the `pi2350`
+environment. Change it to build `possan_rev_c`:
+
+```diff
+      - name: Build Firmware
+-       run: pio run -e pi2350
++       run: pio run -e possan_rev_c
+
+      - name: Upload Firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: tbd_frontend
+          path: |
+-           .pio/build/pi2350/firmware.bin
+-           .pio/build/pi2350/firmware.uf2
++           .pio/build/possan_rev_c/firmware.bin
++           .pio/build/possan_rev_c/firmware.uf2
+          overwrite: true
+```
+
+### 2. Add the `publish-cdn` job
+
+Add this job **after** your existing `build` job (same indentation level
+as `build:`):
 
 ```yaml
   # ────────────────────────────────────────────────────────────
@@ -83,7 +136,7 @@ your existing `build` job (same indentation level as `build:`):
 > **Important:** `app_id` is hardcoded to `"groovebox"` — this is the
 > app slug used in the CDN. Don't change it.
 
-### 2. Your complete workflow should look like this
+### 3. Your complete workflow should look like this
 
 ```yaml
 name: build tbd firmware
@@ -109,15 +162,15 @@ jobs:
         run: pip install --upgrade platformio
 
       - name: Build Firmware
-        run: pio run -e pi2350
+        run: pio run -e possan_rev_c
 
       - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
           name: tbd_frontend
           path: |
-            .pio/build/pi2350/firmware.bin
-            .pio/build/pi2350/firmware.uf2
+            .pio/build/possan_rev_c/firmware.bin
+            .pio/build/possan_rev_c/firmware.uf2
           overwrite: true
 
   publish-cdn:
@@ -169,6 +222,62 @@ jobs:
             }
 ```
 
+### 4. Building locally
+
+```bash
+# Build the shipping firmware:
+pio run -e possan_rev_c
+
+# Output files:
+#   .pio/build/possan_rev_c/firmware.bin   (raw binary)
+#   .pio/build/possan_rev_c/firmware.uf2   (UF2 for BOOTSEL drag-and-drop)
+
+# Flash via BOOTSEL (hold BOOTSEL, plug USB, release):
+pio run -e possan_rev_c -t upload
+
+# Flash via debug probe (if connected):
+# Uncomment debug_tool and upload_protocol in platformio.ini [env:possan_rev_c]
+pio run -e possan_rev_c -t upload
+```
+
+---
+
+## Release coordination with dadamachines
+
+A release (e.g. v0.4.2) requires **both** repos to tag the same version.
+The P4 firmware, Pico firmware, SD card image, and WebUI must all match.
+
+### Before tagging
+
+1. **Build locally** — `pio run -e possan_rev_c`
+2. **Flash to hardware** — test with the P4 firmware build from
+   `dadamachines/ctag-tbd` that will be tagged with the same version
+3. **Smoke test** — boot, sequencer, SPI communication, MIDI, WebUI
+   parameter control, all working together
+4. **Agree on the version tag with Johannes** — both repos use the same
+   semver tag (e.g. `v0.4.2`)
+
+### Tagging the release
+
+```bash
+git tag v0.4.2
+git push origin v0.4.2
+```
+
+Johannes tags the P4 repo within minutes. Both dispatches arrive at the
+CDN independently — the Stable Channel flash page shows both versions.
+
+### After tagging
+
+Verify both dispatches landed:
+```bash
+curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/latest.json \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); \
+    print(f'P4: {d[\"tag\"]}  Pico: {d.get(\"picoVersion\",\"—\")}')"
+```
+
+Both should show `v0.4.2`.
+
 ---
 
 ## How to publish a release
@@ -181,7 +290,7 @@ git push origin v0.4.2
 ```
 
 What happens:
-1. **Your CI** builds the firmware (same as any push)
+1. **Your CI** builds `possan_rev_c` (the Rev C shipping firmware)
 2. **`publish-cdn` job** fires (because the tag starts with `v`)
 3. It computes the SHA-256 of `firmware.uf2` and dispatches to the CDN
 4. **CDN `receive-pico-app.yml`** downloads your artifact, verifies the
@@ -229,6 +338,7 @@ You should see `HTTP/2 200` with a non-zero `content-length`.
 | CDN run shows "SHA-256 mismatch" | Artifact was re-built between jobs | Re-tag and push (delete old tag first) |
 | CDN run shows 404 downloading artifact | Cross-repo artifact access issue | Ask dadamachines to check — may need token adjustment |
 | CDN run doesn't appear at all | Dispatch failed silently | Check the `publish-cdn` job logs for errors in the Dispatch step |
+| Build fails with missing SPI pin | Wrong environment | Make sure CI builds `possan_rev_c`, not `pi2350` |
 
 ---
 
