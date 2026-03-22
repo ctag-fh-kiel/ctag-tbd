@@ -11,8 +11,8 @@ or something went wrong. Firmware updates **never erase** your SD card.
 
      <div class="dada-cta" style="border:2px solid #2563EB;">
        <h3>⭐ Stable Channel</h3>
-       <p>Flash the latest stable firmware release directly from
-       your browser &mdash; no tools required.</p>
+       <p>Flash the latest stable firmware or any previous version
+       directly from your browser &mdash; no tools required.</p>
        <a href="10_stable_channel.html" class="dada-cta-link">Stable Channel &rarr;</a>
      </div>
 
@@ -33,7 +33,6 @@ or something went wrong. Firmware updates **never erase** your SD card.
    </div>
 
    <div class="dada-secondary-links">
-     <a href="30_release_archive.html">Release Archive</a> &middot;
      <a href="50_troubleshooting.html">Troubleshooting</a>
    </div>
 
@@ -47,6 +46,5 @@ or something went wrong. Firmware updates **never erase** your SD card.
    10_stable_channel
    20_staging_channel
    70_webui_versions
-   30_release_archive
    50_troubleshooting
    60_app_manager

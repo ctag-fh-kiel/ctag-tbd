@@ -4,11 +4,11 @@
 Stable Channel
 ****************************
 
-Flash the **latest stable firmware** and **SD card image** to your TBD-16 directly from
+Flash **stable firmware** and the **SD card image** to your TBD-16 directly from
 the browser — no card reader, no terminal commands, no opening the device.
+Use the version selector to flash the **latest release** or any **previous version**.
 
-Firmware artifacts come from the latest
-`GitHub Release <https://github.com/dadamachines/ctag-tbd/releases/latest>`_.
+All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`_.
 
 .. dropdown:: How it Works
 
@@ -111,6 +111,15 @@ Firmware artifacts come from the latest
       .sd-recovery .btn-success   { background: #16A34A; }
       .sd-recovery .btn-secondary { background: #6B7280; }
       .sd-recovery .btn-cyan      { background: #0891B2; }
+      .sd-recovery select {
+        padding: 0.5em 0.8em;
+        border: 1px solid #d1d5db;
+        border-radius: 5px;
+        font-size: 0.9em;
+        width: 100%;
+        max-width: 360px;
+        margin-bottom: 0.5em;
+      }
       .sd-recovery .progress-wrap {
         margin-top: 0.7em;
         background: #E5E7EB;
@@ -240,6 +249,9 @@ Firmware artifacts come from the latest
         body:not([data-theme="light"]) .sd-recovery .step-card {
           background: #1e293b; border-color: #334155;
         }
+        body:not([data-theme="light"]) .sd-recovery select {
+          background: #1e293b; color: #f1f5f9; border-color: #475569;
+        }
         body:not([data-theme="light"]) .sd-recovery .step-hdr { color: #f1f5f9; }
         body:not([data-theme="light"]) .sd-recovery .step-desc { color: #94a3b8; }
         body:not([data-theme="light"]) .sd-recovery .status {
@@ -267,15 +279,18 @@ Firmware artifacts come from the latest
 
     <div class="sd-recovery" id="sdRecovery">
 
-      <!-- ════════ RELEASE INFO ════════ -->
+      <!-- ════════ VERSION SELECTOR ════════ -->
       <div class="step-card active-step" id="cardSelect" style="border-color:#7c3aed; box-shadow:0 0 0 1px #7c3aed;">
         <div class="step-hdr" style="color:#7c3aed;">
-          <span class="step-num" style="background:#7c3aed;">▼</span> Firmware Package
+          <span class="step-num" style="background:#7c3aed;">▼</span> Select Firmware Version
         </div>
         <div class="step-desc">
-          Loading release info from GitHub…
+          Choose a release to flash. The <b>latest stable version</b> is selected by default.
         </div>
-        <div class="status status-info" id="statPkg">Fetching latest release…</div>
+        <select id="versionSelect" disabled>
+          <option value="">Loading releases…</option>
+        </select>
+        <div class="status status-info" id="statPkg">Fetching release list from GitHub…</div>
       </div>
 
       <!-- ════════ PATH CHOOSER ════════ -->
@@ -476,6 +491,7 @@ Firmware artifacts come from the latest
 
     /* ── DOM refs ── */
     var $ = function (id) { return document.getElementById(id); };
+    var versionSelect = $('versionSelect');
 
     /* Path A refs */
     var btnA1Connect = $('btnA1Connect'), btnA1Flash = $('btnA1Flash');
@@ -514,32 +530,47 @@ Firmware artifacts come from the latest
     }
     function hideProg(wrap) { wrap.style.display = 'none'; }
 
-    /* ── Release package info (populated from GitHub API) ── */
-    var RELEASE = null;
-    /* ── Firmware CDN (same-origin GitHub Pages) ── */
+    /* ── State ── */
     var FIRMWARE_CDN = 'https://dadamachines.github.io/dada-tbd-firmware';
     var CHANNEL = 'stable';
     var TUSB_MSC_URL = FIRMWARE_CDN + '/' + CHANNEL + '/p4/tusb_msc.bin';
+    var RELEASES = [];
+    var SELECTED = null;   /* { tag, name, p4Url, picoUrl, zipUrl, hashUrl, htmlUrl } */
+    var PICO_UF2_URL = null;
+    var REBOOT_WAIT = 20;
 
     /* ══════════════════════════════
-       Fetch release info from GitHub API + build CDN URLs
+       Fetch all stable releases from GitHub API
        ══════════════════════════════ */
-    async function fetchRelease() {
-      /* Get release metadata (tag, name, notes URL) from GitHub API */
-      var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases/latest');
+    async function fetchReleases() {
+      var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases?per_page=50');
       if (!resp.ok) throw new Error('GitHub API error: ' + resp.statusText);
-      var data = await resp.json();
+      var releases = await resp.json();
+      return releases.filter(function (r) { return !r.prerelease && !r.draft; });
+    }
 
-      /* Build download URLs from the firmware CDN (same-origin — no CORS issues) */
-      var base = FIRMWARE_CDN + '/' + CHANNEL + '/p4/';
-      return {
-        tag: data.tag_name,
-        name: data.name,
-        p4Url: base + 'dada-tbd-16-' + data.tag_name + '-unified.bin',
-        zipUrl: base + 'tbd-sd-card.zip',
-        hashUrl: base + 'tbd-sd-card-hash.txt',
-        htmlUrl: data.html_url
+    /* Build CDN URLs for P4/Pico + GitHub asset URLs for SD card */
+    function buildUrls(release) {
+      var tag = release.tag_name;
+      var base = FIRMWARE_CDN + '/' + CHANNEL;
+      var urls = {
+        tag: tag,
+        name: release.name,
+        htmlUrl: release.html_url,
+        p4Url: base + '/p4/dada-tbd-16-' + tag + '-unified.bin',
+        picoUrl: base + '/pico/dada-tbd-16-' + tag + '-pico.uf2',
+        zipUrl: null,
+        hashUrl: null
       };
+      /* SD card assets come from the GitHub release (versioned per-release) */
+      if (release.assets) {
+        for (var i = 0; i < release.assets.length; i++) {
+          var a = release.assets[i];
+          if (a.name === 'tbd-sd-card.zip') urls.zipUrl = a.browser_download_url;
+          if (a.name === 'tbd-sd-card-hash.txt') urls.hashUrl = a.browser_download_url;
+        }
+      }
+      return urls;
     }
 
     /* ── Path chooser (global — called from onclick) ── */
@@ -561,82 +592,134 @@ Firmware artifacts come from the latest
     };
 
     /* ══════════════════════════════
-       Pico firmware — from CDN repo
+       Reset all step UIs
        ══════════════════════════════ */
-    var PICO_UF2_URL = null;
+    function resetAllSteps() {
+      /* Path A */
+      btnA1Connect.textContent = 'Connect'; btnA1Connect.disabled = true;
+      btnA1Flash.disabled = true;
+      hideProg(progA1); setStat(statA1, 'Loading…');
+      btnA2Connect.disabled = true; btnA2Flash.disabled = true; btnA2Reboot.disabled = true;
+      hideProg(progA2); setStat(statA2, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
+      cardDoneA.style.display = 'none';
 
-    async function discoverPicoFirmware(tag) {
-      /* Check the CDN for pico firmware availability */
-      var name = 'dada-tbd-16-' + tag + '-pico.uf2';
-      PICO_UF2_URL = FIRMWARE_CDN + '/' + CHANNEL + '/pico/' + name;
-      try {
-        var resp = await fetch(PICO_UF2_URL, { method: 'HEAD' });
-        if (resp.ok) return name;
-      } catch (_) {}
-      PICO_UF2_URL = null;
-      return null;
+      /* Path B */
+      btn1Connect.textContent = 'Connect'; btn1Connect.disabled = true;
+      btn1Go.disabled = true;
+      btn2Pick.disabled = true;
+      btn3Connect.disabled = true; btn3Go.disabled = true;
+      btn4Connect.disabled = true; btn4Flash.disabled = true;
+      btn5Connect.disabled = true; btn5Flash.disabled = true; btn5Reboot.disabled = true;
+      skip1.style.display = 'none';
+      hideProg(prog1); hideProg(prog2); hideProg(prog4); hideProg(prog5);
+      setStat(stat1, 'Select a version, then click <b>Connect</b>.');
+      setStat(stat2, 'Complete Step 1 first.');
+      setStat(stat3, 'Complete Step 2 first. <b>Safely eject the drive</b> before clicking Connect.');
+      setStat(stat4, 'Complete Step 3 first. <b>Power-cycle</b>, then click <b>Connect</b>.');
+      setStat(stat5, 'Complete Step 4 first. Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
+      fileLog.style.display = 'none'; fileLog.textContent = '';
+      cardDone.style.display = 'none';
+
+      /* Hide both paths + path chooser selection */
+      $('pathA').style.display = 'none';
+      $('pathB').style.display = 'none';
+      $('cardPathChooser').style.display = 'none';
+      var oA = $('optionCardA'), oB = $('optionCardB');
+      oA.style.boxShadow = 'none'; oB.style.boxShadow = 'none';
     }
 
     /* ══════════════════════════════
-       INIT — load tools + fetch release
+       Version selection
+       ══════════════════════════════ */
+    function selectVersion(tag) {
+      var isLatest = (RELEASES.length > 0 && RELEASES[0].tag_name === tag);
+      var r = RELEASES.find(function (rel) { return rel.tag_name === tag; });
+      if (!r) return;
+      SELECTED = buildUrls(r);
+      PICO_UF2_URL = SELECTED.picoUrl;
+
+      resetAllSteps();
+
+      if (!SELECTED.zipUrl && !isLatest) {
+        setStat($('statPkg'), '\u26a0 <b>' + SELECTED.tag + '</b> does not include an SD card image. ' +
+          'This release predates the automated build system. ' +
+          '<a href="' + SELECTED.htmlUrl + '" target="_blank">Release notes \u2192</a>', 'err');
+        return;
+      }
+
+      if (isLatest) {
+        /* Latest release — show path chooser (Path A + Path B) */
+        setStat($('statPkg'), '<b>' + SELECTED.name + '</b> (latest) \u2014 ' +
+          '<a href="' + SELECTED.htmlUrl + '" target="_blank">Release notes \u2192</a>', 'info');
+        $('cardPathChooser').style.display = 'block';
+        /* Enable Path A */
+        btnA1Connect.textContent = 'Connect'; btnA1Connect.disabled = false;
+        setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>. Keep <b>back Port&nbsp;#1</b> connected for power.');
+        /* Enable Path B */
+        btn1Connect.textContent = 'Connect'; btn1Connect.disabled = false;
+        skip1.style.display = 'inline-block';
+        setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB-C cables are connected.');
+      } else {
+        /* Older release — force Path B (full SD deploy required) */
+        setStat($('statPkg'), 'Selected <b>' + SELECTED.tag + '</b> \u2014 ' + SELECTED.name +
+          '. SD card image included. ' +
+          '<a href="' + SELECTED.htmlUrl + '" target="_blank">Release notes \u2192</a>', 'info');
+        $('pathA').style.display = 'none';
+        $('pathB').style.display = 'block';
+        btn1Connect.textContent = 'Connect'; btn1Connect.disabled = false;
+        skip1.style.display = 'inline-block';
+        setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB cables are connected: ' +
+          '<b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).');
+      }
+    }
+
+    /* ══════════════════════════════
+       INIT — load tools + fetch releases
        ══════════════════════════════ */
     try {
-      /* Pre-flight checks */
       if (!('serial' in navigator)) {
         setStat($('statPkg'), 'Your browser does not support <b>WebSerial</b>. Use Chrome, Edge, or Opera on desktop.', 'err');
         throw new Error('WebSerial not supported');
       }
 
-      /* Load release + esptool in parallel */
-      var [releaseData, _] = await Promise.all([
-        fetchRelease(),
-        loadEspTool()
+      var [releases, _esp, _pico] = await Promise.all([
+        fetchReleases(),
+        loadEspTool(),
+        loadPicoboot('../_static/picoflash').catch(function (e) {
+          console.warn('Picoboot load failed:', e);
+        })
       ]);
 
-      /* Discover pico firmware (needs tag from release) */
-      var picoFwName = await discoverPicoFirmware(releaseData.tag);
+      RELEASES = releases;
 
-      /* Also try loading Picoboot (non-blocking — Path A Step 2 / Path B Step 5) */
-      try {
-        await loadPicoboot('../_static/picoflash');
-      } catch (e) {
-        console.warn('Picoboot load failed — Pico flash steps will be unavailable:', e);
+      if (RELEASES.length === 0) {
+        setStat($('statPkg'), 'No stable releases found.', 'err');
+        throw new Error('No releases');
       }
 
-      RELEASE = releaseData;
+      /* Populate dropdown */
+      versionSelect.innerHTML = '';
+      RELEASES.forEach(function (r, idx) {
+        var opt = document.createElement('option');
+        opt.value = r.tag_name;
+        opt.textContent = r.tag_name + ' \u2014 ' + r.name + (idx === 0 ? ' (latest)' : '');
+        versionSelect.appendChild(opt);
+      });
+      versionSelect.disabled = false;
 
-      /* Update UI with release info */
-      var desc = $('cardSelect').querySelector('.step-desc');
-      desc.innerHTML = 'Flashing <b>' + RELEASE.tag + '</b> — the latest stable firmware. ' +
-        '<a href="' + RELEASE.htmlUrl + '" target="_blank">View release notes →</a>';
-      setStat($('statPkg'), '<b>' + RELEASE.name + '</b> — P4 firmware' +
-        (picoFwName ? ' + Pico firmware' : '') + ' + SD card image');
-
-      if (!RELEASE.p4Url) {
-        setStat($('statPkg'), 'Release <b>' + RELEASE.tag + '</b> does not contain ctag-tbd.bin. Cannot flash.', 'err');
-        throw new Error('No P4 firmware in release');
-      }
-
-      /* Show path chooser */
-      $('cardPathChooser').style.display = 'block';
-
-      /* Enable buttons */
-      btnA1Connect.textContent = 'Connect';
-      btnA1Connect.disabled = false;
-      setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>. Keep <b>back Port&nbsp;#1</b> connected for power.');
-
-      btn1Connect.textContent = 'Connect';
-      btn1Connect.disabled = false;
-      skip1.style.display = 'inline-block';
-      setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB-C cables are connected: <b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).');
+      selectVersion(RELEASES[0].tag_name);
 
     } catch (e) {
-      if (e.message !== 'WebSerial not supported' && e.message !== 'No P4 firmware in release') {
+      if (e.message !== 'WebSerial not supported' && e.message !== 'No releases') {
         setStat($('statPkg'), 'Failed to load: ' + e.message, 'err');
       }
-      /* Stop — don't wire up any buttons */
       throw e;
     }
+
+    /* ── Version change handler ── */
+    versionSelect.addEventListener('change', function () {
+      selectVersion(versionSelect.value);
+    });
 
     /* ══════════════════════════════
        PATH A — Step A1: Flash ESP32-P4
@@ -664,7 +747,7 @@ Firmware artifacts come from the latest
       btnA1Flash.disabled = true; btnA1Connect.disabled = true;
       try {
         /* unified.bin = bootloader + partition table + OTA data + app at correct offsets */
-        await flashP4(ctxA1, RELEASE.p4Url, 0x0, {
+        await flashP4(ctxA1, SELECTED.p4Url, 0x0, {
           onStatus: function (msg) { setStat(statA1, msg); },
           onProgress: function (pct) { showProg(progA1, progA1Bar, progA1Txt, pct); }
         });
@@ -746,7 +829,6 @@ Firmware artifacts come from the latest
        PATH B — Step 1: Flash MSC + switch OTA
        ══════════════════════════════ */
     var ctxB1 = null;
-    var REBOOT_WAIT = 20;
 
     btn1Connect.addEventListener('click', async function () {
       try {
@@ -767,6 +849,7 @@ Firmware artifacts come from the latest
     btn1Go.addEventListener('click', async function () {
       if (!ctxB1) return;
       btn1Go.disabled = true; btn1Connect.disabled = true;
+      versionSelect.disabled = true;
       try {
         await flashMscAndSwitchOta(ctxB1, TUSB_MSC_URL, {
           onStatus: function (msg) { setStat(stat1, msg); },
@@ -779,6 +862,7 @@ Firmware artifacts come from the latest
         console.error(e);
         setStat(stat1, 'Failed: ' + e.message, 'err');
         btn1Connect.disabled = false;
+        versionSelect.disabled = false;
         await disconnectP4(ctxB1); ctxB1 = null;
       }
     });
@@ -786,6 +870,7 @@ Firmware artifacts come from the latest
     skip1.addEventListener('click', async function () {
       try {
         skip1.style.display = 'none';
+        versionSelect.disabled = true;
         ctxB1 = await connectP4({
           onStatus: function (msg) { setStat(stat1, msg); }
         });
@@ -801,6 +886,7 @@ Firmware artifacts come from the latest
         setStat(stat1, 'Failed: ' + e.message, 'err');
         btn1Connect.disabled = false;
         skip1.style.display = 'inline-block';
+        versionSelect.disabled = false;
         await disconnectP4(ctxB1); ctxB1 = null;
       }
     });
@@ -850,6 +936,11 @@ Firmware artifacts come from the latest
     }
 
     btn2Pick.addEventListener('click', async function () {
+      if (!SELECTED || !SELECTED.zipUrl) {
+        setStat(stat2, 'No SD card image available for this release.', 'err');
+        return;
+      }
+
       var dirHandle;
       try {
         dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
@@ -877,8 +968,8 @@ Firmware artifacts come from the latest
         }
 
         /* Download ZIP with progress */
-        setStat(stat2, 'Downloading SD card image…');
-        var zipResp = await fetch(RELEASE.zipUrl);
+        setStat(stat2, 'Downloading SD card image for <b>' + SELECTED.tag + '</b>…');
+        var zipResp = await fetch(SELECTED.zipUrl);
         if (!zipResp.ok) throw new Error('ZIP download failed: ' + zipResp.statusText);
         var contentLength = parseInt(zipResp.headers.get('Content-Length') || '0', 10);
         var reader = zipResp.body.getReader();
@@ -901,9 +992,14 @@ Firmware artifacts come from the latest
         log('Downloaded ' + (received / 1024 / 1024).toFixed(1) + ' MB');
 
         /* Download hash */
-        var hashResp = await fetch(RELEASE.hashUrl);
-        var sdHash = (await hashResp.text()).trim();
-        log('Hash: ' + sdHash);
+        var sdHash = '';
+        if (SELECTED.hashUrl) {
+          try {
+            var hashResp = await fetch(SELECTED.hashUrl);
+            sdHash = (await hashResp.text()).trim();
+            log('Hash: ' + sdHash);
+          } catch (_) { log('Hash file not available'); }
+        }
 
         /* Extract ZIP */
         setStat(stat2, 'Extracting ZIP…');
@@ -964,17 +1060,19 @@ Firmware artifacts come from the latest
         }
 
         /* Write .version + hash */
-        try {
-          var vh = await dirHandle.getFileHandle('.version', { create: true });
-          var vw = await vh.createWritable(); await vw.write(sdHash); await vw.close();
-          log('FILE .version  (' + sdHash + ')'); written++;
-        } catch (ve) { errors++; log('ERR  .version: ' + ve.message); }
+        if (sdHash) {
+          try {
+            var vh = await dirHandle.getFileHandle('.version', { create: true });
+            var vw = await vh.createWritable(); await vw.write(sdHash); await vw.close();
+            log('FILE .version  (' + sdHash + ')'); written++;
+          } catch (ve) { errors++; log('ERR  .version: ' + ve.message); }
 
-        try {
-          var hh = await dirHandle.getFileHandle('tbd-sd-card-hash.txt', { create: true });
-          var hw = await hh.createWritable(); await hw.write(sdHash); await hw.close();
-          log('FILE tbd-sd-card-hash.txt  (' + sdHash + ')');
-        } catch (he) { log('ERR  tbd-sd-card-hash.txt: ' + he.message); }
+          try {
+            var hh = await dirHandle.getFileHandle('tbd-sd-card-hash.txt', { create: true });
+            var hw = await hh.createWritable(); await hw.write(sdHash); await hw.close();
+            log('FILE tbd-sd-card-hash.txt  (' + sdHash + ')');
+          } catch (he) { log('ERR  tbd-sd-card-hash.txt: ' + he.message); }
+        }
 
         /* Cleanup macOS files */
         setStat(stat2, 'Cleaning up metadata files…');
@@ -1066,7 +1164,7 @@ Firmware artifacts come from the latest
       btn4Flash.disabled = true; btn4Connect.disabled = true;
       try {
         /* unified.bin = bootloader + partition table + OTA data + app at correct offsets */
-        await flashP4(ctxB4, RELEASE.p4Url, 0x0, {
+        await flashP4(ctxB4, SELECTED.p4Url, 0x0, {
           onStatus: function (msg) { setStat(stat4, msg); },
           onProgress: function (pct) { showProg(prog4, prog4Bar, prog4Txt, pct); }
         });

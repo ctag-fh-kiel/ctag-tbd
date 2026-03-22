@@ -1123,15 +1123,16 @@ harmful.
 > development, they can use `esptool.py` or Picoboot CLI directly. These are
 > developer tools, not end-user pages.
 
-#### Version Archive page ✅
+#### Version Archive (merged into Stable Channel) ✅
 
-`30_release_archive.rst` — lets users pick **any previous stable release**
-from a dropdown (populated via GitHub Releases API) and perform a **Full SD
-Card Deploy** (5-step Path B). SD card ZIP + hash are fetched from the
-GitHub Release assets (`browser_download_url`), so every version carries
-its own matching SD card image. P4/Pico firmware come from the CDN
-(`stable/p4/`, `stable/pico/`). Versions without an SD card asset are
-flagged and disabled.
+The version archive functionality was **merged into the Stable Channel page**
+(`10_stable_channel.rst`) as a version selector dropdown. The latest stable
+version is selected by default (both Path A + Path B available). Selecting an
+older version forces Path B (Full SD Deploy) since the SD card image is
+version-specific. SD card ZIP + hash come from GitHub Release assets
+(`browser_download_url`); P4/Pico firmware come from the CDN. Versions
+without an SD card asset are flagged and disabled. `30_release_archive.rst`
+was deleted — fewer pages, same functionality.
 
 #### Build from scratch
 
