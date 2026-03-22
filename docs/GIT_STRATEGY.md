@@ -3701,6 +3701,15 @@ Once these three are in place, possan tags a release → Groovebox .uf2
 arrives in the CDN automatically → flash pages serve it. No manual
 copying, no stale .uf2 seeded from a previous stable release.
 
+#### Release coherence requirement
+
+A tagged release (e.g. v0.4.2) only makes sense when the user gets a
+complete, coherent experience after flashing: matching P4 firmware +
+Pico firmware + SD card image + WebUI. If any component is out of sync
+or missing, the release is useless — users end up with a half-updated
+device. Never tag a firmware release unless all four deliverables are
+aligned and tested together.
+
 #### Build for launch (nice-to-have)
 
 4. **Make `dada-tbd-app-template` public** — the repo is created
@@ -4866,25 +4875,13 @@ Phase 3c — Artifact naming + contributor documentation
   for Phase 3b history rewrite — the re-clone delivers a clean,
   well-documented codebase.
 
-Phase 3b — Git LFS + history rewrite + force-push
-  ─────────────────────────────────────────────────────────────
-  Deferred from Phase 1. Now that CI builds work, flash pages
-  are verified, and old pages are deleted, this is the right
-  time to do the irreversible history rewrite. The team
-  re-clones exactly once, after the full foundation is solid.
-  ─────────────────────────────────────────────────────────────
-  [ ] Enable Git LFS (.gitattributes for *.wav, *.bin, *.uf2, *.zip, *.png, *.jpg)
-  [ ] Run git filter-repo to remove old binary blobs from git history
-  [ ] Force-push cleaned history
-  [ ] Notify team (~10 people) to re-clone
-  Deliverable: .git/ drops from ~350 MB to under ~50 MB. All contributors
-  re-clone once. Future binary assets tracked by LFS.
-
 Phase 4 — Kconfig guards + multi-target CI
   ─────────────────────────────────────────────────────────────
-  Can run in parallel with Phase 3 (no dependency).
-  Kconfig guards are needed before TBD-Core launches and
-  to keep the codebase portable for future upstream adoption.
+  Runs before Phase 3b. Kconfig guards are needed before
+  TBD-Core launches and to keep the codebase portable for
+  future upstream adoption. Doing this before the history
+  rewrite means Phase 3b's re-clone delivers the final
+  codebase shape — contributors clone once, not twice.
   Upstream (ctag-fh-kiel) is dormant — there is nothing to
   merge from p4_main. We move forward; they catch up later.
   ─────────────────────────────────────────────────────────────
@@ -4898,6 +4895,19 @@ Phase 4 — Kconfig guards + multi-target CI
   Deliverable: Codebase builds for TBD-16, TBD-Core, and upstream's
   ESP32-P4-only config. Multi-config CI catches regressions across all
   hardware variants. Upstream can adopt the code whenever they're ready.
+
+Phase 3b — Git LFS + history rewrite + force-push
+  ─────────────────────────────────────────────────────────────
+  Deferred from Phase 1. Runs after Phase 4 so the re-clone
+  delivers the final codebase (Kconfig guards already in
+  place). The team re-clones exactly once.
+  ─────────────────────────────────────────────────────────────
+  [ ] Enable Git LFS (.gitattributes for *.wav, *.bin, *.uf2, *.zip, *.png, *.jpg)
+  [ ] Run git filter-repo to remove old binary blobs from git history
+  [ ] Force-push cleaned history
+  [ ] Notify team (~10 people) to re-clone
+  Deliverable: .git/ drops from ~350 MB to under ~50 MB. All contributors
+  re-clone once. Future binary assets tracked by LFS.
 
 Phase 5 — AnnounceApp + firmware ↔ app compatibility
   ─────────────────────────────────────────────────────────────
@@ -4985,18 +4995,18 @@ Phase 1 ─── Clean slate (delete binaries + rename files + archive)       �
   ▼
 Phase 2 ─── CI pipeline + v0.4.0 + GitHub Releases                      ✅ DONE
   │
-  ├──────────────────────────────────────┐
-  ▼                                      ▼
-Phase 3                                  Phase 4
-CDN repo + flash pages                   Kconfig guards
-+ staging channel                        + multi-target CI
-  │  ✅ CDN repo live                    (independent)
+  │
+  ▼
+Phase 3 ─── CDN repo + flash pages + staging channel             ✅ DONE
+  │  ✅ CDN repo live
   │  ✅ Stable Channel page live
   │  ✅ v0.4.1 pipeline tested
   │  ✅ Hardware flash tested (P4 + SD card)
   │  ✅ CI patch verification added
-  │  ⬜ Pico flash test (deferred)
-  │  ⬜ Staging channel
+  │  ✅ Pico dispatch pipeline tested (app template → CDN → Pages)
+  │
+  ▼
+Phase 4 ─── Kconfig guards + multi-target CI
   │
   ▼
 Phase 3b ── Git LFS + history rewrite + force-push (team re-clones once)
@@ -5011,11 +5021,10 @@ Phase 6 ─── App registry + App Manager catalog
 Phase 7 ─── Plugin adaptation + MultiFX
 ```
 
-**Phases 3 and 4 can run in parallel** — they have no mutual dependency.
-Both depend only on Phase 2. This is the main parallelism opportunity.
-**Phase 3b** runs after Phase 3 — the history rewrite happens only after
-CI, flash pages, and old page deletion are all confirmed working. The team
-re-clones exactly once.
+**Execution order: Phase 3 → Phase 4 → Phase 3b.** Phase 4 runs before
+Phase 3b so the Kconfig restructuring lands first. Phase 3b's re-clone
+then delivers the final codebase shape — contributors clone once, with
+Kconfig guards already in place. The team re-clones exactly once.
 
 ---
 
