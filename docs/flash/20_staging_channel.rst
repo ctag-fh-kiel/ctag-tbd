@@ -605,14 +605,14 @@ or any active feature-test branch build.
     /* Reset all steps when channel changes */
     function resetAllSteps() {
       /* Path A — Connect buttons stay enabled; only action buttons reset */
-      btnA1Connect.disabled = false; btnA1Flash.disabled = true;
+      btnA1Connect.textContent = 'Connect'; btnA1Connect.disabled = false; btnA1Flash.disabled = true;
       hideProg(progA1); setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>.');
       btnA2Connect.disabled = false; btnA2Flash.disabled = true; btnA2Reboot.disabled = true;
       hideProg(progA2); setStat(statA2, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
       cardDoneA.style.display = 'none';
 
       /* Path B — Connect buttons + SD picker stay enabled */
-      btn1Connect.disabled = false; btn1Go.disabled = true;
+      btn1Connect.textContent = 'Connect'; btn1Connect.disabled = false; btn1Go.disabled = true;
       btn2Pick.disabled = false;
       btn3Connect.disabled = false; btn3Go.disabled = true;
       btn4Connect.disabled = false; btn4Flash.disabled = true;
