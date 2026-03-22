@@ -16,7 +16,7 @@
  *   import { loadEspTool, connectP4, flashP4, disconnectP4 } from '../_static/js/tbd-flasher-p4.js';
  *   var esp = await loadEspTool();
  *   var ctx = await connectP4({ onStatus: msg => ... });
- *   await flashP4(ctx, 'https://...ctag-tbd.bin', 0x0, { onProgress: pct => ... });
+ *   await flashP4(ctx, 'https://cdn.example.com/stable/p4/dada-tbd-16-v0.4.1-unified.bin', 0x0, { onProgress: pct => ... });
  *   await disconnectP4(ctx);
  */
 
