@@ -4,7 +4,7 @@
 > repository structure, CI firmware builds, and the upstream relationship
 > with ctag-fh-kiel/ctag-tbd.
 >
-> Date: 2026-03-22 (last updated)
+> Date: 2026-03-23 (last updated)
 >
 > **Product status:** Pre-release. ~10 test users, no shipped product.
 > This means we have a clean slate — no backwards compatibility burden,
@@ -13,11 +13,13 @@
 > advantage of this: aggressive cleanup now, proper infrastructure before
 > the first real release.
 >
-> **Current milestone:** Phases 0–4 and 3c complete. Phase 3b is next
-> (history rewrite), then Phase 5. Four hardware configurations all
-> compile and are CI-verified. Both P4 and Pico repos use identical
-> branch-based CI architecture (5 workflows each). CDN pipeline
-> operational, all hardware tested.
+> **Current milestone:** Phases 0–4, 3c complete. CDN golden master
+> verified. WebUI-aware CI pipeline operational — builds generate WebUI
+> bundles, extract versions, create update packages, and pass
+> `webui_version` through the full dispatch chain. Four hardware configs
+> all compile and are CI-verified. Both P4 and Pico repos use identical
+> branch-based CI architecture (5 workflows each). Phase 3b (history
+> rewrite) is next, then Phase 5.
 >
 > Related documents:
 > - `proposal-branching-strategy.md` — upstream/fork collaboration model
@@ -93,6 +95,9 @@ dadamachines/dada-tbd-firmware (main)               ← firmware CDN
 │   ├── releases.json
 │   ├── p4/
 │   └── pico/
+├── webui-updates/              ← WebUI update packages (mirrored from firmware repo)
+│   ├── webui-update-v0.3.0.zip … webui-update-v0.4.0.zip
+│   └── latest.json             ← version manifest for on-device updater
 └── index.html                  ← root landing page
 ```
 
@@ -104,12 +109,22 @@ dadamachines/dada-tbd-firmware (main)               ← firmware CDN
 ```
 tag push (v*)  →  create-release.yml (main repo)
                     ├── build firmware (Docker: espressif/idf:v5.5.3)
-                    ├── create GitHub Release with artifacts
+                    │     ├── idf.py build
+                    │     ├── build WebUI bundles (build-webui.sh)
+                    │     ├── extract WebUI version (webui-version.json)
+                    │     ├── create unified P4 image
+                    │     ├── create P4 SD card archive
+                    │     └── create WebUI update package (webui-update-v*.zip)
+                    ├── create GitHub Release with all artifacts
                     └── repository_dispatch → dada-tbd-firmware
+                          (includes webui_version in payload)
                           └── receive-firmware.yml
                                 ├── download artifacts from main repo run
                                 ├── copy to stable/p4/ + create versioned pico
+                                ├── copy WebUI package to webui-updates/
                                 ├── write stable/releases.json manifest
+                                │     (includes webuiVersion + webuiUpdate fields)
+                                ├── update webui-updates/latest.json
                                 ├── commit + push
                                 └── deploy to GitHub Pages
 ```
@@ -354,16 +369,16 @@ fully-automated releases.
 | Git | with tags | `git describe --tags --always` for version string |
 
 > **IDF version note:** `idf_component.yml` declares `>=5.5.1` as the
-> minimum, and the current `sdkconfig.defaults` was generated with v5.5.2.
-> However, the project carries **ESP-IDF patches** (see below) that target
-> **v5.5.3** specifically. Use `espressif/idf:v5.5.3` for CI to match
-> what engineers build locally. The Docker image exists on Docker Hub.
+> minimum, and the current `sdkconfig.defaults` was regenerated from a
+> clean ESP-IDF v5.5.3 build (Phase 4). The project carries **ESP-IDF
+> patches** (see below) that target **v5.5.3** specifically. Use
+> `espressif/idf:v5.5.3` for CI to match what engineers build locally.
+> The Docker image exists on Docker Hub.
 
 ### ESP-IDF patches (`patches/` directory)
 
-The experimental branch (`nevvkid/dada-tbd-master-experimental`) adds a
-`patches/` directory with IDF patches applied at CMake configure time. This
-is critical for CI — the patches fix real ESP32-P4 hardware issues:
+The `patches/` directory contains ESP-IDF patches applied at CMake configure
+time. This is critical for CI — the patches fix real ESP32-P4 hardware issues:
 
 **`patches/esp-idf-v5.5.3-p4-fixes.patch`:**
 
@@ -401,14 +416,6 @@ endforeach()
 attempting to apply it. This means CI can use the stock Espressif Docker
 image — the patches are applied automatically during the first build.
 
-> **Important:** These patches and the CMakeLists.txt changes currently live
-> on `nevvkid/dada-tbd-master-experimental` (788 commits ahead of
-> `dada-tbd-master`). They must be merged into `dada-tbd-master` before
-> CI firmware builds will work correctly. The experimental branch also
-> updates `sdkconfig.defaults` to remove stale TinyUSB task config options
-> and adds `--always` to the `git describe` call (so builds without tags
-> still get a version string).
-
 ### Build outputs
 
 ```
@@ -417,8 +424,10 @@ build/
 ├── bootloader/bootloader.bin           ← bootloader
 ├── partition_table/partition-table.bin  ← partition table
 ├── ota_data_initial.bin                ← OTA metadata
-├── dada-tbd-16-p4sd.zip               ← P4 SD card image (WebUI + presets + samples)
-└── dada-tbd-16-p4sd-hash.txt          ← xxh128 hash of P4 SD archive
+├── dada-tbd-sd.zip                     ← P4 SD card image (WebUI + presets + samples)
+├── dada-tbd-sd-hash.txt                ← xxh128 hash of P4 SD archive
+├── webui-update-v{VERSION}.zip         ← WebUI update package (CI-generated)
+└── dada-tbd-16-{name}-unified.bin      ← unified image (created in docs/_static/firmware/p4/)
 ```
 
 The unified firmware image (all 4 binaries merged) is created by the
@@ -435,9 +444,7 @@ esptool.py merge_bin → docs/_static/firmware/p4/<name>-unified.bin
 ### Workflow: Build Firmware (`build-firmware.yml`)
 
 > **Implemented:** See `.github/workflows/build-firmware.yml` for the actual
-> workflow. Key differences from the pseudocode below: `lfs: true` removed
-> (LFS deferred to Phase 3b), `create_sd_archive.sh` first arg is `.`
-> (project root), unified bin uses full naming convention.
+> workflow. The pseudocode below matches the current implementation.
 
 ```yaml
 # .github/workflows/build-firmware.yml
@@ -447,13 +454,16 @@ on:
   workflow_call:
     inputs:
       build_name:
-        description: 'Build name (e.g. possan-tbd-2026-03-19)'
+        description: 'Build identifier (e.g. v0.4.0 or v0.4.0-3-gabc1)'
         required: true
         type: string
     outputs:
       artifact_name:
         description: 'Name of the uploaded artifact'
         value: ${{ jobs.build.outputs.artifact_name }}
+      webui_version:
+        description: 'WebUI version from sdcard_image/data/webui-version.json'
+        value: ${{ jobs.build.outputs.webui_version }}
 
 jobs:
   build:
@@ -462,37 +472,60 @@ jobs:
       image: espressif/idf:v5.5.3
     outputs:
       artifact_name: firmware-${{ inputs.build_name }}
+      webui_version: ${{ steps.webui.outputs.version }}
 
     steps:
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y xxhash
+        run: apt-get update && apt-get install -y xxhash zip
 
       - name: Check out repo
         uses: actions/checkout@v4
         with:
-          lfs: true
           fetch-depth: 0          # needed for git describe version string
           submodules: recursive
 
       - name: Build firmware
         run: |
-          # IDF patches in patches/ are applied automatically by CMakeLists.txt
-          # during configure. No manual patch step needed.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           . $IDF_PATH/export.sh
           idf.py build
+
+      - name: Verify ESP-IDF patches were applied
+        run: |
+          for pf in patches/*.patch; do
+            if git -C "$IDF_PATH" apply --reverse --check "$GITHUB_WORKSPACE/$pf" 2>/dev/null; then
+              echo "  ✅ APPLIED"
+            else
+              echo "  ❌ NOT APPLIED"; exit 1
+            fi
+          done
+
+      - name: Log firmware checksums
+        run: sha256sum build/dada-tbd.bin build/bootloader/bootloader.bin ...
+
+      - name: Build WebUI bundles
+        run: cd sdcard_image/www && bash build-webui.sh
+
+      - name: Extract WebUI version
+        id: webui
+        run: |
+          WEBUI_VERSION=$(python3 -c "import json; print(json.load(open('sdcard_image/data/webui-version.json'))['version'])")
+          echo "version=$WEBUI_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create unified firmware image
         run: |
           . $IDF_PATH/export.sh
-          ./create_unified_p4_firmware.sh "${{ inputs.build_name }}"
+          ./create_unified_p4_firmware.sh "dada-tbd-16-${{ inputs.build_name }}-unified.bin"
 
       - name: Create P4 SD card archive
         run: |
           . $IDF_PATH/export.sh
-          ./create_sd_archive.sh sdcard_image build "$(which xxh128sum)"
-          # Renames output to p4sd naming
-          mv build/dada-*-sd.zip build/dada-${{ inputs.build_name }}-p4sd.zip 2>/dev/null || true
-          mv build/dada-*-sd-hash.txt build/dada-${{ inputs.build_name }}-p4sd-hash.txt 2>/dev/null || true
+          ./create_sd_archive.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/build" "$(which xxh128sum)"
+
+      - name: Create WebUI update package
+        run: |
+          # Collects www/*.gz + data/*.json into a zip with manifest.json
+          # Output: build/webui-update-v${VERSION}.zip
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
@@ -504,15 +537,21 @@ jobs:
             build/bootloader/bootloader.bin
             build/partition_table/partition-table.bin
             build/ota_data_initial.bin
-            build/dada-*-p4sd.zip
-            build/dada-*-p4sd-hash.txt
-            docs/_static/firmware/p4/${{ inputs.build_name }}-unified.bin
+            build/dada-tbd-sd.zip
+            build/dada-tbd-sd-hash.txt
+            build/webui-update-v*.zip
+            docs/_static/firmware/p4/dada-tbd-16-${{ inputs.build_name }}-unified.bin
 ```
 
 **Key details:**
 
 - Uses Espressif's official Docker image (`espressif/idf:v5.5.3`) which has
   the full toolchain, esptool.py, and Python pre-installed.
+- Installs `zip` (for WebUI package) alongside `xxhash`.
+- **WebUI pipeline:** Builds WebUI bundles via `build-webui.sh`, extracts the
+  version from `webui-version.json`, creates a WebUI update package (zip of
+  `www/*.gz` + `data/*.json` + `manifest.json`), and outputs `webui_version`
+  for downstream workflows to include in CDN dispatch.
 - The ESP-IDF patches in `patches/` are applied **automatically** by the
   patch system in `CMakeLists.txt` during `idf.py build` (at CMake configure
   time). No separate patch step is needed in CI — the stock Docker image +
@@ -528,7 +567,8 @@ jobs:
 ### Workflow: Create Release (`create-release.yml`)
 
 > **Implemented:** See `.github/workflows/create-release.yml` for the actual
-> workflow. v0.4.0 and v0.4.1 released successfully via this pipeline.
+> workflow. v0.4.0, v0.4.1, and v0.4.2 released successfully via this
+> pipeline.
 
 This ties the firmware build + GitHub Release + CDN distribution together.
 Triggered on tag push (`v*`) or manual dispatch:
@@ -581,23 +621,27 @@ jobs:
           token: ${{ secrets.FIRMWARE_CDN_TOKEN }}
           repository: dadamachines/dada-tbd-firmware
           event-type: firmware-update
-          client-payload: '{ "channel": "stable", "tag": "...", "run_id": "..." }'
+          client-payload: >-
+            {
+              "channel": "stable",
+              "tag": "...",
+              "run_id": "...",
+              "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}",
+              "webui_version": "${{ needs.firmware.outputs.webui_version }}"
+            }
 ```
 
-The CDN repo's `receive-firmware.yml` handles the dispatch: downloads the
-build artifact from the main repo's CI run, copies files to `stable/p4/` and
-`stable/pico/`, creates a versioned pico copy (`dada-tbd-16-{tag}-pico.uf2`),
-writes `stable/releases.json`, commits, and deploys to GitHub Pages.
+The `webui_version` output from `build-firmware.yml` is passed through
+the dispatch payload so the CDN's `receive-firmware.yml` can record it in
+`releases.json` and update the WebUI update manifest.
 
 ### Workflow: CI on Pull Requests and Push (build-check)
 
 > **Implemented:** See `.github/workflows/ci.yml` for the actual workflow.
-> Key differences: also triggers on push to `dada-tbd-master` (not just PRs),
-> broader path filter (includes sdcard_image/**, sample_rom/**, patches/**,
-> workflow files), uses reusable `build-firmware.yml` instead of inline steps,
-> and adds concurrency group to cancel superseded builds.
+> The pseudocode below matches the current implementation.
 
-To catch build regressions before merge:
+Two CI jobs run on every PR and push to `dada-tbd-master` that touches
+firmware-relevant files:
 
 ```yaml
 # .github/workflows/ci.yml
@@ -606,73 +650,50 @@ name: CI
 on:
   pull_request:
     branches: [dada-tbd-master]
-    paths:
-      - 'main/**'
-      - 'components/**'
-      - 'CMakeLists.txt'
-      - 'sdkconfig.defaults'
+    paths: [main/**, components/**, CMakeLists.txt, sdkconfig*, partitions_*, patches/**, ...]
+  push:
+    branches: [dada-tbd-master]
+    paths: [... same ...]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  # ── Full build for TBD-16 (Config D — the release configuration) ──
   build-check:
+    uses: ./.github/workflows/build-firmware.yml
+    with:
+      build_name: ci-${{ github.sha }}
+
+  # ── Compile-check alternate hardware configurations ──
+  compile-check-configs:
     runs-on: ubuntu-latest
     container:
       image: espressif/idf:v5.5.3
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: tbd-simple
+            overlay: sdkconfig.defaults.tbd-simple
+          - name: tbd-rp2350-only
+            overlay: sdkconfig.defaults.tbd-rp2350-only
+          - name: tbd-sd-only
+            overlay: sdkconfig.defaults.tbd-sd-only
     steps:
-      - name: Install system dependencies
-        run: apt-get update && apt-get install -y xxhash
-
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
-
-      - name: Build firmware
-        run: |
+      - run: |
           . $IDF_PATH/export.sh
-          idf.py build
+          idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;${{ matrix.overlay }}" build
 ```
 
-This runs on PRs that touch firmware code, verifying the build still
-succeeds. It doesn't create releases or deploy — just checks.
-
-### Future: Multi-config CI builds (aligns with Kconfig proposal)
-
-Once the Kconfig flags from `proposal-simple-tbd-config.md` are implemented
-(`CONFIG_TBD_USE_SD_CARD`, `CONFIG_TBD_USE_RP2350`), CI should build and
-verify all four hardware configurations:
-
-```yaml
-# Future addition to ci.yml
-strategy:
-  matrix:
-    config:
-      - name: "Config D — Full TBD-16"
-        sdcard: y
-        rp2350: y
-      - name: "Config C — SD TBD (no RP2350)"
-        sdcard: y
-        rp2350: n
-      - name: "Config B — Sequencer TBD (no SD)"
-        sdcard: n
-        rp2350: y
-      - name: "Config A — Minimal TBD"
-        sdcard: n
-        rp2350: n
-
-steps:
-  - name: Set build config
-    run: |
-      echo "CONFIG_TBD_USE_SD_CARD=${{ matrix.config.sdcard }}" >> sdkconfig.defaults
-      echo "CONFIG_TBD_USE_RP2350=${{ matrix.config.rp2350 }}" >> sdkconfig.defaults
-
-  - name: Build
-    run: |
-      . $IDF_PATH/export.sh
-      idf.py build
-```
-
-This ensures every PR is compatible with all hardware configs, preventing
-regressions in the core platform that would affect upstream ctag-fh-kiel.
+The `build-check` job runs the full reusable workflow (including WebUI
+bundles, patch verification, checksums, and SD archive). The
+`compile-check-configs` matrix verifies that Configs A, B, and C compile
+without errors — these are lightweight builds (no SD archive, no unified
+image). Together they ensure every PR is compatible with all four hardware
+configurations.
 
 ---
 
@@ -771,7 +792,9 @@ no CORS) and populates the UI dynamically. No RST edits needed per build.
         "sdcard": "stable/p4/dada-tbd-16-v0.5.0-sd.zip",
         "hash": "stable/p4/dada-tbd-16-v0.5.0-sd-hash.txt",
         "pico": "stable/pico/dada-tbd-16-v0.5.0-pico.uf2"
-      }
+      },
+      "webuiVersion": "0.4.0",
+      "webuiUpdate": "webui-updates/webui-update-v0.4.0.zip"
     }
   ]
 }
@@ -780,13 +803,15 @@ no CORS) and populates the UI dynamically. No RST edits needed per build.
 **File paths are relative to the CDN root.** The flash page prepends the CDN
 base URL: `https://dadamachines.github.io/dada-tbd-firmware/`.
 
-**Key files:**
+**Key fields:**
 | Key | Description | Used by |
 |---|---|---|
 | `versions[].files.unified` | Unified P4 image (bootloader + partition table + OTA data + app at correct offsets). **Flash to address `0x0`.** | Path A (Quick Update) + Path B (Full SD Deploy) |
 | `versions[].files.sdcard` | SD card zip (tbdsamples + WebUI) | Path B Step 2 |
 | `versions[].files.hash` | SD card hash file | Path B verification |
 | `versions[].files.pico` | Versioned RP2350 Groovebox .uf2 | Path A Step 2 + Path B Step 5 |
+| `versions[].webuiVersion` | WebUI version shipped with this firmware | Flash page display, WebUI updater comparison |
+| `versions[].webuiUpdate` | Path to WebUI update package zip | webui-update.html on-device updater, flash page Path A |
 
 > **tusb_msc location:** Fixed at `apps/tusb-msc/dada-tbd-16-tusb-msc.bin` (not per-channel, not in releases.json). Used by Path B Step 1 to switch device to SD card drive mode.
 
@@ -834,7 +859,7 @@ git push origin dada-tbd-master --tags
 
 This triggers `create-release.yml` which builds the **same code** again
 (deterministic via Docker image) and creates a stable (non-pre-release)
-GitHub Release. The `65_beta_channel.rst` page (renamed to "Stable Channel")
+GitHub Release. The Stable Channel page (`10_stable_channel.rst`)
 gets updated with the new build.
 
 After promotion, reset staging:
@@ -1173,11 +1198,16 @@ Both the docs site (`dadamachines.github.io/ctag-tbd/`) and the CDN share the
 `dadamachines.github.io` origin — same-origin policy satisfied, no CORS issues.
 
 The `receive-firmware.yml` workflow on the CDN repo:
-1. Receives `repository_dispatch` from `create-release.yml`
+1. Receives `repository_dispatch` from `create-release.yml` (includes
+   `webui_version` in client-payload)
 2. Downloads artifacts from the main repo's CI run
 3. Copies to `{channel}/p4/` and creates versioned `{channel}/pico/dada-tbd-16-{tag}-pico.uf2`
-4. Writes `{channel}/releases.json` manifest with all file paths
-5. Commits and deploys to GitHub Pages
+4. Handles WebUI update package: copies `webui-update-v{ver}.zip` to
+   `webui-updates/`, updates `webui-updates/latest.json` (deduplicates if
+   version is unchanged)
+5. Writes `{channel}/releases.json` manifest with all file paths, including
+   `webuiVersion` and `webuiUpdate` fields
+6. Commits and deploys to GitHub Pages
 
 > **Channel structure:** `stable/`, `staging/`, `feature/<name>/` — each with
 > `p4/` and `pico/` subdirectories and a `releases.json` manifest.
@@ -1186,36 +1216,44 @@ The `receive-firmware.yml` workflow on the CDN repo:
 
 ## 9. Versioning Strategy — Firmware, WebUI, and Releases
 
-### Current state: no firmware versions, decoupled WebUI
+### Current state: unified versioning implemented
 
-Today the firmware has **no version number** — builds are identified by
-date-based names (`possan-tbd-2026-03-19`). At compile time, `CMakeLists.txt`
-runs `git describe --tags --abbrev=4` and bakes whatever it returns into
-`version.hpp` as `TBD_FW_VERSION`. Since there are no semantic version tags
-on `dada-tbd-master`, the version string is essentially a git hash.
+Firmware and WebUI share a **unified MAJOR.MINOR** version. Three stable
+releases have shipped: **v0.4.0**, **v0.4.1**, and **v0.4.2**. The WebUI is
+at **0.4.0**.
 
-The WebUI has its **own independent version** in
-`sdcard_image/data/webui-version.json` (currently `0.3.5`), bumped manually
-by the engineer calling `create_webui_update.sh`.
+At compile time, `CMakeLists.txt` runs `git describe --tags --abbrev=4` and
+bakes the result into `version.hpp` as `TBD_FW_VERSION`. With semantic
+version tags on `dada-tbd-master`, stable builds report `v0.4.2`; post-tag
+commits report `v0.4.2-3-gabc1`.
 
-The two are completely decoupled — there is no enforcement that firmware
-version X requires WebUI version Y. The SD card image bakes in whatever
-WebUI version exists at archive time, but WebUI updates can be applied
-independently afterward, potentially creating version mismatches.
+The WebUI version lives in `sdcard_image/data/webui-version.json`
+(currently `0.4.0`). CI reads this during `build-firmware.yml` and packages
+a `webui-update-v0.4.0.zip` automatically. The version is forwarded to the
+CDN via the `webui_version` dispatch parameter.
 
-### The problem for users
+Compatibility is enforced by the **shared MAJOR.MINOR** rule: any firmware
+`0.X.*` works with any WebUI `0.X.*`. The WebUI updater page can warn users
+if the MAJOR.MINOR doesn't match (soft warning, not a hard block).
 
-- A user flashes stable firmware `possan-tbd-2026-03-19` but the WebUI on
-  their SD card is from `0.3.1`. The macro designer crashes because the
-  firmware's REST API changed. There's no way to know the versions don't
-  match.
-- A user sees "firmware: v1.0.0-5-g1234abc" and "WebUI: 0.3.5" in the
-  device config tab. These numbers have no visible relationship. Which goes
-  with which?
-- The staging flash page shows build `dada-tbd-16-staging-v0.4.2-3`. Is that
-  compatible with WebUI 0.3.5? Nobody knows without asking the engineer.
+### The problem this solved
 
-### Proposed versioning scheme: unified MAJOR.MINOR
+Before versioning was implemented, users had no way to tell whether firmware
+and WebUI were compatible:
+
+- A user would flash firmware `possan-tbd-2026-03-19` but the WebUI on
+  their SD card was from `0.3.1`. The macro designer would crash because the
+  firmware's REST API had changed. There was no way to know the versions
+  didn't match.
+- A user would see a git hash for firmware and "WebUI: 0.3.5" in the
+  device config tab. These numbers had no visible relationship.
+- The staging flash page would show a date-based build name. Compatibility
+  with the WebUI was unknowable without asking the engineer.
+
+With unified versioning (v0.4.0+), users see matching MAJOR.MINOR numbers
+and the WebUI updater can warn about mismatches.
+
+### Versioning scheme: unified MAJOR.MINOR
 
 Align firmware and WebUI under a **shared MAJOR.MINOR** version, with
 independent PATCH numbers:
@@ -1408,20 +1446,26 @@ The CDN `releases.json` files include version info:
 
 ```json
 {
-  "builds": [
+  "channel": "stable",
+  "latest": "v0.4.2",
+  "versions": [
     {
-      "name": "dada-tbd-16-staging-v0.4.2-3",
-      "firmwareVersion": "v0.4.2-3-g1a2b3c4",
-      "webuiVersion": "0.4.5",
-      "compatRange": "0.4",
-      "date": "2026-03-20",
-      ...
+      "tag": "v0.4.2",
+      "timestamp": "2026-03-20T12:00:00Z",
+      "files": {
+        "unified": "dada-tbd-unified.bin",
+        "sdcard": "dada-tbd-sd.zip",
+        "hash": "dada-tbd-sd-hash.txt",
+        "pico": "dada-tbd-pico.uf2"
+      },
+      "webuiVersion": "0.4.0",
+      "webuiUpdate": "webui-updates/webui-update-v0.4.0.zip"
     }
   ]
 }
 ```
 
-The flash page can display: "Firmware v0.4.0-15-g1a2b, WebUI 0.4.5,
+The flash page can display: "Firmware v0.4.2, WebUI 0.4.0,
 compatible with any 0.4.x WebUI."
 
 ### How flash pages communicate versioning
@@ -1435,44 +1479,33 @@ compatible with any 0.4.x WebUI."
 
 ### Timeline for adoption
 
-This versioning scheme aligns with the CI migration:
+This versioning scheme was adopted alongside the CI migration:
 
-1. **Phase 1 (CI builds):** Keep date-based names. CI uses `git describe`
-   which already outputs the right format if tags exist.
-2. **Phase 4 (flash page restructure):** Add version display and
+1. ~~**Phase 1 (CI builds):** Keep date-based names. CI uses `git describe`
+   which already outputs the right format if tags exist.~~ **DONE** — CI
+   builds use `git describe` with semantic tags.
+2. ~~**Phase 4 (flash page restructure):** Add version display and
    compatibility info to flash pages. Add the `compatRange` field to
-   manifests.
-3. **First tagged release:** Tag `v0.4.0` on `dada-tbd-master`. Bump
+   manifests.~~ **DONE** — flash pages display version info from
+   `releases.json`; `webuiVersion` field used instead of `compatRange`.
+3. ~~**First tagged release:** Tag `v0.4.0` on `dada-tbd-master`. Bump
    `webui-version.json` to `0.4.0`. From this point, all builds on
-   `dada-tbd-master` automatically get `v0.4.x` version strings.
+   `dada-tbd-master` automatically get `v0.4.x` version strings.~~ **DONE**
+   — v0.4.0, v0.4.1, and v0.4.2 tagged and released.
 4. **WebUI updater enhancement:** Add the MAJOR.MINOR compatibility check.
-   Soft warning only.
+   Soft warning only. *(Not yet implemented.)*
 
-### Starting version: 0.4.0
+### Starting version: 0.4.0 (adopted)
 
-The current WebUI is at `0.3.5`. With only ~10 test users and no shipped
-product, there's no real legacy to protect — but 2+ years of firmware
-development shouldn't look like a v0.1 to the public either. **Start at
-0.4.0.**
+The versioning scheme was adopted starting at 0.4.0 — the natural
+continuation of the existing WebUI numbering (0.3.x). The 0.3.x WebUI
+versions are the implicit "pre-versioning" era.
 
-This is the natural continuation of the existing WebUI numbering. The 0.3.x
-WebUI versions become the implicit "pre-versioning" era. Starting at 0.4.0
-signals maturity without claiming a finished product (that's what 1.0 is
-for).
-
-- `v0.4.0` — first versioned release (current feature set, aligned firmware + WebUI)
-- `v0.5.0` — next release with breaking API changes
-- `v1.0.0` — first "golden master" shipped product
-
-```bash
-# One-time: start the new versioning scheme
-git tag v0.4.0 dada-tbd-master -m "First versioned release"
-git push origin v0.4.0
-
-# Update WebUI version
-echo '{"version":"0.4.0","date":"2026-03-20","description":"First versioned release"}' \
-  > sdcard_image/data/webui-version.json
-```
+- `v0.4.0` — first versioned release (2026-03-XX) ✅
+- `v0.4.1` — bug-fix release ✅
+- `v0.4.2` — latest stable release ✅
+- `v0.5.0` — next release with breaking API changes *(future)*
+- `v1.0.0` — first "golden master" shipped product *(future)*
 
 ---
 
@@ -1547,7 +1580,7 @@ dada-tbd-16-p4sd-v0.4.0.zip        ← P4 SD card image (WebUI + presets + sampl
 dada-tbd-16-p4sd-v0.4.0-hash.txt   ← SHA-256 of P4 SD zip
 ```
 
-This is the same workflow as the existing `65_beta_channel.rst` page:
+This is the same workflow as the Stable Channel page (`10_stable_channel.rst`):
 P4 firmware + Groovebox .uf2 + P4 SD card. Updates are simple — flash the
 new versions of each. The Pico SD card (ships pre-loaded on the device)
 is not touched during standard updates.
@@ -1658,7 +1691,7 @@ The TBD-16 **physically ships** with a Pico SD card pre-loaded with all
 apps (Groovebox, Multi FX, MCL, USB MSC, Debug Probe, UI Test) and the
 `BOOT2350.uf2` bootloader. However, **the default RP2350 firmware is the
 Groovebox flashed standalone** — no bootloader, no boot menu. This keeps
-the update flow simple and identical to the existing `65_beta_channel.rst`
+the update flow simple and identical to the Stable Channel (`10_stable_channel.rst`)
 workflow:
 
 1. Flash the P4 firmware (`dada-tbd-16-v0.4.0.bin`)
@@ -2536,8 +2569,8 @@ Users interact with RP2350 apps at three levels:
 
 #### Path 1: Default setup (recommended — Groovebox standalone)
 
-The standard workflow from the **Stable Channel** flash page, identical to
-the existing `65_beta_channel.rst` flow:
+The standard workflow from the **Stable Channel** flash page
+(`10_stable_channel.rst`):
 
 1. **Flash P4 firmware** (`dada-tbd-16-v0.4.0.bin`) via the web flasher
 2. **Flash Groovebox** (`dada-tbd-16-groovebox-v0.4.0.uf2`) to the RP2350
@@ -3043,8 +3076,8 @@ separate pages — the default Stable Channel and the interactive App Manager:
 #### 1. Stable Channel flash page — default experience
 
 The Stable Channel page handles the standard Groovebox setup: P4 firmware +
-Groovebox .uf2 + P4 SD card. Same workflow as the current
-`65_beta_channel.rst` page:
+Groovebox .uf2 + P4 SD card. Same workflow as
+`10_stable_channel.rst`:
 
 ```
 ═══════════════════════════════════════════════
@@ -4865,6 +4898,30 @@ CDN Golden Master + WebUI Update Restoration (post-Phase 4)
   (on-device updater can check for updates and download packages).
   ✅ COMPLETE
 
+WebUI-Aware CI Pipeline (post-CDN Golden Master)
+  ─────────────────────────────────────────────────────────────
+  Extended the CI pipeline to build WebUI bundles, create
+  webui-update packages, and forward WebUI version metadata to
+  the CDN — ending manual WebUI packaging.
+  ─────────────────────────────────────────────────────────────
+  [x] build-firmware.yml: build WebUI bundles (npm ci + npm run build),
+      extract version from webui-version.json, create webui-update-v*.zip,
+      output webui_version for downstream workflows
+  [x] create-release.yml: forward webui_version in CDN dispatch payload
+  [x] staging-release.yml: forward webui_version in CDN dispatch payload
+  [x] feature-test-release.yml: forward webui_version in CDN dispatch payload
+  [x] CDN receive-firmware.yml: receive webui_version, copy webui-update zip
+      to webui-updates/, update latest.json, add webuiVersion + webuiUpdate
+      fields to releases.json entries (with deduplication guard)
+  [x] Flash pages: Path A reordered to WebUI → P4 → Pico; firmware-only
+      release case handled gracefully ("WebUI is up to date" when unchanged)
+  [x] Audited firmware-only release case: CI always packages WebUI (even if
+      unchanged), CDN deduplicates, device-side updater is source of truth
+  Deliverable: WebUI packaging fully automated in CI. CDN receives and
+  deduplicates WebUI versions. Flash pages guide users through WebUI
+  check before firmware flash.
+  ✅ COMPLETE
+
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────
   Deferred from Phase 1. Runs after Phase 4 so the re-clone
@@ -4981,6 +5038,9 @@ Phase 4 ─── Kconfig guards + multi-target CI                            �
 CDN+WebUI ── Golden master cleanup + WebUI update restoration            ✅ DONE
   │
   ▼
+WebUI CI ── WebUI-aware CI pipeline (automated packaging + CDN dispatch) ✅ DONE
+  │
+  ▼
 Phase 3b ── Git LFS + history rewrite + force-push (team re-clones once)
   │
   ▼
@@ -4993,13 +5053,14 @@ Phase 6 ─── AnnounceApp + compatibility warnings       (was Phase 5)
 Phase 7 ─── Plugin adaptation + MultiFX
 ```
 
-**Execution order: Phase 4 → Phase 3b → Phase 5 → Phase 6.** Phase 4
-runs before Phase 3b so the Kconfig restructuring lands first. Phase 3b's
-re-clone then delivers the final codebase shape. Phase 5 (app registry)
-runs before Phase 6 (AnnounceApp) because the registry infrastructure
-and interactive App Manager page do not require firmware version detection
-— install/remove/sideload all work without it. AnnounceApp adds
-compatibility warnings on top of the working App Manager.
+**Execution order: Phase 4 → CDN+WebUI → WebUI CI → Phase 3b → Phase 5 → Phase 6.**
+Phase 4 runs before Phase 3b so the Kconfig restructuring lands first.
+The CDN golden master and WebUI-aware CI pipeline complete the build/deploy
+infrastructure. Phase 3b's re-clone then delivers the final codebase shape.
+Phase 5 (app registry) runs before Phase 6 (AnnounceApp) because the
+registry infrastructure and interactive App Manager page do not require
+firmware version detection — install/remove/sideload all work without it.
+AnnounceApp adds compatibility warnings on top of the working App Manager.
 
 ---
 
@@ -5026,6 +5087,7 @@ compatibility warnings on top of the working App Manager.
 | CDN golden master (3-repo audit) | Medium | CDN workflows verified end-to-end, releases.json everywhere, no stale artifacts | ✅ Post-Phase 4 |
 | WebUI update system restored | Low | On-device updater works again; 6 zip packages + latest.json restored | ✅ Post-Phase 4 |
 | WebUI updates mirrored to CDN | Low | webui-updates/ in dada-tbd-firmware for same-origin access | ✅ Post-Phase 4 |
+| WebUI-aware CI pipeline | Medium | CI builds WebUI bundles, packages webui-update zip, dispatches version to CDN | ✅ Post-Phase 4 |
 | Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact | ✅ Phase 3 |
 | App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 5 |
 | Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 5 |
@@ -5069,6 +5131,7 @@ compatibility warnings on top of the working App Manager.
 - CDN + Pico + Firmware repo drift → **golden master** (all three repos audited, workflows verified end-to-end)
 - WebUI update zips deleted in Phase 1 → **restored** (6 packages + latest.json recovered, on-device updater works)
 - WebUI updates docs-only → **mirrored to CDN** (webui-updates/ in dada-tbd-firmware)
+- Manual WebUI packaging → **WebUI-aware CI pipeline** (CI builds bundles, creates webui-update zip, dispatches version to CDN; firmware-only releases deduplicate automatically)
 - App registry + App Manager → **interactive catalog** (Phase 5 — no firmware dependency)
 - P4 has no knowledge of Pico app → **AnnounceApp SPI command** (Phase 6)
 - No version check between P4 and Pico → **firmware ↔ app compatibility** (Phase 6)

@@ -116,6 +116,8 @@ The build produces:
 | `ota_data_initial.bin` | `build/ota_data_initial.bin` | OTA boot selector |
 | `dada-tbd-sd.zip` | `build/dada-tbd-sd.zip` | SD card archive (WebUI + samples + data) |
 | `dada-tbd-sd-hash.txt` | `build/dada-tbd-sd-hash.txt` | SD archive integrity hash |
+| `dada-tbd-unified.bin` | `build/dada-tbd-unified.bin` | Merged binary for address 0x0 flash |
+| `webui-update-v*.zip` | `build/webui-update-v*.zip` | WebUI update package (built by CI) |
 
 ### Flash to Device
 
@@ -296,8 +298,11 @@ when firmware-relevant files change** (source code, CMake, sdkconfig,
 patches, sdcard_image, sample_rom, workflows). Docs-only commits do **not**
 trigger a firmware build.
 
-Builds the full firmware in Docker (`espressif/idf:v5.5.3`). Verifies
-ESP-IDF patches are applied and logs checksums. **Does not create a release.**
+Builds the full firmware in Docker (`espressif/idf:v5.5.3`). Also builds
+WebUI bundles, extracts the WebUI version from `webui-version.json`, and
+creates a `webui-update-v*.zip` package. Verifies ESP-IDF patches are
+applied and logs checksums. Outputs `webui_version` for downstream
+workflows. **Does not create a release.**
 
 ### Docs Deploy (`deploy-docs.yml`)
 
@@ -313,20 +318,22 @@ Triggered **only** by pushing a `v*` tag (or manual dispatch):
 git tag v0.5.0 && git push origin v0.5.0
 ```
 
-Pipeline: build firmware → create GitHub Release with all artifacts →
-push to CDN repo → CDN updates `stable/releases.json` and deploys to
-GitHub Pages.
+Pipeline: build firmware + WebUI bundle → create GitHub Release with all
+artifacts → push to CDN repo (including `webui_version`) → CDN updates
+`stable/releases.json` (with `webuiVersion`/`webuiUpdate` fields) and
+deploys to GitHub Pages.
 
 ### Staging Release (`staging-release.yml`)
 
-Triggered on every push to the `staging` branch. Pipeline: build firmware →
-create GitHub pre-release → push to CDN staging channel.
+Triggered on every push to the `staging` branch. Pipeline: build firmware +
+WebUI bundle → create GitHub pre-release → push to CDN staging channel
+(including `webui_version`).
 
 ### Feature Test Release (`feature-test-release.yml`)
 
 Triggered on every push to any `feature-test/*` branch. Pipeline: build
-firmware → create GitHub pre-release → push to CDN with a per-feature
-channel.
+firmware + WebUI bundle → create GitHub pre-release → push to CDN with a
+per-feature channel (including `webui_version`).
 
 ---
 
@@ -353,6 +360,9 @@ feature-test-<name>/
   ├── p4/
   ├── pico/
   └── releases.json
+webui-updates/
+  ├── latest.json       ← latest WebUI version metadata
+  └── webui-update-v*.zip  ← WebUI update packages (deduplicated)
 ```
 
 ### Manifest Format (`releases.json`)
@@ -370,7 +380,9 @@ feature-test-<name>/
         "sdcard": "stable/p4/dada-tbd-16-v0.5.0-sd.zip",
         "hash": "stable/p4/dada-tbd-16-v0.5.0-sd-hash.txt",
         "pico": "stable/pico/dada-tbd-16-v0.5.0-pico.uf2"
-      }
+      },
+      "webuiVersion": "0.5.0",
+      "webuiUpdate": "webui-updates/webui-update-v0.5.0.zip"
     }
   ]
 }
