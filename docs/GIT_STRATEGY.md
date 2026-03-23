@@ -5125,6 +5125,20 @@ Phase 5 — App registry + App Manager catalog + Pico SD bundles
   [x] Add File System Access API for SD card management
       - showDirectoryPicker() → scan tbd-apps/ → install/remove apps
       - SHA-256 verification on downloads, progress bars, file log
+  [x] Rebuild MSC firmware for flash target (dada-tbd-app-template)
+      - v2.0.0: flash-targeted (0x10000000) for Picoboot WebUSB flashing
+      - v1.0.0: RAM-targeted (0x20000000) for SD card / bootloader loading
+      - SdFat PIO SDIO (CLK=GPIO2, CMD=GPIO3, DAT0=GPIO4) + TinyUSB MSC
+      - Hardware-verified: SD card mounts as "TBD-16 SD Card"
+  [x] Add manifest `target` field for RAM/flash release selection
+      - tusb-msc-pico: v2.0.0 target:flash (Step 1), v1.0.0 target:ram (Step 2)
+      - sdRelease(app) prefers target:ram, falls back to releases[0]
+      - releaseCdnUrl(app, rel) + appSdUrl(app) helpers for URL resolution
+      - Safe for all apps — no target field → falls back to latest
+  [x] Fix BOOT2350.uf2 install timing (moved to Step 2)
+      - Previously ran in Step 3 Connect handler after SD card was ejected
+      - Now runs in Step 2 Open SD Card handler while DIR_HANDLE is live
+      - alwaysInstalled app auto-install also moved to Step 2
   [ ] Add "Install Local App" (.uf2 sideload) section (deferred — Phase 5b)
   [x] Add bundle-version.txt reading via File System Access API
       - Pattern integrated in App Manager page
@@ -5133,14 +5147,21 @@ Phase 5 — App registry + App Manager catalog + Pico SD bundles
 
   Testing + contributor onboarding
   ································
-  [ ] Test App Manager: install/remove apps via Picoboot WebUSB
+  [x] Test App Manager: Flash MSC → Open SD → install apps → Flash boot mode
+      - Full 3-step workflow hardware-verified on TBD-16
+      - BOOT2350.uf2 + alwaysInstalled apps install correctly in Step 2
+      - Picoboot flash (bootloader/groovebox) works in Step 3
   [ ] Test App Manager: sideload local .uf2 via File System Access API
-  [ ] Test system tools: flash bootloader + flash nuke via BOOTSEL
+      (deferred — sideload UI not yet built, see Phase 5b)
+  [x] Test system tools: flash bootloader via BOOTSEL (Picoboot WebUSB)
+      - Verified: bootloader flashes at 100%, RP2350 reboots to boot menu
   [ ] Update CDN repo README.md contributor guide
   [ ] Onboard first external contributor (jmamma/MCL → partner manifest)
   Deliverable: App registry fully populated. App Manager interactive with
-  catalog, install/remove, sideload, and system tools. Pico SD bundle
-  downloadable for restore/update scenarios.
+  catalog, install/remove, and system tools. Pico SD bundle downloadable
+  for restore/update scenarios.
+  ✅ PHASE 5 CORE COMPLETE (deferred: sideload UI, Multi FX + MCL manifests,
+     contributor onboarding — blocked on external dependencies or Phase 5b)
 
 Phase 6 — AnnounceApp extensions + firmware ↔ app compatibility
   ─────────────────────────────────────────────────────────────
@@ -5224,12 +5245,14 @@ CDN+WebUI ── Golden master cleanup + WebUI update restoration            ✅
   ▼
 WebUI CI ── WebUI-aware CI pipeline (automated packaging + CDN dispatch) ✅ DONE
   │
-  ▼
-Phase 3b ── Git LFS + history rewrite + force-push (team re-clones once)
-  │
-  ▼
-Phase 5 ─── App registry population + App Manager page + Pico SD bundles
-  │           (registry infra already deployed; AnnounceApp 0xAB merged)
+  ├───────────────────────────────────────────────────────────────────┐
+  ▼                                                                   ▼
+Phase 5 ─── App registry + App Manager + Pico SD bundles  ✅ CORE    Phase 3b
+  │           (MSC firmware, catalog, 3-step workflow,     COMPLETE   Git LFS +
+  │            RAM/flash targets, CDN concurrency fix)                history
+  │           Deferred: sideload UI, Multi FX, MCL,                  rewrite
+  │           contributor onboarding                                  │
+  ├───────────────────────────────────────────────────────────────────┘
   ▼
 Phase 6 ─── AnnounceApp extensions + firmware ↔ app compatibility
   │           (core AnnounceApp done; extends with version + WebUI warnings)
@@ -5237,16 +5260,12 @@ Phase 6 ─── AnnounceApp extensions + firmware ↔ app compatibility
 Phase 7 ─── Plugin adaptation + MultiFX
 ```
 
-**Execution order: Phase 4 → CDN+WebUI → WebUI CI → Phase 3b → Phase 5 → Phase 6.**
-Phase 4 runs before Phase 3b so the Kconfig restructuring lands first.
-The CDN golden master and WebUI-aware CI pipeline complete the build/deploy
-infrastructure. Phase 3b's re-clone then delivers the final codebase shape.
-Phase 5 (app registry) runs before Phase 6 (AnnounceApp extensions) because
-the registry infrastructure is already deployed (apps/, schema, CI workflows)
-and the interactive App Manager page does not require firmware version
-detection — install/remove/sideload all work without it. Core AnnounceApp
-(0xAB) is already merged; Phase 6 extends it with version reporting and
-adds compatibility warnings on top of the working App Manager.
+**Execution order: Phase 4 → CDN+WebUI → WebUI CI → Phase 5 + Phase 3b (parallel) → Phase 6.**
+Phase 5 and Phase 3b are independent — they can run in any order or in
+parallel. Phase 5 core is complete (App Manager + registry + MSC firmware +
+CDN concurrency fix). Phase 3b (Git LFS + history rewrite) can run whenever
+convenient — it does not block or depend on Phase 5. Phase 6 depends on
+Phase 5 (App Manager page must exist for compatibility warnings).
 
 ---
 
@@ -5276,8 +5295,9 @@ adds compatibility warnings on top of the working App Manager.
 | WebUI updates mirrored to CDN | Low | webui-updates/ in dada-tbd-firmware for same-origin access | ✅ Post-Phase 4 |
 | WebUI-aware CI pipeline | Medium | CI builds WebUI bundles, packages webui-update zip, dispatches version to CDN | ✅ Post-Phase 4 |
 | Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact | ✅ Phase 3 |
-| App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 5 (infra ✅, population pending) |
-| Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 5 |
+| App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | ✅ Phase 5 (core complete) |
+| Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB + File System Access | ✅ Phase 5 |
+| MSC firmware (flash + RAM targets) | Medium | Picoboot flashes to RP2350 flash; bootloader loads RAM version from SD | ✅ Phase 5 |
 | AnnounceApp core (SPI 0xAB + REST) | Low | P4 knows active RP2350 app name + flags | ✅ Pre-Phase 5 |
 | AnnounceApp extensions + app compatibility | Medium | Version reporting, compatibility warnings in WebUI + App Manager | Phase 6 |
 | `.jsn` → `.json` file extension rename | Low | 122 files renamed — ✅ DONE | ✅ Phase 1 |
