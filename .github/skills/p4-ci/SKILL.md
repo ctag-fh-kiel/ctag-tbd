@@ -54,7 +54,26 @@ CDN URL base: `https://dadamachines.github.io/dada-tbd-firmware/`
 - **Pico repo** writes ONLY to `{channel}/pico/` — never touches `{channel}/p4/`
 - Both patch their own fields into `{channel}/releases.json`
 - P4 CI preserves any existing `pico` fields when writing the manifest
+- P4 CI also writes the WebUI update package to `webui-updates/` and updates `webui-updates/latest.json`
 - Tag naming ensures binaries are self-identifying: `staging-` prefix for staging, `feature-test-` prefix for features
+
+### WebUI versioning in releases.json
+
+Each version entry in `releases.json` includes WebUI metadata:
+
+```json
+{
+  "tag": "v0.5.0",
+  "timestamp": "2026-03-23T12:00:00Z",
+  "files": { "unified": "...", "sdcard": "...", "hash": "...", "pico": "..." },
+  "webuiVersion": "0.4.0",
+  "webuiUpdate": "webui-updates/webui-update-v0.4.0.zip"
+}
+```
+
+The flash pages use `webuiVersion` and `webuiUpdate` to guide users: **WebUI must be
+updated before firmware flash** to avoid compatibility issues (e.g., the `.jsn` → `.json`
+rename in v0.4.0 would break older firmware that expects `.jsn` files).
 
 ## Workflow Files
 
@@ -79,8 +98,12 @@ The reusable `build-firmware.yml` produces:
 | `dada-tbd-sd.zip` | SD card filesystem archive |
 | `dada-tbd-sd-hash.txt` | xxh128 hash of SD contents |
 | `dada-tbd-16-{tag}-unified.bin` | Unified flash image (all-in-one) |
+| `webui-update-v{version}.zip` | WebUI update package (full, CI-generated) |
 
 Artifact name pattern: `firmware-{build_name}` (retention: 90 days).
+
+The build also outputs `webui_version` (read from `sdcard_image/data/webui-version.json`),
+which is passed to the CDN for inclusion in `releases.json`.
 
 ## Procedures
 
@@ -97,9 +120,9 @@ git push origin v0.5.0
 ```
 
 This triggers `create-release.yml` which:
-1. Builds firmware via `build-firmware.yml`
+1. Builds firmware via `build-firmware.yml` (includes WebUI update package)
 2. Creates a GitHub Release with all artifacts
-3. Dispatches to CDN → `receive-firmware.yml` places files in `stable/p4/`
+3. Dispatches to CDN → `receive-firmware.yml` places files in `stable/p4/` and WebUI package in `webui-updates/`
 
 ### Push to Staging
 
@@ -112,9 +135,9 @@ git push origin staging
 
 This triggers `staging-release.yml` which:
 1. Derives version tag from git: `staging-v{base}-{N}` (e.g. `staging-v0.4.2-3`)
-2. Builds firmware
+2. Builds firmware (includes WebUI update package)
 3. Creates a GitHub pre-release
-4. Dispatches to CDN → files go to `staging/p4/`
+4. Dispatches to CDN → files go to `staging/p4/`, WebUI package to `webui-updates/`
 
 ### Create a Feature Test Build
 
@@ -127,9 +150,9 @@ git push origin feature-test/cool-thing
 
 This triggers `feature-test-release.yml` which:
 1. Derives channel + tag from branch: `feature-test/cool-thing` → tag `feature-test-cool-thing`
-2. Builds firmware
+2. Builds firmware (includes WebUI update package)
 3. Creates a GitHub pre-release (each push overwrites the previous tag)
-4. Dispatches to CDN → files go to `feature-test-cool-thing/p4/`
+4. Dispatches to CDN → files go to `feature-test-cool-thing/p4/`, WebUI package to `webui-updates/`
 
 ### Check CI Status
 
@@ -151,7 +174,7 @@ After any release, verify the CDN has the expected files:
 ```bash
 CHANNEL="stable"  # or staging, feature-test-<name>
 
-# Check releases.json
+# Check releases.json (now includes webuiVersion and webuiUpdate per version)
 curl -s "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/releases.json" | jq .
 
 # Check unified image exists (replace TAG with actual version)
@@ -160,6 +183,9 @@ curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tb
 
 # Check SD card image exists
 curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tbd-16-${TAG}-sd.zip" | head -1
+
+# Check WebUI update package exists
+curl -sI "https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v$(jq -r '.versions[0].webuiVersion' <<< "$(curl -s https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/releases.json)").zip" | head -1
 ```
 
 ## Troubleshooting
@@ -170,6 +196,7 @@ curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tb
 | Release build failed | ESP-IDF build error | Check workflow run logs: `gh run view <id> --log` |
 | CDN not updated | Dispatch failed or CDN workflow failed | Check both repos' Actions tabs |
 | `releases.json` missing pico fields | Expected — P4 CI writes P4 fields only | Pico CI patches pico fields separately |
+| WebUI package not on CDN | `webui_version` output empty or dispatch failed | Check `sdcard_image/data/webui-version.json` exists and build logs |
 | Feature test channel wrong name | Branch name derives the channel | Use `feature-test/<name>` (no nested slashes) |
 | GitHub Release not created | Tag didn't match `v*` pattern | Tag must start with `v` (e.g. `v0.5.0`) |
 

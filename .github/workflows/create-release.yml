@@ -62,7 +62,8 @@ jobs:
               "tag": "${{ inputs.build_name || github.ref_name }}",
               "artifact_name": "firmware-${{ inputs.build_name || github.ref_name }}",
               "run_id": "${{ github.run_id }}",
-              "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}"
+              "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}",
+              "webui_version": "${{ needs.firmware.outputs.webui_version }}"
             }
   # Note: docs are deployed automatically by deploy-docs.yml on branch push.
   # No need to re-deploy here — the branch push always accompanies the tag.

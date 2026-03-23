@@ -14,9 +14,9 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
 
    **Path A — Quick Update** (recommended):
 
-   1. Flashes the selected P4 firmware to the ESP32-P4
-   2. Flashes the RP2350 co-processor firmware
-   3. You update the WebUI over WiFi from the device
+   1. You update the WebUI over WiFi from the device (before flashing firmware)
+   2. Flashes the selected P4 firmware to the ESP32-P4
+   3. Flashes the RP2350 co-processor firmware
 
    **Path B — Full SD Card Deploy** (fresh install / corrupted SD card):
 
@@ -302,7 +302,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
           <div id="optionCardA" style="flex:1; min-width:220px; border:2px solid #0891B2; border-radius:8px; padding:1em 1.2em; cursor:pointer; background:var(--color-background-secondary,#f0fdfa); transition: box-shadow 0.15s, border-color 0.15s;" onclick="choosePath('A')">
             <div style="font-weight:700; font-size:0.95em; color:#0891B2; margin-bottom:0.4em;">⚡ Quick Update <span style="font-size:0.75em; background:#0891B2; color:#fff; padding:0.15em 0.5em; border-radius:3px; vertical-align:middle; margin-left:0.3em;">Recommended</span></div>
             <div style="font-size:0.82em; color:var(--color-foreground-secondary,#555); line-height:1.5;">
-              Flash <b>P4 + Pico firmware</b>, then update the WebUI over WiFi.<br>
+              Update the <b>WebUI over WiFi</b> first, then flash <b>P4 + Pico firmware</b>.<br>
               No SD card erase, no MSC mode — fast &amp; easy.
             </div>
           </div>
@@ -320,13 +320,28 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       </div>
 
       <!-- ════════════════════════════════════════
-           PATH A — Quick Update (firmware only)
+           PATH A — Quick Update (WebUI first, then firmware)
            ════════════════════════════════════════ -->
       <div id="pathA" style="display:none;">
 
+      <!-- A·0 — Update WebUI over WiFi (BEFORE firmware flash) -->
+      <div class="step-card active-step" id="cardA0" style="border-color:#f59e0b;">
+        <div class="step-hdr" style="color:#f59e0b;"><span class="step-num" style="background:#f59e0b;">1</span> Update WebUI over WiFi</div>
+        <div class="step-desc">
+          <b>Update the SD card files before flashing new firmware</b> — the new firmware
+          may not work with outdated WebUI files on the SD card.<br><br>
+          <b>Disconnect all USB cables</b>, wait 3 seconds, then reconnect only <b>back Port&nbsp;#1</b>.
+          Connect your computer to the <b>TBD-16 WiFi</b> network and open
+          <b>http://192.168.4.1/webui-update.html</b>.<br>
+          The updater checks your version automatically — click <b>Install</b> if an update is available.
+          If the page says <b>"Up to date"</b>, skip this step.
+        </div>
+        <div class="status status-info" id="statA0">After the WebUI update completes (or if already up to date), continue to Step 2.</div>
+      </div>
+
       <!-- A·1 — Flash ESP32-P4 -->
-      <div class="step-card active-step" id="cardA1">
-        <div class="step-hdr"><span class="step-num" style="background:#0891B2;">1</span> Flash ESP32-P4 Firmware</div>
+      <div class="step-card" id="cardA1">
+        <div class="step-hdr"><span class="step-num" style="background:#0891B2;">2</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
           Connect the <b>front JTAG port</b> (USB-C&nbsp;#3) and keep <b>back Port&nbsp;#1</b> connected for power.
           Click <b>Connect</b>, then flash <code id="fwNameA1">dada-tbd.bin</code> to the ESP32-P4.
@@ -341,7 +356,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
 
       <!-- A·2 — Flash RP2350 -->
       <div class="step-card" id="cardA2">
-        <div class="step-hdr"><span class="step-num" style="background:#0891B2;">2</span> Flash RP2350 (Pico Firmware)</div>
+        <div class="step-hdr"><span class="step-num" style="background:#0891B2;">3</span> Flash RP2350 (Pico Firmware)</div>
         <div class="step-desc">
           <b>Connect the back USB-C Port&nbsp;#2</b> (closest to the edge).
           You can disconnect the front JTAG cable.
@@ -355,17 +370,6 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         </div>
         <div class="progress-wrap" id="progA2"><div class="progress-bar" id="progA2Bar"></div><span class="progress-text" id="progA2Txt">0 %</span></div>
         <div class="status" id="statA2">Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.</div>
-      </div>
-
-      <!-- A·3 — WebUI over WiFi -->
-      <div class="step-card" id="cardA3" style="border-color:#0891B2;">
-        <div class="step-hdr" style="color:#0891B2;"><span class="step-num" style="background:#0891B2;">3</span> Update WebUI over WiFi</div>
-        <div class="step-desc">
-          <b>Remove all USB cables</b>, wait 3 seconds, then reconnect a single cable to <b>back Port&nbsp;#1</b>.
-          Connect your computer to the TBD-16's WiFi and open <b>http://192.168.4.1/webui-update.html</b>.
-          The updater page will check for the latest WebUI version — click <b>Install</b> to update.
-        </div>
-        <div class="status status-info">After installing, hard-refresh (<b>Ctrl+Shift+R</b> / <b>Cmd+Shift+R</b>) the main page at <b>http://192.168.4.1</b>.</div>
       </div>
 
       <!-- A·DONE -->
@@ -572,7 +576,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         pA.style.display = 'block'; pB.style.display = 'none';
         oA.style.boxShadow = '0 0 0 2px #0891B2'; oA.style.borderColor = '#0891B2';
         oB.style.boxShadow = 'none'; oB.style.borderColor = '#6B7280';
-        st.innerHTML = '\u26a1 <b>Quick Update</b> selected \u2014 flash firmware, then update WebUI over WiFi.';
+        st.innerHTML = '\u26a1 <b>Quick Update</b> selected \u2014 update WebUI over WiFi first, then flash firmware.';
       } else {
         pA.style.display = 'none'; pB.style.display = 'block';
         oB.style.boxShadow = '0 0 0 2px #2563EB'; oB.style.borderColor = '#2563EB';
@@ -796,7 +800,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         await rebootRP2350(ctxA2);
         ctxA2 = null;
         hideProg(progA2);
-        setStat(statA2, '✓ RP2350 rebooted. Now continue to Step 3 — update WebUI over WiFi.', 'ok');
+        setStat(statA2, '✓ RP2350 rebooted. Your TBD-16 is ready!', 'ok');
         cardDoneA.style.display = 'block';
       } catch (e) {
         console.error(e);

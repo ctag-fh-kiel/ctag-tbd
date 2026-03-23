@@ -86,5 +86,6 @@ jobs:
               "tag": "${{ needs.prepare.outputs.channel }}",
               "artifact_name": "firmware-${{ needs.prepare.outputs.channel }}",
               "run_id": "${{ github.run_id }}",
-              "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}"
+              "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}",
+              "webui_version": "${{ needs.firmware.outputs.webui_version }}"
             }

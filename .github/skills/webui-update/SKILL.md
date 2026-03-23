@@ -22,6 +22,23 @@ Create update packages (.zip) that users can apply via `http://192.168.4.1/webui
 - Full SD card erase + reimage → use `tbd-deploy` skill (type: fresh-sd)
 - Writing or editing WebUI source code (JS, HTML, CSS) — just edit files directly
 
+## CI Auto-Generation
+
+Every firmware release (stable, staging, feature-test) **automatically generates a WebUI
+update package** via `build-firmware.yml`. CI reads the version from
+`sdcard_image/data/webui-version.json`, builds the bundles, packages all WebUI + data
+files, and uploads the zip alongside firmware artifacts.
+
+The CDN `receive-firmware.yml` workflow:
+1. Places the package in `webui-updates/webui-update-v{version}.zip`
+2. Updates `webui-updates/latest.json` (used by the on-device updater)
+3. Adds `webuiVersion` and `webuiUpdate` fields to `{channel}/releases.json`
+
+**Manual creation is still needed** when:
+- Shipping a WebUI-only hotfix without a firmware release
+- Creating a package with a subset of files (not a full refresh)
+- Testing changes before committing to a release
+
 ## Key Facts
 
 - Workspace root: the folder containing `CMakeLists.txt`, `sdcard_image/`, `build/`
@@ -52,6 +69,7 @@ Create update packages (.zip) that users can apply via `http://192.168.4.1/webui
 5. **NEVER** set an older version number than what's already installed
 6. **NEVER** skip updating `docs/flash/70_webui_versions.rst` — every release must appear in the version history
 7. **NEVER** pick a version number without checking upstream first — if upstream already has that version, you'll get merge conflicts on the PR
+8. **NEVER** tell users to flash firmware before updating WebUI — for breaking changes (e.g., `.jsn` → `.json` rename), the new firmware won't boot with old SD card files, making the device unable to serve the WebUI updater page
 
 ## File Mapping Reference
 

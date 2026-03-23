@@ -13,6 +13,9 @@ on:
       artifact_name:
         description: "Name of the uploaded artifact"
         value: ${{ jobs.build.outputs.artifact_name }}
+      webui_version:
+        description: "WebUI version from sdcard_image/data/webui-version.json"
+        value: ${{ jobs.build.outputs.webui_version }}
 
 jobs:
   build:
@@ -21,10 +24,11 @@ jobs:
       image: espressif/idf:v5.5.3
     outputs:
       artifact_name: firmware-${{ inputs.build_name }}
+      webui_version: ${{ steps.webui.outputs.version }}
 
     steps:
       - name: Install system dependencies
-        run: apt-get update && apt-get install -y xxhash
+        run: apt-get update && apt-get install -y xxhash zip
 
       - name: Check out repo
         uses: actions/checkout@v4
@@ -59,6 +63,16 @@ jobs:
           sha256sum build/partition_table/partition-table.bin
           sha256sum build/ota_data_initial.bin
 
+      - name: Build WebUI bundles
+        run: cd sdcard_image/www && bash build-webui.sh
+
+      - name: Extract WebUI version
+        id: webui
+        run: |
+          WEBUI_VERSION=$(python3 -c "import json; print(json.load(open('sdcard_image/data/webui-version.json'))['version'])")
+          echo "version=$WEBUI_VERSION" >> "$GITHUB_OUTPUT"
+          echo "WebUI version: $WEBUI_VERSION"
+
       - name: Create unified firmware image
         run: |
           . $IDF_PATH/export.sh
@@ -68,6 +82,65 @@ jobs:
         run: |
           . $IDF_PATH/export.sh
           ./create_sd_archive.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/build" "$(which xxh128sum)"
+
+      - name: Create WebUI update package
+        run: |
+          VERSION="${{ steps.webui.outputs.version }}"
+          BUILD_NAME="${{ inputs.build_name }}"
+          TEMP="build/temp_webui_pkg"
+          OUTPUT="build/webui-update-v${VERSION}.zip"
+          rm -rf "$TEMP" && mkdir -p "$TEMP"
+
+          # Collect www/ assets (.gz files from build-webui.sh)
+          for f in \
+            www/index.html.gz \
+            www/preset-macro-manager.html.gz \
+            www/webui-update.html.gz \
+            www/js/app-bundle.js.gz \
+            www/js/macro-bundle.js.gz \
+            www/js/shoelace-bundle.js.gz \
+            www/shoelace/themes/dark.css.gz \
+            www/shoelace/themes/light.css.gz \
+            www/css/app.css.gz; do
+            if [ -f "sdcard_image/$f" ]; then
+              mkdir -p "$TEMP/$(dirname "$f")"
+              cp "sdcard_image/$f" "$TEMP/$f"
+            fi
+          done
+
+          # Collect data/ JSON files
+          for dir in sp macrodefinitions macrosoundpresets; do
+            if [ -d "sdcard_image/data/$dir" ]; then
+              mkdir -p "$TEMP/data/$dir"
+              cp sdcard_image/data/$dir/*.json "$TEMP/data/$dir/" 2>/dev/null || true
+            fi
+          done
+          for f in webui-version.json favs.json spm-config.json trackdefaults.json synthdefinitions.json; do
+            [ -f "sdcard_image/data/$f" ] && cp "sdcard_image/data/$f" "$TEMP/data/$f"
+          done
+
+          # Create manifest
+          cd "$TEMP"
+          python3 << 'PYEOF'
+          import json, os
+          files = []
+          for root, dirs, fnames in os.walk('.'):
+              for fn in sorted(fnames):
+                  if fn == 'manifest.json': continue
+                  files.append(os.path.join(root, fn)[2:])
+          json.dump({
+              'version': os.environ.get('VERSION', '0.0.0'),
+              'description': 'Full WebUI update (CI-generated)',
+              'files': files
+          }, open('manifest.json', 'w'), indent=2)
+          print(f'Manifest: {len(files)} files')
+          PYEOF
+
+          zip -r -0 "$GITHUB_WORKSPACE/$OUTPUT" .
+          cd "$GITHUB_WORKSPACE" && rm -rf "$TEMP"
+          echo "WebUI package: $OUTPUT ($(wc -c < "$OUTPUT" | tr -d ' ') bytes)"
+        env:
+          VERSION: ${{ steps.webui.outputs.version }}
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
@@ -81,4 +154,5 @@ jobs:
             build/ota_data_initial.bin
             build/dada-tbd-sd.zip
             build/dada-tbd-sd-hash.txt
+            build/webui-update-v*.zip
             docs/_static/firmware/p4/dada-tbd-16-${{ inputs.build_name }}-unified.bin
