@@ -5039,9 +5039,10 @@ Phase 5 — App registry + App Manager catalog + Pico SD bundles
 
   Registry population (seed binaries placed, manifests needed)
   ····························································
-  [ ] Normalize app folder names (no spaces, consistent kebab-case)
-      - "flash nuke" → flash-nuke, tusb_msc-pico → tusb-msc-pico, etc.
-      - Consolidate bootloader/ and tbd-bootloader-v1.1/ into one folder
+  [x] Normalize app folder names (no spaces, consistent kebab-case)
+      - "flash nuke" → flash-nuke, tusb_msc-pico → tusb-msc-pico
+      - Consolidated bootloader/ + tbd-bootloader-v1.1/ into bootloader/
+      - receive-firmware.yml updated for utilities/ path
   [ ] Populate groovebox releases[] with v0.4.x entry
       - Manifest exists, .uf2 committed, releases[] still empty
   [ ] Add tusb-msc-pico manifest.json (Pico mass-storage app)
