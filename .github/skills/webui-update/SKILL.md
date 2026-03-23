@@ -39,6 +39,11 @@ The CDN `receive-firmware.yml` workflow:
 - Creating a package with a subset of files (not a full refresh)
 - Testing changes before committing to a release
 
+**Firmware-only releases** (no WebUI change): CI still generates the package with the
+existing version — this is by design. The CDN's `receive-firmware.yml` deduplicates
+automatically (no new `latest.json` history entry if the version is unchanged). The
+on-device updater shows "✓ WebUI is up to date" and the user skips to firmware flash.
+
 ## Key Facts
 
 - Workspace root: the folder containing `CMakeLists.txt`, `sdcard_image/`, `build/`

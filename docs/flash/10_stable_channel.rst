@@ -326,15 +326,16 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
 
       <!-- A·0 — Update WebUI over WiFi (BEFORE firmware flash) -->
       <div class="step-card active-step" id="cardA0" style="border-color:#f59e0b;">
-        <div class="step-hdr" style="color:#f59e0b;"><span class="step-num" style="background:#f59e0b;">1</span> Update WebUI over WiFi</div>
+        <div class="step-hdr" style="color:#f59e0b;"><span class="step-num" style="background:#f59e0b;">1</span> Check &amp; Update WebUI over WiFi</div>
         <div class="step-desc">
-          <b>Update the SD card files before flashing new firmware</b> — the new firmware
-          may not work with outdated WebUI files on the SD card.<br><br>
+          <b>Check the SD card files before flashing new firmware</b> — some releases require
+          updated WebUI files to boot correctly.<br><br>
           <b>Disconnect all USB cables</b>, wait 3 seconds, then reconnect only <b>back Port&nbsp;#1</b>.
           Connect your computer to the <b>TBD-16 WiFi</b> network and open
           <b>http://192.168.4.1/webui-update.html</b>.<br>
-          The updater checks your version automatically — click <b>Install</b> if an update is available.
-          If the page says <b>"Up to date"</b>, skip this step.
+          The updater checks your version automatically — click <b>Install</b> if an update is available.<br>
+          If the page says <b>"✓ WebUI is up to date"</b>, that's normal — not every firmware
+          release changes the WebUI. Skip this step and continue to Step&nbsp;2.
         </div>
         <div class="status status-info" id="statA0">After the WebUI update completes (or if already up to date), continue to Step 2.</div>
       </div>

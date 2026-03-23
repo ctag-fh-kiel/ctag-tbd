@@ -75,6 +75,11 @@ The flash pages use `webuiVersion` and `webuiUpdate` to guide users: **WebUI mus
 updated before firmware flash** to avoid compatibility issues (e.g., the `.jsn` → `.json`
 rename in v0.4.0 would break older firmware that expects `.jsn` files).
 
+**Firmware-only releases** (e.g., v0.4.5 ships with same WebUI 0.4.2 as v0.4.3): CI still
+builds and packages the WebUI — this is expected. The CDN deduplicates automatically
+(`latest.json` won't create a new version entry if the version is unchanged). The device's
+updater page shows "✓ WebUI is up to date" and the user skips to firmware flash.
+
 ## Workflow Files
 
 All at `.github/workflows/`:

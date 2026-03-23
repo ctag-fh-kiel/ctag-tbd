@@ -878,7 +878,7 @@ version change required editing multiple files.
 | File | Status | Title | Content |
 |---|---|---|---|
 | `index.rst` | **✅ Live** | Flash & Updates | Hub with CTA to Stable Channel |
-| `10_stable_channel.rst` | **✅ Live** | Stable Channel | Two-path flash page: Path A (Quick Update: P4 firmware + Pico), Path B (Full SD Deploy: MSC + SD extract + P4 firmware + Pico). Fetches from CDN. |
+| `10_stable_channel.rst` | **✅ Live** | Stable Channel | Two-path flash page: Path A (Quick Update: WebUI check → P4 firmware → Pico), Path B (Full SD Deploy: MSC + SD extract + P4 firmware + Pico). Fetches from CDN. |
 | `20_staging_channel.rst` | **✅ Live** | Beta Channel | Channel selector (staging + feature-test), CDN-driven, same two-path layout |
 | `30_app_manager.rst` | Placeholder | App Manager | Picoboot WebUSB install/remove, sideload, system tools (Phase 5) |
 | `50_troubleshooting.rst` | **✅ Live** | Troubleshooting | General flash troubleshooting (consolidated from old 67) |
@@ -1332,7 +1332,43 @@ This is a **soft warning**, not a hard block — advanced users can override.
 But most users will understand "your firmware is 0.3, this WebUI needs 0.4,
 update firmware first."
 
-#### SD card image versioning
+#### Firmware-only releases (no WebUI change)
+
+Not every firmware release changes the WebUI. For example, v0.4.5 might ship
+with the same WebUI 0.4.2 that shipped with v0.4.3. This is the **common
+case** for bug-fix and performance releases that only touch C++ firmware or
+Pico code.
+
+**What happens in CI:**
+
+1. `build-firmware.yml` **always** builds the WebUI bundles and creates
+   `webui-update-v0.4.2.zip` — the version comes from
+   `sdcard_image/data/webui-version.json`, which hasn't changed.
+2. All release workflows dispatch `webui_version: "0.4.2"` to the CDN.
+3. `receive-firmware.yml` on the CDN detects the version is unchanged:
+   - The zip overwrites the existing `webui-updates/webui-update-v0.4.2.zip`
+     (identical content, `cp -f`).
+   - `webui-updates/latest.json` is refreshed (url + size) but **no new
+     version history entry** is created (the `OLD_VER != WEBUI_VERSION`
+     guard prevents duplicates).
+   - The new `releases.json` entry for v0.4.5 still records
+     `"webuiVersion": "0.4.2"`, `"webuiUpdate": "webui-updates/webui-update-v0.4.2.zip"`.
+
+**What the user sees:**
+
+1. Flash page Path A, Step 1: "Check & Update WebUI over WiFi"
+2. User opens `webui-update.html` → device compares installed v0.4.2 against
+   CDN v0.4.2 → shows **"✓ WebUI is up to date"**
+3. User skips Step 1, continues to Step 2 (flash P4) and Step 3 (flash Pico)
+4. Device boots normally — firmware 0.4.5 + WebUI 0.4.2, both in the 0.4.x
+   compatibility range.
+
+This is **intentionally low-friction**: CI always packages the WebUI
+(deterministic builds, no conditional logic to maintain), the CDN
+deduplicates automatically, and the device-side updater is the source of
+truth for "do I need an update?" The small cost of re-packaging an unchanged
+zip is negligible compared to the complexity of adding version-change
+detection to CI.
 
 The P4 SD card archive (`dada-tbd-16-p4sd.zip`) includes the WebUI at a
 specific version. When a user does a P4 SD Deploy, they get a matched set:
