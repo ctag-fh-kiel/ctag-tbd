@@ -4785,6 +4785,50 @@ Phase 4 — Kconfig guards + multi-target CI
   Upstream can adopt the Kconfig guards whenever they're ready.
   ✅ PHASE 4 COMPLETE
 
+CDN Golden Master + WebUI Update Restoration (post-Phase 4)
+  ─────────────────────────────────────────────────────────────
+  After Phase 4, a full three-repo audit revealed accumulated
+  drift across the firmware, CDN, and Pico repos. This cleanup
+  session brought all three repos to a verified golden-master
+  state and restored the broken WebUI update system.
+  ─────────────────────────────────────────────────────────────
+  [x] CDN repo (dada-tbd-firmware) golden master cleanup
+      - Converted latest.json → releases.json format across all channels
+      - Removed SHA-named legacy files, unversioned binary copies
+      - Recovered v0.4.1/v0.4.2 SD files from git history
+      - Fixed receive-firmware.yml: jq upsert, versioned pico seeding, legacy cleanup
+      - Fixed receive-pico-app.yml: versioned-only copies, legacy cleanup
+      - Updated index.html with channel links to releases.json
+      - Updated README.md to match actual repo structure
+  [x] Pico repo (tbd-pico-seq3) workflow fixes
+      - staging-release.yml: staging-v{base}-{N} tags via git describe
+      - feature-test-release.yml: channel-name tags
+      - create-release.yml: versioned pico only, writes releases.json
+  [x] Firmware repo CI/CDN alignment
+      - Updated POSSAN_CDN_SETUP.md
+      - Fixed staging and feature-test dispatch workflows
+      - Synced staging + feature-test/test-pipeline branches to dada-tbd-master
+  [x] Verified CI end-to-end: both staging and feature-test pipelines
+      ran successfully through CDN, producing correct releases.json
+  [x] Restored tusb-msc.bin (deleted during cleanup, recovered from git)
+      - Placed at apps/tusb-msc/dada-tbd-16-tusb-msc.bin in CDN repo
+  [x] Restored WebUI update system (broken since Phase 1 cleanup)
+      - Recovered 6 zip files from git history (v0.3.0 through v0.3.5)
+      - Recovered latest.json manifest (version list for on-device updater)
+      - Files restored to docs/_static/updates/ for GitHub Pages serving
+      - Mirrored all WebUI zips + latest.json to CDN repo (webui-updates/)
+      - On-device updater (webui-update.html) can now fetch latest.json
+        from dadamachines.github.io/ctag-tbd/_static/updates/latest.json
+  [x] Cleaned up docs/flash/70_webui_versions.rst
+      - Merged separate Version History table and Downloads table into
+        one unified table with Version, Date, Description, and Download
+      - Moved "How to Update" instructions above the version table
+      - Removed redundant updater page cross-reference
+  Deliverable: All three repos in verified golden-master state. CDN
+  workflows tested end-to-end. WebUI update system fully operational
+  (on-device updater can check for updates and download packages).
+  ✅ COMPLETE
+
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────
   Deferred from Phase 1. Runs after Phase 4 so the re-clone
@@ -4895,7 +4939,10 @@ Phase 3 ─── CDN repo + flash pages + staging channel                    �
 Phase 3c ── Artifact naming + contributor docs                           ✅ DONE
   │
   ▼
-Phase 4 ─── Kconfig guards + multi-target CI
+Phase 4 ─── Kconfig guards + multi-target CI                            ✅ DONE
+  │
+  ▼
+CDN+WebUI ── Golden master cleanup + WebUI update restoration            ✅ DONE
   │
   ▼
 Phase 3b ── Git LFS + history rewrite + force-push (team re-clones once)
@@ -4940,6 +4987,9 @@ compatibility warnings on top of the working App Manager.
 | Git LFS for remaining binaries | Low | Fast clones for engineers | Phase 3b |
 | Branch cleanup (two long-lived branches) | Low | Cleaner repo, less confusion | ✅ Phase 1 |
 | Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | ✅ Phase 4 |
+| CDN golden master (3-repo audit) | Medium | CDN workflows verified end-to-end, releases.json everywhere, no stale artifacts | ✅ Post-Phase 4 |
+| WebUI update system restored | Low | On-device updater works again; 6 zip packages + latest.json restored | ✅ Post-Phase 4 |
+| WebUI updates mirrored to CDN | Low | webui-updates/ in dada-tbd-firmware for same-origin access | ✅ Post-Phase 4 |
 | Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact | ✅ Phase 3 |
 | App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 5 |
 | Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 5 |
@@ -4980,6 +5030,9 @@ compatibility warnings on top of the working App Manager.
 - Git history → **rewrite** (Phase 3b — only 10 people re-clone)
 - Remaining binaries → **Git LFS** (fast clones)
 - Kconfig guards → **portable codebase** (Phase 4 — TBD-Core builds, upstream compatible)
+- CDN + Pico + Firmware repo drift → **golden master** (all three repos audited, workflows verified end-to-end)
+- WebUI update zips deleted in Phase 1 → **restored** (6 packages + latest.json recovered, on-device updater works)
+- WebUI updates docs-only → **mirrored to CDN** (webui-updates/ in dada-tbd-firmware)
 - App registry + App Manager → **interactive catalog** (Phase 5 — no firmware dependency)
 - P4 has no knowledge of Pico app → **AnnounceApp SPI command** (Phase 6)
 - No version check between P4 and Pico → **firmware ↔ app compatibility** (Phase 6)

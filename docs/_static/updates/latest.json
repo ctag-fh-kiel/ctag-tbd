@@ -1,0 +1,39 @@
+{
+  "version": "0.3.5",
+  "date": "2026-03-19",
+  "description": "Export/import fix, updated vol multiplier defaults, Polypad preset update, all definitions",
+  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.5.zip",
+  "size": 433678,
+  "versions": [
+    {
+      "version": "0.3.4",
+      "date": "2026-03-13",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.4.zip",
+      "description": "New WebUI Updater with light theme, reinstall support, and version history"
+    },
+    {
+      "version": "0.3.3",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.3.zip",
+      "description": "New full rompler macro, designer fixes, all definitions and presets"
+    },
+    {
+      "version": "0.3.2",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.2.zip",
+      "description": "Factory preset protection, preset value safety, auto-UI selection"
+    },
+    {
+      "version": "0.3.1",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.1.zip",
+      "description": "Online update workflow test"
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-03-12",
+      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v0.3.0.zip",
+      "description": "Initial WebUI release with full UI refresh"
+    }
+  ]
+}

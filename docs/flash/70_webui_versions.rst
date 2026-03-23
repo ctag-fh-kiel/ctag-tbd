@@ -5,45 +5,6 @@ WebUI Versions
 The TBD-16 WebUI can be updated independently of the firmware using the
 built-in updater at ``http://192.168.4.1/webui-update.html``.
 
-Each version below includes the update package and a summary of changes.
-
-.. list-table:: WebUI Version History
-   :header-rows: 1
-   :widths: 15 15 70
-
-   * - Version
-     - Date
-     - Description
-   * - **0.3.5**
-     - 2026-03-19
-     - Volume multiplier control with factory PIN unlock. Boot Defaults
-       dialog now shows macro definition hint per track. Targeted single-
-       definition reload (fixes crash on save). Export now includes live
-       knob values; bulk import implemented. Updated vol multiplier defaults
-       and Polypad preset. All definitions and presets included.
-   * - **0.3.4**
-     - 2026-03-13
-     - New WebUI Updater with light theme matching Shoelace design,
-       reinstall support (re-apply current version for factory reset),
-       and expandable version history to install older releases.
-   * - **0.3.3**
-     - 2026-03-12
-     - New full rompler macro definition and preset. Designer fixes.
-       All macro definitions and sound presets included.
-   * - **0.3.2**
-     - 2026-03-12
-     - Factory preset protection (lock icons, readonly inputs, hidden
-       Save/Delete for factory presets). Preset value safety (trim to param
-       count, Math.round for firmware compliance). Auto-UI type selection
-       when adding CC mappings. All macro definitions & sound presets included.
-   * - **0.3.1**
-     - 2026-03-12
-     - Online update workflow test. Version bump only — no functional changes.
-   * - **0.3.0**
-     - 2026-03-12
-     - Pre-release with WebUI update workflow. Full UI refresh including
-       plugin manager, sample manager, macro/preset designer, and updater page.
-
 How to Update
 =============
 
@@ -60,28 +21,48 @@ How to Update
    The current WebUI version is shown in the footer of both the main page
    and the macro/preset manager. Click the version link to open the updater.
 
-.. tip::
-   For more details on how the updater works, see
-   `Update WebUI Updater <68_update_updater.html>`_.
-
-Downloads
-=========
+Version History
+===============
 
 .. list-table::
    :header-rows: 1
-   :widths: 20 80
+   :widths: 10 12 58 20
 
    * - Version
+     - Date
+     - Description
      - Download
-   * - v0.3.5
-     - `webui-update-v0.3.5.zip <../_static/updates/webui-update-v0.3.5.zip>`_
-   * - v0.3.4
-     - `webui-update-v0.3.4.zip <../_static/updates/webui-update-v0.3.4.zip>`_
-   * - v0.3.3
-     - `webui-update-v0.3.3.zip <../_static/updates/webui-update-v0.3.3.zip>`_
-   * - v0.3.2
-     - `webui-update-v0.3.2.zip <../_static/updates/webui-update-v0.3.2.zip>`_
-   * - v0.3.1
-     - `webui-update-v0.3.1.zip <../_static/updates/webui-update-v0.3.1.zip>`_
-   * - v0.3.0
-     - `webui-update-v0.3.0.zip <../_static/updates/webui-update-v0.3.0.zip>`_
+   * - **0.3.5**
+     - 2026-03-19
+     - Volume multiplier control with factory PIN unlock. Boot Defaults
+       dialog now shows macro definition hint per track. Targeted single-
+       definition reload (fixes crash on save). Export now includes live
+       knob values; bulk import implemented.
+     - `zip <../_static/updates/webui-update-v0.3.5.zip>`__
+   * - **0.3.4**
+     - 2026-03-13
+     - New WebUI Updater with light theme matching Shoelace design,
+       reinstall support (re-apply current version for factory reset),
+       and expandable version history to install older releases.
+     - `zip <../_static/updates/webui-update-v0.3.4.zip>`__
+   * - **0.3.3**
+     - 2026-03-12
+     - New full rompler macro definition and preset. Designer fixes.
+       All macro definitions and sound presets included.
+     - `zip <../_static/updates/webui-update-v0.3.3.zip>`__
+   * - **0.3.2**
+     - 2026-03-12
+     - Factory preset protection (lock icons, readonly inputs, hidden
+       Save/Delete for factory presets). Preset value safety (trim to param
+       count, Math.round for firmware compliance). Auto-UI type selection
+       when adding CC mappings.
+     - `zip <../_static/updates/webui-update-v0.3.2.zip>`__
+   * - **0.3.1**
+     - 2026-03-12
+     - Online update workflow test. Version bump only — no functional changes.
+     - `zip <../_static/updates/webui-update-v0.3.1.zip>`__
+   * - **0.3.0**
+     - 2026-03-12
+     - Pre-release with WebUI update workflow. Full UI refresh including
+       plugin manager, sample manager, macro/preset designer, and updater page.
+     - `zip <../_static/updates/webui-update-v0.3.0.zip>`__
