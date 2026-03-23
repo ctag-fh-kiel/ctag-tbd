@@ -5052,31 +5052,46 @@ Phase 5 — App registry + App Manager catalog + Pico SD bundles
   [x] Create bootloader manifest.json (boot menu v1.1, system, alwaysInstalled)
   [x] Add README.md to every app folder
       - debug-probe, game, flash-nuke, tusb-msc-pico, bootloader
-  [ ] Create Multi FX manifest + seed .uf2 binary
-  [ ] Create MCL manifest + seed .uf2 binary (partner, jmamma)
-  [ ] Verify app-catalog.json regenerates with all apps listed
+  [ ] Create Multi FX manifest + seed .uf2 binary (deferred — binary not yet available)
+  [ ] Create MCL manifest + seed .uf2 binary (deferred — partner, jmamma)
+  [x] Verify app-catalog.json regenerates with all apps listed
+      - All 6 apps confirmed in catalog (bootloader, debug-probe,
+        flash-nuke, game, groovebox, tusb-msc-pico)
+  [x] Rename CDN binaries to {id}-{version}.uf2 convention
+      - Aligns with receive-pico-app.yml and build-catalog.yml naming
+      - Enables CI to auto-set cdnPath in app-catalog.json
 
   Bundle definitions + Pico SD
   ·····························
-  [ ] Define bundle.schema.json (companion to manifest schema)
-  [ ] Create tbd-16-v0.4.json bundle definition (all default apps + utilities)
-  [ ] Add build-picosd-bundle.yml workflow (assembles Pico SD bundle from registry)
-  [ ] Add bundle-version.txt to Pico SD bundle build output
+  [x] Define bundle.schema.json (companion to manifest schema)
+      - schema/bundle.schema.json in CDN repo
+  [x] Create tbd-16-v0.4.json bundle definition (all default apps + utilities)
+      - bundles/tbd-16-v0.4.json: groovebox, tusb-msc-pico, debug-probe, game
+      - Multi FX + MCL will be added when binaries are available
+  [x] Add build-picosd-bundle.yml workflow (assembles Pico SD bundle from registry)
+      - Workflow in CDN repo (.github/workflows/build-picosd-bundle.yml)
+      - Manual dispatch: target + train inputs
+      - Downloads BOOT2350.uf2 + all apps, SHA-256 verifies, creates ZIP release
+  [x] Add bundle-version.txt to Pico SD bundle build output
+      - Written by build-picosd-bundle.yml into the ZIP root
 
   App Manager page (60_app_manager.rst)
   ······································
-  [ ] Wire app-catalog.json into App Manager page
-      - Currently a 20-line placeholder; needs full implementation
-  [ ] Integrate Picoboot WebUSB for bootloader flashing
-      - Infra exists: tbd-flasher-rp2350.js has loadPicoboot(),
-        connectRP2350(), flashRP2350(), rebootRP2350()
-  [ ] Integrate Picoboot WebUSB for interactive app install
-  [ ] Add "Install Local App" (.uf2 sideload) section
-  [ ] Add bundle-version.txt reading via File System Access API
-      - Pattern already proven in 10_stable_channel.rst and
-        20_staging_channel.rst (showDirectoryPicker)
+  [x] Wire app-catalog.json into App Manager page
+      - Full implementation replacing 20-line placeholder (~1000 lines)
+  [x] Integrate Picoboot WebUSB for bootloader flashing
+      - Uses tbd-flasher-rp2350.js: connectRP2350(), flashRP2350(),
+        rebootRP2350(), disconnectRP2350()
+  [x] Integrate Picoboot WebUSB for interactive app install
+      - Step 1: Flash MSC → Step 2: SD card management → Step 3: Flash boot mode
+  [x] Add File System Access API for SD card management
+      - showDirectoryPicker() → scan tbd-apps/ → install/remove apps
+      - SHA-256 verification on downloads, progress bars, file log
+  [ ] Add "Install Local App" (.uf2 sideload) section (deferred — Phase 5b)
+  [x] Add bundle-version.txt reading via File System Access API
+      - Pattern integrated in App Manager page
   [ ] Add firmware version display (via /api/v2/device?action=getIOCaps → FWV)
-      - Enables compatibility warnings on the App Manager page
+      - Deferred to Phase 6 (AnnounceApp extensions)
 
   Testing + contributor onboarding
   ································
