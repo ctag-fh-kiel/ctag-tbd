@@ -139,7 +139,7 @@ gh run list --repo dadamachines/ctag-tbd --limit 5
 gh run view <run-id> --repo dadamachines/ctag-tbd
 
 # Check CDN for the latest published version
-curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/latest.json | jq .
+curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/releases.json | jq .
 ```
 
 ## Verification
@@ -149,11 +149,11 @@ After any release, verify the CDN has the expected files:
 ```bash
 CHANNEL="stable"  # or staging, feature-test-<name>
 
-# Check latest.json
-curl -s "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/latest.json" | jq .
+# Check releases.json
+curl -s "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/releases.json" | jq .
 
 # Check firmware file exists
-curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tbd.bin" | head -1
+curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tbd-16-app.bin" | head -1
 
 # Check unified image exists
 curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tbd-16-v0.5.0-unified.bin" | head -1
@@ -166,7 +166,7 @@ curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tb
 | CI didn't trigger | Files changed didn't match `paths` filter in `ci.yml` | Check that modified files are in the paths list |
 | Release build failed | ESP-IDF build error | Check workflow run logs: `gh run view <id> --log` |
 | CDN not updated | Dispatch failed or CDN workflow failed | Check both repos' Actions tabs |
-| `latest.json` missing pico fields | Expected — P4 CI writes P4 fields only | Pico CI patches pico fields separately |
+| `releases.json` missing pico fields | Expected — P4 CI writes P4 fields only | Pico CI patches pico fields separately |
 | Feature test channel wrong name | Branch name derives the channel | Use `feature-test/<name>` (no nested slashes) |
 | GitHub Release not created | Tag didn't match `v*` pattern | Tag must start with `v` (e.g. `v0.5.0`) |
 

@@ -314,7 +314,7 @@ git tag v0.5.0 && git push origin v0.5.0
 ```
 
 Pipeline: build firmware → create GitHub Release with all artifacts →
-push to CDN repo → CDN updates `stable/latest.json` and deploys to
+push to CDN repo → CDN updates `stable/releases.json` and deploys to
 GitHub Pages.
 
 ### Staging Release (`staging-release.yml`)
@@ -339,37 +339,47 @@ All release and pre-release firmware is served from
 
 ```
 stable/
-  ├── p4/               ← P4 firmware binaries
+  ├── p4/               ← P4 firmware binaries (device-prefixed)
+  │   └── v0.5.0/       ← per-version SD archive + hash
   ├── pico/             ← RP2350 Groovebox UF2
-  └── latest.json       ← channel manifest
+  └── releases.json     ← channel manifest with version history
 staging/
   ├── p4/
+  │   └── v0.5.0/
   ├── pico/
-  └── latest.json
+  └── releases.json
 feature-test-<name>/
   ├── p4/
+  │   └── v0.5.0/
   ├── pico/
-  └── latest.json
+  └── releases.json
 ```
 
-### Manifest Format (`latest.json`)
+### Manifest Format (`releases.json`)
 
 ```json
 {
-  "tag": "v0.5.0",
   "channel": "stable",
-  "timestamp": "2026-03-22T10:00:00Z",
-  "files": {
-    "unified": "stable/p4/dada-tbd-16-v0.5.0-unified.bin",
-    "p4": "stable/p4/dada-tbd.bin",
-    "bootloader": "stable/p4/bootloader.bin",
-    "partition_table": "stable/p4/partition-table.bin",
-    "ota_data": "stable/p4/ota_data_initial.bin",
-    "sdcard": "stable/p4/dada-tbd-sd.zip",
-    "hash": "stable/p4/dada-tbd-sd-hash.txt",
-    "tusb_msc": "stable/p4/tusb_msc.bin",
-    "pico": "stable/pico/dada-tbd-16-v0.5.0-pico.uf2"
-  }
+  "latest": "v0.5.0",
+  "shared": {
+    "tusb_msc": "stable/p4/dada-tbd-16-tusb-msc.bin",
+    "app": "stable/p4/dada-tbd-16-app.bin",
+    "bootloader": "stable/p4/dada-tbd-16-bootloader.bin",
+    "partitions": "stable/p4/dada-tbd-16-partitions.bin",
+    "otadata": "stable/p4/dada-tbd-16-otadata.bin"
+  },
+  "versions": [
+    {
+      "tag": "v0.5.0",
+      "timestamp": "2026-03-22T10:00:00Z",
+      "files": {
+        "unified": "stable/p4/dada-tbd-16-v0.5.0-unified.bin",
+        "sdcard": "stable/p4/v0.5.0/dada-tbd-16-sd.zip",
+        "hash": "stable/p4/v0.5.0/dada-tbd-16-sd-hash.txt",
+        "pico": "stable/pico/dada-tbd-16-v0.5.0-pico.uf2"
+      }
+    }
+  ]
 }
 ```
 
@@ -377,16 +387,21 @@ feature-test-<name>/
 
 ## Artifact Naming Convention
 
-All public-facing artifacts use the **dadamachines** product name, not the
-upstream `ctag-tbd` project name.
+All public-facing artifacts use the **dadamachines** product name with a
+device prefix (`dada-tbd-16-`) on the CDN. Build outputs keep their
+original names; the CDN receive workflow renames them.
 
-| Artifact | Name | Notes |
-|----------|------|-------|
-| App binary | `dada-tbd.bin` | ESP-IDF output (was `ctag-tbd.bin`) |
-| Unified image | `dada-tbd-16-{tag}-unified.bin` | All partitions merged, flash at `0x0` |
-| SD archive | `dada-tbd-sd.zip` | WebUI + samples + data |
-| SD hash | `dada-tbd-sd-hash.txt` | XXH128 integrity hash |
-| Pico firmware | `dada-tbd-16-{tag}-pico.uf2` | RP2350 Groovebox |
+| Artifact | Build Output | CDN Name | Notes |
+|----------|-------------|----------|-------|
+| App binary | `dada-tbd.bin` | `dada-tbd-16-app.bin` | Device-prefixed on CDN |
+| Bootloader | `bootloader.bin` | `dada-tbd-16-bootloader.bin` | Device-prefixed on CDN |
+| Partitions | `partition-table.bin` | `dada-tbd-16-partitions.bin` | Device-prefixed on CDN |
+| OTA data | `ota_data_initial.bin` | `dada-tbd-16-otadata.bin` | Device-prefixed on CDN |
+| Unified image | — | `dada-tbd-16-{tag}-unified.bin` | All partitions merged, flash at `0x0` |
+| SD archive | `dada-tbd-sd.zip` | `dada-tbd-16-sd.zip` | Also archived per-version |
+| SD hash | `dada-tbd-sd-hash.txt` | `dada-tbd-16-sd-hash.txt` | Also archived per-version |
+| TinyUSB MSC | `tusb_msc.bin` | `dada-tbd-16-tusb-msc.bin` | Device-prefixed on CDN |
+| Pico firmware | — | `dada-tbd-16-{tag}-pico.uf2` | RP2350 Groovebox |
 
 ### Why `dada-tbd` and not `ctag-tbd`?
 

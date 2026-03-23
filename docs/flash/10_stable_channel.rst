@@ -533,44 +533,34 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
     /* ── State ── */
     var FIRMWARE_CDN = 'https://dadamachines.github.io/dada-tbd-firmware';
     var CHANNEL = 'stable';
-    var TUSB_MSC_URL = FIRMWARE_CDN + '/' + CHANNEL + '/p4/tusb_msc.bin';
-    var RELEASES = [];
-    var SELECTED = null;   /* { tag, name, p4Url, picoUrl, zipUrl, hashUrl, htmlUrl } */
+    var CATALOG = null;    /* releases.json object */
+    var VERSIONS = [];     /* catalog.versions array */
+    var SELECTED = null;   /* { tag, p4Url, picoUrl, zipUrl, hashUrl, htmlUrl } */
+    var TUSB_MSC_URL = null;
     var PICO_UF2_URL = null;
     var REBOOT_WAIT = 20;
 
     /* ══════════════════════════════
-       Fetch all stable releases from GitHub API
+       Fetch channel catalog from CDN
        ══════════════════════════════ */
-    async function fetchReleases() {
-      var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases?per_page=50');
-      if (!resp.ok) throw new Error('GitHub API error: ' + resp.statusText);
-      var releases = await resp.json();
-      return releases.filter(function (r) { return !r.prerelease && !r.draft; });
+    async function fetchCatalog() {
+      var resp = await fetch(FIRMWARE_CDN + '/' + CHANNEL + '/releases.json');
+      if (!resp.ok) throw new Error('CDN error: ' + resp.statusText);
+      return resp.json();
     }
 
-    /* Build CDN URLs for P4/Pico + GitHub asset URLs for SD card */
-    function buildUrls(release) {
-      var tag = release.tag_name;
-      var base = FIRMWARE_CDN + '/' + CHANNEL;
-      var urls = {
+    /* Build URLs for a selected version using catalog data */
+    function buildUrls(version) {
+      var tag = version.tag;
+      var f = version.files;
+      return {
         tag: tag,
-        name: release.name,
-        htmlUrl: release.html_url,
-        p4Url: base + '/p4/dada-tbd-16-' + tag + '-unified.bin',
-        picoUrl: base + '/pico/dada-tbd-16-' + tag + '-pico.uf2',
-        zipUrl: null,
-        hashUrl: null
+        htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + tag,
+        p4Url: FIRMWARE_CDN + '/' + f.unified,
+        picoUrl: f.pico ? (FIRMWARE_CDN + '/' + f.pico) : null,
+        zipUrl: f.sdcard ? (FIRMWARE_CDN + '/' + f.sdcard) : null,
+        hashUrl: f.hash ? (FIRMWARE_CDN + '/' + f.hash) : null
       };
-      /* SD card assets come from the GitHub release (versioned per-release) */
-      if (release.assets) {
-        for (var i = 0; i < release.assets.length; i++) {
-          var a = release.assets[i];
-          if (a.name === 'dada-tbd-sd.zip') urls.zipUrl = a.browser_download_url;
-          if (a.name === 'dada-tbd-sd-hash.txt') urls.hashUrl = a.browser_download_url;
-        }
-      }
-      return urls;
     }
 
     /* ── Path chooser (global — called from onclick) ── */
@@ -632,10 +622,10 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
        Version selection
        ══════════════════════════════ */
     function selectVersion(tag) {
-      var isLatest = (RELEASES.length > 0 && RELEASES[0].tag_name === tag);
-      var r = RELEASES.find(function (rel) { return rel.tag_name === tag; });
-      if (!r) return;
-      SELECTED = buildUrls(r);
+      var isLatest = (CATALOG && CATALOG.latest === tag);
+      var ver = VERSIONS.find(function (v) { return v.tag === tag; });
+      if (!ver) return;
+      SELECTED = buildUrls(ver);
       PICO_UF2_URL = SELECTED.picoUrl;
 
       resetAllSteps();
@@ -649,13 +639,13 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
 
       if (isLatest) {
         /* Latest release — show path chooser (Path A + Path B) */
-        setStat($('statPkg'), '<b>' + SELECTED.name + '</b> (latest) \u2014 ' +
+        setStat($('statPkg'), '<b>' + SELECTED.tag + '</b> (latest) \u2014 ' +
           '<a href="' + SELECTED.htmlUrl + '" target="_blank">Release notes \u2192</a>', 'info');
         $('cardPathChooser').style.display = 'block';
       } else {
         /* Older release — force Path B (full SD deploy required) */
-        setStat($('statPkg'), 'Selected <b>' + SELECTED.tag + '</b> \u2014 ' + SELECTED.name +
-          '. SD card image included. ' +
+        setStat($('statPkg'), 'Selected <b>' + SELECTED.tag + '</b>. ' +
+          'SD card image included. ' +
           '<a href="' + SELECTED.htmlUrl + '" target="_blank">Release notes \u2192</a>', 'info');
         $('pathA').style.display = 'none';
         $('pathB').style.display = 'block';
@@ -663,7 +653,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
     }
 
     /* ══════════════════════════════
-       INIT — load tools + fetch releases
+       INIT — load tools + fetch catalog
        ══════════════════════════════ */
     try {
       if (!('serial' in navigator)) {
@@ -671,32 +661,35 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         throw new Error('WebSerial not supported');
       }
 
-      var [releases, _esp, _pico] = await Promise.all([
-        fetchReleases(),
+      var [catalog, _esp, _pico] = await Promise.all([
+        fetchCatalog(),
         loadEspTool(),
         loadPicoboot('../_static/picoflash').catch(function (e) {
           console.warn('Picoboot load failed:', e);
         })
       ]);
 
-      RELEASES = releases;
+      CATALOG = catalog;
+      VERSIONS = catalog.versions || [];
+      TUSB_MSC_URL = catalog.shared && catalog.shared.tusb_msc
+        ? (FIRMWARE_CDN + '/' + catalog.shared.tusb_msc) : null;
 
-      if (RELEASES.length === 0) {
+      if (VERSIONS.length === 0) {
         setStat($('statPkg'), 'No stable releases found.', 'err');
         throw new Error('No releases');
       }
 
       /* Populate dropdown */
       versionSelect.innerHTML = '';
-      RELEASES.forEach(function (r, idx) {
+      VERSIONS.forEach(function (v, idx) {
         var opt = document.createElement('option');
-        opt.value = r.tag_name;
-        opt.textContent = r.tag_name + ' \u2014 ' + r.name + (idx === 0 ? ' (latest)' : '');
+        opt.value = v.tag;
+        opt.textContent = v.tag + (idx === 0 ? ' (latest)' : '');
         versionSelect.appendChild(opt);
       });
       versionSelect.disabled = false;
 
-      selectVersion(RELEASES[0].tag_name);
+      selectVersion(VERSIONS[0].tag);
 
     } catch (e) {
       if (e.message !== 'WebSerial not supported' && e.message !== 'No releases') {

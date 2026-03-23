@@ -79,20 +79,21 @@ dadamachines/dada-tbd-firmware (main)               ← firmware CDN
 │   ├── receive-firmware.yml    ← receives builds via repository_dispatch
 │   └── deploy-pages.yml        ← deploys to GitHub Pages on push
 ├── stable/
-│   ├── latest.json             ← channel manifest (tag, file paths)
+│   ├── releases.json            ← channel manifest with version history
 │   ├── p4/
+│   │   ├── dada-tbd-16-app.bin             ← P4 app partition (device-prefixed)
+│   │   ├── dada-tbd-16-bootloader.bin
+│   │   ├── dada-tbd-16-partitions.bin
+│   │   ├── dada-tbd-16-otadata.bin
+│   │   ├── dada-tbd-16-tusb-msc.bin        ← USB MSC helper
 │   │   ├── dada-tbd-16-v0.4.1-unified.bin  ← P4 unified image (flash to 0x0)
-│   │   ├── dada-tbd.bin         ← P4 app partition only
-│   │   ├── bootloader.bin
-│   │   ├── partition-table.bin
-│   │   ├── ota_data_initial.bin
-│   │   ├── tusb_msc.bin        ← USB MSC helper
-│   │   ├── dada-tbd-sd.zip     ← P4 SD card image
-│   │   └── dada-tbd-sd-hash.txt
+│   │   └── v0.4.1/                         ← per-version SD archive + hash
+│   │       ├── dada-tbd-16-sd.zip
+│   │       └── dada-tbd-16-sd-hash.txt
 │   └── pico/
 │       └── dada-tbd-16-v0.4.1-pico.uf2    ← RP2350 Groovebox firmware
 ├── staging/                    ← staging channel (live)
-│   ├── latest.json
+│   ├── releases.json
 │   ├── p4/
 │   └── pico/
 └── index.html                  ← root landing page
@@ -111,7 +112,7 @@ tag push (v*)  →  create-release.yml (main repo)
                           └── receive-firmware.yml
                                 ├── download artifacts from main repo run
                                 ├── copy to stable/p4/ + create versioned pico
-                                ├── write stable/latest.json manifest
+                                ├── write stable/releases.json manifest
                                 ├── commit + push
                                 └── deploy to GitHub Pages
 ```
@@ -268,8 +269,8 @@ https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.1/dada-tbd-sd.zi
 ```
 https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-v0.4.1-unified.bin
 https://dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-16-v0.4.1-pico.uf2
-https://dadamachines.github.io/dada-tbd-firmware/stable/p4/tusb_msc.bin
-https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-sd.zip
+https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-tusb-msc.bin
+https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-sd.zip
 ```
 
 No firmware binaries committed to the main repo. The flash pages fetch from
@@ -589,7 +590,7 @@ jobs:
 The CDN repo's `receive-firmware.yml` handles the dispatch: downloads the
 build artifact from the main repo's CI run, copies files to `stable/p4/` and
 `stable/pico/`, creates a versioned pico copy (`dada-tbd-16-{tag}-pico.uf2`),
-writes `stable/latest.json`, commits, and deploys to GitHub Pages.
+writes `stable/releases.json`, commits, and deploys to GitHub Pages.
 
 ### Workflow: CI on Pull Requests and Push (build-check)
 
@@ -742,40 +743,47 @@ staging push
             └──▸ receive-firmware.yml
                   ├── copies artifacts to staging/p4/ + staging/pico/
                   ├── creates versioned pico copy
-                  ├── writes staging/latest.json manifest
+                  ├── writes staging/releases.json manifest
                   └── deploys to GitHub Pages
 ```
 ```
-CDN URL: https://dadamachines.github.io/dada-tbd-firmware/staging/latest.json
+CDN URL: https://dadamachines.github.io/dada-tbd-firmware/staging/releases.json
          https://dadamachines.github.io/dada-tbd-firmware/staging/p4/dada-tbd-16-{tag}-unified.bin
          https://dadamachines.github.io/dada-tbd-firmware/staging/pico/dada-tbd-16-{tag}-pico.uf2
 ```
 
-The flash page reads `latest.json` at page load (via `fetch()` — same origin,
+The flash page reads `releases.json` at page load (via `fetch()` — same origin,
 no CORS) and populates the UI dynamically. No RST edits needed per build.
 
-### Manifest format: `{channel}/latest.json` (on CDN repo)
+### Manifest format: `{channel}/releases.json` (on CDN repo)
 
 > **Implemented for stable channel.** See
-> `dadamachines.github.io/dada-tbd-firmware/stable/latest.json` for the live
+> `dadamachines.github.io/dada-tbd-firmware/stable/releases.json` for the live
 > manifest. Staging channel will follow the same format.
 
 ```json
 {
-  "tag": "v0.4.1",
   "channel": "stable",
-  "timestamp": "2026-03-21T20:23:17Z",
-  "files": {
-    "unified": "stable/p4/dada-tbd-16-v0.4.1-unified.bin",
-    "p4": "stable/p4/dada-tbd.bin",
-    "bootloader": "stable/p4/bootloader.bin",
-    "partition_table": "stable/p4/partition-table.bin",
-    "ota_data": "stable/p4/ota_data_initial.bin",
-    "sdcard": "stable/p4/dada-tbd-sd.zip",
-    "hash": "stable/p4/dada-tbd-sd-hash.txt",
-    "tusb_msc": "stable/p4/tusb_msc.bin",
-    "pico": "stable/pico/dada-tbd-16-v0.4.1-pico.uf2"
-  }
+  "latest": "v0.5.0",
+  "shared": {
+    "tusb_msc": "stable/p4/dada-tbd-16-tusb-msc.bin",
+    "app": "stable/p4/dada-tbd-16-app.bin",
+    "bootloader": "stable/p4/dada-tbd-16-bootloader.bin",
+    "partitions": "stable/p4/dada-tbd-16-partitions.bin",
+    "otadata": "stable/p4/dada-tbd-16-otadata.bin"
+  },
+  "versions": [
+    {
+      "tag": "v0.5.0",
+      "timestamp": "2026-03-22T10:00:00Z",
+      "files": {
+        "unified": "stable/p4/dada-tbd-16-v0.5.0-unified.bin",
+        "sdcard": "stable/p4/v0.5.0/dada-tbd-16-sd.zip",
+        "hash": "stable/p4/v0.5.0/dada-tbd-16-sd-hash.txt",
+        "pico": "stable/pico/dada-tbd-16-v0.5.0-pico.uf2"
+      }
+    }
+  ]
 }
 ```
 
@@ -785,11 +793,11 @@ base URL: `https://dadamachines.github.io/dada-tbd-firmware/`.
 **Key files:**
 | Key | Description | Used by |
 |---|---|---|
-| `unified` | Unified P4 image (bootloader + partition table + OTA data + app at correct offsets). **Flash to address `0x0`.** | Path A (Quick Update) + Path B (Full SD Deploy) |
-| `pico` | Versioned RP2350 Groovebox .uf2 | Path A Step 2 + Path B Step 5 |
-| `tusb_msc` | USB MSC helper — switches device to SD card drive mode | Path B Step 1 |
-| `sdcard` | SD card zip (tbdsamples + WebUI) | Path B Step 2 |
-| `p4` | App partition only (for advanced use — not used by flash page) | Manual / CLI |
+| `shared.tusb_msc` | USB MSC helper — switches device to SD card drive mode | Path B Step 1 |
+| `shared.app` | P4 app partition only (advanced use — not used by flash page) | Manual / CLI |
+| `versions[].files.unified` | Unified P4 image (bootloader + partition table + OTA data + app at correct offsets). **Flash to address `0x0`.** | Path A (Quick Update) + Path B (Full SD Deploy) |
+| `versions[].files.sdcard` | SD card zip (tbdsamples + WebUI) | Path B Step 2 |
+| `versions[].files.pico` | Versioned RP2350 Groovebox .uf2 | Path A Step 2 + Path B Step 5 |
 
 > **Why not commit binaries to docs/_static?** Because every build would add
 > ~16 MB to the main repo. With the CDN repo, binaries live outside the main
@@ -1415,11 +1423,11 @@ The `receive-firmware.yml` workflow on the CDN repo:
 1. Receives `repository_dispatch` from `create-release.yml`
 2. Downloads artifacts from the main repo's CI run
 3. Copies to `{channel}/p4/` and creates versioned `{channel}/pico/dada-tbd-16-{tag}-pico.uf2`
-4. Writes `{channel}/latest.json` manifest with all file paths
+4. Writes `{channel}/releases.json` manifest with all file paths
 5. Commits and deploys to GitHub Pages
 
 > **Channel structure:** `stable/`, `staging/`, `feature/<name>/` — each with
-> `p4/` and `pico/` subdirectories and a `latest.json` manifest.
+> `p4/` and `pico/` subdirectories and a `releases.json` manifest.
 
 ---
 
@@ -1983,10 +1991,10 @@ Why combine instead of separate:
 dadamachines/dada-tbd-firmware          ← firmware CDN + app registry
 ├── stable/                             ← P4 firmware channels (dispatch-only)
 │   ├── p4/
-│   │   ├── dada-tbd.bin
-│   │   ├── bootloader.bin
-│   │   ├── partition-table.bin
-│   │   ├── ota_data_initial.bin
+│   │   ├── dada-tbd-16-app.bin
+│   │   ├── dada-tbd-16-bootloader.bin
+│   │   ├── dada-tbd-16-partitions.bin
+│   │   ├── dada-tbd-16-otadata.bin
 │   │   ├── dada-tbd-unified.bin
 │   │   ├── dada-tbd-16-p4sd.zip
 │   │   ├── flash_args.txt
@@ -1994,7 +2002,7 @@ dadamachines/dada-tbd-firmware          ← firmware CDN + app registry
 │   ├── pico/                           ← Pico .uf2 (dispatch-only)
 │   │   ├── pico.uf2
 │   │   └── pico-version.txt
-│   └── latest.json
+│   └── releases.json
 ├── staging/                            ← same structure as stable
 │   └── ...
 ├── feature-test-*/                     ← ephemeral feature channels
@@ -2240,7 +2248,7 @@ by **convention**: same branch name in both repos → same CDN channel.
 │                                                                  │
 │  1. Clone CDN repo using PICO_CDN_TOKEN                          │
 │  2. Place .uf2 in {channel}/pico/                                │
-│  3. Update {channel}/latest.json with Pico version               │
+│  3. Update {channel}/releases.json with Pico version               │
 │  4. Commit + push (triggers GitHub Pages deploy)                 │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -2284,7 +2292,7 @@ Each `publish-cdn` job follows the same pattern:
 2. Computes SHA-256
 3. Clones CDN repo using `PICO_CDN_TOKEN`
 4. Places `.uf2` in `{channel}/pico/` (versioned + latest copy)
-5. Patches `{channel}/latest.json` with Pico version
+5. Patches `{channel}/releases.json` with Pico version
 6. Commits and pushes (triggers GitHub Pages deploy)
 
 The channel is **hardcoded per workflow** — no tag-name parsing needed.
@@ -3659,25 +3667,25 @@ dadamachines/ctag-tbd          possan/tbd-pico-seq3
        │  (CDN repo — GitHub Pages)     │
        │                                │
        │  {channel}/p4/                 │ ← P4 repo only
-       │    dada-tbd.bin, bootloader,   │
-       │    partition-table, unified,   │
-       │    SD zip + hash               │
+       │    dada-tbd-16-app.bin,        │
+       │    bootloader, partitions,     │
+       │    unified, SD zip + hash      │
        │                                │
        │  {channel}/pico/               │ ← Pico repo only
        │    dada-tbd-pico.uf2           │
        │    dada-tbd-16-{tag}-pico.uf2  │
        │                                │
-       │  {channel}/latest.json         │ ← both patch their fields
+       │  {channel}/releases.json       │ ← both patch their fields
        └────────────────────────────────┘
                     │
                     ▼
          dadamachines.github.io
          /dada-tbd-firmware/
-         {channel}/latest.json
+         {channel}/releases.json
 ```
 
 The two pipelines are **independent and asynchronous**. Each writes
-only its own files and patches only its own fields in `latest.json`.
+only its own files and patches only its own fields in `releases.json`.
 Between the two pushes, the manifest shows mismatched versions. This
 window is typically seconds to minutes.
 
@@ -3710,7 +3718,7 @@ Both CI pipelines run (~2–5 min each) and dispatch to the CDN.
 
 **Step 4 — Verify CDN convergence.** After both dispatches land:
 ```bash
-curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/latest.json \
+curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/releases.json \
   | python3 -c "import sys,json; d=json.load(sys.stdin); \
     print(f'P4: {d[\"tag\"]}  Pico: {d.get(\"picoVersion\",\"—\")}')"
 ```
@@ -3719,7 +3727,7 @@ Actions tab and re-dispatch.
 
 ##### The inconsistency window
 
-Between the two dispatches, `stable/latest.json` briefly shows
+Between the two dispatches, `stable/releases.json` briefly shows
 mismatched versions. This is acceptable because:
 
 1. **The window is short** — seconds to minutes, not hours
@@ -3754,11 +3762,11 @@ versions match. For launch this is unnecessary overhead.
 **Separation of concerns:**
 - `receive-firmware.yml` in the CDN repo handles P4 firmware + SD card +
   hash only. It writes `{channel}/p4/` files and the non-pico fields in
-  `{channel}/latest.json`. It preserves existing pico fields if already
+  `{channel}/releases.json`. It preserves existing pico fields if already
   set.
 - Possan's `publish-cdn` job handles Pico firmware only. It writes
   `{channel}/pico/` files and patches the `pico` and `picoVersion`
-  fields into `{channel}/latest.json`.
+  fields into `{channel}/releases.json`.
 - Neither pipeline touches the other's files. This eliminates the
   cross-repo seeding problem.
 

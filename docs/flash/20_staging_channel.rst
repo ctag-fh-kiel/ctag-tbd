@@ -528,14 +528,14 @@ or any active feature-test branch build.
     var RELEASE = null;
     var FIRMWARE_CDN = 'https://dadamachines.github.io/dada-tbd-firmware';
     var CHANNEL = 'staging';
-    var TUSB_MSC_URL = FIRMWARE_CDN + '/stable/p4/tusb_msc.bin';
+    var TUSB_MSC_URL = null;
     var channelSelect = $('channelSelect');
 
     /* ══════════════════════════════
        Channel discovery + loading
        ══════════════════════════════ */
 
-    /* Discover available channels by checking CDN manifests */
+    /* Discover available channels by checking CDN catalogs */
     async function discoverChannels() {
       var channels = [{ name: 'staging', label: 'Staging (latest pre-release)' }];
 
@@ -563,43 +563,47 @@ or any active feature-test branch build.
       return channels;
     }
 
-    /* Load firmware info for a given channel */
+    /* Load firmware info for a given channel from its releases.json */
     async function loadChannel(channelName) {
       CHANNEL = channelName;
 
-      if (channelName === 'staging') {
-        /* Staging: get the latest pre-release from GitHub API */
-        var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases');
-        if (!resp.ok) throw new Error('GitHub API error: ' + resp.statusText);
-        var releases = await resp.json();
-        var data = releases.find(function (r) { return r.prerelease; });
-        if (!data) throw new Error('No staging pre-release found');
+      var catalogUrl = FIRMWARE_CDN + '/' + channelName + '/releases.json';
+      var resp = await fetch(catalogUrl);
+      if (!resp.ok) throw new Error('Channel catalog not found: ' + channelName);
+      var catalog = await resp.json();
 
-        var base = FIRMWARE_CDN + '/staging/p4/';
-        return {
-          tag: data.tag_name,
-          name: data.name,
-          p4Url: base + 'dada-tbd-16-' + data.tag_name + '-unified.bin',
-          zipUrl: base + 'dada-tbd-sd.zip',
-          hashUrl: base + 'dada-tbd-sd-hash.txt',
-          htmlUrl: data.html_url
-        };
-      } else {
-        /* Feature-test: fetch CDN manifest directly */
-        var manifestUrl = FIRMWARE_CDN + '/' + channelName + '/latest.json';
-        var resp = await fetch(manifestUrl);
-        if (!resp.ok) throw new Error('Channel manifest not found: ' + channelName);
-        var manifest = await resp.json();
-
-        return {
-          tag: manifest.tag,
-          name: channelName + ' @ ' + manifest.tag.slice(-8),
-          p4Url: FIRMWARE_CDN + '/' + manifest.files.unified,
-          zipUrl: FIRMWARE_CDN + '/' + manifest.files.sdcard,
-          hashUrl: FIRMWARE_CDN + '/' + manifest.files.hash,
-          htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + manifest.tag
-        };
+      if (!catalog.versions || catalog.versions.length === 0) {
+        throw new Error('No versions in ' + channelName + ' channel');
       }
+
+      /* Use the latest version (first in array) */
+      var latest = catalog.versions[0];
+      var f = latest.files;
+
+      /* Set TUSB_MSC_URL from shared files (fall back to stable) */
+      if (catalog.shared && catalog.shared.tusb_msc) {
+        TUSB_MSC_URL = FIRMWARE_CDN + '/' + catalog.shared.tusb_msc;
+      } else {
+        /* Seed from stable channel */
+        try {
+          var stableResp = await fetch(FIRMWARE_CDN + '/stable/releases.json');
+          if (stableResp.ok) {
+            var stableCatalog = await stableResp.json();
+            if (stableCatalog.shared && stableCatalog.shared.tusb_msc) {
+              TUSB_MSC_URL = FIRMWARE_CDN + '/' + stableCatalog.shared.tusb_msc;
+            }
+          }
+        } catch (_) {}
+      }
+
+      return {
+        tag: latest.tag,
+        name: channelName + ' @ ' + latest.tag,
+        p4Url: f.unified ? (FIRMWARE_CDN + '/' + f.unified) : null,
+        zipUrl: f.sdcard ? (FIRMWARE_CDN + '/' + f.sdcard) : null,
+        hashUrl: f.hash ? (FIRMWARE_CDN + '/' + f.hash) : null,
+        htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + latest.tag
+      };
     }
 
     /* Reset all steps when channel changes */
