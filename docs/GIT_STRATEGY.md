@@ -78,7 +78,11 @@ CORS issues arise.
 ```
 dadamachines/dada-tbd-firmware (main)               ← firmware CDN
 ├── .github/workflows/
-│   ├── receive-firmware.yml    ← receives builds via repository_dispatch
+│   ├── receive-firmware.yml    ← dispatch: P4 firmware from main repo
+│   ├── receive-pico-app.yml   ← dispatch: Pico .uf2 from app repos
+│   ├── build-catalog.yml      ← CI: regenerate app-catalog.json on push
+│   ├── validate-pr.yml        ← CI: validate app manifest PRs
+│   ├── build-picosd-bundle.yml ← manual: assemble Pico SD bundle ZIP
 │   └── deploy-pages.yml        ← deploys to GitHub Pages on push
 ├── apps/
 │   └── tusb-msc/
@@ -3286,6 +3290,35 @@ This makes the flash page count **5 pages + shared JS**:
 
 All of these workflows live in `dadamachines/dada-tbd-firmware/.github/workflows/`.
 
+#### Concurrency groups
+
+Each CDN workflow uses its **own concurrency group** so that independent
+workflows never cancel each other. This is critical because a single push
+or dispatch can trigger multiple workflows simultaneously (e.g. a push
+that modifies `apps/` triggers both `build-catalog` and `deploy-pages`).
+
+| Workflow | Concurrency group | cancel-in-progress |
+|----------|-------------------|--------------------|
+| `build-catalog.yml` | `build-catalog` | true |
+| `deploy-pages.yml` | `deploy-pages` | true |
+| `receive-firmware.yml` | `receive-firmware-{channel}` | true |
+| `receive-pico-app.yml` | `receive-pico-app-{app_id}` | true |
+
+The dispatch workflows (`receive-firmware`, `receive-pico-app`) scope
+their group by channel or app ID, so dispatches for different channels
+or apps run in parallel without cancelling each other.
+
+GitHub Pages deployment is handled by each workflow's own `deploy-pages`
+job (sequenced via `needs:`). The `github-pages` environment provides
+its own queueing — if two workflows try to deploy simultaneously,
+GitHub queues them automatically.
+
+> **Historical note:** All 4 workflows originally shared
+> `concurrency: group: pages, cancel-in-progress: true`. This caused
+> `receive-firmware` dispatches to cancel in-flight `build-catalog` runs
+> (and vice versa), leading to stale `app-catalog.json`. Fixed by giving
+> each workflow its own concurrency group.
+
 #### `receive-firmware.yml` — P4 firmware dispatch (existing)
 
 Already implemented and running. Receives `repository_dispatch` type
@@ -3390,16 +3423,16 @@ jobs:
 
 #### `build-catalog.yml` — regenerates the app catalog
 
-Runs on every merge to `main` that touches `apps/`. Reads all manifests
-and produces `app-catalog.json`, deployed to GitHub Pages alongside
-firmware files.
+Runs on every merge to `main` that touches `apps/` or `system-tools/`.
+Downloads missing binaries from `sourceUrl`, verifies SHA-256, builds
+`app-catalog.json`, commits everything, and deploys to GitHub Pages.
 
 ```yaml
 name: Build App Catalog
 on:
   push:
     branches: [main]
-    paths: ['apps/**']
+    paths: ['apps/**', 'system-tools/**']
 
 jobs:
   catalog:
@@ -5034,6 +5067,11 @@ Phase 5 — App registry + App Manager catalog + Pico SD bundles
       - Auto-generates app-catalog.json; currently lists groovebox only
   [x] Add receive-pico-app.yml workflow (Profile A: trusted dispatch)
       - Receives pico-app-update events, verifies SHA-256, commits binary
+  [x] Fix CDN workflow concurrency groups
+      - Each workflow now has its own group (build-catalog, deploy-pages,
+        receive-firmware-{channel}, receive-pico-app-{app_id})
+      - Previously all 4 shared `group: pages` which caused cross-cancellation
+      - Dispatch workflows scoped by channel/app_id for parallel safety
   [x] Set dada-tbd-app-template to Public
       - github.com/dadamachines/dada-tbd-app-template — public
 
@@ -5233,6 +5271,7 @@ adds compatibility warnings on top of the working App Manager.
 | Branch cleanup (two long-lived branches) | Low | Cleaner repo, less confusion | ✅ Phase 1 |
 | Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | ✅ Phase 4 |
 | CDN golden master (3-repo audit) | Medium | CDN workflows verified end-to-end, releases.json everywhere, no stale artifacts | ✅ Post-Phase 4 |
+| CDN workflow concurrency fix | Low | Each workflow gets its own concurrency group — no more cross-cancellation | ✅ Phase 5 |
 | WebUI update system restored | Low | On-device updater works again; 6 zip packages + latest.json restored | ✅ Post-Phase 4 |
 | WebUI updates mirrored to CDN | Low | webui-updates/ in dada-tbd-firmware for same-origin access | ✅ Post-Phase 4 |
 | WebUI-aware CI pipeline | Medium | CI builds WebUI bundles, packages webui-update zip, dispatches version to CDN | ✅ Post-Phase 4 |
