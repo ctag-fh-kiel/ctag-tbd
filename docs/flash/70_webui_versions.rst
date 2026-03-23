@@ -3,12 +3,12 @@ WebUI Versions
 ********************
 
 The TBD-16 WebUI can be updated independently of the firmware using the
-built-in updater at ``http://192.168.4.1/webui-update.html``.
+built-in updater at `http://192.168.4.1/webui-update.html <http://192.168.4.1/webui-update.html>`__.
 
 How to Update
 =============
 
-1. Open ``http://192.168.4.1/webui-update.html`` in your browser
+1. Open `http://192.168.4.1/webui-update.html <http://192.168.4.1/webui-update.html>`__ in your browser
    (Chrome, Edge, or Opera — device must be connected via USB).
 2. The page will automatically check for online updates.
    If a newer version is available, click **Install Update**.

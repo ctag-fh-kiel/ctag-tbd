@@ -20,7 +20,7 @@ or any active feature-test branch build.
 
    **Path A — Quick Update** (recommended):
 
-   1. You update the WebUI over WiFi from the device (before flashing firmware)
+   1. You update the WebUI from the device (before flashing firmware)
    2. Flashes the selected P4 firmware to the ESP32-P4
    3. Flashes the RP2350 co-processor firmware
 
@@ -297,7 +297,7 @@ or any active feature-test branch build.
           <div id="optionCardA" style="flex:1; min-width:220px; border:2px solid #0891B2; border-radius:8px; padding:1em 1.2em; cursor:pointer; background:var(--color-background-secondary,#f0fdfa); transition: box-shadow 0.15s, border-color 0.15s;" onclick="choosePath('A')">
             <div style="font-weight:700; font-size:0.95em; color:#0891B2; margin-bottom:0.4em;">⚡ Quick Update <span style="font-size:0.75em; background:#0891B2; color:#fff; padding:0.15em 0.5em; border-radius:3px; vertical-align:middle; margin-left:0.3em;">Recommended</span></div>
             <div style="font-size:0.82em; color:var(--color-foreground-secondary,#555); line-height:1.5;">
-              Update the <b>WebUI over WiFi</b> first, then flash <b>P4 + Pico firmware</b>.<br>
+              Update the <b>WebUI</b> first, then flash <b>P4 + Pico firmware</b>.<br>
               No SD card erase, no MSC mode — fast &amp; easy.
             </div>
           </div>
@@ -319,15 +319,13 @@ or any active feature-test branch build.
            ════════════════════════════════════════ -->
       <div id="pathA" style="display:none;">
 
-      <!-- A·0 — Update WebUI over WiFi (BEFORE firmware flash) -->
+      <!-- A·0 — Update WebUI (BEFORE firmware flash) -->
       <div class="step-card active-step" id="cardA0" style="border-color:#f59e0b;">
-        <div class="step-hdr" style="color:#f59e0b;"><span class="step-num" style="background:#f59e0b;">1</span> Check &amp; Update WebUI over WiFi</div>
+        <div class="step-hdr" style="color:#f59e0b;"><span class="step-num" style="background:#f59e0b;">1</span> Check &amp; Update WebUI</div>
         <div class="step-desc">
           <b>Check the SD card files before flashing new firmware</b> — some releases require
           updated WebUI files to boot correctly.<br><br>
-          <b>Disconnect all USB cables</b>, wait 3 seconds, then reconnect only <b>back Port&nbsp;#1</b>.
-          Connect your computer to the <b>TBD-16 WiFi</b> network and open
-          <b>http://192.168.4.1/webui-update.html</b>.<br>
+          Open <a href="http://192.168.4.1/webui-update.html" target="_blank">http://192.168.4.1/webui-update.html</a>.<br>
           The updater checks your version automatically — click <b>Install</b> if an update is available.<br>
           If the page says <b>"✓ WebUI is up to date"</b>, that's normal — not every firmware
           release changes the WebUI. Skip this step and continue to Step&nbsp;2.
@@ -372,7 +370,7 @@ or any active feature-test branch build.
       <div class="complete-card" id="cardDoneA">
         <h3>✓ Quick Update Complete</h3>
         <p>Your TBD-16 has the latest beta firmware.<br>
-        Open <b>http://192.168.4.1</b> to use the device.</p>
+        Open <a href="http://192.168.4.1" target="_blank">http://192.168.4.1</a> to use the device.</p>
       </div>
 
       </div><!-- end pathA -->
@@ -467,7 +465,7 @@ or any active feature-test branch build.
         <h3>✓ Pre-release Firmware Setup Complete</h3>
         <p>Your TBD-16 has the SD card image and selected pre-release firmware.<br>
         <b>Remove all USB cables</b>, wait 3 seconds, reconnect via <b>back Port&nbsp;#1</b>,
-        then open <b>http://192.168.4.1</b>.</p>
+        then open <a href="http://192.168.4.1" target="_blank">http://192.168.4.1</a>.</p>
       </div>
 
       </div><!-- end pathB -->
@@ -550,15 +548,28 @@ or any active feature-test branch build.
         if (resp.ok) {
           var releases = await resp.json();
           var seen = {};
+          var candidates = [];
           releases.forEach(function (r) {
             if (!r.prerelease) return;
-            /* feature-test tags: feature-test-cool-thing (= channel name) */
+            /* feature-test tags: feature-test-cool-thing (= channel name).
+               Exclude tags that end with a commit-hash suffix (7+ hex chars). */
             var m = r.tag_name.match(/^(feature-test-[a-z0-9-]+)$/);
-            if (m && !seen[m[1]]) {
+            if (m && !m[1].match(/-[0-9a-f]{7,}$/) && !seen[m[1]]) {
               seen[m[1]] = true;
+              candidates.push(m[1]);
+            }
+          });
+          /* Verify each candidate has a releases.json on the CDN */
+          var checks = await Promise.all(candidates.map(function (name) {
+            return fetch(FIRMWARE_CDN + '/' + name + '/releases.json', { method: 'HEAD' })
+              .then(function (r) { return r.ok ? name : null; })
+              .catch(function () { return null; });
+          }));
+          checks.forEach(function (name) {
+            if (name) {
               channels.push({
-                name: m[1],
-                label: m[1].replace('feature-test-', 'Feature: ')
+                name: name,
+                label: name.replace('feature-test-', 'Feature: ')
               });
             }
           });
@@ -669,7 +680,7 @@ or any active feature-test branch build.
         pA.style.display = 'block'; pB.style.display = 'none';
         oA.style.boxShadow = '0 0 0 2px #0891B2'; oA.style.borderColor = '#0891B2';
         oB.style.boxShadow = 'none'; oB.style.borderColor = '#6B7280';
-        st.innerHTML = '\u26a1 <b>Quick Update</b> selected \u2014 update WebUI over WiFi first, then flash firmware.';
+        st.innerHTML = '\u26a1 <b>Quick Update</b> selected \u2014 update WebUI first, then flash firmware.';
       } else {
         pA.style.display = 'none'; pB.style.display = 'block';
         oB.style.boxShadow = '0 0 0 2px #2563EB'; oB.style.borderColor = '#2563EB';
