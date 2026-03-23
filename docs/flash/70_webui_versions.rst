@@ -38,31 +38,31 @@ Version History
        dialog now shows macro definition hint per track. Targeted single-
        definition reload (fixes crash on save). Export now includes live
        knob values; bulk import implemented.
-     - `zip <../_static/updates/webui-update-v0.3.5.zip>`__
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.3.5.zip>`__
    * - **0.3.4**
      - 2026-03-13
      - New WebUI Updater with light theme matching Shoelace design,
        reinstall support (re-apply current version for factory reset),
        and expandable version history to install older releases.
-     - `zip <../_static/updates/webui-update-v0.3.4.zip>`__
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.3.4.zip>`__
    * - **0.3.3**
      - 2026-03-12
      - New full rompler macro definition and preset. Designer fixes.
        All macro definitions and sound presets included.
-     - `zip <../_static/updates/webui-update-v0.3.3.zip>`__
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.3.3.zip>`__
    * - **0.3.2**
      - 2026-03-12
      - Factory preset protection (lock icons, readonly inputs, hidden
        Save/Delete for factory presets). Preset value safety (trim to param
        count, Math.round for firmware compliance). Auto-UI type selection
        when adding CC mappings.
-     - `zip <../_static/updates/webui-update-v0.3.2.zip>`__
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.3.2.zip>`__
    * - **0.3.1**
      - 2026-03-12
      - Online update workflow test. Version bump only — no functional changes.
-     - `zip <../_static/updates/webui-update-v0.3.1.zip>`__
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.3.1.zip>`__
    * - **0.3.0**
      - 2026-03-12
      - Pre-release with WebUI update workflow. Full UI refresh including
        plugin manager, sample manager, macro/preset designer, and updater page.
-     - `zip <../_static/updates/webui-update-v0.3.0.zip>`__
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.3.0.zip>`__

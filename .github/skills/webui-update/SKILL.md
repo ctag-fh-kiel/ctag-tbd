@@ -28,8 +28,9 @@ Create update packages (.zip) that users can apply via `http://192.168.4.1/webui
 - Package script: `create_webui_update.sh` at workspace root
 - Version file: `sdcard_image/data/webui-version.json`
 - Build script: `sdcard_image/www/build-webui.sh`
-- Online update manifest: `docs/_static/updates/latest.json`
-- Update hosting URL: `https://dadamachines.github.io/ctag-tbd/_static/updates/`
+- Online update manifest: `docs/_static/updates/latest.json` (pointer — URLs resolve to CDN)
+- CDN hosting: `https://dadamachines.github.io/dada-tbd-firmware/webui-updates/`
+- CDN repo: `../dada-tbd-firmware/webui-updates/` (sibling directory)
 - WebUI versions doc: `docs/flash/70_webui_versions.rst` — **must be updated every release**
 - The device's updater page auto-checks `latest.json` on load to offer one-click online updates
 - The updater supports **reinstall** (re-apply current version) and **older versions** (roll back)
@@ -219,14 +220,13 @@ unzip -l build/webui-update-v<VERSION>.zip
 
 ### Step 6 — Update the WebUI versions docs page
 
-Add the new version to `docs/flash/70_webui_versions.rst`. This page has two tables:
-
-1. **Version History table** (top) — add a new row at the top (below the header) with version, date, and a short description of what changed.
-2. **Downloads table** (bottom) — add a new row at the top with a link to the zip:
+Add the new version to `docs/flash/70_webui_versions.rst`. This page has a single table with Version, Date, Description, and Download columns. Add a new row at the top (below the header):
 
 ```rst
    * - v<VERSION>
-     - `webui-update-v<VERSION>.zip <../_static/updates/webui-update-v<VERSION>.zip>`_
+     - <DATE>
+     - <DESCRIPTION>
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v<VERSION>.zip>`__
 ```
 
 This step is **required** — every release must appear in the versions page so users can see the changelog and download older packages.
@@ -259,13 +259,13 @@ Use this decision tree when the user just says "create an update" without specif
 
 ## Procedure: Publish Update for Online Auto-Update
 
-After creating an update package and updating the docs page (Steps 1–6 above), the `create_webui_update.sh` script automatically copies the zip to `docs/_static/updates/` and updates `latest.json`. To make it live:
+After creating an update package and updating the docs page (Steps 1–6 above), the `create_webui_update.sh` script automatically copies the zip to the CDN repo (`../dada-tbd-firmware/webui-updates/`) and updates `latest.json` in both docs and CDN. To make it live:
 
-### Step 1 — Verify docs/_static/updates/
+### Step 1 — Verify CDN repo
 
 ```bash
 cat docs/_static/updates/latest.json
-ls -la docs/_static/updates/*.zip
+ls -la ../dada-tbd-firmware/webui-updates/*.zip
 ```
 
 Confirm `latest.json` has the correct version, URL, size, and `versions` array.
@@ -276,13 +276,13 @@ The `versions` array in `latest.json` lists previously released versions for the
 {
   "version": "1.2.0",
   "date": "2026-03-15",
-  "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v1.2.0.zip",
+  "url": "https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v1.2.0.zip",
   "size": 180000,
   "versions": [
     {
       "version": "1.1.0",
       "date": "2026-03-12",
-      "url": "https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v1.1.0.zip",
+      "url": "https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v1.1.0.zip",
       "description": "Previous feature release"
     }
   ]
@@ -291,15 +291,24 @@ The `versions` array in `latest.json` lists previously released versions for the
 
 When adding a new version, move the current `latest.json` top-level entry into the `versions` array before updating the top-level fields.
 
-### Step 2 — Commit and push
+### Step 2 — Commit and push both repos
 
-Include the update package, latest.json, version file, and the docs changelog:
+Firmware repo (latest.json pointer + docs + version file):
 
 ```bash
-git add docs/_static/updates/ \
+git add docs/_static/updates/latest.json \
   sdcard_image/data/webui-version.json \
   docs/flash/70_webui_versions.rst
 git commit -m "WebUI v<VERSION> — <short description>"
+git push
+```
+
+CDN repo (zip + latest.json):
+
+```bash
+cd ../dada-tbd-firmware
+git add webui-updates/
+git commit -m "WebUI v<VERSION> update package"
 git push
 ```
 
@@ -323,7 +332,7 @@ make -f docs/config/Makefile html
 ```
 
 The update will be available at:
-`https://dadamachines.github.io/ctag-tbd/_static/updates/latest.json`
+`https://dadamachines.github.io/dada-tbd-firmware/webui-updates/latest.json`
 
 ### How Online Updates Work
 

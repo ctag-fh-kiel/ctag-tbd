@@ -108,14 +108,30 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo "Upload this zip via the WebUI Updater at http://192.168.4.1/webui-update.html"
 
-# ── Publish to docs site for online updates ──
-UPDATES_DIR="${SCRIPT_DIR}/docs/_static/updates"
-if [ -d "${UPDATES_DIR}" ]; then
+# ── Publish to CDN repo for online updates ──
+CDN_DIR="${SCRIPT_DIR}/../dada-tbd-firmware/webui-updates"
+DOCS_DIR="${SCRIPT_DIR}/docs/_static/updates"
+ZIP_URL="https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v${VERSION}.zip"
+if [ -d "${CDN_DIR}" ]; then
   echo ""
-  echo "Publishing to docs/_static/updates/ for online update hosting..."
-  cp "${OUTPUT}" "${UPDATES_DIR}/"
-  ZIP_URL="https://dadamachines.github.io/ctag-tbd/_static/updates/webui-update-v${VERSION}.zip"
-  cat > "${UPDATES_DIR}/latest.json" <<EOF
+  echo "Publishing to CDN repo (dada-tbd-firmware/webui-updates/)..."
+  cp "${OUTPUT}" "${CDN_DIR}/"
+  echo "  ✓ Copied zip to ${CDN_DIR}/"
+  echo ""
+  echo "After pushing the CDN repo, the update will be available at:"
+  echo "  ${ZIP_URL}"
+else
+  echo ""
+  echo "⚠ CDN repo not found at ${CDN_DIR}"
+  echo "  Clone dadamachines/dada-tbd-firmware next to this repo, then copy:"
+  echo "  cp ${OUTPUT} <cdn-repo>/webui-updates/"
+fi
+
+# ── Update latest.json (docs site — pointer to CDN, fetched by on-device updater) ──
+if [ -d "${DOCS_DIR}" ]; then
+  echo ""
+  echo "Updating docs/_static/updates/latest.json (pointer to CDN)..."
+  cat > "${DOCS_DIR}/latest.json" <<EOF
 {
   "version": "${VERSION}",
   "date": "$(date +%Y-%m-%d)",
@@ -124,9 +140,11 @@ if [ -d "${UPDATES_DIR}" ]; then
   "size": ${zip_size}
 }
 EOF
-  echo "  ✓ Copied zip to ${UPDATES_DIR}/"
-  echo "  ✓ Updated latest.json → v${VERSION}"
-  echo ""
-  echo "After pushing to GitHub, the update will be available at:"
-  echo "  ${ZIP_URL}"
+  # Also update CDN copy of latest.json
+  if [ -d "${CDN_DIR}" ]; then
+    cp "${DOCS_DIR}/latest.json" "${CDN_DIR}/latest.json"
+    echo "  ✓ Updated latest.json in both docs and CDN"
+  else
+    echo "  ✓ Updated latest.json in docs (CDN copy needs manual update)"
+  fi
 fi
