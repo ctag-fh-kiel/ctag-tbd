@@ -526,19 +526,34 @@ for all available apps.
       });
     }
 
-    /** Get the latest release for an app. */
+    /** Get the latest release for an app (prefers flash target for Picoboot). */
     function latestRelease(app) {
       if (!app.releases || app.releases.length === 0) return null;
       return app.releases[0];
     }
 
-    /** Get the CDN download URL for an app's latest release. */
-    function appCdnUrl(app) {
-      var rel = latestRelease(app);
+    /** Get the SD card release (prefers target:"ram" for bootloader loading). */
+    function sdRelease(app) {
+      if (!app.releases || app.releases.length === 0) return null;
+      var ram = app.releases.find(function (r) { return r.target === 'ram'; });
+      return ram || app.releases[0];
+    }
+
+    /** Build a CDN URL from a release object. */
+    function releaseCdnUrl(app, rel) {
       if (!rel) return null;
       if (rel.cdnPath) return FIRMWARE_CDN + '/' + rel.cdnPath;
-      /* Fallback: construct from convention */
       return FIRMWARE_CDN + '/apps/' + app.id + '/' + app.id + '-' + rel.version + '.uf2';
+    }
+
+    /** Get the CDN download URL for an app's latest release (Picoboot flash). */
+    function appCdnUrl(app) {
+      return releaseCdnUrl(app, latestRelease(app));
+    }
+
+    /** Get the CDN download URL for an app's SD card release (bootloader RAM). */
+    function appSdUrl(app) {
+      return releaseCdnUrl(app, sdRelease(app));
     }
 
     /** Get a catalog app by ID. */
@@ -799,12 +814,12 @@ for all available apps.
 
     btn2Refresh.addEventListener('click', refreshApps);
 
-    /* ── Install an app to tbd-apps/ ── */
+    /* ── Install an app to tbd-apps/ (uses RAM release for bootloader) ── */
     async function installApp(app) {
       if (!DIR_HANDLE) return;
 
       var sdName = app.sdFilename || (app.id + '.uf2');
-      var url = appCdnUrl(app);
+      var url = appSdUrl(app);
       if (!url) {
         setStat(statApps, 'No download URL for <b>' + app.name + '</b>.', 'err');
         return;
@@ -822,7 +837,7 @@ for all available apps.
         log('Downloaded ' + (data.length / 1024).toFixed(0) + ' KB');
 
         /* Verify SHA-256 if available */
-        var rel = latestRelease(app);
+        var rel = sdRelease(app);
         if (rel && rel.sha256 && window.crypto && window.crypto.subtle) {
           var hashBuf = await crypto.subtle.digest('SHA-256', data);
           var hashArr = Array.from(new Uint8Array(hashBuf));
