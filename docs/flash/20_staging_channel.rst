@@ -596,8 +596,8 @@ or any active feature-test branch build.
       var latest = catalog.versions[0];
       var f = latest.files;
 
-      /* TUSB_MSC_URL is a fixed path — shared across all channels */
-      TUSB_MSC_URL = FIRMWARE_CDN + '/apps/tusb-msc/dada-tbd-16-tusb-msc.bin';
+      /* TUSB_MSC_URL is the P4 MSC utility (not a Pico app) — shared across all channels */
+      TUSB_MSC_URL = FIRMWARE_CDN + '/utilities/dada-tbd-16-tusb_msc-p4/dada-tbd-16-tusb-msc.bin';
 
       return {
         tag: latest.tag,

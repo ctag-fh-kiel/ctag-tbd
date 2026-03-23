@@ -5018,8 +5018,14 @@ Phase 5 — App registry + App Manager catalog + Pico SD bundles
   Registry infrastructure (done)
   ·····························
   [x] Add apps/ directory to dadamachines/dada-tbd-firmware
-      - apps/groovebox/manifest.json exists (releases[] empty)
-      - apps/tusb-msc/ has binary but no manifest yet
+      - apps/groovebox/ — manifest.json + dada-tbd-16-v0.4.1-pico.uf2
+      - apps/debug-probe/, apps/game/, apps/flash nuke/,
+        apps/tusb_msc-pico/, apps/bootloader/ — seed .uf2s placed
+      - apps/tbd-bootloader-v1.1/ — bootloader + sd-card/ layout
+  [x] Separate P4 MSC utility from Pico apps
+      - utilities/dada-tbd-16-tusb_msc-p4/dada-tbd-16-tusb-msc.bin
+      - Flash pages (10_stable, 20_staging) updated to new CDN path
+      - apps/tusb_msc-pico/tusb_msc.uf2 is the Pico mass-storage app
   [x] Define manifest.schema.json
       - schema/manifest.schema.json deployed with full validation rules
   [x] Add validate-pr.yml workflow (schema + download + SHA-256 check)
@@ -5031,18 +5037,20 @@ Phase 5 — App registry + App Manager catalog + Pico SD bundles
   [x] Set dada-tbd-app-template to Public
       - github.com/dadamachines/dada-tbd-app-template — public
 
-  Registry population
-  ·····················
-  [ ] Populate groovebox releases[] with v0.4.x entry + commit .uf2
-      - Manifest exists but releases array is empty
-  [ ] Add tusb-msc manifest.json (binary exists, needs manifest)
+  Registry population (seed binaries placed, manifests needed)
+  ····························································
+  [ ] Normalize app folder names (no spaces, consistent kebab-case)
+      - "flash nuke" → flash-nuke, tusb_msc-pico → tusb-msc-pico, etc.
+      - Consolidate bootloader/ and tbd-bootloader-v1.1/ into one folder
+  [ ] Populate groovebox releases[] with v0.4.x entry
+      - Manifest exists, .uf2 committed, releases[] still empty
+  [ ] Add tusb-msc-pico manifest.json (Pico mass-storage app)
+  [ ] Create debug-probe manifest.json (seed .uf2 placed)
+  [ ] Create game manifest.json (seed .uf2 placed)
+  [ ] Create flash-nuke manifest.json (seed .uf2 placed)
+  [ ] Create bootloader manifest.json (seed .uf2 placed)
   [ ] Create Multi FX manifest + seed .uf2 binary
   [ ] Create MCL manifest + seed .uf2 binary (partner, jmamma)
-  [ ] Create Debug Probe manifest + seed .uf2 binary
-  [ ] Create UI Test manifest + seed .uf2 binary
-  [ ] Create Game manifest + seed .uf2 binary
-  [ ] Add system-tools/bootloader/ manifest + bootloader_pico2.uf2
-  [ ] Add system-tools/flash-nuke/ manifest + flash_nuke.uf2
   [ ] Verify app-catalog.json regenerates with all apps listed
 
   Bundle definitions + Pico SD
