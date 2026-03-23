@@ -757,7 +757,31 @@ for all available apps.
       SD_APPS = files;
       renderAppTable(files);
 
-      /* Check for BOOT2350.uf2 on root */
+      /* Ensure BOOT2350.uf2 is on the SD card root */
+      try { await ensureBoot2350(); } catch (e) {
+        console.warn('BOOT2350.uf2 install failed:', e);
+        log('Warning: could not write BOOT2350.uf2 — ' + e.message);
+      }
+
+      /* Auto-install any missing alwaysInstalled apps */
+      var installable = getInstallableApps();
+      for (var i = 0; i < installable.length; i++) {
+        var app = installable[i];
+        if (!app.alwaysInstalled) continue;
+        var sdName = app.sdFilename || (app.id + '.uf2');
+        if (SD_APPS.indexOf(sdName) >= 0) continue;
+        setStat(stat2, 'Installing required app: <b>' + app.name + '</b>…');
+        try { await installApp(app); } catch (e) {
+          log('Warning: could not install ' + app.name + ' — ' + e.message);
+        }
+      }
+
+      /* Re-scan after auto-installs */
+      files = await scanInstalledApps(DIR_HANDLE);
+      SD_APPS = files;
+      renderAppTable(files);
+
+      /* Final status */
       var hasBoot = false;
       try {
         await DIR_HANDLE.getFileHandle('BOOT2350.uf2', { create: false });
@@ -765,11 +789,11 @@ for all available apps.
       } catch (_) {}
 
       if (hasBoot) {
-        setStat(stat2, '✓ SD card opened. <b>BOOT2350.uf2</b> found on root. ' +
-          'Install or remove apps below.', 'ok');
+        setStat(stat2, '✓ SD card ready. <b>BOOT2350.uf2</b> installed on root. ' +
+          'Install or remove apps below, then proceed to <b>Step 3</b>.', 'ok');
       } else {
-        setStat(stat2, '✓ SD card opened. <b>BOOT2350.uf2 missing</b> from root — ' +
-          'it will be installed automatically if you choose <b>Boot Menu</b> mode.', 'info');
+        setStat(stat2, '✓ SD card opened, but <b>BOOT2350.uf2 could not be installed</b>. ' +
+          'The bootloader boot menu will not work without it.', 'err');
       }
     });
 
@@ -898,29 +922,6 @@ for all available apps.
     btn3Connect.addEventListener('click', async function () {
       try {
         btn3Connect.disabled = true;
-
-        /* If bootloader mode, ensure BOOT2350.uf2 + required apps are on SD */
-        if (SELECTED_MODE === 'bootloader' && DIR_HANDLE) {
-          setStat(stat3, 'Checking SD card for required files…');
-          try { await ensureBoot2350(); } catch (e) {
-            console.warn('BOOT2350.uf2 write failed:', e);
-            log('Warning: could not write BOOT2350.uf2 — ' + e.message);
-          }
-
-          /* Auto-install any missing alwaysInstalled apps */
-          var installable = getInstallableApps();
-          for (var i = 0; i < installable.length; i++) {
-            var app = installable[i];
-            if (!app.alwaysInstalled) continue;
-            var sdName = app.sdFilename || (app.id + '.uf2');
-            if (SD_APPS.indexOf(sdName) >= 0) continue;
-            setStat(stat3, 'Installing required app: <b>' + app.name + '</b>…');
-            try { await installApp(app); } catch (e) {
-              log('Warning: could not install ' + app.name + ' — ' + e.message);
-            }
-          }
-        }
-
         setStat(stat3, 'Put the RP2350 in <b>BOOTSEL mode</b>, then waiting for device…');
         ctx3 = await connectRP2350({
           onStatus: function (msg) { setStat(stat3, msg); }
