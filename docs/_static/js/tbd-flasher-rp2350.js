@@ -18,8 +18,6 @@
 
 /* ── Module state ── */
 var _Picoboot = null;
-var _PicobootCmd = null;
-var _PicobootCmdId = null;
 var _uf2ToFlashBuffer = null;
 
 /* ── Loader ── */
@@ -35,8 +33,6 @@ export async function loadPicoboot(basePath) {
   var base = new URL(basePath, document.baseURI).href;
   var picoMod = await import(base + '/pkg/index.js');
   _Picoboot = picoMod.Picoboot;
-  _PicobootCmd = picoMod.PicobootCmd;
-  _PicobootCmdId = picoMod.PicobootCmdId;
   var uf2Mod = await import(base + '/js/uf2.js');
   _uf2ToFlashBuffer = uf2Mod.uf2ToFlashBuffer;
 }
@@ -99,24 +95,11 @@ export async function flashRP2350(ctx, url, callbacks) {
   status('Parsing UF2 file…');
   var parsed = _uf2ToFlashBuffer(uf2Data);
   var sizeKB = (parsed.data.length / 1024).toFixed(0);
-  var isRam = parsed.address >= 0x20000000;
 
-  /* Tag context so rebootRP2350 knows how to restart the device */
-  ctx._ramAddress = isRam ? parsed.address : null;
-
-  if (isRam) {
-    status('Writing ' + sizeKB + ' KB to SRAM…');
-    progress(35);
-    await ctx.connection.resetInterface();
-    await ctx.connection.exitXip();
-    await ctx.connection.flashWrite(parsed.address, parsed.data);
-    progress(100);
-  } else {
-    status('Erasing & writing ' + sizeKB + ' KB to flash…');
-    progress(35);
-    await ctx.pico.flashEraseAndWrite(parsed.address, parsed.data);
-    progress(100);
-  }
+  status('Erasing & writing ' + sizeKB + ' KB to flash…');
+  progress(35);
+  await ctx.pico.flashEraseAndWrite(parsed.address, parsed.data);
+  progress(100);
 }
 
 /* ── Reboot ── */
@@ -132,19 +115,8 @@ export async function rebootRP2350(ctx, callbacks) {
   var status = cb.onStatus || function () {};
 
   try {
-    if (ctx._ramAddress && _PicobootCmd && _PicobootCmdId) {
-      /* RAM UF2 was loaded — use EXEC to jump directly to the SRAM code.
-         Standard reboot would boot from flash, ignoring the SRAM data. */
-      status('Executing SRAM firmware…');
-      var args = new Uint8Array(16);
-      new DataView(args.buffer).setUint32(0, ctx._ramAddress, true);
-      var cmd = new _PicobootCmd(_PicobootCmdId.EXEC, 4, 0, args);
-      await ctx.connection.sendCmd(cmd, null);
-    } else {
-      /* Flash UF2 — normal reboot picks it up from flash */
-      status('Rebooting device…');
-      await ctx.connection.reboot(100);
-    }
+    status('Rebooting device…');
+    await ctx.connection.reboot(100);
   } catch (e) {
     /* Expected: device disconnects immediately on exec/reboot */
     console.warn('Reboot/exec command error (may be expected):', e.message);
