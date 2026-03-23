@@ -905,7 +905,7 @@ version change required editing multiple files.
 | `index.rst` | **✅ Live** | Flash & Updates | Hub with CTA to Stable Channel |
 | `10_stable_channel.rst` | **✅ Live** | Stable Channel | Two-path flash page: Path A (Quick Update: WebUI check → P4 firmware → Pico), Path B (Full SD Deploy: MSC + SD extract + P4 firmware + Pico). Fetches from CDN. |
 | `20_staging_channel.rst` | **✅ Live** | Beta Channel | Channel selector (staging + feature-test), CDN-driven, same two-path layout |
-| `30_app_manager.rst` | Placeholder | App Manager | Picoboot WebUSB install/remove, sideload, system tools (Phase 5) |
+| `60_app_manager.rst` | Placeholder | App Manager | Picoboot WebUSB install/remove, sideload, system tools (Phase 5) |
 | `50_troubleshooting.rst` | **✅ Live** | Troubleshooting | General flash troubleshooting (consolidated from old 67) |
 | `70_webui_versions.rst` | **✅ Live** | WebUI Versions | How to Update + version history + downloads (covers old 40/68) |
 
@@ -2679,7 +2679,7 @@ on a fresh setup since the bootloader remembers the last-used app).
 
 #### Path 3: App Manager — browse, install, update
 
-The **App Manager** page (`docs/flash/30_app_manager.rst`) is an
+The **App Manager** page (`docs/flash/60_app_manager.rst`) is an
 interactive browser-based tool for managing the RP2350 app collection.
 It serves several purposes:
 
@@ -3175,7 +3175,7 @@ multi-app mode, managing apps, or switching back to standalone.
 
 #### 2. App Manager page — interactive app management
 
-A new page (`docs/flash/30_app_manager.rst`) for managing RP2350 apps
+A new page (`docs/flash/60_app_manager.rst`) for managing RP2350 apps
 interactively via the browser. Users arrive here from the Stable Channel
 page when they want to enable multi-app mode or manage their app collection:
 
@@ -5004,47 +5004,100 @@ Phase 3b — Git LFS + history rewrite + force-push
 
 Phase 5 — App registry + App Manager catalog + Pico SD bundles
   ─────────────────────────────────────────────────────────────
-  Depends on: Phase 3 (30_app_manager.rst must exist as the
-  shell page). Registry infrastructure and interactive App
-  Manager do NOT require AnnounceApp — install/remove apps,
-  sideload, system tools all work without firmware version
-  detection. AnnounceApp adds compatibility warnings later.
+  Depends on: Phase 3 (60_app_manager.rst shell page exists).
+  Most CDN registry infrastructure is already in place —
+  apps/ directory, manifest schema, CI validation and catalog
+  workflows all deployed during post-Phase 4 work. AnnounceApp
+  (0xAB) is merged into dada-tbd-master — the REST endpoint
+  (/api/v2/device?action=getAppInfo) already returns the active
+  RP2350 app name. Phase 5 focuses on: (1) populating the
+  registry with all app manifests + seed binaries, (2) building
+  the interactive App Manager page, (3) Pico SD bundles.
   ─────────────────────────────────────────────────────────────
-  [ ] Add apps/ directory to dadamachines/dada-tbd-firmware
-  [ ] Define manifest.schema.json and bundle.schema.json
-  [ ] Add validate-pr.yml workflow (schema + download + SHA-256 check)
-  [ ] Add build-catalog.yml workflow (generates app-catalog.json on merge)
-  [ ] Migrate Groovebox, Multi FX, MCL manifests into apps/
-  [ ] Migrate USB MSC, Debug Probe, UI Test, Game manifests (apps/, alwaysInstalled)
-  [ ] Add system-tools/bootloader/ and system-tools/flash-nuke/ manifests
+
+  Registry infrastructure (done)
+  ·····························
+  [x] Add apps/ directory to dadamachines/dada-tbd-firmware
+      - apps/groovebox/manifest.json exists (releases[] empty)
+      - apps/tusb-msc/ has binary but no manifest yet
+  [x] Define manifest.schema.json
+      - schema/manifest.schema.json deployed with full validation rules
+  [x] Add validate-pr.yml workflow (schema + download + SHA-256 check)
+      - Validates manifest PRs, downloads from sourceUrl server-side
+  [x] Add build-catalog.yml workflow (generates app-catalog.json on merge)
+      - Auto-generates app-catalog.json; currently lists groovebox only
+  [x] Add receive-pico-app.yml workflow (Profile A: trusted dispatch)
+      - Receives pico-app-update events, verifies SHA-256, commits binary
+  [x] Set dada-tbd-app-template to Public
+      - github.com/dadamachines/dada-tbd-app-template — public
+
+  Registry population
+  ·····················
+  [ ] Populate groovebox releases[] with v0.4.x entry + commit .uf2
+      - Manifest exists but releases array is empty
+  [ ] Add tusb-msc manifest.json (binary exists, needs manifest)
+  [ ] Create Multi FX manifest + seed .uf2 binary
+  [ ] Create MCL manifest + seed .uf2 binary (partner, jmamma)
+  [ ] Create Debug Probe manifest + seed .uf2 binary
+  [ ] Create UI Test manifest + seed .uf2 binary
+  [ ] Create Game manifest + seed .uf2 binary
+  [ ] Add system-tools/bootloader/ manifest + bootloader_pico2.uf2
+  [ ] Add system-tools/flash-nuke/ manifest + flash_nuke.uf2
+  [ ] Verify app-catalog.json regenerates with all apps listed
+
+  Bundle definitions + Pico SD
+  ·····························
+  [ ] Define bundle.schema.json (companion to manifest schema)
   [ ] Create tbd-16-v0.4.json bundle definition (all default apps + utilities)
   [ ] Add build-picosd-bundle.yml workflow (assembles Pico SD bundle from registry)
   [ ] Add bundle-version.txt to Pico SD bundle build output
-  [ ] Wire app-catalog.json into App Manager page (30_app_manager.rst)
-  [ ] Integrate Picoboot WebUSB for bootloader flashing on App Manager
-  [ ] Integrate Picoboot WebUSB for interactive app install on App Manager
-  [ ] Add "Install Local App" (.uf2 sideload) section to App Manager page
-  [ ] Add bundle-version.txt reading via File System Access API on App Manager
+
+  App Manager page (60_app_manager.rst)
+  ······································
+  [ ] Wire app-catalog.json into App Manager page
+      - Currently a 20-line placeholder; needs full implementation
+  [ ] Integrate Picoboot WebUSB for bootloader flashing
+      - Infra exists: tbd-flasher-rp2350.js has loadPicoboot(),
+        connectRP2350(), flashRP2350(), rebootRP2350()
+  [ ] Integrate Picoboot WebUSB for interactive app install
+  [ ] Add "Install Local App" (.uf2 sideload) section
+  [ ] Add bundle-version.txt reading via File System Access API
+      - Pattern already proven in 10_stable_channel.rst and
+        20_staging_channel.rst (showDirectoryPicker)
+  [ ] Add firmware version display (via /api/v2/device?action=getIOCaps → FWV)
+      - Enables compatibility warnings on the App Manager page
+
+  Testing + contributor onboarding
+  ································
   [ ] Test App Manager: install/remove apps via Picoboot WebUSB
   [ ] Test App Manager: sideload local .uf2 via File System Access API
   [ ] Test system tools: flash bootloader + flash nuke via BOOTSEL
-  [ ] Write contributor guide (README.md in dada-tbd-firmware repo)
+  [ ] Update CDN repo README.md contributor guide
   [ ] Onboard first external contributor (jmamma/MCL → partner manifest)
-  Deliverable: App registry live. App Manager fully interactive with
+  Deliverable: App registry fully populated. App Manager interactive with
   catalog, install/remove, sideload, and system tools. Pico SD bundle
   downloadable for restore/update scenarios.
 
-Phase 6 — AnnounceApp + firmware ↔ app compatibility
+Phase 6 — AnnounceApp extensions + firmware ↔ app compatibility
   ─────────────────────────────────────────────────────────────
-  Depends on: Phase 2 (versioning scheme must exist so version
-  strings have meaning) and Phase 5 (App Manager page must exist
-  so compatibility warnings have somewhere to display).
-  This is P4 firmware + WebUI work, not repo infrastructure.
+  Depends on: Phase 2 (versioning scheme) and Phase 5 (App
+  Manager page must exist). Core AnnounceApp SPI command is
+  already merged — P4 knows the active RP2350 app name and
+  flags. This phase extends it with version reporting and
+  adds compatibility warnings to the WebUI and App Manager.
   ─────────────────────────────────────────────────────────────
-  [ ] Merge announceApp from experimental branch into dada-tbd-master
-  [ ] Assign stable SPI command ID, document payload in SpiAPI.hpp
-  [ ] Add P4-side handler: store app identity (name, version, caps) in DeviceAPI
-  [ ] Add picoApp, picoVersion, picoCaps fields to /api/v2/device REST response
+  [x] Merge announceApp from experimental branch into dada-tbd-master
+      - Already on dada-tbd-master; SpiAPI.cpp handles 0xAB
+  [x] Assign stable SPI command ID, document payload in SpiAPI.hpp
+      - AnnounceApp = 0xAB in SpiAPI.hpp line 96
+      - Payload: flags (uint8_t), app_name (cstring)
+  [x] Add P4-side handler: store app identity in DeviceAPI
+      - SpiAPI.cpp: parses app name + plugin_lock + redirect_samples
+  [x] Add rp2350_app, plugin_lock, redirect_samples to REST response
+      - GET /api/v2/device?action=getAppInfo — fully working
+  [ ] Extend AnnounceApp payload with app version + capabilities
+      - May need additional SPI fields (picoVersion, picoCaps)
+      - Evaluate after Phase 5 whether current fields suffice
   [ ] Add WebUI device info panel: show active Pico app name + version
   [ ] Add picoAppCompat flag when app MAJOR.MINOR ≠ firmware MAJOR.MINOR
   [ ] Add dismissible WebUI warning banner for compatibility mismatch
@@ -5052,7 +5105,7 @@ Phase 6 — AnnounceApp + firmware ↔ app compatibility
   [ ] Add fallback firmware version dropdown for manual selection on App Manager
   [ ] Implement firmware ↔ app version check on App Manager (warning banner, never blocks)
   [ ] Test: flash old Groovebox on new firmware → WebUI shows warning → app still runs
-  Deliverable: P4 knows which Pico app is running. WebUI and App Manager
+  Deliverable: P4 reports active app + version. WebUI and App Manager
   show version info and soft warnings. No layer ever blocks the user.
 
 Phase 7 — Plugin adaptation + MultiFX
@@ -5111,11 +5164,11 @@ WebUI CI ── WebUI-aware CI pipeline (automated packaging + CDN dispatch) ✅
 Phase 3b ── Git LFS + history rewrite + force-push (team re-clones once)
   │
   ▼
-Phase 5 ─── App registry + App Manager catalog         (was Phase 6)
-  │
+Phase 5 ─── App registry population + App Manager page + Pico SD bundles
+  │           (registry infra already deployed; AnnounceApp 0xAB merged)
   ▼
-Phase 6 ─── AnnounceApp + compatibility warnings       (was Phase 5)
-  │
+Phase 6 ─── AnnounceApp extensions + firmware ↔ app compatibility
+  │           (core AnnounceApp done; extends with version + WebUI warnings)
   ▼
 Phase 7 ─── Plugin adaptation + MultiFX
 ```
@@ -5124,10 +5177,12 @@ Phase 7 ─── Plugin adaptation + MultiFX
 Phase 4 runs before Phase 3b so the Kconfig restructuring lands first.
 The CDN golden master and WebUI-aware CI pipeline complete the build/deploy
 infrastructure. Phase 3b's re-clone then delivers the final codebase shape.
-Phase 5 (app registry) runs before Phase 6 (AnnounceApp) because the
-registry infrastructure and interactive App Manager page do not require
-firmware version detection — install/remove/sideload all work without it.
-AnnounceApp adds compatibility warnings on top of the working App Manager.
+Phase 5 (app registry) runs before Phase 6 (AnnounceApp extensions) because
+the registry infrastructure is already deployed (apps/, schema, CI workflows)
+and the interactive App Manager page does not require firmware version
+detection — install/remove/sideload all work without it. Core AnnounceApp
+(0xAB) is already merged; Phase 6 extends it with version reporting and
+adds compatibility warnings on top of the working App Manager.
 
 ---
 
@@ -5156,9 +5211,10 @@ AnnounceApp adds compatibility warnings on top of the working App Manager.
 | WebUI updates mirrored to CDN | Low | webui-updates/ in dada-tbd-firmware for same-origin access | ✅ Post-Phase 4 |
 | WebUI-aware CI pipeline | Medium | CI builds WebUI bundles, packages webui-update zip, dispatches version to CDN | ✅ Post-Phase 4 |
 | Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact | ✅ Phase 3 |
-| App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 5 |
+| App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 5 (infra ✅, population pending) |
 | Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 5 |
-| RP2350 app versioning + AnnounceApp design | Medium | App compatibility tracking, future app store | Phase 6 |
+| AnnounceApp core (SPI 0xAB + REST) | Low | P4 knows active RP2350 app name + flags | ✅ Pre-Phase 5 |
+| AnnounceApp extensions + app compatibility | Medium | Version reporting, compatibility warnings in WebUI + App Manager | Phase 6 |
 | `.jsn` → `.json` file extension rename | Low | 122 files renamed — ✅ DONE | ✅ Phase 1 |
 
 ### What stays the same
@@ -5199,7 +5255,7 @@ AnnounceApp adds compatibility warnings on top of the working App Manager.
 - WebUI update zips deleted in Phase 1 → **restored** (6 packages + latest.json recovered, on-device updater works)
 - WebUI updates docs-only → **mirrored to CDN** (webui-updates/ in dada-tbd-firmware)
 - Manual WebUI packaging → **WebUI-aware CI pipeline** (CI builds bundles, creates webui-update zip, dispatches version to CDN; firmware-only releases deduplicate automatically)
-- App registry + App Manager → **interactive catalog** (Phase 5 — no firmware dependency)
-- P4 has no knowledge of Pico app → **AnnounceApp SPI command** (Phase 6)
-- No version check between P4 and Pico → **firmware ↔ app compatibility** (Phase 6)
+- App registry + App Manager → **interactive catalog** (Phase 5 — infra deployed, population + page pending)
+- P4 has no knowledge of Pico app → **AnnounceApp SPI command** (✅ merged — 0xAB, getAppInfo REST working)
+- No version check between P4 and Pico → **firmware ↔ app compatibility** (Phase 6 — extends AnnounceApp with version)
 - All 57 plugins WebUI-only → **~15 plugins adapted for hardware UI** (Phase 7)
