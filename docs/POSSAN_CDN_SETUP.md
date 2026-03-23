@@ -204,9 +204,7 @@ The Beta Channel flash page shows feature-test channels in its dropdown.
 | Feature test | `git push origin feature-test/foo` | `feature-test-foo/pico/` |
 
 After tagging, the CDN pico directory gets:
-- `dada-tbd-pico.uf2` — unversioned alias (latest for that channel)
 - `dada-tbd-16-{tag}-pico.uf2` — versioned name (what flash pages request)
-- `pico-version.txt` — version string
 
 ---
 
@@ -244,7 +242,7 @@ You should see `HTTP/2 200` with a non-zero `content-length`.
 | CI didn't trigger | Push was not to `dada-tbd-master`, `staging`, or `feature-test/*` | Check branch name matches a workflow trigger |
 | Stable release didn't publish | Tag doesn't start with `v` | Use `v0.4.2`, not `0.4.2` |
 | Push to CDN fails with 403 | Token expired or permissions changed | Ask dadamachines to regenerate the CDN token |
-| CDN commit appears but Pages not updated | Pages deploy was cancelled by concurrency | Re-run the Deploy Pages workflow in CDN repo Actions tab |
+| CDN commit appears but Pages not updated | Pages deploy failed | Re-run the Deploy Pages workflow in CDN repo Actions tab. (Previously caused by shared concurrency groups — now fixed: each CDN workflow has its own group.) |
 | Build fails with missing SPI pin | Wrong environment | Make sure CI builds `possan_rev_c`, not `pi2350` |
 
 ---

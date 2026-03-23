@@ -345,9 +345,22 @@ All release and pre-release firmware is served from
 ### Channel Structure
 
 ```
-apps/
-  └── tusb-msc/
-      └── dada-tbd-16-tusb-msc.bin   ← USB MSC helper (fixed path)
+apps/                                ← RP2350 app registry (catalog-driven)
+  ├── bootloader/                    ← BOOT2350 bootloader
+  │   └── manifest.json
+  ├── groovebox/                     ← Groovebox app (from possan/tbd-pico-seq3)
+  │   └── manifest.json
+  ├── tusb-msc-pico/                 ← USB MSC helper for Pico (UF2)
+  │   └── manifest.json
+  ├── debug-probe/                   ← Debug probe app
+  │   └── manifest.json
+  ├── flash-nuke/                    ← Flash nuke utility
+  │   └── manifest.json
+  └── game/                          ← Example game app
+      └── manifest.json
+utilities/
+  └── dada-tbd-16-tusb_msc-p4/      ← P4 USB MSC helper (bin, not in catalog)
+      └── dada-tbd-16-tusb-msc.bin
 stable/
   ├── p4/               ← P4 firmware (versioned, flat)
   ├── pico/             ← RP2350 Groovebox UF2
@@ -363,7 +376,22 @@ feature-test-<name>/
 webui-updates/
   ├── latest.json       ← latest WebUI version metadata
   └── webui-update-v*.zip  ← WebUI update packages (deduplicated)
+app-catalog.json         ← auto-generated merged catalog of all apps
+bundles/                 ← pre-assembled SD card bundles
 ```
+
+The CDN repo has 6 GitHub Actions workflows:
+
+| Workflow | Purpose |
+|----------|---------|
+| `build-catalog.yml` | Merges all `apps/*/manifest.json` into `app-catalog.json` |
+| `deploy-pages.yml` | Deploys the CDN to GitHub Pages |
+| `receive-firmware.yml` | Receives P4 firmware dispatch from this repo |
+| `receive-pico-app.yml` | Receives Pico app dispatch from app repos |
+| `validate-pr.yml` | Validates app manifest PRs (schema + SHA-256 check) |
+| `build-picosd-bundle.yml` | Manual dispatch — assembles Pico SD bundle |
+
+Each workflow uses its own concurrency group to prevent cross-cancellation.
 
 ### Manifest Format (`releases.json`)
 
@@ -415,8 +443,10 @@ original names; the CDN receive workflow renames them.
 | Unified image | — | `dada-tbd-16-{tag}-unified.bin` | All partitions merged, flash at `0x0` |
 | SD archive | `dada-tbd-sd.zip` | `dada-tbd-16-{tag}-sd.zip` | Versioned in `{channel}/p4/` |
 | SD hash | `dada-tbd-sd-hash.txt` | `dada-tbd-16-{tag}-sd-hash.txt` | Versioned in `{channel}/p4/` |
-| TinyUSB MSC | `tusb_msc.bin` | `dada-tbd-16-tusb-msc.bin` | Fixed at `apps/tusb-msc/` |
+| P4 USB MSC | `tusb_msc.bin` | `dada-tbd-16-tusb-msc.bin` | Fixed at `utilities/dada-tbd-16-tusb_msc-p4/` |
+| Pico USB MSC | — | `tusb-msc-pico-{ver}.uf2` | In `apps/tusb-msc-pico/` (catalog-driven) |
 | Pico firmware | — | `dada-tbd-16-{tag}-pico.uf2` | RP2350 Groovebox |
+| App catalog | — | `app-catalog.json` | Auto-generated from `apps/*/manifest.json` |
 
 ### Why `dada-tbd` and not `ctag-tbd`?
 
