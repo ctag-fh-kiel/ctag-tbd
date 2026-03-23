@@ -200,6 +200,17 @@
       background: var(--accent-light); color: var(--accent);
       border: 1px solid var(--accent-border);
     }
+    .status-msg.warning {
+      background: hsl(48 100% 96.1%); color: hsl(32.1 94.6% 43.7%);
+      border: 1px solid hsl(48 96.5% 76.7%);
+    }
+    .compat-warning {
+      background: hsl(48 100% 96.1%); border: 1px solid hsl(48 96.5% 76.7%);
+      border-radius: var(--radius); padding: 0.75rem 1rem;
+      margin: 0.75rem 0; font-size: 0.82rem; color: hsl(32.1 94.6% 43.7%);
+      font-weight: 500;
+    }
+    .compat-warning strong { color: hsl(20.5 90.2% 48.2%); }
 
     /* Log area */
     .log-area {
@@ -322,6 +333,29 @@
   let manifest = null;
   let zipFiles = {};  // name → { compression, data }
   let installedVersion = null;
+  let firmwareVersion = null;
+
+  // ── Load firmware version from device ──
+  async function loadFirmwareVersion() {
+    try {
+      var resp = await fetch('/api/v2/device?action=getIOCaps');
+      if (resp.ok) {
+        var caps = await resp.json();
+        firmwareVersion = caps.FWV || null;
+      }
+    } catch (e) {
+      firmwareVersion = null;
+    }
+  }
+
+  // ── Extract MAJOR.MINOR from a version string (e.g. "0.4.2" → "0.4") ──
+  function getMajorMinor(v) {
+    if (!v) return null;
+    var s = v.replace(/^v/, '');
+    var parts = s.split('.');
+    if (parts.length < 2) return null;
+    return parts[0] + '.' + parts[1];
+  }
 
   // ── Load current version from device ──
   async function loadCurrentVersion() {
@@ -377,6 +411,16 @@
           '<span class="up-to-date">&#9989; WebUI is up to date (v' + escHtml(latest.version) + ')</span><br>' +
           '<button class="btn btn-secondary btn-sm" id="online-reinstall-btn" style="margin-top:0.5rem;">' +
           '&#8635; Reinstall v' + escHtml(latest.version) + '</button>';
+      }
+
+      // Compatibility check — warn if WebUI MAJOR.MINOR doesn't match firmware
+      var fwMm = getMajorMinor(firmwareVersion);
+      var updMm = getMajorMinor(latest.version);
+      if (fwMm && updMm && fwMm !== updMm) {
+        html += '<div class="compat-warning"><strong>\u26A0 Compatibility Notice:</strong> ' +
+          'This WebUI update (v' + escHtml(latest.version) + ') targets firmware ' + escHtml(updMm) +
+          '.x \u2014 your firmware is v' + escHtml(firmwareVersion) + '. ' +
+          'Consider updating your firmware first.</div>';
       }
 
       // Older versions section (from versions array in latest.json)
@@ -438,6 +482,18 @@
     // Disable all online buttons
     var btns = onlineContent.querySelectorAll('button');
     for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
+
+    // Compatibility check — soft warning before online install
+    var fwMm = getMajorMinor(firmwareVersion);
+    var updMm = getMajorMinor(latest.version);
+    if (fwMm && updMm && fwMm !== updMm) {
+      if (!confirm('This WebUI (v' + latest.version + ') targets firmware ' + updMm +
+        '.x but your firmware is v' + firmwareVersion +
+        '.\n\nInstalling a mismatched WebUI may cause issues.\nContinue anyway?')) {
+        for (var k = 0; k < btns.length; k++) btns[k].disabled = false;
+        return;
+      }
+    }
 
     var statusEl = document.createElement('div');
     statusEl.style.cssText = 'margin-top:0.5rem;font-size:0.82rem;color:var(--accent);font-weight:600;';
@@ -559,8 +615,8 @@
     }
   }
 
-  // Load version, then check for online updates
-  loadCurrentVersion().then(function() { checkOnlineUpdate(); });
+  // Load version + firmware version, then check for online updates
+  Promise.all([loadCurrentVersion(), loadFirmwareVersion()]).then(function() { checkOnlineUpdate(); });
 
   // ── Minimal ZIP reader (supports stored + deflated entries) ──
   function parseZip(buffer) {
@@ -722,6 +778,17 @@
       applyBtn.disabled = false;
       dropZone.style.display = 'none';
 
+      // Compatibility check — show warning for manual uploads
+      var fwMm = getMajorMinor(firmwareVersion);
+      var updMm = getMajorMinor(manifest.version);
+      if (fwMm && updMm && fwMm !== updMm) {
+        showStatus(
+          '\u26A0 This WebUI package (v' + manifest.version + ') targets firmware ' + updMm +
+          '.x \u2014 your firmware is v' + firmwareVersion + '. Consider updating firmware first.',
+          'warning'
+        );
+      }
+
     } catch (e) {
       showStatus('Failed to read ZIP: ' + e.message, 'error');
       log('ERROR: ' + e.message, 'err');
@@ -731,6 +798,18 @@
   // ── Apply update ──
   applyBtn.addEventListener('click', async () => {
     if (!manifest) return;
+
+    // Compatibility check — soft warning before manual install
+    var fwMm = getMajorMinor(firmwareVersion);
+    var updMm = getMajorMinor(manifest.version);
+    if (fwMm && updMm && fwMm !== updMm) {
+      if (!confirm('This WebUI package (v' + manifest.version + ') targets firmware ' + updMm +
+        '.x but your firmware is v' + firmwareVersion +
+        '.\n\nInstalling a mismatched WebUI may cause issues.\nContinue anyway?')) {
+        return;
+      }
+    }
+
     applyBtn.disabled = true;
     progressBar.style.display = 'block';
 

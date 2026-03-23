@@ -1349,28 +1349,31 @@ When doing WebUI-only patches within the train:
 The MAJOR.MINOR **must match** the current firmware release train. The PATCH
 can differ.
 
-#### Compatibility check in the WebUI updater
+#### Compatibility check in the WebUI updater *(implemented)*
 
-The updater page (`webui-update.html`) can enforce compatibility:
+The updater page (`webui-update.html`) enforces compatibility via four
+check points. At page load, it fetches the firmware version from
+`/api/v2/device?action=getIOCaps` → `FWV` field. The `getMajorMinor()`
+helper extracts `"X.Y"` from `"X.Y.Z"` or `"vX.Y.Z"`:
 
 ```javascript
-// Compare MAJOR.MINOR of installed firmware vs available WebUI update
-var fwVersion = capabilities.FWV;  // e.g. "v0.4.2" from /api/v2/device
-var updateVersion = manifest.version;  // e.g. "0.4.5" from latest.json
-
-var fwMajorMinor = fwVersion.replace(/^v/, '').split('.').slice(0, 2).join('.');
-var uiMajorMinor = updateVersion.split('.').slice(0, 2).join('.');
-
-if (fwMajorMinor !== uiMajorMinor) {
-  showWarning('This WebUI update (' + updateVersion + ') requires firmware ' +
-    uiMajorMinor + '.x. Your firmware is ' + fwVersion + '. ' +
-    'Please update your firmware first via the Stable Channel page.');
+function getMajorMinor(v) {
+  if (!v) return null;
+  var s = v.replace(/^v/, '');
+  var parts = s.split('.');
+  if (parts.length < 2) return null;
+  return parts[0] + '.' + parts[1];
 }
 ```
 
+When MAJOR.MINOR of the WebUI update doesn't match the firmware:
+
+1. **Online update banner:** An amber "Compatibility Notice" warning appears.
+2. **Online install:** A `confirm()` dialog warns before downloading.
+3. **Manual zip load:** A warning status bar appears after parsing the ZIP.
+4. **Manual apply:** A `confirm()` dialog warns before uploading files.
+
 This is a **soft warning**, not a hard block — advanced users can override.
-But most users will understand "your firmware is 0.3, this WebUI needs 0.4,
-update firmware first."
 
 #### Firmware-only releases (no WebUI change)
 
@@ -1550,8 +1553,14 @@ This versioning scheme was adopted alongside the CI migration:
    `webui-version.json` to `0.4.0`. From this point, all builds on
    `dada-tbd-master` automatically get `v0.4.x` version strings.~~ **DONE**
    — v0.4.0, v0.4.1, and v0.4.2 tagged and released.
-4. **WebUI updater enhancement:** Add the MAJOR.MINOR compatibility check.
-   Soft warning only. *(Not yet implemented.)*
+4. ~~**WebUI updater enhancement:** Add the MAJOR.MINOR compatibility check.
+   Soft warning only.~~ **DONE** — `webui-update.html` now fetches the
+   firmware version (`/api/v2/device?action=getIOCaps` → `FWV`), extracts
+   MAJOR.MINOR from both firmware and target WebUI versions, and shows:
+   - An amber "Compatibility Notice" banner in the online-update check,
+   - A `confirm()` dialog before online or manual installs,
+   - A warning status bar when a mismatched zip is loaded manually.
+   Users can always proceed (soft warning, not hard block).
 
 ### Starting version: 0.4.0 (adopted)
 
