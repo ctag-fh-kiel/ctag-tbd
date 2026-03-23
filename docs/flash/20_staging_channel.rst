@@ -580,21 +580,8 @@ or any active feature-test branch build.
       var latest = catalog.versions[0];
       var f = latest.files;
 
-      /* Set TUSB_MSC_URL from shared files (fall back to stable) */
-      if (catalog.shared && catalog.shared.tusb_msc) {
-        TUSB_MSC_URL = FIRMWARE_CDN + '/' + catalog.shared.tusb_msc;
-      } else {
-        /* Seed from stable channel */
-        try {
-          var stableResp = await fetch(FIRMWARE_CDN + '/stable/releases.json');
-          if (stableResp.ok) {
-            var stableCatalog = await stableResp.json();
-            if (stableCatalog.shared && stableCatalog.shared.tusb_msc) {
-              TUSB_MSC_URL = FIRMWARE_CDN + '/' + stableCatalog.shared.tusb_msc;
-            }
-          }
-        } catch (_) {}
-      }
+      /* TUSB_MSC_URL is a fixed path — shared across all channels */
+      TUSB_MSC_URL = FIRMWARE_CDN + '/apps/tusb-msc/dada-tbd-16-tusb-msc.bin';
 
       return {
         tag: latest.tag,

@@ -152,11 +152,12 @@ CHANNEL="stable"  # or staging, feature-test-<name>
 # Check releases.json
 curl -s "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/releases.json" | jq .
 
-# Check firmware file exists
-curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tbd-16-app.bin" | head -1
+# Check unified image exists (replace TAG with actual version)
+TAG="v0.5.0"
+curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tbd-16-${TAG}-unified.bin" | head -1
 
-# Check unified image exists
-curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tbd-16-v0.5.0-unified.bin" | head -1
+# Check SD card image exists
+curl -sI "https://dadamachines.github.io/dada-tbd-firmware/${CHANNEL}/p4/dada-tbd-16-${TAG}-sd.zip" | head -1
 ```
 
 ## Troubleshooting

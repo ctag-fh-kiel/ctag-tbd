@@ -671,8 +671,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
 
       CATALOG = catalog;
       VERSIONS = catalog.versions || [];
-      TUSB_MSC_URL = catalog.shared && catalog.shared.tusb_msc
-        ? (FIRMWARE_CDN + '/' + catalog.shared.tusb_msc) : null;
+      TUSB_MSC_URL = FIRMWARE_CDN + '/apps/tusb-msc/dada-tbd-16-tusb-msc.bin';
 
       if (VERSIONS.length === 0) {
         setStat($('statPkg'), 'No stable releases found.', 'err');

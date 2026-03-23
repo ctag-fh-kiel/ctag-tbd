@@ -78,18 +78,15 @@ dadamachines/dada-tbd-firmware (main)               ← firmware CDN
 ├── .github/workflows/
 │   ├── receive-firmware.yml    ← receives builds via repository_dispatch
 │   └── deploy-pages.yml        ← deploys to GitHub Pages on push
+├── apps/
+│   └── tusb-msc/
+│       └── dada-tbd-16-tusb-msc.bin        ← USB MSC helper (fixed path)
 ├── stable/
 │   ├── releases.json            ← channel manifest with version history
 │   ├── p4/
-│   │   ├── dada-tbd-16-app.bin             ← P4 app partition (device-prefixed)
-│   │   ├── dada-tbd-16-bootloader.bin
-│   │   ├── dada-tbd-16-partitions.bin
-│   │   ├── dada-tbd-16-otadata.bin
-│   │   ├── dada-tbd-16-tusb-msc.bin        ← USB MSC helper
 │   │   ├── dada-tbd-16-v0.4.1-unified.bin  ← P4 unified image (flash to 0x0)
-│   │   └── v0.4.1/                         ← per-version SD archive + hash
-│   │       ├── dada-tbd-16-sd.zip
-│   │       └── dada-tbd-16-sd-hash.txt
+│   │   ├── dada-tbd-16-v0.4.1-sd.zip       ← SD card archive (versioned)
+│   │   └── dada-tbd-16-v0.4.1-sd-hash.txt  ← SD card hash (versioned)
 │   └── pico/
 │       └── dada-tbd-16-v0.4.1-pico.uf2    ← RP2350 Groovebox firmware
 ├── staging/                    ← staging channel (live)
@@ -269,8 +266,8 @@ https://github.com/dadamachines/ctag-tbd/releases/download/v0.4.1/dada-tbd-sd.zi
 ```
 https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-v0.4.1-unified.bin
 https://dadamachines.github.io/dada-tbd-firmware/stable/pico/dada-tbd-16-v0.4.1-pico.uf2
-https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-tusb-msc.bin
-https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-sd.zip
+https://dadamachines.github.io/dada-tbd-firmware/stable/p4/dada-tbd-16-v0.4.1-sd.zip
+https://dadamachines.github.io/dada-tbd-firmware/apps/tusb-msc/dada-tbd-16-tusb-msc.bin
 ```
 
 No firmware binaries committed to the main repo. The flash pages fetch from
@@ -765,21 +762,14 @@ no CORS) and populates the UI dynamically. No RST edits needed per build.
 {
   "channel": "stable",
   "latest": "v0.5.0",
-  "shared": {
-    "tusb_msc": "stable/p4/dada-tbd-16-tusb-msc.bin",
-    "app": "stable/p4/dada-tbd-16-app.bin",
-    "bootloader": "stable/p4/dada-tbd-16-bootloader.bin",
-    "partitions": "stable/p4/dada-tbd-16-partitions.bin",
-    "otadata": "stable/p4/dada-tbd-16-otadata.bin"
-  },
   "versions": [
     {
       "tag": "v0.5.0",
       "timestamp": "2026-03-22T10:00:00Z",
       "files": {
         "unified": "stable/p4/dada-tbd-16-v0.5.0-unified.bin",
-        "sdcard": "stable/p4/v0.5.0/dada-tbd-16-sd.zip",
-        "hash": "stable/p4/v0.5.0/dada-tbd-16-sd-hash.txt",
+        "sdcard": "stable/p4/dada-tbd-16-v0.5.0-sd.zip",
+        "hash": "stable/p4/dada-tbd-16-v0.5.0-sd-hash.txt",
         "pico": "stable/pico/dada-tbd-16-v0.5.0-pico.uf2"
       }
     }
@@ -793,11 +783,12 @@ base URL: `https://dadamachines.github.io/dada-tbd-firmware/`.
 **Key files:**
 | Key | Description | Used by |
 |---|---|---|
-| `shared.tusb_msc` | USB MSC helper — switches device to SD card drive mode | Path B Step 1 |
-| `shared.app` | P4 app partition only (advanced use — not used by flash page) | Manual / CLI |
 | `versions[].files.unified` | Unified P4 image (bootloader + partition table + OTA data + app at correct offsets). **Flash to address `0x0`.** | Path A (Quick Update) + Path B (Full SD Deploy) |
 | `versions[].files.sdcard` | SD card zip (tbdsamples + WebUI) | Path B Step 2 |
+| `versions[].files.hash` | SD card hash file | Path B verification |
 | `versions[].files.pico` | Versioned RP2350 Groovebox .uf2 | Path A Step 2 + Path B Step 5 |
+
+> **tusb_msc location:** Fixed at `apps/tusb-msc/dada-tbd-16-tusb-msc.bin` (not per-channel, not in releases.json). Used by Path B Step 1 to switch device to SD card drive mode.
 
 > **Why not commit binaries to docs/_static?** Because every build would add
 > ~16 MB to the main repo. With the CDN repo, binaries live outside the main
@@ -1991,17 +1982,11 @@ Why combine instead of separate:
 dadamachines/dada-tbd-firmware          ← firmware CDN + app registry
 ├── stable/                             ← P4 firmware channels (dispatch-only)
 │   ├── p4/
-│   │   ├── dada-tbd-16-app.bin
-│   │   ├── dada-tbd-16-bootloader.bin
-│   │   ├── dada-tbd-16-partitions.bin
-│   │   ├── dada-tbd-16-otadata.bin
-│   │   ├── dada-tbd-unified.bin
-│   │   ├── dada-tbd-16-p4sd.zip
-│   │   ├── flash_args.txt
-│   │   └── version.txt
+│   │   ├── dada-tbd-16-v0.5.0-unified.bin
+│   │   ├── dada-tbd-16-v0.5.0-sd.zip
+│   │   └── dada-tbd-16-v0.5.0-sd-hash.txt
 │   ├── pico/                           ← Pico .uf2 (dispatch-only)
-│   │   ├── pico.uf2
-│   │   └── pico-version.txt
+│   │   └── dada-tbd-16-v0.5.0-pico.uf2
 │   └── releases.json
 ├── staging/                            ← same structure as stable
 │   └── ...
@@ -3667,9 +3652,9 @@ dadamachines/ctag-tbd          possan/tbd-pico-seq3
        │  (CDN repo — GitHub Pages)     │
        │                                │
        │  {channel}/p4/                 │ ← P4 repo only
-       │    dada-tbd-16-app.bin,        │
-       │    bootloader, partitions,     │
-       │    unified, SD zip + hash      │
+       │    dada-tbd-16-{tag}-unified,  │
+       │    dada-tbd-16-{tag}-sd.zip,   │
+       │    dada-tbd-16-{tag}-sd-hash   │
        │                                │
        │  {channel}/pico/               │ ← Pico repo only
        │    dada-tbd-pico.uf2           │
