@@ -14,6 +14,7 @@ Provided "as is" without any express or implied warranties.
 
 #include "SampleAPI.hpp"
 #include "SPManager.hpp"
+#include "sdkconfig.h"
 #include <cstring>
 #include <string>
 #include <vector>
@@ -21,7 +22,9 @@ Provided "as is" without any express or implied warranties.
 #include <dirent.h>
 #include <sys/stat.h>
 #include <cstdio>
+#if CONFIG_TBD_USE_SD_CARD
 #include "esp_vfs_fat.h"
+#endif
 #include "esp_log.h"
 #include "esp_heap_caps.h"
 #include "rapidjson/document.h"
@@ -549,12 +552,14 @@ static esp_err_t handle_list(httpd_req_t *req) {
     capacityObj.AddMember("active_bank_bytes", (unsigned)usedBytes, alloc);
 
     // SD card storage info via esp_vfs_fat_info
+#if CONFIG_TBD_USE_SD_CARD
     uint64_t sdTotal = 0, sdFree = 0;
     if (esp_vfs_fat_info("/sdcard", &sdTotal, &sdFree) == ESP_OK) {
         // Use double to avoid uint32 overflow for large SD cards
         capacityObj.AddMember("sd_total_bytes", (double)sdTotal, alloc);
         capacityObj.AddMember("sd_free_bytes",  (double)sdFree,  alloc);
     }
+#endif
 
     resp.AddMember("capacity", capacityObj, alloc);
 

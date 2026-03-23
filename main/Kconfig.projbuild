@@ -1,5 +1,26 @@
 menu "CTAG TBD Configuration"
 
+    menu "TBD Hardware Configuration"
+        config TBD_USE_SD_CARD
+            bool "Enable SD Card Support"
+            default y
+            help
+                Enable SD card as the storage backend for presets, WebUI, and samples.
+                When disabled, the system uses LittleFS flash partitions for presets/WebUI
+                and a flash partition for the sample ROM (.tbd binary format).
+                Disable this for boards without an SD card socket (Config A, Config B).
+
+        config TBD_USE_RP2350
+            bool "Enable RP2350 Sequencer Bridge"
+            default y
+            help
+                Enable the RP2350 SPI bridge for hardware sequencer, OLED display,
+                and MIDI routing via the Pico subsystem.
+                When disabled, MIDI is received directly via ESP32-P4 native USB-MIDI
+                (TinyUSB), and SPI2/SPI3 buses are not initialized (freeing 10 GPIO pins).
+                Disable this for boards without an RP2350 (Config A, Config C).
+    endmenu
+
     config ABLETON_LINK
         bool "Enable Ableton Link Support"
         default y

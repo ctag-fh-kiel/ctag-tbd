@@ -21,11 +21,16 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "Control.hpp"
+#include "sdkconfig.h"
+
+#if CONFIG_TBD_USE_RP2350
 #include "rp2350_spi_stream.hpp"
+#endif
 
 uint8_t *CTAG::CTRL::Control::buf_ptr = nullptr; // buffer pointer for current cv + trig data
 uint16_t updatecounter = 0;
 
+#if CONFIG_TBD_USE_RP2350
 IRAM_ATTR int CTAG::CTRL::Control::Update(void *sendbuffer, void **receivebuffer) {
     return CTAG::DRIVERS::rp2350_spi_stream::GetCurrentBuffer(sendbuffer, receivebuffer);
 }
@@ -33,3 +38,11 @@ IRAM_ATTR int CTAG::CTRL::Control::Update(void *sendbuffer, void **receivebuffer
 void CTAG::CTRL::Control::Init() {
     buf_ptr = DRIVERS::rp2350_spi_stream::Init();
 }
+#else
+IRAM_ATTR int CTAG::CTRL::Control::Update(void *sendbuffer, void **receivebuffer) {
+    return 0;
+}
+
+void CTAG::CTRL::Control::Init() {
+}
+#endif

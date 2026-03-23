@@ -1,0 +1,5 @@
+# Hardware overlay: TBD + SD (Config C)
+# SD card enabled, no RP2350 — USB-MIDI, no sequencer
+# Usage: idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.tbd-sd-only" build
+CONFIG_TBD_USE_SD_CARD=y
+CONFIG_TBD_USE_RP2350=n

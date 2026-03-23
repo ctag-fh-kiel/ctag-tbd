@@ -22,6 +22,13 @@ The DSP engine, plugin system, and core firmware are developed upstream by [Robe
 
 See the [documentation](https://dadamachines.github.io/ctag-tbd/) for setup guides, plugin reference, and flashing instructions.
 
+## Hardware Configurations
+
+The firmware supports four hardware configurations for different board
+variants — from a minimal flash-only build to the full TBD-16 with SD card
+and RP2350 sequencer bridge. See [HARDWARE_CONFIGURATIONS.md](HARDWARE_CONFIGURATIONS.md) for
+the feature matrix, build instructions, and Kconfig flag reference.
+
 ## Project Structure
 
 ```

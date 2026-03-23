@@ -86,7 +86,7 @@ Rules:
 
 ### SD Card Hash Interaction
 
-The WebUI Updater does **not** modify `tbd-sd-card-hash.txt` or `.version`. This means:
+The WebUI Updater does **not** modify `dada-tbd-sd-hash.txt` or `.version`. This means:
 - No destructive re-extraction on reboot
 - Updated files persist across reboots
 - A future full firmware deploy (with `create_sd_archive.sh`) will overwrite files updated this way — this is expected and correct

@@ -45,6 +45,8 @@ Deploy firmware and/or WebUI to an ESP32-P4 TBD-16 device over USB.
 | Server | Only serves `.gz` files — always deploy gzipped assets |
 | `tusb_msc.bin` | Already on ota_1 — never re-flash unless doing clean install |
 | Flash scripts | `bin/flash.sh`, `bin/flash-aem.sh`, `bin/flash_ota_1.sh` |
+| Hardware config | TBD-16 (default). For alternate configs see `HARDWARE_CONFIGURATIONS.md` |
+| ESP-IDF version | 5.5.3 (`espressif/idf:v5.5.3` in CI) |
 
 ## ESP32-P4 Flash Address Map
 
@@ -177,8 +179,8 @@ cp sdcard_image/www/shoelace/themes/dark.css.gz "/Volumes/NO NAME/www/shoelace/t
 ### Step 6 — Update hash files
 
 ```bash
-cp build/tbd-sd-card-hash.txt "/Volumes/NO NAME/tbd-sd-card-hash.txt"
-cp build/tbd-sd-card-hash.txt "/Volumes/NO NAME/.version"
+cp build/dada-tbd-sd-hash.txt "/Volumes/NO NAME/dada-tbd-sd-hash.txt"
+cp build/dada-tbd-sd-hash.txt "/Volumes/NO NAME/.version"
 ```
 
 ### Step 7 — Eject and switch back

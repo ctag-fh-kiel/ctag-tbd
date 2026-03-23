@@ -12,7 +12,9 @@ on:
       - "CMakeLists.txt"
       - "sdkconfig"
       - "sdkconfig.defaults"
+      - "sdkconfig.defaults.*"
       - "partitions_example.csv"
+      - "partitions_no_sd.csv"
       - "patches/**"
       - "sdcard_image/**"
       - "sample_rom/**"
@@ -29,7 +31,9 @@ on:
       - "CMakeLists.txt"
       - "sdkconfig"
       - "sdkconfig.defaults"
+      - "sdkconfig.defaults.*"
       - "partitions_example.csv"
+      - "partitions_no_sd.csv"
       - "patches/**"
       - "sdcard_image/**"
       - "sample_rom/**"
@@ -43,7 +47,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Full build-check for TBD-16 (Config D — the release configuration) ──
   build-check:
     uses: ./.github/workflows/build-firmware.yml
     with:
       build_name: ci-${{ github.sha }}
+
+  # ── Compile-check alternate hardware configurations ──
+  # Verifies that Configs A, B, and C compile without errors.
+  # These are lightweight builds (no SD archive, no unified image).
+  compile-check-configs:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v5.5.3
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: tbd-simple
+            overlay: sdkconfig.defaults.tbd-simple
+          - name: tbd-rp2350-only
+            overlay: sdkconfig.defaults.tbd-rp2350-only
+          - name: tbd-sd-only
+            overlay: sdkconfig.defaults.tbd-sd-only
+    name: "compile-check (${{ matrix.name }})"
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Build ${{ matrix.name }}
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          . $IDF_PATH/export.sh
+          idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;${{ matrix.overlay }}" build

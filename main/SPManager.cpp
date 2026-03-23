@@ -32,19 +32,22 @@ respective component folders / files if different from this license.
 #include "network.hpp"
 #include "tusb.hpp"
 #include "RestServer.hpp"
+#if CONFIG_TBD_USE_RP2350
 #include "SpiAPI.hpp"
+#endif
 #include "Control.hpp"
 #include "helpers/ctagFastMath.hpp"
 #include "helpers/ctagSampleRom.hpp"
 #include "stmlib/dsp/dsp.h"
+#if CONFIG_TBD_USE_RP2350
 #include "rp2350_spi_stream.hpp"
+#endif
 // ableton link
 #include "link.hpp"
+#if CONFIG_TBD_USE_RP2350
 #include "SpiProtocol.h"
 #include "SpiProtocolHelper.hpp"
-#include "MacroTranslator.hpp"
-#include "MacroDeviceDefinition.hpp"
-#include "MacroSoundPreset.hpp"
+#endif
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
@@ -54,7 +57,6 @@ respective component folders / files if different from this license.
 using namespace CTAG;
 using namespace CTAG::AUDIO;
 using namespace CTAG::DRIVERS;
-using namespace CTAG::MACROPRESETS;
 
 #define CPU_MAX_ALLOWED_CYCLES 300000 // 261224 // is 32/44100kHz * 360MHz
 #define SPI_TRANSACTION_TIMEOUT_US 200000
@@ -62,7 +64,11 @@ using namespace CTAG::MACROPRESETS;
 // global variable, sdcard base directory
 namespace CTAG {
     namespace RESOURCES {
+#if CONFIG_TBD_USE_SD_CARD
         std::string sdcardRoot {"/sdcard"};
+#else
+        std::string sdcardRoot {"/littlefs"};
+#endif
     }
 }
 
@@ -83,7 +89,9 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     bool isStereoCH0 = false;
     esp_cpu_cycle_count_t start, diff;
 
+#if CONFIG_TBD_USE_RP2350
     SpiProtocolHelper protocol;
+#endif
 
     // Provide dummy cv/trig buffers so plugins that access pd.cv[x] or
     // pd.trig[x] don't crash with a null-pointer dereference.
@@ -103,15 +111,18 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
     // wait a bit to let everything initialize and stabilize
     vTaskDelay(pdMS_TO_TICKS(4000));
 
+#if CONFIG_TBD_USE_RP2350
     int64_t nextspitime = 0;
     int64_t nextspireceivedeadline = 0;
 
     int responsecounter = 0;
+#endif
     int framecounter = 0;
 
     ESP_LOGI("SPManager", "Audio task started, entering main loop.");
 
     while (runAudioTask) {
+#if CONFIG_TBD_USE_RP2350
         //
         // Prepare a response.
         //
@@ -261,6 +272,12 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 nextspireceivedeadline = now + SPI_TRANSACTION_TIMEOUT_US;
             }
         }
+#else
+        // Without RP2350: always process, read MIDI from TinyUSB directly
+        pd.controlData = (void *)1;
+        memset(&pd.midi_bytes, 0, sizeof(pd.midi_bytes));
+        pd.midi_bytes_length = tusb::Read((uint8_t*)pd.midi_bytes, sizeof(pd.midi_bytes));
+#endif // CONFIG_TBD_USE_RP2350
 
         taskYIELD();
 
@@ -297,7 +314,9 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                               (sp[0] != nullptr || sp[1] != nullptr);
 
             if (canProcess) {
-                macroTranslator->TranslateInput(&pd);
+#if CONFIG_TBD_USE_SD_CARD
+                if (macroTranslator) macroTranslator->TranslateInput(&pd);
+#endif
                 memset(&pd.midi_bytes, 0, pd.midi_bytes_length); // clear buffer
 
                 // Process channel 0
@@ -460,9 +479,11 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
             sp[1] = nullptr;
         }
     }
-    if (chan == 0) {
+#if CONFIG_TBD_USE_SD_CARD
+    if (chan == 0 && macroTranslator) {
         macroTranslator->soundProcessor = nullptr;
     }
+#endif
 
     ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -480,9 +501,11 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
         xSemaphoreGive(processMutex);
         return;
     }
-    if (chan == 0) {
+#if CONFIG_TBD_USE_SD_CARD
+    if (chan == 0 && macroTranslator) {
         macroTranslator->soundProcessor = sp[chan];
     }
+#endif
     model->SetActivePluginID(id, chan);
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
     xSemaphoreGive(processMutex);
@@ -508,10 +531,6 @@ atomic<uint32_t> SoundProcessorManager::toStereoCH1;
 atomic<uint32_t> SoundProcessorManager::runAudioTask;
 atomic<uint32_t> SoundProcessorManager::ch0_outputSoftClip;
 atomic<uint32_t> SoundProcessorManager::ch1_outputSoftClip;
-std::shared_ptr<CTAG::MACROPRESETS::SynthDefinitionDataModel> SoundProcessorManager::synthDefinitionModel = nullptr;
-std::shared_ptr<CTAG::MACROPRESETS::MacroSoundPresetDataModel> SoundProcessorManager::macroSoundDefinitionModel = nullptr;
-std::shared_ptr<CTAG::MACROPRESETS::MacroDeviceDefinitionDataModel> SoundProcessorManager::macroDeviceDefinitionModel = nullptr;
-std::shared_ptr<CTAG::MACROPRESETS::MacroTranslator> SoundProcessorManager::macroTranslator = nullptr;
 atomic<uint32_t> SoundProcessorManager::parameterChangeCounter = 0;
 atomic<uint32_t> SoundProcessorManager::macroChangeCounter = 0;
 atomic<uint32_t> SoundProcessorManager::trackMachineChangeCounter = 0;
@@ -527,6 +546,7 @@ static void debug_task(void *pvParameters) {
     // vTaskDelay(200 / portTICK_PERIOD_MS);
     // ESP_LOGI("SPManager", "FreeRTOS Stats:\n%s", freertosstats);
 
+#if CONFIG_TBD_USE_RP2350
     ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!, counters: tx-err=%ld queue-err=%ld parse-err=%ld success=%ld",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -536,6 +556,13 @@ static void debug_task(void *pvParameters) {
              DRIVERS::rp2350_spi_stream::queueErrorCount,
              DRIVERS::rp2350_spi_stream::parseErrorCount,
              DRIVERS::rp2350_spi_stream::transferSuccessCount);
+#else
+    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+#endif
 
     // printf("Audio task cycles %d, micros %d, slow process() counter %d/%d, fbuf = [%1.3f, %1.3f...], tempo %ld, sentSynthMidi %d b, receivedUsbDeviceMidi %d b, %d new request counter errors\n", (int)diff, (int)diff2, (int)slowProcessCounter, (int)framecounter, fbuf[0], fbuf[BUF_SZ], pd.sequencer_tempo, (int)sentSynthMidiBytes, (int)receivedUsbDeviceMidiBytes, (int)requestCounterErrors);
     // requestCounterErrors = 0;
@@ -560,18 +587,9 @@ void SoundProcessorManager::StartSoundProcessor() {
     // generate internal data
     updateConfiguration();
 
-    synthDefinitionModel = std::make_shared<CTAG::MACROPRESETS::SynthDefinitionDataModel>();
-    macroSoundDefinitionModel = std::make_shared<CTAG::MACROPRESETS::MacroSoundPresetDataModel>();
-    macroDeviceDefinitionModel = std::make_shared<CTAG::MACROPRESETS::MacroDeviceDefinitionDataModel>();
-    macroTranslator = std::make_shared<CTAG::MACROPRESETS::MacroTranslator>();
-
-    synthDefinitionModel->ReloadSynthDefinitions();
-    macroDeviceDefinitionModel->ReloadMachineDefinitions();
-    macroSoundDefinitionModel->ReloadSoundPresets(macroDeviceDefinitionModel.get(), synthDefinitionModel.get());
-
-    macroTranslator->synthDefinitionModel = synthDefinitionModel;
-    macroTranslator->macroDeviceDefinitionModel = macroDeviceDefinitionModel;
-    macroTranslator->macroSoundDefinitionModel = macroSoundDefinitionModel;
+#if CONFIG_TBD_USE_SD_CARD
+    InitMacroSystem();
+#endif
 
     // start network
     NET::Network::SetSSID(model->GetNetworkConfigurationData("ssid"));
@@ -593,7 +611,9 @@ void SoundProcessorManager::StartSoundProcessor() {
     NET::Network::SetMDNSName(model->GetNetworkConfigurationData("mdns_name"));
     NET::Network::Up();
     REST::RestServer::StartRestServer();
+#if CONFIG_TBD_USE_RP2350
     SPIAPI::SpiAPI::StartSpiAPI();
+#endif
 
     // Ableton Link
     CTAG::LINK::link::Init();
@@ -786,184 +806,6 @@ void SoundProcessorManager::SetTrackMachine(const int trackIndex, const string &
     }
 }
 
-void SoundProcessorManager::SetTrackMacro(const int trackIndex, const string &macroDefinitionID) {
-    if (macroTranslator == nullptr) {
-        return;
-    }
-
-    MacroDeviceDefinition *def = macroDeviceDefinitionModel
-        ->LoadMacroDeviceDefinition(macroDefinitionID);
-
-    if (def == nullptr) {
-        ESP_LOGI("SPManager", "Macro definition %s not found, cannot load macro",
-            macroDefinitionID.c_str());
-        return;
-    }
-
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    macroTranslator->SetTrackMacroDefinition(trackIndex, def);
-    xSemaphoreGive(processMutex);
-    delete def;
-}
-
-void SoundProcessorManager::SetTrackParametersFromJSON(const string &parametersJSON) {
-    if (macroTranslator == nullptr) {
-        return;
-    }
-
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    macroTranslator->SetTrackParametersFromJSON(parametersJSON);
-    xSemaphoreGive(processMutex);
-}
-
-void SoundProcessorManager::SetTrackParameter(const int trackIndex, int parameterIndex, int32_t value) {
-    if (macroTranslator == nullptr) {
-        return;
-    }
-
-    macroTranslator->SetTrackParameter(trackIndex, parameterIndex, value);
-}
-
-// void SoundProcessorManager::SetTrackSampleBank(const int trackIndex, const string &sampleBankId) {
-//      if (macroTranslator == nullptr) {
-//         return;
-//     }
-
-//     if (macroTranslator == nullptr) {
-//         return;
-//     }
-
-//     macroTranslator->SetTrackSampleBank(trackIndex, sampleBankId);
-// }
-
-void SoundProcessorManager::RefreshMacros() {
-    ESP_LOGW("SPManager", ">>> RefreshMacros called");
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    synthDefinitionModel->ReloadSynthDefinitions();
-    macroDeviceDefinitionModel->ReloadMachineDefinitions();
-    macroTranslator->RefreshActiveDefinitions();
-    xSemaphoreGive(processMutex);
-}
-
-void SoundProcessorManager::RefreshSingleMacro(const string &defId) {
-    ESP_LOGI("SPManager", ">>> RefreshSingleMacro id=%s", defId.c_str());
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    macroDeviceDefinitionModel->ReloadSingleDefinition(defId);
-    macroTranslator->RefreshDefinitionById(defId);
-    xSemaphoreGive(processMutex);
-}
-
-void SoundProcessorManager::RefreshSoundPresets() {
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    macroSoundDefinitionModel->ReloadSoundPresets(macroDeviceDefinitionModel.get(), synthDefinitionModel.get());
-    xSemaphoreGive(processMutex);
-}
-
-std::string SoundProcessorManager::GetMacroSoundPresetListJSON(){
-    std::string output;
-    macroSoundDefinitionModel->SerializeListJSON(&output);
-    return output;
-}
-
-std::string SoundProcessorManager::GetMacroSoundPresetJSON(const std::string &soundPresetId){
-    std::string output;
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    macroSoundDefinitionModel->SerializeItemJSON(soundPresetId, &output);
-    xSemaphoreGive(processMutex);
-    return output;
-}
-
-std::string SoundProcessorManager::GetMacroDefinitionJSON(const std::string &soundPresetId){
-    std::string output;
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    macroDeviceDefinitionModel->SerializeItemJSON(soundPresetId, &output);
-    xSemaphoreGive(processMutex);
-    return output;
-}
-
-void SoundProcessorManager::ActivateTrackMachine(const int trackIndex, const std::string machineId) {
-}
-
-void SoundProcessorManager::LoadTrackMacro(const int trackIndex, const std::string macroId) {
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    MacroDeviceDefinition *def =
-        macroDeviceDefinitionModel->LoadMacroDeviceDefinition(macroId);
-    xSemaphoreGive(processMutex);
-    if (def != nullptr) {
-        xSemaphoreTake(processMutex, portMAX_DELAY);
-        macroTranslator->SetTrackMachine(trackIndex, def->synthId);
-        macroTranslator->SetTrackMacroDefinition(trackIndex, def);
-        xSemaphoreGive(processMutex);
-        delete def;
-    }
-}
-
-void SoundProcessorManager::LoadTrackMacroAndPreset(const int trackIndex, const std::string soundPresetId) {
-    ESP_LOGI("SPManager", "Loading sound preset \"%s\" for track %d", soundPresetId.c_str(), trackIndex);
-
-    ESP_LOGI("SPManager", "Mem 1 freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-        heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-        heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-        heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-        heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    MacroSoundPreset *preset =
-        macroSoundDefinitionModel->LoadMacroSoundPreset(soundPresetId);
-    xSemaphoreGive(processMutex);
-    if (preset == nullptr) {
-        ESP_LOGI("SPManager", "Preset %s not found, loading macro without preset",
-            soundPresetId.c_str());
-        return;
-    }
-
-    ESP_LOGI("SPManager", "Loaded sound preset \"%s\" name \"%s\" and macro \"%s\"",
-        preset->id.c_str(), preset->displayName.c_str(), preset->macroDeviceId.c_str());
-
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    MacroDeviceDefinition *def =
-        macroDeviceDefinitionModel->LoadMacroDeviceDefinition(preset->macroDeviceId);
-    xSemaphoreGive(processMutex);
-    if (def == nullptr) {
-        ESP_LOGI("SPManager", "Macro definition %s not found, cannot load macro or preset",
-            preset->macroDeviceId.c_str());
-        delete preset;
-        return;
-    }
-
-    ESP_LOGD("SPManager", "Loaded macro def \"%s\" named \"%s\", applying to track %d", def->id.c_str(), def->name.c_str(), trackIndex);
-
-    ESP_LOGI("SPManager", "Mem 2 freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-        heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-        heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-        heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-        heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-
-    // LoadTrackMacro(trackIndex, def->synthId);
-    xSemaphoreTake(processMutex, portMAX_DELAY);
-    macroTranslator->SetTrackMachine(trackIndex, def->synthId);
-    macroTranslator->SetTrackMacroDefinition(trackIndex, def);
-    xSemaphoreGive(processMutex);
-
-    int pidx = 0;
-    for(const auto& param : preset->parameterValues) {
-        // ESP_LOGI("SPManager", "  Setting track %d param %d to value %f",
-        //     trackIndex, pidx, param);
-        macroTranslator->SetTrackParameter(trackIndex, pidx, param);
-        pidx ++;
-    }
-
-    delete preset;
-    delete def;
-
-    ESP_LOGD("SPManager", "Mem 4 freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-        heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-        heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-        heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-        heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-
-}
-
 // ─── Audio health monitoring ─────────────────────────────────────
 
 string SoundProcessorManager::GetAudioHealthJSON() {
@@ -1061,18 +903,6 @@ char *SoundProcessorManager::GetSafeJSONSoundProcessorPresets(const string &id) 
     return copy;
 }
 
-void SoundProcessorManager::MarkTracksChangedFromWebui(){
-    trackMachineChangeCounter ++;
-}
-
-void SoundProcessorManager::MarkMacrosChangedFromWebui(){
-    macroChangeCounter ++;
-}
-
-void SoundProcessorManager::MarkDefinitionsChangedFromWebui(){
-    definitionChangeCounter ++;
-}
-
 std::string SoundProcessorManager::GetKitIndexJSON(){
     return ctagSampleRom::GetKitIndexJSON();
 }
@@ -1081,7 +911,4 @@ std::string SoundProcessorManager::GetActiveKitBankIndexJSON(){
     return ctagSampleRom::GetActiveKitBankIndexJSON();
 }
 
-void SoundProcessorManager::PutSamplePresetJSON(const string &presetJSON) {
-    // ctagSampleRom::PutSamplePresetJSON(presetJSON);
-    macroSoundDefinitionModel->PutSamplePresetJSON(presetJSON);
-}
+

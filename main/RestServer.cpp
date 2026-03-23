@@ -37,7 +37,9 @@ respective component folders / files if different from this license.
 #include "PluginAPI.hpp"
 #include "DeviceAPI.hpp"
 #include "SampleAPI.hpp"
+#if CONFIG_TBD_USE_SD_CARD
 #include "MacroAPI.hpp"
+#endif
 #include "RestServer.hpp"
 #include <string.h>
 #include <fcntl.h>
@@ -244,6 +246,7 @@ esp_err_t RestServer::StartRestServer() {
     httpd_register_uri_handler(server, &samples_post);
 
     /* ── 4. Macro API  (2 handlers) ── */
+#if CONFIG_TBD_USE_SD_CARD
     httpd_uri_t macros_get = {
         .uri      = "/api/v2/macros",
         .method   = HTTP_GET,
@@ -259,6 +262,7 @@ esp_err_t RestServer::StartRestServer() {
         .user_ctx = rest_context
     };
     httpd_register_uri_handler(server, &macros_post);
+#endif // CONFIG_TBD_USE_SD_CARD
 
     /* ── 5. Static files — must be LAST (wildcard catch-all) ── */
     httpd_uri_t static_get = {

@@ -21,6 +21,9 @@ respective component folders / files if different from this license.
 
 #pragma once
 
+#include "sdkconfig.h"
+#if CONFIG_TBD_USE_RP2350
+
 #include "driver/spi_slave.h"
 #include <stdint.h>
 #include <atomic>
@@ -52,3 +55,5 @@ namespace CTAG {
         };
     }
 }
+
+#endif // CONFIG_TBD_USE_RP2350

@@ -17,6 +17,9 @@ respective component folders / files if different from this license.
 
 #pragma once
 
+#include "sdkconfig.h"
+#if CONFIG_TBD_USE_RP2350
+
 #include "SpiProtocol.h"
 #include <stdint.h>
 
@@ -43,4 +46,6 @@ public:
   uint8_t getNextSequence(uint8_t currentNumber);
   void markRequestSeen(uint8_t seq);
 };
+
+#endif // CONFIG_TBD_USE_RP2350
 

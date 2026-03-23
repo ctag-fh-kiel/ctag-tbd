@@ -18,7 +18,10 @@ respective component folders / files if different from this license.
 #include "DeviceAPI.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
+#include "sdkconfig.h"
+#if CONFIG_TBD_USE_RP2350
 #include "SpiAPI.hpp"
+#endif
 #include <cstring>
 #include <string>
 #include "esp_log.h"
@@ -96,9 +99,15 @@ static esp_err_t handle_get_audio_health(httpd_req_t *req) {
 
 /** action=getAppInfo — active RP2350 app identity + capability flags */
 static esp_err_t handle_get_app_info(httpd_req_t *req) {
+#if CONFIG_TBD_USE_RP2350
     const string &appId = CTAG::SPIAPI::SpiAPI::GetRP2350AppId();
     bool locked = CTAG::SPIAPI::SpiAPI::IsPluginLocked();
     bool redirectSamples = CTAG::SPIAPI::SpiAPI::ShouldRedirectSamples();
+#else
+    const string appId = "none";
+    bool locked = false;
+    bool redirectSamples = false;
+#endif
     string json = "{\"rp2350_app\":\"" + appId
         + "\",\"plugin_lock\":" + (locked ? "true" : "false")
         + ",\"redirect_samples\":" + (redirectSamples ? "true" : "false")
@@ -207,6 +216,7 @@ static esp_err_t handle_store_favorite(httpd_req_t *req, const char *query) {
 /** action=recallFavorite&id=N */
 static esp_err_t handle_recall_favorite(httpd_req_t *req, const char *query) {
     // Block favorite recall when RP2350 app has locked plugin switching.
+#if CONFIG_TBD_USE_RP2350
     if (CTAG::SPIAPI::SpiAPI::IsPluginLocked()) {
         ESP_LOGW(TAG, "Favorite recall blocked — RP2350 app '%s' has locked plugins",
                  CTAG::SPIAPI::SpiAPI::GetRP2350AppId().c_str());
@@ -216,6 +226,7 @@ static esp_err_t handle_recall_favorite(httpd_req_t *req, const char *query) {
         httpd_resp_sendstr(req, "{\"error\":\"plugin_locked\",\"reason\":\"RP2350 app has locked plugin switching\"}");
         return ESP_OK;
     }
+#endif
 
     char idStr[4] = {0};
     httpd_query_key_value(query, "id", idStr, sizeof(idStr));

@@ -32,10 +32,12 @@ respective component folders / files if different from this license.
 #include "ctagSoundProcessorFactory.hpp"
 #include "SPManagerDataModel.hpp"
 #include <atomic>
+#if CONFIG_TBD_USE_SD_CARD
 #include "SynthDefinitionDataModel.hpp"
 #include "MacroSoundPresetDataModel.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
 #include "MacroTranslator.hpp"
+#endif
 
 using namespace CTAG::SP;
 
@@ -118,10 +120,10 @@ namespace CTAG {
             static void RefreshSampleRom();
 
             static void SetTrackMachine(const int trackIndex, const string &synthID);
+#if CONFIG_TBD_USE_SD_CARD
             static void SetTrackMacro(const int trackIndex, const string &macroDefinitionID);
             static void SetTrackParametersFromJSON(const string &parametersJSON);
             static void SetTrackParameter(const int trackIndex, int parameterIndex, int32_t value);
-            // static void SetTrackSampleBank(const int trackIndex, const string &bankName);
             static void PutSamplePresetJSON(const string &presetJSON);
 
             static std::shared_ptr<CTAG::MACROPRESETS::SynthDefinitionDataModel> synthDefinitionModel;
@@ -143,6 +145,8 @@ namespace CTAG {
             static void RefreshMacros();
             static void RefreshSingleMacro(const string &defId);
             static void RefreshSoundPresets();
+            static void InitMacroSystem();
+#endif // CONFIG_TBD_USE_SD_CARD
 
             // Audio health monitoring — returns JSON with lock errors, slow process count, memory stats
             static string GetAudioHealthJSON();

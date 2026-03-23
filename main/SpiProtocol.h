@@ -17,6 +17,9 @@ respective component folders / files if different from this license.
 
 #pragma once
 
+#include "sdkconfig.h"
+#if CONFIG_TBD_USE_RP2350
+
 #include <stdint.h>
 
 #define P4_SPI_REQUEST_SIZE 512
@@ -85,3 +88,5 @@ struct p4_spi_response2 {
     uint32_t magic2;
     // offset 464
 };
+
+#endif // CONFIG_TBD_USE_RP2350

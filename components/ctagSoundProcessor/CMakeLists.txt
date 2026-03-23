@@ -2,6 +2,12 @@
 file(GLOB SOUND_PROCESSORS ctagSoundProcessor*.cpp)
 # remove item matching "ctagSoundProcessor.cpp" from ${SOUND_PROCESSORS}
 # list(FILTER SOUND_PROCESSORS EXCLUDE REGEX "ctagSoundProcessor\\.cpp$")
+
+# PicoSeqRack is a dadamachines TBD-16 addition, requires SD card + RP2350
+if(NOT CONFIG_TBD_USE_SD_CARD)
+    list(FILTER SOUND_PROCESSORS EXCLUDE REGEX "PicoSeqRack")
+endif()
+
 # clean generated directory
 file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/gen_include)
 # convert JSON descriptors to c headers and extract processor IDs
@@ -57,10 +63,14 @@ file(GLOB SRCS_FILES
         memory/*.c
         SimpleComp/*.h
         SimpleComp/*.cpp
-        rack/*.hpp
-        rack/*.cpp
         ${CMAKE_BINARY_DIR}/gen_include/*.hpp
         )
+
+# rack/ files are only used by PicoSeqRack (dadamachines TBD-16)
+if(CONFIG_TBD_USE_SD_CARD)
+    file(GLOB RACK_FILES rack/*.hpp rack/*.cpp)
+    list(APPEND SRCS_FILES ${RACK_FILES})
+endif()
 
 if (TBD_SIM)
     add_library(ctagsp STATIC ${SRCS_FILES})

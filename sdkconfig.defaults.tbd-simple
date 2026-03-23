@@ -1,0 +1,7 @@
+# Hardware overlay: TBD Simple (Config A)
+# No SD card, no RP2350 — flash-only storage, USB-MIDI
+# Usage: idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.tbd-simple" build
+CONFIG_TBD_USE_SD_CARD=n
+CONFIG_TBD_USE_RP2350=n
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_no_sd.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions_no_sd.csv"

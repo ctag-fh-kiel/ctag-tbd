@@ -20,6 +20,10 @@ respective component folders / files if different from this license.
 ***************/
 
 #pragma once
+
+#include "sdkconfig.h"
+#if CONFIG_TBD_USE_RP2350
+
 #include <cstdint>
 #include <string>
 
@@ -116,3 +120,5 @@ namespace CTAG::SPIAPI{
         static bool ShouldRedirectSamples() { return rp2350RedirectSamples; }
     };
 }
+
+#endif // CONFIG_TBD_USE_RP2350

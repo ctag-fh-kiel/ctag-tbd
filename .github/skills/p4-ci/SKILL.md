@@ -180,7 +180,9 @@ components/**
 CMakeLists.txt
 sdkconfig
 sdkconfig.defaults
+sdkconfig.defaults.*
 partitions_example.csv
+partitions_no_sd.csv
 patches/**
 sdcard_image/**
 sample_rom/**
@@ -191,6 +193,22 @@ create_unified_p4_firmware.sh
 ```
 
 Docs-only, WebUI-only, or skill-file commits do NOT trigger a firmware build.
+
+## Multi-Config CI
+
+`ci.yml` runs two parallel jobs:
+
+| Job | Configuration | What it does |
+|-----|---------------|--------------|
+| `build-check` | TBD-16 (Config D, default) | Full build via `build-firmware.yml` — produces all artifacts |
+| `compile-check-configs` (matrix) | Configs A, B, C | Lightweight `idf.py build` — verifies compilation only |
+
+The matrix uses sdkconfig overlay files (`sdkconfig.defaults.tbd-*`) that
+are merged on top of `sdkconfig.defaults` via `SDKCONFIG_DEFAULTS`. See
+[HARDWARE_CONFIGURATIONS.md](../../HARDWARE_CONFIGURATIONS.md) for
+the full configuration reference.
+
+Release workflows always build Config D (TBD-16) only.
 
 ## Related Resources
 

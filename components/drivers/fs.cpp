@@ -26,6 +26,9 @@ respective component folders / files if different from this license.
 #include "esp_log.h"
 #include "fs.hpp"
 
+#include "sdkconfig.h"
+
+#if CONFIG_TBD_USE_SD_CARD
 #include <sd_pwr_ctrl_interface.h>
 #include <ctime>
 #include "esp_vfs_fat.h"
@@ -559,3 +562,36 @@ void FileSystem::InitFS(){
     // Check and update SD card content from zip if needed
     check_and_update_sd_content("/sdcard");
 }
+
+#else // !CONFIG_TBD_USE_SD_CARD
+
+#include "esp_littlefs.h"
+
+using namespace CTAG::DRIVERS;
+
+bool FileSystem::SDMounted() {
+    return false;
+}
+
+void FileSystem::InitFS(){
+    esp_vfs_littlefs_conf_t conf = {
+        .base_path = "/littlefs",
+        .partition_label = "storage",
+        .format_if_mount_failed = true,
+        .dont_mount = false,
+    };
+
+    esp_err_t ret = esp_vfs_littlefs_register(&conf);
+    if (ret != ESP_OK) {
+        ESP_LOGE("FS", "Failed to mount LittleFS (%s)", esp_err_to_name(ret));
+        return;
+    }
+
+    size_t total = 0, used = 0;
+    ret = esp_littlefs_info(conf.partition_label, &total, &used);
+    if (ret == ESP_OK) {
+        ESP_LOGI("FS", "LittleFS mounted: total=%d, used=%d", total, used);
+    }
+}
+
+#endif // CONFIG_TBD_USE_SD_CARD

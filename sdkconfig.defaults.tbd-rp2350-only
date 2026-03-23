@@ -1,0 +1,7 @@
+# Hardware overlay: TBD + RP2350 (Config B)
+# RP2350 bridge enabled, no SD card — flash-only storage
+# Usage: idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.defaults.tbd-rp2350-only" build
+CONFIG_TBD_USE_SD_CARD=n
+CONFIG_TBD_USE_RP2350=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_no_sd.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions_no_sd.csv"

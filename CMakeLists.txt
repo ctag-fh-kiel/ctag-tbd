@@ -35,11 +35,6 @@ endforeach()
 # pull in idf specific items, config vars etc.
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=sdmmc_read_sectors" APPEND)
-idf_build_set_property(LINK_OPTIONS "-Wl,--undefined=__wrap_sdmmc_read_sectors" APPEND)
-idf_build_set_property(LINK_OPTIONS "-Wl,--wrap=sdmmc_write_sectors" APPEND)
-idf_build_set_property(LINK_OPTIONS "-Wl,--undefined=__wrap_sdmmc_write_sectors" APPEND)
-
 project(dada-tbd)
 
 # this is global to all!
@@ -63,17 +58,19 @@ endif()
 configure_file(${CMAKE_SOURCE_DIR}/version.hpp.in ${CMAKE_BINARY_DIR}/gen_include/version.hpp @ONLY)
 idf_build_set_property(INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/gen_include APPEND)
 
-# Create SD card zip archive and hash for embedded system
-set(SD_CARD_ZIP "${CMAKE_BINARY_DIR}/dada-tbd-sd.zip")
-set(SD_CARD_HASH "${CMAKE_BINARY_DIR}/dada-tbd-sd-hash.txt")
+# Create SD card zip archive and hash for embedded system (only when SD card is enabled)
+if(CONFIG_TBD_USE_SD_CARD)
+    set(SD_CARD_ZIP "${CMAKE_BINARY_DIR}/dada-tbd-sd.zip")
+    set(SD_CARD_HASH "${CMAKE_BINARY_DIR}/dada-tbd-sd-hash.txt")
 
-# Find xxhash tool
-find_program(XXH128SUM xxh128sum REQUIRED)
+    # Find xxhash tool
+    find_program(XXH128SUM xxh128sum REQUIRED)
 
-add_custom_target(sd_card_archive ALL
-    COMMAND ${CMAKE_SOURCE_DIR}/create_sd_archive.sh ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${XXH128SUM}
-    BYPRODUCTS ${SD_CARD_ZIP} ${SD_CARD_HASH}
-    COMMENT "Building SD card archive and hash"
-    VERBATIM
-)
+    add_custom_target(sd_card_archive ALL
+        COMMAND ${CMAKE_SOURCE_DIR}/create_sd_archive.sh ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${XXH128SUM}
+        BYPRODUCTS ${SD_CARD_ZIP} ${SD_CARD_HASH}
+        COMMENT "Building SD card archive and hash"
+        VERBATIM
+    )
+endif()
 

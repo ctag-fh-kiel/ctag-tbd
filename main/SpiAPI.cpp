@@ -19,6 +19,9 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
+#include "sdkconfig.h"
+#if CONFIG_TBD_USE_RP2350
+
 #include "SpiAPI.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
@@ -756,6 +759,7 @@ namespace CTAG::SPIAPI{
                 }
                 break;
             case RequestType::GetMacroSoundPresetList:
+#if CONFIG_TBD_USE_SD_CARD
                 {
                     // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                     std::string outputjson;
@@ -766,8 +770,12 @@ namespace CTAG::SPIAPI{
                     // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                     result = transmitCString(requestType, outputjson.c_str());
                 }
+#else
+                result = transmitCString(requestType, "{}");
+#endif
                 break;
             case RequestType::GetMacroSoundPreset:
+#if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string presetId = string_parameter;
                     ESP_LOGI("SpiAPI", "Getting macro sound preset %s", presetId.c_str());
@@ -782,8 +790,12 @@ namespace CTAG::SPIAPI{
                     // GetPresetJson(presetId, &outputjson);
                     // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 }
+#else
+                result = transmitCString(requestType, "{}");
+#endif
                 break;
             case RequestType::GetMacroDefinition:
+#if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string macroId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
                     ESP_LOGI("SpiAPI", "Getting macro definition %s", macroId.c_str());
@@ -796,8 +808,12 @@ namespace CTAG::SPIAPI{
                     // HELPERS::ctagSampleRom::RefreshDataStructure();
                     // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 }
+#else
+                result = transmitCString(requestType, "{}");
+#endif
                 break;
             case RequestType::ActivateTrackMachine:
+#if CONFIG_TBD_USE_SD_CARD
                 {
                     int trackIndex = uint8_param_0;
                     std::string machineId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
@@ -809,8 +825,10 @@ namespace CTAG::SPIAPI{
                     // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                     // result = transmitCString(requestType, cstring);
                 }
+#endif
                 break;
             case RequestType::LoadTrackSoundPreset:
+#if CONFIG_TBD_USE_SD_CARD
                 {
                     int trackIndex = uint8_param_0;
                     std::string presetId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
@@ -831,6 +849,7 @@ namespace CTAG::SPIAPI{
                         CTAG::AUDIO::SoundProcessorManager::SetTrackParameter(trackIndex, 1, sampleSlice);
                     }
                 }
+#endif
                 break;
 
             case RequestType::GetTrackDefaultPresets:
@@ -840,7 +859,8 @@ namespace CTAG::SPIAPI{
                     // The file maps track indices to preset IDs, e.g.:
                     // { "tracks": [ {"index":0,"preset":"db-all-def"}, ... ] }
                     std::string json = "{}";
-                    FILE *f = fopen("/sdcard/data/trackdefaults.json", "r");
+                    std::string path = std::string(CTAG::RESOURCES::sdcardRoot) + "/data/trackdefaults.json";
+                    FILE *f = fopen(path.c_str(), "r");
                     if (f) {
                         fseek(f, 0, SEEK_END);
                         long sz = ftell(f);
@@ -902,21 +922,25 @@ namespace CTAG::SPIAPI{
             //     break;
 
             case RequestType::PutSamplePresetJSON:
+#if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string json = string_parameter;
                     ESP_LOGI("SpiAPI", "Saving preset json: %s", json.c_str());
                     CTAG::AUDIO::SoundProcessorManager::PutSamplePresetJSON(json);
                     CTAG::AUDIO::SoundProcessorManager::RefreshSoundPresets();
                 }
+#endif
                 break;
 
             case RequestType::LoadTrackMacroDefinition:
+#if CONFIG_TBD_USE_SD_CARD
                 {
                     int trackIndex = uint8_param_0;
                     std::string macroId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
                     ESP_LOGI("SpiAPI", "Activating track %d macro %s", trackIndex, macroId.c_str());
                     CTAG::AUDIO::SoundProcessorManager::LoadTrackMacro(trackIndex, macroId);
                 }
+#endif
                 break;
 
             case RequestType::AnnounceApp:
@@ -936,3 +960,5 @@ namespace CTAG::SPIAPI{
         }
     }
 }
+
+#endif // CONFIG_TBD_USE_RP2350

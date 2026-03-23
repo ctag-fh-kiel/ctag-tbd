@@ -13,10 +13,11 @@
 > advantage of this: aggressive cleanup now, proper infrastructure before
 > the first real release.
 >
-> **Current milestone:** Phases 0–3 and 3c complete. Phase 4 is next
-> (Kconfig guards + multi-target CI), then Phase 3b (history rewrite).
-> Both P4 and Pico repos use identical branch-based CI architecture
-> (5 workflows each). CDN pipeline operational, all hardware tested.
+> **Current milestone:** Phases 0–4 and 3c complete. Phase 3b is next
+> (history rewrite), then Phase 5. Four hardware configurations all
+> compile and are CI-verified. Both P4 and Pico repos use identical
+> branch-based CI architecture (5 workflows each). CDN pipeline
+> operational, all hardware tested.
 >
 > Related documents:
 > - `proposal-branching-strategy.md` — upstream/fork collaboration model
@@ -4958,16 +4959,76 @@ Phase 4 — Kconfig guards + multi-target CI
   Upstream (ctag-fh-kiel) is dormant — there is nothing to
   merge from p4_main. We move forward; they catch up later.
   ─────────────────────────────────────────────────────────────
-  [ ] Implement CONFIG_TBD_USE_SD_CARD and CONFIG_TBD_USE_RP2350 Kconfig flags
-  [ ] Add #ifdef guards to the 6 shared files (SPManager, RestServer, main, CMakeLists, fs, ctagSampleRom)
-  [ ] Verify the codebase builds with both Kconfig flags disabled (upstream-compatible config)
-  [ ] Create sdkconfig.tbd16 and sdkconfig.tbd-core for multi-target builds
-  [ ] Add multi-config CI matrix (all 4 hardware configurations)
-  [ ] Verify CI matrix produces dada-tbd-16-*.bin and dada-tbd-core-*.bin
-  [ ] Add ctag-upstream remote as a reference (for history, not for syncing)
-  Deliverable: Codebase builds for TBD-16, TBD-Core, and upstream's
-  ESP32-P4-only config. Multi-config CI catches regressions across all
-  hardware variants. Upstream can adopt the code whenever they're ready.
+  [x] Implement CONFIG_TBD_USE_SD_CARD and CONFIG_TBD_USE_RP2350 Kconfig flags
+      - Both flags default y (TBD-16 config) in main/Kconfig.projbuild
+      - CMake two-pass issue solved: fatfs unconditional in REQUIRES,
+        Kconfig used only for SRCS and preprocessor guards
+  [x] Add #ifdef guards across 13+ source files
+      - SPI/RP2350: SpiAPI, SpiProtocol, SpiProtocolHelper,
+        rp2350_spi_stream, Control, DeviceAPI, PluginAPI
+      - SD card: SPManager, RestServer, SpiAPI (macro commands),
+        fs.cpp (SD vs LittleFS mount), root CMakeLists (sdmmc wraps)
+  [x] Split SPManager into SPManager.cpp + MacroSPManager.cpp
+      - User insight: split is cleaner than heavy #if guards
+      - MacroSPManager.cpp: all macro method bodies, static members,
+        InitMacroSystem() helper — auto-excluded by CMake Macro.* filter
+      - SPManager.cpp: only 3 small #if CONFIG_TBD_USE_SD_CARD guards
+  [x] CMake conditional compilation (3 component CMakeLists)
+      - main/: filters out Macro*, SynthDefinition*, TrackDefinition*
+      - ctagSoundProcessor/: excludes PicoSeqRack + rack/ subdirectory
+      - drivers/: excludes SD/SDMMC or RP2350 SPI sources per Kconfig
+  [x] Storage abstraction: fs.cpp mounts SD (SDMMC) or LittleFS flash
+      - Runtime root path via CTAG::RESOURCES::sdcardRoot
+  [x] Create partitions_no_sd.csv (flash-only: nvs + ota_0 + LittleFS + sample_rom)
+  [x] Add LittleFS dependency (joltwallet/littlefs ^1.20.4)
+  [x] Verify all 4 hardware configurations build
+      - Config A (no SD, no RP2350): 3.0 MB — TBD Simple
+      - Config B (RP2350, no SD):    3.0 MB — TBD + RP2350
+      - Config C (SD, no RP2350):    3.1 MB — TBD + SD
+      - Config D (SD + RP2350):      3.2 MB — TBD-16 (default)
+  [x] Create sdkconfig overlay files for alternate configs
+      - sdkconfig.defaults.tbd-simple (Config A)
+      - sdkconfig.defaults.tbd-rp2350-only (Config B)
+      - sdkconfig.defaults.tbd-sd-only (Config C)
+      - Usage: idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;overlay" build
+  [x] Regenerate sdkconfig.defaults from clean ESP-IDF 5.5.3 build
+      - Eliminated stale 5.5.2 deprecated aliases and contradictions
+      - Zero drift between defaults and generated config
+  [x] Add multi-config CI matrix (ci.yml)
+      - build-check: full TBD-16 build (Config D) via build-firmware.yml
+      - compile-check-configs: matrix of Configs A, B, C (compile-only)
+      - Path triggers updated for sdkconfig.defaults.* and partitions_no_sd.csv
+  [x] Create HARDWARE_CONFIGURATIONS.md (repo root)
+      - Feature matrix, partition tables, build instructions, architecture notes
+      - Linked from README.md
+  [x] Update CI skill file (.github/skills/p4-ci/SKILL.md)
+      - Documented multi-config CI job structure
+  [x] Hardware verification: flash TBD-16 and test PicoSeqRack + USB NCM
+      — Discovered critical linker bug: --wrap=sdmmc_read_sectors flags
+        were set in root CMakeLists.txt using idf_build_set_property(LINK_OPTIONS)
+        AFTER the project() call. ESP-IDF's build system silently ignores
+        link options set at that point. Result: custom_sdmmc_cmd.cpp was
+        compiled but never linked — all FATFS reads went through the
+        ORIGINAL sdmmc_read_sectors, which allocates DMA from internal RAM
+        and OOMs when PicoSeqRack loads 28 MB of wavetable samples.
+      — Fix: moved --wrap flags to components/drivers/CMakeLists.txt using
+        target_link_libraries(${COMPONENT_LIB} INTERFACE ...), matching
+        the pattern ESP-IDF's own cxx component uses for _Unwind wraps.
+      — Verified with riscv32-esp-elf-nm: __wrap_sdmmc_read_sectors and
+        __wrap_sdmmc_write_sectors now appear in the ELF; original symbols
+        are garbage collected.
+      — PicoSeqRack boots with full wavetable sample loading (269 .WAV files)
+      — USB NCM: ping 192.168.4.1 works, HTTP 200 OK, WebUI accessible
+      — Note for nevvkid repo: the same bug existed there but was masked
+        because nevvkid placed the --wrap flags BEFORE project() which
+        happened to work. Our Phase 4 changes moved them after project()
+        during the Kconfig conditional wrapping, exposing the issue.
+  Deliverable: Codebase builds for TBD-16 and 3 alternate hardware
+  configurations. Multi-config CI catches regressions across all
+  variants. sdkconfig.defaults is clean ESP-IDF 5.5.3. Hardware-verified
+  on TBD-16: PicoSeqRack + wavetable samples + USB NCM all working.
+  Upstream can adopt the Kconfig guards whenever they're ready.
+  ✅ PHASE 4 COMPLETE
 
 Phase 3b — Git LFS + history rewrite + force-push
   ─────────────────────────────────────────────────────────────
@@ -5123,7 +5184,7 @@ compatibility warnings on top of the working App Manager.
 | Pico branch-based CI (5 workflows) | Low | Pico CI mirrors P4 architecture exactly | ✅ Phase 3c |
 | Git LFS for remaining binaries | Low | Fast clones for engineers | Phase 3b |
 | Branch cleanup (two long-lived branches) | Low | Cleaner repo, less confusion | ✅ Phase 1 |
-| Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | Phase 4 |
+| Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | ✅ Phase 4 |
 | Multi-target naming (`dada-{target}-*`) | Low | Clear hardware identification in every artifact | ✅ Phase 3 |
 | App registry (combined in `dada-tbd-firmware`) | Medium | External contributors submit apps via PR, CI-verified bundles | Phase 5 |
 | Interactive App Manager page | Medium | Browser-based app install/remove via Picoboot WebUSB | Phase 5 |

@@ -15,6 +15,9 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
+#include "sdkconfig.h"
+#if CONFIG_TBD_USE_RP2350
+
 #include "SpiProtocolHelper.hpp"
 
 SpiProtocolHelper::SpiProtocolHelper() {
@@ -71,3 +74,5 @@ void SpiProtocolHelper::markRequestSeen(uint8_t seq) {
     lastSeenRequestCounter = seq;
     canPrepareNextResponse = true;
 }
+
+#endif // CONFIG_TBD_USE_RP2350

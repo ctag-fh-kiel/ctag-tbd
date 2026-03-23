@@ -19,6 +19,9 @@ License and copyright details for specific submodules are included in their
 respective component folders / files if different from this license.
 ***************/
 
+#include "sdkconfig.h"
+#if CONFIG_TBD_USE_RP2350
+
 #include "rp2350_spi_stream.hpp"
 
 #include <algorithm>
@@ -351,3 +354,5 @@ IRAM_ATTR bool CTAG::DRIVERS::rp2350_spi_stream::GetReceivedBuffer(void **receiv
     *receivebuffer = ret_buf + 2;
     return true;
 }
+
+#endif // CONFIG_TBD_USE_RP2350
