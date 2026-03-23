@@ -72,6 +72,9 @@ jobs:
             overlay: sdkconfig.defaults.tbd-sd-only
     name: "compile-check (${{ matrix.name }})"
     steps:
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y xxhash
+
       - name: Check out repo
         uses: actions/checkout@v4
         with:
