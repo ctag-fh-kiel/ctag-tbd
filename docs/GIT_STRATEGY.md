@@ -13,13 +13,14 @@
 > advantage of this: aggressive cleanup now, proper infrastructure before
 > the first real release.
 >
-> **Current milestone:** Phases 0–4, 3c complete. CDN golden master
-> verified. WebUI-aware CI pipeline operational — builds generate WebUI
-> bundles, extract versions, create update packages, and pass
+> **Current milestone:** Phases 0–4, 3b, 3c complete. Phase 5 core complete.
+> CDN golden master verified. WebUI-aware CI pipeline operational — builds
+> generate WebUI bundles, extract versions, create update packages, and pass
 > `webui_version` through the full dispatch chain. Four hardware configs
 > all compile and are CI-verified. Both P4 and Pico repos use identical
-> branch-based CI architecture (5 workflows each). Phase 3b (history
-> rewrite) is next, then Phase 5.
+> branch-based CI architecture (5 workflows each). Phase 3b (history rewrite)
+> complete — .git/objects/ dropped from ~300 MB to ~50 MB, Git LFS skipped.
+> Phase 6 (AnnounceApp extensions) is next.
 >
 > Related documents:
 > - `proposal-branching-strategy.md` — upstream/fork collaboration model
@@ -4609,32 +4610,88 @@ Upstream catches up on their schedule.**
 
 ---
 
-## 15. Clean Up Git History (do this in Phase 3b)
+## 15. Clean Up Git History (Phase 3b) — ✅ DONE
 
-After deleting old binaries from the working tree, the `.git/` pack still
-contains 246 MB of old binary blobs. With only ~10 test users, a history
-rewrite is trivial to coordinate — **do it now** rather than carrying dead
-weight forever.
+Completed 2026-07-13. Used `git-filter-repo` across multiple passes to
+strip all dead binary blobs from history. Git LFS was evaluated and
+deliberately skipped — it adds install requirements, quota concerns, and
+pointer-file complexity for minimal benefit given ~10 contributors and
+rarely-changing binary assets (`sample_rom/` is 71 MB but almost never
+modified).
+
+### What was stripped
+
+```
+bin/ctag-tbd.bin                                    # old firmware builds
+bin/storage.bin                                      # old storage image
+docs/_static/firmware/p4/*.bin                        # P4 firmware snapshots
+docs/_static/firmware/pico/*.uf2                      # Pico firmware snapshots
+docs/_static/sdcard_image/**/*.zip                    # SD card archives
+docs/downloads/**/*.bin                              # old download binaries
+docs/get_started/_static/firmware/**                  # get-started artifacts
+docs/get_started/_static/sdcard_image/*.zip           # get-started SD archives
+docs/get_started/_static/device_manifests/*.bin       # device manifest bins
+docs/flash/_static/sdcard_image/*.zip                 # flash page SD archives
+hw/pcb/fp-info-cache                                 # KiCad cache (old path)
+hw/pcb/ESP32-Eurorack-Audio.kicad_pcb                # KiCad board (old path)
+hardware/mk1/pcb/fp-info-cache                       # KiCad cache (renamed path)
+hardware/mk1/pcb/ESP32-Eurorack-Audio.kicad_pcb      # KiCad board (renamed path)
+tbd_core/api/ts_generator/ts_files/src/app.min.js    # generated JS bundle
+```
+
+### What was explicitly kept
+
+- `bin/tusb_msc.bin`, `bin/usb_uac.bin` — active firmware utilities
+- `sample_rom/` — 357 WAVs + sample-rom.tbd, needed for factory builds
+- `simulator/*.wav` — test audio files
+- All PNG/JPG images — not worth the workflow disruption
+- All source code — untouched by filter-repo
+
+### Results
+
+| Metric | Before | After |
+|--------|--------|-------|
+| `.git/objects/` | ~300 MB | ~50 MB |
+| `.git/modules/` | 73 MB | 73 MB (submodule caches, normal) |
+| Total `.git/` | ~360 MB | ~125 MB |
+| Working tree | unchanged | unchanged |
+
+### Commands used
 
 ```bash
 brew install git-filter-repo
 
+# Multiple passes with --invert-paths to strip dead blob paths
+# (paths accumulated across old directory layouts)
 git filter-repo \
-  --path-glob 'docs/_static/firmware/p4/possan-tbd-2026-02-*.bin' --invert-paths \
-  --path-glob 'docs/_static/firmware/p4/possan-tbd-2026-03-0*.bin' --invert-paths \
-  --path-glob 'docs/_static/firmware/pico/possan-tbd-2026-02-*.uf2' --invert-paths \
-  --path-glob 'docs/_static/sdcard_image/2026-02-*' --invert-paths \
-  --path-glob 'docs/_static/sdcard_image/2026-03-0*' --invert-paths
+  --path-glob 'bin/ctag-tbd.bin' --invert-paths \
+  --path-glob 'bin/storage.bin' --invert-paths \
+  --path-glob 'docs/_static/firmware/p4/*.bin' --invert-paths \
+  --path-glob 'docs/_static/firmware/pico/*.uf2' --invert-paths \
+  --path-glob 'docs/_static/sdcard_image/*' --invert-paths \
+  --path-glob 'docs/downloads/*/*.bin' --invert-paths \
+  --path-glob 'docs/get_started/_static/firmware/p4/*.bin' --invert-paths \
+  --path-glob 'docs/get_started/_static/firmware/pico/*.uf2' --invert-paths \
+  --path-glob 'docs/get_started/_static/sdcard_image/*' --invert-paths \
+  --path-glob 'docs/get_started/_static/device_manifests/*.bin' --invert-paths \
+  --path-glob 'docs/flash/_static/sdcard_image/*.zip' --invert-paths \
+  --path-glob 'hw/pcb/*' --invert-paths \
+  --path-glob 'hardware/mk1/pcb/*' --invert-paths \
+  --path-glob 'tbd_core/api/ts_generator/ts_files/src/app.min.js' --invert-paths \
+  --force
 
+# Clean up reflog + aggressive GC
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+
+# Re-add origin (filter-repo strips it) and force-push
+git remote add origin https://github.com/dadamachines/ctag-tbd.git
 git push origin --force --all
 git push origin --force --tags
 ```
 
-> **Note:** This rewrites history. All ~10 test users and contributors must
-> re-clone or re-fork after this. Coordinate via a simple message — with this
-> team size, it's a non-event.
-
-**Expected savings:** `.git/` should drop from ~246 MB to under ~50 MB.
+> **Re-clone guide:** See [docs/RE_CLONE_GUIDE.md](RE_CLONE_GUIDE.md) for
+> contributor instructions.
 
 ---
 
@@ -5022,18 +5079,19 @@ WebUI-Aware CI Pipeline (post-CDN Golden Master)
   check before firmware flash.
   ✅ COMPLETE
 
-Phase 3b — Git LFS + history rewrite + force-push
+Phase 3b — History rewrite + force-push                                ✅ DONE
   ─────────────────────────────────────────────────────────────
   Deferred from Phase 1. Runs after Phase 4 so the re-clone
   delivers the final codebase (Kconfig guards already in
   place). The team re-clones exactly once.
   ─────────────────────────────────────────────────────────────
-  [ ] Enable Git LFS (.gitattributes for *.wav, *.bin, *.uf2, *.zip, *.png, *.jpg)
-  [ ] Run git filter-repo to remove old binary blobs from git history
-  [ ] Force-push cleaned history
+  [x] Run git filter-repo to remove old binary blobs from git history
+  [x] Force-push cleaned history (all branches + all tags)
+  [x] Write contributor re-clone guide (docs/RE_CLONE_GUIDE.md)
   [ ] Notify team (~10 people) to re-clone
-  Deliverable: .git/ drops from ~350 MB to under ~50 MB. All contributors
-  re-clone once. Future binary assets tracked by LFS.
+  Deliverable: .git/objects/ drops from ~300 MB to ~50 MB. All contributors
+  re-clone once. Git LFS deliberately skipped — adds friction for minimal
+  benefit with ~10 contributors and rarely-changing binary assets.
 
 Phase 5 — App registry + App Manager catalog + Pico SD bundles
   ─────────────────────────────────────────────────────────────
@@ -5248,9 +5306,9 @@ WebUI CI ── WebUI-aware CI pipeline (automated packaging + CDN dispatch) ✅
   ├───────────────────────────────────────────────────────────────────┐
   ▼                                                                   ▼
 Phase 5 ─── App registry + App Manager + Pico SD bundles  ✅ CORE    Phase 3b
-  │           (MSC firmware, catalog, 3-step workflow,     COMPLETE   Git LFS +
-  │            RAM/flash targets, CDN concurrency fix)                history
-  │           Deferred: sideload UI, Multi FX, MCL,                  rewrite
+  │           (MSC firmware, catalog, 3-step workflow,     COMPLETE   History
+  │            RAM/flash targets, CDN concurrency fix)               rewrite
+  │           Deferred: sideload UI, Multi FX, MCL,                  ✅ DONE
   │           contributor onboarding                                  │
   ├───────────────────────────────────────────────────────────────────┘
   ▼
@@ -5263,8 +5321,8 @@ Phase 7 ─── Plugin adaptation + MultiFX
 **Execution order: Phase 4 → CDN+WebUI → WebUI CI → Phase 5 + Phase 3b (parallel) → Phase 6.**
 Phase 5 and Phase 3b are independent — they can run in any order or in
 parallel. Phase 5 core is complete (App Manager + registry + MSC firmware +
-CDN concurrency fix). Phase 3b (Git LFS + history rewrite) can run whenever
-convenient — it does not block or depend on Phase 5. Phase 6 depends on
+CDN concurrency fix). Phase 3b is complete (history rewrite, no LFS —
+.git/objects/ dropped from ~300 MB to ~50 MB). Phase 6 depends on
 Phase 5 (App Manager page must exist for compatibility warnings).
 
 ---
@@ -5273,7 +5331,7 @@ Phase 5 (App Manager page must exist for compatibility warnings).
 
 | Change | Effort | Impact | Status |
 |---|---|---|---|
-| Delete old binaries + rewrite git history | Low (10 users re-clone) | ~450 MB less total (~220 working tree + ~230 git history) | Phase 1 ✅ (delete) / Phase 3b (rewrite) |
+| Delete old binaries + rewrite git history | Low (10 users re-clone) | ~450 MB less total (~220 working tree + ~230 git history) | ✅ Phase 1 (delete) / ✅ Phase 3b (rewrite) |
 | CI firmware builds | Medium | Reproducible builds, automated releases | ✅ Phase 2 |
 | CI build checks on PRs | Low | Catch regressions before merge | ✅ Phase 2 |
 | Unified versioning (v0.4.0 start) | Low | Clear firmware ↔ WebUI compatibility | ✅ Phase 2 |
@@ -5286,7 +5344,7 @@ Phase 5 (App Manager page must exist for compatibility warnings).
 | Staging + feature test channels | Medium | Pre-release testing via browser flash, CI-built | ✅ Phase 3 |
 | Artifact naming (dada-tbd branding) | Low | All artifacts carry dadamachines identity | ✅ Phase 3c |
 | Pico branch-based CI (5 workflows) | Low | Pico CI mirrors P4 architecture exactly | ✅ Phase 3c |
-| Git LFS for remaining binaries | Low | Fast clones for engineers | Phase 3b |
+| ~~Git LFS for remaining binaries~~ | ~~Low~~ | ~~Fast clones~~ | Skipped — adds friction, minimal benefit with ~10 contributors |
 | Branch cleanup (two long-lived branches) | Low | Cleaner repo, less confusion | ✅ Phase 1 |
 | Kconfig guards + multi-target CI | Medium | Portable codebase; TBD-Core builds; upstream can adopt when ready | ✅ Phase 4 |
 | CDN golden master (3-repo audit) | Medium | CDN workflows verified end-to-end, releases.json everywhere, no stale artifacts | ✅ Post-Phase 4 |
@@ -5333,8 +5391,8 @@ Phase 5 (App Manager page must exist for compatibility warnings).
 - CONTRIBUTING.md → **published** (Phase 3c)
 
 **Planned:**
-- Git history → **rewrite** (Phase 3b — only 10 people re-clone)
-- Remaining binaries → **Git LFS** (fast clones)
+- Git history → **rewritten** (Phase 3b ✅ — .git/objects/ 300→50 MB, re-clone guide published)
+- ~~Remaining binaries → Git LFS~~ — skipped, adds friction for minimal benefit
 - Kconfig guards → **portable codebase** (Phase 4 — TBD-Core builds, upstream compatible)
 - CDN + Pico + Firmware repo drift → **golden master** (all three repos audited, workflows verified end-to-end)
 - WebUI update zips deleted in Phase 1 → **restored** (6 packages + latest.json recovered, on-device updater works)
