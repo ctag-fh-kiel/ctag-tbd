@@ -83,7 +83,7 @@ The `publish-cdn` job:
 2. Computes SHA-256
 3. Clones the CDN repo with `PICO_CDN_TOKEN`
 4. Places `.uf2` files in `{channel}/pico/`
-5. Patches `latest.json` pico fields
+5. Patches `releases.json` pico fields
 6. Commits and pushes
 
 **Separation of concerns:**
@@ -93,7 +93,7 @@ The `publish-cdn` job:
   `{channel}/pico/` on the CDN
 
 Neither repo touches the other's files. Both patch their own fields
-into `{channel}/latest.json`. The flash page reads the combined
+into `{channel}/releases.json`. The flash page reads the combined
 manifest and flashes both.
 
 ### Building locally
@@ -148,9 +148,9 @@ git tag v0.5.0 && git push origin v0.5.0
 
 **Verify CDN convergence:**
 ```bash
-curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/latest.json \
+curl -s https://dadamachines.github.io/dada-tbd-firmware/stable/releases.json \
   | python3 -c "import sys,json; d=json.load(sys.stdin); \
-    print(f'P4: {d[\"tag\"]}  Pico: {d.get(\"picoVersion\",\"—\")}')"
+    print(f'P4: {d[\"latest\"]}  Pico: {d.get(\"picoVersion\",\"—\")}')"
 # Both should show v0.5.0
 ```
 

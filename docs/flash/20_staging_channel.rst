@@ -547,13 +547,13 @@ or any active feature-test branch build.
           var seen = {};
           releases.forEach(function (r) {
             if (!r.prerelease) return;
-            /* feature-test tags look like: feature-test-cool-thing-abc12345 */
-            var m = r.tag_name.match(/^(feature-test-[a-z0-9-]+?)-[0-9a-f]{6,}$/);
+            /* feature-test tags: feature-test-cool-thing (= channel name) */
+            var m = r.tag_name.match(/^(feature-test-[a-z0-9-]+)$/);
             if (m && !seen[m[1]]) {
               seen[m[1]] = true;
               channels.push({
                 name: m[1],
-                label: m[1].replace('feature-test-', 'Feature: ') + ' (' + r.tag_name.slice(-8) + ')'
+                label: m[1].replace('feature-test-', 'Feature: ')
               });
             }
           });
@@ -587,6 +587,7 @@ or any active feature-test branch build.
         tag: latest.tag,
         name: channelName + ' @ ' + latest.tag,
         p4Url: f.unified ? (FIRMWARE_CDN + '/' + f.unified) : null,
+        picoUrl: f.pico ? (FIRMWARE_CDN + '/' + f.pico) : null,
         zipUrl: f.sdcard ? (FIRMWARE_CDN + '/' + f.sdcard) : null,
         hashUrl: f.hash ? (FIRMWARE_CDN + '/' + f.hash) : null,
         htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + latest.tag
@@ -631,16 +632,15 @@ or any active feature-test branch build.
 
       try {
         var releaseData = await loadChannel(channelName);
-        var picoFwName = await discoverPicoFirmware(releaseData.tag, channelName);
-
         RELEASE = releaseData;
+        PICO_UF2_URL = RELEASE.picoUrl;
 
         var desc = $('cardSelect').querySelector('.step-desc');
         var channelLabel = channelName === 'staging' ? 'staging branch' : channelName + ' branch';
         desc.innerHTML = 'Channel: <b>' + channelName + '</b> — flashing <b>' + RELEASE.tag + '</b>. ' +
           '<a href="' + RELEASE.htmlUrl + '" target="_blank">View release notes \u2192</a>';
         setStat($('statPkg'), '<b>' + RELEASE.name + '</b> — P4 firmware' +
-          (picoFwName ? ' + Pico firmware' : '') + ' + SD card image');
+          (PICO_UF2_URL ? ' + Pico firmware' : '') + ' + SD card image');
 
         if (!RELEASE.p4Url) {
           setStat($('statPkg'), 'Channel <b>' + channelName + '</b> does not have P4 firmware. Cannot flash.', 'err');
@@ -674,29 +674,9 @@ or any active feature-test branch build.
     };
 
     /* ══════════════════════════════
-       Pico firmware — from CDN repo
+       Pico firmware — from releases.json
        ══════════════════════════════ */
     var PICO_UF2_URL = null;
-
-    async function discoverPicoFirmware(tag, ch) {
-      /* Check the CDN for pico firmware availability */
-      var name = 'dada-tbd-16-' + tag + '-pico.uf2';
-      PICO_UF2_URL = FIRMWARE_CDN + '/' + (ch || CHANNEL) + '/pico/' + name;
-      try {
-        var resp = await fetch(PICO_UF2_URL, { method: 'HEAD' });
-        if (resp.ok) return name;
-      } catch (_) {}
-      /* Fallback: try stable channel pico (feature-test channels may not have pico) */
-      if (ch && ch !== 'staging') {
-        PICO_UF2_URL = FIRMWARE_CDN + '/stable/pico/' + name;
-        try {
-          var resp2 = await fetch(PICO_UF2_URL, { method: 'HEAD' });
-          if (resp2.ok) return name;
-        } catch (_) {}
-      }
-      PICO_UF2_URL = null;
-      return null;
-    }
 
     /* ══════════════════════════════
        INIT — load tools + fetch release

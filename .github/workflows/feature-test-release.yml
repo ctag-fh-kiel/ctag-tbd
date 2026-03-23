@@ -2,6 +2,10 @@
 # and push to a per-feature channel on the CDN.
 # Engineers push to feature-test/<name> to get a flashable build without
 # touching staging or stable.
+#
+# Tag format: feature-test-<name>  (same as channel name)
+# Example: branch feature-test/cool-thing → tag feature-test-cool-thing
+# Each push overwrites the previous build for that feature.
 name: Feature Test Release
 
 on:
@@ -18,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       channel: ${{ steps.names.outputs.channel }}
-      build_name: ${{ steps.names.outputs.build_name }}
+      build_name: ${{ steps.names.outputs.channel }}
     steps:
       - name: Derive channel and build names
         id: names
@@ -26,18 +30,15 @@ jobs:
           # feature-test/cool-thing → feature-test-cool-thing
           BRANCH="${GITHUB_REF_NAME}"
           CHANNEL=$(echo "$BRANCH" | sed 's|/|-|g')
-          SHORT_SHA=$(echo "$GITHUB_SHA" | head -c 8)
-          BUILD_NAME="${CHANNEL}-${SHORT_SHA}"
           echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
-          echo "build_name=$BUILD_NAME" >> "$GITHUB_OUTPUT"
-          echo "Branch: $BRANCH  Channel: $CHANNEL  Build: $BUILD_NAME"
+          echo "Branch: $BRANCH  Channel: $CHANNEL"
 
   # ── Step 1: Build firmware ──
   firmware:
     needs: prepare
     uses: ./.github/workflows/build-firmware.yml
     with:
-      build_name: ${{ needs.prepare.outputs.build_name }}
+      build_name: ${{ needs.prepare.outputs.channel }}
 
   # ── Step 2: Create GitHub pre-release ──
   release:
@@ -47,7 +48,7 @@ jobs:
       - name: Download firmware artifacts
         uses: actions/download-artifact@v4
         with:
-          name: firmware-${{ needs.prepare.outputs.build_name }}
+          name: firmware-${{ needs.prepare.outputs.channel }}
           path: release-assets/
 
       - name: List release assets
@@ -56,16 +57,17 @@ jobs:
       - name: Create pre-release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.prepare.outputs.build_name }}
+          tag_name: ${{ needs.prepare.outputs.channel }}
           name: "TBD-16 feature test — ${{ needs.prepare.outputs.channel }}"
           prerelease: true
           files: release-assets/**/*
           body: |
             Feature test build from branch `${{ github.ref_name }}`.
+            Tag: `${{ needs.prepare.outputs.channel }}`
             Commit: `${{ github.sha }}`
             Channel: `${{ needs.prepare.outputs.channel }}`
 
-            Flash via CDN: `https://dadamachines.github.io/dada-tbd-firmware/${{ needs.prepare.outputs.channel }}/latest.json`
+            Flash from the [Beta Channel page](https://dadamachines.github.io/ctag-tbd/flash/20_staging_channel.html?channel=${{ needs.prepare.outputs.channel }}).
 
   # ── Step 3: Push to CDN feature channel ──
   publish-cdn:
@@ -81,8 +83,8 @@ jobs:
           client-payload: >-
             {
               "channel": "${{ needs.prepare.outputs.channel }}",
-              "tag": "${{ needs.prepare.outputs.build_name }}",
-              "artifact_name": "firmware-${{ needs.prepare.outputs.build_name }}",
+              "tag": "${{ needs.prepare.outputs.channel }}",
+              "artifact_name": "firmware-${{ needs.prepare.outputs.channel }}",
               "run_id": "${{ github.run_id }}",
               "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}"
             }

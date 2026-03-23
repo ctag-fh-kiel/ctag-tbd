@@ -34,17 +34,17 @@ push v0.5.0 tag
     → repository_dispatch ──────────→  receive-firmware.yml
                                          → downloads artifact
                                          → places in stable/p4/
-                                         → writes stable/latest.json
+                                         → writes stable/releases.json
                                          → deploys to GitHub Pages
 ```
 
 ## CDN Channel System
 
-| Channel | Trigger | CDN path | Tag format |
-|---------|---------|----------|------------|
-| `stable` | `v*` tag on `dada-tbd-master` | `stable/p4/` | `v0.5.0` |
-| `staging` | Push to `staging` branch | `staging/p4/` | `staging-{sha}` |
-| `feature-test-<name>` | Push to `feature-test/<name>` branch | `feature-test-<name>/p4/` | `feature-test-<name>-{short_sha}` |
+| Channel | Trigger | CDN path | Tag format | Example |
+|---------|---------|----------|------------|----------|
+| `stable` | `v*` tag on `dada-tbd-master` | `stable/p4/` | `v{semver}` | `v0.5.0` |
+| `staging` | Push to `staging` branch | `staging/p4/` | `staging-v{base}-{N}` | `staging-v0.4.2-3` |
+| `feature-test-<name>` | Push to `feature-test/<name>` branch | `feature-test-<name>/p4/` | `feature-test-<name>` | `feature-test-cool-thing` |
 
 CDN URL base: `https://dadamachines.github.io/dada-tbd-firmware/`
 
@@ -52,8 +52,9 @@ CDN URL base: `https://dadamachines.github.io/dada-tbd-firmware/`
 
 - **P4 repo** writes ONLY to `{channel}/p4/` — never touches `{channel}/pico/`
 - **Pico repo** writes ONLY to `{channel}/pico/` — never touches `{channel}/p4/`
-- Both patch their own fields into `{channel}/latest.json`
+- Both patch their own fields into `{channel}/releases.json`
 - P4 CI preserves any existing `pico` fields when writing the manifest
+- Tag naming ensures binaries are self-identifying: `staging-` prefix for staging, `feature-test-` prefix for features
 
 ## Workflow Files
 
@@ -110,9 +111,10 @@ git push origin staging
 ```
 
 This triggers `staging-release.yml` which:
-1. Builds firmware
-2. Creates a GitHub pre-release tagged `staging-{sha}`
-3. Dispatches to CDN → files go to `staging/p4/`
+1. Derives version tag from git: `staging-v{base}-{N}` (e.g. `staging-v0.4.2-3`)
+2. Builds firmware
+3. Creates a GitHub pre-release
+4. Dispatches to CDN → files go to `staging/p4/`
 
 ### Create a Feature Test Build
 
@@ -124,9 +126,9 @@ git push origin feature-test/cool-thing
 ```
 
 This triggers `feature-test-release.yml` which:
-1. Derives channel name: `feature-test/cool-thing` → `feature-test-cool-thing`
+1. Derives channel + tag from branch: `feature-test/cool-thing` → tag `feature-test-cool-thing`
 2. Builds firmware
-3. Creates a GitHub pre-release
+3. Creates a GitHub pre-release (each push overwrites the previous tag)
 4. Dispatches to CDN → files go to `feature-test-cool-thing/p4/`
 
 ### Check CI Status

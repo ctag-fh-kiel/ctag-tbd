@@ -384,6 +384,20 @@ All public-facing artifacts use the **dadamachines** product name with a
 device prefix (`dada-tbd-16-`) on the CDN. Build outputs keep their
 original names; the CDN receive workflow renames them.
 
+### Tag format per channel
+
+| Channel | Tag format | Example tag | Example CDN filename |
+|---------|-----------|-------------|---------------------|
+| **Stable** | `v{semver}` | `v0.5.0` | `dada-tbd-16-v0.5.0-unified.bin` |
+| **Staging** | `staging-v{base}-{N}` | `staging-v0.4.2-3` | `dada-tbd-16-staging-v0.4.2-3-unified.bin` |
+| **Feature** | `feature-test-{name}` | `feature-test-cool-thing` | `dada-tbd-16-feature-test-cool-thing-unified.bin` |
+
+- Staging tags are derived from `git describe`: base = nearest `v*` tag, N = commit distance
+- Feature tags equal the channel name (branch `feature-test/cool-thing` → tag `feature-test-cool-thing`)
+- The tag prefix (`staging-`, `feature-test-`) ensures binaries are self-identifying even outside their CDN directory
+
+### CDN artifact table
+
 | Artifact | Build Output | CDN Name | Notes |
 |----------|-------------|----------|-------|
 | Unified image | — | `dada-tbd-16-{tag}-unified.bin` | All partitions merged, flash at `0x0` |

@@ -1,6 +1,12 @@
 # Build firmware from staging branch, create a GitHub pre-release,
 # and push to the staging channel on the CDN.
 # Triggers on push to the staging branch.
+#
+# Tag format: staging-v{base}-{N}
+#   base = latest reachable v* tag (e.g. v0.4.2)
+#   N    = number of commits since that tag
+# Example: staging-v0.4.2-3 (3 commits after v0.4.2 on staging)
+# The "staging-" prefix ensures binaries are never confused with stable releases.
 name: Staging Release
 
 on:
@@ -12,23 +18,43 @@ permissions:
   contents: write
 
 jobs:
+  # ── Derive version tag from git history ──
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.derive.outputs.tag }}
+      build_name: ${{ steps.derive.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Derive staging tag from git describe
+        id: derive
+        run: |
+          BASE=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo "v0.0.0")
+          DISTANCE=$(git rev-list "${BASE}..HEAD" --count 2>/dev/null || git rev-list HEAD --count)
+          TAG="staging-${BASE}-${DISTANCE}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Base: $BASE  Distance: $DISTANCE  Tag: $TAG"
+
   # ── Step 1: Build firmware ──
   firmware:
+    needs: prepare
     uses: ./.github/workflows/build-firmware.yml
     with:
-      build_name: staging-${{ github.sha }}
+      build_name: ${{ needs.prepare.outputs.tag }}
 
   # ── Step 2: Create GitHub pre-release ──
   release:
-    needs: firmware
+    needs: [prepare, firmware]
     runs-on: ubuntu-latest
-    outputs:
-      tag: staging-${{ github.sha }}
     steps:
       - name: Download firmware artifacts
         uses: actions/download-artifact@v4
         with:
-          name: firmware-staging-${{ github.sha }}
+          name: firmware-${{ needs.prepare.outputs.tag }}
           path: release-assets/
 
       - name: List release assets
@@ -37,18 +63,19 @@ jobs:
       - name: Create pre-release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: staging-${{ github.sha }}
-          name: "TBD-16 staging @ ${{ github.sha }}"
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: "TBD-16 staging — ${{ needs.prepare.outputs.tag }}"
           prerelease: true
           files: release-assets/**/*
           body: |
-            Staging build from commit ${{ github.sha }}.
-            Branch: `staging`
-            Commit: ${{ github.event.head_commit.message }}
+            Staging build from branch `staging`.
+            Tag: `${{ needs.prepare.outputs.tag }}`
+            Commit: `${{ github.sha }}`
+            ${{ github.event.head_commit.message }}
 
   # ── Step 3: Push to CDN staging channel ──
   publish-cdn:
-    needs: [firmware, release]
+    needs: [prepare, firmware, release]
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch to firmware CDN
@@ -60,8 +87,8 @@ jobs:
           client-payload: >-
             {
               "channel": "staging",
-              "tag": "staging-${{ github.sha }}",
-              "artifact_name": "firmware-staging-${{ github.sha }}",
+              "tag": "${{ needs.prepare.outputs.tag }}",
+              "artifact_name": "firmware-${{ needs.prepare.outputs.tag }}",
               "run_id": "${{ github.run_id }}",
               "token": "${{ secrets.FIRMWARE_CDN_TOKEN }}"
             }

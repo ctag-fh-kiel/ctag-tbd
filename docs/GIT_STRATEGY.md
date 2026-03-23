@@ -745,8 +745,8 @@ staging push
 ```
 ```
 CDN URL: https://dadamachines.github.io/dada-tbd-firmware/staging/releases.json
-         https://dadamachines.github.io/dada-tbd-firmware/staging/p4/dada-tbd-16-{tag}-unified.bin
-         https://dadamachines.github.io/dada-tbd-firmware/staging/pico/dada-tbd-16-{tag}-pico.uf2
+         https://dadamachines.github.io/dada-tbd-firmware/staging/p4/dada-tbd-16-staging-v0.4.2-3-unified.bin
+         https://dadamachines.github.io/dada-tbd-firmware/staging/pico/dada-tbd-16-staging-v0.4.2-3-pico.uf2
 ```
 
 The flash page reads `releases.json` at page load (via `fetch()` — same origin,
@@ -796,145 +796,29 @@ base URL: `https://dadamachines.github.io/dada-tbd-firmware/`.
 
 ### Workflow: Build & Publish Staging (`staging-release.yml`)
 
-```yaml
-# .github/workflows/staging-release.yml
-name: Staging Release
+> **Note:** The example below shows the design intent. See the actual
+> [staging-release.yml](../.github/workflows/staging-release.yml) for the
+> implementation.
 
-on:
-  push:
-    branches: [staging]
+Staging derives a version tag from git history:
+- `BASE` = latest reachable `v*` tag (e.g. `v0.4.2`)
+- `DISTANCE` = commits since that tag
+- `TAG` = `staging-{BASE}-{DISTANCE}` → e.g. `staging-v0.4.2-3`
 
-permissions:
-  contents: write          # needed to create releases + push manifest
+The `staging-` prefix ensures these binaries are never confused with stable
+releases. The version part keeps them sortable and traceable.
 
-jobs:
-  # ── Step 1: Build firmware ──
-  build:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      build_name: "dada-tbd-16-staging-${{ github.event.head_commit.timestamp }}"
-
-  # ── Step 2: Create pre-release on GitHub Releases ──
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate release tag
-        id: tag
-        run: |
-          DATE=$(date -u +%Y-%m-%d)
-          SHORT_SHA=${GITHUB_SHA::7}
-          echo "tag=staging-${DATE}" >> "$GITHUB_OUTPUT"
-          echo "name=dada-tbd-16-staging-${DATE}" >> "$GITHUB_OUTPUT"
-          echo "date=${DATE}" >> "$GITHUB_OUTPUT"
-          echo "sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
-
-      - name: Download firmware artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: firmware-dada-tbd-16-staging-*
-          path: release-assets/
-          merge-multiple: true
-
-      - name: Rename artifacts for release
-        run: |
-          TAG="${{ steps.tag.outputs.name }}"
-          # Unified P4 firmware
-          mv release-assets/*-unified.bin "release-assets/${TAG}.bin" 2>/dev/null || \
-          mv release-assets/dada-tbd.bin "release-assets/${TAG}.bin"
-          # Pico firmware (if exists)
-          if ls release-assets/*.uf2 2>/dev/null; then
-            mv release-assets/*.uf2 "release-assets/${TAG}.uf2"
-          fi
-          # P4 SD card archive
-          mv release-assets/*-p4sd.zip "release-assets/${TAG}-p4sd.zip" 2>/dev/null || true
-          mv release-assets/*-p4sd-hash.txt "release-assets/${TAG}-p4sd-hash.txt" 2>/dev/null || true
-
-      - name: Create GitHub pre-release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: "Staging Build ${{ steps.tag.outputs.date }}"
-          prerelease: true
-          generate_release_notes: true
-          files: |
-            release-assets/${{ steps.tag.outputs.name }}.bin
-            release-assets/${{ steps.tag.outputs.name }}.uf2
-            release-assets/${{ steps.tag.outputs.name }}-p4sd.zip
-            release-assets/${{ steps.tag.outputs.name }}-p4sd-hash.txt
-
-  # ── Step 3: Update staging manifest (on dada-tbd-master) ──
-  update-manifest:
-    needs: publish
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out dada-tbd-master
-        uses: actions/checkout@v4
-        with:
-          ref: dada-tbd-master
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update staging-manifest.json
-        run: |
-          TAG="${{ needs.publish.outputs.tag }}"
-          NAME="${{ needs.publish.outputs.name }}"
-          DATE="${{ needs.publish.outputs.date }}"
-          SHA="${{ needs.publish.outputs.sha }}"
-          MANIFEST="docs/_static/firmware/staging-manifest.json"
-          BASE_URL="https://github.com/dadamachines/ctag-tbd/releases/download/${TAG}"
-
-          # Read commit message as changelog
-          CHANGELOG=$(git -C /tmp log --format=%s -1 "$GITHUB_SHA" 2>/dev/null || echo "Staging build ${DATE}")
-
-          # Create manifest if it doesn't exist
-          if [ ! -f "$MANIFEST" ]; then
-            echo '{"channel":"staging","updated":"","builds":[]}' > "$MANIFEST"
-          fi
-
-          # Prepend new build entry using Python (available in ubuntu-latest)
-          python3 -c "
-          import json, sys
-          from datetime import datetime, timezone
-          m = json.load(open('$MANIFEST'))
-          m['updated'] = datetime.now(timezone.utc).isoformat()
-          entry = {
-              'name': '${NAME}',
-              'date': '${DATE}',
-              'branch': 'staging',
-              'commit': '${SHA}',
-              'changelog': '''${CHANGELOG}''',
-              'p4Url': '${BASE_URL}/${NAME}.bin',
-              'picoUrl': '${BASE_URL}/${NAME}.uf2',
-              'p4sdUrl': '${BASE_URL}/${NAME}-p4sd.zip',
-              'p4sdHashUrl': '${BASE_URL}/${NAME}-p4sd-hash.txt',
-          }
-          m['builds'].insert(0, entry)
-          # Keep last 20 staging builds in manifest
-          m['builds'] = m['builds'][:20]
-          json.dump(m, open('$MANIFEST', 'w'), indent=2)
-          "
-
-      - name: Commit and push manifest
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/_static/firmware/staging-manifest.json
-          git commit -m "ci: update staging manifest (${{ needs.publish.outputs.date }})"
-          git push
-```
+Pipeline: build firmware → GitHub pre-release → `repository_dispatch` to CDN
+→ files land in `staging/p4/` with names like `dada-tbd-16-staging-v0.4.2-3-unified.bin`.
 
 **Key design decisions:**
 
-- The `staging-release.yml` only triggers on pushes to the `staging` branch.
+- Triggers on pushes to the `staging` branch only.
 - Firmware is built with the **same reusable workflow** (`build-firmware.yml`)
-  as production releases — same Docker image, same toolchain. This is the
-  core guarantee: what users test is what gets released.
-- Binaries go to **GitHub Releases** as pre-releases (marked with
-  `prerelease: true`). They don't clutter the stable releases list and are
-  clearly labeled.
-- The manifest update commits to `dada-tbd-master` which triggers a docs
-  redeploy. This means the staging flash page is always current.
-- Manifest is capped at 20 entries to keep the JSON small.
+  as production releases — same Docker image, same toolchain.
+- Binaries go to **GitHub Releases** as pre-releases (`prerelease: true`).
+- CDN manifest (`staging/releases.json`) is updated by `receive-firmware.yml`
+  on the CDN repo — not committed back to the main repo.
 
 ### Stable release promotion
 
@@ -943,8 +827,8 @@ When a staging build passes testing, the engineer merges `staging` into
 
 ```bash
 git checkout dada-tbd-master
-git merge staging --no-ff -m "Release: promote staging-2026-03-20 to stable"
-git tag v2026-03-20
+git merge staging --no-ff -m "Release: promote staging to stable v0.5.0"
+git tag v0.5.0
 git push origin dada-tbd-master --tags
 ```
 
@@ -995,7 +879,7 @@ version change required editing multiple files.
 |---|---|---|---|
 | `index.rst` | **✅ Live** | Flash & Updates | Hub with CTA to Stable Channel |
 | `10_stable_channel.rst` | **✅ Live** | Stable Channel | Two-path flash page: Path A (Quick Update: P4 firmware + Pico), Path B (Full SD Deploy: MSC + SD extract + P4 firmware + Pico). Fetches from CDN. |
-| `20_staging_channel.rst` | **✅ Live** | Beta Channel | Channel selector (staging + feature-test), manifest-driven, same two-path layout |
+| `20_staging_channel.rst` | **✅ Live** | Beta Channel | Channel selector (staging + feature-test), CDN-driven, same two-path layout |
 | `30_app_manager.rst` | Placeholder | App Manager | Picoboot WebUSB install/remove, sideload, system tools (Phase 5) |
 | `50_troubleshooting.rst` | **✅ Live** | Troubleshooting | General flash troubleshooting (consolidated from old 67) |
 | `70_webui_versions.rst` | **✅ Live** | WebUI Versions | How to Update + version history + downloads (covers old 40/68) |
@@ -1038,29 +922,26 @@ await flashP4(ctx, p4Url, 0x0, { onStatus: ..., onProgress: ... });
 await flashRP2350(ctx, picoUrl, { onStatus: ..., onProgress: ... });
 ```
 
-#### Manifest-driven pages (staging + archive)
+#### CDN-driven pages (staging + feature)
 
-The staging channel and archive pages load their package lists from JSON
-manifests at page load time, so **no RST edits are needed when new builds
-are created**:
+The staging channel and feature test pages load their data from CDN
+`releases.json` files at page load time, so **no RST edits are needed when
+new builds are created**:
 
 ```javascript
-// 20_staging_channel.rst — loads from manifest
-import { loadManifest } from '../_static/js/tbd-flasher.js';
-
-// Supports ?channel=<feature-name> for feature test builds
+// 20_staging_channel.rst — loads from CDN releases.json
+// Supports ?channel=<name> for feature test builds
 var params = new URLSearchParams(window.location.search);
 var channel = params.get('channel') || 'staging';
-var manifestUrl = channel === 'staging'
-  ? '../_static/firmware/staging-manifest.json'
-  : '../_static/firmware/feature-' + channel + '-manifest.json';
+var cdnBase = 'https://dadamachines.github.io/dada-tbd-firmware/';
+var releasesUrl = cdnBase + channel + '/p4/releases.json';
 
-var manifest = await loadManifest(manifestUrl);
+var releases = await fetch(releasesUrl).then(r => r.json());
 // Populate dropdown, wire up flash buttons...
 ```
 
 ```javascript
-// 30_archive.rst — loads from stable manifest or hardcoded list
+// 30_archive.rst — loads from stable releases.json
 // Archive always requires Full SD Deploy (no Quick Update path)
 // to guarantee firmware + SD card version match
 ```
@@ -1180,187 +1061,68 @@ get their own isolated testing channel using the **same CI infrastructure**.
 #### How it works
 
 Any branch prefixed with `feature-test/` triggers the same firmware build
-workflow and publishes to a **separate manifest** scoped to that feature:
+workflow and publishes to a **separate CDN channel directory** for that feature:
 
 ```
-feature-test/new-sequencer     → feature-new-sequencer-manifest.json
-feature-test/audio-pipeline-v2 → feature-audio-pipeline-v2-manifest.json
+feature-test/new-sequencer     → CDN channel: feature-test-new-sequencer/
+feature-test/audio-pipeline-v2 → CDN channel: feature-test-audio-pipeline-v2/
 ```
 
 The naming convention is:
 - Branch: `feature-test/<feature-name>`
-- Release tag: `feature-<feature-name>-2026-03-20`
-- Manifest: `docs/_static/firmware/feature-<feature-name>-manifest.json`
+- Tag (= channel): `feature-test-<feature-name>` (e.g. `feature-test-new-sequencer`)
+- CDN path: `feature-test-<feature-name>/p4/releases.json`
 
 #### Workflow extension: `feature-test-release.yml`
 
-```yaml
-# .github/workflows/feature-test-release.yml
-name: Feature Test Release
+> **Note:** The example below shows the design intent. See the actual
+> [feature-test-release.yml](../.github/workflows/feature-test-release.yml)
+> for the implementation.
 
-on:
-  push:
-    branches:
-      - 'feature-test/**'
+Feature-test builds derive the tag from the branch name:
+- Branch `feature-test/cool-thing` → channel `feature-test-cool-thing`
+- The **tag equals the channel name** — e.g. `feature-test-cool-thing`
+- Each push **overwrites** the previous GitHub Release for that tag (no
+  accumulating builds — one binary per feature at a time)
 
-permissions:
-  contents: write
+Pipeline: build firmware → GitHub pre-release → `repository_dispatch` to CDN
+→ files land in `feature-test-cool-thing/p4/` with names like
+`dada-tbd-16-feature-test-cool-thing-unified.bin`.
 
-jobs:
-  build:
-    uses: ./.github/workflows/build-firmware.yml
-    with:
-      build_name: "tbd-${{ github.ref_name }}"
+**Key design decisions:**
 
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Derive feature name and tag
-        id: meta
-        run: |
-          # feature-test/new-sequencer → new-sequencer
-          FEATURE="${GITHUB_REF_NAME#feature-test/}"
-          DATE=$(date -u +%Y-%m-%d)
-          SHORT_SHA=${GITHUB_SHA::7}
-          echo "feature=${FEATURE}" >> "$GITHUB_OUTPUT"
-          echo "tag=feature-${FEATURE}-${DATE}" >> "$GITHUB_OUTPUT"
-          echo "name=dada-tbd-16-feature-${FEATURE}-${DATE}" >> "$GITHUB_OUTPUT"
-          echo "date=${DATE}" >> "$GITHUB_OUTPUT"
-          echo "sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
-          echo "manifest=feature-${FEATURE}-manifest.json" >> "$GITHUB_OUTPUT"
-
-      - name: Download firmware artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release-assets/
-          merge-multiple: true
-
-      - name: Rename artifacts
-        run: |
-          NAME="${{ steps.meta.outputs.name }}"
-          mv release-assets/*-unified.bin "release-assets/${NAME}.bin" 2>/dev/null || \
-          mv release-assets/dada-tbd.bin "release-assets/${NAME}.bin"
-          if ls release-assets/*.uf2 2>/dev/null; then
-            mv release-assets/*.uf2 "release-assets/${NAME}.uf2"
-          fi
-
-      - name: Create GitHub pre-release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.meta.outputs.tag }}
-          name: "Feature Test: ${{ steps.meta.outputs.feature }} (${{ steps.meta.outputs.date }})"
-          prerelease: true
-          body: |
-            **Feature branch:** `${{ github.ref_name }}`
-            **Commit:** `${{ steps.meta.outputs.sha }}`
-
-            This is a feature test build — not part of the staging or stable channel.
-          files: |
-            release-assets/${{ steps.meta.outputs.name }}.bin
-            release-assets/${{ steps.meta.outputs.name }}.uf2
-            release-assets/${{ steps.meta.outputs.name }}-p4sd.zip
-            release-assets/${{ steps.meta.outputs.name }}-p4sd-hash.txt
-
-  update-manifest:
-    needs: publish
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: dada-tbd-master
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update feature manifest
-        env:
-          FEATURE: ${{ needs.publish.outputs.feature }}
-          TAG: ${{ needs.publish.outputs.tag }}
-          NAME: ${{ needs.publish.outputs.name }}
-          DATE: ${{ needs.publish.outputs.date }}
-          SHA: ${{ needs.publish.outputs.sha }}
-          MANIFEST_FILE: ${{ needs.publish.outputs.manifest }}
-        run: |
-          MANIFEST="docs/_static/firmware/${MANIFEST_FILE}"
-          BASE_URL="https://github.com/dadamachines/ctag-tbd/releases/download/${TAG}"
-          BRANCH="${GITHUB_REF_NAME}"
-
-          python3 -c "
-          import json, os
-          from datetime import datetime, timezone
-          mf = os.environ['MANIFEST']
-          if os.path.exists(mf):
-              m = json.load(open(mf))
-          else:
-              m = {'channel': 'feature', 'feature': os.environ['FEATURE'], 'updated': '', 'builds': []}
-          m['updated'] = datetime.now(timezone.utc).isoformat()
-          entry = {
-              'name': os.environ['NAME'],
-              'date': os.environ['DATE'],
-              'branch': os.environ['BRANCH'],
-              'commit': os.environ['SHA'],
-              'p4Url': os.environ['BASE_URL'] + '/' + os.environ['NAME'] + '.bin',
-              'picoUrl': os.environ['BASE_URL'] + '/' + os.environ['NAME'] + '.uf2',
-              'p4sdUrl': os.environ['BASE_URL'] + '/' + os.environ['NAME'] + '-p4sd.zip',
-              'p4sdHashUrl': os.environ['BASE_URL'] + '/' + os.environ['NAME'] + '-p4sd-hash.txt',
-          }
-          m['builds'].insert(0, entry)
-          m['builds'] = m['builds'][:10]  # keep last 10 builds per feature
-          json.dump(m, open(mf, 'w'), indent=2)
-          "
-
-      - name: Commit and push manifest
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "docs/_static/firmware/${{ needs.publish.outputs.manifest }}"
-          git commit -m "ci: update feature manifest ${{ needs.publish.outputs.feature }} (${{ needs.publish.outputs.date }})"
-          git push
-```
+- Triggers on pushes to any `feature-test/**` branch.
+- Tag = channel name, so each feature has exactly one live build.
+  No date suffixes, no SHA suffixes.
+- Binaries are self-identifying: the `feature-test-` prefix in the filename
+  makes them impossible to confuse with stable or staging builds.
+- CDN `releases.json` (in the feature channel directory) is updated by
+  `receive-firmware.yml` on the CDN repo.
 
 #### Flash page: dynamic feature channel
 
-The staging flash page (`20_staging_channel.rst`) can double as the feature
-test page by accepting a `?channel=<feature-name>` query parameter:
-
-```javascript
-// At the top of the staging page's <script>
-var params = new URLSearchParams(window.location.search);
-var channel = params.get('channel') || 'staging';
-var manifestUrl = channel === 'staging'
-  ? '../_static/firmware/staging-manifest.json'
-  : '../_static/firmware/feature-' + channel + '-manifest.json';
-```
-
-This means a developer can share a single URL with testers:
+The staging flash page (`20_staging_channel.rst`) doubles as the feature
+test page by accepting a `?channel=<name>` query parameter:
 
 ```
-https://dadamachines.github.io/ctag-tbd/flash/20_staging_channel.html?channel=new-sequencer
+https://dadamachines.github.io/dada-tbd-firmware/flash/staging/?channel=feature-test-cool-thing
 ```
 
-The page title and warning banner adapt:
-
-```javascript
-if (channel !== 'staging') {
-  document.getElementById('channelTitle').textContent =
-    'Feature Test: ' + channel;
-  document.getElementById('channelWarning').textContent =
-    'This is an experimental feature build. It may be unstable and is not ' +
-    'part of the regular release pipeline.';
-}
-```
+The page loads `releases.json` from the channel's CDN directory. Channel
+discovery finds all available channels by listing the CDN repo contents.
 
 No separate RST page needed per feature — one page serves all channels.
 
 #### Lifecycle
 
 1. Developer creates `feature-test/my-thing` branch
-2. Pushes trigger CI → firmware built → pre-release created → manifest updated
+2. Pushes trigger CI → firmware built → pre-release created →
+   `repository_dispatch` → CDN updated
 3. Developer shares the flash URL with testers
 4. When the feature is ready, it gets merged into `staging` (the normal path)
    or abandoned
-5. **Cleanup:** When a feature branch is deleted, its manifest and pre-
-   releases can be cleaned up manually, or left to expire. Feature manifests
-   are capped at 10 builds each so they stay small.
+5. **Cleanup:** When a feature branch is deleted, its CDN channel directory
+   and GitHub pre-release can be cleaned up manually.
 
 #### When to use which channel
 
@@ -1380,8 +1142,8 @@ feature branches (on personal forks)
         ▼                                      ▼
     staging branch                      feature test channel
         │                               (isolated pre-releases,
-        │ CI builds → pre-release       per-feature manifest,
-        │           → manifest update   shared flash page with
+        │ CI builds → pre-release       CDN channel directory,
+        │           → repository_dispatch shared flash page with
         │           → staging flash     ?channel= parameter)
         │
         │ users test via browser flash
@@ -1450,7 +1212,7 @@ independently afterward, potentially creating version mismatches.
 - A user sees "firmware: v1.0.0-5-g1234abc" and "WebUI: 0.3.5" in the
   device config tab. These numbers have no visible relationship. Which goes
   with which?
-- The staging flash page shows build `dada-tbd-16-staging-2026-03-20`. Is that
+- The staging flash page shows build `dada-tbd-16-staging-v0.4.2-3`. Is that
   compatible with WebUI 0.3.5? Nobody knows without asking the engineer.
 
 ### Proposed versioning scheme: unified MAJOR.MINOR
@@ -1600,20 +1362,20 @@ This is automatic from `git describe`. Users see this on the staging flash
 page and in the device config tab, making it obvious they're running a
 pre-release.
 
-Feature test builds may have no version tag at all — `git describe --always`
-falls back to a bare hash. The flash page labels them with the branch name
-and date.
+Feature test builds use the branch name as their tag
+(e.g. `feature-test-cool-thing`). The flash page labels them with the channel
+name.
 
-#### Release manifest with version metadata
+#### Release data with version metadata
 
-The staging and stable manifests include version info:
+The CDN `releases.json` files include version info:
 
 ```json
 {
   "builds": [
     {
-      "name": "dada-tbd-16-staging-2026-03-20",
-      "firmwareVersion": "v0.4.0-15-g1a2b3c4",
+      "name": "dada-tbd-16-staging-v0.4.2-3",
+      "firmwareVersion": "v0.4.2-3-g1a2b3c4",
       "webuiVersion": "0.4.5",
       "compatRange": "0.4",
       "date": "2026-03-20",
@@ -1736,7 +1498,7 @@ dada-{target}[-{app}]-{version}.{ext}
 | `dada` | Always present — brand prefix | `dada-` |
 | `{target}` | `tbd-16`, `tbd-core`, `custom` | `dada-tbd-16-` |
 | `{app}` | Optional — RP2350 app name (only for `.uf2` files) | `dada-tbd-16-groovebox-` |
-| `{version}` | Semver tag or staging/feature date | `v0.4.0`, `staging-2026-03-20` |
+| `{version}` | Semver tag, staging tag, or feature channel | `v0.4.0`, `staging-v0.4.2-3`, `feature-test-cool-thing` |
 | `{ext}` | `bin` (P4), `uf2` (Pico), `zip` (SD), `txt` (hash) | `.bin` |
 
 #### Complete artifact set per target
@@ -1780,10 +1542,10 @@ or if the card was accidentally wiped). Ships once per MAJOR.MINOR train.
 
 **TBD-16 staging build (4 files):**
 ```
-dada-tbd-16-staging-2026-03-20.bin
-dada-tbd-16-groovebox-staging-2026-03-20.uf2
-dada-tbd-16-p4sd.zip
-dada-tbd-16-p4sd-hash.txt
+dada-tbd-16-staging-v0.4.2-3-unified.bin
+dada-tbd-16-groovebox-staging-v0.4.2-3-pico.uf2
+dada-tbd-16-staging-v0.4.2-3-sd.zip
+dada-tbd-16-staging-v0.4.2-3-sd-hash.txt
 ```
 
 ### CI build matrix
@@ -4830,11 +4592,11 @@ Phase 3 — Flash pages + CDN + staging channel
       - Triggers on push to staging branch
       - Builds firmware, creates GitHub pre-release, dispatches to CDN with channel=staging
       - CDN receive-firmware.yml updated: seeds pico UF2 from stable for new channels
-  [x] Add feature-test-release.yml workflow (feature-test/* → per-feature manifests)
+  [x] Add feature-test-release.yml workflow (feature-test/* → CDN channel per feature)
       - Triggers on push to feature-test/* branches
       - Derives channel name from branch (feature-test/foo → feature-test-foo)
+      - Tag = channel name, each push overwrites previous release
       - Creates GitHub pre-release, dispatches to CDN with per-feature channel
-      - CDN creates channel/latest.json — engineers flash via CDN URL
   [x] Test: push to staging → verify pre-release created → verify CDN updated
       - Staging branch push triggered Staging Release workflow (run #1, in progress)
   [x] Create 20_staging_channel.rst (Beta Channel flash page, CHANNEL='staging')
@@ -4843,7 +4605,7 @@ Phase 3 — Flash pages + CDN + staging channel
       - Warning banner linking back to Stable Channel for production use
       - Channel selector dropdown: staging (default) + feature-test/* channels
       - Feature-test channels discovered from GitHub pre-release tags
-      - loadChannel() handles both staging (GitHub API) and feature-test (CDN manifest)
+      - loadChannel() fetches releases.json from CDN channel directory
       - Deep-link support: ?channel=feature-test-foo selects that channel on load
       - resetAllSteps() resets both Path A and Path B UI when channel changes
   [x] Create 60_app_manager.rst (placeholder: bootloader flash via BOOTSEL, system tools, sideload section)
