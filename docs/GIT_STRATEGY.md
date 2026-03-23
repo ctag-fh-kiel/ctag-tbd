@@ -5037,19 +5037,21 @@ Phase 5 — App registry + App Manager catalog + Pico SD bundles
   [x] Set dada-tbd-app-template to Public
       - github.com/dadamachines/dada-tbd-app-template — public
 
-  Registry population (seed binaries placed, manifests needed)
+  Registry population (seed binaries placed, manifests created)
   ····························································
   [x] Normalize app folder names (no spaces, consistent kebab-case)
       - "flash nuke" → flash-nuke, tusb_msc-pico → tusb-msc-pico
       - Consolidated bootloader/ + tbd-bootloader-v1.1/ into bootloader/
       - receive-firmware.yml updated for utilities/ path
-  [ ] Populate groovebox releases[] with v0.4.x entry
-      - Manifest exists, .uf2 committed, releases[] still empty
-  [ ] Add tusb-msc-pico manifest.json (Pico mass-storage app)
-  [ ] Create debug-probe manifest.json (seed .uf2 placed)
-  [ ] Create game manifest.json (seed .uf2 placed)
-  [ ] Create flash-nuke manifest.json (seed .uf2 placed)
-  [ ] Create bootloader manifest.json (seed .uf2 placed)
+  [x] Populate groovebox releases[] with v0.4.1 entry
+      - SHA-256 verified, 808960 bytes
+  [x] Add tusb-msc-pico manifest.json (Pico mass-storage, system, alwaysInstalled)
+  [x] Create debug-probe manifest.json (CMSIS-DAP for STM32, system, alwaysInstalled)
+  [x] Create game manifest.json (demo, official)
+  [x] Create flash-nuke manifest.json (Raspberry Pi flash eraser, system, alwaysInstalled)
+  [x] Create bootloader manifest.json (boot menu v1.1, system, alwaysInstalled)
+  [x] Add README.md to every app folder
+      - debug-probe, game, flash-nuke, tusb-msc-pico, bootloader
   [ ] Create Multi FX manifest + seed .uf2 binary
   [ ] Create MCL manifest + seed .uf2 binary (partner, jmamma)
   [ ] Verify app-catalog.json regenerates with all apps listed
