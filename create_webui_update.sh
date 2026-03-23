@@ -131,7 +131,37 @@ fi
 if [ -d "${DOCS_DIR}" ]; then
   echo ""
   echo "Updating docs/_static/updates/latest.json (pointer to CDN)..."
-  cat > "${DOCS_DIR}/latest.json" <<EOF
+  LATEST="${DOCS_DIR}/latest.json"
+  if [ -f "${LATEST}" ] && command -v jq >/dev/null 2>&1; then
+    # Preserve history: move current top-level entry into versions array
+    OLD_VERSION=$(jq -r '.version // empty' "${LATEST}")
+    if [ -n "${OLD_VERSION}" ] && [ "${OLD_VERSION}" != "${VERSION}" ]; then
+      jq --arg ver "${VERSION}" \
+         --arg date "$(date +%Y-%m-%d)" \
+         --arg desc "${DESCRIPTION}" \
+         --arg url "${ZIP_URL}" \
+         --argjson size "${zip_size}" \
+         '{
+           version: $ver,
+           date: $date,
+           description: $desc,
+           url: $url,
+           size: $size,
+           versions: ([{version: .version, date: .date, url: .url, description: .description}] + (.versions // []))
+         }' "${LATEST}" > "${LATEST}.tmp" && mv "${LATEST}.tmp" "${LATEST}"
+      echo "  ✓ Moved v${OLD_VERSION} into versions history"
+    else
+      # Same version — just update in place
+      jq --arg date "$(date +%Y-%m-%d)" \
+         --arg desc "${DESCRIPTION}" \
+         --arg url "${ZIP_URL}" \
+         --argjson size "${zip_size}" \
+         '.date = $date | .description = $desc | .url = $url | .size = $size' \
+         "${LATEST}" > "${LATEST}.tmp" && mv "${LATEST}.tmp" "${LATEST}"
+    fi
+  else
+    # No jq or no existing file — write fresh
+    cat > "${LATEST}" <<EOF
 {
   "version": "${VERSION}",
   "date": "$(date +%Y-%m-%d)",
@@ -140,6 +170,8 @@ if [ -d "${DOCS_DIR}" ]; then
   "size": ${zip_size}
 }
 EOF
+  fi
+  echo "  ✓ Updated latest.json → v${VERSION}"
   # Also update CDN copy of latest.json
   if [ -d "${CDN_DIR}" ]; then
     cp "${DOCS_DIR}/latest.json" "${CDN_DIR}/latest.json"

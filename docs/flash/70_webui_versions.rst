@@ -32,6 +32,13 @@ Version History
      - Date
      - Description
      - Download
+   * - **0.4.0**
+     - 2026-03-23
+     - Full data migration: ``.jsn`` → ``.json`` rename for all 114 sound
+       processor files, ``favs.json``, ``spm-config.json``. All macro
+       definitions and sound presets included. CI pipeline and repo cleanup.
+       **Required for v0.4.x firmware** — Path A users must install this.
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.4.0.zip>`__
    * - **0.3.5**
      - 2026-03-19
      - Volume multiplier control with factory PIN unlock. Boot Defaults
