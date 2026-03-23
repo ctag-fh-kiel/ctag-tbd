@@ -1203,8 +1203,10 @@ The `receive-firmware.yml` workflow on the CDN repo:
 2. Downloads artifacts from the main repo's CI run
 3. Copies to `{channel}/p4/` and creates versioned `{channel}/pico/dada-tbd-16-{tag}-pico.uf2`
 4. Handles WebUI update package: copies `webui-update-v{ver}.zip` to
-   `webui-updates/`, updates `webui-updates/latest.json` (deduplicates if
-   version is unchanged)
+   `webui-updates/` for **all** channels; updates `webui-updates/latest.json`
+   **only for stable** (deduplicates if version is unchanged). Non-stable
+   channels still get the zip published (for direct download from flash
+   pages), but never touch `latest.json`
 5. Writes `{channel}/releases.json` manifest with all file paths, including
    `webuiVersion` and `webuiUpdate` fields
 6. Commits and deploys to GitHub Pages
@@ -1481,11 +1483,20 @@ pushed `0.5.0` to `latest.json`, every device running stable `0.4.x` would
 see a spurious update offer for an incompatible WebUI. The stable channel
 must remain the source of truth for `latest.json`.
 
-**CDN data flow (no changes needed):** The `receive-firmware.yml` workflow
-already publishes version-specific zips to `webui-updates/` for all channels
-(e.g. `webui-update-v0.5.0.zip`). The `webuiUpdate` field in each channel's
-`releases.json` points to the correct zip. The flash page simply reads this
-field and constructs the download URL.
+**CDN data flow (implemented in `receive-firmware.yml`):**
+
+1. The WebUI zip (`webui-update-v{ver}.zip`) is published to `webui-updates/`
+   for **every** channel — stable, staging, and feature-test alike.
+2. `latest.json` is updated **only when `CHANNEL == "stable"`**. This is
+   enforced by a channel guard in `receive-firmware.yml`. Staging and
+   feature-test builds never touch `latest.json`.
+3. Each channel's `releases.json` records `webuiVersion` and `webuiUpdate`
+   (the path to the correct zip). The flash page reads these fields and
+   constructs the download URL.
+
+The result: stable devices always see the correct stable WebUI via
+`latest.json`, while non-stable flash pages can link directly to the
+version-specific zip in `webui-updates/`.
 
 #### Release data with version metadata
 
