@@ -606,8 +606,24 @@ or any active feature-test branch build.
         picoUrl: f.pico ? (FIRMWARE_CDN + '/' + f.pico) : null,
         zipUrl: f.sdcard ? (FIRMWARE_CDN + '/' + f.sdcard) : null,
         hashUrl: f.hash ? (FIRMWARE_CDN + '/' + f.hash) : null,
-        htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + latest.tag
+        htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + latest.tag,
+        webuiVersion: latest.webuiVersion || null,
+        webuiUpdateUrl: latest.webuiUpdate ? (FIRMWARE_CDN + '/' + latest.webuiUpdate) : null
       };
+    }
+
+    /* Fetch the stable channel's WebUI version for comparison */
+    var STABLE_WEBUI_VERSION = null;
+    async function fetchStableWebuiVersion() {
+      try {
+        var resp = await fetch(FIRMWARE_CDN + '/stable/releases.json');
+        if (resp.ok) {
+          var cat = await resp.json();
+          if (cat.versions && cat.versions.length > 0) {
+            STABLE_WEBUI_VERSION = cat.versions[0].webuiVersion || null;
+          }
+        }
+      } catch (_) { /* CDN unavailable — leave null */ }
     }
 
     /* Reset all steps when channel changes */
@@ -663,11 +679,44 @@ or any active feature-test branch build.
           return;
         }
 
+        /* Update Step A0 based on whether this channel needs a non-stable WebUI */
+        updateWebuiStep();
+
         /* Show path chooser */
         $('cardPathChooser').style.display = 'block';
       } catch (e) {
         console.error(e);
         setStat($('statPkg'), 'Failed to load channel <b>' + channelName + '</b>: ' + e.message, 'err');
+      }
+    }
+
+    /* Update Step A0 card dynamically based on channel WebUI version */
+    function updateWebuiStep() {
+      var descEl = $('cardA0').querySelector('.step-desc');
+      var statEl = $('statA0');
+      var wv = RELEASE ? RELEASE.webuiVersion : null;
+      var wUrl = RELEASE ? RELEASE.webuiUpdateUrl : null;
+      var needsManual = wv && STABLE_WEBUI_VERSION && wv !== STABLE_WEBUI_VERSION && wUrl;
+
+      if (needsManual) {
+        descEl.innerHTML =
+          '<b>This build requires WebUI ' + wv + '</b> (stable is ' + STABLE_WEBUI_VERSION + ').' +
+          ' The built-in auto-updater cannot install this version.<br><br>' +
+          '1. <a href="' + wUrl + '" target="_blank"><b>Download WebUI update ' + wv + '</b></a><br>' +
+          '2. Open <a href="http://192.168.4.1/webui-update.html" target="_blank">http://192.168.4.1/webui-update.html</a><br>' +
+          '3. Drag the downloaded <b>.zip</b> onto the updater page and click <b>Apply Update</b>.';
+        statEl.innerHTML = 'After the WebUI update completes, continue to Step 2.';
+        statEl.className = 'status status-info';
+      } else {
+        descEl.innerHTML =
+          '<b>Check the SD card files before flashing new firmware</b> \u2014 some releases require ' +
+          'updated WebUI files to boot correctly.<br><br>' +
+          'Open <a href="http://192.168.4.1/webui-update.html" target="_blank">http://192.168.4.1/webui-update.html</a>.<br>' +
+          'The updater checks your version automatically \u2014 click <b>Install</b> if an update is available.<br>' +
+          'If the page says <b>"\u2713 WebUI is up to date"</b>, that\u2019s normal \u2014 not every firmware ' +
+          'release changes the WebUI. Skip this step and continue to Step\u00a02.';
+        statEl.innerHTML = 'After the WebUI update completes (or if already up to date), continue to Step 2.';
+        statEl.className = 'status status-info';
       }
     }
 
@@ -704,13 +753,14 @@ or any active feature-test branch build.
         throw new Error('WebSerial not supported');
       }
 
-      /* Load tools + discover channels in parallel */
-      var [channels, _esp, _pico] = await Promise.all([
+      /* Load tools + discover channels + fetch stable WebUI version in parallel */
+      var [channels, _esp, _pico, _stableWui] = await Promise.all([
         discoverChannels(),
         loadEspTool(),
         loadPicoboot('../_static/picoflash').catch(function (e) {
           console.warn('Picoboot load failed — Pico flash steps will be unavailable:', e);
-        })
+        }),
+        fetchStableWebuiVersion()
       ]);
 
       /* Populate channel dropdown */

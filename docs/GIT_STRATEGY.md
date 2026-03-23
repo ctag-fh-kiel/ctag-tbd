@@ -1394,7 +1394,7 @@ Pico code.
 
 **What the user sees:**
 
-1. Flash page Path A, Step 1: "Check & Update WebUI over WiFi"
+1. Flash page Path A, Step 1: "Check & Update WebUI"
 2. User opens `webui-update.html` → device compares installed v0.4.2 against
    CDN v0.4.2 → shows **"✓ WebUI is up to date"**
 3. User skips Step 1, continues to Step 2 (flash P4) and Step 3 (flash Pico)
@@ -1420,7 +1420,7 @@ The optional Pico SD curated bundle (see Section 10) is versioned per
 MAJOR.MINOR train — one bundle per `0.4.x`, one per `0.5.x`, etc. It is
 not released with every patch.
 
-The **Quick Update** path (firmware flash + WiFi WebUI update) also ensures
+The **Quick Update** path (firmware flash + WebUI update) also ensures
 matching: the flash page points users to the correct WebUI update for that
 firmware version, or the WebUI updater auto-detects.
 
@@ -1439,6 +1439,53 @@ pre-release.
 Feature test builds use the branch name as their tag
 (e.g. `feature-test-cool-thing`). The flash page labels them with the channel
 name.
+
+#### Non-stable WebUI updates (staging / feature channels)
+
+The device's built-in WebUI updater (`webui-update.html`) checks
+`webui-updates/latest.json` on the CDN — which always points to the latest
+**stable** WebUI version. This is correct for the stable channel but creates
+a gap for staging and feature-test builds: if a pre-release build ships with
+a different WebUI version (e.g. `0.5.0` while stable is still `0.4.0`), the
+auto-updater cannot install it.
+
+**How the flash page handles this (implemented):**
+
+The Beta Channel page (`20_staging_channel.rst`) dynamically adapts Step A0
+based on the channel's `webuiVersion` field from `releases.json`:
+
+1. At init, the page fetches `stable/releases.json` to get the current
+   stable WebUI version.
+2. When a channel loads, `loadChannel()` extracts `webuiVersion` and
+   `webuiUpdateUrl` from the channel's `releases.json`.
+3. `updateWebuiStep()` compares the channel's WebUI version against stable:
+   - **Same version** → standard flow: "Open the updater, it auto-checks."
+   - **Different version** → manual flow: provides a direct download link
+     for the required WebUI update zip and instructions to drag it onto the
+     device's updater page.
+
+```javascript
+// Simplified logic in updateWebuiStep()
+var needsManual = wv && STABLE_WEBUI_VERSION && wv !== STABLE_WEBUI_VERSION;
+if (needsManual) {
+  // Show: "This build requires WebUI X.Y.Z. Download [link], then
+  //        open webui-update.html and drag the zip onto the page."
+} else {
+  // Show: "Open webui-update.html — updater checks automatically."
+}
+```
+
+**Why not update `latest.json` for every channel?** Because `latest.json` is
+what the device firmware checks at boot and on the updater page. If staging
+pushed `0.5.0` to `latest.json`, every device running stable `0.4.x` would
+see a spurious update offer for an incompatible WebUI. The stable channel
+must remain the source of truth for `latest.json`.
+
+**CDN data flow (no changes needed):** The `receive-firmware.yml` workflow
+already publishes version-specific zips to `webui-updates/` for all channels
+(e.g. `webui-update-v0.5.0.zip`). The `webuiUpdate` field in each channel's
+`releases.json` points to the correct zip. The flash page simply reads this
+field and constructs the download URL.
 
 #### Release data with version metadata
 

@@ -562,7 +562,8 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         p4Url: FIRMWARE_CDN + '/' + f.unified,
         picoUrl: f.pico ? (FIRMWARE_CDN + '/' + f.pico) : null,
         zipUrl: f.sdcard ? (FIRMWARE_CDN + '/' + f.sdcard) : null,
-        hashUrl: f.hash ? (FIRMWARE_CDN + '/' + f.hash) : null
+        hashUrl: f.hash ? (FIRMWARE_CDN + '/' + f.hash) : null,
+        webuiVersion: version.webuiVersion || null
       };
     }
 
