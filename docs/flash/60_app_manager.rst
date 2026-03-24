@@ -526,10 +526,17 @@ for all available apps.
       });
     }
 
-    /** Get the latest release for an app (prefers flash target for Picoboot). */
+    /** Get the latest release for an app (for display — any target). */
     function latestRelease(app) {
       if (!app.releases || app.releases.length === 0) return null;
       return app.releases[0];
+    }
+
+    /** Get the latest flash-targeted release (for Picoboot WebUSB). */
+    function flashRelease(app) {
+      if (!app.releases || app.releases.length === 0) return null;
+      var flash = app.releases.find(function (r) { return r.target === 'flash'; });
+      return flash || app.releases[0];
     }
 
     /** Get the SD card release (prefers target:"ram" for bootloader loading). */
@@ -546,9 +553,9 @@ for all available apps.
       return FIRMWARE_CDN + '/apps/' + app.id + '/' + app.id + '-' + rel.version + '.uf2';
     }
 
-    /** Get the CDN download URL for an app's latest release (Picoboot flash). */
+    /** Get the CDN download URL for an app's flash release (Picoboot). */
     function appCdnUrl(app) {
-      return releaseCdnUrl(app, latestRelease(app));
+      return releaseCdnUrl(app, flashRelease(app));
     }
 
     /** Get the CDN download URL for an app's SD card release (bootloader RAM). */
