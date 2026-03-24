@@ -617,7 +617,6 @@ hr.docutils {
   flex-wrap: wrap;
   gap: 0.6em 1.5em;
   margin: 0.5em 0 2em;
-  font-size: 0.9em;
 }
 
 .dada-secondary-links a {
@@ -628,6 +627,24 @@ hr.docutils {
 .dada-secondary-links a:hover {
   color: var(--dada-accent);
   text-decoration: underline;
+}
+
+/* Pill-style secondary links */
+.dada-pill {
+  display: inline-block;
+  padding: 0.45em 1.1em;
+  border: 1.5px solid var(--color-foreground-border, #d1d5db);
+  border-radius: 999px;
+  color: var(--color-foreground-primary) !important;
+  font-size: 1em;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.dada-pill:hover {
+  border-color: var(--dada-accent, #2563EB);
+  background: var(--color-background-secondary, #f9fafb);
 }
 
 /* Full-width CTA banner (custom hardware) */

@@ -16,24 +16,25 @@ or something went wrong. Firmware updates **never erase** your SD card.
        <a href="10_stable_channel.html" class="dada-cta-link">Stable Channel &rarr;</a>
      </div>
 
-     <div class="dada-cta">
-       <h3>🧪 Beta Channel</h3>
-       <p>Flash pre-release firmware from the staging branch
-       or feature-test builds &mdash; test new features before they ship.</p>
-       <a href="20_staging_channel.html" class="dada-cta-link">Beta Channel &rarr;</a>
+     <div class="dada-cta" style="border:2px solid #10B981;">
+       <h3>📦 App Manager</h3>
+       <p>Install and manage RP2350 apps on your SD card &mdash;
+       USB Mass Storage, Groovebox, UI Test, and more.</p>
+       <a href="60_app_manager.html" class="dada-cta-link">App Manager &rarr;</a>
      </div>
 
      <div class="dada-cta">
        <h3>WebUI Versions</h3>
-       <p>Update the web interface independently &mdash;
-       no firmware flash or SD card erase needed.</p>
-       <a href="70_webui_versions.html" class="dada-cta-link">WebUI Versions &rarr;</a>
+       <p>Changelog and download packages for
+       the built-in WebUI updater.</p>
+       <a href="70_webui_versions.html" class="dada-cta-link">Version History &rarr;</a>
      </div>
 
    </div>
 
    <div class="dada-secondary-links">
-     <a href="50_troubleshooting.html">Troubleshooting</a>
+     <a href="20_staging_channel.html" class="dada-pill">🧪 Beta Channel</a>
+     <a href="50_troubleshooting.html" class="dada-pill">🛠 Troubleshooting</a>
    </div>
 
 .. include:: /_includes/newsletter.rst
@@ -44,7 +45,5 @@ or something went wrong. Firmware updates **never erase** your SD card.
    :hidden:
 
    10_stable_channel
-   20_staging_channel
-   70_webui_versions
-   50_troubleshooting
    60_app_manager
+   70_webui_versions
