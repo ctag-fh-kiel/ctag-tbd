@@ -95,5 +95,6 @@ that stripped-down, direct-access mode.
 Links
 =====
 
+- :doc:`Install or update via App Manager </flash/60_app_manager>`
 - :doc:`50+ DSP Plugins </plugins/index>`
 - :doc:`Back to Apps </apps/index>`

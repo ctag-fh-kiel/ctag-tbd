@@ -60,12 +60,12 @@ support packages, and upload tools.
 2. Get the Source
 =================
 
-Clone the RP2350 firmware template repository:
+Clone the RP2350 App template repository:
 
 .. code-block:: bash
 
-    git clone https://github.com/dadamachines/rp2350-arduino-tbd-fw.git
-    cd rp2350-arduino-tbd-fw
+    git clone https://github.com/dadamachines/dada-tbd-app-template.git
+    cd dada-tbd-app-template
 
 This is a separate repository from the main DSP project. The frontend and
 backend are developed independently --- you do not need the ESP-IDF or the DSP
@@ -75,7 +75,7 @@ repository to build frontend firmware.
 3. Open in VS Code
 ===================
 
-1. In VS Code, click **File > Open Folder** and select the ``rp2350-arduino-tbd-fw`` folder.
+1. In VS Code, click **File > Open Folder** and select the ``dada-tbd-app-template`` folder.
 2. PlatformIO will detect the ``platformio.ini`` file and configure the project.
 3. Wait for PlatformIO to finish downloading platform packages and libraries
    (visible in the bottom status bar).
@@ -138,7 +138,7 @@ The device will reboot automatically after flashing.
 
 .. code-block:: text
 
-    rp2350-arduino-tbd-fw/
+    dada-tbd-app-template/
     ├── platformio.ini        # Build configuration and dependencies
     ├── src/
     │   ├── src.ino           # Arduino entry point (stub)
@@ -249,6 +249,6 @@ Next Steps
 
 -  :doc:`App Architecture <rp2350>` --- Deep dive into the RP2350/P4
    communication protocol, MIDI integration, and pin mapping.
--  :doc:`Flash UI Firmware </flash/30_flash_ui>` --- Flash pre-built firmware
-   without a development environment.
+-  :doc:`App Manager </flash/60_app_manager>` --- Install pre-built Apps
+   from the browser without a development environment.
 -  Ready for audio DSP? See :doc:`Plugin Development Setup </plugins/getting-started>`.

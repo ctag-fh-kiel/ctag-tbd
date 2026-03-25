@@ -10,6 +10,15 @@ pick one from the menu and start playing.
 
 .. raw:: html
 
+   <div class="apps-install-tip">
+     <strong>🛠 Install &amp; manage Apps from your browser</strong><br>
+     Use the <a href="../flash/60_app_manager.html">App Manager</a> to
+     install, update, or remove Apps — no card reader or terminal needed.
+     It connects to the
+     <a href="https://dadamachines.github.io/dada-tbd-firmware/app-catalog.json">App Catalog</a>
+     and handles everything over USB.
+   </div>
+
    <h2 class="apps-section-header">Shipping with TBD-16</h2>
 
    <div class="apps-grid">
@@ -31,30 +40,6 @@ pick one from the menu and start playing.
              <span class="app-tag app-tag-default">Default</span>
              <span class="app-tag app-tag-sequencer">Sequencer</span>
              <span class="app-tag app-tag-synth">Synth</span>
-             <span class="app-tag app-tag-midi">MIDI</span>
-             <span class="app-tag app-tag-link">Link</span>
-           </div>
-         </div>
-       </a>
-     </div>
-
-     <!-- Multi Effect / Synth -->
-     <div class="app-card" data-tags="synth fx midi link">
-       <a href="multi-effect.html">
-         <div class="app-card-screen app-screen-multifx">
-           <span class="app-status shipping" title="Shipping"></span>
-           <span class="app-placeholder">◆ MULTI FX</span>
-         </div>
-         <div class="app-card-body">
-           <h3>Multi Effect / Synth</h3>
-           <p class="app-tagline">
-             Browse and play any of the 50+ DSP plugins from the hardware UI.
-             Run two plugins simultaneously as a stereo chain, dual synth, or
-             any combination.
-           </p>
-           <div class="app-tags">
-             <span class="app-tag app-tag-synth">Synth</span>
-             <span class="app-tag app-tag-fx">FX</span>
              <span class="app-tag app-tag-midi">MIDI</span>
              <span class="app-tag app-tag-link">Link</span>
            </div>
@@ -94,6 +79,31 @@ pick one from the menu and start playing.
 
    <div class="apps-grid">
 
+     <!-- Multi Effect / Synth -->
+     <div class="app-card" data-tags="synth fx midi link planned">
+       <a href="multi-effect.html">
+         <div class="app-card-screen app-screen-multifx">
+           <span class="app-status planned" title="Planned"></span>
+           <span class="app-placeholder">◆ MULTI FX</span>
+         </div>
+         <div class="app-card-body">
+           <h3>Multi Effect / Synth</h3>
+           <p class="app-tagline">
+             Browse and play any of the 50+ DSP plugins from the hardware UI.
+             Run two plugins simultaneously as a stereo chain, dual synth, or
+             any combination.
+           </p>
+           <div class="app-tags">
+             <span class="app-tag app-tag-planned">Planned</span>
+             <span class="app-tag app-tag-synth">Synth</span>
+             <span class="app-tag app-tag-fx">FX</span>
+             <span class="app-tag app-tag-midi">MIDI</span>
+             <span class="app-tag app-tag-link">Link</span>
+           </div>
+         </div>
+       </a>
+     </div>
+
      <!-- MIDI Controller + Audio Interface -->
      <div class="app-card" data-tags="controller midi audio planned">
        <a href="midi-controller.html">
@@ -120,16 +130,16 @@ pick one from the menu and start playing.
 
      <!-- Your App -->
      <div class="app-card app-card-cta" data-tags="community">
-       <a href="bootloader.html#adding-your-own-app">
+       <a href="getting-started.html">
          <div class="app-card-screen">
            <span class="app-placeholder">+</span>
          </div>
          <div class="app-card-body">
            <h3>Build Your Own</h3>
            <p class="app-tagline">
-             The App system is open. Write RP2350 firmware, compile to
-             .uf2, drop it on the SD card. Your App shows up in the boot
-             menu alongside everything else.
+             The App system is open. Clone the App Template,
+             write RP2350 firmware in Arduino, and install via
+             the App Manager.
            </p>
            <div class="app-tags">
              <span class="app-tag app-tag-community">Community</span>

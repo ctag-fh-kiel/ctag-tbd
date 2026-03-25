@@ -99,5 +99,7 @@ limited to music -- any RP2350 firmware can run on the device.
 Links
 =====
 
+- :doc:`App Manager </flash/60_app_manager>` -- install and update Apps from the browser
 - :doc:`Bootloader <bootloader>` -- how to switch between Apps
+- `App Catalog <https://dadamachines.github.io/dada-tbd-firmware/app-catalog.json>`_ -- all available Apps (JSON)
 - :doc:`Back to Apps </apps/index>`

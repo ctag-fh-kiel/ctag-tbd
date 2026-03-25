@@ -94,7 +94,13 @@ file. To make it available in the boot menu:
    c. Copy your ``.uf2`` file into the ``tbd-apps/`` folder.
    d. Reboot and select your App from the menu.
 
-   **Option B -- remove the SD card:**
+   **Option B -- App Manager (browser):**
+
+   a. Open the :doc:`App Manager </flash/60_app_manager>` in Chrome or Edge.
+   b. Follow the 3-step workflow to mount the SD card over USB.
+   c. Install your ``.uf2`` file via the file manager.
+
+   **Option C -- remove the SD card:**
 
    a. Remove the SD card from the TBD-16.
    b. Insert it into your computer using a card reader.
@@ -140,7 +146,9 @@ menu, no SD card required for launching.
 
 **Restoring the bootloader:**
 
-To get the multi-App boot menu back, repeat the BOOTSEL process and flash the
+To get the multi-App boot menu back, use the
+:doc:`App Manager </flash/60_app_manager>` (it can flash the bootloader
+directly from the browser), or repeat the BOOTSEL process and flash the
 bootloader ``.uf2`` from the
 `UF2 Loader releases <https://github.com/ctag-fh-kiel/uf2loader>`_.
 

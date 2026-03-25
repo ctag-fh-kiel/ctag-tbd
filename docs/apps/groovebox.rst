@@ -64,6 +64,7 @@ perspective they behave as one unified instrument.
 Links
 =====
 
+- :doc:`Install or update via App Manager </flash/60_app_manager>`
 - `Possan's website <https://possan.codes/>`_
 - `Possan on GitHub <https://github.com/possan>`_
 - :doc:`All 50+ DSP plugins </plugins/index>` available on the ESP32-P4

@@ -77,6 +77,7 @@ The MCL source is available on GitHub under the GPL license.
 Links
 =====
 
+- :doc:`Install or update via App Manager </flash/60_app_manager>`
 - `MCL on GitHub <https://github.com/jmamma/MCL>`_
 - `jmamma on GitHub <https://github.com/jmamma>`_
 - :doc:`Back to Apps </apps/index>`
