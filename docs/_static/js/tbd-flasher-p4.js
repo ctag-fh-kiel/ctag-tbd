@@ -222,9 +222,15 @@ export async function flashMscAndSwitchOta(ctx, mscUrl, callbacks) {
   var status = cb.onStatus || function () {};
   var progress = cb.onProgress || function () {};
 
-  /* Read partition table to find ota_1 dynamically */
-  status('Reading partition table…');
-  var ota1Addr = await detectOta1Address(ctx);
+  /* Try to read partition table; fall back to known TBD-16 address */
+  var ota1Addr;
+  try {
+    status('Reading partition table…');
+    ota1Addr = await detectOta1Address(ctx);
+  } catch (e) {
+    console.warn('Partition table read failed, using default ota_1 address:', e);
+    ota1Addr = 0x510000;
+  }
 
   /* Download + flash tusb_msc.bin */
   status('Downloading MSC firmware…');
