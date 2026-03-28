@@ -150,7 +150,6 @@ namespace CTAG {
 			void registerParamAndCC(const PickSeqRackInitData *initdata, const char *suffix, int cc, function<DrumRackParameterSetter> setter);
 			void parseIncomingMidiMessages(const uint8_t *buf, const size_t len);
 
-			void setTrackMachine(const uint8_t trackIndex, const std::string machineId) override;
 			void setTrackMachine(const uint8_t trackIndex, const std::string machineId, float volumeMultiplier);
 			void setTrackBank(const uint8_t trackIndex, const uint16_t bankIndex);
 

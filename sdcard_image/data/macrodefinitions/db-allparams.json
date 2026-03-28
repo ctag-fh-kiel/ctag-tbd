@@ -2,7 +2,7 @@
   "id": "db-allparams",
   "name": "Synth Kick All param",
   "machine": "db",
-  "volmult": 1.8,
+  "volmult": 1.5,
   "groups": [
     {
       "name": "Page 1",

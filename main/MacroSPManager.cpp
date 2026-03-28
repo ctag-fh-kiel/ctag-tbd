@@ -153,7 +153,7 @@ void SoundProcessorManager::LoadTrackMacro(const int trackIndex, const std::stri
     xSemaphoreGive(processMutex);
     if (def != nullptr) {
         xSemaphoreTake(processMutex, portMAX_DELAY);
-        macroTranslator->SetTrackMachine(trackIndex, def->synthId);
+        macroTranslator->SetTrackMachine(trackIndex, def->synthId, def->volumeMultiplier);
         macroTranslator->SetTrackMacroDefinition(trackIndex, def);
         xSemaphoreGive(processMutex);
         delete def;
@@ -203,7 +203,7 @@ void SoundProcessorManager::LoadTrackMacroAndPreset(const int trackIndex, const 
 
     // LoadTrackMacro(trackIndex, def->synthId);
     xSemaphoreTake(processMutex, portMAX_DELAY);
-    macroTranslator->SetTrackMachine(trackIndex, def->synthId);
+    macroTranslator->SetTrackMachine(trackIndex, def->synthId, def->volumeMultiplier);
     macroTranslator->SetTrackMacroDefinition(trackIndex, def);
     xSemaphoreGive(processMutex);
 
