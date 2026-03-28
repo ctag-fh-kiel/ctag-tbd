@@ -176,15 +176,20 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         display: none;
       }
       .sd-recovery .skip-link {
-        font-size: 0.82em;
-        color: #6B7280;
+        font-size: 0.9em;
+        color: #2563EB;
         cursor: pointer;
         text-decoration: underline;
-        margin-top: 0.4em;
+        margin-top: 0.5em;
         display: inline-block;
+        padding: 0.3em 0.6em;
+        background: #eff6ff;
+        border-radius: 4px;
+        border: 1px solid #bfdbfe;
       }
       .sd-recovery .skip-link:hover {
-        color: #2563EB;
+        color: #1d4ed8;
+        background: #dbeafe;
       }
       .sd-recovery .complete-card {
         border: 2px solid #10b981;
@@ -310,7 +315,11 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
             <div style="font-weight:700; font-size:0.95em; color:#6B7280; margin-bottom:0.4em;">🗄️ Full SD Card Deploy</div>
             <div style="font-size:0.82em; color:var(--color-foreground-secondary,#555); line-height:1.5;">
               Flash <b>P4 + Pico firmware</b> and re-write the entire SD card image.<br>
-              Use for fresh installs or if your SD card data is corrupted.
+              Use for <b>fresh installs</b>, recovery, or if your SD card data is corrupted.
+            </div>
+            <div style="font-size:0.78em; color:#b91c1c; margin-top:0.5em; line-height:1.4;">
+              ⚠️ <b>This erases ALL data on the SD card</b> — samples, macros, presets,
+              and any custom files will be permanently deleted.
             </div>
           </div>
         </div>
@@ -343,7 +352,8 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         <div class="step-hdr"><span class="step-num" style="background:#0891B2;">2</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
           Connect the <b>front JTAG port</b> (USB-C&nbsp;#3) and keep <b>back Port&nbsp;#1</b> connected for power.
-          Click <b>Connect</b>, then flash <code id="fwNameA1">dada-tbd.bin</code> to the ESP32-P4.
+          Click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b> in the port picker,
+          then flash <code id="fwNameA1">dada-tbd.bin</code> to the ESP32-P4.
         </div>
         <div class="btn-row">
           <button id="btnA1Connect" class="btn-primary" disabled>Loading…</button>
@@ -391,7 +401,8 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         <div class="step-desc">
           Connect both USB-C cables: <b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).
           This step flashes the USB Mass Storage firmware via the front port. After reboot the
-          SD card will appear as a removable drive on the <b>back port</b>.
+          SD card will appear as a removable drive on the <b>back port</b>.<br>
+          <small>📌 In the port picker, select <b>"USB JTAG/serial debug unit"</b> (not "Debug Probe").</small>
         </div>
         <div class="btn-row">
           <button id="btn1Connect" class="btn-primary" disabled>Loading…</button>
@@ -407,8 +418,12 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         <div class="step-hdr"><span class="step-num">2</span> Write SD Card Image</div>
         <div class="step-desc">
           The SD card should now be mounted via <b>back Port&nbsp;#1</b> (look for a <b>"NO NAME"</b> drive).
-          Select the mounted drive below. The SD card image will be downloaded from GitHub,
-          extracted, and written directly.
+          Select the mounted drive below.
+          <div style="margin-top:0.5em; padding:0.5em 0.7em; background:#fef2f2; border:1px solid #fecaca; border-radius:4px; font-size:0.88em; color:#991b1b; line-height:1.5;">
+            ⚠️ <b>All data on the SD card will be permanently erased</b> —
+            including your samples, macro definitions, sound presets, and any custom files.
+            The factory SD card image will be written in their place.
+          </div>
         </div>
         <div class="btn-row">
           <button id="btn2Pick" class="btn-primary">Select SD Card Drive</button>
@@ -424,13 +439,13 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         <div class="step-desc">
           Safely eject the SD card drive from your computer before proceeding.
           Keep <b>back Port&nbsp;#1</b> connected for power, and the <b>front JTAG port</b> connected for serial.
-          Click <b>Connect</b> to reconnect via the front JTAG port.
+          Click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b> in the port picker.
         </div>
         <div class="btn-row">
           <button id="btn3Connect" class="btn-primary">Connect</button>
           <button id="btn3Go" class="btn-success" disabled>Switch to Normal Mode</button>
         </div>
-        <div class="status" id="stat3">Click <b>Connect</b> via the <b>front JTAG port</b> to switch back to normal mode.</div>
+        <div class="status" id="stat3">Click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b>.</div>
       </div>
 
       <!-- B·4 — Flash P4 -->
@@ -438,14 +453,14 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
           <b>Power-cycle the device</b>: unplug <b>back Port&nbsp;#1</b>, wait 3 seconds, replug it.
-          Then click <b>Connect</b> via the <b>front JTAG port</b>.
+          Then click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b> in the port picker.
         </div>
         <div class="btn-row">
           <button id="btn4Connect" class="btn-primary">Connect</button>
           <button id="btn4Flash" class="btn-success" disabled>Flash TBD-16 Firmware</button>
         </div>
         <div class="progress-wrap" id="prog4"><div class="progress-bar" id="prog4Bar"></div><span class="progress-text" id="prog4Txt">0 %</span></div>
-        <div class="status" id="stat4">Click <b>Connect</b> via the <b>front JTAG port</b>, then flash.</div>
+        <div class="status" id="stat4">Click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b>, then flash.</div>
       </div>
 
       <!-- B·5 — Flash Pico -->
@@ -541,7 +556,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
     var SELECTED = null;   /* { tag, p4Url, picoUrl, zipUrl, hashUrl, htmlUrl } */
     var TUSB_MSC_URL = null;
     var PICO_UF2_URL = null;
-    var REBOOT_WAIT = 20;
+    var REBOOT_WAIT = 25;
 
     /* ══════════════════════════════
        Fetch channel catalog from CDN
@@ -592,7 +607,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       /* Path A — Connect buttons stay enabled; only action buttons reset */
       btnA1Connect.textContent = 'Connect'; btnA1Connect.disabled = false;
       btnA1Flash.disabled = true;
-      hideProg(progA1); setStat(statA1, 'Click <b>Connect</b> via the <b>front JTAG port</b>.');
+      hideProg(progA1); setStat(statA1, 'Click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b>.');
       btnA2Connect.disabled = false; btnA2Flash.disabled = true; btnA2Reboot.disabled = true;
       hideProg(progA2); setStat(statA2, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
       cardDoneA.style.display = 'none';
@@ -608,7 +623,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       hideProg(prog1); hideProg(prog2); hideProg(prog4); hideProg(prog5);
       setStat(stat1, 'Select a version, then click <b>Connect</b>.');
       setStat(stat2, 'Select the <b>"NO NAME"</b> SD card drive.');
-      setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b> via the front JTAG port.');
+      setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b>. Select <b>"USB JTAG/serial debug unit"</b>.');
       setStat(stat4, '<b>Power-cycle the device</b>: unplug back Port&nbsp;#1, wait 3 s, replug. Then click <b>Connect</b>.');
       setStat(stat5, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
       fileLog.style.display = 'none'; fileLog.textContent = '';
@@ -839,9 +854,9 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
           onStatus: function (msg) { setStat(stat1, msg); },
           onProgress: function (pct) { showProg(prog1, prog1Bar, prog1Txt, pct); }
         });
-        await resetDevice(ctxB1);
+        var resetOk = await resetDevice(ctxB1);
         await disconnectP4(ctxB1); ctxB1 = null;
-        startRebootCountdown();
+        startRebootCountdown(resetOk);
       } catch (e) {
         console.error(e);
         setStat(stat1, 'Failed: ' + e.message, 'err');
@@ -862,9 +877,9 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         await switchOtaSlot(ctxB1, 1, {
           onStatus: function (msg) { setStat(stat1, msg); }
         });
-        await resetDevice(ctxB1);
+        var resetOk = await resetDevice(ctxB1);
         await disconnectP4(ctxB1); ctxB1 = null;
-        startRebootCountdown();
+        startRebootCountdown(resetOk);
       } catch (e) {
         console.error(e);
         setStat(stat1, 'Failed: ' + e.message, 'err');
@@ -875,15 +890,23 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       }
     });
 
-    function startRebootCountdown() {
+    function startRebootCountdown(resetOk) {
       var remaining = REBOOT_WAIT;
       hideProg(prog1);
       showProg(prog1, prog1Bar, prog1Txt, 0);
-      setStat(stat1,
-        '✓ Firmware written &amp; OTA switched. The device should reboot into SD card mode.<br>' +
-        '<b>If the SD card drive does not appear within ' + REBOOT_WAIT + ' seconds:</b><br>' +
-        '&nbsp;&nbsp;① Press the <b>RESET button</b> on the back, <i>or</i><br>' +
-        '&nbsp;&nbsp;② Unplug <b>both</b> cables, wait 3 s, replug them.', 'ok');
+
+      if (resetOk === false) {
+        setStat(stat1,
+          '⚠️ <b>Software reset failed.</b> Please power-cycle the device:<br>' +
+          '&nbsp;&nbsp;Unplug <b>both</b> USB cables, wait 3 s, replug them.<br>' +
+          '<small>The SD card drive should appear within 25–30 seconds.</small>', 'warn');
+      } else {
+        setStat(stat1,
+          '✓ Firmware written &amp; OTA switched. The device should reboot into SD card mode.<br>' +
+          '<b>If the SD card drive does not appear within ' + REBOOT_WAIT + ' seconds:</b><br>' +
+          '&nbsp;&nbsp;Power-cycle: unplug <b>both</b> USB cables, wait 3 s, replug them.<br>' +
+          '<small>The SD card can take 25–30 s to initialize — this is normal.</small>', 'ok');
+      }
 
       var iv = setInterval(function () {
         remaining--;
@@ -893,8 +916,33 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         if (remaining <= 0) {
           clearInterval(iv);
           hideProg(prog1);
-          setStat(stat1, '✓ Ready. Look for the <b>"NO NAME"</b> drive.', 'ok');
+          setStat(stat1,
+            '⏳ The SD card drive should appear soon. If not:<br>' +
+            '&nbsp;&nbsp;① <b>Wait 10 more seconds</b> — some SD cards are slow to initialize<br>' +
+            '&nbsp;&nbsp;② <b>Power-cycle</b>: unplug <b>both</b> USB cables, wait 3 s, replug them<br>' +
+            '<button id="retryResetBtn" style="margin-top:0.5em;padding:0.3em 0.8em;' +
+            'cursor:pointer;border:1px solid #93c5fd;background:#eff6ff;border-radius:4px;' +
+            'color:#2563eb;font-size:0.9em;">🔄 Retry software reset</button>', 'ok');
           setStat(stat2, 'Select the <b>"NO NAME"</b> SD card drive below.');
+          var retryBtn = $('retryResetBtn');
+          if (retryBtn) {
+            retryBtn.addEventListener('click', async function () {
+              retryBtn.disabled = true;
+              retryBtn.textContent = 'Connecting…';
+              try {
+                var retryCtx = await connectP4({ onStatus: function () {} });
+                var ok = await resetDevice(retryCtx);
+                await disconnectP4(retryCtx);
+                startRebootCountdown(ok);
+              } catch (e) {
+                console.error('Retry reset failed:', e);
+                setStat(stat1,
+                  '⚠️ Could not reconnect. Please <b>power-cycle</b> the device:<br>' +
+                  '&nbsp;&nbsp;Unplug <b>both</b> USB cables, wait 3 s, replug them.<br>' +
+                  '<small>The SD card drive should appear within 25–30 seconds.</small>', 'warn');
+              }
+            });
+          }
         }
       }, 1000);
     }
@@ -918,6 +966,24 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       }
     }
 
+    /**
+     * Recursively erase all files and subdirectories inside a directory.
+     * The directory itself is preserved (we can't delete the root mount).
+     */
+    async function eraseDirectory(dirHandle, logFn) {
+      var entries = [];
+      for await (var entry of dirHandle.entries()) entries.push(entry);
+      for (var i = 0; i < entries.length; i++) {
+        var name = entries[i][0], handle = entries[i][1];
+        try {
+          await dirHandle.removeEntry(name, { recursive: true });
+          if (logFn) logFn('DEL  ' + name + (handle.kind === 'directory' ? '/' : ''));
+        } catch (e) {
+          if (logFn) logFn('SKIP ' + name + ': ' + e.message);
+        }
+      }
+    }
+
     btn2Pick.addEventListener('click', async function () {
       if (!SELECTED || !SELECTED.zipUrl) {
         setStat(stat2, 'No SD card image available for this release.', 'err');
@@ -933,12 +999,30 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         return;
       }
 
+      /* Confirm before erasing */
+      if (!confirm(
+        'WARNING: This will permanently erase ALL data on the SD card, including:\n\n' +
+        '  • Audio samples\n' +
+        '  • Macro definitions\n' +
+        '  • Sound presets\n' +
+        '  • Any custom files\n\n' +
+        'The factory SD card image will be written in their place.\n\n' +
+        'Continue?'
+      )) { return; }
+
       btn2Pick.disabled = true;
       fileLog.style.display = 'block';
       fileLog.textContent = '';
       function log(msg) { fileLog.textContent += msg + '\n'; fileLog.scrollTop = fileLog.scrollHeight; }
 
       try {
+        /* Erase existing files on SD card */
+        setStat(stat2, 'Erasing SD card…');
+        showProg(prog2, prog2Bar, prog2Txt, 0);
+        await eraseDirectory(dirHandle, log);
+        log('SD card erased');
+        showProg(prog2, prog2Bar, prog2Txt, 5);
+
         /* Load JSZip */
         if (!window.JSZip) {
           await new Promise(function (resolve, reject) {
@@ -963,7 +1047,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
           chunks.push(result.value);
           received += result.value.length;
           if (contentLength > 0) {
-            var dlPct = Math.round(received / contentLength * 50);
+            var dlPct = 5 + Math.round(received / contentLength * 40);
             showProg(prog2, prog2Bar, prog2Txt, dlPct);
             setStat(stat2, 'Downloading… ' + (received / 1024 / 1024).toFixed(1) + ' / ' + (contentLength / 1024 / 1024).toFixed(1) + ' MB');
           }
@@ -1006,7 +1090,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         for (var ei = 0; ei < entries.length; ei++) {
           var name = entries[ei];
           var zipEntry = zip.files[name];
-          var pct = 50 + Math.round((ei + 1) / total * 45);
+          var pct = 47 + Math.round((ei + 1) / total * 48);
           showProg(prog2, prog2Bar, prog2Txt, pct);
 
           if (name.indexOf('__MACOSX') >= 0 || name.indexOf('.DS_Store') >= 0) continue;
@@ -1070,7 +1154,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         } else {
           setStat(stat2, '✓ <b>' + written + '</b> files written. <b>⏏ Please safely eject the drive</b> before proceeding.', 'ok');
         }
-        setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b> via the front JTAG port.');
+        setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b>. Select <b>"USB JTAG/serial debug unit"</b>.');
       } catch (e) {
         console.error(e);
         setStat(stat2, 'Failed: ' + e.message, 'err');

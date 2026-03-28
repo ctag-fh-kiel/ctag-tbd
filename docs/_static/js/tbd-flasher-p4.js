@@ -222,8 +222,9 @@ export async function flashMscAndSwitchOta(ctx, mscUrl, callbacks) {
   var status = cb.onStatus || function () {};
   var progress = cb.onProgress || function () {};
 
-  /* TBD-16 partition layout is fixed: ota_1 starts right after ota_0 (5 MB @ 0x10000) */
-  var ota1Addr = 0x510000;
+  /* Read partition table to find ota_1 dynamically */
+  status('Reading partition table…');
+  var ota1Addr = await detectOta1Address(ctx);
 
   /* Download + flash tusb_msc.bin */
   status('Downloading MSC firmware…');
@@ -272,9 +273,13 @@ export async function switchOtaSlot(ctx, slot, callbacks) {
   });
 }
 
-/** Hard-reset the device. May throw on some setups (expected). */
+/** Hard-reset the device. Returns true on success, false if reset signal failed. */
 export async function resetDevice(ctx) {
-  try { await ctx.loader.after('hard_reset'); } catch (e) {
-    console.warn('Software reset failed (expected on some setups):', e);
+  try {
+    await ctx.loader.after('hard_reset');
+    return true;
+  } catch (e) {
+    console.warn('Software reset failed:', e);
+    return false;
   }
 }
