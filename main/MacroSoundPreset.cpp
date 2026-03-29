@@ -23,19 +23,18 @@ respective component folders / files if different from this license.
 using namespace CTAG::MACROPRESETS;
 using namespace rapidjson;
 
-
-MacroSoundPreset::MacroSoundPreset() {
-    id = "";
-    displayName = "";
-    groupName = "";
-    parameterValues.clear();
-    validTracks.clear();
+void MacroSoundPresetUtils::MacroSoundPreset_Reset(struct MacroSoundPreset *preset) {
+    memset(preset->id, 0, sizeof(preset->id));
+    memset(preset->displayName, 0, sizeof(preset->displayName));
+    memset(preset->groupName, 0, sizeof(preset->groupName));
+    memset(preset->macroDeviceId, 0, sizeof(preset->macroDeviceId));
+    preset->validTracksBitmask = 0;
+    for(int k=0; k<MaxMacroSoundPresetParameters; k++) {
+        preset->parameterValues[k] = 0;
+    }
 }
 
-MacroSoundPreset::~MacroSoundPreset() {
-}
-
-bool MacroSoundPreset::DeserializeJSON(const rapidjson::Value &jsonelement) {
+bool MacroSoundPresetUtils::MacroSoundPreset_DeserializeJSON(struct MacroSoundPreset *preset, const rapidjson::Value &jsonelement) {
     // Implement deserialization logic here
 
     if (!jsonelement.IsObject()) {
@@ -44,38 +43,45 @@ bool MacroSoundPreset::DeserializeJSON(const rapidjson::Value &jsonelement) {
     }
 
      if (jsonelement.HasMember("id") && jsonelement["id"].IsString()) {
-        id = jsonelement["id"].GetString();
+        strncpy(preset->id, jsonelement["id"].GetString(), sizeof(preset->id) - 1);
+        preset->id[sizeof(preset->id) - 1] = '\0';
     } else {
         ESP_LOGE("MacroSoundPreset", "Missing or invalid 'id' field");
         return false;
     }
 
     if (jsonelement.HasMember("name") && jsonelement["name"].IsString()) {
-        displayName = jsonelement["name"].GetString();
+        strncpy(preset->displayName, jsonelement["name"].GetString(), sizeof(preset->displayName) - 1);
+        preset->displayName[sizeof(preset->displayName) - 1] = '\0';
     } else {
         ESP_LOGE("MacroSoundPreset", "Missing or invalid 'name' field");
         return false;
     }
 
     if (jsonelement.HasMember("group") && jsonelement["group"].IsString()) {
-        groupName = jsonelement["group"].GetString();
+        strncpy(preset->groupName, jsonelement["group"].GetString(), sizeof(preset->groupName) - 1);
+        preset->groupName[sizeof(preset->groupName) - 1] = '\0';
     } else {
         ESP_LOGE("MacroSoundPreset", "Missing or invalid 'group' field");
         return false;
     }
 
     if (jsonelement.HasMember("macro") && jsonelement["macro"].IsString()) {
-        macroDeviceId = jsonelement["macro"].GetString();
+        strncpy(preset->macroDeviceId, jsonelement["macro"].GetString(), sizeof(preset->macroDeviceId) - 1);
+        preset->macroDeviceId[sizeof(preset->macroDeviceId) - 1] = '\0';
     } else {
         ESP_LOGE("MacroSoundPreset", "Missing or invalid 'macro' field");
         return false;
     }
 
     if (jsonelement.HasMember("values") && jsonelement["values"].IsArray()) {
-        parameterValues.clear();
+        int index = 0;
         for (auto &v : jsonelement["values"].GetArray()) {
             if (v.IsInt()) {
-                parameterValues.push_back(v.GetInt());
+                if (index < MaxMacroSoundPresetParameters) {
+                    preset->parameterValues[index] = v.GetInt();
+                }
+                index++;
             } else {
                 ESP_LOGE("MacroSoundPreset", "Invalid 'values' array element");
                 return false;
@@ -89,26 +95,10 @@ bool MacroSoundPreset::DeserializeJSON(const rapidjson::Value &jsonelement) {
     return true;
 }
 
-bool MacroSoundPreset::SerializeJSONInto(rapidjson::Document &doc) {
-    // TODO: Just read from disk?
-
-    doc.SetObject();
-
-    Value s_id(kObjectType);
-    s_id.SetString(id, doc.GetAllocator());
-
-    doc.AddMember("id", s_id, doc.GetAllocator());
-    doc.AddMember("name", Value(displayName.c_str(), doc.GetAllocator()), doc.GetAllocator());
-    doc.AddMember("group", Value(groupName.c_str(), doc.GetAllocator()), doc.GetAllocator());
-    doc.AddMember("macro", Value(macroDeviceId.c_str(), doc.GetAllocator()), doc.GetAllocator());
-
-    Value paramValues(kArrayType);
-    doc.AddMember("values", paramValues, doc.GetAllocator());
-    for (auto &v : parameterValues) {
-        Value val(kNumberType);
-        val.SetInt(v);
-        doc["values"].PushBack(val, doc.GetAllocator());
-    }
-
-    return true;
+void MacroSoundPresetUtils::MacroSoundPresetGroup_Reset(struct MacroSoundPresetGroup *group) {
+    memset(group->id, 0, sizeof(group->id));
+    memset(group->displayName, 0, sizeof(group->displayName));
+    group->validTracksBitmask = 0;
+    group->numFileIds = 0;
+    memset(group->fileIds, 0, sizeof(group->fileIds));
 }

@@ -24,18 +24,24 @@ respective component folders / files if different from this license.
 #include "rapidjson/writer.h"
 #include <dirent.h>
 #include "esp_log.h"
+#include "ctagResources.hpp"
 
 
 using namespace CTAG::MACROPRESETS;
 using namespace rapidjson;
 
 
-SynthDefinitionDataModel::SynthDefinitionDataModel() {
-    synths.clear();
-    tracks.clear();
-}
+void SynthDefinitionDataModel::Init() {
+    synths = (struct SynthDefinition *) heap_caps_malloc(MAX_SYNTHS * sizeof(struct SynthDefinition), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    tracks = (struct TrackDefinition *) heap_caps_malloc(MAX_TRACKS * sizeof(struct TrackDefinition), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
 
-SynthDefinitionDataModel::~SynthDefinitionDataModel() {
+    for(int i=0; i<MAX_SYNTHS; i++) {
+        CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_Reset(&synths[i]);
+    }
+
+    for(int i=0; i<MAX_TRACKS; i++) {
+        CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_Reset(&tracks[i]);
+    }
 }
 
 // #define MB_BUF_SZ 1024
@@ -43,11 +49,7 @@ SynthDefinitionDataModel::~SynthDefinitionDataModel() {
 void SynthDefinitionDataModel::ReloadSynthDefinitions() {
     // return;
 
-    #ifndef TBD_SIM
-        const std::string MODELJSONFN = "/sdcard/data/synthdefinitions.json";
-    #else
-        const std::string MODELJSONFN = "../../sdcard_image/data/synthdefinitions.json";
-    #endif
+    const std::string MODELJSONFN = CTAG::RESOURCES::sdcardRoot + "/data/synthdefinitions.json";
 
     ESP_LOGI("SynthDefinitionDataModel", "Trying to read synth defintition file: %s", MODELJSONFN.c_str());
 
@@ -63,25 +65,31 @@ void SynthDefinitionDataModel::ReloadSynthDefinitions() {
 }
 
 int SynthDefinitionDataModel::GetNumberOfSynthDefinitions() {
-    return synths.size();
+    int count = 0;
+    for(int i=0; i<MAX_SYNTHS; i++) {
+        if (synths[i].id[0] != '\0') {
+            count ++;
+        }
+    }
+    return count;
 }
 
 void SynthDefinitionDataModel::GetSynthDeviceDefinitionId(int index, std::string *idOutput) {
 }
 
 SynthDefinition *SynthDefinitionDataModel::GetSynthDefinition(const std::string id) {
-    for(SynthDefinition *s : synths) {
-        if (s->id == id) {
-            return s;
+    for(int i=0; i<MAX_SYNTHS; i++) {
+        if (synths[i].id == id) {
+            return &synths[i];
         }
     }
     return nullptr;
 }
 
 TrackDefinition *SynthDefinitionDataModel::GetTrackDefinition(int index) {
-    for(TrackDefinition *t : tracks) {
-        if (t->index == index) {
-            return t;
+    for(int i=0; i<MAX_TRACKS; i++) {
+        if (tracks[i].index == index) {
+            return &tracks[i];
         }
     }
     return nullptr;
@@ -94,119 +102,28 @@ bool SynthDefinitionDataModel::DeserializeJSON(const rapidjson::Value &jsoneleme
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
              heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 
-    for (TrackDefinition *t : tracks) {
-        delete t;
-    }
-    tracks.clear();
-    for (SynthDefinition *s : synths) {
-        delete s;
-    }
-    synths.clear();
-
+    int index = 0;
     if (jsonelement.HasMember("machines")) {
         for (auto &v : jsonelement["machines"].GetArray()) {
-            SynthDefinition *s = new SynthDefinition();
-            if (s->DeserializeJSON(v)) {
-                ESP_LOGI("SynthDefinitionDataModel", "Deserialized synth definition: #%s \"%s\"", s->id.c_str(), s->name.c_str());
-                synths.push_back(s);
-            } else {
-                delete s;
+            if (CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_DeserializeJSON(&synths[index], v)) {
+                ESP_LOGI("SynthDefinitionDataModel", "Deserialized synth definition: #%d id %s \"%s\"", index, synths[index].id, synths[index].name);
+                index ++;
             }
         }
     }
 
+    index = 0;
     if (jsonelement.HasMember("tracks")) {
         for (auto &v : jsonelement["tracks"].GetArray()) {
-            TrackDefinition *t = new TrackDefinition();
-            if (t->DeserializeJSON(v)) {
-                ESP_LOGI("SynthDefinitionDataModel", "Deserialized track definition: #%d \"%s\"", t->index, t->name.c_str());
-                tracks.push_back(t);
-            } else {
-                delete t;
+            if (CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_DeserializeJSON(&tracks[index], v)) {
+                ESP_LOGI("SynthDefinitionDataModel", "Deserialized track definition #%d index %d \"%s\"", index, tracks[index].index, tracks[index].name);
+                // tracks.push_back(t);
+                index ++;
             }
         }
     }
 
     return true;
-}
-
-void SynthDefinitionDataModel::SerializeTrackJSON(int index, std::string *output){
-    Document d;
-
-    d.SetObject();
-
-    Value tracksarray(kArrayType);
-    d.AddMember("tracks", tracksarray, d.GetAllocator());
-    for(TrackDefinition *t : tracks) {
-        if (t->index == index) {
-            d.AddMember("index", t->index, d.GetAllocator());
-            d.AddMember("name", Value(t->name.c_str(), d.GetAllocator()), d.GetAllocator());
-
-            Value machinearray(kArrayType);
-            for(auto k : t->macroMachineIds) {
-                machinearray.PushBack(Value(k.c_str(), d.GetAllocator()), d.GetAllocator());
-            }
-            d.AddMember("machines", machinearray, d.GetAllocator());
-            // d["tracks"].PushBack(d, d.GetAllocator());
-        }
-    }
-
-    StringBuffer buffer;
-    Writer<StringBuffer> writer(buffer);
-    d.Accept(writer);
-    ESP_LOGD("SynthDefinitionDataModel", "JSON string %s", buffer.GetString());
-
-    output->assign(buffer.GetString());
-}
-
-void SynthDefinitionDataModel::SerializeSynthJSON(const std::string id, std::string *output){
-    // Implement serialization logic here
-    Document d;
-    d.SetObject();
-
-    // Value machinesarray(kArrayType);
-    // d.AddMember("machines", machinesarray, d.GetAllocator());
-    for(SynthDefinition *s : synths) {
-        if (s->id == id ) {
-
-            // Value machinejson(kObjectType);
-            d.AddMember("id", Value(s->id.c_str(), d.GetAllocator()), d.GetAllocator());
-            d.AddMember("name", Value(s->name.c_str(), d.GetAllocator()), d.GetAllocator());
-            // machinejson.AddMember("type", s->type, d.GetAllocator());
-
-            Value paramarray(kArrayType);
-            d.AddMember("parameters", paramarray, d.GetAllocator());
-
-            for(auto p : s->parameters) {
-                Value param(kObjectType);
-
-                param.AddMember("id", Value(p->id.c_str(), d.GetAllocator()), d.GetAllocator());
-                param.AddMember("name", Value(p->name.c_str(), d.GetAllocator()), d.GetAllocator());
-                if (p->type == SynthParameterType_CC) {
-                    param.AddMember("type", "CC", d.GetAllocator());
-                } else if (p->type == SynthParameterType_NRPM) {
-                    param.AddMember("type", "NRPM", d.GetAllocator());
-                } else {
-                    param.AddMember("type", "None", d.GetAllocator());
-                }
-                param.AddMember("cc", p->cc, d.GetAllocator());
-                param.AddMember("default", p->defaultValue, d.GetAllocator());
-
-                d["parameters"].PushBack(param, d.GetAllocator());
-            }
-
-            // d["machines"].PushBack(machinejson, d.GetAllocator());
-            // if (s->SerializeJSONInto(machinejson, d.GetAllocator())) {
-            // }
-        }
-    }
-
-    StringBuffer buffer;
-    Writer<StringBuffer> writer(buffer);
-    d.Accept(writer);
-    ESP_LOGD("SynthDefinitionDataModel", "JSON string %s", buffer.GetString());
-
-    output->assign(buffer.GetString());
 }
 
 void SynthDefinitionDataModel::SerializeListJSON(std::string *output) {
@@ -217,8 +134,8 @@ void SynthDefinitionDataModel::SerializeListJSON(std::string *output) {
 
     Value machinesarray(kArrayType);
     d.AddMember("machines", machinesarray, d.GetAllocator());
-    for(SynthDefinition *s : synths) {
-        Value machineid = Value(s->id.c_str(), d.GetAllocator());
+    for(int i=0; i<MAX_SYNTHS; i++) {
+        Value machineid = Value(synths[i].id, d.GetAllocator());
         d["machines"].PushBack(machineid, d.GetAllocator());
     }
 
@@ -230,27 +147,8 @@ void SynthDefinitionDataModel::SerializeListJSON(std::string *output) {
     output->assign(buffer.GetString());
 }
 
-// bool SynthDefinitionDataModel::UpdateDefinitionJSON(const std::string &jsonstring) {
-//     Document d;
-//     if (d.Parse(jsonstring.c_str()).HasParseError()) {
-//         ESP_LOGE("SynthDefinitionDataModel", "Failed to parse JSON string: %s", jsonstring.c_str());
-//         return false;
-//     }
+static SynthDefinitionDataModel g_synthdef_instance;
 
-//     #ifndef TBD_SIM
-//         const std::string MODELJSONFN = "/sdcard/data/synthdefinitions.json";
-//     #else
-//         const std::string MODELJSONFN = "../../sdcard_image/data/synthdefinitions.json";
-//     #endif
-
-//     fp = fopen(MODELJSONFN.c_str(), "w");
-//     if (fp == NULL) {
-//         ESP_LOGE("MacroSoundPresetDataModel", "could not open file %s", MODELJSONFN.c_str());
-//         return false;
-//     }
-//     fwrite(jsonstring.c_str(), 1, jsonstring.size(), fp);
-//     fclose(fp);
-
-//     return true;
-// }
-
+SynthDefinitionDataModel *SynthDefinitionDataModel::instance() {
+    return &g_synthdef_instance;
+}

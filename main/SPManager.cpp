@@ -48,6 +48,12 @@ respective component folders / files if different from this license.
 #include "SpiProtocol.h"
 #include "SpiProtocolHelper.hpp"
 #endif
+#if CONFIG_TBD_USE_SD_CARD
+#include "SynthDefinitionDataModel.hpp"
+#include "MacroSoundPresetDataModel.hpp"
+#include "MacroDeviceDefinitionDataModel.hpp"
+#include "MacroTranslator.hpp"
+#endif
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 #define MIN(x, y) ((x)<(y)) ? (x) : (y)
@@ -57,6 +63,9 @@ respective component folders / files if different from this license.
 using namespace CTAG;
 using namespace CTAG::AUDIO;
 using namespace CTAG::DRIVERS;
+#if CONFIG_TBD_USE_SD_CARD
+using namespace CTAG::MACROPRESETS;
+#endif
 
 #define CPU_MAX_ALLOWED_CYCLES 300000 // 261224 // is 32/44100kHz * 360MHz
 #define SPI_TRANSACTION_TIMEOUT_US 200000
@@ -65,9 +74,9 @@ using namespace CTAG::DRIVERS;
 namespace CTAG {
     namespace RESOURCES {
 #if CONFIG_TBD_USE_SD_CARD
-        std::string sdcardRoot {"/sdcard"};
+        std::string sdcardRoot = "/sdcard";
 #else
-        std::string sdcardRoot {"/littlefs"};
+        std::string sdcardRoot = "/littlefs";
 #endif
     }
 }
@@ -315,7 +324,7 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
             if (canProcess) {
 #if CONFIG_TBD_USE_SD_CARD
-                if (macroTranslator) macroTranslator->TranslateInput(&pd);
+                MacroTranslator::instance().TranslateInput(&pd);
 #endif
                 memset(&pd.midi_bytes, 0, pd.midi_bytes_length); // clear buffer
 
@@ -480,8 +489,8 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
         }
     }
 #if CONFIG_TBD_USE_SD_CARD
-    if (chan == 0 && macroTranslator) {
-        macroTranslator->soundProcessor = nullptr;
+    if (chan == 0) {
+        MacroTranslator::instance().soundProcessor = nullptr;
     }
 #endif
 
@@ -502,8 +511,8 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
         return;
     }
 #if CONFIG_TBD_USE_SD_CARD
-    if (chan == 0 && macroTranslator) {
-        macroTranslator->soundProcessor = sp[chan];
+    if (chan == 0) {
+        MacroTranslator::instance().soundProcessor = sp[chan];
     }
 #endif
     model->SetActivePluginID(id, chan);

@@ -24,50 +24,40 @@ using namespace CTAG::MACROPRESETS;
 using namespace rapidjson;
 
 
-TrackDefinition::TrackDefinition() {
-    index = 0;
-    name = "";
-    midiChannel = 0;
-    drumNote = 0;
-    baseCC = 0;
-    macroMachineIds.clear();
+void CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_Reset(struct TrackDefinition *def) {
+    def->index = 0;
+    memset(def->name, 0, sizeof(def->name));
+    def->midiChannel = 0;
+    def->drumNote = 0;
+    def->baseCC = 0;
+    memset(def->macroMachineIds, 0, sizeof(def->macroMachineIds));
 }
 
-TrackDefinition::~TrackDefinition() {
-}
-
-bool TrackDefinition::DeserializeJSON(const Value &jsonelement) {
+bool CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_DeserializeJSON(struct TrackDefinition *def, const Value &jsonelement) {
     if (!jsonelement.HasMember("index")) return false;
     if (!jsonelement.HasMember("name")) return false;
     if (!jsonelement.HasMember("midichannel")) return false;
     if (!jsonelement.HasMember("drumnote")) return false;
     if (!jsonelement.HasMember("basecc")) return false;
 
-    index = jsonelement["index"].GetInt();
-    name = jsonelement["name"].GetString();
-    midiChannel = jsonelement["midichannel"].GetInt();
-    drumNote = jsonelement["drumnote"].GetInt();
-    baseCC = jsonelement["basecc"].GetInt();
+    def->index = jsonelement["index"].GetInt();
+    strncpy(def->name, jsonelement["name"].GetString(), sizeof(def->name) - 1);
+    def->name[sizeof(def->name) - 1] = '\0';
+    def->midiChannel = jsonelement["midichannel"].GetInt();
+    def->drumNote = jsonelement["drumnote"].GetInt();
+    def->baseCC = jsonelement["basecc"].GetInt();
 
-    ESP_LOGI("TrackDefinition", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-   
-    macroMachineIds.clear();
+    memset(def->macroMachineIds, 0, sizeof(def->macroMachineIds));
     if (jsonelement.HasMember("machines") && jsonelement["machines"].IsArray()) {
+        int i = 0;
         for (auto &v : jsonelement["machines"].GetArray()) {
-            macroMachineIds.push_back(v.GetString());
+            if (i < MaxTrackDefinitionMachineIds) {
+                strncpy(def->macroMachineIds[i], v.GetString(), sizeof(def->macroMachineIds[i]) - 1);
+                def->macroMachineIds[i][sizeof(def->macroMachineIds[i]) - 1] = '\0';
+                i++;
+            }
         }
     }
 
     return true;
 }
-
-bool TrackDefinition::SerializeJSONInto(const rapidjson::Value &jsonelement, rapidjson::Document::AllocatorType &allocator) {
-    // Implementation goes here
-    // parentjsonelement
-    return true;
-}
-

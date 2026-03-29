@@ -23,43 +23,41 @@ respective component folders / files if different from this license.
 
 namespace CTAG {
     namespace MACROPRESETS {
-        enum SynthParameterType {
+        const int MaxSynthDefinitionParameters = 24;
+
+        enum SynthParameterType : uint8_t {
             SynthParameterType_None = 0,
             SynthParameterType_CC = 1,
             SynthParameterType_NRPM = 2,
         };
 
-        class SynthParameter {
-            public:
-                std::string id;
-                std::string name;
-                enum SynthParameterType type;
-                uint16_t defaultValue;
-                uint8_t cc;
-
-            public:
-                SynthParameter();
-                ~SynthParameter();
-        };
-
-        enum SynthType {
+        enum SynthType : uint8_t {
             SynthType_None = 0,
             SynthType_Synth = 1,
             SynthType_Drum = 2,
         };
 
-        class SynthDefinition {
-            public:
-                std::string id;
-                std::string name;
-                enum SynthType type;
-                std::vector<SynthParameter*> parameters;
+        struct SynthParameter {
+            char id[16];
+            char name[32];
+            enum SynthParameterType type;
+            uint16_t defaultValue;
+            uint8_t cc;
+        };
 
-            public:
-                SynthDefinition();
-                ~SynthDefinition();
-                bool DeserializeJSON(const rapidjson::Value &jsonelement);
-                // bool SerializeJSONInto(const rapidjson::Value &jsonelement, rapidjson::Document::AllocatorType &allocator);
+        struct SynthDefinition {
+            char id[16];
+            char name[32];
+            enum SynthType type;
+            struct SynthParameter parameters[MaxSynthDefinitionParameters];
+        };
+
+        class SynthDefinitionUtils final {
+        public:
+            SynthDefinitionUtils() = delete;
+
+            static void SynthDefinition_Reset(struct SynthDefinition *def);
+            static bool SynthDefinition_DeserializeJSON(struct SynthDefinition *def, const rapidjson::Value &jsonelement);
         };
     }
 }

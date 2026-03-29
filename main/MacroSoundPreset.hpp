@@ -27,18 +27,34 @@ respective component folders / files if different from this license.
 
 namespace CTAG {
     namespace MACROPRESETS {
-        class MacroSoundPreset {
+        const int MaxMacroSoundPresetParameters = 24;
+        const int MaxPresetsPerGroup = 64;
+
+        struct MacroSoundPreset {
+            char id[16];
+            char displayName[32];
+            char groupName[16];
+            char macroDeviceId[16];
+            uint32_t validTracksBitmask;
+            int32_t parameterValues[MaxMacroSoundPresetParameters];
+        };
+
+        struct MacroSoundPresetGroup {
+            char id[16];
+            char displayName[32];
+            uint32_t validTracksBitmask;
+            uint8_t numFileIds;
+            char fileIds[MaxPresetsPerGroup][16];
+        };
+
+        class MacroSoundPresetUtils final {
             public:
-                std::string id;
-                std::string displayName;
-                std::string groupName;
-                std::string macroDeviceId;
-                std::set<uint8_t> validTracks;
-                std::vector<int32_t> parameterValues;
-                bool DeserializeJSON(const rapidjson::Value &jsonelement);
-                bool SerializeJSONInto(rapidjson::Document &doc);
-                MacroSoundPreset();
-                ~MacroSoundPreset();
+            MacroSoundPresetUtils() = delete;
+
+            static bool MacroSoundPreset_DeserializeJSON(struct MacroSoundPreset *preset, const rapidjson::Value &jsonelement);
+            static void MacroSoundPreset_Reset(struct MacroSoundPreset *preset);
+
+            static void MacroSoundPresetGroup_Reset(struct MacroSoundPresetGroup *group);
         };
     }
 }

@@ -36,6 +36,9 @@ respective component folders / files if different from this license.
 #include "esp_rom_crc.h"
 #include "driver/gpio.h"
 
+#include "MacroSoundPresetDataModel.hpp"
+#include "MacroDeviceDefinitionDataModel.hpp"
+
 #include "link.hpp"
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
@@ -765,8 +768,7 @@ namespace CTAG::SPIAPI{
                     std::string outputjson;
                     int trackIndex = uint8_param_0;
                     ESP_LOGI("SpiAPI", "Getting macro sound preset list, track %d", trackIndex);
-                    CTAG::AUDIO::SoundProcessorManager::macroSoundDefinitionModel
-                        ->GetPresetIndexJson(trackIndex, &outputjson);
+                    CTAG::MACROPRESETS::MacroSoundPresetDataModel::instance().GetPresetIndexJson(trackIndex, &outputjson);
                     // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                     result = transmitCString(requestType, outputjson.c_str());
                 }
@@ -782,13 +784,6 @@ namespace CTAG::SPIAPI{
                     std::string outputjson;
                     outputjson = CTAG::AUDIO::SoundProcessorManager::GetMacroSoundPresetJSON(presetId);
                     result = transmitCString(requestType, outputjson.c_str());
-                    // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
-                    // CTAG::MACROPRESETS::MacroSoundPreset *preset =
-                    //     CTAG::AUDIO::SoundProcessorManager::macroSoundDefinitionModel
-                    //         ->GetMacroSoundPreset(presetId);
-                    // SerializeJSONInto
-                    // GetPresetJson(presetId, &outputjson);
-                    // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 }
 #else
                 result = transmitCString(requestType, "{}");
@@ -859,7 +854,7 @@ namespace CTAG::SPIAPI{
                     // The file maps track indices to preset IDs, e.g.:
                     // { "tracks": [ {"index":0,"preset":"db-all-def"}, ... ] }
                     std::string json = "{}";
-                    std::string path = std::string(CTAG::RESOURCES::sdcardRoot) + "/data/trackdefaults.json";
+                    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/trackdefaults.json";
                     FILE *f = fopen(path.c_str(), "r");
                     if (f) {
                         fseek(f, 0, SEEK_END);
