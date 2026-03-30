@@ -82,14 +82,22 @@ export function parsePartitionTable(data) {
   return entries;
 }
 
-/** Read partition table from device flash and find ota_1 offset. */
+/** Read partition table from device flash and find ota_1 partition.
+ *  Returns { offset, size } or throws if not found. */
 export async function detectOta1Address(ctx) {
-  var ptStr = await ctx.loader.readFlash(PT_ADDR, PT_READ_SIZE);
-  var ptData = new Uint8Array(ptStr.length);
-  for (var i = 0; i < ptStr.length; i++) ptData[i] = ptStr.charCodeAt(i);
+  var raw = await ctx.loader.readFlash(PT_ADDR, PT_READ_SIZE);
+  var ptData;
+  if (raw instanceof Uint8Array) {
+    ptData = raw;
+  } else if (typeof raw === 'string') {
+    ptData = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) ptData[i] = raw.charCodeAt(i);
+  } else {
+    ptData = new Uint8Array(raw);
+  }
   var parts = parsePartitionTable(ptData);
   for (var p = 0; p < parts.length; p++) {
-    if (parts[p].name === 'ota_1') return parts[p].offset;
+    if (parts[p].name === 'ota_1') return { offset: parts[p].offset, size: parts[p].size };
   }
   throw new Error('ota_1 partition not found in device partition table');
 }
@@ -222,7 +230,9 @@ export async function flashMscAndSwitchOta(ctx, mscUrl, callbacks) {
   var status = cb.onStatus || function () {};
   var progress = cb.onProgress || function () {};
 
-  /* TBD-16 / TBD-Core: ota_1 is always at 0x510000 */
+  /* TBD-16: ota_1 is always at 0x510000.
+     Reading the partition table via WebSerial has proven unreliable —
+     hardcoded address is the only method that works consistently. */
   var ota1Addr = 0x510000;
 
   /* Download + flash tusb_msc.bin */

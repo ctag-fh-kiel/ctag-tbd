@@ -447,7 +447,7 @@ or any active feature-test branch build.
       <div class="step-card" id="card4">
         <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
-          <b>Power-cycle the device</b>: unplug <b>back Port&nbsp;#1</b>, wait 3 seconds, replug it.
+          Press the <b>Reset button</b> on the back (next to Port&nbsp;#1) to restart the device.
           Then click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b> in the port picker.
         </div>
         <div class="btn-row">
@@ -455,7 +455,7 @@ or any active feature-test branch build.
           <button id="btn4Flash" class="btn-success" disabled>Flash TBD-16 Firmware</button>
         </div>
         <div class="progress-wrap" id="prog4"><div class="progress-bar" id="prog4Bar"></div><span class="progress-text" id="prog4Txt">0 %</span></div>
-        <div class="status" id="stat4">Click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b>, then flash.</div>
+        <div class="status" id="stat4">Press <b>Reset</b> on the back, then click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b>.</div>
       </div>
 
       <!-- B·5 — Flash Pico -->
@@ -661,7 +661,7 @@ or any active feature-test branch build.
       setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB-C cables are connected.');
       setStat(stat2, 'Select the <b>"NO NAME"</b> SD card drive.');
       setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b>. Select <b>"USB JTAG/serial debug unit"</b>.');
-      setStat(stat4, '<b>Power-cycle the device</b>, then click <b>Connect</b>.');
+      setStat(stat4, 'Press <b>Reset</b> on the back (next to Port&nbsp;#1), then click <b>Connect</b>.');
       setStat(stat5, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
       fileLog.style.display = 'none'; fileLog.textContent = '';
       cardDone.style.display = 'none';
@@ -1057,11 +1057,16 @@ or any active feature-test branch build.
      * Recursively erase all files and subdirectories inside a directory.
      * The directory itself is preserved (we can't delete the root mount).
      */
+    var SYS_DIRS = ['.Spotlight-V100', '.fseventsd', '.Trashes', '.TemporaryItems'];
     async function eraseDirectory(dirHandle, logFn) {
       var entries = [];
       for await (var entry of dirHandle.entries()) entries.push(entry);
       for (var i = 0; i < entries.length; i++) {
         var name = entries[i][0], handle = entries[i][1];
+        if (SYS_DIRS.indexOf(name) >= 0) {
+          if (logFn) logFn('SKIP ' + name + '/ (system)');
+          continue;
+        }
         try {
           await dirHandle.removeEntry(name, { recursive: true });
           if (logFn) logFn('DEL  ' + name + (handle.kind === 'directory' ? '/' : ''));
@@ -1170,7 +1175,9 @@ or any active feature-test branch build.
           var pct = 47 + Math.round((ei + 1) / total * 48);
           showProg(prog2, prog2Bar, prog2Txt, pct);
 
-          if (name.indexOf('__MACOSX') >= 0 || name.indexOf('.DS_Store') >= 0) continue;
+          var nameLower = name.toLowerCase();
+          if (nameLower.indexOf('__macosx') >= 0 || nameLower.indexOf('.ds_store') >= 0) continue;
+          if (parts.some(function (p) { return p === '..' || p === '.'; })) { log('SKIP ' + name + ' (unsafe path)'); continue; }
           var baseName = name.split('/').pop();
           if (baseName && baseName.indexOf('._') === 0) continue;
 
@@ -1269,7 +1276,7 @@ or any active feature-test branch build.
         await disconnectP4(ctxB3); ctxB3 = null;
 
         setStat(stat3, '✓ Switched to normal mode.', 'ok');
-        setStat(stat4, '<b>Power-cycle the device</b>: unplug back Port&nbsp;#1, wait 3 s, replug. Then click <b>Connect</b>.');
+        setStat(stat4, 'Press <b>Reset</b> on the back (next to Port&nbsp;#1), then click <b>Connect</b>.');
       } catch (e) {
         console.error(e);
         setStat(stat3, 'Failed: ' + e.message, 'err');
