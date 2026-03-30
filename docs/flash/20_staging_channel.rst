@@ -182,21 +182,16 @@ or any active feature-test branch build.
         color: #374151;
         display: none;
       }
-      .sd-recovery .skip-link {
-        font-size: 0.9em;
-        color: #2563EB;
-        cursor: pointer;
-        text-decoration: underline;
+      .sd-recovery .info-box {
+        font-size: 0.88em;
+        color: #1e40af;
         margin-top: 0.5em;
-        display: inline-block;
-        padding: 0.3em 0.6em;
+        display: block;
+        padding: 0.5em 0.7em;
         background: #eff6ff;
         border-radius: 4px;
         border: 1px solid #bfdbfe;
-      }
-      .sd-recovery .skip-link:hover {
-        color: #1d4ed8;
-        background: #dbeafe;
+        line-height: 1.5;
       }
       .sd-recovery .complete-card {
         border: 2px solid #10b981;
@@ -248,6 +243,9 @@ or any active feature-test branch build.
       body[data-theme="dark"] .sd-recovery .hint-box {
         background: #422006; color: #fbbf24; border-color: #78350f;
       }
+      body[data-theme="dark"] .sd-recovery .info-box {
+        background: #1e3a5f; color: #93c5fd; border-color: #1e3a5f;
+      }
       body[data-theme="dark"] .sd-recovery .file-log {
         background: #0f172a; border-color: #334155; color: #cbd5e1;
       }
@@ -280,6 +278,9 @@ or any active feature-test branch build.
         }
         body:not([data-theme="light"]) .sd-recovery .hint-box {
           background: #422006; color: #fbbf24; border-color: #78350f;
+        }
+        body:not([data-theme="light"]) .sd-recovery .info-box {
+          background: #1e3a5f; color: #93c5fd; border-color: #1e3a5f;
         }
         body:not([data-theme="light"]) .sd-recovery .file-log {
           background: #0f172a; border-color: #334155; color: #cbd5e1;
@@ -412,8 +413,10 @@ or any active feature-test branch build.
           Connect both USB-C cables: <b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).
           This step flashes the USB Mass Storage firmware via the front port. After reboot the
           SD card will appear as a removable drive on the <b>back port</b>.
+          <div class="info-box">
+            📌 In the port picker, select <b>"USB JTAG/serial debug unit"</b> (not "Debug Probe").
+          </div>
           <div class="hint-box">
-            📌 In the port picker, select <b>"USB JTAG/serial debug unit"</b> (not "Debug Probe").<br>
             <b>Port not showing?</b> Hold <b>BOOT</b> (between Port&nbsp;#1 and #2) → press <b>Reset</b> → release <b>BOOT</b> → press <b>Reset</b> again.
           </div>
         </div>
