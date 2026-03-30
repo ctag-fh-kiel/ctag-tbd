@@ -798,10 +798,10 @@ void SoundProcessorManager::RefreshSampleRom() {
     ctagSampleRom::RefreshDataStructure();
 }
 
-void SoundProcessorManager::SetTrackMachine(const int trackIndex, const string &synthID) {
+void SoundProcessorManager::SetTrackMachine(const int trackIndex, const string &synthID, float volumeMultiplier) {
     if (sp[0] != nullptr) {
         // xSemaphoreTake(processMutex, portMAX_DELAY);
-        sp[0]->setTrackMachine(trackIndex, synthID);
+        sp[0]->setTrackMachine(trackIndex, synthID, volumeMultiplier);
         // xSemaphoreGive(processMutex);
     }
 }

@@ -76,7 +76,7 @@ static void read_all_json_in_dir(const char *dirPath, Value &outArray,
         return;
     }
 
-    char pathBuf[256];
+    char pathBuf[270];
     char *fileBuf = (char *)heap_caps_malloc(8192, MALLOC_CAP_SPIRAM);
     if (!fileBuf) {
         closedir(dir);
@@ -91,7 +91,8 @@ static void read_all_json_in_dir(const char *dirPath, Value &outArray,
         if (nlen < 6 || strcasecmp(ent->d_name + nlen - 5, ".json") != 0)
             continue;
 
-        snprintf(pathBuf, sizeof(pathBuf), "%s/%s", dirPath, ent->d_name);
+        snprintf(pathBuf, sizeof(pathBuf) - 1, "%s/%s", dirPath, ent->d_name);
+        pathBuf[sizeof(pathBuf) - 1] = '\0';
         FILE *fp = fopen(pathBuf, "r");
         if (!fp) continue;
 

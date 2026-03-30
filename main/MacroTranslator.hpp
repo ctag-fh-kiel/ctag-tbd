@@ -55,7 +55,7 @@ namespace CTAG {
                 CTAG::SP::ctagSoundProcessor *soundProcessor;
 
                 // void SetTrackSampleBank(const int trackIndex, const std::string bankName);
-                void SetTrackMachine(const int trackIndex, const std::string synthID);
+                void SetTrackMachine(const int trackIndex, const std::string synthID, float volumeMultiplier);
                 void SetTrackMacroDefinition(const int trackIndex, MacroDeviceDefinition *def);
                 void SetTrackParameter(const int trackIndex, int parameterIndex, int32_t value);
                 void SetTrackParametersFromJSON(const std::string &parametersJSON);

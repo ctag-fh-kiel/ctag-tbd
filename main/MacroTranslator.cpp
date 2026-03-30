@@ -91,7 +91,7 @@ MacroTranslator::MacroTranslator() {
 MacroTranslator::~MacroTranslator() {
 };
 
-void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string synthID) {
+void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string synthID, float volumeMultiplier) {
     if (synthID == trackMachineId[trackIndex]) {
         return;
     }
@@ -147,8 +147,8 @@ void MacroTranslator::SetTrackMacroDefinition(const int trackIndex, MacroDeviceD
     // ESP_LOGI("MacroTranslator", "Setting track %d macro definition 0x%08X",
     // trackIndex, (uintptr_t)def);
     if (def != nullptr) {
-        ESP_LOGI("MacroTranslator", "Macro def: \"%s\" \"%s\" \"%s\"",
-            def->id.c_str(), def->name.c_str(), def->synthId.c_str());
+        ESP_LOGI("MacroTranslator", "Macro def: \"%s\" \"%s\" \"%s\" %1.1fx",
+            def->id.c_str(), def->name.c_str(), def->synthId.c_str(), def->volumeMultiplier);
     }
 
     if (definition[trackIndex] != nullptr) {
@@ -157,7 +157,7 @@ void MacroTranslator::SetTrackMacroDefinition(const int trackIndex, MacroDeviceD
     }
 
     if (def == nullptr) {
-        SetTrackMachine(trackIndex, "");
+        SetTrackMachine(trackIndex, "", 1.0f);
         return;
     }
 
@@ -207,9 +207,7 @@ void MacroTranslator::SetTrackMacroDefinition(const int trackIndex, MacroDeviceD
     // }
     // ESP_LOGI("MacroTranslator", "dummy 8");
 
-
-    SetTrackMachine(trackIndex, def->synthId);
-
+    SetTrackMachine(trackIndex, def->synthId, def->volumeMultiplier);
 
     // ESP_LOGI("MacroTranslator", "dummy 9");
 
@@ -308,7 +306,7 @@ void MacroTranslator::SetTrackParametersFromJSON(const std::string &parametersJS
     if (d.HasMember("machine")) {
         std::string machine = d["machine"].GetString();
         ESP_LOGI("MacroTranslator", "Setting track %d machine to: %s", trackIndex, machine.c_str());
-        this->SetTrackMachine(trackIndex, machine);
+        this->SetTrackMachine(trackIndex, machine, 1.0f);
     }
 
     if (d.HasMember("parameters")) {

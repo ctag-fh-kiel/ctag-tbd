@@ -119,7 +119,7 @@ namespace CTAG {
             static void EnablePluginProcessing();
             static void RefreshSampleRom();
 
-            static void SetTrackMachine(const int trackIndex, const string &synthID);
+            static void SetTrackMachine(const int trackIndex, const string &synthID, float volumeMultiplier);
 #if CONFIG_TBD_USE_SD_CARD
             static void SetTrackMacro(const int trackIndex, const string &macroDefinitionID);
             static void SetTrackParametersFromJSON(const string &parametersJSON);
