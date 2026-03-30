@@ -453,7 +453,8 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
           Press the <b>Reset button</b> on the back (next to Port&nbsp;#1) to restart the device.
-          Then click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b> in the port picker.
+          Then click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b> in the port picker.<br>
+          <small>📌 Port not showing? Hold <b>BOOT</b> (between Port&nbsp;#1 and #2) → press <b>Reset</b> → release <b>BOOT</b> → press <b>Reset</b> again.</small>
         </div>
         <div class="btn-row">
           <button id="btn4Connect" class="btn-primary">Connect</button>
@@ -1100,12 +1101,12 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
 
           var nameLower = name.toLowerCase();
           if (nameLower.indexOf('__macosx') >= 0 || nameLower.indexOf('.ds_store') >= 0) continue;
-          if (parts.some(function (p) { return p === '..' || p === '.'; })) { log('SKIP ' + name + ' (unsafe path)'); continue; }
           var baseName = name.split('/').pop();
           if (baseName && baseName.indexOf('._') === 0) continue;
 
           var parts = name.split('/').filter(function (s) { return s.length > 0; });
           if (parts.length === 0) continue;
+          if (parts.some(function (p) { return p === '..' || p === '.'; })) { log('SKIP ' + name + ' (unsafe path)'); continue; }
 
           try {
             if (zipEntry.dir) {
