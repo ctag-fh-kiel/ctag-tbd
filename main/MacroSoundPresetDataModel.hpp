@@ -21,33 +21,33 @@ respective component folders / files if different from this license.
 #include <string>
 #include "ctagDataModelBase.hpp"
 
+
 namespace CTAG {
     namespace MACROPRESETS {
-        class MacroSoundPreset;
-        class MacroSoundPresetGroup;
-
-        class SynthDefinitionDataModel;
-        class MacroDeviceDefinitionDataModel;
+        const int MaxSoundPresets = 256;
+        const int MaxSoundPresetGroups = 64;
 
         class MacroSoundPresetDataModel final : public CTAG::SP::ctagDataModelBase{
             private:
-                std::vector<MacroSoundPreset*> presets;
-                std::vector<MacroSoundPresetGroup*> groups;
+                struct MacroSoundPreset* presets;
+                int presetsUsed; 
+                struct MacroSoundPresetGroup* groups;
+                int groupsUsed;
             public:
-                MacroSoundPresetDataModel();
-                ~MacroSoundPresetDataModel();
-                void ReloadSoundPresets( MacroDeviceDefinitionDataModel *macromodel,  SynthDefinitionDataModel *synthmodel);
+                void Init();
+                void ReloadSoundPresets();
                 int GetNumberOfSoundPresetGroups();
                 void GetMacroSoundPresetGroupId(int index, std::string *idOutput);
                 int GetNumberOfSoundPresets();
                 void GetPresetIndexJson(int trackIndex, std::string *output);
                 void SerializeListJSON(std::string *output);
                 void SerializeItemJSON(const std::string &id, std::string *output);
-                MacroSoundPreset *LoadMacroSoundPreset(const std::string id);
+                void LoadMacroSoundPreset(MacroSoundPreset *target, const std::string id);
                 bool UpdatePreset(const std::string &jsonString);
                 void DeleteItem(const std::string &id);
-                bool SerializeListInto(int trackIndex, rapidjson::Document &doc);
+                void SerializeListInto(int trackIndex, rapidjson::Document &doc);
                 bool PutSamplePresetJSON(const string &presetJSON);
+                static MacroSoundPresetDataModel &instance();
         };
     }
 }

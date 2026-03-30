@@ -16,7 +16,6 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "MacroSoundPresetDataModel.hpp"
-#include "MacroSoundPresetGroup.hpp"
 #include "MacroSoundPreset.hpp"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/document.h"
@@ -29,6 +28,7 @@ respective component folders / files if different from this license.
 #include "SynthDefinitionDataModel.hpp"
 #include "MacroDeviceDefinition.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
+#include "MacroSoundPreset.hpp"
 #include "ctagResources.hpp"
 
 
@@ -36,27 +36,27 @@ using namespace CTAG::MACROPRESETS;
 using namespace rapidjson;
 
 
-MacroSoundPresetDataModel::MacroSoundPresetDataModel() {
-    presets.clear();
-    groups.clear();
-}
-
-MacroSoundPresetDataModel::~MacroSoundPresetDataModel() {
+void MacroSoundPresetDataModel::Init() {
+    presets = (MacroSoundPreset*) heap_caps_malloc(sizeof(MacroSoundPreset) * MaxSoundPresets, MALLOC_CAP_32BIT | MALLOC_CAP_SPIRAM);
+    groups = (MacroSoundPresetGroup*) heap_caps_malloc(sizeof(MacroSoundPresetGroup) * MaxSoundPresetGroups, MALLOC_CAP_32BIT | MALLOC_CAP_SPIRAM);
+    for(int i=0; i<MaxSoundPresets; i++) {
+        MacroSoundPresetUtils::MacroSoundPreset_Reset(&presets[i]);
+    }
+    for(int i=0; i<MaxSoundPresetGroups; i++) {
+        MacroSoundPresetUtils::MacroSoundPresetGroup_Reset(&groups[i]);
+    }
 }
 
 int compareGroups(const void *a, const void *b) {
-    MacroSoundPresetGroup *ga = *(MacroSoundPresetGroup**)a;
-    MacroSoundPresetGroup *gb = *(MacroSoundPresetGroup**)b;
-    return ga->displayName.compare(gb->displayName);
+    struct MacroSoundPresetGroup *ga = (struct MacroSoundPresetGroup*)a;
+    struct MacroSoundPresetGroup *gb = (struct MacroSoundPresetGroup*)b;
+    return strcmp(ga->displayName, gb->displayName);
 }
 
-void MacroSoundPresetDataModel::ReloadSoundPresets(
-    MacroDeviceDefinitionDataModel *macromodel,
-    SynthDefinitionDataModel *synthmodel
-) {
+void MacroSoundPresetDataModel::ReloadSoundPresets() {
     ESP_LOGI("MacroSoundPresetDataModel", "Trying to read macro sound preset file");
 
-    ESP_LOGI("MacroSoundPresetDataModel", "Before clear: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGI("MacroSoundPresetDataModel", "Before reload: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
         heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
         heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -64,124 +64,126 @@ void MacroSoundPresetDataModel::ReloadSoundPresets(
 
     Document d;
 
-    for(MacroSoundPreset *p : presets) {
-        delete p;
+    for(int i=0; i<MaxSoundPresets; i++) {
+        MacroSoundPresetUtils::MacroSoundPreset_Reset(&presets[i]);
     }
-    presets.clear();
-    for(MacroSoundPresetGroup *g : groups) {
-        delete g;
+    for(int i=0; i<MaxSoundPresetGroups; i++) {
+        MacroSoundPresetUtils::MacroSoundPresetGroup_Reset(&groups[i]);
     }
-    groups.clear();
-
-    ESP_LOGI("MacroSoundPresetDataModel", "After clear: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-        heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-        heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-        heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-        heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 
     DIR *dir;
     struct dirent *ent;
     Value sparray(kArrayType);
-    std::string path = std::string(CTAG::RESOURCES::sdcardRoot + std::string("/data/macrosoundpresets"));
+    int pindex = 0;
+    int gindex = 0;
+    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
     if ((dir = opendir(path.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             std::string fn(ent->d_name);
 
-            ESP_LOGI("MacroSoundPresetDataModel", "In loop: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-                heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-                heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-                heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-                heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-
             Document d;
             loadJSON(d, path + "/" + fn);
             if(!d.HasParseError()) {
-                MacroSoundPreset *preset = new MacroSoundPreset();
-                if(preset->DeserializeJSON(d)) {
-                    ESP_LOGI("MacroSoundPresetDataModel", "Got sound preset: #%s \"%s\"", preset->id.c_str(), preset->displayName.c_str());
-                    presets.push_back(preset);
+                if(MacroSoundPresetUtils::MacroSoundPreset_DeserializeJSON(&presets[pindex], d)) {
+                    ESP_LOGI("MacroSoundPresetDataModel", "Got sound preset: %d id: %s \"%s\"", pindex, presets[pindex].id, presets[pindex].displayName);
 
                     // Find existing or create new group
-                    MacroSoundPresetGroup *group = nullptr;
-                    for(MacroSoundPresetGroup *g : groups) {
-                        if (g->id == preset->groupName) {
-                            group = g;
+                    gindex = -1;
+                    for(int i=0; i<MaxSoundPresetGroups; i++) {
+                        if (strcmp(groups[i].id, presets[pindex].groupName) == 0) {
+                            gindex = i;
                             break;
                         }
                     }
-                    if (group != nullptr) {
-                        group->fileIds.push_back(preset->id);
-                    } else {
-                        ESP_LOGI("MacroSoundPresetDataModel", "Found new group: \"%s\"", preset->groupName.c_str());
-                        group = new MacroSoundPresetGroup();
-                        group->id = preset->groupName;
-                        group->displayName = preset->groupName;
-                        group->fileIds.push_back(preset->id);
-                        groups.push_back(group);
+                    if (gindex == -1) {
+                        for(int i=0; i<MaxSoundPresetGroups; i++) {
+                            if (groups[i].id[0] == '\0') {
+                                gindex = i;
+                                break;
+                            }
+                        }
+                        strcpy(groups[gindex].id, presets[pindex].groupName);
+                        strcpy(groups[gindex].displayName, presets[pindex].groupName);
+                        groups[gindex].validTracksBitmask = 0;
+                        groups[gindex].numFileIds = 0;
                     }
 
-                    MacroDeviceDefinition *macrodef = macromodel->LoadMacroDeviceDefinition(preset->macroDeviceId);
+                    strcpy(groups[gindex].fileIds[groups[gindex].numFileIds], presets[pindex].id);
+                    groups[gindex].numFileIds++;
+
+                    MacroDeviceDefinition *macrodef = MacroDeviceDefinitionDataModel::instance()
+                        .GetMacroDeviceDefinition((const char *)&presets[pindex].macroDeviceId);
                     if (macrodef == nullptr) {
-                        ESP_LOGE("MacroSoundPresetDataModel", "  Could not find macro device definition with id %s for preset %s", preset->macroDeviceId.c_str(), preset->id.c_str());
+                        ESP_LOGE("MacroSoundPresetDataModel", "  Could not find macro device definition with id %s for preset %s", presets[pindex].macroDeviceId, presets[pindex].id);
                     } else {
-                        ESP_LOGI("MacroSoundPresetDataModel", "  Found macro device definition with id %s for preset %s", preset->macroDeviceId.c_str(), preset->id.c_str());
+                        ESP_LOGI("MacroSoundPresetDataModel", "  Found macro device definition with id %s for preset %s", presets[pindex].macroDeviceId, presets[pindex].id);
                         // figure out which tracks this preset is valid on.
                         for (int i = 0; i < 16; i++) {
-                            TrackDefinition *trackdef = synthmodel->GetTrackDefinition(i);
+                            TrackDefinition *trackdef = SynthDefinitionDataModel::instance()->GetTrackDefinition(i);
                             if (trackdef != nullptr) {
-                                for(std::string mid : trackdef->macroMachineIds) {
-                                    if (mid == macrodef->synthId) {
-                                        // ESP_LOGI("MacroSoundPresetDataModel", "    Track %d has macro machine id %s", i, mid.c_str());
-                                        preset->validTracks.insert(i);
-                                        group->validTracks.insert(i);
+                                for(int j=0; j<MaxTrackDefinitionMachineIds; j++) {
+                                    if (trackdef->macroMachineIds[j][0] != '\0') {
+                                        if (strcmp(trackdef->macroMachineIds[j], macrodef->synthId) == 0) {
+                                            ESP_LOGD("MacroSoundPresetDataModel", "    Marking as supported on track %d (pindex %d, gindex %d)\n", i, pindex, gindex);
+                                            presets[pindex].validTracksBitmask |= (1 << i);
+                                            groups[gindex].validTracksBitmask |= (1 << i);
+                                        }
                                     }
                                 }
                             }
                         }
-                        delete macrodef;
+                        ESP_LOGD("MacroSoundPresetDataModel", "    gindex %d trackmask %d", gindex, groups[gindex].validTracksBitmask);
+                        ESP_LOGD("MacroSoundPresetDataModel", "    pindex %d trackmask %d", pindex, presets[pindex].validTracksBitmask);
                     }
+
+                    pindex ++;
                 } else {
                     ESP_LOGE("MacroSoundPresetDataModel", "Failed to deserialize macro sound preset from file %s", fn.c_str());
-                    delete preset;
                 }
             } else {
-                ESP_LOGI("MacroSoundPresetDataModel", "Failed to parse preset file: %s", fn.c_str());
+                ESP_LOGE("MacroSoundPresetDataModel", "Failed to parse preset file: %s", fn.c_str());
             }
         }
         closedir(dir);
+        presetsUsed = pindex;
 
         // TODO: Sort groups
-        qsort(groups.data(), groups.size(), sizeof(MacroSoundPresetGroup*), compareGroups);
+
+        int gcount = 0;
+        // find number of groups
+        for(int g=0; g<MaxSoundPresetGroups; g++) {
+            if (groups[g].id[0] != '\0') {
+                gcount++;
+            }
+        }
+        qsort(groups, gcount, sizeof(struct MacroSoundPresetGroup), compareGroups);
+        groupsUsed = gcount;
     } else {
         ESP_LOGE("MacroSoundPresetDataModel", "Could not open directory %s", path.c_str());
     }
 
-    ESP_LOGI("MacroSoundPresetDataModel", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGI("MacroSoundPresetDataModel", "After reload: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
         heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
         heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
         heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 }
 
-MacroSoundPreset *MacroSoundPresetDataModel::LoadMacroSoundPreset(std::string id) {
-    std::string path = std::string(CTAG::RESOURCES::sdcardRoot + std::string("/data/macrosoundpresets"));
-    std::string filename = path + "/" + id + ".json";
+void MacroSoundPresetDataModel::LoadMacroSoundPreset(MacroSoundPreset *target, std::string id) {
+    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
+    const std::string filename = path + "/" + id + ".json";
 
     Document d;
     loadJSON(d, filename);
     if(d.HasParseError()) {
         ESP_LOGE("MacroSoundPresetDataModel", "Failed to parse JSON file %s", filename.c_str());
-        return nullptr;
+        return;
     }
 
-    MacroSoundPreset *preset = new MacroSoundPreset();
-    if(!preset->DeserializeJSON(d)) {
+    if(!MacroSoundPresetUtils::MacroSoundPreset_DeserializeJSON(target, d)) {
         ESP_LOGE("MacroSoundPresetDataModel", "Failed to deserialize macro sound preset from file %s", filename.c_str());
-        delete preset;
-        return nullptr;
+        return;
     }
-
-    return preset;
 }
 
 int MacroSoundPresetDataModel::GetNumberOfSoundPresetGroups() {
@@ -201,14 +203,15 @@ void MacroSoundPresetDataModel::GetPresetIndexJson(int trackIndex, std::string *
 
     doc.SetObject();
 
-    SerializeListInto(trackIndex, doc);
-
     doc.AddMember("track", trackIndex, doc.GetAllocator());
+
+    SerializeListInto(trackIndex, doc);
 
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);
     doc.Accept(writer);
-    ESP_LOGD("MacroSoundPresetDataModel", "JSON string %s", buffer.GetString());
+
+    ESP_LOGI("MacroSoundPresetDataModel", "GetPresetIndexJson JSON: %s", buffer.GetString());
 
     output->assign(buffer.GetString());
 }
@@ -218,19 +221,13 @@ void MacroSoundPresetDataModel::SerializeListJSON(std::string *output) {
 
     doc.SetObject();
 
-
-
     Value presetsarray(kArrayType);
     doc.AddMember("presets", presetsarray, doc.GetAllocator());
-    for(MacroSoundPreset *s : presets) {
-        doc["presets"].PushBack(Value(s->id.c_str(), doc.GetAllocator()), doc.GetAllocator());
-        // Document d2;
-        // if (s->SerializeJSONInto(d2)) {
-        //     Value copyOfd2(d2, doc.GetAllocator());
-        //     doc["presets"].PushBack(copyOfd2.Move(), doc.GetAllocator());
-        // } else {
-        //     ESP_LOGE("MacroSoundPresetDataModel", "Failed to serialize macro sound preset #%s \"%s\"", s->id.c_str(), s->displayName.c_str());
-        // }
+    for(int i=0; i<MaxSoundPresets; i++) {
+        if (presets[i].id[0] == '\0') {
+            continue;
+        }
+        doc["presets"].PushBack(Value(presets[i].id, doc.GetAllocator()), doc.GetAllocator());
     }
 
     StringBuffer buffer;
@@ -257,8 +254,8 @@ bool MacroSoundPresetDataModel::UpdatePreset(const std::string &jsonString) {
 
     // just save the file now when we know the id
 
-    std::string path = std::string(CTAG::RESOURCES::sdcardRoot + std::string("/data/macrosoundpresets"));
-    std::string filename = path + "/" + id + ".json";
+    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
+    const std::string filename = path + "/" + id + ".json";
 
     fp = fopen(filename.c_str(), "w");
     if (fp == NULL) {
@@ -275,8 +272,8 @@ bool MacroSoundPresetDataModel::UpdatePreset(const std::string &jsonString) {
 
 
 void MacroSoundPresetDataModel::SerializeItemJSON(const std::string &id, std::string *output) {
-    std::string path = std::string(CTAG::RESOURCES::sdcardRoot + std::string("/data/macrosoundpresets"));
-    std::string filename = path + "/" + id + ".json";
+    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
+    const std::string filename = path + "/" + id + ".json";
 
     output->assign("");
 
@@ -311,48 +308,54 @@ void MacroSoundPresetDataModel::SerializeItemJSON(const std::string &id, std::st
 }
 
 void MacroSoundPresetDataModel::DeleteItem(const std::string &id) {
-    std::string path = std::string(CTAG::RESOURCES::sdcardRoot + std::string("/data/macrosoundpresets"));
-    std::string filename = path + "/" + id + ".json";
+    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
+    const std::string filename = path + "/" + id + ".json";
     ESP_LOGI("MacroSoundPresetDataModel", "Deleting file: %s", filename.c_str());
     unlink(filename.c_str());
 }
 
-bool MacroSoundPresetDataModel::SerializeListInto(int trackIndex, rapidjson::Document &doc) {
+void MacroSoundPresetDataModel::SerializeListInto(int trackIndex, rapidjson::Document &doc) {
     Value groupsarray(kArrayType);
     doc.AddMember("presetgroups", groupsarray, doc.GetAllocator());
 
-    for(MacroSoundPresetGroup *g : groups) {
-        if (!g->validTracks.contains(trackIndex)) {
+    for(int gi=0; gi<MaxSoundPresetGroups; gi++) {
+        if (groups[gi].id[0] == '\0') {
+            continue;
+        }
+
+        if (!(groups[gi].validTracksBitmask & (1 << trackIndex))) {
             continue;
         }
 
         Value groupobj(kObjectType);
-        groupobj.AddMember("id", Value(g->id.c_str(), doc.GetAllocator()), doc.GetAllocator());
-        groupobj.AddMember("name", Value(g->displayName.c_str(), doc.GetAllocator()), doc.GetAllocator());
+        groupobj.AddMember("id", Value(groups[gi].id, doc.GetAllocator()), doc.GetAllocator());
+        groupobj.AddMember("name", Value(groups[gi].displayName, doc.GetAllocator()), doc.GetAllocator());
 
         Value presetsarray(kArrayType);
         groupobj.AddMember("presets", presetsarray, doc.GetAllocator());
 
-        for(MacroSoundPreset *p : presets) {
-            if (!p->validTracks.contains(trackIndex)) {
+        for(int pi=0; pi<MaxSoundPresets; pi++) {
+            if (presets[pi].id[0] == '\0') {
                 continue;
             }
 
-            if (p->groupName != g->displayName) {
+            if (!(presets[pi].validTracksBitmask & (1 << trackIndex))) {
+                continue;
+            }
+
+            if (strcmp(presets[pi].groupName, groups[gi].displayName) != 0) {
                 continue;
             }
 
             Value presetobj(kObjectType);
-            presetobj.AddMember("id", Value(p->id.c_str(), doc.GetAllocator()), doc.GetAllocator());
-            presetobj.AddMember("name", Value(p->displayName.c_str(), doc.GetAllocator()), doc.GetAllocator());
+            presetobj.AddMember("id", Value(presets[pi].id, doc.GetAllocator()), doc.GetAllocator());
+            presetobj.AddMember("name", Value(presets[pi].displayName, doc.GetAllocator()), doc.GetAllocator());
             // TODO: Use name
             groupobj["presets"].PushBack(presetobj, doc.GetAllocator());
         }
 
         doc["presetgroups"].PushBack(groupobj, doc.GetAllocator());
     }
-
-    return false;
 }
 
 bool MacroSoundPresetDataModel::PutSamplePresetJSON(const string &presetJSON) {
@@ -364,14 +367,13 @@ bool MacroSoundPresetDataModel::PutSamplePresetJSON(const string &presetJSON) {
     }
 
     MacroSoundPreset mp;
-    if (!mp.DeserializeJSON(d)) {
+    if (!MacroSoundPresetUtils::MacroSoundPreset_DeserializeJSON(&mp, d)) {
         ESP_LOGE("MacroSoundPresetDataModel", "Failed to deserialize MacroSoundPreset from JSON string: %s", presetJSON.c_str());
         return false;
     }
 
-    std::string id = mp.id;
-    std::string path = std::string(CTAG::RESOURCES::sdcardRoot +
-        std::string("/data/macrosoundpresets/") + id + ".json");
+    const std::string path = CTAG::RESOURCES::sdcardRoot +
+        "/data/macrosoundpresets/" + std::string(mp.id) + ".json";
 
     FILE *f = fopen(path.c_str(), "w");
     if (!f) {
@@ -384,4 +386,9 @@ bool MacroSoundPresetDataModel::PutSamplePresetJSON(const string &presetJSON) {
     ESP_LOGI("SpiAPI", "GetTrackDefaultPresets: wrote %ld bytes to %s", presetJSON.size(), path.c_str());
 
     return true;
+}
+
+MacroSoundPresetDataModel &MacroSoundPresetDataModel::instance() {
+    static MacroSoundPresetDataModel instance;
+    return instance;
 }

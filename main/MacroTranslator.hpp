@@ -41,17 +41,13 @@ namespace CTAG {
                 char trackMachineId[16][16];
                 char trackSampleBankName[16][16];
                 uint16_t trackSampleBankIndex[16];
-                MacroDeviceDefinition *definition[16];
+                MacroDeviceDefinition *definitions;
 
                 void parseIncomingMidiMessages(const uint8_t *buf, const size_t len);
 
             public:
-                MacroTranslator();
-                ~MacroTranslator();
+                void Init();
 
-                std::shared_ptr<SynthDefinitionDataModel> synthDefinitionModel;
-                std::shared_ptr<MacroSoundPresetDataModel> macroSoundDefinitionModel;
-                std::shared_ptr<MacroDeviceDefinitionDataModel> macroDeviceDefinitionModel;
                 CTAG::SP::ctagSoundProcessor *soundProcessor;
 
                 // void SetTrackSampleBank(const int trackIndex, const std::string bankName);
@@ -67,6 +63,8 @@ namespace CTAG {
 
                 void SerializeStateJSON(std::string *output);
                 bool SerializeStateInto(rapidjson::Document &doc);
+
+                static MacroTranslator &instance();
         };
     }
 }

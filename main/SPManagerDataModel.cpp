@@ -52,13 +52,14 @@ void SPManagerDataModel::getSoundProcessors() {
     struct dirent *ent;
     Value sparray(kArrayType);
     m.AddMember("availableProcessors", sparray, m.GetAllocator());
-    if ((dir = opendir(string(CTAG::RESOURCES::sdcardRoot + string("/data/sp")).c_str())) != NULL) {
+    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/sp";
+    if ((dir = opendir(path.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             string fn(ent->d_name);
             if (fn.find("mui-") != string::npos) {
                 ESP_LOGD("SPModel", "Filename: %s", fn.c_str());
                 Document d;
-                loadJSON(d, CTAG::RESOURCES::sdcardRoot + "/data/sp/" + fn);
+                loadJSON(d, path + "/" + fn);
                 Value obj(kObjectType);
                 Value id(d["id"].GetString(), d.GetAllocator());
                 Value name(d["name"].GetString(), d.GetAllocator());
@@ -262,7 +263,7 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
     Document presets;
     presets.Parse(data);
     if(presets.HasParseError()) return;
-    storeJSON(presets, string(CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".json"));
+    storeJSON(presets, CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".json");
 }
 
 bool SPManagerDataModel::HasPluginID(const string &id) {

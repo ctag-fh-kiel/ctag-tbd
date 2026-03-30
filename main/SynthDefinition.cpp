@@ -24,62 +24,46 @@ using namespace CTAG::MACROPRESETS;
 using namespace rapidjson;
 
 
-SynthParameter::SynthParameter() {
-    id = "";
-    name = "";
-    type = SynthParameterType_None;
-    defaultValue = 0;
-    cc = 0;
-}
-
-SynthParameter::~SynthParameter() {
+void SynthParameter_Reset(struct SynthParameter *param) {
+    memset(param->id, 0, sizeof(param->id));
+    memset(param->name, 0, sizeof(param->name));
+    param->type = SynthParameterType_None;
+    param->defaultValue = 0;
+    param->cc = 0;
 }
 
 
-
-
-
-
-SynthDefinition::SynthDefinition() {
-    id = "";
-    name = "";
-    type = SynthType_None;
-    parameters.clear();
+void CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_Reset(struct SynthDefinition *def) {
+    memset(def->id, 0, sizeof(def->id));
+    memset(def->name, 0, sizeof(def->name));
+    def->type = SynthType_None;
+    for(int pi=0; pi<MaxSynthDefinitionParameters; pi++) {
+        SynthParameter_Reset(&def->parameters[pi]);
+    }
 }
 
-SynthDefinition::~SynthDefinition() {
-}
-
-bool SynthDefinition::DeserializeJSON(const Value &jsonelement) {
+bool CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_DeserializeJSON(struct SynthDefinition *def, const Value &jsonelement) {
     if (!jsonelement.HasMember("id")) return false;
     if (!jsonelement["id"].IsString()) return false;
-    id = jsonelement["id"].GetString();
+    strncpy(def->id, jsonelement["id"].GetString(), sizeof(def->id) - 1);
 
     if (!jsonelement.HasMember("name")) return false;
     if (!jsonelement["name"].IsString()) return false;
-    name = jsonelement["name"].GetString();
+    strncpy(def->name, jsonelement["name"].GetString(), sizeof(def->name) - 1);
 
     if (!jsonelement.HasMember("type")) return false;
     if (!jsonelement["type"].IsString()) return false;
 
-    std::string typestring = jsonelement["name"].GetString();
-    type = SynthType_None;
+    std::string typestring = jsonelement["type"].GetString();
+    def->type = SynthType_None;
     if (typestring == "synth") {
-        type = SynthType_Synth;
+        def->type = SynthType_Synth;
     }
     if (typestring == "drum") {
-        type = SynthType_Drum;
+        def->type = SynthType_Drum;
     }
-    // type = static_cast<SynthType>(jsonelement["type"].GetInt());
 
-    ESP_LOGI("SynthDefinition", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-
-
-    parameters.clear();
+    int index = 0;
     if (jsonelement.HasMember("parameters") && jsonelement["parameters"].IsArray()) {
         for (auto &v : jsonelement["parameters"].GetArray()) {
             if (!v.HasMember("id")) return false;
@@ -88,37 +72,22 @@ bool SynthDefinition::DeserializeJSON(const Value &jsonelement) {
             if (!v.HasMember("def")) return false;
             if (!v.HasMember("ctrl")) return false;
 
-            SynthParameter *p = new SynthParameter();
-            p->id = v["id"].GetString();
-            p->name = v["name"].GetString();
-            if (v["type"].GetString() == std::string("cc")) {
+            SynthParameter *p = &def->parameters[index];
+            strncpy(p->id, v["id"].GetString(), sizeof(p->id) - 1);
+            strncpy(p->name, v["name"].GetString(), sizeof(p->name) - 1);
+            std::string typestring = v["type"].GetString();
+            if (typestring == "cc") {
                 p->type = SynthParameterType_CC;
-            } else if (v["type"].GetString() == std::string("nrpm")) {
+            } else if (typestring == "nrpm") {
                 p->type = SynthParameterType_NRPM;
             } else {
                 p->type = SynthParameterType_None;
             }
             p->defaultValue = v["def"].GetUint();
             p->cc = v["ctrl"].GetUint();
-
-            parameters.push_back(p);
+            index ++;
         }
     }
 
     return true;
 }
-
-// bool SynthDefinition::SerializeJSONInto(const rapidjson::Value &jsonelement, rapidjson::Document::AllocatorType &allocator) {
-//     // Implementation goes here
-
-//     // Value obj(kObjectType);
-//     // Value id(jsonelement["id"].GetString(), allocator);
-//     // Value name(jsonelement["name"].GetString(), allocator);
-//     // Value hint(kStringType);
-
-//     // jsonelement.AddMember("id", id.Move(), allocator);
-//     // jsonelement.AddMember("name", name.Move(), allocator);
-//     // // jsonelement.PushBack(obj.Move(), allocator);
-
-//     return true;
-// }

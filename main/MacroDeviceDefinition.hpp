@@ -23,6 +23,8 @@ respective component folders / files if different from this license.
 
 namespace CTAG {
     namespace MACROPRESETS {
+        const int MaxOutputMappingSources = 8;
+        const int MaxOutputMappings = 16;
 
         // Response curve types for parameter mapping
         enum class MacroCurveType : uint8_t {
@@ -31,47 +33,34 @@ namespace CTAG {
             Exp    = 2,   // Exponential: for decay/envelope times (resolution for short times)
         };
 
-        class MacroDeviceOutputMappingSource {
-            public:
-                uint8_t parameterIndex;
-                int32_t multiplier;
-                int32_t divider;
-                MacroCurveType curve;
-
-            public:
-                MacroDeviceOutputMappingSource();
-                ~MacroDeviceOutputMappingSource();
-                bool DeserializeJSON(const rapidjson::Value &jsonelement);
-                // bool SerializeJSONInto(rapidjson::Document &doc);
+        struct MacroDeviceOutputMappingSource {
+            uint8_t parameterIndex;
+            int32_t multiplier;
+            int32_t divider;
+            MacroCurveType curve;
         };
 
-        class MacroDeviceOutputMapping {
-            public:
-                int ctrl;
-                int startValue;
-                std::vector<MacroDeviceOutputMappingSource> sources;
-
-            public:
-                MacroDeviceOutputMapping();
-                ~MacroDeviceOutputMapping();
-                bool DeserializeJSON(const rapidjson::Value &jsonelement);
-                // bool SerializeJSONInto(rapidjson::Document &doc);
+        struct MacroDeviceOutputMapping {
+            uint8_t ctrl;
+            int16_t startValue;
+            struct MacroDeviceOutputMappingSource sources[MaxOutputMappingSources];
         };
 
-        class MacroDeviceDefinition {
+        struct MacroDeviceDefinition {
+            char id[16];
+            char name[32];
+            char synthId[16];
+            float volumeMultiplier;
+            struct MacroDeviceOutputMapping outputMappings[MaxOutputMappings];
+        };
+
+        class MacroDeviceDefinitionUtils final {
             public:
-                std::string id;
-                std::string name;
-                std::string synthId;
-                float volumeMultiplier;
-                // std::vector<MacroDeviceParameterGroup> parameterGroups;
-                std::vector<MacroDeviceOutputMapping> outputMappings;
-            public:
-                MacroDeviceDefinition();
-                ~MacroDeviceDefinition();
-                MacroDeviceDefinition *copy();
-                bool DeserializeJSON(const rapidjson::Value &jsonelement);
-                // bool SerializeJSONInto(rapidjson::Document &doc);
+            MacroDeviceDefinitionUtils() = delete;
+
+            static void MacroDeviceDefinition_CopyInto(const struct MacroDeviceDefinition *source, struct MacroDeviceDefinition *target);
+            static void MacroDeviceDefinition_Reset(struct MacroDeviceDefinition *def);
+            static bool MacroDeviceDefinition_DeserializeJSON(struct MacroDeviceDefinition *def, const rapidjson::Value &jsonelement);
         };
     }
 }

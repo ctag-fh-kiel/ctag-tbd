@@ -23,22 +23,23 @@ respective component folders / files if different from this license.
 
 namespace CTAG {
     namespace MACROPRESETS {
-        class TrackDefinition {
-            public:
-                int index;
-                std::string name;
-                int midiChannel;
-                int drumNote;
-                int baseCC;
-                std::string activeMachineId;
-                std::vector<std::string> macroMachineIds;
-                // std::vector<std::string> macroPresetIds;
+        const int MaxTrackDefinitionMachineIds = 8;
 
-            public:
-                TrackDefinition();
-                ~TrackDefinition();
-                bool DeserializeJSON(const rapidjson::Value &jsonelement);
-                bool SerializeJSONInto(const rapidjson::Value &jsonelement, rapidjson::Document::AllocatorType &allocator);
+        struct TrackDefinition {
+            int index;
+            char name[16];
+            int midiChannel;
+            int drumNote;
+            int baseCC;
+            char macroMachineIds[MaxTrackDefinitionMachineIds][16];
+        };
+
+        class TrackDefinitionUtils final {
+        public:
+            TrackDefinitionUtils() = delete;
+
+            static void TrackDefinition_Reset(struct TrackDefinition *def);
+            static bool TrackDefinition_DeserializeJSON(struct TrackDefinition *def, const rapidjson::Value &jsonelement);
         };
     }
 }
