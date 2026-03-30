@@ -383,10 +383,9 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       <div class="step-card" id="cardA2">
         <div class="step-hdr"><span class="step-num" style="background:#0891B2;">3</span> Flash RP2350 (Pico Firmware)</div>
         <div class="step-desc">
-          <b>Connect the back USB-C Port&nbsp;#2</b> (closest to the edge).
-          You can disconnect the front JTAG cable.
-          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET on the front panel),
-          then click <b>Connect</b>.
+          Disconnect all cables. Hold the <b>BOOTSEL</b> button (left of the front JTAG port),
+          plug <b>back USB-C Port&nbsp;#2</b> (closest to the edge) while holding, then release <b>BOOTSEL</b>.
+          A drive <b>"RP2350"</b> or <b>"RPI-RP2"</b> should appear. Click <b>Connect</b>.
         </div>
         <div class="btn-row">
           <button id="btnA2Connect" class="btn-primary">Connect</button>
@@ -394,7 +393,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
           <button id="btnA2Reboot" class="btn-secondary" disabled>Reboot</button>
         </div>
         <div class="progress-wrap" id="progA2"><div class="progress-bar" id="progA2Bar"></div><span class="progress-text" id="progA2Txt">0 %</span></div>
-        <div class="status" id="statA2">Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.</div>
+        <div class="status" id="statA2">Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.</div>
       </div>
 
       <!-- A·DONE -->
@@ -417,8 +416,11 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         <div class="step-desc">
           Connect both USB-C cables: <b>front JTAG port</b> (serial) and <b>back Port&nbsp;#1</b> (SD card drive).
           This step flashes the USB Mass Storage firmware via the front port. After reboot the
-          SD card will appear as a removable drive on the <b>back port</b>.<br>
-          <small>📌 In the port picker, select <b>"USB JTAG/serial debug unit"</b> (not "Debug Probe").</small>
+          SD card will appear as a removable drive on the <b>back port</b>.
+          <div class="hint-box">
+            📌 In the port picker, select <b>"USB JTAG/serial debug unit"</b> (not "Debug Probe").<br>
+            <b>Port not showing?</b> Hold <b>BOOT</b> (between Port&nbsp;#1 and #2) → press <b>Reset</b> → release <b>BOOT</b> → press <b>Reset</b> again.
+          </div>
         </div>
         <div class="btn-row">
           <button id="btn1Connect" class="btn-primary" disabled>Loading…</button>
@@ -426,7 +428,6 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         </div>
         <div class="progress-wrap" id="prog1"><div class="progress-bar" id="prog1Bar"></div><span class="progress-text" id="prog1Txt">0 %</span></div>
         <div class="status" id="stat1">Loading flash tool…</div>
-        <span class="skip-link" id="skip1" style="display:none;">Already have MSC firmware? Click here to skip flashing and just switch to SD card mode →</span>
       </div>
 
       <!-- B·2 — Write SD Card -->
@@ -486,9 +487,9 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       <div class="step-card" id="card5">
         <div class="step-hdr"><span class="step-num">5</span> Flash RP2350 (Pico Firmware)</div>
         <div class="step-desc">
-          <b>Connect back USB-C Port&nbsp;#2</b> (closest to the edge).
-          Put the RP2350 in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET),
-          then click <b>Connect</b>.
+          Disconnect all cables. Hold the <b>BOOTSEL</b> button (left of the front JTAG port),
+          plug <b>back USB-C Port&nbsp;#2</b> (closest to the edge) while holding, then release <b>BOOTSEL</b>.
+          A drive <b>"RP2350"</b> or <b>"RPI-RP2"</b> should appear. Click <b>Connect</b>.
         </div>
         <div class="btn-row">
           <button id="btn5Connect" class="btn-primary">Connect</button>
@@ -496,7 +497,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
           <button id="btn5Reboot" class="btn-secondary" disabled>Reboot</button>
         </div>
         <div class="progress-wrap" id="prog5"><div class="progress-bar" id="prog5Bar"></div><span class="progress-text" id="prog5Txt">0 %</span></div>
-        <div class="status" id="stat5">Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.</div>
+        <div class="status" id="stat5">Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.</div>
       </div>
 
       <!-- B·DONE -->
@@ -542,7 +543,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
     /* Path B refs */
     var btn1Connect = $('btn1Connect'), btn1Go = $('btn1Go');
     var prog1 = $('prog1'), prog1Bar = $('prog1Bar'), prog1Txt = $('prog1Txt');
-    var stat1 = $('stat1'), skip1 = $('skip1');
+    var stat1 = $('stat1');
     var btn2Pick = $('btn2Pick');
     var prog2 = $('prog2'), prog2Bar = $('prog2Bar'), prog2Txt = $('prog2Txt');
     var stat2 = $('stat2'), fileLog = $('fileLog');
@@ -628,7 +629,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       btnA1Flash.disabled = true;
       hideProg(progA1); setStat(statA1, 'Click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b>.');
       btnA2Connect.disabled = false; btnA2Flash.disabled = true; btnA2Reboot.disabled = true;
-      hideProg(progA2); setStat(statA2, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
+      hideProg(progA2); setStat(statA2, 'Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.');
       cardDoneA.style.display = 'none';
 
       /* Path B — Connect buttons + SD picker stay enabled */
@@ -638,13 +639,12 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       btn3Connect.disabled = false; btn3Go.disabled = true;
       btn4Connect.disabled = false; btn4Flash.disabled = true;
       btn5Connect.disabled = false; btn5Flash.disabled = true; btn5Reboot.disabled = true;
-      skip1.style.display = 'inline-block';
       hideProg(prog1); hideProg(prog2); hideProg(prog4); hideProg(prog5);
       setStat(stat1, 'Select a version, then click <b>Connect</b>.');
       setStat(stat2, 'Select the <b>"NO NAME"</b> SD card drive.');
       setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b>. Select <b>"USB JTAG/serial debug unit"</b>.');
       setStat(stat4, 'Press <b>Reset</b> on the back (next to Port&nbsp;#1), then click <b>Connect</b>.');
-      setStat(stat5, 'Put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
+      setStat(stat5, 'Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.');
       fileLog.style.display = 'none'; fileLog.textContent = '';
       cardDone.style.display = 'none';
 
@@ -755,7 +755,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(statA1, 'Connected to <b>' + ctxA1.chip + '</b>. Click <b>Flash TBD-16 Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(statA1, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3), then click <b>Connect</b> again.', 'err');
+        setStat(statA1, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3). If that does not help, also replug <b>back Port&nbsp;#1</b> to power-cycle. Then click <b>Connect</b> again.', 'err');
         btnA1Connect.disabled = false;
         await disconnectP4(ctxA1); ctxA1 = null;
       }
@@ -776,7 +776,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(statA1, '✓ ESP32-P4 firmware updated.', 'ok');
 
         if (PICO_UF2_URL) {
-          setStat(statA2, '<b>Connect back USB-C Port&nbsp;#2</b>, put the RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
+          setStat(statA2, 'Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.');
         } else {
           setStat(statA2, 'No Pico firmware available — skip this step.', 'info');
           cardDoneA.style.display = 'block';
@@ -804,7 +804,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(statA2, 'Connected to <b>' + (ctxA2.info.productName || 'RP2350') + '</b>. Click <b>Flash Pico Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(statA2, 'Connection failed — make sure the RP2350 is in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET). Try unplugging and replugging <b>Port&nbsp;#2</b>.', 'err');
+        setStat(statA2, 'Connection failed — disconnect all cables, hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b> again.', 'err');
         btnA2Connect.disabled = false;
         await disconnectRP2350(ctxA2); ctxA2 = null;
       }
@@ -846,7 +846,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat1, 'Connected to <b>' + ctxB1.chip + '</b>. Click <b>Flash &amp; Switch</b> to proceed.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(stat1, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3), then click <b>Connect</b> again.', 'err');
+        setStat(stat1, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3). If that does not help, also replug <b>back Port&nbsp;#1</b> to power-cycle. Then click <b>Connect</b> again.', 'err');
         btn1Connect.disabled = false;
         await disconnectP4(ctxB1); ctxB1 = null;
       }
@@ -868,30 +868,6 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         console.error(e);
         setStat(stat1, 'Failed: ' + e.message, 'err');
         btn1Connect.disabled = false;
-        versionSelect.disabled = false;
-        await disconnectP4(ctxB1); ctxB1 = null;
-      }
-    });
-
-    skip1.addEventListener('click', async function () {
-      try {
-        skip1.style.display = 'none';
-        versionSelect.disabled = true;
-        ctxB1 = await connectP4({
-          onStatus: function (msg) { setStat(stat1, msg); }
-        });
-        setStat(stat1, 'Connected to <b>' + ctxB1.chip + '</b>. Switching to SD card mode…', 'info');
-        await switchOtaSlot(ctxB1, 1, {
-          onStatus: function (msg) { setStat(stat1, msg); }
-        });
-        var resetOk = await resetDevice(ctxB1);
-        await disconnectP4(ctxB1); ctxB1 = null;
-        startRebootCountdown(resetOk);
-      } catch (e) {
-        console.error(e);
-        setStat(stat1, 'Failed: ' + e.message, 'err');
-        btn1Connect.disabled = false;
-        skip1.style.display = 'inline-block';
         versionSelect.disabled = false;
         await disconnectP4(ctxB1); ctxB1 = null;
       }
@@ -1191,7 +1167,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat3, 'Connected to <b>' + ctxB3.chip + '</b>. Click <b>Switch to Normal Mode</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(stat3, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3), then click <b>Connect</b> again.', 'err');
+        setStat(stat3, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3). If that does not help, also replug <b>back Port&nbsp;#1</b> to power-cycle. Then click <b>Connect</b> again.', 'err');
         btn3Connect.disabled = false;
         await disconnectP4(ctxB3); ctxB3 = null;
       }
@@ -1232,7 +1208,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat4, 'Connected to <b>' + ctxB4.chip + '</b>. Click <b>Flash TBD-16 Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(stat4, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3), then click <b>Connect</b> again.', 'err');
+        setStat(stat4, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3). If that does not help, also replug <b>back Port&nbsp;#1</b> to power-cycle. Then click <b>Connect</b> again.', 'err');
         btn4Connect.disabled = false;
         await disconnectP4(ctxB4); ctxB4 = null;
       }
@@ -1253,7 +1229,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat4, '✓ ESP32-P4 firmware updated. Disconnect the <b>front JTAG cable</b> (USB-C&nbsp;#3) and <b>back Port&nbsp;#1</b>.', 'ok');
 
         if (PICO_UF2_URL) {
-          setStat(stat5, '<b>Connect back USB-C Port&nbsp;#2</b>, put RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
+          setStat(stat5, 'Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.');
         } else {
           setStat(stat5, 'No Pico firmware available — skip this step.', 'info');
           cardDone.style.display = 'block';
@@ -1281,7 +1257,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat5, 'Connected to <b>' + (ctxB5.info.productName || 'RP2350') + '</b>. Click <b>Flash Pico Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(stat5, 'Connection failed — make sure the RP2350 is in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET). Try unplugging and replugging <b>Port&nbsp;#2</b>.', 'err');
+        setStat(stat5, 'Connection failed — disconnect all cables, hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b> again.', 'err');
         btn5Connect.disabled = false;
         await disconnectRP2350(ctxB5); ctxB5 = null;
       }
