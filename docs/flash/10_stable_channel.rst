@@ -162,6 +162,16 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       .sd-recovery .status-info {
         background: #EFF6FF; color: #1E40AF;
       }
+      .sd-recovery .hint-box {
+        margin-top: 0.5em;
+        padding: 0.5em 0.7em;
+        background: #fef9c3;
+        border: 1px solid #fde68a;
+        border-radius: 4px;
+        font-size: 0.88em;
+        color: #92400e;
+        line-height: 1.5;
+      }
       .sd-recovery .file-log {
         margin-top: 0.5em;
         max-height: 140px;
@@ -238,6 +248,9 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       body[data-theme="dark"] .sd-recovery .status-info {
         background: #1e3a5f; color: #93c5fd;
       }
+      body[data-theme="dark"] .sd-recovery .hint-box {
+        background: #422006; color: #fbbf24; border-color: #78350f;
+      }
       body[data-theme="dark"] .sd-recovery .file-log {
         background: #0f172a; border-color: #334155; color: #cbd5e1;
       }
@@ -270,6 +283,9 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         }
         body:not([data-theme="light"]) .sd-recovery .status-info {
           background: #1e3a5f; color: #93c5fd;
+        }
+        body:not([data-theme="light"]) .sd-recovery .hint-box {
+          background: #422006; color: #fbbf24; border-color: #78350f;
         }
         body:not([data-theme="light"]) .sd-recovery .file-log {
           background: #0f172a; border-color: #334155; color: #cbd5e1;
@@ -453,8 +469,10 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         <div class="step-hdr"><span class="step-num">4</span> Flash ESP32-P4 Firmware</div>
         <div class="step-desc">
           Press the <b>Reset button</b> on the back (next to Port&nbsp;#1) to restart the device.
-          Then click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b> in the port picker.<br>
-          <small>📌 Port not showing? Hold <b>BOOT</b> (between Port&nbsp;#1 and #2) → press <b>Reset</b> → release <b>BOOT</b> → press <b>Reset</b> again.</small>
+          Then click <b>Connect</b> and select <b>"USB JTAG/serial debug unit"</b> in the port picker.
+          <div class="hint-box">
+            📌 <b>Port not showing?</b> Hold <b>BOOT</b> (between Port&nbsp;#1 and #2) → press <b>Reset</b> → release <b>BOOT</b> → press <b>Reset</b> again.
+          </div>
         </div>
         <div class="btn-row">
           <button id="btn4Connect" class="btn-primary">Connect</button>
@@ -485,7 +503,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       <div class="complete-card" id="cardDone">
         <h3>✓ Stable Firmware Setup Complete</h3>
         <p>Your TBD-16 has the SD card image and latest stable firmware.<br>
-        <b>Remove all USB cables</b>, wait 3 seconds, reconnect via <b>back Port&nbsp;#1</b>,
+        <b>Disconnect ALL USB cables</b>, wait 5 seconds, reconnect <b>ONLY back Port&nbsp;#1</b>,
         then open <a href="http://192.168.4.1" target="_blank">http://192.168.4.1</a>.</p>
       </div>
 
@@ -737,7 +755,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(statA1, 'Connected to <b>' + ctxA1.chip + '</b>. Click <b>Flash TBD-16 Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(statA1, 'Connection failed: ' + e.message, 'err');
+        setStat(statA1, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3), then click <b>Connect</b> again.', 'err');
         btnA1Connect.disabled = false;
         await disconnectP4(ctxA1); ctxA1 = null;
       }
@@ -786,7 +804,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(statA2, 'Connected to <b>' + (ctxA2.info.productName || 'RP2350') + '</b>. Click <b>Flash Pico Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(statA2, 'Connection failed: ' + e.message, 'err');
+        setStat(statA2, 'Connection failed — make sure the RP2350 is in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET). Try unplugging and replugging <b>Port&nbsp;#2</b>.', 'err');
         btnA2Connect.disabled = false;
         await disconnectRP2350(ctxA2); ctxA2 = null;
       }
@@ -800,27 +818,15 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
           onStatus: function (msg) { setStat(statA2, msg); },
           onProgress: function (pct) { showProg(progA2, progA2Bar, progA2Txt, pct); }
         });
-        btnA2Reboot.disabled = false;
-        setStat(statA2, '✓ RP2350 firmware updated. Click <b>Reboot</b> to restart.', 'ok');
+        try { await rebootRP2350(ctxA2); } catch (ignore) { /* best-effort */ }
+        await disconnectRP2350(ctxA2); ctxA2 = null;
+        hideProg(progA2);
+        setStat(statA2, '✓ RP2350 firmware updated. Your TBD-16 is ready!', 'ok');
+        cardDoneA.style.display = 'block';
       } catch (e) {
         console.error(e);
         setStat(statA2, 'Flash failed: ' + e.message, 'err');
         btnA2Connect.disabled = false;
-        await disconnectRP2350(ctxA2); ctxA2 = null;
-      }
-    });
-
-    btnA2Reboot.addEventListener('click', async function () {
-      try {
-        btnA2Reboot.disabled = true;
-        await rebootRP2350(ctxA2);
-        ctxA2 = null;
-        hideProg(progA2);
-        setStat(statA2, '✓ RP2350 rebooted. Your TBD-16 is ready!', 'ok');
-        cardDoneA.style.display = 'block';
-      } catch (e) {
-        console.error(e);
-        setStat(statA2, 'Reboot failed: ' + e.message, 'err');
         await disconnectRP2350(ctxA2); ctxA2 = null;
       }
     });
@@ -840,7 +846,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat1, 'Connected to <b>' + ctxB1.chip + '</b>. Click <b>Flash &amp; Switch</b> to proceed.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(stat1, 'Connection failed: ' + e.message, 'err');
+        setStat(stat1, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3), then click <b>Connect</b> again.', 'err');
         btn1Connect.disabled = false;
         await disconnectP4(ctxB1); ctxB1 = null;
       }
@@ -1185,7 +1191,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat3, 'Connected to <b>' + ctxB3.chip + '</b>. Click <b>Switch to Normal Mode</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(stat3, 'Connection failed: ' + e.message, 'err');
+        setStat(stat3, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3), then click <b>Connect</b> again.', 'err');
         btn3Connect.disabled = false;
         await disconnectP4(ctxB3); ctxB3 = null;
       }
@@ -1226,7 +1232,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat4, 'Connected to <b>' + ctxB4.chip + '</b>. Click <b>Flash TBD-16 Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(stat4, 'Connection failed: ' + e.message, 'err');
+        setStat(stat4, 'Connection failed — unplug and replug the <b>front JTAG cable</b> (USB-C&nbsp;#3), then click <b>Connect</b> again.', 'err');
         btn4Connect.disabled = false;
         await disconnectP4(ctxB4); ctxB4 = null;
       }
@@ -1244,7 +1250,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         await resetDevice(ctxB4);
         await disconnectP4(ctxB4); ctxB4 = null;
 
-        setStat(stat4, '✓ ESP32-P4 firmware updated. <b>Remove all USB cables</b>, wait 3 s, reconnect via back Port&nbsp;#1.', 'ok');
+        setStat(stat4, '✓ ESP32-P4 firmware updated. Disconnect the <b>front JTAG cable</b> (USB-C&nbsp;#3) and <b>back Port&nbsp;#1</b>.', 'ok');
 
         if (PICO_UF2_URL) {
           setStat(stat5, '<b>Connect back USB-C Port&nbsp;#2</b>, put RP2350 in <b>BOOTSEL mode</b>, then click <b>Connect</b>.');
@@ -1275,7 +1281,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat5, 'Connected to <b>' + (ctxB5.info.productName || 'RP2350') + '</b>. Click <b>Flash Pico Firmware</b>.', 'ok');
       } catch (e) {
         console.error(e);
-        setStat(stat5, 'Connection failed: ' + e.message, 'err');
+        setStat(stat5, 'Connection failed — make sure the RP2350 is in <b>BOOTSEL mode</b> (hold BOOTSEL + press RESET). Try unplugging and replugging <b>Port&nbsp;#2</b>.', 'err');
         btn5Connect.disabled = false;
         await disconnectRP2350(ctxB5); ctxB5 = null;
       }
@@ -1289,27 +1295,15 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
           onStatus: function (msg) { setStat(stat5, msg); },
           onProgress: function (pct) { showProg(prog5, prog5Bar, prog5Txt, pct); }
         });
-        btn5Reboot.disabled = false;
-        setStat(stat5, '✓ RP2350 firmware updated. Click <b>Reboot</b>.', 'ok');
+        try { await rebootRP2350(ctxB5); } catch (ignore) { /* best-effort */ }
+        await disconnectRP2350(ctxB5); ctxB5 = null;
+        hideProg(prog5);
+        setStat(stat5, '✓ RP2350 firmware updated.', 'ok');
+        cardDone.style.display = 'block';
       } catch (e) {
         console.error(e);
         setStat(stat5, 'Flash failed: ' + e.message, 'err');
         btn5Connect.disabled = false;
-        await disconnectRP2350(ctxB5); ctxB5 = null;
-      }
-    });
-
-    btn5Reboot.addEventListener('click', async function () {
-      try {
-        btn5Reboot.disabled = true;
-        await rebootRP2350(ctxB5);
-        ctxB5 = null;
-        hideProg(prog5);
-        setStat(stat5, '✓ RP2350 rebooted.', 'ok');
-        cardDone.style.display = 'block';
-      } catch (e) {
-        console.error(e);
-        setStat(stat5, 'Reboot failed: ' + e.message, 'err');
         await disconnectRP2350(ctxB5); ctxB5 = null;
       }
     });
