@@ -26,6 +26,9 @@ respective component folders / files if different from this license.
 #include "esp_log.h"
 #include "fs.hpp"
 #include "led_rgb_bba.hpp"
+#if CONFIG_TBD_USE_RP2350
+#include "pico_firmware_update.hpp"
+#endif
 
 #include "SPManager.hpp"
 #include "ctagSPAllocator.hpp"
@@ -49,6 +52,10 @@ void app_main() {
 
     DRIVERS::LedRGB::InitLedRGB();
     DRIVERS::LedRGB::SetLedRGB(0, 0, 255);
+
+#if CONFIG_TBD_USE_RP2350
+    DRIVERS::PicoFirmwareUpdate::CheckAndFlash();
+#endif
 
     AUDIO::SoundProcessorManager::StartSoundProcessor();
 }

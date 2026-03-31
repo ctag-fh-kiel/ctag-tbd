@@ -110,6 +110,7 @@ IRAM_ATTR static void spi_post_trans_cb(spi_slave_transaction_t *trans){
 
 namespace CTAG::SPIAPI{
     std::string SpiAPI::rp2350AppId;   // empty = unknown/legacy
+    std::string SpiAPI::rp2350PicoVersion; // empty = unknown
     bool SpiAPI::rp2350PluginLock = false;
     bool SpiAPI::rp2350RedirectSamples = false;
     TaskHandle_t SpiAPI::hTask;
@@ -949,6 +950,13 @@ namespace CTAG::SPIAPI{
                     rp2350RedirectSamples = (uint8_param_0 & 0x02) != 0;
                     ESP_LOGI("SpiAPI", "RP2350 announced app: \"%s\" (plugin_lock=%d, redirect_samples=%d)",
                              rp2350AppId.c_str(), rp2350PluginLock ? 1 : 0, rp2350RedirectSamples ? 1 : 0);
+                }
+                break;
+
+            case RequestType::ReportPicoVersion:
+                {
+                    rp2350PicoVersion = string_parameter;
+                    ESP_LOGI("SpiAPI", "RP2350 reported Pico firmware version: \"%s\"", rp2350PicoVersion.c_str());
                 }
                 break;
             }

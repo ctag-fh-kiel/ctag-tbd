@@ -4,7 +4,7 @@ set(DRIVER_SRCS
 )
 
 if(CONFIG_TBD_USE_RP2350)
-    list(APPEND DRIVER_SRCS "rp2350_spi_stream.cpp")
+    list(APPEND DRIVER_SRCS "rp2350_spi_stream.cpp" "pico_reset.cpp" "picoboot3_master.cpp" "pico_firmware_update.cpp")
 endif()
 
 if(CONFIG_TBD_USE_SD_CARD)
