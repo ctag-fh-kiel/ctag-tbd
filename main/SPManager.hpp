@@ -33,10 +33,10 @@ respective component folders / files if different from this license.
 #include "SPManagerDataModel.hpp"
 #include <atomic>
 #if CONFIG_TBD_USE_SD_CARD
-#include "SynthDefinitionDataModel.hpp"
-#include "MacroSoundPresetDataModel.hpp"
-#include "MacroDeviceDefinitionDataModel.hpp"
-#include "MacroTranslator.hpp"
+// #include "SynthDefinitionDataModel.hpp"
+// #include "MacroSoundPresetDataModel.hpp"
+// #include "MacroDeviceDefinitionDataModel.hpp"
+// #include "MacroTranslator.hpp"
 #endif
 
 using namespace CTAG::SP;
@@ -119,17 +119,12 @@ namespace CTAG {
             static void EnablePluginProcessing();
             static void RefreshSampleRom();
 
-            static void SetTrackMachine(const int trackIndex, const string &synthID);
+            static void SetTrackMachine(const int trackIndex, const string &synthID, float volumeMultiplier);
 #if CONFIG_TBD_USE_SD_CARD
             static void SetTrackMacro(const int trackIndex, const string &macroDefinitionID);
             static void SetTrackParametersFromJSON(const string &parametersJSON);
             static void SetTrackParameter(const int trackIndex, int parameterIndex, int32_t value);
             static void PutSamplePresetJSON(const string &presetJSON);
-
-            static std::shared_ptr<CTAG::MACROPRESETS::SynthDefinitionDataModel> synthDefinitionModel;
-            static std::shared_ptr<CTAG::MACROPRESETS::MacroSoundPresetDataModel> macroSoundDefinitionModel;
-            static std::shared_ptr<CTAG::MACROPRESETS::MacroDeviceDefinitionDataModel> macroDeviceDefinitionModel;
-            static std::shared_ptr<CTAG::MACROPRESETS::MacroTranslator> macroTranslator;
 
             static std::string GetMacroSoundPresetListJSON();
             static std::string GetMacroSoundPresetJSON(const std::string &soundPresetId);

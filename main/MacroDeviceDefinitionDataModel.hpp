@@ -19,27 +19,27 @@ respective component folders / files if different from this license.
 
 #include <string>
 #include <vector>
+#include "MacroDeviceDefinition.hpp"
 #include "ctagDataModelBase.hpp"
 
 namespace CTAG {
     namespace MACROPRESETS {
-        class MacroDeviceDefinition;
+        const int MaxMacroDeviceDefinitions = 64;
 
         class MacroDeviceDefinitionDataModel final : public CTAG::SP::ctagDataModelBase{
             private:
-                std::vector<MacroDeviceDefinition*> definitions;
+                struct MacroDeviceDefinition *definitions;
             public:
-                MacroDeviceDefinitionDataModel();
-                ~MacroDeviceDefinitionDataModel();
+                void Init();
                 void ReloadMachineDefinitions();
                 bool ReloadSingleDefinition(const std::string &id);
                 int GetNumberOfDefinitions();
-                // void GetMacroDeviceDefinitionId(int index, char *buffer, int bufferSize);
-                MacroDeviceDefinition *LoadMacroDeviceDefinition(const std::string id);
+                struct MacroDeviceDefinition *GetMacroDeviceDefinition(const char *id);
                 void SerializeListJSON(std::string *output);
                 void SerializeItemJSON(const std::string &id, std::string *output);
                 bool UpdateDefinition(const std::string &jsonString);
                 void DeleteItem(const std::string &id);
+                static MacroDeviceDefinitionDataModel &instance();
         };
     }
 }

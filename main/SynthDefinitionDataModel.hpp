@@ -20,20 +20,25 @@ respective component folders / files if different from this license.
 #include <string>
 #include <vector>
 #include "ctagDataModelBase.hpp"
+#include "SynthDefinition.hpp"
+#include "TrackDefinition.hpp"
+
+
+#define MAX_TRACKS 20
+#define MAX_SYNTHS 24
 
 namespace CTAG {
     namespace MACROPRESETS {
-        class TrackDefinition;
-        class SynthDefinition;
 
         class SynthDefinitionDataModel final : public CTAG::SP::ctagDataModelBase {
             private:
-                std::vector<TrackDefinition*> tracks;
-                std::vector<SynthDefinition*> synths;
+                class SynthDefinition *synths;
+                class TrackDefinition *tracks;
 
             public:
-                SynthDefinitionDataModel();
-                ~SynthDefinitionDataModel();
+                // SynthDefinitionDataModel(const SynthDefinitionDataModel&) = delete;
+
+                void Init();
                 void ReloadSynthDefinitions();
                 int GetNumberOfSynthDefinitions();
                 void GetSynthDeviceDefinitionId(int index, std::string *idOutput);
@@ -42,9 +47,9 @@ namespace CTAG {
                 TrackDefinition *GetTrackDefinition(int index);
                 bool DeserializeJSON(const rapidjson::Value &jsonelement);
                 void SerializeJSON(std::string *output);
-                void SerializeTrackJSON(int index, std::string *output);
-                void SerializeSynthJSON(const std::string id, std::string *output);
                 void SerializeListJSON(std::string *output);
+
+                static SynthDefinitionDataModel *instance();
         };
     }
 }

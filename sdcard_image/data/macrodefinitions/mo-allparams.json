@@ -9,12 +9,12 @@
       "parameters": [
         {
           "idx": 0,
-          "name": "Bank",
+          "name": "Shape",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "shape"
+          "max": 46,
+          "res": 10,
+          "ui": "macroshape"
         },
         {
           "idx": 1,

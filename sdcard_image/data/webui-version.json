@@ -1,5 +1,5 @@
 {
-  "version": "0.4.1",
+  "version": "0.4.5",
   "date": "2026-04-01",
   "description": "System Updater: add Pico firmware update via CDN"
 }

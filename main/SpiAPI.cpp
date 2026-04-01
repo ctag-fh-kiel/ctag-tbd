@@ -26,6 +26,7 @@ respective component folders / files if different from this license.
 #include "SPManager.hpp"
 #include "Favorites.hpp"
 #include "helpers/ctagSampleRom.hpp"
+#include "pico_firmware_update.hpp"
 
 #include "soc/gpio_num.h"
 #include "esp_log.h"
@@ -35,6 +36,9 @@ respective component folders / files if different from this license.
 #include "esp_image_format.h"
 #include "esp_rom_crc.h"
 #include "driver/gpio.h"
+
+#include "MacroSoundPresetDataModel.hpp"
+#include "MacroDeviceDefinitionDataModel.hpp"
 
 #include "link.hpp"
 
@@ -107,6 +111,7 @@ IRAM_ATTR static void spi_post_trans_cb(spi_slave_transaction_t *trans){
 
 namespace CTAG::SPIAPI{
     std::string SpiAPI::rp2350AppId;   // empty = unknown/legacy
+    std::string SpiAPI::rp2350PicoVersion; // empty = unknown
     bool SpiAPI::rp2350PluginLock = false;
     bool SpiAPI::rp2350RedirectSamples = false;
     TaskHandle_t SpiAPI::hTask;
@@ -627,7 +632,30 @@ namespace CTAG::SPIAPI{
             case RequestType::GetFirmwareInfo:
                 ESP_LOGI("SpiAPI", "GetFirmwareInfo");
                 {
-                    std::string info("{\"HWV\":\"" + TBD_HW_VERSION + "\",\"FWV\":\"" + TBD_FW_VERSION + "\",\"OTA\":\"" + std::string(esp_get_current_ota_label()) + "\"}");
+                    // Read WebUI version from SD card
+                    std::string webui_ver;
+                    FILE *wf = fopen("/sdcard/data/webui-version.json", "r");
+                    if (wf) {
+                        char buf[256];
+                        size_t len = fread(buf, 1, sizeof(buf) - 1, wf);
+                        fclose(wf);
+                        buf[len] = '\0';
+                        const char *v = strstr(buf, "\"version\"");
+                        if (v) {
+                            v = strchr(v, ':');
+                            if (v) {
+                                v++;
+                                while (*v == ' ' || *v == '"') v++;
+                                const char *end = strchr(v, '"');
+                                if (end) webui_ver.assign(v, end - v);
+                            }
+                        }
+                    }
+
+                    std::string info("{\"HWV\":\"" + TBD_HW_VERSION
+                        + "\",\"FWV\":\"" + TBD_FW_VERSION
+                        + "\",\"OTA\":\"" + std::string(esp_get_current_ota_label())
+                        + "\",\"WEBUI\":\"" + webui_ver + "\"}");
                     result = transmitCString(requestType, info.c_str());
                 }
                 break;
@@ -765,8 +793,7 @@ namespace CTAG::SPIAPI{
                     std::string outputjson;
                     int trackIndex = uint8_param_0;
                     ESP_LOGI("SpiAPI", "Getting macro sound preset list, track %d", trackIndex);
-                    CTAG::AUDIO::SoundProcessorManager::macroSoundDefinitionModel
-                        ->GetPresetIndexJson(trackIndex, &outputjson);
+                    CTAG::MACROPRESETS::MacroSoundPresetDataModel::instance().GetPresetIndexJson(trackIndex, &outputjson);
                     // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                     result = transmitCString(requestType, outputjson.c_str());
                 }
@@ -782,13 +809,6 @@ namespace CTAG::SPIAPI{
                     std::string outputjson;
                     outputjson = CTAG::AUDIO::SoundProcessorManager::GetMacroSoundPresetJSON(presetId);
                     result = transmitCString(requestType, outputjson.c_str());
-                    // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
-                    // CTAG::MACROPRESETS::MacroSoundPreset *preset =
-                    //     CTAG::AUDIO::SoundProcessorManager::macroSoundDefinitionModel
-                    //         ->GetMacroSoundPreset(presetId);
-                    // SerializeJSONInto
-                    // GetPresetJson(presetId, &outputjson);
-                    // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 }
 #else
                 result = transmitCString(requestType, "{}");
@@ -859,7 +879,7 @@ namespace CTAG::SPIAPI{
                     // The file maps track indices to preset IDs, e.g.:
                     // { "tracks": [ {"index":0,"preset":"db-all-def"}, ... ] }
                     std::string json = "{}";
-                    std::string path = std::string(CTAG::RESOURCES::sdcardRoot) + "/data/trackdefaults.json";
+                    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/trackdefaults.json";
                     FILE *f = fopen(path.c_str(), "r");
                     if (f) {
                         fseek(f, 0, SEEK_END);
@@ -954,6 +974,34 @@ namespace CTAG::SPIAPI{
                     rp2350RedirectSamples = (uint8_param_0 & 0x02) != 0;
                     ESP_LOGI("SpiAPI", "RP2350 announced app: \"%s\" (plugin_lock=%d, redirect_samples=%d)",
                              rp2350AppId.c_str(), rp2350PluginLock ? 1 : 0, rp2350RedirectSamples ? 1 : 0);
+                }
+                break;
+
+            case RequestType::ReportPicoVersion:
+                {
+                    rp2350PicoVersion = string_parameter;
+                    ESP_LOGI("SpiAPI", "RP2350 reported Pico firmware version: \"%s\"", rp2350PicoVersion.c_str());
+                }
+                break;
+
+            case RequestType::GetPicoUpdateStatus:
+                {
+                    bool picoUpdated = DRIVERS::PicoFirmwareUpdate::ConsumePicoUpdateFlag();
+                    bool p4Updated = DRIVERS::PicoFirmwareUpdate::ConsumeP4UpdateFlag();
+
+                    std::string status;
+                    if (picoUpdated && p4Updated) {
+                        status = "both:" + TBD_FW_VERSION;
+                    } else if (p4Updated) {
+                        status = "p4:" + TBD_FW_VERSION;
+                    } else if (picoUpdated) {
+                        status = "pico";
+                    } else {
+                        status = "none";
+                    }
+
+                    ESP_LOGI("SpiAPI", "GetPicoUpdateStatus: %s", status.c_str());
+                    result = transmitCString(requestType, status.c_str());
                 }
                 break;
             }

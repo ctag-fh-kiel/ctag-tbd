@@ -94,9 +94,12 @@ namespace CTAG::SPIAPI{
             LoadTrackMacroDefinition = 0xAA,
 
             AnnounceApp = 0xAB, // RP2350 announces its active app, args [flags (uint8_t, bit0=plugin_lock, bit1=redirect_samples), app_name (cstring)]
+            ReportPicoVersion = 0xAC, // RP2350 reports its firmware version, args [version_string (cstring)]
+            GetPicoUpdateStatus = 0xAE, // RP2350 queries if Pico firmware was updated this boot, returns "updated" or "none"
         };
 
         static std::string rp2350AppId;   // app name announced by RP2350 (empty = unknown/legacy)
+        static std::string rp2350PicoVersion; // firmware version reported by RP2350
         static bool rp2350PluginLock;     // true = RP2350 app requested HTTP plugin switching be blocked
         static bool rp2350RedirectSamples; // true = WebUI should default to Samples view
 
@@ -116,6 +119,7 @@ namespace CTAG::SPIAPI{
         SpiAPI() = delete;
         static void StartSpiAPI();
         static const std::string& GetRP2350AppId() { return rp2350AppId; }
+        static const std::string& GetPicoVersion() { return rp2350PicoVersion; }
         static bool IsPluginLocked() { return rp2350PluginLock; }
         static bool ShouldRedirectSamples() { return rp2350RedirectSamples; }
     };

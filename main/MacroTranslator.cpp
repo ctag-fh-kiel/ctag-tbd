@@ -65,13 +65,10 @@ static inline int32_t applyCurve(int32_t val, MacroCurveType curve) {
     }
 }
 
-
-MacroTranslator::MacroTranslator() {
+void MacroTranslator::Init() {
     soundProcessor = nullptr;
-    synthDefinitionModel = nullptr;
-    macroSoundDefinitionModel = nullptr;
-    macroDeviceDefinitionModel = nullptr;
     bankDirty = false;
+    definitions = (class MacroDeviceDefinition *)heap_caps_malloc(sizeof(MacroDeviceDefinition) * 16, MALLOC_CAP_32BIT | MALLOC_CAP_SPIRAM);
 
     for (int i = 0; i < 16; i++) {
         trackToMidiChannel[i] = -1;
@@ -79,19 +76,16 @@ MacroTranslator::MacroTranslator() {
         strcpy(trackMachineId[i], "");
         strcpy(trackSampleBankName[i], "");
         trackSampleBankIndex[i] = 0;
-        definition[i] = nullptr;
         trackDirty[i] = false;
+        MacroDeviceDefinitionUtils::MacroDeviceDefinition_Reset(&definitions[i]);
 
         for (int j = 0; j < 32; j++) {
             trackParameterValues[i][j] = 0;
         }
     }
-};
+}
 
-MacroTranslator::~MacroTranslator() {
-};
-
-void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string synthID) {
+void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string synthID, float volumeMultiplier) {
     if (synthID == trackMachineId[trackIndex]) {
         return;
     }
@@ -101,7 +95,7 @@ void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string sy
     strncpy(trackMachineId[trackIndex], synthID.c_str(), sizeof(trackMachineId[trackIndex]) - 1);
     trackMachineId[trackIndex][sizeof(trackMachineId[trackIndex]) - 1] = '\0';
 
-    SynthDefinition *synthDef = synthDefinitionModel->GetSynthDefinition(synthID);
+    SynthDefinition *synthDef = SynthDefinitionDataModel::instance()->GetSynthDefinition(synthID);
     if (synthDef == nullptr) {
         ESP_LOGE("MacroTranslator", "Synth definition not found for id %s",
             synthID.c_str());
@@ -110,7 +104,7 @@ void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string sy
 
     int idx = 0;
 
-    TrackDefinition *trackDef = synthDefinitionModel->GetTrackDefinition(trackIndex);
+    TrackDefinition *trackDef = SynthDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
     if (trackDef == nullptr) {
         ESP_LOGE("MacroTranslator", "Track definition not found for track index %d",
             trackIndex);
@@ -123,17 +117,21 @@ void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string sy
     ESP_LOGI("MacroTranslator", "Track %d base cc is %d", trackIndex, trackBaseCC[trackIndex]);
 
     idx = 0;
-    for(auto par : synthDef->parameters) {
+    for(struct SynthParameter &par : synthDef->parameters) {
+        if (par.id[0] == '\0') {
+            continue;
+        }
+
         ESP_LOGI("MacroTranslator", "Processing parameter %s, type %d, cc %d",
-        par->id.c_str(), par->type, par->cc);
+        par.id, par.type, par.cc);
 
-        trackParameterValues[trackIndex][idx] = par->defaultValue;
+        trackParameterValues[trackIndex][idx] = par.defaultValue;
 
-        if (par->type == SynthParameterType_CC) {
+        if (par.type == SynthParameterType_CC) {
             soundProcessor->handleMidiControlChange(
                 trackDef->midiChannel,
-                trackBaseCC[trackIndex] + par->cc,
-                par->defaultValue
+                trackBaseCC[trackIndex] + par.cc,
+                par.defaultValue
             );
         }
 
@@ -147,91 +145,45 @@ void MacroTranslator::SetTrackMacroDefinition(const int trackIndex, MacroDeviceD
     // ESP_LOGI("MacroTranslator", "Setting track %d macro definition 0x%08X",
     // trackIndex, (uintptr_t)def);
     if (def != nullptr) {
-        ESP_LOGI("MacroTranslator", "Macro def: \"%s\" \"%s\" \"%s\"",
-            def->id.c_str(), def->name.c_str(), def->synthId.c_str());
-    }
-
-    if (definition[trackIndex] != nullptr) {
-        delete definition[trackIndex];
-        definition[trackIndex] = nullptr;
+        ESP_LOGI("MacroTranslator", "Macro def: \"%s\" \"%s\" \"%s\" %1.1fx",
+            def->id, def->name, def->synthId, def->volumeMultiplier);
     }
 
     if (def == nullptr) {
-        SetTrackMachine(trackIndex, "");
+        SetTrackMachine(trackIndex, "", 1.0f);
         return;
     }
 
     SynthDefinition *synthDef =
-        synthDefinitionModel->GetSynthDefinition(def->synthId);
+        SynthDefinitionDataModel::instance()->GetSynthDefinition(def->synthId);
 
     if (synthDef == nullptr) {
         ESP_LOGE("MacroTranslator", "Invalid synth referenceSynth definition not found for id %s",
-            def->synthId.c_str());
+            def->synthId);
     }
 
-    // TrackDefinition *trackDef = synthDefinitionModel->GetTrackDefinition(trackIndex);
-    // if (trackDef == nullptr) {
-    //     ESP_LOGE("MacroTranslator", "Track definition not found for track index %d",
-    //         trackIndex);
-    //     return;
-    // }
 
-    // Document d1;
-    // d1.SetObject();
-    // if (def->SerializeJSONInto(d1)) {
-    // ESP_LOGI("MacroTranslator", "dummy 5");
-    // ESP_LOGI("MacroTranslator", "Mem 1 freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-    //     heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-    //     heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-    //     heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-    //     heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-
-    MacroDeviceDefinition *defcopy = def->copy();
-
-    // ESP_LOGI("MacroTranslator", "Mem 2 freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-    //     heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-    //     heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-    //     heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-    //     heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-    
-    // if (defcopy == nullptr) {
-    definition[trackIndex] = defcopy;
-    // ESP_LOGI("MacroTranslator", "dummy 6");
-    // } else {
-    //     ESP_LOGE("MacroTranslator", "Failed to deserialize macro definition into JSON");
-    //     delete defcopy;
-    //     ESP_LOGI("MacroTranslator", "dummy 7");
-    // }
-    // } else {
-    //     ESP_LOGE("MacroTranslator", "Failed to serialize macro definition into JSON");
-    // }
-    // ESP_LOGI("MacroTranslator", "dummy 8");
-
-
-    SetTrackMachine(trackIndex, def->synthId);
-
-
-    // ESP_LOGI("MacroTranslator", "dummy 9");
-
+    MacroDeviceDefinitionUtils::MacroDeviceDefinition_CopyInto(def, &definitions[trackIndex]);
+    SetTrackMachine(trackIndex, def->synthId, def->volumeMultiplier);
 }
 
 void MacroTranslator::RefreshActiveDefinitions() {
     ESP_LOGW("MacroTranslator", ">>> RefreshActiveDefinitions called");
     for (int t = 0; t < 16; t++) {
-        if (definition[t] == nullptr) {
+        if (definitions[t].id[0] == '\0') {
             ESP_LOGI("MacroTranslator", "  track %d: def=null, skip", t);
             continue;
         }
-        std::string macroId = definition[t]->id;
+        std::string macroId = definitions[t].id;
         if (macroId.empty()) continue;
 
         MacroDeviceDefinition *freshDef =
-            macroDeviceDefinitionModel->LoadMacroDeviceDefinition(macroId);
+            MacroDeviceDefinitionDataModel::instance().GetMacroDeviceDefinition(macroId.c_str());
         if (freshDef == nullptr) continue;
 
-        delete definition[t];
-        definition[t] = freshDef;
-        trackDirty[t] = true;
+        // delete definition[t];
+        definitions[t] = *freshDef;
+        // trackDirty[t] = true;
 
         ESP_LOGI("MacroTranslator", "Refreshed track %d def '%s' (volMult=%.2f)",
             t, macroId.c_str(), freshDef->volumeMultiplier);
@@ -240,16 +192,16 @@ void MacroTranslator::RefreshActiveDefinitions() {
 
 void MacroTranslator::RefreshDefinitionById(const std::string &id) {
     for (int t = 0; t < 16; t++) {
-        if (definition[t] == nullptr) continue;
-        if (definition[t]->id != id) continue;
+        if (definitions[t].id[0] == '\0') continue;
+        if (strcmp(definitions[t].id, id.c_str()) != 0) continue;
 
         MacroDeviceDefinition *freshDef =
-            macroDeviceDefinitionModel->LoadMacroDeviceDefinition(id);
+            MacroDeviceDefinitionDataModel::instance().GetMacroDeviceDefinition(id.c_str());
         if (freshDef == nullptr) continue;
 
-        delete definition[t];
-        definition[t] = freshDef;
-        trackDirty[t] = true;
+        // delete definition[t];
+        definitions[t] = *freshDef;
+        // trackDirty[t] = true;
 
         ESP_LOGI("MacroTranslator", "Refreshed track %d def '%s' (volMult=%.2f)",
             t, id.c_str(), freshDef->volumeMultiplier);
@@ -299,7 +251,7 @@ void MacroTranslator::SetTrackParametersFromJSON(const std::string &parametersJS
     if (d.HasMember("macro")) {
         std::string macro = d["macro"].GetString();
         MacroDeviceDefinition *def =
-            macroDeviceDefinitionModel->LoadMacroDeviceDefinition(macro);
+            MacroDeviceDefinitionDataModel::instance().GetMacroDeviceDefinition(macro.c_str());
         ESP_LOGI("MacroTranslator", "Setting track %d macro definition to %s => 0x%08X", trackIndex, macro.c_str(), (uintptr_t)def);
         this->SetTrackMacroDefinition(trackIndex, def);
         delete def;
@@ -308,7 +260,7 @@ void MacroTranslator::SetTrackParametersFromJSON(const std::string &parametersJS
     if (d.HasMember("machine")) {
         std::string machine = d["machine"].GetString();
         ESP_LOGI("MacroTranslator", "Setting track %d machine to: %s", trackIndex, machine.c_str());
-        this->SetTrackMachine(trackIndex, machine);
+        this->SetTrackMachine(trackIndex, machine, 1.0f);
     }
 
     if (d.HasMember("parameters")) {
@@ -490,7 +442,7 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
     for(int t=0; t<16; t++) {
         if (trackDirty[t]) {
             // First change machines if needed.
-            float volMult = (definition[t] != nullptr) ? definition[t]->volumeMultiplier : 1.0f;
+            float volMult = definitions[t].volumeMultiplier;
             soundProcessor->setTrackMachine(t, trackMachineId[t], volMult);
         }
     }
@@ -502,32 +454,39 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
             trackDirty[t] = false;
 
             // TODO: copy mapping instead.
-            MacroDeviceDefinition *def = definition[t];
+            MacroDeviceDefinition *def = &definitions[t];
 
             if (def != nullptr) {
                 int idx = 0;
-                for(auto om : def->outputMappings) {
-                    int32_t finalvalue = om.startValue;
+                for(int omi = 0; omi < MaxOutputMappings; omi++) {
+                    struct MacroDeviceOutputMapping *om = &def->outputMappings[omi];
+                    if (om->ctrl == 0) {
+                        continue;
+                    }
 
-                    for(auto src : om.sources) {
-                        int val = trackParameterValues[t][src.parameterIndex];
-                        val = applyCurve(val, src.curve);
-                        if (src.divider > 0) {
-                            finalvalue += (val * src.multiplier) / src.divider;
+                    int32_t finalvalue = om->startValue;
+
+                    for(int oms=0; oms<MaxOutputMappingSources; oms++) {
+                        struct MacroDeviceOutputMappingSource *src = &om->sources[oms];
+
+                        int val = trackParameterValues[t][src->parameterIndex];
+                        val = applyCurve(val, src->curve);
+                        if (src->divider > 0) {
+                            finalvalue += (val * src->multiplier) / src->divider;
                         } else {
-                            finalvalue += val * src.multiplier;
+                            finalvalue += val * src->multiplier;
                         }
                     }
-                    
+
                     // TODO: support NRPM
-                    
+
                     if (finalvalue < 0) finalvalue = 0;
                     if (finalvalue > 127) finalvalue = 127;
-                    
+
                     int midichannel = trackToMidiChannel[t];
-                    if (om.ctrl  != -1) {
+                    if (om->ctrl != -1) {
                         outputValues[t][idx] = finalvalue;
-                        int finalcc = om.ctrl + trackBaseCC[t];
+                        int finalcc = om->ctrl + trackBaseCC[t];
                         soundProcessor->handleMidiControlChange(midichannel, finalcc, finalvalue);
                     }
                     idx ++;
@@ -570,8 +529,8 @@ bool MacroTranslator::SerializeStateInto(rapidjson::Document &doc) {
         Value trackjson(kObjectType);
         trackjson.AddMember("index", ti, doc.GetAllocator());
         trackjson.AddMember("machine", Value(trackMachineId[ti], doc.GetAllocator()), doc.GetAllocator());
-        if (definition[ti] != nullptr) {
-            trackjson.AddMember("macro", Value(definition[ti]->id.c_str(), doc.GetAllocator()), doc.GetAllocator());
+        if (definitions[ti].id[0] != '\0') {
+            trackjson.AddMember("macro", Value(definitions[ti].id, doc.GetAllocator()), doc.GetAllocator());
         } else {
             trackjson.AddMember("macro", "", doc.GetAllocator());
         }
@@ -581,20 +540,7 @@ bool MacroTranslator::SerializeStateInto(rapidjson::Document &doc) {
     return false;
 }
 
-// void MacroTranslator::SetTrackSampleBank(const int trackIndex, const std::string bankName) {
-//     if (bankName == trackSampleBankName[trackIndex]) {
-//         return;
-//     }
-
-//     CTAG::SP::HELPERS::ctagSampleRom srom;
-//     int bankindex = srom.GetBankIndexFromBankName(bankName);
-
-//     ESP_LOGI("MacroTranslator", "Track %d sample bank set to %s (index %d)",
-//         trackIndex, bankName.c_str(), bankindex);
-
-//     trackSampleBankName[trackIndex] = bankName;
-//     trackSampleBankIndex[trackIndex] = bankindex;
-
-//     bankDirty = true;
-// }
-
+MacroTranslator &MacroTranslator::instance() {
+    static MacroTranslator instance;
+    return instance;
+}

@@ -24,50 +24,48 @@ respective component folders / files if different from this license.
 using namespace CTAG::MACROPRESETS;
 using namespace rapidjson;
 
-MacroDeviceOutputMappingSource::MacroDeviceOutputMappingSource() {
-    parameterIndex = 0;
-    multiplier = 1;
-    divider = 1;
-    curve = MacroCurveType::Linear;
+void MacroDeviceOutputMappingSource_Reset(struct MacroDeviceOutputMappingSource *source) {
+    source->parameterIndex = 0;
+    source->multiplier = 0;
+    source->divider = 1;
+    source->curve = MacroCurveType::Linear;
 }
 
-MacroDeviceOutputMappingSource::~MacroDeviceOutputMappingSource() {}
-
-bool MacroDeviceOutputMappingSource:: DeserializeJSON(const rapidjson::Value &jsonelement) {
+bool MacroDeviceOutputMappingSource_DeserializeJSON(struct MacroDeviceOutputMappingSource *source, const rapidjson::Value &jsonelement) {
     if (!jsonelement.IsObject()) {
         ESP_LOGE("MacroDeviceOutputMappingSource", "Not a JSON object");
         return false;
     }
 
     if (jsonelement.HasMember("src") && jsonelement["src"].IsUint()) {
-        parameterIndex = jsonelement["src"].GetUint();
+        source->parameterIndex = jsonelement["src"].GetUint();
     } else {
         ESP_LOGE("MacroDeviceOutputMappingSource", "Missing or invalid 'src' field");
         return false;
     }
 
     if (jsonelement.HasMember("mul") && jsonelement["mul"].IsInt()) {
-        multiplier = jsonelement["mul"].GetInt();
+        source->multiplier = jsonelement["mul"].GetInt();
     } else {
         ESP_LOGE("MacroDeviceOutputMappingSource", "Missing or invalid 'mul' field");
         return false;
     }
 
     if (jsonelement.HasMember("div") && jsonelement["div"].IsInt()) {
-        divider = jsonelement["div"].GetInt();
+        source->divider = jsonelement["div"].GetInt();
     } else {
         ESP_LOGE("MacroDeviceOutputMappingSource", "Missing or invalid 'div' field");
         return false;
     }
 
     // Parse optional curve type (defaults to Linear if missing)
-    curve = MacroCurveType::Linear;
+    source->curve = MacroCurveType::Linear;
     if (jsonelement.HasMember("curve") && jsonelement["curve"].IsString()) {
         const char *curveStr = jsonelement["curve"].GetString();
         if (strcmp(curveStr, "log") == 0) {
-            curve = MacroCurveType::Log;
+            source->curve = MacroCurveType::Log;
         } else if (strcmp(curveStr, "exp") == 0) {
-            curve = MacroCurveType::Exp;
+            source->curve = MacroCurveType::Exp;
         }
         // "linear" or unknown → stays Linear
     }
@@ -75,97 +73,98 @@ bool MacroDeviceOutputMappingSource:: DeserializeJSON(const rapidjson::Value &js
     return true;
 }
 
-MacroDeviceOutputMapping::MacroDeviceOutputMapping() {
-    ctrl = 0;
-    startValue = 0;
-    sources.clear();
+void MacroDeviceOutputMapping_Reset(struct MacroDeviceOutputMapping *mapping) {
+    mapping->ctrl = 0;
+    mapping->startValue = 0;
+    for(int i=0; i<MaxOutputMappingSources; i++) {
+        MacroDeviceOutputMappingSource_Reset(&mapping->sources[i]);
+    }
 }
 
-MacroDeviceOutputMapping::~MacroDeviceOutputMapping() {}
-
-bool MacroDeviceOutputMapping::DeserializeJSON(const rapidjson::Value &jsonelement) {
+bool MacroDeviceOutputMapping_DeserializeJSON(struct MacroDeviceOutputMapping *mapping, const rapidjson::Value &jsonelement) {
     if (!jsonelement.IsObject()) {
         ESP_LOGE("MacroDeviceOutputMapping", "Not a JSON object");
         return false;
     }
 
     if (jsonelement.HasMember("ctrl") && jsonelement["ctrl"].IsInt()) {
-        ctrl = jsonelement["ctrl"].GetInt();
+        mapping->ctrl = jsonelement["ctrl"].GetInt();
     } else {
         ESP_LOGE("MacroDeviceOutputMapping", "Missing or invalid 'ctrl' field");
         return false;
     }
 
     if (jsonelement.HasMember("start") && jsonelement["start"].IsInt()) {
-        startValue = jsonelement["start"].GetInt();
+        mapping->startValue = jsonelement["start"].GetInt();
     } else {
         ESP_LOGE("MacroDeviceOutputMapping", "Missing or invalid 'start' field");
         return false;
     }
 
+    int index = 0;
     if (jsonelement.HasMember("add") && jsonelement["add"].IsArray()) {
         for (auto &v : jsonelement["add"].GetArray()) {
-            MacroDeviceOutputMappingSource s;
-            if (s.DeserializeJSON(v)) {
-                sources.push_back(s);
-            } else {
+            if (!MacroDeviceOutputMappingSource_DeserializeJSON(&mapping->sources[index], v)) {
                 ESP_LOGE("MacroDeviceOutputMapping", "Failed to deserialize a source in 'add' array");
             }
+            index ++;
         }
     }
 
     return true;
 }
 
-MacroDeviceDefinition::MacroDeviceDefinition() {
-    id = "";
-    name = "";
-    synthId = "";
-    volumeMultiplier = 1.0f;
-    outputMappings.clear();
+void MacroDeviceDefinitionUtils::MacroDeviceDefinition_Reset(struct MacroDeviceDefinition *def) {
+    memset(def->id, 0, sizeof(def->id));
+    memset(def->name, 0, sizeof(def->name));
+    memset(def->synthId, 0, sizeof(def->synthId));
+    def->volumeMultiplier = 1.0f;
+    for(int i=0; i<MaxOutputMappings; i++) {
+        MacroDeviceOutputMapping_Reset(&def->outputMappings[i]);
+    }
 }
 
-MacroDeviceDefinition::~MacroDeviceDefinition() {
-}
-
-bool MacroDeviceDefinition::DeserializeJSON(const rapidjson::Value &jsonelement) {
+bool MacroDeviceDefinitionUtils::MacroDeviceDefinition_DeserializeJSON(struct MacroDeviceDefinition *def, const rapidjson::Value &jsonelement) {
     if (!jsonelement.IsObject()) {
         ESP_LOGE("MacroDeviceDefinition", "Not a JSON object");
         return false;
     }
 
      if (jsonelement.HasMember("id") && jsonelement["id"].IsString()) {
-        id = jsonelement["id"].GetString();
+        strncpy(def->id, jsonelement["id"].GetString(), sizeof(def->id) - 1);
+        def->id[sizeof(def->id) - 1] = '\0';
     } else {
         ESP_LOGE("MacroDeviceDefinition", "Missing or invalid 'id' field");
         return false;
     }
 
     if (jsonelement.HasMember("name") && jsonelement["name"].IsString()) {
-        name = jsonelement["name"].GetString();
+        strncpy(def->name, jsonelement["name"].GetString(), sizeof(def->name) - 1);
+        def->name[sizeof(def->name) - 1] = '\0';
     } else {
         ESP_LOGE("MacroDeviceDefinition", "Missing or invalid 'name' field");
         return false;
     }
 
     if (jsonelement.HasMember("machine") && jsonelement["machine"].IsString()) {
-        synthId = jsonelement["machine"].GetString();
+        strncpy(def->synthId, jsonelement["machine"].GetString(), sizeof(def->synthId) - 1);
+        def->synthId[sizeof(def->synthId) - 1] = '\0';
     } else {
         ESP_LOGE("MacroDeviceDefinition", "Missing or invalid 'machine' field");
         return false;
     }
 
     if (jsonelement.HasMember("volmult") && jsonelement["volmult"].IsNumber()) {
-        volumeMultiplier = jsonelement["volmult"].GetFloat();
+        def->volumeMultiplier = jsonelement["volmult"].GetFloat();
     } else {
-        volumeMultiplier = 1.0f;
+        def->volumeMultiplier = 1.0f;
     }
 
+    int index = 0;
     if (jsonelement.HasMember("mapping") && jsonelement["mapping"].IsArray()) {
         for (auto &v : jsonelement["mapping"].GetArray()) {
-            MacroDeviceOutputMapping m;
-            if (m.DeserializeJSON(v)) {
-                outputMappings.push_back(m);
+            if (MacroDeviceOutputMapping_DeserializeJSON(&def->outputMappings[index], v)) {
+                index ++;
             } else {
                 ESP_LOGE("MacroDeviceDefinition", "Failed to deserialize an output mapping in 'mapping' array");
             }
@@ -178,12 +177,15 @@ bool MacroDeviceDefinition::DeserializeJSON(const rapidjson::Value &jsonelement)
     return true;
 }
 
-MacroDeviceDefinition *MacroDeviceDefinition::copy() {
-    MacroDeviceDefinition *newCopy = new MacroDeviceDefinition();
-    newCopy->id = this->id;
-    newCopy->name = this->name;
-    newCopy->synthId = this->synthId;
-    newCopy->volumeMultiplier = this->volumeMultiplier;
-    newCopy->outputMappings = this->outputMappings;
-    return newCopy;
+void MacroDeviceDefinitionUtils::MacroDeviceDefinition_CopyInto(const struct MacroDeviceDefinition *source, struct MacroDeviceDefinition *target) {
+    strncpy(target->id, source->id, sizeof(target->id) - 1);
+    target->id[sizeof(target->id) - 1] = '\0';
+    strncpy(target->name, source->name, sizeof(target->name) - 1);
+    target->name[sizeof(target->name) - 1] = '\0';
+    strncpy(target->synthId, source->synthId, sizeof(target->synthId) - 1);
+    target->synthId[sizeof(target->synthId) - 1] = '\0';
+    target->volumeMultiplier = source->volumeMultiplier;
+    for(int i=0; i<MaxOutputMappings; i++) {
+        memcpy(&target->outputMappings[i], &source->outputMappings[i], sizeof(struct MacroDeviceOutputMapping));
+    }
 }

@@ -35,9 +35,11 @@ respective component folders / files if different from this license.
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/filewritestream.h"
 #include "helpers/ctagSampleRom.hpp"
+#include "MacroTranslator.hpp"
 
 using namespace CTAG::REST;
 using namespace rapidjson;
+using namespace CTAG::MACROPRESETS;
 
 static const char *MACRO_TAG = "MacroAPI";
 static const char *MACRODEFS_DIR  = "/sdcard/data/macrodefinitions";
@@ -76,7 +78,7 @@ static void read_all_json_in_dir(const char *dirPath, Value &outArray,
         return;
     }
 
-    char pathBuf[256];
+    char pathBuf[270];
     char *fileBuf = (char *)heap_caps_malloc(8192, MALLOC_CAP_SPIRAM);
     if (!fileBuf) {
         closedir(dir);
@@ -91,7 +93,8 @@ static void read_all_json_in_dir(const char *dirPath, Value &outArray,
         if (nlen < 6 || strcasecmp(ent->d_name + nlen - 5, ".json") != 0)
             continue;
 
-        snprintf(pathBuf, sizeof(pathBuf), "%s/%s", dirPath, ent->d_name);
+        snprintf(pathBuf, sizeof(pathBuf) - 1, "%s/%s", dirPath, ent->d_name);
+        pathBuf[sizeof(pathBuf) - 1] = '\0';
         FILE *fp = fopen(pathBuf, "r");
         if (!fp) continue;
 
@@ -154,7 +157,7 @@ esp_err_t MacroAPI::macroapi_get_handler(httpd_req_t *req) {
 
         // 3) Current track state
         Document trackDoc(kObjectType);
-        CTAG::AUDIO::SoundProcessorManager::macroTranslator->SerializeStateInto(trackDoc);
+        MacroTranslator::instance().SerializeStateInto(trackDoc);
         if (trackDoc.HasMember("tracks"))
             resp.AddMember("tracks", trackDoc["tracks"], alloc);
 
@@ -175,7 +178,7 @@ esp_err_t MacroAPI::macroapi_get_handler(httpd_req_t *req) {
     auto &alloc = resp.GetAllocator();
 
     Document doc2(kObjectType);
-    CTAG::AUDIO::SoundProcessorManager::macroTranslator->SerializeStateInto(doc2);
+    MacroTranslator::instance().SerializeStateInto(doc2);
     resp.AddMember("tracks", doc2["tracks"], alloc);
 
     StringBuffer sb;
@@ -355,7 +358,7 @@ esp_err_t MacroAPI::macroapi_post_handler(httpd_req_t *req) {
 
     if (strcmp(action, "reload") == 0) {
         if (defId[0] != '\0') {
-            /* Targeted single-definition reload — lightweight, runs inline */
+            /* Targeted single-defion reload — lightweight, runs inline */
             ESP_LOGI(MACRO_TAG, "Targeted reload for id=%s", defId);
             CTAG::AUDIO::SoundProcessorManager::RefreshSingleMacro(std::string(defId));
             return send_ok(req);
