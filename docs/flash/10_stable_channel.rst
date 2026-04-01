@@ -1263,8 +1263,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         setStat(stat4, '✓ ESP32-P4 firmware updated. Disconnect the <b>front JTAG cable</b> (USB-C&nbsp;#3) and <b>back Port&nbsp;#1</b>.', 'ok');
 
         if (PICO_ON_SD) {
-          $('card5').style.display = 'none';
-          setStat(stat5, '✓ Pico firmware deployed to SD card — will be installed automatically on next boot.', 'ok');
+          setStat(stat5, '✓ Pico firmware deployed to SD card — will auto-install on next boot (requires picoboot3 bootloader).<br><br>⚠️ <b>First-time setup or different app on the Pico?</b> Flash manually via BOOTSEL: disconnect all cables, hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release → click <b>Connect</b>.', 'ok');
           cardDone.style.display = 'block';
         } else if (PICO_UF2_URL) {
           setStat(stat5, 'Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.');
