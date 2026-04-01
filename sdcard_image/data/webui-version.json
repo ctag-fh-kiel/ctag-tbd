@@ -1,5 +1,5 @@
 {
-  "version": "0.4.0",
-  "date": "2026-03-21",
-  "description": "CI pipeline, .jsn→.json rename, repo cleanup"
+  "version": "0.4.1",
+  "date": "2026-04-01",
+  "description": "System Updater: add Pico firmware update via CDN"
 }
