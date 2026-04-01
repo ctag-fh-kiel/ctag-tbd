@@ -32,6 +32,13 @@ Version History
      - Date
      - Description
      - Download
+   * - **0.4.1**
+     - 2026-04-01
+     - System Updater: added Pico firmware update section with CDN check,
+       download, and SD card deploy. Page renamed from "WebUI Updater" to
+       "System Updater". New ``uploadsystem`` REST endpoint for writing to
+       ``/sdcard/system/``. Pico version exposed in ``getAppInfo`` API.
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.4.1.zip>`__
    * - **0.4.0**
      - 2026-03-23
      - Full data migration: ``.jsn`` → ``.json`` rename for all 114 sound
