@@ -14,7 +14,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TBD-16 — WebUI Updater</title>
+  <title>TBD-16 — System Updater</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -235,13 +235,16 @@
 </head>
 <body>
 <div class="app-header">
-  <h1>&#9881; WebUI Updater</h1>
+  <h1>&#9881; System Updater</h1>
   <div class="header-nav">
     <a href="/">&#8592; TBD-16</a>
     <a href="/preset-macro-manager.html">Presets &amp; Macros</a>
   </div>
 </div>
 <div class="container">
+
+  <!-- WebUI section -->
+  <div class="section-label" style="margin-top:0;">WebUI</div>
 
   <!-- Current version -->
   <div class="version-row" style="margin-top:0.25rem;">
@@ -300,6 +303,27 @@
 
   <!-- Log -->
   <div class="log-area" id="log-area"></div>
+
+  <!-- ═══ Pico Firmware ═══ -->
+  <div class="section-label" style="margin-top:2.5rem;">Pico Firmware</div>
+
+  <div class="version-row">
+    <div class="version-card">
+      <div class="label">Installed Pico Version</div>
+      <div class="value" id="pico-current-version">&mdash;</div>
+    </div>
+  </div>
+
+  <div class="online-banner" id="pico-banner">
+    <div id="pico-content"><span class="checking">&#128269; Checking for Pico firmware updates&hellip;</span></div>
+  </div>
+
+  <div class="progress-bar" id="pico-progress-bar">
+    <div class="fill" id="pico-progress-fill" style="width:0%"></div>
+  </div>
+
+  <div class="status-msg" id="pico-status-msg"></div>
+  <div class="log-area" id="pico-log-area"></div>
 </div>
 
 <script>
@@ -942,6 +966,198 @@
   function escAttr(s) {
     return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ══ Pico Firmware Update ══════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+
+  var CDN_BASE = 'https://dadamachines.github.io/dada-tbd-firmware/';
+  var RELEASES_URL = CDN_BASE + 'stable/releases.json';
+
+  var picoVersionEl    = document.getElementById('pico-current-version');
+  var picoBanner       = document.getElementById('pico-banner');
+  var picoContent      = document.getElementById('pico-content');
+  var picoProgressBar  = document.getElementById('pico-progress-bar');
+  var picoProgressFill = document.getElementById('pico-progress-fill');
+  var picoStatusMsg    = document.getElementById('pico-status-msg');
+  var picoLogArea      = document.getElementById('pico-log-area');
+
+  var currentPicoVersion = null;
+
+  function picoLog(msg, cls) {
+    picoLogArea.style.display = 'block';
+    var div = document.createElement('div');
+    div.className = 'log-line' + (cls ? ' log-' + cls : '');
+    div.textContent = msg;
+    picoLogArea.appendChild(div);
+    picoLogArea.scrollTop = picoLogArea.scrollHeight;
+  }
+
+  function picoStatus(msg, type) {
+    picoStatusMsg.textContent = msg;
+    picoStatusMsg.className = 'status-msg ' + type;
+    picoStatusMsg.style.display = 'block';
+  }
+
+  async function loadPicoVersion() {
+    try {
+      var resp = await fetch('/api/v2/device?action=getAppInfo');
+      if (resp.ok) {
+        var info = await resp.json();
+        currentPicoVersion = info.pico_version || null;
+        picoVersionEl.textContent = currentPicoVersion || 'unknown';
+      }
+    } catch (e) {
+      picoVersionEl.textContent = 'offline';
+    }
+  }
+
+  async function checkPicoUpdate() {
+    try {
+      var resp = await fetch(RELEASES_URL, { cache: 'no-cache' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var releases = await resp.json();
+
+      var cdnPicoVersion = releases.picoVersion || null;
+      if (!cdnPicoVersion) {
+        picoContent.innerHTML = '<span class="checking">No Pico firmware version info on CDN.</span>';
+        return;
+      }
+
+      // Find the picoBin URL from the latest version entry
+      var picoBinUrl = null;
+      if (releases.versions && releases.versions.length > 0) {
+        var latest = releases.versions[0];
+        if (latest.files && latest.files.picoBin) {
+          picoBinUrl = CDN_BASE + latest.files.picoBin;
+        }
+      }
+
+      var stripped = currentPicoVersion ? currentPicoVersion.replace(/^v/, '') : '0.0.0';
+      var cdnStripped = cdnPicoVersion.replace(/^v/, '');
+      var isNewer = currentPicoVersion && compareVersions(cdnStripped, stripped) > 0;
+
+      var html = '';
+
+      if (!currentPicoVersion || currentPicoVersion === 'unknown') {
+        html += '<span class="checking">Cannot determine installed Pico version. ';
+        if (picoBinUrl) {
+          html += 'You can still install ' + escHtml(cdnPicoVersion) + '.</span>';
+          html += '<br><button class="btn btn-primary btn-sm" id="pico-install-btn" style="margin-top:0.5rem;">' +
+            'Install ' + escHtml(cdnPicoVersion) + '</button>';
+        } else {
+          html += 'No binary available for download yet.</span>';
+        }
+      } else if (isNewer) {
+        html += '<div class="update-title">&#10024; Pico Firmware Update: ' + escHtml(cdnPicoVersion) + '</div>' +
+          '<div class="update-meta">Installed: ' + escHtml(currentPicoVersion) + '</div>';
+        if (picoBinUrl) {
+          html += '<button class="btn btn-primary" id="pico-install-btn" style="margin-top:0.5rem;">' +
+            'Download &amp; Install ' + escHtml(cdnPicoVersion) + '</button>';
+        } else {
+          html += '<div class="update-desc" style="margin-top:0.5rem;">Binary not yet available for WebUI install. Use the web flasher instead.</div>';
+        }
+      } else {
+        html += '<span class="up-to-date">&#9989; Pico firmware is up to date (' + escHtml(cdnPicoVersion) + ')</span>';
+        if (picoBinUrl) {
+          html += '<br><button class="btn btn-secondary btn-sm" id="pico-reinstall-btn" style="margin-top:0.5rem;">' +
+            '&#8635; Reinstall ' + escHtml(cdnPicoVersion) + '</button>';
+        }
+      }
+
+      picoContent.innerHTML = html;
+
+      var installBtn = document.getElementById('pico-install-btn');
+      if (installBtn) {
+        installBtn.addEventListener('click', function() {
+          installPicoUpdate(cdnPicoVersion, picoBinUrl);
+        });
+      }
+      var reinstallBtn = document.getElementById('pico-reinstall-btn');
+      if (reinstallBtn) {
+        reinstallBtn.addEventListener('click', function() {
+          installPicoUpdate(cdnPicoVersion, picoBinUrl);
+        });
+      }
+
+    } catch (e) {
+      picoContent.innerHTML = '<span class="checking">Could not check for Pico firmware updates.</span>';
+    }
+  }
+
+  async function installPicoUpdate(version, binUrl) {
+    var btns = picoContent.querySelectorAll('button');
+    for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
+
+    picoProgressBar.style.display = 'block';
+    picoProgressFill.style.width = '10%';
+    picoLog('Downloading Pico firmware ' + version + '...', 'info');
+
+    try {
+      // Step 1: Download binary from CDN
+      var resp = await fetch(binUrl);
+      if (!resp.ok) throw new Error('Download failed: HTTP ' + resp.status);
+      var binData = await resp.arrayBuffer();
+      picoLog('Downloaded ' + formatBytes(binData.byteLength), 'ok');
+      picoProgressFill.style.width = '40%';
+
+      // Step 2: Upload binary to SD card
+      picoLog('Uploading pico-firmware.bin to SD card...', 'info');
+      var uploadResp = await fetch(
+        '/api/v2/samples?action=uploadsystem&path=firmware/pico-firmware.bin',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: binData
+        }
+      );
+      if (!uploadResp.ok) {
+        var errText = await uploadResp.text().catch(function() { return uploadResp.statusText; });
+        throw new Error('Upload failed: ' + errText);
+      }
+      var uploadResult = await uploadResp.json();
+      if (!uploadResult.ok) throw new Error(uploadResult.error || 'Upload rejected');
+      picoLog('Firmware binary uploaded (' + uploadResult.size + ' bytes)', 'ok');
+      picoProgressFill.style.width = '75%';
+
+      // Step 3: Write version sidecar file
+      picoLog('Writing version file...', 'info');
+      var versionResp = await fetch(
+        '/api/v2/samples?action=uploadsystem&path=firmware/pico-firmware-version.txt',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream' },
+          body: version
+        }
+      );
+      if (!versionResp.ok) {
+        picoLog('Warning: version file write failed', 'err');
+      } else {
+        picoLog('Version file written: ' + version, 'ok');
+      }
+      picoProgressFill.style.width = '100%';
+
+      picoStatus(
+        'Pico firmware ' + version + ' deployed to SD card. ' +
+        'It will be flashed automatically on next reboot.',
+        'success'
+      );
+      picoLog('Done! Reboot the device to flash the new Pico firmware.', 'ok');
+
+      picoVersionEl.textContent = currentPicoVersion + ' \u2192 ' + version + ' (pending reboot)';
+
+    } catch (e) {
+      picoStatus('Pico firmware update failed: ' + e.message, 'error');
+      picoLog('Error: ' + e.message, 'err');
+      picoProgressFill.style.width = '0%';
+      var btns2 = picoContent.querySelectorAll('button');
+      for (var j = 0; j < btns2.length; j++) btns2[j].disabled = false;
+    }
+  }
+
+  // Load Pico version + check for updates
+  loadPicoVersion().then(function() { checkPicoUpdate(); });
+
 })();
 </script>
 </body>

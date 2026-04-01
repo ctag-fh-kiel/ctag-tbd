@@ -103,14 +103,17 @@ static esp_err_t handle_get_app_info(httpd_req_t *req) {
     const string &appId = CTAG::SPIAPI::SpiAPI::GetRP2350AppId();
     bool locked = CTAG::SPIAPI::SpiAPI::IsPluginLocked();
     bool redirectSamples = CTAG::SPIAPI::SpiAPI::ShouldRedirectSamples();
+    const string &picoVer = CTAG::SPIAPI::SpiAPI::GetPicoVersion();
 #else
     const string appId = "none";
     bool locked = false;
     bool redirectSamples = false;
+    const string picoVer = "";
 #endif
     string json = "{\"rp2350_app\":\"" + appId
         + "\",\"plugin_lock\":" + (locked ? "true" : "false")
         + ",\"redirect_samples\":" + (redirectSamples ? "true" : "false")
+        + ",\"pico_version\":\"" + picoVer + "\""
         + "}";
     return send_json(req, json.c_str());
 }
