@@ -579,6 +579,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
     var SELECTED = null;   /* { tag, p4Url, picoUrl, zipUrl, hashUrl, htmlUrl } */
     var TUSB_MSC_URL = null;
     var PICO_UF2_URL = null;
+    var PICO_ON_SD = false;
     var REBOOT_WAIT = 25;
 
     /* ══════════════════════════════
@@ -599,6 +600,7 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
         htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + tag,
         p4Url: FIRMWARE_CDN + '/' + f.unified,
         picoUrl: f.pico ? (FIRMWARE_CDN + '/' + f.pico) : null,
+        picoBinUrl: f.picoBin ? (FIRMWARE_CDN + '/' + f.picoBin) : null,
         zipUrl: f.sdcard ? (FIRMWARE_CDN + '/' + f.sdcard) : null,
         hashUrl: f.hash ? (FIRMWARE_CDN + '/' + f.hash) : null,
         webuiVersion: version.webuiVersion || null
@@ -643,6 +645,8 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
       btn4Connect.disabled = false; btn4Flash.disabled = true;
       btn5Connect.disabled = false; btn5Flash.disabled = true; btn5Reboot.disabled = true;
       hideProg(prog1); hideProg(prog2); hideProg(prog4); hideProg(prog5);
+      PICO_ON_SD = false;
+      $('card5').style.display = '';
       setStat(stat1, 'Select a version, then click <b>Connect</b>.');
       setStat(stat2, 'Select the <b>"NO NAME"</b> SD card drive.');
       setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b>. Select <b>"USB JTAG/serial debug unit"</b>.');
@@ -1134,6 +1138,33 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
           } catch (he) { log('ERR  dada-tbd-sd-hash.txt: ' + he.message); }
         }
 
+        /* Deploy Pico firmware to SD (P4 will flash automatically on next boot) */
+        if (SELECTED.picoBinUrl) {
+          try {
+            setStat(stat2, 'Downloading Pico firmware…');
+            var fwResp = await fetch(SELECTED.picoBinUrl);
+            if (fwResp.ok) {
+              var fwData = new Uint8Array(await fwResp.arrayBuffer());
+              var sysDir = await dirHandle.getDirectoryHandle('system', { create: true });
+              var fwDir = await sysDir.getDirectoryHandle('firmware', { create: true });
+              var fwFile = await fwDir.getFileHandle('pico-firmware.bin', { create: true });
+              var fwW = await fwFile.createWritable(); await fwW.write(fwData); await fwW.close();
+              log('FILE system/firmware/pico-firmware.bin  (' + fwData.length + ' bytes)');
+              fwData = null;
+              var picoVer = CATALOG.picoVersion || SELECTED.tag;
+              var verFile = await fwDir.getFileHandle('pico-firmware-version.txt', { create: true });
+              var verW = await verFile.createWritable(); await verW.write(picoVer); await verW.close();
+              log('FILE system/firmware/pico-firmware-version.txt  (' + picoVer + ')');
+              PICO_ON_SD = true;
+              written += 2;
+            } else {
+              log('WARN Pico firmware download failed: ' + fwResp.statusText);
+            }
+          } catch (pe) {
+            log('WARN Pico firmware: ' + pe.message);
+          }
+        }
+
         /* Cleanup macOS files */
         setStat(stat2, 'Cleaning up metadata files…');
         showProg(prog2, prog2Bar, prog2Txt, 97);
@@ -1231,7 +1262,11 @@ All releases are on `GitHub <https://github.com/dadamachines/ctag-tbd/releases>`
 
         setStat(stat4, '✓ ESP32-P4 firmware updated. Disconnect the <b>front JTAG cable</b> (USB-C&nbsp;#3) and <b>back Port&nbsp;#1</b>.', 'ok');
 
-        if (PICO_UF2_URL) {
+        if (PICO_ON_SD) {
+          $('card5').style.display = 'none';
+          setStat(stat5, '✓ Pico firmware deployed to SD card — will be installed automatically on next boot.', 'ok');
+          cardDone.style.display = 'block';
+        } else if (PICO_UF2_URL) {
           setStat(stat5, 'Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.');
         } else {
           setStat(stat5, 'No Pico firmware available — skip this step.', 'info');
