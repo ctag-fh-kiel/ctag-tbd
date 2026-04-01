@@ -32,6 +32,12 @@ Version History
      - Date
      - Description
      - Download
+   * - **0.4.5**
+     - 2026-04-01
+     - Version bump for coordinated v0.4.5 release (P4 + Pico + WebUI).
+       Includes Pico firmware update via System Updater and all prior v0.4.1
+       features.
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.4.5.zip>`__
    * - **0.4.1**
      - 2026-04-01
      - System Updater: added Pico firmware update section with CDN check,
