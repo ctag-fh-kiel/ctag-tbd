@@ -1035,7 +1035,9 @@
 
       var stripped = currentPicoVersion ? currentPicoVersion.replace(/^v/, '') : '0.0.0';
       var cdnStripped = cdnPicoVersion.replace(/^v/, '');
-      var isNewer = currentPicoVersion && compareVersions(cdnStripped, stripped) > 0;
+      // Dev builds (bare git hash/number like "1674" or "40b5") have no dots — not valid semver
+      var isDevBuild = currentPicoVersion && stripped.indexOf('.') === -1;
+      var isNewer = currentPicoVersion && !isDevBuild && compareVersions(cdnStripped, stripped) > 0;
 
       var html = '';
 
@@ -1047,6 +1049,15 @@
             'Install ' + escHtml(cdnPicoVersion) + '</button>';
         } else {
           html += 'No binary available for download yet.</span>';
+        }
+      } else if (isDevBuild) {
+        html += '<div class="update-title">&#10024; Official Pico Firmware: ' + escHtml(cdnPicoVersion) + '</div>' +
+          '<div class="update-meta">Installed: ' + escHtml(currentPicoVersion) + ' (dev build)</div>';
+        if (picoBinUrl) {
+          html += '<button class="btn btn-primary" id="pico-install-btn" style="margin-top:0.5rem;">' +
+            'Install Official ' + escHtml(cdnPicoVersion) + '</button>';
+        } else {
+          html += '<div class="update-desc" style="margin-top:0.5rem;">Binary not yet available for WebUI install. Use the web flasher instead.</div>';
         }
       } else if (isNewer) {
         html += '<div class="update-title">&#10024; Pico Firmware Update: ' + escHtml(cdnPicoVersion) + '</div>' +

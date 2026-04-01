@@ -32,6 +32,12 @@ Version History
      - Date
      - Description
      - Download
+   * - **0.4.6**
+     - 2026-04-01
+     - Fix Pico version comparison for dev builds. Non-semver versions
+       (bare git hash/number) were incorrectly treated as newer than
+       official releases. BOOTSEL step kept visible as picoboot3 fallback.
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.4.6.zip>`__
    * - **0.4.5**
      - 2026-04-01
      - Version bump for coordinated v0.4.5 release (P4 + Pico + WebUI).
