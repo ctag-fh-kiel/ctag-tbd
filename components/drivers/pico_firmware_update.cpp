@@ -22,6 +22,8 @@ respective component folders / files if different from this license.
 #include "pico_reset.hpp"
 #include "picoboot3_master.hpp"
 #include "led_rgb_bba.hpp"
+#include <string>
+#include "version.hpp"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -85,6 +87,45 @@ static void log_to_sd(const char *fmt, ...) {
 }
 
 namespace CTAG::DRIVERS {
+
+bool PicoFirmwareUpdate::ConsumePicoUpdateFlag() {
+    struct stat st;
+    if (stat(PICO_UPDATE_FLAG_PATH, &st) == 0) {
+        remove(PICO_UPDATE_FLAG_PATH);
+        return true;
+    }
+    return false;
+}
+
+bool PicoFirmwareUpdate::ConsumeP4UpdateFlag() {
+    struct stat st;
+    if (stat(P4_UPDATE_FLAG_PATH, &st) == 0) {
+        remove(P4_UPDATE_FLAG_PATH);
+        return true;
+    }
+    return false;
+}
+
+void PicoFirmwareUpdate::CheckP4VersionChange() {
+    // Read previously stored P4 firmware version
+    char installed[64] = {0};
+    read_text_file(P4_INSTALLED_PATH, installed, sizeof(installed));
+
+    const char *current = TBD_FW_VERSION.c_str();
+
+    if (strcmp(installed, current) == 0) {
+        ESP_LOGI(TAG, "P4 version unchanged: %s", installed);
+        return;
+    }
+
+    ESP_LOGI(TAG, "P4 version changed: '%s' -> '%s'", installed, current);
+
+    // Write flag file (consumed once by 0xAE handler after Pico reads it)
+    write_text_file(P4_UPDATE_FLAG_PATH, "1");
+
+    // Update installed version for next boot comparison
+    write_text_file(P4_INSTALLED_PATH, current);
+}
 
 bool PicoFirmwareUpdate::CheckAndFlash() {
     // Clear previous log
@@ -287,6 +328,8 @@ bool PicoFirmwareUpdate::CheckAndFlash() {
     vTaskDelay(pdMS_TO_TICKS(500));
     LedRGB::SetLedRGB(0, 0, 255);  // back to blue (normal boot)
 
+    // Write flag file so the Pico can query update status after reboot
+    write_text_file(PICO_UPDATE_FLAG_PATH, "1");
     return true;
 
 fail_deinit:

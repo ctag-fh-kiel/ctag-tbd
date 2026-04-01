@@ -55,6 +55,7 @@ void app_main() {
 
 #if CONFIG_TBD_USE_RP2350
     DRIVERS::PicoFirmwareUpdate::CheckAndFlash();
+    DRIVERS::PicoFirmwareUpdate::CheckP4VersionChange();
 #endif
 
     AUDIO::SoundProcessorManager::StartSoundProcessor();

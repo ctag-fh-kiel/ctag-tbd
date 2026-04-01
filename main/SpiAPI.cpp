@@ -26,6 +26,7 @@ respective component folders / files if different from this license.
 #include "SPManager.hpp"
 #include "Favorites.hpp"
 #include "helpers/ctagSampleRom.hpp"
+#include "pico_firmware_update.hpp"
 
 #include "soc/gpio_num.h"
 #include "esp_log.h"
@@ -631,7 +632,30 @@ namespace CTAG::SPIAPI{
             case RequestType::GetFirmwareInfo:
                 ESP_LOGI("SpiAPI", "GetFirmwareInfo");
                 {
-                    std::string info("{\"HWV\":\"" + TBD_HW_VERSION + "\",\"FWV\":\"" + TBD_FW_VERSION + "\",\"OTA\":\"" + std::string(esp_get_current_ota_label()) + "\"}");
+                    // Read WebUI version from SD card
+                    std::string webui_ver;
+                    FILE *wf = fopen("/sdcard/data/webui-version.json", "r");
+                    if (wf) {
+                        char buf[256];
+                        size_t len = fread(buf, 1, sizeof(buf) - 1, wf);
+                        fclose(wf);
+                        buf[len] = '\0';
+                        const char *v = strstr(buf, "\"version\"");
+                        if (v) {
+                            v = strchr(v, ':');
+                            if (v) {
+                                v++;
+                                while (*v == ' ' || *v == '"') v++;
+                                const char *end = strchr(v, '"');
+                                if (end) webui_ver.assign(v, end - v);
+                            }
+                        }
+                    }
+
+                    std::string info("{\"HWV\":\"" + TBD_HW_VERSION
+                        + "\",\"FWV\":\"" + TBD_FW_VERSION
+                        + "\",\"OTA\":\"" + std::string(esp_get_current_ota_label())
+                        + "\",\"WEBUI\":\"" + webui_ver + "\"}");
                     result = transmitCString(requestType, info.c_str());
                 }
                 break;
@@ -957,6 +981,27 @@ namespace CTAG::SPIAPI{
                 {
                     rp2350PicoVersion = string_parameter;
                     ESP_LOGI("SpiAPI", "RP2350 reported Pico firmware version: \"%s\"", rp2350PicoVersion.c_str());
+                }
+                break;
+
+            case RequestType::GetPicoUpdateStatus:
+                {
+                    bool picoUpdated = DRIVERS::PicoFirmwareUpdate::ConsumePicoUpdateFlag();
+                    bool p4Updated = DRIVERS::PicoFirmwareUpdate::ConsumeP4UpdateFlag();
+
+                    std::string status;
+                    if (picoUpdated && p4Updated) {
+                        status = "both:" + TBD_FW_VERSION;
+                    } else if (p4Updated) {
+                        status = "p4:" + TBD_FW_VERSION;
+                    } else if (picoUpdated) {
+                        status = "pico";
+                    } else {
+                        status = "none";
+                    }
+
+                    ESP_LOGI("SpiAPI", "GetPicoUpdateStatus: %s", status.c_str());
+                    result = transmitCString(requestType, status.c_str());
                 }
                 break;
             }
