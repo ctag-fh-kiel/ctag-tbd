@@ -642,11 +642,13 @@ or any active feature-test branch build.
         name: channelName + ' @ ' + latest.tag,
         p4Url: f.unified ? (FIRMWARE_CDN + '/' + f.unified) : null,
         picoUrl: f.pico ? (FIRMWARE_CDN + '/' + f.pico) : null,
+        picoBinUrl: f.picoBin ? (FIRMWARE_CDN + '/' + f.picoBin) : null,
         zipUrl: f.sdcard ? (FIRMWARE_CDN + '/' + f.sdcard) : null,
         hashUrl: f.hash ? (FIRMWARE_CDN + '/' + f.hash) : null,
         htmlUrl: 'https://github.com/dadamachines/ctag-tbd/releases/tag/' + latest.tag,
         webuiVersion: latest.webuiVersion || null,
-        webuiUpdateUrl: latest.webuiUpdate ? (FIRMWARE_CDN + '/' + latest.webuiUpdate) : null
+        webuiUpdateUrl: latest.webuiUpdate ? (FIRMWARE_CDN + '/' + latest.webuiUpdate) : null,
+        picoVersion: catalog.picoVersion || null
       };
     }
 
@@ -680,6 +682,8 @@ or any active feature-test branch build.
       btn4Connect.disabled = false; btn4Flash.disabled = true;
       btn5Connect.disabled = false; btn5Flash.disabled = true; btn5Reboot.disabled = true;
       hideProg(prog1); hideProg(prog2); hideProg(prog4); hideProg(prog5);
+      PICO_ON_SD = false;
+      $('card5').style.display = '';
       setStat(stat1, 'Click <b>Connect</b>. Make sure <b>both</b> USB-C cables are connected.');
       setStat(stat2, 'Select the <b>"NO NAME"</b> SD card drive.');
       setStat(stat3, '<b>Safely eject the SD card drive</b>, then click <b>Connect</b>. Select <b>"USB JTAG/serial debug unit"</b>.');
@@ -779,6 +783,7 @@ or any active feature-test branch build.
        Pico firmware — from releases.json
        ══════════════════════════════ */
     var PICO_UF2_URL = null;
+    var PICO_ON_SD = false;
 
     /* ══════════════════════════════
        INIT — load tools + fetch release
@@ -1211,6 +1216,33 @@ or any active feature-test branch build.
           log('FILE dada-tbd-sd-hash.txt  (' + sdHash + ')');
         } catch (he) { log('ERR  dada-tbd-sd-hash.txt: ' + he.message); }
 
+        /* Deploy Pico firmware to SD (P4 will flash automatically on next boot) */
+        if (RELEASE.picoBinUrl) {
+          try {
+            setStat(stat2, 'Downloading Pico firmware…');
+            var fwResp = await fetch(RELEASE.picoBinUrl);
+            if (fwResp.ok) {
+              var fwData = new Uint8Array(await fwResp.arrayBuffer());
+              var sysDir = await dirHandle.getDirectoryHandle('system', { create: true });
+              var fwDir = await sysDir.getDirectoryHandle('firmware', { create: true });
+              var fwFile = await fwDir.getFileHandle('pico-firmware.bin', { create: true });
+              var fwW = await fwFile.createWritable(); await fwW.write(fwData); await fwW.close();
+              log('FILE system/firmware/pico-firmware.bin  (' + fwData.length + ' bytes)');
+              fwData = null;
+              var picoVer = RELEASE.picoVersion || RELEASE.tag;
+              var verFile = await fwDir.getFileHandle('pico-firmware-version.txt', { create: true });
+              var verW = await verFile.createWritable(); await verW.write(picoVer); await verW.close();
+              log('FILE system/firmware/pico-firmware-version.txt  (' + picoVer + ')');
+              PICO_ON_SD = true;
+              written += 2;
+            } else {
+              log('WARN Pico firmware download failed: ' + fwResp.statusText);
+            }
+          } catch (pe) {
+            log('WARN Pico firmware: ' + pe.message);
+          }
+        }
+
         /* Cleanup macOS files */
         setStat(stat2, 'Cleaning up metadata files…');
         showProg(prog2, prog2Bar, prog2Txt, 97);
@@ -1308,7 +1340,11 @@ or any active feature-test branch build.
 
         setStat(stat4, '✓ ESP32-P4 firmware updated. Disconnect the <b>front JTAG cable</b> (USB-C&nbsp;#3) and <b>back Port&nbsp;#1</b>.', 'ok');
 
-        if (PICO_UF2_URL) {
+        if (PICO_ON_SD) {
+          $('card5').style.display = 'none';
+          setStat(stat5, '✓ Pico firmware deployed to SD card — will be installed automatically on next boot.', 'ok');
+          cardDone.style.display = 'block';
+        } else if (PICO_UF2_URL) {
           setStat(stat5, 'Disconnect all cables. Hold <b>BOOTSEL</b> → plug <b>Port&nbsp;#2</b> → release. Then click <b>Connect</b>.');
         } else {
           setStat(stat5, 'No Pico firmware available — skip this step.', 'info');
