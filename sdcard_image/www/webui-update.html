@@ -1032,6 +1032,10 @@
           picoBinUrl = CDN_BASE + latest.files.picoBin;
         }
       }
+      // Fallback: construct URL from picoVersion when picoBin missing (CI race condition)
+      if (!picoBinUrl && cdnPicoVersion) {
+        picoBinUrl = CDN_BASE + 'stable/pico/dada-tbd-16-' + cdnPicoVersion + '-pico.bin';
+      }
 
       var stripped = currentPicoVersion ? currentPicoVersion.replace(/^v/, '') : '0.0.0';
       var cdnStripped = cdnPicoVersion.replace(/^v/, '');
