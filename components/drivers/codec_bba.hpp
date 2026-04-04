@@ -33,6 +33,8 @@ namespace CTAG {
             Codec() = delete;
             static void InitCodec();
 
+            static void PrintBootTiming();
+
             static void ADCHighPassEnable();
 
             static void ADCHighPassDisable();
