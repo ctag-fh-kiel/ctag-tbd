@@ -11,7 +11,7 @@ if(CONFIG_TBD_USE_SD_CARD)
     list(APPEND DRIVER_SRCS "custom_sdmmc_cmd.cpp")
 endif()
 
-set(DRIVER_REQUIRES ableton_link driver littlefs)
+set(DRIVER_REQUIRES ableton_link driver littlefs esp_timer)
 
 idf_component_register(SRCS ${DRIVER_SRCS}
         INCLUDE_DIRS "."
