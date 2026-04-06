@@ -30,6 +30,7 @@ respective component folders / files if different from this license.
 #include "MacroDeviceDefinitionDataModel.hpp"
 #include "MacroSoundPreset.hpp"
 #include "ctagResources.hpp"
+#include "StorageOverlay.hpp"
 
 
 using namespace CTAG::MACROPRESETS;
@@ -71,18 +72,17 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
         MacroSoundPresetUtils::MacroSoundPresetGroup_Reset(&groups[i]);
     }
 
-    DIR *dir;
-    struct dirent *ent;
-    Value sparray(kArrayType);
     int pindex = 0;
     int gindex = 0;
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
-    if ((dir = opendir(path.c_str())) != NULL) {
-        while ((ent = readdir(dir)) != NULL) {
-            std::string fn(ent->d_name);
+    // Use overlay: merged listing of /user/presets/ + /factory/presets/
+    auto presetFiles = CTAG::STORAGE::listMergedDir(CTAG::STORAGE::DIR_PRESETS);
+    for (const auto &fn : presetFiles) {
+        {
+            std::string resolvedPath = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PRESETS, fn);
+            if (resolvedPath.empty()) continue;
 
             Document d;
-            loadJSON(d, path + "/" + fn);
+            loadJSON(d, resolvedPath);
             if(!d.HasParseError()) {
                 if(MacroSoundPresetUtils::MacroSoundPreset_DeserializeJSON(&presets[pindex], d)) {
                     ESP_LOGI("MacroSoundPresetDataModel", "Got sound preset: %d id: %s \"%s\"", pindex, presets[pindex].id, presets[pindex].displayName);
@@ -144,23 +144,18 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
                 ESP_LOGE("MacroSoundPresetDataModel", "Failed to parse preset file: %s", fn.c_str());
             }
         }
-        closedir(dir);
-        presetsUsed = pindex;
-
-        // TODO: Sort groups
-
-        int gcount = 0;
-        // find number of groups
-        for(int g=0; g<MaxSoundPresetGroups; g++) {
-            if (groups[g].id[0] != '\0') {
-                gcount++;
-            }
-        }
-        qsort(groups, gcount, sizeof(struct MacroSoundPresetGroup), compareGroups);
-        groupsUsed = gcount;
-    } else {
-        ESP_LOGE("MacroSoundPresetDataModel", "Could not open directory %s", path.c_str());
     }
+    presetsUsed = pindex;
+
+    // Sort groups
+    int gcount = 0;
+    for(int g=0; g<MaxSoundPresetGroups; g++) {
+        if (groups[g].id[0] != '\0') {
+            gcount++;
+        }
+    }
+    qsort(groups, gcount, sizeof(struct MacroSoundPresetGroup), compareGroups);
+    groupsUsed = gcount;
 
     ESP_LOGI("MacroSoundPresetDataModel", "After reload: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
         heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -170,8 +165,12 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
 }
 
 void MacroSoundPresetDataModel::LoadMacroSoundPreset(MacroSoundPreset *target, std::string id) {
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
-    const std::string filename = path + "/" + id + ".json";
+    // Overlay: check /user/presets/ then /factory/presets/
+    const std::string filename = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PRESETS, id + ".json");
+    if (filename.empty()) {
+        ESP_LOGE("MacroSoundPresetDataModel", "Preset not found in overlay: %s", id.c_str());
+        return;
+    }
 
     Document d;
     loadJSON(d, filename);
@@ -252,10 +251,9 @@ bool MacroSoundPresetDataModel::UpdatePreset(const std::string &jsonString) {
 
     std::string id = d["id"].GetString();
 
-    // just save the file now when we know the id
+    // Write to /user/presets/ (user data layer)
 
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
-    const std::string filename = path + "/" + id + ".json";
+    const std::string filename = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_PRESETS, id + ".json");
 
     fp = fopen(filename.c_str(), "w");
     if (fp == NULL) {
@@ -272,8 +270,13 @@ bool MacroSoundPresetDataModel::UpdatePreset(const std::string &jsonString) {
 
 
 void MacroSoundPresetDataModel::SerializeItemJSON(const std::string &id, std::string *output) {
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
-    const std::string filename = path + "/" + id + ".json";
+    // Overlay: check /user/presets/ then /factory/presets/
+    const std::string filename = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PRESETS, id + ".json");
+    if (filename.empty()) {
+        ESP_LOGE("MacroSoundPresetDataModel", "Preset not found in overlay: %s", id.c_str());
+        output->assign("");
+        return;
+    }
 
     output->assign("");
 
@@ -308,8 +311,8 @@ void MacroSoundPresetDataModel::SerializeItemJSON(const std::string &id, std::st
 }
 
 void MacroSoundPresetDataModel::DeleteItem(const std::string &id) {
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrosoundpresets";
-    const std::string filename = path + "/" + id + ".json";
+    // Only delete from /user/presets/ (factory presets are immutable)
+    const std::string filename = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_PRESETS, id + ".json");
     ESP_LOGI("MacroSoundPresetDataModel", "Deleting file: %s", filename.c_str());
     unlink(filename.c_str());
 }
@@ -372,8 +375,8 @@ bool MacroSoundPresetDataModel::PutSamplePresetJSON(const string &presetJSON) {
         return false;
     }
 
-    const std::string path = CTAG::RESOURCES::sdcardRoot +
-        "/data/macrosoundpresets/" + std::string(mp.id) + ".json";
+    // Write to /user/presets/ (user data layer)
+    const std::string path = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_PRESETS, std::string(mp.id) + ".json");
 
     FILE *f = fopen(path.c_str(), "w");
     if (!f) {

@@ -26,6 +26,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "ctagDataModelBase.hpp"
+#include "StorageOverlay.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -80,9 +81,9 @@ namespace CTAG {
 
             Document m;
 #ifndef TBD_SIM
-            const string MODELJSONFN = "/sdcard/data/spm-config.json";
+            const string MODELJSONFN = CTAG::STORAGE::userPath() + "/" + CTAG::STORAGE::DIR_CONFIG + "/device.json";
 #else
-            const string MODELJSONFN = "../../sdcard_image/data/spm-config.json";
+            const string MODELJSONFN = "../../sdcard_image/user/config/device.json";
 #endif
         };
     }

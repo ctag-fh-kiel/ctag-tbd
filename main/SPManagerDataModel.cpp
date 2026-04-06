@@ -45,36 +45,33 @@ SPManagerDataModel::SPManagerDataModel() {
 SPManagerDataModel::~SPManagerDataModel() {
 }
 
-// checks for available sound processors based on data/sp json file entries
+// checks for available sound processors based on factory/patches/ + user/patches/ json file entries
 void SPManagerDataModel::getSoundProcessors() {
     if (m.HasMember("availableProcessors")) return;
-    DIR *dir;
-    struct dirent *ent;
     Value sparray(kArrayType);
     m.AddMember("availableProcessors", sparray, m.GetAllocator());
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/sp";
-    if ((dir = opendir(path.c_str())) != NULL) {
-        while ((ent = readdir(dir)) != NULL) {
-            string fn(ent->d_name);
-            if (fn.find("mui-") != string::npos) {
-                ESP_LOGD("SPModel", "Filename: %s", fn.c_str());
-                Document d;
-                loadJSON(d, path + "/" + fn);
-                Value obj(kObjectType);
-                Value id(d["id"].GetString(), d.GetAllocator());
-                Value name(d["name"].GetString(), d.GetAllocator());
-                Value hint(kStringType);
-                obj.AddMember("id", id.Move(), m.GetAllocator());
-                obj.AddMember("name", name.Move(), m.GetAllocator());
-                obj.AddMember("isStereo", d["isStereo"], m.GetAllocator());
-                if (d.HasMember("hint")) {
-                    hint.SetString(d["hint"].GetString(), m.GetAllocator());
-                    obj.AddMember("hint", hint.Move(), m.GetAllocator());
-                }
-                m["availableProcessors"].PushBack(obj, m.GetAllocator());
+    // Use overlay: merged listing of /user/patches/ + /factory/patches/
+    auto patchFiles = CTAG::STORAGE::listMergedDir(CTAG::STORAGE::DIR_PATCHES);
+    for (const auto &fn : patchFiles) {
+        if (fn.find("mui-") != string::npos) {
+            std::string resolvedPath = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PATCHES, fn);
+            if (resolvedPath.empty()) continue;
+            ESP_LOGD("SPModel", "Filename: %s", fn.c_str());
+            Document d;
+            loadJSON(d, resolvedPath);
+            Value obj(kObjectType);
+            Value id(d["id"].GetString(), d.GetAllocator());
+            Value name(d["name"].GetString(), d.GetAllocator());
+            Value hint(kStringType);
+            obj.AddMember("id", id.Move(), m.GetAllocator());
+            obj.AddMember("name", name.Move(), m.GetAllocator());
+            obj.AddMember("isStereo", d["isStereo"], m.GetAllocator());
+            if (d.HasMember("hint")) {
+                hint.SetString(d["hint"].GetString(), m.GetAllocator());
+                obj.AddMember("hint", hint.Move(), m.GetAllocator());
             }
+            m["availableProcessors"].PushBack(obj, m.GetAllocator());
         }
-        closedir(dir);
     }
     storeJSON(m, MODELJSONFN);
 }
@@ -247,7 +244,8 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
     json.Clear();
     Document d1, d2;
-    loadJSON(d1, CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".json");
+    std::string presetFile = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PATCHES, "mp-" + id + ".json");
+    loadJSON(d1, presetFile);
     d2.SetObject();
     Value s_id(kObjectType);
     s_id.SetString(id, d2.GetAllocator());
@@ -263,7 +261,7 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
     Document presets;
     presets.Parse(data);
     if(presets.HasParseError()) return;
-    storeJSON(presets, CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".json");
+    storeJSON(presets, CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_PATCHES, std::string("mp-") + id + ".json"));
 }
 
 bool SPManagerDataModel::HasPluginID(const string &id) {

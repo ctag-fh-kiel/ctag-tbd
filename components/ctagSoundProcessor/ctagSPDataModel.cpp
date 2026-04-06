@@ -26,6 +26,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/stringbuffer.h"
 #include "esp_log.h"
 #include "ctagResources.hpp"
+#include <sys/stat.h>
 
 /*
 #ifndef TBD_SIM
@@ -35,16 +36,28 @@ respective component folders / files if different from this license.
 #endif
  */
 
+// Inline overlay resolution for patches (avoids circular component dep on main/)
+static std::string resolveOverlayPatch(const std::string &filename) {
+    std::string userPath = CTAG::RESOURCES::sdcardRoot + "/user/patches/" + filename;
+    struct stat st;
+    if (stat(userPath.c_str(), &st) == 0) return userPath;
+    return CTAG::RESOURCES::sdcardRoot + "/factory/patches/" + filename;
+}
+static std::string userPatchPath(const std::string &filename) {
+    return CTAG::RESOURCES::sdcardRoot + "/user/patches/" + filename;
+}
+
 using namespace CTAG::SP;
 
 ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo) {
     // acquire data from json files ui model and patch model
-    muiFileName = CTAG::RESOURCES::sdcardRoot + "/data/sp/mui-" + id + ".json";
+    muiFileName = resolveOverlayPatch("mui-" + id + ".json");
     //std::cout << "Reading " << muiFileName << std::endl;
     loadJSON(mui, muiFileName);
-    mpFileName = CTAG::RESOURCES::sdcardRoot + "/data/sp/mp-" + id + ".json";
-    //std::cout << "Reading " << mpFileName << std::endl;
-    loadJSON(mp, mpFileName);
+    // Read presets from overlay (user overrides factory), but always write to user dir
+    std::string mpReadPath = resolveOverlayPatch("mp-" + id + ".json");
+    mpFileName = userPatchPath("mp-" + id + ".json");
+    loadJSON(mp, mpReadPath);
     // load last activated preset
     if (mp.IsObject() && mp.HasMember("activePatch") && mp["activePatch"].IsInt()) {
         ESP_LOGD("Model", "Loading patch number %d", mp["activePatch"].GetInt());

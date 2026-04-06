@@ -85,7 +85,7 @@ namespace CTAG::SPIAPI{
             GetMacroDefinition = 0xA2,
             ActivateTrackMachine = 0xA3,
             LoadTrackSoundPreset = 0xA4,
-            GetTrackDefaultPresets = 0xA5, // returns JSON with default preset IDs per track from /sdcard/data/trackdefaults.json
+            GetTrackDefaultPresets = 0xA5, // returns JSON with default preset IDs per track from trackdefaults/default.json
             // SetTrackSampleBank = 0xA6,
             GetKitIndexJSON = 0xA7,
             GetSampleBankIndexJSON = 0xA8,

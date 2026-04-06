@@ -41,6 +41,8 @@ static const char *TAG = "SampleAPI";
 // SD card paths
 static const char *SAMPLE_ROOT = "/sdcard/tbdsamples";
 static const char *SAMPLE_ROM_FILE = "/sdcard/tbdsamples/sample_rom.json";
+// TODO(storage-refactor): Migrate CONFIG_ROOT reads to overlay (factory+user),
+// writes to /user/, and coordinate with WebUI path expectations.
 static const char *CONFIG_ROOT = "/sdcard/data";
 
 // PSRAM capacity constant (~28 MB)

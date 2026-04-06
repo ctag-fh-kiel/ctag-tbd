@@ -36,14 +36,13 @@ respective component folders / files if different from this license.
 #include "rapidjson/filewritestream.h"
 #include "helpers/ctagSampleRom.hpp"
 #include "MacroTranslator.hpp"
+#include "StorageOverlay.hpp"
 
 using namespace CTAG::REST;
 using namespace rapidjson;
 using namespace CTAG::MACROPRESETS;
 
 static const char *MACRO_TAG = "MacroAPI";
-static const char *MACRODEFS_DIR  = "/sdcard/data/macrodefinitions";
-static const char *PRESETS_DIR    = "/sdcard/data/macrosoundpresets";
 
 static void set_api_headers(httpd_req_t *req) {
     httpd_resp_set_hdr(req, "Cache-Control", "no-store");
@@ -116,6 +115,39 @@ static void read_all_json_in_dir(const char *dirPath, Value &outArray,
     closedir(dir);
 }
 
+/**
+ * Read all JSON files from an overlay subdirectory (user overrides factory).
+ */
+static void read_all_json_overlay(const char *subdir, Value &outArray,
+                                  Document::AllocatorType &alloc) {
+    auto files = CTAG::STORAGE::listMergedDir(subdir);
+    char *fileBuf = (char *)heap_caps_malloc(8192, MALLOC_CAP_SPIRAM);
+    if (!fileBuf) {
+        ESP_LOGE(MACRO_TAG, "SPIRAM alloc failed for file buffer");
+        return;
+    }
+    for (const auto &fn : files) {
+        size_t nlen = fn.size();
+        if (nlen < 6 || strcasecmp(fn.c_str() + nlen - 5, ".json") != 0)
+            continue;
+        std::string path = CTAG::STORAGE::resolveFile(subdir, fn);
+        if (path.empty()) continue;
+        FILE *fp = fopen(path.c_str(), "r");
+        if (!fp) continue;
+        FileReadStream is(fp, fileBuf, 8192);
+        Document doc;
+        doc.ParseStream(is);
+        fclose(fp);
+        if (doc.HasParseError() || !doc.IsObject()) {
+            ESP_LOGW(MACRO_TAG, "Skip bad JSON: %s", fn.c_str());
+            continue;
+        }
+        Value copy(doc, alloc);
+        outArray.PushBack(copy, alloc);
+    }
+    heap_caps_free(fileBuf);
+}
+
 
 // Forward declarations for handlers defined below
 static esp_err_t handle_get_trackdefaults(httpd_req_t *req);
@@ -147,12 +179,12 @@ esp_err_t MacroAPI::macroapi_get_handler(httpd_req_t *req) {
 
         // 1) All macro definitions
         Value defs(kArrayType);
-        read_all_json_in_dir(MACRODEFS_DIR, defs, alloc);
+        read_all_json_overlay(CTAG::STORAGE::DIR_MACROS, defs, alloc);
         resp.AddMember("macroDefs", defs, alloc);
 
         // 2) All sound presets
         Value presets(kArrayType);
-        read_all_json_in_dir(PRESETS_DIR, presets, alloc);
+        read_all_json_overlay(CTAG::STORAGE::DIR_PRESETS, presets, alloc);
         resp.AddMember("soundPresets", presets, alloc);
 
         // 3) Current track state
@@ -247,14 +279,20 @@ static esp_err_t handle_set_track_macro(httpd_req_t *req) {
     return send_ok(req);
 }
 
-static const char *TRACKDEFAULTS_PATH = "/sdcard/data/trackdefaults.json";
+static std::string trackDefaultsReadPath() {
+    return CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_TRACKDEFAULTS, "default.json");
+}
+static std::string trackDefaultsWritePath() {
+    return CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_TRACKDEFAULTS, "default.json");
+}
 
 /**
  * GET  ?action=get_trackdefaults
- * Returns the contents of /sdcard/data/trackdefaults.json (or "{}" if missing).
+ * Returns the contents of trackdefaults/default.json (or "{}" if missing).
  */
 static esp_err_t handle_get_trackdefaults(httpd_req_t *req) {
-    FILE *f = fopen(TRACKDEFAULTS_PATH, "r");
+    std::string tdPath = trackDefaultsReadPath();
+    FILE *f = fopen(tdPath.c_str(), "r");
     if (!f) {
         ESP_LOGW(MACRO_TAG, "trackdefaults.json not found, returning {}");
         return send_json(req, "{}");
@@ -281,7 +319,7 @@ static esp_err_t handle_get_trackdefaults(httpd_req_t *req) {
 
 /**
  * POST ?action=save_trackdefaults
- * Writes the request body (JSON) to /sdcard/data/trackdefaults.json.
+ * Writes the request body (JSON) to user/trackdefaults/default.json.
  * If the sampleKit field changed, also updates the active sample bank
  * in sample_rom.json and reloads PSRAM so the device is immediately in sync.
  */
@@ -315,7 +353,7 @@ static esp_err_t handle_save_trackdefaults(httpd_req_t *req) {
         }
     }
 
-    FILE *f = fopen(TRACKDEFAULTS_PATH, "w");
+    FILE *f = fopen(trackDefaultsWritePath().c_str(), "w");
     if (!f) {
         heap_caps_free(content);
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Cannot write file");

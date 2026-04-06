@@ -26,6 +26,7 @@ respective component folders / files if different from this license.
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "ctagResources.hpp"
+#include "StorageOverlay.hpp"
 
 
 using namespace CTAG::MACROPRESETS;
@@ -46,18 +47,16 @@ void MacroDeviceDefinitionDataModel::ReloadMachineDefinitions() {
         MacroDeviceDefinitionUtils::MacroDeviceDefinition_Reset(&definitions[i]);
     }
 
-    DIR *dir;
-    struct dirent *ent;
-    Value sparray(kArrayType);
-
     int index = 0;
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrodefinitions";
-    if ((dir = opendir(path.c_str())) != NULL) {
-        while ((ent = readdir(dir)) != NULL) {
-            std::string fn(ent->d_name);
+    // Use overlay: merged listing of /user/macros/ + /factory/macros/
+    auto macroFiles = CTAG::STORAGE::listMergedDir(CTAG::STORAGE::DIR_MACROS);
+    for (const auto &fn : macroFiles) {
+        {
+            std::string resolvedPath = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_MACROS, fn);
+            if (resolvedPath.empty()) continue;
 
             Document d;
-            loadJSON(d, path + "/" + fn);
+            loadJSON(d, resolvedPath);
             if(!d.HasParseError()) {
                 if( MacroDeviceDefinitionUtils::MacroDeviceDefinition_DeserializeJSON(&definitions[index], d)) {
                     ESP_LOGI("MacroDeviceDefinitionDataModel", "Deserialized macro device definition: #%s \"%s\"", definitions[index].id, definitions[index].name);
@@ -70,15 +69,17 @@ void MacroDeviceDefinitionDataModel::ReloadMachineDefinitions() {
 
             }
         }
-        closedir(dir);
-    } else {
-        ESP_LOGE("MacroDeviceDefinitionDataModel", "Could not open directory %s", path.c_str());
     }
 
 }
 
 bool MacroDeviceDefinitionDataModel::ReloadSingleDefinition(const std::string &id) {
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrodefinitions/" + id + ".json";
+    // Overlay: check /user/macros/ then /factory/macros/
+    const std::string path = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_MACROS, id + ".json");
+    if (path.empty()) {
+        ESP_LOGE("MacroDeviceDefinitionDataModel", "Macro def not found in overlay: %s", id.c_str());
+        return false;
+    }
     Document d;
     loadJSON(d, path);
     if (d.HasParseError()) {
@@ -164,9 +165,9 @@ bool MacroDeviceDefinitionDataModel::UpdateDefinition(const std::string &jsonStr
 
     const std::string id = d["id"].GetString();
 
-    // just save the file now when we know the id
+    // Write to /user/macros/ (user data layer)
 
-    const std::string path = CTAG::RESOURCES::sdcardRoot + std::string("/data/macrodefinitions");
+    const std::string path = CTAG::STORAGE::userPath() + "/" + CTAG::STORAGE::DIR_MACROS;
     const std::string filename = path + "/" + id + ".json";
 
     fp = fopen(filename.c_str(), "w");
@@ -184,8 +185,13 @@ bool MacroDeviceDefinitionDataModel::UpdateDefinition(const std::string &jsonStr
 
 
 void MacroDeviceDefinitionDataModel::SerializeItemJSON(const std::string &id, std::string *output) {
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrodefinitions";
-    const std::string filename = path + "/" + id + ".json";
+    // Overlay: check /user/macros/ then /factory/macros/
+    const std::string filename = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_MACROS, id + ".json");
+    if (filename.empty()) {
+        ESP_LOGE("MacroDeviceDefinitionDataModel", "Macro def not found in overlay: %s", id.c_str());
+        output->assign("");
+        return;
+    }
 
     FILE *fp = fopen(filename.c_str(), "r");
     if (fp == NULL) {
@@ -222,10 +228,8 @@ void MacroDeviceDefinitionDataModel::SerializeItemJSON(const std::string &id, st
 
 
 void MacroDeviceDefinitionDataModel::DeleteItem(const std::string &id) {
-    // TODO: Just delete from disk?
-
-    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/macrodefinitions";
-    const std::string filename = path + "/" + id + ".json";
+    // Only delete from /user/macros/ (factory macros are immutable)
+    const std::string filename = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_MACROS, id + ".json");
     ESP_LOGI("MacroDeviceDefinitionDataModel", "Deleting file: %s", filename.c_str());
 
     unlink(filename.c_str());

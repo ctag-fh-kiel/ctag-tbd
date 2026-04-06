@@ -39,6 +39,7 @@ respective component folders / files if different from this license.
 
 #include "MacroSoundPresetDataModel.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
+#include "StorageOverlay.hpp"
 
 #include "link.hpp"
 
@@ -634,7 +635,8 @@ namespace CTAG::SPIAPI{
                 {
                     // Read WebUI version from SD card
                     std::string webui_ver;
-                    FILE *wf = fopen("/sdcard/data/webui-version.json", "r");
+                    std::string wvPath = CTAG::RESOURCES::sdcardRoot + "/system/webui-version.json";
+                    FILE *wf = fopen(wvPath.c_str(), "r");
                     if (wf) {
                         char buf[256];
                         size_t len = fread(buf, 1, sizeof(buf) - 1, wf);
@@ -874,12 +876,12 @@ namespace CTAG::SPIAPI{
 
             case RequestType::GetTrackDefaultPresets:
                 {
-                    // Read /sdcard/data/trackdefaults.json and return its contents.
+                    // Read trackdefaults/default.json via overlay and return its contents.
                     // If the file does not exist, return empty object "{}".
                     // The file maps track indices to preset IDs, e.g.:
                     // { "tracks": [ {"index":0,"preset":"db-all-def"}, ... ] }
                     std::string json = "{}";
-                    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/trackdefaults.json";
+                    const std::string path = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_TRACKDEFAULTS, "default.json");
                     FILE *f = fopen(path.c_str(), "r");
                     if (f) {
                         fseek(f, 0, SEEK_END);

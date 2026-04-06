@@ -25,6 +25,7 @@ respective component folders / files if different from this license.
 #include <dirent.h>
 #include "esp_log.h"
 #include "ctagResources.hpp"
+#include "StorageOverlay.hpp"
 
 
 using namespace CTAG::MACROPRESETS;
@@ -49,7 +50,8 @@ void SynthDefinitionDataModel::Init() {
 void SynthDefinitionDataModel::ReloadSynthDefinitions() {
     // return;
 
-    const std::string MODELJSONFN = CTAG::RESOURCES::sdcardRoot + "/data/synthdefinitions.json";
+    // synthdefinitions.json is a factory resource (read-only, describes available synths)
+    const std::string MODELJSONFN = CTAG::STORAGE::factoryPath() + "/synthdefinitions.json";
 
     ESP_LOGI("SynthDefinitionDataModel", "Trying to read synth defintition file: %s", MODELJSONFN.c_str());
 

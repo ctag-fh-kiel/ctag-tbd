@@ -53,6 +53,7 @@ respective component folders / files if different from this license.
 #include "MacroSoundPresetDataModel.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
 #include "MacroTranslator.hpp"
+#include "StorageOverlay.hpp"
 #endif
 
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
@@ -580,6 +581,10 @@ static void debug_task(void *pvParameters) {
 
 void SoundProcessorManager::StartSoundProcessor() {
     ledBlink = 5;
+
+    // Initialize storage overlay (factory/user layout, migrate from legacy if needed)
+    CTAG::STORAGE::initOverlay();
+
     model = std::make_unique<SPManagerDataModel>();
 
     // prepare threads and mutex
