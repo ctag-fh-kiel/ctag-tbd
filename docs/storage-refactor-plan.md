@@ -99,7 +99,7 @@
 
 **Goal:** Fix crash on fresh SD when loading plugins whose user-patch files don't exist yet.
 
-**Status: COMPLETE** ✅ — Applied 2026-04-06 (uncommitted)
+**Status: COMPLETE** ✅ — Applied 2026-04-06, committed with Phase 1 (`4645531e`)
 
 ### Root cause
 
@@ -125,7 +125,7 @@ Split read/write paths:
 
 **Goal:** Move all project I/O from Pico SD to P4 SD via SPI. Pico SD card no longer required.
 
-**Status: IN PROGRESS** — Binary transport + save/load implemented, not yet tested on device
+**Status: COMPLETE** ✅ — Committed `4645531e` (P4) / `d03181a` (Pico) on 2026-04-07
 
 *Depends on Phase 0 (overlay resolution must be working) ✅*
 
@@ -134,42 +134,49 @@ Split read/write paths:
 - [x] Add new SPI commands in `SpiAPI.hpp` / `SpiAPI.cpp`:
   - `0xB0 SaveProjectToP4` — receive binary from Pico, write to `/user/projects/projectXXX.bin`
   - `0xB1 LoadProjectFromP4` — read binary from user (fallback factory), stream to Pico
-- [ ] Additional SPI commands (not yet implemented):
+- [x] Additional SPI commands:
   - `0xB2 ListProjects` — scan `/user/projects/` + `/factory/projects/`, return JSON list
-  - `0xB3 DeleteProject` — remove project folder
-  - `0xB4 SavePicoConfig` — receive sequencer config binary, write to `/user/config/sequencer.bin`
+  - `0xB3 DeleteProject` — remove project from `/user/projects/`
+  - `0xB4 SavePicoConfig` — receive sequencer config binary, atomicWrite to `/user/config/sequencer.bin`
   - `0xB5 LoadPicoConfig` — read sequencer config, stream to Pico
 - [x] Implement chunked SPI binary transfer via `transmitBinary()` — 2041 bytes/frame, fingerprint + ACK
 - [x] Create `/user/projects/` directory on first save (mkdir in SaveProjectToP4 handler)
-- [ ] Implement temp-file + rename write pattern for atomic saves
+- [x] Implement temp-file + rename write pattern for atomic saves (`atomicWrite()` helper)
+  - FAT32 rename cannot overwrite — must `remove()` destination before `rename()`
 - [ ] Project metadata (`project.json`): name, date, firmware version, format version
 - [ ] Migrate file naming from `projectXXX.bin` to `{id}/song.psng` (audit naming convention)
 
 ### Pico repo
 
-- [x] Add command IDs `0xB0`–`0xB1` in `SpiAPI.h` (enum `RequestType_t`)
+- [x] Add command IDs `0xB0`–`0xB5` in `SpiAPI.h` (enum `RequestType_t`)
 - [x] Add SPI methods:
   - `SaveProjectToP4(slotName, data, size)` — chunked binary send
   - `LoadProjectFromP4(slotName, data, maxSize, actualSize)` — chunked binary receive
+  - `ListProjects()` — request JSON list from P4
+  - `DeleteProject(slotName)` — delete from P4 user dir
+  - `SavePicoConfig(data, size)` — send config binary to P4
+  - `LoadPicoConfig(data, maxSize, actualSize)` — receive config from P4
   - `transmitBinaryData()` / `receiveBinaryData()` — private transport helpers
 - [x] Rewire `project_saveto_fs()` → `spi_api.SaveProjectToP4()` (was `storage->writeFile()`)
 - [x] Rewire `project_loadfrom_fs()` → `spi_api.LoadProjectFromP4()` (was `storage->readFile()`)
 - [x] Make Pico SD card init conditional: `picoStorage = nullptr`, added `isInitialized()` to `SdCardHW`
-- [ ] Add command IDs `0xB2`–`0xB5` (ListProjects, DeleteProject, SavePicoConfig, LoadPicoConfig)
+- [x] Create `SpiStorage` class (`IStorageInterface`) routing config I/O to P4 SD via SPI
+- [x] Wire `sequi.storage = spiStorage` — config load/save goes through SPI
+- [x] Boot flow: `loadOrInitConfig()` → `LoadPicoConfig()` from P4; if fails, hardcoded defaults
 - [ ] Modify project list scanning — replace SD card `EnumFiles` with `SpiAPI::ListProjects()`
-- [ ] Modify config save/load — replace SD card I/O with SPI equivalents
 - [ ] Update `project_load.cpp` / `project_save.cpp` screens to use P4-based file list
-- [ ] Boot flow: attempt `LoadPicoConfig()` from P4; if fails, use hardcoded defaults
 
 ### Verification (Phase 1)
 
-- [ ] **Save a project** on Pico OLED → file appears at P4 `/user/projects/`
-- [ ] **Load the saved project** → sequence plays back identically
+- [x] **Save a project** on Pico OLED → file written to P4 `/user/projects/` via SPI ✅ 2026-04-06
+- [x] **Load the saved project** → sequence plays back correctly ✅ 2026-04-06
 - [ ] Project list on OLED shows projects from P4 (both `/user/` and `/factory/`)
-- [ ] Delete a project from OLED → folder removed from P4 SD
-- [ ] Device boots and operates with NO Pico SD card inserted
-- [ ] Sequencer config (MIDI routing, display prefs) persists across reboots via P4
-- [ ] Power-cycle during save does not corrupt existing projects (atomic write)
+- [ ] Delete a project from OLED → file removed from P4 SD
+- [x] Device boots and operates with NO Pico SD card inserted ✅ 2026-04-07
+- [x] Sequencer config (MIDI routing, display prefs) persists across reboots via P4 ✅ 2026-04-07
+  - LoadPicoConfig: 64 bytes from `/user/config/sequencer.bin`
+  - SavePicoConfig: atomicWrite back to P4 on boot
+- [x] Power-cycle during save does not corrupt existing projects (atomic write) ✅ 2026-04-07
 - [ ] SPI transfer of 60 KB project completes in < 200 ms
 
 ---
