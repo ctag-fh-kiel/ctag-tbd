@@ -942,12 +942,31 @@ namespace CTAG::SPIAPI{
 
             case RequestType::GetTrackDefaultPresets:
                 {
-                    // Read trackdefaults/default.json via overlay and return its contents.
-                    // If the file does not exist, return empty object "{}".
-                    // The file maps track indices to preset IDs, e.g.:
-                    // { "tracks": [ {"index":0,"preset":"db-all-def"}, ... ] }
+                    // Read track defaults template via overlay and return its contents.
+                    // If string_parameter is non-empty, use that as the template name.
+                    // Otherwise, read the active template name from user config.
+                    // Falls back to "default" if nothing is configured.
+                    std::string templateName = string_parameter;
+                    if (templateName.empty()) {
+                        // Try reading active template from config
+                        std::string cfgPath = STORAGE::userPath() + "/" + STORAGE::DIR_CONFIG + "/active-trackdefault.txt";
+                        FILE *cf = fopen(cfgPath.c_str(), "r");
+                        if (cf) {
+                            char nameBuf[64] = {};
+                            if (fgets(nameBuf, sizeof(nameBuf), cf)) {
+                                // Strip trailing newline
+                                size_t len = strlen(nameBuf);
+                                while (len > 0 && (nameBuf[len-1] == '\n' || nameBuf[len-1] == '\r')) nameBuf[--len] = '\0';
+                                if (len > 0) templateName = nameBuf;
+                            }
+                            fclose(cf);
+                        }
+                        if (templateName.empty()) templateName = "default";
+                    }
+
+                    std::string filename = templateName + ".json";
+                    const std::string path = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_TRACKDEFAULTS, filename.c_str());
                     std::string json = "{}";
-                    const std::string path = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_TRACKDEFAULTS, "default.json");
                     FILE *f = fopen(path.c_str(), "r");
                     if (f) {
                         fseek(f, 0, SEEK_END);
@@ -963,9 +982,9 @@ namespace CTAG::SPIAPI{
                             }
                         }
                         fclose(f);
-                        ESP_LOGI("SpiAPI", "GetTrackDefaultPresets: loaded %ld bytes from trackdefaults.json", sz);
+                        ESP_LOGI("SpiAPI", "GetTrackDefaultPresets: loaded %ld bytes from %s", sz, filename.c_str());
                     } else {
-                        ESP_LOGW("SpiAPI", "GetTrackDefaultPresets: trackdefaults.json not found, returning {}");
+                        ESP_LOGW("SpiAPI", "GetTrackDefaultPresets: %s not found, returning {}", filename.c_str());
                     }
                     result = transmitCString(requestType, json.c_str());
                 }
@@ -1291,6 +1310,132 @@ namespace CTAG::SPIAPI{
 #else
                 ESP_LOGW("SpiAPI", "LoadPicoConfig: SD card disabled");
                 result = transmitBinary(requestType, nullptr, 0);
+#endif
+                break;
+
+            case RequestType::ListTrackDefaults:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    ESP_LOGI("SpiAPI", "ListTrackDefaults");
+                    // Scan factory + user trackdefaults dirs, return JSON array of template names
+                    // Format: ["default","techno","ambient"]
+                    std::string json = "[";
+                    bool first = true;
+                    std::string factoryDir = STORAGE::factoryPath() + "/" + STORAGE::DIR_TRACKDEFAULTS;
+                    std::string userDir = STORAGE::userPath() + "/" + STORAGE::DIR_TRACKDEFAULTS;
+                    std::set<std::string> seen;
+
+                    const std::string dirPaths[] = { factoryDir, userDir };
+                    for (const auto &dirPath : dirPaths) {
+                        DIR *d = opendir(dirPath.c_str());
+                        if (!d) continue;
+                        struct dirent *ent;
+                        while ((ent = readdir(d)) != nullptr) {
+                            std::string name = ent->d_name;
+                            // Match *.json files
+                            if (name.size() > 5 && name.substr(name.size() - 5) == ".json") {
+                                std::string templateName = name.substr(0, name.size() - 5);
+                                if (seen.count(templateName)) continue;
+                                seen.insert(templateName);
+                                if (!first) json += ",";
+                                json += "\"" + templateName + "\"";
+                                first = false;
+                            }
+                        }
+                        closedir(d);
+                    }
+                    json += "]";
+                    ESP_LOGI("SpiAPI", "ListTrackDefaults: %s", json.c_str());
+                    result = transmitCString(requestType, json.c_str());
+                }
+#else
+                result = transmitCString(requestType, "[]");
+#endif
+                break;
+
+            case RequestType::GetTrackDefault:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    std::string templateName = string_parameter;
+                    ESP_LOGI("SpiAPI", "GetTrackDefault: \"%s\"", templateName.c_str());
+
+                    // Resolve via overlay (user overrides factory)
+                    std::string filename = templateName + ".json";
+                    const std::string path = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_TRACKDEFAULTS, filename.c_str());
+                    std::string json = "{}";
+                    FILE *f = fopen(path.c_str(), "r");
+                    if (f) {
+                        fseek(f, 0, SEEK_END);
+                        long sz = ftell(f);
+                        fseek(f, 0, SEEK_SET);
+                        if (sz > 0 && sz < 8192) {
+                            char *buf = (char*)malloc(sz + 1);
+                            if (buf) {
+                                fread(buf, 1, sz, f);
+                                buf[sz] = '\0';
+                                json = buf;
+                                free(buf);
+                            }
+                        }
+                        fclose(f);
+                        ESP_LOGI("SpiAPI", "GetTrackDefault: loaded %ld bytes", sz);
+                    } else {
+                        ESP_LOGW("SpiAPI", "GetTrackDefault: \"%s\" not found", templateName.c_str());
+                    }
+                    result = transmitCString(requestType, json.c_str());
+                }
+#else
+                result = transmitCString(requestType, "{}");
+#endif
+                break;
+
+            case RequestType::SaveTrackDefault:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    std::string templateName = string_parameter;
+                    ESP_LOGI("SpiAPI", "SaveTrackDefault: \"%s\"", templateName.c_str());
+
+                    // Receive JSON data from Pico
+                    std::string jsonData;
+                    result = receiveString(RequestType::SaveTrackDefault, jsonData);
+                    if (!result) {
+                        ESP_LOGE("SpiAPI", "SaveTrackDefault: failed to receive data");
+                        break;
+                    }
+
+                    // Ensure user trackdefaults dir exists
+                    std::string tdDir = STORAGE::userPath() + "/" + STORAGE::DIR_TRACKDEFAULTS;
+                    mkdir(tdDir.c_str(), 0755);
+
+                    // Atomic write
+                    std::string filePath = tdDir + "/" + templateName + ".json";
+                    result = atomicWrite(filePath, jsonData.data(), jsonData.size());
+                    if (result) {
+                        ESP_LOGI("SpiAPI", "SaveTrackDefault: saved %d bytes to %s", (int)jsonData.size(), filePath.c_str());
+                    }
+                }
+#else
+                ESP_LOGW("SpiAPI", "SaveTrackDefault: SD card disabled");
+                result = true;
+#endif
+                break;
+
+            case RequestType::DeleteTrackDefault:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    std::string templateName = string_parameter;
+                    ESP_LOGI("SpiAPI", "DeleteTrackDefault: \"%s\"", templateName.c_str());
+                    // Only delete from user dir — factory templates are immutable
+                    std::string filePath = STORAGE::userPath() + "/" + STORAGE::DIR_TRACKDEFAULTS + "/" + templateName + ".json";
+                    if (remove(filePath.c_str()) == 0) {
+                        ESP_LOGI("SpiAPI", "DeleteTrackDefault: deleted %s", filePath.c_str());
+                    } else {
+                        ESP_LOGW("SpiAPI", "DeleteTrackDefault: file not found %s", filePath.c_str());
+                    }
+                    result = true;
+                }
+#else
+                result = true;
 #endif
                 break;
             }

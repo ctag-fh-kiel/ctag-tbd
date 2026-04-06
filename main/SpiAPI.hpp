@@ -104,6 +104,12 @@ namespace CTAG::SPIAPI{
             DeleteProject = 0xB3, // delete project from user dir, args [slotName (cstring)]
             SavePicoConfig = 0xB4, // receive config binary from Pico, save to P4 SD
             LoadPicoConfig = 0xB5, // load config binary from P4 SD, send to Pico
+
+            // Phase 2: Track default template management
+            ListTrackDefaults = 0xB6, // scan overlay trackdefaults, return JSON list of template names
+            GetTrackDefault = 0xB7, // return JSON content of a named template, args [name (cstring)]
+            SaveTrackDefault = 0xB8, // save a user track default template, args [name (cstring)], then JSON data
+            DeleteTrackDefault = 0xB9, // delete a user track default template, args [name (cstring)]
         };
 
         static std::string rp2350AppId;   // app name announced by RP2350 (empty = unknown/legacy)

@@ -18,7 +18,7 @@
 | Decision | Choice |
 |----------|--------|
 | Top-left button menu name | **"Home"** (was "Project") — contains Project, Kit, Preset, Settings, Track Defaults |
-| Track default sets | **10 global user-named templates** stored on P4 SD, with sensible default names |
+| Track default sets | **3-5 global templates** stored on P4 SD (factory + user), max `MAX_TRACK_TEMPLATES` |
 | Per-project track defaults | **Copy at creation time** — project gets a snapshot, then independent |
 | Machine change in existing project | Doesn't affect saved data; **snapshot presets on save** (Phase 3) |
 | Phase priority | **Phase 1 first:** No-Pico-SD + SPI project storage |
@@ -163,15 +163,17 @@ Split read/write paths:
 - [x] Create `SpiStorage` class (`IStorageInterface`) routing config I/O to P4 SD via SPI
 - [x] Wire `sequi.storage = spiStorage` — config load/save goes through SPI
 - [x] Boot flow: `loadOrInitConfig()` → `LoadPicoConfig()` from P4; if fails, hardcoded defaults
-- [ ] Modify project list scanning — replace SD card `EnumFiles` with `SpiAPI::ListProjects()`
-- [ ] Update `project_load.cpp` / `project_save.cpp` screens to use P4-based file list
+- [x] Modify project list scanning — replace SD card `EnumFiles` with `SpiAPI::ListProjects()`
+- [x] Update `project_load.cpp` / `project_save.cpp` screens to use P4-based file list
+- [x] Add delete project UI flow (load screen → "Delete" option → confirm → SPI 0xB3)
+- [x] Add `BACKGROUNDUPDATE_TYPE_DELETEPROJECT` handler in background loop
 
 ### Verification (Phase 1)
 
 - [x] **Save a project** on Pico OLED → file written to P4 `/user/projects/` via SPI ✅ 2026-04-06
 - [x] **Load the saved project** → sequence plays back correctly ✅ 2026-04-06
-- [ ] Project list on OLED shows projects from P4 (both `/user/` and `/factory/`)
-- [ ] Delete a project from OLED → file removed from P4 SD
+- [x] Project list on OLED shows projects from P4 (both `/user/` and `/factory/`)
+- [x] Delete a project from OLED → file removed from P4 SD
 - [x] Device boots and operates with NO Pico SD card inserted ✅ 2026-04-07
 - [x] Sequencer config (MIDI routing, display prefs) persists across reboots via P4 ✅ 2026-04-07
   - LoadPicoConfig: 64 bytes from `/user/config/sequencer.bin`
@@ -181,71 +183,61 @@ Split read/write paths:
 
 ---
 
-## Phase 2 — Multiple Track Default Templates
+## Phase 2 — Track Default Templates
 
-**Goal:** 10 user-named track default templates, selectable from OLED "Home" menu, copied into projects.
+**Goal:** 3-5 global track default templates (factory + user-created), selectable from project menu.
+Per-project: user chooses which template to apply, or defines custom track setup.
 
-**Status:** Not started
+**Status:** IN PROGRESS — SPI commands done, basic UI started
 
-*Depends on Phase 1 (project storage on P4 must work)*
+*Depends on Phase 1 (project storage on P4 must work) ✅*
 
 ### P4 repo
 
-- [ ] Add SPI commands for track default template management:
-  - `0xBC ListTrackDefaultTemplates` — scan overlay trackdefaults, return JSON list of names
-  - `0xBD GetTrackDefaultTemplate(name)` — return JSON content of a specific template
-  - `0xBE SaveTrackDefaultTemplate(name, json)` — write to `/user/trackdefaults/{name}.json`
-  - `0xBF DeleteTrackDefaultTemplate(name)` — remove from `/user/trackdefaults/` (refuse `/factory/`)
-  - `0xC0 SetActiveTrackDefault(name)` — update `/user/config/active-trackdefault.json`
-- [ ] Modify existing `GetTrackDefaultPresets` (0xA5) handler:
-  - Read `active-trackdefault.json` to find active template name
-  - Resolve template via overlay
-  - Return the resolved JSON (same format as current `trackdefaults.json`)
-- [ ] Create factory templates in `sdcard_image/factory/trackdefaults/`:
-  - `default.json` — current 19-track setup
-  - Optionally: `techno.json`, `ambient.json`, `minimal.json`
-- [ ] Template file format:
-  ```json
-  {
-    "name": "Default",
-    "description": "Standard groovebox layout",
-    "factory": true,
-    "kit": "def_smp.json",
-    "tracks": [ ... ]
-  }
-  ```
+- [x] Add SPI commands for track default template management:
+  - `0xB6 ListTrackDefaults` — scan overlay trackdefaults, return JSON array of template names
+  - `0xB7 GetTrackDefault(name)` — return JSON content of a named template via overlay
+  - `0xB8 SaveTrackDefault(name, json)` — write to `/user/trackdefaults/{name}.json`
+  - `0xB9 DeleteTrackDefault(name)` — remove from `/user/trackdefaults/` (factory immutable)
+- [x] Modify existing `GetTrackDefaultPresets` (0xA5) handler:
+  - Accept optional template name in `string_param_3`
+  - If empty, read active template name from `/user/config/active-trackdefault.txt`
+  - Falls back to `"default"` if neither provided
+  - Resolve template via overlay, return JSON
+- [ ] Create additional factory templates in `sdcard_image/factory/trackdefaults/`
+  - `default.json` exists ✅
+  - Optionally: 1-2 additional templates (techno, ambient, minimal)
 
 ### Pico repo
 
-- [ ] Add SPI wrapper methods for template management
+- [x] Add SPI wrapper methods: `ListTrackDefaults()`, `GetTrackDefault()`, `SaveTrackDefault()`, `DeleteTrackDefault()`
+- [x] Add `activeTrackDefault[24]` to `SEQCONFIGFILE`, bump version to 105
+  - Default value: `"default"`
+  - Old v104 configs auto-rejected (size mismatch), defaults applied
+- [x] Modify `GetTrackDefaultPresets()` to accept optional `templateName` parameter
+- [x] Modify `fetchAndInitTrackDefaults()` to accept optional template name
+- [x] Add `BACKGROUNDUPDATE_TYPE_APPLYTRACKDEFAULT` handler — calls `fetchAndInitTrackDefaults()` + `initializeMacroPresetOnTrack()` for all tracks
+- [x] Add `applyTrackDefault()` to `IHostInterface` / `PicoHost`
+- [x] Add **"Track setup"** menu item to project screen (item 5, before System settings)
+- [x] Create `tracksetup.hpp` / `tracksetup.cpp` — template list screen:
+  - `enter()` fetches template list from P4 via `trackdefault_updatelist()`
+  - Shows list of available templates
+  - Select → "Apply?" confirmation → `host->applyTrackDefault(name)`
 - [ ] Rename top-left menu from "Project" to **"Home"**
-  - File: `lib/sequencerui/screens/project.cpp` — update menu title string
-- [ ] Add **"Track Setup"** menu item to Home menu:
-  - New screen `trackdefault_select.cpp`:
-    - Lists available templates (factory show lock icon; user editable)
-    - Select → applies template
-    - "Set as device default" option
-  - New screen `trackdefault_edit.cpp`:
-    - Shows per-track machine assignments
-    - Edit and save / "Save as new"
-    - Name editing (character entry)
-- [ ] Modify "New Song" / "Clear Project" flow:
-  - After clearing, apply active track default template
-  - Optionally prompt: "Use template: [Default] ?" with left/right to cycle
+- [ ] Show factory templates with lock icon (vs. user templates)
+- [ ] "Set as device default" option (writes to Pico config)
+- [ ] Track setup editor screen — per-track machine view / modify
+- [ ] "Save as new template" — capture current track assignment as user template
+- [ ] Modify "Clear Project" flow to apply active track default template
 - [ ] Store template name in project metadata when saving
-- [ ] Modify `fetchAndInitTrackDefaults()` in `main.cpp`:
-  - Accept optional template name parameter
-  - If no name → use active global default (existing SPI 0xA5 behavior)
-  - If name given → fetch specific template via new SPI command
 
 ### Verification (Phase 2)
 
-- [ ] Home menu shows "Track Setup" entry; selecting opens template list
-- [ ] Factory templates appear with lock icon
+- [x] Project menu shows "Track setup" entry
+- [ ] Selecting opens template list with names from P4
 - [ ] Selecting a template applies machines + presets to all tracks
 - [ ] "Save as new" creates a user template visible in the list
-- [ ] Editing a user template persists changes on P4 SD
-- [ ] Deleting a user template works; factory templates cannot be deleted
+- [ ] Factory templates cannot be deleted
 - [ ] New Song flow applies active template
 - [ ] "Set as device default" persists across reboots
 
