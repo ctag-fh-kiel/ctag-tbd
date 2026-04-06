@@ -69,7 +69,7 @@ namespace CTAG {
             void mergeModels();
 
             Document mui, mp;
-            string mpFileName, muiFileName;
+            string mpFileName, mpWriteFileName, muiFileName;
             Document activePreset;
         };
     }

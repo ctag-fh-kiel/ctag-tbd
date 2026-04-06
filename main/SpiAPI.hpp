@@ -96,6 +96,14 @@ namespace CTAG::SPIAPI{
             AnnounceApp = 0xAB, // RP2350 announces its active app, args [flags (uint8_t, bit0=plugin_lock, bit1=redirect_samples), app_name (cstring)]
             ReportPicoVersion = 0xAC, // RP2350 reports its firmware version, args [version_string (cstring)]
             GetPicoUpdateStatus = 0xAE, // RP2350 queries if Pico firmware was updated this boot, returns "updated" or "none"
+
+            // Phase 1: Project storage on P4 SD card
+            SaveProjectToP4 = 0xB0, // receive project binary from Pico, save to P4 SD, args [slotName (cstring)]
+            LoadProjectFromP4 = 0xB1, // load project binary from P4 SD, send to Pico, args [slotName (cstring)]
+            ListProjects = 0xB2, // list projects from user + factory dirs, returns JSON array
+            DeleteProject = 0xB3, // delete project from user dir, args [slotName (cstring)]
+            SavePicoConfig = 0xB4, // receive config binary from Pico, save to P4 SD
+            LoadPicoConfig = 0xB5, // load config binary from P4 SD, send to Pico
         };
 
         static std::string rp2350AppId;   // app name announced by RP2350 (empty = unknown/legacy)
@@ -108,6 +116,7 @@ namespace CTAG::SPIAPI{
         static uint8_t *send_buffer, *receive_buffer;
         static void api_task(void *pvParameters);
         static bool transmitCString(const RequestType reqType, const char *str);
+        static bool transmitBinary(const RequestType reqType, const uint8_t *data, uint32_t len);
         static bool receiveString(const RequestType reqType, std::string &str);
         static bool handle_send_file(const std::string& filepath,
                                       uint8_t* send_buffer,

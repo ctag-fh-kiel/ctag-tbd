@@ -68,12 +68,12 @@
 - [x] Update `create_sd_archive.sh` (new layout + legacy `/data/` backward compat)
 - [x] P4 build verified clean
 
-### Still needs on-device verification
+### On-device verification
 
-- [ ] P4 boots with new SD layout; overlay resolution serves presets correctly
-- [ ] WebUI still loads (presets, macros, samples visible)
+- [x] P4 boots with new SD layout; overlay resolution serves presets correctly ✅ 2026-04-06
+- [x] WebUI still loads (presets, macros, samples visible) ✅ 2026-04-06 — API v2 returns full plugin list
 - [ ] Old-layout SD card auto-migrates on P4 boot (test with pre-refactor SD image)
-- [ ] Pico boots, gets track defaults via SPI 0xA5 (JSON content unchanged)
+- [x] Pico boots, gets track defaults via SPI 0xA5 — PicoSeqRack loaded correctly ✅ 2026-04-06
 
 ### Key files (Phase 0)
 
@@ -95,53 +95,76 @@
 
 ---
 
+## Phase 0.5 — ctagSPDataModel Crash Fix
+
+**Goal:** Fix crash on fresh SD when loading plugins whose user-patch files don't exist yet.
+
+**Status: COMPLETE** ✅ — Applied 2026-04-06 (uncommitted)
+
+### Root cause
+
+`ctagSPDataModel` constructor set `mpFileName` to the **user write path** (`/sdcard/user/patches/mp-PicoSeqRack.json`) which doesn't exist on a fresh SD. `LoadPreset()` called `loadJSON(mp, mpFileName)` on the nonexistent file → corrupt rapidjson `Document` → `activePreset.CopyFrom()` triggered a **Guru Meditation Error: Load access fault** on Core 0.
+
+### Fix
+
+Split read/write paths:
+- `mpFileName` = `resolveOverlayPatch(...)` — checks user dir first, falls back to factory
+- `mpWriteFileName` = `userPatchPath(...)` — always writes to user dir
+- After `storeJSON()`, set `mpFileName = mpWriteFileName` so subsequent reads use the user copy
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `components/ctagSoundProcessor/ctagSPDataModel.cpp` | Split read/write paths, use `mpWriteFileName` for `storeJSON()` |
+| `components/ctagSoundProcessor/ctagSPDataModel.hpp` | Added `string mpWriteFileName` member |
+
+---
+
 ## Phase 1 — SPI Project Storage (No Pico SD)
 
 **Goal:** Move all project I/O from Pico SD to P4 SD via SPI. Pico SD card no longer required.
 
-**Status:** Not started
+**Status: IN PROGRESS** — Binary transport + save/load implemented, not yet tested on device
 
-*Depends on Phase 0 (overlay resolution must be working)*
+*Depends on Phase 0 (overlay resolution must be working) ✅*
 
 ### P4 repo
 
-- [ ] Add new SPI commands in `SpiAPI.hpp` / `SpiAPI.cpp`:
-  - `0xB0 SaveProjectToP4` — receive binary from Pico, write to `/user/projects/{id}/song.psng` + `project.json`
-  - `0xB1 LoadProjectFromP4` — read song binary, stream to Pico
+- [x] Add new SPI commands in `SpiAPI.hpp` / `SpiAPI.cpp`:
+  - `0xB0 SaveProjectToP4` — receive binary from Pico, write to `/user/projects/projectXXX.bin`
+  - `0xB1 LoadProjectFromP4` — read binary from user (fallback factory), stream to Pico
+- [ ] Additional SPI commands (not yet implemented):
   - `0xB2 ListProjects` — scan `/user/projects/` + `/factory/projects/`, return JSON list
   - `0xB3 DeleteProject` — remove project folder
   - `0xB4 SavePicoConfig` — receive sequencer config binary, write to `/user/config/sequencer.bin`
   - `0xB5 LoadPicoConfig` — read sequencer config, stream to Pico
+- [x] Implement chunked SPI binary transfer via `transmitBinary()` — 2041 bytes/frame, fingerprint + ACK
+- [x] Create `/user/projects/` directory on first save (mkdir in SaveProjectToP4 handler)
 - [ ] Implement temp-file + rename write pattern for atomic saves
-- [ ] Implement chunked SPI data transfer for payloads > 2 KB (projects are ~60 KB)
-  - Extend `transmitData()` / `receiveData()` if not already supporting multi-frame
-- [ ] Create `/user/projects/` directory structure on first save
 - [ ] Project metadata (`project.json`): name, date, firmware version, format version
+- [ ] Migrate file naming from `projectXXX.bin` to `{id}/song.psng` (audit naming convention)
 
 ### Pico repo
 
-- [ ] Add command IDs `0xB0`–`0xB5` to `SpiProtocol.h`
-- [ ] Add new SPI command methods in `SpiAPI.h` / `SpiAPI.cpp`:
-  - `SaveProjectToP4()` — serialize song → chunked SPI send to P4
-  - `LoadProjectFromP4(id)` — request from P4, receive chunked, deserialize
-  - `ListProjects()` — request JSON list from P4
-  - `DeleteProject(id)` — send delete command
-  - `SavePicoConfig()` — serialize lastconfig → SPI to P4
-  - `LoadPicoConfig()` — request from P4
-- [ ] Modify `PicoHost::saveProject()` — replace `storage->writeFile()` with `SpiAPI::SaveProjectToP4()`
-- [ ] Modify `PicoHost::loadProject()` — replace `storage->readFile()` with `SpiAPI::LoadProjectFromP4()`
+- [x] Add command IDs `0xB0`–`0xB1` in `SpiAPI.h` (enum `RequestType_t`)
+- [x] Add SPI methods:
+  - `SaveProjectToP4(slotName, data, size)` — chunked binary send
+  - `LoadProjectFromP4(slotName, data, maxSize, actualSize)` — chunked binary receive
+  - `transmitBinaryData()` / `receiveBinaryData()` — private transport helpers
+- [x] Rewire `project_saveto_fs()` → `spi_api.SaveProjectToP4()` (was `storage->writeFile()`)
+- [x] Rewire `project_loadfrom_fs()` → `spi_api.LoadProjectFromP4()` (was `storage->readFile()`)
+- [x] Make Pico SD card init conditional: `picoStorage = nullptr`, added `isInitialized()` to `SdCardHW`
+- [ ] Add command IDs `0xB2`–`0xB5` (ListProjects, DeleteProject, SavePicoConfig, LoadPicoConfig)
 - [ ] Modify project list scanning — replace SD card `EnumFiles` with `SpiAPI::ListProjects()`
 - [ ] Modify config save/load — replace SD card I/O with SPI equivalents
-- [ ] Make Pico SD card init conditional: only init if card physically present
-  - `SdCardHW::init()` already returns `sdInitialized` flag; skip gracefully if false
 - [ ] Update `project_load.cpp` / `project_save.cpp` screens to use P4-based file list
-- [ ] Remove `PicoStorage` calls from project save/load path (keep class for optional bootloader SD)
 - [ ] Boot flow: attempt `LoadPicoConfig()` from P4; if fails, use hardcoded defaults
 
 ### Verification (Phase 1)
 
-- [ ] Save a project on Pico OLED → file appears at P4 `/user/projects/{id}/song.psng`
-- [ ] Load the saved project → sequence plays back identically
+- [ ] **Save a project** on Pico OLED → file appears at P4 `/user/projects/`
+- [ ] **Load the saved project** → sequence plays back identically
 - [ ] Project list on OLED shows projects from P4 (both `/user/` and `/factory/`)
 - [ ] Delete a project from OLED → folder removed from P4 SD
 - [ ] Device boots and operates with NO Pico SD card inserted

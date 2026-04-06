@@ -54,10 +54,10 @@ ctagSPDataModel::ctagSPDataModel(const string &id, const bool isStereo) {
     muiFileName = resolveOverlayPatch("mui-" + id + ".json");
     //std::cout << "Reading " << muiFileName << std::endl;
     loadJSON(mui, muiFileName);
-    // Read presets from overlay (user overrides factory), but always write to user dir
-    std::string mpReadPath = resolveOverlayPatch("mp-" + id + ".json");
-    mpFileName = userPatchPath("mp-" + id + ".json");
-    loadJSON(mp, mpReadPath);
+    // Read presets from overlay (user overrides factory), write to user dir
+    mpFileName = resolveOverlayPatch("mp-" + id + ".json");
+    mpWriteFileName = userPatchPath("mp-" + id + ".json");
+    loadJSON(mp, mpFileName);
     // load last activated preset
     if (mp.IsObject() && mp.HasMember("activePatch") && mp["activePatch"].IsInt()) {
         ESP_LOGD("Model", "Loading patch number %d", mp["activePatch"].GetInt());
@@ -179,7 +179,8 @@ void ctagSPDataModel::LoadPreset(const int num) {
     // save currently loaded preset to model
     if (!mp.HasMember("activePatch")) return;
     mp["activePatch"].SetInt(patchNum);
-    storeJSON(mp, mpFileName);
+    storeJSON(mp, mpWriteFileName);
+    mpFileName = mpWriteFileName; // subsequent reads from user copy
     json.Clear();
     Writer<StringBuffer> writer(json);
     mp.Accept(writer);
@@ -247,7 +248,8 @@ void ctagSPDataModel::SavePreset(const string &name, const int number) {
     }
     if (!mp.HasMember("activePatch")) return;
     mp["activePatch"] = patchNum;
-    storeJSON(mp, mpFileName);
+    storeJSON(mp, mpWriteFileName);
+    mpFileName = mpWriteFileName; // subsequent reads from user copy
     //ESP_LOGE("MOdel", "Stored JSON after");
     //PrintSelf();
 }

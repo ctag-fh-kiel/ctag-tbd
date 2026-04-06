@@ -43,6 +43,8 @@ respective component folders / files if different from this license.
 
 #include "link.hpp"
 
+#include <set>
+
 #define MAX(x, y) ((x)>(y)) ? (x) : (y)
 
 #define RCV_HOST    SPI3_HOST // SPI2 connects to rp2350 spi1
@@ -277,6 +279,70 @@ namespace CTAG::SPIAPI{
             if (requestType != (uint8_t)reqType){
                 return false;
             }
+        }
+        return true;
+    }
+
+
+    bool SpiAPI::transmitBinary(const RequestType reqType, const uint8_t *data, uint32_t len) {
+        // Like transmitCString but takes explicit length — binary-safe (no strlen).
+        uint8_t* requestTypeField = send_buffer + 2;
+        *requestTypeField = static_cast<uint8_t>(reqType);
+        uint32_t* lengthField = (uint32_t*)(send_buffer + 3);
+
+        if (len == 0) {
+            // Must still send one frame with length=0 so Pico's receiveBinaryData
+            // gets a valid response instead of blocking or reading stale data.
+            *lengthField = 0;
+            spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+            return true;
+        }
+
+        uint32_t bytes_to_send = 0;
+        uint32_t bytes_sent = 0;
+        uint32_t remaining = len;
+        while (remaining > 0) {
+            *lengthField = remaining;
+            bytes_to_send = remaining > 2048 - 7 ? 2048 - 7 : remaining;
+            memcpy(send_buffer + 7, data + bytes_sent, bytes_to_send);
+            remaining -= bytes_to_send;
+            bytes_sent += bytes_to_send;
+            spi_slave_transmit(RCV_HOST, &transaction, portMAX_DELAY);
+            // fingerprint check
+            if (receive_buffer[0] != 0xCA || receive_buffer[1] != 0xFE) {
+                return false;
+            }
+            // check request type acknowledgment
+            const uint8_t requestType = receive_buffer[2];
+            if (requestType != (uint8_t)reqType) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Atomic write: write to temp file, then rename to final path.
+    // FAT32 (FATFS) rename cannot overwrite — must remove destination first.
+    static bool atomicWrite(const std::string &filePath, const void *data, size_t len) {
+        std::string tmpPath = filePath + ".tmp";
+        FILE *f = fopen(tmpPath.c_str(), "wb");
+        if (!f) {
+            ESP_LOGE("SpiAPI", "atomicWrite: failed to open %s", tmpPath.c_str());
+            return false;
+        }
+        size_t written = fwrite(data, 1, len, f);
+        fclose(f);
+        if (written != len) {
+            ESP_LOGE("SpiAPI", "atomicWrite: short write (%d/%d)", (int)written, (int)len);
+            remove(tmpPath.c_str());
+            return false;
+        }
+        // FAT32 rename does not overwrite — remove destination first
+        remove(filePath.c_str());
+        if (rename(tmpPath.c_str(), filePath.c_str()) != 0) {
+            ESP_LOGE("SpiAPI", "atomicWrite: rename failed %s -> %s", tmpPath.c_str(), filePath.c_str());
+            remove(tmpPath.c_str());
+            return false;
         }
         return true;
     }
@@ -1005,6 +1071,227 @@ namespace CTAG::SPIAPI{
                     ESP_LOGI("SpiAPI", "GetPicoUpdateStatus: %s", status.c_str());
                     result = transmitCString(requestType, status.c_str());
                 }
+                break;
+
+            case RequestType::SaveProjectToP4:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    std::string slotName = string_parameter;
+                    ESP_LOGI("SpiAPI", "SaveProjectToP4: slot \"%s\"", slotName.c_str());
+
+                    // Receive binary project data from Pico
+                    std::string projectData;
+                    result = receiveString(RequestType::SaveProjectToP4, projectData);
+                    if (!result) {
+                        ESP_LOGE("SpiAPI", "SaveProjectToP4: failed to receive data");
+                        break;
+                    }
+
+                    // Ensure projects directory exists
+                    std::string projDir = STORAGE::userPath() + "/" + STORAGE::DIR_PROJECTS;
+                    mkdir(projDir.c_str(), 0755);
+
+                    // Atomic write: temp file + rename
+                    std::string filePath = projDir + "/project" + slotName + ".bin";
+                    result = atomicWrite(filePath, projectData.data(), projectData.size());
+                    if (result) {
+                        ESP_LOGI("SpiAPI", "SaveProjectToP4: saved %d bytes to %s", (int)projectData.size(), filePath.c_str());
+                    }
+                }
+#else
+                ESP_LOGW("SpiAPI", "SaveProjectToP4: SD card disabled");
+                result = true;
+#endif
+                break;
+
+            case RequestType::LoadProjectFromP4:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    std::string slotName = string_parameter;
+                    ESP_LOGI("SpiAPI", "LoadProjectFromP4: slot \"%s\"", slotName.c_str());
+
+                    // Try user path first, then factory path
+                    std::string filePath = STORAGE::userPath() + "/" + STORAGE::DIR_PROJECTS + "/project" + slotName + ".bin";
+                    FILE *f = fopen(filePath.c_str(), "rb");
+                    if (!f) {
+                        // Fall back to factory projects
+                        filePath = STORAGE::factoryPath() + "/" + STORAGE::DIR_PROJECTS + "/project" + slotName + ".bin";
+                        f = fopen(filePath.c_str(), "rb");
+                    }
+                    if (!f) {
+                        ESP_LOGW("SpiAPI", "LoadProjectFromP4: project not found for slot \"%s\"", slotName.c_str());
+                        // Send empty response (0 bytes) so Pico knows it failed
+                        result = transmitBinary(requestType, nullptr, 0);
+                        break;
+                    }
+
+                    // Get file size
+                    fseek(f, 0, SEEK_END);
+                    long fileSize = ftell(f);
+                    fseek(f, 0, SEEK_SET);
+
+                    if (fileSize <= 0 || fileSize > 65536) {
+                        ESP_LOGE("SpiAPI", "LoadProjectFromP4: invalid file size %ld", fileSize);
+                        fclose(f);
+                        result = transmitBinary(requestType, nullptr, 0);
+                        break;
+                    }
+
+                    // Read file into buffer
+                    uint8_t *buf = (uint8_t*)malloc(fileSize);
+                    if (!buf) {
+                        ESP_LOGE("SpiAPI", "LoadProjectFromP4: malloc failed (%ld bytes)", fileSize);
+                        fclose(f);
+                        result = transmitBinary(requestType, nullptr, 0);
+                        break;
+                    }
+                    size_t readBytes = fread(buf, 1, fileSize, f);
+                    fclose(f);
+
+                    ESP_LOGI("SpiAPI", "LoadProjectFromP4: transmitting %d bytes from %s", (int)readBytes, filePath.c_str());
+                    result = transmitBinary(requestType, buf, (uint32_t)readBytes);
+                    free(buf);
+                }
+#else
+                ESP_LOGW("SpiAPI", "LoadProjectFromP4: SD card disabled");
+                result = transmitBinary(requestType, nullptr, 0);
+#endif
+                break;
+
+            case RequestType::ListProjects:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    ESP_LOGI("SpiAPI", "ListProjects");
+                    // Scan user and factory project dirs, return JSON array of slot names
+                    // Format: ["slot00","slot01","slot03"] — only slots that have files
+                    std::string json = "[";
+                    bool first = true;
+                    const char *dirs[] = {
+                        (STORAGE::userPath() + "/" + STORAGE::DIR_PROJECTS).c_str(),
+                        (STORAGE::factoryPath() + "/" + STORAGE::DIR_PROJECTS).c_str()
+                    };
+                    // Need stable strings for dir paths
+                    std::string userDir = STORAGE::userPath() + "/" + STORAGE::DIR_PROJECTS;
+                    std::string factoryDir = STORAGE::factoryPath() + "/" + STORAGE::DIR_PROJECTS;
+                    const std::string dirPaths[] = { userDir, factoryDir };
+
+                    // Track which slots we've already seen (user overrides factory)
+                    std::set<std::string> seen;
+                    for (const auto &dirPath : dirPaths) {
+                        DIR *d = opendir(dirPath.c_str());
+                        if (!d) continue;
+                        struct dirent *ent;
+                        while ((ent = readdir(d)) != nullptr) {
+                            std::string name = ent->d_name;
+                            // Match pattern: project{slotName}.bin
+                            if (name.size() > 11 && name.substr(0, 7) == "project" && name.substr(name.size() - 4) == ".bin") {
+                                std::string slotName = name.substr(7, name.size() - 11); // strip "project" and ".bin"
+                                if (seen.count(slotName)) continue;
+                                seen.insert(slotName);
+                                if (!first) json += ",";
+                                json += "\"" + slotName + "\"";
+                                first = false;
+                            }
+                        }
+                        closedir(d);
+                    }
+                    json += "]";
+                    ESP_LOGI("SpiAPI", "ListProjects: %s", json.c_str());
+                    result = transmitCString(requestType, json.c_str());
+                }
+#else
+                result = transmitCString(requestType, "[]");
+#endif
+                break;
+
+            case RequestType::DeleteProject:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    std::string slotName = string_parameter;
+                    ESP_LOGI("SpiAPI", "DeleteProject: slot \"%s\"", slotName.c_str());
+                    // Only delete from user dir — factory projects are immutable
+                    std::string filePath = STORAGE::userPath() + "/" + STORAGE::DIR_PROJECTS + "/project" + slotName + ".bin";
+                    if (remove(filePath.c_str()) == 0) {
+                        ESP_LOGI("SpiAPI", "DeleteProject: deleted %s", filePath.c_str());
+                        result = true;
+                    } else {
+                        ESP_LOGW("SpiAPI", "DeleteProject: file not found %s", filePath.c_str());
+                        result = true; // not an error — file already doesn't exist
+                    }
+                }
+#else
+                result = true;
+#endif
+                break;
+
+            case RequestType::SavePicoConfig:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    ESP_LOGI("SpiAPI", "SavePicoConfig");
+                    std::string configData;
+                    result = receiveString(RequestType::SavePicoConfig, configData);
+                    if (!result) {
+                        ESP_LOGE("SpiAPI", "SavePicoConfig: failed to receive data");
+                        break;
+                    }
+
+                    // Ensure config directory exists
+                    std::string configDir = STORAGE::userPath() + "/" + STORAGE::DIR_CONFIG;
+                    mkdir(configDir.c_str(), 0755);
+
+                    // Atomic write
+                    std::string filePath = configDir + "/sequencer.bin";
+                    result = atomicWrite(filePath, configData.data(), configData.size());
+                    if (result) {
+                        ESP_LOGI("SpiAPI", "SavePicoConfig: saved %d bytes to %s", (int)configData.size(), filePath.c_str());
+                    }
+                }
+#else
+                ESP_LOGW("SpiAPI", "SavePicoConfig: SD card disabled");
+                result = true;
+#endif
+                break;
+
+            case RequestType::LoadPicoConfig:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    ESP_LOGI("SpiAPI", "LoadPicoConfig");
+                    std::string filePath = STORAGE::userPath() + "/" + STORAGE::DIR_CONFIG + "/sequencer.bin";
+                    FILE *f = fopen(filePath.c_str(), "rb");
+                    if (!f) {
+                        ESP_LOGW("SpiAPI", "LoadPicoConfig: file not found %s", filePath.c_str());
+                        result = transmitBinary(requestType, nullptr, 0);
+                        break;
+                    }
+
+                    fseek(f, 0, SEEK_END);
+                    long fileSize = ftell(f);
+                    fseek(f, 0, SEEK_SET);
+
+                    if (fileSize <= 0 || fileSize > 4096) {
+                        ESP_LOGE("SpiAPI", "LoadPicoConfig: invalid file size %ld", fileSize);
+                        fclose(f);
+                        result = transmitBinary(requestType, nullptr, 0);
+                        break;
+                    }
+
+                    uint8_t *buf = (uint8_t*)malloc(fileSize);
+                    if (!buf) {
+                        fclose(f);
+                        result = transmitBinary(requestType, nullptr, 0);
+                        break;
+                    }
+                    size_t readBytes = fread(buf, 1, fileSize, f);
+                    fclose(f);
+
+                    ESP_LOGI("SpiAPI", "LoadPicoConfig: transmitting %d bytes", (int)readBytes);
+                    result = transmitBinary(requestType, buf, (uint32_t)readBytes);
+                    free(buf);
+                }
+#else
+                ESP_LOGW("SpiAPI", "LoadPicoConfig: SD card disabled");
+                result = transmitBinary(requestType, nullptr, 0);
+#endif
                 break;
             }
         }
