@@ -21,6 +21,8 @@ respective component folders / files if different from this license.
 #include <vector>
 #include "MacroDeviceDefinition.hpp"
 #include "ctagDataModelBase.hpp"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 namespace CTAG {
     namespace MACROPRESETS {
@@ -29,6 +31,7 @@ namespace CTAG {
         class MacroDeviceDefinitionDataModel final : public CTAG::SP::ctagDataModelBase{
             private:
                 struct MacroDeviceDefinition *definitions;
+                SemaphoreHandle_t arrayMutex = nullptr;
             public:
                 void Init();
                 void ReloadMachineDefinitions();

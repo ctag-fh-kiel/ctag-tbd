@@ -38,6 +38,7 @@ using namespace rapidjson;
 
 
 void MacroSoundPresetDataModel::Init() {
+    arrayMutex = xSemaphoreCreateMutex();
     presets = (MacroSoundPreset*) heap_caps_malloc(sizeof(MacroSoundPreset) * MaxSoundPresets, MALLOC_CAP_32BIT | MALLOC_CAP_SPIRAM);
     groups = (MacroSoundPresetGroup*) heap_caps_malloc(sizeof(MacroSoundPresetGroup) * MaxSoundPresetGroups, MALLOC_CAP_32BIT | MALLOC_CAP_SPIRAM);
     for(int i=0; i<MaxSoundPresets; i++) {
@@ -56,6 +57,8 @@ int compareGroups(const void *a, const void *b) {
 
 void MacroSoundPresetDataModel::ReloadSoundPresets() {
     ESP_LOGI("MacroSoundPresetDataModel", "Trying to read macro sound preset file");
+
+    xSemaphoreTake(arrayMutex, portMAX_DELAY);
 
     ESP_LOGI("MacroSoundPresetDataModel", "Before reload: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
         heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -162,6 +165,8 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
         heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
         heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
+    xSemaphoreGive(arrayMutex);
 }
 
 void MacroSoundPresetDataModel::LoadMacroSoundPreset(MacroSoundPreset *target, std::string id) {
@@ -198,6 +203,7 @@ int MacroSoundPresetDataModel::GetNumberOfSoundPresets() {
 }
 
 void MacroSoundPresetDataModel::GetPresetIndexJson(int trackIndex, std::string *output) {
+    xSemaphoreTake(arrayMutex, portMAX_DELAY);
     Document doc;
 
     doc.SetObject();
@@ -213,9 +219,11 @@ void MacroSoundPresetDataModel::GetPresetIndexJson(int trackIndex, std::string *
     ESP_LOGI("MacroSoundPresetDataModel", "GetPresetIndexJson JSON: %s", buffer.GetString());
 
     output->assign(buffer.GetString());
+    xSemaphoreGive(arrayMutex);
 }
 
 void MacroSoundPresetDataModel::SerializeListJSON(std::string *output) {
+    xSemaphoreTake(arrayMutex, portMAX_DELAY);
     Document doc;
 
     doc.SetObject();
@@ -235,6 +243,7 @@ void MacroSoundPresetDataModel::SerializeListJSON(std::string *output) {
     ESP_LOGD("MacroSoundPresetDataModel", "JSON string %s", buffer.GetString());
 
     output->assign(buffer.GetString());
+    xSemaphoreGive(arrayMutex);
 }
 
 bool MacroSoundPresetDataModel::UpdatePreset(const std::string &jsonString) {

@@ -1128,7 +1128,9 @@ namespace CTAG::SPIAPI{
 
                     // Atomic write: temp file + rename
                     std::string filePath = projDir + "/project" + slotName + ".bin";
+                    STORAGE::lockStorage();
                     result = atomicWrite(filePath, projectData.data(), projectData.size());
+                    STORAGE::unlockStorage();
                     if (result) {
                         ESP_LOGI("SpiAPI", "SaveProjectToP4: saved %d bytes to %s", (int)projectData.size(), filePath.c_str());
                     }
@@ -1246,6 +1248,7 @@ namespace CTAG::SPIAPI{
                     ESP_LOGI("SpiAPI", "DeleteProject: slot \"%s\"", slotName.c_str());
                     // Only delete from user dir — factory projects are immutable
                     std::string filePath = STORAGE::userPath() + "/" + STORAGE::DIR_PROJECTS + "/project" + slotName + ".bin";
+                    STORAGE::lockStorage();
                     if (remove(filePath.c_str()) == 0) {
                         ESP_LOGI("SpiAPI", "DeleteProject: deleted %s", filePath.c_str());
                         result = true;
@@ -1253,6 +1256,7 @@ namespace CTAG::SPIAPI{
                         ESP_LOGW("SpiAPI", "DeleteProject: file not found %s", filePath.c_str());
                         result = true; // not an error — file already doesn't exist
                     }
+                    STORAGE::unlockStorage();
                 }
 #else
                 result = true;
@@ -1276,7 +1280,9 @@ namespace CTAG::SPIAPI{
 
                     // Atomic write
                     std::string filePath = configDir + "/sequencer.bin";
+                    STORAGE::lockStorage();
                     result = atomicWrite(filePath, configData.data(), configData.size());
+                    STORAGE::unlockStorage();
                     if (result) {
                         ESP_LOGI("SpiAPI", "SavePicoConfig: saved %d bytes to %s", (int)configData.size(), filePath.c_str());
                     }
@@ -1447,7 +1453,9 @@ namespace CTAG::SPIAPI{
 
                     // Atomic write
                     std::string filePath = tdDir + "/" + templateName + ".json";
+                    STORAGE::lockStorage();
                     result = atomicWrite(filePath, jsonData.data(), jsonData.size());
+                    STORAGE::unlockStorage();
                     if (result) {
                         ESP_LOGI("SpiAPI", "SaveTrackDefault: saved %d bytes to %s", (int)jsonData.size(), filePath.c_str());
                     }
@@ -1465,11 +1473,13 @@ namespace CTAG::SPIAPI{
                     ESP_LOGI("SpiAPI", "DeleteTrackDefault: \"%s\"", templateName.c_str());
                     // Only delete from user dir — factory templates are immutable
                     std::string filePath = STORAGE::userPath() + "/" + STORAGE::DIR_TRACKDEFAULTS + "/" + templateName + ".json";
+                    STORAGE::lockStorage();
                     if (remove(filePath.c_str()) == 0) {
                         ESP_LOGI("SpiAPI", "DeleteTrackDefault: deleted %s", filePath.c_str());
                     } else {
                         ESP_LOGW("SpiAPI", "DeleteTrackDefault: file not found %s", filePath.c_str());
                     }
+                    STORAGE::unlockStorage();
                     result = true;
                 }
 #else

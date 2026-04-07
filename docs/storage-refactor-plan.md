@@ -360,9 +360,9 @@ Projects are resilient to firmware changes that modify preset files.
 
 2. **Track default template format** — Current `trackdefaults.json` has `kit` field + per-track `sampleSlice`/`sampleBank`. New template format wraps this in metadata (`name`, `description`, `factory`). The 0xA5 handler must strip metadata or Pico must parse extended format.
 
-3. **Concurrent access** — When WebUI (REST) and Pico (SPI) both access `/user/projects/`, use a mutex around file operations. P4 is single-threaded for SPI but multi-threaded for HTTP.
+3. **Concurrent access** — ✅ IMPLEMENTED. Storage mutex (`lockStorage()`/`unlockStorage()` in `StorageOverlay.hpp`) protects all file write operations in `SpiAPI.cpp` (5 write blocks) and `SampleAPI.cpp` (3 write points). Per-class `arrayMutex` protects in-memory arrays in `MacroSoundPresetDataModel` and `MacroDeviceDefinitionDataModel` from concurrent SPI + HTTP access.
 
-4. **Atomic writes** — Write to temp file, then `rename()`. FAT32 rename is atomic on ESP-IDF VFS. Critical for project saves during power-cycle.
+4. **Atomic writes** — ✅ IMPLEMENTED. `atomicWrite()` in `SpiAPI.cpp` uses temp-file + rename pattern. FAT32 rename cannot overwrite — must `remove()` before `rename()`. All SPI write operations use `atomicWrite()`, wrapped in storage mutex.
 
 ---
 

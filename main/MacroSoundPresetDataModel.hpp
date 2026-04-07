@@ -20,6 +20,8 @@ respective component folders / files if different from this license.
 #include <vector>
 #include <string>
 #include "ctagDataModelBase.hpp"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 
 namespace CTAG {
@@ -33,6 +35,7 @@ namespace CTAG {
                 int presetsUsed; 
                 struct MacroSoundPresetGroup* groups;
                 int groupsUsed;
+                SemaphoreHandle_t arrayMutex = nullptr;
             public:
                 void Init();
                 void ReloadSoundPresets();

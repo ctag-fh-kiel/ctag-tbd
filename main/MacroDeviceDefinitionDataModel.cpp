@@ -34,6 +34,7 @@ using namespace rapidjson;
 
 
 void MacroDeviceDefinitionDataModel::Init() {
+    arrayMutex = xSemaphoreCreateMutex();
     definitions = (struct MacroDeviceDefinition *)heap_caps_malloc(sizeof(struct MacroDeviceDefinition) * MaxMacroDeviceDefinitions, MALLOC_CAP_32BIT | MALLOC_CAP_SPIRAM);
     for(int i=0; i<MaxMacroDeviceDefinitions; i++) {
         MacroDeviceDefinitionUtils::MacroDeviceDefinition_Reset(&definitions[i]);
@@ -42,6 +43,8 @@ void MacroDeviceDefinitionDataModel::Init() {
 
 void MacroDeviceDefinitionDataModel::ReloadMachineDefinitions() {
     ESP_LOGI("MacroDeviceDefinitionDataModel", "Trying to read macro device definition file");
+
+    xSemaphoreTake(arrayMutex, portMAX_DELAY);
 
     for(int i=0; i<MaxMacroDeviceDefinitions; i++) {
         MacroDeviceDefinitionUtils::MacroDeviceDefinition_Reset(&definitions[i]);
@@ -71,19 +74,23 @@ void MacroDeviceDefinitionDataModel::ReloadMachineDefinitions() {
         }
     }
 
+    xSemaphoreGive(arrayMutex);
 }
 
 bool MacroDeviceDefinitionDataModel::ReloadSingleDefinition(const std::string &id) {
+    xSemaphoreTake(arrayMutex, portMAX_DELAY);
     // Overlay: check /user/macros/ then /factory/macros/
     const std::string path = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_MACROS, id + ".json");
     if (path.empty()) {
         ESP_LOGE("MacroDeviceDefinitionDataModel", "Macro def not found in overlay: %s", id.c_str());
+        xSemaphoreGive(arrayMutex);
         return false;
     }
     Document d;
     loadJSON(d, path);
     if (d.HasParseError()) {
         ESP_LOGE("MacroDeviceDefinitionDataModel", "Failed to parse %s", path.c_str());
+        xSemaphoreGive(arrayMutex);
         return false;
     }
 
@@ -99,6 +106,7 @@ bool MacroDeviceDefinitionDataModel::ReloadSingleDefinition(const std::string &i
     // MacroDeviceDefinition *newDef = new MacroDeviceDefinition();
     if (!MacroDeviceDefinitionUtils::MacroDeviceDefinition_DeserializeJSON(&definitions[index], d)) {
         ESP_LOGE("MacroDeviceDefinitionDataModel", "Failed to deserialize %s", id.c_str());
+        xSemaphoreGive(arrayMutex);
         return false;
     }
 
@@ -118,20 +126,25 @@ bool MacroDeviceDefinitionDataModel::ReloadSingleDefinition(const std::string &i
     // // New definition — append
     // definitions.push_back(newDef);
     ESP_LOGI("MacroDeviceDefinitionDataModel", "Added new definition: #%s", id.c_str());
+    xSemaphoreGive(arrayMutex);
     return true;
 }
 
 MacroDeviceDefinition *MacroDeviceDefinitionDataModel::GetMacroDeviceDefinition(const char *id) {
+    xSemaphoreTake(arrayMutex, portMAX_DELAY);
     for(int i=0; i<MaxMacroDeviceDefinitions; i++) {
         if (strcmp(definitions[i].id, id) == 0) {
+            xSemaphoreGive(arrayMutex);
             return &definitions[i];
         }
     }
 
+    xSemaphoreGive(arrayMutex);
     return nullptr;
 }
 
 void MacroDeviceDefinitionDataModel::SerializeListJSON(std::string *output) {
+    xSemaphoreTake(arrayMutex, portMAX_DELAY);
     Document d;
     d.SetObject();
 
@@ -148,6 +161,7 @@ void MacroDeviceDefinitionDataModel::SerializeListJSON(std::string *output) {
     // ESP_LOGD("MacroDeviceDefinitionDataModel", "JSON string %s", buffer.GetString());
 
     output->assign(buffer.GetString());
+    xSemaphoreGive(arrayMutex);
 }
 
 bool MacroDeviceDefinitionDataModel::UpdateDefinition(const std::string &jsonString) {

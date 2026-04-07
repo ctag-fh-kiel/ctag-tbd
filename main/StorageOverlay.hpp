@@ -25,11 +25,25 @@ Licensed under the GNU Lesser General Public License (LGPL 3.0).
 #include <vector>
 #include "esp_log.h"
 #include "ctagResources.hpp"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 namespace CTAG {
 namespace STORAGE {
 
 static const char *OVERLAY_TAG = "StorageOverlay";
+
+/**
+ * Global storage mutex — protects SD card file write operations
+ * from concurrent access by SPI task and HTTP handlers.
+ * Acquire before any file write/delete/rename sequence.
+ */
+inline SemaphoreHandle_t &storageMutex() {
+    static SemaphoreHandle_t mtx = xSemaphoreCreateMutex();
+    return mtx;
+}
+inline void lockStorage()   { xSemaphoreTake(storageMutex(), portMAX_DELAY); }
+inline void unlockStorage() { xSemaphoreGive(storageMutex()); }
 
 // Zone path helpers — all relative to sdcardRoot (/sdcard)
 inline std::string factoryPath() { return RESOURCES::sdcardRoot + "/factory"; }

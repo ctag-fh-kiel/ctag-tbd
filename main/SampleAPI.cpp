@@ -141,8 +141,10 @@ static bool load_json_file(const char *path, Document &doc) {
 
 /** Store a JSON Document to a file on SD card */
 static bool store_json_file(const char *path, Document &doc) {
+    CTAG::STORAGE::lockStorage();
     FILE *fp = fopen(path, "w");
     if (!fp) {
+        CTAG::STORAGE::unlockStorage();
         ESP_LOGE(TAG, "Cannot write %s", path);
         return false;
     }
@@ -152,6 +154,7 @@ static bool store_json_file(const char *path, Document &doc) {
     doc.Accept(writer);
     fflush(fp);
     fclose(fp);
+    CTAG::STORAGE::unlockStorage();
     return true;
 }
 
@@ -818,8 +821,10 @@ static esp_err_t handle_uploadconfig(httpd_req_t *req) {
         // No subdir — write to user/config/
         filePath = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_CONFIG, pathStr);
     }
+    CTAG::STORAGE::lockStorage();
     FILE *fp = fopen(filePath.c_str(), "w");
     if (!fp) {
+        CTAG::STORAGE::unlockStorage();
         ESP_LOGE(TAG, "Cannot create file: %s", filePath.c_str());
             return send_error(req, 500, "Cannot create file");
     }
@@ -828,6 +833,7 @@ static esp_err_t handle_uploadconfig(httpd_req_t *req) {
     char *chunk = (char *)heap_caps_malloc(CHUNK_BUF_SIZE, MALLOC_CAP_SPIRAM);
     if (!chunk) {
         fclose(fp);
+        CTAG::STORAGE::unlockStorage();
         return send_error(req, 500, "Out of memory");
     }
 
@@ -842,6 +848,7 @@ static esp_err_t handle_uploadconfig(httpd_req_t *req) {
             }
             ESP_LOGE(TAG, "Upload recv error");
             fclose(fp);
+            CTAG::STORAGE::unlockStorage();
             heap_caps_free(chunk);
             remove(filePath.c_str());
             return send_error(req, 500, "Upload receive error");
@@ -853,6 +860,7 @@ static esp_err_t handle_uploadconfig(httpd_req_t *req) {
 
     fflush(fp);
     fclose(fp);
+    CTAG::STORAGE::unlockStorage();
     heap_caps_free(chunk);
 
     ESP_LOGI(TAG, "Uploaded %s (%d bytes)", filePath.c_str(), total_written);
@@ -1115,7 +1123,10 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         } else {
             filePath = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_CONFIG, deletePath);
         }
-        if (remove(filePath.c_str()) != 0) {
+        CTAG::STORAGE::lockStorage();
+        int rc = remove(filePath.c_str());
+        CTAG::STORAGE::unlockStorage();
+        if (rc != 0) {
             ESP_LOGE(TAG, "Delete failed: %s", filePath.c_str());
             return send_error(req, 500, "Delete failed");
         }
