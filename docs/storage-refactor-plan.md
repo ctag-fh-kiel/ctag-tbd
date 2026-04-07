@@ -90,7 +90,7 @@
 | `main/SpiAPI.cpp` | P4 | Overlay trackdefaults, `system/webui-version.json` |
 | `main/MacroAPI.cpp` | P4 | `read_all_json_overlay()` helper |
 | `components/.../ctagSPDataModel.cpp` | P4 | Inline overlay for patches (avoids dep cycle) |
-| `main/SampleAPI.cpp` | P4 | TODO marker only (needs WebUI coordination) |
+| `main/SampleAPI.cpp` | P4 | ✅ Fully overlay-migrated (resolveFile, userFilePath, scan_overlay_configs) |
 | `create_sd_archive.sh` | P4 | New layout + legacy `/data/` for backward compat |
 
 ---
@@ -354,15 +354,341 @@ Projects are resilient to firmware changes that modify preset files.
 
 ---
 
+## Phase 5 — WebUI Config Path Adaptation
+
+**Goal:** Fix WebUI JavaScript to use the new overlay subdir names. Currently the backend expects
+`presets/`, `macros/`, `patches/` but the WebUI JS still sends the legacy `macrosoundpresets/`,
+`macrodefinitions/` paths — resulting in 404 errors for all config save/load operations.
+
+**Status:** NOT STARTED
+
+**Priority: HIGH** — The WebUI preset/macro editor is broken against the new backend.
+
+*Depends on Phase 0 (overlay paths must be deployed). Independent of all other phases.*
+
+> **Reference:** `docs/webui-storage-handover.md` documents the backend contract.
+
+### Path renaming required
+
+| Old JS path prefix | New overlay subdir | Occurrences |
+|---------------------|--------------------|-------------|
+| `macrosoundpresets/` | `presets/` | 18 (4 files) |
+| `macrodefinitions/` | `macros/` | 6 (4 files) |
+| **Total** | | **24** |
+
+### Files to change (all in `sdcard_image/www/js/`)
+
+| File | `macrosoundpresets` refs | `macrodefinitions` refs | Notes |
+|------|-------------------------|------------------------|-------|
+| `designer.js` | 4 | 2 | Preset save/load, macro def upload |
+| `macro-bundle.js` | 9 | 3 | Macro editor: preset + def CRUD |
+| `performer.js` | 4 | 1 | Live preset load/save |
+| `app-bundle.js` | 1 (comment) | 0 | Comment only — update for accuracy |
+
+### Tasks
+
+- [ ] Search-replace `'macrosoundpresets/'` → `'presets/'` in all JS files
+- [ ] Search-replace `'macrodefinitions/'` → `'macros/'` in all JS files
+- [ ] Update any stale comments referencing old paths (`/sdcard/data/`, `sp/`)
+- [ ] Rebuild WebUI bundles via `build-webui.sh` (if applicable)
+- [ ] Verify in browser: preset save/load works, macro editor works
+- [ ] Verify `synthdefinitions.json` path still resolves (used in `shared.js`, may need `config/` prefix)
+
+### Verification (Phase 5)
+
+- [ ] WebUI loads preset list (getconfig with `presets/` subdir)
+- [ ] Saving a preset from designer writes to `/user/presets/`
+- [ ] Macro definition editor loads and saves correctly
+- [ ] No 404 errors in browser console for config operations
+- [ ] Factory presets still visible via overlay (read from `/factory/presets/`)
+
+---
+
+## Phase 6 — Generic Storage REST API
+
+**Goal:** Expose P4 SD card file operations via HTTP for backup, restore, project browsing, and
+storage statistics. This is the foundation for WebUI backup/restore and any future data management.
+
+**Status:** NOT STARTED
+
+**Priority: MEDIUM** — Prerequisite for WebUI backup/restore (Phase 7) and storage indicator.
+
+*Depends on Phase 0 (overlay zones). Independent of Phases 5, 3b.*
+
+> **Reference:** Original audit §8.4 specifies these endpoints.
+
+### New endpoints (register in `RestServer.cpp`)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v2/storage/info` | SD card total/used/free bytes, per-zone breakdown |
+| GET | `/api/v2/storage/list?path=&recursive=` | Directory listing with file sizes + timestamps |
+| GET | `/api/v2/storage/file?path=` | Raw file download (binary or JSON) |
+| POST | `/api/v2/storage/file?path=` | Upload/overwrite file (multipart or raw body) |
+| DELETE | `/api/v2/storage/file?path=` | Delete file |
+| POST | `/api/v2/storage/mkdir?path=` | Create directory |
+| POST | `/api/v2/storage/copy?from=&to=` | Server-side file copy |
+| POST | `/api/v2/storage/reload` | Flush caches, re-scan overlay |
+
+### Security constraints
+
+- [ ] **Read-only `/factory/`** — reject POST/DELETE to any path under `/factory/`
+- [ ] **Path traversal protection** — reject `..` components, normalize paths
+- [ ] **Reject writes to `/system/`** — reserved for firmware use
+- [ ] **Size limit on uploads** — enforce reasonable per-file max (e.g., 1 MB)
+- [ ] Wrap all write operations in `lockStorage()` / `unlockStorage()`
+
+### Tasks
+
+- [ ] Create `main/StorageAPI.cpp` / `.hpp` — REST handlers for the new endpoints
+- [ ] Register routes in `RestServer.cpp`
+- [ ] Implement `getSDCardInfo()` — `FATFS` stats for total/used/free
+- [ ] Implement recursive directory listing with file metadata (size, timestamp)
+- [ ] Implement file GET/POST/DELETE with overlay-aware path resolution
+- [ ] Implement mkdir, copy, reload
+- [ ] Add unit test: path traversal rejection (`../../etc/passwd`, leading `/`)
+- [ ] Integration test: upload file → list → download → verify content match
+
+### Verification (Phase 6)
+
+- [ ] `curl /api/v2/storage/info` returns SD card stats
+- [ ] `curl /api/v2/storage/list?path=user/presets/` returns JSON file list
+- [ ] Upload + download roundtrip preserves file content exactly
+- [ ] Cannot write to `/factory/` (403 Forbidden)
+- [ ] Cannot path-traverse outside SD root (400 Bad Request)
+
+---
+
+## Phase 7 — WebUI Backup & Restore
+
+**Goal:** Browser-side backup and restore of all user data via the Storage REST API.
+No archive creation on the MCU — JSZip runs in the browser, streaming files over HTTP.
+
+**Status:** NOT STARTED
+
+**Priority: MEDIUM** — Protects user data across firmware updates.
+
+*Depends on Phase 6 (Storage REST API must exist).*
+
+> **Reference:** Original audit §7 specifies the browser-side ZIP approach.
+
+### Backup flow
+
+1. WebUI fetches `/api/v2/storage/list?path=user/&recursive=true`
+2. For each file: `GET /api/v2/storage/file?path=user/{filepath}`
+3. JSZip assembles all files into `dada-tbd-backup-{date}.zip`
+4. Browser triggers download
+
+### Restore flow
+
+1. User uploads ZIP via file picker
+2. JSZip extracts in browser
+3. For each file: `POST /api/v2/storage/file?path=user/{filepath}`
+4. `POST /api/v2/storage/reload` to re-scan overlay
+5. Confirmation: "Restored N files, M bytes"
+
+### Tasks
+
+- [ ] Add JSZip library to WebUI (`sdcard_image/www/js/jszip.min.js`)
+- [ ] Create backup panel UI (modal overlay in sample-manager or new page)
+- [ ] Implement backup: recursive list → parallel file downloads → ZIP assembly
+- [ ] Implement restore: ZIP extract → confirm overwrite → parallel uploads → reload
+- [ ] Add "Factory reset" option: `DELETE /api/v2/storage/file?path=user/` (recursive) → reload
+- [ ] Progress indicator during backup/restore (file count, byte progress)
+- [ ] Add backup reminder prompt before firmware updates (web flasher integration)
+
+### WebUI Storage Indicator
+
+- [ ] Add storage usage widget (total/used/free) to sample-manager header
+- [ ] Per-zone breakdown: projects, presets, macros, patches, kits, samples
+- [ ] Color-coded bar: green < 70%, yellow 70-90%, red > 90%
+
+### Verification (Phase 7)
+
+- [ ] Full backup creates valid ZIP with all user files
+- [ ] Restore from ZIP recreates user directory tree
+- [ ] Factory reset clears `/user/` and restores factory-only state
+- [ ] Storage indicator updates after backup/restore operations
+- [ ] Backup/restore works with large data sets (100+ files, 10+ MB total)
+
+---
+
+## Phase 8 — WebUI Overlay-Aware Browsing
+
+**Goal:** WebUI displays factory vs. user content distinctly. Users can reset individual
+items to factory defaults. Sample pool, preset list, and macro list show provenance.
+
+**Status:** NOT STARTED
+
+**Priority: LOW** — Quality-of-life improvement, not blocking any workflow.
+
+*Depends on Phase 5 (config paths) and Phase 6 (storage REST API for metadata).*
+
+> **Reference:** Original audit §8.2 describes overlay-aware browsing.
+
+### Tasks
+
+- [ ] Preset list: show factory badge "(F)" for items from `/factory/presets/`
+- [ ] Macro list: show factory badge for items from `/factory/macros/`
+- [ ] Sample pool: distinguish factory vs. user-uploaded samples
+- [ ] "Reset to factory" context menu: delete user override → overlay falls through to factory
+- [ ] "Duplicate" option: copy factory item to user layer for editing
+- [ ] Indicate overridden items: user file shadows a factory file with same name
+
+### Verification (Phase 8)
+
+- [ ] Factory presets show "(F)" badge, user presets do not
+- [ ] "Reset to factory" removes user override, factory version reappears
+- [ ] Editing a factory preset auto-copies to user layer (no factory mutation)
+
+---
+
+## Phase 9 — Project Metadata & File-Level Snapshots
+
+**Goal:** Complete Phase 3b. Projects include metadata and snapshotted preset/macro JSON
+files for full self-containment and resilience to firmware changes.
+
+**Status:** NOT STARTED
+
+**Priority: LOW** — Useful for project portability, but parameter values (Phase 3a) cover the
+most common "sounds wrong after load" scenario.
+
+*Depends on Phase 3a (sound restoration must work). Phase 1 (SPI project storage) complete.*
+
+### Project metadata (`project.json`)
+
+Each project directory gets a `project.json`:
+```json
+{
+  "name": "My Song",
+  "created": "2026-04-10T12:00:00Z",
+  "modified": "2026-04-10T14:30:00Z",
+  "firmwareVersion": "1.2.0",
+  "formatVersion": 1,
+  "templateName": "default",
+  "tracks": [
+    { "slot": 0, "presetId": "808-kick", "macroDefId": "PicoSeqRack" },
+    ...
+  ]
+}
+```
+
+### Tasks
+
+#### P4 repo
+- [ ] On `SaveProjectToP4` (0xB0): create/update `project.json` alongside `song.psng`
+- [ ] On `SaveProjectToP4`: snapshot each track's preset JSON + macro def JSON into
+      `/user/projects/{id}/snapshots/{trackN}-preset.json`, `{trackN}-macrodef.json`
+- [ ] On `LoadProjectFromP4` (0xB1): compare snapshot hashes with current files,
+      return per-track mismatch flags in response
+- [ ] Migrate project directory naming: `projectXXX.bin` → `{id}/song.psng` + `project.json`
+
+#### Pico repo
+- [ ] Send track metadata (presetId, macroDefId per track) with save command
+- [ ] On load: if mismatch flags present, show OLED warning:
+      "Presets changed since save" → "Load saved" / "Use current"
+- [ ] Store/display project name on OLED (from `project.json`)
+- [ ] Project naming/renaming screen
+
+### Verification (Phase 9)
+
+- [ ] Saved project directory contains `project.json` + snapshots
+- [ ] Loading detects when preset has been modified since save
+- [ ] User can choose saved vs. current preset on mismatch
+- [ ] Project name displays on Pico OLED
+
+---
+
+## Phase 10 — Content-Addressed Kit Store
+
+**Goal:** Kits (sample/wavetable collections) are stored as immutable, content-addressed
+snapshots. Projects reference kits by hash for reproducibility.
+
+**Status:** NOT STARTED
+
+**Priority: LOW** — Advanced feature for kit versioning and deduplication.
+
+*Depends on Phase 6 (Storage REST API) for kit management WebUI.*
+
+> **Reference:** Original audit §4.5–4.6 specifies the content-addressed store.
+
+### Architecture
+
+```
+/user/kits/
+├── store/
+│   └── {xxh128-hash}/       ← immutable snapshot directory
+│       ├── manifest.json    ← file list + per-file hashes
+│       └── samples/         ← actual audio files
+├── heads/
+│   └── {kitname}.json       ← mutable pointer: { "hash": "...", "name": "..." }
+└── incoming/                ← temp staging for uploads
+```
+
+### Tasks
+
+- [ ] Implement XXH128 hashing for kit directories (use existing xxHash in codebase)
+- [ ] On kit upload/save: hash content → store in `/user/kits/store/{hash}/`
+- [ ] Create `manifest.json` per kit snapshot (file list, sizes, individual hashes)
+- [ ] Implement mutable heads: `/user/kits/heads/{name}.json` → `{ "hash": "..." }`
+- [ ] Garbage collection: scan project references → mark used hashes → delete unreferenced
+- [ ] SPI commands for kit hash lookup: `GetKitHash(name)` → hash string
+- [ ] Store kit hash in `project.json` for reproducibility
+- [ ] WebUI: kit editor shows current hash, history of snapshots, diff view
+- [ ] WebUI: kit GC button with "will free N MB" estimate
+
+### Verification (Phase 10)
+
+- [ ] Modifying a kit creates new hash, old snapshot preserved
+- [ ] Two identical kits produce same hash (deduplication)
+- [ ] GC removes unreferenced snapshots, preserves referenced ones
+- [ ] Project load verifies kit hash matches
+
+---
+
+## Phase 11 — Polish & Extras
+
+**Goal:** Final quality items from the original audit that don't fit neatly into other phases.
+
+**Status:** NOT STARTED
+
+**Priority: LOW** — Nice-to-haves for production readiness.
+
+### Tasks
+
+- [ ] Factory demo projects: create 3-5 showcase projects in `/factory/projects/`
+  - Different genres/styles demonstrating machine capabilities
+  - Include matching presets and kit data
+- [ ] Pre-deploy backup prompt in web flasher (`tbd-flasher-p4.js`)
+  - Before firmware flash: "Back up your data? [Download backup] [Skip]"
+  - Uses backup API from Phase 7
+- [ ] Track setup editor screen on Pico OLED
+  - Per-track view: machine name, preset name, volume
+  - Modify machine assignment per track
+- [ ] "Save as new template" on Pico OLED
+  - Capture current track assignment as user template in `/user/trackdefaults/`
+- [ ] SPI transfer CRC — end-to-end integrity check on binary payloads
+- [ ] Song file CRC32 in footer — detect corruption on load
+- [ ] Data format versioning framework
+  - `version.json` tracks schema version per data type
+  - Sequential migration functions for format upgrades
+  - Auto-migrate on boot if version mismatch detected
+
+---
+
 ## Key Technical Considerations
 
-1. **SPI chunked transfer** — Current frame is 2048 bytes with 7-byte header = 2041 payload. A 60 KB project needs ~30 frames. Verify `transmitData()` / `receiveData()` handle multi-frame at this scale. Test with 60 KB payload early in Phase 1.
+1. **SPI chunked transfer** — ✅ VERIFIED. Current frame is 2048 bytes with 7-byte header = 2041 payload. A 60 KB project needs ~30 frames. `transmitData()` / `receiveData()` handle multi-frame correctly.
 
-2. **Track default template format** — Current `trackdefaults.json` has `kit` field + per-track `sampleSlice`/`sampleBank`. New template format wraps this in metadata (`name`, `description`, `factory`). The 0xA5 handler must strip metadata or Pico must parse extended format.
+2. **Track default template format** — ✅ WORKING. Template JSON served via overlay resolution. 0xA5 handler accepts optional template name parameter.
 
 3. **Concurrent access** — ✅ IMPLEMENTED. Storage mutex (`lockStorage()`/`unlockStorage()` in `StorageOverlay.hpp`) protects all file write operations in `SpiAPI.cpp` (5 write blocks) and `SampleAPI.cpp` (3 write points). Per-class `arrayMutex` protects in-memory arrays in `MacroSoundPresetDataModel` and `MacroDeviceDefinitionDataModel` from concurrent SPI + HTTP access.
 
 4. **Atomic writes** — ✅ IMPLEMENTED. `atomicWrite()` in `SpiAPI.cpp` uses temp-file + rename pattern. FAT32 rename cannot overwrite — must `remove()` before `rename()`. All SPI write operations use `atomicWrite()`, wrapped in storage mutex.
+
+5. **WebUI path breakage** — ⚠️ CRITICAL. Backend overlay expects `presets/`, `macros/` subdir names but WebUI JS still sends `macrosoundpresets/`, `macrodefinitions/`. No backward-compat shim exists — results in 404 errors. Must fix in Phase 5 before any WebUI testing.
+
+6. **Storage REST API security** — Phase 6 endpoints must enforce: path traversal rejection, `/factory/` read-only, `/system/` write-protected, upload size limits. All writes through `lockStorage()`.
 
 ---
 
@@ -373,41 +699,100 @@ Projects are resilient to firmware changes that modify preset files.
 | File | Purpose |
 |------|---------|
 | `main/StorageOverlay.hpp` | Overlay resolution, migration, directory helpers |
-| `main/SpiAPI.hpp` / `.cpp` | SPI command handlers, new commands 0xB0–0xC0 |
+| `main/SpiAPI.hpp` / `.cpp` | SPI command handlers, commands 0xB0–0xBA |
 | `main/SpiProtocol.h` | Low-level SPI frame structures |
 | `main/SPManager.cpp` | Boot sequence, `initOverlay()` call |
 | `main/MacroAPI.cpp` | Preset/macro REST handlers |
-| `main/SampleAPI.cpp` | Sample file I/O (TODO: overlay migration) |
+| `main/SampleAPI.cpp` | Sample + config file I/O (overlay-migrated ✅) |
 | `main/RestServer.cpp` | HTTP handler registration |
+| `main/StorageAPI.cpp` | **NEW (Phase 6):** Generic storage REST handlers |
+| `docs/webui-storage-handover.md` | Backend changes documented for WebUI developer |
 | `sdcard_image/` | Factory SD card image layout |
+| `sdcard_image/www/js/designer.js` | WebUI designer — preset/macro config paths |
+| `sdcard_image/www/js/macro-bundle.js` | WebUI macro editor — preset/macro config paths |
+| `sdcard_image/www/js/performer.js` | WebUI performer — preset config paths |
+| `sdcard_image/www/js/app-bundle.js` | WebUI main bundle |
+| `sdcard_image/www/js/sample-manager.js` | WebUI sample manager |
+| `sdcard_image/www/js/shared.js` | WebUI shared utilities |
 | `create_sd_archive.sh` | SD card ZIP creation for releases |
 
 ### Pico repo (`tbd-pico-seq3`)
 
 | File | Purpose |
 |------|---------|
-| `src/SpiAPI.h` / `.cpp` | SPI command methods (add 0xB0–0xC0) |
+| `src/SpiAPI.h` / `.cpp` | SPI command methods (0xB0–0xBA) |
 | `src/SpiProtocol.h` | Command ID constants |
 | `src/PicoHost.h` / `.cpp` | `saveProject()` / `loadProject()` rewiring |
 | `src/PicoStorage.h` / `.cpp` | Make SD-optional, keep for bootloader |
 | `src/SdCardHW.cpp` | Conditional SD init |
-| `examples/main.cpp` | `fetchAndInitTrackDefaults()`, boot flow, migration |
-| `lib/sequencerui/screens/project.cpp` | Menu rename → "Home", add "Track Setup" |
+| `examples/main.cpp` | `fetchAndInitTrackDefaults()`, boot flow |
+| `lib/sequencerui/screens/project.cpp` | Home menu (renamed from "Project") |
 | `lib/sequencerui/screens/project_load.cpp` | SPI-based project list |
 | `lib/sequencerui/screens/project_save.cpp` | SPI-based save |
-| `lib/sequencerui/screens/trackdefault_select.cpp` | NEW: template browser |
-| `lib/sequencerui/screens/trackdefault_edit.cpp` | NEW: template editor |
+| `lib/sequencerui/screens/tracksetup.cpp` | Track default template browser |
 
 ---
 
 ## Scope Boundaries
 
-**Included:** Phases 0–4 above, both repos, on-device template management, no-Pico-SD operation, auto-migration, REST storage API foundation.
+**Included (Phases 0–11):**
+- SD restructure & overlay resolution (P4 backend) ✅
+- SPI project storage, no-Pico-SD operation ✅
+- Track default templates (SPI + Pico UI) ✅
+- Home menu redesign, 16 project slots ✅
+- Sound restoration & parameter values (Phase 3a) ✅
+- Thread safety (storage mutex + array mutexes) ✅
+- WebUI config path adaptation (Phase 5) — **CRITICAL, next**
+- Generic Storage REST API (Phase 6)
+- WebUI Backup & Restore (Phase 7)
+- WebUI overlay-aware browsing (Phase 8)
+- Project metadata & file-level snapshots (Phase 9)
+- Content-addressed kit store (Phase 10)
+- Factory demo projects, CRC integrity, data versioning (Phase 11)
 
-**Excluded (future work):**
-- WebUI Backup & Restore panel (JSZip browser-side)
-- WebUI project browser
-- Factory demo projects (content creation)
-- Pico SD backup (directory mirror)
-- Content-addressed kit store GC via WebUI
-- WebUI overlay-aware sample browser (badges, "reset to factory")
+**Excluded:**
+- Pico SD auto-migration (only 5 beta users, not worth the complexity)
+- Pico SD backup / directory mirror (no Pico SD required)
+- Real-time sample streaming from P4 SD (out of scope for sequencer)
+- Multi-user / authentication (single-device, local network only)
+
+---
+
+## Progress Summary
+
+> Updated 2026-04-XX
+
+| Phase | Name | Status | Priority |
+|-------|------|--------|----------|
+| 0 | SD Restructure & Overlay | ✅ COMPLETE | — |
+| 0.5 | ctagSPDataModel Crash Fix | ✅ COMPLETE | — |
+| 1 | SPI Project Storage | ✅ COMPLETE | — |
+| 2 | Track Default Templates | ✅ COMPLETE (core) | — |
+| 2.5 | Home Menu & 16 Slots | ✅ COMPLETE | — |
+| 3a | Sound Restoration | ✅ COMPLETE | — |
+| 3b | File-Level Snapshots | → Moved to Phase 9 | LOW |
+| ~~4~~ | ~~Migration & Backup~~ | REMOVED | — |
+| **5** | **WebUI Config Paths** | **NOT STARTED** | **HIGH** |
+| 6 | Storage REST API | NOT STARTED | MEDIUM |
+| 7 | WebUI Backup & Restore | NOT STARTED | MEDIUM |
+| 8 | WebUI Overlay Browsing | NOT STARTED | LOW |
+| 9 | Project Metadata & Snapshots | NOT STARTED | LOW |
+| 10 | Content-Addressed Kit Store | NOT STARTED | LOW |
+| 11 | Polish & Extras | NOT STARTED | LOW |
+
+### Dependency graph
+
+```
+Phase 0 ─┬─ Phase 1 ── Phase 3a ✅
+          │      └──── Phase 2 ── Phase 2.5 ✅
+          │
+          ├─ Phase 5 (WebUI paths) ◄── NEXT: fixes broken WebUI
+          │
+          ├─ Phase 6 (Storage REST API)
+          │      ├──── Phase 7 (Backup/Restore)
+          │      ├──── Phase 8 (Overlay Browsing)
+          │      └──── Phase 10 (Kit Store)
+          │
+          └─ Phase 9 (Metadata/Snapshots) ← depends on Phase 3a
+                 └──── Phase 11 (Polish)
+```
