@@ -1317,33 +1317,55 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     ESP_LOGI("SpiAPI", "ListTrackDefaults");
-                    // Scan factory + user trackdefaults dirs, return JSON array of template names
-                    // Format: ["default","techno","ambient"]
+                    // Scan factory + user trackdefaults dirs, return JSON array with factory flag
+                    // Format: [{"n":"default","f":1},{"n":"user1","f":0}]
                     std::string json = "[";
                     bool first = true;
                     std::string factoryDir = STORAGE::factoryPath() + "/" + STORAGE::DIR_TRACKDEFAULTS;
                     std::string userDir = STORAGE::userPath() + "/" + STORAGE::DIR_TRACKDEFAULTS;
-                    std::set<std::string> seen;
 
-                    const std::string dirPaths[] = { factoryDir, userDir };
-                    for (const auto &dirPath : dirPaths) {
-                        DIR *d = opendir(dirPath.c_str());
-                        if (!d) continue;
-                        struct dirent *ent;
-                        while ((ent = readdir(d)) != nullptr) {
-                            std::string name = ent->d_name;
-                            // Match *.json files
-                            if (name.size() > 5 && name.substr(name.size() - 5) == ".json") {
-                                std::string templateName = name.substr(0, name.size() - 5);
-                                if (seen.count(templateName)) continue;
-                                seen.insert(templateName);
-                                if (!first) json += ",";
-                                json += "\"" + templateName + "\"";
-                                first = false;
+                    // First pass: collect factory template names
+                    std::set<std::string> factoryNames;
+                    std::set<std::string> seen;
+                    {
+                        DIR *d = opendir(factoryDir.c_str());
+                        if (d) {
+                            struct dirent *ent;
+                            while ((ent = readdir(d)) != nullptr) {
+                                std::string name = ent->d_name;
+                                if (name.size() > 5 && name.substr(name.size() - 5) == ".json") {
+                                    std::string templateName = name.substr(0, name.size() - 5);
+                                    factoryNames.insert(templateName);
+                                    seen.insert(templateName);
+                                    if (!first) json += ",";
+                                    json += "{\"n\":\"" + templateName + "\",\"f\":1}";
+                                    first = false;
+                                }
                             }
+                            closedir(d);
                         }
-                        closedir(d);
                     }
+
+                    // Second pass: user-only templates
+                    {
+                        DIR *d = opendir(userDir.c_str());
+                        if (d) {
+                            struct dirent *ent;
+                            while ((ent = readdir(d)) != nullptr) {
+                                std::string name = ent->d_name;
+                                if (name.size() > 5 && name.substr(name.size() - 5) == ".json") {
+                                    std::string templateName = name.substr(0, name.size() - 5);
+                                    if (seen.count(templateName)) continue;
+                                    seen.insert(templateName);
+                                    if (!first) json += ",";
+                                    json += "{\"n\":\"" + templateName + "\",\"f\":0}";
+                                    first = false;
+                                }
+                            }
+                            closedir(d);
+                        }
+                    }
+
                     json += "]";
                     ESP_LOGI("SpiAPI", "ListTrackDefaults: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());

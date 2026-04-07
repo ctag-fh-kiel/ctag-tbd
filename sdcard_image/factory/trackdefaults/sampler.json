@@ -1,0 +1,25 @@
+{
+  "_comment": "Sampler setup — all rompler tracks for sample-based production.",
+  "kit": "def_smp.json",
+  "tracks": [
+    { "index": 0,  "preset": "ro-all-def",         "_name": "Rompler 1",  "sampleSlice": 0, "sampleBank": 0 },
+    { "index": 1,  "preset": "ro-all-def",         "_name": "Rompler 2",  "sampleSlice": 1, "sampleBank": 0 },
+    { "index": 2,  "preset": "ro-all-def",         "_name": "Rompler 3",  "sampleSlice": 2, "sampleBank": 0 },
+    { "index": 3,  "preset": "ro-all-def",         "_name": "Rompler 4",  "sampleSlice": 3, "sampleBank": 0 },
+    { "index": 4,  "preset": "ro-all-def",         "_name": "Rompler 5",  "sampleSlice": 0, "sampleBank": 1 },
+    { "index": 5,  "preset": "ro-all-def",         "_name": "Rompler 6",  "sampleSlice": 1, "sampleBank": 1 },
+    { "index": 6,  "preset": "ro-all-def",         "_name": "Rompler 7",  "sampleSlice": 2, "sampleBank": 1 },
+    { "index": 7,  "preset": "ro-all-def",         "_name": "Rompler 8",  "sampleSlice": 3, "sampleBank": 1 },
+    { "index": 8,  "preset": "ro-all-def",         "_name": "Rompler 9",  "sampleSlice": 0, "sampleBank": 2 },
+    { "index": 9,  "preset": "ro-all-def",         "_name": "Rompler 10", "sampleSlice": 1, "sampleBank": 2 },
+    { "index": 10, "preset": "ro-all-def",         "_name": "Rompler 11", "sampleSlice": 2, "sampleBank": 2 },
+    { "index": 11, "preset": "ro-all-def",         "_name": "Rompler 12", "sampleSlice": 3, "sampleBank": 2 },
+    { "index": 12, "preset": "ro-all-def",         "_name": "Rompler 13", "sampleSlice": 0, "sampleBank": 3 },
+    { "index": 13, "preset": "ro-all-def",         "_name": "Rompler 14", "sampleSlice": 1, "sampleBank": 3 },
+    { "index": 14, "preset": "pp-all-def",         "_name": "Chord    — Polypad (pp)" },
+    { "index": 15, "preset": "inp-all-def",        "_name": "Input    — Audio Input" },
+    { "index": 16, "preset": "fxdelay-all-def",    "_name": "FX1      — Delay" },
+    { "index": 17, "preset": "fxreverb-all-def",   "_name": "FX2      — Reverb" },
+    { "index": 18, "preset": "fxmaster-all-def",   "_name": "Master" }
+  ]
+}

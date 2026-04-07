@@ -188,14 +188,14 @@ Split read/write paths:
 **Goal:** 3-5 global track default templates (factory + user-created), selectable from project menu.
 Per-project: user chooses which template to apply, or defines custom track setup.
 
-**Status:** IN PROGRESS — SPI commands done, basic UI started
+**Status:** IN PROGRESS — SPI commands done, UI complete, factory templates deployed
 
 *Depends on Phase 1 (project storage on P4 must work) ✅*
 
 ### P4 repo
 
 - [x] Add SPI commands for track default template management:
-  - `0xB6 ListTrackDefaults` — scan overlay trackdefaults, return JSON array of template names
+  - `0xB6 ListTrackDefaults` — scan overlay trackdefaults, return JSON array with factory/user flags
   - `0xB7 GetTrackDefault(name)` — return JSON content of a named template via overlay
   - `0xB8 SaveTrackDefault(name, json)` — write to `/user/trackdefaults/{name}.json`
   - `0xB9 DeleteTrackDefault(name)` — remove from `/user/trackdefaults/` (factory immutable)
@@ -204,9 +204,10 @@ Per-project: user chooses which template to apply, or defines custom track setup
   - If empty, read active template name from `/user/config/active-trackdefault.txt`
   - Falls back to `"default"` if neither provided
   - Resolve template via overlay, return JSON
-- [ ] Create additional factory templates in `sdcard_image/factory/trackdefaults/`
-  - `default.json` exists ✅
-  - Optionally: 1-2 additional templates (techno, ambient, minimal)
+- [x] Create additional factory templates in `sdcard_image/factory/trackdefaults/`
+  - `default.json` — full drum machine + synth setup ✅
+  - `minimal.json` — fewer drums, more synth focus ✅
+  - `sampler.json` — all rompler tracks for sample-based production ✅
 
 ### Pico repo
 
@@ -221,25 +222,69 @@ Per-project: user chooses which template to apply, or defines custom track setup
 - [x] Add **"Track setup"** menu item to project screen (item 5, before System settings)
 - [x] Create `tracksetup.hpp` / `tracksetup.cpp` — template list screen:
   - `enter()` fetches template list from P4 via `trackdefault_updatelist()`
-  - Shows list of available templates
-  - Select → "Apply?" confirmation → `host->applyTrackDefault(name)`
-- [ ] Rename top-left menu from "Project" to **"Home"**
-- [ ] Show factory templates with lock icon (vs. user templates)
-- [ ] "Set as device default" option (writes to Pico config)
+  - Shows list of available templates with factory indicator "(F)"
+  - Select → options: "Back", "Apply", "Set as default"
+  - "Apply" calls `host->applyTrackDefault(name)` for current project
+  - "Set as default" saves to config + applies
+- [x] Rename top-left menu from "Project" to **"Home"**
+- [x] Show factory templates with (F) indicator (vs. user templates)
+- [x] "Set as device default" option (writes to Pico config, auto-saved)
 - [ ] Track setup editor screen — per-track machine view / modify
 - [ ] "Save as new template" — capture current track assignment as user template
-- [ ] Modify "Clear Project" flow to apply active track default template
+- [x] Modify "Clear Project" flow to apply active track default template
+  - `project_reset()` passes `sequi.config.activeTrackDefault` to `fetchAndInitTrackDefaults()`
 - [ ] Store template name in project metadata when saving
 
 ### Verification (Phase 2)
 
 - [x] Project menu shows "Track setup" entry
-- [ ] Selecting opens template list with names from P4
+- [x] Home screen renamed from "Project" to "Home" with reordered items
+- [ ] Selecting opens template list with names from P4 (3 factory: default, minimal, sampler)
 - [ ] Selecting a template applies machines + presets to all tracks
 - [ ] "Save as new" creates a user template visible in the list
 - [ ] Factory templates cannot be deleted
 - [ ] New Song flow applies active template
 - [ ] "Set as device default" persists across reboots
+
+---
+
+## Phase 2.5 — Home Menu Redesign & 16-Slot Projects
+
+**Goal:** Professional Home menu with visual groups, project context in title, 16 project slots mapped to step buttons, and consistent naming.
+
+**Status:** First iteration COMPLETE ✅
+
+*Depends on Phase 2 (track default templates must be working)*
+
+### Design (see `docs/home-menu-design-proposal.md` in Pico repo)
+
+```
+── [Slot N / Untitled] ──────
+  Save                          ← most common action first (hardware convention)
+  Load
+  New
+  - - - - - - - - - - - - - -   ← dashed separator (non-selectable)
+  Kit
+  Track setup
+  Save preset
+  - - - - - - - - - - - - - -   ← dashed separator (non-selectable)
+  Settings
+```
+
+### Changes (all in Pico repo)
+
+- [x] Home menu: visual groups with dashed separators, cursor skips separator items
+- [x] Title shows project context: "Slot N" (loaded) or "Untitled" (fresh)
+- [x] Menu order: Save → Load → New (most common first)
+- [x] Shorter labels: "Save", "Load", "New", "Kit", "Settings"
+- [x] `MAX_PROJECT_SLOTS` 5 → 16, mapped to step buttons
+- [x] Save/Load screens: step button LEDs (bright=occupied, dim=empty)
+- [x] Save/Load screens: step button press = quick slot select
+- [x] "Clear project?" → "New project?" 
+- [x] "System menu" → "Settings" (consistent naming)
+- [x] Design proposal doc updated with rationale and complete menu tree
+- [ ] Context-aware warnings for destructive actions in saved projects (future)
+- [ ] Project naming / renaming (future)
 
 ---
 
