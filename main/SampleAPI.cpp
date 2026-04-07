@@ -1191,6 +1191,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
             ESP_LOGI(TAG, "Saved bank metadata for kit %d", bankIdx);
         }
 
+        CTAG::AUDIO::SoundProcessorManager::webuiChangeCounter++;
         return send_ok(req);
     }
 
@@ -1251,6 +1252,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
 
         ESP_LOGI(TAG, "Created kit '%s' -> %s (index %" PRIu32 ")", name.c_str(), filename.c_str(), newIdx);
 
+        CTAG::AUDIO::SoundProcessorManager::webuiChangeCounter++;
         // Return with new kit index
         char resp[128];
         snprintf(resp, sizeof(resp), "{\"ok\":true,\"newKitIndex\":%" PRIu32 "}", newIdx);
@@ -1339,6 +1341,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         store_json_file(SAMPLE_ROM_FILE, sampleRom);
 
         ESP_LOGI(TAG, "Deleted kit at index %d", kitIdx);
+        CTAG::AUDIO::SoundProcessorManager::webuiChangeCounter++;
         return send_ok(req);
     }
 

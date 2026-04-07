@@ -84,9 +84,9 @@ struct p4_spi_response2 {
     uint32_t led_color;
     // offset 460
     uint32_t webui_update_counter;
-    // offset 460
-    uint32_t magic2;
     // offset 464
+    uint32_t magic2;
+    // offset 468
 };
 
 #endif // CONFIG_TBD_USE_RP2350

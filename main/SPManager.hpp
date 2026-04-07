@@ -179,6 +179,9 @@ namespace CTAG {
             static atomic<uint32_t> macroChangeCounter;
             static atomic<uint32_t> trackMachineChangeCounter;
             static atomic<uint32_t> definitionChangeCounter;
+
+        public:
+            static atomic<uint32_t> webuiChangeCounter;
         };
     }
 }

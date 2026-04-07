@@ -1,5 +1,6 @@
 #include "ctagSampleRomModel.hpp"
 #include <filesystem>
+#include <vector>
 
 #include "rapidjson/writer.h"
 
@@ -335,35 +336,76 @@ std::string CTAG::SP::ctagSampleRomModel::GetKitIndexJSON() {
 
 std::string CTAG::SP::ctagSampleRomModel::GetActiveKitBankIndexJSON() {
     if (!sample_rom.IsObject()) return "{}";
-    if (!sample_rom.HasMember("smp_bank_meta")) return "{}";
-    if (!sample_rom["smp_bank_meta"].IsArray()) return "{}";
+    if (!desc_smp.IsArray()) return "{}";
+
+    static const int SLICES_PER_BANK = 32;
+    int totalEntries = (int)desc_smp.GetArray().Size();
+
+    // Bank structure comes from smp_bank_meta (set by Sample Manager)
+    std::vector<std::string> bankNames;
+    int kitIdx = GetActiveSampleBankIndex();
+    if (sample_rom.HasMember("smp_bank_meta") && sample_rom["smp_bank_meta"].IsArray()) {
+        auto metaArr = sample_rom["smp_bank_meta"].GetArray();
+        if ((rapidjson::SizeType)kitIdx < metaArr.Size()) {
+            auto &meta = metaArr[kitIdx];
+            if (meta.IsObject() && meta.HasMember("banks") && meta["banks"].IsArray()) {
+                for (auto &b : meta["banks"].GetArray()) {
+                    bankNames.push_back(
+                        (b.HasMember("name") && b["name"].IsString()) ? b["name"].GetString() : "");
+                }
+            }
+        }
+    }
+
+    // If no metadata (legacy kit) or 0 banks: single bank with all samples
+    int numBanks = (int)bankNames.size();
+    if (numBanks == 0) numBanks = 1;
 
     rapidjson::Document doc;
     doc.SetObject();
-
     rapidjson::Value banks(kArrayType);
-    doc.AddMember("banks", banks, doc.GetAllocator());
 
-    int bankindex = GetActiveSampleBankIndex();
-    rapidjson::Value &bankmeta = sample_rom["smp_bank_meta"].GetArray()[bankindex];
+    for (int b = 0; b < numBanks; b++) {
+        std::string name = (b < (int)bankNames.size() && !bankNames[b].empty())
+                           ? bankNames[b]
+                           : "Bank " + std::to_string(b + 1);
+        rapidjson::Value obj(kObjectType);
+        obj.AddMember("index", b, doc.GetAllocator());
+        obj.AddMember("name", rapidjson::Value(name.c_str(), doc.GetAllocator()), doc.GetAllocator());
+        obj.AddMember("startIndex", b * SLICES_PER_BANK, doc.GetAllocator());
+        obj.AddMember("sampleCount", 0, doc.GetAllocator()); // filled below
+        banks.PushBack(obj, doc.GetAllocator());
+    }
 
-    if (!bankmeta.IsObject()) return "{}";
-
-    if(desc_smp.IsArray()) {
-        int index = 0;
-        for(auto& v : bankmeta["banks"].GetArray()){
-            rapidjson::Value bankobj(kObjectType);
-
-            bankobj.AddMember("index", rapidjson::Value(index), doc.GetAllocator());
-            if(v.HasMember("name") && v["name"].IsString()){
-                bankobj.AddMember("name", rapidjson::Value(v["name"].GetString(), doc.GetAllocator()), doc.GetAllocator());
-            }
-
-            doc["banks"].PushBack(bankobj, doc.GetAllocator());
-            // }
-            index ++;
+    // Count actual (non-empty) samples per bank
+    for (rapidjson::SizeType i = 0; i < desc_smp.GetArray().Size(); i++) {
+        auto &entry = desc_smp[i];
+        if (!entry.IsObject()) continue;
+        if (!entry.HasMember("filename") || !entry["filename"].IsString()) continue;
+        if (strlen(entry["filename"].GetString()) == 0) continue;
+        int b = (int)i / SLICES_PER_BANK;
+        if (b < numBanks) {
+            banks[b]["sampleCount"].SetInt(banks[b]["sampleCount"].GetInt() + 1);
         }
     }
+
+    doc.AddMember("banks", banks, doc.GetAllocator());
+
+    // Sample names (filename without .wav)
+    rapidjson::Value samples(kArrayType);
+    for (rapidjson::SizeType i = 0; i < desc_smp.GetArray().Size(); i++) {
+        auto &entry = desc_smp[i];
+        std::string name;
+        if (entry.IsObject() && entry.HasMember("filename") && entry["filename"].IsString()) {
+            name = entry["filename"].GetString();
+            if (name.size() > 4) {
+                auto ext = name.substr(name.size() - 4);
+                if (ext == ".wav" || ext == ".WAV") name.resize(name.size() - 4);
+            }
+        }
+        samples.PushBack(rapidjson::Value(name.c_str(), doc.GetAllocator()), doc.GetAllocator());
+    }
+    doc.AddMember("samples", samples, doc.GetAllocator());
 
     StringBuffer sb;
     Writer<StringBuffer> writer(sb);

@@ -1,10 +1,78 @@
 {
-  "wt_banks": ["def_wt.json"],
-  "wt_bank_names": ["Default"],
-  "wt_bank_tags": [["basic", "stock"]],
-  "smp_banks": ["def_smp.json", "a4_dub.json"],
-  "smp_bank_names": ["Default", "A4 Dub"],
-  "smp_bank_tags": [["basic", "stock"], ["analog 4", "dub", "chords", "c-minor"]],
+  "wt_banks": [
+    "def_wt.json"
+  ],
+  "wt_bank_names": [
+    "Default"
+  ],
+  "wt_bank_tags": [
+    [
+      "basic",
+      "stock"
+    ]
+  ],
+  "smp_banks": [
+    "def_smp.json",
+    "a4_dub.json"
+  ],
+  "smp_bank_names": [
+    "Default",
+    "A4 Dub"
+  ],
+  "smp_bank_tags": [
+    [
+      "basic",
+      "stock"
+    ],
+    [
+      "analog 4",
+      "dub",
+      "chords",
+      "c-minor"
+    ]
+  ],
   "active_wt_bank": 0,
-  "active_smp_bank": 0
+  "active_smp_bank": 0,
+  "smp_bank_meta": [
+    {
+      "banks": [
+        {
+          "name": "DRUMS",
+          "color": "#4CAF50"
+        },
+        {
+          "name": "OTHER",
+          "color": "#2196F3"
+        },
+        {
+          "name": "A4 DUB",
+          "color": "#FFC107"
+        },
+        {
+          "name": "LOOPS",
+          "color": "#FF9800"
+        }
+      ]
+    },
+    {
+      "banks": [
+        {
+          "name": "A4 DUB 1",
+          "color": "#4CAF50"
+        },
+        {
+          "name": "A4 DUB 2",
+          "color": "#2196F3"
+        },
+        {
+          "name": "A4 DUB 3",
+          "color": "#FFC107"
+        },
+        {
+          "name": "A4 DUB 4",
+          "color": "#FF9800"
+        }
+      ]
+    }
+  ]
 }
