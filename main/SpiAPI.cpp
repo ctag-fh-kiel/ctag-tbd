@@ -1460,6 +1460,19 @@ namespace CTAG::SPIAPI{
                 result = true;
 #endif
                 break;
+
+            case RequestType::SetTrackParamValues:
+                {
+                    int trackIndex = uint8_param_0;
+                    int count = uint8_param_1;
+                    if (count > 16) count = 16;
+                    const int16_t *values = reinterpret_cast<const int16_t*>(string_parameter.data());
+                    ESP_LOGI("SpiAPI", "SetTrackParamValues: track %d, %d params", trackIndex, count);
+                    for (int i = 0; i < count; i++) {
+                        CTAG::AUDIO::SoundProcessorManager::SetTrackParameter(trackIndex, i, (int32_t)values[i]);
+                    }
+                }
+                break;
             }
         }
     }

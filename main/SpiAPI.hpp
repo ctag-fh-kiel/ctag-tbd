@@ -110,6 +110,9 @@ namespace CTAG::SPIAPI{
             GetTrackDefault = 0xB7, // return JSON content of a named template, args [name (cstring)]
             SaveTrackDefault = 0xB8, // save a user track default template, args [name (cstring)], then JSON data
             DeleteTrackDefault = 0xB9, // delete a user track default template, args [name (cstring)]
+
+            // Phase 3: Project preset snapshot / parameter restore
+            SetTrackParamValues = 0xBA, // batch-set track parameter values, args [trackIndex (uint8), count (uint8), values (int16[] in string_param)]
         };
 
         static std::string rp2350AppId;   // app name announced by RP2350 (empty = unknown/legacy)

@@ -290,43 +290,59 @@ Per-project: user chooses which template to apply, or defines custom track setup
 
 ## Phase 3 — Self-Contained Projects (Preset Snapshots)
 
-**Goal:** Preset and macro definitions are snapshotted into project folders at save time. Projects are resilient to firmware changes.
+**Goal:** Projects restore the correct sounds when loaded. Parameter values are preserved exactly as saved.
 
-**Status:** Not started
+**Status:** Phase 3a complete (sound restoration + parameter values). Phase 3b (file-level snapshots) deferred.
 
 *Depends on Phase 1. Independent of Phase 2.*
 
-### P4 repo
+### Phase 3a — Sound Restoration (Complete)
 
-- [ ] Add SPI commands:
-  - `0xB6 GetProjectPresetSnapshot(trackIndex)` — return preset + macro def JSON for a track
-  - `0xB7 GetActiveKitHash` — return XXH128 of active kit binary
+**Bug fix:** `project_loadfrom_fs()` previously called `LoadTrackMacroDefinition` (0xAA) which only
+configured the synth engine with factory-default parameter values. Projects loaded but sounded wrong.
+
+**Fix:** Now calls `LoadTrackSoundPreset` (0xA4) per track using the stored `soundPresetId` from the
+project binary, which properly configures the synth engine and applies preset parameter values.
+
+**Enhancement:** New SPI command `SetTrackParamValues` (0xBA) sends the exact saved parameter values
+(from the project binary blob) to the P4 after loading the preset. This overrides preset defaults with
+the user's exact tweaked values from save time.
+
+#### P4 repo
+- [x] Add SPI command `0xBA SetTrackParamValues(trackIndex, count, values[])` — batch-set track
+      parameter values via `SoundProcessorManager::SetTrackParameter()`
+
+#### Pico repo
+- [x] Fix `project_loadfrom_fs()`: use `LoadTrackSoundPreset` (0xA4) instead of `LoadTrackMacroDefinition` (0xAA)
+- [x] After preset load, send saved parameter values via `SetTrackParamValues` (0xBA)
+- [x] Fallback to `LoadTrackMacroDefinition` for legacy projects without `soundPresetId`
+
+### Phase 3b — File-Level Preset Snapshots (Deferred)
+
+**Goal:** Preset and macro definition JSON files are snapshotted into project folders at save time.
+Projects are resilient to firmware changes that modify preset files.
+
+*Note: Command codes 0xB6/0xB7 from the original plan are used by Phase 2 (ListTrackDefaults/GetTrackDefault). New commands would start at 0xBB+.*
+
+#### P4 repo
 - [ ] On `SaveProjectToP4` (0xB0), extend handler:
   - For each track: save preset + macro def JSON to `/user/projects/{id}/snapshots/`
-  - Record kit hash in `project.json`
 - [ ] On `LoadProjectFromP4` (0xB1), extend handler:
   - Compare saved snapshots with current presets
   - Return a "mismatch" flag per track if preset has changed
-- [ ] Implement content-addressed kit store:
-  - `/user/kits/store/{hash}/` — immutable kit snapshots
-  - `/user/kits/heads/{name}.json` — mutable head pointers
-- [ ] Kit garbage collection endpoint (REST + SPI)
+- [ ] Content-addressed kit store (future)
 
-### Pico repo
-
-- [ ] On save: request snapshot data from P4 per track, include in save bundle
+#### Pico repo
 - [ ] On load: check mismatch flags; if any:
   - Show OLED warning: "Presets changed since save"
   - Options: "Load saved" / "Use current"
-- [ ] Add kit hash display in project info screen
 
-### Verification (Phase 3)
+### Verification (Phase 3a)
 
-- [ ] Save project → `/user/projects/{id}/snapshots/` contains preset JSONs
-- [ ] Save project → `project.json` contains `kitHash`
-- [ ] Modify preset → load project → OLED shows mismatch warning
-- [ ] Kit modification creates new hash; old projects still reference old hash
-- [ ] GC removes unreferenced kit store entries
+- [x] Load project → P4 synth engine configured with correct preset (not just macro defaults)
+- [x] Load project → P4 parameter values match saved state (not preset defaults)
+- [x] Legacy projects without `soundPresetId` → falls back to `LoadTrackMacroDefinition`
+- [x] Both Pico and P4 build successfully
 
 ---
 
