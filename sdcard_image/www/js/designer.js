@@ -1567,7 +1567,7 @@
 
       var preset = { id: id, name: name, group: group, macro: state.editDef.id, values: values };
       var jsonStr = JSON.stringify(preset, null, 2);
-      var filePath = 'macrosoundpresets/' + id + '.json';
+      var filePath = 'presets/' + id + '.json';
 
       createBtn.setAttribute('loading', '');
       fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -1613,7 +1613,7 @@
     });
 
     var jsonStr = JSON.stringify(preset, null, 2);
-    var filePath = 'macrosoundpresets/' + presetId + '.json';
+    var filePath = 'presets/' + presetId + '.json';
 
     fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
@@ -1662,7 +1662,7 @@
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'macrosoundpresets/' + presetId + '.json';
+      var filePath = 'presets/' + presetId + '.json';
       apiPost('/api/v2/samples?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -1729,7 +1729,7 @@
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'macrodefinitions/' + defId + '.json';
+      var filePath = 'macros/' + defId + '.json';
       apiPost('/api/v2/samples?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -1789,7 +1789,7 @@
 
     var cleanDef = cleanDefinitionForSave(state.editDef);
     var jsonStr = JSON.stringify(cleanDef, null, 2);
-    var filePath = 'macrodefinitions/' + state.editDef.id + '.json';
+    var filePath = 'macros/' + state.editDef.id + '.json';
 
     S.showLoading('Saving definition\u2026');
     fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -1856,7 +1856,7 @@
             }
             S.toast('Imported definition: ' + (data.name || data.id || 'unknown'), 'success', 2000);
           } else if (data.id && data.macro && data.values) {
-            var filePath = 'macrosoundpresets/' + data.id + '.json';
+            var filePath = 'presets/' + data.id + '.json';
             fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

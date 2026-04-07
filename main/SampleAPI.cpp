@@ -520,6 +520,17 @@ static esp_err_t handle_list(httpd_req_t *req) {
             std::string jsonPath;
             if (!configSubdir.empty()) {
                 jsonPath = CTAG::STORAGE::resolveFile(configSubdir.c_str(), configFilename);
+            } else {
+                // No subdir — check root of user/ then factory/ (e.g. synthdefinitions.json)
+                std::string userRoot = CTAG::STORAGE::userPath() + "/" + configFilename;
+                if (CTAG::STORAGE::fileExists(userRoot)) {
+                    jsonPath = userRoot;
+                } else {
+                    std::string factoryRoot = CTAG::STORAGE::factoryPath() + "/" + configFilename;
+                    if (CTAG::STORAGE::fileExists(factoryRoot)) {
+                        jsonPath = factoryRoot;
+                    }
+                }
             }
             if (jsonPath.empty()) {
                 return send_error(req, 404, "Config file not found");

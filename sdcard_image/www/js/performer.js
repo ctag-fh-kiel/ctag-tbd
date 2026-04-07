@@ -885,7 +885,7 @@
 
       saveBtn.setAttribute('loading', '');
       var jsonStr = JSON.stringify(preset, null, 2);
-      var filePath = 'macrosoundpresets/' + id + '.json';
+      var filePath = 'presets/' + id + '.json';
 
       fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
         method: 'POST',
@@ -953,7 +953,7 @@
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'macrosoundpresets/' + presetId + '.json';
+      var filePath = 'presets/' + presetId + '.json';
       S.apiPostJSON('/samples?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -1088,13 +1088,13 @@
     defs.forEach(function(d) {
       if (!d.id) return;
       chain = chain.then(function() {
-        return uploadFile('macrodefinitions/' + d.id + '.json', d);
+        return uploadFile('macros/' + d.id + '.json', d);
       });
     });
     presets.forEach(function(p) {
       if (!p.id) return;
       chain = chain.then(function() {
-        return uploadFile('macrosoundpresets/' + p.id + '.json', p);
+        return uploadFile('presets/' + p.id + '.json', p);
       });
     });
     chain.then(function() {
@@ -1129,7 +1129,7 @@
     if (preset.values.length !== expectedCount) {
       if (!confirm('Preset has ' + preset.values.length + ' values but macro "' + preset.macro + '" has ' + expectedCount + ' parameters. Import anyway?')) return;
     }
-    var filePath = 'macrosoundpresets/' + preset.id + '.json';
+    var filePath = 'presets/' + preset.id + '.json';
     var jsonStr = JSON.stringify(preset, null, 2);
 
     fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {

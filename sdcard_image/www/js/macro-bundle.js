@@ -2602,7 +2602,7 @@ window.TBD.shared = {
 
       saveBtn.setAttribute('loading', '');
       var jsonStr = JSON.stringify(preset, null, 2);
-      var filePath = 'macrosoundpresets/' + id + '.json';
+      var filePath = 'presets/' + id + '.json';
 
       fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
         method: 'POST',
@@ -2670,7 +2670,7 @@ window.TBD.shared = {
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'macrosoundpresets/' + presetId + '.json';
+      var filePath = 'presets/' + presetId + '.json';
       S.apiPostJSON('/samples?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -2805,13 +2805,13 @@ window.TBD.shared = {
     defs.forEach(function(d) {
       if (!d.id) return;
       chain = chain.then(function() {
-        return uploadFile('macrodefinitions/' + d.id + '.json', d);
+        return uploadFile('macros/' + d.id + '.json', d);
       });
     });
     presets.forEach(function(p) {
       if (!p.id) return;
       chain = chain.then(function() {
-        return uploadFile('macrosoundpresets/' + p.id + '.json', p);
+        return uploadFile('presets/' + p.id + '.json', p);
       });
     });
     chain.then(function() {
@@ -2846,7 +2846,7 @@ window.TBD.shared = {
     if (preset.values.length !== expectedCount) {
       if (!confirm('Preset has ' + preset.values.length + ' values but macro "' + preset.macro + '" has ' + expectedCount + ' parameters. Import anyway?')) return;
     }
-    var filePath = 'macrosoundpresets/' + preset.id + '.json';
+    var filePath = 'presets/' + preset.id + '.json';
     var jsonStr = JSON.stringify(preset, null, 2);
 
     fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -4534,7 +4534,7 @@ window.TBD.shared = {
 
       var preset = { id: id, name: name, group: group, macro: state.editDef.id, values: values };
       var jsonStr = JSON.stringify(preset, null, 2);
-      var filePath = 'macrosoundpresets/' + id + '.json';
+      var filePath = 'presets/' + id + '.json';
 
       createBtn.setAttribute('loading', '');
       fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -4580,7 +4580,7 @@ window.TBD.shared = {
     });
 
     var jsonStr = JSON.stringify(preset, null, 2);
-    var filePath = 'macrosoundpresets/' + presetId + '.json';
+    var filePath = 'presets/' + presetId + '.json';
 
     fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
@@ -4629,7 +4629,7 @@ window.TBD.shared = {
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'macrosoundpresets/' + presetId + '.json';
+      var filePath = 'presets/' + presetId + '.json';
       apiPost('/api/v2/samples?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -4696,7 +4696,7 @@ window.TBD.shared = {
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'macrodefinitions/' + defId + '.json';
+      var filePath = 'macros/' + defId + '.json';
       apiPost('/api/v2/samples?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -4756,7 +4756,7 @@ window.TBD.shared = {
 
     var cleanDef = cleanDefinitionForSave(state.editDef);
     var jsonStr = JSON.stringify(cleanDef, null, 2);
-    var filePath = 'macrodefinitions/' + state.editDef.id + '.json';
+    var filePath = 'macros/' + state.editDef.id + '.json';
 
     S.showLoading('Saving definition\u2026');
     fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -4823,7 +4823,7 @@ window.TBD.shared = {
             }
             S.toast('Imported definition: ' + (data.name || data.id || 'unknown'), 'success', 2000);
           } else if (data.id && data.macro && data.values) {
-            var filePath = 'macrosoundpresets/' + data.id + '.json';
+            var filePath = 'presets/' + data.id + '.json';
             fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -4902,7 +4902,7 @@ window.TBD.shared = {
 // Presets are grouped into <optgroup>s by their macro definition name,
 // so the user sees e.g. "Phat Punch" / "Synth Kick — All knobs" sections.
 //
-// Data source:  /sdcard/data/trackdefaults.json
+// Data source:  factory/ or user/trackdefaults/
 // API:          GET  /api/v2/macros?action=get_trackdefaults
 //               POST /api/v2/macros?action=save_trackdefaults
 //
@@ -5531,7 +5531,7 @@ window.TBD.shared = {
 
     var result = {
       _comment: 'Default preset per track, loaded by the Pico via SPI command 0xA5.',
-      _comment2: 'Preset IDs = filenames (without .json) from data/macrosoundpresets/.',
+      _comment2: 'Preset IDs = filenames (without .json) from presets/.',
       _comment3: 'Omit a track entry to let the Pico use the first available preset.',
       _comment4: 'The kit field sets which kit file to activate in PSRAM (matched by filename).',
       _comment5: 'NOTE: all romplers share the same PSRAM kit — only one kit is active at a time.',

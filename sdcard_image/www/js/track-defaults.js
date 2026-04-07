@@ -10,7 +10,7 @@
 // Presets are grouped into <optgroup>s by their macro definition name,
 // so the user sees e.g. "Phat Punch" / "Synth Kick — All knobs" sections.
 //
-// Data source:  /sdcard/data/trackdefaults.json
+// Data source:  factory/ or user/trackdefaults/
 // API:          GET  /api/v2/macros?action=get_trackdefaults
 //               POST /api/v2/macros?action=save_trackdefaults
 //
@@ -639,7 +639,7 @@
 
     var result = {
       _comment: 'Default preset per track, loaded by the Pico via SPI command 0xA5.',
-      _comment2: 'Preset IDs = filenames (without .json) from data/macrosoundpresets/.',
+      _comment2: 'Preset IDs = filenames (without .json) from presets/.',
       _comment3: 'Omit a track entry to let the Pico use the first available preset.',
       _comment4: 'The kit field sets which kit file to activate in PSRAM (matched by filename).',
       _comment5: 'NOTE: all romplers share the same PSRAM kit — only one kit is active at a time.',
