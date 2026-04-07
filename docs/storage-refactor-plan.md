@@ -346,44 +346,11 @@ Projects are resilient to firmware changes that modify preset files.
 
 ---
 
-## Phase 4 — Migration, Polish & Backup Foundation
+## ~~Phase 4 — Migration, Polish & Backup Foundation~~ (REMOVED)
 
-**Goal:** Auto-migrate existing Pico SD projects, add REST storage API, prepare for WebUI backup.
-
-**Status:** Not started
-
-*Depends on Phase 1*
-
-### P4 repo
-
-- [ ] Implement generic storage REST API (6 endpoints from audit Section 8.4):
-  - `GET /api/v2/storage/info`
-  - `GET /api/v2/storage/list?path=`
-  - `GET /api/v2/storage/file?path=`
-  - `POST /api/v2/storage/file?path=`
-  - `DELETE /api/v2/storage/file?path=`
-  - `POST /api/v2/storage/mkdir?path=`
-- [ ] Security: reject path traversal (`../`), reject writes to `/factory/` and `/system/`
-- [ ] Pre-deploy backup prompt in web flasher
-
-### Pico repo
-
-- [ ] Auto-migration on first boot after update:
-  - Detect `/lastconfig.bin` or `/project*.bin` on Pico SD (if card present)
-  - OLED: "Migrating projects to device storage..."
-  - Stream each project via `SaveProjectToP4()`
-  - Migrate `lastconfig.bin` via `SavePicoConfig()`
-  - OLED: "Migration complete. Pico SD card can be removed."
-  - Write migration-complete flag to P4 config
-  - Do NOT delete files from Pico SD
-
-### Verification (Phase 4)
-
-- [ ] Insert old Pico SD with projects → boot → migration runs automatically
-- [ ] All projects appear in P4 `/user/projects/` after migration
-- [ ] Original files remain on Pico SD (non-destructive)
-- [ ] REST API serves `/user/` files over HTTP
-- [ ] REST API rejects path traversal and writes to `/factory/`
+> Phase 4 has been removed from scope. With only 5 beta users and no legacy Pico SD
+> projects to migrate, auto-migration is unnecessary. REST storage API may be
+> revisited as a future WebUI feature.
 
 ---
 

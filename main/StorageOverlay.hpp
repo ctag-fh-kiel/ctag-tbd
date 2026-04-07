@@ -189,6 +189,7 @@ inline void ensureOverlayDirs() {
         "/factory/macros",
         "/factory/patches",
         "/factory/trackdefaults",
+        "/factory/config",
         "/user",
         "/user/projects",
         "/user/presets",
@@ -236,6 +237,9 @@ inline bool copyFile(const std::string &src, const std::string &dst) {
 
     fclose(fin);
     fclose(fout);
+    if (!ok) {
+        remove(dst.c_str());
+    }
     return ok;
 }
 

@@ -512,7 +512,7 @@ static void check_and_update_sd_content(const std::string& base_path) {
     // Delete old content directories if they exist
     delete_dir_recursive(base_path + "/data");
     delete_dir_recursive(base_path + "/www");
-    delete_dir_recursive(base_path + "/tbdsamples");
+    delete_dir_recursive(base_path + "/samples");
     unlink(version_file.c_str()); // Delete old .version file
 
     // Extract new content

@@ -4,9 +4,9 @@
 #include "rapidjson/writer.h"
 
 #ifdef TBD_SIM
-#define SD_CARD_SAMPLE_FOLDER "../../sample_rom/tbdsamples"
+#define SD_CARD_SAMPLE_FOLDER "../../sample_rom/samples"
 #else
-#define SD_CARD_SAMPLE_FOLDER "/sdcard/tbdsamples"
+#define SD_CARD_SAMPLE_FOLDER "/sdcard/samples"
 #endif
 
 #define SAMPLE_ROM_DEFINITION_FILE "sample_rom.json"

@@ -29,6 +29,7 @@ respective component folders / files if different from this license.
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include "driver/spi_slave.h"
 
 namespace CTAG::SPIAPI{
@@ -119,6 +120,7 @@ namespace CTAG::SPIAPI{
         static std::string rp2350PicoVersion; // firmware version reported by RP2350
         static bool rp2350PluginLock;     // true = RP2350 app requested HTTP plugin switching be blocked
         static bool rp2350RedirectSamples; // true = WebUI should default to Samples view
+        static SemaphoreHandle_t rp2350StateMutex; // protects rp2350AppId, rp2350PicoVersion from torn reads
 
         static TaskHandle_t hTask;
         static spi_slave_transaction_t transaction;
@@ -136,8 +138,18 @@ namespace CTAG::SPIAPI{
     public:
         SpiAPI() = delete;
         static void StartSpiAPI();
-        static const std::string& GetRP2350AppId() { return rp2350AppId; }
-        static const std::string& GetPicoVersion() { return rp2350PicoVersion; }
+        static std::string GetRP2350AppId() {
+            xSemaphoreTake(rp2350StateMutex, portMAX_DELAY);
+            std::string copy = rp2350AppId;
+            xSemaphoreGive(rp2350StateMutex);
+            return copy;
+        }
+        static std::string GetPicoVersion() {
+            xSemaphoreTake(rp2350StateMutex, portMAX_DELAY);
+            std::string copy = rp2350PicoVersion;
+            xSemaphoreGive(rp2350StateMutex);
+            return copy;
+        }
         static bool IsPluginLocked() { return rp2350PluginLock; }
         static bool ShouldRedirectSamples() { return rp2350RedirectSamples; }
     };

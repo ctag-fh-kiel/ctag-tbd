@@ -507,8 +507,8 @@ def _is_under(p: Path, root: Path) -> bool:
 
 def main():
     base_dir = Path(__file__).parent
-    tbds_dir = base_dir / 'tbdsamples'
-    # Find .wav files case-insensitively, excluding tbdsamples (output) directory
+    tbds_dir = base_dir / 'samples'
+    # Find .wav files case-insensitively, excluding samples (output) directory
     wav_files = [p for p in base_dir.rglob('*.[Ww][Aa][Vv]') if not _is_under(p, tbds_dir)]
     results = []
     srcs = []
@@ -538,7 +538,7 @@ def main():
     # Ensure destination base folder exists
     tbds_dir.mkdir(parents=True, exist_ok=True)
 
-    # Build short entries and copy/convert into tbdsamples preserving structure and shortening names
+    # Build short entries and copy/convert into samples preserving structure and shortening names
     short_entries = []
     warnings = []
     for info, src in zip(results, srcs):
@@ -588,7 +588,7 @@ def main():
             entry['offset'] = off
         short_entries.append(entry)
 
-    # Write shortened JSON into tbdsamples folder
+    # Write shortened JSON into samples folder
     short_path = tbds_dir / 'wav_info_short.json'
     with open(short_path, 'w') as f:
         json.dump(short_entries, f, indent=2)

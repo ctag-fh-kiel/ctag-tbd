@@ -38,6 +38,7 @@ respective component folders / files if different from this license.
 #include "driver/gpio.h"
 
 #include "MacroSoundPresetDataModel.hpp"
+#include "SynthDefinitionDataModel.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
 #include "StorageOverlay.hpp"
 
@@ -117,12 +118,15 @@ namespace CTAG::SPIAPI{
     std::string SpiAPI::rp2350PicoVersion; // empty = unknown
     bool SpiAPI::rp2350PluginLock = false;
     bool SpiAPI::rp2350RedirectSamples = false;
+    SemaphoreHandle_t SpiAPI::rp2350StateMutex = nullptr;
     TaskHandle_t SpiAPI::hTask;
     spi_slave_transaction_t SpiAPI::transaction;
     uint8_t *SpiAPI::send_buffer, *SpiAPI::receive_buffer;
 
     void SpiAPI::StartSpiAPI(){
         ESP_LOGI("SpiAPI", "Init()");
+        rp2350StateMutex = xSemaphoreCreateMutex();
+        configASSERT(rp2350StateMutex);
         //Configuration for the SPI bus
         spi_bus_config_t buscfg = {
             .mosi_io_num = GPIO_MOSI,
@@ -656,14 +660,18 @@ namespace CTAG::SPIAPI{
                 if (uptime_ms < 15000) {
                     ESP_LOGW("SpiAPI", "Ignoring Reboot command during boot grace period (%lld ms uptime)", uptime_ms);
                     // Still clear app state — RP2350 is (re)booting and will re-announce
+                    xSemaphoreTake(rp2350StateMutex, portMAX_DELAY);
                     rp2350AppId.clear();
                     rp2350PluginLock = false;
                     rp2350RedirectSamples = false;
+                    xSemaphoreGive(rp2350StateMutex);
                     break;
                 }
+                xSemaphoreTake(rp2350StateMutex, portMAX_DELAY);
                 rp2350AppId.clear();
                 rp2350PluginLock = false;
                 rp2350RedirectSamples = false;
+                xSemaphoreGive(rp2350StateMutex);
                 ESP_LOGI("SpiAPI", "Rebooting device!");
                 esp_restart();
                 break;
@@ -919,6 +927,10 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     int trackIndex = uint8_param_0;
+                    if (trackIndex < 0 || trackIndex >= MAX_TRACKS) {
+                        ESP_LOGE("SpiAPI", "LoadTrackSoundPreset: invalid trackIndex %d", trackIndex);
+                        break;
+                    }
                     std::string presetId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
                     ESP_LOGI("SpiAPI", "Loading track %d macro \"%s\"", trackIndex, presetId.c_str());
                     CTAG::AUDIO::SoundProcessorManager::LoadTrackMacroAndPreset(trackIndex, presetId);
@@ -1056,9 +1068,11 @@ namespace CTAG::SPIAPI{
                     // uint8_param_0 bit 0 = plugin_lock (block HTTP plugin switching)
                     // uint8_param_0 bit 1 = redirect_samples (WebUI defaults to Samples view)
                     // string_parameter  = app display name (e.g. "Groovebox")
+                    xSemaphoreTake(rp2350StateMutex, portMAX_DELAY);
                     rp2350AppId = string_parameter;
                     rp2350PluginLock = (uint8_param_0 & 0x01) != 0;
                     rp2350RedirectSamples = (uint8_param_0 & 0x02) != 0;
+                    xSemaphoreGive(rp2350StateMutex);
                     ESP_LOGI("SpiAPI", "RP2350 announced app: \"%s\" (plugin_lock=%d, redirect_samples=%d)",
                              rp2350AppId.c_str(), rp2350PluginLock ? 1 : 0, rp2350RedirectSamples ? 1 : 0);
                 }
@@ -1066,8 +1080,10 @@ namespace CTAG::SPIAPI{
 
             case RequestType::ReportPicoVersion:
                 {
+                    xSemaphoreTake(rp2350StateMutex, portMAX_DELAY);
                     rp2350PicoVersion = string_parameter;
-                    ESP_LOGI("SpiAPI", "RP2350 reported Pico firmware version: \"%s\"", rp2350PicoVersion.c_str());
+                    xSemaphoreGive(rp2350StateMutex);
+                    ESP_LOGI("SpiAPI", "RP2350 reported Pico firmware version: \"%s\"", string_parameter.c_str());
                 }
                 break;
 
@@ -1465,7 +1481,12 @@ namespace CTAG::SPIAPI{
                 {
                     int trackIndex = uint8_param_0;
                     int count = uint8_param_1;
+                    if (trackIndex < 0 || trackIndex >= MAX_TRACKS) {
+                        ESP_LOGE("SpiAPI", "SetTrackParamValues: invalid trackIndex %d", trackIndex);
+                        break;
+                    }
                     if (count > 16) count = 16;
+                    if (count <= 0) break;
                     const int16_t *values = reinterpret_cast<const int16_t*>(string_parameter.data());
                     ESP_LOGI("SpiAPI", "SetTrackParamValues: track %d, %d params", trackIndex, count);
                     for (int i = 0; i < count; i++) {

@@ -32,6 +32,7 @@ Provided "as is" without any express or implied warranties.
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/filewritestream.h"
+#include "StorageOverlay.hpp"
 
 using namespace CTAG::REST;
 using namespace rapidjson;
@@ -39,11 +40,10 @@ using namespace rapidjson;
 static const char *TAG = "SampleAPI";
 
 // SD card paths
-static const char *SAMPLE_ROOT = "/sdcard/tbdsamples";
-static const char *SAMPLE_ROM_FILE = "/sdcard/tbdsamples/sample_rom.json";
-// TODO(storage-refactor): Migrate CONFIG_ROOT reads to overlay (factory+user),
-// writes to /user/, and coordinate with WebUI path expectations.
-static const char *CONFIG_ROOT = "/sdcard/data";
+static const char *SAMPLE_ROOT = "/sdcard/samples";
+static const char *SAMPLE_ROM_FILE = "/sdcard/samples/sample_rom.json";
+// Config files are accessed via StorageOverlay (factory+user resolution).
+// Legacy /data/ path removed — all config reads use overlay, writes go to /user/.
 
 // PSRAM capacity constant (~28 MB)
 static const uint32_t PSRAM_MAX_BYTES = 29360128;
@@ -280,6 +280,102 @@ static void scan_json_files(const char *base, const char *rel,
     closedir(dir);
 }
 
+/**
+ * Scan a single directory for JSON files, using a fixed path prefix for results.
+ * Unlike scan_json_files, the "path" field is set to pathPrefix for top-level
+ * files and "pathPrefix/rel" for nested files.
+ */
+static void scan_json_with_prefix(const char *dir, const char *rel,
+                                  const char *pathPrefix,
+                                  Value &files, Document::AllocatorType &alloc) {
+    std::string dirPath = std::string(dir);
+    if (rel && rel[0]) { dirPath += "/"; dirPath += rel; }
+
+    DIR *d = opendir(dirPath.c_str());
+    if (!d) return;
+
+    struct dirent *ent;
+    while ((ent = readdir(d)) != nullptr) {
+        if (ent->d_name[0] == '.') continue;
+        std::string relPath;
+        if (rel && rel[0]) { relPath = std::string(rel) + "/" + ent->d_name; }
+        else { relPath = ent->d_name; }
+
+        std::string fullPath = std::string(dir) + "/" + relPath;
+        struct stat st;
+        if (stat(fullPath.c_str(), &st) != 0) continue;
+
+        if (S_ISDIR(st.st_mode)) {
+            scan_json_with_prefix(dir, relPath.c_str(), pathPrefix, files, alloc);
+        } else if (S_ISREG(st.st_mode)) {
+            size_t len = strlen(ent->d_name);
+            if (len > 5 && strcasecmp(ent->d_name + len - 5, ".json") == 0) {
+                // Build path: "prefix" or "prefix/rel_folder"
+                std::string folder(pathPrefix);
+                if (rel && rel[0]) { folder += "/"; folder += rel; }
+
+                Value fileObj(kObjectType);
+                Value nameVal(ent->d_name, alloc);
+                Value pathVal(folder.c_str(), alloc);
+                fileObj.AddMember("name", nameVal, alloc);
+                fileObj.AddMember("path", pathVal, alloc);
+                fileObj.AddMember("size", (uint64_t)st.st_size, alloc);
+                fileObj.AddMember("mtime", (uint64_t)st.st_mtime * 1000ULL, alloc);
+                files.PushBack(fileObj, alloc);
+            }
+        }
+    }
+    closedir(d);
+}
+
+/**
+ * Scan overlay config directories (merged factory+user) for JSON files.
+ * Returns entries with path = "subdir" or "subdir/nested", matching
+ * the overlay subdir names (presets, macros, patches, config, trackdefaults).
+ * User files shadow same-named factory files.
+ */
+static void scan_overlay_configs(Value &files, Document::AllocatorType &alloc) {
+    using namespace CTAG::STORAGE;
+    static const char *SUBDIRS[] = {
+        DIR_PRESETS, DIR_MACROS, DIR_PATCHES, DIR_CONFIG, DIR_TRACKDEFAULTS, nullptr
+    };
+    for (int i = 0; SUBDIRS[i]; i++) {
+        const char *subdir = SUBDIRS[i];
+        // Collect user-layer relative paths first (these shadow factory)
+        std::vector<std::string> userPaths;
+        std::string userDir = userPath() + "/" + subdir;
+        // Scan user zone with subdir as path prefix
+        int beforeUser = files.Size();
+        scan_json_with_prefix(userDir.c_str(), "", subdir, files, alloc);
+        // Record relative paths found in user zone for dedup
+        for (rapidjson::SizeType j = beforeUser; j < files.Size(); j++) {
+            std::string p = files[j]["path"].GetString();
+            p += "/";
+            p += files[j]["name"].GetString();
+            userPaths.push_back(p);
+        }
+        // Scan factory zone, skip entries already found in user
+        int beforeFactory = files.Size();
+        scan_json_with_prefix((factoryPath() + "/" + subdir).c_str(), "", subdir, files, alloc);
+        // Remove factory entries that shadow user entries
+        // Walk backwards to safely erase
+        for (int j = (int)files.Size() - 1; j >= beforeFactory; j--) {
+            std::string p = files[j]["path"].GetString();
+            p += "/";
+            p += files[j]["name"].GetString();
+            bool shadowed = false;
+            for (const auto &up : userPaths) {
+                if (up == p) { shadowed = true; break; }
+            }
+            if (shadowed) {
+                // Remove by swapping with last element
+                files[j] = files[files.Size() - 1];
+                files.PopBack();
+            }
+        }
+    }
+}
+
 /** Scan directory tree and collect all directory paths (relative) */
 static void scan_directories(const char *base, const char *rel,
                              Value &dirs, Document::AllocatorType &alloc) {
@@ -408,9 +504,24 @@ static esp_err_t handle_list(httpd_req_t *req) {
             // val contains path like "drums/factory/BD0"
             char decoded[256];
             url_decode(decoded, val, sizeof(decoded));
-            std::string jsonPath = std::string(CONFIG_ROOT) + "/" + decoded;
+            // Parse subdir/filename from path (e.g. "presets/myfile.json")
+            std::string decodedStr(decoded);
+            std::string configSubdir, configFilename;
+            size_t slashPos = decodedStr.find('/');
+            if (slashPos != std::string::npos) {
+                configSubdir = decodedStr.substr(0, slashPos);
+                configFilename = decodedStr.substr(slashPos + 1);
+            } else {
+                configFilename = decodedStr;
+            }
+            std::string jsonPath;
+            if (!configSubdir.empty()) {
+                jsonPath = CTAG::STORAGE::resolveFile(configSubdir.c_str(), configFilename);
+            }
+            if (jsonPath.empty()) {
+                return send_error(req, 404, "Config file not found");
+            }
 
-            // Try .wav then .WAV
             FILE *fp = fopen(jsonPath.c_str(), "r");
             if (!fp) {
                 return send_error(req, 404, "Config file not found");
@@ -499,7 +610,7 @@ static esp_err_t handle_list(httpd_req_t *req) {
     // resp.AddMember("rootdirectories", dirs2, alloc);
 
     Value files2(kArrayType);
-    scan_json_files(CONFIG_ROOT, "", files2, alloc);
+    scan_overlay_configs(files2, alloc);
     resp.AddMember("configfiles", files2, alloc);
 
     // 2) Kits metadata (entire sample_rom object)
@@ -691,23 +802,22 @@ static esp_err_t handle_uploadconfig(httpd_req_t *req) {
         snprintf(filenameVal, sizeof(filenameVal), "sample_%lu", (unsigned long)esp_log_timestamp());
     }
 
-    // Ensure target directory exists
-    // std::string dirPath = std::string(CONFIG_ROOT) + "/" + pathVal;
-    // // Create directories recursively (simple approach)
-    // {
-    //     std::string tmp;
-    //     for (size_t i = 0; i < dirPath.size(); i++) {
-    //         tmp += dirPath[i];
-    //         if (dirPath[i] == '/' && i > 0) {
-    //             mkdir(tmp.c_str(), 0755);
-    //         }
-    //     }
-    //     mkdir(dirPath.c_str(), 0755);
-    // }
-
-    // Write configfile
-    std::string filePath = std::string(CONFIG_ROOT) + "/" + pathVal;
-    // std::string filePath = dirPath;
+    // Write configfile to user overlay dir
+    // pathVal is "subdir/filename" (e.g. "macros/mydef.json")
+    std::string pathStr(pathVal);
+    size_t slashPos = pathStr.find('/');
+    std::string filePath;
+    if (slashPos != std::string::npos) {
+        std::string subdir = pathStr.substr(0, slashPos);
+        std::string fname = pathStr.substr(slashPos + 1);
+        filePath = CTAG::STORAGE::userFilePath(subdir.c_str(), fname);
+        // Ensure parent directory exists
+        std::string parentDir = CTAG::STORAGE::userPath() + "/" + subdir;
+        mkdir(parentDir.c_str(), 0755);
+    } else {
+        // No subdir — write to user/config/
+        filePath = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_CONFIG, pathStr);
+    }
     FILE *fp = fopen(filePath.c_str(), "w");
     if (!fp) {
         ESP_LOGE(TAG, "Cannot create file: %s", filePath.c_str());
@@ -994,13 +1104,22 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         if (!doc.HasMember("path")) {
             return send_error(req, 400, "Missing delete fields");
         }
-        std::string filePath = std::string(CONFIG_ROOT) + "/" +
-                               doc["path"].GetString();
+        // Only delete from user dir (factory files are immutable)
+        std::string deletePath(doc["path"].GetString());
+        size_t slashPos = deletePath.find('/');
+        std::string filePath;
+        if (slashPos != std::string::npos) {
+            std::string subdir = deletePath.substr(0, slashPos);
+            std::string fname = deletePath.substr(slashPos + 1);
+            filePath = CTAG::STORAGE::userFilePath(subdir.c_str(), fname);
+        } else {
+            filePath = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_CONFIG, deletePath);
+        }
         if (remove(filePath.c_str()) != 0) {
             ESP_LOGE(TAG, "Delete failed: %s", filePath.c_str());
             return send_error(req, 500, "Delete failed");
         }
-        ESP_LOGI(TAG, "Deleted: %s", doc["path"].GetString());
+        ESP_LOGI(TAG, "Deleted config: %s", doc["path"].GetString());
         return send_ok(req);
     }
 
