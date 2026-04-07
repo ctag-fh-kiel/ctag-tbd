@@ -188,7 +188,7 @@ Split read/write paths:
 **Goal:** 3-5 global track default templates (factory + user-created), selectable from project menu.
 Per-project: user chooses which template to apply, or defines custom track setup.
 
-**Status:** IN PROGRESS — SPI commands done, UI complete, factory templates deployed
+**Status:** COMPLETE (core) ✅ — SPI commands done, UI complete, factory templates deployed
 
 *Depends on Phase 1 (project storage on P4 must work) ✅*
 
@@ -239,12 +239,12 @@ Per-project: user chooses which template to apply, or defines custom track setup
 
 - [x] Project menu shows "Track setup" entry
 - [x] Home screen renamed from "Project" to "Home" with reordered items
-- [ ] Selecting opens template list with names from P4 (3 factory: default, minimal, sampler)
-- [ ] Selecting a template applies machines + presets to all tracks
-- [ ] "Save as new" creates a user template visible in the list
-- [ ] Factory templates cannot be deleted
-- [ ] New Song flow applies active template
-- [ ] "Set as device default" persists across reboots
+- [x] Selecting opens template list with names from P4 (3 factory: default, minimal, sampler)
+- [x] Selecting a template applies machines + presets to all tracks
+- [ ] "Save as new" creates a user template visible in the list (Phase 11)
+- [x] Factory templates cannot be deleted (no delete UI; P4-side protection on 0xB9)
+- [x] New Song flow applies active template (`project_reset()` uses `activeTrackDefault`)
+- [x] "Set as device default" persists across reboots (writes to config, auto-saved)
 
 ---
 
@@ -360,9 +360,9 @@ Projects are resilient to firmware changes that modify preset files.
 `presets/`, `macros/`, `patches/` but the WebUI JS still sends the legacy `macrosoundpresets/`,
 `macrodefinitions/` paths — resulting in 404 errors for all config save/load operations.
 
-**Status:** NOT STARTED
+**Status: COMPLETE** ✅ — Committed `a1662e40` on 2026-04-07
 
-**Priority: HIGH** — The WebUI preset/macro editor is broken against the new backend.
+**Priority: HIGH** — The WebUI preset/macro editor was broken against the new backend.
 
 *Depends on Phase 0 (overlay paths must be deployed). Independent of all other phases.*
 
@@ -387,12 +387,12 @@ Projects are resilient to firmware changes that modify preset files.
 
 ### Tasks
 
-- [ ] Search-replace `'macrosoundpresets/'` → `'presets/'` in all JS files
-- [ ] Search-replace `'macrodefinitions/'` → `'macros/'` in all JS files
-- [ ] Update any stale comments referencing old paths (`/sdcard/data/`, `sp/`)
-- [ ] Rebuild WebUI bundles via `build-webui.sh` (if applicable)
+- [x] Search-replace `'macrosoundpresets/'` → `'presets/'` in all JS files
+- [x] Search-replace `'macrodefinitions/'` → `'macros/'` in all JS files
+- [x] Update any stale comments referencing old paths (`/sdcard/data/`, `sp/`)
+- [x] Regenerate .gz bundles for app-bundle.js and macro-bundle.js
 - [ ] Verify in browser: preset save/load works, macro editor works
-- [ ] Verify `synthdefinitions.json` path still resolves (used in `shared.js`, may need `config/` prefix)
+- [x] Fix SampleAPI.cpp `getconfig` handler for files without subdir (synthdefinitions.json)
 
 ### Verification (Phase 5)
 
@@ -772,7 +772,7 @@ snapshots. Projects reference kits by hash for reproducibility.
 | 3a | Sound Restoration | ✅ COMPLETE | — |
 | 3b | File-Level Snapshots | → Moved to Phase 9 | LOW |
 | ~~4~~ | ~~Migration & Backup~~ | REMOVED | — |
-| **5** | **WebUI Config Paths** | **NOT STARTED** | **HIGH** |
+| 5 | WebUI Config Paths | ✅ COMPLETE | — |
 | 6 | Storage REST API | NOT STARTED | MEDIUM |
 | 7 | WebUI Backup & Restore | NOT STARTED | MEDIUM |
 | 8 | WebUI Overlay Browsing | NOT STARTED | LOW |
