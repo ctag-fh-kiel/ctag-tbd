@@ -106,6 +106,15 @@ bool PicoFirmwareUpdate::ConsumeP4UpdateFlag() {
     return false;
 }
 
+/// Ensure /sdcard/system/firmware directory exists (needed for version/flag files).
+static void ensure_firmware_dir() {
+    struct stat st;
+    if (stat(FW_DIR_PATH, &st) != 0) {
+        mkdir("/sdcard/system", 0755);
+        mkdir(FW_DIR_PATH, 0755);
+    }
+}
+
 void PicoFirmwareUpdate::CheckP4VersionChange() {
     // Read previously stored P4 firmware version
     char installed[64] = {0};
@@ -120,6 +129,9 @@ void PicoFirmwareUpdate::CheckP4VersionChange() {
 
     ESP_LOGI(TAG, "P4 version changed: '%s' -> '%s'", installed, current);
 
+    // Ensure directory exists before writing files
+    ensure_firmware_dir();
+
     // Write flag file (consumed once by 0xAE handler after Pico reads it)
     write_text_file(P4_UPDATE_FLAG_PATH, "1");
 
@@ -128,6 +140,9 @@ void PicoFirmwareUpdate::CheckP4VersionChange() {
 }
 
 bool PicoFirmwareUpdate::CheckAndFlash() {
+    // Ensure firmware directory exists for log/flag files
+    ensure_firmware_dir();
+
     // Clear previous log
     remove(FW_LOG_PATH);
     log_to_sd("=== Pico firmware update check ===");
