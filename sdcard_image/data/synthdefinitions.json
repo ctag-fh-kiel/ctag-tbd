@@ -494,9 +494,9 @@
         {
           "id": "freq",
           "name": "Freq",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 8,
-          "def": 16
+          "def": 2048
         },
         {
           "id": "tone",
@@ -522,16 +522,16 @@
         {
           "id": "fm-env",
           "name": "Fm Env",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
-          "def": 16
+          "def": 2048
         },
         {
           "id": "fm-decay",
           "name": "Fm Decay",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
-          "def": 8
+          "def": 1024
         },
         {
           "id": "fm-accent",

@@ -10,10 +10,10 @@
         {
           "idx": 0,
           "name": "Freq",
-          "def": 3,
+          "def": 512,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "freq",
           "curve": "log"
         },
@@ -53,19 +53,19 @@
         {
           "idx": 4,
           "name": "Fm Env",
-          "def": 20,
+          "def": 2560,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "envamount"
         },
         {
           "idx": 5,
           "name": "Fm Decay",
-          "def": 45,
+          "def": 5760,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "envdecay",
           "curve": "exp"
         },

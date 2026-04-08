@@ -750,8 +750,28 @@ namespace CTAG::SPIAPI{
                 break;
             case RequestType::GetSynthDefinitionsJSON:
                 {
-                    std::string info = "{\"status\":\"not implemented\"}";
-                    result = transmitCString(requestType, info.c_str());
+                    std::string json = "{}";
+                    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/synthdefinitions.json";
+                    FILE *f = fopen(path.c_str(), "r");
+                    if (f) {
+                        fseek(f, 0, SEEK_END);
+                        long sz = ftell(f);
+                        fseek(f, 0, SEEK_SET);
+                        if (sz > 0 && sz < 8192) {
+                            char *buf = (char*)malloc(sz + 1);
+                            if (buf) {
+                                fread(buf, 1, sz, f);
+                                buf[sz] = '\0';
+                                json = buf;
+                                free(buf);
+                            }
+                        }
+                        fclose(f);
+                        ESP_LOGI("SpiAPI", "GetSynthDefinitionsJSON: loaded %ld bytes from synthdefinitions.json", sz);
+                    } else {
+                        ESP_LOGW("SpiAPI", "GetSynthDefinitionsJSON: synthdefinitions.json not found, returning {}");
+                    }
+                    result = transmitCString(requestType, json.c_str());
                 }
                 break;
             case RequestType::GetMacroMachineDefinitionsJSON:
