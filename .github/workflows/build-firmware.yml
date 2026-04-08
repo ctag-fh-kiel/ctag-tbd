@@ -14,7 +14,7 @@ on:
         description: "Name of the uploaded artifact"
         value: ${{ jobs.build.outputs.artifact_name }}
       webui_version:
-        description: "WebUI version from sdcard_image/data/webui-version.json"
+        description: "WebUI version from sdcard_image/system/webui-version.json"
         value: ${{ jobs.build.outputs.webui_version }}
 
 jobs:
@@ -69,7 +69,7 @@ jobs:
       - name: Extract WebUI version
         id: webui
         run: |
-          WEBUI_VERSION=$(python3 -c "import json; print(json.load(open('sdcard_image/data/webui-version.json'))['version'])")
+          WEBUI_VERSION=$(python3 -c "import json; print(json.load(open('sdcard_image/system/webui-version.json'))['version'])")
           echo "version=$WEBUI_VERSION" >> "$GITHUB_OUTPUT"
           echo "WebUI version: $WEBUI_VERSION"
 
@@ -108,15 +108,16 @@ jobs:
             fi
           done
 
-          # Collect data/ JSON files
-          for dir in sp macrodefinitions macrosoundpresets; do
-            if [ -d "sdcard_image/data/$dir" ]; then
-              mkdir -p "$TEMP/data/$dir"
-              cp sdcard_image/data/$dir/*.json "$TEMP/data/$dir/" 2>/dev/null || true
+          # Collect JSON files from overlay layout (factory/, user/, system/)
+          for dir in factory user system; do
+            if [ -d "sdcard_image/$dir" ]; then
+              mkdir -p "$TEMP/$dir"
+              find "sdcard_image/$dir" -name '*.json' | while read -r src; do
+                dest="$TEMP/${src#sdcard_image/}"
+                mkdir -p "$(dirname "$dest")"
+                cp "$src" "$dest"
+              done
             fi
-          done
-          for f in webui-version.json favs.json spm-config.json trackdefaults.json synthdefinitions.json; do
-            [ -f "sdcard_image/data/$f" ] && cp "sdcard_image/data/$f" "$TEMP/data/$f"
           done
 
           # Create manifest
