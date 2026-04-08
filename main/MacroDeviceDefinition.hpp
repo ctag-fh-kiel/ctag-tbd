@@ -47,9 +47,9 @@ namespace CTAG {
         };
 
         struct MacroDeviceDefinition {
-            char id[16];
+            char id[32];
             char name[32];
-            char synthId[16];
+            char synthId[32];
             float volumeMultiplier;
             struct MacroDeviceOutputMapping outputMappings[MaxOutputMappings];
         };

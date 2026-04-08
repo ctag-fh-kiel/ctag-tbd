@@ -330,43 +330,52 @@ void MacroSoundPresetDataModel::SerializeListInto(int trackIndex, rapidjson::Doc
     Value groupsarray(kArrayType);
     doc.AddMember("presetgroups", groupsarray, doc.GetAllocator());
 
-    for(int gi=0; gi<MaxSoundPresetGroups; gi++) {
-        if (groups[gi].id[0] == '\0') {
-            continue;
-        }
+    // Group presets by machine (synth engine) like the web UI TrackDefaults dialog.
+    // Hierarchy: Track → machines (from TrackDefinition) → presets using macros for that machine.
+    TrackDefinition *trackDef = SynthDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
+    if (trackDef == nullptr) return;
 
-        if (!(groups[gi].validTracksBitmask & (1 << trackIndex))) {
-            continue;
-        }
+    for (int mi = 0; mi < MaxTrackDefinitionMachineIds; mi++) {
+        if (trackDef->macroMachineIds[mi][0] == '\0') continue;
+        const char *machineId = trackDef->macroMachineIds[mi];
+
+        // Skip empty placeholder machines (same filter as web UI)
+        if (strcmp(machineId, "nodrum") == 0 ||
+            strcmp(machineId, "nosynth") == 0 ||
+            strcmp(machineId, "nofx") == 0) continue;
+
+        // Get machine display name from SynthDefinition
+        SynthDefinition *synthDef = SynthDefinitionDataModel::instance()->GetSynthDefinition(std::string(machineId));
+        const char *machineName = synthDef ? synthDef->name : machineId;
 
         Value groupobj(kObjectType);
-        groupobj.AddMember("id", Value(groups[gi].id, doc.GetAllocator()), doc.GetAllocator());
-        groupobj.AddMember("name", Value(groups[gi].displayName, doc.GetAllocator()), doc.GetAllocator());
+        groupobj.AddMember("id", Value(machineId, doc.GetAllocator()), doc.GetAllocator());
+        groupobj.AddMember("name", Value(machineName, doc.GetAllocator()), doc.GetAllocator());
 
         Value presetsarray(kArrayType);
         groupobj.AddMember("presets", presetsarray, doc.GetAllocator());
 
-        for(int pi=0; pi<MaxSoundPresets; pi++) {
-            if (presets[pi].id[0] == '\0') {
-                continue;
-            }
+        // Find all presets whose macro definition targets this synth engine
+        for (int pi = 0; pi < presetsUsed; pi++) {
+            if (presets[pi].id[0] == '\0') continue;
+            if (!(presets[pi].validTracksBitmask & (1 << trackIndex))) continue;
 
-            if (!(presets[pi].validTracksBitmask & (1 << trackIndex))) {
-                continue;
-            }
-
-            if (strcmp(presets[pi].groupName, groups[gi].displayName) != 0) {
-                continue;
-            }
+            // Look up the preset's macro definition to check its synthId
+            MacroDeviceDefinition *macroDef = MacroDeviceDefinitionDataModel::instance()
+                .GetMacroDeviceDefinition(presets[pi].macroDeviceId);
+            if (macroDef == nullptr) continue;
+            if (strcmp(macroDef->synthId, machineId) != 0) continue;
 
             Value presetobj(kObjectType);
             presetobj.AddMember("id", Value(presets[pi].id, doc.GetAllocator()), doc.GetAllocator());
             presetobj.AddMember("name", Value(presets[pi].displayName, doc.GetAllocator()), doc.GetAllocator());
-            // TODO: Use name
             groupobj["presets"].PushBack(presetobj, doc.GetAllocator());
         }
 
-        doc["presetgroups"].PushBack(groupobj, doc.GetAllocator());
+        // Only include machine if it has at least one preset
+        if (groupobj["presets"].Size() > 0) {
+            doc["presetgroups"].PushBack(groupobj, doc.GetAllocator());
+        }
     }
 }
 

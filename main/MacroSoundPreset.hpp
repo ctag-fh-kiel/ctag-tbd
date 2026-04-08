@@ -31,20 +31,20 @@ namespace CTAG {
         const int MaxPresetsPerGroup = 64;
 
         struct MacroSoundPreset {
-            char id[16];
+            char id[32];
             char displayName[32];
-            char groupName[16];
-            char macroDeviceId[16];
+            char groupName[32];
+            char macroDeviceId[32];
             uint32_t validTracksBitmask;
             int32_t parameterValues[MaxMacroSoundPresetParameters];
         };
 
         struct MacroSoundPresetGroup {
-            char id[16];
+            char id[32];
             char displayName[32];
             uint32_t validTracksBitmask;
             uint8_t numFileIds;
-            char fileIds[MaxPresetsPerGroup][16];
+            char fileIds[MaxPresetsPerGroup][32];
         };
 
         class MacroSoundPresetUtils final {
