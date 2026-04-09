@@ -263,7 +263,7 @@
    * Fetch kit names and per-kit bank metadata from the samples API.
    */
   function loadKitData() {
-    return S.queuedFetch('/samples')
+    return S.queuedFetch('/storage')
       .then(function(data) {
         if (data && data.kits && data.kits.smp_bank_names) {
           kitNames = data.kits.smp_bank_names;

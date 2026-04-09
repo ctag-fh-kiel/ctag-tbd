@@ -1585,54 +1585,28 @@ static esp_err_t handle_reload(httpd_req_t *req) {
     return send_ok(req);
 }
 
-// ─── Public dispatch handlers ────────────────────────────────
-
-esp_err_t StorageAPI::samples_get_handler(httpd_req_t *req) {
-    return handle_list(req);
-}
-
-esp_err_t StorageAPI::samples_post_handler(httpd_req_t *req) {
-    // Dispatch via ?action= query string
-    size_t qlen = httpd_req_get_url_query_len(req);
-    char action[32] = {0};
-
-    if (qlen > 0) {
-        char *query = (char *)malloc(qlen + 1);
-        httpd_req_get_url_query_str(req, query, qlen + 1);
-        httpd_query_key_value(query, "action", action, sizeof(action));
-        free(query);
-    }
-
-    if (strcmp(action, "upload") == 0) {
-        return handle_upload(req);
-    } else if (strcmp(action, "uploadconfig") == 0) {
-        return handle_uploadconfig(req);
-    } else if (strcmp(action, "uploadwww") == 0) {
-        return handle_uploadwww(req);
-    } else if (strcmp(action, "uploadsystem") == 0) {
-        return handle_uploadsystem(req);
-    } else if (strcmp(action, "manage") == 0) {
-        return handle_manage(req);
-    } else if (strcmp(action, "reload") == 0) {
-        return handle_reload(req);
-    }
-
-    ESP_LOGW(TAG, "Unknown POST action: %s", action);
-    return send_error(req, 400, "Unknown action parameter");
-}
-
 // ═══════════════════════════════════════════════════════════════════
-//  GENERIC STORAGE REST API  (Phase 6)
+//  UNIFIED STORAGE REST API
 //
-//  GET  /api/v2/storage?action=info         → SD card stats
-//  GET  /api/v2/storage?action=list&path=X  → recursive file listing
-//  GET  /api/v2/storage?action=file&path=X  → raw file download
+//  All storage, sample, and config operations under /api/v2/storage*
 //
-//  POST /api/v2/storage?action=upload&path=X  → file upload
-//  POST /api/v2/storage?action=mkdir&path=X   → create directory
-//  POST /api/v2/storage?action=delete&path=X  → delete file/dir
-//  POST /api/v2/storage?action=copy&from=X&to=Y → server-side copy
-//  POST /api/v2/storage?action=reload         → flush caches
+//  GET  (no query)                → bulk sample list + dirs + configs + kits
+//  GET  ?preview=X                → stream WAV for audio preview
+//  GET  ?getconfig=X              → overlay-resolved config file
+//  GET  ?kit=N                    → switch active kit before listing
+//  GET  ?action=info              → SD card stats
+//  GET  ?action=list&path=X       → recursive file listing
+//  GET  ?action=file&path=X       → raw file download
+//
+//  POST ?action=upload&path=X     → file upload (generic or sample WAV)
+//  POST ?action=uploadconfig      → config file upload (user overlay)
+//  POST ?action=uploadwww         → www file upload
+//  POST ?action=uploadsystem      → system file upload
+//  POST ?action=manage            → JSON body: rename/delete/kit ops
+//  POST ?action=mkdir&path=X      → create directory
+//  POST ?action=delete&path=X     → delete file/dir
+//  POST ?action=copy&from=X&to=Y  → server-side copy
+//  POST ?action=reload            → reload PSRAM from SD card
 // ═══════════════════════════════════════════════════════════════════
 
 static const char *SD_ROOT = "/sdcard";
@@ -1809,13 +1783,18 @@ esp_err_t StorageAPI::storage_get_handler(httpd_req_t *req) {
     httpd_resp_set_hdr(req, "Connection", "close");
 
     size_t qlen = httpd_req_get_url_query_len(req);
-    if (qlen == 0) return send_error(req, 400, "Missing query parameters");
+
+    // No query params → legacy bulk sample listing
+    if (qlen == 0) return handle_list(req);
 
     char query[512] = {0};
     httpd_req_get_url_query_str(req, query, sizeof(query));
 
     char action[32] = {0};
     httpd_query_key_value(query, "action", action, sizeof(action));
+
+    // No action= param → delegate to legacy handler (handles preview, getconfig, kit)
+    if (action[0] == '\0') return handle_list(req);
 
     // ── action=info ──
     if (strcmp(action, "info") == 0) {
@@ -1927,6 +1906,14 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
 
     // ── action=upload ──
     if (strcmp(action, "upload") == 0) {
+        // Legacy sample upload: ?action=upload&path=X&filename=Y (WAV file to /sdcard/samples/)
+        char filenameCheck[16] = {0};
+        httpd_query_key_value(query, "filename", filenameCheck, sizeof(filenameCheck));
+        if (filenameCheck[0] != '\0') {
+            return handle_upload(req);
+        }
+
+        // Generic storage upload: ?action=upload&path=X (raw file to /sdcard/<path>)
         char pathVal[256] = {0};
         httpd_query_key_value(query, "path", pathVal, sizeof(pathVal));
 
@@ -2042,9 +2029,21 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
 
     // ── action=reload ──
     if (strcmp(action, "reload") == 0) {
-        ESP_LOGI(TAG, "storage reload requested");
-        // TODO: flush caches, re-scan overlay, notify Pico
-        return send_ok(req);
+        return handle_reload(req);
+    }
+
+    // ── Legacy sample actions (merged from /api/v2/samples) ──
+    if (strcmp(action, "uploadconfig") == 0) {
+        return handle_uploadconfig(req);
+    }
+    if (strcmp(action, "uploadwww") == 0) {
+        return handle_uploadwww(req);
+    }
+    if (strcmp(action, "uploadsystem") == 0) {
+        return handle_uploadsystem(req);
+    }
+    if (strcmp(action, "manage") == 0) {
+        return handle_manage(req);
     }
 
     return send_error(req, 400, "Unknown action");

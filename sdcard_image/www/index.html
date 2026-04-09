@@ -2901,7 +2901,7 @@
        Built by: build-webui.sh  |  Served dynamically by: dev-server.js -->
   <script defer src="js/app-bundle.js?v=7"></script>
   <script>
-    fetch('/api/v2/samples?getconfig=webui-version.json')
+    fetch('/api/v2/storage?getconfig=webui-version.json')
       .then(r => r.ok ? r.json() : null)
       .then(v => {
         const el = document.getElementById('webui-version-link');

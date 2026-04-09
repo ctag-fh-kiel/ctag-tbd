@@ -677,7 +677,7 @@ var _trackChangeCallbacks = [];
  * Called once at boot; both views read from sharedData.
  *
  * Uses TWO sequential requests to stay within ESP32 HTTP socket limits:
- *   1. GET /api/v2/samples?getconfig=synthdefinitions.json  → synth defs
+ *   1. GET /api/v2/storage?getconfig=synthdefinitions.json  → synth defs
  *   2. GET /api/v2/macros?action=getall                     → bulk macro data
  *
  * The "getall" endpoint returns { macroDefs, soundPresets, tracks } in a
@@ -685,7 +685,7 @@ var _trackChangeCallbacks = [];
  */
 function loadSharedData() {
   showLoading('Loading tracks & definitions…');
-  return fetch('/api/v2/samples?getconfig=synthdefinitions.json').then(function(r) {
+  return fetch('/api/v2/storage?getconfig=synthdefinitions.json').then(function(r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }).then(function(synthDefs) {

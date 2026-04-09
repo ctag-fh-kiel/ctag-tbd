@@ -269,7 +269,7 @@
 <!-- ─── Scripts ─────────────────────────────────────────── -->
 <script defer src="js/macro-bundle.js?v=3"></script>
 <script>
-  fetch('/api/v2/samples?getconfig=webui-version.json')
+  fetch('/api/v2/storage?getconfig=webui-version.json')
     .then(r => r.ok ? r.json() : null)
     .then(v => {
       const el = document.getElementById('webui-version-link');

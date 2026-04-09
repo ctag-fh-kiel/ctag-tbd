@@ -1570,7 +1570,7 @@
       var filePath = 'presets/' + id + '.json';
 
       createBtn.setAttribute('loading', '');
-      fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+      fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: jsonStr,
@@ -1615,7 +1615,7 @@
     var jsonStr = JSON.stringify(preset, null, 2);
     var filePath = 'presets/' + presetId + '.json';
 
-    fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+    fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: jsonStr,
@@ -1663,7 +1663,7 @@
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
       var filePath = 'presets/' + presetId + '.json';
-      apiPost('/api/v2/samples?action=manage', { action: 'deleteconfig', path: filePath })
+      apiPost('/api/v2/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
         S.toast('Deleted preset: ' + displayName, 'success', 2000);
@@ -1730,7 +1730,7 @@
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
       var filePath = 'macros/' + defId + '.json';
-      apiPost('/api/v2/samples?action=manage', { action: 'deleteconfig', path: filePath })
+      apiPost('/api/v2/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
         // If the deleted def was being edited, clear state
@@ -1792,7 +1792,7 @@
     var filePath = 'macros/' + state.editDef.id + '.json';
 
     S.showLoading('Saving definition\u2026');
-    fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+    fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: jsonStr,
@@ -1857,7 +1857,7 @@
             S.toast('Imported definition: ' + (data.name || data.id || 'unknown'), 'success', 2000);
           } else if (data.id && data.macro && data.values) {
             var filePath = 'presets/' + data.id + '.json';
-            fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+            fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data, null, 2),

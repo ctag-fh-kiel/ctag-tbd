@@ -681,7 +681,7 @@ var _trackChangeCallbacks = [];
  * Called once at boot; both views read from sharedData.
  *
  * Uses TWO sequential requests to stay within ESP32 HTTP socket limits:
- *   1. GET /api/v2/samples?getconfig=synthdefinitions.json  → synth defs
+ *   1. GET /api/v2/storage?getconfig=synthdefinitions.json  → synth defs
  *   2. GET /api/v2/macros?action=getall                     → bulk macro data
  *
  * The "getall" endpoint returns { macroDefs, soundPresets, tracks } in a
@@ -689,7 +689,7 @@ var _trackChangeCallbacks = [];
  */
 function loadSharedData() {
   showLoading('Loading tracks & definitions…');
-  return fetch('/api/v2/samples?getconfig=synthdefinitions.json').then(function(r) {
+  return fetch('/api/v2/storage?getconfig=synthdefinitions.json').then(function(r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }).then(function(synthDefs) {
@@ -2604,7 +2604,7 @@ window.TBD.shared = {
       var jsonStr = JSON.stringify(preset, null, 2);
       var filePath = 'presets/' + id + '.json';
 
-      fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+      fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: jsonStr,
@@ -2671,7 +2671,7 @@ window.TBD.shared = {
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
       var filePath = 'presets/' + presetId + '.json';
-      S.apiPostJSON('/samples?action=manage', { action: 'deleteconfig', path: filePath })
+      S.apiPostJSON('/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
         // If the deleted preset was active, clear it
@@ -2785,7 +2785,7 @@ window.TBD.shared = {
     var errors = 0;
 
     function uploadFile(path, obj) {
-      return fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(path), {
+      return fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(path), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(obj, null, 2),
@@ -2849,7 +2849,7 @@ window.TBD.shared = {
     var filePath = 'presets/' + preset.id + '.json';
     var jsonStr = JSON.stringify(preset, null, 2);
 
-    fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+    fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: jsonStr,
@@ -4537,7 +4537,7 @@ window.TBD.shared = {
       var filePath = 'presets/' + id + '.json';
 
       createBtn.setAttribute('loading', '');
-      fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+      fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: jsonStr,
@@ -4582,7 +4582,7 @@ window.TBD.shared = {
     var jsonStr = JSON.stringify(preset, null, 2);
     var filePath = 'presets/' + presetId + '.json';
 
-    fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+    fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: jsonStr,
@@ -4630,7 +4630,7 @@ window.TBD.shared = {
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
       var filePath = 'presets/' + presetId + '.json';
-      apiPost('/api/v2/samples?action=manage', { action: 'deleteconfig', path: filePath })
+      apiPost('/api/v2/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
         S.toast('Deleted preset: ' + displayName, 'success', 2000);
@@ -4697,7 +4697,7 @@ window.TBD.shared = {
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
       var filePath = 'macros/' + defId + '.json';
-      apiPost('/api/v2/samples?action=manage', { action: 'deleteconfig', path: filePath })
+      apiPost('/api/v2/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
         // If the deleted def was being edited, clear state
@@ -4759,7 +4759,7 @@ window.TBD.shared = {
     var filePath = 'macros/' + state.editDef.id + '.json';
 
     S.showLoading('Saving definition\u2026');
-    fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+    fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: jsonStr,
@@ -4824,7 +4824,7 @@ window.TBD.shared = {
             S.toast('Imported definition: ' + (data.name || data.id || 'unknown'), 'success', 2000);
           } else if (data.id && data.macro && data.values) {
             var filePath = 'presets/' + data.id + '.json';
-            fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+            fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data, null, 2),
@@ -5155,7 +5155,7 @@ window.TBD.shared = {
    * Fetch kit names and per-kit bank metadata from the samples API.
    */
   function loadKitData() {
-    return S.queuedFetch('/samples')
+    return S.queuedFetch('/storage')
       .then(function(data) {
         if (data && data.kits && data.kits.smp_bank_names) {
           kitNames = data.kits.smp_bank_names;

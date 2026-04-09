@@ -384,7 +384,7 @@
   // ── Load current version from device ──
   async function loadCurrentVersion() {
     try {
-      const resp = await fetch('/api/v2/samples?getconfig=webui-version.json');
+      const resp = await fetch('/api/v2/storage?getconfig=webui-version.json');
       if (resp.ok) {
         const v = await resp.json();
         installedVersion = v.version || null;
@@ -609,7 +609,7 @@
           date: manifest.date || new Date().toISOString().slice(0, 10),
           description: manifest.description || ''
         });
-        await fetch('/api/v2/samples?action=uploadconfig&path=webui-version.json', {
+        await fetch('/api/v2/storage?action=uploadconfig&path=webui-version.json', {
           method: 'POST', body: versionData
         });
         log('Version file updated to v' + manifest.version, 'ok');
@@ -875,7 +875,7 @@
           date: manifest.date || new Date().toISOString().slice(0, 10),
           description: manifest.description || ''
         });
-        await fetch('/api/v2/samples?action=uploadconfig&path=webui-version.json', {
+        await fetch('/api/v2/storage?action=uploadconfig&path=webui-version.json', {
           method: 'POST',
           body: versionData
         });
@@ -915,7 +915,7 @@
       throw new Error('Unknown path prefix (expected www/ or data/): ' + filePath);
     }
 
-    const url = '/api/v2/samples?action=' + action + '&path=' + encodeURIComponent(apiPath);
+    const url = '/api/v2/storage?action=' + action + '&path=' + encodeURIComponent(apiPath);
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/octet-stream' },
@@ -1119,7 +1119,7 @@
       // Step 2: Upload binary to SD card
       picoLog('Uploading pico-firmware.bin to SD card...', 'info');
       var uploadResp = await fetch(
-        '/api/v2/samples?action=uploadsystem&path=firmware/pico-firmware.bin',
+        '/api/v2/storage?action=uploadsystem&path=firmware/pico-firmware.bin',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },
@@ -1138,7 +1138,7 @@
       // Step 3: Write version sidecar file
       picoLog('Writing version file...', 'info');
       var versionResp = await fetch(
-        '/api/v2/samples?action=uploadsystem&path=firmware/pico-firmware-version.txt',
+        '/api/v2/storage?action=uploadsystem&path=firmware/pico-firmware-version.txt',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/octet-stream' },

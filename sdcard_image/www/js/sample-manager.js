@@ -16,7 +16,7 @@
 var _S = (window.TBD && window.TBD.shared) ? window.TBD.shared : null;
 
 // ─── Configuration ───────────────────────────────────────────
-const API_BASE      = '/api/v2/samples';
+const API_BASE      = '/api/v2/storage';
 const SAMPLE_RATE   = 44100;
 const MAX_FILENAME  = 32;
 const SLICES_PER_BANK = 32;

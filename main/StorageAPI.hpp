@@ -20,44 +20,36 @@ Provided "as is" without any express or implied warranties.
 namespace CTAG {
     namespace REST {
         /**
-         * Storage & Sample Manager REST API
+         * Unified Storage & Sample Manager REST API
          *
-         * === Legacy Sample Manager (preserved) ===
+         * Single endpoint: /api/v2/storage*
          *
-         *   GET  /api/v2/samples*           — list files / kits / capacity
-         *        ?preview=path/name         — stream a WAV for audio preview
-         *        ?kit=N                     — switch active kit before listing
+         * GET  /api/v2/storage*
+         *      (no query)                         — bulk sample list + dirs + configs + kits
+         *      ?preview=path/name                 — stream a WAV for audio preview
+         *      ?getconfig=filename                — overlay-resolved config file
+         *      ?kit=N                             — switch active kit before listing
+         *      ?action=info                       — SD card total/free/per-zone stats
+         *      ?action=list&path=X                — recursive directory listing with sizes
+         *      ?action=file&path=X                — raw file download
          *
-         *   POST /api/v2/samples*
-         *        ?action=upload&path=X&filename=Y  — binary WAV upload
-         *        ?action=manage                    — JSON body: rename/delete/saveKit/createKit/createFolder
-         *        ?action=reload                    — trigger PSRAM reload
+         * POST /api/v2/storage*
+         *      ?action=upload&path=X              — raw file upload (body = file content)
+         *      ?action=uploadconfig&path=X        — config file upload (user overlay)
+         *      ?action=uploadwww&path=X           — www file upload
+         *      ?action=uploadsystem&path=X        — system file upload
+         *      ?action=manage                     — JSON body: rename/delete/saveKit/createKit/etc
+         *      ?action=mkdir&path=X               — create directory
+         *      ?action=delete&path=X              — delete file or directory (recursive)
+         *      ?action=copy&from=X&to=Y           — server-side file copy
+         *      ?action=reload                     — reload PSRAM from SD card
          *
-         * === Generic Storage API (Phase 6) ===
-         *
-         *   GET  /api/v2/storage*
-         *        ?action=info                      — SD card total/free/per-zone stats
-         *        ?action=list&path=X               — recursive directory listing with sizes
-         *        ?action=file&path=X               — raw file download
-         *
-         *   POST /api/v2/storage*
-         *        ?action=upload&path=X             — raw file upload (body = file content)
-         *        ?action=mkdir&path=X              — create directory
-         *        ?action=delete&path=X             — delete file or directory (recursive)
-         *        ?action=copy&from=X&to=Y          — server-side file copy
-         *        ?action=reload                    — flush caches, re-scan overlay
-         *
-         * Security: /factory/ read-only, /system/ write-protected, path traversal rejected.
+         * Security: /factory/ read-only, path traversal rejected.
          */
         class StorageAPI final {
         public:
             StorageAPI() = delete;
 
-            // Legacy Sample Manager endpoints
-            static esp_err_t samples_get_handler(httpd_req_t *req);
-            static esp_err_t samples_post_handler(httpd_req_t *req);
-
-            // Generic Storage API endpoints (Phase 6)
             static esp_err_t storage_get_handler(httpd_req_t *req);
             static esp_err_t storage_post_handler(httpd_req_t *req);
         };

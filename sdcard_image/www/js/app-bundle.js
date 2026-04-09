@@ -2690,7 +2690,7 @@ var _trackChangeCallbacks = [];
  * Called once at boot; both views read from sharedData.
  *
  * Uses TWO sequential requests to stay within ESP32 HTTP socket limits:
- *   1. GET /api/v2/samples?getconfig=synthdefinitions.json  → synth defs
+ *   1. GET /api/v2/storage?getconfig=synthdefinitions.json  → synth defs
  *   2. GET /api/v2/macros?action=getall                     → bulk macro data
  *
  * The "getall" endpoint returns { macroDefs, soundPresets, tracks } in a
@@ -2698,7 +2698,7 @@ var _trackChangeCallbacks = [];
  */
 function loadSharedData() {
   showLoading('Loading tracks & definitions…');
-  return fetch('/api/v2/samples?getconfig=synthdefinitions.json').then(function(r) {
+  return fetch('/api/v2/storage?getconfig=synthdefinitions.json').then(function(r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }).then(function(synthDefs) {
@@ -5309,7 +5309,7 @@ window.TBD.shared = {
 var _S = (window.TBD && window.TBD.shared) ? window.TBD.shared : null;
 
 // ─── Configuration ───────────────────────────────────────────
-const API_BASE      = '/api/v2/samples';
+const API_BASE      = '/api/v2/storage';
 const SAMPLE_RATE   = 44100;
 const MAX_FILENAME  = 32;
 const SLICES_PER_BANK = 32;
@@ -8616,7 +8616,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
    * Fetch kit names and per-kit bank metadata from the samples API.
    */
   function loadKitData() {
-    return S.queuedFetch('/samples')
+    return S.queuedFetch('/storage')
       .then(function(data) {
         if (data && data.kits && data.kits.smp_bank_names) {
           kitNames = data.kits.smp_bank_names;

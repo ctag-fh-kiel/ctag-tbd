@@ -887,7 +887,7 @@
       var jsonStr = JSON.stringify(preset, null, 2);
       var filePath = 'presets/' + id + '.json';
 
-      fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+      fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: jsonStr,
@@ -954,7 +954,7 @@
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
       var filePath = 'presets/' + presetId + '.json';
-      S.apiPostJSON('/samples?action=manage', { action: 'deleteconfig', path: filePath })
+      S.apiPostJSON('/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
         // If the deleted preset was active, clear it
@@ -1068,7 +1068,7 @@
     var errors = 0;
 
     function uploadFile(path, obj) {
-      return fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(path), {
+      return fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(path), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(obj, null, 2),
@@ -1132,7 +1132,7 @@
     var filePath = 'presets/' + preset.id + '.json';
     var jsonStr = JSON.stringify(preset, null, 2);
 
-    fetch('/api/v2/samples?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+    fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: jsonStr,

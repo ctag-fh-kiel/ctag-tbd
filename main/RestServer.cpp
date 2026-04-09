@@ -25,13 +25,12 @@ respective component folders / files if different from this license.
  * All domain logic is in dedicated modules:
  *   PluginAPI  (GET/POST /api/v2/plugins)   — sound processor management
  *   DeviceAPI  (GET/POST /api/v2/device)    — config, IO caps, favorites
- *   StorageAPI (GET/POST /api/v2/samples)   — storage & sample management
- *   StorageAPI (GET/POST /api/v2/storage)   — generic storage REST API
+ *   StorageAPI (GET/POST /api/v2/storage)   — unified storage, sample & config management
  *   MacroAPI   (GET/POST /api/v2/macros)    — macro presets
  *   OtaAPI     (GET/POST /api/v2/ota)       — firmware OTA update
  *
  * This file handles:
- *   - Server configuration (max_uri_handlers = 20, using 13 of 20)
+ *   - Server configuration (max_uri_handlers = 20, using 11 of 20)
  *   - Static file serving (gzipped assets from SD card)
  *   - URI handler registration for all 4 API domains
  */
@@ -184,7 +183,7 @@ esp_err_t RestServer::StartRestServer() {
     config.core_id            = 0;
     config.uri_match_fn       = httpd_uri_match_wildcard;
     config.task_priority      = tskIDLE_PRIORITY + 4;
-    config.max_uri_handlers   = 20;   // upstream p4_main limit; using 13 of 20
+    config.max_uri_handlers   = 20;   // upstream p4_main limit; using 11 of 20
     config.stack_size         = 8192;
     config.max_req_hdr_len    = 1024; // default 512 too small for modern browser headers (causes 431)
     config.recv_wait_timeout  = 10;   // upstream p4_main value — lru_purge handles socket pressure
@@ -193,7 +192,7 @@ esp_err_t RestServer::StartRestServer() {
     // All API responses now use Connection:close to free sockets immediately.
     // Static files also use Connection:close.
 
-    ESP_LOGI(REST_TAG, "Starting HTTP Server (v2 API — 13 of 20 handler slots)");
+    ESP_LOGI(REST_TAG, "Starting HTTP Server (v2 API — 11 of 20 handler slots)");
     if (httpd_start(&server, &config) != ESP_OK)
         return ESP_FAIL;
 
@@ -231,24 +230,7 @@ esp_err_t RestServer::StartRestServer() {
     };
     httpd_register_uri_handler(server, &device_post);
 
-    /* ── 3. Sample API  (2 handlers) ── */
-    httpd_uri_t samples_get = {
-        .uri      = "/api/v2/samples*",
-        .method   = HTTP_GET,
-        .handler  = &StorageAPI::samples_get_handler,
-        .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &samples_get);
-
-    httpd_uri_t samples_post = {
-        .uri      = "/api/v2/samples*",
-        .method   = HTTP_POST,
-        .handler  = &StorageAPI::samples_post_handler,
-        .user_ctx = rest_context
-    };
-    httpd_register_uri_handler(server, &samples_post);
-
-    /* ── 4. Macro API  (2 handlers) ── */
+    /* ── 3. Macro API  (2 handlers) ── */
 #if CONFIG_TBD_USE_SD_CARD
     httpd_uri_t macros_get = {
         .uri      = "/api/v2/macros",
@@ -267,7 +249,7 @@ esp_err_t RestServer::StartRestServer() {
     httpd_register_uri_handler(server, &macros_post);
 #endif // CONFIG_TBD_USE_SD_CARD
 
-    /* ── 5. OTA API  (2 handlers) ── */
+    /* ── 4. OTA API  (2 handlers) ── */
     httpd_uri_t ota_get = {
         .uri      = "/api/v2/ota",
         .method   = HTTP_GET,
@@ -284,7 +266,7 @@ esp_err_t RestServer::StartRestServer() {
     };
     httpd_register_uri_handler(server, &ota_post);
 
-    /* ── 6. Generic Storage API  (2 handlers) ── */
+    /* ── 5. Unified Storage API  (2 handlers) ── */
     httpd_uri_t storage_get = {
         .uri      = "/api/v2/storage*",
         .method   = HTTP_GET,
@@ -301,7 +283,7 @@ esp_err_t RestServer::StartRestServer() {
     };
     httpd_register_uri_handler(server, &storage_post);
 
-    /* ── 7. Static files — must be LAST (wildcard catch-all) ── */
+    /* ── 6. Static files — must be LAST (wildcard catch-all) ── */
     httpd_uri_t static_get = {
         .uri      = "/*",
         .method   = HTTP_GET,
@@ -310,6 +292,6 @@ esp_err_t RestServer::StartRestServer() {
     };
     httpd_register_uri_handler(server, &static_get);
 
-    ESP_LOGI(REST_TAG, "All 13 URI handlers registered successfully");
+    ESP_LOGI(REST_TAG, "All 11 URI handlers registered successfully");
     return ESP_OK;
 }
