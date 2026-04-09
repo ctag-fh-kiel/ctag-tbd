@@ -103,8 +103,13 @@ namespace CTAG::SP::HELPERS {
         return true;
     }
 
+    static uint32_t _readSliceDiagCounter = 0;
+
     void ctagSampleRom::ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples) {
+        if (n_samples == 0) return;
         if (slice >= numberSlices) {
+            if ((_readSliceDiagCounter++ % 10000) == 0)
+                ESP_LOGW("SROM", "DIAG ReadSlice SILENT: slice=%lu >= numberSlices=%lu n=%lu", slice, numberSlices, n_samples);
             memset(dst, 0, n_samples * 2);
             return;
         }
@@ -113,10 +118,16 @@ namespace CTAG::SP::HELPERS {
         if (offset + len >= sliceSizes[slice]) { // read beyond slice end ?
             len = sliceSizes[slice] - offset;
         }
-        if (len <= 0) return; // nothing to read!
-        if(slice >= nSlicesBuffered) // nSlicesBuffered > 0 if SPIRAM Buffer is used
+        if (len <= 0) {
+            if (n_samples > 0 && (_readSliceDiagCounter++ % 10000) == 0)
+                ESP_LOGW("SROM", "DIAG ReadSlice CLIPPED: slice=%lu size=%lu offset=%lu n=%lu len=%ld", slice, sliceSizes[slice], offset, n_samples, (long)len);
+            return; // nothing to read!
+        }
+        if(slice >= nSlicesBuffered) { // nSlicesBuffered > 0 if SPIRAM Buffer is used
+            if ((_readSliceDiagCounter++ % 10000) == 0)
+                ESP_LOGW("SROM", "DIAG ReadSlice ZERO: slice=%lu >= nSlicesBuffered=%lu n=%lu", slice, nSlicesBuffered, n_samples);
             memset(dst, 0, len*2);
-        else
+        } else
             memcpy(dst, &ptrSPIRAM[start], len*2);
     }
 
@@ -221,6 +232,10 @@ namespace CTAG::SP::HELPERS {
     }
 
     void ctagSampleRom::RefreshDataStructureFromSDCard(){
+        // Immediately mark all slices as unbuffered so any concurrent ReadSlice()
+        // calls return silence instead of reading stale/partially-loaded PSRAM data.
+        nSlicesBuffered = 0;
+
         ctagSampleRomModel sample_rom_model;
 
         // get total number of slices and samples
@@ -298,7 +313,7 @@ namespace CTAG::SP::HELPERS {
         for (uint32_t i = 0; i < slices_wt; i++) {
             std::string filename = sample_rom_model.GetFilenameForWTSlice(i);
             if (filename == "") {
-                ESP_LOGE("SROM", "No filename for slice %li", i);
+                ESP_LOGD("SROM", "No filename for WT slice %li (empty slot)", i);
                 continue;
             }
             if (!std::filesystem::exists(filename)) {
@@ -330,7 +345,7 @@ namespace CTAG::SP::HELPERS {
             uint32_t j = i + firstNonWtSlice;
             std::string filename = sample_rom_model.GetFilenameForSampleSlice(i);
             if (filename == "") {
-                ESP_LOGE("SROM", "No filename for slice %li", j);
+                ESP_LOGD("SROM", "No filename for sample slice %li (empty bank slot)", j);
                 continue;
             }
             if (!std::filesystem::exists(filename)) {
@@ -360,6 +375,14 @@ namespace CTAG::SP::HELPERS {
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
         ESP_LOGI("SROM", "Done loading samples, total size %li bytes, time taken %.2fs, %.2fMB/s ", totalSize, (float)duration / 1000.f, (float(totalSize) / (1024.0f * 1024.0f)) / (duration / 1000.0f));
+
+        // Diagnostic: dump metadata for first 16 sample slices
+        ESP_LOGW("SROM", "DIAG: numberSlices=%lu, firstNonWtSlice=%lu, slices_samples=%lu", numberSlices, firstNonWtSlice, slices_samples);
+        for (uint32_t di = 0; di < 16 && di < slices_samples; di++) {
+            uint32_t absIdx = firstNonWtSlice + di;
+            ESP_LOGW("SROM", "DIAG: sampleSlice[%lu] absIdx=%lu offset=%lu size=%lu", di, absIdx, sliceOffsets[absIdx], sliceSizes[absIdx]);
+        }
+
         // everything is buffered
         nSlicesBuffered = numberSlices;
     }

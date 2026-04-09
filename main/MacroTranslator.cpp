@@ -485,6 +485,13 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
 
                     int midichannel = trackToMidiChannel[t];
                     if (om->ctrl != -1) {
+                        // Diagnostic: log bank/slice CC for rompler tracks
+                        static uint32_t _macroDiagCtr = 0;
+                        if ((om->ctrl == 8 || om->ctrl == 9) && ((_macroDiagCtr++ % 5000) == 0)) {
+                            printf("DIAG MacroTranslator: t=%d ch=%d cc=%d+%d=%d val=%ld (src paramVal=%ld)\n",
+                                   t, midichannel, (int)om->ctrl, (int)trackBaseCC[t], (int)(om->ctrl + trackBaseCC[t]),
+                                   (long)finalvalue, (long)trackParameterValues[t][om->sources[0].parameterIndex]);
+                        }
                         outputValues[t][idx] = finalvalue;
                         int finalcc = om->ctrl + trackBaseCC[t];
                         soundProcessor->handleMidiControlChange(midichannel, finalcc, finalvalue);

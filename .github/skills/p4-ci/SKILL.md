@@ -218,9 +218,8 @@ sdkconfig.defaults
 sdkconfig.defaults.*
 partitions_example.csv
 partitions_no_sd.csv
-patches/**
+idf-patches/**
 sdcard_image/**
-sample_rom/**
 create_sd_archive.sh
 create_unified_p4_firmware.sh
 .github/workflows/build-firmware.yml

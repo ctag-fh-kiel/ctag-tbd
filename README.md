@@ -35,9 +35,9 @@ the feature matrix, build instructions, and Kconfig flag reference.
 components/         DSP plugins and sound processors
 docs/               Sphinx documentation source
 main/               Firmware entry point and system management
-sdcard_image/       Web UI and configuration data
+sdcard_image/       SD card image (samples, kits, presets, web UI)
 simulator/          Desktop simulator for plugin development
-sample_rom/         Stock audio samples
+tools/              Build scripts and sample utilities
 generators/         Plugin scaffolding templates
 ```
 

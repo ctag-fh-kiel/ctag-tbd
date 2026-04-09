@@ -45,7 +45,7 @@ jobs:
       - name: Verify ESP-IDF patches were applied
         run: |
           echo "=== Patch verification ==="
-          for pf in patches/*.patch; do
+          for pf in idf-patches/*.patch; do
             echo "Checking: $pf"
             if git -C "$IDF_PATH" apply --reverse --check "$GITHUB_WORKSPACE/$pf" 2>/dev/null; then
               echo "  ✅ APPLIED — patch is present in ESP-IDF source"

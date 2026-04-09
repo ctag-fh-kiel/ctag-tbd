@@ -16,14 +16,14 @@ from datetime import datetime
 
 SLICES_PER_BANK = 32
 
-SAMPLE_DIR = os.path.join(os.path.dirname(__file__), '..', 'sample_rom', 'samples')
+SAMPLE_DIR = os.path.join(os.path.dirname(__file__), '..', 'sdcard_image', 'factory', 'kits')
 
 # Bank names for the Default kit, grouped by path
 DEFAULT_KIT_BANKS = [
-    {"name": "DRUMS", "color": "#4CAF50", "path": "drums/factory"},
-    {"name": "OTHER", "color": "#2196F3", "path": "other/factory"},
-    {"name": "A4 DUB", "color": "#FFC107", "path": "a4_dub"},
-    {"name": "LOOPS", "color": "#FF9800", "path": "drums/loops"},
+    {"name": "DRUMS", "color": "#4CAF50", "path": "factory/drums"},
+    {"name": "OTHER", "color": "#2196F3", "path": "factory/other"},
+    {"name": "A4 DUB", "color": "#FFC107", "path": "factory/a4_dub"},
+    {"name": "LOOPS", "color": "#FF9800", "path": "factory/loops"},
 ]
 
 # Bank names for the A4 Dub kit (112 samples / 32 = 4 banks, remainder in 4th)

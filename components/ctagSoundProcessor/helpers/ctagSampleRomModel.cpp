@@ -1,20 +1,45 @@
 #include "ctagSampleRomModel.hpp"
 #include <filesystem>
 #include <vector>
+#include <sys/stat.h>
 
 #include "rapidjson/writer.h"
 
 #ifdef TBD_SIM
-#define SD_CARD_SAMPLE_FOLDER "../../sample_rom/samples"
+#define SD_CARD_SAMPLE_FOLDER "../../sdcard_image/samples"
+#define SD_CARD_USER_KITS_FOLDER "../../sdcard_image/user/kits"
+#define SD_CARD_FACTORY_KITS_FOLDER "../../sdcard_image/factory/kits"
 #else
 #define SD_CARD_SAMPLE_FOLDER "/sdcard/samples"
+#define SD_CARD_USER_KITS_FOLDER "/sdcard/user/kits"
+#define SD_CARD_FACTORY_KITS_FOLDER "/sdcard/factory/kits"
 #endif
 
 #define SAMPLE_ROM_DEFINITION_FILE "sample_rom.json"
 
+/**
+ * Resolve a kit JSON filename using overlay pattern:
+ * 1. /user/kits/{filename} — user-created or user-modified kits
+ * 2. /factory/kits/{filename} — factory-shipped kits
+ * 3. /samples/{filename} — legacy fallback (pre-overlay)
+ * Returns full path to the kit file.
+ */
+static std::string resolveKitFile(const std::string &filename) {
+    struct stat st;
+    std::string userKit = std::string(SD_CARD_USER_KITS_FOLDER) + "/" + filename;
+    if (stat(userKit.c_str(), &st) == 0) return userKit;
+    std::string factoryKit = std::string(SD_CARD_FACTORY_KITS_FOLDER) + "/" + filename;
+    if (stat(factoryKit.c_str(), &st) == 0) return factoryKit;
+    // Legacy fallback: kits stored flat in /samples/
+    return std::string(SD_CARD_SAMPLE_FOLDER) + "/" + filename;
+}
+
 CTAG::SP::ctagSampleRomModel::ctagSampleRomModel(){
-    sampleRomDescFileName_ = std::string(SD_CARD_SAMPLE_FOLDER) + "/" + std::string(SAMPLE_ROM_DEFINITION_FILE);
-    loadJSON(sample_rom, sampleRomDescFileName_);
+    // Read sample_rom.json via overlay (user → factory → samples legacy)
+    std::string readPath = resolveKitFile(SAMPLE_ROM_DEFINITION_FILE);
+    loadJSON(sample_rom, readPath);
+    // All writes go to user/kits/ (copy-on-write)
+    sampleRomDescFileName_ = std::string(SD_CARD_USER_KITS_FOLDER) + "/" + std::string(SAMPLE_ROM_DEFINITION_FILE);
     LoadActiveWTBankDescriptor();
     LoadActiveSampleBankDescriptor();
 }
@@ -22,7 +47,9 @@ CTAG::SP::ctagSampleRomModel::ctagSampleRomModel(){
 bool CTAG::SP::ctagSampleRomModel::IsSampleRomSDValid(){
     if (!std::filesystem::exists(SD_CARD_SAMPLE_FOLDER)) return false;
     if (!std::filesystem::is_directory(SD_CARD_SAMPLE_FOLDER)) return false;
-    if (!std::filesystem::exists(std::string(SD_CARD_SAMPLE_FOLDER) + "/" + SAMPLE_ROM_DEFINITION_FILE)) return false;
+    // Check overlay: user/kits → factory/kits → samples (legacy)
+    std::string resolved = resolveKitFile(SAMPLE_ROM_DEFINITION_FILE);
+    if (!std::filesystem::exists(resolved)) return false;
     return true;
 }
 
@@ -45,7 +72,7 @@ std::string CTAG::SP::ctagSampleRomModel::GetFilenameWTBankByIndex(const uint32_
     if (!sample_rom.HasMember("wt_banks")) return "";
     if (!sample_rom["wt_banks"].IsArray()) return "";
     if (index >= sample_rom["wt_banks"].GetArray().Size()) return "";
-    return std::string(SD_CARD_SAMPLE_FOLDER) + "/" + std::string(sample_rom["wt_banks"].GetArray()[index].GetString());
+    return resolveKitFile(sample_rom["wt_banks"].GetArray()[index].GetString());
 }
 
 std::string CTAG::SP::ctagSampleRomModel::GetFilenameSampleBankByIndex(const uint32_t index){
@@ -53,7 +80,7 @@ std::string CTAG::SP::ctagSampleRomModel::GetFilenameSampleBankByIndex(const uin
     if (!sample_rom.HasMember("smp_banks")) return "";
     if (!sample_rom["smp_banks"].IsArray()) return "";
     if (index >= sample_rom["smp_banks"].GetArray().Size()) return "";
-    return std::string(SD_CARD_SAMPLE_FOLDER) + "/" + std::string(sample_rom["smp_banks"].GetArray()[index].GetString());
+    return resolveKitFile(sample_rom["smp_banks"].GetArray()[index].GetString());
 }
 
 std::string CTAG::SP::ctagSampleRomModel::GetSampleRomDescriptorJSON(){

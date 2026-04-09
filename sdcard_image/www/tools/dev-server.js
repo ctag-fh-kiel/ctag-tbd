@@ -3,7 +3,7 @@
  * TBD-16 WebUI — Development Server
  *
  * Serves the WebUI from sdcard_image/www/ and provides mock API endpoints
- * that mirror the real ESP32 RestServer.cpp/MacroAPI.cpp/SampleAPI.cpp.
+ * that mirror the real ESP32 RestServer.cpp/MacroAPI.cpp/StorageAPI.cpp.
  * Uses real data from sdcard_image/data/ (synthdefinitions, macrodefinitions,
  * macrosoundpresets, sp/ plugin configs).
  *
@@ -153,7 +153,7 @@ loadSystemConfig();
 
 /** Recursively scan for .json files under a directory, returning
  *  entries with { name, path (relative folder), size, mtime } —
- *  matching the real SampleAPI::scan_json_files format. */
+ *  matching the real StorageAPI::scan_json_files format. */
 function scanJsonFiles(baseDir, relDir) {
   const results = [];
   const dirPath = relDir ? path.join(baseDir, relDir) : baseDir;
@@ -487,7 +487,7 @@ function handleSamplesGet(req, res) {
     }
   }
 
-  // Default: full response matching real SampleAPI::samples_get_handler
+  // Default: full response matching real StorageAPI::samples_get_handler
   // Scans /sdcard/data/ for config files, /sdcard/tbdsamples/ for WAV files
   const configfiles = scanJsonFiles(DATA_DIR, '');
   const files = scanWavFiles(SAMPLE_ROOT, '');

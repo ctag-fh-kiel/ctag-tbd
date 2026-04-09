@@ -380,12 +380,12 @@ fully-automated releases.
 > `espressif/idf:v5.5.3` for CI to match what engineers build locally.
 > The Docker image exists on Docker Hub.
 
-### ESP-IDF patches (`patches/` directory)
+### ESP-IDF patches (`idf-patches/` directory)
 
-The `patches/` directory contains ESP-IDF patches applied at CMake configure
+The `idf-patches/` directory contains ESP-IDF patches applied at CMake configure
 time. This is critical for CI — the patches fix real ESP32-P4 hardware issues:
 
-**`patches/esp-idf-v5.5.3-p4-fixes.patch`:**
+**`idf-patches/esp-idf-v5.5.3-p4-fixes.patch`:**
 
 1. **MMU map fix** (`esp_mmu_map.c`) — replaces cache disable/enable calls
    with mutex locks in `s_vaddr_to_paddr()` and `s_paddr_to_vaddr()`. Fixes
@@ -400,7 +400,7 @@ time. This is critical for CI — the patches fix real ESP32-P4 hardware issues:
 
 ```cmake
 # Applied at configure time — idempotent (safe to re-run)
-file(GLOB IDF_PATCHES "${CMAKE_SOURCE_DIR}/patches/*.patch")
+file(GLOB IDF_PATCHES "${CMAKE_SOURCE_DIR}/idf-patches/*.patch")
 foreach(PATCH_FILE ${IDF_PATCHES})
     execute_process(
         COMMAND git apply --check "${PATCH_FILE}"
@@ -497,7 +497,7 @@ jobs:
 
       - name: Verify ESP-IDF patches were applied
         run: |
-          for pf in patches/*.patch; do
+          for pf in idf-patches/*.patch; do
             if git -C "$IDF_PATH" apply --reverse --check "$GITHUB_WORKSPACE/$pf" 2>/dev/null; then
               echo "  ✅ APPLIED"
             else
@@ -557,7 +557,7 @@ jobs:
   version from `webui-version.json`, creates a WebUI update package (zip of
   `www/*.gz` + `data/*.json` + `manifest.json`), and outputs `webui_version`
   for downstream workflows to include in CDN dispatch.
-- The ESP-IDF patches in `patches/` are applied **automatically** by the
+- The ESP-IDF patches in `idf-patches/` are applied **automatically** by the
   patch system in `CMakeLists.txt` during `idf.py build` (at CMake configure
   time). No separate patch step is needed in CI — the stock Docker image +
   the repo's patch directory is all that's required.
@@ -655,7 +655,7 @@ name: CI
 on:
   pull_request:
     branches: [dada-tbd-master]
-    paths: [main/**, components/**, CMakeLists.txt, sdkconfig*, partitions_*, patches/**, ...]
+    paths: [main/**, components/**, CMakeLists.txt, sdkconfig*, partitions_*, idf-patches/**, ...]
   push:
     branches: [dada-tbd-master]
     paths: [... same ...]
@@ -4711,13 +4711,13 @@ git push origin --force --tags
 ```
 Phase 0 — Merge experimental branch (hard prerequisite for CI) ✅ DONE
   ─────────────────────────────────────────────────────────────
-  The patches/ directory, updated sdkconfig.defaults, and the
+  The idf-patches/ directory, updated sdkconfig.defaults, and the
   git describe --always fix were on
   nevvkid/dada-tbd-master-experimental. Merged into
   dadamachines/ctag-tbd dada-tbd-master via PR (2026-03-21).
   ─────────────────────────────────────────────────────────────
   [x] Cherry-pick or merge from experimental into dada-tbd-master:
-      - patches/ directory (ESP-IDF v5.5.3 P4 fixes)
+      - idf-patches/ directory (ESP-IDF v5.5.3 P4 fixes)
       - CMakeLists.txt patch-apply block (idempotent git apply)
       - sdkconfig.defaults cleanup (remove stale TinyUSB task config)
       - git describe --always flag addition
@@ -4757,7 +4757,7 @@ Phase 2 — CI pipeline + versioning + minimal flash page
   [x] Add build-firmware.yml workflow (reusable, container: espressif/idf:v5.5.3)
   [x] Add ci.yml workflow for PR + push build checks
       Path-filtered: only triggers when firmware-relevant files change
-      (main/**, components/**, CMakeLists.txt, sdkconfig*, patches/**,
+      (main/**, components/**, CMakeLists.txt, sdkconfig*, idf-patches/**,
       sdcard_image/**, sample_rom/**, *.sh, workflow files)
       Docs-only commits do NOT trigger firmware builds.
   [x] Add create-release.yml workflow (v* tag trigger + manual dispatch)

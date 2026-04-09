@@ -32,7 +32,7 @@ namespace CTAG {
          * All domain logic lives in dedicated modules:
          *   PluginAPI  (GET/POST /api/v2/plugins)
          *   DeviceAPI  (GET/POST /api/v2/device)
-         *   SampleAPI  (GET/POST /api/v2/samples)
+         *   StorageAPI (GET/POST /api/v2/samples)
          *   MacroAPI   (GET/POST /api/v2/macros)
          *
          * RestServer only handles static file serving and

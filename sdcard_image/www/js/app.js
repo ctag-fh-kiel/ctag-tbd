@@ -106,21 +106,26 @@
     var compact = document.getElementById('cfg-compact');
     if (compact) compact.checked = !!config.compactLayout;
 
-    // System tab
-    var firmware = document.getElementById('cfg-firmware');
-    if (firmware) firmware.textContent = config.firmwareVersion || '—';
+    // System tab — fetch version info from IOCaps and AppInfo endpoints
+    fetchSystemInfo();
+  }
 
-    var hardware = document.getElementById('cfg-hardware');
-    if (hardware) hardware.textContent = config.hardwareVersion || config.codec || '—';
-
-    var samplerate = document.getElementById('cfg-samplerate');
-    if (samplerate) samplerate.textContent = config.sampleRate ? (config.sampleRate + ' Hz') : '—';
-
-    var connstatus = document.getElementById('cfg-connstatus');
-    if (connstatus) {
-      var dot = connstatus.querySelector('.status-footer-dot');
-      if (dot) dot.style.background = '#4caf50';
-      connstatus.lastChild.textContent = ' Connected';
+  async function fetchSystemInfo() {
+    try {
+      var iocaps = await S.queuedFetch('/device?action=getIOCaps');
+      var firmware = document.getElementById('cfg-firmware');
+      if (firmware) firmware.textContent = iocaps.FWV || '—';
+      var hardware = document.getElementById('cfg-hardware');
+      if (hardware) hardware.textContent = iocaps.HWV || '—';
+    } catch (e) {
+      console.warn('Failed to fetch IOCaps:', e);
+    }
+    try {
+      var appInfo = await S.queuedFetch('/device?action=getAppInfo');
+      var picoFw = document.getElementById('cfg-pico-firmware');
+      if (picoFw) picoFw.textContent = appInfo.pico_version || '—';
+    } catch (e) {
+      console.warn('Failed to fetch AppInfo:', e);
     }
   }
 
@@ -286,21 +291,138 @@
       });
     }
 
-    // Firmware Update button
+    // Firmware Update — inline OTA panel in System tab
     var fwUpdate = document.getElementById('cfg-firmware-update');
-    if (fwUpdate) {
-      fwUpdate.addEventListener('click', function() {
-        S.toast('Firmware update not yet implemented', 'warning');
-      });
+    var otaPanel = document.getElementById('ota-panel');
+    var otaInfo = document.getElementById('ota-info');
+    var otaStepSelect = document.getElementById('ota-step-select');
+    var otaStepConfirm = document.getElementById('ota-step-confirm');
+    var otaStepProgress = document.getElementById('ota-step-progress');
+    var otaStepDone = document.getElementById('ota-step-done');
+    var otaFileName = document.getElementById('ota-file-name');
+    var otaProgress = document.getElementById('ota-progress');
+    var otaProgressText = document.getElementById('ota-progress-text');
+    var _otaFile = null;
+    var _otaInfo = null;
+
+    function otaReset() {
+      otaStepSelect.style.display = '';
+      otaStepConfirm.style.display = 'none';
+      otaStepProgress.style.display = 'none';
+      otaStepDone.style.display = 'none';
+      otaFileName.textContent = '';
+      _otaFile = null;
+      otaProgress.value = 0;
     }
 
-    // Factory Reset button
-    var factoryReset = document.getElementById('cfg-factory-reset');
-    if (factoryReset) {
-      factoryReset.addEventListener('click', function() {
-        if (confirm('Are you sure you want to factory reset? This will erase all presets and settings.')) {
-          S.toast('Factory reset not yet implemented', 'warning');
-        }
+    if (fwUpdate && otaPanel) {
+      fwUpdate.addEventListener('click', function() {
+        otaReset();
+        otaPanel.style.display = '';
+        otaInfo.textContent = 'Loading partition info…';
+        fetch('/api/v2/ota')
+          .then(function(r) { return r.json(); })
+          .then(function(info) {
+            _otaInfo = info;
+            var maxMB = (info.maxSize / (1024 * 1024)).toFixed(1);
+            otaInfo.innerHTML = 'Running: <b>' + info.running + '</b> &nbsp;→&nbsp; Target: <b>' + info.next + '</b> (max ' + maxMB + ' MB)';
+          })
+          .catch(function(e) {
+            otaInfo.textContent = 'Could not query OTA status: ' + e.message;
+          });
+      });
+
+      document.getElementById('ota-panel-close').addEventListener('click', function() {
+        otaPanel.style.display = 'none';
+        otaReset();
+      });
+
+      document.getElementById('ota-pick-file').addEventListener('click', function() {
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.bin';
+        input.addEventListener('change', function() {
+          if (!input.files || !input.files[0] || !_otaInfo) return;
+          _otaFile = input.files[0];
+          var maxMB = (_otaInfo.maxSize / (1024*1024)).toFixed(1);
+          var fileMB = (_otaFile.size / (1024*1024)).toFixed(1);
+          if (_otaFile.size > _otaInfo.maxSize) {
+            S.toast('Firmware too large (' + fileMB + ' MB > ' + maxMB + ' MB)', 'danger');
+            _otaFile = null;
+            return;
+          }
+          otaFileName.textContent = _otaFile.name + ' (' + fileMB + ' MB)';
+          otaStepSelect.style.display = 'none';
+          otaStepConfirm.style.display = '';
+        });
+        input.click();
+      });
+
+      document.getElementById('ota-cancel-file').addEventListener('click', function() {
+        otaStepConfirm.style.display = 'none';
+        otaStepSelect.style.display = '';
+        otaFileName.textContent = '';
+        _otaFile = null;
+      });
+
+      document.getElementById('ota-start-upload').addEventListener('click', function() {
+        if (!_otaFile) return;
+        otaStepConfirm.style.display = 'none';
+        otaStepProgress.style.display = '';
+        otaProgress.value = 0;
+        otaProgressText.textContent = 'Uploading… 0%';
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/v2/ota', true);
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+        xhr.upload.addEventListener('progress', function(e) {
+          if (e.lengthComputable) {
+            var pct = Math.round(100 * e.loaded / e.total);
+            otaProgress.value = pct;
+            otaProgressText.textContent = 'Uploading… ' + pct + '%';
+          }
+        });
+
+        xhr.addEventListener('load', function() {
+          if (xhr.status === 200) {
+            otaStepProgress.style.display = 'none';
+            otaStepDone.style.display = '';
+            try { var resp = JSON.parse(xhr.responseText); } catch(e) {}
+            var part = (resp && resp.partition) || 'OTA partition';
+            document.getElementById('ota-done-text').textContent = '✓ Firmware flashed to ' + part;
+          } else {
+            otaStepProgress.style.display = 'none';
+            otaStepSelect.style.display = '';
+            S.toast('OTA failed: ' + xhr.responseText, 'danger', 8000);
+          }
+        });
+
+        xhr.addEventListener('error', function() {
+          otaStepProgress.style.display = 'none';
+          otaStepSelect.style.display = '';
+          S.toast('Upload failed — connection error', 'danger');
+        });
+
+        xhr.addEventListener('timeout', function() {
+          otaStepProgress.style.display = 'none';
+          otaStepSelect.style.display = '';
+          S.toast('Upload timed out', 'danger');
+        });
+
+        xhr.timeout = 300000;
+        xhr.send(_otaFile);
+      });
+
+      document.getElementById('ota-reboot').addEventListener('click', function() {
+        fetch('/api/v2/device', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'reboot' })
+        }).catch(function() {});
+        otaPanel.style.display = 'none';
+        otaReset();
+        S.toast('Rebooting device…', 'primary', 5000);
       });
     }
 

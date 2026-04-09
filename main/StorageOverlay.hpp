@@ -203,6 +203,7 @@ inline void ensureOverlayDirs() {
         "/factory/macros",
         "/factory/patches",
         "/factory/trackdefaults",
+        "/factory/kits",
         "/factory/config",
         "/user",
         "/user/projects",

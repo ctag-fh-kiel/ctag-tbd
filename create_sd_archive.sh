@@ -57,9 +57,9 @@ find . -type f \
 done
 cd - > /dev/null
 
-# Copy samples
+# Copy samples (audio data — lives alongside factory/user in sdcard_image/)
 echo "Copying samples..."
-cp -r "${SOURCE_DIR}/sample_rom/samples" "${TEMP_DIR}/samples"
+cp -r "${SOURCE_DIR}/sdcard_image/samples" "${TEMP_DIR}/samples"
 
 # Create .version placeholder (will be updated with actual hash later)
 echo "placeholder" > "${TEMP_DIR}/.version"
@@ -98,9 +98,9 @@ rm -f "${VERSION_FILE}"
 echo "SD card archive created: ${SD_CARD_ZIP}"
 echo "Hash file created: ${SD_CARD_HASH}"
 echo "Contents:"
-echo "  - /factory (factory default patches, macros, presets)"
+echo "  - /factory (factory default patches, macros, presets, kits)"
 echo "  - /user (user config, overrides, projects)"
 echo "  - /system (system metadata)"
 echo "  - /www (gzipped web files with .gz extension)"
-echo "  - /samples (audio samples)"
+echo "  - /samples (audio data only — WAV files, previews)"
 

@@ -84,6 +84,14 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
     iS1Slice = iS1Bank * 32 + iS1Slice + firstNonWtSlice;
     rompler.params.slice = iS1Slice;
 
+    // Periodic diagnostic
+    static uint32_t _romplerDiagCtr = 0;
+    if ((_romplerDiagCtr++ % 50000) == 0) {
+        printf("DIAG RackRompler: bank=%d slice=%d abs=%d firstNonWt=%lu s1_bank=%d s1_slice=%d\n",
+               iS1Bank, (int)(iS1Slice - iS1Bank * 32 - firstNonWtSlice), iS1Slice, firstNonWtSlice,
+               (int)s1_bank.load(), (int)s1_slice.load());
+    }
+
     MK_FLT_PAR_ABS_NOCV(fS1Speed, s1_speed, 4095.f, 2.f)
     CONSTRAIN(fS1Speed, 0.f, 2.f)
     // playbackSpeed is only set at note trigger to preserve it between frames

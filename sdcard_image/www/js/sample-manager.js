@@ -23,7 +23,7 @@ const SLICES_PER_BANK = 32;
 const NUM_BANKS     = 8;
 const PSRAM_MAX     = 29_360_128;           // ~28 MB
 const UPLOAD_SOFT_LIMIT = 10 * 1024 * 1024; // 10 MB
-const USER_FOLDER   = 'my-samples';         // writable user area
+const USER_FOLDER   = 'user';               // writable user area on SD card
 
 const DEFAULT_BANKS = [
   { name: 'KICK',     color: '#4CAF50' },
@@ -969,7 +969,7 @@ function clearTransferLog(mode = 'finished') {
 function toggleSelectionMode() {
   // Can only use selection mode in user-writable folders
   if (!state.selectionMode && !isInUserFolder()) {
-    toast('Select is only available in the my-samples folder', 'warning');
+    toast('Select is only available in the user folder', 'warning');
     return;
   }
   state.selectionMode = !state.selectionMode;
@@ -1229,7 +1229,7 @@ function renderPoolContent() {
 
   wrap.innerHTML = items.map(item => {
     if (item.type === 'folder') {
-      // Show rename/delete only for sub-folders inside user folder, NOT for my-samples itself
+      // Show rename/delete only for sub-folders inside user folder, NOT for the user root itself
       const folderEditable = isUserWritableChild(item.path);
       const folderActions = folderEditable
         ? `<sl-icon-button name="pencil" label="Rename folder" class="action-hover" data-act="rename-folder" data-folder-path="${esc(item.path)}" data-folder-name="${esc(item.name)}" onclick="event.stopPropagation();"></sl-icon-button>
@@ -3015,11 +3015,7 @@ async function init() {
       status.style.color = 'var(--sl-color-success-600)';
     }
 
-    // Ensure user folder exists and navigate to it by default
-    if (!state.folders.includes(USER_FOLDER)) {
-      try { await createFolderOnDevice(USER_FOLDER); } catch {}
-      await fetchSampleList();
-    }
+    // Default to user folder (samples/user on SD card)
     state.poolPath = USER_FOLDER;
   } catch (e) {
     console.error('Initial fetch failed:', e);

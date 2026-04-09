@@ -800,13 +800,13 @@ void SoundProcessorManager::KillAudioTask() {
 }
 
 void SoundProcessorManager::DisablePluginProcessing() {
-    // xSemaphoreTake(processMutex, portMAX_DELAY);
+    xSemaphoreTake(processMutex, portMAX_DELAY);
     ledBlink = 42;
 }
 
 void SoundProcessorManager::EnablePluginProcessing() {
     ledBlink = 5;
-    // xSemaphoreGive(processMutex);
+    xSemaphoreGive(processMutex);
 }
 
 void SoundProcessorManager::RefreshSampleRom() {
@@ -816,9 +816,9 @@ void SoundProcessorManager::RefreshSampleRom() {
 
 void SoundProcessorManager::SetTrackMachine(const int trackIndex, const string &synthID, float volumeMultiplier) {
     if (sp[0] != nullptr) {
-        // xSemaphoreTake(processMutex, portMAX_DELAY);
+        xSemaphoreTake(processMutex, portMAX_DELAY);
         sp[0]->setTrackMachine(trackIndex, synthID, volumeMultiplier);
-        // xSemaphoreGive(processMutex);
+        xSemaphoreGive(processMutex);
     }
 }
 

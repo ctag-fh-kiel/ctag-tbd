@@ -38,8 +38,8 @@ int main(int ac, char **av) {
     try {
         desc.add_options()
                 ("help,h", "this help message")
-                ("srom,s", po::value<string>(&sromFile)->default_value("../../sample_rom/sample-rom.tbd"),
-                 "file for sample rom emulation, default ../../sample_rom/sample-rom.tbd")
+                ("srom,s", po::value<string>(&sromFile)->default_value("../../tools/sample-tools/sample-rom.tbd"),
+                 "file for sample rom emulation, default ../../tools/sample-tools/sample-rom.tbd")
                 ("list,l", po::bool_switch(&bListSoundCards)->default_value(false), "list sound cards")
                 ("device,d", po::value<int>(&iDeviceNum)->default_value(0), "sound card device id, default 0")
                 ("output,o", po::bool_switch(&bOutputOnly)->default_value(false),

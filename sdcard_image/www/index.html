@@ -2633,38 +2633,64 @@
       <div class="config-tab-panel" id="config-system">
         <div class="config-section">
           <div class="config-section-title">System Information</div>
-          <div class="config-section-desc">View system information and perform maintenance</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.5rem;">
             <div>
-              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Firmware Version</div>
+              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">P4 Firmware</div>
               <div id="cfg-firmware" style="font-size:0.92rem;font-weight:700;font-family:var(--sl-font-mono);">—</div>
             </div>
             <div>
-              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Hardware Version</div>
+              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Pico Firmware</div>
+              <div id="cfg-pico-firmware" style="font-size:0.92rem;font-weight:700;font-family:var(--sl-font-mono);">—</div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Hardware</div>
               <div id="cfg-hardware" style="font-size:0.92rem;font-weight:700;font-family:var(--sl-font-mono);">—</div>
-            </div>
-            <div>
-              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Sample Rate</div>
-              <div id="cfg-samplerate" style="font-size:0.92rem;font-weight:700;font-family:var(--sl-font-mono);">—</div>
-            </div>
-            <div>
-              <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);margin-bottom:0.15rem;">Connection Status</div>
-              <div id="cfg-connstatus" style="font-size:0.92rem;font-weight:700;display:flex;align-items:center;gap:0.3rem;">
-                <span class="status-footer-dot"></span> Connected
-              </div>
             </div>
           </div>
         </div>
         <div class="config-section">
           <div class="config-section-title">Maintenance</div>
-          <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
+          <div style="display:flex;gap:0.75rem;margin-top:0.5rem;" id="cfg-maintenance-buttons">
             <sl-button variant="default" style="flex:1;" id="cfg-firmware-update">Firmware Update</sl-button>
-            <sl-button variant="danger" style="flex:1;" id="cfg-factory-reset">Factory Reset</sl-button>
+          </div>
+          <!-- Inline OTA panel (hidden by default) -->
+          <div id="ota-panel" style="display:none;margin-top:0.75rem;">
+            <div style="background:var(--sl-color-neutral-100);border-radius:var(--sl-border-radius-medium);padding:0.85rem 1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                <span style="font-size:0.82rem;font-weight:600;text-transform:uppercase;color:var(--sl-color-neutral-500);">Firmware OTA Update</span>
+                <sl-icon-button name="x-lg" label="Close" id="ota-panel-close" style="font-size:0.85rem;"></sl-icon-button>
+              </div>
+              <div id="ota-info" style="font-size:0.85rem;margin-bottom:0.65rem;font-family:var(--sl-font-mono);color:var(--sl-color-neutral-700);">
+                Loading partition info…
+              </div>
+              <!-- Step 1: file select -->
+              <div id="ota-step-select" style="display:flex;gap:0.5rem;align-items:center;">
+                <sl-button variant="primary" size="small" id="ota-pick-file"><sl-icon slot="prefix" name="upload"></sl-icon> Select .bin file</sl-button>
+                <span id="ota-file-name" style="font-size:0.82rem;color:var(--sl-color-neutral-500);"></span>
+              </div>
+              <!-- Step 2: confirm + upload -->
+              <div id="ota-step-confirm" style="display:none;margin-top:0.5rem;">
+                <div style="display:flex;gap:0.5rem;align-items:center;">
+                  <sl-button variant="warning" size="small" id="ota-start-upload">Flash Firmware</sl-button>
+                  <sl-button variant="default" size="small" id="ota-cancel-file">Cancel</sl-button>
+                </div>
+              </div>
+              <!-- Step 3: progress -->
+              <div id="ota-step-progress" style="display:none;margin-top:0.5rem;">
+                <sl-progress-bar id="ota-progress" value="0" style="--height:0.6rem;"></sl-progress-bar>
+                <div id="ota-progress-text" style="font-size:0.78rem;color:var(--sl-color-neutral-500);margin-top:0.25rem;">Uploading… 0%</div>
+              </div>
+              <!-- Step 4: done -->
+              <div id="ota-step-done" style="display:none;margin-top:0.5rem;">
+                <div id="ota-done-text" style="font-size:0.85rem;font-weight:600;color:var(--sl-color-success-600);margin-bottom:0.5rem;">✓ Firmware flashed successfully</div>
+                <sl-button variant="primary" size="small" id="ota-reboot">Reboot Now</sl-button>
+              </div>
+            </div>
           </div>
         </div>
         <div class="config-section">
-          <div class="config-section-title">Backup &amp; Restore</div>
-          <div class="config-section-desc">Use the TBD web interface to backup and restore your device configuration. This includes all presets, favorites, and settings.</div>
+          <div class="config-section-title">Settings Backup &amp; Restore</div>
+          <div class="config-section-desc">Backup and restore device settings, plugin presets, and favorites. Sample files and projects are stored on the SD card.</div>
           <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
             <sl-button variant="default" style="flex:1;" id="cfg-backup"><sl-icon slot="prefix" name="download"></sl-icon> Download Backup</sl-button>
             <sl-button variant="default" style="flex:1;" id="cfg-restore"><sl-icon slot="prefix" name="upload"></sl-icon> Upload Backup</sl-button>

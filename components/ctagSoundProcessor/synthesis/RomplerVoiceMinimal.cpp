@@ -47,10 +47,18 @@ namespace CTAG::SYNTHESIS {
         sliceLockedStartOffset = params.startOffsetRelative;
 
         if (!sampleRom.HasSlice(slice)) {
+            static uint32_t _hasSliceDiagCtr = 0;
+            if ((_hasSliceDiagCtr++ % 50000) == 0)
+                printf("DIAG RomplerVoice: HasSlice(%lu) = false\n", (unsigned long)slice);
             memset(out, 0, size * sizeof(float));
             return;
         }
         uint32_t sliceLength = sampleRom.GetSliceSize(slice);
+        if (sliceLength == 0) {
+            static uint32_t _sliceLenDiagCtr = 0;
+            if ((_sliceLenDiagCtr++ % 50000) == 0)
+                printf("DIAG RomplerVoice: slice=%lu sliceLength=0 (no data)\n", (unsigned long)slice);
+        }
 
         // bit reduction
         int16_t brr_mask = bit_reduction_masks[14 - params.bitReduction];

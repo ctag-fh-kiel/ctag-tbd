@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Apply ESP-IDF patches (idempotent — safe to re-run)
-# Patches are checked into patches/ and applied to $IDF_PATH at configure time.
+# Patches are checked into idf-patches/ and applied to $IDF_PATH at configure time.
 # git apply --check verifies the patch hasn't been applied yet.
-file(GLOB IDF_PATCHES "${CMAKE_SOURCE_DIR}/patches/*.patch")
+file(GLOB IDF_PATCHES "${CMAKE_SOURCE_DIR}/idf-patches/*.patch")
 foreach(PATCH_FILE ${IDF_PATCHES})
     execute_process(
         COMMAND git apply --check "${PATCH_FILE}"
