@@ -310,6 +310,16 @@
     .reboot-banner .rb-title { font-size: 0.9rem; font-weight: 700; color: hsl(32.1 94.6% 43.7%); margin-bottom: 0.25rem; }
     .reboot-banner .rb-desc { font-size: 0.78rem; color: var(--fg2); margin-bottom: 0.75rem; }
 
+    /* Backup section */
+    .backup-section { padding: 0.75rem 0; }
+    .backup-desc { font-size: 0.78rem; color: var(--fg2); margin: 0 0 0.75rem 0; }
+    .backup-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .backup-actions label { cursor: pointer; }
+    .backup-progress { margin-top: 0.75rem; }
+    .backup-status { font-size: 0.78rem; color: var(--fg2); display: inline-block; margin-top: 0.25rem; }
+    .backup-status.success { color: var(--success); font-weight: 600; }
+    .backup-status.error { color: hsl(0 70% 55%); font-weight: 600; }
+
     /* Manual fallback — hidden by default */
     .manual-toggle {
       font-size: 0.78rem; color: var(--fg3); cursor: pointer;
@@ -542,6 +552,29 @@
     <div class="rb-title">&#9888; Reboot Required</div>
     <div class="rb-desc" id="rb-desc">Firmware has been staged. Reboot the device to apply changes.</div>
     <button class="btn btn-primary" id="reboot-btn">Reboot Now</button>
+  </div>
+
+  <!-- ═══ Settings Backup ═══ -->
+  <div class="section-header collapsed" id="section-backup-header">
+    <span class="section-chevron">&#9660;</span>
+    <span class="section-title">Settings Backup &amp; Restore</span>
+  </div>
+  <div class="section-body collapsed" id="section-backup-body" style="max-height:500px;">
+    <div class="backup-section">
+      <p class="backup-desc">Back up your settings, presets, projects, macros, kits, and track defaults.
+        Audio samples are not included &mdash; use an SD card reader for full backup.</p>
+      <div class="backup-actions">
+        <button class="btn btn-secondary" id="backup-settings-btn">&#128229; Download Backup</button>
+        <label class="btn btn-secondary" id="restore-settings-label">
+          &#128228; Restore Backup
+          <input type="file" id="restore-settings-input" accept=".json" style="display:none;">
+        </label>
+      </div>
+      <div class="backup-progress" id="backup-progress" style="display:none;">
+        <div class="progress-bar"><div class="progress-fill" id="backup-progress-fill"></div></div>
+        <span class="backup-status" id="backup-status"></span>
+      </div>
+    </div>
   </div>
 
   <!-- ═══ Advanced ═══ -->
@@ -1911,6 +1944,22 @@
   // Update All — orchestrated sequential update flow (WebUI → P4 → Pico)
   document.getElementById('update-all-btn').addEventListener('click', async function() {
     var btn = this;
+
+    // Pre-update backup prompt
+    var choice = confirm(
+      'Before updating, would you like to download a settings backup?\n\n' +
+      'OK = Download backup first, then update\n' +
+      'Cancel = Skip backup, update now'
+    );
+    if (choice) {
+      document.getElementById('backup-settings-btn').click();
+      // Wait a moment for user to see the backup starting, then proceed
+      await new Promise(function(r) { setTimeout(r, 500); });
+      if (!confirm('Backup started. Continue with the update now?')) {
+        return;
+      }
+    }
+
     btn.disabled = true;
     btn.textContent = 'Updating...';
 
@@ -1964,6 +2013,180 @@
       // Expected — device disconnects immediately
     }
     document.getElementById('rb-desc').textContent = 'Device is rebooting... Refresh this page in ~15 seconds.';
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // ══ Settings Backup & Restore ═════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+
+  var backupProgress     = document.getElementById('backup-progress');
+  var backupProgressFill = document.getElementById('backup-progress-fill');
+  var backupStatusEl     = document.getElementById('backup-status');
+
+  function backupStatus(msg, cls) {
+    backupStatusEl.textContent = msg;
+    backupStatusEl.className = 'backup-status' + (cls ? ' ' + cls : '');
+  }
+
+  // ── Backup: download /user/ tree as JSON ──
+  document.getElementById('backup-settings-btn').addEventListener('click', async function() {
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = '\u23F3 Backing up\u2026';
+    backupProgress.style.display = '';
+    backupProgressFill.style.width = '0%';
+    backupStatus('Listing files\u2026');
+
+    try {
+      // 1. List all user files
+      var listResp = await fetch('/api/v2/storage?action=list&path=user');
+      if (!listResp.ok) throw new Error('Failed to list user files');
+      var listing = await listResp.json();
+
+      // Flatten file list (recursive listing returns nested entries)
+      var files = [];
+      function collectFiles(entries, prefix) {
+        if (!entries) return;
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i];
+          var p = prefix ? prefix + '/' + e.name : e.name;
+          if (e.type === 'dir' && e.children) {
+            collectFiles(e.children, p);
+          } else if (e.type === 'file') {
+            files.push({ path: 'user/' + p, size: e.size || 0 });
+          }
+        }
+      }
+      collectFiles(listing.entries || listing, '');
+
+      if (files.length === 0) {
+        backupStatus('No user files found.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '&#128229; Download Backup';
+        return;
+      }
+
+      // 2. Download each file and encode as base64
+      var backup = {
+        format: 'tbd-settings-backup',
+        version: 1,
+        date: new Date().toISOString(),
+        deviceFirmware: firmwareVersion || 'unknown',
+        files: []
+      };
+
+      for (var fi = 0; fi < files.length; fi++) {
+        var pct = Math.round(((fi + 1) / files.length) * 100);
+        backupProgressFill.style.width = pct + '%';
+        backupStatus('Downloading ' + (fi + 1) + '/' + files.length + ': ' + files[fi].path);
+
+        try {
+          var fileResp = await fetch('/api/v2/storage?action=file&path=' + encodeURIComponent(files[fi].path));
+          if (!fileResp.ok) continue;  // skip missing/unreadable files
+          var blob = await fileResp.blob();
+          var b64 = await blobToBase64(blob);
+          backup.files.push({ path: files[fi].path, data: b64, size: blob.size });
+        } catch (fe) {
+          // Skip individual file errors
+        }
+      }
+
+      // 3. Trigger download
+      var json = JSON.stringify(backup, null, 2);
+      var a = document.createElement('a');
+      var dateStr = new Date().toISOString().slice(0, 10);
+      a.download = 'tbd-backup-' + dateStr + '.json';
+      a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+      a.click();
+      URL.revokeObjectURL(a.href);
+
+      backupProgressFill.style.width = '100%';
+      backupStatus('\u2705 Backup complete \u2014 ' + backup.files.length + ' files (' +
+        formatSize(json.length) + ')', 'success');
+
+    } catch (e) {
+      backupStatus('Backup failed: ' + e.message, 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '&#128229; Download Backup';
+  });
+
+  function blobToBase64(blob) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onloadend = function() {
+        // Strip "data:...;base64," prefix
+        resolve(reader.result.split(',')[1] || '');
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function base64ToBlob(b64) {
+    var raw = atob(b64);
+    var arr = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+    return new Blob([arr]);
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  // ── Restore: upload JSON backup ──
+  document.getElementById('restore-settings-input').addEventListener('change', async function() {
+    var file = this.files[0];
+    if (!file) return;
+    this.value = '';  // allow re-selecting same file
+
+    if (!confirm('This will overwrite your current settings, presets, and projects with the backup.\n\nContinue?')) return;
+
+    backupProgress.style.display = '';
+    backupProgressFill.style.width = '0%';
+    backupStatus('Reading backup file\u2026');
+
+    try {
+      var text = await file.text();
+      var backup = JSON.parse(text);
+
+      if (backup.format !== 'tbd-settings-backup' || !backup.files || !backup.files.length) {
+        backupStatus('Invalid backup file format.', 'error');
+        return;
+      }
+
+      var ok = 0, fail = 0;
+      for (var i = 0; i < backup.files.length; i++) {
+        var f = backup.files[i];
+        var pct = Math.round(((i + 1) / backup.files.length) * 100);
+        backupProgressFill.style.width = pct + '%';
+        backupStatus('Restoring ' + (i + 1) + '/' + backup.files.length + ': ' + f.path);
+
+        try {
+          var blob = base64ToBlob(f.data);
+          // uploadconfig writes to /sdcard/user/ — strip "user/" prefix
+          var relPath = f.path.replace(/^user\//, '');
+          var resp = await fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(relPath), {
+            method: 'POST',
+            body: blob
+          });
+          if (resp.ok) ok++; else fail++;
+        } catch (ue) {
+          fail++;
+        }
+      }
+
+      backupProgressFill.style.width = '100%';
+      var msg = '\u2705 Restore complete \u2014 ' + ok + ' files restored';
+      if (fail > 0) msg += ', ' + fail + ' failed';
+      backupStatus(msg, fail > 0 ? 'error' : 'success');
+
+    } catch (e) {
+      backupStatus('Restore failed: ' + e.message, 'error');
+    }
   });
 
   // ═══════════════════════════════════════════════════════════════
