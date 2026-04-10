@@ -1170,6 +1170,99 @@ static esp_err_t handle_uploadsystem(httpd_req_t *req) {
     return send_json(req, resp);
 }
 
+// ─── POST /api/v2/storage?action=uploadfactory ───────────────
+//
+// Query params: ?path=presets/mypreset.json  (relative to /sdcard/factory/)
+// Body: raw file data (binary)
+//
+static esp_err_t handle_uploadfactory(httpd_req_t *req) {
+    ESP_LOGI(TAG, "handle_uploadfactory, content_len=%d", req->content_len);
+
+    size_t qlen = httpd_req_get_url_query_len(req);
+    char query_buf[256] = {0};
+    char pathVal[128] = {0};
+
+    if (qlen > 0) {
+        httpd_req_get_url_query_str(req, query_buf, sizeof(query_buf));
+        char raw[128];
+        if (httpd_query_key_value(query_buf, "path", raw, sizeof(raw)) == ESP_OK) {
+            url_decode(pathVal, raw, sizeof(pathVal));
+        } else {
+            return send_error(req, 400, "Missing path parameter");
+        }
+    } else {
+        return send_error(req, 400, "Missing query parameters");
+    }
+
+    // Path traversal protection
+    if (strstr(pathVal, "..") != nullptr) {
+        return send_error(req, 400, "Invalid path");
+    }
+
+    // Construct full path and ensure parent directories exist
+    std::string filePath = std::string("/sdcard/factory/") + pathVal;
+    std::string dirPath = filePath.substr(0, filePath.find_last_of('/'));
+    {
+        std::string tmp;
+        for (size_t i = 0; i < dirPath.size(); i++) {
+            tmp += dirPath[i];
+            if (dirPath[i] == '/' && i > 0) {
+                mkdir(tmp.c_str(), 0755);
+            }
+        }
+        mkdir(dirPath.c_str(), 0755);
+    }
+
+    CTAG::STORAGE::lockStorage();
+    FILE *fp = fopen(filePath.c_str(), "w");
+    if (!fp) {
+        CTAG::STORAGE::unlockStorage();
+        ESP_LOGE(TAG, "Cannot create file: %s", filePath.c_str());
+        return send_error(req, 500, "Cannot create file");
+    }
+
+    char *chunk = (char *)heap_caps_malloc(CHUNK_BUF_SIZE, MALLOC_CAP_SPIRAM);
+    if (!chunk) {
+        fclose(fp);
+        CTAG::STORAGE::unlockStorage();
+        return send_error(req, 500, "Out of memory");
+    }
+
+    int remaining = req->content_len;
+    int total_written = 0;
+    while (remaining > 0) {
+        int toRead = remaining > CHUNK_BUF_SIZE ? CHUNK_BUF_SIZE : remaining;
+        int recv = httpd_req_recv(req, chunk, toRead);
+        if (recv <= 0) {
+            if (recv == HTTPD_SOCK_ERR_TIMEOUT) {
+                continue;
+            }
+            ESP_LOGE(TAG, "Upload recv error");
+            fclose(fp);
+            CTAG::STORAGE::unlockStorage();
+            heap_caps_free(chunk);
+            remove(filePath.c_str());
+            return send_error(req, 500, "Upload receive error");
+        }
+        fwrite(chunk, 1, recv, fp);
+        remaining -= recv;
+        total_written += recv;
+    }
+
+    fflush(fp);
+    fclose(fp);
+    CTAG::STORAGE::unlockStorage();
+    heap_caps_free(chunk);
+
+    ESP_LOGI(TAG, "Uploaded factory file %s (%d bytes)", filePath.c_str(), total_written);
+
+    char resp[256];
+    snprintf(resp, sizeof(resp),
+             "{\"ok\":true,\"path\":\"%s\",\"size\":%d}",
+             pathVal, total_written);
+    return send_json(req, resp);
+}
+
 // ─── POST /api/v2/samples?action=manage ──────────────────────
 //
 // Body: JSON with { "action": "rename"|"delete"|"saveKit"|"createKit"|"createFolder", ... }
@@ -1663,6 +1756,7 @@ static esp_err_t handle_reload(httpd_req_t *req) {
 //  POST ?action=uploadconfig      → config file upload (user overlay)
 //  POST ?action=uploadwww         → www file upload
 //  POST ?action=uploadsystem      → system file upload
+//  POST ?action=uploadfactory     → factory file upload
 //  POST ?action=manage            → JSON body: rename/delete/kit ops
 //  POST ?action=mkdir&path=X      → create directory
 //  POST ?action=delete&path=X     → delete file/dir
@@ -2137,6 +2231,10 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
     if (strcmp(action, "uploadsystem") == 0) {
         free(query);
         return handle_uploadsystem(req);
+    }
+    if (strcmp(action, "uploadfactory") == 0) {
+        free(query);
+        return handle_uploadfactory(req);
     }
     if (strcmp(action, "manage") == 0) {
         free(query);

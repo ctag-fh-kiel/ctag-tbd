@@ -275,7 +275,7 @@
 
     /* Version summary card */
     .version-summary {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;
       margin-bottom: 1.25rem;
     }
     .vs-card {
@@ -325,8 +325,24 @@
     .manual-area { display: none; margin-top: 0.75rem; }
     .manual-area.open { display: block; }
 
+    /* Channel selector */
+    .channel-bar {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-bottom: 0.75rem; font-size: 0.75rem; color: var(--fg3);
+    }
+    .channel-bar select {
+      font-size: 0.75rem; font-family: inherit;
+      padding: 0.2rem 0.4rem; border: 1px solid var(--border);
+      border-radius: var(--radius); background: var(--bg2); color: var(--fg);
+      cursor: pointer;
+    }
+    .channel-bar .channel-note {
+      font-size: 0.7rem; color: var(--warn); font-weight: 500;
+      display: none;
+    }
+
     @media (max-width: 600px) {
-      .version-summary { grid-template-columns: 1fr; }
+      .version-summary { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -339,6 +355,16 @@
   </div>
 </div>
 <div class="container">
+
+  <!-- ═══ Channel Selector ═══ -->
+  <div class="channel-bar">
+    <label for="channel-select">Channel:</label>
+    <select id="channel-select">
+      <option value="stable">Stable</option>
+      <option value="staging">Staging</option>
+    </select>
+    <span class="channel-note" id="channel-note">&#9888; Non-stable channel &mdash; may contain untested builds</span>
+  </div>
 
   <!-- ═══ Version Summary ═══ -->
   <div class="version-summary">
@@ -356,6 +382,11 @@
       <div class="vs-label">Pico Firmware</div>
       <div class="vs-version" id="vs-pico-version">&mdash;</div>
       <div class="vs-status checking" id="vs-pico-status">checking&hellip;</div>
+    </div>
+    <div class="vs-card">
+      <div class="vs-label">Factory Data</div>
+      <div class="vs-version" id="vs-factory-version">&mdash;</div>
+      <div class="vs-status checking" id="vs-factory-status">checking&hellip;</div>
     </div>
   </div>
 
@@ -554,6 +585,8 @@
   const vsP4Status     = document.getElementById('vs-p4-status');
   const vsPicoVersion  = document.getElementById('vs-pico-version');
   const vsPicoStatus   = document.getElementById('vs-pico-status');
+  const vsFactoryVersion = document.getElementById('vs-factory-version');
+  const vsFactoryStatus  = document.getElementById('vs-factory-status');
   const webuiBadge     = document.getElementById('webui-badge');
   const p4Badge        = document.getElementById('p4-badge');
   const picoBadge      = document.getElementById('pico-badge');
@@ -562,6 +595,30 @@
 
   const UPDATE_CHECK_URL = 'https://dadamachines.github.io/dada-tbd-firmware/webui-updates/latest.json';
 
+  var CDN_BASE = 'https://dadamachines.github.io/dada-tbd-firmware/';
+  var currentChannel = localStorage.getItem('tbd-update-channel') || 'stable';
+
+  function getReleasesUrl() { return CDN_BASE + currentChannel + '/releases.json'; }
+
+  // ── Channel selector ──
+  var channelSelect = document.getElementById('channel-select');
+  var channelNote = document.getElementById('channel-note');
+  channelSelect.value = currentChannel;
+  if (currentChannel !== 'stable') channelNote.style.display = '';
+
+  channelSelect.addEventListener('change', function() {
+    currentChannel = this.value;
+    localStorage.setItem('tbd-update-channel', currentChannel);
+    channelNote.style.display = currentChannel !== 'stable' ? '' : 'none';
+    // Re-check all updates with new channel
+    pendingUpdates = { webui: null, p4: null, pico: null };
+    refreshUpdateAll();
+    checkOnlineUpdate();
+    checkP4Update();
+    checkPicoUpdate();
+  });
+
+
   let manifest = null;
   let zipFiles = {};  // name → { compression, data }
   let installedVersion = null;
@@ -569,6 +626,7 @@
   let hardwareLabel = null;
   let needsReboot = false;      // set true after P4 OTA or Pico staging
   let latestCdnData = null;     // cached releases.json
+  let factoryDataVersion = null; // from /factory/version.json
 
   // ── Track which updates are available for "Update All" ──
   var pendingUpdates = { webui: null, p4: null, pico: null };
@@ -611,6 +669,28 @@
       vsP4Status.textContent = 'offline';
       vsP4Status.className = 'vs-status offline';
       document.getElementById('p4-current-version').textContent = 'offline';
+    }
+  }
+
+  // ── Load factory data version ──
+  async function loadFactoryVersion() {
+    try {
+      var resp = await fetch('/api/v2/storage?action=file&path=factory/version.json');
+      if (resp.ok) {
+        var data = await resp.json();
+        factoryDataVersion = data.dataVersion || null;
+        vsFactoryVersion.textContent = factoryDataVersion || '?';
+        vsFactoryStatus.textContent = 'loaded';
+        vsFactoryStatus.className = 'vs-status current';
+      } else {
+        vsFactoryVersion.textContent = '?';
+        vsFactoryStatus.textContent = 'not found';
+        vsFactoryStatus.className = 'vs-status offline';
+      }
+    } catch (e) {
+      vsFactoryVersion.textContent = '?';
+      vsFactoryStatus.textContent = 'offline';
+      vsFactoryStatus.className = 'vs-status offline';
     }
   }
 
@@ -750,12 +830,21 @@
         webuiBadge.textContent = 'Update Available';
         webuiBadge.className = 'section-badge update-available';
         pendingUpdates.webui = latest;
+        // Factory data may also be updated when WebUI is updated
+        if (factoryDataVersion) {
+          vsFactoryStatus.textContent = 'update included';
+          vsFactoryStatus.className = 'vs-status outdated';
+        }
       } else {
         vsWebuiStatus.textContent = 'up to date';
         vsWebuiStatus.className = 'vs-status current';
         webuiBadge.textContent = 'Up to Date';
         webuiBadge.className = 'section-badge up-to-date';
         pendingUpdates.webui = null;
+        if (factoryDataVersion) {
+          vsFactoryStatus.textContent = 'up to date';
+          vsFactoryStatus.className = 'vs-status current';
+        }
       }
       refreshUpdateAll();
 
@@ -1247,9 +1336,6 @@
   // ══ Pico Firmware Update ══════════════════════════════════════
   // ═══════════════════════════════════════════════════════════════
 
-  var CDN_BASE = 'https://dadamachines.github.io/dada-tbd-firmware/';
-  var RELEASES_URL = CDN_BASE + 'stable/releases.json';
-
   var picoVersionEl    = document.getElementById('pico-current-version');
   var picoBanner       = document.getElementById('pico-banner');
   var picoContent      = document.getElementById('pico-content');
@@ -1294,13 +1380,15 @@
 
   async function checkPicoUpdate() {
     try {
-      var resp = await fetch(RELEASES_URL, { cache: 'no-cache' });
+      var resp = await fetch(getReleasesUrl(), { cache: 'no-cache' });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       var releases = await resp.json();
 
       var cdnPicoVersion = releases.picoVersion || null;
       if (!cdnPicoVersion) {
         picoContent.innerHTML = '<span class="checking">No Pico firmware version info on CDN.</span>';
+        vsPicoStatus.textContent = 'no CDN info';
+        vsPicoStatus.className = 'vs-status offline';
         return;
       }
 
@@ -1314,7 +1402,7 @@
       }
       // Fallback: construct URL from picoVersion when picoBin missing (CI race condition)
       if (!picoBinUrl && cdnPicoVersion) {
-        picoBinUrl = CDN_BASE + 'stable/pico/dada-tbd-16-' + cdnPicoVersion + '-pico.bin';
+        picoBinUrl = CDN_BASE + currentChannel + '/pico/dada-tbd-16-' + cdnPicoVersion + '-pico.bin';
       }
 
       var stripped = currentPicoVersion ? currentPicoVersion.replace(/^v/, '') : '0.0.0';
@@ -1507,7 +1595,7 @@
 
   async function checkP4Update() {
     try {
-      var resp = await fetch(RELEASES_URL, { cache: 'no-cache' });
+      var resp = await fetch(getReleasesUrl(), { cache: 'no-cache' });
       if (!resp.ok) throw new Error('HTTP ' + resp.status);
       var releases = await resp.json();
       latestCdnData = releases;
@@ -1515,6 +1603,8 @@
       var cdnP4Version = releases.p4Version || null;
       if (!cdnP4Version) {
         p4Content.innerHTML = '<span class="checking">No P4 firmware version info on CDN.</span>';
+        vsP4Status.textContent = 'no CDN info';
+        vsP4Status.className = 'vs-status offline';
         return;
       }
 
@@ -1527,7 +1617,7 @@
         }
       }
       if (!p4BinUrl && cdnP4Version) {
-        p4BinUrl = CDN_BASE + 'stable/p4/dada-tbd-16-' + cdnP4Version + '-unified.bin';
+        p4BinUrl = CDN_BASE + currentChannel + '/p4/dada-tbd-16-' + cdnP4Version + '-unified.bin';
       }
 
       var fwStripped = firmwareVersion ? firmwareVersion.replace(/^v/, '') : '0.0.0';
@@ -1883,7 +1973,8 @@
   Promise.all([
     loadCurrentVersion(),
     loadFirmwareVersion(),
-    loadPicoVersion()
+    loadPicoVersion(),
+    loadFactoryVersion()
   ]).then(function() {
     checkOnlineUpdate();
     checkP4Update();
