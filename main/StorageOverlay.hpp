@@ -7,7 +7,6 @@ The SD card is organized into zones:
   /sdcard/factory/  — immutable factory defaults (from SD card image)
   /sdcard/user/     — user-created/modified data (the backup target)
   /sdcard/system/   — runtime caches (ephemeral, rebuilt at boot)
-  /sdcard/data/     — legacy flat layout (auto-migrated on first boot)
 
 Overlay resolution: check /user/ first, then /factory/.
 Writes always go to /user/.
@@ -49,7 +48,6 @@ inline void unlockStorage() { xSemaphoreGive(storageMutex()); }
 inline std::string factoryPath() { return RESOURCES::sdcardRoot + "/factory"; }
 inline std::string userPath()    { return RESOURCES::sdcardRoot + "/user"; }
 inline std::string systemPath()  { return RESOURCES::sdcardRoot + "/system"; }
-inline std::string legacyPath()  { return RESOURCES::sdcardRoot + "/data"; }
 
 // Subdirectory names (shared between factory/ and user/ zones)
 static constexpr const char *DIR_PRESETS       = "presets";      // was macrosoundpresets/
@@ -59,11 +57,6 @@ static constexpr const char *DIR_TRACKDEFAULTS = "trackdefaults";
 static constexpr const char *DIR_PROJECTS      = "projects";
 static constexpr const char *DIR_KITS          = "kits";
 static constexpr const char *DIR_CONFIG        = "config";
-
-// Legacy directory names (for migration detection)
-static constexpr const char *LEGACY_PRESETS = "macrosoundpresets";
-static constexpr const char *LEGACY_MACROS  = "macrodefinitions";
-static constexpr const char *LEGACY_PATCHES = "sp";
 
 /**
  * Check if a file or directory exists.
@@ -186,15 +179,7 @@ inline bool hasOverlayLayout() {
 }
 
 /**
- * Check if the SD card has the legacy flat layout (/data/).
- */
-inline bool hasLegacyLayout() {
-    return isDirectory(legacyPath()) && !hasOverlayLayout();
-}
-
-/**
  * Create the directory structure for the overlay layout.
- * Does not move any files — that's done by migrateFromLegacy().
  */
 inline void ensureOverlayDirs() {
     const char *dirs[] = {
@@ -259,125 +244,12 @@ inline bool copyFile(const std::string &src, const std::string &dst) {
 }
 
 /**
- * Copy all files from a source directory to a destination directory.
- * Does not recurse into subdirectories.
- * Returns count of files copied.
- */
-inline int copyDirFiles(const std::string &srcDir, const std::string &dstDir) {
-    DIR *d = opendir(srcDir.c_str());
-    if (!d) return 0;
-
-    int count = 0;
-    struct dirent *entry;
-    while ((entry = readdir(d)) != nullptr) {
-        if (entry->d_name[0] == '.') continue;
-        std::string srcFile = srcDir + "/" + entry->d_name;
-        // Skip subdirectories
-        struct stat st;
-        if (stat(srcFile.c_str(), &st) != 0 || S_ISDIR(st.st_mode)) continue;
-
-        std::string dstFile = dstDir + "/" + entry->d_name;
-        if (copyFile(srcFile, dstFile)) {
-            count++;
-        } else {
-            ESP_LOGW(OVERLAY_TAG, "Failed to copy: %s -> %s", srcFile.c_str(), dstFile.c_str());
-        }
-    }
-    closedir(d);
-    return count;
-}
-
-/**
- * Migrate from legacy /data/ layout to overlay /factory/+/user/ layout.
- *
- * Copies factory data files into /factory/ subdirectories.
- * User-modified files (favs.json, spm-config.json) go to /user/config/.
- * The original /data/ directory is left intact (not deleted).
- *
- * Call this once at boot if hasLegacyLayout() returns true.
- */
-inline void migrateFromLegacy() {
-    ESP_LOGI(OVERLAY_TAG, "Migrating from legacy /data/ layout to overlay layout...");
-
-    ensureOverlayDirs();
-
-    std::string legacy = legacyPath();
-
-    // Move preset files: /data/macrosoundpresets/ → /factory/presets/
-    copyDirFiles(legacy + "/" + LEGACY_PRESETS, factoryPath() + "/" + DIR_PRESETS);
-
-    // Move macro definition files: /data/macrodefinitions/ → /factory/macros/
-    copyDirFiles(legacy + "/" + LEGACY_MACROS, factoryPath() + "/" + DIR_MACROS);
-
-    // Move processor plugin files: /data/sp/ → /factory/plugins/
-    copyDirFiles(legacy + "/" + LEGACY_PATCHES, factoryPath() + "/" + DIR_PLUGINS);
-
-    // Move singleton config files to their new locations
-    // synthdefinitions.json → /factory/synthdefinitions.json
-    std::string synthDef = legacy + "/synthdefinitions.json";
-    if (fileExists(synthDef)) {
-        copyFile(synthDef, factoryPath() + "/synthdefinitions.json");
-    }
-
-    // trackdefaults.json → /factory/trackdefaults/default.json
-    std::string trackDef = legacy + "/trackdefaults.json";
-    if (fileExists(trackDef)) {
-        copyFile(trackDef, factoryPath() + "/" + DIR_TRACKDEFAULTS + "/default.json");
-    }
-
-    // User-owned files → /user/config/
-    std::string favs = legacy + "/favs.json";
-    if (fileExists(favs)) {
-        copyFile(favs, userPath() + "/" + DIR_CONFIG + "/favorites.json");
-    }
-
-    std::string spmConfig = legacy + "/spm-config.json";
-    if (fileExists(spmConfig)) {
-        copyFile(spmConfig, userPath() + "/" + DIR_CONFIG + "/device.json");
-    }
-
-    // webui-version.json → /system/ (ephemeral)
-    std::string webuiVer = legacy + "/webui-version.json";
-    if (fileExists(webuiVer)) {
-        copyFile(webuiVer, systemPath() + "/webui-version.json");
-    }
-
-    // Create version.json in /user/
-    std::string versionPath = userPath() + "/version.json";
-    if (!fileExists(versionPath)) {
-        FILE *f = fopen(versionPath.c_str(), "w");
-        if (f) {
-            fprintf(f, "{\n"
-                       "  \"schemaVersion\": 1,\n"
-                       "  \"migratedFrom\": \"legacy\",\n"
-                       "  \"migratedAt\": \"2026-04-06\"\n"
-                       "}\n");
-            fclose(f);
-        }
-    }
-
-    ESP_LOGI(OVERLAY_TAG, "Migration from legacy layout complete. Original /data/ preserved.");
-}
-
-/**
  * Initialize the storage overlay system.
  * Call once at boot, after SD card is mounted.
- *
- * If the SD card has the legacy layout, migrates automatically.
- * If it already has the overlay layout, ensures all directories exist.
+ * Ensures all required directories exist.
  */
 inline void initOverlay() {
-    if (hasLegacyLayout()) {
-        ESP_LOGI(OVERLAY_TAG, "Legacy /data/ layout detected — migrating...");
-        migrateFromLegacy();
-    } else if (hasOverlayLayout()) {
-        ESP_LOGI(OVERLAY_TAG, "Overlay layout detected — ensuring directories...");
-        ensureOverlayDirs();
-    } else {
-        // Fresh SD card or empty — create overlay structure
-        ESP_LOGI(OVERLAY_TAG, "No recognized layout — creating overlay structure...");
-        ensureOverlayDirs();
-    }
+    ensureOverlayDirs();
 }
 
 } // namespace STORAGE
