@@ -1425,16 +1425,42 @@
     .midi-routing-table sl-select { --sl-input-height-small: 28px; min-width: 100px; }
 
     /* ── Sample Manager View ────────────────────────────────── */
-    #view-samples { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
+    #view-samples { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; position: relative; }
     #view-samples.active { display: flex; }
     #view-samples sl-split-panel { flex: 1; --divider-width: 5px; min-height: 0; }
     #view-samples sl-split-panel::part(divider) { background: var(--sl-color-neutral-300); }
     #view-samples sl-split-panel::part(panel) { overflow: hidden; }
 
+    /* File Manager collapse */
+    #view-samples.pool-collapsed sl-split-panel { --divider-width: 0px; }
+    #view-samples.pool-collapsed #pool-panel { overflow: hidden; width: 0; min-width: 0; }
+    #view-samples.pool-collapsed sl-split-panel::part(divider) { visibility: hidden; width: 0; pointer-events: none; }
+    .pool-toggle-btn {
+      background: none; border: none; cursor: pointer; padding: 0.25rem 0.4rem;
+      color: var(--sl-color-neutral-500); display: flex; align-items: center;
+      font-size: 1.1rem; transition: color 0.15s, background 0.15s; border-radius: 4px;
+    }
+    .pool-toggle-btn:hover { color: var(--sl-color-neutral-900); background: var(--sl-color-neutral-200); }
+    .pool-expand-btn {
+      display: none; align-items: center; gap: 0.35rem;
+      position: absolute; left: 0; top: 8px; z-index: 20;
+      background: var(--sl-color-neutral-0); color: var(--sl-color-neutral-700);
+      border: 1px solid var(--sl-color-neutral-300); border-left: none;
+      border-radius: 0 6px 6px 0;
+      padding: 0.4rem 0.65rem 0.4rem 0.45rem;
+      cursor: pointer; font-size: 0.78rem; font-weight: 600;
+      line-height: 1; white-space: nowrap;
+      box-shadow: 1px 2px 6px rgba(0,0,0,0.10);
+      transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    }
+    .pool-expand-btn sl-icon { font-size: 1rem; }
+    .pool-expand-btn:hover { color: var(--sl-color-primary-700); background: var(--sl-color-primary-50); border-color: var(--sl-color-primary-400); box-shadow: 1px 2px 8px rgba(0,0,0,0.15); }
+    #view-samples.pool-collapsed .pool-expand-btn { display: flex !important; }
+
     /* Panels */
     .panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
     .panel-left  { background: var(--sl-color-neutral-50); position: relative; }
-    .panel-right { background: var(--sl-color-neutral-0); }
+    .panel-right { background: var(--sl-color-neutral-0); position: relative; }
     .panel-title-bar {
       display: flex; align-items: center;
       padding: 0.45rem 0.85rem;
@@ -1446,11 +1472,13 @@
     .panel-title-right { margin-left: auto; display: flex; align-items: center; gap: 0.4rem; }
 
     /* Pool Controls */
-    .pool-controls { display: flex; align-items: center; padding: 0.3rem 0.85rem; border-bottom: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; gap: 0.4rem; min-height: 34px; }
-    .pool-breadcrumb { display: flex; align-items: center; gap: 0.2rem; flex: 1; overflow: hidden; font-size: 0.82rem; }
-    .pool-breadcrumb-home { font-size: 0.9rem; color: var(--sl-color-neutral-500); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; }
+    .pool-controls { display: flex; align-items: center; padding: 0.3rem 0.85rem; border-bottom: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; gap: 0.35rem; min-height: 34px; }
+    .pool-breadcrumb { display: flex; align-items: center; gap: 0.2rem; flex: 1; overflow: hidden; font-size: 0.82rem; min-width: 0; }
+    .pool-toolbar-btn { flex-shrink: 0; }
+    .pool-toolbar-btn::part(base) { font-size: 0.78rem; padding-inline: 0.55rem; }
+    .pool-breadcrumb-home { font-size: 0.9rem; color: var(--sl-color-neutral-500); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; white-space: nowrap; }
     .pool-breadcrumb-home:hover { color: var(--sl-color-primary-600); }
-    .pool-breadcrumb-home-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--sl-color-neutral-500); cursor: pointer; margin-left: 0.2rem; }
+    .pool-breadcrumb-home-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--sl-color-neutral-500); cursor: pointer; margin-left: 0.2rem; white-space: nowrap; }
     .pool-breadcrumb-home:hover + .pool-breadcrumb-home-label, .pool-breadcrumb-home-label:hover { color: var(--sl-color-primary-600); }
     .pool-breadcrumb-seg { color: var(--sl-color-primary-600); cursor: pointer; white-space: nowrap; font-weight: 500; }
     .pool-breadcrumb-seg:hover { text-decoration: underline; }
@@ -1631,10 +1659,28 @@
     .header-storage-bar-fill.danger { background: var(--sl-color-danger-500); }
 
     /* Sample Picker Dialog */
-    .sample-picker-list { max-height: 320px; overflow-y: auto; margin-top: 0.5rem; }
-    .sample-picker-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.5rem; cursor: pointer; border-radius: var(--sl-border-radius-medium); }
+    .sample-picker-toolbar { display: flex; align-items: center; gap: 0.5rem; }
+    .sample-picker-toolbar sl-input { flex: 1; }
+    .sample-picker-toolbar sl-input::part(prefix) { display: flex; align-items: center; }
+    .sample-picker-folder-filter { min-width: 140px; max-width: 180px; }
+    .sample-picker-folder-filter::part(combobox) { font-size: 0.78rem; min-height: 1.75rem; padding-top: 0; padding-bottom: 0; }
+    .sample-picker-folder-filter sl-option::part(base) { font-size: 0.78rem; padding: 0.25rem 0.6rem; }
+    .sample-picker-count { font-size: 0.75rem; color: var(--sl-color-neutral-500); white-space: nowrap; margin-top: 0.35rem; }
+    .sample-picker-list { max-height: 380px; overflow-y: auto; margin-top: 0.4rem; border: 1px solid var(--sl-color-neutral-200); border-radius: var(--sl-border-radius-medium); }
+    .sample-picker-item { display: flex; align-items: center; gap: 0.4rem; padding: 0.32rem 0.55rem; cursor: pointer; border-bottom: 1px solid color-mix(in srgb, var(--sl-color-neutral-200) 50%, transparent); transition: background 0.1s; min-height: 28px; }
+    .sample-picker-item:last-child { border-bottom: none; }
     .sample-picker-item:hover { background: var(--sl-color-neutral-200); }
-    .sample-picker-item.selected { background: var(--sl-color-primary-200); }
+    .sample-picker-item.selected { background: color-mix(in srgb, var(--sl-color-primary-600) 12%, transparent); }
+    .sample-picker-item .pi-check { width: 14px; height: 14px; accent-color: var(--sl-color-primary-600); flex-shrink: 0; cursor: pointer; pointer-events: none; }
+    .sample-picker-item .pi-icon { font-size: 0.78rem; flex-shrink: 0; color: var(--sl-color-neutral-400); }
+    .sample-picker-item .pi-name { flex: 1; font-size: 0.82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sample-picker-item .pi-dur { width: 52px; font-size: 0.78rem; color: var(--sl-color-neutral-500); text-align: right; flex-shrink: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .sample-picker-item .pi-size { width: 62px; font-size: 0.78rem; color: var(--sl-color-neutral-500); text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .sample-picker-item .pi-preview { font-size: 0.82rem; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+    .sample-picker-item:hover .pi-preview { opacity: 1; }
+    .sample-picker-item .pi-preview.playing { opacity: 1; }
+    @media (hover: none) { .sample-picker-item .pi-preview { opacity: 1; } }
+    #picker-dialog [slot="footer"] { margin-inline-start: 0.35rem; }
 
     /* Responsive: Sample Manager */
     @media (max-width: 768px) {
@@ -1961,6 +2007,126 @@
     .td-btn-setactive:disabled { opacity: 0.4; cursor: default; background: var(--sl-color-neutral-100); border-color: var(--sl-color-neutral-200); }
     .td-btn-saveas { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border: 1px solid var(--sl-color-neutral-300); border-radius: 4px; background: var(--sl-color-neutral-0); color: var(--sl-color-neutral-700); cursor: pointer; white-space: nowrap; line-height: 1; }
     .td-btn-saveas:hover { background: var(--sl-color-primary-50); border-color: var(--sl-color-primary-400); color: var(--sl-color-primary-700); }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PROJECT VIEWER — right-panel mode
+       ═══════════════════════════════════════════════════════════════ */
+    #kit-panel.pv-active > *:not(.pv-editor) { display: none !important; }
+    #kit-panel.pv-active > .pv-editor { display: flex !important; flex: 1; min-height: 0; }
+    .pv-editor { display: none; flex-direction: column; overflow: hidden; min-height: 0; }
+    .pv-editor .panel-title-bar { flex-shrink: 0; }
+    .pv-body { flex: 1; overflow-y: auto; padding: 0.75rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+    /* Project name */
+    .pv-name-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .pv-name-input { flex: 1; font-size: 1.1rem; font-weight: 600; padding: 0.3rem 0.5rem; border: 1px solid var(--sl-color-neutral-300); border-radius: 4px; background: var(--sl-color-neutral-0); color: var(--sl-color-neutral-900); }
+    .pv-name-input:focus { outline: none; border-color: var(--sl-color-primary-500); box-shadow: 0 0 0 2px var(--sl-color-primary-200); }
+    .pv-name-save-btn { background: none; border: 1px solid var(--sl-color-neutral-300); border-radius: 4px; cursor: pointer; padding: 0.3rem 0.55rem; font-size: 0.95rem; color: var(--sl-color-neutral-600); display: flex; align-items: center; flex-shrink: 0; }
+    .pv-name-save-btn:hover { background: var(--sl-color-primary-50); border-color: var(--sl-color-primary-400); color: var(--sl-color-primary-600); }
+    .pv-name-saved { font-size: 0.7rem; color: var(--sl-color-success-600); font-weight: 500; opacity: 0; transition: opacity 0.3s; }
+    .pv-name-saved.visible { opacity: 1; }
+
+    /* Overview grid */
+    .pv-overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }
+    .pv-stat { padding: 0.5rem 0.65rem; background: var(--sl-color-neutral-50); border: 1px solid var(--sl-color-neutral-200); border-radius: 6px; }
+    .pv-stat-label { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sl-color-neutral-500); margin-bottom: 2px; }
+    .pv-stat-value { font-size: 0.85rem; font-weight: 600; color: var(--sl-color-neutral-900); }
+
+    /* Track tab strip (like Preset Manager) */
+    .pv-tabs {
+      display: flex; flex-shrink: 0;
+      border-bottom: 2px solid var(--sl-color-neutral-300);
+      overflow-x: auto; overflow-y: hidden;
+      background: var(--sl-color-neutral-100);
+      min-height: 52px; margin-bottom: 0;
+    }
+    .pv-tab {
+      flex: 1 1 0; min-width: 48px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 0.25rem 0.1rem;
+      border-right: 1px solid var(--sl-color-neutral-200);
+      cursor: pointer; transition: all 0.15s;
+      gap: 0.1rem; user-select: none;
+      position: relative;
+    }
+    .pv-tab:last-child { border-right: none; }
+    .pv-tab:hover { background: var(--sl-color-neutral-200); }
+    .pv-tab.active {
+      background: color-mix(in srgb, var(--sl-color-primary-600) 15%, transparent);
+    }
+    .pv-tab.active::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--sl-color-primary-600);
+    }
+    .pv-tab-num {
+      font-size: 0.55rem; font-weight: 700;
+      color: var(--sl-color-neutral-0);
+      background: var(--sl-color-neutral-600);
+      padding: 0.05rem 0.25rem; border-radius: 3px;
+      line-height: 1.3;
+    }
+    .pv-tab.active .pv-tab-num { background: var(--sl-color-primary-600); }
+    /* Type-colored tab numbers — exact same colors as TD type badges */
+    .pv-tab.pv-tab-drum .pv-tab-num { background: color-mix(in srgb, var(--sl-color-warning-200) 60%, transparent); color: var(--sl-color-warning-800); }
+    .pv-tab.pv-tab-drum.active .pv-tab-num { background: var(--sl-color-warning-200); color: var(--sl-color-warning-800); }
+    .pv-tab.pv-tab-drum.active { background: color-mix(in srgb, var(--sl-color-warning-200) 18%, transparent); }
+    .pv-tab.pv-tab-drum.active::after { background: var(--sl-color-warning-500); }
+    .pv-tab.pv-tab-synth .pv-tab-num { background: color-mix(in srgb, var(--sl-color-primary-200) 60%, transparent); color: var(--sl-color-primary-800); }
+    .pv-tab.pv-tab-synth.active .pv-tab-num { background: var(--sl-color-primary-200); color: var(--sl-color-primary-800); }
+    .pv-tab.pv-tab-synth.active { background: color-mix(in srgb, var(--sl-color-primary-200) 18%, transparent); }
+    .pv-tab.pv-tab-synth.active::after { background: var(--sl-color-primary-500); }
+    .pv-tab.pv-tab-fx .pv-tab-num { background: color-mix(in srgb, var(--sl-color-success-200) 60%, transparent); color: var(--sl-color-success-800); }
+    .pv-tab.pv-tab-fx.active .pv-tab-num { background: var(--sl-color-success-200); color: var(--sl-color-success-800); }
+    .pv-tab.pv-tab-fx.active { background: color-mix(in srgb, var(--sl-color-success-200) 18%, transparent); }
+    .pv-tab.pv-tab-fx.active::after { background: var(--sl-color-success-500); }
+    .pv-tab-name {
+      font-size: 0.5rem; font-weight: 600;
+      color: var(--sl-color-neutral-600);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 100%; text-align: center; line-height: 1.2;
+    }
+    .pv-tab-dot {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--sl-color-primary-500);
+      position: absolute; top: 3px; right: 3px;
+    }
+
+    /* Track type badges */
+    .pv-type-badge {
+      font-size: 0.55rem; font-weight: 700; text-transform: uppercase;
+      padding: 0.1rem 0.35rem; border-radius: 3px; letter-spacing: 0.04em;
+    }
+    .pv-type-drum { background: color-mix(in srgb, var(--sl-color-warning-200) 60%, transparent); color: var(--sl-color-warning-800); }
+    .pv-type-synth { background: color-mix(in srgb, var(--sl-color-primary-200) 60%, transparent); color: var(--sl-color-primary-800); }
+    .pv-type-fx { background: color-mix(in srgb, var(--sl-color-success-200) 60%, transparent); color: var(--sl-color-success-800); }
+
+    /* Track detail panel */
+    .pv-detail { padding: 0.75rem; }
+    .pv-detail-header {
+      display: flex; align-items: center; gap: 0.6rem;
+      margin-bottom: 0.75rem; padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--sl-color-neutral-200);
+    }
+    .pv-detail-title { font-size: 1rem; font-weight: 700; color: var(--sl-color-neutral-900); }
+    .pv-detail-sub { font-size: 0.75rem; color: var(--sl-color-neutral-500); }
+    .pv-track-info { display: grid; grid-template-columns: auto 1fr; gap: 0.15rem 0.75rem; color: var(--sl-color-neutral-600); margin-bottom: 0.6rem; font-size: 0.78rem; }
+    .pv-track-info dt { font-weight: 600; color: var(--sl-color-neutral-500); }
+    .pv-section-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sl-color-neutral-500); margin: 0.5rem 0 0.35rem; }
+
+    /* Pattern step grids */
+    .pv-patterns { display: flex; flex-direction: column; gap: 0.4rem; }
+    .pv-pattern { background: var(--sl-color-neutral-50); border: 1px solid var(--sl-color-neutral-200); border-radius: 4px; padding: 0.4rem 0.5rem; }
+    .pv-pattern-header { font-size: 0.72rem; font-weight: 600; color: var(--sl-color-neutral-700); margin-bottom: 0.3rem; }
+    .pv-step-grid { display: flex; gap: 1px; height: 20px; }
+    .pv-step { flex: 1; border-radius: 2px; min-width: 3px; }
+    .pv-step-off { background: var(--sl-color-neutral-200); }
+    .pv-step-on { background: var(--sl-color-primary-500); }
+    .pv-step-beat { border-left: 1px solid var(--sl-color-neutral-300); }
+    .pv-pattern-empty { font-size: 0.68rem; color: var(--sl-color-neutral-400); font-style: italic; }
+
     .panel-nav { display: inline-flex; align-items: center; gap: 0.15rem; margin-left: 0.75rem; }
     .panel-nav-link { font-size: 0.78rem; font-weight: 500; color: var(--sl-color-neutral-400); cursor: pointer; padding: 0.2rem 0.45rem; border-radius: 3px; text-decoration: none; letter-spacing: 0.02em; }
     .panel-nav-link:hover { color: var(--sl-color-neutral-700); background: var(--sl-color-neutral-100); }
@@ -2174,7 +2340,8 @@
 
       <!-- ════ SAMPLE MANAGER VIEW ════ -->
       <div id="view-samples">
-      <sl-split-panel position="42">
+      <button class="pool-expand-btn" id="pool-expand-btn" title="Show File Manager"><sl-icon name="layout-sidebar-inset"></sl-icon> Files</button>
+      <sl-split-panel position="40">
 
         <!-- ──── LEFT: Sample Pool ──── -->
         <div slot="start" class="panel panel-left" id="pool-panel">
@@ -2182,20 +2349,17 @@
             <span class="panel-title">File Manager</span>
             <div class="panel-title-right">
               <span style="font-size:0.78rem;color:var(--sl-color-neutral-500);" id="pool-file-count">&mdash;</span>
+              <button class="pool-toggle-btn" id="pool-collapse-btn" title="Hide File Manager"><sl-icon name="layout-sidebar-inset"></sl-icon></button>
             </div>
           </div>
           <div class="pool-controls">
             <div class="pool-breadcrumb" id="pool-breadcrumb">
               <span class="pool-breadcrumb-current">/</span>
             </div>
-            <sl-button size="small" variant="default" id="select-mode-btn" title="Select multiple files">
-              <sl-icon slot="prefix" name="check2-square"></sl-icon>Select
-            </sl-button>
-            <sl-button size="small" variant="default" id="new-folder-btn">
-              <sl-icon slot="prefix" name="folder2-open"></sl-icon>New Folder
-            </sl-button>
-            <sl-button size="small" variant="primary" id="upload-btn">
-              <sl-icon slot="prefix" name="cloud-arrow-up"></sl-icon>Upload
+            <sl-button size="small" variant="default" class="pool-toolbar-btn" id="select-mode-btn">Select</sl-button>
+            <sl-button size="small" variant="default" class="pool-toolbar-btn" id="new-folder-btn">New Folder</sl-button>
+            <sl-button size="small" variant="primary" class="pool-toolbar-btn" id="upload-btn">
+              Upload<sl-icon slot="suffix" name="chevron-down" style="font-size:0.75rem;"></sl-icon>
             </sl-button>
             <div id="upload-menu" style="display:none;position:fixed;z-index:200;background:var(--sl-color-neutral-0);border:1px solid var(--sl-color-neutral-300);border-radius:var(--sl-border-radius-medium);box-shadow:0 4px 12px rgba(0,0,0,0.15);min-width:160px;padding:0.25rem 0;">
               <div id="upload-files-opt" style="padding:0.45rem 0.85rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.5rem;" onmouseover="this.style.background='var(--sl-color-neutral-200)'" onmouseout="this.style.background=''">
@@ -2341,6 +2505,29 @@
               <button class="td-btn-setactive" id="td-setactive-btn" title="Set this template as the boot default"><sl-icon name="star" style="font-size:0.65rem;"></sl-icon> Set as Boot Default</button>
             </div>
             <div class="td-editor-body" id="td-editor-body"></div>
+          </div>
+
+          <!-- ──── Project Viewer (takes over right panel when active) ──── -->
+          <div class="pv-editor" id="pv-editor">
+            <div class="panel-title-bar">
+              <span class="panel-title">Project Viewer</span>
+              <div class="panel-title-right">
+                <sl-icon-button name="download" label="Download" id="pv-download" title="Download project file" style="font-size:0.9rem;"></sl-icon-button>
+                <sl-icon-button name="x-lg" label="Close" id="pv-close" title="Close viewer" style="font-size:0.9rem;"></sl-icon-button>
+              </div>
+            </div>
+            <div class="td-toolbar" id="pv-toolbar">
+              <div class="td-tab td-tab-active">
+                <div class="td-tab-icon"><sl-icon name="music-note-list"></sl-icon></div>
+                <span id="pv-file-name">projectslot00.bin</span>
+                <span class="td-badge-factory" id="pv-badge-factory" style="display:none;">factory</span>
+              </div>
+              <div class="td-toolbar-spacer"></div>
+            </div>
+            <div class="pv-tabs" id="pv-tabs"></div>
+            <div class="pv-body" id="pv-body">
+              <sl-spinner style="margin:2rem auto;display:block;"></sl-spinner>
+            </div>
           </div>
         </div>
 
@@ -2944,13 +3131,21 @@
   </sl-dialog>
 
   <!-- Sample Picker -->
-  <sl-dialog label="Add Sample to Bank" id="picker-dialog" style="--width:480px;">
-    <sl-input id="picker-search" placeholder="Search samples…" clearable size="small">
-      <sl-icon name="search" slot="prefix"></sl-icon>
-    </sl-input>
+  <sl-dialog label="Add Sample to Bank" id="picker-dialog" style="--width:560px;">
+    <div class="sample-picker-toolbar">
+      <sl-input id="picker-search" placeholder="Search samples…" clearable size="small">
+        <sl-icon name="search" slot="prefix"></sl-icon>
+      </sl-input>
+      <sl-select id="picker-folder-filter" class="sample-picker-folder-filter" size="small" value="__all__" hoist>
+        <sl-option value="__all__">All Folders</sl-option>
+      </sl-select>
+    </div>
+    <div class="sample-picker-count" id="picker-count"></div>
     <div class="sample-picker-list" id="picker-list"></div>
-    <sl-button slot="footer" variant="primary" id="picker-ok">Add Selected</sl-button>
-    <sl-button slot="footer" variant="default" id="picker-cancel">Cancel</sl-button>
+    <div slot="footer" style="display:flex;gap:0.5rem;justify-content:flex-end;width:100%;">
+      <sl-button variant="primary" id="picker-ok">Add Selected</sl-button>
+      <sl-button variant="default" id="picker-cancel">Cancel</sl-button>
+    </div>
   </sl-dialog>
 
   <!-- Delete Kit -->

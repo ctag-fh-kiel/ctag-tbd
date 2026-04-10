@@ -539,11 +539,12 @@ function handleSamplesGet(req, res) {
 
   // Get a config file: ?getconfig=synthdefinitions.json
   if (q.getconfig) {
-    // Try DATA_DIR first, then FACTORY_DIR as fallback
+    // Try DATA_DIR first, then FACTORY_DIR, then SYSTEM_DIR as fallback
     let configPath = path.join(DATA_DIR, q.getconfig);
     if (!fs.existsSync(configPath)) configPath = path.join(FACTORY_DIR, q.getconfig);
+    if (!fs.existsSync(configPath)) configPath = path.join(SDCARD_ROOT, 'system', q.getconfig);
     // Security: must stay inside sdcard_image
-    if (!configPath.startsWith(DATA_DIR) && !configPath.startsWith(FACTORY_DIR)) {
+    if (!configPath.startsWith(SDCARD_ROOT)) {
       return sendJson(res, 403, { error: 'Forbidden' });
     }
     try {

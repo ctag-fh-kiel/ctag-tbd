@@ -845,7 +845,7 @@
 
   function showTDPanel() {
     var panel = document.getElementById('kit-panel');
-    panel.classList.remove('viewer-active');
+    panel.classList.remove('viewer-active', 'pv-active');
     panel.classList.add('td-editor-active');
     // Update filename in the sub-header tab
     var nameEl = document.getElementById('td-file-name');
