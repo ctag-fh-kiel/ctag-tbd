@@ -41,7 +41,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     body { background: var(--bg); color: var(--fg); min-height: 100vh; }
-    .container { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .container { max-width: 720px; margin: 0 auto; padding: 1.25rem 1.5rem; }
 
     /* Header */
     .app-header {
@@ -78,7 +78,7 @@
     /* Online update banner */
     .online-banner {
       background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 1rem; margin-bottom: 1.25rem;
+      padding: 0.75rem 1rem; margin-bottom: 0.75rem;
     }
     .online-banner .checking { color: var(--fg3); font-size: 0.82rem; }
     .online-banner .up-to-date { color: var(--success); font-size: 0.85rem; font-weight: 600; }
@@ -250,7 +250,7 @@
     .section-header {
       display: flex; align-items: center; gap: 0.5rem;
       cursor: pointer; user-select: none;
-      padding: 0.6rem 0; margin: 1.5rem 0 0;
+      padding: 0.6rem 0; margin: 0.75rem 0 0;
       border-bottom: 1px solid var(--border);
     }
     .section-header:first-of-type { margin-top: 0; }
@@ -280,7 +280,7 @@
     }
     .vs-card {
       background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 0.75rem 1rem;
+      padding: 0.6rem 0.85rem;
     }
     .vs-card .vs-label { font-size: 0.65rem; color: var(--fg3); text-transform: uppercase;
       letter-spacing: 0.05em; margin-bottom: 0.2rem; }
@@ -309,6 +309,21 @@
     }
     .reboot-banner .rb-title { font-size: 0.9rem; font-weight: 700; color: hsl(32.1 94.6% 43.7%); margin-bottom: 0.25rem; }
     .reboot-banner .rb-desc { font-size: 0.78rem; color: var(--fg2); margin-bottom: 0.75rem; }
+
+    /* Manual fallback — hidden by default */
+    .manual-toggle {
+      font-size: 0.78rem; color: var(--fg3); cursor: pointer;
+      border: none; background: none; padding: 0.25rem 0; font-family: inherit;
+      margin-top: 0.5rem; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .manual-toggle:hover { color: var(--accent); }
+    .manual-toggle .toggle-icon {
+      font-size: 0.65rem; display: inline-block; transition: transform 0.2s;
+      transform: rotate(-90deg);
+    }
+    .manual-toggle.open .toggle-icon { transform: rotate(0deg); }
+    .manual-area { display: none; margin-top: 0.75rem; }
+    .manual-area.open { display: block; }
 
     @media (max-width: 600px) {
       .version-summary { grid-template-columns: 1fr; }
@@ -359,35 +374,18 @@
   </div>
   <div class="section-body" id="section-webui-body">
 
-  <!-- Current version -->
-  <div class="version-row" style="margin-top:0.75rem;">
-    <div class="version-card">
-      <div class="label">Installed WebUI</div>
-      <div class="value" id="current-version">&mdash;</div>
-      <div class="date" id="current-date"></div>
-    </div>
-    <div class="version-card" id="update-version-card" style="display:none;">
-      <div class="label">Update Package</div>
-      <div class="value" id="update-version">&mdash;</div>
-      <div class="date" id="update-date"></div>
-    </div>
+  <!-- Hidden version carriers (JS refs) -->
+  <div style="display:none" aria-hidden="true">
+    <span id="current-version"></span><span id="current-date"></span>
+    <div id="update-version-card"><span id="update-version"></span><span id="update-date"></span></div>
   </div>
 
   <!-- Online update check -->
-  <div class="online-banner" id="online-banner">
+  <div class="online-banner" id="online-banner" style="margin-top:0.75rem;">
     <div id="online-content"><span class="checking">&#128269; Checking for updates...</span></div>
   </div>
 
-  <!-- Manual update -->
-  <div class="section-label">Manual Update</div>
-  <div class="drop-zone" id="drop-zone">
-    <div class="icon">&#128230;</div>
-    <div class="label">Drop a WebUI update package here, or click to browse</div>
-    <div class="hint">Accepts .zip files containing a manifest.json and update files</div>
-    <input type="file" id="file-input" accept=".zip">
-  </div>
-
-  <!-- Manifest info (shown after zip is loaded) -->
+  <!-- Manifest info (shown after zip is loaded — online or manual) -->
   <div class="manifest-info" id="manifest-info">
     <h3 id="manifest-title"></h3>
     <div class="desc" id="manifest-desc"></div>
@@ -401,7 +399,7 @@
 
   <!-- Action buttons -->
   <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-    <button class="btn btn-primary" id="apply-btn" disabled>Apply Update</button>
+    <button class="btn btn-primary" id="apply-btn" disabled style="display:none;">Apply Update</button>
     <button class="btn btn-secondary" id="reset-btn" style="display:none;">Reset</button>
   </div>
 
@@ -411,9 +409,15 @@
   <!-- Log -->
   <div class="log-area" id="log-area"></div>
 
-  <div class="hash-info" style="margin-top:1rem;">
-    <strong>&#9432; Note:</strong> WebUI updates do not change the SD card hash.
-    A full firmware deploy will overwrite any files updated here &mdash; this is expected.
+  <!-- Manual fallback -->
+  <button class="manual-toggle" data-target="webui-manual-area"><span class="toggle-icon">&#9660;</span> Manual upload</button>
+  <div class="manual-area" id="webui-manual-area">
+    <div class="drop-zone" id="drop-zone">
+      <div class="icon">&#128230;</div>
+      <div class="label">Drop a WebUI update package here, or click to browse</div>
+      <div class="hint">Accepts .zip files containing a manifest.json</div>
+      <input type="file" id="file-input" accept=".zip">
+    </div>
   </div>
 
   </div><!-- end WebUI body -->
@@ -426,30 +430,13 @@
   </div>
   <div class="section-body" id="section-p4-body">
 
-  <div class="version-row" style="margin-top:0.75rem;">
-    <div class="version-card">
-      <div class="label">Installed P4 Firmware</div>
-      <div class="value" id="p4-current-version">&mdash;</div>
-      <div class="date" id="p4-hw-label"></div>
-    </div>
+  <!-- Hidden version carriers (JS refs) -->
+  <div style="display:none" aria-hidden="true">
+    <span id="p4-current-version"></span><span id="p4-hw-label"></span>
   </div>
 
-  <div class="online-banner" id="p4-banner">
+  <div class="online-banner" id="p4-banner" style="margin-top:0.75rem;">
     <div id="p4-content"><span class="checking">&#128269; Checking for P4 firmware updates&hellip;</span></div>
-  </div>
-
-  <!-- P4 manual upload -->
-  <div class="section-label">Manual Update</div>
-  <div class="upload-card">
-    <div class="upload-icon">&#128295;</div>
-    <div class="upload-text">Flash a local P4 firmware file via OTA</div>
-    <button class="btn btn-secondary btn-sm" id="p4-pick-file">Select .bin file&hellip;</button>
-    <div class="upload-hint">Accepts .bin firmware files for ESP32-P4</div>
-    <div class="upload-file-name" id="p4-file-name"></div>
-  </div>
-  <div id="p4-manual-confirm" style="display:none;text-align:center;margin-bottom:0.75rem;">
-    <button class="btn btn-primary btn-sm" id="p4-manual-flash">Flash Firmware</button>
-    <button class="btn btn-secondary btn-sm" id="p4-manual-cancel" style="margin-left:0.5rem;">Cancel</button>
   </div>
 
   <div class="progress-bar" id="p4-progress-bar">
@@ -458,6 +445,22 @@
 
   <div class="status-msg" id="p4-status-msg"></div>
   <div class="log-area" id="p4-log-area"></div>
+
+  <!-- Manual fallback -->
+  <button class="manual-toggle" data-target="p4-manual-area"><span class="toggle-icon">&#9660;</span> Manual upload</button>
+  <div class="manual-area" id="p4-manual-area">
+    <div class="upload-card">
+      <div class="upload-icon">&#128295;</div>
+      <div class="upload-text">Flash a local P4 firmware file via OTA</div>
+      <button class="btn btn-secondary btn-sm" id="p4-pick-file">Select .bin file&hellip;</button>
+      <div class="upload-hint">Accepts .bin firmware files for ESP32-P4</div>
+      <div class="upload-file-name" id="p4-file-name"></div>
+    </div>
+    <div id="p4-manual-confirm" style="display:none;text-align:center;margin-bottom:0.75rem;">
+      <button class="btn btn-primary btn-sm" id="p4-manual-flash">Flash Firmware</button>
+      <button class="btn btn-secondary btn-sm" id="p4-manual-cancel" style="margin-left:0.5rem;">Cancel</button>
+    </div>
+  </div>
 
   </div><!-- end P4 body -->
 
@@ -469,29 +472,13 @@
   </div>
   <div class="section-body" id="section-pico-body">
 
-  <div class="version-row" style="margin-top:0.75rem;">
-    <div class="version-card">
-      <div class="label">Installed Pico Firmware</div>
-      <div class="value" id="pico-current-version">&mdash;</div>
-    </div>
+  <!-- Hidden version carriers (JS refs) -->
+  <div style="display:none" aria-hidden="true">
+    <span id="pico-current-version"></span>
   </div>
 
-  <div class="online-banner" id="pico-banner">
+  <div class="online-banner" id="pico-banner" style="margin-top:0.75rem;">
     <div id="pico-content"><span class="checking">&#128269; Checking for Pico firmware updates&hellip;</span></div>
-  </div>
-
-  <!-- Pico manual upload -->
-  <div class="section-label">Manual Update</div>
-  <div class="upload-card">
-    <div class="upload-icon">&#128295;</div>
-    <div class="upload-text">Stage a local Pico firmware file for flashing on reboot</div>
-    <button class="btn btn-secondary btn-sm" id="pico-pick-file">Select .bin file&hellip;</button>
-    <div class="upload-hint">Accepts .bin firmware files for RP2350</div>
-    <div class="upload-file-name" id="pico-file-name"></div>
-  </div>
-  <div id="pico-manual-confirm" style="display:none;text-align:center;margin-bottom:0.75rem;">
-    <button class="btn btn-primary btn-sm" id="pico-manual-flash">Stage Firmware</button>
-    <button class="btn btn-secondary btn-sm" id="pico-manual-cancel" style="margin-left:0.5rem;">Cancel</button>
   </div>
 
   <div class="progress-bar" id="pico-progress-bar">
@@ -500,6 +487,22 @@
 
   <div class="status-msg" id="pico-status-msg"></div>
   <div class="log-area" id="pico-log-area"></div>
+
+  <!-- Manual fallback -->
+  <button class="manual-toggle" data-target="pico-manual-area"><span class="toggle-icon">&#9660;</span> Manual upload</button>
+  <div class="manual-area" id="pico-manual-area">
+    <div class="upload-card">
+      <div class="upload-icon">&#128295;</div>
+      <div class="upload-text">Stage a local Pico firmware file for flashing on reboot</div>
+      <button class="btn btn-secondary btn-sm" id="pico-pick-file">Select .bin file&hellip;</button>
+      <div class="upload-hint">Accepts .bin firmware files for RP2350</div>
+      <div class="upload-file-name" id="pico-file-name"></div>
+    </div>
+    <div id="pico-manual-confirm" style="display:none;text-align:center;margin-bottom:0.75rem;">
+      <button class="btn btn-primary btn-sm" id="pico-manual-flash">Stage Firmware</button>
+      <button class="btn btn-secondary btn-sm" id="pico-manual-cancel" style="margin-left:0.5rem;">Cancel</button>
+    </div>
+  </div>
 
   </div><!-- end Pico body -->
 
@@ -576,6 +579,17 @@
       hdr.classList.toggle('collapsed');
       var body = hdr.nextElementSibling;
       if (body) body.classList.toggle('collapsed');
+    });
+  });
+
+  // ── Manual fallback toggle ──
+  document.querySelectorAll('.manual-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = document.getElementById(btn.getAttribute('data-target'));
+      if (target) {
+        var isOpen = target.classList.toggle('open');
+        btn.classList.toggle('open', isOpen);
+      }
     });
   });
 
@@ -1053,6 +1067,7 @@
       }
       manifestInfo.style.display = 'block';
       applyBtn.disabled = false;
+      applyBtn.style.display = '';
       dropZone.style.display = 'none';
 
       // Compatibility check — show warning for manual uploads
@@ -1200,10 +1215,15 @@
     logArea.style.display = 'none';
     logArea.innerHTML = '';
     applyBtn.disabled = true;
+    applyBtn.style.display = 'none';
     resetBtn.style.display = 'none';
     dropZone.style.display = '';
     updCard.style.display = 'none';
     fileInput.value = '';
+    var ma = document.getElementById('webui-manual-area');
+    if (ma) { ma.classList.add('open'); }
+    var mt = document.querySelector('[data-target="webui-manual-area"]');
+    if (mt) { mt.classList.add('open'); }
     loadCurrentVersion().then(function() { checkOnlineUpdate(); });
   });
 
@@ -1440,6 +1460,9 @@
       picoLog('Done! Reboot the device to flash the new Pico firmware.', 'ok');
 
       picoVersionEl.textContent = currentPicoVersion + ' \u2192 ' + version + ' (pending reboot)';
+      vsPicoVersion.textContent = currentPicoVersion + ' \u2192 ' + version;
+      vsPicoStatus.textContent = 'pending reboot';
+      vsPicoStatus.className = 'vs-status outdated';
       showRebootBanner('Pico firmware ' + version + ' staged. Reboot to apply.');
 
     } catch (e) {
@@ -1642,6 +1665,9 @@
       p4Log('Done! Reboot the device to boot into the new firmware.', 'ok');
 
       p4VersionEl.textContent = firmwareVersion + ' \u2192 ' + version + ' (pending reboot)';
+      vsP4Version.textContent = firmwareVersion + ' \u2192 ' + version;
+      vsP4Status.textContent = 'pending reboot';
+      vsP4Status.className = 'vs-status outdated';
       showRebootBanner('P4 firmware ' + version + ' flashed. Reboot to activate.');
 
     } catch (e) {
@@ -1722,6 +1748,52 @@
       document.getElementById('p4-manual-cancel').onclick = function() {
         document.getElementById('p4-manual-confirm').style.display = 'none';
         document.getElementById('p4-file-name').textContent = '';
+      };
+    });
+    inp.click();
+  });
+
+  // ── Pico Manual file picker ──
+  document.getElementById('pico-pick-file').addEventListener('click', function() {
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.bin';
+    inp.addEventListener('change', function() {
+      if (!inp.files.length) return;
+      var file = inp.files[0];
+      document.getElementById('pico-file-name').textContent = file.name + ' (' + formatBytes(file.size) + ')';
+      document.getElementById('pico-manual-confirm').style.display = '';
+
+      document.getElementById('pico-manual-flash').onclick = async function() {
+        document.getElementById('pico-manual-confirm').style.display = 'none';
+        picoProgressBar.style.display = 'block';
+        picoProgressFill.style.width = '10%';
+        picoLog('Manual stage: ' + file.name, 'info');
+        try {
+          var binData = await file.arrayBuffer();
+          picoLog('Uploading pico-firmware.bin (' + formatBytes(binData.byteLength) + ')...', 'info');
+          picoProgressFill.style.width = '50%';
+          var uploadResp = await fetch(
+            '/api/v2/storage?action=uploadsystem&path=firmware/pico-firmware.bin',
+            { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: binData }
+          );
+          if (!uploadResp.ok) throw new Error('Upload failed: HTTP ' + uploadResp.status);
+          var result = await uploadResp.json();
+          if (!result.ok) throw new Error(result.error || 'Upload rejected');
+          picoLog('Firmware staged (' + result.size + ' bytes)', 'ok');
+          picoProgressFill.style.width = '100%';
+          picoStatus('Pico firmware staged. Reboot to flash.', 'success');
+          showRebootBanner('Pico firmware staged from ' + file.name + '. Reboot to apply.');
+        } catch (e) {
+          picoStatus('Stage failed: ' + e.message, 'error');
+          picoLog('Error: ' + e.message, 'err');
+          picoProgressFill.style.width = '0%';
+        }
+      };
+
+      document.getElementById('pico-manual-cancel').onclick = function() {
+        document.getElementById('pico-manual-confirm').style.display = 'none';
+        document.getElementById('pico-file-name').textContent = '';
       };
     });
     inp.click();
