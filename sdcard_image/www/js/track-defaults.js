@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
-// TBD-16 WebUI — Track Default Presets Editor (Overlay)
+// TBD-16 WebUI — Track Default Presets Editor (Right Panel)
 //
-// Opens as a Shoelace dialog from the header nav.
+// Renders inside #kit-panel as a right-panel editor mode.
+// Toggle between File Viewer (JSON) and Editor via header buttons.
 // Hierarchy mirrors the main Preset & Macro Manager UI:
 //   Track → Machine → Preset (grouped by Macro definition)
 //
@@ -11,7 +12,7 @@
 // so the user sees e.g. "Phat Punch" / "Synth Kick — All knobs" sections.
 //
 // Data source:  factory/ or user/trackdefaults/
-// API:          GET  /api/v2/macros?action=get_trackdefaults
+// API:          GET  /api/v2/macros?action=get_trackdefaults&file=<name>
 //               POST /api/v2/macros?action=save_trackdefaults
 //
 // (c) 2014-2026 Johannes Elias Lohbihler for dadamachines.
@@ -23,6 +24,8 @@
   var S = window.TBD.shared;
 
   // ─── State ─────────────────────────────────────────────────
+  var currentFile = null;     // { path, name } of the file being edited
+
   var trackDefaults = null;   // parsed trackdefaults.json
   var dirty = false;
   var facetedData = null;     // per-track: [ { machine, name, macros: [{id, name, presets}] } ]
@@ -31,6 +34,7 @@
   var kitMeta = [];           // per-kit bank metadata [{banks: [{name, color}]}]
   var activeKitIndex = 0;     // index of the currently active kit in PSRAM
   var activeKitEntries = [];  // sample entries for the active kit
+  var activeTemplateName = 'default'; // name of the boot-default template (from P4)
 
   var SLICES_PER_BANK = 32;
   var DEFAULT_BANKS = [
@@ -220,7 +224,7 @@
     html += '</select>';
     sliceCell.innerHTML = html;
     sliceCell.querySelector('.td-slice-select').addEventListener('change', function() {
-      dirty = true; updateSaveButton();
+      dirty = true;
     });
   }
 
@@ -302,8 +306,9 @@
   }
 
   function loadTrackDefaults() {
+    var fileParam = currentFile && currentFile.name ? '&file=' + encodeURIComponent(currentFile.name) : '';
     return loadKitData().then(function() {
-      return S.queuedFetch('/macros?action=get_trackdefaults');
+      return S.queuedFetch('/macros?action=get_trackdefaults' + fileParam);
     }).then(function(data) {
         trackDefaults = data && data.tracks ? data : { tracks: [] };
         return trackDefaults;
@@ -315,12 +320,82 @@
       });
   }
 
-  function saveTrackDefaults(data) {
-    return S.queuedPost('/macros?action=save_trackdefaults', data, S.API_MUTATION_TIMEOUT_MS)
+  function isFactoryFile() {
+    return currentFile && /^factory\//i.test(currentFile.path || '');
+  }
+
+  function updateFactoryBadge() {
+    var badge = document.getElementById('td-badge-factory');
+    var factory = isFactoryFile();
+    if (badge) badge.style.display = factory ? '' : 'none';
+  }
+
+  /**
+   * Get the template name (without .json) for the current file.
+   */
+  function currentTemplateName() {
+    if (!currentFile || !currentFile.name) return 'default';
+    return currentFile.name.replace(/\.json$/i, '');
+  }
+
+  /**
+   * Fetch which template is the active boot default from the P4.
+   */
+  function fetchActiveTemplate() {
+    return S.queuedFetch('/macros?action=get_active_trackdefault')
+      .then(function(data) {
+        if (data && data.name) activeTemplateName = data.name;
+        updateActiveBadge();
+      })
+      .catch(function() { /* ignore — badge stays as-is */ });
+  }
+
+  /**
+   * Update the "boot default" badge and "Set as Boot Default" button.
+   */
+  function updateActiveBadge() {
+    var badge = document.getElementById('td-badge-active');
+    var btn = document.getElementById('td-setactive-btn');
+    var isActive = (currentTemplateName() === activeTemplateName);
+    if (badge) badge.style.display = isActive ? '' : 'none';
+    if (btn) {
+      btn.disabled = isActive;
+      if (isActive) {
+        btn.innerHTML = '<sl-icon name="star-fill" style="font-size:0.65rem;color:var(--sl-color-success-600);"></sl-icon> Boot Default';
+      } else {
+        btn.innerHTML = '<sl-icon name="star" style="font-size:0.65rem;"></sl-icon> Set as Boot Default';
+      }
+    }
+  }
+
+  /**
+   * Set the current template as the boot default via REST API.
+   */
+  function setAsBootDefault() {
+    var name = currentTemplateName();
+    S.queuedPost('/macros?action=set_active_trackdefault', { name: name }, S.API_MUTATION_TIMEOUT_MS)
       .then(function(resp) {
         if (resp && resp.ok) {
-          S.toast('Boot defaults saved', 'success', 3000);
+          activeTemplateName = name;
+          updateActiveBadge();
+          S.toast('Boot default set to "' + name + '"', 'success', 3000);
+        } else {
+          S.toast('Failed to set boot default', 'danger', 4000);
+        }
+      })
+      .catch(function(err) {
+        S.toast('Failed to set boot default: ' + err.message, 'danger', 4000);
+      });
+  }
+
+  function saveTrackDefaults(data, fileName) {
+    var file = fileName || (currentFile ? currentFile.name : 'default.json');
+    return S.queuedPost('/macros?action=save_trackdefaults&file=' + encodeURIComponent(file), data, S.API_MUTATION_TIMEOUT_MS)
+      .then(function(resp) {
+        if (resp && resp.ok) {
+          S.toast('Track setup saved', 'success', 3000);
           dirty = false;
+          updateFactoryBadge();
         } else {
           S.toast('Save failed', 'danger', 4000);
         }
@@ -330,6 +405,97 @@
         S.toast('Save failed: ' + err.message, 'danger', 4000);
         throw err;
       });
+  }
+
+  // ─── Save As Dialog (Shoelace) ───────────────────────────
+
+  function saveAsDialog() {
+    var old = document.getElementById('td-saveas-dialog');
+    if (old) old.remove();
+
+    var srcName = currentFile ? currentFile.name.replace(/\.json$/i, '') : 'default';
+    var defaultName = srcName + '-custom';
+
+    var dialog = document.createElement('sl-dialog');
+    dialog.id = 'td-saveas-dialog';
+    dialog.label = 'Save Track Setup As…';
+    dialog.setAttribute('style', '--width:26rem;');
+
+    // Add footer gap between Cancel and Save buttons
+    var footerStyle = document.createElement('style');
+    footerStyle.textContent = '#td-saveas-dialog::part(footer){display:flex;gap:0.5rem;justify-content:flex-end;}';
+
+    var html = '';
+    html += '<div style="font-size:0.8rem;color:var(--sl-color-neutral-500);margin-bottom:0.75rem;">';
+    html += '<sl-icon name="info-circle" style="font-size:0.7rem;"></sl-icon> ';
+    html += 'Saves a copy to the user folder. The original factory template is not modified.';
+    html += '</div>';
+    html += '<sl-input id="td-saveas-name" label="Template Name" value="' + S.esc(defaultName) + '" placeholder="e.g. my-setup" required autofocus></sl-input>';
+    html += '<div id="td-saveas-hint" style="font-size:0.72rem;color:var(--sl-color-neutral-400);margin-top:0.35rem;"></div>';
+
+    dialog.innerHTML = html;
+
+    var cancelBtn = document.createElement('sl-button');
+    cancelBtn.setAttribute('slot', 'footer');
+    cancelBtn.setAttribute('variant', 'default');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', function() { dialog.hide(); });
+
+    var saveBtn = document.createElement('sl-button');
+    saveBtn.setAttribute('slot', 'footer');
+    saveBtn.setAttribute('variant', 'primary');
+    saveBtn.innerHTML = '<sl-icon name="floppy" slot="prefix"></sl-icon> Save Copy';
+
+    saveBtn.addEventListener('click', function() {
+      var nameInput = dialog.querySelector('#td-saveas-name');
+      var hint = dialog.querySelector('#td-saveas-hint');
+      var raw = (nameInput.value || '').trim();
+
+      if (!raw) {
+        hint.textContent = 'Please enter a name';
+        hint.style.color = 'var(--sl-color-danger-600)';
+        nameInput.focus();
+        return;
+      }
+
+      var safeName = raw.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-|-$/g, '');
+      if (!safeName) {
+        hint.textContent = 'Name must contain at least one letter or digit';
+        hint.style.color = 'var(--sl-color-danger-600)';
+        nameInput.focus();
+        return;
+      }
+
+      var fileName = safeName + '.json';
+      var data = collectFromUI();
+
+      saveBtn.setAttribute('loading', '');
+      saveTrackDefaults(data, fileName)
+        .then(function() {
+          dialog.hide();
+          // Switch currentFile to the new user copy
+          currentFile = { path: 'user/trackdefaults', name: fileName };
+          var nameEl = document.getElementById('td-file-name');
+          if (nameEl) nameEl.textContent = fileName;
+          dirty = false;
+          updateFactoryBadge();
+          // Refresh the file browser to show the new file
+          if (window.TBD.sampleManager && window.TBD.sampleManager.refreshCurrentDir) {
+            window.TBD.sampleManager.refreshCurrentDir();
+          }
+        })
+        .catch(function() {
+          saveBtn.removeAttribute('loading');
+        });
+    });
+
+    dialog.appendChild(cancelBtn);
+    dialog.appendChild(saveBtn);
+    document.body.appendChild(dialog);
+    document.head.appendChild(footerStyle);
+
+    dialog.addEventListener('sl-after-hide', function() { dialog.remove(); footerStyle.remove(); });
+    requestAnimationFrame(function() { dialog.show(); });
   }
 
   // ─── Preset dropdown builder ───────────────────────────────
@@ -414,9 +580,9 @@
       bankCell.querySelector('.td-bank-select').addEventListener('change', function() {
         var newBank = parseInt(this.value, 10);
         rebuildSliceDropdown(trackIdx, kitIdx, newBank, 0);
-        dirty = true; updateSaveButton();
+        dirty = true;
       });
-      sliceCell.querySelector('.td-slice-select').addEventListener('change', function() { dirty = true; updateSaveButton(); });
+      sliceCell.querySelector('.td-slice-select').addEventListener('change', function() { dirty = true; });
     } else {
       bankCell.innerHTML = '<span class="td-na">—</span>';
       sliceCell.innerHTML = '<span class="td-na">—</span>';
@@ -424,7 +590,7 @@
   }
 
   function renderOverlayContent() {
-    var body = document.getElementById('trackdefaults-body');
+    var body = document.getElementById('td-editor-body');
     if (!body) return;
 
     facetedData = buildFacetedData();
@@ -433,7 +599,7 @@
     var html = '';
     html += '<p class="td-intro">Configure which preset each track loads on boot. ';
     html += 'Pick a <strong>machine</strong> first, then choose a <strong>preset</strong>. ';
-    html += 'Changes take effect on next power-up.</p>';
+    html += 'Changes take effect on next power-up.</p>';;
 
     // ─── Global kit selector ─────────────────────────────────
     if (kitNames.length > 0) {
@@ -575,7 +741,7 @@
         updateRomplerCells(idx, machineId);
 
         dirty = true;
-        updateSaveButton();
+       
       });
     });
 
@@ -583,7 +749,7 @@
     body.querySelectorAll('.td-preset-select').forEach(function(sel) {
       sel.addEventListener('change', function() {
         dirty = true;
-        updateSaveButton();
+       
       });
     });
 
@@ -591,7 +757,7 @@
     body.querySelectorAll('.td-slice-select').forEach(function(sel) {
       sel.addEventListener('change', function() {
         dirty = true;
-        updateSaveButton();
+       
       });
     });
 
@@ -604,7 +770,7 @@
         var newBank = parseInt(sel.value, 10);
         rebuildSliceDropdown(trackIdx, kitIdx2, newBank, 0);
         dirty = true;
-        updateSaveButton();
+       
       });
     });
 
@@ -614,19 +780,11 @@
       kitSel.addEventListener('change', function() {
         rebuildBankDropdowns();
         dirty = true;
-        updateSaveButton();
+       
       });
     }
 
     dirty = false;
-    updateSaveButton();
-  }
-
-  function updateSaveButton() {
-    var btn = document.getElementById('td-save-btn');
-    if (btn) {
-      btn.disabled = !dirty;
-    }
   }
 
   // ─── Collect & Save ────────────────────────────────────────
@@ -648,7 +806,7 @@
     };
 
     var tracks = S.data.tracks || [];
-    var presetSelects = document.querySelectorAll('#trackdefaults-body .td-preset-select');
+    var presetSelects = document.querySelectorAll('#td-editor-body .td-preset-select');
 
     presetSelects.forEach(function(sel) {
       var idx = parseInt(sel.getAttribute('data-track'), 10);
@@ -683,79 +841,196 @@
     return result;
   }
 
+  // ─── Panel switching ────────────────────────────────────────
+
+  function showTDPanel() {
+    var panel = document.getElementById('kit-panel');
+    panel.classList.remove('viewer-active');
+    panel.classList.add('td-editor-active');
+    // Update filename in the sub-header tab
+    var nameEl = document.getElementById('td-file-name');
+    if (nameEl) nameEl.textContent = currentFile ? currentFile.name : 'default.json';
+    // Hide the File Viewer nav links when switching to editor
+    var fvNav = document.getElementById('fv-td-nav');
+    if (fvNav) fvNav.style.display = 'none';
+    // Show/hide factory badge and adjust Save button
+    updateFactoryBadge();
+    // Fetch and show active template badge
+    fetchActiveTemplate();
+  }
+
+  function closeTDEditor() {
+    if (dirty && !confirm('You have unsaved changes. Discard them?')) return;
+    var panel = document.getElementById('kit-panel');
+    panel.classList.remove('td-editor-active');
+    dirty = false;
+    // Hide the File Viewer nav links
+    var fvNav = document.getElementById('fv-td-nav');
+    if (fvNav) fvNav.style.display = 'none';
+  }
+
+  /**
+   * Switch from editor to JSON file viewer showing the actual file.
+   * Fetches the raw file from the server so the user sees the real content.
+   */
+  function switchToJsonView() {
+    var panel = document.getElementById('kit-panel');
+    panel.classList.remove('td-editor-active');
+    panel.classList.add('viewer-active');
+
+    var fileName = currentFile ? currentFile.name : 'default.json';
+    var filePath = currentFile ? currentFile.path : 'factory/trackdefaults';
+
+    // Show the Editor/JSON nav links in File Viewer header
+    var fvNav = document.getElementById('fv-td-nav');
+    if (fvNav) fvNav.style.display = '';
+
+    // Use the sample-manager openFileViewer to load the real file
+    var fullPath = filePath + '/' + fileName;
+    var body = document.getElementById('fv-body');
+    body.innerHTML = '<sl-spinner></sl-spinner>';
+
+    // Fetch the real file content from server
+    fetch('/api/v2/storage?fetch=' + encodeURIComponent(fullPath))
+      .then(function(r) { return r.text(); })
+      .then(function(text) {
+        var smState = window.TBD.sampleManager && window.TBD.sampleManager.state;
+        if (smState) {
+          smState.fileViewerOpen = true;
+          smState.fileViewerData = {
+            path: filePath,
+            name: fileName,
+            size: text.length,
+            content: text,
+            type: 'json'
+          };
+        }
+
+        document.getElementById('fv-name').textContent = fileName;
+        var iconDiv = document.getElementById('fv-icon');
+        iconDiv.className = 'fv-tab-icon json';
+        iconDiv.innerHTML = '<sl-icon name="file-earmark-code"></sl-icon>';
+        document.getElementById('fv-lang').textContent = 'JSON';
+        document.getElementById('fv-size').textContent = text.length + ' B';
+
+        if (window.TBD.sampleManager && window.TBD.sampleManager.renderJson) {
+          window.TBD.sampleManager.renderJson(body, text);
+        } else {
+          body.innerHTML = '<pre style="padding:1rem;color:#d4d4d4;">' + S.esc(text) + '</pre>';
+        }
+      })
+      .catch(function() {
+        body.innerHTML = '<div style="padding:1rem;color:#999;">Could not load file.</div>';
+      });
+  }
+
+  /**
+   * Open the track defaults editor for a specific file.
+   * Called from: header button (default.json), file viewer toggle (any td file).
+   */
+  function openTrackDefaultsEditor(filePath, fileName) {
+    currentFile = filePath ? { path: filePath, name: fileName || 'default.json' } : null;
+
+    S.showLoading('Loading track setup…');
+    var dataReady = S.data.loaded
+      ? Promise.resolve()
+      : S.loadSharedData();
+    dataReady.then(function() {
+      return loadTrackDefaults();
+    }).then(function() {
+      renderOverlayContent();
+      S.hideLoading();
+      showTDPanel();
+    }).catch(function() {
+      S.hideLoading();
+      S.toast('Could not load track setup', 'danger', 4000);
+    });
+  }
+
+  /**
+   * Open from file viewer — parses the already-loaded JSON content.
+   */
+  function openFromFileViewer() {
+    var smState = window.TBD.sampleManager && window.TBD.sampleManager.state;
+    var fvData = smState && smState.fileViewerData;
+
+    if (fvData && fvData.content) {
+      currentFile = { path: fvData.path, name: fvData.name };
+      try {
+        var parsed = JSON.parse(fvData.content);
+        trackDefaults = parsed && parsed.tracks ? parsed : { tracks: [] };
+      } catch (e) {
+        S.toast('Invalid JSON in file', 'danger', 4000);
+        return;
+      }
+    } else {
+      currentFile = null;
+    }
+
+    S.showLoading('Loading editor…');
+    var dataReady = S.data.loaded
+      ? Promise.resolve()
+      : S.loadSharedData();
+    dataReady.then(function() {
+      return loadKitData();
+    }).then(function() {
+      renderOverlayContent();
+      S.hideLoading();
+      showTDPanel();
+    }).catch(function() {
+      S.hideLoading();
+      S.toast('Could not load editor data', 'danger', 4000);
+    });
+  }
+
   // ─── Init ──────────────────────────────────────────────────
 
   function init() {
-    // Create the dialog DOM dynamically so it can be shared across pages
-    // (index.html Sample Manager + preset-macro-manager.html)
-    var dialog = document.getElementById('trackdefaults-dialog');
-    if (!dialog) {
-      dialog = document.createElement('sl-dialog');
-      dialog.label = 'Boot Default Presets';
-      dialog.id = 'trackdefaults-dialog';
-      dialog.style.cssText = '--width:64rem;';
-      dialog.innerHTML =
-        '<div id="trackdefaults-body"></div>' +
-        '<sl-button slot="footer" variant="default" id="td-close-btn">Close</sl-button>' +
-        '<sl-button slot="footer" variant="primary" id="td-save-btn" disabled>Save to SD Card</sl-button>';
-      document.body.appendChild(dialog);
-    }
-
     var openBtn = document.getElementById('trackdefaults-btn');
-    var saveBtn = document.getElementById('td-save-btn');
     var closeBtn = document.getElementById('td-close-btn');
 
-    if (!openBtn) {
-      console.warn('[TrackDefaults] Trigger button not found');
-      return;
+    // Header text links — TD editor side
+    var tdLinkJson = document.getElementById('td-link-json');
+    // Header text links — File Viewer side
+    var fvLinkEditor = document.getElementById('fv-link-editor');
+
+    if (openBtn) {
+      openBtn.addEventListener('click', function() {
+        openTrackDefaultsEditor('factory/trackdefaults', 'default.json');
+      });
     }
 
-    openBtn.addEventListener('click', function() {
-      S.showLoading('Loading boot defaults…');
-      // Ensure shared data (tracks, machines, macros) is loaded — on the Macros
-      // page this is already done, on the Samples page it may not be.
-      var dataReady = S.data.loaded
-        ? Promise.resolve()
-        : S.loadSharedData();
-      dataReady.then(function() {
-        return loadTrackDefaults();
-      }).then(function() {
-        renderOverlayContent();
-        S.hideLoading();
-        dialog.show();
-      }).catch(function() {
-        S.hideLoading();
-        S.toast('Could not load boot defaults', 'danger', 4000);
+    var saveAsBtn = document.getElementById('td-saveas-btn');
+    if (saveAsBtn) {
+      saveAsBtn.addEventListener('click', function() {
+        saveAsDialog();
       });
-    });
+    }
 
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function() {
-        var data = collectFromUI();
-        S.showLoading('Saving boot defaults…');
-        saveTrackDefaults(data).then(function() {
-          trackDefaults = data;
-          S.hideLoading();
-        }).catch(function() {
-          S.hideLoading();
-        });
+    var setActiveBtn = document.getElementById('td-setactive-btn');
+    if (setActiveBtn) {
+      setActiveBtn.addEventListener('click', function() {
+        setAsBootDefault();
       });
     }
 
     if (closeBtn) {
       closeBtn.addEventListener('click', function() {
-        dialog.hide();
+        closeTDEditor();
       });
     }
 
-    // Confirm unsaved changes on close
-    dialog.addEventListener('sl-request-close', function(e) {
-      if (dirty) {
-        if (!confirm('You have unsaved changes. Discard them?')) {
-          e.preventDefault();
-        }
-      }
-    });
+    if (tdLinkJson) {
+      tdLinkJson.addEventListener('click', function() {
+        switchToJsonView();
+      });
+    }
+
+    if (fvLinkEditor) {
+      fvLinkEditor.addEventListener('click', function() {
+        openFromFileViewer();
+      });
+    }
   }
 
   // ─── Export ────────────────────────────────────────────────
@@ -763,6 +1038,11 @@
   window.TBD = window.TBD || {};
   window.TBD.trackDefaults = {
     init: init,
+    openEditor: openTrackDefaultsEditor,
+    openFromFileViewer: openFromFileViewer,
+    isTrackDefaultsFile: function(path) {
+      return /trackdefaults\//i.test(path || '');
+    }
   };
 
 })();

@@ -28,28 +28,8 @@
   }
 
   function populateConfigDialog(config) {
-    // Connection tab
-    var apiUrl = document.getElementById('cfg-api-url');
-    if (apiUrl) apiUrl.value = config.apiEndpoint || window.location.origin;
-
-    // MIDI tab
-    var midiEnable = document.getElementById('cfg-midi-enable');
-    if (midiEnable) midiEnable.checked = !!config.midiEnabled;
-
-    var midiChannel = document.getElementById('cfg-midi-channel');
-    if (midiChannel) {
-      if (midiChannel.querySelectorAll('sl-option').length === 0) {
-        var html = '';
-        for (var i = 1; i <= 16; i++) {
-          html += '<sl-option value="' + i + '">Channel ' + i + '</sl-option>';
-        }
-        midiChannel.innerHTML = html;
-      }
-      midiChannel.value = String(config.midiChannel || 1);
-    }
-
-    // Enumerate MIDI devices if Web MIDI is available
-    populateMidiDevices();
+    // ── Device MIDI Routing — from config.midi (same JSON the Pico uses via SPI)
+    populateMidiRouting(config);
 
     // WiFi tab — firmware stores in nested config.wifi object
     var wifi = config.wifi || {};
@@ -116,7 +96,8 @@
       var firmware = document.getElementById('cfg-firmware');
       if (firmware) firmware.textContent = iocaps.FWV || '—';
       var hardware = document.getElementById('cfg-hardware');
-      if (hardware) hardware.textContent = iocaps.HWV || '—';
+      var hwLabel = { DADA: 'TBD-16' };
+      if (hardware) hardware.textContent = hwLabel[iocaps.HWV] || iocaps.HWV || '—';
     } catch (e) {
       console.warn('Failed to fetch IOCaps:', e);
     }
@@ -129,46 +110,92 @@
     }
   }
 
-  function populateMidiDevices() {
-    var container = document.getElementById('cfg-midi-devices');
+  // ── Device MIDI Routing ──────────────────────────────────
+  // Reads config.midi (same JSON the Pico OLED screen uses via SPI
+  // GetConfiguration/SetConfiguration 0x10/0x11).
+  // Port structure mirrors midisettings.cpp on the Pico:
+  //   uartmidi1/2.in, uartmidi1/2.out   — TRS MIDI 1/2
+  //   usbhost.in, usbhost.out           — USB Host MIDI
+  //   usbdevice.in, usbdevice.out       — USB Device MIDI
+  //   abletonlink                        — off / tempo / tempo+startstop
+  // Mode values: "none", "sync", "notes", "sync+notes"
+
+  var MIDI_MODES = [
+    { value: 'none',       label: 'None' },
+    { value: 'sync',       label: 'Sync' },
+    { value: 'notes',      label: 'Notes' },
+    { value: 'sync+notes', label: 'Sync + Notes' },
+  ];
+
+  var LINK_MODES = [
+    { value: 'off',              label: 'Off' },
+    { value: 'tempo',            label: 'Tempo' },
+    { value: 'tempo+startstop',  label: 'Tempo + Start/Stop' },
+  ];
+
+  var MIDI_PORTS = [
+    { key: 'uartmidi1', label: 'TRS MIDI 1', hasIn: true, hasOut: true },
+    { key: 'uartmidi2', label: 'TRS MIDI 2', hasIn: true, hasOut: true },
+    { key: 'usbhost',   label: 'USB Host MIDI', hasIn: true, hasOut: true },
+    { key: 'usbdevice', label: 'USB Device MIDI', hasIn: true, hasOut: true },
+  ];
+
+  function midiSelectHtml(id, modes, current) {
+    var html = '<sl-select id="' + id + '" size="small" value="' + S.esc(current) + '" hoist>';
+    for (var i = 0; i < modes.length; i++) {
+      html += '<sl-option value="' + modes[i].value + '">' + S.esc(modes[i].label) + '</sl-option>';
+    }
+    html += '</sl-select>';
+    return html;
+  }
+
+  function populateMidiRouting(config) {
+    var container = document.getElementById('cfg-midi-routing');
     if (!container) return;
 
-    if (navigator.requestMIDIAccess) {
-      navigator.requestMIDIAccess().then(function(access) {
-        var html = '';
-        var inputs = access.inputs;
-        var outputs = access.outputs;
-        var deviceNames = {};
-
-        inputs.forEach(function(input) {
-          deviceNames[input.name] = deviceNames[input.name] || { input: false, output: false };
-          deviceNames[input.name].input = true;
-        });
-        outputs.forEach(function(output) {
-          deviceNames[output.name] = deviceNames[output.name] || { input: false, output: false };
-          deviceNames[output.name].output = true;
-        });
-
-        var names = Object.keys(deviceNames);
-        if (names.length === 0) {
-          container.innerHTML = '<div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">No MIDI devices detected</div>';
-          return;
-        }
-
-        names.forEach(function(name) {
-          var d = deviceNames[name];
-          var badges = '';
-          if (d.input) badges += '<span class="midi-device-badge">Input</span>';
-          if (d.output) badges += '<span class="midi-device-badge">Output</span>';
-          html += '<div class="midi-device-item"><span style="font-size:0.85rem;">' + S.esc(name) + '</span><div>' + badges + '</div></div>';
-        });
-        container.innerHTML = html;
-      }).catch(function() {
-        container.innerHTML = '<div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">MIDI access denied</div>';
-      });
-    } else {
-      container.innerHTML = '<div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">Web MIDI not supported in this browser</div>';
+    var midi = config.midi;
+    if (!midi) {
+      container.innerHTML = '<div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">MIDI routing not available (device not connected)</div>';
+      return;
     }
+
+    var html = '<table class="midi-routing-table">';
+    html += '<thead><tr><th>Port</th><th>Input</th><th>Output</th></tr></thead><tbody>';
+
+    for (var i = 0; i < MIDI_PORTS.length; i++) {
+      var port = MIDI_PORTS[i];
+      var portData = midi[port.key] || {};
+      html += '<tr>';
+      html += '<td class="port-name">' + S.esc(port.label) + '</td>';
+      html += '<td>' + (port.hasIn ? midiSelectHtml('cfg-midi-' + port.key + '-in', MIDI_MODES, portData.in || 'none') : '—') + '</td>';
+      html += '<td>' + (port.hasOut ? midiSelectHtml('cfg-midi-' + port.key + '-out', MIDI_MODES, portData.out || 'none') : '—') + '</td>';
+      html += '</tr>';
+    }
+
+    // Ableton Link — spans the in/out columns
+    html += '<tr>';
+    html += '<td class="port-name">Ableton Link</td>';
+    html += '<td colspan="2">' + midiSelectHtml('cfg-midi-abletonlink', LINK_MODES, midi.abletonlink || 'off') + '</td>';
+    html += '</tr>';
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function readMidiRoutingIntoConfig(config) {
+    if (!config.midi) config.midi = {};
+    var midi = config.midi;
+
+    for (var i = 0; i < MIDI_PORTS.length; i++) {
+      var port = MIDI_PORTS[i];
+      if (!midi[port.key]) midi[port.key] = {};
+      var inEl = document.getElementById('cfg-midi-' + port.key + '-in');
+      var outEl = document.getElementById('cfg-midi-' + port.key + '-out');
+      if (inEl) midi[port.key].in = inEl.value;
+      if (outEl) midi[port.key].out = outEl.value;
+    }
+    var linkEl = document.getElementById('cfg-midi-abletonlink');
+    if (linkEl) midi.abletonlink = linkEl.value;
   }
 
   function setupConfigDialog() {
@@ -223,34 +250,6 @@
       cfgReboot.addEventListener('click', function() {
         document.getElementById('config-dialog').hide();
         document.getElementById('reboot-dialog').show();
-      });
-    }
-
-    // Test Connection button
-    var testConn = document.getElementById('cfg-test-connection');
-    if (testConn) {
-      testConn.addEventListener('click', async function() {
-        var dot = document.getElementById('cfg-conn-dot');
-        var statusEl = document.getElementById('cfg-conn-status');
-        if (dot) dot.style.background = '#ff9800';
-        if (statusEl) statusEl.textContent = 'Testing…';
-        try {
-          var apiUrl = document.getElementById('cfg-api-url');
-          var url = (apiUrl ? apiUrl.value : window.location.origin) + '/api/v2/device?action=getIOCaps';
-          var resp = await S.apiQueue.enqueue(function() {
-            return fetch(url, { method: 'GET', signal: AbortSignal.timeout(5000) });
-          });
-          if (resp.ok) {
-            if (dot) dot.style.background = '#4caf50';
-            if (statusEl) statusEl.textContent = 'Connected';
-          } else {
-            if (dot) dot.style.background = '#f44336';
-            if (statusEl) statusEl.textContent = 'Error (' + resp.status + ')';
-          }
-        } catch (e) {
-          if (dot) dot.style.background = '#f44336';
-          if (statusEl) statusEl.textContent = 'Unreachable';
-        }
       });
     }
 
@@ -672,17 +671,8 @@
     }
     var config = currentConfig;
 
-    var apiUrl = document.getElementById('cfg-api-url');
-    if (apiUrl) config.apiEndpoint = apiUrl.value;
-
-    var midiEnable = document.getElementById('cfg-midi-enable');
-    if (midiEnable) config.midiEnabled = midiEnable.checked;
-
-    var midiChannel = document.getElementById('cfg-midi-channel');
-    if (midiChannel) config.midiChannel = parseInt(midiChannel.value, 10) || 1;
-
-    var compact = document.getElementById('cfg-compact');
-    if (compact) config.compactLayout = compact.checked;
+    // Device MIDI routing — same pattern as WiFi: merge into config.midi
+    readMidiRoutingIntoConfig(config);
 
     try {
       await S.queuedPost('/device?action=setConfig', config);

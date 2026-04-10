@@ -23,7 +23,7 @@ const SLICES_PER_BANK = 32;
 const NUM_BANKS     = 8;
 const PSRAM_MAX     = 29_360_128;           // ~28 MB
 const UPLOAD_SOFT_LIMIT = 10 * 1024 * 1024; // 10 MB
-const USER_FOLDER   = 'user';               // writable user area on SD card
+const USER_FOLDER   = 'samples/user';        // writable user area on SD card
 
 const DEFAULT_BANKS = [
   { name: 'KICK',     color: '#4CAF50' },
@@ -84,6 +84,10 @@ const state = {
   // Multi-select for batch operations
   selectedFiles: new Set(),   // Set of 'path/name' keys
   selectionMode: false,
+
+  // File viewer state
+  fileViewerOpen: false,
+  fileViewerData: null,       // { path, name, size, content, type }
 
   sortableInstances: [],
   initializing: true,
@@ -284,6 +288,15 @@ async function fetchSampleList() {
   state.kits     = d.kits  || state.kits;
   state.kitEntries = d.active_kit_entries || [];
   state.capacity = d.capacity || state.capacity;
+  // Clear file source — we're now showing a device kit
+  state.kitFileSource = null;
+  var kitNav = document.getElementById('kit-file-nav');
+  if (kitNav) kitNav.style.display = 'none';
+  // Hide file toolbar, show normal kit controls
+  var kitFileToolbar = document.getElementById('kit-file-toolbar');
+  if (kitFileToolbar) kitFileToolbar.style.display = 'none';
+  var kitControls = document.querySelector('.kit-controls');
+  if (kitControls) kitControls.style.display = '';
 
   // Load bank metadata
   const meta = state.kits.smp_bank_meta;
@@ -317,7 +330,9 @@ function markMissingKitEntries() {
   // Build a Set of "path/filename" keys from available files
   const available = new Set();
   for (const f of state.files) {
-    const key = f.path ? `${f.path}/${f.name}` : f.name;
+    // Strip .wav extension to match kit entry stems
+    const stem = f.name.replace(/\.wav$/i, '');
+    const key = f.path ? `${f.path}/${stem}` : stem;
     available.add(key);
   }
   for (let i = 0; i < state.kitEntries.length; i++) {
@@ -335,7 +350,8 @@ function markMissingKitEntries() {
 function findKitReferencesForFile(path, filename) {
   const refs = [];
   if (!state.kitEntries) return refs;
-  const targetKey = path ? `${path}/${filename}` : filename;
+  const stem = filename.replace(/\.wav$/i, '');
+  const targetKey = path ? `${path}/${stem}` : stem;
   for (let i = 0; i < state.kitEntries.length; i++) {
     const e = state.kitEntries[i];
     if (!e) continue;
@@ -1010,8 +1026,7 @@ function setupSelectionToolbar() {
       // Select all writable files in current folder
       const items = getPoolItems().filter(i => i.type === 'file' && isUserWritable(i.path));
       for (const item of items) {
-        const stem = item.name.replace(/\.wav$/i, '');
-        state.selectedFiles.add(`${item.path}/${stem}`);
+        state.selectedFiles.add(`${item.path}/${item.name}`);
       }
       renderPoolContent();
     } else if (act === 'select-none') {
@@ -1192,7 +1207,7 @@ function getPoolItems() {
 
 function renderBreadcrumb() {
   const el = document.getElementById('pool-breadcrumb');
-  const homeHtml = '<sl-icon name="hdd" class="pool-breadcrumb-home" data-nav=""></sl-icon><span class="pool-breadcrumb-home-label" data-nav="">TBD-16 SD Card</span>';
+  const homeHtml = '<sl-icon name="hdd" class="pool-breadcrumb-home" data-nav=""></sl-icon><span class="pool-breadcrumb-home-label" data-nav="">SD Card</span>';
   if (state.poolPath === '') {
     el.innerHTML = homeHtml;
     return;
@@ -1235,7 +1250,7 @@ function renderPoolContent() {
         ? `<sl-icon-button name="pencil" label="Rename folder" class="action-hover" data-act="rename-folder" data-folder-path="${esc(item.path)}" data-folder-name="${esc(item.name)}" onclick="event.stopPropagation();"></sl-icon-button>
            <sl-icon-button name="trash3" label="Delete folder" class="action-hover" data-act="delete-folder" data-folder-path="${esc(item.path)}" data-folder-name="${esc(item.name)}" onclick="event.stopPropagation();"></sl-icon-button>`
         : '';
-      const countLabel = item.fileCount ? `${item.fileCount} sample${item.fileCount !== 1 ? 's' : ''}` : '';
+      const countLabel = item.fileCount ? `${item.fileCount} file${item.fileCount !== 1 ? 's' : ''}` : '';
       return `<div class="sample-row folder-row" data-nav="${esc(item.path)}" data-folder-path="${esc(item.path)}" draggable="true">
         <sl-icon name="folder2-open" class="sample-row-icon"></sl-icon>
         <span class="sample-row-name">${esc(item.name)}</span>
@@ -1248,10 +1263,12 @@ function renderPoolContent() {
       </div>`;
     }
 
-    const stem = item.name.replace(/\.wav$/i, '');
-    const durStr = item.size ? fileDuration(item.size) : '';
+    const isWav = /\.wav$/i.test(item.name);
+    const displayName = isWav ? item.name.replace(/\.wav$/i, '') : item.name;
+    const durStr = isWav && item.size ? fileDuration(item.size) : '';
+    const fileIcon = isWav ? 'music-note-beamed' : (/\.json$/i.test(item.name) ? 'file-earmark-code' : 'file-earmark');
     const fileWritable = isUserWritable(item.path);
-    const fileKey = `${item.path}/${stem}`;
+    const fileKey = `${item.path}/${item.name}`;
     const isSelected = state.selectedFiles.has(fileKey);
 
     // Checkbox for multi-select (only in user-writable areas)
@@ -1260,19 +1277,29 @@ function renderPoolContent() {
       : '';
 
     const editActions = fileWritable
-      ? `<sl-icon-button name="pencil"     label="Rename" class="action-hover" data-act="rename"   data-path="${esc(item.path)}" data-name="${esc(stem)}"></sl-icon-button>
-         <sl-icon-button name="trash3"     label="Delete" class="action-hover" data-act="delete"   data-path="${esc(item.path)}" data-name="${esc(stem)}"></sl-icon-button>`
+      ? `<sl-icon-button name="pencil"     label="Rename" class="action-hover" data-act="rename"   data-path="${esc(item.path)}" data-name="${esc(item.name)}"></sl-icon-button>
+         <sl-icon-button name="trash3"     label="Delete" class="action-hover" data-act="delete"   data-path="${esc(item.path)}" data-name="${esc(item.name)}"></sl-icon-button>`
       : '';
+    const previewBtn = isWav
+      ? `<sl-icon-button name="play-fill"  label="Preview" data-act="preview"  data-path="${esc(item.path)}" data-name="${esc(item.name)}"></sl-icon-button>`
+      : '';
+    const isViewable = /\.(json|txt|csv|xml|md|log|ini|cfg|conf)$/i.test(item.name);
+    const viewBtn = (!isWav && isViewable)
+      ? `<sl-icon-button name="eye"        label="View"     class="action-hover" data-act="view-file"     data-path="${esc(item.path)}" data-name="${esc(item.name)}" data-size="${item.size}"></sl-icon-button>`
+      : '';
+    const downloadBtn = `<sl-icon-button name="download"   label="Download" class="action-hover" data-act="download-file" data-path="${esc(item.path)}" data-name="${esc(item.name)}"></sl-icon-button>`;
     return `<div class="sample-row file-row pool-file${isSelected ? ' selected' : ''}"
-        data-path="${esc(item.path)}" data-name="${esc(stem)}" data-size="${item.size}"
-        draggable="true">
+        data-path="${esc(item.path)}" data-name="${esc(item.name)}" data-size="${item.size}"
+        ${isWav ? 'draggable="true"' : ''} ${isViewable && !isWav ? 'style="cursor:pointer"' : ''}>
       ${checkboxHTML}
-      <sl-icon name="music-note-beamed" class="sample-row-icon"></sl-icon>
-      <span class="sample-row-name" title="${esc(stem)}">${esc(stem)}</span>
+      <sl-icon name="${fileIcon}" class="sample-row-icon"></sl-icon>
+      <span class="sample-row-name" title="${esc(item.name)}">${esc(displayName)}</span>
       <span class="sample-row-dur">${durStr}</span>
       <span class="sample-row-smp">${item.size ? formatBytes(item.size) : ''}</span>
       <div class="sample-row-actions">
-        <sl-icon-button name="play-fill"  label="Preview" data-act="preview"  data-path="${esc(item.path)}" data-name="${esc(stem)}"></sl-icon-button>
+        ${previewBtn}
+        ${viewBtn}
+        ${downloadBtn}
         ${editActions}
       </div>
     </div>`;
@@ -1593,7 +1620,8 @@ function setupPoolDragEvents() {
         let added = 0;
         for (const data of samples) {
           const nsamp = nsamples(data.size);
-          if (addEntryToBank(bankIdx, data.name, data.path, nsamp)) added++;
+          const stem = data.name.replace(/\.wav$/i, '');
+          if (addEntryToBank(bankIdx, stem, data.path, nsamp)) added++;
         }
         if (added > 0) {
           markDirty();
@@ -1614,12 +1642,13 @@ function setupPoolDragEvents() {
       const data = JSON.parse(raw);
       const nsamp = nsamples(data.size);
 
+      const stem = data.name.replace(/\.wav$/i, '');
       // Check if dropped onto a specific slot (replace)
       const slot = e.target.closest('.bank-slot');
       if (slot && slot.dataset.index !== undefined) {
         const absIdx = parseInt(slot.dataset.index, 10);
         if (absIdx >= 0 && absIdx < state.kitEntries.length) {
-          state.kitEntries[absIdx] = { filename: data.name, path: data.path, nsamples: nsamp, sname: '' };
+          state.kitEntries[absIdx] = { filename: stem, path: data.path, nsamples: nsamp, sname: '' };
           markMissingKitEntries();
           markDirty();
           renderKitEditor();
@@ -1632,10 +1661,10 @@ function setupPoolDragEvents() {
       const body = e.target.closest('[data-drop="bank"]');
       if (!body) return;
       const bankIdx = parseInt(body.dataset.bank, 10);
-      if (addEntryToBank(bankIdx, data.name, data.path, nsamp)) {
+      if (addEntryToBank(bankIdx, stem, data.path, nsamp)) {
         markDirty();
         renderKitEditor();
-        toast(`Added ${data.name} to ${state.banks[bankIdx].name}`, 'success');
+        toast(`Added ${stem} to ${state.banks[bankIdx].name}`, 'success');
       }
     } catch (err) {
       console.error('Drop parse error:', err);
@@ -1963,6 +1992,27 @@ function setupPoolActions() {
         openDeleteDialog(btn.dataset.path, btn.dataset.name);
         return;
       }
+      if (act === 'download-file') {
+        e.stopPropagation();
+        downloadFile(btn.dataset.path, btn.dataset.name);
+        return;
+      }
+      if (act === 'view-file') {
+        e.stopPropagation();
+        openFileViewer(btn.dataset.path, btn.dataset.name, parseInt(btn.dataset.size, 10) || 0);
+        return;
+      }
+    }
+
+    // Click on non-WAV file row → open file viewer
+    const fileRow = e.target.closest('.file-row');
+    if (fileRow && !e.target.closest('[data-act]') && !e.target.closest('.pool-select-cb')) {
+      const name = fileRow.dataset.name;
+      if (name && !/\.wav$/i.test(name)) {
+        e.stopPropagation();
+        openFileViewer(fileRow.dataset.path, name, parseInt(fileRow.dataset.size, 10) || 0);
+        return;
+      }
     }
 
     // Folder navigation via breadcrumb or folder row
@@ -2050,7 +2100,8 @@ function openRenameDialog(path, filename) {
   const dlg = document.getElementById('rename-dialog');
   const inp = document.getElementById('rename-input');
   dlg.label = 'Rename';
-  inp.value = filename;
+  // Show stem without extension for editing
+  inp.value = filename.replace(/\.[^.]+$/, '');
   dlg.show();
   setTimeout(() => inp.focus(), 100);
 }
@@ -2064,7 +2115,8 @@ function setupRenameDialog() {
     const ctx = state._renameCtx;
     if (!ctx) return;
     if (ctx._kitIndex !== undefined) return; // handled by temporary handler
-    const newName = sanitizeFilename(document.getElementById('rename-input').value);
+    const ext = (ctx.filename.match(/\.[^.]+$/) || [''])[0];
+    const newName = sanitizeFilename(document.getElementById('rename-input').value) + ext;
     if (!newName || newName === ctx.filename) { dlg.hide(); return; }
     try {
       await renameSample(ctx.path, ctx.filename, newName);
@@ -2083,7 +2135,7 @@ function setupRenameDialog() {
 async function openDeleteDialog(path, filename) {
   state._deleteCtx = { path, filename };
   document.getElementById('delete-msg').textContent =
-    `Delete ${filename}.wav from ${path}?`;
+    `Delete ${filename} from ${path}?`;
 
   // Check ALL kits for references to this file via firmware
   const refsEl = document.getElementById('delete-kit-refs');
@@ -2094,8 +2146,9 @@ async function openDeleteDialog(path, filename) {
   document.getElementById('delete-dialog').show();
 
   try {
+    const stemForRefs = filename.replace(/\.wav$/i, '');
     const result = await apiPost('?action=manage', {
-      action: 'checkFileRefs', path, filename
+      action: 'checkFileRefs', path, filename: stemForRefs
     });
     const refs = result.refs || [];
     if (refs.length > 0) {
@@ -2548,6 +2601,7 @@ function renderPickerList(filter) {
   const list = document.getElementById('picker-list');
   const lc = filter.toLowerCase();
   const filtered = state.files.filter(f => {
+    if (!/\.wav$/i.test(f.name)) return false;  // only WAV files for kit
     const stem = f.name.replace(/\.wav$/i, '');
     return !lc || stem.toLowerCase().includes(lc) || f.path.toLowerCase().includes(lc);
   });
@@ -2595,7 +2649,7 @@ function setupSamplePicker() {
     let added = 0;
     for (const key of state._pickerSelected) {
       const [path, name] = [key.substring(0, key.lastIndexOf('/')), key.substring(key.lastIndexOf('/') + 1)];
-      const file = state.files.find(f => f.path === path && f.name === name);
+      const file = state.files.find(f => f.path === path && f.name.replace(/\.wav$/i, '') === name);
       const nsamp = file ? nsamples(file.size) : 0;
       if (addEntryToBank(bankIdx, name, path, nsamp)) added++;
     }
@@ -2936,6 +2990,475 @@ function setupImportKitDialog() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  FILE VIEWER — VS Code Dark+ inspired code viewer
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Character-by-character JSON tokenizer.
+ * Operates on RAW text (not HTML-escaped), returns safe HTML.
+ */
+function tokenizeJsonLine(raw) {
+  var out = '';
+  var i = 0;
+  var len = raw.length;
+
+  while (i < len) {
+    var ch = raw[i];
+
+    // Whitespace — pass through
+    if (ch === ' ' || ch === '\t') {
+      out += ch;
+      i++;
+      continue;
+    }
+
+    // String literal
+    if (ch === '"') {
+      var s = '"';
+      i++;
+      while (i < len && raw[i] !== '"') {
+        if (raw[i] === '\\' && i + 1 < len) {
+          s += raw[i] + raw[i + 1];
+          i += 2;
+        } else {
+          s += raw[i];
+          i++;
+        }
+      }
+      if (i < len) { s += '"'; i++; } // closing quote
+
+      // Look ahead: is this a key (followed by colon)?
+      var j = i;
+      while (j < len && (raw[j] === ' ' || raw[j] === '\t')) j++;
+      var cls = (j < len && raw[j] === ':') ? 'tk-key' : 'tk-str';
+      out += '<span class="' + cls + '">' + esc(s) + '</span>';
+      continue;
+    }
+
+    // Colon
+    if (ch === ':') {
+      out += '<span class="tk-pun">:</span>';
+      i++;
+      continue;
+    }
+
+    // Comma
+    if (ch === ',') {
+      out += '<span class="tk-pun">,</span>';
+      i++;
+      continue;
+    }
+
+    // Braces
+    if (ch === '{' || ch === '}') {
+      out += '<span class="tk-brc">' + ch + '</span>';
+      i++;
+      continue;
+    }
+
+    // Brackets
+    if (ch === '[' || ch === ']') {
+      out += '<span class="tk-brk">' + ch + '</span>';
+      i++;
+      continue;
+    }
+
+    // Number
+    if (ch === '-' || (ch >= '0' && ch <= '9')) {
+      var num = '';
+      while (i < len && /[0-9eE.\-+]/.test(raw[i])) {
+        num += raw[i];
+        i++;
+      }
+      out += '<span class="tk-num">' + esc(num) + '</span>';
+      continue;
+    }
+
+    // true
+    if (raw.substr(i, 4) === 'true') {
+      out += '<span class="tk-bool">true</span>';
+      i += 4;
+      continue;
+    }
+    // false
+    if (raw.substr(i, 5) === 'false') {
+      out += '<span class="tk-bool">false</span>';
+      i += 5;
+      continue;
+    }
+    // null
+    if (raw.substr(i, 4) === 'null') {
+      out += '<span class="tk-null">null</span>';
+      i += 4;
+      continue;
+    }
+
+    // Any other char — escape and emit
+    out += esc(ch);
+    i++;
+  }
+
+  return out;
+}
+
+/** Build breadcrumb HTML from path segments */
+function fvBreadcrumb(path, name) {
+  var parts = path ? path.split('/') : [];
+  parts.push(name);
+  return parts.map(function(p, i) {
+    return (i > 0 ? '<span class="fv-bc-sep">›</span>' : '') +
+      '<span class="fv-bc-seg">' + esc(p) + '</span>';
+  }).join('');
+}
+
+/** Detect language label */
+function fvLang(name) {
+  var ext = (name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+  return { '.json': 'JSON', '.txt': 'Plain Text', '.csv': 'CSV', '.xml': 'XML',
+    '.md': 'Markdown', '.log': 'Log', '.ini': 'INI', '.cfg': 'Config',
+    '.conf': 'Config', '.html': 'HTML', '.css': 'CSS', '.js': 'JavaScript'
+  }[ext] || 'Plain Text';
+}
+
+/** Open a kit JSON file in the Kit Editor (full editing) */
+async function openKitFromFile(path, name) {
+  var filePath = path ? path + '/' + name : name;
+  try {
+    // Close the file viewer if open
+    closeFileViewer();
+
+    var url = API_BASE + '?fetch=' + encodeURIComponent(filePath);
+    var r = await (_apiQueue ? _apiQueue.enqueue(function() {
+      return fetch(url, { signal: AbortSignal.timeout(15000) });
+    }) : fetch(url, { signal: AbortSignal.timeout(15000) }));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var text = await r.text();
+    var entries = JSON.parse(text);
+    if (!Array.isArray(entries)) throw new Error('Kit file is not an array');
+
+    // Load entries into Kit Editor state
+    state.kitEntries = entries;
+
+    // Rebuild banks from the entries — count how many non-empty banks exist
+    var bankCount = Math.ceil(entries.length / SLICES_PER_BANK);
+    if (bankCount < 1) bankCount = 1;
+    state.banks = [];
+    for (var b = 0; b < bankCount; b++) {
+      state.banks.push({
+        name: DEFAULT_BANKS[b] ? DEFAULT_BANKS[b].name : 'BANK ' + (b + 1),
+        color: DEFAULT_BANKS[b] ? DEFAULT_BANKS[b].color : BANK_COLORS[b % BANK_COLORS.length],
+        collapsed: false,
+      });
+    }
+
+    // Track file source for save
+    state.kitFileSource = { path: path, name: name };
+    state.dirty = false;
+
+    renderKitEditor();
+    updateCapacityBar();
+    updateSaveButton();
+    // Show Kit Editor / JSON toggle
+    var kitNav = document.getElementById('kit-file-nav');
+    if (kitNav) kitNav.style.display = '';
+    // Show file toolbar with filename, hide normal kit controls
+    var kitFileToolbar = document.getElementById('kit-file-toolbar');
+    var kitFileName = document.getElementById('kit-file-name');
+    var kitFileBadge = document.getElementById('kit-file-badge-factory');
+    var kitControls = document.querySelector('.kit-controls');
+    if (kitFileToolbar) kitFileToolbar.style.display = '';
+    if (kitFileName) kitFileName.textContent = name;
+    if (kitFileBadge) kitFileBadge.style.display = /^factory\//i.test(path || '') ? '' : 'none';
+    if (kitControls) kitControls.style.display = 'none';
+    toast('Loaded kit: ' + name, 'neutral');
+  } catch (e) {
+    toast('Failed to open kit: ' + e.message, 'danger');
+  }
+}
+
+/** Switch from Kit Editor to JSON view for a file-loaded kit */
+function switchToKitJson() {
+  if (!state.kitFileSource) return;
+  var path = state.kitFileSource.path;
+  var name = state.kitFileSource.name;
+  var filePath = path ? path + '/' + name : name;
+  // Open the file in the file viewer (bypass kit interception)
+  openFileViewerDirect(path, name, 0);
+}
+
+/** Switch from File Viewer JSON back to Kit Editor view */
+function switchToKitEditor() {
+  closeFileViewer();
+}
+
+/** Open file viewer — takes over the entire right panel */
+async function openFileViewer(path, name, size) {
+  var panel = document.getElementById('kit-panel');
+  var body = document.getElementById('fv-body');
+  var ext = (name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+
+  // Intercept trackdefaults JSON files — open directly in TD editor
+  var fullPath = path ? path + '/' + name : name;
+  if (ext === '.json' && /trackdefaults\//i.test(fullPath) && window.TBD.trackDefaults) {
+    window.TBD.trackDefaults.openEditor(path, name);
+    return;
+  }
+
+  // Intercept kit JSON files — open in Kit Editor (full editing)
+  var isKitFile = ext === '.json' && /kits\//i.test(fullPath) && !/\b(def_wt|sample_rom)\.json$/i.test(name);
+  if (isKitFile) {
+    await openKitFromFile(path, name);
+    return;
+  }
+  return openFileViewerDirect(path, name, size);
+}
+
+/** Internal file viewer — no kit/TD interception */
+async function openFileViewerDirect(path, name, size) {
+  var panel = document.getElementById('kit-panel');
+  var body = document.getElementById('fv-body');
+  var ext = (name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+
+  // Update tab
+  document.getElementById('fv-name').textContent = name;
+  var iconDiv = document.getElementById('fv-icon');
+  iconDiv.className = 'fv-tab-icon ' + (ext === '.json' ? 'json' : 'text');
+  iconDiv.innerHTML = ext === '.json'
+    ? '<sl-icon name="file-earmark-code"></sl-icon>'
+    : '<sl-icon name="file-earmark-text"></sl-icon>';
+
+  // Status bar
+  document.getElementById('fv-lang').textContent = fvLang(name);
+  document.getElementById('fv-enc').textContent = 'UTF-8';
+  document.getElementById('fv-size').textContent = size ? formatBytes(size) : '';
+  document.getElementById('fv-lines').textContent = '';
+
+  // Activate viewer — hides all kit editor elements via CSS
+  panel.classList.add('viewer-active');
+  state.fileViewerOpen = true;
+
+  // Show "Editor / JSON" nav links when viewing a trackdefaults JSON
+  var fvNav = document.getElementById('fv-td-nav');
+  var fullPath = path ? path + '/' + name : name;
+  if (fvNav) {
+    fvNav.style.display = /trackdefaults\//i.test(fullPath) ? '' : 'none';
+  }
+  // Show "Kit Editor / JSON" nav links when viewing a kit file (not for non-kit JSON like def_wt, sample_rom)
+  var fvKitNav = document.getElementById('fv-kit-nav');
+  if (fvKitNav) {
+    var isCurrentKit = state.kitFileSource && state.kitFileSource.name === name && state.kitFileSource.path === path;
+    fvKitNav.style.display = isCurrentKit ? '' : 'none';
+  }
+
+  // Loading
+  body.innerHTML = '<sl-spinner></sl-spinner>';
+
+  // Check if text file
+  var filePath = path ? path + '/' + name : name;
+  var isText = /\.(json|txt|csv|md|ini|cfg|xml|html|css|js|log|conf)$/i.test(name);
+
+  if (!isText) {
+    body.innerHTML = '<div class="fv-msg"><sl-icon name="file-earmark-binary"></sl-icon>' +
+      '<div style="color:#ccc;font-weight:500;">' + esc(name) + '</div>' +
+      '<div>' + (size ? formatBytes(size) : 'Unknown') + ' \u00b7 ' + (ext || 'binary') + '</div>' +
+      '<div style="font-size:12px;margin-top:4px;">Preview not available. Use Download.</div></div>';
+    state.fileViewerData = { path: path, name: name, size: size, content: null, type: 'binary' };
+    return;
+  }
+
+  try {
+    var url = API_BASE + '?fetch=' + encodeURIComponent(filePath);
+    var r = await (_apiQueue ? _apiQueue.enqueue(function() {
+      return fetch(url, { signal: AbortSignal.timeout(15000) });
+    }) : fetch(url, { signal: AbortSignal.timeout(15000) }));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var text = await r.text();
+
+    state.fileViewerData = { path: path, name: name, size: size, content: text, type: ext === '.json' ? 'json' : 'text' };
+
+    if (ext === '.json') {
+      fvRenderJson(body, text);
+    } else {
+      fvRenderCode(body, text, false, '');
+    }
+  } catch (e) {
+    body.innerHTML = '<div class="fv-msg error"><sl-icon name="exclamation-triangle"></sl-icon>' +
+      'Failed to load: ' + esc(e.message) + '</div>';
+    state.fileViewerData = { path: path, name: name, size: size, content: null, type: 'error' };
+  }
+}
+
+/** Close viewer — restores kit editor */
+function closeFileViewer() {
+  document.getElementById('kit-panel').classList.remove('viewer-active');
+  state.fileViewerOpen = false;
+  state.fileViewerData = null;
+}
+
+/** Render JSON with pretty-print + syntax highlighting */
+function fvRenderJson(container, text) {
+  var formatted;
+  var banner = '';
+
+  try {
+    formatted = JSON.stringify(JSON.parse(text), null, 2);
+  } catch (e) {
+    formatted = text;
+    var m = e.message.match(/position\s+(\d+)/i);
+    var lineInfo = '';
+    if (m) {
+      lineInfo = ' (line ' + text.substring(0, parseInt(m[1], 10)).split('\n').length + ')';
+    }
+    banner = '<div class="fv-error-banner"><sl-icon name="exclamation-triangle"></sl-icon>' +
+      '<span>Invalid JSON: ' + esc(e.message) + lineInfo + '</span></div>';
+  }
+
+  fvRenderCode(container, formatted, banner === '', banner);
+}
+
+/**
+ * Core code renderer: line numbers, syntax tokens, fold regions.
+ */
+function fvRenderCode(container, text, highlight, bannerHtml) {
+  var lines = text.split('\n');
+  var n = lines.length;
+
+  // Update line count in status bar
+  var linesEl = document.getElementById('fv-lines');
+  if (linesEl) linesEl.textContent = 'Ln ' + n;
+
+  // Build fold map for JSON
+  var foldMap = {};
+  if (highlight) {
+    var stack = [];
+    for (var fi = 0; fi < n; fi++) {
+      var trimmed = lines[fi].trim().replace(/,\s*$/, '');
+      if (trimmed.endsWith('{') || trimmed.endsWith('[')) {
+        stack.push(fi);
+      }
+      if (trimmed === '}' || trimmed === ']') {
+        if (stack.length > 0) {
+          var opener = stack.pop();
+          if (fi - opener > 1) foldMap[opener] = fi;
+        }
+      }
+    }
+  }
+
+  // Render lines
+  var gutterWidth = String(n).length;
+  var gHTML = '';
+  var cHTML = '';
+
+  for (var li = 0; li < n; li++) {
+    var num = String(li + 1).padStart(gutterWidth);
+    gHTML += '<div class="fv-gutter-line" data-ln="' + li + '">' + num + '</div>';
+
+    var content = highlight ? tokenizeJsonLine(lines[li]) : esc(lines[li]);
+    cHTML += '<div class="fv-line" data-ln="' + li + '">' + (content || ' ') + '</div>';
+  }
+
+  container.innerHTML = (bannerHtml || '') +
+    '<div class="fv-editor">' +
+      '<div class="fv-gutter" id="fv-gutter">' + gHTML + '</div>' +
+      '<div class="fv-code" id="fv-code">' + cHTML + '</div>' +
+    '</div>';
+
+  // Setup fold regions — append fold buttons to opener lines
+  if (highlight) {
+    var codeEl = container.querySelector('.fv-code');
+    var gutEl = container.querySelector('.fv-gutter');
+    var foldKeys = Object.keys(foldMap);
+    for (var fk = 0; fk < foldKeys.length; fk++) {
+      var startLn = parseInt(foldKeys[fk], 10);
+      var endLn = foldMap[startLn];
+      (function(s, e) {
+        var codeLine = codeEl.querySelector('.fv-line[data-ln="' + s + '"]');
+        if (!codeLine) return;
+        var btn = document.createElement('span');
+        btn.className = 'fv-fold-btn';
+        btn.textContent = ' \u25BE';
+        btn.title = 'Fold ' + (e - s - 1) + ' lines';
+        codeLine.appendChild(btn);
+
+        btn.addEventListener('click', function() {
+          var isCollapsed = btn.textContent.trim() === '\u25B8';
+          btn.textContent = isCollapsed ? ' \u25BE' : ' \u25B8';
+
+          for (var ln = s + 1; ln <= e; ln++) {
+            var cl = codeEl.querySelector('.fv-line[data-ln="' + ln + '"]');
+            var gl = gutEl.querySelector('.fv-gutter-line[data-ln="' + ln + '"]');
+            if (cl) cl.style.display = isCollapsed ? '' : 'none';
+            if (gl) gl.style.display = isCollapsed ? '' : 'none';
+          }
+
+          var ph = codeLine.querySelector('.fv-fold-ph');
+          if (!isCollapsed) {
+            if (!ph) {
+              ph = document.createElement('span');
+              ph.className = 'fv-fold-ph';
+              ph.textContent = (e - s - 1) + ' lines';
+              ph.addEventListener('click', function(ev) {
+                ev.stopPropagation();
+                btn.click();
+              });
+              codeLine.appendChild(ph);
+            }
+            ph.style.display = 'inline-block';
+          } else {
+            if (ph) ph.style.display = 'none';
+          }
+        });
+      })(startLn, endLn);
+    }
+  }
+}
+
+/** Download file */
+function downloadFile(path, name) {
+  var filePath = path ? path + '/' + name : name;
+  var url = API_BASE + '?download=' + encodeURIComponent(filePath);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+}
+
+/** Setup file viewer event handlers */
+function setupFileViewer() {
+  document.getElementById('fv-close').addEventListener('click', closeFileViewer);
+
+  // Kit Editor / JSON toggle — from Kit Editor side
+  var kitLinkJson = document.getElementById('kit-link-json');
+  if (kitLinkJson) {
+    kitLinkJson.addEventListener('click', switchToKitJson);
+  }
+  // Kit Editor / JSON toggle — from File Viewer side
+  var fvLinkKitEditor = document.getElementById('fv-link-kit-editor');
+  if (fvLinkKitEditor) {
+    fvLinkKitEditor.addEventListener('click', switchToKitEditor);
+  }
+
+  document.getElementById('fv-download').addEventListener('click', function() {
+    if (state.fileViewerData) {
+      downloadFile(state.fileViewerData.path, state.fileViewerData.name);
+    }
+  });
+
+  document.getElementById('fv-copy').addEventListener('click', async function() {
+    if (!state.fileViewerData || !state.fileViewerData.content) {
+      toast('No content to copy', 'warning');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(state.fileViewerData.content);
+      toast('Copied to clipboard', 'success', 2000);
+    } catch (e) {
+      toast('Copy failed', 'danger');
+    }
+  });
+}
+// ═══════════════════════════════════════════════════════════════
 //  THEME TOGGLE — standalone fallback (used only on samples.html)
 // ═══════════════════════════════════════════════════════════════
 
@@ -3000,6 +3523,7 @@ async function init() {
   setupSelectionToolbar();
   setupBatchDeleteDialog();
   setupImportKitDialog();
+  setupFileViewer();
 
   // Select mode button
   const selectBtn = document.getElementById('select-mode-btn');
@@ -3048,7 +3572,7 @@ async function init() {
 // Unified mode: export on window.TBD for lazy init from app.js
 // Standalone mode (samples.html): auto-init on DOMContentLoaded
 if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
-  window.TBD.sampleManager = { init: init, state: state };
+  window.TBD.sampleManager = { init: init, state: state, renderJson: fvRenderJson };
 } else {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(init, 200));

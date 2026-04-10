@@ -112,6 +112,8 @@ namespace CTAG::SPIAPI{
             SaveTrackDefault = 0xB8, // save a user track default template, args [name (cstring)], then JSON data
             DeleteTrackDefault = 0xB9, // delete a user track default template, args [name (cstring)]
 
+            SetActiveTrackDefault = 0xBB, // set active boot template, args [name (cstring)], writes user/config/active-trackdefault.txt
+
             // Phase 3: Project preset snapshot / parameter restore
             SetTrackParamValues = 0xBA, // batch-set track parameter values, args [trackIndex (uint8), count (uint8), values (int16[] in string_param)]
         };

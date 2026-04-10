@@ -21,7 +21,7 @@
   // ─── Settings ─────────────────────────────────────────────
 
   function setupSettings() {
-    var btn = document.getElementById('settings-btn');
+    var btn = document.getElementById('config-btn');
     if (btn) {
       btn.addEventListener('click', function() {
         S.toast('Settings panel (coming soon)', 'neutral', 2000);

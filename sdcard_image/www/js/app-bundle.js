@@ -5316,7 +5316,7 @@ const SLICES_PER_BANK = 32;
 const NUM_BANKS     = 8;
 const PSRAM_MAX     = 29_360_128;           // ~28 MB
 const UPLOAD_SOFT_LIMIT = 10 * 1024 * 1024; // 10 MB
-const USER_FOLDER   = 'user';               // writable user area on SD card
+const USER_FOLDER   = 'samples/user';        // writable user area on SD card
 
 const DEFAULT_BANKS = [
   { name: 'KICK',     color: '#4CAF50' },
@@ -5377,6 +5377,10 @@ const state = {
   // Multi-select for batch operations
   selectedFiles: new Set(),   // Set of 'path/name' keys
   selectionMode: false,
+
+  // File viewer state
+  fileViewerOpen: false,
+  fileViewerData: null,       // { path, name, size, content, type }
 
   sortableInstances: [],
   initializing: true,
@@ -5577,6 +5581,15 @@ async function fetchSampleList() {
   state.kits     = d.kits  || state.kits;
   state.kitEntries = d.active_kit_entries || [];
   state.capacity = d.capacity || state.capacity;
+  // Clear file source — we're now showing a device kit
+  state.kitFileSource = null;
+  var kitNav = document.getElementById('kit-file-nav');
+  if (kitNav) kitNav.style.display = 'none';
+  // Hide file toolbar, show normal kit controls
+  var kitFileToolbar = document.getElementById('kit-file-toolbar');
+  if (kitFileToolbar) kitFileToolbar.style.display = 'none';
+  var kitControls = document.querySelector('.kit-controls');
+  if (kitControls) kitControls.style.display = '';
 
   // Load bank metadata
   const meta = state.kits.smp_bank_meta;
@@ -5610,7 +5623,9 @@ function markMissingKitEntries() {
   // Build a Set of "path/filename" keys from available files
   const available = new Set();
   for (const f of state.files) {
-    const key = f.path ? `${f.path}/${f.name}` : f.name;
+    // Strip .wav extension to match kit entry stems
+    const stem = f.name.replace(/\.wav$/i, '');
+    const key = f.path ? `${f.path}/${stem}` : stem;
     available.add(key);
   }
   for (let i = 0; i < state.kitEntries.length; i++) {
@@ -5628,7 +5643,8 @@ function markMissingKitEntries() {
 function findKitReferencesForFile(path, filename) {
   const refs = [];
   if (!state.kitEntries) return refs;
-  const targetKey = path ? `${path}/${filename}` : filename;
+  const stem = filename.replace(/\.wav$/i, '');
+  const targetKey = path ? `${path}/${stem}` : stem;
   for (let i = 0; i < state.kitEntries.length; i++) {
     const e = state.kitEntries[i];
     if (!e) continue;
@@ -6303,8 +6319,7 @@ function setupSelectionToolbar() {
       // Select all writable files in current folder
       const items = getPoolItems().filter(i => i.type === 'file' && isUserWritable(i.path));
       for (const item of items) {
-        const stem = item.name.replace(/\.wav$/i, '');
-        state.selectedFiles.add(`${item.path}/${stem}`);
+        state.selectedFiles.add(`${item.path}/${item.name}`);
       }
       renderPoolContent();
     } else if (act === 'select-none') {
@@ -6485,7 +6500,7 @@ function getPoolItems() {
 
 function renderBreadcrumb() {
   const el = document.getElementById('pool-breadcrumb');
-  const homeHtml = '<sl-icon name="hdd" class="pool-breadcrumb-home" data-nav=""></sl-icon><span class="pool-breadcrumb-home-label" data-nav="">TBD-16 SD Card</span>';
+  const homeHtml = '<sl-icon name="hdd" class="pool-breadcrumb-home" data-nav=""></sl-icon><span class="pool-breadcrumb-home-label" data-nav="">SD Card</span>';
   if (state.poolPath === '') {
     el.innerHTML = homeHtml;
     return;
@@ -6528,7 +6543,7 @@ function renderPoolContent() {
         ? `<sl-icon-button name="pencil" label="Rename folder" class="action-hover" data-act="rename-folder" data-folder-path="${esc(item.path)}" data-folder-name="${esc(item.name)}" onclick="event.stopPropagation();"></sl-icon-button>
            <sl-icon-button name="trash3" label="Delete folder" class="action-hover" data-act="delete-folder" data-folder-path="${esc(item.path)}" data-folder-name="${esc(item.name)}" onclick="event.stopPropagation();"></sl-icon-button>`
         : '';
-      const countLabel = item.fileCount ? `${item.fileCount} sample${item.fileCount !== 1 ? 's' : ''}` : '';
+      const countLabel = item.fileCount ? `${item.fileCount} file${item.fileCount !== 1 ? 's' : ''}` : '';
       return `<div class="sample-row folder-row" data-nav="${esc(item.path)}" data-folder-path="${esc(item.path)}" draggable="true">
         <sl-icon name="folder2-open" class="sample-row-icon"></sl-icon>
         <span class="sample-row-name">${esc(item.name)}</span>
@@ -6541,10 +6556,12 @@ function renderPoolContent() {
       </div>`;
     }
 
-    const stem = item.name.replace(/\.wav$/i, '');
-    const durStr = item.size ? fileDuration(item.size) : '';
+    const isWav = /\.wav$/i.test(item.name);
+    const displayName = isWav ? item.name.replace(/\.wav$/i, '') : item.name;
+    const durStr = isWav && item.size ? fileDuration(item.size) : '';
+    const fileIcon = isWav ? 'music-note-beamed' : (/\.json$/i.test(item.name) ? 'file-earmark-code' : 'file-earmark');
     const fileWritable = isUserWritable(item.path);
-    const fileKey = `${item.path}/${stem}`;
+    const fileKey = `${item.path}/${item.name}`;
     const isSelected = state.selectedFiles.has(fileKey);
 
     // Checkbox for multi-select (only in user-writable areas)
@@ -6553,19 +6570,29 @@ function renderPoolContent() {
       : '';
 
     const editActions = fileWritable
-      ? `<sl-icon-button name="pencil"     label="Rename" class="action-hover" data-act="rename"   data-path="${esc(item.path)}" data-name="${esc(stem)}"></sl-icon-button>
-         <sl-icon-button name="trash3"     label="Delete" class="action-hover" data-act="delete"   data-path="${esc(item.path)}" data-name="${esc(stem)}"></sl-icon-button>`
+      ? `<sl-icon-button name="pencil"     label="Rename" class="action-hover" data-act="rename"   data-path="${esc(item.path)}" data-name="${esc(item.name)}"></sl-icon-button>
+         <sl-icon-button name="trash3"     label="Delete" class="action-hover" data-act="delete"   data-path="${esc(item.path)}" data-name="${esc(item.name)}"></sl-icon-button>`
       : '';
+    const previewBtn = isWav
+      ? `<sl-icon-button name="play-fill"  label="Preview" data-act="preview"  data-path="${esc(item.path)}" data-name="${esc(item.name)}"></sl-icon-button>`
+      : '';
+    const isViewable = /\.(json|txt|csv|xml|md|log|ini|cfg|conf)$/i.test(item.name);
+    const viewBtn = (!isWav && isViewable)
+      ? `<sl-icon-button name="eye"        label="View"     class="action-hover" data-act="view-file"     data-path="${esc(item.path)}" data-name="${esc(item.name)}" data-size="${item.size}"></sl-icon-button>`
+      : '';
+    const downloadBtn = `<sl-icon-button name="download"   label="Download" class="action-hover" data-act="download-file" data-path="${esc(item.path)}" data-name="${esc(item.name)}"></sl-icon-button>`;
     return `<div class="sample-row file-row pool-file${isSelected ? ' selected' : ''}"
-        data-path="${esc(item.path)}" data-name="${esc(stem)}" data-size="${item.size}"
-        draggable="true">
+        data-path="${esc(item.path)}" data-name="${esc(item.name)}" data-size="${item.size}"
+        ${isWav ? 'draggable="true"' : ''} ${isViewable && !isWav ? 'style="cursor:pointer"' : ''}>
       ${checkboxHTML}
-      <sl-icon name="music-note-beamed" class="sample-row-icon"></sl-icon>
-      <span class="sample-row-name" title="${esc(stem)}">${esc(stem)}</span>
+      <sl-icon name="${fileIcon}" class="sample-row-icon"></sl-icon>
+      <span class="sample-row-name" title="${esc(item.name)}">${esc(displayName)}</span>
       <span class="sample-row-dur">${durStr}</span>
       <span class="sample-row-smp">${item.size ? formatBytes(item.size) : ''}</span>
       <div class="sample-row-actions">
-        <sl-icon-button name="play-fill"  label="Preview" data-act="preview"  data-path="${esc(item.path)}" data-name="${esc(stem)}"></sl-icon-button>
+        ${previewBtn}
+        ${viewBtn}
+        ${downloadBtn}
         ${editActions}
       </div>
     </div>`;
@@ -6886,7 +6913,8 @@ function setupPoolDragEvents() {
         let added = 0;
         for (const data of samples) {
           const nsamp = nsamples(data.size);
-          if (addEntryToBank(bankIdx, data.name, data.path, nsamp)) added++;
+          const stem = data.name.replace(/\.wav$/i, '');
+          if (addEntryToBank(bankIdx, stem, data.path, nsamp)) added++;
         }
         if (added > 0) {
           markDirty();
@@ -6907,12 +6935,13 @@ function setupPoolDragEvents() {
       const data = JSON.parse(raw);
       const nsamp = nsamples(data.size);
 
+      const stem = data.name.replace(/\.wav$/i, '');
       // Check if dropped onto a specific slot (replace)
       const slot = e.target.closest('.bank-slot');
       if (slot && slot.dataset.index !== undefined) {
         const absIdx = parseInt(slot.dataset.index, 10);
         if (absIdx >= 0 && absIdx < state.kitEntries.length) {
-          state.kitEntries[absIdx] = { filename: data.name, path: data.path, nsamples: nsamp, sname: '' };
+          state.kitEntries[absIdx] = { filename: stem, path: data.path, nsamples: nsamp, sname: '' };
           markMissingKitEntries();
           markDirty();
           renderKitEditor();
@@ -6925,10 +6954,10 @@ function setupPoolDragEvents() {
       const body = e.target.closest('[data-drop="bank"]');
       if (!body) return;
       const bankIdx = parseInt(body.dataset.bank, 10);
-      if (addEntryToBank(bankIdx, data.name, data.path, nsamp)) {
+      if (addEntryToBank(bankIdx, stem, data.path, nsamp)) {
         markDirty();
         renderKitEditor();
-        toast(`Added ${data.name} to ${state.banks[bankIdx].name}`, 'success');
+        toast(`Added ${stem} to ${state.banks[bankIdx].name}`, 'success');
       }
     } catch (err) {
       console.error('Drop parse error:', err);
@@ -7256,6 +7285,27 @@ function setupPoolActions() {
         openDeleteDialog(btn.dataset.path, btn.dataset.name);
         return;
       }
+      if (act === 'download-file') {
+        e.stopPropagation();
+        downloadFile(btn.dataset.path, btn.dataset.name);
+        return;
+      }
+      if (act === 'view-file') {
+        e.stopPropagation();
+        openFileViewer(btn.dataset.path, btn.dataset.name, parseInt(btn.dataset.size, 10) || 0);
+        return;
+      }
+    }
+
+    // Click on non-WAV file row → open file viewer
+    const fileRow = e.target.closest('.file-row');
+    if (fileRow && !e.target.closest('[data-act]') && !e.target.closest('.pool-select-cb')) {
+      const name = fileRow.dataset.name;
+      if (name && !/\.wav$/i.test(name)) {
+        e.stopPropagation();
+        openFileViewer(fileRow.dataset.path, name, parseInt(fileRow.dataset.size, 10) || 0);
+        return;
+      }
     }
 
     // Folder navigation via breadcrumb or folder row
@@ -7343,7 +7393,8 @@ function openRenameDialog(path, filename) {
   const dlg = document.getElementById('rename-dialog');
   const inp = document.getElementById('rename-input');
   dlg.label = 'Rename';
-  inp.value = filename;
+  // Show stem without extension for editing
+  inp.value = filename.replace(/\.[^.]+$/, '');
   dlg.show();
   setTimeout(() => inp.focus(), 100);
 }
@@ -7357,7 +7408,8 @@ function setupRenameDialog() {
     const ctx = state._renameCtx;
     if (!ctx) return;
     if (ctx._kitIndex !== undefined) return; // handled by temporary handler
-    const newName = sanitizeFilename(document.getElementById('rename-input').value);
+    const ext = (ctx.filename.match(/\.[^.]+$/) || [''])[0];
+    const newName = sanitizeFilename(document.getElementById('rename-input').value) + ext;
     if (!newName || newName === ctx.filename) { dlg.hide(); return; }
     try {
       await renameSample(ctx.path, ctx.filename, newName);
@@ -7376,7 +7428,7 @@ function setupRenameDialog() {
 async function openDeleteDialog(path, filename) {
   state._deleteCtx = { path, filename };
   document.getElementById('delete-msg').textContent =
-    `Delete ${filename}.wav from ${path}?`;
+    `Delete ${filename} from ${path}?`;
 
   // Check ALL kits for references to this file via firmware
   const refsEl = document.getElementById('delete-kit-refs');
@@ -7387,8 +7439,9 @@ async function openDeleteDialog(path, filename) {
   document.getElementById('delete-dialog').show();
 
   try {
+    const stemForRefs = filename.replace(/\.wav$/i, '');
     const result = await apiPost('?action=manage', {
-      action: 'checkFileRefs', path, filename
+      action: 'checkFileRefs', path, filename: stemForRefs
     });
     const refs = result.refs || [];
     if (refs.length > 0) {
@@ -7841,6 +7894,7 @@ function renderPickerList(filter) {
   const list = document.getElementById('picker-list');
   const lc = filter.toLowerCase();
   const filtered = state.files.filter(f => {
+    if (!/\.wav$/i.test(f.name)) return false;  // only WAV files for kit
     const stem = f.name.replace(/\.wav$/i, '');
     return !lc || stem.toLowerCase().includes(lc) || f.path.toLowerCase().includes(lc);
   });
@@ -7888,7 +7942,7 @@ function setupSamplePicker() {
     let added = 0;
     for (const key of state._pickerSelected) {
       const [path, name] = [key.substring(0, key.lastIndexOf('/')), key.substring(key.lastIndexOf('/') + 1)];
-      const file = state.files.find(f => f.path === path && f.name === name);
+      const file = state.files.find(f => f.path === path && f.name.replace(/\.wav$/i, '') === name);
       const nsamp = file ? nsamples(file.size) : 0;
       if (addEntryToBank(bankIdx, name, path, nsamp)) added++;
     }
@@ -8229,6 +8283,475 @@ function setupImportKitDialog() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  FILE VIEWER — VS Code Dark+ inspired code viewer
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Character-by-character JSON tokenizer.
+ * Operates on RAW text (not HTML-escaped), returns safe HTML.
+ */
+function tokenizeJsonLine(raw) {
+  var out = '';
+  var i = 0;
+  var len = raw.length;
+
+  while (i < len) {
+    var ch = raw[i];
+
+    // Whitespace — pass through
+    if (ch === ' ' || ch === '\t') {
+      out += ch;
+      i++;
+      continue;
+    }
+
+    // String literal
+    if (ch === '"') {
+      var s = '"';
+      i++;
+      while (i < len && raw[i] !== '"') {
+        if (raw[i] === '\\' && i + 1 < len) {
+          s += raw[i] + raw[i + 1];
+          i += 2;
+        } else {
+          s += raw[i];
+          i++;
+        }
+      }
+      if (i < len) { s += '"'; i++; } // closing quote
+
+      // Look ahead: is this a key (followed by colon)?
+      var j = i;
+      while (j < len && (raw[j] === ' ' || raw[j] === '\t')) j++;
+      var cls = (j < len && raw[j] === ':') ? 'tk-key' : 'tk-str';
+      out += '<span class="' + cls + '">' + esc(s) + '</span>';
+      continue;
+    }
+
+    // Colon
+    if (ch === ':') {
+      out += '<span class="tk-pun">:</span>';
+      i++;
+      continue;
+    }
+
+    // Comma
+    if (ch === ',') {
+      out += '<span class="tk-pun">,</span>';
+      i++;
+      continue;
+    }
+
+    // Braces
+    if (ch === '{' || ch === '}') {
+      out += '<span class="tk-brc">' + ch + '</span>';
+      i++;
+      continue;
+    }
+
+    // Brackets
+    if (ch === '[' || ch === ']') {
+      out += '<span class="tk-brk">' + ch + '</span>';
+      i++;
+      continue;
+    }
+
+    // Number
+    if (ch === '-' || (ch >= '0' && ch <= '9')) {
+      var num = '';
+      while (i < len && /[0-9eE.\-+]/.test(raw[i])) {
+        num += raw[i];
+        i++;
+      }
+      out += '<span class="tk-num">' + esc(num) + '</span>';
+      continue;
+    }
+
+    // true
+    if (raw.substr(i, 4) === 'true') {
+      out += '<span class="tk-bool">true</span>';
+      i += 4;
+      continue;
+    }
+    // false
+    if (raw.substr(i, 5) === 'false') {
+      out += '<span class="tk-bool">false</span>';
+      i += 5;
+      continue;
+    }
+    // null
+    if (raw.substr(i, 4) === 'null') {
+      out += '<span class="tk-null">null</span>';
+      i += 4;
+      continue;
+    }
+
+    // Any other char — escape and emit
+    out += esc(ch);
+    i++;
+  }
+
+  return out;
+}
+
+/** Build breadcrumb HTML from path segments */
+function fvBreadcrumb(path, name) {
+  var parts = path ? path.split('/') : [];
+  parts.push(name);
+  return parts.map(function(p, i) {
+    return (i > 0 ? '<span class="fv-bc-sep">›</span>' : '') +
+      '<span class="fv-bc-seg">' + esc(p) + '</span>';
+  }).join('');
+}
+
+/** Detect language label */
+function fvLang(name) {
+  var ext = (name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+  return { '.json': 'JSON', '.txt': 'Plain Text', '.csv': 'CSV', '.xml': 'XML',
+    '.md': 'Markdown', '.log': 'Log', '.ini': 'INI', '.cfg': 'Config',
+    '.conf': 'Config', '.html': 'HTML', '.css': 'CSS', '.js': 'JavaScript'
+  }[ext] || 'Plain Text';
+}
+
+/** Open a kit JSON file in the Kit Editor (full editing) */
+async function openKitFromFile(path, name) {
+  var filePath = path ? path + '/' + name : name;
+  try {
+    // Close the file viewer if open
+    closeFileViewer();
+
+    var url = API_BASE + '?fetch=' + encodeURIComponent(filePath);
+    var r = await (_apiQueue ? _apiQueue.enqueue(function() {
+      return fetch(url, { signal: AbortSignal.timeout(15000) });
+    }) : fetch(url, { signal: AbortSignal.timeout(15000) }));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var text = await r.text();
+    var entries = JSON.parse(text);
+    if (!Array.isArray(entries)) throw new Error('Kit file is not an array');
+
+    // Load entries into Kit Editor state
+    state.kitEntries = entries;
+
+    // Rebuild banks from the entries — count how many non-empty banks exist
+    var bankCount = Math.ceil(entries.length / SLICES_PER_BANK);
+    if (bankCount < 1) bankCount = 1;
+    state.banks = [];
+    for (var b = 0; b < bankCount; b++) {
+      state.banks.push({
+        name: DEFAULT_BANKS[b] ? DEFAULT_BANKS[b].name : 'BANK ' + (b + 1),
+        color: DEFAULT_BANKS[b] ? DEFAULT_BANKS[b].color : BANK_COLORS[b % BANK_COLORS.length],
+        collapsed: false,
+      });
+    }
+
+    // Track file source for save
+    state.kitFileSource = { path: path, name: name };
+    state.dirty = false;
+
+    renderKitEditor();
+    updateCapacityBar();
+    updateSaveButton();
+    // Show Kit Editor / JSON toggle
+    var kitNav = document.getElementById('kit-file-nav');
+    if (kitNav) kitNav.style.display = '';
+    // Show file toolbar with filename, hide normal kit controls
+    var kitFileToolbar = document.getElementById('kit-file-toolbar');
+    var kitFileName = document.getElementById('kit-file-name');
+    var kitFileBadge = document.getElementById('kit-file-badge-factory');
+    var kitControls = document.querySelector('.kit-controls');
+    if (kitFileToolbar) kitFileToolbar.style.display = '';
+    if (kitFileName) kitFileName.textContent = name;
+    if (kitFileBadge) kitFileBadge.style.display = /^factory\//i.test(path || '') ? '' : 'none';
+    if (kitControls) kitControls.style.display = 'none';
+    toast('Loaded kit: ' + name, 'neutral');
+  } catch (e) {
+    toast('Failed to open kit: ' + e.message, 'danger');
+  }
+}
+
+/** Switch from Kit Editor to JSON view for a file-loaded kit */
+function switchToKitJson() {
+  if (!state.kitFileSource) return;
+  var path = state.kitFileSource.path;
+  var name = state.kitFileSource.name;
+  var filePath = path ? path + '/' + name : name;
+  // Open the file in the file viewer (bypass kit interception)
+  openFileViewerDirect(path, name, 0);
+}
+
+/** Switch from File Viewer JSON back to Kit Editor view */
+function switchToKitEditor() {
+  closeFileViewer();
+}
+
+/** Open file viewer — takes over the entire right panel */
+async function openFileViewer(path, name, size) {
+  var panel = document.getElementById('kit-panel');
+  var body = document.getElementById('fv-body');
+  var ext = (name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+
+  // Intercept trackdefaults JSON files — open directly in TD editor
+  var fullPath = path ? path + '/' + name : name;
+  if (ext === '.json' && /trackdefaults\//i.test(fullPath) && window.TBD.trackDefaults) {
+    window.TBD.trackDefaults.openEditor(path, name);
+    return;
+  }
+
+  // Intercept kit JSON files — open in Kit Editor (full editing)
+  var isKitFile = ext === '.json' && /kits\//i.test(fullPath) && !/\b(def_wt|sample_rom)\.json$/i.test(name);
+  if (isKitFile) {
+    await openKitFromFile(path, name);
+    return;
+  }
+  return openFileViewerDirect(path, name, size);
+}
+
+/** Internal file viewer — no kit/TD interception */
+async function openFileViewerDirect(path, name, size) {
+  var panel = document.getElementById('kit-panel');
+  var body = document.getElementById('fv-body');
+  var ext = (name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+
+  // Update tab
+  document.getElementById('fv-name').textContent = name;
+  var iconDiv = document.getElementById('fv-icon');
+  iconDiv.className = 'fv-tab-icon ' + (ext === '.json' ? 'json' : 'text');
+  iconDiv.innerHTML = ext === '.json'
+    ? '<sl-icon name="file-earmark-code"></sl-icon>'
+    : '<sl-icon name="file-earmark-text"></sl-icon>';
+
+  // Status bar
+  document.getElementById('fv-lang').textContent = fvLang(name);
+  document.getElementById('fv-enc').textContent = 'UTF-8';
+  document.getElementById('fv-size').textContent = size ? formatBytes(size) : '';
+  document.getElementById('fv-lines').textContent = '';
+
+  // Activate viewer — hides all kit editor elements via CSS
+  panel.classList.add('viewer-active');
+  state.fileViewerOpen = true;
+
+  // Show "Editor / JSON" nav links when viewing a trackdefaults JSON
+  var fvNav = document.getElementById('fv-td-nav');
+  var fullPath = path ? path + '/' + name : name;
+  if (fvNav) {
+    fvNav.style.display = /trackdefaults\//i.test(fullPath) ? '' : 'none';
+  }
+  // Show "Kit Editor / JSON" nav links when viewing a kit file (not for non-kit JSON like def_wt, sample_rom)
+  var fvKitNav = document.getElementById('fv-kit-nav');
+  if (fvKitNav) {
+    var isCurrentKit = state.kitFileSource && state.kitFileSource.name === name && state.kitFileSource.path === path;
+    fvKitNav.style.display = isCurrentKit ? '' : 'none';
+  }
+
+  // Loading
+  body.innerHTML = '<sl-spinner></sl-spinner>';
+
+  // Check if text file
+  var filePath = path ? path + '/' + name : name;
+  var isText = /\.(json|txt|csv|md|ini|cfg|xml|html|css|js|log|conf)$/i.test(name);
+
+  if (!isText) {
+    body.innerHTML = '<div class="fv-msg"><sl-icon name="file-earmark-binary"></sl-icon>' +
+      '<div style="color:#ccc;font-weight:500;">' + esc(name) + '</div>' +
+      '<div>' + (size ? formatBytes(size) : 'Unknown') + ' \u00b7 ' + (ext || 'binary') + '</div>' +
+      '<div style="font-size:12px;margin-top:4px;">Preview not available. Use Download.</div></div>';
+    state.fileViewerData = { path: path, name: name, size: size, content: null, type: 'binary' };
+    return;
+  }
+
+  try {
+    var url = API_BASE + '?fetch=' + encodeURIComponent(filePath);
+    var r = await (_apiQueue ? _apiQueue.enqueue(function() {
+      return fetch(url, { signal: AbortSignal.timeout(15000) });
+    }) : fetch(url, { signal: AbortSignal.timeout(15000) }));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var text = await r.text();
+
+    state.fileViewerData = { path: path, name: name, size: size, content: text, type: ext === '.json' ? 'json' : 'text' };
+
+    if (ext === '.json') {
+      fvRenderJson(body, text);
+    } else {
+      fvRenderCode(body, text, false, '');
+    }
+  } catch (e) {
+    body.innerHTML = '<div class="fv-msg error"><sl-icon name="exclamation-triangle"></sl-icon>' +
+      'Failed to load: ' + esc(e.message) + '</div>';
+    state.fileViewerData = { path: path, name: name, size: size, content: null, type: 'error' };
+  }
+}
+
+/** Close viewer — restores kit editor */
+function closeFileViewer() {
+  document.getElementById('kit-panel').classList.remove('viewer-active');
+  state.fileViewerOpen = false;
+  state.fileViewerData = null;
+}
+
+/** Render JSON with pretty-print + syntax highlighting */
+function fvRenderJson(container, text) {
+  var formatted;
+  var banner = '';
+
+  try {
+    formatted = JSON.stringify(JSON.parse(text), null, 2);
+  } catch (e) {
+    formatted = text;
+    var m = e.message.match(/position\s+(\d+)/i);
+    var lineInfo = '';
+    if (m) {
+      lineInfo = ' (line ' + text.substring(0, parseInt(m[1], 10)).split('\n').length + ')';
+    }
+    banner = '<div class="fv-error-banner"><sl-icon name="exclamation-triangle"></sl-icon>' +
+      '<span>Invalid JSON: ' + esc(e.message) + lineInfo + '</span></div>';
+  }
+
+  fvRenderCode(container, formatted, banner === '', banner);
+}
+
+/**
+ * Core code renderer: line numbers, syntax tokens, fold regions.
+ */
+function fvRenderCode(container, text, highlight, bannerHtml) {
+  var lines = text.split('\n');
+  var n = lines.length;
+
+  // Update line count in status bar
+  var linesEl = document.getElementById('fv-lines');
+  if (linesEl) linesEl.textContent = 'Ln ' + n;
+
+  // Build fold map for JSON
+  var foldMap = {};
+  if (highlight) {
+    var stack = [];
+    for (var fi = 0; fi < n; fi++) {
+      var trimmed = lines[fi].trim().replace(/,\s*$/, '');
+      if (trimmed.endsWith('{') || trimmed.endsWith('[')) {
+        stack.push(fi);
+      }
+      if (trimmed === '}' || trimmed === ']') {
+        if (stack.length > 0) {
+          var opener = stack.pop();
+          if (fi - opener > 1) foldMap[opener] = fi;
+        }
+      }
+    }
+  }
+
+  // Render lines
+  var gutterWidth = String(n).length;
+  var gHTML = '';
+  var cHTML = '';
+
+  for (var li = 0; li < n; li++) {
+    var num = String(li + 1).padStart(gutterWidth);
+    gHTML += '<div class="fv-gutter-line" data-ln="' + li + '">' + num + '</div>';
+
+    var content = highlight ? tokenizeJsonLine(lines[li]) : esc(lines[li]);
+    cHTML += '<div class="fv-line" data-ln="' + li + '">' + (content || ' ') + '</div>';
+  }
+
+  container.innerHTML = (bannerHtml || '') +
+    '<div class="fv-editor">' +
+      '<div class="fv-gutter" id="fv-gutter">' + gHTML + '</div>' +
+      '<div class="fv-code" id="fv-code">' + cHTML + '</div>' +
+    '</div>';
+
+  // Setup fold regions — append fold buttons to opener lines
+  if (highlight) {
+    var codeEl = container.querySelector('.fv-code');
+    var gutEl = container.querySelector('.fv-gutter');
+    var foldKeys = Object.keys(foldMap);
+    for (var fk = 0; fk < foldKeys.length; fk++) {
+      var startLn = parseInt(foldKeys[fk], 10);
+      var endLn = foldMap[startLn];
+      (function(s, e) {
+        var codeLine = codeEl.querySelector('.fv-line[data-ln="' + s + '"]');
+        if (!codeLine) return;
+        var btn = document.createElement('span');
+        btn.className = 'fv-fold-btn';
+        btn.textContent = ' \u25BE';
+        btn.title = 'Fold ' + (e - s - 1) + ' lines';
+        codeLine.appendChild(btn);
+
+        btn.addEventListener('click', function() {
+          var isCollapsed = btn.textContent.trim() === '\u25B8';
+          btn.textContent = isCollapsed ? ' \u25BE' : ' \u25B8';
+
+          for (var ln = s + 1; ln <= e; ln++) {
+            var cl = codeEl.querySelector('.fv-line[data-ln="' + ln + '"]');
+            var gl = gutEl.querySelector('.fv-gutter-line[data-ln="' + ln + '"]');
+            if (cl) cl.style.display = isCollapsed ? '' : 'none';
+            if (gl) gl.style.display = isCollapsed ? '' : 'none';
+          }
+
+          var ph = codeLine.querySelector('.fv-fold-ph');
+          if (!isCollapsed) {
+            if (!ph) {
+              ph = document.createElement('span');
+              ph.className = 'fv-fold-ph';
+              ph.textContent = (e - s - 1) + ' lines';
+              ph.addEventListener('click', function(ev) {
+                ev.stopPropagation();
+                btn.click();
+              });
+              codeLine.appendChild(ph);
+            }
+            ph.style.display = 'inline-block';
+          } else {
+            if (ph) ph.style.display = 'none';
+          }
+        });
+      })(startLn, endLn);
+    }
+  }
+}
+
+/** Download file */
+function downloadFile(path, name) {
+  var filePath = path ? path + '/' + name : name;
+  var url = API_BASE + '?download=' + encodeURIComponent(filePath);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+}
+
+/** Setup file viewer event handlers */
+function setupFileViewer() {
+  document.getElementById('fv-close').addEventListener('click', closeFileViewer);
+
+  // Kit Editor / JSON toggle — from Kit Editor side
+  var kitLinkJson = document.getElementById('kit-link-json');
+  if (kitLinkJson) {
+    kitLinkJson.addEventListener('click', switchToKitJson);
+  }
+  // Kit Editor / JSON toggle — from File Viewer side
+  var fvLinkKitEditor = document.getElementById('fv-link-kit-editor');
+  if (fvLinkKitEditor) {
+    fvLinkKitEditor.addEventListener('click', switchToKitEditor);
+  }
+
+  document.getElementById('fv-download').addEventListener('click', function() {
+    if (state.fileViewerData) {
+      downloadFile(state.fileViewerData.path, state.fileViewerData.name);
+    }
+  });
+
+  document.getElementById('fv-copy').addEventListener('click', async function() {
+    if (!state.fileViewerData || !state.fileViewerData.content) {
+      toast('No content to copy', 'warning');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(state.fileViewerData.content);
+      toast('Copied to clipboard', 'success', 2000);
+    } catch (e) {
+      toast('Copy failed', 'danger');
+    }
+  });
+}
+// ═══════════════════════════════════════════════════════════════
 //  THEME TOGGLE — standalone fallback (used only on samples.html)
 // ═══════════════════════════════════════════════════════════════
 
@@ -8293,6 +8816,7 @@ async function init() {
   setupSelectionToolbar();
   setupBatchDeleteDialog();
   setupImportKitDialog();
+  setupFileViewer();
 
   // Select mode button
   const selectBtn = document.getElementById('select-mode-btn');
@@ -8341,7 +8865,7 @@ async function init() {
 // Unified mode: export on window.TBD for lazy init from app.js
 // Standalone mode (samples.html): auto-init on DOMContentLoaded
 if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
-  window.TBD.sampleManager = { init: init, state: state };
+  window.TBD.sampleManager = { init: init, state: state, renderJson: fvRenderJson };
 } else {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(init, 200));
@@ -8352,9 +8876,10 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
 
 // ── track-defaults.js ───
 // ═══════════════════════════════════════════════════════════════
-// TBD-16 WebUI — Track Default Presets Editor (Overlay)
+// TBD-16 WebUI — Track Default Presets Editor (Right Panel)
 //
-// Opens as a Shoelace dialog from the header nav.
+// Renders inside #kit-panel as a right-panel editor mode.
+// Toggle between File Viewer (JSON) and Editor via header buttons.
 // Hierarchy mirrors the main Preset & Macro Manager UI:
 //   Track → Machine → Preset (grouped by Macro definition)
 //
@@ -8364,7 +8889,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
 // so the user sees e.g. "Phat Punch" / "Synth Kick — All knobs" sections.
 //
 // Data source:  factory/ or user/trackdefaults/
-// API:          GET  /api/v2/macros?action=get_trackdefaults
+// API:          GET  /api/v2/macros?action=get_trackdefaults&file=<name>
 //               POST /api/v2/macros?action=save_trackdefaults
 //
 // (c) 2014-2026 Johannes Elias Lohbihler for dadamachines.
@@ -8376,6 +8901,8 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
   var S = window.TBD.shared;
 
   // ─── State ─────────────────────────────────────────────────
+  var currentFile = null;     // { path, name } of the file being edited
+
   var trackDefaults = null;   // parsed trackdefaults.json
   var dirty = false;
   var facetedData = null;     // per-track: [ { machine, name, macros: [{id, name, presets}] } ]
@@ -8384,6 +8911,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
   var kitMeta = [];           // per-kit bank metadata [{banks: [{name, color}]}]
   var activeKitIndex = 0;     // index of the currently active kit in PSRAM
   var activeKitEntries = [];  // sample entries for the active kit
+  var activeTemplateName = 'default'; // name of the boot-default template (from P4)
 
   var SLICES_PER_BANK = 32;
   var DEFAULT_BANKS = [
@@ -8573,7 +9101,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     html += '</select>';
     sliceCell.innerHTML = html;
     sliceCell.querySelector('.td-slice-select').addEventListener('change', function() {
-      dirty = true; updateSaveButton();
+      dirty = true;
     });
   }
 
@@ -8655,8 +9183,9 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
   }
 
   function loadTrackDefaults() {
+    var fileParam = currentFile && currentFile.name ? '&file=' + encodeURIComponent(currentFile.name) : '';
     return loadKitData().then(function() {
-      return S.queuedFetch('/macros?action=get_trackdefaults');
+      return S.queuedFetch('/macros?action=get_trackdefaults' + fileParam);
     }).then(function(data) {
         trackDefaults = data && data.tracks ? data : { tracks: [] };
         return trackDefaults;
@@ -8668,12 +9197,82 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
       });
   }
 
-  function saveTrackDefaults(data) {
-    return S.queuedPost('/macros?action=save_trackdefaults', data, S.API_MUTATION_TIMEOUT_MS)
+  function isFactoryFile() {
+    return currentFile && /^factory\//i.test(currentFile.path || '');
+  }
+
+  function updateFactoryBadge() {
+    var badge = document.getElementById('td-badge-factory');
+    var factory = isFactoryFile();
+    if (badge) badge.style.display = factory ? '' : 'none';
+  }
+
+  /**
+   * Get the template name (without .json) for the current file.
+   */
+  function currentTemplateName() {
+    if (!currentFile || !currentFile.name) return 'default';
+    return currentFile.name.replace(/\.json$/i, '');
+  }
+
+  /**
+   * Fetch which template is the active boot default from the P4.
+   */
+  function fetchActiveTemplate() {
+    return S.queuedFetch('/macros?action=get_active_trackdefault')
+      .then(function(data) {
+        if (data && data.name) activeTemplateName = data.name;
+        updateActiveBadge();
+      })
+      .catch(function() { /* ignore — badge stays as-is */ });
+  }
+
+  /**
+   * Update the "boot default" badge and "Set as Boot Default" button.
+   */
+  function updateActiveBadge() {
+    var badge = document.getElementById('td-badge-active');
+    var btn = document.getElementById('td-setactive-btn');
+    var isActive = (currentTemplateName() === activeTemplateName);
+    if (badge) badge.style.display = isActive ? '' : 'none';
+    if (btn) {
+      btn.disabled = isActive;
+      if (isActive) {
+        btn.innerHTML = '<sl-icon name="star-fill" style="font-size:0.65rem;color:var(--sl-color-success-600);"></sl-icon> Boot Default';
+      } else {
+        btn.innerHTML = '<sl-icon name="star" style="font-size:0.65rem;"></sl-icon> Set as Boot Default';
+      }
+    }
+  }
+
+  /**
+   * Set the current template as the boot default via REST API.
+   */
+  function setAsBootDefault() {
+    var name = currentTemplateName();
+    S.queuedPost('/macros?action=set_active_trackdefault', { name: name }, S.API_MUTATION_TIMEOUT_MS)
       .then(function(resp) {
         if (resp && resp.ok) {
-          S.toast('Boot defaults saved', 'success', 3000);
+          activeTemplateName = name;
+          updateActiveBadge();
+          S.toast('Boot default set to "' + name + '"', 'success', 3000);
+        } else {
+          S.toast('Failed to set boot default', 'danger', 4000);
+        }
+      })
+      .catch(function(err) {
+        S.toast('Failed to set boot default: ' + err.message, 'danger', 4000);
+      });
+  }
+
+  function saveTrackDefaults(data, fileName) {
+    var file = fileName || (currentFile ? currentFile.name : 'default.json');
+    return S.queuedPost('/macros?action=save_trackdefaults&file=' + encodeURIComponent(file), data, S.API_MUTATION_TIMEOUT_MS)
+      .then(function(resp) {
+        if (resp && resp.ok) {
+          S.toast('Track setup saved', 'success', 3000);
           dirty = false;
+          updateFactoryBadge();
         } else {
           S.toast('Save failed', 'danger', 4000);
         }
@@ -8683,6 +9282,97 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
         S.toast('Save failed: ' + err.message, 'danger', 4000);
         throw err;
       });
+  }
+
+  // ─── Save As Dialog (Shoelace) ───────────────────────────
+
+  function saveAsDialog() {
+    var old = document.getElementById('td-saveas-dialog');
+    if (old) old.remove();
+
+    var srcName = currentFile ? currentFile.name.replace(/\.json$/i, '') : 'default';
+    var defaultName = srcName + '-custom';
+
+    var dialog = document.createElement('sl-dialog');
+    dialog.id = 'td-saveas-dialog';
+    dialog.label = 'Save Track Setup As…';
+    dialog.setAttribute('style', '--width:26rem;');
+
+    // Add footer gap between Cancel and Save buttons
+    var footerStyle = document.createElement('style');
+    footerStyle.textContent = '#td-saveas-dialog::part(footer){display:flex;gap:0.5rem;justify-content:flex-end;}';
+
+    var html = '';
+    html += '<div style="font-size:0.8rem;color:var(--sl-color-neutral-500);margin-bottom:0.75rem;">';
+    html += '<sl-icon name="info-circle" style="font-size:0.7rem;"></sl-icon> ';
+    html += 'Saves a copy to the user folder. The original factory template is not modified.';
+    html += '</div>';
+    html += '<sl-input id="td-saveas-name" label="Template Name" value="' + S.esc(defaultName) + '" placeholder="e.g. my-setup" required autofocus></sl-input>';
+    html += '<div id="td-saveas-hint" style="font-size:0.72rem;color:var(--sl-color-neutral-400);margin-top:0.35rem;"></div>';
+
+    dialog.innerHTML = html;
+
+    var cancelBtn = document.createElement('sl-button');
+    cancelBtn.setAttribute('slot', 'footer');
+    cancelBtn.setAttribute('variant', 'default');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', function() { dialog.hide(); });
+
+    var saveBtn = document.createElement('sl-button');
+    saveBtn.setAttribute('slot', 'footer');
+    saveBtn.setAttribute('variant', 'primary');
+    saveBtn.innerHTML = '<sl-icon name="floppy" slot="prefix"></sl-icon> Save Copy';
+
+    saveBtn.addEventListener('click', function() {
+      var nameInput = dialog.querySelector('#td-saveas-name');
+      var hint = dialog.querySelector('#td-saveas-hint');
+      var raw = (nameInput.value || '').trim();
+
+      if (!raw) {
+        hint.textContent = 'Please enter a name';
+        hint.style.color = 'var(--sl-color-danger-600)';
+        nameInput.focus();
+        return;
+      }
+
+      var safeName = raw.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-|-$/g, '');
+      if (!safeName) {
+        hint.textContent = 'Name must contain at least one letter or digit';
+        hint.style.color = 'var(--sl-color-danger-600)';
+        nameInput.focus();
+        return;
+      }
+
+      var fileName = safeName + '.json';
+      var data = collectFromUI();
+
+      saveBtn.setAttribute('loading', '');
+      saveTrackDefaults(data, fileName)
+        .then(function() {
+          dialog.hide();
+          // Switch currentFile to the new user copy
+          currentFile = { path: 'user/trackdefaults', name: fileName };
+          var nameEl = document.getElementById('td-file-name');
+          if (nameEl) nameEl.textContent = fileName;
+          dirty = false;
+          updateFactoryBadge();
+          // Refresh the file browser to show the new file
+          if (window.TBD.sampleManager && window.TBD.sampleManager.refreshCurrentDir) {
+            window.TBD.sampleManager.refreshCurrentDir();
+          }
+        })
+        .catch(function() {
+          saveBtn.removeAttribute('loading');
+        });
+    });
+
+    dialog.appendChild(cancelBtn);
+    dialog.appendChild(saveBtn);
+    document.body.appendChild(dialog);
+    document.head.appendChild(footerStyle);
+
+    dialog.addEventListener('sl-after-hide', function() { dialog.remove(); footerStyle.remove(); });
+    requestAnimationFrame(function() { dialog.show(); });
   }
 
   // ─── Preset dropdown builder ───────────────────────────────
@@ -8767,9 +9457,9 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
       bankCell.querySelector('.td-bank-select').addEventListener('change', function() {
         var newBank = parseInt(this.value, 10);
         rebuildSliceDropdown(trackIdx, kitIdx, newBank, 0);
-        dirty = true; updateSaveButton();
+        dirty = true;
       });
-      sliceCell.querySelector('.td-slice-select').addEventListener('change', function() { dirty = true; updateSaveButton(); });
+      sliceCell.querySelector('.td-slice-select').addEventListener('change', function() { dirty = true; });
     } else {
       bankCell.innerHTML = '<span class="td-na">—</span>';
       sliceCell.innerHTML = '<span class="td-na">—</span>';
@@ -8777,7 +9467,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
   }
 
   function renderOverlayContent() {
-    var body = document.getElementById('trackdefaults-body');
+    var body = document.getElementById('td-editor-body');
     if (!body) return;
 
     facetedData = buildFacetedData();
@@ -8786,7 +9476,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     var html = '';
     html += '<p class="td-intro">Configure which preset each track loads on boot. ';
     html += 'Pick a <strong>machine</strong> first, then choose a <strong>preset</strong>. ';
-    html += 'Changes take effect on next power-up.</p>';
+    html += 'Changes take effect on next power-up.</p>';;
 
     // ─── Global kit selector ─────────────────────────────────
     if (kitNames.length > 0) {
@@ -8928,7 +9618,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
         updateRomplerCells(idx, machineId);
 
         dirty = true;
-        updateSaveButton();
+       
       });
     });
 
@@ -8936,7 +9626,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     body.querySelectorAll('.td-preset-select').forEach(function(sel) {
       sel.addEventListener('change', function() {
         dirty = true;
-        updateSaveButton();
+       
       });
     });
 
@@ -8944,7 +9634,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     body.querySelectorAll('.td-slice-select').forEach(function(sel) {
       sel.addEventListener('change', function() {
         dirty = true;
-        updateSaveButton();
+       
       });
     });
 
@@ -8957,7 +9647,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
         var newBank = parseInt(sel.value, 10);
         rebuildSliceDropdown(trackIdx, kitIdx2, newBank, 0);
         dirty = true;
-        updateSaveButton();
+       
       });
     });
 
@@ -8967,19 +9657,11 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
       kitSel.addEventListener('change', function() {
         rebuildBankDropdowns();
         dirty = true;
-        updateSaveButton();
+       
       });
     }
 
     dirty = false;
-    updateSaveButton();
-  }
-
-  function updateSaveButton() {
-    var btn = document.getElementById('td-save-btn');
-    if (btn) {
-      btn.disabled = !dirty;
-    }
   }
 
   // ─── Collect & Save ────────────────────────────────────────
@@ -9001,7 +9683,7 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     };
 
     var tracks = S.data.tracks || [];
-    var presetSelects = document.querySelectorAll('#trackdefaults-body .td-preset-select');
+    var presetSelects = document.querySelectorAll('#td-editor-body .td-preset-select');
 
     presetSelects.forEach(function(sel) {
       var idx = parseInt(sel.getAttribute('data-track'), 10);
@@ -9036,79 +9718,196 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     return result;
   }
 
+  // ─── Panel switching ────────────────────────────────────────
+
+  function showTDPanel() {
+    var panel = document.getElementById('kit-panel');
+    panel.classList.remove('viewer-active');
+    panel.classList.add('td-editor-active');
+    // Update filename in the sub-header tab
+    var nameEl = document.getElementById('td-file-name');
+    if (nameEl) nameEl.textContent = currentFile ? currentFile.name : 'default.json';
+    // Hide the File Viewer nav links when switching to editor
+    var fvNav = document.getElementById('fv-td-nav');
+    if (fvNav) fvNav.style.display = 'none';
+    // Show/hide factory badge and adjust Save button
+    updateFactoryBadge();
+    // Fetch and show active template badge
+    fetchActiveTemplate();
+  }
+
+  function closeTDEditor() {
+    if (dirty && !confirm('You have unsaved changes. Discard them?')) return;
+    var panel = document.getElementById('kit-panel');
+    panel.classList.remove('td-editor-active');
+    dirty = false;
+    // Hide the File Viewer nav links
+    var fvNav = document.getElementById('fv-td-nav');
+    if (fvNav) fvNav.style.display = 'none';
+  }
+
+  /**
+   * Switch from editor to JSON file viewer showing the actual file.
+   * Fetches the raw file from the server so the user sees the real content.
+   */
+  function switchToJsonView() {
+    var panel = document.getElementById('kit-panel');
+    panel.classList.remove('td-editor-active');
+    panel.classList.add('viewer-active');
+
+    var fileName = currentFile ? currentFile.name : 'default.json';
+    var filePath = currentFile ? currentFile.path : 'factory/trackdefaults';
+
+    // Show the Editor/JSON nav links in File Viewer header
+    var fvNav = document.getElementById('fv-td-nav');
+    if (fvNav) fvNav.style.display = '';
+
+    // Use the sample-manager openFileViewer to load the real file
+    var fullPath = filePath + '/' + fileName;
+    var body = document.getElementById('fv-body');
+    body.innerHTML = '<sl-spinner></sl-spinner>';
+
+    // Fetch the real file content from server
+    fetch('/api/v2/storage?fetch=' + encodeURIComponent(fullPath))
+      .then(function(r) { return r.text(); })
+      .then(function(text) {
+        var smState = window.TBD.sampleManager && window.TBD.sampleManager.state;
+        if (smState) {
+          smState.fileViewerOpen = true;
+          smState.fileViewerData = {
+            path: filePath,
+            name: fileName,
+            size: text.length,
+            content: text,
+            type: 'json'
+          };
+        }
+
+        document.getElementById('fv-name').textContent = fileName;
+        var iconDiv = document.getElementById('fv-icon');
+        iconDiv.className = 'fv-tab-icon json';
+        iconDiv.innerHTML = '<sl-icon name="file-earmark-code"></sl-icon>';
+        document.getElementById('fv-lang').textContent = 'JSON';
+        document.getElementById('fv-size').textContent = text.length + ' B';
+
+        if (window.TBD.sampleManager && window.TBD.sampleManager.renderJson) {
+          window.TBD.sampleManager.renderJson(body, text);
+        } else {
+          body.innerHTML = '<pre style="padding:1rem;color:#d4d4d4;">' + S.esc(text) + '</pre>';
+        }
+      })
+      .catch(function() {
+        body.innerHTML = '<div style="padding:1rem;color:#999;">Could not load file.</div>';
+      });
+  }
+
+  /**
+   * Open the track defaults editor for a specific file.
+   * Called from: header button (default.json), file viewer toggle (any td file).
+   */
+  function openTrackDefaultsEditor(filePath, fileName) {
+    currentFile = filePath ? { path: filePath, name: fileName || 'default.json' } : null;
+
+    S.showLoading('Loading track setup…');
+    var dataReady = S.data.loaded
+      ? Promise.resolve()
+      : S.loadSharedData();
+    dataReady.then(function() {
+      return loadTrackDefaults();
+    }).then(function() {
+      renderOverlayContent();
+      S.hideLoading();
+      showTDPanel();
+    }).catch(function() {
+      S.hideLoading();
+      S.toast('Could not load track setup', 'danger', 4000);
+    });
+  }
+
+  /**
+   * Open from file viewer — parses the already-loaded JSON content.
+   */
+  function openFromFileViewer() {
+    var smState = window.TBD.sampleManager && window.TBD.sampleManager.state;
+    var fvData = smState && smState.fileViewerData;
+
+    if (fvData && fvData.content) {
+      currentFile = { path: fvData.path, name: fvData.name };
+      try {
+        var parsed = JSON.parse(fvData.content);
+        trackDefaults = parsed && parsed.tracks ? parsed : { tracks: [] };
+      } catch (e) {
+        S.toast('Invalid JSON in file', 'danger', 4000);
+        return;
+      }
+    } else {
+      currentFile = null;
+    }
+
+    S.showLoading('Loading editor…');
+    var dataReady = S.data.loaded
+      ? Promise.resolve()
+      : S.loadSharedData();
+    dataReady.then(function() {
+      return loadKitData();
+    }).then(function() {
+      renderOverlayContent();
+      S.hideLoading();
+      showTDPanel();
+    }).catch(function() {
+      S.hideLoading();
+      S.toast('Could not load editor data', 'danger', 4000);
+    });
+  }
+
   // ─── Init ──────────────────────────────────────────────────
 
   function init() {
-    // Create the dialog DOM dynamically so it can be shared across pages
-    // (index.html Sample Manager + preset-macro-manager.html)
-    var dialog = document.getElementById('trackdefaults-dialog');
-    if (!dialog) {
-      dialog = document.createElement('sl-dialog');
-      dialog.label = 'Boot Default Presets';
-      dialog.id = 'trackdefaults-dialog';
-      dialog.style.cssText = '--width:64rem;';
-      dialog.innerHTML =
-        '<div id="trackdefaults-body"></div>' +
-        '<sl-button slot="footer" variant="default" id="td-close-btn">Close</sl-button>' +
-        '<sl-button slot="footer" variant="primary" id="td-save-btn" disabled>Save to SD Card</sl-button>';
-      document.body.appendChild(dialog);
-    }
-
     var openBtn = document.getElementById('trackdefaults-btn');
-    var saveBtn = document.getElementById('td-save-btn');
     var closeBtn = document.getElementById('td-close-btn');
 
-    if (!openBtn) {
-      console.warn('[TrackDefaults] Trigger button not found');
-      return;
+    // Header text links — TD editor side
+    var tdLinkJson = document.getElementById('td-link-json');
+    // Header text links — File Viewer side
+    var fvLinkEditor = document.getElementById('fv-link-editor');
+
+    if (openBtn) {
+      openBtn.addEventListener('click', function() {
+        openTrackDefaultsEditor('factory/trackdefaults', 'default.json');
+      });
     }
 
-    openBtn.addEventListener('click', function() {
-      S.showLoading('Loading boot defaults…');
-      // Ensure shared data (tracks, machines, macros) is loaded — on the Macros
-      // page this is already done, on the Samples page it may not be.
-      var dataReady = S.data.loaded
-        ? Promise.resolve()
-        : S.loadSharedData();
-      dataReady.then(function() {
-        return loadTrackDefaults();
-      }).then(function() {
-        renderOverlayContent();
-        S.hideLoading();
-        dialog.show();
-      }).catch(function() {
-        S.hideLoading();
-        S.toast('Could not load boot defaults', 'danger', 4000);
+    var saveAsBtn = document.getElementById('td-saveas-btn');
+    if (saveAsBtn) {
+      saveAsBtn.addEventListener('click', function() {
+        saveAsDialog();
       });
-    });
+    }
 
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function() {
-        var data = collectFromUI();
-        S.showLoading('Saving boot defaults…');
-        saveTrackDefaults(data).then(function() {
-          trackDefaults = data;
-          S.hideLoading();
-        }).catch(function() {
-          S.hideLoading();
-        });
+    var setActiveBtn = document.getElementById('td-setactive-btn');
+    if (setActiveBtn) {
+      setActiveBtn.addEventListener('click', function() {
+        setAsBootDefault();
       });
     }
 
     if (closeBtn) {
       closeBtn.addEventListener('click', function() {
-        dialog.hide();
+        closeTDEditor();
       });
     }
 
-    // Confirm unsaved changes on close
-    dialog.addEventListener('sl-request-close', function(e) {
-      if (dirty) {
-        if (!confirm('You have unsaved changes. Discard them?')) {
-          e.preventDefault();
-        }
-      }
-    });
+    if (tdLinkJson) {
+      tdLinkJson.addEventListener('click', function() {
+        switchToJsonView();
+      });
+    }
+
+    if (fvLinkEditor) {
+      fvLinkEditor.addEventListener('click', function() {
+        openFromFileViewer();
+      });
+    }
   }
 
   // ─── Export ────────────────────────────────────────────────
@@ -9116,6 +9915,11 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
   window.TBD = window.TBD || {};
   window.TBD.trackDefaults = {
     init: init,
+    openEditor: openTrackDefaultsEditor,
+    openFromFileViewer: openFromFileViewer,
+    isTrackDefaultsFile: function(path) {
+      return /trackdefaults\//i.test(path || '');
+    }
   };
 
 })();
@@ -9151,28 +9955,8 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
   }
 
   function populateConfigDialog(config) {
-    // Connection tab
-    var apiUrl = document.getElementById('cfg-api-url');
-    if (apiUrl) apiUrl.value = config.apiEndpoint || window.location.origin;
-
-    // MIDI tab
-    var midiEnable = document.getElementById('cfg-midi-enable');
-    if (midiEnable) midiEnable.checked = !!config.midiEnabled;
-
-    var midiChannel = document.getElementById('cfg-midi-channel');
-    if (midiChannel) {
-      if (midiChannel.querySelectorAll('sl-option').length === 0) {
-        var html = '';
-        for (var i = 1; i <= 16; i++) {
-          html += '<sl-option value="' + i + '">Channel ' + i + '</sl-option>';
-        }
-        midiChannel.innerHTML = html;
-      }
-      midiChannel.value = String(config.midiChannel || 1);
-    }
-
-    // Enumerate MIDI devices if Web MIDI is available
-    populateMidiDevices();
+    // ── Device MIDI Routing — from config.midi (same JSON the Pico uses via SPI)
+    populateMidiRouting(config);
 
     // WiFi tab — firmware stores in nested config.wifi object
     var wifi = config.wifi || {};
@@ -9239,7 +10023,8 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
       var firmware = document.getElementById('cfg-firmware');
       if (firmware) firmware.textContent = iocaps.FWV || '—';
       var hardware = document.getElementById('cfg-hardware');
-      if (hardware) hardware.textContent = iocaps.HWV || '—';
+      var hwLabel = { DADA: 'TBD-16' };
+      if (hardware) hardware.textContent = hwLabel[iocaps.HWV] || iocaps.HWV || '—';
     } catch (e) {
       console.warn('Failed to fetch IOCaps:', e);
     }
@@ -9252,46 +10037,92 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     }
   }
 
-  function populateMidiDevices() {
-    var container = document.getElementById('cfg-midi-devices');
+  // ── Device MIDI Routing ──────────────────────────────────
+  // Reads config.midi (same JSON the Pico OLED screen uses via SPI
+  // GetConfiguration/SetConfiguration 0x10/0x11).
+  // Port structure mirrors midisettings.cpp on the Pico:
+  //   uartmidi1/2.in, uartmidi1/2.out   — TRS MIDI 1/2
+  //   usbhost.in, usbhost.out           — USB Host MIDI
+  //   usbdevice.in, usbdevice.out       — USB Device MIDI
+  //   abletonlink                        — off / tempo / tempo+startstop
+  // Mode values: "none", "sync", "notes", "sync+notes"
+
+  var MIDI_MODES = [
+    { value: 'none',       label: 'None' },
+    { value: 'sync',       label: 'Sync' },
+    { value: 'notes',      label: 'Notes' },
+    { value: 'sync+notes', label: 'Sync + Notes' },
+  ];
+
+  var LINK_MODES = [
+    { value: 'off',              label: 'Off' },
+    { value: 'tempo',            label: 'Tempo' },
+    { value: 'tempo+startstop',  label: 'Tempo + Start/Stop' },
+  ];
+
+  var MIDI_PORTS = [
+    { key: 'uartmidi1', label: 'TRS MIDI 1', hasIn: true, hasOut: true },
+    { key: 'uartmidi2', label: 'TRS MIDI 2', hasIn: true, hasOut: true },
+    { key: 'usbhost',   label: 'USB Host MIDI', hasIn: true, hasOut: true },
+    { key: 'usbdevice', label: 'USB Device MIDI', hasIn: true, hasOut: true },
+  ];
+
+  function midiSelectHtml(id, modes, current) {
+    var html = '<sl-select id="' + id + '" size="small" value="' + S.esc(current) + '" hoist>';
+    for (var i = 0; i < modes.length; i++) {
+      html += '<sl-option value="' + modes[i].value + '">' + S.esc(modes[i].label) + '</sl-option>';
+    }
+    html += '</sl-select>';
+    return html;
+  }
+
+  function populateMidiRouting(config) {
+    var container = document.getElementById('cfg-midi-routing');
     if (!container) return;
 
-    if (navigator.requestMIDIAccess) {
-      navigator.requestMIDIAccess().then(function(access) {
-        var html = '';
-        var inputs = access.inputs;
-        var outputs = access.outputs;
-        var deviceNames = {};
-
-        inputs.forEach(function(input) {
-          deviceNames[input.name] = deviceNames[input.name] || { input: false, output: false };
-          deviceNames[input.name].input = true;
-        });
-        outputs.forEach(function(output) {
-          deviceNames[output.name] = deviceNames[output.name] || { input: false, output: false };
-          deviceNames[output.name].output = true;
-        });
-
-        var names = Object.keys(deviceNames);
-        if (names.length === 0) {
-          container.innerHTML = '<div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">No MIDI devices detected</div>';
-          return;
-        }
-
-        names.forEach(function(name) {
-          var d = deviceNames[name];
-          var badges = '';
-          if (d.input) badges += '<span class="midi-device-badge">Input</span>';
-          if (d.output) badges += '<span class="midi-device-badge">Output</span>';
-          html += '<div class="midi-device-item"><span style="font-size:0.85rem;">' + S.esc(name) + '</span><div>' + badges + '</div></div>';
-        });
-        container.innerHTML = html;
-      }).catch(function() {
-        container.innerHTML = '<div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">MIDI access denied</div>';
-      });
-    } else {
-      container.innerHTML = '<div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">Web MIDI not supported in this browser</div>';
+    var midi = config.midi;
+    if (!midi) {
+      container.innerHTML = '<div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">MIDI routing not available (device not connected)</div>';
+      return;
     }
+
+    var html = '<table class="midi-routing-table">';
+    html += '<thead><tr><th>Port</th><th>Input</th><th>Output</th></tr></thead><tbody>';
+
+    for (var i = 0; i < MIDI_PORTS.length; i++) {
+      var port = MIDI_PORTS[i];
+      var portData = midi[port.key] || {};
+      html += '<tr>';
+      html += '<td class="port-name">' + S.esc(port.label) + '</td>';
+      html += '<td>' + (port.hasIn ? midiSelectHtml('cfg-midi-' + port.key + '-in', MIDI_MODES, portData.in || 'none') : '—') + '</td>';
+      html += '<td>' + (port.hasOut ? midiSelectHtml('cfg-midi-' + port.key + '-out', MIDI_MODES, portData.out || 'none') : '—') + '</td>';
+      html += '</tr>';
+    }
+
+    // Ableton Link — spans the in/out columns
+    html += '<tr>';
+    html += '<td class="port-name">Ableton Link</td>';
+    html += '<td colspan="2">' + midiSelectHtml('cfg-midi-abletonlink', LINK_MODES, midi.abletonlink || 'off') + '</td>';
+    html += '</tr>';
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function readMidiRoutingIntoConfig(config) {
+    if (!config.midi) config.midi = {};
+    var midi = config.midi;
+
+    for (var i = 0; i < MIDI_PORTS.length; i++) {
+      var port = MIDI_PORTS[i];
+      if (!midi[port.key]) midi[port.key] = {};
+      var inEl = document.getElementById('cfg-midi-' + port.key + '-in');
+      var outEl = document.getElementById('cfg-midi-' + port.key + '-out');
+      if (inEl) midi[port.key].in = inEl.value;
+      if (outEl) midi[port.key].out = outEl.value;
+    }
+    var linkEl = document.getElementById('cfg-midi-abletonlink');
+    if (linkEl) midi.abletonlink = linkEl.value;
   }
 
   function setupConfigDialog() {
@@ -9346,34 +10177,6 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
       cfgReboot.addEventListener('click', function() {
         document.getElementById('config-dialog').hide();
         document.getElementById('reboot-dialog').show();
-      });
-    }
-
-    // Test Connection button
-    var testConn = document.getElementById('cfg-test-connection');
-    if (testConn) {
-      testConn.addEventListener('click', async function() {
-        var dot = document.getElementById('cfg-conn-dot');
-        var statusEl = document.getElementById('cfg-conn-status');
-        if (dot) dot.style.background = '#ff9800';
-        if (statusEl) statusEl.textContent = 'Testing…';
-        try {
-          var apiUrl = document.getElementById('cfg-api-url');
-          var url = (apiUrl ? apiUrl.value : window.location.origin) + '/api/v2/device?action=getIOCaps';
-          var resp = await S.apiQueue.enqueue(function() {
-            return fetch(url, { method: 'GET', signal: AbortSignal.timeout(5000) });
-          });
-          if (resp.ok) {
-            if (dot) dot.style.background = '#4caf50';
-            if (statusEl) statusEl.textContent = 'Connected';
-          } else {
-            if (dot) dot.style.background = '#f44336';
-            if (statusEl) statusEl.textContent = 'Error (' + resp.status + ')';
-          }
-        } catch (e) {
-          if (dot) dot.style.background = '#f44336';
-          if (statusEl) statusEl.textContent = 'Unreachable';
-        }
       });
     }
 
@@ -9795,17 +10598,8 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     }
     var config = currentConfig;
 
-    var apiUrl = document.getElementById('cfg-api-url');
-    if (apiUrl) config.apiEndpoint = apiUrl.value;
-
-    var midiEnable = document.getElementById('cfg-midi-enable');
-    if (midiEnable) config.midiEnabled = midiEnable.checked;
-
-    var midiChannel = document.getElementById('cfg-midi-channel');
-    if (midiChannel) config.midiChannel = parseInt(midiChannel.value, 10) || 1;
-
-    var compact = document.getElementById('cfg-compact');
-    if (compact) config.compactLayout = compact.checked;
+    // Device MIDI routing — same pattern as WiFi: merge into config.midi
+    readMidiRoutingIntoConfig(config);
 
     try {
       await S.queuedPost('/device?action=setConfig', config);

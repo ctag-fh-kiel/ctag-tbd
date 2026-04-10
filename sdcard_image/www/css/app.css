@@ -2308,3 +2308,275 @@ sl-dialog::part(footer) {
   color: var(--sl-color-neutral-600);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   FILE VIEWER — VS Code Dark+ inspired code viewer
+   ═══════════════════════════════════════════════════════════════ */
+
+/* When viewer is active, hide ALL kit editor siblings */
+#kit-panel.viewer-active > *:not(.file-viewer) {
+  display: none !important;
+}
+#kit-panel.viewer-active {
+  background: #1e1e1e !important;
+}
+#kit-panel.viewer-active > .file-viewer {
+  display: flex !important;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Viewer container — fills the panel as a flex child */
+.file-viewer {
+  display: none;
+  flex-direction: column;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Tab bar ── */
+.fv-toolbar {
+  display: flex;
+  align-items: stretch;
+  background: #252526;
+  border-bottom: 1px solid #1e1e1e;
+  flex-shrink: 0;
+  height: 35px;
+  min-height: 35px;
+}
+.fv-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  background: #1e1e1e;
+  border-top: 2px solid #007acc;
+  border-right: 1px solid #252526;
+  font-size: 13px;
+  color: #ffffff;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.fv-tab-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fv-tab-icon.json { color: #e8ab53; }
+.fv-tab-icon.text { color: #a8a8a8; }
+.fv-tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-left: 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #858585;
+  font-size: 14px;
+  line-height: 1;
+}
+.fv-tab-close:hover {
+  background: #37373d;
+  color: #ffffff;
+}
+.fv-toolbar-spacer { flex: 1; }
+.fv-toolbar-actions {
+  display: flex;
+  align-items: center;
+  padding-right: 8px;
+  gap: 2px;
+}
+.fv-toolbar-actions sl-icon-button {
+  font-size: 0.9rem;
+  color: #858585;
+}
+.fv-toolbar-actions sl-icon-button:hover {
+  color: #ffffff;
+}
+
+/* ── Breadcrumb ── */
+.fv-breadcrumb {
+  padding: 0 16px;
+  height: 22px;
+  line-height: 22px;
+  font-size: 11px;
+  color: #969696;
+  background: #1e1e1e;
+  border-bottom: 1px solid #2d2d2d;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.fv-breadcrumb .fv-bc-seg {
+  color: #cccccc;
+}
+.fv-breadcrumb .fv-bc-sep {
+  color: #585858;
+  margin: 0 3px;
+  font-size: 10px;
+}
+
+/* ── Editor body ── */
+.fv-body {
+  flex: 1;
+  overflow: auto;
+  background: #1e1e1e;
+  min-height: 0;
+}
+
+/* ── Code layout: gutter + code ── */
+.fv-editor {
+  display: flex;
+  min-height: 100%;
+}
+
+/* Line number gutter */
+.fv-gutter {
+  flex-shrink: 0;
+  padding: 4px 0;
+  text-align: right;
+  color: #858585;
+  font-family: 'Menlo', 'Monaco', 'Consolas', 'SF Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 20px;
+  user-select: none;
+  background: #1e1e1e;
+  min-width: 54px;
+}
+.fv-gutter-line {
+  padding: 0 16px 0 0;
+  height: 20px;
+}
+
+/* Code area */
+.fv-code {
+  flex: 1;
+  padding: 4px 16px 4px 16px;
+  font-family: 'Menlo', 'Monaco', 'Consolas', 'SF Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 20px;
+  white-space: pre;
+  color: #d4d4d4;
+  tab-size: 2;
+  border-left: 1px solid #2d2d2d;
+  min-width: 0;
+}
+
+/* Individual code line */
+.fv-line {
+  height: 20px;
+}
+.fv-line:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ── Syntax tokens — VS Code Dark+ ── */
+.tk-key  { color: #9cdcfe; }
+.tk-str  { color: #ce9178; }
+.tk-num  { color: #b5cea8; }
+.tk-bool { color: #569cd6; }
+.tk-null { color: #569cd6; font-style: italic; }
+.tk-brc  { color: #ffd700; }
+.tk-brk  { color: #da70d6; }
+.tk-pun  { color: #d4d4d4; }
+
+/* ── Status bar ── */
+.fv-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 12px;
+  height: 22px;
+  min-height: 22px;
+  background: #007acc;
+  color: #ffffff;
+  font-size: 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── Fold indicators ── */
+.fv-fold-btn {
+  display: inline;
+  color: #858585;
+  cursor: pointer;
+  user-select: none;
+  font-size: 10px;
+}
+.fv-fold-btn:hover { color: #cccccc; }
+
+.fv-fold-ph {
+  display: inline-block;
+  color: #858585;
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  border-radius: 3px;
+  padding: 0 6px;
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 18px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+.fv-fold-ph:hover {
+  background: #37373d;
+  border-color: #505050;
+  color: #cccccc;
+}
+
+/* ── Error banner ── */
+.fv-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: #332222;
+  border-bottom: 1px solid #5a3030;
+  color: #f48771;
+  font-size: 13px;
+  flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.fv-error-banner sl-icon {
+  font-size: 14px;
+  color: #f48771;
+}
+
+/* ── Loading / error / unsupported ── */
+.fv-body sl-spinner {
+  --indicator-color: #007acc;
+  --track-color: #333;
+  margin: 3rem auto;
+  display: block;
+  font-size: 1.5rem;
+}
+.fv-msg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #858585;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.fv-msg sl-icon { font-size: 3rem; color: #555; }
+.fv-msg.error sl-icon { color: #e5534b; }
+
+/* ── Scrollbar ── */
+.fv-body::-webkit-scrollbar { width: 10px; height: 10px; }
+.fv-body::-webkit-scrollbar-track { background: #1e1e1e; }
+.fv-body::-webkit-scrollbar-thumb { background: rgba(121,121,121,0.4); }
+.fv-body::-webkit-scrollbar-thumb:hover { background: rgba(121,121,121,0.7); }
+.fv-body::-webkit-scrollbar-corner { background: #1e1e1e; }
+

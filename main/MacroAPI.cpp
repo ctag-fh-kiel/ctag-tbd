@@ -152,6 +152,8 @@ static void read_all_json_overlay(const char *subdir, Value &outArray,
 // Forward declarations for handlers defined below
 static esp_err_t handle_get_trackdefaults(httpd_req_t *req);
 static esp_err_t handle_save_trackdefaults(httpd_req_t *req);
+static esp_err_t handle_get_active_trackdefault(httpd_req_t *req);
+static esp_err_t handle_set_active_trackdefault(httpd_req_t *req);
 
 /**
  * GET /api/v2/macros — dispatched by ?action= query parameter.
@@ -202,6 +204,11 @@ esp_err_t MacroAPI::macroapi_get_handler(httpd_req_t *req) {
     /* ── action=get_trackdefaults ── read boot-default presets ── */
     if (strcmp(action, "get_trackdefaults") == 0) {
         return handle_get_trackdefaults(req);
+    }
+
+    /* ── action=get_active_trackdefault ── which template is active ── */
+    if (strcmp(action, "get_active_trackdefault") == 0) {
+        return handle_get_active_trackdefault(req);
     }
 
     /* ── default: return current track state ── */
@@ -376,6 +383,87 @@ static esp_err_t handle_save_trackdefaults(httpd_req_t *req) {
     return send_ok(req);
 }
 
+/**
+ * GET  ?action=get_active_trackdefault
+ * Returns {"name":"<template>"} from user/config/active-trackdefault.txt.
+ * Falls back to "default" if the file doesn't exist.
+ */
+static esp_err_t handle_get_active_trackdefault(httpd_req_t *req) {
+    std::string name = "default";
+    std::string cfgPath = CTAG::STORAGE::userPath() + "/" + CTAG::STORAGE::DIR_CONFIG + "/active-trackdefault.txt";
+    FILE *f = fopen(cfgPath.c_str(), "r");
+    if (f) {
+        char buf[64] = {};
+        if (fgets(buf, sizeof(buf), f)) {
+            size_t len = strlen(buf);
+            while (len > 0 && (buf[len-1] == '\n' || buf[len-1] == '\r')) buf[--len] = '\0';
+            if (len > 0) name = buf;
+        }
+        fclose(f);
+    }
+    Document resp(kObjectType);
+    auto &alloc = resp.GetAllocator();
+    resp.AddMember("name", Value(name.c_str(), alloc), alloc);
+    StringBuffer sb;
+    Writer<StringBuffer> writer(sb);
+    resp.Accept(writer);
+    return send_json(req, sb.GetString());
+}
+
+/**
+ * POST ?action=set_active_trackdefault
+ * Body: {"name":"<template>"}
+ * Writes the template name to user/config/active-trackdefault.txt.
+ */
+static esp_err_t handle_set_active_trackdefault(httpd_req_t *req) {
+    if (req->content_len == 0 || req->content_len > 256) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid body size");
+        return ESP_FAIL;
+    }
+    char *content = (char *)heap_caps_malloc(req->content_len + 1, MALLOC_CAP_SPIRAM);
+    if (!content) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Out of memory");
+        return ESP_FAIL;
+    }
+    int ret = httpd_req_recv(req, content, req->content_len);
+    if (ret <= 0) {
+        heap_caps_free(content);
+        if (ret == HTTPD_SOCK_ERR_TIMEOUT) httpd_resp_send_408(req);
+        return ESP_FAIL;
+    }
+    content[req->content_len] = '\0';
+
+    Document doc;
+    doc.Parse(content);
+    heap_caps_free(content);
+
+    if (doc.HasParseError() || !doc.IsObject() || !doc.HasMember("name") || !doc["name"].IsString()) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Expected {\"name\":\"...\"}");
+        return ESP_FAIL;
+    }
+
+    std::string name = doc["name"].GetString();
+    if (name.empty() || name.size() > 60) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid template name");
+        return ESP_FAIL;
+    }
+
+    std::string cfgDir = CTAG::STORAGE::userPath() + "/" + CTAG::STORAGE::DIR_CONFIG;
+    mkdir(cfgDir.c_str(), 0755);
+    std::string cfgPath = cfgDir + "/active-trackdefault.txt";
+
+    FILE *f = fopen(cfgPath.c_str(), "w");
+    if (!f) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Cannot write config");
+        return ESP_FAIL;
+    }
+    fwrite(name.c_str(), 1, name.size(), f);
+    fclose(f);
+
+    ESP_LOGI(MACRO_TAG, "Set active track default to \"%s\"", name.c_str());
+    return send_ok(req);
+}
+
 esp_err_t MacroAPI::macroapi_post_handler(httpd_req_t *req) {
     ESP_LOGI(MACRO_TAG, "POST Mem free int %d, SPIRAM %d",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
@@ -411,6 +499,9 @@ esp_err_t MacroAPI::macroapi_post_handler(httpd_req_t *req) {
     }
     else if (strcmp(action, "save_trackdefaults") == 0) {
         return handle_save_trackdefaults(req);
+    }
+    else if (strcmp(action, "set_active_trackdefault") == 0) {
+        return handle_set_active_trackdefault(req);
     }
 
     httpd_resp_set_type(req, "text/html");

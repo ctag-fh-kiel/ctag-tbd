@@ -53,7 +53,9 @@ const PORT = parseInt(process.argv[2], 10) || 3001;
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 const WEBROOT = path.resolve(__dirname, '..');
 const DATA_DIR = path.resolve(REPO_ROOT, 'sdcard_image', 'data');
+const FACTORY_DIR = path.resolve(REPO_ROOT, 'sdcard_image', 'factory');
 const SAMPLE_ROOT = path.resolve(REPO_ROOT, 'sample_rom', 'tbdsamples');
+const SDCARD_ROOT = path.resolve(REPO_ROOT, 'sdcard_image');
 
 // ───────── MIME types ─────────
 const MIME = {
@@ -82,7 +84,8 @@ let systemConfig = {};    // Loaded from spm-config.json
 const favorites = {};     // slot# -> data
 
 function loadSynthDefinitions() {
-  const p = path.join(DATA_DIR, 'synthdefinitions.json');
+  let p = path.join(DATA_DIR, 'synthdefinitions.json');
+  if (!fs.existsSync(p)) p = path.join(FACTORY_DIR, 'synthdefinitions.json');
   try {
     synthDefs = JSON.parse(fs.readFileSync(p, 'utf8'));
   } catch (e) {
@@ -90,25 +93,33 @@ function loadSynthDefinitions() {
     synthDefs = { tracks: [], machines: [] };
   }
 
-  // Build plugin list by scanning mui-*.json files in sp/ directory,
+  // Build plugin list by scanning mui-*.json files in plugins/ directory,
   // matching the real firmware's SPManagerDataModel::getSoundProcessors().
   pluginList = [];
-  const spDir = path.join(DATA_DIR, 'sp');
-  try {
-    const files = fs.readdirSync(spDir).filter(f => f.startsWith('mui-') && f.endsWith('.json')).sort();
-    for (const file of files) {
-      try {
-        const d = JSON.parse(fs.readFileSync(path.join(spDir, file), 'utf8'));
-        pluginList.push({
-          id: d.id || file.replace(/^mui-|\.json$/g, ''),
-          name: d.name || d.id || file,
-          isStereo: d.isStereo || false,
-          hint: d.hint || '',
-        });
-      } catch (e) { /* skip unreadable files */ }
+  const spDirs = [
+    path.join(DATA_DIR, 'sp'),
+    path.join(FACTORY_DIR, 'plugins'),
+  ];
+  for (const spDir of spDirs) {
+    try {
+      const files = fs.readdirSync(spDir).filter(f => f.startsWith('mui-') && f.endsWith('.json')).sort();
+      for (const file of files) {
+        try {
+          const d = JSON.parse(fs.readFileSync(path.join(spDir, file), 'utf8'));
+          const id = d.id || file.replace(/^mui-|\.json$/g, '');
+          if (!pluginList.find(p => p.id === id)) {
+            pluginList.push({
+              id: id,
+              name: d.name || d.id || file,
+              isStereo: d.isStereo || false,
+              hint: d.hint || '',
+            });
+          }
+        } catch (e) { /* skip unreadable files */ }
+      }
+    } catch (e) {
+      // directory may not exist, that's okay
     }
-  } catch (e) {
-    console.warn('Could not scan sp/ directory:', e.message);
   }
 
   // Initialize 19 track slots (0-15 instruments, 16-18 FX)
@@ -135,13 +146,36 @@ function loadSynthDefinitions() {
 }
 
 function loadSystemConfig() {
-  try {
-    systemConfig = JSON.parse(
-      fs.readFileSync(path.join(DATA_DIR, 'spm-config.json'), 'utf8')
-    );
-  } catch (e) {
-    systemConfig = { activeProcessors: ['TBD03', 'TBD03'] };
-  }
+  // The real P4 firmware returns the "configuration" object from device.json
+  // via GET /device?action=getConfig.  Our mock mirrors that shape so the
+  // WebUI sees the same JSON locally as it does on the real device.
+  //
+  // Sections: wifi, midi, audio codec levels, channel routing.
+  // WiFi and MIDI follow the same pattern: a nested object keyed by
+  // feature name matching the Pico OLED settings screens.
+  systemConfig = {
+    wifi: {
+      ssid: 'dada-tbd',
+      pwd: '',
+      mode: 'usbncm',
+      mdns_name: 'dada-tbd',
+      ip: '192.168.4.1',
+    },
+    midi: {
+      uartmidi1: { in: 'sync+notes', out: 'sync+notes' },
+      uartmidi2: { in: 'sync+notes', out: 'sync+notes' },
+      usbhost:   { in: 'sync+notes', out: 'sync+notes' },
+      usbdevice: { in: 'sync+notes', out: 'sync+notes' },
+      abletonlink: 'off',
+    },
+    ch01_daisy: 'off',
+    ch0_toStereo: 'off',
+    ch1_toStereo: 'off',
+    ch0_outputSoftClip: 'on',
+    ch1_outputSoftClip: 'on',
+    ch0_codecLvlOut: '58',
+    ch1_codecLvlOut: '58',
+  };
 }
 
 loadSynthDefinitions();
@@ -233,14 +267,69 @@ function scanDirectories(baseDir, relDir) {
   return results;
 }
 
+/** Scan ALL files recursively under a directory (mirrors real StorageAPI scan) */
+function scanAllFiles(baseDir, relDir) {
+  const results = [];
+  const dirPath = relDir ? path.join(baseDir, relDir) : baseDir;
+  let entries;
+  try { entries = fs.readdirSync(dirPath, { withFileTypes: true }); }
+  catch (e) { return results; }
+
+  for (const ent of entries) {
+    if (ent.name.startsWith('.')) continue;
+    const relPath = relDir ? relDir + '/' + ent.name : ent.name;
+    const fullPath = path.join(baseDir, relPath);
+
+    if (ent.isDirectory()) {
+      // Skip www/ directory (that's the webroot, not SD data)
+      if (!relDir && ent.name === 'www') continue;
+      results.push(...scanAllFiles(baseDir, relPath));
+    } else if (ent.isFile()) {
+      const stat = fs.statSync(fullPath);
+      results.push({
+        name: ent.name,
+        path: relDir || '',
+        size: stat.size,
+        mtime: Math.floor(stat.mtimeMs),
+      });
+    }
+  }
+  return results;
+}
+
+/** Scan ALL directories recursively under a directory */
+function scanAllDirectories(baseDir, relDir) {
+  const results = [];
+  const dirPath = relDir ? path.join(baseDir, relDir) : baseDir;
+  let entries;
+  try { entries = fs.readdirSync(dirPath, { withFileTypes: true }); }
+  catch (e) { return results; }
+
+  for (const ent of entries) {
+    if (ent.name.startsWith('.')) continue;
+    if (ent.isDirectory()) {
+      if (!relDir && ent.name === 'www') continue;
+      const relPath = relDir ? relDir + '/' + ent.name : ent.name;
+      results.push(relPath);
+      results.push(...scanAllDirectories(baseDir, relPath));
+    }
+  }
+  return results;
+}
+
 /** Generate mock plugin params for a given plugin */
 function generateMockParams(pluginId) {
-  // Try to load the real sp/ config file if it exists
-  const spPath = path.join(DATA_DIR, 'sp', `mui-${pluginId}.json`);
-  try {
-    const data = JSON.parse(fs.readFileSync(spPath, 'utf8'));
-    if (data.params) return data;
-  } catch (e) { /* fall through to mock */ }
+  // Try to load the real config file if it exists (data/sp/ or factory/plugins/)
+  const candidates = [
+    path.join(DATA_DIR, 'sp', `mui-${pluginId}.json`),
+    path.join(FACTORY_DIR, 'plugins', `mui-${pluginId}.json`),
+  ];
+  for (const spPath of candidates) {
+    try {
+      const data = JSON.parse(fs.readFileSync(spPath, 'utf8'));
+      if (data.params) return data;
+    } catch (e) { /* try next */ }
+  }
 
   // Generate mock params
   const params = [];
@@ -272,7 +361,7 @@ function handleGetIOCaps(req, res) {
              `${prefix}_P_MW_1`, `${prefix}_P_BC_2`);
   }
   sendJson(res, 200, {
-    HWV: 'DADA',
+    HWV: 'TBD-16',
     FWV: '0.0.0-dev',
     p: 'dada',
     t: triggers,
@@ -450,9 +539,11 @@ function handleSamplesGet(req, res) {
 
   // Get a config file: ?getconfig=synthdefinitions.json
   if (q.getconfig) {
-    const configPath = path.join(DATA_DIR, q.getconfig);
-    // Security: must stay inside DATA_DIR
-    if (!configPath.startsWith(DATA_DIR)) {
+    // Try DATA_DIR first, then FACTORY_DIR as fallback
+    let configPath = path.join(DATA_DIR, q.getconfig);
+    if (!fs.existsSync(configPath)) configPath = path.join(FACTORY_DIR, q.getconfig);
+    // Security: must stay inside sdcard_image
+    if (!configPath.startsWith(DATA_DIR) && !configPath.startsWith(FACTORY_DIR)) {
       return sendJson(res, 403, { error: 'Forbidden' });
     }
     try {
@@ -465,6 +556,49 @@ function handleSamplesGet(req, res) {
       return res.end(raw);
     } catch (e) {
       return sendJson(res, 404, { error: 'Not found: ' + q.getconfig });
+    }
+  }
+
+  // Fetch file (inline view): ?fetch=path/to/file
+  if (q.fetch) {
+    const fetchPath = path.join(SDCARD_ROOT, q.fetch);
+    if (!fetchPath.startsWith(SDCARD_ROOT)) {
+      return sendJson(res, 403, { error: 'Forbidden' });
+    }
+    try {
+      const stat = fs.statSync(fetchPath);
+      const ext = path.extname(fetchPath).toLowerCase();
+      const mime = MIME[ext] || 'application/octet-stream';
+      res.writeHead(200, {
+        'Content-Type': mime,
+        'Content-Length': stat.size,
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache',
+      });
+      return fs.createReadStream(fetchPath).pipe(res);
+    } catch (e) {
+      return sendJson(res, 404, { error: 'Not found: ' + q.fetch });
+    }
+  }
+
+  // Download file: ?download=path/to/file
+  if (q.download) {
+    const dlPath = path.join(SDCARD_ROOT, q.download);
+    if (!dlPath.startsWith(SDCARD_ROOT)) {
+      return sendJson(res, 403, { error: 'Forbidden' });
+    }
+    try {
+      const stat = fs.statSync(dlPath);
+      const filename = path.basename(dlPath);
+      res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': 'attachment; filename="' + filename + '"',
+        'Content-Length': stat.size,
+        'Access-Control-Allow-Origin': '*',
+      });
+      return fs.createReadStream(dlPath).pipe(res);
+    } catch (e) {
+      return sendJson(res, 404, { error: 'Not found: ' + q.download });
     }
   }
 
@@ -488,16 +622,18 @@ function handleSamplesGet(req, res) {
   }
 
   // Default: full response matching real StorageAPI::samples_get_handler
-  // Scans /sdcard/data/ for config files, /sdcard/tbdsamples/ for WAV files
+  // Scan entire sdcard_image/ directory (mirrors real device scanning /sdcard/)
   const configfiles = scanJsonFiles(DATA_DIR, '');
-  const files = scanWavFiles(SAMPLE_ROOT, '');
-  const directories = scanDirectories(SAMPLE_ROOT, '');
+  const files = scanAllFiles(SDCARD_ROOT, '');
+  const directories = scanAllDirectories(SDCARD_ROOT, '');
 
   // Load kits from sample_rom.json if available
   let kits = {};
   try {
+    let sampleRomPath = path.join(DATA_DIR, 'sample_rom.json');
+    if (!fs.existsSync(sampleRomPath)) sampleRomPath = path.join(FACTORY_DIR, 'kits', 'sample_rom.json');
     const sampleRom = JSON.parse(
-      fs.readFileSync(path.join(DATA_DIR, 'sample_rom.json'), 'utf8')
+      fs.readFileSync(sampleRomPath, 'utf8')
     );
     kits = {
       smp_banks: sampleRom.smp_banks || [],
@@ -592,16 +728,43 @@ function handleMacroApiGet(req, res) {
   const parsed = url.parse(req.url, true);
   const action = parsed.query.action || '';
 
+  if (action === 'get_trackdefaults') {
+    // Return the actual factory trackdefaults file
+    const tdFile = parsed.query.file || 'default.json';
+    const safeName = path.basename(tdFile);
+    const factoryPath = path.join(FACTORY_DIR, 'trackdefaults', safeName);
+    const userPath = path.join(path.dirname(FACTORY_DIR), 'user', 'trackdefaults', safeName);
+    let tdPath = fs.existsSync(userPath) && safeName !== '.gitkeep' ? userPath : factoryPath;
+    try {
+      const content = JSON.parse(fs.readFileSync(tdPath, 'utf8'));
+      return sendJson(res, 200, content);
+    } catch (e) {
+      return sendJson(res, 200, { tracks: [] });
+    }
+  }
+
+  if (action === 'get_active_trackdefault') {
+    const cfgPath = path.join(path.dirname(FACTORY_DIR), 'user', 'config', 'active-trackdefault.txt');
+    let name = 'default';
+    try {
+      name = fs.readFileSync(cfgPath, 'utf8').trim() || 'default';
+    } catch (e) { /* file not found — use default */ }
+    return sendJson(res, 200, { name });
+  }
+
   if (action === 'getall') {
     // Bulk endpoint — return macroDefs, soundPresets, and tracks
-    const macroDefs = scanJsonFiles(DATA_DIR, 'macrodefinitions').map(f => {
+    // Scan both data/macrodefinitions and factory/macros for macro definitions
+    let macroDefs = scanJsonFiles(DATA_DIR, 'macrodefinitions').concat(scanJsonFiles(FACTORY_DIR, 'macros')).map(f => {
       try {
-        return JSON.parse(fs.readFileSync(path.join(DATA_DIR, f.path ? f.path + '/' + f.name : f.name), 'utf8'));
+        const base = f.path && f.path.startsWith('macros') ? FACTORY_DIR : DATA_DIR;
+        return JSON.parse(fs.readFileSync(path.join(base, f.path ? f.path + '/' + f.name : f.name), 'utf8'));
       } catch (e) { return null; }
     }).filter(Boolean);
-    const soundPresets = scanJsonFiles(DATA_DIR, 'macrosoundpresets').map(f => {
+    const soundPresets = scanJsonFiles(DATA_DIR, 'macrosoundpresets').concat(scanJsonFiles(FACTORY_DIR, 'presets')).map(f => {
       try {
-        return JSON.parse(fs.readFileSync(path.join(DATA_DIR, f.path ? f.path + '/' + f.name : f.name), 'utf8'));
+        const base = f.path && f.path.startsWith('presets') ? FACTORY_DIR : DATA_DIR;
+        return JSON.parse(fs.readFileSync(path.join(base, f.path ? f.path + '/' + f.name : f.name), 'utf8'));
       } catch (e) { return null; }
     }).filter(Boolean);
     const tracks = trackState.slice(0, 19).map(t => ({
@@ -625,6 +788,39 @@ function handleMacroApiGet(req, res) {
 function handleMacroApiPost(req, res) {
   const parsed = url.parse(req.url, true);
   const action = parsed.query.action || '';
+
+  if (action === 'save_trackdefaults') {
+    return readJsonBody(req, (err, body) => {
+      if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
+      const safeName = path.basename(parsed.query.file || 'default.json');
+      const userDir = path.join(path.dirname(FACTORY_DIR), 'user', 'trackdefaults');
+      try {
+        if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
+        fs.writeFileSync(path.join(userDir, safeName), JSON.stringify(body, null, 2), 'utf8');
+        console.log(`[trackdefaults] Saved ${safeName}`);
+        return sendJson(res, 200, { ok: true });
+      } catch (e) {
+        return sendJson(res, 500, { error: e.message });
+      }
+    });
+  }
+
+  if (action === 'set_active_trackdefault') {
+    return readJsonBody(req, (err, body) => {
+      if (err) return sendJson(res, 400, { error: 'Invalid JSON' });
+      const name = (body.name || '').trim();
+      if (!name) return sendJson(res, 400, { error: 'Missing name' });
+      const cfgDir = path.join(path.dirname(FACTORY_DIR), 'user', 'config');
+      try {
+        if (!fs.existsSync(cfgDir)) fs.mkdirSync(cfgDir, { recursive: true });
+        fs.writeFileSync(path.join(cfgDir, 'active-trackdefault.txt'), name, 'utf8');
+        console.log(`[trackdefaults] Active boot default set to "${name}"`);
+        return sendJson(res, 200, { ok: true });
+      } catch (e) {
+        return sendJson(res, 500, { error: e.message });
+      }
+    });
+  }
 
   if (action === 'update_track' || action === 'set_track_parameters') {
     readJsonBody(req, (err, body) => {
@@ -786,6 +982,7 @@ const server = http.createServer((req, res) => {
     const action = parsed.query.action || '';
     if (action === 'getIOCaps') return handleGetIOCaps(req, res);
     if (action === 'getConfig') return handleGetConfiguration(req, res);
+    if (action === 'getAppInfo') return sendJson(res, 200, { pico_version: '0.0.0-dev' });
     if (action === 'getFavorites') return handleFavoriteGet(req, res, action);
     return sendJson(res, 400, { error: 'Unknown device GET action: ' + action });
   }
@@ -801,10 +998,10 @@ const server = http.createServer((req, res) => {
     return sendJson(res, 400, { error: 'Unknown device POST action: ' + action });
   }
 
-  // /api/v2/samples
-  if (p === '/api/v2/samples' && req.method === 'GET')
+  // /api/v2/samples + /api/v2/storage (JS uses /api/v2/storage)
+  if ((p === '/api/v2/samples' || p === '/api/v2/storage') && req.method === 'GET')
     return handleSamplesGet(req, res);
-  if (p === '/api/v2/samples' && req.method === 'POST')
+  if ((p === '/api/v2/samples' || p === '/api/v2/storage') && req.method === 'POST')
     return handleSamplesPost(req, res);
 
   // /api/v2/macros

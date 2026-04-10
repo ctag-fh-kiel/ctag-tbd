@@ -54,7 +54,7 @@ inline std::string legacyPath()  { return RESOURCES::sdcardRoot + "/data"; }
 // Subdirectory names (shared between factory/ and user/ zones)
 static constexpr const char *DIR_PRESETS       = "presets";      // was macrosoundpresets/
 static constexpr const char *DIR_MACROS        = "macros";       // was macrodefinitions/
-static constexpr const char *DIR_PATCHES       = "patches";      // was sp/
+static constexpr const char *DIR_PLUGINS        = "plugins";       // was patches/, sp/
 static constexpr const char *DIR_TRACKDEFAULTS = "trackdefaults";
 static constexpr const char *DIR_PROJECTS      = "projects";
 static constexpr const char *DIR_KITS          = "kits";
@@ -86,7 +86,7 @@ inline bool isDirectory(const std::string &path) {
  * Checks /user/{subdir}/{filename} first, then /factory/{subdir}/{filename}.
  * Returns the full resolved path, or empty string if not found in either zone.
  *
- * @param subdir  e.g. "presets", "macros", "patches"
+ * @param subdir  e.g. "presets", "macros", "plugins"
  * @param filename  e.g. "db-all-def.json"
  * @return Full path to the resolved file, or "" if not found
  */
@@ -201,7 +201,7 @@ inline void ensureOverlayDirs() {
         "/factory",
         "/factory/presets",
         "/factory/macros",
-        "/factory/patches",
+        "/factory/plugins",
         "/factory/trackdefaults",
         "/factory/kits",
         "/factory/config",
@@ -209,7 +209,7 @@ inline void ensureOverlayDirs() {
         "/user/projects",
         "/user/presets",
         "/user/macros",
-        "/user/patches",
+        "/user/plugins",
         "/user/trackdefaults",
         "/user/kits",
         "/user/config",
@@ -309,8 +309,8 @@ inline void migrateFromLegacy() {
     // Move macro definition files: /data/macrodefinitions/ → /factory/macros/
     copyDirFiles(legacy + "/" + LEGACY_MACROS, factoryPath() + "/" + DIR_MACROS);
 
-    // Move processor patch files: /data/sp/ → /factory/patches/
-    copyDirFiles(legacy + "/" + LEGACY_PATCHES, factoryPath() + "/" + DIR_PATCHES);
+    // Move processor plugin files: /data/sp/ → /factory/plugins/
+    copyDirFiles(legacy + "/" + LEGACY_PATCHES, factoryPath() + "/" + DIR_PLUGINS);
 
     // Move singleton config files to their new locations
     // synthdefinitions.json → /factory/synthdefinitions.json

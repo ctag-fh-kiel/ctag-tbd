@@ -45,16 +45,16 @@ SPManagerDataModel::SPManagerDataModel() {
 SPManagerDataModel::~SPManagerDataModel() {
 }
 
-// checks for available sound processors based on factory/patches/ + user/patches/ json file entries
+// checks for available sound processors based on factory/plugins/ + user/plugins/ json file entries
 void SPManagerDataModel::getSoundProcessors() {
     if (m.HasMember("availableProcessors")) return;
     Value sparray(kArrayType);
     m.AddMember("availableProcessors", sparray, m.GetAllocator());
-    // Use overlay: merged listing of /user/patches/ + /factory/patches/
-    auto patchFiles = CTAG::STORAGE::listMergedDir(CTAG::STORAGE::DIR_PATCHES);
+    // Use overlay: merged listing of /user/plugins/ + /factory/plugins/
+    auto patchFiles = CTAG::STORAGE::listMergedDir(CTAG::STORAGE::DIR_PLUGINS);
     for (const auto &fn : patchFiles) {
         if (fn.find("mui-") != string::npos) {
-            std::string resolvedPath = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PATCHES, fn);
+            std::string resolvedPath = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PLUGINS, fn);
             if (resolvedPath.empty()) continue;
             ESP_LOGD("SPModel", "Filename: %s", fn.c_str());
             Document d;
@@ -244,7 +244,7 @@ void SPManagerDataModel::ResetNetworkConfiguration() {
 const char *SPManagerDataModel::GetCStrJSONSoundProcessorPresets(const string &id) {
     json.Clear();
     Document d1, d2;
-    std::string presetFile = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PATCHES, "mp-" + id + ".json");
+    std::string presetFile = CTAG::STORAGE::resolveFile(CTAG::STORAGE::DIR_PLUGINS, "mp-" + id + ".json");
     loadJSON(d1, presetFile);
     d2.SetObject();
     Value s_id(kObjectType);
@@ -261,7 +261,7 @@ void SPManagerDataModel::SetCStrJSONSoundProcessorPreset(const char *id, const c
     Document presets;
     presets.Parse(data);
     if(presets.HasParseError()) return;
-    storeJSON(presets, CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_PATCHES, std::string("mp-") + id + ".json"));
+    storeJSON(presets, CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_PLUGINS, std::string("mp-") + id + ".json"));
 }
 
 bool SPManagerDataModel::HasPluginID(const string &id) {

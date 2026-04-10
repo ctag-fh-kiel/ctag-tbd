@@ -1409,34 +1409,20 @@
       border: 1px solid rgba(0,0,0,0.08);
     }
 
-    /* MIDI device list items */
-    .midi-device-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0.55rem 0.75rem;
-      border: 1px solid var(--sl-color-neutral-200);
-      border-radius: var(--sl-border-radius-medium);
-      margin-bottom: 0.4rem;
-      background: var(--sl-color-neutral-0);
-    }
-    .midi-device-item .midi-device-name {
-      font-size: 0.85rem; font-weight: 600;
-    }
-    .midi-device-item .midi-device-mfg {
-      font-size: 0.72rem; color: var(--sl-color-neutral-500);
-    }
-    .midi-device-badge {
-      font-size: 0.62rem; font-weight: 700;
-      padding: 0.1rem 0.4rem; border-radius: 3px;
+    /* ── MIDI Routing Table (Device Settings) ─────────────── */
+    .midi-routing-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .midi-routing-table th {
+      text-align: left; font-weight: 600; font-size: 0.72rem;
       text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--sl-color-neutral-500); padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid var(--sl-color-neutral-200);
     }
-    .midi-device-badge.badge-input {
-      background: #e8f0fe; color: #2b6cb0;
-      border: 1px solid #90cdf4;
+    .midi-routing-table td {
+      padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--sl-color-neutral-100);
     }
-    .midi-device-badge.badge-output {
-      background: #fde8e8; color: #c53030;
-      border: 1px solid #feb2b2;
-    }
+    .midi-routing-table tr:last-child td { border-bottom: none; }
+    .midi-routing-table .port-name { font-weight: 500; white-space: nowrap; }
+    .midi-routing-table sl-select { --sl-input-height-small: 28px; min-width: 100px; }
 
     /* ── Sample Manager View ────────────────────────────────── */
     #view-samples { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
@@ -1716,6 +1702,10 @@
       font-size: 1rem;
       font-weight: 700;
     }
+    /* Track defaults grid — narrower columns for panel layout */
+    .td-editor-body .td-row {
+      grid-template-columns: 2rem 4.5rem 2.5rem 7rem 1fr 5.5rem 3.5rem;
+    }
     .td-intro {
       font-size: 0.82rem;
       color: var(--sl-color-neutral-600);
@@ -1942,6 +1932,78 @@
       border-radius: var(--sl-border-radius-medium);
       border-left: 3px solid var(--sl-color-primary-400);
     }
+
+    /* ═══════════════════════════════════════════════════════════════
+       FILE VIEWER — VS Code Dark+ inspired code viewer
+       ═══════════════════════════════════════════════════════════════ */
+    #kit-panel.viewer-active > *:not(.file-viewer) { display: none !important; }
+    #kit-panel.viewer-active { background: #1e1e1e !important; }
+    #kit-panel.viewer-active > .file-viewer { display: flex !important; flex: 1; min-height: 0; }
+    .file-viewer { display: none; flex-direction: column; background: #1e1e1e; color: #d4d4d4; overflow: hidden; min-height: 0; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       TRACK DEFAULTS EDITOR — right-panel mode
+       ═══════════════════════════════════════════════════════════════ */
+    #kit-panel.td-editor-active > *:not(.td-editor) { display: none !important; }
+    #kit-panel.td-editor-active > .td-editor { display: flex !important; flex: 1; min-height: 0; }
+    .td-editor { display: none; flex-direction: column; overflow: hidden; min-height: 0; }
+    .td-editor .panel-title-bar { flex-shrink: 0; }
+    .td-editor-body { flex: 1; overflow-y: auto; padding: 0.75rem; }
+    .td-toolbar, .kit-file-toolbar { display: flex; align-items: stretch; background: var(--sl-color-neutral-50); border-bottom: 1px solid var(--sl-color-neutral-200); flex-shrink: 0; height: 35px; min-height: 35px; }
+    .td-tab, .kit-file-tab { display: flex; align-items: center; gap: 7px; padding: 0 14px; font-size: 13px; white-space: nowrap; cursor: default; }
+    .td-tab-active, .kit-file-tab-active { background: var(--sl-color-neutral-0); border-bottom: 2px solid var(--sl-color-primary-600); color: var(--sl-color-neutral-900); font-weight: 500; }
+    .td-tab-icon, .kit-file-tab-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: var(--sl-color-primary-600); }
+    .td-toolbar-spacer, .kit-file-toolbar-spacer { flex: 1; }
+    .td-badge-factory, .kit-file-badge-factory { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-0); background: var(--sl-color-neutral-400); padding: 1px 6px; border-radius: 3px; line-height: 1.4; }
+    .td-badge-active { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-0); background: var(--sl-color-success-600); padding: 1px 6px; border-radius: 3px; line-height: 1.4; }
+    .td-btn-setactive { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.68rem; font-weight: 600; padding: 0.25rem 0.6rem; border: 1px solid var(--sl-color-neutral-300); border-radius: 4px; background: var(--sl-color-neutral-0); color: var(--sl-color-neutral-700); cursor: pointer; white-space: nowrap; line-height: 1; margin-right: 0.5rem; }
+    .td-btn-setactive:hover { background: var(--sl-color-success-50); border-color: var(--sl-color-success-500); color: var(--sl-color-success-700); }
+    .td-btn-setactive:disabled { opacity: 0.4; cursor: default; background: var(--sl-color-neutral-100); border-color: var(--sl-color-neutral-200); }
+    .td-btn-saveas { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border: 1px solid var(--sl-color-neutral-300); border-radius: 4px; background: var(--sl-color-neutral-0); color: var(--sl-color-neutral-700); cursor: pointer; white-space: nowrap; line-height: 1; }
+    .td-btn-saveas:hover { background: var(--sl-color-primary-50); border-color: var(--sl-color-primary-400); color: var(--sl-color-primary-700); }
+    .panel-nav { display: inline-flex; align-items: center; gap: 0.15rem; margin-left: 0.75rem; }
+    .panel-nav-link { font-size: 0.78rem; font-weight: 500; color: var(--sl-color-neutral-400); cursor: pointer; padding: 0.2rem 0.45rem; border-radius: 3px; text-decoration: none; letter-spacing: 0.02em; }
+    .panel-nav-link:hover { color: var(--sl-color-neutral-700); background: var(--sl-color-neutral-100); }
+    .panel-nav-link.active { color: var(--sl-color-neutral-700); cursor: default; font-weight: 600; }
+    .panel-nav-link.active:hover { background: none; }
+    .fv-toolbar { display: flex; align-items: stretch; background: #252526; border-bottom: 1px solid #1e1e1e; flex-shrink: 0; height: 35px; min-height: 35px; }
+    .fv-tab { display: flex; align-items: center; gap: 7px; padding: 0 14px; background: #1e1e1e; border-top: 2px solid #007acc; border-right: 1px solid #252526; font-size: 13px; color: #ffffff; white-space: nowrap; letter-spacing: 0.01em; }
+    .fv-tab-icon { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+    .fv-tab-icon.json { color: #e8ab53; }
+    .fv-tab-icon.text { color: #a8a8a8; }
+    .fv-tab-close { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin-left: 6px; border-radius: 3px; cursor: pointer; color: #858585; font-size: 14px; line-height: 1; }
+    .fv-tab-close:hover { background: #37373d; color: #ffffff; }
+    .fv-toolbar-spacer { flex: 1; }
+    .fv-toolbar-actions { display: flex; align-items: center; padding-right: 8px; gap: 2px; }
+    .fv-toolbar-actions sl-icon-button { font-size: 0.9rem; color: #858585; }
+    .fv-toolbar-actions sl-icon-button:hover { color: #ffffff; }
+
+    .fv-body { flex: 1; overflow: auto; background: #1e1e1e; min-height: 0; }
+    .fv-editor { display: flex; min-height: 100%; }
+    .fv-gutter { flex-shrink: 0; padding: 4px 0; text-align: right; color: #858585; font-family: 'Menlo','Monaco','Consolas','SF Mono','Courier New',monospace; font-size: 13px; line-height: 20px; user-select: none; background: #1e1e1e; min-width: 54px; }
+    .fv-gutter-line { padding: 0 16px 0 0; height: 20px; }
+    .fv-code { flex: 1; padding: 4px 16px; font-family: 'Menlo','Monaco','Consolas','SF Mono','Courier New',monospace; font-size: 13px; line-height: 20px; white-space: pre; color: #d4d4d4; tab-size: 2; border-left: 1px solid #2d2d2d; min-width: 0; }
+    .fv-line { height: 20px; }
+    .fv-line:hover { background: rgba(255,255,255,0.04); }
+    .tk-key { color: #9cdcfe; } .tk-str { color: #ce9178; } .tk-num { color: #b5cea8; }
+    .tk-bool { color: #569cd6; } .tk-null { color: #569cd6; font-style: italic; }
+    .tk-brc { color: #ffd700; } .tk-brk { color: #da70d6; } .tk-pun { color: #d4d4d4; }
+    .fv-statusbar { display: flex; align-items: center; gap: 16px; padding: 0 12px; height: 22px; min-height: 22px; background: #007acc; color: #ffffff; font-size: 12px; flex-shrink: 0; white-space: nowrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .fv-fold-btn { display: inline; color: #858585; cursor: pointer; user-select: none; font-size: 10px; }
+    .fv-fold-btn:hover { color: #cccccc; }
+    .fv-fold-ph { display: inline-block; color: #858585; background: #2d2d2d; border: 1px solid #404040; border-radius: 3px; padding: 0 6px; font-size: 11px; cursor: pointer; line-height: 18px; vertical-align: middle; margin-left: 4px; }
+    .fv-fold-ph:hover { background: #37373d; border-color: #505050; color: #cccccc; }
+    .fv-error-banner { display: flex; align-items: center; gap: 8px; padding: 6px 16px; background: #332222; border-bottom: 1px solid #5a3030; color: #f48771; font-size: 13px; flex-shrink: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .fv-error-banner sl-icon { font-size: 14px; color: #f48771; }
+    .fv-body sl-spinner { --indicator-color: #007acc; --track-color: #333; margin: 3rem auto; display: block; font-size: 1.5rem; }
+    .fv-msg { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; padding: 3rem 2rem; text-align: center; color: #858585; font-size: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .fv-msg sl-icon { font-size: 3rem; color: #555; }
+    .fv-msg.error sl-icon { color: #e5534b; }
+    .fv-body::-webkit-scrollbar { width: 10px; height: 10px; }
+    .fv-body::-webkit-scrollbar-track { background: #1e1e1e; }
+    .fv-body::-webkit-scrollbar-thumb { background: rgba(121,121,121,0.4); }
+    .fv-body::-webkit-scrollbar-thumb:hover { background: rgba(121,121,121,0.7); }
+    .fv-body::-webkit-scrollbar-corner { background: #1e1e1e; }
   </style>
 </head>
 <body>
@@ -1963,10 +2025,10 @@
           <sl-icon name="music-note-beamed"></sl-icon>Plugins
         </button>
         <button class="nav-tab" id="nav-samples" data-view="view-samples">
-          <sl-icon name="hdd"></sl-icon>Samples
+          <sl-icon name="hdd"></sl-icon>Data
         </button>
         <a class="nav-tab" href="/preset-macro-manager.html">
-          <sl-icon name="sliders"></sl-icon>Macros
+          <sl-icon name="sliders"></sl-icon>Presets
         </a>
       </nav>
 
@@ -1995,8 +2057,8 @@
       </div>
 
       <div class="header-right">
-        <sl-tooltip content="Boot Default Presets">
-          <sl-icon-button id="trackdefaults-btn" name="hdd" label="Boot Defaults"
+        <sl-tooltip content="Track Setup">
+          <sl-icon-button id="trackdefaults-btn" name="hdd" label="Track Setup"
             style="font-size:1rem; display:none;"></sl-icon-button>
         </sl-tooltip>
         <sl-tooltip content="Sample Manager Guide">
@@ -2023,7 +2085,7 @@
           <div class="plugin-lock-message">
             <div class="lock-icon-ring"><sl-icon name="lock"></sl-icon></div>
             <h3>Plugins are managed by Groovebox</h3>
-            <p>Plugin switching is controlled by the active firmware on the RP2350. Use the Samples or Macros views to manage your kits and presets.</p>
+            <p>Plugin switching is controlled by the active firmware on the RP2350. Use the Data or Presets views to manage your kits and presets.</p>
           </div>
         </div>
 
@@ -2117,7 +2179,7 @@
         <!-- ──── LEFT: Sample Pool ──── -->
         <div slot="start" class="panel panel-left" id="pool-panel">
           <div class="panel-title-bar">
-            <span class="panel-title">Sample Pool</span>
+            <span class="panel-title">File Manager</span>
             <div class="panel-title-right">
               <span style="font-size:0.78rem;color:var(--sl-color-neutral-500);" id="pool-file-count">&mdash;</span>
             </div>
@@ -2173,6 +2235,10 @@
         <div slot="end" class="panel panel-right" id="kit-panel">
           <div class="panel-title-bar">
             <span class="panel-title">Kit Editor</span>
+            <span class="panel-nav" id="kit-file-nav" style="display:none;">
+              <a class="panel-nav-link active" id="kit-link-editor">Kit Editor</a>
+              <a class="panel-nav-link" id="kit-link-json">JSON</a>
+            </span>
             <div class="panel-title-right">
               <sl-icon-button name="download" label="Export Kit" id="export-kit-btn" title="Export Kit backup" style="font-size:0.9rem;"></sl-icon-button>
               <sl-icon-button name="upload" label="Import Kit" id="import-kit-btn" title="Import Kit backup" style="font-size:0.9rem;"></sl-icon-button>
@@ -2182,6 +2248,14 @@
                 <label>Banks</label>
               </div>
             </div>
+          </div>
+          <div class="kit-file-toolbar" id="kit-file-toolbar" style="display:none;">
+            <div class="kit-file-tab kit-file-tab-active">
+              <div class="kit-file-tab-icon"><sl-icon name="file-earmark-music"></sl-icon></div>
+              <span id="kit-file-name"></span>
+              <span class="kit-file-badge-factory" id="kit-file-badge-factory" style="display:none;">factory</span>
+            </div>
+            <div class="kit-file-toolbar-spacer"></div>
           </div>
           <div class="kit-controls">
             <sl-select id="kit-select" size="small" hoist>
@@ -2207,6 +2281,66 @@
           </div>
           <div class="kit-content" id="bank-container">
             <sl-spinner style="margin:1rem auto;display:block;"></sl-spinner>
+          </div>
+
+          <!-- ──── File Viewer (takes over entire right panel when active) ──── -->
+          <div class="file-viewer" id="file-viewer">
+            <div class="panel-title-bar">
+              <span class="panel-title">File Viewer</span>
+              <span class="panel-nav" id="fv-td-nav" style="display:none;">
+                <a class="panel-nav-link" id="fv-link-editor">Editor</a>
+                <a class="panel-nav-link active" id="fv-link-json">JSON</a>
+              </span>
+              <span class="panel-nav" id="fv-kit-nav" style="display:none;">
+                <a class="panel-nav-link" id="fv-link-kit-editor">Kit Editor</a>
+                <a class="panel-nav-link active" id="fv-link-kit-json">JSON</a>
+              </span>
+              <div class="panel-title-right">
+                <sl-icon-button name="clipboard" label="Copy" id="fv-copy" title="Copy to clipboard" style="font-size:0.9rem;"></sl-icon-button>
+                <sl-icon-button name="download" label="Download" id="fv-download" title="Download file" style="font-size:0.9rem;"></sl-icon-button>
+                <sl-icon-button name="x-lg" label="Close" id="fv-close" title="Close viewer" style="font-size:0.9rem;"></sl-icon-button>
+              </div>
+            </div>
+            <div class="fv-toolbar">
+              <div class="fv-tab">
+                <div class="fv-tab-icon json" id="fv-icon"><sl-icon name="file-earmark-code"></sl-icon></div>
+                <span id="fv-name"></span>
+              </div>
+              <div class="fv-toolbar-spacer"></div>
+            </div>
+            <div class="fv-body" id="fv-body"></div>
+            <div class="fv-statusbar">
+              <span id="fv-lang">JSON</span>
+              <span id="fv-enc">UTF-8</span>
+              <span id="fv-size"></span>
+              <span id="fv-lines"></span>
+            </div>
+          </div>
+
+          <!-- ──── Track Setup Editor (takes over right panel when active) ──── -->
+          <div class="td-editor" id="td-editor">
+            <div class="panel-title-bar">
+              <span class="panel-title">Track Setup</span>
+              <span class="panel-nav">
+                <a class="panel-nav-link active" id="td-link-editor">Editor</a>
+                <a class="panel-nav-link" id="td-link-json">JSON</a>
+              </span>
+              <div class="panel-title-right">
+                <button class="td-btn-saveas" id="td-saveas-btn" title="Save as new user template"><sl-icon name="floppy" style="font-size:0.65rem;"></sl-icon> Save As…</button>
+                <sl-icon-button name="x-lg" label="Close" id="td-close-btn" title="Close editor" style="font-size:0.9rem;"></sl-icon-button>
+              </div>
+            </div>
+            <div class="td-toolbar">
+              <div class="td-tab td-tab-active">
+                <div class="td-tab-icon"><sl-icon name="table"></sl-icon></div>
+                <span id="td-file-name">default.json</span>
+                <span class="td-badge-factory" id="td-badge-factory">factory</span>
+                <span class="td-badge-active" id="td-badge-active" style="display:none;">boot default</span>
+              </div>
+              <div class="td-toolbar-spacer"></div>
+              <button class="td-btn-setactive" id="td-setactive-btn" title="Set this template as the boot default"><sl-icon name="star" style="font-size:0.65rem;"></sl-icon> Set as Boot Default</button>
+            </div>
+            <div class="td-editor-body" id="td-editor-body"></div>
           </div>
         </div>
 
@@ -2297,16 +2431,16 @@
   <!-- ════ DIALOGS ════ -->
 
   <!-- Sample Manager Guide Dialog -->
-  <sl-dialog label="Sample Manager Guide" id="samples-info-dialog" style="--width:56rem;">
+  <sl-dialog label="Data Manager Guide" id="samples-info-dialog" style="--width:56rem;">
     <div class="qs-guide">
       <div class="qs-intro">
-        <p><strong>Welcome to the Sample Manager!</strong> Upload, organize, and assign audio samples to your TBD-16 kits. Drag &amp; drop WAV files, build custom kits, and configure which samples load on each track at boot.</p>
+        <p><strong>Welcome to the Data Manager!</strong> Upload, organize, and assign audio samples to your TBD-16 kits. Drag &amp; drop WAV files, build custom kits, and configure which samples load on each track at boot.</p>
       </div>
 
       <details class="qs-section" open>
-        <summary><sl-icon name="folder2-open"></sl-icon> Sample Pool (Left Panel)</summary>
+        <summary><sl-icon name="folder2-open"></sl-icon> File Manager (Left Panel)</summary>
         <div class="qs-body">
-          <p>The <strong>Sample Pool</strong> shows all audio files on the TBD-16 SD card.</p>
+          <p>The <strong>File Manager</strong> shows all files on the TBD-16 SD card.</p>
           <ol>
             <li><strong>Browse Folders</strong> — Click folder names to navigate. Use the breadcrumb path at the top to go back.</li>
             <li><strong>Upload Samples</strong> — Click <em>Upload</em> or drag &amp; drop WAV files onto the panel. Files upload directly to the current folder.</li>
@@ -2331,9 +2465,9 @@
       </details>
 
       <details class="qs-section">
-        <summary><sl-icon name="hdd"></sl-icon> Boot Default Presets</summary>
+        <summary><sl-icon name="hdd"></sl-icon> Track Setup</summary>
         <div class="qs-body">
-          <p>Use the <strong>Boot Defaults</strong> button (HDD icon in the header) to configure which machine, preset, and sample bank each track loads on power-up.</p>
+          <p>Use the <strong>Track Setup</strong> button (HDD icon in the header) to configure which machine, preset, and sample bank each track loads on power-up.</p>
           <ol>
             <li><strong>Pick a Machine</strong> — For each of the 20 tracks, choose which synth engine to load.</li>
             <li><strong>Pick a Preset</strong> — Select from the available sound presets for that machine.</li>
@@ -2362,56 +2496,25 @@
   <sl-dialog label="System Configuration" id="config-dialog" style="--width:640px;">
     <div class="config-dialog-content" id="config-content">
       <div class="config-tabs" id="config-tabs">
-        <button class="config-tab active" data-tab="config-connection"><sl-icon name="globe"></sl-icon> Connection</button>
-        <button class="config-tab" data-tab="config-midi"><sl-icon name="music-note-beamed"></sl-icon> MIDI</button>
+        <button class="config-tab active" data-tab="config-midi"><sl-icon name="music-note-beamed"></sl-icon> MIDI</button>
         <button class="config-tab" data-tab="config-wifi"><sl-icon name="wifi"></sl-icon> WiFi</button>
         <button class="config-tab" data-tab="config-audio"><sl-icon name="sliders"></sl-icon> Audio</button>
+        <button class="config-tab" data-tab="config-system"><sl-icon name="gear-fill"></sl-icon> System</button>
         <button class="config-tab" data-tab="config-appearance"><sl-icon name="palette"></sl-icon> Appearance</button>
-        <button class="config-tab" data-tab="config-system"><sl-icon name="gear"></sl-icon> System</button>
-      </div>
-
-      <!-- ── Connection Tab ── -->
-      <div class="config-tab-panel active" id="config-connection">
-        <div class="config-section">
-          <div class="config-section-title">API Connection</div>
-          <div class="config-section-desc">Configure the connection to your TBD device</div>
-          <div class="config-row">
-            <label>TBD API URL</label>
-            <div style="display:flex;gap:0.5rem;align-items:center;flex:1;">
-              <sl-input id="cfg-api-url" size="small" placeholder="http://ctag-tbd.local" style="flex:1;"></sl-input>
-              <sl-button size="small" variant="primary" id="cfg-test-connection">Test Connection</sl-button>
-            </div>
-          </div>
-          <div class="config-row">
-            <div style="display:flex;align-items:center;gap:0.4rem;">
-              <span class="status-footer-dot" id="cfg-conn-dot"></span>
-              <span id="cfg-conn-status" style="font-size:0.82rem;">Connected</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- ── MIDI Tab ── -->
-      <div class="config-tab-panel" id="config-midi">
+      <div class="config-tab-panel active" id="config-midi">
+        <!-- Device MIDI Routing — mirrors Pico OLED MIDI Settings screen -->
         <div class="config-section">
-          <div class="config-section-title">MIDI Configuration</div>
-          <div class="config-section-desc">Configure MIDI devices and mappings</div>
-          <div class="config-row">
-            <label>MIDI Support</label>
-            <sl-switch id="cfg-midi-enable"></sl-switch>
-          </div>
-          <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);padding:0.15rem 0 0.5rem;">Web MIDI API is supported in this browser</div>
-          <div class="config-row">
-            <label>MIDI Channel</label>
-            <sl-select id="cfg-midi-channel" size="small" value="1" hoist style="max-width:120px;"></sl-select>
+          <div class="config-section-title">Device MIDI Routing</div>
+          <div class="config-section-desc">Configure hardware MIDI port routing (synced with device)</div>
+          <div id="cfg-midi-routing">
+            <div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">Loading…</div>
           </div>
         </div>
-        <div class="config-section">
-          <div class="config-section-title">Connected MIDI Devices</div>
-          <div id="cfg-midi-devices" style="min-height:60px;">
-            <div style="font-size:0.82rem;color:var(--sl-color-neutral-500);padding:0.5rem 0;">No MIDI devices detected</div>
-          </div>
-        </div>
+
+
       </div>
 
       <!-- ── WiFi Tab ── -->
@@ -2617,14 +2720,6 @@
           <div style="font-size:0.75rem;color:var(--sl-color-neutral-500);margin-top:0.25rem;padding-left:0.25rem;">
             <strong>Control Mode</strong> — Knobs with physical units (Hz, ms, dB).<br>
             <strong>Config Mode</strong> — Raw sliders with integer values (default).
-          </div>
-        </div>
-        <div class="config-section">
-          <div class="config-section-title">Layout</div>
-          <div class="config-section-desc">Customize the interface layout</div>
-          <div class="config-row">
-            <label>Compact Layout</label>
-            <sl-switch id="cfg-compact"></sl-switch>
           </div>
         </div>
       </div>

@@ -40,7 +40,7 @@ using namespace rapidjson;
 static const char *TAG = "StorageAPI";
 
 // SD card paths
-static const char *SAMPLE_ROOT = "/sdcard/samples";
+static const char *SD_ROOT = "/sdcard";
 // Kit JSON overlay: user-created kits go here, factory kits in /factory/kits/
 static const char *USER_KITS_DIR = "/sdcard/user/kits";
 static const char *FACTORY_KITS_DIR = "/sdcard/factory/kits";
@@ -59,7 +59,6 @@ static const uint32_t PSRAM_MAX_BYTES = 29360128;
  * Resolve a kit JSON filename using overlay pattern:
  * 1. /user/kits/{filename} — user-created or user-modified kits
  * 2. /factory/kits/{filename} — factory-shipped kits
- * 3. /samples/{filename} — legacy fallback (pre-overlay)
  * Returns full path to the kit file.
  */
 static std::string resolveKitFile(const std::string &filename) {
@@ -67,8 +66,8 @@ static std::string resolveKitFile(const std::string &filename) {
     if (CTAG::STORAGE::fileExists(userKit)) return userKit;
     std::string factoryKit = std::string(FACTORY_KITS_DIR) + "/" + filename;
     if (CTAG::STORAGE::fileExists(factoryKit)) return factoryKit;
-    // Legacy fallback: kits stored flat in /samples/
-    return std::string(SAMPLE_ROOT) + "/" + filename;
+    // Fallback: return factory path even if it doesn't exist yet
+    return factoryKit;
 }
 
 /**
@@ -182,10 +181,12 @@ static bool load_json_file(const char *path, Document &doc) {
         ESP_LOGW(TAG, "Cannot open %s", path);
         return false;
     }
-    char readBuf[1024];
-    FileReadStream is(fp, readBuf, sizeof(readBuf));
+    char *readBuf = (char *)heap_caps_malloc(1024, MALLOC_CAP_SPIRAM);
+    if (!readBuf) { fclose(fp); return false; }
+    FileReadStream is(fp, readBuf, 1024);
     doc.ParseStream(is);
     fclose(fp);
+    heap_caps_free(readBuf);
     return !doc.HasParseError();
 }
 
@@ -213,7 +214,7 @@ static bool store_json_file(const char *path, Document &doc) {
  * Appends to the JSON array `files` in the given allocator.
  * `rel` is the relative path from SAMPLE_ROOT.
  */
-static void scan_wav_files(const char *base, const char *rel,
+static void scan_all_files(const char *base, const char *rel,
                            Value &files, Document::AllocatorType &alloc) {
     std::string dirPath = std::string(base);
     if (rel && rel[0]) {
@@ -242,14 +243,8 @@ static void scan_wav_files(const char *base, const char *rel,
 
         if (S_ISDIR(st.st_mode)) {
             // Recurse into subdirectory
-            scan_wav_files(base, relPath.c_str(), files, alloc);
+            scan_all_files(base, relPath.c_str(), files, alloc);
         } else if (S_ISREG(st.st_mode)) {
-            // Check if .wav extension
-            size_t len = strlen(ent->d_name);
-            if (len > 4 &&
-                (strcasecmp(ent->d_name + len - 4, ".wav") == 0)) {
-                // Extract name without extension
-                std::string stem(ent->d_name, len - 4);
                 // Extract folder path (relative)
                 std::string folder;
                 if (rel && rel[0]) {
@@ -257,7 +252,7 @@ static void scan_wav_files(const char *base, const char *rel,
                 }
 
                 Value fileObj(kObjectType);
-                Value nameVal(stem.c_str(), alloc);
+                Value nameVal(ent->d_name, alloc);
                 Value pathVal(folder.c_str(), alloc);
                 fileObj.AddMember("name", nameVal, alloc);
                 fileObj.AddMember("path", pathVal, alloc);
@@ -265,7 +260,6 @@ static void scan_wav_files(const char *base, const char *rel,
                 // mtime in milliseconds (ESP-IDF st_mtime is seconds)
                 fileObj.AddMember("mtime", (uint64_t)st.st_mtime * 1000ULL, alloc);
                 files.PushBack(fileObj, alloc);
-            }
         }
     }
     closedir(dir);
@@ -384,13 +378,13 @@ static void scan_json_with_prefix(const char *dir, const char *rel,
 /**
  * Scan overlay config directories (merged factory+user) for JSON files.
  * Returns entries with path = "subdir" or "subdir/nested", matching
- * the overlay subdir names (presets, macros, patches, config, trackdefaults).
+ * the overlay subdir names (presets, macros, plugins, config, trackdefaults).
  * User files shadow same-named factory files.
  */
 static void scan_overlay_configs(Value &files, Document::AllocatorType &alloc) {
     using namespace CTAG::STORAGE;
     static const char *SUBDIRS[] = {
-        DIR_PRESETS, DIR_MACROS, DIR_PATCHES, DIR_CONFIG, DIR_TRACKDEFAULTS, nullptr
+        DIR_PRESETS, DIR_MACROS, DIR_PLUGINS, DIR_CONFIG, DIR_TRACKDEFAULTS, nullptr
     };
     for (int i = 0; SUBDIRS[i]; i++) {
         const char *subdir = SUBDIRS[i];
@@ -500,25 +494,23 @@ static esp_err_t handle_list(httpd_req_t *req) {
         // Handle preview request
         if (httpd_query_key_value(query, "preview", val, sizeof(val)) == ESP_OK) {
             free(query);
-            // val contains path like "drums/factory/BD0"
+            // val contains path like "samples/factory/drums/BD0"
             char decoded[256];
             url_decode(decoded, val, sizeof(decoded));
-            std::string wavPath = std::string(SAMPLE_ROOT) + "/" + decoded + ".wav";
-
-            // Try .wav then .WAV
+            // Try exact path first (may include extension), then .wav/.WAV
+            std::string wavPath = std::string(SD_ROOT) + "/" + decoded;
             FILE *fp = fopen(wavPath.c_str(), "r");
             if (!fp) {
-                wavPath = std::string(SAMPLE_ROOT) + "/" + decoded + ".WAV";
+                wavPath = std::string(SD_ROOT) + "/" + decoded + ".wav";
+                fp = fopen(wavPath.c_str(), "r");
+            }
+            if (!fp) {
+                wavPath = std::string(SD_ROOT) + "/" + decoded + ".WAV";
                 fp = fopen(wavPath.c_str(), "r");
             }
             if (!fp) {
                 return send_error(req, 404, "Preview not found");
             }
-
-            // Get file size
-            fseek(fp, 0, SEEK_END);
-            long fsize = ftell(fp);
-            fseek(fp, 0, SEEK_SET);
 
             httpd_resp_set_type(req, "audio/wav");
             httpd_resp_set_hdr(req, "Connection", "close");
@@ -526,6 +518,80 @@ static esp_err_t handle_list(httpd_req_t *req) {
             httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
 
             // Stream the file in chunks
+            char *chunk = (char *)heap_caps_malloc(CHUNK_BUF_SIZE, MALLOC_CAP_SPIRAM);
+            if (!chunk) {
+                fclose(fp);
+                return send_error(req, 500, "Out of memory");
+            }
+            size_t read_bytes;
+            do {
+                read_bytes = fread(chunk, 1, CHUNK_BUF_SIZE, fp);
+                if (read_bytes > 0) {
+                    if (httpd_resp_send_chunk(req, chunk, read_bytes) != ESP_OK) {
+                        fclose(fp);
+                        heap_caps_free(chunk);
+                        httpd_resp_send_chunk(req, NULL, 0);
+                        return ESP_FAIL;
+                    }
+                }
+            } while (read_bytes > 0);
+
+            fclose(fp);
+            heap_caps_free(chunk);
+            httpd_resp_send_chunk(req, NULL, 0);
+            return ESP_OK;
+        }
+
+        // Handle file download / raw fetch request
+        // ?download=path — serves any file with Content-Disposition: attachment
+        // ?fetch=path    — serves file inline (for JSON viewer etc.)
+        if (httpd_query_key_value(query, "download", val, sizeof(val)) == ESP_OK ||
+            httpd_query_key_value(query, "fetch", val, sizeof(val)) == ESP_OK) {
+            bool isDownload = (httpd_query_key_value(query, "download", val, sizeof(val)) == ESP_OK);
+            free(query);
+            char decoded[256];
+            url_decode(decoded, val, sizeof(decoded));
+            std::string filePath = std::string(SD_ROOT) + "/" + decoded;
+            FILE *fp = fopen(filePath.c_str(), "r");
+            if (!fp) {
+                return send_error(req, 404, "File not found");
+            }
+
+            fseek(fp, 0, SEEK_END);
+            long fsize = ftell(fp);
+            fseek(fp, 0, SEEK_SET);
+
+            // Determine Content-Type from extension
+            std::string ext;
+            size_t dotPos = filePath.rfind('.');
+            if (dotPos != std::string::npos) ext = filePath.substr(dotPos);
+            const char *ctype = "application/octet-stream";
+            if (ext == ".json")      ctype = "application/json";
+            else if (ext == ".txt")  ctype = "text/plain";
+            else if (ext == ".wav" || ext == ".WAV") ctype = "audio/wav";
+            else if (ext == ".html") ctype = "text/html";
+            else if (ext == ".css")  ctype = "text/css";
+            else if (ext == ".js")   ctype = "application/javascript";
+
+            httpd_resp_set_type(req, ctype);
+            httpd_resp_set_hdr(req, "Connection", "close");
+            httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+            httpd_resp_set_hdr(req, "Cache-Control", "no-cache");
+
+            // Content-Length for proper download progress
+            char lenBuf[16];
+            snprintf(lenBuf, sizeof(lenBuf), "%ld", fsize);
+            httpd_resp_set_hdr(req, "Content-Length", lenBuf);
+
+            if (isDownload) {
+                // Extract filename for Content-Disposition
+                std::string fname(decoded);
+                size_t lastSlash = fname.rfind('/');
+                if (lastSlash != std::string::npos) fname = fname.substr(lastSlash + 1);
+                std::string disposition = "attachment; filename=\"" + fname + "\"";
+                httpd_resp_set_hdr(req, "Content-Disposition", disposition.c_str());
+            }
+
             char *chunk = (char *)heap_caps_malloc(CHUNK_BUF_SIZE, MALLOC_CAP_SPIRAM);
             if (!chunk) {
                 fclose(fp);
@@ -591,11 +657,6 @@ static esp_err_t handle_list(httpd_req_t *req) {
                 return send_error(req, 404, "Config file not found");
             }
 
-            // Get file size
-            fseek(fp, 0, SEEK_END);
-            long fsize = ftell(fp);
-            fseek(fp, 0, SEEK_SET);
-
             httpd_resp_set_type(req, "application/json");
             httpd_resp_set_hdr(req, "Connection", "close");
             httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -658,14 +719,14 @@ static esp_err_t handle_list(httpd_req_t *req) {
     Document resp(kObjectType);
     auto &alloc = resp.GetAllocator();
 
-    // 1) Scan WAV files
+    // 1) Scan all files from entire SD card
     Value files(kArrayType);
-    scan_wav_files(SAMPLE_ROOT, "", files, alloc);
+    scan_all_files(SD_ROOT, "", files, alloc);
     resp.AddMember("files", files, alloc);
 
     // 1b) Scan all directories (including empty ones)
     Value dirs(kArrayType);
-    scan_directories(SAMPLE_ROOT, "", dirs, alloc);
+    scan_directories(SD_ROOT, "", dirs, alloc);
     resp.AddMember("directories", dirs, alloc);
 
     // 1b) Scan all directories (including empty ones)
@@ -779,7 +840,7 @@ static esp_err_t handle_upload(httpd_req_t *req) {
     }
 
     // Ensure target directory exists
-    std::string dirPath = std::string(SAMPLE_ROOT) + "/" + pathVal;
+    std::string dirPath = std::string(SD_ROOT) + "/" + pathVal;
     // Create directories recursively (simple approach)
     {
         std::string tmp;
@@ -1137,12 +1198,12 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         if (!doc.HasMember("path") || !doc.HasMember("oldName") || !doc.HasMember("newName")) {
             return send_error(req, 400, "Missing rename fields");
         }
-        std::string oldPath = std::string(SAMPLE_ROOT) + "/" +
+        std::string oldPath = std::string(SD_ROOT) + "/" +
                               doc["path"].GetString() + "/" +
-                              doc["oldName"].GetString() + ".wav";
-        std::string newPath = std::string(SAMPLE_ROOT) + "/" +
+                              doc["oldName"].GetString();
+        std::string newPath = std::string(SD_ROOT) + "/" +
                               doc["path"].GetString() + "/" +
-                              doc["newName"].GetString() + ".wav";
+                              doc["newName"].GetString();
         if (rename(oldPath.c_str(), newPath.c_str()) != 0) {
             ESP_LOGE(TAG, "Rename failed: %s -> %s", oldPath.c_str(), newPath.c_str());
             return send_error(req, 500, "Rename failed");
@@ -1156,9 +1217,9 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         if (!doc.HasMember("path") || !doc.HasMember("filename")) {
             return send_error(req, 400, "Missing delete fields");
         }
-        std::string filePath = std::string(SAMPLE_ROOT) + "/" +
+        std::string filePath = std::string(SD_ROOT) + "/" +
                                doc["path"].GetString() + "/" +
-                               doc["filename"].GetString() + ".wav";
+                               doc["filename"].GetString();
         if (remove(filePath.c_str()) != 0) {
             ESP_LOGE(TAG, "Delete failed: %s", filePath.c_str());
             return send_error(req, 500, "Delete failed");
@@ -1404,7 +1465,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         if (!doc.HasMember("path")) {
             return send_error(req, 400, "Missing folder path");
         }
-        std::string dirPath = std::string(SAMPLE_ROOT) + "/" + doc["path"].GetString();
+        std::string dirPath = std::string(SD_ROOT) + "/" + doc["path"].GetString();
         // Create recursively
         std::string tmp;
         for (size_t i = 0; i < dirPath.size(); i++) {
@@ -1423,8 +1484,8 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         if (!doc.HasMember("oldPath") || !doc.HasMember("newPath")) {
             return send_error(req, 400, "Missing renameFolder fields");
         }
-        std::string oldDir = std::string(SAMPLE_ROOT) + "/" + doc["oldPath"].GetString();
-        std::string newDir = std::string(SAMPLE_ROOT) + "/" + doc["newPath"].GetString();
+        std::string oldDir = std::string(SD_ROOT) + "/" + doc["oldPath"].GetString();
+        std::string newDir = std::string(SD_ROOT) + "/" + doc["newPath"].GetString();
 
         // Verify old path exists and is a directory
         struct stat st;
@@ -1448,7 +1509,7 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         if (!doc.HasMember("path")) {
             return send_error(req, 400, "Missing folder path");
         }
-        std::string dirPath = std::string(SAMPLE_ROOT) + "/" + doc["path"].GetString();
+        std::string dirPath = std::string(SD_ROOT) + "/" + doc["path"].GetString();
 
         // Verify path exists and is a directory
         struct stat st;
@@ -1608,8 +1669,6 @@ static esp_err_t handle_reload(httpd_req_t *req) {
 //  POST ?action=copy&from=X&to=Y  → server-side copy
 //  POST ?action=reload            → reload PSRAM from SD card
 // ═══════════════════════════════════════════════════════════════════
-
-static const char *SD_ROOT = "/sdcard";
 
 // ─── Security: path validation ───────────────────────────────────
 
@@ -1787,17 +1846,28 @@ esp_err_t StorageAPI::storage_get_handler(httpd_req_t *req) {
     // No query params → legacy bulk sample listing
     if (qlen == 0) return handle_list(req);
 
-    char query[512] = {0};
-    httpd_req_get_url_query_str(req, query, sizeof(query));
-
+    // Extract action= using heap to keep stack clean for handle_list()
     char action[32] = {0};
-    httpd_query_key_value(query, "action", action, sizeof(action));
+    {
+        char *qbuf = (char *)malloc(qlen + 1);
+        if (qbuf) {
+            httpd_req_get_url_query_str(req, qbuf, qlen + 1);
+            httpd_query_key_value(qbuf, "action", action, sizeof(action));
+            free(qbuf);
+        }
+    }
 
     // No action= param → delegate to legacy handler (handles preview, getconfig, kit)
     if (action[0] == '\0') return handle_list(req);
 
+    // Action branches below don't call handle_list — use heap for query buffer
+    char *query = (char *)malloc(qlen + 1);
+    if (!query) return send_error(req, 500, "Out of memory");
+    httpd_req_get_url_query_str(req, query, qlen + 1);
+
     // ── action=info ──
     if (strcmp(action, "info") == 0) {
+        free(query); // not needed for info
         StringBuffer sb;
         Writer<StringBuffer> writer(sb);
         writer.StartObject();
@@ -1830,6 +1900,7 @@ esp_err_t StorageAPI::storage_get_handler(httpd_req_t *req) {
     if (strcmp(action, "list") == 0) {
         char pathVal[256] = {0};
         httpd_query_key_value(query, "path", pathVal, sizeof(pathVal));
+        free(query);
 
         std::string absPath = sanitize_storage_path(pathVal);
         if (absPath.empty()) return send_error(req, 400, "Invalid path");
@@ -1853,6 +1924,7 @@ esp_err_t StorageAPI::storage_get_handler(httpd_req_t *req) {
     if (strcmp(action, "file") == 0) {
         char pathVal[256] = {0};
         httpd_query_key_value(query, "path", pathVal, sizeof(pathVal));
+        free(query);
 
         std::string absPath = sanitize_storage_path(pathVal);
         if (absPath.empty()) return send_error(req, 400, "Invalid path");
@@ -1871,21 +1943,28 @@ esp_err_t StorageAPI::storage_get_handler(httpd_req_t *req) {
         else if (absPath.size() > 4 && absPath.substr(absPath.size() - 4) == ".wav") ct = "audio/wav";
         httpd_resp_set_type(req, ct);
 
-        // Stream file in chunks
-        char buf[4096];
+        // Stream file in chunks (SPIRAM to avoid stack overflow)
+        char *buf = (char *)heap_caps_malloc(CHUNK_BUF_SIZE, MALLOC_CAP_SPIRAM);
+        if (!buf) {
+            fclose(f);
+            return send_error(req, 500, "Out of memory");
+        }
         size_t n;
-        while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
+        while ((n = fread(buf, 1, CHUNK_BUF_SIZE, f)) > 0) {
             if (httpd_resp_send_chunk(req, buf, n) != ESP_OK) {
                 fclose(f);
+                heap_caps_free(buf);
                 httpd_resp_send_chunk(req, nullptr, 0);
                 return ESP_FAIL;
             }
         }
         fclose(f);
+        heap_caps_free(buf);
         httpd_resp_send_chunk(req, nullptr, 0); // end chunked response
         return ESP_OK;
     }
 
+    free(query);
     return send_error(req, 400, "Unknown action");
 }
 
@@ -1898,8 +1977,10 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
     size_t qlen = httpd_req_get_url_query_len(req);
     if (qlen == 0) return send_error(req, 400, "Missing query parameters");
 
-    char query[512] = {0};
-    httpd_req_get_url_query_str(req, query, sizeof(query));
+    // Use heap for query buffer to keep stack clean (8 KB httpd limit)
+    char *query = (char *)malloc(qlen + 1);
+    if (!query) return send_error(req, 500, "Out of memory");
+    httpd_req_get_url_query_str(req, query, qlen + 1);
 
     char action[32] = {0};
     httpd_query_key_value(query, "action", action, sizeof(action));
@@ -1910,12 +1991,14 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
         char filenameCheck[16] = {0};
         httpd_query_key_value(query, "filename", filenameCheck, sizeof(filenameCheck));
         if (filenameCheck[0] != '\0') {
+            free(query);
             return handle_upload(req);
         }
 
         // Generic storage upload: ?action=upload&path=X (raw file to /sdcard/<path>)
         char pathVal[256] = {0};
         httpd_query_key_value(query, "path", pathVal, sizeof(pathVal));
+        free(query);
 
         std::string absPath = sanitize_storage_path(pathVal);
         if (absPath.empty()) return send_error(req, 400, "Invalid path");
@@ -1937,18 +2020,24 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
             return send_error(req, 500, "Cannot create file");
         }
 
-        // Receive body in chunks
+        // Receive body in chunks (SPIRAM to avoid stack overflow)
         int remaining = req->content_len;
-        char buf[4096];
+        char *buf = (char *)heap_caps_malloc(CHUNK_BUF_SIZE, MALLOC_CAP_SPIRAM);
+        if (!buf) {
+            fclose(f);
+            CTAG::STORAGE::unlockStorage();
+            return send_error(req, 500, "Out of memory");
+        }
         bool ok = true;
         while (remaining > 0) {
-            int toRead = remaining > (int)sizeof(buf) ? (int)sizeof(buf) : remaining;
+            int toRead = remaining > (int)CHUNK_BUF_SIZE ? (int)CHUNK_BUF_SIZE : remaining;
             int received = httpd_req_recv(req, buf, toRead);
             if (received <= 0) { ok = false; break; }
             if ((int)fwrite(buf, 1, received, f) != received) { ok = false; break; }
             remaining -= received;
         }
         fclose(f);
+        heap_caps_free(buf);
 
         if (!ok) {
             remove(tmpPath.c_str());
@@ -1972,6 +2061,7 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
     if (strcmp(action, "mkdir") == 0) {
         char pathVal[256] = {0};
         httpd_query_key_value(query, "path", pathVal, sizeof(pathVal));
+        free(query);
 
         std::string absPath = sanitize_storage_path(pathVal);
         if (absPath.empty()) return send_error(req, 400, "Invalid path");
@@ -1990,6 +2080,7 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
     if (strcmp(action, "delete") == 0) {
         char pathVal[256] = {0};
         httpd_query_key_value(query, "path", pathVal, sizeof(pathVal));
+        free(query);
 
         std::string absPath = sanitize_storage_path(pathVal);
         if (absPath.empty()) return send_error(req, 400, "Invalid path");
@@ -2010,6 +2101,7 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
         char fromVal[256] = {0}, toVal[256] = {0};
         httpd_query_key_value(query, "from", fromVal, sizeof(fromVal));
         httpd_query_key_value(query, "to", toVal, sizeof(toVal));
+        free(query);
 
         std::string srcPath = sanitize_storage_path(fromVal);
         std::string dstPath = sanitize_storage_path(toVal);
@@ -2029,22 +2121,28 @@ esp_err_t StorageAPI::storage_post_handler(httpd_req_t *req) {
 
     // ── action=reload ──
     if (strcmp(action, "reload") == 0) {
+        free(query);
         return handle_reload(req);
     }
 
     // ── Legacy sample actions (merged from /api/v2/samples) ──
     if (strcmp(action, "uploadconfig") == 0) {
+        free(query);
         return handle_uploadconfig(req);
     }
     if (strcmp(action, "uploadwww") == 0) {
+        free(query);
         return handle_uploadwww(req);
     }
     if (strcmp(action, "uploadsystem") == 0) {
+        free(query);
         return handle_uploadsystem(req);
     }
     if (strcmp(action, "manage") == 0) {
+        free(query);
         return handle_manage(req);
     }
 
+    free(query);
     return send_error(req, 400, "Unknown action");
 }

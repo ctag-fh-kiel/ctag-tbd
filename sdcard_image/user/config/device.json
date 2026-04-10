@@ -12,6 +12,13 @@
       "mdns_name": "dada-tbd",
       "ip": "192.168.4.1"
     },
+    "midi": {
+      "uartmidi1": { "in": "sync+notes", "out": "sync+notes" },
+      "uartmidi2": { "in": "sync+notes", "out": "sync+notes" },
+      "usbhost": { "in": "sync+notes", "out": "sync+notes" },
+      "usbdevice": { "in": "sync+notes", "out": "sync+notes" },
+      "abletonlink": "off"
+    },
     "ch01_daisy": "off",
     "ch0_toStereo": "off",
     "ch1_toStereo": "off",

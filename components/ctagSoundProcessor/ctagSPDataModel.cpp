@@ -36,15 +36,15 @@ respective component folders / files if different from this license.
 #endif
  */
 
-// Inline overlay resolution for patches (avoids circular component dep on main/)
+// Inline overlay resolution for plugins (avoids circular component dep on main/)
 static std::string resolveOverlayPatch(const std::string &filename) {
-    std::string userPath = CTAG::RESOURCES::sdcardRoot + "/user/patches/" + filename;
+    std::string userPath = CTAG::RESOURCES::sdcardRoot + "/user/plugins/" + filename;
     struct stat st;
     if (stat(userPath.c_str(), &st) == 0) return userPath;
-    return CTAG::RESOURCES::sdcardRoot + "/factory/patches/" + filename;
+    return CTAG::RESOURCES::sdcardRoot + "/factory/plugins/" + filename;
 }
 static std::string userPatchPath(const std::string &filename) {
-    return CTAG::RESOURCES::sdcardRoot + "/user/patches/" + filename;
+    return CTAG::RESOURCES::sdcardRoot + "/user/plugins/" + filename;
 }
 
 using namespace CTAG::SP;

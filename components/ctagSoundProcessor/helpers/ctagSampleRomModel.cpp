@@ -6,11 +6,11 @@
 #include "rapidjson/writer.h"
 
 #ifdef TBD_SIM
-#define SD_CARD_SAMPLE_FOLDER "../../sdcard_image/samples"
+#define SD_CARD_SAMPLE_FOLDER "../../sdcard_image"
 #define SD_CARD_USER_KITS_FOLDER "../../sdcard_image/user/kits"
 #define SD_CARD_FACTORY_KITS_FOLDER "../../sdcard_image/factory/kits"
 #else
-#define SD_CARD_SAMPLE_FOLDER "/sdcard/samples"
+#define SD_CARD_SAMPLE_FOLDER "/sdcard"
 #define SD_CARD_USER_KITS_FOLDER "/sdcard/user/kits"
 #define SD_CARD_FACTORY_KITS_FOLDER "/sdcard/factory/kits"
 #endif
@@ -21,7 +21,6 @@
  * Resolve a kit JSON filename using overlay pattern:
  * 1. /user/kits/{filename} — user-created or user-modified kits
  * 2. /factory/kits/{filename} — factory-shipped kits
- * 3. /samples/{filename} — legacy fallback (pre-overlay)
  * Returns full path to the kit file.
  */
 static std::string resolveKitFile(const std::string &filename) {
@@ -30,8 +29,7 @@ static std::string resolveKitFile(const std::string &filename) {
     if (stat(userKit.c_str(), &st) == 0) return userKit;
     std::string factoryKit = std::string(SD_CARD_FACTORY_KITS_FOLDER) + "/" + filename;
     if (stat(factoryKit.c_str(), &st) == 0) return factoryKit;
-    // Legacy fallback: kits stored flat in /samples/
-    return std::string(SD_CARD_SAMPLE_FOLDER) + "/" + filename;
+    return factoryKit;
 }
 
 CTAG::SP::ctagSampleRomModel::ctagSampleRomModel(){

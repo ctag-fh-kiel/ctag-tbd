@@ -1487,6 +1487,26 @@ namespace CTAG::SPIAPI{
 #endif
                 break;
 
+            case RequestType::SetActiveTrackDefault:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    std::string templateName = string_parameter;
+                    ESP_LOGI("SpiAPI", "SetActiveTrackDefault: \"%s\"", templateName.c_str());
+                    std::string cfgDir = STORAGE::userPath() + "/" + STORAGE::DIR_CONFIG;
+                    mkdir(cfgDir.c_str(), 0755);
+                    std::string cfgPath = cfgDir + "/active-trackdefault.txt";
+                    STORAGE::lockStorage();
+                    result = atomicWrite(cfgPath, templateName.data(), templateName.size());
+                    STORAGE::unlockStorage();
+                    if (result) {
+                        ESP_LOGI("SpiAPI", "SetActiveTrackDefault: wrote \"%s\" to %s", templateName.c_str(), cfgPath.c_str());
+                    }
+                }
+#else
+                result = true;
+#endif
+                break;
+
             case RequestType::SetTrackParamValues:
                 {
                     int trackIndex = uint8_param_0;
