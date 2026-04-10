@@ -130,6 +130,20 @@
     .drop-zone .hint { font-size: 0.72rem; color: var(--fg3); margin-top: 0.5rem; }
     .drop-zone input[type="file"] { display: none; }
 
+    /* Upload card (P4 / Pico manual upload — matches drop-zone aesthetic) */
+    .upload-card {
+      border: 2px dashed var(--border-light); border-radius: var(--radius);
+      padding: 1.5rem; text-align: center;
+      background: var(--bg2); margin-bottom: 1.25rem;
+    }
+    .upload-card .upload-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+    .upload-card .upload-text { font-size: 0.82rem; color: var(--fg2); margin-bottom: 0.75rem; }
+    .upload-card .upload-hint { font-size: 0.72rem; color: var(--fg3); margin-top: 0.5rem; }
+    .upload-card .upload-file-name {
+      font-size: 0.78rem; color: var(--accent); font-weight: 500;
+      margin-top: 0.5rem; min-height: 1em;
+    }
+
     /* Manifest info */
     .manifest-info {
       background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
@@ -348,7 +362,7 @@
   <!-- Current version -->
   <div class="version-row" style="margin-top:0.75rem;">
     <div class="version-card">
-      <div class="label">Installed Version</div>
+      <div class="label">Installed WebUI</div>
       <div class="value" id="current-version">&mdash;</div>
       <div class="date" id="current-date"></div>
     </div>
@@ -362,12 +376,6 @@
   <!-- Online update check -->
   <div class="online-banner" id="online-banner">
     <div id="online-content"><span class="checking">&#128269; Checking for updates...</span></div>
-  </div>
-
-  <!-- Hash info -->
-  <div class="hash-info">
-    <strong>&#9432; Note:</strong> WebUI updates do not change the SD card hash.
-    A full firmware deploy will overwrite any files updated here — this is expected.
   </div>
 
   <!-- Manual update -->
@@ -403,6 +411,11 @@
   <!-- Log -->
   <div class="log-area" id="log-area"></div>
 
+  <div class="hash-info" style="margin-top:1rem;">
+    <strong>&#9432; Note:</strong> WebUI updates do not change the SD card hash.
+    A full firmware deploy will overwrite any files updated here &mdash; this is expected.
+  </div>
+
   </div><!-- end WebUI body -->
 
   <!-- ═══ P4 Firmware Section ═══ -->
@@ -426,14 +439,17 @@
   </div>
 
   <!-- P4 manual upload -->
-  <div class="section-label">Manual P4 Update</div>
-  <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.75rem;">
+  <div class="section-label">Manual Update</div>
+  <div class="upload-card">
+    <div class="upload-icon">&#128295;</div>
+    <div class="upload-text">Flash a local P4 firmware file via OTA</div>
     <button class="btn btn-secondary btn-sm" id="p4-pick-file">Select .bin file&hellip;</button>
-    <span id="p4-file-name" style="font-size:0.78rem;color:var(--fg2);"></span>
+    <div class="upload-hint">Accepts .bin firmware files for ESP32-P4</div>
+    <div class="upload-file-name" id="p4-file-name"></div>
   </div>
-  <div id="p4-manual-confirm" style="display:none;margin-bottom:0.75rem;">
+  <div id="p4-manual-confirm" style="display:none;text-align:center;margin-bottom:0.75rem;">
     <button class="btn btn-primary btn-sm" id="p4-manual-flash">Flash Firmware</button>
-    <button class="btn btn-secondary btn-sm" id="p4-manual-cancel">Cancel</button>
+    <button class="btn btn-secondary btn-sm" id="p4-manual-cancel" style="margin-left:0.5rem;">Cancel</button>
   </div>
 
   <div class="progress-bar" id="p4-progress-bar">
@@ -455,13 +471,27 @@
 
   <div class="version-row" style="margin-top:0.75rem;">
     <div class="version-card">
-      <div class="label">Installed Pico Version</div>
+      <div class="label">Installed Pico Firmware</div>
       <div class="value" id="pico-current-version">&mdash;</div>
     </div>
   </div>
 
   <div class="online-banner" id="pico-banner">
     <div id="pico-content"><span class="checking">&#128269; Checking for Pico firmware updates&hellip;</span></div>
+  </div>
+
+  <!-- Pico manual upload -->
+  <div class="section-label">Manual Update</div>
+  <div class="upload-card">
+    <div class="upload-icon">&#128295;</div>
+    <div class="upload-text">Stage a local Pico firmware file for flashing on reboot</div>
+    <button class="btn btn-secondary btn-sm" id="pico-pick-file">Select .bin file&hellip;</button>
+    <div class="upload-hint">Accepts .bin firmware files for RP2350</div>
+    <div class="upload-file-name" id="pico-file-name"></div>
+  </div>
+  <div id="pico-manual-confirm" style="display:none;text-align:center;margin-bottom:0.75rem;">
+    <button class="btn btn-primary btn-sm" id="pico-manual-flash">Stage Firmware</button>
+    <button class="btn btn-secondary btn-sm" id="pico-manual-cancel" style="margin-left:0.5rem;">Cancel</button>
   </div>
 
   <div class="progress-bar" id="pico-progress-bar">
@@ -1134,8 +1164,11 @@
     } else if (filePath.startsWith('data/')) {
       action = 'uploadconfig';
       apiPath = filePath.slice(5);
+    } else if (filePath.startsWith('factory/')) {
+      action = 'uploadfactory';
+      apiPath = filePath.slice(8);
     } else {
-      throw new Error('Unknown path prefix (expected www/ or data/): ' + filePath);
+      throw new Error('Unknown path prefix (expected www/, data/, or factory/): ' + filePath);
     }
 
     const url = '/api/v2/storage?action=' + action + '&path=' + encodeURIComponent(apiPath);
@@ -1713,9 +1746,43 @@
     }
   }
 
-  // Update All button — placeholder for Phase 2 orchestration
-  document.getElementById('update-all-btn').addEventListener('click', function() {
-    alert('Update All will be available in a future release.\n\nFor now, update each component individually in order:\n1. WebUI\n2. P4 Firmware\n3. Pico Firmware');
+  // Update All — orchestrated sequential update flow (WebUI → P4 → Pico)
+  document.getElementById('update-all-btn').addEventListener('click', async function() {
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Updating...';
+
+    // Expand all collapsed sections so user can see progress
+    document.querySelectorAll('.section-header.collapsed').forEach(function(h) { h.click(); });
+
+    var steps = [];
+    if (pendingUpdates.webui) steps.push('webui');
+    if (pendingUpdates.p4) steps.push('p4');
+    if (pendingUpdates.pico) steps.push('pico');
+
+    var desc = document.getElementById('ua-desc');
+
+    for (var i = 0; i < steps.length; i++) {
+      var stepNum = 'Step ' + (i + 1) + ' of ' + steps.length + ': ';
+
+      if (steps[i] === 'webui') {
+        desc.textContent = stepNum + 'Installing WebUI v' + pendingUpdates.webui.version + '\u2026';
+        await installOnlineUpdate(pendingUpdates.webui);
+      } else if (steps[i] === 'p4') {
+        desc.textContent = stepNum + 'Installing P4 Firmware v' + pendingUpdates.p4.version + '\u2026';
+        await installP4Update(pendingUpdates.p4.version, pendingUpdates.p4.url);
+      } else if (steps[i] === 'pico') {
+        desc.textContent = stepNum + 'Installing Pico Firmware v' + pendingUpdates.pico.version + '\u2026';
+        await installPicoUpdate(pendingUpdates.pico.version, pendingUpdates.pico.url);
+      }
+    }
+
+    desc.textContent = 'All updates processed. Check each section for results.';
+    btn.textContent = 'Done';
+
+    if (needsReboot) {
+      showRebootBanner('Updates installed. Reboot to apply firmware changes.');
+    }
   });
 
   function showRebootBanner(msg) {
