@@ -231,6 +231,74 @@
       padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.75rem; color: var(--fg2);
     }
     .hash-info strong { color: var(--fg); }
+
+    /* Collapsible sections */
+    .section-header {
+      display: flex; align-items: center; gap: 0.5rem;
+      cursor: pointer; user-select: none;
+      padding: 0.6rem 0; margin: 1.5rem 0 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-header:first-of-type { margin-top: 0; }
+    .section-header .section-chevron {
+      font-size: 0.65rem; color: var(--fg3); transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .section-header.collapsed .section-chevron { transform: rotate(-90deg); }
+    .section-header .section-title {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--fg3); flex: 1;
+    }
+    .section-header .section-badge {
+      font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.5rem;
+      border-radius: 999px; white-space: nowrap;
+    }
+    .section-badge.up-to-date { background: var(--success-light); color: var(--success); border: 1px solid var(--success-border); }
+    .section-badge.update-available { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent-border); }
+    .section-badge.unknown { background: var(--bg3); color: var(--fg3); border: 1px solid var(--border); }
+    .section-body { overflow: hidden; transition: max-height 0.3s ease; }
+    .section-body.collapsed { max-height: 0 !important; }
+
+    /* Version summary card */
+    .version-summary {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .vs-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+    }
+    .vs-card .vs-label { font-size: 0.65rem; color: var(--fg3); text-transform: uppercase;
+      letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+    .vs-card .vs-version { font-size: 0.95rem; font-weight: 700; color: var(--fg);
+      font-variant-numeric: tabular-nums; }
+    .vs-card .vs-status { font-size: 0.72rem; margin-top: 0.15rem; }
+    .vs-status.checking { color: var(--fg3); }
+    .vs-status.current { color: var(--success); }
+    .vs-status.outdated { color: var(--accent); font-weight: 600; }
+    .vs-status.offline { color: var(--fg3); font-style: italic; }
+
+    /* Update All banner */
+    .update-all-banner {
+      background: var(--accent-light); border: 1px solid var(--accent-border);
+      border-radius: var(--radius); padding: 1rem; margin-bottom: 1.25rem;
+      display: none; text-align: center;
+    }
+    .update-all-banner .ua-title { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem; }
+    .update-all-banner .ua-desc { font-size: 0.78rem; color: var(--fg2); margin-bottom: 0.75rem; }
+
+    /* Reboot banner */
+    .reboot-banner {
+      background: hsl(48 100% 96.1%); border: 1px solid hsl(48 96.5% 76.7%);
+      border-radius: var(--radius); padding: 1rem; margin-top: 1.5rem;
+      display: none; text-align: center;
+    }
+    .reboot-banner .rb-title { font-size: 0.9rem; font-weight: 700; color: hsl(32.1 94.6% 43.7%); margin-bottom: 0.25rem; }
+    .reboot-banner .rb-desc { font-size: 0.78rem; color: var(--fg2); margin-bottom: 0.75rem; }
+
+    @media (max-width: 600px) {
+      .version-summary { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -243,19 +311,50 @@
 </div>
 <div class="container">
 
-  <!-- WebUI section -->
-  <div class="section-label" style="margin-top:0;">WebUI</div>
+  <!-- ═══ Version Summary ═══ -->
+  <div class="version-summary">
+    <div class="vs-card">
+      <div class="vs-label">WebUI</div>
+      <div class="vs-version" id="vs-webui-version">&mdash;</div>
+      <div class="vs-status checking" id="vs-webui-status">checking&hellip;</div>
+    </div>
+    <div class="vs-card">
+      <div class="vs-label">P4 Firmware</div>
+      <div class="vs-version" id="vs-p4-version">&mdash;</div>
+      <div class="vs-status checking" id="vs-p4-status">checking&hellip;</div>
+    </div>
+    <div class="vs-card">
+      <div class="vs-label">Pico Firmware</div>
+      <div class="vs-version" id="vs-pico-version">&mdash;</div>
+      <div class="vs-status checking" id="vs-pico-status">checking&hellip;</div>
+    </div>
+  </div>
+
+  <!-- Update All banner (shown when multiple updates are available) -->
+  <div class="update-all-banner" id="update-all-banner">
+    <div class="ua-title">&#10024; Updates Available</div>
+    <div class="ua-desc" id="ua-desc">New versions available for multiple components.</div>
+    <button class="btn btn-primary" id="update-all-btn" disabled>Update All</button>
+  </div>
+
+  <!-- ═══ WebUI Section ═══ -->
+  <div class="section-header" id="section-webui-header">
+    <span class="section-chevron">&#9660;</span>
+    <span class="section-title">WebUI</span>
+    <span class="section-badge unknown" id="webui-badge">&mdash;</span>
+  </div>
+  <div class="section-body" id="section-webui-body">
 
   <!-- Current version -->
-  <div class="version-row" style="margin-top:0.25rem;">
+  <div class="version-row" style="margin-top:0.75rem;">
     <div class="version-card">
       <div class="label">Installed Version</div>
-      <div class="value" id="current-version">—</div>
+      <div class="value" id="current-version">&mdash;</div>
       <div class="date" id="current-date"></div>
     </div>
     <div class="version-card" id="update-version-card" style="display:none;">
       <div class="label">Update Package</div>
-      <div class="value" id="update-version">—</div>
+      <div class="value" id="update-version">&mdash;</div>
       <div class="date" id="update-date"></div>
     </div>
   </div>
@@ -304,10 +403,57 @@
   <!-- Log -->
   <div class="log-area" id="log-area"></div>
 
-  <!-- ═══ Pico Firmware ═══ -->
-  <div class="section-label" style="margin-top:2.5rem;">Pico Firmware</div>
+  </div><!-- end WebUI body -->
 
-  <div class="version-row">
+  <!-- ═══ P4 Firmware Section ═══ -->
+  <div class="section-header" id="section-p4-header">
+    <span class="section-chevron">&#9660;</span>
+    <span class="section-title">P4 Firmware (ESP32-P4)</span>
+    <span class="section-badge unknown" id="p4-badge">&mdash;</span>
+  </div>
+  <div class="section-body" id="section-p4-body">
+
+  <div class="version-row" style="margin-top:0.75rem;">
+    <div class="version-card">
+      <div class="label">Installed P4 Firmware</div>
+      <div class="value" id="p4-current-version">&mdash;</div>
+      <div class="date" id="p4-hw-label"></div>
+    </div>
+  </div>
+
+  <div class="online-banner" id="p4-banner">
+    <div id="p4-content"><span class="checking">&#128269; Checking for P4 firmware updates&hellip;</span></div>
+  </div>
+
+  <!-- P4 manual upload -->
+  <div class="section-label">Manual P4 Update</div>
+  <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:0.75rem;">
+    <button class="btn btn-secondary btn-sm" id="p4-pick-file">Select .bin file&hellip;</button>
+    <span id="p4-file-name" style="font-size:0.78rem;color:var(--fg2);"></span>
+  </div>
+  <div id="p4-manual-confirm" style="display:none;margin-bottom:0.75rem;">
+    <button class="btn btn-primary btn-sm" id="p4-manual-flash">Flash Firmware</button>
+    <button class="btn btn-secondary btn-sm" id="p4-manual-cancel">Cancel</button>
+  </div>
+
+  <div class="progress-bar" id="p4-progress-bar">
+    <div class="fill" id="p4-progress-fill" style="width:0%"></div>
+  </div>
+
+  <div class="status-msg" id="p4-status-msg"></div>
+  <div class="log-area" id="p4-log-area"></div>
+
+  </div><!-- end P4 body -->
+
+  <!-- ═══ Pico Firmware Section ═══ -->
+  <div class="section-header" id="section-pico-header">
+    <span class="section-chevron">&#9660;</span>
+    <span class="section-title">Pico Firmware (RP2350)</span>
+    <span class="section-badge unknown" id="pico-badge">&mdash;</span>
+  </div>
+  <div class="section-body" id="section-pico-body">
+
+  <div class="version-row" style="margin-top:0.75rem;">
     <div class="version-card">
       <div class="label">Installed Pico Version</div>
       <div class="value" id="pico-current-version">&mdash;</div>
@@ -324,13 +470,29 @@
 
   <div class="status-msg" id="pico-status-msg"></div>
   <div class="log-area" id="pico-log-area"></div>
+
+  </div><!-- end Pico body -->
+
+  <!-- ═══ Reboot Banner ═══ -->
+  <div class="reboot-banner" id="reboot-banner">
+    <div class="rb-title">&#9888; Reboot Required</div>
+    <div class="rb-desc" id="rb-desc">Firmware has been staged. Reboot the device to apply changes.</div>
+    <button class="btn btn-primary" id="reboot-btn">Reboot Now</button>
+  </div>
+
+  <!-- ═══ Advanced ═══ -->
+  <div style="margin-top:1.5rem;text-align:center;font-size:0.75rem;color:var(--fg3);">
+    <a href="https://dadamachines.github.io/dada-tbd-firmware/flash/" target="_blank"
+       style="color:var(--fg3);text-decoration:underline;">Advanced: Full SD Card Deploy &amp; Recovery</a>
+  </div>
+
 </div>
 
 <script>
 (function() {
   'use strict';
 
-  // ── DOM refs ──
+  // ── DOM refs (WebUI) ──
   const dropZone      = document.getElementById('drop-zone');
   const fileInput     = document.getElementById('file-input');
   const manifestInfo  = document.getElementById('manifest-info');
@@ -352,23 +514,59 @@
   const onlineBanner  = document.getElementById('online-banner');
   const onlineContent = document.getElementById('online-content');
 
+  // ── DOM refs (Version summary) ──
+  const vsWebuiVersion = document.getElementById('vs-webui-version');
+  const vsWebuiStatus  = document.getElementById('vs-webui-status');
+  const vsP4Version    = document.getElementById('vs-p4-version');
+  const vsP4Status     = document.getElementById('vs-p4-status');
+  const vsPicoVersion  = document.getElementById('vs-pico-version');
+  const vsPicoStatus   = document.getElementById('vs-pico-status');
+  const webuiBadge     = document.getElementById('webui-badge');
+  const p4Badge        = document.getElementById('p4-badge');
+  const picoBadge      = document.getElementById('pico-badge');
+  const updateAllBanner = document.getElementById('update-all-banner');
+  const rebootBanner   = document.getElementById('reboot-banner');
+
   const UPDATE_CHECK_URL = 'https://dadamachines.github.io/dada-tbd-firmware/webui-updates/latest.json';
 
   let manifest = null;
   let zipFiles = {};  // name → { compression, data }
   let installedVersion = null;
   let firmwareVersion = null;
+  let hardwareLabel = null;
+  let needsReboot = false;      // set true after P4 OTA or Pico staging
+  let latestCdnData = null;     // cached releases.json
 
-  // ── Load firmware version from device ──
+  // ── Track which updates are available for "Update All" ──
+  var pendingUpdates = { webui: null, p4: null, pico: null };
+
+  // ── Collapsible section toggle ──
+  document.querySelectorAll('.section-header').forEach(function(hdr) {
+    hdr.addEventListener('click', function() {
+      hdr.classList.toggle('collapsed');
+      var body = hdr.nextElementSibling;
+      if (body) body.classList.toggle('collapsed');
+    });
+  });
+
+  // ── Load firmware version from device (P4) ──
   async function loadFirmwareVersion() {
     try {
       var resp = await fetch('/api/v2/device?action=getIOCaps');
       if (resp.ok) {
         var caps = await resp.json();
         firmwareVersion = caps.FWV || null;
+        hardwareLabel = caps.HW || null;
+        vsP4Version.textContent = firmwareVersion || '?';
+        document.getElementById('p4-current-version').textContent = firmwareVersion || '?';
+        if (hardwareLabel) document.getElementById('p4-hw-label').textContent = hardwareLabel;
       }
     } catch (e) {
       firmwareVersion = null;
+      vsP4Version.textContent = 'offline';
+      vsP4Status.textContent = 'offline';
+      vsP4Status.className = 'vs-status offline';
+      document.getElementById('p4-current-version').textContent = 'offline';
     }
   }
 
@@ -381,7 +579,7 @@
     return parts[0] + '.' + parts[1];
   }
 
-  // ── Load current version from device ──
+  // ── Load current WebUI version from device ──
   async function loadCurrentVersion() {
     try {
       const resp = await fetch('/api/v2/storage?getconfig=webui-version.json');
@@ -390,13 +588,18 @@
         installedVersion = v.version || null;
         curVersion.textContent = v.version || '?';
         curDate.textContent = v.date ? ('Installed: ' + v.date) : '';
+        vsWebuiVersion.textContent = v.version || '?';
       } else {
         curVersion.textContent = 'not set';
         curDate.textContent = 'No version file found on device';
+        vsWebuiVersion.textContent = 'not set';
       }
     } catch (e) {
       curVersion.textContent = 'offline';
       curDate.textContent = 'Cannot reach device';
+      vsWebuiVersion.textContent = 'offline';
+      vsWebuiStatus.textContent = 'offline';
+      vsWebuiStatus.className = 'vs-status offline';
     }
   }
 
@@ -496,8 +699,28 @@
         });
       }
 
+      // Update version summary badges
+      if (isNewer) {
+        vsWebuiStatus.textContent = 'v' + latest.version + ' available';
+        vsWebuiStatus.className = 'vs-status outdated';
+        webuiBadge.textContent = 'Update Available';
+        webuiBadge.className = 'section-badge update-available';
+        pendingUpdates.webui = latest;
+      } else {
+        vsWebuiStatus.textContent = 'up to date';
+        vsWebuiStatus.className = 'vs-status current';
+        webuiBadge.textContent = 'Up to Date';
+        webuiBadge.className = 'section-badge up-to-date';
+        pendingUpdates.webui = null;
+      }
+      refreshUpdateAll();
+
     } catch (e) {
       onlineContent.innerHTML = '<span class="checking">Could not check for updates. Use manual upload below.</span>';
+      vsWebuiStatus.textContent = 'check failed';
+      vsWebuiStatus.className = 'vs-status offline';
+      webuiBadge.textContent = '?';
+      webuiBadge.className = 'section-badge unknown';
     }
   }
 
@@ -639,8 +862,8 @@
     }
   }
 
-  // Load version + firmware version, then check for online updates
-  Promise.all([loadCurrentVersion(), loadFirmwareVersion()]).then(function() { checkOnlineUpdate(); });
+  // Load version + firmware version — the unified init at end of file handles this
+  // (checkOnlineUpdate is called from the unified init block)
 
   // ── Minimal ZIP reader (supports stored + deflated entries) ──
   function parseZip(buffer) {
@@ -1006,9 +1229,13 @@
         var info = await resp.json();
         currentPicoVersion = info.pico_version || null;
         picoVersionEl.textContent = currentPicoVersion || 'unknown';
+        vsPicoVersion.textContent = currentPicoVersion || '?';
       }
     } catch (e) {
       picoVersionEl.textContent = 'offline';
+      vsPicoVersion.textContent = 'offline';
+      vsPicoStatus.textContent = 'offline';
+      vsPicoStatus.className = 'vs-status offline';
     }
   }
 
@@ -1082,6 +1309,22 @@
 
       picoContent.innerHTML = html;
 
+      // Update pico badges
+      if (isNewer || isDevBuild) {
+        vsPicoStatus.textContent = cdnPicoVersion + ' available';
+        vsPicoStatus.className = 'vs-status outdated';
+        picoBadge.textContent = 'Update Available';
+        picoBadge.className = 'section-badge update-available';
+        pendingUpdates.pico = { version: cdnPicoVersion, url: picoBinUrl };
+      } else {
+        vsPicoStatus.textContent = 'up to date';
+        vsPicoStatus.className = 'vs-status current';
+        picoBadge.textContent = 'Up to Date';
+        picoBadge.className = 'section-badge up-to-date';
+        pendingUpdates.pico = null;
+      }
+      refreshUpdateAll();
+
       var installBtn = document.getElementById('pico-install-btn');
       if (installBtn) {
         installBtn.addEventListener('click', function() {
@@ -1097,6 +1340,10 @@
 
     } catch (e) {
       picoContent.innerHTML = '<span class="checking">Could not check for Pico firmware updates.</span>';
+      vsPicoStatus.textContent = 'check failed';
+      vsPicoStatus.className = 'vs-status offline';
+      picoBadge.textContent = '?';
+      picoBadge.className = 'section-badge unknown';
     }
   }
 
@@ -1160,6 +1407,7 @@
       picoLog('Done! Reboot the device to flash the new Pico firmware.', 'ok');
 
       picoVersionEl.textContent = currentPicoVersion + ' \u2192 ' + version + ' (pending reboot)';
+      showRebootBanner('Pico firmware ' + version + ' staged. Reboot to apply.');
 
     } catch (e) {
       picoStatus('Pico firmware update failed: ' + e.message, 'error');
@@ -1171,7 +1419,337 @@
   }
 
   // Load Pico version + check for updates
-  loadPicoVersion().then(function() { checkPicoUpdate(); });
+  // (called from unified init below)
+
+  // ═══════════════════════════════════════════════════════════════
+  // ══ P4 Firmware Update (OTA) ══════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+
+  var p4VersionEl    = document.getElementById('p4-current-version');
+  var p4Banner       = document.getElementById('p4-banner');
+  var p4Content      = document.getElementById('p4-content');
+  var p4ProgressBar  = document.getElementById('p4-progress-bar');
+  var p4ProgressFill = document.getElementById('p4-progress-fill');
+  var p4StatusMsg    = document.getElementById('p4-status-msg');
+  var p4LogArea      = document.getElementById('p4-log-area');
+  var p4OtaInfo      = null;  // {running, next, maxSize}
+
+  function p4Log(msg, cls) {
+    p4LogArea.style.display = 'block';
+    var div = document.createElement('div');
+    div.className = 'log-line' + (cls ? ' log-' + cls : '');
+    div.textContent = msg;
+    p4LogArea.appendChild(div);
+    p4LogArea.scrollTop = p4LogArea.scrollHeight;
+  }
+
+  function p4Status(msg, type) {
+    p4StatusMsg.textContent = msg;
+    p4StatusMsg.className = 'status-msg ' + type;
+    p4StatusMsg.style.display = 'block';
+  }
+
+  async function checkP4Update() {
+    try {
+      var resp = await fetch(RELEASES_URL, { cache: 'no-cache' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var releases = await resp.json();
+      latestCdnData = releases;
+
+      var cdnP4Version = releases.p4Version || null;
+      if (!cdnP4Version) {
+        p4Content.innerHTML = '<span class="checking">No P4 firmware version info on CDN.</span>';
+        return;
+      }
+
+      // Find the p4 binary URL
+      var p4BinUrl = null;
+      if (releases.versions && releases.versions.length > 0) {
+        var latest = releases.versions[0];
+        if (latest.files && latest.files.p4Bin) {
+          p4BinUrl = CDN_BASE + latest.files.p4Bin;
+        }
+      }
+      if (!p4BinUrl && cdnP4Version) {
+        p4BinUrl = CDN_BASE + 'stable/p4/dada-tbd-16-' + cdnP4Version + '-unified.bin';
+      }
+
+      var fwStripped = firmwareVersion ? firmwareVersion.replace(/^v/, '') : '0.0.0';
+      var cdnStripped = cdnP4Version.replace(/^v/, '');
+      var isNewer = firmwareVersion && compareVersions(cdnStripped, fwStripped) > 0;
+
+      var html = '';
+
+      if (!firmwareVersion) {
+        html += '<span class="checking">Cannot determine installed P4 version.</span>';
+        if (p4BinUrl) {
+          html += '<br><button class="btn btn-primary btn-sm" id="p4-install-btn" style="margin-top:0.5rem;">' +
+            'Install ' + escHtml(cdnP4Version) + '</button>';
+        }
+      } else if (isNewer) {
+        html += '<div class="update-title">&#10024; P4 Firmware Update: ' + escHtml(cdnP4Version) + '</div>' +
+          '<div class="update-meta">Installed: ' + escHtml(firmwareVersion) + '</div>';
+        if (p4BinUrl) {
+          html += '<button class="btn btn-primary" id="p4-install-btn" style="margin-top:0.5rem;">' +
+            'Download &amp; Install ' + escHtml(cdnP4Version) + '</button>';
+        }
+      } else {
+        html += '<span class="up-to-date">&#9989; P4 firmware is up to date (' + escHtml(cdnP4Version) + ')</span>';
+        if (p4BinUrl) {
+          html += '<br><button class="btn btn-secondary btn-sm" id="p4-reinstall-btn" style="margin-top:0.5rem;">' +
+            '&#8635; Reinstall ' + escHtml(cdnP4Version) + '</button>';
+        }
+      }
+
+      p4Content.innerHTML = html;
+
+      // Update P4 badges
+      if (isNewer) {
+        vsP4Status.textContent = cdnP4Version + ' available';
+        vsP4Status.className = 'vs-status outdated';
+        p4Badge.textContent = 'Update Available';
+        p4Badge.className = 'section-badge update-available';
+        pendingUpdates.p4 = { version: cdnP4Version, url: p4BinUrl };
+      } else {
+        vsP4Status.textContent = 'up to date';
+        vsP4Status.className = 'vs-status current';
+        p4Badge.textContent = 'Up to Date';
+        p4Badge.className = 'section-badge up-to-date';
+        pendingUpdates.p4 = null;
+      }
+      refreshUpdateAll();
+
+      var installBtn = document.getElementById('p4-install-btn');
+      if (installBtn) {
+        installBtn.addEventListener('click', function() {
+          installP4Update(cdnP4Version, p4BinUrl);
+        });
+      }
+      var reinstallBtn = document.getElementById('p4-reinstall-btn');
+      if (reinstallBtn) {
+        reinstallBtn.addEventListener('click', function() {
+          installP4Update(cdnP4Version, p4BinUrl);
+        });
+      }
+
+    } catch (e) {
+      p4Content.innerHTML = '<span class="checking">Could not check for P4 firmware updates.</span>';
+      vsP4Status.textContent = 'check failed';
+      vsP4Status.className = 'vs-status offline';
+      p4Badge.textContent = '?';
+      p4Badge.className = 'section-badge unknown';
+    }
+  }
+
+  async function installP4Update(version, binUrl) {
+    var btns = p4Content.querySelectorAll('button');
+    for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
+
+    p4ProgressBar.style.display = 'block';
+    p4ProgressFill.style.width = '5%';
+    p4Log('Querying OTA partition info...', 'info');
+
+    try {
+      // Step 1: Query partition info
+      var infoResp = await fetch('/api/v2/ota');
+      if (!infoResp.ok) throw new Error('Cannot query OTA partition: HTTP ' + infoResp.status);
+      p4OtaInfo = await infoResp.json();
+      p4Log('Running: ' + p4OtaInfo.running + ' → Target: ' + p4OtaInfo.next +
+        ' (max ' + formatBytes(p4OtaInfo.maxSize) + ')', 'info');
+      p4ProgressFill.style.width = '10%';
+
+      // Step 2: Download firmware from CDN
+      p4Log('Downloading P4 firmware ' + version + '...', 'info');
+      var binResp = await fetch(binUrl);
+      if (!binResp.ok) throw new Error('Download failed: HTTP ' + binResp.status);
+      var binData = await binResp.arrayBuffer();
+      p4Log('Downloaded ' + formatBytes(binData.byteLength), 'ok');
+      p4ProgressFill.style.width = '30%';
+
+      // Validate size
+      if (binData.byteLength > p4OtaInfo.maxSize) {
+        throw new Error('Firmware too large (' + formatBytes(binData.byteLength) +
+          ') for partition (' + formatBytes(p4OtaInfo.maxSize) + ')');
+      }
+
+      // Step 3: Upload via OTA endpoint
+      p4Log('Flashing to partition ' + p4OtaInfo.next + '...', 'info');
+      var uploadDone = false;
+      await new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/v2/ota');
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+        xhr.timeout = 300000; // 5 minutes
+        xhr.upload.addEventListener('progress', function(e) {
+          if (e.lengthComputable) {
+            var pct = 30 + (e.loaded / e.total) * 60; // 30% to 90%
+            p4ProgressFill.style.width = pct.toFixed(1) + '%';
+          }
+        });
+        xhr.addEventListener('load', function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var resp = JSON.parse(xhr.responseText);
+              if (resp.partition) {
+                p4Log('Firmware flashed to partition: ' + resp.partition, 'ok');
+              }
+            } catch(e) { /* ok */ }
+            resolve();
+          } else {
+            reject(new Error('OTA upload failed: HTTP ' + xhr.status));
+          }
+        });
+        xhr.addEventListener('error', function() { reject(new Error('OTA upload network error')); });
+        xhr.addEventListener('timeout', function() { reject(new Error('OTA upload timed out')); });
+        xhr.send(binData);
+      });
+
+      p4ProgressFill.style.width = '100%';
+      p4Status('P4 firmware ' + version + ' flashed successfully! Reboot to activate.', 'success');
+      p4Log('Done! Reboot the device to boot into the new firmware.', 'ok');
+
+      p4VersionEl.textContent = firmwareVersion + ' \u2192 ' + version + ' (pending reboot)';
+      showRebootBanner('P4 firmware ' + version + ' flashed. Reboot to activate.');
+
+    } catch (e) {
+      p4Status('P4 firmware update failed: ' + e.message, 'error');
+      p4Log('Error: ' + e.message, 'err');
+      p4ProgressFill.style.width = '0%';
+      var btns2 = p4Content.querySelectorAll('button');
+      for (var j = 0; j < btns2.length; j++) btns2[j].disabled = false;
+    }
+  }
+
+  // ── P4 Manual file picker ──
+  document.getElementById('p4-pick-file').addEventListener('click', function() {
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.bin';
+    inp.addEventListener('change', function() {
+      if (!inp.files.length) return;
+      var file = inp.files[0];
+      document.getElementById('p4-file-name').textContent = file.name + ' (' + formatBytes(file.size) + ')';
+      document.getElementById('p4-manual-confirm').style.display = '';
+
+      document.getElementById('p4-manual-flash').onclick = async function() {
+        document.getElementById('p4-manual-confirm').style.display = 'none';
+        p4ProgressBar.style.display = 'block';
+        p4ProgressFill.style.width = '5%';
+        p4Log('Manual flash: ' + file.name, 'info');
+
+        try {
+          // Query partition info
+          var infoResp = await fetch('/api/v2/ota');
+          if (!infoResp.ok) throw new Error('Cannot query OTA partition');
+          p4OtaInfo = await infoResp.json();
+          p4Log('Target partition: ' + p4OtaInfo.next + ' (max ' + formatBytes(p4OtaInfo.maxSize) + ')', 'info');
+
+          var binData = await file.arrayBuffer();
+          if (binData.byteLength > p4OtaInfo.maxSize) {
+            throw new Error('File too large for partition');
+          }
+
+          p4Log('Flashing ' + formatBytes(binData.byteLength) + '...', 'info');
+          await new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/v2/ota');
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+            xhr.timeout = 300000;
+            xhr.upload.addEventListener('progress', function(e) {
+              if (e.lengthComputable) {
+                p4ProgressFill.style.width = ((e.loaded / e.total) * 90).toFixed(1) + '%';
+              }
+            });
+            xhr.addEventListener('load', function() {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  var resp = JSON.parse(xhr.responseText);
+                  if (resp.partition) p4Log('Flashed to: ' + resp.partition, 'ok');
+                } catch(ee) { /* ok */ }
+                resolve();
+              } else {
+                reject(new Error('OTA upload failed: HTTP ' + xhr.status));
+              }
+            });
+            xhr.addEventListener('error', function() { reject(new Error('Network error')); });
+            xhr.addEventListener('timeout', function() { reject(new Error('Timed out')); });
+            xhr.send(binData);
+          });
+
+          p4ProgressFill.style.width = '100%';
+          p4Status('Firmware flashed! Reboot to activate.', 'success');
+          showRebootBanner('P4 firmware flashed from ' + file.name + '. Reboot to activate.');
+        } catch (e) {
+          p4Status('Flash failed: ' + e.message, 'error');
+          p4Log('Error: ' + e.message, 'err');
+          p4ProgressFill.style.width = '0%';
+        }
+      };
+
+      document.getElementById('p4-manual-cancel').onclick = function() {
+        document.getElementById('p4-manual-confirm').style.display = 'none';
+        document.getElementById('p4-file-name').textContent = '';
+      };
+    });
+    inp.click();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // ══ Update All + Reboot ═══════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+
+  function refreshUpdateAll() {
+    var count = (pendingUpdates.webui ? 1 : 0) + (pendingUpdates.p4 ? 1 : 0) + (pendingUpdates.pico ? 1 : 0);
+    if (count >= 2) {
+      var parts = [];
+      if (pendingUpdates.webui) parts.push('WebUI v' + pendingUpdates.webui.version);
+      if (pendingUpdates.p4) parts.push('P4 v' + pendingUpdates.p4.version);
+      if (pendingUpdates.pico) parts.push('Pico v' + pendingUpdates.pico.version);
+      document.getElementById('ua-desc').textContent = parts.join(', ') + ' available.';
+      updateAllBanner.style.display = '';
+      document.getElementById('update-all-btn').disabled = false;
+    } else {
+      updateAllBanner.style.display = 'none';
+    }
+  }
+
+  // Update All button — placeholder for Phase 2 orchestration
+  document.getElementById('update-all-btn').addEventListener('click', function() {
+    alert('Update All will be available in a future release.\n\nFor now, update each component individually in order:\n1. WebUI\n2. P4 Firmware\n3. Pico Firmware');
+  });
+
+  function showRebootBanner(msg) {
+    needsReboot = true;
+    document.getElementById('rb-desc').textContent = msg;
+    rebootBanner.style.display = '';
+  }
+
+  document.getElementById('reboot-btn').addEventListener('click', async function() {
+    if (!confirm('Reboot the device now?\n\nThe device will disconnect briefly and reconnect.')) return;
+    var btn = document.getElementById('reboot-btn');
+    btn.disabled = true;
+    btn.textContent = 'Rebooting...';
+    try {
+      await fetch('/api/v2/device?action=reboot', { method: 'POST' });
+    } catch(e) {
+      // Expected — device disconnects immediately
+    }
+    document.getElementById('rb-desc').textContent = 'Device is rebooting... Refresh this page in ~15 seconds.';
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // ══ Unified Initialization ════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+
+  Promise.all([
+    loadCurrentVersion(),
+    loadFirmwareVersion(),
+    loadPicoVersion()
+  ]).then(function() {
+    checkOnlineUpdate();
+    checkP4Update();
+    checkPicoUpdate();
+  });
 
 })();
 </script>
