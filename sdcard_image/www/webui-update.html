@@ -301,6 +301,18 @@
     .update-all-banner .ua-title { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem; }
     .update-all-banner .ua-desc { font-size: 0.78rem; color: var(--fg2); margin-bottom: 0.75rem; }
 
+    /* Step tracker */
+    .ua-steps { display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 0.75rem; display: none; }
+    .ua-step {
+      display: flex; align-items: center; gap: 0.3rem;
+      font-size: 0.72rem; color: var(--fg3); padding: 0.25rem 0.6rem;
+      border-radius: 999px; background: var(--bg2); transition: all 0.3s ease;
+    }
+    .ua-step.active { background: var(--accent); color: #fff; font-weight: 600; }
+    .ua-step.done { background: hsl(142 71% 45%); color: #fff; }
+    .ua-step.fail { background: hsl(0 70% 55%); color: #fff; }
+    .ua-step .ua-icon { font-size: 0.8rem; }
+
     /* Reboot banner */
     .reboot-banner {
       background: hsl(48 100% 96.1%); border: 1px solid hsl(48 96.5% 76.7%);
@@ -403,6 +415,7 @@
   <!-- Update All banner (shown when multiple updates are available) -->
   <div class="update-all-banner" id="update-all-banner">
     <div class="ua-title">&#10024; Updates Available</div>
+    <div class="ua-steps" id="ua-steps"></div>
     <div class="ua-desc" id="ua-desc">New versions available for multiple components.</div>
     <button class="btn btn-primary" id="update-all-btn" disabled>Update All</button>
   </div>
@@ -577,10 +590,32 @@
     </div>
   </div>
 
-  <!-- ═══ Advanced ═══ -->
-  <div style="margin-top:1.5rem;text-align:center;font-size:0.75rem;color:var(--fg3);">
-    <a href="https://dadamachines.github.io/dada-tbd-firmware/flash/" target="_blank"
-       style="color:var(--fg3);text-decoration:underline;">Advanced: Full SD Card Deploy &amp; Recovery</a>
+  <!-- ═══ SD Card Recovery ═══ -->
+  <div class="section-header collapsed" id="section-recovery-header">
+    <span class="section-chevron">&#9660;</span>
+    <span class="section-title">SD Card Recovery</span>
+  </div>
+  <div class="section-body collapsed" id="section-recovery-body" style="max-height:600px;">
+    <div class="backup-section">
+      <p class="backup-desc">If your device won&rsquo;t boot or the SD card is corrupted, you can
+        re-flash the full SD card image to restore factory state.</p>
+      <div id="recovery-content"><span class="checking">Loading recovery info&hellip;</span></div>
+      <div style="margin-top:0.75rem;padding:0.75rem;background:var(--bg2);border-radius:var(--radius);font-size:0.78rem;line-height:1.5;color:var(--fg2);">
+        <strong style="color:var(--fg);">Recovery Steps:</strong>
+        <ol style="margin:0.5rem 0 0 1.25rem;padding:0;">
+          <li>Download the SD card image (.zip) above</li>
+          <li>Remove the microSD card from the TBD-16</li>
+          <li>Insert it into your computer using an SD card reader</li>
+          <li>Format the card as <strong>FAT32</strong> (or exFAT for cards &gt;32&thinsp;GB)</li>
+          <li>Extract the .zip contents to the root of the SD card</li>
+          <li>Safely eject and re-insert the card into the TBD-16</li>
+          <li>Power cycle the device</li>
+        </ol>
+        <p style="margin:0.5rem 0 0;font-size:0.72rem;color:var(--fg3);">
+          &#9888; This will reset presets, macros, and settings to factory defaults.
+          Back up your settings first if possible.</p>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -1481,6 +1516,39 @@
         }
       }
 
+      // Older Pico firmware versions (deduplicated)
+      if (releases.versions && releases.versions.length > 1) {
+        var olderPico = [];
+        var seenPico = {};
+        seenPico[cdnPicoVersion] = true; // skip current
+        for (var pi = 1; pi < releases.versions.length; pi++) {
+          var prv = releases.versions[pi];
+          var prvUrl = prv.files && prv.files.picoBin ? CDN_BASE + prv.files.picoBin : null;
+          if (!prvUrl) continue;
+          // Extract pico version from filename (e.g., "stable/pico/dada-tbd-16-v0.4.5-pico.bin")
+          var picoVerMatch = prv.files.picoBin.match(/dada-tbd-16-([\w.\-]+)-pico\.bin/);
+          var picoVer = picoVerMatch ? picoVerMatch[1] : prv.tag;
+          if (seenPico[picoVer]) continue;
+          seenPico[picoVer] = true;
+          olderPico.push({ version: picoVer, date: prv.timestamp, url: prvUrl });
+        }
+        if (olderPico.length > 0) {
+          html += '<button class="versions-toggle" id="pico-versions-toggle">' +
+            '&#9662; Show older versions (' + olderPico.length + ')</button>';
+          html += '<div class="versions-list" id="pico-versions-list">';
+          for (var qi = 0; qi < olderPico.length; qi++) {
+            var opv = olderPico[qi];
+            html += '<div class="version-item">' +
+              '<span class="vi-version">' + escHtml(opv.version) + '</span>' +
+              '<span class="vi-date">' + escHtml(opv.date ? opv.date.split('T')[0] : '') + '</span>' +
+              '<button class="btn btn-secondary btn-sm" data-pico-url="' + escAttr(opv.url) + '" ' +
+              'data-pico-ver="' + escAttr(opv.version) + '">Install</button>' +
+              '</div>';
+          }
+          html += '</div>';
+        }
+      }
+
       picoContent.innerHTML = html;
 
       // Update pico badges
@@ -1509,6 +1577,25 @@
       if (reinstallBtn) {
         reinstallBtn.addEventListener('click', function() {
           installPicoUpdate(cdnPicoVersion, picoBinUrl);
+        });
+      }
+
+      // Older Pico version events
+      var picoToggleBtn = document.getElementById('pico-versions-toggle');
+      if (picoToggleBtn) {
+        picoToggleBtn.addEventListener('click', function() {
+          var list = document.getElementById('pico-versions-list');
+          var open = list.classList.toggle('open');
+          picoToggleBtn.innerHTML = (open ? '&#9652; Hide' : '&#9662; Show') +
+            ' older versions (' + document.querySelectorAll('#pico-versions-list .version-item').length + ')';
+        });
+      }
+      var picoVerBtns = picoContent.querySelectorAll('[data-pico-url]');
+      for (var pbi = 0; pbi < picoVerBtns.length; pbi++) {
+        picoVerBtns[pbi].addEventListener('click', function() {
+          var ver = this.getAttribute('data-pico-ver');
+          if (!confirm('Install Pico firmware ' + ver + '?\n\nThis is an older version \u2014 downgrading may cause issues.')) return;
+          installPicoUpdate(ver, this.getAttribute('data-pico-url'));
         });
       }
 
@@ -1680,6 +1767,31 @@
         }
       }
 
+      // Older P4 firmware versions
+      if (releases.versions && releases.versions.length > 1) {
+        var olderP4 = [];
+        for (var vi = 1; vi < releases.versions.length; vi++) {
+          var rv = releases.versions[vi];
+          var rvUrl = rv.files && rv.files.unified ? CDN_BASE + rv.files.unified : null;
+          if (rvUrl) olderP4.push({ version: rv.tag, date: rv.timestamp, url: rvUrl });
+        }
+        if (olderP4.length > 0) {
+          html += '<button class="versions-toggle" id="p4-versions-toggle">' +
+            '&#9662; Show older versions (' + olderP4.length + ')</button>';
+          html += '<div class="versions-list" id="p4-versions-list">';
+          for (var oi = 0; oi < olderP4.length; oi++) {
+            var ov = olderP4[oi];
+            html += '<div class="version-item">' +
+              '<span class="vi-version">' + escHtml(ov.version) + '</span>' +
+              '<span class="vi-date">' + escHtml(ov.date ? ov.date.split('T')[0] : '') + '</span>' +
+              '<button class="btn btn-secondary btn-sm" data-p4-url="' + escAttr(ov.url) + '" ' +
+              'data-p4-ver="' + escAttr(ov.version) + '">Install</button>' +
+              '</div>';
+          }
+          html += '</div>';
+        }
+      }
+
       p4Content.innerHTML = html;
 
       // Update P4 badges
@@ -1708,6 +1820,25 @@
       if (reinstallBtn) {
         reinstallBtn.addEventListener('click', function() {
           installP4Update(cdnP4Version, p4BinUrl);
+        });
+      }
+
+      // Older P4 version events
+      var p4ToggleBtn = document.getElementById('p4-versions-toggle');
+      if (p4ToggleBtn) {
+        p4ToggleBtn.addEventListener('click', function() {
+          var list = document.getElementById('p4-versions-list');
+          var open = list.classList.toggle('open');
+          p4ToggleBtn.innerHTML = (open ? '&#9652; Hide' : '&#9662; Show') +
+            ' older versions (' + document.querySelectorAll('#p4-versions-list .version-item').length + ')';
+        });
+      }
+      var p4VerBtns = p4Content.querySelectorAll('[data-p4-url]');
+      for (var bi = 0; bi < p4VerBtns.length; bi++) {
+        p4VerBtns[bi].addEventListener('click', function() {
+          var ver = this.getAttribute('data-p4-ver');
+          if (!confirm('Install P4 firmware ' + ver + '?\n\nThis is an older version \u2014 downgrading may cause issues.')) return;
+          installP4Update(ver, this.getAttribute('data-p4-url'));
         });
       }
 
@@ -1967,28 +2098,51 @@
     document.querySelectorAll('.section-header.collapsed').forEach(function(h) { h.click(); });
 
     var steps = [];
-    if (pendingUpdates.webui) steps.push('webui');
-    if (pendingUpdates.p4) steps.push('p4');
-    if (pendingUpdates.pico) steps.push('pico');
+    if (pendingUpdates.webui) steps.push({ key: 'webui', label: 'WebUI v' + pendingUpdates.webui.version });
+    if (pendingUpdates.p4) steps.push({ key: 'p4', label: 'P4 v' + pendingUpdates.p4.version });
+    if (pendingUpdates.pico) steps.push({ key: 'pico', label: 'Pico v' + pendingUpdates.pico.version });
+
+    // Build step tracker pills
+    var stepsEl = document.getElementById('ua-steps');
+    stepsEl.innerHTML = '';
+    steps.forEach(function(s) {
+      var pill = document.createElement('span');
+      pill.className = 'ua-step';
+      pill.id = 'ua-step-' + s.key;
+      pill.innerHTML = '<span class="ua-icon">\u25CB</span> ' + s.label;
+      stepsEl.appendChild(pill);
+    });
+    stepsEl.style.display = 'flex';
 
     var desc = document.getElementById('ua-desc');
 
     for (var i = 0; i < steps.length; i++) {
-      var stepNum = 'Step ' + (i + 1) + ' of ' + steps.length + ': ';
+      var pill = document.getElementById('ua-step-' + steps[i].key);
+      pill.className = 'ua-step active';
+      pill.querySelector('.ua-icon').textContent = '\u23F3';
+      desc.textContent = 'Installing ' + steps[i].label + '\u2026';
 
-      if (steps[i] === 'webui') {
-        desc.textContent = stepNum + 'Installing WebUI v' + pendingUpdates.webui.version + '\u2026';
-        await installOnlineUpdate(pendingUpdates.webui);
-      } else if (steps[i] === 'p4') {
-        desc.textContent = stepNum + 'Installing P4 Firmware v' + pendingUpdates.p4.version + '\u2026';
-        await installP4Update(pendingUpdates.p4.version, pendingUpdates.p4.url);
-      } else if (steps[i] === 'pico') {
-        desc.textContent = stepNum + 'Installing Pico Firmware v' + pendingUpdates.pico.version + '\u2026';
-        await installPicoUpdate(pendingUpdates.pico.version, pendingUpdates.pico.url);
+      var ok = false;
+      try {
+        if (steps[i].key === 'webui') {
+          await installOnlineUpdate(pendingUpdates.webui);
+          ok = true;
+        } else if (steps[i].key === 'p4') {
+          await installP4Update(pendingUpdates.p4.version, pendingUpdates.p4.url);
+          ok = true;
+        } else if (steps[i].key === 'pico') {
+          await installPicoUpdate(pendingUpdates.pico.version, pendingUpdates.pico.url);
+          ok = true;
+        }
+      } catch (e) {
+        // step failed
       }
+
+      pill.className = ok ? 'ua-step done' : 'ua-step fail';
+      pill.querySelector('.ua-icon').textContent = ok ? '\u2713' : '\u2717';
     }
 
-    desc.textContent = 'All updates processed. Check each section for results.';
+    desc.textContent = 'All updates processed.';
     btn.textContent = 'Done';
 
     if (needsReboot) {
@@ -2005,14 +2159,81 @@
   document.getElementById('reboot-btn').addEventListener('click', async function() {
     if (!confirm('Reboot the device now?\n\nThe device will disconnect briefly and reconnect.')) return;
     var btn = document.getElementById('reboot-btn');
+    var rbDesc = document.getElementById('rb-desc');
     btn.disabled = true;
-    btn.textContent = 'Rebooting...';
+    btn.textContent = 'Rebooting\u2026';
+
+    // Capture pre-reboot versions for comparison
+    var preP4 = firmwareVersion;
+    var prePico = currentPicoVersion;
+
     try {
       await fetch('/api/v2/device?action=reboot', { method: 'POST' });
     } catch(e) {
       // Expected — device disconnects immediately
     }
-    document.getElementById('rb-desc').textContent = 'Device is rebooting... Refresh this page in ~15 seconds.';
+
+    // Auto-reconnect: poll until device responds
+    rbDesc.textContent = 'Device is rebooting\u2026 waiting for reconnect.';
+    btn.textContent = 'Reconnecting\u2026';
+    var maxAttempts = 30;  // ~60 seconds at 2s intervals
+    var attempt = 0;
+    var reconnected = false;
+
+    while (attempt < maxAttempts) {
+      attempt++;
+      await new Promise(function(r) { setTimeout(r, 2000); });
+      rbDesc.textContent = 'Waiting for device\u2026 (' + attempt + '/' + maxAttempts + ')';
+      try {
+        var resp = await fetch('/api/v2/device?action=getIOCaps', {
+          signal: AbortSignal.timeout(3000)
+        });
+        if (resp.ok) { reconnected = true; break; }
+      } catch(e) {
+        // Still offline — keep polling
+      }
+    }
+
+    if (!reconnected) {
+      rbDesc.textContent = 'Could not reconnect. Please refresh this page manually.';
+      btn.textContent = 'Refresh';
+      btn.disabled = false;
+      btn.onclick = function() { location.reload(); };
+      return;
+    }
+
+    // Device is back — reload all versions
+    rbDesc.textContent = 'Device reconnected! Verifying versions\u2026';
+    await Promise.all([
+      loadCurrentVersion(),
+      loadFirmwareVersion(),
+      loadPicoVersion(),
+      loadFactoryVersion()
+    ]);
+
+    // Compare and report
+    var changes = [];
+    if (preP4 && firmwareVersion && preP4 !== firmwareVersion) {
+      changes.push('P4: ' + preP4 + ' \u2192 ' + firmwareVersion);
+    }
+    if (prePico && currentPicoVersion && prePico !== currentPicoVersion) {
+      changes.push('Pico: ' + prePico + ' \u2192 ' + currentPicoVersion);
+    }
+
+    needsReboot = false;
+    if (changes.length > 0) {
+      rbDesc.innerHTML = '\u2705 Reboot complete \u2014 ' + changes.join(', ');
+    } else {
+      rbDesc.textContent = '\u2705 Reboot complete \u2014 device is back online.';
+    }
+    btn.textContent = 'Refresh Page';
+    btn.disabled = false;
+    btn.onclick = function() { location.reload(); };
+
+    // Re-check for any remaining online updates
+    checkOnlineUpdate();
+    checkP4Update();
+    checkPicoUpdate();
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -2190,6 +2411,36 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // ══ SD Card Recovery ══════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════
+
+  function loadRecoveryInfo() {
+    var el = document.getElementById('recovery-content');
+    if (!latestCdnData || !latestCdnData.versions || latestCdnData.versions.length === 0) {
+      el.innerHTML = '<span class="checking">No recovery image available.</span>';
+      return;
+    }
+    var latest = latestCdnData.versions[0];
+    var sdUrl = latest.files && latest.files.sdcard ? CDN_BASE + latest.files.sdcard : null;
+    var hashUrl = latest.files && latest.files.hash ? CDN_BASE + latest.files.hash : null;
+
+    if (!sdUrl) {
+      el.innerHTML = '<span class="checking">No SD card image available for ' + escHtml(latest.tag) + '.</span>';
+      return;
+    }
+
+    var html = '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;">' +
+      '<a href="' + escAttr(sdUrl) + '" class="btn btn-primary btn-sm" download>' +
+      '&#128229; Download SD Image (' + escHtml(latest.tag) + ')</a>';
+    if (hashUrl) {
+      html += '<a href="' + escAttr(hashUrl) + '" class="btn btn-secondary btn-sm" download ' +
+        'style="font-size:0.72rem;">Hash file</a>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // ══ Unified Initialization ════════════════════════════════════
   // ═══════════════════════════════════════════════════════════════
 
@@ -2200,7 +2451,7 @@
     loadFactoryVersion()
   ]).then(function() {
     checkOnlineUpdate();
-    checkP4Update();
+    checkP4Update().then(loadRecoveryInfo);
     checkPicoUpdate();
   });
 
