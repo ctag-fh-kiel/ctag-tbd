@@ -99,9 +99,19 @@
   var presetSet = {};
   FACTORY_PRESETS.forEach(function(id) { presetSet[id] = true; });
 
-  // Factory edit unlock state (session only — resets on page reload)
-  var _unlocked = false;
+  // Factory edit unlock state — persisted across pages via sessionStorage
+  var _unlocked = sessionStorage.getItem('tbd-factory-unlocked') === '1';
   var FACTORY_PIN = '0000';
+
+  function _persistUnlock() {
+    if (_unlocked) {
+      sessionStorage.setItem('tbd-factory-unlocked', '1');
+    } else {
+      sessionStorage.removeItem('tbd-factory-unlocked');
+    }
+    // Dispatch event so footer lock icon can update
+    window.dispatchEvent(new CustomEvent('tbd-factory-lock-changed', { detail: { unlocked: _unlocked } }));
+  }
 
   /**
    * Show a Shoelace dialog asking for the factory PIN.
@@ -138,6 +148,7 @@
       var val = input ? input.value.trim() : '';
       if (val === FACTORY_PIN) {
         _unlocked = true;
+        _persistUnlock();
         dialog.hide();
         if (typeof onSuccess === 'function') onSuccess();
       } else {
@@ -167,13 +178,53 @@
     });
   }
 
+  /**
+   * Setup the footer lock button (present on both index.html and preset-macro-manager.html).
+   * - Click when locked → show PIN dialog
+   * - Click when unlocked → lock again
+   */
+  function setupFooterLock() {
+    var btn = document.getElementById('factory-lock-btn');
+    var icon = document.getElementById('factory-lock-icon');
+    if (!btn || !icon) return;
+
+    function updateIcon() {
+      icon.setAttribute('name', _unlocked ? 'unlock' : 'lock');
+      btn.classList.toggle('unlocked', _unlocked);
+      btn.title = _unlocked ? 'Factory Edit Mode (unlocked) — click to lock' : 'Factory Edit Mode — click to unlock';
+    }
+    updateIcon();
+
+    btn.addEventListener('click', function() {
+      if (_unlocked) {
+        _unlocked = false;
+        _persistUnlock();
+        updateIcon();
+        if (window.TBD.shared && window.TBD.shared.toast) {
+          window.TBD.shared.toast('Factory edit mode locked', 'neutral', 2000);
+        }
+      } else {
+        showPinDialog(function() {
+          updateIcon();
+          if (window.TBD.shared && window.TBD.shared.toast) {
+            window.TBD.shared.toast('Factory edit mode unlocked — factory files are now editable', 'warning', 3000);
+          }
+        });
+      }
+    });
+
+    // Listen for lock/unlock events from other code paths
+    window.addEventListener('tbd-factory-lock-changed', function() { updateIcon(); });
+  }
+
   window.TBD = window.TBD || {};
   window.TBD.factory = {
     isFactoryDefinition: function(id) { return defSet[id] === true; },
     isFactoryPreset: function(id) { return presetSet[id] === true; },
     isUnlocked: function() { return _unlocked; },
     showPinDialog: showPinDialog,
-    lock: function() { _unlocked = false; },
+    setupFooterLock: setupFooterLock,
+    lock: function() { _unlocked = false; _persistUnlock(); },
     FACTORY_DEFINITIONS: FACTORY_DEFINITIONS,
     FACTORY_PRESETS: FACTORY_PRESETS,
   };

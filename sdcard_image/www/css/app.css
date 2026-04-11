@@ -2580,3 +2580,27 @@ sl-dialog::part(footer) {
 .fv-body::-webkit-scrollbar-thumb:hover { background: rgba(121,121,121,0.7); }
 .fv-body::-webkit-scrollbar-corner { background: #1e1e1e; }
 
+/* ── Factory Lock Button ── */
+.factory-lock-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  background: none; border: 1px solid transparent;
+  border-radius: var(--sl-border-radius-medium);
+  color: var(--sl-color-neutral-400);
+  cursor: pointer; font-size: 0.85rem;
+  transition: all 0.15s;
+}
+.factory-lock-btn:hover {
+  color: var(--sl-color-neutral-600);
+  border-color: var(--sl-color-neutral-300);
+  background: var(--sl-color-neutral-200);
+}
+.factory-lock-btn.unlocked {
+  color: var(--sl-color-warning-600);
+  border-color: var(--sl-color-warning-300);
+  background: color-mix(in srgb, var(--sl-color-warning-200) 30%, transparent);
+}
+.factory-lock-btn.unlocked:hover {
+  background: color-mix(in srgb, var(--sl-color-warning-200) 50%, transparent);
+}
+

@@ -832,6 +832,11 @@
     // Config dialog (tabbed)
     setupConfigDialog();
 
+    // Factory lock button in footer
+    if (window.TBD.factory && window.TBD.factory.setupFooterLock) {
+      window.TBD.factory.setupFooterLock();
+    }
+
     // Debug panel
     setupDebugPanel();
 
@@ -915,6 +920,17 @@
     // If ?view=samples was requested, switch to it after a short delay
     if (requestedView === 'samples') {
       setTimeout(function() { switchView('view-samples'); }, 300);
+    }
+
+    // If ?openConfig=1 was requested, open config dialog after init
+    if (params.get('openConfig') === '1') {
+      setTimeout(function() {
+        loadConfiguration();
+        document.getElementById('config-dialog').show();
+        // Clean URL to avoid re-opening on refresh
+        var cleanUrl = window.location.pathname + (requestedView ? '?view=' + requestedView : '');
+        window.history.replaceState(null, '', cleanUrl);
+      }, 600);
     }
   }
 

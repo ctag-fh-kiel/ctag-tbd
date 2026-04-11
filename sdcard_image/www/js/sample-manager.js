@@ -3247,6 +3247,8 @@ async function openKitFromFile(path, name) {
     if (kitFileName) kitFileName.textContent = name;
     if (kitFileBadge) kitFileBadge.style.display = /^factory\//i.test(path || '') ? '' : 'none';
     if (kitControls) kitControls.style.display = 'none';
+    var kitCloseBtn = document.getElementById('kit-close-btn');
+    if (kitCloseBtn) kitCloseBtn.style.display = '';
     toast('Loaded kit: ' + name, 'neutral');
   } catch (e) {
     toast('Failed to open kit: ' + e.message, 'danger');
@@ -3376,6 +3378,25 @@ function closeFileViewer() {
   document.getElementById('kit-panel').classList.remove('viewer-active');
   state.fileViewerOpen = false;
   state.fileViewerData = null;
+}
+
+/** Close a file-loaded kit — restores the dropdown-based kit editor */
+function closeFileLoadedKit() {
+  state.kitFileSource = null;
+  var kitNav = document.getElementById('kit-file-nav');
+  if (kitNav) kitNav.style.display = 'none';
+  var kitFileToolbar = document.getElementById('kit-file-toolbar');
+  if (kitFileToolbar) kitFileToolbar.style.display = 'none';
+  var kitControls = document.querySelector('.kit-controls');
+  if (kitControls) kitControls.style.display = '';
+  var kitCloseBtn = document.getElementById('kit-close-btn');
+  if (kitCloseBtn) kitCloseBtn.style.display = 'none';
+  // Re-fetch the active device kit
+  fetchSampleList().then(function() {
+    renderSamplePool();
+    renderKitEditor();
+    updateCapacityBar();
+  }).catch(function() {});
 }
 
 /** Render JSON with pretty-print + syntax highlighting */
@@ -3994,6 +4015,12 @@ function downloadFile(path, name) {
 /** Setup file viewer event handlers */
 function setupFileViewer() {
   document.getElementById('fv-close').addEventListener('click', closeFileViewer);
+
+  // Kit Editor close button — closes file-loaded kit, restores dropdown mode
+  var kitCloseBtn = document.getElementById('kit-close-btn');
+  if (kitCloseBtn) {
+    kitCloseBtn.addEventListener('click', closeFileLoadedKit);
+  }
 
   // Kit Editor / JSON toggle — from Kit Editor side
   var kitLinkJson = document.getElementById('kit-link-json');

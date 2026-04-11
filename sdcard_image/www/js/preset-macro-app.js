@@ -24,7 +24,7 @@
     var btn = document.getElementById('config-btn');
     if (btn) {
       btn.addEventListener('click', function() {
-        S.toast('Settings panel (coming soon)', 'neutral', 2000);
+        window.location.href = '/index.html?view=plugins&openConfig=1';
       });
     }
   }
@@ -203,6 +203,11 @@
     setupCenterSubTabs();
     setupPresetExportImport();
     setupKeyboard();
+
+    // Factory lock button in footer
+    if (window.TBD.factory && window.TBD.factory.setupFooterLock) {
+      window.TBD.factory.setupFooterLock();
+    }
 
     // Load shared data, then init modules
     S.loadSharedData().then(function() {

@@ -23,6 +23,7 @@ BUNDLE_SOURCES=(
   js/Sortable.min.js
   js/webaudio-controls.js
   js/shared.js
+  js/factory-manifest.js
   js/display-hints.js
   js/plugin-manager.js
   js/sample-manager.js

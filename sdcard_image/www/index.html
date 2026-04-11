@@ -1103,6 +1103,28 @@
       flex-shrink: 0; overflow: hidden;
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
+    .factory-lock-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px;
+      background: none; border: 1px solid transparent;
+      border-radius: var(--sl-border-radius-medium);
+      color: var(--sl-color-neutral-400);
+      cursor: pointer; font-size: 0.85rem;
+      transition: all 0.15s;
+    }
+    .factory-lock-btn:hover {
+      color: var(--sl-color-neutral-600);
+      border-color: var(--sl-color-neutral-300);
+      background: var(--sl-color-neutral-200);
+    }
+    .factory-lock-btn.unlocked {
+      color: var(--sl-color-warning-600);
+      border-color: var(--sl-color-warning-300);
+      background: color-mix(in srgb, var(--sl-color-warning-200) 30%, transparent);
+    }
+    .factory-lock-btn.unlocked:hover {
+      background: color-mix(in srgb, var(--sl-color-warning-200) 50%, transparent);
+    }
     .status-footer-inner {
       display: flex; align-items: center;
       padding: 0.35rem 0.75rem;
@@ -2356,8 +2378,8 @@
             <div class="pool-breadcrumb" id="pool-breadcrumb">
               <span class="pool-breadcrumb-current">/</span>
             </div>
-            <sl-button size="small" variant="default" class="pool-toolbar-btn" id="select-mode-btn">Select</sl-button>
-            <sl-button size="small" variant="default" class="pool-toolbar-btn" id="new-folder-btn">New Folder</sl-button>
+            <sl-button size="small" variant="default" class="pool-toolbar-btn" id="select-mode-btn"><sl-icon slot="prefix" name="check2-square"></sl-icon>Select</sl-button>
+            <sl-button size="small" variant="default" class="pool-toolbar-btn" id="new-folder-btn"><sl-icon slot="prefix" name="folder-plus"></sl-icon>New Folder</sl-button>
             <sl-button size="small" variant="primary" class="pool-toolbar-btn" id="upload-btn">
               Upload<sl-icon slot="suffix" name="chevron-down" style="font-size:0.75rem;"></sl-icon>
             </sl-button>
@@ -2411,6 +2433,7 @@
                 <sl-switch id="view-toggle" size="small" checked></sl-switch>
                 <label>Banks</label>
               </div>
+              <sl-icon-button name="x-lg" label="Close" id="kit-close-btn" title="Close kit file" style="font-size:0.9rem;display:none;"></sl-icon-button>
             </div>
           </div>
           <div class="kit-file-toolbar" id="kit-file-toolbar" style="display:none;">
@@ -2555,6 +2578,9 @@
            style="font-size:0.65rem;color:var(--sl-color-neutral-400);text-decoration:none;white-space:nowrap;"
            title="WebUI Updater"></a>
         <div class="status-footer-spacer"></div>
+        <button class="factory-lock-btn" id="factory-lock-btn" title="Factory Edit Mode">
+          <sl-icon name="lock" id="factory-lock-icon"></sl-icon>
+        </button>
         <button class="debug-toggle-btn" id="debug-toggle" title="Toggle Debug Panel">
           <sl-icon name="terminal"></sl-icon> Debug
         </button>
