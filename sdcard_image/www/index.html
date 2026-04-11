@@ -1807,6 +1807,10 @@
       background: color-mix(in srgb, var(--sl-color-success-200) 60%, transparent);
       color: var(--sl-color-success-800);
     }
+    .td-type-master {
+      background: color-mix(in srgb, var(--sl-color-purple-200, #ddd6fe) 60%, transparent);
+      color: var(--sl-color-purple-800, #5b21b6);
+    }
     .td-select {
       width: 100%;
       padding: 0.3rem 0.5rem;
@@ -2024,6 +2028,10 @@
     .pv-tab.pv-tab-fx.active .pv-tab-num { background: var(--sl-color-success-200); color: var(--sl-color-success-800); }
     .pv-tab.pv-tab-fx.active { background: color-mix(in srgb, var(--sl-color-success-200) 18%, transparent); }
     .pv-tab.pv-tab-fx.active::after { background: var(--sl-color-success-500); }
+    .pv-tab.pv-tab-master .pv-tab-num { background: color-mix(in srgb, var(--sl-color-purple-200, #ddd6fe) 60%, transparent); color: var(--sl-color-purple-800, #5b21b6); }
+    .pv-tab.pv-tab-master.active .pv-tab-num { background: var(--sl-color-purple-200, #ddd6fe); color: var(--sl-color-purple-800, #5b21b6); }
+    .pv-tab.pv-tab-master.active { background: color-mix(in srgb, var(--sl-color-purple-200, #ddd6fe) 18%, transparent); }
+    .pv-tab.pv-tab-master.active::after { background: var(--sl-color-purple-500, #8b5cf6); }
     .pv-tab-name {
       font-size: 0.5rem; font-weight: 600;
       color: var(--sl-color-neutral-600);
@@ -2044,6 +2052,7 @@
     .pv-type-drum { background: color-mix(in srgb, var(--sl-color-warning-200) 60%, transparent); color: var(--sl-color-warning-800); }
     .pv-type-synth { background: color-mix(in srgb, var(--sl-color-primary-200) 60%, transparent); color: var(--sl-color-primary-800); }
     .pv-type-fx { background: color-mix(in srgb, var(--sl-color-success-200) 60%, transparent); color: var(--sl-color-success-800); }
+    .pv-type-master { background: color-mix(in srgb, var(--sl-color-purple-200, #ddd6fe) 60%, transparent); color: var(--sl-color-purple-800, #5b21b6); }
 
     /* Track detail panel */
     .pv-detail { padding: 0.75rem; }

@@ -827,6 +827,8 @@ function renderTrackOverview() {
   var html = '';
   sharedData.tracks.forEach(function(track) {
     var classes = 'track-strip';
+    if (track.type === 'drum') classes += ' track-drum';
+    else if (track.type === 'synth') classes += ' track-synth';
     if (track.index >= 16 && track.index <= 17) classes += ' track-fx';
     if (track.index === 18) classes += ' track-master';
     if (track.index === sharedData.activeTrack) classes += ' active';

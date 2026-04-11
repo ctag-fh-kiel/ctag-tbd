@@ -2840,6 +2840,8 @@ function renderTrackOverview() {
   var html = '';
   sharedData.tracks.forEach(function(track) {
     var classes = 'track-strip';
+    if (track.type === 'drum') classes += ' track-drum';
+    else if (track.type === 'synth') classes += ' track-synth';
     if (track.index >= 16 && track.index <= 17) classes += ' track-fx';
     if (track.index === 18) classes += ' track-master';
     if (track.index === sharedData.activeTrack) classes += ' active';
@@ -9521,8 +9523,8 @@ function pvParseBinary(buffer) {
 function pvTrackType(track) {
   var id = typeof track === 'string' ? track : (track.macroDefId || '');
   if (/^(db|fmb|ds|hh[12]?|rs|cl|smp|drs|cp)-/i.test(id)) return 'drum';
-  if (/^(fx|fxdelay|fxreverb|fxmaster)-/i.test(id)) return 'fx';
-  if (/^(inp)-/i.test(id)) return 'fx';
+  if (/^fxmaster-/i.test(id)) return 'master';
+  if (/^(fx|fxdelay|fxreverb)-/i.test(id)) return 'fx';
   // Rompler: use group to decide — low groups (0,1) are typically drum, higher are synth
   if (/^ro-/i.test(id) && typeof track === 'object' && track.group <= 1) return 'drum';
   return 'synth';
@@ -10672,14 +10674,16 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
 
       // Track type badge
       var typeClass = 'td-type-badge';
-      if (track.type === 'drum')  typeClass += ' td-type-drum';
+      var isMaster = track.index === 18 || (track.machines && track.machines.indexOf('fxmaster') >= 0);
+      if (isMaster) typeClass += ' td-type-master';
+      else if (track.type === 'drum')  typeClass += ' td-type-drum';
       else if (track.type === 'synth') typeClass += ' td-type-synth';
       else if (track.type === 'fx')    typeClass += ' td-type-fx';
 
       html += '<div class="td-row" data-track="' + idx + '">';
       html += '<span class="td-col-idx">' + String(idx + 1).padStart(2, '0') + '</span>';
       html += '<span class="td-col-name">' + S.esc(track.name) + '</span>';
-      html += '<span class="td-col-type"><span class="' + typeClass + '">' + S.esc(track.type) + '</span></span>';
+      html += '<span class="td-col-type"><span class="' + typeClass + '">' + S.esc(isMaster ? 'master' : track.type) + '</span></span>';
 
       // Machine dropdown — same options as the main UI MACHINE: dropdown
       html += '<span class="td-col-engine">';

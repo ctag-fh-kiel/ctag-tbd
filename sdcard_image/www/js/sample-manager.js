@@ -3988,8 +3988,8 @@ function pvParseBinary(buffer) {
 function pvTrackType(track) {
   var id = typeof track === 'string' ? track : (track.macroDefId || '');
   if (/^(db|fmb|ds|hh[12]?|rs|cl|smp|drs|cp)-/i.test(id)) return 'drum';
-  if (/^(fx|fxdelay|fxreverb|fxmaster)-/i.test(id)) return 'fx';
-  if (/^(inp)-/i.test(id)) return 'fx';
+  if (/^fxmaster-/i.test(id)) return 'master';
+  if (/^(fx|fxdelay|fxreverb)-/i.test(id)) return 'fx';
   // Rompler: use group to decide — low groups (0,1) are typically drum, higher are synth
   if (/^ro-/i.test(id) && typeof track === 'object' && track.group <= 1) return 'drum';
   return 'synth';

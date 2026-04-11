@@ -640,14 +640,16 @@
 
       // Track type badge
       var typeClass = 'td-type-badge';
-      if (track.type === 'drum')  typeClass += ' td-type-drum';
+      var isMaster = track.index === 18 || (track.machines && track.machines.indexOf('fxmaster') >= 0);
+      if (isMaster) typeClass += ' td-type-master';
+      else if (track.type === 'drum')  typeClass += ' td-type-drum';
       else if (track.type === 'synth') typeClass += ' td-type-synth';
       else if (track.type === 'fx')    typeClass += ' td-type-fx';
 
       html += '<div class="td-row" data-track="' + idx + '">';
       html += '<span class="td-col-idx">' + String(idx + 1).padStart(2, '0') + '</span>';
       html += '<span class="td-col-name">' + S.esc(track.name) + '</span>';
-      html += '<span class="td-col-type"><span class="' + typeClass + '">' + S.esc(track.type) + '</span></span>';
+      html += '<span class="td-col-type"><span class="' + typeClass + '">' + S.esc(isMaster ? 'master' : track.type) + '</span></span>';
 
       // Machine dropdown — same options as the main UI MACHINE: dropdown
       html += '<span class="td-col-engine">';

@@ -251,30 +251,54 @@ body {
 }
 /* Track-machine info removed from overview strip */
 
-/* FX & Master track distinct colors */
+/* Track-type colors — aligned with Track Setup / Project Viewer badges */
+.track-strip.track-drum .track-num {
+  background: color-mix(in srgb, var(--sl-color-warning-300) 80%, transparent); color: var(--sl-color-warning-900);
+}
+.track-strip.track-drum.active .track-num {
+  background: var(--sl-color-warning-400); color: var(--sl-color-warning-950);
+}
+.track-strip.track-drum.active {
+  background: color-mix(in srgb, var(--sl-color-warning-200) 18%, transparent);
+}
+.track-strip.track-drum.active::after {
+  background: var(--sl-color-warning-500);
+}
+.track-strip.track-synth .track-num {
+  background: color-mix(in srgb, var(--sl-color-primary-300) 80%, transparent); color: var(--sl-color-primary-900);
+}
+.track-strip.track-synth.active .track-num {
+  background: var(--sl-color-primary-400); color: var(--sl-color-primary-950);
+}
+.track-strip.track-synth.active {
+  background: color-mix(in srgb, var(--sl-color-primary-200) 18%, transparent);
+}
+.track-strip.track-synth.active::after {
+  background: var(--sl-color-primary-500);
+}
 .track-strip.track-fx .track-num {
-  background: var(--sl-color-purple-600, #7c3aed);
+  background: color-mix(in srgb, var(--sl-color-success-300) 80%, transparent); color: var(--sl-color-success-900);
 }
 .track-strip.track-fx.active .track-num {
-  background: var(--sl-color-purple-700, #6d28d9);
+  background: var(--sl-color-success-400); color: var(--sl-color-success-950);
 }
 .track-strip.track-fx.active {
-  background: color-mix(in srgb, var(--sl-color-purple-600, #7c3aed) 15%, transparent);
+  background: color-mix(in srgb, var(--sl-color-success-200) 18%, transparent);
 }
 .track-strip.track-fx.active::after {
-  background: var(--sl-color-purple-600, #7c3aed);
+  background: var(--sl-color-success-500);
 }
 .track-strip.track-master .track-num {
-  background: var(--sl-color-amber-600, #d97706);
+  background: color-mix(in srgb, var(--sl-color-purple-300, #c4b5fd) 80%, transparent); color: var(--sl-color-purple-900, #4c1d95);
 }
 .track-strip.track-master.active .track-num {
-  background: var(--sl-color-amber-700, #b45309);
+  background: var(--sl-color-purple-400, #a78bfa); color: var(--sl-color-purple-950, #2e1065);
 }
 .track-strip.track-master.active {
-  background: color-mix(in srgb, var(--sl-color-amber-600, #d97706) 15%, transparent);
+  background: color-mix(in srgb, var(--sl-color-purple-200, #ddd6fe) 18%, transparent);
 }
 .track-strip.track-master.active::after {
-  background: var(--sl-color-amber-600, #d97706);
+  background: var(--sl-color-purple-500, #8b5cf6);
 }
 
 /* ── (Preset browser now in sidebar — see .sidebar styles above) ── */
