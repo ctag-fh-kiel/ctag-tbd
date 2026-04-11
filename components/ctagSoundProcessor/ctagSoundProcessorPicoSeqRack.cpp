@@ -676,6 +676,25 @@ void ctagSoundProcessorPicoSeqRack::handleMidiControlChange(const uint8_t channe
     }
 };
 
+void ctagSoundProcessorPicoSeqRack::handleMidiControlChangeNRPM(const uint8_t channel, const uint8_t control, const uint16_t value) {
+    int cv_value = ((int)value * 4096) / 16384;
+    int key = CC_TO_MAP_KEY(channel, control);
+
+    auto it = pMapParCC.find(key);
+    if (it != pMapParCC.end()) {
+        // ESP_LOGI("ctagSoundProcessorPicoSeqRack", "MIDI: CC %d, %d, %d (cv %d) (Set)", channel, control, value, cv_value);
+        // TODO: Write directly to devices?.
+        for(auto& listener : it->second){
+            listener(cv_value);
+            // if (dev->handlesCC(channel, control)){
+            //     dev->setParameterForCC(control, cv_value);
+            // }
+        }
+    } else {
+        // ESP_LOGI("ctagSoundProcessorPicoSeqRack", "MIDI: CC %d, %d, %d (Unhandled)", channel, control, value);
+    }
+};
+
 static void dumpMemoryUsage() {
     uint32_t freeSize = esp_get_free_heap_size();
 	printf("The available total size of heap:%" PRIu32 "\n", freeSize);
@@ -1256,7 +1275,8 @@ void ctagSoundProcessorPicoSeqRack::setTrackBank(const uint8_t trackIndex, const
 }
 
 void ctagSoundProcessorPicoSeqRack::handleMidiNoteOn(const uint8_t channel, uint8_t note, uint8_t velocity) {
-    // printf("PicoSeqRack: handleMidiNoteOn(channel=%d, note=%d, velocity=%d)\n", channel, note, velocity);
+    printf("PicoSeqRack: handleMidiNoteOn(channel=%d, note=%d, velocity=%d)\n", channel, note, velocity);
+
     if (channel == 9) {
         if (note == 36) {
             if (ch1_ab.enabled) {
@@ -1605,5 +1625,3 @@ void ctagSoundProcessorPicoSeqRack::handleMidiNoteOff(const uint8_t channel, uin
     }
 }
 
-void ctagSoundProcessorPicoSeqRack::handleMidiControlChangePair(const uint8_t channel, uint8_t firstcontrol, uint16_t value) {
-}

@@ -39,6 +39,8 @@ respective component folders / files if different from this license.
 
 #include "MacroSoundPresetDataModel.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
+#include "SynthDefinitionDataModel.hpp"
+#include "SynthDefinition.hpp"
 
 #include "link.hpp"
 
@@ -748,32 +750,53 @@ namespace CTAG::SPIAPI{
                 break;
             case RequestType::DisableFileTransferMode:
                 break;
-            case RequestType::GetSynthDefinitionsJSON:
+            case RequestType::GetSynthListJSON:
                 {
-                    std::string json = "{}";
-                    const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/synthdefinitions.json";
-                    FILE *f = fopen(path.c_str(), "r");
-                    if (f) {
-                        fseek(f, 0, SEEK_END);
-                        long sz = ftell(f);
-                        fseek(f, 0, SEEK_SET);
-                        if (sz > 0 && sz < 8192) {
-                            char *buf = (char*)malloc(sz + 1);
-                            if (buf) {
-                                fread(buf, 1, sz, f);
-                                buf[sz] = '\0';
-                                json = buf;
-                                free(buf);
-                            }
-                        }
-                        fclose(f);
-                        ESP_LOGI("SpiAPI", "GetSynthDefinitionsJSON: loaded %ld bytes from synthdefinitions.json", sz);
-                    } else {
-                        ESP_LOGW("SpiAPI", "GetSynthDefinitionsJSON: synthdefinitions.json not found, returning {}");
-                    }
-                    result = transmitCString(requestType, json.c_str());
+#if CONFIG_TBD_USE_SD_CARD
+                    std::string listjson = "{}";
+                    CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->SerializeListJSON(&listjson);
+                    result = transmitCString(requestType, listjson.c_str());
+                }
+#endif
+                break;
+            case RequestType::GetSynthDefinitionJSON:
+                {
+#if CONFIG_TBD_USE_SD_CARD
+                    std::string synthId = string_parameter;
+                    ESP_LOGI("SpiAPI", "Getting synth definition %s", synthId.c_str());
+                    std::string synthjson = "{}";
+                    auto def = CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->GetSynthDefinition(synthId);
+                    CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_SerializeJSON(def, &synthjson);
+                    result = transmitCString(requestType, synthjson.c_str());
+#endif
                 }
                 break;
+            // case RequestType::GetSynthDefinitionsJSON:
+            //     {
+            //         std::string json = "{}";
+            //         const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/synthdefinitions.json";
+            //         FILE *f = fopen(path.c_str(), "r");
+            //         if (f) {
+            //             fseek(f, 0, SEEK_END);
+            //             long sz = ftell(f);
+            //             fseek(f, 0, SEEK_SET);
+            //             if (sz > 0 && sz < 8192) {
+            //                 char *buf = (char*)malloc(sz + 1);
+            //                 if (buf) {
+            //                     fread(buf, 1, sz, f);
+            //                     buf[sz] = '\0';
+            //                     json = buf;
+            //                     free(buf);
+            //                 }
+            //             }
+            //             fclose(f);
+            //             ESP_LOGI("SpiAPI", "GetSynthDefinitionsJSON: loaded %ld bytes from synthdefinitions.json", sz);
+            //         } else {
+            //             ESP_LOGW("SpiAPI", "GetSynthDefinitionsJSON: synthdefinitions.json not found, returning {}");
+            //         }
+            //         result = transmitCString(requestType, json.c_str());
+            //     }
+            //     break;
             case RequestType::GetMacroMachineDefinitionsJSON:
                 {
                     std::string info = "{\"status\":\"not implemented\"}";
@@ -856,7 +879,7 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     int trackIndex = uint8_param_0;
-                    std::string machineId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
+                    std::string machineId = string_parameter;
                     ESP_LOGI("SpiAPI", "Activating track %d machine %s", trackIndex, machineId.c_str());
                     CTAG::AUDIO::SoundProcessorManager::ActivateTrackMachine(trackIndex, machineId);
                     // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();

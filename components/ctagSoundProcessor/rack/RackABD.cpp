@@ -30,7 +30,7 @@ void RackABD::Init(const PickSeqRackInitData *initdata) {
     initdata->rack->registerParamAndCC(initdata, "a_fm", 11, [&](const int val){ a_fm = val;});
     initdata->rack->registerParamAndCC(initdata, "s_fm", 12, [&](const int val){ s_fm = val;});
     initdata->rack->registerParamAndCC(initdata, "accent", 13, [&](const int val){ accent = val;});
-    
+
     this->enabled = false;
 }
 

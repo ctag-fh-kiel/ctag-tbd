@@ -18,6 +18,7 @@ respective component folders / files if different from this license.
 #include "SynthDefinition.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 
 using namespace CTAG::MACROPRESETS;
@@ -88,6 +89,53 @@ bool CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_DeserializeJSON(s
             index ++;
         }
     }
+
+    return true;
+}
+
+bool CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_SerializeJSON(struct SynthDefinition *def, std::string *jsonoutput) {
+    *jsonoutput = "{\"dummy\":42}";
+
+
+
+    Document d;
+
+    d.SetObject();
+
+    d.AddMember("id", Value(def->id, d.GetAllocator()), d.GetAllocator());
+    d.AddMember("name", Value(def->name, d.GetAllocator()), d.GetAllocator());
+
+    Value paramsarray(kArrayType);
+    d.AddMember("parameters", paramsarray, d.GetAllocator());
+    for(int i=0; i<MaxSynthDefinitionParameters; i++) {
+        if (def->parameters[i].id[0] == '\0') {
+            continue;
+        }
+
+        Value param(kObjectType);
+        param.AddMember("id", Value(def->parameters[i].id, d.GetAllocator()), d.GetAllocator());
+        param.AddMember("name", Value(def->parameters[i].name, d.GetAllocator()), d.GetAllocator());
+        std::string typestring;
+        if (def->parameters[i].type == SynthParameterType_CC) {
+            typestring = "cc";
+        } else if (def->parameters[i].type == SynthParameterType_NRPM) {
+            typestring = "nrpm";
+        } else {
+            typestring = "none";
+        }
+        param.AddMember("type", Value(typestring.c_str(), d.GetAllocator()), d.GetAllocator());
+        param.AddMember("ctrl", def->parameters[i].cc, d.GetAllocator());
+        param.AddMember("def", def->parameters[i].defaultValue, d.GetAllocator());
+
+        d["parameters"].PushBack(param, d.GetAllocator());
+    }
+
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+    d.Accept(writer);
+    ESP_LOGD("SynthDefinitionUtils", "JSON string %s", buffer.GetString());
+
+    jsonoutput->assign(buffer.GetString());
 
     return true;
 }

@@ -33,6 +33,11 @@ namespace CTAG {
             Exp    = 2,   // Exponential: for decay/envelope times (resolution for short times)
         };
 
+        enum CtrlType : uint8_t {
+            CtrlType_CC = 1,
+            CtrlType_NRPM = 2,
+        };
+
         struct MacroDeviceOutputMappingSource {
             uint8_t parameterIndex;
             int32_t multiplier;
@@ -42,6 +47,7 @@ namespace CTAG {
 
         struct MacroDeviceOutputMapping {
             uint8_t ctrl;
+            enum CtrlType ctrltype;
             int16_t startValue;
             struct MacroDeviceOutputMappingSource sources[MaxOutputMappingSources];
         };

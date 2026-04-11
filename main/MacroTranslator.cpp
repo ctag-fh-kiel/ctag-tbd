@@ -77,6 +77,12 @@ void MacroTranslator::Init() {
         strcpy(trackSampleBankName[i], "");
         trackSampleBankIndex[i] = 0;
         trackDirty[i] = false;
+
+        nrpm_number_lsb[i] = 0;
+        nrpm_number_msb[i] = 0;
+        nrpm_value_lsb[i] = 0;
+        nrpm_value_msb[i] = 0;
+
         MacroDeviceDefinitionUtils::MacroDeviceDefinition_Reset(&definitions[i]);
 
         for (int j = 0; j < 32; j++) {
@@ -129,6 +135,13 @@ void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string sy
 
         if (par.type == SynthParameterType_CC) {
             soundProcessor->handleMidiControlChange(
+                trackDef->midiChannel,
+                trackBaseCC[trackIndex] + par.cc,
+                par.defaultValue
+            );
+        }
+        if (par.type == SynthParameterType_NRPM) {
+            soundProcessor->handleMidiControlChangeNRPM(
                 trackDef->midiChannel,
                 trackBaseCC[trackIndex] + par.cc,
                 par.defaultValue
@@ -369,26 +382,80 @@ void MacroTranslator::parseIncomingMidiMessages(const uint8_t *buf, const size_t
                 uint8_t value = buf[o++];
                 left -= 2;
 
-                // ESP_LOGI("MacroTranslator", "got cc %d = %d on channel %d", control, value, inputchannel);
+                // TODO: support NRPM
+                if (control == 98) {
+                    // NRPM number LSB
 
-                uint8_t mapped = false;
-                for(int t=0; t<16; t++) {
-                    if (trackToMidiChannel[t] == inputchannel) {
-                        int macrocc = (int)control - trackBaseCC[t];
-                        macrocc -= 8; // input parameter CC's start at 8 too and...
-                        if (macrocc >= 0 && macrocc < 24) {
-                            // ESP_LOGI("MacroTranslator", "  -> track %d param %d = %d (baseCC=%d)", t, macrocc, value, trackBaseCC[t]);
-                            this->SetTrackParameter(t, macrocc, value);
-                            mapped = true;
+                    nrpm_number_lsb[inputchannel] = value;
+
+                } else if(control == 99) {
+                    // NRPM number MSB
+                    nrpm_number_msb[inputchannel] = value;
+
+                } else if(control == 38) {
+                    // NRPM value LSB
+                    nrpm_value_lsb[inputchannel] = value;
+
+                } else if(control == 6) {
+                    // NRPM value MSB
+                    nrpm_value_msb[inputchannel] = value;
+
+                    int16_t number2 = (nrpm_number_msb[inputchannel] << 7) + nrpm_number_lsb[inputchannel];
+                    int16_t value2 = (nrpm_value_msb[inputchannel] << 7) + nrpm_value_lsb[inputchannel];
+
+                    // ESP_LOGI("MacroTranslator", "Received NRPM on channel %d: number %d|%d (%d), value %d|%d (%d)",
+                    //     inputchannel,
+                    //     nrpm_number_msb[inputchannel] , nrpm_number_lsb[inputchannel],
+                    //     number2,
+                    //     nrpm_value_msb[inputchannel] , nrpm_value_lsb[inputchannel],
+                    //     value2
+                    // );
+
+                    // actually set value.
+
+                    uint8_t mapped = false;
+                    for(int t=0; t<16; t++) {
+                        if (trackToMidiChannel[t] == inputchannel) {
+                            int macrocc = (int)number2 - trackBaseCC[t];
+                            macrocc -= 8; // input parameter CC's start at 8 too and...
+                            if (macrocc >= 0 && macrocc < 24) {
+                                // ESP_LOGI("MacroTranslator", "  -> track %d param %d = %d (baseCC=%d)", t, macrocc, value, trackBaseCC[t]);
+                                this->SetTrackParameter(t, macrocc, value2);
+                                mapped = true;
+                            }
                         }
                     }
-                }
 
-                if (!mapped) {
-                    // ESP_LOGI("MacroTranslator", "  -> no track mapped to MIDI channel %d", inputchannel);
-                    this->soundProcessor->handleMidiControlChange(inputchannel, control, value);
-                }
+                    if (!mapped) {
+                        // ESP_LOGI("MacroTranslator", "  -> no track mapped to MIDI channel %d", inputchannel);
+                        this->soundProcessor->handleMidiControlChangeNRPM(inputchannel, control, value);
+                    }
 
+                } else {
+                    // regular control change, continue with normal processing
+
+
+
+                    // ESP_LOGI("MacroTranslator", "got cc %d = %d on channel %d", control, value, inputchannel);
+
+                    uint8_t mapped = false;
+                    for(int t=0; t<16; t++) {
+                        if (trackToMidiChannel[t] == inputchannel) {
+                            int macrocc = (int)control - trackBaseCC[t];
+                            macrocc -= 8; // input parameter CC's start at 8 too and...
+                            if (macrocc >= 0 && macrocc < 24) {
+                                // ESP_LOGI("MacroTranslator", "  -> track %d param %d = %d (baseCC=%d)", t, macrocc, value, trackBaseCC[t]);
+                                this->SetTrackParameter(t, macrocc, value);
+                                mapped = true;
+                            }
+                        }
+                    }
+
+                    if (!mapped) {
+                        // ESP_LOGI("MacroTranslator", "  -> no track mapped to MIDI channel %d", inputchannel);
+                        this->soundProcessor->handleMidiControlChange(inputchannel, control, value);
+                    }
+                }
                 break;
             }
             case 0xC0: // program change
@@ -479,15 +546,27 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
                     }
 
                     // TODO: support NRPM
+                   
+                    if (om->ctrltype == CtrlType_CC)  {
+                        if (finalvalue < 0) finalvalue = 0;
+                        if (finalvalue > 127) finalvalue = 127;
+                        
+                        int midichannel = trackToMidiChannel[t];
+                        if (om->ctrl != -1) {
+                            outputValues[t][idx] = finalvalue;
+                            int finalcc = om->ctrl + trackBaseCC[t];
+                            soundProcessor->handleMidiControlChange(midichannel, finalcc, finalvalue);
+                        }
+                    } else if (om->ctrltype == CtrlType_NRPM) {
+                        if (finalvalue < 0) finalvalue = 0;
+                        if (finalvalue > 16383) finalvalue = 16383;
 
-                    if (finalvalue < 0) finalvalue = 0;
-                    if (finalvalue > 127) finalvalue = 127;
-
-                    int midichannel = trackToMidiChannel[t];
-                    if (om->ctrl != -1) {
-                        outputValues[t][idx] = finalvalue;
-                        int finalcc = om->ctrl + trackBaseCC[t];
-                        soundProcessor->handleMidiControlChange(midichannel, finalcc, finalvalue);
+                        int midichannel = trackToMidiChannel[t];
+                        if (om->ctrl != -1) {
+                            outputValues[t][idx] = finalvalue;
+                            int finalcc = om->ctrl + trackBaseCC[t];
+                            soundProcessor->handleMidiControlChangeNRPM(midichannel, finalcc, finalvalue);
+                        }
                     }
                     idx ++;
                 }

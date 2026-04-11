@@ -42,6 +42,10 @@ namespace CTAG {
                 char trackSampleBankName[16][16];
                 uint16_t trackSampleBankIndex[16];
                 MacroDeviceDefinition *definitions;
+                uint8_t nrpm_number_lsb[16];
+                uint8_t nrpm_number_msb[16];
+                uint8_t nrpm_value_lsb[16];
+                uint8_t nrpm_value_msb[16];
 
                 void parseIncomingMidiMessages(const uint8_t *buf, const size_t len);
 

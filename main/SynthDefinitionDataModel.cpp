@@ -127,7 +127,6 @@ bool SynthDefinitionDataModel::DeserializeJSON(const rapidjson::Value &jsoneleme
 }
 
 void SynthDefinitionDataModel::SerializeListJSON(std::string *output) {
-    // Implement serialization logic here
     Document d;
 
     d.SetObject();
@@ -135,6 +134,10 @@ void SynthDefinitionDataModel::SerializeListJSON(std::string *output) {
     Value machinesarray(kArrayType);
     d.AddMember("machines", machinesarray, d.GetAllocator());
     for(int i=0; i<MAX_SYNTHS; i++) {
+        if (synths[i].id[0] == '\0') {
+            continue;
+        }
+
         Value machineid = Value(synths[i].id, d.GetAllocator());
         d["machines"].PushBack(machineid, d.GetAllocator());
     }
