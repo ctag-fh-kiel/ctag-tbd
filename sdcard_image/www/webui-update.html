@@ -45,22 +45,25 @@
 
     /* Header */
     .app-header {
-      display: flex; align-items: center; gap: 0.75rem;
+      display: flex; align-items: center;
       padding: 0 1.5rem; height: 48px;
       background: hsl(240 4.8% 95.9%); /* neutral-100 */
       border-bottom: 1px solid var(--border);
       max-width: 720px; margin: 0 auto;
       border-radius: 0 0 var(--radius) var(--radius);
     }
-    .app-header h1 { font-size: 0.95rem; font-weight: 700; white-space: nowrap; }
-    .header-nav {
-      display: flex; align-items: center; gap: 0.75rem;
-      margin-left: auto; font-size: 0.78rem;
+    .header-back {
+      display: flex; align-items: center; gap: 0.35rem;
+      color: var(--accent); text-decoration: none; font-size: 0.82rem; font-weight: 500;
+      white-space: nowrap; flex-shrink: 0;
     }
-    .header-nav a {
-      color: var(--accent); text-decoration: none; font-weight: 500;
+    .header-back:hover { text-decoration: underline; }
+    .header-title {
+      flex: 1; text-align: center;
+      font-size: 0.88rem; font-weight: 700; color: var(--fg);
+      white-space: nowrap;
     }
-    .header-nav a:hover { text-decoration: underline; }
+    .header-spacer { width: 60px; flex-shrink: 0; } /* balance the back link */
 
     /* Version cards */
     .version-row { display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
@@ -370,11 +373,9 @@
 </head>
 <body>
 <div class="app-header">
-  <h1>&#9881; System Updater</h1>
-  <div class="header-nav">
-    <a href="/">&#8592; TBD-16</a>
-    <a href="/preset-macro-manager.html">Presets &amp; Macros</a>
-  </div>
+  <a href="/" class="header-back">&#8592; TBD-16</a>
+  <span class="header-title">System Updater</span>
+  <span class="header-spacer"></span>
 </div>
 <div class="container">
 
@@ -590,32 +591,11 @@
     </div>
   </div>
 
-  <!-- ═══ SD Card Recovery ═══ -->
-  <div class="section-header collapsed" id="section-recovery-header">
-    <span class="section-chevron">&#9660;</span>
-    <span class="section-title">SD Card Recovery</span>
-  </div>
-  <div class="section-body collapsed" id="section-recovery-body" style="max-height:600px;">
-    <div class="backup-section">
-      <p class="backup-desc">If your device won&rsquo;t boot or the SD card is corrupted, you can
-        re-flash the full SD card image to restore factory state.</p>
-      <div id="recovery-content"><span class="checking">Loading recovery info&hellip;</span></div>
-      <div style="margin-top:0.75rem;padding:0.75rem;background:var(--bg2);border-radius:var(--radius);font-size:0.78rem;line-height:1.5;color:var(--fg2);">
-        <strong style="color:var(--fg);">Recovery Steps:</strong>
-        <ol style="margin:0.5rem 0 0 1.25rem;padding:0;">
-          <li>Download the SD card image (.zip) above</li>
-          <li>Remove the microSD card from the TBD-16</li>
-          <li>Insert it into your computer using an SD card reader</li>
-          <li>Format the card as <strong>FAT32</strong> (or exFAT for cards &gt;32&thinsp;GB)</li>
-          <li>Extract the .zip contents to the root of the SD card</li>
-          <li>Safely eject and re-insert the card into the TBD-16</li>
-          <li>Power cycle the device</li>
-        </ol>
-        <p style="margin:0.5rem 0 0;font-size:0.72rem;color:var(--fg3);">
-          &#9888; This will reset presets, macros, and settings to factory defaults.
-          Back up your settings first if possible.</p>
-      </div>
-    </div>
+  <!-- ═══ Footer link ═══ -->
+  <div style="margin-top:1.5rem;text-align:center;font-size:0.75rem;color:var(--fg3);">
+    Need to reflash the SD card? Use the
+    <a href="https://dadamachines.github.io/dada-tbd-firmware/flash/" target="_blank"
+       style="color:var(--accent);text-decoration:underline;">Flash &amp; Recovery Tool</a>
   </div>
 
 </div>
@@ -2411,36 +2391,6 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // ══ SD Card Recovery ══════════════════════════════════════════
-  // ═══════════════════════════════════════════════════════════════
-
-  function loadRecoveryInfo() {
-    var el = document.getElementById('recovery-content');
-    if (!latestCdnData || !latestCdnData.versions || latestCdnData.versions.length === 0) {
-      el.innerHTML = '<span class="checking">No recovery image available.</span>';
-      return;
-    }
-    var latest = latestCdnData.versions[0];
-    var sdUrl = latest.files && latest.files.sdcard ? CDN_BASE + latest.files.sdcard : null;
-    var hashUrl = latest.files && latest.files.hash ? CDN_BASE + latest.files.hash : null;
-
-    if (!sdUrl) {
-      el.innerHTML = '<span class="checking">No SD card image available for ' + escHtml(latest.tag) + '.</span>';
-      return;
-    }
-
-    var html = '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;">' +
-      '<a href="' + escAttr(sdUrl) + '" class="btn btn-primary btn-sm" download>' +
-      '&#128229; Download SD Image (' + escHtml(latest.tag) + ')</a>';
-    if (hashUrl) {
-      html += '<a href="' + escAttr(hashUrl) + '" class="btn btn-secondary btn-sm" download ' +
-        'style="font-size:0.72rem;">Hash file</a>';
-    }
-    html += '</div>';
-    el.innerHTML = html;
-  }
-
-  // ═══════════════════════════════════════════════════════════════
   // ══ Unified Initialization ════════════════════════════════════
   // ═══════════════════════════════════════════════════════════════
 
@@ -2451,7 +2401,7 @@
     loadFactoryVersion()
   ]).then(function() {
     checkOnlineUpdate();
-    checkP4Update().then(loadRecoveryInfo);
+    checkP4Update();
     checkPicoUpdate();
   });
 
