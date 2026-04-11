@@ -46,7 +46,7 @@ namespace CTAG {
         };
 
         struct MacroDeviceOutputMapping {
-            uint8_t ctrl;
+            int8_t ctrl;
             enum CtrlType ctrltype;
             int16_t startValue;
             struct MacroDeviceOutputMappingSource sources[MaxOutputMappingSources];

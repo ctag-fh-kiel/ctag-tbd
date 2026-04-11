@@ -232,8 +232,7 @@ void MacroTranslator::SetTrackParameter(const int trackIndex, int parameterIndex
         return;
     }
 
-    // ESP_LOGI("MacroTranslator", "Track %d, Parameter %d = %d",
-    //     trackIndex, parameterIndex, value);
+    // ESP_LOGI("MacroTranslator", "Track %d, Parameter %d = %d",     trackIndex, parameterIndex, value);
     trackParameterValues[trackIndex][parameterIndex] = value;
     trackDirty[trackIndex] = 1;
 }
@@ -269,8 +268,7 @@ void MacroTranslator::SetTrackParametersFromJSON(const std::string &parametersJS
         this->SetTrackMacroDefinition(trackIndex, def);
         delete def;
     }
-
-    if (d.HasMember("machine")) {
+    else if (d.HasMember("machine")) {
         std::string machine = d["machine"].GetString();
         ESP_LOGI("MacroTranslator", "Setting track %d machine to: %s", trackIndex, machine.c_str());
         this->SetTrackMachine(trackIndex, machine, 1.0f);
@@ -419,7 +417,7 @@ void MacroTranslator::parseIncomingMidiMessages(const uint8_t *buf, const size_t
                             int macrocc = (int)number2 - trackBaseCC[t];
                             macrocc -= 8; // input parameter CC's start at 8 too and...
                             if (macrocc >= 0 && macrocc < 24) {
-                                // ESP_LOGI("MacroTranslator", "  -> track %d param %d = %d (baseCC=%d)", t, macrocc, value, trackBaseCC[t]);
+                                // ESP_LOGI("MacroTranslator", "  -> track %d nrpm param %d = %d (baseCC=%d)", t, macrocc, value2, trackBaseCC[t]);
                                 this->SetTrackParameter(t, macrocc, value2);
                                 mapped = true;
                             }
@@ -428,7 +426,7 @@ void MacroTranslator::parseIncomingMidiMessages(const uint8_t *buf, const size_t
 
                     if (!mapped) {
                         // ESP_LOGI("MacroTranslator", "  -> no track mapped to MIDI channel %d", inputchannel);
-                        this->soundProcessor->handleMidiControlChangeNRPM(inputchannel, control, value);
+                        this->soundProcessor->handleMidiControlChangeNRPM(inputchannel, number2, value2);
                     }
 
                 } else {
@@ -524,10 +522,9 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
             MacroDeviceDefinition *def = &definitions[t];
 
             if (def != nullptr) {
-                int idx = 0;
                 for(int omi = 0; omi < MaxOutputMappings; omi++) {
                     struct MacroDeviceOutputMapping *om = &def->outputMappings[omi];
-                    if (om->ctrl == 0) {
+                    if (om->ctrl < 0) {
                         continue;
                     }
 
@@ -537,7 +534,9 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
                         struct MacroDeviceOutputMappingSource *src = &om->sources[oms];
 
                         int val = trackParameterValues[t][src->parameterIndex];
-                        val = applyCurve(val, src->curve);
+                        if (om->ctrltype == CtrlType_CC) {
+                            val = applyCurve(val, src->curve);
+                        }
                         if (src->divider > 0) {
                             finalvalue += (val * src->multiplier) / src->divider;
                         } else {
@@ -545,30 +544,29 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
                         }
                     }
 
-                    // TODO: support NRPM
-                   
-                    if (om->ctrltype == CtrlType_CC)  {
+                    int midichannel = trackToMidiChannel[t];
+                    int finalcc = om->ctrl + trackBaseCC[t];
+
+                    // ESP_LOGI("MacroTranslator", "Track %d output mapping: CC %d (baseCC=%d) (type %d)= %d",
+                    //     t, finalcc, trackBaseCC[t], om->ctrltype, finalvalue);
+
+                    if (om->ctrltype == CtrlType_CC) {
                         if (finalvalue < 0) finalvalue = 0;
                         if (finalvalue > 127) finalvalue = 127;
-                        
-                        int midichannel = trackToMidiChannel[t];
-                        if (om->ctrl != -1) {
-                            outputValues[t][idx] = finalvalue;
-                            int finalcc = om->ctrl + trackBaseCC[t];
+
+                        if (finalvalue != outputValues[t][omi]) {
+                            outputValues[t][omi] = finalvalue;
                             soundProcessor->handleMidiControlChange(midichannel, finalcc, finalvalue);
                         }
                     } else if (om->ctrltype == CtrlType_NRPM) {
                         if (finalvalue < 0) finalvalue = 0;
                         if (finalvalue > 16383) finalvalue = 16383;
 
-                        int midichannel = trackToMidiChannel[t];
-                        if (om->ctrl != -1) {
-                            outputValues[t][idx] = finalvalue;
-                            int finalcc = om->ctrl + trackBaseCC[t];
+                        if (finalvalue != outputValues[t][omi]) {
+                            outputValues[t][omi] = finalvalue;
                             soundProcessor->handleMidiControlChangeNRPM(midichannel, finalcc, finalvalue);
                         }
                     }
-                    idx ++;
                 }
             }
         }

@@ -648,9 +648,9 @@
         {
           "id": "i",
           "name": "I",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 15,
-          "def": 1
+          "def": 80
         },
         {
           "id": "ratiomode",
@@ -942,28 +942,28 @@
         {
           "id": "start",
           "name": "Start",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 10,
           "def": 0
         },
         {
           "id": "end",
           "name": "End",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 11,
           "def": 127
         },
         {
           "id": "cutoff",
           "name": "Cutoff",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 127
         },
         {
           "id": "reso",
           "name": "Reso",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
           "def": 0
         },
@@ -1068,7 +1068,7 @@
         {
           "id": "p0",
           "name": "P0",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 9,
           "def": 0
         },
@@ -1089,21 +1089,21 @@
         {
           "id": "cutoff",
           "name": "Cutoff",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 64
         },
         {
           "id": "reso",
           "name": "Reso",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
           "def": 0
         },
         {
           "id": "envdec",
           "name": "EnvDec",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 14,
           "def": 16
         },
@@ -1145,21 +1145,21 @@
         {
           "id": "p1",
           "name": "P1",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 20,
           "def": 0
         },
         {
           "id": "p0amt",
           "name": "P0 Amt",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 21,
           "def": 0
         },
         {
           "id": "p1amt",
           "name": "P1 Amt",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 22,
           "def": 0
         },
@@ -1201,42 +1201,42 @@
         {
           "id": "p0",
           "name": "P0",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 9,
           "def": 0
         },
         {
           "id": "p1",
           "name": "P1",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 10,
           "def": 0
         },
         {
           "id": "waveshap",
           "name": "Waveshape",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 11,
           "def": 0
         },
         {
           "id": "p0a",
           "name": "P0 A",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 0
         },
         {
           "id": "p1a",
           "name": "P1 A",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
           "def": 0
         },
         {
           "id": "fma",
           "name": "FM A",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 14,
           "def": 0
         },
@@ -1320,14 +1320,14 @@
         {
           "id": "cutoff",
           "name": "Cutoff",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 127
         },
         {
           "id": "reso",
           "name": "Reso",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
           "def": 0
         },

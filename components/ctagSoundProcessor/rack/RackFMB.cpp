@@ -49,9 +49,25 @@ void RackFMB::Process(const PicoSeqRackProcessData &data) {
         _trig = true;
         midi_trig = false;
     }
+
+    float _f0 = f_b/4095.f * (200.f-20.f)+20.f;
+    // if(cv_f_b != -1){
+    //     float fMod = data.cv[cv_f_b] * 5.f;
+    //     fMod = CTAG::SP::HELPERS::fastpow2(fMod);
+    //     _f0 *= fMod;
+    // }
+    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_d_b, d_b, 4095.f, 0.001f, 1.f)
+    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_f_m, f_m, 4095.f, 40.f, 2000.f)
+    MK_FLT_PAR_ABS_NOCV(_modindex, f_m, 4095.f, 63.f)
+    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_I, I, 4095.f, 0.f, 10.f)
+    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_d_m, d_m, 4095.f, 0.001f, .5f)
+    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_A_f, A_f, 4095.f, 0.f, 1000.f)
+    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_d_f, d_f, 4095.f, 0.001f, .1f)
+
     if (_trig != trig_prev) {
         if (_trig) {
-            // printf("FMB\n");
+            // printf("FMB %1.1f %1.1f %1.1f %1.1f %1.1f %1.1f %1.1f\n",
+            //     _f0, _d_b, _f_m, _d_m, _A_f, _d_f, _I);
             fmb.Trigger();
         }
         trig_prev = _trig;
@@ -65,22 +81,9 @@ void RackFMB::Process(const PicoSeqRackProcessData &data) {
 
     MK_BOOL_PAR_NOCV(_use_ratio_mode, use_ratio_mode)
     MK_BOOL_PAR_NOCV(_mod_env_sync, mod_env_sync)
-    float _f0 = f_b/4095.f * (200.f-20.f)+20.f;
-    // if(cv_f_b != -1){
-    //     float fMod = data.cv[cv_f_b] * 5.f;
-    //     fMod = CTAG::SP::HELPERS::fastpow2(fMod);
-    //     _f0 *= fMod;
-    // }
-    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_d_b, d_b, 4095.f, 0.001f, 1.f)
-    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_f_m, f_m, 4095.f, 40.f, 2000.f)
-    MK_FLT_PAR_ABS_NOCV(_modindex, f_m, 4095.f, 63.f)
     int iModIndex = static_cast<int>(_modindex);
     CONSTRAIN(iModIndex, 0, 63)
-    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_I, I, 4095.f, 0.f, 10.f)
-    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_d_m, d_m, 4095.f, 0.001f, .5f)
     MK_INT_PAR_NOCV(iModFeedback, b_m, 16.f)
-    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_A_f, A_f, 4095.f, 0.f, 1000.f)
-    MK_FLT_PAR_ABS_MIN_MAX_NOCV(_d_f, d_f, 4095.f, 0.001f, .1f)
 
     fmb.params.use_ratio_mode = _use_ratio_mode;
     fmb.params.mod_env_sync = _mod_env_sync;

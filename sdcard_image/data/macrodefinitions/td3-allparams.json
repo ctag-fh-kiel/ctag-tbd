@@ -9,39 +9,43 @@
       "parameters": [
         {
           "idx": 0,
-          "name": "Bank",
+          "name": "Shape",
+          "type": "cc",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "shape"
+          "max": 47,
+          "res": 10,
+          "ui": "macroshape"
         },
         {
           "idx": 1,
           "name": "P0",
-          "def": 64,
+          "type": "nrpm",
+          "def": 8000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 1024,
           "ui": "shape2"
         },
         {
           "idx": 2,
           "name": "VCA D",
-          "def": 63,
+          "type": "nrpm",
+          "def": 5500,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "envdecay",
           "curve": "exp"
         },
         {
           "idx": 3,
           "name": "VCF D",
-          "def": 57,
+          "type": "nrpm",
+          "def": 7000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "envdecay",
           "curve": "exp"
         }
@@ -53,29 +57,32 @@
         {
           "idx": 4,
           "name": "Cutoff",
-          "def": 37,
+          "type": "nrpm",
+          "def": 3500,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 1024,
           "ui": "filtercutoff",
           "curve": "log"
         },
         {
           "idx": 5,
           "name": "Reso",
-          "def": 45,
+          "type": "nrpm",
+          "def": 5000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "filterq"
         },
         {
           "idx": 6,
           "name": "EnvDec",
-          "def": 80,
+          "type": "nrpm",
+          "def": 10000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "envdecay",
           "curve": "exp"
         },
@@ -137,28 +144,31 @@
         {
           "idx": 12,
           "name": "P1",
-          "def": 32,
+          "type": "nrpm",
+          "def": 4000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
           "idx": 13,
           "name": "P0 Amt",
+          "type": "nrpm",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
           "idx": 14,
           "name": "P1 Amt",
+          "type": "nrpm",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
@@ -187,6 +197,7 @@
     },
     {
       "ctrl": 9,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -198,6 +209,7 @@
     },
     {
       "ctrl": 10,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -210,6 +222,7 @@
     },
     {
       "ctrl": 11,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -222,6 +235,7 @@
     },
     {
       "ctrl": 12,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -234,6 +248,7 @@
     },
     {
       "ctrl": 13,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -245,6 +260,7 @@
     },
     {
       "ctrl": 14,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -312,6 +328,7 @@
     },
     {
       "ctrl": 20,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -323,6 +340,7 @@
     },
     {
       "ctrl": 21,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -334,6 +352,7 @@
     },
     {
       "ctrl": 22,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {

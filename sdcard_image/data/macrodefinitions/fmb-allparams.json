@@ -10,38 +10,42 @@
         {
           "idx": 0,
           "name": "FM",
-          "def": 28,
+          "type": "nrpm",
+          "def": 2500,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 4096,
           "ui": "shape2"
         },
         {
           "idx": 1,
           "name": "DB",
-          "def": 69,
+          "type": "nrpm",
+          "def": 8800,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 4096,
           "ui": "shape2",
           "curve": "exp"
         },
         {
           "idx": 2,
           "name": "FM",
-          "def": 9,
+          "type": "nrpm",
+          "def": 1100,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 4096,
           "ui": "shape3"
         },
         {
           "idx": 3,
           "name": "DM",
-          "def": 36,
+          "type": "nrpm",
+          "def": 200,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 4096,
           "ui": "shape3",
           "curve": "exp"
         }
@@ -53,38 +57,42 @@
         {
           "idx": 4,
           "name": "BM",
-          "def": 48,
+          "type": "nrpm",
+          "def": 6000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 4096,
           "ui": "shape2"
         },
         {
           "idx": 5,
           "name": "AF",
-          "def": 19,
+          "type": "nrpm",
+          "def": 2400,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 4096,
           "ui": "shape3"
         },
         {
           "idx": 6,
           "name": "DF",
-          "def": 63,
+          "type": "nrpm",
+          "def": 8000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 4096,
           "ui": "shape",
           "curve": "exp"
         },
         {
           "idx": 7,
           "name": "I",
-          "def": 38,
+          "type": "nrpm",
+          "def": 4600,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 4096,
           "ui": "noise"
         }
       ]
@@ -93,6 +101,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -104,6 +113,7 @@
     },
     {
       "ctrl": 9,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -116,6 +126,7 @@
     },
     {
       "ctrl": 10,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -127,6 +138,7 @@
     },
     {
       "ctrl": 11,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -139,6 +151,7 @@
     },
     {
       "ctrl": 12,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -150,6 +163,7 @@
     },
     {
       "ctrl": 13,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -161,6 +175,7 @@
     },
     {
       "ctrl": 14,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -173,6 +188,7 @@
     },
     {
       "ctrl": 15,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
