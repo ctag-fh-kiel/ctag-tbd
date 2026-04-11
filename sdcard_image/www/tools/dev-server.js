@@ -92,12 +92,20 @@ function loadSynthDefinitions() {
     synthDefs = { tracks: [], machines: [] };
   }
 
-  // Build plugin list by scanning mp-*.json (or legacy mui-*.json) in factory/plugins/,
+  // Build plugin list by scanning mui-*.json (then mp-*.json) in factory/plugins/,
   // matching the real firmware's SPManagerDataModel::getSoundProcessors().
+  // Sort mui- before mp- so metadata-rich UI definitions take precedence
+  // over bare patch files during deduplication.
   pluginList = [];
   const spDir = path.join(FACTORY_DIR, 'plugins');
   try {
-    const files = fs.readdirSync(spDir).filter(f => (f.startsWith('mp-') || f.startsWith('mui-')) && f.endsWith('.json')).sort();
+    const files = fs.readdirSync(spDir)
+      .filter(f => (f.startsWith('mp-') || f.startsWith('mui-')) && f.endsWith('.json'))
+      .sort((a, b) => {
+        const aPrio = a.startsWith('mui-') ? 0 : 1;
+        const bPrio = b.startsWith('mui-') ? 0 : 1;
+        return aPrio - bPrio || a.localeCompare(b);
+      });
     for (const file of files) {
       try {
         const d = JSON.parse(fs.readFileSync(path.join(spDir, file), 'utf8'));
@@ -105,7 +113,7 @@ function loadSynthDefinitions() {
         if (!pluginList.find(p => p.id === id)) {
           pluginList.push({
             id: id,
-            name: d.name || d.id || file,
+            name: d.name || id,
             isStereo: d.isStereo || false,
             hint: d.hint || '',
           });

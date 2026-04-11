@@ -2193,8 +2193,8 @@
           <sl-icon-button id="trackdefaults-btn" name="hdd" label="Track Setup"
             style="font-size:1rem; display:none;"></sl-icon-button>
         </sl-tooltip>
-        <sl-tooltip content="Sample Manager Guide">
-          <sl-icon-button id="samples-info-btn" name="info-circle" label="Sample Manager Guide"
+        <sl-tooltip content="Data Manager Guide">
+          <sl-icon-button id="samples-info-btn" name="info-circle" label="Data Manager Guide"
             style="font-size:1rem; display:none;"></sl-icon-button>
         </sl-tooltip>
         <sl-tooltip content="Configuration">
@@ -2548,36 +2548,51 @@
 
   <!-- ════ DIALOGS ════ -->
 
-  <!-- Sample Manager Guide Dialog -->
+  <!-- Data Manager Guide Dialog -->
   <sl-dialog label="Data Manager Guide" id="samples-info-dialog" style="--width:56rem;">
     <div class="qs-guide">
       <div class="qs-intro">
-        <p><strong>Welcome to the Data Manager!</strong> Upload, organize, and assign audio samples to your TBD-16 kits. Drag &amp; drop WAV files, build custom kits, and configure which samples load on each track at boot.</p>
+        <p><strong>Welcome to the Data Manager!</strong> Browse and manage all files on your TBD-16 SD card &mdash; audio samples, kits, presets, macros, projects, and track configurations.</p>
       </div>
 
       <details class="qs-section" open>
-        <summary><sl-icon name="folder2-open"></sl-icon> File Manager (Left Panel)</summary>
+        <summary><sl-icon name="folder2-open"></sl-icon> File Manager</summary>
         <div class="qs-body">
-          <p>The <strong>File Manager</strong> shows all files on the TBD-16 SD card.</p>
+          <p>The <strong>File Manager</strong> on the left shows all files and folders on the SD card.</p>
           <ol>
-            <li><strong>Browse Folders</strong> — Click folder names to navigate. Use the breadcrumb path at the top to go back.</li>
-            <li><strong>Upload Samples</strong> — Click <em>Upload</em> or drag &amp; drop WAV files onto the panel. Files upload directly to the current folder.</li>
-            <li><strong>Organize</strong> — Use <em>New Folder</em> to create subfolders. Use <em>Select</em> mode to move or delete multiple files at once.</li>
-            <li><strong>Preview</strong> — Click the <strong>▶</strong> button next to any sample to hear it through your browser.</li>
+            <li><strong>Browse</strong> &mdash; Click folder names to navigate. Use the breadcrumb path at the top to go back.</li>
+            <li><strong>Upload</strong> &mdash; Click <em>Upload</em> or drag &amp; drop files onto the panel. Files upload to the current folder.</li>
+            <li><strong>Organize</strong> &mdash; Use <em>New Folder</em> to create subfolders. Use <em>Select</em> mode to move, rename, or delete files.</li>
+            <li><strong>Audio Preview</strong> &mdash; Click <strong>&#9654;</strong> next to any WAV file to hear it through your browser.</li>
+            <li><strong>Collapse / Expand</strong> &mdash; Click the collapse button to hide the File Manager into a narrow rail. Click the rail or its icon to expand it again.</li>
           </ol>
         </div>
       </details>
 
       <details class="qs-section">
-        <summary><sl-icon name="music-note-list"></sl-icon> Kit Editor (Right Panel)</summary>
+        <summary><sl-icon name="file-earmark-text"></sl-icon> File Viewer</summary>
         <div class="qs-body">
-          <p>The <strong>Kit Editor</strong> lets you assign samples to the 8 rompler tracks (banks of up to 32 slices each).</p>
+          <p>Click any file in the File Manager to open it in the <strong>File Viewer</strong>. The viewer adapts to the file type:</p>
+          <ul>
+            <li><strong>JSON files</strong> &mdash; Syntax-highlighted with collapsible sections. Sound presets and macro definitions show cross-links to the Macro &amp; Preset Editor.</li>
+            <li><strong>Audio files</strong> &mdash; Waveform display with playback controls, duration, and format info.</li>
+            <li><strong>Binary files</strong> &mdash; Hex dump and metadata (e.g. Project Viewer for <code>.bin</code> project files).</li>
+          </ul>
+          <p>When <strong>Factory Edit Mode</strong> is enabled (lock icon in the footer), JSON and text files can be edited inline with the <sl-icon name="pencil-square" style="font-size:0.85em;"></sl-icon> edit button. Changes are validated before saving.</p>
+        </div>
+      </details>
+
+      <details class="qs-section">
+        <summary><sl-icon name="music-note-beamed"></sl-icon> Kit Editor</summary>
+        <div class="qs-body">
+          <p>The <strong>Kit Editor</strong> lets you assign audio samples to the 8 rompler tracks (banks of up to 32 slices each).</p>
           <ol>
-            <li><strong>Select a Kit</strong> — Use the dropdown at the top. Kits are stored in PSRAM and loaded at boot.</li>
-            <li><strong>Add Samples</strong> — Click <em>+ Add sample</em> inside a bank, or drag files from the Sample Pool directly into a bank slot.</li>
-            <li><strong>Reorder</strong> — Drag sample rows within a bank to change slice order.</li>
-            <li><strong>Toggle View</strong> — Use the <em>Banks</em> toggle to switch between the compact bank list and expanded view.</li>
-            <li><strong>Save</strong> — Click <em>Save</em> to write the kit to SD card. Changes are not saved automatically.</li>
+            <li><strong>Select a Kit</strong> &mdash; Use the dropdown at the top. Kits are stored in PSRAM and loaded at boot.</li>
+            <li><strong>Add Samples</strong> &mdash; Click <em>+ Add sample</em> inside a bank, or drag files from the File Manager directly into a bank slot.</li>
+            <li><strong>Reorder</strong> &mdash; Drag sample rows within a bank to change slice order.</li>
+            <li><strong>Toggle View</strong> &mdash; Use the <em>Banks</em> toggle to switch between the compact bank list and expanded view.</li>
+            <li><strong>Save</strong> &mdash; Click <em>Save</em> to write the kit to SD card. Changes are not saved automatically.</li>
+            <li><strong>Import / Export</strong> &mdash; Export a kit as JSON to back it up or share it. Import a kit JSON to restore it (samples must already exist on the SD card).</li>
           </ol>
         </div>
       </details>
@@ -2585,23 +2600,39 @@
       <details class="qs-section">
         <summary><sl-icon name="hdd"></sl-icon> Track Setup</summary>
         <div class="qs-body">
-          <p>Use the <strong>Track Setup</strong> button (HDD icon in the header) to configure which machine, preset, and sample bank each track loads on power-up.</p>
-          <ol>
-            <li><strong>Pick a Machine</strong> — For each of the 20 tracks, choose which synth engine to load.</li>
-            <li><strong>Pick a Preset</strong> — Select from the available sound presets for that machine.</li>
-            <li><strong>Rompler Tracks</strong> — For rompler-type tracks, also set the default <em>Bank</em> and <em>Slice</em> from your kit.</li>
-            <li><strong>Save to SD Card</strong> — Changes take effect on the next power cycle.</li>
-          </ol>
+          <p>Open <strong>Track Setup</strong> by clicking a <code>trackdefaults/*.json</code> file, or via the <sl-icon name="hdd" style="font-size:0.85em;"></sl-icon> icon in the header.</p>
+          <p>Configure what each of the 19 tracks loads on power-up. Tracks are color-coded by type:</p>
+          <ul>
+            <li><strong style="color:var(--sl-color-warning-600);">DRUM</strong> (Tracks 01&ndash;08) &mdash; Drum machines and rompler percussion</li>
+            <li><strong style="color:var(--sl-color-primary-600);">SYNTH</strong> (Tracks 09&ndash;16) &mdash; Synthesizers, wavetable, and audio input</li>
+            <li><strong style="color:var(--sl-color-success-600);">FX</strong> (Tracks 17&ndash;18) &mdash; Effect sends (delay, reverb)</li>
+            <li><strong style="color:#7c3aed;">MASTER</strong> (Track 19) &mdash; Master effects bus</li>
+          </ul>
+          <p>For each track: pick a <em>Machine</em>, select a <em>Preset</em>, and for rompler tracks set the default <em>Bank</em> and <em>Slice</em>. Use the toolbar icons to save, download, or set as boot default.</p>
         </div>
       </details>
 
       <details class="qs-section">
-        <summary><sl-icon name="arrow-left-right"></sl-icon> Import &amp; Export Kits</summary>
+        <summary><sl-icon name="file-earmark-binary"></sl-icon> Project Viewer</summary>
         <div class="qs-body">
-          <p>Back up and share your kits using the export/import buttons in the Kit Editor header.</p>
+          <p>Double-click a <code>.bin</code> project file in the File Manager to open the <strong>Project Viewer</strong>.</p>
           <ul>
-            <li><strong>Export</strong> — Downloads the current kit as a JSON file. Does not include the audio files themselves — only the bank/slice assignments.</li>
-            <li><strong>Import</strong> — Upload a previously exported kit JSON. The referenced samples must already exist on the SD card.</li>
+            <li><strong>Track Tabs</strong> &mdash; See all 16 instrument tracks with color-coded tabs. Click a tab to view that track&rsquo;s machine, preset, and pattern data.</li>
+            <li><strong>Pattern Details</strong> &mdash; Each track shows its patterns with step count, time signature, and note content.</li>
+            <li><strong>Project Info</strong> &mdash; BPM, time signature, shuffle, kit assignment, format version, and file size.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="qs-section">
+        <summary><sl-icon name="archive"></sl-icon> SD Card Layout</summary>
+        <div class="qs-body">
+          <p>The SD card is organized into zones:</p>
+          <ul>
+            <li><strong>factory/</strong> &mdash; Read-only defaults that ship with the firmware (presets, kits, plugins, track defaults).</li>
+            <li><strong>user/</strong> &mdash; Your customizations. All changes you make are saved here, overlaying the factory defaults.</li>
+            <li><strong>samples/</strong> &mdash; Audio files. <code>samples/factory/</code> has built-in sounds; <code>samples/user/</code> is for your uploads.</li>
+            <li><strong>system/</strong> &mdash; Internal caches and firmware staging (managed automatically).</li>
           </ul>
         </div>
       </details>
@@ -2699,9 +2730,19 @@
           <div class="config-section-desc">Configure codec output levels and channel routing</div>
 
           <!-- Codec Output Levels -->
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;">
+            <label style="font-size:0.85rem;font-weight:600;flex:1;">Output Levels</label>
+            <sl-tooltip content="When linked, both channels use the same level">
+              <div style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;" id="cfg-level-link-wrap">
+                <sl-icon id="cfg-level-link-icon" name="link" style="font-size:0.9rem;color:var(--sl-color-primary-600);"></sl-icon>
+                <span style="font-size:0.72rem;color:var(--sl-color-neutral-500);">Linked</span>
+              </div>
+            </sl-tooltip>
+            <sl-switch id="cfg-level-link" checked size="small" style="--height:16px;--width:28px;--thumb-size:12px;"></sl-switch>
+          </div>
           <div style="margin-bottom:1.25rem;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;">
-              <label style="font-size:0.85rem;font-weight:600;">Left Codec Level (CH0)</label>
+              <label id="cfg-ch0-label" style="font-size:0.82rem;color:var(--sl-color-neutral-600);">Left + Right</label>
               <span id="cfg-input-gain-val" style="font-size:0.85rem;font-weight:700;font-family:var(--sl-font-mono);">58 / 63</span>
             </div>
             <input type="range" class="config-range" id="cfg-input-gain" min="0" max="63" value="58" step="1">
@@ -2709,9 +2750,9 @@
               <span>0</span><span>58 (ref 0 dBV)</span><span>63</span>
             </div>
           </div>
-          <div style="margin-bottom:1.25rem;">
+          <div style="margin-bottom:1.25rem;" id="cfg-ch1-level-wrap">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;">
-              <label style="font-size:0.85rem;font-weight:600;">Right Codec Level (CH1)</label>
+              <label style="font-size:0.82rem;color:var(--sl-color-neutral-600);">Right (CH1)</label>
               <span id="cfg-output-gain-val" style="font-size:0.85rem;font-weight:700;font-family:var(--sl-font-mono);">58 / 63</span>
             </div>
             <input type="range" class="config-range" id="cfg-output-gain" min="0" max="63" value="58" step="1">
@@ -2720,70 +2761,61 @@
             </div>
           </div>
 
-          <hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:1rem 0;">
-
-          <!-- CH0 Soft Clip Output -->
-          <div class="config-row">
-            <div>
-              <label style="font-weight:600;">CH0 Output Soft Clip</label>
-              <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);">Apply soft clipping to CH0 (left) output</div>
+          <!-- Advanced Options -->
+          <details id="cfg-audio-advanced" style="margin-bottom:1rem;border:1px solid var(--sl-color-neutral-200);border-radius:var(--sl-border-radius-medium);overflow:hidden;">
+            <summary style="padding:0.6rem 0.75rem;font-size:0.82rem;font-weight:600;cursor:pointer;background:var(--sl-color-neutral-50);color:var(--sl-color-neutral-600);user-select:none;">Advanced Options</summary>
+            <div style="padding:0.75rem;">
+            <!-- CH0 Soft Clip Output -->
+            <div class="config-row">
+              <div>
+                <label style="font-weight:600;">CH0 Output Soft Clip</label>
+                <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);">Apply soft clipping to CH0 (left) output</div>
+              </div>
+              <sl-switch id="cfg-soft-clip-ch0"></sl-switch>
             </div>
-            <sl-switch id="cfg-soft-clip-ch0"></sl-switch>
-          </div>
-          <!-- CH1 Soft Clip Output -->
-          <div class="config-row">
-            <div>
-              <label style="font-weight:600;">CH1 Output Soft Clip</label>
-              <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);">Apply soft clipping to CH1 (right) output</div>
+            <!-- CH1 Soft Clip Output -->
+            <div class="config-row">
+              <div>
+                <label style="font-weight:600;">CH1 Output Soft Clip</label>
+                <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);">Apply soft clipping to CH1 (right) output</div>
+              </div>
+              <sl-switch id="cfg-soft-clip-ch1"></sl-switch>
             </div>
-            <sl-switch id="cfg-soft-clip-ch1"></sl-switch>
-          </div>
-
-          <hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:1rem 0;">
-
-          <!-- CH0→CH1 Daisy Chain -->
-          <div class="config-form-row">
-            <div class="config-label">CH0 → CH1 Daisy Chain</div>
-            <div class="config-field">
-              <sl-select id="cfg-daisy-chain" size="small" value="off">
-                <sl-option value="off">Off</sl-option>
-                <sl-option value="on">On</sl-option>
-              </sl-select>
+            <hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:0.75rem 0;">
+            <!-- CH0→CH1 Daisy Chain -->
+            <div class="config-form-row">
+              <div class="config-label">CH0 → CH1 Daisy Chain</div>
+              <div class="config-field">
+                <sl-select id="cfg-daisy-chain" size="small" value="off">
+                  <sl-option value="off">Off</sl-option>
+                  <sl-option value="on">On</sl-option>
+                </sl-select>
+              </div>
             </div>
-          </div>
-          <!-- CH0 To Stereo -->
-          <div class="config-form-row">
-            <div class="config-label">CH0 To Stereo</div>
-            <div class="config-field">
-              <sl-select id="cfg-ch0-stereo" size="small" value="off">
-                <sl-option value="off">Off</sl-option>
-                <sl-option value="on">On</sl-option>
-                <sl-option value="mix">Mix with CH1</sl-option>
-              </sl-select>
+            <!-- CH0 To Stereo -->
+            <div class="config-form-row">
+              <div class="config-label">CH0 To Stereo</div>
+              <div class="config-field">
+                <sl-select id="cfg-ch0-stereo" size="small" value="off">
+                  <sl-option value="off">Off</sl-option>
+                  <sl-option value="on">On</sl-option>
+                  <sl-option value="mix">Mix with CH1</sl-option>
+                </sl-select>
+              </div>
             </div>
-          </div>
-          <!-- CH1 To Stereo -->
-          <div class="config-form-row">
-            <div class="config-label">CH1 To Stereo</div>
-            <div class="config-field">
-              <sl-select id="cfg-ch1-stereo" size="small" value="off">
-                <sl-option value="off">Off</sl-option>
-                <sl-option value="on">On</sl-option>
-                <sl-option value="mix">Mix with CH0</sl-option>
-              </sl-select>
+            <!-- CH1 To Stereo -->
+            <div class="config-form-row">
+              <div class="config-label">CH1 To Stereo</div>
+              <div class="config-field">
+                <sl-select id="cfg-ch1-stereo" size="small" value="off">
+                  <sl-option value="off">Off</sl-option>
+                  <sl-option value="on">On</sl-option>
+                  <sl-option value="mix">Mix with CH0</sl-option>
+                </sl-select>
+              </div>
             </div>
-          </div>
-
-          <hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:1rem 0;">
-
-          <!-- Noise Gate (WebUI-only setting) -->
-          <div class="config-row">
-            <div>
-              <label style="font-weight:600;">Input Noise Gate</label>
-              <div style="font-size:0.78rem;color:var(--sl-color-neutral-500);">Apply a noise gate to audio inputs</div>
             </div>
-            <sl-switch id="cfg-noise-gate"></sl-switch>
-          </div>
+          </details>
 
           <sl-button variant="primary" class="config-action-btn" id="cfg-audio-save">Save Audio Settings</sl-button>
         </div>
@@ -2862,17 +2894,17 @@
           </div>
         </div>
         <div class="config-section">
-          <div class="config-section-title">Maintenance</div>
-          <div style="display:flex;gap:0.75rem;margin-top:0.5rem;" id="cfg-maintenance-buttons">
-            <sl-button variant="default" style="flex:1;" id="cfg-firmware-update">System Updater</sl-button>
+          <div class="config-section-title">Firmware &amp; Software Updates</div>
+          <div class="config-section-desc">Check for and install updates for P4 firmware, Pico firmware, and WebUI.</div>
+          <div style="margin-top:0.5rem;" id="cfg-maintenance-buttons">
+            <sl-button variant="default" style="width:100%;" id="cfg-firmware-update"><sl-icon slot="prefix" name="arrow-repeat"></sl-icon> Open System Updater</sl-button>
           </div>
         </div>
         <div class="config-section">
           <div class="config-section-title">Settings Backup &amp; Restore</div>
-          <div class="config-section-desc">Backup and restore device settings, plugin presets, and favorites. Sample files and projects are stored on the SD card.</div>
-          <div style="display:flex;gap:0.75rem;margin-top:0.5rem;">
-            <sl-button variant="default" style="flex:1;" id="cfg-backup"><sl-icon slot="prefix" name="download"></sl-icon> Download Backup</sl-button>
-            <sl-button variant="default" style="flex:1;" id="cfg-restore"><sl-icon slot="prefix" name="upload"></sl-icon> Upload Backup</sl-button>
+          <div class="config-section-desc">Back up your settings, presets, projects, macros, kits, and track defaults. Audio samples are not included &mdash; use an SD card reader for full backup.</div>
+          <div style="margin-top:0.5rem;">
+            <sl-button variant="default" style="width:100%;" id="cfg-open-backup"><sl-icon slot="prefix" name="archive"></sl-icon> Open in System Updater</sl-button>
           </div>
         </div>
       </div>

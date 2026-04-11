@@ -63,7 +63,22 @@
       font-size: 0.88rem; font-weight: 700; color: var(--fg);
       white-space: nowrap;
     }
-    .header-spacer { width: 60px; flex-shrink: 0; } /* balance the back link */
+    .header-channel {
+      display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;
+    }
+    .header-channel label {
+      font-size: 0.72rem; color: var(--fg3); white-space: nowrap;
+    }
+    .header-channel select {
+      font-size: 0.72rem; font-family: inherit;
+      padding: 0.15rem 0.35rem; border: 1px solid var(--border);
+      border-radius: var(--radius); background: var(--bg2); color: var(--fg);
+      cursor: pointer;
+    }
+    .header-channel .channel-note {
+      font-size: 0.65rem; color: var(--warn); font-weight: 500;
+      display: none; white-space: nowrap;
+    }
 
     /* Version cards */
     .version-row { display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
@@ -350,22 +365,6 @@
     .manual-area { display: none; margin-top: 0.75rem; }
     .manual-area.open { display: block; }
 
-    /* Channel selector */
-    .channel-bar {
-      display: flex; align-items: center; gap: 0.5rem;
-      margin-bottom: 0.75rem; font-size: 0.75rem; color: var(--fg3);
-    }
-    .channel-bar select {
-      font-size: 0.75rem; font-family: inherit;
-      padding: 0.2rem 0.4rem; border: 1px solid var(--border);
-      border-radius: var(--radius); background: var(--bg2); color: var(--fg);
-      cursor: pointer;
-    }
-    .channel-bar .channel-note {
-      font-size: 0.7rem; color: var(--warn); font-weight: 500;
-      display: none;
-    }
-
     @media (max-width: 600px) {
       .version-summary { grid-template-columns: repeat(2, 1fr); }
     }
@@ -375,19 +374,16 @@
 <div class="app-header">
   <a href="/" class="header-back">&#8592; TBD-16</a>
   <span class="header-title">System Updater</span>
-  <span class="header-spacer"></span>
-</div>
-<div class="container">
-
-  <!-- ═══ Channel Selector ═══ -->
-  <div class="channel-bar">
+  <div class="header-channel">
     <label for="channel-select">Channel:</label>
     <select id="channel-select">
       <option value="stable">Stable</option>
       <option value="staging">Staging</option>
     </select>
-    <span class="channel-note" id="channel-note">&#9888; Non-stable channel &mdash; may contain untested builds</span>
+    <span class="channel-note" id="channel-note">&#9888; Non-stable</span>
   </div>
+</div>
+<div class="container">
 
   <!-- ═══ Version Summary ═══ -->
   <div class="version-summary">

@@ -11167,6 +11167,22 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     }
     var noiseGate = document.getElementById('cfg-noise-gate');
     if (noiseGate) noiseGate.checked = !!config.noiseGate;
+    // Restore linked levels state (default: linked)
+    var levelLink = document.getElementById('cfg-level-link');
+    var ch1Wrap = document.getElementById('cfg-ch1-level-wrap');
+    var linkIcon = document.getElementById('cfg-level-link-icon');
+    var ch0Label = document.getElementById('cfg-ch0-label');
+    if (levelLink && ch1Wrap) {
+      var linked = localStorage.getItem('tbd-level-linked') !== 'false';
+      levelLink.checked = linked;
+      if (ch0Label) ch0Label.textContent = linked ? 'Left + Right' : 'Left (CH0)';
+      ch1Wrap.style.display = linked ? 'none' : '';
+      if (linkIcon) { linkIcon.name = linked ? 'link' : 'link-break'; linkIcon.style.color = linked ? 'var(--sl-color-primary-600)' : 'var(--sl-color-neutral-400)'; }
+      if (linked && ch0Level) {
+        if (ch1Level) ch1Level.value = ch0Level.value;
+        if (ch1LevelVal) ch1LevelVal.textContent = ch0Level.value + ' / 63';
+      }
+    }
     var softClipCh0 = document.getElementById('cfg-soft-clip-ch0');
     if (softClipCh0) softClipCh0.checked = config.ch0_outputSoftClip === 'on';
     var softClipCh1 = document.getElementById('cfg-soft-clip-ch1');
@@ -11396,121 +11412,56 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
       });
     }
 
-    // Backup / Restore buttons
-    var backupBtn = document.getElementById('cfg-backup');
-    if (backupBtn) {
-      backupBtn.addEventListener('click', async function() {
-        try {
-          S.showLoading('Creating backup…');
-          var backup = {};
-
-          // 1) Configuration
-          backup.configuration = await S.queuedFetch('/device?action=getConfig');
-
-          // 2) Favorites
-          backup.favorites = await S.queuedFetch('/device?action=getFavorites');
-
-          // 3) All plugin preset data
-          var plugins = await S.queuedFetch('/plugins?action=list');
-          backup.presets = {};
-          for (var i = 0; i < plugins.length; i++) {
-            var pid = plugins[i].id;
-            if (pid === 'Void') continue;
-            try {
-              backup.presets[pid] = await S.queuedFetch('/plugins?action=getPresetData&id=' + encodeURIComponent(pid));
-            } catch (e) {
-              // Plugin may not have preset data — skip silently
-            }
-          }
-
-          // 4) Write as JSON download
-          var data = JSON.stringify(backup, null, 2);
-          var blob = new Blob([data], { type: 'application/json' });
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = url;
-          var dateStr = new Date().toISOString().slice(0, 10);
-          a.download = 'ctag-tbd-backup-' + dateStr + '.json';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-
-          S.hideLoading();
-          S.toast('Backup created', 'success', 2000);
-        } catch (e) {
-          S.hideLoading();
-          S.toast('Backup failed: ' + e.message, 'danger');
-        }
-      });
-    }
-    var restoreBtn = document.getElementById('cfg-restore');
-    if (restoreBtn) {
-      restoreBtn.addEventListener('click', function() {
-        var input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.addEventListener('change', async function() {
-          if (!input.files || !input.files[0]) return;
-          if (!confirm('This will overwrite ALL settings, presets, and favorites. Continue?')) return;
-          try {
-            S.showLoading('Restoring backup…');
-            var text = await input.files[0].text();
-            var backup = JSON.parse(text);
-
-            // 1) Restore configuration
-            if (backup.configuration) {
-              await S.queuedPost('/device?action=setConfig', backup.configuration);
-            }
-
-            // 2) Restore favorites
-            if (Array.isArray(backup.favorites)) {
-              for (var i = 0; i < backup.favorites.length; i++) {
-                if (backup.favorites[i] && backup.favorites[i].plug_0) {
-                  await S.queuedPost('/device?action=storeFavorite&id=' + i, backup.favorites[i]);
-                }
-              }
-            }
-
-            // 3) Restore preset data
-            if (backup.presets) {
-              var pluginIds = Object.keys(backup.presets);
-              for (var j = 0; j < pluginIds.length; j++) {
-                var pid = pluginIds[j];
-                try {
-                  await S.queuedPost('/plugins?action=setPresetData&id=' + encodeURIComponent(pid), backup.presets[pid]);
-                } catch (e) {
-                  // Non-critical — plugin may not exist on this device
-                }
-              }
-            }
-
-            S.hideLoading();
-            S.toast('Backup restored — please reload the page', 'success', 5000);
-          } catch (e) {
-            S.hideLoading();
-            S.toast('Restore failed: ' + e.message, 'danger');
-          }
-        });
-        input.click();
+    // Backup — redirect to System Updater page (single source of truth)
+    var openBackup = document.getElementById('cfg-open-backup');
+    if (openBackup) {
+      openBackup.addEventListener('click', function() {
+        window.location.href = '/webui-update.html';
       });
     }
 
-    // Audio tab - codec level range labels
+    // Audio tab - codec level range labels with linked behavior
     var ch0Level = document.getElementById('cfg-input-gain');
     var ch0LevelVal = document.getElementById('cfg-input-gain-val');
+    var ch1Level = document.getElementById('cfg-output-gain');
+    var ch1LevelVal = document.getElementById('cfg-output-gain-val');
+    var levelLink = document.getElementById('cfg-level-link');
+    var ch1Wrap = document.getElementById('cfg-ch1-level-wrap');
+    var linkIcon = document.getElementById('cfg-level-link-icon');
+    var ch0Label = document.getElementById('cfg-ch0-label');
+
+    function isLevelsLinked() { return levelLink && levelLink.checked; }
+    function updateLinkLabel(linked) {
+      if (ch0Label) ch0Label.textContent = linked ? 'Left + Right' : 'Left (CH0)';
+      if (ch1Wrap) ch1Wrap.style.display = linked ? 'none' : '';
+      if (linkIcon) { linkIcon.name = linked ? 'link' : 'link-break'; linkIcon.style.color = linked ? 'var(--sl-color-primary-600)' : 'var(--sl-color-neutral-400)'; }
+    }
+
     if (ch0Level && ch0LevelVal) {
       ch0Level.addEventListener('input', function() {
         var v = parseInt(ch0Level.value);
         ch0LevelVal.textContent = v + ' / 63';
+        if (isLevelsLinked() && ch1Level) {
+          ch1Level.value = v;
+          if (ch1LevelVal) ch1LevelVal.textContent = v + ' / 63';
+        }
       });
     }
-    var ch1Level = document.getElementById('cfg-output-gain');
-    var ch1LevelVal = document.getElementById('cfg-output-gain-val');
     if (ch1Level && ch1LevelVal) {
       ch1Level.addEventListener('input', function() {
         var v = parseInt(ch1Level.value);
         ch1LevelVal.textContent = v + ' / 63';
+      });
+    }
+    if (levelLink) {
+      levelLink.addEventListener('sl-change', function() {
+        var linked = levelLink.checked;
+        localStorage.setItem('tbd-level-linked', linked ? 'true' : 'false');
+        updateLinkLabel(linked);
+        if (linked && ch0Level && ch1Level) {
+          ch1Level.value = ch0Level.value;
+          if (ch1LevelVal) ch1LevelVal.textContent = ch0Level.value + ' / 63';
+        }
       });
     }
     // Audio save button
