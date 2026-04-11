@@ -1146,90 +1146,6 @@
       flex-shrink: 0;
     }
     .status-footer-dot.offline { background: var(--sl-color-danger-500); }
-    .debug-toggle-btn {
-      font-size: 0.72rem; padding: 0.15rem 0.5rem;
-      border: 1px solid var(--sl-color-neutral-300);
-      border-radius: var(--sl-border-radius-medium);
-      background: var(--sl-color-neutral-200);
-      color: var(--sl-color-neutral-500);
-      cursor: pointer; font-family: var(--sl-font-sans);
-      font-weight: 600; display: flex; align-items: center; gap: 0.25rem;
-      transition: all 0.15s;
-    }
-    .debug-toggle-btn:hover {
-      background: var(--sl-color-neutral-300);
-      color: var(--sl-color-neutral-700);
-    }
-    .debug-toggle-btn sl-icon { font-size: 0.75rem; }
-
-    /* ── Debug Panel ─────────────────────────────────────────── */
-    .debug-panel {
-      background: var(--sl-color-neutral-0);
-      border-top: 1px solid var(--sl-color-neutral-200);
-      max-height: 0; overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-    .debug-panel.expanded { max-height: 350px; }
-    .debug-panel-header {
-      display: flex; align-items: center;
-      padding: 0.35rem 0.75rem;
-      gap: 0.5rem; min-height: 34px;
-      border-bottom: 1px solid var(--sl-color-neutral-200);
-    }
-    .debug-panel-title {
-      font-size: 0.78rem; font-weight: 700; color: var(--sl-color-neutral-600);
-    }
-    .debug-tabs {
-      display: flex; gap: 0; margin-left: auto;
-    }
-    .debug-tab {
-      font-size: 0.72rem; font-weight: 600;
-      padding: 0.25rem 0.65rem;
-      border: 1px solid var(--sl-color-neutral-300);
-      background: var(--sl-color-neutral-100);
-      color: var(--sl-color-neutral-500);
-      cursor: pointer; font-family: var(--sl-font-sans);
-      transition: all 0.15s;
-    }
-    .debug-tab:first-child { border-radius: var(--sl-border-radius-medium) 0 0 var(--sl-border-radius-medium); }
-    .debug-tab:last-child { border-radius: 0 var(--sl-border-radius-medium) var(--sl-border-radius-medium) 0; border-left: none; }
-    .debug-tab:hover { background: var(--sl-color-neutral-200); }
-    .debug-tab.active {
-      background: var(--sl-color-primary-600); color: #fff;
-      border-color: var(--sl-color-primary-700);
-    }
-    .debug-tab-panel { display: none; padding: 0.65rem 0.75rem; overflow-y: auto; max-height: 280px; }
-    .debug-tab-panel.active { display: block; }
-    .debug-card {
-      border: 1px solid var(--sl-color-neutral-200);
-      border-radius: var(--sl-border-radius-medium);
-      padding: 0.65rem; margin-bottom: 0.65rem;
-    }
-    .debug-card-title {
-      font-size: 0.78rem; font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-    .debug-row {
-      display: flex; justify-content: space-between;
-      font-size: 0.78rem; padding: 0.15rem 0;
-    }
-    .debug-row-label { color: var(--sl-color-neutral-500); }
-    .debug-row-value { font-weight: 600; font-variant-numeric: tabular-nums; }
-    .debug-msg-list {
-      display: flex; flex-direction: column; gap: 0.2rem;
-    }
-    .debug-msg {
-      font-size: 0.72rem; padding: 0.2rem 0.4rem;
-      background: var(--sl-color-neutral-100);
-      border-radius: 3px; display: flex; align-items: center; gap: 0.35rem;
-    }
-    .debug-msg-type {
-      font-weight: 700; color: var(--sl-color-success-600);
-    }
-    .debug-msg-time {
-      color: var(--sl-color-neutral-500);
-      margin-left: auto;
-    }
 
     /* ── Toast Stack ────────────────────────────────────────── */
     .toast-stack {
@@ -2581,61 +2497,8 @@
         <button class="factory-lock-btn" id="factory-lock-btn" title="Factory Edit Mode">
           <sl-icon name="lock" id="factory-lock-icon"></sl-icon>
         </button>
-        <button class="debug-toggle-btn" id="debug-toggle" title="Toggle Debug Panel">
-          <sl-icon name="terminal"></sl-icon> Debug
-        </button>
         <div class="status-footer-info">
         </div>
-      </div>
-    </div>
-
-    <!-- ════ DEBUG PANEL ════ -->
-    <div class="debug-panel" id="debug-panel">
-      <div class="debug-panel-header">
-        <span style="font-weight:700;">Debug Panel</span>
-        <div style="flex:1;"></div>
-        <button id="debug-refresh" style="background:none;border:1px solid var(--sl-color-neutral-400);color:var(--sl-color-neutral-600);border-radius:4px;padding:2px 8px;font-size:0.72rem;cursor:pointer;">Refresh</button>
-        <button id="debug-close" style="background:none;border:none;color:var(--sl-color-neutral-500);cursor:pointer;font-size:1rem;padding:0 4px;">&times;</button>
-      </div>
-      <div class="debug-tabs">
-        <button class="debug-tab active" data-tab="debug-app-state">App State</button>
-        <button class="debug-tab" data-tab="debug-network">Network</button>
-        <button class="debug-tab" data-tab="debug-params">Parameters</button>
-      </div>
-      <div class="debug-tab-panel active" id="debug-app-state">
-        <div class="debug-card">
-          <div class="debug-row"><span>Active View</span><span id="dbg-active-view">—</span></div>
-          <div class="debug-row"><span>Slot A Plugin</span><span id="dbg-slot-a">—</span></div>
-          <div class="debug-row"><span>Slot A Preset</span><span id="dbg-preset-a">—</span></div>
-          <div class="debug-row"><span>Slot B Plugin</span><span id="dbg-slot-b">—</span></div>
-          <div class="debug-row"><span>Slot B Preset</span><span id="dbg-preset-b">—</span></div>
-          <div class="debug-row"><span>Stereo Mode</span><span id="dbg-stereo">—</span></div>
-          <div class="debug-row"><span>Plugin Count</span><span id="dbg-plugin-count">—</span></div>
-          <div class="debug-row"><span>Favorites Cached</span><span id="dbg-fav-count">—</span></div>
-          <div class="debug-row"><span>Kit / Bank</span><span id="dbg-kit-info">—</span></div>
-          <div class="debug-row"><span>Page Load Time</span><span id="dbg-load-time">—</span></div>
-        </div>
-      </div>
-      <div class="debug-tab-panel" id="debug-network">
-        <div class="debug-card">
-          <div class="debug-row"><span>Connection</span><span id="dbg-ws-status">—</span></div>
-          <div class="debug-row"><span>API Base URL</span><span id="dbg-api-url">—</span></div>
-          <div class="debug-row"><span>API Calls Made</span><span id="dbg-api-calls">0</span></div>
-          <div class="debug-row"><span>API Errors</span><span id="dbg-api-errors">0</span></div>
-          <div class="debug-row"><span>Last API Call</span><span id="dbg-last-api">—</span></div>
-          <div class="debug-row"><span>Last Error</span><span id="dbg-last-error">None</span></div>
-        </div>
-        <div class="debug-msg" id="dbg-api-log" style="max-height:120px;overflow-y:auto;">No API calls logged yet.</div>
-      </div>
-      <div class="debug-tab-panel" id="debug-params">
-        <div class="debug-card">
-          <div class="debug-row"><span>Slot A Params</span><span id="dbg-params-a">0</span></div>
-          <div class="debug-row"><span>Slot A Groups</span><span id="dbg-groups-a">0</span></div>
-          <div class="debug-row"><span>Slot B Params</span><span id="dbg-params-b">0</span></div>
-          <div class="debug-row"><span>Slot B Groups</span><span id="dbg-groups-b">0</span></div>
-          <div class="debug-row"><span>Param Changes</span><span id="dbg-param-changes">0</span></div>
-        </div>
-        <div class="debug-msg" id="dbg-param-log" style="max-height:120px;overflow-y:auto;">No parameter changes logged yet.</div>
       </div>
     </div>
 

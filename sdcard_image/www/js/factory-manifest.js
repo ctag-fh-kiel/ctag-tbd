@@ -140,7 +140,8 @@
     var unlockBtn = document.createElement('sl-button');
     unlockBtn.setAttribute('slot', 'footer');
     unlockBtn.setAttribute('variant', 'warning');
-    unlockBtn.innerHTML = '<sl-icon name="unlock" slot="prefix"></sl-icon> Unlock';
+    unlockBtn.setAttribute('style', 'margin-left: var(--sl-spacing-x-small);');
+    unlockBtn.textContent = 'Unlock';
 
     function tryUnlock() {
       var input = document.getElementById('factory-pin-input');
@@ -193,7 +194,12 @@
       btn.classList.toggle('unlocked', _unlocked);
       btn.title = _unlocked ? 'Factory Edit Mode (unlocked) — click to lock' : 'Factory Edit Mode — click to unlock';
     }
-    updateIcon();
+    // Defer initial icon update until sl-icon is defined to avoid blank icons
+    if (customElements.get('sl-icon')) {
+      updateIcon();
+    } else {
+      customElements.whenDefined('sl-icon').then(updateIcon);
+    }
 
     btn.addEventListener('click', function() {
       if (_unlocked) {

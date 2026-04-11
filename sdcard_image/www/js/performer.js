@@ -186,12 +186,7 @@
         var isFactoryUnlocked = F && F.isUnlocked && F.isUnlocked();
         var volReadonly = isFactoryDef && !isFactoryUnlocked;
         html += '<span class="track-info-label" title="Volume multiplier — compensates for quiet/loud engines. 1.0 = no change.">VOL:</span>';
-        html += '<input type="number" class="track-inline-input def-volmult-input" value="' + (def.volmult != null ? def.volmult : 1.0) + '" min="0.1" max="4.0" step="0.1" style="width:4rem;' + (volReadonly ? 'opacity:0.5;' : '') + '" title="Volume multiplier (0.1–4.0)"' + (volReadonly ? ' readonly' : '') + ' />';
-        if (isFactoryDef) {
-          html += '<button class="mapping-btn btn-factory-unlock" title="' + (isFactoryUnlocked ? 'Factory edit mode active — click to lock' : 'Unlock factory edit mode') + '" style="padding:0 0.35rem;min-width:0;margin-left:0.15rem;' + (isFactoryUnlocked ? 'border-color:var(--sl-color-warning-400);color:var(--sl-color-warning-700);' : '') + '">';
-          html += '<sl-icon name="' + (isFactoryUnlocked ? 'unlock' : 'lock') + '" style="font-size:0.7rem;"></sl-icon>';
-          html += '</button>';
-        }
+        html += '<input type="number" class="track-inline-input def-volmult-input" value="' + (def.volmult != null ? def.volmult : 1.0) + '" min="0.1" max="4.0" step="0.1" style="width:3rem;' + (volReadonly ? 'opacity:0.5;' : '') + '" title="Volume multiplier (0.1–4.0)"' + (volReadonly ? ' readonly' : '') + ' />';
         html += '<div class="track-def-actions">';
         html += '<button class="mapping-btn btn-save-def" title="Save this definition"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
         html += '<button class="mapping-btn btn-export-def" title="Export as JSON"><sl-icon name="download" style="font-size:0.7rem;"></sl-icon> Export</button>';
@@ -325,27 +320,6 @@
           volmultInput.value = v;
           D.state.editDef.volmult = v;
           D.state.dirty = true;
-        }
-      });
-    }
-
-    var unlockBtn = document.querySelector('#track-info-bar .btn-factory-unlock');
-    if (unlockBtn) {
-      unlockBtn.addEventListener('click', function() {
-        var F = window.TBD.factory;
-        if (!F) return;
-        var track = S.data.tracks ? S.data.tracks.find(function(t) { return t.index === state.activeTrack; }) : null;
-        if (F.isUnlocked && F.isUnlocked()) {
-          // Already unlocked — lock again
-          F.lock();
-          renderTrackInfoBar(track, state.activeMacroDef);
-          S.toast('Factory edit mode locked', 'neutral', 2000);
-        } else {
-          // Show PIN dialog
-          F.showPinDialog(function() {
-            renderTrackInfoBar(track, state.activeMacroDef);
-            S.toast('Factory edit mode unlocked', 'warning', 3000);
-          });
         }
       });
     }
@@ -1187,6 +1161,12 @@
 
     setupPresetBrowserEvents();
     setupQuickActions();
+
+    // Re-render track info bar when factory lock state changes (VOL readonly)
+    window.addEventListener('tbd-factory-lock-changed', function() {
+      var track = S.data.tracks ? S.data.tracks.find(function(t) { return t.index === state.activeTrack; }) : null;
+      if (track) renderTrackInfoBar(track, state.activeMacroDef);
+    });
 
     if (S.data.loaded && S.data.tracks.length > 0) {
       S.selectTrack(S.data.tracks[0].index);
