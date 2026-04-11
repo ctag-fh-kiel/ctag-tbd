@@ -194,12 +194,13 @@
       btn.classList.toggle('unlocked', _unlocked);
       btn.title = _unlocked ? 'Factory Edit Mode (unlocked) — click to lock' : 'Factory Edit Mode — click to unlock';
     }
-    // Defer initial icon update until sl-icon is defined to avoid blank icons
-    if (customElements.get('sl-icon')) {
-      updateIcon();
-    } else {
-      customElements.whenDefined('sl-icon').then(updateIcon);
-    }
+    // Always defer initial icon update — even if sl-icon is already registered,
+    // the specific element may not have completed its Lit upgrade cycle yet.
+    // whenDefined resolves immediately (as microtask) if already defined,
+    // then rAF ensures the element is fully upgraded before we set attributes.
+    customElements.whenDefined('sl-icon').then(function() {
+      requestAnimationFrame(updateIcon);
+    });
 
     btn.addEventListener('click', function() {
       if (_unlocked) {

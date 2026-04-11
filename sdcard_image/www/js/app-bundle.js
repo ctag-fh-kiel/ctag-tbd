@@ -3266,12 +3266,13 @@ window.TBD.shared = {
       btn.classList.toggle('unlocked', _unlocked);
       btn.title = _unlocked ? 'Factory Edit Mode (unlocked) — click to lock' : 'Factory Edit Mode — click to unlock';
     }
-    // Defer initial icon update until sl-icon is defined to avoid blank icons
-    if (customElements.get('sl-icon')) {
-      updateIcon();
-    } else {
-      customElements.whenDefined('sl-icon').then(updateIcon);
-    }
+    // Always defer initial icon update — even if sl-icon is already registered,
+    // the specific element may not have completed its Lit upgrade cycle yet.
+    // whenDefined resolves immediately (as microtask) if already defined,
+    // then rAF ensures the element is fully upgraded before we set attributes.
+    customElements.whenDefined('sl-icon').then(function() {
+      requestAnimationFrame(updateIcon);
+    });
 
     btn.addEventListener('click', function() {
       if (_unlocked) {
@@ -8867,6 +8868,24 @@ async function openFileViewerDirect(path, name, size) {
   if (fvNav) fvNav.style.display = (isTD && !isCurrentKit) ? '' : 'none';
   if (fvKitNav) fvKitNav.style.display = isCurrentKit ? '' : 'none';
 
+  // Show Macro Editor / Preset Editor cross-links
+  var fvMacroNav = document.getElementById('fv-macro-nav');
+  var fvPresetNav = document.getElementById('fv-preset-nav');
+  var isMacroPath = /\bmacros\b/i.test(fullPath);
+  var isPresetPath = /\bpresets\b/i.test(fullPath);
+  if (fvMacroNav) fvMacroNav.style.display = (isMacroPath && !isTD && !isCurrentKit) ? '' : 'none';
+  if (fvPresetNav) fvPresetNav.style.display = (isPresetPath && !isTD && !isCurrentKit) ? '' : 'none';
+
+  // Reset edit mode state
+  _fvEditing = false;
+  document.getElementById('fv-edit').style.display = 'none';
+  document.getElementById('fv-import').style.display = 'none';
+  document.getElementById('fv-save').style.display = 'none';
+  document.getElementById('fv-cancel-edit').style.display = 'none';
+  document.getElementById('fv-copy').style.display = '';
+  var sb = document.querySelector('.fv-statusbar');
+  if (sb) sb.classList.remove('editing');
+
   // Loading
   body.innerHTML = '<sl-spinner></sl-spinner>';
 
@@ -8898,6 +8917,8 @@ async function openFileViewerDirect(path, name, size) {
     } else {
       fvRenderCode(body, text, false, '');
     }
+    // Show edit button if factory unlocked
+    fvUpdateEditButton();
   } catch (e) {
     body.innerHTML = '<div class="fv-msg error"><sl-icon name="exclamation-triangle"></sl-icon>' +
       'Failed to load: ' + esc(e.message) + '</div>';
@@ -8907,9 +8928,251 @@ async function openFileViewerDirect(path, name, size) {
 
 /** Close viewer — restores kit editor */
 function closeFileViewer() {
+  fvCancelEdit();  // exit edit mode if active
   document.getElementById('kit-panel').classList.remove('viewer-active');
   state.fileViewerOpen = false;
   state.fileViewerData = null;
+}
+
+// ─── File Viewer: Edit Mode ─────────────────────────────
+var _fvEditing = false;
+
+/** Enter edit mode — CSS Grid stacked pre (highlight) + textarea (input) */
+function fvStartEdit() {
+  if (!state.fileViewerData || !state.fileViewerData.content) return;
+  _fvEditing = true;
+  var body = document.getElementById('fv-body');
+  var content = state.fileViewerData.content;
+  if (state.fileViewerData.type === 'json') {
+    try { content = JSON.stringify(JSON.parse(content), null, 2); } catch (e) { /* keep raw */ }
+  }
+  body.innerHTML = '';
+  // fv-body keeps its default overflow:auto — it scrolls the whole edit grid
+
+  // Grid container — both children stack in same cell
+  var grid = document.createElement('div');
+  grid.className = 'fv-edit-grid';
+
+  // Pre: highlighted read-only layer (pointer-events: none)
+  var pre = document.createElement('pre');
+  pre.id = 'fv-edit-pre';
+  pre.setAttribute('aria-hidden', 'true');
+
+  // Textarea: transparent text, visible caret
+  var ta = document.createElement('textarea');
+  ta.className = 'fv-edit-area';
+  ta.id = 'fv-edit-area';
+  ta.value = content;
+  ta.spellcheck = false;
+  ta.setAttribute('autocomplete', 'off');
+  ta.setAttribute('autocorrect', 'off');
+  ta.setAttribute('autocapitalize', 'off');
+
+  grid.appendChild(pre);
+  grid.appendChild(ta);
+  body.appendChild(grid);
+
+  // Sync highlight + lint
+  function sync() {
+    var text = ta.value;
+    var isJson = state.fileViewerData && state.fileViewerData.type === 'json';
+    var lines = text.split('\n');
+    var html = '';
+    for (var i = 0; i < lines.length; i++) {
+      html += (isJson ? tokenizeJsonLine(lines[i]) : esc(lines[i])) + '\n';
+    }
+    pre.innerHTML = html;
+    // Auto-size textarea to match pre height (prevents internal scroll desync)
+    ta.style.height = '0';
+    ta.style.height = pre.scrollHeight + 'px';
+    // Lint in status bar
+    var linesEl = document.getElementById('fv-lines');
+    if (!linesEl) return;
+    if (isJson) {
+      try {
+        JSON.parse(text);
+        linesEl.textContent = 'EDITING \u00b7 Ln ' + lines.length + ' \u00b7 Valid JSON';
+        linesEl.className = '';
+      } catch (e) {
+        var m = e.message.match(/position\s+(\d+)/i);
+        var ln = '';
+        if (m) ln = ' (Ln ' + text.substring(0, parseInt(m[1], 10)).split('\n').length + ')';
+        linesEl.textContent = 'EDITING \u00b7 ' + e.message + ln;
+        linesEl.className = 'fv-lint-error';
+      }
+    } else {
+      linesEl.textContent = 'EDITING \u00b7 Ln ' + lines.length;
+      linesEl.className = '';
+    }
+  }
+
+  sync();
+  ta.addEventListener('input', sync);
+
+  // Tab key inserts 2 spaces
+  ta.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      var s = ta.selectionStart, end = ta.selectionEnd;
+      ta.value = ta.value.substring(0, s) + '  ' + ta.value.substring(end);
+      ta.selectionStart = ta.selectionEnd = s + 2;
+      sync();
+    }
+  });
+
+  ta.focus();
+
+  // Update toolbar
+  document.getElementById('fv-edit').style.display = 'none';
+  document.getElementById('fv-import').style.display = 'none';
+  document.getElementById('fv-save').style.display = '';
+  document.getElementById('fv-cancel-edit').style.display = '';
+  document.getElementById('fv-copy').style.display = 'none';
+  var sb = document.querySelector('.fv-statusbar');
+  if (sb) sb.classList.add('editing');
+}
+
+/** Cancel edit — restore read-only rendered view */
+function fvCancelEdit() {
+  if (!_fvEditing) return;
+  _fvEditing = false;
+  document.getElementById('fv-edit').style.display = '';
+  document.getElementById('fv-save').style.display = 'none';
+  document.getElementById('fv-cancel-edit').style.display = 'none';
+  document.getElementById('fv-copy').style.display = '';
+  fvUpdateEditButton(); // restores edit + import visibility
+  var sb = document.querySelector('.fv-statusbar');
+  if (sb) sb.classList.remove('editing');
+  // Re-render the original content
+  if (state.fileViewerData && state.fileViewerData.content) {
+    var body = document.getElementById('fv-body');
+    // Restore fv-body default styles
+    body.scrollTop = 0;
+    if (state.fileViewerData.type === 'json') {
+      fvRenderJson(body, state.fileViewerData.content);
+    } else {
+      fvRenderCode(body, state.fileViewerData.content, false, '');
+    }
+  }
+}
+
+/** Save edited content back to device */
+async function fvSaveEdit() {
+  if (!_fvEditing || !state.fileViewerData) return;
+  var ta = document.querySelector('.fv-edit-area');
+  if (!ta) return;
+  var newContent = ta.value;
+
+  // Validate JSON if JSON file
+  if (state.fileViewerData.type === 'json') {
+    try {
+      JSON.parse(newContent);
+    } catch (e) {
+      toast('Invalid JSON: ' + e.message, 'danger', 4000);
+      return;
+    }
+  }
+
+  var filePath = state.fileViewerData.path
+    ? state.fileViewerData.path + '/' + state.fileViewerData.name
+    : state.fileViewerData.name;
+
+  try {
+    var url = API_BASE + '?action=uploadconfig&path=' + encodeURIComponent(filePath);
+    var r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: newContent,
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    toast('Saved: ' + state.fileViewerData.name, 'success', 2000);
+    // Update cached content
+    state.fileViewerData.content = newContent;
+    // Exit edit mode and re-render
+    fvCancelEdit();
+  } catch (e) {
+    toast('Save failed: ' + e.message, 'danger', 3000);
+  }
+}
+
+/** Import/Replace — pick a JSON file from computer, validate, and upload to device */
+function fvImportFile() {
+  if (!state.fileViewerData) return;
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,.txt';
+  input.addEventListener('change', function() {
+    if (!input.files.length) return;
+    var file = input.files[0];
+    var reader = new FileReader();
+    reader.onload = async function() {
+      var text = reader.result;
+      // JSON validation
+      if (state.fileViewerData.type === 'json') {
+        try {
+          JSON.parse(text);
+        } catch (e) {
+          toast('Invalid JSON in "' + file.name + '": ' + e.message, 'danger', 5000);
+          return;
+        }
+      }
+      // Confirm replacement
+      if (!confirm('Replace "' + state.fileViewerData.name + '" with contents of "' + file.name + '"?')) return;
+      // Upload
+      var filePath = state.fileViewerData.path
+        ? state.fileViewerData.path + '/' + state.fileViewerData.name
+        : state.fileViewerData.name;
+      try {
+        var url = API_BASE + '?action=uploadconfig&path=' + encodeURIComponent(filePath);
+        var r = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: text,
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        toast('Replaced: ' + state.fileViewerData.name, 'success', 2000);
+        // Update cached content and re-render
+        state.fileViewerData.content = text;
+        var body = document.getElementById('fv-body');
+        if (state.fileViewerData.type === 'json') {
+          fvRenderJson(body, text);
+        } else {
+          fvRenderCode(body, text, false, '');
+        }
+        fvUpdateEditButton();
+      } catch (e) {
+        toast('Import failed: ' + e.message, 'danger', 3000);
+      }
+    };
+    reader.readAsText(file);
+  });
+  input.click();
+}
+
+/** Check if current file viewer path is in a macro or preset folder */
+function fvGetEditorLink() {
+  if (!state.fileViewerData) return null;
+  var fp = state.fileViewerData.path || '';
+  if (/^(factory|user)\/macros$/i.test(fp)) return 'macro';
+  if (/^(factory|user)\/presets$/i.test(fp)) return 'preset';
+  // Also match deeper subpaths like macros/subfolder
+  if (/\bmacros\b/i.test(fp)) return 'macro';
+  if (/\bpresets\b/i.test(fp)) return 'preset';
+  return null;
+}
+
+/** Show/hide the Edit and Import buttons based on factory unlock state and file type */
+function fvUpdateEditButton() {
+  var editBtn = document.getElementById('fv-edit');
+  var importBtn = document.getElementById('fv-import');
+  if (!editBtn) return;
+  var F = window.TBD.factory;
+  var unlocked = F && F.isUnlocked && F.isUnlocked();
+  var isEditable = state.fileViewerData && state.fileViewerData.content &&
+    (state.fileViewerData.type === 'json' || state.fileViewerData.type === 'text');
+  var show = unlocked && isEditable && !_fvEditing;
+  editBtn.style.display = show ? '' : 'none';
+  if (importBtn) importBtn.style.display = show ? '' : 'none';
 }
 
 /** Close a file-loaded kit — restores the dropdown-based kit editor */
@@ -9532,6 +9795,14 @@ function setupPoolCollapse() {
     view.classList.remove('pool-collapsed');
     splitPanel.position = savedPosition;
   });
+  // Also expand on clicking the vertical label
+  var rail = document.querySelector('.pool-expand-rail');
+  if (rail) {
+    rail.addEventListener('click', function(e) {
+      if (e.target.closest('.pool-expand-icon')) return; // let button handle it
+      expandBtn.click();
+    });
+  }
 }
 
 /** Download file */
@@ -9582,6 +9853,44 @@ function setupFileViewer() {
     } catch (e) {
       toast('Copy failed', 'danger');
     }
+  });
+
+  // Edit / Save / Cancel / Import buttons
+  document.getElementById('fv-edit').addEventListener('click', fvStartEdit);
+  document.getElementById('fv-save').addEventListener('click', fvSaveEdit);
+  document.getElementById('fv-cancel-edit').addEventListener('click', fvCancelEdit);
+  document.getElementById('fv-import').addEventListener('click', fvImportFile);
+
+  // Cross-link: Macro Editor → preset-macro-manager.html
+  var macroLink = document.getElementById('fv-link-macro-editor');
+  if (macroLink) {
+    macroLink.addEventListener('click', function() {
+      var defId = '';
+      if (state.fileViewerData && state.fileViewerData.name) {
+        defId = state.fileViewerData.name.replace(/\.json$/i, '');
+      }
+      var url = '/preset-macro-manager.html?tab=macros';
+      if (defId) url += '&openDef=' + encodeURIComponent(defId);
+      window.location.href = url;
+    });
+  }
+  // Cross-link: Preset Editor → preset-macro-manager.html
+  var presetLink = document.getElementById('fv-link-preset-editor');
+  if (presetLink) {
+    presetLink.addEventListener('click', function() {
+      var presetId = '';
+      if (state.fileViewerData && state.fileViewerData.name) {
+        presetId = state.fileViewerData.name.replace(/\.json$/i, '');
+      }
+      var url = '/preset-macro-manager.html?tab=presets';
+      if (presetId) url += '&openPreset=' + encodeURIComponent(presetId);
+      window.location.href = url;
+    });
+  }
+
+  // Update edit button when factory lock state changes
+  window.addEventListener('tbd-factory-lock-changed', function() {
+    fvUpdateEditButton();
   });
 }
 // ═══════════════════════════════════════════════════════════════
@@ -9711,7 +10020,7 @@ async function init() {
 // Unified mode: export on window.TBD for lazy init from app.js
 // Standalone mode (samples.html): auto-init on DOMContentLoaded
 if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
-  window.TBD.sampleManager = { init: init, state: state, renderJson: fvRenderJson };
+  window.TBD.sampleManager = { init: init, state: state, renderJson: fvRenderJson, navigatePool: navigatePool, openFile: openFileViewerDirect };
 } else {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => setTimeout(init, 200));
@@ -10083,11 +10392,10 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     if (badge) badge.style.display = isActive ? '' : 'none';
     if (btn) {
       btn.disabled = isActive;
-      if (isActive) {
-        btn.innerHTML = '<sl-icon name="star-fill" style="font-size:0.65rem;color:var(--sl-color-success-600);"></sl-icon> Boot Default';
-      } else {
-        btn.innerHTML = '<sl-icon name="star" style="font-size:0.65rem;"></sl-icon> Set as Boot Default';
-      }
+      btn.setAttribute('name', isActive ? 'star-fill' : 'star');
+      btn.setAttribute('data-active', isActive ? 'true' : 'false');
+      btn.title = isActive ? 'Boot Default' : 'Set as Boot Default';
+      btn.label = isActive ? 'Boot Default' : 'Set as Boot Default';
     }
   }
 
@@ -10734,6 +11042,19 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     if (setActiveBtn) {
       setActiveBtn.addEventListener('click', function() {
         setAsBootDefault();
+      });
+    }
+
+    var downloadBtn = document.getElementById('td-download-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', function() {
+        if (!currentFile) return;
+        var filePath = (currentFile.path ? currentFile.path + '/' : '') + currentFile.name;
+        var url = '/api/v2/storage?download=' + encodeURIComponent(filePath);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = currentFile.name;
+        a.click();
       });
     }
 
@@ -11531,6 +11852,55 @@ if (typeof window.TBD !== 'undefined' && window.TBD.shared) {
     // If ?view=samples was requested, switch to it after a short delay
     if (requestedView === 'samples') {
       setTimeout(function() { switchView('view-samples'); }, 300);
+    }
+
+    // If ?browse=<folder> was requested, switch to Data view and navigate to folder
+    var browsePath = params.get('browse');
+    if (browsePath) {
+      setTimeout(function() {
+        switchView('view-samples');
+        // Wait for sample manager to initialize, then navigate to the folder
+        var attempts = 0;
+        var navInterval = setInterval(function() {
+          attempts++;
+          var sm = window.TBD.sampleManager;
+          if (sm && sm.navigatePool && sm.state && sm.state.files) {
+            clearInterval(navInterval);
+            sm.navigatePool(browsePath);
+            // Clean URL to avoid re-navigating on refresh
+            var cleanUrl = window.location.pathname + '?view=samples';
+            window.history.replaceState(null, '', cleanUrl);
+          } else if (attempts > 30) {
+            clearInterval(navInterval);
+          }
+        }, 200);
+      }, 300);
+    }
+
+    // If ?file=<path> was requested, switch to Data view, navigate to folder, open file in viewer
+    var filePath = params.get('file');
+    if (filePath) {
+      var lastSlash = filePath.lastIndexOf('/');
+      var fileFolder = lastSlash > 0 ? filePath.substring(0, lastSlash) : '';
+      var fileName = lastSlash > 0 ? filePath.substring(lastSlash + 1) : filePath;
+      setTimeout(function() {
+        switchView('view-samples');
+        var attempts = 0;
+        var navInterval = setInterval(function() {
+          attempts++;
+          var sm = window.TBD.sampleManager;
+          if (sm && sm.navigatePool && sm.state && sm.state.files) {
+            clearInterval(navInterval);
+            sm.navigatePool(fileFolder);
+            // Wait for folder to load, then open the file
+            setTimeout(function() { sm.openFile(fileFolder, fileName, 0); }, 400);
+            var cleanUrl = window.location.pathname + '?view=samples';
+            window.history.replaceState(null, '', cleanUrl);
+          } else if (attempts > 30) {
+            clearInterval(navInterval);
+          }
+        }, 200);
+      }, 300);
     }
 
     // If ?openConfig=1 was requested, open config dialog after init

@@ -1257,12 +1257,13 @@ window.TBD.shared = {
       btn.classList.toggle('unlocked', _unlocked);
       btn.title = _unlocked ? 'Factory Edit Mode (unlocked) — click to lock' : 'Factory Edit Mode — click to unlock';
     }
-    // Defer initial icon update until sl-icon is defined to avoid blank icons
-    if (customElements.get('sl-icon')) {
-      updateIcon();
-    } else {
-      customElements.whenDefined('sl-icon').then(updateIcon);
-    }
+    // Always defer initial icon update — even if sl-icon is already registered,
+    // the specific element may not have completed its Lit upgrade cycle yet.
+    // whenDefined resolves immediately (as microtask) if already defined,
+    // then rAF ensures the element is fully upgraded before we set attributes.
+    customElements.whenDefined('sl-icon').then(function() {
+      requestAnimationFrame(updateIcon);
+    });
 
     btn.addEventListener('click', function() {
       if (_unlocked) {
@@ -1950,21 +1951,24 @@ window.TBD.shared = {
       if (def) {
         var D = window.TBD.designer;
         var isNew = D && D.state && !D.state.selectedDefId;
-        html += '<div class="track-info-row">';
+        html += '<div class="track-info-row" style="flex-wrap:nowrap;gap:0.35rem;">';
         html += '<span class="track-info-label">MACRO NAME:</span>';
-        html += '<input class="track-inline-input def-name-input" value="' + S.esc(def.name) + '" placeholder="Definition name" />';
+        html += '<input class="track-inline-input def-name-input" value="' + S.esc(def.name) + '" placeholder="Definition name" style="flex:1 1 80px;min-width:60px;max-width:200px;" />';
         html += '<span class="track-info-label">ID:</span>';
-        html += '<input class="track-inline-input def-id-input" value="' + S.esc(def.id) + '" placeholder="auto-id" ' + (isNew ? '' : 'readonly') + ' />';
+        html += '<input class="track-inline-input def-id-input" value="' + S.esc(def.id) + '" placeholder="auto-id" style="min-width:0;max-width:12ch;" ' + (isNew ? '' : 'readonly') + ' />';
         var F = window.TBD.factory;
         var isFactoryDef = F && F.isFactoryDefinition(def.id);
         var isFactoryUnlocked = F && F.isUnlocked && F.isUnlocked();
         var volReadonly = isFactoryDef && !isFactoryUnlocked;
         html += '<span class="track-info-label" title="Volume multiplier — compensates for quiet/loud engines. 1.0 = no change.">VOL:</span>';
-        html += '<input type="number" class="track-inline-input def-volmult-input" value="' + (def.volmult != null ? def.volmult : 1.0) + '" min="0.1" max="4.0" step="0.1" style="width:3rem;' + (volReadonly ? 'opacity:0.5;' : '') + '" title="Volume multiplier (0.1–4.0)"' + (volReadonly ? ' readonly' : '') + ' />';
-        html += '<div class="track-def-actions">';
+        html += '<input type="text" inputmode="decimal" class="track-inline-input def-volmult-input" value="' + (def.volmult != null ? def.volmult : 1.0) + '" style="width:5ch;min-width:4ch;max-width:6ch;text-align:center;padding:0.25rem 0.2rem;' + (volReadonly ? 'opacity:0.5;' : '') + '" title="Volume multiplier (0.1–4.0)"' + (volReadonly ? ' readonly' : '') + ' />';
+        html += '<div class="track-def-actions" style="flex-shrink:0;">';
         html += '<button class="mapping-btn btn-save-def" title="Save this definition"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
         html += '<button class="mapping-btn btn-export-def" title="Export as JSON"><sl-icon name="download" style="font-size:0.7rem;"></sl-icon> Export</button>';
         html += '<button class="mapping-btn btn-import-def" title="Import from JSON"><sl-icon name="upload" style="font-size:0.7rem;"></sl-icon> Import</button>';
+        var jsonFolder = (isFactoryDef ? 'factory/macros' : 'macros');
+        var jsonFile = jsonFolder + '/' + def.id + '.json';
+        html += '<a class="mapping-btn btn-viewjson-def" href="/index.html?view=samples&file=' + encodeURIComponent(jsonFile) + '" title="View this macro\'s JSON in Data Manager" style="text-decoration:none;"><sl-icon name="filetype-json" style="font-size:0.7rem;"></sl-icon> View JSON</a>';
         if (!isNew) {
           html += '<button class="mapping-btn btn-delete-def" title="Delete this definition" style="border-color:var(--sl-color-danger-300);color:var(--sl-color-danger-600);"><sl-icon name="trash3" style="font-size:0.7rem;"></sl-icon> Delete</button>';
         }
@@ -4916,6 +4920,7 @@ window.TBD.shared = {
     deleteDefinition: deleteDefinition,
     exportDefinition: exportDefinition,
     importDefinitionFile: importDefinitionFile,
+    selectMacroDefinition: selectMacroDefinition,
     reload: function() {
       if (state.activeTrack >= 0) {
         var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
@@ -5289,11 +5294,10 @@ window.TBD.shared = {
     if (badge) badge.style.display = isActive ? '' : 'none';
     if (btn) {
       btn.disabled = isActive;
-      if (isActive) {
-        btn.innerHTML = '<sl-icon name="star-fill" style="font-size:0.65rem;color:var(--sl-color-success-600);"></sl-icon> Boot Default';
-      } else {
-        btn.innerHTML = '<sl-icon name="star" style="font-size:0.65rem;"></sl-icon> Set as Boot Default';
-      }
+      btn.setAttribute('name', isActive ? 'star-fill' : 'star');
+      btn.setAttribute('data-active', isActive ? 'true' : 'false');
+      btn.title = isActive ? 'Boot Default' : 'Set as Boot Default';
+      btn.label = isActive ? 'Boot Default' : 'Set as Boot Default';
     }
   }
 
@@ -5943,6 +5947,19 @@ window.TBD.shared = {
       });
     }
 
+    var downloadBtn = document.getElementById('td-download-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', function() {
+        if (!currentFile) return;
+        var filePath = (currentFile.path ? currentFile.path + '/' : '') + currentFile.name;
+        var url = '/api/v2/storage?download=' + encodeURIComponent(filePath);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = currentFile.name;
+        a.click();
+      });
+    }
+
     if (closeBtn) {
       closeBtn.addEventListener('click', function() {
         closeTDEditor();
@@ -6169,6 +6186,77 @@ window.TBD.shared = {
     });
   }
 
+  // ─── URL Parameter Handling (cross-links from FILE VIEWER) ─
+
+  function handleUrlParams() {
+    var params = new URLSearchParams(window.location.search);
+    var tab = params.get('tab');
+    var openDef = params.get('openDef');
+    var openPreset = params.get('openPreset');
+
+    if (tab === 'macros' || openDef) {
+      switchTab('macros');
+    } else if (tab === 'presets' || openPreset) {
+      switchTab('presets');
+    }
+
+    if (openDef && S.data.macroDefs) {
+      // Find the macro definition by ID
+      var def = S.data.macroDefs.find(function(d) { return d.id === openDef; });
+      if (def) {
+        // Find a track that has the matching machine
+        var targetTrack = S.data.tracks.find(function(t) {
+          return (t.machines || []).indexOf(def.machine) >= 0;
+        });
+        if (targetTrack) {
+          S.selectTrack(targetTrack.index);
+        }
+        // Give UI time to settle after track selection, then select the definition
+        setTimeout(function() {
+          if (window.TBD.designer && window.TBD.designer.selectMacroDefinition) {
+            window.TBD.designer.selectMacroDefinition(openDef);
+          }
+        }, 300);
+      }
+    }
+
+    if (openPreset && S.data.soundPresets) {
+      // Find preset by ID and select its macro to show it in context
+      var preset = S.data.soundPresets.find(function(p) { return p.id === openPreset; });
+      if (preset && preset.macro) {
+        var pDef = S.data.macroDefs.find(function(d) { return d.id === preset.macro; });
+        if (pDef) {
+          var targetTrack = S.data.tracks.find(function(t) {
+            return (t.machines || []).indexOf(pDef.machine) >= 0;
+          });
+          if (targetTrack) {
+            S.selectTrack(targetTrack.index);
+          }
+        }
+        // Give UI time to settle, then select the macro + scroll to preset
+        setTimeout(function() {
+          if (window.TBD.designer && window.TBD.designer.selectMacroDefinition && preset.macro) {
+            window.TBD.designer.selectMacroDefinition(preset.macro);
+          }
+          // Highlight the target preset card after a short additional delay
+          setTimeout(function() {
+            var presetCard = document.querySelector('.sp-card[data-preset-id="' + openPreset + '"]');
+            if (presetCard) {
+              presetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              presetCard.style.outline = '2px solid var(--sl-color-primary-500)';
+              setTimeout(function() { presetCard.style.outline = ''; }, 2000);
+            }
+          }, 200);
+        }, 300);
+      }
+    }
+
+    // Clean URL params without triggering a reload
+    if (params.toString()) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }
+
   // ─── Boot Sequence ────────────────────────────────────────
 
   function boot() {
@@ -6211,6 +6299,9 @@ window.TBD.shared = {
       if (S.data.tracks.length > 0) {
         S.selectTrack(S.data.tracks[0].index);
       }
+
+      // Handle URL params (cross-links from FILE VIEWER)
+      handleUrlParams();
 
       S.hideLoading();
       console.log('[TBD-16] Boot complete');

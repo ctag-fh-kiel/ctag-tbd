@@ -760,6 +760,55 @@
       setTimeout(function() { switchView('view-samples'); }, 300);
     }
 
+    // If ?browse=<folder> was requested, switch to Data view and navigate to folder
+    var browsePath = params.get('browse');
+    if (browsePath) {
+      setTimeout(function() {
+        switchView('view-samples');
+        // Wait for sample manager to initialize, then navigate to the folder
+        var attempts = 0;
+        var navInterval = setInterval(function() {
+          attempts++;
+          var sm = window.TBD.sampleManager;
+          if (sm && sm.navigatePool && sm.state && sm.state.files) {
+            clearInterval(navInterval);
+            sm.navigatePool(browsePath);
+            // Clean URL to avoid re-navigating on refresh
+            var cleanUrl = window.location.pathname + '?view=samples';
+            window.history.replaceState(null, '', cleanUrl);
+          } else if (attempts > 30) {
+            clearInterval(navInterval);
+          }
+        }, 200);
+      }, 300);
+    }
+
+    // If ?file=<path> was requested, switch to Data view, navigate to folder, open file in viewer
+    var filePath = params.get('file');
+    if (filePath) {
+      var lastSlash = filePath.lastIndexOf('/');
+      var fileFolder = lastSlash > 0 ? filePath.substring(0, lastSlash) : '';
+      var fileName = lastSlash > 0 ? filePath.substring(lastSlash + 1) : filePath;
+      setTimeout(function() {
+        switchView('view-samples');
+        var attempts = 0;
+        var navInterval = setInterval(function() {
+          attempts++;
+          var sm = window.TBD.sampleManager;
+          if (sm && sm.navigatePool && sm.state && sm.state.files) {
+            clearInterval(navInterval);
+            sm.navigatePool(fileFolder);
+            // Wait for folder to load, then open the file
+            setTimeout(function() { sm.openFile(fileFolder, fileName, 0); }, 400);
+            var cleanUrl = window.location.pathname + '?view=samples';
+            window.history.replaceState(null, '', cleanUrl);
+          } else if (attempts > 30) {
+            clearInterval(navInterval);
+          }
+        }, 200);
+      }, 300);
+    }
+
     // If ?openConfig=1 was requested, open config dialog after init
     if (params.get('openConfig') === '1') {
       setTimeout(function() {

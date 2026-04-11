@@ -4,8 +4,7 @@
  *
  * Serves the WebUI from sdcard_image/www/ and provides mock API endpoints
  * that mirror the real ESP32 RestServer.cpp/MacroAPI.cpp/StorageAPI.cpp.
- * Uses real data from sdcard_image/data/ (synthdefinitions, macrodefinitions,
- * macrosoundpresets, sp/ plugin configs).
+ * Uses real data from sdcard_image/ (factory/, system/, samples/, user/).
  *
  * Mock API Endpoints (v2 — matching RestServer.cpp):
  *   GET  /api/v2/device?action=getIOCaps              → IO capabilities
@@ -26,8 +25,8 @@
  *   GET  /api/v2/plugins?action=getPresetData&id=X      → full preset JSON
  *   POST /api/v2/plugins?action=setPresetData&id=X      → write preset JSON
  *   GET  /api/v2/samples                               → file list + configfiles scan
- *   GET  /api/v2/samples?getconfig=<path>               → serve JSON from data/
- *   POST /api/v2/samples?action=uploadconfig&path=<p>   → save JSON to data/
+ *   GET  /api/v2/samples?getconfig=<path>               → serve JSON config file
+ *   POST /api/v2/samples?action=uploadconfig&path=<p>   → save JSON config file
  *   POST /api/v2/samples?action=manage                  → delete/rename files
  *   POST /api/v2/samples?action=reload                  → reload sample rom
  *   GET  /api/v2/macros                                 → current track state
@@ -52,10 +51,10 @@ const url  = require('url');
 const PORT = parseInt(process.argv[2], 10) || 3001;
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
 const WEBROOT = path.resolve(__dirname, '..');
-const DATA_DIR = path.resolve(REPO_ROOT, 'sdcard_image', 'data');
 const FACTORY_DIR = path.resolve(REPO_ROOT, 'sdcard_image', 'factory');
 const SAMPLE_ROOT = path.resolve(REPO_ROOT, 'sample_rom', 'tbdsamples');
 const SDCARD_ROOT = path.resolve(REPO_ROOT, 'sdcard_image');
+const DATA_DIR = SDCARD_ROOT; // Legacy alias — was sdcard_image/data/, now uses SD card root
 
 // ───────── MIME types ─────────
 const MIME = {
@@ -93,33 +92,28 @@ function loadSynthDefinitions() {
     synthDefs = { tracks: [], machines: [] };
   }
 
-  // Build plugin list by scanning mui-*.json files in plugins/ directory,
+  // Build plugin list by scanning mp-*.json (or legacy mui-*.json) in factory/plugins/,
   // matching the real firmware's SPManagerDataModel::getSoundProcessors().
   pluginList = [];
-  const spDirs = [
-    path.join(DATA_DIR, 'sp'),
-    path.join(FACTORY_DIR, 'plugins'),
-  ];
-  for (const spDir of spDirs) {
-    try {
-      const files = fs.readdirSync(spDir).filter(f => f.startsWith('mui-') && f.endsWith('.json')).sort();
-      for (const file of files) {
-        try {
-          const d = JSON.parse(fs.readFileSync(path.join(spDir, file), 'utf8'));
-          const id = d.id || file.replace(/^mui-|\.json$/g, '');
-          if (!pluginList.find(p => p.id === id)) {
-            pluginList.push({
-              id: id,
-              name: d.name || d.id || file,
-              isStereo: d.isStereo || false,
-              hint: d.hint || '',
-            });
-          }
-        } catch (e) { /* skip unreadable files */ }
-      }
-    } catch (e) {
-      // directory may not exist, that's okay
+  const spDir = path.join(FACTORY_DIR, 'plugins');
+  try {
+    const files = fs.readdirSync(spDir).filter(f => (f.startsWith('mp-') || f.startsWith('mui-')) && f.endsWith('.json')).sort();
+    for (const file of files) {
+      try {
+        const d = JSON.parse(fs.readFileSync(path.join(spDir, file), 'utf8'));
+        const id = d.id || file.replace(/^(mp|mui)-|\.json$/g, '');
+        if (!pluginList.find(p => p.id === id)) {
+          pluginList.push({
+            id: id,
+            name: d.name || d.id || file,
+            isStereo: d.isStereo || false,
+            hint: d.hint || '',
+          });
+        }
+      } catch (e) { /* skip unreadable files */ }
     }
+  } catch (e) {
+    // directory may not exist, that's okay
   }
 
   // Initialize 19 track slots (0-15 instruments, 16-18 FX)
@@ -281,8 +275,8 @@ function scanAllFiles(baseDir, relDir) {
     const fullPath = path.join(baseDir, relPath);
 
     if (ent.isDirectory()) {
-      // Skip www/ directory (that's the webroot, not SD data)
-      if (!relDir && ent.name === 'www') continue;
+      // Skip www/ (webroot) and data/ (legacy, deprecated)
+      if (!relDir && (ent.name === 'www' || ent.name === 'data')) continue;
       results.push(...scanAllFiles(baseDir, relPath));
     } else if (ent.isFile()) {
       const stat = fs.statSync(fullPath);
@@ -308,7 +302,7 @@ function scanAllDirectories(baseDir, relDir) {
   for (const ent of entries) {
     if (ent.name.startsWith('.')) continue;
     if (ent.isDirectory()) {
-      if (!relDir && ent.name === 'www') continue;
+      if (!relDir && (ent.name === 'www' || ent.name === 'data')) continue;
       const relPath = relDir ? relDir + '/' + ent.name : ent.name;
       results.push(relPath);
       results.push(...scanAllDirectories(baseDir, relPath));
@@ -321,7 +315,7 @@ function scanAllDirectories(baseDir, relDir) {
 function generateMockParams(pluginId) {
   // Try to load the real config file if it exists (data/sp/ or factory/plugins/)
   const candidates = [
-    path.join(DATA_DIR, 'sp', `mui-${pluginId}.json`),
+    path.join(FACTORY_DIR, 'plugins', `mp-${pluginId}.json`),
     path.join(FACTORY_DIR, 'plugins', `mui-${pluginId}.json`),
   ];
   for (const spPath of candidates) {
@@ -539,8 +533,8 @@ function handleSamplesGet(req, res) {
 
   // Get a config file: ?getconfig=synthdefinitions.json
   if (q.getconfig) {
-    // Try DATA_DIR first, then FACTORY_DIR, then SYSTEM_DIR as fallback
-    let configPath = path.join(DATA_DIR, q.getconfig);
+    // Try FACTORY_DIR first, then system/, then SD root as fallback
+    let configPath = path.join(FACTORY_DIR, q.getconfig);
     if (!fs.existsSync(configPath)) configPath = path.join(FACTORY_DIR, q.getconfig);
     if (!fs.existsSync(configPath)) configPath = path.join(SDCARD_ROOT, 'system', q.getconfig);
     // Security: must stay inside sdcard_image
@@ -755,17 +749,15 @@ function handleMacroApiGet(req, res) {
 
   if (action === 'getall') {
     // Bulk endpoint — return macroDefs, soundPresets, and tracks
-    // Scan both data/macrodefinitions and factory/macros for macro definitions
-    let macroDefs = scanJsonFiles(DATA_DIR, 'macrodefinitions').concat(scanJsonFiles(FACTORY_DIR, 'macros')).map(f => {
+    // Scan factory/macros for macro definitions
+    let macroDefs = scanJsonFiles(FACTORY_DIR, 'macros').map(f => {
       try {
-        const base = f.path && f.path.startsWith('macros') ? FACTORY_DIR : DATA_DIR;
-        return JSON.parse(fs.readFileSync(path.join(base, f.path ? f.path + '/' + f.name : f.name), 'utf8'));
+        return JSON.parse(fs.readFileSync(path.join(FACTORY_DIR, f.path ? f.path + '/' + f.name : f.name), 'utf8'));
       } catch (e) { return null; }
     }).filter(Boolean);
-    const soundPresets = scanJsonFiles(DATA_DIR, 'macrosoundpresets').concat(scanJsonFiles(FACTORY_DIR, 'presets')).map(f => {
+    const soundPresets = scanJsonFiles(FACTORY_DIR, 'presets').map(f => {
       try {
-        const base = f.path && f.path.startsWith('presets') ? FACTORY_DIR : DATA_DIR;
-        return JSON.parse(fs.readFileSync(path.join(base, f.path ? f.path + '/' + f.name : f.name), 'utf8'));
+        return JSON.parse(fs.readFileSync(path.join(FACTORY_DIR, f.path ? f.path + '/' + f.name : f.name), 'utf8'));
       } catch (e) { return null; }
     }).filter(Boolean);
     const tracks = trackState.slice(0, 19).map(t => ({

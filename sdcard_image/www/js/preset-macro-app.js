@@ -190,6 +190,77 @@
     });
   }
 
+  // ─── URL Parameter Handling (cross-links from FILE VIEWER) ─
+
+  function handleUrlParams() {
+    var params = new URLSearchParams(window.location.search);
+    var tab = params.get('tab');
+    var openDef = params.get('openDef');
+    var openPreset = params.get('openPreset');
+
+    if (tab === 'macros' || openDef) {
+      switchTab('macros');
+    } else if (tab === 'presets' || openPreset) {
+      switchTab('presets');
+    }
+
+    if (openDef && S.data.macroDefs) {
+      // Find the macro definition by ID
+      var def = S.data.macroDefs.find(function(d) { return d.id === openDef; });
+      if (def) {
+        // Find a track that has the matching machine
+        var targetTrack = S.data.tracks.find(function(t) {
+          return (t.machines || []).indexOf(def.machine) >= 0;
+        });
+        if (targetTrack) {
+          S.selectTrack(targetTrack.index);
+        }
+        // Give UI time to settle after track selection, then select the definition
+        setTimeout(function() {
+          if (window.TBD.designer && window.TBD.designer.selectMacroDefinition) {
+            window.TBD.designer.selectMacroDefinition(openDef);
+          }
+        }, 300);
+      }
+    }
+
+    if (openPreset && S.data.soundPresets) {
+      // Find preset by ID and select its macro to show it in context
+      var preset = S.data.soundPresets.find(function(p) { return p.id === openPreset; });
+      if (preset && preset.macro) {
+        var pDef = S.data.macroDefs.find(function(d) { return d.id === preset.macro; });
+        if (pDef) {
+          var targetTrack = S.data.tracks.find(function(t) {
+            return (t.machines || []).indexOf(pDef.machine) >= 0;
+          });
+          if (targetTrack) {
+            S.selectTrack(targetTrack.index);
+          }
+        }
+        // Give UI time to settle, then select the macro + scroll to preset
+        setTimeout(function() {
+          if (window.TBD.designer && window.TBD.designer.selectMacroDefinition && preset.macro) {
+            window.TBD.designer.selectMacroDefinition(preset.macro);
+          }
+          // Highlight the target preset card after a short additional delay
+          setTimeout(function() {
+            var presetCard = document.querySelector('.sp-card[data-preset-id="' + openPreset + '"]');
+            if (presetCard) {
+              presetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              presetCard.style.outline = '2px solid var(--sl-color-primary-500)';
+              setTimeout(function() { presetCard.style.outline = ''; }, 2000);
+            }
+          }, 200);
+        }, 300);
+      }
+    }
+
+    // Clean URL params without triggering a reload
+    if (params.toString()) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }
+
   // ─── Boot Sequence ────────────────────────────────────────
 
   function boot() {
@@ -232,6 +303,9 @@
       if (S.data.tracks.length > 0) {
         S.selectTrack(S.data.tracks[0].index);
       }
+
+      // Handle URL params (cross-links from FILE VIEWER)
+      handleUrlParams();
 
       S.hideLoading();
       console.log('[TBD-16] Boot complete');

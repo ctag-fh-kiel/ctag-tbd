@@ -360,11 +360,10 @@
     if (badge) badge.style.display = isActive ? '' : 'none';
     if (btn) {
       btn.disabled = isActive;
-      if (isActive) {
-        btn.innerHTML = '<sl-icon name="star-fill" style="font-size:0.65rem;color:var(--sl-color-success-600);"></sl-icon> Boot Default';
-      } else {
-        btn.innerHTML = '<sl-icon name="star" style="font-size:0.65rem;"></sl-icon> Set as Boot Default';
-      }
+      btn.setAttribute('name', isActive ? 'star-fill' : 'star');
+      btn.setAttribute('data-active', isActive ? 'true' : 'false');
+      btn.title = isActive ? 'Boot Default' : 'Set as Boot Default';
+      btn.label = isActive ? 'Boot Default' : 'Set as Boot Default';
     }
   }
 
@@ -1011,6 +1010,19 @@
     if (setActiveBtn) {
       setActiveBtn.addEventListener('click', function() {
         setAsBootDefault();
+      });
+    }
+
+    var downloadBtn = document.getElementById('td-download-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', function() {
+        if (!currentFile) return;
+        var filePath = (currentFile.path ? currentFile.path + '/' : '') + currentFile.name;
+        var url = '/api/v2/storage?download=' + encodeURIComponent(filePath);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = currentFile.name;
+        a.click();
       });
     }
 

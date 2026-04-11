@@ -1370,30 +1370,37 @@
     #view-samples sl-split-panel::part(panel) { overflow: hidden; }
 
     /* File Manager collapse */
-    #view-samples.pool-collapsed sl-split-panel { --divider-width: 0px; }
-    #view-samples.pool-collapsed #pool-panel { overflow: hidden; width: 0; min-width: 0; }
-    #view-samples.pool-collapsed sl-split-panel::part(divider) { visibility: hidden; width: 0; pointer-events: none; }
     .pool-toggle-btn {
       background: none; border: none; cursor: pointer; padding: 0.25rem 0.4rem;
       color: var(--sl-color-neutral-500); display: flex; align-items: center;
       font-size: 1.1rem; transition: color 0.15s, background 0.15s; border-radius: 4px;
     }
     .pool-toggle-btn:hover { color: var(--sl-color-neutral-900); background: var(--sl-color-neutral-200); }
-    .pool-expand-btn {
-      display: none; align-items: center; gap: 0.35rem;
-      position: absolute; left: 0; top: 8px; z-index: 20;
-      background: var(--sl-color-neutral-0); color: var(--sl-color-neutral-700);
-      border: 1px solid var(--sl-color-neutral-300); border-left: none;
-      border-radius: 0 6px 6px 0;
-      padding: 0.4rem 0.65rem 0.4rem 0.45rem;
-      cursor: pointer; font-size: 0.78rem; font-weight: 600;
-      line-height: 1; white-space: nowrap;
-      box-shadow: 1px 2px 6px rgba(0,0,0,0.10);
-      transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    /* Collapsed: narrow left rail with expand icon */
+    #view-samples.pool-collapsed sl-split-panel { --divider-width: 0px; grid-template-columns: 40px 0px 1fr !important; }
+    #view-samples.pool-collapsed sl-split-panel::part(divider) { visibility: hidden; width: 0; pointer-events: none; }
+    #view-samples.pool-collapsed sl-split-panel::part(start) { overflow: visible; }
+    #view-samples.pool-collapsed #pool-panel { min-width: 40px; max-width: 40px; width: 40px; overflow: hidden; }
+    #view-samples.pool-collapsed #pool-panel > *:not(.pool-expand-rail) { display: none !important; }
+    .pool-expand-rail {
+      display: none; flex-direction: column; align-items: center;
+      width: 100%; height: 100%; background: var(--sl-color-neutral-100);
+      border-right: 1px solid var(--sl-color-neutral-200);
     }
-    .pool-expand-btn sl-icon { font-size: 1rem; }
-    .pool-expand-btn:hover { color: var(--sl-color-primary-700); background: var(--sl-color-primary-50); border-color: var(--sl-color-primary-400); box-shadow: 1px 2px 8px rgba(0,0,0,0.15); }
-    #view-samples.pool-collapsed .pool-expand-btn { display: flex !important; }
+    .pool-expand-rail .pool-expand-icon {
+      background: none; border: none; cursor: pointer;
+      color: var(--sl-color-neutral-500); font-size: 1.15rem;
+      padding: 0.5rem 0.45rem; display: flex; align-items: center; justify-content: center;
+      border-radius: 4px; transition: color 0.15s, background 0.15s;
+    }
+    .pool-expand-rail .pool-expand-icon:hover { color: var(--sl-color-primary-600); background: var(--sl-color-neutral-200); }
+    .pool-expand-rail .pool-expand-label {
+      writing-mode: vertical-rl; text-orientation: mixed;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--sl-color-neutral-400);
+      margin-top: 0.25rem; user-select: none;
+    }
+    #view-samples.pool-collapsed .pool-expand-rail { display: flex !important; }
 
     /* Panels */
     .panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
@@ -1940,11 +1947,8 @@
     .td-toolbar-spacer, .kit-file-toolbar-spacer { flex: 1; }
     .td-badge-factory, .kit-file-badge-factory { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-0); background: var(--sl-color-neutral-400); padding: 1px 6px; border-radius: 3px; line-height: 1.4; }
     .td-badge-active { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sl-color-neutral-0); background: var(--sl-color-success-600); padding: 1px 6px; border-radius: 3px; line-height: 1.4; }
-    .td-btn-setactive { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.68rem; font-weight: 600; padding: 0.25rem 0.6rem; border: 1px solid var(--sl-color-neutral-300); border-radius: 4px; background: var(--sl-color-neutral-0); color: var(--sl-color-neutral-700); cursor: pointer; white-space: nowrap; line-height: 1; margin-right: 0.5rem; }
-    .td-btn-setactive:hover { background: var(--sl-color-success-50); border-color: var(--sl-color-success-500); color: var(--sl-color-success-700); }
-    .td-btn-setactive:disabled { opacity: 0.4; cursor: default; background: var(--sl-color-neutral-100); border-color: var(--sl-color-neutral-200); }
-    .td-btn-saveas { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.5rem; border: 1px solid var(--sl-color-neutral-300); border-radius: 4px; background: var(--sl-color-neutral-0); color: var(--sl-color-neutral-700); cursor: pointer; white-space: nowrap; line-height: 1; }
-    .td-btn-saveas:hover { background: var(--sl-color-primary-50); border-color: var(--sl-color-primary-400); color: var(--sl-color-primary-700); }
+    #td-setactive-btn[data-active="true"] { color: var(--sl-color-success-600); }
+    #td-setactive-btn[disabled] { opacity: 0.35; }
 
     /* ═══════════════════════════════════════════════════════════════
        PROJECT VIEWER — right-panel mode
@@ -2103,6 +2107,21 @@
     .fv-msg { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; padding: 3rem 2rem; text-align: center; color: #858585; font-size: 14px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     .fv-msg sl-icon { font-size: 3rem; color: #555; }
     .fv-msg.error sl-icon { color: #e5534b; }
+    /* ── Edit-mode grid overlay (pre + textarea stacked) ── */
+    .fv-edit-grid { display: grid; grid-template: auto / 1fr; min-height: 100%; background: #1e1e1e; }
+    .fv-edit-grid > pre, .fv-edit-grid > textarea {
+      grid-row: 1; grid-column: 1;
+      font-family: 'Menlo','Monaco','Consolas','SF Mono','Courier New',monospace;
+      font-size: 13px; line-height: 20px; tab-size: 2;
+      padding: 4px 16px; margin: 0; border: none;
+      white-space: pre; word-wrap: normal; box-sizing: border-box;
+      overflow: hidden; min-height: 0;
+    }
+    .fv-edit-grid > pre { color: #d4d4d4; background: transparent; pointer-events: none; z-index: 1; }
+    .fv-edit-grid > textarea { color: transparent; caret-color: #d4d4d4; background: transparent; resize: none; outline: none; z-index: 2; -webkit-text-fill-color: transparent; }
+    .fv-edit-grid > textarea::selection { background: rgba(38, 79, 120, 0.6); }
+    .fv-statusbar.editing { background: #665500; }
+    .fv-statusbar .fv-lint-error { color: #ffdddd; }
     .fv-body::-webkit-scrollbar { width: 10px; height: 10px; }
     .fv-body::-webkit-scrollbar-track { background: #1e1e1e; }
     .fv-body::-webkit-scrollbar-thumb { background: rgba(121,121,121,0.4); }
@@ -2278,11 +2297,14 @@
 
       <!-- ════ SAMPLE MANAGER VIEW ════ -->
       <div id="view-samples">
-      <button class="pool-expand-btn" id="pool-expand-btn" title="Show File Manager"><sl-icon name="layout-sidebar-inset"></sl-icon> Files</button>
       <sl-split-panel position="40">
 
         <!-- ──── LEFT: Sample Pool ──── -->
         <div slot="start" class="panel panel-left" id="pool-panel">
+          <div class="pool-expand-rail">
+            <button class="pool-expand-icon" id="pool-expand-btn" title="Show File Manager"><sl-icon name="layout-sidebar-inset"></sl-icon></button>
+            <span class="pool-expand-label">Files</span>
+          </div>
           <div class="panel-title-bar">
             <span class="panel-title">File Manager</span>
             <div class="panel-title-right">
@@ -2398,8 +2420,18 @@
                 <a class="panel-nav-link" id="fv-link-kit-editor">Kit Editor</a>
                 <a class="panel-nav-link active" id="fv-link-kit-json">JSON</a>
               </span>
+              <span class="panel-nav" id="fv-macro-nav" style="display:none;">
+                <a class="panel-nav-link" id="fv-link-macro-editor">Macro Editor</a>
+              </span>
+              <span class="panel-nav" id="fv-preset-nav" style="display:none;">
+                <a class="panel-nav-link" id="fv-link-preset-editor">Preset Editor</a>
+              </span>
               <div class="panel-title-right">
+                <sl-icon-button name="pencil-square" label="Edit" id="fv-edit" title="Edit file" style="font-size:0.9rem;display:none;"></sl-icon-button>
+                <sl-icon-button name="floppy" label="Save" id="fv-save" title="Save changes" style="font-size:0.9rem;display:none;color:var(--sl-color-success-500);"></sl-icon-button>
+                <sl-icon-button name="x-circle" label="Cancel edit" id="fv-cancel-edit" title="Cancel editing" style="font-size:0.9rem;display:none;color:var(--sl-color-warning-500);"></sl-icon-button>
                 <sl-icon-button name="clipboard" label="Copy" id="fv-copy" title="Copy to clipboard" style="font-size:0.9rem;"></sl-icon-button>
+                <sl-icon-button name="upload" label="Import" id="fv-import" title="Replace with file from computer" style="font-size:0.9rem;display:none;"></sl-icon-button>
                 <sl-icon-button name="download" label="Download" id="fv-download" title="Download file" style="font-size:0.9rem;"></sl-icon-button>
                 <sl-icon-button name="x-lg" label="Close" id="fv-close" title="Close viewer" style="font-size:0.9rem;"></sl-icon-button>
               </div>
@@ -2429,7 +2461,9 @@
                 <a class="panel-nav-link" id="td-link-json">JSON</a>
               </span>
               <div class="panel-title-right">
-                <button class="td-btn-saveas" id="td-saveas-btn" title="Save as new user template"><sl-icon name="floppy" style="font-size:0.65rem;"></sl-icon> Save As…</button>
+                <sl-icon-button name="star" label="Set as Boot Default" id="td-setactive-btn" title="Set as Boot Default" style="font-size:0.9rem;"></sl-icon-button>
+                <sl-icon-button name="floppy" label="Save As" id="td-saveas-btn" title="Save as new user template" style="font-size:0.9rem;"></sl-icon-button>
+                <sl-icon-button name="download" label="Download" id="td-download-btn" title="Download file" style="font-size:0.9rem;"></sl-icon-button>
                 <sl-icon-button name="x-lg" label="Close" id="td-close-btn" title="Close editor" style="font-size:0.9rem;"></sl-icon-button>
               </div>
             </div>
@@ -2441,7 +2475,6 @@
                 <span class="td-badge-active" id="td-badge-active" style="display:none;">boot default</span>
               </div>
               <div class="td-toolbar-spacer"></div>
-              <button class="td-btn-setactive" id="td-setactive-btn" title="Set this template as the boot default"><sl-icon name="star" style="font-size:0.65rem;"></sl-icon> Set as Boot Default</button>
             </div>
             <div class="td-editor-body" id="td-editor-body"></div>
           </div>

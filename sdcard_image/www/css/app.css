@@ -2580,6 +2580,65 @@ sl-dialog::part(footer) {
 .fv-body::-webkit-scrollbar-thumb:hover { background: rgba(121,121,121,0.7); }
 .fv-body::-webkit-scrollbar-corner { background: #1e1e1e; }
 
+/* ── Edit mode: CSS Grid overlay (textarea + highlighted pre) ── */
+.fv-edit-grid {
+  display: grid;
+  grid-template: 1fr / 1fr;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: #1e1e1e;
+}
+.fv-edit-grid::-webkit-scrollbar { width: 10px; height: 10px; }
+.fv-edit-grid::-webkit-scrollbar-track { background: #1e1e1e; }
+.fv-edit-grid::-webkit-scrollbar-thumb { background: rgba(121,121,121,0.4); }
+.fv-edit-grid::-webkit-scrollbar-thumb:hover { background: rgba(121,121,121,0.7); }
+.fv-edit-grid::-webkit-scrollbar-corner { background: #1e1e1e; }
+/* Shared font for both layers */
+.fv-edit-grid > pre,
+.fv-edit-grid > textarea {
+  grid-row: 1; grid-column: 1;
+  font-family: 'Menlo', 'Monaco', 'Consolas', 'SF Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 20px;
+  tab-size: 2;
+  padding: 4px 16px;
+  margin: 0;
+  border: none;
+  white-space: pre;
+  word-wrap: normal;
+  box-sizing: border-box;
+  overflow: visible;
+  min-height: 0;
+}
+/* Highlighted pre — visible colored text, no interaction */
+.fv-edit-grid > pre {
+  color: #d4d4d4;
+  background: transparent;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Textarea — invisible text, visible caret + selection */
+.fv-edit-grid > textarea {
+  color: transparent;
+  caret-color: #d4d4d4;
+  background: transparent;
+  resize: none;
+  outline: none;
+  z-index: 1;
+  -webkit-text-fill-color: transparent;
+}
+.fv-edit-grid > textarea::selection {
+  background: rgba(38, 79, 120, 0.6);
+}
+/* Editing status bar turns orange */
+.fv-statusbar.editing {
+  background: #c27d2f;
+}
+.fv-statusbar .fv-lint-error {
+  color: #ffdddd;
+}
+
 /* ── Factory Lock Button ── */
 .factory-lock-btn {
   display: flex; align-items: center; justify-content: center;

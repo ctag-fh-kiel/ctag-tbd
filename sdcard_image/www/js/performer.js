@@ -176,21 +176,24 @@
       if (def) {
         var D = window.TBD.designer;
         var isNew = D && D.state && !D.state.selectedDefId;
-        html += '<div class="track-info-row">';
+        html += '<div class="track-info-row" style="flex-wrap:nowrap;gap:0.35rem;">';
         html += '<span class="track-info-label">MACRO NAME:</span>';
-        html += '<input class="track-inline-input def-name-input" value="' + S.esc(def.name) + '" placeholder="Definition name" />';
+        html += '<input class="track-inline-input def-name-input" value="' + S.esc(def.name) + '" placeholder="Definition name" style="flex:1 1 80px;min-width:60px;max-width:200px;" />';
         html += '<span class="track-info-label">ID:</span>';
-        html += '<input class="track-inline-input def-id-input" value="' + S.esc(def.id) + '" placeholder="auto-id" ' + (isNew ? '' : 'readonly') + ' />';
+        html += '<input class="track-inline-input def-id-input" value="' + S.esc(def.id) + '" placeholder="auto-id" style="min-width:0;max-width:12ch;" ' + (isNew ? '' : 'readonly') + ' />';
         var F = window.TBD.factory;
         var isFactoryDef = F && F.isFactoryDefinition(def.id);
         var isFactoryUnlocked = F && F.isUnlocked && F.isUnlocked();
         var volReadonly = isFactoryDef && !isFactoryUnlocked;
         html += '<span class="track-info-label" title="Volume multiplier — compensates for quiet/loud engines. 1.0 = no change.">VOL:</span>';
-        html += '<input type="number" class="track-inline-input def-volmult-input" value="' + (def.volmult != null ? def.volmult : 1.0) + '" min="0.1" max="4.0" step="0.1" style="width:3rem;' + (volReadonly ? 'opacity:0.5;' : '') + '" title="Volume multiplier (0.1–4.0)"' + (volReadonly ? ' readonly' : '') + ' />';
-        html += '<div class="track-def-actions">';
+        html += '<input type="text" inputmode="decimal" class="track-inline-input def-volmult-input" value="' + (def.volmult != null ? def.volmult : 1.0) + '" style="width:5ch;min-width:4ch;max-width:6ch;text-align:center;padding:0.25rem 0.2rem;' + (volReadonly ? 'opacity:0.5;' : '') + '" title="Volume multiplier (0.1–4.0)"' + (volReadonly ? ' readonly' : '') + ' />';
+        html += '<div class="track-def-actions" style="flex-shrink:0;">';
         html += '<button class="mapping-btn btn-save-def" title="Save this definition"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
         html += '<button class="mapping-btn btn-export-def" title="Export as JSON"><sl-icon name="download" style="font-size:0.7rem;"></sl-icon> Export</button>';
         html += '<button class="mapping-btn btn-import-def" title="Import from JSON"><sl-icon name="upload" style="font-size:0.7rem;"></sl-icon> Import</button>';
+        var jsonFolder = (isFactoryDef ? 'factory/macros' : 'macros');
+        var jsonFile = jsonFolder + '/' + def.id + '.json';
+        html += '<a class="mapping-btn btn-viewjson-def" href="/index.html?view=samples&file=' + encodeURIComponent(jsonFile) + '" title="View this macro\'s JSON in Data Manager" style="text-decoration:none;"><sl-icon name="filetype-json" style="font-size:0.7rem;"></sl-icon> View JSON</a>';
         if (!isNew) {
           html += '<button class="mapping-btn btn-delete-def" title="Delete this definition" style="border-color:var(--sl-color-danger-300);color:var(--sl-color-danger-600);"><sl-icon name="trash3" style="font-size:0.7rem;"></sl-icon> Delete</button>';
         }

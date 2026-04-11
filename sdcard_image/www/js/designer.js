@@ -1912,6 +1912,7 @@
     deleteDefinition: deleteDefinition,
     exportDefinition: exportDefinition,
     importDefinitionFile: importDefinitionFile,
+    selectMacroDefinition: selectMacroDefinition,
     reload: function() {
       if (state.activeTrack >= 0) {
         var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
