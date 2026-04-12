@@ -207,17 +207,18 @@
 
     /* Progress */
     .progress-bar {
-      width: 100%; height: 6px; background: var(--border); border-radius: 3px;
+      width: 100%; height: 20px; background: #E5E7EB; border-radius: 4px;
       margin: 1rem 0; overflow: hidden; display: none;
       position: relative;
     }
     .progress-bar .fill {
-      height: 100%; background: var(--accent); border-radius: 3px;
-      transition: width 0.3s ease;
+      height: 100%; background: var(--accent); border-radius: 4px;
+      transition: width 0.15s ease;
     }
-    .progress-pct {
-      font-size: 0.72rem; color: var(--fg3); text-align: right;
-      margin-top: 0.15rem; display: none;
+    .progress-bar .progress-text {
+      position: absolute; top: 0; left: 0; right: 0;
+      text-align: center; line-height: 20px;
+      font-size: 0.78rem; font-weight: 600; color: #374151;
     }
 
     /* Status message */
@@ -336,14 +337,24 @@
     .ua-step.fail { background: hsl(0 70% 55%); color: #fff; }
     .ua-step .ua-icon { font-size: 0.8rem; }
 
-    /* Reboot banner */
+    /* Power-cycle banner */
     .reboot-banner {
-      background: hsl(48 100% 96.1%); border: 1px solid hsl(48 96.5% 76.7%);
-      border-radius: var(--radius); padding: 1rem; margin-top: 1.5rem;
+      background: hsl(48 100% 96.1%); border: 2px solid hsl(48 96.5% 68%);
+      border-radius: var(--radius); padding: 1.25rem; margin-top: 1.5rem;
       display: none; text-align: center;
     }
-    .reboot-banner .rb-title { font-size: 0.9rem; font-weight: 700; color: hsl(32.1 94.6% 43.7%); margin-bottom: 0.25rem; }
-    .reboot-banner .rb-desc { font-size: 0.78rem; color: var(--fg2); margin-bottom: 0.75rem; }
+    .reboot-banner .rb-title { font-size: 1rem; font-weight: 700; color: hsl(32.1 94.6% 43.7%); margin-bottom: 0.5rem; }
+    .reboot-banner .rb-desc { font-size: 0.82rem; color: var(--fg2); margin-bottom: 0.75rem; }
+    .reboot-banner .rb-steps {
+      text-align: left; display: inline-block; font-size: 0.82rem;
+      color: var(--fg1); line-height: 1.8; margin-bottom: 0.75rem;
+    }
+    .reboot-banner .rb-steps + .btn {
+      display: block; margin: 0 auto 0.5rem;
+    }
+    .reboot-banner .rb-hint {
+      font-size: 0.72rem; color: var(--fg3); margin-top: 0.5rem;
+    }
 
     /* Backup section */
     .backup-section { padding: 0.75rem 0; }
@@ -498,8 +509,8 @@
 
   <div class="progress-bar" id="p4-progress-bar">
     <div class="fill" id="p4-progress-fill" style="width:0%"></div>
+    <span class="progress-text" id="p4-progress-text">0 %</span>
   </div>
-  <div class="progress-pct" id="p4-progress-pct"></div>
 
   <div class="status-msg" id="p4-status-msg"></div>
   <div class="log-area" id="p4-log-area"></div>
@@ -541,8 +552,8 @@
 
   <div class="progress-bar" id="pico-progress-bar">
     <div class="fill" id="pico-progress-fill" style="width:0%"></div>
+    <span class="progress-text" id="pico-progress-text">0 %</span>
   </div>
-  <div class="progress-pct" id="pico-progress-pct"></div>
 
   <div class="status-msg" id="pico-status-msg"></div>
   <div class="log-area" id="pico-log-area"></div>
@@ -565,11 +576,17 @@
 
   </div><!-- end Pico body -->
 
-  <!-- ═══ Reboot Banner ═══ -->
+  <!-- ═══ Power-Cycle Banner ═══ -->
   <div class="reboot-banner" id="reboot-banner">
-    <div class="rb-title">&#9888; Reboot Required</div>
-    <div class="rb-desc" id="rb-desc">Firmware has been staged. Reboot the device to apply changes.</div>
-    <button class="btn btn-primary" id="reboot-btn">Reboot Now</button>
+    <div class="rb-title">&#9888; Power-cycle your device to finish!</div>
+    <div class="rb-desc" id="rb-desc">Firmware has been staged. Power-cycle the device to apply changes.</div>
+    <div class="rb-steps">
+      <div>1. Disconnect <strong>all USB cables</strong></div>
+      <div>2. Wait <strong>5 seconds</strong></div>
+      <div>3. Reconnect power</div>
+    </div>
+    <button class="btn btn-primary" id="reboot-btn">Reboot via Software</button>
+    <div class="rb-hint">Software reboot works in most cases. If the device does not respond, power-cycle manually.</div>
   </div>
 
   <!-- ═══ Settings Backup ═══ -->
@@ -653,12 +670,11 @@
   function getReleasesUrl() { return CDN_BASE + currentChannel + '/releases.json'; }
 
   // ── Progress helpers ──
-  function setProgress(fillEl, pctEl, pct, label) {
+  function setProgress(fillEl, textEl, pct, label) {
     var p = Math.round(pct);
     fillEl.style.width = p + '%';
-    if (pctEl) {
-      pctEl.style.display = 'block';
-      pctEl.textContent = (label ? label + ' \u2014 ' : '') + p + '%';
+    if (textEl) {
+      textEl.textContent = (label ? label + ' \u2014 ' : '') + p + ' %';
     }
   }
 
@@ -1539,7 +1555,7 @@
   var picoContent      = document.getElementById('pico-content');
   var picoProgressBar  = document.getElementById('pico-progress-bar');
   var picoProgressFill = document.getElementById('pico-progress-fill');
-  var picoProgressPct  = document.getElementById('pico-progress-pct');
+  var picoProgressText = document.getElementById('pico-progress-text');
   var picoStatusMsg    = document.getElementById('pico-status-msg');
   var picoLogArea      = document.getElementById('pico-log-area');
 
@@ -1742,7 +1758,7 @@
     for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
 
     picoProgressBar.style.display = 'block';
-    setProgress(picoProgressFill, picoProgressPct, 10, 'Downloading');
+    setProgress(picoProgressFill, picoProgressText, 10, 'Downloading');
     picoLog('Downloading Pico firmware ' + version + '...', 'info');
 
     try {
@@ -1751,7 +1767,7 @@
       if (!resp.ok) throw new Error('Download failed: HTTP ' + resp.status);
       var binData = await resp.arrayBuffer();
       picoLog('Downloaded ' + formatBytes(binData.byteLength), 'ok');
-      setProgress(picoProgressFill, picoProgressPct, 40, 'Uploading to SD');
+      setProgress(picoProgressFill, picoProgressText, 40, 'Uploading to SD');
 
       // Step 2: Upload binary to SD card
       picoLog('Uploading pico-firmware.bin to SD card...', 'info');
@@ -1770,7 +1786,7 @@
       var uploadResult = await uploadResp.json();
       if (!uploadResult.ok) throw new Error(uploadResult.error || 'Upload rejected');
       picoLog('Firmware binary uploaded (' + uploadResult.size + ' bytes)', 'ok');
-      setProgress(picoProgressFill, picoProgressPct, 75, 'Writing version');
+      setProgress(picoProgressFill, picoProgressText, 75, 'Writing version');
 
       // Step 3: Write version sidecar file
       picoLog('Writing version file...', 'info');
@@ -1787,20 +1803,20 @@
       } else {
         picoLog('Version file written: ' + version, 'ok');
       }
-      setProgress(picoProgressFill, picoProgressPct, 100, 'Complete');
+      setProgress(picoProgressFill, picoProgressText, 100, 'Complete');
 
       picoStatus(
         'Pico firmware ' + version + ' deployed to SD card. ' +
-        'It will be flashed automatically on next reboot.',
+        'Power-cycle the device to flash it automatically.',
         'success'
       );
-      picoLog('Done! Reboot the device to flash the new Pico firmware.', 'ok');
+      picoLog('Done! Power-cycle the device to flash the new Pico firmware.', 'ok');
 
-      picoVersionEl.textContent = currentPicoVersion + ' \u2192 ' + version + ' (pending reboot)';
+      picoVersionEl.textContent = currentPicoVersion + ' \u2192 ' + version + ' (pending power-cycle)';
       vsPicoVersion.textContent = currentPicoVersion + ' \u2192 ' + version;
-      vsPicoStatus.textContent = 'pending reboot';
+      vsPicoStatus.textContent = 'pending power-cycle';
       vsPicoStatus.className = 'vs-status outdated';
-      showRebootBanner('Pico firmware ' + version + ' staged. Reboot to apply.');
+      showRebootBanner('Pico firmware ' + version + ' staged. Power-cycle to apply.');
 
     } catch (e) {
       picoStatus('Pico firmware update failed: ' + e.message, 'error');
@@ -1823,7 +1839,7 @@
   var p4Content      = document.getElementById('p4-content');
   var p4ProgressBar  = document.getElementById('p4-progress-bar');
   var p4ProgressFill = document.getElementById('p4-progress-fill');
-  var p4ProgressPct  = document.getElementById('p4-progress-pct');
+  var p4ProgressText = document.getElementById('p4-progress-text');
   var p4StatusMsg    = document.getElementById('p4-status-msg');
   var p4LogArea      = document.getElementById('p4-log-area');
   var p4OtaInfo      = null;  // {running, next, maxSize}
@@ -2023,7 +2039,7 @@
     for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
 
     p4ProgressBar.style.display = 'block';
-    setProgress(p4ProgressFill, p4ProgressPct, 5, 'Querying OTA');
+    setProgress(p4ProgressFill, p4ProgressText, 5, 'Querying OTA');
     p4Log('Querying OTA partition info...', 'info');
 
     try {
@@ -2033,7 +2049,7 @@
       p4OtaInfo = await infoResp.json();
       p4Log('Running: ' + p4OtaInfo.running + ' → Target: ' + p4OtaInfo.next +
         ' (max ' + formatBytes(p4OtaInfo.maxSize) + ')', 'info');
-      setProgress(p4ProgressFill, p4ProgressPct, 10, 'Downloading');
+      setProgress(p4ProgressFill, p4ProgressText, 10, 'Downloading');
 
       // Step 2: Download firmware from CDN
       p4Log('Downloading P4 firmware ' + version + '...', 'info');
@@ -2041,7 +2057,7 @@
       if (!binResp.ok) throw new Error('Download failed: HTTP ' + binResp.status);
       var binData = await binResp.arrayBuffer();
       p4Log('Downloaded ' + formatBytes(binData.byteLength), 'ok');
-      setProgress(p4ProgressFill, p4ProgressPct, 30, 'Flashing');
+      setProgress(p4ProgressFill, p4ProgressText, 30, 'Flashing');
 
       // Validate size
       if (binData.byteLength > p4OtaInfo.maxSize) {
@@ -2060,7 +2076,7 @@
         xhr.upload.addEventListener('progress', function(e) {
           if (e.lengthComputable) {
             var pct = 30 + (e.loaded / e.total) * 60; // 30% to 90%
-            setProgress(p4ProgressFill, p4ProgressPct, pct, 'Flashing');
+            setProgress(p4ProgressFill, p4ProgressText, pct, 'Flashing');
           }
         });
         xhr.addEventListener('load', function() {
@@ -2081,15 +2097,15 @@
         xhr.send(binData);
       });
 
-      setProgress(p4ProgressFill, p4ProgressPct, 100, 'Complete');
-      p4Status('P4 firmware ' + version + ' flashed successfully! Reboot to activate.', 'success');
-      p4Log('Done! Reboot the device to boot into the new firmware.', 'ok');
+      setProgress(p4ProgressFill, p4ProgressText, 100, 'Complete');
+      p4Status('P4 firmware ' + version + ' flashed successfully! Power-cycle the device to activate.', 'success');
+      p4Log('Done! Power-cycle the device to boot into the new firmware.', 'ok');
 
-      p4VersionEl.textContent = firmwareVersion + ' \u2192 ' + version + ' (pending reboot)';
+      p4VersionEl.textContent = firmwareVersion + ' \u2192 ' + version + ' (pending power-cycle)';
       vsP4Version.textContent = firmwareVersion + ' \u2192 ' + version;
-      vsP4Status.textContent = 'pending reboot';
+      vsP4Status.textContent = 'pending power-cycle';
       vsP4Status.className = 'vs-status outdated';
-      showRebootBanner('P4 firmware ' + version + ' flashed. Reboot to activate.');
+      showRebootBanner('P4 firmware ' + version + ' flashed. Power-cycle the device to activate.');
 
     } catch (e) {
       p4Status('P4 firmware update failed: ' + e.message, 'error');
@@ -2157,8 +2173,8 @@
           });
 
           p4ProgressFill.style.width = '100%';
-          p4Status('Firmware flashed! Reboot to activate.', 'success');
-          showRebootBanner('P4 firmware flashed from ' + file.name + '. Reboot to activate.');
+          p4Status('Firmware flashed! Power-cycle the device to activate.', 'success');
+          showRebootBanner('P4 firmware flashed from ' + file.name + '. Power-cycle the device to activate.');
         } catch (e) {
           p4Status('Flash failed: ' + e.message, 'error');
           p4Log('Error: ' + e.message, 'err');
@@ -2203,8 +2219,8 @@
           if (!result.ok) throw new Error(result.error || 'Upload rejected');
           picoLog('Firmware staged (' + result.size + ' bytes)', 'ok');
           picoProgressFill.style.width = '100%';
-          picoStatus('Pico firmware staged. Reboot to flash.', 'success');
-          showRebootBanner('Pico firmware staged from ' + file.name + '. Reboot to apply.');
+          picoStatus('Pico firmware staged. Power-cycle to flash.', 'success');
+          showRebootBanner('Pico firmware staged from ' + file.name + '. Power-cycle to apply.');
         } catch (e) {
           picoStatus('Stage failed: ' + e.message, 'error');
           picoLog('Error: ' + e.message, 'err');
@@ -2313,14 +2329,14 @@
     btn.textContent = 'Done';
 
     if (needsReboot) {
-      showRebootBanner('Updates installed. Reboot to apply firmware changes.');
+      showRebootBanner('Updates installed. Power-cycle the device to apply firmware changes.');
     }
   });
 
   function showRebootBanner(msg) {
     needsReboot = true;
     document.getElementById('rb-desc').textContent = msg;
-    rebootBanner.style.display = '';
+    rebootBanner.style.display = 'block';
     // Scroll reboot banner into view so the user sees the Reboot button
     setTimeout(function() {
       rebootBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2328,7 +2344,7 @@
   }
 
   document.getElementById('reboot-btn').addEventListener('click', async function() {
-    if (!confirm('Reboot the device now?\n\nThe device will disconnect briefly and reconnect.')) return;
+    if (!confirm('Reboot the device now via software?\n\nThe device will disconnect briefly and reconnect.\nIf this does not work, power-cycle manually (unplug all cables, wait 5s, reconnect).')) return;
     var btn = document.getElementById('reboot-btn');
     var rbDesc = document.getElementById('rb-desc');
     btn.disabled = true;
