@@ -645,6 +645,47 @@
 
   function getReleasesUrl() { return CDN_BASE + currentChannel + '/releases.json'; }
 
+  // ── ESP32-safe request serialization ──
+  // ESP32 httpd has only 7 sockets (4 usable after internal overhead).
+  // Intercept all device API requests and serialize them so we never
+  // hold more than 1 socket at a time. Adds a 10 s timeout for reads
+  // and 2 min for uploads to prevent dangling connections.
+  var _origFetch = window.fetch.bind(window);
+  var _deviceQueue = Promise.resolve();
+  window.fetch = function(url, options) {
+    if (typeof url === 'string' && url.startsWith('/api/')) {
+      var p = _deviceQueue.then(function() {
+        var opts = Object.assign({}, options || {});
+        if (!opts.signal) {
+          var controller = new AbortController();
+          var isPost = opts.method && opts.method !== 'GET';
+          var ms = isPost ? 120000 : 10000;
+          var tid = setTimeout(function() { controller.abort(); }, ms);
+          opts.signal = controller.signal;
+          return _origFetch(url, opts).finally(function() { clearTimeout(tid); });
+        }
+        return _origFetch(url, opts);
+      });
+      _deviceQueue = p.catch(function() {});
+      return p;
+    }
+    return _origFetch(url, options);
+  };
+
+  // ── CDN releases.json cache (avoids redundant fetches) ──
+  var _releasesCache = { channel: null, data: null, ts: 0 };
+  async function fetchReleasesJson() {
+    if (_releasesCache.channel === currentChannel && _releasesCache.data
+        && (Date.now() - _releasesCache.ts < 30000)) {
+      return _releasesCache.data;
+    }
+    var resp = await _origFetch(getReleasesUrl(), { cache: 'no-cache' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data = await resp.json();
+    _releasesCache = { channel: currentChannel, data: data, ts: Date.now() };
+    return data;
+  }
+
   // ── Channel selector with dynamic feature-test discovery ──
   var channelSelect = document.getElementById('channel-select');
   var channelNote = document.getElementById('channel-note');
@@ -711,16 +752,17 @@
   channelSelect.value = currentChannel;
   if (currentChannel !== 'stable') channelNote.style.display = '';
 
-  channelSelect.addEventListener('change', function() {
+  channelSelect.addEventListener('change', async function() {
     currentChannel = this.value;
     localStorage.setItem('tbd-update-channel', currentChannel);
     channelNote.style.display = currentChannel !== 'stable' ? '' : 'none';
-    // Re-check all updates with new channel
+    // Re-check all updates with new channel (serialized, cache invalidated)
     pendingUpdates = { webui: null, p4: null, pico: null };
+    _releasesCache = { channel: null, data: null, ts: 0 };
     refreshUpdateAll();
-    checkOnlineUpdate();
-    checkP4Update();
-    checkPicoUpdate();
+    await checkOnlineUpdate();
+    await checkP4Update();
+    await checkPicoUpdate();
   });
 
 
@@ -859,10 +901,8 @@
       if (!data.version || !data.url) throw new Error('Invalid latest.json');
       return data; // { version, url, date, description, versions[] }
     }
-    // Non-stable: read from channel releases.json
-    var resp = await fetch(getReleasesUrl(), { cache: 'no-cache' });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    var releases = await resp.json();
+    // Non-stable: read from channel releases.json (cached)
+    var releases = await fetchReleasesJson();
     if (!releases.versions || releases.versions.length === 0) throw new Error('No versions in channel');
     var entry = releases.versions[0];
     var wv = entry.webuiVersion;
@@ -1521,9 +1561,7 @@
 
   async function checkPicoUpdate() {
     try {
-      var resp = await fetch(getReleasesUrl(), { cache: 'no-cache' });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      var releases = await resp.json();
+      var releases = await fetchReleasesJson();
 
       var cdnPicoVersion = releases.picoVersion || null;
       if (!cdnPicoVersion) {
@@ -1788,9 +1826,7 @@
 
   async function checkP4Update() {
     try {
-      var resp = await fetch(getReleasesUrl(), { cache: 'no-cache' });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      var releases = await resp.json();
+      var releases = await fetchReleasesJson();
       latestCdnData = releases;
 
       // p4Version can come from top-level field OR from latest entry's tag
@@ -2314,14 +2350,12 @@
       return;
     }
 
-    // Device is back — reload all versions
+    // Device is back — reload all versions (serialized for ESP32 safety)
     rbDesc.textContent = 'Device reconnected! Verifying versions\u2026';
-    await Promise.all([
-      loadCurrentVersion(),
-      loadFirmwareVersion(),
-      loadPicoVersion(),
-      loadFactoryVersion()
-    ]);
+    await loadCurrentVersion();
+    await loadFirmwareVersion();
+    await loadPicoVersion();
+    await loadFactoryVersion();
 
     // Compare and report
     var changes = [];
@@ -2342,10 +2376,11 @@
     btn.disabled = false;
     btn.onclick = function() { location.reload(); };
 
-    // Re-check for any remaining online updates
-    checkOnlineUpdate();
-    checkP4Update();
-    checkPicoUpdate();
+    // Re-check for any remaining online updates (serialized)
+    _releasesCache = { channel: null, data: null, ts: 0 };
+    await checkOnlineUpdate();
+    await checkP4Update();
+    await checkPicoUpdate();
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -2526,16 +2561,18 @@
   // ══ Unified Initialization ════════════════════════════════════
   // ═══════════════════════════════════════════════════════════════
 
-  Promise.all([
-    loadCurrentVersion(),
-    loadFirmwareVersion(),
-    loadPicoVersion(),
-    loadFactoryVersion()
-  ]).then(function() {
-    checkOnlineUpdate();
-    checkP4Update();
-    checkPicoUpdate();
-  });
+  // ESP32 httpd has only 7 sockets (4 usable after internal overhead).
+  // Serialize all requests — device API calls are queued automatically
+  // by the fetch interceptor, and CDN checks share cached releases.json.
+  (async function() {
+    await loadCurrentVersion();
+    await loadFirmwareVersion();
+    await loadPicoVersion();
+    await loadFactoryVersion();
+    await checkOnlineUpdate();
+    await checkP4Update();
+    await checkPicoUpdate();
+  })();
 
 })();
 </script>
