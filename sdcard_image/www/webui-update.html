@@ -874,13 +874,13 @@
     }
   }
 
-  // ── Extract MAJOR.MINOR from a version string (e.g. "0.4.2" → "0.4") ──
+  // ── Extract MAJOR.MINOR from a version string ──
+  // Handles channel-prefixed versions like "staging-v0.5.0-rc-1" → "0.5"
   function getMajorMinor(v) {
     if (!v) return null;
-    var s = v.replace(/^v/, '');
-    var parts = s.split('.');
-    if (parts.length < 2) return null;
-    return parts[0] + '.' + parts[1];
+    var m = v.match(/(\d+)\.(\d+)/);
+    if (!m) return null;
+    return m[1] + '.' + m[2];
   }
 
   // ── Load current WebUI version from device ──
@@ -1635,7 +1635,7 @@
       // even though the compiled-in version looks like a dev build
       var sidecarMatch = picoInstalledChannel && picoInstalledChannel === cdnPicoVersion;
       if (sidecarMatch) isDevBuild = false;
-      var isNewer = currentPicoVersion && !isDevBuild && compareVersions(cdnStripped, stripped) > 0;
+      var isNewer = currentPicoVersion && !isDevBuild && !sidecarMatch && compareVersions(cdnStripped, stripped) > 0;
 
       var html = '';
 
@@ -2086,37 +2086,51 @@
           ') for partition (' + formatBytes(p4OtaInfo.maxSize) + ')');
       }
 
-      // Step 3: Upload via OTA endpoint
+      // Step 3: Upload via OTA endpoint (with automatic retry on network error)
       p4Log('Flashing to partition ' + p4OtaInfo.next + '...', 'info');
       var uploadDone = false;
-      await new Promise(function(resolve, reject) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/api/v2/ota');
-        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-        xhr.timeout = 300000; // 5 minutes
-        xhr.upload.addEventListener('progress', function(e) {
-          if (e.lengthComputable) {
-            var pct = 30 + (e.loaded / e.total) * 60; // 30% to 90%
-            setProgress(p4ProgressFill, p4ProgressText, pct, 'Flashing');
-          }
-        });
-        xhr.addEventListener('load', function() {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              var resp = JSON.parse(xhr.responseText);
-              if (resp.partition) {
-                p4Log('Firmware flashed to partition: ' + resp.partition, 'ok');
+      var maxRetries = 1;
+      for (var attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          await new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/v2/ota');
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+            xhr.timeout = 300000; // 5 minutes
+            xhr.upload.addEventListener('progress', function(e) {
+              if (e.lengthComputable) {
+                var pct = 30 + (e.loaded / e.total) * 60; // 30% to 90%
+                setProgress(p4ProgressFill, p4ProgressText, pct, 'Flashing');
               }
-            } catch(e) { /* ok */ }
-            resolve();
+            });
+            xhr.addEventListener('load', function() {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  var resp = JSON.parse(xhr.responseText);
+                  if (resp.partition) {
+                    p4Log('Firmware flashed to partition: ' + resp.partition, 'ok');
+                  }
+                } catch(e) { /* ok */ }
+                resolve();
+              } else {
+                reject(new Error('OTA upload failed: HTTP ' + xhr.status));
+              }
+            });
+            xhr.addEventListener('error', function() { reject(new Error('OTA upload network error')); });
+            xhr.addEventListener('timeout', function() { reject(new Error('OTA upload timed out')); });
+            xhr.send(binData);
+          });
+          break; // success — exit retry loop
+        } catch (retryErr) {
+          if (attempt < maxRetries) {
+            p4Log('Upload failed (' + retryErr.message + '), retrying in 3s...', 'info');
+            setProgress(p4ProgressFill, p4ProgressText, 30, 'Retrying');
+            await new Promise(function(w) { setTimeout(w, 3000); });
           } else {
-            reject(new Error('OTA upload failed: HTTP ' + xhr.status));
+            throw retryErr; // final attempt failed
           }
-        });
-        xhr.addEventListener('error', function() { reject(new Error('OTA upload network error')); });
-        xhr.addEventListener('timeout', function() { reject(new Error('OTA upload timed out')); });
-        xhr.send(binData);
-      });
+        }
+      }
 
       setProgress(p4ProgressFill, p4ProgressText, 100, 'Complete');
       p4Status('P4 firmware ' + version + ' flashed successfully! Power-cycle the device to activate.', 'success');
@@ -2167,31 +2181,45 @@
           }
 
           p4Log('Flashing ' + formatBytes(binData.byteLength) + '...', 'info');
-          await new Promise(function(resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/v2/ota');
-            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
-            xhr.timeout = 300000;
-            xhr.upload.addEventListener('progress', function(e) {
-              if (e.lengthComputable) {
-                p4ProgressFill.style.width = ((e.loaded / e.total) * 90).toFixed(1) + '%';
-              }
-            });
-            xhr.addEventListener('load', function() {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                  var resp = JSON.parse(xhr.responseText);
-                  if (resp.partition) p4Log('Flashed to: ' + resp.partition, 'ok');
-                } catch(ee) { /* ok */ }
-                resolve();
+          var manualMaxRetries = 1;
+          for (var mAttempt = 0; mAttempt <= manualMaxRetries; mAttempt++) {
+            try {
+              await new Promise(function(resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/v2/ota');
+                xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+                xhr.timeout = 300000;
+                xhr.upload.addEventListener('progress', function(e) {
+                  if (e.lengthComputable) {
+                    p4ProgressFill.style.width = ((e.loaded / e.total) * 90).toFixed(1) + '%';
+                  }
+                });
+                xhr.addEventListener('load', function() {
+                  if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                      var resp = JSON.parse(xhr.responseText);
+                      if (resp.partition) p4Log('Flashed to: ' + resp.partition, 'ok');
+                    } catch(ee) { /* ok */ }
+                    resolve();
+                  } else {
+                    reject(new Error('OTA upload failed: HTTP ' + xhr.status));
+                  }
+                });
+                xhr.addEventListener('error', function() { reject(new Error('Network error')); });
+                xhr.addEventListener('timeout', function() { reject(new Error('Timed out')); });
+                xhr.send(binData);
+              });
+              break; // success
+            } catch (mRetryErr) {
+              if (mAttempt < manualMaxRetries) {
+                p4Log('Upload failed (' + mRetryErr.message + '), retrying in 3s...', 'info');
+                p4ProgressFill.style.width = '5%';
+                await new Promise(function(w) { setTimeout(w, 3000); });
               } else {
-                reject(new Error('OTA upload failed: HTTP ' + xhr.status));
+                throw mRetryErr;
               }
-            });
-            xhr.addEventListener('error', function() { reject(new Error('Network error')); });
-            xhr.addEventListener('timeout', function() { reject(new Error('Timed out')); });
-            xhr.send(binData);
-          });
+            }
+          }
 
           p4ProgressFill.style.width = '100%';
           p4Status('Firmware flashed! Power-cycle the device to activate.', 'success');
