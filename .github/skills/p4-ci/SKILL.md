@@ -59,17 +59,36 @@ CDN URL base: `https://dadamachines.github.io/dada-tbd-firmware/`
 
 ### WebUI versioning in releases.json
 
-Each version entry in `releases.json` includes WebUI metadata:
+Each version entry in `releases.json` includes WebUI metadata and firmware references:
 
 ```json
 {
-  "tag": "v0.5.0",
-  "timestamp": "2026-03-23T12:00:00Z",
-  "files": { "unified": "...", "sdcard": "...", "hash": "...", "pico": "..." },
-  "webuiVersion": "0.4.0",
-  "webuiUpdate": "webui-updates/webui-update-v0.4.0.zip"
+  "channel": "stable",
+  "latest": "v0.5.0",
+  "p4Version": "v0.5.0",
+  "versions": [
+    {
+      "tag": "v0.5.0",
+      "timestamp": "2026-03-23T12:00:00Z",
+      "files": {
+        "unified": "stable/p4/dada-tbd-16-v0.5.0-unified.bin",
+        "app": "stable/p4/dada-tbd-16-v0.5.0-app.bin",
+        "sdcard": "stable/p4/dada-tbd-16-v0.5.0-sd.zip",
+        "hash": "stable/p4/dada-tbd-16-v0.5.0-sd-hash.txt",
+        "pico": "stable/pico/dada-tbd-pico.uf2"
+      },
+      "webuiVersion": "0.5.0",
+      "webuiUpdate": "webui-updates/webui-update-v0.5.0.zip"
+    }
+  ]
 }
 ```
+
+Key fields:
+- **`p4Version`** (top-level): The latest P4 firmware version. Used by the on-device updater (`webui-update.html`) to check for P4 firmware updates.
+- **`files.app`**: Standalone app binary (`dada-tbd.bin`) for OTA updates via the WebUI updater. Starts with `ESP_IMAGE_HEADER_MAGIC` — required for the OTA handler's magic byte check.
+- **`files.unified`**: Full flash image (bootloader+partition table+app merged at offset 0x0) for flash pages and esptool. **Cannot** be used for OTA — the OTA handler rejects it because it starts with the bootloader, not the app magic byte.
+- **`webuiVersion`** / **`webuiUpdate`**: WebUI metadata for flash pages and the channel-aware updater.
 
 The flash pages use `webuiVersion` and `webuiUpdate` to guide users: **WebUI must be
 updated before firmware flash** to avoid compatibility issues (e.g., the `.jsn` → `.json`
@@ -107,7 +126,7 @@ The reusable `build-firmware.yml` produces:
 
 Artifact name pattern: `firmware-{build_name}` (retention: 90 days).
 
-The build also outputs `webui_version` (read from `sdcard_image/data/webui-version.json`),
+The build also outputs `webui_version` (read from `sdcard_image/system/webui-version.json`),
 which is passed to the CDN for inclusion in `releases.json`.
 
 ## Procedures
@@ -201,7 +220,7 @@ curl -sI "https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-u
 | Release build failed | ESP-IDF build error | Check workflow run logs: `gh run view <id> --log` |
 | CDN not updated | Dispatch failed or CDN workflow failed | Check both repos' Actions tabs |
 | `releases.json` missing pico fields | Expected — P4 CI writes P4 fields only | Pico CI patches pico fields separately |
-| WebUI package not on CDN | `webui_version` output empty or dispatch failed | Check `sdcard_image/data/webui-version.json` exists and build logs |
+| WebUI package not on CDN | `webui_version` output empty or dispatch failed | Check `sdcard_image/system/webui-version.json` exists and build logs |
 | Feature test channel wrong name | Branch name derives the channel | Use `feature-test/<name>` (no nested slashes) |
 | GitHub Release not created | Tag didn't match `v*` pattern | Tag must start with `v` (e.g. `v0.5.0`) |
 

@@ -381,6 +381,7 @@
       <option value="staging">Staging</option>
     </select>
     <span class="channel-note" id="channel-note">&#9888; Non-stable</span>
+    <span class="channel-note" id="channel-loading" style="display:none;color:var(--fg3)">loading&hellip;</span>
   </div>
 </div>
 <div class="container">
@@ -637,16 +638,76 @@
   const updateAllBanner = document.getElementById('update-all-banner');
   const rebootBanner   = document.getElementById('reboot-banner');
 
-  const UPDATE_CHECK_URL = 'https://dadamachines.github.io/dada-tbd-firmware/webui-updates/latest.json';
+  const STABLE_WEBUI_URL = 'https://dadamachines.github.io/dada-tbd-firmware/webui-updates/latest.json';
 
   var CDN_BASE = 'https://dadamachines.github.io/dada-tbd-firmware/';
   var currentChannel = localStorage.getItem('tbd-update-channel') || 'stable';
 
   function getReleasesUrl() { return CDN_BASE + currentChannel + '/releases.json'; }
 
-  // ── Channel selector ──
+  // ── Channel selector with dynamic feature-test discovery ──
   var channelSelect = document.getElementById('channel-select');
   var channelNote = document.getElementById('channel-note');
+  var channelLoading = document.getElementById('channel-loading');
+
+  // Populate selector — discover feature-test channels from GitHub pre-releases
+  async function discoverChannels() {
+    var channels = [
+      { name: 'stable', label: 'Stable' },
+      { name: 'staging', label: 'Staging' }
+    ];
+    try {
+      channelLoading.style.display = '';
+      var resp = await fetch('https://api.github.com/repos/dadamachines/ctag-tbd/releases?per_page=30');
+      if (resp.ok) {
+        var releases = await resp.json();
+        var seen = {};
+        var candidates = [];
+        releases.forEach(function(r) {
+          if (!r.prerelease) return;
+          var m = r.tag_name.match(/^(feature-test-[a-z0-9-]+)$/);
+          if (m && !m[1].match(/-[0-9a-f]{7,}$/) && !seen[m[1]]) {
+            seen[m[1]] = true;
+            candidates.push(m[1]);
+          }
+        });
+        var checks = await Promise.all(candidates.map(function(name) {
+          return fetch(CDN_BASE + name + '/releases.json', { method: 'HEAD' })
+            .then(function(r) { return r.ok ? name : null; })
+            .catch(function() { return null; });
+        }));
+        checks.forEach(function(name) {
+          if (name) channels.push({ name: name, label: name.replace('feature-test-', 'Feature: ') });
+        });
+      }
+    } catch (_) { /* GitHub API unavailable */ }
+    channelLoading.style.display = 'none';
+    return channels;
+  }
+
+  async function populateChannelSelector() {
+    var channels = await discoverChannels();
+    // Preserve current selection
+    var savedChannel = currentChannel;
+    channelSelect.innerHTML = '';
+    channels.forEach(function(ch) {
+      var opt = document.createElement('option');
+      opt.value = ch.name;
+      opt.textContent = ch.label;
+      channelSelect.appendChild(opt);
+    });
+    // Restore saved channel if it still exists, else fall back to stable
+    var found = channels.some(function(ch) { return ch.name === savedChannel; });
+    if (found) {
+      channelSelect.value = savedChannel;
+    } else {
+      channelSelect.value = 'stable';
+      currentChannel = 'stable';
+      localStorage.setItem('tbd-update-channel', 'stable');
+    }
+    channelNote.style.display = currentChannel !== 'stable' ? '' : 'none';
+  }
+
   channelSelect.value = currentChannel;
   if (currentChannel !== 'stable') channelNote.style.display = '';
 
@@ -750,7 +811,11 @@
   // ── Load current WebUI version from device ──
   async function loadCurrentVersion() {
     try {
-      const resp = await fetch('/api/v2/storage?getconfig=webui-version.json');
+      // Try system/ first (new location), fall back to data/ (legacy)
+      var resp = await fetch('/api/v2/storage?action=file&path=system/webui-version.json');
+      if (!resp.ok) {
+        resp = await fetch('/api/v2/storage?getconfig=webui-version.json');
+      }
       if (resp.ok) {
         const v = await resp.json();
         installedVersion = v.version || null;
@@ -783,12 +848,38 @@
   }
 
   // ── Check for online updates ──
+  // ── Get WebUI update info — channel-aware ──
+  // Stable channel uses webui-updates/latest.json (curated, has versions array).
+  // Non-stable channels use the channel's releases.json webuiVersion + webuiUpdate fields.
+  async function getWebuiUpdateInfo() {
+    if (currentChannel === 'stable') {
+      var resp = await fetch(STABLE_WEBUI_URL, { cache: 'no-cache' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var data = await resp.json();
+      if (!data.version || !data.url) throw new Error('Invalid latest.json');
+      return data; // { version, url, date, description, versions[] }
+    }
+    // Non-stable: read from channel releases.json
+    var resp = await fetch(getReleasesUrl(), { cache: 'no-cache' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var releases = await resp.json();
+    if (!releases.versions || releases.versions.length === 0) throw new Error('No versions in channel');
+    var entry = releases.versions[0];
+    var wv = entry.webuiVersion;
+    var wu = entry.webuiUpdate;
+    if (!wv || !wu) throw new Error('No WebUI info in channel releases.json');
+    return {
+      version: wv,
+      url: CDN_BASE + wu,
+      date: entry.timestamp ? entry.timestamp.split('T')[0] : null,
+      description: 'WebUI update from ' + currentChannel + ' channel',
+      versions: [] // non-stable channels don't have a versions history
+    };
+  }
+
   async function checkOnlineUpdate() {
     try {
-      const resp = await fetch(UPDATE_CHECK_URL, { cache: 'no-cache' });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      const latest = await resp.json();
-      if (!latest.version || !latest.url) throw new Error('Invalid latest.json');
+      const latest = await getWebuiUpdateInfo();
 
       const isNewer = installedVersion && compareVersions(latest.version, installedVersion) > 0;
       const isSame  = installedVersion && compareVersions(latest.version, installedVersion) === 0;
@@ -1009,7 +1100,7 @@
           date: manifest.date || new Date().toISOString().slice(0, 10),
           description: manifest.description || ''
         });
-        await fetch('/api/v2/storage?action=uploadconfig&path=webui-version.json', {
+        await fetch('/api/v2/storage?action=uploadsystem&path=webui-version.json', {
           method: 'POST', body: versionData
         });
         log('Version file updated to v' + manifest.version, 'ok');
@@ -1276,7 +1367,7 @@
           date: manifest.date || new Date().toISOString().slice(0, 10),
           description: manifest.description || ''
         });
-        await fetch('/api/v2/storage?action=uploadconfig&path=webui-version.json', {
+        await fetch('/api/v2/storage?action=uploadsystem&path=webui-version.json', {
           method: 'POST',
           body: versionData
         });
@@ -1315,8 +1406,14 @@
     } else if (filePath.startsWith('factory/')) {
       action = 'uploadfactory';
       apiPath = filePath.slice(8);
+    } else if (filePath.startsWith('system/')) {
+      action = 'uploadsystem';
+      apiPath = filePath.slice(7);
+    } else if (filePath.startsWith('user/')) {
+      action = 'uploaduser';
+      apiPath = filePath.slice(5);
     } else {
-      throw new Error('Unknown path prefix (expected www/, data/, or factory/): ' + filePath);
+      throw new Error('Unknown path prefix (expected www/, data/, factory/, system/, or user/): ' + filePath);
     }
 
     const url = '/api/v2/storage?action=' + action + '&path=' + encodeURIComponent(apiPath);
@@ -1696,7 +1793,11 @@
       var releases = await resp.json();
       latestCdnData = releases;
 
+      // p4Version can come from top-level field OR from latest entry's tag
       var cdnP4Version = releases.p4Version || null;
+      if (!cdnP4Version && releases.versions && releases.versions.length > 0) {
+        cdnP4Version = releases.versions[0].tag || null;
+      }
       if (!cdnP4Version) {
         p4Content.innerHTML = '<span class="checking">No P4 firmware version info on CDN.</span>';
         vsP4Status.textContent = 'no CDN info';
@@ -1704,16 +1805,22 @@
         return;
       }
 
-      // Find the p4 binary URL
+      // Find the P4 OTA binary URL — prefer files.app (standalone app binary),
+      // fall back to files.unified (works on flash pages but NOT for OTA).
+      // unified.bin includes bootloader+partition table merged at offset 0x0
+      // and will be rejected by the OTA handler's magic byte check.
       var p4BinUrl = null;
+      var p4OtaUnsafe = false;
       if (releases.versions && releases.versions.length > 0) {
         var latest = releases.versions[0];
-        if (latest.files && latest.files.p4Bin) {
-          p4BinUrl = CDN_BASE + latest.files.p4Bin;
+        if (latest.files) {
+          if (latest.files.app) {
+            p4BinUrl = CDN_BASE + latest.files.app;
+          } else if (latest.files.unified) {
+            // unified.bin cannot be used for OTA — only for full flash via esptool
+            p4OtaUnsafe = true;
+          }
         }
-      }
-      if (!p4BinUrl && cdnP4Version) {
-        p4BinUrl = CDN_BASE + currentChannel + '/p4/dada-tbd-16-' + cdnP4Version + '-unified.bin';
       }
 
       var fwStripped = firmwareVersion ? firmwareVersion.replace(/^v/, '') : '0.0.0';
@@ -1727,6 +1834,8 @@
         if (p4BinUrl) {
           html += '<br><button class="btn btn-primary btn-sm" id="p4-install-btn" style="margin-top:0.5rem;">' +
             'Install ' + escHtml(cdnP4Version) + '</button>';
+        } else if (p4OtaUnsafe) {
+          html += '<br><span class="checking">P4 OTA binary not available on CDN. Use Manual upload or the Flash &amp; Recovery Tool.</span>';
         }
       } else if (isNewer) {
         html += '<div class="update-title">&#10024; P4 Firmware Update: ' + escHtml(cdnP4Version) + '</div>' +
@@ -1734,6 +1843,9 @@
         if (p4BinUrl) {
           html += '<button class="btn btn-primary" id="p4-install-btn" style="margin-top:0.5rem;">' +
             'Download &amp; Install ' + escHtml(cdnP4Version) + '</button>';
+        } else if (p4OtaUnsafe) {
+          html += '<div class="compat-warning"><strong>&#9888; OTA binary not available</strong> &mdash; ' +
+            'this channel only has a unified image (requires USB flash). Use Manual upload below or the Flash &amp; Recovery Tool.</div>';
         }
       } else {
         html += '<span class="up-to-date">&#9989; P4 firmware is up to date (' + escHtml(cdnP4Version) + ')</span>';
@@ -1743,12 +1855,22 @@
         }
       }
 
+      // Compatibility check — warn if P4 firmware MAJOR.MINOR doesn't match installed WebUI
+      var p4Mm = getMajorMinor(cdnP4Version);
+      var webuiMm = getMajorMinor(installedVersion);
+      if (p4Mm && webuiMm && p4Mm !== webuiMm) {
+        html += '<div class="compat-warning"><strong>\u26A0 Compatibility Notice:</strong> ' +
+          'This P4 firmware (' + escHtml(cdnP4Version) + ') targets release train ' + escHtml(p4Mm) +
+          '.x \u2014 your WebUI is v' + escHtml(installedVersion) + ' (' + escHtml(webuiMm) +
+          '.x). Update your WebUI first to avoid compatibility issues.</div>';
+      }
+
       // Older P4 firmware versions
       if (releases.versions && releases.versions.length > 1) {
         var olderP4 = [];
         for (var vi = 1; vi < releases.versions.length; vi++) {
           var rv = releases.versions[vi];
-          var rvUrl = rv.files && rv.files.unified ? CDN_BASE + rv.files.unified : null;
+          var rvUrl = rv.files && rv.files.app ? CDN_BASE + rv.files.app : null;
           if (rvUrl) olderP4.push({ version: rv.tag, date: rv.timestamp, url: rvUrl });
         }
         if (olderP4.length > 0) {
@@ -1828,6 +1950,20 @@
   }
 
   async function installP4Update(version, binUrl) {
+    // Compatibility check — soft warning before P4 OTA install
+    var p4Mm = getMajorMinor(version);
+    var webuiMm = getMajorMinor(installedVersion);
+    if (p4Mm && webuiMm && p4Mm !== webuiMm) {
+      if (!confirm('⚠ Compatibility Warning\n\nThis P4 firmware (' + version +
+        ') targets release train ' + p4Mm + '.x but your WebUI is v' +
+        installedVersion + ' (' + webuiMm + '.x).\n\n' +
+        'It is recommended to update your WebUI first.\n\nProceed anyway?')) {
+        var btns0 = p4Content.querySelectorAll('button');
+        for (var k = 0; k < btns0.length; k++) btns0[k].disabled = false;
+        return;
+      }
+    }
+
     var btns = p4Content.querySelectorAll('button');
     for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
 

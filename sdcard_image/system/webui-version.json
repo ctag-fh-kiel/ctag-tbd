@@ -1,5 +1,5 @@
 {
-  "version": "0.4.6",
-  "date": "2026-04-01",
-  "description": "Fix Pico version comparison for dev builds"
+  "version": "0.5.0",
+  "date": "2026-04-12",
+  "description": "Unified System Updater: channel selector with feature-test support, channel-aware version checks, P4 OTA from CDN, factory data versioning, settings backup/restore"
 }

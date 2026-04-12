@@ -26,7 +26,7 @@ Create update packages (.zip) that users can apply via `http://192.168.4.1/webui
 
 Every firmware release (stable, staging, feature-test) **automatically generates a WebUI
 update package** via `build-firmware.yml`. CI reads the version from
-`sdcard_image/data/webui-version.json`, builds the bundles, packages all WebUI + data
+`sdcard_image/system/webui-version.json`, builds the bundles, packages all WebUI + data
 files, and uploads the zip alongside firmware artifacts.
 
 The CDN `receive-firmware.yml` workflow:
@@ -48,11 +48,16 @@ on-device updater shows "✓ WebUI is up to date" and the user skips to firmware
 
 - Workspace root: the folder containing `CMakeLists.txt`, `sdcard_image/`, `build/`
 - Package script: `create_webui_update.sh` at workspace root
-- Version file: `sdcard_image/data/webui-version.json`
+- Version file: `sdcard_image/system/webui-version.json`
 - Build script: `sdcard_image/www/build-webui.sh`
 - Online update manifest: `docs/_static/updates/latest.json` (pointer — URLs resolve to CDN)
 - CDN hosting: `https://dadamachines.github.io/dada-tbd-firmware/webui-updates/`
 - CDN repo: `../dada-tbd-firmware/webui-updates/` (sibling directory)
+- **Channel-aware updates**: Stable channel uses `webui-updates/latest.json`; non-stable channels (staging, feature-test) use `webuiVersion` + `webuiUpdate` fields from the channel's `releases.json`
+- **`latest.json` is stable-only**: NEVER update `latest.json` for staging or feature-test channels — it would offer incompatible updates to all stable users
+- **CDN `releases.json` fields**: Each version entry includes `webuiVersion` (semver), `webuiUpdate` (path to zip), `files.app` (standalone OTA binary), `files.unified` (full flash image). Top-level `p4Version` field tracks the latest P4 firmware version.
+- **MAJOR.MINOR compatibility rule** (see `docs/GIT_STRATEGY.md` §9): Firmware and WebUI share MAJOR.MINOR — any `0.X.*` firmware works with any `0.X.*` WebUI. PATCH numbers are independent. A MINOR bump means potential API changes (new REST routes, JSON format changes, SPI protocol changes). The updater shows a **soft warning** (amber banner + confirm dialog) when MAJOR.MINOR mismatches — never a hard block.
+- **OTA binary vs unified**: `files.app` is the standalone app binary (`dada-tbd.bin`, starts with `ESP_IMAGE_HEADER_MAGIC`) for OTA updates via the WebUI updater. `files.unified` is the full flash image (bootloader+partition table+app merged at offset 0x0) used by esptool/flash pages — it CANNOT be used for OTA (magic byte check fails).
 - WebUI versions doc: `docs/flash/70_webui_versions.rst` — **must be updated every release**
 - The device's updater page auto-checks `latest.json` on load to offer one-click online updates
 - The updater supports **reinstall** (re-apply current version) and **older versions** (roll back)
@@ -68,7 +73,7 @@ on-device updater shows "✓ WebUI is up to date" and the user skips to firmware
 ## NEVER Do These
 
 1. **NEVER** include a `www/` file without the `.gz` extension — the server only serves `.gz` files
-2. **NEVER** forget to include `data/webui-version.json` — users won't see the version update
+2. **NEVER** forget to include `system/webui-version.json` — users won't see the version update
 3. **NEVER** skip `build-webui.sh` before packaging — you'll ship stale bundles
 4. **NEVER** include files from `build/` — only from `sdcard_image/`
 5. **NEVER** set an older version number than what's already installed
@@ -99,7 +104,7 @@ Which source files map to which package files:
 | `data/macrodefinitions/*.json` | `data/macrodefinitions/<name>.json` |
 | `data/macrosoundpresets/*.json` | `data/macrosoundpresets/<name>.json` |
 | `data/trackdefaults.json` | `data/trackdefaults.json` |
-| `data/webui-version.json` | `data/webui-version.json` |
+| `system/webui-version.json` | `system/webui-version.json` |
 
 **Important**: `shared.js` and `display-hints.js` are in BOTH bundles. If you change either, include both `app-bundle.js.gz` and `macro-bundle.js.gz`.
 
@@ -115,7 +120,7 @@ Which source files map to which package files:
 cd <workspace_root>
 git fetch upstream
 git log --oneline upstream/dada-tbd-master -3
-cat <(git show upstream/dada-tbd-master:sdcard_image/data/webui-version.json)
+cat <(git show upstream/dada-tbd-master:sdcard_image/system/webui-version.json)
 ```
 
 The new version must be **strictly greater** than whatever upstream has. If upstream already has v0.3.3, use v0.3.4 or higher.
@@ -151,7 +156,7 @@ This produces fresh `app-bundle.js`, `macro-bundle.js`, and all `.gz` files.
 
 ### Step 3 — Bump the version
 
-Edit `sdcard_image/data/webui-version.json`:
+Edit `sdcard_image/system/webui-version.json`:
 
 ```json
 {
@@ -177,7 +182,7 @@ bash create_webui_update.sh <VERSION> "<DESCRIPTION>" <FILE1> [FILE2] ...
 bash create_webui_update.sh 1.0.1 "Fixed macro/preset creation bugs" \
   www/js/app-bundle.js.gz \
   www/js/macro-bundle.js.gz \
-  data/webui-version.json
+  system/webui-version.json
 ```
 
 **Example — Full WebUI refresh (most common):**
@@ -189,7 +194,7 @@ bash create_webui_update.sh 1.1.0 "New features and bug fixes" \
   www/preset-macro-manager.html.gz \
   www/webui-update.html.gz \
   www/css/app.css.gz \
-  data/webui-version.json
+  system/webui-version.json
 ```
 
 **Example — New macro definitions + presets:**
@@ -197,7 +202,7 @@ bash create_webui_update.sh 1.1.0 "New features and bug fixes" \
 bash create_webui_update.sh 1.0.2 "Added new rompler macros" \
   data/macrodefinitions/ro-allnewrompler.json \
   data/macrosoundpresets/allnewrompler-def.json \
-  data/webui-version.json
+  system/webui-version.json
 ```
 
 **Example — Everything (HTML + JS + CSS + data):**
@@ -212,7 +217,7 @@ bash create_webui_update.sh 1.2.0 "Major update with new macros and UI fixes" \
   data/macrodefinitions/ro-allnewrompler.json \
   data/macrosoundpresets/allnewrompler-def.json \
   data/trackdefaults.json \
-  data/webui-version.json
+  system/webui-version.json
 ```
 
 **Example — Include ALL macro definitions and presets (common for major releases):**
@@ -222,7 +227,7 @@ When you want every definition and preset, dynamically expand the file list with
 ```bash
 bash create_webui_update.sh 1.3.0 "Full refresh with all macros" \
   www/js/macro-bundle.js.gz \
-  data/webui-version.json \
+  system/webui-version.json \
   $(cd sdcard_image && find data/macrodefinitions -name '*.json' -type f | sort) \
   $(cd sdcard_image && find data/macrosoundpresets -name '*.json' -type f | sort)
 ```
@@ -275,7 +280,7 @@ Use this decision tree when the user just says "create an update" without specif
 5. **Did any macro definition change?** → Include each `data/macrodefinitions/<name>.json`
 6. **Did any macro preset change?** → Include each `data/macrosoundpresets/<name>.json`
 7. **Did trackdefaults.json change?** → Include `data/trackdefaults.json`
-8. **ALWAYS** include `data/webui-version.json`
+8. **ALWAYS** include `system/webui-version.json`
 9. **When in doubt**, include all WebUI files — the update is idempotent
 
 ---
@@ -320,7 +325,7 @@ Firmware repo (latest.json pointer + docs + version file):
 
 ```bash
 git add docs/_static/updates/latest.json \
-  sdcard_image/data/webui-version.json \
+  sdcard_image/system/webui-version.json \
   docs/flash/70_webui_versions.rst
 git commit -m "WebUI v<VERSION> — <short description>"
 git push
@@ -376,7 +381,7 @@ The update will be available at:
 |---------|-------|-----|
 | "File not found: sdcard_image/www/js/app-bundle.js.gz" | Forgot to run build-webui.sh | Run `cd sdcard_image/www && bash build-webui.sh && cd ../..` first |
 | Update applied but page looks the same | Browser cached old JS (30-day immutable cache) | Hard refresh (Cmd+Shift+R) or clear browser cache |
-| Version not showing in footer | `webui-version.json` missing from device | Include `data/webui-version.json` in the update |
+| Version not showing in footer | `webui-version.json` missing from device | Include `system/webui-version.json` in the update |
 | "Unknown path prefix" error during apply | File path doesn't start with `www/` or `data/` | Fix manifest — all paths must start with `www/` or `data/` |
 | "No manifest.json found" | Zip structure wrong | manifest.json must be at root of zip, not in a subdirectory |
 | Online check says "Could not check" | GitHub Pages not deployed, or no internet | Push `docs/_static/updates/latest.json` and rebuild docs site |
