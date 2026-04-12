@@ -1560,6 +1560,7 @@
   var picoLogArea      = document.getElementById('pico-log-area');
 
   var currentPicoVersion = null;
+  var picoInstalledChannel = null; // from pico-installed-version.txt sidecar
 
   function picoLog(msg, cls) {
     picoLogArea.style.display = 'block';
@@ -1591,6 +1592,14 @@
       vsPicoStatus.textContent = 'offline';
       vsPicoStatus.className = 'vs-status offline';
     }
+    // Read the channel sidecar written by the boot-time flash process
+    try {
+      var sr = await fetch('/api/v2/storage?fetch=system/firmware/pico-installed-version.txt');
+      if (sr.ok) {
+        var txt = (await sr.text()).trim();
+        if (txt && !txt.startsWith('{')) picoInstalledChannel = txt;
+      }
+    } catch (e) { /* sidecar not available — ignore */ }
   }
 
   async function checkPicoUpdate() {
@@ -1622,6 +1631,10 @@
       var cdnStripped = cdnPicoVersion.replace(/^v/, '');
       // Dev builds (bare git hash/number like "1674" or "40b5") have no dots — not valid semver
       var isDevBuild = currentPicoVersion && stripped.indexOf('.') === -1;
+      // If the sidecar channel matches the CDN version, the firmware is up to date
+      // even though the compiled-in version looks like a dev build
+      var sidecarMatch = picoInstalledChannel && picoInstalledChannel === cdnPicoVersion;
+      if (sidecarMatch) isDevBuild = false;
       var isNewer = currentPicoVersion && !isDevBuild && compareVersions(cdnStripped, stripped) > 0;
 
       var html = '';
