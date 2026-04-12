@@ -658,21 +658,32 @@ void ctagSoundProcessorPicoSeqRack::registerParamAndCC(const PickSeqRackInitData
 }
 
 void ctagSoundProcessorPicoSeqRack::handleMidiControlChange(const uint8_t channel, const uint8_t control, const uint8_t value) {
-    int cv_value = ((int)value * 4096) / 128;
+    int32_t cv_value = ((int32_t)value * 4096) / 128;
     int key = CC_TO_MAP_KEY(channel, control);
 
     auto it = pMapParCC.find(key);
     if (it != pMapParCC.end()) {
         // ESP_LOGI("ctagSoundProcessorPicoSeqRack", "MIDI: CC %d, %d, %d (cv %d) (Set)", channel, control, value, cv_value);
-        // TODO: Write directly to devices?.
         for(auto& listener : it->second){
             listener(cv_value);
-            // if (dev->handlesCC(channel, control)){
-            //     dev->setParameterForCC(control, cv_value);
-            // }
         }
-    } else {
-        // ESP_LOGI("ctagSoundProcessorPicoSeqRack", "MIDI: CC %d, %d, %d (Unhandled)", channel, control, value);
+    // } else {
+    // ESP_LOGI("ctagSoundProcessorPicoSeqRack", "MIDI: CC %d, %d, %d (Unhandled)", channel, control, value);
+    }
+};
+
+void ctagSoundProcessorPicoSeqRack::handleMidiControlChangeNRPM(const uint8_t channel, const uint8_t control, const uint16_t value) {
+    int32_t cv_value = ((int32_t)value * 4096) / 16384;
+    int key = CC_TO_MAP_KEY(channel, control);
+
+    auto it = pMapParCC.find(key);
+    if (it != pMapParCC.end()) {
+        // ESP_LOGI("ctagSoundProcessorPicoSeqRack", "MIDI: nrpm CC %d, %d, %d (cv %d) (Set)", channel, control, value, cv_value);
+        for(auto& listener : it->second){
+            listener(cv_value);
+        }
+    // } else {
+    // ESP_LOGI("ctagSoundProcessorPicoSeqRack", "MIDI: nrpm CC %d, %d, %d (Unhandled)", channel, control, value);
     }
 };
 
@@ -1257,6 +1268,7 @@ void ctagSoundProcessorPicoSeqRack::setTrackBank(const uint8_t trackIndex, const
 
 void ctagSoundProcessorPicoSeqRack::handleMidiNoteOn(const uint8_t channel, uint8_t note, uint8_t velocity) {
     // printf("PicoSeqRack: handleMidiNoteOn(channel=%d, note=%d, velocity=%d)\n", channel, note, velocity);
+
     if (channel == 9) {
         if (note == 36) {
             if (ch1_ab.enabled) {
@@ -1605,5 +1617,3 @@ void ctagSoundProcessorPicoSeqRack::handleMidiNoteOff(const uint8_t channel, uin
     }
 }
 
-void ctagSoundProcessorPicoSeqRack::handleMidiControlChangePair(const uint8_t channel, uint8_t firstcontrol, uint16_t value) {
-}

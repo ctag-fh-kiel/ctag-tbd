@@ -101,7 +101,7 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
 
     if (ms != mo_last_shape) {
         mo_last_shape = ms;
-        printf("MO shape=%d\n", ms);
+        // printf("MO shape=%d\n", ms);
         mo_osc.set_shape(ms);
     }
 

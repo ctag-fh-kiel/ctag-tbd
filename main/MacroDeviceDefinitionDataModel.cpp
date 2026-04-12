@@ -158,7 +158,6 @@ void MacroDeviceDefinitionDataModel::SerializeListJSON(std::string *output) {
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);
     d.Accept(writer);
-    // ESP_LOGD("MacroDeviceDefinitionDataModel", "JSON string %s", buffer.GetString());
 
     output->assign(buffer.GetString());
     xSemaphoreGive(arrayMutex);

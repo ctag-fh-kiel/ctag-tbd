@@ -494,9 +494,9 @@
         {
           "id": "freq",
           "name": "Freq",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 8,
-          "def": 16
+          "def": 2048
         },
         {
           "id": "tone",
@@ -522,16 +522,16 @@
         {
           "id": "fm-env",
           "name": "Fm Env",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
-          "def": 16
+          "def": 2048
         },
         {
           "id": "fm-decay",
           "name": "Fm Decay",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
-          "def": 8
+          "def": 1024
         },
         {
           "id": "fm-accent",
@@ -550,14 +550,14 @@
         {
           "id": "freq",
           "name": "Freq",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 8,
-          "def": 16
+          "def": 2048
         },
         {
           "id": "tone",
           "name": "Tone",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 9,
           "def": 32
         },
@@ -571,16 +571,16 @@
         {
           "id": "a-fm",
           "name": "A FM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 11,
-          "def": 2
+          "def": 256
         },
         {
           "id": "s-fm",
           "name": "S FM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
-          "def": 2
+          "def": 256
         },
         {
           "id": "accent",
@@ -599,58 +599,58 @@
         {
           "id": "f-b",
           "name": "FM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 8,
-          "def": 24
+          "def": 3072
         },
         {
           "id": "d-b",
           "name": "DB",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 9,
-          "def": 50
+          "def": 6450
         },
         {
           "id": "f-m",
           "name": "FM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 10,
-          "def": 7
+          "def": 896
         },
         {
           "id": "d-m",
           "name": "DM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 11,
           "def": 0
         },
         {
           "id": "b-m",
           "name": "BM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
-          "def": 5
+          "def": 640
         },
         {
           "id": "a-f",
           "name": "AF",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
-          "def": 16
+          "def": 2048
         },
         {
           "id": "d-f",
           "name": "DF",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 14,
-          "def": 32
+          "def": 4096
         },
         {
           "id": "i",
           "name": "I",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 15,
-          "def": 1
+          "def": 80
         },
         {
           "id": "ratiomode",
@@ -942,28 +942,28 @@
         {
           "id": "start",
           "name": "Start",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 10,
           "def": 0
         },
         {
           "id": "end",
           "name": "End",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 11,
           "def": 127
         },
         {
           "id": "cutoff",
           "name": "Cutoff",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 127
         },
         {
           "id": "reso",
           "name": "Reso",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
           "def": 0
         },
@@ -1068,42 +1068,42 @@
         {
           "id": "p0",
           "name": "P0",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 9,
           "def": 0
         },
         {
           "id": "vca_d",
           "name": "VCA D",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 10,
           "def": 8
         },
         {
           "id": "vcf_d",
           "name": "VCF D",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 11,
           "def": 8
         },
         {
           "id": "cutoff",
           "name": "Cutoff",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 64
         },
         {
           "id": "reso",
           "name": "Reso",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
           "def": 0
         },
         {
           "id": "envdec",
           "name": "EnvDec",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 14,
           "def": 16
         },
@@ -1145,21 +1145,21 @@
         {
           "id": "p1",
           "name": "P1",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 20,
           "def": 0
         },
         {
           "id": "p0amt",
           "name": "P0 Amt",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 21,
           "def": 0
         },
         {
           "id": "p1amt",
           "name": "P1 Amt",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 22,
           "def": 0
         },
@@ -1201,42 +1201,42 @@
         {
           "id": "p0",
           "name": "P0",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 9,
           "def": 0
         },
         {
           "id": "p1",
           "name": "P1",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 10,
           "def": 0
         },
         {
           "id": "waveshap",
           "name": "Waveshape",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 11,
           "def": 0
         },
         {
           "id": "p0a",
           "name": "P0 A",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 0
         },
         {
           "id": "p1a",
           "name": "P1 A",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
           "def": 0
         },
         {
           "id": "fma",
           "name": "FM A",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 14,
           "def": 0
         },
@@ -1320,14 +1320,14 @@
         {
           "id": "cutoff",
           "name": "Cutoff",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 127
         },
         {
           "id": "reso",
           "name": "Reso",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 13,
           "def": 0
         },

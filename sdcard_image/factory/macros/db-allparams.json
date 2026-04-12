@@ -10,10 +10,10 @@
         {
           "idx": 0,
           "name": "Freq",
-          "def": 3,
+          "def": 512,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "freq",
           "curve": "log"
         },
@@ -53,19 +53,19 @@
         {
           "idx": 4,
           "name": "Fm Env",
-          "def": 20,
+          "def": 2560,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "envamount"
         },
         {
           "idx": 5,
           "name": "Fm Decay",
-          "def": 45,
+          "def": 5760,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "envdecay",
           "curve": "exp"
         },
@@ -84,6 +84,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -96,6 +97,7 @@
     },
     {
       "ctrl": 9,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -107,6 +109,7 @@
     },
     {
       "ctrl": 10,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -119,6 +122,7 @@
     },
     {
       "ctrl": 11,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -130,6 +134,7 @@
     },
     {
       "ctrl": 12,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -141,6 +146,7 @@
     },
     {
       "ctrl": 13,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -153,6 +159,7 @@
     },
     {
       "ctrl": 14,
+      "type": "cc",
       "start": 0,
       "add": [
         {

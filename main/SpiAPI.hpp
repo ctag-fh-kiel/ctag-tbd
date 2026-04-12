@@ -72,7 +72,8 @@ namespace CTAG::SPIAPI{
             EnableFileTransferMode = 0x60,
             DisableFileTransferMode = 0x61,
 
-            GetSynthDefinitionsJSON = 0x70,
+            GetSynthListJSON = 0x70,
+            GetSynthDefinitionJSON = 0x71,
 
             GetMacroMachineDefinitionsJSON = 0x80,
             UploadMacroMachineDefinitionJSON = 0x81,

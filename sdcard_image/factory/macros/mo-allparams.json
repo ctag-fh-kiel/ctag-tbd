@@ -19,28 +19,31 @@
         {
           "idx": 1,
           "name": "P0",
-          "def": 64,
+          "type": "nrpm",
+          "def": 8000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "shape3"
         },
         {
           "idx": 2,
           "name": "P1",
-          "def": 40,
+          "type": "nrpm",
+          "def": 5000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "shape2"
         },
         {
           "idx": 3,
           "name": "Waveshape",
+          "type": "nrpm",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "distortion"
         }
       ]
@@ -51,28 +54,31 @@
         {
           "idx": 4,
           "name": "P0 A",
-          "def": 24,
+          "type": "nrpm",
+          "def": 3000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
           "idx": 5,
           "name": "P1 A",
-          "def": 16,
+          "type": "nrpm",
+          "def": 2000,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
           "idx": 6,
           "name": "FM A",
+          "type": "nrpm",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
@@ -158,6 +164,7 @@
     },
     {
       "ctrl": 9,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -169,6 +176,7 @@
     },
     {
       "ctrl": 10,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -180,6 +188,7 @@
     },
     {
       "ctrl": 11,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -191,6 +200,7 @@
     },
     {
       "ctrl": 12,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -202,6 +212,7 @@
     },
     {
       "ctrl": 13,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -213,6 +224,7 @@
     },
     {
       "ctrl": 14,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {

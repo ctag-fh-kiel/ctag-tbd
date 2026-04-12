@@ -94,6 +94,16 @@ bool MacroDeviceOutputMapping_DeserializeJSON(struct MacroDeviceOutputMapping *m
         return false;
     }
 
+    mapping->ctrltype = CtrlType_CC;
+    if (jsonelement.HasMember("type") && jsonelement["type"].IsString()) {
+        const char *typestr = jsonelement["type"].GetString();
+        if (strcmp(typestr, "nrpm") == 0) {
+            mapping->ctrltype = CtrlType_NRPM;
+        }
+        // } else {
+        //     ESP_LOGE("MacroDeviceDefinition", "Missing or invalid 'ctrltype' field");
+    }
+
     if (jsonelement.HasMember("start") && jsonelement["start"].IsInt()) {
         mapping->startValue = jsonelement["start"].GetInt();
     } else {

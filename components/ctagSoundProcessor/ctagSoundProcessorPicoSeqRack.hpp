@@ -156,7 +156,7 @@ namespace CTAG {
 			void handleMidiNoteOn(const uint8_t channel, uint8_t note, uint8_t velocity);
 			void handleMidiNoteOff(const uint8_t channel, uint8_t note, uint8_t velocity);
 			void handleMidiControlChange(const uint8_t channel, uint8_t control, uint8_t value);
-			void handleMidiControlChangePair(const uint8_t channel, uint8_t firstcontrol, uint16_t value);
+			void handleMidiControlChangeNRPM(const uint8_t channel, uint8_t control, uint16_t value);
 
         private:
             virtual void knowYourself() override;

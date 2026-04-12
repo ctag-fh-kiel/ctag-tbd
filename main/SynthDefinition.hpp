@@ -58,6 +58,7 @@ namespace CTAG {
 
             static void SynthDefinition_Reset(struct SynthDefinition *def);
             static bool SynthDefinition_DeserializeJSON(struct SynthDefinition *def, const rapidjson::Value &jsonelement);
+            static bool SynthDefinition_SerializeJSON(struct SynthDefinition *def, std::string *jsonoutput);
         };
     }
 }
