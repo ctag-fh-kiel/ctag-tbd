@@ -1758,11 +1758,19 @@
     for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
 
     picoProgressBar.style.display = 'block';
-    setProgress(picoProgressFill, picoProgressText, 10, 'Downloading');
-    picoLog('Downloading Pico firmware ' + version + '...', 'info');
+    setProgress(picoProgressFill, picoProgressText, 5, 'Preparing');
+    picoLog('Clearing installed-version marker...', 'info');
 
     try {
+      // Step 0: Clear installed-version marker so boot-time check always flashes
+      await fetch(
+        '/api/v2/storage?action=uploadsystem&path=firmware/pico-installed-version.txt',
+        { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: '' }
+      );
+
       // Step 1: Download binary from CDN
+      setProgress(picoProgressFill, picoProgressText, 10, 'Downloading');
+      picoLog('Downloading Pico firmware ' + version + '...', 'info');
       var resp = await fetch(binUrl);
       if (!resp.ok) throw new Error('Download failed: HTTP ' + resp.status);
       var binData = await resp.arrayBuffer();
@@ -2207,6 +2215,11 @@
         picoProgressFill.style.width = '10%';
         picoLog('Manual stage: ' + file.name, 'info');
         try {
+          // Clear installed-version marker so boot-time check always flashes
+          await fetch(
+            '/api/v2/storage?action=uploadsystem&path=firmware/pico-installed-version.txt',
+            { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: '' }
+          );
           var binData = await file.arrayBuffer();
           picoLog('Uploading pico-firmware.bin (' + formatBytes(binData.byteLength) + ')...', 'info');
           picoProgressFill.style.width = '50%';
