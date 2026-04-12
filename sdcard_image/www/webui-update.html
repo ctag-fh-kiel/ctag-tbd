@@ -207,12 +207,17 @@
 
     /* Progress */
     .progress-bar {
-      width: 100%; height: 4px; background: var(--border); border-radius: 2px;
+      width: 100%; height: 6px; background: var(--border); border-radius: 3px;
       margin: 1rem 0; overflow: hidden; display: none;
+      position: relative;
     }
     .progress-bar .fill {
-      height: 100%; background: var(--accent); border-radius: 2px;
+      height: 100%; background: var(--accent); border-radius: 3px;
       transition: width 0.3s ease;
+    }
+    .progress-pct {
+      font-size: 0.72rem; color: var(--fg3); text-align: right;
+      margin-top: 0.15rem; display: none;
     }
 
     /* Status message */
@@ -494,6 +499,7 @@
   <div class="progress-bar" id="p4-progress-bar">
     <div class="fill" id="p4-progress-fill" style="width:0%"></div>
   </div>
+  <div class="progress-pct" id="p4-progress-pct"></div>
 
   <div class="status-msg" id="p4-status-msg"></div>
   <div class="log-area" id="p4-log-area"></div>
@@ -536,6 +542,7 @@
   <div class="progress-bar" id="pico-progress-bar">
     <div class="fill" id="pico-progress-fill" style="width:0%"></div>
   </div>
+  <div class="progress-pct" id="pico-progress-pct"></div>
 
   <div class="status-msg" id="pico-status-msg"></div>
   <div class="log-area" id="pico-log-area"></div>
@@ -644,6 +651,16 @@
   var currentChannel = localStorage.getItem('tbd-update-channel') || 'stable';
 
   function getReleasesUrl() { return CDN_BASE + currentChannel + '/releases.json'; }
+
+  // ── Progress helpers ──
+  function setProgress(fillEl, pctEl, pct, label) {
+    var p = Math.round(pct);
+    fillEl.style.width = p + '%';
+    if (pctEl) {
+      pctEl.style.display = 'block';
+      pctEl.textContent = (label ? label + ' \u2014 ' : '') + p + '%';
+    }
+  }
 
   // ── ESP32-safe request serialization ──
   // ESP32 httpd has only 7 sockets (4 usable after internal overhead).
@@ -1522,6 +1539,7 @@
   var picoContent      = document.getElementById('pico-content');
   var picoProgressBar  = document.getElementById('pico-progress-bar');
   var picoProgressFill = document.getElementById('pico-progress-fill');
+  var picoProgressPct  = document.getElementById('pico-progress-pct');
   var picoStatusMsg    = document.getElementById('pico-status-msg');
   var picoLogArea      = document.getElementById('pico-log-area');
 
@@ -1724,7 +1742,7 @@
     for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
 
     picoProgressBar.style.display = 'block';
-    picoProgressFill.style.width = '10%';
+    setProgress(picoProgressFill, picoProgressPct, 10, 'Downloading');
     picoLog('Downloading Pico firmware ' + version + '...', 'info');
 
     try {
@@ -1733,7 +1751,7 @@
       if (!resp.ok) throw new Error('Download failed: HTTP ' + resp.status);
       var binData = await resp.arrayBuffer();
       picoLog('Downloaded ' + formatBytes(binData.byteLength), 'ok');
-      picoProgressFill.style.width = '40%';
+      setProgress(picoProgressFill, picoProgressPct, 40, 'Uploading to SD');
 
       // Step 2: Upload binary to SD card
       picoLog('Uploading pico-firmware.bin to SD card...', 'info');
@@ -1752,7 +1770,7 @@
       var uploadResult = await uploadResp.json();
       if (!uploadResult.ok) throw new Error(uploadResult.error || 'Upload rejected');
       picoLog('Firmware binary uploaded (' + uploadResult.size + ' bytes)', 'ok');
-      picoProgressFill.style.width = '75%';
+      setProgress(picoProgressFill, picoProgressPct, 75, 'Writing version');
 
       // Step 3: Write version sidecar file
       picoLog('Writing version file...', 'info');
@@ -1769,7 +1787,7 @@
       } else {
         picoLog('Version file written: ' + version, 'ok');
       }
-      picoProgressFill.style.width = '100%';
+      setProgress(picoProgressFill, picoProgressPct, 100, 'Complete');
 
       picoStatus(
         'Pico firmware ' + version + ' deployed to SD card. ' +
@@ -1805,6 +1823,7 @@
   var p4Content      = document.getElementById('p4-content');
   var p4ProgressBar  = document.getElementById('p4-progress-bar');
   var p4ProgressFill = document.getElementById('p4-progress-fill');
+  var p4ProgressPct  = document.getElementById('p4-progress-pct');
   var p4StatusMsg    = document.getElementById('p4-status-msg');
   var p4LogArea      = document.getElementById('p4-log-area');
   var p4OtaInfo      = null;  // {running, next, maxSize}
@@ -2004,7 +2023,7 @@
     for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
 
     p4ProgressBar.style.display = 'block';
-    p4ProgressFill.style.width = '5%';
+    setProgress(p4ProgressFill, p4ProgressPct, 5, 'Querying OTA');
     p4Log('Querying OTA partition info...', 'info');
 
     try {
@@ -2014,7 +2033,7 @@
       p4OtaInfo = await infoResp.json();
       p4Log('Running: ' + p4OtaInfo.running + ' → Target: ' + p4OtaInfo.next +
         ' (max ' + formatBytes(p4OtaInfo.maxSize) + ')', 'info');
-      p4ProgressFill.style.width = '10%';
+      setProgress(p4ProgressFill, p4ProgressPct, 10, 'Downloading');
 
       // Step 2: Download firmware from CDN
       p4Log('Downloading P4 firmware ' + version + '...', 'info');
@@ -2022,7 +2041,7 @@
       if (!binResp.ok) throw new Error('Download failed: HTTP ' + binResp.status);
       var binData = await binResp.arrayBuffer();
       p4Log('Downloaded ' + formatBytes(binData.byteLength), 'ok');
-      p4ProgressFill.style.width = '30%';
+      setProgress(p4ProgressFill, p4ProgressPct, 30, 'Flashing');
 
       // Validate size
       if (binData.byteLength > p4OtaInfo.maxSize) {
@@ -2041,7 +2060,7 @@
         xhr.upload.addEventListener('progress', function(e) {
           if (e.lengthComputable) {
             var pct = 30 + (e.loaded / e.total) * 60; // 30% to 90%
-            p4ProgressFill.style.width = pct.toFixed(1) + '%';
+            setProgress(p4ProgressFill, p4ProgressPct, pct, 'Flashing');
           }
         });
         xhr.addEventListener('load', function() {
@@ -2062,7 +2081,7 @@
         xhr.send(binData);
       });
 
-      p4ProgressFill.style.width = '100%';
+      setProgress(p4ProgressFill, p4ProgressPct, 100, 'Complete');
       p4Status('P4 firmware ' + version + ' flashed successfully! Reboot to activate.', 'success');
       p4Log('Done! Reboot the device to boot into the new firmware.', 'ok');
 
@@ -2302,6 +2321,10 @@
     needsReboot = true;
     document.getElementById('rb-desc').textContent = msg;
     rebootBanner.style.display = '';
+    // Scroll reboot banner into view so the user sees the Reboot button
+    setTimeout(function() {
+      rebootBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   }
 
   document.getElementById('reboot-btn').addEventListener('click', async function() {
@@ -2565,6 +2588,7 @@
   // Serialize all requests — device API calls are queued automatically
   // by the fetch interceptor, and CDN checks share cached releases.json.
   (async function() {
+    await populateChannelSelector();
     await loadCurrentVersion();
     await loadFirmwareVersion();
     await loadPicoVersion();

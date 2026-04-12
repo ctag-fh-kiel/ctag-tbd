@@ -2534,7 +2534,7 @@
       <div class="status-footer-inner">
         <a href="/webui-update.html" id="webui-version-link"
            style="font-size:0.65rem;color:var(--sl-color-neutral-400);text-decoration:none;white-space:nowrap;"
-           title="WebUI Updater"></a>
+           title="WebUI Updater">System Updater</a>
         <div class="status-footer-spacer"></div>
         <button class="factory-lock-btn" id="factory-lock-btn" title="Factory Edit Mode">
           <sl-icon name="lock" id="factory-lock-icon"></sl-icon>
@@ -3120,11 +3120,15 @@
        Built by: build-webui.sh  |  Served dynamically by: dev-server.js -->
   <script defer src="js/app-bundle.js?v=7"></script>
   <script>
-    fetch('/api/v2/storage?getconfig=webui-version.json')
+    fetch('/api/v2/storage?action=file&path=system/webui-version.json')
+      .then(r => {
+        if (!r.ok) return fetch('/api/v2/storage?getconfig=webui-version.json');
+        return r;
+      })
       .then(r => r.ok ? r.json() : null)
       .then(v => {
         const el = document.getElementById('webui-version-link');
-        if (el && v && v.version) el.textContent = 'WebUI v' + v.version;
+        if (el && v && v.version) el.textContent = 'System Updater v' + v.version;
       }).catch(() => {});
   </script>
 </body>
