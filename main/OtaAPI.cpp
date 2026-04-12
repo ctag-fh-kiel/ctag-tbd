@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_app_format.h"
+#include "esp_heap_caps.h"
 
 using namespace CTAG::REST;
 
@@ -94,45 +95,73 @@ esp_err_t OtaAPI::ota_post_handler(httpd_req_t *req) {
         return ESP_FAIL;
     }
 
-    /* ── Receive and write firmware in chunks ── */
-    char buf[4096];
+    /* ── Receive and write firmware in chunks ──
+     * Use a large PSRAM buffer (64 KB) to decouple network receive from
+     * flash writes.  esp_ota_write() triggers flash sector erases that
+     * can stall for 20-100 ms — during which the TCP receive window would
+     * fill and cause connection resets on a fast USB-NCM link.  By
+     * batching receives into a larger buffer we keep the TCP pipe open
+     * while flash is busy.
+     */
+    static constexpr size_t OTA_BUF_SIZE = 64 * 1024;
+    char *buf = (char *)heap_caps_malloc(OTA_BUF_SIZE, MALLOC_CAP_SPIRAM);
+    if (!buf) {
+        ESP_LOGE(TAG, "Failed to allocate OTA receive buffer from PSRAM");
+        esp_ota_abort(ota_handle);
+        CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR,
+                            "Out of memory for OTA buffer");
+        return ESP_FAIL;
+    }
+
     int remaining = req->content_len;
     int received_total = 0;
     bool header_checked = false;
 
     while (remaining > 0) {
-        int to_read = remaining > (int)sizeof(buf) ? (int)sizeof(buf) : remaining;
-        int data_read = httpd_req_recv(req, buf, to_read);
+        /* Fill the PSRAM buffer with as much network data as available */
+        int buf_filled = 0;
+        int buf_target = remaining > (int)OTA_BUF_SIZE ? (int)OTA_BUF_SIZE : remaining;
 
-        if (data_read < 0) {
-            if (data_read == HTTPD_SOCK_ERR_TIMEOUT) {
-                /* Retry on timeout */
-                continue;
+        while (buf_filled < buf_target) {
+            int to_read = buf_target - buf_filled;
+            int data_read = httpd_req_recv(req, buf + buf_filled, to_read);
+
+            if (data_read < 0) {
+                if (data_read == HTTPD_SOCK_ERR_TIMEOUT) {
+                    /* Retry on timeout */
+                    continue;
+                }
+                ESP_LOGE(TAG, "Receive error at byte %d", received_total + buf_filled);
+                heap_caps_free(buf);
+                esp_ota_abort(ota_handle);
+                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR,
+                                    "Firmware receive failed");
+                return ESP_FAIL;
             }
-            ESP_LOGE(TAG, "Receive error at byte %d", received_total);
-            esp_ota_abort(ota_handle);
-            CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR,
-                                "Firmware receive failed");
-            return ESP_FAIL;
-        }
 
-        if (data_read == 0) {
-            ESP_LOGE(TAG, "Connection closed at byte %d/%d",
-                     received_total, req->content_len);
-            esp_ota_abort(ota_handle);
-            CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR,
-                                "Connection closed during upload");
-            return ESP_FAIL;
+            if (data_read == 0) {
+                ESP_LOGE(TAG, "Connection closed at byte %d/%d",
+                         received_total + buf_filled, req->content_len);
+                heap_caps_free(buf);
+                esp_ota_abort(ota_handle);
+                CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
+                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR,
+                                    "Connection closed during upload");
+                return ESP_FAIL;
+            }
+
+            buf_filled += data_read;
         }
 
         /* Validate ESP-IDF app header on first chunk */
-        if (!header_checked && data_read >= (int)sizeof(esp_image_header_t)) {
+        if (!header_checked && buf_filled >= (int)sizeof(esp_image_header_t)) {
             esp_image_header_t *hdr = (esp_image_header_t *)buf;
             if (hdr->magic != ESP_IMAGE_HEADER_MAGIC) {
                 ESP_LOGE(TAG, "Invalid firmware header magic: 0x%02X (expected 0x%02X)",
                          hdr->magic, ESP_IMAGE_HEADER_MAGIC);
+                heap_caps_free(buf);
                 esp_ota_abort(ota_handle);
                 CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                 httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST,
@@ -142,10 +171,12 @@ esp_err_t OtaAPI::ota_post_handler(httpd_req_t *req) {
             header_checked = true;
         }
 
-        err = esp_ota_write(ota_handle, buf, data_read);
+        /* Flush the full buffer to flash in one write */
+        err = esp_ota_write(ota_handle, buf, buf_filled);
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "esp_ota_write failed at byte %d: %s",
                      received_total, esp_err_to_name(err));
+            heap_caps_free(buf);
             esp_ota_abort(ota_handle);
             CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
             httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR,
@@ -153,16 +184,16 @@ esp_err_t OtaAPI::ota_post_handler(httpd_req_t *req) {
             return ESP_FAIL;
         }
 
-        received_total += data_read;
-        remaining -= data_read;
+        received_total += buf_filled;
+        remaining -= buf_filled;
 
-        /* Log progress every ~256 KB */
-        if ((received_total & 0x3FFFF) < data_read) {
-            ESP_LOGI(TAG, "Progress: %d / %d bytes (%.0f%%)",
-                     received_total, req->content_len,
-                     100.0f * received_total / req->content_len);
-        }
+        /* Log progress every buffer flush (~64 KB) */
+        ESP_LOGI(TAG, "Progress: %d / %d bytes (%.0f%%)",
+                 received_total, req->content_len,
+                 100.0f * received_total / req->content_len);
     }
+
+    heap_caps_free(buf);
 
     ESP_LOGI(TAG, "Upload complete: %d bytes received", received_total);
 
