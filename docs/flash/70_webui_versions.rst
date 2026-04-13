@@ -32,6 +32,13 @@ Version History
      - Date
      - Description
      - Download
+   * - **0.5.1**
+     - 2026-04-13
+     - NRPM parameters (possan), OTA PSRAM buffer for reliable firmware
+       uploads, updater UX fixes (compatibility warning, Pico sidecar
+       version detection, OTA retry logic). Includes updated factory
+       macro definitions and presets.
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.5.1.zip>`__
    * - **0.4.6**
      - 2026-04-01
      - Fix Pico version comparison for dev builds. Non-semver versions
