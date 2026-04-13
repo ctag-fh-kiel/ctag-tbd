@@ -2046,7 +2046,7 @@
       // Step 3: Upload via OTA endpoint (with automatic retry on network error)
       p4Log('Flashing to partition ' + p4OtaInfo.next + '...', 'info');
       var uploadDone = false;
-      var maxRetries = 1;
+      var maxRetries = 3;
       for (var attempt = 0; attempt <= maxRetries; attempt++) {
         try {
           await new Promise(function(resolve, reject) {
@@ -2080,9 +2080,9 @@
           break; // success — exit retry loop
         } catch (retryErr) {
           if (attempt < maxRetries) {
-            p4Log('Upload failed (' + retryErr.message + '), retrying in 3s...', 'info');
+            p4Log('Upload failed (' + retryErr.message + '), retrying in 5s...', 'info');
             setProgress(p4ProgressFill, p4ProgressText, 30, 'Retrying');
-            await new Promise(function(w) { setTimeout(w, 3000); });
+            await new Promise(function(w) { setTimeout(w, 5000); });
           } else {
             throw retryErr; // final attempt failed
           }
@@ -2138,7 +2138,7 @@
           }
 
           p4Log('Flashing ' + formatBytes(binData.byteLength) + '...', 'info');
-          var manualMaxRetries = 1;
+          var manualMaxRetries = 3;
           for (var mAttempt = 0; mAttempt <= manualMaxRetries; mAttempt++) {
             try {
               await new Promise(function(resolve, reject) {
@@ -2169,9 +2169,9 @@
               break; // success
             } catch (mRetryErr) {
               if (mAttempt < manualMaxRetries) {
-                p4Log('Upload failed (' + mRetryErr.message + '), retrying in 3s...', 'info');
+                p4Log('Upload failed (' + mRetryErr.message + '), retrying in 5s...', 'info');
                 p4ProgressFill.style.width = '5%';
-                await new Promise(function(w) { setTimeout(w, 3000); });
+                await new Promise(function(w) { setTimeout(w, 5000); });
               } else {
                 throw mRetryErr;
               }
