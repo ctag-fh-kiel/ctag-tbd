@@ -1567,6 +1567,54 @@ namespace CTAG::SPIAPI{
                     }
                 }
                 break;
+
+            case RequestType::SaveScreenshot:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    ESP_LOGI("SpiAPI", "SaveScreenshot: receiving BMP data");
+
+                    // Receive BMP binary data from Pico
+                    std::string screenshotData;
+                    result = receiveString(RequestType::SaveScreenshot, screenshotData);
+                    if (!result || screenshotData.empty()) {
+                        ESP_LOGE("SpiAPI", "SaveScreenshot: failed to receive data");
+                        break;
+                    }
+
+                    // Ensure screenshots directory exists
+                    std::string scrDir = STORAGE::userPath() + "/" + STORAGE::DIR_SCREENSHOTS;
+                    mkdir(scrDir.c_str(), 0755);
+
+                    // Find next available filename (scr_0001.bmp .. scr_9999.bmp)
+                    char filename[32];
+                    int counter = 1;
+                    std::string filePath;
+                    do {
+                        snprintf(filename, sizeof(filename), "scr_%04d.bmp", counter);
+                        filePath = scrDir + "/" + filename;
+                        counter++;
+                    } while (counter < 10000 && STORAGE::fileExists(filePath));
+
+                    if (counter >= 10000) {
+                        ESP_LOGE("SpiAPI", "SaveScreenshot: too many screenshots, max 9999");
+                        break;
+                    }
+
+                    STORAGE::lockStorage();
+                    result = atomicWrite(filePath, screenshotData.data(), screenshotData.size());
+                    STORAGE::unlockStorage();
+                    if (result) {
+                        ESP_LOGI("SpiAPI", "SaveScreenshot: saved %d bytes to %s",
+                                 (int)screenshotData.size(), filePath.c_str());
+                    } else {
+                        ESP_LOGE("SpiAPI", "SaveScreenshot: failed to write %s", filePath.c_str());
+                    }
+                }
+#else
+                ESP_LOGW("SpiAPI", "SaveScreenshot: SD card disabled");
+                result = true;
+#endif
+                break;
             }
         }
     }
