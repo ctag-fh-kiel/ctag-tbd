@@ -171,19 +171,7 @@
     .manifest-info .desc { font-size: 0.8rem; color: var(--fg2); margin-bottom: 0.75rem; }
 
     /* File list */
-    .file-list { list-style: none; }
-    .file-item {
-      display: flex; align-items: center; gap: 0.5rem;
-      padding: 0.4rem 0; border-bottom: 1px solid var(--border);
-      font-size: 0.78rem; font-family: monospace;
-    }
-    .file-item:last-child { border-bottom: none; }
-    .file-item .status-icon { width: 16px; text-align: center; flex-shrink: 0; }
-    .file-item .path { flex: 1; color: var(--fg2); word-break: break-all; }
-    .file-item .size { color: var(--fg3); white-space: nowrap; }
-    .file-item.done .path { color: var(--success); }
-    .file-item.error .path { color: var(--error); }
-    .file-item.uploading .path { color: var(--accent); }
+    .file-list { list-style: none; display: none; }
 
     /* Buttons */
     .btn {
@@ -260,6 +248,7 @@
     .log-area .log-line { padding: 0.1rem 0; }
     .log-area .log-ok { color: var(--success); }
     .log-area .log-err { color: var(--error); }
+    .log-area .log-warn { color: var(--warn); }
     .log-area .log-info { color: var(--accent); }
 
     /* Hash info */
@@ -1111,25 +1100,13 @@
       var missing = manifest.files.filter(function(f) { return !zipFiles[f]; });
       if (missing.length) throw new Error('Missing files: ' + missing.join(', '));
 
-      // Show file list and start upload
+      // Show manifest header and start upload
       manifestTitle.textContent = 'Installing v' + manifest.version;
       manifestDesc.textContent = manifest.description || '';
       updVersion.textContent = 'v' + manifest.version;
       updDate.textContent = manifest.date || '';
       updCard.style.display = '';
 
-      fileList.innerHTML = '';
-      for (var fi = 0; fi < manifest.files.length; fi++) {
-        var f = manifest.files[fi];
-        var li = document.createElement('li');
-        li.className = 'file-item';
-        li.id = 'fi-' + sanitizeId(f);
-        li.innerHTML =
-          '<span class="status-icon">&#9744;</span>' +
-          '<span class="path">' + escHtml(f) + '</span>' +
-          '<span class="size">' + formatBytes(zipFiles[f].data.length) + '</span>';
-        fileList.appendChild(li);
-      }
       manifestInfo.style.display = 'block';
       dropZone.style.display = 'none';
 
@@ -1137,29 +1114,28 @@
       progressBar.style.display = 'block';
 
       var total = manifest.files.length;
-      var done = 0, errors = 0;
+      var done = 0, errors = 0, skipped = 0;
 
       log('Installing update v' + manifest.version + '...', 'info');
 
       for (var ui = 0; ui < manifest.files.length; ui++) {
         var filePath = manifest.files[ui];
-        var item = document.getElementById('fi-' + sanitizeId(filePath));
-        if (item) item.className = 'file-item uploading';
+
+        // user/ files are seed defaults — never overwrite existing user settings
+        if (filePath.startsWith('user/')) {
+          skipped++;
+          log('  SKIP: ' + filePath + ' (user settings preserved)', 'info');
+          done++;
+          progressFill.style.width = ((done / total) * 100).toFixed(1) + '%';
+          continue;
+        }
 
         try {
           var fileData = await extractFileData(zipFiles[filePath]);
           await uploadFile(filePath, fileData);
-          if (item) {
-            item.className = 'file-item done';
-            item.querySelector('.status-icon').innerHTML = '&#9745;';
-          }
           log('  OK: ' + filePath, 'ok');
         } catch (e) {
           errors++;
-          if (item) {
-            item.className = 'file-item error';
-            item.querySelector('.status-icon').innerHTML = '&#9746;';
-          }
           log('  FAIL: ' + filePath + ' — ' + e.message, 'err');
         }
 
@@ -1177,11 +1153,10 @@
           method: 'POST', body: versionData
         });
         log('Version file updated to v' + manifest.version, 'ok');
-        showStatus(
-          'Update complete! All ' + total + ' file(s) installed for v' + manifest.version +
-          '. Hard-refresh (Cmd+Shift+R) the main page to see changes.',
-          'success'
-        );
+        var msg = 'Update complete! ' + (total - skipped) + ' file(s) installed for v' + manifest.version + '.';
+        if (skipped) msg += ' ' + skipped + ' optional file(s) skipped.';
+        msg += ' Hard-refresh (Cmd+Shift+R) the main page to see changes.';
+        showStatus(msg, 'success');
         onlineContent.innerHTML = '<span class="up-to-date">&#9989; Installed v' + escHtml(manifest.version) + '</span>';
         loadCurrentVersion();
       } else {
@@ -1351,17 +1326,6 @@
       updDate.textContent = manifest.date || '';
       updCard.style.display = '';
 
-      fileList.innerHTML = '';
-      for (const f of manifest.files) {
-        const li = document.createElement('li');
-        li.className = 'file-item';
-        li.id = 'fi-' + sanitizeId(f);
-        li.innerHTML =
-          '<span class="status-icon">&#9744;</span>' +
-          '<span class="path">' + escHtml(f) + '</span>' +
-          '<span class="size">' + formatBytes(zipFiles[f].data.length) + '</span>';
-        fileList.appendChild(li);
-      }
       manifestInfo.style.display = 'block';
       applyBtn.disabled = false;
       applyBtn.style.display = '';
@@ -1405,27 +1369,27 @@
     const total = manifest.files.length;
     let done = 0;
     let errors = 0;
+    let skipped = 0;
 
     log('Starting update to v' + manifest.version + '...', 'info');
 
     for (const filePath of manifest.files) {
-      const item = document.getElementById('fi-' + sanitizeId(filePath));
-      if (item) item.className = 'file-item uploading';
+
+      // user/ files are seed defaults — never overwrite existing user settings
+      if (filePath.startsWith('user/')) {
+        skipped++;
+        log('  SKIP: ' + filePath + ' (user settings preserved)', 'info');
+        done++;
+        progressFill.style.width = ((done / total) * 100).toFixed(1) + '%';
+        continue;
+      }
 
       try {
         const fileData = await extractFileData(zipFiles[filePath]);
         await uploadFile(filePath, fileData);
-        if (item) {
-          item.className = 'file-item done';
-          item.querySelector('.status-icon').innerHTML = '&#9745;';
-        }
         log('  OK: ' + filePath, 'ok');
       } catch (e) {
         errors++;
-        if (item) {
-          item.className = 'file-item error';
-          item.querySelector('.status-icon').innerHTML = '&#9746;';
-        }
         log('  FAIL: ' + filePath + ' — ' + e.message, 'err');
       }
 
@@ -1449,11 +1413,10 @@
         log('Warning: could not update version file — ' + e.message, 'err');
       }
 
-      showStatus(
-        'Update complete! All ' + total + ' file(s) installed for v' + manifest.version +
-        '. Hard-refresh (Cmd+Shift+R) the main page to see changes.',
-        'success'
-      );
+      var msg = 'Update complete! ' + (total - skipped) + ' file(s) installed for v' + manifest.version + '.';
+      if (skipped) msg += ' ' + skipped + ' optional file(s) skipped.';
+      msg += ' Hard-refresh (Cmd+Shift+R) the main page to see changes.';
+      showStatus(msg, 'success');
       loadCurrentVersion();
     } else {
       showStatus(
@@ -1473,20 +1436,14 @@
     if (filePath.startsWith('www/')) {
       action = 'uploadwww';
       apiPath = filePath.slice(4);
-    } else if (filePath.startsWith('data/')) {
-      action = 'uploadconfig';
-      apiPath = filePath.slice(5);
     } else if (filePath.startsWith('factory/')) {
       action = 'uploadfactory';
       apiPath = filePath.slice(8);
     } else if (filePath.startsWith('system/')) {
       action = 'uploadsystem';
       apiPath = filePath.slice(7);
-    } else if (filePath.startsWith('user/')) {
-      action = 'uploaduser';
-      apiPath = filePath.slice(5);
     } else {
-      throw new Error('Unknown path prefix (expected www/, data/, factory/, system/, or user/): ' + filePath);
+      throw new Error('Unknown path prefix (expected www/, factory/, or system/): ' + filePath);
     }
 
     const url = '/api/v2/storage?action=' + action + '&path=' + encodeURIComponent(apiPath);
