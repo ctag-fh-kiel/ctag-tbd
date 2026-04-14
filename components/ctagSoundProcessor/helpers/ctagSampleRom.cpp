@@ -376,11 +376,11 @@ namespace CTAG::SP::HELPERS {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
         ESP_LOGI("SROM", "Done loading samples, total size %li bytes, time taken %.2fs, %.2fMB/s ", totalSize, (float)duration / 1000.f, (float(totalSize) / (1024.0f * 1024.0f)) / (duration / 1000.0f));
 
-        // Diagnostic: dump metadata for first 16 sample slices
-        ESP_LOGW("SROM", "DIAG: numberSlices=%lu, firstNonWtSlice=%lu, slices_samples=%lu", numberSlices, firstNonWtSlice, slices_samples);
+        // Diagnostic: dump metadata for first 16 sample slices (DEBUG — compiled out in production)
+        ESP_LOGD("SROM", "DIAG: numberSlices=%lu, firstNonWtSlice=%lu, slices_samples=%lu", numberSlices, firstNonWtSlice, slices_samples);
         for (uint32_t di = 0; di < 16 && di < slices_samples; di++) {
             uint32_t absIdx = firstNonWtSlice + di;
-            ESP_LOGW("SROM", "DIAG: sampleSlice[%lu] absIdx=%lu offset=%lu size=%lu", di, absIdx, sliceOffsets[absIdx], sliceSizes[absIdx]);
+            ESP_LOGD("SROM", "DIAG: sampleSlice[%lu] absIdx=%lu offset=%lu size=%lu", di, absIdx, sliceOffsets[absIdx], sliceSizes[absIdx]);
         }
 
         // everything is buffered
