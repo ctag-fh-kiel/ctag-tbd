@@ -249,7 +249,7 @@ namespace CTAG::SPIAPI{
             str.append((char*)&receive_buffer[7], bytes_received);
             bytes_to_be_received -= bytes_received;
             /*
-            ESP_LOGI("spiapi", "resLength %li, totalResponseLength %li, bytes_received %li, bytes_to_be_received %li",
+            ESP_LOGI("SpiAPI", "resLength %li, totalResponseLength %li, bytes_received %li, bytes_to_be_received %li",
                  *resLength, totalResponseLength, bytes_received, bytes_to_be_received);
             */
         }
@@ -530,12 +530,12 @@ namespace CTAG::SPIAPI{
 
             // check integrity of transaction
             if (transaction.trans_len != 2048 * 8){
-                ESP_LOGE("spiapi", "Received transaction length %d, expected 2048 * 8", transaction.trans_len);
+                ESP_LOGE("SpiAPI", "Received transaction length %d, expected 2048 * 8", transaction.trans_len);
                 result = true;
                 continue;
             }
             if (rcv_data[0] != 0xCA || rcv_data[1] != 0xFE){
-                ESP_LOGE("spiapi", "Received data %x %x, expected 0xCA 0xFE", rcv_data[0], rcv_data[1]);
+                ESP_LOGE("SpiAPI", "Received data %x %x, expected 0xCA 0xFE", rcv_data[0], rcv_data[1]);
                 result = true;
                 continue;
             }
