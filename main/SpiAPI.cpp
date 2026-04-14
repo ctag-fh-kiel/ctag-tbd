@@ -684,14 +684,14 @@ namespace CTAG::SPIAPI{
                 boot_into_slot(1);
                 break;
             case RequestType::GetSampleRomDescriptor:
-                ESP_LOGI("SpiAPI", "GetSampleRomDescriptor");
+                ESP_LOGD("SpiAPI", "GetSampleRomDescriptor");
                 {
                     std::string desc = HELPERS::ctagSampleRom::GetSampleRomDescriptorJSON();
                     result = transmitCString(requestType, desc.c_str());
                 }
                 break;
             case RequestType::SetActiveWaveTableBank:
-                ESP_LOGI("SpiAPI", "Setting active wavetable bank to %d", bank_number);
+                ESP_LOGD("SpiAPI", "Setting active wavetable bank to %d", bank_number);
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 HELPERS::ctagSampleRom::SetActiveWaveTableBank(uint8_param_0);
                 HELPERS::ctagSampleRom::RefreshDataStructure();
@@ -699,7 +699,7 @@ namespace CTAG::SPIAPI{
                 break;
 
             case RequestType::SetActiveSampleKit:
-                ESP_LOGI("SpiAPI", "Setting active sample bank to #%d", uint8_param_0);
+                ESP_LOGD("SpiAPI", "Setting active sample bank to #%d", uint8_param_0);
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 HELPERS::ctagSampleRom::SetActiveSampleBank(uint8_param_0);
                 HELPERS::ctagSampleRom::RefreshDataStructure();
@@ -707,7 +707,7 @@ namespace CTAG::SPIAPI{
                 break;
 
             case RequestType::GetFirmwareInfo:
-                ESP_LOGI("SpiAPI", "GetFirmwareInfo");
+                ESP_LOGD("SpiAPI", "GetFirmwareInfo");
                 {
                     // Read WebUI version from SD card
                     std::string webui_ver;
@@ -768,7 +768,7 @@ namespace CTAG::SPIAPI{
                 {
                     // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                     uint8_t number = HELPERS::ctagSampleRom::GetNumberSlices2();
-                    ESP_LOGI("SpiAPI", "Getting sample file count (%d)", number);
+                    ESP_LOGD("SpiAPI", "Getting sample file count (%d)", number);
                     HELPERS::ctagSampleRom srom;
                     int firstnonwt = srom.GetFirstNonWaveTableSlice();
                     uint32_t total = srom.GetNumberSlices() - firstnonwt;
@@ -781,7 +781,7 @@ namespace CTAG::SPIAPI{
             case RequestType::GetSampleFileInfo:
                 {
                     int16_t file_index = uint8_param_1 * 256 + uint8_param_0;
-                    ESP_LOGI("SpiAPI", "Getting sample file %d info", file_index);
+                    ESP_LOGD("SpiAPI", "Getting sample file %d info", file_index);
                     HELPERS::ctagSampleRom srom;
                     int firstnonwt = srom.GetFirstNonWaveTableSlice();
                     uint32_t total = srom.GetNumberSlices() - firstnonwt;
@@ -801,7 +801,7 @@ namespace CTAG::SPIAPI{
                     int16_t slice = srom.GetFirstNonWaveTableSlice() + file_index;
                     uint32_t offset = srom.GetSliceOffset(slice);
                     uint32_t size = srom.GetSliceSize(slice);
-                    ESP_LOGI("SpiAPI", "Getting sample file %d waveform preview, slice %d, size %ld, offset %ld",
+                    ESP_LOGD("SpiAPI", "Getting sample file %d waveform preview, slice %d, size %ld, offset %ld",
                         file_index, slice, size, offset);
                     char sampledata[520] = { 0, };
                     int16_t slicedata[100] = { 0, };
@@ -839,7 +839,7 @@ namespace CTAG::SPIAPI{
                 {
 #if CONFIG_TBD_USE_SD_CARD
                     std::string synthId = string_parameter;
-                    ESP_LOGI("SpiAPI", "Getting synth definition %s", synthId.c_str());
+                    ESP_LOGD("SpiAPI", "Getting synth definition %s", synthId.c_str());
                     std::string synthjson = "{}";
                     auto def = CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->GetSynthDefinition(synthId);
                     CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_SerializeJSON(def, &synthjson);
@@ -911,7 +911,7 @@ namespace CTAG::SPIAPI{
                     // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                     std::string outputjson;
                     int trackIndex = uint8_param_0;
-                    ESP_LOGI("SpiAPI", "Getting macro sound preset list, track %d", trackIndex);
+                    ESP_LOGD("SpiAPI", "Getting macro sound preset list, track %d", trackIndex);
                     CTAG::MACROPRESETS::MacroSoundPresetDataModel::instance().GetPresetIndexJson(trackIndex, &outputjson);
                     // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                     result = transmitCString(requestType, outputjson.c_str());
@@ -924,7 +924,7 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string presetId = string_parameter;
-                    ESP_LOGI("SpiAPI", "Getting macro sound preset %s", presetId.c_str());
+                    ESP_LOGD("SpiAPI", "Getting macro sound preset %s", presetId.c_str());
                     std::string outputjson;
                     outputjson = CTAG::AUDIO::SoundProcessorManager::GetMacroSoundPresetJSON(presetId);
                     result = transmitCString(requestType, outputjson.c_str());
@@ -937,7 +937,7 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string macroId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
-                    ESP_LOGI("SpiAPI", "Getting macro definition %s", macroId.c_str());
+                    ESP_LOGD("SpiAPI", "Getting macro definition %s", macroId.c_str());
                     std::string outputjson;
                     // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                     outputjson = CTAG::AUDIO::SoundProcessorManager::GetMacroDefinitionJSON(macroId);
@@ -1058,7 +1058,7 @@ namespace CTAG::SPIAPI{
             case RequestType::GetKitIndexJSON:
                 {
                     std::string json = CTAG::AUDIO::SoundProcessorManager::GetKitIndexJSON();
-                    ESP_LOGI("SpiAPI", "Getting track sample bank list: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "Getting track sample bank list: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());
                 }
                 break;
@@ -1066,7 +1066,7 @@ namespace CTAG::SPIAPI{
             case RequestType::GetSampleBankIndexJSON:
                 {
                     std::string json = CTAG::AUDIO::SoundProcessorManager::GetActiveKitBankIndexJSON();
-                    ESP_LOGI("SpiAPI", "Getting track sample bank list: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "Getting track sample bank list: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());
                 }
                 break;
@@ -1087,7 +1087,7 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string json = string_parameter;
-                    ESP_LOGI("SpiAPI", "Saving preset json: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "Saving preset json: %s", json.c_str());
                     CTAG::AUDIO::SoundProcessorManager::PutSamplePresetJSON(json);
                     CTAG::AUDIO::SoundProcessorManager::RefreshSoundPresets();
                 }
@@ -1276,7 +1276,7 @@ namespace CTAG::SPIAPI{
                         closedir(d);
                     }
                     json += "]";
-                    ESP_LOGI("SpiAPI", "ListProjects: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "ListProjects: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());
                 }
 #else
@@ -1432,7 +1432,7 @@ namespace CTAG::SPIAPI{
                     }
 
                     json += "]";
-                    ESP_LOGI("SpiAPI", "ListTrackDefaults: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "ListTrackDefaults: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());
                 }
 #else
