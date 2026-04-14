@@ -88,7 +88,7 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
             loadJSON(d, resolvedPath);
             if(!d.HasParseError()) {
                 if(MacroSoundPresetUtils::MacroSoundPreset_DeserializeJSON(&presets[pindex], d)) {
-                    ESP_LOGI("MacroSoundPresetDataModel", "Got sound preset: %d id: %s \"%s\"", pindex, presets[pindex].id, presets[pindex].displayName);
+                    ESP_LOGD("MacroSoundPresetDataModel", "Got sound preset: %d id: %s \"%s\"", pindex, presets[pindex].id, presets[pindex].displayName);
 
                     // Find existing or create new group
                     gindex = -1;
@@ -119,7 +119,7 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
                     if (macrodef == nullptr) {
                         ESP_LOGE("MacroSoundPresetDataModel", "  Could not find macro device definition with id %s for preset %s", presets[pindex].macroDeviceId, presets[pindex].id);
                     } else {
-                        ESP_LOGI("MacroSoundPresetDataModel", "  Found macro device definition with id %s for preset %s", presets[pindex].macroDeviceId, presets[pindex].id);
+                        ESP_LOGD("MacroSoundPresetDataModel", "  Found macro device definition with id %s for preset %s", presets[pindex].macroDeviceId, presets[pindex].id);
                         // figure out which tracks this preset is valid on.
                         for (int i = 0; i < 16; i++) {
                             TrackDefinition *trackdef = SynthDefinitionDataModel::instance()->GetTrackDefinition(i);
@@ -160,7 +160,8 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
     qsort(groups, gcount, sizeof(struct MacroSoundPresetGroup), compareGroups);
     groupsUsed = gcount;
 
-    ESP_LOGI("MacroSoundPresetDataModel", "After reload: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGI("MacroSoundPresetDataModel", "Loaded %d sound presets in %d groups", presetsUsed, groupsUsed);
+    ESP_LOGD("MacroSoundPresetDataModel", "After reload: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
         heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
         heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM),

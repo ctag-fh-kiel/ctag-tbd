@@ -62,18 +62,19 @@ void MacroDeviceDefinitionDataModel::ReloadMachineDefinitions() {
             loadJSON(d, resolvedPath);
             if(!d.HasParseError()) {
                 if( MacroDeviceDefinitionUtils::MacroDeviceDefinition_DeserializeJSON(&definitions[index], d)) {
-                    ESP_LOGI("MacroDeviceDefinitionDataModel", "Deserialized macro device definition: #%s \"%s\"", definitions[index].id, definitions[index].name);
+                    ESP_LOGD("MacroDeviceDefinitionDataModel", "Deserialized macro device definition: #%s \"%s\"", definitions[index].id, definitions[index].name);
                     index ++;
                 } else {
                     ESP_LOGE("MacroDeviceDefinitionDataModel", "Failed to deserialize macro device definition from file %s", fn.c_str());
                 }
             } else {
-                ESP_LOGI("MacroDeviceDefinitionDataModel", "Failed to parse file: %s", fn.c_str());
+                ESP_LOGW("MacroDeviceDefinitionDataModel", "Failed to parse file: %s", fn.c_str());
 
             }
         }
     }
 
+    ESP_LOGI("MacroDeviceDefinitionDataModel", "Loaded %d macro device definitions", index);
     xSemaphoreGive(arrayMutex);
 }
 
