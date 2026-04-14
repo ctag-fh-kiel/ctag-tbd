@@ -627,6 +627,13 @@ void SoundProcessorManager::StartSoundProcessor() {
     NET::Network::SetMDNSName(model->GetNetworkConfigurationData("mdns_name"));
     NET::Network::Up();
     REST::RestServer::StartRestServer();
+
+    // Start NCM watchdog — auto-reconnects USB if macOS aborts the NCM link
+    if (model->GetNetworkConfigurationData("mode").compare("usbncm") == 0 ||
+        (model->GetNetworkConfigurationData("mode").compare("ap") != 0 &&
+         model->GetNetworkConfigurationData("mode").compare("sta") != 0)) {
+        CTAG::DRIVERS::tusb::StartNCMWatchdog();
+    }
 #if CONFIG_TBD_USE_RP2350
     SPIAPI::SpiAPI::StartSpiAPI();
 #endif

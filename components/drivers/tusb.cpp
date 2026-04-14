@@ -24,6 +24,9 @@ respective component folders / files if different from this license.
 #include "tinyusb_default_config.h"
 #include "esp_log.h"
 #include "esp_attr.h"
+#include "esp_system.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 // Interface counter
 enum interface_count {
@@ -61,12 +64,12 @@ enum usb_endpoints {
 static const char *s_str_desc[7] = {
         // array of pointer to string descriptors
         (char[]) {0x09, 0x04},  // 0: is supported language is English (0x0409)
-        "TBD",             // 1: Manufacturer
-        "TBD-BBA",      // 2: Product
+        "dadamachines",             // 1: Manufacturer
+        "tbd-16",      // 2: Product
         "123456",              // 3: Serials, should use chip ID
-        "TBD midi", // 4: MIDI
-        "TBD net", // 5: NCM
-        "", // 6: MAC
+        "tbd-16 midi", // 4: MIDI
+        "tbd-16 net", // 5: NCM
+        "020211223301", // 6: MAC address (must be 12 hex chars, matches net_config mac_addr)
 };
 
 /**
@@ -157,5 +160,94 @@ bool CTAG::DRIVERS::tusb::WaitForNCMReady(uint32_t timeout_ms) {
 
     ESP_LOGW("TUSB", "NCM interface not ready after %lu ms timeout", timeout_ms);
     return false;
+}
+
+// Declared in network.cpp — shared NCM failure state
+extern volatile uint32_t s_ncm_consecutive_fails;
+extern volatile bool s_ncm_ever_connected;
+
+// Returns true if NCM link is healthy: packets have flowed AND no recent failures.
+// s_ncm_ever_connected is a permanent latch — not sufficient alone because macOS
+// can briefly connect (DHCP works), then abort the link.  We must also verify
+// that s_ncm_consecutive_fails is 0 (no accumulating send failures).
+static bool ncm_link_healthy() {
+    return s_ncm_ever_connected && s_ncm_consecutive_fails == 0;
+}
+
+// NCM watchdog: macOS aborts setupDataTransfers ~50% of the time.
+// Detection: check ncm_link_healthy() = ever_connected AND no consecutive fails.
+// Recovery: esp_restart() — tinyusb_driver_uninstall() while the lwIP network
+// stack is active causes a Guru Meditation crash (Load access fault) because
+// netif_transmit() accesses freed USB structures.  A clean full reboot is the
+// only safe recovery.
+//
+// Reboot limit: uses esp_reset_reason() — if the last boot was already a
+// software restart (from us or a crash), don't restart again. This gives
+// exactly 1 retry per power cycle and prevents infinite reboot loops.
+// ESP32-P4 has no RTC memory, so we can't persist a counter.
+static void ncm_watchdog_task(void *) {
+    static const char *TAG = "TUSB";
+
+    // Check if we're allowed to restart. Only restart once per power cycle.
+    // ESP_RST_POWERON = fresh power-on → OK to restart if needed.
+    // ESP_RST_SW / ESP_RST_PANIC = we already restarted → don't restart again.
+    esp_reset_reason_t reason = esp_reset_reason();
+    bool can_restart = (reason == ESP_RST_POWERON);
+    ESP_LOGI(TAG, "NCM watchdog: reset reason=%d, restart %s",
+             (int)reason, can_restart ? "allowed" : "blocked (already retried)");
+
+    // Wait for boot + USB enum + macOS first setupDataTransfers + DHCP.
+    // Network init happens around t=5s. If link works, DHCP completes by ~9s.
+    vTaskDelay(pdMS_TO_TICKS(12000));
+
+    if (ncm_link_healthy()) {
+        ESP_LOGI(TAG, "NCM watchdog: link healthy, monitoring stability for 30s");
+
+        // Phase 2: stability monitoring — keep checking for 30s.
+        // macOS can connect then abort within seconds, so one check isn't enough.
+        for (int i = 0; i < 15; i++) {
+            vTaskDelay(pdMS_TO_TICKS(2000));
+            if (!ncm_link_healthy()) {
+                if (can_restart) {
+                    ESP_LOGW(TAG, "NCM watchdog: link broke during stability (fails=%lu), restarting device",
+                             (unsigned long)s_ncm_consecutive_fails);
+                    esp_restart();
+                }
+                ESP_LOGW(TAG, "NCM watchdog: link broke but restart blocked — giving up");
+                vTaskDelete(NULL);
+                return;
+            }
+        }
+
+        ESP_LOGI(TAG, "NCM watchdog: link stable for 30s, done");
+        vTaskDelete(NULL);
+        return;
+    }
+
+    // Link unhealthy after 12s
+    if (!tud_mounted()) {
+        // No USB host — charger or powerbank. Don't reboot.
+        ESP_LOGI(TAG, "NCM watchdog: no USB host detected, NCM not available");
+        vTaskDelete(NULL);
+        return;
+    }
+
+    if (!can_restart) {
+        // Already retried once — device works fine, just no WebUI this session.
+        ESP_LOGW(TAG, "NCM watchdog: link unhealthy (ever_ok=%d fails=%lu) but restart blocked — giving up",
+                 (int)s_ncm_ever_connected, (unsigned long)s_ncm_consecutive_fails);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    // USB host present but NCM failed — macOS abort case, first attempt
+    ESP_LOGW(TAG, "NCM watchdog: link unhealthy (ever_ok=%d fails=%lu) with USB host, restarting device",
+             (int)s_ncm_ever_connected, (unsigned long)s_ncm_consecutive_fails);
+    esp_restart();
+}
+
+void CTAG::DRIVERS::tusb::StartNCMWatchdog() {
+    xTaskCreatePinnedToCore(ncm_watchdog_task, "ncm_wd", 2048, nullptr,
+                            tskIDLE_PRIORITY + 2, nullptr, 0);
 }
 
