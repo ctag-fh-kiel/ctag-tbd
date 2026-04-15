@@ -597,35 +597,50 @@ function isMacroKnob(mappingAnalysis, paramIdx) {
 
 /**
 /**
- * Apply a response curve to a 0-127 value.
+ * Apply a response curve to a 0-max value.
+ * Must match the C++ applyCurve() in MacroTranslator.cpp exactly.
+ * For 14-bit NRPN: normalizes to 0-127, applies curve, scales back. Integer-only.
  * Must match the C++ applyCurve() in MacroTranslator.cpp exactly.
  */
-function applyCurve(val, curveType) {
+function applyCurve(val, curveType, max) {
+  max = max || 127;
   if (!curveType || curveType === 'linear') return val;
   if (val <= 0) return 0;
-  if (val >= 127) return 127;
+  if (val >= max) return max;
+
+  // Normalize to 0-127 for curve computation
+  var n = Math.round(val * 127 / max);
+  var curved;
 
   switch (curveType) {
     case 'log':
-      if (val <= 16) return val * 4;
-      if (val <= 64) return 64 + Math.round((val - 16) * 36 / 48);
-      return 100 + Math.round((val - 64) * 27 / 63);
+      if (n <= 16) curved = n * 4;
+      else if (n <= 64) curved = 64 + Math.round((n - 16) * 36 / 48);
+      else curved = 100 + Math.round((n - 64) * 27 / 63);
+      break;
 
     case 'exp':
-      return Math.round(val * val / 127);
+      curved = Math.round(n * n / 127);
+      break;
 
     default:
-      return val;
+      curved = n;
+      break;
   }
+
+  // Scale back to original range
+  return Math.round(curved * max / 127);
 }
 
 /**
- * Compute the real CC output values for a given knob value.
- * Returns an array of { ctrl, name, value, pct } for each mapping target.
- *   ctrl  — CC number
+ * Compute the real CC/NRPN output values for a given knob value.
+ * Returns an array of { ctrl, name, value, pct, max, type } for each mapping target.
+ *   ctrl  — CC/NRPN number
  *   name  — human-readable DSP param name
- *   value — computed output (0-127)
- *   pct   — percentage of 127 (for bar display)
+ *   value — computed output (0-127 for CC, 0-16383 for NRPN)
+ *   pct   — percentage of max (for bar display)
+ *   max   — 127 or 16383
+ *   type  — 'cc' or 'nrpm'
  */
 function computeMappingOutputs(def, paramIdx, knobValue) {
   if (!def || !def.mapping) return [];
@@ -634,14 +649,19 @@ function computeMappingOutputs(def, paramIdx, knobValue) {
     if (!m.add) return;
     m.add.forEach(function(a) {
       if (a.src !== paramIdx) return;
-      var curved = applyCurve(knobValue, a.curve);
+      var max = getParamMax(def.machine, m.ctrl);
+      var paramInfo = getParamInfo(def.machine, m.ctrl);
+      var type = (paramInfo && paramInfo.type) || 'cc';
+      var curved = applyCurve(knobValue, a.curve, max);
       var val = (m.start || 0) + Math.round(curved * a.mul / a.div);
-      val = Math.max(0, Math.min(127, val));
+      val = Math.max(0, Math.min(max, val));
       results.push({
         ctrl: m.ctrl,
         name: resolveCCName(def.machine, m.ctrl),
         value: val,
-        pct: Math.round(val / 127 * 100)
+        pct: Math.round(val / max * 100),
+        max: max,
+        type: type
       });
     });
   });
@@ -813,6 +833,25 @@ function getMachineInfo(machineId) {
 }
 
 /**
+ * Look up a parameter's type info from the machine definition.
+ * Returns the parameter object { ctrl, type, name, ... } or null.
+ */
+function getParamInfo(machineId, ctrl) {
+  var info = getMachineInfo(machineId);
+  if (!info || !info.parameters) return null;
+  return info.parameters.find(function(p) { return p.ctrl === ctrl; }) || null;
+}
+
+/**
+ * Get the max value for a parameter based on its type.
+ * NRPN (type: 'nrpm') → 16383, CC → 127.
+ */
+function getParamMax(machineId, ctrl) {
+  var param = getParamInfo(machineId, ctrl);
+  return (param && param.type === 'nrpm') ? 16383 : 127;
+}
+
+/**
  * Get available (non-empty) machines for a track.
  */
 function getTrackMachines(track) {
@@ -932,28 +971,29 @@ function renderKnobGroups(def, paramValues, options) {
         }
         outputs.forEach(function(o) {
           var mapping = def.mapping.find(function(mm) { return mm.ctrl === o.ctrl; });
-          var rangeLow = 0, rangeHigh = 127;
+          var oMax = o.max || 127;
+          var rangeLow = 0, rangeHigh = oMax;
           var sourceCurve = '';
           if (mapping && mapping.add) {
             if (mapping.add.length === 1) {
               rangeLow = mapping.start || 0;
               var a = mapping.add[0];
-              rangeHigh = rangeLow + Math.round(127 * (a.mul || 1) / (a.div || 1));
-              rangeHigh = Math.min(127, rangeHigh);
+              rangeHigh = rangeLow + Math.round(oMax * (a.mul || 1) / (a.div || 1));
+              rangeHigh = Math.min(oMax, rangeHigh);
               sourceCurve = a.curve || '';
             } else {
               rangeLow = mapping.start || 0;
               rangeHigh = rangeLow;
               mapping.add.forEach(function(a) {
-                rangeHigh += Math.round(127 * (a.mul || 1) / (a.div || 1));
+                rangeHigh += Math.round(oMax * (a.mul || 1) / (a.div || 1));
                 if (a.src === param.idx) sourceCurve = a.curve || '';
               });
-              rangeHigh = Math.min(127, rangeHigh);
+              rangeHigh = Math.min(oMax, rangeHigh);
             }
           }
-          var rangeLowPct = rangeLow / 127 * 100;
-          var rangeWidthPct = (rangeHigh - rangeLow) / 127 * 100;
-          var valuePct = o.value / 127 * 100;
+          var rangeLowPct = rangeLow / oMax * 100;
+          var rangeWidthPct = (rangeHigh - rangeLow) / oMax * 100;
+          var valuePct = o.value / oMax * 100;
 
           html += '<div class="knob-target-row" data-ctrl="' + o.ctrl + '">';
           html += '<span class="knob-target-name">' + esc(o.name) + '</span>';
@@ -969,7 +1009,7 @@ function renderKnobGroups(def, paramValues, options) {
             var targetParamId = def.machine + '_' + esc(o.name).replace(/[- ]/g, '_');
             var targetHint = targetDH.resolveHint(targetParamId, o.name);
             if (targetHint) {
-              var physVal = targetDH.rawToDisplay(o.value, 0, 127, targetHint);
+              var physVal = targetDH.rawToDisplay(o.value, 0, oMax, targetHint);
               targetFmt = targetDH.formatDisplayValue(physVal, targetHint);
             }
           }
@@ -1055,6 +1095,8 @@ window.TBD.shared = {
   onTrackChange: onTrackChange,
   selectTrack: selectSharedTrack,
   getMachineInfo: getMachineInfo,
+  getParamInfo: getParamInfo,
+  getParamMax: getParamMax,
   getTrackMachines: getTrackMachines,
   renderTrackOverview: renderTrackOverview,
   setupTrackOverviewEvents: setupTrackOverviewEvents,
@@ -2215,13 +2257,13 @@ window.TBD.shared = {
                   var pid = state.activeMacroDef.machine + '_' + o.name.replace(/[- ]/g, '_');
                   var hint = targetDH.resolveHint(pid, o.name);
                   if (hint) {
-                    var physVal = targetDH.rawToDisplay(o.value, 0, 127, hint);
+                    var physVal = targetDH.rawToDisplay(o.value, 0, o.max || 127, hint);
                     fmt = targetDH.formatDisplayValue(physVal, hint);
                   }
                 }
                 valEl.textContent = fmt;
               }
-              if (dotEl) dotEl.style.left = (o.value / 127 * 100) + '%';
+              if (dotEl) dotEl.style.left = (o.value / (o.max || 127) * 100) + '%';
             });
           }
         }
@@ -3846,23 +3888,24 @@ window.TBD.shared = {
     var singleSource = (mapping.add || []).length === 1;
     if (singleSource) {
       var low = mapping.start || 0;
-      var high = low + Math.round(127 * mul / div);
+      var high = low + Math.round(maxCC * mul / div);
       return { low: Math.max(0, Math.min(maxCC, low)), high: Math.max(0, Math.min(maxCC, high)) };
     } else {
-      var maxC = Math.round(127 * mul / div);
+      var maxC = Math.round(maxCC * mul / div);
       return { low: 0, high: Math.max(0, Math.min(maxCC, maxC)), base: mapping.start || 0 };
     }
   }
 
   function rangeToSource(mapping, addIdx, low, high) {
+    var maxCC = (mapping.bits === 14) ? 16383 : 127;
     var singleSource = (mapping.add || []).length === 1;
     if (singleSource) {
       mapping.start = low;
       mapping.add[addIdx].mul = high - low;
-      mapping.add[addIdx].div = 127;
+      mapping.add[addIdx].div = maxCC;
     } else {
       mapping.add[addIdx].mul = high;
-      mapping.add[addIdx].div = 127;
+      mapping.add[addIdx].div = maxCC;
     }
   }
 
@@ -4451,11 +4494,12 @@ window.TBD.shared = {
       for (var p = 0; p < 4 && paramIdx < params.length; p++) {
         var cc = params[paramIdx];
         var uiInfo = lookupUiType(machine, cc.id);
+        var ccMax = (cc.type === 'nrpm') ? 16383 : 127;
         var paramObj = {
           idx: paramIdx,
           name: cc.name || ('CC' + cc.ctrl),
           def: cc.def || 0,
-          min: 0, max: 127, res: 64, ui: uiInfo.ui,
+          min: 0, max: ccMax, res: Math.round(ccMax / 2), ui: uiInfo.ui,
         };
         if (uiInfo.curve) paramObj.curve = uiInfo.curve;
         groupParams.push(paramObj);
@@ -4483,7 +4527,9 @@ window.TBD.shared = {
         }
         var addEntry = { src: allParams[i].idx, mul: mapMul, div: 1 };
         if (mapCurve) addEntry.curve = mapCurve;
-        state.editDef.mapping.push({ ctrl: cc.ctrl, start: mapStart, add: [addEntry] });
+        var mapEntry = { ctrl: cc.ctrl, start: mapStart, add: [addEntry] };
+        if (cc.type === 'nrpm') mapEntry.bits = 14;
+        state.editDef.mapping.push(mapEntry);
       }
     });
 

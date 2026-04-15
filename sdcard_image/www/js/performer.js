@@ -438,13 +438,13 @@
                   var pid = state.activeMacroDef.machine + '_' + o.name.replace(/[- ]/g, '_');
                   var hint = targetDH.resolveHint(pid, o.name);
                   if (hint) {
-                    var physVal = targetDH.rawToDisplay(o.value, 0, 127, hint);
+                    var physVal = targetDH.rawToDisplay(o.value, 0, o.max || 127, hint);
                     fmt = targetDH.formatDisplayValue(physVal, hint);
                   }
                 }
                 valEl.textContent = fmt;
               }
-              if (dotEl) dotEl.style.left = (o.value / 127 * 100) + '%';
+              if (dotEl) dotEl.style.left = (o.value / (o.max || 127) * 100) + '%';
             });
           }
         }

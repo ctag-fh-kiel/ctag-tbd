@@ -836,23 +836,24 @@
     var singleSource = (mapping.add || []).length === 1;
     if (singleSource) {
       var low = mapping.start || 0;
-      var high = low + Math.round(127 * mul / div);
+      var high = low + Math.round(maxCC * mul / div);
       return { low: Math.max(0, Math.min(maxCC, low)), high: Math.max(0, Math.min(maxCC, high)) };
     } else {
-      var maxC = Math.round(127 * mul / div);
+      var maxC = Math.round(maxCC * mul / div);
       return { low: 0, high: Math.max(0, Math.min(maxCC, maxC)), base: mapping.start || 0 };
     }
   }
 
   function rangeToSource(mapping, addIdx, low, high) {
+    var maxCC = (mapping.bits === 14) ? 16383 : 127;
     var singleSource = (mapping.add || []).length === 1;
     if (singleSource) {
       mapping.start = low;
       mapping.add[addIdx].mul = high - low;
-      mapping.add[addIdx].div = 127;
+      mapping.add[addIdx].div = maxCC;
     } else {
       mapping.add[addIdx].mul = high;
-      mapping.add[addIdx].div = 127;
+      mapping.add[addIdx].div = maxCC;
     }
   }
 
@@ -1441,11 +1442,12 @@
       for (var p = 0; p < 4 && paramIdx < params.length; p++) {
         var cc = params[paramIdx];
         var uiInfo = lookupUiType(machine, cc.id);
+        var ccMax = (cc.type === 'nrpm') ? 16383 : 127;
         var paramObj = {
           idx: paramIdx,
           name: cc.name || ('CC' + cc.ctrl),
           def: cc.def || 0,
-          min: 0, max: 127, res: 64, ui: uiInfo.ui,
+          min: 0, max: ccMax, res: Math.round(ccMax / 2), ui: uiInfo.ui,
         };
         if (uiInfo.curve) paramObj.curve = uiInfo.curve;
         groupParams.push(paramObj);
@@ -1473,7 +1475,9 @@
         }
         var addEntry = { src: allParams[i].idx, mul: mapMul, div: 1 };
         if (mapCurve) addEntry.curve = mapCurve;
-        state.editDef.mapping.push({ ctrl: cc.ctrl, start: mapStart, add: [addEntry] });
+        var mapEntry = { ctrl: cc.ctrl, start: mapStart, add: [addEntry] };
+        if (cc.type === 'nrpm') mapEntry.bits = 14;
+        state.editDef.mapping.push(mapEntry);
       }
     });
 

@@ -40,29 +40,39 @@ using namespace rapidjson;
  *           64-127 → 100-127 (compressed top end)
  * Exp:     value²/127 — more resolution for short times
  */
-static inline int32_t applyCurve(int32_t val, MacroCurveType curve) {
+static inline int32_t applyCurve(int32_t val, int32_t maxVal, MacroCurveType curve) {
+    if (curve == MacroCurveType::Linear) return val;
     if (val <= 0) return 0;
-    if (val >= 127) return 127;
+    if (val >= maxVal) return maxVal;
+
+    // Normalize to 0-127 for curve computation (integer-only)
+    int32_t n = (val * 127) / maxVal;
+    int32_t curved;
 
     switch (curve) {
         case MacroCurveType::Log:
             // Piecewise linear: emphasises low range (great for freq/cutoff)
-            if (val <= 16) {
-                return val * 4;                      // 0-16 → 0-64
-            } else if (val <= 64) {
-                return 64 + ((val - 16) * 36) / 48;  // 16-64 → 64-100
+            if (n <= 16) {
+                curved = n * 4;                      // 0-16 → 0-64
+            } else if (n <= 64) {
+                curved = 64 + ((n - 16) * 36) / 48;  // 16-64 → 64-100
             } else {
-                return 100 + ((val - 64) * 27) / 63; // 64-127 → 100-127
+                curved = 100 + ((n - 64) * 27) / 63; // 64-127 → 100-127
             }
+            break;
 
         case MacroCurveType::Exp:
             // Quadratic: more resolution for short decay/envelope times
-            return (val * val) / 127;
+            curved = (n * n) / 127;
+            break;
 
-        case MacroCurveType::Linear:
         default:
-            return val;
+            curved = n;
+            break;
     }
+
+    // Scale back to original range
+    return (curved * maxVal) / 127;
 }
 
 void MacroTranslator::Init() {
@@ -534,9 +544,8 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
                         struct MacroDeviceOutputMappingSource *src = &om->sources[oms];
 
                         int val = trackParameterValues[t][src->parameterIndex];
-                        if (om->ctrltype == CtrlType_CC) {
-                            val = applyCurve(val, src->curve);
-                        }
+                        int curveMax = (om->ctrltype == CtrlType_NRPM) ? 16383 : 127;
+                        val = applyCurve(val, curveMax, src->curve);
                         if (src->divider > 0) {
                             finalvalue += (val * src->multiplier) / src->divider;
                         } else {
