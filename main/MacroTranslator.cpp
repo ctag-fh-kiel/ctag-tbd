@@ -206,7 +206,7 @@ void MacroTranslator::RefreshActiveDefinitions() {
 
         // delete definition[t];
         definitions[t] = *freshDef;
-        // trackDirty[t] = true;
+        // trackDirty[t] = true;  // NOT here — bulk reload is too heavy, use RefreshDefinitionById() for live edit
 
         ESP_LOGI("MacroTranslator", "Refreshed track %d def '%s' (volMult=%.2f)",
             t, macroId.c_str(), freshDef->volumeMultiplier);
@@ -222,12 +222,29 @@ void MacroTranslator::RefreshDefinitionById(const std::string &id) {
             MacroDeviceDefinitionDataModel::instance().GetMacroDeviceDefinition(id.c_str());
         if (freshDef == nullptr) continue;
 
-        // delete definition[t];
-        definitions[t] = *freshDef;
-        // trackDirty[t] = true;
+        // Check if machine changed — if so, do full machine init (resets params to defaults)
+        bool machineChanged = (strcmp(freshDef->synthId, trackMachineId[t]) != 0);
 
-        ESP_LOGI("MacroTranslator", "Refreshed track %d def '%s' (volMult=%.2f)",
-            t, id.c_str(), freshDef->volumeMultiplier);
+        definitions[t] = *freshDef;
+
+        // Invalidate output value cache — forces all mappings to re-send to DSP
+        memset(outputValues[t], 0xFF, sizeof(outputValues[t]));
+
+        if (machineChanged && freshDef->synthId[0] != '\0') {
+            ESP_LOGI("MacroTranslator", "Live-edit: track %d machine changed to '%s', full init",
+                t, freshDef->synthId);
+            // SetTrackMachine updates trackMachineId, resets param values to synth defaults,
+            // and sets trackDirty — needed when switching machines
+            SetTrackMachine(t, std::string(freshDef->synthId), freshDef->volumeMultiplier);
+        } else {
+            // Same machine — just update trackMachineId for volMult and mark dirty
+            // Preserves current knob positions / parameter values
+            snprintf(trackMachineId[t], sizeof(trackMachineId[t]), "%s", freshDef->synthId);
+            trackDirty[t] = true;
+        }
+
+        ESP_LOGI("MacroTranslator", "Live-edit: refreshed track %d def '%s' (volMult=%.2f, machineChanged=%d)",
+            t, id.c_str(), freshDef->volumeMultiplier, machineChanged);
     }
 }
 

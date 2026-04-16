@@ -1015,7 +1015,7 @@ function renderKnobGroups(def, paramValues, options) {
           }
           html += '<span class="knob-target-val">' + targetFmt + '</span>';
           // 14-bit badge
-          if (mapping && mapping.bits === 14) {
+          if (mapping && (mapping.bits === 14 || mapping.type === 'nrpm')) {
             html += '<span class="knob-target-14bit">14-bit</span>';
           }
           html += '</div>';
@@ -1958,12 +1958,17 @@ window.TBD.shared = {
     // Right: stacked rows
     html += '<div class="track-info-right">';
 
-    // Row 1: MACHINE
+    // Row 1: MACHINE (+ MACRO in Presets mode)
+    var activeTab = (S.getActiveTab && S.getActiveTab()) || 'presets';
+    var matchingDefs = S.data.macroDefs.filter(function(d) {
+      return d.machine === state.activeMachine;
+    });
+
     html += '<div class="track-info-row">';
     html += '<span class="track-info-label">MACHINE:</span>';
     var availMachines = state._availMachines || S.getTrackMachines(track);
     if (availMachines.length > 1) {
-      html += '<sl-select id="machine-select" size="small" value="' + S.esc(state.activeMachine || '') + '" style="min-width:160px;flex:1;max-width:240px;" hoist>';
+      html += '<sl-select id="machine-select" size="small" value="' + S.esc(state.activeMachine || '') + '" style="min-width:140px;flex:1;max-width:200px;" hoist>';
       availMachines.forEach(function(machId) {
         var info = S.getMachineInfo(machId);
         var label = info ? info.name : machId;
@@ -1977,14 +1982,26 @@ window.TBD.shared = {
         html += '<span class="track-machine-label">' + S.esc(machName) + '</span>';
       }
     }
+    // In Presets mode, add MACRO dropdown in the same row as MACHINE
+    if (activeTab !== 'macros' && matchingDefs.length > 0) {
+      if (matchingDefs.length > 1) {
+        var filterVal = state.macroFilter || '__all__';
+        html += '<span class="track-info-label" style="margin-left:0.5rem;">MACRO:</span>';
+        html += '<sl-select id="knobset-select" size="small" value="' + S.esc(filterVal) + '" style="min-width:140px;flex:1;max-width:200px;" hoist>';
+        html += '<sl-option value="__all__">All Macros</sl-option>';
+        matchingDefs.forEach(function(d) {
+          html += '<sl-option value="' + S.esc(d.id) + '">' + S.esc(d.name || d.id) + '</sl-option>';
+        });
+        html += '</sl-select>';
+      } else if (macroDef) {
+        html += '<span class="track-info-label" style="margin-left:0.5rem;">MACRO:</span>';
+        html += '<span class="track-knobset-label">' + S.esc(macroDef.name) + '</span>';
+      }
+    }
     html += '</div>'; // .track-info-row
 
-    // Divider between rows
-    var activeTab = (S.getActiveTab && S.getActiveTab()) || 'presets';
-    var matchingDefs = S.data.macroDefs.filter(function(d) {
-      return d.machine === state.activeMachine;
-    });
-    var hasRow2 = (activeTab === 'macros' && macroDef) || matchingDefs.length > 0;
+    // Row 2 divider + content
+    var hasRow2 = (activeTab === 'macros' && macroDef) || activeTab !== 'macros';
     if (hasRow2) {
       html += '<hr class="track-info-divider" />';
     }
@@ -2020,23 +2037,47 @@ window.TBD.shared = {
         html += '</div>';
       }
     } else {
-      if (matchingDefs.length > 1) {
-        var filterVal = state.macroFilter || '__all__';
-        html += '<div class="track-info-row">';
-        html += '<span class="track-info-label">MACRO:</span>';
-        html += '<sl-select id="knobset-select" size="small" value="' + S.esc(filterVal) + '" style="min-width:160px;flex:1;max-width:240px;" hoist>';
-        html += '<sl-option value="__all__">All Macros</sl-option>';
-        matchingDefs.forEach(function(d) {
-          html += '<sl-option value="' + S.esc(d.id) + '">' + S.esc(d.name || d.id) + '</sl-option>';
-        });
-        html += '</sl-select>';
-        html += '</div>';
-      } else if (macroDef) {
-        html += '<div class="track-info-row">';
-        html += '<span class="track-info-label">MACRO:</span>';
-        html += '<span class="track-knobset-label">' + S.esc(macroDef.name) + '</span>';
-        html += '</div>';
+      // Presets mode — row 2: Preset info + action buttons
+      html += '<div class="track-info-row" style="flex-wrap:nowrap;gap:0.35rem;">';
+      if (state.activePreset) {
+        var F = window.TBD.factory;
+        var isFactoryPreset = F && F.isFactoryPreset(state.activePreset.id);
+        var isFactoryUnlocked = F && F.isUnlocked && F.isUnlocked();
+        if (isFactoryPreset && !isFactoryUnlocked) {
+          html += '<sl-icon name="lock" style="font-size:0.6rem;opacity:0.45;flex-shrink:0;" title="Factory preset — read-only"></sl-icon>';
+        }
+        html += '<span class="track-info-label">PRESET:</span>';
+        html += '<span class="track-preset-name">' + S.esc(state.activePreset.name) + '</span>';
+        html += '<span class="track-info-label" style="margin-left:0.25rem;">ID:</span>';
+        html += '<span class="track-preset-id">' + S.esc(state.activePreset.id) + '</span>';
+      } else {
+        html += '<span class="track-info-label">PRESET:</span>';
+        html += '<span class="track-preset-name" style="opacity:0.4;font-style:italic;">No preset loaded</span>';
       }
+      // Preset action buttons
+      html += '<div class="track-def-actions" style="flex-shrink:0;">';
+      if (state.activePreset) {
+        var Fsave = window.TBD.factory;
+        var isFactoryP = Fsave && Fsave.isFactoryPreset(state.activePreset.id);
+        var isUnlockedP = Fsave && Fsave.isUnlocked && Fsave.isUnlocked();
+        var canOverwrite = !isFactoryP || isUnlockedP;
+        if (canOverwrite) {
+          html += '<button class="mapping-btn btn-save-preset" title="Overwrite current preset with current knob values"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
+        }
+      }
+      html += '<button class="mapping-btn btn-saveas-preset" title="Save current knob values as a new preset"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save As\u2026</button>';
+      html += '<button class="mapping-btn btn-export-presets" title="Export all presets as JSON"><sl-icon name="download" style="font-size:0.7rem;"></sl-icon> Export</button>';
+      html += '<button class="mapping-btn btn-import-presets" title="Import presets from JSON"><sl-icon name="upload" style="font-size:0.7rem;"></sl-icon> Import</button>';
+      if (state.activePreset) {
+        var FJ = window.TBD.factory;
+        var jsonFolder = (FJ && FJ.isFactoryPreset(state.activePreset.id)) ? 'factory/presets' : 'presets';
+        var jsonFile = jsonFolder + '/' + state.activePreset.id + '.json';
+        html += '<a class="mapping-btn btn-viewjson-presets" href="/index.html?view=samples&file=' + encodeURIComponent(jsonFile) + '" title="View this preset\u2019s JSON in Data Manager" style="text-decoration:none;"><sl-icon name="filetype-json" style="font-size:0.7rem;"></sl-icon> JSON</a>';
+      } else {
+        html += '<a class="mapping-btn btn-viewjson-presets" href="/index.html?view=samples&browse=presets" title="Browse preset JSON files in Data Manager" style="text-decoration:none;"><sl-icon name="filetype-json" style="font-size:0.7rem;"></sl-icon> JSON</a>';
+      }
+      html += '</div>';
+      html += '</div>';
     }
 
     html += '</div>'; // .track-info-right
@@ -2065,6 +2106,8 @@ window.TBD.shared = {
           // "All Macros" — clear filter, keep current activeMacroDef
           state.macroFilter = null;
           state.activePreset = null;
+          var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
+          if (track) renderTrackInfoBar(track, state.activeMacroDef);
         } else {
           var def = S.data.macroDefs.find(function(d) { return d.id === defId; });
           if (def) {
@@ -2089,6 +2132,36 @@ window.TBD.shared = {
       });
     }
 
+    // Preset action buttons in header bar (Presets mode)
+    var savePresetBtn = document.querySelector('#track-info-bar .btn-save-preset');
+    if (savePresetBtn) {
+      savePresetBtn.addEventListener('click', function() {
+        savePresetOverwrite();
+      });
+    }
+    var saveAsPresetBtn = document.querySelector('#track-info-bar .btn-saveas-preset');
+    if (saveAsPresetBtn) {
+      saveAsPresetBtn.addEventListener('click', function() {
+        if (state.activeTrack < 0 || !state.activeMacroDef) {
+          S.toast('Select a track first', 'warning', 2000);
+          return;
+        }
+        savePresetDialog();
+      });
+    }
+    var exportPresetsBtn = document.querySelector('#track-info-bar .btn-export-presets');
+    if (exportPresetsBtn) {
+      exportPresetsBtn.addEventListener('click', function() {
+        exportAllPresets();
+      });
+    }
+    var importPresetsBtn = document.querySelector('#track-info-bar .btn-import-presets');
+    if (importPresetsBtn) {
+      importPresetsBtn.addEventListener('click', function() {
+        importPresetFile();
+      });
+    }
+
     // Def header inputs (Macros mode — NAME/ID/Save/Export/Import in track bar)
     setupDefHeaderInBarEvents();
   }
@@ -2105,8 +2178,8 @@ window.TBD.shared = {
         if (D.state.editDef) {
           D.state.editDef.name = nameInput.value;
           D.state.dirty = true;
-          // Auto-generate ID for new definitions
-          if (!D.state.selectedDefId && idInput) {
+          // Auto-generate ID for new definitions (only if user hasn't manually edited ID)
+          if (!D.state.selectedDefId && idInput && !idInput.dataset.userEdited) {
             var machinePrefix = D.state.editDef.machine ? (D.state.editDef.machine.substring(0, 2) + '-') : '';
             var slug = nameInput.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             D.state.editDef.id = machinePrefix + slug;
@@ -2123,6 +2196,9 @@ window.TBD.shared = {
     }
 
     if (idInput) {
+      idInput.addEventListener('input', function() {
+        idInput.dataset.userEdited = 'true';
+      });
       idInput.addEventListener('change', function() {
         if (D.state.editDef) {
           D.state.editDef.id = idInput.value;
@@ -2386,7 +2462,7 @@ window.TBD.shared = {
         }
         html += '<span class="preset-item-name" title="' + S.esc(p.name) + '">' + S.esc(p.name) + '</span>';
         html += '<span class="preset-item-machine">' + S.esc(p.macro) + '</span>';
-        if (!isFactory) {
+        if (!isFactory || (F && F.isUnlocked && F.isUnlocked())) {
           html += '<button class="preset-item-delete" data-delete-preset-id="' + S.esc(p.id) + '" title="Delete preset">';
           html += '<sl-icon name="trash3"></sl-icon>';
           html += '</button>';
@@ -2424,17 +2500,6 @@ window.TBD.shared = {
   }
 
   function setupPresetBrowserEvents() {
-    var search = document.getElementById('preset-search');
-    if (search) {
-      search.addEventListener('sl-input', function() {
-        state.presetSearchTerm = search.value || '';
-        renderPresetBrowser();
-      });
-      search.addEventListener('sl-clear', function() {
-        state.presetSearchTerm = '';
-        renderPresetBrowser();
-      });
-    }
 
     var list = document.getElementById('preset-list');
     if (list) {
@@ -2514,60 +2579,82 @@ window.TBD.shared = {
   // ─── Quick Actions (sidebar buttons) ─────────────────────
 
   function setupQuickActions() {
-    var randomizeBtn = document.getElementById('qa-randomize');
-    if (randomizeBtn) {
-      randomizeBtn.addEventListener('click', function() {
-        if (state.activeTrack < 0 || !state.activeMacroDef) {
+    var newPresetBtn = document.getElementById('qa-new-preset');
+    if (newPresetBtn) {
+      newPresetBtn.addEventListener('click', function() {
+        if (state.activeTrack < 0) {
           S.toast('Select a track first', 'warning', 2000);
           return;
         }
-        if (state.activeMacroDef.groups) {
-          state.activeMacroDef.groups.forEach(function(group) {
-            group.parameters.forEach(function(param) {
-              var min = param.min || 0;
-              var max = param.max || 127;
-              state.paramValues[param.idx] = Math.floor(Math.random() * (max - min + 1)) + min;
-            });
-          });
-        }
-        var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
-        renderKnobControls(track, state.activeMacroDef);
-        sendParameterUpdate();
-        S.toast('Randomized ' + track.name, 'success', 1500);
-      });
-    }
-
-    var initBtn = document.getElementById('qa-init');
-    if (initBtn) {
-      initBtn.addEventListener('click', function() {
-        if (state.activeTrack < 0 || !state.activeMacroDef) {
-          S.toast('Select a track first', 'warning', 2000);
-          return;
-        }
-        if (state.activeMacroDef.groups) {
-          state.activeMacroDef.groups.forEach(function(group) {
-            group.parameters.forEach(function(param) {
-              state.paramValues[param.idx] = param.def || 0;
-            });
-          });
-        }
-        var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
-        renderKnobControls(track, state.activeMacroDef);
-        sendParameterUpdate();
-        S.toast('Initialized ' + track.name, 'success', 1500);
-      });
-    }
-
-    var saveBtn = document.getElementById('qa-save-preset');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', function() {
-        if (state.activeTrack < 0 || !state.activeMacroDef) {
-          S.toast('Select a track first', 'warning', 2000);
+        // Check if any macros are available for the current machine
+        var availableMacros = S.data.macroDefs.filter(function(d) {
+          return d.machine === state.activeMachine;
+        });
+        if (availableMacros.length === 0) {
+          S.toast('No macros available for this machine — create one first in the Macros tab', 'warning', 3000);
           return;
         }
         savePresetDialog();
       });
     }
+
+  }
+
+  // ─── Save Preset Overwrite (existing preset) ──────────────
+
+  function savePresetOverwrite() {
+    if (!state.activePreset || !state.activeMacroDef) {
+      S.toast('No preset loaded to save', 'warning', 2000);
+      return;
+    }
+
+    // Double-check: factory presets require unlocked factory edit mode
+    var F = window.TBD.factory;
+    var isFactory = F && F.isFactoryPreset(state.activePreset.id);
+    if (isFactory && !(F.isUnlocked && F.isUnlocked())) {
+      S.toast('Factory presets are read-only — use Save As to create a copy', 'warning', 3000);
+      return;
+    }
+
+    // Gather current knob values
+    var paramCount = 0;
+    if (state.activeMacroDef.groups) {
+      state.activeMacroDef.groups.forEach(function(g) {
+        (g.parameters || []).forEach(function(p) {
+          if (p.idx >= paramCount) paramCount = p.idx + 1;
+        });
+      });
+    }
+    var values = [];
+    for (var vi = 0; vi < paramCount; vi++) {
+      var raw = state.paramValues[vi];
+      values[vi] = (raw !== undefined && raw !== null) ? Math.round(raw) : 0;
+    }
+
+    var preset = {
+      id: state.activePreset.id,
+      name: state.activePreset.name,
+      group: state.activePreset.group || 'User',
+      macro: state.activeMacroDef.id,
+      values: values,
+    };
+
+    var jsonStr = JSON.stringify(preset, null, 2);
+    var filePath = (isFactory ? 'factory/presets/' : 'presets/') + preset.id + '.json';
+
+    fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: jsonStr,
+    }).then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      S.toast('Saved: ' + preset.name, 'success', 2000);
+      return S.reloadMacroData();
+    }).then(function() {
+      renderPresetBrowser();
+    }).catch(function(err) {
+      S.toast('Save failed: ' + err.message, 'danger', 3000);
+    });
   }
 
   // ─── Save Preset Dialog (Shoelace) ────────────────────────
@@ -2600,9 +2687,15 @@ window.TBD.shared = {
       trackBadge = 'CH ' + String(track.index + 1).padStart(2, '0');
     }
 
+    // Get available macros for this machine
+    var availableMacros = S.data.macroDefs.filter(function(d) {
+      return d.machine === state.activeMachine;
+    });
+    var currentMacroId = state.activeMacroDef ? state.activeMacroDef.id : '';
+
     var dialog = document.createElement('sl-dialog');
     dialog.id = 'save-preset-dialog';
-    dialog.label = 'Save Sound Preset';
+    dialog.label = 'New Sound Preset';
     dialog.setAttribute('style', '--width:28rem;');
 
     var html = '';
@@ -2610,15 +2703,20 @@ window.TBD.shared = {
     html += '<span class="track-badge" style="font-size:0.72rem;">' + S.esc(trackBadge) + '</span> ';
     html += '<strong>' + S.esc(trackName) + '</strong>';
     html += ' \u2014 ' + S.esc(machineName);
-    html += ' \u00b7 <em>' + S.esc(macroName) + '</em>';
     html += '</div>';
     html += '<div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">';
     html += '<sl-input id="save-preset-name" label="Preset Name" value="' + S.esc(defaultName) + '" placeholder="e.g. Fat Punch" required autofocus></sl-input>';
     html += '<sl-input id="save-preset-group" label="Category / Group" value="' + S.esc(defaultGroup) + '" placeholder="e.g. User" help-text="Presets are grouped by this label in the sidebar"></sl-input>';
+    // Macro selection dropdown
+    html += '<sl-select id="save-preset-macro" label="Macro" value="' + S.esc(currentMacroId) + '" hoist>';
+    availableMacros.forEach(function(m) {
+      html += '<sl-option value="' + S.esc(m.id) + '">' + S.esc(m.name || m.id) + '</sl-option>';
+    });
+    html += '</sl-select>';
     html += '</div>';
     html += '<div style="margin-top:1rem;font-size:0.72rem;color:var(--sl-color-neutral-500);">';
     html += '<sl-icon name="info-circle" style="font-size:0.7rem;"></sl-icon> ';
-    html += 'Saves the current knob values (' + state.paramValues.filter(function(v) { return v !== undefined; }).length + ' params) as a new sound preset for the <strong>' + S.esc(macroName) + '</strong> macro.';
+    html += 'Saves the current knob values as a new sound preset for the selected macro.';
     html += '</div>';
 
     dialog.innerHTML = html;
@@ -2638,8 +2736,10 @@ window.TBD.shared = {
     saveBtn.addEventListener('click', function() {
       var nameInput = dialog.querySelector('#save-preset-name');
       var groupInput = dialog.querySelector('#save-preset-group');
+      var macroSelect = dialog.querySelector('#save-preset-macro');
       var name = (nameInput.value || '').trim();
       var group = (groupInput.value || '').trim() || 'User';
+      var selectedMacroId = macroSelect ? macroSelect.value : (state.activeMacroDef ? state.activeMacroDef.id : '');
 
       if (!name) {
         nameInput.setAttribute('help-text', 'Please enter a name');
@@ -2647,20 +2747,33 @@ window.TBD.shared = {
         return;
       }
 
+      if (!selectedMacroId) {
+        S.toast('Please select a macro', 'warning', 2000);
+        return;
+      }
+
+      // Find the selected macro definition
+      var selectedMacroDef = S.data.macroDefs.find(function(d) { return d.id === selectedMacroId; });
+      if (!selectedMacroDef) {
+        S.toast('Selected macro not found', 'danger', 2000);
+        return;
+      }
+
       var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-      // Prevent overwriting factory presets
+      // Prevent overwriting factory presets (unless Factory Edit Mode unlocked)
       var Fcheck = window.TBD.factory;
-      if (Fcheck && Fcheck.isFactoryPreset(id)) {
-        nameInput.setAttribute('help-text', 'This name matches a factory preset — choose a different name');
+      var isFactoryId = Fcheck && Fcheck.isFactoryPreset(id);
+      if (isFactoryId && !(Fcheck.isUnlocked && Fcheck.isUnlocked())) {
+        nameInput.setAttribute('help-text', 'This name matches a factory preset \u2014 unlock Factory Edit Mode or choose a different name');
         nameInput.focus();
         return;
       }
 
       // Produce a dense values array trimmed to the definition's parameter count
       var paramCount = 0;
-      if (state.activeMacroDef && state.activeMacroDef.groups) {
-        state.activeMacroDef.groups.forEach(function(g) {
+      if (selectedMacroDef && selectedMacroDef.groups) {
+        selectedMacroDef.groups.forEach(function(g) {
           (g.parameters || []).forEach(function(p) {
             if (p.idx >= paramCount) paramCount = p.idx + 1;
           });
@@ -2675,13 +2788,13 @@ window.TBD.shared = {
         id: id,
         name: name,
         group: group,
-        macro: state.activeMacroDef.id,
+        macro: selectedMacroId,
         values: values,
       };
 
       saveBtn.setAttribute('loading', '');
       var jsonStr = JSON.stringify(preset, null, 2);
-      var filePath = 'presets/' + id + '.json';
+      var filePath = (isFactoryId ? 'factory/presets/' : 'presets/') + id + '.json';
 
       fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
         method: 'POST',
@@ -2719,8 +2832,8 @@ window.TBD.shared = {
 
   function deletePreset(presetId) {
     var F = window.TBD.factory;
-    if (F && F.isFactoryPreset(presetId)) {
-      S.toast('Factory presets cannot be deleted', 'warning', 3000);
+    if (F && F.isFactoryPreset(presetId) && !(F.isUnlocked && F.isUnlocked())) {
+      S.toast('Factory presets cannot be deleted \u2014 unlock Factory Edit Mode first', 'warning', 3000);
       return;
     }
     var preset = S.data.soundPresets.find(function(p) { return p.id === presetId; });
@@ -2749,7 +2862,8 @@ window.TBD.shared = {
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'presets/' + presetId + '.json';
+      var Fdel = window.TBD.factory;
+      var filePath = (Fdel && Fdel.isFactoryPreset(presetId) ? 'factory/presets/' : 'presets/') + presetId + '.json';
       S.apiPostJSON('/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -2925,7 +3039,9 @@ window.TBD.shared = {
     if (preset.values.length !== expectedCount) {
       if (!confirm('Preset has ' + preset.values.length + ' values but macro "' + preset.macro + '" has ' + expectedCount + ' parameters. Import anyway?')) return;
     }
-    var filePath = 'presets/' + preset.id + '.json';
+    var Fimp = window.TBD.factory;
+    var isFactoryId = Fimp && Fimp.isFactoryPreset && Fimp.isFactoryPreset(preset.id);
+    var filePath = (isFactoryId && Fimp.isUnlocked && Fimp.isUnlocked() ? 'factory/presets/' : 'presets/') + preset.id + '.json';
     var jsonStr = JSON.stringify(preset, null, 2);
 
     fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -2984,10 +3100,11 @@ window.TBD.shared = {
     setupPresetBrowserEvents();
     setupQuickActions();
 
-    // Re-render track info bar when factory lock state changes (VOL readonly)
+    // Re-render when factory lock state changes (buttons, delete visibility)
     window.addEventListener('tbd-factory-lock-changed', function() {
       var track = S.data.tracks ? S.data.tracks.find(function(t) { return t.index === state.activeTrack; }) : null;
       if (track) renderTrackInfoBar(track, state.activeMacroDef);
+      renderPresetBrowser();
     });
 
     if (S.data.loaded && S.data.tracks.length > 0) {
@@ -3039,6 +3156,8 @@ window.TBD.shared = {
     exportAllPresets: exportAllPresets,
     importPresetFile: importPresetFile,
     savePresetDialog: savePresetDialog,
+    loadPreset: loadPreset,
+    sendParameterUpdate: sendParameterUpdate,
     reload: function() {
       if (state.activeTrack >= 0) {
         var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
@@ -3230,6 +3349,32 @@ window.TBD.shared = {
     });
   }
 
+  // ─── Param Helpers ─────────────────────────────────────────
+
+  function is14bit(m) {
+    return m && (m.bits === 14 || m.type === 'nrpm');
+  }
+
+  function findParamByIdx(idx) {
+    if (!state.editDef || !state.editDef.groups) return null;
+    for (var g = 0; g < state.editDef.groups.length; g++) {
+      var params = state.editDef.groups[g].parameters || [];
+      for (var p = 0; p < params.length; p++) {
+        if (params[p].idx === idx) return params[p];
+      }
+    }
+    return null;
+  }
+
+  function isParamUsedBy14bit(paramIdx, excludeMi) {
+    if (!state.editDef) return false;
+    return (state.editDef.mapping || []).some(function(m, i) {
+      if (i === excludeMi) return false;
+      if (!is14bit(m)) return false;
+      return (m.add || []).some(function(a) { return a.src === paramIdx; });
+    });
+  }
+
   // ─── Definition List (left sidebar — Macros tab) ──────────
 
   function renderDefinitionList() {
@@ -3250,9 +3395,10 @@ window.TBD.shared = {
     var html = '';
 
     // Create New button
-    html += '<button class="sidebar-action-btn" id="create-def-btn" style="margin:0.4rem 0.65rem;width:calc(100% - 1.3rem);">';
-    html += '<sl-icon name="plus-lg"></sl-icon> Create New Definition';
+    html += '<button class="sidebar-action-btn primary" id="create-def-btn" style="margin:0.4rem 0.65rem;width:calc(100% - 1.3rem);">';
+    html += '<sl-icon name="plus-lg"></sl-icon> New Macro';
     html += '</button>';
+    html += '<hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:0.5rem 0.65rem;">';
 
     if (filteredDefs.length === 0) {
       html += '<div style="padding:0.5rem 0.85rem;opacity:0.5;font-size:0.75rem;">No definitions yet</div>';
@@ -3263,13 +3409,14 @@ window.TBD.shared = {
     filteredDefs.forEach(function(def) {
       var isActive = state.selectedDefId === def.id;
       var isFactory = F && F.isFactoryDefinition(def.id);
+      var isFactoryUnlocked = F && F.isUnlocked && F.isUnlocked();
       html += '<div class="preset-item' + (isActive ? ' active' : '') + '" data-def-id="' + S.esc(def.id) + '">';
       if (isFactory) {
-        html += '<sl-icon name="lock" style="font-size:0.65rem;opacity:0.45;flex-shrink:0;margin-right:0.25rem;" title="Factory template — clone to edit"></sl-icon>';
+        html += '<sl-icon name="lock" style="font-size:0.65rem;opacity:0.45;flex-shrink:0;margin-right:0.25rem;" title="Factory template' + (isFactoryUnlocked ? ' — editing unlocked' : ' — clone to edit') + '"></sl-icon>';
       }
       html += '<span class="preset-item-name" title="' + S.esc(def.name || def.id) + '">' + S.esc(def.name || def.id) + '</span>';
       html += '<span class="preset-item-machine">' + S.esc(def.id) + '</span>';
-      if (!isFactory) {
+      if (!isFactory || isFactoryUnlocked) {
         html += '<button class="preset-item-delete" data-delete-def-id="' + S.esc(def.id) + '" title="Delete definition">';
         html += '<sl-icon name="trash3"></sl-icon>';
         html += '</button>';
@@ -3326,25 +3473,147 @@ window.TBD.shared = {
   }
 
   function createNewDefinition() {
+    // Show dialog with options: Start from scratch or Clone existing macro
+    var old = document.getElementById('new-macro-dialog');
+    if (old) old.remove();
+
     var defaultMachine = state.activeMachine || (state.trackMachines.length > 0 ? state.trackMachines[0] : '');
 
-    state.selectedDefId = null;
-    state.editDef = {
-      id: '',
-      name: '',
-      machine: defaultMachine,
-      volmult: 1.0,
-      groups: [],
-      mapping: [],
-    };
-    ensureGroupStructure(state.editDef);
-    state.dirty = true;
-
-    document.querySelectorAll('#definition-list .preset-item').forEach(function(item) {
-      item.classList.remove('active');
+    // Get available macros for cloning (same machine)
+    var availableMacros = S.data.macroDefs.filter(function(d) {
+      return d.machine === defaultMachine;
     });
 
-    renderMacroBuilderSection();
+    var dialog = document.createElement('sl-dialog');
+    dialog.id = 'new-macro-dialog';
+    dialog.label = 'New Macro';
+    dialog.setAttribute('style', '--width:28rem;');
+
+    var html = '';
+    html += '<div style="font-size:0.85rem;margin-bottom:1rem;">';
+    html += 'Create a new macro definition for <strong>' + S.esc(defaultMachine) + '</strong>.';
+    html += '</div>';
+
+    html += '<sl-radio-group label="Starting Point" name="macro-start" value="scratch">';
+    html += '<sl-radio-button value="scratch" style="width:100%;margin-bottom:0.5rem;">';
+    html += '<sl-icon slot="prefix" name="file-earmark-plus"></sl-icon> Start from scratch';
+    html += '</sl-radio-button>';
+    if (availableMacros.length > 0) {
+      html += '<sl-radio-button value="clone" style="width:100%;">';
+      html += '<sl-icon slot="prefix" name="copy"></sl-icon> Clone existing macro';
+      html += '</sl-radio-button>';
+    }
+    html += '</sl-radio-group>';
+
+    if (availableMacros.length > 0) {
+      html += '<sl-select id="clone-macro-select" label="Clone from" style="margin-top:0.75rem;" disabled hoist>';
+      availableMacros.forEach(function(m) {
+        html += '<sl-option value="' + S.esc(m.id) + '">' + S.esc(m.name || m.id) + '</sl-option>';
+      });
+      html += '</sl-select>';
+    }
+
+    dialog.innerHTML = html;
+
+    // Enable/disable clone dropdown based on radio selection
+    var radioGroup = dialog.querySelector('sl-radio-group');
+    var cloneSelect = dialog.querySelector('#clone-macro-select');
+    if (radioGroup && cloneSelect) {
+      radioGroup.addEventListener('sl-change', function() {
+        var val = radioGroup.value;
+        if (val === 'clone') {
+          cloneSelect.removeAttribute('disabled');
+          if (!cloneSelect.value && availableMacros.length > 0) {
+            cloneSelect.value = availableMacros[0].id;
+          }
+        } else {
+          cloneSelect.setAttribute('disabled', '');
+        }
+      });
+    }
+
+    // Footer buttons
+    var cancelBtn = document.createElement('sl-button');
+    cancelBtn.setAttribute('slot', 'footer');
+    cancelBtn.setAttribute('variant', 'default');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', function() { dialog.hide(); });
+
+    var createBtn = document.createElement('sl-button');
+    createBtn.setAttribute('slot', 'footer');
+    createBtn.setAttribute('variant', 'primary');
+    createBtn.innerHTML = '<sl-icon name="plus-lg" slot="prefix"></sl-icon> Create Macro';
+
+    createBtn.addEventListener('click', function() {
+      var startType = radioGroup ? radioGroup.value : 'scratch';
+      
+      if (startType === 'clone' && cloneSelect && cloneSelect.value) {
+        // Clone existing macro
+        var sourceDef = S.data.macroDefs.find(function(d) { return d.id === cloneSelect.value; });
+        if (sourceDef) {
+          state.selectedDefId = null;
+          state.editDef = JSON.parse(JSON.stringify(sourceDef));
+          state.editDef.id = '';
+          state.editDef.name = (sourceDef.name || sourceDef.id) + ' (copy)';
+          ensureGroupStructure(state.editDef);
+          state.dirty = true;
+        }
+      } else {
+        // Start from scratch
+        state.selectedDefId = null;
+        state.editDef = {
+          id: '',
+          name: '',
+          machine: defaultMachine,
+          volmult: 1.0,
+          groups: [],
+          mapping: [],
+        };
+        ensureGroupStructure(state.editDef);
+        state.dirty = true;
+      }
+
+      document.querySelectorAll('#definition-list .preset-item').forEach(function(item) {
+        item.classList.remove('active');
+      });
+
+      renderMacroBuilderSection();
+      
+      // Switch to Macro Builder sub-tab (not Knob Preview)
+      switchToMacroBuilder();
+
+      dialog.hide();
+    });
+
+    dialog.appendChild(cancelBtn);
+    dialog.appendChild(createBtn);
+    document.body.appendChild(dialog);
+
+    // Clean up on close
+    dialog.addEventListener('sl-after-hide', function() {
+      dialog.remove();
+    });
+
+    // Show the dialog
+    requestAnimationFrame(function() {
+      dialog.show();
+    });
+  }
+
+  // Helper to switch to Macro Builder sub-tab
+  function switchToMacroBuilder() {
+    var subtabs = document.querySelectorAll('.center-subtab');
+    subtabs.forEach(function(tab) {
+      var isBuilder = tab.getAttribute('data-subtab') === 'macro-builder';
+      tab.classList.toggle('active', isBuilder);
+    });
+    // Update visibility
+    var knobControls = document.getElementById('knob-controls');
+    var macroBuilder = document.getElementById('macro-builder-section');
+    var knobPreviewExtras = document.getElementById('knob-preview-extras');
+    if (knobControls) knobControls.classList.add('hidden');
+    if (macroBuilder) macroBuilder.classList.remove('hidden');
+    if (knobPreviewExtras) knobPreviewExtras.classList.add('hidden');
   }
 
   function ensureGroupStructure(def) {
@@ -3483,7 +3752,7 @@ window.TBD.shared = {
       });
     });
 
-    // Sync slider ↔ number input for preset param values
+    // Sync slider ↔ number input for preset param values + live audition
     container.querySelectorAll('.preset-slider-input').forEach(function(slider) {
       slider.addEventListener('input', function() {
         var card = slider.closest('.sp-card');
@@ -3492,6 +3761,8 @@ window.TBD.shared = {
         var idx = slider.getAttribute('data-value-idx');
         var numInput = card.querySelector('.preset-value-input[data-preset-id="' + pid + '"][data-value-idx="' + idx + '"]');
         if (numInput) numInput.value = slider.value;
+        // Live audition: send updated value to firmware
+        sendPresetCardValueToFirmware(card, pid);
       });
     });
     container.querySelectorAll('.preset-value-input').forEach(function(numInput) {
@@ -3502,8 +3773,38 @@ window.TBD.shared = {
         var idx = numInput.getAttribute('data-value-idx');
         var slider = card.querySelector('.preset-slider-input[data-preset-id="' + pid + '"][data-value-idx="' + idx + '"]');
         if (slider) slider.value = numInput.value;
+        // Live audition: send updated value to firmware
+        sendPresetCardValueToFirmware(card, pid);
       });
     });
+  }
+
+  // Send all values from a preset card to firmware for live audition
+  function sendPresetCardValueToFirmware(card, presetId) {
+    var P = window.TBD.performer;
+    if (!P || !P.state || P.state.activeTrack < 0 || !state.editDef) return;
+
+    // Gather all values from the card's inputs
+    var values = [];
+    card.querySelectorAll('.preset-value-input[data-preset-id="' + presetId + '"]').forEach(function(input) {
+      var idx = parseInt(input.getAttribute('data-value-idx'), 10);
+      values[idx] = parseInt(input.value, 10) || 0;
+    });
+
+    // Fill missing indices with defaults from the definition
+    if (state.editDef.groups) {
+      state.editDef.groups.forEach(function(g) {
+        (g.parameters || []).forEach(function(p) {
+          if (values[p.idx] === undefined) {
+            values[p.idx] = p.def || 0;
+          }
+        });
+      });
+    }
+
+    // Update performer state and send to firmware
+    P.state.paramValues = values;
+    if (P.sendParameterUpdate) P.sendParameterUpdate();
   }
 
   // ─── Macro Builder Section (center panel) ────────────────
@@ -3637,14 +3938,15 @@ window.TBD.shared = {
       return 'CC\u2009' + String(ctrl).padStart(2, '0');
     }
 
-    function getSemanticInfo(ctrl, rangeLow, rangeHigh) {
+    function getSemanticInfo(ctrl, rangeLow, rangeHigh, maxCC) {
       var mp = ccLookup[ctrl];
       if (!mp || !DH) return { unit: '', rangeStr: '', hint: null };
       var paramId = (def.machine || '') + '_' + (mp.id || '').replace(/-/g, '_');
       var hint = DH.resolveHint(paramId, mp.name, mp);
       if (!hint) return { unit: '', rangeStr: '', hint: null };
-      var physLow = DH.rawToDisplay(rangeLow, 0, 127, hint);
-      var physHigh = DH.rawToDisplay(rangeHigh, 0, 127, hint);
+      var rawMax = maxCC || 127;
+      var physLow = DH.rawToDisplay(rangeLow, 0, rawMax, hint);
+      var physHigh = DH.rawToDisplay(rangeHigh, 0, rawMax, hint);
       var fmtLow = DH.formatDisplayValue(physLow, hint);
       var fmtHigh = DH.formatDisplayValue(physHigh, hint);
       return {
@@ -3669,7 +3971,7 @@ window.TBD.shared = {
     function computeValueDot(param, mapping, ai) {
       var addEntry = mapping.add[ai];
       if (!addEntry) return null;
-      var is14 = mapping.bits === 14;
+      var is14 = is14bit(mapping);
       var maxCC = is14 ? 16383 : 127;
       var start = mapping.start || 0;
       var mul = addEntry.mul || 1;
@@ -3684,13 +3986,13 @@ window.TBD.shared = {
       var ctrl = m.ctrl;
       var mp = ccLookup[ctrl];
       var ccName = mp ? mp.name : '?';
-      var is14 = m.bits === 14;
+      var is14 = is14bit(m);
       var maxCC = is14 ? 16383 : 127;
       var range = sourceToRange(m, ai);
       var curve = addEntry.curve || 'linear';
       var lowPct = range.low / maxCC * 100;
       var highPct = range.high / maxCC * 100;
-      var sem = getSemanticInfo(ctrl, range.low, range.high);
+      var sem = getSemanticInfo(ctrl, range.low, range.high, maxCC);
 
       var srcParam = paramsByIdx[addEntry.src];
       var dot = computeValueDot(srcParam, m, ai);
@@ -3778,11 +4080,13 @@ window.TBD.shared = {
         html += '</div>';
 
         // Properties row
+        var is14bitParam = (param.max || 127) > 127;
+        var propCls = 'mb-prop' + (is14bitParam ? ' is-14bit' : '');
         html += '<div class="mb-props-row">';
-        html += '<label class="mb-prop"><span>def</span><input type="number" class="mapping-input mb-prop-def" value="' + (param.def || 0) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
-        html += '<label class="mb-prop"><span>min</span><input type="number" class="mapping-input mb-prop-min" value="' + (param.min || 0) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
-        html += '<label class="mb-prop"><span>max</span><input type="number" class="mapping-input mb-prop-max" value="' + (param.max || 127) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
-        html += '<label class="mb-prop"><span>res</span><input type="number" class="mapping-input mb-prop-res" value="' + (param.res || 64) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
+        html += '<label class="' + propCls + '"><span>def</span><input type="number" class="mapping-input mb-prop-def" value="' + (param.def || 0) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
+        html += '<label class="' + propCls + '"><span>min</span><input type="number" class="mapping-input mb-prop-min" value="' + (param.min || 0) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
+        html += '<label class="' + propCls + '"><span>max</span><input type="number" class="mapping-input mb-prop-max" value="' + (param.max || 127) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
+        html += '<label class="' + propCls + '"><span>res</span><input type="number" class="mapping-input mb-prop-res" value="' + (param.res || 64) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
         html += '<label class="mb-prop"><span>ui</span><select class="mapping-select mb-prop-ui" data-group="' + gi + '" data-param="' + pi + '">';
         ['bignum', 'slider', 'toggle', 'selector', 'knob', 'freq', 'midinote', 'shape', 'shape2', 'shape3', 'noise', 'distortion', 'envattack', 'envdecay', 'envamount', 'filtercutoff', 'filterq', 'filtertype', 'samplebank', 'sampleslice', 'sampleoffset'].forEach(function(ui) {
           html += '<option value="' + ui + '"' + (param.ui === ui ? ' selected' : '') + '>' + ui + '</option>';
@@ -3833,11 +4137,11 @@ window.TBD.shared = {
         var ctrl = m.ctrl;
         var mp = ccLookup[ctrl];
         var ccName = mp ? mp.name : '?';
-        var is14 = m.bits === 14;
+        var is14 = is14bit(m);
         var maxCC = is14 ? 16383 : 127;
         var fixedVal = m.start || 0;
         var fixedPct = fixedVal / maxCC * 100;
-        var sem = getSemanticInfo(ctrl, fixedVal, fixedVal);
+        var sem = getSemanticInfo(ctrl, fixedVal, fixedVal, maxCC);
 
         html += '<div class="om-constant-row" data-mapping-idx="' + mi + '">';
         html += '<span class="om-cc-label">' + fmtCC(ctrl) + '</span>';
@@ -3881,7 +4185,7 @@ window.TBD.shared = {
 
   function sourceToRange(mapping, addIdx) {
     var add = (mapping.add || [])[addIdx];
-    var maxCC = (mapping.bits === 14) ? 16383 : 127;
+    var maxCC = is14bit(mapping) ? 16383 : 127;
     if (!add) return { low: mapping.start || 0, high: mapping.start || 0 };
     var mul = add.mul || 1;
     var div = add.div || 1;
@@ -3897,7 +4201,7 @@ window.TBD.shared = {
   }
 
   function rangeToSource(mapping, addIdx, low, high) {
-    var maxCC = (mapping.bits === 14) ? 16383 : 127;
+    var maxCC = is14bit(mapping) ? 16383 : 127;
     var singleSource = (mapping.add || []).length === 1;
     if (singleSource) {
       mapping.start = low;
@@ -3983,21 +4287,23 @@ window.TBD.shared = {
 
     matching.forEach(function(preset) {
       var isFactory = FP && FP.isFactoryPreset(preset.id);
-      html += '<div class="sp-card" data-preset-id="' + S.esc(preset.id) + '">';
+      var isUnlocked = FP && FP.isUnlocked && FP.isUnlocked();
+      var isEditable = !isFactory || isUnlocked;
+      html += '<div class="sp-card' + (isFactory && !isUnlocked ? ' sp-card-readonly' : '') + '" data-preset-id="' + S.esc(preset.id) + '">';
 
       // Card header: labeled fields + action buttons
       html += '<div class="sp-card-header">';
       html += '<div class="sp-card-fields">';
-      if (isFactory) {
-        html += '<sl-icon name="lock" style="font-size:0.6rem;opacity:0.45;margin-right:0.25rem;" title="Factory preset — read-only"></sl-icon>';
+      if (isFactory && !isUnlocked) {
+        html += '<span class="sp-factory-badge" title="Factory preset — unlock Factory Edit Mode to modify"><sl-icon name="lock" style="font-size:0.55rem;"></sl-icon> Factory</span>';
       }
       html += '<label class="sp-field-label">Preset Name</label>';
-      html += '<input class="mapping-input sp-name-input preset-name-input" value="' + S.esc(preset.name || preset.id) + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. Fat Punch"' + (isFactory ? ' readonly' : '') + ' />';
+      html += '<input class="mapping-input sp-name-input preset-name-input" value="' + S.esc(preset.name || preset.id) + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. Fat Punch"' + (!isEditable ? ' readonly' : '') + ' />';
       html += '<label class="sp-field-label" style="margin-left:0.5rem;">Group</label>';
-      html += '<input class="mapping-input sp-group-input preset-group-input" value="' + S.esc(preset.group || '') + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. User"' + (isFactory ? ' readonly' : '') + ' />';
+      html += '<input class="mapping-input sp-group-input preset-group-input" value="' + S.esc(preset.group || '') + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. User"' + (!isEditable ? ' readonly' : '') + ' />';
       html += '</div>';
       html += '<div class="sp-card-actions">';
-      if (!isFactory) {
+      if (isEditable) {
         html += '<button class="mapping-btn save-preset-btn" data-preset-id="' + S.esc(preset.id) + '" title="Save changes"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
         html += '<button class="mapping-btn delete-preset-btn" data-preset-id="' + S.esc(preset.id) + '" title="Delete preset"><sl-icon name="trash3" style="font-size:0.7rem;"></sl-icon> Delete</button>';
       }
@@ -4198,7 +4504,7 @@ window.TBD.shared = {
               var mapping = state.editDef.mapping[mi];
               var addEntry = mapping.add && mapping.add[ai];
               if (!addEntry) return;
-              var is14 = mapping.bits === 14;
+              var is14 = is14bit(mapping);
               var maxCC = is14 ? 16383 : 127;
               var start = mapping.start || 0;
               var mul = addEntry.mul || 1;
@@ -4238,7 +4544,7 @@ window.TBD.shared = {
         var ai = parseInt(input.getAttribute('data-add'), 10);
         if (!state.editDef || !state.editDef.mapping[mi]) return;
         var mapping = state.editDef.mapping[mi];
-        var maxCC = (mapping.bits === 14) ? 16383 : 127;
+        var maxCC = is14bit(mapping) ? 16383 : 127;
         var row = input.closest('.om-cc-row, .om-source-row');
         var lowInput = row ? row.querySelector('.om-range-low') : null;
         var highInput = row ? row.querySelector('.om-range-high') : null;
@@ -4279,7 +4585,7 @@ window.TBD.shared = {
       input.addEventListener('change', function() {
         var mi = parseInt(input.getAttribute('data-mapping'), 10);
         if (!state.editDef || !state.editDef.mapping[mi]) return;
-        var maxCC = (state.editDef.mapping[mi].bits === 14) ? 16383 : 127;
+        var maxCC = is14bit(state.editDef.mapping[mi]) ? 16383 : 127;
         state.editDef.mapping[mi].start = Math.max(0, Math.min(maxCC, parseInt(input.value, 10) || 0));
         state.dirty = true;
         renderMacroBuilderSection();
@@ -4291,7 +4597,7 @@ window.TBD.shared = {
       input.addEventListener('change', function() {
         var mi = parseInt(input.getAttribute('data-mapping'), 10);
         if (!state.editDef || !state.editDef.mapping[mi]) return;
-        var maxCC = (state.editDef.mapping[mi].bits === 14) ? 16383 : 127;
+        var maxCC = is14bit(state.editDef.mapping[mi]) ? 16383 : 127;
         state.editDef.mapping[mi].start = Math.max(0, Math.min(maxCC, parseInt(input.value, 10) || 0));
         state.dirty = true;
         renderMacroBuilderSection();
@@ -4305,11 +4611,37 @@ window.TBD.shared = {
         if (!state.editDef || !state.editDef.mapping[mi]) return;
         var mapping = state.editDef.mapping[mi];
         if (checkbox.checked) {
+          // Switching 7-bit → 14-bit: scale mapping start, scale source params up
           mapping.bits = 14;
+          mapping.type = 'nrpm';
+          mapping.start = Math.round((mapping.start || 0) * 16383 / 127);
+          (mapping.add || []).forEach(function(a) {
+            var param = findParamByIdx(a.src);
+            if (param && (param.max || 127) <= 127) {
+              var pOld = param.max || 127;
+              param.def = Math.round((param.def || 0) * 16383 / pOld);
+              param.max = 16383;
+              param.res = Math.round((param.res || Math.round(pOld / 2)) * 16383 / pOld);
+            }
+          });
         } else {
+          // Switching 14-bit → 7-bit: scale mapping start, scale source params down
           delete mapping.bits;
-          if (mapping.start > 127) mapping.start = 127;
-          (mapping.add || []).forEach(function(a) { if (a.mul > 127) a.mul = 127; });
+          delete mapping.type;
+          mapping.start = Math.min(127, Math.round((mapping.start || 0) * 127 / 16383));
+          (mapping.add || []).forEach(function(a) {
+            if (a.mul > 127) a.mul = 127;
+            // Only scale param down if no other mapping still needs 14-bit
+            if (isParamUsedBy14bit(a.src, mi)) return;
+            var param = findParamByIdx(a.src);
+            if (param && (param.max || 127) > 127) {
+              var pOld = param.max;
+              param.def = Math.round((param.def || 0) * 127 / pOld);
+              param.max = 127;
+              param.res = Math.round((param.res || Math.round(pOld / 2)) * 127 / pOld);
+              param.min = Math.min(param.min || 0, 127);
+            }
+          });
         }
         state.dirty = true;
         renderMacroBuilderSection();
@@ -4333,7 +4665,7 @@ window.TBD.shared = {
         function onMove(ev) {
           if (!state.editDef || !state.editDef.mapping[mi]) return;
           var mapping = state.editDef.mapping[mi];
-          var maxCC = (mapping.bits === 14) ? 16383 : 127;
+          var maxCC = is14bit(mapping) ? 16383 : 127;
           var rect = track.getBoundingClientRect();
           var pct = (ev.clientX - rect.left) / rect.width;
           pct = Math.max(0, Math.min(1, pct));
@@ -4390,6 +4722,7 @@ window.TBD.shared = {
             var ccParam = machineInfo.parameters.find(function(p) { return p.ctrl === ctrl; });
             if (ccParam) {
               var uiInfo = lookupUiType(machine, ccParam.id);
+              var isNrpm = ccParam.type === 'nrpm';
               // Find the knob parameter and update its name, ui + curve
               state.editDef.groups.forEach(function(g) {
                 (g.parameters || []).forEach(function(p) {
@@ -4401,6 +4734,12 @@ window.TBD.shared = {
                     p.ui = uiInfo.ui;
                     if (uiInfo.curve) { p.curve = uiInfo.curve; addEntry.curve = uiInfo.curve; }
                     else { delete p.curve; }
+                    // Set 14-bit range for NRPN parameters
+                    if (isNrpm && (p.max || 127) <= 127) {
+                      p.max = 16383;
+                      p.res = Math.round((p.res || 64) * 16383 / 127);
+                      p.def = Math.round((p.def || 0) * 16383 / 127);
+                    }
                   }
                 });
               });
@@ -4408,7 +4747,16 @@ window.TBD.shared = {
           }
         }
 
-        state.editDef.mapping.push({ ctrl: ctrl, start: 0, add: [addEntry] });
+        var newMapping = { ctrl: ctrl, start: 0, add: [addEntry] };
+        // Auto-set 14-bit for NRPN CCs
+        if (machine) {
+          var mi2 = S.getMachineInfo(machine);
+          if (mi2 && mi2.parameters) {
+            var cp = mi2.parameters.find(function(p) { return p.ctrl === ctrl; });
+            if (cp && cp.type === 'nrpm') { newMapping.bits = 14; newMapping.type = 'nrpm'; }
+          }
+        }
+        state.editDef.mapping.push(newMapping);
         state.dirty = true;
         renderMacroBuilderSection();
       });
@@ -4528,7 +4876,7 @@ window.TBD.shared = {
         var addEntry = { src: allParams[i].idx, mul: mapMul, div: 1 };
         if (mapCurve) addEntry.curve = mapCurve;
         var mapEntry = { ctrl: cc.ctrl, start: mapStart, add: [addEntry] };
-        if (cc.type === 'nrpm') mapEntry.bits = 14;
+        if (cc.type === 'nrpm') { mapEntry.bits = 14; mapEntry.type = 'nrpm'; }
         state.editDef.mapping.push(mapEntry);
       }
     });
@@ -4602,10 +4950,11 @@ window.TBD.shared = {
 
       var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-      // Prevent overwriting factory presets
+      // Prevent overwriting factory presets (unless Factory Edit Mode unlocked)
       var Fcheck = window.TBD.factory;
-      if (Fcheck && Fcheck.isFactoryPreset(id)) {
-        nameInput.setAttribute('help-text', 'This name matches a factory preset \u2014 choose a different name');
+      var isFactoryId = Fcheck && Fcheck.isFactoryPreset(id);
+      if (isFactoryId && !(Fcheck.isUnlocked && Fcheck.isUnlocked())) {
+        nameInput.setAttribute('help-text', 'This name matches a factory preset \u2014 unlock Factory Edit Mode or choose a different name');
         nameInput.focus();
         return;
       }
@@ -4623,7 +4972,7 @@ window.TBD.shared = {
 
       var preset = { id: id, name: name, group: group, macro: state.editDef.id, values: values };
       var jsonStr = JSON.stringify(preset, null, 2);
-      var filePath = 'presets/' + id + '.json';
+      var filePath = (isFactoryId ? 'factory/presets/' : 'presets/') + id + '.json';
 
       createBtn.setAttribute('loading', '');
       fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -4652,8 +5001,9 @@ window.TBD.shared = {
 
   function saveEditedPreset(presetId, container) {
     var F = window.TBD.factory;
-    if (F && F.isFactoryPreset(presetId)) {
-      S.toast('Factory presets are read-only', 'warning', 3000);
+    var isFactory = F && F.isFactoryPreset(presetId);
+    if (isFactory && !(F.isUnlocked && F.isUnlocked())) {
+      S.toast('Factory presets are read-only — unlock Factory Edit Mode first', 'warning', 3000);
       return;
     }
     var preset = S.data.soundPresets.find(function(p) { return p.id === presetId; });
@@ -4669,7 +5019,7 @@ window.TBD.shared = {
     });
 
     var jsonStr = JSON.stringify(preset, null, 2);
-    var filePath = 'presets/' + presetId + '.json';
+    var filePath = (isFactory ? 'factory/presets/' : 'presets/') + presetId + '.json';
 
     fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
@@ -4688,8 +5038,8 @@ window.TBD.shared = {
 
   function deleteSoundPreset(presetId) {
     var F = window.TBD.factory;
-    if (F && F.isFactoryPreset(presetId)) {
-      S.toast('Factory presets cannot be deleted', 'warning', 3000);
+    if (F && F.isFactoryPreset(presetId) && !(F.isUnlocked && F.isUnlocked())) {
+      S.toast('Factory presets cannot be deleted \u2014 unlock Factory Edit Mode first', 'warning', 3000);
       return;
     }
     var preset = S.data.soundPresets.find(function(p) { return p.id === presetId; });
@@ -4718,7 +5068,8 @@ window.TBD.shared = {
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'presets/' + presetId + '.json';
+      var Fdel = window.TBD.factory;
+      var filePath = (Fdel && Fdel.isFactoryPreset(presetId) ? 'factory/presets/' : 'presets/') + presetId + '.json';
       apiPost('/api/v2/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -4743,8 +5094,8 @@ window.TBD.shared = {
 
   function deleteDefinition(defId) {
     var F = window.TBD.factory;
-    if (F && F.isFactoryDefinition(defId)) {
-      S.toast('Factory definitions cannot be deleted — clone it instead', 'warning', 3000);
+    if (F && F.isFactoryDefinition(defId) && !(F.isUnlocked && F.isUnlocked())) {
+      S.toast('Factory definitions cannot be deleted — unlock Factory Edit Mode first', 'warning', 3000);
       return;
     }
     var def = S.data.macroDefs.find(function(d) { return d.id === defId; });
@@ -4785,7 +5136,8 @@ window.TBD.shared = {
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'macros/' + defId + '.json';
+      var Fdel = window.TBD.factory;
+      var filePath = (Fdel && Fdel.isFactoryDefinition(defId) ? 'factory/macros/' : 'macros/') + defId + '.json';
       apiPost('/api/v2/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -4845,7 +5197,8 @@ window.TBD.shared = {
 
     var cleanDef = cleanDefinitionForSave(state.editDef);
     var jsonStr = JSON.stringify(cleanDef, null, 2);
-    var filePath = 'macros/' + state.editDef.id + '.json';
+    var isFactoryDef = F && F.isFactoryDefinition(state.editDef.id);
+    var filePath = (isFactoryDef && F.isUnlocked && F.isUnlocked() ? 'factory/macros/' : 'macros/') + state.editDef.id + '.json';
 
     S.showLoading('Saving definition\u2026');
     fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -4912,7 +5265,9 @@ window.TBD.shared = {
             }
             S.toast('Imported definition: ' + (data.name || data.id || 'unknown'), 'success', 2000);
           } else if (data.id && data.macro && data.values) {
-            var filePath = 'presets/' + data.id + '.json';
+            var Fimp = window.TBD.factory;
+            var isFactoryId = Fimp && Fimp.isFactoryPreset && Fimp.isFactoryPreset(data.id);
+            var filePath = (isFactoryId && Fimp.isUnlocked && Fimp.isUnlocked() ? 'factory/presets/' : 'presets/') + data.id + '.json';
             fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -4946,6 +5301,12 @@ window.TBD.shared = {
     });
 
     setupDefinitionListEvents();
+
+    // Re-render when factory lock state changes (delete buttons, edit permissions)
+    window.addEventListener('tbd-factory-lock-changed', function() {
+      renderDefinitionList();
+      if (state.editDef) renderMacroBuilderSection();
+    });
 
     if (S.data.activeTrack >= 0) {
       var track = S.data.tracks.find(function(t) { return t.index === S.data.activeTrack; });

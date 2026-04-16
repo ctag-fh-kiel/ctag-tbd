@@ -443,6 +443,17 @@ body {
   font-size: 0.82rem; font-style: italic;
   color: var(--sl-color-neutral-500);
 }
+.track-preset-name {
+  font-size: 0.85rem; font-weight: 600;
+  color: var(--sl-color-neutral-800);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 180px;
+}
+.track-preset-id {
+  font-size: 0.72rem; font-family: var(--sl-font-mono, monospace);
+  color: var(--sl-color-neutral-400);
+  white-space: nowrap;
+}
 
 /* Inline def header inputs in track-info-bar (Macros mode) */
 .track-inline-input {
@@ -1233,6 +1244,9 @@ details[open].dsp-collapsible > .dsp-collapsible-summary::before {
   border-radius: 4px;
   font-variant-numeric: tabular-nums;
 }
+.mb-prop.is-14bit input[type="number"] {
+  width: 66px;
+}
 .mb-prop select {
   font-size: 0.68rem;
   padding: 0.15rem 0.3rem;
@@ -1652,7 +1666,7 @@ details[open].dsp-collapsible > .dsp-collapsible-summary::before {
 }
 .om-range-low.is-14bit, .om-range-high.is-14bit,
 .om-fixed-input.is-14bit, .mapping-start.is-14bit {
-  width: 56px;
+  width: 66px;
 }
 
 /* 14-bit toggle */
@@ -2003,6 +2017,27 @@ sl-dialog::part(footer) {
   padding: 0.75rem 0.85rem;
   margin-bottom: 0.6rem;
   background: var(--sl-color-neutral-0);
+}
+.sp-card-readonly {
+  opacity: 0.7;
+  border-style: dashed;
+  background: var(--sl-color-neutral-50);
+}
+.sp-card-readonly .sp-param-slider,
+.sp-card-readonly .sp-param-value {
+  pointer-events: none;
+}
+.sp-factory-badge {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  font-size: 0.62rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--sl-color-warning-700);
+  background: var(--sl-color-warning-100);
+  border: 1px solid var(--sl-color-warning-300);
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  margin-right: 0.35rem;
+  flex-shrink: 0;
 }
 .sp-card-header {
   display: flex; align-items: flex-end; gap: 0.75rem;

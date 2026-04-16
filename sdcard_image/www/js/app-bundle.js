@@ -3024,7 +3024,7 @@ function renderKnobGroups(def, paramValues, options) {
           }
           html += '<span class="knob-target-val">' + targetFmt + '</span>';
           // 14-bit badge
-          if (mapping && mapping.bits === 14) {
+          if (mapping && (mapping.bits === 14 || mapping.type === 'nrpm')) {
             html += '<span class="knob-target-14bit">14-bit</span>';
           }
           html += '</div>';
