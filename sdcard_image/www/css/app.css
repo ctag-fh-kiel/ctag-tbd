@@ -2019,7 +2019,6 @@ sl-dialog::part(footer) {
   background: var(--sl-color-neutral-0);
 }
 .sp-card-readonly {
-  opacity: 0.7;
   border-style: dashed;
   background: var(--sl-color-neutral-50);
 }
@@ -2085,6 +2084,47 @@ sl-dialog::part(footer) {
 .sp-card-values {
   display: flex; flex-direction: column; gap: 0.4rem;
 }
+/* Compact knob view inside preset cards */
+.sp-card-knobs {
+  padding: 0.25rem 0;
+}
+.sp-card-knobs .macro-group {
+  margin-bottom: 0.25rem;
+}
+.sp-card-knobs .macro-group-header {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.6rem;
+  min-height: unset;
+  cursor: default;
+}
+.sp-card-knobs .macro-group-chevron { display: none; }
+.sp-card-knobs .macro-group-page-label { font-size: 0.62rem; }
+.sp-card-knobs .macro-group-name { font-size: 0.62rem; }
+.sp-card-knobs .macro-group-body {
+  gap: 0.35rem;
+  padding: 0.25rem 0.4rem;
+}
+.sp-card-knobs .macro-knob-cell {
+  padding: 0.3rem 0.4rem;
+  min-width: 80px;
+}
+.sp-card-knobs .macro-knob-label {
+  font-size: 0.65rem;
+}
+.sp-card-knobs .macro-knob-value {
+  font-size: 0.75rem;
+}
+.sp-card-knobs .knob-target-panel {
+  padding: 0.15rem 0.3rem;
+  font-size: 0.55rem;
+}
+.sp-card-knobs .knob-target-badge {
+  font-size: 0.45rem;
+  padding: 0 0.2rem;
+}
+.sp-card-knobs .knob-target-name { font-size: 0.5rem; }
+.sp-card-knobs .knob-target-val { font-size: 0.5rem; }
+.sp-card-knobs .knob-target-14bit { font-size: 0.4rem; padding: 0 0.15rem; }
 .sp-page-group {
   display: flex; align-items: flex-start; gap: 0.6rem;
 }

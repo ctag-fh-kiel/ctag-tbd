@@ -302,16 +302,37 @@
   }
 
   function createNewDefinition() {
-    // Show dialog with options: Start from scratch or Clone existing macro
     var old = document.getElementById('new-macro-dialog');
     if (old) old.remove();
 
     var defaultMachine = state.activeMachine || (state.trackMachines.length > 0 ? state.trackMachines[0] : '');
+    var machInfo = S.getMachineInfo(defaultMachine);
+    var machineName = machInfo ? machInfo.name : defaultMachine;
 
-    // Get available macros for cloning (same machine)
-    var availableMacros = S.data.macroDefs.filter(function(d) {
-      return d.machine === defaultMachine;
-    });
+    // Get available machines from current track
+    var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
+    var availMachines = track ? S.getTrackMachines(track) : [];
+    if (availMachines.length === 0 && defaultMachine) availMachines = [defaultMachine];
+
+    // Dialog state — track selections via sl-change events
+    // (reading sl-select.value at click time is unreliable with Shoelace)
+    var selectedMachine = defaultMachine;
+    var selectedBaseId = '';
+
+    function getMacrosForMachine(machId) {
+      return S.data.macroDefs.filter(function(d) { return d.machine === machId; });
+    }
+
+    function buildBaseOptions(machId) {
+      var macros = getMacrosForMachine(machId);
+      var F = window.TBD.factory;
+      var h = '<sl-option value="">Empty \u2014 start from scratch</sl-option>';
+      macros.forEach(function(m) {
+        var badge = (F && F.isFactoryDefinition(m.id)) ? '\ud83d\udd12 ' : '';
+        h += '<sl-option value="' + S.esc(m.id) + '">' + badge + S.esc(m.name || m.id) + '</sl-option>';
+      });
+      return h;
+    }
 
     var dialog = document.createElement('sl-dialog');
     dialog.id = 'new-macro-dialog';
@@ -319,45 +340,59 @@
     dialog.setAttribute('style', '--width:28rem;');
 
     var html = '';
-    html += '<div style="font-size:0.85rem;margin-bottom:1rem;">';
-    html += 'Create a new macro definition for <strong>' + S.esc(defaultMachine) + '</strong>.';
-    html += '</div>';
-
-    html += '<sl-radio-group label="Starting Point" name="macro-start" value="scratch">';
-    html += '<sl-radio-button value="scratch" style="width:100%;margin-bottom:0.5rem;">';
-    html += '<sl-icon slot="prefix" name="file-earmark-plus"></sl-icon> Start from scratch';
-    html += '</sl-radio-button>';
-    if (availableMacros.length > 0) {
-      html += '<sl-radio-button value="clone" style="width:100%;">';
-      html += '<sl-icon slot="prefix" name="copy"></sl-icon> Clone existing macro';
-      html += '</sl-radio-button>';
-    }
-    html += '</sl-radio-group>';
-
-    if (availableMacros.length > 0) {
-      html += '<sl-select id="clone-macro-select" label="Clone from" style="margin-top:0.75rem;" disabled hoist>';
-      availableMacros.forEach(function(m) {
-        html += '<sl-option value="' + S.esc(m.id) + '">' + S.esc(m.name || m.id) + '</sl-option>';
+    html += '<div style="display:flex;flex-direction:column;gap:0.75rem;">';
+    // Machine selector
+    if (availMachines.length > 1) {
+      html += '<sl-select id="new-macro-machine" label="Machine" value="' + S.esc(defaultMachine) + '" hoist>';
+      availMachines.forEach(function(machId) {
+        var info = S.getMachineInfo(machId);
+        var label = info ? info.name : machId;
+        html += '<sl-option value="' + S.esc(machId) + '">' + S.esc(label) + '</sl-option>';
       });
       html += '</sl-select>';
+    } else {
+      html += '<div class="save-preset-context">';
+      html += '<strong>' + S.esc(machineName) + '</strong>';
+      html += ' <span style="opacity:0.5;">(' + S.esc(defaultMachine) + ')</span>';
+      html += '</div>';
     }
+    // Name input
+    html += '<sl-input id="new-macro-name" label="Macro Name" placeholder="e.g. Phat Punch" required autofocus></sl-input>';
+    // Based on dropdown
+    html += '<sl-select id="new-macro-base" label="Based on" value="" hoist help-text="Start empty or clone an existing macro as your foundation">';
+    html += buildBaseOptions(defaultMachine);
+    html += '</sl-select>';
+    html += '</div>';
 
     dialog.innerHTML = html;
 
-    // Enable/disable clone dropdown based on radio selection
-    var radioGroup = dialog.querySelector('sl-radio-group');
-    var cloneSelect = dialog.querySelector('#clone-macro-select');
-    if (radioGroup && cloneSelect) {
-      radioGroup.addEventListener('sl-change', function() {
-        var val = radioGroup.value;
-        if (val === 'clone') {
-          cloneSelect.removeAttribute('disabled');
-          if (!cloneSelect.value && availableMacros.length > 0) {
-            cloneSelect.value = availableMacros[0].id;
-          }
-        } else {
-          cloneSelect.setAttribute('disabled', '');
+    // Wire sl-change events to track selections reliably
+    var machineSelectEl = dialog.querySelector('#new-macro-machine');
+    if (machineSelectEl) {
+      machineSelectEl.addEventListener('sl-change', function() {
+        selectedMachine = machineSelectEl.value;
+        // Rebuild "Based on" options for the new machine
+        var oldBase = dialog.querySelector('#new-macro-base');
+        if (oldBase) {
+          var newBase = document.createElement('sl-select');
+          newBase.id = 'new-macro-base';
+          newBase.label = 'Based on';
+          newBase.value = '';
+          newBase.setAttribute('hoist', '');
+          newBase.setAttribute('help-text', 'Start empty or clone an existing macro as your foundation');
+          newBase.innerHTML = buildBaseOptions(selectedMachine);
+          oldBase.replaceWith(newBase);
+          selectedBaseId = '';
+          newBase.addEventListener('sl-change', function() {
+            selectedBaseId = newBase.value;
+          });
         }
+      });
+    }
+    var baseSelectEl = dialog.querySelector('#new-macro-base');
+    if (baseSelectEl) {
+      baseSelectEl.addEventListener('sl-change', function() {
+        selectedBaseId = baseSelectEl.value;
       });
     }
 
@@ -374,56 +409,92 @@
     createBtn.innerHTML = '<sl-icon name="plus-lg" slot="prefix"></sl-icon> Create Macro';
 
     createBtn.addEventListener('click', function() {
-      var startType = radioGroup ? radioGroup.value : 'scratch';
-      
-      if (startType === 'clone' && cloneSelect && cloneSelect.value) {
+      var nameInput = dialog.querySelector('#new-macro-name');
+      var name = (nameInput.value || '').trim();
+
+      if (!name) {
+        nameInput.setAttribute('help-text', 'Please enter a name');
+        nameInput.focus();
+        return;
+      }
+
+      var machine = selectedMachine || defaultMachine;
+
+      // Auto-generate ID: machine prefix + slugified name
+      var machinePrefix = machine ? (machine.substring(0, 2) + '-') : '';
+      var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      var autoId = machinePrefix + slug;
+
+      if (selectedBaseId) {
         // Clone existing macro
-        var sourceDef = S.data.macroDefs.find(function(d) { return d.id === cloneSelect.value; });
+        var sourceDef = S.data.macroDefs.find(function(d) { return d.id === selectedBaseId; });
         if (sourceDef) {
-          state.selectedDefId = null;
           state.editDef = JSON.parse(JSON.stringify(sourceDef));
-          state.editDef.id = '';
-          state.editDef.name = (sourceDef.name || sourceDef.id) + ' (copy)';
+          state.editDef.id = autoId;
+          state.editDef.name = name;
+          state.editDef.machine = machine;
           ensureGroupStructure(state.editDef);
-          state.dirty = true;
+        } else {
+          S.toast('Source macro not found', 'danger', 2000);
+          return;
         }
       } else {
         // Start from scratch
-        state.selectedDefId = null;
         state.editDef = {
-          id: '',
-          name: '',
-          machine: defaultMachine,
+          id: autoId,
+          name: name,
+          machine: machine,
           volmult: 1.0,
           groups: [],
           mapping: [],
         };
         ensureGroupStructure(state.editDef);
-        state.dirty = true;
       }
 
-      document.querySelectorAll('#definition-list .preset-item').forEach(function(item) {
-        item.classList.remove('active');
+      // Auto-save immediately so the macro exists on disk
+      createBtn.setAttribute('loading', '');
+      var cleanDef = cleanDefinitionForSave(state.editDef);
+      var jsonStr = JSON.stringify(cleanDef, null, 2);
+      var filePath = 'macros/' + state.editDef.id + '.json';
+
+      fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: jsonStr,
+      }).then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        state.selectedDefId = state.editDef.id;
+        state.dirty = false;
+        return S.reloadFirmwareMacros(state.editDef.id).then(function() {
+          return S.reloadMacroData();
+        });
+      }).then(function() {
+        renderDefinitionList();
+        renderMacroBuilderSection();
+        switchToMacroBuilder();
+        S.toast('Created: ' + name, 'success', 2000);
+        dialog.hide();
+      }).catch(function(err) {
+        createBtn.removeAttribute('loading');
+        S.toast('Save failed: ' + err.message, 'danger', 3000);
       });
-
-      renderMacroBuilderSection();
-      
-      // Switch to Macro Builder sub-tab (not Knob Preview)
-      switchToMacroBuilder();
-
-      dialog.hide();
     });
 
     dialog.appendChild(cancelBtn);
     dialog.appendChild(createBtn);
     document.body.appendChild(dialog);
 
-    // Clean up on close
-    dialog.addEventListener('sl-after-hide', function() {
+    // Prevent hoisted sl-select overlay clicks from closing the dialog
+    dialog.addEventListener('sl-request-close', function(e) {
+      if (e.detail.source === 'overlay') e.preventDefault();
+    });
+
+    // Guard: only remove on dialog's own hide, not bubbled sl-after-hide from child sl-selects
+    dialog.addEventListener('sl-after-hide', function(e) {
+      if (e.target !== dialog) return;
       dialog.remove();
     });
 
-    // Show the dialog
     requestAnimationFrame(function() {
       dialog.show();
     });
@@ -667,15 +738,13 @@
 
     var html = '';
 
-    // 1:1 Map button at top of macro builder
-    html += '<div class="mb-top-actions">';
-    html += '<button class="mapping-btn btn-1to1" title="Auto-create a 1:1 mapping from all machine CCs">1:1 Map</button>';
-    html += '</div>';
-
-    // Macro Builder description
-    html += '<div class="tab-description">';
-    html += '<sl-icon name="info-circle"></sl-icon>';
-    html += 'Define knobs (up to 6 pages \u00d7 4 knobs) and map them to DSP parameters. Drag knobs to preview. The colored dot on each range track shows the current computed CC value.';
+    // 1:1 Map button + description in one row
+    html += '<div class="mb-top-actions" style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;padding:0.5rem 0;">';
+    html += '<button class="mapping-btn btn-1to1" title="Auto-create a 1:1 mapping from all machine CCs" style="flex-shrink:0;">1:1 Map</button>';
+    html += '<span style="font-size:0.82rem;color:var(--sl-color-neutral-600);line-height:1.3;">';
+    html += '<sl-icon name="info-circle" style="font-size:0.75rem;vertical-align:-1px;margin-right:0.2rem;"></sl-icon>';
+    html += 'Define knobs (up to 6 pages \u00d7 4 knobs) and map them to DSP parameters. Use <strong>1:1 Map</strong> to auto-create all knobs, or add them manually below.';
+    html += '</span>';
     html += '</div>';
 
     // DSP Reference (collapsible, at top of builder for quick access)
@@ -1100,18 +1169,6 @@
       return html;
     }
 
-    // Build page-grouped param structure for labeling values
-    var pageParams = [];
-    def.groups.forEach(function(g, gi) {
-      var params = (g.parameters || []);
-      if (params.length > 0) {
-        pageParams.push({
-          pageName: g.name || ('Page ' + (gi + 1)),
-          params: params,
-        });
-      }
-    });
-
     var FP = window.TBD.factory;
 
     matching.forEach(function(preset) {
@@ -1139,27 +1196,9 @@
       html += '</div>';
       html += '</div>';
 
-      // Card body: values organized by page with knob labels
-      html += '<div class="sp-card-values">';
-      pageParams.forEach(function(page) {
-        html += '<div class="sp-page-group">';
-        html += '<span class="sp-page-label">' + S.esc(page.pageName) + '</span>';
-        html += '<div class="sp-params">';
-        page.params.forEach(function(param) {
-          var val = preset.values && preset.values[param.idx] !== undefined ? preset.values[param.idx] : '';
-          var pMin = param.min !== undefined ? param.min : 0;
-          var pMax = param.max !== undefined ? param.max : 127;
-          var numVal = val !== '' ? val : param.def || 0;
-          html += '<div class="sp-param">';
-          html += '<span class="sp-param-name">' + S.esc(param.name || ('P' + param.idx)) + '</span>';
-          html += '<input class="sp-param-slider preset-slider-input" type="range" min="' + pMin + '" max="' + pMax + '" value="' + numVal + '" data-preset-id="' + S.esc(preset.id) + '" data-value-idx="' + param.idx + '" />';
-          html += '<input class="sp-param-value preset-value-input" type="number" min="' + pMin + '" max="' + pMax + '" value="' + val + '" data-preset-id="' + S.esc(preset.id) + '" data-value-idx="' + param.idx + '" />';
-          html += '<span class="sp-param-range">' + pMin + '–' + pMax + '</span>';
-          html += '</div>';
-        });
-        html += '</div>';
-        html += '</div>';
-      });
+      // Card body: render knobs using the shared knob renderer (compact)
+      html += '<div class="sp-card-knobs">';
+      html += S.renderKnobGroups(def, preset.values || [], { knobSize: 56 });
       html += '</div>';
 
       html += '</div>'; // .sp-card

@@ -849,17 +849,11 @@
     var isFromFactory = state.activePreset && F && F.isFactoryPreset(state.activePreset.id);
 
     var defaultName = state.activePreset ? state.activePreset.name : (state.activeMacroDef ? state.activeMacroDef.name : '');
-    // If cloning a factory preset, append " (copy)" to encourage a new name
     if (isFromFactory) defaultName = defaultName + ' (copy)';
-    var defaultGroup = state.activePreset ? (state.activePreset.group || '') : (state.activeMachine || '');
-    // Factory presets go to "User" group by default when cloning
+    var defaultGroup = state.activePreset ? (state.activePreset.group || '') : '';
     if (isFromFactory && defaultGroup) defaultGroup = 'User';
-    var macroName = state.activeMacroDef ? (state.activeMacroDef.name || state.activeMacroDef.id) : '';
-    var machineName = '';
-    if (state.activeMachine) {
-      var mInfo = S.getMachineInfo(state.activeMachine);
-      machineName = mInfo ? mInfo.name : state.activeMachine;
-    }
+    if (!defaultGroup) defaultGroup = 'User';
+
     var trackName = '';
     var trackBadge = '';
     var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
@@ -868,11 +862,27 @@
       trackBadge = 'CH ' + String(track.index + 1).padStart(2, '0');
     }
 
-    // Get available macros for this machine
-    var availableMacros = S.data.macroDefs.filter(function(d) {
-      return d.machine === state.activeMachine;
-    });
+    // Available machines for this track
+    var availMachines = track ? S.getTrackMachines(track) : [];
+    var currentMachine = state.activeMachine || (availMachines.length > 0 ? availMachines[0] : '');
     var currentMacroId = state.activeMacroDef ? state.activeMacroDef.id : '';
+
+    // Dialog state — track selections via sl-change events
+    var selectedMachine = currentMachine;
+    var selectedMacroId = currentMacroId;
+
+    function getMacrosForMachine(machId) {
+      return S.data.macroDefs.filter(function(d) { return d.machine === machId; });
+    }
+
+    function buildMacroOptions(machId) {
+      var macros = getMacrosForMachine(machId);
+      var h = '';
+      macros.forEach(function(m) {
+        h += '<sl-option value="' + S.esc(m.id) + '">' + S.esc(m.name || m.id) + '</sl-option>';
+      });
+      return h;
+    }
 
     var dialog = document.createElement('sl-dialog');
     dialog.id = 'save-preset-dialog';
@@ -880,20 +890,35 @@
     dialog.setAttribute('style', '--width:28rem;');
 
     var html = '';
+    // Context header
     html += '<div class="save-preset-context">';
     html += '<span class="track-badge" style="font-size:0.72rem;">' + S.esc(trackBadge) + '</span> ';
     html += '<strong>' + S.esc(trackName) + '</strong>';
-    html += ' \u2014 ' + S.esc(machineName);
     html += '</div>';
+
     html += '<div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">';
-    html += '<sl-input id="save-preset-name" label="Preset Name" value="' + S.esc(defaultName) + '" placeholder="e.g. Fat Punch" required autofocus></sl-input>';
-    html += '<sl-input id="save-preset-group" label="Category / Group" value="' + S.esc(defaultGroup) + '" placeholder="e.g. User" help-text="Presets are grouped by this label in the sidebar"></sl-input>';
-    // Macro selection dropdown
+    // Machine dropdown (first)
+    if (availMachines.length > 1) {
+      html += '<sl-select id="save-preset-machine" label="Machine" value="' + S.esc(currentMachine) + '" hoist>';
+      availMachines.forEach(function(machId) {
+        var info = S.getMachineInfo(machId);
+        var label = info ? info.name : machId;
+        html += '<sl-option value="' + S.esc(machId) + '">' + S.esc(label) + '</sl-option>';
+      });
+      html += '</sl-select>';
+    } else {
+      var mInfo = S.getMachineInfo(currentMachine);
+      var mName = mInfo ? mInfo.name : currentMachine;
+      html += '<div style="font-size:0.78rem;color:var(--sl-color-neutral-500);"><strong>Machine:</strong> ' + S.esc(mName) + '</div>';
+    }
+    // Macro dropdown (second)
     html += '<sl-select id="save-preset-macro" label="Macro" value="' + S.esc(currentMacroId) + '" hoist>';
-    availableMacros.forEach(function(m) {
-      html += '<sl-option value="' + S.esc(m.id) + '">' + S.esc(m.name || m.id) + '</sl-option>';
-    });
+    html += buildMacroOptions(currentMachine);
     html += '</sl-select>';
+    // Preset name
+    html += '<sl-input id="save-preset-name" label="Preset Name" value="' + S.esc(defaultName) + '" placeholder="e.g. Fat Punch" required></sl-input>';
+    // Category
+    html += '<sl-input id="save-preset-group" label="Category / Group" value="' + S.esc(defaultGroup) + '" placeholder="e.g. User" help-text="Presets are grouped by this label in the sidebar"></sl-input>';
     html += '</div>';
     html += '<div style="margin-top:1rem;font-size:0.72rem;color:var(--sl-color-neutral-500);">';
     html += '<sl-icon name="info-circle" style="font-size:0.7rem;"></sl-icon> ';
@@ -901,6 +926,36 @@
     html += '</div>';
 
     dialog.innerHTML = html;
+
+    // Wire sl-change events to track selections reliably
+    var machineSelectEl = dialog.querySelector('#save-preset-machine');
+    if (machineSelectEl) {
+      machineSelectEl.addEventListener('sl-change', function() {
+        selectedMachine = machineSelectEl.value;
+        // Rebuild Macro options for the new machine
+        var macros = getMacrosForMachine(selectedMachine);
+        var oldMacro = dialog.querySelector('#save-preset-macro');
+        if (oldMacro) {
+          var newMacro = document.createElement('sl-select');
+          newMacro.id = 'save-preset-macro';
+          newMacro.label = 'Macro';
+          newMacro.setAttribute('hoist', '');
+          newMacro.innerHTML = buildMacroOptions(selectedMachine);
+          selectedMacroId = macros.length > 0 ? macros[0].id : '';
+          newMacro.value = selectedMacroId;
+          oldMacro.replaceWith(newMacro);
+          newMacro.addEventListener('sl-change', function() {
+            selectedMacroId = newMacro.value;
+          });
+        }
+      });
+    }
+    var macroSelectEl = dialog.querySelector('#save-preset-macro');
+    if (macroSelectEl) {
+      macroSelectEl.addEventListener('sl-change', function() {
+        selectedMacroId = macroSelectEl.value;
+      });
+    }
 
     // Footer buttons
     var cancelBtn = document.createElement('sl-button');
@@ -917,10 +972,8 @@
     saveBtn.addEventListener('click', function() {
       var nameInput = dialog.querySelector('#save-preset-name');
       var groupInput = dialog.querySelector('#save-preset-group');
-      var macroSelect = dialog.querySelector('#save-preset-macro');
       var name = (nameInput.value || '').trim();
       var group = (groupInput.value || '').trim() || 'User';
-      var selectedMacroId = macroSelect ? macroSelect.value : (state.activeMacroDef ? state.activeMacroDef.id : '');
 
       if (!name) {
         nameInput.setAttribute('help-text', 'Please enter a name');
@@ -998,8 +1051,14 @@
     dialog.appendChild(saveBtn);
     document.body.appendChild(dialog);
 
-    // Clean up on close
-    dialog.addEventListener('sl-after-hide', function() {
+    // Prevent hoisted sl-select overlay clicks from closing the dialog
+    dialog.addEventListener('sl-request-close', function(e) {
+      if (e.detail.source === 'overlay') e.preventDefault();
+    });
+
+    // Guard: only remove on dialog's own hide, not bubbled sl-after-hide from child sl-selects
+    dialog.addEventListener('sl-after-hide', function(e) {
+      if (e.target !== dialog) return;
       dialog.remove();
     });
 
