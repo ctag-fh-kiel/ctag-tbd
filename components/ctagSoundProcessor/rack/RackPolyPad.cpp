@@ -169,7 +169,7 @@ void RackPolyPad::Process(const PicoSeqRackProcessData &data) {
         params.detune = pp_detune * 4;
         // if (cv_pp_detune != -1) { params.detune = static_cast<int16_t>(fabsf(data.cv[cv_pp_detune]) * 32767.f); }
         CONSTRAIN(params.detune, 0, 32767)
-        params.inversion = pp_inversion * 2 / 4096;
+        params.inversion = (pp_inversion * 5 / 4096) - 2;
         // if (cv_pp_inversion != -1) { params.inversion = static_cast<int16_t>(fabsf(data.cv[cv_pp_inversion]) * 6.f - 3.f); }
         CONSTRAIN(params.inversion, -2, 2)
         float maxA, maxD, maxR;
@@ -218,7 +218,7 @@ void RackPolyPad::Process(const PicoSeqRackProcessData &data) {
         // if (cv_pp_eg_filt_amt != -1) { params.eg_filt_amt = data.cv[cv_pp_eg_filt_amt]; }
         CONSTRAIN(params.eg_filt_amt, -1.f, 1.f)
 
-        params.filter_type = pp_filter_type * 2 / 4096;
+        params.filter_type = pp_filter_type * 3 / 4096;
         // if (cv_pp_filter_type != -1) { params.filter_type = fabsf(data.cv[cv_pp_filter_type]) * 3.f; }
         CONSTRAIN(params.filter_type, 0, 2)        // printf("PP2 %d %d %d\n", paarms.pitch, params.chord, params.nnotes);
 
