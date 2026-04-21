@@ -7,65 +7,397 @@
     {
       "name": "Chord",
       "parameters": [
-        { "idx": 0,  "name": "Chord",     "def": 78,  "min": 0, "max": 127, "res": 32, "ui": "chord"    },
-        { "idx": 1,  "name": "Inversion", "def": 64,  "min": 0, "max": 127, "res": 32, "ui": "chordinv" },
-        { "idx": 17, "name": "Nnotes",    "def": 96,  "min": 0, "max": 127, "res": 32, "ui": "nnotes"   },
-        { "idx": 2,  "name": "Detune",    "def": 20,  "min": 0, "max": 127, "res": 64, "ui": "distortion" }
+        {
+          "idx": 0,
+          "name": "Chord",
+          "def": 78,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "chord"
+        },
+        {
+          "idx": 1,
+          "name": "Inversion",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "chordinv"
+        },
+        {
+          "idx": 17,
+          "name": "Nnotes",
+          "def": 96,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "nnotes"
+        },
+        {
+          "idx": 2,
+          "name": "Detune",
+          "def": 20,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "distortion"
+        }
       ]
     },
     {
       "name": "Filter",
       "parameters": [
-        { "idx": 3, "name": "Cutoff",  "def": 51, "min": 0, "max": 127, "res": 64, "ui": "filtercutoff", "curve": "log" },
-        { "idx": 4, "name": "Reso",    "def": 15, "min": 0, "max": 127, "res": 64, "ui": "filterq" },
-        { "idx": 5, "name": "Type",    "def": 0,  "min": 0, "max": 127, "res": 64, "ui": "filtertype" },
-        { "idx": 6, "name": "Q Scale", "def": 0,  "min": 0, "max": 127, "res": 64, "ui": "bignum" }
+        {
+          "idx": 3,
+          "name": "Cutoff",
+          "def": 51,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filtercutoff",
+          "curve": "log"
+        },
+        {
+          "idx": 4,
+          "name": "Reso",
+          "def": 15,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filterq"
+        },
+        {
+          "idx": 5,
+          "name": "Type",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filtertype"
+        },
+        {
+          "idx": 6,
+          "name": "Q Scale",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
       ]
     },
     {
       "name": "ADSR",
       "parameters": [
-        { "idx": 7,  "name": "Attack",  "def": 0,  "min": 0, "max": 127, "res": 64, "ui": "envattack", "curve": "exp" },
-        { "idx": 8,  "name": "Decay",   "def": 80, "min": 0, "max": 127, "res": 64, "ui": "envdecay",  "curve": "exp" },
-        { "idx": 9,  "name": "Sustain", "def": 96, "min": 0, "max": 127, "res": 64, "ui": "bignum" },
-        { "idx": 10, "name": "Release", "def": 64, "min": 0, "max": 127, "res": 64, "ui": "envdecay",  "curve": "exp" }
+        {
+          "idx": 7,
+          "name": "Attack",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envattack",
+          "curve": "exp"
+        },
+        {
+          "idx": 8,
+          "name": "Decay",
+          "def": 80,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        },
+        {
+          "idx": 9,
+          "name": "Sustain",
+          "def": 96,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 10,
+          "name": "Release",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "envdecay",
+          "curve": "exp"
+        }
       ]
     },
     {
       "name": "LFO",
       "parameters": [
-        { "idx": 11, "name": "L1 Speed",  "def": 31, "min": 0, "max": 127, "res": 64, "ui": "bignum" },
-        { "idx": 12, "name": "L1 Amount", "def": 8,  "min": 0, "max": 127, "res": 64, "ui": "bignum" },
-        { "idx": 13, "name": "L2 Speed",  "def": 10, "min": 0, "max": 127, "res": 64, "ui": "bignum" },
-        { "idx": 14, "name": "L2 Amount", "def": 0,  "min": 0, "max": 127, "res": 64, "ui": "bignum" }
+        {
+          "idx": 11,
+          "name": "L1 Speed",
+          "def": 31,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 12,
+          "name": "L1 Amount",
+          "def": 8,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 13,
+          "name": "L2 Speed",
+          "def": 10,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 14,
+          "name": "L2 Amount",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        }
       ]
     },
     {
       "name": "Mod",
       "parameters": [
-        { "idx": 15, "name": "EG Flt",   "def": 0, "min": 0, "max": 127, "res": 64, "ui": "bignum" },
-        { "idx": 16, "name": "L2 Rand",  "def": 0, "min": 0, "max": 127, "res": 64, "ui": "onoff"  }
+        {
+          "idx": 15,
+          "name": "EG Flt",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 16,
+          "name": "L2 Rand",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "onoff"
+        }
       ]
     }
   ],
   "mapping": [
-    { "ctrl":  8, "start": 0, "add": [ { "src":  0, "mul": 1, "div": 1 } ] },
-    { "ctrl":  9, "start": 0, "add": [ { "src":  1, "mul": 1, "div": 1 } ] },
-    { "ctrl": 10, "start": 0, "add": [ { "src":  2, "mul": 1, "div": 1 } ] },
-    { "ctrl": 11, "start": 0, "add": [ { "src":  3, "mul": 1, "div": 1, "curve": "log" } ] },
-    { "ctrl": 12, "start": 0, "add": [ { "src":  4, "mul": 1, "div": 1 } ] },
-    { "ctrl": 13, "start": 0, "add": [ { "src":  5, "mul": 1, "div": 1 } ] },
-    { "ctrl": 14, "start": 0, "add": [ { "src":  6, "mul": 1, "div": 1 } ] },
-    { "ctrl": 15, "start": 0, "add": [ { "src":  7, "mul": 1, "div": 1, "curve": "exp" } ] },
-    { "ctrl": 16, "start": 0, "add": [ { "src":  8, "mul": 1, "div": 1, "curve": "exp" } ] },
-    { "ctrl": 17, "start": 0, "add": [ { "src":  9, "mul": 1, "div": 1 } ] },
-    { "ctrl": 18, "start": 0, "add": [ { "src": 10, "mul": 1, "div": 1, "curve": "exp" } ] },
-    { "ctrl": 19, "start": 0, "add": [ { "src": 11, "mul": 1, "div": 1 } ] },
-    { "ctrl": 20, "start": 0, "add": [ { "src": 12, "mul": 1, "div": 1 } ] },
-    { "ctrl": 21, "start": 0, "add": [ { "src": 13, "mul": 1, "div": 1 } ] },
-    { "ctrl": 22, "start": 0, "add": [ { "src": 14, "mul": 1, "div": 1 } ] },
-    { "ctrl": 23, "start": 0, "add": [ { "src": 15, "mul": 1, "div": 1 } ] },
-    { "ctrl": 24, "start": 0, "add": [ { "src": 16, "mul": 1, "div": 1 } ] },
-    { "ctrl": 25, "start": 0, "add": [ { "src": 17, "mul": 1, "div": 1 } ] }
+    {
+      "ctrl": 8,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "start": 0,
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "start": 0,
+      "add": [
+        {
+          "src": 7,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 16,
+      "start": 0,
+      "add": [
+        {
+          "src": 8,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 17,
+      "start": 0,
+      "add": [
+        {
+          "src": 9,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 18,
+      "start": 0,
+      "add": [
+        {
+          "src": 10,
+          "mul": 1,
+          "div": 1,
+          "curve": "exp"
+        }
+      ]
+    },
+    {
+      "ctrl": 19,
+      "start": 0,
+      "add": [
+        {
+          "src": 11,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 20,
+      "start": 0,
+      "add": [
+        {
+          "src": 12,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 21,
+      "start": 0,
+      "add": [
+        {
+          "src": 13,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 22,
+      "start": 0,
+      "add": [
+        {
+          "src": 14,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 23,
+      "start": 0,
+      "add": [
+        {
+          "src": 15,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 24,
+      "start": 0,
+      "add": [
+        {
+          "src": 16,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 25,
+      "start": 0,
+      "add": [
+        {
+          "src": 17,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
   ]
 }
