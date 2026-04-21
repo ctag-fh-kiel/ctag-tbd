@@ -18,7 +18,7 @@
         },
         {
           "idx": 1,
-          "name": "Inversion",
+          "name": "Inv",
           "def": 64,
           "min": 0,
           "max": 127,

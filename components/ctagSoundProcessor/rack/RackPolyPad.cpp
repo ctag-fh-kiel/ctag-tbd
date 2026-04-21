@@ -162,9 +162,9 @@ void RackPolyPad::Process(const PicoSeqRackProcessData &data) {
         // if (cv_pp_chord != -1) { params.chord = static_cast<int16_t>(fabsf(data.cv[cv_pp_chord]) * kChordNumChords); }
         CONSTRAIN(params.chord, 0, kChordNumChords - 1)
 
-        params.nnotes = 1 + (pp_nnotes * 4 / 4096);
-        // if (cv_pp_nnotes != -1) { params.nnotes = static_cast<int16_t>(fabsf(data.cv[cv_pp_nnotes]) * 4.f) + 1; }
-        CONSTRAIN(params.nnotes, 1, 4)
+        params.nnotes = 1 + (pp_nnotes * 8 / 4096);
+        // if (cv_pp_nnotes != -1) { params.nnotes = static_cast<int16_t>(fabsf(data.cv[cv_pp_nnotes]) * 8.f) + 1; }
+        CONSTRAIN(params.nnotes, 1, 8)
 
         params.detune = pp_detune * 4;
         // if (cv_pp_detune != -1) { params.detune = static_cast<int16_t>(fabsf(data.cv[cv_pp_detune]) * 32767.f); }
