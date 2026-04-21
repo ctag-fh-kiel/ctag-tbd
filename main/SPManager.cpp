@@ -182,6 +182,10 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 // and the led color
                 send_response->led_color = ledStatus;
                 send_response->webui_update_counter = webuiChangeCounter.load();
+                send_response->screenshot_request_counter = screenshotRequestCounter.load();
+                send_response->injected_button = injectedButton.exchange(0);
+                send_response->injected_button_event = injectedButtonEvent.exchange(0);
+                send_response->_reserved_input = 0;
                 responsecounter ++;
                 send_response->magic = 0xDEADBEEF;
                 send_response->magic2 = 0xFEED;
@@ -547,6 +551,9 @@ atomic<uint32_t> SoundProcessorManager::macroChangeCounter = 0;
 atomic<uint32_t> SoundProcessorManager::trackMachineChangeCounter = 0;
 atomic<uint32_t> SoundProcessorManager::definitionChangeCounter = 0;
 atomic<uint32_t> SoundProcessorManager::webuiChangeCounter = 0;
+atomic<uint32_t> SoundProcessorManager::screenshotRequestCounter = 0;
+atomic<uint8_t> SoundProcessorManager::injectedButton = 0;
+atomic<uint8_t> SoundProcessorManager::injectedButtonEvent = 0;
 
 
 static char freertosstats[2000] = { 0, };
