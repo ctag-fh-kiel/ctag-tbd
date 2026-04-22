@@ -49,6 +49,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -60,6 +61,7 @@
     },
     {
       "ctrl": 9,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -71,10 +73,12 @@
     },
     {
       "ctrl": 10,
+      "type": "cc",
       "start": 8
     },
     {
       "ctrl": 11,
+      "type": "cc",
       "start": 20,
       "add": [
         {
@@ -86,6 +90,7 @@
     },
     {
       "ctrl": 12,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -97,14 +102,17 @@
     },
     {
       "ctrl": 13,
+      "type": "cc",
       "start": 32
     },
     {
       "ctrl": 14,
+      "type": "cc",
       "start": 0
     },
     {
       "ctrl": 15,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -116,6 +124,7 @@
     },
     {
       "ctrl": 16,
+      "type": "cc",
       "start": 8,
       "add": [
         {
@@ -127,6 +136,7 @@
     },
     {
       "ctrl": 17,
+      "type": "cc",
       "start": 8,
       "add": [
         {
@@ -138,6 +148,7 @@
     },
     {
       "ctrl": 18,
+      "type": "cc",
       "start": 16,
       "add": [
         {
@@ -149,6 +160,7 @@
     },
     {
       "ctrl": 19,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -160,6 +172,7 @@
     },
     {
       "ctrl": 20,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -171,6 +184,7 @@
     },
     {
       "ctrl": 21,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -182,6 +196,7 @@
     },
     {
       "ctrl": 22,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -193,6 +208,7 @@
     },
     {
       "ctrl": 23,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -204,10 +220,12 @@
     },
     {
       "ctrl": 24,
+      "type": "cc",
       "start": 127
     },
     {
       "ctrl": 25,
+      "type": "cc",
       "start": 48
     }
   ]

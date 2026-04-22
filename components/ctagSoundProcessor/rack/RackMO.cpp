@@ -180,9 +180,15 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
     int16_t buffer[BUF_SZ];
     mo_osc.Render(mo_sync, buffer, BUF_SZ);
 
-    // calculate amplitude modulation
-    int32_t mod_gain = 65535; // a bit louder
-    mod_gain = (ad_value) / 8;
+    // Amplitude modulation by the AD envelope. Left at the historical `/ 8`
+    // (polyphonic headroom inherited from PolyPad) pending a DSP-focused
+    // follow-up — see tbd-pico-seq3/docs/architecture/monosynth-april-2026.md.
+    // Attempts to raise this (to /2 or /4) produced either aggressive
+    // clipping with `volmult: 2.6` or exposed the Bit Red DSP ineffectiveness
+    // (recorded audio shows no quantization despite mo_bit_reduction
+    // reaching the DSP). Decoupling the loudness/VCA tuning from the macro
+    // refactor for now.
+    int32_t mod_gain = ad_value / 8;
 
     // convert final audio buffer
     int32_t sample = 0;

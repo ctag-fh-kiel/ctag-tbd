@@ -186,6 +186,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -273,6 +274,7 @@
     },
     {
       "ctrl": 15,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -284,6 +286,7 @@
     },
     {
       "ctrl": 16,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -295,6 +298,7 @@
     },
     {
       "ctrl": 17,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -306,6 +310,7 @@
     },
     {
       "ctrl": 18,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -317,6 +322,7 @@
     },
     {
       "ctrl": 19,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -364,6 +370,7 @@
     },
     {
       "ctrl": 23,
+      "type": "cc",
       "start": 0,
       "add": [
         {

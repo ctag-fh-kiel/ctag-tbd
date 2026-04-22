@@ -49,14 +49,17 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "cc",
       "start": 0
     },
     {
       "ctrl": 9,
+      "type": "nrpm",
       "start": 0
     },
     {
       "ctrl": 10,
+      "type": "nrpm",
       "start": 8,
       "add": [
         {
@@ -68,6 +71,7 @@
     },
     {
       "ctrl": 11,
+      "type": "nrpm",
       "start": 8,
       "add": [
         {
@@ -79,6 +83,7 @@
     },
     {
       "ctrl": 12,
+      "type": "nrpm",
       "start": 10,
       "add": [
         {
@@ -90,6 +95,7 @@
     },
     {
       "ctrl": 13,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -101,6 +107,7 @@
     },
     {
       "ctrl": 14,
+      "type": "nrpm",
       "start": 16,
       "add": [
         {
@@ -112,10 +119,12 @@
     },
     {
       "ctrl": 15,
+      "type": "cc",
       "start": 0
     },
     {
       "ctrl": 16,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -127,6 +136,7 @@
     },
     {
       "ctrl": 17,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -138,10 +148,12 @@
     },
     {
       "ctrl": 18,
+      "type": "cc",
       "start": 0
     },
     {
       "ctrl": 19,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -153,18 +165,22 @@
     },
     {
       "ctrl": 20,
+      "type": "nrpm",
       "start": 0
     },
     {
       "ctrl": 21,
+      "type": "nrpm",
       "start": 0
     },
     {
       "ctrl": 22,
+      "type": "nrpm",
       "start": 0
     },
     {
       "ctrl": 23,
+      "type": "cc",
       "start": 0,
       "add": [
         {
