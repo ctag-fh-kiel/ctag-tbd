@@ -77,8 +77,8 @@
           "ui": "filtertype"
         },
         {
-          "idx": 6,
-          "name": "Q Scale",
+          "idx": 15,
+          "name": "EG Flt",
           "def": 0,
           "min": 0,
           "max": 127,
@@ -88,7 +88,7 @@
       ]
     },
     {
-      "name": "ADSR",
+      "name": "Env",
       "parameters": [
         {
           "idx": 7,
@@ -132,11 +132,11 @@
       ]
     },
     {
-      "name": "LFO",
+      "name": "Motion",
       "parameters": [
         {
           "idx": 11,
-          "name": "L1 Speed",
+          "name": "L1 Spd",
           "def": 31,
           "min": 0,
           "max": 127,
@@ -145,7 +145,7 @@
         },
         {
           "idx": 12,
-          "name": "L1 Amount",
+          "name": "L1 Amt",
           "def": 8,
           "min": 0,
           "max": 127,
@@ -154,7 +154,7 @@
         },
         {
           "idx": 13,
-          "name": "L2 Speed",
+          "name": "L2 Spd",
           "def": 10,
           "min": 0,
           "max": 127,
@@ -163,35 +163,12 @@
         },
         {
           "idx": 14,
-          "name": "L2 Amount",
+          "name": "L2 Amt",
           "def": 0,
           "min": 0,
           "max": 127,
           "res": 64,
           "ui": "bignum"
-        }
-      ]
-    },
-    {
-      "name": "Mod",
-      "parameters": [
-        {
-          "idx": 15,
-          "name": "EG Flt",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 16,
-          "name": "L2 Rand",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "onoff"
         }
       ]
     }
@@ -259,17 +236,6 @@
       "add": [
         {
           "src": 5,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 14,
-      "start": 0,
-      "add": [
-        {
-          "src": 6,
           "mul": 1,
           "div": 1
         }
@@ -372,17 +338,6 @@
       "add": [
         {
           "src": 15,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 24,
-      "start": 0,
-      "add": [
-        {
-          "src": 16,
           "mul": 1,
           "div": 1
         }
