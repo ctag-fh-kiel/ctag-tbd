@@ -160,7 +160,10 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
     // if (cv_mo_pitch != -1) {
     //     ipitch += static_cast<int32_t>(data.cv[cv_mo_pitch] * 12.f * 5.f * 128.f); // five octaves
     // }
-    int32_t sc = mo_q_scale * 47 / 4096;
+    // Scale wire arrives as CC, cv_value = wire * 4096/128 = wire * 32.
+    // Macro declares max:46 so wire 0..46 → cv 0..1472 → sc = cv/32 = 0..46.
+    // Each wire step maps 1:1 to one scale, no "expansion" math needed.
+    int32_t sc = mo_q_scale / 32;
     // if (cv_mo_q_scale != -1) {
     //     sc = static_cast<int32_t>(fabsf(data.cv[cv_mo_q_scale]) * 48.f);
     CONSTRAIN(sc, 0, 47);
@@ -196,11 +199,17 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
     // if (cv_mo_waveshaping != -1) {
     //     signature = static_cast<uint16_t>(fabsf(data.cv[cv_mo_waveshaping]) * 65535.f);
     // }
-    int32_t dfactor = (mo_decimation * 30 / 4096) + 1;
+    // SR Red: macro max:30, CC wire 0..30 → cv 0..960 → dfactor = cv/32 + 1 = 1..30.
+    // Each knob click (wire delta 1) == one dfactor step. No mul expansion needed.
+    int32_t dfactor = (mo_decimation / 32) + 1;
+    CONSTRAIN(dfactor, 1, 30);
     // if (cv_mo_decimation != -1) {
     //     dfactor = static_cast<int32_t>(fabsf(data.cv[cv_mo_decimation]) * 30) + 1;
     // }
-    int32_t br = mo_bit_reduction * 6 / 4096;
+    // Bit Red: macro max:5, CC wire 0..5 → cv 0..160 → br = cv/32 = 0..5.
+    // Each knob click == one br step (which means one bit_reduction_masks[] entry).
+    int32_t br = mo_bit_reduction / 32;
+    CONSTRAIN(br, 0, 5);
     // if (cv_mo_bit_reduction != -1) {
     //     br = static_cast<int32_t>(fabsf(data.cv[cv_mo_bit_reduction]) * 6);
     // }

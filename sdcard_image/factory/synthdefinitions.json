@@ -1250,7 +1250,7 @@
         {
           "id": "attack",
           "name": "Attack",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 16,
           "def": 0
         },

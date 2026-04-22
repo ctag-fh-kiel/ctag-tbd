@@ -3818,6 +3818,41 @@ window.TBD.shared = {
         if (p.curve === 'linear') delete p.curve;
       });
     });
+    // ─────────────────────────────────────────────────────────────────────
+    // Pico-firmware invariant guard: every mapping entry MUST carry an
+    // explicit "type" field ("cc" or "nrpm") and that type MUST match the
+    // same ctrl's declared type in synthdefinitions.json for this machine.
+    // A missing type silently defaults to CC on the Pico and regresses
+    // other machines when the synthdef actually declares the ctrl as NRPM
+    // (see tbd-pico-seq3/docs/architecture/macro-system.md, the
+    // "macro-vs-synthdef type agreement" invariant).
+    //
+    // At save time: patch every mapping entry to the synthdef's declared
+    // type. We do NOT warn the user — auto-fix keeps the macro valid
+    // regardless of how it was authored / imported.
+    // ─────────────────────────────────────────────────────────────────────
+    var machineInfo = clean.machine ? S.getMachineInfo(clean.machine) : null;
+    var ctrlTypeLookup = {};
+    if (machineInfo && machineInfo.parameters) {
+      machineInfo.parameters.forEach(function(p) {
+        if (typeof p.ctrl === 'number' && (p.type === 'cc' || p.type === 'nrpm')) {
+          ctrlTypeLookup[p.ctrl] = p.type;
+        }
+      });
+    }
+    (clean.mapping || []).forEach(function(m) {
+      var expected = ctrlTypeLookup[m.ctrl];
+      if (expected) {
+        // Synthdef knows this ctrl → trust synthdef, overwrite any stale value
+        m.type = expected;
+      } else if (m.type !== 'cc' && m.type !== 'nrpm') {
+        // No synthdef match (unusual, e.g. post-machine-rename) → default to CC
+        m.type = 'cc';
+      }
+      // Keep `bits` consistent with type — NRPM implies 14-bit wire protocol
+      if (m.type === 'nrpm' && m.bits !== 14) m.bits = 14;
+      if (m.type === 'cc' && m.bits) delete m.bits;
+    });
     // Enforce key order: id, name, machine, volmult, groups, mapping, then rest
     var ordered = {};
     ['id', 'name', 'machine', 'volmult', 'groups', 'mapping'].forEach(function(k) {
@@ -4723,9 +4758,13 @@ window.TBD.shared = {
             }
           });
         } else {
-          // Switching 14-bit → 7-bit: scale mapping start, scale source params down
+          // Switching 14-bit → 7-bit: scale mapping start, scale source params down.
+          // Mapping.type must be explicit on every entry (see Pico
+          // docs/architecture/macro-system.md "macro-vs-synthdef type agreement"
+          // invariant — missing type silently defaults to CC on the Pico and
+          // regresses other machines). Set type:"cc" here, never delete it.
           delete mapping.bits;
-          delete mapping.type;
+          mapping.type = 'cc';
           mapping.start = Math.min(127, Math.round((mapping.start || 0) * 127 / 16383));
           (mapping.add || []).forEach(function(a) {
             if (a.mul > 127) a.mul = 127;
@@ -4845,8 +4884,12 @@ window.TBD.shared = {
           }
         }
 
-        var newMapping = { ctrl: ctrl, start: 0, add: [addEntry] };
-        // Auto-set 14-bit for NRPN CCs
+        // Invariant: every mapping entry MUST carry an explicit "type" field
+        // ("cc" or "nrpm") matching synthdefinitions.json for the same ctrl.
+        // See tbd-pico-seq3/docs/architecture/macro-system.md — a missing type
+        // silently defaults to CC on the Pico and regresses other machines
+        // when the synthdef actually declares the ctrl as NRPM.
+        var newMapping = { ctrl: ctrl, type: 'cc', start: 0, add: [addEntry] };
         if (machine) {
           var mi2 = S.getMachineInfo(machine);
           if (mi2 && mi2.parameters) {
@@ -4867,7 +4910,25 @@ window.TBD.shared = {
         if (!state.editDef) return;
         var ctrl = parseInt(unmappedSelect.value, 10);
         if (isNaN(ctrl)) return;
-        state.editDef.mapping.push({ ctrl: ctrl, start: 0, add: [] });
+        // Invariant: every mapping entry MUST carry an explicit "type" field
+        // matching synthdefinitions.json. See the knob-to-CC branch above
+        // for the full rationale.
+        var unmappedType = 'cc';
+        var unmappedBits;
+        var unmappedMachine = state.editDef && state.editDef.machine;
+        if (unmappedMachine) {
+          var umi = S.getMachineInfo(unmappedMachine);
+          if (umi && umi.parameters) {
+            var ucp = umi.parameters.find(function(p) { return p.ctrl === ctrl; });
+            if (ucp && ucp.type === 'nrpm') {
+              unmappedType = 'nrpm';
+              unmappedBits = 14;
+            }
+          }
+        }
+        var unmappedEntry = { ctrl: ctrl, type: unmappedType, start: 0, add: [] };
+        if (unmappedBits) unmappedEntry.bits = unmappedBits;
+        state.editDef.mapping.push(unmappedEntry);
         state.dirty = true;
         renderMacroBuilderSection();
       });

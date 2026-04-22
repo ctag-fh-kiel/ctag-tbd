@@ -80,7 +80,7 @@
           "name": "Scale",
           "def": 0,
           "min": 0,
-          "max": 127,
+          "max": 46,
           "res": 64,
           "ui": "scale"
         }
@@ -92,10 +92,10 @@
         {
           "idx": 8,
           "name": "Attack",
-          "def": 11,
+          "def": 1425,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "envattack",
           "curve": "exp"
         },
@@ -136,7 +136,7 @@
           "name": "SR Red",
           "def": 0,
           "min": 0,
-          "max": 127,
+          "max": 30,
           "res": 64,
           "ui": "bignum"
         },
@@ -145,7 +145,7 @@
           "name": "Bit Red",
           "def": 0,
           "min": 0,
-          "max": 127,
+          "max": 5,
           "res": 64,
           "ui": "bignum"
         }
@@ -251,7 +251,7 @@
     },
     {
       "ctrl": 16,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
