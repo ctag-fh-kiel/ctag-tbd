@@ -1,47 +1,47 @@
 {
   "id": "td3-acidbass",
-  "name": "Acid Bass",
+  "name": "AcidBass Macro",
   "machine": "td3",
-  "volmult": 0.6,
+  "volmult": 0.25,
   "groups": [
     {
-      "name": "Acid Bass",
+      "name": "AcidBass",
       "parameters": [
         {
-          "idx": 0,
+          "idx": 18,
           "name": "Squelch",
-          "def": 64,
+          "def": 11000,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "knob"
+          "max": 16383,
+          "res": 2048,
+          "ui": "bignum"
         },
         {
-          "idx": 1,
+          "idx": 19,
           "name": "Grit",
-          "def": 0,
+          "def": 4000,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "knob"
+          "max": 16383,
+          "res": 2048,
+          "ui": "bignum"
         },
         {
-          "idx": 2,
+          "idx": 20,
           "name": "Envelope",
-          "def": 16,
+          "def": 4000,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "knob"
+          "max": 16383,
+          "res": 2048,
+          "ui": "bignum"
         },
         {
-          "idx": 3,
+          "idx": 21,
           "name": "Accent",
-          "def": 30,
+          "def": 6000,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "knob"
+          "max": 16383,
+          "res": 2048,
+          "ui": "bignum"
         }
       ]
     }
@@ -50,85 +50,98 @@
     {
       "ctrl": 8,
       "type": "cc",
-      "start": 0
+      "start": 6,
+      "add": []
     },
     {
       "ctrl": 9,
       "type": "nrpm",
-      "start": 0
+      "bits": 14,
+      "start": 7000,
+      "add": []
     },
     {
       "ctrl": 10,
       "type": "nrpm",
-      "start": 8,
+      "bits": 14,
+      "start": 500,
       "add": [
         {
-          "src": 2,
-          "mul": 1,
-          "div": 2
+          "src": 20,
+          "mul": 5000,
+          "div": 16383,
+          "curve": "exp"
         }
       ]
     },
     {
       "ctrl": 11,
       "type": "nrpm",
-      "start": 8,
+      "bits": 14,
+      "start": 300,
       "add": [
         {
-          "src": 2,
-          "mul": 1,
-          "div": 2
+          "src": 20,
+          "mul": 3000,
+          "div": 16383,
+          "curve": "exp"
         }
       ]
     },
     {
       "ctrl": 12,
       "type": "nrpm",
-      "start": 10,
+      "bits": 14,
+      "start": 1000,
       "add": [
         {
-          "src": 0,
-          "mul": 1,
-          "div": 1
+          "src": 18,
+          "mul": 15000,
+          "div": 16383,
+          "curve": "log"
         }
       ]
     },
     {
       "ctrl": 13,
       "type": "nrpm",
-      "start": 0,
+      "bits": 14,
+      "start": 3000,
       "add": [
         {
-          "src": 3,
-          "mul": 1,
-          "div": 2
+          "src": 18,
+          "mul": 10000,
+          "div": 16383
         }
       ]
     },
     {
       "ctrl": 14,
       "type": "nrpm",
-      "start": 16,
+      "bits": 14,
+      "start": 5000,
       "add": [
         {
-          "src": 0,
-          "mul": 1,
-          "div": 3
+          "src": 18,
+          "mul": 10000,
+          "div": 16383
         }
       ]
     },
     {
       "ctrl": 15,
       "type": "cc",
-      "start": 0
+      "start": 0,
+      "add": []
     },
     {
       "ctrl": 16,
-      "type": "cc",
+      "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
-          "src": 1,
+          "src": 19,
           "mul": 1,
           "div": 1
         }
@@ -136,20 +149,29 @@
     },
     {
       "ctrl": 17,
-      "type": "cc",
+      "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
-          "src": 1,
-          "mul": 39,
-          "div": 127
+          "src": 19,
+          "mul": 12000,
+          "div": 16383
         }
       ]
     },
     {
       "ctrl": 18,
-      "type": "cc",
-      "start": 0
+      "type": "nrpm",
+      "bits": 14,
+      "start": 500,
+      "add": [
+        {
+          "src": 20,
+          "mul": 5000,
+          "div": 16383
+        }
+      ]
     },
     {
       "ctrl": 19,
@@ -157,38 +179,52 @@
       "start": 0,
       "add": [
         {
-          "src": 3,
+          "src": 21,
           "mul": 1,
           "div": 1
         }
       ]
     },
     {
-      "ctrl": 20,
-      "type": "nrpm",
-      "start": 0
-    },
-    {
-      "ctrl": 21,
-      "type": "nrpm",
-      "start": 0
-    },
-    {
-      "ctrl": 22,
-      "type": "nrpm",
-      "start": 0
-    },
-    {
       "ctrl": 23,
-      "type": "cc",
+      "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
-          "src": 3,
-          "mul": 1,
-          "div": 2
+          "src": 21,
+          "mul": 12000,
+          "div": 16383
         }
       ]
+    },
+    {
+      "ctrl": 26,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": []
+    },
+    {
+      "ctrl": 27,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": []
+    },
+    {
+      "ctrl": 28,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": []
+    },
+    {
+      "ctrl": 29,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": []
     }
   ]
 }
