@@ -1580,6 +1580,22 @@ window.TBD.shared = {
    * @returns {object|null} hint object or null if no match
    */
   function resolveHint(paramId, paramName, param) {
+    // Priority 0: Check the macro's explicit ui hint for a per-ui-type
+    // override. Needed for per-machine ranges like MonoSynth's
+    // "envattackfast" (0.5 ms..1 s) vs the generic "envattack"
+    // (0.5 ms..5 s). Additive — old ui strings keep their current
+    // range via the fallback lookups below.
+    if (param && param.ui) {
+      var UI_HINTS = {
+        envattack:     { unit: 'ms', scale: 'log', physMin: 0.5, physMax: 5000, label: 'Attack' },
+        envattackfast: { unit: 'ms', scale: 'log', physMin: 0.5, physMax: 1000, label: 'Attack' },
+        envdecay:      { unit: 'ms', scale: 'log', physMin: 1,   physMax: 5000, label: 'Decay' },
+      };
+      if (UI_HINTS[param.ui]) {
+        return Object.assign({}, UI_HINTS[param.ui], { label: paramName || UI_HINTS[param.ui].label });
+      }
+    }
+
     // Priority 1: Check if the param itself has physical range metadata (future mui extension)
     if (param && param.physMin !== undefined && param.physMax !== undefined) {
       return {
@@ -3271,7 +3287,7 @@ window.TBD.shared = {
     rs:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, noise: {ui:'distortion'}, accent: {ui:'envamount'} },
     cl:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, scale: {ui:'noise'} },
     fmb: { 'f-b': {ui:'shape2'}, 'd-b': {ui:'shape2',curve:'exp'}, 'f-m': {ui:'shape3'}, 'd-m': {ui:'shape3',curve:'exp'}, 'b-m': {ui:'shape2'}, 'a-f': {ui:'shape3'}, 'd-f': {ui:'shape',curve:'exp'}, i: {ui:'noise'} },
-    mo:  { shape: {ui:'shape'}, p0: {ui:'shape3'}, p1: {ui:'shape2'}, waveshap: {ui:'distortion'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'} },
+    mo:  { shape: {ui:'shape'}, p0: {ui:'shape3'}, p1: {ui:'shape2'}, waveshap: {ui:'distortion'}, attack: {ui:'envattackfast',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'} },
     td3: { shape: {ui:'shape'}, p0: {ui:'shape2'}, vca_d: {ui:'envdecay',curve:'exp'}, vcf_d: {ui:'envdecay',curve:'exp'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, envdec: {ui:'envdecay',curve:'exp'}, type: {ui:'filtertype'} },
     pp:  { detune: {ui:'distortion'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, type: {ui:'filtertype'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'}, release: {ui:'envdecay',curve:'exp'} },
     wtosc: { type: {ui:'filtertype'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'}, release: {ui:'bignum',curve:'exp'} },
@@ -3827,9 +3843,17 @@ window.TBD.shared = {
     // (see tbd-pico-seq3/docs/architecture/macro-system.md, the
     // "macro-vs-synthdef type agreement" invariant).
     //
-    // At save time: patch every mapping entry to the synthdef's declared
-    // type. We do NOT warn the user — auto-fix keeps the macro valid
-    // regardless of how it was authored / imported.
+    // EXCEPTION — identity mappings on performance macros. A mapping entry
+    // whose ctrl == (paramIdx + 8) for some macro param idx that's ALSO
+    // used as a `src` in another mapping is a "source knob identity"
+    // mapping. The wire goes to the P4 MacroTranslator storage slot
+    // (trackParameterValues[idx]) and is never dispatched to the DSP
+    // listener directly — only the computeAndDispatch fan-out mappings
+    // hit the DSP. For these identity mappings, the macro author may
+    // declare type:nrpm even when synthdef says cc, to carry 14-bit
+    // (hi-res) knob values into the source storage. We preserve the
+    // authored type in that case. See tbd-pico-seq3/docs/architecture/
+    // macro-system.md "Hi-res performance-macro source knobs".
     // ─────────────────────────────────────────────────────────────────────
     var machineInfo = clean.machine ? S.getMachineInfo(clean.machine) : null;
     var ctrlTypeLookup = {};
@@ -3840,9 +3864,45 @@ window.TBD.shared = {
         }
       });
     }
+    // Collect the set of idx values that are used as `src` in any mapping's
+    // add[] array — these are the "macro source knob" indices whose
+    // identity mappings (ctrl == idx + 8) are eligible for the exception.
+    var srcIdxSet = {};
+    (clean.mapping || []).forEach(function(m) {
+      (m.add || []).forEach(function(a) {
+        if (typeof a.src === 'number') srcIdxSet[a.src] = true;
+      });
+    });
+    // Collect all paramIdx declared in groups (so we can tell "ctrl idx+8"
+    // refers to a real macro source knob and not just any ctrl number).
+    var paramIdxSet = {};
+    (clean.groups || []).forEach(function(g) {
+      (g.parameters || []).forEach(function(p) {
+        if (typeof p.idx === 'number') paramIdxSet[p.idx] = true;
+      });
+    });
+    function isPerformanceIdentityMapping(m) {
+      // ctrl matches an idx+8 of some source-used param idx
+      var implicitIdx = m.ctrl - 8;
+      if (!paramIdxSet[implicitIdx]) return false;
+      if (!srcIdxSet[implicitIdx]) return false;
+      // And: at least ONE other mapping references this idx as a src
+      // (already verified by srcIdxSet) AND this mapping is distinct
+      // from those fan-out destinations (this mapping itself shouldn't
+      // reference implicitIdx as its own src — it's an "identity",
+      // typically empty add[] or fixed start).
+      var selfRefs = (m.add || []).some(function(a) { return a.src === implicitIdx; });
+      return !selfRefs;
+    }
     (clean.mapping || []).forEach(function(m) {
       var expected = ctrlTypeLookup[m.ctrl];
-      if (expected) {
+      if (isPerformanceIdentityMapping(m)) {
+        // Exception: preserve author-declared type. Default to cc if
+        // missing entirely (never leave a mapping without type).
+        if (m.type !== 'cc' && m.type !== 'nrpm') {
+          m.type = expected || 'cc';
+        }
+      } else if (expected) {
         // Synthdef knows this ctrl → trust synthdef, overwrite any stale value
         m.type = expected;
       } else if (m.type !== 'cc' && m.type !== 'nrpm') {
@@ -3852,6 +3912,27 @@ window.TBD.shared = {
       // Keep `bits` consistent with type — NRPM implies 14-bit wire protocol
       if (m.type === 'nrpm' && m.bits !== 14) m.bits = 14;
       if (m.type === 'cc' && m.bits) delete m.bits;
+    });
+
+    // Auto-promote source-knob identity mappings to nrpm when the source
+    // param itself is declared hi-res (max > 127). Rule-of-thumb applied
+    // at save time: if a user sets a macro source knob to 14-bit range,
+    // the wire protocol that carries it must also be 14-bit or the top 7
+    // bits get lost at the MacroTranslator storage step.
+    (clean.groups || []).forEach(function(g) {
+      (g.parameters || []).forEach(function(p) {
+        if (typeof p.idx !== 'number') return;
+        if (!srcIdxSet[p.idx]) return;       // not a source knob
+        if ((p.max || 127) <= 127) return;   // not hi-res
+        // Find the identity mapping for this idx (ctrl == idx + 8)
+        var identity = (clean.mapping || []).find(function(m) {
+          return m.ctrl === p.idx + 8 && isPerformanceIdentityMapping(m);
+        });
+        if (identity && identity.type !== 'nrpm') {
+          identity.type = 'nrpm';
+          identity.bits = 14;
+        }
+      });
     });
     // Enforce key order: id, name, machine, volmult, groups, mapping, then rest
     var ordered = {};
@@ -4101,11 +4182,19 @@ window.TBD.shared = {
       return 'CC\u2009' + String(ctrl).padStart(2, '0');
     }
 
-    function getSemanticInfo(ctrl, rangeLow, rangeHigh, maxCC) {
+    function getSemanticInfo(ctrl, rangeLow, rangeHigh, maxCC, srcParam) {
       var mp = ccLookup[ctrl];
       if (!mp || !DH) return { unit: '', rangeStr: '', hint: null };
       var paramId = (def.machine || '') + '_' + (mp.id || '').replace(/-/g, '_');
-      var hint = DH.resolveHint(paramId, mp.name, mp);
+      // Merge macro-side srcParam's `ui` into the hint query so per-ui-type
+      // overrides (e.g. "envattackfast" → 0.5 ms..1 s) take precedence over
+      // the generic DSP-side lookups. srcParam is the entry in
+      // def.groups[].parameters[] matching this mapping's add[].src idx.
+      var hintParam = mp;
+      if (srcParam && srcParam.ui) {
+        hintParam = Object.assign({}, mp, { ui: srcParam.ui });
+      }
+      var hint = DH.resolveHint(paramId, mp.name, hintParam);
       if (!hint) return { unit: '', rangeStr: '', hint: null };
       var rawMax = maxCC || 127;
       var physLow = DH.rawToDisplay(rangeLow, 0, rawMax, hint);
@@ -4155,9 +4244,8 @@ window.TBD.shared = {
       var curve = addEntry.curve || 'linear';
       var lowPct = range.low / maxCC * 100;
       var highPct = range.high / maxCC * 100;
-      var sem = getSemanticInfo(ctrl, range.low, range.high, maxCC);
-
       var srcParam = paramsByIdx[addEntry.src];
+      var sem = getSemanticInfo(ctrl, range.low, range.high, maxCC, srcParam);
       var dot = computeValueDot(srcParam, m, ai);
 
       var r = '';
@@ -4251,7 +4339,7 @@ window.TBD.shared = {
         html += '<label class="' + propCls + '"><span>max</span><input type="number" class="mapping-input mb-prop-max" value="' + (param.max || 127) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
         html += '<label class="' + propCls + '"><span>res</span><input type="number" class="mapping-input mb-prop-res" value="' + (param.res || 64) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
         html += '<label class="mb-prop"><span>ui</span><select class="mapping-select mb-prop-ui" data-group="' + gi + '" data-param="' + pi + '">';
-        ['bignum', 'slider', 'toggle', 'selector', 'knob', 'freq', 'midinote', 'shape', 'shape2', 'shape3', 'noise', 'distortion', 'envattack', 'envdecay', 'envamount', 'filtercutoff', 'filterq', 'filtertype', 'samplebank', 'sampleslice', 'sampleoffset'].forEach(function(ui) {
+        ['bignum', 'slider', 'toggle', 'selector', 'knob', 'freq', 'midinote', 'shape', 'shape2', 'shape3', 'noise', 'distortion', 'envattack', 'envattackfast', 'envdecay', 'envamount', 'filtercutoff', 'filterq', 'filtertype', 'samplebank', 'sampleslice', 'sampleoffset'].forEach(function(ui) {
           html += '<option value="' + ui + '"' + (param.ui === ui ? ' selected' : '') + '>' + ui + '</option>';
         });
         html += '</select></label>';
