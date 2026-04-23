@@ -1,11 +1,11 @@
 {
   "id": "hh1-allparams",
-  "name": "Hihat 1 All param",
+  "name": "Hi-Hat 1",
   "machine": "hh1",
   "volmult": 1.9,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Voice",
       "parameters": [
         {
           "idx": 0,
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "name": "Page 2",
+      "name": "Snap",
       "parameters": [
         {
           "idx": 4,

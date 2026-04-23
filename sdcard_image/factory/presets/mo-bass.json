@@ -1,1 +1,21 @@
-{"id": "mo-bass", "name": "Bass", "group": "MonoSynth", "macro": "mo-allparams", "values": [2, 3277, 8192, 0, 3277, 4915, 0, 0, 0, 45, 0, 0, 0]}
+{
+  "id": "mo-bass",
+  "name": "Bass",
+  "group": "MonoSyn",
+  "macro": "mo-allparams",
+  "values": [
+    2,
+    3277,
+    8192,
+    0,
+    3277,
+    4915,
+    0,
+    0,
+    0,
+    45,
+    0,
+    0,
+    0
+  ]
+}

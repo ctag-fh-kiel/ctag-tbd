@@ -1,1 +1,13 @@
-{"id":"hh1-all-def","name":"Hihat 1","group":"Hats","macro":"hh1-allparams","values":[14,70,32,77,10]}
+{
+  "id": "hh1-all-def",
+  "name": "Default",
+  "group": "Hat 1",
+  "macro": "hh1-allparams",
+  "values": [
+    14,
+    70,
+    32,
+    77,
+    10
+  ]
+}

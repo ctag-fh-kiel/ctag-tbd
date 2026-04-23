@@ -1,1 +1,12 @@
-{"id": "msp-lushpad2", "name": "Shimmer", "values": [40, 110, 60, 80], "group": "Polypad", "macro": "pp-lushpad"}
+{
+  "id": "msp-lushpad2",
+  "name": "Shimmer",
+  "values": [
+    40,
+    110,
+    60,
+    80
+  ],
+  "group": "PolyPad",
+  "macro": "pp-lushpad"
+}

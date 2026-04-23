@@ -1,1 +1,13 @@
-{"id": "ds-all-def", "name": "DigSnare", "group": "Snares", "macro": "ds-allparams", "values": [11, 68, 30, 83, 10]}
+{
+  "id": "ds-all-def",
+  "name": "Default",
+  "group": "DigSnare",
+  "macro": "ds-allparams",
+  "values": [
+    11,
+    68,
+    30,
+    83,
+    10
+  ]
+}

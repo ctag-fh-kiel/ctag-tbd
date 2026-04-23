@@ -1,1 +1,18 @@
-{"id": "fxdelay-all-def", "name": "DelayFX", "group": "My group", "macro": "fxdelay-allparams", "values": [16, 0, 0, 0, 32, 0, 32, 0, 32, 64]}
+{
+  "id": "fxdelay-all-def",
+  "name": "DelayFX",
+  "group": "FX",
+  "macro": "fxdelay-allparams",
+  "values": [
+    16,
+    0,
+    0,
+    0,
+    32,
+    0,
+    32,
+    0,
+    32,
+    64
+  ]
+}

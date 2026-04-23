@@ -1,1 +1,13 @@
-{"id": "as-all-def", "name": "AnaSnare", "group": "Snares", "macro": "as-allparams", "values": [11, 64, 64, 77, 10]}
+{
+  "id": "as-all-def",
+  "name": "Default",
+  "group": "AnaSub",
+  "macro": "as-allparams",
+  "values": [
+    11,
+    64,
+    64,
+    77,
+    10
+  ]
+}

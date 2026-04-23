@@ -1,1 +1,12 @@
-{"id":"msp-submorph1","name":"Deep Sub","values":[10,30,50,10],"group":"Synth Kick","macro":"db-submorph"}
+{
+  "id": "msp-submorph1",
+  "name": "Deep Sub",
+  "values": [
+    10,
+    30,
+    50,
+    10
+  ],
+  "group": "SynKick",
+  "macro": "db-submorph"
+}

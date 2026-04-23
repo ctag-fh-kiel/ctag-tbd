@@ -1,1 +1,14 @@
-{"id": "ab-all-def", "name": "AnaKick", "group": "Analog Kick", "macro": "ab-allparams", "values": [4, 51, 64, 19, 13, 10]}
+{
+  "id": "ab-all-def",
+  "name": "Default",
+  "group": "AcidBass",
+  "macro": "ab-allparams",
+  "values": [
+    4,
+    51,
+    64,
+    19,
+    13,
+    10
+  ]
+}

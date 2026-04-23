@@ -1,1 +1,24 @@
-{"id": "td3-all-def", "name": "AcidBass", "group": "AcidBass", "macro": "td3-allparams", "values": [2, 7000, 3000, 0, 5000, 3000, 10000, 0, 0, 0, 0, 0, 4000, 0, 0, 0]}
+{
+  "id": "td3-all-def",
+  "name": "Default",
+  "group": "TBD03",
+  "macro": "td3-allparams",
+  "values": [
+    2,
+    7000,
+    3000,
+    0,
+    5000,
+    3000,
+    10000,
+    0,
+    0,
+    0,
+    0,
+    0,
+    4000,
+    0,
+    0,
+    0
+  ]
+}

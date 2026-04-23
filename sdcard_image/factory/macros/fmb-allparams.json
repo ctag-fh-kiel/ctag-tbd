@@ -1,11 +1,11 @@
 {
   "id": "fmb-allparams",
-  "name": "FM Kick All param",
+  "name": "FM Kick",
   "machine": "fmb",
   "volmult": 0.2,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Osc",
       "parameters": [
         {
           "idx": 0,
@@ -52,7 +52,7 @@
       ]
     },
     {
-      "name": "Page 2",
+      "name": "FM",
       "parameters": [
         {
           "idx": 4,

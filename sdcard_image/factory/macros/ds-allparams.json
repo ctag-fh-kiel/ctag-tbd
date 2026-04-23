@@ -1,11 +1,11 @@
 {
   "id": "ds-allparams",
-  "name": "Digital Snare All param",
+  "name": "Digital Snare",
   "machine": "ds",
   "volmult": 0.7,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Tone",
       "parameters": [
         {
           "idx": 0,
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "name": "Page 2",
+      "name": "Snap",
       "parameters": [
         {
           "idx": 4,

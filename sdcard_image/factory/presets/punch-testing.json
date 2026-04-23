@@ -1,1 +1,12 @@
-{"id": "punch-testing", "name": "Punch", "group": "db", "macro": "db-phatpunch", "values": [16, 76, 57, 0]}
+{
+  "id": "punch-testing",
+  "name": "Punch",
+  "group": "SynKick",
+  "macro": "db-phatpunch",
+  "values": [
+    16,
+    76,
+    57,
+    0
+  ]
+}

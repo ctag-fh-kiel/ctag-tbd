@@ -1,1 +1,12 @@
-{"id": "sub-morphing-preset-", "name": "SubMorph", "group": "db", "macro": "db-submorph", "values": [16, 64, 32, 16]}
+{
+  "id": "sub-morphing-preset-",
+  "name": "SubMorph",
+  "group": "SynKick",
+  "macro": "db-submorph",
+  "values": [
+    16,
+    64,
+    32,
+    16
+  ]
+}

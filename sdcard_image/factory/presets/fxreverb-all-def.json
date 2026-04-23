@@ -1,1 +1,11 @@
-{"id": "fxreverb-all-def", "name": "RevrbFX", "group": "My group", "macro": "fxreverb-allparams", "values": [16, 59, 64]}
+{
+  "id": "fxreverb-all-def",
+  "name": "RevrbFX",
+  "group": "FX",
+  "macro": "fxreverb-allparams",
+  "values": [
+    16,
+    59,
+    64
+  ]
+}

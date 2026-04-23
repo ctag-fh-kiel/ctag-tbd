@@ -1,7 +1,7 @@
 {
   "id": "new-kick",
   "name": "New Kick",
-  "group": "fmb",
+  "group": "FM Kick",
   "macro": "fmb-allparams",
   "values": [
     56,

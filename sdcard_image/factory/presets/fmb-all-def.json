@@ -1,1 +1,16 @@
-{"id":"fmb-all-def","name":"FM Kick","group":"FM Kick","macro":"fmb-allparams","values":[5800,6900,900,960,6048,2019,263,98]}
+{
+  "id": "fmb-all-def",
+  "name": "Default",
+  "group": "FM Kick",
+  "macro": "fmb-allparams",
+  "values": [
+    5800,
+    6900,
+    900,
+    960,
+    6048,
+    2019,
+    263,
+    98
+  ]
+}

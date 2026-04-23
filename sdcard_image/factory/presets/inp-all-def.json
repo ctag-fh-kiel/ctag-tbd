@@ -1,1 +1,7 @@
-{"id":"inp-all-def","name":"Audio in","group":"Audio in","macro":"inp-allparams","values":[]}
+{
+  "id": "inp-all-def",
+  "name": "Audio in",
+  "group": "Audio In",
+  "macro": "inp-allparams",
+  "values": []
+}

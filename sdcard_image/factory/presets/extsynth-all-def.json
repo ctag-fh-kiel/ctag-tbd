@@ -1,1 +1,9 @@
-{"id":"extsynth-all-def","name":"Midi","group":"_External","macro":"extsynth-allparams","values":[0]}
+{
+  "id": "extsynth-all-def",
+  "name": "Midi",
+  "group": "ExtSyn",
+  "macro": "extsynth-allparams",
+  "values": [
+    0
+  ]
+}

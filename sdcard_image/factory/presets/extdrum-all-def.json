@@ -1,1 +1,10 @@
-{"id":"extdrum-all-def","name":"Midi","group":"_External","macro":"extdrum-allparams","values":[50,70]}
+{
+  "id": "extdrum-all-def",
+  "name": "Midi",
+  "group": "ExtDrum",
+  "macro": "extdrum-allparams",
+  "values": [
+    50,
+    70
+  ]
+}

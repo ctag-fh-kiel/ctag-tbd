@@ -1,6 +1,6 @@
 {
   "id": "as-allparams",
-  "name": "Analog Snare All param",
+  "name": "Analog Snare",
   "machine": "as",
   "volmult": 1.5,
   "groups": [

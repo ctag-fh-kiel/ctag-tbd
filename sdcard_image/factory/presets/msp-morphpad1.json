@@ -1,1 +1,24 @@
-{"id": "msp-morphpad1", "name": "GlasEvo", "group": "Wavetable", "macro": "wtosc-allparams", "values": [24, 5170, 8192, 0, 15000, 8000, 8192, 1000, 4000, 14000, 3000, 8192, 8192, 8192, 1290, 0]}
+{
+  "id": "msp-morphpad1",
+  "name": "GlasEvo",
+  "group": "WT Osc",
+  "macro": "wtosc-allparams",
+  "values": [
+    24,
+    5170,
+    8192,
+    0,
+    15000,
+    8000,
+    8192,
+    1000,
+    4000,
+    14000,
+    3000,
+    8192,
+    8192,
+    8192,
+    1290,
+    0
+  ]
+}

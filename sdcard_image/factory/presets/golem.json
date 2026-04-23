@@ -1,7 +1,7 @@
 {
   "id": "golem",
   "name": "Golem",
-  "group": "db",
+  "group": "SynKick",
   "macro": "db-allparams",
   "values": [
     16,

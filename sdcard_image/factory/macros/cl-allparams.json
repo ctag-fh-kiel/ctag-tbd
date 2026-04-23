@@ -1,11 +1,11 @@
 {
   "id": "cl-allparams",
-  "name": "Clap All param",
+  "name": "Clap",
   "machine": "cl",
   "volmult": 0.6,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Tone",
       "parameters": [
         {
           "idx": 0,
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "name": "Page 2",
+      "name": "Shape",
       "parameters": [
         {
           "idx": 4,

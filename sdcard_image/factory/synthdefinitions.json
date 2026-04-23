@@ -544,7 +544,7 @@
     },
     {
       "id": "ab",
-      "name": "Analog Kick",
+      "name": "Analog Bass Drum",
       "type": "drum",
       "parameters": [
         {
@@ -754,7 +754,7 @@
     },
     {
       "id": "hh1",
-      "name": "Hihat 1",
+      "name": "Hi-Hat 1",
       "type": "drum",
       "parameters": [
         {
@@ -796,7 +796,7 @@
     },
     {
       "id": "hh2",
-      "name": "Hihat 2",
+      "name": "Hi-Hat 2",
       "type": "drum",
       "parameters": [
         {
@@ -1188,7 +1188,7 @@
     },
     {
       "id": "mo",
-      "name": "Macro osc",
+      "name": "Mono Synth",
       "type": "synth",
       "parameters": [
         {
@@ -1286,7 +1286,7 @@
     },
     {
       "id": "wtosc",
-      "name": "Wavetable osc",
+      "name": "Wavetable Osc",
       "type": "synth",
       "parameters": [
         {
@@ -1440,7 +1440,7 @@
     },
     {
       "id": "pp",
-      "name": "Polypad",
+      "name": "PolyPad",
       "type": "synth",
       "parameters": [
         {
@@ -1573,7 +1573,7 @@
     },
     {
       "id": "extsynth",
-      "name": "MIDI Synth",
+      "name": "External Synth",
       "type": "synth",
       "parameters": [
         {
@@ -1587,7 +1587,7 @@
     },
     {
       "id": "extdrum",
-      "name": "MIDI Drum",
+      "name": "External Drum",
       "type": "synth",
       "parameters": [
         {
@@ -1608,7 +1608,7 @@
     },
     {
       "id": "inp",
-      "name": "External input",
+      "name": "Audio Input",
       "type": "synth",
       "parameters": []
     }

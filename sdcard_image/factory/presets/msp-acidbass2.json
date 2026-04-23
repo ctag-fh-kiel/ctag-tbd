@@ -1,1 +1,30 @@
-{"id": "msp-acidbass2", "name": "Dirty", "group": "AcidBass", "macro": "td3-acidbass", "values": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14000, 10000, 5000, 12000]}
+{
+  "id": "msp-acidbass2",
+  "name": "Dirty",
+  "group": "TBD03",
+  "macro": "td3-acidbass",
+  "values": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    14000,
+    10000,
+    5000,
+    12000
+  ]
+}

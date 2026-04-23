@@ -1,6 +1,6 @@
 {
   "id": "fxdelay-allparams",
-  "name": "Delay FX All param",
+  "name": "Delay FX",
   "machine": "fxdelay",
   "volmult": 1.0,
   "groups": [
