@@ -1,1 +1,1 @@
-{"id":"wtosc-all-def","name":"Wavetable","group":"Wavetable","macro":"wtosc-allparams","values":[0,64,64,0,127,0,0,16,69,90,49,0,0,0,10,0,0,0,0,0]}
+{"id": "wtosc-all-def", "name": "WaveTbl", "group": "Wavetable", "macro": "wtosc-allparams", "values": [0, 8192, 8192, 0, 16383, 0, 8192, 2064, 8900, 11604, 6320, 8192, 8192, 8192, 1290, 0]}

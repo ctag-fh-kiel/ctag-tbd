@@ -1,463 +1,62 @@
 {
   "id": "wtosc-allparams",
-  "name": "Wavetable osc All param",
+  "name": "WaveOsc",
   "machine": "wtosc",
-  "volmult": 1.0,
+  "volmult": 0.5,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Osc",
       "parameters": [
-        {
-          "idx": 0,
-          "name": "Bank",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 1,
-          "name": "Wave",
-          "def": 64,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 2,
-          "name": "Tune",
-          "def": 64,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 3,
-          "name": "Type",
-          "def": 0,
-          "min": 0,
-          "max": 3,
-          "res": 64,
-          "ui": "filtertype"
-        }
+        { "idx": 0,  "name": "Bank",    "def": 0,     "min": 0, "max": 127,   "res": 64,   "ui": "bignum" },
+        { "idx": 1,  "name": "Wave",    "def": 8192,  "min": 0, "max": 16383, "res": 2048, "ui": "shape2" },
+        { "idx": 2,  "name": "Tune",    "def": 8192,  "min": 0, "max": 16383, "res": 2048, "ui": "bipolar" },
+        { "idx": 6,  "name": "Gain",    "def": 8192,  "min": 0, "max": 16383, "res": 2048, "ui": "bignum" }
       ]
     },
     {
-      "name": "Page 2",
+      "name": "Filter",
       "parameters": [
-        {
-          "idx": 4,
-          "name": "Cutoff",
-          "def": 127,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "filtercutoff",
-          "curve": "log"
-        },
-        {
-          "idx": 5,
-          "name": "Reso",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "filterq"
-        },
-        {
-          "idx": 6,
-          "name": "Q Scale",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 7,
-          "name": "Attack",
-          "def": 16,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "envattack",
-          "curve": "exp"
-        }
+        { "idx": 3,  "name": "Type",    "def": 0,     "min": 0, "max": 3,     "res": 64,   "ui": "filtertype" },
+        { "idx": 4,  "name": "Cutoff",  "def": 16383, "min": 0, "max": 16383, "res": 2048, "ui": "filtercutoff", "curve": "log" },
+        { "idx": 5,  "name": "Reso",    "def": 0,     "min": 0, "max": 16383, "res": 2048, "ui": "filterq" },
+        { "idx": 13, "name": "EG Flt",  "def": 8192,  "min": 0, "max": 16383, "res": 2048, "ui": "bipolar" }
       ]
     },
     {
-      "name": "Page 3",
+      "name": "Env",
       "parameters": [
-        {
-          "idx": 8,
-          "name": "Decay",
-          "def": 69,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "envdecay",
-          "curve": "exp"
-        },
-        {
-          "idx": 9,
-          "name": "Sustain",
-          "def": 90,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 10,
-          "name": "Release",
-          "def": 49,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum",
-          "curve": "exp"
-        },
-        {
-          "idx": 11,
-          "name": "E2 Wave",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        }
+        { "idx": 7,  "name": "Attack",  "def": 2064,  "min": 0, "max": 16383, "res": 1024, "ui": "envattack", "curve": "exp" },
+        { "idx": 8,  "name": "Decay",   "def": 8900,  "min": 0, "max": 16383, "res": 1024, "ui": "envdecay",  "curve": "exp" },
+        { "idx": 9,  "name": "Sustain", "def": 11604, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
+        { "idx": 10, "name": "Release", "def": 6320,  "min": 0, "max": 16383, "res": 1024, "ui": "envdecay",  "curve": "exp" }
       ]
     },
     {
-      "name": "Page 4",
+      "name": "EG Mod",
       "parameters": [
-        {
-          "idx": 12,
-          "name": "E2 FM",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 13,
-          "name": "E2 Filt",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 14,
-          "name": "Speed",
-          "def": 10,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 15,
-          "name": "Sync",
-          "def": 0,
-          "min": 0,
-          "max": 1,
-          "res": 64,
-          "ui": "bignum"
-        }
-      ]
-    },
-    {
-      "name": "Page 5",
-      "parameters": [
-        {
-          "idx": 16,
-          "name": "L2 Wave",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 17,
-          "name": "L2 AM",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 18,
-          "name": "L2 FM",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 19,
-          "name": "L2 Filt",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        }
+        { "idx": 11, "name": "EG Wav",  "def": 8192,  "min": 0, "max": 16383, "res": 2048, "ui": "bipolar" },
+        { "idx": 12, "name": "EG FM",   "def": 8192,  "min": 0, "max": 16383, "res": 2048, "ui": "bipolar" },
+        { "idx": 14, "name": "LFO Spd", "def": 1290,  "min": 0, "max": 16383, "res": 2048, "ui": "bignum", "curve": "log" },
+        { "idx": 15, "name": "Sync",    "def": 0,     "min": 0, "max": 1,     "res": 64,   "ui": "onoff" }
       ]
     }
   ],
   "mapping": [
-    {
-      "ctrl": 8,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 0,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 9,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 1,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 10,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 2,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 11,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 3,
-          "mul": 32,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 12,
-      "type": "nrpm",
-      "start": 0,
-      "add": [
-        {
-          "src": 4,
-          "mul": 1,
-          "div": 1,
-          "curve": "log"
-        }
-      ]
-    },
-    {
-      "ctrl": 13,
-      "type": "nrpm",
-      "start": 0,
-      "add": [
-        {
-          "src": 5,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 14,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 6,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 15,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 7,
-          "mul": 1,
-          "div": 1,
-          "curve": "exp"
-        }
-      ]
-    },
-    {
-      "ctrl": 16,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 8,
-          "mul": 1,
-          "div": 1,
-          "curve": "exp"
-        }
-      ]
-    },
-    {
-      "ctrl": 17,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 9,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 18,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 10,
-          "mul": 1,
-          "div": 1,
-          "curve": "exp"
-        }
-      ]
-    },
-    {
-      "ctrl": 19,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 11,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 20,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 12,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 21,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 13,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 22,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 14,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 23,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 15,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 25,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 16,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 26,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 17,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 27,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 18,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 28,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 19,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    }
+    { "ctrl": 8,  "type": "cc",   "start": 0, "add": [{ "src": 0,  "mul": 1, "div": 1 }] },
+    { "ctrl": 9,  "type": "nrpm", "start": 0, "add": [{ "src": 1,  "mul": 1, "div": 1 }] },
+    { "ctrl": 10, "type": "nrpm", "start": 0, "add": [{ "src": 2,  "mul": 1, "div": 1 }] },
+    { "ctrl": 11, "type": "cc",   "start": 0, "add": [{ "src": 3,  "mul": 1, "div": 1 }] },
+    { "ctrl": 12, "type": "nrpm", "start": 0, "add": [{ "src": 4,  "mul": 1, "div": 1, "curve": "log" }] },
+    { "ctrl": 13, "type": "nrpm", "start": 0, "add": [{ "src": 5,  "mul": 1, "div": 1 }] },
+    { "ctrl": 29, "type": "nrpm", "start": 0, "add": [{ "src": 6,  "mul": 1, "div": 1 }] },
+    { "ctrl": 15, "type": "nrpm", "start": 0, "add": [{ "src": 7,  "mul": 1, "div": 1, "curve": "exp" }] },
+    { "ctrl": 16, "type": "nrpm", "start": 0, "add": [{ "src": 8,  "mul": 1, "div": 1, "curve": "exp" }] },
+    { "ctrl": 17, "type": "nrpm", "start": 0, "add": [{ "src": 9,  "mul": 1, "div": 1 }] },
+    { "ctrl": 18, "type": "nrpm", "start": 0, "add": [{ "src": 10, "mul": 1, "div": 1, "curve": "exp" }] },
+    { "ctrl": 19, "type": "nrpm", "start": 0, "add": [{ "src": 11, "mul": 1, "div": 1 }] },
+    { "ctrl": 20, "type": "nrpm", "start": 0, "add": [{ "src": 12, "mul": 1, "div": 1 }] },
+    { "ctrl": 21, "type": "nrpm", "start": 0, "add": [{ "src": 13, "mul": 1, "div": 1 }] },
+    { "ctrl": 22, "type": "nrpm", "start": 0, "add": [{ "src": 14, "mul": 1, "div": 1, "curve": "log" }] },
+    { "ctrl": 23, "type": "cc",   "start": 0, "add": [{ "src": 15, "mul": 1, "div": 1 }] }
   ]
 }
