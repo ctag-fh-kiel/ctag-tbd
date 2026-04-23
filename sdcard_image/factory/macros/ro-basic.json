@@ -1,0 +1,46 @@
+{
+  "id": "ro-basic",
+  "name": "Basic Rompler",
+  "machine": "ro",
+  "volmult": 1.0,
+  "groups": [
+    {
+      "name": "SAMPLE",
+      "parameters": [
+        { "idx": 0, "name": "Bank",   "def": 0,     "min": 0, "max": 127,   "res": 4,    "ui": "samplebank" },
+        { "idx": 1, "name": "Slice",  "def": 0,     "min": 0, "max": 127,   "res": 4,    "ui": "sampleslice" },
+        { "idx": 2, "name": "Start",  "def": 0,     "min": 0, "max": 127,   "res": 64,   "ui": "sampleoffset" },
+        { "idx": 3, "name": "End",    "def": 127,   "min": 0, "max": 127,   "res": 64,   "ui": "sampleoffset" }
+      ]
+    },
+    {
+      "name": "TONE",
+      "parameters": [
+        { "idx": 4, "name": "Pitch",  "def": 64,    "min": 0, "max": 127,   "res": 64,   "ui": "bignum" },
+        { "idx": 5, "name": "Decay",  "def": 50,    "min": 0, "max": 127,   "res": 64,   "ui": "envdecay",    "curve": "exp" },
+        { "idx": 6, "name": "Cutoff", "def": 127,   "min": 0, "max": 127,   "res": 64,   "ui": "filtercutoff","curve": "log" },
+        { "idx": 7, "name": "Reso",   "def": 0,     "min": 0, "max": 127,   "res": 64,   "ui": "filterq" }
+      ]
+    }
+  ],
+  "mapping": [
+    { "ctrl": 8,  "start": 0, "add": [{ "src": 0, "mul": 1, "div": 1 }] },
+    { "ctrl": 9,  "start": 0, "add": [{ "src": 1, "mul": 1, "div": 1 }] },
+    { "ctrl": 10, "start": 0, "add": [{ "src": 2, "mul": 1, "div": 1 }] },
+    { "ctrl": 11, "start": 0, "add": [{ "src": 3, "mul": 1, "div": 1 }] },
+    { "ctrl": 12, "start": 0, "add": [{ "src": 6, "mul": 1, "div": 1, "curve": "log" }] },
+    { "ctrl": 13, "start": 0, "add": [{ "src": 7, "mul": 1, "div": 1 }] },
+    { "ctrl": 14, "start": 32, "add": [] },
+    { "ctrl": 15, "start": 0, "add": [] },
+    { "ctrl": 16, "start": 1, "add": [] },
+    { "ctrl": 17, "start": 1, "add": [{ "src": 5, "mul": 1, "div": 1, "curve": "exp" }] },
+    { "ctrl": 18, "start": 64, "add": [] },
+    { "ctrl": 19, "start": 0, "add": [{ "src": 4, "mul": 1, "div": 1 }] },
+    { "ctrl": 20, "start": 0, "add": [] },
+    { "ctrl": 21, "start": 0, "add": [] },
+    { "ctrl": 22, "start": 64, "add": [] },
+    { "ctrl": 23, "start": 0, "add": [] },
+    { "ctrl": 24, "start": 0, "add": [] },
+    { "ctrl": 25, "start": 64, "add": [] }
+  ]
+}

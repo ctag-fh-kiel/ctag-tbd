@@ -31,6 +31,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -42,6 +43,7 @@
     },
     {
       "ctrl": 9,
+      "type": "cc",
       "start": 0,
       "add": [
         {

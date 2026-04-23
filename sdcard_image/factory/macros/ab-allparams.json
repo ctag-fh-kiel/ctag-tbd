@@ -74,6 +74,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -86,6 +87,7 @@
     },
     {
       "ctrl": 9,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -97,6 +99,7 @@
     },
     {
       "ctrl": 10,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -109,6 +112,7 @@
     },
     {
       "ctrl": 11,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -120,6 +124,7 @@
     },
     {
       "ctrl": 12,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -131,6 +136,7 @@
     },
     {
       "ctrl": 13,
+      "type": "cc",
       "start": 0,
       "add": [
         {

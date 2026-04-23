@@ -96,11 +96,11 @@ namespace CTAG {
 
         private:
             int16_t buffer[32];
-            int8_t scale[4];
+            int8_t scale[8];
 
             HELPERS::ctagADSREnv adsr;
             braids::Svf svf;
-            array<MiSuperSawOsc, 4> v_osc;
+            array<MiSuperSawOsc, 8> v_osc;
             braids::SvfMode mode_ = braids::SvfMode::SVF_MODE_LP;
             CTAG::SP::HELPERS::ctagSineSource lfo1, lfo2;
             ChordParams params_;

@@ -95,7 +95,7 @@ void MacroTranslator::Init() {
 
         MacroDeviceDefinitionUtils::MacroDeviceDefinition_Reset(&definitions[i]);
 
-        for (int j = 0; j < 32; j++) {
+        for (int j = 0; j < 24; j++) {
             trackParameterValues[i][j] = 0;
         }
     }
@@ -254,7 +254,8 @@ void MacroTranslator::SetTrackParameter(const int trackIndex, int parameterIndex
         return;
     }
 
-    if (parameterIndex < 0 || parameterIndex >= 32) {
+    // Storage is trackParameterValues[16][24] — accept idx 0..23.
+    if (parameterIndex < 0 || parameterIndex >= 24) {
         // ESP_LOGE("MacroTranslator", "Parameter index out of range: %d", parameterIndex);
         return;
     }
@@ -308,12 +309,15 @@ void MacroTranslator::SetTrackParametersFromJSON(const std::string &parametersJS
             return;
         }
 
-        int values[16] = {};
-        for(int k=0; k<16; k++) {
+        // trackParameterValues is now [16][24] — idx 0..23 are in bounds. JSON entries
+        // beyond 24 are truncated.
+        int values[24] = {};
+        for(int k=0; k<24; k++) {
             values[k] = -1;
         }
         int idx = 0;
         for (auto &v : params.GetArray()) {
+            if (idx >= 24) break;
             if (v.IsInt()) {
                 values[idx] = v.GetInt();
                 trackParameterValues[trackIndex][idx] = values[idx];

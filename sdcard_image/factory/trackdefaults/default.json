@@ -13,7 +13,7 @@
     { "index": 4,  "preset": "rs-all-def",      "_name": "Rimshot  — (rs)" },
     { "index": 5,  "preset": "cl-all-def",      "_name": "Clap     — (cl)" },
     { "index": 6,  "preset": "ro-all-def",      "_name": "Rompler  — (ro)", "sampleSlice": 3, "sampleBank": 0 },
-    { "index": 7,  "preset": "ro-all-def",      "_name": "Rompler2 — (ro)", "sampleSlice": 1, "sampleBank": 1 },
+    { "index": 7,  "preset": "ro-full-def",     "_name": "Rompler2 — Full (ro)", "sampleSlice": 1, "sampleBank": 1 },
     { "index": 8,  "preset": "msp-acidbass1",   "_name": "Bass     — Acid Bass 1 (td3)" },
     { "index": 9,  "preset": "msp-acidbass2",   "_name": "Bass2    — Acid Bass 2 (td3)" },
     { "index": 10, "preset": "mo-all-def",      "_name": "Lead     — Mono Osc (mo)" },

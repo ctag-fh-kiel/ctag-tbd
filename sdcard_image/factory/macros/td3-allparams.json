@@ -1,64 +1,57 @@
 {
   "id": "td3-allparams",
-  "name": "TBD03 All param",
+  "name": "AcidBass",
   "machine": "td3",
-  "volmult": 1.0,
+  "volmult": 0.4,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Osc",
       "parameters": [
         {
           "idx": 0,
           "name": "Shape",
-          "type": "cc",
-          "def": 0,
+          "def": 2,
           "min": 0,
-          "max": 47,
-          "res": 10,
+          "max": 46,
+          "res": 64,
           "ui": "macroshape"
         },
         {
           "idx": 1,
-          "name": "P0",
-          "type": "nrpm",
-          "def": 8000,
+          "name": "Timbre",
+          "def": 7000,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "shape3"
+        },
+        {
+          "idx": 12,
+          "name": "Color",
+          "def": 4000,
           "min": 0,
           "max": 16383,
           "res": 2048,
           "ui": "shape2"
         },
         {
-          "idx": 2,
-          "name": "VCA D",
-          "type": "nrpm",
-          "def": 5500,
+          "idx": 8,
+          "name": "Warp",
+          "def": 0,
           "min": 0,
           "max": 16383,
           "res": 2048,
-          "ui": "envdecay",
-          "curve": "exp"
-        },
-        {
-          "idx": 3,
-          "name": "VCF D",
-          "type": "nrpm",
-          "def": 7000,
-          "min": 0,
-          "max": 16383,
-          "res": 2048,
-          "ui": "envdecay",
-          "curve": "exp"
+          "ui": "distortion"
         }
       ]
     },
     {
-      "name": "Page 2",
+      "name": "Filter",
       "parameters": [
         {
           "idx": 4,
           "name": "Cutoff",
-          "type": "nrpm",
-          "def": 3500,
+          "def": 5000,
           "min": 0,
           "max": 16383,
           "res": 2048,
@@ -68,64 +61,95 @@
         {
           "idx": 5,
           "name": "Reso",
-          "type": "nrpm",
-          "def": 5000,
+          "def": 3000,
           "min": 0,
           "max": 16383,
-          "res": 4096,
+          "res": 2048,
           "ui": "filterq"
-        },
-        {
-          "idx": 6,
-          "name": "EnvDec",
-          "type": "nrpm",
-          "def": 10000,
-          "min": 0,
-          "max": 16383,
-          "res": 4096,
-          "ui": "envdecay",
-          "curve": "exp"
         },
         {
           "idx": 7,
           "name": "Type",
-          "def": 1,
-          "min": 0,
-          "max": 3,
-          "res": 4,
-          "ui": "filtertype"
-        }
-      ]
-    },
-    {
-      "name": "Page 3",
-      "parameters": [
-        {
-          "idx": 8,
-          "name": "Satur",
           "def": 0,
           "min": 0,
-          "max": 127,
+          "max": 4,
           "res": 64,
           "ui": "bignum"
         },
         {
           "idx": 9,
           "name": "Drive",
-          "def": 11,
+          "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
+          "ui": "bignum"
+        }
+      ]
+    },
+    {
+      "name": "Mod",
+      "parameters": [
+        {
+          "idx": 6,
+          "name": "Env Amt",
+          "def": 10000,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
-          "idx": 10,
-          "name": "Slide",
+          "idx": 13,
+          "name": "Tim EG",
           "def": 0,
           "min": 0,
-          "max": 1,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
+        },
+        {
+          "idx": 14,
+          "name": "Col EG",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "bignum"
+        },
+        {
+          "idx": 15,
+          "name": "Acc Lev",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "bignum"
+        }
+      ]
+    },
+    {
+      "name": "Env",
+      "parameters": [
+        {
+          "idx": 2,
+          "name": "VCA Dec",
+          "def": 3000,
+          "min": 0,
+          "max": 16383,
+          "res": 1024,
+          "ui": "envdecay",
+          "curve": "exp"
+        },
+        {
+          "idx": 3,
+          "name": "VCF Dec",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 1024,
+          "ui": "envdecay",
+          "curve": "exp"
         },
         {
           "idx": 11,
@@ -134,51 +158,7 @@
           "min": 0,
           "max": 1,
           "res": 64,
-          "ui": "bignum"
-        }
-      ]
-    },
-    {
-      "name": "Page 4",
-      "parameters": [
-        {
-          "idx": 12,
-          "name": "P1",
-          "type": "nrpm",
-          "def": 4000,
-          "min": 0,
-          "max": 16383,
-          "res": 4096,
-          "ui": "bignum"
-        },
-        {
-          "idx": 13,
-          "name": "P0 Amt",
-          "type": "nrpm",
-          "def": 0,
-          "min": 0,
-          "max": 16383,
-          "res": 4096,
-          "ui": "bignum"
-        },
-        {
-          "idx": 14,
-          "name": "P1 Amt",
-          "type": "nrpm",
-          "def": 0,
-          "min": 0,
-          "max": 16383,
-          "res": 4096,
-          "ui": "bignum"
-        },
-        {
-          "idx": 15,
-          "name": "Acc. Lev",
-          "def": 26,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
+          "ui": "onoff"
         }
       ]
     }
@@ -186,6 +166,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -266,24 +247,25 @@
         {
           "src": 6,
           "mul": 1,
-          "div": 1,
-          "curve": "exp"
+          "div": 1
         }
       ]
     },
     {
       "ctrl": 15,
+      "type": "cc",
       "start": 0,
       "add": [
         {
           "src": 7,
-          "mul": 32,
+          "mul": 1,
           "div": 1
         }
       ]
     },
     {
       "ctrl": 16,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -295,6 +277,7 @@
     },
     {
       "ctrl": 17,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -305,18 +288,8 @@
       ]
     },
     {
-      "ctrl": 18,
-      "start": 0,
-      "add": [
-        {
-          "src": 10,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
       "ctrl": 19,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -364,6 +337,7 @@
     },
     {
       "ctrl": 23,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
