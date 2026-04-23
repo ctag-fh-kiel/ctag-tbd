@@ -293,6 +293,7 @@ esp_err_t DeviceAPI::device_get_handler(httpd_req_t *req) {
     if (strcmp(action, "triggerScreenshot") == 0) return handle_trigger_screenshot(req);
     if (strcmp(action, "injectButton") == 0)   return handle_inject_button(req, query);
 
+    ESP_LOGW(TAG, "unknown GET action '%s' on uri '%s' query '%s'", action, req->uri, query);
     httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "unknown action");
     return ESP_FAIL;
 }
@@ -311,6 +312,7 @@ esp_err_t DeviceAPI::device_post_handler(httpd_req_t *req) {
     if (strcmp(action, "recallFavorite") == 0)    return handle_recall_favorite(req, query);
     if (strcmp(action, "resetAudioHealth") == 0)  return handle_reset_audio_health(req);
 
+    ESP_LOGW(TAG, "unknown POST action '%s' on uri '%s' query '%s'", action, req->uri, query);
     httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "unknown action");
     return ESP_FAIL;
 }

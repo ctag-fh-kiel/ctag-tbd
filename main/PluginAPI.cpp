@@ -351,6 +351,7 @@ esp_err_t PluginAPI::plugins_get_handler(httpd_req_t *req) {
     if (strcmp(action, "getPresetData") == 0) return handle_get_preset_data(req, query);
     if (strcmp(action, "getAll") == 0)        return handle_get_all(req);
 
+    ESP_LOGW(TAG, "unknown GET action '%s' on uri '%s' query '%s'", action, req->uri, query);
     httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "unknown action");
     return ESP_FAIL;
 }
@@ -371,6 +372,7 @@ esp_err_t PluginAPI::plugins_post_handler(httpd_req_t *req) {
     if (strcmp(action, "loadPreset") == 0)     return handle_load_preset(req, query);
     if (strcmp(action, "setPresetData") == 0)  return handle_set_preset_data(req, query);
 
+    ESP_LOGW(TAG, "unknown POST action '%s' on uri '%s' query '%s'", action, req->uri, query);
     httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "unknown action");
     return ESP_FAIL;
 }
