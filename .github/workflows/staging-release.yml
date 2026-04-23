@@ -2,10 +2,12 @@
 # and push to the staging channel on the CDN.
 # Triggers on push to the staging branch.
 #
-# Tag format: staging-v{base}-{N}
-#   base = latest reachable v* tag (e.g. v0.4.2)
-#   N    = number of commits since that tag
-# Example: staging-v0.4.2-3 (3 commits after v0.4.2 on staging)
+# Tag format: staging-v{STAGING_BASE}-{N}
+#   STAGING_BASE = hardcoded milestone version set below (bump when you want the
+#                  staging channel's version series to jump visibly).
+#   N            = number of commits on this staging branch since it diverged
+#                  from the last `v*` tag — purely for uniqueness / ordering.
+# Example: staging-v0.6.0-51 (51 commits past the last v* tag).
 # The "staging-" prefix ensures binaries are never confused with stable releases.
 name: Staging Release
 
@@ -30,14 +32,20 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Derive staging tag from git describe
+      - name: Derive staging tag
         id: derive
+        env:
+          STAGING_BASE: v0.6.0
         run: |
-          BASE=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo "v0.0.0")
-          DISTANCE=$(git rev-list "${BASE}..HEAD" --count 2>/dev/null || git rev-list HEAD --count)
-          TAG="staging-${BASE}-${DISTANCE}"
+          LAST_VTAG=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo "")
+          if [ -n "$LAST_VTAG" ]; then
+            DISTANCE=$(git rev-list "${LAST_VTAG}..HEAD" --count)
+          else
+            DISTANCE=$(git rev-list HEAD --count)
+          fi
+          TAG="staging-${STAGING_BASE}-${DISTANCE}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "Base: $BASE  Distance: $DISTANCE  Tag: $TAG"
+          echo "Base: $STAGING_BASE  Last v* tag: ${LAST_VTAG:-<none>}  Distance: $DISTANCE  Tag: $TAG"
 
   # ── Step 1: Build firmware ──
   firmware:
