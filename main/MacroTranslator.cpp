@@ -30,49 +30,70 @@ using namespace CTAG::MACROPRESETS;
 using namespace rapidjson;
 
 /**
- * Apply a response curve to a 0-127 value.
- * All math is integer-only (no float) for ESP32 real-time safety.
+ * Apply a response curve to a 0..maxVal value.
+ *
+ * Matches the legacy 0..127-domain piecewise curve shape exactly when
+ * maxVal == 127, but computes natively in the maxVal domain using 64-bit
+ * integer math so there are no precision-loss plateaus on hi-res sources
+ * (maxVal == 16383). All math is integer-only (no float) for ESP32
+ * real-time safety.
  *
  * Linear:  identity (no change)
  * Log:     piecewise linear — slow start, fast end
- *            0-16  → 0-64   (×4 expansion, good for low-end detail)
- *           16-64  → 64-100 (×0.75)
- *           64-127 → 100-127 (compressed top end)
- * Exp:     value²/127 — more resolution for short times
+ *            0..(M/8)      → 0..(M*64/127)            (×4 expansion)
+ *            (M/8)..(M/2)  → (M*64/127)..(M*100/127)  (×0.75)
+ *            (M/2)..M      → (M*100/127)..M           (compressed top)
+ * Exp:     val² / maxVal — more resolution for short times
+ *
+ * Why 64-bit intermediates: the old version normalised `val` into a 0..127
+ * domain first (`n = val * 127 / maxVal`). For `maxVal == 16383`, that
+ * truncated any val below ~129 to n=0 and created maxVal/127-wide plateaus
+ * of identical output across consecutive input values. Knobs with curves
+ * on hi-res sources felt "dead" at slow turn speeds. See the AnaKick A FM
+ * / FM Kick Default debugging session (2026-04-24) and hi-res-and-nrpn.md
+ * § "Debugging unresponsive knobs".
  */
 static inline int32_t applyCurve(int32_t val, int32_t maxVal, MacroCurveType curve) {
     if (curve == MacroCurveType::Linear) return val;
     if (val <= 0) return 0;
     if (val >= maxVal) return maxVal;
 
-    // Normalize to 0-127 for curve computation (integer-only)
-    int32_t n = (val * 127) / maxVal;
-    int32_t curved;
+    int64_t v = val;
+    int64_t M = maxVal;
+    int64_t out;
 
     switch (curve) {
         case MacroCurveType::Log:
-            // Piecewise linear: emphasises low range (great for freq/cutoff)
-            if (n <= 16) {
-                curved = n * 4;                      // 0-16 → 0-64
-            } else if (n <= 64) {
-                curved = 64 + ((n - 16) * 36) / 48;  // 16-64 → 64-100
+            // Piecewise linear — breakpoints at 16/127 (~12.6%) and 64/127
+            // (~50%) of the input range, matching the legacy 127-domain
+            // shape. Comparisons use v*127 vs M*k to stay in integer math
+            // without dividing (no truncation loss on hi-res).
+            if (v * 127 <= M * 16) {
+                // Segment 1 (slope ×4): y = v * 4
+                out = v * 4;
+            } else if (v * 127 <= M * 64) {
+                // Segment 2: y = M*64/127 + (v*127 - M*16) * 36 / (48 * 127)
+                out = (M * 64) / 127 + ((v * 127 - M * 16) * 36) / (48 * 127);
             } else {
-                curved = 100 + ((n - 64) * 27) / 63; // 64-127 → 100-127
+                // Segment 3: y = M*100/127 + (v*127 - M*64) * 27 / (63 * 127)
+                out = (M * 100) / 127 + ((v * 127 - M * 64) * 27) / (63 * 127);
             }
             break;
 
         case MacroCurveType::Exp:
-            // Quadratic: more resolution for short decay/envelope times
-            curved = (n * n) / 127;
+            // Quadratic: (v*127/M)² / 127, scaled back to maxVal domain.
+            // Algebraic simplification: (v*127/M)² / 127 * M/127 = v² / M.
+            out = (v * v) / M;
             break;
 
         default:
-            curved = n;
+            out = v;
             break;
     }
 
-    // Scale back to original range
-    return (curved * maxVal) / 127;
+    if (out < 0) return 0;
+    if (out > maxVal) return maxVal;
+    return (int32_t)out;
 }
 
 void MacroTranslator::Init() {
