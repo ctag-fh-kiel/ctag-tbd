@@ -80,7 +80,11 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
     std::fill_n(mo_out, BUF_SZ, 0.f);
 
     // ad envelope and loop
-    float a = mo_attack / 4095.f * 5.f;
+    // Attack max is 1 s (matches macro ui:"envattackfast" + display-hints.js
+    // physMax:1000 + Pico PT_ENV_ATTACK_FAST formatter). MonoSynth is a
+    // lead/bass voice; useful attacks sit in 0.5 ms–200 ms. 1 s at knob max
+    // leaves a pad-style top end; anything longer belongs on PolyPad.
+    float a = mo_attack / 4095.f * 1.f;
     float d = mo_decay / 4095.f * 5.f;
     // if (cv_mo_attack != -1) {
     //     a = fabsf(data.cv[cv_mo_attack]) * 12.f;

@@ -96,7 +96,7 @@
           "min": 0,
           "max": 16383,
           "res": 2048,
-          "ui": "envattack",
+          "ui": "envattackfast",
           "curve": "exp"
         },
         {
