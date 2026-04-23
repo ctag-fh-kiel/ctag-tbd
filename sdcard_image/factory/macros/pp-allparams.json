@@ -2,7 +2,7 @@
   "id": "pp-allparams",
   "name": "Polypad All param",
   "machine": "pp",
-  "volmult": 3.4,
+  "volmult": 2.8,
   "groups": [
     {
       "name": "Chord",
@@ -39,8 +39,8 @@
           "name": "Detune",
           "def": 20,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "distortion"
         }
       ]
@@ -53,8 +53,8 @@
           "name": "Cutoff",
           "def": 51,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "filtercutoff",
           "curve": "log"
         },
@@ -63,8 +63,8 @@
           "name": "Reso",
           "def": 15,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "filterq"
         },
         {
@@ -81,8 +81,8 @@
           "name": "EG Flt",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         }
       ]
@@ -95,8 +95,8 @@
           "name": "Attack",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 1024,
           "ui": "envattack",
           "curve": "exp"
         },
@@ -105,8 +105,8 @@
           "name": "Decay",
           "def": 80,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 1024,
           "ui": "envdecay",
           "curve": "exp"
         },
@@ -115,8 +115,8 @@
           "name": "Sustain",
           "def": 96,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
@@ -124,8 +124,8 @@
           "name": "Release",
           "def": 64,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 1024,
           "ui": "envdecay",
           "curve": "exp"
         }
@@ -139,8 +139,8 @@
           "name": "L1 Spd",
           "def": 31,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
@@ -148,8 +148,8 @@
           "name": "L1 Amt",
           "def": 8,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
@@ -157,8 +157,8 @@
           "name": "L2 Spd",
           "def": 10,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
@@ -166,8 +166,8 @@
           "name": "L2 Amt",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         }
       ]
@@ -200,7 +200,7 @@
     },
     {
       "ctrl": 10,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -212,7 +212,7 @@
     },
     {
       "ctrl": 11,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -225,7 +225,7 @@
     },
     {
       "ctrl": 12,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -249,7 +249,7 @@
     },
     {
       "ctrl": 15,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -262,7 +262,7 @@
     },
     {
       "ctrl": 16,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -275,7 +275,7 @@
     },
     {
       "ctrl": 17,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -287,7 +287,7 @@
     },
     {
       "ctrl": 18,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -300,7 +300,7 @@
     },
     {
       "ctrl": 19,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -312,7 +312,7 @@
     },
     {
       "ctrl": 20,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -324,7 +324,7 @@
     },
     {
       "ctrl": 21,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -336,7 +336,7 @@
     },
     {
       "ctrl": 22,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -348,7 +348,7 @@
     },
     {
       "ctrl": 23,
-      "type": "cc",
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
