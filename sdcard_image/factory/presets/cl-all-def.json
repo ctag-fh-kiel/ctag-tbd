@@ -1,1 +1,13 @@
-{"id":"cl-all-def","name":"Clap","group":"Claps","macro":"cl-allparams","values":[13,51,80,51,64]}
+{
+  "id": "cl-all-def",
+  "name": "Default",
+  "group": "Clap",
+  "macro": "cl-allparams",
+  "values": [
+    13,
+    51,
+    80,
+    51,
+    0
+  ]
+}

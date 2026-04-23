@@ -1,1 +1,19 @@
-{"id":"fxmaster-all-def","name":"Master FX All default","group":"My group","macro":"fxmaster-allparams","values":[100,32,0,50,12,0,64,64,64,0,64]}
+{
+  "id": "fxmaster-all-def",
+  "name": "MastFX",
+  "group": "FX",
+  "macro": "fxmaster-allparams",
+  "values": [
+    100,
+    32,
+    0,
+    50,
+    12,
+    0,
+    64,
+    64,
+    64,
+    0,
+    64
+  ]
+}

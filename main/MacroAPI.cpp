@@ -165,7 +165,7 @@ static esp_err_t handle_set_active_trackdefault(httpd_req_t *req);
  * a single HTTP round-trip, keeping total API calls within the ESP32 limit.
  */
 esp_err_t MacroAPI::macroapi_get_handler(httpd_req_t *req) {
-    ESP_LOGI(MACRO_TAG, "GET Mem free int %d, SPIRAM %d",
+    ESP_LOGD(MACRO_TAG, "GET Mem free int %d, SPIRAM %d",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
 
@@ -279,7 +279,7 @@ static esp_err_t handle_set_track_macro(httpd_req_t *req) {
     }
     content[req->content_len] = 0;
 
-    ESP_LOGI(MACRO_TAG, "set_track_macro data: %s", content);
+    ESP_LOGD(MACRO_TAG, "set_track_macro data: %s", content);
     CTAG::AUDIO::SoundProcessorManager::SetTrackParametersFromJSON(content);
     heap_caps_free(content);
 
@@ -465,7 +465,7 @@ static esp_err_t handle_set_active_trackdefault(httpd_req_t *req) {
 }
 
 esp_err_t MacroAPI::macroapi_post_handler(httpd_req_t *req) {
-    ESP_LOGI(MACRO_TAG, "POST Mem free int %d, SPIRAM %d",
+    ESP_LOGD(MACRO_TAG, "POST Mem free int %d, SPIRAM %d",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
 

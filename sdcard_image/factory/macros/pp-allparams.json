@@ -1,61 +1,70 @@
 {
   "id": "pp-allparams",
-  "name": "Polypad All param",
+  "name": "PolyPad",
   "machine": "pp",
-  "volmult": 3.4,
+  "volmult": 2.8,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Chord",
       "parameters": [
         {
           "idx": 0,
           "name": "Chord",
-          "def": 0,
+          "def": 78,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "bignum"
+          "ui": "chord"
         },
         {
           "idx": 1,
-          "name": "Inversion",
-          "def": 0,
+          "name": "Inv",
+          "def": 64,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "bignum"
+          "ui": "chordinv"
+        },
+        {
+          "idx": 17,
+          "name": "Nnotes",
+          "def": 96,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "nnotes"
         },
         {
           "idx": 2,
           "name": "Detune",
-          "def": 8,
+          "def": 20,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "distortion"
-        },
+        }
+      ]
+    },
+    {
+      "name": "Filter",
+      "parameters": [
         {
           "idx": 3,
           "name": "Cutoff",
           "def": 51,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "filtercutoff",
           "curve": "log"
-        }
-      ]
-    },
-    {
-      "name": "Page 2",
-      "parameters": [
+        },
         {
           "idx": 4,
           "name": "Reso",
           "def": 15,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "filterq"
         },
         {
@@ -63,41 +72,41 @@
           "name": "Type",
           "def": 0,
           "min": 0,
-          "max": 1,
+          "max": 127,
           "res": 64,
           "ui": "filtertype"
         },
         {
-          "idx": 6,
-          "name": "Q Scale",
+          "idx": 15,
+          "name": "EG Flt",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
-        },
+        }
+      ]
+    },
+    {
+      "name": "Env",
+      "parameters": [
         {
           "idx": 7,
           "name": "Attack",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 1024,
           "ui": "envattack",
           "curve": "exp"
-        }
-      ]
-    },
-    {
-      "name": "Page 3",
-      "parameters": [
+        },
         {
           "idx": 8,
           "name": "Decay",
           "def": 80,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 1024,
           "ui": "envdecay",
           "curve": "exp"
         },
@@ -106,8 +115,8 @@
           "name": "Sustain",
           "def": 96,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
@@ -115,82 +124,50 @@
           "name": "Release",
           "def": 64,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 1024,
           "ui": "envdecay",
           "curve": "exp"
-        },
-        {
-          "idx": 11,
-          "name": "L1 Speed",
-          "def": 31,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
         }
       ]
     },
     {
-      "name": "Page 4",
+      "name": "Motion",
       "parameters": [
         {
+          "idx": 11,
+          "name": "L1 Spd",
+          "def": 31,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "bignum"
+        },
+        {
           "idx": 12,
-          "name": "L1 Amount",
+          "name": "L1 Amt",
           "def": 8,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
           "idx": 13,
-          "name": "L2 Speed",
+          "name": "L2 Spd",
           "def": 10,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         },
         {
           "idx": 14,
-          "name": "L2 Amount",
+          "name": "L2 Amt",
           "def": 0,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 15,
-          "name": "E Filter Amount",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        }
-      ]
-    },
-    {
-      "name": "Page 5",
-      "parameters": [
-        {
-          "idx": 16,
-          "name": "L2 Random",
-          "def": 1,
-          "min": 0,
-          "max": 1,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 17,
-          "name": "Number of Notes",
-          "def": 64,
-          "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "bignum"
         }
       ]
@@ -199,6 +176,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -210,6 +188,7 @@
     },
     {
       "ctrl": 9,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -221,6 +200,7 @@
     },
     {
       "ctrl": 10,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -232,6 +212,7 @@
     },
     {
       "ctrl": 11,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -244,6 +225,7 @@
     },
     {
       "ctrl": 12,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -255,21 +237,11 @@
     },
     {
       "ctrl": 13,
+      "type": "cc",
       "start": 0,
       "add": [
         {
           "src": 5,
-          "mul": 64,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 14,
-      "start": 0,
-      "add": [
-        {
-          "src": 6,
           "mul": 1,
           "div": 1
         }
@@ -277,6 +249,7 @@
     },
     {
       "ctrl": 15,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -289,6 +262,7 @@
     },
     {
       "ctrl": 16,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -301,6 +275,7 @@
     },
     {
       "ctrl": 17,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -312,6 +287,7 @@
     },
     {
       "ctrl": 18,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -324,6 +300,7 @@
     },
     {
       "ctrl": 19,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -335,6 +312,7 @@
     },
     {
       "ctrl": 20,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -346,6 +324,7 @@
     },
     {
       "ctrl": 21,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -357,6 +336,7 @@
     },
     {
       "ctrl": 22,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -368,6 +348,7 @@
     },
     {
       "ctrl": 23,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -378,18 +359,8 @@
       ]
     },
     {
-      "ctrl": 24,
-      "start": 0,
-      "add": [
-        {
-          "src": 16,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
       "ctrl": 25,
+      "type": "cc",
       "start": 0,
       "add": [
         {

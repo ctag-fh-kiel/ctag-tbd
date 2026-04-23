@@ -182,6 +182,10 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 // and the led color
                 send_response->led_color = ledStatus;
                 send_response->webui_update_counter = webuiChangeCounter.load();
+                send_response->screenshot_request_counter = screenshotRequestCounter.load();
+                send_response->injected_button = injectedButton.exchange(0);
+                send_response->injected_button_event = injectedButtonEvent.exchange(0);
+                send_response->_reserved_input = 0;
                 responsecounter ++;
                 send_response->magic = 0xDEADBEEF;
                 send_response->magic2 = 0xFEED;
@@ -496,7 +500,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     }
 #endif
 
-    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -521,7 +525,7 @@ void SoundProcessorManager::SetSoundProcessorChannel(const int chan, const strin
     sp[chan]->LoadPreset(model->GetActivePatchNum(chan));
     xSemaphoreGive(processMutex);
 
-    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -547,6 +551,9 @@ atomic<uint32_t> SoundProcessorManager::macroChangeCounter = 0;
 atomic<uint32_t> SoundProcessorManager::trackMachineChangeCounter = 0;
 atomic<uint32_t> SoundProcessorManager::definitionChangeCounter = 0;
 atomic<uint32_t> SoundProcessorManager::webuiChangeCounter = 0;
+atomic<uint32_t> SoundProcessorManager::screenshotRequestCounter = 0;
+atomic<uint8_t> SoundProcessorManager::injectedButton = 0;
+atomic<uint8_t> SoundProcessorManager::injectedButtonEvent = 0;
 
 
 static char freertosstats[2000] = { 0, };
@@ -559,7 +566,7 @@ static void debug_task(void *pvParameters) {
     // ESP_LOGI("SPManager", "FreeRTOS Stats:\n%s", freertosstats);
 
 #if CONFIG_TBD_USE_RP2350
-    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!, counters: tx-err=%ld queue-err=%ld parse-err=%ld success=%ld",
+    ESP_LOGD("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!, counters: tx-err=%ld queue-err=%ld parse-err=%ld success=%ld",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -569,7 +576,7 @@ static void debug_task(void *pvParameters) {
              DRIVERS::rp2350_spi_stream::parseErrorCount,
              DRIVERS::rp2350_spi_stream::transferSuccessCount);
 #else
-    ESP_LOGI("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("SPManager", "Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -627,6 +634,13 @@ void SoundProcessorManager::StartSoundProcessor() {
     NET::Network::SetMDNSName(model->GetNetworkConfigurationData("mdns_name"));
     NET::Network::Up();
     REST::RestServer::StartRestServer();
+
+    // Start NCM watchdog — auto-reconnects USB if macOS aborts the NCM link
+    if (model->GetNetworkConfigurationData("mode").compare("usbncm") == 0 ||
+        (model->GetNetworkConfigurationData("mode").compare("ap") != 0 &&
+         model->GetNetworkConfigurationData("mode").compare("sta") != 0)) {
+        CTAG::DRIVERS::tusb::StartNCMWatchdog();
+    }
 #if CONFIG_TBD_USE_RP2350
     SPIAPI::SpiAPI::StartSpiAPI();
 #endif

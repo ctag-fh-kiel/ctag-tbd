@@ -1,11 +1,11 @@
 {
   "id": "mo-allparams",
-  "name": "Macro osc All param",
+  "name": "Mono Synth",
   "machine": "mo",
   "volmult": 2.6,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Osc",
       "parameters": [
         {
           "idx": 0,
@@ -18,8 +18,7 @@
         },
         {
           "idx": 1,
-          "name": "P0",
-          "type": "nrpm",
+          "name": "Timbre",
           "def": 8000,
           "min": 0,
           "max": 16383,
@@ -28,8 +27,7 @@
         },
         {
           "idx": 2,
-          "name": "P1",
-          "type": "nrpm",
+          "name": "Color",
           "def": 5000,
           "min": 0,
           "max": 16383,
@@ -38,8 +36,7 @@
         },
         {
           "idx": 3,
-          "name": "Waveshape",
-          "type": "nrpm",
+          "name": "Warp",
           "def": 0,
           "min": 0,
           "max": 16383,
@@ -49,12 +46,11 @@
       ]
     },
     {
-      "name": "Page 2",
+      "name": "Mod",
       "parameters": [
         {
           "idx": 4,
-          "name": "P0 A",
-          "type": "nrpm",
+          "name": "Tim EG",
           "def": 3000,
           "min": 0,
           "max": 16383,
@@ -63,8 +59,7 @@
         },
         {
           "idx": 5,
-          "name": "P1 A",
-          "type": "nrpm",
+          "name": "Col EG",
           "def": 2000,
           "min": 0,
           "max": 16383,
@@ -73,8 +68,7 @@
         },
         {
           "idx": 6,
-          "name": "FM A",
-          "type": "nrpm",
+          "name": "FM EG",
           "def": 0,
           "min": 0,
           "max": 16383,
@@ -83,26 +77,26 @@
         },
         {
           "idx": 7,
-          "name": "Q Scale",
+          "name": "Scale",
           "def": 0,
           "min": 0,
-          "max": 127,
+          "max": 46,
           "res": 64,
-          "ui": "bignum"
+          "ui": "scale"
         }
       ]
     },
     {
-      "name": "Page 3",
+      "name": "Env",
       "parameters": [
         {
           "idx": 8,
           "name": "Attack",
-          "def": 11,
+          "def": 1425,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "envattack",
+          "max": 16383,
+          "res": 2048,
+          "ui": "envattackfast",
           "curve": "exp"
         },
         {
@@ -117,33 +111,41 @@
         },
         {
           "idx": 10,
-          "name": "Loop Env",
+          "name": "EG Loop",
           "def": 0,
           "min": 0,
           "max": 1,
           "res": 64,
-          "ui": "bignum"
+          "ui": "onoff"
         },
         {
-          "idx": 11,
-          "name": "Decim",
+          "name": "",
           "def": 0,
           "min": 0,
-          "max": 127,
+          "max": 0,
           "res": 64,
-          "ui": "bignum"
+          "ui": "hidden"
         }
       ]
     },
     {
-      "name": "Page 4",
+      "name": "Crush",
       "parameters": [
+        {
+          "idx": 11,
+          "name": "SR Red",
+          "def": 0,
+          "min": 0,
+          "max": 30,
+          "res": 64,
+          "ui": "bignum"
+        },
         {
           "idx": 12,
           "name": "Bit Red",
           "def": 0,
           "min": 0,
-          "max": 127,
+          "max": 5,
           "res": 64,
           "ui": "bignum"
         }
@@ -153,6 +155,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -236,6 +239,7 @@
     },
     {
       "ctrl": 15,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -247,6 +251,7 @@
     },
     {
       "ctrl": 16,
+      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -259,6 +264,7 @@
     },
     {
       "ctrl": 17,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -271,6 +277,7 @@
     },
     {
       "ctrl": 18,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -282,6 +289,7 @@
     },
     {
       "ctrl": 19,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -293,6 +301,7 @@
     },
     {
       "ctrl": 20,
+      "type": "cc",
       "start": 0,
       "add": [
         {

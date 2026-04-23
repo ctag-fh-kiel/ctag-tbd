@@ -1,11 +1,11 @@
 {
   "id": "rs-allparams",
-  "name": "Rimshot All param",
+  "name": "Rimshot",
   "machine": "rs",
   "volmult": 0.6,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Tone",
       "parameters": [
         {
           "idx": 0,
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "name": "Page 2",
+      "name": "Snap",
       "parameters": [
         {
           "idx": 4,
@@ -65,6 +65,7 @@
   "mapping": [
     {
       "ctrl": 8,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -77,6 +78,7 @@
     },
     {
       "ctrl": 9,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -88,6 +90,7 @@
     },
     {
       "ctrl": 10,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -100,6 +103,7 @@
     },
     {
       "ctrl": 11,
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -111,6 +115,7 @@
     },
     {
       "ctrl": 12,
+      "type": "cc",
       "start": 0,
       "add": [
         {

@@ -1,1 +1,14 @@
-{"id":"ab-all-def","name":"Analog Kick","group":"Analog Kick","macro":"ab-allparams","values":[4,51,64,19,13,10]}
+{
+  "id": "ab-all-def",
+  "name": "Default",
+  "group": "AnaKick",
+  "macro": "ab-allparams",
+  "values": [
+    10,
+    58,
+    57,
+    20,
+    1024,
+    10
+  ]
+}

@@ -926,18 +926,28 @@ static esp_err_t handle_uploadconfig(httpd_req_t *req) {
         snprintf(filenameVal, sizeof(filenameVal), "sample_%lu", (unsigned long)esp_log_timestamp());
     }
 
-    // Write configfile to user overlay dir
+    // Write configfile — route to factory or user overlay dir
     // pathVal is "subdir/filename" (e.g. "macros/mydef.json")
+    // or "factory/subdir/filename" (e.g. "factory/presets/db-all-def.json")
     std::string pathStr(pathVal);
+    bool isFactoryWrite = (pathStr.substr(0, 8) == "factory/");
+    if (isFactoryWrite) {
+        pathStr = pathStr.substr(8); // strip "factory/" prefix
+    }
     size_t slashPos = pathStr.find('/');
     std::string filePath;
     if (slashPos != std::string::npos) {
         std::string subdir = pathStr.substr(0, slashPos);
         std::string fname = pathStr.substr(slashPos + 1);
-        filePath = CTAG::STORAGE::userFilePath(subdir.c_str(), fname);
-        // Ensure parent directory exists
-        std::string parentDir = CTAG::STORAGE::userPath() + "/" + subdir;
-        mkdir(parentDir.c_str(), 0755);
+        if (isFactoryWrite) {
+            filePath = CTAG::STORAGE::factoryPath() + "/" + subdir + "/" + fname;
+            std::string parentDir = CTAG::STORAGE::factoryPath() + "/" + subdir;
+            mkdir(parentDir.c_str(), 0755);
+        } else {
+            filePath = CTAG::STORAGE::userFilePath(subdir.c_str(), fname);
+            std::string parentDir = CTAG::STORAGE::userPath() + "/" + subdir;
+            mkdir(parentDir.c_str(), 0755);
+        }
     } else {
         // No subdir — write to user/config/
         filePath = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_CONFIG, pathStr);
@@ -1326,14 +1336,22 @@ static esp_err_t handle_manage(httpd_req_t *req) {
         if (!doc.HasMember("path")) {
             return send_error(req, 400, "Missing delete fields");
         }
-        // Only delete from user dir (factory files are immutable)
+        // Route to factory or user dir based on path prefix
         std::string deletePath(doc["path"].GetString());
+        bool isFactoryDelete = (deletePath.substr(0, 8) == "factory/");
+        if (isFactoryDelete) {
+            deletePath = deletePath.substr(8); // strip "factory/" prefix
+        }
         size_t slashPos = deletePath.find('/');
         std::string filePath;
         if (slashPos != std::string::npos) {
             std::string subdir = deletePath.substr(0, slashPos);
             std::string fname = deletePath.substr(slashPos + 1);
-            filePath = CTAG::STORAGE::userFilePath(subdir.c_str(), fname);
+            if (isFactoryDelete) {
+                filePath = CTAG::STORAGE::factoryPath() + "/" + subdir + "/" + fname;
+            } else {
+                filePath = CTAG::STORAGE::userFilePath(subdir.c_str(), fname);
+            }
         } else {
             filePath = CTAG::STORAGE::userFilePath(CTAG::STORAGE::DIR_CONFIG, deletePath);
         }

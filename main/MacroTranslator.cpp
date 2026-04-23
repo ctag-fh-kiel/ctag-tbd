@@ -30,39 +30,70 @@ using namespace CTAG::MACROPRESETS;
 using namespace rapidjson;
 
 /**
- * Apply a response curve to a 0-127 value.
- * All math is integer-only (no float) for ESP32 real-time safety.
+ * Apply a response curve to a 0..maxVal value.
+ *
+ * Matches the legacy 0..127-domain piecewise curve shape exactly when
+ * maxVal == 127, but computes natively in the maxVal domain using 64-bit
+ * integer math so there are no precision-loss plateaus on hi-res sources
+ * (maxVal == 16383). All math is integer-only (no float) for ESP32
+ * real-time safety.
  *
  * Linear:  identity (no change)
  * Log:     piecewise linear — slow start, fast end
- *            0-16  → 0-64   (×4 expansion, good for low-end detail)
- *           16-64  → 64-100 (×0.75)
- *           64-127 → 100-127 (compressed top end)
- * Exp:     value²/127 — more resolution for short times
+ *            0..(M/8)      → 0..(M*64/127)            (×4 expansion)
+ *            (M/8)..(M/2)  → (M*64/127)..(M*100/127)  (×0.75)
+ *            (M/2)..M      → (M*100/127)..M           (compressed top)
+ * Exp:     val² / maxVal — more resolution for short times
+ *
+ * Why 64-bit intermediates: the old version normalised `val` into a 0..127
+ * domain first (`n = val * 127 / maxVal`). For `maxVal == 16383`, that
+ * truncated any val below ~129 to n=0 and created maxVal/127-wide plateaus
+ * of identical output across consecutive input values. Knobs with curves
+ * on hi-res sources felt "dead" at slow turn speeds. See the AnaKick A FM
+ * / FM Kick Default debugging session (2026-04-24) and hi-res-and-nrpn.md
+ * § "Debugging unresponsive knobs".
  */
-static inline int32_t applyCurve(int32_t val, MacroCurveType curve) {
+static inline int32_t applyCurve(int32_t val, int32_t maxVal, MacroCurveType curve) {
+    if (curve == MacroCurveType::Linear) return val;
     if (val <= 0) return 0;
-    if (val >= 127) return 127;
+    if (val >= maxVal) return maxVal;
+
+    int64_t v = val;
+    int64_t M = maxVal;
+    int64_t out;
 
     switch (curve) {
         case MacroCurveType::Log:
-            // Piecewise linear: emphasises low range (great for freq/cutoff)
-            if (val <= 16) {
-                return val * 4;                      // 0-16 → 0-64
-            } else if (val <= 64) {
-                return 64 + ((val - 16) * 36) / 48;  // 16-64 → 64-100
+            // Piecewise linear — breakpoints at 16/127 (~12.6%) and 64/127
+            // (~50%) of the input range, matching the legacy 127-domain
+            // shape. Comparisons use v*127 vs M*k to stay in integer math
+            // without dividing (no truncation loss on hi-res).
+            if (v * 127 <= M * 16) {
+                // Segment 1 (slope ×4): y = v * 4
+                out = v * 4;
+            } else if (v * 127 <= M * 64) {
+                // Segment 2: y = M*64/127 + (v*127 - M*16) * 36 / (48 * 127)
+                out = (M * 64) / 127 + ((v * 127 - M * 16) * 36) / (48 * 127);
             } else {
-                return 100 + ((val - 64) * 27) / 63; // 64-127 → 100-127
+                // Segment 3: y = M*100/127 + (v*127 - M*64) * 27 / (63 * 127)
+                out = (M * 100) / 127 + ((v * 127 - M * 64) * 27) / (63 * 127);
             }
+            break;
 
         case MacroCurveType::Exp:
-            // Quadratic: more resolution for short decay/envelope times
-            return (val * val) / 127;
+            // Quadratic: (v*127/M)² / 127, scaled back to maxVal domain.
+            // Algebraic simplification: (v*127/M)² / 127 * M/127 = v² / M.
+            out = (v * v) / M;
+            break;
 
-        case MacroCurveType::Linear:
         default:
-            return val;
+            out = v;
+            break;
     }
+
+    if (out < 0) return 0;
+    if (out > maxVal) return maxVal;
+    return (int32_t)out;
 }
 
 void MacroTranslator::Init() {
@@ -85,7 +116,7 @@ void MacroTranslator::Init() {
 
         MacroDeviceDefinitionUtils::MacroDeviceDefinition_Reset(&definitions[i]);
 
-        for (int j = 0; j < 32; j++) {
+        for (int j = 0; j < 24; j++) {
             trackParameterValues[i][j] = 0;
         }
     }
@@ -196,7 +227,7 @@ void MacroTranslator::RefreshActiveDefinitions() {
 
         // delete definition[t];
         definitions[t] = *freshDef;
-        // trackDirty[t] = true;
+        // trackDirty[t] = true;  // NOT here — bulk reload is too heavy, use RefreshDefinitionById() for live edit
 
         ESP_LOGI("MacroTranslator", "Refreshed track %d def '%s' (volMult=%.2f)",
             t, macroId.c_str(), freshDef->volumeMultiplier);
@@ -212,12 +243,29 @@ void MacroTranslator::RefreshDefinitionById(const std::string &id) {
             MacroDeviceDefinitionDataModel::instance().GetMacroDeviceDefinition(id.c_str());
         if (freshDef == nullptr) continue;
 
-        // delete definition[t];
-        definitions[t] = *freshDef;
-        // trackDirty[t] = true;
+        // Check if machine changed — if so, do full machine init (resets params to defaults)
+        bool machineChanged = (strcmp(freshDef->synthId, trackMachineId[t]) != 0);
 
-        ESP_LOGI("MacroTranslator", "Refreshed track %d def '%s' (volMult=%.2f)",
-            t, id.c_str(), freshDef->volumeMultiplier);
+        definitions[t] = *freshDef;
+
+        // Invalidate output value cache — forces all mappings to re-send to DSP
+        memset(outputValues[t], 0xFF, sizeof(outputValues[t]));
+
+        if (machineChanged && freshDef->synthId[0] != '\0') {
+            ESP_LOGI("MacroTranslator", "Live-edit: track %d machine changed to '%s', full init",
+                t, freshDef->synthId);
+            // SetTrackMachine updates trackMachineId, resets param values to synth defaults,
+            // and sets trackDirty — needed when switching machines
+            SetTrackMachine(t, std::string(freshDef->synthId), freshDef->volumeMultiplier);
+        } else {
+            // Same machine — just update trackMachineId for volMult and mark dirty
+            // Preserves current knob positions / parameter values
+            snprintf(trackMachineId[t], sizeof(trackMachineId[t]), "%s", freshDef->synthId);
+            trackDirty[t] = true;
+        }
+
+        ESP_LOGI("MacroTranslator", "Live-edit: refreshed track %d def '%s' (volMult=%.2f, machineChanged=%d)",
+            t, id.c_str(), freshDef->volumeMultiplier, machineChanged);
     }
 }
 
@@ -227,7 +275,8 @@ void MacroTranslator::SetTrackParameter(const int trackIndex, int parameterIndex
         return;
     }
 
-    if (parameterIndex < 0 || parameterIndex >= 32) {
+    // Storage is trackParameterValues[16][24] — accept idx 0..23.
+    if (parameterIndex < 0 || parameterIndex >= 24) {
         // ESP_LOGE("MacroTranslator", "Parameter index out of range: %d", parameterIndex);
         return;
     }
@@ -281,12 +330,15 @@ void MacroTranslator::SetTrackParametersFromJSON(const std::string &parametersJS
             return;
         }
 
-        int values[16] = {};
-        for(int k=0; k<16; k++) {
+        // trackParameterValues is now [16][24] — idx 0..23 are in bounds. JSON entries
+        // beyond 24 are truncated.
+        int values[24] = {};
+        for(int k=0; k<24; k++) {
             values[k] = -1;
         }
         int idx = 0;
         for (auto &v : params.GetArray()) {
+            if (idx >= 24) break;
             if (v.IsInt()) {
                 values[idx] = v.GetInt();
                 trackParameterValues[trackIndex][idx] = values[idx];
@@ -534,9 +586,8 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
                         struct MacroDeviceOutputMappingSource *src = &om->sources[oms];
 
                         int val = trackParameterValues[t][src->parameterIndex];
-                        if (om->ctrltype == CtrlType_CC) {
-                            val = applyCurve(val, src->curve);
-                        }
+                        int curveMax = (om->ctrltype == CtrlType_NRPM) ? 16383 : 127;
+                        val = applyCurve(val, curveMax, src->curve);
                         if (src->divider > 0) {
                             finalvalue += (val * src->multiplier) / src->divider;
                         } else {

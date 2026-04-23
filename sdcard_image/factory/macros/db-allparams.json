@@ -1,11 +1,11 @@
 {
   "id": "db-allparams",
-  "name": "Synth Kick All param",
+  "name": "Synth Kick",
   "machine": "db",
   "volmult": 1.5,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Tone",
       "parameters": [
         {
           "idx": 0,
@@ -48,7 +48,7 @@
       ]
     },
     {
-      "name": "Page 2",
+      "name": "FM Env",
       "parameters": [
         {
           "idx": 4,

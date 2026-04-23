@@ -80,7 +80,11 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
     std::fill_n(mo_out, BUF_SZ, 0.f);
 
     // ad envelope and loop
-    float a = mo_attack / 4095.f * 5.f;
+    // Attack max is 1 s (matches macro ui:"envattackfast" + display-hints.js
+    // physMax:1000 + Pico PT_ENV_ATTACK_FAST formatter). MonoSynth is a
+    // lead/bass voice; useful attacks sit in 0.5 ms–200 ms. 1 s at knob max
+    // leaves a pad-style top end; anything longer belongs on PolyPad.
+    float a = mo_attack / 4095.f * 1.f;
     float d = mo_decay / 4095.f * 5.f;
     // if (cv_mo_attack != -1) {
     //     a = fabsf(data.cv[cv_mo_attack]) * 12.f;
@@ -160,7 +164,10 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
     // if (cv_mo_pitch != -1) {
     //     ipitch += static_cast<int32_t>(data.cv[cv_mo_pitch] * 12.f * 5.f * 128.f); // five octaves
     // }
-    int32_t sc = mo_q_scale * 47 / 4096;
+    // Scale wire arrives as CC, cv_value = wire * 4096/128 = wire * 32.
+    // Macro declares max:46 so wire 0..46 → cv 0..1472 → sc = cv/32 = 0..46.
+    // Each wire step maps 1:1 to one scale, no "expansion" math needed.
+    int32_t sc = mo_q_scale / 32;
     // if (cv_mo_q_scale != -1) {
     //     sc = static_cast<int32_t>(fabsf(data.cv[cv_mo_q_scale]) * 48.f);
     CONSTRAIN(sc, 0, 47);
@@ -180,9 +187,15 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
     int16_t buffer[BUF_SZ];
     mo_osc.Render(mo_sync, buffer, BUF_SZ);
 
-    // calculate amplitude modulation
-    int32_t mod_gain = 65535; // a bit louder
-    mod_gain = (ad_value) / 8;
+    // Amplitude modulation by the AD envelope. Left at the historical `/ 8`
+    // (polyphonic headroom inherited from PolyPad) pending a DSP-focused
+    // follow-up — see tbd-pico-seq3/docs/architecture/monosynth-april-2026.md.
+    // Attempts to raise this (to /2 or /4) produced either aggressive
+    // clipping with `volmult: 2.6` or exposed the Bit Red DSP ineffectiveness
+    // (recorded audio shows no quantization despite mo_bit_reduction
+    // reaching the DSP). Decoupling the loudness/VCA tuning from the macro
+    // refactor for now.
+    int32_t mod_gain = ad_value / 8;
 
     // convert final audio buffer
     int32_t sample = 0;
@@ -190,11 +203,17 @@ void RackMO::Process(const PicoSeqRackProcessData &data) {
     // if (cv_mo_waveshaping != -1) {
     //     signature = static_cast<uint16_t>(fabsf(data.cv[cv_mo_waveshaping]) * 65535.f);
     // }
-    int32_t dfactor = (mo_decimation * 30 / 4096) + 1;
+    // SR Red: macro max:30, CC wire 0..30 → cv 0..960 → dfactor = cv/32 + 1 = 1..30.
+    // Each knob click (wire delta 1) == one dfactor step. No mul expansion needed.
+    int32_t dfactor = (mo_decimation / 32) + 1;
+    CONSTRAIN(dfactor, 1, 30);
     // if (cv_mo_decimation != -1) {
     //     dfactor = static_cast<int32_t>(fabsf(data.cv[cv_mo_decimation]) * 30) + 1;
     // }
-    int32_t br = mo_bit_reduction * 6 / 4096;
+    // Bit Red: macro max:5, CC wire 0..5 → cv 0..160 → br = cv/32 = 0..5.
+    // Each knob click == one br step (which means one bit_reduction_masks[] entry).
+    int32_t br = mo_bit_reduction / 32;
+    CONSTRAIN(br, 0, 5);
     // if (cv_mo_bit_reduction != -1) {
     //     br = static_cast<int32_t>(fabsf(data.cv[cv_mo_bit_reduction]) * 6);
     // }

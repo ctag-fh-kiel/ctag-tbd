@@ -82,11 +82,14 @@ void CTAG::SP::ChordSynth::SetDetune(const uint32_t &detune) {
 
 void  CTAG::SP::ChordSynth::calcInversion(int8_t *ht_steps, const int16_t &chord, const int16_t &inversion,
                                                    const int16_t &nnotes) {
-    int8_t inv[4];
-    for (int i = 0; i < 4; i++) {
-        inv[i] = chords[chord][i + 2 + inversion];
+    int8_t inv[8];
+    for (int i = 0; i < nnotes; i++) {
+        int idx = i + 2 + inversion;
+        if (idx < 0) idx = 0;
+        if (idx >= kChordNumNotes) idx = kChordNumNotes - 1;
+        inv[i] = chords[chord][idx];
     }
-    memcpy(ht_steps, inv, 4);
+    memcpy(ht_steps, inv, nnotes);
 }
 
 float CTAG::SP::ChordSynth::GetTTL() {

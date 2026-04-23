@@ -87,6 +87,14 @@ struct p4_spi_response2 {
     // offset 464
     uint32_t magic2;
     // offset 468
+    uint32_t screenshot_request_counter;
+    // offset 472
+    uint8_t injected_button;
+    // offset 473
+    uint8_t injected_button_event;
+    // offset 474
+    uint16_t _reserved_input;
+    // offset 476
 };
 
 #endif // CONFIG_TBD_USE_RP2350

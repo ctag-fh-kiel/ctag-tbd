@@ -1,0 +1,21 @@
+{
+  "id": "mo-pluck",
+  "name": "Pluck",
+  "group": "MonoSyn",
+  "macro": "mo-allparams",
+  "values": [
+    1,
+    4900,
+    6500,
+    0,
+    6550,
+    3277,
+    0,
+    0,
+    0,
+    32,
+    0,
+    0,
+    0
+  ]
+}

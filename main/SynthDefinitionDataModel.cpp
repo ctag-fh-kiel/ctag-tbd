@@ -98,7 +98,7 @@ TrackDefinition *SynthDefinitionDataModel::GetTrackDefinition(int index) {
 }
 
 bool SynthDefinitionDataModel::DeserializeJSON(const rapidjson::Value &jsonelement) {
-    ESP_LOGI("SynthDefinitionDataModel", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
+    ESP_LOGD("SynthDefinitionDataModel", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
              heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
              heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
@@ -108,23 +108,25 @@ bool SynthDefinitionDataModel::DeserializeJSON(const rapidjson::Value &jsoneleme
     if (jsonelement.HasMember("machines")) {
         for (auto &v : jsonelement["machines"].GetArray()) {
             if (CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_DeserializeJSON(&synths[index], v)) {
-                ESP_LOGI("SynthDefinitionDataModel", "Deserialized synth definition: #%d id %s \"%s\"", index, synths[index].id, synths[index].name);
+                ESP_LOGD("SynthDefinitionDataModel", "Deserialized synth definition: #%d id %s \"%s\"", index, synths[index].id, synths[index].name);
                 index ++;
             }
         }
     }
+    int synthCount = index;
 
     index = 0;
     if (jsonelement.HasMember("tracks")) {
         for (auto &v : jsonelement["tracks"].GetArray()) {
             if (CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_DeserializeJSON(&tracks[index], v)) {
-                ESP_LOGI("SynthDefinitionDataModel", "Deserialized track definition #%d index %d \"%s\"", index, tracks[index].index, tracks[index].name);
+                ESP_LOGD("SynthDefinitionDataModel", "Deserialized track definition #%d index %d \"%s\"", index, tracks[index].index, tracks[index].name);
                 // tracks.push_back(t);
                 index ++;
             }
         }
     }
 
+    ESP_LOGI("SynthDefinitionDataModel", "Loaded %d synth definitions, %d track definitions", synthCount, index);
     return true;
 }
 

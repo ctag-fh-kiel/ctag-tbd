@@ -70,6 +70,10 @@ static void l2_free(void *h, void *buffer)
     free(buffer);
 }
 
+// Shared state for NCM link monitoring (read by tusb.cpp watchdog)
+volatile uint32_t s_ncm_consecutive_fails = 0;
+volatile bool s_ncm_ever_connected = false;
+
 static esp_err_t netif_transmit (void *h, void *buffer, size_t len)
 {
     static uint32_t fail_count = 0;
@@ -83,10 +87,13 @@ static esp_err_t netif_transmit (void *h, void *buffer, size_t len)
         }
         success_count++;
         fail_count = 0;
+        s_ncm_consecutive_fails = 0;
+        s_ncm_ever_connected = true;
         return ESP_OK;
     }
 
     fail_count++;
+    s_ncm_consecutive_fails = fail_count;
     // Log at power-of-two intervals to avoid spam: 1, 2, 4, 8, 16, 32, 64, 128, 256...
     if ((fail_count & (fail_count - 1)) == 0) {
         ESP_LOGW(TAG, "USB NCM send failed (%ld) err=%d — host driver may not be ready", fail_count, err);

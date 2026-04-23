@@ -124,6 +124,39 @@ static esp_err_t handle_reset_audio_health(httpd_req_t *req) {
     return send_ok(req);
 }
 
+/** action=triggerScreenshot — request a screenshot capture on the Pico */
+static esp_err_t handle_trigger_screenshot(httpd_req_t *req) {
+#if CONFIG_TBD_USE_RP2350
+    CTAG::AUDIO::SoundProcessorManager::screenshotRequestCounter++;
+    return send_ok(req);
+#else
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "no RP2350");
+    return ESP_FAIL;
+#endif
+}
+
+/** action=injectButton&button=XX&event=YY — inject a button press on the Pico */
+static esp_err_t handle_inject_button(httpd_req_t *req, const char *query) {
+#if CONFIG_TBD_USE_RP2350
+    char btnStr[8] = {0};
+    char evtStr[8] = {0};
+    httpd_query_key_value(query, "button", btnStr, sizeof(btnStr));
+    httpd_query_key_value(query, "event", evtStr, sizeof(evtStr));
+    uint8_t button = (uint8_t)atoi(btnStr);
+    uint8_t event = (uint8_t)atoi(evtStr);
+    if (button == 0) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "invalid button");
+        return ESP_FAIL;
+    }
+    CTAG::AUDIO::SoundProcessorManager::injectedButton.store(button);
+    CTAG::AUDIO::SoundProcessorManager::injectedButtonEvent.store(event);
+    return send_ok(req);
+#else
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "no RP2350");
+    return ESP_FAIL;
+#endif
+}
+
 /**
  * action=getAll — bulk response: config + ioCaps + favorites.
  * Uses chunked transfer to avoid a huge allocation.
@@ -257,7 +290,10 @@ esp_err_t DeviceAPI::device_get_handler(httpd_req_t *req) {
     if (strcmp(action, "getAll") == 0)         return handle_get_all(req);
     if (strcmp(action, "getAudioHealth") == 0) return handle_get_audio_health(req);
     if (strcmp(action, "getAppInfo") == 0)     return handle_get_app_info(req);
+    if (strcmp(action, "triggerScreenshot") == 0) return handle_trigger_screenshot(req);
+    if (strcmp(action, "injectButton") == 0)   return handle_inject_button(req, query);
 
+    ESP_LOGW(TAG, "unknown GET action '%s' on uri '%s' query '%s'", action, req->uri, query);
     httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "unknown action");
     return ESP_FAIL;
 }
@@ -276,6 +312,7 @@ esp_err_t DeviceAPI::device_post_handler(httpd_req_t *req) {
     if (strcmp(action, "recallFavorite") == 0)    return handle_recall_favorite(req, query);
     if (strcmp(action, "resetAudioHealth") == 0)  return handle_reset_audio_health(req);
 
+    ESP_LOGW(TAG, "unknown POST action '%s' on uri '%s' query '%s'", action, req->uri, query);
     httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "unknown action");
     return ESP_FAIL;
 }

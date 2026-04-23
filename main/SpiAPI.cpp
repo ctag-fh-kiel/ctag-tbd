@@ -249,7 +249,7 @@ namespace CTAG::SPIAPI{
             str.append((char*)&receive_buffer[7], bytes_received);
             bytes_to_be_received -= bytes_received;
             /*
-            ESP_LOGI("spiapi", "resLength %li, totalResponseLength %li, bytes_received %li, bytes_to_be_received %li",
+            ESP_LOGI("SpiAPI", "resLength %li, totalResponseLength %li, bytes_received %li, bytes_to_be_received %li",
                  *resLength, totalResponseLength, bytes_received, bytes_to_be_received);
             */
         }
@@ -530,12 +530,12 @@ namespace CTAG::SPIAPI{
 
             // check integrity of transaction
             if (transaction.trans_len != 2048 * 8){
-                ESP_LOGE("spiapi", "Received transaction length %d, expected 2048 * 8", transaction.trans_len);
+                ESP_LOGE("SpiAPI", "Received transaction length %d, expected 2048 * 8", transaction.trans_len);
                 result = true;
                 continue;
             }
             if (rcv_data[0] != 0xCA || rcv_data[1] != 0xFE){
-                ESP_LOGE("spiapi", "Received data %x %x, expected 0xCA 0xFE", rcv_data[0], rcv_data[1]);
+                ESP_LOGE("SpiAPI", "Received data %x %x, expected 0xCA 0xFE", rcv_data[0], rcv_data[1]);
                 result = true;
                 continue;
             }
@@ -684,14 +684,14 @@ namespace CTAG::SPIAPI{
                 boot_into_slot(1);
                 break;
             case RequestType::GetSampleRomDescriptor:
-                ESP_LOGI("SpiAPI", "GetSampleRomDescriptor");
+                ESP_LOGD("SpiAPI", "GetSampleRomDescriptor");
                 {
                     std::string desc = HELPERS::ctagSampleRom::GetSampleRomDescriptorJSON();
                     result = transmitCString(requestType, desc.c_str());
                 }
                 break;
             case RequestType::SetActiveWaveTableBank:
-                ESP_LOGI("SpiAPI", "Setting active wavetable bank to %d", bank_number);
+                ESP_LOGD("SpiAPI", "Setting active wavetable bank to %d", bank_number);
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 HELPERS::ctagSampleRom::SetActiveWaveTableBank(uint8_param_0);
                 HELPERS::ctagSampleRom::RefreshDataStructure();
@@ -699,7 +699,7 @@ namespace CTAG::SPIAPI{
                 break;
 
             case RequestType::SetActiveSampleKit:
-                ESP_LOGI("SpiAPI", "Setting active sample bank to #%d", uint8_param_0);
+                ESP_LOGD("SpiAPI", "Setting active sample bank to #%d", uint8_param_0);
                 CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                 HELPERS::ctagSampleRom::SetActiveSampleBank(uint8_param_0);
                 HELPERS::ctagSampleRom::RefreshDataStructure();
@@ -707,7 +707,7 @@ namespace CTAG::SPIAPI{
                 break;
 
             case RequestType::GetFirmwareInfo:
-                ESP_LOGI("SpiAPI", "GetFirmwareInfo");
+                ESP_LOGD("SpiAPI", "GetFirmwareInfo");
                 {
                     // Read WebUI version from SD card
                     std::string webui_ver;
@@ -768,7 +768,7 @@ namespace CTAG::SPIAPI{
                 {
                     // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                     uint8_t number = HELPERS::ctagSampleRom::GetNumberSlices2();
-                    ESP_LOGI("SpiAPI", "Getting sample file count (%d)", number);
+                    ESP_LOGD("SpiAPI", "Getting sample file count (%d)", number);
                     HELPERS::ctagSampleRom srom;
                     int firstnonwt = srom.GetFirstNonWaveTableSlice();
                     uint32_t total = srom.GetNumberSlices() - firstnonwt;
@@ -781,7 +781,7 @@ namespace CTAG::SPIAPI{
             case RequestType::GetSampleFileInfo:
                 {
                     int16_t file_index = uint8_param_1 * 256 + uint8_param_0;
-                    ESP_LOGI("SpiAPI", "Getting sample file %d info", file_index);
+                    ESP_LOGD("SpiAPI", "Getting sample file %d info", file_index);
                     HELPERS::ctagSampleRom srom;
                     int firstnonwt = srom.GetFirstNonWaveTableSlice();
                     uint32_t total = srom.GetNumberSlices() - firstnonwt;
@@ -801,7 +801,7 @@ namespace CTAG::SPIAPI{
                     int16_t slice = srom.GetFirstNonWaveTableSlice() + file_index;
                     uint32_t offset = srom.GetSliceOffset(slice);
                     uint32_t size = srom.GetSliceSize(slice);
-                    ESP_LOGI("SpiAPI", "Getting sample file %d waveform preview, slice %d, size %ld, offset %ld",
+                    ESP_LOGD("SpiAPI", "Getting sample file %d waveform preview, slice %d, size %ld, offset %ld",
                         file_index, slice, size, offset);
                     char sampledata[520] = { 0, };
                     int16_t slicedata[100] = { 0, };
@@ -839,7 +839,7 @@ namespace CTAG::SPIAPI{
                 {
 #if CONFIG_TBD_USE_SD_CARD
                     std::string synthId = string_parameter;
-                    ESP_LOGI("SpiAPI", "Getting synth definition %s", synthId.c_str());
+                    ESP_LOGD("SpiAPI", "Getting synth definition %s", synthId.c_str());
                     std::string synthjson = "{}";
                     auto def = CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->GetSynthDefinition(synthId);
                     CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_SerializeJSON(def, &synthjson);
@@ -911,7 +911,7 @@ namespace CTAG::SPIAPI{
                     // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                     std::string outputjson;
                     int trackIndex = uint8_param_0;
-                    ESP_LOGI("SpiAPI", "Getting macro sound preset list, track %d", trackIndex);
+                    ESP_LOGD("SpiAPI", "Getting macro sound preset list, track %d", trackIndex);
                     CTAG::MACROPRESETS::MacroSoundPresetDataModel::instance().GetPresetIndexJson(trackIndex, &outputjson);
                     // CTAG::AUDIO::SoundProcessorManager::EnablePluginProcessing();
                     result = transmitCString(requestType, outputjson.c_str());
@@ -924,7 +924,7 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string presetId = string_parameter;
-                    ESP_LOGI("SpiAPI", "Getting macro sound preset %s", presetId.c_str());
+                    ESP_LOGD("SpiAPI", "Getting macro sound preset %s", presetId.c_str());
                     std::string outputjson;
                     outputjson = CTAG::AUDIO::SoundProcessorManager::GetMacroSoundPresetJSON(presetId);
                     result = transmitCString(requestType, outputjson.c_str());
@@ -937,7 +937,7 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string macroId = string_parameter; // receiveString(RequestType::SaveFavorite, string_parameter);
-                    ESP_LOGI("SpiAPI", "Getting macro definition %s", macroId.c_str());
+                    ESP_LOGD("SpiAPI", "Getting macro definition %s", macroId.c_str());
                     std::string outputjson;
                     // CTAG::AUDIO::SoundProcessorManager::DisablePluginProcessing();
                     outputjson = CTAG::AUDIO::SoundProcessorManager::GetMacroDefinitionJSON(macroId);
@@ -1058,7 +1058,7 @@ namespace CTAG::SPIAPI{
             case RequestType::GetKitIndexJSON:
                 {
                     std::string json = CTAG::AUDIO::SoundProcessorManager::GetKitIndexJSON();
-                    ESP_LOGI("SpiAPI", "Getting track sample bank list: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "Getting track sample bank list: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());
                 }
                 break;
@@ -1066,7 +1066,7 @@ namespace CTAG::SPIAPI{
             case RequestType::GetSampleBankIndexJSON:
                 {
                     std::string json = CTAG::AUDIO::SoundProcessorManager::GetActiveKitBankIndexJSON();
-                    ESP_LOGI("SpiAPI", "Getting track sample bank list: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "Getting track sample bank list: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());
                 }
                 break;
@@ -1087,7 +1087,7 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                 {
                     std::string json = string_parameter;
-                    ESP_LOGI("SpiAPI", "Saving preset json: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "Saving preset json: %s", json.c_str());
                     CTAG::AUDIO::SoundProcessorManager::PutSamplePresetJSON(json);
                     CTAG::AUDIO::SoundProcessorManager::RefreshSoundPresets();
                 }
@@ -1276,7 +1276,7 @@ namespace CTAG::SPIAPI{
                         closedir(d);
                     }
                     json += "]";
-                    ESP_LOGI("SpiAPI", "ListProjects: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "ListProjects: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());
                 }
 #else
@@ -1432,7 +1432,7 @@ namespace CTAG::SPIAPI{
                     }
 
                     json += "]";
-                    ESP_LOGI("SpiAPI", "ListTrackDefaults: %s", json.c_str());
+                    ESP_LOGD("SpiAPI", "ListTrackDefaults: %s", json.c_str());
                     result = transmitCString(requestType, json.c_str());
                 }
 #else
@@ -1566,6 +1566,54 @@ namespace CTAG::SPIAPI{
                         CTAG::AUDIO::SoundProcessorManager::SetTrackParameter(trackIndex, i, (int32_t)values[i]);
                     }
                 }
+                break;
+
+            case RequestType::SaveScreenshot:
+#if CONFIG_TBD_USE_SD_CARD
+                {
+                    ESP_LOGI("SpiAPI", "SaveScreenshot: receiving BMP data");
+
+                    // Receive BMP binary data from Pico
+                    std::string screenshotData;
+                    result = receiveString(RequestType::SaveScreenshot, screenshotData);
+                    if (!result || screenshotData.empty()) {
+                        ESP_LOGE("SpiAPI", "SaveScreenshot: failed to receive data");
+                        break;
+                    }
+
+                    // Ensure screenshots directory exists
+                    std::string scrDir = STORAGE::userPath() + "/" + STORAGE::DIR_SCREENSHOTS;
+                    mkdir(scrDir.c_str(), 0755);
+
+                    // Find next available filename (scr_0001.bmp .. scr_9999.bmp)
+                    char filename[32];
+                    int counter = 1;
+                    std::string filePath;
+                    do {
+                        snprintf(filename, sizeof(filename), "scr_%04d.bmp", counter);
+                        filePath = scrDir + "/" + filename;
+                        counter++;
+                    } while (counter < 10000 && STORAGE::fileExists(filePath));
+
+                    if (counter >= 10000) {
+                        ESP_LOGE("SpiAPI", "SaveScreenshot: too many screenshots, max 9999");
+                        break;
+                    }
+
+                    STORAGE::lockStorage();
+                    result = atomicWrite(filePath, screenshotData.data(), screenshotData.size());
+                    STORAGE::unlockStorage();
+                    if (result) {
+                        ESP_LOGI("SpiAPI", "SaveScreenshot: saved %d bytes to %s",
+                                 (int)screenshotData.size(), filePath.c_str());
+                    } else {
+                        ESP_LOGE("SpiAPI", "SaveScreenshot: failed to write %s", filePath.c_str());
+                    }
+                }
+#else
+                ESP_LOGW("SpiAPI", "SaveScreenshot: SD card disabled");
+                result = true;
+#endif
                 break;
             }
         }

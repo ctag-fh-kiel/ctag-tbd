@@ -1,1 +1,16 @@
-{"id":"ro-all-def","name":"Rompler","group":"Rompler","macro":"ro-allparams","values":[0,0,0,127,64,50,127,0]}
+{
+  "id": "ro-all-def",
+  "name": "Basic",
+  "group": "Rompler",
+  "macro": "ro-basic",
+  "values": [
+    0,
+    0,
+    0,
+    127,
+    64,
+    50,
+    127,
+    0
+  ]
+}

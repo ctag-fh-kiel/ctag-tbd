@@ -397,3 +397,93 @@ Switch to MSC, erase SD, extract archive, set hashes, eject, switch back, verify
 | Device stuck in MSC mode | Forgot switch back | `source ~/esp/esp-idf/export.sh 2>/dev/null && otatool.py --port $PORT switch_ota_partition --name ota_0` |
 | `diskutil eject` hangs | Large sync flush | Wait 20-30s — don't kill it. Large writes take time to flush |
 | Plugin missing from WebUI | Stale `spm-config.json` cache or stale SD archive | Rebuild archive with `create_sd_archive.sh`, re-deploy fresh SD. Ensure no `availableProcessors` key in `spm-config.json` |
+
+---
+
+## Development vs Production Builds
+
+The P4 uses ESP-IDF's log level system to control debug output at compile time.
+
+### Log Level Architecture
+
+| sdkconfig Setting | Effect |
+|-------------------|--------|
+| `CONFIG_LOG_DEFAULT_LEVEL=3` (INFO) | Runtime default — what prints at boot |
+| `CONFIG_LOG_MAXIMUM_LEVEL=3` (INFO) | **Compile-time ceiling** — `ESP_LOGD()` calls are removed by preprocessor |
+| `CONFIG_LOG_MAXIMUM_LEVEL=4` (DEBUG) | `ESP_LOGD()` calls are compiled in and available at runtime |
+
+The key insight: when `CONFIG_LOG_MAXIMUM_LEVEL=3`, ALL `ESP_LOGD()` calls have **zero overhead** — they don't exist in the binary. This is the production default.
+
+### Development Build (verbose logging)
+
+To enable debug output for development, change `CONFIG_LOG_MAXIMUM_LEVEL` to 4 (DEBUG):
+
+```bash
+# Using idf.py menuconfig (interactive):
+source ~/esp/esp-idf/export.sh 2>/dev/null && idf.py menuconfig
+# Navigate: Component config → Log → Maximum log verbosity → Debug
+
+# Or edit sdkconfig directly:
+sed -i '' \
+  -e 's/^CONFIG_LOG_MAXIMUM_LEVEL=3/CONFIG_LOG_MAXIMUM_LEVEL=4/' \
+  -e 's/^# CONFIG_LOG_MAXIMUM_LEVEL_DEBUG is not set/CONFIG_LOG_MAXIMUM_LEVEL_DEBUG=y/' \
+  sdkconfig
+```
+
+Then build and flash normally:
+
+```bash
+source ~/esp/esp-idf/export.sh 2>/dev/null && idf.py build
+```
+
+Flash with esptool as per the Firmware-Only Flash procedure above.
+
+### Production Build (quiet, default)
+
+Ensure `CONFIG_LOG_MAXIMUM_LEVEL=3` (the default). This compiles out all `ESP_LOGD()` calls:
+
+```bash
+# Verify current setting:
+grep CONFIG_LOG_MAXIMUM_LEVEL= sdkconfig
+# Should show: CONFIG_LOG_MAXIMUM_LEVEL=3
+
+# If it was changed for dev, restore production settings:
+sed -i '' \
+  -e 's/^CONFIG_LOG_MAXIMUM_LEVEL=4/CONFIG_LOG_MAXIMUM_LEVEL=3/' \
+  -e 's/^CONFIG_LOG_MAXIMUM_LEVEL_DEBUG=y/# CONFIG_LOG_MAXIMUM_LEVEL_DEBUG is not set/' \
+  sdkconfig
+```
+
+Then rebuild and flash.
+
+### Monitoring P4 Serial Output
+
+The P4 outputs logs via USB Serial JTAG (secondary console) at 115200 baud:
+
+```bash
+# Using idf.py monitor (safe — it's idf.py FLASH that is forbidden, not monitor):
+source ~/esp/esp-idf/export.sh 2>/dev/null && \
+PORT=$(ls /dev/cu.usbmodem* 2>/dev/null | head -1) && \
+idf.py -p "$PORT" monitor
+
+# Or using screen:
+screen /dev/cu.usbmodem* 115200
+
+# Exit screen: Ctrl-A, then K, then Y
+# Exit idf.py monitor: Ctrl-]
+```
+
+### What Each Log Level Shows (after cleanup)
+
+| Level | What prints |
+|-------|-------------|
+| **Production** (MAX_LEVEL=3) | Boot banner, state changes (plugin switch, project save/load, reboot), errors, boot summaries |
+| **Development** (MAX_LEVEL=4) | All of production + per-request heap dumps, per-item boot details, SPI command traces, debug_task heap monitoring (every 4s), SROM diagnostics |
+
+### IMPORTANT: Never commit sdkconfig changes for dev builds
+
+The `sdkconfig` with `CONFIG_LOG_MAXIMUM_LEVEL=3` is the production default. If you change it for development, do NOT commit the change. Restore before committing:
+
+```bash
+git checkout -- sdkconfig
+```

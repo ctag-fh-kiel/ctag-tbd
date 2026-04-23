@@ -195,10 +195,12 @@ void SoundProcessorManager::LoadTrackMacroAndPreset(const int trackIndex, const 
     MacroTranslator::instance().SetTrackMacroDefinition(trackIndex, def);
     xSemaphoreGive(processMutex);
 
+    // preset.parameterValues is int32_t[MaxMacroSoundPresetParameters=24]; iterate all of
+    // them. trackParameterValues is now [16][32] so idx 0..31 have real storage — no wrap
+    // into the adjacent track. Performance macros like td3-acidbass with source knobs at
+    // idx 18..21 get their preset values written to the correct slots.
     int pidx = 0;
     for(const auto& param : preset.parameterValues) {
-        // ESP_LOGI("SPManager", "  Setting track %d param %d to value %f",
-        //     trackIndex, pidx, param);
         MacroTranslator::instance().SetTrackParameter(trackIndex, pidx, param);
         pidx ++;
     }

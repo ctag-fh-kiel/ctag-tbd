@@ -1,15 +1,15 @@
 {
   "id": "fmb-allparams",
-  "name": "FM Kick All param",
+  "name": "FM Kick",
   "machine": "fmb",
   "volmult": 0.2,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Carrier",
       "parameters": [
         {
           "idx": 0,
-          "name": "FM",
+          "name": "carFrq",
           "type": "nrpm",
           "def": 2500,
           "min": 0,
@@ -19,46 +19,9 @@
         },
         {
           "idx": 1,
-          "name": "DB",
+          "name": "carDec",
           "type": "nrpm",
           "def": 8800,
-          "min": 0,
-          "max": 16383,
-          "res": 4096,
-          "ui": "shape2",
-          "curve": "exp"
-        },
-        {
-          "idx": 2,
-          "name": "FM",
-          "type": "nrpm",
-          "def": 1100,
-          "min": 0,
-          "max": 16383,
-          "res": 4096,
-          "ui": "shape3"
-        },
-        {
-          "idx": 3,
-          "name": "DM",
-          "type": "nrpm",
-          "def": 200,
-          "min": 0,
-          "max": 16383,
-          "res": 4096,
-          "ui": "shape3",
-          "curve": "exp"
-        }
-      ]
-    },
-    {
-      "name": "Page 2",
-      "parameters": [
-        {
-          "idx": 4,
-          "name": "BM",
-          "type": "nrpm",
-          "def": 6000,
           "min": 0,
           "max": 16383,
           "res": 4096,
@@ -66,7 +29,7 @@
         },
         {
           "idx": 5,
-          "name": "AF",
+          "name": "atkPit",
           "type": "nrpm",
           "def": 2400,
           "min": 0,
@@ -76,24 +39,81 @@
         },
         {
           "idx": 6,
-          "name": "DF",
+          "name": "swpDec",
           "type": "nrpm",
           "def": 8000,
           "min": 0,
           "max": 16383,
           "res": 4096,
-          "ui": "shape",
-          "curve": "exp"
+          "ui": "shape"
+        }
+      ]
+    },
+    {
+      "name": "Modulator",
+      "parameters": [
+        {
+          "idx": 2,
+          "name": "modFrq",
+          "type": "nrpm",
+          "def": 1100,
+          "min": 0,
+          "max": 16383,
+          "res": 4096,
+          "ui": "shape3"
+        },
+        {
+          "idx": 3,
+          "name": "modDec",
+          "type": "nrpm",
+          "def": 200,
+          "min": 0,
+          "max": 16383,
+          "res": 4096,
+          "ui": "shape3"
+        },
+        {
+          "idx": 4,
+          "name": "modFB",
+          "type": "nrpm",
+          "def": 6000,
+          "min": 0,
+          "max": 16383,
+          "res": 4096,
+          "ui": "shape2"
         },
         {
           "idx": 7,
-          "name": "I",
+          "name": "index",
           "type": "nrpm",
           "def": 4600,
           "min": 0,
           "max": 16383,
           "res": 4096,
           "ui": "noise"
+        }
+      ]
+    },
+    {
+      "name": "Mode",
+      "parameters": [
+        {
+          "idx": 8,
+          "name": "ratio",
+          "def": 0,
+          "min": 0,
+          "max": 1,
+          "res": 64,
+          "ui": "onoff"
+        },
+        {
+          "idx": 9,
+          "name": "envSync",
+          "def": 0,
+          "min": 0,
+          "max": 1,
+          "res": 64,
+          "ui": "onoff"
         }
       ]
     }
@@ -119,8 +139,7 @@
         {
           "src": 1,
           "mul": 1,
-          "div": 1,
-          "curve": "exp"
+          "div": 1
         }
       ]
     },
@@ -144,8 +163,7 @@
         {
           "src": 3,
           "mul": 1,
-          "div": 1,
-          "curve": "exp"
+          "div": 1
         }
       ]
     },
@@ -181,8 +199,7 @@
         {
           "src": 6,
           "mul": 1,
-          "div": 1,
-          "curve": "exp"
+          "div": 1
         }
       ]
     },
@@ -193,6 +210,30 @@
       "add": [
         {
           "src": 7,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 16,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 8,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 17,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 9,
           "mul": 1,
           "div": 1
         }

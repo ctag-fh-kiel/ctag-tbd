@@ -1,1 +1,30 @@
-{"id":"msp-acidbass2","name":"Dirty Squelch","values":[110,80,70,100],"group":"TBD03","macro":"td3-acidbass"}
+{
+  "id": "msp-acidbass2",
+  "name": "Dirty",
+  "group": "TBD03",
+  "macro": "td3-acidbass",
+  "values": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    14000,
+    10000,
+    5000,
+    12000
+  ]
+}

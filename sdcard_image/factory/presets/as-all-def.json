@@ -1,1 +1,13 @@
-{"id":"as-all-def","name":"Analog Snare","group":"Snares","macro":"as-allparams","values":[11,64,64,77,10]}
+{
+  "id": "as-all-def",
+  "name": "Default",
+  "group": "AnaSnare",
+  "macro": "as-allparams",
+  "values": [
+    11,
+    64,
+    64,
+    77,
+    10
+  ]
+}

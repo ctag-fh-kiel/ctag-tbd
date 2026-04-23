@@ -72,39 +72,14 @@
 
       <!-- ── Presets tab content ── -->
       <div class="sidebar-content active" data-tab="presets">
-        <div class="sidebar-search">
-          <sl-input placeholder="Search presets…" size="small" clearable id="preset-search">
-            <sl-icon slot="prefix" name="search"></sl-icon>
-          </sl-input>
+        <div class="sidebar-actions" style="padding-bottom:0;border-top:none;">
+          <button class="sidebar-action-btn primary" id="qa-new-preset">
+            <sl-icon name="plus-lg"></sl-icon> New Preset
+          </button>
         </div>
+        <hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:0.5rem 0.65rem;">
         <div class="sidebar-list" id="preset-list">
           <!-- Populated by JS -->
-        </div>
-        <div class="sidebar-actions">
-          <div class="sidebar-actions-row">
-            <button class="sidebar-action-btn primary" id="qa-save-preset">
-              <sl-icon name="floppy"></sl-icon> Save As…
-            </button>
-          </div>
-          <div class="sidebar-actions-row">
-            <button class="sidebar-action-btn" id="qa-randomize">
-              <sl-icon name="sliders"></sl-icon> Randomize
-            </button>
-            <button class="sidebar-action-btn" id="qa-init">
-              <sl-icon name="x-lg"></sl-icon> Init
-            </button>
-          </div>
-          <div class="sidebar-actions-row">
-            <button class="sidebar-action-btn" id="qa-export-presets">
-              <sl-icon name="download"></sl-icon> Export
-            </button>
-            <button class="sidebar-action-btn" id="qa-import-presets">
-              <sl-icon name="upload"></sl-icon> Import
-            </button>
-            <a class="sidebar-action-btn" id="qa-viewjson-presets" href="/index.html?view=samples&browse=presets" title="View preset JSON files in Data Manager" style="text-decoration:none;">
-              <sl-icon name="filetype-json"></sl-icon> JSON
-            </a>
-          </div>
         </div>
       </div>
 
@@ -201,7 +176,7 @@
           <li><strong>Load a Preset</strong> — Click any preset in the sidebar to load it instantly. The knobs update to show the preset's values. The MACRO dropdown syncs to show which macro the preset uses.</li>
           <li><strong>Tweak Knobs</strong> — Drag the knobs in the center panel. Knobs with an orange <em>MACRO</em> label control multiple DSP parameters at once.</li>
           <li><strong>Save Your Sound</strong> — Click <em>Save As…</em> to save your tweaked values as a new preset. Give it a name and category.</li>
-          <li><strong>Quick Actions</strong> — <em>Randomize</em> generates random values for inspiration. <em>Init</em> resets all knobs to defaults. <em>Export/Import</em> lets you share presets as JSON files.</li>
+          <li><strong>Quick Actions</strong> — <em>Export/Import</em> lets you share presets as JSON files.</li>
         </ol>
       </div>
     </details>
@@ -214,7 +189,7 @@
         <h4>Getting Started</h4>
         <ol>
           <li><strong>Select a Track</strong> — Click a channel tab. The MACHINE dropdown shows the synth engine on that track.</li>
-          <li><strong>Pick or Create</strong> — The sidebar lists existing macro definitions. Click one to edit, or click <em>"+ Create New Definition"</em>.</li>
+          <li><strong>Pick or Create</strong> — The sidebar lists existing macro definitions. Click one to edit, or click <em>"+ New Macro"</em>.</li>
           <li><strong>Name &amp; ID</strong> — Set the definition name and ID in the header bar. The ID is auto-generated from the name for new definitions.</li>
           <li><strong>Knob Preview</strong> — The default sub-tab shows a live preview of the knobs. Drag them to see how the mapped CC values change in real time.</li>
           <li><strong>Macro Builder</strong> — Switch to this sub-tab to define parameter groups (pages of up to 4 knobs), set ranges, defaults, and output mappings.</li>

@@ -544,7 +544,7 @@
     },
     {
       "id": "ab",
-      "name": "Analog Kick",
+      "name": "Analog Bass Drum",
       "type": "drum",
       "parameters": [
         {
@@ -557,7 +557,7 @@
         {
           "id": "tone",
           "name": "Tone",
-          "type": "nrpm",
+          "type": "cc",
           "ctrl": 9,
           "def": 32
         },
@@ -571,7 +571,7 @@
         {
           "id": "a-fm",
           "name": "A FM",
-          "type": "nrpm",
+          "type": "cc",
           "ctrl": 11,
           "def": 256
         },
@@ -754,7 +754,7 @@
     },
     {
       "id": "hh1",
-      "name": "Hihat 1",
+      "name": "Hi-Hat 1",
       "type": "drum",
       "parameters": [
         {
@@ -796,7 +796,7 @@
     },
     {
       "id": "hh2",
-      "name": "Hihat 2",
+      "name": "Hi-Hat 2",
       "type": "drum",
       "parameters": [
         {
@@ -942,28 +942,28 @@
         {
           "id": "start",
           "name": "Start",
-          "type": "nrpm",
+          "type": "cc",
           "ctrl": 10,
           "def": 0
         },
         {
           "id": "end",
           "name": "End",
-          "type": "nrpm",
+          "type": "cc",
           "ctrl": 11,
           "def": 127
         },
         {
           "id": "cutoff",
           "name": "Cutoff",
-          "type": "nrpm",
+          "type": "cc",
           "ctrl": 12,
           "def": 127
         },
         {
           "id": "reso",
           "name": "Reso",
-          "type": "nrpm",
+          "type": "cc",
           "ctrl": 13,
           "def": 0
         },
@@ -1117,14 +1117,14 @@
         {
           "id": "satur",
           "name": "Satur",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 16,
           "def": 0
         },
         {
           "id": "drive",
           "name": "Drive",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 17,
           "def": 0
         },
@@ -1166,7 +1166,7 @@
         {
           "id": "acclev",
           "name": "Acc. Lev",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 23,
           "def": 0
         },
@@ -1188,7 +1188,7 @@
     },
     {
       "id": "mo",
-      "name": "Macro osc",
+      "name": "Mono Synth",
       "type": "synth",
       "parameters": [
         {
@@ -1250,7 +1250,7 @@
         {
           "id": "attack",
           "name": "Attack",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 16,
           "def": 0
         },
@@ -1286,7 +1286,7 @@
     },
     {
       "id": "wtosc",
-      "name": "Wavetable osc",
+      "name": "Wavetable Osc",
       "type": "synth",
       "parameters": [
         {
@@ -1299,14 +1299,14 @@
         {
           "id": "wave",
           "name": "Wave",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 9,
           "def": 0
         },
         {
           "id": "tune",
           "name": "Tune",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 10,
           "def": 0
         },
@@ -1341,56 +1341,56 @@
         {
           "id": "attack",
           "name": "Attack",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 15,
           "def": 0
         },
         {
           "id": "decay",
           "name": "Decay",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 16,
           "def": 64
         },
         {
           "id": "sustain",
           "name": "Sustain",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 17,
           "def": 0
         },
         {
           "id": "release",
           "name": "Release",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 18,
           "def": 16
         },
         {
           "id": "e2wave",
           "name": "E2 Wave",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 19,
           "def": 0
         },
         {
           "id": "e2fm",
           "name": "E2 FM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 20,
           "def": 0
         },
         {
           "id": "e2filt",
           "name": "E2 Filt",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 21,
           "def": 0
         },
         {
           "id": "speed",
           "name": "Speed",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 22,
           "def": 10
         },
@@ -1404,35 +1404,35 @@
         {
           "id": "l2wave",
           "name": "L2 Wave",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 25,
           "def": 0
         },
         {
           "id": "l2am",
           "name": "L2 AM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 26,
           "def": 0
         },
         {
           "id": "l2fm",
           "name": "L2 FM",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 27,
           "def": 0
         },
         {
           "id": "l2filt",
           "name": "L2 Filt",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 28,
           "def": 0
         },
         {
           "id": "gain",
           "name": "Gain",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 29,
           "def": 64
         }
@@ -1440,7 +1440,7 @@
     },
     {
       "id": "pp",
-      "name": "Polypad",
+      "name": "PolyPad",
       "type": "synth",
       "parameters": [
         {
@@ -1460,21 +1460,21 @@
         {
           "id": "detune",
           "name": "Detune",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 10,
           "def": 8
         },
         {
           "id": "cutoff",
           "name": "Cutoff",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 11,
           "def": 80
         },
         {
           "id": "reso",
           "name": "Reso",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 12,
           "def": 0
         },
@@ -1495,63 +1495,63 @@
         {
           "id": "attack",
           "name": "Attack",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 15,
           "def": 0
         },
         {
           "id": "decay",
           "name": "Decay",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 16,
           "def": 8
         },
         {
           "id": "sustain",
           "name": "Sustain",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 17,
           "def": 8
         },
         {
           "id": "release",
           "name": "Release",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 18,
           "def": 16
         },
         {
           "id": "l1spd",
           "name": "L1 Speed",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 19,
           "def": 0
         },
         {
           "id": "l1amt",
           "name": "L1 Amount",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 20,
           "def": 0
         },
         {
           "id": "l2spd",
           "name": "L2 Speed",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 21,
           "def": 0
         },
         {
           "id": "l2amt",
           "name": "L2 Amount",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 22,
           "def": 0
         },
         {
           "id": "efltamt",
           "name": "E Filter Amount",
-          "type": "cc",
+          "type": "nrpm",
           "ctrl": 23,
           "def": 0
         },
@@ -1573,7 +1573,7 @@
     },
     {
       "id": "extsynth",
-      "name": "MIDI Synth",
+      "name": "External Synth",
       "type": "synth",
       "parameters": [
         {
@@ -1587,7 +1587,7 @@
     },
     {
       "id": "extdrum",
-      "name": "MIDI Drum",
+      "name": "External Drum",
       "type": "synth",
       "parameters": [
         {
@@ -1608,7 +1608,7 @@
     },
     {
       "id": "inp",
-      "name": "External input",
+      "name": "Audio Input",
       "type": "synth",
       "parameters": []
     }

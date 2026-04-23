@@ -57,6 +57,7 @@ static constexpr const char *DIR_TRACKDEFAULTS = "trackdefaults";
 static constexpr const char *DIR_PROJECTS      = "projects";
 static constexpr const char *DIR_KITS          = "kits";
 static constexpr const char *DIR_CONFIG        = "config";
+static constexpr const char *DIR_SCREENSHOTS   = "screenshots";
 
 /**
  * Check if a file or directory exists.

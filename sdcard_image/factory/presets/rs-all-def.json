@@ -1,1 +1,13 @@
-{"id":"rs-all-def","name":"Rimshot","group":"Rimshot","macro":"rs-allparams","values":[15,64,62,51,28]}
+{
+  "id": "rs-all-def",
+  "name": "Default",
+  "group": "Rimshot",
+  "macro": "rs-allparams",
+  "values": [
+    15,
+    64,
+    62,
+    51,
+    28
+  ]
+}

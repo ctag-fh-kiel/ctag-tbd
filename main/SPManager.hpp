@@ -182,6 +182,9 @@ namespace CTAG {
 
         public:
             static atomic<uint32_t> webuiChangeCounter;
+            static atomic<uint32_t> screenshotRequestCounter;
+            static atomic<uint8_t> injectedButton;
+            static atomic<uint8_t> injectedButtonEvent;
         };
     }
 }

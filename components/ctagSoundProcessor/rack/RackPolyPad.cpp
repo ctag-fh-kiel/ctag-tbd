@@ -30,6 +30,26 @@ void RackPolyPad::Init(const PickSeqRackInitData *initdata) {
     }
     pp_quantizer.Init();
 
+    // ---- PolyPad macro UI decisions (April 2026) ----
+    // Two CC registrations below are deliberately commented out rather than
+    // deleted. The DSP plumbing in RackPolyPad.hpp (pp_q_scale / pp_quantizer /
+    // midi_freq / pp_lfo2_rphase) is kept intact so a future revision can
+    // re-enable either parameter without replumbing the rack.
+    //
+    //   q_scale (CC 14) is musically meaningless in this rack wrapper: rack
+    //     PolyPad takes pitch directly from the played MIDI note, so there is
+    //     no separate fixed root for the Braids quantizer to quantize against.
+    //     The parameter was carried over from the standalone PolyPad plugin,
+    //     where such a root existed. A future scale-quantize feature can wire
+    //     a new parameter through the same pp_quantizer instance.
+    //
+    //   lfo2_rphase / "L2 Rand" (CC 24) is functional in the DSP (see
+    //     ChordSynth::Init - it chooses a random vs fixed LFO2 start phase on
+    //     each note trigger) but is a very subtle effect that only matters
+    //     when L2 Amount > 0 and notes are retriggered often. It was dropped
+    //     from the default pp-allparams.json 4x4 performance layout. Re-enable
+    //     via a custom macro, or by uncommenting the registration below.
+
     initdata->rack->registerParamAndCC(initdata, "chord", 8, [&](const int val) { pp_chord = val; });
     initdata->rack->registerParamAndCC(initdata, "inversion", 9, [&](const int val) { pp_inversion = val; });
     initdata->rack->registerParamAndCC(initdata, "detune", 10, [&](const int val) { pp_detune = val; });
@@ -38,7 +58,7 @@ void RackPolyPad::Init(const PickSeqRackInitData *initdata) {
     initdata->rack->registerParamAndCC(initdata, "cutoff", 11, [&](const int val) { pp_cutoff = val; });
     initdata->rack->registerParamAndCC(initdata, "resonance", 12, [&](const int val) { pp_resonance = val; });
     initdata->rack->registerParamAndCC(initdata, "filter_type", 13, [&](const int val) { pp_filter_type = val; });
-    initdata->rack->registerParamAndCC(initdata, "q_scale", 14, [&](const int val) { pp_q_scale = val; });
+    // initdata->rack->registerParamAndCC(initdata, "q_scale", 14, [&](const int val) { pp_q_scale = val; });  // see comment block above
 
     initdata->rack->registerParamAndCC(initdata, "attack", 15, [&](const int val) { pp_attack = val; });
     initdata->rack->registerParamAndCC(initdata, "decay", 16, [&](const int val) { pp_decay = val; });
@@ -50,9 +70,9 @@ void RackPolyPad::Init(const PickSeqRackInitData *initdata) {
     initdata->rack->registerParamAndCC(initdata, "lfo2_freq", 21, [&](const int val) { pp_lfo2_freq = val; });
     initdata->rack->registerParamAndCC(initdata, "lfo2_amt", 22, [&](const int val) { pp_lfo2_amt = val; });
 
-    initdata->rack->registerParamAndCC(initdata, "eg_filt_amt", 23, [&](const int val) { pp_eg_filt_amt = val; }); // not used
+    initdata->rack->registerParamAndCC(initdata, "eg_filt_amt", 23, [&](const int val) { pp_eg_filt_amt = val; });
     // initdata->rack->registerParamAndCC(initdata, "eg_slow_fast", 23, [&](const int val) { pp_eg_slow_fast = val; });
-    initdata->rack->registerParamAndCC(initdata, "lfo2_rphase", 24, [&](const int val) { pp_lfo2_rphase = val; }); // not used
+    // initdata->rack->registerParamAndCC(initdata, "lfo2_rphase", 24, [&](const int val) { pp_lfo2_rphase = val; });  // see comment block above
 
     initdata->rack->registerParamAndCC(initdata, "nnotes", 25, [&](const int val) { pp_nnotes = val; });
     // initdata->rack->registerParamAndCC(initdata, "ncvoices", 26, [&](const int val) { pp_ncvoices = val; });
@@ -162,14 +182,14 @@ void RackPolyPad::Process(const PicoSeqRackProcessData &data) {
         // if (cv_pp_chord != -1) { params.chord = static_cast<int16_t>(fabsf(data.cv[cv_pp_chord]) * kChordNumChords); }
         CONSTRAIN(params.chord, 0, kChordNumChords - 1)
 
-        params.nnotes = 1 + (pp_nnotes * 4 / 4096);
-        // if (cv_pp_nnotes != -1) { params.nnotes = static_cast<int16_t>(fabsf(data.cv[cv_pp_nnotes]) * 4.f) + 1; }
-        CONSTRAIN(params.nnotes, 1, 4)
+        params.nnotes = 1 + (pp_nnotes * 8 / 4096);
+        // if (cv_pp_nnotes != -1) { params.nnotes = static_cast<int16_t>(fabsf(data.cv[cv_pp_nnotes]) * 8.f) + 1; }
+        CONSTRAIN(params.nnotes, 1, 8)
 
         params.detune = pp_detune * 4;
         // if (cv_pp_detune != -1) { params.detune = static_cast<int16_t>(fabsf(data.cv[cv_pp_detune]) * 32767.f); }
         CONSTRAIN(params.detune, 0, 32767)
-        params.inversion = pp_inversion * 2 / 4096;
+        params.inversion = (pp_inversion * 5 / 4096) - 2;
         // if (cv_pp_inversion != -1) { params.inversion = static_cast<int16_t>(fabsf(data.cv[cv_pp_inversion]) * 6.f - 3.f); }
         CONSTRAIN(params.inversion, -2, 2)
         float maxA, maxD, maxR;
@@ -218,7 +238,7 @@ void RackPolyPad::Process(const PicoSeqRackProcessData &data) {
         // if (cv_pp_eg_filt_amt != -1) { params.eg_filt_amt = data.cv[cv_pp_eg_filt_amt]; }
         CONSTRAIN(params.eg_filt_amt, -1.f, 1.f)
 
-        params.filter_type = pp_filter_type * 2 / 4096;
+        params.filter_type = pp_filter_type * 3 / 4096;
         // if (cv_pp_filter_type != -1) { params.filter_type = fabsf(data.cv[cv_pp_filter_type]) * 3.f; }
         CONSTRAIN(params.filter_type, 0, 2)        // printf("PP2 %d %d %d\n", paarms.pitch, params.chord, params.nnotes);
 

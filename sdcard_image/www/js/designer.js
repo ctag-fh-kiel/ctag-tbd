@@ -41,7 +41,7 @@
     rs:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, noise: {ui:'distortion'}, accent: {ui:'envamount'} },
     cl:  { freq: {ui:'freq',curve:'log'}, tone: {ui:'shape'}, decay: {ui:'envdecay',curve:'exp'}, scale: {ui:'noise'} },
     fmb: { 'f-b': {ui:'shape2'}, 'd-b': {ui:'shape2',curve:'exp'}, 'f-m': {ui:'shape3'}, 'd-m': {ui:'shape3',curve:'exp'}, 'b-m': {ui:'shape2'}, 'a-f': {ui:'shape3'}, 'd-f': {ui:'shape',curve:'exp'}, i: {ui:'noise'} },
-    mo:  { shape: {ui:'shape'}, p0: {ui:'shape3'}, p1: {ui:'shape2'}, waveshap: {ui:'distortion'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'} },
+    mo:  { shape: {ui:'shape'}, p0: {ui:'shape3'}, p1: {ui:'shape2'}, waveshap: {ui:'distortion'}, attack: {ui:'envattackfast',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'} },
     td3: { shape: {ui:'shape'}, p0: {ui:'shape2'}, vca_d: {ui:'envdecay',curve:'exp'}, vcf_d: {ui:'envdecay',curve:'exp'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, envdec: {ui:'envdecay',curve:'exp'}, type: {ui:'filtertype'} },
     pp:  { detune: {ui:'distortion'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, type: {ui:'filtertype'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'}, release: {ui:'envdecay',curve:'exp'} },
     wtosc: { type: {ui:'filtertype'}, cutoff: {ui:'filtercutoff',curve:'log'}, reso: {ui:'filterq'}, attack: {ui:'envattack',curve:'exp'}, decay: {ui:'envdecay',curve:'exp'}, release: {ui:'bignum',curve:'exp'} },
@@ -178,6 +178,32 @@
     });
   }
 
+  // ─── Param Helpers ─────────────────────────────────────────
+
+  function is14bit(m) {
+    return m && (m.bits === 14 || m.type === 'nrpm');
+  }
+
+  function findParamByIdx(idx) {
+    if (!state.editDef || !state.editDef.groups) return null;
+    for (var g = 0; g < state.editDef.groups.length; g++) {
+      var params = state.editDef.groups[g].parameters || [];
+      for (var p = 0; p < params.length; p++) {
+        if (params[p].idx === idx) return params[p];
+      }
+    }
+    return null;
+  }
+
+  function isParamUsedBy14bit(paramIdx, excludeMi) {
+    if (!state.editDef) return false;
+    return (state.editDef.mapping || []).some(function(m, i) {
+      if (i === excludeMi) return false;
+      if (!is14bit(m)) return false;
+      return (m.add || []).some(function(a) { return a.src === paramIdx; });
+    });
+  }
+
   // ─── Definition List (left sidebar — Macros tab) ──────────
 
   function renderDefinitionList() {
@@ -198,9 +224,10 @@
     var html = '';
 
     // Create New button
-    html += '<button class="sidebar-action-btn" id="create-def-btn" style="margin:0.4rem 0.65rem;width:calc(100% - 1.3rem);">';
-    html += '<sl-icon name="plus-lg"></sl-icon> Create New Definition';
+    html += '<button class="sidebar-action-btn primary" id="create-def-btn" style="margin:0.4rem 0.65rem;width:calc(100% - 1.3rem);">';
+    html += '<sl-icon name="plus-lg"></sl-icon> New Macro';
     html += '</button>';
+    html += '<hr style="border:none;border-top:1px solid var(--sl-color-neutral-200);margin:0.5rem 0.65rem;">';
 
     if (filteredDefs.length === 0) {
       html += '<div style="padding:0.5rem 0.85rem;opacity:0.5;font-size:0.75rem;">No definitions yet</div>';
@@ -211,13 +238,14 @@
     filteredDefs.forEach(function(def) {
       var isActive = state.selectedDefId === def.id;
       var isFactory = F && F.isFactoryDefinition(def.id);
+      var isFactoryUnlocked = F && F.isUnlocked && F.isUnlocked();
       html += '<div class="preset-item' + (isActive ? ' active' : '') + '" data-def-id="' + S.esc(def.id) + '">';
       if (isFactory) {
-        html += '<sl-icon name="lock" style="font-size:0.65rem;opacity:0.45;flex-shrink:0;margin-right:0.25rem;" title="Factory template — clone to edit"></sl-icon>';
+        html += '<sl-icon name="lock" style="font-size:0.65rem;opacity:0.45;flex-shrink:0;margin-right:0.25rem;" title="Factory template' + (isFactoryUnlocked ? ' — editing unlocked' : ' — clone to edit') + '"></sl-icon>';
       }
       html += '<span class="preset-item-name" title="' + S.esc(def.name || def.id) + '">' + S.esc(def.name || def.id) + '</span>';
       html += '<span class="preset-item-machine">' + S.esc(def.id) + '</span>';
-      if (!isFactory) {
+      if (!isFactory || isFactoryUnlocked) {
         html += '<button class="preset-item-delete" data-delete-def-id="' + S.esc(def.id) + '" title="Delete definition">';
         html += '<sl-icon name="trash3"></sl-icon>';
         html += '</button>';
@@ -274,25 +302,218 @@
   }
 
   function createNewDefinition() {
+    var old = document.getElementById('new-macro-dialog');
+    if (old) old.remove();
+
     var defaultMachine = state.activeMachine || (state.trackMachines.length > 0 ? state.trackMachines[0] : '');
+    var machInfo = S.getMachineInfo(defaultMachine);
+    var machineName = machInfo ? machInfo.name : defaultMachine;
 
-    state.selectedDefId = null;
-    state.editDef = {
-      id: '',
-      name: '',
-      machine: defaultMachine,
-      volmult: 1.0,
-      groups: [],
-      mapping: [],
-    };
-    ensureGroupStructure(state.editDef);
-    state.dirty = true;
+    // Get available machines from current track
+    var track = S.data.tracks.find(function(t) { return t.index === state.activeTrack; });
+    var availMachines = track ? S.getTrackMachines(track) : [];
+    if (availMachines.length === 0 && defaultMachine) availMachines = [defaultMachine];
 
-    document.querySelectorAll('#definition-list .preset-item').forEach(function(item) {
-      item.classList.remove('active');
+    // Dialog state — track selections via sl-change events
+    // (reading sl-select.value at click time is unreliable with Shoelace)
+    var selectedMachine = defaultMachine;
+    var selectedBaseId = '';
+
+    function getMacrosForMachine(machId) {
+      return S.data.macroDefs.filter(function(d) { return d.machine === machId; });
+    }
+
+    function buildBaseOptions(machId) {
+      var macros = getMacrosForMachine(machId);
+      var F = window.TBD.factory;
+      var h = '<sl-option value="">Empty \u2014 start from scratch</sl-option>';
+      macros.forEach(function(m) {
+        var badge = (F && F.isFactoryDefinition(m.id)) ? '\ud83d\udd12 ' : '';
+        h += '<sl-option value="' + S.esc(m.id) + '">' + badge + S.esc(m.name || m.id) + '</sl-option>';
+      });
+      return h;
+    }
+
+    var dialog = document.createElement('sl-dialog');
+    dialog.id = 'new-macro-dialog';
+    dialog.label = 'New Macro';
+    dialog.setAttribute('style', '--width:28rem;');
+
+    var html = '';
+    html += '<div style="display:flex;flex-direction:column;gap:0.75rem;">';
+    // Machine selector
+    if (availMachines.length > 1) {
+      html += '<sl-select id="new-macro-machine" label="Machine" value="' + S.esc(defaultMachine) + '" hoist>';
+      availMachines.forEach(function(machId) {
+        var info = S.getMachineInfo(machId);
+        var label = info ? info.name : machId;
+        html += '<sl-option value="' + S.esc(machId) + '">' + S.esc(label) + '</sl-option>';
+      });
+      html += '</sl-select>';
+    } else {
+      html += '<div class="save-preset-context">';
+      html += '<strong>' + S.esc(machineName) + '</strong>';
+      html += ' <span style="opacity:0.5;">(' + S.esc(defaultMachine) + ')</span>';
+      html += '</div>';
+    }
+    // Name input
+    html += '<sl-input id="new-macro-name" label="Macro Name" placeholder="e.g. Phat Punch" required autofocus></sl-input>';
+    // Based on dropdown
+    html += '<sl-select id="new-macro-base" label="Based on" value="" hoist help-text="Start empty or clone an existing macro as your foundation">';
+    html += buildBaseOptions(defaultMachine);
+    html += '</sl-select>';
+    html += '</div>';
+
+    dialog.innerHTML = html;
+
+    // Wire sl-change events to track selections reliably
+    var machineSelectEl = dialog.querySelector('#new-macro-machine');
+    if (machineSelectEl) {
+      machineSelectEl.addEventListener('sl-change', function() {
+        selectedMachine = machineSelectEl.value;
+        // Rebuild "Based on" options for the new machine
+        var oldBase = dialog.querySelector('#new-macro-base');
+        if (oldBase) {
+          var newBase = document.createElement('sl-select');
+          newBase.id = 'new-macro-base';
+          newBase.label = 'Based on';
+          newBase.value = '';
+          newBase.setAttribute('hoist', '');
+          newBase.setAttribute('help-text', 'Start empty or clone an existing macro as your foundation');
+          newBase.innerHTML = buildBaseOptions(selectedMachine);
+          oldBase.replaceWith(newBase);
+          selectedBaseId = '';
+          newBase.addEventListener('sl-change', function() {
+            selectedBaseId = newBase.value;
+          });
+        }
+      });
+    }
+    var baseSelectEl = dialog.querySelector('#new-macro-base');
+    if (baseSelectEl) {
+      baseSelectEl.addEventListener('sl-change', function() {
+        selectedBaseId = baseSelectEl.value;
+      });
+    }
+
+    // Footer buttons
+    var cancelBtn = document.createElement('sl-button');
+    cancelBtn.setAttribute('slot', 'footer');
+    cancelBtn.setAttribute('variant', 'default');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', function() { dialog.hide(); });
+
+    var createBtn = document.createElement('sl-button');
+    createBtn.setAttribute('slot', 'footer');
+    createBtn.setAttribute('variant', 'primary');
+    createBtn.innerHTML = '<sl-icon name="plus-lg" slot="prefix"></sl-icon> Create Macro';
+
+    createBtn.addEventListener('click', function() {
+      var nameInput = dialog.querySelector('#new-macro-name');
+      var name = (nameInput.value || '').trim();
+
+      if (!name) {
+        nameInput.setAttribute('help-text', 'Please enter a name');
+        nameInput.focus();
+        return;
+      }
+
+      var machine = selectedMachine || defaultMachine;
+
+      // Auto-generate ID: machine prefix + slugified name
+      var machinePrefix = machine ? (machine.substring(0, 2) + '-') : '';
+      var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      var autoId = machinePrefix + slug;
+
+      if (selectedBaseId) {
+        // Clone existing macro
+        var sourceDef = S.data.macroDefs.find(function(d) { return d.id === selectedBaseId; });
+        if (sourceDef) {
+          state.editDef = JSON.parse(JSON.stringify(sourceDef));
+          state.editDef.id = autoId;
+          state.editDef.name = name;
+          state.editDef.machine = machine;
+          ensureGroupStructure(state.editDef);
+        } else {
+          S.toast('Source macro not found', 'danger', 2000);
+          return;
+        }
+      } else {
+        // Start from scratch
+        state.editDef = {
+          id: autoId,
+          name: name,
+          machine: machine,
+          volmult: 1.0,
+          groups: [],
+          mapping: [],
+        };
+        ensureGroupStructure(state.editDef);
+      }
+
+      // Auto-save immediately so the macro exists on disk
+      createBtn.setAttribute('loading', '');
+      var cleanDef = cleanDefinitionForSave(state.editDef);
+      var jsonStr = JSON.stringify(cleanDef, null, 2);
+      var filePath = 'macros/' + state.editDef.id + '.json';
+
+      fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: jsonStr,
+      }).then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        state.selectedDefId = state.editDef.id;
+        state.dirty = false;
+        return S.reloadFirmwareMacros(state.editDef.id).then(function() {
+          return S.reloadMacroData();
+        });
+      }).then(function() {
+        renderDefinitionList();
+        renderMacroBuilderSection();
+        switchToMacroBuilder();
+        S.toast('Created: ' + name, 'success', 2000);
+        dialog.hide();
+      }).catch(function(err) {
+        createBtn.removeAttribute('loading');
+        S.toast('Save failed: ' + err.message, 'danger', 3000);
+      });
     });
 
-    renderMacroBuilderSection();
+    dialog.appendChild(cancelBtn);
+    dialog.appendChild(createBtn);
+    document.body.appendChild(dialog);
+
+    // Prevent hoisted sl-select overlay clicks from closing the dialog
+    dialog.addEventListener('sl-request-close', function(e) {
+      if (e.detail.source === 'overlay') e.preventDefault();
+    });
+
+    // Guard: only remove on dialog's own hide, not bubbled sl-after-hide from child sl-selects
+    dialog.addEventListener('sl-after-hide', function(e) {
+      if (e.target !== dialog) return;
+      dialog.remove();
+    });
+
+    requestAnimationFrame(function() {
+      dialog.show();
+    });
+  }
+
+  // Helper to switch to Macro Builder sub-tab
+  function switchToMacroBuilder() {
+    var subtabs = document.querySelectorAll('.center-subtab');
+    subtabs.forEach(function(tab) {
+      var isBuilder = tab.getAttribute('data-subtab') === 'macro-builder';
+      tab.classList.toggle('active', isBuilder);
+    });
+    // Update visibility
+    var knobControls = document.getElementById('knob-controls');
+    var macroBuilder = document.getElementById('macro-builder-section');
+    var knobPreviewExtras = document.getElementById('knob-preview-extras');
+    if (knobControls) knobControls.classList.add('hidden');
+    if (macroBuilder) macroBuilder.classList.remove('hidden');
+    if (knobPreviewExtras) knobPreviewExtras.classList.add('hidden');
   }
 
   function ensureGroupStructure(def) {
@@ -367,6 +588,106 @@
         if (p.curve === 'linear') delete p.curve;
       });
     });
+    // ─────────────────────────────────────────────────────────────────────
+    // Pico-firmware invariant guard: every mapping entry MUST carry an
+    // explicit "type" field ("cc" or "nrpm") and that type MUST match the
+    // same ctrl's declared type in synthdefinitions.json for this machine.
+    // A missing type silently defaults to CC on the Pico and regresses
+    // other machines when the synthdef actually declares the ctrl as NRPM
+    // (see tbd-pico-seq3/docs/architecture/macro-system.md, the
+    // "macro-vs-synthdef type agreement" invariant).
+    //
+    // EXCEPTION — identity mappings on performance macros. A mapping entry
+    // whose ctrl == (paramIdx + 8) for some macro param idx that's ALSO
+    // used as a `src` in another mapping is a "source knob identity"
+    // mapping. The wire goes to the P4 MacroTranslator storage slot
+    // (trackParameterValues[idx]) and is never dispatched to the DSP
+    // listener directly — only the computeAndDispatch fan-out mappings
+    // hit the DSP. For these identity mappings, the macro author may
+    // declare type:nrpm even when synthdef says cc, to carry 14-bit
+    // (hi-res) knob values into the source storage. We preserve the
+    // authored type in that case. See tbd-pico-seq3/docs/architecture/
+    // macro-system.md "Hi-res performance-macro source knobs".
+    // ─────────────────────────────────────────────────────────────────────
+    var machineInfo = clean.machine ? S.getMachineInfo(clean.machine) : null;
+    var ctrlTypeLookup = {};
+    if (machineInfo && machineInfo.parameters) {
+      machineInfo.parameters.forEach(function(p) {
+        if (typeof p.ctrl === 'number' && (p.type === 'cc' || p.type === 'nrpm')) {
+          ctrlTypeLookup[p.ctrl] = p.type;
+        }
+      });
+    }
+    // Collect the set of idx values that are used as `src` in any mapping's
+    // add[] array — these are the "macro source knob" indices whose
+    // identity mappings (ctrl == idx + 8) are eligible for the exception.
+    var srcIdxSet = {};
+    (clean.mapping || []).forEach(function(m) {
+      (m.add || []).forEach(function(a) {
+        if (typeof a.src === 'number') srcIdxSet[a.src] = true;
+      });
+    });
+    // Collect all paramIdx declared in groups (so we can tell "ctrl idx+8"
+    // refers to a real macro source knob and not just any ctrl number).
+    var paramIdxSet = {};
+    (clean.groups || []).forEach(function(g) {
+      (g.parameters || []).forEach(function(p) {
+        if (typeof p.idx === 'number') paramIdxSet[p.idx] = true;
+      });
+    });
+    function isPerformanceIdentityMapping(m) {
+      // ctrl matches an idx+8 of some source-used param idx
+      var implicitIdx = m.ctrl - 8;
+      if (!paramIdxSet[implicitIdx]) return false;
+      if (!srcIdxSet[implicitIdx]) return false;
+      // And: at least ONE other mapping references this idx as a src
+      // (already verified by srcIdxSet) AND this mapping is distinct
+      // from those fan-out destinations (this mapping itself shouldn't
+      // reference implicitIdx as its own src — it's an "identity",
+      // typically empty add[] or fixed start).
+      var selfRefs = (m.add || []).some(function(a) { return a.src === implicitIdx; });
+      return !selfRefs;
+    }
+    (clean.mapping || []).forEach(function(m) {
+      var expected = ctrlTypeLookup[m.ctrl];
+      if (isPerformanceIdentityMapping(m)) {
+        // Exception: preserve author-declared type. Default to cc if
+        // missing entirely (never leave a mapping without type).
+        if (m.type !== 'cc' && m.type !== 'nrpm') {
+          m.type = expected || 'cc';
+        }
+      } else if (expected) {
+        // Synthdef knows this ctrl → trust synthdef, overwrite any stale value
+        m.type = expected;
+      } else if (m.type !== 'cc' && m.type !== 'nrpm') {
+        // No synthdef match (unusual, e.g. post-machine-rename) → default to CC
+        m.type = 'cc';
+      }
+      // Keep `bits` consistent with type — NRPM implies 14-bit wire protocol
+      if (m.type === 'nrpm' && m.bits !== 14) m.bits = 14;
+      if (m.type === 'cc' && m.bits) delete m.bits;
+    });
+
+    // Auto-promote source-knob identity mappings to nrpm when the source
+    // param itself is declared hi-res (max > 127). Rule-of-thumb applied
+    // at save time: if a user sets a macro source knob to 14-bit range,
+    // the wire protocol that carries it must also be 14-bit or the top 7
+    // bits get lost at the MacroTranslator storage step.
+    (clean.groups || []).forEach(function(g) {
+      (g.parameters || []).forEach(function(p) {
+        if (typeof p.idx !== 'number') return;
+        if (!srcIdxSet[p.idx]) return;       // not a source knob
+        if ((p.max || 127) <= 127) return;   // not hi-res
+        // Find the identity mapping for this idx (ctrl == idx + 8)
+        var identity = (clean.mapping || []).find(function(m) {
+          return m.ctrl === p.idx + 8 && isPerformanceIdentityMapping(m);
+        });
+        if (identity && identity.type !== 'nrpm') {
+          identity.type = 'nrpm';
+          identity.bits = 14;
+        }
+      });
+    });
     // Enforce key order: id, name, machine, volmult, groups, mapping, then rest
     var ordered = {};
     ['id', 'name', 'machine', 'volmult', 'groups', 'mapping'].forEach(function(k) {
@@ -431,7 +752,7 @@
       });
     });
 
-    // Sync slider ↔ number input for preset param values
+    // Sync slider ↔ number input for preset param values + live audition
     container.querySelectorAll('.preset-slider-input').forEach(function(slider) {
       slider.addEventListener('input', function() {
         var card = slider.closest('.sp-card');
@@ -440,6 +761,8 @@
         var idx = slider.getAttribute('data-value-idx');
         var numInput = card.querySelector('.preset-value-input[data-preset-id="' + pid + '"][data-value-idx="' + idx + '"]');
         if (numInput) numInput.value = slider.value;
+        // Live audition: send updated value to firmware
+        sendPresetCardValueToFirmware(card, pid);
       });
     });
     container.querySelectorAll('.preset-value-input').forEach(function(numInput) {
@@ -450,8 +773,38 @@
         var idx = numInput.getAttribute('data-value-idx');
         var slider = card.querySelector('.preset-slider-input[data-preset-id="' + pid + '"][data-value-idx="' + idx + '"]');
         if (slider) slider.value = numInput.value;
+        // Live audition: send updated value to firmware
+        sendPresetCardValueToFirmware(card, pid);
       });
     });
+  }
+
+  // Send all values from a preset card to firmware for live audition
+  function sendPresetCardValueToFirmware(card, presetId) {
+    var P = window.TBD.performer;
+    if (!P || !P.state || P.state.activeTrack < 0 || !state.editDef) return;
+
+    // Gather all values from the card's inputs
+    var values = [];
+    card.querySelectorAll('.preset-value-input[data-preset-id="' + presetId + '"]').forEach(function(input) {
+      var idx = parseInt(input.getAttribute('data-value-idx'), 10);
+      values[idx] = parseInt(input.value, 10) || 0;
+    });
+
+    // Fill missing indices with defaults from the definition
+    if (state.editDef.groups) {
+      state.editDef.groups.forEach(function(g) {
+        (g.parameters || []).forEach(function(p) {
+          if (values[p.idx] === undefined) {
+            values[p.idx] = p.def || 0;
+          }
+        });
+      });
+    }
+
+    // Update performer state and send to firmware
+    P.state.paramValues = values;
+    if (P.sendParameterUpdate) P.sendParameterUpdate();
   }
 
   // ─── Macro Builder Section (center panel) ────────────────
@@ -485,15 +838,13 @@
 
     var html = '';
 
-    // 1:1 Map button at top of macro builder
-    html += '<div class="mb-top-actions">';
-    html += '<button class="mapping-btn btn-1to1" title="Auto-create a 1:1 mapping from all machine CCs">1:1 Map</button>';
-    html += '</div>';
-
-    // Macro Builder description
-    html += '<div class="tab-description">';
-    html += '<sl-icon name="info-circle"></sl-icon>';
-    html += 'Define knobs (up to 6 pages \u00d7 4 knobs) and map them to DSP parameters. Drag knobs to preview. The colored dot on each range track shows the current computed CC value.';
+    // 1:1 Map button + description in one row
+    html += '<div class="mb-top-actions" style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;padding:0.5rem 0;">';
+    html += '<button class="mapping-btn btn-1to1" title="Auto-create a 1:1 mapping from all machine CCs" style="flex-shrink:0;">1:1 Map</button>';
+    html += '<span style="font-size:0.82rem;color:var(--sl-color-neutral-600);line-height:1.3;">';
+    html += '<sl-icon name="info-circle" style="font-size:0.75rem;vertical-align:-1px;margin-right:0.2rem;"></sl-icon>';
+    html += 'Define knobs (up to 6 pages \u00d7 4 knobs) and map them to DSP parameters. Use <strong>1:1 Map</strong> to auto-create all knobs, or add them manually below.';
+    html += '</span>';
     html += '</div>';
 
     // DSP Reference (collapsible, at top of builder for quick access)
@@ -585,14 +936,23 @@
       return 'CC\u2009' + String(ctrl).padStart(2, '0');
     }
 
-    function getSemanticInfo(ctrl, rangeLow, rangeHigh) {
+    function getSemanticInfo(ctrl, rangeLow, rangeHigh, maxCC, srcParam) {
       var mp = ccLookup[ctrl];
       if (!mp || !DH) return { unit: '', rangeStr: '', hint: null };
       var paramId = (def.machine || '') + '_' + (mp.id || '').replace(/-/g, '_');
-      var hint = DH.resolveHint(paramId, mp.name, mp);
+      // Merge macro-side srcParam's `ui` into the hint query so per-ui-type
+      // overrides (e.g. "envattackfast" → 0.5 ms..1 s) take precedence over
+      // the generic DSP-side lookups. srcParam is the entry in
+      // def.groups[].parameters[] matching this mapping's add[].src idx.
+      var hintParam = mp;
+      if (srcParam && srcParam.ui) {
+        hintParam = Object.assign({}, mp, { ui: srcParam.ui });
+      }
+      var hint = DH.resolveHint(paramId, mp.name, hintParam);
       if (!hint) return { unit: '', rangeStr: '', hint: null };
-      var physLow = DH.rawToDisplay(rangeLow, 0, 127, hint);
-      var physHigh = DH.rawToDisplay(rangeHigh, 0, 127, hint);
+      var rawMax = maxCC || 127;
+      var physLow = DH.rawToDisplay(rangeLow, 0, rawMax, hint);
+      var physHigh = DH.rawToDisplay(rangeHigh, 0, rawMax, hint);
       var fmtLow = DH.formatDisplayValue(physLow, hint);
       var fmtHigh = DH.formatDisplayValue(physHigh, hint);
       return {
@@ -617,7 +977,7 @@
     function computeValueDot(param, mapping, ai) {
       var addEntry = mapping.add[ai];
       if (!addEntry) return null;
-      var is14 = mapping.bits === 14;
+      var is14 = is14bit(mapping);
       var maxCC = is14 ? 16383 : 127;
       var start = mapping.start || 0;
       var mul = addEntry.mul || 1;
@@ -632,15 +992,14 @@
       var ctrl = m.ctrl;
       var mp = ccLookup[ctrl];
       var ccName = mp ? mp.name : '?';
-      var is14 = m.bits === 14;
+      var is14 = is14bit(m);
       var maxCC = is14 ? 16383 : 127;
       var range = sourceToRange(m, ai);
       var curve = addEntry.curve || 'linear';
       var lowPct = range.low / maxCC * 100;
       var highPct = range.high / maxCC * 100;
-      var sem = getSemanticInfo(ctrl, range.low, range.high);
-
       var srcParam = paramsByIdx[addEntry.src];
+      var sem = getSemanticInfo(ctrl, range.low, range.high, maxCC, srcParam);
       var dot = computeValueDot(srcParam, m, ai);
 
       var r = '';
@@ -726,13 +1085,15 @@
         html += '</div>';
 
         // Properties row
+        var is14bitParam = (param.max || 127) > 127;
+        var propCls = 'mb-prop' + (is14bitParam ? ' is-14bit' : '');
         html += '<div class="mb-props-row">';
-        html += '<label class="mb-prop"><span>def</span><input type="number" class="mapping-input mb-prop-def" value="' + (param.def || 0) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
-        html += '<label class="mb-prop"><span>min</span><input type="number" class="mapping-input mb-prop-min" value="' + (param.min || 0) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
-        html += '<label class="mb-prop"><span>max</span><input type="number" class="mapping-input mb-prop-max" value="' + (param.max || 127) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
-        html += '<label class="mb-prop"><span>res</span><input type="number" class="mapping-input mb-prop-res" value="' + (param.res || 64) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
+        html += '<label class="' + propCls + '"><span>def</span><input type="number" class="mapping-input mb-prop-def" value="' + (param.def || 0) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
+        html += '<label class="' + propCls + '"><span>min</span><input type="number" class="mapping-input mb-prop-min" value="' + (param.min || 0) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
+        html += '<label class="' + propCls + '"><span>max</span><input type="number" class="mapping-input mb-prop-max" value="' + (param.max || 127) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
+        html += '<label class="' + propCls + '"><span>res</span><input type="number" class="mapping-input mb-prop-res" value="' + (param.res || 64) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
         html += '<label class="mb-prop"><span>ui</span><select class="mapping-select mb-prop-ui" data-group="' + gi + '" data-param="' + pi + '">';
-        ['bignum', 'slider', 'toggle', 'selector', 'knob', 'freq', 'midinote', 'shape', 'shape2', 'shape3', 'noise', 'distortion', 'envattack', 'envdecay', 'envamount', 'filtercutoff', 'filterq', 'filtertype', 'samplebank', 'sampleslice', 'sampleoffset'].forEach(function(ui) {
+        ['bignum', 'slider', 'toggle', 'selector', 'knob', 'freq', 'midinote', 'shape', 'shape2', 'shape3', 'noise', 'distortion', 'envattack', 'envattackfast', 'envdecay', 'envamount', 'filtercutoff', 'filterq', 'filtertype', 'samplebank', 'sampleslice', 'sampleoffset'].forEach(function(ui) {
           html += '<option value="' + ui + '"' + (param.ui === ui ? ' selected' : '') + '>' + ui + '</option>';
         });
         html += '</select></label>';
@@ -781,11 +1142,11 @@
         var ctrl = m.ctrl;
         var mp = ccLookup[ctrl];
         var ccName = mp ? mp.name : '?';
-        var is14 = m.bits === 14;
+        var is14 = is14bit(m);
         var maxCC = is14 ? 16383 : 127;
         var fixedVal = m.start || 0;
         var fixedPct = fixedVal / maxCC * 100;
-        var sem = getSemanticInfo(ctrl, fixedVal, fixedVal);
+        var sem = getSemanticInfo(ctrl, fixedVal, fixedVal, maxCC);
 
         html += '<div class="om-constant-row" data-mapping-idx="' + mi + '">';
         html += '<span class="om-cc-label">' + fmtCC(ctrl) + '</span>';
@@ -829,30 +1190,31 @@
 
   function sourceToRange(mapping, addIdx) {
     var add = (mapping.add || [])[addIdx];
-    var maxCC = (mapping.bits === 14) ? 16383 : 127;
+    var maxCC = is14bit(mapping) ? 16383 : 127;
     if (!add) return { low: mapping.start || 0, high: mapping.start || 0 };
     var mul = add.mul || 1;
     var div = add.div || 1;
     var singleSource = (mapping.add || []).length === 1;
     if (singleSource) {
       var low = mapping.start || 0;
-      var high = low + Math.round(127 * mul / div);
+      var high = low + Math.round(maxCC * mul / div);
       return { low: Math.max(0, Math.min(maxCC, low)), high: Math.max(0, Math.min(maxCC, high)) };
     } else {
-      var maxC = Math.round(127 * mul / div);
+      var maxC = Math.round(maxCC * mul / div);
       return { low: 0, high: Math.max(0, Math.min(maxCC, maxC)), base: mapping.start || 0 };
     }
   }
 
   function rangeToSource(mapping, addIdx, low, high) {
+    var maxCC = is14bit(mapping) ? 16383 : 127;
     var singleSource = (mapping.add || []).length === 1;
     if (singleSource) {
       mapping.start = low;
       mapping.add[addIdx].mul = high - low;
-      mapping.add[addIdx].div = 127;
+      mapping.add[addIdx].div = maxCC;
     } else {
       mapping.add[addIdx].mul = high;
-      mapping.add[addIdx].div = 127;
+      mapping.add[addIdx].div = maxCC;
     }
   }
 
@@ -914,64 +1276,36 @@
       return html;
     }
 
-    // Build page-grouped param structure for labeling values
-    var pageParams = [];
-    def.groups.forEach(function(g, gi) {
-      var params = (g.parameters || []);
-      if (params.length > 0) {
-        pageParams.push({
-          pageName: g.name || ('Page ' + (gi + 1)),
-          params: params,
-        });
-      }
-    });
-
     var FP = window.TBD.factory;
 
     matching.forEach(function(preset) {
       var isFactory = FP && FP.isFactoryPreset(preset.id);
-      html += '<div class="sp-card" data-preset-id="' + S.esc(preset.id) + '">';
+      var isUnlocked = FP && FP.isUnlocked && FP.isUnlocked();
+      var isEditable = !isFactory || isUnlocked;
+      html += '<div class="sp-card' + (isFactory && !isUnlocked ? ' sp-card-readonly' : '') + '" data-preset-id="' + S.esc(preset.id) + '">';
 
       // Card header: labeled fields + action buttons
       html += '<div class="sp-card-header">';
       html += '<div class="sp-card-fields">';
-      if (isFactory) {
-        html += '<sl-icon name="lock" style="font-size:0.6rem;opacity:0.45;margin-right:0.25rem;" title="Factory preset — read-only"></sl-icon>';
+      if (isFactory && !isUnlocked) {
+        html += '<span class="sp-factory-badge" title="Factory preset — unlock Factory Edit Mode to modify"><sl-icon name="lock" style="font-size:0.55rem;"></sl-icon> Factory</span>';
       }
       html += '<label class="sp-field-label">Preset Name</label>';
-      html += '<input class="mapping-input sp-name-input preset-name-input" value="' + S.esc(preset.name || preset.id) + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. Fat Punch"' + (isFactory ? ' readonly' : '') + ' />';
+      html += '<input class="mapping-input sp-name-input preset-name-input" value="' + S.esc(preset.name || preset.id) + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. Fat Punch"' + (!isEditable ? ' readonly' : '') + ' />';
       html += '<label class="sp-field-label" style="margin-left:0.5rem;">Group</label>';
-      html += '<input class="mapping-input sp-group-input preset-group-input" value="' + S.esc(preset.group || '') + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. User"' + (isFactory ? ' readonly' : '') + ' />';
+      html += '<input class="mapping-input sp-group-input preset-group-input" value="' + S.esc(preset.group || '') + '" data-preset-id="' + S.esc(preset.id) + '" placeholder="e.g. User"' + (!isEditable ? ' readonly' : '') + ' />';
       html += '</div>';
       html += '<div class="sp-card-actions">';
-      if (!isFactory) {
+      if (isEditable) {
         html += '<button class="mapping-btn save-preset-btn" data-preset-id="' + S.esc(preset.id) + '" title="Save changes"><sl-icon name="floppy" style="font-size:0.7rem;"></sl-icon> Save</button>';
         html += '<button class="mapping-btn delete-preset-btn" data-preset-id="' + S.esc(preset.id) + '" title="Delete preset"><sl-icon name="trash3" style="font-size:0.7rem;"></sl-icon> Delete</button>';
       }
       html += '</div>';
       html += '</div>';
 
-      // Card body: values organized by page with knob labels
-      html += '<div class="sp-card-values">';
-      pageParams.forEach(function(page) {
-        html += '<div class="sp-page-group">';
-        html += '<span class="sp-page-label">' + S.esc(page.pageName) + '</span>';
-        html += '<div class="sp-params">';
-        page.params.forEach(function(param) {
-          var val = preset.values && preset.values[param.idx] !== undefined ? preset.values[param.idx] : '';
-          var pMin = param.min !== undefined ? param.min : 0;
-          var pMax = param.max !== undefined ? param.max : 127;
-          var numVal = val !== '' ? val : param.def || 0;
-          html += '<div class="sp-param">';
-          html += '<span class="sp-param-name">' + S.esc(param.name || ('P' + param.idx)) + '</span>';
-          html += '<input class="sp-param-slider preset-slider-input" type="range" min="' + pMin + '" max="' + pMax + '" value="' + numVal + '" data-preset-id="' + S.esc(preset.id) + '" data-value-idx="' + param.idx + '" />';
-          html += '<input class="sp-param-value preset-value-input" type="number" min="' + pMin + '" max="' + pMax + '" value="' + val + '" data-preset-id="' + S.esc(preset.id) + '" data-value-idx="' + param.idx + '" />';
-          html += '<span class="sp-param-range">' + pMin + '–' + pMax + '</span>';
-          html += '</div>';
-        });
-        html += '</div>';
-        html += '</div>';
-      });
+      // Card body: render knobs using the shared knob renderer (compact)
+      html += '<div class="sp-card-knobs">';
+      html += S.renderKnobGroups(def, preset.values || [], { knobSize: 56 });
       html += '</div>';
 
       html += '</div>'; // .sp-card
@@ -1145,7 +1479,7 @@
               var mapping = state.editDef.mapping[mi];
               var addEntry = mapping.add && mapping.add[ai];
               if (!addEntry) return;
-              var is14 = mapping.bits === 14;
+              var is14 = is14bit(mapping);
               var maxCC = is14 ? 16383 : 127;
               var start = mapping.start || 0;
               var mul = addEntry.mul || 1;
@@ -1185,7 +1519,7 @@
         var ai = parseInt(input.getAttribute('data-add'), 10);
         if (!state.editDef || !state.editDef.mapping[mi]) return;
         var mapping = state.editDef.mapping[mi];
-        var maxCC = (mapping.bits === 14) ? 16383 : 127;
+        var maxCC = is14bit(mapping) ? 16383 : 127;
         var row = input.closest('.om-cc-row, .om-source-row');
         var lowInput = row ? row.querySelector('.om-range-low') : null;
         var highInput = row ? row.querySelector('.om-range-high') : null;
@@ -1226,7 +1560,7 @@
       input.addEventListener('change', function() {
         var mi = parseInt(input.getAttribute('data-mapping'), 10);
         if (!state.editDef || !state.editDef.mapping[mi]) return;
-        var maxCC = (state.editDef.mapping[mi].bits === 14) ? 16383 : 127;
+        var maxCC = is14bit(state.editDef.mapping[mi]) ? 16383 : 127;
         state.editDef.mapping[mi].start = Math.max(0, Math.min(maxCC, parseInt(input.value, 10) || 0));
         state.dirty = true;
         renderMacroBuilderSection();
@@ -1238,7 +1572,7 @@
       input.addEventListener('change', function() {
         var mi = parseInt(input.getAttribute('data-mapping'), 10);
         if (!state.editDef || !state.editDef.mapping[mi]) return;
-        var maxCC = (state.editDef.mapping[mi].bits === 14) ? 16383 : 127;
+        var maxCC = is14bit(state.editDef.mapping[mi]) ? 16383 : 127;
         state.editDef.mapping[mi].start = Math.max(0, Math.min(maxCC, parseInt(input.value, 10) || 0));
         state.dirty = true;
         renderMacroBuilderSection();
@@ -1252,11 +1586,41 @@
         if (!state.editDef || !state.editDef.mapping[mi]) return;
         var mapping = state.editDef.mapping[mi];
         if (checkbox.checked) {
+          // Switching 7-bit → 14-bit: scale mapping start, scale source params up
           mapping.bits = 14;
+          mapping.type = 'nrpm';
+          mapping.start = Math.round((mapping.start || 0) * 16383 / 127);
+          (mapping.add || []).forEach(function(a) {
+            var param = findParamByIdx(a.src);
+            if (param && (param.max || 127) <= 127) {
+              var pOld = param.max || 127;
+              param.def = Math.round((param.def || 0) * 16383 / pOld);
+              param.max = 16383;
+              param.res = Math.round((param.res || Math.round(pOld / 2)) * 16383 / pOld);
+            }
+          });
         } else {
+          // Switching 14-bit → 7-bit: scale mapping start, scale source params down.
+          // Mapping.type must be explicit on every entry (see Pico
+          // docs/architecture/macro-system.md "macro-vs-synthdef type agreement"
+          // invariant — missing type silently defaults to CC on the Pico and
+          // regresses other machines). Set type:"cc" here, never delete it.
           delete mapping.bits;
-          if (mapping.start > 127) mapping.start = 127;
-          (mapping.add || []).forEach(function(a) { if (a.mul > 127) a.mul = 127; });
+          mapping.type = 'cc';
+          mapping.start = Math.min(127, Math.round((mapping.start || 0) * 127 / 16383));
+          (mapping.add || []).forEach(function(a) {
+            if (a.mul > 127) a.mul = 127;
+            // Only scale param down if no other mapping still needs 14-bit
+            if (isParamUsedBy14bit(a.src, mi)) return;
+            var param = findParamByIdx(a.src);
+            if (param && (param.max || 127) > 127) {
+              var pOld = param.max;
+              param.def = Math.round((param.def || 0) * 127 / pOld);
+              param.max = 127;
+              param.res = Math.round((param.res || Math.round(pOld / 2)) * 127 / pOld);
+              param.min = Math.min(param.min || 0, 127);
+            }
+          });
         }
         state.dirty = true;
         renderMacroBuilderSection();
@@ -1280,7 +1644,7 @@
         function onMove(ev) {
           if (!state.editDef || !state.editDef.mapping[mi]) return;
           var mapping = state.editDef.mapping[mi];
-          var maxCC = (mapping.bits === 14) ? 16383 : 127;
+          var maxCC = is14bit(mapping) ? 16383 : 127;
           var rect = track.getBoundingClientRect();
           var pct = (ev.clientX - rect.left) / rect.width;
           pct = Math.max(0, Math.min(1, pct));
@@ -1337,6 +1701,7 @@
             var ccParam = machineInfo.parameters.find(function(p) { return p.ctrl === ctrl; });
             if (ccParam) {
               var uiInfo = lookupUiType(machine, ccParam.id);
+              var isNrpm = ccParam.type === 'nrpm';
               // Find the knob parameter and update its name, ui + curve
               state.editDef.groups.forEach(function(g) {
                 (g.parameters || []).forEach(function(p) {
@@ -1348,6 +1713,12 @@
                     p.ui = uiInfo.ui;
                     if (uiInfo.curve) { p.curve = uiInfo.curve; addEntry.curve = uiInfo.curve; }
                     else { delete p.curve; }
+                    // Set 14-bit range for NRPN parameters
+                    if (isNrpm && (p.max || 127) <= 127) {
+                      p.max = 16383;
+                      p.res = Math.round((p.res || 64) * 16383 / 127);
+                      p.def = Math.round((p.def || 0) * 16383 / 127);
+                    }
                   }
                 });
               });
@@ -1355,7 +1726,20 @@
           }
         }
 
-        state.editDef.mapping.push({ ctrl: ctrl, start: 0, add: [addEntry] });
+        // Invariant: every mapping entry MUST carry an explicit "type" field
+        // ("cc" or "nrpm") matching synthdefinitions.json for the same ctrl.
+        // See tbd-pico-seq3/docs/architecture/macro-system.md — a missing type
+        // silently defaults to CC on the Pico and regresses other machines
+        // when the synthdef actually declares the ctrl as NRPM.
+        var newMapping = { ctrl: ctrl, type: 'cc', start: 0, add: [addEntry] };
+        if (machine) {
+          var mi2 = S.getMachineInfo(machine);
+          if (mi2 && mi2.parameters) {
+            var cp = mi2.parameters.find(function(p) { return p.ctrl === ctrl; });
+            if (cp && cp.type === 'nrpm') { newMapping.bits = 14; newMapping.type = 'nrpm'; }
+          }
+        }
+        state.editDef.mapping.push(newMapping);
         state.dirty = true;
         renderMacroBuilderSection();
       });
@@ -1368,7 +1752,25 @@
         if (!state.editDef) return;
         var ctrl = parseInt(unmappedSelect.value, 10);
         if (isNaN(ctrl)) return;
-        state.editDef.mapping.push({ ctrl: ctrl, start: 0, add: [] });
+        // Invariant: every mapping entry MUST carry an explicit "type" field
+        // matching synthdefinitions.json. See the knob-to-CC branch above
+        // for the full rationale.
+        var unmappedType = 'cc';
+        var unmappedBits;
+        var unmappedMachine = state.editDef && state.editDef.machine;
+        if (unmappedMachine) {
+          var umi = S.getMachineInfo(unmappedMachine);
+          if (umi && umi.parameters) {
+            var ucp = umi.parameters.find(function(p) { return p.ctrl === ctrl; });
+            if (ucp && ucp.type === 'nrpm') {
+              unmappedType = 'nrpm';
+              unmappedBits = 14;
+            }
+          }
+        }
+        var unmappedEntry = { ctrl: ctrl, type: unmappedType, start: 0, add: [] };
+        if (unmappedBits) unmappedEntry.bits = unmappedBits;
+        state.editDef.mapping.push(unmappedEntry);
         state.dirty = true;
         renderMacroBuilderSection();
       });
@@ -1441,11 +1843,12 @@
       for (var p = 0; p < 4 && paramIdx < params.length; p++) {
         var cc = params[paramIdx];
         var uiInfo = lookupUiType(machine, cc.id);
+        var ccMax = (cc.type === 'nrpm') ? 16383 : 127;
         var paramObj = {
           idx: paramIdx,
           name: cc.name || ('CC' + cc.ctrl),
           def: cc.def || 0,
-          min: 0, max: 127, res: 64, ui: uiInfo.ui,
+          min: 0, max: ccMax, res: Math.round(ccMax / 2), ui: uiInfo.ui,
         };
         if (uiInfo.curve) paramObj.curve = uiInfo.curve;
         groupParams.push(paramObj);
@@ -1473,7 +1876,9 @@
         }
         var addEntry = { src: allParams[i].idx, mul: mapMul, div: 1 };
         if (mapCurve) addEntry.curve = mapCurve;
-        state.editDef.mapping.push({ ctrl: cc.ctrl, start: mapStart, add: [addEntry] });
+        var mapEntry = { ctrl: cc.ctrl, start: mapStart, add: [addEntry] };
+        if (cc.type === 'nrpm') { mapEntry.bits = 14; mapEntry.type = 'nrpm'; }
+        state.editDef.mapping.push(mapEntry);
       }
     });
 
@@ -1546,10 +1951,11 @@
 
       var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-      // Prevent overwriting factory presets
+      // Prevent overwriting factory presets (unless Factory Edit Mode unlocked)
       var Fcheck = window.TBD.factory;
-      if (Fcheck && Fcheck.isFactoryPreset(id)) {
-        nameInput.setAttribute('help-text', 'This name matches a factory preset \u2014 choose a different name');
+      var isFactoryId = Fcheck && Fcheck.isFactoryPreset(id);
+      if (isFactoryId && !(Fcheck.isUnlocked && Fcheck.isUnlocked())) {
+        nameInput.setAttribute('help-text', 'This name matches a factory preset \u2014 unlock Factory Edit Mode or choose a different name');
         nameInput.focus();
         return;
       }
@@ -1567,7 +1973,7 @@
 
       var preset = { id: id, name: name, group: group, macro: state.editDef.id, values: values };
       var jsonStr = JSON.stringify(preset, null, 2);
-      var filePath = 'presets/' + id + '.json';
+      var filePath = (isFactoryId ? 'factory/presets/' : 'presets/') + id + '.json';
 
       createBtn.setAttribute('loading', '');
       fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -1596,8 +2002,9 @@
 
   function saveEditedPreset(presetId, container) {
     var F = window.TBD.factory;
-    if (F && F.isFactoryPreset(presetId)) {
-      S.toast('Factory presets are read-only', 'warning', 3000);
+    var isFactory = F && F.isFactoryPreset(presetId);
+    if (isFactory && !(F.isUnlocked && F.isUnlocked())) {
+      S.toast('Factory presets are read-only — unlock Factory Edit Mode first', 'warning', 3000);
       return;
     }
     var preset = S.data.soundPresets.find(function(p) { return p.id === presetId; });
@@ -1613,7 +2020,7 @@
     });
 
     var jsonStr = JSON.stringify(preset, null, 2);
-    var filePath = 'presets/' + presetId + '.json';
+    var filePath = (isFactory ? 'factory/presets/' : 'presets/') + presetId + '.json';
 
     fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
       method: 'POST',
@@ -1632,8 +2039,8 @@
 
   function deleteSoundPreset(presetId) {
     var F = window.TBD.factory;
-    if (F && F.isFactoryPreset(presetId)) {
-      S.toast('Factory presets cannot be deleted', 'warning', 3000);
+    if (F && F.isFactoryPreset(presetId) && !(F.isUnlocked && F.isUnlocked())) {
+      S.toast('Factory presets cannot be deleted \u2014 unlock Factory Edit Mode first', 'warning', 3000);
       return;
     }
     var preset = S.data.soundPresets.find(function(p) { return p.id === presetId; });
@@ -1662,7 +2069,8 @@
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'presets/' + presetId + '.json';
+      var Fdel = window.TBD.factory;
+      var filePath = (Fdel && Fdel.isFactoryPreset(presetId) ? 'factory/presets/' : 'presets/') + presetId + '.json';
       apiPost('/api/v2/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -1687,8 +2095,8 @@
 
   function deleteDefinition(defId) {
     var F = window.TBD.factory;
-    if (F && F.isFactoryDefinition(defId)) {
-      S.toast('Factory definitions cannot be deleted — clone it instead', 'warning', 3000);
+    if (F && F.isFactoryDefinition(defId) && !(F.isUnlocked && F.isUnlocked())) {
+      S.toast('Factory definitions cannot be deleted — unlock Factory Edit Mode first', 'warning', 3000);
       return;
     }
     var def = S.data.macroDefs.find(function(d) { return d.id === defId; });
@@ -1729,7 +2137,8 @@
     deleteBtn.innerHTML = '<sl-icon name="trash3" slot="prefix"></sl-icon> Delete';
     deleteBtn.addEventListener('click', function() {
       deleteBtn.setAttribute('loading', '');
-      var filePath = 'macros/' + defId + '.json';
+      var Fdel = window.TBD.factory;
+      var filePath = (Fdel && Fdel.isFactoryDefinition(defId) ? 'factory/macros/' : 'macros/') + defId + '.json';
       apiPost('/api/v2/storage?action=manage', { action: 'deleteconfig', path: filePath })
       .then(function() {
         dialog.hide();
@@ -1789,7 +2198,8 @@
 
     var cleanDef = cleanDefinitionForSave(state.editDef);
     var jsonStr = JSON.stringify(cleanDef, null, 2);
-    var filePath = 'macros/' + state.editDef.id + '.json';
+    var isFactoryDef = F && F.isFactoryDefinition(state.editDef.id);
+    var filePath = (isFactoryDef && F.isUnlocked && F.isUnlocked() ? 'factory/macros/' : 'macros/') + state.editDef.id + '.json';
 
     S.showLoading('Saving definition\u2026');
     fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
@@ -1856,7 +2266,9 @@
             }
             S.toast('Imported definition: ' + (data.name || data.id || 'unknown'), 'success', 2000);
           } else if (data.id && data.macro && data.values) {
-            var filePath = 'presets/' + data.id + '.json';
+            var Fimp = window.TBD.factory;
+            var isFactoryId = Fimp && Fimp.isFactoryPreset && Fimp.isFactoryPreset(data.id);
+            var filePath = (isFactoryId && Fimp.isUnlocked && Fimp.isUnlocked() ? 'factory/presets/' : 'presets/') + data.id + '.json';
             fetch('/api/v2/storage?action=uploadconfig&path=' + encodeURIComponent(filePath), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -1890,6 +2302,12 @@
     });
 
     setupDefinitionListEvents();
+
+    // Re-render when factory lock state changes (delete buttons, edit permissions)
+    window.addEventListener('tbd-factory-lock-changed', function() {
+      renderDefinitionList();
+      if (state.editDef) renderMacroBuilderSection();
+    });
 
     if (S.data.activeTrack >= 0) {
       var track = S.data.tracks.find(function(t) { return t.index === S.data.activeTrack; });
