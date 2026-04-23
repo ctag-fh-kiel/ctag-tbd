@@ -92,7 +92,6 @@
   "mapping": [
     {
       "ctrl": 8,
-      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -104,7 +103,6 @@
     },
     {
       "ctrl": 9,
-      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -116,7 +114,6 @@
     },
     {
       "ctrl": 10,
-      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -128,7 +125,6 @@
     },
     {
       "ctrl": 11,
-      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -140,7 +136,6 @@
     },
     {
       "ctrl": 12,
-      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -153,7 +148,6 @@
     },
     {
       "ctrl": 13,
-      "type": "nrpm",
       "start": 0,
       "add": [
         {
@@ -165,25 +159,21 @@
     },
     {
       "ctrl": 14,
-      "type": "cc",
       "start": 32,
       "add": []
     },
     {
       "ctrl": 15,
-      "type": "cc",
       "start": 0,
       "add": []
     },
     {
       "ctrl": 16,
-      "type": "cc",
       "start": 1,
       "add": []
     },
     {
       "ctrl": 17,
-      "type": "cc",
       "start": 1,
       "add": [
         {
@@ -196,13 +186,11 @@
     },
     {
       "ctrl": 18,
-      "type": "cc",
       "start": 64,
       "add": []
     },
     {
       "ctrl": 19,
-      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -214,37 +202,31 @@
     },
     {
       "ctrl": 20,
-      "type": "cc",
       "start": 0,
       "add": []
     },
     {
       "ctrl": 21,
-      "type": "cc",
       "start": 0,
       "add": []
     },
     {
       "ctrl": 22,
-      "type": "cc",
       "start": 64,
       "add": []
     },
     {
       "ctrl": 23,
-      "type": "cc",
       "start": 0,
       "add": []
     },
     {
       "ctrl": 24,
-      "type": "cc",
       "start": 0,
       "add": []
     },
     {
       "ctrl": 25,
-      "type": "cc",
       "start": 64,
       "add": []
     }

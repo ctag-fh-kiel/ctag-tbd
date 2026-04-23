@@ -34,8 +34,14 @@ namespace CTAG {
             private:
                 int8_t trackToMidiChannel[16];
                 uint8_t trackBaseCC[16];
-                uint16_t trackParameterValues[16][16];
-                uint16_t outputValues[16][16];
+                // Second dim widened to 24 to cover every macro idx currently in use
+                // (max used = 21 for td3-acidbass Accent). Matches MacroSoundPreset's
+                // parameterValues[MaxMacroSoundPresetParameters=24].
+                // MaxOutputMappings is intentionally NOT changed — only the per-track
+                // parameter/output caches are widened. Sizeof(MacroDeviceDefinition) stays the
+                // same, so no cross-machine regressions.
+                uint16_t trackParameterValues[16][24];
+                uint16_t outputValues[16][24];
                 bool trackDirty[16];
                 bool bankDirty;
                 char trackMachineId[16][16];
