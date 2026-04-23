@@ -557,7 +557,7 @@
         {
           "id": "tone",
           "name": "Tone",
-          "type": "nrpm",
+          "type": "cc",
           "ctrl": 9,
           "def": 32
         },
@@ -571,7 +571,7 @@
         {
           "id": "a-fm",
           "name": "A FM",
-          "type": "nrpm",
+          "type": "cc",
           "ctrl": 11,
           "def": 256
         },

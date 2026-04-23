@@ -25,8 +25,7 @@
           "min": 0,
           "max": 16383,
           "res": 4096,
-          "ui": "shape2",
-          "curve": "exp"
+          "ui": "shape2"
         },
         {
           "idx": 5,
@@ -46,8 +45,7 @@
           "min": 0,
           "max": 16383,
           "res": 4096,
-          "ui": "shape",
-          "curve": "exp"
+          "ui": "shape"
         }
       ]
     },
@@ -72,8 +70,7 @@
           "min": 0,
           "max": 16383,
           "res": 4096,
-          "ui": "shape3",
-          "curve": "exp"
+          "ui": "shape3"
         },
         {
           "idx": 4,
@@ -142,8 +139,7 @@
         {
           "src": 1,
           "mul": 1,
-          "div": 1,
-          "curve": "exp"
+          "div": 1
         }
       ]
     },
@@ -167,8 +163,7 @@
         {
           "src": 3,
           "mul": 1,
-          "div": 1,
-          "curve": "exp"
+          "div": 1
         }
       ]
     },
@@ -204,8 +199,7 @@
         {
           "src": 6,
           "mul": 1,
-          "div": 1,
-          "curve": "exp"
+          "div": 1
         }
       ]
     },

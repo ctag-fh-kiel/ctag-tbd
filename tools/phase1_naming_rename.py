@@ -77,10 +77,10 @@ MACHINE_LABEL_BY_PREFIX = {
     "td3":      "TBD03",
     "wtosc":    "WT Osc",
     "db":       "SynKick",
-    "ab":       "AcidBass",
+    "ab":       "AnaKick",
     "fmb":      "FM Kick",
     "ds":       "DigSnare",
-    "as":       "AnaSub",
+    "as":       "AnaSnare",
     "hh1":      "Hat 1",
     "hh2":      "Hat 2",
     "cl":       "Clap",
@@ -121,7 +121,7 @@ SYNTHDEF_MACHINE_NAME_UPDATES = {
 TRACKDEFAULTS_NAME_UPDATES = {
     # (index, new _name). Only entries that currently drift.
     10: "Lead     — Mono Synth (mo)",       # was "Mono Osc (mo)"
-    11: "Lead2    — Mono Synth (mo/wtosc)", # was "Mono Osc (mo/wtosc)"
+    11: "Lead2    — Mono Synth Bass (mo)",  # now boots with mo-bass preset; was "Mono Osc (mo/wtosc)"
 }
 
 

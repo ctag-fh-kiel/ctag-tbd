@@ -5,22 +5,22 @@
   "volmult": 1.5,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Tone",
       "parameters": [
         {
           "idx": 0,
           "name": "Freq",
-          "def": 4,
+          "def": 512,
           "min": 0,
-          "max": 127,
-          "res": 64,
+          "max": 16383,
+          "res": 2048,
           "ui": "freq",
           "curve": "log"
         },
         {
           "idx": 1,
           "name": "Tone",
-          "def": 51,
+          "def": 58,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -29,7 +29,7 @@
         {
           "idx": 2,
           "name": "Decay",
-          "def": 64,
+          "def": 57,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -39,25 +39,25 @@
         {
           "idx": 3,
           "name": "A FM",
-          "def": 19,
+          "def": 20,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "shape3"
+          "ui": "envamount"
         }
       ]
     },
     {
-      "name": "Page 2",
+      "name": "FM Env",
       "parameters": [
         {
           "idx": 4,
           "name": "S FM",
-          "def": 13,
+          "def": 1280,
           "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "shape2"
+          "max": 16383,
+          "res": 2048,
+          "ui": "envamount"
         },
         {
           "idx": 5,
@@ -87,7 +87,7 @@
     },
     {
       "ctrl": 9,
-      "type": "nrpm",
+      "type": "cc",
       "start": 0,
       "add": [
         {
@@ -112,7 +112,7 @@
     },
     {
       "ctrl": 11,
-      "type": "nrpm",
+      "type": "cc",
       "start": 0,
       "add": [
         {
