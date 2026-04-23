@@ -1,5 +1,5 @@
 {
-  "version": "0.5.1",
-  "date": "2026-04-13",
-  "description": "NRPM parameters, OTA reliability improvements, updater UX fixes"
+  "version": "0.6.0",
+  "date": "2026-04-23",
+  "description": "v0.6.0 release train: macro naming refactor, applyCurve() hi-res fix, factory preset cull, three-line OLED header"
 }

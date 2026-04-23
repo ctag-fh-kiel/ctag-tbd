@@ -32,6 +32,17 @@ Version History
      - Date
      - Description
      - Download
+   * - **0.6.0**
+     - 2026-04-23
+     - v0.6.0 release train. Macro/preset naming refactor aligned with
+       the published manual (MonoSyn, AnaKick, FM Kick, DigSnare, TBD03,
+       …). Root-cause fix for the ``applyCurve()`` integer-math plateau
+       on hi-res sources (no more "50-knob-turns-to-move" bug). Factory
+       preset / macro cull — only working Defaults ship; broken variants
+       removed. Three-line OLED header (machine / preset / page) on the
+       Pico side with short machine labels. New ``validate_macros.py``
+       linter for cross-repo macro/synthdef/preset invariants.
+     - `zip <https://dadamachines.github.io/dada-tbd-firmware/webui-updates/webui-update-v0.6.0.zip>`__
    * - **0.5.1**
      - 2026-04-13
      - NRPM parameters (possan), OTA PSRAM buffer for reliable firmware
