@@ -499,4 +499,16 @@ namespace CTAG::SP::HELPERS {
         return (((a * f) - b_neg) * f + c) * f + x0;
     }
 
+    // Fast concave remap for knob feel:
+    // x in [0,1] -> y in [0,1], with more sensitivity at low x.
+    // Smaller k => more aggressive boost near 0.
+    // Suggested values:
+    // k = 0.03f -> very aggressive (~0.1 -> 0.79)
+    // k = 0.06f -> aggressive     (~0.1 -> 0.65)
+    // k = 0.10f -> moderate       (~0.1 -> 0.53)
+    float FastConcaveTransfer(float x, float k) {
+        // Safe for x in [0,1], k > 0
+        return x / (x + k * (1.0f - x));
+    }
+
 }

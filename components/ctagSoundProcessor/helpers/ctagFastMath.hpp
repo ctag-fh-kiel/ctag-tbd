@@ -143,6 +143,7 @@ namespace CTAG::SP::HELPERS {
         const float index,
         const uint32_t size);
 
+    float FastConcaveTransfer(float x, float k);
 
 }
 

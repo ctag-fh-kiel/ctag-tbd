@@ -698,10 +698,11 @@ void ctagSoundProcessorDrumRack::Process(const ProcessData& data){
     }
 
     // delay
-    MK_FLT_PAR_ABS(fFeedback, fx1_feedback, 4095.f, 1.5f)
+    MK_FLT_PAR_ABS(fFeedback, fx1_feedback, 4095.f, 1.2f)
     MK_FLT_PAR_ABS(fBase, fx1_base, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fWidth, fx1_width, 4095.f, 1.f)
     MK_FLT_PAR_ABS(fDelayStereoWidth, fx1_st_width, 4095.f, 1.f)
+	fDelayStereoWidth = HELPERS::FastConcaveTransfer(fDelayStereoWidth, 0.06f);
     MK_FLT_PAR_ABS(fDelayReverbSend, fx1_fx_send, 4095.f, maxFXSendLevelRev)
     fDelayReverbSend *= fDelayReverbSend;
     MK_FLT_PAR_ABS(fDelayAmount, fx1_amount, 4095.f, 2.f)
