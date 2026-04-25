@@ -27,6 +27,15 @@
           "ui": "onoff"
         },
         {
+          "idx": 6,
+          "name": "Fdbk",
+          "def": 45,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filterq"
+        },
+        {
           "idx": 2,
           "name": "Freeze",
           "def": 0,
@@ -34,6 +43,40 @@
           "max": 1,
           "res": 64,
           "ui": "onoff"
+        }
+      ]
+    },
+    {
+      "name": "Delay Tone",
+      "parameters": [
+        {
+          "idx": 7,
+          "name": "HP",
+          "def": 18,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filtercutoff",
+          "curve": "log"
+        },
+        {
+          "idx": 8,
+          "name": "LP",
+          "def": 95,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filtercutoff",
+          "curve": "log"
+        },
+        {
+          "idx": 4,
+          "name": "Width",
+          "def": 32,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "pan"
         },
         {
           "idx": 3,
@@ -47,64 +90,12 @@
       ]
     },
     {
-      "name": "Tone & Send",
+      "name": "Delay Route",
       "parameters": [
-        {
-          "idx": 4,
-          "name": "Width",
-          "def": 32,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "pan"
-        },
         {
           "idx": 5,
           "name": ">Rev",
           "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "level"
-        },
-        {
-          "idx": 6,
-          "name": "Fdbk",
-          "def": 45,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "filterq"
-        },
-        {
-          "idx": 7,
-          "name": "HP",
-          "def": 18,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "filtercutoff",
-          "curve": "log"
-        }
-      ]
-    },
-    {
-      "name": "More",
-      "parameters": [
-        {
-          "idx": 8,
-          "name": "LP",
-          "def": 95,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "filtercutoff",
-          "curve": "log"
-        },
-        {
-          "idx": 9,
-          "name": "Level",
-          "def": 80,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -119,6 +110,15 @@
           "res": 64,
           "ui": "filtercutoff",
           "curve": "log"
+        },
+        {
+          "idx": 9,
+          "name": "Level",
+          "def": 80,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "level"
         }
       ]
     }

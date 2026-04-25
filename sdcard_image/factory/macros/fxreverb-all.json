@@ -29,15 +29,6 @@
           "curve": "log"
         },
         {
-          "idx": 2,
-          "name": "Level",
-          "def": 75,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "level"
-        },
-        {
           "idx": 3,
           "name": "Diffuse",
           "def": 89,
@@ -54,7 +45,12 @@
           "max": 127,
           "res": 64,
           "ui": "bignum"
-        },
+        }
+      ]
+    },
+    {
+      "name": "Reverb Mod",
+      "parameters": [
         {
           "idx": 5,
           "name": "ModRate",
@@ -91,6 +87,20 @@
           "res": 64,
           "ui": "filtercutoff",
           "curve": "log"
+        }
+      ]
+    },
+    {
+      "name": "Advanced",
+      "parameters": [
+        {
+          "idx": 2,
+          "name": "Level",
+          "def": 75,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "level"
         }
       ]
     }

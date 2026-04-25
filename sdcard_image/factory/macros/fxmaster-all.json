@@ -5,7 +5,50 @@
   "volmult": 1.0,
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Output",
+      "parameters": [
+        {
+          "idx": 10,
+          "name": "Volume",
+          "def": 127,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum"
+        },
+        {
+          "idx": 9,
+          "name": "Mute",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "onoff"
+        },
+        {
+          "idx": 11,
+          "name": "Delay",
+          "def": 72,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum",
+          "curve": "log"
+        },
+        {
+          "idx": 12,
+          "name": "Reverb",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "bignum",
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "name": "Compressor A",
       "parameters": [
         {
           "idx": 0,
@@ -48,21 +91,11 @@
       ]
     },
     {
-      "name": "Page 2",
+      "name": "Compressor B",
       "parameters": [
         {
-          "idx": 4,
-          "name": "LPF",
-          "def": 0,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "filtercutoff",
-          "curve": "log"
-        },
-        {
           "idx": 5,
-          "name": "Gain",
+          "name": "MakeUp",
           "def": 14,
           "min": 0,
           "max": 127,
@@ -77,29 +110,16 @@
           "max": 127,
           "res": 64,
           "ui": "bignum"
-        }
-      ]
-    },
-    {
-      "name": "Page 3",
-      "parameters": [
-        {
-          "idx": 9,
-          "name": "Sum mute",
-          "def": 0,
-          "min": 0,
-          "max": 1,
-          "res": 64,
-          "ui": "bignum"
         },
         {
-          "idx": 10,
-          "name": "Sum lev",
-          "def": 127,
+          "idx": 4,
+          "name": "LPF",
+          "def": 0,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "bignum"
+          "ui": "filtercutoff",
+          "curve": "log"
         }
       ]
     }
@@ -213,6 +233,30 @@
           "src": 10,
           "mul": 1,
           "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "type": "cc",
+      "add": [
+        {
+          "src": 11,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 16,
+      "type": "cc",
+      "add": [
+        {
+          "src": 12,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
         }
       ]
     }
