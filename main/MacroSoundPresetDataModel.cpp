@@ -121,7 +121,11 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
                     } else {
                         ESP_LOGD("MacroSoundPresetDataModel", "  Found macro device definition with id %s for preset %s", presets[pindex].macroDeviceId, presets[pindex].id);
                         // figure out which tracks this preset is valid on.
-                        for (int i = 0; i < 16; i++) {
+                        // Iterate up to track 18 (FX1=16, FX2=17, Master=18) so
+                        // fxdelay / fxreverb / fxmaster presets get their bits
+                        // set and the SoundPresetScreen picker can list them
+                        // when invoked from the FX1 / FX2 / Master pages.
+                        for (int i = 0; i < 19; i++) {
                             TrackDefinition *trackdef = SynthDefinitionDataModel::instance()->GetTrackDefinition(i);
                             if (trackdef != nullptr) {
                                 for(int j=0; j<MaxTrackDefinitionMachineIds; j++) {

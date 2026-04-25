@@ -1,6 +1,6 @@
 {
   "id": "fxreverb-def",
-  "name": "RevrbFX",
+  "name": "Default",
   "group": "FX",
   "macro": "fxreverb-all",
   "_comment": "Values aligned 2026-04-24e with Pico initsong.cpp defaults: Time 64 / Damp 80 / Level 75 / Diffuse 89 / PreDly 14. Phase 6 + 8 additions now exposed in WebUI macro editor.",

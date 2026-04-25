@@ -1,6 +1,6 @@
 {
   "id": "fxmaster-def",
-  "name": "MastFX",
+  "name": "Default",
   "group": "FX",
   "macro": "fxmaster-all",
   "values": [
