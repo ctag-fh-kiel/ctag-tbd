@@ -2,7 +2,7 @@
   "id": "rs-allparams",
   "name": "Rimshot",
   "machine": "rs",
-  "volmult": 0.15,
+  "volmult": 0.1,
   "groups": [
     {
       "name": "Tone",

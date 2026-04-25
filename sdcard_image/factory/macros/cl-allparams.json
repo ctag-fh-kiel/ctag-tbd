@@ -2,7 +2,7 @@
   "id": "cl-allparams",
   "name": "Clap",
   "machine": "cl",
-  "volmult": 0.5,
+  "volmult": 0.3,
   "groups": [
     {
       "name": "Tone",

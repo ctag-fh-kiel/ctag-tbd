@@ -2,7 +2,7 @@
   "id": "td3-acidbass",
   "name": "AcidBass Macro",
   "machine": "td3",
-  "volmult": 0.35,
+  "volmult": 0.3,
   "groups": [
     {
       "name": "Perform",
