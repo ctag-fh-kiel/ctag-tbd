@@ -2,7 +2,7 @@
   "id": "pp-allparams",
   "name": "PolyPad",
   "machine": "pp",
-  "volmult": 1.2,
+  "volmult": 0.6,
   "groups": [
     {
       "name": "Chord",

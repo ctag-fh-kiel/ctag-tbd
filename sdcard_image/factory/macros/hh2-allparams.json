@@ -2,7 +2,7 @@
   "id": "hh2-allparams",
   "name": "Hi-Hat 2",
   "machine": "hh2",
-  "volmult": 1.0,
+  "volmult": 0.5,
   "groups": [
     {
       "name": "Voice",

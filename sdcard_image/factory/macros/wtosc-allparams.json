@@ -2,7 +2,7 @@
   "id": "wtosc-allparams",
   "name": "WaveOsc",
   "machine": "wtosc",
-  "volmult": 1.0,
+  "volmult": 0.5,
   "groups": [
     {
       "name": "Osc",

@@ -2,7 +2,7 @@
   "id": "fmb-allparams",
   "name": "FM Kick",
   "machine": "fmb",
-  "volmult": 0.8,
+  "volmult": 0.4,
   "groups": [
     {
       "name": "Carrier",
