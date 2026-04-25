@@ -2,7 +2,7 @@
   "id": "td3-hybrid",
   "name": "Hybrid",
   "machine": "td3",
-  "volmult": 0.4,
+  "volmult": 0.8,
   "groups": [
     {
       "name": "Osc",

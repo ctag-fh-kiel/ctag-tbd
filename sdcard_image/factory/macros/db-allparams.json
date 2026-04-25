@@ -2,7 +2,7 @@
   "id": "db-allparams",
   "name": "Synth Kick",
   "machine": "db",
-  "volmult": 1.5,
+  "volmult": 1.4,
   "groups": [
     {
       "name": "Tone",

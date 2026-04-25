@@ -2,7 +2,7 @@
   "id": "mo-allparams",
   "name": "Mono Synth",
   "machine": "mo",
-  "volmult": 2.6,
+  "volmult": 1.2,
   "groups": [
     {
       "name": "Osc",

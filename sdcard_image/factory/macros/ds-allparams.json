@@ -2,7 +2,7 @@
   "id": "ds-allparams",
   "name": "Digital Snare",
   "machine": "ds",
-  "volmult": 0.7,
+  "volmult": 1.0,
   "groups": [
     {
       "name": "Tone",
