@@ -878,6 +878,18 @@ void SoundProcessorManager::SetTrackMachine(const int trackIndex, const string &
     }
 }
 
+void SoundProcessorManager::SetTrackVolumeMultiplier(const int trackIndex, float volumeMultiplier) {
+    // No xSemaphoreTake here — caller (MacroSPManager::RefreshSingleMacro
+    // → MacroTranslator::RefreshDefinitionById) already holds processMutex.
+    // FreeRTOS mutex is non-recursive; a second take by the same task
+    // deadlocks the audio thread on its next Process() block. The forwarded
+    // call is a single aligned float write inside the rack — naturally
+    // atomic on RISC-V/ARM, no torn reads on the audio side.
+    if (sp[0] != nullptr) {
+        sp[0]->setTrackVolumeMultiplier(trackIndex, volumeMultiplier);
+    }
+}
+
 void SoundProcessorManager::SetTrackMute(const int trackIndex, bool muted) {
     // Forwards Pico-side user-mute state into the rack's per-channel mixer so
     // RackChannelMixer's enabled-check gates the sum output regardless of

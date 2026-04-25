@@ -1382,6 +1382,39 @@ void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, co
     }
 }
 
+// Lightweight volmult-only update — single float write into the track's
+// RackChannelMixer.volumeMultiplier field. Called from
+// MacroTranslator::RefreshDefinitionById's same-machine branch so editing
+// a macro's volmult and reloading via REST takes effect on the running
+// rack mixer without a power cycle.
+//
+// Concurrency: caller already holds SPManager::processMutex (entered in
+// MacroSPManager::RefreshSingleMacro before invoking RefreshDefinitionById).
+// Do NOT take processMutex here — FreeRTOS mutex is non-recursive, second
+// take by the same task would deadlock the audio task on the next block.
+// The single float write is naturally atomic on RISC-V/ARM for an aligned
+// 4-byte field; the audio thread reads it during PreProcess() unaffected.
+void ctagSoundProcessorPicoSeqRack::setTrackVolumeMultiplier(const uint8_t trackIndex, float volumeMultiplier) {
+    switch (trackIndex) {
+        case  0: ch1.volumeMultiplier  = volumeMultiplier; break;
+        case  1: ch2.volumeMultiplier  = volumeMultiplier; break;
+        case  2: ch3.volumeMultiplier  = volumeMultiplier; break;
+        case  3: ch4.volumeMultiplier  = volumeMultiplier; break;
+        case  4: ch5.volumeMultiplier  = volumeMultiplier; break;
+        case  5: ch6.volumeMultiplier  = volumeMultiplier; break;
+        case  6: ch7.volumeMultiplier  = volumeMultiplier; break;
+        case  7: ch8.volumeMultiplier  = volumeMultiplier; break;
+        case  8: ch9.volumeMultiplier  = volumeMultiplier; break;
+        case  9: ch10.volumeMultiplier = volumeMultiplier; break;
+        case 10: ch11.volumeMultiplier = volumeMultiplier; break;
+        case 11: ch12.volumeMultiplier = volumeMultiplier; break;
+        case 12: ch13.volumeMultiplier = volumeMultiplier; break;
+        case 13: ch14.volumeMultiplier = volumeMultiplier; break;
+        case 14: ch15.volumeMultiplier = volumeMultiplier; break;
+        case 15: ch16.volumeMultiplier = volumeMultiplier; break;
+    }
+}
+
 // Pico-side user mute → rack mixer muted flag. RackChannelMixer::PreProcess
 // evaluates `enabled = (level > minVolume) && !muted`, so toggling this
 // silences the track regardless of LEVEL. Essential for the Input track

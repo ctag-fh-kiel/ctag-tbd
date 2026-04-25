@@ -199,6 +199,13 @@ namespace CTAG {
                 // default implementation does nothing, override in derived class for volume support
             }
 
+            virtual void setTrackVolumeMultiplier(const uint8_t trackIndex, float volumeMultiplier) {
+                // default no-op. PicoSeqRack overrides to write the new gain into
+                // the per-track RackChannelMixer so REST `?action=reload&id=X`
+                // takes effect on the running mixer without a power cycle when
+                // only the macro's volmult changed (same machine, same params).
+            }
+
             virtual void setTrackBank(const uint8_t trackIndex, const uint16_t bankIndex) {
                 // default implementation does nothing, override in derived class if needed
             }

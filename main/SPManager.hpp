@@ -120,6 +120,11 @@ namespace CTAG {
             static void RefreshSampleRom();
 
             static void SetTrackMachine(const int trackIndex, const string &synthID, float volumeMultiplier);
+            // Lightweight volmult-only update — pushes a new gain into the rack
+            // mixer for the given track without machine rebind / state reset.
+            // CALLER MUST already hold processMutex (the MacroSPManager reload
+            // paths do; do NOT take it again — non-recursive mutex deadlocks).
+            static void SetTrackVolumeMultiplier(const int trackIndex, float volumeMultiplier);
             // Forwards user-facing mute state into the rack's channel mixer so
             // the RackChannelMixer enabled-check gates the channel output
             // regardless of LEVEL. Essential for the Input track (ch16,

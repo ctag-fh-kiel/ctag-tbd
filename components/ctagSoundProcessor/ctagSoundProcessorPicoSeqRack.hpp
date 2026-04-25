@@ -151,6 +151,11 @@ namespace CTAG {
 			void parseIncomingMidiMessages(const uint8_t *buf, const size_t len);
 
 			void setTrackMachine(const uint8_t trackIndex, const std::string machineId, float volumeMultiplier);
+			// Lightweight volmult-only update — single float write into the rack
+			// mixer. Caller MUST already hold SPManager::processMutex (the
+			// MacroSPManager reload paths already take it; do NOT take it here
+			// or you deadlock the audio task).
+			void setTrackVolumeMultiplier(const uint8_t trackIndex, float volumeMultiplier) override;
 			void setTrackBank(const uint8_t trackIndex, const uint16_t bankIndex);
 
 			// Propagates Pico-side track mute into the channel mixer's `muted` flag

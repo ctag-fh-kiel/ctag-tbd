@@ -16,6 +16,7 @@ respective component folders / files if different from this license.
 ***************/
 
 #include "MacroTranslator.hpp"
+#include "SPManager.hpp"
 #include "esp_log.h"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/document.h"
@@ -258,8 +259,14 @@ void MacroTranslator::RefreshDefinitionById(const std::string &id) {
             // and sets trackDirty — needed when switching machines
             SetTrackMachine(t, std::string(freshDef->synthId), freshDef->volumeMultiplier);
         } else {
-            // Same machine — just update trackMachineId for volMult and mark dirty
-            // Preserves current knob positions / parameter values
+            // Same machine — push the new volMult to the rack mixer (lightweight,
+            // no state reset), update trackMachineId, mark dirty so mappings
+            // re-fan-out to DSP.
+            //
+            // CRITICAL: SoundProcessorManager::SetTrackVolumeMultiplier MUST NOT
+            // take processMutex — the caller (RefreshSingleMacro) already holds
+            // it. Non-recursive FreeRTOS mutex would deadlock the audio task.
+            CTAG::AUDIO::SoundProcessorManager::SetTrackVolumeMultiplier(t, freshDef->volumeMultiplier);
             snprintf(trackMachineId[t], sizeof(trackMachineId[t]), "%s", freshDef->synthId);
             trackDirty[t] = true;
         }
