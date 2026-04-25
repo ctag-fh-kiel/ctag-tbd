@@ -995,6 +995,20 @@
 
       var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+      // Hard cap: Pico SoundPresetPreset2.id is char[16] (15 chars + null).
+      // Overflow crashes device on preset load. See macro-system.md
+      // "CRITICAL id length cap (15 chars on Pico)".
+      if (id.length < 1) {
+        nameInput.setAttribute('help-text', 'Please enter a name with at least one letter or digit');
+        nameInput.focus();
+        return;
+      }
+      if (id.length > 15) {
+        nameInput.setAttribute('help-text', 'Preset id "' + id + '" is ' + id.length + ' chars; max 15. Shorten the name.');
+        nameInput.focus();
+        return;
+      }
+
       // Prevent overwriting factory presets (unless Factory Edit Mode unlocked)
       var Fcheck = window.TBD.factory;
       var isFactoryId = Fcheck && Fcheck.isFactoryPreset(id);
@@ -1013,10 +1027,39 @@
           });
         });
       }
+      // Cap to the preset array size on P4 (MacroSoundPreset.parameterValues
+      // is int32_t[24]). Any idx beyond 23 is silently dropped by the loader.
+      if (paramCount > 24) {
+        S.toast('Macro uses idx >= 24; preset only stores 0..23 — higher idx values will not round-trip.', 'warning', 5000);
+        paramCount = 24;
+      }
+      // Build an idx -> {min,max} lookup so we can clamp values to the
+      // param's declared range (otherwise a stale state.paramValues[] entry
+      // from a different macro can write an out-of-range value that corrupts
+      // the target DSP param).
+      var paramBounds = {};
+      if (selectedMacroDef && selectedMacroDef.groups) {
+        selectedMacroDef.groups.forEach(function(g) {
+          (g.parameters || []).forEach(function(p) {
+            if (typeof p.idx === 'number') {
+              paramBounds[p.idx] = {
+                min: (typeof p.min === 'number') ? p.min : 0,
+                max: (typeof p.max === 'number') ? p.max : 127,
+              };
+            }
+          });
+        });
+      }
       var values = [];
       for (var vi = 0; vi < paramCount; vi++) {
         var raw = state.paramValues[vi];
-        values[vi] = (raw !== undefined && raw !== null) ? Math.round(raw) : 0;
+        var v = (raw !== undefined && raw !== null) ? Math.round(raw) : 0;
+        var b = paramBounds[vi];
+        if (b) {
+          if (v < b.min) v = b.min;
+          if (v > b.max) v = b.max;
+        }
+        values[vi] = v;
       }
       var preset = {
         id: id,

@@ -1127,21 +1127,21 @@ window.TBD.shared = {
     'db-submorph',
     'ds-allparams',
     'ds-snappy',
-    'extdrum-allparams',
-    'extsynth-allparams',
+    'extdrum-all',
+    'extsynth-all',
     'fmb-allparams',
     'fmb-deepfm',
     'fmb-metallic',
-    'fxdelay-allparams',
-    'fxmaster-allparams',
-    'fxreverb-allparams',
+    'fxdelay-all',
+    'fxmaster-all',
+    'fxreverb-all',
     'hh1-allparams',
     'hh2-allparams',
-    'inp-allparams',
+    'inp-all',
     'mo-allparams',
-    'nodrum-allparams',
+    'nodrum-all',
     'nofx-allparams',
-    'nosynth-allparams',
+    'nosynth-all',
     'pp-allparams',
     'pp-darkchord',
     'pp-lushpad',
@@ -1162,11 +1162,11 @@ window.TBD.shared = {
     'ds-all-def',
     'ds-snap1',
     'extdrum-all-def',
-    'extsynth-all-def',
+    'extsynth-def',
     'fmb-all-def',
     'fxdelay-all-def',
-    'fxmaster-all-def',
-    'fxreverb-all-def',
+    'fxmaster-def',
+    'fxreverb-def',
     'golem',
     'hh1-all-def',
     'hh2-all-def',
@@ -2830,6 +2830,20 @@ window.TBD.shared = {
 
       var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+      // Hard cap: Pico SoundPresetPreset2.id is char[16] (15 chars + null).
+      // Overflow crashes device on preset load. See macro-system.md
+      // "CRITICAL id length cap (15 chars on Pico)".
+      if (id.length < 1) {
+        nameInput.setAttribute('help-text', 'Please enter a name with at least one letter or digit');
+        nameInput.focus();
+        return;
+      }
+      if (id.length > 15) {
+        nameInput.setAttribute('help-text', 'Preset id "' + id + '" is ' + id.length + ' chars; max 15. Shorten the name.');
+        nameInput.focus();
+        return;
+      }
+
       // Prevent overwriting factory presets (unless Factory Edit Mode unlocked)
       var Fcheck = window.TBD.factory;
       var isFactoryId = Fcheck && Fcheck.isFactoryPreset(id);
@@ -2848,10 +2862,39 @@ window.TBD.shared = {
           });
         });
       }
+      // Cap to the preset array size on P4 (MacroSoundPreset.parameterValues
+      // is int32_t[24]). Any idx beyond 23 is silently dropped by the loader.
+      if (paramCount > 24) {
+        S.toast('Macro uses idx >= 24; preset only stores 0..23 — higher idx values will not round-trip.', 'warning', 5000);
+        paramCount = 24;
+      }
+      // Build an idx -> {min,max} lookup so we can clamp values to the
+      // param's declared range (otherwise a stale state.paramValues[] entry
+      // from a different macro can write an out-of-range value that corrupts
+      // the target DSP param).
+      var paramBounds = {};
+      if (selectedMacroDef && selectedMacroDef.groups) {
+        selectedMacroDef.groups.forEach(function(g) {
+          (g.parameters || []).forEach(function(p) {
+            if (typeof p.idx === 'number') {
+              paramBounds[p.idx] = {
+                min: (typeof p.min === 'number') ? p.min : 0,
+                max: (typeof p.max === 'number') ? p.max : 127,
+              };
+            }
+          });
+        });
+      }
       var values = [];
       for (var vi = 0; vi < paramCount; vi++) {
         var raw = state.paramValues[vi];
-        values[vi] = (raw !== undefined && raw !== null) ? Math.round(raw) : 0;
+        var v = (raw !== undefined && raw !== null) ? Math.round(raw) : 0;
+        var b = paramBounds[vi];
+        if (b) {
+          if (v < b.min) v = b.min;
+          if (v > b.max) v = b.max;
+        }
+        values[vi] = v;
       }
       var preset = {
         id: id,
@@ -3671,6 +3714,18 @@ window.TBD.shared = {
       var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       var autoId = machinePrefix + slug;
 
+      // Hard cap: Pico shared id[16] buffer = 15 chars + null. Overflow
+      // corrupts the adjacent name field on Pico and crashes the device on
+      // load. See macro-system.md "CRITICAL id length cap (15 chars on Pico)".
+      if (autoId.length > 15) {
+        S.toast('Macro id "' + autoId + '" is ' + autoId.length + ' chars; max 15. Shorten the name.', 'warning', 4000);
+        return;
+      }
+      if (autoId.length < 2) {
+        S.toast('Name is too short after slugifying', 'warning', 3000);
+        return;
+      }
+
       if (selectedBaseId) {
         // Clone existing macro
         var sourceDef = S.data.macroDefs.find(function(d) { return d.id === selectedBaseId; });
@@ -3699,6 +3754,12 @@ window.TBD.shared = {
 
       // Auto-save immediately so the macro exists on disk
       createBtn.setAttribute('loading', '');
+      var structErrs = validateStructuralCaps(state.editDef);
+      if (structErrs.length > 0) {
+        createBtn.removeAttribute('loading');
+        S.toast(structErrs.join(' | '), 'danger', 6000);
+        return;
+      }
       var cleanDef = cleanDefinitionForSave(state.editDef);
       var jsonStr = JSON.stringify(cleanDef, null, 2);
       var filePath = 'macros/' + state.editDef.id + '.json';
@@ -3784,8 +3845,18 @@ window.TBD.shared = {
   }
 
   /**
-   * Re-index all parameters to contiguous 0..N-1 and update mapping src references.
-   * Call after removing knobs, on import, or before save to ensure clean idx values.
+   * Re-index all parameters to contiguous 0..N-1 and update both mapping
+   * `src` references AND identity-mapping `ctrl` values. Identity mappings
+   * have ctrl == paramIdx + 8 (the source-knob storage slot for hi-res
+   * NRPM macros) — when paramIdx changes, ctrl MUST move with it or the
+   * macro routing breaks (the wire still goes to the OLD ctrl, the
+   * MacroTranslator stores into the OLD trackParameterValues[idx]
+   * slot, and fan-out mappings reading from `src: newIdx` see zero).
+   *
+   * Call ONLY when the user has explicitly removed a knob — never on a
+   * vanilla save, because preset values[] arrays in the matching
+   * `*-def.json` preset files are indexed by THIS macro's idx values.
+   * Reindexing the macro silently desyncs every shipped preset.
    */
   function reindexParameters(def) {
     var oldToNew = {};
@@ -3797,13 +3868,23 @@ window.TBD.shared = {
         newIdx++;
       });
     });
-    // Update mapping src references
+    // Update mapping src references (fan-out source idx)
     (def.mapping || []).forEach(function(m) {
       (m.add || []).forEach(function(a) {
         if (oldToNew[a.src] !== undefined) {
           a.src = oldToNew[a.src];
         }
       });
+    });
+    // Update identity-mapping ctrl values: a mapping whose ctrl = oldIdx+8
+    // for some renamed paramIdx must move to newIdx+8 so the
+    // source-knob → MacroTranslator-storage slot identity is preserved.
+    (def.mapping || []).forEach(function(m) {
+      if (typeof m.ctrl !== 'number') return;
+      var implicitOld = m.ctrl - 8;
+      if (oldToNew[implicitOld] !== undefined && oldToNew[implicitOld] !== implicitOld) {
+        m.ctrl = oldToNew[implicitOld] + 8;
+      }
     });
   }
 
@@ -3813,6 +3894,46 @@ window.TBD.shared = {
    * - Strips empty trailing groups (keeps only groups that have parameters)
    * - Removes curve:'linear' from parameters (linear is the default)
    */
+  // Hard structural caps from the Pico / P4 firmware:
+  //   - id[16]      (15 chars + null)  — Pico SoundPresetPreset2.id /
+  //                                     SoundPresetGroup2.id
+  //   - name[32]    (31 chars + null)  — preset display name
+  //   - 20 mappings — MacroDeviceDefinition.outputMappings[MaxOutputMappings]
+  //                    (widened from 16 → 20 on 2026-04-24 in the P4 firmware)
+  //   - 8 sources/mapping — MacroDeviceOutputMappingSources[MaxOutputMappingSources]
+  //   - idx 0..23   — MacroTranslator.trackParameterValues[16][24]
+  //   - values[] ≤24 — MacroSoundPreset.parameterValues[MaxMacroSoundPresetParameters]
+  // Violations here cause silent corruption or device crash on load. See
+  // tbd-pico-seq3/docs/architecture/macro-system.md "CRITICAL — id length
+  // cap".
+  function validateStructuralCaps(def) {
+    var errors = [];
+    if (typeof def.id === 'string' && def.id.length > 15) {
+      errors.push('Macro id "' + def.id + '" is ' + def.id.length + ' chars; cap is 15 (Pico id[16]).');
+    }
+    if (typeof def.name === 'string' && def.name.length > 31) {
+      errors.push('Macro name is ' + def.name.length + ' chars; cap is 31.');
+    }
+    var mappings = def.mapping || [];
+    if (mappings.length > 20) {
+      errors.push('Macro has ' + mappings.length + ' mappings; cap is 20 (MaxOutputMappings, widened 2026-04-24). Excess overflows outputMappings[] into undefined behavior.');
+    }
+    mappings.forEach(function(m, i) {
+      var adds = m.add || [];
+      if (adds.length > 8) {
+        errors.push('Mapping #' + i + ' ctrl=' + m.ctrl + ' has ' + adds.length + ' sources; cap is 8 (MaxOutputMappingSources).');
+      }
+    });
+    (def.groups || []).forEach(function(g, gi) {
+      (g.parameters || []).forEach(function(p, pi) {
+        if (typeof p.idx === 'number' && (p.idx < 0 || p.idx > 23)) {
+          errors.push('Group ' + gi + ' param ' + pi + ' "' + p.name + '" has idx=' + p.idx + '; valid range 0..23.');
+        }
+      });
+    });
+    return errors;
+  }
+
   function cleanDefinitionForSave(def) {
     var clean = JSON.parse(JSON.stringify(def));
     // Validate and clamp volmult
@@ -3826,8 +3947,14 @@ window.TBD.shared = {
             clean.groups[clean.groups.length - 1].parameters.length === 0)) {
       clean.groups.pop();
     }
-    // Re-index to close any gaps from removed knobs
-    reindexParameters(clean);
+    // DELIBERATELY no reindexParameters() here. Author-assigned idx
+    // values are load-bearing: hi-res NRPM source knobs MUST keep
+    // idx == ctrl - 8 (identity invariant), and every preset file
+    // (`*-def.json`) addresses parameters by THIS idx. A blind reindex
+    // on save renumbers idx values, silently breaks identity routing,
+    // and desyncs every shipped preset's values[] array. Only reindex
+    // in response to an explicit user action that requires it (knob
+    // removal in the editor) — never as part of a generic clean-up.
     // Remove default curve from parameters
     clean.groups.forEach(function(g) {
       (g.parameters || []).forEach(function(p) {
@@ -4339,7 +4466,7 @@ window.TBD.shared = {
         html += '<label class="' + propCls + '"><span>max</span><input type="number" class="mapping-input mb-prop-max" value="' + (param.max || 127) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
         html += '<label class="' + propCls + '"><span>res</span><input type="number" class="mapping-input mb-prop-res" value="' + (param.res || 64) + '" data-group="' + gi + '" data-param="' + pi + '" /></label>';
         html += '<label class="mb-prop"><span>ui</span><select class="mapping-select mb-prop-ui" data-group="' + gi + '" data-param="' + pi + '">';
-        ['bignum', 'slider', 'toggle', 'selector', 'knob', 'freq', 'midinote', 'shape', 'shape2', 'shape3', 'noise', 'distortion', 'envattack', 'envattackfast', 'envdecay', 'envamount', 'filtercutoff', 'filterq', 'filtertype', 'samplebank', 'sampleslice', 'sampleoffset'].forEach(function(ui) {
+        ['bignum', 'slider', 'toggle', 'selector', 'knob', 'freq', 'midinote', 'shape', 'shape2', 'shape3', 'noise', 'distortion', 'envattack', 'envattackfast', 'envdecay', 'envamount', 'filtercutoff', 'filterq', 'filtertype', 'filtermode', 'samplebank', 'sampleslice', 'sampleoffset', 'level', 'gainlevel', 'pan', 'bipolar', 'onoff', 'tapedigital', 'freesync', 'timedivisor', 'percent', 'chord', 'chordinv', 'nnotes', 'scale'].forEach(function(ui) {
           html += '<option value="' + ui + '"' + (param.ui === ui ? ' selected' : '') + '>' + ui + '</option>';
         });
         html += '</select></label>';
@@ -5197,6 +5324,20 @@ window.TBD.shared = {
 
       var id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+      // Hard cap: Pico SoundPresetPreset2.id is char[16] (15 chars + null).
+      // Overflow crashes device on preset load. See macro-system.md
+      // "CRITICAL id length cap (15 chars on Pico)".
+      if (id.length < 1) {
+        nameInput.setAttribute('help-text', 'Please enter a name with at least one letter or digit');
+        nameInput.focus();
+        return;
+      }
+      if (id.length > 15) {
+        nameInput.setAttribute('help-text', 'Preset id "' + id + '" is ' + id.length + ' chars; max 15. Shorten the name.');
+        nameInput.focus();
+        return;
+      }
+
       // Prevent overwriting factory presets (unless Factory Edit Mode unlocked)
       var Fcheck = window.TBD.factory;
       var isFactoryId = Fcheck && Fcheck.isFactoryPreset(id);
@@ -5436,12 +5577,20 @@ window.TBD.shared = {
         if (!newId) return;
         newId = newId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/^-|-$/g, '');
         if (!newId) { S.toast('Invalid ID', 'warning', 2000); return; }
+        // Hard cap: Pico shared id[16] buffer = 15 chars + null. Overflow
+        // crashes device. See macro-system.md "CRITICAL id length cap (15 chars on Pico)".
+        if (newId.length > 15) { S.toast('ID "' + newId + '" is ' + newId.length + ' chars; max 15.', 'warning', 4000); return; }
         if (F.isFactoryDefinition(newId)) { S.toast('That ID is also a factory definition', 'warning', 2000); return; }
         state.editDef.id = newId;
         state.selectedDefId = newId;
       }
     }
 
+    var structErrs = validateStructuralCaps(state.editDef);
+    if (structErrs.length > 0) {
+      S.toast(structErrs.join(' | '), 'danger', 6000);
+      return;
+    }
     var cleanDef = cleanDefinitionForSave(state.editDef);
     var jsonStr = JSON.stringify(cleanDef, null, 2);
     var isFactoryDef = F && F.isFactoryDefinition(state.editDef.id);
@@ -5475,6 +5624,11 @@ window.TBD.shared = {
 
   function exportDefinition() {
     if (!state.editDef) { S.toast('Nothing to export', 'warning', 2000); return; }
+    var structErrs = validateStructuralCaps(state.editDef);
+    if (structErrs.length > 0) {
+      S.toast(structErrs.join(' | '), 'danger', 6000);
+      return;
+    }
     var cleanDef = cleanDefinitionForSave(state.editDef);
     var blob = new Blob([JSON.stringify(cleanDef, null, 2)], { type: 'application/json' });
     var a = document.createElement('a');
@@ -5503,7 +5657,11 @@ window.TBD.shared = {
             state.editDef = data;
             state.selectedDefId = data.id || null;
             ensureGroupStructure(state.editDef);
-            reindexParameters(state.editDef);
+            // Do NOT reindex here. Imported files may carry deliberate
+            // non-contiguous idx values (hi-res NRPM source-knob
+            // identities, or matched preset-values[] indices). Trust
+            // the file as authored — reindex would silently corrupt
+            // valid macros and desync any matching preset.
             state.dirty = true;
             renderMacroBuilderSection();
             // Sync performer with the imported definition
