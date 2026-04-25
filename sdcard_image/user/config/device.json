@@ -1,5 +1,8 @@
 {
-  "activeProcessors": ["PicoSeqRack", "Void"],
+  "activeProcessors": [
+    "PicoSeqRack",
+    "Void"
+  ],
   "lastPatches": [
     [],
     []
@@ -13,10 +16,22 @@
       "ip": "192.168.4.1"
     },
     "midi": {
-      "uartmidi1": { "in": "sync+notes", "out": "sync+notes" },
-      "uartmidi2": { "in": "sync+notes", "out": "sync+notes" },
-      "usbhost": { "in": "sync+notes", "out": "sync+notes" },
-      "usbdevice": { "in": "sync+notes", "out": "sync+notes" },
+      "uartmidi1": {
+        "in": "sync+notes",
+        "out": "sync+notes"
+      },
+      "uartmidi2": {
+        "in": "sync+notes",
+        "out": "sync+notes"
+      },
+      "usbhost": {
+        "in": "sync+notes",
+        "out": "sync+notes"
+      },
+      "usbdevice": {
+        "in": "sync+notes",
+        "out": "sync+notes"
+      },
       "abletonlink": "off"
     },
     "ch01_daisy": "off",
@@ -24,7 +39,7 @@
     "ch1_toStereo": "off",
     "ch0_outputSoftClip": "on",
     "ch1_outputSoftClip": "on",
-    "ch0_codecLvlOut": "58",
-    "ch1_codecLvlOut": "58"
+    "ch0_codecLvlOut": "62",
+    "ch1_codecLvlOut": "62"
   }
 }
