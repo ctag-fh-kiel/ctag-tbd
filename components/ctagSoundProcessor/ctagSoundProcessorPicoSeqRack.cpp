@@ -25,6 +25,12 @@ respective component folders / files if different from this license.
 
 using namespace CTAG::SP;
 
+// File-scope peak meters for the OLED Input / Output indicators. Defined
+// here, declared extern in ctagSoundProcessorPicoSeqRack.hpp so SPManager
+// can read them without needing access to the rack class internals.
+volatile float g_peakInputTrack = 0.f;
+volatile float g_peakSynthOnly  = 0.f;
+
 // TODOs: fx return before compressor, stereo panning with delay -> when panned right, levels are lower, metallic sound of reverb.
 
 #define maxFXSendLevelRev 1.5f
@@ -94,22 +100,39 @@ void ctagSoundProcessorPicoSeqRack::preprocessFX1(const ProcessData& data) {
 		last_msPerBeat = 60000.0f / ((float)(scaledbpm) / 10.0f);
     }
 
-    // fDelayTime = fx1_time_ms / 10.0f; // TODO: Better calculation here
-    float dt = fx1_time_ms / 32.0f; // 0-127
-    dt *= last_msPerBeat;
-    dt /= 8.0; // 8 per "1/16th note"
-    dt *= 44100.0f;
-    dt /= 1000.0f;
+    // Sync knob branches the Time resolution:
+    //   ON  → 12 musical divisors of the live msPerBeat (tempo-tracking).
+    //   OFF → free mode, wire 0..127 → 0..2000 ms linear.
+    bool bSync = fx1_sync;
+    int wire = fx1_time_ms / 32;                     // atomic is 0..4064, knob is 0..127
+    if (wire < 0) wire = 0;
+    if (wire > 127) wire = 127;
+
+    float dt_ms;
+    if (bSync) {
+        int idx = (wire * 12) / 128;
+        if (idx < 0) idx = 0;
+        if (idx > 11) idx = 11;
+        // Per-beat fractions: quarter note = msPerBeat. 1/16 = msPerBeat/4 etc.
+        const float divisor_factor[12] = {
+            1.f/8.f,  1.f/6.f,  1.f/4.f,  3.f/8.f,   // 1/32, 1/16T, 1/16, 1/16D
+            1.f/3.f,  1.f/2.f,  3.f/4.f,  2.f/3.f,   // 1/8T,  1/8,   1/8D, 1/4T
+            1.f,      3.f/2.f,  2.f,      4.f        // 1/4,   1/4D,  1/2,  1/1
+        };
+        dt_ms = last_msPerBeat * divisor_factor[idx];
+    } else {
+        // Free mode: 0..2000 ms linear.
+        dt_ms = (float)wire / 127.f * 2000.f;
+    }
+    float dt = dt_ms * 44.1f;                         // ms → samples
     CONSTRAIN(dt, 4.0f, 88200.f);
     int idt = (int)dt;
     if (idt != delaySamples) {
         delaySamples = idt;
-        // printf("Delay time set to %d samples (scaled BPM: %d)\n", idt, scaledbpm);
     }
 
     MK_FLT_PAR_ABS_NOCV(fBase, fx1_base, 4095.f, 1.f)
     MK_FLT_PAR_ABS_NOCV(fWidth, fx1_width, 4095.f, 1.f)
-    bool bSync = fx1_sync;
     bool bSyncTrig {false};
     // if(trig_fx1_sync != -1) bSyncTrig = data.trig[trig_fx1_sync] == 1 ? false : true;
     // if(!bSync){
@@ -129,6 +152,15 @@ void ctagSoundProcessorPicoSeqRack::preprocessFX1(const ProcessData& data) {
     lp_r.copy_f(lp_l);
     hp_r.copy_f(hp_l);
 
+    // Delay-input HP corner — independent of the feedback-path HP. Log
+    // sweep 20 Hz..~2 kHz via 80 semitones (≈100×). Wire 0 → 20 Hz is
+    // effectively bypassed for musical content above 30 Hz.
+    MK_FLT_PAR_ABS_NOCV(fInputHpNorm, fx1_input_hp, 4095.f, 1.f)
+    float dly_in_hp = 20.f * stmlib::SemitonesToRatio(fInputHpNorm * 80.f);
+    CONSTRAIN(dly_in_hp, 20.f, 20000.f)
+    dly_input_hp_l.set_f<stmlib::FREQUENCY_ACCURATE>(dly_in_hp / 44100.f);
+    dly_input_hp_r.copy_f(dly_input_hp_l);
+
     // sync mechanism
     // if(bSyncTrig != pre_sync){
     //     pre_sync = bSyncTrig;
@@ -147,8 +179,31 @@ void ctagSoundProcessorPicoSeqRack::preprocessFX1(const ProcessData& data) {
 void ctagSoundProcessorPicoSeqRack::preprocessFX2(const ProcessData& data) {
     MK_FLT_PAR_ABS_NOCV(fRevTime, fx2_time, 4095.f, 1.f)
     MK_FLT_PAR_ABS_NOCV(fReverbLPF, fx2_lp, 4095.f, 1.f)
+    // fx2_diffuse → reverb.set_diffusion (was hardcoded 0.7). 0.0 ≈ slap
+    // echo, ~0.9 ≈ dense diffuse tail.
+    MK_FLT_PAR_ABS_NOCV(fDiffuse, fx2_diffuse, 4095.f, 0.95f)
     reverb.set_time(fRevTime);
     reverb.set_lp(fReverbLPF);
+    reverb.set_diffusion(fDiffuse);
+    // fx2_modulation 0..2× scaler applied to the LFO frequencies. Bases
+    // 0.5/0.3 Hz match Init() (reverb.h:45-46). Wire 0 freezes both LFOs.
+    MK_FLT_PAR_ABS_NOCV(fMod, fx2_modulation, 4095.f, 2.f)
+    reverb.set_lfo1_freq(0.5f * fMod);
+    reverb.set_lfo2_freq(0.3f * fMod);
+    // fx2_input_gain / fx2_tank_level promote the previously-hardcoded
+    // set_input_gain(0.5) and set_amount(1.0). Default wires (64 / 127)
+    // preserve those legacy values within float rounding.
+    MK_FLT_PAR_ABS_NOCV(fInGain, fx2_input_gain, 4095.f, 1.f)
+    MK_FLT_PAR_ABS_NOCV(fTankLvl, fx2_tank_level, 4095.f, 1.f)
+    reverb.set_input_gain(fInGain);
+    reverb.set_amount(fTankLvl);
+    // Reverb-input HP shelf, applied per-sample before the tank in
+    // renderMasterOutput. Same 20 Hz..~2 kHz log sweep as fx1_input_hp.
+    MK_FLT_PAR_ABS_NOCV(fRevHpNorm, fx2_hp, 4095.f, 1.f)
+    float rev_hp = 20.f * stmlib::SemitonesToRatio(fRevHpNorm * 80.f);
+    CONSTRAIN(rev_hp, 20.f, 20000.f)
+    rev_hp_l.set_f<stmlib::FREQUENCY_ACCURATE>(rev_hp / 44100.f);
+    rev_hp_r.copy_f(rev_hp_l);
 }
 
 void ctagSoundProcessorPicoSeqRack::preprocessMaster(const ProcessData& data) {
@@ -166,9 +221,16 @@ void ctagSoundProcessorPicoSeqRack::renderMasterOutput(const ProcessData& data) 
     // delay
     MK_BOOL_PAR_NOCV(bFreeze, fx1_freeze)
     MK_FLT_PAR_ABS_NOCV(fDelayStereoWidth, fx1_st_width, 4095.f, 1.f)
+    // Concave taper on Width: lower half of travel stays near-mono, full
+    // stereo expansion is concentrated in the upper half. k=0.06 = the
+    // upstream "aggressive" preset. (Commit 38f2975e.)
+    fDelayStereoWidth = HELPERS::FastConcaveTransfer(fDelayStereoWidth, 0.06f);
     MK_FLT_PAR_ABS_NOCV(fDelayReverbSend, fx1_fx_send, 4095.f, maxFXSendLevelRev)
     fDelayReverbSend *= fDelayReverbSend;
-    MK_FLT_PAR_ABS_NOCV(fFeedback, fx1_feedback, 4095.f, 1.5f)
+    // Feedback ceiling 1.2× pairs with the FastConcaveTransfer Width curve
+    // so the cross-feed dominates the upper half of knob travel before
+    // feedback-only buildup can run away. (Upstream commit 38f2975e.)
+    MK_FLT_PAR_ABS_NOCV(fFeedback, fx1_feedback, 4095.f, 1.2f)
     MK_FLT_PAR_ABS_NOCV(fDelayAmount, fx1_amount, 4095.f, 2.f)
 
     // reverb
@@ -184,10 +246,9 @@ void ctagSoundProcessorPicoSeqRack::renderMasterOutput(const ProcessData& data) 
         fCompMUPGain_pre = fCompMUPGain;
     }
     MK_FLT_PAR_ABS_PAN_NOCV(fCompMix, c_mix, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_NOCV(fCompDlyLevel, c_dly_level, 4095.f, 2.f)
-    fCompDlyLevel *= fCompDlyLevel;
-    MK_FLT_PAR_ABS_NOCV(fCompRevLevel, c_rev_level, 4095.f, 2.f)
-    fCompRevLevel *= fCompRevLevel;
+    // CCs 67/68 (c_dly_level / c_rev_level) retired — they had no DSP
+    // referent. FX returns are scaled by fRevAmount / fDelayAmount at the
+    // end of renderMasterOutput().
 
     // overall mix
     MK_FLT_PAR_ABS_NOCV(fMixLevel, sum_lev, 4095.f, 3.f)
@@ -255,6 +316,10 @@ void ctagSoundProcessorPicoSeqRack::renderMasterOutput(const ProcessData& data) 
 
         float inputSample_l = buf_fx1_l[i];
         float inputSample_r = buf_fx1_r[i];
+        // HP applied to dry input before the delay loop, independent of
+        // the feedback-path HP/LP below.
+        inputSample_l = dly_input_hp_l.Process<stmlib::FILTER_MODE_HIGH_PASS>(inputSample_l);
+        inputSample_r = dly_input_hp_r.Process<stmlib::FILTER_MODE_HIGH_PASS>(inputSample_r);
         float outputSample_l, outputSample_r;
 
         outputSample_l = HELPERS::InterpolateWaveLinearWrap(delayBuffer_l, readPos, delayBufferSizeMax);
@@ -292,6 +357,43 @@ void ctagSoundProcessorPicoSeqRack::renderMasterOutput(const ProcessData& data) 
         rev_buf_r[i] = buf_fx2[i] + dly_buf_r[i] * fDelayReverbSend;
     }
 
+    // Pre-delay before the reverb tank. fx2_predelay maps wire 0..4064 →
+    // 0..200 ms via a mono ring buffer (the tank sums L+R internally).
+    // Bypassed when < 2 samples to avoid one-sample latency at zero.
+    {
+        int predly_raw = fx2_predelay;        // 0..4064
+        if (predly_raw < 0) predly_raw = 0;
+        if (predly_raw > 4095) predly_raw = 4095;
+        int preDelaySamples = (predly_raw * 200 * 441) / (4095 * 10);  // ms × 44.1
+        if (preDelaySamples < 2) {
+            // bypass — rev_buf_l/r already carries the FX2 bus; nothing to do.
+        } else {
+            if (preDelaySamples >= preDelayBufSize) preDelaySamples = preDelayBufSize - 1;
+            for (int i = 0; i < bufSz; i++) {
+                // Mono sum of the current FX2 contribution (delay + direct FX2 send)
+                float preIn = 0.5f * (rev_buf_l[i] + rev_buf_r[i]);
+                preDelayBuf[preDelayWriteIdx] = preIn;
+                int readIdx = preDelayWriteIdx - preDelaySamples;
+                if (readIdx < 0) readIdx += preDelayBufSize;
+                float preOut = preDelayBuf[readIdx];
+                // Replace both channels with the pre-delayed mono; reverb tank
+                // will take it from here (it sums L+R on input anyway).
+                rev_buf_l[i] = preOut;
+                rev_buf_r[i] = preOut;
+                preDelayWriteIdx++;
+                if (preDelayWriteIdx >= preDelayBufSize) preDelayWriteIdx = 0;
+            }
+        }
+    }
+
+    // HP shelf on the reverb input, applied per-sample before the tank.
+    // Catches FX2 sends, the FX1→FX2 cross-send, and the pre-delayed
+    // signal when fx2_predelay > 1. Independent of the in-loop LP fx2_lp.
+    for (int i = 0; i < bufSz; i++) {
+        rev_buf_l[i] = rev_hp_l.Process<stmlib::FILTER_MODE_HIGH_PASS>(rev_buf_l[i]);
+        rev_buf_r[i] = rev_hp_r.Process<stmlib::FILTER_MODE_HIGH_PASS>(rev_buf_r[i]);
+    }
+
     // reverb
     reverb.Process(rev_buf_l, rev_buf_r, bufSz);
 
@@ -301,6 +403,21 @@ void ctagSoundProcessorPicoSeqRack::renderMasterOutput(const ProcessData& data) 
     for (int i = 0; i < bufSz; i++) {
         data.buf[i * 2] += rev_buf_l[i] * fRevAmount + dly_buf_l[i] * fDelayAmount;
         data.buf[i * 2 + 1] += rev_buf_r[i] * fRevAmount + dly_buf_r[i] * fDelayAmount;
+    }
+
+    // sum_drive: variable-depth SoftLimit soft saturation on the master bus.
+    // Skipped entirely at wire 0 to keep the default path bit-identical to
+    // the pre-Drive code (no regression on existing material). At Drive>0
+    // the cubic clipper progressively saturates; 1/sqrt(drive) makeup
+    // partially compensates the perceived loudness bump.
+    MK_FLT_PAR_ABS_NOCV(fDriveNorm, sum_drive, 4095.f, 1.f)
+    if (fDriveNorm > 1e-4f) {
+        float fDrive = 1.f + fDriveNorm * 3.f;          // 1× .. 4×
+        float fDriveMakeup = 1.f / sqrtf(fDrive);
+        for (int i = 0; i < bufSz; i++) {
+            data.buf[i * 2 + 0] = stmlib::SoftLimit(data.buf[i * 2 + 0] * fDrive) * fDriveMakeup;
+            data.buf[i * 2 + 1] = stmlib::SoftLimit(data.buf[i * 2 + 1] * fDrive) * fDriveMakeup;
+        }
     }
 }
 
@@ -335,6 +452,22 @@ void ctagSoundProcessorPicoSeqRack::Process(const ProcessData& data){
         if (ch16_in.enabled) {
             mixRenderOutputStereo(ch16_in.out, ch16.level, ch16.pan, ch16.send1, ch16.send2);
         }
+    }
+    // Snapshot combined_out right after ch16 mixes — this is the
+    // INPUT TRACK contribution to the master bus, before any other
+    // tracks render. Used by the OLED Input/Output meters: input
+    // meter = peak of this snapshot, output meter = peak of (final
+    // combined_out − this snapshot) so synth tracks alone register
+    // on the output meter and the input never bleeds into it.
+    {
+        float p = 0.f;
+        for (int i = 0; i < bufSz * 2; i++) {
+            ch16_combined_snapshot[i] = combined_out[i];
+            float a = combined_out[i] < 0 ? -combined_out[i] : combined_out[i];
+            if (a > p) p = a;
+        }
+        float prev = g_peakInputTrack;
+        g_peakInputTrack = (p > prev) ? p : (0.85f * prev + 0.15f * p);
     }
     std::fill_n(data.buf, bufSz * 2, 0.f);
 
@@ -596,6 +729,22 @@ void ctagSoundProcessorPicoSeqRack::Process(const ProcessData& data){
     // T2 = esp_timer_get_time();
     // ch15_render_time = T2 - T;
 
+    // Synth-only peak — combined_out at this point holds (ch16 + every
+    // synth track). Subtract the ch16 snapshot taken right after ch16
+    // mixed; what remains is purely the synth tracks' contribution to
+    // the bus. Used by the OLED Output meter so input audio routed
+    // through ch16 never bleeds into it.
+    {
+        float p = 0.f;
+        for (int i = 0; i < bufSz * 2; i++) {
+            float diff = combined_out[i] - ch16_combined_snapshot[i];
+            float a = diff < 0 ? -diff : diff;
+            if (a > p) p = a;
+        }
+        float prev = g_peakSynthOnly;
+        g_peakSynthOnly = (p > prev) ? p : (0.85f * prev + 0.15f * p);
+    }
+
     // Process effects
     preprocessFX1(data); // delay
 
@@ -632,6 +781,7 @@ void ctagSoundProcessorPicoSeqRack::Process(const ProcessData& data){
         std::fill_n(delayBuffer_l, delayBufferSizeMax, 0.f);
         std::fill_n(delayBuffer_r, delayBufferSizeMax, 0.f);
         std::fill_n(reverbBuffer, 32768, 0.f);
+        std::fill_n(preDelayBuf, preDelayBufSize, 0.f);
     }
 
     // if (framecounter % 5000 == 0) {
@@ -928,6 +1078,13 @@ void ctagSoundProcessorPicoSeqRack::Init(std::size_t blockSize, void* blockPtr){
     assert(reverbBuffer != nullptr);
     std::fill_n(reverbBuffer, 32768, 0.f);
 
+    // Pre-delay ring buffer ahead of the reverb tank.
+    preDelayBuf = static_cast<float*>(heap_caps_malloc(preDelayBufSize * sizeof(float), MALLOC_CAP_SPIRAM));
+    ESP_LOGI("ctagSoundProcessorPicoSeqRack", "Allocate: preDelayBuf=0x%x", (unsigned int)preDelayBuf);
+    assert(preDelayBuf != nullptr);
+    std::fill_n(preDelayBuf, preDelayBufSize, 0.f);
+    preDelayWriteIdx = 0;
+
     // assert(blockSize >= 32768 * 4);
     reverb.Init(reverbBuffer); // requires 32768*4 bytes = 128KB
     reverb.Clear();
@@ -971,6 +1128,13 @@ void ctagSoundProcessorPicoSeqRack::knowYourself(){
     DEFINE_GLOBAL_PARAM("fx2_time", 13, 40, fx2_time);
     DEFINE_GLOBAL_PARAM("fx2_lp", 13, 41, fx2_lp);
     DEFINE_GLOBAL_PARAM("fx2_amount", 13, 42, fx2_amount);
+    DEFINE_GLOBAL_PARAM("fx2_diffuse",  13, 43, fx2_diffuse);
+    DEFINE_GLOBAL_PARAM("fx2_predelay", 13, 44, fx2_predelay);
+    DEFINE_GLOBAL_PARAM("fx2_modulation", 13, 45, fx2_modulation);
+    DEFINE_GLOBAL_PARAM("fx2_input_gain", 13, 46, fx2_input_gain);
+    DEFINE_GLOBAL_PARAM("fx2_tank_level", 13, 47, fx2_tank_level);
+    DEFINE_GLOBAL_PARAM("fx1_input_hp", 13, 30, fx1_input_hp);
+    DEFINE_GLOBAL_PARAM("fx2_hp",       13, 48, fx2_hp);
 
     DEFINE_GLOBAL_PARAM("c_thres", 13, 60, c_thres);
     DEFINE_GLOBAL_PARAM("c_ratio", 13, 61, c_ratio);
@@ -979,11 +1143,11 @@ void ctagSoundProcessorPicoSeqRack::knowYourself(){
     DEFINE_GLOBAL_PARAM("c_lpf", 13, 64, c_lpf);
     DEFINE_GLOBAL_PARAM("c_gain", 13, 65, c_gain);
     DEFINE_GLOBAL_PARAM("c_mix", 13, 66, c_mix);
-    DEFINE_GLOBAL_PARAM("c_dly_level", 13, 67, c_dly_level);
-    DEFINE_GLOBAL_PARAM("c_rev_level", 13, 68, c_rev_level);
+    // CCs 67/68 retired (c_dly_level / c_rev_level had no DSP referent).
 
     DEFINE_GLOBAL_PARAM("sum_mute", 13, 80, sum_mute);
     DEFINE_GLOBAL_PARAM("sum_lev", 13, 81, sum_lev);
+    DEFINE_GLOBAL_PARAM("sum_drive", 13, 82, sum_drive);
 
     isStereo = true;
 	id = "PicoSeqRack";
@@ -1208,8 +1372,40 @@ void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, co
     else if (trackIndex == 15) {
         ch16.enabled = !machineId.empty();
         ch16.volumeMultiplier = volumeMultiplier;
-        ch16_in.enabled = (machineId == "in");
+        // Machine id is "inp" per synthdefinitions.json ({id: "inp", name:
+        // "Audio Input"}). The previous "in" string check never matched,
+        // leaving ch16_in.enabled=false permanently — which caused
+        // RackInput::Process() to early-return and the audio passthrough
+        // to never copy input → output. Input track 16 was silent.
+        ch16_in.enabled = (machineId == "inp");
         // printf("  ch16=%d, ch16_in=%d\n", ch16.enabled, ch16_in.enabled);
+    }
+}
+
+// Pico-side user mute → rack mixer muted flag. RackChannelMixer::PreProcess
+// evaluates `enabled = (level > minVolume) && !muted`, so toggling this
+// silences the track regardless of LEVEL. Essential for the Input track
+// (ch16, continuous passthrough audio) and cuts synth tails instantly on
+// the other 15 tracks.
+void ctagSoundProcessorPicoSeqRack::setTrackMute(const uint8_t trackIndex, bool muted) {
+    switch (trackIndex) {
+        case  0: ch1.muted  = muted; break;
+        case  1: ch2.muted  = muted; break;
+        case  2: ch3.muted  = muted; break;
+        case  3: ch4.muted  = muted; break;
+        case  4: ch5.muted  = muted; break;
+        case  5: ch6.muted  = muted; break;
+        case  6: ch7.muted  = muted; break;
+        case  7: ch8.muted  = muted; break;
+        case  8: ch9.muted  = muted; break;
+        case  9: ch10.muted = muted; break;
+        case 10: ch11.muted = muted; break;
+        case 11: ch12.muted = muted; break;
+        case 12: ch13.muted = muted; break;
+        case 13: ch14.muted = muted; break;
+        case 14: ch15.muted = muted; break;
+        case 15: ch16.muted = muted; break;
+        default: break;
     }
 }
 

@@ -203,6 +203,11 @@ namespace CTAG {
                 // default implementation does nothing, override in derived class if needed
             }
 
+            virtual void setTrackMute(const uint8_t trackIndex, bool muted) {
+                // default implementation does nothing, override in derived class to
+                // forward Pico-side user mute into the rack's per-channel mixer.
+            }
+
             virtual void handleMidiNoteOn(const uint8_t channel, uint8_t note, uint8_t velocity) {
                 // default implementation does nothing, override in derived class if needed
             }

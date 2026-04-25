@@ -62,8 +62,8 @@ PRESET_NAME_MAP = {
 # ---- 1b. Placeholder group fixes ---------------------------------------------
 PRESET_GROUP_PLACEHOLDER_FIXES = {
     "fxdelay-all-def.json": "FX",
-    "fxreverb-all-def.json": "FX",
-    "fxmaster-all-def.json": "FX",
+    "fxreverb-def.json": "FX",
+    "fxmaster-def.json": "FX",
     "nofx-all-def.json": "None",
 }
 
@@ -138,9 +138,9 @@ MACRO_NAME_UPDATES = {
     "pp-allparams.json":      "PolyPad",
     "rs-allparams.json":      "Rimshot",
     "mo-allparams.json":      "Mono Synth",
-    "fxdelay-allparams.json":  "Delay FX",
-    "fxreverb-allparams.json": "Reverb FX",
-    "fxmaster-allparams.json": "Master FX",
+    "fxdelay-all.json":  "Delay FX",
+    "fxreverb-all.json": "Reverb FX",
+    "fxmaster-all.json": "Master FX",
 }
 
 

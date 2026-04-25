@@ -32,6 +32,10 @@ namespace CTAG {
             static uint32_t Write(uint8_t const *data, uint32_t len);
             static bool WaitForNCMReady(uint32_t timeout_ms = 5000);
             static void StartNCMWatchdog();
+            // Polled once per SPI response to surface USB NCM connection
+            // status to the Pico header indicator. Returns true when the
+            // host has enumerated the device and the NCM endpoint can xmit.
+            static bool IsNCMReady();
         };
     }
 }

@@ -438,8 +438,8 @@ PRESET_TO_MACHINE = {
     "mo-all-def":       "mo",
     "wtosc-all-def":    "wtosc",
     "fxdelay-all-def":  "fxdelay",
-    "fxreverb-all-def": "fxreverb",
-    "fxmaster-all-def": "fxmaster",
+    "fxreverb-def": "fxreverb",
+    "fxmaster-def": "fxmaster",
 }
 
 MACRODEF_TO_MACHINE = {
@@ -457,9 +457,9 @@ MACRODEF_TO_MACHINE = {
     "mo-allparams":       "mo",
     "wtosc-allparams":    "wtosc",
     "pp-allparams":       "pp",
-    "fxdelay-allparams":  "fxdelay",
-    "fxreverb-allparams": "fxreverb",
-    "fxmaster-allparams": "fxmaster",
+    "fxdelay-all":  "fxdelay",
+    "fxreverb-all": "fxreverb",
+    "fxmaster-all": "fxmaster",
 }
 
 

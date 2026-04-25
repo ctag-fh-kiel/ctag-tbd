@@ -31,6 +31,14 @@ respective component folders / files if different from this license.
 #include "led_rgb_bba.hpp"
 #include "network.hpp"
 #include "tusb.hpp"
+// File-scope peak meters fed by PicoSeqRack — used to drive the OLED
+// Input / Output indicators. Declared `weak` so SPManager links even
+// when PicoSeqRack.cpp isn't part of the active processor build (the
+// rack header has no include guard, so direct extern was avoided).
+// PicoSeqRack.cpp provides the strong definitions; if it's compiled
+// out, these zero fallbacks resolve and the meters simply read 0.
+__attribute__((weak)) volatile float g_peakInputTrack = 0.f;
+__attribute__((weak)) volatile float g_peakSynthOnly  = 0.f;
 #include "RestServer.hpp"
 #if CONFIG_TBD_USE_RP2350
 #include "SpiAPI.hpp"
@@ -165,15 +173,37 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 // }
                 receivedUsbDeviceMidiBytes += *midi_len;
 
-                // add some waveforms
-                for(int i=0; i<BUF_SZ * 2; i++) {
-                    send_response->input_waveform[i] = 128;
-                    send_response->output_waveform[i] = 128;
+                // Pack stereo input + output samples into the response
+                // (used by the Live Waveform display). Clamped before
+                // the cast so values outside ±1 saturate cleanly.
+                for (int i = 0; i < BUF_SZ * 2; i++) {
+                    float fi = finput2[i];
+                    float fo = fbuf2[i];
+                    if (fi >  1.0f) fi =  1.0f; else if (fi < -1.0f) fi = -1.0f;
+                    if (fo >  1.0f) fo =  1.0f; else if (fo < -1.0f) fo = -1.0f;
+                    send_response->input_waveform[i]  = (uint8_t)((int)(fi * 127.0f) + 128);
+                    send_response->output_waveform[i] = (uint8_t)((int)(fo * 127.0f) + 128);
                 }
-                for(int i=0; i<BUF_SZ * 2; i++) {
-                    send_response->input_waveform[i] = (int)(finput2[i] * 127.0f + 128.f);
-                    send_response->output_waveform[i] = (int)(fbuf2[i] * 127.0f + 128.f);
-                }
+
+                // Dedicated peak bytes for the OLED header meters,
+                // sourced from the rack's per-track contribution split:
+                //   input_peak_byte  = g_peakInputTrack — peak of ch16's
+                //                      (Audio Input track) contribution
+                //                      to combined_out, captured right
+                //                      after ch16 mixes.
+                //   output_peak_byte = g_peakSynthOnly  — peak of synth
+                //                      tracks' contribution only
+                //                      (combined_out − ch16 snapshot).
+                // ch16 audio shows ONLY on the input meter; synth tracks
+                // ONLY on the output meter — full bus separation.
+                float pin  = g_peakInputTrack;
+                float pout = g_peakSynthOnly;
+                if (pin  < 0.f) pin  = 0.f;
+                if (pout < 0.f) pout = 0.f;
+                if (pin  > 1.f) pin  = 1.f;
+                if (pout > 1.f) pout = 1.f;
+                send_response->input_peak_byte  = (uint8_t)(pin  * 255.0f);
+                send_response->output_peak_byte = (uint8_t)(pout * 255.0f);
 
                 // pack ableton link data (after waveforms to avoid any overflow risk)
                 LINK::link_session_data_t *link_data = (LINK::link_session_data_t*)&send_response->link_data;
@@ -185,6 +215,18 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                 send_response->screenshot_request_counter = screenshotRequestCounter.load();
                 send_response->injected_button = injectedButton.exchange(0);
                 send_response->injected_button_event = injectedButtonEvent.exchange(0);
+                {
+                    auto if_type = CTAG::NET::Network::GetIfType();
+                    uint8_t net = 0;
+                    if (if_type == CTAG::NET::Network::IF_TYPE::IF_TYPE_USBNCM) {
+                        net = CTAG::DRIVERS::tusb::IsNCMReady() ? 1 : 0;
+                    } else if (if_type == CTAG::NET::Network::IF_TYPE::IF_TYPE_STA) {
+                        net = 2;
+                    } else if (if_type == CTAG::NET::Network::IF_TYPE::IF_TYPE_AP) {
+                        net = 3;
+                    }
+                    send_response->network_status = net;
+                }
                 send_response->_reserved_input = 0;
                 responsecounter ++;
                 send_response->magic = 0xDEADBEEF;
@@ -832,6 +874,21 @@ void SoundProcessorManager::SetTrackMachine(const int trackIndex, const string &
     if (sp[0] != nullptr) {
         xSemaphoreTake(processMutex, portMAX_DELAY);
         sp[0]->setTrackMachine(trackIndex, synthID, volumeMultiplier);
+        xSemaphoreGive(processMutex);
+    }
+}
+
+void SoundProcessorManager::SetTrackMute(const int trackIndex, bool muted) {
+    // Forwards Pico-side user-mute state into the rack's per-channel mixer so
+    // RackChannelMixer's enabled-check gates the sum output regardless of
+    // LEVEL. Essential for the Input track (ch16, continuous passthrough with
+    // no note-trigger suppression) and cuts synth tails instantly on 1-15.
+    // setTrackMute is a no-op virtual on ctagSoundProcessor's base class, so
+    // the dispatch is safe when the active processor isn't the PicoSeqRack.
+    if (trackIndex < 0 || trackIndex >= 16) return;
+    if (sp[0] != nullptr) {
+        xSemaphoreTake(processMutex, portMAX_DELAY);
+        sp[0]->setTrackMute((uint8_t)trackIndex, muted);
         xSemaphoreGive(processMutex);
     }
 }

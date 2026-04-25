@@ -24,7 +24,12 @@ respective component folders / files if different from this license.
 namespace CTAG {
     namespace MACROPRESETS {
         const int MaxOutputMappingSources = 8;
-        const int MaxOutputMappings = 16;
+        // Widened 2026-04-24 from 16 → 20 to fit `ro-basic` (18 mappings) and
+        // `td3-acidbass` (17 mappings) without silent UB overflow in the
+        // deserializer. Net cost: +544 bytes per MacroDeviceDefinition
+        // instance on P4 SPIRAM — negligible. Validator + WebUI caps updated
+        // to match. See macro-system.md "Structural caps".
+        const int MaxOutputMappings = 20;
 
         // Response curve types for parameter mapping
         enum class MacroCurveType : uint8_t {

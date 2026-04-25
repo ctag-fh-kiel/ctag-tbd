@@ -53,6 +53,58 @@ def collect_synthdef_types() -> dict[tuple[str, int], str]:
     return out
 
 
+def validate_preset_id_length(path: Path, findings: list[Finding]) -> None:
+    """Check preset file's `id` field fits in the Pico's 15-char cap.
+
+    See tbd-pico-seq3/docs/architecture/macro-system.md §"CRITICAL — id length
+    cap (15 chars on Pico)". Overflow corrupts the Pico struct and crashes
+    the device on preset load (2026-04-24 td3-hybrid-squelch incident).
+    """
+    try:
+        d = json.loads(path.read_text())
+    except Exception:
+        return
+    pid = d.get("id", "")
+    if isinstance(pid, str) and len(pid) > 15:
+        findings.append(Finding(
+            severity="ERROR",
+            file=path.name,
+            rule="id-length-exceeds-pico-cap",
+            detail=(
+                f"preset id='{pid}' ({len(pid)} chars) exceeds Pico "
+                f"SoundPresetPreset2.id[16] cap of 15 chars. Will crash the "
+                f"device on preset load."
+            ),
+        ))
+    pname = d.get("name", "")
+    if isinstance(pname, str) and len(pname) > 31:
+        findings.append(Finding(
+            severity="ERROR",
+            file=path.name,
+            rule="name-length-exceeds-pico-cap",
+            detail=(
+                f"preset name='{pname}' ({len(pname)} chars) exceeds Pico "
+                f"SoundPresetPreset2.name[32] cap of 31 chars. UX cap is "
+                f"tighter (~9 chars for OLED preset column)."
+            ),
+        ))
+    # values[] length cap — preset.parameterValues is int32_t[24]
+    # (MaxMacroSoundPresetParameters). Longer arrays are silently truncated
+    # by the P4 loader; not a crash, but indicates design error.
+    values = d.get("values", [])
+    if isinstance(values, list) and len(values) > 24:
+        findings.append(Finding(
+            severity="ERROR",
+            file=path.name,
+            rule="values-length-exceeds-preset-cap",
+            detail=(
+                f"preset values[] length {len(values)} exceeds 24 "
+                f"(MaxMacroSoundPresetParameters). Indices >= 24 are dropped "
+                f"by P4 loader — likely a design error."
+            ),
+        ))
+
+
 def validate_macro(
     path: Path,
     synth_types: dict[tuple[str, int], str],
@@ -62,6 +114,81 @@ def validate_macro(
     name = path.name
     machine = macro.get("machine", "")
     macro_id = macro.get("id", "")
+
+    # 0. id length cap — the Pico's SoundPresetPreset2.id is char[16] (15 chars
+    #    + null). Longer ids overflow into the adjacent name field and crash
+    #    the device on preset load. Real failure pattern: td3-hybrid-squelch
+    #    (18 chars) → crash; td3-hybrid-bass (15 chars) → works. See
+    #    tbd-pico-seq3/docs/architecture/macro-system.md §"CRITICAL — id
+    #    length cap (15 chars on Pico)".
+    if len(macro_id) > 15:
+        findings.append(Finding(
+            severity="ERROR",
+            file=name,
+            rule="id-length-exceeds-pico-cap",
+            detail=(
+                f"macro id='{macro_id}' ({len(macro_id)} chars) exceeds "
+                f"Pico SoundPresetPreset2.id[16] cap of 15 chars. Will corrupt "
+                f"the adjacent name field on Pico and crash the device on load."
+            ),
+        ))
+    macro_name = macro.get("name", "")
+    if isinstance(macro_name, str) and len(macro_name) > 31:
+        findings.append(Finding(
+            severity="ERROR",
+            file=name,
+            rule="name-length-exceeds-pico-cap",
+            detail=(
+                f"macro name='{macro_name}' ({len(macro_name)} chars) exceeds "
+                f"32-char name field cap on Pico shared structs."
+            ),
+        ))
+
+    # Structural caps from MacroDeviceDefinition.hpp:
+    #   MaxOutputMappings = 16 — the deserializer silently overflows past this.
+    #   MaxOutputMappingSources = 8 — sources per mapping.
+    # Violations are memory corruption waiting to happen.
+    mappings = macro.get("mapping", [])
+    # Cap widened to 20 on 2026-04-24 (main/MacroDeviceDefinition.hpp).
+    if len(mappings) > 20:
+        findings.append(Finding(
+            severity="ERROR",
+            file=name,
+            rule="mapping-count-exceeds-cap",
+            detail=(
+                f"macro has {len(mappings)} mapping entries; cap is 20 "
+                f"(MaxOutputMappings). Excess entries overflow "
+                f"outputMappings[] in MacroDeviceDefinition, undefined behavior."
+            ),
+        ))
+    for mp_idx, mp in enumerate(mappings):
+        adds = mp.get("add", [])
+        if len(adds) > 8:
+            findings.append(Finding(
+                severity="ERROR",
+                file=name,
+                rule="mapping-sources-exceed-cap",
+                detail=(
+                    f"mapping[{mp_idx}] ctrl={mp.get('ctrl')} has {len(adds)} "
+                    f"sources in add[]; cap is 8 (MaxOutputMappingSources)."
+                ),
+            ))
+
+    # Param idx cap — trackParameterValues[16][24], so idx must be 0..23.
+    for g in macro.get("groups", []):
+        for p in g.get("parameters", []):
+            idx = p.get("idx")
+            if idx is not None and (idx < 0 or idx > 23):
+                findings.append(Finding(
+                    severity="ERROR",
+                    file=name,
+                    rule="param-idx-out-of-range",
+                    detail=(
+                        f"param '{p.get('name')}' has idx={idx}; valid range "
+                        f"is 0..23 (trackParameterValues[16][24]). Will not "
+                        f"store or fan out correctly."
+                    ),
+                ))
 
     # Build idx → param map
     idx_to_param: dict[int, dict] = {}
@@ -267,6 +394,13 @@ def main() -> int:
         if args.only and macro.get("machine") != args.only:
             continue
         validate_macro(path, synth_types, findings)
+
+    # Preset id-length cap check (Pico SoundPresetPreset2.id[16] = 15 char cap).
+    # The --only filter is best-effort here via filename prefix.
+    for path in sorted(PRESETS.glob("*.json")):
+        if args.only and not path.name.startswith(args.only):
+            continue
+        validate_preset_id_length(path, findings)
 
     # Group by severity then by file for readable output
     errors = [f for f in findings if f.severity == "ERROR"]

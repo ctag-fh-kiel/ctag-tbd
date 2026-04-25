@@ -153,6 +153,13 @@ namespace CTAG {
 			void setTrackMachine(const uint8_t trackIndex, const std::string machineId, float volumeMultiplier);
 			void setTrackBank(const uint8_t trackIndex, const uint16_t bankIndex);
 
+			// Propagates Pico-side track mute into the channel mixer's `muted` flag
+			// so `enabled` stays false while the user mutes — gates the sum output
+			// regardless of LEVEL. See RackChannelMixer for the enabled-check.
+			// Overrides the ctagSoundProcessor base-class default no-op so the
+			// virtual dispatch from MacroTranslator lands here.
+			void setTrackMute(const uint8_t trackIndex, bool muted) override;
+
 			void handleMidiNoteOn(const uint8_t channel, uint8_t note, uint8_t velocity);
 			void handleMidiNoteOff(const uint8_t channel, uint8_t note, uint8_t velocity);
 			void handleMidiControlChange(const uint8_t channel, uint8_t control, uint8_t value);
@@ -285,6 +292,10 @@ namespace CTAG {
             int32_t timer {0}, pre_timer {0};
             stmlib::OnePole lp_l, hp_l;
             stmlib::OnePole lp_r, hp_r;
+            // Delay-input HP (independent of the feedback-path HP) and
+            // reverb-input HP shelf (independent of the in-loop LP fx2_lp).
+            stmlib::OnePole dly_input_hp_l, dly_input_hp_r;
+            stmlib::OnePole rev_hp_l, rev_hp_r;
 			int last_scaledbpm { 1200 };
 			float last_msPerBeat { 500.0f };
 
@@ -293,7 +304,19 @@ namespace CTAG {
             mifx::Reverb reverb;
 			int framecounter;
 
+            // Pre-delay ring buffer ahead of the reverb input path. Max
+            // 200 ms = 8820 samples at 44.1 kHz, mono (reverb sums L+R on
+            // input). ~35 KB in SPIRAM.
+            float *preDelayBuf;
+            static constexpr int preDelayBufSize = 8820;
+            int preDelayWriteIdx {0};
+
         	float audio_in[BUF_SZ*2];
+            // Snapshot of combined_out right after ch16 (Audio Input
+            // track) mixes — used to separate the input track's
+            // contribution from the synth tracks' contribution for
+            // the OLED Input / Output peak meters.
+            float ch16_combined_snapshot[BUF_SZ * 2];
         	float combined_out[BUF_SZ*2];
         	float send1_out[BUF_SZ*2];
         	float send2_out[BUF_SZ*2];
@@ -315,6 +338,34 @@ namespace CTAG {
 			atomic<int32_t> fx1_width;
 			atomic<int32_t> fx2_time;
 			atomic<int32_t> fx2_lp;
+			// fx2_diffuse drives reverb.set_diffusion() (was hardcoded 0.7).
+			// fx2_predelay maps to a mono ring buffer ahead of the tank
+			// (preDelayBuf, 8820 samples / ~200 ms at 44.1 kHz).
+			atomic<int32_t> fx2_diffuse;
+			atomic<int32_t> fx2_predelay;
+			// fx2_modulation scales reverb LFO1/LFO2 frequencies 0..2× of
+			// their bases (0.5 / 0.3 Hz, see reverb.h:45-46). Wire 64 = 1×
+			// preserves prior sound; wire 0 freezes both LFOs.
+			atomic<int32_t> fx2_modulation;
+			// fx2_input_gain → reverb.set_input_gain (legacy hardcoded 0.5).
+			// Wire 64 ≈ 0.5 preserves prior behaviour.
+			atomic<int32_t> fx2_input_gain;
+			// fx2_tank_level → reverb.set_amount (legacy hardcoded 1.0).
+			// Independent from the Master Reverb return (fx2_amount cc 42):
+			// this is the internal tank gain, the Master knob is the bus
+			// return.
+			atomic<int32_t> fx2_tank_level;
+			// HP filters: fx1_input_hp on the delay dry input (independent
+			// from the feedback-path HP fx1_base cc 27); fx2_hp on the
+			// reverb input before the tank. Both wire 0 → 20 Hz (effectively
+			// bypassed), wire 127 → ~2 kHz. Defaults preserve prior sound.
+			atomic<int32_t> fx1_input_hp;
+			atomic<int32_t> fx2_hp;
+			// sum_drive: variable-depth soft saturation on the final output
+			// bus via stmlib::SoftLimit. Wire 0 = transparent (the path is
+			// skipped entirely — see renderMasterOutput). Wire 127 = 4×
+			// drive with /sqrt(drive) loudness makeup.
+			atomic<int32_t> sum_drive;
 			atomic<int32_t> c_thres;
 			atomic<int32_t> c_ratio;
 			atomic<int32_t> c_atk;
@@ -322,8 +373,8 @@ namespace CTAG {
 			atomic<int32_t> c_lpf;
 			atomic<int32_t> c_gain;
 			atomic<int32_t> c_mix;
-			atomic<int32_t> c_dly_level;
-			atomic<int32_t> c_rev_level;
+			// CCs 67/68 (c_dly_level / c_rev_level) retired — DSP never
+			// referenced them. Registration removed in knowYourself().
 			atomic<int32_t> sum_mute;
 			atomic<int32_t> sum_lev;
 			atomic<int32_t> fx1_amount;

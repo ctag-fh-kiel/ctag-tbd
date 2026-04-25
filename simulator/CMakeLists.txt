@@ -166,6 +166,17 @@ target_include_directories(tbd-sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../main)
 set(TEST_FILES
         tests/test_ctagADSREnv.cpp
         tests/test_ctagADSREnv.hpp
+        # Phase 8.6 (2026-04-24e) — FX/Master DSP regression tests.
+        tests/test_fx_mixer_pan.cpp
+        tests/test_fx_mixer_pan.hpp
+        tests/test_fx1_tempo_divisor.cpp
+        tests/test_fx1_tempo_divisor.hpp
+        tests/test_predelay_ringbuf.cpp
+        tests/test_predelay_ringbuf.hpp
+        tests/test_fast_concave.cpp
+        tests/test_fast_concave.hpp
+        tests/test_format_param_value.cpp
+        tests/test_format_param_value.hpp
         tests/run_tests.cpp
         )
 

@@ -41,7 +41,12 @@ void RackChannelMixer::Init(const PickSeqRackInitData *initdata) {
 }
 
 void RackChannelMixer::PreProcess(const PicoSeqRackProcessData &data) {
-    MK_FLT_PAR_ABS_NOCV(fPan, mix_pan, 4096.f, 1.f)
+    // Pan: atomic max is 4064 (CC wire 127 × 32), not 4096. Dividing by
+    // 4096 leaves fPan ≈ 0.984 at hard right after the centre-shift, so
+    // mL = 1 - 0.984 = 0.016 — 1.6 % bleed on the silenced channel.
+    // 4064 + CONSTRAIN gives exact 0/1 at the extremes.
+    MK_FLT_PAR_ABS_NOCV(fPan, mix_pan, 4064.f, 1.f)
+    CONSTRAIN(fPan, 0.f, 1.f)
     MK_FLT_PAR_ABS_NOCV(fLev, mix_lev, 4096.f, 2.f); fLev *= fLev;
     MK_FLT_PAR_ABS_NOCV(fFX1Send, mix_fx1, 4095.f, maxFXSendLevelDly); fFX1Send *= fFX1Send;
     MK_FLT_PAR_ABS_NOCV(fFX2Send, mix_fx2, 4095.f, maxFXSendLevelRev); fFX2Send *= fFX2Send;
@@ -54,7 +59,10 @@ void RackChannelMixer::PreProcess(const PicoSeqRackProcessData &data) {
 		this->level = fLev;
 	}
 
-    this->enabled = level > minVolume;
+    // `muted` is set from the Pico via SoundProcessorManager::SetTrackMute.
+    // Gating `enabled` here silences the Input track's continuous audio and
+    // cuts synth tails on tracks 1-15 the moment the user toggles mute.
+    this->enabled = (level > minVolume) && !muted;
 
 	fPan = fPan * 2.0f - 1.0f;
 	if (fPan != this->pan) {

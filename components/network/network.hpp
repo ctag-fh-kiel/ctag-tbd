@@ -20,6 +20,10 @@ namespace CTAG {
 
             static void SetIfType(IF_TYPE if_type);
 
+            // Read the configured interface type (used by the Pico header
+            // network indicator to pick the right glyph).
+            static IF_TYPE GetIfType() { return _if_type; }
+
             static void SetSSID(const string ssid);
 
             static void SetPWD(const string pwd);

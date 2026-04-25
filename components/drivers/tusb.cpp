@@ -141,6 +141,12 @@ uint32_t CTAG::DRIVERS::tusb::Write(const uint8_t *data, uint32_t len) {
     return tud_midi_stream_write(0, data, len);
 }
 
+bool CTAG::DRIVERS::tusb::IsNCMReady() {
+    // Mirrors the per-iteration check inside WaitForNCMReady. Cheap to
+    // poll on every SPI response cycle.
+    return tud_mounted() && tud_network_can_xmit(64);
+}
+
 bool CTAG::DRIVERS::tusb::WaitForNCMReady(uint32_t timeout_ms) {
     ESP_LOGI("TUSB", "Waiting for NCM interface to be ready...");
 

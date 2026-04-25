@@ -120,6 +120,12 @@ namespace CTAG {
             static void RefreshSampleRom();
 
             static void SetTrackMachine(const int trackIndex, const string &synthID, float volumeMultiplier);
+            // Forwards user-facing mute state into the rack's channel mixer so
+            // the RackChannelMixer enabled-check gates the channel output
+            // regardless of LEVEL. Essential for the Input track (ch16,
+            // continuous passthrough audio with no note-triggers to suppress)
+            // and a bonus on tracks 1-15 where it cuts synth tails instantly.
+            static void SetTrackMute(const int trackIndex, bool muted);
 #if CONFIG_TBD_USE_SD_CARD
             static void SetTrackMacro(const int trackIndex, const string &macroDefinitionID);
             static void SetTrackParametersFromJSON(const string &parametersJSON);

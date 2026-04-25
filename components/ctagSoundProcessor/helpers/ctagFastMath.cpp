@@ -499,4 +499,14 @@ namespace CTAG::SP::HELPERS {
         return (((a * f) - b_neg) * f + c) * f + x0;
     }
 
+    // Ported from upstream CTAG DrumRack commit 38f2975e. Concave transfer
+    // function with tunable aggressiveness `k`:
+    //   k = 0.03  very aggressive (x=0.1 → y≈0.79)
+    //   k = 0.06  aggressive      (x=0.1 → y≈0.65)  — matches upstream usage
+    //   k = 0.10  moderate         (x=0.1 → y≈0.53)
+    // Safe for x ∈ [0, 1], k > 0.
+    float FastConcaveTransfer(float x, float k) {
+        return x / (x + k * (1.0f - x));
+    }
+
 }

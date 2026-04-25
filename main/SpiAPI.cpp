@@ -1568,6 +1568,19 @@ namespace CTAG::SPIAPI{
                 }
                 break;
 
+            case RequestType::SetTrackMute:
+                {
+                    int trackIndex = uint8_param_0;
+                    bool muted = (uint8_param_1 != 0);
+                    if (trackIndex < 0 || trackIndex >= 16) {
+                        ESP_LOGE("SpiAPI", "SetTrackMute: invalid trackIndex %d", trackIndex);
+                        break;
+                    }
+                    // ESP_LOGI("SpiAPI", "SetTrackMute: track %d = %d", trackIndex, muted ? 1 : 0);
+                    CTAG::AUDIO::SoundProcessorManager::SetTrackMute(trackIndex, muted);
+                }
+                break;
+
             case RequestType::SaveScreenshot:
 #if CONFIG_TBD_USE_SD_CARD
                 {

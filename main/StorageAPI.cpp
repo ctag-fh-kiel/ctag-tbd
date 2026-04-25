@@ -939,6 +939,24 @@ static esp_err_t handle_uploadconfig(httpd_req_t *req) {
     if (slashPos != std::string::npos) {
         std::string subdir = pathStr.substr(0, slashPos);
         std::string fname = pathStr.substr(slashPos + 1);
+        // Pico shared id[16] = 15 chars + null. Preset/macro filenames follow
+        // the `<id>.json` convention, so basename > 19 chars means the id
+        // field exceeds the Pico's SoundPresetPreset2.id buffer and will
+        // crash the device on load. Reject here as a first-line guard. See
+        // tbd-pico-seq3/docs/architecture/macro-system.md "CRITICAL — id
+        // length cap (15 chars on Pico)".
+        if ((subdir == "macros" || subdir == "presets") &&
+            fname.size() >= 5 && fname.substr(fname.size() - 5) == ".json") {
+            size_t baseLen = fname.size() - 5;
+            if (baseLen > 15) {
+                ESP_LOGE(TAG, "Reject uploadconfig: basename '%s' is %u chars; "
+                              "cap is 15 (Pico id[16]).",
+                         fname.c_str(), (unsigned)baseLen);
+                return send_error(req, 400,
+                    "filename basename exceeds Pico id[16] cap (15 chars). "
+                    "Shorten the preset or macro id.");
+            }
+        }
         if (isFactoryWrite) {
             filePath = CTAG::STORAGE::factoryPath() + "/" + subdir + "/" + fname;
             std::string parentDir = CTAG::STORAGE::factoryPath() + "/" + subdir;
@@ -1207,6 +1225,32 @@ static esp_err_t handle_uploadfactory(httpd_req_t *req) {
     // Path traversal protection
     if (strstr(pathVal, "..") != nullptr) {
         return send_error(req, 400, "Invalid path");
+    }
+
+    // Pico id[16] cap enforcement: preset/macro basenames must be ≤19 chars
+    // (15-char id + ".json"). Longer names overflow SoundPresetPreset2.id on
+    // the Pico and crash the device on load. See macro-system.md "CRITICAL
+    // — id length cap (15 chars on Pico)".
+    {
+        std::string pv(pathVal);
+        size_t sp = pv.find('/');
+        if (sp != std::string::npos) {
+            std::string subdir = pv.substr(0, sp);
+            std::string fname = pv.substr(sp + 1);
+            if ((subdir == "macros" || subdir == "presets") &&
+                fname.size() >= 5 &&
+                fname.substr(fname.size() - 5) == ".json") {
+                size_t baseLen = fname.size() - 5;
+                if (baseLen > 15) {
+                    ESP_LOGE(TAG, "Reject uploadfactory: basename '%s' is %u "
+                                  "chars; cap is 15 (Pico id[16]).",
+                             fname.c_str(), (unsigned)baseLen);
+                    return send_error(req, 400,
+                        "filename basename exceeds Pico id[16] cap (15 chars). "
+                        "Shorten the preset or macro id.");
+                }
+            }
+        }
     }
 
     // Construct full path and ensure parent directories exist

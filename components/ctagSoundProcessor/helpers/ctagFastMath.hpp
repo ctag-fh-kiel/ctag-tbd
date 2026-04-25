@@ -143,6 +143,13 @@ namespace CTAG::SP::HELPERS {
         const float index,
         const uint32_t size);
 
+    // Upstream DrumRack 38f2975e: concave response curve that stays near 0
+    // for small x, then rises sharply to 1. Used for the delay stereo-width
+    // knob so small knob moves near 0 stay mono-summed (no audible spread
+    // until the user turns meaningfully) and the upper half of the knob
+    // produces the full stereo expansion. Formula: x / (x + k * (1 - x)).
+    // k = 0.06 is "aggressive" — matches upstream's choice.
+    float FastConcaveTransfer(float x, float k);
 
 }
 

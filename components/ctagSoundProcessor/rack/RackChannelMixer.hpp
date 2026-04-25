@@ -26,6 +26,11 @@ public:
 	void PreProcess(const PicoSeqRackProcessData &data);
 	void Init(const PickSeqRackInitData *initdata);
 	bool enabled;
+	// User-facing Pico mute state, set via SoundProcessorManager::SetTrackMute.
+	// Forces `enabled = false` in PreProcess regardless of LEVEL — required for
+	// the Input track (ch16) where audio is continuous passthrough and cannot
+	// be silenced by suppressing note-triggers.
+	bool muted {false};
 	float level;
 	float pan;
 	float send1;

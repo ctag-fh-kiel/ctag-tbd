@@ -147,12 +147,20 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
         uint32_t stepsLengthMs = 0;
         uint32_t sliceLengthMs = 0;
 
-        rompler.params.playbackSpeed = 1.0;
-        if (data.sampleRom->HasSlice(rompler.params.slice)) {
+        // When time-stretch is ON the engine overrides playbackSpeed with the
+        // slice-to-step-length ratio so the sample fills N steps regardless of
+        // its natural duration. When time-stretch is OFF, honour the Speed
+        // knob (fS1Speed ∈ [0..2]; 1.0 = natural pitch). Previously the
+        // non-timestretch branch hardcoded 1.0 and the Speed knob was a dead
+        // control — TODO.md bug fix.
+        if (rompler.params.timeStretchEnable
+            && data.sampleRom->HasSlice(rompler.params.slice)) {
             sliceLength = data.sampleRom->GetSliceSize(rompler.params.slice);
             stepsLengthMs = track_length * data.msPerBeat / 4;
             sliceLengthMs = (sliceLength * 1000) / 44100;
             rompler.params.playbackSpeed = (float)sliceLengthMs / (float)stepsLengthMs;
+        } else {
+            rompler.params.playbackSpeed = fS1Speed;
         }
 
         // printf("S1 sl=%ld ps=%1.3f pitch=%1.3f, ts=%d>%1.1f, slicelen=%ld,msperbeat=%ld,slicelenms=%ld, tempo=%ld,tracklen=%d\n",

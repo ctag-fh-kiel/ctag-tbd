@@ -92,9 +92,28 @@ struct p4_spi_response2 {
     uint8_t injected_button;
     // offset 473
     uint8_t injected_button_event;
-    // offset 474
-    uint16_t _reserved_input;
-    // offset 476
+    // offset 474 — network status enum. 0 = off, 1 = USB NCM ready,
+    // 2 = WiFi STA, 3 = WiFi AP.
+    uint8_t network_status;
+    // offset 475
+    uint8_t _reserved_input;
+    // offset 476/477 — dedicated peak metering, separate from the
+    // input_waveform / output_waveform paths used by the Live Waveform
+    // display. Sourced from the PicoSeqRack's per-track bus split:
+    //   input_peak_byte  → peak of ch16's (Audio Input track) own
+    //                      contribution to combined_out, snapshotted
+    //                      immediately after ch16 mixes and before any
+    //                      synth track renders.
+    //   output_peak_byte → peak of (combined_out − ch16 snapshot), i.e.
+    //                      synth tracks 1..15 only, with the input
+    //                      passthrough fully removed at the bus level.
+    // Range 0..255 maps linearly to absolute amplitude 0..~1.0
+    // (peak of |sample|). Bus-level separation guarantees Track 16
+    // audio NEVER bleeds into the output meter regardless of master
+    // volume, FX returns, or RackInput gain settings.
+    uint8_t input_peak_byte;
+    uint8_t output_peak_byte;
+    // offset 478
 };
 
 #endif // CONFIG_TBD_USE_RP2350

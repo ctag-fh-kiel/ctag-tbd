@@ -120,6 +120,15 @@ namespace CTAG::SPIAPI{
 
             // Screenshot capture (developer tool)
             SaveScreenshot = 0xBC, // receive screenshot BMP from Pico, save to user/screenshots/
+
+            // Track mute — Pico tells P4 when a track's user-facing mute
+            // state changes. P4-side sets ch{N}.muted; the RackChannelMixer
+            // enabled-check then gates the channel output regardless of
+            // LEVEL. Essential for the Input track (continuous audio, no
+            // note-triggers to prevent) and a bonus for cutting synth
+            // tails instantly on the other 15 tracks.
+            // Args: uint8_param_0 = trackIndex (0..15), uint8_param_1 = muted (0/1).
+            SetTrackMute = 0xBD,
         };
 
         static std::string rp2350AppId;   // app name announced by RP2350 (empty = unknown/legacy)
