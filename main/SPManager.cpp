@@ -460,27 +460,44 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
             }
         }
 
-        // Out peak detection, red for output
-        // limiting output
-        max = 0.f;
+        // Output peak detection — proper per-block peak detector reading
+        // BEFORE the SoftClip stage, so we can distinguish "loud but clean"
+        // from "softclip is actively catching" (the actually useful signal).
+        // Old code measured only fbuf[0]+fbuf[1]/2 of the first sample after
+        // softclip, which couldn't reflect either intent.
+        float peakRaw = 0.f;
         for (uint32_t i = 0; i < BUF_SZ; i++) {
-            // soft limiting
-            if (ch0_outputSoftClip) {
-                fbuf[i * 2] = stmlib::SoftClip(fbuf[i * 2]);
-            }
-            if (ch1_outputSoftClip) {
-                fbuf[i * 2 + 1] = stmlib::SoftClip(fbuf[i * 2 + 1]);
-            }
-            //if (fbuf[i * 2] > max) max = fbuf[i * 2];
-            //if (fbuf[i * 2 + 1] > max) max = fbuf[i * 2 + 1];
+            float lin_l = fbuf[i * 2];
+            float lin_r = fbuf[i * 2 + 1];
+            float a = fabsf(lin_l) > fabsf(lin_r) ? fabsf(lin_l) : fabsf(lin_r);
+            if (a > peakRaw) peakRaw = a;
+            // Soft limiting (legacy ctag-tbd safety clipper, default ON).
+            if (ch0_outputSoftClip) fbuf[i * 2]     = stmlib::SoftClip(lin_l);
+            if (ch1_outputSoftClip) fbuf[i * 2 + 1] = stmlib::SoftClip(lin_r);
         }
+        peakOut = 0.9f * peakOut + 0.1f * peakRaw;
 
-        // just take first sample of block for level meter
-        max = fabsf(fbuf[0] + fbuf[1]) / 2.f;
-        peakOut = 0.9f * peakOut + 0.1f * max;
-        //ESP_LOGW("PEAK", "max %.12f, peak %.12f", max, peakOut);
-        max = 255.f + 3.2f * HELPERS::fast_dBV(peakOut);
-        if (max > 0.f) ledData |= ((uint32_t) max) << 16; // red
+        // Multi-zone status LED. Input meter already painted green above.
+        // Output zones layer on top:
+        //   peakOut < 0.5    : no extra colour — input green dominates (clean).
+        //   0.5..0.85         : red intensity rising; blends with input green
+        //                       → yellow (signal approaching ceiling).
+        //   0.85..1.0         : solid red (at ceiling, softclip about to engage).
+        //   > 1.0             : red + blue → magenta (softclip ACTIVELY catching
+        //                       peaks that would otherwise clip — audio is still
+        //                       safe, the cubic saturator is doing its job, but
+        //                       you're hearing soft saturation).
+        if (peakOut > 1.0f) {
+            ledData |= 255u << 16;          // full red
+            ledData |= 180u << 0;           // + blue → magenta tint = "softclip catching"
+        } else if (peakOut > 0.85f) {
+            ledData |= 255u << 16;          // solid red — at output ceiling
+        } else if (peakOut > 0.5f) {
+            int r = (int)((peakOut - 0.5f) / 0.35f * 200.f);
+            if (r > 200) r = 200;
+            ledData |= ((uint32_t)r) << 16; // rising red; mixes with input green → yellow
+        }
+        // peakOut < 0.5 → output adds no colour; input meter shows alone.
 
         // get cpu cycles for audio task and tone led
         diff = esp_cpu_get_cycle_count() - start;
