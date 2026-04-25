@@ -2,7 +2,7 @@
   "id": "extdrum-all-def",
   "name": "Midi",
   "group": "ExtDrum",
-  "macro": "extdrum-allparams",
+  "macro": "extdrum-all",
   "values": [
     50,
     70

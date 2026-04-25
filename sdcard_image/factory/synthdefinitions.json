@@ -371,6 +371,13 @@
           "type": "cc",
           "ctrl": 17,
           "def": 64
+        },
+        {
+          "id": "inputhp",
+          "name": "Input HP",
+          "type": "cc",
+          "ctrl": 18,
+          "def": 0
         }
       ]
     },
@@ -399,6 +406,48 @@
           "type": "cc",
           "ctrl": 10,
           "def": 64
+        },
+        {
+          "id": "diffuse",
+          "name": "Diffuse",
+          "type": "cc",
+          "ctrl": 11,
+          "def": 89
+        },
+        {
+          "id": "predelay",
+          "name": "PreDly",
+          "type": "cc",
+          "ctrl": 12,
+          "def": 14
+        },
+        {
+          "id": "modulation",
+          "name": "ModRate",
+          "type": "cc",
+          "ctrl": 13,
+          "def": 64
+        },
+        {
+          "id": "inputgain",
+          "name": "Drive",
+          "type": "cc",
+          "ctrl": 14,
+          "def": 64
+        },
+        {
+          "id": "tanklevel",
+          "name": "TankLvl",
+          "type": "cc",
+          "ctrl": 15,
+          "def": 127
+        },
+        {
+          "id": "hp",
+          "name": "HP",
+          "type": "cc",
+          "ctrl": 16,
+          "def": 0
         }
       ]
     },
@@ -1610,7 +1659,64 @@
       "id": "inp",
       "name": "Audio Input",
       "type": "synth",
-      "parameters": []
+      "parameters": [
+        {
+          "id": "in_gain",
+          "name": "Gain",
+          "type": "nrpm",
+          "ctrl": 8,
+          "def": 1024
+        },
+        {
+          "id": "in_mono",
+          "name": "Mono",
+          "type": "cc",
+          "ctrl": 9,
+          "def": 0
+        },
+        {
+          "id": "in_hp",
+          "name": "HP",
+          "type": "nrpm",
+          "ctrl": 10,
+          "def": 0
+        },
+        {
+          "id": "in_drive",
+          "name": "Drive",
+          "type": "nrpm",
+          "ctrl": 11,
+          "def": 0
+        },
+        {
+          "id": "in_ftype",
+          "name": "FType",
+          "type": "cc",
+          "ctrl": 12,
+          "def": 0
+        },
+        {
+          "id": "in_fcutoff",
+          "name": "FCut",
+          "type": "nrpm",
+          "ctrl": 13,
+          "def": 4095
+        },
+        {
+          "id": "in_freso",
+          "name": "FReso",
+          "type": "nrpm",
+          "ctrl": 14,
+          "def": 0
+        },
+        {
+          "id": "in_fenv",
+          "name": "FEnv",
+          "type": "nrpm",
+          "ctrl": 15,
+          "def": 0
+        }
+      ]
     }
   ]
 }

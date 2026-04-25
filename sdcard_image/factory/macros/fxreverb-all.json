@@ -1,40 +1,96 @@
 {
-  "id": "fxreverb-allparams",
+  "id": "fxreverb-all",
   "name": "Reverb FX",
   "machine": "fxreverb",
   "volmult": 1.0,
+  "_comment": "Aligned 2026-04-25 with Phase 10 HP (cc 48), Phase 9.2 Drive (cc 46) + TankLvl (cc 47), Phase 9 ModRate (cc 45). Phase 6 Diffuse (cc 43), Phase 8 PreDly (cc 44). Pico OLED has its own page table in initsong.cpp; this macro is what the WebUI editor shows.",
   "groups": [
     {
-      "name": "Page 1",
+      "name": "Reverb",
       "parameters": [
         {
           "idx": 0,
           "name": "Time",
-          "def": 16,
+          "def": 64,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "bignum",
+          "ui": "envdecay",
           "curve": "log"
         },
         {
           "idx": 1,
-          "name": "Lowpass",
-          "def": 59,
+          "name": "Damp",
+          "def": 80,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "bignum",
+          "ui": "filterq",
           "curve": "log"
         },
         {
           "idx": 2,
           "name": "Level",
-          "def": 64,
+          "def": 75,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "level"
+        },
+        {
+          "idx": 3,
+          "name": "Diffuse",
+          "def": 89,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filterq"
+        },
+        {
+          "idx": 4,
+          "name": "PreDly",
+          "def": 14,
           "min": 0,
           "max": 127,
           "res": 64,
           "ui": "bignum"
+        },
+        {
+          "idx": 5,
+          "name": "ModRate",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filterq"
+        },
+        {
+          "idx": 6,
+          "name": "Drive",
+          "def": 64,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filterq"
+        },
+        {
+          "idx": 7,
+          "name": "TankLvl",
+          "def": 127,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "level"
+        },
+        {
+          "idx": 8,
+          "name": "HP",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 64,
+          "ui": "filtercutoff",
+          "curve": "log"
         }
       ]
     }
@@ -75,6 +131,79 @@
           "src": 2,
           "mul": 1,
           "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 7,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 16,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 8,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
         }
       ]
     }

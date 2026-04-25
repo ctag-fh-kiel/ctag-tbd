@@ -1,8 +1,8 @@
 {
-  "id": "extsynth-all-def",
+  "id": "extsynth-def",
   "name": "Midi",
   "group": "ExtSyn",
-  "macro": "extsynth-allparams",
+  "macro": "extsynth-all",
   "values": [
     0
   ]

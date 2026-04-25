@@ -2,17 +2,19 @@
   "id": "fxdelay-all-def",
   "name": "DelayFX",
   "group": "FX",
-  "macro": "fxdelay-allparams",
+  "macro": "fxdelay-all",
+  "_comment": "Values aligned 2026-04-24e with Pico initsong.cpp FX1 DELAY + DELAY TONE defaults: Time 85 (1/4 note) / Sync 127 (on) / Freeze 0 / Mode 0 (Tape) / Width 32 / >Rev 0 / Fdbk 45 / HP 18 / LP 95 / Level 80.",
   "values": [
-    16,
-    0,
+    85,
+    127,
     0,
     0,
     32,
     0,
-    32,
-    0,
-    32,
-    64
+    45,
+    18,
+    95,
+    80,
+    0
   ]
 }

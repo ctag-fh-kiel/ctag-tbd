@@ -101,13 +101,13 @@
     },
     {
       "index": 17,
-      "preset": "fxreverb-all-def",
-      "_name": "FX2 — Reverb FX — fxreverb-all-def"
+      "preset": "fxreverb-def",
+      "_name": "FX2 — Reverb FX — fxreverb-def"
     },
     {
       "index": 18,
-      "preset": "fxmaster-all-def",
-      "_name": "Master — Master FX — fxmaster-all-def"
+      "preset": "fxmaster-def",
+      "_name": "Master — Master FX — fxmaster-def"
     }
   ]
 }

@@ -1,13 +1,13 @@
 {
   "id": "td3-all-def",
-  "name": "Default",
+  "name": "F Default",
   "group": "TBD03",
   "macro": "td3-allparams",
   "values": [
     2,
-    7000,
     3000,
-    0,
+    7000,
+    3500,
     5000,
     3000,
     10000,
@@ -16,7 +16,7 @@
     0,
     0,
     0,
-    4000,
+    2000,
     0,
     0,
     0

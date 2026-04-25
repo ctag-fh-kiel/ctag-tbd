@@ -1,8 +1,198 @@
 {
-  "id": "inp-allparams",
-  "name": "Audio in",
+  "id": "inp-all",
+  "name": "Audio In",
   "machine": "inp",
   "volmult": 1.0,
-  "groups": [],
-  "mapping": []
+  "groups": [
+    {
+      "name": "Input",
+      "parameters": [
+        {
+          "idx": 0,
+          "name": "Gain",
+          "def": 11702,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "gainlevel"
+        },
+        {
+          "idx": 1,
+          "name": "Mono",
+          "def": 0,
+          "min": 0,
+          "max": 1,
+          "res": 64,
+          "ui": "onoff"
+        },
+        {
+          "idx": 2,
+          "name": "HP",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "filtercutoff",
+          "curve": "log"
+        },
+        {
+          "idx": 3,
+          "name": "Drive",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "distortion"
+        }
+      ]
+    },
+    {
+      "name": "Filter",
+      "parameters": [
+        {
+          "idx": 4,
+          "name": "Type",
+          "def": 0,
+          "min": 0,
+          "max": 127,
+          "res": 32,
+          "ui": "filtermode"
+        },
+        {
+          "idx": 5,
+          "name": "Cutoff",
+          "def": 16383,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "filtercutoff",
+          "curve": "log"
+        },
+        {
+          "idx": 6,
+          "name": "Reso",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "filterq"
+        },
+        {
+          "idx": 7,
+          "name": "Env",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "envamount"
+        }
+      ]
+    }
+  ],
+  "mapping": [
+    {
+      "ctrl": 8,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 0,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 9,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 1,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 10,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 2,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 11,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 3,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 12,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 4,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 13,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 5,
+          "mul": 1,
+          "div": 1,
+          "curve": "log"
+        }
+      ]
+    },
+    {
+      "ctrl": 14,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 6,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 15,
+      "type": "nrpm",
+      "bits": 14,
+      "start": 0,
+      "add": [
+        {
+          "src": 7,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    }
+  ]
 }

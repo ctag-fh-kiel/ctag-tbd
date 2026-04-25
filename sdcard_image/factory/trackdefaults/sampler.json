@@ -19,7 +19,7 @@
     { "index": 14, "preset": "pp-all-def",         "_name": "Chord    — Polypad (pp)" },
     { "index": 15, "preset": "inp-all-def",        "_name": "Input    — Audio Input" },
     { "index": 16, "preset": "fxdelay-all-def",    "_name": "FX1      — Delay" },
-    { "index": 17, "preset": "fxreverb-all-def",   "_name": "FX2      — Reverb" },
-    { "index": 18, "preset": "fxmaster-all-def",   "_name": "Master" }
+    { "index": 17, "preset": "fxreverb-def",   "_name": "FX2      — Reverb" },
+    { "index": 18, "preset": "fxmaster-def",   "_name": "Master" }
   ]
 }

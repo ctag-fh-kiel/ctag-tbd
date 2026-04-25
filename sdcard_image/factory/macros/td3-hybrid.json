@@ -1,6 +1,6 @@
 {
-  "id": "td3-allparams",
-  "name": "AcidBass",
+  "id": "td3-hybrid",
+  "name": "Hybrid",
   "machine": "td3",
   "volmult": 0.4,
   "groups": [
@@ -10,7 +10,7 @@
         {
           "idx": 0,
           "name": "Shape",
-          "def": 2,
+          "def": 6,
           "min": 0,
           "max": 46,
           "res": 64,
@@ -19,29 +19,31 @@
         {
           "idx": 1,
           "name": "Timbre",
-          "def": 7000,
+          "def": 4000,
           "min": 0,
           "max": 16383,
           "res": 2048,
           "ui": "shape3"
         },
         {
-          "idx": 12,
-          "name": "Color",
-          "def": 4000,
+          "idx": 2,
+          "name": "Length",
+          "def": 5000,
           "min": 0,
           "max": 16383,
-          "res": 2048,
-          "ui": "shape2"
+          "res": 1024,
+          "ui": "envdecay",
+          "curve": "exp"
         },
         {
-          "idx": 8,
-          "name": "Warp",
-          "def": 0,
+          "idx": 3,
+          "name": "Sweep",
+          "def": 3500,
           "min": 0,
           "max": 16383,
-          "res": 2048,
-          "ui": "distortion"
+          "res": 1024,
+          "ui": "envdecay",
+          "curve": "exp"
         }
       ]
     },
@@ -51,7 +53,7 @@
         {
           "idx": 4,
           "name": "Cutoff",
-          "def": 5000,
+          "def": 3000,
           "min": 0,
           "max": 16383,
           "res": 2048,
@@ -61,39 +63,48 @@
         {
           "idx": 5,
           "name": "Reso",
-          "def": 3000,
+          "def": 5000,
           "min": 0,
           "max": 16383,
           "res": 2048,
           "ui": "filterq"
         },
         {
-          "idx": 7,
-          "name": "Type",
-          "def": 0,
-          "min": 0,
-          "max": 3,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 9,
-          "name": "Drive",
-          "def": 0,
+          "idx": 6,
+          "name": "Env",
+          "def": 5000,
           "min": 0,
           "max": 16383,
           "res": 2048,
+          "ui": "bignum"
+        },
+        {
+          "idx": 7,
+          "name": "Type",
+          "def": 1,
+          "min": 0,
+          "max": 3,
+          "res": 64,
           "ui": "bignum"
         }
       ]
     },
     {
-      "name": "Mod",
+      "name": "Perf",
       "parameters": [
         {
-          "idx": 6,
-          "name": "Env Amt",
-          "def": 10000,
+          "idx": 8,
+          "name": "Warp",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "distortion"
+        },
+        {
+          "idx": 9,
+          "name": "Drive",
+          "def": 1500,
           "min": 0,
           "max": 16383,
           "res": 2048,
@@ -101,55 +112,12 @@
         },
         {
           "idx": 13,
-          "name": "Tim EG",
+          "name": "Motion",
           "def": 0,
           "min": 0,
           "max": 16383,
           "res": 2048,
           "ui": "bignum"
-        },
-        {
-          "idx": 14,
-          "name": "Col EG",
-          "def": 0,
-          "min": 0,
-          "max": 16383,
-          "res": 2048,
-          "ui": "bignum"
-        },
-        {
-          "idx": 15,
-          "name": "Acc Lev",
-          "def": 0,
-          "min": 0,
-          "max": 16383,
-          "res": 2048,
-          "ui": "bignum"
-        }
-      ]
-    },
-    {
-      "name": "Env",
-      "parameters": [
-        {
-          "idx": 2,
-          "name": "VCA Dec",
-          "def": 3000,
-          "min": 0,
-          "max": 16383,
-          "res": 1024,
-          "ui": "envdecay",
-          "curve": "exp"
-        },
-        {
-          "idx": 3,
-          "name": "VCF Dec",
-          "def": 0,
-          "min": 0,
-          "max": 16383,
-          "res": 1024,
-          "ui": "envdecay",
-          "curve": "exp"
         },
         {
           "idx": 11,
@@ -179,6 +147,7 @@
     {
       "ctrl": 9,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -191,6 +160,7 @@
     {
       "ctrl": 10,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -204,6 +174,7 @@
     {
       "ctrl": 11,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -217,6 +188,7 @@
     {
       "ctrl": 12,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -230,6 +202,7 @@
     {
       "ctrl": 13,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -242,6 +215,7 @@
     {
       "ctrl": 14,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -266,6 +240,7 @@
     {
       "ctrl": 16,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -278,6 +253,7 @@
     {
       "ctrl": 17,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -300,20 +276,9 @@
       ]
     },
     {
-      "ctrl": 20,
-      "type": "nrpm",
-      "start": 0,
-      "add": [
-        {
-          "src": 12,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
       "ctrl": 21,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
@@ -326,22 +291,11 @@
     {
       "ctrl": 22,
       "type": "nrpm",
+      "bits": 14,
       "start": 0,
       "add": [
         {
-          "src": 14,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 23,
-      "type": "nrpm",
-      "start": 0,
-      "add": [
-        {
-          "src": 15,
+          "src": 13,
           "mul": 1,
           "div": 1
         }

@@ -1,19 +1,20 @@
 {
-  "id": "fxmaster-all-def",
+  "id": "fxmaster-def",
   "name": "MastFX",
   "group": "FX",
-  "macro": "fxmaster-allparams",
+  "macro": "fxmaster-all",
+  "_comment": "Values align with fxmaster-all macro idx slots after 2026-04-24c retirement of Dly.Lev (idx 7) / Rev.Lev (idx 8). Defaults updated 2026-04-24d to match initsong.cpp best-possible-defaults: Thresh 95 / Ratio 32 / Atk 25 / Rel 65 / LPF 0 / Gain 14 / Mix 127 / (gap 7,8) / Sum mute 0 / Sum lev 127.",
   "values": [
-    100,
+    95,
     32,
+    25,
+    65,
     0,
-    50,
-    12,
+    14,
+    127,
     0,
-    64,
-    64,
-    64,
     0,
-    64
+    0,
+    127
   ]
 }

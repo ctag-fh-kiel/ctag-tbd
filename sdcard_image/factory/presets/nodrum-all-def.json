@@ -1,1 +1,7 @@
-{"id":"nodrum-all-def","name":"Empty","group":"_Empty","macro":"nodrum-allparams","values":[]}
+{
+  "id": "nodrum-all-def",
+  "name": "Empty",
+  "group": "_Empty",
+  "macro": "nodrum-all",
+  "values": []
+}

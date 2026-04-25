@@ -1,5 +1,5 @@
 {
-  "id": "extdrum-allparams",
+  "id": "extdrum-all",
   "name": "MIDI Drum All param",
   "machine": "extdrum",
   "volmult": 1.0,

@@ -2,6 +2,15 @@
   "id": "inp-all-def",
   "name": "Audio in",
   "group": "Audio In",
-  "macro": "inp-allparams",
-  "values": []
+  "macro": "inp-all",
+  "values": [
+    11702,
+    0,
+    0,
+    0,
+    0,
+    16383,
+    0,
+    0
+  ]
 }

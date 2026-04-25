@@ -1,5 +1,5 @@
 {
-  "id": "fxmaster-allparams",
+  "id": "fxmaster-all",
   "name": "Master FX",
   "machine": "fxmaster",
   "volmult": 1.0,
@@ -10,7 +10,7 @@
         {
           "idx": 0,
           "name": "Thresh",
-          "def": 100,
+          "def": 95,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -28,7 +28,7 @@
         {
           "idx": 2,
           "name": "Attack",
-          "def": 0,
+          "def": 25,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -38,7 +38,7 @@
         {
           "idx": 3,
           "name": "Release",
-          "def": 50,
+          "def": 65,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -53,7 +53,7 @@
         {
           "idx": 4,
           "name": "LPF",
-          "def": 12,
+          "def": 0,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -63,7 +63,7 @@
         {
           "idx": 5,
           "name": "Gain",
-          "def": 0,
+          "def": 14,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -72,16 +72,7 @@
         {
           "idx": 6,
           "name": "Mix",
-          "def": 64,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 7,
-          "name": "Dly.Lev",
-          "def": 64,
+          "def": 127,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -92,15 +83,6 @@
     {
       "name": "Page 3",
       "parameters": [
-        {
-          "idx": 8,
-          "name": "Rev.Lev",
-          "def": 64,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
-        },
         {
           "idx": 9,
           "name": "Sum mute",
@@ -113,7 +95,7 @@
         {
           "idx": 10,
           "name": "Sum lev",
-          "def": 64,
+          "def": 127,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -205,30 +187,6 @@
       "add": [
         {
           "src": 6,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 15,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 7,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 16,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 8,
           "mul": 1,
           "div": 1
         }
