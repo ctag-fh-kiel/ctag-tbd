@@ -250,8 +250,17 @@ void ctagSoundProcessorPicoSeqRack::renderMasterOutput(const ProcessData& data) 
     // referent. FX returns are scaled by fRevAmount / fDelayAmount at the
     // end of renderMasterOutput().
 
-    // overall mix
-    MK_FLT_PAR_ABS_NOCV(fMixLevel, sum_lev, 4095.f, 3.f)
+    // overall mix — true fader-style curve.
+    // Wire 0 → 0 (-∞), wire 64 → 1.0 (UNITY 0 dB), wire 127 → 4.0 (+12 dB).
+    // Scale was 3.0 historically (wire 64 = +7 dB, asymmetric "always
+    // amplifying" behaviour) but that compounded with the master compressor
+    // makeup gain, frequently slamming the soft-clipper on transients
+    // and producing audible distortion at default Master Volume. Scale 2.0
+    // makes mid-position genuinely neutral — exactly the same curve as
+    // per-track LEVEL — and matches user intuition for a mixing-console
+    // fader. Per-track LEVEL is in RackChannelMixer.cpp:50 with the same
+    // formula and scale.
+    MK_FLT_PAR_ABS_NOCV(fMixLevel, sum_lev, 4095.f, 2.f)
     fMixLevel *= fMixLevel;
 
     // Render final buffer
