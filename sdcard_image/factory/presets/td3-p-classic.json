@@ -1,6 +1,6 @@
 {
-  "id": "msp-acidbass2",
-  "name": "P Dirty",
+  "id": "td3-p-classic",
+  "name": "P Classic",
   "group": "TBD03",
   "macro": "td3-acidbass",
   "values": [
@@ -22,9 +22,9 @@
     0,
     0,
     0,
-    14000,
-    10000,
-    5000,
-    12000
+    11000,
+    4000,
+    4000,
+    6000
   ]
 }

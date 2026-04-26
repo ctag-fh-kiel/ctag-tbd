@@ -52,13 +52,13 @@
     },
     {
       "index": 8,
-      "preset": "msp-acidbass1",
-      "_name": "Bass — TBD03 — msp-acidbass1"
+      "preset": "td3-p-classic",
+      "_name": "Bass — TBD03 — td3-p-classic"
     },
     {
       "index": 9,
-      "preset": "msp-acidbass2",
-      "_name": "Bass2 — TBD03 — msp-acidbass2"
+      "preset": "td3-p-dirty",
+      "_name": "Bass2 — TBD03 — td3-p-dirty"
     },
     {
       "index": 10,
