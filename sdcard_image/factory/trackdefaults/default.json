@@ -52,13 +52,13 @@
     },
     {
       "index": 8,
-      "preset": "td3-p-classic",
-      "_name": "Bass     — Acid Bass 1 (td3)"
+      "preset": "td3-h-bass",
+      "_name": "Bass     — Hybrid Bass (td3)"
     },
     {
       "index": 9,
-      "preset": "td3-p-dirty",
-      "_name": "Bass2    — Acid Bass 2 (td3)"
+      "preset": "td3-all-def",
+      "_name": "Bass2    — All Params (td3)"
     },
     {
       "index": 10,
