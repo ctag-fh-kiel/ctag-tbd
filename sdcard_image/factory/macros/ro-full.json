@@ -14,21 +14,30 @@
       ]
     },
     {
-      "name": "TONE",
+      "name": "PITCH",
       "parameters": [
-        { "idx": 8,  "name": "Attack", "def": 1,   "min": 0, "max": 127, "res": 64,  "ui": "envattack",    "curve": "exp" },
-        { "idx": 5,  "name": "Decay",  "def": 50,  "min": 0, "max": 127, "res": 64,  "ui": "envdecay",     "curve": "exp" },
-        { "idx": 6,  "name": "Cutoff", "def": 127, "min": 0, "max": 127, "res": 64,  "ui": "filtercutoff", "curve": "log" },
-        { "idx": 7,  "name": "Reso",   "def": 0,   "min": 0, "max": 127, "res": 64,  "ui": "filterq" }
+        { "idx": 15, "name": "Speed",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "speedmult" },
+        { "idx": 4,  "name": "Pitch",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "pitchsemi" },
+        { "idx": 16, "name": "TStrch", "def": 0,   "min": 0, "max": 1,   "res": 64,  "ui": "onoff" },
+        { "idx": 17, "name": "TSAmt",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "percent" }
       ]
     },
     {
-      "name": "SHAPE",
+      "name": "FILTER",
       "parameters": [
-        { "idx": 4,  "name": "Pitch",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "bignum" },
+        { "idx": 6,  "name": "Cutoff", "def": 127, "min": 0, "max": 127, "res": 64,  "ui": "filtercutoff", "curve": "log" },
+        { "idx": 7,  "name": "Reso",   "def": 0,   "min": 0, "max": 127, "res": 64,  "ui": "filterq" },
         { "idx": 9,  "name": "FType",  "def": 32,  "min": 0, "max": 127, "res": 32,  "ui": "filtertype" },
-        { "idx": 10, "name": "BitCr",  "def": 0,   "min": 0, "max": 14,  "res": 128, "ui": "bignum" },
-        { "idx": 11, "name": "EG2FM",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "bipolar" }
+        { "idx": 10, "name": "BitCr",  "def": 0,   "min": 0, "max": 14,  "res": 128, "ui": "bitcr" }
+      ]
+    },
+    {
+      "name": "ENV",
+      "parameters": [
+        { "idx": 8,  "name": "Attack", "def": 1,   "min": 0, "max": 127, "res": 64,  "ui": "envattack",    "curve": "exp" },
+        { "idx": 5,  "name": "Decay",  "def": 50,  "min": 0, "max": 127, "res": 64,  "ui": "envdecay",     "curve": "exp" },
+        { "idx": 11, "name": "EG2FM",  "def": 0,   "min": 0, "max": 127, "res": 64,  "ui": "bignum" },
+        { "name": "", "def": 0, "min": 0, "max": 0, "res": 64, "ui": "hidden" }
       ]
     },
     {
@@ -55,6 +64,9 @@
     { "ctrl": 23, "start": 0, "add": [{ "src": 11, "mul": 1, "div": 1 }] },
     { "ctrl": 20, "start": 0, "add": [{ "src": 12, "mul": 1, "div": 1 }] },
     { "ctrl": 21, "start": 0, "add": [{ "src": 13, "mul": 1, "div": 1 }] },
-    { "ctrl": 22, "start": 0, "add": [{ "src": 14, "mul": 1, "div": 1 }] }
+    { "ctrl": 22, "start": 0, "add": [{ "src": 14, "mul": 1, "div": 1 }] },
+    { "ctrl": 18, "start": 0, "add": [{ "src": 15, "mul": 1, "div": 1 }] },
+    { "ctrl": 24, "start": 0, "add": [{ "src": 16, "mul": 1, "div": 1 }] },
+    { "ctrl": 25, "start": 0, "add": [{ "src": 17, "mul": 1, "div": 1 }] }
   ]
 }
