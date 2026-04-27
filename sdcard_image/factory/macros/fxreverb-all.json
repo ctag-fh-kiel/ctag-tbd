@@ -11,12 +11,11 @@
         {
           "idx": 0,
           "name": "Time",
-          "def": 64,
+          "def": 32,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "envdecay",
-          "curve": "log"
+          "ui": "envdecay"
         },
         {
           "idx": 1,
@@ -114,8 +113,7 @@
         {
           "src": 0,
           "mul": 1,
-          "div": 1,
-          "curve": "log"
+          "div": 1
         }
       ]
     },

@@ -20,9 +20,9 @@
         {
           "idx": 1,
           "name": "Sync",
-          "def": 127,
+          "def": 1,
           "min": 0,
-          "max": 127,
+          "max": 1,
           "res": 64,
           "ui": "onoff"
         },
@@ -33,7 +33,7 @@
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "filterq"
+          "ui": "bignum"
         },
         {
           "idx": 2,
@@ -51,7 +51,7 @@
       "parameters": [
         {
           "idx": 7,
-          "name": "HP",
+          "name": "Base",
           "def": 18,
           "min": 0,
           "max": 127,
@@ -61,7 +61,7 @@
         },
         {
           "idx": 8,
-          "name": "LP",
+          "name": "Width",
           "def": 95,
           "min": 0,
           "max": 127,
@@ -71,7 +71,7 @@
         },
         {
           "idx": 4,
-          "name": "Width",
+          "name": "Stereo",
           "def": 32,
           "min": 0,
           "max": 127,
