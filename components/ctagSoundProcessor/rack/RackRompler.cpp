@@ -76,8 +76,12 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
 
     std::fill_n(s1_out, BUF_SZ, 0.f);
 
-    MK_INT_PAR_ABS_NOCV(bTSMode, s1_tsmode, 2.0f)
-    rompler.params.timeStretchEnable = bTSMode > 0;
+    // Timestretch enable — read the atomic directly so a wire value of 1
+    // (the natural macro `max: 1, ui: onoff` toggle) engages timestretch.
+    // The previous MK_INT_PAR_ABS_NOCV / 4096 * 2 path required wire ≥ 64
+    // to produce bTSMode ≥ 1, so onoff toggles never engaged. See
+    // tbd-pico-seq3/docs/architecture/rompler-april-2026.md § 2.3.
+    rompler.params.timeStretchEnable = (s1_tsmode.load() > 0);
 
     // timestretch target length
     // MK_INT_PAR_NOCV(ts_track_length, track_length, 128);
@@ -102,13 +106,28 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
     CONSTRAIN(fS1Speed, 0.f, 2.f)
     // playbackSpeed is only set at note trigger to preserve it between frames
 
-    MK_FLT_PAR_ABS_NOCV(fS1Pitch, s1_pitch, 4096.0f, 128.f) // midi cc
+    // Pitch knob is bipolar around wire 64. Per the lead-dev spec the
+    // upstream s1_pitch range is -120..+120 tenths-of-semitones (= ±1
+    // octave). Our wire is unsigned 0..127 → cv 0..4064 → centre 2048.
+    // Map (cv - 2048) / 2048 * 12 → -12..+12 semitones.
+    //
+    // DO NOT add midi_note: that produced the lead-dev-reported
+    // "values >59 are always max pitch" clip (RomplerVoiceMinimal's
+    // phaseIncrement clamp at 6× ≈ 31 ST means wire ≥ 95 - midi_note
+    // always clipped, with default midi_note=36 giving the threshold
+    // at wire 59). See tbd-pico-seq3/docs/architecture/rompler-april-2026.md
+    // § 2.1.
+    //
+    // Negative pitch (wire < 64) routes through Speed's sign at note-
+    // trigger to drive reverse playback. RomplerVoiceMinimal already
+    // supports BWD via `phaseIncrement < 0`; the wrapper just never
+    // sent negative values. See § 2.2.
+    float fS1PitchSemi = ((float)s1_pitch.load() - 2048.f) / 2048.f * 12.f;
+    CONSTRAIN(fS1PitchSemi, -12.f, 12.f)
     if (rompler.params.timeStretchEnable) {
-        rompler.params.pitch = fS1Pitch / 10.0;
+        rompler.params.pitch = fS1PitchSemi / 10.0;
     } else {
-        // apply pitch offset relative to center (64 = no change)
-        float pitchOffset = fS1Pitch - 64.f + midi_note;
-        rompler.params.pitch = pitchOffset;
+        rompler.params.pitch = fabsf(fS1PitchSemi);   // magnitude → SemitonesToRatio
     }
 
     MK_FLT_PAR_ABS_NOCV(fS1Start, s1_start, 4095.f, 1.f)
@@ -166,7 +185,12 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
             sliceLengthMs = (sliceLength * 1000) / 44100;
             rompler.params.playbackSpeed = (float)sliceLengthMs / (float)stepsLengthMs;
         } else {
-            rompler.params.playbackSpeed = fS1Speed;
+            // Pitch sign drives playback direction. RomplerVoiceMinimal
+            // chooses FWD vs BWD from the sign of phaseIncrement
+            // (= playbackSpeed * pitchFactor). pitchFactor is always
+            // positive (SemitonesToRatio of |fS1PitchSemi|), so we
+            // route the sign through Speed.
+            rompler.params.playbackSpeed = (fS1PitchSemi < 0.f) ? -fS1Speed : fS1Speed;
         }
 
         // printf("S1 sl=%ld ps=%1.3f pitch=%1.3f, ts=%d>%1.1f, slicelen=%ld,msperbeat=%ld,slicelenms=%ld, tempo=%ld,tracklen=%d\n",
