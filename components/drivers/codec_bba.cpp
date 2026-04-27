@@ -354,8 +354,8 @@ void Codec::cfg_codec() {
 
     // ── 8. UNMUTE ANALOG OUTPUTS ──
     boot_mark(8, "unmuting analog outputs");
-    write_AIC32X4_reg(AIC32X4_LOLGAIN, 0x00);          // unmute LOL, 0dB
-    write_AIC32X4_reg(AIC32X4_LORGAIN, 0x00);          // unmute LOR, 0dB
+    write_AIC32X4_reg(AIC32X4_LOLGAIN, 0x06);          // unmute LOL, +6 dB analog
+    write_AIC32X4_reg(AIC32X4_LORGAIN, 0x06);          // unmute LOR, +6 dB analog
 
     // ── 9. GRADUAL DAC VOLUME FADE-IN ──
     write_AIC32X4_reg(AIC32X4_DACMUTE, 0x00);          // unmute DAC
