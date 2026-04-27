@@ -7,36 +7,36 @@
     {
       "name": "SAMPLE",
       "parameters": [
-        { "idx": 0,  "name": "Bank",   "def": 0,     "min": 0, "max": 127,   "res": 4,    "ui": "samplebank" },
-        { "idx": 1,  "name": "Slice",  "def": 0,     "min": 0, "max": 127,   "res": 4,    "ui": "sampleslice" },
-        { "idx": 2,  "name": "Start",  "def": 0,     "min": 0, "max": 127,   "res": 64,   "ui": "sampleoffset" },
-        { "idx": 3,  "name": "End",    "def": 127,   "min": 0, "max": 127,   "res": 64,   "ui": "sampleoffset" }
+        { "idx": 0,  "name": "Bank",   "def": 0,   "min": 0, "max": 127, "res": 4,   "ui": "samplebank" },
+        { "idx": 1,  "name": "Slice",  "def": 0,   "min": 0, "max": 127, "res": 4,   "ui": "sampleslice" },
+        { "idx": 2,  "name": "Start",  "def": 0,   "min": 0, "max": 127, "res": 64,  "ui": "sampleoffset" },
+        { "idx": 3,  "name": "End",    "def": 127, "min": 0, "max": 127, "res": 64,  "ui": "sampleoffset" }
       ]
     },
     {
       "name": "TONE",
       "parameters": [
-        { "idx": 4,  "name": "Pitch",  "def": 64,    "min": 0, "max": 127,   "res": 64,   "ui": "bignum" },
-        { "idx": 5,  "name": "Decay",  "def": 50,    "min": 0, "max": 127,   "res": 64,   "ui": "envdecay",     "curve": "exp" },
-        { "idx": 6,  "name": "Cutoff", "def": 127,   "min": 0, "max": 127,   "res": 64,   "ui": "filtercutoff", "curve": "log" },
-        { "idx": 7,  "name": "Reso",   "def": 0,     "min": 0, "max": 127,   "res": 64,   "ui": "filterq" }
+        { "idx": 8,  "name": "Attack", "def": 1,   "min": 0, "max": 127, "res": 64,  "ui": "envattack",    "curve": "exp" },
+        { "idx": 5,  "name": "Decay",  "def": 50,  "min": 0, "max": 127, "res": 64,  "ui": "envdecay",     "curve": "exp" },
+        { "idx": 6,  "name": "Cutoff", "def": 127, "min": 0, "max": 127, "res": 64,  "ui": "filtercutoff", "curve": "log" },
+        { "idx": 7,  "name": "Reso",   "def": 0,   "min": 0, "max": 127, "res": 64,  "ui": "filterq" }
       ]
     },
     {
       "name": "SHAPE",
       "parameters": [
-        { "idx": 8,  "name": "Attack", "def": 1,     "min": 0, "max": 127,   "res": 64,   "ui": "envattack",    "curve": "exp" },
-        { "idx": 9,  "name": "FType",  "def": 32,    "min": 0, "max": 127,   "res": 32,   "ui": "filtertype" },
-        { "idx": 10, "name": "BitCr",  "def": 0,     "min": 0, "max": 14,    "res": 128,  "ui": "bignum" },
-        { "idx": 11, "name": "EG2FM",  "def": 64,    "min": 0, "max": 127,   "res": 64,   "ui": "bipolar" }
+        { "idx": 4,  "name": "Pitch",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "bignum" },
+        { "idx": 9,  "name": "FType",  "def": 32,  "min": 0, "max": 127, "res": 32,  "ui": "filtertype" },
+        { "idx": 10, "name": "BitCr",  "def": 0,   "min": 0, "max": 14,  "res": 128, "ui": "bignum" },
+        { "idx": 11, "name": "EG2FM",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "bipolar" }
       ]
     },
     {
       "name": "LOOP",
       "parameters": [
-        { "idx": 12, "name": "Loop",   "def": 0,     "min": 0, "max": 1,     "res": 64,   "ui": "onoff" },
-        { "idx": 13, "name": "PPong",  "def": 0,     "min": 0, "max": 1,     "res": 64,   "ui": "onoff" },
-        { "idx": 14, "name": "PPSta",  "def": 64,    "min": 0, "max": 127,   "res": 64,   "ui": "sampleoffset" }
+        { "idx": 12, "name": "Loop",   "def": 0,   "min": 0, "max": 1,   "res": 64,  "ui": "onoff" },
+        { "idx": 13, "name": "PPong",  "def": 0,   "min": 0, "max": 1,   "res": 64,  "ui": "onoff" },
+        { "idx": 14, "name": "PPSta",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "sampleoffset" }
       ]
     }
   ],
@@ -47,8 +47,8 @@
     { "ctrl": 11, "start": 0, "add": [{ "src": 3,  "mul": 1, "div": 1 }] },
     { "ctrl": 19, "start": 0, "add": [{ "src": 4,  "mul": 1, "div": 1 }] },
     { "ctrl": 17, "start": 0, "add": [{ "src": 5,  "mul": 1, "div": 1, "curve": "exp" }] },
-    { "ctrl": 12, "start": 0, "add": [{ "src": 6, "mul": 1, "div": 1, "curve": "log" }] },
-    { "ctrl": 13, "start": 0, "add": [{ "src": 7, "mul": 1, "div": 1 }] },
+    { "ctrl": 12, "start": 0, "add": [{ "src": 6,  "mul": 1, "div": 1, "curve": "log" }] },
+    { "ctrl": 13, "start": 0, "add": [{ "src": 7,  "mul": 1, "div": 1 }] },
     { "ctrl": 16, "start": 0, "add": [{ "src": 8,  "mul": 1, "div": 1, "curve": "exp" }] },
     { "ctrl": 14, "start": 0, "add": [{ "src": 9,  "mul": 1, "div": 1 }] },
     { "ctrl": 15, "start": 0, "add": [{ "src": 10, "mul": 8, "div": 1 }] },

@@ -40,6 +40,22 @@ private:
 	float midi_freq {0.0f};
 	int midi_note {0};
 	bool midi_trig {false};
+	// Sustained gate state — true between matching noteOn and
+	// noteOff. Drives rompler.params.gate so RomplerVoiceMinimal
+	// sees a falling edge when the note ends. Without this the
+	// gate is a one-tick pulse and the voice has no exit cue,
+	// so looping samples never silence after sequencer stop.
+	// See docs/architecture/rompler-loop-on-stop-bug.md (Pico repo).
+	bool note_held {false};
+	// Process ticks since last rising-edge trigger. Used as a
+	// belt-and-braces safety net for the loop-on-stop bug — even
+	// if note_held tracking fails or noteOff is never called
+	// (e.g., MIDI dropped on the SPI link, sequencer stop path
+	// doesn't emit note-off for some reason), a looping voice
+	// that hasn't seen a fresh trig in ~1.5 s is force-Reset.
+	// Far longer than any reasonable note duration in a step
+	// pattern, so it can't accidentally cut a held loop.
+	uint32_t trig_age_ticks {0};
 	atomic<int16_t> s1_speed;
 	atomic<int16_t> s1_pitch;
 	atomic<int16_t> s1_bank;

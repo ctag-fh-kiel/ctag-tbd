@@ -57,10 +57,16 @@ void RackRompler::noteOn(uint8_t note, uint8_t vel) {
     midi_trig = true;
     midi_note = note;
     midi_freq = 440.f * powf(2.f, (note - 69) / 12.f);
+    note_held = true;
 }
 
 void RackRompler::noteOff(uint8_t note, uint8_t vel) {
-    // TODO: Implement
+    // Just track the held state. Don't Reset() the voice here —
+    // for short step gates the noteOff fires only milliseconds
+    // after noteOn, which would silence the loop before the user
+    // can hear it. The actual loop-stop decision is made in
+    // Process() via the trig-age safety net (see below).
+    note_held = false;
 }
 
 void RackRompler::Process(const PicoSeqRackProcessData &data) {
@@ -198,8 +204,33 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
         //     rompler.params.bitReduction,
         //     rompler.params.gate);
     }
+    // Track time since the last rising-edge trigger. Reset to 0
+    // on any tick that produced a trig, increments otherwise.
+    if (midi_trig) {
+        trig_age_ticks = 0;
+    } else if (trig_age_ticks < UINT32_MAX) {
+        trig_age_ticks++;
+    }
     trig_prev = midi_trig;
     midi_trig = false;
+
+    // Loop safety net: when loop or ping-pong is active, kill the
+    // voice if it hasn't seen a fresh rising-edge trig in
+    // LOOP_STALE_TICKS Process iterations. This catches the
+    // sequencer-stop case (trigs stop coming → trig_age grows
+    // unbounded → Reset fires). LOOP_STALE_TICKS chosen to be
+    // longer than any reasonable held-step duration so a user
+    // holding a step on a looping rompler track can keep hearing
+    // the loop. ~5.8 s at 44.1 kHz / BUF_SZ=32. Beyond that the
+    // user almost certainly stopped or moved on. Non-loop samples
+    // are never touched — they end naturally on their AD tail.
+    // Reset() is idempotent so the redundant calls per tick after
+    // first stop are cheap.
+    constexpr uint32_t LOOP_STALE_TICKS = 8192;
+    const bool loopActive = (s1_lp.load() != 0) || (s1_lp_pp.load() != 0);
+    if (loopActive && trig_age_ticks > LOOP_STALE_TICKS) {
+        rompler.Reset();
+    }
 
     rompler.params.filterType = static_cast<CTAG::SYNTHESIS::RomplerVoiceMinimal::Params::FilterType>(iS1FType);
     rompler.Process(s1_out, BUF_SZ);
