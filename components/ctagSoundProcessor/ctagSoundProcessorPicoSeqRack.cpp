@@ -183,7 +183,11 @@ void ctagSoundProcessorPicoSeqRack::preprocessFX2(const ProcessData& data) {
     // echo, ~0.9 ≈ dense diffuse tail.
     MK_FLT_PAR_ABS_NOCV(fDiffuse, fx2_diffuse, 4095.f, 0.95f)
     reverb.set_time(fRevTime);
-    reverb.set_lp(fReverbLPF);
+    // Damp semantics: invert so wire 0 = no damping (bright tail) and
+    // wire 127 = full damping (dark tail). The mutable reverb's internal
+    // set_lp() takes a coefficient where high values let highs through,
+    // so the user-facing "Damp" knob inverts that.
+    reverb.set_lp(1.0f - fReverbLPF);
     reverb.set_diffusion(fDiffuse);
     // fx2_modulation 0..2× scaler applied to the LFO frequencies. Bases
     // 0.5/0.3 Hz match Init() (reverb.h:45-46). Wire 0 freezes both LFOs.
@@ -245,22 +249,24 @@ void ctagSoundProcessorPicoSeqRack::renderMasterOutput(const ProcessData& data) 
         fCompMUPGain = chunkware_simple::dB2lin(fCompMUPGain);
         fCompMUPGain_pre = fCompMUPGain;
     }
-    MK_FLT_PAR_ABS_PAN_NOCV(fCompMix, c_mix, 4095.f, 1.f)
+    // Mix as conventional dry/wet (0..1), not the upstream CTAG bipolar
+    // PAN curve. Wire 0 = full dry / bypass (compressor inaudible), wire
+    // 127 = full wet (compressed). Matches Elektron / Roland groovebox
+    // convention and the Pico's PT_PERCENT renderer.
+    MK_FLT_PAR_ABS_NOCV(fCompMix, c_mix, 4095.f, 1.f)
     // CCs 67/68 (c_dly_level / c_rev_level) retired — they had no DSP
     // referent. FX returns are scaled by fRevAmount / fDelayAmount at the
     // end of renderMasterOutput().
 
-    // overall mix — true fader-style curve.
-    // Wire 0 → 0 (-∞), wire 64 → 1.0 (UNITY 0 dB), wire 127 → 4.0 (+12 dB).
-    // Scale was 3.0 historically (wire 64 = +7 dB, asymmetric "always
-    // amplifying" behaviour) but that compounded with the master compressor
-    // makeup gain, frequently slamming the soft-clipper on transients
-    // and producing audible distortion at default Master Volume. Scale 2.0
-    // makes mid-position genuinely neutral — exactly the same curve as
-    // per-track LEVEL — and matches user intuition for a mixing-console
-    // fader. Per-track LEVEL is in RackChannelMixer.cpp:50 with the same
-    // formula and scale.
-    MK_FLT_PAR_ABS_NOCV(fMixLevel, sum_lev, 4095.f, 2.f)
+    // overall mix — scale 3.0 squared (wire 0 = -∞, wire 64 ≈ +7 dB,
+    // wire 127 ≈ +19 dB). The downstream stmlib::SoftClip stage maps its
+    // ±3.0 input range to ±1.0 output, so deliberately driving the mix
+    // bus toward ±3.0 lets SoftClip act as a musical saturator rather
+    // than just an emergency safety net. The Pico-side default (110)
+    // and codec analog gain (LOLGAIN/LORGAIN +6 dB) are tuned together
+    // with this scale to land the boot signal in SoftClip's compression
+    // zone.
+    MK_FLT_PAR_ABS_NOCV(fMixLevel, sum_lev, 4095.f, 3.f)
     fMixLevel *= fMixLevel;
 
     // Render final buffer
