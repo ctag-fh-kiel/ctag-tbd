@@ -38,8 +38,8 @@
     },
     {
       "index": 6,
-      "preset": "ro-all-def",
-      "_name": "Rompler  — (ro)",
+      "preset": "ro-full-def",
+      "_name": "Rompler  — Full (ro)",
       "sampleSlice": 3,
       "sampleBank": 0
     },
@@ -72,15 +72,15 @@
     },
     {
       "index": 12,
-      "preset": "ro-all-def",
-      "_name": "Rompler3 — (ro)",
+      "preset": "ro-full-def",
+      "_name": "Rompler3 — Full (ro)",
       "sampleSlice": 2,
       "sampleBank": 2
     },
     {
       "index": 13,
-      "preset": "ro-all-def",
-      "_name": "Rompler4 — (ro)",
+      "preset": "ro-full-def",
+      "_name": "Rompler4 — Full (ro)",
       "sampleSlice": 0,
       "sampleBank": 3
     },
