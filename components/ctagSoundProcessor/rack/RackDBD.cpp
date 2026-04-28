@@ -82,7 +82,8 @@ void RackDBD::Process(const PicoSeqRackProcessData &data) {
         BUF_SZ);
 
     if (out[0] != out[0]) {
-        printf("RackDBD: NaN detected!\n");
+        // Audio-thread: no printf — see RackABD.cpp note. Recovery via Init below.
+        // printf("RackDBD: NaN detected!\n");
         dbd.Init();
     }
 }

@@ -69,7 +69,8 @@ void RackHH2::Process(const PicoSeqRackProcessData &data) {
         BUF_SZ);
 
     if (out[0] != out[0]) {
-        printf("RackHH2: NaN detected!\n");
+        // Audio-thread: no printf — see RackABD.cpp note. Recovery via Init below.
+        // printf("RackHH2: NaN detected!\n");
         hh2.Init();
     }
 }

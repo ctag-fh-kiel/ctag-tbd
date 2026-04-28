@@ -103,13 +103,17 @@ namespace CTAG::SP::HELPERS {
         return true;
     }
 
+    // _readSliceDiagCounter retained for parity with previously-gated diag
+    // logs (now disabled — see audio-thread note below).
     static uint32_t _readSliceDiagCounter = 0;
 
     void ctagSampleRom::ReadSlice(int16_t *dst, const uint32_t slice, const uint32_t offset, const uint32_t n_samples) {
+        // Audio-thread: ReadSlice is called per audio block by the rompler
+        // voices — never log here (even gated). A single ESP_LOGW blocks
+        // the audio task long enough to corrupt the output buffer.
         if (n_samples == 0) return;
         if (slice >= numberSlices) {
-            if ((_readSliceDiagCounter++ % 10000) == 0)
-                ESP_LOGW("SROM", "DIAG ReadSlice SILENT: slice=%lu >= numberSlices=%lu n=%lu", slice, numberSlices, n_samples);
+            // ESP_LOGW("SROM", "DIAG ReadSlice SILENT: slice=%lu >= numberSlices=%lu n=%lu", slice, numberSlices, n_samples);
             memset(dst, 0, n_samples * 2);
             return;
         }
@@ -119,16 +123,15 @@ namespace CTAG::SP::HELPERS {
             len = sliceSizes[slice] - offset;
         }
         if (len <= 0) {
-            if (n_samples > 0 && (_readSliceDiagCounter++ % 10000) == 0)
-                ESP_LOGW("SROM", "DIAG ReadSlice CLIPPED: slice=%lu size=%lu offset=%lu n=%lu len=%ld", slice, sliceSizes[slice], offset, n_samples, (long)len);
+            // ESP_LOGW("SROM", "DIAG ReadSlice CLIPPED: slice=%lu size=%lu offset=%lu n=%lu len=%ld", slice, sliceSizes[slice], offset, n_samples, (long)len);
             return; // nothing to read!
         }
         if(slice >= nSlicesBuffered) { // nSlicesBuffered > 0 if SPIRAM Buffer is used
-            if ((_readSliceDiagCounter++ % 10000) == 0)
-                ESP_LOGW("SROM", "DIAG ReadSlice ZERO: slice=%lu >= nSlicesBuffered=%lu n=%lu", slice, nSlicesBuffered, n_samples);
+            // ESP_LOGW("SROM", "DIAG ReadSlice ZERO: slice=%lu >= nSlicesBuffered=%lu n=%lu", slice, nSlicesBuffered, n_samples);
             memset(dst, 0, len*2);
         } else
             memcpy(dst, &ptrSPIRAM[start], len*2);
+        (void)_readSliceDiagCounter; // suppress unused-variable warning
     }
 
     void ctagSampleRom::ReadSliceAsFloat(float *dst, const uint32_t slice, const uint32_t offset,

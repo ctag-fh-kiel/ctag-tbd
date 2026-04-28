@@ -307,7 +307,8 @@ void RackPolyPad::Process(const PicoSeqRackProcessData &data) {
     }
 
     if (pp_out_stereo[0] != pp_out_stereo[0]) {
-        printf("RackPolyPad: NaN detected!\n");
+        // Audio-thread: no printf — see RackABD.cpp note.
+        // printf("RackPolyPad: NaN detected!\n");
         // hh2.Init();
         // for (auto &v:pp_v_voices) {
         //     v.NoteOff();

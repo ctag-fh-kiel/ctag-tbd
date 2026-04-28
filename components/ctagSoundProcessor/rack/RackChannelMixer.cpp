@@ -55,7 +55,8 @@ void RackChannelMixer::PreProcess(const PicoSeqRackProcessData &data) {
 	fLev *= volumeMultiplier;
 
 	if (fLev != this->level) {
-		ESP_LOGI("RackChannelMixer", "Level changed from %f to %f", this->level, fLev);
+		// Audio-thread: never printf/ESP_LOGx here — blocking log call corrupts audio.
+		// ESP_LOGI("RackChannelMixer", "Level changed from %f to %f", this->level, fLev);
 		this->level = fLev;
 	}
 
