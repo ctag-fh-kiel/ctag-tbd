@@ -3,6 +3,7 @@
   "name": "Default",
   "group": "FX",
   "macro": "fxmaster-all",
+  "_comment": "Clean master profile aligned with the post-2026-04-28 master scale=2 convention. Volume 64 = unity 0 dB (matches Pico initsong.cpp boot default), MakeUp 14 (+6.6 dB), default compressor settings, FX returns at unity (Reverb 64) / +2.4 dB (Delay 72). For louder/saturator character load fxmaster-hot instead. See docs/architecture/gain-staging-vs-octatrack.md § 'Master Volume convention revisit'.",
   "values": [
     95,
     20,
@@ -14,7 +15,7 @@
     0,
     0,
     0,
-    127,
+    64,
     72,
     64
   ]
