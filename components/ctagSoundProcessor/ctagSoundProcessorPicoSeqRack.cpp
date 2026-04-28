@@ -1302,7 +1302,11 @@ void ctagSoundProcessorPicoSeqRack::parseIncomingMidiMessages(const uint8_t *buf
 }
 
 void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, const std::string machineId, float volumeMultiplier) {
-    printf("PicoSeqRack: setTrackMachine(%d, \"%s\", %f)\n", trackIndex, machineId.c_str(), volumeMultiplier);
+    // AUDIO-THREAD: called from MacroTranslator::TranslateInput on every block
+    // where trackDirty[t]==true (macro swap, or any parameter change that sets
+    // dirty). printf here corrupts the output buffer — observed as artifacts
+    // when loading a macro onto a track during playback.
+    // printf("PicoSeqRack: setTrackMachine(%d, \"%s\", %f)\n", trackIndex, machineId.c_str(), volumeMultiplier);
 
     if (trackIndex == 0) {
         ch1.enabled = !machineId.empty();
@@ -1483,7 +1487,9 @@ void ctagSoundProcessorPicoSeqRack::setTrackMute(const uint8_t trackIndex, bool 
 }
 
 void ctagSoundProcessorPicoSeqRack::setTrackBank(const uint8_t trackIndex, const uint16_t bankIndex) {
-    printf("PicoSeqRack: setTrackBank(%d, %d)\n", trackIndex, bankIndex);
+    // AUDIO-THREAD: called from MacroTranslator::TranslateInput on bankDirty.
+    // printf corrupts the output buffer — see setTrackMachine note above.
+    // printf("PicoSeqRack: setTrackBank(%d, %d)\n", trackIndex, bankIndex);
 
     if (trackIndex == 0) {
         ch1_smp.bank_index = bankIndex;

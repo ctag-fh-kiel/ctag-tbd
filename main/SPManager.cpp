@@ -236,7 +236,10 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
                     (p4_spi_response2*) send_response);
                 // printf("protocol: next response prepared\n");
             } else {
-                printf("protocol: no write buffer available\n");
+                // AUDIO-THREAD: this loop is the audio task. printf on the
+                // audio thread corrupts the output buffer. Recovery path
+                // (skipping the prepare) is preserved.
+                // printf("protocol: no write buffer available\n");
             }
         } else {
             // printf("protocol: no need to prepare next response\n");
@@ -317,14 +320,16 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
 
                 protocol.markRequestSeen(spi_req_header->request_sequence_counter);
             } else {
-                printf("protocol: packet invalid\n");
+                // AUDIO-THREAD: see prepare-buffer note above.
+                // printf("protocol: packet invalid\n");
             }
         } else {
             // printf("protocol: did not receive packet\n");
 
             // check timeout...
             if (now > nextspireceivedeadline) {
-                printf("SPI receive timeout.\n");
+                // AUDIO-THREAD: see prepare-buffer note above.
+                // printf("SPI receive timeout.\n");
                 // protocol.markRequestSeen(0);
                 nextspireceivedeadline = now + SPI_TRANSACTION_TIMEOUT_US;
             }
@@ -516,7 +521,9 @@ void IRAM_ATTR SoundProcessorManager::audio_task(void *pvParams) {
         if (framecounter % 3200 == 0) {
             //     printf("Audio task cycles %d, micros %d, slow process() counter %d/%d, fbuf = [%1.3f, %1.3f...], tempo %ld, sentSynthMidi %d b, receivedUsbDeviceMidi %d b, %d new request counter errors, %d lock errors\n", (int)diff, (int)diff2, (int)slowProcessCounter, (int)framecounter, fbuf[0], fbuf[BUF_SZ], pd.sequencer_tempo, (int)sentSynthMidiBytes, (int)receivedUsbDeviceMidiBytes, (int)requestCounterErrors, (int)audioLockErrors);
             //     requestCounterErrors = 0;
-            printf("Audio task CPU time %d uS\n", (int)diff2);
+            // AUDIO-THREAD: gated to every ~2.3 s, but still audio-thread.
+            // printf corrupts the output buffer.
+            // printf("Audio task CPU time %d uS\n", (int)diff2);
         }
 
         taskYIELD();

@@ -612,13 +612,15 @@ void MacroTranslator::TranslateInput(CTAG::SP::ProcessData *pd) {
                         int midichannel = trackToMidiChannel[t];
                         int finalcc = om->ctrl + trackBaseCC[t];
 
-                        // Diagnostic: log bank/slice CC for rompler tracks
-                        static uint32_t _macroDiagCtr = 0;
-                        if ((om->ctrl == 8 || om->ctrl == 9) && ((_macroDiagCtr++ % 5000) == 0)) {
-                            printf("DIAG MacroTranslator: t=%d ch=%d cc=%d+%d=%d val=%ld (src paramVal=%ld)\n",
-                                t, midichannel, (int)om->ctrl, (int)trackBaseCC[t], (int)finalcc,
-                                (long)finalvalue, (long)trackParameterValues[t][om->sources[0].parameterIndex]);
-                        }
+                        // AUDIO-THREAD: TranslateInput runs on the audio task.
+                        // Even gated, this printf corrupts the output buffer.
+                        // Diagnostic kept commented for future bring-up.
+                        // static uint32_t _macroDiagCtr = 0;
+                        // if ((om->ctrl == 8 || om->ctrl == 9) && ((_macroDiagCtr++ % 5000) == 0)) {
+                        //     printf("DIAG MacroTranslator: t=%d ch=%d cc=%d+%d=%d val=%ld (src paramVal=%ld)\n",
+                        //         t, midichannel, (int)om->ctrl, (int)trackBaseCC[t], (int)finalcc,
+                        //         (long)finalvalue, (long)trackParameterValues[t][om->sources[0].parameterIndex]);
+                        // }
 
                         if (om->ctrltype == CtrlType_CC) {
                             if (finalvalue < 0) finalvalue = 0;

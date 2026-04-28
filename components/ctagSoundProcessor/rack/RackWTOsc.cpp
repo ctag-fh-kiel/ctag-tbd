@@ -236,7 +236,8 @@ void RackWTOsc::Process(const PicoSeqRackProcessData &data) {
 }
 
 void RackWTOsc::prepareWavetables(HELPERS::ctagSampleRom *sampleRom) {
-    ESP_LOGI("DrumRackWTOsc", "prepareWavetables bank=%d\n", currentBank);
+    // AUDIO-THREAD: called from Process() on bank change.
+    // ESP_LOGI("DrumRackWTOsc", "prepareWavetables bank=%d\n", currentBank);
 
     // precalculates wavetable data according to https://www.dafx12.york.ac.uk/papers/dafx12_submission_69.pdf
     // plaits uses integrated wavetable synthesis, i.e. integrated wavetables, order K=1 (one integration), N=1 (linear interpolation)
