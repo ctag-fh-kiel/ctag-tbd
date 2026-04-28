@@ -104,33 +104,66 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
     //            (int)s1_bank.load(), (int)s1_slice.load());
     // }
 
-    MK_FLT_PAR_ABS_NOCV(fS1Speed, s1_speed, 4095.f, 2.f)
-    CONSTRAIN(fS1Speed, 0.f, 2.f)
-    // playbackSpeed is only set at note trigger to preserve it between frames
+    // Speed — symmetric bipolar ±2.0× via wire centring at cv 2048.
+    //
+    //   cv 0    (wire 0)   → -2.0× (full reverse 2×)
+    //   cv 1024 (wire 32)  → -1.0× (natural reverse)
+    //   cv 2048 (wire 64)  →  0.0× (silent / scrub-stop — knob centre)
+    //   cv 3072 (wire 96)  → +1.0× (natural forward — DEFAULT in preset)
+    //   cv 4064 (wire 127) → +2.0× (full forward 2×)
+    //
+    // Symmetric: every wire step on the left is the same magnitude as
+    // a wire step on the right. Direction is decided in the engine
+    // by sign of phaseIncrement (RomplerVoiceMinimal.cpp:107);
+    // pitchFactor is always positive, so direction tracks Speed sign
+    // exclusively.
+    //
+    // The natural-forward default lives at wire 96 (NOT wire 64) so
+    // the centre of the knob is silent/scrub-stop and the
+    // forward/reverse halves are symmetric. Preset ro-full-def sets
+    // values[15] = wire 96 (= cv 3072 = +1.0×) as the boot default.
+    //
+    // For finer control, Speed can be promoted to hi-res NRPN
+    // (max:16383) in the macro/synthdef without code change here:
+    // the CC handler at PicoSeqRack.cpp:859 always scales nrpm input
+    // to the same 0..4096 cv-space, so this wrapper is range-agnostic.
+    //
+    // TBD-16 architectural note: upstream DrumRack stores s_speed
+    // atomic as signed cv-space (-4095..+4095) per mui-DrumRack.jsn
+    // and uses unipolar wire 0..+2× with reverse via CV summing.
+    // TBD-16's CC handler stores atomic as unsigned cv-space and has
+    // no CV input, so reverse must be knob-reachable.
+    //
+    // playbackSpeed is only assigned at note trigger to preserve it
+    // between frames.
+    MK_FLT_PAR_ABS_SFT_NOCV(fS1Speed, s1_speed, 4095.f, 2.f)
+    CONSTRAIN(fS1Speed, -2.f, 2.f)
 
-    // Pitch knob is bipolar around wire 64. Per the lead-dev spec the
-    // upstream s1_pitch range is -120..+120 tenths-of-semitones (= ±1
-    // octave). Our wire is unsigned 0..127 → cv 0..4064 → centre 2048.
-    // Map (cv - 2048) / 2048 * 12 → -12..+12 semitones.
+    // Pitch — match upstream DrumRack.cpp:435-440 BEHAVIOUR.
+    //
+    // Upstream stores s_pitch atomic as signed tenths-of-semitones
+    // (-120..+120 per mui-DrumRack.jsn). Its wrapper does
+    // `fS_Pitch = s_pitch; fS_Pitch /= 10.f;` to get ±12 ST and feeds
+    // that to the engine in BOTH TS modes (no if/else). Engine
+    // consumes semitones via stmlib::SemitonesToRatio at
+    // RomplerVoiceMinimal.cpp:78.
+    //
+    // TBD-16's CC handler at PicoSeqRack.cpp:845 stores s1_pitch as
+    // UNSIGNED cv-space (0..4096) regardless of the synthdef min/max,
+    // so the upstream pattern (`s1_pitch / 10.f`) does not produce
+    // semitones here. The centring math below converts the unsigned
+    // cv-space directly to signed semitones — mathematically
+    // equivalent to upstream's tenths-then-/10, just one step. The
+    // earlier `if (timeStretchEnable) /= 10` was a stale upstream
+    // copy that double-applied the divisor and collapsed effective
+    // range to ±1.2 ST in TS-on mode.
     //
     // DO NOT add midi_note: that produced the lead-dev-reported
-    // "values >59 are always max pitch" clip (RomplerVoiceMinimal's
-    // phaseIncrement clamp at 6× ≈ 31 ST means wire ≥ 95 - midi_note
-    // always clipped, with default midi_note=36 giving the threshold
-    // at wire 59). See tbd-pico-seq3/docs/architecture/rompler-april-2026.md
-    // § 2.1.
-    //
-    // Negative pitch (wire < 64) routes through Speed's sign at note-
-    // trigger to drive reverse playback. RomplerVoiceMinimal already
-    // supports BWD via `phaseIncrement < 0`; the wrapper just never
-    // sent negative values. See § 2.2.
+    // "values >59 are always max pitch" clip (engine phaseIncrement
+    // clamp at 6× ≈ 31 ST means wire ≥ 95 - midi_note always clipped).
     float fS1PitchSemi = ((float)s1_pitch.load() - 2048.f) / 2048.f * 12.f;
     CONSTRAIN(fS1PitchSemi, -12.f, 12.f)
-    if (rompler.params.timeStretchEnable) {
-        rompler.params.pitch = fS1PitchSemi / 10.0;
-    } else {
-        rompler.params.pitch = fabsf(fS1PitchSemi);   // magnitude → SemitonesToRatio
-    }
+    rompler.params.pitch = fS1PitchSemi;
 
     MK_FLT_PAR_ABS_NOCV(fS1Start, s1_start, 4095.f, 1.f)
     rompler.params.startOffsetRelative = fS1Start;
@@ -187,12 +220,25 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
             sliceLengthMs = (sliceLength * 1000) / 44100;
             rompler.params.playbackSpeed = (float)sliceLengthMs / (float)stepsLengthMs;
         } else {
-            // Pitch sign drives playback direction. RomplerVoiceMinimal
-            // chooses FWD vs BWD from the sign of phaseIncrement
-            // (= playbackSpeed * pitchFactor). pitchFactor is always
-            // positive (SemitonesToRatio of |fS1PitchSemi|), so we
-            // route the sign through Speed.
-            rompler.params.playbackSpeed = (fS1PitchSemi < 0.f) ? -fS1Speed : fS1Speed;
+            // Bipolar Speed; sign drives direction in the engine via
+            // phaseIncrement = playbackSpeed * pitchFactor at
+            // RomplerVoiceMinimal.cpp:87 (TS-off) or = playbackSpeed
+            // alone at line 77 (TS-on). pitchFactor is always >0, so
+            // direction tracks Speed sign exclusively.
+            //
+            // Defensive epsilon clamp: mifx::PitchShifterMono::set_ratio()
+            // at RomplerVoiceMinimal.cpp:476 computes pitchFactor /
+            // playbackSpeed in TS-on mode; with the asymmetric Speed
+            // mapping the user can land on or near 0 (wire ~32). Below
+            // kSpeedEpsilon the sample is effectively silent anyway, so
+            // forcing the value through the epsilon is musically
+            // harmless and removes the realtime hazard.
+            constexpr float kSpeedEpsilon = 0.001f;
+            float speedToEngine = fS1Speed;
+            if (fabsf(speedToEngine) < kSpeedEpsilon) {
+                speedToEngine = (speedToEngine < 0.f) ? -kSpeedEpsilon : kSpeedEpsilon;
+            }
+            rompler.params.playbackSpeed = speedToEngine;
         }
 
         // printf("S1 sl=%ld ps=%1.3f pitch=%1.3f, ts=%d>%1.1f, slicelen=%ld,msperbeat=%ld,slicelenms=%ld, tempo=%ld,tracklen=%d\n",
