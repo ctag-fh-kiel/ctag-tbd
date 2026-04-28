@@ -11,7 +11,7 @@
         {
           "idx": 0,
           "name": "Time",
-          "def": 32,
+          "def": 51,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -20,7 +20,7 @@
         {
           "idx": 1,
           "name": "Damp",
-          "def": 80,
+          "def": 64,
           "min": 0,
           "max": 127,
           "res": 64,
@@ -30,20 +30,21 @@
         {
           "idx": 3,
           "name": "Diffuse",
-          "def": 89,
+          "def": 94,
           "min": 0,
           "max": 127,
           "res": 64,
           "ui": "filterq"
         },
         {
-          "idx": 4,
-          "name": "PreDly",
-          "def": 14,
+          "idx": 8,
+          "name": "HP",
+          "def": 0,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "bignum"
+          "ui": "filtercutoff",
+          "curve": "log"
         }
       ]
     },
@@ -78,14 +79,13 @@
           "ui": "level"
         },
         {
-          "idx": 8,
-          "name": "HP",
-          "def": 0,
+          "idx": 4,
+          "name": "PreDly",
+          "def": 14,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "filtercutoff",
-          "curve": "log"
+          "ui": "bignum"
         }
       ]
     },
