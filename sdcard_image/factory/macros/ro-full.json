@@ -16,7 +16,7 @@
     {
       "name": "PITCH",
       "parameters": [
-        { "idx": 15, "name": "Speed",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "speedmult" },
+        { "idx": 15, "name": "Speed",  "def": 96,  "min": 0, "max": 127, "res": 64,  "ui": "speedmult" },
         { "idx": 4,  "name": "Pitch",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "pitchsemi" },
         { "idx": 16, "name": "TStrch", "def": 0,   "min": 0, "max": 1,   "res": 64,  "ui": "onoff" },
         { "idx": 17, "name": "TSAmt",  "def": 64,  "min": 0, "max": 127, "res": 64,  "ui": "percent" }
