@@ -233,6 +233,7 @@
     {
       "ctrl": 15,
       "type": "cc",
+      "start": 0,
       "add": [
         {
           "src": 11,
@@ -245,6 +246,7 @@
     {
       "ctrl": 16,
       "type": "cc",
+      "start": 0,
       "add": [
         {
           "src": 12,
