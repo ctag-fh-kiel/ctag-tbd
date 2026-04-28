@@ -52,13 +52,13 @@
       "name": "Reverb Mod",
       "parameters": [
         {
-          "idx": 5,
-          "name": "ModRate",
-          "def": 64,
+          "idx": 4,
+          "name": "PreDly",
+          "def": 14,
           "min": 0,
           "max": 127,
           "res": 64,
-          "ui": "filterq"
+          "ui": "bignum"
         },
         {
           "idx": 6,
@@ -68,24 +68,6 @@
           "max": 127,
           "res": 64,
           "ui": "filterq"
-        },
-        {
-          "idx": 7,
-          "name": "TankLvl",
-          "def": 127,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "level"
-        },
-        {
-          "idx": 4,
-          "name": "PreDly",
-          "def": 14,
-          "min": 0,
-          "max": 127,
-          "res": 64,
-          "ui": "bignum"
         }
       ]
     },
@@ -167,36 +149,12 @@
       ]
     },
     {
-      "ctrl": 13,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 5,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
       "ctrl": 14,
       "type": "cc",
       "start": 0,
       "add": [
         {
           "src": 6,
-          "mul": 1,
-          "div": 1
-        }
-      ]
-    },
-    {
-      "ctrl": 15,
-      "type": "cc",
-      "start": 0,
-      "add": [
-        {
-          "src": 7,
           "mul": 1,
           "div": 1
         }

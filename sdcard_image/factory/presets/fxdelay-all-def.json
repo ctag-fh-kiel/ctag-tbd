@@ -3,10 +3,10 @@
   "name": "Default",
   "group": "FX",
   "macro": "fxdelay-all",
-  "_comment": "Values aligned 2026-04-24e with Pico initsong.cpp FX1 DELAY + DELAY TONE defaults: Time 85 (1/4 note) / Sync 127 (on) / Freeze 0 / Mode 0 (Tape) / Width 32 / >Rev 0 / Fdbk 45 / HP 18 / LP 95 / Level 80.",
+  "_comment": "Values aligned with Pico initsong.cpp FX1 DELAY + DELAY TONE defaults: Time 85 (1/4 note) / Sync 1 (on; capped to max=1 for one-detent toggle) / Freeze 0 / Mode 0 (Tape) / Stereo 32 / >Rev 0 / Fdbk 45 / Base 18 / Width 95 / Level 80.",
   "values": [
     85,
-    127,
+    1,
     0,
     0,
     32,
