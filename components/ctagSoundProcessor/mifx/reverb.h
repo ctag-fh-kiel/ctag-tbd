@@ -89,7 +89,10 @@ namespace mifx {
                 float apout = 0.0f;
                 engine_.Start(&c);
 
-                // Smear AP1 inside the loop.
+                // Smear AP1 inside the loop. ap1 buffer is only 150 samples;
+                // depth ≤ 80 + center 10 keeps reads inside bounds (max 90).
+                // Earlier attempt to scale this up (commit history) caused
+                // out-of-bounds reads → harsh feedback. Do NOT change.
                 c.Interpolate(ap1, 10.0f, LFO_1, 80.0f, 1.0f);
                 c.Write(ap1, 100, 0.0f);
 
@@ -108,6 +111,9 @@ namespace mifx {
 
                 // Main reverb loop.
                 c.Load(apout);
+                // del2 buffer 6312 samples; center 6261 + depth 50 = max
+                // read 6311 (in bounds). DO NOT increase depth — buffer is
+                // sized exactly for ±50.
                 c.Interpolate(del2, 6261.0f, LFO_2, 50.0f, krt);
                 c.Lp(lp_1, klp);
                 c.Read(dap1a TAIL, -kap);
@@ -120,6 +126,9 @@ namespace mifx {
                 *left += (wet - *left) * amount;
 
                 c.Load(apout);
+                // del1 buffer 4501 samples; center 4460 + depth 40 = max
+                // read 4500 (in bounds). DO NOT increase depth — buffer is
+                // sized exactly for ±40.
                 c.Interpolate(del1, 4460.0f, LFO_1, 40.0f, krt);
                 c.Lp(lp_2, klp);
                 c.Read(dap2a TAIL, kap);
@@ -179,7 +188,10 @@ namespace mifx {
                 float apout = 0.0f;
                 engine_.Start(&c);
 
-                // Smear AP1 inside the loop.
+                // Smear AP1 inside the loop. ap1 buffer is only 150 samples;
+                // depth ≤ 80 + center 10 keeps reads inside bounds (max 90).
+                // Earlier attempt to scale this up (commit history) caused
+                // out-of-bounds reads → harsh feedback. Do NOT change.
                 c.Interpolate(ap1, 10.0f, LFO_1, 80.0f, 1.0f);
                 c.Write(ap1, 100, 0.0f);
 
@@ -198,6 +210,9 @@ namespace mifx {
 
                 // Main reverb loop.
                 c.Load(apout);
+                // del2 buffer 6312 samples; center 6261 + depth 50 = max
+                // read 6311 (in bounds). DO NOT increase depth — buffer is
+                // sized exactly for ±50.
                 c.Interpolate(del2, 6261.0f, LFO_2, 50.0f, krt);
                 c.Lp(lp_1, klp);
                 c.Read(dap1a TAIL, -kap);
@@ -210,6 +225,9 @@ namespace mifx {
                 *left = wet;
 
                 c.Load(apout);
+                // del1 buffer 4501 samples; center 4460 + depth 40 = max
+                // read 4500 (in bounds). DO NOT increase depth — buffer is
+                // sized exactly for ±40.
                 c.Interpolate(del1, 4460.0f, LFO_1, 40.0f, krt);
                 c.Lp(lp_2, klp);
                 c.Read(dap2a TAIL, kap);

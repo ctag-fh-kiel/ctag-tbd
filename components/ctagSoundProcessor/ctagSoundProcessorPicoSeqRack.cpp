@@ -152,11 +152,13 @@ void ctagSoundProcessorPicoSeqRack::preprocessFX1(const ProcessData& data) {
     lp_r.copy_f(lp_l);
     hp_r.copy_f(hp_l);
 
-    // Delay-input HP corner — independent of the feedback-path HP. Log
-    // sweep 20 Hz..~2 kHz via 80 semitones (≈100×). Wire 0 → 20 Hz is
-    // effectively bypassed for musical content above 30 Hz.
+    // Delay-input HP corner — independent of the feedback-path HP. 20 Hz
+    // .. 20 kHz log sweep (10 octaves) — matches the OLED PT_FILTER_CUTOFF
+    // renderer which displays `20 × 1000^(wire/127)` ≈ 20..20k. Earlier
+    // 80-semitone DSP scale topped out at ~2 kHz, so the OLED was lying
+    // about the upper half of the knob.
     MK_FLT_PAR_ABS_NOCV(fInputHpNorm, fx1_input_hp, 4095.f, 1.f)
-    float dly_in_hp = 20.f * stmlib::SemitonesToRatio(fInputHpNorm * 80.f);
+    float dly_in_hp = 20.f * stmlib::SemitonesToRatio(fInputHpNorm * 120.f);
     CONSTRAIN(dly_in_hp, 20.f, 20000.f)
     dly_input_hp_l.set_f<stmlib::FREQUENCY_ACCURATE>(dly_in_hp / 44100.f);
     dly_input_hp_r.copy_f(dly_input_hp_l);
@@ -189,22 +191,40 @@ void ctagSoundProcessorPicoSeqRack::preprocessFX2(const ProcessData& data) {
     // so the user-facing "Damp" knob inverts that.
     reverb.set_lp(1.0f - fReverbLPF);
     reverb.set_diffusion(fDiffuse);
-    // fx2_modulation 0..2× scaler applied to the LFO frequencies. Bases
-    // 0.5/0.3 Hz match Init() (reverb.h:45-46). Wire 0 freezes both LFOs.
-    MK_FLT_PAR_ABS_NOCV(fMod, fx2_modulation, 4095.f, 2.f)
-    reverb.set_lfo1_freq(0.5f * fMod);
-    reverb.set_lfo2_freq(0.3f * fMod);
-    // fx2_input_gain / fx2_tank_level promote the previously-hardcoded
-    // set_input_gain(0.5) and set_amount(1.0). Default wires (64 / 127)
-    // preserve those legacy values within float rounding.
+    // ModRate knob retired 2026-04-28: the reverb's internal LFO modulation
+    // depth is fixed (±80 / ±40 / ±50 samples, sized exactly to the all-pass
+    // and recirculating delay-line buffers — increasing depth reads OUT of
+    // those buffers and produces harsh feedback runaway). At the safe
+    // depths the LFO frequency change is barely audible, so the knob has no
+    // useful musical range. LFO frequencies hardcoded to upstream
+    // DrumRack::Init values 0.5 Hz / 0.3 Hz in PicoSeqRack::Init below.
+    // The fx2_modulation atomic + DEFINE_GLOBAL_PARAM stay registered for
+    // SPI compatibility but are no longer read by the DSP path.
+    // fx2_input_gain promotes the previously-hardcoded set_input_gain(0.5)
+    // (default wire 64 ≈ 0.5 preserves legacy behaviour).
     MK_FLT_PAR_ABS_NOCV(fInGain, fx2_input_gain, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_NOCV(fTankLvl, fx2_tank_level, 4095.f, 1.f)
     reverb.set_input_gain(fInGain);
-    reverb.set_amount(fTankLvl);
+    // TankLvl knob retired 2026-04-28: set_amount() is a dry/wet crossfade
+    // INSIDE the tank (`output = input + (wet - input) * amount`), not a
+    // wet-level control — duplicates the master Reverb return. Removed
+    // from the OLED + WebUI for UX clarity. Hardcode set_amount(1.0f) to
+    // match the upstream ctagSoundProcessorDrumRack::Init baseline so the
+    // reverb is fully wet at the tank output regardless of preset state.
+    // The fx2_tank_level atomic + DEFINE_GLOBAL_PARAM stay registered for
+    // SPI compatibility but are no longer read by the DSP path.
+    // MK_FLT_PAR_ABS_NOCV(fTankLvl, fx2_tank_level, 4095.f, 1.f)
+    // reverb.set_amount(fTankLvl);
+    reverb.set_amount(1.0f);
     // Reverb-input HP shelf, applied per-sample before the tank in
-    // renderMasterOutput. Same 20 Hz..~2 kHz log sweep as fx1_input_hp.
+    // renderMasterOutput. 20 Hz..~20 kHz log sweep (10 octaves) — wider
+    // than fx1_input_hp's 80-semitone range so the upper half of the knob
+    // reaches into the vocal/mid band where the cut is musically obvious
+    // (the OnePole is only 6 dB/oct, so we need the cutoff to climb high
+    // for an audible effect on a sustained pad). CONSTRAIN to 20..20 kHz
+    // keeps the OnePole stable. Earlier 80-semitone range topped out at
+    // ~1.9 kHz which only shaved a few dB off the bass — too subtle.
     MK_FLT_PAR_ABS_NOCV(fRevHpNorm, fx2_hp, 4095.f, 1.f)
-    float rev_hp = 20.f * stmlib::SemitonesToRatio(fRevHpNorm * 80.f);
+    float rev_hp = 20.f * stmlib::SemitonesToRatio(fRevHpNorm * 120.f);
     CONSTRAIN(rev_hp, 20.f, 20000.f)
     rev_hp_l.set_f<stmlib::FREQUENCY_ACCURATE>(rev_hp / 44100.f);
     rev_hp_r.copy_f(rev_hp_l);
@@ -1110,6 +1130,11 @@ void ctagSoundProcessorPicoSeqRack::Init(std::size_t blockSize, void* blockPtr){
     reverb.set_amount(1.f);
     reverb.set_lp(0.5f);
     reverb.set_time(0.4f);
+    // Hardcoded LFO frequencies match upstream DrumRack::Init. Modulation
+    // depth in mifx::Reverb is fixed by the delay-line buffer sizes, so a
+    // user-controllable ModRate knob has no useful range — knob retired.
+    reverb.set_lfo1_freq(0.5f);
+    reverb.set_lfo2_freq(0.3f);
 
     // init compressor
     sumCompressor.setSampleRate(44100.f);
