@@ -278,15 +278,14 @@ void ctagSoundProcessorPicoSeqRack::renderMasterOutput(const ProcessData& data) 
     // referent. FX returns are scaled by fRevAmount / fDelayAmount at the
     // end of renderMasterOutput().
 
-    // overall mix — scale 3.0 squared (wire 0 = -∞, wire 64 ≈ +7 dB,
-    // wire 127 ≈ +19 dB). The downstream stmlib::SoftClip stage maps its
-    // ±3.0 input range to ±1.0 output, so deliberately driving the mix
-    // bus toward ±3.0 lets SoftClip act as a musical saturator rather
-    // than just an emergency safety net. The Pico-side default (110)
-    // and codec analog gain (LOLGAIN/LORGAIN +6 dB) are tuned together
-    // with this scale to land the boot signal in SoftClip's compression
-    // zone.
-    MK_FLT_PAR_ABS_NOCV(fMixLevel, sum_lev, 4095.f, 3.f)
+    // overall mix — scale 2.0 squared (wire 0 = -∞, wire 64 = unity 0 dB,
+    // wire 127 = +12 dB max). Octatrack-match convention: default sits at
+    // unity, +12 dB on tap. SoftClip becomes a safety net again rather
+    // than a default-on saturator. Coupled with Pico initsong.cpp Master
+    // Vol default = wire 64 and PT_LEVEL_MASTER renderer scale=2.
+    // See docs/architecture/gain-staging-vs-octatrack.md § "Master
+    // Volume convention revisit — 2026-04-28".
+    MK_FLT_PAR_ABS_NOCV(fMixLevel, sum_lev, 4095.f, 2.f)
     fMixLevel *= fMixLevel;
 
     // Render final buffer
