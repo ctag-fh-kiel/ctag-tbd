@@ -104,39 +104,33 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
     //            (int)s1_bank.load(), (int)s1_slice.load());
     // }
 
-    // Speed — symmetric bipolar ±2.0× via wire centring at cv 2048.
+    // Speed — symmetric bipolar ±2.0× via explicit wire centring.
     //
     //   cv 0    (wire 0)   → -2.0× (full reverse 2×)
     //   cv 1024 (wire 32)  → -1.0× (natural reverse)
-    //   cv 2048 (wire 64)  →  0.0× (silent / scrub-stop — knob centre)
+    //   cv 2048 (wire 64)  →  0.0× (scrub-stop — knob centre)
     //   cv 3072 (wire 96)  → +1.0× (natural forward — DEFAULT in preset)
     //   cv 4064 (wire 127) → +2.0× (full forward 2×)
     //
-    // Symmetric: every wire step on the left is the same magnitude as
-    // a wire step on the right. Direction is decided in the engine
-    // by sign of phaseIncrement (RomplerVoiceMinimal.cpp:107);
-    // pitchFactor is always positive, so direction tracks Speed sign
-    // exclusively.
+    // Direction tracks Speed sign exclusively at engine line 107
+    // (`pitchFactor` is always >0 via SemitonesToRatio).
     //
-    // The natural-forward default lives at wire 96 (NOT wire 64) so
-    // the centre of the knob is silent/scrub-stop and the
-    // forward/reverse halves are symmetric. Preset ro-full-def sets
-    // values[15] = wire 96 (= cv 3072 = +1.0×) as the boot default.
+    // The TBD-16 fork's MK_FLT_PAR_ABS_SFT_NOCV at
+    // ctagSoundProcessorPicoSeqRack.hpp:82 does NOT centre — it
+    // expands to `inname / norm * scale` and only becomes bipolar
+    // via CV summing in upstream's _SFT macro. Since TBD-16 has no
+    // CV, we centre at the wire level here, mirroring Pitch's math
+    // at line 164 below.
     //
-    // For finer control, Speed can be promoted to hi-res NRPN
-    // (max:16383) in the macro/synthdef without code change here:
-    // the CC handler at PicoSeqRack.cpp:859 always scales nrpm input
-    // to the same 0..4096 cv-space, so this wrapper is range-agnostic.
-    //
-    // TBD-16 architectural note: upstream DrumRack stores s_speed
-    // atomic as signed cv-space (-4095..+4095) per mui-DrumRack.jsn
-    // and uses unipolar wire 0..+2× with reverse via CV summing.
-    // TBD-16's CC handler stores atomic as unsigned cv-space and has
-    // no CV input, so reverse must be knob-reachable.
+    // The wire-64 scrub-stop (Speed=0) is handled at note-trigger
+    // by suppressing the gate-on edge — see kSpeedDeadband below.
+    // This avoids a stuck-playhead state where the engine would
+    // otherwise advance readPos at near-zero rate (epsilon clamp)
+    // and produce inaudible micro-playback.
     //
     // playbackSpeed is only assigned at note trigger to preserve it
     // between frames.
-    MK_FLT_PAR_ABS_SFT_NOCV(fS1Speed, s1_speed, 4095.f, 2.f)
+    float fS1Speed = ((float)s1_speed.load() - 2048.f) / 2048.f * 2.f;
     CONSTRAIN(fS1Speed, -2.f, 2.f)
 
     // Pitch — match upstream DrumRack.cpp:435-440 BEHAVIOUR.
@@ -200,9 +194,20 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
     float fTS1Amount = 0.001f + fTSAmount * 0.998f;
     rompler.params.timeStretchWindowSize = fTS1Amount;
 
+    // Speed scrub-stop deadband — at |Speed| < kSpeedDeadband the
+    // wire is at/near centre (wire 64 ±2). The engine's pitch
+    // shifter would divide-by-zero, and an epsilon clamp produced a
+    // stuck-playhead near-silent state on previous trigs. Instead,
+    // suppress gate entirely at scrub-stop: the trig produces clean
+    // silence, the engine state stays clean, and moving the knob
+    // off centre next trig resumes normal playback. Pitch knob
+    // unaffected — only Speed gates the voice.
+    constexpr float kSpeedDeadband = 0.05f;  // ~wire ±1.6 around centre
+    bool speedActive = (fabsf(fS1Speed) >= kSpeedDeadband);
+
     // MK_BOOL_PAR_NOCV(bGateS1, s1_gate)
-    rompler.params.gate = midi_trig;
-    if (midi_trig && !trig_prev) {
+    rompler.params.gate = midi_trig && speedActive;
+    if (midi_trig && !trig_prev && speedActive) {
         uint32_t sliceLength = 0;
         uint32_t stepsLengthMs = 0;
         uint32_t sliceLengthMs = 0;
@@ -210,9 +215,7 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
         // When time-stretch is ON the engine overrides playbackSpeed with the
         // slice-to-step-length ratio so the sample fills N steps regardless of
         // its natural duration. When time-stretch is OFF, honour the Speed
-        // knob (fS1Speed ∈ [0..2]; 1.0 = natural pitch). Previously the
-        // non-timestretch branch hardcoded 1.0 and the Speed knob was a dead
-        // control — TODO.md bug fix.
+        // knob (fS1Speed ∈ [-2..+2], sign = direction; 1.0 = natural forward).
         if (rompler.params.timeStretchEnable
             && data.sampleRom->HasSlice(rompler.params.slice)) {
             sliceLength = data.sampleRom->GetSliceSize(rompler.params.slice);
@@ -224,21 +227,10 @@ void RackRompler::Process(const PicoSeqRackProcessData &data) {
             // phaseIncrement = playbackSpeed * pitchFactor at
             // RomplerVoiceMinimal.cpp:87 (TS-off) or = playbackSpeed
             // alone at line 77 (TS-on). pitchFactor is always >0, so
-            // direction tracks Speed sign exclusively.
-            //
-            // Defensive epsilon clamp: mifx::PitchShifterMono::set_ratio()
-            // at RomplerVoiceMinimal.cpp:476 computes pitchFactor /
-            // playbackSpeed in TS-on mode; with the asymmetric Speed
-            // mapping the user can land on or near 0 (wire ~32). Below
-            // kSpeedEpsilon the sample is effectively silent anyway, so
-            // forcing the value through the epsilon is musically
-            // harmless and removes the realtime hazard.
-            constexpr float kSpeedEpsilon = 0.001f;
-            float speedToEngine = fS1Speed;
-            if (fabsf(speedToEngine) < kSpeedEpsilon) {
-                speedToEngine = (speedToEngine < 0.f) ? -kSpeedEpsilon : kSpeedEpsilon;
-            }
-            rompler.params.playbackSpeed = speedToEngine;
+            // direction tracks Speed sign exclusively. Deadband above
+            // already guarantees |speedToEngine| >= 0.05, so no
+            // divide-by-zero hazard reaches set_ratio.
+            rompler.params.playbackSpeed = fS1Speed;
         }
 
         // printf("S1 sl=%ld ps=%1.3f pitch=%1.3f, ts=%d>%1.1f, slicelen=%ld,msperbeat=%ld,slicelenms=%ld, tempo=%ld,tracklen=%d\n",
