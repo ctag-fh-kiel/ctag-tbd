@@ -2,7 +2,7 @@
   "id": "ab-allparams",
   "name": "Analog Bass Drum",
   "machine": "ab",
-  "volmult": 0.65,
+  "volmult": 1,
   "groups": [
     {
       "name": "Tone",

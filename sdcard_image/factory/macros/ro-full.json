@@ -2,7 +2,7 @@
   "id": "ro-full",
   "name": "Full Rompler",
   "machine": "ro",
-  "volmult": 1.0,
+  "volmult": 0.7,
   "groups": [
     {
       "name": "SAMPLE",

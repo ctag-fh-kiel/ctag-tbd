@@ -2,7 +2,7 @@
   "id": "as-allparams",
   "name": "Analog Snare",
   "machine": "as",
-  "volmult": 0.65,
+  "volmult": 0.4,
   "groups": [
     {
       "name": "Tone",
