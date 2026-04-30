@@ -1,0 +1,19 @@
+{
+  "id": "tbdait-all-def",
+  "name": "DX7 Default",
+  "group": "TBDaits",
+  "macro": "tbdait-params",
+  "values": [
+    2,
+    8192,
+    8192,
+    8192,
+    8192,
+    13000,
+    1,
+    11600,
+    0,
+    0,
+    0
+  ]
+}

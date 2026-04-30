@@ -1,0 +1,25 @@
+{
+  "id": "tbd-all-def",
+  "name": "F Default",
+  "group": "TBDings",
+  "macro": "tbd-allparams",
+  "values": [
+    0,
+    8192,
+    8192,
+    4900,
+    10000,
+    7000,
+    0,
+    1,
+    4000,
+    8000,
+    0,
+    0,
+    0,
+    0,
+    8000,
+    0,
+    0
+  ]
+}

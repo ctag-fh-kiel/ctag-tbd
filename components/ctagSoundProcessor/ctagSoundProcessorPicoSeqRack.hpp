@@ -57,6 +57,8 @@ respective component folders / files if different from this license.
 #include "rack/RackPolyPad.hpp"
 #include "rack/RackMO.hpp"
 #include "rack/RackWTOsc.hpp"
+#include "rack/RackTBDings.hpp"
+#include "rack/RackTBDaits.hpp"
 #include "rack/RackInput.hpp"
 #include "rack/RackFxDelay.hpp"
 #include "rack/RackFxReverb.hpp"
@@ -237,6 +239,8 @@ namespace CTAG {
 
 			RackWTOsc ch12_wtosc;
 			RackMO ch12_mo;
+			RackTBDings ch12_tbd;
+			RackTBDaits ch12_aits;
 			RackRompler ch12_smp;
 			RackChannelMixer ch12;
 			uint32_t ch12_render_time;
@@ -251,6 +255,7 @@ namespace CTAG {
 
 			RackChannelMixer ch15;
 			RackPolyPad ch15_pp;
+			RackTBDings ch15_tbd;
 			RackRompler ch15_smp;
 			uint32_t ch15_render_time;
 
@@ -371,6 +376,10 @@ namespace CTAG {
 			// skipped entirely — see renderMasterOutput). Wire 127 = 4×
 			// drive with /sqrt(drive) loudness makeup.
 			atomic<int32_t> sum_drive;
+			// TBDings global "AIR" master — FaseAcht §4.2 single-slider behaviour.
+			// CC 67 / channel 13. Fans out to every enabled RackTBDings instance's
+			// air_blend field so one knob opens all "pickups" simultaneously.
+			atomic<int32_t> tbd_air_master;
 			atomic<int32_t> c_thres;
 			atomic<int32_t> c_ratio;
 			atomic<int32_t> c_atk;
