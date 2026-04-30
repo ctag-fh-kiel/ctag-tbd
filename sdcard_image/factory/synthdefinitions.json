@@ -178,6 +178,7 @@
         "wtosc",
         "mo",
         "tbd",
+        "tbdait",
         "ro",
         "extsynth"
       ],
@@ -1644,6 +1645,24 @@
         { "id": "mrate",  "name": "Mod Rate",  "type": "nrpm", "ctrl": 22, "def": 8000 },
         { "id": "msnap",  "name": "Mod Snap",  "type": "cc",   "ctrl": 23, "def":    0 },
         { "id": "easter", "name": "Easter",    "type": "cc",   "ctrl": 24, "def":    0 }
+      ]
+    },
+    {
+      "id": "tbdait",
+      "name": "TBDaits",
+      "type": "synth",
+      "parameters": [
+        { "id": "model",  "name": "Model",  "type": "cc",   "ctrl":  8, "def":     2 },
+        { "id": "freq",   "name": "Freq",   "type": "nrpm", "ctrl":  9, "def":  8192 },
+        { "id": "harm",   "name": "Harm",   "type": "nrpm", "ctrl": 10, "def":  8192 },
+        { "id": "timbre", "name": "Timbre", "type": "nrpm", "ctrl": 11, "def":  8192 },
+        { "id": "morph",  "name": "Morph",  "type": "nrpm", "ctrl": 12, "def":  8192 },
+        { "id": "decay",  "name": "Decay",  "type": "nrpm", "ctrl": 13, "def":  9600 },
+        { "id": "color",  "name": "Color",  "type": "nrpm", "ctrl": 14, "def":  8192 },
+        { "id": "level",  "name": "Level",  "type": "nrpm", "ctrl": 15, "def": 11600 },
+        { "id": "fmod",   "name": "FMod",   "type": "nrpm", "ctrl": 16, "def":     0 },
+        { "id": "tmod",   "name": "TMod",   "type": "nrpm", "ctrl": 17, "def":     0 },
+        { "id": "mmod",   "name": "MMod",   "type": "nrpm", "ctrl": 18, "def":     0 }
       ]
     },
     {

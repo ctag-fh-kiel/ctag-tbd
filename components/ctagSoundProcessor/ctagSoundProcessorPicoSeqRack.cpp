@@ -717,6 +717,11 @@ void ctagSoundProcessorPicoSeqRack::Process(const ProcessData& data){
             mixRenderOutputStereo(ch12_tbd.tbd_out_stereo, ch12.level, ch12.pan, ch12.send1, ch12.send2);
         }
 
+        ch12_aits.Process(idata);
+        if (ch12_aits.enabled) {
+            mixRenderOutputStereo(ch12_aits.aits_out_stereo, ch12.level, ch12.pan, ch12.send1, ch12.send2);
+        }
+
         ch12_smp.track_length = ch12.track_length;
         ch12_smp.Process(idata);
         if (ch12_smp.enabled) {
@@ -1038,6 +1043,7 @@ void ctagSoundProcessorPicoSeqRack::Init(std::size_t blockSize, void* blockPtr){
     dri.prefix = "ch12_wtosc_"; ch12_wtosc.Init(&dri);
     dri.prefix = "ch12_mo_"; ch12_mo.Init(&dri);
     dri.prefix = "ch12_tbd_"; ch12_tbd.Init(&dri);
+    dri.prefix = "ch12_aits_"; ch12_aits.Init(&dri);
     dri.prefix = "ch12_smp_"; ch12_smp.Init(&dri);
     ch12_render_time = 0;
 
@@ -1411,6 +1417,7 @@ void ctagSoundProcessorPicoSeqRack::setTrackMachine(const uint8_t trackIndex, co
         ch12_wtosc.enabled = machineId == "wtosc";
         ch12_mo.enabled = machineId == "mo";
         ch12_tbd.enabled = machineId == "tbd";
+        ch12_aits.enabled = machineId == "tbdait";
         ch12_smp.enabled = machineId == "ro";
     }
     else if (trackIndex == 12) {
@@ -1768,6 +1775,10 @@ void ctagSoundProcessorPicoSeqRack::handleMidiNoteOn(const uint8_t channel, uint
             if (velocity > 0) ch12_tbd.noteOn(note, velocity);
             else              ch12_tbd.noteOff(note, 0);
         }
+        if (ch12_aits.enabled) {
+            if (velocity > 0) ch12_aits.noteOn(note, velocity);
+            else              ch12_aits.noteOff(note, 0);
+        }
         if (ch12_smp.enabled) {
             // printf("ch12_ro triggered by note %d, velocity %d\n", note, velocity);
             if (velocity > 0) {
@@ -1894,6 +1905,12 @@ void ctagSoundProcessorPicoSeqRack::handleMidiNoteOff(const uint8_t channel, uin
     else if (channel == 3) {
         if (ch12_mo.enabled) {
             ch12_mo.noteOff(note, 0);
+        }
+        if (ch12_tbd.enabled) {
+            ch12_tbd.noteOff(note, 0);
+        }
+        if (ch12_aits.enabled) {
+            ch12_aits.noteOff(note, 0);
         }
         if (ch12_smp.enabled) {
             ch12_smp.noteOff(note, 0);

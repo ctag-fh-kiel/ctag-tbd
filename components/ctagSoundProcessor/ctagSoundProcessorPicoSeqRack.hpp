@@ -58,6 +58,7 @@ respective component folders / files if different from this license.
 #include "rack/RackMO.hpp"
 #include "rack/RackWTOsc.hpp"
 #include "rack/RackTBDings.hpp"
+#include "rack/RackTBDaits.hpp"
 #include "rack/RackInput.hpp"
 #include "rack/RackFxDelay.hpp"
 #include "rack/RackFxReverb.hpp"
@@ -239,6 +240,7 @@ namespace CTAG {
 			RackWTOsc ch12_wtosc;
 			RackMO ch12_mo;
 			RackTBDings ch12_tbd;
+			RackTBDaits ch12_aits;
 			RackRompler ch12_smp;
 			RackChannelMixer ch12;
 			uint32_t ch12_render_time;
