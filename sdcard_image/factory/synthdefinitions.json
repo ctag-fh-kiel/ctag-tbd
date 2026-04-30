@@ -177,6 +177,7 @@
         "nosynth",
         "wtosc",
         "mo",
+        "tbd",
         "ro",
         "extsynth"
       ],
@@ -220,6 +221,7 @@
       "machines": [
         "nosynth",
         "pp",
+        "tbd",
         "ro",
         "extsynth"
       ],
@@ -1618,6 +1620,30 @@
           "ctrl": 25,
           "def": 32
         }
+      ]
+    },
+    {
+      "id": "tbd",
+      "name": "TBDings",
+      "type": "synth",
+      "parameters": [
+        { "id": "model",  "name": "Model",     "type": "cc",   "ctrl":  8, "def":     0 },
+        { "id": "freq",   "name": "Freq",      "type": "nrpm", "ctrl":  9, "def":  8192 },
+        { "id": "struc",  "name": "Structure", "type": "nrpm", "ctrl": 10, "def":  8192 },
+        { "id": "pos",    "name": "Position",  "type": "nrpm", "ctrl": 11, "def":  4900 },
+        { "id": "bright", "name": "Bright",    "type": "nrpm", "ctrl": 12, "def": 10000 },
+        { "id": "damp",   "name": "Damp",      "type": "nrpm", "ctrl": 13, "def":  7000 },
+        { "id": "chord",  "name": "Chord",     "type": "cc",   "ctrl": 14, "def":     0 },
+        { "id": "poly",   "name": "Poly",      "type": "cc",   "ctrl": 15, "def":     1 },
+        { "id": "envsh",  "name": "Env Shape", "type": "nrpm", "ctrl": 16, "def": 4000 },
+        { "id": "vela",   "name": "Vel Amt",   "type": "nrpm", "ctrl": 17, "def": 8000 },
+        { "id": "air",    "name": "Air",       "type": "nrpm", "ctrl": 18, "def":    0 },
+        { "id": "pluck",  "name": "Pluck",     "type": "cc",   "ctrl": 19, "def":    0 },
+        { "id": "mtype",  "name": "Mod Type",  "type": "cc",   "ctrl": 20, "def":    0 },
+        { "id": "mdpth",  "name": "Mod Depth", "type": "nrpm", "ctrl": 21, "def":    0 },
+        { "id": "mrate",  "name": "Mod Rate",  "type": "nrpm", "ctrl": 22, "def": 8000 },
+        { "id": "msnap",  "name": "Mod Snap",  "type": "cc",   "ctrl": 23, "def":    0 },
+        { "id": "easter", "name": "Easter",    "type": "cc",   "ctrl": 24, "def":    0 }
       ]
     },
     {
