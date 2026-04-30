@@ -52,13 +52,13 @@
     },
     {
       "index": 8,
-      "preset": "td3-h-bass",
-      "_name": "Bass     — Hybrid Bass (td3)"
+      "preset": "td3-all-def",
+      "_name": "Bass     — TBD03 F Default (td3)"
     },
     {
       "index": 9,
       "preset": "td3-all-def",
-      "_name": "Bass2    — All Params (td3)"
+      "_name": "Bass2    — TBD03 F Default (td3)"
     },
     {
       "index": 10,
@@ -67,8 +67,8 @@
     },
     {
       "index": 11,
-      "preset": "mo-bass",
-      "_name": "Lead2    — Mono Synth Bass (mo)"
+      "preset": "tbd-all-def",
+      "_name": "Lead2    — TBDings (tbd)"
     },
     {
       "index": 12,
