@@ -52,6 +52,18 @@ private:
     // sequencer triggers (where note_held stays true between calls).
     int trigger_pulse_state {0};
 
+    // AHR envelope state for the wrapper-side amplitude / accent envelope.
+    //   Attack: instant snap to (velocity/127) on noteOn.
+    //   Hold:   stays at peak while note_held — keyboard sustain.
+    //   Release: exponential decay per Decay knob (5 ms..8 s tau)
+    //     when note_held drops to false.
+    // Drives modulations.level (with level_patched=true) so:
+    //   - LPG (ProcessLP) audibly follows the envelope → Decay shapes tail
+    //   - DX7 patches see velocity-shaped accent → per-patch velocity-to-
+    //     timbre routing preserved (the Plaits-with-envelope-patched feel)
+    //   - Note length actually affects sustain (matters for keyboard play)
+    float env_value {0.f};
+
     // Block counter for silence gate: counts up since the last trigger /
     // active note. After kSilenceTailBlocks of pure idle we mute the output
     // and skip Voice::Render entirely (CPU + correctness — drone engines
@@ -70,8 +82,8 @@ private:
     atomic<int16_t> harm_par {2048};      // preset 8192 → cv 2048 → 0.5
     atomic<int16_t> timbre_par {2048};    // preset 8192 → cv 2048 → 0.5
     atomic<int16_t> morph_par {2048};     // preset 8192 → cv 2048 → 0.5
-    atomic<int16_t> decay_par {2400};     // preset 9600 → cv 2400 → ~0.6 LPG decay
-    atomic<int16_t> color_par {2048};     // preset 8192 → cv 2048 → 0.5 LPG colour
+    atomic<int16_t> decay_par {3250};     // preset 13000 → cv 3250 → ~0.79 LPG decay (audible sustain for lead patches, ~850 ms display)
+    atomic<int16_t> color_par {1920};     // preset 1 (cc src) × mul 60 → wire 60 → cv 1920 → ~0.47 LPG colour (Mix zone)
     atomic<int16_t> level_par {2900};     // preset 11600 → cv 2900 → ~0.7 level
     atomic<int16_t> fmod_par {0};         // preset 0 → no FM mod by default
     atomic<int16_t> tmod_par {0};         // preset 0 → no Timbre mod by default
