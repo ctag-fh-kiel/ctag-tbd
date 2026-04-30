@@ -1,0 +1,47 @@
+{
+  "id": "tbdait-params",
+  "name": "TBDaits",
+  "machine": "tbdait",
+  "volmult": 0.18,
+  "groups": [
+    {
+      "name": "Voice",
+      "parameters": [
+        { "idx":  0, "name": "Model",  "def":    2, "min": 0, "max":    23, "res":   32, "ui": "plaitsmodel" },
+        { "idx":  1, "name": "Freq",   "def": 8192, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
+        { "idx":  2, "name": "Harm",   "def": 8192, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
+        { "idx":  3, "name": "Timbre", "def": 8192, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" }
+      ]
+    },
+    {
+      "name": "Tone",
+      "parameters": [
+        { "idx":  4, "name": "Morph",  "def":  8192, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
+        { "idx":  5, "name": "Decay",  "def":  9600, "min": 0, "max": 16383, "res": 2048, "ui": "envdecay" },
+        { "idx":  6, "name": "Color",  "def":  8192, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
+        { "idx":  7, "name": "Level",  "def": 11600, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" }
+      ]
+    },
+    {
+      "name": "Mod",
+      "parameters": [
+        { "idx":  8, "name": "FMod",   "def":    0, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
+        { "idx":  9, "name": "TMod",   "def":    0, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
+        { "idx": 10, "name": "MMod",   "def":    0, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" }
+      ]
+    }
+  ],
+  "mapping": [
+    { "ctrl":  8, "type": "cc",   "start": 0, "add": [ { "src":  0, "mul":   5, "div": 1 } ] },
+    { "ctrl":  9, "type": "nrpm", "start": 0, "add": [ { "src":  1, "mul":   1, "div": 1 } ] },
+    { "ctrl": 10, "type": "nrpm", "start": 0, "add": [ { "src":  2, "mul":   1, "div": 1 } ] },
+    { "ctrl": 11, "type": "nrpm", "start": 0, "add": [ { "src":  3, "mul":   1, "div": 1 } ] },
+    { "ctrl": 12, "type": "nrpm", "start": 0, "add": [ { "src":  4, "mul":   1, "div": 1 } ] },
+    { "ctrl": 13, "type": "nrpm", "start": 0, "add": [ { "src":  5, "mul":   1, "div": 1 } ] },
+    { "ctrl": 14, "type": "nrpm", "start": 0, "add": [ { "src":  6, "mul":   1, "div": 1 } ] },
+    { "ctrl": 15, "type": "nrpm", "start": 0, "add": [ { "src":  7, "mul":   1, "div": 1 } ] },
+    { "ctrl": 16, "type": "nrpm", "start": 0, "add": [ { "src":  8, "mul":   1, "div": 1 } ] },
+    { "ctrl": 17, "type": "nrpm", "start": 0, "add": [ { "src":  9, "mul":   1, "div": 1 } ] },
+    { "ctrl": 18, "type": "nrpm", "start": 0, "add": [ { "src": 10, "mul":   1, "div": 1 } ] }
+  ]
+}
