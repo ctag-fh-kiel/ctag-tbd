@@ -277,12 +277,14 @@ void RackTBDings::Process(const PicoSeqRackProcessData &data) {
     CONSTRAIN(patch.position,   0.f, 1.f);
     CONSTRAIN(patch.structure,  0.f, 1.f);
 
-    // Note pitch — fine-tune detune ±2 semis around the played note. Closer to
-    // Rings' canonical ±1 semi attenuverter feel; lets the user comma-tune
-    // resonators against each other or chase a microtonal interval without
-    // the knob behaving like a coarse pitch fader. Mid-scale (cv ≈ 2048) = 0.
+    // Note pitch — bias ±12 semitones (1 octave) around the played MIDI note.
+    // Mid-scale (cv ≈ 2048) = 0 detune. Matches TBDaits Freq behavior + the
+    // PT_PLAITS_DETUNE renderer's ±12 semi display so what you see is what
+    // you hear. Hi-res NRPM (16384 steps) gives ~0.001 semi precision at
+    // center, full octave at extremes for octave layering / creative
+    // repitching.
     {
-        float bias_semis = (i_freq / 4095.f - 0.5f) * 4.f;
+        float bias_semis = (i_freq / 4095.f - 0.5f) * 24.f;
         performance_state.note = (float)midi_note + bias_semis;
         CONSTRAIN(performance_state.note, 0.f, 96.f);
     }

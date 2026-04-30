@@ -5,45 +5,45 @@
   "volmult": 0.15,
   "groups": [
     {
-      "name": "Reson",
+      "name": "Voice",
       "parameters": [
-        { "idx":  1, "name": "Freq",   "def": 8192, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
-        { "idx":  2, "name": "Struct", "def": 8192, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
-        { "idx":  3, "name": "Pos",    "def": 4900, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
-        { "idx":  0, "name": "Model",  "def":    0, "min": 0, "max":     5, "res":   32, "ui": "tbdmodel" }
-      ]
-    },
-    {
-      "name": "Timbre",
-      "parameters": [
-        { "idx":  4, "name": "Bright", "def": 10000, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
-        { "idx":  5, "name": "Damp",   "def":  7000, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
+        { "idx":  0, "name": "Model",  "def":     0, "min": 0, "max":     5, "res":   32, "ui": "tbdmodel" },
         { "idx":  6, "name": "Chord",  "def":     0, "min": 0, "max":    10, "res":   32, "ui": "tbdchord" },
-        { "idx":  7, "name": "Poly",   "def":     1, "min": 0, "max":     2, "res":   32, "ui": "tbdvoices" }
-      ]
-    },
-    {
-      "name": "Env",
-      "parameters": [
-        { "idx":  8, "name": "EnvSh",  "def": 4000, "min": 0, "max": 16383, "res": 2048, "ui": "envattack" },
-        { "idx":  9, "name": "VelAmt", "def": 8000, "min": 0, "max": 16383, "res": 2048, "ui": "distortion" },
-        { "idx": 10, "name": "Air",    "def":    0, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
-        { "idx": 11, "name": "Pluck",  "def":    0, "min": 0, "max":     1, "res":   64, "ui": "onoff"  }
+        { "idx":  4, "name": "Bright", "def": 10000, "min": 0, "max": 16383, "res": 2048, "ui": "percent" },
+        { "idx":  5, "name": "Damp",   "def":  7000, "min": 0, "max": 16383, "res": 2048, "ui": "percent" }
       ]
     },
     {
       "name": "Mod",
       "parameters": [
-        { "idx": 12, "name": "MType",  "def":    0, "min": 0, "max":     2, "res":   32, "ui": "tbdmtype" },
-        { "idx": 13, "name": "MDpth",  "def":    0, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
-        { "idx": 14, "name": "MRate",  "def": 8000, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
-        { "idx": 15, "name": "MSnap",  "def":    0, "min": 0, "max":     1, "res":   64, "ui": "onoff"  }
+        { "idx": 13, "name": "MDpth",  "def":     0, "min": 0, "max": 16383, "res": 2048, "ui": "percent" },
+        { "idx": 14, "name": "MRate",  "def":  8000, "min": 0, "max": 16383, "res": 2048, "ui": "percent" },
+        { "idx": 12, "name": "MType",  "def":     0, "min": 0, "max":     2, "res":   32, "ui": "tbdmtype" },
+        { "idx": 15, "name": "MSnap",  "def":     0, "min": 0, "max":     1, "res":   64, "ui": "onoff"  }
+      ]
+    },
+    {
+      "name": "Excite",
+      "parameters": [
+        { "idx": 10, "name": "Air",    "def":     0, "min": 0, "max": 16383, "res": 2048, "ui": "percent" },
+        { "idx": 11, "name": "Pluck",  "def":     0, "min": 0, "max":     1, "res":   64, "ui": "onoff"  },
+        { "idx":  9, "name": "VelAmt", "def":  8000, "min": 0, "max": 16383, "res": 2048, "ui": "percent" },
+        { "idx":  8, "name": "EnvSh",  "def":  4000, "min": 0, "max": 16383, "res": 2048, "ui": "tbdenv" }
+      ]
+    },
+    {
+      "name": "Reson",
+      "parameters": [
+        { "idx":  1, "name": "Freq",   "def":  8192, "min": 0, "max": 16383, "res": 2048, "ui": "plaitsdetune" },
+        { "idx":  2, "name": "Struct", "def":  8192, "min": 0, "max": 16383, "res": 2048, "ui": "percent" },
+        { "idx":  3, "name": "Pos",    "def":  4900, "min": 0, "max": 16383, "res": 2048, "ui": "percent" },
+        { "idx":  7, "name": "Poly",   "def":     1, "min": 0, "max":     2, "res":   32, "ui": "tbdvoices" }
       ]
     },
     {
       "name": "Extra",
       "parameters": [
-        { "idx": 16, "name": "Easter", "def":    0, "min": 0, "max":     1, "res":   64, "ui": "onoff"  }
+        { "idx": 16, "name": "Easter", "def":     0, "min": 0, "max":     1, "res":   64, "ui": "onoff"  }
       ]
     }
   ],
