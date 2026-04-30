@@ -18,7 +18,7 @@
       "parameters": [
         { "idx":  4, "name": "Bright", "def": 10000, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
         { "idx":  5, "name": "Damp",   "def":  7000, "min": 0, "max": 16383, "res": 2048, "ui": "bignum" },
-        { "idx":  6, "name": "Chord",  "def":     0, "min": 0, "max":   127, "res":   64, "ui": "chord"  },
+        { "idx":  6, "name": "Chord",  "def":     0, "min": 0, "max":    10, "res":   32, "ui": "tbdchord" },
         { "idx":  7, "name": "Poly",   "def":     1, "min": 0, "max":     2, "res":   32, "ui": "tbdvoices" }
       ]
     },
@@ -54,7 +54,7 @@
     { "ctrl": 11, "type": "nrpm", "start": 0, "add": [ { "src":  3, "mul":   1, "div": 1 } ] },
     { "ctrl": 12, "type": "nrpm", "start": 0, "add": [ { "src":  4, "mul":   1, "div": 1 } ] },
     { "ctrl": 13, "type": "nrpm", "start": 0, "add": [ { "src":  5, "mul":   1, "div": 1 } ] },
-    { "ctrl": 14, "type": "cc",   "start": 0, "add": [ { "src":  6, "mul":   1, "div": 1 } ] },
+    { "ctrl": 14, "type": "cc",   "start": 0, "add": [ { "src":  6, "mul":  12, "div": 1 } ] },
     { "ctrl": 15, "type": "cc",   "start": 0, "add": [ { "src":  7, "mul":  60, "div": 1 } ] },
     { "ctrl": 16, "type": "nrpm", "start": 0, "add": [ { "src":  8, "mul":   1, "div": 1 } ] },
     { "ctrl": 17, "type": "nrpm", "start": 0, "add": [ { "src":  9, "mul":   1, "div": 1 } ] },
