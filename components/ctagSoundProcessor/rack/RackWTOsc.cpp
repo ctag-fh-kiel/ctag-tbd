@@ -21,20 +21,25 @@ respective component folders / files if different from this license.
 #include "helpers/ctagNumUtil.hpp"
 #include "plaits/dsp/engine/engine.h"
 #include "braids/quantizer_scales.h"
+#include "esp_heap_caps.h"
 
 using namespace CTAG::SP;
-
-#define td3_kAccentDecay 0.5f
-#define td3_kAccentVCAFactor 1.5f
 
 void RackWTOsc::Init(const PickSeqRackInitData *initdata) {
     lfo.SetSampleRate(44100.f / BUF_SZ);
     lfo.SetFrequency(1.f);
 
-    buffer = static_cast<int16_t*>(heap_caps_malloc(260 * 64 * 2, MALLOC_CAP_SPIRAM));
-    fbuffer = static_cast<float*>(heap_caps_malloc(512 * 4, MALLOC_CAP_SPIRAM));
-    memset(buffer, 0, 260 * 64 * 2);
-    memset(fbuffer, 0, 512 * 4);
+    // Allocate ONE bank's worth of PSRAM (~33 KB) plus a 2 KB float
+    // scratch for the integration math. Bank change in Process triggers
+    // a one-shot prepareBank(currentBank) — single audio-block glitch on
+    // change is acceptable for non-real-time bank selection.
+    bankBuffer = static_cast<int16_t*>(heap_caps_malloc(kBankBytes, MALLOC_CAP_SPIRAM));
+    memset(bankBuffer, 0, kBankBytes);
+    fbufScratch = static_cast<float*>(heap_caps_malloc(512 * sizeof(float), MALLOC_CAP_SPIRAM));
+
+    // Preload bank 0 so the first noteOn doesn't have to do the prep.
+    prepareBank(currentBank, initdata->sampleRom);
+    lastBank = currentBank;
 
     oscillator.Init();
     svf.Init();
@@ -52,7 +57,15 @@ void RackWTOsc::Init(const PickSeqRackInitData *initdata) {
     initdata->rack->registerParamAndCC(initdata, "fmode", 11, [&](const int val){ fmode = val;});
     initdata->rack->registerParamAndCC(initdata, "fcut", 12, [&](const int val){ fcut = val;});
     initdata->rack->registerParamAndCC(initdata, "freso", 13, [&](const int val){ freso = val;});
-    initdata->rack->registerParamAndCC(initdata, "q_scale", 14, [&](const int val){ q_scale = val;});
+    /*
+     * q_scale (Braids quantizer scale select) is preserved in DSP code but
+     * its CC registration is disabled — ctrl=14 is now the layout-correct
+     * slot for Gain (macro idx=6, idx+8 invariant). The quantizer code in
+     * Process() is currently commented out anyway, so the parameter has no
+     * audible effect. Re-enable both lines together if pitch-quantization
+     * is brought back, and choose a different ctrl free of macro conflict.
+     */
+    // initdata->rack->registerParamAndCC(initdata, "q_scale", 14, [&](const int val){ q_scale = val;});
 
     initdata->rack->registerParamAndCC(initdata, "attack", 15, [&](const int val){ attack = val;});
     initdata->rack->registerParamAndCC(initdata, "decay", 16, [&](const int val){ decay = val;});
@@ -60,21 +73,78 @@ void RackWTOsc::Init(const PickSeqRackInitData *initdata) {
     initdata->rack->registerParamAndCC(initdata, "release", 18, [&](const int val){ release = val;});
 
     initdata->rack->registerParamAndCC(initdata, "eg2wave", 19, [&](const int val){ eg2wave = val;});
-    // initdata->rack->registerParamAndCC(initdata, "eg2am", 19, [&](const int val){ eg2am = val;});
     initdata->rack->registerParamAndCC(initdata, "eg2fm", 20, [&](const int val){ eg2fm = val;});
     initdata->rack->registerParamAndCC(initdata, "eg2filtfm", 21, [&](const int val){ eg2filtfm = val;});
 
     initdata->rack->registerParamAndCC(initdata, "lfospeed", 22, [&](const int val){ lfospeed = val;});
     initdata->rack->registerParamAndCC(initdata, "lfosync", 23, [&](const int val){ lfosync = val;});
-    // initdata->rack->registerParamAndCC(initdata, "egfasl", 24, [&](const int val){ egfasl = val;});
 
-    initdata->rack->registerParamAndCC(initdata, "lfo2wave", 25, [&](const int val){ lfo2wave = val;});
-    initdata->rack->registerParamAndCC(initdata, "lfo2am", 26, [&](const int val){ lfo2am = val;});
-    initdata->rack->registerParamAndCC(initdata, "lfo2fm", 27, [&](const int val){ lfo2fm = val;});
-    initdata->rack->registerParamAndCC(initdata, "lfo2filtfm", 28, [&](const int val){ lfo2filtfm = val;});
+    // lfo2* ctrl numbers are 24..27 to satisfy the macro idx+8=ctrl
+    // invariant (LFO Mod page = macro idx 16..19). ctrl=24 was previously
+    // reserved for egfasl (Slow EG toggle) which is currently disabled
+    // in DSP, so it's free to reuse.
+    initdata->rack->registerParamAndCC(initdata, "lfo2wave",   24, [&](const int val){ lfo2wave = val;});
+    initdata->rack->registerParamAndCC(initdata, "lfo2am",     25, [&](const int val){ lfo2am = val;});
+    initdata->rack->registerParamAndCC(initdata, "lfo2fm",     26, [&](const int val){ lfo2fm = val;});
+    initdata->rack->registerParamAndCC(initdata, "lfo2filtfm", 27, [&](const int val){ lfo2filtfm = val;});
 
-    initdata->rack->registerParamAndCC(initdata, "gain", 29, [&](const int val){ gain = val;});
-    // initdata->rack->registerParamAndCC(initdata, "pitch", 9, [&](const int val){ pitch = val;});
+    // Gain is exposed at TWO ctrl numbers:
+    //  - ctrl=14 — the layout-correct slot for macro idx=6 (idx+8 invariant,
+    //              docs/architecture/macro-system.md). Required so that
+    //              MacroTranslator's storage slot ctrl-8=6 receives Gain
+    //              writes, matching trackParameterValues[t][6].
+    //  - ctrl=29 — kept for backward compatibility with the original WTOsc
+    //              CC layout / any saved presets that still reference it.
+    initdata->rack->registerParamAndCC(initdata, "gain",  14, [&](const int val){ gain = val;});
+    initdata->rack->registerParamAndCC(initdata, "gain2", 29, [&](const int val){ gain = val;});
+}
+
+void RackWTOsc::prepareBank(int b, HELPERS::ctagSampleRom *sampleRom) {
+    // Bank b occupies sub-slices [b*64 .. b*64+63] in the sample-rom
+    // PSRAM region (each sub-slice = 256 raw int16 samples). If those
+    // slices aren't loaded (active wt-bank descriptor has fewer entries),
+    // mark the wavetable bad and bail — Process will skip rendering.
+    if (!sampleRom->HasSliceGroup(b * 64, b * 64 + 63)) {
+        isWaveTableGood = false;
+        return;
+    }
+    if (sampleRom->GetSliceGroupSize(b * 64, b * 64 + 63) != 256 * 64) {
+        isWaveTableGood = false;
+        return;
+    }
+
+    int16_t *buf = bankBuffer;
+    const int bufferOffset = 4 * 64;  // 256
+
+    // ReadSlice clips at sliceSize=256, so the legacy upstream pattern
+    // ReadSlice(buf, slice, 0, 256*64) returns only ONE wave's worth.
+    // Walk the 64 sub-slices explicitly.
+    for (int j = 0; j < 64; j++) {
+        sampleRom->ReadSlice(&buf[bufferOffset + j * 256], b * 64 + j, 0, 256);
+    }
+
+    // Integrated-wavetable preprocessing
+    // (https://www.dafx12.york.ac.uk/papers/dafx12_submission_69.pdf,
+    // K=1, N=1). See the maths reference in the original ctagSound-
+    // ProcessorWTOsc::prepareWavetables for the per-step rationale.
+    int c = 0;
+    for (int i = 0; i < 64; i++) {
+        int startOffset = bufferOffset + i * 256;
+        float sum4 = buf[startOffset] + buf[startOffset+1] + buf[startOffset+2] + buf[startOffset+3];
+        for (int j = 0; j < 512; j++) {
+            fbufScratch[j] = buf[startOffset + (j % 256)] + sum4;
+        }
+        removeMeanOfFloatArray(fbufScratch, 512);
+        scaleFloatArrayToAbsMax(fbufScratch, 512);
+        accumulateFloatArray(fbufScratch, 512);
+        removeMeanOfFloatArray(fbufScratch, 512);
+        for (int j = 512 - 256 - 4; j < 512; j++) {
+            int16_t v = static_cast<int16_t>(roundf(fbufScratch[j] * 4.f * 32768.f / 256.f));
+            buf[c++] = v;
+        }
+    }
+    for (int i = 0; i < 64; i++) wavetables[i] = &buf[i * 260];
+    isWaveTableGood = true;
 }
 
 void RackWTOsc::noteOn(uint8_t note, uint8_t vel) {
@@ -82,10 +152,19 @@ void RackWTOsc::noteOn(uint8_t note, uint8_t vel) {
     midi_note = note;
     midi_freq = 440.f * powf(2.f, (note - 69) / 12.f);
     pitch = note * 128.0f;
+    note_held = true;
+    pending_velocity = vel ? vel : 100;
+    pending_retrigger = true;  // see hpp comment — forces a clean re-attack
 }
 
 void RackWTOsc::noteOff(uint8_t note, uint8_t vel) {
+    (void)note;
+    (void)vel;
     midi_trig = false;
+    note_held = false;
+    // env_value continues to ring out via the AHR release in Process —
+    // do NOT zero it here, otherwise the user gets a click instead of a
+    // tail. The silence gate handles eventual full mute.
 }
 
 void RackWTOsc::Process(const PicoSeqRackProcessData &data) {
@@ -95,43 +174,99 @@ void RackWTOsc::Process(const PicoSeqRackProcessData &data) {
 
     std::fill_n(out, BUF_SZ, 0.f);
 
-    // wave select
-    currentBank = (wavebank * 16) / 4096;
-	// if(cv_wave != -1) ONE_POLE(fWave, fabsf(data.cv[cv_wave]), 0.1f) else
+    // ---- Stuck-note watchdog (RackRompler-style, line 273-296) -----------
+    // The Pico sequencer's stop-path does not emit noteOff for currently-
+    // held notes — without this safety net, voices on pitched instruments
+    // hang at sustain level forever (user has to power-cycle to silence).
+    // Reset trig_age_ticks on every fresh noteOn pulse; count blocks
+    // otherwise; force-release after kStaleTriggerTicks (~6 s) of silence.
+    if (pending_retrigger) {
+        trig_age_ticks = 0;
+    } else if (trig_age_ticks < UINT32_MAX) {
+        trig_age_ticks++;
+    }
+    if (note_held && trig_age_ticks > kStaleTriggerTicks) {
+        // No fresh trigger in ~6 s — assume dropped/missing noteOff,
+        // force-release. ADSR.Gate(false) on the consume below moves
+        // the envelope into env_release, fades naturally.
+        note_held = false;
+        midi_trig = false;
+    }
+    // ----------------------------------------------------------------------
+
+    // ---- Silence gate ----------------------------------------------------
+    // Activity = note held OR ADSR still ringing (covers attack→decay→
+    // sustain→release tail). Inactive blocks past the tail emit zeros and
+    // skip the engine entirely.
+    const bool any_activity = note_held || !adsr.IsIdle();
+    if (any_activity) {
+        silence_tail_blocks = 0;
+    } else {
+        silence_tail_blocks++;
+        if (silence_tail_blocks > kSilenceTailBlocks) {
+            return;  // out[] is already zeroed above
+        }
+    }
+    // ----------------------------------------------------------------------
+
+    // wave select — wavebank is normalized to 0..4096 by registerParamAndCC.
+    // Map across all 32 banks.
+    currentBank = (wavebank * kMaxBanks) / 4096;
+    if (currentBank < 0) currentBank = 0;
+    if (currentBank >= kMaxBanks) currentBank = kMaxBanks - 1;
+
     fWave = wave / 4095.f;
 
-    if(lastBank != currentBank) { // this is slow, hence not modulated by CV
-        prepareWavetables(data.sampleRom);
+    if (lastBank != currentBank) {
+        // One-shot heavy preprocessing on bank change. ~10 ms blocking
+        // work; produces an audible audio glitch at the moment of
+        // change. Acceptable since bank changes are non-real-time.
+        prepareBank(currentBank, data.sampleRom);
         lastBank = currentBank;
     }
 
-    // gain
-    MK_FLT_PAR_ABS_NOCV(fGain, gain, 4095.f, 2.f)
+    // Gain — clean linear 0..1 mapping (was 0..2 with quadratic squashing,
+    // which made the upper half of the knob inaudible against the AM clamp).
+    MK_FLT_PAR_ABS_NOCV(fGain, gain, 4095.f, 1.f)
 
-    // adsr + adsr modulation
-    // MK_BOOL_PAR_NOCV(bGate, gate)
-    adsr.Gate(midi_trig);
-    // MK_BOOL_PAR_NOCV(bEGSlow, egfasl)
+    // ADSR drives master amplitude (and mod routings via valADSR).
+    // Gate input is note_held — the sustained "is the user pressing
+    // a key right now" state. The watchdog above can clear note_held
+    // independently if no fresh trigger arrives for ~6 s (sequencer-
+    // stop safety net).
+    //
+    // Force-retrigger pattern: ctagADSREnv::Gate(true) is a no-op when
+    // currently in env_decay or env_sustain — so we must Reset() the
+    // ADSR on every fresh noteOn to guarantee re-attack from zero,
+    // otherwise back-to-back sequencer steps within the previous note's
+    // decay tail produce silence. pending_retrigger crosses threads
+    // (set in noteOn from SPI/MIDI task, consumed here on audio task)
+    // — volatile read + single-write makes the consume race-safe.
+    if (pending_retrigger) {
+        pending_retrigger = false;
+        adsr.Reset();
+    }
+    adsr.Gate(note_held);
     MK_FLT_PAR_ABS_NOCV(fAttack, attack, 4095.f, 10.f)
     MK_FLT_PAR_ABS_NOCV(fDecay, decay, 4095.f, 10.f)
     MK_FLT_PAR_ABS_NOCV(fSustain, sustain, 4095.f, 1.f)
     MK_FLT_PAR_ABS_NOCV(fRelease, release, 4095.f, 10.f)
-    // if(bEGSlow){
-    //     fAttack *= 30.f;
-    //     fDecay *= 30.f;
-    //     fRelease *= 30.f;
-    // }
     adsr.SetAttack(fAttack);
     adsr.SetDecay(fDecay);
     adsr.SetSustain(fSustain);
     adsr.SetRelease(fRelease);
 
-    // adsr modulation
-    // MK_FLT_PAR_ABS_SFT_NOCV(fEGAM, eg2am, 4095.f, 1.f)
-    float fEGAM = 1.0f;
-    MK_FLT_PAR_ABS_SFT_NOCV(fEGFM, eg2fm, 4095.f, 12.f)
-    MK_FLT_PAR_ABS_SFT_NOCV(fEGFMFilt, eg2filtfm, 4095.f, 1.f)
-    MK_FLT_PAR_ABS_SFT_NOCV(fEGWave, eg2wave, 4095.f, 1.f)
+    // EG mod amounts are SEMANTICALLY BIPOLAR (knob mid = no mod,
+    // knob full-down = max negative mod, knob full-up = max positive
+    // mod). The MK_FLT_PAR_ABS_SFT_NOCV macro in the rack header is
+    // actually NON-shifting (despite the _SFT_ name) — the original
+    // CV-mode _SFT_ macro shifted, but the rack _NOCV_ variant in
+    // ctagSoundProcessorPicoSeqRack.hpp is identical to ABS_NOCV.
+    // Compute the bipolar shift manually here so knob mid (cv=2048)
+    // → 0, knob ends (cv=0 / cv=4095) → ±scale.
+    const float fEGFM     = (eg2fm     - 2048.f) / 2048.f * 12.f;
+    const float fEGFMFilt = (eg2filtfm - 2048.f) / 2048.f * 1.f;
+    const float fEGWave   = (eg2wave   - 2048.f) / 2048.f * 1.f;
     valADSR = adsr.Process();
 
     // modulation LFO
@@ -140,18 +275,17 @@ void RackWTOsc::Process(const PicoSeqRackProcessData &data) {
 
     bool trigger = preGate != midi_trig && midi_trig;
 
-    // if (midi_trig) {
-    //     // trigger = true;
-    //     midi_trig = false;
-    // }
-
-    if (trigger) {
-        // printf("WTOSC\n");
-        if (bLFOSync) {
-            lfo.SetFrequencyPhase(fLFOSpeed, 0.f);
-        } else {
-            lfo.SetFrequency(fLFOSpeed);
-        }
+    // LFO frequency / phase: in Sync mode, hard-reset phase on every
+    // fresh noteOn (so the LFO is in lockstep with note attacks); in
+    // free-running mode, follow the LFO Spd knob continuously so the
+    // user can sweep speed while a note is held. This matches the
+    // original ctagSoundProcessorWTOsc::Process pattern — my earlier
+    // version only called SetFrequency inside the trigger branch,
+    // which meant the LFO Spd knob had no effect during held notes.
+    if (bLFOSync && trigger) {
+        lfo.SetFrequencyPhase(fLFOSpeed, 0.f);
+    } else {
+        lfo.SetFrequency(fLFOSpeed);
     }
 
     preGate = midi_trig;
@@ -162,23 +296,11 @@ void RackWTOsc::Process(const PicoSeqRackProcessData &data) {
     MK_FLT_PAR_ABS_NOCV(fLFOWave, lfo2wave, 4095.f, 1.f)
     valLFO = lfo.Process();
 
-    // // pitch / tuning / FM
+    // pitch / tuning / FM
     int32_t ipitch = 0;
-    // ipitch += 48; // midi note * resolution
-    // ipitch *= 128;
     ipitch += static_cast<int32_t>(midi_note * 128.0f);
-    int32_t ipitch_root = ipitch;
-    // if (cv_pitch != -1) {
-    //     ipitch += static_cast<int32_t>(data.cv[cv_pitch] * 12.f * 5.f * 128.f); // five octaves
-    // }
     int32_t sc = q_scale * 48 / 4096;
-    // if (cv_q_scale != -1) {
-    //     sc = static_cast<int32_t>(fabsf(data.cv[cv_q_scale]) * 48.f);
     CONSTRAIN(sc, 0, 47);
-    // }
-    //ESP_LOGE("WTOSC", "Scale %d", sc);
-    // pitchQuantizer.Configure(braids::scales[sc]);
-    // ipitch = pitchQuantizer.Process(ipitch, ipitch_root);
 
     float fPitch = static_cast<float>(ipitch);
     fPitch /= 128.f;
@@ -188,9 +310,7 @@ void RackWTOsc::Process(const PicoSeqRackProcessData &data) {
     // filter
     MK_FLT_PAR_ABS_NOCV(fCut, fcut, 4095.f, 1.f)
     MK_FLT_PAR_ABS_NOCV(fReso, freso, 4095.f, 20.f)
-    // filter modulation
-    fCut = fCut + fEGFMFilt * valADSR + fLFOFMFilt * valLFO; // TODO: Pitch tracking
-    // limit values
+    fCut = fCut + fEGFMFilt * valADSR + fLFOFMFilt * valLFO;
     CONSTRAIN(fCut, 0.f, 1.f)
     CONSTRAIN(fReso, 1.f, 20.f)
     fCut = 20.f * stmlib::SemitonesToRatio(fCut * 120.f);
@@ -198,29 +318,31 @@ void RackWTOsc::Process(const PicoSeqRackProcessData &data) {
     MK_INT_PAR_ABS_NOCV(iFType, fmode, 4.f)
     CONSTRAIN(iFType, 0, 3);
 
-    // calculate modulation params
-    float fAM = valADSR * fEGAM; // adsr
-    if (fEGAM < 0.f) fAM -= fEGAM; // adsr
-    fAM = ((1.f - fabsf(fEGAM)) + fAM); // adsr
-    fAM *= (1.f - (valLFO + 1.f) * 0.5f * fLFOAM); // lfo
-    fAM *= fGain * fGain; // gain (quadratic)
+    // Master amplitude: ADSR envelope is the single source of truth.
+    // valADSR comes from the internal ctagADSREnv driven by Attack/
+    // Decay/Sustain/Release knobs — full A/D/S/R shape on the audible
+    // amplitude, exactly as the four labeled knobs imply. LFO AM
+    // modulates it; Gain attenuates the result. The legacy bipolar
+    // fEGAM blend (which made amplitude shape-independent of ADSR
+    // when the EG-AM amount knob was at 0 — the original "sustains
+    // forever" bug) is gone.
+    //
+    // Velocity scaling: pending_velocity (0..127) modulates amplitude
+    // linearly so per-step velocity dynamics are honored.
+    const float fVel = pending_velocity / 127.f;
+    float fAM = valADSR * fVel;
+    fAM *= (1.f - (valLFO + 1.f) * 0.5f * fLFOAM);
+    fAM *= fGain;
     CONSTRAIN(fAM, 0.f, 1.f)
 
     float fWt = fWave + valADSR * fEGWave + valLFO * fLFOWave * 2.f;
     CONSTRAIN(fWt, 0.f, 1.f)
 
-    // detect very fast modulations and filter wave for respective frame
-    // float deltaWt = fabsf(pre_fWt - fWt);
-    // if(deltaWt > 0.1f){
-    //     trigger = true;
-    // }
-    // pre_fWt = fWt;
-
     // calc wave and apply filter
-    if(isWaveTableGood){
+    if (isWaveTableGood) {
         oscillator.Render(trigger, f0, fAM, fWt, wavetables, out, BUF_SZ);
 
-        switch(iFType){
+        switch (iFType) {
             case 1:
                 svf.Process<stmlib::FILTER_MODE_LOW_PASS>(out, out, BUF_SZ);
                 break;
@@ -233,52 +355,4 @@ void RackWTOsc::Process(const PicoSeqRackProcessData &data) {
                 break;
         }
     }
-}
-
-void RackWTOsc::prepareWavetables(HELPERS::ctagSampleRom *sampleRom) {
-    // AUDIO-THREAD: called from Process() on bank change.
-    // ESP_LOGI("DrumRackWTOsc", "prepareWavetables bank=%d\n", currentBank);
-
-    // precalculates wavetable data according to https://www.dafx12.york.ac.uk/papers/dafx12_submission_69.pdf
-    // plaits uses integrated wavetable synthesis, i.e. integrated wavetables, order K=1 (one integration), N=1 (linear interpolation)
-    // check if sample rom seems to have current bank
-    if(!sampleRom->HasSliceGroup(currentBank * 64, currentBank * 64 + 63)){
-        isWaveTableGood = false;
-        return;
-    }
-    int size = sampleRom->GetSliceGroupSize(currentBank * 64, currentBank * 64 + 63);
-    if(size != 256*64){
-        isWaveTableGood = false;
-        return;
-    }
-    int bankOffset = currentBank*64;
-    int bufferOffset = 4*64; // load sample data into buffer at offset, due to pre-calculation each wave will be 260 words long
-    sampleRom->ReadSlice(&buffer[bufferOffset], bankOffset, 0, 256*64);
-    // start conversion of data
-    // 64 wavetables per bank
-    int c = 0;
-    for(int i=0;i<64;i++){ // iterate all waves
-        int startOffset = bufferOffset + i*256; // which wave
-        // prepare long array, i.e. x = numpy.array(list(wave) * 2 + wave[0] + wave[1] + wave[2] + wave[3])
-        float sum4 = buffer[startOffset] + buffer[startOffset+1] + buffer[startOffset+2] + buffer[startOffset+3]; // add dc
-        for(int j=0;j<512;j++){
-            fbuffer[j] = buffer[startOffset + (j%256)] + sum4;
-        }
-        // x -= x.mean()
-        removeMeanOfFloatArray(fbuffer, 512);
-        // x /= numpy.abs(x).max()
-        scaleFloatArrayToAbsMax(fbuffer, 512);
-        // x = numpy.cumsum(x)
-        accumulateFloatArray(fbuffer, 512);
-        // x -= x.mean()
-        removeMeanOfFloatArray(fbuffer, 512);
-        // create pointer map
-        wavetables[i] = &buffer[c];
-        // x = numpy.round(x * (4 * 32768.0 / WAVETABLE_SIZE)
-        for(int j=512-256-4;j<512;j++){
-            int16_t v = static_cast<int16_t >(roundf(fbuffer[j] * 4.f * 32768.f / 256.f));
-            buffer[c++] = v;
-        }
-    }
-    isWaveTableGood = true;
 }

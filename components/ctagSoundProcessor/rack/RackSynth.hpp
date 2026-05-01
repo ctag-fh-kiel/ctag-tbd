@@ -50,6 +50,7 @@ namespace CTAG {
             int midi_channel;
             int cc_base;
             ctagSoundProcessorPicoSeqRack *rack;
+            HELPERS::ctagSampleRom *sampleRom;
         };
     }
 }
