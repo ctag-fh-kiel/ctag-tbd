@@ -1636,8 +1636,7 @@
         { "id": "mtype",  "name": "Mod Type",  "type": "cc",   "ctrl": 20, "def":    0 },
         { "id": "mdpth",  "name": "Mod Depth", "type": "nrpm", "ctrl": 21, "def":    0 },
         { "id": "mrate",  "name": "Mod Rate",  "type": "nrpm", "ctrl": 22, "def": 8000 },
-        { "id": "msnap",  "name": "Mod Snap",  "type": "cc",   "ctrl": 23, "def":    0 },
-        { "id": "easter", "name": "Easter",    "type": "cc",   "ctrl": 24, "def":    0 }
+        { "id": "msnap",  "name": "Mod Snap",  "type": "cc",   "ctrl": 23, "def":    0 }
       ]
     },
     {
