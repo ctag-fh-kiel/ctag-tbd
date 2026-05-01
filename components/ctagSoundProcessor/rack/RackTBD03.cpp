@@ -178,19 +178,34 @@ void RackTBD03::Process(const PicoSeqRackProcessData &data) {
     }
     td3_osc.set_parameters(parameters[0], parameters[1]);
 
-    // pitch calculation and quantization
+    // pitch calculation and quantization with TB-303-style slide.
+    //
+    // When Slide is on, the pitch smooths from the previous block's
+    // pitch toward the current note's pitch via a one-pole IIR with
+    // alpha = 1 - fSlideLevel. fSlideLevel defaults to 0.9 (slide_level
+    // not exposed in the macro yet — could be a Page 4 param if a
+    // slot opens up; for now hardcoded blend gives ~7 ms time constant
+    // at BUF_SZ=32 / 44.1 kHz, in the ballpark of TB-303 slide feel).
+    //
+    // First-note guard: pre_pitch_val starts at 0 (= MIDI note 0,
+    // C-1). The `pre_pitch_val > 0.5f` check skips smoothing on the
+    // very first note so the user doesn't hear an upward chirp from
+    // C-1 to wherever they're playing. After that first note, the
+    // running smoothed pitch is always > 0 in any practical voicing.
+    //
+    // When Slide is off, snap pre_pitch_val to the target so the
+    // next note with slide on starts from the actual previous note's
+    // landing pitch (not a stale smoothed value from before the
+    // slide-off period).
     MK_BOOL_PAR_NOCV(isSlide, td3_slide)
     MK_FLT_PAR_ABS_NOCV(fSlideLevel, td3_slide_level, 4095.f, 0.099f)
-    fSlideLevel += 0.9f;
-    int32_t ipitch = 0; // midi_freq * 128.0f;
-    // if (cv_td3_pitch != -1) {
-    float fPitch = midi_note; //  data.cv[cv_td3_pitch] * 12.f * 5.f; // five octaves
-    // // if(isSlide){
-    // //     fPitch = fSlideLevel * td3_pre_pitch_val + (1.f - fSlideLevel) * fPitch;
-    // // }
-    // td3_pre_pitch_val = fPitch;
-    ipitch += static_cast<int32_t>(fPitch * 128.f);
-    // }
+    fSlideLevel += 0.9f;  // 0.9..0.999 — IIR retention factor
+    float fPitch = (float)midi_note;
+    if (isSlide && td3_pre_pitch_val > 0.5f) {
+        fPitch = fSlideLevel * td3_pre_pitch_val + (1.f - fSlideLevel) * fPitch;
+    }
+    td3_pre_pitch_val = fPitch;
+    int32_t ipitch = static_cast<int32_t>(fPitch * 128.f);
     CONSTRAIN(ipitch, 0, 16383);
     td3_osc.set_pitch(ipitch);
 
