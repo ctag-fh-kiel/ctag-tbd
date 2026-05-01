@@ -27,7 +27,7 @@
       "parameters": [
         { "idx": 6,  "name": "Cutoff", "def": 127, "min": 0, "max": 127, "res": 64,  "ui": "filtercutoff", "curve": "log" },
         { "idx": 7,  "name": "Reso",   "def": 0,   "min": 0, "max": 127, "res": 64,  "ui": "filterq" },
-        { "idx": 9,  "name": "FType",  "def": 32,  "min": 0, "max": 127, "res": 32,  "ui": "filtertype" },
+        { "idx": 9,  "name": "FType",  "def": 32,  "min": 0, "max": 127, "res": 32,  "ui": "filtermode" },
         { "idx": 10, "name": "BitCr",  "def": 0,   "min": 0, "max": 14,  "res": 128, "ui": "bitcr" }
       ]
     },
