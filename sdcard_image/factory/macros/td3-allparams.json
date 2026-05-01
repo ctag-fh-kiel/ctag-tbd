@@ -125,7 +125,7 @@
           "min": 0,
           "max": 1,
           "res": 64,
-          "ui": "onoff"
+          "ui": "td3accent"
         }
       ]
     },
