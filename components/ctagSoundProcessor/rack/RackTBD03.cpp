@@ -199,10 +199,14 @@ void RackTBD03::Process(const PicoSeqRackProcessData &data) {
     td3_osc.Render(td3_sync, buffer, BUF_SZ);
 
     // apply filter and EGs
-    int ftype = (td3_filter_type * 4) / 4096;
-    // if (cv_td3_filter_type != -1) {
-    //     ftype = static_cast<int>(fabsf(data.cv[cv_td3_filter_type]) * 5.f);
-    // }
+    // 5 filter types (0..4 — Pirkle ZDF+boost / Karlson / Blaukraut /
+    // Pirkle ZDF / Zavalishin). The previous `* 4 / 4096` divisor only
+    // reached 3 at full atomic travel, leaving filter 4 (Zavalishin)
+    // unreachable. The macro now exposes max:4 mul:31 (small-enum
+    // pattern from UX PRINCIPLE #4: floor(127/(N-1)) = 31 for N=5),
+    // so atomic spans 0..3968 across the 5 source steps. `* 5 / 4096`
+    // produces 0..4.84, rounded to 0..4 cleanly.
+    int ftype = (td3_filter_type * 5) / 4096;
     CONSTRAIN(ftype, 0, 4)
 
     // Cutoff log-mapped 20 Hz..22 kHz — the previous linear formula

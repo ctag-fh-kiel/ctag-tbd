@@ -5,6 +5,49 @@
   "volmult": 0.3,
   "groups": [
     {
+      "name": "Filter",
+      "parameters": [
+        {
+          "idx": 4,
+          "name": "Cutoff",
+          "def": 5000,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "percent",
+          "curve": "log"
+        },
+        {
+          "idx": 5,
+          "name": "Reso",
+          "def": 3000,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "filterq"
+        },
+        {
+          "idx": 6,
+          "name": "Env Amt",
+          "def": 10000,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "percent"
+        },
+        {
+          "idx": 3,
+          "name": "VCF Dec",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 1024,
+          "ui": "envdecay",
+          "curve": "exp"
+        }
+      ]
+    },
+    {
       "name": "Osc",
       "parameters": [
         {
@@ -46,59 +89,8 @@
       ]
     },
     {
-      "name": "Filter",
-      "parameters": [
-        {
-          "idx": 4,
-          "name": "Cutoff",
-          "def": 5000,
-          "min": 0,
-          "max": 16383,
-          "res": 2048,
-          "ui": "percent",
-          "curve": "log"
-        },
-        {
-          "idx": 5,
-          "name": "Reso",
-          "def": 3000,
-          "min": 0,
-          "max": 16383,
-          "res": 2048,
-          "ui": "filterq"
-        },
-        {
-          "idx": 7,
-          "name": "Type",
-          "def": 0,
-          "min": 0,
-          "max": 3,
-          "res": 64,
-          "ui": "bignum"
-        },
-        {
-          "idx": 9,
-          "name": "Drive",
-          "def": 0,
-          "min": 0,
-          "max": 16383,
-          "res": 2048,
-          "ui": "bignum"
-        }
-      ]
-    },
-    {
       "name": "Mod",
       "parameters": [
-        {
-          "idx": 6,
-          "name": "Env Amt",
-          "def": 10000,
-          "min": 0,
-          "max": 16383,
-          "res": 2048,
-          "ui": "bignum"
-        },
         {
           "idx": 13,
           "name": "Tim EG",
@@ -124,32 +116,7 @@
           "min": 0,
           "max": 16383,
           "res": 2048,
-          "ui": "bignum"
-        }
-      ]
-    },
-    {
-      "name": "Env",
-      "parameters": [
-        {
-          "idx": 2,
-          "name": "VCA Dec",
-          "def": 3000,
-          "min": 0,
-          "max": 16383,
-          "res": 1024,
-          "ui": "envdecay",
-          "curve": "exp"
-        },
-        {
-          "idx": 3,
-          "name": "VCF Dec",
-          "def": 0,
-          "min": 0,
-          "max": 16383,
-          "res": 1024,
-          "ui": "envdecay",
-          "curve": "exp"
+          "ui": "td3acclev"
         },
         {
           "idx": 11,
@@ -159,6 +126,48 @@
           "max": 1,
           "res": 64,
           "ui": "onoff"
+        }
+      ]
+    },
+    {
+      "name": "Perf",
+      "parameters": [
+        {
+          "idx": 7,
+          "name": "Type",
+          "def": 0,
+          "min": 0,
+          "max": 4,
+          "res": 32,
+          "ui": "td3ftype"
+        },
+        {
+          "idx": 9,
+          "name": "Drive",
+          "def": 0,
+          "min": 0,
+          "max": 16383,
+          "res": 2048,
+          "ui": "td3drive"
+        },
+        {
+          "idx": 10,
+          "name": "Slide",
+          "def": 0,
+          "min": 0,
+          "max": 1,
+          "res": 64,
+          "ui": "onoff"
+        },
+        {
+          "idx": 2,
+          "name": "VCA Dec",
+          "def": 3000,
+          "min": 0,
+          "max": 16383,
+          "res": 1024,
+          "ui": "envdecay",
+          "curve": "exp"
         }
       ]
     }
@@ -258,7 +267,7 @@
       "add": [
         {
           "src": 7,
-          "mul": 32,
+          "mul": 31,
           "div": 1
         }
       ]
@@ -282,6 +291,18 @@
       "add": [
         {
           "src": 9,
+          "mul": 1,
+          "div": 1
+        }
+      ]
+    },
+    {
+      "ctrl": 18,
+      "type": "cc",
+      "start": 0,
+      "add": [
+        {
+          "src": 10,
           "mul": 1,
           "div": 1
         }
