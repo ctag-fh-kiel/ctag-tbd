@@ -67,8 +67,8 @@
     },
     {
       "index": 11,
-      "preset": "tbdait-all-def",
-      "_name": "Lead2    — TBDaits DX7 (tbdait)"
+      "preset": "wtosc-all-def",
+      "_name": "Lead2    — Wavetable Osc (wtosc)"
     },
     {
       "index": 12,

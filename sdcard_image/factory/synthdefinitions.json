@@ -1384,11 +1384,11 @@
           "def": 0
         },
         {
-          "id": "qscale",
-          "name": "Q Scale",
-          "type": "cc",
+          "id": "gain",
+          "name": "Gain",
+          "type": "nrpm",
           "ctrl": 14,
-          "def": 0
+          "def": 64
         },
         {
           "id": "attack",
@@ -1457,36 +1457,29 @@
           "id": "l2wave",
           "name": "L2 Wave",
           "type": "nrpm",
-          "ctrl": 25,
+          "ctrl": 24,
           "def": 0
         },
         {
           "id": "l2am",
           "name": "L2 AM",
           "type": "nrpm",
-          "ctrl": 26,
+          "ctrl": 25,
           "def": 0
         },
         {
           "id": "l2fm",
           "name": "L2 FM",
           "type": "nrpm",
-          "ctrl": 27,
+          "ctrl": 26,
           "def": 0
         },
         {
           "id": "l2filt",
           "name": "L2 Filt",
           "type": "nrpm",
-          "ctrl": 28,
+          "ctrl": 27,
           "def": 0
-        },
-        {
-          "id": "gain",
-          "name": "Gain",
-          "type": "nrpm",
-          "ctrl": 29,
-          "def": 64
         }
       ]
     },

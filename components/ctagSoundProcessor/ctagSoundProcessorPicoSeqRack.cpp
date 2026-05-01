@@ -917,6 +917,7 @@ void ctagSoundProcessorPicoSeqRack::Init(std::size_t blockSize, void* blockPtr){
 
     PickSeqRackInitData dri;
     dri.rack = this;
+    dri.sampleRom = &sampleRom;
 
     // ESP_LOGI("ctagSoundProcessorPicoSeqRack", "Dummy -2");
 
@@ -1763,6 +1764,10 @@ void ctagSoundProcessorPicoSeqRack::handleMidiNoteOn(const uint8_t channel, uint
         }
     }
     else if (channel == 3) {
+        if (ch12_wtosc.enabled) {
+            if (velocity > 0) ch12_wtosc.noteOn(note, velocity);
+            else              ch12_wtosc.noteOff(note, 0);
+        }
         if (ch12_mo.enabled) {
             // printf("ch12_mo triggered by note %d, velocity %d\n", note, velocity);
             if (velocity > 0) {
