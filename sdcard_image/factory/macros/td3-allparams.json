@@ -13,7 +13,7 @@
           "def": 2,
           "min": 0,
           "max": 46,
-          "res": 64,
+          "res": 10,
           "ui": "macroshape"
         },
         {
@@ -55,7 +55,7 @@
           "min": 0,
           "max": 16383,
           "res": 2048,
-          "ui": "filtercutoff",
+          "ui": "percent",
           "curve": "log"
         },
         {

@@ -132,8 +132,12 @@ void RackTBD03::Process(const PicoSeqRackProcessData &data) {
     }
     float egvalVCF = td3_adVCF.Process();
 
-    // shape
-    int s = td3_shape * 47 / 4096;
+    // shape — divisor matches RackMO.cpp:101 so all 47 Braids macro
+    // shapes are reachable at full macro travel and each macro-source
+    // increment of 1 advances exactly one shape (no jumping by 2-3 as
+    // the previous `* 47 / 4096` divisor produced — that one only
+    // reached 17 of 47 shapes and stepped fractionally per click).
+    int s = td3_shape * 128 / 4096;
     // if (cv_td3_shape != -1) {
     //     s = fabsf(data.cv[cv_td3_shape]) * (braids::MacroOscillatorShape::MACRO_OSC_SHAPE_LAST_ACCESSIBLE_FROM_META + 1);
     // }
@@ -201,12 +205,17 @@ void RackTBD03::Process(const PicoSeqRackProcessData &data) {
     // }
     CONSTRAIN(ftype, 0, 4)
 
-    float c = td3_cutoff / 4095.f;
-    // if (cv_td3_cutoff != -1) {
-    //     c = fabsf(data.cv[cv_td3_cutoff]);
-    // }
-    c *= 27000.f;
-    c -= 5000.f;
+    // Cutoff log-mapped 20 Hz..22 kHz — the previous linear formula
+    // `c = 27000 * x - 5000` (clamped to [20, 22000]) wasted the bottom
+    // 18.6% of the knob (silently below 20 Hz) and compressed 20-150 Hz
+    // into 0.5% of travel. Reporter heard "stepping artifacts" in that
+    // dead zone, which were the linear quantisation showing through —
+    // log mapping collapses those to ~3 cents per atomic step.
+    // 1100 ≈ 22000/20, so cnorm=0 → 20 Hz, cnorm=1 → 22 kHz; equal
+    // octaves per fraction of knob travel.
+    float cnorm = td3_cutoff / 4095.f;
+    CONSTRAIN(cnorm, 0.f, 1.f)
+    float c = 20.f * powf(1100.f, cnorm);
     float fenv = td3_envelope / 4095.f;
     // if (cv_td3_envelope != -1) {
     //     fenv = fabsf(data.cv[cv_td3_envelope]);
