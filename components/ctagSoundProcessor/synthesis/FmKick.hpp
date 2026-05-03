@@ -25,6 +25,7 @@ public:
     Params params;
 
 private:
+    static constexpr float dt = 32.0f / 44100.f;
     // Ratio mode for modulator frequency
     int ratio_index = 0; // Index into ratio array
     static constexpr int num_ratios = 64;

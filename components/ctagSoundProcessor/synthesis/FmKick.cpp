@@ -17,14 +17,17 @@ void FmKick::Init() {
 
 void FmKick::Trigger() {
     Init();
+    const float safe_db = (params.d_b < 0.001f) ? 0.001f : params.d_b;
+    const float safe_dm = (params.d_m < 0.001f) ? 0.001f : params.d_m;
+    const float safe_df = (params.d_f < 0.001f) ? 0.001f : params.d_f;
     // Calculate decay constants for iterative envelopes WITHOUT std::expf
-    float dt = 32.0f / 44100.f; // Assuming 44100Hz sample rate and 32 samples per block
     // For small x, exp(-x) ≈ 1 - x
-    amp_decay_const = 1.0f - (dt / params.d_b);
-    mod_decay_const = 1.0f - (dt / params.d_m);
-    freq_decay_const = 1.0f - (dt / params.d_f);
+    amp_decay_const   = 1.0f - (dt / safe_db);
+    mod_decay_const   = 1.0f - (dt / safe_dm);
+    freq_decay_const  = 1.0f - (dt / safe_df);
     // Clamp to [0,1] to avoid negative decay in pathological cases
-    if (amp_decay_const < 0.0f) amp_decay_const = 0.0f;
+    if (amp_decay_const  < 0.0f) amp_decay_const  = 0.0f;
+    if (mod_decay_const  < 0.0f) mod_decay_const  = 0.0f;
     if (freq_decay_const < 0.0f) freq_decay_const = 0.0f;
 }
 
@@ -56,7 +59,11 @@ void FmKick::Process(float* out, uint32_t size) {
         ops, f, a, fb_state, fb_amt, nullptr, out, size);
 
     // Iterative decay
-    amp_env *= amp_decay_const;
-    mod_env *= mod_decay_const;
+    amp_env  *= amp_decay_const;
+    mod_env  *= mod_decay_const;
     freq_env *= freq_decay_const;
+    // Kill denormals before they accumulate
+    if (amp_env  < 1e-6f) amp_env  = 0.0f;
+    if (mod_env  < 1e-6f) mod_env  = 0.0f;
+    if (freq_env < 1e-6f) freq_env = 0.0f;
 }
