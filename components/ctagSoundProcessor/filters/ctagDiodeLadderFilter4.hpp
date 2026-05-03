@@ -42,7 +42,7 @@ namespace CTAG::SP::HELPERS {
 
     private:
         static float clip(const float x) {
-            return x / (1 + abs(x));
+            return x / (1 + fabs(x));
         }
 
         float k, A;

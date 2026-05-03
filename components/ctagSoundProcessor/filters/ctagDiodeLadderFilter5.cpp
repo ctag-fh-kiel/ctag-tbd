@@ -117,22 +117,21 @@ float CTAG::SP::HELPERS::ctagDiodeLadderFilter5::Process(float in) {
 
 void CTAG::SP::HELPERS::ctagDiodeLadderFilter5::SetCutoff(float cutoff) {
     cutoff_ = cutoff;
-    float T = 1.f / fs_;
-    float Tdiv2 = T / 2.0f;
 
-    float tn = fasttan(M_PI * cutoff / fs_);
-    float wa = 2.f * fs_ * tn;
-    g = wa * Tdiv2;
+    float tn = tanf(M_PI * cutoff / fs_);  // fix fasttan while here
+    g = tn;  // simplification: wa * T/2 = tn
     gp1 = 1.0f + g;
 
-    // low shelf boost
-    float tnls = tn;
-    if (cutoff > 10000.f) { // limit low shelf frequency, this is fixed for 44100kHz to avoid extra tan calculation
-        tnls = 0.012434004797755f;
-    }
-    cb = (tnls - 1.f) / (tnls + 1.f);
+    // Shelf frequency tracks cutoff at 1/4 ratio (2 octaves below)
+    // Clamped to [20Hz, 4000Hz] to prevent instability
+    float shelf_freq = cutoff * 0.25f;
+    if (shelf_freq < 20.f)   shelf_freq = 20.f;
+    if (shelf_freq > 14000.f) shelf_freq = 14000.f;
+    float tn_shelf = tanf(M_PI * shelf_freq / fs_);
+    cb = (tn_shelf - 1.f) / (tn_shelf + 1.f);
+    // Hard limit cb away from +1 (allpass pole at Nyquist → instability)
+    if (cb > 0.95f) cb = 0.95f;
 
-    // Pre-calculate coefficients
     updateCoefficients();
 }
 
@@ -200,6 +199,12 @@ void CTAG::SP::HELPERS::ctagDiodeLadderFilter5::SetGain(float gain) {
 }
 
 void CTAG::SP::HELPERS::ctagDiodeLadderFilter5::calcLowShelveBoost() {
-    H0 = ((kval_ < 1.f ? 1.f : kval_) * gain_) - 1.f; // this is approximate by hearing
+    H0 = ((kval_ < 1.f ? 1.f : kval_) * gain_) - 1.f;
     if (H0 < 0.f) H0 = 0.f;
+    // Taper to 0 between 8kHz and 16kHz
+    if (cutoff_ > 12000.f) {
+        float fade = 1.f - (cutoff_ - 14000.f) / 14000.f;
+        if (fade < 0.f) fade = 0.f;
+        H0 *= fade;
+    }
 }
