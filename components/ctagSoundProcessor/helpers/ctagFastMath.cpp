@@ -53,7 +53,7 @@ namespace CTAG::SP::HELPERS {
 #define TAN_C2 -12.5288887278448f
 #define TAN_C3 269.7350131214121f
 #define TAN_C4 -71.4145309347748f
-        int octant = (int) x / PI_4;
+        int octant = (int) (x / PI_4);
         float v = octant == 0 ? (x * FOUR_OVER_PI) : ((PI_2 - x) * FOUR_OVER_PI);
         float v2 = v * v;
         v = v * (TAN_C1 + TAN_C2 * v2) / (TAN_C3 + v2 * (TAN_C4 + v2));
