@@ -118,7 +118,8 @@ float CTAG::SP::HELPERS::ctagDiodeLadderFilter5::Process(float in) {
 void CTAG::SP::HELPERS::ctagDiodeLadderFilter5::SetCutoff(float cutoff) {
     cutoff_ = cutoff;
 
-    float tn = tanf(M_PI * cutoff / fs_);  // fix fasttan while here
+    //float tn = tanf(M_PI * cutoff / fs_);  // fix fasttan while here
+    float tn = fasttan(M_PI * cutoff / fs_);  // fix fasttan while here
     g = tn;  // simplification: wa * T/2 = tn
     gp1 = 1.0f + g;
 
@@ -202,7 +203,7 @@ void CTAG::SP::HELPERS::ctagDiodeLadderFilter5::calcLowShelveBoost() {
     H0 = ((kval_ < 1.f ? 1.f : kval_) * gain_) - 1.f;
     if (H0 < 0.f) H0 = 0.f;
     // Taper to 0 between 8kHz and 16kHz
-    if (cutoff_ > 12000.f) {
+    if (cutoff_ > 14000.f) {
         float fade = 1.f - (cutoff_ - 14000.f) / 14000.f;
         if (fade < 0.f) fade = 0.f;
         H0 *= fade;
