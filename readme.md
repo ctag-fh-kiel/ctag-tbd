@@ -2,10 +2,11 @@
 
 ![CTAG-TBD](tbd.png)
 
-## Documentation (in the works):
-[Summary table](https://docs.google.com/spreadsheets/d/1dBZtuBIdtgMqoRruYX-VDdDirdTQ6RD-oz-j79q-bmQ/edit?usp=sharing) of all available plugins.
-Documentation on TBD usage can be found [here (Google Docs)](https://docs.google.com/document/d/1c8mjxWjdiJNP0xpkU2CxRUp9av6V4W39wARJf3_SMSo/edit?usp=sharing)
-Tutorial videos in [YouTube playlist](https://www.youtube.com/playlist?list=PLB5iCbhcvJ2qdD7s1o9wsvQ9qtsCUWVLR)
+## Documentation:
+- [Summary table](https://docs.google.com/spreadsheets/d/1dBZtuBIdtgMqoRruYX-VDdDirdTQ6RD-oz-j79q-bmQ/edit?usp=sharing) of all available plugins.
+- Documentation on TBD usage can be found [here (Google Docs)](https://docs.google.com/document/d/1c8mjxWjdiJNP0xpkU2CxRUp9av6V4W39wARJf3_SMSo/edit?usp=sharing).
+- Tutorial videos in [YouTube playlist](https://www.youtube.com/playlist?list=PLB5iCbhcvJ2qdD7s1o9wsvQ9qtsCUWVLR).
+- The evolution of TBD [Video from ADCx Copenhagen 2026](https://www.youtube.com/watch?v=lNZ0LEXkqIE&t=11148s).
 
 ## Update procedure
 Easiest way to update is to use the ready made [releases from github](https://github.com/ctag-fh-kiel/ctag-tbd/releases).
@@ -76,4 +77,19 @@ Or use [ESP Tool](https://github.com/espressif/esptool) to flash through a USB c
 If you have [ESP IDF](https://github.com/espressif/esp-idf) installed (the whole development environment), use:
 ```sh
 idf.py flash monitor
+```
+
+## Citation
+If you use this software or reference its development, please cite:
+
+```bibtex
+@misc{manzke2026ctagtbd,
+  author       = {Robert Manzke},
+  title        = {{CTAG-TBD: ESP32-Based Open-Source Audio Platform}},
+  year         = {2026},
+  howpublished = {Presented at ADCx Copenhagen 2026},
+  note         = {Conference schedule and recorded presentation available online},
+  url          = {https://audio.dev/adcx-copenhagen-26/schedule/},
+  video        = {https://www.youtube.com/watch?v=lNZ0LEXkqIE&t=11148s}
+}
 ```
