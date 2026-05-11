@@ -5,9 +5,9 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 4 6
 Title "ESP32 Eurorack Audio Module"
-Date "2020-08-18"
-Rev "G"
-Comp "(c) Robert Manzke 2020"
+Date "2021-10-05"
+Rev "H"
+Comp "(c) Robert Manzke 2021"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
 Comment3 ""
@@ -411,35 +411,29 @@ F 3 "~" H 2800 3900 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4700 4000 4500 4000
-Wire Wire Line
-	4700 4200 4700 4000
-Wire Wire Line
-	4500 4200 4700 4200
-Wire Wire Line
-	4950 4350 4950 4400
+	4650 4350 4650 4450
 $Comp
 L power:GND #PWR0415
 U 1 1 5B690874
-P 4950 4400
-F 0 "#PWR0415" H 4950 4150 50  0001 C CNN
-F 1 "GND" H 4955 4227 50  0000 C CNN
-F 2 "" H 4950 4400 50  0001 C CNN
-F 3 "" H 4950 4400 50  0001 C CNN
-	1    4950 4400
+P 4650 4650
+F 0 "#PWR0415" H 4650 4400 50  0001 C CNN
+F 1 "GND" H 4655 4477 50  0000 C CNN
+F 2 "" H 4650 4650 50  0001 C CNN
+F 3 "" H 4650 4650 50  0001 C CNN
+	1    4650 4650
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	4950 4000 4950 4050
+	4650 4000 4650 4050
 $Comp
 L Device:C C407
 U 1 1 5B68F2EB
-P 4950 4200
-F 0 "C407" H 5065 4246 50  0000 L CNN
-F 1 "10u" H 5065 4155 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0402_1005Metric" H 4988 4050 50  0001 C CNN
-F 3 "~" H 4950 4200 50  0001 C CNN
-	1    4950 4200
+P 4650 4200
+F 0 "C407" H 4765 4246 50  0000 L CNN
+F 1 "10u" H 4765 4155 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 4688 4050 50  0001 C CNN
+F 3 "~" H 4650 4200 50  0001 C CNN
+	1    4650 4200
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -466,11 +460,6 @@ F 3 "~" H 2800 4200 50  0001 C CNN
 	1    2800 4200
 	1    0    0    -1  
 $EndComp
-Connection ~ 3150 4400
-Wire Wire Line
-	3150 4100 3150 4400
-Wire Wire Line
-	3350 4100 3150 4100
 $Comp
 L power:GND #PWR0416
 U 1 1 5B6884A3
@@ -482,29 +471,9 @@ F 3 "" H 3150 4450 50  0001 C CNN
 	1    3150 4450
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3250 4200 3250 4000
-Wire Wire Line
-	3350 4200 3250 4200
 Connection ~ 3250 4000
 Wire Wire Line
 	3350 4000 3250 4000
-Connection ~ 4700 4000
-Wire Wire Line
-	4950 4000 4700 4000
-$Comp
-L ESP32-Eurorack-Audio-rescue:ADP7118-user U?
-U 1 1 5B683013
-P 3550 4000
-AR Path="/5B683013" Ref="U?"  Part="1" 
-AR Path="/5B69D53C/5B683013" Ref="U402"  Part="1" 
-F 0 "U402" H 3925 4315 50  0000 C CNN
-F 1 "ADP7118" H 3925 4224 50  0000 C CNN
-F 2 "Package_TO_SOT_SMD:TSOT-23-5" H 3900 3650 50  0001 C CNN
-F 3 "" H 3550 4000 50  0001 C CNN
-	1    3550 4000
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	2800 2800 3250 2800
 Wire Wire Line
@@ -515,45 +484,19 @@ Wire Wire Line
 $Comp
 L power:+3.3VA #PWR0414
 U 1 1 5B6A656B
-P 4950 3850
-F 0 "#PWR0414" H 4950 3700 50  0001 C CNN
-F 1 "+3.3VA" H 4965 4023 50  0000 C CNN
-F 2 "" H 4950 3850 50  0001 C CNN
-F 3 "" H 4950 3850 50  0001 C CNN
-	1    4950 3850
+P 4650 3850
+F 0 "#PWR0414" H 4650 3700 50  0001 C CNN
+F 1 "+3.3VA" H 4665 4023 50  0000 C CNN
+F 2 "" H 4650 3850 50  0001 C CNN
+F 3 "" H 4650 3850 50  0001 C CNN
+	1    4650 3850
 	1    0    0    -1  
 $EndComp
-Connection ~ 4950 4000
+Connection ~ 4650 4000
 Wire Wire Line
-	4950 4000 4950 3850
-$Comp
-L Jumper:Jumper_2_Open JP401
-U 1 1 5DB17B7D
-P 6900 2800
-F 0 "JP401" H 6900 3035 50  0000 C CNN
-F 1 "Jumper_2_Open" H 6900 2944 50  0000 C CNN
-F 2 "Jumper:SolderJumper-2_P1.3mm_Open_TrianglePad1.0x1.5mm" H 6900 2800 50  0001 C CNN
-F 3 "~" H 6900 2800 50  0001 C CNN
-	1    6900 2800
-	1    0    0    -1  
-$EndComp
+	4650 4000 4650 3850
 Wire Wire Line
 	5500 2800 6050 2800
-Wire Wire Line
-	7100 2800 7400 2800
-Wire Wire Line
-	7400 2800 7400 2650
-$Comp
-L power:+3.3VA #PWR0411
-U 1 1 5DB1D1D7
-P 7400 2650
-F 0 "#PWR0411" H 7400 2500 50  0001 C CNN
-F 1 "+3.3VA" H 7415 2823 50  0000 C CNN
-F 2 "" H 7400 2650 50  0001 C CNN
-F 3 "" H 7400 2650 50  0001 C CNN
-	1    7400 2650
-	1    0    0    -1  
-$EndComp
 $Comp
 L Device:R R402
 U 1 1 5DBA3847
@@ -567,9 +510,6 @@ F 3 "~" H 6050 3050 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	6050 2800 6050 2900
-Connection ~ 6050 2800
-Wire Wire Line
-	6050 2800 6700 2800
 $Comp
 L Device:LED D403
 U 1 1 5DBA7FDC
@@ -609,4 +549,26 @@ F 3 "" H 2800 2400 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	2800 2800 2800 2400
+Wire Wire Line
+	4200 4000 4650 4000
+$Comp
+L special-ics:LD2981 U402
+U 1 1 615BEFE7
+P 3550 3900
+F 0 "U402" H 3775 4065 50  0000 C CNN
+F 1 "LD2981ABU33TR" H 3775 3974 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-89-3" H 3550 3900 50  0001 C CNN
+F 3 "" H 3550 3900 50  0001 C CNN
+	1    3550 3900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4200 4150 4350 4150
+Wire Wire Line
+	4350 4150 4350 4450
+Wire Wire Line
+	4350 4450 4650 4450
+Connection ~ 4650 4450
+Wire Wire Line
+	4650 4450 4650 4650
 $EndSCHEMATC

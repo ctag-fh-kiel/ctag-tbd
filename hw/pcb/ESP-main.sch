@@ -5,9 +5,9 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 6
 Title "ESP32 Eurorack Audio Module"
-Date "2020-08-18"
-Rev "G"
-Comp "(c) Robert Manzke 2020"
+Date "2021-10-05"
+Rev "H"
+Comp "(c) Robert Manzke 2021"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
 Comment3 ""
@@ -274,42 +274,31 @@ NoConn ~ 5150 3550
 NoConn ~ 5150 3650
 NoConn ~ 5150 3750
 $Comp
-L special-ics:MIC803 U201
-U 1 1 5CA3F4DA
-P 2950 2350
-F 0 "U201" H 2672 2596 50  0000 R CNN
-F 1 "MIC803" H 2672 2505 50  0000 R CNN
-F 2 "Package_TO_SOT_SMD:SOT-23" H 2950 2350 50  0001 C CNN
-F 3 "" H 2950 2350 50  0001 C CNN
-	1    2950 2350
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:+3.3V #PWR0202
 U 1 1 5CA450EC
-P 2950 1650
-F 0 "#PWR0202" H 2950 1500 50  0001 C CNN
-F 1 "+3.3V" H 2965 1823 50  0000 C CNN
-F 2 "" H 2950 1650 50  0001 C CNN
-F 3 "" H 2950 1650 50  0001 C CNN
-	1    2950 1650
+P 3400 1900
+F 0 "#PWR0202" H 3400 1750 50  0001 C CNN
+F 1 "+3.3V" H 3415 2073 50  0000 C CNN
+F 2 "" H 3400 1900 50  0001 C CNN
+F 3 "" H 3400 1900 50  0001 C CNN
+	1    3400 1900
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2950 1650 2950 1750
+	3400 1900 3400 2000
 $Comp
 L power:GND #PWR0208
 U 1 1 5CA47446
-P 2950 2700
-F 0 "#PWR0208" H 2950 2450 50  0001 C CNN
-F 1 "GND" H 2955 2527 50  0000 C CNN
-F 2 "" H 2950 2700 50  0001 C CNN
-F 3 "" H 2950 2700 50  0001 C CNN
-	1    2950 2700
+P 3400 2450
+F 0 "#PWR0208" H 3400 2200 50  0001 C CNN
+F 1 "GND" H 3405 2277 50  0000 C CNN
+F 2 "" H 3400 2450 50  0001 C CNN
+F 3 "" H 3400 2450 50  0001 C CNN
+	1    3400 2450
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	2950 2550 2950 2700
+	3400 2300 3400 2450
 Wire Wire Line
 	3750 2150 3400 2150
 $Comp
@@ -327,4 +316,17 @@ Text HLabel 7300 3350 2    50   BiDi ~ 0
 IO2
 Wire Wire Line
 	7300 3350 6900 3350
+$Comp
+L special-ics:CN61C U201
+U 1 1 61618AFA
+P 2750 1800
+F 0 "U201" H 3083 1965 50  0000 C CNN
+F 1 "CN61C" H 3083 1874 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 3000 1800 50  0001 C CNN
+F 3 "" H 3000 1800 50  0001 C CNN
+	1    2750 1800
+	1    0    0    -1  
+$EndComp
+Text Notes 2750 4900 1    50   ~ 0
+CN61CN33 consonance electronics http://www.consonance-elec.com/pdf/datasheet/DSE-CN61C.pdf\nor Torex XC61F
 $EndSCHEMATC

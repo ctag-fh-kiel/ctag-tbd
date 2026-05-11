@@ -5,9 +5,9 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 6
 Title "ESP32 Eurorack Audio Module"
-Date "2020-08-18"
-Rev "G"
-Comp "(c) Robert Manzke 2020"
+Date "2021-10-05"
+Rev "H"
+Comp "(c) Robert Manzke 2021"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
 Comment3 ""
@@ -155,7 +155,7 @@ U 1 1 5E5A5A08
 P 2600 4300
 F 0 "D101" H 2600 4797 50  0000 C CNN
 F 1 "WP154A4SUREQBFZGW" H 2250 4700 50  0000 C CNN
-F 2 "LED_THT:LED_D5.0mm-4_RGB" H 2600 4250 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm-4_RGB_Staggered_Pins" H 2600 4250 50  0001 C CNN
 F 3 "~" H 2600 4250 50  0001 C CNN
 	1    2600 4300
 	1    0    0    -1  
@@ -220,62 +220,7 @@ Connection ~ 3650 2950
 Wire Wire Line
 	3650 2950 3350 2950
 Text Label 3550 3700 0    50   ~ 0
-RST
-Wire Wire Line
-	8500 2750 8250 2750
-Wire Wire Line
-	8250 2750 8250 2650
-Wire Wire Line
-	8250 2650 8500 2650
-Wire Wire Line
-	8250 2650 8000 2650
-Connection ~ 8250 2650
-Text Label 8000 2650 0    50   ~ 0
-RST
-$Comp
-L Device:R R104
-U 1 1 5E9015EA
-P 8250 2400
-F 0 "R104" H 8320 2446 50  0000 L CNN
-F 1 "10k" H 8320 2355 50  0000 L CNN
-F 2 "Resistor_SMD:R_0402_1005Metric" V 8180 2400 50  0001 C CNN
-F 3 "~" H 8250 2400 50  0001 C CNN
-	1    8250 2400
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	8250 2550 8250 2650
-$Comp
-L power:+3.3V #PWR0103
-U 1 1 5E90752D
-P 8250 2100
-F 0 "#PWR0103" H 8250 1950 50  0001 C CNN
-F 1 "+3.3V" H 8265 2273 50  0000 C CNN
-F 2 "" H 8250 2100 50  0001 C CNN
-F 3 "" H 8250 2100 50  0001 C CNN
-	1    8250 2100
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	8250 2100 8250 2250
-$Comp
-L power:GND #PWR0105
-U 1 1 5E9097E9
-P 9250 2850
-F 0 "#PWR0105" H 9250 2600 50  0001 C CNN
-F 1 "GND" H 9255 2677 50  0000 C CNN
-F 2 "" H 9250 2850 50  0001 C CNN
-F 3 "" H 9250 2850 50  0001 C CNN
-	1    9250 2850
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9100 2650 9250 2650
-Wire Wire Line
-	9250 2650 9250 2750
-Wire Wire Line
-	9100 2750 9250 2750
-Connection ~ 9250 2750
+IO23
 Text Label 6000 2800 0    50   ~ 0
 SCLK
 Text Label 6000 2900 0    50   ~ 0
@@ -284,22 +229,6 @@ Wire Wire Line
 	5800 2800 6600 2800
 Wire Wire Line
 	5800 2900 6600 2900
-$Comp
-L Switch:SW_DIP_x02 SW101
-U 1 1 5E8F9FEC
-P 8800 2750
-F 0 "SW101" H 8800 3117 50  0000 C CNN
-F 1 "CAL" H 8800 3026 50  0000 C CNN
-F 2 "switches:PTS810" H 8800 2750 50  0001 C CNN
-F 3 "~" H 8800 2750 50  0001 C CNN
-	1    8800 2750
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9250 2750 9250 2850
-NoConn ~ 3800 3800
-Text Label 3550 3600 0    50   ~ 0
-EXCS
 $Comp
 L power:GND #PWR0106
 U 1 1 5EB69233
@@ -336,16 +265,14 @@ Wire Wire Line
 	8450 4000 8250 4000
 Wire Wire Line
 	8950 3900 9150 3900
-Wire Wire Line
-	8950 4000 9150 4000
 Text Label 9150 4000 2    50   ~ 0
-RST
+IO23
 Text Label 8250 3900 0    50   ~ 0
 SCLK
 Text Label 8250 4000 0    50   ~ 0
 MOSI
 Text Label 9150 3900 2    50   ~ 0
-EXCS
+IO5
 $Comp
 L Connector_Generic:Conn_02x05_Odd_Even J101
 U 1 1 5F12A94B
@@ -377,8 +304,80 @@ Text Label 8250 3800 0    50   ~ 0
 RXD
 Text Label 8250 3700 0    50   ~ 0
 TXD
-Text Label 9150 3800 2    50   ~ 0
-IO0
 Text Label 9150 3700 2    50   ~ 0
 EN
+Wire Wire Line
+	3800 3800 3550 3800
+Text Label 3550 3800 0    50   ~ 0
+IO2
+Text Label 9150 3800 2    50   ~ 0
+IO2
+Text Label 3550 3600 0    50   ~ 0
+IO5
+$Comp
+L Device:R R104
+U 1 1 615C8DFC
+P 9550 3750
+F 0 "R104" H 9620 3796 50  0000 L CNN
+F 1 "10k" H 9620 3705 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 9480 3750 50  0001 C CNN
+F 3 "~" H 9550 3750 50  0001 C CNN
+	1    9550 3750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9550 4000 9550 3900
+Wire Wire Line
+	8950 4000 9550 4000
+$Comp
+L power:+3.3V #PWR0105
+U 1 1 615CA249
+P 9550 3450
+F 0 "#PWR0105" H 9550 3300 50  0001 C CNN
+F 1 "+3.3V" H 9565 3623 50  0000 C CNN
+F 2 "" H 9550 3450 50  0001 C CNN
+F 3 "" H 9550 3450 50  0001 C CNN
+	1    9550 3450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9550 3450 9550 3600
+$Comp
+L special-ics:PUSHBTN SW101
+U 1 1 615EBE07
+P 10050 3850
+F 0 "SW101" H 10225 3965 50  0000 C CNN
+F 1 "PUSHBTN" H 10225 3874 50  0000 C CNN
+F 2 "switches:TactilePB_6x6" H 10050 3850 50  0001 C CNN
+F 3 "" H 10050 3850 50  0001 C CNN
+	1    10050 3850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9550 4000 9850 4000
+Connection ~ 9550 4000
+Wire Wire Line
+	9550 4000 9550 4150
+Wire Wire Line
+	9550 4150 9850 4150
+$Comp
+L power:GND #PWR0107
+U 1 1 615EE4ED
+P 10750 4200
+F 0 "#PWR0107" H 10750 3950 50  0001 C CNN
+F 1 "GND" H 10755 4027 50  0000 C CNN
+F 2 "" H 10750 4200 50  0001 C CNN
+F 3 "" H 10750 4200 50  0001 C CNN
+	1    10750 4200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10600 4150 10750 4150
+Wire Wire Line
+	10750 4150 10750 4200
+Wire Wire Line
+	10600 4000 10750 4000
+Wire Wire Line
+	10750 4000 10750 4150
+Connection ~ 10750 4150
 $EndSCHEMATC

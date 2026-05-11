@@ -5,9 +5,9 @@ $Descr A3 16535 11693
 encoding utf-8
 Sheet 6 6
 Title "ESP32 Eurorack Audio Module"
-Date "2020-08-18"
-Rev "G"
-Comp "(c) Robert Manzke 2020"
+Date "2021-10-05"
+Rev "H"
+Comp "(c) Robert Manzke 2021"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
 Comment3 ""
@@ -504,17 +504,6 @@ F 3 "" H 1550 4650 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	1550 4500 1550 4550
-$Comp
-L power:+3.3V #PWR0613
-U 1 1 5DBF03A4
-P 1550 3750
-F 0 "#PWR0613" H 1550 3600 50  0001 C CNN
-F 1 "+3.3V" H 1565 3923 50  0000 C CNN
-F 2 "" H 1550 3750 50  0001 C CNN
-F 3 "" H 1550 3750 50  0001 C CNN
-	1    1550 3750
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	1550 3750 1550 3850
 $Comp
@@ -847,17 +836,6 @@ Wire Wire Line
 	10800 5300 10800 5700
 NoConn ~ 12200 5300
 NoConn ~ 12200 5500
-$Comp
-L power:+3.3V #PWR0102
-U 1 1 5DD0C81D
-P 5150 7250
-F 0 "#PWR0102" H 5150 7100 50  0001 C CNN
-F 1 "+3.3V" H 5165 7423 50  0000 C CNN
-F 2 "" H 5150 7250 50  0001 C CNN
-F 3 "" H 5150 7250 50  0001 C CNN
-	1    5150 7250
-	1    0    0    -1  
-$EndComp
 Text HLabel 4250 3400 0    50   Input ~ 0
 VBIAS1
 Text HLabel 4250 5700 0    50   Input ~ 0
@@ -865,4 +843,26 @@ VBIAS2
 Wire Wire Line
 	5150 7250 5150 7350
 Connection ~ 5150 7350
+$Comp
+L power:+3.3VA #PWR0102
+U 1 1 615E7F53
+P 1550 3750
+F 0 "#PWR0102" H 1550 3600 50  0001 C CNN
+F 1 "+3.3VA" H 1565 3923 50  0000 C CNN
+F 2 "" H 1550 3750 50  0001 C CNN
+F 3 "" H 1550 3750 50  0001 C CNN
+	1    1550 3750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3VA #PWR0103
+U 1 1 615E968D
+P 5150 7250
+F 0 "#PWR0103" H 5150 7100 50  0001 C CNN
+F 1 "+3.3VA" H 5165 7423 50  0000 C CNN
+F 2 "" H 5150 7250 50  0001 C CNN
+F 3 "" H 5150 7250 50  0001 C CNN
+	1    5150 7250
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

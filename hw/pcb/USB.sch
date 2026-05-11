@@ -5,9 +5,9 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 3 6
 Title "ESP32 Eurorack Audio Module"
-Date "2020-08-18"
-Rev "G"
-Comp "(c) Robert Manzke 2020"
+Date "2021-10-05"
+Rev "H"
+Comp "(c) Robert Manzke 2021"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
 Comment3 ""
@@ -271,19 +271,6 @@ Wire Wire Line
 Wire Wire Line
 	3550 2000 3350 2000
 $Comp
-L Connector:USB_B_Micro J?
-U 1 1 5B81BF77
-P 3050 1900
-AR Path="/5B66F258/5B81BF77" Ref="J?"  Part="1" 
-AR Path="/5B81850F/5B81BF77" Ref="J301"  Part="1" 
-F 0 "J301" H 3105 2367 50  0000 C CNN
-F 1 "USB_B_Micro" H 3105 2276 50  0000 C CNN
-F 2 "Connector_USB:USB_Micro-B_Molex-105017-0001" H 3200 1850 50  0001 C CNN
-F 3 "~" H 3200 1850 50  0001 C CNN
-	1    3050 1900
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR?
 U 1 1 5B81BF7F
 P 3050 2650
@@ -367,4 +354,15 @@ Wire Wire Line
 	6300 1500 6200 1500
 Wire Wire Line
 	5900 1500 5600 1500
+$Comp
+L Connector:USB_B_Mini J301
+U 1 1 615C2579
+P 3050 1900
+F 0 "J301" H 3107 2367 50  0000 C CNN
+F 1 "USB_B_Mini" H 3107 2276 50  0000 C CNN
+F 2 "Connector_USB:USB_Mini-B_Tensility_54-00023_Vertical" H 3200 1850 50  0001 C CNN
+F 3 "~" H 3200 1850 50  0001 C CNN
+	1    3050 1900
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

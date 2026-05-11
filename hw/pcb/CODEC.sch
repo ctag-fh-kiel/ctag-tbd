@@ -5,9 +5,9 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 5 6
 Title "ESP32 Eurorack Audio Module"
-Date "2020-08-18"
-Rev "G"
-Comp "(c) Robert Manzke 2020"
+Date "2021-10-05"
+Rev "H"
+Comp "(c) Robert Manzke 2021"
 Comment1 "https://creativecommons.org/licenses/by-nc-sa/4.0/"
 Comment2 "Licensed under CC BY-NC-SA 4.0"
 Comment3 ""
@@ -122,11 +122,9 @@ Wire Wire Line
 	2350 4750 2350 4800
 Wire Wire Line
 	2350 4750 2750 4750
-Wire Wire Line
-	4050 1450 4300 1450
-Text Label 3550 1500 2    50   ~ 0
+Text Label 1900 850  3    50   ~ 0
 LOUT
-Text Label 4300 1450 2    50   ~ 0
+Text Label 2000 850  3    50   ~ 0
 ROUT
 Text Label 2750 4750 2    50   ~ 0
 VMID
@@ -705,8 +703,6 @@ Wire Wire Line
 Connection ~ 5750 3950
 Wire Wire Line
 	5750 3950 5750 4550
-Wire Wire Line
-	3700 4450 3400 4450
 Text Label 3050 4450 0    50   ~ 0
 ROUT
 $Comp
@@ -909,8 +905,6 @@ Wire Wire Line
 Wire Wire Line
 	7150 2950 7150 3100
 Connection ~ 7150 3100
-Wire Wire Line
-	3350 1500 3550 1500
 $Comp
 L power:GND #PWR0507
 U 1 1 5B7BD050
@@ -1185,28 +1179,8 @@ Wire Wire Line
 Connection ~ 10700 2950
 Wire Wire Line
 	10700 2950 10900 2950
-$Comp
-L Device:Jumper JP503
-U 1 1 5DD9E741
-P 3800 3950
-F 0 "JP503" H 3800 4123 50  0000 C CNN
-F 1 "~" H 3800 4123 50  0000 C CNN
-F 2 "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm" H 3800 3950 50  0001 C CNN
-F 3 "~" H 3800 3950 50  0001 C CNN
-	1    3800 3950
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	4100 3950 4150 3950
-Wire Wire Line
-	4150 3950 4150 4450
-Wire Wire Line
-	3500 3950 3400 3950
-Wire Wire Line
-	3400 3950 3400 4450
-Connection ~ 3400 4450
-Wire Wire Line
-	3400 4450 3050 4450
 $Comp
 L Device:Jumper JP504
 U 1 1 5DDCA70A
@@ -1287,46 +1261,8 @@ $EndComp
 Wire Wire Line
 	2850 2150 2700 2150
 NoConn ~ 2700 2250
-$Comp
-L Jumper:Jumper_3_Open JP506
-U 1 1 5E77595A
-P 3200 1500
-F 0 "JP506" V 3246 1587 50  0000 L CNN
-F 1 "LOUT" V 3155 1587 50  0000 L CNN
-F 2 "Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels" H 3200 1500 50  0001 C CNN
-F 3 "~" H 3200 1500 50  0001 C CNN
-	1    3200 1500
-	0    -1   -1   0   
-$EndComp
-$Comp
-L Jumper:Jumper_3_Open JP505
-U 1 1 5E78AD6A
-P 3900 1450
-F 0 "JP505" V 3946 1537 50  0000 L CNN
-F 1 "ROUT" V 3855 1537 50  0000 L CNN
-F 2 "Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels" H 3900 1450 50  0001 C CNN
-F 3 "~" H 3900 1450 50  0001 C CNN
-	1    3900 1450
-	0    -1   -1   0   
-$EndComp
 Wire Wire Line
-	2700 2350 3200 2350
-Wire Wire Line
-	3200 2350 3200 1750
-Wire Wire Line
-	2700 2450 3900 2450
-Wire Wire Line
-	3900 2450 3900 1700
-Wire Wire Line
-	3200 1250 3200 900 
-Wire Wire Line
-	3200 900  1900 900 
-Wire Wire Line
-	1900 900  1900 1350
-Wire Wire Line
-	3900 1200 3900 850 
-Wire Wire Line
-	3900 850  2000 850 
+	1900 850  1900 1350
 Wire Wire Line
 	2000 850  2000 1350
 NoConn ~ 1300 2150
@@ -1337,18 +1273,6 @@ Wire Wire Line
 	1300 2350 1050 2350
 Wire Wire Line
 	1300 2650 1050 2650
-Text Label 1050 2350 0    50   ~ 0
-L2
-Text Label 1050 2650 0    50   ~ 0
-R2
-Wire Wire Line
-	4300 1700 4500 1700
-Wire Wire Line
-	4950 1700 5150 1700
-Text Label 4500 1700 2    50   ~ 0
-L2
-Text Label 5150 1700 2    50   ~ 0
-R2
 NoConn ~ 1700 1350
 NoConn ~ 2400 1350
 Wire Wire Line
@@ -1682,46 +1606,34 @@ Wire Wire Line
 	2300 1150 2650 1150
 Wire Wire Line
 	2300 1150 2300 1350
-Wire Wire Line
-	4950 1850 4950 1700
-Wire Wire Line
-	4300 1850 4300 1700
-$Comp
-L Jumper:Jumper_3_Open JP508
-U 1 1 5E807B21
-P 4950 2100
-F 0 "JP508" V 4996 2187 50  0000 L CNN
-F 1 "RIN" V 4905 2187 50  0000 L CNN
-F 2 "Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels" H 4950 2100 50  0001 C CNN
-F 3 "~" H 4950 2100 50  0001 C CNN
-	1    4950 2100
-	0    -1   -1   0   
-$EndComp
-$Comp
-L Jumper:Jumper_3_Open JP507
-U 1 1 5E7FBA3C
-P 4300 2100
-F 0 "JP507" V 4346 2187 50  0000 L CNN
-F 1 "LIN" V 4255 2187 50  0000 L CNN
-F 2 "Jumper:SolderJumper-3_P1.3mm_Open_RoundedPad1.0x1.5mm_NumberLabels" H 4300 2100 50  0001 C CNN
-F 3 "~" H 4300 2100 50  0001 C CNN
-	1    4300 2100
-	0    -1   -1   0   
-$EndComp
-Text Label 5250 2100 2    50   ~ 0
+Text Label 1050 2650 2    50   ~ 0
 RIN
-Text Label 4600 2100 2    50   ~ 0
+Text Label 1050 2350 2    50   ~ 0
 LIN
+NoConn ~ 2700 2350
+NoConn ~ 2700 2450
+NoConn ~ 2700 2550
+NoConn ~ 2700 2650
 Wire Wire Line
-	5100 2100 5250 2100
+	4150 3950 4150 4450
 Wire Wire Line
-	4450 2100 4600 2100
+	3400 4450 3050 4450
 Wire Wire Line
-	4950 2550 4950 2350
+	3700 4450 3400 4450
+Connection ~ 3400 4450
 Wire Wire Line
-	2700 2550 4950 2550
+	3400 3950 3400 4450
 Wire Wire Line
-	2700 2650 4300 2650
-Wire Wire Line
-	4300 2650 4300 2350
+	3500 3950 3400 3950
+$Comp
+L Device:Jumper JP503
+U 1 1 5DD9E741
+P 3800 3950
+F 0 "JP503" H 3800 4123 50  0000 C CNN
+F 1 "~" H 3800 4123 50  0000 C CNN
+F 2 "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm" H 3800 3950 50  0001 C CNN
+F 3 "~" H 3800 3950 50  0001 C CNN
+	1    3800 3950
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
