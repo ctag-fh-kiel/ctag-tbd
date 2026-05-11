@@ -153,16 +153,19 @@ namespace CTAG::SPIAPI{
         gpio_set_pull_mode(GPIO_SCLK, GPIO_PULLUP_ONLY);
         gpio_set_pull_mode(GPIO_CS, GPIO_PULLUP_ONLY);
 
+        esp_err_t ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
+        ESP_ERROR_CHECK(ret);
+
+        // IDF 6 requires the SPI host to be initialized before allocating
+        // host-specific DMA buffers with spi_bus_dma_memory_alloc().
         send_buffer = (uint8_t*)spi_bus_dma_memory_alloc(RCV_HOST, 2048, 0);
+        receive_buffer = (uint8_t*)spi_bus_dma_memory_alloc(RCV_HOST, 2048, 0);
+        ESP_ERROR_CHECK((send_buffer && receive_buffer) ? ESP_OK : ESP_ERR_NO_MEM);
         send_buffer[0] = 0xCA;
         send_buffer[1] = 0xFE;
-        receive_buffer = (uint8_t*)spi_bus_dma_memory_alloc(RCV_HOST, 2048, 0);
         transaction.length = 2048 * 8;
         transaction.tx_buffer = send_buffer;
         transaction.rx_buffer = receive_buffer;
-
-        auto ret = spi_slave_initialize(RCV_HOST, &buscfg, &slvcfg, SPI_DMA_CH_AUTO);
-        assert(ret == ESP_OK);
 
         xTaskCreatePinnedToCore(api_task, "SpiAPI", 4096 * 2, nullptr, 10, &hTask, 0);
     }

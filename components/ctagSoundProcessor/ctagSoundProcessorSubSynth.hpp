@@ -37,8 +37,6 @@ namespace CTAG {
 
            virtual void Init(std::size_t blockSize, void *blockPtr) override;
 
-            const char *GetCStrID() const;
-
         private:
             virtual void knowYourself() override {};
 
