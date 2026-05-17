@@ -17,9 +17,6 @@ respective component folders / files if different from this license.
 
 #pragma once
 
-// #include "sdkconfig.h"
-// #if CONFIG_TBD_USE_RP2350
-
 #include <stdint.h>
 
 //
@@ -30,40 +27,39 @@ const int MaxEngineDefinitionParameters = 24;
 const int MaxEngineDefinitionsPerPage = 8;
 const int MaxEngines = 32;
 const int MaxEngineId = 16;
+const int MaxEngineDefinitionsPerPage = 8;
 
-enum EngineParameterType : uint8_t {
+enum SharedEngineParameterType : uint8_t {
     EngineParameterType_None = 0,
     EngineParameterType_CC = 1,
     EngineParameterType_NRPM = 2,
     EngineParameterType_Hidden = 3,
 };
 
-struct EngineParameter {
+struct SharedEngineParameter {
     int8_t index;
-    enum EngineParameterType type;
+    enum SharedEngineParameterType type;
     uint16_t defaultValue;
     uint8_t relCC;
     char name[32];
 };
 
-struct EngineDefinition {
+struct SharedEngineDefinition {
     uint32_t id; // fourcc
     char idStr[MaxEngineId]; // string version
     char name[8]; // string version
-    struct EngineParameter parameters[MaxEngineDefinitionParameters];
+    struct SharedEngineParameter parameters[MaxEngineDefinitionParameters];
 };
 
 struct GetEngineDefinitionsPageRequest {
     uint16_t offset;
 };
 
-const int kMaxEngineDefinitionsPerPage = 8;
-
 struct GetEngineDefinitionsPageResponse {
     uint16_t offset;
     uint16_t totalEngineDefinitions;
     uint16_t returnedEngineDefinitions;
-    struct EngineDefinition engineDefinitions[MaxEngineDefinitionsPerPage];
+    struct SharedEngineDefinition engineDefinitions[MaxEngineDefinitionsPerPage];
 };
 
 struct GetEngineDefinitionIdListResponse {
