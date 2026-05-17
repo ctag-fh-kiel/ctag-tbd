@@ -130,6 +130,19 @@ bool SynthDefinitionDataModel::DeserializeJSON(const rapidjson::Value &jsoneleme
     return true;
 }
 
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+void SynthDefinitionDataModel::WriteListResponse(struct GetEngineDefinitionIdListResponse *r) {
+    r->numEngines = 0;
+    for(int i=0; i<MAX_SYNTHS; i++) {
+        if (synths[i].id[0] != '\0') {
+            strncpy((char *)&r->engineIds[r->numEngines], (const char *)&synths[i].id, 8);
+            r->numEngines ++;
+            if (r->numEngines >= MAX_SYNTHS)
+                break;
+        }
+    }
+}
+
 void SynthDefinitionDataModel::SerializeListJSON(std::string *output) {
     Document d;
 

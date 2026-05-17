@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #if CONFIG_TBD_USE_RP2350
 
 #include "SpiAPI.hpp"
+#include "SpiApiProtocol.h"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
 #include "helpers/ctagSampleRom.hpp"
@@ -566,78 +567,78 @@ namespace CTAG::SPIAPI{
 
             // handle request
             switch (requestType){
-            case RequestType::GetPlugins:
-                cstring = AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessors();
-                result = transmitCString(requestType, cstring);
-                break;
-            case RequestType::GetActivePlugin:
-                cstring = AUDIO::SoundProcessorManager::GetStringID(channel).c_str();
-                result = transmitCString(requestType, cstring);
-                break;
-            case RequestType::GetActivePluginParams:
-                cstring = AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(channel);
-                result = transmitCString(requestType, cstring);
-                break;
-            case RequestType::SetActivePlugin:
-                AUDIO::SoundProcessorManager::SetSoundProcessorChannel(channel, string_parameter);
-                FAV::Favorites::DeactivateFavorite();
-                result = true;
-                break;
-            case RequestType::SetPluginParam:
-                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "current", param_value);
-                result = true;
-                break;
-            case RequestType::SetPluginParamCV:
-                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "cv", param_value);
-                result = true;
-                break;
-            case RequestType::SetPluginParamTRIG:
-                AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "trig", param_value);
-                result = true;
-                break;
-            case RequestType::GetPresets:
-                cstring = AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(channel);
-                result = transmitCString(requestType, cstring);
-                break;
-            case RequestType::GetPresetData:
-                cstring = AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string_parameter);
-                result = transmitCString(requestType, cstring);
-                break;
-            case RequestType::SetPresetData:{
-                std::string pluginID = string_parameter;
-                string_parameter.clear();
-                result = receiveString(RequestType::SetPresetData, string_parameter);
-                //ESP_LOGI("SpiAPI", "Result %d, Saving preset %s %s", result, pluginID.c_str(), string_parameter.c_str());
-                if (true == result) AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID.c_str(), string_parameter.c_str());
-            }
-                break;
-            case RequestType::SetPluginParamsJSON:{
-                AUDIO::SoundProcessorManager::SetChannelParamsCstrJSON(channel, string_parameter.c_str());
-            }
-                break;
-            case RequestType::LoadPreset:
-                AUDIO::SoundProcessorManager::ChannelLoadPreset(channel, preset_number);
-                FAV::Favorites::DeactivateFavorite();
-                result = true;
-                break;
-            case RequestType::SavePreset:
-                AUDIO::SoundProcessorManager::ChannelSavePreset(channel, string_parameter, preset_number);
-                result = true;
-                break;
-            case RequestType::GetAllFavorites:
-                cstring = FAV::Favorites::GetAllFavorites().c_str();
-                result = transmitCString(requestType, cstring);
-                break;
-            case RequestType::SaveFavorite:
-                string_parameter.clear();
-                result = receiveString(RequestType::SaveFavorite, string_parameter);
-                //ESP_LOGI("SpiAPI", "Result %d, Saving favorite# %d as %s", result, favorite_number, string_parameter.c_str());
-                if (true == result) FAV::Favorites::StoreFavorite(preset_number, string_parameter);
-                break;
-            case RequestType::LoadFavorite:
-                FAV::Favorites::ActivateFavorite(favorite_number);
-                result = true;
-                break;
+            // case RequestType::GetPlugins:
+            //     cstring = AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessors();
+            //     result = transmitCString(requestType, cstring);
+            //     break;
+            // case RequestType::GetActivePlugin:
+            //     cstring = AUDIO::SoundProcessorManager::GetStringID(channel).c_str();
+            //     result = transmitCString(requestType, cstring);
+            //     break;
+            // case RequestType::GetActivePluginParams:
+            //     cstring = AUDIO::SoundProcessorManager::GetCStrJSONActivePluginParams(channel);
+            //     result = transmitCString(requestType, cstring);
+            //     break;
+            // case RequestType::SetActivePlugin:
+            //     AUDIO::SoundProcessorManager::SetSoundProcessorChannel(channel, string_parameter);
+            //     FAV::Favorites::DeactivateFavorite();
+            //     result = true;
+            //     break;
+            // case RequestType::SetPluginParam:
+            //     AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "current", param_value);
+            //     result = true;
+            //     break;
+            // case RequestType::SetPluginParamCV:
+            //     AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "cv", param_value);
+            //     result = true;
+            //     break;
+            // case RequestType::SetPluginParamTRIG:
+            //     AUDIO::SoundProcessorManager::SetChannelParamValue(channel, string_parameter, "trig", param_value);
+            //     result = true;
+            //     break;
+            // case RequestType::GetPresets:
+            //     cstring = AUDIO::SoundProcessorManager::GetCStrJSONGetPresets(channel);
+            //     result = transmitCString(requestType, cstring);
+            //     break;
+            // case RequestType::GetPresetData:
+            //     cstring = AUDIO::SoundProcessorManager::GetCStrJSONSoundProcessorPresets(string_parameter);
+            //     result = transmitCString(requestType, cstring);
+            //     break;
+            // case RequestType::SetPresetData:{
+            //     std::string pluginID = string_parameter;
+            //     string_parameter.clear();
+            //     result = receiveString(RequestType::SetPresetData, string_parameter);
+            //     //ESP_LOGI("SpiAPI", "Result %d, Saving preset %s %s", result, pluginID.c_str(), string_parameter.c_str());
+            //     if (true == result) AUDIO::SoundProcessorManager::SetCStrJSONSoundProcessorPreset(pluginID.c_str(), string_parameter.c_str());
+            // }
+            //     break;
+            // case RequestType::SetPluginParamsJSON:{
+            //     AUDIO::SoundProcessorManager::SetChannelParamsCstrJSON(channel, string_parameter.c_str());
+            // }
+            //     break;
+            // case RequestType::LoadPreset:
+            //     AUDIO::SoundProcessorManager::ChannelLoadPreset(channel, preset_number);
+            //     FAV::Favorites::DeactivateFavorite();
+            //     result = true;
+            //     break;
+            // case RequestType::SavePreset:
+            //     AUDIO::SoundProcessorManager::ChannelSavePreset(channel, string_parameter, preset_number);
+            //     result = true;
+            //     break;
+            // case RequestType::GetAllFavorites:
+            //     cstring = FAV::Favorites::GetAllFavorites().c_str();
+            //     result = transmitCString(requestType, cstring);
+            //     break;
+            // case RequestType::SaveFavorite:
+            //     string_parameter.clear();
+            //     result = receiveString(RequestType::SaveFavorite, string_parameter);
+            //     //ESP_LOGI("SpiAPI", "Result %d, Saving favorite# %d as %s", result, favorite_number, string_parameter.c_str());
+            //     if (true == result) FAV::Favorites::StoreFavorite(preset_number, string_parameter);
+            //     break;
+            // case RequestType::LoadFavorite:
+            //     FAV::Favorites::ActivateFavorite(favorite_number);
+            //     result = true;
+            //     break;
             case RequestType::GetConfiguration:
                 cstring = AUDIO::SoundProcessorManager::GetCStrJSONConfiguration();
                 result = transmitCString(requestType, cstring);
@@ -648,9 +649,9 @@ namespace CTAG::SPIAPI{
                 if (true == result) AUDIO::SoundProcessorManager::SetConfigurationFromJSON(string_parameter);
                 //ESP_LOGI("SpiAPI", "Result %d, Saving config %s", result, string_parameter.c_str());
                 break;
-            case RequestType::GetIOCapabilities:
-                result = transmitCString(requestType, s.c_str());
-                break;
+            // case RequestType::GetIOCapabilities:
+            //     result = transmitCString(requestType, s.c_str());
+            //     break;
             case RequestType::Reboot:
             {
                 // Ignore Reboot commands during the first 15s after boot.
@@ -826,16 +827,20 @@ namespace CTAG::SPIAPI{
                 break;
             case RequestType::DisableFileTransferMode:
                 break;
-            case RequestType::GetSynthListJSON:
+            case RequestType::GetEngineDefinitionListJSON:
                 {
 #if CONFIG_TBD_USE_SD_CARD
-                    std::string listjson = "{}";
-                    CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->SerializeListJSON(&listjson);
-                    result = transmitCString(requestType, listjson.c_str());
-                }
+                    // std::string listjson = "{}";
+                    // CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->SerializeListJSON(&listjson);
+                    // result = transmitCString(requestType, listjson.c_str());
+
+                    static struct GetEngineDefinitionIdListResponse listresponse;
+                    CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->WriteListResponse(&listresponse);
+                    result =  transmitBinary(requestType, (const uint8_t*)&listresponse, sizeof(listresponse));
 #endif
+                }
                 break;
-            case RequestType::GetSynthDefinitionJSON:
+            case RequestType::GetEngineDefinitionJSON:
                 {
 #if CONFIG_TBD_USE_SD_CARD
                     std::string synthId = string_parameter;
@@ -1627,6 +1632,24 @@ namespace CTAG::SPIAPI{
                 ESP_LOGW("SpiAPI", "SaveScreenshot: SD card disabled");
                 result = true;
 #endif
+                break;
+            case RequestType::GetTrackDefinitionsPage:
+            case RequestType::GetEngineDefinitionsPage:
+            case RequestType::GetMacroDefinitionsPage:
+            case RequestType::GetMacroSoundPresetsPage:
+            case RequestType::GetKitIndexPage:
+            case RequestType::GetSampleBankIndex:
+            case RequestType::GetSampleInfoAndPreview:
+            case RequestType::UploadMacroSoundPreset:
+            case RequestType::ReloadMacroDefinitions:
+            case RequestType::ReloadMacroSoundPresets:
+            case RequestType::ReloadKitIndes:
+            case RequestType::FileQuery:
+            case RequestType::FileReadlock:
+            case RequestType::FileWriteBlock:
+            case RequestType::FileDelete:
+            case RequestType::FileListPage:
+                ESP_LOGW("SpiAPI", "Unhandled api call");
                 break;
             }
         }

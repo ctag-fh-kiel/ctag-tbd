@@ -42,63 +42,63 @@ namespace CTAG::SPIAPI {
 
             // returns json cstring with all plugins
             // TODO: Remove, not used by groovebox
-            GetPlugins = 0x01,
+            // GetPlugins = 0x01,
 
             // returns cstring with active plugin, args uint8_t for channel
             // TODO: Remove, not used by groovebox
-            GetActivePlugin = 0x02,
+            // GetActivePlugin = 0x02,
 
             // returns json cstring with all params of active plugin, args uint8_t for channel
             // TODO: Remove, not used by groovebox
-            GetActivePluginParams = 0x03,
+            // GetActivePluginParams = 0x03,
 
             // sets active plugin, args [channel (uint8_t), pluginID (cstring)]
             // TODO: Remove, not used by groovebox
-            SetActivePlugin = 0x04,
+            // SetActivePlugin = 0x04,
 
             // sets a plugin parameter, args [channel (uint8_t), paramID (cstring), value (int32_t)]
             // TODO: Remove, not used by groovebox
-            SetPluginParam = 0x05,
+            // SetPluginParam = 0x05,
 
             // sets a plugin parameter for CV, args [channel (uint8_t), paramID (cstring), value (int8_t)]
             // TODO: Remove, not used by groovebox
-            SetPluginParamCV = 0x06,
+            // SetPluginParamCV = 0x06,
 
             // sets a plugin parameter for TRIG, args [channel (uint8_t), paramID (cstring), value (int8_t)]
             // TODO: Remove, not used by groovebox
-            SetPluginParamTRIG = 0x07,
+            // SetPluginParamTRIG = 0x07,
 
             // returns json cstring with all presets for a channel, args [channel (uint8_t)]
             // TODO: Remove, not used by groovebox
-            GetPresets = 0x08,
+            // GetPresets = 0x08,
 
             // returns json cstring with all preset data for a plugin, args [pluginID (cstring)]
             // TODO: Remove, not used by groovebox
-            GetPresetData = 0x09,
+            // GetPresetData = 0x09,
 
             // sets a preset data for a plugin, args [pluginID (cstring), presetData (json cstring)]
             // TODO: Remove, not used by groovebox
-            SetPresetData = 0x0A,
+            // SetPresetData = 0x0A,
 
             // loads a preset for a channel, args [channel (uint8_t), presetID (int8_t)]
             // TODO: Remove, not used by groovebox
-            LoadPreset = 0x0B,
+            // LoadPreset = 0x0B,
 
             // saves a preset for a channel, args [channel (uint8_t), presetID (int8_t), presetName (cstring)]
             // TODO: Remove, not used by groovebox
-            SavePreset = 0x0C,
+            // SavePreset = 0x0C,
 
             // returns json cstring with all favorites
             // TODO: Remove, not used by groovebox
-            GetAllFavorites = 0x0D,
+            // GetAllFavorites = 0x0D,
 
             // saves a favorite, args [favorite number (int8_t), json cstring with favorite data]
             // TODO: Remove, not used by groovebox
-            SaveFavorite = 0x0E,
+            // SaveFavorite = 0x0E,
 
             // loads a favorite, args [favorite number (int8_t)]
             // TODO: Remove, not used by groovebox
-            LoadFavorite = 0x0F,
+            // LoadFavorite = 0x0F,
 
             // returns json cstring with current configuration
             // TODO: Remove, not used by groovebox
@@ -110,11 +110,11 @@ namespace CTAG::SPIAPI {
 
             // returns json cstring with IO capabilities
             // TODO: Remove, not used by groovebox (similar to firmware info)
-            GetIOCapabilities = 0x12,
+            // GetIOCapabilities = 0x12,
 
             // updates running plugin data, args [channel (uint8_t), presetData (json cstring)]
             // TODO: Remove, not used by groovebox
-            SetPluginParamsJSON = 0x14,
+            // SetPluginParamsJSON = 0x14,
 
             //
             // Legacy apis that could be removed
@@ -228,11 +228,11 @@ namespace CTAG::SPIAPI {
 
             // TODO: Use other api than json
             // TODO: Should not be needed
-            GetSynthListJSON = 0x70,
+            GetEngineDefinitionListJSON = 0x70,
 
             // TODO: Use other api than json
             // Replaced by GetMachineDefinitionsPage
-            GetSynthDefinitionJSON = 0x71,
+            GetEngineDefinitionJSON = 0x71,
 
             // TODO: Use other api than json
             // Replaced by GetMacroDefinitionsPage
@@ -332,7 +332,7 @@ namespace CTAG::SPIAPI {
             //
 
             GetTrackDefinitionsPage = 0xD0,
-            GetMachineDefinitionsPage = 0xD1,
+            GetEngineDefinitionsPage = 0xD1,
             GetMacroDefinitionsPage = 0xD2,
             GetMacroSoundPresetsPage = 0xD3,
             // GetMacroPreset = 0xD3,
