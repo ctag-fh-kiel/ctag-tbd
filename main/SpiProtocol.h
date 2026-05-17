@@ -83,7 +83,7 @@ struct p4_spi_response2 {
     // offset 456
     uint32_t led_color;
     // offset 460
-    uint32_t webui_update_counter;
+    uint32_t webui_update_counter; // marks when the webui  has updated content that needs to be refetched.
     // offset 464
     uint32_t magic2;
     // offset 468
