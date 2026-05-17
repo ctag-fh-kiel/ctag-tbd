@@ -24,6 +24,7 @@ respective component folders / files if different from this license.
 
 #include "SpiAPI.hpp"
 #include "SpiApiProtocol.h"
+#include "EngineDefinition.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
 #include "helpers/ctagSampleRom.hpp"
@@ -552,6 +553,7 @@ namespace CTAG::SPIAPI{
             const int int32_param_2 = *(int32_t*)&rcv_data[5]; // third request parameter, e.g. value, ...
             const char* string_param_3 = (char*)&rcv_data[9];
             const float float_param_0 = *(float*)&rcv_data[3];
+            const unsigned char* binary_param_3 = (unsigned char*)&rcv_data[9];
             // fourth request parameter, e.g. plugin name, parameter name, ...
 
             int channel = uint8_param_0; // channel is the first parameter
@@ -827,16 +829,13 @@ namespace CTAG::SPIAPI{
                 break;
             case RequestType::DisableFileTransferMode:
                 break;
-            case RequestType::GetEngineDefinitionListJSON:
+            case RequestType::GetEngineDefinitionList:
                 {
 #if CONFIG_TBD_USE_SD_CARD
-                    // std::string listjson = "{}";
-                    // CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->SerializeListJSON(&listjson);
-                    // result = transmitCString(requestType, listjson.c_str());
-
+                    ESP_LOGI("SpiAPI", "Getting engine id list");
                     static struct GetEngineDefinitionIdListResponse listresponse;
                     CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->WriteListResponse(&listresponse);
-                    result =  transmitBinary(requestType, (const uint8_t*)&listresponse, sizeof(listresponse));
+                    result = transmitBinary(requestType, (const uint8_t*)&listresponse, sizeof(listresponse));
 #endif
                 }
                 break;
@@ -1633,8 +1632,46 @@ namespace CTAG::SPIAPI{
                 result = true;
 #endif
                 break;
-            case RequestType::GetTrackDefinitionsPage:
             case RequestType::GetEngineDefinitionsPage:
+                {
+                    ESP_LOGI("SpiAPI", "GetEngineDefinitionsPage");
+                    // for(int j=0; j<64; j++) {
+                    //     if (j % 16 == 0) printf("  ");
+                    //     printf( "%02X ", binary_param_3[j] );
+                    //     if (j % 16 == 15) printf("\n");
+                    // }
+                    // printf("\n");
+
+                    struct GetEngineDefinitionsPageRequest *pagerequest = (struct GetEngineDefinitionsPageRequest*)binary_param_3;
+                    ESP_LOGI("SpiAPI", "GetEngineDefinitionsPage: offset=%d", pagerequest->offset);
+
+                    static struct GetEngineDefinitionsPageResponse pageresponse;
+                    CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->WritePageResponse(
+                        pagerequest,
+                        &pageresponse);
+
+                    const uint8_t *responseBytes = (const uint8_t*)&pageresponse;
+                    // for(int j=0; j<64; j++) {
+                    //     if (j % 16 == 0) printf("  ");
+                    //     printf( "%02X ", responseBytes[j] );
+                    //     if (j % 16 == 15) printf("\n");
+                    // }
+                    // printf("\n");
+
+                    result = transmitBinary(requestType, responseBytes, sizeof(struct GetEngineDefinitionsPageResponse));
+
+                    // std::string cfgDir = STORAGE::userPath() + "/" + STORAGE::DIR_CONFIG;
+                    // mkdir(cfgDir.c_str(), 0755);
+                    // std::string cfgPath = cfgDir + "/active-trackdefault.txt";
+                    // STORAGE::lockStorage();
+                    // result = atomicWrite(cfgPath, templateName.data(), templateName.size());
+                    // STORAGE::unlockStorage();
+                    // if (result) {
+                    //     ESP_LOGI("SpiAPI", "SetActiveTrackDefault: wrote \"%s\" to %s", templateName.c_str(), cfgPath.c_str());
+                    // }
+                }
+                break;
+            case RequestType::GetTrackDefinitionsPage:
             case RequestType::GetMacroDefinitionsPage:
             case RequestType::GetMacroSoundPresetsPage:
             case RequestType::GetKitIndexPage:

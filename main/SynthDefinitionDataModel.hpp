@@ -19,7 +19,7 @@ respective component folders / files if different from this license.
 
 #include <string>
 #include <vector>
-#include "SpiApiProtocol.h"
+#include "EngineDefinition.hpp"
 #include "ctagDataModelBase.hpp"
 #include "SynthDefinition.hpp"
 #include "TrackDefinition.hpp"
@@ -48,8 +48,10 @@ namespace CTAG {
                 TrackDefinition *GetTrackDefinition(int index);
                 bool DeserializeJSON(const rapidjson::Value &jsonelement);
                 // void SerializeJSON(std::string *output);
-                void SerializeListJSON(std::string *output);
+                // void SerializeListJSON(std::string *output);
+
                 void WriteListResponse(struct GetEngineDefinitionIdListResponse *response);
+                void WritePageResponse(const struct GetEngineDefinitionsPageRequest *request, struct GetEngineDefinitionsPageResponse *response);
 
                 static SynthDefinitionDataModel *instance();
         };

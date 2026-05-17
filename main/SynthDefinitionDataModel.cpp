@@ -143,29 +143,66 @@ void SynthDefinitionDataModel::WriteListResponse(struct GetEngineDefinitionIdLis
     }
 }
 
-void SynthDefinitionDataModel::SerializeListJSON(std::string *output) {
-    Document d;
+void SynthDefinitionDataModel::WritePageResponse(const struct GetEngineDefinitionsPageRequest *request, struct GetEngineDefinitionsPageResponse *response) {
+    response->offset = request->offset;
+    response->totalEngineDefinitions = GetNumberOfSynthDefinitions();
+    response->returnedEngineDefinitions = 0;
 
-    d.SetObject();
-
-    Value machinesarray(kArrayType);
-    d.AddMember("machines", machinesarray, d.GetAllocator());
-    for(int i=0; i<MAX_SYNTHS; i++) {
+    for(int k=0; k<MaxEngineDefinitionsPerPage; k++) {
+        int i = request->offset + k;
+        if (i >= MAX_SYNTHS) {
+            break;
+        }
         if (synths[i].id[0] == '\0') {
             continue;
         }
 
-        Value machineid = Value(synths[i].id, d.GetAllocator());
-        d["machines"].PushBack(machineid, d.GetAllocator());
+        response->engineDefinitions[k].id = 0;
+        strcpy( response->engineDefinitions[k].idStr, synths[i].id);
+        strncpy(response->engineDefinitions[k].name, synths[i].name, 8);
+
+        for(int p=0; p<MaxSynthDefinitionParameters; p++) {
+            // response->engineDefinitions[k].parameters[p].index = synths[i].parameters[p].index;
+            response->engineDefinitions[k].parameters[p].type = EngineParameterType_None;
+            if (synths[i].parameters[p].type == SynthParameterType_CC) {
+                response->engineDefinitions[k].parameters[p].type = EngineParameterType_CC;
+            } else if (synths[i].parameters[p].type == SynthParameterType_NRPM) {
+                response->engineDefinitions[k].parameters[p].type = EngineParameterType_NRPM;
+            }
+
+            response->engineDefinitions[k].parameters[p].defaultValue = synths[i].parameters[p].defaultValue;
+            response->engineDefinitions[k].parameters[p].relCC = synths[i].parameters[p].cc;
+
+            strncpy(response->engineDefinitions[k].parameters[p].name, synths[i].parameters[p].name, 32);
+        }
+
+        response->returnedEngineDefinitions ++;
     }
-
-    StringBuffer buffer;
-    Writer<StringBuffer> writer(buffer);
-    d.Accept(writer);
-    ESP_LOGD("SynthDefinitionDataModel", "JSON string %s", buffer.GetString());
-
-    output->assign(buffer.GetString());
 }
+
+// void SynthDefinitionDataModel::SerializeListJSON(std::string *output) {
+//     Document d;
+
+//     d.SetObject();
+
+//     Value machinesarray(kArrayType);
+//     d.AddMember("machines", machinesarray, d.GetAllocator());
+//     for(int i=0; i<MAX_SYNTHS; i++) {
+//         if (synths[i].id[0] == '\0') {
+//             continue;
+//         }
+
+//         Value machineid = Value(synths[i].id, d.GetAllocator());
+//         d["machines"].PushBack(machineid, d.GetAllocator());
+//     }
+
+//     StringBuffer buffer;
+//     Writer<StringBuffer> writer(buffer);
+//     d.Accept(writer);
+//     ESP_LOGD("SynthDefinitionDataModel", "JSON string %s", buffer.GetString());
+
+//     output->assign(buffer.GetString());
+// }
 
 static SynthDefinitionDataModel g_synthdef_instance;
 

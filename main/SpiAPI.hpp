@@ -228,7 +228,7 @@ namespace CTAG::SPIAPI {
 
             // TODO: Use other api than json
             // TODO: Should not be needed
-            GetEngineDefinitionListJSON = 0x70,
+            GetEngineDefinitionList = 0x70,
 
             // TODO: Use other api than json
             // Replaced by GetMachineDefinitionsPage
