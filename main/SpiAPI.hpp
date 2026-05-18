@@ -331,7 +331,7 @@ namespace CTAG::SPIAPI {
             // New apis
             //
 
-            GetTrackDefinitionsPage = 0xD0,
+            // GetTrackDefinitionsPage = 0xD0,
             GetEngineDefinitionsPage = 0xD1,
             GetMacroDefinitionsPage = 0xD2,
             GetMacroSoundPresetsPage = 0xD3,

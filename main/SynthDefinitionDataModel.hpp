@@ -20,9 +20,8 @@ respective component folders / files if different from this license.
 #include <string>
 #include <vector>
 #include "SharedEngineDefinition.hpp"
+#include "SharedTrackDefinition.hpp"
 #include "ctagDataModelBase.hpp"
-#include "SynthDefinition.hpp"
-#include "TrackDefinition.hpp"
 
 
 #define MAX_TRACKS 20
@@ -33,8 +32,8 @@ namespace CTAG {
 
         class SynthDefinitionDataModel final : public CTAG::SP::ctagDataModelBase {
             private:
-                class SynthDefinition *synths;
-                class TrackDefinition *tracks;
+                struct SharedEngineDefinition *synths;
+                struct SharedTrackDefinition *tracks;
 
                 int lastTrack;
                 int lastEngine;
@@ -44,16 +43,14 @@ namespace CTAG {
                 void addFxTrack(const char *name, int midiChannel, int baseCC, const char *defaultbank);
                 void addTrackEngine(const char *machineId);
 
-                void addEngine(const char *id, const char *name, enum SynthType type);
-                void addEngineParameter(const char *paramId, const char *name, enum SynthParameterType ctrltype, int ctrl, int defaultValue);
+                void addEngine(const char *id, const char *name, enum SharedEngineType type);
+                void addEngineParameter(const char *paramId, const char *name, enum SharedEngineParameterType ctrltype, int ctrl, int defaultValue);
 
             public:
                 void Init();
                 int GetNumberOfSynthDefinitions();
-                void GetSynthDefinitionsJSON(const std::string *output);
-                SynthDefinition *GetSynthDefinition(const std::string id);
-                TrackDefinition *GetTrackDefinition(int index);
-                // bool DeserializeJSON(const rapidjson::Value &jsonelement);
+                struct SharedEngineDefinition *GetSynthDefinition(const std::string id);
+                struct SharedTrackDefinition *GetTrackDefinition(int index);
                 bool SerializeIntoJSON(rapidjson::Document &doc);
 
                 void WriteListResponse(struct GetEngineDefinitionIdListResponse *response);

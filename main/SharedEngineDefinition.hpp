@@ -35,8 +35,16 @@ enum SharedEngineParameterType : uint8_t {
     EngineParameterType_Hidden = 3,
 };
 
+enum SharedEngineType : uint8_t {
+    EngineType_None = 0,
+    EngineType_Synth = 1,
+    EngineType_Drum = 2,
+    EngineType_FX = 3,
+};
+
 struct SharedEngineDefinitionParameter {
     int8_t index;
+    char id[16];
     enum SharedEngineParameterType type;
     uint16_t defaultValue;
     uint8_t relCC;
@@ -44,9 +52,10 @@ struct SharedEngineDefinitionParameter {
 };
 
 struct SharedEngineDefinition {
-    uint32_t id; // fourcc
+    // uint32_t id; // fourcc
     char idStr[MaxEngineId]; // string version
     char name[8]; // string version
+    enum SharedEngineType type;
     struct SharedEngineDefinitionParameter parameters[MaxEngineDefinitionParameters];
 };
 

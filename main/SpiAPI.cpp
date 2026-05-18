@@ -44,7 +44,6 @@ respective component folders / files if different from this license.
 #include "MacroDeviceDefinitionDataModel.hpp"
 #include "StorageOverlay.hpp"
 #include "SynthDefinitionDataModel.hpp"
-#include "SynthDefinition.hpp"
 
 #include "link.hpp"
 
@@ -1645,7 +1644,7 @@ namespace CTAG::SPIAPI{
                     // }
                 }
                 break;
-            case RequestType::GetTrackDefinitionsPage:
+            // case RequestType::GetTrackDefinitionsPage:
             case RequestType::GetMacroDefinitionsPage:
             case RequestType::GetMacroSoundPresetsPage:
             case RequestType::GetKitIndexPage:
