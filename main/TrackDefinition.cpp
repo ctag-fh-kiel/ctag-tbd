@@ -33,31 +33,31 @@ void CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_Reset(struct Trac
     memset(def->macroMachineIds, 0, sizeof(def->macroMachineIds));
 }
 
-bool CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_DeserializeJSON(struct TrackDefinition *def, const Value &jsonelement) {
-    if (!jsonelement.HasMember("index")) return false;
-    if (!jsonelement.HasMember("name")) return false;
-    if (!jsonelement.HasMember("midichannel")) return false;
-    if (!jsonelement.HasMember("drumnote")) return false;
-    if (!jsonelement.HasMember("basecc")) return false;
+// bool CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_DeserializeJSON(struct TrackDefinition *def, const Value &jsonelement) {
+//     if (!jsonelement.HasMember("index")) return false;
+//     if (!jsonelement.HasMember("name")) return false;
+//     if (!jsonelement.HasMember("midichannel")) return false;
+//     if (!jsonelement.HasMember("drumnote")) return false;
+//     if (!jsonelement.HasMember("basecc")) return false;
 
-    def->index = jsonelement["index"].GetInt();
-    strncpy(def->name, jsonelement["name"].GetString(), sizeof(def->name) - 1);
-    def->name[sizeof(def->name) - 1] = '\0';
-    def->midiChannel = jsonelement["midichannel"].GetInt();
-    def->drumNote = jsonelement["drumnote"].GetInt();
-    def->baseCC = jsonelement["basecc"].GetInt();
+//     def->index = jsonelement["index"].GetInt();
+//     strncpy(def->name, jsonelement["name"].GetString(), sizeof(def->name) - 1);
+//     def->name[sizeof(def->name) - 1] = '\0';
+//     def->midiChannel = jsonelement["midichannel"].GetInt();
+//     def->drumNote = jsonelement["drumnote"].GetInt();
+//     def->baseCC = jsonelement["basecc"].GetInt();
 
-    memset(def->macroMachineIds, 0, sizeof(def->macroMachineIds));
-    if (jsonelement.HasMember("machines") && jsonelement["machines"].IsArray()) {
-        int i = 0;
-        for (auto &v : jsonelement["machines"].GetArray()) {
-            if (i < MaxTrackDefinitionMachineIds) {
-                strncpy(def->macroMachineIds[i], v.GetString(), sizeof(def->macroMachineIds[i]) - 1);
-                def->macroMachineIds[i][sizeof(def->macroMachineIds[i]) - 1] = '\0';
-                i++;
-            }
-        }
-    }
+//     memset(def->macroMachineIds, 0, sizeof(def->macroMachineIds));
+//     if (jsonelement.HasMember("machines") && jsonelement["machines"].IsArray()) {
+//         int i = 0;
+//         for (auto &v : jsonelement["machines"].GetArray()) {
+//             if (i < MaxTrackDefinitionMachineIds) {
+//                 strncpy(def->macroMachineIds[i], v.GetString(), sizeof(def->macroMachineIds[i]) - 1);
+//                 def->macroMachineIds[i][sizeof(def->macroMachineIds[i]) - 1] = '\0';
+//                 i++;
+//             }
+//         }
+//     }
 
-    return true;
-}
+//     return true;
+// }

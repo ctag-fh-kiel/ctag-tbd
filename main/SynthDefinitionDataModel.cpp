@@ -528,36 +528,74 @@ TrackDefinition *SynthDefinitionDataModel::GetTrackDefinition(int index) {
     return nullptr;
 }
 
-bool SynthDefinitionDataModel::DeserializeJSON(const rapidjson::Value &jsonelement) {
-    ESP_LOGD("SynthDefinitionDataModel", "Init: Mem freesize internal %d, largest block %d, free SPIRAM %d, largest block SPIRAM %d!",
-             heap_caps_get_free_size(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL),
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+bool SynthDefinitionDataModel::SerializeIntoJSON(rapidjson::Document &doc) {
+    // Implementation of SerializeIntoJSON
 
-    int index = 0;
-    if (jsonelement.HasMember("machines")) {
-        for (auto &v : jsonelement["machines"].GetArray()) {
-            if (CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_DeserializeJSON(&synths[index], v)) {
-                ESP_LOGD("SynthDefinitionDataModel", "Deserialized synth definition: #%d id %s \"%s\"", index, synths[index].id, synths[index].name);
-                index ++;
+    Value machinesarray(kArrayType);
+    doc.AddMember("machines", machinesarray, doc.GetAllocator());
+    for(int j=0; j<MAX_SYNTHS; j++) {
+        SynthDefinition *def = &synths[j];
+
+        if (def->id[0] == '\0') continue;
+
+        Value machineObj(kObjectType);
+
+        machineObj.AddMember("id", Value(def->id, doc.GetAllocator()), doc.GetAllocator());
+        machineObj.AddMember("name", Value(def->name, doc.GetAllocator()), doc.GetAllocator());
+
+        Value paramsarray(kArrayType);
+        machineObj.AddMember("parameters", paramsarray, doc.GetAllocator());
+        for(int i=0; i<MaxSynthDefinitionParameters; i++) {
+            if (def->parameters[i].id[0] == '\0') {
+                continue;
             }
-        }
-    }
-    int synthCount = index;
-
-    index = 0;
-    if (jsonelement.HasMember("tracks")) {
-        for (auto &v : jsonelement["tracks"].GetArray()) {
-            if (CTAG::MACROPRESETS::TrackDefinitionUtils::TrackDefinition_DeserializeJSON(&tracks[index], v)) {
-                ESP_LOGD("SynthDefinitionDataModel", "Deserialized track definition #%d index %d \"%s\"", index, tracks[index].index, tracks[index].name);
-                // tracks.push_back(t);
-                index ++;
+            Value param(kObjectType);
+            param.AddMember("id", Value(def->parameters[i].id, doc.GetAllocator()), doc.GetAllocator());
+            param.AddMember("name", Value(def->parameters[i].name, doc.GetAllocator()), doc.GetAllocator());
+            std::string typestring;
+            if (def->parameters[i].type == SynthParameterType_CC) {
+                typestring = "cc";
+            } else if (def->parameters[i].type == SynthParameterType_NRPM) {
+                typestring = "nrpm";
+            } else {
+                typestring = "none";
             }
+            param.AddMember("type", Value(typestring.c_str(), doc.GetAllocator()), doc.GetAllocator());
+            param.AddMember("ctrl", def->parameters[i].cc, doc.GetAllocator());
+            param.AddMember("def", def->parameters[i].defaultValue, doc.GetAllocator());
+            machineObj["parameters"].PushBack(param, doc.GetAllocator());
         }
+
+        doc["machines"].PushBack(machineObj, doc.GetAllocator());
     }
 
-    ESP_LOGI("SynthDefinitionDataModel", "Loaded %d synth definitions, %d track definitions", synthCount, index);
+    Value tracksarray(kArrayType);
+    doc.AddMember("tracks", tracksarray, doc.GetAllocator());
+    for(int j=0; j<MAX_TRACKS; j++) {
+        TrackDefinition *def = &tracks[j];
+
+        if (def->name[0] == '\0') continue;
+
+        Value trackObj(kObjectType);
+
+        trackObj.AddMember("index", def->index, doc.GetAllocator());
+        trackObj.AddMember("name", Value(def->name, doc.GetAllocator()), doc.GetAllocator());
+        trackObj.AddMember("midichannel", def->midiChannel, doc.GetAllocator());
+        trackObj.AddMember("drumnote", def->drumNote, doc.GetAllocator());
+        trackObj.AddMember("basecc", def->baseCC, doc.GetAllocator());
+
+        Value machinesarray(kArrayType);
+        trackObj.AddMember("machines", machinesarray, doc.GetAllocator());
+        for(int k=0; k<MaxTrackDefinitionMachineIds; k++) {
+            if (def->macroMachineIds[k][0] == '\0') {
+                continue;
+            }
+            trackObj["machines"].PushBack(Value(def->macroMachineIds[k], doc.GetAllocator()), doc.GetAllocator());
+        }
+
+        doc["tracks"].PushBack(trackObj, doc.GetAllocator());
+    }
+
     return true;
 }
 

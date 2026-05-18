@@ -705,7 +705,7 @@ var _trackChangeCallbacks = [];
  */
 function loadSharedData() {
   showLoading('Loading tracks & definitions…');
-  return fetch('/api/v2/storage?getconfig=synthdefinitions.json').then(function(r) {
+  return fetch('/api/v2/macros?action=get_synthdefinitions').then(function(r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }).then(function(synthDefs) {

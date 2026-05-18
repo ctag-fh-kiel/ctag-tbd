@@ -53,7 +53,8 @@ namespace CTAG {
                 void GetSynthDefinitionsJSON(const std::string *output);
                 SynthDefinition *GetSynthDefinition(const std::string id);
                 TrackDefinition *GetTrackDefinition(int index);
-                bool DeserializeJSON(const rapidjson::Value &jsonelement);
+                // bool DeserializeJSON(const rapidjson::Value &jsonelement);
+                bool SerializeIntoJSON(rapidjson::Document &doc);
 
                 void WriteListResponse(struct GetEngineDefinitionIdListResponse *response);
                 void WriteEngineDefinitionPageResponse(const struct GetEngineDefinitionsPageRequest *request, struct GetEngineDefinitionsPageResponse *response);

@@ -39,7 +39,7 @@ namespace CTAG {
             TrackDefinitionUtils() = delete;
 
             static void TrackDefinition_Reset(struct TrackDefinition *def);
-            static bool TrackDefinition_DeserializeJSON(struct TrackDefinition *def, const rapidjson::Value &jsonelement);
+            // static bool TrackDefinition_DeserializeJSON(struct TrackDefinition *def, const rapidjson::Value &jsonelement);
         };
     }
 }

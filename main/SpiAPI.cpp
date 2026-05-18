@@ -839,18 +839,18 @@ namespace CTAG::SPIAPI{
 #endif
                 }
                 break;
-            case RequestType::GetEngineDefinitionJSON:
-                {
+//             case RequestType::GetEngineDefinitionJSON:
+//                 {
 #if CONFIG_TBD_USE_SD_CARD
-                    std::string synthId = string_parameter;
-                    ESP_LOGD("SpiAPI", "Getting synth definition %s", synthId.c_str());
-                    std::string synthjson = "{}";
-                    auto def = CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->GetSynthDefinition(synthId);
-                    CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_SerializeJSON(def, &synthjson);
-                    result = transmitCString(requestType, synthjson.c_str());
+//                     std::string synthId = string_parameter;
+//                     ESP_LOGD("SpiAPI", "Getting synth definition %s", synthId.c_str());
+//                     std::string synthjson = "{}";
+//                     auto def = CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->GetSynthDefinition(synthId);
+//                     CTAG::MACROPRESETS::SynthDefinitionUtils::SynthDefinition_SerializeJSON(def, &synthjson);
+//                     result = transmitCString(requestType, synthjson.c_str());
 #endif
-                }
-                break;
+//                 }
+//                 break;
             case RequestType::GetMacroMachineDefinitionsJSON:
                 {
                     std::string info = "{\"status\":\"not implemented\"}";
