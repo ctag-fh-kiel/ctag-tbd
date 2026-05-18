@@ -23,6 +23,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 #include "helpers/ctagSampleRom.hpp"
+#include "EngineDefinitionDataModel.hpp"
 
 
 using namespace CTAG::MACROPRESETS;
@@ -131,7 +132,7 @@ void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string sy
     strncpy(trackMachineId[trackIndex], synthID.c_str(), sizeof(trackMachineId[trackIndex]) - 1);
     trackMachineId[trackIndex][sizeof(trackMachineId[trackIndex]) - 1] = '\0';
 
-    struct SharedEngineDefinition *synthDef = SynthDefinitionDataModel::instance()->GetSynthDefinition(synthID);
+    struct SharedEngineDefinition *synthDef = EngineDefinitionDataModel::instance()->GetSynthDefinition(synthID);
     if (synthDef == nullptr) {
         ESP_LOGE("MacroTranslator", "Synth definition not found for id %s",
             synthID.c_str());
@@ -140,7 +141,7 @@ void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string sy
 
     int idx = 0;
 
-    struct SharedTrackDefinition *trackDef = SynthDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
+    struct SharedTrackDefinition *trackDef = EngineDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
     if (trackDef == nullptr) {
         ESP_LOGE("MacroTranslator", "Track definition not found for track index %d",
             trackIndex);
@@ -198,7 +199,7 @@ void MacroTranslator::SetTrackMacroDefinition(const int trackIndex, MacroDeviceD
     }
 
     struct SharedEngineDefinition *synthDef =
-        SynthDefinitionDataModel::instance()->GetSynthDefinition(def->synthId);
+        EngineDefinitionDataModel::instance()->GetSynthDefinition(def->synthId);
 
     if (synthDef == nullptr) {
         ESP_LOGE("MacroTranslator", "Invalid synth referenceSynth definition not found for id %s",

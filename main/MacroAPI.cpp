@@ -37,6 +37,7 @@ respective component folders / files if different from this license.
 #include "helpers/ctagSampleRom.hpp"
 #include "MacroTranslator.hpp"
 #include "StorageOverlay.hpp"
+#include "EngineDefinitionDataModel.hpp"
 
 using namespace CTAG::REST;
 using namespace rapidjson;
@@ -216,7 +217,7 @@ esp_err_t MacroAPI::macroapi_get_handler(httpd_req_t *req) {
         auto &alloc = resp.GetAllocator();
 
         Document doc2(kObjectType);
-        SynthDefinitionDataModel::instance()->SerializeIntoJSON(doc2);
+        EngineDefinitionDataModel::instance()->SerializeIntoJSON(doc2);
         resp.AddMember("tracks", doc2["tracks"], alloc);
         resp.AddMember("machines", doc2["machines"], alloc);
 

@@ -40,10 +40,9 @@ respective component folders / files if different from this license.
 #include "driver/gpio.h"
 
 #include "MacroSoundPresetDataModel.hpp"
-#include "SynthDefinitionDataModel.hpp"
+#include "EngineDefinitionDataModel.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
 #include "StorageOverlay.hpp"
-#include "SynthDefinitionDataModel.hpp"
 
 #include "link.hpp"
 
@@ -833,7 +832,7 @@ namespace CTAG::SPIAPI{
 #if CONFIG_TBD_USE_SD_CARD
                     ESP_LOGI("SpiAPI", "Getting engine id list");
                     static struct GetEngineDefinitionIdListResponse listresponse;
-                    CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->WriteListResponse(&listresponse);
+                    CTAG::MACROPRESETS::EngineDefinitionDataModel::instance()->WriteListResponse(&listresponse);
                     result = transmitBinary(requestType, (const uint8_t*)&listresponse, sizeof(listresponse));
 #endif
                 }
@@ -1619,7 +1618,7 @@ namespace CTAG::SPIAPI{
                     ESP_LOGI("SpiAPI", "GetEngineDefinitionsPage: offset=%d", pagerequest->offset);
 
                     static struct GetEngineDefinitionsPageResponse pageresponse;
-                    CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->WriteEngineDefinitionPageResponse(
+                    CTAG::MACROPRESETS::EngineDefinitionDataModel::instance()->WriteEngineDefinitionPageResponse(
                         pagerequest,
                         &pageresponse);
 

@@ -21,7 +21,6 @@ respective component folders / files if different from this license.
 #include <vector>
 #include <string>
 #include <ctagSoundProcessor.hpp>
-#include "SynthDefinitionDataModel.hpp"
 #include "MacroSoundPresetDataModel.hpp"
 #include "MacroDeviceDefinition.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"

@@ -57,7 +57,7 @@ __attribute__((weak)) volatile float g_peakSynthOnly  = 0.f;
 #include "SpiProtocolHelper.hpp"
 #endif
 #if CONFIG_TBD_USE_SD_CARD
-#include "SynthDefinitionDataModel.hpp"
+#include "EngineDefinitionDataModel.hpp"
 #include "MacroSoundPresetDataModel.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
 #include "MacroTranslator.hpp"

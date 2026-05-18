@@ -23,7 +23,7 @@ respective component folders / files if different from this license.
 #include "rapidjson/writer.h"
 #include <dirent.h>
 #include "esp_log.h"
-#include "SynthDefinitionDataModel.hpp"
+#include "EngineDefinitionDataModel.hpp"
 #include "MacroDeviceDefinition.hpp"
 #include "MacroDeviceDefinitionDataModel.hpp"
 #include "MacroSoundPreset.hpp"
@@ -124,7 +124,7 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
                         // set and the SoundPresetScreen picker can list them
                         // when invoked from the FX1 / FX2 / Master pages.
                         for (int i = 0; i < 19; i++) {
-                            struct SharedTrackDefinition *trackdef = SynthDefinitionDataModel::instance()->GetTrackDefinition(i);
+                            struct SharedTrackDefinition *trackdef = EngineDefinitionDataModel::instance()->GetTrackDefinition(i);
                             if (trackdef != nullptr) {
                                 for(int j=0; j<MaxTrackDefinitionEngineIds; j++) {
                                     if (trackdef->engineIdStr[j][0] != '\0') {
@@ -335,7 +335,7 @@ void MacroSoundPresetDataModel::SerializeListInto(int trackIndex, rapidjson::Doc
 
     // Group presets by machine (synth engine) like the web UI TrackDefaults dialog.
     // Hierarchy: Track → machines (from TrackDefinition) → presets using macros for that machine.
-    struct SharedTrackDefinition *trackDef = SynthDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
+    struct SharedTrackDefinition *trackDef = EngineDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
     if (trackDef == nullptr) return;
 
     for (int mi = 0; mi < MaxTrackDefinitionEngineIds; mi++) {
@@ -348,7 +348,7 @@ void MacroSoundPresetDataModel::SerializeListInto(int trackIndex, rapidjson::Doc
             strcmp(engineId, "nofx") == 0) continue;
 
         // Get machine display name from SynthDefinition
-        SharedEngineDefinition *synthDef = SynthDefinitionDataModel::instance()->GetSynthDefinition(std::string(engineId));
+        SharedEngineDefinition *synthDef = EngineDefinitionDataModel::instance()->GetSynthDefinition(std::string(engineId));
         const char *machineName = synthDef ? synthDef->name : engineId;
 
         Value groupobj(kObjectType);

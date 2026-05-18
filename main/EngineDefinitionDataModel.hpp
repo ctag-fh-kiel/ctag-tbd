@@ -30,7 +30,7 @@ respective component folders / files if different from this license.
 namespace CTAG {
     namespace MACROPRESETS {
 
-        class SynthDefinitionDataModel final : public CTAG::SP::ctagDataModelBase {
+        class EngineDefinitionDataModel final : public CTAG::SP::ctagDataModelBase {
             private:
                 struct SharedEngineDefinition *synths;
                 struct SharedTrackDefinition *tracks;
@@ -38,13 +38,14 @@ namespace CTAG {
                 int lastTrack;
                 int lastEngine;
 
-                void addDrumTrack(const char *name, int midiChannel, int baseCC, int drumNote, const char *defaultbank);
-                void addSynthTrack(const char *name, int midiChannel, int baseCC, const char *defaultbank);
-                void addFxTrack(const char *name, int midiChannel, int baseCC, const char *defaultbank);
-                void addTrackEngine(const char *machineId);
+                void trackAddDrum(const char *name, int midiChannel, int baseCC, int drumNote, const char *defaultbank);
+                void trackAddSynth(const char *name, int midiChannel, int baseCC, const char *defaultbank);
+                void trackAddFx(const char *name, int midiChannel, int baseCC, const char *defaultbank);
+                void trackEngine(const char *machineId);
 
-                void addEngine(const char *id, const char *name, enum SharedEngineType type);
-                void addEngineParameter(const char *paramId, const char *name, enum SharedEngineParameterType ctrltype, int ctrl, int defaultValue);
+                void engineAdd(const char *id, const char *name, enum SharedEngineType type);
+                void engineCC(const char *paramId, const char *name, int ctrl, int defaultValue);
+                void engineNRPM(const char *paramId, const char *name, int ctrl, int defaultValue);
 
             public:
                 void Init();
@@ -56,7 +57,7 @@ namespace CTAG {
                 void WriteListResponse(struct GetEngineDefinitionIdListResponse *response);
                 void WriteEngineDefinitionPageResponse(const struct GetEngineDefinitionsPageRequest *request, struct GetEngineDefinitionsPageResponse *response);
 
-                static SynthDefinitionDataModel *instance();
+                static EngineDefinitionDataModel *instance();
         };
     }
 }
