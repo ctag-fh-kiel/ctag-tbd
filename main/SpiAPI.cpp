@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 
 #include "SpiAPI.hpp"
 #include "SpiApiProtocol.h"
-#include "EngineDefinition.hpp"
+#include "SharedEngineDefinition.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
 #include "helpers/ctagSampleRom.hpp"
@@ -851,32 +851,6 @@ namespace CTAG::SPIAPI{
 #endif
                 }
                 break;
-            // case RequestType::GetSynthDefinitionsJSON:
-            //     {
-            //         std::string json = "{}";
-            //         const std::string path = CTAG::RESOURCES::sdcardRoot + "/data/synthdefinitions.json";
-            //         FILE *f = fopen(path.c_str(), "r");
-            //         if (f) {
-            //             fseek(f, 0, SEEK_END);
-            //             long sz = ftell(f);
-            //             fseek(f, 0, SEEK_SET);
-            //             if (sz > 0 && sz < 8192) {
-            //                 char *buf = (char*)malloc(sz + 1);
-            //                 if (buf) {
-            //                     fread(buf, 1, sz, f);
-            //                     buf[sz] = '\0';
-            //                     json = buf;
-            //                     free(buf);
-            //                 }
-            //             }
-            //             fclose(f);
-            //             ESP_LOGI("SpiAPI", "GetSynthDefinitionsJSON: loaded %ld bytes from synthdefinitions.json", sz);
-            //         } else {
-            //             ESP_LOGW("SpiAPI", "GetSynthDefinitionsJSON: synthdefinitions.json not found, returning {}");
-            //         }
-            //         result = transmitCString(requestType, json.c_str());
-            //     }
-            //     break;
             case RequestType::GetMacroMachineDefinitionsJSON:
                 {
                     std::string info = "{\"status\":\"not implemented\"}";
@@ -1646,7 +1620,7 @@ namespace CTAG::SPIAPI{
                     ESP_LOGI("SpiAPI", "GetEngineDefinitionsPage: offset=%d", pagerequest->offset);
 
                     static struct GetEngineDefinitionsPageResponse pageresponse;
-                    CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->WritePageResponse(
+                    CTAG::MACROPRESETS::SynthDefinitionDataModel::instance()->WriteEngineDefinitionPageResponse(
                         pagerequest,
                         &pageresponse);
 

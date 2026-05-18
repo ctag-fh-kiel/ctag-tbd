@@ -43,12 +43,13 @@ void SoundProcessorManager::InitMacroSystem() {
         heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
         heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
 
+    // initialize tracks
     SynthDefinitionDataModel::instance()->Init();
     MacroDeviceDefinitionDataModel::instance().Init();
     MacroSoundPresetDataModel::instance().Init();
     MacroTranslator::instance().Init();
 
-    SynthDefinitionDataModel::instance()->ReloadSynthDefinitions();
+    // SynthDefinitionDataModel::instance()->ReloadSynthDefinitions();
     MacroDeviceDefinitionDataModel::instance().ReloadMachineDefinitions();
     MacroSoundPresetDataModel::instance().ReloadSoundPresets();
 
@@ -90,7 +91,7 @@ void SoundProcessorManager::SetTrackParameter(const int trackIndex, int paramete
 void SoundProcessorManager::RefreshMacros() {
     ESP_LOGW("SPManager", ">>> RefreshMacros called");
     xSemaphoreTake(processMutex, portMAX_DELAY);
-    SynthDefinitionDataModel::instance()->ReloadSynthDefinitions();
+    // SynthDefinitionDataModel::instance()->ReloadSynthDefinitions();
     MacroDeviceDefinitionDataModel::instance().ReloadMachineDefinitions();
     MacroTranslator::instance().RefreshActiveDefinitions();
     xSemaphoreGive(processMutex);

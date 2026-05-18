@@ -27,7 +27,6 @@ const int MaxEngineDefinitionParameters = 24;
 const int MaxEngineDefinitionsPerPage = 8;
 const int MaxEngines = 32;
 const int MaxEngineId = 16;
-const int MaxEngineDefinitionsPerPage = 8;
 
 enum SharedEngineParameterType : uint8_t {
     EngineParameterType_None = 0,
@@ -36,7 +35,7 @@ enum SharedEngineParameterType : uint8_t {
     EngineParameterType_Hidden = 3,
 };
 
-struct SharedEngineParameter {
+struct SharedEngineDefinitionParameter {
     int8_t index;
     enum SharedEngineParameterType type;
     uint16_t defaultValue;
@@ -48,7 +47,7 @@ struct SharedEngineDefinition {
     uint32_t id; // fourcc
     char idStr[MaxEngineId]; // string version
     char name[8]; // string version
-    struct SharedEngineParameter parameters[MaxEngineDefinitionParameters];
+    struct SharedEngineDefinitionParameter parameters[MaxEngineDefinitionParameters];
 };
 
 struct GetEngineDefinitionsPageRequest {

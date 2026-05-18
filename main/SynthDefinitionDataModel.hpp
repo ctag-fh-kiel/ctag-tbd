@@ -19,7 +19,7 @@ respective component folders / files if different from this license.
 
 #include <string>
 #include <vector>
-#include "EngineDefinition.hpp"
+#include "SharedEngineDefinition.hpp"
 #include "ctagDataModelBase.hpp"
 #include "SynthDefinition.hpp"
 #include "TrackDefinition.hpp"
@@ -36,22 +36,27 @@ namespace CTAG {
                 class SynthDefinition *synths;
                 class TrackDefinition *tracks;
 
-            public:
-                // SynthDefinitionDataModel(const SynthDefinitionDataModel&) = delete;
+                int lastTrack;
+                int lastEngine;
 
+                void addDrumTrack(const char *name, int midiChannel, int baseCC, int drumNote, const char *defaultbank);
+                void addSynthTrack(const char *name, int midiChannel, int baseCC, const char *defaultbank);
+                void addFxTrack(const char *name, int midiChannel, int baseCC, const char *defaultbank);
+                void addTrackEngine(const char *machineId);
+
+                void addEngine(const char *id, const char *name, enum SynthType type);
+                void addEngineParameter(const char *paramId, const char *name, enum SynthParameterType ctrltype, int ctrl, int defaultValue);
+
+            public:
                 void Init();
-                void ReloadSynthDefinitions();
                 int GetNumberOfSynthDefinitions();
-                void GetSynthDeviceDefinitionId(int index, std::string *idOutput);
                 void GetSynthDefinitionsJSON(const std::string *output);
                 SynthDefinition *GetSynthDefinition(const std::string id);
                 TrackDefinition *GetTrackDefinition(int index);
                 bool DeserializeJSON(const rapidjson::Value &jsonelement);
-                // void SerializeJSON(std::string *output);
-                // void SerializeListJSON(std::string *output);
 
                 void WriteListResponse(struct GetEngineDefinitionIdListResponse *response);
-                void WritePageResponse(const struct GetEngineDefinitionsPageRequest *request, struct GetEngineDefinitionsPageResponse *response);
+                void WriteEngineDefinitionPageResponse(const struct GetEngineDefinitionsPageRequest *request, struct GetEngineDefinitionsPageResponse *response);
 
                 static SynthDefinitionDataModel *instance();
         };

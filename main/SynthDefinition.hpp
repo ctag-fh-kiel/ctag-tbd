@@ -35,6 +35,7 @@ namespace CTAG {
             SynthType_None = 0,
             SynthType_Synth = 1,
             SynthType_Drum = 2,
+            SynthType_FX = 3,
         };
 
         struct SynthParameter {
