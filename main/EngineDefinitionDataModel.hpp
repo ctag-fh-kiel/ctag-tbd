@@ -19,8 +19,8 @@ respective component folders / files if different from this license.
 
 #include <string>
 #include <vector>
-#include "SharedEngineDefinition.hpp"
-#include "SharedTrackDefinition.hpp"
+#include "EngineDefinition.hpp"
+#include "TrackDefinition.hpp"
 #include "ctagDataModelBase.hpp"
 
 
@@ -33,7 +33,7 @@ namespace CTAG {
         class EngineDefinitionDataModel final : public CTAG::SP::ctagDataModelBase {
             private:
                 struct SharedEngineDefinition *synths;
-                struct SharedTrackDefinition *tracks;
+                struct TrackDefinition *tracks;
 
                 int lastTrack;
                 int lastEngine;
@@ -51,7 +51,7 @@ namespace CTAG {
                 void Init();
                 int GetNumberOfSynthDefinitions();
                 struct SharedEngineDefinition *GetSynthDefinition(const std::string id);
-                struct SharedTrackDefinition *GetTrackDefinition(int index);
+                struct TrackDefinition *GetTrackDefinition(int index);
                 bool SerializeIntoJSON(rapidjson::Document &doc);
 
                 void WriteListResponse(struct GetEngineDefinitionIdListResponse *response);

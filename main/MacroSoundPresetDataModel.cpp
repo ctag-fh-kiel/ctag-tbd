@@ -124,7 +124,7 @@ void MacroSoundPresetDataModel::ReloadSoundPresets() {
                         // set and the SoundPresetScreen picker can list them
                         // when invoked from the FX1 / FX2 / Master pages.
                         for (int i = 0; i < 19; i++) {
-                            struct SharedTrackDefinition *trackdef = EngineDefinitionDataModel::instance()->GetTrackDefinition(i);
+                            struct TrackDefinition *trackdef = EngineDefinitionDataModel::instance()->GetTrackDefinition(i);
                             if (trackdef != nullptr) {
                                 for(int j=0; j<MaxTrackDefinitionEngineIds; j++) {
                                     if (trackdef->engineIdStr[j][0] != '\0') {
@@ -335,7 +335,7 @@ void MacroSoundPresetDataModel::SerializeListInto(int trackIndex, rapidjson::Doc
 
     // Group presets by machine (synth engine) like the web UI TrackDefaults dialog.
     // Hierarchy: Track → machines (from TrackDefinition) → presets using macros for that machine.
-    struct SharedTrackDefinition *trackDef = EngineDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
+    struct TrackDefinition *trackDef = EngineDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
     if (trackDef == nullptr) return;
 
     for (int mi = 0; mi < MaxTrackDefinitionEngineIds; mi++) {

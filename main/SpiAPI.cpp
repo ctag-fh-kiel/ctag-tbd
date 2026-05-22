@@ -24,7 +24,7 @@ respective component folders / files if different from this license.
 
 #include "SpiAPI.hpp"
 #include "SpiApiProtocol.h"
-#include "SharedEngineDefinition.hpp"
+#include "EngineDefinition.hpp"
 #include "SPManager.hpp"
 #include "Favorites.hpp"
 #include "helpers/ctagSampleRom.hpp"

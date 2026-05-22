@@ -5,7 +5,7 @@
 const int MaxTrackDefinitionEngineIds = 8;
 const int MaxTrackDefinitionEngineIdLength = 16;
 
-enum SharedTrackType : uint8_t {
+enum TrackType : uint8_t {
     TRACK_TYPE_UNKNOWN = 0,
     TRACK_TYPE_DRUM = 1,
     TRACK_TYPE_SYNTH = 2,
@@ -13,9 +13,9 @@ enum SharedTrackType : uint8_t {
     TRACK_TYPE_AUDIOINPUT = 4,
 };
 
-struct SharedTrackDefinition {
+struct TrackDefinition {
     uint8_t index;
-    enum SharedTrackType type;
+    enum TrackType type;
     int8_t midiChannel;
     int8_t drumNote;
     int8_t baseCC;

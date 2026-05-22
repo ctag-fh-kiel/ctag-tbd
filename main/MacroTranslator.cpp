@@ -141,7 +141,7 @@ void MacroTranslator::SetTrackMachine(const int trackIndex, const std::string sy
 
     int idx = 0;
 
-    struct SharedTrackDefinition *trackDef = EngineDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
+    struct TrackDefinition *trackDef = EngineDefinitionDataModel::instance()->GetTrackDefinition(trackIndex);
     if (trackDef == nullptr) {
         ESP_LOGE("MacroTranslator", "Track definition not found for track index %d",
             trackIndex);

@@ -47,7 +47,7 @@ static void SynthDefinition_Reset(struct SharedEngineDefinition *def) {
     }
 }
 
-static void TrackDefinition_Reset(struct SharedTrackDefinition *def) {
+static void TrackDefinition_Reset(struct TrackDefinition *def) {
     def->index = 0;
     memset(def->name, 0, sizeof(def->name));
     def->midiChannel = 0;
@@ -59,7 +59,7 @@ static void TrackDefinition_Reset(struct SharedTrackDefinition *def) {
 
 void EngineDefinitionDataModel::Init() {
     synths = (struct SharedEngineDefinition *) heap_caps_malloc(MAX_SYNTHS * sizeof(struct SharedEngineDefinition), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
-    tracks = (struct SharedTrackDefinition *) heap_caps_malloc(MAX_TRACKS * sizeof(struct SharedTrackDefinition), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
+    tracks = (struct TrackDefinition *) heap_caps_malloc(MAX_TRACKS * sizeof(struct TrackDefinition), MALLOC_CAP_8BIT | MALLOC_CAP_SPIRAM);
 
     for(int i=0; i<MAX_SYNTHS; i++) {
         SynthDefinition_Reset(&synths[i]);
@@ -459,7 +459,7 @@ void EngineDefinitionDataModel::Init() {
 
 void EngineDefinitionDataModel::trackAddDrum(const char *name, int midiChannel, int baseCC, int drumNote, const char *defaultbank) {
     lastTrack ++;
-    SharedTrackDefinition *track = &tracks[lastTrack];
+    TrackDefinition *track = &tracks[lastTrack];
     track->index = lastTrack;
     track->type = TRACK_TYPE_DRUM;
     strlcpy(track->name, name, 16);
@@ -472,7 +472,7 @@ void EngineDefinitionDataModel::trackAddDrum(const char *name, int midiChannel, 
 
 void EngineDefinitionDataModel::trackAddSynth(const char *name, int midiChannel, int baseCC, const char *defaultbank) {
     lastTrack ++;
-    SharedTrackDefinition *track = &tracks[lastTrack];
+    TrackDefinition *track = &tracks[lastTrack];
     track->index = lastTrack;
     track->type = TRACK_TYPE_SYNTH;
     strlcpy(track->name, name, 16);
@@ -484,7 +484,7 @@ void EngineDefinitionDataModel::trackAddSynth(const char *name, int midiChannel,
 
 void EngineDefinitionDataModel::trackAddFx(const char *name, int midiChannel, int baseCC, const char *defaultbank) {
     lastTrack ++;
-    SharedTrackDefinition *track = &tracks[lastTrack];
+    TrackDefinition *track = &tracks[lastTrack];
     track->index = lastTrack;
     track->type = TRACK_TYPE_FX;
     strlcpy(track->name, name, 16);
@@ -562,7 +562,7 @@ struct SharedEngineDefinition *EngineDefinitionDataModel::GetSynthDefinition(con
     return nullptr;
 }
 
-struct SharedTrackDefinition *EngineDefinitionDataModel::GetTrackDefinition(int index) {
+struct TrackDefinition *EngineDefinitionDataModel::GetTrackDefinition(int index) {
     for(int i=0; i<MAX_TRACKS; i++) {
         if (tracks[i].index == index) {
             return &tracks[i];
@@ -615,7 +615,7 @@ bool EngineDefinitionDataModel::SerializeIntoJSON(rapidjson::Document &doc) {
     Value tracksarray(kArrayType);
     doc.AddMember("tracks", tracksarray, doc.GetAllocator());
     for(int j=0; j<MAX_TRACKS; j++) {
-        struct SharedTrackDefinition *def = &tracks[j];
+        struct TrackDefinition *def = &tracks[j];
 
         if (def->name[0] == '\0') continue;
 
